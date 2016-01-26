@@ -1,54 +1,96 @@
-<!DOCTYPE html>
-<html lang="ja">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
 <head>
-<!--[if lt IE 9]>
-<script type="text/javascript" src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
-<![endif]-->
-<meta charset="UTF-8">
-<meta http-equiv="Pragma" content="no-cache">
-<meta http-equiv="cache-control" content="no-cache">
-<meta http-equiv="expires" content="0">
-<title>チケット情報・販売・購入・予約 | 楽天チケット</title>
-<meta name="description" content="チケット情報・販売・購入・予約は「楽天チケット」で！">
-<meta name="keywords" content="楽天チケット, チケット,チケット予約, チケット購入, イベント">
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+  <title>楽天チケット 購入確認ページ</title>
+  <link rel="stylesheet" type="text/css" href="${request.static_url('altair.app.ticketing.orderreview:static/RT/pc/css/import22.css')}" media="all" />
+  <style type="text/css">
+.OrderBox .settlementBoxInner2 {
+    padding: 0 0 10px;
+}
 
-<meta name="viewport" content="width=device-width,user-scalable=no">
+.OrderBox table {
+    line-height: 1.5em;
+}
 
-<!-- Cascading Style Sheets -->
-<link rel="stylesheet" href="${request.static_url('altair.app.ticketing.orderreview:static/RT/common/css/mypage.css')}" type="text/css" media="all">
 
-<!-- Javascript -->
-<script type="text/javascript" src="${request.static_url('altair.app.ticketing.orderreview:static/js/jquery.js')}"></script>
+.OrderBox h2 {
+    text-align: left;
+    margin: 0 3px 5px 2px;
+    padding: 8px 0 10px 12px;
+    background: url(${request.static_url("altair.app.ticketing.orderreview:static/RT/pc/images/bg_line.gif")}) repeat-x left bottom;
+}
+
+.OrderBox .confirmBoxText{
+    margin-left: 20px;
+}
+
+table {
+	margin: 0 0 0 1em;
+  padding; 0 0;
+  width: 100%;
+}
+
+table th,
+table td {
+	padding: 2px 20px 2px 2px;
+}
+
+table th {
+  width: 10em;
+}
+
+.itemize th,
+.commission th {
+	vertical-align: top;
+	padding: 2px 20px 2px 2px;
+	border-bottom: 1px solid .e6e6e6;
+	font-weight: normal;
+	white-space: nowrap;
+}
+
+.itemize td {
+	padding: 2px;
+	border-bottom: 1px solid .e6e6e6;
+}
+
+.itemize tr:last-child th,
+.itemize tr:last-child td {
+	border: none;
+}
+</style>
 </head>
+<body>
 
-<body class="confirm">
-<div class="ts-wrapper">
+<!-- ***** wrapper [start] ***** -->
+<div id="wrapper">
 
-<!-- ******************** header [start] ******************** -->
-<header class="ts-header">
-<div class="ts-header-inner">
-   
-<!-- ===== ts-header-wrap [start] ===== --> 
-<div class="ts-header-wrap">
-
-<div class="ts-header-logobox clearfix">
-<h1 class="ts-header-logo"><a href="http://ticket.rakuten.co.jp/"><span class="offleft">楽天チケット</span></a></h1>
+<!-- ***** header [start] ***** -->
+<div id="header">
+<h1><a href="http://ticket.rakuten.co.jp/"><img src="${request.static_url('altair.app.ticketing.orderreview:static/RT/pc/images/header_logo_03.gif')}" alt="楽天チケット" /></a></h1>
 </div>
+<!-- ***** header [end] ***** -->
 
-</div><!-- ===== ts-header-wrap [end] ===== --> 
-
-</div></header><!-- ******************** header [end] ******************** -->
-
-<!-- ******************** contents [start] ******************** -->
-<div class="ts-contents">
-<div class="ts-contents-inner">
 
 ${next.body()}
 
-</div></div>
-<!-- ******************** contents [end] ******************** -->
+
+</br>
+<!-- ***** footer [start] ***** -->
+<div class="footer">
+<ul class="footernav">
+<li class="first"><a href="http://www.ticketstar.jp/corporate/">運営会社</a></li>
+<li><a href="${h.safe_get_contact_url(request)}">お問い合わせ</a></li>
+<li><a href="http://privacy.rakuten.co.jp/">個人情報保護方針</a></li>
+<li><a href="http://www.ticketstar.jp/legal/">特定商取引法に基づく表示</a></li>
+<li class="last"><a href="http://ticket.rakuten.co.jp/terms">サービス利用規約</a></li>
+</ul>
+<div class="copyright"> &copy; TicketStar, Inc. </div>
+</div>
+<!-- ***** footer [end] ***** -->
 
 </div>
+<!-- ***** wrapper [end] ***** -->
 
 </body>
 </html>
