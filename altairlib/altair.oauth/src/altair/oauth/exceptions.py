@@ -1,14 +1,12 @@
 class OAuthError(Exception):
     pass
 
-
-class OAuthNoSuchAccessTokenError(OAuthError):
-    pass
-
-
 class OAuthRenderableError(OAuthError):
     pass
 
+class OAuthNoSuchAccessTokenError(OAuthRenderableError):
+    error_string = 'invalid_access_token'
+    http_status = 400
 
 class OAuthBadRequestError(OAuthRenderableError):
     error_string = 'invalid_request'
