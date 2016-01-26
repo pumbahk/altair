@@ -1,0 +1,18 @@
+<%inherit file="../common/_base.html" />
+<%namespace file="../common/tags_smartphone.html" name="m" />
+<%block name="title">検索結果一覧</%block>
+<%block name="fnavi">
+    <hr/>
+    % if genre_id:
+        <a href="${request.route_path('smartphone.genre', genre_id=genre_id)}"><button class="btn-secondary btn-large">戻る</button></a>
+    % endif
+    <a href="${request.route_path('smartphone.main')}"><button class="btn-secondary btn-large">トップへ</button></a>
+</%block>
+
+% if not result:
+    <br/>
+    該当するホットワードは削除されたか、存在しません。
+% endif
+        
+<% path=request.route_path('smartphone.hotword') + result.query.create_parameter() if result else '' %>
+<%include file="_result.html" args="result=result, path=path, helper=helper"/>

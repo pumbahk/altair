@@ -11,7 +11,7 @@ class SearchQuery(object):
         helper=SmartPhoneHelper()
         query = []
         if self.word:
-            query.append(u"フリーワード：" + self.word)
+            query.append(self.word)
         if self.genre:
             query.append(u"ジャンル：" + self.genre.label)
         if self.sale:

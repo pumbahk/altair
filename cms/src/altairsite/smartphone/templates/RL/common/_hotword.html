@@ -1,0 +1,22 @@
+<%page args="hotwords, genre_id, helper" />
+<%namespace file="tags_smartphone.html" name="m" />
+
+<h2 class="glitter red">ホットワード</h2>
+<%
+    genre_query = ""
+    if genre_id:
+        genre_query = "&genre_id=" + str(genre_id)
+%>
+% if hotwords:
+    % for hotword in hotwords:
+        % if helper.get_events_from_hotword(request, hotword):
+            <a href="${request.route_path('smartphone.hotword')}?hotword_id=${hotword.id}${genre_query}">
+                <div class="buttonbox">
+                    <button class="btn btn-primary btn-large"><span class="btn-inner">${hotword.name}</span></button>
+                </div>
+            </a>
+        % endif
+    % endfor
+% else:
+    現在、対象となる公演情報はありません
+% endif

@@ -1,0 +1,149 @@
+<%inherit file="../common/_base.html" />
+<%namespace file="../common/tags_smartphone.html" name="m" />
+<%block name="title">お問合せ</%block>
+<%block name="fnavi">
+    <hr/>
+    <a href="${request.route_path('smartphone.main')}"><button class="btn-secondary btn-large">トップへ</button></a>
+</%block>
+
+<style type="text/css">
+#inquiry {
+    border-color: #000000;
+    border: 2px;
+}
+
+#inquiry input[type="text"] {
+  box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  width: 100%;
+  display: block;
+  height: 34px;
+  font-size: 17px;
+  padding: 0px 2px;
+  margin: 0 0 2px 0;
+}
+
+#inquiry textarea {
+  box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  width: 100%;
+  display: block;
+  height: 68px;
+  font-size: 17px;
+  padding: 0px 2px;
+  margin: 0 0 2px 0;
+}
+
+#inquiry select {
+  height: 30px;
+  font-size: 16px;
+  margin: 1px 0 0 0;
+  background-color: #fff;
+}
+
+#inquiry button {
+  height: 28px;
+  font-weight: bold;
+}
+
+#inquiry form {
+  background-color: cornsilk;color: #000000
+}
+</style>
+
+<%def name="disp_error(errors)">
+    % if errors:
+        % for error in errors:
+            <div style="color:#FF0000;">${error}</div>
+        % endfor
+    % endif
+</%def>
+
+<%def name="disp_explanation()">
+    <div class="sectionbox">
+        <div class="sectionbox-inner">
+        お預かりするお客様の個人情報は、『個人情報保護方針』に基いて厳重に管理し、お客様の同意がない限りお問い合わせ・ご相談への対応以外には使用いたしません。<br/>
+        <br/>
+        個人情報保護方針は<a href="${request.route_path('smartphone.page', kind='privacy')}">こちら</a>をご確認ください。<br/>
+        フォームでお問い合わせ頂いたお客様には、基本的に返信メールにて、3営業日内に回答させて頂いております。<br/>
+        (土日祝は原則対応いたしかねます)<br/>
+        <br/>
+
+        <font color=red>
+            ※携帯電話等の受信設定でドメイン指定受信を設定している方は、「@tstar.jp」からのメールを受信できるように設定してください。
+        </font>
+        <br/><br/>
+
+        ［ご注意］<br/>
+        公演の内容、発売の時期や方法については、各公演ページをご覧ください。<br/>
+        お申込み手続きの依頼や、購入されたチケットの変更・キャンセルの依頼についてはお受けできません。<br/>
+        システムに関する問合せはお受けできません。<br/>
+        「<a href="http://leisure.tstar.jp/faq">よくある質問</a>」に掲載している内容については、お返事をお送りできない場合があります。<br/>
+        問合せの前によくご確認ください。<br/><br/>
+
+        </div>
+    </div>
+</%def>
+
+<h2 class="glitter red">お問い合わせ</h2>
+% if result:
+    <div class="sectionbox">
+        <div class="sectionbox-inner">
+            <div style="color:#FF0000;">
+                以下の内容で送信しました。<br/>
+                受付の確認メールが自動で送信されます。<br/>
+                もし受信されない場合は、ドメインの受信設定、迷惑メールフォルダ等をご確認ください。<br/>
+                別の内容でお問い合わせされる場合は、<a href="${request.route_path('smartphone.page', kind='inquiry')}">こちら</a>から再度お問い合わせください。
+            </div>
+        </div>
+    </div>
+% elif result and form.username.data:
+    ${disp_explanation()}
+    <div class="sectionbox">
+        <div class="sectionbox-inner">
+            <div style="color:#FF0000;">送信に失敗しました。</div>
+        </div>
+    </div>
+% else:
+    ${disp_explanation()}
+% endif
+
+
+<div class="sectionbox inverted" id="inquiry">
+
+<form class="sectionbox-inner" action="${request.route_path('smartphone.page', kind='inquiry')}" method="POST">
+    <fieldset>
+        <legend>お問い合わせフォーム</legend>
+        お名前<br/>
+        漢字<font color="red">※</font><br/>${form.username}
+        ${disp_error(form.username.errors)}
+        カナ<font color="red">※</font><br/>${form.username_kana}
+        ${disp_error(form.username_kana.errors)}
+        メールアドレス<font color="red">※</font><br/>${form.mail}
+        ${disp_error(form.mail.errors)}
+        ご住所・電話番号（申込済の件についてお問合せの場合は、お申し込み時に登録された情報を入力してください。)<br/>
+        〒郵便番号<br/>${form.zip_no}
+        ${disp_error(form.zip_no.errors)}
+        住所<font color="red">※</font><br/>${form.address}
+        ${disp_error(form.tel.errors)}
+        電話番号<font color="red">※</font><br/>${form.tel}
+        ${disp_error(form.address.errors)}
+        ${form.num.label}<br/>
+        (ご予約済のチケットの受付番号が不明な場合は、こちらにお申込みの公演名、公演日時を入力してください)
+        ${form.num}
+        カテゴリ<font color="red">※</font><br/>${form.category}
+        ${disp_error(form.category.errors)}<br/>
+        タイトル<font color="red">※</font><br/>${form.title}
+        ${disp_error(form.title.errors)}
+        内容<font color="red">※</font>(具体的に記載してください)${form.body}<br/>
+        ${disp_error(form.body.errors)}
+        <font color="red">※</font>は必ず入力してください。<br/>
+        % if not result:
+            <input type="submit" class="btn-secondary btn-large" value="送信"/>
+        % endif
+    </fieldset>
+</form>
+</div>
+
