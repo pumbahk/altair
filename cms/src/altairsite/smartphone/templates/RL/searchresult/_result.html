@@ -1,0 +1,95 @@
+<%page args="result, path, helper" />
+<%namespace file="../common/tags_smartphone.html" name="m" />
+
+% if result:
+    ${disp_result(result)}
+% endif
+<script>
+$(window).bind("load resize",function() {
+    $(".result_inner").css('width', window.innerWidth - 60);
+});
+</script>
+
+<%def name="disp_result(result)">
+    % if result.events:
+        <table class="panellist margined navigable sectionbox">
+            % if result.num:
+                <caption>検索条件　${result.query.create_query()}<br/>${result.num}件見つかりました。全${result.num}件中、${result.start}〜${result.end}を表示</caption>
+            % endif
+            <tbody>
+            % for event in result.events:
+                <tr>
+                    <td class="panel condensed with-panel-footer result-inner">
+                        <div class="panel-inner result_inner">
+                            <a href="${request.route_path('smartphone.detail')}?event_id=${event.id}">
+                                <span>${event.title}</span>
+                            </a>
+                            <p class="first">有効期限：${event.event_open}</p>
+                            % if event.performances and not hasattr(result.query, "area"):
+                              % if event.performances[0].venue:
+                                <p class="first">会場：${event.performances[0].venue}　
+                                  <% venue_cnt = helper.get_venue_cnt(event) %>
+                                  % if venue_cnt > 1:
+                                    他${venue_cnt-1}会場
+                                  % endif
+                                </p>
+                              % endif
+                            % endif
+                        </div>
+                        <div class="panel-footer">
+                            <span class="label label-salessegment-normal">販売期間</span><b>${helper.disp_salessegment_start_on_date_week(event)}〜${helper.disp_salessegment_end_on_date_week(event)}</b>
+                        </div>
+                    </td>
+                </tr>
+            % endfor
+            </tbody>
+        </table>
+    % else:
+        <table class="panellist margined navigable">
+            <caption>検索条件　${result.query.create_query()}<br/>検索条件に該当する公演がありませんでした。</caption>
+            <tbody>
+            </tbody>
+        </table>
+    % endif
+
+    <div id=search>
+    % if result.num:
+        % if result.page > 1:
+            <a href="${path}&page=${result.page - 1}"><button class="btn-disabled btn-large">前へ</button></a>
+        % endif
+
+        % for count in range(result.page_end):
+            % if result.page == count + 1:
+                <button class="btn-primary btn-large">${count + 1}</button>
+            % else:
+                <a href="${path}&page=${count+1}"><button class="btn-disabled btn-large">${count + 1}</button></a>
+            % endif
+        % endfor
+
+        % if result.page < result.page_end:
+            <a href="${path}&page=${result.page + 1}"><button class="btn-disabled btn-large">次へ</button></a>
+        % endif
+    % endif
+    </div>
+
+    % if areas:
+        <h2 class="glitter red">地域で絞り込む</h2>
+        <ul class="menu">
+        % for area in areas:
+            <a href="${request.route_path('smartphone.search_area', _query=dict(word=result.query.word, area=area.name, page=1))}"><li class="menuitem"><span class="menuitem-label">${helper.get_area_japanese(area.name)}</span></li></a>
+        % endfor
+        </ul>
+    % else:
+        <h2 class="glitter red">ジャンルで絞り込む</h2>
+        <ul class="menu">
+            <a href="${request.route_path('smartphone.search_area', _query=dict(word=u'水族館・動物園・植物園', area=result.query.area, page=1))}"><li class="menuitem"><span class="menuitem-label">水族館・動物園・植物園</span></li></a>
+            <a href="${request.route_path('smartphone.search_area', _query=dict(word=u'温泉・スパ', area=result.query.area, page=1))}"><li class="menuitem"><span class="menuitem-label">温泉・スパ</span></li></a>
+            <a href="${request.route_path('smartphone.search_area', _query=dict(word=u'美術館・博物館', area=result.query.area, page=1))}"><li class="menuitem"><span class="menuitem-label">美術館・博物館</span></li></a>
+            <a href="${request.route_path('smartphone.search_area', _query=dict(word=u'体験', area=result.query.area, page=1))}"><li class="menuitem"><span class="menuitem-label">体験</span></li></a>
+            <a href="${request.route_path('smartphone.search_area', _query=dict(word=u'遊園地・テーマパーク', area=result.query.area, page=1))}"><li class="menuitem"><span class="menuitem-label">遊園地・テーマパーク</span></li></a>
+            <a href="${request.route_path('smartphone.search_area', _query=dict(word=u'プール・海水浴', area=result.query.area, page=1))}"><li class="menuitem"><span class="menuitem-label">プール・海水浴</span></li></a>
+            <a href="${request.route_path('smartphone.search_area', _query=dict(word=u'その他', area=result.query.area, page=1))}"><li class="menuitem"><span class="menuitem-label">その他</span></li></a>
+        </ul>
+    % endif
+
+</%def>

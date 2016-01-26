@@ -1,0 +1,13 @@
+<%page args="genretree, helper" />
+<%namespace file="tags_smartphone.html" name="m" />
+
+<h2 class="glitter red">ジャンルから探す</h2>
+<ul class="menu">
+    <a href="${request.route_path('smartphone.search', _query=dict(word=u'水族館・動物園・植物園'))}"><li class="menuitem"><span class="menuitem-label">水族館・動物園・植物園</span></li></a>
+    <a href="${request.route_path('smartphone.search', _query=dict(word=u'温泉・スパ'))}"><li class="menuitem"><span class="menuitem-label">温泉・スパ</span></li></a>
+    <a href="${request.route_path('smartphone.search', _query=dict(word=u'美術館・博物館'))}"><li class="menuitem"><span class="menuitem-label">美術館・博物館</span></li></a>
+    <a href="${request.route_path('smartphone.search', _query=dict(word=u'体験'))}"><li class="menuitem"><span class="menuitem-label">体験</span></li></a>
+    <a href="${request.route_path('smartphone.search', _query=dict(word=u'遊園地・テーマパーク'))}"><li class="menuitem"><span class="menuitem-label">遊園地・テーマパーク</span></li></a>
+    <a href="${request.route_path('smartphone.search', _query=dict(word=u'プール・海水浴'))}"><li class="menuitem"><span class="menuitem-label">プール・海水浴</span></li></a>
+    <a href="${request.route_path('smartphone.search', _query=dict(word=u'その他'))}"><li class="menuitem"><span class="menuitem-label">その他</span></li></a>
+</ul>

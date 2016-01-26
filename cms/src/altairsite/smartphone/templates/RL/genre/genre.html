@@ -1,0 +1,27 @@
+<%inherit file="../common/_base.html" />
+<%namespace file="../common/tags_smartphone.html" name="m" />
+<%block name="title">${genre.label}</%block>
+<%block name="fnavi">
+<hr/>
+<a href="${request.route_path('smartphone.main')}"><button class="btn-secondary btn-large">トップへ</button></a><br />
+</%block>
+
+<%include file="../search/genre_search.html" args="form=form"/>
+
+% if genre.name=="music":
+    <h2 class="glitter music">${genre.label}</h2>
+% elif genre.name=="stage":
+    <h2 class="glitter performance">演劇</h2>
+% elif genre.name=="sports":
+    <h2 class="glitter sports">スポーツ</h2>
+% elif genre.name=="event":
+    <h2 class="glitter event">イベント・その他</h2>
+% endif
+
+<%include file="../common/_pickup.html" args="promotions=promotions, helper=helper"/>
+<%include file="_salestab.html" args="week_sales=week_sales, near_end_sales=near_end_sales, helper=helper"/>
+<%include file="../common/_topcontent.html" args="topcontents=topcontents, helper=helper"/>
+<%include file="_subgenre.html" args="genretree=genretree, helper=helper"/>
+<%include file="../common/_topic.html" args="topics=topics, helper=helper"/>
+<%include file="_area.html" args="areas=areas, genre=genre, helper=helper"/>
+<%include file="../common/_hotword.html" args="hotwords=hotwords, helper=helper, genre_id=genre.id"/>

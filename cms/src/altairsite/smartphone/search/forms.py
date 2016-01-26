@@ -42,6 +42,7 @@ class GenreSearchForm(TopSearchForm):
         default=SalesEnum.GENRE.v, coerce=int)
 
 class AreaSearchForm(Form):
+    word = TextField(label = '', validators=[Optional()], default="")
     area = HiddenField(label='', validators=[Optional()], default="")
     genre_id = HiddenField(label='', validators=[Optional()], default="")
     page = HiddenField(validators=[Optional()],default="1")

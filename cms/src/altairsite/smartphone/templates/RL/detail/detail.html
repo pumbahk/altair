@@ -1,0 +1,337 @@
+<%inherit file="../common/_base.html" />
+<%namespace file="../common/tags_smartphone.html" name="m" />
+<%block name="title">${event.title}</%block>
+<%block name="fnavi">
+    <hr/>
+    <a href="${request.route_path('smartphone.main')}"><button class="btn-secondary btn-large">トップへ</button></a>
+</%block>
+
+<%
+    perfs = []
+    for perf in event.performances:
+        if perf.public:
+            perfs.append({"perf":perf, "display_order":perf.display_order})
+    perfs = sorted(perfs, key=lambda v: (v['display_order']))
+
+    period = helper.get_info(event_info, u'有効期限') or helper.disp_period(event.event_open, event.event_close)
+
+    info = {
+        'performance_period':period,
+        'performers':helper.get_info(event_info, u'出演者') or event.performers ,
+        'salessegment':helper.get_info_list(event_info, u'販売期間') ,
+        'notice':helper.get_info(event_info, u'説明／注意事項') or event.notice ,
+        'ticket_payment':helper.get_info(event_info, u'お支払い方法') ,
+        'ticket_pickup':helper.get_info(event_info, u'チケット引き取り方法') ,
+        'content':helper.get_info(event_info, u'お問い合わせ先') or event.inquiry_for,
+    }
+%>
+<script type="text/javascript">
+$(function () {
+  $('*[data-toggle]').each(function (_, n) {
+    $(n).on('click', function () {
+      var target = $(document.getElementById(n.getAttribute('data-toggle')));
+      if (target.hasClass('activated')) {
+        target.removeClass('activated');
+        target.animate({ height: target.attr('data-prev-height') + 'px' }, {
+          duration: 100
+        });
+      } else {
+        var h = 0;
+        var targetOffset = target.offset().top;
+        target.children().each(function (_, n) {
+          h += $(n).height();
+        });
+        target.attr('data-prev-height', target.height());
+        target.animate({ height: h + 'px' }, {
+          duration: 100,
+          step: function (h) {
+            var dest = targetOffset + h - $(window).height();
+            if ($(window).scrollTop() < dest) {
+              $(window).scrollTop(dest);
+            }
+          }
+        });
+        target.addClass('activated');
+      }
+      return false;
+    });
+  });
+
+  $(".panelgroup").each(function (index){
+    var onSale = false
+    $(".panelgroup:eq(" + index+ ") .purchase").each(function (index){
+      onSale = true
+    });
+
+    if (onSale) {
+      $('*[data-toggle]:eq(' + index + ')').trigger("click");
+    }
+  });
+
+  if (!$(".purchase").length) {
+    $('*[data-toggle]').trigger("click");
+  }
+
+});
+</script>
+
+
+
+<h2 class="glitter red">イベント詳細</h2>
+<%m:header>イベント名称</%m:header>
+<div class="sectionbox">
+  <div class="sectionbox-inner">
+    ${event.title}
+  </div>
+</div>
+
+<hr/>
+<%m:header>公演期間</%m:header>
+<div class="sectionbox">
+  <div class="sectionbox-inner">
+      ${helper.nl2br(info['performance_period'])|n}
+  </div>
+</div>
+
+<hr/>
+<%def name="render_sale_image(imagepath)">
+    <img src="${request.static_url(imagepath)}" style="vertical-align: top; margin-top: 1px"/>
+</%def>
+
+<%def name="render_sale(segment)">
+    % if segment.find(u"先行抽選") != -1:
+        ${render_sale_image('altaircms:static/RT/img/search/icon_lottery.gif')}
+    % elif segment.find(u"先行先着") != -1:
+        ${render_sale_image('altaircms:static/RT/img/search/icon_firstcome.gif')}
+    % elif segment.find(u"一般販売") != -1:
+        ${render_sale_image('altaircms:static/RT/img/search/icon_normal.gif')}
+    % elif segment.find(u"一般発売") != -1:
+        ${render_sale_image('altaircms:static/RT/img/search/icon_release.gif')}
+    % elif segment.find(u"先行販売") != -1:
+        ${render_sale_image('altaircms:static/RT/img/search/icon_firstsale.gif')}
+    % else:
+        <span style="font-size:9px; background-color:#ffffaa; padding-left:9px; padding-right:9px; padding-top:1px; padding-bottom:1px; color:#111;">${segment}</span>
+    % endif
+</%def>
+
+<%m:header>販売期間</%m:header>
+% if info['salessegment']:
+    <div class="sectionbox">
+        <div class="sectionbox-inner">
+            <table>
+                % for segment in info['salessegment']:
+                    <tr>
+                        <td>
+                            ${render_sale(segment[0])}
+                        </td>
+                        <td>
+                            ${helper.nl2br(segment[1])|n}
+                        </td>
+                    </tr>
+                % endfor
+            </table>
+        </div>
+    </div>
+% else:
+    % if event.salessegment_groups:
+        <div class="sectionbox">
+            <div class="sectionbox-inner">
+                <table>
+                    % for sales_info in helper.get_summary_salessegment_group(event):
+                        <tr>
+                            <td>
+                                ${render_sale(sales_info['group_name'])}
+                            </td>
+                            <td>
+                                <%
+                                    end = ""
+                                    if sales_info['end']:
+                                        end = helper.disp_date(sales_info['end'])
+                                    endif
+                                %>
+                                ${helper.disp_date(sales_info['start'])}〜${end}
+                                <br/>
+                            </td>
+                        </tr>
+                    % endfor
+                </table>
+            </div>
+        </div>
+    % else:
+        <div class="sectionbox">
+            <div class="sectionbox-inner">
+                ${helper.disp_date(event.deal_open)}〜${helper.disp_date(event.deal_close)}
+            </div>
+        </div>
+        <hr/>
+    % endif
+% endif
+
+% if len(perfs):
+<div align="center">
+  &gt;&gt;<a href="#list">購入はこちらから</a>&lt;&lt;<br />
+</div><br />
+
+<hr/>
+% endif
+
+% if info['performers']:
+    <%m:header>出演者</%m:header>
+    <div class="sectionbox">
+      <div class="sectionbox-inner">
+        ${helper.nl2br(info['performers'])|n}
+      </div>
+    </div>
+<hr/>
+% endif
+
+% if info['ticket_payment']:
+    <%m:header>お支払い方法</%m:header>
+    <div class="sectionbox">
+      <div class="sectionbox-inner">
+        ${helper.nl2br(info['ticket_payment'])|n}
+      </div>
+    </div>
+
+<hr/>
+% endif
+
+% if info['ticket_pickup']:
+    <%m:header>チケット引き取り方法</%m:header>
+    <div class="sectionbox">
+      <div class="sectionbox-inner">
+        ${helper.nl2br(info['ticket_pickup'])|n}
+      </div>
+    </div>
+
+<hr/>
+% endif
+
+% if info['content']:
+    <%m:header>お問い合わせ</%m:header>
+    <div class="sectionbox">
+      <div class="sectionbox-inner">
+        ${helper.nl2br(info['content'])|n}
+      </div>
+    </div>
+
+<hr/>
+% endif
+
+
+<%m:header><a name="list">販売チケット一覧</a></%m:header>
+% if len(perfs):
+<div class="sectionbox">
+    <div class="sectionbox-inner" style="color: red">
+        ご購入の方は、ご希望の公演日が含まれる月をクリックしてください（公演一覧が表示されます）
+    </div>
+</div>
+
+% if info['notice']:
+ <%m:header>詳細/注意事項</%m:header>
+    <div class="sectionbox">
+      <div class="sectionbox-inner">
+        <font size="-1">
+        ${helper.nl2br(info['notice'])|n}
+        </font>
+      </div>
+    </div>
+<hr/>
+% endif
+
+% else:
+<div class="sectionbox">
+    <div class="sectionbox-inner">
+        現在、販売中のチケットはありません。
+    </div>
+</div>
+% endif
+
+<ul class="panellist fullwidth expandable">
+  <% index = 0 %>
+
+      % for count in range(len(month_unit_keys)):
+        <%month = month_unit_keys[count] %>
+        <li class="panelgroup" id=${count}>
+          <span class="panelgroup-label"><a href="#" data-toggle=${count}>${month}</a></span>
+          <ul class="panelgroup-inner">
+            % for i, perf in enumerate(perfs):
+              <%
+                start_on_candidates = [salessegment.start_on for salessegment in perf['perf'].sales if salessegment.publicp and salessegment.group.publicp]
+                end_on_candidates = [salessegment.end_on for salessegment in perf['perf'].sales if salessegment.end_on and salessegment.publicp and salessegment.group.publicp]
+              %>
+              % if (str(perf['perf'].start_on.year) + "/" + str(perf['perf'].start_on.month).zfill(2) == month):
+                <% index += 1 %>
+                <li class="panel">
+                  <table class="panellist margined with-action-buttons">
+                    <caption>[${index}]${perf['perf'].title}</caption>
+                    <tbody>
+                      <tr>
+                        <td class="panel condensed">
+                          <div class="panel-inner h_70px">
+                            <p class="first">
+                              % if perf['perf'].open_on:
+                                開場：${helper.disp_time(perf['perf'].open_on)}<br/>
+                              % endif
+                                有効期限：${helper.disp_period(perf['perf'].start_on, perf['perf'].end_on)}<br/>
+                              % if perf['perf'].venue:
+                                会場：${perf['perf'].venue}<br/>
+                              % endif
+                            </p>
+                          </div>
+                          % if not start_on_candidates:
+                            <div class="actions">
+                                準備中
+                            </div>
+                          %elif min(start_on_candidates) >= helper.now(request):
+                            <div class="actions">
+                                販売前
+                            </div>
+                          %elif not end_on_candidates:
+                            % if not perf['perf'].purchase_link and perf['perf'].backend_id is None:
+                              <div class="actions">
+                                準備中
+                              </div>
+                            % elif not perf['perf'].purchase_link and stock_status.scores.get(int(perf['perf'].backend_id),0) <= 0:
+                              <div class="actions">
+                                予定枚数終了
+                              </div>
+                            % else:
+                              <div class="actions">
+                                <a class="purchase" index="${count}" href="${purchase_links[perf['perf'].id]}">
+                                  <button class="btn btn-primary btn-large"><span class="btn-inner">購入</span></button>
+                                </a>
+                              </div>
+                            % endif
+                          %elif max(end_on_candidates) >= helper.now(request):
+                            % if not perf['perf'].purchase_link and perf['perf'].backend_id is None:
+                              <div class="actions">
+                                準備中
+                              </div>
+                            % elif not perf['perf'].purchase_link and stock_status.scores.get(int(perf['perf'].backend_id),0) <= 0:
+                              <div class="actions">
+                                予定枚数終了
+                              </div>
+                            % else:
+                              <div class="actions">
+                                <a class="purchase" index="${count}" href="${purchase_links[perf['perf'].id]}">
+                                  <button class="btn btn-primary btn-large"><span class="btn-inner">購入</span></button>
+                                </a>
+                              </div>
+                            % endif
+                          % else:
+                            <div class="actions">
+                                販売期間終了
+                            </div>
+                          % endif
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </li>
+              % endif
+            % endfor
+          </ul>
+        </li>
+      % endfor
+</ul>
