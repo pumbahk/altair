@@ -1,36 +1,5 @@
 <%inherit file="./base.html"/>
 <%namespace file="./tags_mobile.html" name="mobile" />
-<%namespace name="fh" module="altair.formhelpers.utils.mako" />
-<%
-   import altair.app.ticketing.cart.helpers as ch
-   import altair.app.ticketing.lots.helpers as h
-   %>
-<%def name="render_field(field, label=False, _description=None, _note=None, _suffix=u'', **kwargs)">
-<%
-_description = _description or field.description
-_note = _note or field._note
-if label is None or label is True:
-  label = field.label
-%>
-<div class="field">
-  % if _description:
-  <div class="field-description">${_description}</div>
-  % endif
-  <div class="control-segment">
-    % if label:
-      ${label}
-    % endif
-    ${fh.render(field, **kwargs)}${_suffix}
-    % if _note:
-    <div class="field-note">${_note}</div>
-    % endif
-    ${ch.error(field.name)}
-  </div>
-</div>
-</%def>
-
-
-<%namespace file="./tags_mobile.html" name="mobile" />
 <div align="center" style="text-align:center">
 ${event.title}<br />
 ${lot.name}
@@ -75,7 +44,6 @@ ${lot.name}
 </div>
 
 <%mobile:form_header>${form['email_1'].label}${h.mobile_required_mark()}</%mobile:form_header>
-<p>${form['email_1'].description}</p>
 <div>
   ${form['email_1'](istyle="3", iprof="mail1")}
   ${h.mobile_error_list(request, form, 'email_1')}
@@ -86,6 +54,7 @@ ${lot.name}
   ${form['email_1_confirm'](istyle="3", iprof="mail1")}
   ${h.mobile_error_list(request, form, 'email_1_confirm')}
 </div>
+<p>${view_context.mail_filter_domain_notice}</p>
 
 <%mobile:form_header>住所</%mobile:form_header>
 <div>
@@ -117,21 +86,12 @@ ${lot.name}
   ${h.mobile_error_list(request, form, 'tel_1')}
 </div>
 
-% for field in form['extra']._contained_form:
-% if not field.short_name in {'member_type'}:
-<%mobile:form_header>${field.label}</%mobile:form_header>
-<div>
-${render_field(field)}
-</div>
-% endif
-% endfor
-
 <%mobile:form_header>${form['memo'].label.text}</%mobile:form_header>
 <div>
   ${form['memo']}
   ${h.mobile_error_list(request, form, 'memo')}
   <div style="font-size: 80%;">
-  ※ご質問を入力されても返信はいたしかねます。<br>
+  ※ご質問を入力されても返信はいたしかねます。
   </div>
 </div>
 

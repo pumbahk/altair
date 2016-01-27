@@ -1,33 +1,4 @@
 <%inherit file="${context['main_template'].uri}" />
-<%namespace name="fh" module="altair.formhelpers.utils.mako" />
-<%
-   import altair.app.ticketing.cart.helpers as ch
-   import altair.app.ticketing.lots.helpers as h
-%>
-<%def name="render_field(field, label=False, _description=None, _note=None, _suffix=u'', **kwargs)">
-<%
-_description = _description or field.description
-_note = _note or field._note
-if label is None or label is True:
-  label = field.label
-%>
-<div class="field">
-  % if _description:
-  <div class="field-description">${_description}</div>
-  % endif
-  <div class="control-segment">
-    % if label:
-      ${label}
-    % endif
-    ${fh.render(field, **kwargs)}${_suffix}
-    % if _note:
-    <div class="field-note">${_note}</div>
-    % endif
-    ${ch.error(field.name)}
-  </div>
-</div>
-</%def>
-
 %if request.session.peek_flash():
 <div style="border: 3px solid red; background: #FFEEEE; padding: 10px; margin: 10px;">
   <ul>
@@ -41,6 +12,10 @@ if label is None or label is True:
   <div class="settlementBoxInner2">
     <h2><img src="${request.static_url('altair.app.ticketing.lots:static/SA/pc/img/settlement/title_event.gif')}" alt="イベント詳細" width="106" height="29" /></h2>
     <table summary="イベント詳細情報">
+      <tr>
+        <th scope="row">イベント名</th>
+        <td>${event.title}</td>
+      </tr>
       <tr>
         <th scope="row">申込受付期間</th>
         <td>${h.japanese_datetime(sales_segment.start_at)}～${h.japanese_datetime(sales_segment.end_at)}</td>
@@ -61,6 +36,10 @@ if label is None or label is True:
         <td>${u"{0} 回".format(lot.entry_limit)}</td>
       </tr>
       %endif
+      <tr>
+        <th scope="row">受付希望数</th>
+        <td>一度の申込で第${lot.limit_wishes}希望まで</td>
+      </tr>
       %if lot.description:
       <tr>
         <th scope="row">注意事項</th>
@@ -68,6 +47,26 @@ if label is None or label is True:
       </tr>
       %endif
     </table>
+  </div>
+</div>
+<div class="settlementBox2">
+  <div class="settlementBoxInner2">
+    <h2><img src="${request.static_url('altair.app.ticketing.lots:static/SA/pc/img/order/title_public.gif')}" alt="公演一覧" width="106" height="29" /></h2>
+    %for performance in performances:
+    <table class="border" summary="イベント詳細情報">
+      <tr>
+        <th colspan="2" class="title" scope="row">${performance.name}</th>
+      </tr>
+      <tr class="none">
+        <th scope="row">公演日</th>
+        <td>${h.performance_datetime(performance)}</td>
+      </tr>
+      <tr>
+        <th scope="row">会場</th>
+        <td>${performance.venue.name}</td>
+      </tr>
+    </table>
+    %endfor
   </div>
 </div>
 
@@ -79,6 +78,7 @@ if label is None or label is True:
       <div class="settlementSelectBox">
         <div class="settlementSelectBoxInner02">
           <p class="header">
+            <strong>第${i + 1}希望</strong>
             %if len(performance_map) == 1:
             <input type="hidden" name="performanceName-${i}" value="${performance_map[0][1]}" />
             %else:
@@ -99,6 +99,9 @@ if label is None or label is True:
           </p>
           <table class="chooser" summary="希望する公演と券種の選択" id="wish-cell-table-${i}">
             <tr>
+              <th>
+                <label>公演日・会場</label>
+              </th>
               <td colspan="2">
                 <select name="performanceDate-${i}" data-wishOrder="${i}" class="performance-date-select">
                 %for performance in performances:
@@ -112,17 +115,19 @@ if label is None or label is True:
                   <option value="${performance.id}">${h.performance_date_label(performance)}</option>
                   % endif
                 %endfor
-                </select>※この項目は選択の必要はございません
+                </select>
               </td>
-              </tr>
+            </tr>
             <tr>
+              <th>
+                <label>席種</label>
+              </th>
               <td colspan="2">
                 <select name="stockType-${i}" data-wishOrder="${i}" class="stock-type-select">
                 %for rec in stock_types:
                 <option value="${rec['id']}">${rec['name']}</option>
                 %endfor
                 </select>
-                    ※この項目は選択の必要はございません
                 <div class="stock-type-description"></div>
               </td>
             </tr>
@@ -189,6 +194,7 @@ if label is None or label is True:
       </div>
       %endfor
     </div>
+    <p style="margin-left:10px; font-size:90%; color:#333;">${view_context.mail_filter_domain_notice}</p>
   </div>
 
   <div class="settlementBox">
@@ -241,6 +247,7 @@ if label is None or label is True:
                    (例：mail@example.ne.jp)
                   ${self.error(form, 'email_1_confirm')}
                 </div>
+                <p>${view_context.mail_filter_domain_notice}</p>
               </td>
             </tr>
             <tr>
@@ -304,26 +311,15 @@ if label is None or label is True:
                 ${self.error(form, 'sex')}
               </td>
             </tr>
-            <tr>
-              <th>旅行券の引換に関して</th>
-              <td style="font-size:16px;">・以下の取扱店舗より、引換場所をご選択ください。<br/>
-                  ・未定の場合は『未定』をご選択ください。<br/>
-                  ・なお、引換場所は、当選後に<a href="https://satv.tstar.jp/orderreview" target="_blank">『購入の確認』</a>ページから編集することが可能です。<br/>
-                  ・引換場所が決定した際は<a href="https://satv.tstar.jp/orderreview" target="_blank">『購入の確認』</a>ページから編集ください。<br/>
-              </td>
-            </tr>
-            % for field in form['extra']._contained_form:
-            % if not field.short_name in {'member_type'}:
-            <tr>
-              <th scope="row">
-                <label for="${field.id}">${field.label}</label>
-              </th>
+            <tr class="settlementSelectEnd">
+              <th>メモ欄</th>
               <td>
-                ${render_field(field)}
+                ${form['memo'](cols=50, rows=5)} ${self.error(form, 'error')}
+                <div style="font-size: 90%;">
+                ※ご質問を入力されても返信はいたしかねます。
+                </div>
               </td>
             </tr>
-            % endif
-            % endfor
           </table>
         </div>
       </div>

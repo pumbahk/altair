@@ -125,8 +125,8 @@ ${self.widget.flow_widget(4)}
     <div class="confirm-message">
       <ul>
 
-        <li>お申し込み時に、ご登録いただいたメールアドレス宛に、受付完了メールが送られます。しばらくたっても確認のメールが届かない場合は、入力されたメールアドレスが誤っている可能性があります。<a target="_blank" href="mailto:satv@tstar.jp">こちら</a> までご連絡ください。<br />
-        <li>お申込内容は、「<a target="_blank" href="https://hawaiians.tstar.jp/orderreview/">購入履歴確認</a>」からもご確認いただけます。受付番号とご登録時のお電話番号をお手元にご用意の上、ご利用ください。</li>
+        <li>お申し込み時に、ご登録いただいたメールアドレス宛に、受付完了メールが送られます。しばらくたっても確認のメールが届かない場合は、入力されたメールアドレスが誤っている可能性があります。主催者までご連絡ください。<br />
+        <li>お申込内容は、「<a target="_blank" href="https://satv.tstar.jp/orderreview/">購入履歴確認</a>」からもご確認いただけます。受付番号とご登録時のお電話番号をお手元にご用意の上、ご利用ください。</li>
       </ul>
 
     </div>
@@ -135,7 +135,6 @@ ${self.widget.flow_widget(4)}
 
 <div style="width: 800px; text-align: center; margin-left: auto; margin-right: auto;">
   <div class="next-action">
-    <a href="${request.context.host_base_url}"><img src="${request.static_url('altair.app.ticketing.cart:static/SA/pc/images/btn_back_to_top.gif')}"/></a>
     <a href="${request.route_url("cart.index", event_id=order.performance.event.id, _query={'performance': order.performance_id})}"
        ><img src="${request.static_url('altair.app.ticketing.cart:static/SA/pc/images/btn_other_ticket.gif')}"/></a>
   </div>

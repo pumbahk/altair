@@ -163,8 +163,8 @@
       <%m:header>注意事項</%m:header>
       <div class="confirm-message dispBoxInner">
         <div class="methodArea">
-        お申し込み時に、ご登録いただいたメールアドレス宛に、受付完了メールが送られます。しばらくたっても確認のメールが届かない場合は、入力されたメールアドレスが誤っている可能性があります。<a target="_blank" href="mailto:satv@tstar.jp">こちら</a> までご連絡ください。<br />
-        お申込内容は、「<a target="_blank" href="https://hawaiians.tstar.jp/orderreview/">履歴確認</a>」からもご確認いただけます。受付番号とご登録時のお電話番号をお手元にご用意の上、ご利用ください。
+        お申し込み時に、ご登録いただいたメールアドレス宛に、受付完了メールが送られます。しばらくたっても確認のメールが届かない場合は、入力されたメールアドレスが誤っている可能性があります。主催者までご連絡ください。<br />
+        お申込内容は、「<a target="_blank" href="https://satv.tstar.jp/orderreview/">履歴確認</a>」からもご確認いただけます。受付番号とご登録時のお電話番号をお手元にご用意の上、ご利用ください。
         </div>
       </div>
     </div>
@@ -172,9 +172,6 @@
 </div>
 
 <div class="next-action">
-  <a href="${request.context.host_base_url}"  >
-    <button class="btn btn-primary" style="width: 49%; height: 46px">チケットTOP</button>
-  </a>
   <a href="${request.route_url("cart.index", event_id=order.performance.event.id, _query={'performance':order.performance_id})}">
     <button class="btn btn-primary" style="width: 49%; height: 46px">他のチケットを購入</button>
   </a>
