@@ -1,36 +1,50 @@
-<%inherit file="../layout.html" />
+<%inherit file="../layout_resp.html" />
+<%block name="title">マイページ</%block>
 
-<h2>マイページ</h2>
+<h1 class="heading heading-primary">マイページ</h1>
 
-<h3>購入履歴照会</h3>
+
+<!-- ===== 購入履歴照会 ===== -->
+<div class="confirm-wrap">
+<h2 class="heading heading_simple_line">購入履歴照会</h2>
+
 % if orders:
   ${render_orders(orders)}
 % else:
-  購入履歴がありません。
+  <p>購入履歴がありません。</p>
 % endif
+
+</div><!-- ===== / 購入履歴照会 ===== -->
 
 <br/><br/>
 
-<h3>抽選申込み照会</h3>
+<!-- ===== 抽選申込み照会 ===== -->
+<div class="confirm-wrap">
+<h2 class="heading heading_simple_line">抽選申込み照会</h2>
 % if lot_entries:
   ${render_lot_entries(lot_entries)}
 % else:
-  抽選申込みがありません。
+  <p>抽選申込みがありません。</p>
 % endif
 
 <br/><br/>
 
 <%include file="../../../__commons__/trouble_message.html" />
 
-<h3>メールマガジン</h3>
+<!-- ===== メールマガジンの配信 ===== -->
+<div class="confirm-wrap">
+<div class="confirm-wrap-inner confirm-magBox">
+<h2 class="heading heading_simple_line">メールマガジンの配信</h2>
+
 ${render_mailmagazine(request)}
 
-<br/><br/>
+</div></div><!-- ===== 　/メールマガジンの配信 ===== -->
 
-<h3>楽天ポイントのご確認</h3>
-<a href="https://point.rakuten.co.jp/">楽天ポイントのご確認はこちら</a>
-
-<br/><br/>
+<!-- ===== 楽天ポイントのご確認 ===== -->
+<div class="confirm-wrap">
+<h2 class="heading heading_simple_line">楽天ポイントのご確認</h2>
+<p>&raquo; <a href="https://point.rakuten.co.jp/">楽天ポイントのご確認はこちら</a></p>
+</div><!-- ===== / 楽天ポイントのご確認 ===== -->
 
 <%def name="render_shipping_address(shipping_address)">
   <table class="purchasedContents" summary="配送先情報">
@@ -56,10 +70,9 @@ ${render_mailmagazine(request)}
 </%def>
 
 <%def name="render_lot_entries(lot_entries)">
-  <div id="mypageHistory">
     % for entry in lot_entries:
-      <div class="box">
-        <p><img src="${request.static_url('altair.app.ticketing.orderreview:static/RT/pc/images/mypage/' + h.get_entry_status_image(request, entry))}" alt="${h.get_entry_status(request, entry)}" width="60" height="60" /></p>
+      <div class="mypage-box">
+        <p class="mypage-icon"><img src="${request.static_url('altair.app.ticketing.orderreview:static/RT/pc/images/mypage/' + h.get_entry_status_image(request, entry))}" alt="${h.get_entry_status(request, entry)}" width="60" height="60" /></p>
         <dl>
           <form id="lots${entry.entry_no}" name="${entry.entry_no}" action="/lots/review" method="POST">
             <input type="hidden" name="entry_no" value="${entry.entry_no}"/>
@@ -69,21 +82,19 @@ ${render_mailmagazine(request)}
             % else:
               <dt><a href="javascript:void(0);" onclick="document.getElementById('lots' + '${entry.entry_no}').submit()">${entry.lot.name}</a></dt>
             % endif
-            <dd>受付番号：${entry.entry_no}　申込日時：${h.japanese_datetime(entry.created_at)}</dd>
+            <dd><span class="br">受付番号：${entry.entry_no}</span>
+                <span>申込日時：${h.japanese_datetime(entry.created_at)}</span></dd>
+            <dd><span class="br"></span><span></span></dd><!-- for adjustment -->
           </form>
         </dl>
       </div>
     % endfor
-  </div>
 <div style="text-align: right">
 ${render_pager(lot_entries)}
 </div>
 </%def>
 
 <%def name="render_orders(orders)">
-
-<div id="mypageHistory">
-<div class="inner">
 
 % for order in orders:
 
@@ -98,26 +109,30 @@ else:
     period = h.japanese_datetime(order.performance.start_on)
 %>
 
-<div class="box">
-<p><img src="${request.static_url('altair.app.ticketing.orderreview:static/RT/pc/images/mypage/' + h.get_order_status_image(order))}" alt="${h.get_order_status(order)}" width="60" height="60" /></p>
-<p><img src="${request.static_url('altair.app.ticketing.orderreview:static/RT/pc/images/mypage/' + h.get_payment_status_image(order))}" alt="${h.get_payment_status(order)}" width="60" height="60" /></p>
+<div class="mypage-box">
+<p class="mypage-icon"><img src="${request.static_url('altair.app.ticketing.orderreview:static/RT/pc/images/mypage/' + h.get_order_status_image(order))}" alt="${h.get_order_status(order)}" height="60" width="60"></p>
+<p class="mypage-icon"><img src="${request.static_url('altair.app.ticketing.orderreview:static/RT/pc/images/mypage/' + h.get_payment_status_image(order))}" alt="${h.get_payment_status(order)}" height="60" width="60"></p>
 <dl>
 <form id="${order.order_no}" name="${order.order_no}" action="${request.route_path('mypage.order.show')}" method="POST">
 <input type="hidden" name="order_no" value="${order.order_no}"/>
 <dt><a href="javascript:void(0);" onclick="document.getElementById('${order.order_no}').submit()">${order.performance.name}</a></dt>
-<dd>受付番号：${order.order_no}　予約日時：${h.japanese_datetime(order.created_at)}</dd>
-<dd>${period} 開演 ${order.performance.venue.name}</dd>
+<dd>
+<span class="br">受付番号：${order.order_no}</span>
+<span>予約日時：${h.japanese_datetime(order.created_at)}</span></dd>
+<dd>
+<span class="br">${period} 開演</span>
+<span>${order.performance.venue.name}</span>
+</dd>
 </form>
 </dl>
 </div>
 
 % endfor
-</div>
-</div>
 
 <div style="text-align: right">
 ${render_pager(orders)}
 </div>
+
 </%def>
 
 <%def name="render_pager(result)">
@@ -125,27 +140,26 @@ ${result.pager(format=u"$link_first $link_previous 前を表示 ~3~ 次を表示
 </%def>
 
 <%def name="render_mailmagazine(request)">
-
   % if mailmagazines_to_subscribe:
 
-  <form id="mail_form" name="mail_form" method="post" action="${request.route_path('mypage.mailmag.confirm')}">
-  <div id="mypageHistory">
-    楽天チケットからのメールマガジンの購読を選択できます。<br/><br/>
+<form id="mail_form" name="mail_form" class="confirmForm" method="post" action="${request.route_path('mypage.mailmag.confirm')}">
+  <p class="bold">楽天チケットからのメールマガジンの購読を選択できます。</p>
     % for mailmagazine, subscribed in mailmagazines_to_subscribe:
-      <div class="box">
-        <dl>
-            <input type="checkbox" ${"checked" if subscribed else ""} name="mailmagazine" id="mailmagazine-${mailmagazine.id}" value="${mailmagazine.id}" />
-            <b><label for="mailmagazine-${mailmagazine.id}">${mailmagazine.name}</label></b>
-            <br/><br/>
-
-            ${mailmagazine.description|n}
-        </dl>
-      </div>
+<p class="mgtb10">
+<input type="checkbox" ${"checked" if subscribed else ""} name="mailmagazine" id="mailmagazine-${mailmagazine.id}" value="${mailmagazine.id}" />
+<label for="mailmagazine-9">${mailmagazine.name}</label>
+% if subscribed:
+  <span class="icon_onmag">購読中</span>
+% endif
+</p>
+<p class="fs12">${mailmagazine.description|n}</p>
     % endfor
-  </div>
-  <div style="text-align: center">
-    <input type="submit" value="変更する" class="btnLogin" style="width:200px;height:40px;line-height:40px;">
-  </div>
-  </form>
+
+<div class="confirm-btnBox">
+<input class="btn btn-primary" type="submit" value="変更する"></p>
+</div>
+
+</form>
+
   % endif
 </%def>
