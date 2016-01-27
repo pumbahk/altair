@@ -22,7 +22,6 @@ from altair.app.ticketing.core.models import (
     Operator,
     ReportRecipient,
     PaymentDeliveryMethodPair,
-    SalesSegmentPaymentDeliveryMethodPair
 )
 from altair.app.ticketing.events.sales_segments.resources import SalesSegmentAccessor
 from altair.app.ticketing.lots.models import Lot
