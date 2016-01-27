@@ -15,7 +15,15 @@ from altair.formhelpers import (
     OurSelectField, SwitchOptional,
     )
 from altair.app.ticketing.core.models import ReportFrequencyEnum, ReportPeriodEnum
-from altair.app.ticketing.core.models import Product, SalesSegment, SalesSegmentGroup, Operator, ReportRecipient
+from altair.app.ticketing.core.models import (
+    Product,
+    SalesSegment,
+    SalesSegmentGroup,
+    Operator,
+    ReportRecipient,
+    PaymentDeliveryMethodPair,
+    SalesSegmentPaymentDeliveryMethodPair
+)
 from altair.app.ticketing.events.sales_segments.resources import SalesSegmentAccessor
 from altair.app.ticketing.lots.models import Lot
 from altair.app.ticketing.events.sales_reports.forms import ReportSettingForm
@@ -214,6 +222,15 @@ class LotForm(Form):
         sales_segment.max_quantity=self.data['max_quantity']
         sales_segment.seat_choice=False
         sales_segment.auth3d_notice = self.data['auth3d_notice']
+        if self.data['sales_segment_group_id']:
+            SalesSegmentPaymentDeliveryMethodPair.query.filter_by(sales_segment_id=sales_segment.id).delete()
+            pdmps = PaymentDeliveryMethodPair.filter_by(sales_segment_group_id=sales_segment.sales_segment_group_id).all()
+            for pdmp in pdmps:
+                ss_pdmp = SalesSegmentPaymentDeliveryMethodPair(
+                     payment_delivery_method_pair_id=pdmp.id,
+                    sales_segment_id=sales_segment.id,
+                )
+                ss_pdmp.save()
 
         sales_segment_group = sales_segment.sales_segment_group
         sales_segment.use_default_start_at=self.data['use_default_start_at']

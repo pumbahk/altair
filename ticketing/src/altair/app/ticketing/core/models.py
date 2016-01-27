@@ -1654,6 +1654,9 @@ SalesSegment_PaymentDeliveryMethodPair = Table(
     Column('sales_segment_id', Identifier, ForeignKey('SalesSegment.id')),
     )
 
+class SalesSegmentPaymentDeliveryMethodPair(Base, BaseModel):
+    __table__ = SalesSegment_PaymentDeliveryMethodPair
+
 class DateCalculationBase(StandardEnum):
     Absolute             = 0
     OrderDate            = 1
