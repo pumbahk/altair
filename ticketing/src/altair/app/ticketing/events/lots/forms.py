@@ -223,14 +223,7 @@ class LotForm(Form):
         sales_segment.seat_choice=False
         sales_segment.auth3d_notice = self.data['auth3d_notice']
         if self.data['sales_segment_group_id']:
-            SalesSegmentPaymentDeliveryMethodPair.query.filter_by(sales_segment_id=sales_segment.id).delete()
-            pdmps = PaymentDeliveryMethodPair.filter_by(sales_segment_group_id=sales_segment.sales_segment_group_id).all()
-            for pdmp in pdmps:
-                ss_pdmp = SalesSegmentPaymentDeliveryMethodPair(
-                     payment_delivery_method_pair_id=pdmp.id,
-                    sales_segment_id=sales_segment.id,
-                )
-                ss_pdmp.save()
+            sales_segment.payment_delivery_method_pairs = PaymentDeliveryMethodPair.query.filter_by(sales_segment_group_id=sales_segment.sales_segment_group_id).all()
 
         sales_segment_group = sales_segment.sales_segment_group
         sales_segment.use_default_start_at=self.data['use_default_start_at']
