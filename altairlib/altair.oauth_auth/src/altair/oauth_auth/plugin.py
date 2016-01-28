@@ -191,7 +191,10 @@ class OAuthAuthPlugin(object):
         else:
             authorization_code = request.GET.getone('code')
             verification_token = request.GET.getone('state')
-            expected_verification_token = request.session[self.SESSION_VERIFICATION_TOKEN_KEY]
+            expected_verification_token = request.session.get(self.SESSION_VERIFICATION_TOKEN_KEY)
+            if expected_verification_token is None:
+                logger.info('token was not created yet')
+                return HTTPFound(location=error_url)
             if verification_token != expected_verification_token:
                 logger.warning('state does not match (%s != %s)' % (verification_token, expected_verification_token))
                 return HTTPFound(location=error_url)
