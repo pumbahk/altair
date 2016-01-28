@@ -39,6 +39,7 @@ logger = logging.getLogger(__name__)
 class PrintedReports(BaseView):
 
     @view_config(route_name='printed_reports.edit', request_method='GET')
+    @view_config(route_name='printed_reports.recipients_update', request_method='GET')
     def edit_get(self):
         return dict(
             event=self.context.event,

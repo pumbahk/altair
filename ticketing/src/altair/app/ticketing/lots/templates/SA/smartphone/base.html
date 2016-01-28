@@ -24,21 +24,23 @@
 <div id="container">
 
 <div id="header">
-    <h1><img class="serviceLogo" src="${request.static_url('altair.app.ticketing.lots:static/SA/smartphone/img/common/logo.png')}" alt="静岡朝日テレビ"></h1>
+<h1><img src="${request.static_url('altair.app.ticketing.lots:static/SA/mobile/img/logo.gif')}" width="240" height="96" alt="静岡朝日テレビ"></h1>
+<br/>
       % if lot:
-        <!--
         <form name="logout" action="${request.route_path('lots.entry.logout', _query=dict(lot_id=lot.id, event_id=lot.event.id))}" method="POST">
           <div style="text-align: right">
             % if hasattr(request, 'context') and request.context.authenticated_user()['is_guest']:
-              <input type="submit" value="会員でログイン"/>
+              <input type="submit" value="優待コードでログイン"/>
             % else:
               <input type="submit" value="ログアウト"/>
             % endif
           </div>
         </form>
-        -->
       % endif
-    <h2>抽選申込ページ</h2>
+  <div style="text-align:right;">
+  <a href="/howto.html" class="headerLink" target="_blank">申込方法</a>　<a href="/faq.html" class="headerLink" target="_blank">よくある質問</a>　<a href="/kakunin.html" class="headerLink" target="_blank">申込確認</a>
+</div>
+<h2>抽選申込ページ</h2>
 </div>
 
   <!-- ========== main ========== -->
@@ -47,9 +49,9 @@
   <div class="footerCopy">
     <div class="footernav">
       <ul>
-<li><a href="mailto:satv@tstar.jp">お問い合わせ</a></li>
-<li><a href="http://www.ticketstar.jp/legal">特定商取引法に基づく表示</a></li>
-<li><a href="http://privacy.rakuten.co.jp/">個人情報保護方針</a></li>
+        <li><a class="first" href="http://www.ticketstar.jp/corporate" target="_blank">運営会社</a></li>
+        <li><a href="http://www.ticketstar.jp/privacy/" target="_blank">個人情報保護方針</a></li>
+        <li><a class="last" href="http://www.ticketstar.jp/legal" target="_blank">特定商取引法に基づく表示</a></li>
       </ul>
     </div>
     <div class="copyright">

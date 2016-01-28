@@ -115,11 +115,12 @@
         <td rowspan="${rows}">
           ${view.status_label(altair_famiport_performance_group.status)}
           ${view.sales_channel_label(altair_famiport_performance_group.sales_channel)}
-          <a href="${request.route_path('events.famiport.performance_groups.item.show', event_id=event.id, altair_famiport_performance_group_id=altair_famiport_performance_group.id)}">${altair_famiport_performance_group.name_1}</a> (${altair_famiport_performance_group.name_2})
+          <a href="${request.route_path('events.famiport.performance_groups.item.show', event_id=event.id, altair_famiport_performance_group_id=altair_famiport_performance_group.id)}">${altair_famiport_performance_group.name_1}</a> (${altair_famiport_performance_group.name_2})<br>
+          <span style="color: #9e0000;">最終反映時刻：${view.last_reflected_at_label(altair_famiport_performance_group)}</span>
         </td>
         <td rowspan="${rows}">
           ${altair_famiport_performance_group.altair_famiport_venue.name}<br />
-          [${altair_famiport_performance_group.altair_famiport_venue.sites[0].name}]
+          [${altair_famiport_performance_group.altair_famiport_performances.values()[0].performance.venue.name}]
         </td>
         <td rowspan="${rows}">${altair_famiport_performance_group.code_1}-${altair_famiport_performance_group.code_2}</td>
         % for i, (performance, altair_famiport_performance) in enumerate(sorted(altair_famiport_performance_group.altair_famiport_performances.items(), key=lambda pair: pair[1].code)):
@@ -128,7 +129,12 @@
       <tr>
           % endif
         <td rowspan="2">${altair_famiport_performance.code}</td>
-        <td><a href="${request.route_path('events.famiport.performances.item.show', event_id=event.id, altair_famiport_performance_group_id=altair_famiport_performance_group.id, altair_famiport_performance_id=altair_famiport_performance.id)}">${altair_famiport_performance.name}</a></td>
+        <td>
+          ${view.status_label(altair_famiport_performance.status)}
+          <a href="${request.route_path('events.famiport.performances.item.show', event_id=event.id, altair_famiport_performance_group_id=altair_famiport_performance_group.id, altair_famiport_performance_id=altair_famiport_performance.id)}">
+            ${altair_famiport_performance.name}
+          </a>
+        </td>
         <td rowspan="2">${vh.datetime(altair_famiport_performance.start_at, with_weekday=True)}</td>
       </tr>
       <tr>

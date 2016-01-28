@@ -63,6 +63,12 @@ class FamiPortView(BaseView):
             label = u'???'
         return label
 
+    def last_reflected_at_label(self, famiport_performance_group):
+        if famiport_performance_group.last_reflected_at is None:
+            return u'-'
+        else:
+            return famiport_performance_group.last_reflected_at
+
     @view_config(route_name='events.famiport.performance_groups.index', renderer=u'events/famiport/show.html')
     def show(self):
         event_id = self.request.matchdict['event_id']

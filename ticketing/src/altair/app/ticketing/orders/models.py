@@ -541,7 +541,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     def can_release_stocks(self):
         # 払戻済のみ座席解放可能
-        return (self.status == 'ordered' and self.payment_status == 'refunded' and self.released_at is None)
+        return (self.status == 'refunded' and self.payment_status == 'refunded' and self.released_at is None)
 
     def cancel(self, request, payment_method=None, now=None):
         from .api import refund_order, cancel_order

@@ -3584,6 +3584,8 @@ class Refund(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 Refund.payment_method_id==refund_payment_method.id,
             ).with_entities(
                 Performance.name.label('performance_name'),
+                Performance.start_on.label('performance_start_on'),
+                Performance.end_on.label('performance_end_on'),
                 PaymentMethod.name.label('payment_method_name'),
                 DeliveryMethod.name.label('delivery_method_name'),
                 Order.issued.label('issued'),

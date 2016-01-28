@@ -190,8 +190,9 @@ ${(view_context.embedded_html_complete_page_smartphone or u'')|n}
         tmp = []
         # event_id
         tmp.append(str(order.performance.event.id))
-        # パフォーマンスID + 公演開始時刻 + 商品ID
-        tmp.append(str(order.performance.id) + '_' + str(order.performance.start_on) + '_' + str(product.product.id))
+        # performance_id + 公演開始時刻 + 商品ID
+        start_on_str = str(order.performance.start_on).replace(':','').replace('-','').replace(' ','')
+        tmp.append(str(order.performance.id) + '_' + start_on_str[:-2] + '_' + str(product.product.id))
         # 単価
         tmp.append(str(product.quantity))
         # 単価 * 枚数 (金額のカンマ排除)
@@ -200,8 +201,6 @@ ${(view_context.embedded_html_complete_page_smartphone or u'')|n}
         # 明細内情報は;で連結
         sc_product.append(";".join(tmp))
 
-    # 各明細は,で連結
-    sproduct = ",".join(sc_product)
     sc = {"pagename": "completed", "events": "purchase", "order_no": order.order_no, "products": ",".join(sc_product)}
 %>
 <%include file="../common/sc_basic.html" args="sc=sc" />
