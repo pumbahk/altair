@@ -451,9 +451,6 @@ class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
                     logger.error(u'FamiPortReceipt(reserve_number=%s, barcode_no=%s) is not marked inquired or invalid status.' % (famiport_receipt.reserve_number, famiport_receipt.barcode_no, ))
                     replyCode = ReplyCodeEnum.SearchKeyError.value
                     famiport_receipt = None
-                else:
-                    famiport_receipt.mark_payment_request_received(now, request)
-                    session.commit()
 
             # validate the request
             if famiport_receipt is not None:
@@ -602,6 +599,9 @@ class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
                     koenDate=koenDate,
                     tickets=famiport_ticket_responses
                     )
+                # 正常なレスポンスを返せたらpayment_request_received_atを立てる
+                famiport_receipt.mark_payment_request_received(now, request)
+                session.commit()
             else:
                 resultCode = str_or_blank(resultCode)
                 replyCode = str_or_blank(replyCode)
