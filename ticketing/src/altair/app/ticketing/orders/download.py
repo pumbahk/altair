@@ -873,7 +873,7 @@ class OrderSearchBase(list):
         if fm_reserve_number:
             try:
                 famiport_order = famiport_api.get_famiport_order_by_reserve_number(self.request, fm_reserve_number)
-                cond = and_(cond, Order.__table__.c.order_no==famiport_order['order_no'])
+                cond = and_(cond, t_order.c.order_no==famiport_order['order_no'])
             except FamiPortAPINotFoundError:
                 cond = and_(cond, Order.__table__.c.id==None) # No resullt
 
