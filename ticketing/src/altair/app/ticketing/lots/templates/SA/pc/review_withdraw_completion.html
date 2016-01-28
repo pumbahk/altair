@@ -10,7 +10,6 @@
 <div align="center">
     <a href="${request.route_path('lots.review.index')}" class="withdrawBackButtonPC">入力画面に戻る</a>
 </div>
-
 <br/>
 <div class="confirmBox">
   <div class="confirmBoxInner">
@@ -18,7 +17,6 @@
     <div class="confirmBoxText">${entry.entry_no}</div>
   </div>
 </div>
-
 %if h.lot_entry_display_status(entry, now) == u'抽選申込取消':
 <div class="confirmBox">
   <div class="confirmBoxInner">

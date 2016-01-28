@@ -1,33 +1,4 @@
 <%inherit file="${context['main_template'].uri}" />
-<%namespace name="fh" module="altair.formhelpers.utils.mako" />
-<%
-   import altair.app.ticketing.cart.helpers as ch
-   import altair.app.ticketing.lots.helpers as h
-   %>
-<%def name="render_field(field, label=False, _description=None, _note=None, _suffix=u'', **kwargs)">
-<%
-_description = _description or field.description
-_note = _note or field._note
-if label is None or label is True:
-  label = field.label
-%>
-<div class="field">
-  % if _description:
-  <div class="field-description">${_description}</div>
-  % endif
-  <div class="control-segment">
-    % if label:
-      ${label}
-    % endif
-    ${fh.render(field, **kwargs)}${_suffix}
-    % if _note:
-    <div class="field-note">${_note}</div>
-    % endif
-    ${ch.error(field.name)}
-  </div>
-</div>
-</%def>
-
 <div id="main">
 <form method="post" action="${request.route_path('lots.entry.index', event_id=event.id, lot_id=lot.id)}">
 
@@ -46,8 +17,10 @@ if label is None or label is True:
 <dd><p>${entry.entry_no}</p></dd>
 
 %for wish in wishes:
-<dt class="creditHl">購入内容</dt>
+<dt class="creditHl">第${wish.wish_order + 1}希望 ${wish.performance.name}</dt>
 <dd>
+<p>${h.performance_date_label(wish.performance)}
+</p>
 <div class="detailBox">
 <table>
 %for i, lot_product in enumerate(wish.products):
@@ -104,7 +77,7 @@ if label is None or label is True:
 <li>氏名(漢字)&nbsp;${shipping_address.last_name}&nbsp;${shipping_address.first_name}</li>
 <li>氏名(カナ)&nbsp;${shipping_address.last_name_kana}&nbsp;${shipping_address.first_name_kana}</li>
 <li>メールアドレス&nbsp;${shipping_address.email_1}</li>
-<li>電話番号&nbsp;&nbsp;${shipping_address.tel_1}</li>
+<li>電話番号${shipping_address.tel_1}</li>
 <li>住所<br>
 ※配達受取を選択した場合<br>
 〒${shipping_address.zip}&nbsp;
@@ -119,27 +92,11 @@ ${shipping_address.address_2}
 </div>
 </dd>
 
-<% extra_form_data = entry.get_lot_entry_attribute_pair_pairs(request) %>
-% if extra_form_data:
-<dt class="creditHl">追加情報</dt>
-<dd>
-  <div class="detailBox">
-    <ul>
-      % for _, (display_name, display_value) in extra_form_data:
-      <li>
-        <th scope="row">${display_name}: &nbsp;${ch.sensible_coerce(request, display_value)}</th>
-      </li>
-      % endfor
-    </ul>
-  </div>
-</dd>
-% endif
-
 <dt class="creditHl">注意事項</dt>
 <dd>
 <div class="detailBox">
 <p>お申込み時に、ご登録いただいたメールアドレス宛に、受付完了メールが送られます。しばらくたっても確認のメールが届かない場合は、入力されたメールアドレスが誤りがあるか、メールの受信設定により受信できていない可能性があります。</p>
-<p>登録内容、受信設定を確認のうえ、 <a href="${h.safe_get_contact_url(request)}">こちら</a>よりお問合せください。</p>
+<p>登録内容、受信設定を確認のうえ、主催者にお問合せください。</p>
 <p>お問合せの際は、お申し込み時のお名前、電話番号、公演名、受付番号を記載お願いいたします。</p>
 <p>お申込内容は、「<a href="/lots/review">申込確認ページ</a>」からもご確認いただけます。受付番号とご登録時のお電話番号をお手元にご用意の上、ご利用ください。</p>
 </div>

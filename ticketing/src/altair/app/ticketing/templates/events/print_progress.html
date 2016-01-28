@@ -1,7 +1,7 @@
 ##<%page args="event,progress"/>
 <%inherit file="/layout_2cols.html" />
 <%namespace file="/common/helpers.html" name="ch" />
-
+<% import altair.app.ticketing.cart.helpers as h %>
 <%block name="breadcrumbs">
   ${ch.breadcrumbs(
       names=[u'イベント', event.title, u'発券進捗状況確認'],
@@ -139,7 +139,7 @@ ${print_progress_form.product_item_id}
     %for performance in event.performances:
     <tr>
       <td>${performance.display_order}</td>
-      <td>${performance.start_on.strftime("%Y-%m-%d")if performance.start_on else ''}</td>
+      <td>${h.japanese_datetime(performance.start_on) if performance.start_on else ''}</td>
       <td><a href="${request.route_path('performances.print_progress.show', performance_id=performance.id)}">${performance.name}</a></td>
       <td>
         ${performance.venue.name if performance.venue else u'(なし)'}

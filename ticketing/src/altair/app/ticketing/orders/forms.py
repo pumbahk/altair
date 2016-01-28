@@ -513,6 +513,10 @@ class OrderSearchForm(SearchFormBase):
         ],
         coerce=str,
     )
+    login_id = TextField(
+        label=u'ログインID',
+        validators=[Optional()],
+    )
     member_id = TextField(
         label=u'会員番号',
         validators=[Optional()],
