@@ -325,7 +325,6 @@ def build_famiport_order_dict(request, order_like, client_code, type_, name='fam
     if type_ == FamiPortOrderType.PaymentOnly.value:
         payment_sheet_text_template = order_like.payment_delivery_pair.payment_method.preferences.get(unicode(PAYMENT_PLUGIN_ID), {}).get(u'payment_sheet_text', None)
         if payment_sheet_text_template is not None:
-            import ipdb;ipdb.set_trace()
             dict_ = build_cover_dict_from_order(order_like)
             #tkt330 プレースホルダーを二重交換
             payment_sheet_text = pystache.render(payment_sheet_text_template, dict_)
