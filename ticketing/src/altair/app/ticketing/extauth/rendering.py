@@ -1,14 +1,40 @@
 # encoding: utf-8
 import os
 import logging
+import cgi
 from zope.interface import implementer
 from zope.proxy import ProxyBase, setProxiedObject
 from pyramid.renderers import RendererHelper
+from pyramid.interfaces import IRendererInfo
 from pyramid.path import AssetResolver
 from altair.pyramid_dynamic_renderer.interfaces import IDynamicRendererHelperFactory
 from altair.pyramid_dynamic_renderer import RendererHelperProxy, RequestSwitchingRendererHelperFactory
 
 logger = logging.getLogger(__name__)
+
+
+@implementer(IRendererInfo)
+class NotFoundRenderer(object):
+    name = None
+    package = None
+    type = None
+    registry = None
+
+    def __init__(self):
+        pass
+
+    def render(self, value, system_values, request):
+        url = request.organization.emergency_exit_url
+        if url:
+            request.response.status = 302
+            request.response.content_type = u'text/html'
+            request.response.headers['Location'] = url
+            return u'<html><body>{url}</body></html>'.format(url=cgi.escape(url))
+        else:
+            request.response.status = 404
+            request.response.content_type = u'text/html'
+            return u'<html><body><h1>404 Not Found</h1></body></html>'
+
 
 @implementer(IDynamicRendererHelperFactory)
 class OverridableTemplateRendererHelperFactory(object):
@@ -69,7 +95,7 @@ class OverridableTemplateRendererHelperFactory(object):
                     self.bad_templates.add(resolved_uri)
                     continue
             return RendererHelper(name=resolved_uri, package=package, registry=registry)
-        return None
+        return NotFoundRenderer()
 
 _template_renderer_helper_factory_proxy = ProxyBase(None)
 
