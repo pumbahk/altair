@@ -43,4 +43,5 @@ setup(name='altair.oauth',
       entry_points="""
       # -*- Entry points: -*-
       """,
+      test_suite='altair.oauth.tests'
       )
