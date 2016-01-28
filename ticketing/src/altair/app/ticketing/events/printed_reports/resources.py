@@ -6,7 +6,6 @@ from sqlalchemy.orm.exc import NoResultFound
 from altair.app.ticketing.resources import TicketingAdminResource
 from altair.app.ticketing.core.models import Event, PrintedReportRecipient
 
-
 class PrintedReportSettingAdminResource(TicketingAdminResource):
     def __init__(self, request):
         super(PrintedReportSettingAdminResource, self).__init__(request)
@@ -23,8 +22,11 @@ class PrintedReportSettingAdminResource(TicketingAdminResource):
 
     def update_printed_report_setting(self):
         form = forms.PrintedReportSettingForm(self.request.POST)
-        self.printed_report_setting.start_on = form.start_on.data
-        self.printed_report_setting.end_on = form.end_on.data
+        if form.validate():
+            self.printed_report_setting.start_on = form.start_on.data
+            self.printed_report_setting.end_on = form.end_on.data
+
+        return form
 
     def update_recipient(self):
         form = forms.PrintedReportRecipientForm(self.request.POST)

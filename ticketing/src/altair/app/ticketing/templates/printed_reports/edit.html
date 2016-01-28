@@ -16,7 +16,11 @@
 
 <h3>発券進捗メール送信時刻</h3>
 現在の送信設定時刻<br/>
+% if message:
+<p style="color:red">${message}</p>
+% else:
 ${report_setting.start_on.strftime('%Y-%m-%d %H:%M')} 〜 ${report_setting.end_on.strftime('%Y-%m-%d %H:%M')}
+% endif
 <form action="${request.route_path('printed_reports.report_setting_update', event_id=event.id)}" method="POST">
 ${report_setting_form.start_on}〜${report_setting_form.end_on}
 <input type="submit" class="btn normal" value="送信期間更新"/>
