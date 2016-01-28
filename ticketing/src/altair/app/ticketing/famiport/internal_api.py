@@ -319,6 +319,7 @@ def make_suborder_by_order_no(
         request,
         session,
         order_no,
+        type_=None,
         reason=None,
         cancel_reason_code=None,
         cancel_reason_text=None,
@@ -329,7 +330,7 @@ def make_suborder_by_order_no(
     if now is None:
         now = datetime.now()
     famiport_order = get_famiport_order(session, order_no=order_no, client_code=client_code)
-    famiport_order.make_suborder(now, request, reason, cancel_reason_code, cancel_reason_text)
+    famiport_order.make_suborder(now, request, type_, reason, cancel_reason_code, cancel_reason_text)
 
 def update_famiport_order_by_order_no(
         session,
@@ -367,9 +368,6 @@ def update_famiport_order_by_order_no(
     if famiport_order.canceled_at is not None:
         raise FamiPortAlreadyCanceledError('FamiPortOrder(id=%ld) is already canceled' % famiport_order.id)
 
-    if famiport_order.type != type_:
-        raise FamiPortError(u'type differs')
-
     famiport_sales_segment = famiport_order.famiport_sales_segment
     famiport_performance = famiport_order.famiport_performance
     famiport_event = famiport_performance.famiport_event
@@ -393,6 +391,7 @@ def update_famiport_order_by_order_no(
     event_differs = False
     performance_differs = False
     sales_segment_differs = False
+
     if famiport_event.code_1 != event_code_1 or famiport_event.code_2 != event_code_2:
         logger.warning(
             u'event_code_1, event_code_2 differs ('

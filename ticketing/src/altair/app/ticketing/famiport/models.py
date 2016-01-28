@@ -751,7 +751,7 @@ class FamiPortOrder(Base, WithTimestamp):
             ticketing_famiport_receipt.make_reissueable(now, request)
             self.issued_at = None
 
-    def make_suborder(self, now, request, reason=None, cancel_reason_code=None, cancel_reason_text=None):
+    def make_suborder(self, now, request, type_=None, reason=None, cancel_reason_code=None, cancel_reason_text=None):
         if self.invalidated_at is not None:
             raise FamiPortUnsatisfiedPreconditionError(u'order is already invalidated')
         if self.canceled_at is not None:
@@ -760,6 +760,9 @@ class FamiPortOrder(Base, WithTimestamp):
             if famiport_receipt.canceled_at is None:
                 famiport_receipt.mark_canceled(now, request, reason, cancel_reason_code, cancel_reason_text)
 
+        if type_:
+            logger.info("updated famiport_order.type to:{}".format(type_))
+            self.type = type_
         self.add_receipts()
         self.paid_at = None
         self.issued_at = None

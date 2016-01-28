@@ -1300,6 +1300,7 @@ class RefreshFamiPortOrderTest(TestCase):
         from altair.app.ticketing.core.models import Site, Event, Performance
         from altair.app.ticketing.famiport.userside_models import AltairFamiPortVenue, AltairFamiPortPerformanceGroup, AltairFamiPortPerformance
         from altair.app.ticketing.famiport.models import FamiPortOrder, FamiPortOrderType, FamiPortPerformance, FamiPortEvent, FamiPortVenue, FamiPortClient, FamiPortPlayguide
+        from .famiport import FamiPortPaymentPlugin, FamiPortDeliveryPlugin, FamiPortPaymentDeliveryPlugin
         famiport_session = get_db_session(self.request, 'famiport')
         client = FamiPortClient(
             name=u'client',
@@ -1341,22 +1342,7 @@ class RefreshFamiPortOrderTest(TestCase):
             )
         self.session.add(altair_famiport_performance)
         self.session.flush()
-
-        famiport_session.add(
-            FamiPortOrder(
-                type=FamiPortOrderType.CashOnDelivery.value,
-                famiport_client=client,
-                order_no=u'XX0000000000',
-                famiport_order_identifier=u'',
-                total_amount=Decimal(100),
-                system_fee=Decimal(30),
-                ticketing_fee=Decimal(10),
-                ticket_payment=Decimal(60),
-                customer_name=u'',
-                customer_address_1=u'',
-                customer_address_2=u'',
-                customer_phone_number=u'',
-                famiport_performance=FamiPortPerformance(
+        famiport_performance = FamiPortPerformance(
                     code=u'000',
                     userside_id=altair_famiport_performance.id,
                     famiport_event=FamiPortEvent(
@@ -1366,43 +1352,192 @@ class RefreshFamiPortOrderTest(TestCase):
                         client=client
                         )
                     )
+        famiport_session.add(famiport_performance)
+        famiport_session.flush()
+
+        famiport_session.add(
+            FamiPortOrder(
+                type=FamiPortOrderType.PaymentOnly.value,
+                famiport_client=client,
+                order_no=u'XX0000000PAY',
+                famiport_order_identifier=u'001000000001',
+                total_amount=Decimal(100),
+                system_fee=Decimal(30),
+                ticketing_fee=Decimal(10),
+                ticket_payment=Decimal(60),
+                customer_name=u'',
+                customer_address_1=u'',
+                customer_address_2=u'',
+                customer_phone_number=u'',
+                famiport_performance=famiport_performance
+                )
+            )
+        famiport_session.flush()
+        famiport_session.add(
+            FamiPortOrder(
+                type=FamiPortOrderType.Ticketing.value,
+                famiport_client=client,
+                order_no=u'XX0000000DEL',
+                famiport_order_identifier=u'001000000002',
+                total_amount=Decimal(100),
+                system_fee=Decimal(30),
+                ticketing_fee=Decimal(10),
+                ticket_payment=Decimal(60),
+                customer_name=u'',
+                customer_address_1=u'',
+                customer_address_2=u'',
+                customer_phone_number=u'',
+                famiport_performance=famiport_performance
+                )
+            )
+        famiport_session.flush()
+        famiport_session.add(
+            FamiPortOrder(
+                type=FamiPortOrderType.CashOnDelivery.value,
+                famiport_client=client,
+                order_no=u'XX0000000COD',
+                famiport_order_identifier=u'001000000003',
+                total_amount=Decimal(100),
+                system_fee=Decimal(30),
+                ticketing_fee=Decimal(10),
+                ticket_payment=Decimal(60),
+                customer_name=u'',
+                customer_address_1=u'',
+                customer_address_2=u'',
+                customer_phone_number=u'',
+                famiport_performance=famiport_performance
                 )
             )
         famiport_session.flush()
         targets = self._getTargets()
         for target in targets:
-            order = DummyModel(
-                organization_id=1,
-                performance_id=performance.id,
-                order_no=u'XX0000000000',
-                items=[],
-                total_amount=Decimal(100),
-                system_fee=Decimal(10),
-                delivery_fee=Decimal(10),
-                transaction_fee=Decimal(10),
-                special_fee=Decimal(10),
-                special_fee_name=u'special',
-                sales_segment=None,
-                shipping_address=DummyModel(
-                    zip=u'0000000',
-                    prefecture=u'new',
-                    city=u'new',
-                    address_1=u'new',
-                    address_2=u'new',
-                    tel_1=u'0123456789',
-                    tel_2=None,
-                    last_name=u'new_last_name',
-                    first_name=u'new_first_name'
-                    ),
-                channel=1,
-                operator=None,
-                user=None,
-                membership=None,
-                user_point_accounts=None,
-                payment_start_at=datetime(2015, 1, 1, 0, 0, 0),
-                payment_due_at=datetime(2015, 1, 2, 0, 0, 0),
-                issuing_start_at=datetime(2015, 1, 1, 0, 0, 0),
-                issuing_end_at=datetime(2015, 1, 1, 0, 0, 0)
-                )
             obj = target()
+            if isinstance(obj, FamiPortPaymentPlugin):
+                order = DummyModel(
+                    id=1,
+                    organization_id=1,
+                    performance_id=performance.id,
+                    order_no=u'XX0000000PAY',
+                    items=[],
+                    total_amount=Decimal(100),
+                    system_fee=Decimal(10),
+                    delivery_fee=Decimal(10),
+                    transaction_fee=Decimal(10),
+                    special_fee=Decimal(10),
+                    special_fee_name=u'special',
+                    sales_segment=None,
+                    shipping_address=DummyModel(
+                        zip=u'0000000',
+                        prefecture=u'new_pay',
+                        city=u'new_pay',
+                        address_1=u'new_pay',
+                        address_2=u'new_pay',
+                        tel_1=u'0123456789',
+                        tel_2=None,
+                        last_name=u'new_last_name_pay',
+                        first_name=u'new_first_name_pay'
+                        ),
+                    payment_delivery_pair=DummyModel(
+                        payment_method=DummyModel(
+                            preferences={
+                                u'6': {u'payment_sheet_text': None}
+                            }
+                        )
+                    ),
+                    channel=1,
+                    operator=None,
+                    user=None,
+                    membership=None,
+                    user_point_accounts=None,
+                    payment_start_at=datetime(2015, 1, 1, 0, 0, 0),
+                    payment_due_at=datetime(2015, 1, 2, 0, 0, 0),
+                    issuing_start_at=datetime(2015, 1, 1, 0, 0, 0),
+                    issuing_end_at=datetime(2015, 1, 1, 0, 0, 0),
+                    paid_at=None,
+                    delivered_at=None,
+                    canceled_at=None,
+                    created_at=datetime(2015, 1, 1, 0, 0, 0),
+                    issued_at=None
+                    )
+            elif isinstance(obj, FamiPortDeliveryPlugin):
+                order = DummyModel(
+                    id=2,
+                    organization_id=1,
+                    performance_id=performance.id,
+                    order_no=u'XX0000000DEL',
+                    items=[],
+                    total_amount=Decimal(100),
+                    system_fee=Decimal(10),
+                    delivery_fee=Decimal(10),
+                    transaction_fee=Decimal(10),
+                    special_fee=Decimal(10),
+                    special_fee_name=u'special',
+                    sales_segment=None,
+                    shipping_address=DummyModel(
+                        zip=u'0000000',
+                        prefecture=u'new_del',
+                        city=u'new_del',
+                        address_1=u'new_del',
+                        address_2=u'new_del',
+                        tel_1=u'0123456789',
+                        tel_2=None,
+                        last_name=u'new_last_name_del',
+                        first_name=u'new_first_name_del'
+                        ),
+                    channel=1,
+                    operator=None,
+                    user=None,
+                    membership=None,
+                    user_point_accounts=None,
+                    payment_start_at=datetime(2015, 1, 1, 0, 0, 0),
+                    payment_due_at=datetime(2015, 1, 2, 0, 0, 0),
+                    issuing_start_at=datetime(2015, 1, 1, 0, 0, 0),
+                    issuing_end_at=datetime(2015, 1, 1, 0, 0, 0),
+                    paid_at=None,
+                    delivered_at=None,
+                    canceled_at=None,
+                    created_at=datetime(2015, 1, 1, 0, 0, 0),
+                    issued_at=None
+                    )
+            elif isinstance(obj, FamiPortPaymentDeliveryPlugin):
+                order = DummyModel(
+                    id=3,
+                    organization_id=1,
+                    performance_id=performance.id,
+                    order_no=u'XX0000000COD',
+                    items=[],
+                    total_amount=Decimal(100),
+                    system_fee=Decimal(10),
+                    delivery_fee=Decimal(10),
+                    transaction_fee=Decimal(10),
+                    special_fee=Decimal(10),
+                    special_fee_name=u'special',
+                    sales_segment=None,
+                    shipping_address=DummyModel(
+                        zip=u'0000000',
+                        prefecture=u'new_cod',
+                        city=u'new_cod',
+                        address_1=u'new_cod',
+                        address_2=u'new_cod',
+                        tel_1=u'0123456789',
+                        tel_2=None,
+                        last_name=u'new_last_name_cod',
+                        first_name=u'new_first_name_cod'
+                        ),
+                    channel=1,
+                    operator=None,
+                    user=None,
+                    membership=None,
+                    user_point_accounts=None,
+                    payment_start_at=datetime(2015, 1, 1, 0, 0, 0),
+                    payment_due_at=datetime(2015, 1, 2, 0, 0, 0),
+                    issuing_start_at=datetime(2015, 1, 1, 0, 0, 0),
+                    issuing_end_at=datetime(2015, 1, 1, 0, 0, 0),
+                    paid_at=None,
+                    delivered_at=None,
+                    canceled_at=None,
+                    created_at=datetime(2015, 1, 1, 0, 0, 0),
+                    issued_at=None
+                    )
+
             obj.refresh(self.request, order)
