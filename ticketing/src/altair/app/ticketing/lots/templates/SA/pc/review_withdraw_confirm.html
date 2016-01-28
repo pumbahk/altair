@@ -34,14 +34,12 @@
 </div>
 %endif
 
-
 <div class="confirmBox">
   <div class="confirmBoxInner">
     <h2><img src="${request.static_url('altair.app.ticketing.lots:static/SA/pc/img/order/title_number.gif')}" alt="申込番号" width="97" height="30" /></h2>
     <div class="confirmBoxText">${entry.entry_no}</div>
   </div>
 </div>
-
 %if h.lot_entry_display_status(entry, now) == u'抽選申込取消':
 <div class="confirmBox">
   <div class="confirmBoxInner">

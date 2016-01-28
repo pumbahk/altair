@@ -90,9 +90,10 @@ dl.cost-detail > dd {
         <div class="subInner2">
           <dl class="creditList">
             %for wish in wishes:
-            <dt class="creditHl">${wish.performance.name}</dt>
+            <dt class="creditHl">第${wish.wish_order + 1}希望</dt>
             <dd>
               <dl class="wish-detail">
+                <dt>${h.japanese_datetime(wish.performance.start_on)}　${wish.performance.venue.name}</dt>
                 % for lot_product in wish.products:
                 <dt class="product-name">${lot_product.product.name}</dt>
                 <dd class="product-price-and-quantity">${h.format_currency(lot_product.product.price)}×${lot_product.quantity}枚</dd>
@@ -158,25 +159,6 @@ dl.cost-detail > dd {
     </dl>
   </div>
 </div>
-
-<% extra_form_data = entry.get_lot_entry_attribute_pair_pairs(request) %>
-% if extra_form_data:
-<div class="subbox">
-  <dl>
-    <dt><p class="lineRed">追加情報</p></dt>
-      <dd>
-          <div class="subInner2">
-              <dl class="creditList">
-                % for _, (display_name, display_value) in extra_form_data:
-                <dt class="creditHl">${display_name}</dt>
-                <dd>${h.sensible_coerce(request, display_value)}</dd>
-                % endfor
-              </dl>
-          </div>
-      </dd>
-  </dl>
-</div>
-% endif
 
 %if can_withdraw_show:
 <form method="POST" id="withdrawForm" name="withdrawForm" action="${request.route_path('lots.review.withdraw.confirm')}">
