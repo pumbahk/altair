@@ -60,6 +60,8 @@ from altair.app.ticketing.lots.models import (
     LotEntry,
     )
 from altair.app.ticketing.sej.models import SejOrder
+from altair.app.ticketing.famiport import api as famiport_api
+from altair.app.ticketing.famiport.exc import FamiPortAPINotFoundError
 from altair.keybreak import (
     KeyBreakCounter,
 )
@@ -865,6 +867,15 @@ class OrderSearchBase(list):
             value = condition.ordered_to.data
             cond = and_(cond,
                         t_order.c.created_at<=value)
+
+        # FM予約番号
+        fm_reserve_number = condition.fm_reserve_number.data
+        if fm_reserve_number:
+            try:
+                famiport_order = famiport_api.get_famiport_order_by_reserve_number(self.request, fm_reserve_number)
+                cond = and_(cond, Order.__table__.c.order_no==famiport_order['order_no'])
+            except FamiPortAPINotFoundError:
+                cond = and_(cond, Order.__table__.c.id==None) # No resullt
 
         # セブン−イレブン払込票/引換票番号
         if condition.billing_or_exchange_number.data:

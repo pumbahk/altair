@@ -66,8 +66,6 @@ from altair.app.ticketing.orders.models import (
     ProtoOrder,
     )
 from altair.app.ticketing.sej import api as sej_api
-from altair.app.ticketing.famiport import api as famiport_api
-from altair.app.ticketing.famiport.exc import FamiPortAPINotFoundError
 from altair.app.ticketing.mails.api import get_mail_utility
 from altair.app.ticketing.mailmags.models import MailSubscription, MailMagazine, MailSubscriptionStatus
 from altair.app.ticketing.orders.export import OrderCSV, get_japanese_columns, RefundResultCSVExporter
@@ -339,13 +337,6 @@ class OrderIndexView(OrderBaseView):
                                     slave_session,
                                     organization_id,
                                     condition=form_search)
-                fm_reserve_number = form_search.fm_reserve_number.data
-                if fm_reserve_number:
-                    try:
-                        famiport_order = famiport_api.get_famiport_order_by_reserve_number(request, fm_reserve_number)
-                        query.condition = and_(query.condition, Order.__table__.c.order_no==famiport_order['order_no'])
-                    except FamiPortAPINotFoundError:
-                        query.condition = and_(query.condition, Order.__table__.c.id==None) # No resullt
             else:
                 return {
                     'form':OrderForm(context=self.context),
