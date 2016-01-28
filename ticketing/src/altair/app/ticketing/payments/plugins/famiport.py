@@ -480,6 +480,7 @@ def refresh_order(request, order, plugin, now=None, name='famiport'):
         type_ = select_famiport_order_type(order, plugin)
         if type_ != existing_order['type']:
             famiport_api.make_suborder_by_order_no(request, order_no=order.order_no, type_=type_, client_code=tenant.code)
+            logger.info("changed FamiPortOrder(order_no={}).type and made suborder".format(existing_order['order_no']))
         famiport_api.update_famiport_order_by_order_no(
             request,
             **build_famiport_order_dict(request, order, tenant.code, type_, name=name)

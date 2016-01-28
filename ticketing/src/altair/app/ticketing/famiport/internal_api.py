@@ -368,6 +368,9 @@ def update_famiport_order_by_order_no(
     if famiport_order.canceled_at is not None:
         raise FamiPortAlreadyCanceledError('FamiPortOrder(id=%ld) is already canceled' % famiport_order.id)
 
+    if famiport_order.type != type_:
+        raise FamiPortError(u'type differs')
+
     famiport_sales_segment = famiport_order.famiport_sales_segment
     famiport_performance = famiport_order.famiport_performance
     famiport_event = famiport_performance.famiport_event
