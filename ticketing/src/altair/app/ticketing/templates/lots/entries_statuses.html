@@ -14,7 +14,7 @@
       <td>${lot_status.total_entries}</td>
       <td>${lot_status.elected_count}</td>
       <td>${lot_status.ordered_count}</td>
-      %if lot_available:
+      %if between_lot_start_and_payment_due:
       <td>${lot_status.reserved_count}</td>
       %else:
       <td>0</td>
@@ -53,7 +53,7 @@
       %endfor
       <td>${status.elected_quantity}</td>
       <td>${status.ordered_quantity}</td>
-      %if lot_available:
+      %if between_lot_start_and_payment_due:
       <td>${status.reserved_quantity}</td>
       %else:
       <td>0</td>
@@ -69,7 +69,7 @@
       %endfor
       <td>${sum([st.elected_quantity for st in statuses])}</td>
       <td>${sum([st.ordered_quantity for st in statuses])}</td>
-      %if lot_available:
+      %if between_lot_start_and_payment_due:
       <td>${sum([st.reserved_quantity for st in statuses])}</td>
       %else:
       <td>0</td>

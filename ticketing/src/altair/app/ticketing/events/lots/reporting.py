@@ -113,7 +113,7 @@ class LotEntryReporter(object):
     def create_report_mail(self, status):
         body = render_to_response(self.body_template,
                                   dict(lot=self.lot,
-                                       lot_available=self.lot.available_on(datetime.now()),
+                                       between_lot_start_and_payment_due=self.lot.between_lot_start_and_payment_due(),
                                        lot_status=status))
         return Message(subject=self.subject,
                        recipients=[x.email for x in self.report_setting.recipients],
