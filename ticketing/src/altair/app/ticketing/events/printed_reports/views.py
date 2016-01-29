@@ -52,13 +52,13 @@ class PrintedReports(BaseView):
     @view_config(route_name='printed_reports.report_setting_update', request_method='POST')
     def report_setting_update(self):
         
-        form=self.context.update_printed_report_setting()
+        form = self.context.update_printed_report_setting()
 
-        message=""
+        message = ""
         if form.validate():
             self.request.session.flash(u"発券進捗メールの送信時刻を変更しました。")
         else:
-            message=u"送信期間が正しく入力されていません"
+            message = u"送信期間が正しく入力されていません"
 
         return dict(
             message=message,
