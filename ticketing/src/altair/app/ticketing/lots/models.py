@@ -374,6 +374,47 @@ class Lot(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return ((self.start_at is None) or (self.start_at <= now)) and \
                ((self.end_at is None) or (now <= self.end_at))
 
+    def between_lot_start_and_payment_due(self):
+        due_at = self._get_lot_payment_last_due()
+        now = datetime.now()
+        if now > self.start_at and now < due_at:
+            return True
+        return False
+
+    def _get_lot_payment_last_due(self):
+        pdmps = self.sales_segment.payment_delivery_method_pairs
+        due_at = self.end_at
+        from altair.app.ticketing.core.models import DateCalculationBase
+        for pdmp in pdmps:
+            this_due_base = datetime(1900,1,1)
+            if pdmp.payment_due_day_calculation_base == DateCalculationBase.Absolute.v:
+                if pdmp.payment_due_at is not None and pdmp.payment_due_at > due_at:
+                    due_at = pdmp.payment_due_at
+                    continue
+            elif pdmp.payment_due_day_calculation_base == DateCalculationBase.OrderDate.v \
+                or pdmp.payment_due_day_calculation_base == DateCalculationBase.OrderDateTime.v:
+                this_due_base = self.end_at
+            elif pdmp.payment_due_day_calculation_base == DateCalculationBase.PerformanceStartDate.v:
+                for product in self.products:
+                    for performance in product.performances:
+                        if performance.start_on is not None and performance.start_on > this_due_base:
+                            this_due_base = performance.start_on
+            elif pdmp.payment_due_day_calculation_base == DateCalculationBase.PerformanceEndDate.v:
+                for product in self.products:
+                    for performance in product.performances:
+                        if performance.end_on is not None and performance.end_on > this_due_base:
+                            this_due_base = performance.end_on
+            elif pdmp.payment_due_day_calculation_base == DateCalculationBase.SalesStartDate.v:
+                if self.sales_segment.start_at is not None:
+                    this_due_base = self.lot.sales_segment.start_at
+            elif pdmp.payment_due_day_calculation_base == DateCalculationBase.SalesEndDate.v:
+                if self.sales_segment.end_at is not None:
+                    this_due_base = self.sales_segment.end_at
+            this_due_at = this_due_base + timedelta(days=pdmp.payment_period_days)
+            if this_due_at > due_at:
+                due_at = this_due_at
+        return due_at
+
     @classmethod
     def has_product(cls, product):
         return sql.and_(cls.sales_segment_id==Product.sales_segment_id,
