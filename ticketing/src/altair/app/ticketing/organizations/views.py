@@ -195,7 +195,7 @@ class OrganizationSettings(BaseView):
         organization_setting = OrganizationSetting.query.filter_by(organization_id=organization_id, id=organization_setting_id).first()
         if organization_setting is None:
             return HTTPNotFound("organizationSetting(organization_id=%d, id=%d) is not found" % (organization_setting_id, organization_id))
-        f = OrganizationSettingForm(obj=organization_setting, context=self.context)
+        f = OrganizationSettingForm(obj=organization_setting, context=self.context, organization=organization)
         return {
             'organization': organization,
             'form':f,
@@ -212,7 +212,7 @@ class OrganizationSettings(BaseView):
         if organization_setting is None:
             return HTTPNotFound("organizationSetting(organization_id=%d, id=%d) is not found" % (organization_setting_id, organization_id))
 
-        f = OrganizationSettingForm(self.request.POST, obj=organization_setting, context=self.context)
+        f = OrganizationSettingForm(self.request.POST, obj=organization_setting, context=self.context, organization=organization)
         if not f.validate():
             return {
                 'organization': organization,
@@ -289,7 +289,7 @@ class OrganizationSettingSimples(BaseView):
             if self.context.organization \
               and organization and organization_setting\
               and organization.id == self.context.organization.id:
-                f = OrganizationSettingSimpleForm(obj=organization_setting, context=self.context)
+                f = OrganizationSettingSimpleForm(obj=organization_setting, context=self.context, organization=organization)
                 return {
                     'organization': organization,
                     'form':f,
@@ -327,7 +327,7 @@ class OrganizationSettingSimples(BaseView):
             if self.context.organization \
               and organization and organization_setting\
               and organization.id == self.context.organization.id:
-                f = OrganizationSettingSimpleForm(formdata=formdata, context=self.context)
+                f = OrganizationSettingSimpleForm(formdata=formdata, context=self.context, organization=organization)
                 if not f.validate():
                     return {
                         'organization': organization,
