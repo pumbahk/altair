@@ -51,7 +51,7 @@ def main(argv=sys.argv):
             .join(OrderedProductItemToken, OrderedProductItemToken.ordered_product_item_id == OrderedProductItem.id) \
             .join(OrderedProduct, OrderedProductItem.ordered_product_id == OrderedProduct.id)\
             .join(Order, OrderedProduct.order_id == Order.id) \
-            .filter(Order.operator_id == event.organization_id) \
+            .filter(Order.organization_id == event.organization_id) \
             .filter(OrderedProductItemToken.printed_at >= yesterday.strftime(date_format)) \
             .filter(OrderedProductItemToken.printed_at <= today.strftime(date_format)) \
             .group_by(OrderedProductItem.product_item_id)
