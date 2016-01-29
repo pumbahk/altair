@@ -151,12 +151,10 @@ class FamiPortResponseBuilder(object):
     def build_response(self, famiport_request=None):
         pass
 
-    def is_normal_response(self, receipt, resultCode, replyCode):
+    def is_normal_response(self, resultCode, replyCode):
         if resultCode == ResultCodeEnum.Normal.value and replyCode == ReplyCodeEnum.Normal.value:
             return True
         else:
-            # tkt904 エラーが起きているのに正常レスポンスとして返してしまっているケース
-            logger.error('invalid FamiPortResponse.(processing reserve_number={})'.format(receipt.reserve_number))
             return False
 
 
@@ -576,6 +574,15 @@ class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
                         ftr = self._create_famiport_ticket_response(ticket)
                         famiport_ticket_responses.append(ftr)
 
+                if self.is_normal_response(resultCode, replyCode):
+                    # 正常なレスポンスを返せたらpayment_request_received_atを立てる
+                    famiport_receipt.mark_payment_request_received(now, request)
+                    session.commit()
+                else:
+                    # tkt904:エラーが起きているのに正常レスポンスとして返えそうとしてしまっているケース
+                    logger.error('invalid FamiPortResponse.(processing reserve_number={})'.format(famiport_receipt.reserve_number))
+                    raise FamiPortInvalidResponseError('invalid FamiPortResponse')
+
                 resultCode = str_or_blank(resultCode)
                 replyCode = str_or_blank(replyCode)
                 replyClass = str_or_blank(replyClass)
@@ -607,10 +614,6 @@ class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
                     koenDate=koenDate,
                     tickets=famiport_ticket_responses
                     )
-                if self.is_normal_response(famiport_receipt, resultCode, replyCode):
-                    # 正常なレスポンスを返せたらpayment_request_received_atを立てる
-                    famiport_receipt.mark_payment_request_received(now, request)
-                    session.commit()
             else:
                 resultCode = str_or_blank(resultCode)
                 replyCode = str_or_blank(replyCode)
