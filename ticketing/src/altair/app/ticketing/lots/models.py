@@ -410,7 +410,10 @@ class Lot(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             elif pdmp.payment_due_day_calculation_base == DateCalculationBase.SalesEndDate.v:
                 if self.sales_segment.end_at is not None:
                     this_due_base = self.sales_segment.end_at
-            this_due_at = this_due_base + timedelta(days=pdmp.payment_period_days)
+            if pdmp.payment_period_days:
+                this_due_at = this_due_base + timedelta(days=pdmp.payment_period_days)
+            else:
+                this_due_at = this_due_base
             if this_due_at > due_at:
                 due_at = this_due_at
         return due_at
