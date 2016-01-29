@@ -34,6 +34,7 @@ from .forms import PrintedReportSettingForm, PrintedReportRecipientForm
 
 logger = logging.getLogger(__name__)
 
+
 @view_defaults(decorator=with_bootstrap, permission='sales_viewer'
         , renderer='altair.app.ticketing:templates/printed_reports/edit.html')
 class PrintedReports(BaseView):

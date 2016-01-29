@@ -6,6 +6,7 @@ from sqlalchemy.orm.exc import NoResultFound
 from altair.app.ticketing.resources import TicketingAdminResource
 from altair.app.ticketing.core.models import Event, PrintedReportRecipient
 
+
 class PrintedReportSettingAdminResource(TicketingAdminResource):
     def __init__(self, request):
         super(PrintedReportSettingAdminResource, self).__init__(request)
