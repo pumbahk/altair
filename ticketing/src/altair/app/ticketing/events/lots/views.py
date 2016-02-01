@@ -470,7 +470,7 @@ class LotEntries(BaseView):
             LotEntryReportSetting.lot_id==lot.id
         ).all()
 
-        lot_available = lot.available_on(datetime.now())
+        between_lot_start_and_payment_due = lot.between_lot_start_and_payment_due()
         return dict(
             lot=lot,
             performances = lot_status.performances,
@@ -478,7 +478,7 @@ class LotEntries(BaseView):
             sub_counts = lot_status.sub_counts,
             lot_status=lot_status,
             report_settings=report_settings,
-            lot_available=lot_available,
+            between_lot_start_and_payment_due=between_lot_start_and_payment_due,
             )
 
 

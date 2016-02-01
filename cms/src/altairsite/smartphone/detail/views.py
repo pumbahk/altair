@@ -59,7 +59,7 @@ def moveDetail(context, request):
 
 @smartphone_site_view_config(route_name='smartphone.detail',request_type="altair.mobile.interfaces.ISmartphoneRequest"
              , custom_predicates=(enable_dynamic_page, ), renderer=selectable_renderer('altairsite.smartphone:templates/%(prefix)s/detail/detail.html'))
-def moveKTDetail(context, request):
+def moveImageDetail(context, request):
     form = DetailForm(request.GET)
     event = context.get_event(form.data['event_id'])
     now = get_now(request)
