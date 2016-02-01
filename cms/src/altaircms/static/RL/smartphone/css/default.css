@@ -107,11 +107,11 @@ ul.menu {
 
 .sectionbox.inverted {
   color: #fff;
-  background-color: #bf0000;
-  background-image: linear-gradient(top, #bf0000 0%, #b81118);
-  background-image: -webkit-gradient(linear, left top, left bottom, from(#bf0000), to(#b81118));
-  background-image: -webkit-linear-gradient(top, #bf0000 0%, #b81118);
-  background-image: -moz-linear-gradient(top, #bf0000 0%, #b81118);
+  background-color: #1253A4;
+  background-image: linear-gradient(top, #1253A4 0%, #1253A4);
+  background-image: -webkit-gradient(linear, left top, left bottom, from(#1253A4), to(#1253A4));
+  background-image: -webkit-linear-gradient(top, #1253A4 0%, #1253A4);
+  background-image: -moz-linear-gradient(top, #1253A4 0%, #1253A4);
   box-shadow: inset 2px 2px 8px 0px rgba(0, 0, 0, .25);
 }
 
@@ -843,14 +843,14 @@ h2.glitter.red {
   line-height: 38px;
   font-size: 17px;
   letter-spacing: 2px;
-  color: #fff;
+  color: black;
   overflow: hidden;
   vertical-align: middle;
   padding: 0px 0px 0px 20px;
-  background-image: linear-gradient(top, #cd4b4f 0%, #c63035 48%, #c01920 50%, #c52d33);
-  background-image: -webkit-gradient(linear, left top, left bottom, from(#cd4b4f), color-stop(0.48, #c63035), color-stop(0.5, #c01920), to(#c52d33));
-  background-image: -webkit-linear-gradient(top, #cd4b4f 0%, #c63035 48%, #c01920 50%, #c52d33);
-  background-image: -moz-linear-gradient(top, #cd4b4f 0%, #c63035 48%, #c01920 50%, #c52d33);
+  background: #fbe15f;
+  background: -moz-linear-gradient(top, #fbe15f 50%, #c9a607 100%);
+  background: -webkit-linear-gradient(top, #fbe15f 50%,#c9a607 100%);
+  background: linear-gradient(to bottom, #fbe15f 50%,#c9a607 100%);
   box-shadow: 2px 2px 2px -1px rgba(0, 0, 0, .3), 0px 0px 0px 2px rgba(255, 255, 255, .3) inset;
   text-shadow: 1px 1px 1px rgba(0, 0, 0, .4);
   user-select: none;

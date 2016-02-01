@@ -4,18 +4,18 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
 <meta name="apple-mobile-web-app-title" content="楽天レジャー" />
 <link rel="apple-touch-icon-precomposed" href="apple-touch-icon-precomposed.png">
-<script src=${request.static_url('altaircms:static/RT/smartphone/js/jquery-1.9.1.min.js')}></script>
-<script src=${request.static_url('altaircms:static/RT/smartphone/js/jquery-ui-1.9.2.custom.min.js')}></script>
-<script src=${request.static_url('altaircms:static/RT/smartphone/js/flipsnap.min.js')}></script>
-<link rel="stylesheet" type="text/css" href=${request.static_url('altaircms:static/RT/smartphone/css/jquery-ui-1.9.2.custom.min.css')} />
-<link rel="stylesheet" type="text/css" href="${request.static_url('altaircms:static/RT/smartphone/css/default.css')}" />
+<script src=${request.static_url('altaircms:static/RL/smartphone/js/jquery-1.9.1.min.js')}></script>
+<script src=${request.static_url('altaircms:static/RL/smartphone/js/jquery-ui-1.9.2.custom.min.js')}></script>
+<script src=${request.static_url('altaircms:static/RL/smartphone/js/flipsnap.min.js')}></script>
+<link rel="stylesheet" type="text/css" href=${request.static_url('altaircms:static/RL/smartphone/css/jquery-ui-1.9.2.custom.min.css')} />
+<link rel="stylesheet" type="text/css" href="${request.static_url('altaircms:static/RL/smartphone/css/default.css')}" />
 <title>楽天レジャー-<%block name="title"/></title>
 </head>
 <body>
 
 <div class="header-navigation">
   <a class="goto-link btn-primary" style="float: right" href="${request.route_path('smartphone.goto_pc_page')}">PC版へ</a>
-  <a href="/"><img alt="楽天レジャー" width="82" height="45" src="${request.static_url('altaircms:static/RT/smartphone/img/logo.png')}"/></a>
+  <a href="/"><img alt="楽天レジャー" width="82" height="45" src="${request.static_url('altaircms:static/RL/smartphone/img/logo.png')}"/></a>
 </div>
 <div id="fb-root"></div>
 
@@ -50,7 +50,7 @@
 </span>
 <br/>
 <div>
-     <img class="img_center" src="${request.static_url('altaircms:static/RT/smartphone/img/point.jpg')}"/>
+     <img class="img_center" src="${request.static_url('altaircms:static/RL/smartphone/img/point.jpg')}"/>
 </div>
 -->
 ${self.body()}
