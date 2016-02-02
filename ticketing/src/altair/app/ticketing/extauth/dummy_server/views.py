@@ -51,10 +51,9 @@ class EaglesExtauthCheckMembershipAPI(object):
             .one()
         cond = sa.and_(
             (EaglesMembership.valid_since == None) \
-            | sa.and_(EaglesMembership.valid_since >= datetime(params['start_year'], 1, 1),
-                   EaglesMembership.valid_since < datetime(params['end_year'] + 1, 1, 1)),
+            | (EaglesMembership.valid_since <= datetime(params['start_year'], 1, 1)),
             (EaglesMembership.expire_at == None) \
-            | (EaglesMembership.expire_at >= self.request.now)
+            | (EaglesMembership.expire_at >= datetime(params['end_year'] + 1, 1, 1))
             )
         if not include_permanent_memberships:
             cond = sa.and_(

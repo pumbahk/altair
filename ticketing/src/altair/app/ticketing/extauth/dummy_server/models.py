@@ -20,9 +20,9 @@ class EaglesUser(Base):
             sa.and_(
                 EaglesMembership.user_id == EaglesUser.id,
                 sa.or_(EaglesMembership.valid_since == None,
-                       EaglesMembership.valid_since >= get_current_request().now),
+                       EaglesMembership.valid_since <= get_current_request().now),
                 sa.or_(EaglesMembership.expire_at == None,
-                       get_current_request().now > EaglesMembership.expire_at)
+                       get_current_request().now < EaglesMembership.expire_at)
                 )
         )
 
