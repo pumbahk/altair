@@ -31,6 +31,7 @@ from altair.app.ticketing.events.sales_reports.reports import SalesTotalReporter
 from altair.app.ticketing.events.sales_reports.exceptions import ReportSettingValidationError
 from altair.app.ticketing.utils import get_safe_filename
 from .forms import PrintedReportSettingForm, PrintedReportRecipientForm
+
 logger = logging.getLogger(__name__)
 
 
@@ -50,9 +51,17 @@ class PrintedReports(BaseView):
 
     @view_config(route_name='printed_reports.report_setting_update', request_method='POST')
     def report_setting_update(self):
-        self.context.update_printed_report_setting()
-        self.request.session.flash(u"発券進捗メールの送信時刻を変更しました。")
+        
+        form = self.context.update_printed_report_setting()
+
+        message = ""
+        if form.validate():
+            self.request.session.flash(u"発券進捗メールの送信時刻を変更しました。")
+        else:
+            message = u"送信期間が正しく入力されていません"
+
         return dict(
+            message=message,
             event=self.context.event,
             report_setting=self.context.printed_report_setting,
             report_setting_form=PrintedReportSettingForm(),
