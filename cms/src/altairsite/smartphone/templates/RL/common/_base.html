@@ -2,26 +2,26 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-<meta name="apple-mobile-web-app-title" content="楽天レジャー" />
+<meta name="apple-mobile-web-app-title" content="レジャーチケット" />
 <link rel="apple-touch-icon-precomposed" href="apple-touch-icon-precomposed.png">
 <script src=${request.static_url('altaircms:static/RL/smartphone/js/jquery-1.9.1.min.js')}></script>
 <script src=${request.static_url('altaircms:static/RL/smartphone/js/jquery-ui-1.9.2.custom.min.js')}></script>
 <script src=${request.static_url('altaircms:static/RL/smartphone/js/flipsnap.min.js')}></script>
 <link rel="stylesheet" type="text/css" href=${request.static_url('altaircms:static/RL/smartphone/css/jquery-ui-1.9.2.custom.min.css')} />
 <link rel="stylesheet" type="text/css" href="${request.static_url('altaircms:static/RL/smartphone/css/default.css')}" />
-<title>楽天レジャー-<%block name="title"/></title>
+<title>レジャーチケット-<%block name="title"/></title>
 </head>
 <body>
 
 <div class="header-navigation">
   <a class="goto-link btn-primary" style="float: right" href="${request.route_path('smartphone.goto_pc_page')}">PC版へ</a>
-  <a href="/"><img alt="楽天レジャー" width="82" height="45" src="${request.static_url('altaircms:static/RL/smartphone/img/logo.png')}"/></a>
+  <a href="/"><img alt="レジャーチケット" width="82" height="45" src="${request.static_url('altaircms:static/RL/smartphone/img/logo.png')}"/></a>
 </div>
 <div id="fb-root"></div>
 
 <%
     sns_url = u"http://leisure.tstar.jp/"
-    sns_title = u"楽天レジャー-トップ"
+    sns_title = u"レジャーチケット-トップ"
     if sns:
         sns_url = sns['url']
         sns_title = sns['title']
