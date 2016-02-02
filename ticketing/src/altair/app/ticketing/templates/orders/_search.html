@@ -73,6 +73,10 @@ from altair.formhelpers import OurDateWidget
           <th><label for="member_id">${form.member_id.label.text}</label></th>
           <td>${form.member_id()}</td>
           <td></td>
+          <th><label for="fm_reserve_number">${form.fm_reserve_number.label.text}</label></th>
+          <td>${form.fm_reserve_number()}</td>
+          <th><label>${form.billing_or_exchange_number.label.text}</label></th>
+          <td>${form.billing_or_exchange_number}</td>
         </tr>
         <tr>
           <th><label>${form.ordered_from.label.text}</label></th>
@@ -103,8 +107,6 @@ from altair.formhelpers import OurDateWidget
               }
             }).click();
           </script>
-          <th><label>${form.billing_or_exchange_number.label.text}</label></th>
-          <td>${form.billing_or_exchange_number}</td>
         </tr>
       </tbody>
     </table>
