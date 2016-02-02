@@ -322,7 +322,6 @@ def build_famiport_order_dict(request, order_like, client_code, type_, name='fam
         system_fee = order_like.transaction_fee + order_like.system_fee + order_like.special_fee
         ticketing_fee = order_like.delivery_fee
         ticket_payment = order_like.total_amount - (order_like.system_fee + order_like.transaction_fee + order_like.delivery_fee + order_like.special_fee)
-
     if type_ == FamiPortOrderType.PaymentOnly.value:
         payment_sheet_text_template = order_like.payment_delivery_pair.payment_method.preferences.get(unicode(PAYMENT_PLUGIN_ID), {}).get(u'payment_sheet_text', None)
         if payment_sheet_text_template is not None:
@@ -470,14 +469,18 @@ def cancel_order(request, order, now=None):
         raise FamiPortPluginFailure('failed to cancel order', order_no=order.order_no, back_url=None)
 
 
-def refresh_order(request, order, now=None, name='famiport'):
+def refresh_order(request, order, plugin, now=None, name='famiport'):
     """予約更新"""
     tenant = lookup_famiport_tenant(request, order)
     if tenant is None:
-        raise FamiPortPluginFailure('could not find famiport tenant', order_like.order_no, None, None)
+        raise FamiPortPluginFailure('could not find famiport tenant', order.order_no, None, None)
     try:
         existing_order = famiport_api.get_famiport_order(request, tenant.code, order.order_no)
-        type_ = existing_order['type']
+        # 更新後Orderからfamiport_order.typeを再判定する
+        type_ = select_famiport_order_type(order, plugin)
+        if type_ != existing_order['type']:
+            famiport_api.make_suborder_by_order_no(request, order_no=order.order_no, type_=type_, client_code=tenant.code)
+            logger.info("changed FamiPortOrder(order_no={}).type and made suborder. (old_type={} to new_type={})".format(existing_order['order_no'], existing_order['type'], type_))
         famiport_api.update_famiport_order_by_order_no(
             request,
             **build_famiport_order_dict(request, order, tenant.code, type_, name=name)
@@ -619,7 +622,7 @@ class FamiPortPaymentPlugin(object):
 
     def refresh(self, request, order):
         """決済側の状態をDBに反映"""
-        return refresh_order(request, order)
+        return refresh_order(request, order, self)
 
     def cancel(self, request, order):
         """キャンセル処理"""
@@ -728,7 +731,7 @@ class FamiPortDeliveryPlugin(object):
 
     def refresh(self, request, order):
         """リフレッシュ"""
-        return refresh_order(request, order)
+        return refresh_order(request, order, self)
 
     def cancel(self, request, order):
         """キャンセル処理"""
@@ -772,7 +775,7 @@ class FamiPortPaymentDeliveryPlugin(object):
 
     def refresh(self, request, order):
         """リフレッシュ"""
-        return refresh_order(request, order)
+        return refresh_order(request, order, self)
 
     def cancel(self, request, order):
         """キャンセル処理"""
@@ -813,8 +816,11 @@ def validate_order_like(request, order_like, plugin, update=False):
     # 前払後日渡しの場合は発券開始日時が入金開始日時以降であることをチェック
     if update:
         famiport_order = famiport_api.get_famiport_order(request, tenant.code, order_like.order_no)
+        if (famiport_order['paid_at'] or famiport_order['issued_at'] or famiport_order['canceled_at']) \
+           and famiport_order['type'] != famiport_order_type:
+            raise OrderLikeValidationFailure(u'予約タイプ変更エラー：代引、後日発券間の変更は未入金のときのみ可能です', u'')
         if famiport_order['type'] == FamiPortOrderType.Payment.value:
-            if order_like.issuing_start_at <= order_like.payment_start_at:
+            if order_like.issuing_start_at < order_like.payment_start_at:
                 raise OrderLikeValidationFailure(u'前払後日渡しの予約は発券開始日時(%s)が入金開始日時(%s)以降である必要があります。' % \
                 (order_like.issuing_start_at.strftime("%Y/%m/%d %H:%M:%S"), order_like.payment_start_at.strftime("%Y/%m/%d %H:%M:%S")), 'order_like.issuing_start_at')
 

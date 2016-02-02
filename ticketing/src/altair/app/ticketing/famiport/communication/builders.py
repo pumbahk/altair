@@ -151,6 +151,12 @@ class FamiPortResponseBuilder(object):
     def build_response(self, famiport_request=None):
         pass
 
+    def is_normal_response(self, resultCode, replyCode):
+        if resultCode == ResultCodeEnum.Normal.value and replyCode == ReplyCodeEnum.Normal.value:
+            return True
+        else:
+            return False
+
 
 class FamiPortReservationInquiryResponseBuilder(FamiPortResponseBuilder):
     def build_response(self, famiport_reservation_inquiry_request, session, now, request):
@@ -451,9 +457,6 @@ class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
                     logger.error(u'FamiPortReceipt(reserve_number=%s, barcode_no=%s) is not marked inquired or invalid status.' % (famiport_receipt.reserve_number, famiport_receipt.barcode_no, ))
                     replyCode = ReplyCodeEnum.SearchKeyError.value
                     famiport_receipt = None
-                else:
-                    famiport_receipt.mark_payment_request_received(now, request)
-                    session.commit()
 
             # validate the request
             if famiport_receipt is not None:
@@ -570,6 +573,15 @@ class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
                     for ticket in tickets:
                         ftr = self._create_famiport_ticket_response(ticket)
                         famiport_ticket_responses.append(ftr)
+
+                if self.is_normal_response(resultCode, replyCode):
+                    # 正常なレスポンスを返せたらpayment_request_received_atを立てる
+                    famiport_receipt.mark_payment_request_received(now, request)
+                    session.commit()
+                else:
+                    # tkt904:エラーが起きているのに正常レスポンスとして返えそうとしてしまっているケース
+                    logger.error('invalid FamiPortResponse.(processing reserve_number={})'.format(famiport_receipt.reserve_number))
+                    raise FamiPortInvalidResponseError('invalid FamiPortResponse')
 
                 resultCode = str_or_blank(resultCode)
                 replyCode = str_or_blank(replyCode)
