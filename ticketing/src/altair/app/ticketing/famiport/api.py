@@ -765,6 +765,34 @@ def cancel_famiport_order_by_order_no(request, client_code, order_no, now=None):
         raise FamiPortAPIError('internal error')
 
 @user_api
+def make_suborder_by_order_no(
+        request,
+        order_no,
+        type_=None,
+        reason=None,
+        cancel_reason_code=None,
+        cancel_reason_text=None,
+        client_code=None,
+        now=None
+        ):
+    session = get_db_session(request, 'famiport')
+    try:
+        internal.make_suborder_by_order_no(
+            request,
+            session,
+            order_no,
+            type_,
+            reason=reason,
+            cancel_reason_code=cancel_reason_code,
+            cancel_reason_text=cancel_reason_text,
+            client_code=client_code,
+            now=now
+        )
+    except:
+        logger.exception(u'internal error')
+        raise FamiPortAPIError('internal error')
+
+@user_api
 def update_famiport_order_by_order_no(
         request,
         client_code,
