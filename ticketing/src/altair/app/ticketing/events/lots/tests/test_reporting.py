@@ -192,6 +192,7 @@ class LotEntryReporterTests(unittest.TestCase):
                 end_at=now,
                 ),
             available_on=lambda now: True,
+            between_lot_start_and_payment_due=lambda : True,
         )
         recipients=[
             ReportRecipient(
