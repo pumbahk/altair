@@ -6,9 +6,7 @@
 <!-- member LOGIN BOX -->
 <div class="col2_1 tile2 login-box">
 <dl>
-<dt class="login-name" id="rakulogintitle"><span>ファンクラブの方</span>はこちらから
-<p class="fs12" style="color: red;">※ファンクラブ会員と連携した楽天会員ID・パスワードが必要です。</p>
-</dt>
+<dt class="login-name" id="rakulogintitle"><span>ファンクラブの方</span>はこちらから</dt>
 <dd class="login-inbox" id="rakulogin">
 
 <ul class="fcType clearfix">
@@ -26,6 +24,7 @@ from datetime import datetime
 thisyear = datetime.now().strftime('%Y')
 %>
 <p class="tac mgt20"><a href="https://eagles.fanclub.rakuten.co.jp/mypage/login/ridLogin?year=${thisyear}" class="btnID">楽天会員ID連携がお済でない方はコチラ</a></p>
+<p class="fs12" style="color: red;">※ファンクラブ会員と連携した楽天会員ID・パスワードが必要です。</p>
 <p>※会員ID・パスワードを忘れてしまった方は<a href="https://member.id.rakuten.co.jp/rms/nid/upkfwd" target="_blank">こちら</a></p>
 </dd>
 </dl>
