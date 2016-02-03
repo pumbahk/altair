@@ -816,9 +816,12 @@ def validate_order_like(request, order_like, plugin, update=False):
     # 前払後日渡しの場合は発券開始日時が入金開始日時以降であることをチェック
     if update:
         famiport_order = famiport_api.get_famiport_order(request, tenant.code, order_like.order_no)
+        if not order_like.issuing_start_at:
+            order_like.issuing_start_at = famiport_order['ticketing_start_at']
+        famiport_order_type = select_famiport_order_type(order_like, plugin)
         if (famiport_order['paid_at'] or famiport_order['issued_at'] or famiport_order['canceled_at']) \
            and famiport_order['type'] != famiport_order_type:
-            raise OrderLikeValidationFailure(u'予約タイプ変更エラー：代引、後日発券間の変更は未入金のときのみ可能です', u'')
+            raise OrderLikeValidationFailure(u'予約タイプ変更エラー：代引、後日発券間の変更は未入金のときのみ可能です', u'order.type')
         if famiport_order['type'] == FamiPortOrderType.Payment.value:
             if order_like.issuing_start_at < order_like.payment_start_at:
                 raise OrderLikeValidationFailure(u'前払後日渡しの予約は発券開始日時(%s)が入金開始日時(%s)以降である必要があります。' % \
@@ -842,7 +845,7 @@ def validate_order_like(request, order_like, plugin, update=False):
     if famiport_order_type != FamiPortOrderType.PaymentOnly.value:
         num_tickets = get_ticket_count(request, order_like)
         if num_tickets > FAMIPORT_MAX_TICKET_COUNT:
-            raise OrderLikeValidationFailure(u'could not handle more than 23 tickets', u'')
+            raise OrderLikeValidationFailure(u'could not handle more than 23 tickets', u'order.count')
 
     if order_like.payment_delivery_pair is not None:
         # 合計金額
