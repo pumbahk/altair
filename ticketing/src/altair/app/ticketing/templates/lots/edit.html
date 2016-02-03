@@ -11,7 +11,14 @@
 <%
 import json
 
-f = lambda x: dict(start_at=(x.start_at.strftime('%Y-%m-%dT%H:%M:%S') if x.start_at else ''), end_at=(x.end_at.strftime('%Y-%m-%dT%H:%M:%S') if x.end_at else ''))
+def f(x):
+    start_at = ''
+    end_at = ''
+    if x.start_at is not None:
+        start_at = x.start_at.strftime('%Y-%m-%dT%H:%M:%S')
+    if x.end_at is not None:
+        end_at = x.end_at.strftime('%Y-%m-%dT%H:%M:%S')
+    return dict(start_at = start_at, end_at = end_at, max_quantity = x.max_quantity)
 
 dates_json = json.dumps(dict([(x.id, f(x)) for x in event.sales_segment_groups]))
 %>
@@ -36,8 +43,13 @@ function updateSalesSegmentGroupById(j) {
   var start_at_arr = timestamp_to_arr(d.start_at);
   var end_at_arr = timestamp_to_arr(d.end_at);
 
-  if (start_at_arr.length < 2) {
+  if (d.start_at.length < 1) {
     start_at_arr = [['', '', ''], ['', '', '']];
+    document.getElementById('use_default_start_at').checked = false;
+    document.getElementById('use_default_start_at').disabled = true;
+  } else {
+    document.getElementById('use_default_start_at').checked = true;
+    document.getElementById('use_default_start_at').disabled = false;
   }
   $('#start_at\\.year').val(start_at_arr[0][0]);
   $('#start_at\\.month').val(start_at_arr[0][1]);
@@ -46,8 +58,13 @@ function updateSalesSegmentGroupById(j) {
   $('#start_at\\.minute').val(start_at_arr[1][1]);
   $('#start_at\\.second').val(start_at_arr[1][2]);
 
-  if (end_at_arr.length < 2) {
+  if (d.end_at.length < 1) {
     end_at_arr = [['', '', ''], ['', '', '']];
+    document.getElementById('use_default_end_at').checked = false;
+    document.getElementById('use_default_end_at').disabled = true;
+  } else {
+    document.getElementById('use_default_end_at').checked = true;
+    document.getElementById('use_default_end_at').disabled = false;
   }
   $('#end_at\\.year').val(end_at_arr[0][0]);
   $('#end_at\\.month').val(end_at_arr[0][1]);
@@ -94,9 +111,9 @@ function updateSalesSegmentGroupById(j) {
         <legend>販売区分情報</legend>
       ${ch.form_item(form.sales_segment_group_id)}
       ${ch.form_item(form.start_at)}
-      ${ch.form_item(form.use_default_start_at)}
+      ${ch.form_item(form.use_default_start_at, disabled='')}
       ${ch.form_item(form.end_at)}
-      ${ch.form_item(form.use_default_end_at)}
+      ${ch.form_item(form.use_default_end_at, disabled='')}
       ${ch.form_item(form.max_quantity)}
       ${ch.form_item(form.auth3d_notice)}
     </fieldset>
