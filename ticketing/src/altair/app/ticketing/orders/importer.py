@@ -1183,13 +1183,15 @@ class OrderImporter(object):
                                 )
                             )
 
-            for plugin in lookup_plugin(self.request, cart.payment_delivery_pair):
-                if plugin is None:
-                    continue
-                try:
-                    plugin.validate_order(self.request, cart, update=(cart.original_order is not None))
-                except OrderLikeValidationFailure as e:
-                    add_error(u'「%s」の入力値が不正です (%s)' % (japanese_columns[e.path], e.message))
+            payment_delivery_plugin, payment_plugin, delivery_plugin = lookup_plugin(self.request, cart.payment_delivery_pair)
+            try:
+                if payment_delivery_plugin is not None:
+                    payment_delivery_plugin.validate_order(self.request, cart, update=(cart.original_order is not None))
+                else:
+                    payment_plugin.validate_order(self.request, cart, update=(cart.original_order is not None))
+                    delivery_plugin.validate_order(self.request, cart, update=(cart.original_order is not None))
+            except OrderLikeValidationFailure as e:
+                add_error(u'「%s」の入力値が不正です (%s)' % (japanese_columns[e.path], e.message))
 
             # エラーがなければインポート対象に
             if ref not in refs_excluded:
