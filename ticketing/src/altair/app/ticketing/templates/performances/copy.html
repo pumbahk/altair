@@ -26,6 +26,9 @@ $(document).ready(function() {
         </tr>');
     $('[deleteTarget = ' + rowCount+ ']').click(deleteRow);
   });
+
+  $('form').disableOnSubmit('input[type=submit]');
+
 });
 </script>
 
