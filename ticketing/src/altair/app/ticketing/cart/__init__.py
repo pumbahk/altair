@@ -364,6 +364,7 @@ def setup_routes(config):
     config.add_route('cart.point', 'rsp', factory='.resources.CartBoundTicketingCartResource')
     config.add_route('cart.extra_form', 'extra_form', factory='.resources.CartBoundTicketingCartResource')
     config.add_route('cart.release', 'release')
+    config.add_route('cart.exit', 'top')
 
     # 完了／エラー
     config.add_route('payment.confirm', 'confirm', factory='.resources.CartBoundTicketingCartResource')
