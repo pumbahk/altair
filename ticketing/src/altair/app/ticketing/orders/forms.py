@@ -456,8 +456,13 @@ class SearchFormBase(Form):
         return conditions
 
 class OrderSearchForm(SearchFormBase):
+    fm_reserve_number = TextField(
+        label=u'FM予約番号',
+        validators=[Optional()],
+    )
+
     billing_or_exchange_number = TextField(
-        label=u'セブン−イレブン払込票/引換票番号',
+        label=u'SEJ払込票/引換票番号',
         validators=[Optional()],
     )
     ordered_from = DateTimeField(

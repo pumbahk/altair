@@ -35,8 +35,9 @@
               <a onclick="document.logout.submit()" class="btn btn-supplementary"><span class="btn-inner">ログアウト</span></a>
             % endif
             % if getattr(request, 'context', None) and hasattr(request.context, 'switch_pc_url'):
-              <a href="${request.context.switch_pc_url}" class="btn btn-supplementary"><span class="btn-inner">PCサイトで購入する</span></a>
+             <a href="${request.context.switch_pc_url}" class="btn btn-supplementary"><span class="btn-inner">PCサイトで購入する</span></a>
             % endif
+             <a href="${request.route_path('cart.exit')}">トップへ</a>
           </div>
         </form>
       </div>

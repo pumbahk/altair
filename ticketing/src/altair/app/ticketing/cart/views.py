@@ -1531,3 +1531,8 @@ def switch_sp_perf(context, request):
     response = _create_response_perf(request=request, params=request.GET)
     set_we_invalidate_pc_access(response)
     return response
+
+@lbr_view_config(decorator=with_jquery.not_when(mobile_request), request_method="GET", route_name='cart.exit')
+def exit(context, request):
+    api.remove_cart(request)
+    return back_to_top(request)
