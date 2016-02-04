@@ -2,10 +2,17 @@
 <%namespace file="/common/helpers.html" name="ch" />
 
 <%block name="breadcrumbs">
+% if lot:
   ${ch.breadcrumbs(
       names=[u'イベント', event.title, u'抽選', lot.name],
       urls=[request.route_path('events.index'), request.route_path('events.show', event_id=event.id), request.route_url('lots.index', event_id=event.id)]
   )}
+% else:
+  ${ch.breadcrumbs(
+      names=[u'イベント', event.title, u'抽選'],
+      urls=[request.route_path('events.index'), request.route_path('events.show', event_id=event.id)]
+  )}
+% endif
 </%block>
 
 <%
@@ -38,19 +45,24 @@ function timestamp_to_arr(s) {
   return [ymd, hms];
 }
 
+function updateCheckboxState (datetime, form_name) {
+ if (datetime.length < 1) {
+    $('[name=' + form_name + ']').prop('checked',false);
+    $('[name=' + form_name + ']').prop('disabled',true);
+  } else {
+    $('[name=' + form_name + ']').prop('checked',true);
+    $('[name=' + form_name + ']').prop('disabled',false);
+  }
+}
+
 function updateSalesSegmentGroupById(j) {
   var d = dates[j];
   var start_at_arr = timestamp_to_arr(d.start_at);
   var end_at_arr = timestamp_to_arr(d.end_at);
 
-  if (d.start_at.length < 1) {
-    start_at_arr = [['', '', ''], ['', '', '']];
-    document.getElementById('use_default_start_at').checked = false;
-    document.getElementById('use_default_start_at').disabled = true;
-  } else {
-    document.getElementById('use_default_start_at').checked = true;
-    document.getElementById('use_default_start_at').disabled = false;
-  }
+  updateCheckboxState(d.start_at, "use_default_start_at")
+  updateCheckboxState(d.end_at, "use_default_end_at")
+
   $('#start_at\\.year').val(start_at_arr[0][0]);
   $('#start_at\\.month').val(start_at_arr[0][1]);
   $('#start_at\\.day').val(start_at_arr[0][2]);
@@ -58,14 +70,6 @@ function updateSalesSegmentGroupById(j) {
   $('#start_at\\.minute').val(start_at_arr[1][1]);
   $('#start_at\\.second').val(start_at_arr[1][2]);
 
-  if (d.end_at.length < 1) {
-    end_at_arr = [['', '', ''], ['', '', '']];
-    document.getElementById('use_default_end_at').checked = false;
-    document.getElementById('use_default_end_at').disabled = true;
-  } else {
-    document.getElementById('use_default_end_at').checked = true;
-    document.getElementById('use_default_end_at').disabled = false;
-  }
   $('#end_at\\.year').val(end_at_arr[0][0]);
   $('#end_at\\.month').val(end_at_arr[0][1]);
   $('#end_at\\.day').val(end_at_arr[0][2]);
@@ -100,12 +104,14 @@ function updateSalesSegmentGroupById(j) {
       ${ch.form_item(form.lotting_announce_timezone)}
       ${ch.form_item(form.custom_timezone_label)}
       ${ch.form_item(form.auth_type)}
+      % if lot:
       ${ch.form_item(form.mail_send_now)}
-      %if org_withdraw:
+          % if org_withdraw:
       ${ch.form_item(form.lot_entry_user_withdraw)}
-      %else:
+          % else:
       ${ch.form_item(form.lot_entry_user_withdraw, disabled='disabled')}
-      %endif
+          % endif
+      % endif
     </fieldset>
     <fieldset>
         <legend>販売区分情報</legend>
@@ -122,3 +128,16 @@ function updateSalesSegmentGroupById(j) {
     </div>
   </form>
 </div>
+% if not lot:
+<script type="text/javascript">
+  $(document).ready(function(){
+    var ssgid = "${request.params.get('ssgid', '')}";
+    $('#sales_segment_group_id').val(ssgid);
+
+    var opt = $('#sales_segment_group_id').children(':selected');
+
+    $('#name').val(opt.text());
+    updateSalesSegmentGroupById(opt.val());
+  });
+</script>
+% endif
