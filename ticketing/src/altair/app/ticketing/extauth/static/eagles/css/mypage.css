@@ -775,17 +775,17 @@ color:#860010;
 .statusBox .statusList .status_sponsor span.member_kind { background-image: url(../images/status_sponsor.png); }
 .statusBox .statusList .status_school { border-bottom: 5px solid #7D001A; }
 .statusBox .statusList .status_school span.member_kind { background-image: url(../images/status_school.png); }
-.statusBox .statusList .status_aomori { border-bottom: 5px solid #7D001A; }
+.statusBox .statusList .status_aomori { border-bottom: 5px solid #6D1C7C; }
 .statusBox .statusList .status_aomori span.member_kind { background-image: url(../images/status_aomori.png); }
-.statusBox .statusList .status_akita { border-bottom: 5px solid #7D001A; }
+.statusBox .statusList .status_akita { border-bottom: 5px solid #D71718; }
 .statusBox .statusList .status_akita span.member_kind { background-image: url(../images/status_akita.png); }
-.statusBox .statusList .status_iwate { border-bottom: 5px solid #7D001A; }
+.statusBox .statusList .status_iwate { border-bottom: 5px solid #2096D5; }
 .statusBox .statusList .status_iwate span.member_kind { background-image: url(../images/status_iwate.png); }
-.statusBox .statusList .status_miyagi { border-bottom: 5px solid #7D001A; }
+.statusBox .statusList .status_miyagi { border-bottom: 5px solid #127E3B; }
 .statusBox .statusList .status_miyagi span.member_kind { background-image: url(../images/status_miyagi.png); }
-.statusBox .statusList .status_yamagata { border-bottom: 5px solid #7D001A; }
+.statusBox .statusList .status_yamagata { border-bottom: 5px solid #E37610; }
 .statusBox .statusList .status_yamagata span.member_kind { background-image: url(../images/status_yamagata.png); }
-.statusBox .statusList .status_fukushima { border-bottom: 5px solid #7D001A; }
+.statusBox .statusList .status_fukushima { border-bottom: 5px solid #D31577; }
 .statusBox .statusList .status_fukushima span.member_kind { background-image: url(../images/status_fukushima.png); }
 
 @media only screen and (min-width: 480px) {

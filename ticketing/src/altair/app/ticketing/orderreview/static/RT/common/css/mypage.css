@@ -10,11 +10,24 @@
 .confirm a:hover { text-decoration: none; }
 .confirm .list-disc li { list-style: outside disc; margin: 0 0 1rem 20px; }
 
+.col2 { width: 50%; margin: 0 auto; }
+.col2_1 { width: 48%; float: left; }
+.col2_2 { width: 48%; float: right; }
+ 
+.col3_1 , .col3_2 , .col3_3 { width: 30%; float: left; } 
+.col3_2 { margin-right: 5%; margin-left: 5%; }
+ 
+.col4_1 , .col4_2 , .col4_3 , .col4_4 { width: 22%; float: left; }
+.col4_2 { margin-left: 4%; margin-right: 4%; }
+.col4_3 { margin-right: 4%; }
+
 
 /* layout
 --------------------------------------------------- */
 html {
 	font-size: 62.5%;
+	border-left: 10px solid transparent;
+	border-right: 10px solid transparent;
 }
 body {
 	color: #333;
@@ -248,6 +261,7 @@ body {
 	cursor: pointer;
 	display: inline-block;
 	width: 200px;
+	text-decoration: none !important;
 	font-size: 1.6rem;
 	font-weight: bold;
 	padding: 10px;
@@ -391,6 +405,82 @@ body {
 .mypage-box .br:after { content: "　"; }
 
 
+/* login-box ============================== */
+.login-box {
+	-webkit-border-radius: 3px;
+	-moz-border-radius: 3px;
+	border-radius: 3px;
+	border: 1px solid #ABABAB;
+	margin-bottom: 20px;
+}
+.login-name {
+	background: #EFEFEF;
+	text-align: center;
+	font-weight: bold;
+	font-size: 14px;
+	padding: 10px 0;
+	margin: 10px 10px 0 10px;
+}
+.login-name span {
+	font-size: 20px; font-weight: bold;
+}
+.login-inbox {
+	text-align: center;
+	padding: 10px;
+}
+
+
+/* .customer-table ============================== */
+.customer-table {
+	width: 100%;
+	border-collapse: collapse;
+	border: 3px solid #CCC;
+}
+.customer-table th,
+.customer-table td {
+	border: 1px solid #CCC;
+	padding: 10px;
+}
+.customer-table th {
+	width: 18%;
+	background: #FBFBFB;
+	font-weight: bold;
+}
+.customer-table th span {
+	font-weight: normal;
+	font-size: 1.0rem;
+	color: #787878;
+}
+.customer-table td p.annot {
+	background: #EFEFEF;
+	font-size: 1.2rem;
+	color: #666;
+	line-height: 1.25;
+	padding: 5px;
+	margin: 5px 0;
+}
+.icon-required { /* 必須アイコン */
+	background: #F14145;
+	color: #FFF !important;
+	font-size: 1.0rem;
+	padding: 0 3px;
+	margin-left: 5px;
+	-moz-border-radius:3px;
+	-webkit-border-radius:3px;
+	border-radius:3px;
+}
+.icon-nonrequired { /* 任意アイコン */
+	background: #999;
+	color: #FFF !important;
+	font-size: 1.0rem;
+	padding: 0 3px;
+	margin-left: 5px;
+	-moz-border-radius:3px;
+	-webkit-border-radius:3px;
+	border-radius:3px;
+}
+
+
 
 /* Responsive ============================== */
 @media screen and (max-width: 767px){
@@ -420,9 +510,26 @@ body {
 .copyright { clear: both; }
 .ts-contents-inner { padding: 20px 3%; }
 
-.mypage-box dl { clear: both; margin-left: 0; }
-.confirm-magBox { padding: 20px 3%; margin: 0; }
+.login-box {
+	width: 100%;
+	float: none;
 }
 
-html { border: 10px solid transparent; }
-html { -webkit-box-sizing: border-box; }
+.mypage-box dl { clear: both; margin-left: 0; }
+.confirm-magBox { padding: 20px 3%; margin: 0; }
+
+.customer-table {
+	width: 100%;
+	table-layout:fixed;
+	word-break:break-all;
+	word-wrap:break-word;
+	box-sizing: border-box;
+}
+.customer-table th,
+.customer-table td {
+	width: 100%;
+	display: block;
+	padding: 10px;
+	box-sizing: border-box;
+}
+}

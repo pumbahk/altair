@@ -2,10 +2,7 @@
 <% member_set = _context.member_sets[0] %>
 <p class="box bold tac fs18" style="color: red;">2016年ファンクラブ会員先行購入は楽天会員IDと連携済のお客様のみが対象となります。</p>
 
-
 <div class="box clearfix">
-
-
 <!-- member LOGIN BOX -->
 <div class="col2_1 tile2 login-box">
 <dl>
@@ -22,12 +19,13 @@
 <li class="fcType-L" style="background:#EFEFEF;"><img src="${view_context.static_url('images/status_rocken.png')}" alt="ろっけんイーグルス"></li>
 </ul>
 <p class="tac mgt20 mgb10"><a href="${_context.route_path('extauth.rakuten.entry')}" class="btnA btnA_l"><span class="login-fc-btn">楽天会員IDでログイン</span></a></p>
+<%! 
+from datetime import datetime
+thisyear = datetime.now().strftime('%Y')
+%>
+<p class="tac mgt20"><a href="https://eagles.fanclub.rakuten.co.jp/mypage/login/ridLogin?year=${thisyear}" class="btnID">楽天会員ID連携がお済でない方はコチラ</a></p>
 <p class="fs12" style="color: red;">※ファンクラブ会員と連携した楽天会員ID・パスワードが必要です。</p>
 <p>※会員ID・パスワードを忘れてしまった方は<a href="https://member.id.rakuten.co.jp/rms/nid/upkfwd" target="_blank">こちら</a></p>
-<%doc>
-<!--一時的に隠します-->
-<p class="tac mgt20"><a href="#" class="btnID">楽天会員ID連携がお済でない方はコチラ</a></p>
-</%doc>
 </dd>
 </dl>
 </div>

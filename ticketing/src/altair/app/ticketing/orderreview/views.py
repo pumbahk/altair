@@ -107,7 +107,7 @@ def autologin(request):
 
         authenticated_user = request.altair_auth_info
         user = cart_api.get_or_create_user(authenticated_user)
-        
+
         if user is not None:
             path = request.params.get("next", "/orderreview/mypage")
             # nextのチェックがad hocky...
@@ -723,27 +723,33 @@ class QRView(object):
     def send_mail(self):
         # TODO: validate mail address
 
-        mail = self.request.params['mail']
-        # send mail using template
-        form = schemas.SendMailSchema(self.request.POST)
+        if 'mail' in self.request.params:
+            mail = self.request.params['mail']
+            # send mail using template
+            form = schemas.SendMailSchema(self.request.POST)
 
-        if not form.validate():
-            return dict(mail=mail,
-                        message=u"Emailの形式が正しくありません")
+            if not form.validate():
+                return dict(mail=mail,
+                            message=u"Emailの形式が正しくありません")
 
-        try:
-            sender = self.context.organization.setting.default_mail_sender
-            api.send_qr_mail(self.request, self.context, mail, sender)
-        except Exception, e:
-            logger.error(e.message, exc_info=1)
-            ## この例外は違う...
-            raise HTTPNotFound()
+            try:
+                sender = self.context.organization.setting.default_mail_sender
+                api.send_qr_mail(self.request, self.context, mail, sender)
+            except Exception, e:
+                logger.error(e.message, exc_info=1)
+                ## この例外は違う...
+                raise HTTPNotFound()
 
-        message = u"%s宛にメールをお送りしました。" % mail
-        return dict(
-            mail = mail,
-            message = message
-            )
+            message = u"%s宛にメールをお送りしました。" % mail
+            return dict(
+                mail = mail,
+                message = message
+                )
+        else:
+            message = u"メールが見つかりませんでした。"
+            return dict(
+                message = message
+                )
 
     @lbr_view_config(
         route_name='order_review.orion_send',

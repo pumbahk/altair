@@ -693,7 +693,7 @@ msgid "payment-4:reserved_number"
 msgstr "支払番号"
 
 msgid "payment-6:payment_reserve_number"
-msgstr "FM予約番号"
+msgstr "FM入金用予約番号"
 
 msgid "payment-6:payment_shop_name"
 msgstr "FM払込店舗"
@@ -705,7 +705,7 @@ msgid "delivery-6:ticketing_reserve_number"
 msgstr "FM引換用予約番号"
 
 msgid "payment-6:delivery-6:payment_reserve_number"
-msgstr "FM予約番号"
+msgstr "FM入金用予約番号"
 
 msgid "payment-6:delivery-6:payment_shop_name"
 msgstr "FM払込店舗"

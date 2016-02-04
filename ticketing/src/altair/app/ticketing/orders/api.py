@@ -2147,9 +2147,10 @@ def get_payment_delivery_plugin_info(request, order, flavor='html'):
 
     descr_registry = get_order_info_descriptor_registry(request)
 
+    from collections import OrderedDict
     if payment_plugin is not None:
         _payment_plugin_info = payment_plugin.get_order_info(request, order)
-        payment_plugin_info = {}
+        payment_plugin_info = OrderedDict()
         for k, v in _payment_plugin_info.items():
             descr = descr_registry.get_descriptor(payment_plugin, k)
             pair = None
@@ -2168,7 +2169,7 @@ def get_payment_delivery_plugin_info(request, order, flavor='html'):
         payment_plugin_info = None
     if delivery_plugin is not None:
         _delivery_plugin_info = delivery_plugin.get_order_info(request, order)
-        delivery_plugin_info = {}
+        delivery_plugin_info = OrderedDict()
         for k, v in _delivery_plugin_info.items():
             descr = descr_registry.get_descriptor(delivery_plugin, k)
             pair = None

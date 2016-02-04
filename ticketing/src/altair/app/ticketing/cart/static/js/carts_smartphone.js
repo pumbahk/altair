@@ -1041,27 +1041,33 @@ cart.OrderFormView = Backbone.View.extend({
             btn_select_seat.parent().css('display', 'none');
             btn_entrust.parent().css('display', 'none');
             btn_buy.parent().css('display', null);
+            btn_buy.one('click', function () {
+                self.presenter.onBuyPressed();
+                $(this).one('click', arguments.callee);
+                return false;
+            });
         } else {
             if (self.seatSelectionEnabled && stock_type.get("seat_choice")) {
                 btn_select_seat.parent().css('display', null);
+                btn_select_seat.click(function () { self.presenter.onSelectSeatPressed(); return false; });
                 btn_entrust.parent().css('display', null);
+                btn_entrust.one('click', function () {
+                    self.presenter.onEntrustPressed();
+                    $(this).one('click', arguments.callee);
+                    return false;
+                });
+                btn_buy.parent().css('display', 'none');
             } else {
                 btn_select_seat.parent().css('display', 'none');
-                btn_entrust.parent().css('display', null);
+                btn_entrust.parent().css('display', 'none');
+                btn_buy.parent().css('display', null);
+                btn_buy.one('click', function () {
+                    self.presenter.onEntrustPressed();
+                    $(this).one('click', arguments.callee);
+                    return false;
+                });
             }
-            btn_buy.parent().css('display', 'none');
         }
-        btn_select_seat.click(function () { self.presenter.onSelectSeatPressed(); return false; });
-        btn_entrust.one('click', function () {
-            self.presenter.onEntrustPressed();
-            $(this).one('click', arguments.callee);
-            return false;
-        });
-        btn_buy.one('click', function () {
-            self.presenter.onBuyPressed();
-            $(this).one('click', arguments.callee);
-            return false;
-        });
 
         return orderForm;
     },

@@ -190,6 +190,21 @@ def get_famiport_order(request, client_code, order_no):
         raise FamiPortAPIError('internal error')
 
 @user_api
+def get_famiport_order_by_reserve_number(request, reserve_number):
+    sys.exc_clear()
+    try:
+        session = get_db_session(request, 'famiport')
+        famiport_order = session.query(FamiPortOrder).join(FamiPortReceipt, FamiPortReceipt.famiport_order_id == FamiPortOrder.id)\
+                                                     .filter(FamiPortReceipt.reserve_number == reserve_number).one()
+        return famiport_order_to_dict(famiport_order)
+    except NoResultFound:
+        raise FamiPortAPINotFoundError('no such order corresponds to reserve_number: %s' % reserve_number)
+    except:
+        logger.exception(u'internal error')
+        raise FamiPortAPIError('internal error')
+
+
+@user_api
 def get_famiport_venue_by_name(request, client_code, name):
     sys.exc_clear()
     try:
