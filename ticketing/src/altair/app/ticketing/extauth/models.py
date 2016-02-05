@@ -78,6 +78,22 @@ class Member(Base, WithCreatedAt):
     member_set = orm.relationship('MemberSet', backref='member_sets')
     enabled = sa.Column(sa.Boolean(), nullable=False, default=True)
 
+    email = sa.Column(sa.Unicode(255), nullable=True)
+    given_name = sa.Column(sa.Unicode(255), nullable=True)
+    family_name = sa.Column(sa.Unicode(255), nullable=True)
+    given_name_kana = sa.Column(sa.Unicode(255), nullable=True)
+    family_name_kana = sa.Column(sa.Unicode(255), nullable=True)
+    birthday = sa.Column(sa.Date(), nullable=True)
+    gender = sa.Column(sa.Integer, nullable=True)
+    country = sa.Column(sa.Unicode(64), nullable=True)
+    zip = sa.Column(sa.Unicode(32), nullable=True)
+    prefecture = sa.Column(sa.Unicode(128), nullable=True)
+    city = sa.Column(sa.Unicode(255), nullable=True)
+    address_1 = sa.Column(sa.Unicode(255), nullable=True)
+    address_2 = sa.Column(sa.Unicode(255), nullable=True)
+    tel_1 = sa.Column(sa.Unicode(32), nullable=True)
+    tel_2 = sa.Column(sa.Unicode(32), nullable=True)
+
     def query_valid_memberships(self, now):
         return [
             membership
