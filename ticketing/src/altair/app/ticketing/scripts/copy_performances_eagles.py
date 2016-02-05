@@ -10,7 +10,7 @@ import argparse
 import re
 import csv
 import locale
-from datetime import date, datetime, timedelta
+from datetime import time, date, datetime, timedelta
 from dateutil.parser import parse as parsedate
 
 from pyramid.paster import bootstrap, setup_logging
@@ -120,12 +120,12 @@ def do_performance_copy(request, session, file_, encoding, format, dry_run=False
 
     def get_performance(performance_id, title=None):
         try:
-            retval = session.query(Performance).filter_by(id=performance_id).one()
+            perf = session.query(Performance).filter_by(id=performance_id).one()
         except NoResultFound:
             raise new_record_error('no such performance: %d' % performance_id)
-        if title and retval.name != title:
+        if title and perf.name != title:
             raise new_record_error('performance(id=%d).title differs from %s' % (performance_id, title))
-        return retval
+        return perf
 
     def generate_performance_code(performance):
         return '%s%02d%02dZ' % (performance.code[0:7], performance.start_on.month, performance.start_on.day)
@@ -144,6 +144,8 @@ def do_performance_copy(request, session, file_, encoding, format, dry_run=False
             new_performance_start_at = combine_date_time(new_performance_date, new_performance_start_time)
             new_performance_abbreviated_title = cols[u'公演名略称']
             new_performance_subtitle = cols[u'公演名副題']
+            new_performance_subtitle4 = cols[u'公演名副題4']
+            new_note = cols[u'公演名備考']
             new_performance_display_order = parse_int(cols[u'表示順'], 'invalid display order')
             new_performance_max_orders = parse_int(cols[u'購入回数制限'], 'invalid max orders')
             new_performance_max_quantity_per_user = parse_int(cols[u'購入上限枚数 (購入者毎)'], 'invalid max quantity')
@@ -165,6 +167,8 @@ def do_performance_copy(request, session, file_, encoding, format, dry_run=False
                 new_performance.start_on = new_performance_start_at
                 new_performance.name = new_performance_name
                 new_performance.subtitle = new_performance_subtitle
+                new_performance.subtitle4 = new_performance_subtitle4
+                new_performance.note = new_note
                 new_performance.abbreviated_title = new_performance_abbreviated_title
                 new_performance.code = new_performance_code
                 new_performance.display_order = new_performance_display_order
