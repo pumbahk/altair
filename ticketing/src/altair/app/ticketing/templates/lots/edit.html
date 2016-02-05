@@ -46,6 +46,7 @@ function timestamp_to_arr(s) {
 }
 
 function updateCheckboxState (datetime, form_name) {
+ <%doc>日付が相対指定の場合はグループの値を利用させない #tkt970</%doc>
  if (datetime.length < 1) {
     $('[name=' + form_name + ']').prop('checked',false);
     $('[name=' + form_name + ']').prop('disabled',true);
@@ -76,6 +77,9 @@ function updateSalesSegmentGroupById(j) {
   $('#end_at\\.hour').val(end_at_arr[1][0]);
   $('#end_at\\.minute').val(end_at_arr[1][1]);
   $('#end_at\\.second').val(end_at_arr[1][2]);
+
+  <%doc>新規でも更新でも販売区分グループと連動させる #tkt970</%doc>
+  $('#max_quantity').val(d.max_quantity);
 }
 </script>
 
