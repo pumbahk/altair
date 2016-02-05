@@ -106,12 +106,12 @@ def do_performance_copy(request, session, file_, encoding, format, dry_run=False
         s = s.strip()
         if not s:
             return None
-        g = re.match(u'(?P<hour>\d+)時(?P<minute>\d+)分?', s)
+        g = re.match(u'(?P<hour>\d+)時(?P<minute>\d+)分(?:(?P<second>\d+)秒)?', s)
         if g is not None:
             return time(
                 hour=parse_int(g.group('hour'), msg),
                 minute=parse_int(g.group('minute'), msg),
-                second=0
+                second=parse_int(g.group('second'), msg)
                 )
         try:
             return parsedate(s).time()
