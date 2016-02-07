@@ -73,6 +73,8 @@ japanese_columns = {
     u'order.payment_start_at': u'支払開始日時',
     u'order.payment_due_at': u'支払期限',
     u'order.cart_setting_id': u'カート設定',
+    u'order.type':u'予約タイプ',
+    u'order.count':u'チケット枚数',
     u'anshin_checkout.order_id': u'楽天ID決済 注文番号',
     u'anshin_checkout.order_control_id': u'楽天ID決済 注文管理番号',
     u'anshin_checkout.used_point': u'楽天ID決済 利用ポイント数',
