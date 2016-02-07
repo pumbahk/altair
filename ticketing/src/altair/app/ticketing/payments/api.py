@@ -104,8 +104,12 @@ def lookup_plugin(request, payment_delivery_pair):
     payment_delivery_plugin = get_payment_delivery_plugin(request,
         payment_delivery_pair.payment_method.payment_plugin_id,
         payment_delivery_pair.delivery_method.delivery_plugin_id,)
-    payment_plugin = get_payment_plugin(request, payment_delivery_pair.payment_method.payment_plugin_id)
-    delivery_plugin = get_delivery_plugin(request, payment_delivery_pair.delivery_method.delivery_plugin_id)
+    if payment_delivery_plugin is None:
+        payment_plugin = get_payment_plugin(request, payment_delivery_pair.payment_method.payment_plugin_id)
+        delivery_plugin = get_delivery_plugin(request, payment_delivery_pair.delivery_method.delivery_plugin_id)
+    else:
+        payment_plugin = None
+        delivery_plugin = None
     if payment_delivery_plugin is None and \
        (payment_plugin is None or delivery_plugin is None):
         raise PaymentDeliveryMethodPairNotFound(u"対応する決済プラグインか配送プラグインが見つかりませんでした")
