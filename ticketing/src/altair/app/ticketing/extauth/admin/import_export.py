@@ -214,14 +214,12 @@ def optional(reader, dict_, k, type_=six.text_type):
             v = type_(v)
     if isinstance(v, six.text_type):
         v = strip(v)
-        if not v:
-            return Unspecified
     return v
 
 
-def required(reader, dict_, k, type_=six.text_type):
+def required(reader, dict_, k, type_=six.text_type, allow_blank=False):
     v = optional(reader, dict_, k, type_)
-    if v is Unspecified:
+    if v is Unspecified or (not allow_blank and v == u''):
         raise MemberImportExportError.from_reader(
             reader, [k],
             u'「%s」は必須です' % reader.column_name_map[k]
@@ -521,10 +519,11 @@ class MemberDataImporter(object):
 
     def map_to_member_column(self, record):
         auth_secret = record['auth_secret']
-        if auth_secret.startswith(HASH_SIGNATURE):
-            auth_secret = auth_secret[len(HASH_SIGNATURE):]
-        else:
-            auth_secret = digest_secret(auth_secret, generate_salt())
+        if auth_secret is not Unspecified:
+            if auth_secret.startswith(HASH_SIGNATURE):
+                auth_secret = auth_secret[len(HASH_SIGNATURE):]
+            else:
+                auth_secret = digest_secret(auth_secret, generate_salt())
         return dict(
             id=record['member_id'],
             name=record['name'] or u'',
