@@ -17,7 +17,7 @@ class XlsTabularDataReader(object):
         if isinstance(f, (str, text_type)):
             wb = xlrd.open_workbook(f, **kwargs)
         else:
-            wb = xlrd.open_workbook(file_contents=f.read())
+            wb = xlrd.open_workbook(file_contents=f.read(), **kwargs)
         if sheet is not None:
             ws = wb.sheet_by_name(sheet)
         else:
