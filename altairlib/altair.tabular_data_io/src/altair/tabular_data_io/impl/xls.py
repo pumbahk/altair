@@ -14,7 +14,10 @@ class XlsTabularDataReader(object):
         kwargs = {}
         if encoding is not None:
             kwargs['encoding_override'] = encoding
-        wb = xlrd.open_workbook(f, **kwargs)
+        if isinstance(f, (str, text_type)):
+            wb = xlrd.open_workbook(f, **kwargs)
+        else:
+            wb = xlrd.open_workbook(file_contents=f.read())
         if sheet is not None:
             ws = wb.sheet_by_name(sheet)
         else:
