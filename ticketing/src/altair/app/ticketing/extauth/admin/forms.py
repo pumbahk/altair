@@ -19,6 +19,7 @@ from altair.formhelpers.fields import (
 )
 from altair.formhelpers.fields.datetime import (
     OurDateTimeField,
+    OurDateField,
     )
 from altair.formhelpers.widgets import (
     OurPasswordInput,
@@ -26,7 +27,11 @@ from altair.formhelpers.widgets import (
     OurDateWidget,
 )
 from altair.formhelpers.fields.select import SimpleChoices
-from altair.formhelpers.validators import RequiredOnNew
+from altair.formhelpers.validators import (
+    RequiredOnNew,
+    Zenkaku,
+    Katakana,
+    )
 from altair.formhelpers.validators.optional import SwitchOptionalBase
 from altair.formhelpers import Max, after1900
 from wtforms.validators import Required, Length, Optional
@@ -433,6 +438,136 @@ class MemberForm(OurForm):
             unicode(membership.id): [membership]
             for membership in memberships
             }
+        )
+
+    email = OurTextField(
+        label=u'メールアドレス',
+        validators=[
+            Optional(),
+            Length(max=255),
+            ]
+        )
+
+    given_name = OurTextField(
+        label=u'配送先名',
+        validators=[
+            Optional(),
+            Length(max=255),
+            ]
+        )
+
+    family_name = OurTextField(
+        label=u'配送先姓',
+        validators=[
+            Optional(),
+            Length(max=255),
+            ]
+        )
+
+    given_name_kana = OurTextField(
+        label=u'配送先名(カナ)',
+        validators=[
+            Optional(),
+            Katakana,
+            Length(max=255),
+            ]
+        )
+
+    family_name_kana = OurTextField(
+        label=u'配送先姓(カナ)',
+        validators=[
+            Optional(),
+            Katakana,
+            Length(max=255),
+            ]
+        )
+
+    birthday = OurDateField(
+        label=u'誕生日',
+        validators=[
+            Optional(),
+            ]
+        )
+
+    gender = OurSelectField(
+        label=u'性別',
+        validators=[
+            Optional(),
+            ],
+        model=SimpleChoices(
+            [
+                (None, u'(入力なし)'),
+                (0, u'未回答'),
+                (1, u'男性'),
+                (2, u'女性')
+                ],
+            decoder=lambda x: int(x) if x != u'' else None,
+            encoder=lambda x: unicode(x) if x is not None else u''
+            )
+        )
+
+    country = OurTextField(
+        label=u'国',
+        validators=[
+            Optional(),
+            Length(max=64),
+            ]
+        )
+
+    zip = OurTextField(
+        label=u'郵便番号',
+        validators=[
+            Optional(),
+            Length(max=32),
+            ]
+        )
+
+    prefecture = OurTextField(
+        label=u'都道府県',
+        validators=[
+            Optional(),
+            Length(max=128),
+            ]
+        )
+
+    city = OurTextField(
+        label=u'市区町村',
+        validators=[
+            Optional(),
+            Length(max=255),
+            ]
+        )
+
+    address_1 = OurTextField(
+        label=u'住所1',
+        validators=[
+            Optional(),
+            Length(max=255),
+            ]
+        )
+
+    address_2 = OurTextField(
+        label=u'住所2',
+        validators=[
+            Optional(),
+            Length(max=255),
+            ]
+        )
+
+    tel_1 = OurTextField(
+        label=u'電話番号1',
+        validators=[
+            Optional(),
+            Length(max=32),
+            ]
+        )
+
+    tel_2 = OurTextField(
+        label=u'電話番号2',
+        validators=[
+            Optional(),
+            Length(max=32),
+            ]
         )
 
     enabled = OurBooleanField(

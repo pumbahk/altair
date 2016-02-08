@@ -521,6 +521,21 @@ class MembersView(object):
         member.auth_identifier = form.auth_identifier.data
         if form.auth_secret.data:
             member.auth_secret = digest_secret(form.auth_secret.data, generate_salt())
+        member.email = form.email.data
+        member.given_name = form.given_name.data
+        member.family_name = form.family_name.data
+        member.given_name_kana = form.given_name_kana.data
+        member.family_name_kana = form.family_name_kana.data
+        member.birthday = form.birthday.data
+        member.gender = form.gender.data
+        member.country = form.country.data
+        member.zip = form.zip.data
+        member.prefecture = form.prefecture.data
+        member.city = form.city.data
+        member.address_1 = form.address_1.data
+        member.address_2 = form.address_2.data
+        member.tel_1 = form.tel_1.data
+        member.tel_2 = form.tel_2.data
         member.enabled = form.enabled.data
         memberships = {
             membership.id: membership
@@ -576,7 +591,22 @@ class MembersView(object):
             auth_identifier=form.auth_identifier.data,
             auth_secret=form.auth_secret.data,
             )
-        member.enabled=form.enabled.data
+        member.email = form.email.data
+        member.given_name = form.given_name.data
+        member.family_name = form.family_name.data
+        member.given_name_kana = form.given_name_kana.data
+        member.family_name_kana = form.family_name_kana.data
+        member.birthday = form.birthday.data
+        member.gender = form.gender.data
+        member.country = form.country.data
+        member.zip = form.zip.data
+        member.prefecture = form.prefecture.data
+        member.city = form.city.data
+        member.address_1 = form.address_1.data
+        member.address_2 = form.address_2.data
+        member.tel_1 = form.tel_1.data
+        member.tel_2 = form.tel_2.data
+        member.enabled = form.enabled.data
         for membership_id, membership_elem_list in form.memberships.entries.items():
             for membership_elem in membership_elem_list:
                 membership_form = membership_elem._contained_form
@@ -635,10 +665,11 @@ class MembersView(object):
         exporter = import_export.MemberDataExporter(slave_session, organization_id)
         writer = import_export.TabularDataWriter(resp.body_file, import_export.japanese_columns.values(), import_export.japanese_columns.keys(), type=type_)
         date_time_formatter = lambda dt: dt.strftime("%Y-%m-%d %H:%M:%S").decode("ASCII")
+        date_formatter = lambda dt: dt.strftime("%Y-%m-%d").decode("ASCII")
         resp.content_type = writer.preferred_mime_type
         if resp.content_type.startswith('text/'):
             resp.charset = 'Windows-31J' if writer.encoding.lower() == 'cp932' else writer.encoding
-        num_records = import_export.MemberDataWriterAdapter(date_time_formatter)(writer, exporter, ignore_close_error=True)
+        num_records = import_export.MemberDataWriterAdapter(date_time_formatter, date_formatter)(writer, exporter, ignore_close_error=True)
         self.request.session.flash(u'%d件をエクスポートしました' % num_records)
         return resp
 

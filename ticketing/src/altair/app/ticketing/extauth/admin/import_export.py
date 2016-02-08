@@ -1,7 +1,7 @@
 # encoding: utf-8
 import six
 from collections import OrderedDict
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy import sql
 from dateutil.parser import parse as parsedate
@@ -20,7 +20,19 @@ __all__ = [
     'MemberImportExportError',
     'MemberImportExportErrors',
     'japanese_columns',
+    'gender_value_map',
     ] 
+
+
+class _Unspecified(object):
+    def __nonzero__(self):
+        return False
+
+    def __bool__(self):
+        return False
+
+Unspecified = _Unspecified()
+
 
 japanese_columns = OrderedDict([
     (u'auth_identifier', u'ログインID'),
@@ -31,8 +43,42 @@ japanese_columns = OrderedDict([
     (u'member_kind', u'会員区分'),
     (u'valid_since', u'開始日'),
     (u'expire_at', u'有効期限'),
+    (u'email', u'メールアドレス'),
+    (u'given_name', u'配送先名'),
+    (u'family_name', u'配送先姓'),
+    (u'given_name_kana', u'配送先名(カナ)'),
+    (u'family_name_kana', u'配送先姓(カナ)'),
+    (u'birthday', u'誕生日'),
+    (u'gender', u'性別'),
+    (u'country', u'国'),
+    (u'zip', u'郵便番号'),
+    (u'prefecture', u'都道府県'),
+    (u'city', u'市区町村'),
+    (u'address_1', u'住所1'),
+    (u'address_2', u'住所2'),
+    (u'tel_1', u'電話番号1'),
+    (u'tel_2', u'電話番号2'),
     (u'deleted', u'削除フラグ'),
     ])
+
+gender_value_map = {
+    u'': Unspecified,
+    u'-': None,
+    u'未回答': 0,
+    u'Unanswered': 0,
+    u'N': 0,
+    u'0': 0,
+    u'男性': 1,
+    u'男': 1,
+    u'Male': 1,
+    u'M': 1,
+    u'1': 1,
+    u'女性': 2,
+    u'女': 2,
+    u'Female': 2,
+    u'F': 2,
+    u'2': 2,
+    }
 
 ONE_SECOND = timedelta(seconds=1)
 
@@ -187,15 +233,6 @@ class DictBuilder(object):
         self.result[k] = v
 
 
-class _Unspecified(object):
-    def __nonzero__(self):
-        return False
-
-    def __bool__(self):
-        return False
-
-Unspecified = _Unspecified()
-
 def strip(v):
     return v.strip(u' \t　') if v is not None else None
 
@@ -255,7 +292,9 @@ def validate_term(reader, dict_, start_k, end_k):
 def parse_datetime(reader, dict_, k):
     if k not in dict_:
         return Unspecified
-    raw_value = dict_[k]
+    raw_value = dict_.get(k)
+    if raw_value is None:
+        return Unspecified
     if isinstance(raw_value, date):
         return raw_value
     if not isinstance(raw_value, (str, six.text_type)):
@@ -266,6 +305,33 @@ def parse_datetime(reader, dict_, k):
     elif raw_value in (u'-', u'−'):
         return None
     return parsedate(raw_value)
+
+
+def parse_date(reader, dict_, k):
+    retval = parse_datetime(reader, dict_, k)
+    if isinstance(retval, datetime):
+        return retval.date()
+    else:
+        return retval
+
+
+def parse_gender(reader, dict_, k):
+    raw_value = dict_.get(k)
+    if raw_value is None:
+        return Unspecified
+    if not isinstance(raw_value, (str, six.text_type)):
+        raw_value = six.text_type(raw_value)
+    raw_value = strip(raw_value)
+    if not raw_value:
+        return Unspecified
+    try:
+        retval = gender_value_map[raw_value]
+    except KeyError:
+        raise MemberImportExportError.from_reader(
+            reader, [k],
+            u'「%s」は正しい値ではありません' % raw_value
+            )
+    return retval
 
 
 class MemberDataParser(object):
@@ -351,6 +417,21 @@ class MemberDataParser(object):
                 expire_at = expire_at.replace(second=59, microsecond=0)
                 expire_at += ONE_SECOND
             b['expire_at'] = expire_at
+            b['email'] = raw_record.get('email') or Unspecified
+            b['given_name'] = raw_record.get('given_name') or Unspecified
+            b['family_name'] = raw_record.get('family_name') or Unspecified
+            b['given_name_kana'] = raw_record.get('given_name_kana') or Unspecified
+            b['family_name_kana'] = raw_record.get('family_name_kana') or Unspecified
+            b['birthday'] = parse_date(reader, raw_record, u'birthday')
+            b['gender'] = parse_gender(reader, raw_record, u'gender')
+            b['country'] = raw_record.get('country') or Unspecified
+            b['zip'] = raw_record.get('zip') or Unspecified
+            b['prefecture'] = raw_record.get('prefecture') or Unspecified
+            b['city'] = raw_record.get('city') or Unspecified
+            b['address_1'] = raw_record.get('address_1') or Unspecified
+            b['address_2'] = raw_record.get('address_2') or Unspecified
+            b['tel_1'] = raw_record.get('tel_1') or Unspecified
+            b['tel_2'] = raw_record.get('tel_2') or Unspecified
             b['deleted'] = bool(strip(raw_record.get(u'deleted', u'')))
         return b.errors, b.result
 
@@ -446,8 +527,9 @@ class MemberDataParser(object):
 
 
 class MemberDataWriterAdapter(object):
-    def __init__(self, datetime_formatter):
+    def __init__(self, datetime_formatter, date_formatter):
         self.datetime_formatter = datetime_formatter
+        self.date_formatter = date_formatter
 
     def format_ternary(self, v):
         if v:
@@ -456,7 +538,19 @@ class MemberDataWriterAdapter(object):
             return u''
         else:
             return u''
-            
+
+    def format_gender(self, v):
+        if v is None:
+            return u''
+        elif v == 0:
+            return u'N'
+        elif v == 1:
+            return u'M'
+        elif v == 2:
+            return u'F'
+        else:
+            return u'???'
+
     def __call__(self, writer, exporter, ignore_close_error=False):
         num_records = 0
         try:
@@ -468,14 +562,30 @@ class MemberDataWriterAdapter(object):
                     'membership_identifier': record['membership_identifier'] or u'',
                     'member_set':            record['member_set'] or u'',
                     'member_kind':           record['member_kind'] or u'',
+                    'email':                 record['email'] or u'',
+                    'given_name':            record['given_name'] or u'',
+                    'family_name':           record['family_name'] or u'',
+                    'given_name_kana':       record['given_name_kana'] or u'',
+                    'family_name_kana':      record['family_name_kana'] or u'',
+                    'gender':                self.format_gender(record['gender']),
+                    'country':               record['country'] or u'',
+                    'zip':                   record['zip'] or u'',
+                    'prefecture':            record['prefecture'] or u'',
+                    'city':                  record['city'] or u'',
+                    'address_1':             record['address_1'] or u'',
+                    'address_2':             record['address_2'] or u'',
+                    'tel_1':                 record['tel_1'] or u'',
+                    'tel_2':                 record['tel_2'] or u'',
                     'deleted':               self.format_ternary(record.get('deleted', None)),
                     }
                 if writer.datetime_conversion_needed:
                     row['valid_since'] = self.datetime_formatter(record['valid_since']) if record['valid_since'] is not None else u''
                     row['expire_at'] = self.datetime_formatter(record['expire_at'] - ONE_SECOND) if record['expire_at'] is not None else u''
+                    row['birthday'] = self.date_formatter(record['birthday']) if record['birthday'] is not None else u''
                 else:
                     row['valid_since'] = record['valid_since'] or u''
                     row['expire_at'] = (record['expire_at']  - ONE_SECOND) if record['expire_at'] is not None else u''
+                    row['birthday'] = record['birthday'] if record['birthday'] is not None else u''
                 writer(row)
                 num_records += 1
         finally:
@@ -504,8 +614,22 @@ class MemberDataImporter(object):
             name=record['name'] or u'',
             member_set_id=record['member_set'].id,
             auth_identifier=record['auth_identifier'],
-            auth_secret=auth_secret
-            ) 
+            auth_secret=auth_secret,
+            email=record['email'],
+            given_name=record['given_name'],
+            family_name=record['family_name'],
+            given_name_kana=record['given_name_kana'],
+            family_name_kana=record['family_name_kana'],
+            gender=record['gender'],
+            country=record['country'],
+            zip=record['zip'],
+            prefecture=record['prefecture'],
+            city=record['city'],
+            address_1=record['address_1'],
+            address_2=record['address_2'],
+            tel_1=record['tel_1'],
+            tel_2=record['tel_2']
+            )
 
     def map_to_membership_column(self, record):
         return dict(
@@ -600,6 +724,21 @@ class MemberDataExporter(object):
         ('member_kind',           MemberKind.name),
         ('valid_since',           Membership.valid_since),
         ('expire_at',             Membership.expire_at),
+        ('email',                 Member.email),
+        ('given_name',            Member.given_name),
+        ('family_name',           Member.family_name),
+        ('given_name_kana',       Member.given_name_kana),
+        ('family_name_kana',      Member.family_name_kana),
+        ('birthday',              Member.birthday),
+        ('gender',                Member.gender),
+        ('country',               Member.country),
+        ('zip',                   Member.zip),
+        ('prefecture',            Member.prefecture),
+        ('city',                  Member.city),
+        ('address_1',             Member.address_1),
+        ('address_2',             Member.address_2),
+        ('tel_1',                 Member.tel_1),
+        ('tel_2',                 Member.tel_2),
         ('deleted',               False),
         ]
     select_from = Member.__table__ \
