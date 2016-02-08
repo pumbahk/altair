@@ -23,6 +23,16 @@ body {
 	float: left;
 	width: 630px;
 }
+#tsTableBody {
+    vertical-align: top;
+}
+#tsMainLeft img{
+    padding-right: 15px;
+    padding-bottom: 15px;
+}
+#tsMainRight p{
+    vertical-align: top;
+}
 #tsContents #tsSideArea {
 	margin-left: 650px;
 	width: 300px;
