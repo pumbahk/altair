@@ -242,7 +242,13 @@ def optional(reader, dict_, k, type_=six.text_type):
         return Unspecified
     v = dict_[k]
     if type_ is not None:
-        v = type_(v)
+        if issubclass(type_, six.text_type):
+            if isinstance(v, float):
+                v = u'%g' % v
+            else:
+                v = type_(v)
+        else:
+            v = type_(v)
     if isinstance(v, six.text_type):
         v = strip(v)
         if not v:
@@ -311,7 +317,13 @@ def parse_datetime(reader, dict_, k):
         return Unspecified
     if isinstance(raw_value, date):
         return raw_value
-    if not isinstance(raw_value, (str, six.text_type)):
+    elif isinstance(raw_value, float):
+        v = raw_value - 1.
+        if v >= 61.: # THE LOTUS 1-2-3 bug
+            v -= 1.
+        days = int(v)
+        return datetime(1900, 1, 1, 0, 0, 0) + timedelta(days=days, microseconds=86400000000.0 * (v - float(days)))
+    elif not isinstance(raw_value, (str, six.text_type)):
         raw_value = six.text_type(raw_value)
     raw_value = strip(raw_value)
     if not raw_value:
