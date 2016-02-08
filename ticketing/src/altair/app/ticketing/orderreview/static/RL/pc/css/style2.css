@@ -119,10 +119,10 @@ h1{
 }
 
 h2 {
-background: #CC0000; /* Old browsers */
+background: #FFD464; /* Old browsers */
 margin: 0 0 20px 0;
 padding: 10px 10px;
-color: #FFF;
+color: #000;
 font-size: 24px;
 line-height: 24px;
 
@@ -288,7 +288,7 @@ background:none repeat scroll 0 0 #FFF;
 border-radius:10px 10px 10px 10px;
 margin:20px auto;
 padding:30px;
-/*border: 2px #09355F solid;*/
+/*border: 2px #1253A4 solid;*/
 }
 
 a {
@@ -480,8 +480,8 @@ table tbody th {
 }
 */
 table thead th {
-  background-color:#820000;
-  border-bottom:1px solid #820000;
+  background-color:#1253A4;
+  border-bottom:1px solid #1253A4;
   color:#FFF;
 }
 
@@ -495,14 +495,14 @@ border-right:1px solid #09355F;
 
 
 table tr td {
-border-bottom:1px solid #09355F;
-border-left:1px solid #09355F;
+border-bottom:1px solid #1253A4;
+border-left:1px solid #1253A4;
 padding:8px 15px;
 cursor: default;
 }
 
 table tr td:last-child {
-border-right:1px solid #09355F;
+border-right:1px solid #1253A4;
 }
 
 table tr td{
@@ -850,7 +850,7 @@ border-collapse: collapse;
 margin: 0px auto 20px auto;
 padding: 10px;
 width: 100%;
-border: 5px solid #09355F;
+border: 5px solid #1253A4;
 }
 
 /*
