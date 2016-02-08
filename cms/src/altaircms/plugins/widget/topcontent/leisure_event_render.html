@@ -14,43 +14,35 @@
 <%
   genre = ""
   link = ""
-  genre_link = ""
   style = "tsMusicList"
   if widget.system_tag:
       if widget.system_tag.label == u'水族館・動物園・植物園':
         genre = u"水族館・動物園・植物園"
         link = "/leisure-amusement"
-        genre_link = "/leisure-amusement"
         style = "tsMusicList"
       elif widget.system_tag.label == u'温泉・スパ':
         genre = u"温泉・スパ"
         link = "/leisure-spa"
-        genre_link = "/leisure-spa"
         style = "tsStageList"
       elif widget.system_tag.label == u'美術館・博物館':
         genre = u"美術館・博物館"
         link = "/leisure-musium"
-        genre_link = "/leisure-musium"
         style = "tsSportsList"
       elif widget.system_tag.label == u'体験':
         genre = u"体験"
         link = "/leisure-experience"
-        genre_link = "/leisure-experience"
         style = "tsEventList"
       elif widget.system_tag.label == u'遊園地・テーマパーク':
         genre = u"遊園地・テーマパーク"
         link = "/leisure-themapark"
-        genre_link = "/leisure-themapark"
         style = "tsMusicList"
       elif widget.system_tag.label == u'プール・海水浴':
         genre = u"プール・海水浴"
         link = "/leisure-pool"
-        genre_link = "/leisure-pool"
         style = "tsStageList"
       elif widget.system_tag.label == u'その他':
         genre = u"その他"
         link = "/leisure-other"
-        genre_link = "/leisure-other"
         style = "tsSportsList"
       endif
   endif
@@ -62,7 +54,7 @@
 
     <ul class=" clearfix">
       % for content in h.chunk(qs, 1):
-        <% link  = h.link.get_link_from_topcontent(request,content[0]) %>
+        <% link = h.link.get_link_from_topcontent(request,content[0]) %>
       <li>
         <dl>
           <dt class="tileImg">
@@ -85,7 +77,7 @@
       </li>
       % endfor
     </ul>
-    <p class="tsGenreIndex"><a href="${genre_link}">${widget.system_tag.label}の公演一覧 &raquo;</a></p>
+    <p class="tsGenreIndex"><a href="${request.route_path("page_search_by_freeword", _query=dict(q=widget.system_tag.label))}">${widget.system_tag.label}の公演一覧 &raquo;</a></p>
 
   </div>
 </div>
