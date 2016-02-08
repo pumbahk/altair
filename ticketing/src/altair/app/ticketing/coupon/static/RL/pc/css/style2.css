@@ -119,10 +119,10 @@ h1{
 }
 
 h2 {
-background: #CC0000; /* Old browsers */
+background: #FFD464; /* Old browsers */
 margin: 0 0 20px 0;
 padding: 10px 10px;
-color: #FFF;
+color: #000;
 font-size: 24px;
 line-height: 24px;
 
@@ -480,7 +480,7 @@ table tbody th {
 }
 */
 table thead th {
-  background-color:#820000;
+  background-color:#1253A4;
   border-bottom:1px solid #820000;
   color:#FFF;
 }
