@@ -646,6 +646,7 @@ class MemberDataImporter(object):
             given_name_kana=record['given_name_kana'],
             family_name_kana=record['family_name_kana'],
             gender=record['gender'],
+            birthday=record['birthday'],
             country=record['country'],
             zip=record['zip'],
             prefecture=record['prefecture'],
