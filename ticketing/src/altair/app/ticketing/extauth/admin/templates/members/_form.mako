@@ -130,15 +130,6 @@
   </div>
 </div>
 <div class="control-group">
-  <label class="control-label" for="member-form--given_name">${form.given_name.label.text}</label>
-  <div class="controls">
-    ${form.given_name(id="member-form--given_name", autocomplete="off")}
-    %if form.given_name.errors:
-    <span class="help-inline">${u' / '.join(form.given_name.errors)}</span>
-    % endif
-  </div>
-</div>
-<div class="control-group">
   <label class="control-label" for="member-form--family_name">${form.family_name.label.text}</label>
   <div class="controls">
     ${form.family_name(id="member-form--family_name", autocomplete="off")}
@@ -148,11 +139,11 @@
   </div>
 </div>
 <div class="control-group">
-  <label class="control-label" for="member-form--given_name_kana">${form.given_name_kana.label.text}</label>
+  <label class="control-label" for="member-form--given_name">${form.given_name.label.text}</label>
   <div class="controls">
-    ${form.given_name_kana(id="member-form--given_name_kana", autocomplete="off")}
-    %if form.given_name_kana.errors:
-    <span class="help-inline">${u' / '.join(form.given_name_kana.errors)}</span>
+    ${form.given_name(id="member-form--given_name", autocomplete="off")}
+    %if form.given_name.errors:
+    <span class="help-inline">${u' / '.join(form.given_name.errors)}</span>
     % endif
   </div>
 </div>
@@ -162,6 +153,15 @@
     ${form.family_name_kana(id="member-form--family_name_kana", autocomplete="off")}
     %if form.family_name_kana.errors:
     <span class="help-inline">${u' / '.join(form.family_name_kana.errors)}</span>
+    % endif
+  </div>
+</div>
+<div class="control-group">
+  <label class="control-label" for="member-form--given_name_kana">${form.given_name_kana.label.text}</label>
+  <div class="controls">
+    ${form.given_name_kana(id="member-form--given_name_kana", autocomplete="off")}
+    %if form.given_name_kana.errors:
+    <span class="help-inline">${u' / '.join(form.given_name_kana.errors)}</span>
     % endif
   </div>
 </div>
