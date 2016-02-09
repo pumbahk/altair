@@ -50,6 +50,7 @@ def main(argv=sys.argv[1:]):
 
     env = bootstrap(args.config)
     registry = env['registry']
+    request = env['request']
     session = get_global_db_session(registry, 'famiport')
 
     auto_complete_delta = None
@@ -74,7 +75,7 @@ def main(argv=sys.argv[1:]):
             _logger.info('get a multiple lock')
             errors = completer.get_setup_errors()
             if not errors:
-                successes, fails = completer.complete_all(session)
+                successes, fails = completer.complete_all(session, request)
                 _logger.info(
                     'famiport auto complete finished: success={}, failed={}'.format(
                         successes, fails))
