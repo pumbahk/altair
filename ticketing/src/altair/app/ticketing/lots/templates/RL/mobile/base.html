@@ -1,11 +1,11 @@
 <html lang="ja">
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <title><%block name="title">楽天レジャーチケット</%block></title>
+  <title><%block name="title">レジャーチケット</%block></title>
 </head>
 <body>
 <div align="center">
-  <img src="${request.static_url('altair.app.ticketing.lots:static/RL/mobile/img/logo.gif')}" width="240" height="96" alt="楽天レジャーチケット" />
+  <img src="${request.static_url('altair.app.ticketing.lots:static/RL/mobile/img/logo.gif')}" alt="レジャーチケット" />
     % if lot:
       <!--
       <form action="${request.route_path('lots.entry.logout', _query=dict(lot_id=lot.id, event_id=lot.event.id))}" method="POST">

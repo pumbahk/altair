@@ -1,4 +1,4 @@
-<%def name="band(bgcolor='#cc0000', color='#ffffff')">
+<%def name="band(bgcolor='blue', color='#ffffff')">
 <div style="background-color:${bgcolor}" bgcolor="${bgcolor}">
 % if color:
 <font color="${color}">
@@ -9,10 +9,10 @@ ${caller.body()}
 % endif
 </div>
 </%def>
-<%def name="header(markercolor='#cc0000')">
+<%def name="header(markercolor='blue')">
 <div><font color="${markercolor}">■${caller.body()}</font></div>
 </%def>
-<%def name="line(width=1,color='#cc0000')">
+<%def name="line(width=1,color='blue')">
 <div
 % if color:
   style="background-color:${color}" bgcolor="${color}"
