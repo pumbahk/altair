@@ -34,7 +34,7 @@ def salvage_order(context, request):
     session = get_db_session(request, 'famiport')
     completer = request.registry.queryUtility(IFamiPortOrderAutoCompleter)
     try:
-        completer.complete(session, receipt_id)
+        completer.complete(session, request, receipt_id)
     except InvalidReceiptStatusError:
         # 正常系
         pass
