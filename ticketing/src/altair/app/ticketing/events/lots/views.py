@@ -145,7 +145,7 @@ class Lots(BaseView):
             h=h,
             )
 
-    @view_config(route_name='lots.new', renderer='altair.app.ticketing:templates/lots/new.html', permission='event_viewer')
+    @view_config(route_name='lots.new', renderer='altair.app.ticketing:templates/lots/edit.html', permission='event_viewer')
     def new(self):
         event = self.context.event
         if event is None:
