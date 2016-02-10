@@ -23,6 +23,16 @@ body {
 	float: left;
 	width: 630px;
 }
+#tsTableBody {
+    vertical-align: top;
+}
+#tsMainLeft img{
+    padding-right: 15px;
+    padding-bottom: 15px;
+}
+#tsMainRight p{
+    vertical-align: top;
+}
 #tsContents #tsSideArea {
 	margin-left: 650px;
 	width: 300px;
@@ -74,9 +84,9 @@ body {
 #tsMainArea #tsTopics h3 {
 /*	background: url(../../_images/ttl_h3_default.jpg) no-repeat 0 0;
 	height: 37px;*/
-	background: #c42d32;
+	background: #FFD464;
 	font-weight: bold;
-	color: #EBEBEB;
+	color: #000;
 	font-size: 1.3em;
 	padding: 10px 20px;
 	-moz-border-top-left-radius:3px;
@@ -239,9 +249,9 @@ body {
 	padding: 10px;
 }
 #tsSaleTicketInfo h3 {
-	background: #c42d32;	
+	background: #FFD464;
 	font-weight: bold;
-	color: #EBEBEB;
+	color: #000;
 	font-size: 1.3em;
 	padding: 10px 20px;
 	-moz-border-top-left-radius:3px;
@@ -295,7 +305,7 @@ body {
 	/*width: 300px;
 	height: 26px;
 	background: url(../../_images/ttl_side.jpg) no-repeat 0 0;*/
-	background: #81877d;
+	background: #1253A4;
 	color: #EDEDED;
 	font-weight: bold;
 	font-size: 1.2em;
@@ -367,7 +377,7 @@ body {
 	/*width: 300px;
 	height: 26px;
 	background: url(../../_images/ttl_side.jpg) no-repeat 0 0;*/
-	background: #81877d;
+	background: #1253A4;
 	color: #EDEDED;
 	font-weight: bold;
 	font-size: 1.2em;

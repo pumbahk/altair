@@ -237,13 +237,31 @@ def strip(v):
     return v.strip(u' \t　') if v is not None else None
 
 
-def required(reader, dict_, k):
+def optional(reader, dict_, k, type_=six.text_type):
     if k not in dict_:
+        return Unspecified
+    v = dict_[k]
+    if type_ is not None:
+        if issubclass(type_, six.text_type):
+            if isinstance(v, float):
+                v = u'%g' % v
+            else:
+                v = type_(v)
+        else:
+            v = type_(v)
+    if isinstance(v, six.text_type):
+        v = strip(v)
+    return v
+
+
+def required(reader, dict_, k, type_=six.text_type, allow_blank=False):
+    v = optional(reader, dict_, k, type_)
+    if v is Unspecified or (not allow_blank and v == u''):
         raise MemberImportExportError.from_reader(
             reader, [k],
             u'「%s」は必須です' % reader.column_name_map[k]
             )
-    return strip(dict_[k])
+    return v
 
 
 def validate_length(reader, dict_, k, min, max):
@@ -297,7 +315,13 @@ def parse_datetime(reader, dict_, k):
         return Unspecified
     if isinstance(raw_value, date):
         return raw_value
-    if not isinstance(raw_value, (str, six.text_type)):
+    elif isinstance(raw_value, float):
+        v = raw_value - 1.
+        if v >= 61.: # THE LOTUS 1-2-3 bug
+            v -= 1.
+        days = int(v)
+        return datetime(1900, 1, 1, 0, 0, 0) + timedelta(days=days, microseconds=86400000000.0 * (v - float(days)))
+    elif not isinstance(raw_value, (str, six.text_type)):
         raw_value = six.text_type(raw_value)
     raw_value = strip(raw_value)
     if not raw_value:
@@ -405,12 +429,12 @@ class MemberDataParser(object):
     def convert_to_record(self, reader, raw_record):
         with DictBuilder((MemberImportExportError, )) as b:
             member_set = None
-            b['auth_identifier'] = required(reader, raw_record, u'auth_identifier')
-            b['auth_secret'] = raw_record.get(u'auth_secret') or Unspecified
-            b['name'] = raw_record.get(u'name') or Unspecified
-            b['member_set'] = member_set = self._resolve_member_set(reader, u'member_set', required(reader, raw_record, u'member_set'))
-            b['member_kind'] = member_set and self._resolve_member_kind(reader, u'member_kind', member_set, required(reader, raw_record, u'member_kind'))
-            b['membership_identifier'] = raw_record.get(u'membership_identifier') or Unspecified
+            b['auth_identifier'] = required(reader, raw_record, u'auth_identifier', six.text_type)
+            b['auth_secret'] = optional(reader, raw_record, u'auth_secret', six.text_type)
+            b['name'] = optional(reader, raw_record, u'name', six.text_type)
+            b['member_set'] = member_set = self._resolve_member_set(reader, u'member_set', required(reader, raw_record, u'member_set', six.text_type))
+            b['member_kind'] = member_set and self._resolve_member_kind(reader, u'member_kind', member_set, optional(reader, raw_record, u'member_kind', six.text_type))
+            b['membership_identifier'] = optional(reader, raw_record, u'membership_identifier', six.text_type)
             b['valid_since'] = parse_datetime(reader, raw_record, u'valid_since')
             expire_at = parse_datetime(reader, raw_record, u'expire_at')
             if expire_at is not None and expire_at is not Unspecified:
@@ -605,10 +629,11 @@ class MemberDataImporter(object):
 
     def map_to_member_column(self, record):
         auth_secret = record['auth_secret']
-        if auth_secret.startswith(HASH_SIGNATURE):
-            auth_secret = auth_secret[len(HASH_SIGNATURE):]
-        else:
-            auth_secret = digest_secret(auth_secret, generate_salt())
+        if auth_secret is not Unspecified:
+            if auth_secret.startswith(HASH_SIGNATURE):
+                auth_secret = auth_secret[len(HASH_SIGNATURE):]
+            else:
+                auth_secret = digest_secret(auth_secret, generate_salt())
         return dict(
             id=record['member_id'],
             name=record['name'] or u'',
