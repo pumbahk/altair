@@ -16,8 +16,8 @@ apmv5.1a.vpc.altr	userapp-cart
 apmv5.1c.vpc.altr	userapp-cart
 apmv7.1a.vpc.altr	userapp-cart
 apmv7.1c.vpc.altr	userapp-cart
-apmv8.1a.vpc.altr	userapp-cart
-apmv8.1c.vpc.altr	userapp-cart
+apmv8.1a.vpc.altr	userapp-cart-api
+apmv8.1c.vpc.altr	userapp-cart-api
 apmv9.1a.vpc.altr	userapp-cart
 apmv9.1c.vpc.altr	userapp-cart
 apmv11.1a.vpc.altr	userapp-cart
@@ -28,6 +28,16 @@ apmv13.1a.vpc.altr	userapp-cart
 apmv13.1c.vpc.altr	userapp-cart
 apmv14.1a.vpc.altr	userapp-cart
 apmv14.1c.vpc.altr	userapp-cart
+apmv15.1a.vpc.altr	userapp-cart
+apmv15.1c.vpc.altr	userapp-cart
+apmv16.1a.vpc.altr	userapp-cart
+apmv16.1c.vpc.altr	userapp-cart
+apmv17.1a.vpc.altr	userapp-cart
+apmv17.1c.vpc.altr	userapp-cart
+apmv18.1a.vpc.altr	userapp-cart
+apmv18.1c.vpc.altr	userapp-cart
+apmv19.1a.vpc.altr	userapp-cart
+apmv19.1c.vpc.altr	userapp-cart
 
 apcv1.1c.vpc.altr	sej
 apcv1.1a.vpc.altr	sej
