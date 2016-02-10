@@ -4,6 +4,7 @@ from zope.interface import implementer
 from pyramid.threadlocal import get_current_request
 import sqlalchemy as sa
 from sqlalchemy import orm
+from sqlalchemy.sql import functions as sqlf
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
 from altair.models import Identifier
 from altair.models import MutableSpaceDelimitedList, SpaceDelimitedList, MutationDict, JSONEncodedDict
@@ -15,14 +16,14 @@ Base = declarative_base()
 class WithCreatedAt(object):
     @declared_attr
     def created_at(self):
-        return sa.Column(sa.DateTime(), nullable=False, default=datetime.now, server_default=sa.text(u'CURRENT_TIMESTAMP()'))
+        return sa.Column(sa.DateTime(), nullable=False, default=datetime.now, server_default=sqlf.current_timestamp())
 
 
 class Organization(Base):
     __tablename__ = 'Organization'
     id = sa.Column(Identifier, autoincrement=True, primary_key=True, nullable=False)
     short_name = sa.Column(sa.Unicode(32), nullable=False)
-    canonical_host_name = sa.Column(sa.Unicode(128), sa.ForeignKey('Host.host_name'), nullable=True)
+    canonical_host_name = sa.Column(sa.Unicode(128), sa.ForeignKey('Host.host_name', use_alter=True, name=u'Organization_ibfk_1'), nullable=True)
     maximum_oauth_scope = sa.Column(MutableSpaceDelimitedList.as_mutable(SpaceDelimitedList(255)), nullable=False, default=u'')
     maximum_oauth_client_expiration_time = sa.Column(sa.Integer(), nullable=False, default=63072000)
     invalidate_client_http_session_on_access_token_revocation = sa.Column(sa.Boolean(), nullable=False, default=False)
@@ -77,6 +78,22 @@ class Member(Base, WithCreatedAt):
     auth_secret = sa.Column(sa.Unicode(128), nullable=True)
     member_set = orm.relationship('MemberSet', backref='member_sets')
     enabled = sa.Column(sa.Boolean(), nullable=False, default=True)
+
+    email = sa.Column(sa.Unicode(255), nullable=True)
+    given_name = sa.Column(sa.Unicode(255), nullable=True)
+    family_name = sa.Column(sa.Unicode(255), nullable=True)
+    given_name_kana = sa.Column(sa.Unicode(255), nullable=True)
+    family_name_kana = sa.Column(sa.Unicode(255), nullable=True)
+    birthday = sa.Column(sa.Date(), nullable=True)
+    gender = sa.Column(sa.Integer, nullable=True)
+    country = sa.Column(sa.Unicode(64), nullable=True)
+    zip = sa.Column(sa.Unicode(32), nullable=True)
+    prefecture = sa.Column(sa.Unicode(128), nullable=True)
+    city = sa.Column(sa.Unicode(255), nullable=True)
+    address_1 = sa.Column(sa.Unicode(255), nullable=True)
+    address_2 = sa.Column(sa.Unicode(255), nullable=True)
+    tel_1 = sa.Column(sa.Unicode(32), nullable=True)
+    tel_2 = sa.Column(sa.Unicode(32), nullable=True)
 
     def query_valid_memberships(self, now):
         return [

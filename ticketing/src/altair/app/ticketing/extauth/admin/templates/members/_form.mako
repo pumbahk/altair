@@ -120,3 +120,139 @@
   </div>
   <span class="help-inline">${u' / '.join(error for error in form.memberships.errors if isinstance(error, basestring))}</span>
 </div>
+<div class="control-group">
+  <label class="control-label" for="member-form--email">${form.email.label.text}</label>
+  <div class="controls">
+    ${form.email(id="member-form--email", autocomplete="off")}
+    %if form.email.errors:
+    <span class="help-inline">${u' / '.join(form.email.errors)}</span>
+    % endif
+  </div>
+</div>
+<div class="control-group">
+  <label class="control-label" for="member-form--family_name">${form.family_name.label.text}</label>
+  <div class="controls">
+    ${form.family_name(id="member-form--family_name", autocomplete="off")}
+    %if form.family_name.errors:
+    <span class="help-inline">${u' / '.join(form.family_name.errors)}</span>
+    % endif
+  </div>
+</div>
+<div class="control-group">
+  <label class="control-label" for="member-form--given_name">${form.given_name.label.text}</label>
+  <div class="controls">
+    ${form.given_name(id="member-form--given_name", autocomplete="off")}
+    %if form.given_name.errors:
+    <span class="help-inline">${u' / '.join(form.given_name.errors)}</span>
+    % endif
+  </div>
+</div>
+<div class="control-group">
+  <label class="control-label" for="member-form--family_name_kana">${form.family_name_kana.label.text}</label>
+  <div class="controls">
+    ${form.family_name_kana(id="member-form--family_name_kana", autocomplete="off")}
+    %if form.family_name_kana.errors:
+    <span class="help-inline">${u' / '.join(form.family_name_kana.errors)}</span>
+    % endif
+  </div>
+</div>
+<div class="control-group">
+  <label class="control-label" for="member-form--given_name_kana">${form.given_name_kana.label.text}</label>
+  <div class="controls">
+    ${form.given_name_kana(id="member-form--given_name_kana", autocomplete="off")}
+    %if form.given_name_kana.errors:
+    <span class="help-inline">${u' / '.join(form.given_name_kana.errors)}</span>
+    % endif
+  </div>
+</div>
+<div class="control-group">
+  <label class="control-label" for="member-form--birthday">${form.birthday.label.text}</label>
+  <div class="controls">
+    ${form.birthday(autocomplete="off")}
+    %if form.birthday.errors:
+    <span class="help-inline">${u' / '.join(form.birthday.errors)}</span>
+    % endif
+  </div>
+</div>
+<div class="control-group">
+  <label class="control-label" for="member-form--gender">${form.gender.label.text}</label>
+  <div class="controls">
+    ${form.gender(id="member-form--gender", autocomplete="off")}
+    %if form.gender.errors:
+    <span class="help-inline">${u' / '.join(form.gender.errors)}</span>
+    % endif
+  </div>
+</div>
+<div class="control-group">
+  <label class="control-label" for="member-form--country">${form.country.label.text}</label>
+  <div class="controls">
+    ${form.country(id="member-form--country", autocomplete="off")}
+    %if form.country.errors:
+    <span class="help-inline">${u' / '.join(form.country.errors)}</span>
+    % endif
+  </div>
+</div>
+<div class="control-group">
+  <label class="control-label" for="member-form--zip">${form.zip.label.text}</label>
+  <div class="controls">
+    ${form.zip(id="member-form--zip", autocomplete="off")}
+    %if form.zip.errors:
+    <span class="help-inline">${u' / '.join(form.zip.errors)}</span>
+    % endif
+  </div>
+</div>
+<div class="control-group">
+  <label class="control-label" for="member-form--prefecture">${form.prefecture.label.text}</label>
+  <div class="controls">
+    ${form.prefecture(id="member-form--prefecture", autocomplete="off")}
+    %if form.prefecture.errors:
+    <span class="help-inline">${u' / '.join(form.prefecture.errors)}</span>
+    % endif
+  </div>
+</div>
+<div class="control-group">
+  <label class="control-label" for="member-form--city">${form.city.label.text}</label>
+  <div class="controls">
+    ${form.city(id="member-form--city", autocomplete="off")}
+    %if form.city.errors:
+    <span class="help-inline">${u' / '.join(form.city.errors)}</span>
+    % endif
+  </div>
+</div>
+<div class="control-group">
+  <label class="control-label" for="member-form--address_1">${form.address_1.label.text}</label>
+  <div class="controls">
+    ${form.address_1(id="member-form--address_1", autocomplete="off")}
+    %if form.address_1.errors:
+    <span class="help-inline">${u' / '.join(form.address_1.errors)}</span>
+    % endif
+  </div>
+</div>
+<div class="control-group">
+  <label class="control-label" for="member-form--address_2">${form.address_2.label.text}</label>
+  <div class="controls">
+    ${form.address_2(id="member-form--address_2", autocomplete="off")}
+    %if form.address_2.errors:
+    <span class="help-inline">${u' / '.join(form.address_2.errors)}</span>
+    % endif
+  </div>
+</div>
+<div class="control-group">
+  <label class="control-label" for="member-form--tel_1">${form.tel_1.label.text}</label>
+  <div class="controls">
+    ${form.tel_1(id="member-form--tel_1", autocomplete="off")}
+    %if form.tel_1.errors:
+    <span class="help-inline">${u' / '.join(form.tel_1.errors)}</span>
+    % endif
+  </div>
+</div>
+<div class="control-group">
+  <label class="control-label" for="member-form--tel_2">${form.tel_2.label.text}</label>
+  <div class="controls">
+    ${form.tel_2(id="member-form--tel_2", autocomplete="off")}
+    %if form.tel_2.errors:
+    <span class="help-inline">${u' / '.join(form.tel_2.errors)}</span>
+    % endif
+  </div>
+</div>
+

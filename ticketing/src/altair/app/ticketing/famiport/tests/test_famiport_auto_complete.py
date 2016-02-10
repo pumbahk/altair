@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import six
 from unittest import TestCase
+from pyramid.testing import DummyRequest
 from datetime import (
     datetime,
     timedelta,
@@ -345,16 +346,17 @@ class FamiPortOrderAutoCompleterTest(TestCase):
         now_ = datetime(2015, 1, 1, 1, 30, 0)
         registry = mock.Mock()
         session = mock.Mock()
+        request = DummyRequest()
         target = self._create(registry, self.expiry)
         receipt = FamiPortReceiptFakeFactory.create(now_ - self.expiry)
         receipt.id = receipt_id
         target._get_receipt = mock.Mock(return_value=receipt)
         target._do_complete = mock.Mock()
         target._notify = mock.Mock()
-        target.complete(session, receipt_id, now_)
+        target.complete(session, request, receipt_id, now_)
         self.assertFalse(target._no_commit)
         self.assertEqual(target._get_receipt.call_args, mock.call(session, receipt_id))
-        self.assertEqual(target._do_complete.call_args, mock.call(session, receipt, now_))
+        self.assertEqual(target._do_complete.call_args, mock.call(session, request, receipt, now_))
         self.assertEqual(session.add.call_args, mock.call(receipt))
         self.assertTrue(session.commit.called)
         self.assertEqual(target._notify.call_args, mock.call(session, receipt, now_))
@@ -365,6 +367,7 @@ class FamiPortOrderAutoCompleterTest(TestCase):
         now_ = datetime(2015, 1, 1, 1, 30, 0)
         registry = mock.Mock()
         session = mock.Mock()
+        request = DummyRequest()
         target = self._create(registry, self.expiry)
         receipt = FamiPortReceiptFakeFactory.create(now_)
         receipt.id = receipt_id
@@ -372,7 +375,7 @@ class FamiPortOrderAutoCompleterTest(TestCase):
         target._get_receipt = mock.Mock(return_value=receipt)
         target._notify = mock.Mock()
         with self.assertRaises(InvalidReceiptStatusError):
-            target.complete(session, receipt_id, now_)
+            target.complete(session, request, receipt_id, now_)
 
 
 class FamiPortOrderAutoCopleter_complete_Test(TestCase):
@@ -411,11 +414,12 @@ class FamiPortOrderAutoCopleter_complete_Test(TestCase):
         receipt.id = receipt_id
         registry = mock.Mock()
         session = mock.Mock()
+        request = DummyRequest()
         target = self._create(registry=registry, expiry=self.expiry)
         target._get_receipt = mock.Mock(return_value=receipt)
         target._notify = mock.Mock(return_value=receipt)
         with self.assertRaises(InvalidReceiptStatusError):
-            target.complete(session, receipt_id)
+            target.complete(session, request, receipt_id)
         self.assertIsNone(receipt.rescued_at)
         self.assertIsNone(receipt.completed_at)
 
@@ -433,12 +437,15 @@ class FamiPortOrderAutoCopleter_complete_Test(TestCase):
             payment_request_received_at=ago
             )
         receipt.id = receipt_id
+        receipt.famiport_order.mark_issued = mock.Mock()
+        receipt.famiport_order.mark_paid = mock.Mock()
         registry = mock.Mock()
         session = mock.Mock()
+        request = DummyRequest()
         target = self._create(registry=registry, expiry=self.expiry)
         target._get_receipt = mock.Mock(return_value=receipt)
         target._notify = mock.Mock(return_value=receipt)
-        target.complete(session, receipt_id)
+        target.complete(session, request, receipt_id)
         self.assertTrue(receipt.rescued_at)
         self.assertTrue(receipt.completed_at)
 
@@ -497,14 +504,15 @@ class FamiPortOrderAutoCompleteRunnerTest(TestCase):
         Receipt = namedtuple('Receipt', 'id')
         receipts = [Receipt(id=ii) for ii in range(count)]
         registry = mock.Mock()
+        request = DummyRequest()
         target = self._create(registry, delta=delta)
         target._fetch_target_famiport_receipt_ids = lambda *args, **kwds: receipts
         complete = mock.Mock()
         target._completer.complete = complete
         target.time_point = datetime.now()
         session = mock.Mock()
-        sucess_receipt_ids, failed_receipt_ids = target.complete_all(session)
-        exp_call_argrs_list = [mock.call(session, ii, target.time_point)
+        sucess_receipt_ids, failed_receipt_ids = target.complete_all(session, request)
+        exp_call_argrs_list = [mock.call(session, request, ii, target.time_point)
                                for ii in range(count)]
         self.assertEqual(complete.call_args_list, exp_call_argrs_list)
         self.assertEqual(sucess_receipt_ids, range(count))
@@ -518,14 +526,15 @@ class FamiPortOrderAutoCompleteRunnerTest(TestCase):
         Receipt = namedtuple('Receipt', 'id')
         receipts = [Receipt(id=ii) for ii in range(count)]
         registry = mock.Mock()
+        request = DummyRequest()
         target = self._create(registry, delta)
         target._fetch_target_famiport_receipt_ids = lambda *args, **kwds: receipts
         complete = mock.Mock(side_effect=InvalidReceiptStatusError())
         target._completer.complete = complete
         target.time_point = datetime.now()
         session = mock.Mock()
-        sucess_receipt_ids, failed_receipt_ids = target.complete_all(session)
-        exp_call_argrs_list = [mock.call(session, ii, target.time_point)
+        sucess_receipt_ids, failed_receipt_ids = target.complete_all(session, request)
+        exp_call_argrs_list = [mock.call(session, request, ii, target.time_point)
                                for ii in range(count)]
         self.assertEqual(complete.call_args_list, exp_call_argrs_list)
         self.assertEqual(sucess_receipt_ids, [])

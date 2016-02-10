@@ -280,7 +280,7 @@ class FamiPortOrderAutoCompleter(object):
            and receipt.canceled_at is None \
            and receipt.payment_request_received_at <= now - self._expiry
 
-    def complete(self, session, receipt_id, now_=None):
+    def complete(self, session, request, receipt_id, now_=None):
         """FamiPortReceiptを90VOID救済する
 
         no_commitが指定されていない場合はDBへのcommitをしません。
@@ -294,7 +294,7 @@ class FamiPortOrderAutoCompleter(object):
             raise NoSuchReceiptError('%d' % receipt_id)
         if self.can_auto_complete(receipt, now_):
             _logger.debug('completing: FamiPortReceipt.id={}'.format(receipt.id))
-            self._do_complete(session, receipt, now_)
+            self._do_complete(session, request, receipt, now_)
             if not self._no_commit:
                 session.add(receipt)
                 session.commit()
@@ -314,22 +314,22 @@ class FamiPortOrderAutoCompleter(object):
             )
         self._notifier.notify(data=context, now_=now_)
 
-    def _do_complete(self, session, receipt, now_):
+    def _do_complete(self, session, request, receipt, now_):
         """FamiPortOrderを完了状態にする"""
         receipt.rescued_at = now_
-        receipt.completed_at = now_
+        receipt.mark_completed(now_, request)
         if receipt.famiport_order.type == FamiPortOrderType.CashOnDelivery.value:
-            receipt.famiport_order.paid_at = now_
-            receipt.famiport_order.issued_at = now_
+            receipt.famiport_order.mark_issued(now_, request)
+            receipt.famiport_order.mark_paid(now_, request)
         elif receipt.famiport_order.type == FamiPortOrderType.Ticketing.value:
-            receipt.famiport_order.issued_at = now_
+            receipt.famiport_order.mark_issued(now_, request)
         elif receipt.famiport_order.type == FamiPortOrderType.PaymentOnly.value:
-            receipt.famiport_order.paid_at = now_
+            receipt.famiport_order.mark_paid(now_, request)
         elif receipt.famiport_order.type == FamiPortOrderType.Payment.value:
             if receipt.type == FamiPortReceiptType.Payment.value:
-                receipt.famiport_order.paid_at = now_
+                receipt.famiport_order.mark_paid(now_, request)
             elif receipt.type == FamiPortReceiptType.Ticketing.value:
-                receipt.famiport_order.issued_at = now_
+                receipt.famiport_order.mark_issued(now_, request)
 
 
     def _get_receipt(self, session, receipt_id):
@@ -360,13 +360,13 @@ class FamiPortOrderAutoCompleteRunner(object):
     def time_point(self):
         return _get_now() - self._delta
 
-    def complete_all(self, session):
+    def complete_all(self, session, request):
         success_receipt_ids = []
         failed_receipt_ids = []
         for receipt_value in self._fetch_target_famiport_receipt_ids(session):
             receipt_id = receipt_value.id
             try:
-                self._completer.complete(session, receipt_id, self.time_point)
+                self._completer.complete(session, request, receipt_id, self.time_point)
             except InvalidReceiptStatusError as err:
                 _logger.error(err)
                 failed_receipt_ids.append(receipt_id)
