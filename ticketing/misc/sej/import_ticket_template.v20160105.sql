@@ -64,7 +64,7 @@ body {
 
 #FIXMSG01 {
   font-family: "ＭＳ ゴシック";
-  font-size: 6.5pt;
+  font-size: 7pt;
   position: absolute;
   left: 143px;
   top: 159px;
@@ -73,7 +73,7 @@ body {
 
 #FIXMSG02 {
   font-family: "ＭＳ ゴシック";
-  font-size: 6pt;
+  font-size: 7pt;
   font-weight: bold;
   position: absolute;
   left: 50px;
@@ -83,62 +83,62 @@ body {
 /* 発券店：セブン-イレブン */
 #FIXMSG03 {
   font-family: "ＭＳ ゴシック";
-  font-size: 6pt;
+  font-size: 7pt;
   font-weight: bold;
   position: absolute;
   left: 50px;
-  top: 178px;
+  top: 216px;
   width: 5em;
 }
 
 /* 払込票 */
 #FIXMSG04 {
   font-family: "ＭＳ ゴシック";
-  font-size: 6pt;
+  font-size: 7pt;
   font-weight: bold;
   position: absolute;
   left: 50px;
-  top: 187px;
+  top: 225px;
   width: 5em;
 }
 
 #FIXMSG05 {
   font-family: "ＭＳ ゴシック";
-  font-size: 6pt;
+  font-size: 7pt;
   font-weight: bold;
   position: absolute;
   left: 420px;
-  top: 178px;
+  top: 216px;
 }
 
 #FIXMSG06 {
   font-family: "ＭＳ ゴシック";
-  font-size: 6pt;
+  font-size: 7pt;
   font-weight: bold;
   position: absolute;
   left: 420px;
-  top: 187px;
+  top: 225px;
 }
 
 /* 再発券印字 使用していない */
 #FIXTAG01 {
   font-family: "ＭＳ ゴシック";
-  font-size: 6pt;
+  font-size: 7pt;
   font-weight: bold;
   position: absolute;
   left: 330px;
-  top: 178px;
+  top: 216px;
   white-space: nowrap;
 }
 
 /* 発券店名 */
 #FIXTAG02 {
   font-family: "ＭＳ ゴシック";
-  font-size: 6pt;
+  font-size: 7pt;
   font-weight: bold;
   position: absolute;
   left: 83px;
-  top: 178px;
+  top: 216px;
   width: 16em;
   white-space: nowrap;
 }
@@ -150,7 +150,7 @@ body {
   font-weight: bold;
   position: absolute;
   left: 285px;
-  top: 178px;
+  top: 216px;
   width: 8em;
   white-space: nowrap;
 }
@@ -158,11 +158,11 @@ body {
 /* 発券日時 */
 #FIXTAG04 {
   font-family: "ＭＳ ゴシック";
-  font-size: 6pt;
+  font-size: 7pt;
   font-weight: bold;
   position: absolute;
   left: 180px;
-  top: 187px;
+  top: 225px;
   width: 10em;
   white-space: nowrap;
 }
@@ -174,7 +174,7 @@ body {
   font-weight: bold;
   position: absolute;
   left: 83px;
-  top: 187px;
+  top: 225px;
   width: 7em;
   white-space: nowrap;
 }
@@ -186,7 +186,7 @@ body {
   font-weight: bold;
   position: absolute;
   left: 285px;
-  top: 187px;
+  top: 225px;
   width: 5em;
   white-space: nowrap;
 }
@@ -983,7 +983,7 @@ body {
 
 #FIXMSG01 {
   font-family: "ＭＳ ゴシック";
-  font-size: 6.5pt;
+  font-size: 7pt;
   position: absolute;
   left: 143px;
   top: 197px;
@@ -992,7 +992,7 @@ body {
 
 #FIXMSG02 {
   font-family: "ＭＳ ゴシック";
-  font-size: 6pt;
+  font-size: 7pt;
   font-weight: bold;
   position: absolute;
   left: 50px;
@@ -1002,7 +1002,7 @@ body {
 /* 発券店：セブン-イレブン */
 #FIXMSG03 {
   font-family: "ＭＳ ゴシック";
-  font-size: 6pt;
+  font-size: 7pt;
   font-weight: bold;
   position: absolute;
   left: 50px;
@@ -1012,7 +1012,7 @@ body {
 
 #FIXMSG05 {
   font-family: "ＭＳ ゴシック";
-  font-size: 6pt;
+  font-size: 7pt;
   font-weight: bold;
   position: absolute;
   left: 420px;
@@ -1021,7 +1021,7 @@ body {
 
 #FIXMSG06 {
   font-family: "ＭＳ ゴシック";
-  font-size: 6pt;
+  font-size: 7pt;
   font-weight: bold;
   position: absolute;
   left: 420px;
@@ -1031,7 +1031,7 @@ body {
 /* 再発券印字 使用していない */
 #FIXTAG01 {
   font-family: "ＭＳ ゴシック";
-  font-size: 6pt;
+  font-size: 7pt;
   font-weight: bold;
   position: absolute;
   left: 330px;
@@ -1042,7 +1042,7 @@ body {
 /* 発券店名 */
 #FIXTAG02 {
   font-family: "ＭＳ ゴシック";
-  font-size: 6pt;
+  font-size: 7pt;
   font-weight: bold;
   position: absolute;
   left: 83px;
@@ -1066,7 +1066,7 @@ body {
 /* 発券日時 */
 #FIXTAG04 {
   font-family: "ＭＳ ゴシック";
-  font-size: 6pt;
+  font-size: 7pt;
   font-weight: bold;
   position: absolute;
   left: 180px;
@@ -1102,7 +1102,7 @@ body {
 /* 引換票・払込票 */
 #FIXTAG07 {
   font-family: "ＭＳ ゴシック";
-  font-size: 6pt;
+  font-size: 7pt;
   font-weight: bold;
   position: absolute;
   left: 50px;
