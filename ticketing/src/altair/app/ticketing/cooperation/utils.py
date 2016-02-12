@@ -87,11 +87,11 @@ class UnicodeType(RawType):
 class IntegerType(RawType):
     @classmethod
     def encode(cls, value):
-        return str(value) if not (value is None) else ''
+        return str(value) if not (value is None) and (value.isdigit()) else ''
 
     @classmethod
     def decode(cls, value):
-        return int(value) if not (value is '') else None
+        return int(value) if not (value is '') and (value.isdigit()) else None
 
 
 class DateTimeType(RawType):
