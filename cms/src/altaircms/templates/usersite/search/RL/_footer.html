@@ -1,13 +1,3 @@
-<div id="pageanchor" style="clear:both;float: right">
-    % if layout.get_genre_tree_with_nestlevel_from_page(page):
-        % for index, f, genre in layout.get_genre_tree_with_nestlevel_from_page(page):
-            % if index == 1:
-                <a href="#pagetop">${genre.label}のチケット ページ上部へ</a><br/><br/>
-            % endif
-        % endfor
-    % endif
-</div>
-
 % if page:
   <!-- ========== description ========== -->
   <div id="pagedescription" style="clear:both;">
@@ -17,39 +7,6 @@
 
 <div id="grpRakutenLinkArea">
 
-<div id="serviceList">
-  <dl>
-    % if layout.get_genre_tree_with_nestlevel_from_page(page):
-      <!-- # genreがあるページ -->
-      <dl>
-        % for index, f, genre in layout.get_genre_tree_with_nestlevel_from_page(page):
-          % if index == 1:
-            <dt><a href="${h.link.get_link_from_genre(request, genre)}">${genre.label}</a></dt>
-          % else:
-            <dd>
-              <ul>
-                <li><a href="${h.link.get_link_from_genre(request, genre)}">${genre.label}</a></li>
-              </ul>
-            </dd>
-          % endif
-        % endfor
-      </dl>
-    % else:
-      % for genre in layout.top_category_genre_list:
-        <dl>
-          <dt><a href="${h.link.get_link_from_genre(request, genre)}">${genre.label}</a></dt>
-            <dd>
-              % for subgenre in layout.get_subgenre_list_from_genre(genre):
-                <ul>
-                  <li><a href="${h.link.get_link_from_genre(request, subgenre)}">${subgenre.label}</a></li>
-                </ul>
-              % endfor
-            </dd>
-          </dl>
-        % endfor
-      % endif
-    </dl>
-</div><!-- /div#serviceList -->
 </div><!-- /div#grpRakutenLinkArea -->
 
 <div id="grpFooter">
