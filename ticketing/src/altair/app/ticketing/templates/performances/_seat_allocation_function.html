@@ -874,7 +874,7 @@ function buildCannotStockActionModal(stocks, message){
     modal.show();
 }
 
-function buildCannotSeatConvertModal(errors, cannot_converts){
+function buildCannotSeatConvertModal(errors, cannot_converts, data_error){
     var msg = '';
     var modal = $('#modal-cannot-seat-convert');
     var message = modal.find('#cannot-seat-action-message');
@@ -911,6 +911,20 @@ function buildCannotSeatConvertModal(errors, cannot_converts){
         });
         body.append(header);
         body.append(cannot_convert_table);
+    }
+    if (data_error.length > 0){
+        var header = $('<h4>不正データがあります</h4>')
+        var data_error_table = $("<table><tr>"+
+                                 "<td bgcolor='red'>不正な座席番号</td>"+
+                                 "</tr></table>");
+        $.each(data_error, function(index, ex_l0_id){
+            var row = $("<tr>"+
+                        "<td bgcolor='red'>"+ex_l0_id+"</td>" +
+                        "</tr>");
+            data_error_table.append(row);
+        });
+        body.append(header);
+        body.append(data_error_table);
     }
     if (errors.length > 0 ||  cannot_converts.length > 0){
         msg += 'があります。';
@@ -1045,6 +1059,7 @@ function select_seats_by_csv(){
     var url = "${request.route_path('cooperation.get_seat_l0_ids', performance_id=performance.id)}"
     var venue = venueEditorRoot.venueeditor('model');
     var errors = [];
+    var data_error = [];
     var cannot_converts = [];
     var msg = '';
     fd = new FormData($form[0]);
@@ -1060,6 +1075,10 @@ function select_seats_by_csv(){
                 cannot_converts.push(ex_l0_id);
             });
 
+            for (var name in data.fail){
+                data_error.push(data.fail[name]);
+            }
+
             for (var name in data.success){
                 var l0_id = data.success[name];
                 venue.seats.each(function(seat){
@@ -1072,7 +1091,7 @@ function select_seats_by_csv(){
                     }
                 });
             }
-            buildCannotSeatConvertModal(errors, cannot_converts);
+            buildCannotSeatConvertModal(errors, cannot_converts, data_error);
         },
         error: function(xhr, text) {
             var responseText = JSON.parse(xhr.responseText);
