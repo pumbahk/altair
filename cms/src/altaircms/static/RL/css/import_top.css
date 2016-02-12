@@ -1,5 +1,6 @@
 ﻿@charset "utf-8";
 
+@import url("all.css"); /* Reset CSS */
 @import url("common.css"); /* Reset CSS */
 @import url("grpRakutenCommon.css");  /* grpRakuten Header */
 @import url("top.css"); /* RakutenTicket TOP PAGE CSS */
