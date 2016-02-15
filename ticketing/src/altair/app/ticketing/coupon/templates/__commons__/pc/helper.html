@@ -7,7 +7,14 @@
       % for element in item.elements:
         % for token in element.tokens:
         <tr>
-          <td class="textR ticket_col">${element.product_item.name}</td>
+          <td class="textR ticket_col">
+            ${element.product_item.name}
+            % if token.seat:
+              <div>
+                ${token.seat.name}
+              </div>
+            % endif
+          </td>
           <td class="textR">
             % if order.is_canceled():
               キャンセル済みです
