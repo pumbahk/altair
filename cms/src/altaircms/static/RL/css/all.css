@@ -1763,7 +1763,7 @@ td.event img {
 
 /* .detailBox {{{ */
 .detailBox {
-    width: 690px;
+    width: 950px;
     margin: 0 auto 20px auto;
     background: url(../img/detail/bg_box_bottom.gif) no-repeat left bottom;
 }
@@ -2744,9 +2744,43 @@ h2.sidebar-heading {
 }
 /* }}} */
 
-h1.detail-title {
-    font-size: 200%;
+h1.detail-title{
+position: relative;
+margin: 0 0 15px;
+background: #1253a4 none repeat scroll 0 0;
+-moz-border-radius: 20px;
+-webkit-border-radius: 20px;
+border-radius: 20px;
+line-height: 2.2em;
+text-indent: 22px;
+font-size: 150%;
+color: #FFF;
 }
+
+h1.detail-title::before {
+content: "";
+border-left: 8px solid #fff000;
+padding: 0 0 0 8px;
+}
+
+h1.detail-title::after {
+content: "";
+position: absolute;
+top: 100%;
+left: 3%;
+width: 0;
+height: 0;
+
+-moz-border-bottom-colors: none;
+-moz-border-left-colors: none;
+-moz-border-right-colors: none;
+-moz-border-top-colors: none;
+
+border-color: #1253a4 transparent transparent;
+border-style: solid;
+border-width: 10px;
+}
+
 
 /* .detail {{{ */
 .detail.heading {

@@ -10,6 +10,8 @@ wkmv1.1a.vpc.altr	worker
 wkmv1.1c.vpc.altr	worker
 apmv2.1a.vpc.altr	userapp-usersite
 apmv2.1c.vpc.altr	userapp-usersite
+apmv3.1a.vpc.altr	userapp-usersite
+apmv3.1c.vpc.altr	userapp-usersite
 apmv4.1a.vpc.altr	userapp-usersite
 apmv4.1c.vpc.altr	userapp-usersite
 apmv5.1a.vpc.altr	userapp-cart
@@ -36,8 +38,8 @@ apmv17.1a.vpc.altr	userapp-cart
 apmv17.1c.vpc.altr	userapp-cart
 apmv18.1a.vpc.altr	userapp-cart
 apmv18.1c.vpc.altr	userapp-cart
-apmv19.1a.vpc.altr	userapp-cart
-apmv19.1c.vpc.altr	userapp-cart
+apmv19.1a.vpc.altr	userapp-extauth
+apmv19.1c.vpc.altr	userapp-extauth
 
 apcv1.1c.vpc.altr	sej
 apcv1.1a.vpc.altr	sej
