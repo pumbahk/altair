@@ -8,6 +8,7 @@ import cgi
 import six
 import base64
 from urlparse import urljoin
+from datetime import datetime
 from zope.interface import implementer
 from altair.oauth_auth.interfaces import IOAuthAPIFactory, IOAuthNegotiator, IOAuthAPI
 from altair.oauth_auth.exceptions import OAuthAPICommunicationError
@@ -41,20 +42,28 @@ class OAuthAPIBase(object):
 
 @implementer(IOAuthNegotiator)
 class OAuthNegotiator(OAuthAPIBase):
-    def __init__(self, opener_factory, endpoint, revocation_endpoint, client_credentials, encoding='utf-8'):
+    def __init__(self, opener_factory, endpoint, revocation_endpoint, client_credentials, encoding='utf-8', timeout=10):
         self.opener_factory = opener_factory
         self.endpoint = endpoint
         self.revocation_endpoint = revocation_endpoint
         self.client_credentials = client_credentials
         self.encoding = encoding
+        self.timeout = float(timeout)
 
     def _do_request(self, req):
+        request_start_time = datetime.now()
         opener = self.opener_factory()
-        logger.debug('making request to %s' % req._Request__original)
+        logger.debug('making request to %s ...' % req._Request__original)
         try:
-            resp = opener.open(req)
+            resp = opener.open(req, timeout=self.timeout)
         except urllib2.HTTPError as e:
             resp = e
+        except urllib2.URLError as e:
+            resp = e
+            raise OAuthAPICommunicationError(u'URLError: request=%s, reason=%s' % (req._Request__original, e.reason))
+        finally:
+            elapsed = datetime.now() - request_start_time
+            logger.info('[Elapsed] %ss : _do_request : request to %s' % (elapsed.total_seconds(), req._Request__original))
         retval = None
         try:
             content_type = resp.headers.get('content-type').lstrip(", ") # XXX: to work around the anormaries of Google API
@@ -91,6 +100,7 @@ class OAuthNegotiator(OAuthAPIBase):
         return retval
 
     def get_access_token(self, request, authorization_code, redirect_uri):
+        request_start_time = datetime.now()
         client_credentials = self.client_credentials
         if callable(client_credentials):
             client_credentials = client_credentials(request)
@@ -107,6 +117,8 @@ class OAuthNegotiator(OAuthAPIBase):
             )
         retval = self._do_request(req)
         access_token = retval.pop(u'access_token')
+        elapsed = datetime.now() - request_start_time
+        logger.debug('[Elapsed] %ss : get_access_token' % (elapsed.total_seconds()))
         return (access_token, retval)
 
     def revoke_access_token(self, request, token):
@@ -134,22 +146,29 @@ class OAuthNegotiator(OAuthAPIBase):
 
 @implementer(IOAuthAPI)
 class OAuthAPIClient(OAuthAPIBase):
-    def __init__(self, opener_factory, encoding, access_token, endpoints):
+    def __init__(self, opener_factory, encoding, access_token, endpoints, timeout=10):
         self.opener_factory = opener_factory
         self.encoding = encoding
         self.access_token = access_token
         self.endpoints = endpoints
+        self.timeout = float(timeout)
 
     def _do_get_request(self, endpoint, params):
+        request_start_time = datetime.now()
         opener = self.opener_factory()
         params_ = params.copy()
         params_.update(access_token=self.access_token)
         url = urljoin(endpoint, '?' + self._encode_params(params_.items()))
         req = urllib2ext.SensibleRequest(url)
         try:
-            resp = opener.open(req)
+            resp = opener.open(req, timeout=self.timeout)
         except urllib2.HTTPError as e:
-            raise OAuthAPICommunicationError(u'%s: url=%s, body=%s' % (unicode(e), url, e.read()))
+            raise OAuthAPICommunicationError(u'HTTPError %s: url=%s, body=%s' % (unicode(e), url, e.read()))
+        except urllib2.URLError as e:
+            raise OAuthAPICommunicationError(u'URLError: url=%s, reason=%s' % (url, e.reason))
+        finally:
+            elapsed = datetime.now() - request_start_time
+            logger.info('[Elapsed] %ss : _do_get_request : request to %s' % (elapsed.total_seconds(), url))
         try:
             mime_type, encoding = parse_content_type(resp.headers['content-type'])
             if mime_type not in ('application/json', 'text/javascript'): # text/javascript は Facebook の腐った API 対策
@@ -165,9 +184,15 @@ class OAuthAPIClient(OAuthAPIBase):
         return endpoint
 
     def get_user_info(self, request):
+        request_start_time = datetime.now()
         user_info = self._do_get_request(self.get_endpoint(request, 'get_user_info'), {})
         logger.debug('get_user_info() = %r' % user_info)
+        if user_info is None:
+            return dict()
+
         id = user_info.get('sub') or user_info['id']
+        elapsed = datetime.now() - request_start_time
+        logger.debug('[Elapsed] %ss : get_user_info' % (elapsed.total_seconds()))
         return dict(
             identifiers=dict(
                 id=id,
