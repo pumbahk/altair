@@ -75,10 +75,13 @@ class CooperationView(BaseView):
 
             try:
                 for record in reader:
+                    id = record[0]
+                    gettii_venue_code = record[6]
                     l0_id = record[1].strip().decode('cp932')
                     name = record[3].strip().decode('cp932')
                     seat = seats.get(l0_id, None)
-                    if seat:
+                    if seat and (id is not None) and id.isdigit() and \
+                            (gettii_venue_code is not None) and gettii_venue_code.isdigit():
                         success[name] = l0_id
                     else:
                         fail[name] = l0_id
