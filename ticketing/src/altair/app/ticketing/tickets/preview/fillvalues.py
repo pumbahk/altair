@@ -71,8 +71,13 @@ def template_fillvalues(template, params, variation=IdentityVariation()):
     u"good-bye,  this is a {{item}} {{heee}}"
     """
     try:
+        for key in params:
+            if params[key] == u'\uff0a':   ##＊全角アスタリスク
+                params[key] = 'string_to_be_deleted'
         rendered = FillValuesRenderer(variation).render(template, convert_to_nested_dict(params))
         rendered = FillValuesRenderer(IdentityVariation()).render(rendered, convert_to_nested_dict(params))
+        import re
+        rendered = re.sub(r'>[^>]*string_to_be_deleted[^<]*</', '> </', rendered)
         return rendered.replace(u"｛", u"{").replace(u"｝", u"}")
     except Exception, e:
         logger.exception(e)
