@@ -1,0 +1,14 @@
+<%inherit file="base.html" />
+%if request.session.peek_flash():
+<div style="border: 3px solid red; background: #FFEEEE; padding: 10px; margin: 10px;">
+  <ul>
+    %for _message in request.session.pop_flash():
+    <li>${_message}</li>
+    %endfor
+  </ul>
+</div>
+%endif
+<p>
+${message|n}
+</p>
+
