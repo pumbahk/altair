@@ -229,6 +229,8 @@ class RakutenOpenID(object):
         f = urllib2.urlopen(url, timeout=self.timeout)
         try:
             response_body = f.read()
+        except Exception as e:
+            raise RakutenIDAPIError("error occurred during calling %s: payload=%r, original_exception=%r" % (url, data or payload, e))
         finally:
             f.close()
             elapsed = datetime.now() - request_start_time
