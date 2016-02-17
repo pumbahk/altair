@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="Shift_JIS" ?>
+<TICKET>
+<b><![CDATA[0.1 S :mm U
+:#000 rg .14 0 0 .14 112 0 cm :rl lo f 1 0 0 1 0 0 cm
+:f15 hc 1 S :b hc
+:c hc 12 fs 60 5 m :m "BLUE MAN GROUP IN TOKYO" x 10 fs pc
+14 8 m 93 5 "%(event_name)s %(number)s" X
+14 13 m 93 9 "2012年 08月 31日(金)<br /> 12:30 開場 13:00 開演" X
+65 13 m 93 9 "ポンチョ席 1列%(seat_number)s番<br/>\\\\%(ticket_price)s (税込)" X
+7 fs
+14 22 m 90 10 "主催: ブルーマングループ IN %(area)s、LLP<br/>お問合せ: ブルーマングループ%(area)s公演事務局 03-5414-3255<br/>後援: 東京都、米国大使館、港区、東京メトロ<br/>営利目的の転売禁止<br/>4歳以下入場不可" X
+6.35 fs
+13.3 42.4 m 30 2 "予約番号：" X 25.1 42.4 m 30 2 "%(order_id)s" X
+13.3 44.8 m 80 2 "お問合せ先：楽天チケット お問い合わせセンター 03-9876-5432" X
+8 fs
+:b hc 112 5 m 28 8 "BLUE MAN GROUP IN %(area_eng)s" X
+112 14 m 28 12 "開催日 2012年<br/>8月31日(金)<br/>開場 12:30<br/>開演 13:00<br/>" X
+112 32 m 28 15 "ポンチョ席<br/>1列%(seat_number)s番<br/>\\\\%(ticket_price)s(税込)" X
+:b hc 7 fs 112 50 m 28 4 "%(order_id)s" X
+pc
+]]></b>
+  <FIXTAG01></FIXTAG01>
+  <FIXTAG02>麹町店</FIXTAG02>
+  <FIXTAG03>012345</FIXTAG03>
+  <FIXTAG04>2011.06.01 12.14</FIXTAG04>
+  <FIXTAG05>0123456789012</FIXTAG05>
+  <FIXTAG06>02/03枚中</FIXTAG06>
+  <FIXTAG07>払込票</FIXTAG07>
+</TICKET>
