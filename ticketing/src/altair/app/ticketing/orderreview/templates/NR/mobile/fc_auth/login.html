@@ -4,7 +4,7 @@
 </head>
 <body style="background-color:#FFFFFF" bgcolor="#FFFFFF">
 <div align="center">
-  <img src="${request.static_url('altair.app.ticketing.orderreview:static/HI/mobile/images/mobile_logo.gif')}" width="240" height="96" alt="スパリゾートハワイアンズ" />
+  <img src="${request.static_url('altair.app.ticketing.orderreview:static/NR/mobile/images/mobile_logo.gif')}" width="240" height="96" alt="スパリゾートハワイアンズ" />
 </div>
 <div>
 <div style="background-color:#E8240C" bgcolor="#E8240C"><font color="white">お申込み</font></div>
@@ -16,7 +16,7 @@
 
 </div>
 <form action="${request.route_path('fc_auth.login', membership=u'-', _query=dict(return_to=request.route_path('mypage.show')))}" method="post">
-<input type="hidden" name="membership" value="HI" />
+<input type="hidden" name="membership" value="NR" />
 <div>
   会員番号<br/>
   <input type="text" name="username" size="22" value="" istyle="4">
