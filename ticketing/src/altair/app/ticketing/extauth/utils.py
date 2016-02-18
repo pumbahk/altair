@@ -25,7 +25,7 @@ def generate_random_alnum_string(n):
 def digest_secret(secret, salt):
     assert len(salt) == 32
     h = hashlib.sha256()
-    h.update(salt + secret)
+    h.update(salt.encode('utf8') + secret.encode('utf8'))
     return salt + h.hexdigest()
 
 def period_overlaps(a, b):
