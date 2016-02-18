@@ -57,9 +57,9 @@
           %for product in order.ordered_products:
             <tr id="commission">
               % if len(product.elements) == 1:
-                <th scope="row"><img src="${request.static_url('altair.app.ticketing.cart:static/HI/smartphone/images/icon_dummy.gif')}" alt="" width="21" height="21" />${product.product.name}<strong> ${product.seat_quantity}</strong>枚<br/></th>
+                <th scope="row"><img src="${request.static_url('altair.app.ticketing.cart:static/NR/smartphone/images/icon_dummy.gif')}" alt="" width="21" height="21" />${product.product.name}<strong> ${product.seat_quantity}</strong>枚<br/></th>
               % else:
-                <th scope="row"><img src="${request.static_url('altair.app.ticketing.cart:static/HI/smartphone/images/icon_dummy.gif')}" alt="" width="21" height="21" />${product.product.name} ×<strong>${product.quantity}</strong><br/></th>
+                <th scope="row"><img src="${request.static_url('altair.app.ticketing.cart:static/NR/smartphone/images/icon_dummy.gif')}" alt="" width="21" height="21" />${product.product.name} ×<strong>${product.quantity}</strong><br/></th>
               % endif
               <td>&nbsp;</td>
               <td>&nbsp;</td>
