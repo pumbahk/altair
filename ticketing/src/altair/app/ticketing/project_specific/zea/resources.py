@@ -5,20 +5,20 @@ from altair.sqlahelper import get_db_session
 from altair.app.ticketing.core.models import Event, Performance, SalesSegment, SalesSegmentGroup
 from altair.app.ticketing.orders.models import Order
 
-from .interfaces import IZeaAdminSettings
+from .interfaces import IFCAdminSettings
 
-class ZeaAdminResourceBase(object):
+class FCAdminResourceBase(object):
     @reify
     def slave_db_session(self):
         return get_db_session(self.request, 'slave')
 
-class ZeaAdminEventIndexResource(ZeaAdminResourceBase):
+class FCAdminEventIndexResource(FCAdminResourceBase):
     def __init__(self, request):
         self.request = request
 
     @reify
     def events(self):
-        event_ids = get_zea_admin_settings(self.request).event_ids
+        event_ids = get_fc_admin_settings(self.request).event_ids
         return self.slave_db_session.query(Event) \
             .filter(Event.id.in_(event_ids)) \
             .all()
@@ -28,19 +28,19 @@ class ZeaAdminEventIndexResource(ZeaAdminResourceBase):
             event_id = long(event_id)
         except (TypeError, ValueError):
             event_id = None
-        event_ids = get_zea_admin_settings(self.request).event_ids
+        event_ids = get_fc_admin_settings(self.request).event_ids
         if event_id not in event_ids:
             raise KeyError(event_id)
-        return ZeaAdminEventResource(
+        return FCAdminEventResource(
             self.request,
             event_id
             )
              
 
-class ZeaAdminEventResource(ZeaAdminResourceBase):
-    def __init__(self, request, event_id):
+class FCAdminEventResource(FCAdminResourceBase):
+    def __init__(self, request):
         self.request = request
-        self.event_id = event_id
+        self.event_id = request.matchdict['event_id']
 
     @reify
     def event(self):
@@ -67,26 +67,27 @@ class ZeaAdminEventResource(ZeaAdminResourceBase):
 
 
 def root_factory(request):
-    return ZeaAdminEventIndexResource(request)
+    return FCAdminEventIndexResource(request)
 
 
-def get_zea_admin_settings(request_or_registry):
+def get_fc_admin_settings(request_or_registry):
     if hasattr(request_or_registry, 'registry'):
         registry = request_or_registry.registry
     else:
         registry = request_or_registry
-    return registry.queryUtility(IZeaAdminSettings)
+    return registry.queryUtility(IFCAdminSettings)
 
 
-@implementer(IZeaAdminSettings)
-class ZeaAdminSettings(object):
+@implementer(IFCAdminSettings)
+class FCAdminSettings(object):
     def __init__(self, event_ids):
         self.event_ids = event_ids
 
 
 def includeme(config):
+    import ipdb;ipdb.set_trace()
     config.registry.registerUtility(
-        ZeaAdminSettings(
+        FCAdminSettings(
             event_ids=[
                 long(v.strip())
                 for v in re.split(
@@ -95,6 +96,6 @@ def includeme(config):
                     )
                 ],
             ),
-        IZeaAdminSettings
+        IFCAdminSettings
         )
 

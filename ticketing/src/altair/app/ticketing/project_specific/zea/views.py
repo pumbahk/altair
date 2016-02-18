@@ -12,20 +12,20 @@ from .csvgen import make_csv_gen
 logger = logging.getLogger(__name__)
 
 @view_defaults(decorator=with_bootstrap)
-class ZeaAdminEventView(object):
+class FCAdminEventView(object):
     def __init__(self, context, request):
         self.context = context
         self.request = request
 
     @view_config(
-        context='.resources.ZeaAdminEventIndexResource',
+        route_name='zea.index',
         renderer='altair.app.ticketing.project_specific.zea:templates/events/index.mako'
         )
     def index(self):
         return {}
 
     @view_config(
-        context='.resources.ZeaAdminEventResource',
+        route_name='zea.detail',
         renderer='altair.app.ticketing.project_specific.zea:templates/events/detail.mako'
         )
     def detail(self):
@@ -35,7 +35,7 @@ class ZeaAdminEventView(object):
             }
 
     @view_config(
-        context='.resources.ZeaAdminEventResource',
+        context='.resources.FCAdminEventResource',
         name='download'
         )
     def download(self):

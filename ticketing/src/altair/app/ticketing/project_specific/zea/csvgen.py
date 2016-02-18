@@ -104,7 +104,7 @@ columns = [
     (u'公演', u'{.performance.name}'),
     (u'公演コード', u'{.performance.code}'),
     (u'販売区分', u'{.sales_segment.sales_segment_group.name}'),
-    (u'誕生日', u'{.attributes[誕生日]._as_datetime:%Y-%m-%d}'),
+    (u'誕生日', u'{.attributes[誕生日]}'),
     (u'ニックネーム', u'{.attributes[ニックネーム]}'),
     (u'メールマガジンの配信', u'''{.attributes[メールマガジンの配信]}'''),
     (u'好きなメンバー', u'{.attributes[好きなメンバー]}'),

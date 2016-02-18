@@ -45,7 +45,7 @@ altair.newsletters.admin =
 
 [rewrite:zea-admin]
 zea-admin = 
-    http://zea-admin.stg.altr.jp(/.*)
+    http://fc-orders-admin.stg.altr.jp(/.*)
     http://%(_proxy_target)s:8071\1
 
 [rewrite:dummy-checkout-server]

@@ -53,7 +53,7 @@ altair.ticketing.cart.mq.url = ${altair:ticketing.mq_url}
 ;altair.ticketing.cart.mq = altair.mq.publisher.locally_dispatching_publisher_consumer_factory
 ;altair.ticketing.cart.mq.routes = cart:cart
 
-altair.zea_admin.events = 1
+altair.zea_admin.events = 3112
 
 [app:www-check]
 use = egg:Paste#static
@@ -76,7 +76,7 @@ pipeline =
 
 [composite:default]
 use = egg:Paste#urlmap
-/zea-admin = pipeline_default
+/fc-orders-admin = pipeline_default
 /.www-check = www-check
 
 [server:main]

@@ -4,6 +4,7 @@ import codecs
 from pyramid.config import Configurator
 import sqlahelper
 from sqlalchemy import engine_from_config
+from .resources import FCAdminEventIndexResource, FCAdminEventResource
 
 def replace_with_geta_handler(e):
     return (u'〓', e.start + 1)
@@ -27,5 +28,10 @@ def main(global_config, **local_config):
     config.include('pyramid_fanstatic')
     config.add_mako_renderer('.mako') 
     config.include('.resources')
+
+    config.add_route('zea.index', '/zea', factory=FCAdminEventIndexResource)
+    config.add_route('zea.detail', '/zea/{event_id}', factory=FCAdminEventResource)
+    config.add_route('yoshida-rinne.index', '/yoshida-rinne', factory=FCAdminEventIndexResource)
+    config.add_route('yoshida-rinne.detail', '/yoshida-rinne/{event_id}', factory=FCAdminEventResource)
     config.scan('.')
-    return config.make_wsgi_app() 
+    return config.make_wsgi_app()
