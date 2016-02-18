@@ -41,7 +41,7 @@ class NewslettersForm(Form):
         ])
     sender_name = TextField(u'送信者名', validators=[])
     subscriber_file = FileField(u'送信先リスト', validators=[])
-    subscriber_count = HiddenField(u'送信件数', validators=[Optional()])
+    subscriber_count = HiddenField(u'送信件数', validators=[Optional()], default='1')
     force_upload = IntegerField(
         label=u'エラーリストを無視',
         default=0,
