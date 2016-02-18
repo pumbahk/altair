@@ -737,9 +737,7 @@ class Visitor(object):
                 elem = unicode(elem)
                 lines = re.split(ur'\r\n|\r|\n', elem)
                 for line in lines:
-                    check_line = line.strip()
-                    if check_line:
-                        nodes.append(line)
+                    nodes.append(line)
             else:
                 if elem.tag == u'{%s}flowSpan' % SVG_NAMESPACE:
                     tag = 'span'
