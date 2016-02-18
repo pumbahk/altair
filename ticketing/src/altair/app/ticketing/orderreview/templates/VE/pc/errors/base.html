@@ -1,0 +1,51 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ja" lang="ja">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+  <title>${view_context.team_name}</title>
+  <link rel="stylesheet" type="text/css" href="${view_context.static_url('pc/css/style2.css')}" media="all" />
+  <%block name="javascript"></%block>
+  <%block name="css"></%block>
+</head>
+<body id="settlement">
+  <p id="naviSkip"><a href="#main" tabindex="1" title="本文へジャンプ"><img src="${view_context.static_url('pc/images/skip.gif')}" alt="本文へジャンプ" width="1" height="1" /></a></p>
+  <div id="container">
+    <!-- ========== header ========== -->
+    <div class="header" id="top">
+      <div class="header-inner">
+            <a href="/">
+              <h1>
+                <img src="${view_context.static_url('pc/images/logo.png')}" alt="${view_context.team_name}" height="70"/>
+              </h1>
+            </a>
+        <div class="history">
+          <a href="/orderreview" class="historySearchBtn">購入履歴の確認</a>
+        </div>
+      </div>
+    </div>
+<div class="gnavi">
+    <ul>
+      <li><a href="/">TOP</a></li>
+      <li><a href="/schedule">試合日程</a></li>
+      <li><a href="/payment">支払・受取方法</a></li>
+      <li class="last"><a href="/faq">FAQ</a></li>
+    </ul>
+</div>
+
+
+    <!-- ========== /header ========== -->
+    
+    <hr />
+
+    <!-- ========== main ========== -->
+    <div class="wrapper">
+      <div class="kadomaru">
+          ${self.body()}
+      </div>
+    </div>
+    <!-- ========== /main ========== -->
+  </div>
+  <!-- /container -->
+  <%block name="extras" />
+</body>
+</html>
