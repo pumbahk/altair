@@ -1,5 +1,6 @@
 # encoding: utf-8
 import decimal
+import codecs
 from codecs import getencoder
 from datetime import date
 from ..models import FamiPortOrderType
@@ -43,7 +44,7 @@ def make_marshaller(f, encoding='cp932', eor='\n'):
     encoder = getencoder(encoding)
     marshaller = FixedRecordMarshaller(refund_report_schema)
     def out(rendered):
-        f.write(encoder(rendered)[0] + eor)
+        f.write(encoder(rendered, errors='replaceWithZenkakuSpace')[0] + eor)
     def _(row):
         marshaller(row, out)
     return _
