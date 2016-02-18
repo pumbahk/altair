@@ -14,7 +14,7 @@
     text-align: left;
     margin: 0 3px 5px 2px;
     padding: 8px 0 10px 12px;
-    background: url(${view_context.static_url("altair.app.ticketing.orderreview:static/RT/pc/images/bg_line.gif")}) repeat-x left bottom;
+    background: url(${view_context.static_url("pc/images/bg_line.gif")}) repeat-x left bottom;
 }
 
 .OrderBox .confirmBoxText{
@@ -222,7 +222,7 @@ shipping =order.shipping_address
         </tr>
         %endif
         <tr id="total">
-          <th scope="row"><img src="${view_context.static_url("altair.app.ticketing.orderreview:static/RT/pc/images/total.gif")}" alt="合計金額" width="67" height="16" /></th>
+          <th scope="row"><img src="${view_context.static_url("pc/images/total.gif")}" alt="合計金額" width="67" height="16" /></th>
           <td>&nbsp;</td>
           <td>&nbsp;</td>
           <td class="align1">￥${h.format_number(order.total_amount)}</td>

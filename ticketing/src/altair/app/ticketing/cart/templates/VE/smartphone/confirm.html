@@ -2,7 +2,7 @@
 <%namespace file="tags_smartphone.html" name="m" />
 
 <%block name="javascript">
-<script type="text/javascript" src="${view_context.static_url('altair.app.ticketing.cart:static/js/disable_on_submit.js')}"></script>
+<script type="text/javascript" src="${request.static_url('altair.app.ticketing.cart:static/js/disable_on_submit.js')}"></script>
 <script type="text/javascript">
   $(function() {
     $('form').disableOnSubmit('input[type=submit][name!="back"]');
