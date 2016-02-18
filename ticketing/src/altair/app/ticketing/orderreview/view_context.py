@@ -49,7 +49,7 @@ def get_orderreview_view_context_factory(default_package):
         def organization_contact_email(self):
             organization_contact_email = None
             try:
-                organization_short_name = self.request.organization.contact_email
+                organization_contact_email = self.request.organization.contact_email
             except Exception as e:
                 logger.warn('organization_contact_email not found (%s)' % e.message)
             return organization_contact_email
@@ -103,7 +103,7 @@ def get_orderreview_view_context_factory(default_package):
 
         def static_url(self, path, module=None, *args, **kwargs):
             if module is None:
-                module=orderreview
+                module='orderreview'
             return self.request.static_url("altair.app.ticketing.%(module)s:static/%(organization_short_name)s/%(path)s" % dict(organization_short_name=self.organization_short_name, path=path, module=module), *args, **kwargs)
 
         def __getattr__(self, k):

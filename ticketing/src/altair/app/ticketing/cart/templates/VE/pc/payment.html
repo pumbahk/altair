@@ -1,7 +1,7 @@
 <%inherit file="./base.html"/>
 
 <%block name="javascript">
-    <script type="text/javascript" src="${view_context.static_url('altair.app.ticketing.cart:static/js/ajaxzip3-https.js')}"></script>
+    <script type="text/javascript" src="${request.static_url('altair.app.ticketing.cart:static/js/ajaxzip3-https.js')}"></script>
 </%block>
 
 ${self.widget.flow_widget(2)}
@@ -161,7 +161,7 @@ ${self.widget.flow_widget(2)}
           <td>
             <ul>
               <li>${form['zip'].label}
-                <% path = view_context.static_url('altair.app.ticketing.cart:static/js/zipdata') %>
+                <% path = request.static_url('altair.app.ticketing.cart:static/js/zipdata') %>
                 ${form['zip'](onKeyUp="AjaxZip3.zip2addr('" + path + "', 'zip','','prefecture','city','', 'address_1');")}
                 (例: 1030001)
                 ${h.error_list(request, form, 'zip')}

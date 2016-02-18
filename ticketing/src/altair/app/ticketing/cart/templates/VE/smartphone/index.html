@@ -98,10 +98,10 @@
 </%block>
 
 <%block name="javascript">
-  <script type="text/javascript" src="${view_context.static_url('altair.app.ticketing.cart:static/js/underscore-min.js')}"></script>
-  <script type="text/javascript" src="${view_context.static_url('altair.app.ticketing.cart:static/js/backbone-min.js')}"></script>
-  <script type="text/javascript" src="${view_context.static_url('altair.app.ticketing.cart:static/js/ajaxhooks.min.js')}"></script>
-  <script type="text/javascript" src="${view_context.static_url('altair.app.ticketing.cart:static/js/carts_smartphone.js')}"></script>
+  <script type="text/javascript" src="${request.static_url('altair.app.ticketing.cart:static/js/underscore-min.js')}"></script>
+  <script type="text/javascript" src="${request.static_url('altair.app.ticketing.cart:static/js/backbone-min.js')}"></script>
+  <script type="text/javascript" src="${request.static_url('altair.app.ticketing.cart:static/js/ajaxhooks.min.js')}"></script>
+  <script type="text/javascript" src="${request.static_url('altair.app.ticketing.cart:static/js/carts_smartphone.js')}"></script>
   <script type="text/javascript">
 var selected = ${selected};
 var salesSegmentsSelection = ${sales_segments_selection};
