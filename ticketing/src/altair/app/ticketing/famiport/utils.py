@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import jctconv
 
-
 def hankaku2zenkaku(text):
     """半角英数字を全角に変換する
     """
@@ -30,3 +29,7 @@ def validate_convert_famiport_kogyo_name_style(*args, **kwds):
         return True
     except Exception:
         return False
+
+
+def replace_with_zenkaku_space(e):
+    return (u'　', e.start + 1)
