@@ -1,0 +1,32 @@
+<html lang="ja">
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <title><%block name="title">${view_context.team_name}</%block></title>
+</head>
+<body style="background-color:#FFFFFF" bgcolor="#FFFFFF">
+<div align="center">
+  <img src="${view_context.static_url('mobile/images/mobile_logo.gif')}" width="100%" alt="${view_context.team_name}" />
+</div>
+<div>
+    <form action="${request.route_path('cart.logout')}" method="POST">
+      <div style="text-align: right">
+        <!--
+        % if (not getattr(request, 'context', None)) or request.context.authenticated_user()['is_guest']:
+          <input type="submit" value="会員でログイン"/>
+        % else:
+          <input type="submit" value="ログアウト"/>
+        % endif
+        -->
+      </div>
+    </form>
+
+${self.body()}
+<hr size="1" color="#888888" noshade="noshade" />
+<div align="center" style="font-size:x-small">
+  <div>
+    <a href="http://www.ticketstar.jp/corporate">運営会社</a> | <a href="http://www.ticketstar.jp/privacy/">個人情報保護方針</a> | <a href="http://www.ticketstar.jp/legal">特定商取引法に基づく表示</a>
+  </div>
+<div><font color="#888888"> &copy; TicketStar, Inc.</font></div>
+</div>
+</body>
+</html>
