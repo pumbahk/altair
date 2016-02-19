@@ -5,6 +5,7 @@ import re
 import io
 import csv
 import decimal
+import codecs
 from codecs import lookup as lookup_codec
 from collections import namedtuple
 from datetime import date, time, datetime, timedelta
@@ -12,9 +13,11 @@ import six
 from zope.interface import implementer
 from altair.timeparse import parse_duration, build_duration
 from altair.jis.sjis import sjis_iterator, multibyte_in_sjis, len_in_sjis
-from ..utils import hankaku2zenkaku
+from ..utils import hankaku2zenkaku, replace_with_zenkaku_space
 from .utils import BufferedIOWrapper
 from .interfaces import ITabularDataColumn, ITabularDataColumnSpecification, ITabularDataMarshaller, ITabularDataUnmarshaller
+
+codecs.register_error('replaceWithZenkakuSpace', replace_with_zenkaku_space)
 
 Column = implementer(ITabularDataColumn)(namedtuple('Column', ('name', 'spec')))
 
