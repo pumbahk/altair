@@ -78,10 +78,6 @@ ${tabs.tabs(request)}
           </td>
         </tr>
         <tr>
-            <th>当選/落選登録時に送信</th>
-            <td>${u'送信する' if lot.mail_send_now else u'送信しない'}</td>
-        </tr>
-        <tr>
             <th>抽選申込ユーザ取消</th>
             <td>${u'ON' if lot.lot_entry_user_withdraw and org_withdraw else u'OFF'}</td>
         </tr>
