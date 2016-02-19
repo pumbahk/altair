@@ -37,7 +37,7 @@
 
 <div class="confirmBox">
   <div class="confirmBoxInner">
-    <h2><img src="${view_context.static_url('pc/img/order/title_number.gif')}" alt="申込番号" width="97" height="30" /></h2>
+    <h2><img src="${view_context.static_url('pc/img/order/title_number.gif', 'lots')}" alt="申込番号" width="97" height="30" /></h2>
     <div class="confirmBoxText">${entry.entry_no}</div>
   </div>
 </div>
@@ -53,7 +53,7 @@
 %else:
 <div class="confirmBox">
   <div class="confirmBoxInner">
-    <h2><img src="${view_context.static_url('pc/img/order/title_election_result.gif')}" alt="抽選結果" /></h2>
+    <h2><img src="${view_context.static_url('pc/img/order/title_election_result.gif', 'lots')}" alt="抽選結果" /></h2>
     <div class="confirmBoxText">
       % if h.lot_entry_display_status(entry, now) == u'当選表示':
 抽選の結果、お客様はご当選されました。
@@ -145,7 +145,7 @@
 
 <div class="settlementBox">
   <div class="settlementBoxInner">
-    <h2><img src="${view_context.static_url('pc/img/order/title_buyer.gif')}" alt="購入者情報" width="97" height="30" /></h2>
+    <h2><img src="${view_context.static_url('pc/img/order/title_buyer.gif', 'lots')}" alt="購入者情報" width="97" height="30" /></h2>
     <div class="settlementSelectBox">
       <div class="settlementSelectBoxInner02">
         <table summary="お支払・お引取り方法選択">

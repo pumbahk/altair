@@ -15,6 +15,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 def get_cart_view_context_factory(default_package):
+
     if not isinstance(default_package, basestring):
         default_package = default_package.__name__
 
