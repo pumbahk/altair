@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import jctconv
 
+
 def hankaku2zenkaku(text):
     """半角英数字を全角に変換する
     """
