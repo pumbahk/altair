@@ -30,3 +30,7 @@ def validate_convert_famiport_kogyo_name_style(*args, **kwds):
         return True
     except Exception:
         return False
+
+
+def replace_with_zenkaku_space(e):
+    return (u'　', e.start + 1)
