@@ -71,11 +71,6 @@ def reject_lots_task(context, request):
             lot_entry = context.work.lot_entry
             lot_entry.reject()
             DBSession.delete(context.work)
-            # TODO: イベント
-            mail_send_now = Lot.query.filter_by(id=context.lot.id).first().mail_send_now
-            if mail_send_now is not None and mail_send_now:
-                event = LotRejectedEvent(request, lot_entry)
-                request.registry.notify(event)
         except Exception as e:
             work = s.query(lot_models.LotRejectWork).filter_by(id=context.work.id).one()
             history.error = work.error = str(e).decode('utf-8')
