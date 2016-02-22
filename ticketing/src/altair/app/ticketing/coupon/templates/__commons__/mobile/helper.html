@@ -6,6 +6,11 @@
     % for token in element.tokens:
       <div>
         ${element.product_item.name}
+        % if token.seat:
+          <div>
+            ${token.seat.name}
+          </div>
+        % endif
         % if order.is_canceled():
           キャンセル済みです
         % elif order.payment_status == 'refunding':
