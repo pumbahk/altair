@@ -153,7 +153,8 @@ class QueryParamsRender(object):
         if qp.get("category_label"):
             r.append(u"ジャンル: %s" % qp.get("category_label"))
         elif qp.get("category_tree") and qp.get("top_categories") or qp.get("sub_categories"):
-            r.append(u"ジャンル: %s " % self.describe_from_tree(qp["category_tree"]))
+            if "category_tree" in qp:
+                r.append(u"ジャンル: %s " % self.describe_from_tree(qp["category_tree"]))
         if qp.get("area_tree") and qp.get("prefectures"):
             r.append(u"開催地: %s" % self.describe_from_tree(qp["area_tree"]))
         if qp.get("performance_open") or qp.get("performance_close"):
