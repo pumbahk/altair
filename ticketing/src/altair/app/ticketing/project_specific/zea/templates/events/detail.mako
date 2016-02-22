@@ -23,6 +23,9 @@
   </form>
 </div>
 <div class="container">
+% if paged_orders.first_item is None:
+    <p>現在、予約はありません</p>
+% else:
 ${h.render_bootstrap_pager(paged_orders)}
 <table class="table">
   <thead>
@@ -43,4 +46,5 @@ ${h.render_bootstrap_pager(paged_orders)}
   </tbody>
 </table>
 ${h.render_bootstrap_pager(paged_orders)}
+% endif
 </div>

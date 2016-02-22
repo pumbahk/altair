@@ -91,7 +91,7 @@ def includeme(config):
                 long(v.strip())
                 for v in re.split(
                     ur'\s+|,',
-                    config.registry.settings['altair.zea_admin.events']
+                    config.registry.settings['altair.fc_admin.events']
                     )
                 ],
             ),
