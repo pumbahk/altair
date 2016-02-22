@@ -1,11 +1,11 @@
 [DEFAULT]
-www_check_docroot = %(here)s/../var/www-check/altair.ticketing.zea-admin
+www_check_docroot = %(here)s/../var/www-check/altair.ticketing.fc-admin
 
 sqlalchemy.url = ${altair:ticketing.db_url.master}
 altair.sqlahelper.sessions.slave.url = ${altair:ticketing.db_url.slave}
 
-[app:main]
-use = config:%(here)s/../../baseconf/common.ini#zea-admin
+[app:fc_admin_zea]
+use = config:%(here)s/../../baseconf/common.ini#fc-admin
 pyramid.includes = altair.findable_label ${altair:extra_pyramid_includes}
 
 get sqlalchemy.url = sqlalchemy.url
@@ -59,24 +59,24 @@ altair.zea_admin.events = 3112
 use = egg:Paste#static
 document_root = %(www_check_docroot)s
 
-[filter:prefix]
+[filter:prefix_zea]
 use = egg:PasteDeploy#prefix
-prefix = /zea-admin
+prefix = /fc-admin/zea
 
 [filter:browserid]
 use = egg:altair.browserid#browserid
 cookie_name = browserid
 env_key = repoze.browserid
 
-[pipeline:pipeline_default]
+[pipeline:pipeline_zea]
 pipeline = 
-    prefix
+    prefix_zea
     browserid
-    main
+    fc_admin_zea
 
 [composite:default]
 use = egg:Paste#urlmap
-/fc-orders-admin = pipeline_default
+/fc-admin/zea = pipeline_zea
 /.www-check = www-check
 
 [server:main]

@@ -18,14 +18,14 @@ class FCAdminEventView(object):
         self.request = request
 
     @view_config(
-        route_name='zea.index',
+        route_name='index',
         renderer='altair.app.ticketing.project_specific.zea:templates/events/index.mako'
         )
     def index(self):
         return {}
 
     @view_config(
-        route_name='zea.detail',
+        route_name='detail',
         renderer='altair.app.ticketing.project_specific.zea:templates/events/detail.mako'
         )
     def detail(self):

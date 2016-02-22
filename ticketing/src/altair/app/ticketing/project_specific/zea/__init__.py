@@ -29,9 +29,7 @@ def main(global_config, **local_config):
     config.add_mako_renderer('.mako') 
     config.include('.resources')
 
-    config.add_route('zea.index', '/zea', factory=FCAdminEventIndexResource)
-    config.add_route('zea.detail', '/zea/{event_id}', factory=FCAdminEventResource)
-    config.add_route('yoshida-rinne.index', '/yoshida-rinne', factory=FCAdminEventIndexResource)
-    config.add_route('yoshida-rinne.detail', '/yoshida-rinne/{event_id}', factory=FCAdminEventResource)
+    config.add_route('index', '/', factory=FCAdminEventIndexResource)
+    config.add_route('detail', '/{event_id}', factory=FCAdminEventResource)
     config.scan('.')
     return config.make_wsgi_app()
