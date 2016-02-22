@@ -85,7 +85,6 @@ class FCAdminSettings(object):
 
 
 def includeme(config):
-    import ipdb;ipdb.set_trace()
     config.registry.registerUtility(
         FCAdminSettings(
             event_ids=[
