@@ -71,7 +71,8 @@ class PagerAdapter(object):
         self.opts = self.DEFAULT_OPT.copy()
         self.opts.update(kwargs)
         if "page" in request.GET:
-            self.opts["page"] = int(request.GET["page"])
+            if request.GET["page"].isdigit():
+                self.opts["page"] = int(request.GET["page"])
         if not "url" in self.opts:
             self.opts["url"] = url_generate_default(request)
 
