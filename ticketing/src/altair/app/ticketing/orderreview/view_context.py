@@ -45,6 +45,15 @@ def get_orderreview_view_context_factory(default_package):
                 logger.warn('organization_short_name not found (%s)' % e.message)
             return organization_short_name
 
+        @reify
+        def organization_contact_email(self):
+            organization_contact_email = None
+            try:
+                organization_contact_email = self.request.organization.contact_email
+            except Exception as e:
+                logger.warn('organization_contact_email not found (%s)' % e.message)
+            return organization_contact_email
+
         @property
         def cart_setting(self):
             if self.context is not None and hasattr(self.context, 'cart_setting'):
@@ -92,8 +101,10 @@ def get_orderreview_view_context_factory(default_package):
                 ua_type=self.ua_type,
                 path=path)
 
-        def static_url(self, path, *args, **kwargs):
-            return self.request.static_url("altair.app.ticketing.orderreview:static/%(organization_short_name)s/%(path)s" % dict(organization_short_name=self.organization_short_name, path=path), *args, **kwargs)
+        def static_url(self, path, module=None, *args, **kwargs):
+            if module is None:
+                module='orderreview'
+            return self.request.static_url("altair.app.ticketing.%(module)s:static/%(organization_short_name)s/%(path)s" % dict(organization_short_name=self.organization_short_name, path=path, module=module), *args, **kwargs)
 
         def __getattr__(self, k):
             return getattr(self.cart_setting, k)

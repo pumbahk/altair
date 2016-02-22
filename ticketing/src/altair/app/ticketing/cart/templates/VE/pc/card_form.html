@@ -1,0 +1,102 @@
+<%inherit file="./base.html"/>
+
+<%block name="javascript">
+<script type="text/javascript" src="${request.static_url('altair.app.ticketing.cart:static/js/disable_on_submit.js')}"></script>
+<script type="text/javascript">
+  $(function() {
+    $('form').disableOnSubmit('input[type=submit]');
+  });
+</script>
+</%block>
+
+<%block name="css">
+<style type="text/css">
+  .settlementPayInputInner dd {
+    margin-left: 36px;
+  }
+  #btn-next {
+    border: 0;
+    width: 226px;
+    height: 46px;
+    background: url("${view_context.static_url('pc/images/btn_next.gif')}") left top no-repeat;
+  }
+</style>
+</%block>
+
+%if request.session.peek_flash():
+  %for message in request.session.pop_flash():
+     <table cellpadding="0" cellspacing="0" class="formeagles">
+     <tr><td colspan="2" style="text-align:left;"><div class="error">${message}</div></td></tr>
+     </table>
+  %endfor
+%endif
+
+${self.widget.flow_widget(2)}
+
+<form id="form1" name="form1" method="post" action="${request.url}">
+  ${form.csrf_token()}
+  <div class="settlementBox">
+    <div class="settlementBoxInner">
+      <!-- カード情報 -->
+      <dl>
+        <dt class="cartPayment">クレジットカードでお支払い</dt>
+        <dd>
+          <div class="settlementPayInput">
+            <div class="settlementPayInputInner">
+              <dl>
+                <dt>カード番号(半角数字)</dt>
+                <dd>
+                  <input name="card_number" type="text" id="textfield" length="16" placeholder="1234123412341234"/>
+                  16桁
+                  ${h.error_list(request, form, 'card_number')}
+                </dd>
+                <dt>有効期限</dt>
+                <dd>
+                  ${form.exp_month(id="select")}
+                  月　
+                  ${form.exp_year(id="select2")}
+                  年
+                  ${h.error_list(request, form, 'exp_month')}
+                  ${h.error_list(request, form, 'exp_year')}
+                </dd>
+                <dt>名義人(半角ローマ字)</dt>
+                <dd>
+                  <input name="card_holder_name" type="text" id="textfield5" size="50" placeholder="YAMADA TARO"/>
+                  ${h.error_list(request, form, 'card_holder_name')}
+                </dd>
+                <dt>セキュリティコード(半角)</dt>
+                <dd>
+                  <input name="secure_code" type="text" id="textfield6" size="5"/>
+                  ${h.error_list(request, form, 'secure_code')}
+                </dd>
+              </dl>
+            </div>
+          </div>
+
+          <p>セキュリティコードは、MasterCard、VisaまたはGMBでは、カード裏面の署名欄に印刷されている下3桁の数字です。<br/>
+            American Expressでは、カードの表に印刷されている4桁の数字です。
+          </p>
+
+          <p>
+            <span style="font-size: large">
+            ブラウザの「戻る」ボタンを使用するとエラーになります。<br/>
+            ページによってはブラウザの「更新」ボタンを使用するとエラーになる場合があります。
+            </span>
+          </p>
+
+          <p>
+            注文受付完了と同時に決済され、即時注文確定となります。
+            支払回数は≪1回払い≫のみのお取扱いとなります。
+            以下のクレジットカードがご利用できます。
+          </p>
+          <p>
+            <img src="${view_context.static_url('pc/images/cards.gif')}" alt="cards" width="282px" height="40px"><br />
+          </p>
+        </dd>
+      </dl>
+    </div>
+  </div>
+  <p class="align2">
+    <input id="btn-next" type="submit" value="" />
+  </p>
+</form>
