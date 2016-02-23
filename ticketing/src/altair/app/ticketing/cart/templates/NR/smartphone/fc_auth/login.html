@@ -3,7 +3,7 @@
 <head>
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
   <link rel="shortcut icon" href="${request.static_url('altair.app.ticketing.fc_auth:static/NR/pc/images/favicon.ico')}">
-  <title>スパリゾートハワイアンズ ログインページ</title>
+  <title>${view_context.team_name} ログインページ</title>
   <link rel="stylesheet" type="text/css" href="${request.static_url('altair.app.ticketing.fc_auth:static/NR/pc/css/style2.css')}" media="all" />
 </head>
 <body>
@@ -11,7 +11,7 @@
   <div class="header-inner">
     <h1>
       <a href="/">
-        <img src="${request.static_url('altair.app.ticketing.fc_auth:static/NR/pc/images/logo.png')}" alt="スパリゾートハワイアンズ" height="64"/>
+        <img src="${request.static_url('altair.app.ticketing.fc_auth:static/NR/pc/images/logo.png')}" alt="${view_context.team_name}" height="64"/>
       </a>
     </h1>
   </div>
@@ -33,7 +33,7 @@
                               <form action="${request.route_url('fc_auth.guest', membership=request.matchdict['membership'])}" method="post">
                                 <input type="submit" class="btnLogin" value="次へ進む" /><br/>
                                   <div>
-                                      
+
                                   </div>
                               </form>
                             </td>

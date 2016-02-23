@@ -3,8 +3,8 @@
 <head>
   <meta http-equiv="content-type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-  <title>チケット販売 - スパリゾートハワイアンズ</title>
-  <meta name="description" content="スパリゾートハワイアンズは、チケットのオンラインショッピングサイトです。" />
+  <title>チケット販売 - ${view_context.team_name}</title>
+  <meta name="description" content="${view_context.team_name}は、チケットのオンラインショッピングサイトです。" />
   <meta name="keywords" content="チケット" />
   <meta http-equiv="content-style-type" content="text/css" />
   <meta http-equiv="content-script-type" content="text/javascript" />
@@ -21,7 +21,7 @@
       <div class="grpheader">
         <div class="siteID">
           <a href="http://north-road.tstar.jp/">
-            <img src="${request.static_url('altair.app.ticketing.cart:static/NR/smartphone/images/logo.png')}" alt="スパリゾートハワイアンズ" class="serviceLogo" />
+            <img src="${request.static_url('altair.app.ticketing.cart:static/NR/smartphone/images/logo.png')}" alt="${view_context.team_name}" class="serviceLogo" />
           </a>
         </div>
       </div>

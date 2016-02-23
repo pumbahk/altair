@@ -1,11 +1,11 @@
 <html lang="ja">
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <title><%block name="title">スパリゾートハワイアンズ</%block></title>
+  <title><%block name="title">${view_context.team_name}</%block></title>
 </head>
 <body>
 <div align="center">
-  <img src="${request.static_url('altair.app.ticketing.lots:static/NR/mobile/img/mobile_logo.gif')}" width="240" height="96" alt="スパリゾートハワイアンズ" />
+  <img src="${request.static_url('altair.app.ticketing.lots:static/NR/mobile/img/mobile_logo.gif')}" width="240" height="96" alt="${view_context.team_name}" />
     % if lot:
       <!--
       <form action="${request.route_path('lots.entry.logout', _query=dict(lot_id=lot.id, event_id=lot.event.id))}" method="POST">

@@ -17,14 +17,14 @@
     $('form').disableOnSubmit();
   });
 </script>
-<title>スパリゾートハワイアンズ</title>
+<title>${view_context.team_name}</title>
 </head>
 <body>
 <p id="naviSkip"><a href="#main" tabindex="1" title="本文へジャンプ"><img src="${request.static_url('altair.app.ticketing.lots:static/NR/smartphone/img/common/skip.gif')}" alt="本文へジャンプ" width="1" height="1"></a></p>
 <div id="container">
 
 <div id="header">
-    <h1><img src="${request.static_url('altair.app.ticketing.lots:static/NR/mobile/img/logo.gif')}" width="240" height="96" alt="スパリゾートハワイアンズ"></h1>
+    <h1><img src="${request.static_url('altair.app.ticketing.lots:static/NR/mobile/img/logo.gif')}" width="240" height="96" alt="${view_context.team_name}"></h1>
       % if lot:
         <!--
         <form name="logout" action="${request.route_path('lots.entry.logout', _query=dict(lot_id=lot.id, event_id=lot.event.id))}" method="POST">
