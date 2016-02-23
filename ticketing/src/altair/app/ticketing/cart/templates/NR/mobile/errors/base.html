@@ -1,11 +1,11 @@
 <html lang="ja">
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <title><%block name="title">スパリゾートハワイアンズ</%block></title>
+  <title><%block name="title">${view_context.team_name}</%block></title>
 </head>
 <body style="background-color:#FFFFFF" bgcolor="#FFFFFF">
 <div align="center">
-  <img src="${request.static_url('altair.app.ticketing.cart:static/NR/mobile/images/mobile_logo.gif')}" width="100%" height="96" alt="スパリゾートハワイアンズ" />
+  <img src="${request.static_url('altair.app.ticketing.cart:static/NR/mobile/images/mobile_logo.gif')}" width="100%" height="96" alt="${view_context.team_name}" />
 </div>
 <div>
 ${self.body()}

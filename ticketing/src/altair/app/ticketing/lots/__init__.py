@@ -211,7 +211,7 @@ def main(global_config, **local_config):
     config.include('altair.app.ticketing.payments.plugins')
     config.include('altair.app.ticketing.mails')
     config.include('altair.app.ticketing.cart.request')
-    config.include('.view_context')
+    config.include('altair.app.ticketing.cart.view_context')
     config.include('altair.app.ticketing.cart.setup__renderers')
     config.include('altair.app.ticketing.cart.setup_payment_renderers')
     config.include("altair.app.ticketing.cart.preview")

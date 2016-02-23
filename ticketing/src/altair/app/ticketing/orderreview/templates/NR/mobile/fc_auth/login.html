@@ -1,10 +1,10 @@
 <html lang="ja">
 <head>
-  <title>スパリゾートハワイアンズ</title>
+  <title>${view_context.team_name}</title>
 </head>
 <body style="background-color:#FFFFFF" bgcolor="#FFFFFF">
 <div align="center">
-  <img src="${request.static_url('altair.app.ticketing.orderreview:static/NR/mobile/images/mobile_logo.gif')}" width="240" height="96" alt="スパリゾートハワイアンズ" />
+  <img src="${request.static_url('altair.app.ticketing.orderreview:static/NR/mobile/images/mobile_logo.gif')}" width="240" height="96" alt="${view_context.team_name}" />
 </div>
 <div>
 <div style="background-color:#E8240C" bgcolor="#E8240C"><font color="white">お申込み</font></div>

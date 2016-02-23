@@ -100,6 +100,7 @@ def get_cart_view_context_factory(default_package):
 
         @property
         def contact_url(self):
+            import pdb; pdb.set_trace()
             return self.cart_setting.contact_url or api.safe_get_contact_url(self.request)
 
         @property
