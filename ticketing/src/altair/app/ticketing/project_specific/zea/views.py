@@ -35,14 +35,13 @@ class FCAdminEventView(object):
             }
 
     @view_config(
-        context='.resources.FCAdminEventResource',
-        name='download'
+        route_name='download'
         )
     def download(self):
         response = self.request.response
         encoding = self.request.params.get('encoding', 'CP932')
         encoder = codecs.getencoder(encoding)
-        csvgen = make_csv_gen(self.request)
+        csvgen = make_csv_gen(self.request, self.context.event)
         f = io.BytesIO()
         writer = csv.writer(f)
         block_size = 131072

@@ -31,5 +31,6 @@ def main(global_config, **local_config):
 
     config.add_route('index', '/', factory=FCAdminEventIndexResource)
     config.add_route('detail', '/{event_id}', factory=FCAdminEventResource)
+    config.add_route('download', '/{event_id}/download', factory=FCAdminEventResource)
     config.scan('.')
     return config.make_wsgi_app()

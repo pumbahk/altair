@@ -77,7 +77,7 @@ class CSVGen(object):
         _record = Wrapper(record)
         return [f.format(_record) for _, f in self.columns]
 
-columns = [
+base_columns = [
     (u'予約番号', u'{.order_no}'),
     (u'ステータス', u'{.status}'),
     (u'決済ステータス', u'{.payment_status}'),
@@ -119,5 +119,5 @@ def build_extra_form_columns(event):
 
 def make_csv_gen(request, event):
     extra_form_columns = build_extra_form_columns(event)
-    columns.extend(extra_form_columns)
+    columns = base_columns + extra_form_columns
     return CSVGen(columns)
