@@ -122,6 +122,13 @@ ${ch.breadcrumbs(
 <hr/>
 
 <h3>チケット様式</h3>
+<% from altair.app.ticketing.tickets import VISIBLE_TICKETFORMAT_SESSION_KEY %>
+% if request.session.get(VISIBLE_TICKETFORMAT_SESSION_KEY, None):
+    <a href="${request.route_path('tickets.ticketformats.invisible')}">不使用のチケット様式を隠す</a>
+% else:
+    <a href="${request.route_path('tickets.ticketformats.visible')}">チケット様式を全部表示する</a>
+% endif
+<br/>
 <div id="ticketformat_menu" class="btn-group">
   <a href="${request.route_path("tickets.ticketformats.new")}" class="btn">
     <i class="icon-plus"></i> 新規

@@ -161,7 +161,10 @@ class TicketTemplateForm(OurForm):
         super(TicketTemplateForm, self).__init__(formdata=formdata, obj=obj, prefix=prefix, **kwargs)
         self.context = context
         self.ticket_format_id.choices = [
-            (format.id, format.name) for format in TicketFormat.filter_by(organization_id=context.organization.id)
+            (format.id, format.name)
+            for format in TicketFormat\
+                .filter_by(organization_id=context.organization.id)\
+                .filter_by(visible=True)
             ]
         if not formdata and not obj:
             self.principal.data = True
@@ -347,6 +350,11 @@ class TicketFormatForm(OurForm):
         label=u'表示順',
         validators=[Optional()],
         default=1
+    )
+
+    visible = OurBooleanField(
+        label=u'チケット様式を使用する',
+        default=True,
     )
 
     def validate_display_order(form, field):

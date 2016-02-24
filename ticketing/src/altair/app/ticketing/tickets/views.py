@@ -43,6 +43,7 @@ from .convert import to_opcodes
 from .cleaner import cleanup_svg
 from .cleaner.normalize import normalize as normalize_svg
 from .cleaner.api import get_xmltree
+from altair.app.ticketing.tickets.api import set_visible_ticketformat, set_invisible_ticketformat
 
 logger = logging.getLogger(__name__)
 
@@ -82,6 +83,9 @@ class TicketMasters(BaseView):
         ticket_cover_sort_by, ticket_cover_direction = helpers.sortparams('ticket_cover', self.request, ('updated_at', 'desc'))
 
         ticket_format_qs = TicketFormat.filter_by(organization_id=self.context.user.organization_id)
+        from altair.app.ticketing.tickets import VISIBLE_TICKETFORMAT_SESSION_KEY
+        if not self.request.session.get(VISIBLE_TICKETFORMAT_SESSION_KEY):
+            ticket_format_qs = ticket_format_qs.filter_by(visible=True)
         ticket_format_qs = ticket_format_qs.order_by(TicketFormat.display_order)
         page_format_qs = PageFormat.filter_by(organization_id=self.context.user.organization_id)
         page_format_qs = page_format_qs.order_by(PageFormat.display_order)
@@ -99,8 +103,19 @@ class TicketMasters(BaseView):
                     covers=ticket_cover_qs,
                     ticket_candidates=json.dumps(ticket_candidates))
 
+
 @view_defaults(decorator=with_bootstrap, permission="ticket_editor")
 class TicketFormats(BaseView):
+    @view_config(route_name="tickets.ticketformats.visible")
+    def visible(self):
+        set_visible_ticketformat(self.request)
+        return HTTPFound(self.request.route_path("tickets.index"))
+
+    @view_config(route_name="tickets.ticketformats.invisible")
+    def invisible(self):
+        set_invisible_ticketformat(self.request)
+        return HTTPFound(self.request.route_path("tickets.index"))
+
     @view_config(route_name="tickets.ticketformats.edit",renderer='altair.app.ticketing:templates/tickets/ticketformats/new.html')
     def edit(self):
         format = TicketFormat.filter_by(organization_id=self.context.user.organization_id,
@@ -112,7 +127,8 @@ class TicketFormats(BaseView):
                                       name=format.name,
                                       data_value=json.dumps(format.data),
                                       delivery_methods=[m.id for m in format.delivery_methods],
-                                      display_order=format.display_order)
+                                      display_order=format.display_order,
+                                      visible=format.visible)
         return dict(h=helpers, form=form, format=format)
 
     @view_config(route_name='tickets.ticketformats.edit', renderer='altair.app.ticketing:templates/tickets/ticketformats/new.html', request_method="POST")
@@ -131,6 +147,7 @@ class TicketFormats(BaseView):
         format.name=params["name"]
         format.data=params["data_value"]
         format.display_order=params["display_order"]
+        format.visible=params["visible"]
 
         for dmethod in format.delivery_methods:
             format.delivery_methods.remove(dmethod)
@@ -165,7 +182,8 @@ class TicketFormats(BaseView):
         form = forms.TicketFormatForm(organization_id=self.context.user.organization_id,
                                       name=format.name,
                                       data_value=json.dumps(format.data),
-                                      delivery_methods=[m.id for m in format.delivery_methods])
+                                      delivery_methods=[m.id for m in format.delivery_methods],
+                                      visible=format.visible)
         return dict(h=helpers, form=form)
 
     @view_config(route_name='tickets.ticketformats.new', renderer='altair.app.ticketing:templates/tickets/ticketformats/new.html', request_method="POST")
@@ -179,7 +197,8 @@ class TicketFormats(BaseView):
         ticket_format = TicketFormat(name=params["name"],
                                 data=params["data_value"],
                                 organization_id=self.context.user.organization_id,
-                                display_order=params["display_order"]
+                                display_order=params["display_order"],
+                                visible=params["visible"]
                                 )
 
         for dmethod in DeliveryMethod.filter(DeliveryMethod.id.in_(form.data["delivery_methods"])):

@@ -3099,6 +3099,7 @@ class TicketFormat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     delivery_methods = relationship('DeliveryMethod', secondary=TicketFormat_DeliveryMethod.__table__, backref='ticket_formats')
     data = Column(MutationDict.as_mutable(JSONEncodedDict(65536)))
     display_order = Column(Identifier)
+    visible = Column(Boolean, default=True, nullable=False)
 
     def detect_preview_type(self):
         for dm in self.delivery_methods:
