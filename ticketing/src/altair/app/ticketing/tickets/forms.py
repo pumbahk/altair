@@ -21,6 +21,7 @@ from altair.svg.geometry import as_user_unit
 from altair.app.ticketing.tickets.constants import PAPERS, ORIENTATIONS
 from altair.app.ticketing.tickets.cleaner.api import get_validated_svg_cleaner
 from altair.app.ticketing.payments.plugins import SEJ_DELIVERY_PLUGIN_ID
+from sqlalchemy.sql.expression import or_
 
 def filestorage_has_file(storage):
     return hasattr(storage, "filename") and storage.file
@@ -236,13 +237,23 @@ class TicketTemplateEditForm(OurForm):
     def _get_translations(self):
         return Translations()
 
-    def __init__(self, formdata=None, obj=None, prefix='', context=None, **kwargs):
+    def __init__(self, formdata=None, obj=None, ticket_format_id=None, prefix='', context=None, **kwargs):
         super(TicketTemplateEditForm, self).__init__(formdata=formdata, obj=obj, prefix=prefix, **kwargs)
         self.context = context
         self.obj = obj
-        self.ticket_format_id.choices = [
-            (format.id, format.name) for format in TicketFormat.filter_by(organization_id=context.organization.id)
+        if ticket_format_id:
+            self.ticket_format_id.choices = [(format.id, format.name)\
+                for format in TicketFormat\
+                    .filter_by(organization_id=context.organization.id)\
+                    .filter(or_(TicketFormat.visible==True, TicketFormat.id==ticket_format_id))
             ]
+        else:
+            self.ticket_format_id.choices = [(format.id, format.name)\
+                for format in TicketFormat\
+                    .filter_by(organization_id=context.organization.id)\
+                    .filter_by(visible=True)
+            ]
+
         self.data_value = None
         self.filename = None
 
