@@ -30,7 +30,7 @@ class FCAdminEventView(object):
         )
     def detail(self):
         return {
-            'csvgen': make_csv_gen(self.request),
+            'csvgen': make_csv_gen(self.request, self.context.event),
             'paged_orders': Page(self.context.orders.order_by(desc(Order.id)), page=self.request.GET.get('page')),
             }
 

@@ -90,7 +90,6 @@ columns = [
     (u'名', u'{.shipping_address.first_name}'),
     (u'セイ', u'{.shipping_address.last_name_kana}'),
     (u'メイ', u'{.shipping_address.first_name_kana}'),
-    (u'性別', u'{.attributes[性別]}'),
     (u'郵便番号', u'{.shipping_address.zip}'),
     (u'国', u'{.shipping_address.country}'),
     (u'都道府県', u'{.shipping_address.prefecture}'),
@@ -104,11 +103,21 @@ columns = [
     (u'公演', u'{.performance.name}'),
     (u'公演コード', u'{.performance.code}'),
     (u'販売区分', u'{.sales_segment.sales_segment_group.name}'),
-    (u'誕生日', u'{.attributes[誕生日]}'),
-    (u'ニックネーム', u'{.attributes[ニックネーム]}'),
-    (u'メールマガジンの配信', u'''{.attributes[メールマガジンの配信]}'''),
-    (u'好きなメンバー', u'{.attributes[好きなメンバー]}'),
     ]
 
-def make_csv_gen(request):
+
+# 追加フォーム項目をカラムに追加
+def build_extra_form_columns(event):
+    extra_form_columns = []
+    if event.setting.cart_setting.extra_form_fields:
+        for f in event.setting.cart_setting.extra_form_fields:
+            key = f['name']
+            column = (key, u'{.attributes[%s]}' % key)
+            extra_form_columns.append(column)
+    return extra_form_columns
+
+
+def make_csv_gen(request, event):
+    extra_form_columns = build_extra_form_columns(event)
+    columns.extend(extra_form_columns)
     return CSVGen(columns)
