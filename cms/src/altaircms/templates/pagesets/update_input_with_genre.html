@@ -21,6 +21,8 @@
       };
 
 
+      $("#genre_id").val(${form.genre_id.data});
+
       $("#genre_id").on("change",function(e){
 %if master_env.obj.event_id:
          var params = {"event": "${master_env.obj.event_id}", "pagetype": "${master_env.obj.pagetype_id}", "name": ""};
