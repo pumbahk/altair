@@ -12,6 +12,8 @@ def includeme(config):
     config.include(setup_svg)
     config.add_route('tickets.index', '/')
 
+    config.add_route('tickets.ticketformats.visible', '/ticketformats/visible')
+    config.add_route('tickets.ticketformats.invisible', '/ticketformats/invisible')
     config.add_route('tickets.ticketformats.new', '/ticketformats/new')
     config.add_route('tickets.ticketformats.show', '/ticketformats/{id}')
     config.add_route('tickets.ticketformats.edit', '/ticketformats/{id}/edit')
@@ -59,3 +61,5 @@ def includeme(config):
 
     config.scan('.views')
     config.include(".preview")
+
+VISIBLE_TICKETFORMAT_SESSION_KEY = "_visiable_ticketformat"
