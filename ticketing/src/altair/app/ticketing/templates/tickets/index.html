@@ -215,6 +215,13 @@ ${ch.breadcrumbs(
 <hr/>
 
 <h3>テンプレート</h3>
+<% from altair.app.ticketing.tickets import VISIBLE_TICKETTEMPLATE_SESSION_KEY %>
+% if request.session.get(VISIBLE_TICKETTEMPLATE_SESSION_KEY):
+    <a href="${request.route_path('tickets.templates.invisible')}">不使用のテンプレートを隠す</a>
+% else:
+    <a href="${request.route_path('tickets.templates.visible')}">テンプレートを全部表示する</a>
+% endif
+<br/>
 <div class="btn-group" id="template_menu">
   <a href="${request.route_path("tickets.templates.new")}" class="btn">
     <i class="icon-plus"></i> 新規
@@ -252,7 +259,6 @@ ${ch.breadcrumbs(
 </%doc>
       </ul>
 </div>
-
 <% sortable = lambda *args, **kwargs: h.sortable('ticket_template', *args, **kwargs) %>
 <table class="table fullwidth checkboxed_table">
   <thead>

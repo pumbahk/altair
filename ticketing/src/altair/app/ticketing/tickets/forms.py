@@ -204,6 +204,11 @@ class TicketTemplateForm(OurForm):
         label=u"表紙を印刷する"
         )
 
+    visible = OurBooleanField(
+        label=u"テンプレートを使用する",
+        default=True,
+    )
+
     def validate(self):
         if not super(type(self), self).validate():
             return False
@@ -276,6 +281,10 @@ class TicketTemplateEditForm(OurForm):
         label=u"表紙を印刷する"
         )
 
+    visible = OurBooleanField(
+        label=u"テンプレートを使用する",
+        default=True,
+    )
     def validate(self):
         if not super(type(self), self).validate():
             return False

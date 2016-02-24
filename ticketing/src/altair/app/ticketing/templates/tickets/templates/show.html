@@ -46,6 +46,10 @@ ${ch.breadcrumbs(
           <td class="span3">${u'主券' if template.principal else u'副券'}
         </tr>
         <tr>
+          <th class="span2">使用</th>
+          <td class="span3">${u'可' if template.visible else u'不可'}</td>
+        </tr>
+        <tr>
           <th class="span2">作成日時</th>
           <td class="span3">${template.created_at}</td>
         </tr>

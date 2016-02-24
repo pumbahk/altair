@@ -3105,6 +3105,7 @@ class Ticket(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     data = Column(MutationDict.as_mutable(JSONEncodedDict(65536)))
     filename = Column(Unicode(255), nullable=False, default=u"uploaded.svg")
     cover_print = Column(Boolean, nullable=False, default=True)
+    visible = Column(Boolean, nullable=False, default=True)
 
     def before_insert_or_update(self):
         if self.original_ticket and self.data != self.original_ticket.data:
