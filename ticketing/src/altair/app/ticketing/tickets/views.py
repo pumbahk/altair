@@ -521,7 +521,8 @@ class TicketTemplates(BaseView):
 
         form = forms.TicketTemplateEditForm(
             context=self.context,
-            obj=template
+            obj=template,
+            ticket_format_id=template.ticket_format_id,
             )
         return dict(
             h=helpers,
