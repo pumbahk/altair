@@ -50,6 +50,7 @@ ${render_mailmagazine(request)}
 
 <%def name="render_lot_entries(lot_entries)">
   <div id="mypageHistory">
+  <div class="inner">
     % for entry in lot_entries:
       <div class="box">
         <p><img src="${request.static_url('altair.app.ticketing.orderreview:static/RT/pc/images/mypage/' + h.get_entry_status_image(request, entry))}" alt="${h.get_entry_status(request, entry)}" width="60" height="60" /></p>
@@ -67,6 +68,7 @@ ${render_mailmagazine(request)}
         </dl>
       </div>
     % endfor
+  </div>
   </div>
 <div style="text-align: right">
 ${render_pager(lot_entries)}
