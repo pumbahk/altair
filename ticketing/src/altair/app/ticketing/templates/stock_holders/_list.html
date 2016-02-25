@@ -63,7 +63,7 @@ function load_stock_holder_count(){
           %endif
           >
         <td><input type="radio" name="stock_holder_id" value="${stock_holder.id}" /></td>
-        <td style="color:${stock_holder.style['text_color']};">${ch.seat_style(stock_holder.style)}</td>
+        <td>${ch.seat_style(stock_holder.style)}</td>
         <td><a href="javascript:edit_stock_holder('${stock_holder.id}');"><span id="name">${stock_holder.name}</span></a></td>
         <td><a href="${request.route_path('accounts.show', account_id=stock_holder.account_id)}"><span id="account_id" value="${stock_holder.account_id}">${stock_holder.account.name}</span></a></td>
         <td>
