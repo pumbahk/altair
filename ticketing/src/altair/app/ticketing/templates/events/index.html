@@ -47,6 +47,45 @@
 
 </script>
 
+<%def name="render_famiport_btn(event)">
+    % if event.organization.setting.famiport_enabled:
+        <% fm_performance_ids = is_famiport_cooperation[event.id] %>
+        % if not fm_performance_ids:
+        <a class="btn btn-danger" href="${request.route_path('events.famiport.performance_groups.index', event_id=event.id)}" style="margin-left: 5px;">
+          Famiポート連携
+        </a>
+        % elif len(fm_performance_ids) == len(event.performances):
+        <a class="btn btn-success" href="${request.route_path('events.famiport.performance_groups.index', event_id=event.id)}" style="margin-left: 5px;">
+          Famiポート連携
+        </a>
+        % else:
+        <a class="btn btn-warning" href="${request.route_path('events.famiport.performance_groups.index', event_id=event.id)}" style="margin-left: 5px;">
+          Famiポート連携
+        </a>
+        % endif
+    % else:
+    <input type="button" disabled class="btn btn-default" value="Famiポート連携" style="margin-left: 5px;"/>
+    % endif
+</%def>
+
+<%def name="render_cms_btn(event)">
+    % if event.cms_send_at:
+        % if event.updated_at > event.cms_send_at:
+          <a class="btn btn-small btn-warning" href="javascript:send_event(${event.id});" style="margin-left: 5px;">
+            <i class="icon-refresh icon-white"></i> CMSへ送信
+          </a>
+        % else:
+          <a class="btn btn-small btn-inverse" href="javascript:send_event(${event.id});" style="margin-left: 5px;">
+            <i class="icon-refresh icon-white"></i> CMSへ送信
+          </a>
+        % endif
+    % else:
+        <a class="btn btn-small btn-warning" href="javascript:send_event(${event.id});" style="margin-left: 5px;">
+            <i class="icon-refresh icon-white"></i> CMSへ送信
+        </a>
+    % endif
+</%def>
+
 <%def name="general_disp()">
   <table id="event_table" class="table bordered">
     <thead>
@@ -69,43 +108,11 @@
         <td>
           ${event.display_order}
         </td>
-        <td class="span5">
+        <td class="span4">
           <div class="btn-group" style="float: left;">
           <%include file="./_action_button.html" args="event=event, order=['edit', 'copy', 'delete'], small=True" />
-          % if event.cms_send_at:
-            % if event.updated_at > event.cms_send_at:
-              <a class="btn btn-small btn-warning" href="javascript:send_event(${event.id});" style="margin-left: 10px;">
-                <i class="icon-refresh icon-white"></i> CMSへ送信
-              </a>
-            % else:
-              <a class="btn btn-small btn-inverse" href="javascript:send_event(${event.id});" style="margin-left: 10px;">
-                <i class="icon-refresh icon-white"></i> CMSへ送信
-              </a>
-            % endif
-          % else:
-            <a class="btn btn-small btn-warning" href="javascript:send_event(${event.id});" style="margin-left: 10px;">
-                <i class="icon-refresh icon-white"></i> CMSへ送信
-            </a>
-          % endif
-
-          % if event.organization.setting.famiport_enabled:
-            <% fm_performance_ids = is_famiport_cooperation[event.id] %>
-              % if not fm_performance_ids:
-                <a class="btn btn-danger" href="${request.route_path('events.famiport.performance_groups.index', event_id=event.id)}" style="margin-left: 10px;">
-                  Famiポート連携
-                </a>
-              % elif len(fm_performance_ids) == len(event.performances):
-                <a class="btn btn-success" href="${request.route_path('events.famiport.performance_groups.index', event_id=event.id)}" style="margin-left: 10px;">
-                  Famiポート連携
-                </a>
-              % else:
-                <a class="btn btn-warning" href="${request.route_path('events.famiport.performance_groups.index', event_id=event.id)}" style="margin-left: 10px;">
-                  Famiポート連携
-                </a>
-              % endif
-          % else:
-            <input type="button" disabled class="btn btn-default" value="Famiポート連携" style="margin-left: 10px;"/>
-          % endif
+          ${render_cms_btn(event)}
+          ${render_famiport_btn(event)}
           </div>
         </td>
       </tr>
@@ -148,23 +155,10 @@
           </td>
           <td>
           </td>
-          <td class="span3">
+          <td class="span4">
             <%include file="./_action_button.html" args="event=event, order=['edit', 'copy', 'delete'], small=True" />
-            % if event.cms_send_at:
-              % if event.updated_at > event.cms_send_at:
-                <a class="btn btn-small btn-warning" href="javascript:send_event(${event.id});" style="margin-left: 10px;">
-                  <i class="icon-refresh icon-white"></i> CMSへ送信
-                </a>
-              % else:
-                <a class="btn btn-small btn-inverse" href="javascript:send_event(${event.id});" style="margin-left: 10px;">
-                  <i class="icon-refresh icon-white"></i> CMSへ送信
-                </a>
-              % endif
-            % else:
-              <a class="btn btn-small btn-warning" href="javascript:send_event(${event.id});" style="margin-left: 10px;">
-                <i class="icon-refresh icon-white"></i> CMSへ送信
-              </a>
-            % endif
+            ${render_cms_btn(event)}
+            ${render_famiport_btn(event)}
           </td>
         </tr>
         <% section_no += 1 %>
@@ -196,24 +190,11 @@
                 % endif
               % endif
             </td>
-            <td class="span3">
+            <td class="span4">
               % if row_no == 0:
                 <%include file="./_action_button.html" args="event=event, order=['edit', 'copy', 'delete'], small=True" />
-                % if event.cms_send_at:
-                  % if event.updated_at > event.cms_send_at:
-                    <a class="btn btn-small btn-warning" href="javascript:send_event(${event.id});" style="margin-left: 10px;">
-                      <i class="icon-refresh icon-white"></i> CMSへ送信
-                    </a>
-                  % else:
-                    <a class="btn btn-small btn-inverse" href="javascript:send_event(${event.id});" style="margin-left: 10px;">
-                      <i class="icon-refresh icon-white"></i> CMSへ送信
-                    </a>
-                  % endif
-                % else:
-                  <a class="btn btn-small btn-warning" href="javascript:send_event(${event.id});" style="margin-left: 10px;">
-                    <i class="icon-refresh icon-white"></i> CMSへ送信
-                  </a>
-                % endif
+                ${render_cms_btn(event)}
+                ${render_famiport_btn(event)}
               % endif
             </td>
           </tr>
@@ -254,24 +235,11 @@
               % endif
             % endif
           </td>
-          <td class="span3">
+          <td class="span4">
             % if row_no == 0:
               <%include file="./_action_button.html" args="event=event, order=['edit', 'copy', 'delete'], small=True" />
-              % if event.cms_send_at:
-                % if event.updated_at > event.cms_send_at:
-                  <a class="btn btn-small btn-warning" href="javascript:send_event(${event.id});" style="margin-left: 10px;">
-                    <i class="icon-refresh icon-white"></i> CMSへ送信
-                  </a>
-                % else:
-                  <a class="btn btn-small btn-inverse" href="javascript:send_event(${event.id});" style="margin-left: 10px;">
-                    <i class="icon-refresh icon-white"></i> CMSへ送信
-                  </a>
-                % endif
-              % else:
-                <a class="btn btn-small btn-warning" href="javascript:send_event(${event.id});" style="margin-left: 10px;">
-                  <i class="icon-refresh icon-white"></i> CMSへ送信
-                </a>
-              % endif
+              ${render_cms_btn(event)}
+              ${render_famiport_btn(event)}
             % endif
           </td>
         </tr>
