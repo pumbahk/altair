@@ -102,12 +102,6 @@ class LotForm(Form):
         choices=_auth_types
     )
 
-    mail_send_now = OurBooleanField(
-        label=u'当選／落選登録時に送信',
-        default=False,
-        widget=CheckboxInput()
-    )
-
     lot_entry_user_withdraw = OurBooleanField(
         label=u'抽選申込ユーザ取消',
         default=False,
@@ -245,7 +239,6 @@ class LotForm(Form):
         lot.lotting_announce_timezone=self.data['lotting_announce_timezone']
         lot.custom_timezone_label=self.data['custom_timezone_label']
         lot.auth_type = self.data['auth_type']
-        lot.mail_send_now = self.data['mail_send_now']
         lot.lot_entry_user_withdraw = self.data['lot_entry_user_withdraw']
 
         return lot

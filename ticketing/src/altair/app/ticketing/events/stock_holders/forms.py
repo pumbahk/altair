@@ -44,9 +44,10 @@ class StockHolderForm(OurForm):
     )
     text_color = OurTextField(
         label=u'記号色',
-        validators=[RequiredOnUpdate()],
+        validators=[Required()],
     )
     is_putback_target = BooleanField(
+        default=False,
         label=u'外部返券利用',
         validators=[],
     )

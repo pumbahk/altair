@@ -24,7 +24,7 @@
       ${form_item(form.name, maxlength=255)}
       ${form_item(form.text)}
       ${form_item(form.text_color, class_='span3')}
-      %if form.is_putback_target:
+      %if form.is_putback_target.data:
           ${form_item(form.is_putback_target, checked='yes')}
       %else:
           ${form_item(form.is_putback_target)}
