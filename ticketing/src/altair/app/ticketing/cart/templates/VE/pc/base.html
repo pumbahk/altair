@@ -18,13 +18,11 @@
   <div id="container" style="position:relative">
     <form action="${request.route_path('cart.logout')}" method="POST">
       <div style="text-align: right">
-        <!--
         % if (not getattr(request, 'context', None)) or request.context.authenticated_user()['is_guest']:
           <input type="submit" value="会員でログイン"/>
         % else:
           <input type="submit" value="ログアウト"/>
         % endif
-        -->
       </div>
     </form>
     <!-- ========== header ========== -->
