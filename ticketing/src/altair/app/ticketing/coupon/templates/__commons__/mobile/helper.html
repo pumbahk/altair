@@ -34,3 +34,38 @@
 % endfor
 </%def>
 
+<%def name="render_out_term_coupon(order)">
+<%namespace file="tags_mobile.html" name="mobile" />
+<%mobile:form_header>クーポンが有効期限切れです</%mobile:form_header>
+<div class="purchased">
+
+<div>${order.performance.event.title}</div>
+<div>${order.performance.name}</div>
+<br/>
+
+<%mobile:form_header>受付番号</%mobile:form_header>
+<div>${order.order_no}</div>
+<br/>
+
+<%mobile:form_header>ご購入チケット</%mobile:form_header>
+% for item in order.items:
+  ${item.product.seat_stock_type.name}<br/>
+  ${item.product.name} × ${item.quantity}枚<br/>
+  % for element in item.elements:
+    % for token in element.tokens:
+      <div>
+        ${element.product_item.name}
+        % if token.seat:
+          <div>
+            ${token.seat.name}
+          </div>
+        % endif
+        有効期限切れです
+      </div>
+    % endfor
+  % endfor
+    <hr/>
+% endfor
+</div>
+
+</%def>

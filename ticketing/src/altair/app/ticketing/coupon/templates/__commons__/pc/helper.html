@@ -43,3 +43,72 @@
       % endfor
     % endfor
 </%def>
+
+<%def name="render_out_term_coupon(order)">
+<div class="purchased">
+  <h2 class="error">クーポンが有効期限切れです</h2>
+</div>
+<div class="purchased">
+
+  <h2>チケット情報</h2>
+
+  <table class="purchasedContents">
+    <tbody>
+      <tr>
+        <thead>
+          <th colspan="4">${order.performance.event.title} <br />${order.performance.name}</th>
+        </thead>
+      </tr>
+    </tbody>
+  </table>
+  <p/>
+
+  <table class="purchasedContents">
+    <tbody>
+      <tr>
+        <thead>
+          <th colspan="4">受付番号</th>
+        </thead>
+      </tr>
+    </tbody>
+    <tr>
+      <td class="textR">${order.order_no}</td>
+    </tr>
+
+  <table class="purchasedContents">
+    <tbody>
+      <tr>
+        <thead>
+          <th colspan="2">ご購入チケット</th>
+        </thead>
+      </tr>
+    </tbody>
+    % for item in order.items:
+      <tr>
+        <td class="textR coupon_name" colspan="2">${item.product.seat_stock_type.name}<br/>
+        ${item.product.name} × ${item.quantity}枚</td>
+      </tr>
+      % for element in item.elements:
+        % for token in element.tokens:
+        <tr>
+          <td class="textR ticket_col">
+            ${element.product_item.name}
+            % if token.seat:
+              <div>
+                ${token.seat.name}
+              </div>
+            % endif
+          </td>
+          <td class="textR">
+              有効期限切れです
+          </td>
+        </tr>
+        % endfor
+      % endfor
+    % endfor
+  </table>
+  <p/>
+
+  </table>
+</div>
+</%def>
