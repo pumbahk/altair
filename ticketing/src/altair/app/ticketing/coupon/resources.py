@@ -7,6 +7,7 @@ from altair.sqlahelper import get_db_session
 from altair.app.ticketing.users.models import Membership
 from altair.app.ticketing.cart import api as cart_api
 from altair.app.ticketing.orders.models import Order, Performance
+from altair.app.ticketing.payments.plugins import RESERVE_NUMBER_DELIVERY_PLUGIN_ID
 from altair.app.ticketing.payments.plugins.models import ReservedNumber
 from altair.app.ticketing.core.models import SalesSegment, SalesSegmentSetting
 from .security import CouponSecurity
@@ -62,9 +63,26 @@ class CouponViewResource(CouponResourceBase):
         if not self.order:
             return False
 
-        perf = self.session.query(Performance).filter(Performance.id==self.order.performance_id).first()
+        delivery_method = self.order.payment_delivery_method_pair.delivery_method
+        preferences = delivery_method.preferences.get(unicode(RESERVE_NUMBER_DELIVERY_PLUGIN_ID), {})
+
+        # 有効期限があった場合は優先
+        if 'expiration_date' in preferences:
+            expiration_date = preferences['expiration_date']
+            if str(expiration_date).isdigit():
+                start = self.order.created_at < datetime.today()
+                end = datetime.now().date() < (self.order.created_at.date() + timedelta(days=(int(expiration_date) + 1)))
+                if start and end:
+                    return True
+
+        # 有効期限がない場合は、公演日
+        perf = self.session.query(Performance).filter(Performance.id == self.order.performance_id).first()
         if perf.start_on > datetime.today() + timedelta(minutes=1):
-            return True
+            if perf.end_on is None:
+                return True
+            if perf.end_on >= datetime.today():
+                return True
+
 
     @property
     def coupon_security(self):
