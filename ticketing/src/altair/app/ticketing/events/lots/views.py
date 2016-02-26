@@ -61,6 +61,7 @@ from .forms import (
     ProductForm,
     LotForm,
     SearchEntryForm,
+    EntryStatusForm,
     SendingMailForm,
     LotEntryReportSettingForm,
 )
@@ -497,8 +498,14 @@ class LotEntries(BaseView):
         self.check_organization(self.context.event)
         lot_id = self.context.lot_id
         lot = slave_session.query(Lot).filter(Lot.id==lot_id).one()
+        form = EntryStatusForm(formdata=self.request.params)
+        condition = None
+        if 'do_export' in self.request.params and form.validate():
+            condition = self._build_lot_export_query(form)
+            logger.debug("condition = {0}".format(condition))
+
         #entries = lots_api.get_lot_entries_iter(lot.id)
-        entries = CSVExporter(slave_session, lot.id)
+        entries = CSVExporter(slave_session, lot.id, condition)
         filename='lot-{0.id}.csv'.format(lot)
         if self.request.matched_route.name == 'lots.entries.export':
             self.request.response.content_type = 'text/plain;charset=Shift_JIS'
@@ -597,6 +604,45 @@ class LotEntries(BaseView):
             enable_elect_all = True
 
         return condition, enable_elect_all
+
+    def _build_lot_export_query(self, form):
+        condition = (LotEntry.id != None)
+
+        wish_condition = (LotEntry.id == None) ## means False
+        if form.canceled.data:
+            wish_condition = sql.or_(wish_condition,
+                                     LotEntryWish.canceled_at!=None)
+        else:
+            condition = sql.and_(condition,
+                                 LotEntryWish.canceled_at==None)
+        if form.withdrawn.data:
+            wish_condition = sql.or_(wish_condition,
+                                     LotEntryWish.withdrawn_at!=None)
+        else:
+            condition = sql.and_(condition,
+                                 LotEntryWish.withdrawn_at==None)
+        if form.entried.data:
+            wish_condition = sql.or_(wish_condition,
+                                     sql.and_(LotEntryWish.elected_at==None,
+                                              LotEntryWish.rejected_at==None,
+                                              LotElectWork.id==None,
+                                              LotRejectWork.id==None))
+        if form.electing.data:
+            wish_condition = sql.or_(wish_condition,
+                                     sql.and_(LotEntryWish.entry_wish_no==LotElectWork.entry_wish_no,
+                                              LotEntryWish.elected_at==None))
+        if form.rejecting.data:
+            wish_condition = sql.or_(wish_condition,
+                                     sql.and_(LotEntry.entry_no==LotRejectWork.lot_entry_no,
+                                              LotEntryWish.rejected_at==None))
+        if form.elected.data:
+            wish_condition = sql.or_(wish_condition,
+                                     LotEntryWish.elected_at!=None)
+        if form.rejected.data:
+            wish_condition = sql.or_(wish_condition,
+                                     LotEntryWish.rejected_at!=None)
+        condition = sql.and_(condition, wish_condition)
+        return condition
 
     @view_config(route_name='lots.entries.search',
                  renderer='altair.app.ticketing:templates/lots/search.html', permission='event_viewer')
@@ -802,8 +848,10 @@ class LotEntries(BaseView):
         lot = Lot.query.filter(Lot.id==lot_id).one()
         electing = Electing(lot, self.request)
         closer = LotCloser(lot, self.request)
+        form = EntryStatusForm(formdata=self.request.params)
         return dict(lot=lot,
                     closer=closer,
+                    form=form,
                     process_possible=self._check_lot_entries_process_possible(),
                     electing=electing)
 
