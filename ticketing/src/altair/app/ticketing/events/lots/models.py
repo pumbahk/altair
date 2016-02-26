@@ -464,7 +464,7 @@ FROM LotEntryWish
               ON LotEntryProduct.product_id = Product.id AND Product.deleted_at IS NULL
               JOIN StockType
               ON Product.seat_stock_type_id = StockType.id AND StockType.deleted_at IS NULL
-         WHERE LotEntry.lot_id = %s
+         WHERE LotEntry.lot_id = {}
          AND LotEntryProduct.deleted_at IS NULL
          GROUP BY LotEntryProduct.lot_wish_id
      ) p_sum
@@ -488,8 +488,9 @@ FROM LotEntryWish
      ON LotEntry.user_id=UserCredential.user_id AND LotEntry.membership_id=UserCredential.membership_id AND UserCredential.deleted_at IS NULL
      LEFT JOIN LotEntryAttribute
      ON LotEntryAttribute.lot_entry_id = LotEntry.id
-WHERE Lot.id = %s
+WHERE Lot.id = {}
      AND LotEntryWish.deleted_at IS NULL
+     AND {}
 ORDER BY 申し込み番号, 希望順序, attribute_name
 
 """
@@ -541,12 +542,15 @@ ORDER BY 申し込み番号, 希望順序, attribute_name
         u'会員種別ID',
     )
 
-    def __init__(self, session, lot_id):
+    def __init__(self, session, lot_id, condition=u'Lot.id IS NOT NULL'):
         self.session = session
         self.lot_id = lot_id
+        self.condition = condition
 
     def __iter__(self):
-        cur = self.session.bind.execute(self.sql, self.lot_id, self.lot_id)
+        from sqlalchemy.dialects import mysql
+        str_sql = self.sql.format(self.lot_id, self.lot_id, str(self.condition.compile(dialect=mysql.dialect())))
+        cur = self.session.bind.execute(str_sql)
         try:
             prev_row = None
             row = None
