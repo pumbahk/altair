@@ -18,12 +18,9 @@
     $("#start_date").prop('readonly','true');
     $("#start_date").css({'cursor':'none'});
     $("#start_date").css({'background-color':'white'});
+
     $('#start_time').timepicker({
-        timeFormat: 'HH:mm',
-        minTime: new Date(0, 0, 0, 0, 0, 0),
-        maxTime: new Date(0, 0, 0, 23, 59, 0),
-        startTIme: new Date(0, 0, 0, 0, 0, 0),
-        interval: 30
+        minutes:{ interval:10 },
     });
     $("#start_time").css({'background-color':'white'});
     $("#start_time").prop('readonly','true');
