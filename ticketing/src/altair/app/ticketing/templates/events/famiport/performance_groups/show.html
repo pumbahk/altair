@@ -43,7 +43,7 @@
   <tbody>
     <tr>
       <th>ステータス</th>
-      <td>${view.status_label(altair_famiport_performance_group.status)}</td>
+      <td>${view.not_reflected_label(altair_famiport_performance_group)}${view.status_label(altair_famiport_performance_group.status)}</td>
     </tr>
     <tr>
       <th>Altairイベント名</th>
@@ -88,7 +88,7 @@
     <% rows = len(altair_famiport_performance.altair_famiport_sales_segment_pairs) %>
     <tr>
       <td><input type="radio" name="altair_famiport_performance_id" value="${altair_famiport_performance.id}" /></td>
-      <td rowspan="${rows or 1}">${view.status_label(altair_famiport_performance.status)}</td>
+      <td rowspan="${rows or 1}">${view.not_reflected_label(altair_famiport_performance)}${view.status_label(altair_famiport_performance.status)}</td>
       <td rowspan="${rows or 1}">${altair_famiport_performance.code}</td>
       <td rowspan="${rows or 1}"><a href="${request.route_path('events.famiport.performances.item.show', event_id=event.id, altair_famiport_performance_group_id=altair_famiport_performance_group.id, altair_famiport_performance_id=altair_famiport_performance.id)}">${altair_famiport_performance.name}</a></td>
       <td rowspan="${rows or 1}"><a href="${request.route_path('performances.show', performance_id=altair_famiport_performance.performance.id)}">${altair_famiport_performance.performance.name}</td>
