@@ -938,7 +938,7 @@ background: url(images/mypage/bg_search.gif) no-repeat 0 0;
 vertical-align: middle;
 }
 
-#mypageHistory div .box {
+#mypageHistory div.box {
 clear: both;
 overflow: hidden;
 padding: 10px 0 5px;

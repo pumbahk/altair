@@ -606,7 +606,7 @@ function buildStockHolderTypeTables(venue) {
     if (!keyedStocks)
       return;
     var style = stockHolder.get('style');
-    var swatch = $('<span class="swatch"></span>').css('color', style.text_color).text(style.text||'　');
+    var swatch = $('<span class="swatch"></span>').css('text-color', style.text_color).text(style.text||'　');
     var head = $('<h5 class="ui-header" style="float: left;"></h5>').text(' ' + stockHolder.get('name'));
     var transfer = $('<a class="transfer btn btn-mini btn-inverse" href="javascript:buildTransferModal(' + stockHolder.id + ');">枠移動</a>');
     var lock_group = $('<a class="transfer btn btn-mini" href="javascript:lockStocksByStockHolder(' + stockHolder.id + ');"></a>');
