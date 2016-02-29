@@ -375,12 +375,12 @@ class CSVExporter(object):
 SELECT
     CASE
         WHEN LotEntryWish.withdrawn_at IS NOT NULL THEN 'ユーザ取消'
-        WHEN LotEntry.closed_at IS NOT NULL THEN '終了'
         WHEN LotEntryWish.elected_at IS NOT NULL THEN '当選'
         WHEN LotEntryWish.rejected_at IS NOT NULL THEN '落選'
         WHEN LotEntryWish.canceled_at IS NOT NULL THEN 'キャンセル'
         WHEN LotElectWork.lot_entry_no IS NOT NULL THEN '当選予定'
         WHEN LotRejectWork.lot_entry_no IS NOT NULL THEN '落選予定'
+        WHEN LotEntry.closed_at IS NOT NULL THEN '終了'
         ELSE '申込'
     END AS `状態`,
     LotEntry.entry_no AS `申し込み番号`,

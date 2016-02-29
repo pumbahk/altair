@@ -995,8 +995,6 @@ class LotEntryWish(LotEntryWishSupport, Base, BaseModel, WithTimestamp, Logicall
         """ """
         if self.withdrawn_at:
             return u"ユーザ取消"
-        if self.closed:
-            return u"終了"
         if self.canceled_at:
             return u"キャンセル"
         if self.elected_at:
@@ -1007,6 +1005,9 @@ class LotEntryWish(LotEntryWishSupport, Base, BaseModel, WithTimestamp, Logicall
             return u"当選予定"
         if self.reject_works:
             return u"落選予定"
+        if self.closed:
+            return u"終了"
+
         return u"申込"
 
     def elect(self, now):
