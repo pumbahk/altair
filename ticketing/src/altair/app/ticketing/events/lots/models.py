@@ -246,8 +246,6 @@ class LotWishSummary(Base):
             return u"キャンセル"
         if self.is_other_electing():
             return u"他の希望が当選予定"
-        if self.closed_at:
-            return u"終了"
         if self.elected_at:
             return u"当選"
         if self.is_electing():
@@ -256,6 +254,8 @@ class LotWishSummary(Base):
             return u"落選予定"
         if self.rejected_at:
             return u"落選"
+        if self.closed_at:
+            return u"終了"
         return u"申込"
 
     @property
