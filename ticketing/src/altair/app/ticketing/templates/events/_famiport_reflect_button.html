@@ -1,0 +1,20 @@
+<%page args="event, btn_status" />
+<%namespace file="/common/helpers.html" name="ch" />
+
+% if event.organization.setting.famiport_enabled:
+    <%
+    if btn_status == u'NONE_REFLECTED':
+        btn_style = "btn-danger"
+    elif btn_status == u'ALL_REFLECTED':
+        btn_style = "btn-success"
+    elif btn_status == u'SOME_REFLECTED':
+        btn_style = "btn-warning"
+    else:
+        btn_style = "btn-default"
+    %>
+    <a class="btn ${btn_style}" href="${request.route_path('events.famiport.performance_groups.index', event_id=event.id)}" style="margin-left: 5px;">
+      Famiポート連携
+    </a>
+% else:
+<input type="button" disabled class="btn btn-default" value="Famiポート連携" style="margin-left: 5px;"/>
+% endif
