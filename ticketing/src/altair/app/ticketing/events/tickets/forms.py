@@ -24,12 +24,15 @@ class BoundTicketForm(Form):
         Form.__init__(self, formdata=formdata, obj=obj, prefix=prefix, **kwargs)
         if 'organization_id' in kwargs:
             self.ticket_template.choices = [
-                (ticket.id, ticket.name) for ticket in Ticket.templates_query().filter_by(organization_id=kwargs['organization_id'])
+                (ticket.id, ticket.name)\
+                for ticket in Ticket.templates_query()\
+                    .filter_by(organization_id=kwargs['organization_id'])\
+                    .filter_by(visible=True)
             ]
 
     ticket_template = SelectField(
-        label=u"チケットテンプレート", 
-        choices=[], 
+        label=u"チケットテンプレート",
+        choices=[],
         coerce=long
         )
 
