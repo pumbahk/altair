@@ -6,6 +6,20 @@
 <%block name="style">
 <link rel="stylesheet" type="text/css" href="/static/css/decentcolorpicker.css" />
 <link rel="stylesheet" type="text/css" href="/static/css/performance.css" />
+<style type="text/css">
+  #export .packed-checkboxes .checkbox-set {
+    width: 80em;
+  }
+  #export .packed-checkboxes .checkbox-set .checkbox-set-item {
+    width: 8em;
+    float: left;
+  }
+  #export .packed-checkboxes th {
+    font-weight: normal;
+    background-color: #eee;
+  }
+</style>
+
 </%block>
 
 <%block name="fulltitle">
@@ -43,9 +57,47 @@ ${tabs.tabs(request)}
   <div class="alert alert-warning">
     抽選申込情報をCSV形式でダウンロードします。<br>
   </div>
+  <form id="export" method="post" action="${request.route_url('lots.entries.export', lot_id=lot.id)}">
   <fieldset>
-    <a href="${request.route_url('lots.entries.export', lot_id=lot.id)}" class="btn">ダウンロード</a>
+    <div>
+      <table class="packed-checkboxes">
+        <tbody>
+          <tr>
+            <th>ステータス</th>
+            <td>
+              <div class="checkbox-set" id="status">
+                <label class="checkbox-set-item" for="canceled">${form.canceled.label.text}
+                  ${form.canceled()}
+                </label>
+                <label class="checkbox-set-item" for="withdrawn">${form.withdrawn.label.text}
+                  ${form.withdrawn()}
+                </label>
+                <label class="checkbox-set-item" for="entried">${form.entried.label.text}
+                  ${form.entried()}
+                </label>
+                <label class="checkbox-set-item" for="electing">${form.electing.label.text}
+                  ${form.electing()}
+                </label>
+                <label class="checkbox-set-item" for="elected">${form.elected.label.text}
+                  ${form.elected()}
+                </label>
+                <label class="checkbox-set-item" for="rejecting">${form.rejecting.label.text}
+                  ${form.rejecting()}
+                </label>
+                <label class="checkbox-set-item" for="rejected">${form.rejected.label.text}
+                  ${form.rejected()}
+                </label>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </fieldset>
+  <div style="margin-top: 20px;">
+    <button type="submit" name="do_export" class="btn">ダウンロード</button>
+  </div>
+  </form>
 </div>
 
 <hr>
