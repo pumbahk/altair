@@ -546,6 +546,7 @@ class TicketTemplates(BaseView):
         form = forms.TicketTemplateEditForm(
             context=self.context,
             obj=template,
+            ticket_format_id=template.ticket_format_id,
             formdata=self.request.POST)
         if not form.validate():
             return dict(
