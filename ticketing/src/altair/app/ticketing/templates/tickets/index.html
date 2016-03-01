@@ -169,6 +169,7 @@ ${ch.breadcrumbs(
       <th><a href="#" class="sortable">用紙サイズ</a></th>
       <th><a href="#" class="sortable">引取方法</a></th>
       <th><a href="#" class="sortable">表示順</a></th>
+      <th><a href="${sortable(request, "visible", direction="desc")}" class="sortable">使用</a></th>
       <th><a href="${sortable(request, "updated_at", direction="desc")}" class="sortable">更新日時</a></th>
       <th><a href="${sortable(request, "created_at", direction="desc")}" class="sortable">作成日時</a></th>
     </tr>
@@ -181,6 +182,7 @@ ${ch.breadcrumbs(
       <td>${h.format_size(h.extract_paper_size(format))}
       <td>${u' / '.join(dm.name for dm in format.delivery_methods)}</td>
       <td>${format.display_order}</td>
+      <td>${u'可' if format.visible else u'不可'}</td>
       <td>${format.updated_at}</td>
       <td>${format.created_at}</td>
     </tr>
@@ -267,6 +269,7 @@ ${ch.breadcrumbs(
       <th><a href="${sortable(request, "name")}" class="sortable">名前</a></th>
       <th><a href="${sortable(request, "filename")}" class="sortable">ファイル名</a></th>
       <th><a href="#" class="sortable">チケット様式</a></th>
+      <th><a href="${sortable(request, "visible")}" class="sortable">使用</a></th>
       <th><a href="${sortable(request, "updated_at", direction="desc")}" class="sortable">更新日時</a></th>
       <th><a href="${sortable(request, "created_at", direction="desc")}" class="sortable">作成日時</a></th>
     </tr>
@@ -278,6 +281,7 @@ ${ch.breadcrumbs(
       <td><a href="${request.route_url('tickets.templates.show', id=template.id)}">${template.name}</a></td>
       <td>${template.filename}</td>
       <td>${template.ticket_format.name}</td>
+      <td>${u'可' if template.visible else u'不可'}</td>
       <td>${template.updated_at}</td>
       <td>${template.created_at}</td>
     </tr>
