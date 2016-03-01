@@ -82,6 +82,7 @@ class CouponViewResource(CouponResourceBase):
                 return True
             if perf.end_on >= datetime.today():
                 return True
+        return False
 
 
     @property
