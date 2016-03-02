@@ -1265,12 +1265,12 @@ class OrderDetailView(OrderBaseView):
 
         sejOrder = sej_api.get_sej_order(order.order_no)
         if sejOrder:
-            if order.payment_delivery_method_pair.payment_method == payments_plugins.SEJ_PAYMENT_PLUGIN_ID:
+            if order.payment_delivery_method_pair.payment_method.payment_plugin_id == payments_plugins.SEJ_PAYMENT_PLUGIN_ID:
                 if order.payment_due_at < datetime.now():
                     self.request.session.flash(u'セブン予約(%s)の支払期限を過ぎているためキャンセルできません' % order.order_no)
                     raise HTTPFound(location=route_path('orders.show', self.request, order_id=order.id))
 
-            if order.payment_delivery_method_pair.delivery_method == payments_plugins.SEJ_DELIVERY_PLUGIN_ID:
+            if order.payment_delivery_method_pair.delivery_method.delivery_plugin_id == payments_plugins.SEJ_DELIVERY_PLUGIN_ID:
                 if order.issuing_end_at < datetime.now():
                     self.request.session.flash(u'セブン予約(%s)の発券期限を過ぎているためキャンセルできません' % order.order_no)
                     raise HTTPFound(location=route_path('orders.show', self.request, order_id=order.id))
