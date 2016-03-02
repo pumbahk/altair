@@ -9,7 +9,7 @@ from altair.formhelpers import Translations, Required, OurBooleanField
 from altair.formhelpers.validators import DynSwitchDisabled
 from altair.app.ticketing.core.models import DeliveryMethod, DeliveryMethodPlugin
 from altair.saannotation import get_annotations_for
-from altair.app.ticketing.payments.plugins import SEJ_DELIVERY_PLUGIN_ID, QR_DELIVERY_PLUGIN_ID, FAMIPORT_DELIVERY_PLUGIN_ID
+from altair.app.ticketing.payments.plugins import SEJ_DELIVERY_PLUGIN_ID, QR_DELIVERY_PLUGIN_ID, FAMIPORT_DELIVERY_PLUGIN_ID, RESERVE_NUMBER_DELIVERY_PLUGIN_ID
 
 class DeliveryMethodForm(OurForm):
 
@@ -66,6 +66,12 @@ class DeliveryMethodForm(OurForm):
         label=u'単一QRモード (一括発券)',
         validators=[
             DynSwitchDisabled('{delivery_plugin_id} <> "%d"' % QR_DELIVERY_PLUGIN_ID)
+            ]
+        )
+    expiration_date = OurTextField(
+        label=u'チケット有効期限 (相対)',
+        validators=[
+            DynSwitchDisabled('{delivery_plugin_id} <> "%d"' % RESERVE_NUMBER_DELIVERY_PLUGIN_ID)
             ]
         )
     display_order = OurTextField(
