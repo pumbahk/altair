@@ -2,7 +2,7 @@
 from altair.app.ticketing.famiport.userside_models import AltairFamiPortPerformance, AltairFamiPortReflectionStatus
 from altair.app.ticketing.payments import plugins
 
-def get_famiport_reflect_button_status(self, session, event):
+def get_famiport_reflect_button_status(session, event):
         altair_famiport_performances = session.query(AltairFamiPortPerformance) \
             .filter(AltairFamiPortPerformance.performance_id.in_([prfm.id for prfm in event.performances])) \
             .filter(AltairFamiPortPerformance.status == AltairFamiPortReflectionStatus.Reflected.value) \
