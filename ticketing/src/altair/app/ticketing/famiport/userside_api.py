@@ -4,6 +4,7 @@ import itertools
 from urllib import urlencode
 from datetime import datetime, timedelta
 import sqlalchemy as sa
+import transaction
 from markupsafe import Markup
 from sqlalchemy import sql
 from sqlalchemy.sql import func as sqlf
@@ -11,8 +12,8 @@ from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 from altair.mq import get_publisher
 from altair.app.ticketing.core.models import Site, Venue, Event, Performance, SalesSegment, SalesSegment_PaymentDeliveryMethodPair, PaymentDeliveryMethodPair, FamiPortTenant, PaymentMethod, DeliveryMethod
 from altair.app.ticketing.famiport.models import FamiPortPrefecture, FamiPortPerformanceType, FamiPortSalesChannel
-from altair.app.ticketing.famiport.exc import FamiPortAPINotFoundError
-from altair.app.ticketing.famiport.api import get_famiport_venue_by_userside_id, get_famiport_venue_by_userside_id_or_name, get_famiport_venue_by_name, resolve_famiport_prefecture_by_name, create_or_update_famiport_venue, create_or_update_famiport_event, create_or_update_famiport_performance, create_or_update_famiport_sales_segment
+from altair.app.ticketing.famiport.exc import FamiPortAPIError, FamiPortAPINotFoundError
+from altair.app.ticketing.famiport.api import get_famiport_venue_by_userside_id, get_famiport_venue_by_userside_id_or_name, get_famiport_venue_by_name, resolve_famiport_prefecture_by_name, create_famiport_venue, create_or_update_famiport_venue, create_or_update_famiport_event, create_or_update_famiport_performance, create_or_update_famiport_sales_segment
 from altair.app.ticketing.famiport.userside_models import (
     AltairFamiPortVenue,
     AltairFamiPortVenue_Site,
@@ -73,6 +74,7 @@ def next_sales_segment_code(session, altair_famiport_performance_id):
     else:
         return u'001'
 
+# Pair up given sales_segments as (seat_unselectable_sales_segment, seat_selectable_sales_segment)
 def find_sales_segment_pairs(session, sales_segments):
     def _cmp(a, b):
         if a.start_at is None:
@@ -101,99 +103,146 @@ def find_sales_segment_pairs(session, sales_segments):
                 yield a, None
         i += 1
 
+def create_altair_famiport_venue(request, session, organization_id, client_code, venue, name, name_kana=u''):
+    # Create new AltairFamiPortVenue
+    altair_famiport_venue = AltairFamiPortVenue(
+        organization_id = organization_id,
+        siteprofile_id = venue.site.siteprofile_id,
+        famiport_venue_id = None,
+        venue_name=venue.name,
+        name=name,
+        name_kana=name_kana,
+        status=AltairFamiPortReflectionStatus.Editing.value
+        )
+    altair_famiport_venue.venues.append(venue)
+
+    # session.add(altair_famiport_venue)
+    # session.flush()
+
+    # Create new FamiPortVenue for altair_famiport_venue
+    result = None
+    prefecture = resolve_famiport_prefecture_by_name(request, venue.site.siteprofile.prefecture.strip())
+    try:
+        result = create_famiport_venue(
+            request,
+            client_code=client_code,
+            userside_id=altair_famiport_venue.id,
+            name=altair_famiport_venue.venue_name,
+            name_kana=u'',
+            prefecture=prefecture,
+            )
+    except FamiPortAPIError as famiPortAPIError:
+        logger.error('FamiPortVenueの作成に失敗しました。')
+
+    if result is not None:
+        # Update altair_famiport_venue.famiport_venue_id with created FamiPortVenue.id
+        famiport_venue_id = result['venue_id']
+        altair_famiport_venue.famiport_venue_id = famiport_venue_id
+        session.add(altair_famiport_venue)
+        session.flush()
+    return altair_famiport_venue
+
 def build_famiport_performance_groups(request, session, datetime_formatter, tenant, event_id):
     event = session.query(Event).filter_by(id=event_id).one()
     assert tenant.organization_id == event.organization_id
     logs = []
     client_code = tenant.code
-    altair_famiport_performance_groups = session.query(AltairFamiPortPerformanceGroup).filter(AltairFamiPortPerformanceGroup.event_id == event.id)
     performances_by_venue = {}
+    moving_performance_ids = set()
     altair_famiport_venues_just_added = set()
     altair_famiport_performances_just_added = set()
+
+    # STEP 1: 連携対象の登録
     for performance in event.performances:
         altair_famiport_venue = None
-        # Look up existing AltairFamiPortVenue with same event_id and venue_name
-        for altair_famiport_performance_group in altair_famiport_performance_groups:
-            if altair_famiport_performance_group.altair_famiport_venue.venue_name == performance.venue.name:
-                if altair_famiport_venue is None:
-                    altair_famiport_venue = altair_famiport_performance_group.altair_famiport_venue
-                else:
-                    logs.append(u'会場「%s」と同じ名前の会場が複数連携されています。システム管理者に連絡してください' % performance.venue.name)
-                    return logs
-        if altair_famiport_venue is None:
-            try:
-                # Look up existing AltairFamiPortVenue with same venue_name
-                altair_famiport_venue = session.query(AltairFamiPortVenue) \
-                    .filter(AltairFamiPortVenue.organization_id == event.organization_id) \
-                    .filter(AltairFamiPortVenue.venue_name == performance.venue.name) \
-                    .distinct() \
-                    .one()
-            except NoResultFound:
-                logger.info('no correspoding AltairFamiPortVenue record for Site.id=%ld, Venue.name=%s' % (performance.venue.site_id, performance.venue.name))
-        result = {}
-        if altair_famiport_venue is None:
-            altair_famiport_venue = AltairFamiPortVenue(
-                organization_id=event.organization_id,
-                famiport_venue_id=None,
-                venue_name=performance.venue.name,
-                name=performance.venue.site.name,
-                name_kana=u'',
-                status=AltairFamiPortReflectionStatus.Editing.value,
-                sites=[performance.venue.site]
-                )
-            session.add(altair_famiport_venue)
-            session.flush()
-            prefecture = resolve_famiport_prefecture_by_name(request, performance.venue.site.prefecture.strip())
-            result = create_or_update_famiport_venue(
-                request,
-                client_code=client_code,
-                id=None,
-                userside_id=altair_famiport_venue.id,
-                name=performance.venue.name,
-                name_kana=u'',
-                prefecture=prefecture,
-                update_existing=False
-                )
-            famiport_venue_id = result['venue_id']
-            altair_famiport_venue.famiport_venue_id = famiport_venue_id
-            altair_famiport_venues_just_added.add(altair_famiport_venue.id)
-            logs.append(u'会場「%s」はFamiポート未連携のために自動的に連携対象としました' % performance.venue.name)
+
+        # Look up existing AltairFamiPortVenue for this performance's venue
+        altair_famiport_venue = session.query(AltairFamiPortVenue) \
+            .join(AltairFamiPortVenue.siteprofile) \
+            .join(AltairFamiPortVenue.venues) \
+            .filter(AltairFamiPortVenue.organization_id == event.organization_id) \
+            .filter(AltairFamiPortVenue.siteprofile_id == performance.venue.site.siteprofile.id) \
+            .filter(AltairFamiPortVenue.venues.any(id = performance.venue.id)) \
+            .filter(AltairFamiPortVenue.venue_name == performance.venue.name) \
+            .filter(AltairFamiPortVenue.deleted_at == None) \
+            .first()
+        if altair_famiport_venue is not None: # Exact altair_famiport_venue is found
+            altair_famiport_venue.venues.append(performance.venue)
         else:
-            famiport_venue_info = get_famiport_venue_by_userside_id_or_name(request, client_code, altair_famiport_venue.id, altair_famiport_venue.venue_name)
-            famiport_venue_id = famiport_venue_info['venue_id']
-            prefecture = famiport_venue_info['prefecture']
-            if performance.venue.site not in altair_famiport_venue.sites:
-                altair_famiport_venue.sites.append(performance.venue.site)
+            # Look up existing AltairFamiPortVenue with same venue id and different venue name
+            altair_famiport_venue = session.query(AltairFamiPortVenue) \
+                .join(AltairFamiPortVenue.siteprofile) \
+                .join(AltairFamiPortVenue.venues) \
+                .filter(AltairFamiPortVenue.organization_id == event.organization_id) \
+                .filter(AltairFamiPortVenue.siteprofile_id == performance.venue.site.siteprofile.id) \
+                .filter(AltairFamiPortVenue.venues.any(id = performance.venue.id)) \
+                .filter(AltairFamiPortVenue.deleted_at == None) \
+                .first()
+            if altair_famiport_venue is not None: # venue.name changed altair_famiport_venue is found
+                altair_famiport_venue.venues.remove(performance.venue) # Remove name changed venue from mapping table
+                moving_performance_ids.add(performance.id)
+                # Create new AltairFamiPortVenue and corresponding FamiPortVenue
+                altair_famiport_venue = create_altair_famiport_venue(request, session, event.organization_id, client_code, performance.venue, performance.venue.site.siteprofile.name)
+            else:
+                existimg_altair_famiport_performance = session.query(AltairFamiPortPerformance).filter(AltairFamiPortPerformance.performance_id == performance.id).first()
+                if existimg_altair_famiport_performance:
+                    moving_performance_ids.add(performance.id)
+                # Look up existing AltairFamiPortVenue with same siteprofile_id and venue name
+                altair_famiport_venue = session.query(AltairFamiPortVenue) \
+                    .join(AltairFamiPortVenue.siteprofile) \
+                    .join(AltairFamiPortVenue.venues) \
+                    .filter(AltairFamiPortVenue.organization_id == event.organization_id) \
+                    .filter(AltairFamiPortVenue.siteprofile_id == performance.venue.site.siteprofile.id) \
+                    .filter(AltairFamiPortVenue.venues.any(name = performance.venue.name)) \
+                    .filter(AltairFamiPortVenue.deleted_at == None) \
+                    .first()
+                if altair_famiport_venue is not None:
+                    altair_famiport_venue.venues.append(performance.venue) # Add new venue to mapping table
+                else:
+                    # Create new AltairFamiPortVenue and corresponding FamiPortVenue
+                    altair_famiport_venue = create_altair_famiport_venue(request, session, event.organization_id, client_code, performance.venue, performance.venue.site.siteprofile.name)
+
+            altair_famiport_venues_just_added.add(altair_famiport_venue.id)
+            logs.append(u'会場「%s」をFamiポート連携対象としました' % performance.venue.name)
+
+            # famiport_venue_info = get_famiport_venue_by_userside_id(request, client_code, altair_famiport_venue.id)
+            # famiport_venue_id = famiport_venue_info['venue_id']
+            # # prefecture = famiport_venue_info['prefecture']
             if altair_famiport_venue.id in altair_famiport_venues_just_added:
                 if altair_famiport_venue.status == AltairFamiPortReflectionStatus.AwaitingReflection.value:
                     logs.append(u'会場「%s」は、反映待ちとなっており自動更新できません' % performance.venue.name)
                 elif altair_famiport_venue.status == AltairFamiPortReflectionStatus.Reflected.value:
                     logs.append(u'会場「%s」は、反映済となっており自動更新できません。一度編集状態に戻してください' % performance.venue.name)
-                elif altair_famiport_venue.status == AltairFamiPortReflectionStatus.Editing.value:
-                    logs.append(u'会場「%s」の、連携値を更新しました' % performance.venue.name)
-                    prefecture = resolve_famiport_prefecture_by_name(request, performance.venue.site.prefecture)
-                    altair_famiport_venue.name = performance.venue.name
-                    result = create_or_update_famiport_venue(
-                        request,
-                        client_code=client_code,
-                        id=famiport_venue_id,
-                        userside_id=altair_famiport_venue.id,
-                        name=performance.venue.name,
-                        name_kana=u'',
-                        prefecture=prefecture,
-                        update_existing=True
-                        )
-                    if result['new']:
-                        logs.append(u'会場「%s」が予期せず再連携されています。システム管理者に連絡してください' % performance.venue.name)
+            #     elif altair_famiport_venue.status == AltairFamiPortReflectionStatus.Editing.value:
+            #         logs.append(u'会場「%s」の、連携値を更新しました' % performance.venue.name)
+            #         prefecture = resolve_famiport_prefecture_by_name(request, performance.venue.site.prefecture)
+            #         altair_famiport_venue.name = performance.venue.name
+            #         # Update FamiPortVenue for altair_famiport_venue
+            #         result = create_or_update_famiport_venue(
+            #             request,
+            #             client_code=client_code,
+            #             id=famiport_venue_id,
+            #             userside_id=altair_famiport_venue.id,
+            #             name=performance.venue.name,
+            #             name_kana=u'',
+            #             prefecture=prefecture,
+            #             update_existing=True
+            #             )
+            #
+            #         if result['new']:
+            #             logs.append(u'会場「%s」が予期せず再連携されています。システム管理者に連絡してください' % performance.venue.name)
 
+        # 連携対象のPerformanceとAltairFamiPortVenueの組み合わせを登録
         performances_for_venue = performances_by_venue.get(altair_famiport_venue)
         if performances_for_venue is None:
             performances_by_venue[altair_famiport_venue] = performances_for_venue = []
         performances_for_venue.append(performance)
 
+    # STEP 2: 登録された連携対象の連携
     for altair_famiport_venue, performances_for_venue in performances_by_venue.items():
         altair_famiport_performance_group = None
         try:
+            # Look up existing AltairFamiPortPerformanceGroup with same event_id and altair_famiport_venue_id
             altair_famiport_performance_group = session.query(AltairFamiPortPerformanceGroup) \
                 .filter(AltairFamiPortPerformanceGroup.event_id == event.id) \
                 .filter(AltairFamiPortPerformanceGroup.altair_famiport_venue_id == altair_famiport_venue.id) \
@@ -201,6 +250,8 @@ def build_famiport_performance_groups(request, session, datetime_formatter, tena
         except NoResultFound:
             pass
         performances_by_venue = sorted(performances_for_venue, key=lambda performance: performance.start_on)
+
+        # Create new AltairFamiPortPerformanceGroup
         if altair_famiport_performance_group is None:
             code_1, code_2 = next_event_code(session, event)
             if len(performances_for_venue) > 1:
@@ -234,6 +285,7 @@ def build_famiport_performance_groups(request, session, datetime_formatter, tena
             logs.append(u'公演グループ「%s」(%s-%s) は、反映待ちとなっており自動更新できません' % (altair_famiport_performance_group.name_1, altair_famiport_performance_group.code_1, altair_famiport_performance_group.code_2))
         else:
             for performance in performances_for_venue:
+                # Look up existing AltairFamiPortPerformance for the performance and set type
                 altair_famiport_performance = altair_famiport_performance_group.altair_famiport_performances.get(performance)
                 if performance.end_on is None or performance.end_on - performance.start_on < timedelta(days=1):
                     type_ = FamiPortPerformanceType.Normal.value
@@ -242,39 +294,58 @@ def build_famiport_performance_groups(request, session, datetime_formatter, tena
                     type_ = FamiPortPerformanceType.Spanned.value
                     ticket_name = u'(%sまで有効)' % datetime_formatter.format_date(performance.end_on, with_weekday=True)
 
-                if altair_famiport_performance is None:
+                if altair_famiport_performance is None: # No existing AltairFamiPortPerformance for the performance in altair_famiport_performance_group
                     logs.append(u'公演「%s」(id=%ld) を新たに連携設定しました' % (performance.name, performance.id))
                     code = next_performance_code(session, altair_famiport_performance_group.id)
                     if not validate_convert_famiport_kogyo_name_style(performance.name):
                         logs.append(u'公演名が長すぎるか使用できない文字が含まれていたので変換しました: 公演「%s」(id=%ld)' % (performance.name, performance.id))
-                    altair_famiport_performance = AltairFamiPortPerformance(
-                        altair_famiport_performance_group=altair_famiport_performance_group,
-                        code=code,
-                        name=convert_famiport_kogyo_name_style(performance.name),
-                        type=type_,
-                        ticket_name=ticket_name,
-                        performance=performance,
-                        start_at=performance.start_on,
-                        status=AltairFamiPortReflectionStatus.Editing.value
-                        )
-                    session.add(altair_famiport_performance)
-                    session.flush()
-                    altair_famiport_performances_just_added.add(altair_famiport_performance.id)
-                else:
+                    if performance.id in moving_performance_ids:
+                        # session.execute('UPDATE AltairFamiPortPerformance SET altair_famiport_performance_group_id = %ld, code = %s WHERE performance_id = %ld' \
+                        #                % (altair_famiport_performance_group.id, next_performance_code(session, altair_famiport_performance_group.id), performance.id))
+                        # session.commit()
+                        # session.query(AltairFamiPortPerformance).filter(AltairFamiPortPerformance.performance_id == performance.id)\
+                        #                                        .update({AltairFamiPortPerformance.altair_famiport_performance_group_id: altair_famiport_performance_group.id, \
+                        #                                                 AltairFamiPortPerformance.code: next_performance_code(session, altair_famiport_performance_group.id)}, False)
+                        altair_famiport_performance = session.query(AltairFamiPortPerformance).filter(AltairFamiPortPerformance.performance_id == performance.id).one()
+
+                        # Update altair_famiport_performance's attributes
+                        # Move existing altair_famiport_performance to another group
+                        if altair_famiport_performance.altair_famiport_performance_group_id != altair_famiport_performance_group.id:
+                            altair_famiport_performance.altair_famiport_performance_group_id = altair_famiport_performance_group.id
+                            altair_famiport_performance.code = code
+                            session.flush()
+
+                        logs.append(u'公演「%s」(id=%ld) の連携値を更新しました' % (performance.name, performance.id))
+                    else:
+                        # Create new AltairFamiPortPerformance for the performance
+                        altair_famiport_performance = AltairFamiPortPerformance(
+                            altair_famiport_performance_group=altair_famiport_performance_group,
+                            code=code,
+                            name=convert_famiport_kogyo_name_style(performance.name),
+                            type=type_,
+                            ticket_name=ticket_name,
+                            performance=performance,
+                            start_at=performance.start_on,
+                            status=AltairFamiPortReflectionStatus.Editing.value
+                            )
+                        session.add(altair_famiport_performance)
+                        session.flush()
+                        altair_famiport_performances_just_added.add(altair_famiport_performance.id)
+                else: # AltairFamiPortPerformance for the performance exists
                     if not altair_famiport_performance.id not in altair_famiport_performances_just_added:
                         if altair_famiport_performance.status == AltairFamiPortReflectionStatus.AwaitingReflection.value:
                             logs.append(u'公演「%s」(id=%ld) は、反映待ちとなっており自動更新できません' % (performance.name, performance.id))
                         elif altair_famiport_performance.status == AltairFamiPortReflectionStatus.Reflected.value:
                             logs.append(u'公演「%s」(id=%ld) は、反映済となっており自動更新できません。一度編集状態に戻してください。' % (performance.name, performance.id))
                         elif altair_famiport_performance.status == AltairFamiPortReflectionStatus.Editing.value:
-                            logs.append(u'公演「%s」(id=%ld) の連携値を更新しました' % (performance.name, performance.id))
                             if not validate_convert_famiport_kogyo_name_style(performance.name):
                                 logs.append(u'公演名が長すぎるか使用できない文字が含まれていたので変換しました: 公演「%s」(id=%ld)' % (performance.name, performance.id))
-                            altair_famiport_performance.name = convert_famiport_kogyo_name_style(performance.name)
+                            altair_famiport_performance.name = convert_famiport_kogyo_name_style(performance.name) # TODO Skip in the 2nd update
                             altair_famiport_performance.type = type_
                             altair_famiport_performance.ticket_name = ticket_name
                             altair_famiport_performance.start_at = performance.start_on
                 if altair_famiport_performance.status == AltairFamiPortReflectionStatus.Editing.value:
+                    # Look up famiport related SalesSegments of performance
                     sales_segments = session.query(SalesSegment) \
                         .join(SalesSegment_PaymentDeliveryMethodPair, SalesSegment_PaymentDeliveryMethodPair.c.sales_segment_id == SalesSegment.id) \
                         .join(PaymentDeliveryMethodPair, SalesSegment_PaymentDeliveryMethodPair.c.payment_delivery_method_pair_id == PaymentDeliveryMethodPair.id) \
@@ -286,6 +357,7 @@ def build_famiport_performance_groups(request, session, datetime_formatter, tena
                             ) \
                         .filter(SalesSegment.performance_id == performance.id) \
                         .all()
+                    # Pair up sales_segments as [(seat_unselectable_sales_segment, seat_selectable_sales_segment), ...]
                     sales_segment_pairs = list(find_sales_segment_pairs(session, sales_segments))
                     if len(sales_segment_pairs) > 0:
                         for seat_unselectable_sales_segment, seat_selectable_sales_segment in sales_segment_pairs:
@@ -298,21 +370,22 @@ def build_famiport_performance_groups(request, session, datetime_formatter, tena
                                 pair_ids.append(seat_selectable_sales_segment.id)
                                 non_none_sales_segments.append(seat_selectable_sales_segment)
                             assert len(pair_ids) > 0
-                            altair_famiport_sales_segment = None
+                            altair_famiport_sales_segment_pair = None
                             inconsistent_sales_segment = None
                             try:
-                                altair_famiport_sales_segment = session.query(AltairFamiPortSalesSegmentPair) \
+                                altair_famiport_sales_segment_pair = session.query(AltairFamiPortSalesSegmentPair) \
                                     .filter(sql.or_(
                                         AltairFamiPortSalesSegmentPair.seat_unselectable_sales_segment_id.in_(pair_ids),
                                         AltairFamiPortSalesSegmentPair.seat_selectable_sales_segment_id.in_(pair_ids)
                                         )) \
                                     .one()
-                                if altair_famiport_sales_segment.seat_unselectable_sales_segment is not None and \
-                                   altair_famiport_sales_segment.seat_unselectable_sales_segment.seat_choice:
-                                    inconsistent_sales_segment = altair_famiport_sales_segment.seat_unselectable_sales_segment
-                                elif altair_famiport_sales_segment.seat_selectable_sales_segment is not None and \
-                                   not altair_famiport_sales_segment.seat_selectable_sales_segment.seat_choice:
-                                    inconsistent_sales_segment = altair_famiport_sales_segment.seat_selectable_sales_segment
+                                # Check the consistency of altair_famiport_sales_segment_pair
+                                if altair_famiport_sales_segment_pair.seat_unselectable_sales_segment is not None and \
+                                   altair_famiport_sales_segment_pair.seat_unselectable_sales_segment.seat_choice:
+                                    inconsistent_sales_segment = altair_famiport_sales_segment_pair.seat_unselectable_sales_segment
+                                elif altair_famiport_sales_segment_pair.seat_selectable_sales_segment is not None and \
+                                   not altair_famiport_sales_segment_pair.seat_selectable_sales_segment.seat_choice:
+                                    inconsistent_sales_segment = altair_famiport_sales_segment_pair.seat_selectable_sales_segment
                             except NoResultFound:
                                 pass
                             except MultipleResultsFound:
@@ -324,14 +397,14 @@ def build_famiport_performance_groups(request, session, datetime_formatter, tena
                                     inconsistent_sales_segment.id
                                     ))
                             else:
-                                if altair_famiport_sales_segment is None:
+                                if altair_famiport_sales_segment_pair is None:
                                     for sales_segment in non_none_sales_segments:
                                         logs.append(u'販売区分「%s」(id=%d) を新たに連携設定しました' % (
                                             sales_segment.sales_segment_group.name,
                                             sales_segment.id
                                             ))
                                     code = next_sales_segment_code(session, altair_famiport_performance.id)
-                                    altair_famiport_sales_segment = AltairFamiPortSalesSegmentPair(
+                                    altair_famiport_sales_segment_pair = AltairFamiPortSalesSegmentPair(
                                         altair_famiport_performance=altair_famiport_performance,
                                         code=code,
                                         name=non_none_sales_segments[0].sales_segment_group.name,
@@ -342,23 +415,23 @@ def build_famiport_performance_groups(request, session, datetime_formatter, tena
                                         seat_selectable_sales_segment=seat_selectable_sales_segment,
                                         status=AltairFamiPortReflectionStatus.Editing.value
                                         )
-                                    session.add(altair_famiport_sales_segment)
+                                    session.add(altair_famiport_sales_segment_pair)
                                 else:
-                                    if altair_famiport_sales_segment.status == AltairFamiPortReflectionStatus.Editing.value:
+                                    if altair_famiport_sales_segment_pair.status == AltairFamiPortReflectionStatus.Editing.value:
                                         for sales_segment in non_none_sales_segments:
                                             logs.append(u'販売区分「%s」(id=%d) の連携値を更新しました' % (
                                                 sales_segment.sales_segment_group.name,
                                                 sales_segment.id
                                                 ))
-                                        altair_famiport_sales_segment.seat_unselectable_sales_segment = seat_unselectable_sales_segment
-                                        altair_famiport_sales_segment.seat_selectable_sales_segment = seat_selectable_sales_segment
-                                    elif altair_famiport_sales_segment.status == AltairFamiPortReflectionStatus.AwaitingReflection.value:
+                                        altair_famiport_sales_segment_pair.seat_unselectable_sales_segment = seat_unselectable_sales_segment
+                                        altair_famiport_sales_segment_pair.seat_selectable_sales_segment = seat_selectable_sales_segment
+                                    elif altair_famiport_sales_segment_pair.status == AltairFamiPortReflectionStatus.AwaitingReflection.value:
                                         for sales_segment in non_none_sales_segments:
                                             logs.append(u'販売区分「%s」(id=%d) は連携待ちとなっており自動更新できません' % (
                                                 sales_segment.sales_segment_group.name,
                                                 sales_segment.id
                                                 ))
-                                    elif altair_famiport_sales_segment.status == AltairFamiPortReflectionStatus.Reflected.value:
+                                    elif altair_famiport_sales_segment_pair.status == AltairFamiPortReflectionStatus.Reflected.value:
                                         for sales_segment in non_none_sales_segments:
                                             logs.append(u'販売区分「%s」(id=%d) は、反映済となっており自動更新できません。一度編集状態に戻してください。' % (
                                                 sales_segment.sales_segment_group.name,
@@ -389,7 +462,7 @@ def submit_to_downstream_sync(request, session, tenant, event):
                 altair_famiport_performance_group.altair_famiport_venue.id
                 )
         except FamiPortAPINotFoundError:
-            prefecture = resolve_famiport_prefecture_by_name(request, altair_famiport_performance_group.altair_famiport_venue.site.prefecture)
+            prefecture = resolve_famiport_prefecture_by_name(request, altair_famiport_performance_group.altair_famiport_venue.siteprofile.prefecture)
             result = create_or_update_famiport_venue(
                 request,
                 client_code=tenant.code,

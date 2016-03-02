@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import os.path
 import lxml.etree
+from warnings import warn
 
 from .communication import (
     FamiPortReservationInquiryRequest,
@@ -326,7 +327,7 @@ def _setup_db(registry, modules=[], echo=False, engine=None):
     for module in modules:
         resolver.resolve(module)
     Base.metadata.create_all(bind=engine)
-    for session_name in ['famiport', 'famiport_slave', 'famiport_comm']:
+    for session_name in ['ticketing', 'famiport', 'famiport_slave', 'famiport_comm']:
         register_sessionmaker_with_engine(
             registry,
             session_name,

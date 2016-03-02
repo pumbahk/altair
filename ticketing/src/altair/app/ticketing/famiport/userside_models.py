@@ -9,7 +9,7 @@ from altair.saannotation import AnnotatedColumn
 from pyramid.i18n import TranslationString as _
 from altair.models import MutationDict, JSONEncodedDict, LogicallyDeleted, Identifier, WithTimestamp
 from altair.app.ticketing.models import Base, BaseModel, DBSession, _flush_or_rollback
-from altair.app.ticketing.orders.models import Order
+from altair.app.ticketing.orders.models import Order, Performance
 from altair.app.ticketing.payments.plugins import FAMIPORT_PAYMENT_PLUGIN_ID, FAMIPORT_DELIVERY_PLUGIN_ID
 from altair.app.ticketing.famiport.models import FamiPortSalesChannel, FamiPortPerformanceType
 from altair.app.ticketing.core.models import SalesSegment
@@ -32,6 +32,14 @@ class AltairFamiPortVenue_Site(Base):
     altair_famiport_venue_id = AnnotatedColumn(Identifier, sa.ForeignKey('AltairFamiPortVenue.id', ondelete='CASCADE'), nullable=False)
     site_id = AnnotatedColumn(Identifier, sa.ForeignKey('Site.id', ondelete='CASCADE'), nullable=False)
 
+class AltairFamiPortVenue_Venue(Base):
+    __tablename__ = 'AltairFamiPortVenue_Venue'
+    __table_args__ = (
+        sa.PrimaryKeyConstraint('altair_famiport_venue_id', 'venue_id'),
+        )
+
+    altair_famiport_venue_id = AnnotatedColumn(Identifier, sa.ForeignKey('AltairFamiPortVenue.id', ondelete='CASCADE'), nullable=False)
+    venue_id = AnnotatedColumn(Identifier, sa.ForeignKey('Venue.id', ondelete='CASCADE'), nullable=False)
 
 class AltairFamiPortVenue(Base, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'AltairFamiPortVenue'
@@ -41,6 +49,7 @@ class AltairFamiPortVenue(Base, WithTimestamp, LogicallyDeleted):
    
     id = AnnotatedColumn(Identifier, primary_key=True, autoincrement=True)
     organization_id = AnnotatedColumn(Identifier, sa.ForeignKey('Organization.id'), nullable=False)
+    siteprofile_id = AnnotatedColumn(Identifier, sa.ForeignKey('SiteProfile.id'), nullable=False)
     famiport_venue_id = AnnotatedColumn(Identifier, nullable=False)
     venue_name = AnnotatedColumn(sa.Unicode(50), nullable=False) # Venue.name
     name  = AnnotatedColumn(sa.Unicode(50), nullable=False) # Site.name
@@ -49,7 +58,9 @@ class AltairFamiPortVenue(Base, WithTimestamp, LogicallyDeleted):
     last_reflected_at = AnnotatedColumn(sa.DateTime(), nullable=True)
 
     organization = orm.relationship('Organization')
+    siteprofile = orm.relationship('SiteProfile')
     sites = orm.relationship('Site', secondary=AltairFamiPortVenue_Site.__table__)
+    venues = orm.relationship('Venue', secondary=AltairFamiPortVenue_Venue.__table__)
 
 
 class AltairFamiPortPerformanceGroup(Base, WithTimestamp, LogicallyDeleted):
@@ -161,11 +172,6 @@ class AltairFamiPortPerformance(Base, WithTimestamp, LogicallyDeleted):
 
     performance = orm.relationship('Performance')
     altair_famiport_performance_group = orm.relationship('AltairFamiPortPerformanceGroup')
-
-    # def reserved_orders(self):
-    #     query = Order.query.filter_by(Order.performance_id==self.performance_id).filter_by(Order.deleted_at!=None).filter_by(Order.canceled_at!=None)\
-    #                                                                              .filter_by(sa.or_(Order.payment_plugin_id==FAMIPORT_PAYMENT_PLUGIN_ID, Order.delivery_plugin_id==FAMIPORT_DELIVERY_PLUGIN_ID))
-    #     return query.first()
 
     def delete(self):
         # if self.reserved_orders():
