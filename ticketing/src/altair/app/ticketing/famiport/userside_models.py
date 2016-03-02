@@ -165,13 +165,19 @@ class AltairFamiPortPerformance(Base, WithTimestamp, LogicallyDeleted):
     type = AnnotatedColumn(sa.Integer, nullable=False, default=FamiPortPerformanceType.Normal.value, _a_label=u'公演種別')
     performance_id = AnnotatedColumn(Identifier, sa.ForeignKey('Performance.id'), nullable=False)
     searchable = AnnotatedColumn(sa.Boolean, nullable=False, default=True, _a_label=u'公演情報開示フラグ')
-    start_at = AnnotatedColumn(sa.DateTime(), nullable=True, _a_label=u'公演日時')
+    start_at = AnnotatedColumn(sa.DateTime(), nullable=False, _a_label=u'公演日時')  # Performance.start_onが必須なので必ず入る
     ticket_name = AnnotatedColumn(sa.Unicode(20), nullable=True, _a_label=u'チケット名称')
     status = AnnotatedColumn(sa.Integer(), default=AltairFamiPortReflectionStatus.Editing.value)
     last_reflected_at = AnnotatedColumn(sa.DateTime(), nullable=True)
 
     performance = orm.relationship('Performance')
     altair_famiport_performance_group = orm.relationship('AltairFamiPortPerformanceGroup')
+
+    @orm.validates('start_at')
+    def validate_start_at(self, key, value):
+        if value is None:
+            logger.error("altair_famiport_performce(peformance_id:{}) has no start_at date. ".format(self.performance.id))
+        return value
 
     def delete(self):
         # if self.reserved_orders():
