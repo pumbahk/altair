@@ -6,7 +6,7 @@ from altair.formhelpers.form import OurForm
 from altair.formhelpers.fields import OurTextField, OurSelectField, OurDecimalField, OurHiddenField
 from altair.formhelpers.widgets import OurTextArea
 from altair.formhelpers import Translations, Required, OurBooleanField
-from altair.formhelpers.validators import DynSwitchDisabled
+from altair.formhelpers.validators import DynSwitchDisabled, ValidationError
 from altair.app.ticketing.core.models import DeliveryMethod, DeliveryMethodPlugin
 from altair.saannotation import get_annotations_for
 from altair.app.ticketing.payments.plugins import SEJ_DELIVERY_PLUGIN_ID, QR_DELIVERY_PLUGIN_ID, FAMIPORT_DELIVERY_PLUGIN_ID, RESERVE_NUMBER_DELIVERY_PLUGIN_ID
@@ -82,3 +82,8 @@ class DeliveryMethodForm(OurForm):
         label=u'使用可否',
         default=True,
     )
+
+    def validate_expiration_date(form, field):
+        if field.data:
+            if str(field.data).isdigit() == False:
+                raise ValidationError(u'数字（正数）のみ、入力できます。')
