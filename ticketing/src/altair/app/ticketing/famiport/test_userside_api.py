@@ -414,8 +414,59 @@ class FamiPortSyncTest(unittest.TestCase):
 
         # TODO submit_to_downstream_sync
 
-        # Change status from Editing to AwaitingReflection
+        # Change status from Editing to Reflected for now
         for entity in [altair_famiport_venue, altair_famiport_performance_group, altair_famiport_performance, altair_famiport_salessegment_pair]:
-            self.changeStatus(entity, AltairFamiPortReflectionStatus.Reflected.value)
+           self.changeStatus(entity, AltairFamiPortReflectionStatus.Reflected.value)
 
         build_famiport_performance_groups(self.fm_request, self.session, datetime_formatter, self.rt_fmtenant, event1.id)
+
+    def test_performance_starton_change(self):
+        """2nd FM sync with performance.start.on change
+        """
+
+        siteprofile1 = SiteProfile(id = 1, name = u'Zepp DiverCity TOKYO', prefecture = u'東京都')
+        site1 = Site(id = 1, siteprofile_id = 1, name = u'Zepp DiverCity TOKYO', visible = True)
+        event1 = Event(id = 1, code = 'RT00001', title = u'テストイベント1', organization_id = 15)
+        performance1 = Performance(id = 1, event_id = 1, name = u'テスト公演1', code = 'RT0000000001', start_on = datetime(2016, 3, 1, 10, 0, 0), end_on = None)
+        venue1 = Venue(id = 1, site_id = 1, organization_id = 15, name = u'Zepp DiverCity TOKYO', performance_id = 1)
+        salessegmentgroup1 = SalesSegmentGroup(id = 1, organization_id = 15, event_id = 1, kind = 'normal', name = u'一般発売', seat_choice = False, \
+                                                    start_at = datetime(2016, 2, 1, 10, 0, 0), end_at = datetime(2016, 2, 26, 23, 59, 59))
+        salessegment1 = SalesSegment(id = 1, sales_segment_group_id = 1, performance_id = 1, event_id = 1, payment_delivery_method_pairs = [self.fm_pdmp], public = True, seat_choice = False, \
+                                          start_at = datetime(2016, 2, 1, 10, 0, 0), end_at = datetime(2016, 2, 26, 23, 59, 59))
+
+        self.session.add(siteprofile1)
+        self.session.add(site1)
+        self.session.add(event1)
+        self.session.add(performance1)
+        self.session.add(venue1)
+        self.session.add(salessegmentgroup1)
+        self.session.add(salessegment1)
+        self.session.flush()
+
+        datetime_formatter = create_date_time_formatter(self.request)
+        build_famiport_performance_groups(self.fm_request, self.session, datetime_formatter, self.rt_fmtenant, event1.id)
+
+        # Retrieve created intermidiate objects: AltairFamiPortVenue, AltairFamiPortPerformanceGroup, AltairFamiPortPerformance, AltairFamiPortSalesSegmentPair
+        altair_famiport_venue = self.session.query(AltairFamiPortVenue).filter(AltairFamiPortVenue.siteprofile_id == siteprofile1.id).filter(AltairFamiPortVenue.venue_name == venue1.name).one()
+        altair_famiport_performance_group = self.session.query(AltairFamiPortPerformanceGroup).filter_by(event_id = event1.id).one()
+        altair_famiport_performance = self.session.query(AltairFamiPortPerformance).filter_by(performance_id = performance1.id).one()
+        altair_famiport_salessegment_pair = self.session.query(AltairFamiPortSalesSegmentPair).filter(sa.or_(AltairFamiPortSalesSegmentPair.seat_unselectable_sales_segment_id == salessegment1.id, \
+                                                                                                             AltairFamiPortSalesSegmentPair.seat_selectable_sales_segment_id == salessegment1.id)).one()
+
+        # TODO submit_to_downstream_sync
+
+        self.assertEqual(performance1.start_on, altair_famiport_performance.start_at)
+
+        performance1.start_on = datetime(2016, 3, 1, 11, 0, 0)
+        self.session.add(performance1)
+        self.session.flush()
+
+         # Change status from Editing to AwaitingReflection
+        for entity in [altair_famiport_venue, altair_famiport_performance_group, altair_famiport_performance, altair_famiport_salessegment_pair]:
+            self.changeStatus(entity, AltairFamiPortReflectionStatus.Editing.value)
+
+        build_famiport_performance_groups(self.fm_request, self.session, datetime_formatter, self.rt_fmtenant, event1.id)
+
+        altair_famiport_performance = self.session.query(AltairFamiPortPerformance).filter(AltairFamiPortPerformance.performance_id == performance1.id).one()
+
+        self.assertEqual(performance1.start_on, altair_famiport_performance.start_at)
