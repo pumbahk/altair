@@ -281,7 +281,7 @@ def get_famiport_event_by_userside_id(request, client_code, userside_id):
         raise FamiPortAPIError('internal error')
 
 @user_api
-def create_famiport_venue(request, client_code, userside_id, name, name_kana, prefecture):
+def create_or_get_famiport_venue(request, client_code, userside_id, name, name_kana, prefecture):
     sys.exc_clear()
     try:
         session = get_db_session(request, 'famiport')

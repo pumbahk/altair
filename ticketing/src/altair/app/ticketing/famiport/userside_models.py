@@ -59,7 +59,7 @@ class AltairFamiPortVenue(Base, WithTimestamp, LogicallyDeleted):
 
     organization = orm.relationship('Organization')
     siteprofile = orm.relationship('SiteProfile')
-    sites = orm.relationship('Site', secondary=AltairFamiPortVenue_Site.__table__)
+    # sites = orm.relationship('Site', secondary=AltairFamiPortVenue_Site.__table__) Not used anyomore
     venues = orm.relationship('Venue', secondary=AltairFamiPortVenue_Venue.__table__)
 
 

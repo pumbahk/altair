@@ -13,7 +13,7 @@ from altair.mq import get_publisher
 from altair.app.ticketing.core.models import Site, Venue, Event, Performance, SalesSegment, SalesSegment_PaymentDeliveryMethodPair, PaymentDeliveryMethodPair, FamiPortTenant, PaymentMethod, DeliveryMethod
 from altair.app.ticketing.famiport.models import FamiPortPrefecture, FamiPortPerformanceType, FamiPortSalesChannel
 from altair.app.ticketing.famiport.exc import FamiPortAPIError, FamiPortAPINotFoundError
-from altair.app.ticketing.famiport.api import get_famiport_venue_by_userside_id, get_famiport_venue_by_userside_id_or_name, get_famiport_venue_by_name, resolve_famiport_prefecture_by_name, create_famiport_venue, create_or_update_famiport_venue, create_or_update_famiport_event, create_or_update_famiport_performance, create_or_update_famiport_sales_segment
+from altair.app.ticketing.famiport.api import get_famiport_venue_by_userside_id, get_famiport_venue_by_userside_id_or_name, get_famiport_venue_by_name, resolve_famiport_prefecture_by_name, create_or_get_famiport_venue, create_or_update_famiport_venue, create_or_update_famiport_event, create_or_update_famiport_performance, create_or_update_famiport_sales_segment
 from altair.app.ticketing.famiport.userside_models import (
     AltairFamiPortVenue,
     AltairFamiPortVenue_Site,
@@ -103,7 +103,7 @@ def find_sales_segment_pairs(session, sales_segments):
                 yield a, None
         i += 1
 
-def create_altair_famiport_venue(request, session, organization_id, client_code, venue, name, name_kana=u''):
+def __create_altair_famiport_venue(request, session, organization_id, client_code, venue, name, name_kana=u''):
     # Create new AltairFamiPortVenue
     altair_famiport_venue = AltairFamiPortVenue(
         organization_id = organization_id,
@@ -116,14 +116,11 @@ def create_altair_famiport_venue(request, session, organization_id, client_code,
         )
     altair_famiport_venue.venues.append(venue)
 
-    # session.add(altair_famiport_venue)
-    # session.flush()
-
     # Create new FamiPortVenue for altair_famiport_venue
     result = None
     prefecture = resolve_famiport_prefecture_by_name(request, venue.site.siteprofile.prefecture.strip())
     try:
-        result = create_famiport_venue(
+        result = create_or_get_famiport_venue(
             request,
             client_code=client_code,
             userside_id=altair_famiport_venue.id,
@@ -166,10 +163,7 @@ def build_famiport_performance_groups(request, session, datetime_formatter, tena
             .filter(AltairFamiPortVenue.venue_name == performance.venue.name) \
             .filter(AltairFamiPortVenue.deleted_at == None) \
             .first()
-        if altair_famiport_venue is not None: # Exact altair_famiport_venue is found
-            if performance.venue not in altair_famiport_venue.venues:
-                altair_famiport_venue.venues.append(performance.venue)
-        else:
+        if altair_famiport_venue is None: # Exact altair_famiport_venue is not found
             # Look up existing AltairFamiPortVenue with same venue id and different venue name
             altair_famiport_venue = session.query(AltairFamiPortVenue) \
                 .join(AltairFamiPortVenue.siteprofile) \
@@ -183,10 +177,10 @@ def build_famiport_performance_groups(request, session, datetime_formatter, tena
                 altair_famiport_venue.venues.remove(performance.venue) # Remove name changed venue from mapping table
                 moving_performance_ids.add(performance.id)
                 # Create new AltairFamiPortVenue and corresponding FamiPortVenue
-                altair_famiport_venue = create_altair_famiport_venue(request, session, event.organization_id, client_code, performance.venue, performance.venue.site.siteprofile.name)
+                altair_famiport_venue = __create_altair_famiport_venue(request, session, event.organization_id, client_code, performance.venue, performance.venue.site.siteprofile.name)
             else:
-                existimg_altair_famiport_performance = session.query(AltairFamiPortPerformance).filter(AltairFamiPortPerformance.performance_id == performance.id).first()
-                if existimg_altair_famiport_performance:
+                existing_altair_famiport_performance = session.query(AltairFamiPortPerformance).filter(AltairFamiPortPerformance.performance_id == performance.id).first()
+                if existing_altair_famiport_performance:
                     moving_performance_ids.add(performance.id)
                 # Look up existing AltairFamiPortVenue with same siteprofile_id and venue name
                 altair_famiport_venue = session.query(AltairFamiPortVenue) \
@@ -202,7 +196,7 @@ def build_famiport_performance_groups(request, session, datetime_formatter, tena
                         altair_famiport_venue.venues.append(performance.venue) # Add new venue to mapping table
                 else:
                     # Create new AltairFamiPortVenue and corresponding FamiPortVenue
-                    altair_famiport_venue = create_altair_famiport_venue(request, session, event.organization_id, client_code, performance.venue, performance.venue.site.siteprofile.name)
+                    altair_famiport_venue = __create_altair_famiport_venue(request, session, event.organization_id, client_code, performance.venue, performance.venue.site.siteprofile.name)
 
             altair_famiport_venues_just_added.add(altair_famiport_venue.id)
             logs.append(u'会場「%s」をFamiポート連携対象としました' % performance.venue.name)
