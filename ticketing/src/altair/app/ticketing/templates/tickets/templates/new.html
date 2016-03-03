@@ -53,9 +53,10 @@ ${ch.breadcrumbs(
 	<fieldset>
 	  ${ch.form_item(form.name)}
 	  ${ch.form_item(form.ticket_format_id)}
-    ${ch.form_item(form.always_reissueable)}
-    ${ch.form_item(form.principal)}
+      ${ch.form_item(form.always_reissueable)}
+      ${ch.form_item(form.principal)}
 	  ${ch.form_item(form.drawing, placeholder=place_holder)}
+      ${ch.form_item(form.visible)}
 	</fieldset>
 	<div class="form-actions">
 	  <input class="btn btn-primary" type="submit" name="submit" value="登録">

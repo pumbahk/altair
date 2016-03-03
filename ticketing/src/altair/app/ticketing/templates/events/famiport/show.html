@@ -113,6 +113,7 @@
           <input type="checkbox" name="altair_famiport_performance_group_id[]" value="${altair_famiport_performance_group.id}" />
         </td>
         <td rowspan="${rows}">
+          ${view.not_reflected_label(altair_famiport_performance_group)}
           ${view.status_label(altair_famiport_performance_group.status)}
           ${view.sales_channel_label(altair_famiport_performance_group.sales_channel)}
           <a href="${request.route_path('events.famiport.performance_groups.item.show', event_id=event.id, altair_famiport_performance_group_id=altair_famiport_performance_group.id)}">${altair_famiport_performance_group.name_1}</a> (${altair_famiport_performance_group.name_2})<br>
@@ -130,6 +131,7 @@
           % endif
         <td rowspan="2">${altair_famiport_performance.code}</td>
         <td>
+          ${view.not_reflected_label(altair_famiport_performance)}
           ${view.status_label(altair_famiport_performance.status)}
           <a href="${request.route_path('events.famiport.performances.item.show', event_id=event.id, altair_famiport_performance_group_id=altair_famiport_performance_group.id, altair_famiport_performance_id=altair_famiport_performance.id)}">
             ${altair_famiport_performance.name}

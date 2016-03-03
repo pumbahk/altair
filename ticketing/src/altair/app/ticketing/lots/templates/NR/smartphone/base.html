@@ -17,14 +17,14 @@
     $('form').disableOnSubmit();
   });
 </script>
-<title>${view_context.team_name}</title>
+<title>ノースロード・ミュージック</title>
 </head>
 <body>
 <p id="naviSkip"><a href="#main" tabindex="1" title="本文へジャンプ"><img src="${request.static_url('altair.app.ticketing.lots:static/NR/smartphone/img/common/skip.gif')}" alt="本文へジャンプ" width="1" height="1"></a></p>
 <div id="container">
 
 <div id="header">
-    <h1><img src="${request.static_url('altair.app.ticketing.lots:static/NR/smartphone/img/common/logo.png')}" width="240" height="96" alt="${view_context.team_name}"></h1>
+    <h1><img src="${request.static_url('altair.app.ticketing.lots:static/NR/smartphone/img/common/logo.png')}" alt="ノースロード・ミュージック"></h1>
       % if lot:
         <!--
         <form name="logout" action="${request.route_path('lots.entry.logout', _query=dict(lot_id=lot.id, event_id=lot.event.id))}" method="POST">
@@ -47,7 +47,7 @@
   <div class="footerCopy">
     <div class="footernav">
       <ul>
-<li><a href="mailto:north-road.tstar.jp">お問い合わせ</a></li>
+<li><a href="http://www.north-road.co.jp/contactus/index.html">お問い合わせ</a></li>
 <li><a href="http://www.ticketstar.jp/legal">特定商取引法に基づく表示</a></li>
 <li><a href="http://www.ticketstar.jp/privacy/">個人情報保護方針</a></li>
       </ul>

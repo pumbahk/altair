@@ -3069,6 +3069,7 @@ class TicketFormat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     delivery_methods = relationship('DeliveryMethod', secondary=TicketFormat_DeliveryMethod.__table__, backref='ticket_formats')
     data = Column(MutationDict.as_mutable(JSONEncodedDict(65536)))
     display_order = Column(Identifier)
+    visible = Column(Boolean, default=True, nullable=False)
 
     def detect_preview_type(self):
         for dm in self.delivery_methods:
@@ -3104,6 +3105,7 @@ class Ticket(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     data = Column(MutationDict.as_mutable(JSONEncodedDict(65536)))
     filename = Column(Unicode(255), nullable=False, default=u"uploaded.svg")
     cover_print = Column(Boolean, nullable=False, default=True)
+    visible = Column(Boolean, nullable=False, default=True)
 
     def before_insert_or_update(self):
         if self.original_ticket and self.data != self.original_ticket.data:
