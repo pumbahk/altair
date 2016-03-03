@@ -66,24 +66,36 @@ class CouponViewResource(CouponResourceBase):
         delivery_method = self.order.payment_delivery_method_pair.delivery_method
         preferences = delivery_method.preferences.get(unicode(RESERVE_NUMBER_DELIVERY_PLUGIN_ID), {})
 
-        # 有効期限があった場合は優先
+        # 相対有効期限があった場合は優先
         if 'expiration_date' in preferences:
             expiration_date = preferences['expiration_date']
             if str(expiration_date).isdigit():
-                start = self.order.created_at < datetime.today()
-                end = datetime.now().date() < (self.order.created_at.date() + timedelta(days=(int(expiration_date) + 1)))
-                if start and end:
-                    return True
+                return self.can_use_expiration_date(expiration_date)
 
-        # 有効期限がない場合は、公演日
+        # 相対有効期限がない場合は、公演期間のみ使用可
+        return self.can_use_performance_term()
+
+    def can_use_expiration_date(self, expiration_date):
+        if not self.order.created_at < datetime.today():
+            return False
+
+        if not (datetime.now().date() <= (self.order.created_at.date() + timedelta(days=(int(expiration_date))))):
+            return False
+
+        # 相対有効期限があっても、公演終了日は越えて入れない
+        if not self.can_use_performance_term():
+            return False
+
+        return True
+
+    def can_use_performance_term(self):
         perf = self.session.query(Performance).filter(Performance.id == self.order.performance_id).first()
-        if perf.start_on > datetime.today() + timedelta(minutes=1):
+        if perf.start_on < datetime.today() + timedelta(minutes=1):
             if perf.end_on is None:
                 return True
             if perf.end_on >= datetime.today():
                 return True
         return False
-
 
     @property
     def coupon_security(self):
