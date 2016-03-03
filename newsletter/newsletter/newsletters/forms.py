@@ -56,7 +56,7 @@ class NewslettersForm(Form):
     updated_at = DateTimeField(u'更新日時')
 
     def __init__(self, *args, **kw):
-        if args:
+        if args and args[0].get('start_date'):
             # set start_on
             args[0].add('start_on', args[0].get('start_date') + ' ' + args[0].get('start_time') + ':00')
 
