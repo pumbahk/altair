@@ -82,19 +82,12 @@ class CouponViewResource(CouponResourceBase):
         if not (datetime.now().date() <= (self.order.created_at.date() + timedelta(days=(int(expiration_date))))):
             return False
 
-        # 相対有効期限があっても、公演終了日は越えて入れない
-        if not self.can_use_performance_term():
-            return False
-
         return True
 
     def can_use_performance_term(self):
         perf = self.session.query(Performance).filter(Performance.id == self.order.performance_id).first()
-        if perf.start_on < datetime.today() + timedelta(minutes=1):
-            if perf.end_on is None:
-                return True
-            if perf.end_on >= datetime.today():
-                return True
+        if perf.start_on > datetime.today() + timedelta(minutes=1):
+            return True
         return False
 
     @property
