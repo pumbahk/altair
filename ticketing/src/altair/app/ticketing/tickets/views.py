@@ -43,6 +43,12 @@ from .convert import to_opcodes
 from .cleaner import cleanup_svg
 from .cleaner.normalize import normalize as normalize_svg
 from .cleaner.api import get_xmltree
+from altair.app.ticketing.tickets.api import (
+    set_visible_ticketformat,
+    set_invisible_ticketformat,
+    set_visible_tickettemplate,
+    set_invisible_tickettemplate,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -82,10 +88,16 @@ class TicketMasters(BaseView):
         ticket_cover_sort_by, ticket_cover_direction = helpers.sortparams('ticket_cover', self.request, ('updated_at', 'desc'))
 
         ticket_format_qs = TicketFormat.filter_by(organization_id=self.context.user.organization_id)
+        from altair.app.ticketing.tickets import VISIBLE_TICKETFORMAT_SESSION_KEY
+        if not self.request.session.get(VISIBLE_TICKETFORMAT_SESSION_KEY):
+            ticket_format_qs = ticket_format_qs.filter_by(visible=True)
         ticket_format_qs = ticket_format_qs.order_by(TicketFormat.display_order)
         page_format_qs = PageFormat.filter_by(organization_id=self.context.user.organization_id)
         page_format_qs = page_format_qs.order_by(PageFormat.display_order)
         ticket_template_qs = Ticket.templates_query().filter_by(organization_id=self.context.user.organization_id)
+        from altair.app.ticketing.tickets import VISIBLE_TICKETTEMPLATE_SESSION_KEY
+        if not self.request.session.get(VISIBLE_TICKETTEMPLATE_SESSION_KEY):
+            ticket_template_qs = ticket_template_qs.filter_by(visible=True)
         ticket_template_qs = ticket_template_qs.order_by(helpers.get_direction(ticket_template_direction)(ticket_template_sort_by))
 
         ticket_cover_qs = TicketCover.query.filter_by(organization_id=self.context.user.organization_id)
@@ -99,8 +111,19 @@ class TicketMasters(BaseView):
                     covers=ticket_cover_qs,
                     ticket_candidates=json.dumps(ticket_candidates))
 
+
 @view_defaults(decorator=with_bootstrap, permission="ticket_editor")
 class TicketFormats(BaseView):
+    @view_config(route_name="tickets.ticketformats.visible")
+    def visible(self):
+        set_visible_ticketformat(self.request)
+        return HTTPFound(self.request.route_path("tickets.index"))
+
+    @view_config(route_name="tickets.ticketformats.invisible")
+    def invisible(self):
+        set_invisible_ticketformat(self.request)
+        return HTTPFound(self.request.route_path("tickets.index"))
+
     @view_config(route_name="tickets.ticketformats.edit",renderer='altair.app.ticketing:templates/tickets/ticketformats/new.html')
     def edit(self):
         format = TicketFormat.filter_by(organization_id=self.context.user.organization_id,
@@ -112,7 +135,8 @@ class TicketFormats(BaseView):
                                       name=format.name,
                                       data_value=json.dumps(format.data),
                                       delivery_methods=[m.id for m in format.delivery_methods],
-                                      display_order=format.display_order)
+                                      display_order=format.display_order,
+                                      visible=format.visible)
         return dict(h=helpers, form=form, format=format)
 
     @view_config(route_name='tickets.ticketformats.edit', renderer='altair.app.ticketing:templates/tickets/ticketformats/new.html', request_method="POST")
@@ -131,6 +155,7 @@ class TicketFormats(BaseView):
         format.name=params["name"]
         format.data=params["data_value"]
         format.display_order=params["display_order"]
+        format.visible=params["visible"]
 
         for dmethod in format.delivery_methods:
             format.delivery_methods.remove(dmethod)
@@ -165,7 +190,8 @@ class TicketFormats(BaseView):
         form = forms.TicketFormatForm(organization_id=self.context.user.organization_id,
                                       name=format.name,
                                       data_value=json.dumps(format.data),
-                                      delivery_methods=[m.id for m in format.delivery_methods])
+                                      delivery_methods=[m.id for m in format.delivery_methods],
+                                      visible=format.visible)
         return dict(h=helpers, form=form)
 
     @view_config(route_name='tickets.ticketformats.new', renderer='altair.app.ticketing:templates/tickets/ticketformats/new.html', request_method="POST")
@@ -179,7 +205,8 @@ class TicketFormats(BaseView):
         ticket_format = TicketFormat(name=params["name"],
                                 data=params["data_value"],
                                 organization_id=self.context.user.organization_id,
-                                display_order=params["display_order"]
+                                display_order=params["display_order"],
+                                visible=params["visible"]
                                 )
 
         for dmethod in DeliveryMethod.filter(DeliveryMethod.id.in_(form.data["delivery_methods"])):
@@ -435,6 +462,17 @@ class TicketCovers(BaseView):
 
 @view_defaults(decorator=with_bootstrap, permission="ticket_editor")
 class TicketTemplates(BaseView):
+    @view_config(route_name="tickets.templates.visible")
+    def visible(self):
+        set_visible_tickettemplate(self.request)
+        return HTTPFound(self.request.route_path("tickets.index"))
+
+    @view_config(route_name="tickets.templates.invisible")
+    def invisible(self):
+        set_invisible_tickettemplate(self.request)
+        return HTTPFound(self.request.route_path("tickets.index"))
+
+
     @view_config(route_name="tickets.templates.new", renderer="altair.app.ticketing:templates/tickets/templates/new.html",
                  request_method="GET")
     def new(self):
@@ -463,7 +501,8 @@ class TicketTemplates(BaseView):
                                  ticket_format_id=form.data["ticket_format_id"],
                                  data=form.data_value,
                                  filename=form.drawing.data.filename,
-                                 organization_id=self.context.organization.id
+                                 organization_id=self.context.organization.id,
+                                 visible=form.data["visible"],
                                  )
 
         ticket_template.save()
@@ -482,7 +521,8 @@ class TicketTemplates(BaseView):
 
         form = forms.TicketTemplateEditForm(
             context=self.context,
-            obj=template
+            obj=template,
+            ticket_format_id=template.ticket_format_id,
             )
         return dict(
             h=helpers,
@@ -506,6 +546,7 @@ class TicketTemplates(BaseView):
         form = forms.TicketTemplateEditForm(
             context=self.context,
             obj=template,
+            ticket_format_id=template.ticket_format_id,
             formdata=self.request.POST)
         if not form.validate():
             return dict(
@@ -522,6 +563,7 @@ class TicketTemplates(BaseView):
         template.always_reissueable = form.data["always_reissueable"]
         template.principal = form.data["principal"]
         template.cover_print = form.data["cover_print"]
+        template.visible = form.data["visible"]
         if form.filename:
             template.filename = form.filename
         if form.data_value:

@@ -31,7 +31,6 @@ from altair.app.ticketing.models import merge_session_with_post, record_to_multi
 from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.core.models import Event, EventSetting, Performance, PerformanceSetting, StockType, StockTypeEnum, SalesSegment
-from altair.app.ticketing.famiport.userside_models import AltairFamiPortPerformance, AltairFamiPortReflectionStatus
 from altair.app.ticketing.core import api as core_api
 from altair.app.ticketing.core.utils import PageURL_WebOb_Ex
 from altair.app.ticketing.events.performances.forms import PerformanceForm
@@ -44,6 +43,7 @@ from .api import get_cms_data, set_visible_event, set_invisible_event
 from altair.app.ticketing.events.performances.api import set_visible_performance, set_invisible_performance
 from .forms import EventForm, EventSearchForm, EventPublicForm
 from .helpers import EventHelper
+from .famiport_helpers import get_famiport_reflect_button_status
 from altair.app.ticketing.carturl.api import get_cart_url_builder, get_cart_now_url_builder, get_agreement_cart_url_builder
 logger = logging.getLogger()
 
@@ -134,22 +134,16 @@ class Events(BaseView):
         if self.request.params.get('format') == 'xml':
             return self.index_xml(query, 50)
 
-        is_famiport_cooperation = {}
+        famiport_reflect_button_status = {}
         for event in events:
-            altair_famiport_performances = slave_session.query(AltairFamiPortPerformance) \
-                .filter(AltairFamiPortPerformance.performance_id.in_([performance.id for performance in event.performances])) \
-                .filter(AltairFamiPortPerformance.status == AltairFamiPortReflectionStatus.Reflected.value) \
-                .all()
-            # FM連携済みのperformance_idリスト
-            fm_performance_ids = [p.performance_id for p in altair_famiport_performances]
-            is_famiport_cooperation[event.id] = fm_performance_ids
+            famiport_reflect_button_status[event.id] = get_famiport_reflect_button_status(slave_session, event)
 
         return {
             'form_search': form_search,
             'form':EventForm(context=self.context),
             'events':events,
             'search_query':search_query,
-            'is_famiport_cooperation': is_famiport_cooperation,
+            'famiport_reflect_button_status': famiport_reflect_button_status,
             'h':EventHelper()
         }
 
@@ -203,17 +197,12 @@ class Events(BaseView):
             performances = performances.filter(PerformanceSetting.visible == True)
         performances = performances.all()
 
-        altair_famiport_performances = slave_session.query(AltairFamiPortPerformance)\
-            .filter(AltairFamiPortPerformance.performance_id.in_([performance.id for performance in performances]))\
-            .filter(AltairFamiPortPerformance.status == AltairFamiPortReflectionStatus.Reflected.value) \
-            .all()
-        # FM連携済みのperformance_idリスト
-        fm_performance_ids = [p.performance_id for p in altair_famiport_performances]
+        famiport_reflect_button_status = get_famiport_reflect_button_status(slave_session, event)
 
         return {
             'event':event,
             'performances':performances,
-            'fm_performance_ids': fm_performance_ids,
+            'famiport_reflect_button_status': famiport_reflect_button_status,
             'seat_stock_types':slave_session.query(StockType).filter_by(event_id=event_id, type=StockTypeEnum.Seat.v).order_by(StockType.display_order).all(),
             'non_seat_stock_types':slave_session.query(StockType).filter_by(event_id=event_id, type=StockTypeEnum.Other.v).order_by(StockType.display_order).all(),
             'cart_url': cart_url,

@@ -12,6 +12,8 @@ def includeme(config):
     config.include(setup_svg)
     config.add_route('tickets.index', '/')
 
+    config.add_route('tickets.ticketformats.visible', '/ticketformats/visible')
+    config.add_route('tickets.ticketformats.invisible', '/ticketformats/invisible')
     config.add_route('tickets.ticketformats.new', '/ticketformats/new')
     config.add_route('tickets.ticketformats.show', '/ticketformats/{id}')
     config.add_route('tickets.ticketformats.edit', '/ticketformats/{id}/edit')
@@ -24,6 +26,8 @@ def includeme(config):
     config.add_route('tickets.pageformats.delete', '/pageformats/{id}/delete')
     config.add_route('tickets.pageformats.data', '/pageformats/{id}/data')
 
+    config.add_route('tickets.templates.visible', '/templates/visible')
+    config.add_route('tickets.templates.invisible', '/templates/invisible')
     config.add_route('tickets.templates.new', '/templates/new', factory=".resources.TicketsResource")
     config.add_route('tickets.templates.show', '/templates/{id}', factory=".resources.TicketsResource")
     config.add_route('tickets.templates.edit', '/templates/{id}/edit', factory=".resources.TicketsResource")
@@ -59,3 +63,6 @@ def includeme(config):
 
     config.scan('.views')
     config.include(".preview")
+
+VISIBLE_TICKETFORMAT_SESSION_KEY = "_visible_ticketformat"
+VISIBLE_TICKETTEMPLATE_SESSION_KEY = "_visible_tickettemplate"

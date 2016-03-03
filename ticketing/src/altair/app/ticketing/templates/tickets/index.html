@@ -122,6 +122,13 @@ ${ch.breadcrumbs(
 <hr/>
 
 <h3>チケット様式</h3>
+<% from altair.app.ticketing.tickets import VISIBLE_TICKETFORMAT_SESSION_KEY %>
+% if request.session.get(VISIBLE_TICKETFORMAT_SESSION_KEY, None):
+    <a href="${request.route_path('tickets.ticketformats.invisible')}">不使用のチケット様式を隠す</a>
+% else:
+    <a href="${request.route_path('tickets.ticketformats.visible')}">チケット様式を全部表示する</a>
+% endif
+<br/>
 <div id="ticketformat_menu" class="btn-group">
   <a href="${request.route_path("tickets.ticketformats.new")}" class="btn">
     <i class="icon-plus"></i> 新規
@@ -162,6 +169,7 @@ ${ch.breadcrumbs(
       <th><a href="#" class="sortable">用紙サイズ</a></th>
       <th><a href="#" class="sortable">引取方法</a></th>
       <th><a href="#" class="sortable">表示順</a></th>
+      <th><a href="${sortable(request, "visible", direction="desc")}" class="sortable">使用</a></th>
       <th><a href="${sortable(request, "updated_at", direction="desc")}" class="sortable">更新日時</a></th>
       <th><a href="${sortable(request, "created_at", direction="desc")}" class="sortable">作成日時</a></th>
     </tr>
@@ -174,6 +182,7 @@ ${ch.breadcrumbs(
       <td>${h.format_size(h.extract_paper_size(format))}
       <td>${u' / '.join(dm.name for dm in format.delivery_methods)}</td>
       <td>${format.display_order}</td>
+      <td>${u'可' if format.visible else u'不可'}</td>
       <td>${format.updated_at}</td>
       <td>${format.created_at}</td>
     </tr>
@@ -208,6 +217,13 @@ ${ch.breadcrumbs(
 <hr/>
 
 <h3>テンプレート</h3>
+<% from altair.app.ticketing.tickets import VISIBLE_TICKETTEMPLATE_SESSION_KEY %>
+% if request.session.get(VISIBLE_TICKETTEMPLATE_SESSION_KEY):
+    <a href="${request.route_path('tickets.templates.invisible')}">不使用のテンプレートを隠す</a>
+% else:
+    <a href="${request.route_path('tickets.templates.visible')}">テンプレートを全部表示する</a>
+% endif
+<br/>
 <div class="btn-group" id="template_menu">
   <a href="${request.route_path("tickets.templates.new")}" class="btn">
     <i class="icon-plus"></i> 新規
@@ -245,7 +261,6 @@ ${ch.breadcrumbs(
 </%doc>
       </ul>
 </div>
-
 <% sortable = lambda *args, **kwargs: h.sortable('ticket_template', *args, **kwargs) %>
 <table class="table fullwidth checkboxed_table">
   <thead>
@@ -254,6 +269,7 @@ ${ch.breadcrumbs(
       <th><a href="${sortable(request, "name")}" class="sortable">名前</a></th>
       <th><a href="${sortable(request, "filename")}" class="sortable">ファイル名</a></th>
       <th><a href="#" class="sortable">チケット様式</a></th>
+      <th><a href="${sortable(request, "visible")}" class="sortable">使用</a></th>
       <th><a href="${sortable(request, "updated_at", direction="desc")}" class="sortable">更新日時</a></th>
       <th><a href="${sortable(request, "created_at", direction="desc")}" class="sortable">作成日時</a></th>
     </tr>
@@ -265,6 +281,7 @@ ${ch.breadcrumbs(
       <td><a href="${request.route_url('tickets.templates.show', id=template.id)}">${template.name}</a></td>
       <td>${template.filename}</td>
       <td>${template.ticket_format.name}</td>
+      <td>${u'可' if template.visible else u'不可'}</td>
       <td>${template.updated_at}</td>
       <td>${template.created_at}</td>
     </tr>
@@ -273,6 +290,30 @@ ${ch.breadcrumbs(
 </table>
 
 <hr/>
+<script type="text/javascript">
+  $(function(){
+    $("#cover_menu a.id-action").click(
+     function(){
+       var pk = $("input[name='cover_id']:checked").val();
+       if(!pk){ return false; }
+       $(this).attr("href", $(this).attr("data-base-url").replace("__id__", pk));
+       return true;
+    });
+
+    $("#cover_menu a.id-delegate-action").click(
+     function(){
+       var pk = $("input[name='cover_id']:checked").val();
+       if(!pk){ return false; }
+       var delegated=$(this).attr("data-delegated");
+// fixme
+       var form = $(delegated).find("form")
+       $(form).attr("action",$(form).attr("data-base-url").replace("__id__", pk));
+       $(delegated).modal();
+       return true;
+    });
+  });
+</script>
+
 
 <h3>表紙</h3>
 <div class="btn-group" id="cover_menu">
@@ -381,6 +422,24 @@ ${ch.breadcrumbs(
   <div class="modal-footer">
     <a href="#" class="btn" data-dismiss="modal">キャンセル</a>
     <form action="#" data-base-url="${request.route_path("tickets.templates.delete",id="__id__")}" method="POST">
+      <button type="submit" class="btn">削除する</button>
+    </form>
+  </div>
+</div>
+
+## delete cover
+
+<div class="modal hide" id="deleteModalCover">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal">×</button>
+    <h3>確認</h3>
+  </div>
+  <div class="modal-body">
+      この表紙を削除します。よろしいですか？
+  </div>
+  <div class="modal-footer">
+    <a href="#" class="btn" data-dismiss="modal">キャンセル</a>
+    <form action="#" data-base-url="${request.route_path("tickets.covers.delete",id="__id__")}" method="POST">
       <button type="submit" class="btn">削除する</button>
     </form>
   </div>

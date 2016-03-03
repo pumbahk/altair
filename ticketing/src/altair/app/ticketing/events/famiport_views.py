@@ -30,6 +30,8 @@ class FamiPortView(BaseView):
         return get_db_session(self.request, 'slave')
 
     def status_label(self, status):
+        u"""AltairFamiPortReflectionStatusに応じた表示用ラベル(html)を返す
+        """
         if status == AltairFamiPortReflectionStatus.Editing.value:
             label = u'編集中'
             class_ = u'label-important'
@@ -44,6 +46,17 @@ class FamiPortView(BaseView):
             class_ = u'label-warning'
 
         return Markup(u'<span class="label %(class_)s">%(label)s</span>' % dict(class_=class_, label=label))
+
+    def not_reflected_label(self, altair_famiport_obj):
+        u"""AltairFamiPortPerformanceGroup, AltairFamiPortPerformance, AltairFamiPortSalesSegmentPair
+        がFM側へ連携済みかどうかを表すラベルを返す
+        """
+        if altair_famiport_obj.last_reflected_at is not None:
+            return u""
+        label = u"未"
+        class_ = u"label-important"
+        return Markup(u'<span class="label %(class_)s">%(label)s</span>' % dict(class_=class_, label=label))
+
 
     def sales_channel_label(self, sales_channel):
         if sales_channel == FamiPortSalesChannel.FamiPortOnly.value:
@@ -68,6 +81,7 @@ class FamiPortView(BaseView):
             return u'-'
         else:
             return famiport_performance_group.last_reflected_at
+
 
     @view_config(route_name='events.famiport.performance_groups.index', renderer=u'events/famiport/show.html')
     def show(self):

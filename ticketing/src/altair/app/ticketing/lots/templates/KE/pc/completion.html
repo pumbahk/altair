@@ -1,4 +1,9 @@
 <%inherit file="${context['main_template'].uri}" />
+<%
+   import altair.app.ticketing.cart.helpers as ch
+   import altair.app.ticketing.lots.helpers as h
+%>
+
 <p class="pageTitle">申込を完了しました</p>
 <div class="confirmBox">
   <div class="confirmBoxInner">
@@ -48,7 +53,6 @@
   </div>
 </div>
 
-% if 0:
 <div class="settlementBox">
   <div class="settlementBoxInner">
     <h2><img src="${request.static_url('altair.app.ticketing.lots:static/KE/pc/img/order/title_buyer.gif')}" alt="購入者情報" width="97" height="30" /></h2>
@@ -86,13 +90,25 @@
             <th>性別</th>
             <td>${h.format_gender(request, gender)}</td>
           </tr>
-          <tr class="settlementSelectEnd">
-            <th><label>メモ欄</label></th>
-            <td>${memo|h.nl2br}</td>
-          </tr>
         </table>
       </div>
     </div>
+  </div>
+</div>
+
+<% extra_form_data = entry.get_lot_entry_attribute_pair_pairs(request) %>
+% if extra_form_data:
+<div class="settlementBox">
+  <div class="settlementBoxInner">
+    <h2>追加情報</h2>
+	  <table id="contentsOfShopping">
+    % for _, (display_name, display_value) in extra_form_data:
+      <tr>
+        <th scope="row">${display_name}</th>
+        <td>${ch.sensible_coerce(request, display_value)}</td>
+      </tr>
+    % endfor
+    </table>
   </div>
 </div>
 % endif

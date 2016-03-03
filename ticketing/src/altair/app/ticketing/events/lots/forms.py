@@ -369,7 +369,67 @@ class ProductForm(Form):
                         status = False
         return status
 
-class SearchEntryForm(Form):
+class EntryStatusForm(Form):
+    """
+    ステータス
+    """
+    canceled = BooleanField(
+        label=u"キャンセル",
+        default=False,
+        validators=[
+            Required(),
+        ],
+    )
+
+    withdrawn = BooleanField(
+        label=u"ユーザ取消",
+        default=False,
+        validators=[
+            Required(),
+        ],
+    )
+
+    entried = BooleanField(
+        label=u"申込",
+        default=True,
+        validators=[
+            Required(),
+        ],
+    )
+
+    electing = BooleanField(
+        label=u"当選予定",
+        default=True,
+        validators=[
+            Required(),
+        ],
+    )
+
+    elected = BooleanField(
+        label=u"当選",
+        default=True,
+        validators=[
+            Required(),
+        ],
+    )
+
+    rejecting = BooleanField(
+        label=u"落選予定",
+        default=True,
+        validators=[
+            Required(),
+        ],
+    )
+
+    rejected = BooleanField(
+        label=u"落選",
+        default=True,
+        validators=[
+            Required(),
+        ],
+    )
+
+class SearchEntryForm(EntryStatusForm):
     """
     販売区分
     決済方法
@@ -430,67 +490,12 @@ class SearchEntryForm(Form):
         widget=OurDateWidget()
     )
 
-    canceled = BooleanField(
-        label=u"キャンセル",
-        default=False,
-        validators=[
-            Required(),
-        ],
-    )
-
-    withdrawn = BooleanField(
-        label=u"ユーザ取消",
-        default=False,
-        validators=[
-            Required(),
-        ],
-    )
-
-    entried = BooleanField(
-        label=u"申込",
-        default=True,
-        validators=[
-            Required(),
-        ],
-    )
-
-    electing = BooleanField(
-        label=u"当選予定",
-        default=True,
-        validators=[
-            Required(),
-        ],
-    )
-
-    elected = BooleanField(
-        label=u"当選",
-        default=True,
-        validators=[
-            Required(),
-        ],
-    )
-
-    rejecting = BooleanField(
-        label=u"落選予定",
-        default=True,
-        validators=[
-            Required(),
-        ],
-    )
-
-    rejected = BooleanField(
-        label=u"落選",
-        default=True,
-        validators=[
-            Required(),
-        ],
-    )
-
     wish_order = SelectField(
         label=u'希望順位',
         validators=[],
         choices=[],
     )
+
 
 class SendingMailForm(Form):
 
