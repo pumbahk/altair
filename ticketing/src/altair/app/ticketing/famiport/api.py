@@ -499,7 +499,6 @@ def create_or_update_famiport_event(
         logger.exception(u'internal error')
         raise FamiPortAPIError('internal error', client_code)
 
-
 @user_api
 def create_or_update_famiport_performance(
         request,
@@ -543,7 +542,14 @@ def create_or_update_famiport_performance(
                 .filter(FamiPortPerformance.invalidated_at == None) \
                 .one()
         except NoResultFound:
-            pass
+            try:
+                # When old_performance is moved to another famuport_event
+                old_performance = session.query(FamiPortPerformance) \
+                    .with_lockmode('update') \
+                    .filter(FamiPortPerformance.userside_id == userside_id) \
+                    .one()
+            except NoResultFound:
+                pass
         sys.exc_clear()
 
         if type_ == FamiPortPerformanceType.Normal.value:
