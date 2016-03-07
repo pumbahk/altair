@@ -543,10 +543,11 @@ def create_or_update_famiport_performance(
                 .one()
         except NoResultFound:
             try:
-                # When old_performance is moved to another famuport_event
+                # When old_performance is moved to another famiport_event
                 old_performance = session.query(FamiPortPerformance) \
                     .with_lockmode('update') \
                     .filter(FamiPortPerformance.userside_id == userside_id) \
+                    .filter(FamiPortPerformance.invalidated_at == None) \
                     .one()
             except NoResultFound:
                 pass
