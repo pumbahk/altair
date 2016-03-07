@@ -223,32 +223,11 @@ def build_famiport_performance_groups(request, session, datetime_formatter, tena
             altair_famiport_venues_just_added.add(altair_famiport_venue.id)
             logs.append(u'会場「%s」をFamiポート連携対象としました' % performance.venue.name)
 
-            # famiport_venue_info = get_famiport_venue_by_userside_id(request, client_code, altair_famiport_venue.id)
-            # famiport_venue_id = famiport_venue_info['venue_id']
-            # # prefecture = famiport_venue_info['prefecture']
             if altair_famiport_venue.id in altair_famiport_venues_just_added:
                 if altair_famiport_venue.status == AltairFamiPortReflectionStatus.AwaitingReflection.value:
                     logs.append(u'会場「%s」は、反映待ちとなっており自動更新できません' % performance.venue.name)
                 elif altair_famiport_venue.status == AltairFamiPortReflectionStatus.Reflected.value:
                     logs.append(u'会場「%s」は、反映済となっており自動更新できません。一度編集状態に戻してください' % performance.venue.name)
-            #     elif altair_famiport_venue.status == AltairFamiPortReflectionStatus.Editing.value:
-            #         logs.append(u'会場「%s」の、連携値を更新しました' % performance.venue.name)
-            #         prefecture = resolve_famiport_prefecture_by_name(request, performance.venue.site.prefecture)
-            #         altair_famiport_venue.name = performance.venue.name
-            #         # Update FamiPortVenue for altair_famiport_venue
-            #         result = create_or_update_famiport_venue(
-            #             request,
-            #             client_code=client_code,
-            #             id=famiport_venue_id,
-            #             userside_id=altair_famiport_venue.id,
-            #             name=performance.venue.name,
-            #             name_kana=u'',
-            #             prefecture=prefecture,
-            #             update_existing=True
-            #             )
-            #
-            #         if result['new']:
-            #             logs.append(u'会場「%s」が予期せず再連携されています。システム管理者に連絡してください' % performance.venue.name)
 
         # 連携対象のPerformanceとAltairFamiPortVenueの組み合わせを登録
         performances_for_venue = performances_by_venue.get(altair_famiport_venue)
@@ -358,6 +337,7 @@ def build_famiport_performance_groups(request, session, datetime_formatter, tena
                                 altair_famiport_performance.ticket_name = ticket_name
                                 altair_famiport_performance.start_at = performance.start_on
                                 altair_famiport_performance.updated_at = now
+
                 if altair_famiport_performance.status == AltairFamiPortReflectionStatus.Editing.value:
                     # Look up famiport related SalesSegments of performance
                     sales_segments = session.query(SalesSegment) \
