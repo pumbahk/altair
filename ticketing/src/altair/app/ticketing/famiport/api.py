@@ -643,7 +643,15 @@ def create_or_update_famiport_sales_segment(
                 .filter(FamiPortSalesSegment.invalidated_at == None) \
                 .one()
         except NoResultFound:
-            pass
+            try:
+                # When old_sales_segment is moved to another famiport_performance
+                old_sales_segment = session.query(FamiPortSalesSegment) \
+                    .with_lockmode('update') \
+                    .filter(FamiPortSalesSegment.userside_id == userside_id) \
+                    .filter(FamiPortSalesSegment.invalidated_at == None) \
+                    .one()
+            except NoResultFound:
+                pass
         sys.exc_clear()
 
         internal.validate_sales_channel(sales_channel)

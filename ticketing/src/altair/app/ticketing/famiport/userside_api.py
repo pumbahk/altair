@@ -163,6 +163,7 @@ def build_famiport_performance_groups(request, session, datetime_formatter, tena
 
     # STEP 1: 連携対象の登録
     for performance in event.performances:
+        now = datetime.now()
         altair_famiport_venue = None
 
         # Look up existing AltairFamiPortVenue for this performance's venue
@@ -319,16 +320,13 @@ def build_famiport_performance_groups(request, session, datetime_formatter, tena
                     if performance.id in moving_performance_ids:
                         altair_famiport_performance = session.query(AltairFamiPortPerformance) \
                                                              .filter(AltairFamiPortPerformance.performance_id == performance.id).one()
-
                         # Update altair_famiport_performance's attributes
                         # Move existing altair_famiport_performance to another group
                         if altair_famiport_performance.altair_famiport_performance_group_id != altair_famiport_performance_group.id:
                             altair_famiport_performance.status = AltairFamiPortReflectionStatus.Editing.value
                             altair_famiport_performance.altair_famiport_performance_group_id = altair_famiport_performance_group.id
                             altair_famiport_performance.code = code
-                            session.add(altair_famiport_performance)
-                            session.flush()
-
+                            altair_famiport_performance.updated_at = now
                         logs.append(u'公演「%s」(id=%ld) の連携値を更新しました' % (performance.name, performance.id))
                     else:
                         # Create new AltairFamiPortPerformance for the performance
@@ -359,9 +357,7 @@ def build_famiport_performance_groups(request, session, datetime_formatter, tena
                                 altair_famiport_performance.type = type_
                                 altair_famiport_performance.ticket_name = ticket_name
                                 altair_famiport_performance.start_at = performance.start_on
-                                session.add(altair_famiport_performance)
-                                session.flush()
-
+                                altair_famiport_performance.updated_at = now
                 if altair_famiport_performance.status == AltairFamiPortReflectionStatus.Editing.value:
                     # Look up famiport related SalesSegments of performance
                     sales_segments = session.query(SalesSegment) \
@@ -415,13 +411,13 @@ def build_famiport_performance_groups(request, session, datetime_formatter, tena
                                     inconsistent_sales_segment.id
                                     ))
                             else:
+                                code = next_sales_segment_code(session, altair_famiport_performance.id)
                                 if altair_famiport_sales_segment_pair is None:
                                     for sales_segment in non_none_sales_segments:
                                         logs.append(u'販売区分「%s」(id=%d) を新たに連携設定しました' % (
                                             sales_segment.sales_segment_group.name,
                                             sales_segment.id
                                             ))
-                                    code = next_sales_segment_code(session, altair_famiport_performance.id)
                                     altair_famiport_sales_segment_pair = AltairFamiPortSalesSegmentPair(
                                         altair_famiport_performance=altair_famiport_performance,
                                         code=code,
@@ -434,10 +430,18 @@ def build_famiport_performance_groups(request, session, datetime_formatter, tena
                                         status=AltairFamiPortReflectionStatus.Editing.value
                                         )
                                     session.add(altair_famiport_sales_segment_pair)
+                                    session.flush()
                                 else:
+                                    if performance.id in moving_performance_ids:
+                                        # Move existing altair_famiport_sales_segment_pair to moved altair_famiport_performance
+                                        if altair_famiport_sales_segment_pair.altair_famiport_performance_id != altair_famiport_performance.id:
+                                            altair_famiport_sales_segment_pair.status = AltairFamiPortReflectionStatus.Editing.value
+                                            altair_famiport_sales_segment_pair.altair_famiport_performance_id = altair_famiport_performance.id
+                                            altair_famiport_sales_segment_pair.code = code
+                                            altair_famiport_sales_segment_pair.updated_at = now
                                     if altair_famiport_sales_segment_pair.status == AltairFamiPortReflectionStatus.Editing.value:
                                         if altair_famiport_sales_segment_pair.seat_unselectable_sales_segment != seat_unselectable_sales_segment or \
-                                           altair_famiport_sales_segment_pair.seat_selectable_sales_segment != seat_selectable_sales_segment:
+                                            altair_famiport_sales_segment_pair.seat_selectable_sales_segment != seat_selectable_sales_segment:
                                             for sales_segment in non_none_sales_segments:
                                                     logs.append(u'販売区分「%s」(id=%d) の連携値を更新しました' % (
                                                         sales_segment.sales_segment_group.name,

@@ -125,7 +125,7 @@ class FamiPortSyncTest(unittest.TestCase):
         tearDown()
 
     @staticmethod
-    def changeStatus(entity, status):
+    def __changeStatus(entity, status):
         # if entity.status == AltairFamiPortReflectionStatus.Editing:
         entity.status = status
         # else:
@@ -326,7 +326,7 @@ class FamiPortSyncTest(unittest.TestCase):
 
         # Change status from Editing to AwaitingReflection
         for entity in [altair_famiport_venue, altair_famiport_performance_group, altair_famiport_performance, altair_famiport_salessegment_pair]:
-            self.changeStatus(entity, AltairFamiPortReflectionStatus.Editing.value)
+            self.__changeStatus(entity, AltairFamiPortReflectionStatus.Editing.value)
 
         build_famiport_performance_groups(self.fm_request, self.session, datetime_formatter, self.rt_fmtenant, event1.id)
 
@@ -404,7 +404,7 @@ class FamiPortSyncTest(unittest.TestCase):
 
         # Change status from Editing to AwaitingReflection
         for entity in [altair_famiport_venue, altair_famiport_performance_group, altair_famiport_performance, altair_famiport_salessegment_pair]:
-            self.changeStatus(entity, AltairFamiPortReflectionStatus.Editing.value)
+            self.__changeStatus(entity, AltairFamiPortReflectionStatus.Editing.value)
 
         build_famiport_performance_groups(self.fm_request, self.session, datetime_formatter, self.rt_fmtenant, event1.id)
 
@@ -488,7 +488,7 @@ class FamiPortSyncTest(unittest.TestCase):
 
         # Change status from Editing to AwaitingReflection
         for entity in [altair_famiport_venue, altair_famiport_performance_group, altair_famiport_performance, altair_famiport_salessegment_pair]:
-            self.changeStatus(entity, AltairFamiPortReflectionStatus.Editing.value)
+            self.__changeStatus(entity, AltairFamiPortReflectionStatus.Editing.value)
 
         build_famiport_performance_groups(self.fm_request, self.session, datetime_formatter, self.rt_fmtenant, event1.id)
 
@@ -557,7 +557,7 @@ class FamiPortSyncTest(unittest.TestCase):
 
         # Change status from Editing to Reflected for now
         for entity in [altair_famiport_venue, altair_famiport_performance_group, altair_famiport_performance, altair_famiport_salessegment_pair]:
-           self.changeStatus(entity, AltairFamiPortReflectionStatus.Reflected.value)
+           self.__changeStatus(entity, AltairFamiPortReflectionStatus.Reflected.value)
 
         build_famiport_performance_groups(self.fm_request, self.session, datetime_formatter, self.rt_fmtenant, event1.id)
 
@@ -576,8 +576,8 @@ class FamiPortSyncTest(unittest.TestCase):
 
         self.assertEqual(venue1.name, famiport_venue.name)
 
-    def test_performance_starton_change(self):
-        """2nd FM sync with performance.start.on change
+    def test_performance_starton_change_without_altairfmvenue_and_fmvenue(self):
+        """2nd FM sync with performance.start.on change without existing AltairFamiPortVenue and FamiPortVenue
         """
 
         siteprofile1 = SiteProfile(id = 1, name = u'Zepp DiverCity TOKYO', prefecture = u'東京都')
@@ -625,7 +625,7 @@ class FamiPortSyncTest(unittest.TestCase):
 
         # Change status from Editing to AwaitingReflection
         for entity in [altair_famiport_venue, altair_famiport_performance_group, altair_famiport_performance, altair_famiport_salessegment_pair]:
-            self.changeStatus(entity, AltairFamiPortReflectionStatus.Editing.value)
+            self.__changeStatus(entity, AltairFamiPortReflectionStatus.Editing.value)
 
         build_famiport_performance_groups(self.fm_request, self.session, datetime_formatter, self.rt_fmtenant, event1.id)
 
@@ -683,7 +683,7 @@ class FamiPortSyncTest(unittest.TestCase):
 
         # Change status from Editing to AwaitingReflection
         for entity in [altair_famiport_venue, altair_famiport_performance_group, altair_famiport_performance, altair_famiport_salessegment_pair]:
-            self.changeStatus(entity, AltairFamiPortReflectionStatus.Editing.value)
+            self.__changeStatus(entity, AltairFamiPortReflectionStatus.Editing.value)
 
         build_famiport_performance_groups(self.fm_request, self.session, datetime_formatter, self.rt_fmtenant, event1.id)
 
