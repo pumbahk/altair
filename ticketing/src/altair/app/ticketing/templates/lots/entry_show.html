@@ -54,7 +54,7 @@ Altair Backend -- ${lot.event.title}[${lot.name}]
           </table>
           <div class="pagination-right">
             %if lot_entry.canceled_at:
-            <a class="btn btn-danger delete-lot-entry" data-dismiss="modal"><i class="icon-remove"></i>非表示</a>
+            <a class="btn btn-danger delete-lot-entry" data-dismiss="modal"><i class="icon-remove"></i>削除</a>
 
             %endif
           </div>
@@ -239,7 +239,7 @@ $(".delete-lot-entry").on("click", function (){
     var form = modal.find("form");
     form.attr("method", "POST");
     form.attr("action", "${request.route_path('lots.entries.delete', lot_id=lot_entry.lot_id, entry_no=lot_entry.entry_no)}");
-    form.find("input[type=submit]").val("非表示にする");
+    form.find("input[type=submit]").val("削除する");
     var message = "抽選申込を削除します。(この操作を戻すことはできません)"
     modal.find(".message").html("<p>" + message + "</p>");
     modal.modal("toggle");
