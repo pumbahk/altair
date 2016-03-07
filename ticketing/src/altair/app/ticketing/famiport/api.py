@@ -641,6 +641,9 @@ def create_or_update_famiport_sales_segment(
                 .with_lockmode('update') \
                 .filter(FamiPortSalesSegment.code == code) \
                 .filter(FamiPortSalesSegment.famiport_performance_id == performance.id) \
+                .filter(FamiPortSalesSegment.name == name) \
+                .filter(FamiPortSalesSegment.start_at == start_at) \
+                .filter(FamiPortSalesSegment.end_at == end_at) \
                 .filter(FamiPortSalesSegment.invalidated_at == None) \
                 .one()
         except NoResultFound:

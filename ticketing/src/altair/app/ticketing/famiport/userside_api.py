@@ -367,12 +367,16 @@ def build_famiport_performance_groups(request, session, datetime_formatter, tena
                             altair_famiport_sales_segment_pair = None
                             inconsistent_sales_segment = None
                             try:
+                                # Look up existing AltairFamiPortSalesSegmentPair
                                 altair_famiport_sales_segment_pair = session.query(AltairFamiPortSalesSegmentPair) \
                                     .filter(sql.or_(
                                         AltairFamiPortSalesSegmentPair.seat_unselectable_sales_segment_id.in_(pair_ids),
                                         AltairFamiPortSalesSegmentPair.seat_selectable_sales_segment_id.in_(pair_ids)
                                         )) \
                                     .one()
+                                # Update AltairFamiPortSalesSegmentPair.name if changed
+                                if altair_famiport_sales_segment_pair.name != non_none_sales_segments[0].sales_segment_group.name:
+                                    altair_famiport_sales_segment_pair.name = non_none_sales_segments[0].sales_segment_group.name
                                 # Check the consistency of altair_famiport_sales_segment_pair
                                 if altair_famiport_sales_segment_pair.seat_unselectable_sales_segment is not None and \
                                    altair_famiport_sales_segment_pair.seat_unselectable_sales_segment.seat_choice:
@@ -556,6 +560,6 @@ def submit_to_downstream_sync(request, session, tenant, event):
                 altair_famiport_sales_segment_pair.status = AltairFamiPortReflectionStatus.Reflected.value
                 altair_famiport_sales_segment_pair.last_reflected_at = now
                 if result['new']:
-                    logger.info('AltairFamiPortSalesSegmentPair(id=%ld) registered' % altair_famiport_performance.id)
+                    logger.info('AltairFamiPortSalesSegmentPair(id=%ld) registered' % altair_famiport_sales_segment_pair.id)
                 else:
-                    logger.info('AltairFamiPortSalesSegmentPair(id=%ld) updated' % altair_famiport_performance.id)
+                    logger.info('AltairFamiPortSalesSegmentPair(id=%ld) updated' % altair_famiport_sales_segment_pair.id)
