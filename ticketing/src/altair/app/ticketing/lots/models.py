@@ -811,7 +811,12 @@ class LotEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
 
     def delete(self):
-        self.deleted_at = datetime.now()
+        now = datetime.now()
+        for wish in self.wishes:
+            for product in wish.products:
+                product.delete(now)
+            wish.delete(now)
+        self.deleted_at = now
 
     def is_deletable(self):
         """キャンセル、取消状態の抽選申込のみ論理削除可能"""
@@ -1026,6 +1031,10 @@ class LotEntryWish(LotEntryWishSupport, Base, BaseModel, WithTimestamp, Logicall
         now = now or datetime.now()
         self.withdrawn_at = now
 
+    def delete(self, now):
+        now = now or datetime.now()
+        self.deleted_at = now
+
 class LotEntryProduct(LotEntryProductSupport, Base, BaseModel, WithTimestamp, LogicallyDeleted):
     u""" 抽選申し込み商品 """
     __tablename__ = 'LotEntryProduct'
@@ -1047,6 +1056,9 @@ class LotEntryProduct(LotEntryProductSupport, Base, BaseModel, WithTimestamp, Lo
     organization_id = sa.Column(Identifier,
                                 sa.ForeignKey('Organization.id'))
     organization = orm.relationship('Organization', backref='lot_entry_products')
+    def delete(self, now):
+        now = now or datetime.now()
+        self.deleted_at = now
 
 
 #class LotElectWork(Base, BaseModel, WithTimestamp, LogicallyDeleted):
