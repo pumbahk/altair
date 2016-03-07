@@ -690,3 +690,8 @@ div#grpRakutenLinkArea div#serviceList dl {
 	overflow: hidden;
 	zoom: 1;
 }
+
+.eagles-order-no {
+  font-size: 16px;
+  font-size: 1.6rem;
+}
