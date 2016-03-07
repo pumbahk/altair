@@ -87,6 +87,28 @@
   <a href="${request.route_path('orders.toggle_show_total', _query=request.params)}" class="btn btn-small">購入金額の合計を表示</a>
 % endif
 
+% if total_quantity is not None:
+<table class="table table-striped table-bordered">
+  <thead>
+    <tr>
+      <th>検索された購入枚数の総合計 <a href="${request.route_path('orders.toggle_show_total_quantity', _query=request.params)}" class="btn btn-small">隠す</a></th>
+    </tr>
+  </thead>
+  <tr>
+    <td>
+      % if total_quantity:
+        ${vh.number(total_quantity)}
+      % else:
+        0
+      % endif
+      枚
+    </td>
+  </tr>
+</table>
+% else:
+  <a href="${request.route_path('orders.toggle_show_total_quantity', _query=request.params)}" class="btn btn-small">購入枚数の合計を表示</a>
+% endif
+
 <div class="orders">
   % if orders is not None:
   <%include file="/orders/_list2.html" args="form=form, orders=orders" />
