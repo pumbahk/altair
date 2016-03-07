@@ -31,7 +31,6 @@ from altair.formhelpers.widgets import (
     CheckboxMultipleSelect,
     )
 from altair.formhelpers.validators import JISX0208
-from .formhelpers import validate_ticket_bundle_and_sales_segment_set
 from altair.app.ticketing.core.models import (
     SalesSegment, Product, ProductItem, StockHolder, StockType, TicketBundle,
     SalesSegmentGroup, Event, Ticket, TicketFormat, DeliveryMethod,
