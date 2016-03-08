@@ -274,7 +274,7 @@ summary_columns = [
     t_payment_method.c.payment_plugin_id,
 ]
 
-#
+# 
 t_member_group_names = select([t_member_group.c.membership_id,
                                func.group_concat(t_member_group.c.name).label('names')],
                               whereclause=t_member_group.c.deleted_at==None,
@@ -288,7 +288,7 @@ detail_summary_columns = summary_columns + [
     t_order.c.delivery_fee, #配送手数料
     t_order.c.system_fee, #システム利用料
     t_order.c.special_fee, #特別手数料
-    #(t_order.c.total_amount * t_sales_segment.c.margin_ratio / 100).label('margin'),
+    #(t_order.c.total_amount * t_sales_segment.c.margin_ratio / 100).label('margin'), 
     # t_order.c.margin, #内手数料金額
     t_order.c.note, #メモ
     t_order.c.special_fee_name, #特別手数料名
@@ -659,13 +659,13 @@ class OrderSummaryKeyBreakAdapter(object):
                 name = "{0}[{1}][{2}]".format(childitem3, counter[child1_key], counter[child2_key])
                 if item[childitem3]:
                     breaked_items.append(
-                        (name,
+                        (name, 
                          item[childitem3]))
             for childitem3 in child3_indexed:
                 name = "{0}[{1}][{2}][{3}]".format(childitem3, counter[child1_key], counter[child2_key], counter[child3_key])
                 if item[childitem3]:
                     breaked_items.append(
-                        (name,
+                        (name, 
                          item[childitem3]))
                     child3_count[(counter[child1_key], counter[child2_key])] = max(child3_count.get((counter[child1_key], counter[child2_key]), 0), counter[child3_key])
 
@@ -771,7 +771,7 @@ class OrderSearchBase(list):
                 if self._cond['direction'].data == 'asc':
                     return query.order_by(sort_col.asc())
                 elif self._cond['direction'].data == 'desc':
-                    return query.order_by(sort_col.desc())
+                    return query.order_by(sort_col.desc())                    
                 else:
                     return query.order_by(self.default_order)
             else:
@@ -1023,7 +1023,7 @@ class OrderSearchBase(list):
                     and_(t_performance.c.id==t_product_item.c.performance_id,
                          t_performance.c.deleted_at==None),
                 )
-
+    
                 sub_cond = t_ordered_product_item.c.deleted_at==None
                 if condition.event_id.data:
                      sub_cond = and_(sub_cond,
@@ -1031,7 +1031,7 @@ class OrderSearchBase(list):
                 if condition.performance_id.data:
                      sub_cond = and_(sub_cond,
                                      t_performance.c.id==condition.event_id.data)
-
+    
                 subq = select([t_ordered_product.c.order_id],
                               from_obj=from_obj,
                               whereclause=sub_cond,
@@ -1040,10 +1040,10 @@ class OrderSearchBase(list):
                 ).having(
                     func.sum(t_ordered_product_item.c.quantity) == value
                 )
-
+    
                 cond = and_(cond,
                             t_order.c.id.in_(subq))
-
+    
         return cond
 
     def __iter__(self):
@@ -1090,7 +1090,6 @@ class OrderSearchBase(list):
                      whereclause=self.condition,
         )
 
-        logger.debug("sql = {0}".format(sql))
         cur = self.db_session.bind.execute(sql)
         try:
             r = cur.fetchone()
@@ -1119,7 +1118,7 @@ class OrderSearchBase(list):
             limit = min(limit_span, stop-start)
         offset = start
         while True:
-            sql = select(self.columns,
+            sql = select(self.columns, 
                          from_obj=[self.target],
                          whereclause=self.condition,
             ).limit(limit
