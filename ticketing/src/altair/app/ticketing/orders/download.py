@@ -779,6 +779,11 @@ class OrderSearchBase(list):
         return query.order_by(self.default_order)
 
     def query_cond(self, condition):
+        """検索条件
+
+        キーワード引数：
+        condition -- 初期化した検索条件
+        """
         cond = and_(t_organization.c.id==self.organization_id,
                     t_ordered_product.c.id==t_order.c.id,
                     t_order.c.deleted_at==None)
@@ -1079,6 +1084,7 @@ class OrderSearchBase(list):
             cur.close()
 
     def total_quantity(self):
+        """すべての予約枚数を返す"""
         sql = select([func.sum(t_ordered_product.c.quantity)],
                      from_obj=[self.target],
                      whereclause=self.condition,
