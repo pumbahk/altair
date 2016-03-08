@@ -1093,3 +1093,8 @@ input[type="submit"] {
 .settlementNotice p {
 	margin: 0 0;
 }
+
+.eagles-order-no {
+  font-size: 16px;
+  font-size: 1.6rem;
+}
