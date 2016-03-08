@@ -785,7 +785,7 @@ class OrderSearchBase(list):
         condition -- 初期化した検索条件
         """
         cond = and_(t_organization.c.id==self.organization_id,
-                    t_ordered_product.c.id==t_order.c.id,
+                    t_ordered_product.c.order_id==t_order.c.id,
                     t_order.c.deleted_at==None)
 
         if condition is None:
