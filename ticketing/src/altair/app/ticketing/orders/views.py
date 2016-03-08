@@ -323,6 +323,11 @@ class OrderIndexView(OrderBaseView):
 
     @show_total_quantity_flag.setter
     def show_total_quantity_flag(self, value):
+        """予約枚数表示のフラグをセッションに保存
+
+        キーワード引数：
+        value -- True/False
+        """
         self.request.session[self.SHOW_TOTAL_QUANTITY_KEY] = value
 
     @view_config(route_name='orders.index')
@@ -398,6 +403,7 @@ class OrderIndexView(OrderBaseView):
 
     @view_config(route_name='orders.toggle_show_total_quantity')
     def toggle_show_total_quantity(self):
+        """予約枚数の表示を切り替え"""
         self.show_total_quantity_flag = not self.show_total_quantity_flag
         return HTTPFound(location=self.request.route_path('orders.index', _query=self.request.params))
 
