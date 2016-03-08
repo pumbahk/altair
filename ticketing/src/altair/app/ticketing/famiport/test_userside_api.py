@@ -8,6 +8,7 @@ from pyramid.testing import setUp, tearDown
 from altair.app.ticketing.testing import _setup_db, _teardown_db, DummyRequest
 from altair.app.ticketing.famiport.testing import _setup_db as fm_setup_db, _teardown_db as fm__teardown_db
 from userside_api import (
+    find_sales_segment_pairs,
     create_altair_famiport_venue,
     build_famiport_performance_groups,
     submit_to_downstream,
@@ -124,12 +125,45 @@ class FamiPortSyncTest(unittest.TestCase):
         fm__teardown_db(self.fm_config.registry)
         tearDown()
 
+    def test_find_sales_segment_pairs(self):
+        """ Test seat uneslectable SalesSegment and seat selectable SalesSegment pairing
+        """
+        siteprofile1 = SiteProfile(id = 1, name = u'Zepp DiverCity TOKYO', prefecture = u'東京都')
+        site1 = Site(id = 1, siteprofile_id = siteprofile1.id, name = u'Zepp DiverCity TOKYO', visible = True)
+        event1 = Event(id = 1, code = 'RT00001', title = u'テストイベント1', organization_id = 15)
+        performance1 = Performance(id = 1, event_id = 1, name = u'テスト公演1', code = 'RT0000000001', \
+                                   start_on = datetime(2016, 3, 1, 10, 0, 0), end_on = None)
+        venue1 = Venue(id = 1, site_id = site1.id, organization_id = 15, name = u'Zepp DiverCity TOKYO', performance_id = performance1.id)
+        salessegmentgroup1 = SalesSegmentGroup(id = 1, organization_id = 15, event_id = event1.id, kind = 'normal', name = u'一般発売', \
+                            seat_choice = False, start_at = datetime(2016, 2, 1, 10, 0, 0), end_at = datetime(2016, 2, 26, 23, 59, 59))
+        unselectable_salessegment1 = SalesSegment(id = 1, sales_segment_group_id = salessegmentgroup1.id, performance_id = performance1.id, event_id = event1.id, \
+                                     payment_delivery_method_pairs = [self.fm_pdmp], public = True, seat_choice = False, \
+                                     start_at = datetime(2016, 2, 1, 10, 0, 0), end_at = datetime(2016, 2, 14, 23, 59, 59))
+        selectable_salessegment1 = SalesSegment(id = 2, sales_segment_group_id = salessegmentgroup1.id, performance_id = performance1.id, event_id = event1.id, \
+                                     payment_delivery_method_pairs = [self.fm_pdmp], public = True, seat_choice = True, \
+                                     start_at = datetime(2016, 2, 15, 0, 0, 0), end_at = datetime(2016, 2, 29, 23, 59, 59))
+        sales_segments1 = [unselectable_salessegment1]
+        sales_segment_pairs1 = list(find_sales_segment_pairs(self.session, sales_segments1))
+        for seat_unselectable_sales_segment, seat_selectable_sales_segment in sales_segment_pairs1:
+            self.assertEqual(seat_unselectable_sales_segment.id, unselectable_salessegment1.id)
+            self.assertEqual(seat_selectable_sales_segment, None)
+
+        sales_segments2 = [selectable_salessegment1]
+        sales_segment_pairs2 = list(find_sales_segment_pairs(self.session, sales_segments2))
+        for seat_unselectable_sales_segment, seat_selectable_sales_segment in sales_segment_pairs2:
+            self.assertEqual(seat_unselectable_sales_segment, None)
+            self.assertEqual(seat_selectable_sales_segment.id, selectable_salessegment1.id)
+
+        sales_segments3 = [unselectable_salessegment1, selectable_salessegment1]
+        sales_segment_pairs3 = list(find_sales_segment_pairs(self.session, sales_segments3))
+        for seat_unselectable_sales_segment, seat_selectable_sales_segment in sales_segment_pairs3:
+            self.assertEqual(seat_unselectable_sales_segment.id, unselectable_salessegment1.id)
+            self.assertEqual(seat_selectable_sales_segment.id, selectable_salessegment1.id)
+
+
     @staticmethod
     def __changeStatus(entity, status):
-        # if entity.status == AltairFamiPortReflectionStatus.Editing:
         entity.status = status
-        # else:
-        #    raise
 
 
     def test_fmsync_without_altairfmvenue_and_fmvenue(self):
