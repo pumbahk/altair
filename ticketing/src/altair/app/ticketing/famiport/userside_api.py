@@ -200,6 +200,8 @@ def build_famiport_performance_groups(request, session, datetime_formatter, tena
                     # Create new AltairFamiPortVenue and corresponding FamiPortVenue
                     altair_famiport_venue = create_altair_famiport_venue(request, session, event.organization_id, \
                                             client_code, performance.venue, performance.venue.site.siteprofile.name)
+                    altair_famiport_venues_just_added.add(altair_famiport_venue.id)
+                    logs.append(u'会場「%s」をFamiポート連携対象としました' % performance.venue.name)
             else:
                 existing_altair_famiport_performance = session.query(AltairFamiPortPerformance) \
                                             .filter(AltairFamiPortPerformance.performance_id == performance.id).first()
@@ -219,9 +221,8 @@ def build_famiport_performance_groups(request, session, datetime_formatter, tena
                     # Create new AltairFamiPortVenue and corresponding FamiPortVenue
                     altair_famiport_venue = create_altair_famiport_venue(request, session, event.organization_id, \
                                             client_code, performance.venue, performance.venue.site.siteprofile.name)
-
-            altair_famiport_venues_just_added.add(altair_famiport_venue.id)
-            logs.append(u'会場「%s」をFamiポート連携対象としました' % performance.venue.name)
+                    altair_famiport_venues_just_added.add(altair_famiport_venue.id)
+                    logs.append(u'会場「%s」をFamiポート連携対象としました' % performance.venue.name)
 
             if altair_famiport_venue.id in altair_famiport_venues_just_added:
                 if altair_famiport_venue.status == AltairFamiPortReflectionStatus.AwaitingReflection.value:
@@ -292,6 +293,14 @@ def build_famiport_performance_groups(request, session, datetime_formatter, tena
                     ticket_name = u'(%sまで有効)' % datetime_formatter.format_date(performance.end_on, with_weekday=True)
 
                 if altair_famiport_performance is None: # No existing AltairFamiPortPerformance for the performance in altair_famiport_performance_group
+                    # 連携対象から削除されたAltairFamiPortPerformanceをチェック
+                    deleted_altair_famiport_performance = session.query(AltairFamiPortPerformance, include_deleted=True) \
+                                                                 .filter(AltairFamiPortPerformance.performance_id == performance.id)\
+                                                                 .filter(AltairFamiPortPerformance.deleted_at != None) \
+                                                                 .first()
+                    if deleted_altair_famiport_performance is not None:
+                        continue # 連携対象でない場合はスキップ
+
                     logs.append(u'公演「%s」(id=%ld) を新たに連携設定しました' % (performance.name, performance.id))
                     code = next_performance_code(session, altair_famiport_performance_group.id)
                     if not validate_convert_famiport_kogyo_name_style(performance.name):
