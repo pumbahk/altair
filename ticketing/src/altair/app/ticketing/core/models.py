@@ -89,6 +89,20 @@ class SiteProfile(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     tel_2 = Column(String(32))
     fax = Column(String(32))
 
+    @classmethod
+    def get_default_siteprofile(cls):
+        return DBSession.query(SiteProfile)\
+                        .filter(SiteProfile.name == 'dummy')\
+                        .filter(SiteProfile.prefecture == u'全国')\
+                        .first()
+
+    @classmethod
+    def get_by_name_and_prefecture(cls, name, prefecture):
+        return DBSession.query(SiteProfile)\
+                        .filter(SiteProfile.name == name)\
+                        .filter(SiteProfile.prefecture == prefecture)\
+                        .first()
+
 @implementer(ITentativeVenueSite)
 class Site(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "Site"

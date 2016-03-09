@@ -38,8 +38,17 @@ def upgrade():
         sa.Column('deleted_at', sa.TIMESTAMP(), nullable=True)
         )
 
+    # Clean up exsiting Site.prefecture
+    update_site_name_sql = u"UPDATE Site SET prefecture = '全国' \
+                                         WHERE prefecture is not null \
+                                         and prefecture not like '%県%' \
+                                         and prefecture not like '%都%' \
+                                         and prefecture not like '%府%' \
+                                         and prefecture not like '%道%'"
+    op.execute(update_site_name_sql)
+
     # Set up SiteProfile data from existing data in Site
-    insert_default_siteprofile_sql = u"INSERT INTO SiteProfile (name, prefecture, updated_at) VALUES ('dummy', '全国', now());"
+    insert_default_siteprofile_sql = u"INSERT INTO SiteProfile (name, prefecture, updated_at) VALUES ('default', '全国', now());"
     op.execute(insert_default_siteprofile_sql)
     insert_siteprofile_sql = u"INSERT INTO SiteProfile (name, prefecture, updated_at) SELECT DISTINCT name, prefecture, now() FROM Site WHERE prefecture is not NULL;"
     op.execute(insert_siteprofile_sql)
