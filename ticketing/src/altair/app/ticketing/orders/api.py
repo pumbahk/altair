@@ -599,7 +599,7 @@ class OrderSummarySearchQueryBuilder(SearchQueryBuilderBase):
         return query
 
 
-def _validate_order_cancellation(request, order):
+def _validate_order_cancellation(request, order, now):
     """キャンセル可能かvalidationする
     :param request: リクエスト
     :param order: バリデーション対象
@@ -623,7 +623,7 @@ def _validate_order_cancellation(request, order):
         plugins = [payment_plugin, delivery_plugin]
     for plugin in plugins:
         try:
-            plugin.validate_order_cancellation(request, order)
+            plugin.validate_order_cancellation(request, order, now)
         except CancellationValidationFailure as e:
             logger.error(u'pluginキャンセルできる状態ではありません: {}'.format(e.message))
             raise
@@ -643,7 +643,7 @@ def cancel_order(request, order, now=None):
 
     # キャンセル処理の前にvalidationする
     try:
-        _validate_order_cancellation(request, order)
+        _validate_order_cancellation(request, order, now)
     except:
         raise OrderCancellationError(order.order_no, _(u'予約がキャンセルできる状態ではありません (予約ステータス: ${status}, 支払ステータス: ${payment_status})', mapping=dict(status=order.status, payment_status=order.payment_status)).interpolate())
 

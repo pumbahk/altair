@@ -1263,18 +1263,6 @@ class OrderDetailView(OrderBaseView):
         if order is None:
             return HTTPNotFound('order id %d is not found' % order_id)
 
-        sejOrder = sej_api.get_sej_order(order.order_no)
-        if sejOrder:
-            if order.payment_delivery_method_pair.payment_method.payment_plugin_id == payments_plugins.SEJ_PAYMENT_PLUGIN_ID:
-                if order.payment_due_at < datetime.now():
-                    self.request.session.flash(u'セブン予約(%s)の支払期限を過ぎているためキャンセルできません' % order.order_no)
-                    raise HTTPFound(location=route_path('orders.show', self.request, order_id=order.id))
-
-            if order.payment_delivery_method_pair.delivery_method.delivery_plugin_id == payments_plugins.SEJ_DELIVERY_PLUGIN_ID:
-                if order.issuing_end_at < datetime.now():
-                    self.request.session.flash(u'セブン予約(%s)の発券期限を過ぎているためキャンセルできません' % order.order_no)
-                    raise HTTPFound(location=route_path('orders.show', self.request, order_id=order.id))
-
         if order.cancel(self.request):
             notify_order_canceled(self.request, order)
             self.request.session.flash(u'予約(%s)をキャンセルしました' % order.order_no)

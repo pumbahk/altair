@@ -83,7 +83,7 @@ class ReservedNumberDeliveryPlugin(object):
     def validate_order(self, request, order_like, update=False):
         """ なにかしたほうが良い?"""
 
-    def validate_order_cancellation(request, order):
+    def validate_order_cancellation(request, order, now):
         """ キャンセルバリデーション """
         pass
 
@@ -200,7 +200,7 @@ class ReservedNumberPaymentPlugin(object):
     def validate_order(self, request, order_like, update=False):
         """ なにかしたほうが良い?"""
 
-    def validate_order_cancellation(request, order):
+    def validate_order_cancellation(request, order, now):
         """ キャンセルバリデーション """
         pass
 

@@ -80,7 +80,7 @@ class IDeliveryPlugin(Interface):
     def validate_order(request, order_like, update=False):
         """ バリデーション """
 
-    def validate_order_cancellation(request, order):
+    def validate_order_cancellation(request, order, now):
         """ キャンセルバリデーション """
 
     def prepare(request, cart):
@@ -112,7 +112,7 @@ class IPaymentPlugin(Interface, IPaymentPreparer):
     def validate_order(request, order_like, update=False):
         """ バリデーション """
 
-    def validate_order_cancellation(request, order):
+    def validate_order_cancellation(request, order, now):
         """ キャンセルバリデーション """
 
     def prepare(request, cart):
@@ -147,7 +147,7 @@ class IPaymentDeliveryPlugin(Interface):
     def validate_order(request, order_like, update=False):
         """ バリデーション """
 
-    def validate_order_cancellation(request, order):
+    def validate_order_cancellation(request, order, now):
         """ キャンセルバリデーション """
 
     def prepare(request, cart):

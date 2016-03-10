@@ -460,13 +460,13 @@ def refund_order(request, order, refund_record, now=None):
         )
 
 
-def validate_order_cancellation(request, order):
+def validate_famiport_order_cancellation(request, order, now):
     """ キャンセルバリデーション """
     tenant = lookup_famiport_tenant(request, order)
     if tenant is None:
         raise FamiPortPluginFailure('could not find famiport tenant', order_no=order_like.order_no, back_url=None)
     try:
-        famiport_api.can_cancel_famiport_order(request, tenant.code, order.order_no)
+        famiport_api.can_cancel_famiport_order(request, tenant.code, order.order_no, now)
     except FamiPortAPIError:
         raise CancellationValidationFailure(u'FamiPortOrder(order_no:{}) is not able to cancel.'.format(order.order_no))
 
@@ -611,9 +611,9 @@ class FamiPortPaymentPlugin(object):
         """予約を作成する前にvalidationする"""
         validate_order_like(request, order_like, self, update)
 
-    def validate_order_cancellation(self, request, order):
+    def validate_order_cancellation(self, request, order, now):
         """ キャンセルバリデーション """
-        validate_order_cancellation(request, order)
+        validate_famiport_order_cancellation(request, order, now)
 
     def prepare(self, request, cart):
         """前処理"""
@@ -727,9 +727,9 @@ class FamiPortDeliveryPlugin(object):
         """予約の検証"""
         validate_order_like(request, order_like, self, update)
 
-    def validate_order_cancellation(self, request, order):
+    def validate_order_cancellation(self, request, order, now):
         """ キャンセルバリデーション """
-        validate_order_cancellation(request, order)
+        validate_famiport_order_cancellation(request, order, now)
 
     def prepare(self, request, cart):
         """ 前処理 """
@@ -772,9 +772,9 @@ class FamiPortPaymentDeliveryPlugin(object):
         """予約の検証"""
         validate_order_like(request, order_like, self, update)
 
-    def validate_order_cancellation(self, request, order):
+    def validate_order_cancellation(self, request, order, now):
         """ キャンセルバリデーション """
-        validate_order_cancellation(request, order)
+        validate_famiport_order_cancellation(request, order, now)
 
     def prepare(self, request, cart):
         """ 前処理 """

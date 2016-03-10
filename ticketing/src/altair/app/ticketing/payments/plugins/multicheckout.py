@@ -146,7 +146,7 @@ class MultiCheckoutPlugin(object):
         if order_like.total_amount <= 0:
             raise OrderLikeValidationFailure(u'total_amount is zero', 'order.total_amount')
 
-    def validate_order_cancellation(request, order):
+    def validate_order_cancellation(request, order, now):
         """ キャンセルバリデーション """
         pass
 
