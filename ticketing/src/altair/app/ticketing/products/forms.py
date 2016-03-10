@@ -36,8 +36,8 @@ from altair.app.ticketing.core.models import (
     SalesSegmentGroup, Event, Ticket, TicketFormat, DeliveryMethod,
     )
 from altair.app.ticketing.orders.models import Order, OrderedProduct, OrderedProductItem
-from altair.app.ticketing.payments.plugins import SEJ_DELIVERY_PLUGIN_ID
 from altair.app.ticketing.helpers import label_text_for
+from .formhelpers import validate_ticket_bundle_and_sales_segment_set
 
 logger = logging.getLogger(__name__)
 
@@ -347,6 +347,7 @@ class ProductItemForm(OurForm, ProductItemFormMixin):
             raise Exception('product must be non-None value')
 
         event = product.sales_segment.sales_segment_group.event
+        self.sales_segment = product.sales_segment
         self.product = product
         self.product_id.data = product.id
 
@@ -361,6 +362,10 @@ class ProductItemForm(OurForm, ProductItemFormMixin):
 
     def _get_translations(self):
         return Translations()
+
+    def validate_ticket_bundle_id(self, field):
+        ticket_bundle = TicketBundle.filter_by(id=field.data).one()
+        validate_ticket_bundle_and_sales_segment_set(field=field, ticket_bundle=ticket_bundle, sales_segment=self.sales_segment)
 
     def validate_stock_type_id(form, field):
         if not field.data:
@@ -415,6 +420,7 @@ class ProductAndProductItemAPIForm(OurForm, ProductFormMixin, ProductItemFormMix
         if sales_segment is None:
             raise Exception('sales_segment must be non-None value')
 
+        self.sales_segment = sales_segment
         event = sales_segment.sales_segment_group.event
         stock_holders = StockHolder.get_own_stock_holders(event=event)
         self.stock_holder_id.choices = [(sh.id, sh.name) for sh in stock_holders]
@@ -508,6 +514,10 @@ class ProductAndProductItemAPIForm(OurForm, ProductFormMixin, ProductItemFormMix
                 product = Product.get(form.product_id.data)
                 if stock_type.id != product.seat_stock_type_id:
                     raise ValidationError(u'商品の席種と異なる在庫を登録することはできません')
+
+    def validate_ticket_bundle_id(self, field):
+        ticket_bundle = TicketBundle.filter_by(id=field.data).one()
+        validate_ticket_bundle_and_sales_segment_set(field=field, ticket_bundle=ticket_bundle, sales_segment=self.sales_segment)
 
     def validate(self, *args, **kwargs):
         status = super(ProductAndProductItemAPIForm, self).validate(*args, **kwargs)
