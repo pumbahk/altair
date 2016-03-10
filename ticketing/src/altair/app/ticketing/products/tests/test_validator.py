@@ -1,6 +1,6 @@
 # -*- coding:utf-8 -*-
 import unittest
-from pyramid import testing
+from pyramid.testing import DummyModel
 from wtforms.validators import ValidationError
 from altair.app.ticketing.core.models import (
     TicketBundle,
@@ -36,6 +36,18 @@ class ValidatorTests(unittest.TestCase):
         cls.session = _setup_db(model_dependencies)
 
     def setUp(self):
+        self.dummy_field1 = DummyModel(
+            errors=[]
+        )
+        self.dummy_field2 = DummyModel(
+            errors=[]
+        )
+        self.dummy_field3 = DummyModel(
+            errors=[]
+        )
+        self.dummy_field4 = DummyModel(
+            errors=[]
+        )
         self.sej_delivery_method = DeliveryMethod(
             id=1,
             delivery_plugin_id=plugins.SEJ_DELIVERY_PLUGIN_ID
@@ -187,62 +199,59 @@ class ValidatorTests(unittest.TestCase):
         """
         販売区分の引取方法にコンビニがあって、
         券面構成内にはコンビニがない場合は、
-        validationは通らず例外が発生する
+        validationに引っかかってfield.errorsにエラーメッセージが入る
         """
-        with self.assertRaises(ValidationError):
-            validate_ticket_bundle_and_sales_segment_set(
-                sales_segment=self.sales_segment_both_store_in,
-                ticket_bundle=self.ticket_bundle_non_store
-            )
-        with self.assertRaises(ValidationError):
-            validate_ticket_bundle_and_sales_segment_set(
-                sales_segment=self.sales_segment_both_store_in,
-                ticket_bundle=self.ticket_bundle_sej
-            )
-        with self.assertRaises(ValidationError):
-            validate_ticket_bundle_and_sales_segment_set(
-                sales_segment=self.sales_segment_both_store_in,
-                ticket_bundle=self.ticket_bundle_fami
-            )
+        validate_ticket_bundle_and_sales_segment_set(
+            field=self.dummy_field1,
+            sales_segment=self.sales_segment_both_store_in,
+            ticket_bundle=self.ticket_bundle_non_store
+        )
+        validate_ticket_bundle_and_sales_segment_set(
+            field=self.dummy_field2,
+            sales_segment=self.sales_segment_both_store_in,
+            ticket_bundle=self.ticket_bundle_sej
+        )
+        validate_ticket_bundle_and_sales_segment_set(
+            field=self.dummy_field3,
+            sales_segment=self.sales_segment_both_store_in,
+            ticket_bundle=self.ticket_bundle_fami
+        )
+        self.assertEqual(len(self.dummy_field1.errors), 1)
+        self.assertEqual(len(self.dummy_field2.errors), 1)
+        self.assertEqual(len(self.dummy_field3.errors), 1)
 
     def test_ticket_bundle_with_store_validation(self):
         """
         販売区分の引取方法にコンビニがあって、
         券面構成内にもコンビニがある場合は、
-        validationは通る
+        validationに引っかからずメッセージも空になる
         """
-        try:
-            validate_ticket_bundle_and_sales_segment_set(
-                sales_segment=self.sales_segment_both_store_in,
-                ticket_bundle=self.ticket_bundle_both
-            )
-        except Exception, e:
-            self.fail("unexpected exception raised(both store test): {}".format(e.message.encode('utf8')))
-
-        try:
-            validate_ticket_bundle_and_sales_segment_set(
-                sales_segment=self.sales_segment_sej_in,
-                ticket_bundle=self.ticket_bundle_sej
-            )
-        except Exception, e:
-            self.fail("unexpected exception raised(sej test): {}".format(e.message.encode('utf8')))
-
-        try:
-            validate_ticket_bundle_and_sales_segment_set(
-                sales_segment=self.sales_segment_fami_in,
-                ticket_bundle=self.ticket_bundle_fami
-            )
-        except Exception, e:
-            self.fail("unexpected exception raised(fami test): {}".format(e.message.encode('utf8')))
-
-        # 余分な券面があっても例外はあげない
-        try:
-            validate_ticket_bundle_and_sales_segment_set(
-                sales_segment=self.sales_segment_non_store_in,
-                ticket_bundle=self.ticket_bundle_both
-            )
-        except Exception, e:
-            self.fail("unexpected exception raised(non store test): {}".format(e.message.encode('utf8')))
+        validate_ticket_bundle_and_sales_segment_set(
+            field=self.dummy_field1,
+            sales_segment=self.sales_segment_both_store_in,
+            ticket_bundle=self.ticket_bundle_both
+        )
+        validate_ticket_bundle_and_sales_segment_set(
+            field=self.dummy_field2,
+            sales_segment=self.sales_segment_sej_in,
+            ticket_bundle=self.ticket_bundle_sej
+        )
+        validate_ticket_bundle_and_sales_segment_set(
+            field=self.dummy_field3,
+            sales_segment=self.sales_segment_fami_in,
+            ticket_bundle=self.ticket_bundle_fami
+        )
+        validate_ticket_bundle_and_sales_segment_set(
+            field=self.dummy_field4,
+            sales_segment=self.sales_segment_non_store_in,
+            ticket_bundle=self.ticket_bundle_both
+        )
+        # コンビニ種類が合致する場合はエラー無し
+        self.assertEqual(len(self.dummy_field1.errors), 0)
+        self.assertEqual(len(self.dummy_field2.errors), 0)
+        self.assertEqual(len(self.dummy_field3.errors), 0)
+        # 券面に余分に紐付いていてもエラー無し
+        self.assertEqual(len(self.dummy_field4.errors), 0)
 
 if __name__ == "__main__":
     unittest.main()
