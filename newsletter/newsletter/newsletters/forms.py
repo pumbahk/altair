@@ -50,13 +50,15 @@ class NewslettersForm(Form):
     start_date = DateField(u'送信日', validators=[
         Required(u'入力してください')
         ], format='%Y-%m-%d')
-    start_time = DateTimeField(u'送信時間', validators=[], format='%H:%M', default=datetime.now().replace(hour=12, minute=0))
+    start_time = DateTimeField(u'送信時間', validators=[
+        Required(u'入力してください')
+        ], format='%H:%M', default=datetime.now().replace(hour=12, minute=0))
     start_on   = DateTimeField(u'送信日時', validators=[], format='%Y-%m-%d %H:%M:%S')
     created_at = DateTimeField(u'作成日時')
     updated_at = DateTimeField(u'更新日時')
 
     def __init__(self, *args, **kw):
-        if args:
+        if args and args[0].get('start_date'):
             # set start_on
             args[0].add('start_on', args[0].get('start_date') + ' ' + args[0].get('start_time') + ':00')
 
