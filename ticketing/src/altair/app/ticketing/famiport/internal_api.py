@@ -293,6 +293,8 @@ def can_cancel_famiport_order(
         now
         ):
     """FamiPortOrderがキャンセル出来る状態か確認する(true or false)"""
+    if now is None:
+        now = datetime.now()
     famiport_order = get_famiport_order(session, order_no=order_no, client_code=client_code)
     return famiport_order.can_cancel(now, request)
 
