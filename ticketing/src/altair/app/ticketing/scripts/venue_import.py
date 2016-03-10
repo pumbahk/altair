@@ -74,14 +74,17 @@ def import_tree(registry, update, organization, xmldoc, file, bundle_base_url=No
         raise FormatError('The root object is not a Venue')
 
     backend_metadata_url = myurljoin(bundle_base_url, 'metadata.json')
-    siteprofile = SiteProfile(name = tree['properties']['name'], prefecture = prefecture)
+    site_name = tree['properties']['name']
+    siteprofile = DBSession.query(SiteProfile).filter_by(name = site_name).filter_by(prefecture = prefecture).first()
+    if not siteprofile:
+        siteprofile = SiteProfile(name = site_name, prefecture = prefecture)
     if update:
-        site = Site(name=tree['properties']['name'], _backend_metadata_url=backend_metadata_url, siteprofile = siteprofile)
+        site = Site(name=site_name, _backend_metadata_url=backend_metadata_url, siteprofile = siteprofile)
         venue_q = DBSession.query(Venue)
         if venue_id is not None:
             venue_q = venue_q.filter_by(organization=organization, id=venue_id)
         else:
-            venue_q = venue_q.filter_by(organization=organization, name=tree['properties']['name'])
+            venue_q = venue_q.filter_by(organization=organization, name=site_name)
         try:
             venue = venue_q.one()
         except NoResultFound:
@@ -94,9 +97,9 @@ def import_tree(registry, update, organization, xmldoc, file, bundle_base_url=No
         venue.site.delete() # 論理削除
         venue.site = site
     else:
-        site = Site(name=tree['properties']['name'], _backend_metadata_url=backend_metadata_url, siteprofile = siteprofile)
+        site = Site(name=site_name, _backend_metadata_url=backend_metadata_url, siteprofile = siteprofile)
         l0_seats = dict()
-        venue = Venue(site=site, name=tree['properties']['name'])
+        venue = Venue(site=site, name=site_name)
         venue.organization = organization
 
     seat_index_type_objs = tree['collections'].get('seatIndexTypes')
