@@ -460,6 +460,12 @@ katakana_regex = re.compile(ur'^[\u30a1-\u30f6\u30fb\u30fc\u30fd\u30feー]+$')
 
 SEJ_MAX_ALLOWED_AMOUNT = Decimal('300000')
 
+def validate_order_cancellation(request, order):
+    sej_order = sej_api.get_sej_order(order.order_no)
+    sej_tenant = userside_api.lookup_sej_tenant(request, order.organization_id)
+
+    sej_api.validate_sej_order_cancellation(request, sej_tenant, sej_order)
+
 def validate_order_like(request, current_date, order_like, update=False, ticketing=True):
     if ticketing and get_ticket_count(request, order_like) > 20:
         raise OrderLikeValidationFailure(u'cannot handle more than 20 tickets', '')
@@ -533,6 +539,10 @@ def validate_order_like(request, current_date, order_like, update=False, ticketi
 class SejPaymentPlugin(object):
     def validate_order(self, request, order_like, update=False):
         validate_order_like(request, datetime.now(), order_like, update, ticketing=False)
+
+    def validate_order_cancellation(self, request, order):
+        """ キャンセルバリデーション """
+        validate_order_cancellation(request, order)
 
     def prepare(self, request, cart):
         """  """
@@ -617,6 +627,10 @@ class SejDeliveryPlugin(SejDeliveryPluginBase):
     def validate_order(self, request, order_like, update=False):
         validate_order_like(request, datetime.now(), order_like, update, ticketing=True)
 
+    def validate_order_cancellation(self, request, order):
+        """ キャンセルバリデーション """
+        validate_order_cancellation(request, order)
+
     def prepare(self, request, cart):
         """  """
 
@@ -700,6 +714,10 @@ class SejDeliveryPlugin(SejDeliveryPluginBase):
 class SejPaymentDeliveryPlugin(SejDeliveryPluginBase):
     def validate_order(self, request, order_like, update=False):
         validate_order_like(request, datetime.now(), order_like, update, ticketing=True)
+
+    def validate_order_cancellation(self, request, order):
+        """ キャンセルバリデーション """
+        validate_order_cancellation(request, order)
 
     def prepare(self, request, cart):
         """  """

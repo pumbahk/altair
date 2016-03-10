@@ -80,6 +80,9 @@ class IDeliveryPlugin(Interface):
     def validate_order(request, order_like, update=False):
         """ バリデーション """
 
+    def validate_order_cancellation(request, order):
+        """ キャンセルバリデーション """
+
     def prepare(request, cart):
         """ 前処理 """
 
@@ -108,6 +111,9 @@ class IPaymentPlugin(Interface, IPaymentPreparer):
     """ 決済プラグイン"""
     def validate_order(request, order_like, update=False):
         """ バリデーション """
+
+    def validate_order_cancellation(request, order):
+        """ キャンセルバリデーション """
 
     def prepare(request, cart):
         """ 前処理 """
@@ -141,6 +147,9 @@ class IPaymentDeliveryPlugin(Interface):
     def validate_order(request, order_like, update=False):
         """ バリデーション """
 
+    def validate_order_cancellation(request, order):
+        """ キャンセルバリデーション """
+
     def prepare(request, cart):
         """ 前処理 """
 
@@ -149,6 +158,9 @@ class IPaymentDeliveryPlugin(Interface):
 
     def finish2(request, order):
         """ 確定処理 (先にOrderを作る場合) """
+
+    def cancel(request, order):
+        """ キャンセル """
 
     def refresh(request, order):
         """ 内容変更 """

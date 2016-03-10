@@ -285,6 +285,17 @@ def create_famiport_order(
     session.commit()
     return famiport_order
 
+def can_cancel_famiport_order(
+        request,
+        session,
+        client_code,
+        order_no,
+        now
+        ):
+    """FamiPortOrderがキャンセル出来る状態か確認する(true or false)"""
+    famiport_order = get_famiport_order(session, order_no=order_no, client_code=client_code)
+    return famiport_order.can_cancel(now, request)
+
 def cancel_famiport_order_by_order_no(
         request,
         session, 
