@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 
 from datetime import timedelta
+from datetime import datetime
 import logging
 logger = logging.getLogger(__name__)
 
@@ -59,15 +60,25 @@ def refresh_sej_order(request, tenant, sej_order, update_reason, now=None, sessi
     return sej_order
 
 
-def validate_sej_order_cancellation(request, tenant, sej_order):
+def validate_sej_order_cancellation(request, tenant, sej_order, now=None):
+    if not now:
+        now = datetime.now()
     if sej_order.cancel_at is not None:
         raise SejError(u'already canceled', sej_order.order_no)
     if sej_order.pay_at is not None:
         raise SejError(u'already paid', sej_order.order_no)
-    if sej_order.payment_type == SejPaymentType.Prepayment and sej_order.issue_at is not None:
+    if sej_order.payment_type == SejPaymentType.Paid.value and sej_order.issue_at is not None:
         raise SejError(u'The Order.type is Prepayment and already printed', sej_order.order_no)
     if sej_order.shop_id != tenant.shop_id:
         raise SejError(u'SejOrder.shop_id (%s) != SejTenant.shop_id (%s)' % (sej_order.shop_id, tenant.shop_id), sej_order.order_no)
+    # コンビニ支払が発生する予約
+    if sej_order.payment_type in (SejPaymentType.Prepayments.value, SejPaymentType.CashOnDelivery.value, SejPaymentType.PrepaymentOnly.value) \
+            and sej_order.payment_due_at < now:
+        raise SejError(u'payment is overdue(SejOrder.payment_due_at: {})'.format(sej_order.payment_due_at), sej_order.order_no)
+    # コンビニ発券が発生する予約
+    if sej_order.payment_type in (SejPaymentType.Prepayments.value, SejPaymentType.CashOnDelivery.value, SejPaymentType.Paid.value) \
+            and sej_order.ticketing_due_at < now:
+        raise SejError(u'ticketing is overdue(SejOrder.ticketing_due_at: {})'.format(sej_order.ticketing_due_at), sej_order.order_no)
 
 
 def cancel_sej_order(request, tenant, sej_order, now=None, session=None):

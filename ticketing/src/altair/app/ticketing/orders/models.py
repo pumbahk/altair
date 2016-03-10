@@ -515,14 +515,6 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def can_cancel(self):
         # 受付済のみキャンセル可能、払戻時はキャンセル不可
         if self.status == 'ordered' and self.payment_status in ('unpaid', 'paid'):
-            # コンビニ決済は未入金のみキャンセル可能
-            payment_plugin_id = self.payment_delivery_pair.payment_method.payment_plugin_id
-            if payment_plugin_id == plugins.SEJ_PAYMENT_PLUGIN_ID and self.payment_status != 'unpaid':
-                return False
-            # コンビニ引取は未発券のみキャンセル可能
-            delivery_plugin_id = self.payment_delivery_pair.delivery_method.delivery_plugin_id
-            if delivery_plugin_id == plugins.SEJ_DELIVERY_PLUGIN_ID and self.is_issued():
-                return False
             return True
         return False
 
