@@ -14,6 +14,7 @@
         <th>オペレーター</th>
         <th>予約数</th>
         <th>ステータス</th>
+        <th>ランダム</th>
         <th>登録日時</th>
         <th>更新日時</th>
         <th class="span2"></th>
@@ -24,6 +25,7 @@
         <td>${task.operator.name}</td>
         <td>${task.count}</td>
         <td>${oh.get_order_import_task_status_label(task.status)}</td>
+        <td>${u'Yes' if task.enable_random_import else u'No'}</td>
         <td>${task.created_at}</td>
         <td>${task.updated_at}</td>
         <td>
@@ -49,6 +51,7 @@
   ${ch.form_item(form.always_issue_order_no)}
   ${ch.form_item(form.allocation_mode)}
   ${ch.form_item(form.merge_order_attributes)}
+  ${ch.form_item(form.enable_random_import)}
   ${ch.form_item(form.order_csv)}
   <div class="form-actions">
     <input class="btn btn-primary pull-right" type="submit" value="確認する">
