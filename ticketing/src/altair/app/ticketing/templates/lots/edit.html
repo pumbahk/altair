@@ -137,10 +137,14 @@ function updateSalesSegmentGroupById(j) {
     var ssgid = "${request.params.get('ssgid', '')}";
     $('#sales_segment_group_id').val(ssgid);
 
+    % if len(request.POST) == 0:
     var opt = $('#sales_segment_group_id').children(':selected');
 
     $('#name').val(opt.text());
     updateSalesSegmentGroupById(opt.val());
+    % else:
+    $("#sales_segment_group_id").val(${request.params.get('sales_segment_group_id')});
+    % endif
   });
 </script>
 % endif
