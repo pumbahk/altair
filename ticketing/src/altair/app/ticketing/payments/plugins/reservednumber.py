@@ -81,7 +81,11 @@ class ReservedNumberDeliveryPlugin(object):
     """ 窓口引き換え予約番号プラグイン"""
 
     def validate_order(self, request, order_like, update=False):
-        """ なにかしたほうが良い?""" 
+        """ なにかしたほうが良い?"""
+
+    def validate_order_cancellation(request, order):
+        """ キャンセルバリデーション """
+        pass
 
     def prepare(self, request, cart):
         """ 前処理 なし"""
@@ -194,7 +198,11 @@ class ReservedNumberPaymentPlugin(object):
     """ 窓口支払い番号プラグイン"""
 
     def validate_order(self, request, order_like, update=False):
-        """ なにかしたほうが良い?""" 
+        """ なにかしたほうが良い?"""
+
+    def validate_order_cancellation(request, order):
+        """ キャンセルバリデーション """
+        pass
 
     def prepare(self, request, cart):
         """ 前処理 なし"""

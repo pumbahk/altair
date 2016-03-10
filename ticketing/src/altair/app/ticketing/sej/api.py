@@ -58,13 +58,22 @@ def refresh_sej_order(request, tenant, sej_order, update_reason, now=None, sessi
         raise SejError(u'generic failure (reason: %s)' % unicode(e), sej_order.order_no)
     return sej_order
 
+
+def validate_sej_order_cancellation(request, tenant, sej_order):
+    if sej_order.cancel_at is not None:
+        raise SejError(u'already canceled', sej_order.order_no)
+    if sej_order.pay_at is not None:
+        raise SejError(u'already paid', sej_order.order_no)
+    if sej_order.payment_type == SejPaymentType.Prepayment and sej_order.issue_at is not None:
+        raise SejError(u'The Order.type is Prepayment and already printed', sej_order.order_no)
+    if sej_order.shop_id != tenant.shop_id:
+        raise SejError(u'SejOrder.shop_id (%s) != SejTenant.shop_id (%s)' % (sej_order.shop_id, tenant.shop_id), sej_order.order_no)
+
+
 def cancel_sej_order(request, tenant, sej_order, now=None, session=None):
     if session is None:
         session = _session
-    if sej_order.cancel_at is not None:
-        raise SejError(u'already canceled', sej_order.order_no)
-    if sej_order.shop_id != tenant.shop_id:
-        raise SejError(u'SejOrder.shop_id (%s) != SejTenant.shop_id (%s)' % (sej_order.shop_id, tenant.shop_id), sej_order.order_no)
+    validate_sej_order_cancellation(request, tenant, sej_order, now)
     try:
         try:
             request_cancel_order(

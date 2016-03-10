@@ -96,6 +96,10 @@ class CheckoutPlugin(object):
            order_like.special_fee < ANSHIN_CHECKOUT_MINIMUM_AMOUNT:
             raise OrderLikeValidationFailure(u'special_fee too low', 'order.special_fee')
 
+    def validate_order_cancellation(request, order):
+        """ キャンセルバリデーション """
+        pass
+
     def prepare(self, request, cart):
         """ ここでは何もしない """
 

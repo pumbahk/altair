@@ -80,7 +80,11 @@ def delivery_notice_viewlet(context, request):
 
 class OrionTicketDeliveryPlugin(object):
     def validate_order(self, request, order_like, update=False):
-        """ なにかしたほうが良い?""" 
+        """ なにかしたほうが良い?"""
+
+    def validate_order_cancellation(request, order):
+        """ キャンセルバリデーション """
+        pass
 
     def prepare(self, request, cart):
         """ 前処理 """

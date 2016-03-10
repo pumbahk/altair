@@ -67,6 +67,10 @@ class FreePaymentPlugin(object):
         if order_like.total_amount != 0:
             raise OrderLikeValidationFailure(u'total_amount is not zero', 'order.total_amount')
 
+    def validate_order_cancellation(request, order):
+        """ キャンセルバリデーション """
+        pass
+
     def prepare(self, request, cart):
         """ 前処理 なし"""
 

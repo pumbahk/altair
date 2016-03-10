@@ -61,7 +61,12 @@ from altair.app.ticketing.sej.models import (
 from altair.app.ticketing.payments.payment import Payment
 from altair.app.ticketing.payments.api import lookup_plugin, get_payment_delivery_plugin, get_payment_plugin, get_delivery_plugin
 from altair.app.ticketing.payments.interfaces import IPaymentCart
-from altair.app.ticketing.payments.exceptions import OrderLikeValidationFailure, PaymentDeliveryMethodPairNotFound, PaymentPluginException
+from altair.app.ticketing.payments.exceptions import (
+    OrderLikeValidationFailure,
+    PaymentDeliveryMethodPairNotFound,
+    PaymentPluginException,
+    CancellationValidationFailure
+    )
 from altair.app.ticketing.payments import plugins as payments_plugins
 from altair.multicheckout.util import get_multicheckout_ahead_com_name
 from altair.multicheckout.models import MultiCheckoutStatusEnum
@@ -594,41 +599,78 @@ class OrderSummarySearchQueryBuilder(SearchQueryBuilderBase):
         return query
 
 
+def _validate_order_cancellation(request, order):
+    """キャンセル可能かvalidationする
+    :param request: リクエスト
+    :param order: バリデーション対象
+    :return: エラーメッセージ(list)
+    """
+    if not order.can_cancel():
+        logger.error(
+            u'予約がキャンセルできる状態ではありません (予約No: {order_no}, 予約ステータス: {status}, 支払ステータス: {payment_status})'.format(
+                order_no=order.order_no,
+                status=order.status,
+                payment_status=order.payment_status
+            )
+        )
+        raise
+
+    # 各プラグイン固有のバリデーション
+    payment_delivery_plugin, payment_plugin, delivery_plugin = lookup_plugin(request, order.payment_delivery_pair)
+    if payment_delivery_plugin is not None:
+        plugins = [payment_delivery_plugin]
+    else:
+        plugins = [payment_plugin, delivery_plugin]
+    for plugin in plugins:
+        try:
+            plugin.validate_order_cancellation(request, order)
+        except CancellationValidationFailure as e:
+            logger.error(u'pluginキャンセルできる状態ではありません: {}'.format(e.message))
+            raise
+
+
 def cancel_order(request, order, now=None):
+    """
+    Orderをキャンセル状態にする。（決済キャンセル、在庫解放含む）
+    :param request: リクエスト
+    :param order: キャンセル対象
+    :param now: キャンセル時刻
+    :return: 注意メッセージ(list)（例外ではない）
+    """
     logger.info('canceling order: %s' % order.order_no)
     warnings = []
     now = now or datetime.now()
-    if not order.can_cancel():
+
+    # キャンセル処理の前にvalidationする
+    try:
+        _validate_order_cancellation(request, order)
+    except:
         raise OrderCancellationError(order.order_no, _(u'予約がキャンセルできる状態ではありません (予約ステータス: ${status}, 支払ステータス: ${payment_status})', mapping=dict(status=order.status, payment_status=order.payment_status)).interpolate())
 
     '''
     決済方法ごとに払戻処理
     '''
-    payment_plugin_id = order.payment_delivery_pair.payment_method.payment_plugin_id
-    delivery_plugin_id = order.payment_delivery_pair.delivery_method.delivery_plugin_id
-
-    payment_delivery_plugin = get_payment_delivery_plugin(request, payment_plugin_id, delivery_plugin_id)
-    payment_plugin = get_payment_plugin(request, payment_plugin_id)
-    delivery_plugin = get_delivery_plugin(request, delivery_plugin_id)
-    if payment_delivery_plugin is not None:
-        payment_plugin = payment_delivery_plugin
-        delivery_plugin = None
-    else:
-        if payment_plugin is None and delivery_plugin is None:
-            raise PaymentDeliveryMethodPairNotFound(u"対応する決済プラグインか配送プラグインが見つかりませんでした")
+    payment_delivery_plugin, payment_plugin, delivery_plugin = lookup_plugin(request, order.payment_delivery_pair)
 
     # インナー予約の場合はAPI決済していないのでスキップ
     # ただしコンビニ決済はインナー予約でもAPIで通知しているので処理する
-    if order.is_inner_channel and payment_plugin_id != payments_plugins.SEJ_PAYMENT_PLUGIN_ID:
+    if payment_delivery_plugin:
+        payment_plugin_id = payment_delivery_plugin.id
+    elif payment_plugin:
+        payment_plugin_id = payment_plugin.id
+    if order.is_inner_channel and payment_plugin_id not in (payments_plugins.SEJ_PAYMENT_PLUGIN_ID, payments_plugins.FAMIPORT_PAYMENT_PLUGIN_ID):
         warnings.append(_(u'インナー予約のキャンセルなので決済払戻処理をスキップします'))
         payment_plugin = None
 
     # 入金済みなら決済をキャンセル
     try:
-        if payment_plugin is not None:
-            payment_plugin.cancel(request, order)
-        if delivery_plugin is not None:
-            delivery_plugin.cancel(request, order)
+        if payment_delivery_plugin:
+            payment_delivery_plugin.cancel(request, order)
+        else:
+            if payment_plugin is not None:
+                payment_plugin.cancel(request, order)
+            if delivery_plugin is not None:
+                delivery_plugin.cancel(request, order)
     except PaymentPluginException:
         logger.exception(u'キャンセルに失敗しました')
         raise
