@@ -365,7 +365,7 @@ class ProductItemForm(OurForm, ProductItemFormMixin):
 
     def validate_ticket_bundle_id(self, field):
         ticket_bundle = TicketBundle.filter_by(id=field.data).one()
-        validate_ticket_bundle_and_sales_segment_set(ticket_bundle=ticket_bundle, sales_segment=self.sales_segment)
+        validate_ticket_bundle_and_sales_segment_set(field=field, ticket_bundle=ticket_bundle, sales_segment=self.sales_segment)
 
     def validate_stock_type_id(form, field):
         if not field.data:
@@ -517,7 +517,7 @@ class ProductAndProductItemAPIForm(OurForm, ProductFormMixin, ProductItemFormMix
 
     def validate_ticket_bundle_id(self, field):
         ticket_bundle = TicketBundle.filter_by(id=field.data).one()
-        validate_ticket_bundle_and_sales_segment_set(ticket_bundle=ticket_bundle, sales_segment=self.sales_segment)
+        validate_ticket_bundle_and_sales_segment_set(field=field, ticket_bundle=ticket_bundle, sales_segment=self.sales_segment)
 
     def validate(self, *args, **kwargs):
         status = super(ProductAndProductItemAPIForm, self).validate(*args, **kwargs)
