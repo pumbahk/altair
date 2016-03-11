@@ -448,9 +448,7 @@ order_summary_joins = t_order.join(
 ).outerjoin(
     t_lot,
     t_lot_entry.c.lot_id == t_lot.c.id
-)
-
-order_product_summary_joins = order_summary_joins.join(
+).join(
     t_ordered_product,
     and_(t_ordered_product.c.order_id==t_order.c.id,
          t_ordered_product.c.deleted_at==None),
@@ -466,7 +464,9 @@ order_product_summary_joins = order_summary_joins.join(
     t_product_item,
     and_(t_product_item.c.id==t_ordered_product_item.c.product_item_id,
          t_product_item.c.deleted_at==None),
-).join(
+)
+
+order_product_summary_joins = order_summary_joins.join(
     t_venue,
     and_(t_venue.c.performance_id==t_performance.c.id,
          t_venue.c.deleted_at==None),
@@ -785,7 +785,6 @@ class OrderSearchBase(list):
         condition -- 初期化した検索条件
         """
         cond = and_(t_organization.c.id==self.organization_id,
-                    t_ordered_product.c.order_id==t_order.c.id,
                     t_order.c.deleted_at==None)
 
         if condition is None:
@@ -1085,7 +1084,7 @@ class OrderSearchBase(list):
 
     def total_quantity(self):
         """すべての予約枚数を返す"""
-        sql = select([func.sum(t_ordered_product.c.quantity)],
+        sql = select([func.sum(t_ordered_product_item.c.quantity)],
                      from_obj=[self.target],
                      whereclause=self.condition,
         )
