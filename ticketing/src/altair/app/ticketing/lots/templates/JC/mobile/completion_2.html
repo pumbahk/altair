@@ -12,7 +12,7 @@ ${h.japanese_date(performance.start_on)}<br />
 会場: ${performance.venue.name}<br />
 開演: ${h.japanese_time(performance.start_on)} (予定)<br />
 </div>
-<%mobile:form_header>希望種別と名数</%mobile:form_header>
+<%mobile:form_header>希望種別とエントリー人数</%mobile:form_header>
 <div>
 % for wp in lot_entry.wishes[0].products:
 ・${wp.product.name}<br />
