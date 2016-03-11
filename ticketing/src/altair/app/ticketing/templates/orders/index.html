@@ -96,7 +96,7 @@
 <table class="table table-striped table-bordered">
   <thead>
     <tr>
-        <th>検索された購入枚数の総合計</th>
+        <th>検索された販売枚数の総合計</th>
     </tr>
   </thead>
   <tr>
@@ -111,7 +111,7 @@
   </tr>
 </table>
 % else:
-  <a href="${request.route_path('orders.toggle_show_total_quantity', _query=request.params)}" class="btn">購入枚数の合計を表示</a>
+  <a href="${request.route_path('orders.toggle_show_total_quantity', _query=request.params)}" class="btn">販売枚数の合計を表示</a>
 % endif
 
 <div class="orders">
