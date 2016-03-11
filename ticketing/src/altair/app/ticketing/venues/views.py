@@ -754,7 +754,7 @@ def new_post(request):
             siteprofile = SiteProfile(name = site.name, prefecture = site.prefecture)
             siteprofile.save()
         except MultipleResultsFound:
-            logger.error("Multople SiteProfile with same name and prefecture found: (name: %s, prefecture: %s)" % (site.name, site.prefecture))
+            logger.error("Multiple SiteProfile with same name and prefecture found: (name: %s, prefecture: %s)" % (site.name, site.prefecture))
             request.session.flash("名前と都道府県が同じ会場プロファイルが複数存在します (名前: %s, 都道府県: %s)" % (site.name, site.prefecture))
         site.siteprofile = siteprofile
         site.save()
