@@ -58,7 +58,7 @@ def upgrade():
                         WHERE s.name = sp.name AND s.prefecture = sp.prefecture AND s.prefecture is not NULL AND s.prefecture <> '';"
     op.execute(update_site_sql)
     update_null_prefecture_site_sql = u"UPDATE Site as s, SiteProfile as sp SET s.siteprofile_id = sp.id, s.updated_at = now() \
-                                        WHERE (sp.name = 'default' AND sp.prefecture = '全国') AND (s.prefecture is NULL OR s.prefecture = '');"
+                                        WHERE (sp.name = 'default' AND sp.prefecture = '全国') AND (s.siteprofile_id = 0 OR s.prefecture is NULL OR s.prefecture = '');"
     op.execute(update_null_prefecture_site_sql)
     op.create_foreign_key('Site_ibfk_1', 'Site', 'SiteProfile', ['siteprofile_id'], ['id'])
 
