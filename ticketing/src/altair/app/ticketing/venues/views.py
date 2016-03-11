@@ -750,7 +750,7 @@ def new_post(request):
         site.visible = True
         try:
             siteprofile = SiteProfile.get_by_name_and_prefecture(site.name, site.prefecture)
-        except NoReSultFound:
+        except NoResultFound:
             siteprofile = SiteProfile(name = site.name, prefecture = site.prefecture)
             siteprofile.save()
         except MultipleResultsFound:
