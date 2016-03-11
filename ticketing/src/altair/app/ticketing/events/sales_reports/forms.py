@@ -381,3 +381,13 @@ class ReportSettingForm(OurForm):
                 self.recipients.errors.append(u'送信先を選択または入力してください')
                 status = False
         return status
+
+
+class OnlyEmailCheckForm(OurForm):
+     email = TextField(
+        label=u'メールアドレス',
+        validators=[
+            Required(),
+            Email()
+        ]
+     )

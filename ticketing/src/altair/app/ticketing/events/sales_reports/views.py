@@ -24,6 +24,7 @@ from altair.app.ticketing.events.sales_reports.forms import (
     SalesReportSearchForm,
     SalesReportForm,
     ReportSettingForm,
+    OnlyEmailCheckForm,
     NumberOfPerformanceReportExportForm,
     )
 
@@ -254,10 +255,14 @@ class ReportSettings(BaseView):
         if not form.validate():
             raise ReportSettingValidationError(form=form)
 
+        error = False
+        num = 0
         report_setting.recipients = []
         for line in form.recipients.data.splitlines():
+            num += 1
             row = line.split(',')
             if len(row) > 2:
+                self.request.session.flash(u'入力された形式が不正です。（例：名前,メールアドレス {}行目'.format(str(num)))
                 continue
 
             recipient = ReportRecipient()
@@ -265,6 +270,8 @@ class ReportSettings(BaseView):
             # メアドのみ
             if len(row) == 1:
                 if not row[0].strip():
+                    self.request.session.flash(u'空白は指定できません。{}行目'.format(str(num)))
+                    error = True
                     continue
                 recipient.name = ""
                 recipient.email = row[0].strip()
@@ -272,15 +279,27 @@ class ReportSettings(BaseView):
             # 名前とメアド
             elif len(row) == 2:
                 if not row[0].strip() or not row[1].strip():
+                    self.request.session.flash(u'空白は指定できません。{}行目'.format(str(num)))
+                    error = True
                     continue
                 recipient.name = row[0].strip()
                 recipient.email = row[1].strip()
+
+            check_form = OnlyEmailCheckForm()
+            check_form.email.data = recipient.email
+            if not check_form.validate():
+                self.request.session.flash(u'メールアドレスの形式が不正です。{}行目'.format(str(num)))
+                error = True
+                continue
 
             recipient.organization_id = self.context.organization.id
             report_setting.recipients.append(recipient)
 
         if not report_setting.recipients:
             return
+
+        if not error:
+            self.request.session.flash(u'レポート送信設定を保存しました')
 
         report_setting.frequency = form.frequency.data
         report_setting.event_id = form.event_id.data
@@ -305,7 +324,6 @@ class ReportSettings(BaseView):
     def new_post(self):
         try:
             self._save_report_setting()
-            self.request.session.flash(u'レポート送信設定を保存しました')
             return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
         except ReportSettingValidationError as e:
             return {
