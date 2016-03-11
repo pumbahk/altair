@@ -1015,12 +1015,13 @@ class ImportCSVParser(object):
 
 
 class OrderImporter(object):
-    def __init__(self, request, import_type, allocation_mode=AllocationModeEnum.AlwaysAllocateNew.v, entrust_separate_seats=False, merge_order_attributes=False, session=None, now=None):
+    def __init__(self, request, import_type, allocation_mode=AllocationModeEnum.AlwaysAllocateNew.v, entrust_separate_seats=False, merge_order_attributes=False, enable_random_import=True, session=None, now=None):
         self.request = request
         self.import_type = int(import_type)
         self.allocation_mode = int(allocation_mode)
         self.entrust_separate_seats = entrust_separate_seats
         self.merge_order_attributes = merge_order_attributes
+        self.enable_random_import = enable_random_import
         self.session = session
         if now is None:
             now = datetime.now()
@@ -1207,6 +1208,7 @@ class OrderImporter(object):
             allocation_mode=self.allocation_mode,
             entrust_separate_seats=self.entrust_separate_seats,
             merge_order_attributes=self.merge_order_attributes,
+            enable_random_import=self.enable_random_import,
             data=u'{}',
             errors=u'{}',
             count=0
@@ -1292,6 +1294,7 @@ def run_import_task(request, task):
             import_type=task.import_type,
             allocation_mode=task.allocation_mode,
             entrust_separate_seats=task.entrust_separate_seats,
+            enable_random_import=task.enable_random_import,
             order_modifier=add_note,
             channel_for_new_orders=ChannelEnum.IMPORT.v
             )

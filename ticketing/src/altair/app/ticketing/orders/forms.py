@@ -1013,6 +1013,9 @@ class OrderImportForm(OurForm):
     always_issue_order_no = OurBooleanField(
         label=u'常に新しい予約番号を発番'
     )
+    enable_random_import = OurBooleanField(
+        label=u'ランダムインポート'
+    )
     allocation_mode = BugFreeSelectField(
         label=u'配席モード',
         validators=[Required()],
