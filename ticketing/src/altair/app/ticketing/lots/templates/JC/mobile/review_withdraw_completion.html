@@ -70,7 +70,7 @@ ${entry.payment_delivery_method_pair.delivery_method.name}<br/>
   <div>
   %for lot_product in wish.products:
     ${lot_product.product.name}
-    ${h.format_currency(lot_product.product.price)}×${lot_product.quantity}枚=${h.format_currency(lot_product.subtotal)} (税込)
+    ${h.format_currency(lot_product.product.price)}×${lot_product.quantity}名=${h.format_currency(lot_product.subtotal)} (税込)
   %endfor
   <%mobile:form_header>決済手数料</%mobile:form_header>
   (${wish.lot_entry.payment_delivery_method_pair.payment_method.name})

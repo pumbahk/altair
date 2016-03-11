@@ -44,11 +44,11 @@ ${wish.performance.name}<br />
 ${h.japanese_date(wish.performance.start_on)}<br />
 会場 ${wish.performance.venue.name}<br />
 開演 ${h.japanese_time(wish.performance.start_on)} (予定)<br />
-<%mobile:form_header>希望種別と枚数</%mobile:form_header>
+<%mobile:form_header>希望種別と名数</%mobile:form_header>
 <div><font size="-1">
 % for lot_product in wish.products:
 ・${lot_product.product.name}<br />
-<div align="right" style="text-align:right">${h.format_currency(lot_product.product.price)}×${lot_product.quantity}枚=${h.format_currency(lot_product.subtotal)} (税込)</div>
+<div align="right" style="text-align:right">${h.format_currency(lot_product.product.price)}×${lot_product.quantity}名=${h.format_currency(lot_product.subtotal)} (税込)</div>
 % endfor
 </div>
 ・決済手数料 (${wish.lot_entry.payment_delivery_method_pair.payment_method.name})<br />
@@ -73,7 +73,7 @@ ${h.format_currency(wish.special_fee)}
 合計 ${h.format_currency(wish.total_amount)} (税込)
 </font></div>
 %endfor
-<%mobile:header>選手情報</%mobile:header>
+<%mobile:header>エントリー代表者情報</%mobile:header>
 <%mobile:form_header>氏名(漢字)</%mobile:form_header>
 <div>
 ${shipping_address.last_name} ${shipping_address.first_name}
