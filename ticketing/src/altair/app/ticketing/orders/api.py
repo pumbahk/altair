@@ -625,7 +625,6 @@ def _validate_order_cancellation(request, order, now):
         try:
             plugin.validate_order_cancellation(request, order, now)
         except CancellationValidationFailure as e:
-            logger.error(u'pluginキャンセルできる状態ではありません: {}'.format(e.message))
             raise
 
 
@@ -645,7 +644,13 @@ def cancel_order(request, order, now=None):
     try:
         _validate_order_cancellation(request, order, now)
     except:
-        raise OrderCancellationError(order.order_no, _(u'予約がキャンセルできる状態ではありません (予約ステータス: ${status}, 支払ステータス: ${payment_status})', mapping=dict(status=order.status, payment_status=order.payment_status)).interpolate())
+        import sys
+        exc_info = sys.exc_info()
+        raise OrderCancellationError(
+            order.order_no,
+            _(u'the order cannot be canceled. OrderStatus=${status}, PaymentStatus=${payment_status})', mapping=dict(status=order.status, payment_status=order.payment_status)).interpolate(),
+            nested_exc_info=exc_info
+        )
 
     '''
     決済方法ごとに払戻処理
@@ -654,11 +659,7 @@ def cancel_order(request, order, now=None):
 
     # インナー予約の場合はAPI決済していないのでスキップ
     # ただしコンビニ決済はインナー予約でもAPIで通知しているので処理する
-    if payment_delivery_plugin:
-        payment_plugin_id = payment_delivery_plugin.id
-    elif payment_plugin:
-        payment_plugin_id = payment_plugin.id
-    if order.is_inner_channel and payment_plugin_id not in (payments_plugins.SEJ_PAYMENT_PLUGIN_ID, payments_plugins.FAMIPORT_PAYMENT_PLUGIN_ID):
+    if order.is_inner_channel and order.payment_plugin_id not in (payments_plugins.SEJ_PAYMENT_PLUGIN_ID, payments_plugins.FAMIPORT_PAYMENT_PLUGIN_ID):
         warnings.append(_(u'インナー予約のキャンセルなので決済払戻処理をスキップします'))
         payment_plugin = None
 

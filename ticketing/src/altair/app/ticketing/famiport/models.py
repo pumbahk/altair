@@ -722,10 +722,8 @@ class FamiPortOrder(Base, WithTimestamp):
         if any(famiport_receipt.payment_request_received_at is not None and famiport_receipt.canceled_at is None for famiport_receipt in self.famiport_receipts):
             raise FamiPortUnsatisfiedPreconditionError('FamiPortOrder(id=%ld, order_no=%s) cannot be canceled; there are pending receipt(s)' % (self.id, self.order_no))
         # SEJの要件に平仄を取るために追加 tkt1009
-        if self.paid_at is not None and self.payment_due_at < now:
-            raise FamiPortUnsatisfiedPreconditionError('FamiPortOrder(id=%ld, order_no=%s) cannot be canceled; payment_due_at is overdue' % (self.id, self.order_no))
-        if self.type is FamiPortOrderType.Ticketing and self.ticketing_end_at < now:
-            raise FamiPortUnsatisfiedPreconditionError('FamiPortOrder(id=%ld, order_no=%s) cannot be canceled; ticketing_end_at is overdue' % (self.id, self.order_no))
+        if self.type == FamiPortOrderType.Ticketing.value and self.ticketing_end_at < now:
+            raise FamiPortUnsatisfiedPreconditionError('FamiPortOrder(id=%ld, order_no=%s) cannot be canceled; ticketing is overdue' % (self.id, self.order_no))
 
         return True
 
