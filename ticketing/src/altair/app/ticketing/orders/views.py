@@ -1447,7 +1447,7 @@ class OrderDetailView(OrderBaseView):
         order = get_order_by_id(self.request, order_id)
 
         if order.status == 'canceled':
-            self.request.session.flash(u'キャンセル済みの為、金額の変更はできません')
+            self.request.session.flash(u'キャンセル済みの為、商品の変更はできません')
             return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
 
         if order is None or order.organization_id != self.context.organization.id:
