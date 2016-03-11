@@ -27,7 +27,7 @@ def upgrade():
 
     # Set up AltairFamiPortVenue_Venue based on existing data in AltairFamiPortVenue_Site
     insert_sql = u"INSERT INTO AltairFamiPortVenue_Venue (altair_famiport_venue_id, venue_id) \
-                   SELECT DISTINCT a_s.altair_famiport_venue_id, v.id FROM AltairFamiPortVenue_Site as a_s \
+                   SELECT DISTINCT a_s.altair_famiport_venue_id, v.id as venue_id FROM AltairFamiPortVenue_Site as a_s \
                    INNER JOIN AltairFamiPortPerformanceGroup as afmpg ON a_s.altair_famiport_venue_id = afmpg.altair_famiport_venue_id \
                    INNER JOIN AltairFamiPortPerformance as afmp ON afmpg.id = afmp.altair_famiport_performance_group_id \
                    INNER JOIN Venue as v ON v.performance_id = afmp.performance_id \

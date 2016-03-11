@@ -9,6 +9,7 @@ import argparse
 import locale
 import time
 import json
+import logging
 
 from pyramid.paster import get_app, bootstrap
 
@@ -28,6 +29,8 @@ io_encoding = locale.getpreferredencoding()
 SITE_INFO_NAMESPACE = 'http://xmlns.ticketstar.jp/2012/site-info'
 
 verbose = False
+
+logger = logging.getLogger(__name__)
 
 class FormatError(Exception):
     pass
@@ -75,7 +78,13 @@ def import_tree(registry, update, organization, xmldoc, file, bundle_base_url=No
 
     backend_metadata_url = myurljoin(bundle_base_url, 'metadata.json')
     site_name = tree['properties']['name']
-    siteprofile = DBSession.query(SiteProfile).filter_by(name = site_name).filter_by(prefecture = prefecture).first()
+    try:
+        siteprofile = SiteProfile.get_by_name_and_prefecture(name=site_name, prefecture=prefecture)
+    except NoResultFound:
+        pass
+    except MultipleResultsFound as multipleResultsFound:
+        logger.error("Multiple SiteProfile with same name and prefecture found: (name: %s, prefecture: %s)" % (site_name, prefecture))
+        raise multipleResultsFound
     if not siteprofile:
         siteprofile = SiteProfile(name = site_name, prefecture = prefecture)
     if update:

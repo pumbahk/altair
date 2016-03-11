@@ -92,16 +92,16 @@ class SiteProfile(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     @classmethod
     def get_default_siteprofile(cls):
         return DBSession.query(SiteProfile)\
-                        .filter(SiteProfile.name == 'dummy')\
+                        .filter(SiteProfile.name == 'default')\
                         .filter(SiteProfile.prefecture == u'全国')\
-                        .first()
+                        .one()
 
     @classmethod
     def get_by_name_and_prefecture(cls, name, prefecture):
         return DBSession.query(SiteProfile)\
                         .filter(SiteProfile.name == name)\
                         .filter(SiteProfile.prefecture == prefecture)\
-                        .first()
+                        .one()
 
 @implementer(ITentativeVenueSite)
 class Site(Base, BaseModel, WithTimestamp, LogicallyDeleted):

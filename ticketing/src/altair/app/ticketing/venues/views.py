@@ -21,6 +21,7 @@ from sqlalchemy import and_, distinct
 from sqlalchemy.sql import exists, join, func, or_, not_
 from sqlalchemy.sql.expression import asc, desc
 from sqlalchemy.orm import joinedload, noload, aliased, undefer
+from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 
 from altair.sqlahelper import get_db_session
 
@@ -747,8 +748,14 @@ def new_post(request):
     if f.validate():
         site = merge_session_with_post(Site(), f.data)
         site.visible = True
-        siteprofile = SiteProfile(name = site.name, prefecture = site.prefecture)
-        siteprofile.save()
+        try:
+            siteprofile = SiteProfile.get_by_name_and_prefecture(site.name, site.prefecture)
+        except NoReSultFound:
+            siteprofile = SiteProfile(name = site.name, prefecture = site.prefecture)
+            siteprofile.save()
+        except MultipleResultsFound:
+            logger.error("Multople SiteProfile with same name and prefecture found: (name: %s, prefecture: %s)" % (site.name, site.prefecture))
+            request.session.flash("名前と都道府県が同じ会場プロファイルが複数存在します (名前: %s, 都道府県: %s)" % (site.name, site.prefecture))
         site.siteprofile = siteprofile
         site.save()
 

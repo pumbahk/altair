@@ -38,33 +38,25 @@ def upgrade():
         sa.Column('deleted_at', sa.TIMESTAMP(), nullable=True)
         )
 
-    # Clean up exsiting Site.prefecture
-    update_site_name_sql = u"UPDATE Site SET prefecture = '全国' \
-                                         WHERE prefecture is not null \
-                                         and prefecture not like '%県%' \
-                                         and prefecture not like '%都%' \
-                                         and prefecture not like '%府%' \
-                                         and prefecture not like '%道%'"
-    op.execute(update_site_name_sql)
-
     # Set up SiteProfile data from existing data in Site
     insert_default_siteprofile_sql = u"INSERT INTO SiteProfile (name, prefecture, updated_at) VALUES ('default', '全国', now());"
     op.execute(insert_default_siteprofile_sql)
-    insert_siteprofile_sql = u"INSERT INTO SiteProfile (name, prefecture, updated_at) SELECT DISTINCT name, prefecture, now() FROM Site WHERE prefecture is not NULL;"
+    insert_siteprofile_sql = u"INSERT INTO SiteProfile (name, prefecture, updated_at) SELECT DISTINCT name, prefecture, now() \
+                               FROM Site WHERE prefecture is not NULL AND prefecture <> '';"
     op.execute(insert_siteprofile_sql)
 
     # Set up Site.siteprofile_id with SiteProfile data created above
-    op.add_column('Site', sa.Column('siteprofile_id', Identifier, nullable=False))
+    op.add_column('Site', sa.Column('siteprofile_id', Identifier, nullable=False, default=0))
     update_site_sql = u"UPDATE Site as s, SiteProfile as sp SET s.siteprofile_id = sp.id, s.updated_at = now() \
-                        WHERE s.name = sp.name AND s.prefecture = sp.prefecture AND s.prefecture is not NULL;"
+                        WHERE s.name = sp.name AND s.prefecture = sp.prefecture AND s.prefecture is not NULL AND s.prefecture <> '';"
     op.execute(update_site_sql)
     update_null_prefecture_site_sql = u"UPDATE Site as s, SiteProfile as sp SET s.siteprofile_id = sp.id, s.updated_at = now() \
-                                        WHERE sp.name = 'dummy' AND s.prefecture is NULL;"
+                                        WHERE (sp.name = 'default' AND sp.prefecture = '全国') AND (s.prefecture is NULL OR s.prefecture == '');"
     op.execute(update_null_prefecture_site_sql)
     op.create_foreign_key('Site_ibfk_1', 'Site', 'SiteProfile', ['siteprofile_id'], ['id'])
 
     # Set up AltairFamiPortVenue.siteprofile_id based on existing data in AltairFamiPortVenue_Site
-    op.add_column('AltairFamiPortVenue', sa.Column('siteprofile_id', Identifier, nullable=False))
+    op.add_column('AltairFamiPortVenue', sa.Column('siteprofile_id', Identifier, nullable=False, default=0))
     update_altairfamiportvenue_sql = u"UPDATE AltairFamiPortVenue as afv INNER JOIN AltairFamiPortVenue_Site as afvs on afv.id = afvs.altair_famiport_venue_id \
                                        INNER JOIN Site as s on afvs.site_id = s.id \
                                        INNER JOIN SiteProfile as sp on s.siteprofile_id = sp.id \
@@ -76,7 +68,6 @@ def upgrade():
 
 
 def downgrade():
-    # op.drop_constraint('AltairFamiPortVenue_ibuq_1', 'AltairFamiPortVenue', 'unique')
     op.drop_column('AltairFamiPortVenue', 'siteprofile_id')
     op.drop_constraint('Site_ibfk_1', 'Site', 'foreignkey')
     op.drop_column('Site', sa.Column('siteprofile_id'))
