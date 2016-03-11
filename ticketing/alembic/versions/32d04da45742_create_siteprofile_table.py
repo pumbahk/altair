@@ -76,6 +76,6 @@ def upgrade():
 
 def downgrade():
     op.drop_column('AltairFamiPortVenue', 'siteprofile_id')
-    op.drop_constraint('Site_ibfk_1', 'Site', 'foreignkey')
+    # op.drop_constraint('Site_ibfk_1', 'Site', 'foreignkey')
     op.drop_column('Site', sa.Column('siteprofile_id'))
     op.drop_table('SiteProfile')
