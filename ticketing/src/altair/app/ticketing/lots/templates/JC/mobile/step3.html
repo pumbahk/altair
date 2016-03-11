@@ -13,7 +13,7 @@ ${h.japanese_date(option_data['performance'].start_on)}<br />
 会場 ${option_data['performance'].venue.name}<br />
 開演 ${h.japanese_time(option_data['performance'].start_on)} (予定)<br />
 </div>
-<%mobile:form_header>希望種別と名数:</%mobile:form_header>
+<%mobile:form_header>希望種別とエントリー人数:</%mobile:form_header>
 <div><font size="-1">
 % for rec in option_data['wished_products']:
 % if rec['quantity'] > 0:
