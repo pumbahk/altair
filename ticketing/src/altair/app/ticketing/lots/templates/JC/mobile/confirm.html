@@ -51,7 +51,7 @@ ${h.japanese_date(wish.performance.start_on)}<br />
 % for lot_product in wish.products:
 ・${lot_product.product.name}<br />
 <div align="right" style="text-align:right">
-${h.format_currency(lot_product.product.price)}×${lot_product.quantity}枚=${h.format_currency(lot_product.subtotal)} (税込)
+${h.format_currency(lot_product.product.price)}×${lot_product.quantity}名=${h.format_currency(lot_product.subtotal)} (税込)
 </div>
 % endfor
 ・決済手数料 (${payment_delivery_method_pair.payment_method.name})<br />
@@ -78,7 +78,7 @@ ${h.format_currency(wish.special_fee)}
 </font></div>
 </div>
 %endfor
-<%mobile:header>選手情報</%mobile:header>
+<%mobile:header>エントリー代表者情報</%mobile:header>
 <%mobile:form_header>氏名(漢字)</%mobile:form_header>
 <div>
 ${shipping_address['last_name']} ${shipping_address['first_name']}

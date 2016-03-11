@@ -22,7 +22,7 @@
             <table border="0">
               %for cp in cart.items:
               <tr>
-                <th>${cp.product.name}　${cp.quantity}枚</th>
+                <th>${cp.product.name}　${cp.quantity}名</th>
                 <td>${cp.product.price}</td>
               </tr>
               %endfor
@@ -68,16 +68,16 @@
 
     <div class="settlementBox">
       <div class="settlementBoxInner">
-        <h2><img src="${request.static_url('altair.app.ticketing.lots:static/JC/pc/img/order/title_buyer.gif')}" alt="選手情報" width="97" height="30" /></h2>
+        <h2><img src="${request.static_url('altair.app.ticketing.lots:static/JC/pc/img/order/title_buyer.gif')}" alt="エントリー代表者情報" width="97" height="30" /></h2>
         <div id="settlementSelectBox">
           <div id="settlementSelectBoxInner02">
             <table summary="お支払・お引取り方法選択">
               <tr>
-                <th><label>選手氏名（全角）</label></th>
+                <th><label>エントリー代表者氏名（全角）</label></th>
                 <td>${cart.shipping_address.last_name} ${cart.shipping_address.first_name}</td>
               </tr>
               <tr>
-                <th><label>選手氏名（カナ）</label></th>
+                <th><label>エントリー代表者氏名（カナ）</label></th>
                 <td>${cart.shipping_address.last_name_kana} ${cart.shipping_address.first_name_kana}</td>
               </tr>
               <tr>

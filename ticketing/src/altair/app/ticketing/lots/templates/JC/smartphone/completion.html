@@ -60,7 +60,7 @@ if label is None or label is True:
 <tr>
 <td>${lot_product.product.name}</td>
 </tr><tr>
-<td>${h.format_currency(lot_product.product.price)}×${lot_product.quantity}枚=${h.format_currency(lot_product.subtotal)}</td>
+<td>${h.format_currency(lot_product.product.price)}×${lot_product.quantity}名=${h.format_currency(lot_product.subtotal)}</td>
 </tr>
 %endfor
 
@@ -102,7 +102,7 @@ if label is None or label is True:
 
 %endfor
 
-<dt class="creditHl">選手情報</dt>
+<dt class="creditHl">エントリー代表者情報</dt>
 <dd>
 
 <div class="detailBox">

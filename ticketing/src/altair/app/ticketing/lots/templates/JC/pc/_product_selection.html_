@@ -21,7 +21,7 @@
         <% for (var k=0; k < upperLimit; k++) { %>
         <option value="<%= k + 1 %>"><%= k + 1 %></option>
         <% } %> 
-      </select>枚
+      </select>名
     </div>
     <% if (product.description) { %>
     <span class="product-description"><%= product.description %></span>
