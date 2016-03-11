@@ -45,6 +45,13 @@ def upgrade():
                                FROM Site WHERE prefecture is not NULL AND prefecture <> '';"
     op.execute(insert_siteprofile_sql)
 
+    update_siteprofile_prefecture_sql = u"UPDATE SiteProfile SET prefecture = '全国' \
+                                          WHERE prefecture not like '%県%' \
+                                          and prefecture not like '%都%' \
+                                          and prefecture not like '%府%' \
+                                          and prefecture not like '%道%'"
+    op.execute(update_siteprofile_prefecture_sql)
+
     # Set up Site.siteprofile_id with SiteProfile data created above
     op.add_column('Site', sa.Column('siteprofile_id', Identifier, nullable=False, default=0))
     update_site_sql = u"UPDATE Site as s, SiteProfile as sp SET s.siteprofile_id = sp.id, s.updated_at = now() \
