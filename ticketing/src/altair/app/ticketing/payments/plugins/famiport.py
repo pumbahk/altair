@@ -465,10 +465,9 @@ def validate_famiport_order_cancellation(request, order, now):
     tenant = lookup_famiport_tenant(request, order)
     if tenant is None:
         raise FamiPortPluginFailure('could not find famiport tenant', order_no=order_like.order_no, back_url=None)
-    try:
-        famiport_api.can_cancel_famiport_order(request, tenant.code, order.order_no, now)
-    except FamiPortAPIError:
-        raise CancellationValidationFailure(u'FamiPortOrder(order_no:{}) is not able to cancel.'.format(order.order_no))
+
+    if not famiport_api.can_cancel_famiport_order(request, tenant.code, order.order_no, now):
+        raise CancellationValidationFailure(u'FamiPortOrder(order_no:{}) is not able to be canceled.'.format(order.order_no))
 
 def cancel_order(request, order, now=None):
     """キャンセル"""

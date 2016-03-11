@@ -61,6 +61,7 @@ def refresh_sej_order(request, tenant, sej_order, update_reason, now=None, sessi
 
 
 def validate_sej_order_cancellation(request, tenant, sej_order, now=None):
+    """SejOrderバリデーション"""
     if not now:
         now = datetime.now()
     if sej_order.cancel_at is not None:
@@ -70,14 +71,14 @@ def validate_sej_order_cancellation(request, tenant, sej_order, now=None):
     if sej_order.shop_id != tenant.shop_id:
         raise SejError(u'SejOrder.shop_id (%s) != SejTenant.shop_id (%s)' % (sej_order.shop_id, tenant.shop_id), sej_order.order_no)
     # 代済の時は未発券のときならキャンセルできる
-    if sej_order.payment_type == SejPaymentType.Paid.value and sej_order.issue_at is not None:
+    if int(sej_order.payment_type) == SejPaymentType.Paid.v and sej_order.issue_at is not None:
         raise SejError(u'SejOrder.type=Paid and already printed', sej_order.order_no)
     # コンビニ支払が発生する予約は支払期限を過ぎるとキャンセルできない
-    if sej_order.payment_type in (SejPaymentType.Prepayments.value, SejPaymentType.CashOnDelivery.value, SejPaymentType.PrepaymentOnly.value) \
+    if int(sej_order.payment_type) in (SejPaymentType.Prepayment.v, SejPaymentType.CashOnDelivery.v, SejPaymentType.PrepaymentOnly.v) \
             and sej_order.payment_due_at and sej_order.payment_due_at < now:
         raise SejError(u'payment is overdue(SejOrder.payment_due_at: {})'.format(sej_order.payment_due_at), sej_order.order_no)
     # コンビニ発券が発生する予約は発券期限を過ぎるとキャンセルできない
-    if sej_order.payment_type in (SejPaymentType.Prepayments.value, SejPaymentType.CashOnDelivery.value, SejPaymentType.Paid.value) \
+    if int(sej_order.payment_type) in (SejPaymentType.Prepayment.v, SejPaymentType.CashOnDelivery.v, SejPaymentType.Paid.v) \
             and sej_order.ticketing_due_at and sej_order.ticketing_due_at < now:
         raise SejError(u'ticketing is overdue(SejOrder.ticketing_due_at: {})'.format(sej_order.ticketing_due_at), sej_order.order_no)
 
@@ -85,8 +86,8 @@ def validate_sej_order_cancellation(request, tenant, sej_order, now=None):
 def cancel_sej_order(request, tenant, sej_order, now=None, session=None):
     if session is None:
         session = _session
-    validate_sej_order_cancellation(request, tenant, sej_order, now)
     try:
+        validate_sej_order_cancellation(request, tenant, sej_order, now)
         try:
             request_cancel_order(
                 request,

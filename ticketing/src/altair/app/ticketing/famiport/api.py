@@ -825,7 +825,7 @@ def can_cancel_famiport_order(request, client_code, order_no, now=None):
         return internal.can_cancel_famiport_order(request, session, client_code, order_no, now)
     except:
         logger.exception(u'internal error')
-        raise FamiPortAPIError('internal error')
+        return False
 
 
 @user_api
