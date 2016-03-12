@@ -96,7 +96,7 @@ dl.cost-detail > dd {
                 <dt>${h.japanese_datetime(wish.performance.start_on)}　${wish.performance.venue.name}</dt>
                 % for lot_product in wish.products:
                 <dt class="product-name">${lot_product.product.name}</dt>
-                <dd class="product-price-and-quantity">${h.format_currency(lot_product.product.price)}×${lot_product.quantity}枚</dd>
+                <dd class="product-price-and-quantity">${h.format_currency(lot_product.product.price)}×${lot_product.quantity}名</dd>
                 % endfor
               </dl>
                 <dl class="cost-detail">
@@ -127,13 +127,13 @@ dl.cost-detail > dd {
 
   <div class="subbox">
     <dl>
-      <dt><p class="lineRed">選手情報</p></dt>
+      <dt><p class="lineRed">エントリー代表者情報</p></dt>
       <dd>
         <div class="subInner2">
           <dl class="creditList">
-            <dt class="creditHl">選手氏名</dt>
+            <dt class="creditHl">エントリー代表者氏名</dt>
             <dd>${shipping_address.last_name} ${shipping_address.first_name}</dd>
-            <dt class="creditHl">選手氏名（カナ）</dt>
+            <dt class="creditHl">エントリー代表者氏名（カナ）</dt>
             <dd>${shipping_address.last_name_kana} ${shipping_address.first_name_kana}</dd>
             <dt class="creditHl">メールアドレス</dt>
             <dd>${shipping_address.email_1}</dd>

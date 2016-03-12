@@ -57,8 +57,8 @@ if label is None or label is True:
       </tr>
       %if sales_segment.max_quantity:
       <tr>
-        <th scope="row">制限枚数</th>
-        <td>1希望の申込で${sales_segment.max_quantity}枚まで</td>
+        <th scope="row">上限人数</th>
+        <td>1希望の申込で${sales_segment.max_quantity}名まで</td>
       </tr>
       %endif
       %if lot.entry_limit:
@@ -229,12 +229,12 @@ if label is None or label is True:
 
   <div class="settlementBox">
     <div class="settlementBoxInner">
-      <h2><img src="${request.static_url('altair.app.ticketing.lots:static/JC/pc/img/order/title_buyer.gif')}" alt="選手情報" width="97" height="30" /></h2>
+      <h2><img src="${request.static_url('altair.app.ticketing.lots:static/JC/pc/img/order/title_buyer.gif')}" alt="エントリー代表者情報" width="97" height="30" /></h2>
       <div class="settlementSelectBox">
         <div class="settlementSelectBoxInner02">
           <table summary="お支払・お引取り方法選択">
             <tr>
-              <th><label>選手氏名（全角）</label></th>
+              <th><label>エントリー代表者氏名（全角）</label></th>
               <td>
                 <div class="form-field">
                   ${form['last_name'].label} ${form['last_name']}
@@ -248,7 +248,7 @@ if label is None or label is True:
                 </div>
               </td>
             <tr>
-              <th><label>選手氏名（カナ）</label></th>
+              <th><label>エントリー代表者氏名（カナ）</label></th>
               <td>
                 <div class="form-field">
                   ${form['last_name_kana'].label} ${form['last_name_kana']}

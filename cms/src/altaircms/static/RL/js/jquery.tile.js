@@ -20,7 +20,7 @@
 })(jQuery);
 
 
-$(function() {
+$(document).ready(function () {
   $(".tileImg").tile(4);
   $(".tileTitle").tile(4);
   $(".tileText").tile(4);

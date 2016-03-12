@@ -5,8 +5,8 @@ ${event.title}<br />
 ${lot.name}
 </div>
 <%mobile:header>第${option_index}希望</%mobile:header>
-参加区分・種別と希望枚数をお選びください。<br />
-合計で${sales_segment.max_quantity}枚まで入力できます。<br />
+参加区分・種別と希望人数をお選びください。<br />
+合計で${sales_segment.max_quantity}名まで入力できます。<br />
 <%mobile:messages messages="${messages}" />
 <br />
 <form action="${request.route_path('lots.entry.step3', event_id=event.id, lot_id=lot.id, option_index=option_index)}" method="post">
@@ -25,7 +25,7 @@ ${products_per_stock_type[0].seat_stock_type.description|n}
 ・${product.name}<br />
 <div align="right" style="text-align:right">
 ${h.format_currency(product.price)}×
-<input type="text" name="product-${product.id}" size="2" value="" istyle="4" />枚
+<input type="text" name="product-${product.id}" size="2" value="" istyle="4" />名
 </div>
 %endfor
 </div>

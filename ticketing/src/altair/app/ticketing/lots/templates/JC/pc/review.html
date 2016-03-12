@@ -65,7 +65,7 @@
               <dl class="cost-summary">
               %for lot_product in wish.products:
                 <dt class="product-name">${lot_product.product.name}</dt>
-                <dd class="product-price-and-quantity">${h.format_currency(lot_product.product.price)}×${lot_product.quantity}枚=${h.format_currency(lot_product.subtotal)} (税込)</dd>
+                <dd class="product-price-and-quantity">${h.format_currency(lot_product.product.price)}×${lot_product.quantity}名=${h.format_currency(lot_product.subtotal)} (税込)</dd>
               %endfor
                 <dt class="payment-method">決済手数料 (${wish.lot_entry.payment_delivery_method_pair.payment_method.name})</dt>
                 <dd class="payment-fee">${h.format_currency(wish.transaction_fee)}</dd>
@@ -91,16 +91,16 @@
 
 <div class="settlementBox">
   <div class="settlementBoxInner">
-    <h2><img src="${request.static_url('altair.app.ticketing.lots:static/JC/pc/img/order/title_buyer.gif')}" alt="選手情報" width="97" height="30" /></h2>
+    <h2><img src="${request.static_url('altair.app.ticketing.lots:static/JC/pc/img/order/title_buyer.gif')}" alt="エントリー代表者情報" width="97" height="30" /></h2>
     <div class="settlementSelectBox">
       <div class="settlementSelectBoxInner02">
         <table summary="お支払・お引取り方法選択">
           <tr>
-            <th>選手氏名</th>
+            <th>エントリー代表者氏名</th>
             <td>${shipping_address.last_name} ${shipping_address.first_name}</td>
           </tr>
           <tr>
-            <th>選手氏名（カナ）</th>
+            <th>エントリー代表者氏名（カナ）</th>
             <td>${shipping_address.last_name_kana} ${shipping_address.first_name_kana}</td>
           </tr>
           <tr>

@@ -12,9 +12,9 @@ ${h.japanese_datetime(sales_segment.end_at)}
 </div>
 <%mobile:form_header>抽選結果発表予定日</%mobile:form_header>
 <div>${h.announce_time_label(lot)}</div>
-<%mobile:form_header>制限枚数</%mobile:form_header>
+<%mobile:form_header>上限人数</%mobile:form_header>
 <div>
-1希望の申込で${sales_segment.max_quantity}枚まで<br />
+1希望の申込で${sales_segment.max_quantity}名まで<br />
 </div>
 % if lot.entry_limit:
 <%mobile:form_header>申込回数制限</%mobile:form_header>
