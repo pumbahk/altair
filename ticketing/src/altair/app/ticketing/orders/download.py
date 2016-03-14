@@ -448,7 +448,9 @@ order_summary_joins = t_order.join(
 ).outerjoin(
     t_lot,
     t_lot_entry.c.lot_id == t_lot.c.id
-).join(
+)
+
+order_product_item_summary_joins = order_summary_joins.join(
     t_ordered_product,
     and_(t_ordered_product.c.order_id==t_order.c.id,
          t_ordered_product.c.deleted_at==None),
@@ -466,7 +468,7 @@ order_summary_joins = t_order.join(
          t_product_item.c.deleted_at==None),
 )
 
-order_product_summary_joins = order_summary_joins.join(
+order_product_summary_joins = order_product_item_summary_joins.join(
     t_venue,
     and_(t_venue.c.performance_id==t_performance.c.id,
          t_venue.c.deleted_at==None),
@@ -1175,6 +1177,10 @@ class OrderSummary(OrderSearchBase):
     columns = summary_columns
     default_order = t_order.c.id.desc()
 
+class OrderProductItemSummary(OrderSearchBase):
+    target = order_product_item_summary_joins
+    columns = summary_columns
+    default_order = t_order.c.id.desc()
 
 class OrderDownload(OrderSearchBase):
     target = order_product_summary_joins
