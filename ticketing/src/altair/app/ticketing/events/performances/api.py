@@ -1,8 +1,8 @@
 # coding:utf-8
 from datetime import datetime
 from altair.app.ticketing.core.utils import ApplicableTicketsProducer
-from altair.app.ticketing.payments.plugins.sej import DELIVERY_PLUGIN_ID as SEJ_DELIVERY_PLUGIN_ID
-from altair.app.ticketing.payments.plugins.famiport import DELIVERY_PLUGIN_ID as FAMIPORT_DELIVERY_PLUGIN_ID
+from altair.app.ticketing.payments.plugins import SEJ_DELIVERY_PLUGIN_ID
+from altair.app.ticketing.payments.plugins import FAMIPORT_DELIVERY_PLUGIN_ID
 
 from . import VISIBLE_PERFORMANCE_SESSION_KEY
 
@@ -42,7 +42,7 @@ def get_no_ticket_bundles(performance):
                     if not producer.any_exist(producer.famiport_only_tickets()):
                         p = product_item.product
                         if p.sales_segment is not None:
-                            no_ticket_bundles += u'<div>販売区分: {}、商品名: {}(FAMIPORT券面なし)</div>'.format(
+                            no_ticket_bundles += u'<div>販売区分: {}、商品名: {}(ファミマ券面なし)</div>'.format(
                                 p.sales_segment.name, p.name)
 
     return no_ticket_bundles
