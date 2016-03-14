@@ -51,9 +51,9 @@ class OAuthNegotiator(OAuthAPIBase):
         self.timeout = float(timeout)
 
     def _do_request(self, req):
+        request_start_time = datetime.now()
         opener = self.opener_factory()
         logger.debug('making request to %s ...' % req._Request__original)
-        request_start_time = datetime.now()
         try:
             resp = opener.open(req, timeout=self.timeout)
         except urllib2.HTTPError as e:
@@ -154,12 +154,12 @@ class OAuthAPIClient(OAuthAPIBase):
         self.timeout = float(timeout)
 
     def _do_get_request(self, endpoint, params):
+        request_start_time = datetime.now()
         opener = self.opener_factory()
         params_ = params.copy()
         params_.update(access_token=self.access_token)
         url = urljoin(endpoint, '?' + self._encode_params(params_.items()))
         req = urllib2ext.SensibleRequest(url)
-        request_start_time = datetime.now()
         try:
             resp = opener.open(req, timeout=self.timeout)
         except urllib2.HTTPError as e:
@@ -187,6 +187,9 @@ class OAuthAPIClient(OAuthAPIBase):
         request_start_time = datetime.now()
         user_info = self._do_get_request(self.get_endpoint(request, 'get_user_info'), {})
         logger.debug('get_user_info() = %r' % user_info)
+        if user_info is None:
+            return dict()
+
         id = user_info.get('sub') or user_info['id']
         elapsed = datetime.now() - request_start_time
         logger.debug('[Elapsed] %ss : get_user_info' % (elapsed.total_seconds()))
