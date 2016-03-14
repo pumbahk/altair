@@ -67,7 +67,7 @@ class EaglesCommunicator(object):
             data = json.load(resp, encoding=charset)
         finally:
             elapsed = datetime.now() - request_start_time
-            logger.info('request to %s completed in %ss' % (endpoint, elapsed.total_seconds()))
+            logger.info('[Elapsed] %ss : _do_request : request to %s completed' % (elapsed.total_seconds(), endpoint))
         try:
             status = data.pop(u'status')
         except KeyError:
