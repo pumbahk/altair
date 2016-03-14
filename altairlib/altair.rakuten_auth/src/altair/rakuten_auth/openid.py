@@ -10,7 +10,6 @@ import logging
 import uuid
 import pickle
 import logging
-import socket
 from datetime import datetime
 from zope.interface import implementer
 from beaker.cache import Cache, CacheManager, cache_regions
@@ -228,25 +227,20 @@ class RakutenOpenID(object):
             (u'openid.oauth.scope', params['oauth_scope']),
             ]
         url = self.build_endpoint_request_url(query)
-        logger.debug('endpoint_request_url=%s timeout=%d' % (url, self.timeout))
+        logger.debug('endpoint_request_url=%s' % url)
         request_start_time = datetime.now()
         try:
-            f = urllib2.urlopen(url, timeout = self.timeout)
+            f = urllib2.urlopen(url, timeout=self.timeout)
             try:
                 response_body = f.read()
-            except socket.timeout:
-                raise RakutenIDAPIError("socket timeout occurred during reading %s" % (url))
             finally:
                 f.close()
-        except urllib2.URLError as e:
-            RakutenIDAPIError("error occurred during calling %s: reason=%s" % (url, e.reason))
-        except socket.timeout:
-            raise RakutenIDAPIError("socket timeout occurred during calling %s" % (url))
         except Exception as e:
             raise RakutenIDAPIError("error occurred during calling %s: original_exception=%r" % (url, e))
         finally:
             elapsed = datetime.now() - request_start_time
             logger.info('[Elapsed] %ss : verify_authentication : request to %s completed' % (elapsed.total_seconds(), url))
+
         logger.debug('authenticate result: %s' % response_body)
         is_valid = response_body.split("\n")[0].split(":")[1]
 
