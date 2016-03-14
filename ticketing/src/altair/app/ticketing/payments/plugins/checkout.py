@@ -172,7 +172,7 @@ class CheckoutPlugin(object):
                 error_code=e.error_code
                 )
 
-    def cancel(self, request, order_like):
+    def cancel(self, request, order_like, now=None):
         # 売り上げキャンセル
         service = api.get_checkout_service(request, order_like.organization_id, get_channel(order_like.channel))
         try:

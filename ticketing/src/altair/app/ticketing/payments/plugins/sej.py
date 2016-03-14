@@ -595,12 +595,13 @@ class SejPaymentPlugin(object):
             )
 
     @clear_exc
-    def cancel(self, request, order):
+    def cancel(self, request, order, now=None):
         tenant = userside_api.lookup_sej_tenant(request, order.organization_id)
         cancel_order(
             request,
             tenant=tenant,
-            order=order
+            order=order,
+            now=now
             )
 
     @clear_exc
@@ -686,12 +687,13 @@ class SejDeliveryPlugin(SejDeliveryPluginBase):
             )
 
     @clear_exc
-    def cancel(self, request, order):
+    def cancel(self, request, order, now=None):
         tenant = userside_api.lookup_sej_tenant(request, order.organization_id)
         cancel_order(
             request,
             tenant=tenant,
-            order=order
+            order=order,
+            now=now
             )
 
     @clear_exc
@@ -774,12 +776,13 @@ class SejPaymentDeliveryPlugin(SejDeliveryPluginBase):
             )
 
     @clear_exc
-    def cancel(self, request, order):
+    def cancel(self, request, order, now=None):
         tenant = userside_api.lookup_sej_tenant(request, order.organization_id)
         cancel_order(
             request,
             tenant=tenant,
-            order=order
+            order=order,
+            now=now
             )
 
     @clear_exc

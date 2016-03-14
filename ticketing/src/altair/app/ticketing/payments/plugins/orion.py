@@ -109,7 +109,7 @@ class OrionTicketDeliveryPlugin(object):
         # XXX: 座席番号などが変わっている可能性があるので、何かすべきような...
         pass
 
-    def cancel(self, request, order):
+    def cancel(self, request, order, now=None):
         # キャンセルフラグを立てるべきだと思うけど...
         pass
 

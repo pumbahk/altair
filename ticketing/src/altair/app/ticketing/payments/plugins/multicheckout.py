@@ -376,7 +376,7 @@ class MultiCheckoutPlugin(object):
                 )
 
     @clear_exc
-    def cancel(self, request, order):
+    def cancel(self, request, order, now=None):
         # 売り上げキャンセル
         organization = c_models.Organization.query.filter_by(id=order.organization_id).one()
         multicheckout_api = get_multicheckout_3d_api(request, organization.setting.multicheckout_shop_name)
