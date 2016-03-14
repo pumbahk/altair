@@ -854,9 +854,7 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def has_that_delivery(self, delivery_plugin_id):
         qs = DBSession.query(DeliveryMethod)\
             .filter(DeliveryMethod.delivery_plugin_id==delivery_plugin_id)\
-            .join(PaymentDeliveryMethodPair)\
-            .filter(DeliveryMethod.id==PaymentDeliveryMethodPair.delivery_method_id)\
-            .join(SalesSegment_PaymentDeliveryMethodPair)\
+            .filter(PaymentDeliveryMethodPair.delivery_method_id==DeliveryMethod.id)\
             .filter(SalesSegment_PaymentDeliveryMethodPair.c.payment_delivery_method_pair_id==PaymentDeliveryMethodPair.id)\
             .filter(Product.sales_segment_id==SalesSegment_PaymentDeliveryMethodPair.c.sales_segment_id)\
             .filter(Product.id==ProductItem.product_id)\
