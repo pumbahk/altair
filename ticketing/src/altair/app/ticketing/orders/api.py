@@ -666,12 +666,12 @@ def cancel_order(request, order, now=None):
     # 入金済みなら決済をキャンセル
     try:
         if payment_delivery_plugin:
-            payment_delivery_plugin.cancel(request, order)
+            payment_delivery_plugin.cancel(request, order, now)
         else:
             if payment_plugin is not None:
-                payment_plugin.cancel(request, order)
+                payment_plugin.cancel(request, order, now)
             if delivery_plugin is not None:
-                delivery_plugin.cancel(request, order)
+                delivery_plugin.cancel(request, order, now)
     except PaymentPluginException:
         logger.exception(u'キャンセルに失敗しました')
         raise
