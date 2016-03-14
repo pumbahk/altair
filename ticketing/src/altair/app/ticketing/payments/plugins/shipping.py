@@ -66,7 +66,7 @@ class ShippingDeliveryPlugin(object):
         if order.delivered_at is not None:
             raise Exception('order %s is already delivered' % order.order_no)
 
-    def cancel(self, request, order):
+    def cancel(self, request, order, now=None):
         # キャンセルフラグを立てるべきだと思うけど...
         pass
 

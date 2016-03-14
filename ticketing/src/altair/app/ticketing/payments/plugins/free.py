@@ -92,7 +92,7 @@ class FreePaymentPlugin(object):
     def refresh(self, request, order):
         pass
 
-    def cancel(self, request, order):
+    def cancel(self, request, order, now=None):
         pass
 
     def refund(self, request, order, refund_record):

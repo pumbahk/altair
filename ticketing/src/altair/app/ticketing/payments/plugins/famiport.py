@@ -475,7 +475,7 @@ def cancel_order(request, order, now=None):
     if tenant is None:
         raise FamiPortPluginFailure('could not find famiport tenant', order_no=order_like.order_no, back_url=None)
     try:
-        famiport_api.cancel_famiport_order_by_order_no(request, tenant.code, order.order_no)
+        famiport_api.cancel_famiport_order_by_order_no(request, tenant.code, order.order_no, now)
     except FamiPortAPIError:
         raise FamiPortPluginFailure('failed to cancel order', order_no=order.order_no, back_url=None)
 
@@ -640,9 +640,9 @@ class FamiPortPaymentPlugin(object):
         """決済側の状態をDBに反映"""
         return refresh_order(request, order, self)
 
-    def cancel(self, request, order):
+    def cancel(self, request, order, now=None):
         """キャンセル処理"""
-        return cancel_order(request, order)
+        return cancel_order(request, order, now)
 
     def refund(self, request, order, refund_record):
         """払戻処理"""
@@ -753,9 +753,9 @@ class FamiPortDeliveryPlugin(object):
         """リフレッシュ"""
         return refresh_order(request, order, self)
 
-    def cancel(self, request, order):
+    def cancel(self, request, order, now=None):
         """キャンセル処理"""
-        return cancel_order(request, order)
+        return cancel_order(request, order, now)
 
     def refund(self, request, order, refund_record):
         """払い戻し"""
@@ -801,9 +801,9 @@ class FamiPortPaymentDeliveryPlugin(object):
         """リフレッシュ"""
         return refresh_order(request, order, self)
 
-    def cancel(self, request, order):
+    def cancel(self, request, order, now=None):
         """キャンセル処理"""
-        return cancel_order(request, order)
+        return cancel_order(request, order, now)
 
     def refund(self, request, order, refund_record):
         """払い戻し"""
