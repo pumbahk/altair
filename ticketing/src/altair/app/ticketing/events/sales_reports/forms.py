@@ -374,20 +374,64 @@ class ReportSettingForm(OurForm):
         if not self.performance_id.data:
             self.performance_id.data = None
 
+    def validate_recipients(form, field):
+        num = 0
+        emails = []
+        for line in field.data.splitlines():
+            num += 1
+            row = line.split(',')
+            if len(row) > 2:
+                raise ValidationError(u'入力された形式が不正です。（例：名前,メールアドレス {}行目'.format(str(num)))
+
+            # メアドのみ
+            if len(row) == 1:
+                if not row[0].strip():
+                    raise ValidationError(u'空白は指定できません。{}行目'.format(str(num)))
+
+                if not validate_email(row[0].strip()):
+                    raise ValidationError(u'メールアドレスの形式が不正です。{}行目'.format(str(num)))
+                emails.append(row[0].strip())
+                if not check_orverlap_email(emails):
+                    raise ValidationError(u'メールアドレスが重複しています。{}行目'.format(str(num)))
+
+            # 名前とメアド
+            elif len(row) == 2:
+                if not row[0].strip() or not row[1].strip():
+                    raise ValidationError(u'空白は指定できません。{}行目'.format(str(num)))
+                if not validate_email(row[1].strip()):
+                    raise ValidationError(u'メールアドレスの形式が不正です。{}行目'.format(str(num)))
+                emails.append(row[1].strip())
+                if not check_orverlap_email(emails):
+                    raise ValidationError(u'メールアドレスが重複しています。{}行目'.format(str(num)))
+
     def validate(self):
         status = super(ReportSettingForm, self).validate()
         if status:
-            if not self.recipients.data and not self.email.data:
-                self.recipients.errors.append(u'送信先を選択または入力してください')
+            if not self.recipients.data:
+                self.recipients.errors.append(u'送信先を入力してください')
                 status = False
         return status
 
 
 class OnlyEmailCheckForm(OurForm):
-     email = TextField(
+    email = TextField(
         label=u'メールアドレス',
         validators=[
             Required(),
             Email()
         ]
-     )
+    )
+
+
+def validate_email(data):
+    check_form = OnlyEmailCheckForm()
+    check_form.email.data = data
+    if not check_form.validate():
+        return False
+    return True
+
+
+def check_orverlap_email(emails):
+    if len(set(emails)) != len(emails):
+        return False
+    return True
