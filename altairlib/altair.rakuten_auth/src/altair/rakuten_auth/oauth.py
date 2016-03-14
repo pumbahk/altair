@@ -9,7 +9,6 @@ import urllib2
 import urlparse
 import hashlib
 from zope.interface import implementer
-from datetime import datetime
 
 from .interfaces import IRakutenOAuth, IRakutenIDAPI, IRakutenIDAPIFactory, IRakutenIDAPI2, IRakutenIDAPI2Factory
 
@@ -96,14 +95,11 @@ class RakutenOAuth(object):
 
         request_url = self.endpoint + '?' + urllib.urlencode([(k.encode('utf-8'), v.encode('utf-8')) for k, v in params])
         logger.debug("getting access token: %s" % request_url)
+        f = urllib2.urlopen(request_url, timeout=self.timeout)
         try:
-            f = urllib2.urlopen(request_url, timeout=self.timeout)
-            try:
-                response_body = f.read()
-            finally:
-                f.close()
-        except urllib2.HTTPError as e:
-            logger.warn(u'get_access_token urlopen error: %s %s %s' % request_url, e.code, e.reason)
+            response_body = f.read()
+        finally:
+            f.close()
 
         logger.debug('raw access token : %s' % response_body)
         retval = self.parse_access_token_response(response_body)
@@ -159,7 +155,6 @@ class RakutenIDAPI(object):
             (u'rakuten_oauth_api', rakuten_oauth_api),
             ]
 
-        request_start_time = datetime.now()
         request_url = self.endpoint + '?' + urllib.urlencode([(k.encode('utf-8'), v.encode('utf-8')) for k, v in params])
         logger.debug("get user_info: %s" % request_url)
         try:
@@ -173,8 +168,6 @@ class RakutenIDAPI(object):
                 e.close()
         finally:
             f.close()
-            elapsed = datetime.now() - request_start_time
-            logger.info('[Elapsed] %ss : call_rakutenid_api : request to %s completed' % (elapsed.total_seconds(), request_url))
 
         return response_body
 
