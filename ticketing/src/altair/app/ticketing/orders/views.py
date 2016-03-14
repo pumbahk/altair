@@ -346,9 +346,13 @@ class OrderIndexView(OrderBaseView):
         total_quantity = None
         page = int(request.params.get('page', 0))
         if request.params:
-            from .download import OrderSummary
+            from .download import OrderSummary, OrderProductItemSummary
             if form_search.validate():
                 query = OrderSummary(self.request,
+                                    slave_session,
+                                    organization_id,
+                                    condition=form_search)
+                query_ordered_product_item = OrderProductItemSummary(self.request,
                                     slave_session,
                                     organization_id,
                                     condition=form_search)
@@ -376,7 +380,7 @@ class OrderIndexView(OrderBaseView):
                 count = query.count()
 
             if self.show_total_quantity_flag:
-                total_quantity = query.total_quantity()[0]
+                total_quantity = query_ordered_product_item.total_quantity()[0]
 
             orders = paginate.Page(
                 query,
