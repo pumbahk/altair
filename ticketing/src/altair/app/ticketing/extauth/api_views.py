@@ -73,7 +73,6 @@ class APIView(object):
         try:
             client_id, client_secret = oauth_request_parser.get_client_credentials(self.request)
             params = oauth_request_parser.parse_issue_access_token_request(self.request)
-            logger.debug('session params %r' % params)
         except OAuthBadRequestError:
             logger.exception('bad request')
             self.request.response.status = 400

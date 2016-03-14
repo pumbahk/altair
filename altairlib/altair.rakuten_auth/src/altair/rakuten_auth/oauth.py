@@ -8,9 +8,7 @@ import urllib
 import urllib2
 import urlparse
 import hashlib
-import socket
 from zope.interface import implementer
-from datetime import datetime
 
 from .interfaces import IRakutenOAuth, IRakutenIDAPI, IRakutenIDAPIFactory, IRakutenIDAPI2, IRakutenIDAPI2Factory
 
@@ -97,32 +95,18 @@ class RakutenOAuth(object):
 
         request_url = self.endpoint + '?' + urllib.urlencode([(k.encode('utf-8'), v.encode('utf-8')) for k, v in params])
         logger.debug("getting access token: %s" % request_url)
-        logger.debug("request to %s timeout=%d" % (request_url, self.timeout))
-        request_start_time = datetime.now()
+        f = urllib2.urlopen(request_url, timeout=self.timeout)
         try:
-            f = urllib2.urlopen(request_url, timeout=self.timeout)
-            try:
-                response_body = f.read()
-            except socket.timeout:
-                logger.warn(u'socket timeout occuued dureing reading %s' %  request_url)
-            finally:
-                f.close()
-        except urllib2.HTTPError as e:
-            logger.warn(u'get_access_token urlopen error: %s %s %s' % (request_url, e.code, e.reason))
-        except urllib2.URLError as e:
-            logger.warn(u'get_access_token urlopen error: %s %s' % (request_url, e.reason))
-        except socket.timeout:
-            logger.warn(u'get_access_token socket timeout occured: %s' % request_url)
-
+            response_body = f.read()
         finally:
-            elapsed = datetime.now() - request_start_time
-            logger.info('[Elapsed] %ss : get_access_token : request to %s completed' % (elapsed.total_seconds(), request_url))
+            f.close()
 
         logger.debug('raw access token : %s' % response_body)
         retval = self.parse_access_token_response(response_body)
         if 'oauth_token' not in retval:
             raise RakutenOAuthNegotiationError(retval)
         return retval
+
 
 @implementer(IRakutenIDAPI)
 class RakutenIDAPI(object):
@@ -173,28 +157,17 @@ class RakutenIDAPI(object):
 
         request_url = self.endpoint + '?' + urllib.urlencode([(k.encode('utf-8'), v.encode('utf-8')) for k, v in params])
         logger.debug("get user_info: %s" % request_url)
-        logger.debug("request to %s timeout=%d" % (request_url, self.timeout))
-        request_start_time = datetime.now()
         try:
             f = urllib2.urlopen(request_url, timeout=self.timeout)
-            try:
-                response_body = f.read()
-            except socket.timeout:
-                logger.warn('socket timeout occured in reading: %s' % (request_url))
+            response_body = f.read()
         except urllib2.HTTPError as e:
             try:
                 response_body = e.read()
                 raise RakutenIDAPIError('error occurred during calling %s; code=%s, payload=%r' % (request_url, e.code, response_body))
             finally:
                 e.close()
-        except urllib2.URLError as e:
-            raise RakutenIDAPIError('error occurred during calling %s; reason=%r' % (request_url, e.reason))
-        except socket.timeout:
-            RakutenIDAPIError('socket timeout occured: %s' % (request_url))
         finally:
             f.close()
-            elapsed = datetime.now() - request_start_time
-            logger.info('[Elapsed] %ss : call_rakutenid_api : request to %s completed' % (elapsed.total_seconds(), request_url))
 
         return response_body
 
@@ -222,23 +195,15 @@ class RakutenIDAPI2(object):
         req = urllib2.Request(url, urllib.urlencode([(six.text_type(k).encode(self.encoding), six.text_type(v).encode(self.encoding)) for k, v in params.items()]))
         data = payload = res = None
         try:
-            request_start_time = datetime.now()
-            logger.debug("request to %s timeout=%d" % (url, self.timeout))
             try:
-                res = urllib2.urlopen(req, timeout = self.timeout)
+                res = urllib2.urlopen(req)
                 payload = res.read()
                 data = json.loads(payload, encoding=self.encoding)
             except urllib2.HTTPError as res:
                 payload = res.read()
                 data = json.loads(payload, encoding=self.encoding)
-            except urllib2.URLError as res:
-                raise RakutenIDAPIError("error occurred during calling %s: reason=%s" % (url, e.reason))
-            except socket.timeout:
-                raise RakutenIDAPIError("socket timeout occurred during calling %s:" % (url))
             finally:
                 res.close()
-                elapsed = datetime.now() - request_start_time
-                logger.info('[Elapsed] %ss : call_oauth2_api : request to %s completed' % (elapsed.total_seconds(), url))
         except Exception as e:
             raise RakutenIDAPIError("error occurred during calling %s: payload=%r, original_exception=%r" % (url, data or payload, e))
         if isinstance(res, urllib2.HTTPError):
