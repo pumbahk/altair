@@ -44,9 +44,6 @@ def strip_query_string_and_fragment(url):
     url = urlunparse((parsed_url.scheme, parsed_url.netloc, parsed_url.path, parsed_url.params, None, None))
     return url
 
-class RakutenIDAPIError(Exception):
-    pass
-
 class RakutenOpenIDHTTPSessionContext(object):
     http_backend = None
 
@@ -229,15 +226,13 @@ class RakutenOpenID(object):
         url = self.build_endpoint_request_url(query)
         logger.debug('endpoint_request_url=%s' % url)
         request_start_time = datetime.now()
+        f = urllib2.urlopen(url, timeout=self.timeout)
         try:
-            f = urllib2.urlopen(url, timeout=self.timeout)
-            try:
-                response_body = f.read()
-            finally:
-                f.close()
+            response_body = f.read()
         except Exception as e:
-            raise RakutenIDAPIError("error occurred during calling %s: original_exception=%r" % (url, e))
+            raise RakutenIDAPIError("error occurred during calling %s: payload=%r, original_exception=%r" % (url, data or payload, e))
         finally:
+            f.close()
             elapsed = datetime.now() - request_start_time
             logger.info('[Elapsed] %ss : verify_authentication : request to %s completed' % (elapsed.total_seconds(), url))
 
