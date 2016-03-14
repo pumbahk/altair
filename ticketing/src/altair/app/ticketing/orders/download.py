@@ -1084,20 +1084,6 @@ class OrderSearchBase(list):
         finally:
             cur.close()
 
-    def total_quantity(self):
-        """すべての予約枚数を返す"""
-        sql = select([func.sum(t_ordered_product_item.c.quantity)],
-                     from_obj=[self.target],
-                     whereclause=self.condition,
-        )
-
-        cur = self.db_session.bind.execute(sql)
-        try:
-            r = cur.fetchone()
-            return r
-        finally:
-            cur.close()
-
     def __getslice__(self, start, stop):
         return self.execute(start, stop)
 
@@ -1177,11 +1163,6 @@ class OrderSummary(OrderSearchBase):
     columns = summary_columns
     default_order = t_order.c.id.desc()
 
-class OrderProductItemSummary(OrderSearchBase):
-    target = order_product_item_summary_joins
-    columns = summary_columns
-    default_order = t_order.c.id.desc()
-
 class OrderDownload(OrderSearchBase):
     target = order_product_summary_joins
     columns = detail_summary_columns
@@ -1217,3 +1198,21 @@ class MailPermissionCache(OrderSearchBase):
         return and_(t_mailmagazine.c.organization_id==self.organization_id,
                     t_mail_subscription.c.status==MailSubscriptionStatus.Subscribed.v)
 
+class OrderProductItemSummary(OrderSearchBase):
+    target = order_product_item_summary_joins
+    columns = summary_columns
+    default_order = t_order.c.id.desc()
+
+    def total_quantity(self):
+        """すべての予約枚数を返す"""
+        sql = select([func.sum(t_ordered_product_item.c.quantity)],
+                     from_obj=[self.target],
+                     whereclause=self.condition,
+        )
+
+        cur = self.db_session.bind.execute(sql)
+        try:
+            r = cur.fetchone()
+            return r
+        finally:
+            cur.close()
