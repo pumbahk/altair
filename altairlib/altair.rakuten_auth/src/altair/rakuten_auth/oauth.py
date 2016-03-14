@@ -223,7 +223,7 @@ class RakutenIDAPI2(object):
         data = payload = res = None
         try:
             request_start_time = datetime.now()
-            logger.debug("request to %s timeout=%d" % (url, self.timeout))
+            logger.debug("request to %s timeout=%d", (url, self.timeout))
             try:
                 res = urllib2.urlopen(req, timeout = self.timeout)
                 payload = res.read()
