@@ -225,14 +225,11 @@ class RakutenOpenID(object):
             ]
         url = self.build_endpoint_request_url(query)
         logger.debug('endpoint_request_url=%s' % url)
-        request_start_time = datetime.now()
         f = urllib2.urlopen(url, timeout=self.timeout)
         try:
             response_body = f.read()
         finally:
             f.close()
-            elapsed = datetime.now() - request_start_time
-            logger.info('[Elapsed] %ss : verify_authentication : request to %s completed' % (elapsed.total_seconds(), url))
 
         logger.debug('authenticate result: %s' % response_body)
         is_valid = response_body.split("\n")[0].split(":")[1]
