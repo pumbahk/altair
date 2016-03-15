@@ -34,7 +34,10 @@
                 </form>
               </div>
               <div class="confirm_exist">
-                <input class="btnCoupon coupon_button" type="button" value="利用する" next_url=${request.route_path('coupon.admission', reserved_number=reserved_number.number, token_id=token.id)} />
+                <input class="btnCoupon coupon_button" type="button" value="利用する"
+                       next_url=${request.route_path('coupon.admission', reserved_number=reserved_number.number, token_id=token.id)}
+                       check_url=${request.route_path('coupon.check_can_use', token_id=token.id)}
+                />
               </div>
             % endif
           </td>

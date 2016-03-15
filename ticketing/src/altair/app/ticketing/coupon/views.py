@@ -4,6 +4,7 @@ from altair.pyramid_dynamic_renderer import lbr_view_config
 from altair.app.ticketing.cart.rendering import selectable_renderer
 from pyramid.httpexceptions import HTTPFound
 from . import COUPON_COOKIE_NAME
+from .api import can_use_coupon
 from datetime import datetime
 
 class CouponErrorView(object):
@@ -61,7 +62,7 @@ class CouponView(object):
 
     @lbr_view_config(
         route_name='coupon.admission', request_method='POST')
-    def admission(self):
+    def admission_post(self):
         if self.context.order is None:
             return HTTPFound(location=self.request.route_path('coupon.notfound'))
 
@@ -79,3 +80,8 @@ class CouponView(object):
             order=self.context.order,
             coupon_security=self.context.coupon_security
             )
+
+    @lbr_view_config(
+        route_name='coupon.check_can_use', request_method="GET", renderer='json')
+    def check_can_use(self):
+        return can_use_coupon(self.request, self.request.matchdict.get('token_id', None))
