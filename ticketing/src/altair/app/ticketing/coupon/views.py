@@ -52,7 +52,8 @@ class CouponView(object):
             return HTTPFound(location=self.request.route_path('coupon.notfound'))
 
         if not self.context.can_use:
-            return HTTPFound(location=self.request.route_path('coupon.out_term'))
+            return HTTPFound(location=self.request.route_path(
+                'coupon.out_term', reserved_number=self.context.reserved_number.number))
 
         return dict(
             reserved_number=self.context.reserved_number,
@@ -67,7 +68,8 @@ class CouponView(object):
             return HTTPFound(location=self.request.route_path('coupon.notfound'))
 
         if not self.context.can_use:
-            return HTTPFound(location=self.request.route_path('coupon.out_term'))
+            return HTTPFound(location=self.request.route_path(
+                'coupon.out_term', reserved_number=self.context.reserved_number.number))
 
         self.context.use_coupon()
 
