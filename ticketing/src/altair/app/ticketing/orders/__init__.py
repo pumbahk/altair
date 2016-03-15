@@ -6,8 +6,8 @@ def setup_subscribers(config):
 
 def includeme(config):
     config.add_route('orders.index'                     , '/')
-    config.add_route('orders.toggle_show_total'         , '/toggle_show_total')
-    config.add_route('orders.toggle_show_total_quantity', '/toggle_show_total_quantity')
+    config.add_route('orders.show_total_amount'         , '/show_total_amount')
+    config.add_route('orders.show_total_quantity'       , '/show_total_quantity')
     config.add_route('orders.checked.queue'             , '/checked/queue', factory=".resources.OrdersEnqueueingResource")
     config.add_route('orders.checked.delivered'         , '/checked/delivered')
     config.add_route('orders.show'                      , '/show/{order_id:\d+}', factory=".resources.OrdersShowResource")

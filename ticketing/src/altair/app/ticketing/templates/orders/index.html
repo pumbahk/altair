@@ -46,9 +46,9 @@
     <dd id="checkbox_status_count"></dd>
   </dl>
   % if request.params.get('action') == 'checked':
-  <a type="button" class="btn" href="javascript:search_orders('${request.route_path('orders.index')}');">全ての予約を表示</a>
+  <a type="button" class="btn" href="javascript:search_orders('${request.route_path('orders.index')}', total='');">全ての予約を表示</a>
   % else:
-  <a type="button" class="btn" href="javascript:search_orders('${request.route_path('orders.index', _query=dict(action='checked'))}');">選択した予約だけ表示</a>
+  <a type="button" class="btn" href="javascript:search_orders('${request.route_path('orders.index', _query=dict(action='checked'))}', total='');">選択した予約だけ表示</a>
   % endif
   <button type="button" class="btn" id="checkbox_status_reset">リセット</button>
   <a type="button" class="btn" id="addall">全て選択</a>
@@ -69,50 +69,17 @@
 
 <br />
 
-% if total is not None:
-<table class="table table-striped table-bordered">
-  <thead>
-    <tr>
-      <th>検索された購入金額の総合計</th>
-    </tr>
-  </thead>
-  <tr>
-    <td>
-      % if total:
-        ${vh.price(total)}
-      % else:
-        &yen;0
-      % endif
-    </td>
-  </tr>
-</table>
-% else:
-  <a href="${request.route_path('orders.toggle_show_total', _query=request.params)}" class="btn">購入金額の合計を表示</a>
-% endif
+<div id='total_amount'></div>
+<div id='btn_total_amount'>
+  <a href="javascript:search_orders('${request.route_path('orders.show_total_amount')}', total='amount')" class="btn">購入金額の合計を表示</a>
+</div>
 
-<br /><br />
+<br />
 
-% if total_quantity is not None:
-<table class="table table-striped table-bordered">
-  <thead>
-    <tr>
-        <th>検索された販売枚数の総合計</th>
-    </tr>
-  </thead>
-  <tr>
-    <td>
-      % if total_quantity:
-        ${vh.number(total_quantity)}
-      % else:
-        0
-      % endif
-      枚
-    </td>
-  </tr>
-</table>
-% else:
-  <a href="${request.route_path('orders.toggle_show_total_quantity', _query=request.params)}" class="btn">販売枚数の合計を表示</a>
-% endif
+<div id='total_quantity'></div>
+<div id='btn_total_quantity'>
+  <a href="javascript:search_orders('${request.route_url('orders.show_total_quantity')}', total='quantity')" class="btn">販売枚数の合計を表示</a>
+</div>
 
 <div class="orders">
   % if orders is not None:
