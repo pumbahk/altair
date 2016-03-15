@@ -61,6 +61,129 @@
       } else {
         cvs_field.css('display', 'none');
       }
+
+      // 決済方法と引取方法のタイプによってディフォルト値を設定
+      var payment_credit_card = 1;        // クレジットカード決済
+      var payment_rakuten_id = 2;         // 楽天あんしん支払いサービス
+      var payment_convenience_store = 3;  // コンビニ決済（セブンイレブン）
+      var payment_window = 4;             // 窓口支払
+      var payment_free = 5;               // 無料
+      var payment_famiport = 6;           // ファミポート決済
+      var delivery_post = 1;              // 郵送
+      var delivery_convenience_store = 2; // コンビニ受取（セブンイレブン）
+      var delivery_window = 3;            // 窓口受取
+      var delivery_qr = 4;                // QR認証
+      var delivery_event_gate = 5;        // イベント・ゲート
+      var delivery_famiport = 6;          // ファミポート引取
+      // 決済IDと引取IDを取得
+      $.ajax({
+        url: "${request.route_url('payment_delivery_method_pairs.payment_delivery_plugin')}",
+        type: 'POST',
+        dataType: 'json',
+        data: {payment_plugin_id: $('#payment_method_id').val(), delivery_plugin_id: $('#delivery_method_id').val()},
+        success: function(data) {
+          var payment_plugin_id = data.payment_plugin_id;
+          var delivery_plugin_id = data.delivery_plugin_id;
+          if(payment_plugin_id == payment_credit_card && delivery_plugin_id == delivery_convenience_store) {
+            set_value(
+                0,
+                false, false, true, 1, true, 0,
+                false, true, false, 6, false, 1,
+                false, true, false, 3, false, 30
+                );
+          }
+          if(payment_plugin_id == payment_rakuten_id && delivery_plugin_id == delivery_convenience_store) {
+            set_value(
+                0,
+                false, false, true, 1, true, 0,
+                false, true, false, 6, false, 1,
+                false, true, false, 3, false, 30
+                );
+          }
+          if(payment_plugin_id == payment_convenience_store && delivery_plugin_id == delivery_convenience_store) {
+            set_value(
+                4,
+                false, true, false, 1, false, 3,
+                false, true, false, 1, false, 0,
+                false, true, false, 3, false, 30
+                );
+          }
+          if(payment_plugin_id == payment_credit_card && delivery_plugin_id == delivery_post) {
+            set_value(
+                14,
+                false, false, true, 1, true, 0,
+                false, false, true, 1, true, 0,
+                false, false, true, 1, true, 0
+                );
+          }
+          if(payment_plugin_id == payment_convenience_store && delivery_plugin_id == delivery_post) {
+            set_value(
+                17,
+                false, true, false, 1, false, 3,
+                false, false, true, 1, true, 0,
+                false, false, true, 1, true, 0
+                );
+          }
+          if(payment_plugin_id == payment_credit_card && delivery_plugin_id == delivery_qr) {
+            set_value(
+                0,
+                false, false, true, 1, true, 0,
+                false, false, true, 1, true, 0,
+                false, false, true, 1, true, 0
+                );
+          }
+          if(payment_plugin_id == payment_convenience_store && delivery_plugin_id == delivery_qr) {
+            set_value(
+                4,
+                false, true, false, 1, false, 3,
+                false, false, true, 1, true, 0,
+                false, false, true, 1, true, 0
+                );
+          }
+          if(payment_plugin_id == payment_window && delivery_plugin_id == delivery_window) {
+            set_value(
+                0,
+                false, false, true, 1, true, 0,
+                false, false, true, 1, true, 0,
+                false, false, true, 1, true, 0
+                );
+          }
+        },
+        error: function() {
+          $('#error_message').html('データ取得失敗しました');
+        }
+      });
+
+      function set_value(
+          unavailable,
+          payment_1_absolute, payment_1_relative, payment_2, payment_2_option, payment_disabled, payment,
+          interval_1_absolute, interval_1_relative, interval_2, interval_2_option, interval_disabled, interval,
+          end_1_absolute, end_1_relative, end_2, end_2_option, end_disabled, end
+          ) {
+        // 選択不可期間
+        $('#unavailable_period_days').val(unavailable);
+        // 支払期日
+        $('#payment_period_days-1-absolute').prop('checked', payment_1_absolute);
+        $('#payment_period_days-1-relative').prop('checked', payment_1_relative);
+        $('#payment_period_days-2').prop('disabled', payment_2);
+        $("#payment_period_days-2 option[value=" + payment_2_option + "]").attr('selected', 'selected');
+        $('#payment_period_days').prop('disabled', payment_disabled);
+        $('#payment_period_days').val(payment);
+        // コンビニ発券開始日時
+        $('#issuing_interval_days-1-absolute').prop('checked', interval_1_absolute);
+        $('#issuing_interval_days-1-relative').prop('checked', interval_1_relative);
+        $('#issuing_interval_days-2').prop('disabled', interval_2);
+        $("#issuing_interval_days-2 option[value=" + interval_2_option + "]").attr('selected', 'selected');
+        $('#issuing_interval_days').prop('disabled', interval_disabled);
+        $('#issuing_interval_days').val(interval);
+        // コンビニ発券期限日時
+        $('#issuing_end_in_days-1-absolute').prop('checked', end_1_absolute);
+        $('#issuing_end_in_days-1-relative').prop('checked', end_1_relative);
+        $('#issuing_end_in_days-2').prop('disabled', end_2);
+        $("#issuing_end_in_days-2 option[value=" + end_2_option + "]").attr('selected', 'selected');
+        $('#issuing_end_in_days').prop('disabled', end_disabled);
+        $('#issuing_end_in_days').val(end);
+      }
     };
 
 
@@ -219,6 +342,7 @@
           </div>
         </div>
       </div>
+      <div id='error_message'></div>
     </fieldset>
     <div class="form-actions">
       <input class="btn btn-primary" type="submit" name="submit" value="保存">

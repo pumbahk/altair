@@ -39,6 +39,13 @@ class PaymentDeliveryMethodPairs(BaseView):
             'system_fee_type': system_fee_type,
         }
 
+    @view_config(route_name='payment_delivery_method_pairs.payment_delivery_plugin', renderer='json')
+    def get_payment_delivery_plugin(self):
+        return {
+            'payment_plugin_id': PaymentMethod.filter_by(id=self.request.POST.get('payment_plugin_id')).one().payment_plugin_id,
+            'delivery_plugin_id': DeliveryMethod.filter_by(id=self.request.POST.get('delivery_plugin_id')).one().delivery_plugin_id,
+        }
+
     @view_config(route_name='payment_delivery_method_pairs.new', request_method='POST', renderer='altair.app.ticketing:templates/payment_delivery_method_pairs/edit.html')
     def new_post(self):
         sales_segment_group_id = int(self.request.POST.get('sales_segment_group_id', 0))
