@@ -1,7 +1,8 @@
 # coding:utf-8
 from datetime import datetime
 from altair.app.ticketing.core.utils import ApplicableTicketsProducer
-from altair.app.ticketing.payments.plugins.sej import DELIVERY_PLUGIN_ID as SEJ_DELIVERY_PLUGIN_ID
+from altair.app.ticketing.payments.plugins import SEJ_DELIVERY_PLUGIN_ID
+from altair.app.ticketing.payments.plugins import FAMIPORT_DELIVERY_PLUGIN_ID
 
 from . import VISIBLE_PERFORMANCE_SESSION_KEY
 
@@ -17,21 +18,31 @@ def set_invisible_performance(request):
 
 def get_no_ticket_bundles(performance):
     no_ticket_bundles = ''
-    has_sej = performance.has_that_delivery(SEJ_DELIVERY_PLUGIN_ID)
     for sales_segment in performance.sales_segments:
+        has_sej_delivery = sales_segment.has_that_delivery(SEJ_DELIVERY_PLUGIN_ID)
+        has_famiport_delivery = sales_segment.has_that_delivery(FAMIPORT_DELIVERY_PLUGIN_ID)
         for product in sales_segment.products:
             for product_item in product.items:
                 if not product_item.ticket_bundle:
                     p = product_item.product
                     if p.sales_segment is not None:
-                        no_ticket_bundles += u'<div>販売区分: %s、商品名: %s</div>'.format(
+                        no_ticket_bundles += u'<div>販売区分: {}、商品名: {}</div>'.format(
                             p.sales_segment.name, p.name)
-                elif has_sej:
+                if has_sej_delivery:
                     producer = ApplicableTicketsProducer.from_bundle(
                         product_item.ticket_bundle)
                     if not producer.any_exist(producer.sej_only_tickets()):
                         p = product_item.product
                         if p.sales_segment is not None:
-                            no_ticket_bundles += u'<div>販売区分: %s、商品名: %s(SEJ券面なし)</div>'.format(
+                            no_ticket_bundles += u'<div>販売区分: {}、商品名: {}(SEJ券面なし)</div>'.format(
                                 p.sales_segment.name, p.name)
+                if has_famiport_delivery:
+                    producer = ApplicableTicketsProducer.from_bundle(
+                        product_item.ticket_bundle)
+                    if not producer.any_exist(producer.famiport_only_tickets()):
+                        p = product_item.product
+                        if p.sales_segment is not None:
+                            no_ticket_bundles += u'<div>販売区分: {}、商品名: {}(ファミマ券面なし)</div>'.format(
+                                p.sales_segment.name, p.name)
+
     return no_ticket_bundles
