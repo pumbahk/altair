@@ -11,13 +11,9 @@ from userside_api import (
     find_sales_segment_pairs,
     create_altair_famiport_venue,
     build_famiport_performance_groups,
-    submit_to_downstream,
     submit_to_downstream_sync
 )
-from api import create_or_get_famiport_venue
-from altair.mq.interfaces import IConsumer, IPublisher, ITaskDispatcher
-from altair.mq.publisher import LocallyDispatchingPublisherConsumer
-from altair.mq.consumer import TaskDispatcher
+from api import resolve_famiport_prefecture_by_name
 
 
 
@@ -50,6 +46,7 @@ from altair.app.ticketing.famiport.models import (
     FamiPortPlayguide,
     FamiPortClient,
     FamiPortVenue,
+    FamiPortGenre1,
     FamiPortEvent,
     FamiPortPerformance,
     FamiPortSalesSegment
@@ -60,22 +57,6 @@ logger = logging.getLogger(__name__)
 # TODO Test duplicate AltairFamiPortVenue case
 
 class FamiPortSyncTest(unittest.TestCase):
-    def setUp_mq(self):
-        settings = {
-            'altair.ticketing.userside_famiport.mq': 'altair.mq.publisher.pika_publisher_factory, altair.mq.consumer.pika_client_factory',
-            'altair.ticketing.userside_famiport.mq.url': 'amqp://guest:guest@localhost:5672/%2F'
-        }
-
-        self.config = setUp(request=self.request, settings = settings)
-
-        self.config.registry.registerUtility(LocallyDispatchingPublisherConsumer, IConsumer, 'userside_famiport.submit_to_downstream')
-        self.config.registry.registerUtility(LocallyDispatchingPublisherConsumer, IPublisher, 'userside_famiport.submit_to_downstream')
-        self.config.registry.registerUtility(TaskDispatcher, ITaskDispatcher)
-
-        self.config.include('altair.mq')
-        self.config.include('altair.app.ticketing.famiport.userside_workers')
-        self.config.scan('altair.app.ticketing.famiport.userside_workers')
-
     def setUp(self):
         self.request = DummyRequest()
 
@@ -86,9 +67,6 @@ class FamiPortSyncTest(unittest.TestCase):
                 'altair.app.ticketing.famiport.userside_models',
                 ]
             )
-
-        # self.setUp_mq()
-        # self.request.registry = self.config.registry
 
         # Set up data on Altair side
         self.rt_org = Organization(id = 15, name = u'楽天チケット', code = 'RT', short_name = 'RT')
@@ -191,6 +169,10 @@ class FamiPortSyncTest(unittest.TestCase):
         self.session.add(salessegment1)
         self.session.flush()
 
+        famiport_genre1 = FamiPortGenre1(code = 1, name = u'音楽')
+        self.fm_session.add(famiport_genre1)
+        self.fm_session.flush()
+
         datetime_formatter = create_date_time_formatter(self.request)
         build_famiport_performance_groups(self.fm_request, self.session, datetime_formatter, self.rt_fmtenant, event1.id)
 
@@ -220,37 +202,29 @@ class FamiPortSyncTest(unittest.TestCase):
         self.assertEqual(salessegment1.id, altair_famiport_salessegment_pair.seat_unselectable_sales_segment_id)
 
         self.assertEqual(venue1.name, famiport_venue.name)
+        self.assertEqual(resolve_famiport_prefecture_by_name(self.request, venue1.site.siteprofile.prefecture), famiport_venue.prefecture)
 
         # Change status from Editing to AwaitingReflection
-        # for entity in [altair_famiport_venue, altair_famiport_performance_group, altair_famiport_performance, altair_famiport_salessegment_pair]:
-        #     self.changeStatus(entity, AltairFamiPortReflectionStatus.AwaitingReflection)
+        for entity in [altair_famiport_venue, altair_famiport_performance_group, altair_famiport_performance, altair_famiport_salessegment_pair]:
+            self.__changeStatus(entity, AltairFamiPortReflectionStatus.AwaitingReflection.value)
 
         # Create FamiPort objects
-        # submit_to_downstream(self.request, event1)
-        # submit_to_downstream_sync(self.request, self.session, self.rt_fmtenant, event1)
-
-        # TODO Wait until consumer is done
-        # self.config.registry.queryUtility(IConsumer, 'userside_famiport.submit_to_downstream')
-
+        submit_to_downstream_sync(self.fm_request, self.session, self.rt_fmtenant, event1)
 
         # Retrieve created famiport objects
-        # famiport_venue = self.fm_session.query(FamiPortVenue).filter_by(userside_id = altair_famiport_venue.id).one()
-        # famiport_event = self.fm_session.query(FamiPortEvent).filter_by(userside_id = altair_famiport_performance_group.id).one()
-        # famiport_performance = self.fm_session.query(FamiPortPerformance).filter_by(userside_id = altair_famiport_performance.id).one()
-        # famiport_salessegment = self.fm_session.query(FamiPortSalesSegment).filter_by(userside_id = altair_famiport_salessegment_pair.id).one()
-        #
-        # # Make sure expected FamiPort objects are created
-        # self.assertEqual(venue1.name, famiport_venue.name)
-        # self.assertEqual(venue1.site.siteprofile, famiport_venue.prefecture)
-        #
-        # self.assertEqual(famiport_venue.id, famiport_event.venue_id)
-        #
-        # self.assertEqual(famiport_event.id, famiport_performance.famiport_event_id)
-        # self.assertEqual(performance1.start_on, famiport_performance.start_at)
-        #
-        # self.assertEqual(famiport_performance.id, famiport_salessegment.famiport_performance_id)
-        # self.assertEqual(salessegment1.start_at, famiport_salessegment.start_at)
-        # self.assertEqual(salessegment1.end_at, famiport_salessegment.end_at)
+        famiport_event = self.fm_session.query(FamiPortEvent).filter_by(userside_id = altair_famiport_performance_group.id).one()
+        famiport_performance = self.fm_session.query(FamiPortPerformance).filter_by(userside_id = altair_famiport_performance.id).one()
+        famiport_salessegment = self.fm_session.query(FamiPortSalesSegment).filter_by(userside_id = altair_famiport_salessegment_pair.id).one()
+
+        # Make sure expected FamiPort objects are created
+        self.assertEqual(famiport_venue.id, famiport_event.venue_id)
+        self.assertEqual(famiport_event.id, famiport_performance.famiport_event_id)
+        self.assertEqual(performance1.start_on, famiport_performance.start_at)
+
+        self.assertEqual(famiport_performance.id, famiport_salessegment.famiport_performance_id)
+        self.assertEqual(salessegment1.start_at, famiport_salessegment.start_at)
+        self.assertEqual(salessegment1.end_at, famiport_salessegment.end_at)
+        self.assertEqual(salessegmentgroup1.name, famiport_salessegment.name)
 
     def test_fmsync_with_altairfmvenue_and_fmvenue(self):
         """ 1st FM sync with existing AltairFamiPortVenue and FamiPortVenue
@@ -278,6 +252,10 @@ class FamiPortSyncTest(unittest.TestCase):
         self.session.add(salessegment1)
         self.session.flush()
 
+        famiport_genre1 = FamiPortGenre1(code = 1, name = u'音楽')
+        self.fm_session.add(famiport_genre1)
+        self.fm_session.flush()
+
         # Create dummy AltairFamiPortVenue and FamiPortVenue for existing ones check test
         altair_famiport_venue1 = create_altair_famiport_venue(self.request, self.session, self.rt_org.id, self.rt_fmtenant.code, \
                                                               venue1, site1.name, name_kana=u'',)
@@ -299,7 +277,6 @@ class FamiPortSyncTest(unittest.TestCase):
 
         famiport_venue = self.fm_session.query(FamiPortVenue).filter(FamiPortVenue.userside_id == altair_famiport_venue.id).one()
 
-
         self.assertEqual(venue1.name, altair_famiport_venue.name)
         self.assertEqual(venue1.site.siteprofile.id, altair_famiport_venue.siteprofile_id)
 
@@ -312,6 +289,29 @@ class FamiPortSyncTest(unittest.TestCase):
         self.assertEqual(salessegment1.id, altair_famiport_salessegment_pair.seat_unselectable_sales_segment_id)
 
         self.assertEqual(venue1.name, famiport_venue.name)
+        self.assertEqual(resolve_famiport_prefecture_by_name(self.request, venue1.site.siteprofile.prefecture), famiport_venue.prefecture)
+
+        # Change status from Editing to AwaitingReflection
+        for entity in [altair_famiport_venue, altair_famiport_performance_group, altair_famiport_performance, altair_famiport_salessegment_pair]:
+            self.__changeStatus(entity, AltairFamiPortReflectionStatus.AwaitingReflection.value)
+
+        # Create FamiPort objects
+        submit_to_downstream_sync(self.fm_request, self.session, self.rt_fmtenant, event1)
+
+        # Retrieve created famiport objects
+        famiport_event = self.fm_session.query(FamiPortEvent).filter_by(userside_id = altair_famiport_performance_group.id).one()
+        famiport_performance = self.fm_session.query(FamiPortPerformance).filter_by(userside_id = altair_famiport_performance.id).one()
+        famiport_salessegment = self.fm_session.query(FamiPortSalesSegment).filter_by(userside_id = altair_famiport_salessegment_pair.id).one()
+
+        # Make sure expected FamiPort objects are created
+        self.assertEqual(famiport_venue.id, famiport_event.venue_id)
+        self.assertEqual(famiport_event.id, famiport_performance.famiport_event_id)
+        self.assertEqual(performance1.start_on, famiport_performance.start_at)
+
+        self.assertEqual(famiport_performance.id, famiport_salessegment.famiport_performance_id)
+        self.assertEqual(salessegment1.start_at, famiport_salessegment.start_at)
+        self.assertEqual(salessegment1.end_at, famiport_salessegment.end_at)
+        self.assertEqual(salessegmentgroup1.name, famiport_salessegment.name)
 
     def test_venue_name_change_without_altairfmvenue_and_fmvenue(self):
         """2nd FM sync after venue name was changed without existing AltairFamiPortVenue and FamiPortVenue
@@ -339,6 +339,10 @@ class FamiPortSyncTest(unittest.TestCase):
         self.session.add(salessegment1)
         self.session.flush()
 
+        famiport_genre1 = FamiPortGenre1(code = 1, name = u'音楽')
+        self.fm_session.add(famiport_genre1)
+        self.fm_session.flush()
+
         datetime_formatter = create_date_time_formatter(self.request)
         build_famiport_performance_groups(self.fm_request, self.session, datetime_formatter, self.rt_fmtenant, event1.id)
 
@@ -358,7 +362,7 @@ class FamiPortSyncTest(unittest.TestCase):
         self.session.add(venue1)
         self.session.flush()
 
-        # Change status from Editing to AwaitingReflection
+        # Change status from Editing
         for entity in [altair_famiport_venue, altair_famiport_performance_group, altair_famiport_performance, altair_famiport_salessegment_pair]:
             self.__changeStatus(entity, AltairFamiPortReflectionStatus.Editing.value)
 
@@ -383,6 +387,32 @@ class FamiPortSyncTest(unittest.TestCase):
         self.assertEqual(salessegment1.id, altair_famiport_salessegment_pair.seat_unselectable_sales_segment_id)
 
         self.assertEqual(venue1.name, famiport_venue.name)
+        self.assertEqual(resolve_famiport_prefecture_by_name(self.request, venue1.site.siteprofile.prefecture), famiport_venue.prefecture)
+
+        # Change status from Editing to AwaitingReflection
+        for entity in [altair_famiport_venue, altair_famiport_performance_group, altair_famiport_performance, altair_famiport_salessegment_pair]:
+            self.__changeStatus(entity, AltairFamiPortReflectionStatus.AwaitingReflection.value)
+
+        # Create FamiPort objects
+        submit_to_downstream_sync(self.fm_request, self.session, self.rt_fmtenant, event1)
+
+        # Retrieve created famiport objects
+        famiport_event = self.fm_session.query(FamiPortEvent).filter_by(userside_id = altair_famiport_performance_group.id) \
+                                                             .filter_by(invalidated_at = None).one()
+        famiport_performance = self.fm_session.query(FamiPortPerformance).filter_by(userside_id = altair_famiport_performance.id) \
+                                                                         .filter_by(invalidated_at = None).one()
+        famiport_salessegment = self.fm_session.query(FamiPortSalesSegment).filter_by(userside_id = altair_famiport_salessegment_pair.id) \
+                                                                           .filter_by(invalidated_at = None).one()
+
+        # Make sure expected FamiPort objects are created
+        self.assertEqual(famiport_venue.id, famiport_event.venue_id)
+        self.assertEqual(famiport_event.id, famiport_performance.famiport_event_id)
+        self.assertEqual(performance1.start_on, famiport_performance.start_at)
+
+        self.assertEqual(famiport_performance.id, famiport_salessegment.famiport_performance_id)
+        self.assertEqual(salessegment1.start_at, famiport_salessegment.start_at)
+        self.assertEqual(salessegment1.end_at, famiport_salessegment.end_at)
+        self.assertEqual(salessegmentgroup1.name, famiport_salessegment.name)
 
     def test_venue_name_change_with_altairfmvenue_and_fmvenue(self):
         """2nd FM sync after venue name was changed with existing AltairFamiPortVenue and FamiPortVenue
@@ -410,6 +440,10 @@ class FamiPortSyncTest(unittest.TestCase):
         self.session.add(salessegment1)
         self.session.flush()
 
+        famiport_genre1 = FamiPortGenre1(code = 1, name = u'音楽')
+        self.fm_session.add(famiport_genre1)
+        self.fm_session.flush()
+
         # Create dummy AltairFamiPortVenue and FamiPortVenue for existing ones check test
         dummy_venue = Venue(id = 2, site_id = 1, organization_id = 15, name = u'Zepp DiverCity TOKYO Next', performance_id = None)
         self.session.add(dummy_venue)
@@ -432,11 +466,18 @@ class FamiPortSyncTest(unittest.TestCase):
                                                 .filter(sa.or_(AltairFamiPortSalesSegmentPair.seat_unselectable_sales_segment_id == salessegment1.id, \
                                                                AltairFamiPortSalesSegmentPair.seat_selectable_sales_segment_id == salessegment1.id)).one()
 
+        # Change status from Editing to AwaitingReflection
+        for entity in [altair_famiport_venue, altair_famiport_performance_group, altair_famiport_performance, altair_famiport_salessegment_pair]:
+            self.__changeStatus(entity, AltairFamiPortReflectionStatus.AwaitingReflection.value)
+
+        # Create FamiPort objects
+        submit_to_downstream_sync(self.fm_request, self.session, self.rt_fmtenant, event1)
+
         venue1.name = u'Zepp DiverCity TOKYO Next'
         self.session.add(venue1)
         self.session.flush()
 
-        # Change status from Editing to AwaitingReflection
+        # Change status from Editing
         for entity in [altair_famiport_venue, altair_famiport_performance_group, altair_famiport_performance, altair_famiport_salessegment_pair]:
             self.__changeStatus(entity, AltairFamiPortReflectionStatus.Editing.value)
 
@@ -453,6 +494,13 @@ class FamiPortSyncTest(unittest.TestCase):
 
         famiport_venue = self.fm_session.query(FamiPortVenue).filter(FamiPortVenue.userside_id == altair_famiport_venue.id).one()
 
+        # Change status from Editing to AwaitingReflection
+        for entity in [altair_famiport_venue, altair_famiport_performance_group, altair_famiport_performance, altair_famiport_salessegment_pair]:
+            self.__changeStatus(entity, AltairFamiPortReflectionStatus.AwaitingReflection.value)
+
+        # Create FamiPort objects
+        submit_to_downstream_sync(self.fm_request, self.session, self.rt_fmtenant, event1)
+
         self.assertEqual(venue1.name, altair_famiport_venue.venue_name)
         self.assertEqual(venue1.site.siteprofile.id, altair_famiport_venue.siteprofile_id)
 
@@ -465,6 +513,26 @@ class FamiPortSyncTest(unittest.TestCase):
         self.assertEqual(salessegment1.id, altair_famiport_salessegment_pair.seat_unselectable_sales_segment_id)
 
         self.assertEqual(venue1.name, famiport_venue.name)
+        self.assertEqual(resolve_famiport_prefecture_by_name(self.request, venue1.site.siteprofile.prefecture), famiport_venue.prefecture)
+
+        # Retrieve created famiport objects
+        famiport_venue = self.fm_session.query(FamiPortVenue).filter(FamiPortVenue.userside_id == altair_famiport_venue.id).one()
+        famiport_event = self.fm_session.query(FamiPortEvent).filter_by(userside_id = altair_famiport_performance_group.id) \
+                                                             .filter_by(invalidated_at = None).one()
+        famiport_performance = self.fm_session.query(FamiPortPerformance).filter_by(userside_id = altair_famiport_performance.id) \
+                                                                         .filter_by(invalidated_at = None).one()
+        famiport_salessegment = self.fm_session.query(FamiPortSalesSegment).filter_by(userside_id = altair_famiport_salessegment_pair.id) \
+                                                                           .filter_by(invalidated_at = None).one()
+
+        # Make sure expected FamiPort objects are created
+        self.assertEqual(famiport_venue.id, famiport_event.venue_id)
+        self.assertEqual(famiport_event.id, famiport_performance.famiport_event_id)
+        self.assertEqual(performance1.start_on, famiport_performance.start_at)
+
+        self.assertEqual(famiport_performance.id, famiport_salessegment.famiport_performance_id)
+        self.assertEqual(salessegment1.start_at, famiport_salessegment.start_at)
+        self.assertEqual(salessegment1.end_at, famiport_salessegment.end_at)
+        self.assertEqual(salessegmentgroup1.name, famiport_salessegment.name)
 
     def test_venue_id_name_change_without_altairfmvenue_and_fmvenue(self):
         """2nd FM sync after venue id and name were changed without existing AltairFamiPortVenue and FamiPortVenue
@@ -492,6 +560,10 @@ class FamiPortSyncTest(unittest.TestCase):
         self.session.add(salessegment1)
         self.session.flush()
 
+        famiport_genre1 = FamiPortGenre1(code = 1, name = u'音楽')
+        self.fm_session.add(famiport_genre1)
+        self.fm_session.flush()
+
         datetime_formatter = create_date_time_formatter(self.request)
         build_famiport_performance_groups(self.fm_request, self.session, datetime_formatter, self.rt_fmtenant, event1.id)
 
@@ -507,6 +579,12 @@ class FamiPortSyncTest(unittest.TestCase):
                                                 .filter(sa.or_(AltairFamiPortSalesSegmentPair.seat_unselectable_sales_segment_id == salessegment1.id, \
                                                                AltairFamiPortSalesSegmentPair.seat_selectable_sales_segment_id == salessegment1.id)).one()
 
+        # Change status from Editing to AwaitingReflection
+        for entity in [altair_famiport_venue, altair_famiport_performance_group, altair_famiport_performance, altair_famiport_salessegment_pair]:
+            self.__changeStatus(entity, AltairFamiPortReflectionStatus.AwaitingReflection.value)
+
+        # Create FamiPort objects
+        submit_to_downstream_sync(self.fm_request, self.session, self.rt_fmtenant, event1)
 
         siteprofile2 = SiteProfile(id = 2, name = u'Zepp DiverCity KYOTO', prefecture = u'京都府')
         site2 = Site(id = 2, siteprofile_id = 2, name = u'Zepp DiverCity KYOTO', visible = True)
@@ -520,7 +598,7 @@ class FamiPortSyncTest(unittest.TestCase):
         self.session.add(performance1)
         self.session.flush()
 
-        # Change status from Editing to AwaitingReflection
+        # Change status from Editing
         for entity in [altair_famiport_venue, altair_famiport_performance_group, altair_famiport_performance, altair_famiport_salessegment_pair]:
             self.__changeStatus(entity, AltairFamiPortReflectionStatus.Editing.value)
 
@@ -545,6 +623,33 @@ class FamiPortSyncTest(unittest.TestCase):
         self.assertEqual(salessegment1.id, altair_famiport_salessegment_pair.seat_unselectable_sales_segment_id)
 
         self.assertEqual(venue2.name, famiport_venue.name)
+        self.assertEqual(resolve_famiport_prefecture_by_name(self.request, venue2.site.siteprofile.prefecture), famiport_venue.prefecture)
+
+        # Change status from Editing to AwaitingReflection
+        for entity in [altair_famiport_venue, altair_famiport_performance_group, altair_famiport_performance, altair_famiport_salessegment_pair]:
+            self.__changeStatus(entity, AltairFamiPortReflectionStatus.AwaitingReflection.value)
+
+        # Create FamiPort objects
+        submit_to_downstream_sync(self.fm_request, self.session, self.rt_fmtenant, event1)
+
+        # Retrieve created famiport objects
+        famiport_venue = self.fm_session.query(FamiPortVenue).filter(FamiPortVenue.userside_id == altair_famiport_venue.id).one()
+        famiport_event = self.fm_session.query(FamiPortEvent).filter_by(userside_id = altair_famiport_performance_group.id) \
+                                                             .filter_by(invalidated_at = None).one()
+        famiport_performance = self.fm_session.query(FamiPortPerformance).filter_by(userside_id = altair_famiport_performance.id) \
+                                                                         .filter_by(invalidated_at = None).one()
+        famiport_salessegment = self.fm_session.query(FamiPortSalesSegment).filter_by(userside_id = altair_famiport_salessegment_pair.id) \
+                                                                           .filter_by(invalidated_at = None).one()
+
+        # Make sure expected FamiPort objects are created
+        self.assertEqual(famiport_venue.id, famiport_event.venue_id)
+        self.assertEqual(famiport_event.id, famiport_performance.famiport_event_id)
+        self.assertEqual(performance1.start_on, famiport_performance.start_at)
+
+        self.assertEqual(famiport_performance.id, famiport_salessegment.famiport_performance_id)
+        self.assertEqual(salessegment1.start_at, famiport_salessegment.start_at)
+        self.assertEqual(salessegment1.end_at, famiport_salessegment.end_at)
+        self.assertEqual(salessegmentgroup1.name, famiport_salessegment.name)
 
     def test_no_change(self):
         """2nd FM sync with no change
@@ -572,6 +677,10 @@ class FamiPortSyncTest(unittest.TestCase):
         self.session.add(salessegment1)
         self.session.flush()
 
+        famiport_genre1 = FamiPortGenre1(code = 1, name = u'音楽')
+        self.fm_session.add(famiport_genre1)
+        self.fm_session.flush()
+
         datetime_formatter = create_date_time_formatter(self.request)
         build_famiport_performance_groups(self.fm_request, self.session, datetime_formatter, self.rt_fmtenant, event1.id)
 
@@ -587,13 +696,49 @@ class FamiPortSyncTest(unittest.TestCase):
                                                 .filter(sa.or_(AltairFamiPortSalesSegmentPair.seat_unselectable_sales_segment_id == salessegment1.id, \
                                                                AltairFamiPortSalesSegmentPair.seat_selectable_sales_segment_id == salessegment1.id)).one()
 
-        # TODO submit_to_downstream_sync
+        famiport_venue = self.fm_session.query(FamiPortVenue).filter(FamiPortVenue.userside_id == altair_famiport_venue.id).one()
 
-        # Change status from Editing to Reflected for now
+        # Change status from Editing to AwaitingReflection
         for entity in [altair_famiport_venue, altair_famiport_performance_group, altair_famiport_performance, altair_famiport_salessegment_pair]:
-           self.__changeStatus(entity, AltairFamiPortReflectionStatus.Reflected.value)
+            self.__changeStatus(entity, AltairFamiPortReflectionStatus.AwaitingReflection.value)
 
+        # Create FamiPort objects
+        submit_to_downstream_sync(self.fm_request, self.session, self.rt_fmtenant, event1)
+
+        # Retrieve created famiport objects
+        famiport_event = self.fm_session.query(FamiPortEvent).filter_by(userside_id = altair_famiport_performance_group.id).one()
+        famiport_performance = self.fm_session.query(FamiPortPerformance).filter_by(userside_id = altair_famiport_performance.id).one()
+        famiport_salessegment = self.fm_session.query(FamiPortSalesSegment).filter_by(userside_id = altair_famiport_salessegment_pair.id).one()
+
+        # Make sure expected FamiPort objects are created
+        self.assertEqual(famiport_venue.id, famiport_event.venue_id)
+        self.assertEqual(famiport_event.id, famiport_performance.famiport_event_id)
+        self.assertEqual(performance1.start_on, famiport_performance.start_at)
+
+        self.assertEqual(famiport_performance.id, famiport_salessegment.famiport_performance_id)
+        self.assertEqual(salessegment1.start_at, famiport_salessegment.start_at)
+        self.assertEqual(salessegment1.end_at, famiport_salessegment.end_at)
+        self.assertEqual(salessegmentgroup1.name, famiport_salessegment.name)
+
+
+        # Change status from Editing
+        for entity in [altair_famiport_venue, altair_famiport_performance_group, altair_famiport_performance, altair_famiport_salessegment_pair]:
+           self.__changeStatus(entity, AltairFamiPortReflectionStatus.Editing.value)
+
+        # Auto add again
         build_famiport_performance_groups(self.fm_request, self.session, datetime_formatter, self.rt_fmtenant, event1.id)
+
+        # Retrieve created intermidiate objects: AltairFamiPortVenue, AltairFamiPortPerformanceGroup, AltairFamiPortPerformance, AltairFamiPortSalesSegmentPair
+        altair_famiport_venue = self.session.query(AltairFamiPortVenue)\
+                                            .filter(AltairFamiPortVenue.siteprofile_id == siteprofile1.id)\
+                                            .filter(AltairFamiPortVenue.venue_name == venue1.name).one()
+        altair_famiport_performance_group = self.session.query(AltairFamiPortPerformanceGroup)\
+                                                        .filter_by(event_id = event1.id).one()
+        altair_famiport_performance = self.session.query(AltairFamiPortPerformance)\
+                                                  .filter_by(performance_id = performance1.id).one()
+        altair_famiport_salessegment_pair = self.session.query(AltairFamiPortSalesSegmentPair)\
+                                                .filter(sa.or_(AltairFamiPortSalesSegmentPair.seat_unselectable_sales_segment_id == salessegment1.id, \
+                                                               AltairFamiPortSalesSegmentPair.seat_selectable_sales_segment_id == salessegment1.id)).one()
 
         famiport_venue = self.fm_session.query(FamiPortVenue).filter(FamiPortVenue.userside_id == altair_famiport_venue.id).one()
 
@@ -609,6 +754,32 @@ class FamiPortSyncTest(unittest.TestCase):
         self.assertEqual(salessegment1.id, altair_famiport_salessegment_pair.seat_unselectable_sales_segment_id)
 
         self.assertEqual(venue1.name, famiport_venue.name)
+
+        # Change status from Editing to AwaitingReflection
+        for entity in [altair_famiport_venue, altair_famiport_performance_group, altair_famiport_performance, altair_famiport_salessegment_pair]:
+            self.__changeStatus(entity, AltairFamiPortReflectionStatus.AwaitingReflection.value)
+
+        # Create FamiPort objects
+        submit_to_downstream_sync(self.fm_request, self.session, self.rt_fmtenant, event1)
+
+        # Retrieve created famiport objects
+        famiport_venue = self.fm_session.query(FamiPortVenue).filter(FamiPortVenue.userside_id == altair_famiport_venue.id).one()
+        famiport_event = self.fm_session.query(FamiPortEvent).filter_by(userside_id = altair_famiport_performance_group.id) \
+                                                             .filter_by(invalidated_at = None).one()
+        famiport_performance = self.fm_session.query(FamiPortPerformance).filter_by(userside_id = altair_famiport_performance.id) \
+                                                                         .filter_by(invalidated_at = None).one()
+        famiport_salessegment = self.fm_session.query(FamiPortSalesSegment).filter_by(userside_id = altair_famiport_salessegment_pair.id) \
+                                                                           .filter_by(invalidated_at = None).one()
+
+        # Make sure expected FamiPort objects are created
+        self.assertEqual(famiport_venue.id, famiport_event.venue_id)
+        self.assertEqual(famiport_event.id, famiport_performance.famiport_event_id)
+        self.assertEqual(performance1.start_on, famiport_performance.start_at)
+
+        self.assertEqual(famiport_performance.id, famiport_salessegment.famiport_performance_id)
+        self.assertEqual(salessegment1.start_at, famiport_salessegment.start_at)
+        self.assertEqual(salessegment1.end_at, famiport_salessegment.end_at)
+        self.assertEqual(salessegmentgroup1.name, famiport_salessegment.name)
 
     def test_performance_starton_change_without_altairfmvenue_and_fmvenue(self):
         """2nd FM sync with performance.start.on change without existing AltairFamiPortVenue and FamiPortVenue
@@ -636,6 +807,10 @@ class FamiPortSyncTest(unittest.TestCase):
         self.session.add(salessegment1)
         self.session.flush()
 
+        famiport_genre1 = FamiPortGenre1(code = 1, name = u'音楽')
+        self.fm_session.add(famiport_genre1)
+        self.fm_session.flush()
+
         datetime_formatter = create_date_time_formatter(self.request)
         build_famiport_performance_groups(self.fm_request, self.session, datetime_formatter, self.rt_fmtenant, event1.id)
 
@@ -649,15 +824,20 @@ class FamiPortSyncTest(unittest.TestCase):
                                                         .filter(sa.or_(AltairFamiPortSalesSegmentPair.seat_unselectable_sales_segment_id == salessegment1.id, \
                                                                        AltairFamiPortSalesSegmentPair.seat_selectable_sales_segment_id == salessegment1.id)).one()
 
-        # TODO submit_to_downstream_sync
-
         self.assertEqual(performance1.start_on, altair_famiport_performance.start_at)
+
+        # Change status from Editing to AwaitingReflection
+        for entity in [altair_famiport_venue, altair_famiport_performance_group, altair_famiport_performance, altair_famiport_salessegment_pair]:
+            self.__changeStatus(entity, AltairFamiPortReflectionStatus.AwaitingReflection.value)
+
+        # Create FamiPort objects
+        submit_to_downstream_sync(self.fm_request, self.session, self.rt_fmtenant, event1)
 
         performance1.start_on = datetime(2016, 3, 1, 11, 0, 0)
         self.session.add(performance1)
         self.session.flush()
 
-        # Change status from Editing to AwaitingReflection
+        # Change status from Editing
         for entity in [altair_famiport_venue, altair_famiport_performance_group, altair_famiport_performance, altair_famiport_salessegment_pair]:
             self.__changeStatus(entity, AltairFamiPortReflectionStatus.Editing.value)
 
@@ -667,6 +847,33 @@ class FamiPortSyncTest(unittest.TestCase):
                                                   .filter(AltairFamiPortPerformance.performance_id == performance1.id).one()
 
         self.assertEqual(performance1.start_on, altair_famiport_performance.start_at)
+
+
+        # Change status from Editing to AwaitingReflection
+        for entity in [altair_famiport_venue, altair_famiport_performance_group, altair_famiport_performance, altair_famiport_salessegment_pair]:
+            self.__changeStatus(entity, AltairFamiPortReflectionStatus.AwaitingReflection.value)
+
+        # Create FamiPort objects
+        submit_to_downstream_sync(self.fm_request, self.session, self.rt_fmtenant, event1)
+
+        # Retrieve created famiport objects
+        famiport_venue = self.fm_session.query(FamiPortVenue).filter(FamiPortVenue.userside_id == altair_famiport_venue.id).one()
+        famiport_event = self.fm_session.query(FamiPortEvent).filter_by(userside_id = altair_famiport_performance_group.id) \
+                                                             .filter_by(invalidated_at = None).one()
+        famiport_performance = self.fm_session.query(FamiPortPerformance).filter_by(userside_id = altair_famiport_performance.id) \
+                                                                         .filter_by(invalidated_at = None).one()
+        famiport_salessegment = self.fm_session.query(FamiPortSalesSegment).filter_by(userside_id = altair_famiport_salessegment_pair.id) \
+                                                                           .filter_by(invalidated_at = None).one()
+
+        # Make sure expected FamiPort objects are created
+        self.assertEqual(famiport_venue.id, famiport_event.venue_id)
+        self.assertEqual(famiport_event.id, famiport_performance.famiport_event_id)
+        self.assertEqual(performance1.start_on, famiport_performance.start_at)
+
+        self.assertEqual(famiport_performance.id, famiport_salessegment.famiport_performance_id)
+        self.assertEqual(salessegment1.start_at, famiport_salessegment.start_at)
+        self.assertEqual(salessegment1.end_at, famiport_salessegment.end_at)
+        self.assertEqual(salessegmentgroup1.name, famiport_salessegment.name)
 
     def test_add_sales_segment(self):
         """
@@ -695,6 +902,10 @@ class FamiPortSyncTest(unittest.TestCase):
         self.session.add(salessegment1)
         self.session.flush()
 
+        famiport_genre1 = FamiPortGenre1(code = 1, name = u'音楽')
+        self.fm_session.add(famiport_genre1)
+        self.fm_session.flush()
+
         datetime_formatter = create_date_time_formatter(self.request)
         build_famiport_performance_groups(self.fm_request, self.session, datetime_formatter, self.rt_fmtenant, event1.id)
 
@@ -708,14 +919,20 @@ class FamiPortSyncTest(unittest.TestCase):
                                                 .filter(sa.or_(AltairFamiPortSalesSegmentPair.seat_unselectable_sales_segment_id == salessegment1.id, \
                                                                AltairFamiPortSalesSegmentPair.seat_selectable_sales_segment_id == salessegment1.id)).one()
 
+        # Change status from Editing to AwaitingReflection
+        for entity in [altair_famiport_venue, altair_famiport_performance_group, altair_famiport_performance, altair_famiport_salessegment_pair]:
+            self.__changeStatus(entity, AltairFamiPortReflectionStatus.AwaitingReflection.value)
+
+        # Create FamiPort objects
+        submit_to_downstream_sync(self.fm_request, self.session, self.rt_fmtenant, event1)
+
         salessegment2 = SalesSegment(id = 2, sales_segment_group_id = 1, performance_id = 1, event_id = 1, \
                                      payment_delivery_method_pairs = [self.fm_pdmp], public = True, seat_choice = True, \
                                      start_at = datetime(2016, 3, 1, 0, 0, 0), end_at = datetime(2016, 3, 31, 23, 59, 59))
-
         self.session.add(salessegment2)
         self.session.flush()
 
-        # Change status from Editing to AwaitingReflection
+        # Change status to Editing
         for entity in [altair_famiport_venue, altair_famiport_performance_group, altair_famiport_performance, altair_famiport_salessegment_pair]:
             self.__changeStatus(entity, AltairFamiPortReflectionStatus.Editing.value)
 
@@ -726,3 +943,29 @@ class FamiPortSyncTest(unittest.TestCase):
 
         self.assertEqual(altair_famiport_salessegment_pair.seat_unselectable_sales_segment_id, salessegment1.id)
         self.assertEqual(altair_famiport_salessegment_pair.seat_selectable_sales_segment_id, salessegment2.id)
+
+        # Change status from Editing to AwaitingReflection
+        for entity in [altair_famiport_venue, altair_famiport_performance_group, altair_famiport_performance, altair_famiport_salessegment_pair]:
+            self.__changeStatus(entity, AltairFamiPortReflectionStatus.AwaitingReflection.value)
+
+        # Create FamiPort objects
+        submit_to_downstream_sync(self.fm_request, self.session, self.rt_fmtenant, event1)
+
+        # Retrieve created famiport objects
+        famiport_venue = self.fm_session.query(FamiPortVenue).filter(FamiPortVenue.userside_id == altair_famiport_venue.id).one()
+        famiport_event = self.fm_session.query(FamiPortEvent).filter_by(userside_id = altair_famiport_performance_group.id) \
+                                                             .filter_by(invalidated_at = None).one()
+        famiport_performance = self.fm_session.query(FamiPortPerformance).filter_by(userside_id = altair_famiport_performance.id) \
+                                                                         .filter_by(invalidated_at = None).one()
+        famiport_salessegment = self.fm_session.query(FamiPortSalesSegment).filter_by(userside_id = altair_famiport_salessegment_pair.id) \
+                                                                            .filter_by(invalidated_at = None).one()
+
+        # Make sure expected FamiPort objects are created
+        self.assertEqual(famiport_venue.id, famiport_event.venue_id)
+        self.assertEqual(famiport_event.id, famiport_performance.famiport_event_id)
+        self.assertEqual(performance1.start_on, famiport_performance.start_at)
+
+        self.assertEqual(famiport_performance.id, famiport_salessegment.famiport_performance_id)
+        self.assertEqual(salessegment1.start_at, famiport_salessegment.start_at)
+        self.assertEqual(salessegment2.end_at, famiport_salessegment.end_at)
+        self.assertEqual(salessegmentgroup1.name, famiport_salessegment.name)
