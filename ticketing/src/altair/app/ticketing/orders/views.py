@@ -307,6 +307,7 @@ class OrderBaseView(BaseView):
 @view_defaults(decorator=with_bootstrap, renderer='altair.app.ticketing:templates/orders/index.html', permission='sales_counter')
 class OrderIndexView(OrderBaseView):
     SHOW_TOTAL_KEY = 'orders.index.show_total'
+    SHOW_TOTAL_QUANTITY_KEY = 'orders.index.show_total_quantity'
 
     @property
     def show_total_flag(self):
@@ -315,6 +316,19 @@ class OrderIndexView(OrderBaseView):
     @show_total_flag.setter
     def show_total_flag(self, value):
         self.request.session[self.SHOW_TOTAL_KEY] = value
+
+    @property
+    def show_total_quantity_flag(self):
+        return self.request.session.get(self.SHOW_TOTAL_QUANTITY_KEY, False)
+
+    @show_total_quantity_flag.setter
+    def show_total_quantity_flag(self, value):
+        """予約枚数表示のフラグをセッションに保存
+
+        キーワード引数：
+        value -- True/False
+        """
+        self.request.session[self.SHOW_TOTAL_QUANTITY_KEY] = value
 
     @view_config(route_name='orders.index')
     def index(self):
@@ -329,11 +343,16 @@ class OrderIndexView(OrderBaseView):
 
         orders = None
         total = None
+        total_quantity = None
         page = int(request.params.get('page', 0))
         if request.params:
-            from .download import OrderSummary
+            from .download import OrderSummary, OrderProductItemSummary
             if form_search.validate():
                 query = OrderSummary(self.request,
+                                    slave_session,
+                                    organization_id,
+                                    condition=form_search)
+                query_ordered_product_item = OrderProductItemSummary(self.request,
                                     slave_session,
                                     organization_id,
                                     condition=form_search)
@@ -344,6 +363,7 @@ class OrderIndexView(OrderBaseView):
                     'orders':orders,
                     'page': page,
                     'total': total,
+                    'total_quantity': total_quantity,
                     'endpoints': self.endpoints,
                     }
 
@@ -359,6 +379,9 @@ class OrderIndexView(OrderBaseView):
             else:
                 count = query.count()
 
+            if self.show_total_quantity_flag:
+                total_quantity = query_ordered_product_item.total_quantity()[0]
+
             orders = paginate.Page(
                 query,
                 page=page,
@@ -373,6 +396,7 @@ class OrderIndexView(OrderBaseView):
             'orders':orders,
             'page': page,
             'total': total,
+            'total_quantity': total_quantity,
             'endpoints': self.endpoints,
             }
 
@@ -381,6 +405,11 @@ class OrderIndexView(OrderBaseView):
         self.show_total_flag = not self.show_total_flag
         return HTTPFound(location=self.request.route_path('orders.index', _query=self.request.params))
 
+    @view_config(route_name='orders.toggle_show_total_quantity')
+    def toggle_show_total_quantity(self):
+        """予約枚数の表示を切り替え"""
+        self.show_total_quantity_flag = not self.show_total_quantity_flag
+        return HTTPFound(location=self.request.route_path('orders.index', _query=self.request.params))
 
 class DownloadParamValidationError(Exception):
     u"""購入情報DL(beta)のパラメータエラー

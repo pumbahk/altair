@@ -450,7 +450,7 @@ order_summary_joins = t_order.join(
     t_lot_entry.c.lot_id == t_lot.c.id
 )
 
-order_product_summary_joins = order_summary_joins.join(
+order_product_item_summary_joins = order_summary_joins.join(
     t_ordered_product,
     and_(t_ordered_product.c.order_id==t_order.c.id,
          t_ordered_product.c.deleted_at==None),
@@ -466,7 +466,9 @@ order_product_summary_joins = order_summary_joins.join(
     t_product_item,
     and_(t_product_item.c.id==t_ordered_product_item.c.product_item_id,
          t_product_item.c.deleted_at==None),
-).join(
+)
+
+order_product_summary_joins = order_product_item_summary_joins.join(
     t_venue,
     and_(t_venue.c.performance_id==t_performance.c.id,
          t_venue.c.deleted_at==None),
@@ -779,6 +781,11 @@ class OrderSearchBase(list):
         return query.order_by(self.default_order)
 
     def query_cond(self, condition):
+        """検索条件
+
+        キーワード引数：
+        condition -- 初期化した検索条件
+        """
         cond = and_(t_organization.c.id==self.organization_id,
                     t_order.c.deleted_at==None)
 
@@ -1156,7 +1163,6 @@ class OrderSummary(OrderSearchBase):
     columns = summary_columns
     default_order = t_order.c.id.desc()
 
-
 class OrderDownload(OrderSearchBase):
     target = order_product_summary_joins
     columns = detail_summary_columns
@@ -1192,3 +1198,21 @@ class MailPermissionCache(OrderSearchBase):
         return and_(t_mailmagazine.c.organization_id==self.organization_id,
                     t_mail_subscription.c.status==MailSubscriptionStatus.Subscribed.v)
 
+class OrderProductItemSummary(OrderSearchBase):
+    target = order_product_item_summary_joins
+    columns = summary_columns
+    default_order = t_order.c.id.desc()
+
+    def total_quantity(self):
+        """すべての予約枚数を返す"""
+        sql = select([func.sum(t_ordered_product_item.c.quantity)],
+                     from_obj=[self.target],
+                     whereclause=self.condition,
+        )
+
+        cur = self.db_session.bind.execute(sql)
+        try:
+            r = cur.fetchone()
+            return r
+        finally:
+            cur.close()
