@@ -16,8 +16,62 @@ from altair.formhelpers import OurDateWidget
 }
 </style>
 <script type="text/javascript">
-  function search_orders(url) {
-    $('#search').attr('action', url).submit();
+  function search_orders(url, total) {
+    if(total == '') {
+      $('#search').attr('action', url).submit();
+    } else {
+      if(total == 'amount') {
+        show_total(url, "${request.params.get('event_id')}", 'amount');
+      } else if(total == 'quantity') {
+        show_total(url, "${request.params.get('event_id')}", 'quantity');
+      } else {
+        $('#search').attr('action', url).submit();
+      }
+    }
+  }
+
+  function show_total(url, event_id, type) {
+    $.ajax({
+      url: url,
+      type: 'POST',
+      dataType: 'json',
+      data: {event_id: event_id},
+      success: function(data) {
+        switch(type) {
+          case 'amount':
+            $('#btn_total_amount').hide();
+            var total = document.getElementById('total_amount');
+            var text = '検索された購入金額の総合計';
+            var count = parseInt(data.total_amount).toLocaleString();
+            break;
+          case 'quantity':
+            $('#btn_total_quantity').hide();
+            var total = document.getElementById('total_quantity');
+            var text = '検索された販売枚数の総合計';
+            var count = parseInt(data.total_quantity).toLocaleString();
+            break;
+          default:
+            break;
+        }
+        var table = document.createElement('table');
+        table.className = 'table table-striped table-bordered';
+        var thead = document.createElement('thead');
+        var tr0 = document.createElement('tr');
+        var td0 = document.createElement('td');
+        td0.appendChild(document.createTextNode(text));
+        tr0.appendChild(td0);
+        thead.appendChild(tr0);
+        var tbody = document.createElement('tbody');
+        var tr1 = document.createElement('tr');
+        var td1 = document.createElement('td');
+        td1.appendChild(document.createTextNode(count));
+        tr1.appendChild(td1);
+        tbody.appendChild(tr1);
+        table.appendChild(thead);
+        table.appendChild(tbody);
+        total.appendChild(table);
+      }
+    })
   }
 
   function sort_orders(sort, direction, url) {
@@ -248,7 +302,7 @@ from altair.formhelpers import OurDateWidget
   <ul class="nav nav-pills">
     <li class="dropdown" id="top-search" style="margin-left: 10px;">
       <div class="btn-group">
-        <a href="javascript:search_orders('${request.route_path('orders.index')}');" class="btn">
+        <a href="javascript:search_orders('${request.route_path('orders.index')}', total='');" class="btn">
           <i class="icon-search"></i> 検索
         </a>
       </div>

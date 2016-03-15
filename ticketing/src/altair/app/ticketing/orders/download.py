@@ -1070,8 +1070,8 @@ class OrderSearchBase(list):
         finally:
             cur.close()
 
-    def count_and_total(self):
-        sql = select([func.count(t_order.c.id), func.sum(t_order.c.total_amount)],
+    def total_amount(self):
+        sql = select([func.sum(t_order.c.total_amount)],
                      from_obj=[self.target],
                      whereclause=self.condition,
         )
