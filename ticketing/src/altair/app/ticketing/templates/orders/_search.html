@@ -16,18 +16,8 @@ from altair.formhelpers import OurDateWidget
 }
 </style>
 <script type="text/javascript">
-  function search_orders(url, total) {
-    if(total == '') {
-      $('#search').attr('action', url).submit();
-    } else {
-      if(total == 'amount') {
-        show_total(url, "${request.params.get('event_id')}", 'amount');
-      } else if(total == 'quantity') {
-        show_total(url, "${request.params.get('event_id')}", 'quantity');
-      } else {
-        $('#search').attr('action', url).submit();
-      }
-    }
+  function search_orders(url) {
+    $('#search').attr('action', url).submit();
   }
 
   function show_total(url, event_id, type) {
@@ -70,6 +60,9 @@ from altair.formhelpers import OurDateWidget
         table.appendChild(thead);
         table.appendChild(tbody);
         total.appendChild(table);
+      },
+      error: function() {
+        $('#total_error').html('データ取得失敗しました');
       }
     })
   }
@@ -302,7 +295,7 @@ from altair.formhelpers import OurDateWidget
   <ul class="nav nav-pills">
     <li class="dropdown" id="top-search" style="margin-left: 10px;">
       <div class="btn-group">
-        <a href="javascript:search_orders('${request.route_path('orders.index')}', total='');" class="btn">
+        <a href="javascript:search_orders('${request.route_path('orders.index')}');" class="btn">
           <i class="icon-search"></i> 検索
         </a>
       </div>
