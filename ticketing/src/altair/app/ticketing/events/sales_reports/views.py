@@ -24,6 +24,7 @@ from altair.app.ticketing.events.sales_reports.forms import (
     SalesReportSearchForm,
     SalesReportForm,
     ReportSettingForm,
+    OnlyEmailCheckForm,
     NumberOfPerformanceReportExportForm,
     )
 
@@ -247,32 +248,45 @@ class SalesReports(BaseView):
 class ReportSettings(BaseView):
 
     def _save_report_setting(self, report_setting=None):
-        f = ReportSettingForm(self.request.POST, context=self.context)
-        if not f.validate():
-            raise ReportSettingValidationError(form=f)
-        new_recipients = [
-            ReportRecipient.query.filter_by(id=report_recipient_id, organization_id=self.context.organization.id).one()
-            for report_recipient_id in f.recipients.data
-            ]
-        if f.email.data:
-            rr = ReportRecipient.query.filter_by(name=f.name.data, email=f.email.data, organization_id=self.context.organization.id).first()
-            if not rr:
-                rr = ReportRecipient(name=f.name.data, email=f.email.data, organization_id=self.context.organization.id)
-            new_recipients.append(rr)
         if report_setting is None:
             report_setting = ReportSetting()
 
-        remove_candidates = set(report_setting.recipients) - set(new_recipients)
-        for c in remove_candidates:
-            if len(c.lot_entry_report_settings) == 0 and len([s for s in c.settings if s.id != report_setting.id]) == 0:
-                logger.info(u'remove no reference recipient id={} name={} email={}'.format(c.id, c.name, c.email))
-                c.delete()
+        form = ReportSettingForm(self.request.POST, context=self.context)
+        if not form.validate():
+            raise ReportSettingValidationError(form=form)
 
-        report_setting = merge_session_with_post(report_setting, f.data)
-        report_setting.recipients[:] = []
-        report_setting.recipients.extend(new_recipients)
+        num = 0
+        report_setting.recipients = []
+        for line in form.recipients.data.splitlines():
+            num += 1
+            row = line.split(',')
+
+            recipient = ReportRecipient()
+
+            # メアドのみ
+            if len(row) == 1:
+                recipient.name = ""
+                recipient.email = row[0].strip()
+
+            # 名前とメアド
+            elif len(row) == 2:
+                recipient.name = row[0].strip()
+                recipient.email = row[1].strip()
+
+            recipient.organization_id = self.context.organization.id
+            report_setting.recipients.append(recipient)
+
+        report_setting.frequency = form.frequency.data
+        report_setting.event_id = form.event_id.data
+        report_setting.day_of_week = form.day_of_week.data
+        report_setting.time = form.time.data
+        report_setting.start_on = form.start_on.data
+        report_setting.end_on = form.end_on.data
+        report_setting.performance_id = form.performance_id.data
+        report_setting.period = form.period.data
+        report_setting.report_type = form.report_type.data
+
         report_setting.save()
-        return
 
     @view_config(route_name='report_settings.new', request_method='GET', renderer='altair.app.ticketing:templates/sales_reports/_form.html', xhr=True)
     def new_xhr(self):
@@ -285,18 +299,27 @@ class ReportSettings(BaseView):
     def new_post(self):
         try:
             self._save_report_setting()
-            self.request.session.flash(u'レポート送信設定を保存しました')
             return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
         except ReportSettingValidationError as e:
             return {
                 'form':e.form,
                 'action': self.request.path,
                 }
+        self.request.session.flash(u'レポート送信設定を保存しました')
 
     @view_config(route_name='report_settings.edit', request_method='GET', renderer='altair.app.ticketing:templates/sales_reports/_form.html', xhr=True)
     def edit_xhr(self):
+        form = ReportSettingForm(obj=self.context.report_setting, context=self.context)
+        recipient_list = []
+        for recipient in self.context.report_setting.recipients:
+            if recipient.name:
+                recipient_list.append(recipient.name + "," + recipient.email)
+            else:
+                recipient_list.append(recipient.email)
+        form.recipients.data = "\n".join(recipient_list)
+
         return {
-            'form': ReportSettingForm(obj=self.context.report_setting, context=self.context),
+            'form': form,
             'action': self.request.path,
             }
 

@@ -8,7 +8,7 @@ from wtforms.compat import iteritems
 
 from altair.formhelpers import (
     OurDateTimeField, Translations, Required, RequiredOnUpdate, MultipleEmail,
-    OurForm, OurIntegerField, OurBooleanField, OurDecimalField, OurSelectField,
+    OurForm, OurIntegerField, OurBooleanField, OurDecimalField, OurSelectField, OurTextAreaField,
     OurTimeField, PHPCompatibleSelectMultipleField, zero_as_none, after1900, Max,
     )
 from altair.app.ticketing.core.models import Operator, ReportSetting, ReportRecipient, SalesSegment, Performance, Event
@@ -142,8 +142,6 @@ class SalesReportForm(OurForm):
                 field.data = kwargs[name]
         if formdata and not 'need_total' in formdata:
             self.need_total.data = True
-        if formdata and 'recipient' in formdata:
-            self.recipient.data = ', '.join([email.strip() for email in self.recipient.data.split(',')])
 
     def _get_translations(self):
         return Translations()
@@ -206,9 +204,9 @@ class SalesReportForm(OurForm):
         missing_value_defaults=dict(hour=Max, minute=Max, second=Max),
         format='%Y-%m-%d %H:%M',
     )
-    recipient = TextField(
+    recipient = OurTextAreaField(
         label=u'送信先',
-        validators=[Required(), MultipleEmail()],
+        validators=[Required()],
     )
     subject = TextField(
         label=u'件名',
@@ -241,13 +239,9 @@ class ReportSettingForm(OurForm):
         context = kwargs.pop('context', None)
         self.context = context
 
-        if hasattr(context, 'organization') and context.organization.id:
-            org_recipients = ReportRecipient.query.filter_by(organization_id=context.organization.id).all()
-            self.recipients.choices = [(r.id, u'{} <{}>'.format(r.name, r.email)) for r in org_recipients]
         if obj:
             self.report_hour.data = int(obj.time[0:2] or 0)
             self.report_minute.data = int(obj.time[2:4] or 0)
-            self.recipients.data = [r.id for r in obj.recipients]
         self.time.data = self.format_report_time()
 
     def _get_translations(self):
@@ -262,11 +256,9 @@ class ReportSettingForm(OurForm):
     performance_id = HiddenField(
         validators=[Optional()],
     )
-    recipients = PHPCompatibleSelectMultipleField(
+    recipients = OurTextAreaField(
         label=u'送信先',
         validators=[Optional()],
-        choices=[],
-        coerce=lambda v: None if not v else int(v)
     )
     name = TextField(
         label=u'名前',
@@ -353,48 +345,6 @@ class ReportSettingForm(OurForm):
         report_time = report_time[0:3] + '0'
         return report_time
 
-    def validate_recipients(form, field):
-        if field.data:
-            query = ReportSetting.query.filter(
-                ReportSetting.frequency==form.frequency.data,
-                ReportSetting.time==form.format_report_time(),
-            ).join(
-                ReportSetting.recipients
-            ).filter(
-                ReportRecipient.id.in_(field.data)
-            )
-            if form.id.data:
-                query = query.filter(ReportSetting.id!=form.id.data)
-            if form.event_id.data:
-                query = query.filter(ReportSetting.event_id==form.event_id.data)
-            if form.performance_id.data:
-                query = query.filter(ReportSetting.performance_id==form.performance_id.data)
-            if form.frequency.data == ReportFrequencyEnum.Weekly.v[0]:
-                query = query.filter(ReportSetting.day_of_week==form.day_of_week.data)
-            if query.count() > 0:
-                raise ValidationError(u'既にレポート送信設定済みの送信先です')
-
-    def validate_email(form, field):
-        if field.data:
-            query = ReportSetting.query.filter(
-                ReportSetting.frequency==form.frequency.data,
-                ReportSetting.time==form.format_report_time(),
-            ).join(
-                ReportSetting.recipients
-            ).filter(
-                ReportRecipient.email==field.data
-            )
-            if form.id.data:
-                query = query.filter(ReportSetting.id!=form.id.data)
-            if form.event_id.data:
-                query = query.filter(ReportSetting.event_id==form.event_id.data)
-            if form.performance_id.data:
-                query = query.filter(ReportSetting.performance_id==form.performance_id.data)
-            if form.frequency.data == ReportFrequencyEnum.Weekly.v[0]:
-                query = query.filter(ReportSetting.day_of_week==form.day_of_week.data)
-            if query.count() > 0:
-                raise ValidationError(u'既にレポート送信設定済みの送信先です')
-
     def validate_frequency(form, field):
         if field.data:
             if field.data == ReportFrequencyEnum.Weekly.v[0] and not form.day_of_week.data:
@@ -424,10 +374,64 @@ class ReportSettingForm(OurForm):
         if not self.performance_id.data:
             self.performance_id.data = None
 
+    def validate_recipients(form, field):
+        num = 0
+        emails = []
+        for line in field.data.splitlines():
+            num += 1
+            row = line.split(',')
+            if len(row) > 2:
+                raise ValidationError(u'入力された形式が不正です。（例：名前,メールアドレス {}行目'.format(str(num)))
+
+            # メアドのみ
+            if len(row) == 1:
+                if not row[0].strip():
+                    raise ValidationError(u'空白は指定できません。{}行目'.format(str(num)))
+
+                if not validate_email(row[0].strip()):
+                    raise ValidationError(u'メールアドレスの形式が不正です。{}行目'.format(str(num)))
+                emails.append(row[0].strip())
+                if not check_orverlap_email(emails):
+                    raise ValidationError(u'メールアドレスが重複しています。{}行目'.format(str(num)))
+
+            # 名前とメアド
+            elif len(row) == 2:
+                if not row[0].strip() or not row[1].strip():
+                    raise ValidationError(u'空白は指定できません。{}行目'.format(str(num)))
+                if not validate_email(row[1].strip()):
+                    raise ValidationError(u'メールアドレスの形式が不正です。{}行目'.format(str(num)))
+                emails.append(row[1].strip())
+                if not check_orverlap_email(emails):
+                    raise ValidationError(u'メールアドレスが重複しています。{}行目'.format(str(num)))
+
     def validate(self):
         status = super(ReportSettingForm, self).validate()
         if status:
-            if not self.recipients.data and not self.email.data:
-                self.recipients.errors.append(u'送信先を選択または入力してください')
+            if not self.recipients.data:
+                self.recipients.errors.append(u'送信先を入力してください')
                 status = False
         return status
+
+
+class OnlyEmailCheckForm(OurForm):
+    email = TextField(
+        label=u'メールアドレス',
+        validators=[
+            Required(),
+            Email()
+        ]
+    )
+
+
+def validate_email(data):
+    check_form = OnlyEmailCheckForm()
+    check_form.email.data = data
+    if not check_form.validate():
+        return False
+    return True
+
+
+def check_orverlap_email(emails):
+    if len(set(emails)) != len(emails):
+        return False
+    return True
