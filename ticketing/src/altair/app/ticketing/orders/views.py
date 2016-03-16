@@ -1433,8 +1433,8 @@ class OrderDetailView(OrderBaseView):
         order_id = int(self.request.matchdict.get('order_id', 0))
         order = get_order_by_id(self.request, order_id)
 
-        if order.status == 'canceled':
-            self.request.session.flash(u'キャンセル済みの為、商品の変更はできません')
+        if order.status == 'canceled' or order.status == 'refunded':
+            self.request.session.flash(u'キャンセル、または、払戻済みの為、商品の変更はできません')
             return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
 
         if order is None or order.organization_id != self.context.organization.id:
@@ -1582,8 +1582,8 @@ class OrderDetailView(OrderBaseView):
         update_list = self.create_update_ordered_product_item_list(self.request.POST.items())
 
         order = Order.query.filter(Order.order_no==order_no).first()
-        if order.status == 'canceled':
-            self.request.session.flash(u'キャンセル済みのため、購入商品属性の更新は行えません')
+        if order.status == 'canceled' or order.status == 'refunded':
+            self.request.session.flash(u'キャンセル、または、払戻済みの為、購入商品属性の更新は行えません')
             return HTTPFound(self.request.route_path(route_name="orders.show", order_id=order.id) + "#ordered_product_attributes")
 
         new_order = Order.clone(order, deep=True)
