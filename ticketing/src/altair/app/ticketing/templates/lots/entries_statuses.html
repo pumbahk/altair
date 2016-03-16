@@ -29,6 +29,7 @@
       <th rowspan="2">公演日時</th>
       <th rowspan="2">会場</th>
       <th rowspan="2">席種</th>
+      <th rowspan="2">商品</th>
       <th rowspan="2">申込総枚数</th>
       <th colspan="${lot_status.lot.limit_wishes}">希望順位内訳枚数</th>
       <th rowspan="2">当選枚数</th>
@@ -41,40 +42,58 @@
       <th>第${i+1}希望</th>
       %endfor
     </tr>
-    <% statuses = lot_status.performance_seat_type_statuses %>
-    %for status in statuses:
-    <tr>
-      <td>${vh.datetime(status.performance.start_on, with_weekday=True)}</td>
-      <td>${status.performance.venue.name}</td>
-      <td>${status.seat_type.name}</td>
-      <td>${status.entry_quantity}</td>
-      %for i in range(lot_status.lot.limit_wishes):
-      <td>${status.wish_statuses[i].entry_quantity}</td>
-      %endfor
-      <td>${status.elected_quantity}</td>
-      <td>${status.ordered_quantity}</td>
-      %if between_lot_start_and_payment_due:
-      <td>${status.reserved_quantity}</td>
-      %else:
-      <td>0</td>
-      %endif
-      <td>${status.canceled_quantity}</td>
-    </tr>
+    <% stock_type_wishes_status, product_wishes_status = lot_status.performance_seat_type_statuses %>
+    %for stock_type_status in stock_type_wishes_status:
+        %for product_status in product_wishes_status[(stock_type_status.performance, stock_type_status.stock_type)]:
+        <tr>
+            <td>${vh.datetime(product_status.performance.start_on, with_weekday=True)}</td>
+            <td>${product_status.performance.venue.name}</td>
+            <td>${product_status.seat_type.name}</td>
+            <td>${product_status.product.name}</td>
+            <td>${product_status.entry_quantity}</td>
+            %for i in range(lot_status.lot.limit_wishes):
+                <td>${product_status.wish_statuses[i].entry_quantity}</td>
+            %endfor
+            <td>${product_status.elected_quantity}</td>
+            <td>${product_status.ordered_quantity}</td>
+            %if between_lot_start_and_payment_due:
+                <td>${product_status.reserved_quantity}</td>
+            %else:
+                <td>0</td>
+            %endif
+            <td>${product_status.canceled_quantity}</td>
+        </tr>
+        %endfor
+        <tr bgcolor="grey">
+            <td colspan="4" align="right">${stock_type_status.stock_type.name}合計</td>
+            <td>${stock_type_status.entry_quantity}</td>
+            %for i in range(lot_status.lot.limit_wishes):
+                <td>${stock_type_status.wish_statuses[i].entry_quantity}</td>
+            %endfor
+            <td>${stock_type_status.elected_quantity}</td>
+            <td>${stock_type_status.ordered_quantity}</td>
+            %if between_lot_start_and_payment_due:
+                <td>${stock_type_status.reserved_quantity}</td>
+            %else:
+                <td>0</td>
+            %endif
+            <td>${stock_type_status.canceled_quantity}</td>
+        </tr>
     %endfor
     <tr>
-      <td colspan="3">合計</td>
-      <td>${lot_status.total_quantity or 0}</td>
-      %for i in range(lot_status.lot.limit_wishes):
-      <td>${lot_status.wish_statuses[i].quantity or 0}</td>
-      %endfor
-      <td>${sum([st.elected_quantity for st in statuses])}</td>
-      <td>${sum([st.ordered_quantity for st in statuses])}</td>
-      %if between_lot_start_and_payment_due:
-      <td>${sum([st.reserved_quantity for st in statuses])}</td>
-      %else:
-      <td>0</td>
-      %endif
-      <td>${sum([st.canceled_quantity for st in statuses])}</td>
+        <td colspan="4">合計</td>
+        <td>${lot_status.total_quantity or 0}</td>
+        %for i in range(lot_status.lot.limit_wishes):
+            <td>${lot_status.wish_statuses[i].quantity or 0}</td>
+        %endfor
+        <td>${sum([st.elected_quantity for st in stock_type_wishes_status])}</td>
+        <td>${sum([st.ordered_quantity for st in stock_type_wishes_status])}</td>
+        %if between_lot_start_and_payment_due:
+            <td>${sum([st.reserved_quantity for st in stock_type_wishes_status])}</td>
+        %else:
+            <td>0</td>
+        %endif
+        <td>${sum([st.canceled_quantity for st in stock_type_wishes_status])}</td>
     </tr>
   </table>
 </div>
