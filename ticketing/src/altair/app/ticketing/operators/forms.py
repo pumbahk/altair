@@ -131,7 +131,7 @@ class OperatorForm(Form):
         validators=[
             Required(),
             Length(4, 384, message=u'4文字以上384文字以内で入力してください'),
-            Regexp("^[a-zA-Z0-9@!#$%&'()*+,\-./_]+$", 0, message=u'英数記号を入力してください。'),
+            Regexp("^[a-zA-Z0-9@!#$%&'()*+,\-./_:=]+$", 0, message=u'英数記号を入力してください。'),
         ]
     )
     password = PasswordField(
