@@ -46,9 +46,9 @@
     <dd id="checkbox_status_count"></dd>
   </dl>
   % if request.params.get('action') == 'checked':
-  <a type="button" class="btn" href="javascript:search_orders('${request.route_path('orders.index')}', total='');">全ての予約を表示</a>
+  <a type="button" class="btn" href="javascript:search_orders('${request.route_path('orders.index')}');">全ての予約を表示</a>
   % else:
-  <a type="button" class="btn" href="javascript:search_orders('${request.route_path('orders.index', _query=dict(action='checked'))}', total='');">選択した予約だけ表示</a>
+  <a type="button" class="btn" href="javascript:search_orders('${request.route_path('orders.index', _query=dict(action='checked'))}');">選択した予約だけ表示</a>
   % endif
   <button type="button" class="btn" id="checkbox_status_reset">リセット</button>
   <a type="button" class="btn" id="addall">全て選択</a>
@@ -71,15 +71,17 @@
 
 <div id='total_amount'></div>
 <div id='btn_total_amount'>
-  <a href="javascript:search_orders('${request.route_path('orders.show_total_amount')}', total='amount')" class="btn">購入金額の合計を表示</a>
+  <a href="javascript:show_total('${request.route_path('orders.show_total_amount')}', ${request.params.get('event_id')}, total='amount')" class="btn">購入金額の合計を表示</a>
 </div>
 
 <br />
 
 <div id='total_quantity'></div>
 <div id='btn_total_quantity'>
-  <a href="javascript:search_orders('${request.route_url('orders.show_total_quantity')}', total='quantity')" class="btn">販売枚数の合計を表示</a>
+  <a href="javascript:show_total('${request.route_url('orders.show_total_quantity')}', ${request.params.get('event_id')}, total='quantity')" class="btn">販売枚数の合計を表示</a>
 </div>
+
+<div id='total_error'></div>
 
 <div class="orders">
   % if orders is not None:
