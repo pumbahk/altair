@@ -20,12 +20,12 @@ from altair.formhelpers import OurDateWidget
     $('#search').attr('action', url).submit();
   }
 
-  function show_total(url, event_id, type) {
+  function show_total(url, type) {
     $.ajax({
       url: url,
       type: 'POST',
       dataType: 'json',
-      data: {event_id: event_id},
+      data: $('#search').serialize(),
       success: function(data) {
         switch(type) {
           case 'amount':
