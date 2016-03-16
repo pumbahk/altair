@@ -71,14 +71,14 @@
 
 <div id='total_amount'></div>
 <div id='btn_total_amount'>
-  <a href="javascript:show_total('${request.route_path('orders.show_total_amount')}', ${request.params.get('event_id')}, total='amount')" class="btn">購入金額の合計を表示</a>
+  <a href="javascript:show_total('${request.route_path('orders.show_total_amount')}', total='amount')" class="btn">購入金額の合計を表示</a>
 </div>
 
 <br />
 
 <div id='total_quantity'></div>
 <div id='btn_total_quantity'>
-  <a href="javascript:show_total('${request.route_url('orders.show_total_quantity')}', ${request.params.get('event_id')}, total='quantity')" class="btn">販売枚数の合計を表示</a>
+  <a href="javascript:show_total('${request.route_url('orders.show_total_quantity')}', total='quantity')" class="btn">販売枚数の合計を表示</a>
 </div>
 
 <div id='total_error'></div>
