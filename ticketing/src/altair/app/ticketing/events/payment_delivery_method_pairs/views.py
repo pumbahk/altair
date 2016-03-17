@@ -10,6 +10,7 @@ from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.core.models import SalesSegmentGroup, PaymentDeliveryMethodPair, PaymentMethod, DeliveryMethod
 from altair.app.ticketing.events.payment_delivery_method_pairs.forms import PaymentDeliveryMethodPairForm
 from altair.app.ticketing.service_fee_methods.api import get_system_fee_default, SystemFeeDefaultDoesNotExist, SystemFeeDefaultDuplicated
+from . import helpers as h
 
 @view_defaults(decorator=with_bootstrap, permission='event_editor')
 class PaymentDeliveryMethodPairs(BaseView):
@@ -39,12 +40,12 @@ class PaymentDeliveryMethodPairs(BaseView):
             'system_fee_type': system_fee_type,
         }
 
-    @view_config(route_name='payment_delivery_method_pairs.payment_delivery_plugin', renderer='json')
+    @view_config(route_name='payment_delivery_method_pairs.default_values_for_pdmp', renderer='json')
     def get_payment_delivery_plugin(self):
-        return {
-            'payment_plugin_id': PaymentMethod.filter_by(id=self.request.POST.get('payment_plugin_id')).one().payment_plugin_id,
-            'delivery_plugin_id': DeliveryMethod.filter_by(id=self.request.POST.get('delivery_plugin_id')).one().delivery_plugin_id,
-        }
+        return h.default_values_for_pdmp(
+            self.request.GET.get('payment_plugin_id'),
+            self.request.GET.get('delivery_plugin_id')
+        )
 
     @view_config(route_name='payment_delivery_method_pairs.new', request_method='POST', renderer='altair.app.ticketing:templates/payment_delivery_method_pairs/edit.html')
     def new_post(self):
