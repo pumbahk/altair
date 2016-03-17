@@ -239,9 +239,12 @@ class EventPublicForm(Form):
         if field.data == 1:
             # 配下の全てのProductItemに券種が紐づいていること
             event = Event.get(form.event_id.data)
+            error_msg = []
             for performance in event.performances:
 
                 no_ticket_bundles = get_no_ticket_bundles(performance)
 
                 if no_ticket_bundles:
-                    raise ValidationError(u'券面構成が設定されていない商品設定がある為、公開できません %s' % no_ticket_bundles)
+                    error_msg.append(u'パフォーマンス[%s]券面構成が設定されていない商品設定がある為、公開できません %s' % (performance.name, no_ticket_bundles))
+            if len(error_msg) > 0:
+                raise ValidationError(('\n').join(error_msg))
