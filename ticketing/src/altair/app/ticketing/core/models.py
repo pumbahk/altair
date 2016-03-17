@@ -824,9 +824,9 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def has_that_delivery(self, delivery_plugin_id):
         qs = DBSession.query(DeliveryMethod)\
             .filter(DeliveryMethod.delivery_plugin_id==delivery_plugin_id)\
-            .filter(DeliveryMethod.id==PaymentDeliveryMethodPair.delivery_method_id)\
-            .filter(PaymentDeliveryMethodPair.sales_segment_group_id == SalesSegment.id)\
-            .filter(SalesSegment.id==Product.sales_segment_group_id)\
+            .filter(PaymentDeliveryMethodPair.delivery_method_id==DeliveryMethod.id)\
+            .filter(SalesSegment_PaymentDeliveryMethodPair.c.payment_delivery_method_pair_id==PaymentDeliveryMethodPair.id)\
+            .filter(Product.sales_segment_id==SalesSegment_PaymentDeliveryMethodPair.c.sales_segment_id)\
             .filter(Product.id==ProductItem.product_id)\
             .filter(ProductItem.performance_id==self.id)
         return bool(qs.first())
@@ -3691,6 +3691,17 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     def available_payment_delivery_method_pairs(self, now):
         return [pdmp for pdmp in self.payment_delivery_method_pairs if pdmp.is_available_for(self, now)]
 
+    def has_that_delivery(self, delivery_plugin_id):
+        for pdmp in self.payment_delivery_method_pairs:
+            if pdmp.delivery_method.delivery_plugin_id == delivery_plugin_id:
+                return True
+        return False
+
+    def has_that_payment(self, payment_plugin_id):
+        for pdmp in self.payment_delivery_method_pairs:
+            if pdmp.payment_method.payment_plugin_id == payment_plugin_id:
+                return True
+        return False
 
     def query_orders_by_user(self, user, filter_canceled=False, query=None):
         """ 該当ユーザーがこの販売区分での注文内容を問い合わせ """
