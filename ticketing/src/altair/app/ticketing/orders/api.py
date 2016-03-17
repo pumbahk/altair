@@ -1070,7 +1070,7 @@ def get_relevant_object(request, order_no, session=None, include_deleted=False):
         return cart
     return None
 
-def create_or_update_orders_from_proto_orders(request, reserving, stocker, proto_orders, import_type, allocation_mode, entrust_separate_seats, order_modifier=None, now=None, channel_for_new_orders=ChannelEnum.INNER.v):
+def create_or_update_orders_from_proto_orders(request, reserving, stocker, proto_orders, import_type, allocation_mode, entrust_separate_seats, enable_random_import, order_modifier=None, now=None, channel_for_new_orders=ChannelEnum.INNER.v):
     from altair.app.ticketing.models import DBSession
     errors_map = {}
 
@@ -1079,6 +1079,9 @@ def create_or_update_orders_from_proto_orders(request, reserving, stocker, proto
     orders_will_be_updated = bool(int(import_type) & int(ImportTypeEnum.Update))
     always_issue_order_no = bool(int(import_type) & int(ImportTypeEnum.AlwaysIssueOrderNo))
 
+    import random
+    if enable_random_import:
+        random.shuffle(proto_orders)
     if orders_will_be_updated:
         for proto_order in proto_orders:
             if proto_order.original_order:

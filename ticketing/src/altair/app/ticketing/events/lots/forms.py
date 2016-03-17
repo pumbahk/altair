@@ -526,40 +526,6 @@ class LotEntryReportSettingForm(ReportSettingForm):
         validators=[Optional()],
     )
 
-    def validate_recipients(form, field):
-        if field.data:
-            q = LotEntryReportSetting.query_reporting_about(
-                id=form.id.data,
-                event_id=form.event_id.data,
-                lot_id=form.lot_id.data,
-                time=form.format_report_time(),
-                frequency=form.frequency.data,
-                day_of_week=form.day_of_week.data,
-            ).join(
-                LotEntryReportSetting.recipients
-            ).filter(
-                ReportRecipient.id.in_(field.data)
-            )
-            if q.count() > 0:
-                raise ValidationError(u'既にレポート送信設定済みの送信先です')
-
-    def validate_email(form, field):
-        if field.data:
-            q = LotEntryReportSetting.query_reporting_about(
-                id=form.id.data,
-                event_id=form.event_id.data,
-                lot_id=form.lot_id.data,
-                time=form.format_report_time(),
-                frequency=form.frequency.data,
-                day_of_week=form.day_of_week.data,
-            ).join(
-                LotEntryReportSetting.recipients
-            ).filter(
-                ReportRecipient.email==field.data
-            )
-            if q.count() > 0:
-                raise ValidationError(u'既にレポート送信設定済みの送信先です')
-
     def validate_event_id(form, field):
         pass
 

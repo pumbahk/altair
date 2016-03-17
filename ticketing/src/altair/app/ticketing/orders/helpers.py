@@ -130,6 +130,7 @@ def order_import_task_stats(task):
     stats['created_at'] = task.created_at
     stats['updated_at'] = task.updated_at
     stats['operator_name'] = task.operator.name
+    stats['enable_random_import'] = task.enable_random_import
     stats['status'] = get_order_import_task_status_label(task.status)
 
     return stats

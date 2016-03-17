@@ -499,6 +499,7 @@ class TicketTemplates(BaseView):
 
         ticket_template = Ticket(name=form.data["name"],
                                  ticket_format_id=form.data["ticket_format_id"],
+                                 principal=form.data["principal"],
                                  data=form.data_value,
                                  filename=form.drawing.data.filename,
                                  organization_id=self.context.organization.id,
