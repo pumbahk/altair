@@ -22,6 +22,7 @@ import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.InetSocketAddress;
+import java.net.Proxy;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -337,6 +338,8 @@ public class Server {
     private InetSocketAddress address;
 
     private List<URI> originHosts = new ArrayList<URI>();
+    
+    private Proxy proxy;
 
     private int nextId;
     private BlockingQueue<Job> queue;
@@ -680,13 +683,14 @@ public class Server {
         }
     }
 
-    public Server(InetSocketAddress address, List<URI> originHosts, long gcInterval, String authString) {
+    public Server(InetSocketAddress address, List<URI> originHosts, Proxy proxy, long gcInterval, String authString) {
         if (originHosts.size() == 0) {
             throw new IllegalArgumentException("no origin hosts given");
         }
         this.logWindow = new LogWindow();
         this.address = address;
         this.originHosts.addAll(originHosts);
+        this.proxy = proxy;
         this.nextId = 0;
         this.gcInterval = gcInterval;
         this.authString = authString;
@@ -721,12 +725,12 @@ public class Server {
         return _originHosts;
     }
 
-    public Server(String listen, List<String> originHosts, long gcInterval, String authString) {
-        this(parseAddress(listen), parseOriginHosts(originHosts), gcInterval, authString);
+    public Server(String listen, List<String> originHosts, Proxy proxy, long gcInterval, String authString) {
+        this(parseAddress(listen), parseOriginHosts(originHosts), proxy, gcInterval, authString);
     }
 
     public Server(Configuration config) {
-        this(config.getListen(), config.getOriginHosts(), config.getGCInterval(), config.getAuthString());
+        this(config.getListen(), config.getOriginHosts(), config.getProxy(), config.getGCInterval(), config.getAuthString());
     }
 
     public void setService(AppWindowService service) {
@@ -803,6 +807,8 @@ public class Server {
         for (PrintService service: PrinterJob.lookupPrintServices()) {
             printServices.add(service);
         }
+        
+        log.info("Proxy is " + ((proxy==null) ? "(none)" : proxy.toString()));
 
         log.info("Accept connection at " + address);
         icon.setToolTip("altair print server at " + address);
@@ -1184,7 +1190,7 @@ public class Server {
     }
 
     private HttpURLConnection openConnection(URL url) throws IOException {
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        HttpURLConnection conn = (HttpURLConnection) (proxy != null ? url.openConnection(proxy) : url.openConnection());
         if(authString != null && authString.contains(":")) {
             conn.addRequestProperty("Authorization", "Basic " + DatatypeConverter.printBase64Binary(authString.getBytes()));
         }
