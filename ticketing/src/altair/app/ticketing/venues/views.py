@@ -813,14 +813,17 @@ def edit_post(request):
                     siteprofile.save()
                     site.siteprofile = siteprofile
             else:
-                siteprofile = SiteProfile.get_by_name_and_prefecture(site.name, site.prefecture)
-                if siteprofile is not None: # If there is an existing one
+                try:
+                    siteprofile = SiteProfile.get_by_name_and_prefecture(site.name, site.prefecture)
                     if site.siteprofile_id != siteprofile.id:
                         site.siteprofile = siteprofile
-                else:
+                except NoResultFound:
                     siteprofile = SiteProfile(name = site.name, prefecture = site.prefecture)
                     siteprofile.save()
                     site.siteprofile = siteprofile
+                except MultipleResultsFound as multipleResultsFound:
+                    logger.error("Multiple SiteProfile with same name and prefecture found: (name: %s, prefecture: %s)" % (site.name, site.prefecture))
+                    request.session.flash(u'複数の会場 (%s, %s)が見つかりました。システム管理者にお知らせください。' % (site.name, site.prefecture))
             site.save()
 
         request.session.flash(u'会場を保存しました')
