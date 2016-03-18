@@ -1,0 +1,41 @@
+<div>
+    <h4>QRチケット</h4>
+
+    ${description}
+
+% if paid:
+
+    % for ticket in tickets:
+        <div style="border: 1px solid gray; padding: 8px; margin-bottom: 4px;">
+            % if ticket.product:
+            商品名 ${ticket.product.name} (${ticket.product.id}) <br />
+            % endif
+            %if ticket.seat:
+            席番号 ${ticket.seat.name} (${ticket.seat.l0_id}) <br />
+            %endif
+            <br />
+            % if ticket.printed_at:
+                発行(印刷orメール送信)済 (${ticket.printed_at})
+            % else:
+                未発行
+            % endif
+            <form method="post" target="_blank" action="${request.route_path('order_review.qr_print')}">
+                <input type="hidden" name="order_no" value="${order.order_no}" />
+                <input type="hidden" name="tel" value="${tel}" />
+                <input type="hidden" name="token" value="${ticket.token.id if ticket.token else ""}" />
+                <input type="submit" value="QRコードを表示する" style="width:150px;height:40px" />
+            </form>
+            <br/>
+            <form method="post" target="_blank" action="${request.route_path('order_review.qr_send')}">
+                <input type="hidden" name="order_no" value="${order.order_no}" />
+                <input type="hidden" name="tel" value="${tel}" />
+                <input type="hidden" name="token" value="${ticket.token.id if ticket.token else ""}" />
+                メールアドレス: <input type="text" name="mail" size="40" />
+                <input type="submit" name="send" value="メールで送る" />
+            </form>
+        </div>
+    % endfor
+% else:
+お支払い完了後、このページにQRコードを表示するためのボタンが表示されます。表示されたQRコードを印刷、あるいは、PC/携帯へメール送信の上、試合当日、指定の入場ゲートにてQRコード（印刷したもの、あるいは携帯画面）をお見せください。
+% endif
+</div>
