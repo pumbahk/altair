@@ -1,5 +1,6 @@
 package jp.ticketstar.ticketing.printing.server;
 
+import java.net.Proxy;
 import java.util.List;
 
 public interface Configuration {
@@ -8,4 +9,5 @@ public interface Configuration {
     public long getGCInterval();
     public boolean getIgnoreWrongCert();
     public String getAuthString();
+    public Proxy getProxy();
 }

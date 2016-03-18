@@ -1,5 +1,6 @@
 package jp.ticketstar.ticketing.printing;
 
+import java.net.Proxy;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,6 +33,8 @@ public class App {
 
         @Option(name="--auth")
         String authString = null;
+        
+        Proxy proxy = null;
 
         public boolean isAcceptConnection() {
             return acceptConnection;
@@ -61,6 +64,11 @@ public class App {
         public String getAuthString() {
             return authString;
         }
+        
+        @Override
+        public Proxy getProxy() {
+        	return proxy;
+        }
     }
 
     public static void main(String[] args) {
@@ -81,6 +89,9 @@ public class App {
         final AppWindowService appService = new AppWindowService(model);
 
         if (config.isAcceptConnection()) {
+        	// Get proxy setting from windows registry
+        	config.proxy = SystemConfiguration.getProxyConfiguration();
+        	
             final Server appServer = new Server(config);
             appServer.setService(appService);
             appServer.run();
