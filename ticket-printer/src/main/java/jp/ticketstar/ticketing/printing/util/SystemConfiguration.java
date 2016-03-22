@@ -1,4 +1,4 @@
-package jp.ticketstar.ticketing.printing;
+package jp.ticketstar.ticketing.printing.util;
 
 import java.net.InetSocketAddress;
 import java.net.Proxy;
@@ -10,7 +10,7 @@ import static com.sun.jna.platform.win32.Advapi32Util.registryGetIntValue;
 import static com.sun.jna.platform.win32.Advapi32Util.registryGetStringValue;
 import static com.sun.jna.platform.win32.Advapi32Util.registryValueExists;
 
-public class SystemConfiguration {
+public class SystemConfiguration implements ProxyFactory {
 	private static final HKEY root = WinReg.HKEY_CURRENT_USER;
 	private static final String key = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Internet Settings";
 	
@@ -27,7 +27,15 @@ public class SystemConfiguration {
 		return registryGetIntValue(root, key, name);
 	}
 	
-	public static Proxy getProxyConfiguration() {
+	private static SystemConfiguration instance = null;
+	public static SystemConfiguration getInstance() {
+		if (instance == null) {
+			instance = new SystemConfiguration();
+		}
+		return instance;
+	}
+	
+	public Proxy getProxy() {
 		String proxyServerSetting = null;
 		try {
 			if (getInt("ProxyEnable") != 1) {
