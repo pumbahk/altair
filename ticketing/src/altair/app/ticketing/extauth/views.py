@@ -109,10 +109,10 @@ class OAuthParamsReceiver(object):
                     oauth_params['prompt'] = re.split(ur'\s+', aux.get('prompt', 'select_account'))
                     request.session['oauth_params'] = oauth_params
                 except ResponseError as e:
-                    logger.error(str(e))
+                    logger.warn(str(e))
                     raise RedisResponseError(e.message)
                 except OAuthBadRequestError as e:
-                    logger.error(str(e))
+                    logger.warn(str(e))
                     raise OAuthError(str(e))
                 except OAuthRenderableError as e:
                     logger.exception('oops')
@@ -506,7 +506,6 @@ def notfound(context, request):
         renderer=selectable_renderer("redis_response_error.mako")
         )
 def redis_response_error(exception, request):
-    log_exception_message(request, *build_exception_message(request))
     return {}
 
 
@@ -524,7 +523,6 @@ def urlopen_timeout_error(exception, request):
     renderer=selectable_renderer('oauth_error.mako'),
     )
 def oauth_error(exception, request):
-    log_exception_message(request, *build_exception_message(request))
     return {}
 
 
