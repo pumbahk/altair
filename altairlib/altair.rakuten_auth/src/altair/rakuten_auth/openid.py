@@ -10,6 +10,7 @@ import logging
 import uuid
 import pickle
 import logging
+import socket
 from datetime import datetime
 from zope.interface import implementer
 from beaker.cache import Cache, CacheManager, cache_regions
@@ -90,6 +91,8 @@ def sex_no(s, encoding='utf-8'):
     else:
         return 0
 
+class RakutenOpenIDError(Exception):
+    pass
 
 @implementer(IRakutenOpenID, IAuthenticator, ILoginHandler, IChallenger, IMetadataProvider)
 class RakutenOpenID(object):
@@ -224,12 +227,22 @@ class RakutenOpenID(object):
             (u'openid.oauth.scope', params['oauth_scope']),
             ]
         url = self.build_endpoint_request_url(query)
-        logger.debug('endpoint_request_url=%s' % url)
-        f = urllib2.urlopen(url, timeout=self.timeout)
+        logger.debug('endpoint_request_url={0} timeout={1}'.format(url, self.timeout))
         try:
+            f = None
+            f = urllib2.urlopen(url, timeout=self.timeout)
             response_body = f.read()
+        except urllib2.HTTPError as e:
+            raise RakutenOpenIDError(u'verify_authentication HTTPError %s: url=%s, body=%s' % (unicode(e), url, e.read()))
+        except urllib2.URLError as e:
+            raise RakutenOpenIDError(u'verify_authentication URLError: url=%s, reason=%s' % (url, e.reason))
+        except socket.timeout:
+            raise RakutenOpenIDError(u'verify_authentication socket timeout')
+        except Exception as e:
+            raise RakutenOpenIDError(u'verify_authentication read error original_exception: %r' % e) 
         finally:
-            f.close()
+            if f is not None:
+                f.close()
 
         logger.debug('authenticate result: %s' % response_body)
         is_valid = response_body.split("\n")[0].split(":")[1]
