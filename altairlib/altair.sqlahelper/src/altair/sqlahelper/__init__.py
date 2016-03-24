@@ -169,10 +169,14 @@ class CloserTween(object):
             self.close_sessions(request)
 
     def close_sessions(self, request):
-        sessions = request.environ.get('altair.sqlahelper.sessions', {})
-        for name in sessions.keys():
-            session = sessions.pop(name)
-            session.close()
+        try:
+            sessions = request.environ.get('altair.sqlahelper.sessions', {})
+            for name in sessions.keys():
+                session = sessions.pop(name)
+                session.close()
+        except Exception as e:
+            logger.warning(u'closing session failed.(altair.sqlahelper.CloserTween): {}'.format(e))
+            raise
 
 
 @contextlib.contextmanager
