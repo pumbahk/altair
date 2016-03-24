@@ -171,8 +171,6 @@ class CloserTween(object):
     def close_sessions(self, request):
         try:
             sessions = request.environ.get('altair.sqlahelper.sessions', {})
-            logger.warning(u'altair.sqlahelper!!!!!')
-            logger.warning(u'{}'.format(sessions))
             for name in sessions.keys():
                 session = sessions.pop(name)
                 session.close()
