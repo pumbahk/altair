@@ -174,8 +174,8 @@ class CloserTween(object):
             for name in sessions.keys():
                 session = sessions.pop(name)
                 session.close()
-        except:
-            logger.warning(u'closing session failed.(altair.sqlahelper.CloserTween)')
+        except Exception as e:
+            logger.warning(u'closing session failed.(altair.sqlahelper.CloserTween): {}'.format(e))
 
 
 @contextlib.contextmanager
