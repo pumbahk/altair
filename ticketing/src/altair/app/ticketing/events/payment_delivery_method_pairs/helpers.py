@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import json
-from altair.app.ticketing.events.payment_delivery_method_pairs.api import get_payment_delivery_plugin_ids
+from altair.app.ticketing.payments.api import get_payment_delivery_plugin_ids
 from altair.app.ticketing.payments.plugins import (
     MULTICHECKOUT_PAYMENT_PLUGIN_ID,
     CHECKOUT_PAYMENT_PLUGIN_ID,

@@ -11,6 +11,7 @@ from .interfaces import ICartInterface
 from .exceptions import PaymentDeliveryMethodPairNotFound, PaymentCartNotAvailable
 from .interfaces import IPaymentPreparerFactory, IPaymentPreparer, IPaymentDeliveryPlugin, IPaymentPlugin, IDeliveryPlugin
 from .directives import Discriminator
+from altair.app.ticketing.core.models import PaymentMethod, DeliveryMethod
 
 logger = logging.getLogger(__name__)
 
@@ -122,3 +123,25 @@ def validate_order_like(request, order_like, update=False):
     else:
         payment_plugin.validate_order(request, order_like, update=update)
         delivery_plugin.validate_order(request, order_like, update=update)
+
+def get_payment_delivery_plugin_ids(payment_method_id, delivery_method_id):
+    """支払と引取タイプIDを返す
+
+    引数：
+        payment_method_id (int): 支払方法ID
+        delivery_method_id (int): 取引方法ID
+
+    戻り値：
+        json: 値をjsonのフォーマットで返す
+            {
+                'payment_plugin_id': payment_plugin_id,
+                'delivery_plugin_id': delivery_plugin_id
+            }
+    """
+    payment_plugin_id = PaymentMethod.filter_by(id=payment_method_id).one().payment_plugin_id
+    delivery_plugin_id = DeliveryMethod.filter_by(id=delivery_method_id).one().delivery_plugin_id
+
+    return {
+        'payment_plugin_id': payment_plugin_id,
+        'delivery_plugin_id': delivery_plugin_id
+    }
