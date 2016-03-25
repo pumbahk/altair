@@ -385,3 +385,41 @@ class FeatureSetting(Base):
             return feature_setting.value
         else:
             return None
+
+class Word(Base):
+    __tablename__ = "word"
+    id = sa.Column(sa.Integer, primary_key=True)
+    organization_id = sa.Column(sa.Integer, sa.ForeignKey('organization.id'))
+    data = sa.Column(sa.String(length=255))
+    description = sa.Column(sa.String(length=255))
+    link = sa.Column(sa.String(length=255))
+
+class WordSearch(Base):
+    __tablename__ = "word_search"
+    id = sa.Column(sa.Integer, primary_key=True)
+    organization_id = sa.Column(sa.Integer, sa.ForeignKey('organization.id'))
+    word_id = sa.Column(sa.Integer, sa.ForeignKey('word.id'))
+    word = relationship("Word", backref=orm.backref('word_searches'))
+    data = sa.Column(sa.String(length=255))
+
+class Event_Word(Base):
+    __tablename__ = "event_word"
+    id = sa.Column(sa.Integer, primary_key=True)
+    event_id = sa.Column(sa.Integer, sa.ForeignKey('event.id'))
+    event = relationship("Event", backref=orm.backref('event_word'))
+    word_id = sa.Column(sa.Integer, sa.ForeignKey('word.id'))
+    word = relationship("Word", backref=orm.backref('event_word'))
+    sorting = sa.Column(sa.Integer)
+
+    subscribable = sa.Column(sa.Boolean, default=False)
+
+class Performance_Word(Base):
+    __tablename__ = "performance_word"
+    id = sa.Column(sa.Integer, primary_key=True)
+    performance_id = sa.Column(sa.Integer, sa.ForeignKey('performance.id'))
+    performance = relationship("Performance", backref=orm.backref('performance_word'))
+    word_id = sa.Column(sa.Integer, sa.ForeignKey('word.id'))
+    word = relationship("Word", backref=orm.backref('performance_word'))
+    sorting = sa.Column(sa.Integer)
+
+    subscribable = sa.Column(sa.Boolean, default=False)

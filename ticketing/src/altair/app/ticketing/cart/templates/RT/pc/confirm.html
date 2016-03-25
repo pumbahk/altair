@@ -202,6 +202,35 @@
   </div>
   % endif
 
+  % if keywords_to_subscribe:
+  <div class="settlementBox">
+		<div class="settlementBoxInner">
+			<h2><!--<img src="${request.static_url('altair.app.ticketing.cart:static/RT/pc/images/title_magazine.gif')}" alt="メールマガジンの配信" width="177" height="30" />-->お気に入りアーティスト等登録</h2>
+			<div id="mailKeywordBox">
+				<div id="mailKeywordBoxInner">
+					<dl>
+						<dt>
+							お気に入りのアーティスト等を登録いただきますと、販売開始等の際にメールでお知らせします。
+						</dt>
+						<dd>
+							<ul>
+								% for keyword, subscribed in keywords_to_subscribe:
+								<li${subscribed and u' class="subscribed"' or u''|n}>
+									<div>
+										<input type="checkbox" checked="checked" name="keyword" id="keyword-${keyword.id}" value="${keyword.id}"${subscribed and u' disabled="disabled"' or u''|n} />
+										<label for="keyword-${keyword.id}">${keyword.label}</label>
+									</div>
+								</li>
+								% endfor
+							</ul>
+						</dd>
+					</dl>
+				</div>
+			</div>
+		</div>
+  </div>
+  % endif
+
   <table style="margin-left: auto; margin-right: auto;">
 		<tr>
 			<td class="button_box">

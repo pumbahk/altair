@@ -109,6 +109,9 @@ def main(global_config, **local_config):
     config.include("altairsite.order")
     config.include("altairsite.preview")
     config.include("altairsite.rtapp")
+    from pyramid.renderers import JSON
+    config.add_renderer("json", JSON(ensure_ascii=False))
+    config.include("altairsite.word")
     config.include(add_request_properties)
 
     config.add_static_view('static', 'altaircms:static', cache_max_age=3600)

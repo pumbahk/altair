@@ -1327,9 +1327,16 @@ class ConfirmView(object):
                 raw_extra_form_data,
                 mode='entry'
                 )
+        # TODO: APIコールして、データ構造つくる
+        # 現状では、購読済かどうかはAPIから得られないので、subscribedはFalse固定
+        ks = [ ]
+        ks.append([ type('', (), { 'id': 1, 'label': 'DREAMS COME TRUE' }), False ])
+        ks.append([ type('', (), { 'id': 2, 'label': 'FUZZY CONTROL' }), False ])
+        ks.append([ type('', (), { 'id': 3, 'label': 'S+AKS' }), False ])
         return dict(
             cart=cart,
             mailmagazines_to_subscribe=magazines_to_subscribe,
+            keywords_to_subscribe=ks,
             form=form,
             delegator=delegator,
             membershipinfo = self.context.membershipinfo,
@@ -1338,13 +1345,16 @@ class ConfirmView(object):
         )
 
 # 完了画面の処理の『継続』 (http://ja.wikipedia.org/wiki/%E7%B6%99%E7%B6%9A)
-def cont_complete_view(context, request, order_no, magazine_ids):
+def cont_complete_view(context, request, order_no, magazine_ids, keyword_ids):
     cart = api.get_cart_by_order_no(request, order_no)
 
     # メール購読
     user = api.get_user(context.authenticated_user()) # これも読み直し
     emails = cart.shipping_address.emails
     multi_subscribe(user, emails, magazine_ids)
+    
+    # お気に入り登録
+    # TODO: use keyword_ids
 
     api.logout(request)
 
@@ -1422,6 +1432,7 @@ class CompleteView(object):
             self.context, self.request,
             order_no,
             magazine_ids=self.request.params.getall('mailmagazine')
+            keyword_ids=self.request.params.getall('keyword')
             )
 
     @lbr_view_config(context=CompleteViewTicketingCartResource)
