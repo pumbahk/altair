@@ -25,6 +25,22 @@ from altair.app.ticketing.core.models import (
 from altair.app.ticketing.payments.plugins import CHECKOUT_PAYMENT_PLUGIN_ID
 from altair.saannotation import get_annotations_for
 
+from altair.app.ticketing.payments.api import get_payment_delivery_plugin_ids
+from altair.app.ticketing.payments.plugins import (
+    MULTICHECKOUT_PAYMENT_PLUGIN_ID,
+    CHECKOUT_PAYMENT_PLUGIN_ID,
+    SEJ_PAYMENT_PLUGIN_ID,
+    RESERVE_NUMBER_PAYMENT_PLUGIN_ID,
+    FREE_PAYMENT_PLUGIN_ID,
+    FAMIPORT_PAYMENT_PLUGIN_ID,
+    SHIPPING_DELIVERY_PLUGIN_ID,
+    SEJ_DELIVERY_PLUGIN_ID,
+    RESERVE_NUMBER_DELIVERY_PLUGIN_ID,
+    QR_DELIVERY_PLUGIN_ID,
+    ORION_DELIVERY_PLUGIN_ID,
+    FAMIPORT_DELIVERY_PLUGIN_ID
+)
+
 def required_when_absolute(field_name):
     return [
         SwitchOptionalBase(
@@ -610,3 +626,96 @@ class PaymentDeliveryMethodPairForm(OurForm):
                         status = False
                         break
         return status
+
+    def default_values_for_pdmp(self, payment_method_id, delivery_method_id):
+        formdata = self.data
+        payment_plugin_id, delivery_plugin_id = get_payment_delivery_plugin_ids(payment_method_id, delivery_method_id)
+        """
+        Formのデフォルト値から変更する値のみを以下で更新する
+        """
+        if payment_plugin_id == MULTICHECKOUT_PAYMENT_PLUGIN_ID and delivery_plugin_id == SEJ_DELIVERY_PLUGIN_ID:
+            formdata['issuing_end_in_days'] = 30
+            """
+            data = set_values(
+                0,
+                'false', 'false', 'true', 1, 'true', 0,
+                'false', 'true', 'false', 6, 'false', 1,
+                'false', 'true', 'false', 3, 'false', 30
+            )
+            """
+        elif payment_plugin_id == CHECKOUT_PAYMENT_PLUGIN_ID and delivery_plugin_id == SEJ_DELIVERY_PLUGIN_ID:
+            formdata['issuing_end_in_days'] = 30
+            """
+            data = set_values(
+                0,
+                'false', 'false', 'true', 1, 'true', 0,
+                'false', 'true', 'false', 6, 'false', 1,
+                'false', 'true', 'false', 3, 'false', 30
+            )
+            """
+        elif payment_plugin_id == SEJ_PAYMENT_PLUGIN_ID and delivery_plugin_id == SEJ_DELIVERY_PLUGIN_ID:
+            formdata['unavailable_period_days'] = 4
+            formdata['payment_period_days'] = 3
+            formdata['issuing_end_in_days'] = 30
+            """
+            data = set_values(
+                4,
+                'false', 'true', 'false', 1, 'false', 3,
+                'false', 'true', 'false', 1, 'false', 0,
+                'false', 'true', 'false', 3, 'false', 30
+            )
+            """
+        elif payment_plugin_id == MULTICHECKOUT_PAYMENT_PLUGIN_ID and delivery_plugin_id == SHIPPING_DELIVERY_PLUGIN_ID:
+            formdata['unavailable_period_days'] = 14
+            formdata['issuing_end_in_days'] = 0
+            """
+            data = set_values(
+                14,
+                'false', 'false', 'true', 1, 'true', 0,
+                'false', 'false', 'true', 1, 'true', 0,
+                'false', 'false', 'true', 1, 'true', 0
+            )
+            """
+        elif payment_plugin_id == SEJ_PAYMENT_PLUGIN_ID and delivery_plugin_id == SHIPPING_DELIVERY_PLUGIN_ID:
+            formdata['unavailable_period_days'] = 17
+            formdata['issuing_end_in_days'] = 0
+            """
+            data = set_values(
+                17,
+                'false', 'true', 'false', 1, 'false', 3,
+                'false', 'false', 'true', 1, 'true', 0,
+                'false', 'false', 'true', 1, 'true', 0
+            )
+            """
+        elif payment_plugin_id == MULTICHECKOUT_PAYMENT_PLUGIN_ID and delivery_plugin_id == QR_DELIVERY_PLUGIN_ID:
+            formdata['issuing_end_in_days'] = 0
+            """
+            data = set_values(
+                0,
+                'false', 'false', 'true', 1, 'true', 0,
+                'false', 'false', 'true', 1, 'true', 0,
+                'false', 'false', 'true', 1, 'true', 0
+            )
+            """
+        elif payment_plugin_id == SEJ_PAYMENT_PLUGIN_ID and delivery_plugin_id == QR_DELIVERY_PLUGIN_ID:
+            formdata['unavailable_period_days'] = 4
+            formdata['issuing_end_in_days'] = 0
+            """
+            data = set_values(
+                4,
+                'false', 'true', 'false', 1, 'false', 3,
+                'false', 'false', 'true', 1, 'true', 0,
+                'false', 'false', 'true', 1, 'true', 0
+            )
+            """
+        elif payment_plugin_id == RESERVE_NUMBER_PAYMENT_PLUGIN_ID and delivery_plugin_id == RESERVE_NUMBER_DELIVERY_PLUGIN_ID:
+            formdata['issuing_end_in_days'] = 0
+            """
+            data = set_values(
+                0,
+                'false', 'false', 'true', 1, 'true', 0,
+                'false', 'false', 'true', 1, 'true', 0,
+                'false', 'false', 'true', 1, 'true', 0
+            )
+            """
+        return self.data

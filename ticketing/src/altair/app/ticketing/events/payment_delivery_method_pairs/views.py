@@ -41,10 +41,11 @@ class PaymentDeliveryMethodPairs(BaseView):
         }
 
     @view_config(route_name='payment_delivery_method_pairs.default_values_for_pdmp', renderer='json')
-    def get_payment_delivery_plugin(self):
-        return h.default_values_for_pdmp(
-            self.request.GET.get('payment_plugin_id'),
-            self.request.GET.get('delivery_plugin_id')
+    def get_pdmp_default_values(self):
+        f = PaymentDeliveryMethodPairForm(self.request.GET)
+        return f.default_values_for_pdmp(
+            payment_method_id=self.request.GET.get('payment_method_id'),
+            delivery_method_id=self.request.GET.get('delivery_method_id')
         )
 
     @view_config(route_name='payment_delivery_method_pairs.new', request_method='POST', renderer='altair.app.ticketing:templates/payment_delivery_method_pairs/edit.html')

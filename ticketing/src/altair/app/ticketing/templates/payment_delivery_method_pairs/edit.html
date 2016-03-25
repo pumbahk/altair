@@ -67,7 +67,7 @@
         url: "${request.route_url('payment_delivery_method_pairs.default_values_for_pdmp')}",
         type: 'GET',
         dataType: 'json',
-        data: {payment_plugin_id: $('#payment_method_id').val(), delivery_plugin_id: $('#delivery_method_id').val()},
+        data: {payment_method_id: $('#payment_method_id').val(), delivery_method_id: $('#delivery_method_id').val()},
         success: function(data) {
           // 選択不可期間
           $('#unavailable_period_days').val(data.unavailable_period_days);
