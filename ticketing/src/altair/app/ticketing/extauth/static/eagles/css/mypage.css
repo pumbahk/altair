@@ -690,11 +690,10 @@ color:#860010;
 /*  error
 -----------------------------------------*/
 .errorBox .errorText {
-	text-align: center;
 	font-weight: bold;
 	font-size: 24px;
 	color: #C00;
-	margin-bottom: 50px;
+	margin-bottom: 10px;
 }
 .errorBox {
 	position:relative;

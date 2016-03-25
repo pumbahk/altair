@@ -449,10 +449,9 @@ class Events(BaseView):
         f.event_id.data = self.request.matchdict['event_id']
         f.public.data = self.request.matchdict['public']
         f.public.data = True if f.public.data == '1' else False
+        event = Event.get(f.event_id.data, organization_id=self.context.user.organization_id)
 
         if f.validate():
-            event = Event.get(f.event_id.data, organization_id=self.context.user.organization_id)
-
             if not event:
                 return HTTPNotFound('events.open POST event not found')
 
@@ -473,4 +472,5 @@ class Events(BaseView):
 
         return {
             'form':f,
+            'event':event,
         }

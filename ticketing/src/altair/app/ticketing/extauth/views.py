@@ -1,6 +1,7 @@
 # encoding: UTF-8
 import logging
 import re
+import urllib2
 from datetime import datetime
 from urlparse import urljoin, urlparse
 from urllib import urlencode, quote
@@ -15,10 +16,11 @@ from altair.pyramid_dynamic_renderer.config import lbr_view_config, lbr_notfound
 from altair.auth.api import get_plugin_registry, get_auth_api
 from altair.oauth.api import get_oauth_provider, get_openid_provider
 from altair.oauth.request import WebObOAuthRequestParser
-from altair.oauth.exceptions import OAuthRenderableError, OpenIDAccountSelectionRequired, OpenIDLoginRequired
+from altair.oauth.exceptions import OAuthRenderableError, OAuthBadRequestError, OpenIDAccountSelectionRequired, OpenIDLoginRequired
 from altair.rakuten_auth.openid import RakutenOpenID
 from altair.exclog.api import log_exception_message, build_exception_message
 from altair.sqlahelper import get_db_session
+from redis.exceptions import ResponseError
 from .rendering import selectable_renderer
 from .rakuten_auth import get_openid_claimed_id
 from .api import get_communicator
@@ -29,6 +31,22 @@ from .helpers import Helpers
 from .exceptions import GenericError
 
 logger = logging.getLogger(__name__)
+
+
+class RedisResponseError(Exception):
+    def __init__(self, msg):
+        self.msg = msg
+
+
+class URLopenTimeoutError(Exception):
+    def __init__(self, msg):
+        self.msg = msg
+
+
+class OAuthError(Exception):
+    def __init__(self, msg):
+        self.msg = msg
+
 
 def extract_identifer(request):
     retval = None
@@ -90,6 +108,12 @@ class OAuthParamsReceiver(object):
                     oauth_params['nonce'] = aux.get('nonce')
                     oauth_params['prompt'] = re.split(ur'\s+', aux.get('prompt', 'select_account'))
                     request.session['oauth_params'] = oauth_params
+                except ResponseError as e:
+                    logger.warn(str(e))
+                    raise RedisResponseError(e.message)
+                except OAuthBadRequestError as e:
+                    logger.warn(str(e))
+                    raise OAuthError(str(e))
                 except OAuthRenderableError as e:
                     logger.exception('oops')
                     if oauth_params is not None:
@@ -148,6 +172,9 @@ class View(object):
         if openid_claimed_id is not None:
             try:
                 data = get_communicator(self.request, self.request.organization.fanclub_api_type).get_user_profile(openid_claimed_id)
+            except urllib2.URLError as e:
+                logger.error(str(e))
+                raise URLopenTimeoutError(str(e))
             except GenericError as e:
                 logger.info('get_user_profile failed: %r' % e)
                 data = None
@@ -473,10 +500,36 @@ def reset_and_continue(context, request):
 def notfound(context, request):
     return {}
 
+
 @lbr_view_config(
-    renderer=selectable_renderer('fatal.mako'),
-    context=Exception
+        context=RedisResponseError,
+        renderer=selectable_renderer("redis_response_error.mako")
+        )
+def redis_response_error(exception, request):
+    return {}
+
+
+@lbr_view_config(
+    context=URLopenTimeoutError,
+    renderer=selectable_renderer('urlopen_timeout_error.mako'),
     )
-def fatal(context, request):
+def urlopen_timeout_error(exception, request):
+    log_exception_message(request, *build_exception_message(request))
+    return {}
+
+
+@lbr_view_config(
+    context=OAuthError,
+    renderer=selectable_renderer('oauth_error.mako'),
+    )
+def oauth_error(exception, request):
+    return {}
+
+
+@lbr_view_config(
+    context=Exception,
+    renderer=selectable_renderer('fatal.mako'),
+    )
+def fatal(exception, request):
     log_exception_message(request, *build_exception_message(request))
     return {}
