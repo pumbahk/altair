@@ -1,0 +1,221 @@
+<%inherit file="${context['main_template'].uri}" />
+<%namespace name="fh" module="altair.formhelpers.utils.mako" />
+<%block name="javascript">
+  <script type="text/javascript" src="${request.static_url('altair.app.ticketing.cart:static/js/ajaxzip3-https.js')}"></script>
+  <script type="text/javascript">
+var zip_file_path = ${h.json_encode(request.static_url('altair.app.ticketing.cart:static/js/zipdata'))|n};
+</script>
+</%block>
+<%block name="title">${view_context.title}</%block>
+% if view_context.orderreview_page_url != 'about:blank':
+<div class="title-right-description">
+  申込受付履歴は<a href="${view_context.orderreview_page_url}">こちら</a>で確認できます
+</div>
+% endif
+<%def name="render_field(field, label=False, _description=None, _note=None, _suffix=u'', **kwargs)">
+<%
+_description = _description or field.description
+_note = _note or field._note
+if label is None or label is True:
+  label = field.label
+%>
+<div class="field">
+  % if _description:
+  <div class="field-description">${_description}</div>
+  % endif
+  <div class="control-segment">
+    % if label:
+      ${label}
+    % endif
+    ${fh.render(field, **kwargs)}${_suffix}
+    % if _note:
+    <div class="field-note">${_note}</div>
+    % endif
+    ${h.error(field.name)}
+  </div>
+</div>
+</%def>
+<%! from altair.formhelpers import widgets %>
+<%fh:render_block>
+<form action="${request.current_route_path()}" method="post">
+  <table class="frame form">
+    <colgroup>
+      <col style="width:180px;">
+      <col style="width:310px;">
+    </colgroup>
+    <tbody>
+      <tr>
+        <th>${view_context.fc_kind_title if view_context.fc_kind_title else u'会員種別'} <span class="red">*</span></th>
+        <td>
+          ${render_field(form['extra']['member_type'])}
+        </td>
+      </tr>
+      <tr>
+        <th>
+          ${view_context.fc_name if view_context.fc_name else u'氏名'} <span class="red">*</span>
+        </th>
+        <td>
+          ${render_field(form.last_name, label=True)}
+          ${render_field(form.first_name, label=True)}
+        </td>
+      </tr>
+      <tr>
+        <th>
+          ${view_context.fc_name if view_context.fc_name else u'氏名'}（フリガナ） <span class="red">*</span>
+        </th>
+        <td>
+          ${render_field(form.last_name_kana, label=True)}
+          ${render_field(form.first_name_kana, label=True)}
+        </td>
+      </tr>
+      <tr>
+        <th>
+          郵便番号 <span class="red">*</span>
+        </th>
+        <td>
+          ${render_field(form['zip'])}
+        </td>
+      </tr>
+      <tr>
+        <th>
+          住所 <span class="red">*</span>
+        </th>
+        <td>
+          ${render_field(form['prefecture'], label=True)}
+          ${render_field(form['city'], label=True, _note=u'(例：千代田区)')}
+          ${render_field(form['address_1'], label=True, _note=u'(例：丸の内1-1)')}
+          ${render_field(form['address_2'], label=True, _note=u'(例：XXビル253号)')}
+        </td>
+      </tr>
+      % if view_context.flavors.get('mobile_and_landline_phone_number'):
+      <tr>
+        <th rowspan="2">
+          電話番号 <span class="red">*</span><br />
+          <span class="red">（自宅・携帯のどちらか必須）</span>
+        </th>
+        <td>
+          ${render_field(form['tel_1'], label=u'(自宅)')}
+        </td>
+      </tr>
+      <tr>
+        <td>
+          ${render_field(form['tel_2'], label=u'(携帯)')}
+        </td>
+      </tr>
+      % else:
+      <tr>
+        <th>
+          電話番号 <span class="red">*</span><br />
+        </th>
+        <td>
+          ${render_field(form['tel_1'])}
+        </td>
+      </tr>
+      % endif
+      % if view_context.flavors.get('pc_and_mobile_email_address'):
+      <tr>
+        <th>
+          PCメールアドレス <span class="red">*</span>
+        </th>
+        <td>
+          ${render_field(form['email_1'])}
+        </td>
+      </tr>
+      <tr>
+        <th>
+          PCメールアドレス（確認用） <span class="red">*</span>
+        </th>
+        <td>
+          ${render_field(form['email_1_confirm'])}
+        </td>
+      </tr>
+      <tr>
+        <th>
+          携帯メールアドレス
+        </th>
+        <td>
+          ${render_field(form['email_2'])}
+        </td>
+      </tr>
+      <tr>
+        <th>
+          携帯メールアドレス（確認用）
+        </th>
+        <td>
+          ${render_field(form['email_2_confirm'])}
+        </td>
+      </tr>
+      % else:
+      <tr>
+        <th>
+          メールアドレス <span class="red">*</span>
+        </th>
+        <td>
+          ${render_field(form['email_1'])}
+        </td>
+      </tr>
+      <tr>
+        <th>
+          メールアドレス（確認用） <span class="red">*</span>
+        </th>
+        <td>
+          ${render_field(form['email_1_confirm'])}
+        </td>
+      </tr>
+      % endif
+      % for field in form['extra']._contained_form:
+      % if not field.short_name in {'member_type'}:
+      <tr>
+        <th scope="row">
+            ${field.label.text}
+            % if field.flags.required:
+            <span class="red">*</span>
+            % endif
+        </th>
+        <td>
+          ${render_field(field)}
+        </td>
+      </tr>
+      % endif
+      % endfor
+    </tbody>
+    <tfoot>
+      <tr>
+        <td colspan="2">
+          <div class="textR red">
+            *は入力必須項目です。
+            % if view_context.flavors.get('mobile_and_landline_phone_number'):
+電話番号は携帯・自宅のどちらか一方で構いません。
+            % endif
+          </div>
+        </td>
+      </tr>
+    </tfoot>
+  </table>
+  <%def name="__post__(registry_var)">
+  ${fh.inject_js(registry_var)}
+  <script type="text/javascript">
+(function (registry) {
+var zip = registry.providers['zip'],
+    prefecture = registry.providers['prefecture'],
+    city = registry.providers['city'],
+    address_1 = registry.providers['address_1'];
+$(zip.getUIElements()).on('keyup', function () {
+  AjaxZip3.zip2addr(
+    zip_file_path,
+    this,
+    null,
+    $(prefecture.getUIElements()).filter('input,select').get(0),
+    $(city.getUIElements()).filter('input').get(0),
+    null,
+    $(address_1.getUIElements()).filter('input').get(0)
+  );
+});
+})(${registry_var|n});
+</script>
+  </%def>
+  </%fh:render_block>
+  <div class="frame frame-inner textC">
+    <input type="submit" value="次に進む" class="submit">
+  </div>
+</form>
