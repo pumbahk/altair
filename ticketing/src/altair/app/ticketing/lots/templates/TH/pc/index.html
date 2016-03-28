@@ -140,59 +140,78 @@
 
   <div class="settlementBox">
     <div class="settlementBoxInner">
-      <h2><img src="${request.static_url('altair.app.ticketing.lots:static/TH/pc/img/order/title_how.gif')}" alt="お支払・お引取り方法選択" width="208" height="30" /></h2>
+      <h2><img src="${request.static_url('altair.app.ticketing.cart:static/HI/pc/images/title_methods.gif')}" alt="お支払い、引き取り方法の指定" width="267" height="30" /></h2>
+      %if len(payment_delivery_pairs) > 1:
+            <p style="margin-left:20px;">どれかひとつをお選びください</p>
+      %endif
+      <% checked_id = request.params.get('payment_delivery_method_pair_id') %>
       %for m in payment_delivery_pairs:
       <div class="settlementPayBox">
         <div class="settlementPayBoxInner">
           <table>
-            <tbody>
-              <tr>
-                <% checked = 'checked' if str(m.id) == payment_delivery_method_pair_id else '' %>
-                <td class="settlementPayRadio"${u' rowspan="2"' if m.system_fee > 0 or m.special_fee > 0 else u''|n}><input type="radio" name="payment_delivery_method_pair_id" id="radio" value="${m.id}" ${checked} /></td>
-                <td>
-                  <dl class="left">
-                    <dt>${m.payment_method.name}　${h.format_currency(m.transaction_fee)} (${h.fee_type(m.payment_method.fee_type)})</dt>
-                    <dd>${m.payment_method.description or '' | n}<br /></dd>
-                  </dl>
-                  <dl class="left">
-                    <dt>${m.delivery_method.name}　${h.format_currency(m.delivery_fee)} (${h.fee_type(m.delivery_method.fee_type)})</dt>
-                    <dd>${m.delivery_method.description or '' | n}</dd>
-                  </dl>
-                </td>
-              </tr>
-              % if m.system_fee > 0 or m.special_fee > 0:
-              <tr>
-                <td colspan="2">
-                  <dl>
-                    <dt>利用料・手数料</dt>
-                    <dd>
-                      <dl>
+            <tr>
+              <% checked = 'checked' if str(m.id) == checked_id else '' %>
+              <td class="settlementPayRadio"${' rowspan="2"' if m.system_fee > 0 or m.special_fee > 0 else u''|n}>
+                <input type="radio" name="payment_delivery_method_pair_id" id="radio2" value="${m.id}" autocomplete="off" ${checked} />
+              </td>
+              <td onclick="$(this).parents('tr').find('input').click();">
+                <dl>
+                  <dt>${m.payment_method.name}</dt>
+                  <dd class="paymentFee_${h.format_number(m.transaction_fee)}">
+                    <span class="paymentFeeLabel">手数料</span>
+                    <span class="paymentFee">${h.format_currency(m.transaction_fee)}</span>
+                    <span class="paymentFeeType">(${h.fee_type(m.payment_method.fee_type)})</span>
+                    <div class="description">${m.payment_method.description or '' | n}</div>
+                  </dd>
+                </dl>
+              </td>
+              <td onclick="$(this).parents('tr').find('input').click();">
+                <dl>
+                  <dt>${m.delivery_method.name}</dt>
+                  <dd class="devlieryFee_${h.format_number(m.delivery_fee)}">
+                    <span class="deliveryFeeLabel">手数料</span>
+                    <span class="deliveryFee">${h.format_currency(m.delivery_fee)}</span>
+                    <span class="deliveryFeeType">(${h.fee_type(m.delivery_method.fee_type)})</span>
+                    <div class="description">${m.delivery_method.description or '' | n}</div>
+                  </dd>
+                </dl>
+              </td>
+            </tr>
+            % if m.system_fee > 0 or m.special_fee > 0:
+            <tr>
+              <td colspan="2">
+                <dl class="fullwidth">
+                  <dt>上記以外の利用料・手数料</dt>
+                  <dd>
+                    <dl>
                       %if m.system_fee > 0:
-                        <dt>システム利用料</dt>
-                        <dd class="paymentFee_${h.format_number(m.transaction_fee)}">
-                          <span class="paymentFee">${h.format_currency(m.system_fee)}</span>
-                          <span class="paymentFeeType">(${h.fee_type(m.system_fee_type)})</span>
-                        </dd>
+                      <dt>システム利用料</dt>
+                      <dd class="paymentFee_${h.format_number(m.transaction_fee)}">
+                        <span class="paymentFee">${h.format_currency(m.system_fee)}</span>
+                        <span class="paymentFeeType">(${h.fee_type(m.system_fee_type)})</span>
+                      </dd>
                       %endif
                       %if m.special_fee > 0:
-                        <dt>${m.special_fee_name}</dt>
-                        <dd class="paymentFee_${h.format_number(m.transaction_fee)}">
-                          <span class="paymentFee">${h.format_currency(m.special_fee)}</span>
-                          <span class="paymentFeeType">(${h.fee_type(m.special_fee_type)})</span>
-                        </dd>
+                      <dt>${m.special_fee_name}</dt>
+                      <dd class="paymentFee_${h.format_number(m.transaction_fee)}">
+                        <span class="paymentFee">${h.format_currency(m.special_fee)}</span>
+                        <span class="paymentFeeType">(${h.fee_type(m.special_fee_type)})</span>
+                      </dd>
                       %endif
-                      </dl>
-                      <div class="description">上記の利用料・手数料がかかります。</div>
-                    </dd>
-                  </dl>
-                </td>
-              </tr>
-              % endif
-            </tbody>
+                    </dl>
+                    <div class="description">
+                      上記の利用料・手数料がかかります。
+                    </div>
+                  </dd>
+                </dl>
+              </td>
+            </tr>
+            % endif
           </table>
         </div>
       </div>
       %endfor
+      <p>${view_context.mail_filter_domain_notice}</p>
     </div>
   </div>
 
