@@ -1,0 +1,56 @@
+<html lang="ja">
+<head>
+  <title>${view_context.team_name}</title>
+</head>
+<body style="background-color:#FFFFFF" bgcolor="#FFFFFF">
+<div align="center">
+  <img src="${view_context.static_url('mobile/images/mb_logo.gif')}" width="240" height="96" alt="${view_context.team_name}" />
+</div>
+<div>
+<div style="background-color:#E8240C" bgcolor="#E8240C"><font color="white">購入確認</font></div>
+
+<p style="text-align:center;">
+<div id="login_form">
+<div><font color="#E60048">■</font>会員の方はこちらから</font>
+</div>
+
+</div>
+<form action="${request.route_path('fc_auth.login', membership=u'-', _query=dict(return_to=request.route_path('mypage.show')))}" method="post">
+<input type="hidden" name="membership" value="${view_context.organization_short_name}" />
+<div>
+  会員番号<br/>
+  <input type="text" name="username" size="22" value="" istyle="4">
+  %if message:
+  <br/><span class="color: red">会員が見つかりません</span>
+  %endif
+  <input type="hidden" name="password" value="ambt">
+</div>
+<input type="submit" value="ログイン" />
+</form>
+</div>
+
+<div>
+<div><font color="#E60048">■</font>一般の方はこちらから</font>
+</div>
+
+</div>
+<form action="${request.route_path('order_review.form')}" method="post">
+<div style="text-align:center;">
+<br/>
+<input type="submit" value="&gt;&gt;次へ進む&lt;&lt;"/><br />
+<div>
+
+</div>
+</div>
+</div>
+</form>
+</p>
+<hr size="1" color="#888888" noshade="noshade" />
+<div align="center" style="font-size:x-small">
+  <div>
+    <a href="http://www.ticketstar.jp/corporate">運営会社</a> | <a href="http://www.ticketstar.jp/privacy/">個人情報保護方針</a> | <a href="http://www.ticketstar.jp/legal">特定商取引法に基づく表示</a>
+  </div>
+<div><font color="#888888"> &copy; TicketStar, Inc.</font></div>
+</div>
+</body>
+</html>
