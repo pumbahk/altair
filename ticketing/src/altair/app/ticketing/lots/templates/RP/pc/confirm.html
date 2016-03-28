@@ -1,10 +1,10 @@
 <%inherit file="${context['main_template'].uri}" />
-<p class="pageTitle">申込内容をご確認ください。</p>
+<p class="pageTitle">お申込内容をご確認ください。</p>
 <form id="form1" name="form1" method="post" action="">
   <input type="hidden" name="token" value="${token}" />
   <div class="settlementBox">
     <div class="settlementBoxInner">
-      <h2><img src="${request.static_url('altair.app.ticketing.lots:static/RP/pc/img/order/title_hope.gif')}" alt="希望選択" width="97" height="30" /></h2>
+      <h2><img src="${request.static_url('altair.app.ticketing.lots:static/RP/pc/img/order/title_hope.gif')}" alt="お申込内容" width="97" height="30" /></h2>
       %for wish in wishes:
       <div class="settlementSelectBox">
         <div class="settlementSelectBoxInner02">
