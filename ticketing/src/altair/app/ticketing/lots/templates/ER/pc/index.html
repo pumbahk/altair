@@ -135,7 +135,7 @@ if label is None or label is True:
 
   <div class="settlementBox">
     <div class="settlementBoxInner">
-      <h2><img src="${request.static_url('altair.app.ticketing.cart:static/HI/pc/images/title_methods.gif')}" alt="お支払い、引き取り方法の指定" width="267" height="30" /></h2>
+      <h2><img src="${request.static_url('altair.app.ticketing.cart:static/ER/pc/images/title_methods.gif')}" alt="お支払い、引き取り方法の指定" width="267" height="30" /></h2>
       %if len(payment_delivery_pairs) > 1:
             <p style="margin-left:20px;">どれかひとつをお選びください</p>
       %endif
@@ -215,9 +215,9 @@ if label is None or label is True:
       <h2><img src="${request.static_url('altair.app.ticketing.lots:static/ER/pc/img/order/title_buyer.gif')}" alt="購入者情報" width="97" height="30" /></h2>
       <div class="settlementSelectBox">
         <div class="settlementSelectBoxInner02">
-          <table summary="お支払・お引取り方法選択">
+          <table summary="購入者情報入力">
             <tr>
-              <th><label>購入者氏名（全角）</label></th>
+              <th><label>購入者氏名(全角)</label><span class="notice-label"> ※必須</span></th>
               <td>
                 <div class="form-field">
                   ${form['last_name'].label} ${form['last_name']}
@@ -231,7 +231,7 @@ if label is None or label is True:
                 </div>
               </td>
             <tr>
-              <th><label>購入者氏名（カナ）</label></th>
+              <th><label>購入者氏名(全角カナ)</label><span class="notice-label"> ※必須</span></th>
               <td>
                 <div class="form-field">
                   ${form['last_name_kana'].label} ${form['last_name_kana']}
@@ -246,7 +246,7 @@ if label is None or label is True:
               </td>
             </tr>
             <tr>
-              <th>メールアドレス</th>
+              <th>メールアドレス(半角英数)<span class="notice-label"> ※必須</span></th>
               <td>
                 <div class="form-field">
                   ${form['email_1'].label}
@@ -260,21 +260,11 @@ if label is None or label is True:
                    (例：mail@example.ne.jp)
                   ${self.error(form, 'email_1_confirm')}
                 </div>
+                <div>${view_context.mail_filter_domain_notice}</div>
               </td>
             </tr>
             <tr>
-              <th>電話番号</th>
-              <td>
-                <div class="form-field">
-                  ${form['tel_1'].label}
-                  ${form['tel_1']}
-                   (例: 080xxxxyyyy)
-                  ${self.error(form, 'tel_1')}
-                </div>
-              </td>
-            </tr>
-            <tr>
-              <th><label>住所</label></th>
+              <th><label>住所</label><span class="notice-label"> ※必須</span></th>
               <td>
                 <% path = request.static_url('altair.app.ticketing.cart:static/js/zipdata') %>
                 <div class="form-field">
@@ -306,6 +296,17 @@ if label is None or label is True:
                   ${form['address_2'](style="width: 30em")}
                    (例: yyビルz階)
                   ${self.error(form, 'address_2')}
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <th>電話番号(半角数字)<span class="notice-label"> ※必須</span></th>
+              <td>
+                <div class="form-field">
+                  ${form['tel_1'].label}
+                  ${form['tel_1']}
+                   (例: 080xxxxyyyy)
+                  ${self.error(form, 'tel_1')}
                 </div>
               </td>
             </tr>

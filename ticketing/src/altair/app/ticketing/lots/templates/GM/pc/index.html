@@ -1,4 +1,33 @@
 <%inherit file="${context['main_template'].uri}" />
+<%namespace name="fh" module="altair.formhelpers.utils.mako" />
+<%
+   import altair.app.ticketing.cart.helpers as ch
+   import altair.app.ticketing.lots.helpers as h
+   %>
+<%def name="render_field(field, label=False, _description=None, _note=None, _suffix=u'', **kwargs)">
+<%
+_description = _description or field.description
+_note = _note or field._note
+if label is None or label is True:
+  label = field.label
+%>
+<div class="field">
+  % if _description:
+  <div class="field-description">${_description}</div>
+  % endif
+  <div class="control-segment">
+    % if label:
+      ${label}
+    % endif
+    ${fh.render(field, **kwargs)}${_suffix}
+    % if _note:
+    <div class="field-note">${_note}</div>
+    % endif
+    ${ch.error(field.name)}
+  </div>
+</div>
+</%def>
+
 %if request.session.peek_flash():
 <div style="border: 3px solid red; background: #FFEEEE; padding: 10px; margin: 10px;">
   <ul>
@@ -140,7 +169,7 @@
 
   <div class="settlementBox">
     <div class="settlementBoxInner">
-      <h2><img src="${request.static_url('altair.app.ticketing.cart:static/HI/pc/images/title_methods.gif')}" alt="お支払い、引き取り方法の指定" width="267" height="30" /></h2>
+      <h2><img src="${request.static_url('altair.app.ticketing.cart:static/GM/pc/images/title_methods.gif')}" alt="お支払い、引き取り方法の指定" width="267" height="30" /></h2>
       %if len(payment_delivery_pairs) > 1:
             <p style="margin-left:20px;">どれかひとつをお選びください</p>
       %endif
@@ -220,9 +249,9 @@
       <h2><img src="${request.static_url('altair.app.ticketing.lots:static/GM/pc/img/order/title_buyer.gif')}" alt="購入者情報" width="97" height="30" /></h2>
       <div class="settlementSelectBox">
         <div class="settlementSelectBoxInner02">
-          <table summary="お支払・お引取り方法選択">
+          <table summary="購入者情報入力">
             <tr>
-              <th><label>購入者氏名（全角）</label></th>
+              <th><label>購入者氏名(全角)</label><span class="notice-label"> ※必須</span></th>
               <td>
                 <div class="form-field">
                   ${form['last_name'].label} ${form['last_name']}
@@ -236,7 +265,7 @@
                 </div>
               </td>
             <tr>
-              <th><label>購入者氏名（カナ）</label></th>
+              <th><label>購入者氏名(全角カナ)</label><span class="notice-label"> ※必須</span></th>
               <td>
                 <div class="form-field">
                   ${form['last_name_kana'].label} ${form['last_name_kana']}
@@ -251,7 +280,7 @@
               </td>
             </tr>
             <tr>
-              <th>メールアドレス</th>
+              <th>メールアドレス(半角英数)<span class="notice-label"> ※必須</span></th>
               <td>
                 <div class="form-field">
                   ${form['email_1'].label}
@@ -265,21 +294,11 @@
                    (例：mail@example.ne.jp)
                   ${self.error(form, 'email_1_confirm')}
                 </div>
+                <div>${view_context.mail_filter_domain_notice}</div>
               </td>
             </tr>
             <tr>
-              <th>電話番号</th>
-              <td>
-                <div class="form-field">
-                  ${form['tel_1'].label}
-                  ${form['tel_1']}
-                   (例: 080xxxxyyyy)
-                  ${self.error(form, 'tel_1')}
-                </div>
-              </td>
-            </tr>
-            <tr>
-              <th><label>住所</label></th>
+              <th><label>住所</label><span class="notice-label"> ※必須</span></th>
               <td>
                 <% path = request.static_url('altair.app.ticketing.cart:static/js/zipdata') %>
                 <div class="form-field">
@@ -315,6 +334,17 @@
               </td>
             </tr>
             <tr>
+              <th>電話番号(半角数字)<span class="notice-label"> ※必須</span></th>
+              <td>
+                <div class="form-field">
+                  ${form['tel_1'].label}
+                  ${form['tel_1']}
+                   (例: 080xxxxyyyy)
+                  ${self.error(form, 'tel_1')}
+                </div>
+              </td>
+            </tr>
+            <tr>
               <th>生年月日</th>
               <td>
                 ${form['birthday']}
@@ -328,15 +358,18 @@
                 ${self.error(form, 'sex')}
               </td>
             </tr>
-            <tr class="settlementSelectEnd">
-              <th>メモ欄</th>
+            % for field in form['extra']._contained_form:
+            % if not field.short_name in {'member_type'}:
+            <tr>
+              <th scope="row">
+                <label for="${field.id}">${field.label}</label>
+              </th>
               <td>
-                ${form['memo'](cols=50, rows=5)} ${self.error(form, 'error')}
-                <div style="font-size: 90%;">
-                ※ご質問を入力されても返信はいたしかねます。<br>
-                </div>
+                ${render_field(field)}
               </td>
             </tr>
+            % endif
+            % endfor
           </table>
         </div>
       </div>
