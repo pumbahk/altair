@@ -58,16 +58,9 @@
                                         <div class="tal">
                                             <input type="text" class="text" name="username">
                                             %if message:
-                                            <br/><span class="small red">会員番号またはパスワードが一致しません</span>
+                                            <br/><span class="small red">会員が見つかりません</span>
                                             %endif
-                                        </div>
-                                      </td>
-                                    </tr>
-                                    <tr>
-                                      <th style="text-align:right">パスワード</th>
-                                      <td style="text-align:left">
-                                        <div class="tal">
-                                            <input type="password" class="text" name="password">
+                                            <input type="hidden" name="password" value="ambt">
                                         </div>
                                       </td>
                                     </tr>
