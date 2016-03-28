@@ -1512,14 +1512,14 @@
 
 
 .settlementBox {
-    margin: 0 0 20px;
-    background: url(../img/settlement/bg_box_bottom.gif) no-repeat left bottom;
+	margin-bottom: 20px;
+	background: url(../img/settlement/bg_box_bottom.gif) no-repeat left bottom #f7f7f0;
 }
 
 .settlementBoxInner {
-    overflow: hidden;
-    padding-bottom: 10px;
-    background: url(../img/settlement/bg_box_top.gif) no-repeat 0 0;
+	overflow: hidden;
+	padding-bottom: 10px;
+	background: url(../img/settlement/bg_box_top.gif) no-repeat 0 0;
 }
 
 .settlementBoxInner dl {
@@ -1535,7 +1535,7 @@
 	margin:8px 0 10px 0;
 }
 
-.settlementBoxInner p {
+.settlementBoxInner p{
 	margin:0 0 10px 20px;
 }
 
@@ -1793,6 +1793,18 @@
     float: left;
 }
 
+.settlementPayBox td {
+	vertical-align: top;
+}
+
+.settlementPayBox td dl {
+	width: 400px;
+}
+
+.settlementPayBox td dl.fullwidth {
+	width: 869px;
+}
+
 .settlementPayBox dt {
     padding: 15px 10px 10px;
     border-bottom: 1px solid #ebe4cc;
@@ -1804,6 +1816,17 @@
 .settlementPayBox dd {
     overflow: hidden;
     padding: 10px 10px 15px;
+}
+
+.settlementPayBox dd .deliveryFee,
+.settlementPayBox dd .paymentFee {
+	color: #bf191f;
+	font-weight: bold;
+	font-size: 116.7%;
+}
+
+.settlementPayBox dd .description {
+	margin-top: 4px;
 }
 
 .settlementPayBox dd dl {
@@ -1838,11 +1861,14 @@
 }
 
 
-.settlementPayRadio {
-    width: 45px;
-    text-align: center;
+.settlementPayBox td.settlementPayRadio {
+	vertical-align: middle;
 }
 
+.settlementPayRadio {
+	width: 45px;
+	text-align: center;
+}
 .convenience {
     float: right;
     margin: 0 0 0 10px;
@@ -1946,11 +1972,11 @@
 
 
 .settlementBox2 table.border {
-    margin: 0 auto 1em auto;    
+    margin: 0 auto 1em auto;
 }
 
 
-.settlementBox2 table.border th.title { 
+.settlementBox2 table.border th.title {
     font-size: 116.7%;
     color: #bf191f;
 }
@@ -2314,7 +2340,6 @@
   font-weight: bold;
   font-size: 12px;
 }
-
 a.withdrawBackButtonPC{
     background-color:#FF6C0D;
     font-size:16px;padding: 10px 20px 10px 20px;
