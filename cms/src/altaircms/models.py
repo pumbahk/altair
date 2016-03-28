@@ -390,9 +390,13 @@ class Word(Base):
     __tablename__ = "word"
     id = sa.Column(sa.Integer, primary_key=True)
     organization_id = sa.Column(sa.Integer, sa.ForeignKey('organization.id'))
-    data = sa.Column(sa.String(length=255))
+    label = sa.Column(sa.String(length=255))
     description = sa.Column(sa.String(length=255))
     link = sa.Column(sa.String(length=255))
+
+    query = DBSession.query_property()
+    def __str__(self):
+        return self.label
 
 class WordSearch(Base):
     __tablename__ = "word_search"

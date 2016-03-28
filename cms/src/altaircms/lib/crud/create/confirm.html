@@ -40,7 +40,18 @@ else:
     % else:
 	  <td>${getattr(form,k).label}</td>
     % endif
-	  <td>${getattr(x,k)}</td>
+	  <td>
+          <%
+            v = getattr(x,k)
+          %>
+          % if isinstance(v, list):
+            % for u in v:
+              <span style="border: 1px solid gray; border-radius: 3px ; padding: 2px;">${u}</span>
+            % endfor
+          % else:
+            <span>${v}</span>
+          % endif
+      </td>
 	</tr>
   % endfor
   </tbody>

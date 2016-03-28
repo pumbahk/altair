@@ -161,6 +161,12 @@ class myQuerySelectField(extfields.QuerySelectField):
         else:
             return obj.id == data.id or obj == data
 
+class myQuerySelectMultipleField(extfields.QuerySelectMultipleField):
+    def iter_choices(self):
+        pks = [ x.id for x in self.data ]
+        for pk, obj in self._get_object_list():
+            yield (pk, self.get_label(obj), int(pk) in pks)
+
 from zope.interface import Interface
 from zope.interface import provider
 
@@ -179,7 +185,7 @@ def compose_dynamic_query(g, f):
         return g(model, request, f(model, request, query))
     return wrapped
 
-def dynamic_query_select_field_factory(model, dynamic_query=None, name=None, break_separate=False, **kwargs):
+def dynamic_query_select_field_factory(model, dynamic_query=None, name=None, break_separate=False, multiple=False, **kwargs):
     """
     dynamic_query_factory: lambda model, request, query : ...
 
@@ -191,7 +197,10 @@ def dynamic_query_select_field_factory(model, dynamic_query=None, name=None, bre
             return field.query
         kwargs["query_factory"] = _query_factory
 
-    field = myQuerySelectField(**kwargs)
+    if multiple:
+        field = myQuerySelectMultipleField(**kwargs)
+    else:
+        field = myQuerySelectField(**kwargs)
 
     name = name or model.__name__
     def dynamic_query_filter(field, form=None, rendering_val=None, request=None):

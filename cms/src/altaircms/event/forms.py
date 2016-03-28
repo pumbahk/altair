@@ -8,9 +8,13 @@ from wtforms import widgets
 from altaircms.formhelpers import required_field, append_errors
 from .models import Event
 from ..page.models import PageSet
-from ..models import Category
+from ..models import Category, Word
 from altaircms.formhelpers import dynamic_query_select_field_factory
 from datetime import datetime
+
+def eventFormQueryFactory():
+    # FIXME:
+    return Word.query.filter(Word.organization_id==8)
 
 class EventForm(Form):
     title = fields.TextField(label=u'タイトル', validators=[required_field()])
@@ -20,6 +24,11 @@ class EventForm(Form):
     inquiry_for = fields.TextField(label=u'問い合わせ先', widget=widgets.TextArea())
     notice = fields.TextField(label=u"説明／注意事項", widget=widgets.TextArea())
     performers = fields.TextField(label=u"出演者リスト", widget=widgets.TextArea())
+    keywords = dynamic_query_select_field_factory(
+        Word, allow_blank=True, label=u"キーワードリスト",
+        get_label=lambda obj: obj.label,
+        multiple=True,
+        query_factory=eventFormQueryFactory)
     ticket_pickup = fields.TextField(label=u"チケット引き取り方法", widget=widgets.TextArea())
     ticket_payment = fields.TextField(label=u"支払い方法", widget=widgets.TextArea())
     event_open = fields.DateTimeField(label=u'イベント開始日', validators=[required_field()])
@@ -57,7 +66,9 @@ class EventForm(Form):
 
     __display_fields__ = [u"title", u"subtitle", 
                           u"backend_id", u"code", 
-                          u"description", u"performers", u"inquiry_for", "notice", "ticket_payment", "ticket_pickup", 
+                          u"description", u"performers",
+                          u"keywords",
+                          u"inquiry_for", "notice", "ticket_payment", "ticket_pickup", 
                           u"event_open", u"event_close", 
                           u"deal_open", u"deal_close", 
                           u"is_searchable", u"in_preparation"]
