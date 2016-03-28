@@ -1327,12 +1327,12 @@ class ConfirmView(object):
                 raw_extra_form_data,
                 mode='entry'
                 )
-        # TODO: APIコールして、データ構造つくる
+
         # 現状では、購読済かどうかはAPIから得られないので、subscribedはFalse固定
         ks = [ ]
-        ks.append([ type('', (), { 'id': 1, 'label': 'DREAMS COME TRUE' }), False ])
-        ks.append([ type('', (), { 'id': 2, 'label': 'FUZZY CONTROL' }), False ])
-        ks.append([ type('', (), { 'id': 3, 'label': 'S+AKS' }), False ])
+        res = api.get_keywords_from_cms(self.request, cart.performance_id)
+        for w in res["words"]:
+            ks.append([ type('', (), { 'id': w["id"], 'label': w["label"] }), False ])
         return dict(
             cart=cart,
             mailmagazines_to_subscribe=magazines_to_subscribe,
@@ -1431,7 +1431,7 @@ class CompleteView(object):
         return cont_complete_view(
             self.context, self.request,
             order_no,
-            magazine_ids=self.request.params.getall('mailmagazine')
+            magazine_ids=self.request.params.getall('mailmagazine'),
             keyword_ids=self.request.params.getall('keyword')
             )
 

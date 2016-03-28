@@ -1,3 +1,4 @@
+
 # coding: utf-8
 from pyramid.interfaces import IRequest
 from .interfaces import IAPIKeyValidator, IEventRepository
@@ -39,4 +40,9 @@ def includeme(config):
 
     config.add_route("api_event_url_candidates", "/api/event/url_candidates")
 
+    # バックエンドへの受け渡し用(受け取り用と同じAPIトークンを使う。)
+    config.add_route("api_keyword", "/api/word/")
+
     config.scan(".views")
+    config.scan(".word")
+

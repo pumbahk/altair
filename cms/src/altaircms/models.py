@@ -386,18 +386,6 @@ class FeatureSetting(Base):
         else:
             return None
 
-class Word(Base):
-    __tablename__ = "word"
-    id = sa.Column(sa.Integer, primary_key=True)
-    organization_id = sa.Column(sa.Integer, sa.ForeignKey('organization.id'))
-    label = sa.Column(sa.String(length=255))
-    description = sa.Column(sa.String(length=255))
-    link = sa.Column(sa.String(length=255))
-
-    query = DBSession.query_property()
-    def __str__(self):
-        return self.label
-
 class WordSearch(Base):
     __tablename__ = "word_search"
     id = sa.Column(sa.Integer, primary_key=True)
@@ -427,3 +415,17 @@ class Performance_Word(Base):
     sorting = sa.Column(sa.Integer)
 
     subscribable = sa.Column(sa.Boolean, default=False)
+
+class Word(Base):
+    __tablename__ = "word"
+    id = sa.Column(sa.Integer, primary_key=True)
+    organization_id = sa.Column(sa.Integer, sa.ForeignKey('organization.id'))
+    label = sa.Column(sa.String(length=255))
+    description = sa.Column(sa.String(length=255))
+    link = sa.Column(sa.String(length=255))
+
+    query = DBSession.query_property()
+    def __str__(self):
+        return self.label
+
+    performances = relationship("Performance", backref="keywords", secondary=Performance_Word.__tablename__)
