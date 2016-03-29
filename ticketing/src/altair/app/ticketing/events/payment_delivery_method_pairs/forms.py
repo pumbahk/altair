@@ -637,6 +637,7 @@ class PaymentDeliveryMethodPairForm(OurForm):
         if payment_plugin_id == MULTICHECKOUT_PAYMENT_PLUGIN_ID and delivery_plugin_id == SEJ_DELIVERY_PLUGIN_ID:
             formdata['issuing_end_in_days'] = 30
             formdata['issuing_end_in_days_selected_choice'] = DateCalculationBase.SalesEndDate.v
+            formdata['issuing_end_in_days_enable'] = True
             """
             data = set_values(
                 0,
