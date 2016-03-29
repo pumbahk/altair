@@ -25,7 +25,7 @@ thisyear = datetime.now().strftime('%Y')
 <!-- guest LOGIN BOX -->
 % if guest_member_kinds:
 <div class="col2_2 tile2 login-box">
-<form action="${_context.route_path('extauth.login')}" method="POST">
+<form action="${_context.route_path('extauth.login',_query=request.GET)}" method="POST">
 <dl>
 <dt class="login-name"><span>一般の方</span>はこちら</dt>
 <dd class="login-inbox">

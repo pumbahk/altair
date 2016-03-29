@@ -32,7 +32,7 @@ thisyear = datetime.now().strftime('%Y')
 
 <!-- guest LOGIN BOX -->
 <div class="col2_2 tile2 login-box">
-<form action="${_context.route_path('extauth.login')}" method="POST">
+<form action="${_context.route_path('extauth.login',_query=dict(member_set=member_set.name))}" method="POST">
 <dl>
 % for member_kind in member_set.member_kinds:
 % if member_kind.show_in_landing_page and member_kind.enable_guests:
