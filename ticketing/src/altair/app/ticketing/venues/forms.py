@@ -22,7 +22,7 @@ class VenueSearchForm(OurForm):
 
     venue_name = OurTextField(
         label=u'会場名',
-        filters=[strip_spaces, NFKC],
+        filters=[strip_spaces],
         )
     prefecture = OurSelectField(
         label=u'都道府県',
