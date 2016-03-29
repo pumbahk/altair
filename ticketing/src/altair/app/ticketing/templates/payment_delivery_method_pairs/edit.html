@@ -205,6 +205,7 @@
             <label class="radio">
               ${form.payment_period_days.base_type_radio('relative')}
             </label>
+            <% import ipdb;ipdb.set_trace() %>
             ${form.payment_period_days(class_='span1', subcategory_class='span2')}
             ${ch.validate_errors(form.payment_period_days)}
           </div>
