@@ -2021,6 +2021,7 @@
 
 .confirmBoxInner {
     background: url(../img/settlement/bg_confirm_bottom.gif) no-repeat left bottom;
+    padding: 10px;
 }
 
 .confirmBoxInner table.border th {

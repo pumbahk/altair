@@ -877,6 +877,7 @@
     line-height: 1;
     margin-bottom: 10px;
     color: #7f663f;
+    font-size: 116.7%;
     font-weight: bold;
     background: url(../img/detail/bg_count_down.gif) no-repeat 0 0;
 }
@@ -1475,7 +1476,6 @@
 .settlementSelectBox th {
     width: 25%;
     padding: 5px 10px;
-    font-size: 116.7%;
     background: url(../img/settlement/bg_select_td.gif) repeat-x left bottom;
     color: #aa5555;
 }
@@ -2021,6 +2021,7 @@
 
 .confirmBoxInner {
     background: url(../img/settlement/bg_confirm_bottom.gif) no-repeat left bottom;
+    padding: 10px;
 }
 
 .confirmBoxInner table.border th {
