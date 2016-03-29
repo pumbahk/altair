@@ -81,12 +81,11 @@ def import_tree(registry, update, organization, xmldoc, file, bundle_base_url=No
     try:
         siteprofile = SiteProfile.get_by_name_and_prefecture(name=site_name, prefecture=prefecture)
     except NoResultFound:
-        pass
+        siteprofile = SiteProfile(name = site_name, prefecture = prefecture)
+        siteprofile.save()
     except MultipleResultsFound as multipleResultsFound:
         logger.error("Multiple SiteProfile with same name and prefecture found: (name: %s, prefecture: %s)" % (site_name, prefecture))
         raise multipleResultsFound
-    if not siteprofile:
-        siteprofile = SiteProfile(name = site_name, prefecture = prefecture)
     if update:
         site = Site(name=site_name, _backend_metadata_url=backend_metadata_url, siteprofile = siteprofile)
         venue_q = DBSession.query(Venue)
