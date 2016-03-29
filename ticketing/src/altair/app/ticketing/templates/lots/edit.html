@@ -120,9 +120,9 @@ function updateSalesSegmentGroupById(j) {
         <legend>販売区分情報</legend>
       ${ch.form_item(form.sales_segment_group_id)}
       ${ch.form_item(form.start_at)}
-      ${ch.form_item(form.use_default_start_at, disabled='')}
+      ${ch.form_item(form.use_default_start_at)}
       ${ch.form_item(form.end_at)}
-      ${ch.form_item(form.use_default_end_at, disabled='')}
+      ${ch.form_item(form.use_default_end_at)}
       ${ch.form_item(form.max_quantity)}
       ${ch.form_item(form.auth3d_notice)}
     </fieldset>
@@ -138,12 +138,11 @@ function updateSalesSegmentGroupById(j) {
     $('#sales_segment_group_id').val(ssgid);
 
     % if len(request.POST) == 0:
-    var opt = $('#sales_segment_group_id').children(':selected');
-
-    $('#name').val(opt.text());
-    updateSalesSegmentGroupById(opt.val());
+      var opt = $('#sales_segment_group_id').children(':selected');
+      $('#name').val(opt.text());
+      updateSalesSegmentGroupById(opt.val());
     % else:
-    $("#sales_segment_group_id").val(${request.params.get('sales_segment_group_id')});
+      $("#sales_segment_group_id").val(${request.params.get('sales_segment_group_id')});
     % endif
   });
 </script>
