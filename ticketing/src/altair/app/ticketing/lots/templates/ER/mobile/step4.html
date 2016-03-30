@@ -38,7 +38,7 @@ ${lot.name}
 <%mobile:messages messages="${messages}" />
 <%mobile:header>お客様情報の入力</%mobile:header>
 <form method="post" action="${request.current_route_path()}">
-<%mobile:form_header>申込者氏名(全角)${h.mobile_required_mark()}</%mobile:form_header>
+<%mobile:form_header>購入者氏名(全角)${h.mobile_required_mark()}</%mobile:form_header>
 <div>
   ${form['last_name'].label}
   ${form['last_name'](istyle="1", iprof="name1")}
@@ -50,7 +50,7 @@ ${lot.name}
   ${h.mobile_error_list(request, form, 'first_name')}
 </div>
 
-<%mobile:form_header>申込者氏名(カナ)${h.mobile_required_mark()}</%mobile:form_header>
+<%mobile:form_header>購入者氏名(カナ)${h.mobile_required_mark()}</%mobile:form_header>
 <div>
   ${form['last_name_kana'].label}
   ${form['last_name_kana'](istyle="2", iprod="kana1")}

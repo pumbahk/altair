@@ -37,7 +37,7 @@ ${h.japanese_date(performance.start_on)}<br />
 <%mobile:header>お客様情報</%mobile:header>
 修正・変更箇所があれば訂正の上、「次へ」をクリックしてください。<br />
 <form method="post" action="${request.url}">
-<%mobile:form_header>申込者氏名(全角)</%mobile:form_header>
+<%mobile:form_header>購入者氏名(全角)</%mobile:form_header>
 <div>
   ${form['last_name'].label}
   ${form['last_name']}
@@ -49,7 +49,7 @@ ${h.japanese_date(performance.start_on)}<br />
   ${h.mobile_error_list(request, form, 'first_name')}
 <div color="#ff0000">
 
-<%mobile:form_header>申込者氏名(カナ)</%mobile:form_header>
+<%mobile:form_header>購入者氏名(カナ)</%mobile:form_header>
 <div>
   ${form['last_name_kana'].label}
   ${form['last_name_kana']}
