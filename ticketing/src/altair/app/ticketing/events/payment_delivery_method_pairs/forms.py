@@ -629,15 +629,24 @@ class PaymentDeliveryMethodPairForm(OurForm):
 
     def default_values_for_pdmp(self, payment_method_id, delivery_method_id):
         formdata = self.data
-        import ipdb;ipdb.set_trace()
         payment_plugin_id, delivery_plugin_id = get_payment_delivery_plugin_ids(payment_method_id, delivery_method_id)
+        # mmm...
+        default_form_state = dict(
+            payment_period_days_selected_choice=DateCalculationBase.OrderDate.v,
+            payment_period_days_disable=False,
+            issuing_interval_days_selected_choice=DateCalculationBase.OrderDate.v,
+            issuing_interval_days_disable=False,
+            issuing_end_in_days_selected_choice=DateCalculationBase.OrderDate.v,
+            issuing_end_in_days_disable=False
+        )
         """
         Formのデフォルト値から変更する値のみを以下で更新する
         """
         if payment_plugin_id == MULTICHECKOUT_PAYMENT_PLUGIN_ID and delivery_plugin_id == SEJ_DELIVERY_PLUGIN_ID:
+            formdata['issuing_interval_days'] = 1
             formdata['issuing_end_in_days'] = 30
-            formdata['issuing_end_in_days_selected_choice'] = DateCalculationBase.SalesEndDate.v
-            formdata['issuing_end_in_days_enable'] = True
+            default_form_state['payment_period_days_disable'] = True
+            default_form_state['issuing_end_in_days_selected_choice'] = DateCalculationBase.PerformanceEndDate.v
             """
             data = set_values(
                 0,
@@ -721,4 +730,4 @@ class PaymentDeliveryMethodPairForm(OurForm):
                 'false', 'false', 'true', 1, 'true', 0
             )
             """
-        return self.data
+        return formdata.update(default_form_state)
