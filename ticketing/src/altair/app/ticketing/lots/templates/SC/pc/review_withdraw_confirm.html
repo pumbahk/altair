@@ -161,12 +161,8 @@
             <td>${shipping_address.email_1}</td>
           </tr>
           <tr>
-            <th>電話番号 (自宅)</th>
+            <th>電話番号</th>
             <td>${shipping_address.tel_1}</td>
-          </tr>
-          <tr>
-            <th>電話番号 (携帯電話)</th>
-            <td>${shipping_address.tel_2}</td>
           </tr>
           <tr>
             <th>住所</th>
@@ -183,12 +179,29 @@
             <th>性別</th>
             <td>${h.format_gender(request, gender)}</td>
           </tr>
-          <tr class="settlementSelectEnd">
-            <th><label>メモ欄</label></th>
-            <td>${memo|h.nl2br}</td>
-          </tr>
         </table>
       </div>
     </div>
   </div>
 </div>
+
+<% extra_form_data = entry.get_lot_entry_attribute_pair_pairs(request) %>
+% if extra_form_data:
+<div class="settlementBox">
+  <div class="settlementBoxInner">
+    <h2 class="title">追加情報</h2>
+      <div class="settlementSelectBox">
+        <div class="settlementSelectBoxInner02">
+            <table summary="追加情報">
+                % for _, (display_name, display_value) in extra_form_data:
+                <tr>
+                    <th>${display_name}</th>
+                    <td>${h.sensible_coerce(request, display_value)}</td>
+                </tr>
+                % endfor
+            </table>
+        </div>
+      </div>
+  </div>
+</div>
+% endif
