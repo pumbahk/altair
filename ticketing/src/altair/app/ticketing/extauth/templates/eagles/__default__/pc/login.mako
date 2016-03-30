@@ -18,7 +18,7 @@
 <li class="fcType-L" style="background:#E1FFE1;"><img src="${view_context.static_url('images/status_school.png')}" alt="スクール"></li>
 </ul>
 
-<form action="${_context.route_path('extauth.login')}" method="POST">
+<form action="${_context.route_path('extauth.login',_query=request.GET)}" method="POST">
 <table class="loginTBL">
 <tbody>
 <tr>

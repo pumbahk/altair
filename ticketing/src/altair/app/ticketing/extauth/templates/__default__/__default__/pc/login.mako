@@ -12,7 +12,7 @@
     %> 
     <p>${member_set.display_name}ログイン</p>
     <p>会員種別: ${u' / '.join(member_kind.name for member_kind in member_set.member_kinds if member_kind.show_in_landing_page)}</p>
-    <form action="${_context.route_path('extauth.login')}" method="POST">
+    <form action="${_context.route_path('extauth.login',_query=request.GET)}" method="POST">
       <p>
       % for member_kind in member_set.member_kinds:
       % if member_kind.show_in_landing_page and member_kind.enable_guests:
@@ -21,7 +21,7 @@
       % endfor
       </p>
     </form>
-    <form action="${_context.route_path('extauth.login')}" method="POST">
+    <form action="${_context.route_path('extauth.login',_query=request.GET)}" method="POST">
       % if _message:
       <p>${_message}</p>
       % endif
