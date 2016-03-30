@@ -8,6 +8,8 @@ import jp.ticketstar.ticketing.printing.gui.AppWindowModel;
 import jp.ticketstar.ticketing.printing.gui.AppWindowService;
 import jp.ticketstar.ticketing.printing.gui.IAppWindow;
 import jp.ticketstar.ticketing.printing.server.Server;
+import jp.ticketstar.ticketing.printing.util.ProxyFactory;
+import jp.ticketstar.ticketing.printing.util.SystemConfiguration;
 
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
@@ -32,6 +34,8 @@ public class App {
 
         @Option(name="--auth")
         String authString = null;
+        
+        ProxyFactory proxyFactory = null;
 
         public boolean isAcceptConnection() {
             return acceptConnection;
@@ -61,6 +65,11 @@ public class App {
         public String getAuthString() {
             return authString;
         }
+        
+        @Override
+        public ProxyFactory getProxyFactory() {
+        	return proxyFactory;
+        }
     }
 
     public static void main(String[] args) {
@@ -81,6 +90,9 @@ public class App {
         final AppWindowService appService = new AppWindowService(model);
 
         if (config.isAcceptConnection()) {
+        	// Get proxy setting from windows registry
+        	config.proxyFactory = SystemConfiguration.getInstance();
+        	
             final Server appServer = new Server(config);
             appServer.setService(appService);
             appServer.run();
