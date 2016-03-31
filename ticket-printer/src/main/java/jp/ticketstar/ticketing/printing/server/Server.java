@@ -22,6 +22,7 @@ import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.InetSocketAddress;
+import java.net.Proxy;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -71,6 +72,7 @@ import jp.ticketstar.ticketing.printing.TicketPrintable;
 import jp.ticketstar.ticketing.printing.URLConnectionSVGDocumentLoader;
 import jp.ticketstar.ticketing.printing.gui.AppWindowService;
 import jp.ticketstar.ticketing.printing.gui.FormatLoader;
+import jp.ticketstar.ticketing.printing.util.ProxyFactory;
 import jp.ticketstar.ticketing.svg.ExtendedSVG12BridgeContext;
 import jp.ticketstar.ticketing.svg.ExtendedSVG12OMDocument;
 import jp.ticketstar.ticketing.svg.OurDocumentLoader;
@@ -337,6 +339,8 @@ public class Server {
     private InetSocketAddress address;
 
     private List<URI> originHosts = new ArrayList<URI>();
+    
+    private ProxyFactory proxyFactory;
 
     private int nextId;
     private BlockingQueue<Job> queue;
@@ -680,13 +684,14 @@ public class Server {
         }
     }
 
-    public Server(InetSocketAddress address, List<URI> originHosts, long gcInterval, String authString) {
+    public Server(InetSocketAddress address, List<URI> originHosts, ProxyFactory proxyFactory, long gcInterval, String authString) {
         if (originHosts.size() == 0) {
             throw new IllegalArgumentException("no origin hosts given");
         }
         this.logWindow = new LogWindow();
         this.address = address;
         this.originHosts.addAll(originHosts);
+        this.proxyFactory = proxyFactory;
         this.nextId = 0;
         this.gcInterval = gcInterval;
         this.authString = authString;
@@ -721,12 +726,12 @@ public class Server {
         return _originHosts;
     }
 
-    public Server(String listen, List<String> originHosts, long gcInterval, String authString) {
-        this(parseAddress(listen), parseOriginHosts(originHosts), gcInterval, authString);
+    public Server(String listen, List<String> originHosts, ProxyFactory proxyFactory, long gcInterval, String authString) {
+        this(parseAddress(listen), parseOriginHosts(originHosts), proxyFactory, gcInterval, authString);
     }
 
     public Server(Configuration config) {
-        this(config.getListen(), config.getOriginHosts(), config.getGCInterval(), config.getAuthString());
+        this(config.getListen(), config.getOriginHosts(), config.getProxyFactory(), config.getGCInterval(), config.getAuthString());
     }
 
     public void setService(AppWindowService service) {
@@ -803,7 +808,7 @@ public class Server {
         for (PrintService service: PrinterJob.lookupPrintServices()) {
             printServices.add(service);
         }
-
+        
         log.info("Accept connection at " + address);
         icon.setToolTip("altair print server at " + address);
         statusLabel.setLabel("queue size is "+queue.size());
@@ -1184,7 +1189,7 @@ public class Server {
     }
 
     private HttpURLConnection openConnection(URL url) throws IOException {
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection(proxyFactory.getProxy());
         if(authString != null && authString.contains(":")) {
             conn.addRequestProperty("Authorization", "Basic " + DatatypeConverter.printBase64Binary(authString.getBytes()));
         }

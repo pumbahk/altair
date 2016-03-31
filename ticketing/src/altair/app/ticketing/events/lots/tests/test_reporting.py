@@ -207,7 +207,63 @@ class LotEntryReporterTests(unittest.TestCase):
             lot=lot,
         )
         now = datetime(2013, 2, 3)
-
+        performance=testing.DummyModel(
+            start_on=datetime(2013, 1, 20),
+            venue=testing.DummyModel(
+                name=u"テスト会場",
+            ),
+        )
+        stock_type=testing.DummyModel(
+            name=u"S席"
+        )
+        stock_type_wishes_status=[
+            testing.DummyModel(
+                performance=performance,
+                stock_type=stock_type,
+                entry_quantity=100,
+                wish_statuses=[
+                    testing.DummyModel(entry_quantity=10),
+                    testing.DummyModel(entry_quantity=15),
+                    testing.DummyModel(entry_quantity=20),
+                    testing.DummyModel(entry_quantity=25),
+                    testing.DummyModel(entry_quantity=30),
+                ],
+                elected_quantity=10,
+                ordered_quantity=20,
+                reserved_quantity=30,
+                canceled_quantity=40,
+            ),
+        ]
+        product_wishes_status={}
+        product_wishes_status[(performance, stock_type)] = []
+        product_wishes_status[(performance, stock_type)].append(
+            testing.DummyModel(
+                performance=testing.DummyModel(
+                    start_on=datetime(2013, 1, 20),
+                    venue=testing.DummyModel(
+                        name=u"テスト会場",
+                    ),
+                ),
+                seat_type=testing.DummyModel(
+                    name=u"S席"
+                ),
+                product=testing.DummyModel(
+                    name=u"子供用"
+                ),
+                entry_quantity=100,
+                wish_statuses=[
+                    testing.DummyModel(entry_quantity=10),
+                    testing.DummyModel(entry_quantity=15),
+                    testing.DummyModel(entry_quantity=20),
+                    testing.DummyModel(entry_quantity=25),
+                    testing.DummyModel(entry_quantity=30),
+                ],
+                elected_quantity=10,
+                ordered_quantity=20,
+                reserved_quantity=30,
+                canceled_quantity=40,
+            ),
+        )
         status = testing.DummyModel(
             total_entries=1,
             elected_count=2,
@@ -223,31 +279,7 @@ class LotEntryReporterTests(unittest.TestCase):
                 testing.DummyModel(quantity=25),
                 testing.DummyModel(quantity=30),
             ],
-            performance_seat_type_statuses=[
-                testing.DummyModel(
-                    performance=testing.DummyModel(
-                        start_on=datetime(2013, 1, 20),
-                        venue=testing.DummyModel(
-                            name=u"テスト会場",
-                        ),
-                    ),
-                    seat_type=testing.DummyModel(
-                        name=u"S席"
-                    ),
-                    entry_quantity=100,
-                    wish_statuses=[
-                        testing.DummyModel(entry_quantity=10),
-                        testing.DummyModel(entry_quantity=15),
-                        testing.DummyModel(entry_quantity=20),
-                        testing.DummyModel(entry_quantity=25),
-                        testing.DummyModel(entry_quantity=30),
-                    ],
-                    elected_quantity=10,
-                    ordered_quantity=20,
-                    reserved_quantity=30,
-                    canceled_quantity=40,
-                ),
-            ],
+            performance_seat_type_statuses=(stock_type_wishes_status, product_wishes_status),
         )
 
         target = self._makeOne(sender, mailer, setting)
