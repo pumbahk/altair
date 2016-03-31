@@ -473,6 +473,7 @@ class LotEntryStatus(object):
         inner = DBSession.query(
             Performance.id.label('performance_id'),
             StockType.id.label('stock_type_id'),
+            Product.id.label('product_id'),
             LotEntryWish.wish_order.label('wish_order'),
             case([
                 (LotEntry.withdrawn_at == None,
@@ -527,7 +528,7 @@ class LotEntryStatus(object):
             LotEntry.entry_no != None
         ).subquery()
 
-        results = DBSession.query(
+        stock_type_results = DBSession.query(
             Performance,
             StockType,
             sql.func.sum(inner.c.entry_quantity),
@@ -541,7 +542,24 @@ class LotEntryStatus(object):
             inner.c.stock_type_id==StockType.id
         ).group_by(inner.c.performance_id, inner.c.stock_type_id).all()
 
-        wishes_results = DBSession.query(
+        product_results = DBSession.query(
+            Performance,
+            StockType,
+            Product,
+            sql.func.sum(inner.c.entry_quantity),
+            sql.func.sum(inner.c.elected_quantity),
+            sql.func.sum(inner.c.ordered_quantity),
+            sql.func.sum(inner.c.reserved_quantity),
+            sql.func.sum(inner.c.canceled_quantity),
+        ).filter(
+            inner.c.performance_id==Performance.id
+        ).filter(
+            inner.c.stock_type_id==StockType.id
+        ).filter(
+            inner.c.product_id==Product.id
+        ).group_by(inner.c.performance_id, inner.c.stock_type_id, inner.c.product_id).all()
+
+        stock_type_wishes_results = DBSession.query(
             Performance,
             StockType,
             inner.c.wish_order,
@@ -554,21 +572,44 @@ class LotEntryStatus(object):
             inner.c.performance_id, inner.c.stock_type_id, inner.c.wish_order
         ).all()
 
-        wishes_statuses = [LotEntryPerformanceSeatTypesWishStatus(performance,
+
+        product_wishes_results = DBSession.query(
+            Performance,
+            StockType,
+            Product,
+            inner.c.wish_order,
+            sql.func.sum(inner.c.entry_quantity),
+        ).filter(
+            inner.c.performance_id==Performance.id
+        ).filter(
+            inner.c.stock_type_id==StockType.id
+        ).filter(
+            inner.c.product_id==Product.id
+        ).group_by(
+            inner.c.performance_id, inner.c.stock_type_id, inner.c.product_id, inner.c.wish_order
+        ).all()
+
+        stock_type_wishes_statuses = [LotEntryPerformanceSeatTypesWishStatus(performance,
                                                                   stock_type,
                                                                   wish_order,
                                                                   entry_quantity)
                            for (performance, stock_type, wish_order,entry_quantity)
-                           in wishes_results]
+                           in stock_type_wishes_results]
+        product_wishes_statuses = [LotEntryPerformanceProductWishStatus(performance,
+                                                                  stock_type,
+                                                                  product,
+                                                                  wish_order,
+                                                                  entry_quantity)
+                           for (performance, stock_type, product, wish_order,entry_quantity)
+                           in product_wishes_results]
 
-
-        wishes_statuses_ = {}
-        for w in wishes_statuses:
-            ww = wishes_statuses_.get(w.performance_seat_type, {})
+        stock_type_wishes_statuses_ = {}
+        for w in stock_type_wishes_statuses:
+            ww = stock_type_wishes_statuses_.get(w.performance_seat_type, {})
             ww[w.wish_order] = w
-            wishes_statuses_[w.performance_seat_type] = ww
+            stock_type_wishes_statuses_[w.performance_seat_type] = ww
 
-        for (performance, stock_type), ww in wishes_statuses_.items():
+        for (performance, stock_type), ww in stock_type_wishes_statuses_.items():
             for i in range(self.lot.limit_wishes):
                 if i in ww:
                     continue
@@ -576,17 +617,52 @@ class LotEntryStatus(object):
                                                                stock_type,
                                                                i, 0)
 
-        return [LotEntryPerformanceSeatTypeStatus(performance,
+        product_wishes_statuses_ = {}
+        for w in product_wishes_statuses:
+            ww = product_wishes_statuses_.get(w.performance_seat_type_product, {})
+            ww[w.wish_order] = w
+            product_wishes_statuses_[w.performance_seat_type_product] = ww
+
+        for (performance, stock_type, product), ww in product_wishes_statuses_.items():
+            for i in range(self.lot.limit_wishes):
+                if i in ww:
+                    continue
+                ww[i] = LotEntryPerformanceProductWishStatus(performance,
+                                                               stock_type,
+                                                               product,
+                                                               i, 0)
+
+        product_wishes_status = {}
+        for (performance, stock_type, product, entry_quantity, elected_quantity, ordered_quantity,
+            reserved_quantity, canceled_quantity) in product_results:
+            if (performance, stock_type) not in product_wishes_status:
+                product_wishes_status[(performance, stock_type)] = []
+            product_wishes_status[(performance, stock_type)].append(
+                LotEntryPerformanceProductStatus(
+                performance,
+                stock_type,
+                product,
+                entry_quantity,
+                elected_quantity,
+                ordered_quantity,
+                reserved_quantity,
+                canceled_quantity,
+                product_wishes_statuses_[(performance, stock_type, product)])
+            )
+
+        stock_type_wishes_status = [LotEntryPerformanceSeatTypeStatus(performance,
                                                   stock_type,
                                                   entry_quantity,
                                                   elected_quantity,
                                                   ordered_quantity,
                                                   reserved_quantity,
                                                   canceled_quantity,
-                                                  wishes_statuses_[(performance, stock_type)],
+                                                  stock_type_wishes_statuses_[(performance, stock_type)],
                                               )
                 for (performance, stock_type, entry_quantity, elected_quantity, ordered_quantity,
-                     reserved_quantity, canceled_quantity) in results]
+                     reserved_quantity, canceled_quantity) in stock_type_results]
+
+        return stock_type_wishes_status, product_wishes_status
 
 class LotEntryWishStatus(object):
     def __init__(self, wish_order, quantity):
@@ -594,7 +670,23 @@ class LotEntryWishStatus(object):
         self.quantity = quantity
 
 class LotEntryPerformanceSeatTypeStatus(object):
-    def __init__(self, performance, seat_type,
+    def __init__(self, performance, stock_type,
+                 entry_quantity, elected_quantity,
+                 ordered_quantity,
+                 reserved_quantity,
+                 canceled_quantity,
+                 wish_statuses):
+         self.performance = performance
+         self.stock_type = stock_type
+         self.entry_quantity = entry_quantity
+         self.elected_quantity = elected_quantity
+         self.ordered_quantity = ordered_quantity
+         self.reserved_quantity = reserved_quantity
+         self.canceled_quantity = canceled_quantity
+         self.wish_statuses = wish_statuses
+
+class LotEntryPerformanceProductStatus(object):
+    def __init__(self, performance, seat_type, product,
                  entry_quantity, elected_quantity,
                  ordered_quantity,
                  reserved_quantity,
@@ -602,12 +694,14 @@ class LotEntryPerformanceSeatTypeStatus(object):
                  wish_statuses):
          self.performance = performance
          self.seat_type = seat_type
+         self.product = product
          self.entry_quantity = entry_quantity
          self.elected_quantity = elected_quantity
          self.ordered_quantity = ordered_quantity
          self.reserved_quantity = reserved_quantity
          self.canceled_quantity = canceled_quantity
          self.wish_statuses = wish_statuses
+
 
 class LotEntryPerformanceSeatTypesWishStatus(object):
     """ """
@@ -619,6 +713,18 @@ class LotEntryPerformanceSeatTypesWishStatus(object):
         self.wish_order = wish_order
 
         self.performance_seat_type = (performance, seat_type)
+
+class LotEntryPerformanceProductWishStatus(object):
+    """ """
+
+    def __init__(self, performance, seat_type, product, wish_order, entry_quantity):
+        self.performance = performance
+        self.seat_type = seat_type
+        self.product = product
+        self.entry_quantity = entry_quantity
+        self.wish_order = wish_order
+
+        self.performance_seat_type_product = (performance, seat_type, product)
 
 class LotEntryController(object):
     def __init__(self, request=None):
