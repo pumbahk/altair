@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<title>TicketStar</title>
+<meta name="description" content="Redmine" />
+<meta name="keywords" content="issue,bug,tracker" />
+<meta content="authenticity_token" name="csrf-param" />
+<meta content="30brJdse4UddwUCyctcqww6/HwS0oM/iiCXkp6/1OE8=" name="csrf-token" />
+<link rel='shortcut icon' href='/favicon.ico?1373949734' />
+<link href="/stylesheets/jquery/jquery-ui-1.9.2.css?1365499045" media="all" rel="stylesheet" type="text/css" />
+<link href="/themes/a1-altair/stylesheets/application.css?1373951586" media="all" rel="stylesheet" type="text/css" />
+
+<script src="/javascripts/jquery-1.8.3-ui-1.9.2-ujs-2.0.3.js?1365499045" type="text/javascript"></script>
+<script src="/javascripts/application.js?1373949734" type="text/javascript"></script>
+<script type="text/javascript">
+//<![CDATA[
+$(window).load(function(){ warnLeavingUnsaved('このページから移動すると、保存されていないデータが失われます。'); });
+//]]>
+</script>
+
+<link href="/plugin_assets/redmine_issue_templates/stylesheets/issue_templates.css?1372168882" media="screen" rel="stylesheet" type="text/css" /> 
+ <link href="/plugin_assets/clipboard_image_paste/stylesheets/jquery.Jcrop-0.9.10.min.css?1365670659" media="all" rel="stylesheet" type="text/css" />
+<link href="/plugin_assets/clipboard_image_paste/stylesheets/clipboard_image_paste.css?1365670659" media="all" rel="stylesheet" type="text/css" />
+<script src="/plugin_assets/clipboard_image_paste/javascripts/jcrop-0.9.10.min.js?1365670659" type="text/javascript"></script>
+<script src="/plugin_assets/clipboard_image_paste/javascripts/clipboard_image_paste.js?1365670659" type="text/javascript"></script>
+  <script type="text/javascript">
+    var j$cbp = $;
+  </script>
+
+<!-- page specific tags -->
+</head>
+<body class="theme-A1-altair controller-account action-login">
+<div id="wrapper">
+<div id="wrapper2">
+<div id="wrapper3">
+<div id="top-menu">
+    <div id="account">
+        <ul><li><a href="/login" class="login">ログイン</a></li></ul>    </div>
+    
+    </div>
+
+<div id="header">
+
+    <h1>TicketStar</h1>
+
+</div>
+
+<div id="main" class="nosidebar">
+    <div id="sidebar">
+        
+        
+    </div>
+
+    <div id="content">
+        
+        
+<div id="login-form">
+<form accept-charset="UTF-8" action="/login" method="post"><div style="margin:0;padding:0;display:inline"><input name="utf8" type="hidden" value="&#x2713;" /><input name="authenticity_token" type="hidden" value="30brJdse4UddwUCyctcqww6/HwS0oM/iiCXkp6/1OE8=" /></div>
+<input name="back_url" type="hidden" value="https://redmine.ticketstar.jp/attachments/download/12482/favicon.ico" />
+<table>
+<tr>
+    <td align="right"><label for="username">ログイン:</label></td>
+    <td align="left"><input id="username" name="username" tabindex="1" type="text" /></td>
+</tr>
+<tr>
+    <td align="right"><label for="password">パスワード:</label></td>
+    <td align="left"><input id="password" name="password" tabindex="2" type="password" /></td>
+</tr>
+<tr>
+    <td></td>
+    <td align="left">
+    </td>
+</tr>
+<tr>
+    <td align="left">
+    </td>
+    <td align="right">
+        <input type="submit" name="login" value="ログイン &#187;" tabindex="5"/>
+    </td>
+</tr>
+</table>
+</form></div>
+
+
+<script type="text/javascript">
+//<![CDATA[
+$('#username').focus();
+//]]>
+</script>
+
+        <style type="text/css">
+    #announcement {
+        width: 100%;
+        background-color: #FCFFB4;
+        border: solid 5px yellow;
+        padding: 10px 0;
+        text-align: center;
+    a {
+        font-size: 12px;
+        margin-left: 5px;
+        color: #6E5910;
+      }
+    }
+</style>
+
+<script type="text/javascript">
+//<![CDATA[
+$(document).ready(function(){$('h2:first').after($('#announcement'));});
+//]]>
+</script>
+
+ <link href="/plugin_assets/sidebar_hide/stylesheets/sidebar_hide.css?1407115752" media="screen" rel="stylesheet" type="text/css" />
+<script src="/plugin_assets/sidebar_hide/javascripts/sidebar_hide.js?1407115752" type="text/javascript"></script>
+
+
+        <div style="clear:both;"></div>
+    </div>
+</div>
+</div>
+
+<div id="ajax-indicator" style="display:none;"><span>ロード中...</span></div>
+<div id="ajax-modal" style="display:none;"></div>
+
+<div id="footer">
+  <div class="bgl"><div class="bgr">
+    Powered by <a href="http://www.redmine.org/">Redmine</a> &copy; 2006-2013 Jean-Philippe Lang
+  </div></div>
+</div>
+</div>
+</div>
+ 
+<span id="cbp_images_form">
+  <span id="cbp_image_fields"></span>
+  <span class="add_attachment"><a class="add_attachment" href="#" onclick="cbImagePaste.showPasteDialog(); return false;; return false;">クリップボードから画像を追加</a>
+  (サイズの上限: 100 MB)</span>
+</span>
+
+<!-- input field span inspired by redmine/app/views/attachments/_form.html.erb -->
+<span id="cbp_image_field" style="display:none">
+  <span id="cbp_attach_thumbnail_box">
+    <img id="cbp_attach_thumbnail"/>
+  </span>
+  <input id="cbp_image_data" name="attachments[nnnnn][data]" type="hidden" value="" />
+  <input class="name" maxlength="50" name="attachments[nnnnn][name]" type="text" value="" />
+  <a href="#" id="cbp_link_btn" title="画像とサムネイルへのリンク"><img alt="Link" src="/images/link.png?1365499045" /></a>
+  <input class="description" maxlength="255" name="attachments[nnnnn][description]" placeholder="任意のコメント" type="text" value="" />
+  <a href="#" onclick="cbImagePaste.removeImageField(this); return false;" title="削除"><img alt="Delete" src="/images/delete.png?1365499045" /></a>
+</span>
+
+<!-- clipboard paste dialog -->
+<div id="cbp_paste_dlg" title="クリップボードから画像を追加" style="display:none">
+  <script type="text/javascript">
+    // translated labels go here (inside namespace)
+    (function(cbImagePaste, $, undefined) {
+      cbImagePaste.cbp_txt_crop_box        = "選択した領域:  x={1}  y={2}  幅={3}  高さ={4}";
+      cbImagePaste.cbp_txt_print           = "Ctrl+Vで画像を貼り付けてください。";
+      cbImagePaste.cbp_txt_select          = "ドラッグして画像の貼り付けたい領域を選択してください。";
+      cbImagePaste.cbp_txt_deselect        = "選択を解除するには領域の外側をクリックしてください。";
+      cbImagePaste.cbp_txt_empty_cb        = "クリップボードが空です。";
+      cbImagePaste.cbp_txt_no_image_cb     = "クリップボードに画像がありません。";
+      cbImagePaste.cbp_txt_no_image_pst    = "何も画像が貼り付けられていません。";
+      cbImagePaste.cbp_txt_too_many_files  = "これ以上ファイルを追加できません。一度の更新で添付できるファイルの数は10個までです。";
+      cbImagePaste.cbp_txt_wrong_browser   = "お使いのブラウザはクリップボードAPIをサポートしていません。Firefox 5以上かGoogle Chrome 13以上をお使いください。";
+      cbImagePaste.cbp_txt_btn_ok          = "OK";
+      cbImagePaste.cbp_txt_btn_cancel      = "キャンセル";
+      cbImagePaste.cbp_txt_too_big_image   = "このファイルはアップロードできません。添付ファイルサイズの上限(100 MB)を超えています。";
+      cbImagePaste.cbp_max_attach_size     = 104857600;
+      cbImagePaste.cbp_max_attachments     = 10;
+      cbImagePaste.cbp_min_chrome_ver      = 535;
+      cbImagePaste.cbp_min_firefox_ver     = 5;
+      cbImagePaste.cbp_act_update_id       = 668;
+    }(window.cbImagePaste = window.cbImagePaste || {}, j$cbp));
+  </script>
+
+  <div id="cbp_header_box">
+    <!-- canvas id="cbp_thumbnail" width="60" height="60"></canvas -->
+    <div id="cbp_instructions">&nbsp;</div>
+  </div>
+  <div id="cbp_panel_box">
+    <!-- place for pasted image editor -->
+  </div>
+</div>
+
+<!-- dialog to copy image link for wiki -->
+<div id="cbp_link_dlg" title="画像とサムネイルへのリンク" style="display:none">
+  <input type="text" id="cbp_image_link" readonly />
+  <p/>
+  <input type="text" id="cbp_thumbnail_link" readonly />
+</div>
+
+</body>
+</html>

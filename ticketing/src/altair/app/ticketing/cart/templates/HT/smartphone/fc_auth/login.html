@@ -2,21 +2,20 @@
 <html lang="en">
 <head>
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
-  <link rel="shortcut icon" href="${request.static_url('altair.app.ticketing.fc_auth:static/HT/pc/images/favicon.ico')}">
-  <title>TAUポイントカード ログインページ</title>
-  <link rel="stylesheet" type="text/css" href="${request.static_url('altair.app.ticketing.fc_auth:static/HT/pc/css/style2.css')}" media="all" />
+  <link rel="shortcut icon" href="${view_context.static_url('smartphone/images/favicon.ico', 'fc_auth')}">
+  <title>${view_context.team_name} ログインページ</title>
+  <link rel="stylesheet" type="text/css" href="${view_context.static_url('pc/css/style2.css','fc_auth')}" media="all" />
 </head>
 <body>
 <div class="header" id="top">
   <div class="header-inner">
     <h1>
       <a href="/">
-        <img src="${request.static_url('altair.app.ticketing.fc_auth:static/HT/pc/images/logo.png')}" alt="TAUポイントカード" height="64"/>
+        <img src="${view_context.static_url('smartphone/images/sp_logo.png', 'fc_auth')}" alt="${view_context.team_name}" height="64"/>
       </a>
     </h1>
   </div>
 </div>
-
 <div class="wrapper">
   <div class="kadomaru">
             <table class="nobdr">
@@ -31,7 +30,7 @@
                         <tr>
                             <td style="text-align:center">
                               <form action="${request.route_url('fc_auth.guest', membership=request.matchdict['membership'])}" method="post">
-                                <input type="submit" class="btnLogin" value="申し込む" /><br/>
+                                <input type="submit" class="btnLogin" value="次へ進む" /><br/>
                                   <div>
                                       
                                   </div>
@@ -68,7 +67,7 @@
                                       <th style="text-align:right">パスワード</th>
                                       <td style="text-align:left">
                                         <div class="tal">
-                                            <input type="password" class="text" name="password"">
+                                            <input type="password" class="text" name="password">
                                         </div>
                                       </td>
                                     </tr>
@@ -87,16 +86,15 @@
 <h3>注意事項</h3>
 <ul class="notes">
     <li>携帯電話､スマートフォンの各キャリアの受信拒否設定から、購入確認メールが受け取れない場合がございますので、
-<span style="color:#f00;">tau-hiroshima@tstar.jpのドメイン指定受信許可設定を行ってください</span>。</li>
+<span style="color:#f00;">@tstar.jpのドメイン指定受信許可設定を行ってください</span>。</li>
     <li>受付開始直後は回線が大変込み合う場合がございますので、予めご了承ください。</li>
     <li>会員番号・パスワードは半角でご入力ください。</li>
 </ul>
 <h3>その他</h3>
 <ul class="notes">
     <li>購入履歴の確認は<a href="/orderreview" target="_blank">こちら</a>から行ってください。</li>
-    <li>パスワードをお忘れの場合<a href="mailto:tau-hiroshima@tstar.jp" target="_blank">こちら</a>からお問合せください。</li>
+    <li>パスワードをお忘れの場合<a href="${h.safe_get_contact_url(request)}" target="_blank">こちら</a>からお問合せください。</li>
 </ul>
-
   </div>
 </div>
 
@@ -104,9 +102,9 @@
   <div class="footer-inner">
     <div class="footernav">
       <ul>
-        <li><a class="first" href="http://www.ticketstar.jp" target="_blank">運営会社</a></li>
-        <li><a href="mailto:tau-hiroshima@tstar.jp" target="_blank">お問い合わせ</a></li>
-        <li><a href="http://privacy.rakuten.co.jp/" target="_blank">個人情報保護方針</a></li>
+        <li><a class="first" href="http://www.ticketstar.jp/corporate" target="_blank">運営会社</a></li>
+        <li><a href="${h.safe_get_contact_url(request)}" target="_blank">お問い合わせ</a></li>
+        <li><a href="http://www.ticketstar.jp/privacy/" target="_blank">個人情報保護方針</a></li>
         <li><a class="last" href="http://www.ticketstar.jp/legal" target="_blank">特定商取引法に基づく表示</a></li>
       </ul>
     </div>
