@@ -30,7 +30,6 @@ if label is None or label is True:
 </div>
 </%def>
 
-
 <div align="center" style="text-align:center">
 ${event.title}<br />
 ${lot.name}
@@ -74,21 +73,13 @@ ${h.format_currency(wish.special_fee)}
 </font></div>
 %endfor
 <%mobile:header>購入者情報</%mobile:header>
-<%mobile:form_header>氏名(漢字)</%mobile:form_header>
+<%mobile:form_header>購入者氏名(漢字)</%mobile:form_header>
 <div>
 ${shipping_address.last_name} ${shipping_address.first_name}
 </div>
-<%mobile:form_header>氏名(カナ)</%mobile:form_header>
+<%mobile:form_header>購入者氏名(カナ)</%mobile:form_header>
 <div>
 ${shipping_address.last_name_kana} ${shipping_address.first_name_kana}
-</div>
-<%mobile:form_header>性別</%mobile:form_header>
-<div>
-${h.format_gender(request, gender)}
-</div>
-<%mobile:form_header>生年月日</%mobile:form_header>
-<div>
-${h.japanese_date(birthday)}
 </div>
 <%mobile:form_header>メールアドレス</%mobile:form_header>
 <div>
@@ -102,9 +93,13 @@ ${shipping_address.tel_1}
 <div>
 ${shipping_address.zip} ${shipping_address.prefecture}${shipping_address.city}${shipping_address.address_1}${shipping_address.address_2}
 </div>
-<%mobile:form_header>メモ</%mobile:form_header>
+<%mobile:form_header>生年月日</%mobile:form_header>
 <div>
-${memo|h.nl2br}
+${h.japanese_date(birthday)}
+</div>
+<%mobile:form_header>性別</%mobile:form_header>
+<div>
+${h.format_gender(request, gender)}
 </div>
 
 <% extra_form_data = entry.get_lot_entry_attribute_pair_pairs(request) %>
