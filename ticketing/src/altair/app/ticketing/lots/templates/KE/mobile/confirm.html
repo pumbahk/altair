@@ -76,23 +76,14 @@ ${h.format_currency(wish.special_fee)}
 </font></div>
 </div>
 %endfor
-
 <%mobile:header>購入者情報</%mobile:header>
-<%mobile:form_header>氏名(漢字)</%mobile:form_header>
+<%mobile:form_header>購入者氏名</%mobile:form_header>
 <div>
 ${shipping_address['last_name']} ${shipping_address['first_name']}
 </div>
-<%mobile:form_header>氏名(カナ)</%mobile:form_header>
+<%mobile:form_header>購入者氏名(カナ)</%mobile:form_header>
 <div>
 ${shipping_address['last_name_kana']} ${shipping_address['first_name_kana']}
-</div>
-<%mobile:form_header>性別</%mobile:form_header>
-<div>
-${h.format_gender(request, gender)}
-</div>
-<%mobile:form_header>生年月日</%mobile:form_header>
-<div>
-${h.japanese_date(birthday)}
 </div>
 <%mobile:form_header>メールアドレス</%mobile:form_header>
 <div>
@@ -108,6 +99,14 @@ ${shipping_address['tel_1']}
 ${shipping_address['prefecture']}${shipping_address['city']}<br />
 ${shipping_address['address_1']}<br />
 ${shipping_address['address_2']}
+</div>
+<%mobile:form_header>生年月日</%mobile:form_header>
+<div>
+${h.japanese_date(birthday)}
+</div>
+<%mobile:form_header>性別</%mobile:form_header>
+<div>
+${h.format_gender(request, gender)}
 </div>
 
 % if extra_form_data:
