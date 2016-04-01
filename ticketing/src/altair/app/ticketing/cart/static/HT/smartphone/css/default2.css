@@ -16,7 +16,7 @@ body {
 
 .header .grpheader {
   float: left;
-  height: 71px;
+  height: 80px;
 }
 
 .header .side-action-buttons {
@@ -62,7 +62,7 @@ ul.menu {
   font-size: 20px;
   line-height: 1.5em;
 }
-
+ 
 .menuitem:hover,
 .menuitem:active {
   background-image: linear-gradient(top, #f8f8f8 0%, #eaebcc 100%);
@@ -183,7 +183,7 @@ ul.menu {
 .btn-large {
   font-size: 20px;
   line-height: 40px;
-  height: 44px;
+  height: 44px; 
 }
 
 .buttonbox {
@@ -391,7 +391,7 @@ ul.panellist.expandable > li.panelgroup {
   border-top: 1px solid #ccc;
   overflow: hidden;
 }
-
+  
 ul.panellist.expandable > li.panelgroup.activated {
   height: auto;
 }
@@ -583,7 +583,7 @@ table.panellist.margined > tbody > tr > td.panel.navigable:active {
 }
 
 .panel .panel-footer {
-  width: auto;
+  width: auto; 
   padding: 4px 4px;
   background-color: #fff;
   background-image: linear-gradient(top, #fff 0%, #eee 98%, #fff 100%);
