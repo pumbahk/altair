@@ -1,5 +1,34 @@
 <%inherit file="./base.html"/>
 <%namespace file="./tags_mobile.html" name="mobile" />
+<%namespace name="fh" module="altair.formhelpers.utils.mako" />
+<%
+   import altair.app.ticketing.cart.helpers as ch
+   import altair.app.ticketing.lots.helpers as h
+   %>
+<%def name="render_field(field, label=False, _description=None, _note=None, _suffix=u'', **kwargs)">
+<%
+_description = _description or field.description
+_note = _note or field._note
+if label is None or label is True:
+  label = field.label
+%>
+<div class="field">
+  % if _description:
+  <div class="field-description">${_description}</div>
+  % endif
+  <div class="control-segment">
+    % if label:
+      ${label}
+    % endif
+    ${fh.render(field, **kwargs)}${_suffix}
+    % if _note:
+    <div class="field-note">${_note}</div>
+    % endif
+    ${ch.error(field.name)}
+  </div>
+</div>
+</%def>
+
 <div align="center" style="text-align:center">
 ${event.title}<br />
 ${lot.name}
@@ -19,7 +48,7 @@ ${lot.name}
   ${h.mobile_error_list(request, form, 'first_name')}
 </div>
 
-<%mobile:form_header>購入者氏名(カナ)${h.mobile_required_mark()}</%mobile:form_header>
+<%mobile:form_header>購入者氏名(全角カナ)${h.mobile_required_mark()}</%mobile:form_header>
 <div>
   ${form['last_name_kana'].label}
   ${form['last_name_kana'](istyle="2", iprod="kana1")}
@@ -29,18 +58,6 @@ ${lot.name}
   ${form['first_name_kana'].label}
   ${form['first_name_kana'](istyle="2", iprod="kana2")}
   ${h.mobile_error_list(request, form, 'first_name_kana')}
-</div>
-
-<%mobile:form_header>${form['sex'].label}${h.mobile_required_mark()}</%mobile:form_header>
-<div>
-  ${form['sex'](_widget=h.mobile_list_widget(request))}
-  ${h.mobile_error_list(request, form, 'sex')}
-</div>
-
-<%mobile:form_header>誕生日${h.mobile_required_mark()}</%mobile:form_header>
-<div>
-  ${form['birthday'](_widget=h.sensible_widget(request, form['birthday'].widget), istyle="4")}
-  ${h.mobile_error_list(request, form, 'birthday', with_label=True)}
 </div>
 
 <%mobile:form_header>${form['email_1'].label}${h.mobile_required_mark()}</%mobile:form_header>
@@ -86,14 +103,27 @@ ${lot.name}
   ${h.mobile_error_list(request, form, 'tel_1')}
 </div>
 
-<%mobile:form_header>${form['memo'].label.text}</%mobile:form_header>
+<%mobile:form_header>生年月日${h.mobile_required_mark()}</%mobile:form_header>
 <div>
-  ${form['memo']}
-  ${h.mobile_error_list(request, form, 'memo')}
-  <div style="font-size: 80%;">
-  ※ご質問を入力されても返信はいたしかねます。<br>
-  </div>
+  ${form['birthday'](_widget=h.sensible_widget(request, form['birthday'].widget), istyle="4")}
+  ${h.mobile_error_list(request, form, 'birthday', with_label=True)}
 </div>
+
+<%mobile:form_header>${form['sex'].label}${h.mobile_required_mark()}</%mobile:form_header>
+<div>
+  ${form['sex'](_widget=h.mobile_list_widget(request))}
+  ${h.mobile_error_list(request, form, 'sex')}
+</div>
+
+% for field in form['extra']._contained_form:
+% if not field.short_name in {'member_type'}:
+<%mobile:form_header>${field.label}</%mobile:form_header>
+<div>
+${render_field(field)}
+${h.error_list(request, field)}
+</div>
+% endif
+% endfor
 
 <hr />
 <div>
@@ -132,7 +162,6 @@ ${h.format_currency(m.special_fee)} (${h.fee_type(m.special_fee_type)})
 <img src="${request.static_url('altair.app.ticketing.cart:static/RP/mobile/images/visa.gif')}" height="30px" />
 <img src="${request.static_url('altair.app.ticketing.cart:static/RP/mobile/images/master.gif')}" height="30px" />
 <img src="${request.static_url('altair.app.ticketing.cart:static/RP/mobile/images/jcb.gif')}" height="30px" />
-<img src="${request.static_url('altair.app.ticketing.cart:static/RP/mobile/images/amex_logo.gif')}" height="30px" />
 </font>
 % elif m.payment_method.payment_plugin_id == 2:
 <font size="-2">
