@@ -1,0 +1,11 @@
+<%inherit file="./base.html" />
+<%namespace file="./tags_mobile.html" name="mobile" />
+<div align="center" style="text-align:center">
+<p>
+${lot.event.title} ${lot.name} <br/>
+ の申込期間は<br/>
+${h.japanese_datetime(lot.start_at)} ～<br>
+${h.japanese_datetime(lot.end_at)} となっております。
+</p>
+
+</div>
