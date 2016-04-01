@@ -1,10 +1,10 @@
 <html lang="ja">
 <head>
-  <title>TAUポイントカード</title>
+  <title>${view_context.team_name}</title>
 </head>
 <body style="background-color:#FFFFFF" bgcolor="#FFFFFF">
 <div align="center">
-  <img src="${request.static_url('altair.app.ticketing.fc_auth:static/HT/mobile/images/logo_mobile.gif')}" width="240" height="96" alt="TAUポイントカード" />
+  <img src="${view_context.static_url('mobile/images/mb_logo.gif', 'fc_auth')}" width="240" height="96" alt="${view_context.team_name}" />
 </div>
 <div>
 <div style="background-color:#0A50AA" bgcolor="#0A50AA"><font color="white">お申込み</font></div>
@@ -16,7 +16,7 @@
 
 </div>
 <form action="${request.path}" method="post">
-<input type="hidden" name="membership" value="HT" />
+<input type="hidden" name="membership" value="${view_context.organization_short_name}" />
 <div>
   会員番号<br/>
   <input type="text" name="username" size="22" value="" istyle="4">
@@ -25,7 +25,7 @@
   %endif
   <br/>
   パスワード<br/>
-  <input type="password" name="password"" size="22" value="" istyle="4">
+  <input type="password" name="password" size="22" value="" istyle="4">
 </div>
 <input type="submit" value="ログイン" />
 </form>
@@ -39,7 +39,7 @@
 <form action="${request.route_url('fc_auth.guest', membership=request.matchdict['membership'])}" method="post">
 <div style="text-align:center;">
 <br/>
-<input type="submit" value="&gt;&gt;申し込む&lt;&lt;"/><br />
+<input type="submit" value="&gt;&gt;次へ進む&lt;&lt;"/><br />
 <div>
 
 </div>
@@ -50,7 +50,7 @@
 <hr size="1" color="#888888" noshade="noshade" />
 <div align="center" style="font-size:x-small">
   <div>
-    <a href="http://www.ticketstar.jp">運営会社</a> | <a href="http://privacy.rakuten.co.jp/">個人情報保護方針</a> | <a href="http://www.ticketstar.jp/legal">特定商取引法に基づく表示</a>
+    <a href="http://www.ticketstar.jp/corporate">運営会社</a> | <a href="http://www.ticketstar.jp/privacy/">個人情報保護方針</a> | <a href="http://www.ticketstar.jp/legal">特定商取引法に基づく表示</a>
   </div>
 <div><font color="#888888"> &copy; TicketStar, Inc.</font></div>
 </div>

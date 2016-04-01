@@ -19,7 +19,7 @@ ${cart.performance.event.title} ${cart.performance.name} ${h.performance_datetim
 % else:
   ${product.product.name} × ${product.quantity}<br/>
 % endif
-￥${h.format_number(product.product.price * product.quantity)}<br/>
+  ￥${h.format_number(product.product.price * product.quantity)}<br/>
 % if product.product.sales_segment.setting.display_seat_no:
   % for seat in product.seats:
   ${seat['name']}<br/>
@@ -92,7 +92,7 @@ ${shipping.zip} ${shipping.prefecture}${shipping.city}${shipping.address_1}${shi
 
 % if mailmagazines_to_subscribe:
 <%mobile:header>メールマガジンの配信</%mobile:header>
-ご利用いただいた方には、TAUポイントカードからのメールマガジンをお送りします。不要な方はチェックをはずしてください。<br />
+ご利用いただいた方には、${view_context.team_name}からのメールマガジンをお送りします。不要な方はチェックをはずしてください。<br />
 % for mailmagazine, subscribed in mailmagazines_to_subscribe:
 % if subscribed:
 <font color="red">(購読済)</font>
