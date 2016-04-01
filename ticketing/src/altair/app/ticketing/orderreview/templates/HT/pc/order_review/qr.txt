@@ -9,7 +9,6 @@ ${performance.name}
 会場: ${performance.venue.name}
 
 日付: ${h.performance_datetime(performance)}
-
 %if product:
 席種: ${product.name}
 %endif
