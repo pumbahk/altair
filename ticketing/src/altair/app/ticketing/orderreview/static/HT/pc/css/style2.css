@@ -119,7 +119,7 @@ h1{
 }
 
 h2 {
-background: #00A8AD; /* Old browsers */
+background: #E8240C; /* Old browsers */
 margin: 0 0 20px 0;
 padding: 10px 10px;
 color: #FFF;
@@ -134,11 +134,11 @@ font-weight:700;
 font-size:15px;
 color:#FFF;
 line-height:1;
-border-left:5px solid #000000;
-border-top:1px dotted #000000;
-border-bottom:1px dotted #000000;
-border-right:1px dotted #000000;
-background:#00A8AD;
+border-left:5px solid #F0F0E1;
+border-top:1px solid #686859;
+border-bottom:1px solid #686859;
+border-right:1px solid #686859;
+background:#686859;
 padding:4px 0 4px 10px;
 }
 
@@ -268,7 +268,7 @@ color: #000;
 }
 
 .gnavi ul li a:hover {
-color:#09355F;
+color:#686859;
 text-decoration:none;
 }
 
@@ -295,11 +295,11 @@ background:none repeat scroll 0 0 #FFF;
 border-radius:10px 10px 10px 10px;
 margin:20px auto;
 padding:30px;
-/*border: 2px #09355F solid;*/
+/*border: 2px #686859 solid;*/
 }
 
 a {
-color:#09355F;
+color:#686859;
 }
 
 a:hover {
@@ -316,7 +316,7 @@ clear:both!important;
 }
 
 .cred{
-color: #09355F;
+color: #686859;
 }
 
 .ylw{
@@ -326,9 +326,9 @@ color: #fc0;
 -moz-box-shadow:inset 0px 1px 0px 0px #f5978e;
 -webkit-box-shadow:inset 0px 1px 0px 0px #f5978e;
 box-shadow:inset 0px 1px 0px 0px #f5978e;
-background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #f24537), color-stop(1, #09355F) );
-background:-moz-linear-gradient( center top, #f24537 5%, #09355F 100% );
-filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#f24537', endColorstr='#09355F');
+background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #f24537), color-stop(1, #686859) );
+background:-moz-linear-gradient( center top, #f24537 5%, #686859 100% );
+filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#f24537', endColorstr='#686859');
 background-color:#f24537;
 -webkit-border-top-left-radius:6px;
 -moz-border-radius-topleft:6px;
@@ -358,10 +358,10 @@ text-align:center;
 text-shadow:1px 1px 0px #810e05;
 }
 .btnR:hover {
-background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #09355F), color-stop(1, #f24537) );
-background:-moz-linear-gradient( center top, #09355F 5%, #f24537 100% );
-filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#09355F', endColorstr='#f24537');
-background-color:#09355F;
+background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #686859), color-stop(1, #f24537) );
+background:-moz-linear-gradient( center top, #686859 5%, #f24537 100% );
+filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#686859', endColorstr='#f24537');
+background-color:#686859;
 color:#ffffff !important;
 }
 .btnR:active {
@@ -428,7 +428,7 @@ border-radius:6px;
 text-indent:0;
 border:1px solid #edadb5;
 display:inline-block;
-color:#09355F;
+color:#686859;
 font-family:Arial;
 font-size:16px;
 font-weight:bold;
@@ -446,7 +446,7 @@ background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #f2
 background:-moz-linear-gradient( center top, #f2ab1e 5%, #ffcc00 100% );
 filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#f2ab1e', endColorstr='#ffcc00');
 background-color:#f2ab1e;
-color:#09355F;
+color:#686859;
 }
 .historySearchBtn:active {
 position:relative;
@@ -461,14 +461,15 @@ table {
 width:96%;
 border-spacing:0;
 font-size:14px;
-border-top:1px solid #09355F;
+border-top:1px solid #686859;
 border-collapse: collapse;
 margin: auto auto;
 cursor: default;
 }
 
 table tr{
-border-bottom: 1px solid #09355F;
+border-bottom: 1px solid #686859;
+border-left: 1px solid #686859;
 }
 
 table th {
@@ -480,13 +481,13 @@ cursor: default;
 }
 
 table tbody th {
-  color: #FFF;
-  background-color:#00A8AD;
+  color: #686859;
+  background-color:#F0F0E1;
 }
 
 table thead th {
-  background-color:#00A8AD;
-  color:#FFF;
+  color:#686859;
+  background-color:#F0F0E1;
 }
 
 table thead th:first-child {
@@ -494,25 +495,24 @@ border-bottom:none;
 }
 
 table thead th {
-border-bottom:1px solid #09355F;
+border-bottom:1px solid #686859;
 }
 
 table th:last-child {
-border-right:1px solid #09355F;
+border-right:1px solid #686859;
+border-left:1px solid #686859;
 }
 
 table tr td {
-border-bottom:1px solid #09355F;
-border-left:1px solid #09355F;
+border-bottom:1px solid #686859;
+border-left:1px solid #686859;
 padding:8px 15px;
 cursor: default;
 }
 
 table tr td:last-child {
-border-right:1px solid #09355F;
-}
-
-table tr td{
+border-right:1px solid #686859;
+border-left:1px solid #686859;
 }
 
 table tr td:hover {
@@ -536,6 +536,7 @@ cursor: default;
 table.pricelist tr:hover{
 
 }
+
 table.pricelist th{
 padding: 5px;
 font-weight: bold;
@@ -543,12 +544,12 @@ font-weight: bold;
 
 table.default {
 border-collapse: collapse;
-border: 1px #09355F solid;
+border: 1px #686859 solid;
 margin: 20px auto;
 }
 
 table.default th {
-border: solid 1px #09355F;
+border: solid 1px #686859;
 color: #fff;
 background:rgba(134,0,16,0.6);
 text-shadow: none;
@@ -556,14 +557,14 @@ padding:5px;
 }
 
 table.default td {
-border: solid 1px #09355F;
+border: solid 1px #686859;
 color: #000000;
 padding:5px;
 text-align: center;
 }
 
-table.default td a:hover{
-color: #09355F;
+table.default td a:hover {
+color: #686859;
 position:relative;
 top:1px;
 }
@@ -600,8 +601,8 @@ margin: 7px 0;
 }
 
 dl.faq dt{
-color: #09355F;
-border-left: 5px #09355F solid;
+color: #686859;
+border-left: 5px #686859 solid;
 padding: 0px 0 0 10px;
 font-size: 16px;
 font-weight: bold;
@@ -624,11 +625,11 @@ text-align: right;
 display: inline-block;
 padding: 5px;
 float: right;
-border: 3px #09355F solid;
+border: 3px #686859 solid;
 }
 
 a.sidebtnA {
-border-left: 5px #09355F solid;
+border-left: 5px #686859 solid;
 -moz-box-shadow:inset 0px 1px 0px 0px #ffffff;
 -webkit-box-shadow:inset 0px 1px 0px 0px #ffffff;
 box-shadow:inset 0px 1px 0px 0px #ffffff;
@@ -704,7 +705,7 @@ padding:0;
 }
 
 .footer .footernav ul li {
-border-left:1px solid #09355F;
+border-left:1px solid #686859;
 display:inline;
 padding:0 6px;
 }
@@ -755,7 +756,7 @@ padding: 5px;
 }
 
 .guestbox thead th {
-background: #09355F;
+background: #686859;
 font-size: 20px;
 height: 30px;
 }
@@ -771,26 +772,26 @@ background: #fffecb;
 .loginbox {
 border: 1px #555 solid;
 width: 420px;
-height: 450px;
+height: 240px;
 }
 
 .loginbox thead th {
-background-color: #09355F;
+background-color: #686859;
 color: #fff;
 font-size: 20px;
 height: 30px;
 }
 
 .loginbox td {
-background: #fffecb;
+background: #F0F0E1;
 }
 
 .loginbox th {
-background: #fffecb;
+background: #F0F0E1;
 }
 
 .member th {
-color: #09355F;
+color: #686859;
 text-align: right;
 }
 
@@ -857,16 +858,16 @@ border-collapse: collapse;
 margin: 0px auto 20px auto;
 padding: 10px;
 width: 100%;
-border: 5px solid #09355F;
+border: 5px solid #686859;
 }
 
 .formWrapper table.form tbody th{
-background-color: #205A86;
+background-color: #F0F0E1;
 border-collapse: collapse;
 padding: 10px;
-border-bottom: 1px solid #09355F;
+border-bottom: 1px solid #686859;
 text-align: right;
-color: #FFF;
+color: #686859`;
 }
 
 
@@ -874,7 +875,7 @@ color: #FFF;
 background-color: #efefef;
 border-collapse: collapse;
 padding: 10px;
-border-bottom: 1px solid #09355F;
+border-bottom: 1px solid #686859;
 font-size: 16px;
 color: #000;
 }
@@ -883,7 +884,7 @@ color: #000;
 .formWrapper table.form td{
 background-color: #fff;
 padding: 20px 10px;
-border-bottom: 1px solid #09355F;
+border-bottom: 1px solid #686859;
 text-align: left;
 
 }
@@ -891,13 +892,13 @@ text-align: left;
 .formWrapper table.form tfoot td{
 background-color: #fff;
 padding: 10px;
-border-top: 2px solid #09355F;
+border-top: 2px solid #686859;
 font-size: 16px;
 text-align: left;
 }
 
 .formWrapper table.form input{
-border: 1px solid #09355F;
+border: 1px solid #686859;
 font-size: 20px;
 line-height: 120%;
 height: 30px;
@@ -912,12 +913,12 @@ margin: 10px auto;
 font-size: 20px;
 font-weight: bold;
 display: inline-block;
-background-color:#000000;
+background-color:#FB6F56;
 }
 
 .formWrapper table.form input.submit:hover,
 .btnLogin:hover {
-background-color:#000000;
+background-color:#FB6F56;
 }
 
 
@@ -937,7 +938,7 @@ background: url(images/mypage/bg_search.gif) no-repeat 0 0;
 vertical-align: middle;
 }
 
-#mypageHistory div .box {
+#mypageHistory div.box {
 clear: both;
 overflow: hidden;
 padding: 10px 0 5px;
