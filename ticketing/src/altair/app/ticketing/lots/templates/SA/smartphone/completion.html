@@ -1,4 +1,10 @@
 <%inherit file="${context['main_template'].uri}" />
+<%namespace name="fh" module="altair.formhelpers.utils.mako" />
+<%
+   import altair.app.ticketing.cart.helpers as ch
+   import altair.app.ticketing.lots.helpers as h
+%>
+
 <div id="main">
 <form method="post" action="${request.route_path('lots.entry.index', event_id=event.id, lot_id=lot.id)}">
 
@@ -74,10 +80,10 @@
 
 <div class="detailBox">
 <ul>
-<li>氏名(漢字)&nbsp;${shipping_address.last_name}&nbsp;${shipping_address.first_name}</li>
-<li>氏名(カナ)&nbsp;${shipping_address.last_name_kana}&nbsp;${shipping_address.first_name_kana}</li>
+<li>購入者氏名&nbsp;${shipping_address.last_name}&nbsp;${shipping_address.first_name}</li>
+<li>購入者氏名(カナ)&nbsp;${shipping_address.last_name_kana}&nbsp;${shipping_address.first_name_kana}</li>
 <li>メールアドレス&nbsp;${shipping_address.email_1}</li>
-<li>電話番号${shipping_address.tel_1}</li>
+<li>電話番号&nbsp;&nbsp;${shipping_address.tel_1}</li>
 <li>住所<br>
 ※配達受取を選択した場合<br>
 〒${shipping_address.zip}&nbsp;
@@ -86,11 +92,26 @@ ${shipping_address.address_2}
 </li>
 <li>生年月日&nbsp;${u"{0.year} 年 {0.month}月 {0.day}日".format(birthday)}</li>
 <li>性別&nbsp;${h.format_gender(request, gender)}</li>
-<li>メモ欄&nbsp;${memo|h.nl2br}</li>
 
 </ul>
 </div>
 </dd>
+
+<% extra_form_data = entry.get_lot_entry_attribute_pair_pairs(request) %>
+% if extra_form_data:
+<dt class="creditHl">追加情報</dt>
+<dd>
+  <div class="detailBox">
+    <ul>
+      % for _, (display_name, display_value) in extra_form_data:
+      <li>
+        <th scope="row">${display_name}: &nbsp;${ch.sensible_coerce(request, display_value)}</th>
+      </li>
+      % endfor
+    </ul>
+  </div>
+</dd>
+% endif
 
 <dt class="creditHl">注意事項</dt>
 <dd>
