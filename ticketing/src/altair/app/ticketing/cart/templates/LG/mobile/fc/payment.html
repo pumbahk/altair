@@ -36,22 +36,6 @@ ${m.delivery_method.name}<br/>
 % if m.special_fee > 0:
 ${m.special_fee_name}:${h.format_currency(m.special_fee)} (${h.fee_type(m.special_fee_type)})<br />
 % endif
-<div>
-% if m.payment_method.payment_plugin_id == 1:
-<font size="-2">
-予約受付完了と同時に決済され、即時予約確定となります。支払回数は≪1回払い≫のみのお取扱いとなります。以下のクレジットカードがご利用できます。<br />
-<img src="${view_context.static_url('mobile/images/kc_logo_rakuten.gif')}" height="30px" />
-<img src="${view_context.static_url('mobile/images/visa.gif')}" height="30px" />
-<img src="${view_context.static_url('mobile/images/master.gif')}" height="30px" />
-<img src="${view_context.static_url('mobile/images/jcb.gif')}" height="30px" />
-</font>
-% elif m.payment_method.payment_plugin_id == 3:
-<font size="-2">
-予約有効期日までにお支払頂きます。<br />
-お支払が確認できた時点で予約確定となります。<br />
-</font>
-% endif
-</div>
 %endfor
 <hr />
 <input type="submit" name="back" value="戻る" class="submit" />
