@@ -1,4 +1,9 @@
 <%inherit file="${context['main_template'].uri}" />
+<%namespace name="fh" module="altair.formhelpers.utils.mako" />
+<%
+   import altair.app.ticketing.cart.helpers as ch
+   import altair.app.ticketing.lots.helpers as h
+%>
 %if can_withdraw:
 <div align="center">
 <h1>この抽選申込を取消しますか?</h1>
@@ -34,13 +39,13 @@
 </div>
 %endif
 
+
 <div class="confirmBox">
   <div class="confirmBoxInner">
     <h2><img src="${request.static_url('altair.app.ticketing.lots:static/GM/pc/img/order/title_number.gif')}" alt="申込番号" width="97" height="30" /></h2>
     <div class="confirmBoxText">${entry.entry_no}</div>
   </div>
 </div>
-
 %if h.lot_entry_display_status(entry, now) == u'抽選申込取消':
   <div class="confirmBox">
     <dl>
@@ -166,12 +171,8 @@
             <td>${shipping_address.email_1}</td>
           </tr>
           <tr>
-            <th>電話番号 (自宅)</th>
+            <th>電話番号</th>
             <td>${shipping_address.tel_1}</td>
-          </tr>
-          <tr>
-            <th>電話番号 (携帯電話)</th>
-            <td>${shipping_address.tel_2}</td>
           </tr>
           <tr>
             <th>住所</th>
@@ -188,10 +189,15 @@
             <th>性別</th>
             <td>${h.format_gender(request, gender)}</td>
           </tr>
-          <tr class="settlementSelectEnd">
-            <th><label>メモ欄</label></th>
-            <td>${memo|h.nl2br}</td>
-          </tr>
+          <% extra_form_data = entry.get_lot_entry_attribute_pair_pairs(request) %>
+          % if extra_form_data:
+            % for _, (display_name, display_value) in extra_form_data:
+              <tr>
+                <th scope="row">${display_name}</th>
+                <td>${ch.sensible_coerce(request, display_value)}</td>
+              </tr>
+            % endfor
+          % endif
         </table>
       </div>
     </div>
