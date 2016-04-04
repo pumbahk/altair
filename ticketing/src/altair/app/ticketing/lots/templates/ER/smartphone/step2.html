@@ -28,6 +28,8 @@ if label is None or label is True:
 </div>
 </%def>
 
+
+
 <%block name="javascript">
     <script type="text/javascript">
     $(document).ready(function(){
@@ -191,16 +193,6 @@ ${self.error(form, 'email_1_confirm')}
 <p class="tyuui2">${form['email_1'].description}</p>
 </dd>
 
-<dt class="creditHl">電話番号(半角数字)</dt>
-<dd>
-<p>
-${h.render_label(form['tel_1'])}（固定電話をお持ちでない場合は、携帯電話番号を入力してください。）<br/>
-${form['tel_1']}<br/>
-${self.error(form, 'tel_1')}
-(例: 03xxxxyyyy)
-</p>
-</dd>
-
 <dt class="creditHl">住所</dt>
 <dd>
 <p>
@@ -239,6 +231,16 @@ ${self.error(form, 'address_2')}
 </p>
 </dd>
 
+<dt class="creditHl">電話番号(半角数字)</dt>
+<dd>
+<p>
+${h.render_label(form['tel_1'])}（固定電話をお持ちでない場合は、携帯電話番号を入力してください。）<br/>
+${form['tel_1']}<br/>
+${self.error(form, 'tel_1')}
+(例: 03xxxxyyyy)
+</p>
+</dd>
+
 <dt class="creditHl"><label class="required" for="birthday">生年月日</label></dt>
 <dd>
 <p>
@@ -273,9 +275,6 @@ ${self.error(form, 'sex')}
 </dd>
 % endif
 % endfor
-</dd>
-
-
 
 </dl>
 </div>
