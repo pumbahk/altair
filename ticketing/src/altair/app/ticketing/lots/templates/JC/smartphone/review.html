@@ -123,7 +123,7 @@ dl.cost-detail > dd {
         </div>
       </div>
     </div>
-  </div>
+  </div> 
 
   <div class="subbox">
     <dl>
@@ -137,10 +137,8 @@ dl.cost-detail > dd {
             <dd>${shipping_address.last_name_kana} ${shipping_address.first_name_kana}</dd>
             <dt class="creditHl">メールアドレス</dt>
             <dd>${shipping_address.email_1}</dd>
-            <dt class="creditHl">電話番号 (自宅)</dt>
+            <dt class="creditHl">電話番号</dt>
             <dd>${shipping_address.tel_1}</dd>
-            <dt class="creditHl">電話番号 (携帯電話)</dt>
-            <dd>${shipping_address.tel_2}</dd>
             <dt class="creditHl">住所</dt>
             <dd>
               〒${shipping_address.zip}<br />
@@ -155,30 +153,28 @@ dl.cost-detail > dd {
         </div>
       </dd>
     </dl>
+  </div>
+</div>
 
 <% extra_form_data = entry.get_lot_entry_attribute_pair_pairs(request) %>
 % if extra_form_data:
-<div class="settlementBox">
-  <div class="settlementBoxInner">
-    <h2 class="title">追加情報</h2>
-      <div class="settlementSelectBox">
-        <div class="settlementSelectBoxInner02">
-            <table summary="追加情報">
+<div class="subbox">
+  <dl>
+    <dt><p class="lineRed">追加情報</p></dt>
+      <dd>
+          <div class="subInner2">
+              <dl class="creditList">
                 % for _, (display_name, display_value) in extra_form_data:
-                <tr>
-                    <th>${display_name}</th>
-                    <td>${h.sensible_coerce(request, display_value)}</td>
-                </tr>
+                <dt class="creditHl">${display_name}</dt>
+                <dd>${h.sensible_coerce(request, display_value)}</dd>
                 % endfor
-            </table>
-        </div>
-      </div>
-  </div>
+              </dl>
+          </div>
+      </dd>
+  </dl>
 </div>
 % endif
 
-  </div>
-</div>
 %if can_withdraw_show:
 <form method="POST" id="withdrawForm" name="withdrawForm" action="${request.route_path('lots.review.withdraw.confirm')}">
     <div align="center">

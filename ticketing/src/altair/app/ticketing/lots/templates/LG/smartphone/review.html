@@ -123,7 +123,38 @@ dl.cost-detail > dd {
         </div>
       </div>
     </div>
+  </div> 
+
+  <div class="subbox">
+    <dl>
+      <dt><p class="lineRed">購入者情報</p></dt>
+      <dd>
+        <div class="subInner2">
+          <dl class="creditList">
+            <dt class="creditHl">購入者氏名</dt>
+            <dd>${shipping_address.last_name} ${shipping_address.first_name}</dd>
+            <dt class="creditHl">購入者氏名（カナ）</dt>
+            <dd>${shipping_address.last_name_kana} ${shipping_address.first_name_kana}</dd>
+            <dt class="creditHl">メールアドレス</dt>
+            <dd>${shipping_address.email_1}</dd>
+            <dt class="creditHl">電話番号</dt>
+            <dd>${shipping_address.tel_1}</dd>
+            <dt class="creditHl">住所</dt>
+            <dd>
+              〒${shipping_address.zip}<br />
+              ${shipping_address.prefecture}${shipping_address.city}${shipping_address.address_1}<br />
+              ${shipping_address.address_2}</td>
+            </d>
+            <dt class="creditHl">生年月日</dt>
+            <dd>${u"{0.year} 年 {0.month}月 {0.day}日".format(birthday)}</dd>
+            <dt class="creditHl">性別</dt>
+            <dd>${h.format_gender(request, gender)}</dd>
+          </dl>
+        </div>
+      </dd>
+    </dl>
   </div>
+</div>
 
 <% extra_form_data = entry.get_lot_entry_attribute_pair_pairs(request) %>
 % if extra_form_data:
@@ -143,39 +174,6 @@ dl.cost-detail > dd {
   </dl>
 </div>
 % endif
-
-  <div class="subbox">
-    <dl>
-      <dt><p class="lineRed">購入者情報</p></dt>
-      <dd>
-        <div class="subInner2">
-          <dl class="creditList">
-            <dt class="creditHl">購入者氏名</dt>
-            <dd>${shipping_address.last_name} ${shipping_address.first_name}</dd>
-            <dt class="creditHl">購入者氏名（カナ）</dt>
-            <dd>${shipping_address.last_name_kana} ${shipping_address.first_name_kana}</dd>
-            <dt class="creditHl">メールアドレス</dt>
-            <dd>${shipping_address.email_1}</dd>
-            <dt class="creditHl">電話番号 </dt>
-            <dd>${shipping_address.tel_1}</dd>
-            <dt class="creditHl">住所</dt>
-            <dd>
-              〒${shipping_address.zip}<br />
-              ${shipping_address.prefecture}${shipping_address.city}${shipping_address.address_1}<br />
-              ${shipping_address.address_2}</td>
-            </d>
-            <dt class="creditHl">生年月日</dt>
-            <dd>${u"{0.year} 年 {0.month}月 {0.day}日".format(birthday)}</dd>
-            <dt class="creditHl">性別</dt>
-            <dd>${h.format_gender(request, gender)}</dd>
-            <dt class="creditHl">メモ欄</dt>
-            <dd>${memo|h.nl2br}</dd>
-          </dl>
-        </div>
-      </dd>
-    </dl>
-  </div>
-</div>
 
 %if can_withdraw_show:
 <form method="POST" id="withdrawForm" name="withdrawForm" action="${request.route_path('lots.review.withdraw.confirm')}">
