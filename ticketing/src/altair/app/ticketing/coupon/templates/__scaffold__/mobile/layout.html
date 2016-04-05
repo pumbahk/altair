@@ -1,0 +1,21 @@
+<html>
+  <head>
+    <title>${view_context.team_name} 購入確認ページ</title>
+  </head>
+  <body style="background-color:#FFFFFF" bgcolor="#FFFFFF">
+    <div style="text-align: center; background-color: #FFF">
+      <a href="${view_context.host_name}">
+        <img src="${view_context.static_url('mobile/images/logo_mobile.gif')}" alt="${view_context.team_name}" width="100%"/>
+      </a>
+    </div>
+
+    <%block name="header">
+    </%block>
+    </div>
+    ${next.body()}
+    <hr />
+    <div>
+      &copy; TicketStar, Inc. 
+    </div>
+  </body>
+</html>
