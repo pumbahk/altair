@@ -2,8 +2,7 @@
 <%
    import altair.app.ticketing.cart.helpers as ch
    import altair.app.ticketing.lots.helpers as h
-   %>
-
+%>
 <p class="pageTitle">申込を完了しました</p>
 <div class="confirmBox">
   <div class="confirmBoxInner">
@@ -13,7 +12,7 @@
 </div>
 <div class="settlementBox">
   <div class="settlementBoxInner">
-    <h2 class="title"><img src="${request.static_url('altair.app.ticketing.lots:static/JC/pc/img/order/title_hope.gif')}" alt="希望選択" width="97" height="30" /></h2>
+    <h2 class="title"><img src="${request.static_url('altair.app.ticketing.lots:static/JC/pc/img/order/title_hope.gif')}" alt="お申込内容" width="97" height="30" /></h2>
     %for wish in wishes:
     <div class="settlementSelectBox">
       <div class="settlementSelectBoxInner02">
@@ -57,9 +56,9 @@
     <h2><img src="${request.static_url('altair.app.ticketing.lots:static/JC/pc/img/order/title_buyer.gif')}" alt="エントリー代表者情報" width="97" height="30" /></h2>
     <div class="settlementSelectBox">
       <div class="settlementSelectBoxInner02">
-        <table summary="お支払・お引取り方法選択">
+        <table summary="エントリー代表者情報">
           <tr>
-            <th>エントリー代表者氏名（全角）</th>
+            <th>エントリー代表者氏名</th>
             <td>${shipping_address.last_name} ${shipping_address.first_name}</td>
           </tr>
           <tr>
@@ -85,7 +84,7 @@
             <th>生年月日</th>
             <td>${u"{0.year} 年 {0.month}月 {0.day}日".format(birthday)}</td>
           </tr>
-          <tr class="settlementSelectEnd">
+          <tr>
             <th>性別</th>
             <td>${h.format_gender(request, gender)}</td>
           </tr>

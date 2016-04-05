@@ -1,4 +1,8 @@
 <%inherit file="${context['main_template'].uri}" />
+<%
+   import altair.app.ticketing.cart.helpers as ch
+   import altair.app.ticketing.lots.helpers as h
+%>
 <p class="pageTitle">申込を完了しました</p>
 <div class="confirmBox">
   <div class="confirmBoxInner">
@@ -8,7 +12,7 @@
 </div>
 <div class="settlementBox">
   <div class="settlementBoxInner">
-    <h2 class="title"><img src="${request.static_url('altair.app.ticketing.lots:static/TK/pc/img/order/title_hope.gif')}" alt="希望選択" width="97" height="30" /></h2>
+    <h2 class="title"><img src="${request.static_url('altair.app.ticketing.lots:static/TK/pc/img/order/title_hope.gif')}" alt="お申込内容" width="97" height="30" /></h2>
     %for wish in wishes:
     <div class="settlementSelectBox">
       <div class="settlementSelectBoxInner02">
@@ -52,9 +56,9 @@
     <h2><img src="${request.static_url('altair.app.ticketing.lots:static/TK/pc/img/order/title_buyer.gif')}" alt="購入者情報" width="97" height="30" /></h2>
     <div class="settlementSelectBox">
       <div class="settlementSelectBoxInner02">
-        <table summary="お支払・お引取り方法選択">
+        <table summary="購入者情報">
           <tr>
-            <th>購入者氏名（全角）</th>
+            <th>購入者氏名</th>
             <td>${shipping_address.last_name} ${shipping_address.first_name}</td>
           </tr>
           <tr>
@@ -84,15 +88,29 @@
             <th>性別</th>
             <td>${h.format_gender(request, gender)}</td>
           </tr>
-          <tr class="settlementSelectEnd">
-            <th><label>メモ欄</label></th>
-            <td>${memo|h.nl2br}</td>
-          </tr>
         </table>
       </div>
     </div>
   </div>
 </div>
+
+<% extra_form_data = entry.get_lot_entry_attribute_pair_pairs(request) %>
+% if extra_form_data:
+<div class="confirmBox">
+	<div class="confirmBoxInner">
+    <h2>追加情報</h2>
+	  <table id="contentsOfShopping">
+    % for _, (display_name, display_value) in extra_form_data:
+      <tr>
+        <th scope="row">${display_name}</th>
+        <td>${ch.sensible_coerce(request, display_value)}</td>
+      </tr>
+    % endfor
+    </table>
+  </div>
+</div>
+% endif
+
 <div class="settlementBox">
   <div class="settlementBoxInner">
     <h2>注意事項</h2>
