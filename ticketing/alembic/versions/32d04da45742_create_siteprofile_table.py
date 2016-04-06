@@ -2,14 +2,14 @@
 """Create SiteProfile table
 
 Revision ID: 32d04da45742
-Revises: ddaa27c32b6
+Revises: 39b1645c028e
 Create Date: 2016-02-24 12:51:36.801915
 
 """
 
 # revision identifiers, used by Alembic.
 revision = '32d04da45742'
-down_revision = 'ddaa27c32b6'
+down_revision = '39b1645c028e'
 
 from alembic import op
 import sqlalchemy as sa
