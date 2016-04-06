@@ -3,6 +3,7 @@
 
 <%mobile:header>チケット購入</%mobile:header>
 <div>購入を完了いたしました。</div>
+<div>${(view_context.embedded_html_complete_page_mobile or u'')|n}</div>
 <div>下記の受付番号はとても大切な番号です。すぐにメモして保管してください。</div>
 
 <%mobile:header>受付番号</%mobile:header>
@@ -69,6 +70,6 @@ ${h.render_payment_finished_viewlet(request, order)}
 ${h.render_delivery_finished_viewlet(request, order)}
 </div>
 <br />
-<div>お申込内容は、「<a href="https://tau-hiroshima.tstar.jp/orderreview">購入履歴確認</a>」からもご確認いただけます。受付番号とご登録時のお電話番号をお手元にご用意の上、ご利用ください。</div>
+<div>お申込内容は、「<a href="${view_context.orderreview_page_url}">購入履歴確認</a>」からもご確認いただけます。受付番号とご登録時のお電話番号をお手元にご用意の上、ご利用ください。</div>
 <a href="${request.context.host_base_url}">チケットTOP</a>
 <a href="${request.route_url("cart.index", event_id=order.performance.event.id, _query={'performance': order.performance_id})}">他のチケットを購入</a>
