@@ -766,6 +766,20 @@ def resolve_famiport_prefecture_by_name(request, name):
     except KeyError:
         raise FamiPortAPINotFoundError(u'no such prefecture: %s' % name)
 
+
+@user_api
+def can_cancel_famiport_order(request, client_code, order_no, now=None):
+    sys.exc_clear()
+    try:
+        if now is None:
+            now = datetime.now()
+        session = get_db_session(request, 'famiport')
+        return internal.can_cancel_famiport_order(request, session, client_code, order_no, now)
+    except:
+        logger.exception(u'internal error')
+        return False
+
+
 @user_api
 def cancel_famiport_order_by_order_no(request, client_code, order_no, now=None):
     sys.exc_clear()

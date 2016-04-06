@@ -2607,6 +2607,7 @@ class PluginTestBase(unittest.TestCase, CoreTestMixin, CartTestMixin):
             order.order_no=self.new_order_no()
             order.created_at = datetime(2012, 1, 1, 0, 0, 0)
             order.payment_due_at = datetime(2012, 1, 5, 0, 0, 0)
+            order.issuing_end_at = datetime(2012, 1, 8, 0, 0, 0)
             sej_order = self._create_sej_order(order, payment_type)
             self.session.add(order)
             order_pairs[payment_type] = (order, sej_order)
@@ -2721,7 +2722,7 @@ class PaymentPluginTest(PluginTestBase):
                 'X_ticket_kounyu_daikin': sej_order.commission_fee,
                 'X_hakken_daikin': sej_order.ticketing_fee,
                 }
-            plugin.refresh(self.request, order)
+            plugin.refresh(self.request, order, current_date=datetime(2012, 1, 4, 0, 0, 0))
             self.assertTrue(self.dummy_communicator_called)
 
     def test_refresh_fail_without_sej_order(self):
@@ -2846,7 +2847,7 @@ class DeliveryPluginTest(PluginTestBase):
                 self.result.update({
                     'X_barcode_no_01': '00000002',
                     })
-            plugin.refresh(self.request, order)
+            plugin.refresh(self.request, order, current_date=datetime(2012, 1, 4, 0, 0, 0))
             self.assertTrue(self.dummy_communicator_called)
             self.assertTrue(sej_order.tickets[0].barcode_number, '00000002')
 
@@ -2940,7 +2941,7 @@ class PaymentDeliveryPluginTest(PluginTestBase):
                 self.result.update({
                     'X_barcode_no_01': '00000002',
                     })
-            plugin.refresh(self.request, order)
+            plugin.refresh(self.request, order, current_date=datetime(2012, 1, 4, 0, 0, 0))
             self.assertTrue(self.dummy_communicator_called)
             self.assertTrue(sej_order.tickets[0].barcode_number, '00000002')
 

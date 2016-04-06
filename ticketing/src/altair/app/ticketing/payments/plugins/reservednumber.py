@@ -81,7 +81,11 @@ class ReservedNumberDeliveryPlugin(object):
     """ 窓口引き換え予約番号プラグイン"""
 
     def validate_order(self, request, order_like, update=False):
-        """ なにかしたほうが良い?""" 
+        """ なにかしたほうが良い?"""
+
+    def validate_order_cancellation(self, request, order, now):
+        """ キャンセルバリデーション """
+        pass
 
     def prepare(self, request, cart):
         """ 前処理 なし"""
@@ -111,7 +115,7 @@ class ReservedNumberDeliveryPlugin(object):
             raise Exception('order %s is already delivered' % order.order_no)
         # 引換番号を再発行するべきだと思うけど...
 
-    def cancel(self, request, order):
+    def cancel(self, request, order, now=None):
         # キャンセルフラグを立てるべきだと思うけど...
         pass
 
@@ -194,7 +198,11 @@ class ReservedNumberPaymentPlugin(object):
     """ 窓口支払い番号プラグイン"""
 
     def validate_order(self, request, order_like, update=False):
-        """ なにかしたほうが良い?""" 
+        """ なにかしたほうが良い?"""
+
+    def validate_order_cancellation(self, request, order, now):
+        """ キャンセルバリデーション """
+        pass
 
     def prepare(self, request, cart):
         """ 前処理 なし"""
@@ -227,7 +235,7 @@ class ReservedNumberPaymentPlugin(object):
             raise Exception('order %s is already delivered' % order.order_no)
         # 支払番号を再発行すべきだと思うけど...
 
-    def cancel(self, request, order):
+    def cancel(self, request, order, now=None):
         # キャンセルフラグを立てるべきだと思うけど...
         pass
 

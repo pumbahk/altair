@@ -43,7 +43,11 @@ def deliver_completion_viewlet(context, request):
 
 class ShippingDeliveryPlugin(object):
     def validate_order(self, request, order_like, update=False):
-        """ なにかしたほうが良い?""" 
+        """ なにかしたほうが良い?"""
+
+    def validate_order_cancellation(self, request, order, now):
+        """ キャンセルバリデーション """
+        pass
 
     def prepare(self, request, cart):
         """ 前処理なし """
@@ -62,7 +66,7 @@ class ShippingDeliveryPlugin(object):
         if order.delivered_at is not None:
             raise Exception('order %s is already delivered' % order.order_no)
 
-    def cancel(self, request, order):
+    def cancel(self, request, order, now=None):
         # キャンセルフラグを立てるべきだと思うけど...
         pass
 

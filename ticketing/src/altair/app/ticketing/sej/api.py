@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 
 from datetime import timedelta
+from datetime import datetime
 import logging
 logger = logging.getLogger(__name__)
 
@@ -58,14 +59,39 @@ def refresh_sej_order(request, tenant, sej_order, update_reason, now=None, sessi
         raise SejError(u'generic failure (reason: %s)' % unicode(e), sej_order.order_no)
     return sej_order
 
-def cancel_sej_order(request, tenant, sej_order, now=None, session=None):
-    if session is None:
-        session = _session
+
+def validate_sej_order_cancellation(request, tenant, sej_order, origin_order, now=None):
+    """SejOrderバリデーション"""
+    if not now:
+        now = datetime.now()
     if sej_order.cancel_at is not None:
-        raise SejError(u'already canceled', sej_order.order_no)
+        raise SejError(u'SejOrder already canceled', sej_order.order_no)
+    if sej_order.pay_at is not None:
+        raise SejError(u'SejOrder already paid', sej_order.order_no)
     if sej_order.shop_id != tenant.shop_id:
         raise SejError(u'SejOrder.shop_id (%s) != SejTenant.shop_id (%s)' % (sej_order.shop_id, tenant.shop_id), sej_order.order_no)
+    # 代済の時は未発券のときならキャンセルできる
+    if int(sej_order.payment_type) == SejPaymentType.Paid.v and sej_order.issue_at is not None:
+        raise SejError(u'SejOrder.type=Paid and already printed', sej_order.order_no)
+    # コンビニ支払が発生する予約は支払期限を過ぎるとキャンセルできない
+    if int(sej_order.payment_type) in (SejPaymentType.Prepayment.v, SejPaymentType.CashOnDelivery.v, SejPaymentType.PrepaymentOnly.v):
+        # 本当はSejOrderの入金期限を見るべきと思うが、実際のデータは入ってない場合もあるのでOrderの期限をみるようにする
+        # and sej_order.payment_due_at and sej_order.payment_due_at < now:
+        if origin_order.payment_due_at and origin_order.payment_due_at < now:
+            raise SejError(u'payment is overdue(Order.payment_due_at: {})'.format(origin_order.payment_due_at), origin_order.order_no)
+    # コンビニ発券が発生する予約は発券期限を過ぎるとキャンセルできない
+    if int(sej_order.payment_type) in (SejPaymentType.Prepayment.v, SejPaymentType.CashOnDelivery.v, SejPaymentType.Paid.v):
+        # 本当はSejOrderの発券期限を見るべきと思うが、実際のデータは入ってない場合もあるのでOrderの期限をみるようにする
+        # and sej_order.ticketing_due_at and sej_order.ticketing_due_at < now:
+        if origin_order.issuing_end_at and origin_order.issuing_end_at < now:
+            raise SejError(u'ticketing is overdue(Order.ticketing_due_at: {})'.format(origin_order.issuing_end_at), origin_order.order_no)
+
+
+def cancel_sej_order(request, tenant, sej_order, origin_order, now=None, session=None):
+    if session is None:
+        session = _session
     try:
+        validate_sej_order_cancellation(request, tenant, sej_order, origin_order, now)
         try:
             request_cancel_order(
                 request,
