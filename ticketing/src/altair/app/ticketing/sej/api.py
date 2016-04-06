@@ -70,8 +70,9 @@ def validate_sej_order_cancellation(request, tenant, sej_order, origin_order, no
         raise SejError(u'SejOrder already paid', sej_order.order_no)
     if sej_order.shop_id != tenant.shop_id:
         raise SejError(u'SejOrder.shop_id (%s) != SejTenant.shop_id (%s)' % (sej_order.shop_id, tenant.shop_id), sej_order.order_no)
-    # 代済の時は未発券のときならキャンセルできる
-    if int(sej_order.payment_type) == SejPaymentType.Paid.v and sej_order.issue_at is not None:
+    # 代済の時は未発券のときならキャンセルできる(Order.issuedも見る必要がある)
+    if int(sej_order.payment_type) == SejPaymentType.Paid.v and \
+            (sej_order.issue_at is not None or origin_order.issued is True):
         raise SejError(u'SejOrder.type=Paid and already printed', sej_order.order_no)
     # コンビニ支払が発生する予約は支払期限を過ぎるとキャンセルできない
     if int(sej_order.payment_type) in (SejPaymentType.Prepayment.v, SejPaymentType.CashOnDelivery.v, SejPaymentType.PrepaymentOnly.v):
