@@ -69,15 +69,12 @@ class SiteForm(Form):
             Regexp(u'^([0-9]{3}-[0-9]{4})?$', message=u'000-0000形式で入力してください'),
         ]
     )
-    prefecture = TextField(
+    prefecture = OurSelectField(
         label = u'都道府県',
-        filters=[
-            replace_ambiguous,
-            ],
+        choices=[(u'', u'')] + [(u'全国', u'全国')] + [(p.name, p.name)for p in Prefecture.all()],
         validators=[
             Required(),
             JISX0208,
-            Length(max=10, message=u'10文字以内で入力してください'),
         ]
     )
     city = TextField(

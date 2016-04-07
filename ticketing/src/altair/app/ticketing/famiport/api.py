@@ -281,6 +281,36 @@ def get_famiport_event_by_userside_id(request, client_code, userside_id):
         raise FamiPortAPIError('internal error')
 
 @user_api
+def create_or_get_famiport_venue(request, client_code, userside_id, name, name_kana, prefecture):
+    sys.exc_clear()
+    try:
+        session = get_db_session(request, 'famiport')
+
+        # validation
+        internal.get_famiport_client(session, client_code)
+        # validation
+        internal.validate_prefecture(prefecture)
+
+        famiport_venue = None
+        famiport_venue = session.query(FamiPortVenue) \
+            .filter(FamiPortVenue.client_code == client_code) \
+            .filter(FamiPortVenue.userside_id == userside_id) \
+            .filter(FamiPortVenue.name == name) \
+            .filter(FamiPortVenue.prefecture == prefecture).first()
+        if famiport_venue == None:
+            famiport_venue = FamiPortVenue(client_code = client_code, userside_id = userside_id, \
+                                           name = name, name_kana = name_kana, prefecture = prefecture)
+            session.add(famiport_venue)
+            session.commit()
+        return dict(venue_id=famiport_venue.id)
+
+    except FamiPortAPIError as famiPortAPIError:
+        raise famiPortAPIError
+    except:
+        logger.exception(u'internal error')
+        raise FamiPortAPIError('internal error')
+
+@user_api
 def create_or_update_famiport_venue(
         request,
         client_code,
@@ -469,7 +499,6 @@ def create_or_update_famiport_event(
         logger.exception(u'internal error')
         raise FamiPortAPIError('internal error', client_code)
 
-
 @user_api
 def create_or_update_famiport_performance(
         request,
@@ -513,7 +542,15 @@ def create_or_update_famiport_performance(
                 .filter(FamiPortPerformance.invalidated_at == None) \
                 .one()
         except NoResultFound:
-            pass
+            try:
+                # When old_performance is moved to another famiport_event
+                old_performance = session.query(FamiPortPerformance) \
+                    .with_lockmode('update') \
+                    .filter(FamiPortPerformance.userside_id == userside_id) \
+                    .filter(FamiPortPerformance.invalidated_at == None) \
+                    .one()
+            except NoResultFound:
+                pass
         sys.exc_clear()
 
         if type_ == FamiPortPerformanceType.Normal.value:
@@ -604,10 +641,21 @@ def create_or_update_famiport_sales_segment(
                 .with_lockmode('update') \
                 .filter(FamiPortSalesSegment.code == code) \
                 .filter(FamiPortSalesSegment.famiport_performance_id == performance.id) \
+                .filter(FamiPortSalesSegment.name == name) \
+                .filter(FamiPortSalesSegment.start_at == start_at) \
+                .filter(FamiPortSalesSegment.end_at == end_at) \
                 .filter(FamiPortSalesSegment.invalidated_at == None) \
                 .one()
         except NoResultFound:
-            pass
+            try:
+                # When old_sales_segment is moved to another famiport_performance
+                old_sales_segment = session.query(FamiPortSalesSegment) \
+                    .with_lockmode('update') \
+                    .filter(FamiPortSalesSegment.userside_id == userside_id) \
+                    .filter(FamiPortSalesSegment.invalidated_at == None) \
+                    .one()
+            except NoResultFound:
+                pass
         sys.exc_clear()
 
         internal.validate_sales_channel(sales_channel)

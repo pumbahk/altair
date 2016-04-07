@@ -21,6 +21,7 @@ from sqlalchemy import and_, distinct
 from sqlalchemy.sql import exists, join, func, or_, not_
 from sqlalchemy.sql.expression import asc, desc
 from sqlalchemy.orm import joinedload, noload, aliased, undefer
+from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 
 from altair.sqlahelper import get_db_session
 
@@ -39,7 +40,7 @@ from altair.app.ticketing.core.utils import PageURL_WebOb_Ex
 from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.models import merge_session_with_post, record_to_multidict
 from altair.app.ticketing.core.models import (
-    Site, Venue, VenueArea, VenueArea_group_l0_id, Seat, SeatAttribute, SeatStatus, SeatStatusEnum, SalesSegment, SalesSegmentSetting,
+    SiteProfile, Site, Venue, VenueArea, VenueArea_group_l0_id, Seat, SeatAttribute, SeatStatus, SeatStatusEnum, SalesSegment, SalesSegmentSetting,
     SeatAdjacencySet, SeatAdjacency, Seat_SeatAdjacency, Stock, StockStatus, StockHolder, StockType,
     ProductItem, Product, Performance, Event, SeatIndexType, SeatIndex, SeatGroup
 )
@@ -747,6 +748,15 @@ def new_post(request):
     if f.validate():
         site = merge_session_with_post(Site(), f.data)
         site.visible = True
+        try:
+            siteprofile = SiteProfile.get_by_name_and_prefecture(site.name, site.prefecture)
+        except NoResultFound:
+            siteprofile = SiteProfile(name = site.name, prefecture = site.prefecture)
+            siteprofile.save()
+        except MultipleResultsFound:
+            logger.error("Multiple SiteProfile with same name and prefecture found: (name: %s, prefecture: %s)" % (site.name, site.prefecture))
+            request.session.flash("名前と都道府県が同じ会場プロファイルが複数存在します (名前: %s, 都道府県: %s)" % (site.name, site.prefecture))
+        site.siteprofile = siteprofile
         site.save()
 
         venue = merge_session_with_post(Venue(site_id=site.id, organization_id=request.context.user.organization_id), f.data)
@@ -792,8 +802,29 @@ def edit_post(request):
         venue = merge_session_with_post(venue, f.data)
         venue.save()
 
-        site = merge_session_with_post(venue.site, f.data)
-        site.save()
+        # Also update corresponding Site only when if this venue is original
+        if venue.performance_id is None:
+            site = merge_session_with_post(venue.site, f.data)
+            default_siteprofile = SiteProfile.get_default_siteprofile()
+            if site.siteprofile_id == default_siteprofile.id: # if site's siteprofile is default
+                if site.name != default_siteprofile.name or site.prefecture != default_siteprofile.prefecture:
+                    # Create new SiteProfile if name or prefecture is different rather than updating default one
+                    siteprofile = SiteProfile(name = site.name, prefecture = site.prefecture)
+                    siteprofile.save()
+                    site.siteprofile = siteprofile
+            else:
+                try:
+                    siteprofile = SiteProfile.get_by_name_and_prefecture(site.name, site.prefecture)
+                    if site.siteprofile_id != siteprofile.id:
+                        site.siteprofile = siteprofile
+                except NoResultFound:
+                    siteprofile = SiteProfile(name = site.name, prefecture = site.prefecture)
+                    siteprofile.save()
+                    site.siteprofile = siteprofile
+                except MultipleResultsFound as multipleResultsFound:
+                    logger.error("Multiple SiteProfile with same name and prefecture found: (name: %s, prefecture: %s)" % (site.name, site.prefecture))
+                    request.session.flash(u'複数の会場 (%s, %s)が見つかりました。システム管理者にお知らせください。' % (site.name, site.prefecture))
+            site.save()
 
         request.session.flash(u'会場を保存しました')
         return HTTPFound(location=route_path('venues.show', request, venue_id=venue.id))
