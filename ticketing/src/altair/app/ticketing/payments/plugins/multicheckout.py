@@ -146,6 +146,10 @@ class MultiCheckoutPlugin(object):
         if order_like.total_amount <= 0:
             raise OrderLikeValidationFailure(u'total_amount is zero', 'order.total_amount')
 
+    def validate_order_cancellation(self, request, order, now):
+        """ キャンセルバリデーション """
+        pass
+
     def prepare(self, request, cart):
         """ 3Dセキュア認証 """
         notice = cart.sales_segment.auth3d_notice
@@ -372,7 +376,7 @@ class MultiCheckoutPlugin(object):
                 )
 
     @clear_exc
-    def cancel(self, request, order):
+    def cancel(self, request, order, now=None):
         # 売り上げキャンセル
         organization = c_models.Organization.query.filter_by(id=order.organization_id).one()
         multicheckout_api = get_multicheckout_3d_api(request, organization.setting.multicheckout_shop_name)

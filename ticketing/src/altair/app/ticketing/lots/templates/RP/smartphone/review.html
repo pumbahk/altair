@@ -104,7 +104,7 @@ dl.cost-detail > dd {
                     <dd class="ticket-amount">${h.format_currency(wish.tickets_amount)}</dd>
                     <dt class="payment-method">決済手数料 (${wish.lot_entry.payment_delivery_method_pair.payment_method.name})</dt>
                     <dd class="payment-fee">${h.format_currency(wish.transaction_fee)}</dd>
-                    <dt class="delivery-method">配送手数料 (${wish.lot_entry.payment_delivery_method_pair.delivery_method.name})</dt>
+                    <dt class="delivery-method">引取手数料 (${wish.lot_entry.payment_delivery_method_pair.delivery_method.name})</dt>
                     <dd class="delivery-fee">${h.format_currency(wish.delivery_fee)}</dd>
                     <dt class="delivery-method">システム利用料</dt>
                     <dd class="delivery-fee">${h.format_currency(wish.system_fee)}</dd>
@@ -137,10 +137,8 @@ dl.cost-detail > dd {
             <dd>${shipping_address.last_name_kana} ${shipping_address.first_name_kana}</dd>
             <dt class="creditHl">メールアドレス</dt>
             <dd>${shipping_address.email_1}</dd>
-            <dt class="creditHl">電話番号 (自宅)</dt>
+            <dt class="creditHl">電話番号</dt>
             <dd>${shipping_address.tel_1}</dd>
-            <dt class="creditHl">電話番号 (携帯電話)</dt>
-            <dd>${shipping_address.tel_2}</dd>
             <dt class="creditHl">住所</dt>
             <dd>
               〒${shipping_address.zip}<br />
@@ -151,8 +149,13 @@ dl.cost-detail > dd {
             <dd>${u"{0.year} 年 {0.month}月 {0.day}日".format(birthday)}</dd>
             <dt class="creditHl">性別</dt>
             <dd>${h.format_gender(request, gender)}</dd>
-            <dt class="creditHl">メモ欄</dt>
-            <dd>${memo|h.nl2br}</dd>
+            <% extra_form_data = entry.get_lot_entry_attribute_pair_pairs(request) %>
+            % if extra_form_data:
+              % for _, (display_name, display_value) in extra_form_data:
+                <dt class="creditHl">${display_name}</dt>
+                <dd>${h.sensible_coerce(request, display_value)}</dd>
+              % endfor
+            % endif
           </dl>
         </div>
       </dd>

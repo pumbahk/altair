@@ -302,6 +302,7 @@ class OrderTests(unittest.TestCase, CoreTestMixin):
                     SalesAmount=target.total_amount
                     )
                 if payment_plugin_id == p.SEJ_PAYMENT_PLUGIN_ID:
+                    target.sej_order.pay_at = datetime(2014, 1, 1)
                     self.assertFalse(target.cancel(request))
                 else:
                     target.cancel(request)
