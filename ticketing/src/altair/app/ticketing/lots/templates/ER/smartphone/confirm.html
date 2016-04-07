@@ -4,14 +4,13 @@
    import altair.app.ticketing.cart.helpers as ch
    import altair.app.ticketing.lots.helpers as h
 %>
-
 <div id="main">
 <form id="form1" name="form1" method="post" action="">
     <input type="hidden" name="token" value="${token}" />
 
 <div class="subbox">
 <dl>
-<dt><p class="lineRed">申込内容確認</p></dt>
+<dt><p class="lineRed">お申込内容確認</p></dt>
 <dd>
 <div class="confirInner">
 
@@ -21,8 +20,10 @@
 ご注文内容をご確認いただき「確定する」ボタンで購入してください</dt>
 
 %for wish in wishes:
-<dt class="creditHl">購入内容</dt>
+<dt class="creditHl">第${wish.wish_order + 1}希望 ${wish.performance.name}</dt>
 <dd>
+<p>${h.performance_date_label(wish.performance)}
+</p>
 <div class="detailBox">
 <table>
 %for i, lot_product in enumerate(wish.products):
@@ -76,8 +77,8 @@
 
 <div class="detailBox">
 <ul>
-<li>氏名(漢字)&nbsp;${shipping_address['last_name']}&nbsp;${shipping_address['first_name']}</li>
-<li>氏名(カナ)&nbsp;${shipping_address['last_name_kana']}&nbsp;${shipping_address['first_name_kana']}</li>
+<li>購入者氏名&nbsp;${shipping_address['last_name']}&nbsp;${shipping_address['first_name']}</li>
+<li>購入者氏名(カナ)&nbsp;${shipping_address['last_name_kana']}&nbsp;${shipping_address['first_name_kana']}</li>
 <li>メールアドレス&nbsp;${shipping_address['email_1']}</li>
 <li>電話番号&nbsp;&nbsp;${shipping_address['tel_1']}</li>
 <li>住所<br>
@@ -88,7 +89,6 @@ ${shipping_address['address_2']}
 </li>
 <li>生年月日&nbsp;${u"{0.year} 年 {0.month}月 {0.day}日".format(birthday)}</li>
 <li>性別&nbsp;${h.format_gender(request, gender)}</li>
-<li>メモ欄&nbsp;${memo|h.nl2br}</li>
 
 </ul>
 </div>

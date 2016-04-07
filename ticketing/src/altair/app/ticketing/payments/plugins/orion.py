@@ -80,7 +80,11 @@ def delivery_notice_viewlet(context, request):
 
 class OrionTicketDeliveryPlugin(object):
     def validate_order(self, request, order_like, update=False):
-        """ なにかしたほうが良い?""" 
+        """ なにかしたほうが良い?"""
+
+    def validate_order_cancellation(self, request, order, now):
+        """ キャンセルバリデーション """
+        pass
 
     def prepare(self, request, cart):
         """ 前処理 """
@@ -105,7 +109,7 @@ class OrionTicketDeliveryPlugin(object):
         # XXX: 座席番号などが変わっている可能性があるので、何かすべきような...
         pass
 
-    def cancel(self, request, order):
+    def cancel(self, request, order, now=None):
         # キャンセルフラグを立てるべきだと思うけど...
         pass
 

@@ -273,7 +273,7 @@ def refresh_order(request, tenant, order, update_reason, current_date=None):
                 sej_order=new_sej_order,
                 session=_session
                 )
-            sej_api.cancel_sej_order(request, tenant=tenant, sej_order=sej_order, now=current_date)
+            sej_api.cancel_sej_order(request, tenant=tenant, sej_order=sej_order, origin_order=order, now=current_date)
         except SejErrorBase:
             raise SejPluginFailure('refresh_order', order_no=order.order_no, back_url=None)
     else:
@@ -341,7 +341,7 @@ def cancel_order(request, tenant, order, now=None):
         if sej_order is None:
             raise SejPluginFailure('no corresponding SejOrder found for order %s' % order.order_no)
         try:
-            sej_api.cancel_sej_order(request, tenant=tenant, sej_order=sej_order, now=now)
+            sej_api.cancel_sej_order(request, tenant=tenant, sej_order=sej_order, origin_order=order, now=now)
         except SejError:
             raise SejPluginFailure('cancel_order', order_no=order.order_no, back_url=None)
 
@@ -460,6 +460,12 @@ katakana_regex = re.compile(ur'^[\u30a1-\u30f6\u30fb\u30fc\u30fd\u30feー]+$')
 
 SEJ_MAX_ALLOWED_AMOUNT = Decimal('300000')
 
+def validate_sej_order_cancellation(request, order, now):
+    sej_order = sej_api.get_sej_order(order.order_no)
+    sej_tenant = userside_api.lookup_sej_tenant(request, order.organization_id)
+
+    sej_api.validate_sej_order_cancellation(request, sej_tenant, sej_order, order, now)
+
 def validate_order_like(request, current_date, order_like, update=False, ticketing=True):
     if ticketing and get_ticket_count(request, order_like) > 20:
         raise OrderLikeValidationFailure(u'cannot handle more than 20 tickets', '')
@@ -534,6 +540,10 @@ class SejPaymentPlugin(object):
     def validate_order(self, request, order_like, update=False):
         validate_order_like(request, datetime.now(), order_like, update, ticketing=False)
 
+    def validate_order_cancellation(self, request, order, now):
+        """ キャンセルバリデーション """
+        validate_sej_order_cancellation(request, order, now)
+
     def prepare(self, request, cart):
         """  """
 
@@ -572,8 +582,9 @@ class SejPaymentPlugin(object):
         return bool(sej_order.billing_number)
 
     @clear_exc
-    def refresh(self, request, order):
-        current_date = datetime.now()
+    def refresh(self, request, order, current_date=None):
+        if current_date is None:
+            current_date = datetime.now()
         settings = request.registry.settings
         tenant = userside_api.lookup_sej_tenant(request, order.organization_id)
         refresh_order(
@@ -585,12 +596,13 @@ class SejPaymentPlugin(object):
             )
 
     @clear_exc
-    def cancel(self, request, order):
+    def cancel(self, request, order, now=None):
         tenant = userside_api.lookup_sej_tenant(request, order.organization_id)
         cancel_order(
             request,
             tenant=tenant,
-            order=order
+            order=order,
+            now=now
             )
 
     @clear_exc
@@ -616,6 +628,10 @@ class SejDeliveryPluginBase(object):
 class SejDeliveryPlugin(SejDeliveryPluginBase):
     def validate_order(self, request, order_like, update=False):
         validate_order_like(request, datetime.now(), order_like, update, ticketing=True)
+
+    def validate_order_cancellation(self, request, order, now):
+        """ キャンセルバリデーション """
+        validate_sej_order_cancellation(request, order, now)
 
     def prepare(self, request, cart):
         """  """
@@ -660,8 +676,9 @@ class SejDeliveryPlugin(SejDeliveryPluginBase):
         return bool(sej_order.exchange_number)
 
     @clear_exc
-    def refresh(self, request, order):
-        current_date = datetime.now()
+    def refresh(self, request, order, current_date=None):
+        if current_date is None:
+            current_date = datetime.now()
         tenant = userside_api.lookup_sej_tenant(request, order.organization_id)
         refresh_order(
             request,
@@ -672,12 +689,13 @@ class SejDeliveryPlugin(SejDeliveryPluginBase):
             )
 
     @clear_exc
-    def cancel(self, request, order):
+    def cancel(self, request, order, now=None):
         tenant = userside_api.lookup_sej_tenant(request, order.organization_id)
         cancel_order(
             request,
             tenant=tenant,
-            order=order
+            order=order,
+            now=now
             )
 
     @clear_exc
@@ -700,6 +718,10 @@ class SejDeliveryPlugin(SejDeliveryPluginBase):
 class SejPaymentDeliveryPlugin(SejDeliveryPluginBase):
     def validate_order(self, request, order_like, update=False):
         validate_order_like(request, datetime.now(), order_like, update, ticketing=True)
+
+    def validate_order_cancellation(self, request, order, now):
+        """ キャンセルバリデーション """
+        validate_sej_order_cancellation(request, order, now)
 
     def prepare(self, request, cart):
         """  """
@@ -744,8 +766,9 @@ class SejPaymentDeliveryPlugin(SejDeliveryPluginBase):
         return bool(sej_order.billing_number)
 
     @clear_exc
-    def refresh(self, request, order):
-        current_date = datetime.now()
+    def refresh(self, request, order, current_date=None):
+        if current_date is None:
+            current_date = datetime.now()
         tenant = userside_api.lookup_sej_tenant(request, order.organization_id)
         refresh_order(
             request,
@@ -756,12 +779,13 @@ class SejPaymentDeliveryPlugin(SejDeliveryPluginBase):
             )
 
     @clear_exc
-    def cancel(self, request, order):
+    def cancel(self, request, order, now=None):
         tenant = userside_api.lookup_sej_tenant(request, order.organization_id)
         cancel_order(
             request,
             tenant=tenant,
-            order=order
+            order=order,
+            now=now
             )
 
     @clear_exc

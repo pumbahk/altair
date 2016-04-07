@@ -5,6 +5,7 @@ from pyramid.decorator import reify
 from altair.mobile.interfaces import IMobileRequest, ISmartphoneRequest
 from altair.app.ticketing.mails.interfaces import IMailRequest
 from altair.app.ticketing.cart import api as cart_api
+from . import api
 
 logger = logging.getLogger(__name__)
 
@@ -63,6 +64,10 @@ def get_coupon_view_context_factory(default_package):
             return self.request.organization.name
 
         @property
+        def host_name(self):
+            return api.get_host(self.request).host_name
+
+        @property
         def extra_footer_links(self):
             return self.cart_setting.extra_footer_links or []
 
@@ -85,8 +90,10 @@ def get_coupon_view_context_factory(default_package):
                 ua_type=self.ua_type,
                 path=path)
 
-        def static_url(self, path, *args, **kwargs):
-            return self.request.static_url("altair.app.ticketing.orderreview:static/%(organization_short_name)s/%(path)s" % dict(organization_short_name=self.organization_short_name, path=path), *args, **kwargs)
+        def static_url(self, path, module=None, *args, **kwargs):
+            if module is None:
+                module = 'coupon'
+            return self.request.static_url("altair.app.ticketing.%(module)s:static/%(organization_short_name)s/%(path)s" % dict(organization_short_name=self.organization_short_name, path=path, module=module), *args, **kwargs)
 
         def __getattr__(self, k):
             return getattr(self.cart_setting, k)

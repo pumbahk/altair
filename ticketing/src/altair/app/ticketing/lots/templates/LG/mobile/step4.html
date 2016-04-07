@@ -29,7 +29,6 @@ if label is None or label is True:
 </div>
 </%def>
 
-
 <div align="center" style="text-align:center">
 ${event.title}<br />
 ${lot.name}
@@ -37,7 +36,7 @@ ${lot.name}
 <%mobile:messages messages="${messages}" />
 <%mobile:header>お客様情報の入力</%mobile:header>
 <form method="post" action="${request.current_route_path()}">
-<%mobile:form_header>申込者氏名(全角)${h.mobile_required_mark()}</%mobile:form_header>
+<%mobile:form_header>購入者氏名(全角)${h.mobile_required_mark()}</%mobile:form_header>
 <div>
   ${form['last_name'].label}
   ${form['last_name'](istyle="1", iprof="name1")}
@@ -49,7 +48,7 @@ ${lot.name}
   ${h.mobile_error_list(request, form, 'first_name')}
 </div>
 
-<%mobile:form_header>申込者氏名(カナ)${h.mobile_required_mark()}</%mobile:form_header>
+<%mobile:form_header>購入者氏名(全角カナ)${h.mobile_required_mark()}</%mobile:form_header>
 <div>
   ${form['last_name_kana'].label}
   ${form['last_name_kana'](istyle="2", iprod="kana1")}
@@ -61,19 +60,8 @@ ${lot.name}
   ${h.mobile_error_list(request, form, 'first_name_kana')}
 </div>
 
-<%mobile:form_header>${form['sex'].label}${h.mobile_required_mark()}</%mobile:form_header>
-<div>
-  ${form['sex'](_widget=h.mobile_list_widget(request))}
-  ${h.mobile_error_list(request, form, 'sex')}
-</div>
-
-<%mobile:form_header>誕生日${h.mobile_required_mark()}</%mobile:form_header>
-<div>
-  ${form['birthday'](_widget=h.sensible_widget(request, form['birthday'].widget), istyle="4")}
-  ${h.mobile_error_list(request, form, 'birthday', with_label=True)}
-</div>
-
 <%mobile:form_header>${form['email_1'].label}${h.mobile_required_mark()}</%mobile:form_header>
+<p>${form['email_1'].description}</p>
 <div>
   ${form['email_1'](istyle="3", iprof="mail1")}
   ${h.mobile_error_list(request, form, 'email_1')}
@@ -84,7 +72,6 @@ ${lot.name}
   ${form['email_1_confirm'](istyle="3", iprof="mail1")}
   ${h.mobile_error_list(request, form, 'email_1_confirm')}
 </div>
-<p>${view_context.mail_filter_domain_notice}</p>
 
 <%mobile:form_header>住所</%mobile:form_header>
 <div>
@@ -116,11 +103,24 @@ ${lot.name}
   ${h.mobile_error_list(request, form, 'tel_1')}
 </div>
 
+<%mobile:form_header>生年月日${h.mobile_required_mark()}</%mobile:form_header>
+<div>
+  ${form['birthday'](_widget=h.sensible_widget(request, form['birthday'].widget), istyle="4")}
+  ${h.mobile_error_list(request, form, 'birthday', with_label=True)}
+</div>
+
+<%mobile:form_header>${form['sex'].label}${h.mobile_required_mark()}</%mobile:form_header>
+<div>
+  ${form['sex'](_widget=h.mobile_list_widget(request))}
+  ${h.mobile_error_list(request, form, 'sex')}
+</div>
+
 % for field in form['extra']._contained_form:
 % if not field.short_name in {'member_type'}:
 <%mobile:form_header>${field.label}</%mobile:form_header>
 <div>
 ${render_field(field)}
+${h.error_list(request, field)}
 </div>
 % endif
 % endfor
@@ -162,7 +162,6 @@ ${h.format_currency(m.special_fee)} (${h.fee_type(m.special_fee_type)})
 <img src="${request.static_url('altair.app.ticketing.cart:static/LG/mobile/images/visa.gif')}" height="30px" />
 <img src="${request.static_url('altair.app.ticketing.cart:static/LG/mobile/images/master.gif')}" height="30px" />
 <img src="${request.static_url('altair.app.ticketing.cart:static/LG/mobile/images/jcb.gif')}" height="30px" />
-<img src="${request.static_url('altair.app.ticketing.cart:static/LG/mobile/images/amex_logo.gif')}" height="30px" />
 </font>
 % elif m.payment_method.payment_plugin_id == 2:
 <font size="-2">

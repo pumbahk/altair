@@ -3,39 +3,14 @@
 <%
    import altair.app.ticketing.cart.helpers as ch
    import altair.app.ticketing.lots.helpers as h
-   %>
-<%def name="render_field(field, label=False, _description=None, _note=None, _suffix=u'', **kwargs)">
-<%
-_description = _description or field.description
-_note = _note or field._note
-if label is None or label is True:
-  label = field.label
 %>
-<div class="field">
-  % if _description:
-  <div class="field-description">${_description}</div>
-  % endif
-  <div class="control-segment">
-    % if label:
-      ${label}
-    % endif
-    ${fh.render(field, **kwargs)}${_suffix}
-    % if _note:
-    <div class="field-note">${_note}</div>
-    % endif
-    ${ch.error(field.name)}
-  </div>
-</div>
-</%def>
-
-
 <div id="main">
 <form id="form1" name="form1" method="post" action="">
     <input type="hidden" name="token" value="${token}" />
 
 <div class="subbox">
 <dl>
-<dt><p class="lineRed">申込内容確認</p></dt>
+<dt><p class="lineRed">お申込内容確認</p></dt>
 <dd>
 <div class="confirInner">
 
@@ -55,7 +30,7 @@ if label is None or label is True:
 <tr>
 <td>${lot_product.product.name}</td>
 </tr><tr>
-<td>${h.format_currency(lot_product.product.price)}×${lot_product.quantity}名=${h.format_currency(lot_product.subtotal)}</td>
+<td>${h.format_currency(lot_product.product.price)}×${lot_product.quantity}枚=${h.format_currency(lot_product.subtotal)}</td>
 </tr>
 %endfor
 
@@ -102,8 +77,8 @@ if label is None or label is True:
 
 <div class="detailBox">
 <ul>
-<li>氏名(漢字)&nbsp;${shipping_address['last_name']}&nbsp;${shipping_address['first_name']}</li>
-<li>氏名(カナ)&nbsp;${shipping_address['last_name_kana']}&nbsp;${shipping_address['first_name_kana']}</li>
+<li>エントリー代表者氏名&nbsp;${shipping_address['last_name']}&nbsp;${shipping_address['first_name']}</li>
+<li>エントリー代表者氏名(カナ)&nbsp;${shipping_address['last_name_kana']}&nbsp;${shipping_address['first_name_kana']}</li>
 <li>メールアドレス&nbsp;${shipping_address['email_1']}</li>
 <li>電話番号&nbsp;&nbsp;${shipping_address['tel_1']}</li>
 <li>住所<br>

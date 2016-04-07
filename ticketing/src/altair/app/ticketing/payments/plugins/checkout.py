@@ -96,6 +96,10 @@ class CheckoutPlugin(object):
            order_like.special_fee < ANSHIN_CHECKOUT_MINIMUM_AMOUNT:
             raise OrderLikeValidationFailure(u'special_fee too low', 'order.special_fee')
 
+    def validate_order_cancellation(self, request, order, now):
+        """ キャンセルバリデーション """
+        pass
+
     def prepare(self, request, cart):
         """ ここでは何もしない """
 
@@ -168,7 +172,7 @@ class CheckoutPlugin(object):
                 error_code=e.error_code
                 )
 
-    def cancel(self, request, order_like):
+    def cancel(self, request, order_like, now=None):
         # 売り上げキャンセル
         service = api.get_checkout_service(request, order_like.organization_id, get_channel(order_like.channel))
         try:

@@ -44,6 +44,17 @@ class OrderLikeValidationFailure(Exception):
         return self.args[1]
 
 
+class CancellationValidationFailure(Exception):
+    """キャンセル出来ない状態にあるときに発生させる例外
+    """
+    def __init__(self, message):
+        super(CancellationValidationFailure, self).__init__(message)
+
+    @property
+    def message(self):
+        return self.args[0]
+
+
 class PaymentDeliveryMethodPairNotFound(Exception):
     """
     不思議な経路をたどるなどしてPDMPが取得できない.

@@ -60,6 +60,7 @@ from ..interfaces import IOrderDelivery
 from ..exceptions import (
     PaymentPluginException,
     OrderLikeValidationFailure,
+    CancellationValidationFailure
     )
 import altair.app.ticketing.orders.models as order_models
 from . import FAMIPORT_PAYMENT_PLUGIN_ID as PAYMENT_PLUGIN_ID
@@ -458,13 +459,23 @@ def refund_order(request, order, refund_record, now=None):
         per_ticket_fee=refund_record.refund_per_ticket_fee
         )
 
+
+def validate_famiport_order_cancellation(request, order, now):
+    """ キャンセルバリデーション """
+    tenant = lookup_famiport_tenant(request, order)
+    if tenant is None:
+        raise FamiPortPluginFailure('could not find famiport tenant', order_no=order_like.order_no, back_url=None)
+
+    if not famiport_api.can_cancel_famiport_order(request, tenant.code, order.order_no, now):
+        raise CancellationValidationFailure(u'FamiPortOrder(order_no:{}) is not able to be canceled.'.format(order.order_no))
+
 def cancel_order(request, order, now=None):
     """キャンセル"""
     tenant = lookup_famiport_tenant(request, order)
     if tenant is None:
         raise FamiPortPluginFailure('could not find famiport tenant', order_no=order_like.order_no, back_url=None)
     try:
-        famiport_api.cancel_famiport_order_by_order_no(request, tenant.code, order.order_no)
+        famiport_api.cancel_famiport_order_by_order_no(request, tenant.code, order.order_no, now)
     except FamiPortAPIError:
         raise FamiPortPluginFailure('failed to cancel order', order_no=order.order_no, back_url=None)
 
@@ -599,6 +610,10 @@ class FamiPortPaymentPlugin(object):
         """予約を作成する前にvalidationする"""
         validate_order_like(request, order_like, self, update)
 
+    def validate_order_cancellation(self, request, order, now):
+        """ キャンセルバリデーション """
+        validate_famiport_order_cancellation(request, order, now)
+
     def prepare(self, request, cart):
         """前処理"""
 
@@ -625,9 +640,9 @@ class FamiPortPaymentPlugin(object):
         """決済側の状態をDBに反映"""
         return refresh_order(request, order, self)
 
-    def cancel(self, request, order):
+    def cancel(self, request, order, now=None):
         """キャンセル処理"""
-        return cancel_order(request, order)
+        return cancel_order(request, order, now)
 
     def refund(self, request, order, refund_record):
         """払戻処理"""
@@ -711,6 +726,10 @@ class FamiPortDeliveryPlugin(object):
         """予約の検証"""
         validate_order_like(request, order_like, self, update)
 
+    def validate_order_cancellation(self, request, order, now):
+        """ キャンセルバリデーション """
+        validate_famiport_order_cancellation(request, order, now)
+
     def prepare(self, request, cart):
         """ 前処理 """
 
@@ -734,9 +753,9 @@ class FamiPortDeliveryPlugin(object):
         """リフレッシュ"""
         return refresh_order(request, order, self)
 
-    def cancel(self, request, order):
+    def cancel(self, request, order, now=None):
         """キャンセル処理"""
-        return cancel_order(request, order)
+        return cancel_order(request, order, now)
 
     def refund(self, request, order, refund_record):
         """払い戻し"""
@@ -751,6 +770,10 @@ class FamiPortPaymentDeliveryPlugin(object):
     def validate_order(self, request, order_like, update=False):
         """予約の検証"""
         validate_order_like(request, order_like, self, update)
+
+    def validate_order_cancellation(self, request, order, now):
+        """ キャンセルバリデーション """
+        validate_famiport_order_cancellation(request, order, now)
 
     def prepare(self, request, cart):
         """ 前処理 """
@@ -778,9 +801,9 @@ class FamiPortPaymentDeliveryPlugin(object):
         """リフレッシュ"""
         return refresh_order(request, order, self)
 
-    def cancel(self, request, order):
+    def cancel(self, request, order, now=None):
         """キャンセル処理"""
-        return cancel_order(request, order)
+        return cancel_order(request, order, now)
 
     def refund(self, request, order, refund_record):
         """払い戻し"""

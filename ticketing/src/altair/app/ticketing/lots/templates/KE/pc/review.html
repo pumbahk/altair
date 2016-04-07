@@ -69,7 +69,7 @@
               %endfor
                 <dt class="payment-method">決済手数料 (${wish.lot_entry.payment_delivery_method_pair.payment_method.name})</dt>
                 <dd class="payment-fee">${h.format_currency(wish.transaction_fee)}</dd>
-                <dt class="delivery-method">配送手数料 (${wish.lot_entry.payment_delivery_method_pair.delivery_method.name})</dt>
+                <dt class="delivery-method">引取手数料 (${wish.lot_entry.payment_delivery_method_pair.delivery_method.name})</dt>
                 <dd class="delivery-fee">${h.format_currency(wish.delivery_fee)}</dd>
                 <dt class="delivery-method">システム利用料</dt>
                 <dd class="delivery-fee">${h.format_currency(wish.system_fee)}</dd>
@@ -94,7 +94,7 @@
     <h2><img src="${request.static_url('altair.app.ticketing.lots:static/KE/pc/img/order/title_buyer.gif')}" alt="購入者情報" width="97" height="30" /></h2>
     <div class="settlementSelectBox">
       <div class="settlementSelectBoxInner02">
-        <table summary="お支払・お引取り方法選択">
+        <table summary="購入者情報">
           <tr>
             <th>購入者氏名</th>
             <td>${shipping_address.last_name} ${shipping_address.first_name}</td>
@@ -108,12 +108,8 @@
             <td>${shipping_address.email_1}</td>
           </tr>
           <tr>
-            <th>電話番号 (自宅)</th>
+            <th>電話番号</th>
             <td>${shipping_address.tel_1}</td>
-          </tr>
-          <tr>
-            <th>電話番号 (携帯電話)</th>
-            <td>${shipping_address.tel_2}</td>
           </tr>
           <tr>
             <th>住所</th>

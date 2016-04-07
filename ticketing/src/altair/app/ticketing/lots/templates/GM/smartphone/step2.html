@@ -1,4 +1,35 @@
 <%inherit file="${context['main_template'].uri}" />
+<%namespace name="fh" module="altair.formhelpers.utils.mako" />
+<%
+   import altair.app.ticketing.cart.helpers as ch
+   import altair.app.ticketing.lots.helpers as h
+   %>
+<%def name="render_field(field, label=False, _description=None, _note=None, _suffix=u'', **kwargs)">
+<%
+_description = _description or field.description
+_note = _note or field._note
+if label is None or label is True:
+  label = field.label
+%>
+<div class="field">
+  % if _description:
+  <div class="field-description">${_description}</div>
+  % endif
+  <div class="control-segment">
+    % if label:
+      ${label}
+    % endif
+    ${fh.render(field, **kwargs)}${_suffix}
+    % if _note:
+    <div class="field-note">${_note}</div>
+    % endif
+    ${ch.error(field.name)}
+  </div>
+</div>
+</%def>
+
+
+
 <%block name="javascript">
     <script type="text/javascript">
     $(document).ready(function(){
@@ -162,16 +193,6 @@ ${self.error(form, 'email_1_confirm')}
 <p class="tyuui2">${form['email_1'].description}</p>
 </dd>
 
-<dt class="creditHl">電話番号(半角数字)</dt>
-<dd>
-<p>
-${h.render_label(form['tel_1'])}（固定電話をお持ちでない場合は、携帯電話番号を入力してください。）<br/>
-${form['tel_1']}<br/>
-${self.error(form, 'tel_1')}
-(例: 03xxxxyyyy)
-</p>
-</dd>
-
 <dt class="creditHl">住所</dt>
 <dd>
 <p>
@@ -210,6 +231,16 @@ ${self.error(form, 'address_2')}
 </p>
 </dd>
 
+<dt class="creditHl">電話番号(半角数字)</dt>
+<dd>
+<p>
+${h.render_label(form['tel_1'])}（固定電話をお持ちでない場合は、携帯電話番号を入力してください。）<br/>
+${form['tel_1']}<br/>
+${self.error(form, 'tel_1')}
+(例: 03xxxxyyyy)
+</p>
+</dd>
+
 <dt class="creditHl"><label class="required" for="birthday">生年月日</label></dt>
 <dd>
 <p>
@@ -226,18 +257,16 @@ ${self.error(form, 'sex')}
 </p>
 </dd>
 
-<dt class="creditHl">メモ欄</dt>
+% for field in form['extra']._contained_form:
+% if not field.short_name in {'member_type'}:
+<dt class="creditHl">${field.label}</dt>
 <dd>
-<p>
-${form['memo'](style="width: 98%")} ${self.error(form, 'error')}
-<div style="font-size: 90%;">
-※ご質問を入力されても返信はいたしかねます。<br>
-ご質問は下記のお問い合わせ先よりお願いいたします。
-</div>
-</p>
+  <p>
+    ${render_field(field)}
+  </p>
 </dd>
-
-
+% endif
+% endfor
 
 </dl>
 </div>

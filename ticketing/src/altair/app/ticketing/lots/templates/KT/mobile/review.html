@@ -61,7 +61,7 @@ ${h.format_currency(lot_product.product.price)}×${lot_product.quantity}枚=${h.
 <div align="right" style="text-align:right">
 ${h.format_currency(wish.transaction_fee)}
 </div>
-・配送手数料 (${wish.lot_entry.payment_delivery_method_pair.delivery_method.name})<br .>
+・引取手数料 (${wish.lot_entry.payment_delivery_method_pair.delivery_method.name})<br />
 <div align="right" style="text-align:right">
 ${h.format_currency(wish.delivery_fee)}
 </div>
@@ -83,11 +83,11 @@ ${h.format_currency(wish.special_fee)}
 </div>
 %endfor
 <%mobile:header>購入者情報</%mobile:header>
-<%mobile:form_header>氏名(漢字)</%mobile:form_header>
+<%mobile:form_header>購入者氏名</%mobile:form_header>
 <div>
 ${shipping_address.last_name} ${shipping_address.first_name}
 </div>
-<%mobile:form_header>氏名(カナ)</%mobile:form_header>
+<%mobile:form_header>購入者氏名(カナ)</%mobile:form_header>
 <div>
 ${shipping_address.last_name_kana} ${shipping_address.first_name_kana}
 </div>
@@ -103,24 +103,28 @@ ${shipping_address.tel_1}
 <div>
 ${shipping_address.zip} ${shipping_address.prefecture}${shipping_address.city}${shipping_address.address_1}${shipping_address.address_2}
 </div>
-<%mobile:form_header>性別</%mobile:form_header>
-<div>
-${h.format_gender(request, gender)}
-</div>
 <%mobile:form_header>生年月日</%mobile:form_header>
 <div>
 ${h.japanese_date(birthday)}
 </div>
-% if user_point_accounts:
-<%mobile:form_header>楽天ポイント口座</%mobile:form_header>
+<%mobile:form_header>性別</%mobile:form_header>
 <div>
-${user_point_accounts[0].account_number}
+${h.format_gender(request, gender)}
 </div>
+
+<% extra_form_data = entry.get_lot_entry_attribute_pair_pairs(request) %>
+% if extra_form_data:
+<%mobile:header>追加情報</%mobile:header>
+% for _, (display_name, display_value) in extra_form_data:
+<div>
+<%mobile:form_header>${display_name}</%mobile:form_header>
+</div>
+<div>
+${h.sensible_coerce(request, display_value)}
+</div>
+% endfor
 % endif
-<%mobile:form_header>メモ</%mobile:form_header>
-<div>
-${memo|h.nl2br}
-</div>
+
 
 %if can_withdraw_show:
 <form method="POST" id="withdrawForm" name="withdrawForm" action="${request.route_path('lots.review.withdraw.confirm')}">

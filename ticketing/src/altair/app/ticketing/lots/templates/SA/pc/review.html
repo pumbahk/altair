@@ -69,7 +69,7 @@
               %endfor
                 <dt class="payment-method">決済手数料 (${wish.lot_entry.payment_delivery_method_pair.payment_method.name})</dt>
                 <dd class="payment-fee">${h.format_currency(wish.transaction_fee)}</dd>
-                <dt class="delivery-method">配送手数料 (${wish.lot_entry.payment_delivery_method_pair.delivery_method.name})</dt>
+                <dt class="delivery-method">引取手数料 (${wish.lot_entry.payment_delivery_method_pair.delivery_method.name})</dt>
                 <dd class="delivery-fee">${h.format_currency(wish.delivery_fee)}</dd>
                 <dt class="delivery-method">システム利用料</dt>
                 <dd class="delivery-fee">${h.format_currency(wish.system_fee)}</dd>
@@ -94,7 +94,7 @@
     <h2><img src="${request.static_url('altair.app.ticketing.lots:static/SA/pc/img/order/title_buyer.gif')}" alt="購入者情報" width="97" height="30" /></h2>
     <div class="settlementSelectBox">
       <div class="settlementSelectBoxInner02">
-        <table summary="お支払・お引取り方法選択">
+        <table summary="購入者情報">
           <tr>
             <th>購入者氏名</th>
             <td>${shipping_address.last_name} ${shipping_address.first_name}</td>
@@ -126,15 +126,32 @@
             <th>性別</th>
             <td>${h.format_gender(request, gender)}</td>
           </tr>
-          <tr class="settlementSelectEnd">
-            <th><label>メモ欄</label></th>
-            <td>${memo|h.nl2br}</td>
-          </tr>
         </table>
       </div>
     </div>
   </div>
 </div>
+
+<% extra_form_data = entry.get_lot_entry_attribute_pair_pairs(request) %>
+% if extra_form_data:
+<div class="settlementBox">
+  <div class="settlementBoxInner">
+    <h2 class="title">追加情報</h2>
+      <div class="settlementSelectBox">
+        <div class="settlementSelectBoxInner02">
+            <table summary="追加情報">
+                % for _, (display_name, display_value) in extra_form_data:
+                <tr>
+                    <th>${display_name}</th>
+                    <td>${h.sensible_coerce(request, display_value)}</td>
+                </tr>
+                % endfor
+            </table>
+        </div>
+      </div>
+  </div>
+</div>
+% endif
 
 %if can_withdraw_show:
 <form method="POST" id="withdrawForm" name="withdrawForm" action="${request.route_path('lots.review.withdraw.confirm')}">

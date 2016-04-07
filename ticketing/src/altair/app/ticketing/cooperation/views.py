@@ -70,24 +70,28 @@ class CooperationView(BaseView):
                 reader.next() # headerを捨てる
             except (csv.Error, StopIteration) as err:
                 raise HTTPBadRequest(body=json.dumps({
-                    'message':u'ファイルが空です',
+                    'message': u'ファイルが空です',
                 }))
 
             try:
                 for record in reader:
-                    id = record[0]
-                    gettii_venue_code = record[6]
+                    seat_id = record[0]
                     l0_id = record[1].strip().decode('cp932')
                     name = record[3].strip().decode('cp932')
                     seat = seats.get(l0_id, None)
-                    if seat and (id is not None) and id.isdigit() and \
-                            (gettii_venue_code is not None) and gettii_venue_code.isdigit():
+                    if seat and (seat_id is not None) and seat_id.isdigit():
                         success[name] = l0_id
                     else:
                         fail[name] = l0_id
             except IndexError as err:
                 raise HTTPBadRequest(body=json.dumps({
-                    'message':u'ファイルフォーマットが不正です',
+                    'message': u'ファイルフォーマットが不正です',
+                }))
+
+            if fail:
+                raise HTTPBadRequest(body=json.dumps({
+                    'message': u'ファイルの1カラム目の、データを数字で入れてください',
+                    'fail': fail
                 }))
 
             return {'success': success,
@@ -101,11 +105,11 @@ class CooperationView(BaseView):
                 external_seat_csv.read_csv(self.request.POST['csvfile'].file)
             except CSVEmptyError as err:
                 raise HTTPBadRequest(body=json.dumps({
-                    'message':u'ファイルが空です',
+                    'message': u'ファイルが空です',
                 }))
             except AttributeError as err:
                 raise HTTPBadRequest(body=json.dumps({
-                    'message':u'ファイルが選択されていません',
+                    'message': u'ファイルが選択されていません',
                 }))
 
             records = [record for record in external_seat_csv]
@@ -128,7 +132,7 @@ class CooperationView(BaseView):
             external_venue_codes = list(set([row.venue_code for row in records]))
             if len(external_venue_codes) != 1:
                 raise HTTPBadRequest(body=json.dumps({
-                    'message':u'複数の会場コードは受け付けられません',
+                    'message': u'複数の会場コードは受け付けられません',
                 }))
 
             external_venue_code = external_venue_codes[0]
@@ -138,7 +142,7 @@ class CooperationView(BaseView):
                 external_venue = GettiiVenue.query.filter(GettiiVenue.code==external_venue_code).one()
             except NoResultFound:
                 raise HTTPBadRequest(body=json.dumps({
-                    'message':u'指定された会場コードを持つGettii会場が見つかりませんでした',
+                    'message': u'指定された会場コードを持つGettii会場が見つかりませんでした',
                 }))
             id_seat = dict([(ex_seat.l0_id, ex_seat) for ex_seat in external_venue.gettii_seats])
 
@@ -156,11 +160,11 @@ class CooperationView(BaseView):
                     }
         elif fmt_ == 'augus':
             raise HTTPBadRequest(body=json.dumps({
-                'message':u'この機能はまだ使用できません',
+                'message': u'この機能はまだ使用できません',
             }))
         else:
             raise HTTPBadRequest(body=json.dumps({
-                'message':u'この機能はまだ使用できません',
+                'message': u'この機能はまだ使用できません',
             }))
 
     # distribution

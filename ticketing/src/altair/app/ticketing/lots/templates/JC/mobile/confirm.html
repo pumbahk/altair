@@ -30,8 +30,6 @@ if label is None or label is True:
 </div>
 </%def>
 
-
-
 <div align="center" style="text-align:center">
 ${event.title}<br />
 ${lot.name}
@@ -51,14 +49,14 @@ ${h.japanese_date(wish.performance.start_on)}<br />
 % for lot_product in wish.products:
 ・${lot_product.product.name}<br />
 <div align="right" style="text-align:right">
-${h.format_currency(lot_product.product.price)}×${lot_product.quantity}名=${h.format_currency(lot_product.subtotal)} (税込)
+${h.format_currency(lot_product.product.price)}×${lot_product.quantity}枚=${h.format_currency(lot_product.subtotal)} (税込)
 </div>
 % endfor
 ・決済手数料 (${payment_delivery_method_pair.payment_method.name})<br />
 <div align="right" style="text-align:right">
 ${h.format_currency(wish.transaction_fee)}
 </div>
-・配送手数料 (${payment_delivery_method_pair.delivery_method.name})<br .>
+・引取手数料 (${payment_delivery_method_pair.delivery_method.name})<br />
 <div align="right" style="text-align:right">
 ${h.format_currency(wish.delivery_fee)}
 </div>
@@ -79,21 +77,13 @@ ${h.format_currency(wish.special_fee)}
 </div>
 %endfor
 <%mobile:header>エントリー代表者情報</%mobile:header>
-<%mobile:form_header>氏名(漢字)</%mobile:form_header>
+<%mobile:form_header>エントリー代表者氏名</%mobile:form_header>
 <div>
 ${shipping_address['last_name']} ${shipping_address['first_name']}
 </div>
-<%mobile:form_header>氏名(カナ)</%mobile:form_header>
+<%mobile:form_header>エントリー代表者氏名(カナ)</%mobile:form_header>
 <div>
 ${shipping_address['last_name_kana']} ${shipping_address['first_name_kana']}
-</div>
-<%mobile:form_header>性別</%mobile:form_header>
-<div>
-${h.format_gender(request, gender)}
-</div>
-<%mobile:form_header>生年月日</%mobile:form_header>
-<div>
-${h.japanese_date(birthday)}
 </div>
 <%mobile:form_header>メールアドレス</%mobile:form_header>
 <div>
@@ -109,6 +99,14 @@ ${shipping_address['tel_1']}
 ${shipping_address['prefecture']}${shipping_address['city']}<br />
 ${shipping_address['address_1']}<br />
 ${shipping_address['address_2']}
+</div>
+<%mobile:form_header>生年月日</%mobile:form_header>
+<div>
+${h.japanese_date(birthday)}
+</div>
+<%mobile:form_header>性別</%mobile:form_header>
+<div>
+${h.format_gender(request, gender)}
 </div>
 
 % if extra_form_data:
