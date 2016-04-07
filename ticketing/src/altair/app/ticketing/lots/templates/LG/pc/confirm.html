@@ -107,23 +107,6 @@
   </div>
   % endif
 
-
-  % if extra_form_data:
-  <div class="confirmBox">
-  	<div class="confirmBoxInner">
-      <h2>追加情報</h2>
-  	  <table id="contentsOfShopping">
-      % for _, (display_name, display_value) in extra_form_data:
-        <tr>
-          <th scope="row">${display_name}</th>
-          <td>${ch.sensible_coerce(request, display_value)}</td>
-        </tr>
-      % endfor
-      </table>
-    </div>
-  </div>
-  % endif
-
   % if mailmagazines_to_subscribe:
   <div class="settlementBox">
     <div class="settlementBoxInner">
