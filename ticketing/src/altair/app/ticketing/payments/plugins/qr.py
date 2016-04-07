@@ -24,6 +24,9 @@ from altair.app.ticketing.core.interfaces import IOrderLike
 from collections import namedtuple
 
 from . import QR_DELIVERY_PLUGIN_ID as DELIVERY_PLUGIN_ID
+import re
+tag_re = re.compile(r"<[^>]*?>")
+
 
 def includeme(config):
     config.add_delivery_plugin(QRTicketDeliveryPlugin(), DELIVERY_PLUGIN_ID)
@@ -96,10 +99,13 @@ def deliver_completion_mail_viewlet(context, request):
     shipping_address = context.order.shipping_address
     order = context.order
     delivery_method = order.payment_delivery_pair.delivery_method
+    description = ""
+    if delivery_method.description is not None:
+        description = tag_re.sub("", delivery_method.description)
     return dict(h=cart_helper, shipping_address=shipping_address,
                 notice=context.mail_data("D", "notice"),
                 delivery_name=delivery_method.name,
-                description=Markup(delivery_method.description),
+                description=description,
                 )
 
 @lbr_view_config(context=IOrderCancelMailResource, name="delivery-%d" % DELIVERY_PLUGIN_ID)
