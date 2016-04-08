@@ -9,6 +9,7 @@ import argparse
 import locale
 import time
 import json
+import logging
 
 from pyramid.paster import get_app, bootstrap
 
@@ -28,6 +29,8 @@ io_encoding = locale.getpreferredencoding()
 SITE_INFO_NAMESPACE = 'http://xmlns.ticketstar.jp/2012/site-info'
 
 verbose = False
+
+logger = logging.getLogger(__name__)
 
 class FormatError(Exception):
     pass
@@ -50,11 +53,12 @@ def relativate(a, b):
     else:
         return abs_b[len(pfx) + 1:]
 
-def import_tree(registry, update, organization, xmldoc, file, bundle_base_url=None, venue_id=None, max_adjacency=None):
+def import_tree(registry, update, organization, xmldoc, file, bundle_base_url=None, venue_id=None, max_adjacency=None, prefecture=u'全国'):
     # 論理削除をインストールする都合でコードの先頭でセッションが初期化
     # されてほしくないので、ここで import する
     from altair.app.ticketing.models import DBSession
     from altair.app.ticketing.core.models import (
+        SiteProfile,
         Site,
         Venue,
         VenueArea,
@@ -73,13 +77,22 @@ def import_tree(registry, update, organization, xmldoc, file, bundle_base_url=No
         raise FormatError('The root object is not a Venue')
 
     backend_metadata_url = myurljoin(bundle_base_url, 'metadata.json')
+    site_name = tree['properties']['name']
+    try:
+        siteprofile = SiteProfile.get_by_name_and_prefecture(name=site_name, prefecture=prefecture)
+    except NoResultFound:
+        siteprofile = SiteProfile(name = site_name, prefecture = prefecture)
+        siteprofile.save()
+    except MultipleResultsFound as multipleResultsFound:
+        logger.error("Multiple SiteProfile with same name and prefecture found: (name: %s, prefecture: %s)" % (site_name, prefecture))
+        raise multipleResultsFound
     if update:
-        site = Site(name=tree['properties']['name'], _backend_metadata_url=backend_metadata_url)
+        site = Site(name=site_name, _backend_metadata_url=backend_metadata_url, siteprofile = siteprofile)
         venue_q = DBSession.query(Venue)
         if venue_id is not None:
             venue_q = venue_q.filter_by(organization=organization, id=venue_id)
         else:
-            venue_q = venue_q.filter_by(organization=organization, name=tree['properties']['name'])
+            venue_q = venue_q.filter_by(organization=organization, name=site_name)
         try:
             venue = venue_q.one()
         except NoResultFound:
@@ -92,9 +105,9 @@ def import_tree(registry, update, organization, xmldoc, file, bundle_base_url=No
         venue.site.delete() # 論理削除
         venue.site = site
     else:
-        site = Site(name=tree['properties']['name'], _backend_metadata_url=backend_metadata_url)
+        site = Site(name=site_name, _backend_metadata_url=backend_metadata_url, siteprofile = siteprofile)
         l0_seats = dict()
-        venue = Venue(site=site, name=tree['properties']['name'])
+        venue = Venue(site=site, name=site_name)
         venue.organization = organization
 
     seat_index_type_objs = tree['collections'].get('seatIndexTypes')
@@ -325,6 +338,7 @@ def import_tree(registry, update, organization, xmldoc, file, bundle_base_url=No
         print '[ADD] SeatAdjacencySet(seat_count=%d)' % adjacency_set.seat_count
         DBSession.add(adjacency_set)
 
+    DBSession.merge(siteprofile)
     DBSession.merge(site)
     DBSession.merge(venue)
 
@@ -337,7 +351,7 @@ def import_tree(registry, update, organization, xmldoc, file, bundle_base_url=No
     else:
         print 'WARNING: Drawing was not uploaded automatically'
 
-def import_or_update_svg(env, update, organization_name, file, bundle_base_url, venue_id, max_adjacency, dry_run):
+def import_or_update_svg(env, update, organization_name, file, bundle_base_url, venue_id, max_adjacency, dry_run, prefecture):
     from altair.app.ticketing.models import DBSession
     from altair.app.ticketing.core.models import Organization
     organization = DBSession.query(Organization).filter_by(name=organization_name).one()
@@ -349,7 +363,7 @@ def import_or_update_svg(env, update, organization_name, file, bundle_base_url, 
     title = root.find('{%s}title' % SVG_NAMESPACE)
     print '  Title: %s' % title.text.encode(io_encoding)
     try:
-        import_tree(env['registry'], update, organization, xmldoc, file, bundle_base_url, venue_id, max_adjacency)
+        import_tree(env['registry'], update, organization, xmldoc, file, bundle_base_url, venue_id, max_adjacency, prefecture)
         if dry_run:
             transaction.abort()
         else:
@@ -378,6 +392,8 @@ def main():
                         help='specify venue id (use with -u)')
     parser.add_argument('-U', '--base-url', metavar='base_url',
                         help='base url under which the site data will be put')
+    parser.add_argument('-P', '--prefecture', metavar='prefecture',
+                        help='prefecture to be set on site and siteprofile')
     parsed_args = parser.parse_args()
 
     env = bootstrap(parsed_args.config_uri)
@@ -390,6 +406,8 @@ def main():
     bundle_base_url = myurljoin(site_base_url, parsed_args.base_url)
     if bundle_base_url[-1] != '/':
         bundle_base_url += '/'
+    hex_prefecture = parsed_args.prefecture
+    prefecture = hex_prefecture.decode('hex')
     for svg_file in parsed_args.svg_files:
         import_or_update_svg(
             env,
@@ -399,7 +417,8 @@ def main():
             bundle_base_url=bundle_base_url,
             venue_id=parsed_args.venue,
             max_adjacency=parsed_args.max_adjacency,
-            dry_run=parsed_args.dry_run)
+            dry_run=parsed_args.dry_run,
+            prefecture=prefecture)
 
 if __name__ == '__main__':
     main()

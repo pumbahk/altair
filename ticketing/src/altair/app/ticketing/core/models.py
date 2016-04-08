@@ -76,23 +76,53 @@ class Seat_SeatAdjacency(Base):
     l0_id = Column(Unicode(48), ForeignKey('Seat.l0_id'), primary_key=True)
     seat_adjacency_id = Column(Identifier, ForeignKey('SeatAdjacency.id', ondelete='CASCADE'), primary_key=True, nullable=False)
 
-@implementer(ITentativeVenueSite)
-class Site(Base, BaseModel, WithTimestamp, LogicallyDeleted):
-    __tablename__ = "Site"
+class SiteProfile(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+    __tablename__ = "SiteProfile"
     id = Column(Identifier, primary_key=True)
     name = Column(String(255))
     zip = Column(Unicode(32))
-    prefecture   = Column(Unicode(64), nullable=False, default=u'')
+    prefecture = Column(Unicode(64), nullable=False, default=u'')
     city = Column(Unicode(255))
     address_1 = Column('street', Unicode(255))
     address_2 = Column('other_address', Unicode(255))
     tel_1 = Column(String(32))
     tel_2 = Column(String(32))
     fax = Column(String(32))
+
+    @classmethod
+    def get_default_siteprofile(cls):
+        return DBSession.query(SiteProfile)\
+                        .filter(SiteProfile.name == 'default')\
+                        .filter(SiteProfile.prefecture == u'全国')\
+                        .one()
+
+    @classmethod
+    def get_by_name_and_prefecture(cls, name, prefecture):
+        return DBSession.query(SiteProfile)\
+                        .filter(SiteProfile.name == name)\
+                        .filter(SiteProfile.prefecture == prefecture)\
+                        .one()
+
+@implementer(ITentativeVenueSite)
+class Site(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+    __tablename__ = "Site"
+    id = Column(Identifier, primary_key=True)
+    siteprofile_id = AnnotatedColumn(Identifier, ForeignKey('SiteProfile.id'), nullable=False)
+    name = Column(String(255))
+    zip = Column(Unicode(32)) # deprecated
+    prefecture   = Column(Unicode(64), nullable=False, default=u'') # deprecated
+    city = Column(Unicode(255)) # deprecated
+    address_1 = Column('street', Unicode(255)) # deprecated
+    address_2 = Column('other_address', Unicode(255)) # deprecated
+    tel_1 = Column(String(32)) # deprecated
+    tel_2 = Column(String(32)) # deprecated
+    fax = Column(String(32)) # deprecated
     visible = AnnotatedColumn(Boolean, default=True, _a_label=_(u'会場の表示/非表示'))
     _drawing_url = Column('drawing_url', String(255))
     _frontend_metadata_url = Column('metadata_url', String(255))
     _backend_metadata_url = Column('backend_metadata_url', String(255))
+
+    siteprofile = relationship('SiteProfile')
 
 class L0Seat(Base, BaseModel):
     __tablename__  = 'L0Seat'

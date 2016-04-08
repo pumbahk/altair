@@ -104,6 +104,9 @@
     </thead>
     <tbody>
     % for altair_famiport_performance_group in altair_famiport_performance_groups:
+      % if not altair_famiport_performance_group.altair_famiport_performances:
+        <% continue %>
+      % endif
       <tr>
         <%
         altair_famiport_performances = altair_famiport_performance_group.altair_famiport_performances
@@ -120,8 +123,10 @@
           <span style="color: #9e0000;">最終反映時刻：${view.last_reflected_at_label(altair_famiport_performance_group)}</span>
         </td>
         <td rowspan="${rows}">
-          ${altair_famiport_performance_group.altair_famiport_venue.name}<br />
-          [${altair_famiport_performance_group.altair_famiport_performances.values()[0].performance.venue.name}]
+          ${altair_famiport_performance_group.altair_famiport_venue.venue_name}<br />
+          % if altair_famiport_performance_group.altair_famiport_performances:
+            [${altair_famiport_performance_group.altair_famiport_performances.values()[0].performance.venue.name}]
+          % endif
         </td>
         <td rowspan="${rows}">${altair_famiport_performance_group.code_1}-${altair_famiport_performance_group.code_2}</td>
         % for i, (performance, altair_famiport_performance) in enumerate(sorted(altair_famiport_performance_group.altair_famiport_performances.items(), key=lambda pair: pair[1].code)):
