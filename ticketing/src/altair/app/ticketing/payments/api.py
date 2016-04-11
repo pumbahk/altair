@@ -132,11 +132,8 @@ def get_payment_delivery_plugin_ids(payment_method_id, delivery_method_id):
         delivery_method_id (int): 取引方法ID
 
     戻り値：
-        json: 値をjsonのフォーマットで返す
-            {
-                'payment_plugin_id': payment_plugin_id,
-                'delivery_plugin_id': delivery_plugin_id
-            }
+        payment_plugin_id
+        delivery_plugin_id
     """
     payment_plugin_id = PaymentMethod.filter_by(id=payment_method_id).one().payment_plugin_id
     delivery_plugin_id = DeliveryMethod.filter_by(id=delivery_method_id).one().delivery_plugin_id

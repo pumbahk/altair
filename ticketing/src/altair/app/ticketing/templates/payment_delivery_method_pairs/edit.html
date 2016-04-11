@@ -72,24 +72,17 @@
           // 選択不可期間
           $('#unavailable_period_days').val(data.unavailable_period_days);
           // 支払期日
-          $('#payment_period_days-1-absolute').prop('checked', JSON.parse(data.payment_period_days_one_absolute));
-          $('#payment_period_days-1-relative').prop('checked', JSON.parse(data.payment_period_days_one_relative));
-          $('#payment_period_days-2').prop('disabled', JSON.parse(data.payment_period_days_two));
-          $("#payment_period_days-2 option[value=" + data.payment_period_days_two_selected + "]").attr('selected', 'selected');
+          $('#payment_period_days-2').prop('disabled', JSON.parse(data.payment_period_days_two_disabled));
+          $("#payment_period_days-2 option[value=" + data.payment_period_days_selected_choice + "]").attr('selected', 'selected');
           $('#payment_period_days').prop('disabled', JSON.parse(data.payment_period_days_disabled));
-          $('#payment_period_days').val(data.payment_period_days);
           // コンビニ発券開始日時
-          $('#issuing_interval_days-1-absolute').prop('checked', JSON.parse(data.issuing_interval_days_one_absolute));
-          $('#issuing_interval_days-1-relative').prop('checked', JSON.parse(data.issuing_interval_days_one_relative));
-          $('#issuing_interval_days-2').prop('disabled', JSON.parse(data.issuing_interval_days_two));
-          $("#issuing_interval_days-2 option[value=" + data.issuing_interval_days_two_selected + "]").attr('selected', 'selected');
+          $('#issuing_interval_days-2').prop('disabled', JSON.parse(data.issuing_interval_days_two_disabled));
+          $("#issuing_interval_days-2 option[value=" + data.issuing_interval_days_selected_choice + "]").attr('selected', 'selected');
           $('#issuing_interval_days').prop('disabled', JSON.parse(data.issuing_interval_days_disabled));
           $('#issuing_interval_days').val(data.issuing_interval_days);
           // コンビニ発券期限日時
-          $('#issuing_end_in_days-1-absolute').prop('checked', JSON.parse(data.issuing_end_in_days_one_absolute));
-          $('#issuing_end_in_days-1-relative').prop('checked', JSON.parse(data.issuing_end_in_days_one_relative));
-          $('#issuing_end_in_days-2').prop('disabled', JSON.parse(data.issuing_end_in_days_two));
-          $("#issuing_end_in_days-2 option[value=" + data.issuing_end_in_days_two_selected + "]").attr('selected', 'selected');
+          $('#issuing_end_in_days-2').prop('disabled', JSON.parse(data.issuing_end_in_days_two_disabled));
+          $("#issuing_end_in_days-2 option[value=" + data.issuing_end_in_days_selected_choice + "]").attr('selected', 'selected');
           $('#issuing_end_in_days').prop('disabled', JSON.parse(data.issuing_end_in_days_disabled));
           $('#issuing_end_in_days').val(data.issuing_end_in_days);
         },
@@ -205,7 +198,6 @@
             <label class="radio">
               ${form.payment_period_days.base_type_radio('relative')}
             </label>
-            <% import ipdb;ipdb.set_trace() %>
             ${form.payment_period_days(class_='span1', subcategory_class='span2')}
             ${ch.validate_errors(form.payment_period_days)}
           </div>
