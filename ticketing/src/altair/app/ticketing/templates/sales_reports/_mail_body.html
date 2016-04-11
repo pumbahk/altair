@@ -87,7 +87,7 @@
       <td style="padding: 5px;" rowspan="${count}">${report.stock_holder_name}</td>
       % endif
       <td style="padding: 5px;">${report.product_name}</td>
-      <td style="padding: 5px; text-align: right;">${vh.price(report.product_price)}</td>
+      <td style="padding: 5px; text-align: right;">${vh.price(report.product_price/report.sales_unit)}</td>
       % if i == 0:
       <td style="padding: 5px; text-align: right;" rowspan="${count}">${vh.number(report.stock_quantity) or ''}</td>
       <td style="padding: 5px; text-align: right;" rowspan="${count}">${vh.number(report.vacant_quantity) or ''}</td>
