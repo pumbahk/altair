@@ -54,7 +54,7 @@ ${h.error_list(request, form, 'secure_code')}
 </dd>
 
 <dd>
-<p>セキュリティコードは、MasterCard、VisaまたはJCBでは、カード裏面の署名欄に印刷されている下3桁の数字です。</p>
+<p>セキュリティコードは、カード裏面の署名欄に印刷されている下3桁の数字です。</p>
 
 <p>ブラウザの「戻る」ボタンを使用するとエラーになります。前ページに戻る場合は画面内に表示されているボタンを使用して下さい。なお、ページによってはブラウザの「更新」ボタンを使用するとエラーになる場合があります。</p>
 
@@ -67,7 +67,7 @@ ${h.error_list(request, form, 'secure_code')}
   <p>予約受付完了と同時に決済され、即時予約確定となります。 支払回数は≪1回払い≫のみのお取扱いとなります。 以下のクレジットカードがご利用できます。 </p>
 %endif
 
-<p><img src="${request.static_url('altair.app.ticketing.cart:static/RT/smartphone/images/cards.gif')}" width="100%" alt=""></p>
+<p><img src="${request.static_url('altair.app.ticketing.cart:static/RT/smartphone/images/cards.gif')}" alt="cards"></p>
 </dd>
 
 </dl>
