@@ -1,0 +1,54 @@
+<html lang="ja">
+<head>
+  <title>サウンドクリエーター</title>
+</head>
+<body style="background-color:#FFFFFF" bgcolor="#FFFFFF">
+<div align="center">
+  <img src="${request.static_url('altair.app.ticketing.fc_auth:static/SC/mobile/images/logo_mobile.gif')}" width="240" height="96" alt="サウンドクリエーター" />
+</div>
+<div>
+<div style="background-color:#1D2B62" bgcolor="#1D2B62"><font color="white">チケット購入</font></div>
+
+<p style="text-align:center;">
+<div id="login_form">
+<div><font color="#FEBF00">■</font>各種会員の方はこちらから</font>
+</div>
+
+</div>
+<form action="${request.path}" method="post">
+<input type="hidden" name="membership" value="SC" />
+<div>
+  会員ID<br/>
+  <input type="text" name="username" size="22" value="" istyle="4">
+  %if message:
+  <br/><span style="color: red">IDまたはパスワードが一致しません</span>
+  %endif
+
+  <input type="hidden" name="password" value="sc">
+</div>
+<input type="submit" value="ログイン" />
+</form>
+</div>
+
+<div>
+<div><font color="#FEBF00">■</font>一般の方はこちらから</font>
+</div>
+
+</div>
+<form action="${request.route_url('fc_auth.guest', membership=request.matchdict['membership'])}" method="post">
+<div style="text-align:center;">
+<br/>
+<input type="submit" value="&gt;&gt;チケット購入&lt;&lt;"/><br />
+</div>
+</div>
+</form>
+</p>
+<hr size="1" color="#888888" noshade="noshade" />
+<div align="center" style="font-size:x-small">
+  <div>
+<a href="http://www.sound-c.co.jp/contact/">お問い合わせ</a> | <a href="http://sc.tstar.jp/kiyaku.html">利用規約</a> | <a href="http://sc.tstar.jp/tokushoho.html">特定商取引法に基づく表示</a> | <a href="http://www.acpc.or.jp/concert/">ライブ・エンタテインメント約款</a> | <a href="http://www.sound-c.co.jp/privacy/">個人情報保護方針</a>
+  </div>
+<div><font color="#888888"> &copy; TicketStar, Inc.</font></div>
+</div>
+</body>
+</html>
