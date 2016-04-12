@@ -106,7 +106,7 @@
 var selected = ${selected};
 var salesSegmentsSelection = ${sales_segments_selection};
 var cartReleaseUrl = ${h.json_encode(cart_release_url)|n};
-var spinnerPictureUrl = ${h.json_encode(request.static_url('altair.app.ticketing.cart:static/SC/smartphone/images/loading.gif'))|n};
+var spinnerPictureUrl = ${h.json_encode(view_context.static_url('smartphone/images/loading.gif'))|n};
 $(function() {cart.init(salesSegmentsSelection, selected, cartReleaseUrl, false, spinnerPictureUrl);});
 $(function () {
   $('*[data-toggle]').live(

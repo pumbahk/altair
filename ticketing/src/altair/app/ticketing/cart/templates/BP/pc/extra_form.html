@@ -1,5 +1,4 @@
 <%inherit file="./base.html"/>
-<%namespace name="fh" module="altair.formhelpers.utils.mako" />
 %if request.session.peek_flash():
     %for message in request.session.pop_flash():
     <div class="error">${message}</div>
@@ -9,7 +8,6 @@
   <div class="confirmBox">
     <div class="confirmBoxInner">
       <h2>追加情報の入力</h2>
-      <%fh:render_block>
       <% beginning_of_group = True %>
       % for field in form_fields:
         % if field['field']:
@@ -25,7 +23,7 @@
             % endif
             <ul>
               <li>
-                ${fh.render(field['field'])}
+                ${field['field']()}
                 ${h.error_list(request, field['field'])}
               </li>
             </ul>
@@ -45,10 +43,6 @@
       % if not beginning_of_group:
       </table>
       % endif
-      <%def name="__post__(registry_var)">
-      ${fh.inject_js(registry_var)}
-      </%def>
-      </%fh:render_block>
     </div>
   </div>
   <p class="align2"><image onclick="$('#form1').submit()" src="${request.static_url('altair.app.ticketing.cart:static/ticketstar/pc/images/btn_next.gif')}" alt="次へ" width="226" height="46" /></p>

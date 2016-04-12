@@ -15,7 +15,7 @@ ${self.widget.flow_widget(2)}
 <form id="form1" name="form1" method="post" action="${request.url}">
   <div class="settlementBox">
     <div class="settlementBoxInner">
-      <h2><img src="${request.static_url('altair.app.ticketing.cart:static/SC/pc/images/title_methods.gif')}" alt="お支払い、引き取り方法の指定" width="267" height="30" /></h2>
+      <h2><img src="${view_context.static_url('pc/images/title_methods.gif')}" alt="お支払い、引き取り方法の指定" width="267" height="30" /></h2>
       %if len(payment_delivery_methods) > 1:
             <p style="margin-left:20px;">どれかひとつをお選びください</p>
       %endif
@@ -91,7 +91,7 @@ ${self.widget.flow_widget(2)}
   </div>
   <div class="confirmBox">
     <div class="confirmBoxInner">
-      <h2><img src="${request.static_url('altair.app.ticketing.cart:static/SC/pc/images/title_customer_info.gif')}" alt="購入者情報" width="103" height="30" /></h2>
+      <h2><img src="${view_context.static_url('pc/images/title_customer_info.gif')}" alt="購入者情報" width="103" height="30" /></h2>
       <!--
           <h2>購入者情報</h2>
           <div class="settlementPayBox">
@@ -216,6 +216,6 @@ ${self.widget.flow_widget(2)}
   </div>
   
 </div>
-<p class="align2"><image onclick="$('#form1').submit()" src="${request.static_url('altair.app.ticketing.cart:static/SC/pc/images/btn_next.gif')}" alt="次へ" width="226" height="46" /></p>
+<p class="align2"><image onclick="$('#form1').submit()" src="${view_context.static_url('pc/images/btn_next.gif')}" alt="次へ" width="226" height="46" /></p>
 </form>
 

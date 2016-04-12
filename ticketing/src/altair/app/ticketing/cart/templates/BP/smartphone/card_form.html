@@ -18,7 +18,7 @@
     border: 0;
     width: 226px;
     height: 46px;
-    background: url("${request.static_url('altair.app.ticketing.cart:static/SC/smartphone/images/btn_next.gif')}") left top no-repeat;
+    background: url("${view_context.static_url('smartphone/images/btn_next.gif')}") left top no-repeat;
   }
 </style>
 </%block>
@@ -93,10 +93,10 @@ notice = request.session.get('altair.app.ticketing.payments.auth3d_notice')
           </p>
 %endif
           <p>
-            <img src="${request.static_url('altair.app.ticketing.cart:static/SC/smartphone/images/kc_logo_rakuten.gif')}" height="30px" />
-            <img src="${request.static_url('altair.app.ticketing.cart:static/SC/smartphone/images/visa.gif')}" height="30px" />
-            <img src="${request.static_url('altair.app.ticketing.cart:static/SC/smartphone/images/master.gif')}" height="30px" />
-            <img src="${request.static_url('altair.app.ticketing.cart:static/SC/smartphone/images/jcb.gif')}" height="30px" />
+            <img src="${view_context.static_url('smartphone/images/kc_logo_rakuten.gif')}" height="30px" />
+            <img src="${view_context.static_url('smartphone/images/visa.gif')}" height="30px" />
+            <img src="${view_context.static_url('smartphone/images/master.gif')}" height="30px" />
+            <img src="${view_context.static_url('smartphone/images/jcb.gif')}" height="30px" />
           </p>
         </dd>
       </dl>

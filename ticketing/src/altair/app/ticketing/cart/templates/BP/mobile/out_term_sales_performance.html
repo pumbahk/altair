@@ -32,7 +32,7 @@ ${h.japanese_datetime(start_at)}
 <li><a href="${h.cart_url(request, sales_segment=_sales_segment)}">${h.format_name(request, sales_segment=_sales_segment)}</a></li>
 %   endfor
 </ul>
+% else:
+<p>他のイベントのチケットは<a href="${request.context.host_base_url}">こちら</a>からお買い求めくださいますようお願いいたします。</p>
 % endif
-<p>他の公演のチケットは<a href="http://www.sound-c.co.jp/ticket/">こちら</a>からお買い求めくださいますようお願いいたします。</p>
-<p>購入済みの方は、<a href="http://sc.tstar.jp/">こちら</a>からお申込内容をご確認いただけます。</p>
 

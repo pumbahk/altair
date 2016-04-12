@@ -1,6 +1,5 @@
 <%inherit file="./base.html"/>
 <%namespace file="tags_smartphone.html" name="t" />
-<%namespace name="fh" module="altair.formhelpers.utils.mako" />
 <%block name="css">
 <style type="text/css">
 form {
@@ -29,7 +28,6 @@ form {
   <h2 class="glitter red">追加情報の入力</h2>
   <div class="confirmBox">
     <div class="confirmBoxInner">
-      <%fh:render_block>
       % for i, field in enumerate(form_fields):
       <div class="dispBox">
       % if field['field']:
@@ -39,7 +37,7 @@ form {
           <div>${field['field'].description}</div>
           % endif
           <div>
-            ${fh.render(field['field'], _widget=h.sensible_widget(request, field['field'].widget))}
+            ${field['field'](_widget=h.sensible_widget(request, field['field'].widget))}
             ${h.error_list(request, field['field'])}
           </div>
           % if field['field']._note:
@@ -49,10 +47,6 @@ form {
         <div>${field['description']}</div>
       % endif
       % endfor
-      <%def name="__post__(registry_var)">
-      ${fh.inject_js(registry_var)}
-      </%def>
-      </%fh:render_block>
     </div>
   </div>
   <div class="buttonbox">

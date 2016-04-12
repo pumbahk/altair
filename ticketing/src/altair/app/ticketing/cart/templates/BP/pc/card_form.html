@@ -18,7 +18,7 @@
     border: 0;
     width: 226px;
     height: 46px;
-    background: url("${request.static_url('altair.app.ticketing.cart:static/SC/pc/images/btn_next.gif')}") left top no-repeat;
+    background: url("${view_context.static_url('pc/images/btn_next.gif')}") left top no-repeat;
   }
 </style>
 </%block>
@@ -31,9 +31,7 @@
   %endfor
 %endif
 
-% if hasattr(self, 'widget'):
 ${self.widget.flow_widget(2)}
-% endif
 
 <form id="form1" name="form1" method="post" action="${request.url}">
   ${form.csrf_token()}
@@ -90,7 +88,7 @@ ${self.widget.flow_widget(2)}
             以下のクレジットカードがご利用できます。
           </p>
           <p>
-            <img src="${request.static_url('altair.app.ticketing.cart:static/SC/pc/images/cards.gif')}" alt="cards"><br />
+            <img src="${view_context.static_url('pc/images/cards.gif')}" alt="cards"><br />
           </p>
         </dd>
       </dl>

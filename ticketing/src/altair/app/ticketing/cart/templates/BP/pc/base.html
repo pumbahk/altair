@@ -1,47 +1,53 @@
 <%namespace name="widget" file="./_widgets.html" inheritable="True" />
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ja" lang="ja">
-  <head>
-    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
-    <title>${view_context.team_name}</title>
-    <meta http-equiv="content-style-type" content="text/css" />
-    <meta http-equiv="content-script-type" content="text/javascript" />
-    <meta name="viewport" content="width=950" />
-    <link rel="shortcut icon" href="${view_context.static_url('pc/images/favicon.ico')}">
-    <link rel="stylesheet" href="${view_context.static_url('pc/css/import2.css')}" type="text/css" media="all" />
-    <link rel="stylesheet" href="${view_context.static_url('pc/css/custom2.css')}" type="text/css" media="all" />
-    <%block name="javascript"></%block>
-    <%block name="css"></%block>
-  </head>
-  <body id="settlement">
-    <p id="naviSkip">
-    <a href="#main" tabindex="1" title="本文へジャンプ">
-      <img src="${view_context.static_url('pc/images/skip.gif')}" alt="本文へジャンプ" width="1" height="1" />
-    </a>
-    </p>
-    <div id="container" style="position:relative">
-      <!-- ========== header ========== -->
-      <div id="grpheader" style="height:80px">
-        <p id="siteID" style="float:none;position:absolute;z-index:100">
-        <img src="${view_context.static_url('pc/images/pc_logo.png')}" alt="${view_context.team_name}" width="950" height="64" />
-        </p>
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+  <title>${view_context.team_name}</title>
+  <meta http-equiv="content-style-type" content="text/css" />
+  <meta http-equiv="content-script-type" content="text/javascript" />
+  <meta name="viewport" content="width=950" />
+  <link rel="shortcut icon" href="${view_context.static_url('pc/images/favicon.ico')}">
+  <link rel="stylesheet" href="${view_context.static_url('pc/css/import2.css')}" type="text/css" media="all" />
+  <link rel="stylesheet" href="${view_context.static_url('pc/css/custom2.css')}" type="text/css" media="all" />
+  <%block name="javascript"></%block>
+  <%block name="css"></%block>
+</head>
+<body id="settlement">
+  <p id="naviSkip"><a href="#main" tabindex="1" title="本文へジャンプ"><img src="${view_context.static_url('pc/images/skip.gif')}" alt="本文へジャンプ" width="1" height="1" /></a></p>
+  <div id="container" style="position:relative">
+    <form action="${request.route_path('cart.logout')}" method="POST">
+      <div style="text-align: right">
+        % if (not getattr(request, 'context', None)) or request.context.authenticated_user()['is_guest']:
+          <input type="submit" value="会員でログイン"/>
+        % else:
+          <input type="submit" value="ログアウト"/>
+        % endif
       </div>
+    </form>
 
-      <div style="text-align:right;">
-        <a href="/howto.html" class="headerLink" target="_blank">申込方法</a>
-        <a href="/faq.html" class="headerLink" target="_blank">よくある質問</a>
-        <a href="/orderreview" class="headerLink" target="_blank">申込確認</a>
-      </div>
-      <!-- ========== /header ========== -->
-
-      <hr />
-
-      <!-- ========== main ========== -->
-      <div id="main">
-        ${self.body()}
-      </div>
-      <!-- ========== /main ========== -->
+    <!-- ========== header ========== -->
+    <div id="grpheader" style="height:80px">
+      <p id="siteID" style="float:none;position:absolute;z-index:100">
+        <img src="${view_context.static_url('pc/images/pc_logo.png')}" alt="${view_context.team_name}" width="950" height="64"  />
+      </p>
     </div>
-    <!-- /container -->
-  </body>
+
+    <div style="text-align:right;">
+      <a href="/howto.html" class="headerLink" target="_blank">申込方法</a>
+      <a href="/faq.html" class="headerLink" target="_blank">よくある質問</a>
+      <a href="/orderreview" class="headerLink" target="_blank">申込確認</a>
+    </div>
+    <!-- ========== /header ========== -->
+
+    <hr />
+
+    <!-- ========== main ========== -->
+    <div id="main">
+      ${self.body()}
+    </div>
+    <!-- ========== /main ========== -->
+  </div>
+  <!-- /container -->
+</body>
 </html>
