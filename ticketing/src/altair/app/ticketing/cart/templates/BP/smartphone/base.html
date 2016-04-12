@@ -3,13 +3,13 @@
 <head>
   <meta http-equiv="content-type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-  <title>チケット販売 - サウンドクリエーター</title>
-  <meta name="description" content="サウンドクリエーターは、チケットのオンラインショッピングサイトです。" />
+  <title>チケット販売 - ${view_context.team_name}</title>
+  <meta name="description" content="${view_context.team_name}は、チケットのオンラインショッピングサイトです。" />
   <meta name="keywords" content="チケット" />
   <meta http-equiv="content-style-type" content="text/css" />
   <meta http-equiv="content-script-type" content="text/javascript" />
-  <link rel="shortcut icon" href="${request.static_url('altair.app.ticketing.cart:static/SC/smartphone/images/sc.ico')}">
-  <link rel="stylesheet" href="${request.static_url('altair.app.ticketing.cart:static/SC/smartphone/css/default2.css')}" type="text/css" />
+  <link rel="shortcut icon" href="${view_context.static_url('smartphone/images/favicon.ico')}">
+  <link rel="stylesheet" href="${view_context.static_url('smartphone/css/default2.css')}" type="text/css" />
   <%block name="javascript"></%block>
   <%block name="css"></%block>
 </head>
@@ -20,8 +20,8 @@
     <div class="header">
       <div class="grpheader">
         <div class="siteID">
-          <a href="http://sc.tstar.jp/">
-            <img src="${request.static_url('altair.app.ticketing.cart:static/SC/smartphone/images/sc_logo.png')}" alt="サウンドクリエーター" class="serviceLogo" />
+          <a href="/">
+            <img src="${view_context.static_url('smartphone/images/sp_logo.png')}" alt="${view_context.team_name}" class="serviceLogo" />
           </a>
         </div>
       </div>
@@ -36,7 +36,9 @@
 
       <br clear="left">
       <div style="text-align:right;">
-        <a href="/howto.html" class="headerLink" target="_blank">申込方法</a>　<a href="/faq.html" class="headerLink" target="_blank">よくある質問</a>　<a href="/kakunin.html" class="headerLink" target="_blank">申込確認</a>
+        <a href="/howto.html" class="headerLink" target="_blank">申込方法</a>
+        <a href="/faq.html" class="headerLink" target="_blank">よくある質問</a>
+        <a href="/orderreview" class="headerLink" target="_blank">申込確認</a>
       </div>
 
       <div class="band">
@@ -50,20 +52,6 @@
       ${self.body()}
     </div>
     <!-- ========== /main ========== -->
-  <div class="footerCopy">
-    <div class="footernav">
-      <ul>
-<li><a href="http://www.sound-c.co.jp/contact/">お問い合わせ</a></li>
-<li><a href="http://sc.tstar.jp/kiyaku.html">利用規約</a></li>
-<li><a href="http://sc.tstar.jp/tokushoho.html">特定商取引法に基づく表示</a></li>
-<li><a href="http://www.acpc.or.jp/concert/">ライブ・エンタテインメント約款</a></li>
-<li><a href="http://www.sound-c.co.jp/privacy/">個人情報保護方針</a></li>
-      </ul>
-    </div>
-    <div class="copyright">
-       &copy; TicketStar, Inc.
-    </div>
-  </div>
   </div>
   <!-- /container -->
   <%block name="extras" />
