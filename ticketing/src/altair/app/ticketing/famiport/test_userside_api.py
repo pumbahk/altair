@@ -519,9 +519,11 @@ class FamiPortSyncTest(unittest.TestCase):
         famiport_venue = self.fm_session.query(FamiPortVenue).filter(FamiPortVenue.userside_id == altair_famiport_venue.id).one()
         famiport_event = self.fm_session.query(FamiPortEvent).filter_by(userside_id = altair_famiport_performance_group.id) \
                                                              .filter_by(invalidated_at = None).one()
-        famiport_performance = self.fm_session.query(FamiPortPerformance).filter_by(userside_id = altair_famiport_performance.id) \
+        famiport_performance = self.fm_session.query(FamiPortPerformance).filter(FamiPortPerformance.famiport_event_id == famiport_event.id) \
+                                                                         .filter_by(userside_id = altair_famiport_performance.id) \
                                                                          .filter_by(invalidated_at = None).one()
-        famiport_salessegment = self.fm_session.query(FamiPortSalesSegment).filter_by(userside_id = altair_famiport_salessegment_pair.id) \
+        famiport_salessegment = self.fm_session.query(FamiPortSalesSegment).filter(FamiPortSalesSegment.famiport_performance_id == famiport_performance.id) \
+                                                                           .filter_by(userside_id = altair_famiport_salessegment_pair.id) \
                                                                            .filter_by(invalidated_at = None).one()
 
         # Make sure expected FamiPort objects are created
@@ -636,9 +638,11 @@ class FamiPortSyncTest(unittest.TestCase):
         famiport_venue = self.fm_session.query(FamiPortVenue).filter(FamiPortVenue.userside_id == altair_famiport_venue.id).one()
         famiport_event = self.fm_session.query(FamiPortEvent).filter_by(userside_id = altair_famiport_performance_group.id) \
                                                              .filter_by(invalidated_at = None).one()
-        famiport_performance = self.fm_session.query(FamiPortPerformance).filter_by(userside_id = altair_famiport_performance.id) \
+        famiport_performance = self.fm_session.query(FamiPortPerformance).filter(FamiPortPerformance.famiport_event_id == famiport_event.id) \
+                                                                         .filter_by(userside_id = altair_famiport_performance.id) \
                                                                          .filter_by(invalidated_at = None).one()
-        famiport_salessegment = self.fm_session.query(FamiPortSalesSegment).filter_by(userside_id = altair_famiport_salessegment_pair.id) \
+        famiport_salessegment = self.fm_session.query(FamiPortSalesSegment).filter(FamiPortSalesSegment.famiport_performance_id == famiport_performance.id) \
+                                                                           .filter_by(userside_id = altair_famiport_salessegment_pair.id) \
                                                                            .filter_by(invalidated_at = None).one()
 
         # Make sure expected FamiPort objects are created
@@ -766,9 +770,11 @@ class FamiPortSyncTest(unittest.TestCase):
         famiport_venue = self.fm_session.query(FamiPortVenue).filter(FamiPortVenue.userside_id == altair_famiport_venue.id).one()
         famiport_event = self.fm_session.query(FamiPortEvent).filter_by(userside_id = altair_famiport_performance_group.id) \
                                                              .filter_by(invalidated_at = None).one()
-        famiport_performance = self.fm_session.query(FamiPortPerformance).filter_by(userside_id = altair_famiport_performance.id) \
+        famiport_performance = self.fm_session.query(FamiPortPerformance).filter(FamiPortPerformance.famiport_event_id == famiport_event.id) \
+                                                                         .filter_by(userside_id = altair_famiport_performance.id) \
                                                                          .filter_by(invalidated_at = None).one()
-        famiport_salessegment = self.fm_session.query(FamiPortSalesSegment).filter_by(userside_id = altair_famiport_salessegment_pair.id) \
+        famiport_salessegment = self.fm_session.query(FamiPortSalesSegment).filter(FamiPortSalesSegment.famiport_performance_id == famiport_performance.id) \
+                                                                           .filter_by(userside_id = altair_famiport_salessegment_pair.id) \
                                                                            .filter_by(invalidated_at = None).one()
 
         # Make sure expected FamiPort objects are created
@@ -860,9 +866,11 @@ class FamiPortSyncTest(unittest.TestCase):
         famiport_venue = self.fm_session.query(FamiPortVenue).filter(FamiPortVenue.userside_id == altair_famiport_venue.id).one()
         famiport_event = self.fm_session.query(FamiPortEvent).filter_by(userside_id = altair_famiport_performance_group.id) \
                                                              .filter_by(invalidated_at = None).one()
-        famiport_performance = self.fm_session.query(FamiPortPerformance).filter_by(userside_id = altair_famiport_performance.id) \
+        famiport_performance = self.fm_session.query(FamiPortPerformance).filter(FamiPortPerformance.famiport_event_id == famiport_event.id) \
+                                                                         .filter_by(userside_id = altair_famiport_performance.id) \
                                                                          .filter_by(invalidated_at = None).one()
-        famiport_salessegment = self.fm_session.query(FamiPortSalesSegment).filter_by(userside_id = altair_famiport_salessegment_pair.id) \
+        famiport_salessegment = self.fm_session.query(FamiPortSalesSegment).filter(FamiPortSalesSegment.famiport_performance_id == famiport_performance.id) \
+                                                                           .filter_by(userside_id = altair_famiport_salessegment_pair.id) \
                                                                            .filter_by(invalidated_at = None).one()
 
         # Make sure expected FamiPort objects are created
@@ -955,10 +963,12 @@ class FamiPortSyncTest(unittest.TestCase):
         famiport_venue = self.fm_session.query(FamiPortVenue).filter(FamiPortVenue.userside_id == altair_famiport_venue.id).one()
         famiport_event = self.fm_session.query(FamiPortEvent).filter_by(userside_id = altair_famiport_performance_group.id) \
                                                              .filter_by(invalidated_at = None).one()
-        famiport_performance = self.fm_session.query(FamiPortPerformance).filter_by(userside_id = altair_famiport_performance.id) \
+        famiport_performance = self.fm_session.query(FamiPortPerformance).filter(FamiPortPerformance.famiport_event_id == famiport_event.id) \
+                                                                         .filter_by(userside_id = altair_famiport_performance.id) \
                                                                          .filter_by(invalidated_at = None).one()
-        famiport_salessegment = self.fm_session.query(FamiPortSalesSegment).filter_by(userside_id = altair_famiport_salessegment_pair.id) \
-                                                                            .filter_by(invalidated_at = None).one()
+        famiport_salessegment = self.fm_session.query(FamiPortSalesSegment).filter(FamiPortSalesSegment.famiport_performance_id == famiport_performance.id) \
+                                                                           .filter_by(userside_id = altair_famiport_salessegment_pair.id) \
+                                                                           .filter_by(invalidated_at = None).one()
 
         # Make sure expected FamiPort objects are created
         self.assertEqual(famiport_venue.id, famiport_event.venue_id)
