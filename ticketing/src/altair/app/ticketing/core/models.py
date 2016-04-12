@@ -107,7 +107,7 @@ class SiteProfile(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 class Site(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "Site"
     id = Column(Identifier, primary_key=True)
-    siteprofile_id = AnnotatedColumn(Identifier, ForeignKey('SiteProfile.id'), nullable=False)
+    siteprofile_id = AnnotatedColumn(Identifier, ForeignKey('SiteProfile.id'), nullable=False, default = 1)
     name = Column(String(255))
     zip = Column(Unicode(32)) # deprecated
     prefecture   = Column(Unicode(64), nullable=False, default=u'') # deprecated
