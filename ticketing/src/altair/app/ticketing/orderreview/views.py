@@ -29,18 +29,25 @@ from altair.app.ticketing.payments import plugins
 from altair.app.ticketing.cart import api as cart_api
 from altair.app.ticketing.cart.rendering import selectable_renderer
 from altair.app.ticketing.cart.view_support import filter_extra_form_schema, get_extra_form_schema, render_view_to_response_with_derived_request, render_display_value
+from altair.app.ticketing.api.impl import CMSCommunicationApi
 from altair.app.ticketing.qr.image import qrdata_as_image_response
 from altair.app.ticketing.qr.utils import build_qr_by_history_id, build_qr_by_token_id, build_qr_by_orion, get_matched_token_from_token_id, build_qr_by_order
 from altair.app.ticketing.fc_auth.api import do_authenticate
 from altair.app.ticketing.orders.models import Order, OrderedProduct, OrderedProductItem, OrderedProductItemToken
 from altair.app.ticketing.orders.api import OrderAttributeIO, get_extra_form_fields_for_order, get_order_by_order_no
 from altair.app.ticketing.lots.models import LotEntry
+from altair.app.ticketing.users.models import User, WordSubscription
 
 from .api import is_mypage_organization, is_rakuten_auth_organization
 from . import schemas
 from . import api
 from . import helpers as h
 from .exceptions import InvalidForm
+
+import urllib
+import urllib2
+import contextlib
+import re
 
 def jump_maintenance_page_om_for_trouble(organization):
     """https://redmine.ticketstar.jp/issues/10878
@@ -834,3 +841,104 @@ def render_qrmail_viewlet(context, request):
         mail=request.params['mail'],
         url=request.route_url('order_review.qr_confirm', ticket_id=ticket.id, sign=sign),
         )
+
+@view_defaults(custom_predicates=(is_mypage_organization, ),
+               permission='*')
+class MypageWordView(object):
+    def __init__(self, context, request):
+        self.context = context
+        self.request = request
+        authenticated_user = self.context.authenticated_user()
+        user = cart_api.get_user(authenticated_user)
+        if not user:
+            raise HTTPNotFound()
+        self.user = user
+
+    def _get_word(self, id=None, q=None):
+        communication_api = cart_api.get_communication_api(self.request, CMSCommunicationApi)
+        if id is not None:
+            path = "/api/word/?id=%(id)s" % {"id": urllib.quote_plus(id)}
+        elif q is not None and 0 < len(q):
+            path = "/api/word/?q=%(q)s" % {"q": urllib.quote_plus(q)}
+        else:
+            raise Exception("invalid param")
+
+        req = communication_api.create_connection(path)
+        try:
+            with contextlib.closing(urllib2.urlopen(req)) as res:
+                try:
+                    data = res.read()
+                    result = json.loads(data)
+                    return result['data']
+                except urllib2.HTTPError, e:
+                    logging.warn("*api* HTTPError: url=%s errorno %s" % (communication_api.get_url(path), e))
+        except urllib2.URLError, e:
+            fmt = "*api* URLError: url=%s response status %s"
+            logging.warn(fmt % (communication_api.get_url(path), e))
+        return None
+
+    @lbr_view_config(route_name='mypage.word.show',
+        request_method="GET",
+        custom_predicates=(override_auth_type,),
+        renderer=selectable_renderer("mypage/word.html"),)
+    def form(self):
+        subscriptions = WordSubscription.query.filter(WordSubscription.user_id==self.user.id).all()
+        word_ids = map(lambda s: str(s.word_id), subscriptions)
+        words = self._get_word(id=' '.join(word_ids))
+        return { "words": words }
+
+    @lbr_view_config(route_name='mypage.word.search',
+        request_method="GET",
+        custom_predicates=(override_auth_type,),
+        renderer="json")
+    def search(self):
+        words = None
+        q = self.request.params.get('q')
+        if q is not None and 0 < len(q):
+            words = self._get_word(q=q.encode('utf-8'))
+        else:
+            id = self.request.params.get('id')
+            if id is not None and 0 < len(id) and re.match("[\d ]+", id):
+                words = self._get_word(id=id)
+        if words is not None:
+            return { "data": words }
+        return { }
+
+    @lbr_view_config(route_name='mypage.word.subscribe',
+        request_method="POST",
+        custom_predicates=(override_auth_type,),
+        renderer="json")
+    def subscribe(self):
+        word_id = self.request.params.get('word')
+        words = self._get_word(id=word_id)
+        if len(words) != 1:
+            return { }
+        word_id = words[0]['id']
+
+        if words is not None and len(words) == 1:
+            if WordSubscription.query.filter(WordSubscription.user_id==self.user.id, WordSubscription.word_id==word_id).first() != None:
+                # already registered
+                return { }
+
+            WordSubscription.add(WordSubscription(user_id=self.user.id, word_id=word_id))
+            return { "data": words }
+        return { }
+
+    @lbr_view_config(route_name='mypage.word.unsubscribe',
+        request_method="POST",
+        custom_predicates=(override_auth_type,),
+        renderer="json")
+    def unsubscribe(self):
+        word_id = self.request.params.get('word')
+        words = self._get_word(id=word_id)
+        if len(words) != 1:
+            return { }
+        word_id = words[0]['id']
+        ws = WordSubscription.query.filter(WordSubscription.user_id==self.user.id, WordSubscription.word_id==word_id).first()
+        if ws != None:
+
+            ws.delete()
+            DBSession.flush()
+            return { "data": words }
+
+        return { }

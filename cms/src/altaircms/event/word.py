@@ -3,9 +3,10 @@
 from pyramid.view import view_config
 import json
 from altaircms.modellib import DBSession
+from sqlalchemy import or_
 from sqlalchemy.orm import joinedload
 from ..event.models import Event
-from ..models import Performance, Word, Performance_Word, Event_Word
+from ..models import Performance, Word, WordSearch, Performance_Word, Event_Word
 from ..plugins.widget.summary.models import SummaryWidget
 
 
@@ -17,7 +18,10 @@ def api_word_get(request):
         performance = DBSession.query(Performance)\
             .options(joinedload(Performance.event))\
             .filter_by(backend_id=cart_performance)\
-            .one()
+            .first()
+        if performance is None:
+            # no such performance
+            return dict()
 
         w1 = DBSession.query(Word)\
         .join(Performance_Word)\
@@ -38,18 +42,34 @@ def api_word_get(request):
         words = list()
         word_ids = set()
         for word in w1.all():
-            words.append(dict(id=word.id, label=word.label))
+            words.append(dict(id=word.id, label=word.label, type=word.type))
             word_ids.add(word.id)
         for word in w2.all():
             if word.id not in word_ids:
-                words.append(dict(id=word.id, label=word.label))
+                words.append(dict(id=word.id, label=word.label, type=word.type))
                 word_ids.add(word.id)
 
         event = dict(title=performance.event.title)
         return dict(performance=dict(title=performance.title, event=event), words=words)
 
-    words = DBSession.query(Word).all()
+    # all words
+    words = DBSession.query(Word)\
+        .outerjoin(WordSearch)\
+        .filter(Word.organization_id==organization_id)
+
+    id_list = request.params.get('id')
+    if id_list is not None and 0 < len(id_list):
+        words = words.filter(Word.id.in_(id_list.split(' ')))
+    else:
+        q = request.params.get('q')
+        if q is not None and 0 < len(q):
+            words = words.filter(or_(Word.label.contains(q), WordSearch.data.contains(q)))
+        else:
+            pass
+            # no filter
+
+    words = words.distinct().all()
     word_dicts = list()
     for word in words:
-        word_dicts.append(dict(data=word.data))
+        word_dicts.append(dict(id=word.id, label=word.label, type=word.type))
     return dict(count=len(words), data=word_dicts)

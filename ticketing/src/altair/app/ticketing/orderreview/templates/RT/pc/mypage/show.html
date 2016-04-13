@@ -40,6 +40,15 @@ ${render_mailmagazine(request)}
 
 </div></div><!-- ===== 　/メールマガジンの配信 ===== -->
 
+<!-- ===== お気に入りワード ===== -->
+<div class="confirm-wrap">
+<div class="confirm-wrap-inner confirm-magBox">
+<h2 class="heading heading_simple_line">お気に入りワードのお知らせメール</h2>
+
+${render_word(request)}
+
+</div></div><!-- ===== 　/お気に入りワード ===== -->
+
 <!-- ===== 楽天ポイントのご確認 ===== -->
 <div class="confirm-wrap">
 <h2 class="heading heading_simple_line">楽天ポイントのご確認</h2>
@@ -162,4 +171,25 @@ ${result.pager(format=u"$link_first $link_previous 前を表示 ~3~ 次を表示
 </form>
 
   % endif
+</%def>
+
+<%def name="render_word(request)">
+<form id="word_form" name="word_form" class="confirmForm" method="post" action="${request.route_path('mypage.mailmag.confirm')}">
+  <p class="bold">お気に入りワードに登録しておくと、発売開始等のタイミングでお知らせメールが届きます.</p>
+  <p>≫ <a href="${request.route_path('mypage.word.show')}">お気に入りワードの確認・変更はこちら</a></p>
+<p class="mgtb10">
+<input type="radio" ${"checked" if subscribed else ""} name="word" id="word-subscribe" value="1" />
+<label for="word-subscribe">受信する</label>
+% if subscribed:
+  <span class="icon_onmag">購読中</span>
+% endif
+&nbsp;
+<input type="radio" ${"" if subscribed else "checked"} name="word" id="word-unsubscribe" value="" />
+<label for="word-unsubscribe">受信しない</label>
+</p>
+
+<div class="confirm-btnBox">
+<input class="btn btn-primary" type="submit" value="変更する"></p>
+</div>
+</form>
 </%def>

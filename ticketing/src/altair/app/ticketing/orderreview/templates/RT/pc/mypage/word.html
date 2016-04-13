@@ -1,0 +1,117 @@
+<%inherit file="../layout_resp.html" />
+<%block name="title">マイページ</%block>
+
+<style>
+    table.favorite-list
+    td { height: 48px; line-height: 48px; padding-top: 4px; padding-left: 4px; }
+    table.favorite-list
+    span { display: inline-block; height: 48px; width: 48px; background-repeat: no-repeat; text-indent: -9999px; }
+    table.favorite-list
+    span.favorite-artist { background-image: url(${request.static_url('altair.app.ticketing.orderreview:static/RT/common/images/favorite-icon01.png')}) }
+    table.favorite-list
+    form { display: inline; margin: 0; }
+</style>
+
+<h1 class="heading heading-primary">お気に入りワード確認・変更</h1>
+
+<div class="confirm-wrap">
+<h2 class="heading heading_simple_line">お気に入りワード一覧</h2>
+    % if len(words) == 0:
+        <p>お気に入りワードの登録はありません.</p>
+    % else:
+        <table class="favorite-list subscription" style="width: 100%;">
+        <thead id="subscribed_word_template_container">
+            <tr style="display: none; border: 2px solid #eee;"><td><span class="favorite-{type}">{type}</span> {label}</td><td style="width: 100px;"><form method="post" action="${request.route_path('mypage.word.subscribe')}"><input type="hidden" name="word" value="{id}" /><input type="submit" value="追加する" /></form></td></tr>
+        </thead>
+        <tbody>
+            % for word in words:
+                <tr style="border: 2px solid #eee;"><td><span class="favorite-${word['type']}">${word['type']}</span> ${word['label']}</td><td style="width: 100px;"><form method="post" action="${request.route_path('mypage.word.unsubscribe')}"><input type="hidden" name="word" value="${word['id']}" /><input type="submit" value="解除する" /></form></td></tr>
+            % endfor
+        </tbody>
+        </table>
+    % endif
+</div>
+
+<div class="confirm-wrap">
+<h2 class="heading heading_simple_line">お気に入りワードを追加しよう!</h2>
+
+    <form id="word_search">
+        <input type="text" name="q" placeholder="アーティスト名など" />
+        <input type="submit" value="検索" />
+    </form>
+
+    <table class="favorite-list search-result" style="width: 100%;">
+        <tbody id="word_template_container">
+        <tr style="display: none; border: 2px solid #eee;"><td><span class="favorite-{type}">{type}</span> {label}</td><td style="width: 100px;"><form method="post" action="${request.route_path('mypage.word.subscribe')}"><input type="hidden" name="word" value="{id}" /><input type="submit" value="追加する" /></form></td></tr>
+        </tbody>
+    </table>
+
+</div>
+
+<script>
+(function() {
+    var build = function(t, d) {
+        return $(t.replace(/{([^}]+)}/g, function(_, e) { return d[e]; }))
+        .css({ display: '' });
+    };
+    var pos = $('#word_template_container').eq(0);
+    var template = $('#word_template_container').html();
+    var ui = $('#word_search input');
+    $('#word_search').submit(function() {
+        ui.prop('disabled', true);
+        pos.find('tr:visible').remove();
+        var q = $('*[name="q"]', this).val();
+        $.ajax({
+            url: '${request.route_path("mypage.word.search")}',
+            data: { q: q }
+        }).done(function(r) {
+            ui.prop('disabled', false);
+            if(r.data.length == 0) {
+                alert('見つかりませんでした.');
+                return;
+            }
+            $(r.data).each(function() {
+                build(template, this)
+                .attr('id', 'word-' + this.id)
+                .appendTo(pos);
+            });
+        }).fail(function() {
+            ui.prop('disabled', false);
+            // TODO:
+        });
+        return false;
+    });
+
+    $('.favorite-list').on('submit', 'form', function() {
+        var tr = $(this).parents('tr').eq(0);
+        var add = (1 <= $(this).parents('.search-result').size());
+        $.ajax({
+            url: this.action,
+            type: 'post',
+            data: $(this).serialize()
+        })
+        .done(function(r) {
+            if(add) {
+                tr.remove();
+
+                var template = $('#subscribed_word_template_container').html();
+                build(template, r.data[0])
+                .attr('id', 'word-' + r.data[0].od)
+                .appendTo($('.favorite-list.subscription'));
+            } else {
+                // TODO: slideUp()したいが、trに対してはうまくいかない
+                tr.remove();
+            }
+        })
+        .fail(function(r) {
+            alert('失敗しました.');
+        });
+        return false;
+    });
+})();
+</script>
+
+<br />
+<br />
+
+<a href="${request.route_path('mypage.order.show')}">マイページに戻る</a>
