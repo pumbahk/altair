@@ -34,13 +34,13 @@ def need_ticketing(type):
 
 class SejTicketType(StandardEnum):
     # 1:本券(チケットバーコード有り)
-    Ticket                  = 2
-    # 2:本券(チケットバーコード無し)
     TicketWithBarcode       = 1
+    # 2:本券(チケットバーコード無し)
+    Ticket                  = 2
     # 3:本券以外(チケットバーコード有り)
-    ExtraTicket             = 4
-    # 4:本券以外(チケットバーコード無し)
     ExtraTicketWithBarcode  = 3
+    # 4:本券以外(チケットバーコード無し)
+    ExtraTicket             = 4
 
 code_from_ticket_type = dict((enum_.v, enum_) for enum_ in SejTicketType)
 
