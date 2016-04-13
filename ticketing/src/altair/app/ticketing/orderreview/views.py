@@ -37,6 +37,7 @@ from altair.app.ticketing.orders.models import Order, OrderedProduct, OrderedPro
 from altair.app.ticketing.orders.api import OrderAttributeIO, get_extra_form_fields_for_order, get_order_by_order_no
 from altair.app.ticketing.lots.models import LotEntry
 from altair.app.ticketing.users.models import User, WordSubscription
+from altair.app.ticketing.users.word import get_word
 
 from .api import is_mypage_organization, is_rakuten_auth_organization
 from . import schemas
@@ -855,27 +856,7 @@ class MypageWordView(object):
         self.user = user
 
     def _get_word(self, id=None, q=None):
-        communication_api = cart_api.get_communication_api(self.request, CMSCommunicationApi)
-        if id is not None:
-            path = "/api/word/?id=%(id)s" % {"id": urllib.quote_plus(id)}
-        elif q is not None and 0 < len(q):
-            path = "/api/word/?q=%(q)s" % {"q": urllib.quote_plus(q)}
-        else:
-            raise Exception("invalid param")
-
-        req = communication_api.create_connection(path)
-        try:
-            with contextlib.closing(urllib2.urlopen(req)) as res:
-                try:
-                    data = res.read()
-                    result = json.loads(data)
-                    return result['data']
-                except urllib2.HTTPError, e:
-                    logging.warn("*api* HTTPError: url=%s errorno %s" % (communication_api.get_url(path), e))
-        except urllib2.URLError, e:
-            fmt = "*api* URLError: url=%s response status %s"
-            logging.warn(fmt % (communication_api.get_url(path), e))
-        return None
+        return get_word(self.request, id, q)
 
     @lbr_view_config(route_name='mypage.word.show',
         request_method="GET",

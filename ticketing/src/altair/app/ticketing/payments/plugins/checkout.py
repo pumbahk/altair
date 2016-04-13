@@ -354,7 +354,8 @@ class CheckoutCallbackView(object):
         retval = cont_complete_view(
             self.context, self.request,
             order_no=cart.order_no,
-            magazine_ids=self.request.session.get('altair.app.ticketing.cart.magazine_ids', [])
+            magazine_ids=self.request.session.get('altair.app.ticketing.cart.magazine_ids', []),
+            word_ids=self.request.session.get('altair.app.ticketing.cart.word_ids', []),
             )
         try:
             del self.request.session['altair.app.ticketing.cart.magazine_ids']
