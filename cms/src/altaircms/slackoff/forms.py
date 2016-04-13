@@ -127,7 +127,7 @@ class PerformanceForm(Form):
     calendar_content = fields.TextField(label=u"カレンダーに追加する文字列")
 
     keywords = dynamic_query_select_field_factory(
-        Word, allow_blank=True, label=u"キーワードリスト",
+        Word, allow_blank=True, label=u"お気に入りワード",
         get_label=lambda obj: obj.label,
         multiple=True,
         query_factory=eventFormQueryFactory)

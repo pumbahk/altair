@@ -25,7 +25,7 @@ class EventForm(Form):
     notice = fields.TextField(label=u"説明／注意事項", widget=widgets.TextArea())
     performers = fields.TextField(label=u"出演者リスト", widget=widgets.TextArea())
     keywords = dynamic_query_select_field_factory(
-        Word, allow_blank=True, label=u"キーワードリスト",
+        Word, allow_blank=True, label=u"お気に入りワード",
         get_label=lambda obj: obj.label,
         multiple=True,
         query_factory=eventFormQueryFactory)
