@@ -546,6 +546,7 @@ def create_or_update_famiport_performance(
                 # When old_performance is moved to another famiport_event
                 old_performance = session.query(FamiPortPerformance) \
                     .with_lockmode('update') \
+                    .filter(FamiPortPerformance.famiport_event_id == event.id) \
                     .filter(FamiPortPerformance.userside_id == userside_id) \
                     .filter(FamiPortPerformance.invalidated_at == None) \
                     .one()
@@ -651,6 +652,7 @@ def create_or_update_famiport_sales_segment(
                 # When old_sales_segment is moved to another famiport_performance
                 old_sales_segment = session.query(FamiPortSalesSegment) \
                     .with_lockmode('update') \
+                    .filter(FamiPortSalesSegment.famiport_performance_id == performance.id) \
                     .filter(FamiPortSalesSegment.userside_id == userside_id) \
                     .filter(FamiPortSalesSegment.invalidated_at == None) \
                     .one()
