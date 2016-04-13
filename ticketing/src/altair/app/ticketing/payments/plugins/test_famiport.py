@@ -1297,7 +1297,7 @@ class RefreshFamiPortOrderTest(TestCase):
     def test_it(self):
         from decimal import Decimal
         from datetime import datetime
-        from altair.app.ticketing.core.models import Site, Event, Performance
+        from altair.app.ticketing.core.models import SiteProfile, Site, Venue, Event, Performance
         from altair.app.ticketing.famiport.userside_models import AltairFamiPortVenue, AltairFamiPortPerformanceGroup, AltairFamiPortPerformance
         from altair.app.ticketing.famiport.models import FamiPortOrder, FamiPortOrderType, FamiPortPerformance, FamiPortEvent, FamiPortVenue, FamiPortClient, FamiPortPlayguide
         from .famiport import FamiPortPaymentPlugin, FamiPortDeliveryPlugin, FamiPortPaymentDeliveryPlugin
@@ -1321,13 +1321,17 @@ class RefreshFamiPortOrderTest(TestCase):
 
         event = Event(organization=self.organization)
         performance = Performance()
+        siteprofile = SiteProfile(name=u'venue', prefecture=u'全国')
+        site = Site(name=u'venue', siteprofile=siteprofile)
+        venue = Venue(organization_id = 15, name=u'venue_name', performance = performance, site=site)
         altair_famiport_venue = AltairFamiPortVenue(
             organization=self.organization,
             famiport_venue_id=famiport_venue.id,
-            venue_name=u'venue_name',
-            name=u'venue',
+            venue_name=venue.name,
+            name=site.name,
             name_kana=u'venue_kana',
-            sites=[Site()]
+            venues=[venue],
+            siteprofile = siteprofile
             )
         altair_famiport_performance_group = AltairFamiPortPerformanceGroup(
             organization=self.organization,
