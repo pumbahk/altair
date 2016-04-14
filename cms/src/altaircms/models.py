@@ -394,6 +394,10 @@ class WordSearch(Base):
     word = relationship("Word", backref=orm.backref('word_searches'))
     data = sa.Column(sa.String(length=255))
 
+    created_at = sa.Column(sa.DateTime, default=datetime.now)
+    updated_at = sa.Column(sa.DateTime, default=datetime.now, onupdate=datetime.now)
+    deleted_at = sa.Column(sa.DateTime)
+
 class Event_Word(Base):
     __tablename__ = "event_word"
     id = sa.Column(sa.Integer, primary_key=True)
@@ -401,9 +405,11 @@ class Event_Word(Base):
     event = relationship("Event", backref=orm.backref('event_word'))
     word_id = sa.Column(sa.Integer, sa.ForeignKey('word.id'))
     word = relationship("Word", backref=orm.backref('event_word'))
-    sorting = sa.Column(sa.Integer)
+    #sorting = sa.Column(sa.Integer)
+    #subscribable = sa.Column(sa.Boolean, default=False)
 
-    subscribable = sa.Column(sa.Boolean, default=False)
+    created_at = sa.Column(sa.DateTime, default=datetime.now)
+    updated_at = sa.Column(sa.DateTime, default=datetime.now, onupdate=datetime.now)
 
 class Performance_Word(Base):
     __tablename__ = "performance_word"
@@ -412,9 +418,11 @@ class Performance_Word(Base):
     performance = relationship("Performance", backref=orm.backref('performance_word'))
     word_id = sa.Column(sa.Integer, sa.ForeignKey('word.id'))
     word = relationship("Word", backref=orm.backref('performance_word'))
-    sorting = sa.Column(sa.Integer)
+    #sorting = sa.Column(sa.Integer)
+    #subscribable = sa.Column(sa.Boolean, default=False)
 
-    subscribable = sa.Column(sa.Boolean, default=False)
+    created_at = sa.Column(sa.DateTime, default=datetime.now)
+    updated_at = sa.Column(sa.DateTime, default=datetime.now, onupdate=datetime.now)
 
 class Word(Base):
     __tablename__ = "word"
@@ -422,8 +430,12 @@ class Word(Base):
     organization_id = sa.Column(sa.Integer, sa.ForeignKey('organization.id'))
     type = sa.Column(sa.String(length=255))
     label = sa.Column(sa.String(length=255))
-    description = sa.Column(sa.String(length=255))
-    link = sa.Column(sa.String(length=255))
+    #description = sa.Column(sa.String(length=255))
+    #link = sa.Column(sa.String(length=255))
+
+    created_at = sa.Column(sa.DateTime, default=datetime.now)
+    updated_at = sa.Column(sa.DateTime, default=datetime.now, onupdate=datetime.now)
+    deleted_at = sa.Column(sa.DateTime)
 
     query = DBSession.query_property()
     def __str__(self):

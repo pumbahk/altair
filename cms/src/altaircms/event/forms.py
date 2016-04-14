@@ -13,8 +13,10 @@ from altaircms.formhelpers import dynamic_query_select_field_factory
 from datetime import datetime
 
 def eventFormQueryFactory():
-    # FIXME:
-    return Word.query.filter(Word.organization_id==8)
+    # FIXME: fixed organization_id
+    return Word.query\
+        .filter(Word.deleted_at==None)\
+        .filter(Word.organization_id==8)
 
 class EventForm(Form):
     title = fields.TextField(label=u'タイトル', validators=[required_field()])

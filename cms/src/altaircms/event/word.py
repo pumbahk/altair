@@ -24,6 +24,7 @@ def api_word_get(request):
             return dict()
 
         w1 = DBSession.query(Word)\
+        .filter(Word.deleted_at==None)\
         .join(Performance_Word)\
         .filter(Word.organization_id==organization_id)\
         .filter(Performance_Word.subscribable==True)\
@@ -32,6 +33,7 @@ def api_word_get(request):
         .order_by(Performance_Word.sorting)
 
         w2 = DBSession.query(Word)\
+        .filter(Word.deleted_at==None)\
         .join(Event_Word)\
         .filter(Word.organization_id==organization_id)\
         .filter(Event_Word.subscribable==True)\
@@ -54,7 +56,9 @@ def api_word_get(request):
 
     # all words
     words = DBSession.query(Word)\
+        .filter(Word.deleted_at==None)\
         .outerjoin(WordSearch)\
+        .filter(WordSearch.deleted_at==None)\
         .filter(Word.organization_id==organization_id)
 
     id_list = request.params.get('id')

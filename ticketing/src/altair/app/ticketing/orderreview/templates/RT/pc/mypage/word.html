@@ -16,20 +16,17 @@
 
 <div class="confirm-wrap">
 <h2 class="heading heading_simple_line">お気に入りワード一覧</h2>
-    % if len(words) == 0:
-        <p>お気に入りワードの登録はありません.</p>
-    % else:
-        <table class="favorite-list subscription" style="width: 100%;">
-        <thead id="subscribed_word_template_container">
-            <tr style="display: none; border: 2px solid #eee;"><td><span class="favorite-{type}">{type}</span> {label}</td><td style="width: 100px;"><form method="post" action="${request.route_path('mypage.word.subscribe')}"><input type="hidden" name="word" value="{id}" /><input type="submit" value="追加する" /></form></td></tr>
-        </thead>
-        <tbody>
-            % for word in words:
-                <tr style="border: 2px solid #eee;"><td><span class="favorite-${word['type']}">${word['type']}</span> ${word['label']}</td><td style="width: 100px;"><form method="post" action="${request.route_path('mypage.word.unsubscribe')}"><input type="hidden" name="word" value="${word['id']}" /><input type="submit" value="解除する" /></form></td></tr>
-            % endfor
-        </tbody>
-        </table>
-    % endif
+    <p id="msg_nothing_subscribe" style="${'display: none' if 0 < len(words) else ''}">お気に入りワードの登録はありません.</p>
+    <table class="favorite-list subscription" style="width: 100%;">
+    <thead id="subscribed_word_template_container">
+        <tr style="display: none; border: 2px solid #eee;"><td><span class="favorite-{type}">{type}</span> {label}</td><td style="width: 100px;"><form method="post" action="${request.route_path('mypage.word.unsubscribe')}"><input type="hidden" name="word" value="{id}" /><input type="submit" value="解除する" /></form></td></tr>
+    </thead>
+    <tbody>
+        % for word in words:
+            <tr style="border: 2px solid #eee;"><td><span class="favorite-${word['type']}">${word['type']}</span> ${word['label']}</td><td style="width: 100px;"><form method="post" action="${request.route_path('mypage.word.unsubscribe')}"><input type="hidden" name="word" value="${word['id']}" /><input type="submit" value="解除する" /></form></td></tr>
+        % endfor
+    </tbody>
+    </table>
 </div>
 
 <div class="confirm-wrap">
@@ -98,9 +95,14 @@
                 build(template, r.data[0])
                 .attr('id', 'word-' + r.data[0].od)
                 .appendTo($('.favorite-list.subscription'));
+
+                $('#msg_nothing_subscribe').hide();
             } else {
                 // TODO: slideUp()したいが、trに対してはうまくいかない
                 tr.remove();
+                if ($('.favorite-list.subscription tr:visible').size() == 0) {
+                    $('#msg_nothing_subscribe').show();
+                }
             }
         })
         .fail(function(r) {

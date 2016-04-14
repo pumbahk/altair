@@ -856,6 +856,8 @@ class MypageWordView(object):
         self.user = user
 
     def _get_word(self, id=None, q=None):
+        if id is not None and len(id) == 0 and q is None:
+            return [ ]
         return get_word(self.request, id, q)
 
     @lbr_view_config(route_name='mypage.word.show',
