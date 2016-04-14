@@ -914,6 +914,7 @@ h3.glitter {
   background-image: linear-gradient(top, #9ea398 0%, #898f83 48%, #767d70 50%, #878d81);
   background-image: -webkit-gradient(linear, left top, left bottom, from(#9ea398), color-stop(0.48, #898f83), color-stop(0.5, #767d70), to(#878d81));
   background-image: -webkit-linear-gradient(top, #9ea398 0%, #898f83 48%, #767d70 50%, #878d81);
+  background-image: -moz-linear-gradient(top, #9ea398 0%, #898f83 48%, #767d70 50%, #878d81);
   box-shadow: 2px 2px 2px -1px rgba(0, 0, 0, .3), 0px 0px 0px 2px rgba(255, 255, 255, .3) inset;
   text-shadow: 1px 1px 1px rgba(0, 0, 0, .4);
   user-select: none;
