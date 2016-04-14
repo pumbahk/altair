@@ -1,18 +1,22 @@
 # -*- coding:utf-8 -*-
 
-from pyramid.view import view_config
+
+import logging
 import json
+from pyramid.view import view_config
 from altaircms.modellib import DBSession
 from sqlalchemy import or_
 from sqlalchemy.orm import joinedload
 from ..event.models import Event
 from ..models import Performance, Word, WordSearch, Performance_Word, Event_Word
-from ..plugins.widget.summary.models import SummaryWidget
+
+logger = logging.getLogger(__file__)
 
 
 @view_config(route_name="api_keyword", request_method="GET", renderer='json')
 def api_word_get(request):
-    organization_id = 8    # FIXME:
+    organization_id = request.context.organization.id
+
     cart_performance = request.params.get('backend_performance_id')
     if cart_performance:
         performance = DBSession.query(Performance)\

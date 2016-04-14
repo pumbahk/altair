@@ -12,11 +12,21 @@ from ..models import Category, Word
 from altaircms.formhelpers import dynamic_query_select_field_factory
 from datetime import datetime
 
+from pyramid.threadlocal import get_current_request
+
+import logging
+logger = logging.getLogger(__file__)
+
 def eventFormQueryFactory():
-    # FIXME: fixed organization_id
-    return Word.query\
-        .filter(Word.deleted_at==None)\
-        .filter(Word.organization_id==8)
+    q = Word.query\
+        .filter(Word.deleted_at==None)
+    try:
+        context = get_current_request().context
+        if hasattr(context, 'organization'):
+            return q.filter(Word.organization_id==context.organization.id)
+    except Exception, e:
+        logger.error(e)
+    return None
 
 class EventForm(Form):
     title = fields.TextField(label=u'タイトル', validators=[required_field()])
