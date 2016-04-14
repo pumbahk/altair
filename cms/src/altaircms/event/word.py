@@ -27,7 +27,6 @@ def api_word_get(request):
         .filter(Word.deleted_at==None)\
         .join(Performance_Word)\
         .filter(Word.organization_id==organization_id)\
-        .filter(Performance_Word.subscribable==True)\
         .join(Performance)\
         .filter(Performance.backend_id==cart_performance)\
         .order_by(Performance_Word.sorting)
@@ -36,7 +35,6 @@ def api_word_get(request):
         .filter(Word.deleted_at==None)\
         .join(Event_Word)\
         .filter(Word.organization_id==organization_id)\
-        .filter(Event_Word.subscribable==True)\
         .join(Event)\
         .filter(Event.id==performance.event_id)\
         .order_by(Event_Word.sorting)
