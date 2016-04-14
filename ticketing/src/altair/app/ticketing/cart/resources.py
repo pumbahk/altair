@@ -70,9 +70,6 @@ class DefaultCartSetting(object):
     orderreview_page_url = u''
     mail_filter_domain_notice_template = None
 
-    booster_cart = False
-    fc_cart = False
-
 default_cart_setting = DefaultCartSetting()
 
 def get_default_cart_setting(request):
