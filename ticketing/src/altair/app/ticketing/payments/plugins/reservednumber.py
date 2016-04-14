@@ -143,14 +143,8 @@ class CompletionMailViewlet(object):
         """ 完了メール表示
         :param context: ICompleteMailDelivery
         """
-        order = self.context.order
-        payment_method = order.payment_delivery_pair.payment_method
         notice = self.context.mail_data("P", "notice")
-        reserved_number = m.ReservedNumber.query.filter_by(order_no=self.context.order.order_no).first()
-        description = ""
-        if payment_method.description is not None:
-            description = tag_re.sub("", payment_method.description)
-        return dict(notice=notice, reserved_number=reserved_number, description=description)
+        return dict(notice=notice)
 
     @lbr_view_config(name="delivery-%d" % PLUGIN_ID, renderer=_overridable_delivery("reserved_number_mail_complete.html", fallback_ua_type='mail'))
     def delivery(self):
