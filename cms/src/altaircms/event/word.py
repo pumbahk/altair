@@ -15,11 +15,9 @@ logger = logging.getLogger(__file__)
 
 @view_config(route_name="api_keyword", request_method="GET", renderer='json')
 def api_word_get(request):
-    organization_id = request.context.organization.id
-
     cart_performance = request.params.get('backend_performance_id')
     if cart_performance:
-        performance = DBSession.query(Performance)\
+        performance = request.allowable(Performance)\
             .options(joinedload(Performance.event))\
             .filter_by(backend_id=cart_performance)\
             .first()
@@ -27,21 +25,17 @@ def api_word_get(request):
             # no such performance
             return dict()
 
-        w1 = DBSession.query(Word)\
+        w1 = request.allowable(Word)\
         .filter(Word.deleted_at==None)\
         .join(Performance_Word)\
-        .filter(Word.organization_id==organization_id)\
         .join(Performance)\
-        .filter(Performance.backend_id==cart_performance)\
-        .order_by(Performance_Word.sorting)
+        .filter(Performance.backend_id==cart_performance)
 
-        w2 = DBSession.query(Word)\
+        w2 = request.allowable(Word)\
         .filter(Word.deleted_at==None)\
         .join(Event_Word)\
-        .filter(Word.organization_id==organization_id)\
         .join(Event)\
-        .filter(Event.id==performance.event_id)\
-        .order_by(Event_Word.sorting)
+        .filter(Event.id==performance.event_id)
 
         words = list()
         word_ids = set()
@@ -57,11 +51,10 @@ def api_word_get(request):
         return dict(performance=dict(title=performance.title, event=event), words=words)
 
     # all words
-    words = DBSession.query(Word)\
+    words = request.allowable(Performance)\
         .filter(Word.deleted_at==None)\
         .outerjoin(WordSearch)\
-        .filter(WordSearch.deleted_at==None)\
-        .filter(Word.organization_id==organization_id)
+        .filter(WordSearch.deleted_at==None)
 
     id_list = request.params.get('id')
     if id_list is not None and 0 < len(id_list):

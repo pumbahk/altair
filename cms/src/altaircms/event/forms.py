@@ -18,15 +18,9 @@ import logging
 logger = logging.getLogger(__file__)
 
 def eventFormQueryFactory():
-    q = Word.query\
-        .filter(Word.deleted_at==None)
-    try:
-        context = get_current_request().context
-        if hasattr(context, 'organization'):
-            return q.filter(Word.organization_id==context.organization.id)
-    except Exception, e:
-        logger.error(e)
-    return None
+    request = get_current_request()
+    return request.allowable(Word)\
+    .filter(Word.deleted_at==None)
 
 class EventForm(Form):
     title = fields.TextField(label=u'タイトル', validators=[required_field()])
