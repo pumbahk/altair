@@ -71,9 +71,7 @@
             </div>
           </div>
 
-          <p>セキュリティコードは、MasterCard、VisaまたはJCBでは、カード裏面の署名欄に印刷されている下3桁の数字です。<br/>
-            American Expressでは、カードの表に印刷されている4桁の数字です。
-          </p>
+          <p>セキュリティコードは、カード裏面の署名欄に印刷されている下3桁の数字です。</p>
 
           <p>
             ブラウザの「戻る」ボタンを使用するとエラーになります。<br/>
@@ -96,7 +94,6 @@ notice = request.session.get('altair.app.ticketing.payments.auth3d_notice')
             <img src="${request.static_url('altair.app.ticketing.cart:static/RT/pc/images/visa.gif')}" height="30px" />
             <img src="${request.static_url('altair.app.ticketing.cart:static/RT/pc/images/master.gif')}" height="30px" />
             <img src="${request.static_url('altair.app.ticketing.cart:static/RT/pc/images/jcb.gif')}" height="30px" />
-            <img src="${request.static_url('altair.app.ticketing.cart:static/RT/pc/images/amex_logo.gif')}" height="30px" /><br />
           </p>
           <p>
             <font color="#FF0000">※カード情報入力時に、ご利用カードの有効性の確認（オーソリ確認）を実施しております。<br/>

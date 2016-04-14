@@ -30,7 +30,7 @@ body {
 
 .header .band {
   clear: both;
-  background-color: #bf0000;
+  background-color: #2C80D4;
   color: #fff;
 }
 
@@ -719,18 +719,12 @@ table.panellist.margined > tbody > tr > td.panel.navigable:active {
 }
 
 .btn-supplementary {
-  background-image: linear-gradient(top, #ffafa9 0%, #f78b84 48%, #f06b64 50%, #f68780);
-  background-image: -webkit-gradient(linear, left top, left bottom, from(#ffafa9), color-stop(0.48, #f78b84), color-stop(0.5, #f06b64), to(#f68780));
-  background-image: -webkit-linear-gradient(top, #ffafa9 0%, #f78b84 48%, #f06b64 50%, #f68780);
-  background-image: -moz-linear-gradient(top, #ffafa9 0%, #f78b84 48%, #f06b64 50%, #f68780);
+  background: #2C80D4;
   box-shadow: 2px 2px 2px -1px rgba(0, 0, 0, .3), 0px 0px 0px 2px rgba(255, 255, 255, .3) inset;
 }
 
 .btn-supplementary:hover {
-  background-image: linear-gradient(top, #ffb7b1 0%, #ff938c 48%, #f87372 50%, #ff8f88);
-  background-image: -webkit-gradient(linear, left top, left bottom, from(#ffb7b1), color-stop(0.48, #ff938c), color-stop(0.5, #f87372), to(#ff8f88));
-  background-image: -webkit-linear-gradient(top, #ffb7b1 0%, #ff938c 48%, #f87372 50%, #ff8f88);
-  background-image: -moz-linear-gradient(top, #ffb7b1 0%, #ff938c 48%, #f87372 50%, #ff8f88);
+  background: #2C80D4;
   box-shadow-image: 2px 2px 2px -1px rgba(0, 0, 0, .3), 0px 0px 0px 2px rgba(255, 255, 255, .3) inset;
 }
 
@@ -892,10 +886,7 @@ h2.glitter.red {
   overflow: hidden;
   vertical-align: middle;
   padding: 0px 0px 0px 20px;
-  background-image: linear-gradient(top, #cd4b4f 0%, #c63035 48%, #c01920 50%, #c52d33);
-  background-image: -webkit-gradient(linear, left top, left bottom, from(#cd4b4f), color-stop(0.48, #c63035), color-stop(0.5, #c01920), to(#c52d33));
-  background-image: -webkit-linear-gradient(top, #cd4b4f 0%, #c63035 48%, #c01920 50%, #c52d33);
-  background-image: -moz-linear-gradient(top, #cd4b4f 0%, #c63035 48%, #c01920 50%, #c52d33);
+  background: #2C80D4;
   box-shadow: 2px 2px 2px -1px rgba(0, 0, 0, .3), 0px 0px 0px 2px rgba(255, 255, 255, .3) inset;
   text-shadow: 1px 1px 1px rgba(0, 0, 0, .4);
   user-select: none;
@@ -905,10 +896,7 @@ h2.glitter.red {
 }
 
 h2.glitter.red:after {
-  background-image: linear-gradient(top, #ffffff 0%, #e3e3e3 48%, #cccccc 50%, #e1e1e1);
-  background-image: -webkit-gradient(linear, left top, left bottom, from(#ffffff), color-stop(0.48, #e3e3e3), color-stop(0.5, #cccccc), to(#e1e1e1));
-  background-image: -webkit-linear-gradient(top, #ffffff 0%, #e3e3e3 48%, #cccccc 50%, #e1e1e1);
-  background-image: -moz-linear-gradient(top, #ffffff 0%, #e3e3e3 48%, #cccccc 50%, #e1e1e1);
+  background: #2C80D4;
 }
 
 h3.glitter {
@@ -943,10 +931,7 @@ h3.glitter:after {
   content: "";
   width: 2px;
   height: 20px;
-  background-image: linear-gradient(top, #ffffff 0%, #ffd6d6 48%, #ffb2b2 50%, #ffd2d2);
-  background-image: -webkit-gradient(linear, left top, left bottom, from(#ffffff), color-stop(0.48, #ffd6d6), color-stop(0.5, #ffb2b2), to(#ffd2d2));
-  background-image: -webkit-linear-gradient(top, #ffffff 0%, #ffd6d6 48%, #ffb2b2 50%, #ffd2d2);
-  background-image: -moz-linear-gradient(top, #ffffff 0%, #ffd6d6 48%, #ffb2b2 50%, #ffd2d2);
+  background: #2C80D4;
 }
 
 

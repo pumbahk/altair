@@ -1,0 +1,37 @@
+<%inherit file="./base.html"/>
+<%namespace file="altair.app.ticketing.cart:templates/__commons__/tags_mobile.html" name="mobile" />
+<% from altair.app.ticketing.cart.resources import PerformanceOrientedTicketingCartResource %>
+<%mobile:header>チケット購入</%mobile:header>
+<div align="center" style="text-align:center">${event.title}</div><hr size="1" noshade="noshade" />
+% if preferred_performance:
+<font color="red" size="-1">
+誠に申し訳ございませんが、選択された公演「${h.format_name(request, performance=preferred_performance)}」は<u>現在販売しておりません</u>。<br />
+他の日時／会場を下記よりお選びいただけます。<br />
+</font>
+% endif
+% if not key:
+  <%mobile:form_header>${selector_label_1}をお選びください</%mobile:form_header>
+  % for _key, _ in key_to_formatted_sales_segments_map:
+  <a href="${request.current_route_path(_query={'key': _key})}">${_key}</a><br/>
+  % endfor
+% else:
+  <%mobile:form_header>${selector_label_2}をお選びください</%mobile:form_header>
+  % if isinstance(request.context, PerformanceOrientedTicketingCartResource):
+  %   for _, sales_segments in key_to_formatted_sales_segments_map:
+  %     for sales_segment_info in sales_segments:
+  <a href="${request.route_path('cart.seat_types2', performance_id=sales_segment_info['performance_id'], sales_segment_id=sales_segment_info['id'])}">${sales_segment_info['name']}</a><br />
+  %     endfor
+  %   endfor
+  % else:
+  %   for _, sales_segments in key_to_formatted_sales_segments_map:
+  %     for sales_segment_info in sales_segments:
+  <a href="${request.route_path('cart.seat_types', event_id=event.id, sales_segment_id=sales_segment_info['id'])}">${sales_segment_info['name']}</a><br />
+  %     endfor
+  %   endfor
+  % endif
+  <%mobile:form_get action="${request.route_path('cart.index', event_id=event.id)}">
+    <div style="text-align:center;">
+      <input type="submit" value="戻る">
+    </div>
+  </%mobile:form_get>
+% endif
