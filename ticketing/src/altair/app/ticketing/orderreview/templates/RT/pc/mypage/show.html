@@ -41,6 +41,7 @@ ${render_mailmagazine(request)}
 </div></div><!-- ===== 　/メールマガジンの配信 ===== -->
 
 <!-- ===== お気に入りワード ===== -->
+% if word_enabled:
 <div class="confirm-wrap">
 <div class="confirm-wrap-inner confirm-magBox">
 <h2 class="heading heading_simple_line">お気に入りワードのお知らせメール</h2>
@@ -48,6 +49,7 @@ ${render_mailmagazine(request)}
 ${render_word(request)}
 
 </div></div><!-- ===== 　/お気に入りワード ===== -->
+%endif
 
 <!-- ===== 楽天ポイントのご確認 ===== -->
 <div class="confirm-wrap">

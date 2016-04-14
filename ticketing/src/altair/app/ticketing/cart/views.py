@@ -1329,12 +1329,15 @@ class ConfirmView(object):
                 mode='entry'
                 )
 
-        user = api.get_user(self.context.authenticated_user()) # これも読み直し
         ks = [ ]
-        if user is not None:
-            res = api.get_keywords_from_cms(self.request, cart.performance_id)
-            for w in res["words"]:
-                ks.append([ type('', (), { 'id': w["id"], 'label': w["label"] }), False ])
+        organization = api.get_organization(self.request)
+        if organization.setting.enable_word == 1:
+            user = api.get_user(self.context.authenticated_user()) # これも読み直し
+            if user is not None:
+                res = api.get_keywords_from_cms(self.request, cart.performance_id)
+                for w in res["words"]:
+                    # TODO: subscribe状況をセットしてあげても良いが
+                    ks.append([ type('', (), { 'id': w["id"], 'label': w["label"] }), False ])
 
         return dict(
             cart=cart,
@@ -1358,7 +1361,9 @@ def cont_complete_view(context, request, order_no, magazine_ids, word_ids):
     multi_subscribe(user, emails, magazine_ids)
     
     # お気に入り登録
-    word_subscribe(request, user, word_ids)
+    organization = api.get_organization(request)
+    if organization.setting.enable_word == 1:
+        word_subscribe(request, user, word_ids)
 
     api.logout(request)
 

@@ -176,6 +176,7 @@ class MypageView(object):
             orders=orders,
             lot_entries=entries,
             mailmagazines_to_subscribe=magazines_to_subscribe,
+            word_enabled=self.request.organization.setting.enable_word == 1,
             h=h,
         )
 

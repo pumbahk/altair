@@ -413,6 +413,9 @@ class OrganizationSettingForm(OrganizationSettingSimpleForm):
     enable_mypage = OurBooleanField(
         label=get_annotations_for(c_models.OrganizationSetting.enable_mypage)['label']
     )
+    enable_word = OurBooleanField(
+        label=get_annotations_for(c_models.OrganizationSetting.enable_word)['label']
+    )
     augus_use = OurBooleanField(
         label=get_annotations_for(c_models.OrganizationSetting.augus_use)['label']
         )
