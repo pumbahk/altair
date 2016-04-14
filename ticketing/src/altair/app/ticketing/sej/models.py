@@ -332,6 +332,8 @@ class SejTicket(Base, WithTimestamp, LogicallyDeleted):
     order_no                = Column(String(12), ForeignKey("SejOrder.order_no"), nullable=True)
     ticket_idx              = Column(Integer)
     product_item_id         = Column(Identifier, ForeignKey("ProductItem.id"), nullable=True)
+    ordered_product_item_token_id = Column(Identifier, ForeignKey("OrderedProductItemToken.id"), nullable=True)
+    ordered_product_item_token    = relationship("OrderedProductItemToken")
 
     def new_branch(self, **kwargs):
         values = dict(
