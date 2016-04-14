@@ -103,7 +103,7 @@
       <td rowspan="${count}" style="border-left: 1px solid #ddd;">${record.stock_holder_name}</td>
         % endif
       <td>${record.product_name}</td>
-      <td class="price">${vh.price(record.product_price)}</td>
+      <td class="price">${vh.price(record.product_price/record.sales_unit)}</td>
         % if i == 0:
       <td rowspan="${count}" class="numeric">${vh.number(record.stock_quantity) or ''}</td>
       <td rowspan="${count}" class="numeric">${vh.number(record.vacant_quantity) or ''}</td>

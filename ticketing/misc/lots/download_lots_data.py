@@ -35,13 +35,15 @@ def save_entries(args):
     #db = 'ticketing'
     #user = 'ticketing'
     #password = 'ticketing'
+    #port = 3306
 
     host = 'dbmain.standby.altr'
     db = 'ticketing'
-    user = 'ticketstar_ro'
+    user = 'ticketing_ro'
     password = 'ticketing'
+    port = 3308
 
-    client = pymysql.connect(host=host, db=db, user=user, passwd=password)
+    client = pymysql.connect(host=host, db=db, user=user, passwd=password, port=port)
     cur = client.cursor()
     cur.execute('SET NAMES sjis')
 
