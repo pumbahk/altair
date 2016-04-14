@@ -1,4 +1,3 @@
-
 # coding: utf-8
 from pyramid.interfaces import IRequest
 from .interfaces import IAPIKeyValidator, IEventRepository
