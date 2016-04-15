@@ -896,7 +896,10 @@ h2.glitter.red {
 }
 
 h2.glitter.red:after {
-  background: #78CAE7;
+  background-image: linear-gradient(top, #ffffff 0%, #e3e3e3 48%, #cccccc 50%, #e1e1e1);
+  background-image: -webkit-gradient(linear, left top, left bottom, from(#ffffff), color-stop(0.48, #e3e3e3), color-stop(0.5, #cccccc), to(#e1e1e1));
+  background-image: -webkit-linear-gradient(top, #ffffff 0%, #e3e3e3 48%, #cccccc 50%, #e1e1e1);
+  background-image: -moz-linear-gradient(top, #ffffff 0%, #e3e3e3 48%, #cccccc 50%, #e1e1e1);
 }
 
 h3.glitter {
@@ -931,6 +934,10 @@ h3.glitter:after {
   content: "";
   width: 2px;
   height: 20px;
+  background-image: linear-gradient(top, #ffffff 0%, #ffd6d6 48%, #ffb2b2 50%, #ffd2d2);
+  background-image: -webkit-gradient(linear, left top, left bottom, from(#ffffff), color-stop(0.48, #ffd6d6), color-stop(0.5, #ffb2b2), to(#ffd2d2));
+  background-image: -webkit-linear-gradient(top, #ffffff 0%, #ffd6d6 48%, #ffb2b2 50%, #ffd2d2);
+  background-image: -moz-linear-gradient(top, #ffffff 0%, #ffd6d6 48%, #ffb2b2 50%, #ffd2d2);
 }
 
 
