@@ -117,13 +117,13 @@ def get_tickets(request, order, ticket_template_id=None):
             bundle = ordered_product_item.product_item.ticket_bundle
             for seat, dict_ in dicts:
                 for ticket in applicable_tickets_iter(bundle):
+                    #tkt1200 バーコードありチケットについてはOrderedProductItemTokenとSejTicketを関連付けたい
+                    token_id = dict_.get(u'token_id')
                     if ticket.principal:
                         ticket_type = SejTicketType.TicketWithBarcode
-                        #tkt1200 バーコードありチケットについてはOrderedProductItemTokenとSejTicketを関連付けたい
-                        token_id = dict_.get(u'token_id')
                     else:
                         ticket_type = SejTicketType.ExtraTicket
-                        token_id = None
+
                     ticket_format = ticket.ticket_format
                     ticket_template_id = get_ticket_template_id_from_ticket_format(ticket_format)
                     transform = transform_matrix_from_ticket_format(ticket_format)
