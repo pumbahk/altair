@@ -10,7 +10,8 @@
 <script type="text/javascript">
   function popup_membergroup_delete_modal(id) {
     var modal = $('#modal-membergroup-delete');
-    modal.find('#message').text('選択した会員区分を削除します。よろしいですか？');
+    $('#delete').text('削除する(取消不可)');
+    modal.find('#message').text('選択した会員区分と販売区分グループへ紐付きを削除します。戻すことができません。よろしいですか？');
     modal.modal('toggle');
     if(!modal.data("*click.bound")){
       modal.data("*click.bound", true)
