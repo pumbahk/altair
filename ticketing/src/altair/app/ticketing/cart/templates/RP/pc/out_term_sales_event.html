@@ -3,10 +3,7 @@
 % if which == 'next':
 <p>${event.title} (${performance.name}) の販売期間は</p>
 <p>
-${h.japanese_datetime(start_at)}
-%   if end_at:
-〜 ${h.japanese_datetime(end_at)} 
-%   endif
+${h.japanese_datetime(start_at)} 〜
 </p>
 <p>となっております。</p>
 <p>販売期間内にアクセスしていただきますようお願いいたします。</p>
