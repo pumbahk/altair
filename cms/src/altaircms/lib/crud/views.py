@@ -96,6 +96,8 @@ class CRUDResource(RootFactory): ## fixme
         raise self.AfterInput(form=form, context=self)
 
     def create_model_from_form(self, form):
+        from altaircms.auth.helpers import get_authenticated_organization
+        _ = get_authenticated_organization(self.request)
         obj = model_from_dict(self.model, form.data)
         DBSession.add(obj)
 

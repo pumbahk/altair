@@ -57,6 +57,10 @@ def notify_model_create(request, obj, params=None):
     registry = request.registry
     return registry.notify(ModelCreate(request, obj, params))
 
+from altaircms.auth.helpers import get_authenticated_organization
+
 def add_request_organization_id(self):
     if hasattr(self.obj, "organization_id"):
-        self.obj.organization_id = self.request.organization.id
+        organization = get_authenticated_organization(self.request)
+        if organization is not None:
+            self.obj.organization_id = organization.id
