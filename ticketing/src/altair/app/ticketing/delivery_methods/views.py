@@ -69,7 +69,7 @@ class DeliveryMethods(BaseView):
         obj = DeliveryMethod.query.filter_by(id=delivery_method_id).one()
         form = DeliveryMethodForm(obj=obj)
         form.single_qr_mode.data = obj.preferences.get(unicode(QR_DELIVERY_PLUGIN_ID), {}).get('single_qr_mode', False)
-        form.expiration_date.data = obj.preferences.get(unicode(RESERVE_NUMBER_DELIVERY_PLUGIN_ID), {}).get('expiration_date', False)
+        form.expiration_date.data = obj.preferences.get(unicode(RESERVE_NUMBER_DELIVERY_PLUGIN_ID), {}).get('expiration_date', None)
         return {
             'form': form
             }
