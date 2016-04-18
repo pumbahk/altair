@@ -5,7 +5,11 @@
     table.favorite-list
     td { height: 48px; line-height: 48px; padding-top: 4px; padding-left: 4px; }
     table.favorite-list
-    span { display: inline-block; height: 40px; width: 40px; background-repeat: no-repeat; text-indent: -9999px; }
+    span.kana { font-size: 70%; color: #999; }
+    table.favorite-list
+    span.description { font-size: 85%; color: #000; }
+    table.favorite-list
+    span.type { display: inline-block; height: 40px; width: 40px; background-repeat: no-repeat; text-indent: -9999px; }
     table.favorite-list
     span.favorite-artist { background-image: url(${request.static_url('altair.app.ticketing.orderreview:static/RT/common/images/favorite-icon01.png')}) }
     table.favorite-list
@@ -28,7 +32,7 @@
 
     <table class="favorite-list search-result" style="width: 100%;">
         <tbody id="word_template_container">
-        <tr style="display: none; border: 2px solid #eee;"><td><span class="favorite-{type}">{type}</span> {label}</td><td style="width: 100px;"><form method="post" action="${request.route_path('mypage.word.subscribe')}"><input type="hidden" name="word" value="{id}" /><input type="submit" value="追加する" /></form></td></tr>
+        <tr style="display: none; border: 2px solid #eee;"><td><span class="type favorite-{type}">{type}</span> {label} <span class="kana">{label_kana}</span> <span class="description">{description}</span></td><td style="width: 100px;"><form method="post" action="${request.route_path('mypage.word.subscribe')}"><input type="hidden" name="word" value="{id}" /><input type="submit" value="追加する" /></form></td></tr>
         </tbody>
     </table>
 
@@ -39,11 +43,11 @@
     <p id="msg_nothing_subscribe" style="${'display: none' if 0 < len(words) else ''}">お気に入りワードの登録はありません.</p>
     <table class="favorite-list subscription" style="width: 100%;">
     <thead id="subscribed_word_template_container">
-        <tr style="display: none; border: 2px solid #eee;"><td><span class="favorite-{type}">{type}</span> {label}</td><td style="width: 100px;"><form method="post" action="${request.route_path('mypage.word.unsubscribe')}"><input type="hidden" name="word" value="{id}" /><input type="submit" value="解除する" /></form></td></tr>
+        <tr style="display: none; border: 2px solid #eee;"><td><span class="type favorite-{type}">{type}</span> {label} <span class="kana">{label_kana}</span> <span class="description">{description}</span></td><td style="width: 100px;"><form method="post" action="${request.route_path('mypage.word.unsubscribe')}"><input type="hidden" name="word" value="{id}" /><input type="submit" value="解除する" /></form></td></tr>
     </thead>
     <tbody>
         % for word in words:
-            <tr style="border: 2px solid #eee;"><td><span class="favorite-${word['type']}">${word['type']}</span> ${word['label']}</td><td style="width: 100px;"><form method="post" action="${request.route_path('mypage.word.unsubscribe')}"><input type="hidden" name="word" value="${word['id']}" /><input type="submit" value="解除する" /></form></td></tr>
+            <tr style="border: 2px solid #eee;"><td><span class="type favorite-${word['type']}">${word['type']}</span> ${word['label']} <span class="kana">${word['label_kana']}</span> <span class="description">${"(%s)" % word['description'] if word['description'] else ""}</span></td><td style="width: 100px;"><form method="post" action="${request.route_path('mypage.word.unsubscribe')}"><input type="hidden" name="word" value="${word['id']}" /><input type="submit" value="解除する" /></form></td></tr>
         % endfor
     </tbody>
     </table>
@@ -51,6 +55,17 @@
 
 <script>
 (function() {
+    var conv = function(d) {
+        var r = { };
+        for(var k in d) {
+            if (k == "description") {
+                r[k] = d[k] ? "("+d[k]+")" : "";
+            } else {
+                r[k] = d[k];
+            }
+        }
+        return r;
+    };
     var build = function(t, d) {
         return $(t.replace(/{([^}]+)}/g, function(_, e) { return d[e]; }))
         .css({ display: '' });
@@ -77,7 +92,7 @@
                 return;
             }
             $(r.data).each(function() {
-                build(template, this)
+                build(template, conv(this))
                 .attr('id', 'word-' + this.id)
                 .appendTo(pos);
             });
@@ -101,7 +116,7 @@
                 tr.remove();
 
                 var template = $('#subscribed_word_template_container').html();
-                build(template, r.data[0])
+                build(template, conv(r.data[0]))
                 .attr('id', 'word-' + r.data[0].od)
                 .appendTo($('.favorite-list.subscription'));
 

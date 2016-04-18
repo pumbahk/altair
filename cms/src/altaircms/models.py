@@ -393,6 +393,7 @@ class WordSearch(Base):
     word_id = sa.Column(sa.Integer, sa.ForeignKey('word.id'))
     word = relationship("Word", backref=orm.backref('word_searches'))
     data = sa.Column(sa.String(length=255))
+    data_kana = sa.Column(sa.String(length=255))
 
     created_at = sa.Column(sa.DateTime, default=datetime.now)
     updated_at = sa.Column(sa.DateTime, default=datetime.now, onupdate=datetime.now)
@@ -430,7 +431,8 @@ class Word(Base):
     organization_id = sa.Column(sa.Integer, sa.ForeignKey('organization.id'))
     type = sa.Column(sa.String(length=255))
     label = sa.Column(sa.String(length=255))
-    #description = sa.Column(sa.String(length=255))
+    label_kana = sa.Column(sa.String(length=255))
+    description = sa.Column(sa.String(length=255))
     #link = sa.Column(sa.String(length=255))
 
     created_at = sa.Column(sa.DateTime, default=datetime.now)

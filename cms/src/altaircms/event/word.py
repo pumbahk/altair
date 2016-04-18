@@ -62,7 +62,7 @@ def api_word_get(request):
     else:
         q = request.params.get('q')
         if q is not None and 0 < len(q):
-            words = words.filter(or_(Word.label.contains(q), WordSearch.data.contains(q)))
+            words = words.filter(or_(Word.label.contains(q), Word.label_kana.contains(q), WordSearch.data.contains(q), WordSearch.data_kana.contains(q)))
         else:
             pass
             # no filter
@@ -70,5 +70,5 @@ def api_word_get(request):
     words = words.distinct().all()
     word_dicts = list()
     for word in words:
-        word_dicts.append(dict(id=word.id, label=word.label, type=word.type))
+        word_dicts.append(dict(id=word.id, label=word.label, label_kana=word.label_kana, description=word.description, type=word.type))
     return dict(count=len(words), data=word_dicts)
