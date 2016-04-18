@@ -36,6 +36,8 @@ def main(argv=sys.argv):
 
     for cnt, report_setting in enumerate(query.all()):
         logger.info('printed_report_setting_id: {0}'.format(report_setting.id))
+        if not report_setting.recipients:
+            continue
 
         today = datetime.now()
         yesterday = today - timedelta(days=1)
