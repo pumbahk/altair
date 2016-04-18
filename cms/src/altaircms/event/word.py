@@ -51,7 +51,7 @@ def api_word_get(request):
         return dict(performance=dict(title=performance.title, event=event), words=words)
 
     # all words
-    words = request.allowable(Performance)\
+    words = request.allowable(Word)\
         .filter(Word.deleted_at==None)\
         .outerjoin(WordSearch)\
         .filter(WordSearch.deleted_at==None)
