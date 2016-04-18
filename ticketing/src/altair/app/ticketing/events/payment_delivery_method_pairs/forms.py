@@ -25,6 +25,22 @@ from altair.app.ticketing.core.models import (
 from altair.app.ticketing.payments.plugins import CHECKOUT_PAYMENT_PLUGIN_ID
 from altair.saannotation import get_annotations_for
 
+from altair.app.ticketing.payments.api import get_payment_delivery_plugin_ids
+from altair.app.ticketing.payments.plugins import (
+    MULTICHECKOUT_PAYMENT_PLUGIN_ID,
+    CHECKOUT_PAYMENT_PLUGIN_ID,
+    SEJ_PAYMENT_PLUGIN_ID,
+    RESERVE_NUMBER_PAYMENT_PLUGIN_ID,
+    FREE_PAYMENT_PLUGIN_ID,
+    FAMIPORT_PAYMENT_PLUGIN_ID,
+    SHIPPING_DELIVERY_PLUGIN_ID,
+    SEJ_DELIVERY_PLUGIN_ID,
+    RESERVE_NUMBER_DELIVERY_PLUGIN_ID,
+    QR_DELIVERY_PLUGIN_ID,
+    ORION_DELIVERY_PLUGIN_ID,
+    FAMIPORT_DELIVERY_PLUGIN_ID
+)
+
 def required_when_absolute(field_name):
     return [
         SwitchOptionalBase(
@@ -610,3 +626,112 @@ class PaymentDeliveryMethodPairForm(OurForm):
                         status = False
                         break
         return status
+
+    def default_values_for_pdmp(self, payment_method_id, delivery_method_id):
+        formdata = self.data
+        # 選択された決済方法と引取方法より、決済と引取のPlugin IDを取得
+        payment_plugin_id, delivery_plugin_id = get_payment_delivery_plugin_ids(payment_method_id, delivery_method_id)
+        # 画面上表示の共通デフォルト値を設定
+        default_form_state = dict(
+            # 支払期日
+            payment_period_days_two_disabled=False,                                # 相対指定の日付選択無効
+            payment_period_days_selected_choice=DateCalculationBase.OrderDate.v,   # 相対指定のデフォルト値を設定
+            payment_period_days_disabled=False,                                    # 何日後の指定無効
+            # コンビニ発券開始日時
+            issuing_interval_days_two_disabled=False,                              # 相対指定の日付選択無効
+            issuing_interval_days_selected_choice=DateCalculationBase.OrderDate.v, # 相対指定のデフォルト値を設定
+            issuing_interval_days_disabled=False,                                  # 何日後の指定無効
+            # コンビニ発券期限日時
+            issuing_end_in_days_two_disabled=False,                                # 相対指定の日付選択無効
+            issuing_end_in_days_selected_choice=DateCalculationBase.OrderDate.v,   # 相対指定のデフォルト値を設定
+            issuing_end_in_days_disabled=False                                     # 何日後の指定無効
+        )
+        """
+        Formのデフォルト値から変更する値のみを以下で更新する
+        """
+        if payment_plugin_id == MULTICHECKOUT_PAYMENT_PLUGIN_ID and delivery_plugin_id == SEJ_DELIVERY_PLUGIN_ID:
+            """決済方法：クレジットカード　引取方法：コンビニ(セブン-イレブン)"""
+            # 支払期日
+            default_form_state['payment_period_days_two_disabled'] = True
+            default_form_state['payment_period_days_disabled'] = True
+            # コンビニ発券開始日時
+            default_form_state['issuing_interval_days_selected_choice'] = DateCalculationBase.OrderDateTime.v
+            formdata['issuing_interval_days'] = 1
+            # コンビニ発券期限日時
+            default_form_state['issuing_end_in_days_selected_choice'] = DateCalculationBase.PerformanceEndDate.v
+            formdata['issuing_end_in_days'] = 30
+        elif payment_plugin_id == CHECKOUT_PAYMENT_PLUGIN_ID and delivery_plugin_id == SEJ_DELIVERY_PLUGIN_ID:
+            """決済方法：楽天ID　引取方法：コンビニ(セブン-イレブン)"""
+            # 支払期日
+            default_form_state['payment_period_days_two_disabled'] = True
+            default_form_state['payment_period_days_disabled'] = True
+            # コンビニ発券開始日時
+            default_form_state['issuing_interval_days_selected_choice'] = DateCalculationBase.OrderDateTime.v
+            formdata['issuing_interval_days'] = 1
+            # コンビニ発券期限日時
+            default_form_state['issuing_end_in_days_selected_choice'] = DateCalculationBase.PerformanceEndDate.v
+            formdata['issuing_end_in_days'] = 30
+        elif payment_plugin_id == SEJ_PAYMENT_PLUGIN_ID and delivery_plugin_id == SEJ_DELIVERY_PLUGIN_ID:
+            """決済方法：コンビニ(セブン-イレブン)　引取方法：コンビニ(セブン-イレブン)"""
+            # 選択不可期間
+            formdata['unavailable_period_days'] = 4
+            # コンビニ発券期限日時
+            default_form_state['issuing_end_in_days_selected_choice'] = DateCalculationBase.PerformanceEndDate.v
+            formdata['issuing_end_in_days'] = 30
+        elif payment_plugin_id == MULTICHECKOUT_PAYMENT_PLUGIN_ID and delivery_plugin_id == SHIPPING_DELIVERY_PLUGIN_ID:
+            """決済方法：クレジットカード　引取方法：配送"""
+            # 選択不可期間
+            formdata['unavailable_period_days'] = 14
+            # 支払期日
+            default_form_state['payment_period_days_two_disabled'] = True
+            default_form_state['payment_period_days_disabled'] = True
+            # コンビニ発券開始日時
+            default_form_state['issuing_interval_days_two_disabled'] = True
+            default_form_state['issuing_interval_days_disabled'] = True
+            # コンビニ発券期限日時
+            default_form_state['issuing_end_in_days_two_disabled'] = True
+            default_form_state['issuing_end_in_days_disabled'] = True
+        elif payment_plugin_id == SEJ_PAYMENT_PLUGIN_ID and delivery_plugin_id == SHIPPING_DELIVERY_PLUGIN_ID:
+            """決済方法：コンビニ(セブン-イレブン)　引取方法：配送"""
+            # 選択不可期間
+            formdata['unavailable_period_days'] = 17
+            # コンビニ発券開始日時
+            default_form_state['issuing_interval_days_two_disabled'] = True
+            default_form_state['issuing_interval_days_disabled'] = True
+            # コンビニ発券期限日時
+            default_form_state['issuing_end_in_days_two_disabled'] = True
+            default_form_state['issuing_end_in_days_disabled'] = True
+        elif payment_plugin_id == MULTICHECKOUT_PAYMENT_PLUGIN_ID and delivery_plugin_id == QR_DELIVERY_PLUGIN_ID:
+            """決済方法：クレジットカード　引取方法：QRコード"""
+            # 支払期日
+            default_form_state['payment_period_days_two_disabled'] = True
+            default_form_state['payment_period_days_disabled'] = True
+            # コンビニ発券開始日時
+            default_form_state['issuing_interval_days_two_disabled'] = True
+            default_form_state['issuing_interval_days_disabled'] = True
+            # コンビニ発券期限日時
+            default_form_state['issuing_end_in_days_two_disabled'] = True
+            default_form_state['issuing_end_in_days_disabled'] = True
+        elif payment_plugin_id == SEJ_PAYMENT_PLUGIN_ID and delivery_plugin_id == QR_DELIVERY_PLUGIN_ID:
+            """決済方法：コンビニ(セブン-イレブン)　引取方法：QRコード"""
+            # 選択不可期間
+            formdata['unavailable_period_days'] = 4
+            # コンビニ発券開始日時
+            default_form_state['issuing_interval_days_two_disabled'] = True
+            default_form_state['issuing_interval_days_disabled'] = True
+            # コンビニ発券期限日時
+            default_form_state['issuing_end_in_days_two_disabled'] = True
+            default_form_state['issuing_end_in_days_disabled'] = True
+        elif payment_plugin_id == RESERVE_NUMBER_PAYMENT_PLUGIN_ID and delivery_plugin_id == RESERVE_NUMBER_DELIVERY_PLUGIN_ID:
+            """決済方法：窓口支払　引取方法：窓口受取"""
+            # 支払期日
+            default_form_state['payment_period_days_two_disabled'] = True
+            default_form_state['payment_period_days_disabled'] = True
+            # コンビニ発券開始日時
+            default_form_state['issuing_interval_days_two_disabled'] = True
+            default_form_state['issuing_interval_days_disabled'] = True
+            # コンビニ発券期限日時
+            default_form_state['issuing_end_in_days_two_disabled'] = True
+            default_form_state['issuing_end_in_days_disabled'] = True
+        formdata.update(default_form_state)
+        return formdata
