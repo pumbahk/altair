@@ -20,6 +20,7 @@ from altair.app.ticketing.products.forms import ProductItemForm, ProductAndProdu
 from altair.app.ticketing.loyalty.models import PointGrantSetting
 from altair.app.ticketing.utils import moderate_name_candidates
 from .forms import PreviewImageDownloadForm
+from .api import add_lot_product, add_lot_product_item, get_lot_product, get_lot_product_item, edit_lot_product, edit_lot_product_item, delete_lot_product, delete_lot_product_item
 from decimal import Decimal
 logger = logging.getLogger(__name__)
 
@@ -57,6 +58,8 @@ class ProductAndProductItem(BaseView):
                 query = query.filter_by(id=f.sales_segment_id.data)
 
             for sales_segment_for_product in query:
+
+                # 商品の登録
                 product = merge_session_with_post(Product(), f.data, excludes={'id'})
                 max_display_order = Product.query.filter(
                         Product.sales_segment_id==sales_segment_for_product.id
@@ -69,6 +72,7 @@ class ProductAndProductItem(BaseView):
                 product.point_grant_settings.extend(point_grant_settings)
                 product.save()
 
+                # 商品明細の登録
                 stock = Stock.query.filter_by(
                     stock_type_id=f.seat_stock_type_id.data,
                     stock_holder_id=f.stock_holder_id.data,
@@ -84,6 +88,15 @@ class ProductAndProductItem(BaseView):
                     ticket_bundle_id=f.ticket_bundle_id.data
                 )
                 product_item.save()
+
+                # 抽選商品の登録
+                lot_product = add_lot_product(
+                    sales_segment_group=sales_segment.sales_segment_group,
+                    original_product=product
+                )
+
+                # 抽選商品明細の登録
+                add_lot_product_item(lot_product, product_item)
 
             self.request.session.flash(u'商品を保存しました')
             return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
@@ -127,10 +140,16 @@ class ProductAndProductItem(BaseView):
                 product_item.stock_id = stock.id
                 product_item.ticket_bundle_id = f.ticket_bundle_id.data
                 product_item.save()
+
+                # 抽選の商品を更新
+                edit_lot_product_item(product_item)
             else:
                 if len(product.items) == 1:
                     product.items[0].price = product.price / product.items[0].quantity
                     product.items[0].save()
+
+            # 抽選の商品を更新
+            edit_lot_product(product)
 
             self.request.session.flash(u'商品を保存しました')
             return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
@@ -167,6 +186,7 @@ class ProductAndProductItem(BaseView):
                         break
                 new_product.sales_segment = copy_sales_segment
                 new_product.sales_segment_id = copy_sales_segment.id
+                add_lot_product(new_product)
 
         self.request.session.flash(u'商品をコピーしました')
         return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
@@ -176,7 +196,11 @@ class ProductAndProductItem(BaseView):
         product = self.context.product
         location = self.request.route_path('performances.show_tab', performance_id=product.performance_id, tab='product')
         try:
+            # 抽選の商品の削除
+            delete_lot_product(product)
+
             product.delete()
+
             self.request.session.flash(u'商品を削除しました')
         except Exception, e:
             self.request.session.flash(e.message)
@@ -301,8 +325,14 @@ class ProductAndProductItem(BaseView):
             if row_data.get('deleted'):
                 try:
                     if f.is_leaf.data:
+                        # 抽選の商品明細の削除
+                        delete_lot_product_item(product_item)
+
                         product_item.delete()
                     else:
+                        # 抽選の商品の削除
+                        delete_lot_product(product)
+
                         product.delete()
                 except Exception, e:
                     logger.info(row_data)
@@ -330,6 +360,9 @@ class ProductAndProductItem(BaseView):
                     product.performance_id = f.performance_id.data
                     product.save()
 
+                    # 抽選商品の更新
+                    edit_lot_product(product)
+
                 stock = Stock.query.filter_by(
                     stock_type_id=f.stock_type_id.data,
                     stock_holder_id=f.stock_holder_id.data,
@@ -343,6 +376,10 @@ class ProductAndProductItem(BaseView):
                 product_item.stock_id = stock.id
                 product_item.ticket_bundle_id = f.ticket_bundle_id.data
                 product_item.save()
+
+                # 抽選商品明細の更新
+                edit_lot_product_item(product_item)
+
         return {}
 
 
@@ -374,9 +411,13 @@ class ProductItems(BaseView):
             if f.product.items:
                 price = sum(item.price * item.quantity for item in f.product.items)
 
+            # 商品明細の登録
             price += f.product_item_price.data * f.product_item_quantity.data
             f.product.price = price
             f.product.save()
+
+            # 抽選商品の更新
+            edit_lot_product(f.product)
 
             stock = Stock.query.filter_by(
                 stock_type_id=f.stock_type_id.data,
@@ -393,6 +434,9 @@ class ProductItems(BaseView):
                 ticket_bundle_id=f.ticket_bundle_id.data
             )
             product_item.save()
+
+            # 抽選商品明細の登録
+            add_lot_product_item(get_lot_product(f.product.id), product_item)
 
             self.request.session.flash(u'商品に在庫を割当てました')
             return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
@@ -438,6 +482,9 @@ class ProductItems(BaseView):
                     f.product.price += item.price * item.quantity
             f.product.save()
 
+            # 抽選の商品明細の修正
+            edit_lot_product(original_product=f.product)
+
             stock = Stock.query.filter_by(
                 stock_type_id=f.stock_type_id.data,
                 stock_holder_id=f.stock_holder_id.data,
@@ -452,6 +499,9 @@ class ProductItems(BaseView):
                 ticket_bundle_id=f.ticket_bundle_id.data
             ))
             product_item.save()
+
+            # 抽選の商品明細の修正
+            edit_lot_product_item(original_product_item=product_item)
 
             self.request.session.flash(u'商品明細を保存しました')
             return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
@@ -468,7 +518,11 @@ class ProductItems(BaseView):
         product_item = self.context.product_item
         location = self.request.route_path('performances.show_tab', performance_id=product_item.performance_id, tab='product')
         try:
+            # 抽選の商品明細の削除
+            delete_lot_product_item(product_item)
+
             product_item.delete()
+
             self.request.session.flash(u'商品明細を削除しました')
         except Exception, e:
             self.request.session.flash(e.message)
