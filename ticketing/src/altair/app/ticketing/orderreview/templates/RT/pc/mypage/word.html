@@ -58,6 +58,11 @@
     var pos = $('#word_template_container').eq(0);
     var template = $('#word_template_container').html();
     var ui = $('#word_search input');
+    var update_action = function() {
+      $('#word_search *[type="submit"]').prop('disabled', $('#word_search *[name="q"]').val() == '');
+    };
+    $('#word_search *[name="q"]').bind('<keyup></keyup> change', update_action);
+    update_action();
     $('#word_search').submit(function() {
         ui.prop('disabled', true);
         pos.find('tr:visible').remove();

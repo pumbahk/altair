@@ -70,6 +70,7 @@ def includeme(config):
 
     ## word
     config.add_route('mypage.word.show', '/mypage/word/', factory='.resources.MyPageResource')
+    config.add_route('mypage.word.configure', '/mypage/word/configure', factory='.resources.MyPageResource')
     config.add_route('mypage.word.search', '/mypage/word/search', factory='.resources.MyPageResource')
     config.add_route('mypage.word.subscribe', '/mypage/word/subscribe', factory='.resources.MyPageResource')
     config.add_route('mypage.word.unsubscribe', '/mypage/word/unsubscribe', factory='.resources.MyPageResource')

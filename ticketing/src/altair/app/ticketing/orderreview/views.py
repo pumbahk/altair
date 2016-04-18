@@ -36,7 +36,7 @@ from altair.app.ticketing.fc_auth.api import do_authenticate
 from altair.app.ticketing.orders.models import Order, OrderedProduct, OrderedProductItem, OrderedProductItemToken
 from altair.app.ticketing.orders.api import OrderAttributeIO, get_extra_form_fields_for_order, get_order_by_order_no
 from altair.app.ticketing.lots.models import LotEntry
-from altair.app.ticketing.users.models import User, WordSubscription
+from altair.app.ticketing.users.models import User, WordSubscription, UserProfile
 from altair.app.ticketing.users.word import get_word
 
 from .api import is_mypage_organization, is_rakuten_auth_organization
@@ -171,13 +171,21 @@ class MypageView(object):
                 shipping_address.emails
                 )
 
+        word_enabled = self.request.organization.setting.enable_word == 1
+        subscribe_word = False
+        if word_enabled:
+            profile = UserProfile.query.filter(UserProfile.user_id==user.id).first()
+            logger.debug(profile)
+            if profile is not None and profile.subscribe_word:
+                subscribe_word = True
+
         return dict(
             shipping_address=shipping_address,
             orders=orders,
             lot_entries=entries,
             mailmagazines_to_subscribe=magazines_to_subscribe,
-            word_enabled=self.request.organization.setting.enable_word == 1,
-            h=h,
+            word_enabled=word_enabled,
+            subscribe=subscribe_word,
         )
 
     @lbr_view_config(
@@ -887,6 +895,25 @@ class MypageWordView(object):
         if words is not None:
             return { "data": words }
         return { }
+
+    @lbr_view_config(route_name='mypage.word.configure',
+        request_method="POST",
+        custom_predicates=(override_auth_type,),
+        renderer="json")
+    def configure(self):
+        authenticated_user = self.context.authenticated_user()
+        user = cart_api.get_user(authenticated_user)
+        subscribe = self.request.params.get('subscribe')
+        profile = UserProfile.query.filter(UserProfile.user_id==user.id).first()
+        if profile is None:
+            profile = UserProfile(user_id=user.id)
+            profile.subscribe_word = 1 if subscribe=="1" else 0
+            DBSession.add(profile)
+        else:
+            profile.subscribe_word = 1 if subscribe=="1" else 0
+            profile.update()
+            DBSession.flush()
+        return { "result": "OK" }
 
     @lbr_view_config(route_name='mypage.word.subscribe',
         request_method="POST",
