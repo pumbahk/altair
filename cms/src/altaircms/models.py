@@ -425,10 +425,9 @@ class Performance_Word(Base):
     created_at = sa.Column(sa.DateTime, default=datetime.now)
     updated_at = sa.Column(sa.DateTime, default=datetime.now, onupdate=datetime.now)
 
-class Word(Base):
+class Word(Base, WithOrganizationMixin):
     __tablename__ = "word"
     id = sa.Column(sa.Integer, primary_key=True)
-    organization_id = sa.Column(sa.Integer, sa.ForeignKey('organization.id'))
     type = sa.Column(sa.String(length=255))
     label = sa.Column(sa.String(length=255))
     label_kana = sa.Column(sa.String(length=255))
