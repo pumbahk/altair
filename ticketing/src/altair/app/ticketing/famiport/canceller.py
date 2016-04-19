@@ -38,6 +38,7 @@ class FamiPortOrderCanceller(object):
                 FamiPortOrder.invalidated_at.is_(None),
                 FamiPortOrder.canceled_at.is_(None),
                 FamiPortOrder.expired_at.is_(None),
+                FamiPortOrder.type != FamiPortOrderType.Ticketing.value,
                 FamiPortReceipt.canceled_at.is_(None),
                 FamiPortReceipt.completed_at.is_(None),
                 or_(
