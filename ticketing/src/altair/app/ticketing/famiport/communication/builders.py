@@ -490,6 +490,7 @@ class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
                     if famiport_order.type == FamiPortOrderType.Payment and famiport_order.payment_famiport_receipt.completed_at is None: # 後日発券で未入金
                         logger.info(u'tickets for order are not paid yet')
                         replyCode = ReplyCodeEnum.SearchKeyError.value # 未入金の状態で後日発券しようとしている
+                        famiport_receipt = None
                     elif famiport_receipt.completed_at is not None:
                         if famiport_receipt.made_reissueable_at is not None:
                             logger.info(u'tickets for order are already issued at %s' % (famiport_receipt.completed_at, ))
