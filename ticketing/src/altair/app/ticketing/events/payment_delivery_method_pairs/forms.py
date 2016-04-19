@@ -649,8 +649,8 @@ class PaymentDeliveryMethodPairForm(OurForm):
         """
         Formのデフォルト値から変更する値のみを以下で更新する
         """
-        if payment_plugin_id == MULTICHECKOUT_PAYMENT_PLUGIN_ID and delivery_plugin_id == SEJ_DELIVERY_PLUGIN_ID:
-            """決済方法：クレジットカード　引取方法：コンビニ(セブン-イレブン)"""
+        if payment_plugin_id == MULTICHECKOUT_PAYMENT_PLUGIN_ID and (delivery_plugin_id == SEJ_DELIVERY_PLUGIN_ID or delivery_plugin_id == FAMIPORT_DELIVERY_PLUGIN_ID):
+            """決済方法：クレジットカード　引取方法：コンビニ"""
             # 支払期日
             default_form_state['payment_period_days_two_disabled'] = True
             default_form_state['payment_period_days_disabled'] = True
@@ -660,8 +660,8 @@ class PaymentDeliveryMethodPairForm(OurForm):
             # コンビニ発券期限日時
             default_form_state['issuing_end_in_days_selected_choice'] = DateCalculationBase.PerformanceEndDate.v
             formdata['issuing_end_in_days'] = 30
-        elif payment_plugin_id == CHECKOUT_PAYMENT_PLUGIN_ID and delivery_plugin_id == SEJ_DELIVERY_PLUGIN_ID:
-            """決済方法：楽天ID　引取方法：コンビニ(セブン-イレブン)"""
+        elif payment_plugin_id == CHECKOUT_PAYMENT_PLUGIN_ID and (delivery_plugin_id == SEJ_DELIVERY_PLUGIN_ID or delivery_plugin_id == FAMIPORT_DELIVERY_PLUGIN_ID):
+            """決済方法：楽天ID　引取方法：コンビニ"""
             # 支払期日
             default_form_state['payment_period_days_two_disabled'] = True
             default_form_state['payment_period_days_disabled'] = True
@@ -671,8 +671,8 @@ class PaymentDeliveryMethodPairForm(OurForm):
             # コンビニ発券期限日時
             default_form_state['issuing_end_in_days_selected_choice'] = DateCalculationBase.PerformanceEndDate.v
             formdata['issuing_end_in_days'] = 30
-        elif payment_plugin_id == SEJ_PAYMENT_PLUGIN_ID and delivery_plugin_id == SEJ_DELIVERY_PLUGIN_ID:
-            """決済方法：コンビニ(セブン-イレブン)　引取方法：コンビニ(セブン-イレブン)"""
+        elif (payment_plugin_id == SEJ_PAYMENT_PLUGIN_ID or payment_plugin_id == FAMIPORT_PAYMENT_PLUGIN_ID) and (delivery_plugin_id == SEJ_DELIVERY_PLUGIN_ID or delivery_plugin_id == FAMIPORT_DELIVERY_PLUGIN_ID):
+            """決済方法：コンビニ　引取方法：コンビニ"""
             # 選択不可期間
             formdata['unavailable_period_days'] = 4
             # コンビニ発券期限日時
@@ -691,8 +691,8 @@ class PaymentDeliveryMethodPairForm(OurForm):
             # コンビニ発券期限日時
             default_form_state['issuing_end_in_days_two_disabled'] = True
             default_form_state['issuing_end_in_days_disabled'] = True
-        elif payment_plugin_id == SEJ_PAYMENT_PLUGIN_ID and delivery_plugin_id == SHIPPING_DELIVERY_PLUGIN_ID:
-            """決済方法：コンビニ(セブン-イレブン)　引取方法：配送"""
+        elif (payment_plugin_id == SEJ_PAYMENT_PLUGIN_ID or payment_plugin_id == FAMIPORT_PAYMENT_PLUGIN_ID) and delivery_plugin_id == SHIPPING_DELIVERY_PLUGIN_ID:
+            """決済方法：コンビニ　引取方法：配送"""
             # 選択不可期間
             formdata['unavailable_period_days'] = 17
             # コンビニ発券開始日時
@@ -712,8 +712,8 @@ class PaymentDeliveryMethodPairForm(OurForm):
             # コンビニ発券期限日時
             default_form_state['issuing_end_in_days_two_disabled'] = True
             default_form_state['issuing_end_in_days_disabled'] = True
-        elif payment_plugin_id == SEJ_PAYMENT_PLUGIN_ID and delivery_plugin_id == QR_DELIVERY_PLUGIN_ID:
-            """決済方法：コンビニ(セブン-イレブン)　引取方法：QRコード"""
+        elif (payment_plugin_id == SEJ_PAYMENT_PLUGIN_ID or payment_plugin_id == FAMIPORT_PAYMENT_PLUGIN_ID) and delivery_plugin_id == QR_DELIVERY_PLUGIN_ID:
+            """決済方法：コンビニ　引取方法：QRコード"""
             # 選択不可期間
             formdata['unavailable_period_days'] = 4
             # コンビニ発券開始日時
