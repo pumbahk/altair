@@ -274,6 +274,7 @@ class FamiPortReservationInquiryResponseBuilder(FamiPortResponseBuilder):
                                 else:
                                     raise FamiPortInvalidResponseError('invalid FamiPortResponse')
                     elif famiport_receipt.type == FamiPortReceiptType.Ticketing.value:
+
                         if famiport_order.ticketing_start_at is not None and  \
                            famiport_order.ticketing_start_at > ticketingDate:
                             logger.error(u'ticketingDate is earlier than ticketing_start_at (%s)' % (famiport_order.ticketing_start_at, ))
@@ -486,9 +487,9 @@ class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
                             famiport_receipt = None
                 if famiport_receipt is not None and \
                    receipt_type in (FamiPortReceiptType.CashOnDelivery.value, FamiPortReceiptType.Ticketing.value):
-                    if receipt_type == FamiPortReceiptType.Ticketing.value and famiport_order.payment_famiport_receipt.payment_request_received_at is None: # 後日発券で未入金
+                    if famiport_order.type == FamiPortOrderType.Payment and famiport_order.payment_famiport_receipt.completed_at is None: # 後日発券で未入金
                         logger.info(u'tickets for order are not paid yet')
-                        replyCode = ReplyCodeEnum.OtherError # 未入金の状態で後日発券しようとしている
+                        replyCode = ReplyCodeEnum.SearchKeyError.value # 未入金の状態で後日発券しようとしている
                     if famiport_receipt.completed_at is not None:
                         if famiport_receipt.made_reissueable_at is not None:
                             logger.info(u'tickets for order are already issued at %s' % (famiport_receipt.completed_at, ))
