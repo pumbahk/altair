@@ -10,7 +10,6 @@ from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.core.models import SalesSegmentGroup, PaymentDeliveryMethodPair, PaymentMethod, DeliveryMethod
 from altair.app.ticketing.events.payment_delivery_method_pairs.forms import PaymentDeliveryMethodPairForm
 from altair.app.ticketing.service_fee_methods.api import get_system_fee_default, SystemFeeDefaultDoesNotExist, SystemFeeDefaultDuplicated
-from . import helpers as h
 
 @view_defaults(decorator=with_bootstrap, permission='event_editor')
 class PaymentDeliveryMethodPairs(BaseView):
