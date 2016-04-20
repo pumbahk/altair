@@ -129,3 +129,5 @@ class CouponViewResource(CouponResourceBase):
         # 全てのクーポンが使用済みの場合、オーダーも発券済みとする。
         if self.all_coupon_used:
             self.order.printed_at = now
+            self.order.issued_at = now
+            self.order.issued = True
