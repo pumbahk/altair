@@ -1,14 +1,14 @@
 """favorite word support
 
 Revision ID: bf2ef09ab6c
-Revises: 39b1645c028e
+Revises: 1173311eb7c3
 Create Date: 2016-04-14 10:47:36.417711
 
 """
 
 # revision identifiers, used by Alembic.
 revision = 'bf2ef09ab6c'
-down_revision = '39b1645c028e'
+down_revision = '1173311eb7c3'
 
 from alembic import op
 import sqlalchemy as sa
