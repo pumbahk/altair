@@ -72,18 +72,18 @@
           // 選択不可期間
           $('#unavailable_period_days').val(data.unavailable_period_days);
           // 支払期日
-          $('#payment_period_days-2').prop('disabled', JSON.parse(data.payment_period_days_two_disabled));
+          $('#payment_period_days-2').attr('readonly', JSON.parse(data.payment_period_days_two_readonly));
           $("#payment_period_days-2 option[value=" + data.payment_period_days_selected_choice + "]").attr('selected', 'selected');
-          $('#payment_period_days').prop('disabled', JSON.parse(data.payment_period_days_disabled));
+          $('#payment_period_days').attr('readonly', JSON.parse(data.payment_period_days_readonly));
           // コンビニ発券開始日時
-          $('#issuing_interval_days-2').prop('disabled', JSON.parse(data.issuing_interval_days_two_disabled));
+          $('#issuing_interval_days-2').attr('readonly', JSON.parse(data.issuing_interval_days_two_readonly));
           $("#issuing_interval_days-2 option[value=" + data.issuing_interval_days_selected_choice + "]").attr('selected', 'selected');
-          $('#issuing_interval_days').prop('disabled', JSON.parse(data.issuing_interval_days_disabled));
+          $('#issuing_interval_days').attr('readonly', JSON.parse(data.issuing_interval_days_readonly));
           $('#issuing_interval_days').val(data.issuing_interval_days);
           // コンビニ発券期限日時
-          $('#issuing_end_in_days-2').prop('disabled', JSON.parse(data.issuing_end_in_days_two_disabled));
+          $('#issuing_end_in_days-2').attr('readonly', JSON.parse(data.issuing_end_in_days_two_readonly));
           $("#issuing_end_in_days-2 option[value=" + data.issuing_end_in_days_selected_choice + "]").attr('selected', 'selected');
-          $('#issuing_end_in_days').prop('disabled', JSON.parse(data.issuing_end_in_days_disabled));
+          $('#issuing_end_in_days').attr('readonly', JSON.parse(data.issuing_end_in_days_readonly));
           $('#issuing_end_in_days').val(data.issuing_end_in_days);
         },
         error: function() {
