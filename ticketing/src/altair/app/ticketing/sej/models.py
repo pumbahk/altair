@@ -347,7 +347,8 @@ class SejTicket(Base, WithTimestamp, LogicallyDeleted):
             order=self.order,
             order_no=self.order_no,
             ticket_idx=self.ticket_idx,
-            product_item_id=self.product_item_id
+            product_item_id=self.product_item_id,
+            ordered_product_item_token_id=self.ordered_product_item_token_id
             )
         values.update(kwargs)
         return self.__class__(**values)
