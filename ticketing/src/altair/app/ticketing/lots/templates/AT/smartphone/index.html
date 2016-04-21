@@ -1,0 +1,74 @@
+<%inherit file="${context['main_template'].uri}" />
+<div id="main">
+
+%if request.session.peek_flash():
+<div style="border: 3px solid red; background: #FFEEEE; padding: 10px; margin: 10px;">
+  <ul>
+    %for message in request.session.pop_flash():
+    <li>${message}</li>
+    %endfor
+  </ul>
+</div>
+%endif
+
+<form name="form1" method="get" action="${request.route_path('lots.entry.sp_step1', event_id=event.id, lot_id=lot.id)}">
+<div class="subbox">
+<dl>
+<dt><p>イベント詳細</p></dt>
+<dd>
+<dl class="infoList">
+<dt>イベント名</dt>
+<dd>${event.title}</dd>
+<dt>申込受付期間</dt>
+<dd>${h.japanese_datetime(sales_segment.start_at)}～${h.japanese_datetime(sales_segment.end_at)}</dd>
+<dt>抽選結果発表予定日</dt>
+<dd>${h.announce_time_label(lot)}</dd>
+% if sales_segment.max_quantity:
+<dt>制限枚数</dt>
+<dd>1希望の申込で${sales_segment.max_quantity}枚まで</dd>
+% endif
+% if lot.entry_limit:
+<dt>申込回数制限</dt>
+<dd>${u"{0} 回".format(lot.entry_limit)}</dd>
+% endif
+<dt>受付希望数</dt>
+<dd>一度の申込で第${lot.limit_wishes}希望まで</dd>
+% if lot.description:
+<dt>注意事項</dt>
+<dd>${view.cr2br(lot.description)|n}</dd>
+% endif
+</dl>
+</dd>
+</dl>
+</div>
+
+<div class="subbox">
+<dl>
+<dt><p>公演一覧</p></dt>
+<dd>
+<dl class="infoList">
+% for performance in performances:
+<dt><span>${performance.name}</span></dt>
+<dt>公演日</dt>
+<dd>${h.performance_datetime(performance)}</dd>
+<dt>会場</dt>
+<dd>${performance.venue.name}</dd>
+% endfor
+
+</dl>
+</dd>
+</dl>
+</div>
+
+% if performance_id:
+  <input type="hidden" name="performance" value="${performance_id}"/>
+% endif
+
+<p class="nextBtn">
+  <a href="javaScript:document.form1.submit();">
+    <input type="submit" value="次へ">
+  </a>
+</p>
+
+</form>
+</div>

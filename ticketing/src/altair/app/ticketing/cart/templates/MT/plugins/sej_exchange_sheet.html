@@ -1,0 +1,7 @@
+<%page args="label=u'払込票・引換票を表示'" />
+<div>
+    <form action="${sej_order.exchange_sheet_url}" method="POST" target="_blank">
+        <input type="hidden" name="iraihyo_id_00" value="${sej_order.exchange_sheet_number}">
+        <input type="submit" name="submit" value="${label}" class="btn"/>
+    </form>
+</div>
