@@ -61,8 +61,36 @@
       } else {
         cvs_field.css('display', 'none');
       }
-    };
 
+      // 決済と引取によってディフォルト値を設定
+      $.ajax({
+        url: "${request.route_url('payment_delivery_method_pairs.default_values_for_pdmp')}",
+        type: 'GET',
+        dataType: 'json',
+        data: {payment_method_id: $('#payment_method_id').val(), delivery_method_id: $('#delivery_method_id').val()},
+        success: function(data) {
+          // 選択不可期間
+          $('#unavailable_period_days').val(data.unavailable_period_days);
+          // 支払期日
+          $('#payment_period_days-2').attr('readonly', JSON.parse(data.payment_period_days_two_readonly));
+          $("#payment_period_days-2 option[value=" + data.payment_period_days_selected_choice + "]").attr('selected', 'selected');
+          $('#payment_period_days').attr('readonly', JSON.parse(data.payment_period_days_readonly));
+          // コンビニ発券開始日時
+          $('#issuing_interval_days-2').attr('readonly', JSON.parse(data.issuing_interval_days_two_readonly));
+          $("#issuing_interval_days-2 option[value=" + data.issuing_interval_days_selected_choice + "]").attr('selected', 'selected');
+          $('#issuing_interval_days').attr('readonly', JSON.parse(data.issuing_interval_days_readonly));
+          $('#issuing_interval_days').val(data.issuing_interval_days);
+          // コンビニ発券期限日時
+          $('#issuing_end_in_days-2').attr('readonly', JSON.parse(data.issuing_end_in_days_two_readonly));
+          $("#issuing_end_in_days-2 option[value=" + data.issuing_end_in_days_selected_choice + "]").attr('selected', 'selected');
+          $('#issuing_end_in_days').attr('readonly', JSON.parse(data.issuing_end_in_days_readonly));
+          $('#issuing_end_in_days').val(data.issuing_end_in_days);
+        },
+        error: function() {
+          $('#error_message').html('データ取得失敗しました');
+        }
+      });
+    };
 
     $('#payment_method_id').change(function() {
       if (!is_edit) {
@@ -219,6 +247,7 @@
           </div>
         </div>
       </div>
+      <div id='error_message'></div>
     </fieldset>
     <div class="form-actions">
       <input class="btn btn-primary" type="submit" name="submit" value="保存">

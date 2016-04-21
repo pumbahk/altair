@@ -1517,6 +1517,7 @@ class FamiPortPaymentTicketingResponseBuilderTest(unittest.TestCase, FamiPortRes
             phoneNumber=u'0123456789'
             )
         self.famiport_order_payment.famiport_receipts[1].inquired_at = datetime(2015, 5, 21, 13, 39, 12)
+        self.famiport_order_payment.payment_famiport_receipt.completed_at = datetime(2015, 5, 21, 13, 40, 1)
         builder = get_response_builder(self.request, f_request)
         result = builder.build_response(f_request, self.session, self.now, self.request)
         self.assertEqual(result.resultCode, ResultCodeEnum.Normal.value)
@@ -1594,6 +1595,7 @@ class FamiPortPaymentTicketingResponseBuilderTest(unittest.TestCase, FamiPortRes
             phoneNumber=u'0123456789'
             )
         self.famiport_order_payment.famiport_receipts[1].inquired_at = datetime(2015, 5, 21, 13, 39, 12)
+        self.famiport_order_payment.payment_famiport_receipt.completed_at = datetime(2015, 5, 21, 13, 40, 1)
         builder = get_response_builder(self.request, f_request)
         result = builder.build_response(f_request, self.session, self.now, self.request)
         self.assertEqual(result.resultCode, ResultCodeEnum.Normal.value)

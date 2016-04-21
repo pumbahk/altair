@@ -1,0 +1,367 @@
+<%inherit file="${context['main_template'].uri}" />
+<div id="main">
+  <h1><img src="${view_context.static_url('pc/img/order/title_settlement.gif', 'lots')}" alt="チケット申込" width="950" height="40" /></h1>
+  %if request.session.peek_flash():
+  <div style="border: 3px solid red; background: #FFEEEE; padding: 10px; margin: 10px;">
+    <ul>
+      %for message in request.session.pop_flash():
+      <li>${message}</li>
+      %endfor
+    </ul>
+  </div>
+  %endif
+
+  <form method="post" id="wishForm" action="${request.route_path('lots.entry.sp_step3', event_id=event.id, lot_id=lot.id)}">
+
+    <div class="settlementBox">
+      <div class="settlementBoxInner">
+        <h2><img src="${view_context.static_url('pc/img/order/title_how.gif', 'lots')}" alt="お支払・お引取り方法選択" width="208" height="30" /></h2>
+        %for m in payment_delivery_pairs:
+        <div class="settlementPayBox">
+          <div class="settlementPayBoxInner">
+            <table>
+              <tbody>
+                <tr>
+                  <% checked = 'checked' if str(m.id) == payment_delivery_method_pair_id else '' %>
+                  <td class="settlementPayRadio"${u' rowspan="2"' if m.system_fee > 0 or m.special_fee > 0 else u''|n}><input type="radio" name="payment_delivery_method_pair_id" id="radio" value="${m.id}" ${checked} /></td>
+                  <td>
+                    <dl class="left">
+                      <dt>${m.payment_method.name}　${h.format_currency(m.transaction_fee)} (${h.fee_type(m.payment_method.fee_type)})</dt>
+                      <dd>${m.payment_method.description or '' | n}<br /></dd>
+                    </dl>
+                    <dl class="left">
+                      <dt>${m.delivery_method.name}　${h.format_currency(m.delivery_fee)} (${h.fee_type(m.delivery_method.fee_type)})</dt>
+                      <dd>${m.delivery_method.description or '' | n}</dd>
+                    </dl>
+                  </td>
+                </tr>
+                % if m.system_fee > 0 or m.special_fee > 0:
+                <tr>
+                  <td colspan="2">
+                    <dl>
+                      <dt>利用料・手数料</dt>
+                      <dd>
+                        <dl>
+                        %if m.system_fee > 0:
+                          <dt>システム利用料</dt>
+                          <dd class="paymentFee_${h.format_number(m.transaction_fee)}">
+                            <span class="paymentFee">${h.format_currency(m.system_fee)}</span>
+                            <span class="paymentFeeType">(${h.fee_type(m.system_fee_type)})</span>
+                          </dd>
+                        %endif
+                        %if m.special_fee > 0:
+                          <dt>${m.special_fee_name}</dt>
+                          <dd class="paymentFee_${h.format_number(m.transaction_fee)}">
+                            <span class="paymentFee">${h.format_currency(m.special_fee)}</span>
+                            <span class="paymentFeeType">(${h.fee_type(m.special_fee_type)})</span>
+                          </dd>
+                        %endif
+                        </dl>
+                        <div class="description">上記の利用料・利用料がかかります。</div>
+                      </dd>
+                    </dl>
+                  </td>
+                </tr>
+                % endif
+              </tbody>
+            </table>
+          </div>
+        </div>
+        %endfor
+      </div>
+    </div>
+
+    <div class="settlementBox">
+      <div class="settlementBoxInner">
+        <h2><img src="${view_context.static_url('pc/img/order/title_buyer.gif', 'lots')}" alt="購入者情報" width="97" height="30" /></h2>
+        <div class="settlementSelectBox">
+          <div class="settlementSelectBoxInner02">
+            <table summary="お支払・お引取り方法選択">
+              <tr>
+                <th><label>購入者氏名（全角）</label></th>
+                <td>
+                  <div class="form-field">
+                    ${form['last_name'].label} ${form['last_name']}
+                    ${self.error(form, 'last_name')}
+                  </div>
+                  <div class="form-field">
+                    ${form['first_name'].label} ${form['first_name']}
+                    ${self.error(form, 'first_name')}
+                  </div>
+                </td>
+              <tr>
+                <th><label>購入者氏名（カナ）</label></th>
+                <td>
+                  <div class="form-field">
+                    ${form['last_name_kana'].label} ${form['last_name_kana']}
+                    ${self.error(form, 'last_name_kana')}
+                  </div>
+                  <div class="form-field">
+                    ${form['first_name_kana'].label} ${form['first_name_kana']}
+                    ${self.error(form, 'first_name_kana')}
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <th>メールアドレス</th>
+                <td>
+                  <p>${form['email_1'].description}</p>
+                  <div class="form-field">
+                    ${form['email_1'].label}
+                    ${form['email_1']}
+                    ${self.error(form, 'email_1')}
+                  </div>
+                  <div class="form-field">
+                    ${form['email_1_confirm'].label}
+                    ${form['email_1_confirm']}
+                    ${self.error(form, 'email_1_confirm')}
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <th>電話番号</th>
+                <td>
+                  <div class="form-field">
+                    ${form['tel_1'].label}
+                    ${form['tel_1']}
+                    ${self.error(form, 'tel_1')}
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <th><label>住所</label></th>
+                <td>
+                  <% path = request.static_url('altair.app.ticketing.cart:static/js/zipdata') %>
+                  <div class="form-field">
+                    ${form['zip'].label}
+                    ${form['zip'](onKeyUp="AjaxZip3.zip2addr('" + path + "', 'zip','','prefecture','city','', 'address_1');")}
+                    ${self.error(form, 'zip')}
+                  </div>
+                  <div class="form-field">
+                    ${form['prefecture'].label}
+                    ${form['prefecture']}
+                    ${self.error(form, 'prefecture')}
+                  </div>
+                  <div class="form-field">
+                    ${form['city'].label}
+                    ${form['city']}
+                    ${self.error(form, 'city')}
+                  </div>
+                  <div class="form-field">
+                    ${form['address_1'].label}
+                    ${form['address_1'](style="width: 30em")}
+                    ${self.error(form, 'address_1')}
+                  </div>
+                  <div class="form-field">
+                    ${form['address_2'].label}
+                    ${form['address_2'](style="width: 30em")}
+                    ${self.error(form, 'address_2')}
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <th>生年月日</th>
+                <td>
+                  ${form['birthday']}
+                  ${self.error(form, 'birthday')}
+                </td>
+              </tr>
+              <tr>
+                <th>${form['sex'].label}</th>
+                <td>
+                  ${form['sex']}
+                  ${self.error(form, 'sex')}
+                </td>
+              </tr>
+              <tr class="settlementSelectEnd">
+                <th>メモ欄</th>
+                <td>${form['memo'](cols=50, rows=5)} ${self.error(form, 'error')}</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="align2"><input type="image" src="${view_context.static_url('pc/img/settlement/btn_next.gif', 'lots')}" alt="次へ" width="226" height="46" /></p>
+  </form>
+</div>
+<%def name="product_select_tmpl()">
+<%include file="_product_selection.html_" />
+</%def>
+<script type="text/javascript">
+var product_select_tmpl = _.template(decodeURIComponent('${capture(product_select_tmpl)|u,n}'.replace(/\+/g, ' ')));
+var stockTypes = ${h.tojson(stock_types)|n};
+var performanceProductMap = ${h.tojson(performance_product_map)|n};
+var postedValues = ${h.tojson(posted_values)|n};
+var upperLimit = ${sales_segment.max_quantity};
+var performanceMap = ${h.tojson(performance_map)|n};
+var selected_performance_id = 0;
+% if selected_performance:
+    selected_performance_id = ${selected_performance.id};
+% endif
+
+(function($wishForm) {
+    function cellTableId(n) {
+        return 'wish-cell-table-' + n
+    }
+
+    function refreshProducts(dateSelect, stockTypeSelect) {
+        var products = [];
+        var performanceId = $(dateSelect).val();
+        var stockTypeId = stockTypeSelect.val();
+        $.each(performanceProductMap[performanceId], function (_, product) {
+            if (product.stock_type_id == stockTypeId)
+                products.push(product);
+        });
+        var wishOrder = $(dateSelect).data('wishorder');
+        var wishCellTableId = cellTableId(wishOrder);
+        var rows = $("#" + wishCellTableId + " tbody tr.product-select-tr");
+        rows.remove();
+        if (!products) {
+            return;
+        }
+        var html = product_select_tmpl({wishOrder: wishOrder, products: products});
+        $("#" + wishCellTableId + " tbody").append(html);
+        for (var i = 0; i < stockTypes.length; i++) {
+            var stockType = stockTypes[i];
+            if (stockType.id == stockTypeId) {
+                $(stockTypeSelect.parent().find('.stock-type-description')).html(stockType.description);
+            }
+        }
+    }
+
+    function refreshStockTypeSelection(dateSelect, stockTypeSelect) {
+        var performanceId = dateSelect.val();
+        var filteredStockTypeIds = {};
+        var products = performanceProductMap[performanceId];
+        for (var i = 0; i < products.length; i++)
+            filteredStockTypeIds[products[i].stock_type_id] = true;
+        stockTypeSelect.empty();
+        for (var i = 0; i < stockTypes.length; i++) {
+            var stockType = stockTypes[i];
+            if (stockType.id in filteredStockTypeIds)
+                stockTypeSelect.append($('<option></option>').attr('value', stockType.id).text(stockType.name));
+        }
+    }
+
+    function refreshDateSelection(performanceNameSelect, dateSelect, selected_id) {
+        var selectedPerformanceName = performanceNameSelect.val();
+        for (var i = 0; i < performanceMap.length; i++) {
+            if (performanceMap[i][0] == selectedPerformanceName) {
+                choices = performanceMap[i][1];
+            }
+        }
+        dateSelect.empty();
+        for (var i = 0; i < choices.length; i++) {
+            var choice = choices[i];
+            if (selected_id == choice.id) {
+                dateSelect.append($('<option></option>').attr('value', choice.id).attr({ selected: "selected" }).text(choice.label));
+            } else {
+                dateSelect.append($('<option></option>').attr('value', choice.id).text(choice.label));
+            }
+        }
+    }
+
+    function getPerformanceIdAndStockTypeIdFromProductId(productId) {
+        for (var performanceId in performanceProductMap) {
+            var datum = performanceProductMap[performanceId];
+            for (var i = 0; i < datum.length; i++) {
+                if (datum[i].id == productId)
+                    return [performanceId, datum[i].stock_type_id];
+            }
+        }
+    }
+
+    var PRODUCT_ID_RE = /^product-id-(\d+)-(\d+)$/;
+    function updateSelection(values) {
+        for (var key in values) {
+            matches = PRODUCT_ID_RE.exec(key)
+            if (matches) {
+                var wishOrder = matches[1], wishedProductOrder = matches[2];
+                var productId = values[key];
+                var pair = getPerformanceIdAndStockTypeIdFromProductId(productId);
+                var performanceId = pair[0], stockTypeId = pair[1];
+                var performanceNameSelect = $wishForm.find('select.performance-name-select[data-wishOrder="' + wishOrder + '"]');
+                var dateSelect = $wishForm.find('select.performance-date-select[data-wishOrder="' + wishOrder + '"]');
+                var stockTypeSelect = $wishForm.find('select.stock-type-select[data-wishOrder="' + wishOrder + '"]');
+                if (!dateSelect.find('option[value="' + performanceId + '"]').length) {
+                    var performanceName = null;
+                    for (var i = 0; i < performanceMap.length; i++) {
+                        var performances = performanceMap[i][1];
+                        for (var j = 0; j < performances.length; j++) {
+                            if (performances[j].id == performanceId) {
+                                performanceName = performanceMap[i][0];
+                                break;
+                            }
+                        }
+                    }
+                    if (performanceName) {
+                        performanceNameSelect.val(performanceName);
+                        refreshDateSelection(performanceNameSelect, dateSelect, 0);
+                        stockTypeSelect.empty();
+                    }
+                }
+                if (dateSelect.val() != performanceId) {
+                    dateSelect.val(performanceId);
+                    stockTypeSelect.empty();
+                }
+
+                var stockTypeSelectUpdated = false;
+                if (!stockTypeSelect.find('option[value="' + stockTypeId + '"]').length) {
+                    refreshStockTypeSelection(dateSelect, stockTypeSelect);
+                    stockTypeSelectUpdated = true;
+                }
+
+                if (stockTypeSelect.val() != stockTypeId || stockTypeSelectUpdated) {
+                    stockTypeSelect.val(stockTypeId);
+                    refreshProducts(dateSelect, stockTypeSelect);
+                }
+
+                var quantityFieldName = 'product-quantity-' + wishOrder + '-' + wishedProductOrder;
+                var quantity = values[quantityFieldName];
+                $wishForm.find('select[name="' + quantityFieldName + '"]').val(quantity);
+            }
+        }
+    }
+
+    $(".performance-name-select").change(function() {
+        var performanceNameSelect = $(this);
+        var wishOrder = performanceNameSelect.data('wishorder');
+        var dateSelect = $wishForm.find('select.performance-date-select[data-wishOrder="' + wishOrder + '"]');
+        var stockTypeSelect = $wishForm.find('select.stock-type-select[data-wishOrder="' + wishOrder + '"]');
+        refreshDateSelection(performanceNameSelect, dateSelect, 0);
+        refreshStockTypeSelection(dateSelect, stockTypeSelect);
+        refreshProducts(dateSelect, stockTypeSelect);
+    });
+    $wishForm.find(".performance-date-select").change(function() {
+        var dateSelect = $(this);
+        var wishOrder = dateSelect.data('wishorder');
+        var stockTypeSelect = $wishForm.find('select.stock-type-select[data-wishOrder="' + wishOrder + '"]');
+        refreshStockTypeSelection(dateSelect, stockTypeSelect);
+        refreshProducts(dateSelect, stockTypeSelect);
+    });
+    $wishForm.find(".stock-type-select").change(function() {
+        var stockTypeSelect = $(this);
+        var wishOrder = stockTypeSelect.data('wishorder');
+        var dateSelect = $wishForm.find('select.performance-date-select[data-wishOrder="' + wishOrder + '"]');
+        refreshProducts(dateSelect, stockTypeSelect);
+    });
+
+    $(function() {
+        $wishForm.find("select.performance-name-select").each(function(_, n) {
+            var performanceNameSelect = $(n);
+            var wishOrder = performanceNameSelect.data('wishorder');
+            var dateSelect = $wishForm.find('select.performance-date-select[data-wishOrder="' + wishOrder + '"]');
+            refreshDateSelection(performanceNameSelect, dateSelect, selected_performance_id);
+        });
+        $wishForm.find("select.performance-date-select").each(function(_, n) {
+            var dateSelect = $(n);
+            var wishOrder = dateSelect.data('wishorder');
+            var stockTypeSelect = $wishForm.find('select.stock-type-select[data-wishOrder="' + wishOrder + '"]');
+            refreshStockTypeSelection(dateSelect, stockTypeSelect);
+            refreshProducts(dateSelect, stockTypeSelect);
+        });
+        updateSelection(postedValues);
+    });
+})($('#wishForm'));
+</script>

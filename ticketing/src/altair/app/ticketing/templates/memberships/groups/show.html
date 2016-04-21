@@ -16,7 +16,7 @@
 
 <div>
   <a href="${request.route_path('membergroups',action="edit", membergroup_id=membergroup.id, _query=dict(membership_id=membergroup.membership_id,redirect_to=redirect_to))}" class="btn">編集</a>
-  <a id="delete_link" href="javascript:popup_membergroup_delete_modal(${membergroup.id});" class="btn">削除</a>
+  <a id="delete_link" href="javascript:popup_membergroup_delete_modal(${membergroup.id});" class="btn">削除(取消不可)</a>
 </div>
 
 <hr/>
