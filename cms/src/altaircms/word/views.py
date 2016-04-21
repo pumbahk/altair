@@ -4,6 +4,7 @@ from pyramid.view import view_config, view_defaults
 
 from sqlalchemy import func, distinct
 import sqlalchemy.orm as orm
+from sqlalchemy import or_
 import altaircms.helpers as h
 
 from ..event.word import api_word_get
@@ -31,20 +32,25 @@ class WordManageView(object):
         request_method="GET",
         renderer="altaircms:templates/word/list.html",)
     def index(self):
-        q = DBSession.query(Word.id, Word.label, Word.label_kana,
+        search = self.request.params.get('q')
+        query = DBSession.query(Word.id, Word.label, Word.label_kana,
                             func.count(distinct(WordSearch.id)).label("num_searches"),
                             func.count(distinct(Event.id)).label("num_events"),
                             Word.updated_at,
                             )
-        words = self.request.allowable(Word, q)\
+        qs = self.request.allowable(Word, query)\
             .filter(Word.deleted_at==None)\
             .outerjoin(WordSearch)\
             .filter(WordSearch.deleted_at==None)\
             .outerjoin(Event_Word, Event)\
             .group_by(Word.id)\
-            .order_by(Word.label_kana)\
-            .all()
-        return dict(words=words)
+            .order_by(Word.label_kana)
+        if search is not None and 0 < len(search):
+            qs = qs.filter(or_(Word.label.contains(search), WordSearch.data.contains(search)))
+        return {
+            "q": search if not None else '',
+            "xs": h.paginate(self.request, qs, item_count=qs.count()),
+        }
 
     @view_config(request_method="GET")
     def form(self):

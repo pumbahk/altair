@@ -13,7 +13,6 @@ from altaircms.helpers.viewhelpers import get_endpoint
 from altaircms.subscribers import notify_model_create ## too-bad
 
 from sqlalchemy.sql.operators import ColumnOperators
-logger = logging.getLogger(__file__)
 
 """
 todo: resourceを登録する形式に変更

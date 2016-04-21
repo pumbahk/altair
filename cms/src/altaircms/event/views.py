@@ -14,7 +14,7 @@ from altaircms.auth.models import Host
 from . import forms
 from . import searcher
 from ..models import DBSession
-from .models import Event
+from .models import Event, Word
 from . import helpers as h
 from .event_info import get_event_notify_info
 from ..page.subscribers import notify_page_update
@@ -112,9 +112,14 @@ def event_list(request):
     else:
         search_form = forms.EventSearchForm()
 
+    word = None
+    if "word" in params and 0 < len(params["word"]):
+        word = Word.query.filter(Word.id==int(params["word"]), Word.deleted_at==None).first()
+
     return dict(
-        events=events.order_by(sa.desc(Event.updated_at)), 
-        search_form=search_form, 
+        events=events.order_by(sa.desc(Event.updated_at)),
+        search_form=search_form,
+        word=word,
     )
 
 ##

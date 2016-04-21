@@ -100,6 +100,8 @@ class EventSearchForm(Form):
         Category, allow_blank=True, label=u"カテゴリ", validators=[validators.Optional()],
         get_label=lambda obj: obj.label or u"--なし--")
 
+    word = fields.TextField(validators=[validators.Optional()])
+
 class EventTakeinPageForm(Form):
     pageset = dynamic_query_select_field_factory(
         PageSet, allow_blank=False, label=u"取り込むページ",
