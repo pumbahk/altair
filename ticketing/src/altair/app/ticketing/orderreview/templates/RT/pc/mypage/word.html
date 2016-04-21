@@ -47,7 +47,7 @@
     </thead>
     <tbody>
         % for word in words:
-            <tr style="border: 2px solid #eee;"><td><span class="type favorite-${word['type']}">${word['type']}</span> ${word['label']} <span class="kana">${word['label_kana']}</span> <span class="description">${"(%s)" % word['description'] if word['description'] else ""}</span></td><td style="width: 100px;"><form method="post" action="${request.route_path('mypage.word.unsubscribe')}"><input type="hidden" name="word" value="${word['id']}" /><input type="submit" value="解除する" /></form></td></tr>
+            <tr style="border: 2px solid #eee;"><td><span class="type favorite-${word['type']}">${word['type']}</span> ${word['label']} <span class="kana">${word['label_kana'] if word['label_kana'] is not None else ''}</span> <span class="description">${"(%s)" % word['description'] if word['description'] else ""}</span></td><td style="width: 100px;"><form method="post" action="${request.route_path('mypage.word.unsubscribe')}"><input type="hidden" name="word" value="${word['id']}" /><input type="submit" value="解除する" /></form></td></tr>
         % endfor
     </tbody>
     </table>
@@ -61,7 +61,7 @@
             if (k == "description") {
                 r[k] = d[k] ? "("+d[k]+")" : "";
             } else {
-                r[k] = d[k];
+                r[k] = d[k] || "";
             }
         }
         return r;
