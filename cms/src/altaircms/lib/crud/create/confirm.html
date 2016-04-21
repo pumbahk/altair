@@ -49,7 +49,7 @@ else:
               <span style="border: 1px solid gray; border-radius: 3px ; padding: 2px;">${u}</span>
             % endfor
           % else:
-            <span>${v}</span>
+            <span>${(" <br />\n".join(v.split("\n")) if v is not None else 'None') | n}</span>
           % endif
       </td>
 	</tr>
