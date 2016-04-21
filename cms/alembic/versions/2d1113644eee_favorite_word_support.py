@@ -31,10 +31,8 @@ def upgrade():
     op.create_table(
         'word_search',
         sa.Column('id', sa.Integer(), primary_key=True),
-        sa.Column('organization_id', sa.Integer(), sa.ForeignKey('organization.id'), nullable=False),
         sa.Column('word_id', sa.Integer(), sa.ForeignKey('word.id'), nullable=False),
         sa.Column('data', sa.String(length=255), nullable=True),
-        sa.Column('data_kana', sa.String(length=255), nullable=True),
         sa.Column('created_at', sa.TIMESTAMP(), server_default=text('CURRENT_TIMESTAMP'), nullable=False),
         sa.Column('updated_at', sa.TIMESTAMP(), server_default=text('0'), nullable=False),
         sa.Column('deleted_at', sa.TIMESTAMP(), nullable=True),

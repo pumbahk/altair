@@ -62,7 +62,7 @@ def api_word_get(request):
     else:
         q = request.params.get('q')
         if q is not None and 0 < len(q):
-            words = words.filter(or_(Word.label.contains(q), Word.label_kana.contains(q), WordSearch.data.contains(q), WordSearch.data_kana.contains(q)))
+            words = words.filter(or_(Word.label.contains(q), Word.label_kana.contains(q), WordSearch.data.contains(q)))
         else:
             pass
             # no filter

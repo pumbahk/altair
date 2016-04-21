@@ -48,8 +48,10 @@ else:
             % for u in v:
               <span style="border: 1px solid gray; border-radius: 3px ; padding: 2px;">${u}</span>
             % endfor
+          % elif isinstance(v, basestring):
+            <span>${(" <br />\n".join(v.split("\n"))) | n}</span>
           % else:
-            <span>${(" <br />\n".join(v.split("\n")) if v is not None else 'None') | n}</span>
+            <span>${v}</span>
           % endif
       </td>
 	</tr>
