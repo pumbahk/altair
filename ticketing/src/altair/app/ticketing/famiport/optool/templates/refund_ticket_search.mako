@@ -96,7 +96,7 @@
             <% ticketing_shop_code = famiport_refund_entry.famiport_ticket.famiport_order.ticketing_famiport_receipt.shop_code%>
             <td>${ticketing_shop_code if ticketing_shop_code else '-'}</td>
             <td>${rts_helper.get_shop_name_text(rts_helper.get_famiport_shop_by_code(ticketing_shop_code))}</td>
-            <td>${rts_helper.get_management_number_from_famiport_order_identifier(famiport_receipt.famiport_order_identifier)}</td>
+            <td>${rts_helper.get_management_number_from_famiport_order_identifier(famiport_receipt.famiport_order.famiport_order_identifier)}</td>
             <td>${famiport_refund_entry.famiport_ticket.barcode_number}</td>
             <td>${famiport_receipt.famiport_order.famiport_performance.famiport_event.code_1}</td>
             <td>${famiport_receipt.famiport_order.famiport_performance.famiport_event.code_2}</td>
