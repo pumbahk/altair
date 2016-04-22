@@ -168,7 +168,7 @@ class SejRefundZipFileBuilder(object):
         # SejRefundEvent -> yyyymmdd_tpbkoen.dat
         refund_event_file_path = os.path.join(self.work_dir, self.refund_event_file_name)
         refund_event_tsv = open(refund_event_file_path, 'w')
-        tsv_writer = csv.writer(refund_event_tsv, delimiter='\t', quoting=csv.QUOTE_NONE, lineterminator='\r\n')
+        tsv_writer = csv.writer(refund_event_tsv, delimiter='\t', quoting=csv.QUOTE_MINIMAL, lineterminator='\r\n')
         try:
             for sej_refund_event in sej_refund_events:
                 tsv_writer.writerow(encode_to_sjis([
