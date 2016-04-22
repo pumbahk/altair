@@ -138,5 +138,35 @@
     </div>
   </div>
   % endif
+
+  % if keywords_to_subscribe:
+  <div class="settlementBox">
+		<div class="settlementBoxInner">
+			<h2><!--<img src="${request.static_url('altair.app.ticketing.cart:static/RT/pc/images/title_magazine.gif')}" alt="お気に入りワード登録" width="177" height="30" />-->お気に入りワード登録</h2>
+			<div id="mailKeywordBox">
+				<div id="mailKeywordBoxInner">
+					<dl>
+						<dt>
+							お気に入りワード（アーティスト名等）を登録いただきますと、販売開始等の際にメールでお知らせいたします。
+						</dt>
+						<dd>
+							<ul>
+								% for keyword, subscribed in keywords_to_subscribe:
+								<li ${subscribed and u'class="subscribed"' or u''|n}>
+									<div>
+										<input type="checkbox" checked="checked" name="keyword" id="keyword-${keyword.id}" value="${keyword.id}" ${subscribed and u'disabled="disabled"' or u''|n} />
+										<label for="keyword-${keyword.id}">${keyword.label}</label>
+									</div>
+								</li>
+								% endfor
+							</ul>
+						</dd>
+					</dl>
+				</div>
+			</div>
+		</div>
+  </div>
+  % endif
+
   <p class="align2"><input type="image" name="back" src="${request.static_url('altair.app.ticketing.lots:static/RT/pc/img/order/btn_back.gif')}" alt="戻る" width="236" height="46" /><input type="image"  src="${request.static_url('altair.app.ticketing.lots:static/RT/pc/img/order/btn_confirm.gif')}" alt="確定する" width="236" height="46" /></a></p>
 </form>
