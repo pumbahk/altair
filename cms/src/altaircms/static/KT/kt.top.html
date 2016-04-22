@@ -1,0 +1,199 @@
+<%def name="widgets(name)">
+  % for w in display_blocks[name]:
+    ${w|n}
+  % endfor
+</%def>
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-title" content="kyodo tohoku">
+    <title>キョードー東北</title>
+    <link rel="stylesheet" type="text/css" href="${request.static_url('altaircms:static/KT/css/index.css')}" media="all">
+    <link rel="stylesheet" type="text/css" href="${request.static_url('altaircms:static/KT/css/default.css')}" media="all">
+    <link rel="stylesheet" type="text/css" href="${request.static_url('altaircms:static/KT/css/bootstrap.css')}" media="all">
+    <link rel="stylesheet" type="text/css" href="${request.static_url('altaircms:static/KT/css/jquery.bxslider.css')}" media="all">
+
+    <script type="text/javascript" src="${request.static_url('altaircms:static/KT/js/jquery-1.10.1.js')}"></script>
+    <script type="text/javascript" src="${request.static_url('altaircms:static/KT/js/jquery.bxslider.min.js')}"></script>
+    <script type="text/javascript">
+      $(document).ready(function(){
+          $('.bxslider').bxSlider({
+              auto: true,
+              mode: 'horizontal',
+              captions: true,
+              autoControls: true
+          });
+      });
+    </script>
+  </head>
+
+  <body>
+    <div class="header-navigation">
+      <a class="goto-link btn-order" style="float: right" href="/orderreview">購入確認</a>
+      <a href="/"><img src="${request.static_url('altaircms:static/KT/img/logo.png')}" width="250px"></a>
+    </div>
+    <div class="clearfix"></div>
+
+    <ul class="buttonset _4cols">
+      <li><a href="/" class="button embedded">TOP</a></li>
+      <li><a href="/howto.html" class="button embedded">購入方法</a></li>
+      <li><a href="/faq.html" class="button embedded">FAQ</a></li>
+      <li><a href="http://www.kyodo-tohoku.com/" class="button embedded">PCサイトへ</a></li>
+    </ul>
+    <!--
+        <div class="sectionbox inverted" id="search">
+          <form class="sectionbox-inner" action="http://ticket.rakuten.co.jp/smartphone/search" method="GET">
+            <input id="word" name="word" placeholder="公演名、公演日など" value="" type="text"><input class="btn-secondary btn-large" value="検索" type="submit">
+            <a href="http://ticket.rakuten.co.jp/smartphone/init_detail">詳細検索</a>
+            <br>
+          </form>
+        </div>
+        -->
+<div id="mainArea" align="center">
+<%block name="main_top">
+   ${widgets("main_top")}
+</%block>
+</div>
+
+    <div class="bx-wrapper">
+      <ul class="bxslider">
+        <%block name="main">
+          ${widgets("main")}
+        </%block>
+
+        <!--
+        <li><a href="http://c.tstar.jp/ktsample/blast.html"><img src="//tstar.s3.amazonaws.com/usersite/uploaded/ticketstar/a1a9a3c54d2043f4
+81521bf253e3f31b/369/images/slide_image1.jpg" alt="画像1"></a></li>
+        <li><a href="http://c.tstar.jp/ktsample/blast.html"><img src="//tstar.s3.amazonaws.com/usersite/uploaded/ticketstar/a1a9a3c54d2043f481521bf253e3f31b/369/images/slide_image2.jpg" alt="画像2"></a></li>
+        <li><a href="http://c.tstar.jp/ktsample/blast.html"><img src="//tstar.s3.amazonaws.com/usersite/uploaded/ticketstar/a1a9a3c54d2043f481521bf253e3f31b/369/images/slide_image3.jpg" alt="画像3"></a></li>
+        -->
+      </ul>
+    </div>
+
+
+
+    <div class="clearfix"></div>
+
+    <h2 class="glitter green">▼NEWS</h2>
+    <div>
+      <%block name="news">
+      ${widgets("news")}
+      </%block>
+    </div>
+
+	<ul class="ticket-tab-index">
+      <li>▼先行予約</li>
+	  <li><a class="kt" href="ippan.html">一般発売はこちら</a></li>
+	</ul>
+    <ul class="panellist fullwidth navigable">
+        <%block name="content">
+        ${widgets("content")}
+        </%block>
+    </ul>
+      <!--
+      <li class="panel condensed">
+        <a href="http://c.tstar.jp/ktsample/blast.html">
+          <div class="panel-inner">
+            <img class="thematic" src="//tstar.s3.amazonaws.com/usersite/uploaded/ticketstar/a1a9a3c54d2043f481521bf253e3f31b/369/images/blast.png"><h4>blast</h4>
+            <p class="first">待望の仙台公演決定！1/1[月]10:00～先行発売！</p>
+          </div>
+        </a>
+      </li>
+      -->
+
+<!--
+    <a href="http://books.rakuten.co.jp/rb/12728081/">
+      <img src="//tstar.s3.amazonaws.com/usersite/uploaded/ticketstar/a1a9a3c54d2043f481521bf253e3f31b/369/images/side_nav_icon.gif">
+      ○×○×、ニューアルバムリリース！ご購入はこちら<br></a>
+
+
+    <a href="">
+      <img src="//tstar.s3.amazonaws.com/usersite/uploaded/ticketstar/a1a9a3c54d2043f481521bf253e3f31b/369/images/side_nav_icon.gif">
+      押尾コータロー、チケット発売中！<br></a>
+    -->
+
+    <!--
+	<ul class="ticket-tab-index">
+      <li>▼先行予約</li>
+	  <li><a class="kt" href="ippan.html">一般発売はこちら</a></li>
+	</ul>
+    <ul class="panellist fullwidth navigable">
+      <li class="panel condensed">
+        <a href="http://c.tstar.jp/ktsample/blast.html">
+          <div class="panel-inner">
+            <img class="thematic" src="//tstar.s3.amazonaws.com/usersite/uploaded/ticketstar/a1a9a3c54d2043f481521bf253e3f31b/369/images/blast.png"><h4>blast</h4>
+            <p class="first">待望の仙台公演決定！1/1[月]10:00～先行発売！</p>
+          </div>
+        </a>
+      </li>
+      <li class="panel condensed">
+        <a href="http://c.tstar.jp/ktsample/blast.html">
+          <div class="panel-inner">
+            <img class="thematic" src="//tstar.s3.amazonaws.com/usersite/uploaded/ticketstar/a1a9a3c54d2043f481521bf253e3f31b/369/images/2.png"><h4>TAKUMA FESTIVAL JAPAN「夕　－ゆう－」</h4>
+            <p class="first">至極のラブロマンスが超パワーアップして帰ってくる！！</p>
+          </div>
+        </a>
+      </li>
+      <li class="panel condensed">
+        <a href="http://c.tstar.jp/ktsample/blast.html">
+          <div class="panel-inner">
+            <img class="thematic" src="//tstar.s3.amazonaws.com/usersite/uploaded/ticketstar/a1a9a3c54d2043f481521bf253e3f31b/369/images/3.png"><h4>高嶋ちさ子</h4>
+            <p class="first">待望の仙台公演！</p>
+          </div>
+        </a>
+      </li>
+      <li class="panel condensed">
+        <a href="http://c.tstar.jp/ktsample/blast.html">
+          <div class="panel-inner">
+            <img class="thematic" src="//tstar.s3.amazonaws.com/usersite/uploaded/ticketstar/a1a9a3c54d2043f481521bf253e3f31b/369/images/4.png"><h4>週末よしもと爆笑まつり</h4>
+            <p class="first">公演決定！</p>
+          </div>
+        </a>
+      </li>
+      <li class="panel condensed">
+        <a href="http://c.tstar.jp/ktsample/blast.html">
+          <div class="panel-inner">
+            <img class="thematic" src="//tstar.s3.amazonaws.com/usersite/uploaded/ticketstar/a1a9a3c54d2043f481521bf253e3f31b/369/images/5.png"><h4>押尾コータロー</h4>
+            <p class="first">再び仙台公演！</p>
+          </div>
+        </a>
+      </li>
+      <li class="panel condensed">
+        <a href="http://c.tstar.jp/ktsample/blast.html">
+          <div class="panel-inner">
+            <img class="thematic" src="//tstar.s3.amazonaws.com/usersite/uploaded/ticketstar/a1a9a3c54d2043f481521bf253e3f31b/369/images/6.png"><h4>TAO</h4>
+            <p class="first">TAO特別番組放送決定！</p>
+          </div>
+        </a>
+      </li>
+      <li class="panel condensed">
+        <a href="http://c.tstar.jp/ktsample/blast.html">
+          <div class="panel-inner">
+            <img class="thematic" src="//tstar.s3.amazonaws.com/usersite/uploaded/ticketstar/a1a9a3c54d2043f481521bf253e3f31b/369/images/7.png"><h4>THE 39 STEPS</h4>
+            <p class="first">役者4人で139役を演じる衝撃の100分間！
+              巨匠ヒッチコックのサスペンスを完全コメディ化</p>
+          </div>
+        </a>
+      </li>
+    </ul>
+    -->
+
+
+<ul class="guide-tab-index">
+  <li><a class="kt" href="">当日券情報</a></li>
+  <li><a class="kt" href="https://www.ticket.ne.jp/kyodo-tohoku/kaiintourokuselect.do">メルマガ会員登録</a></li>
+</ul>
+
+    <div align="center">
+      <font size="-2">
+        <div>
+          <a href="http://www.kyodo-tohoku.com/tokutei_annai.php">特定商取引に関する法律に基づく表示他｜</a>
+          <a href="http://www.kyodo-tohoku.com/otoiawase.php">お問い合わせ</a><br><a href="http://www.kyodo-tohoku.com/kojin_annai.php">個人情報に関して</a>
+        </div>
+        <div><font color="#888888">Copyright c 2010-2014 TicketStar Inc. All Rights Reserved.</font></div>
+      </font>
+    </div>
+  </body>
+</html>
