@@ -141,11 +141,11 @@ font-weight:700;
 font-size:15px;
 color:#FFF;
 line-height:1;
-border-left:5px solid #F0F0E1;
-border-top:1px dotted #686859;
-border-bottom:1px dotted #686859;
-border-right:1px dotted #686859;
-background:#686859;
+border-left:5px solid #F4CEC4;
+border-top:1px dotted #F4CEC4;
+border-bottom:1px dotted #F4CEC4;
+border-right:1px dotted #F4CEC4;
+background:#1C2954;
 padding:4px 0 4px 10px;
 }
 
@@ -761,7 +761,7 @@ width: 420px;
 height: 240px;
 }
 .loginbox thead th{
-background: #686859;
+background: #1C2954;
 font-size: 20px;
 height: 30px;
 color: #fff;
@@ -772,7 +772,7 @@ background: #F0F0E1;
 }
 
 .loginbox th{
-background: #686859;
+background: #1C2954;
 color: #fff;
 }
 
