@@ -82,7 +82,7 @@ class UserProfile(Base, BaseModel, LogicallyDeleted, WithTimestamp):
 
     rakuten_point_account = Column(String(20))
 
-    subscribe_word = Column(Boolean(), default=False)
+    subscribe_word = Column(Boolean(), default=True)
 
     @hybrid_property
     def full_name_kana(self):
