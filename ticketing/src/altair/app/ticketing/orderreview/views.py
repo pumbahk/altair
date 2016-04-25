@@ -875,9 +875,10 @@ class MypageWordView(object):
         renderer=selectable_renderer("mypage/word.html"),)
     def form(self):
         subscriptions = WordSubscription.query.filter(WordSubscription.user_id==self.user.id).all()
-        word_ids = map(lambda s: str(s.word_id), subscriptions)
-        words = self._get_word(id=' '.join(word_ids))
-        return { "words": words }
+        words = self._get_word(id=' '.join([ str(s.word_id) for s in subscriptions ]))
+        if words is not None:
+            return { "data": words }
+        return { }
 
     @lbr_view_config(route_name='mypage.word.search',
         request_method="GET",

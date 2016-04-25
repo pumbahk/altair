@@ -22,9 +22,9 @@ def word_subscribe(request, user, word_ids):
         logger.error("user is None in word_subscribe()")
         return
 
-    words = get_word(request, id=' '.join(word_ids))
+    words = get_word(request, id=' '.join([ str(x) for x in word_ids ]))
 
-    logger.debug("word_subscribe: %s" % ' '.join(word_ids))
+    logger.debug("word_subscribe: %s" % ' '.join([ str(x) for x in word_ids ]))
     for word in words:
         if WordSubscription.query.filter(WordSubscription.user_id==user.id, WordSubscription.word_id==word['id']).first() is None:
             session.add(WordSubscription(user_id=user.id, word_id=word['id']))
@@ -43,6 +43,7 @@ def get_word(request, id=None, q=None):
         with contextlib.closing(urllib2.urlopen(req)) as res:
             try:
                 data = res.read()
+                logger.info("API call complete: %s" % data)
                 result = json.loads(data)
                 return result['data']
             except urllib2.HTTPError, e:
