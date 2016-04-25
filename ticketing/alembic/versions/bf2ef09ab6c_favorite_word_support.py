@@ -29,7 +29,7 @@ def upgrade():
         )
 
     op.add_column('OrganizationSetting', sa.Column('enable_word', sa.Boolean(), nullable=True, default=False))
-    op.add_column('UserProfile', sa.Column('subscribe_word', sa.Boolean(), nullable=True, default=False))
+    op.add_column('UserProfile', sa.Column('subscribe_word', sa.Boolean(), nullable=True, default=True))
 
 def downgrade():
     op.drop_table('WordSubscription')
