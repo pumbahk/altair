@@ -588,6 +588,7 @@ class TicketDictBuilder(object):
         if not ordered_product_item_token.valid:
             return None
         d = {}
+        d[u'token_id'] = ordered_product_item_token.id
         d[u'発券時ユニークID'] = get_unique_string_for_qr_from_token(ordered_product_item_token)
         d[u'serial'] = ordered_product_item_token.serial
         d[u'発券番号'] = ticket_number_issuer(ordered_product_item.product_item.id) if ticket_number_issuer else ""
