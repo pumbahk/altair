@@ -71,4 +71,4 @@ def api_word_get(request):
     word_dicts = list()
     for word in words:
         word_dicts.append(dict(id=word.id, label=word.label, label_kana=word.label_kana, description=word.description, type=word.type))
-    return dict(count=len(words), data=word_dicts)
+    return dict(words=word_dicts)
