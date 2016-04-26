@@ -4,6 +4,7 @@
 import logging
 import json
 from pyramid.view import view_config
+from pyramid.httpexceptions import HTTPBadRequest
 from altaircms.modellib import DBSession
 from sqlalchemy import or_
 from sqlalchemy.orm import joinedload
@@ -64,8 +65,7 @@ def api_word_get(request):
         if q is not None and 0 < len(q):
             words = words.filter(or_(Word.label.contains(q), Word.label_kana.contains(q), WordSearch.data.contains(q)))
         else:
-            pass
-            # no filter
+            raise HTTPBadRequest()
 
     words = words.distinct().all()
     word_dicts = list()

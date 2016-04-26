@@ -19,7 +19,15 @@ session = sqlahelper.get_session()
 
 def word_subscribe(request, user, word_ids):
     if user is None:
-        logger.error("user is None in word_subscribe()")
+        logger.warn("user is None in word_subscribe()")
+        return
+
+    if user.id is None:
+        logger.warn("user.id is None in word_subscribe()")
+        return
+
+    if word_ids is None or len(word_ids) == 0:
+        logger.warn("word_ids is none or empty array in word_subscribe()")
         return
 
     words = get_word(request, id=' '.join([ str(x) for x in word_ids ]))
@@ -31,7 +39,7 @@ def word_subscribe(request, user, word_ids):
 
 def get_word(request, id=None, q=None):
     communication_api = cart_api.get_communication_api(request, CMSCommunicationApi)
-    if id is not None:
+    if id is not None and 0 < len(id):
         path = "/api/word/?id=%(id)s" % {"id": urllib.quote_plus(id)}
     elif q is not None and 0 < len(q):
         path = "/api/word/?q=%(q)s" % {"q": urllib.quote_plus(q)}
