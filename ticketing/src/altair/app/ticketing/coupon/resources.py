@@ -86,8 +86,14 @@ class CouponViewResource(CouponResourceBase):
 
     def can_use_performance_term(self):
         perf = self.session.query(Performance).filter(Performance.id == self.order.performance_id).first()
-        if perf.start_on > datetime.today() + timedelta(minutes=1):
-            return True
+        if perf.end_on:
+            # 終了日時が指定されている場合は、その時刻まで入場できる
+            if datetime.today() < perf.end_on:
+                return True
+        else:
+            # 終了日時が指定されていない場合は、公演開始日の当日いっぱい入れる
+            if datetime.today().date() <= perf.start_on.date():
+                return True
         return False
 
     @property
