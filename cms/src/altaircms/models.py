@@ -435,7 +435,7 @@ class Word(Base, WithOrganizationMixin):
     __tablename__ = "word"
     id = sa.Column(sa.Integer, primary_key=True)
     type = sa.Column(sa.String(length=255))
-    label = sa.Column(sa.String(length=255))
+    label = sa.Column(sa.String(length=255), nullable=False)
     label_kana = sa.Column(sa.String(length=255))
     description = sa.Column(sa.String(length=255))
     #link = sa.Column(sa.String(length=255))

@@ -20,7 +20,7 @@ def upgrade():
         sa.Column('id', sa.Integer(), primary_key=True),
         sa.Column('organization_id', sa.Integer(), sa.ForeignKey('organization.id'), nullable=False),
         sa.Column('type', sa.String(length=255), nullable=True),
-        sa.Column('label', sa.String(length=255), nullable=True),
+        sa.Column('label', sa.String(length=255), nullable=False),
         sa.Column('label_kana', sa.String(length=255), nullable=True),
         sa.Column('description', sa.String(length=255), nullable=True),
         #sa.Column('link', sa.String(length=255), nullable=True),
