@@ -2,7 +2,7 @@
 
 from altaircms.formhelpers import MaybeDateTimeField
 from wtforms import fields, validators
-from altaircms.formhelpers import Form, allowable_model_query
+from altaircms.formhelpers import Form
 from wtforms import widgets
 
 from altaircms.formhelpers import required_field, append_errors
@@ -18,7 +18,8 @@ import logging
 logger = logging.getLogger(__file__)
 
 def eventFormQueryFactory():
-    return allowable_model_query(Word)\
+    request = get_current_request()
+    return request.allowable(Word)\
     .filter(Word.deleted_at==None)
 
 class EventForm(Form):
