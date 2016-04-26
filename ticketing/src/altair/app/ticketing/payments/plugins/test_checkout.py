@@ -340,8 +340,10 @@ class TestCheckoutViews(unittest.TestCase, CoreTestMixin):
                     self.assertEqual(resp.status_code, 200)
                     self.assertTrue(u'OK' in resp.text)
 
+    @mock.patch('altair.app.ticketing.cart.request.get_db_session')
     @mock.patch('altair.app.ticketing.checkout.api.AnshinCheckoutAPI')
-    def test_success_page_fail(self, checkout_class):
+    def test_success_page_fail(self, checkout_class, get_db_session):
+        get_db_session.return_value = self.session
         from datetime import datetime
         class dummy_datetime(datetime):
             @classmethod
