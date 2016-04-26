@@ -263,9 +263,11 @@ class CheckoutView(object):
         cart = get_cart(self.request) # build_checkout_request_form のために for_update=True (これは呼び出し先がそうしている)
         try:
             self.request.session['altair.app.ticketing.cart.magazine_ids'] = [long(v) for v in self.request.params.getall('mailmagazine')]
+            self.request.session['altair.app.ticketing.cart.word_ids'] = [long(v) for v in self.request.params.getall('keyword')]
         except TypeError, ValueError:
             raise HTTPBadRequest()
         logger.debug(u'mailmagazine = %s' % self.request.session['altair.app.ticketing.cart.magazine_ids'])
+        logger.debug(u'keyword = %s' % self.request.session['altair.app.ticketing.cart.word_ids'])
         channel = get_channel(cart.channel)
         service = api.get_checkout_service(self.request, cart.performance.event.organization, channel)
         success_url = self.request.route_url('payment.checkout.callback.success')
@@ -359,6 +361,7 @@ class CheckoutCallbackView(object):
             )
         try:
             del self.request.session['altair.app.ticketing.cart.magazine_ids']
+            del self.request.session['altair.app.ticketing.cart.word_ids']
         except KeyError:
             pass
         return retval
