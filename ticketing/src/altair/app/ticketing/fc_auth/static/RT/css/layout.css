@@ -1,0 +1,408 @@
+@charset "utf-8";
+
+/* layout
+----------------------------------------------------------- */
+body {
+	text-align: center;
+}
+#wrapper {
+	width: 950px;
+	margin: 0 auto;
+	text-align: left;
+}
+
+
+/* Header
+----------------------------------------------------------- */
+
+/* ヘッダ全体枠 */
+div#header {
+	padding-top: 10px;
+	margin-bottom: 20px;
+	font-size: 120%;
+	text-align: left; /* for Quirks Mode */
+}
+
+/* サイトID */
+#header h1 {
+
+}
+
+
+/* footer
+----------------------------------------------------------- */
+.footer{
+	background-color: #FFFFFF;
+	font-size: 12pt;
+	color: #555;
+	text-align: center;
+	padding: 10px 0;
+	width: 760px;
+	margin: 0 auto;	
+}
+
+.footer .footernav{
+	margin: 10px auto;
+}
+
+.footer ul.footernav {
+    display: inline;
+    font-size: 75%;
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
+
+.footer ul.footernav li.first {
+    border-left: medium none;
+}
+
+.footer ul.footernav li {
+    border-left: 1px solid #534741;
+    display: inline;
+    padding: 0 6px;
+    white-space: nowrap;
+}
+
+.footer .copyright {
+	margin-top: 10px;
+    font-size: 75%;
+}
+
+/* Common
+----------------------------------------------------------- */
+
+h2 {
+	background: #c01920;
+	font-weight: bold;
+	color: #FFF;
+	padding: 10px;
+	margin-bottom: 20px;
+}
+h3 {
+	border-left: 3px solid #CCC;
+	padding: 8px;
+	margin-left: 5px;
+	margin-bottom: 20px;
+}
+
+
+
+/* マイページ
+----------------------------------------------------------- */
+
+/* -- mypage -- */
+#mypageHistory {
+	background: url(../images/bg_confirm_bottom.gif) no-repeat 0 bottom;
+	padding-bottom: 12px;
+	margin: 0 auto 20px auto;
+}
+#mypageHistory .inner {
+	background: url(../images/bg_confirm_top.gif) no-repeat 0 0;
+	padding: 10px 20px;
+}
+
+#mypageHistory form {
+	height: 40px;
+	padding: 5px 15px 0;
+	background: url(../../img/mypage/bg_search.gif) no-repeat 0 0;
+}
+
+#mypageHistory form input {
+	vertical-align: middle;
+}
+
+#mypageHistory div.box {
+	clear: both;
+	overflow: hidden;
+	padding: 10px 0 5px;
+	border-bottom: 1px dashed #cccccc;
+}
+
+* html #mypageHistory div {
+	height: 1%;
+}
+
+#mypageHistory p {
+	float: left;
+	margin: 0;
+	padding-left: 5px;
+}
+
+#mypageHistory dl {
+	float: left;
+	width: 650px;
+	padding-left: 20px;
+}
+
+#mypageHistory dt {
+	padding-bottom: 5px;
+	font-size: 14px;
+	font-weight: bold;
+}
+
+#mypageHistory dd {
+	padding-bottom: 5px;
+	font-size: 12px;
+}
+
+
+/*
+#mypageCancel {
+	margin-bottom: 30px;
+}
+
+#mypageCancel div {
+	clear: both;
+	position: relative;
+	overflow: hidden;
+	padding: 10px 0;
+	border-bottom: 1px dashed #cccccc;
+}
+
+* html #mypageCancel div {
+	height: 1%;
+}
+
+#mypageCancel p {
+	float: left;
+	margin: 0;
+	padding-left: 5px;
+}
+
+#mypageCancel dl {
+	float: left;
+	width: 630px;
+	padding-left: 20px;
+}
+
+#mypageCancel dt {
+	font-size: 116.7%;
+	font-weight: bold;
+}
+
+#mypageCancel dd {
+	font-size: 91.7%;;
+}
+
+.btnCancelDelete {
+	position: absolute;
+	top: 10px;
+	right: 5px;
+	padding: 0;
+}
+
+#mypageAgentMail h3 {
+	float: left;
+}
+
+#mypageAgentMail p {
+	float: right;
+	margin-bottom: 10px;
+}
+
+#mypageAgentMail ul {
+	clear: both;
+	overflow: hidden;
+	padding: 15px 10px 10px;
+	background-color: #f7f7ea;
+}
+
+* html #mypageAgentMail ul {
+	height: 1%;
+}
+
+#mypageAgentMail li {
+	float: left;
+	margin: 0 10px 5px 0;
+	white-space: nowrap;
+}
+
+#mypageAgentMail li img {
+	vertical-align: top;
+}
+
+#mypageAgentMail li a {
+	text-decoration: none;
+}
+
+#mypageAgentMail li a:hover {
+	text-decoration: underline;
+}
+
+.mypagePaging {
+	clear: both;
+	font-weight: bold;
+	text-align: right;
+}
+
+.mypageBox1 {
+	height: 1%;
+	margin-bottom: 30px;
+	padding: 8px;
+	border: 2px solid #cccccc;
+}
+
+.mypageBox1 div {
+	position: relative;
+	float: right;
+	width: 640px;
+	margin-bottom: 15px;
+}
+
+.mypageBox1 h3 {
+	font-size: 116.7%;
+}
+
+.mypageBox1 div dt {
+	margin-bottom: 5px;
+}
+
+.mypageBox1 div dd {
+	font-size: 91.7%;
+}
+
+.mypageBox1 div dd a {
+	padding: 2px 0 2px 15px;
+	background: url(../../img/mypage/icon_map.gif) no-repeat 0 0;
+}
+
+.mypageBox1 div ul {
+	position: absolute;
+	right: 0;
+	bottom: 0;
+}
+
+.mypageBox1 div li {
+	float: right;
+	margin-left: 5px;
+}
+
+.mypageBox1 div li .twitter-share-button {
+	display: block;
+	width: 70px !important;
+}
+
+.mypageBox1 table {
+	width: 100%;
+	margin-bottom: 10px;
+	background-color: #fcfcf7;
+}
+
+.mypageBox1 th {
+	width: 20%;
+	padding: 10px;
+	border: 1px solid #e6e6da;
+	font-size: 91.7%;
+	font-weight: normal;
+}
+
+.mypageBox1 td {
+	padding: 10px;
+	border: 1px solid #e6e6da;
+	font-weight: bold;
+}
+
+.mypageBox1 td.align1 {
+	border-left: none;
+	font-weight: normal;
+}
+
+.mypageBox1 td span {
+	font-size: 91.7%;
+	font-weight: normal;
+}
+
+.mypageBox1 th.waitingPayment,
+.mypageBox1 td.waitingPayment {
+	background-color: #fccac6;
+}
+
+.mypageBox1 p {
+	margin: 0;
+}
+
+.mypageBuy {
+	border-right: none !important;
+}
+*/
+
+/* -- purchasedContents -- */
+.purchasedContents {
+	width: 100%;
+	margin: 0 auto 20px auto;
+	font-size: 14px;
+	border-collapse: collapse;
+	border-top: 1px solid #F2F2E5;
+	border-left: 1px solid #F2F2E5;
+}
+.purchasedContents tr th,
+.purchasedContents tr td {
+	border-bottom: 1px solid #F2F2E5;
+	border-right: 1px solid #F2F2E5;
+	padding: 10px;
+}
+.purchasedContents tr th {
+	background: #F9F9F2;
+}
+
+
+
+
+
+.ticketConfirm {
+	margin-bottom: 30px;
+}
+.ticketConfirmLogin dl dt,
+.memberLogin dl dt {
+	background: #EFEFEF;
+	padding: 5px;
+	font-weight: bold;
+	margin-bottom: 10px;
+}
+.ticketConfirmLogin dl dd,
+.memberLogin dl dd {
+	margin-bottom: 10px;
+}
+.ticketConfirmLogin {
+	float: left; 
+	width: 43%;
+	min-height: 200px;
+	padding: 20px;
+	margin-left: 10px;
+	border: 3px #F2F2E5 solid;
+	text-align: center;
+    border-radius: 10px;
+    -webkit-border-radius: 10px;
+    -moz-border-radius: 10px;
+}
+.memberLogin {
+	float: right;
+	width: 43%;
+	min-height: 200px;
+	padding: 20px;
+	margin-right: 10px;
+	border: 3px #F2F2E5 solid;
+	text-align: center;
+    border-radius: 10px;
+    -webkit-border-radius: 10px;
+    -moz-border-radius: 10px;
+}
+
+.memberLogin table {
+	width: 100%;
+	margin: 0 auto 20px auto;
+	font-size: 14px;
+	border-collapse: collapse;
+	border-top: 1px solid #F2F2E5;
+	border-left: 1px solid #F2F2E5;
+}
+.memberLogin table tr th,
+.memberLogin table tr td {
+	border-bottom: 1px solid #F2F2E5;
+	border-right: 1px solid #F2F2E5;
+	padding: 10px;
+}
+.memberLogin table tr th {
+	background: #F9F9F2;
+}

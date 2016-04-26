@@ -513,7 +513,7 @@ cursor:pointer;
 }
 
 table tr td {
-background-color:#FFF;
+background-color:#F0F0E1;
 }
 
 table.pricelist{
@@ -1141,8 +1141,4 @@ table td.display_value ul li {
 
 .memberLogin table tr th {
 	background: #F9F9F2;
-}
-
-.coupon_name {
-	background-color: #FCF8E3;
 }
