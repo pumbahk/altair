@@ -21,7 +21,6 @@ class CoreTestMixin(object):
         import re
         from datetime import datetime
         self.organization = Organization(id=1, short_name=u'', code=u'XX')
-        self.organization._setting = OrganizationSetting(enable_word=1)
         self.host = Host(organization=self.organization, host_name='example.com:80')
         self.event = Event(organization=self.organization, title=u'イベント')
         self.performance = Performance(
