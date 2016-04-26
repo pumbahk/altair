@@ -91,8 +91,8 @@ class CouponViewResource(CouponResourceBase):
             if datetime.today() < perf.end_on:
                 return True
         else:
-            # 終了日時が指定されていない場合は、公演開始日の当日いっぱい入れる
-            if datetime.today().date() <= perf.start_on.date():
+            # 終了日時が指定されていない場合は、公演時刻まで入れる
+            if datetime.today() <= perf.start_on:
                 return True
         return False
 
