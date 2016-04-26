@@ -130,7 +130,7 @@ class PerformanceForm(Form):
         Word, allow_blank=True, label=u"お気に入りワード",
         get_label=lambda obj: obj.label,
         multiple=True,
-        query_factory=eventFormQueryFactory)
+        dynamic_query=eventFormQueryFactory, break_separate=False)
 
     def validate(self, **kwargs):
         if super(PerformanceForm, self).validate():
