@@ -90,7 +90,7 @@ class TestCheckoutViews(unittest.TestCase, CoreTestMixin):
             DateCalculationBase,
             )
         from altair.app.ticketing.cart.models import Cart, CartSetting
-        from altair.app.ticketing.core.models import ShippingAddress
+        from altair.app.ticketing.core.models import ShippingAddress, OrganizationSetting
         from altair.app.ticketing.checkout.models import RakutenCheckoutSetting
         from . import CHECKOUT_PAYMENT_PLUGIN_ID, SHIPPING_DELIVERY_PLUGIN_ID
         from datetime import datetime
@@ -103,6 +103,7 @@ class TestCheckoutViews(unittest.TestCase, CoreTestMixin):
             ])
         CoreTestMixin.setUp(self)
         self.organization.short_name = 'vissel'
+        self.organization._setting = OrganizationSetting(enable_word=1)
         self.session.add(self.organization)
         self.cart_setting = CartSetting(type='standard')
         self.session.add(self.cart_setting)
