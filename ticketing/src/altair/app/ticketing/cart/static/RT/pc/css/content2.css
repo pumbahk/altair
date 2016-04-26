@@ -2416,61 +2416,73 @@
 }
 
 /* メールマガジンの配信 */
-#mailMagazineBox {
+#mailMagazineBox,
+#mailKeywordBox {
 	width: 934px;
 	margin: 0 0 5px 7px;
 	background: url(../images/bg_payment_top.png) no-repeat 0 0;
 }
 
-#mailMagazineBoxInner {
+#mailMagazineBoxInner,
+#mailKeywordBoxInner {
 	padding: 5px;
 	background: url(../images/bg_payment_bottom.gif) no-repeat left bottom;
 }
 
-#mailMagazineBoxInner ul {
+#mailMagazineBoxInner ul,
+#mailKeywordBoxInner ul {
 	height: 1%;
 	background-color: #fff7e5;
 }
 
-#mailMagazineBoxInner li {
+#mailMagazineBoxInner li,
+#mailKeywordBoxInner li {
 	padding: 10px;
 	border-bottom: 1px solid #ebe4cc;
 }
 
-#mailMagazineBoxInner li:last-child {
+#mailMagazineBoxInner li:last-child,
+#mailKeywordBoxInner li:last-child {
 	border: none
 }
 
-#mailMagazineBoxInner dl {
+#mailMagazineBoxInner dl,
+#mailKeywordBoxInner dl {
 	margin: 0 0;
 	padding: 0 0;
 }
 
-#mailMagazineBoxInner dt {
+#mailMagazineBoxInner dt,
+#mailKeywordBoxInner dt {
 	font-weight: bold;
 	padding: 10px 10px;
 	border-bottom: 1px solid #ccc;
 }
 
-#mailMagazineBoxInner dd {
+#mailMagazineBoxInner dd,
+#mailKeywordBoxInner dd {
 	padding: 0px 10px 10px 10px;
 }
 
-#mailMagazineBoxInner dd ul {
+#mailMagazineBoxInner dd ul,
+#mailKeywordBoxInner dd ul {
 	overflow: hidden;
 }
 
-#mailMagazineBoxInner dd ul li {
+#mailMagazineBoxInner dd ul li,
+#mailKeywordBoxInner dd ul li {
 	float: left;
 	padding: 10px 0 0;
 	border: none;
 }
 
-#mailMagazineBoxInner dd ul li.subscribed {
+#mailMagazineBoxInner dd ul li.subscribed,
+#mailKeywordBoxInner dd ul li.subscribed {
 	color: #7f7b72;
 }
 
-#mailMagazineBoxInner dd ul li.subscribed label:after {
+#mailMagazineBoxInner dd ul li.subscribed label:after,
+#mailKeywordBoxInner dd ul li.subscribed label:after {
   display: inline-block;
 	border-radius: 2px;
 	-webkit-border-radius: 2px;

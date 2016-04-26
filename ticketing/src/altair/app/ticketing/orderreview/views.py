@@ -29,18 +29,26 @@ from altair.app.ticketing.payments import plugins
 from altair.app.ticketing.cart import api as cart_api
 from altair.app.ticketing.cart.rendering import selectable_renderer
 from altair.app.ticketing.cart.view_support import filter_extra_form_schema, get_extra_form_schema, render_view_to_response_with_derived_request, render_display_value
+from altair.app.ticketing.api.impl import CMSCommunicationApi
 from altair.app.ticketing.qr.image import qrdata_as_image_response
 from altair.app.ticketing.qr.utils import build_qr_by_history_id, build_qr_by_token_id, build_qr_by_orion, get_matched_token_from_token_id, build_qr_by_order
 from altair.app.ticketing.fc_auth.api import do_authenticate
 from altair.app.ticketing.orders.models import Order, OrderedProduct, OrderedProductItem, OrderedProductItemToken
 from altair.app.ticketing.orders.api import OrderAttributeIO, get_extra_form_fields_for_order, get_order_by_order_no
 from altair.app.ticketing.lots.models import LotEntry
+from altair.app.ticketing.users.models import User, WordSubscription, UserProfile
+from altair.app.ticketing.users.word import get_word
 
 from .api import is_mypage_organization, is_rakuten_auth_organization
 from . import schemas
 from . import api
 from . import helpers as h
 from .exceptions import InvalidForm
+
+import urllib
+import urllib2
+import contextlib
+import re
 
 def jump_maintenance_page_om_for_trouble(organization):
     """https://redmine.ticketstar.jp/issues/10878
@@ -163,12 +171,22 @@ class MypageView(object):
                 shipping_address.emails
                 )
 
+        word_enabled = self.request.organization.setting.enable_word == 1
+        subscribe_word = False
+        if word_enabled:
+            profile = UserProfile.query.filter(UserProfile.user_id==user.id).first()
+            logger.debug(profile)
+            if profile is not None and profile.subscribe_word:
+                subscribe_word = True
+
         return dict(
             shipping_address=shipping_address,
             orders=orders,
             lot_entries=entries,
             mailmagazines_to_subscribe=magazines_to_subscribe,
             h=h,
+            word_enabled=word_enabled,
+            subscribe=subscribe_word,
         )
 
     @lbr_view_config(
@@ -834,3 +852,106 @@ def render_qrmail_viewlet(context, request):
         mail=request.params['mail'],
         url=request.route_url('order_review.qr_confirm', ticket_id=ticket.id, sign=sign),
         )
+
+@view_defaults(custom_predicates=(is_mypage_organization, ),
+               permission='*')
+class MypageWordView(object):
+    def __init__(self, context, request):
+        self.context = context
+        self.request = request
+        authenticated_user = self.context.authenticated_user()
+        user = cart_api.get_user(authenticated_user)
+        if not user:
+            raise HTTPNotFound()
+        self.user = user
+
+    def _get_word(self, id=None, q=None):
+        if id is not None and len(id) == 0 and q is None:
+            return [ ]
+        return get_word(self.request, id, q)
+
+    @lbr_view_config(route_name='mypage.word.show',
+        request_method="GET",
+        custom_predicates=(override_auth_type,),
+        renderer=selectable_renderer("mypage/word.html"),)
+    def form(self):
+        subscriptions = WordSubscription.query.filter(WordSubscription.user_id==self.user.id).all()
+        words = self._get_word(id=' '.join([ str(s.word_id) for s in subscriptions ]))
+        if words is not None:
+            return { "data": words }
+        return { }
+
+    @lbr_view_config(route_name='mypage.word.search',
+        request_method="GET",
+        custom_predicates=(override_auth_type,),
+        renderer="json")
+    def search(self):
+        words = None
+        q = self.request.params.get('q')
+        if q is not None and 0 < len(q):
+            words = self._get_word(q=q.encode('utf-8'))
+        else:
+            id = self.request.params.get('id')
+            if id is not None and 0 < len(id) and re.match("[\d ]+", id):
+                words = self._get_word(id=id)
+        if words is not None:
+            return { "data": words }
+        return { }
+
+    @lbr_view_config(route_name='mypage.word.configure',
+        request_method="POST",
+        custom_predicates=(override_auth_type,),
+        renderer="json")
+    def configure(self):
+        authenticated_user = self.context.authenticated_user()
+        user = cart_api.get_user(authenticated_user)
+        subscribe = self.request.params.get('subscribe')
+        profile = UserProfile.query.filter(UserProfile.user_id==user.id).first()
+        if profile is None:
+            profile = UserProfile(user_id=user.id)
+            profile.subscribe_word = 1 if subscribe=="1" else 0
+            DBSession.add(profile)
+        else:
+            profile.subscribe_word = 1 if subscribe=="1" else 0
+            profile.update()
+            DBSession.flush()
+        return { "result": "OK" }
+
+    @lbr_view_config(route_name='mypage.word.subscribe',
+        request_method="POST",
+        custom_predicates=(override_auth_type,),
+        renderer="json")
+    def subscribe(self):
+        word_id = self.request.params.get('word')
+        words = self._get_word(id=word_id)
+        if len(words) != 1:
+            return { }
+        word_id = words[0]['id']
+
+        if words is not None and len(words) == 1:
+            if WordSubscription.query.filter(WordSubscription.user_id==self.user.id, WordSubscription.word_id==word_id).first() != None:
+                # already registered
+                return { }
+
+            WordSubscription.add(WordSubscription(user_id=self.user.id, word_id=word_id))
+            return { "data": words }
+        return { }
+
+    @lbr_view_config(route_name='mypage.word.unsubscribe',
+        request_method="POST",
+        custom_predicates=(override_auth_type,),
+        renderer="json")
+    def unsubscribe(self):
+        word_id = self.request.params.get('word')
+        words = self._get_word(id=word_id)
+        if len(words) != 1:
+            return { }
+        word_id = words[0]['id']
+        ws = WordSubscription.query.filter(WordSubscription.user_id==self.user.id, WordSubscription.word_id==word_id).first()
+        if ws != None:
+
+            ws.delete()
+            DBSession.flush()
+            return { "data": words }
+
+        return { }

@@ -68,6 +68,13 @@ def includeme(config):
     config.add_route('mypage.logout', '/mypage/logout', factory='.resources.MyPageListViewResource')
     config.add_route('mypage.autologin', '/mypage/autologin', factory='.resources.MyPageListViewResource')
 
+    ## word
+    config.add_route('mypage.word.show', '/mypage/word/', factory='.resources.MyPageResource')
+    config.add_route('mypage.word.configure', '/mypage/word/configure', factory='.resources.MyPageResource')
+    config.add_route('mypage.word.search', '/mypage/word/search', factory='.resources.MyPageResource')
+    config.add_route('mypage.word.subscribe', '/mypage/word/subscribe', factory='.resources.MyPageResource')
+    config.add_route('mypage.word.unsubscribe', '/mypage/word/unsubscribe', factory='.resources.MyPageResource')
+
     ## misc
     config.add_route('contact', '/contact', factory='.resources.ContactViewResource')
     config.add_route('order_review.information', '/information')  # refs 10883
@@ -90,6 +97,14 @@ def setup_auth(config):
         forget(request)
         return HTTPFound(request.route_path('order_review.index'))
     config.set_forbidden_handler(forbidden_handler)
+
+def setup_cms_communication_api(config):
+    import altair.app.ticketing.api.impl as api_impl
+    api_impl.bind_communication_api(config,
+                            "..api.impl.CMSCommunicationApi",
+                            config.registry.settings["altair.cms.api_url"],
+                            config.registry.settings["altair.cms.api_key"]
+                            )
 
 def main(global_config, **local_config):
     settings = dict(global_config)
@@ -132,5 +147,7 @@ def main(global_config, **local_config):
     config.include('.preview')
     config.scan(".views")
     config.scan(".panels")
+
+    setup_cms_communication_api(config)
 
     return config.make_wsgi_app()

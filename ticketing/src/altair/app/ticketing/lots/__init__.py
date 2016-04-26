@@ -9,6 +9,7 @@ from pyramid.tweens import EXCVIEW
 from pyramid.tweens import INGRESS
 from altair.app.ticketing.wsgi import direct_static_serving_filter_factory
 from ..users.models import Membership
+from ..cart import setup_cms_communication_api
 from altair.sqlahelper import get_db_session
 
 import sqlalchemy as sa
@@ -232,6 +233,8 @@ def main(global_config, **local_config):
     config.scan(".mobile_views")
     config.scan(".smartphone_views")
     config.scan(".layouts")
+
+    setup_cms_communication_api(config)
 
     app = config.make_wsgi_app()
 

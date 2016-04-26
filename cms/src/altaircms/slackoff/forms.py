@@ -19,7 +19,8 @@ from altaircms.page.forms import url_not_conflict
 
 from ..event.models import Event
 from altaircms.models import Performance, Genre
-from ..models import Category, SalesSegment, SalesSegmentGroup, Ticket
+from ..models import Category, SalesSegment, SalesSegmentGroup, Ticket, Word
+from ..event.forms import eventFormQueryFactory
 from ..asset.models import ImageAsset
 from ..page.models import PageSet, MobileTag
 from ..topic.models import TopicTag, Topcontent,TopcontentTag, PromotionTag, Promotion
@@ -125,6 +126,12 @@ class PerformanceForm(Form):
     mobile_purchase_link = fields.TextField(label=u"購入ページリンク(mobile)", filters=[quote])
     calendar_content = fields.TextField(label=u"カレンダーに追加する文字列")
 
+    keywords = dynamic_query_select_field_factory(
+        Word, allow_blank=True, label=u"お気に入りワード",
+        get_label=lambda obj: obj.label,
+        multiple=True,
+        query_factory=eventFormQueryFactory)
+
     def validate(self, **kwargs):
         if super(PerformanceForm, self).validate():
             data = self.data
@@ -155,7 +162,7 @@ class PerformanceForm(Form):
                           u"prefecture", u"venue", 
                           u"open_on", u"start_on", u"end_on",
                           u"purchase_link", u"mobile_purchase_link", 
-                          u"calendar_content", "display_order"]
+                          u"calendar_content", u"keywords", "display_order"]
 
 validate_term = TermValidator("start_on", "end_on",  u"公開開始日よりも後に終了日が設定されています")
 class SalesSegmentForm(Form):

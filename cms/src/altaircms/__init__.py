@@ -57,6 +57,7 @@ def includeme(config):
     config.include("altaircms.page")
     config.include("altaircms.topic")
     config.include("altaircms.widget")
+    config.include("altaircms.word")
     config.include("altaircms.asset", route_prefix="/asset")
     config.include("altaircms.base")
     config.include("altaircms.tag")

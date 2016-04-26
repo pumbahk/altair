@@ -385,3 +385,85 @@ class FeatureSetting(Base):
             return feature_setting.value
         else:
             return None
+
+class WordSearch(Base):
+    __tablename__ = "word_search"
+    id = sa.Column(sa.Integer, primary_key=True)
+    word_id = sa.Column(sa.Integer, sa.ForeignKey('word.id'))
+    word = relationship("Word", backref=orm.backref('word_searches', cascade='all, delete-orphan'))
+    data = sa.Column(sa.String(length=255))
+
+    created_at = sa.Column(sa.DateTime, default=datetime.now)
+    updated_at = sa.Column(sa.DateTime, default=datetime.now, onupdate=datetime.now)
+    deleted_at = sa.Column(sa.DateTime)
+
+    def __init__(self, _str=None, **kwargs):
+        if _str is not None:
+            kwargs["data"] = _str
+        super(WordSearch, self).__init__(**kwargs)
+
+    def __str__(self):
+        return self.data
+
+class Event_Word(Base):
+    __tablename__ = "event_word"
+    id = sa.Column(sa.Integer, primary_key=True)
+    event_id = sa.Column(sa.Integer, sa.ForeignKey('event.id'))
+    event = relationship("Event", backref=orm.backref('event_word'))
+    word_id = sa.Column(sa.Integer, sa.ForeignKey('word.id'))
+    word = relationship("Word", backref=orm.backref('event_word'))
+    #sorting = sa.Column(sa.Integer)
+    #subscribable = sa.Column(sa.Boolean, default=False)
+
+    created_at = sa.Column(sa.DateTime, default=datetime.now)
+    updated_at = sa.Column(sa.DateTime, default=datetime.now, onupdate=datetime.now)
+
+class Performance_Word(Base):
+    __tablename__ = "performance_word"
+    id = sa.Column(sa.Integer, primary_key=True)
+    performance_id = sa.Column(sa.Integer, sa.ForeignKey('performance.id'))
+    performance = relationship("Performance", backref=orm.backref('performance_word'))
+    word_id = sa.Column(sa.Integer, sa.ForeignKey('word.id'))
+    word = relationship("Word", backref=orm.backref('performance_word'))
+    #sorting = sa.Column(sa.Integer)
+    #subscribable = sa.Column(sa.Boolean, default=False)
+
+    created_at = sa.Column(sa.DateTime, default=datetime.now)
+    updated_at = sa.Column(sa.DateTime, default=datetime.now, onupdate=datetime.now)
+
+class Word(Base, WithOrganizationMixin):
+    __tablename__ = "word"
+    id = sa.Column(sa.Integer, primary_key=True)
+    type = sa.Column(sa.String(length=255))
+    label = sa.Column(sa.String(length=255), nullable=False)
+    label_kana = sa.Column(sa.String(length=255))
+    description = sa.Column(sa.String(length=255))
+    #link = sa.Column(sa.String(length=255))
+
+    created_at = sa.Column(sa.DateTime, default=datetime.now)
+    updated_at = sa.Column(sa.DateTime, default=datetime.now, onupdate=datetime.now)
+    deleted_at = sa.Column(sa.DateTime)
+
+    query = DBSession.query_property()
+    def __str__(self):
+        return self.label
+
+    performances = relationship("Performance", backref="keywords", secondary=Performance_Word.__tablename__)
+
+    def __setattr__(self, key, value):
+        if key == 'word_searches':
+            old = dict()
+            for a in self.word_searches:
+                old[a.data] = a
+
+            fixed = [ ]
+            for b in value:
+                if b.id is None and b.data in old:
+                    fixed.append(old.pop(b.data))
+                else:
+                    fixed.append(b)
+            for obj in old.values():
+                DBSession.delete(obj)
+            value = fixed
+
+        super(Word, self).__setattr__(key, value)

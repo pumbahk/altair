@@ -8,9 +8,19 @@ from wtforms import widgets
 from altaircms.formhelpers import required_field, append_errors
 from .models import Event
 from ..page.models import PageSet
-from ..models import Category
+from ..models import Category, Word
 from altaircms.formhelpers import dynamic_query_select_field_factory
 from datetime import datetime
+
+from pyramid.threadlocal import get_current_request
+
+import logging
+logger = logging.getLogger(__file__)
+
+def eventFormQueryFactory():
+    request = get_current_request()
+    return request.allowable(Word)\
+    .filter(Word.deleted_at==None)
 
 class EventForm(Form):
     title = fields.TextField(label=u'タイトル', validators=[required_field()])
@@ -20,6 +30,11 @@ class EventForm(Form):
     inquiry_for = fields.TextField(label=u'問い合わせ先', widget=widgets.TextArea())
     notice = fields.TextField(label=u"説明／注意事項", widget=widgets.TextArea())
     performers = fields.TextField(label=u"出演者リスト", widget=widgets.TextArea())
+    keywords = dynamic_query_select_field_factory(
+        Word, allow_blank=True, label=u"お気に入りワード",
+        get_label=lambda obj: obj.label,
+        multiple=True,
+        query_factory=eventFormQueryFactory)
     ticket_pickup = fields.TextField(label=u"チケット引き取り方法", widget=widgets.TextArea())
     ticket_payment = fields.TextField(label=u"支払い方法", widget=widgets.TextArea())
     event_open = fields.DateTimeField(label=u'イベント開始日', validators=[required_field()])
@@ -57,31 +72,35 @@ class EventForm(Form):
 
     __display_fields__ = [u"title", u"subtitle", 
                           u"backend_id", u"code", 
-                          u"description", u"performers", u"inquiry_for", "notice", "ticket_payment", "ticket_pickup", 
+                          u"description", u"performers",
+                          u"keywords",
+                          u"inquiry_for", "notice", "ticket_payment", "ticket_pickup", 
                           u"event_open", u"event_close", 
                           u"deal_open", u"deal_close", 
                           u"is_searchable", u"in_preparation"]
 
 class EventSearchForm(Form):
-    freeword = fields.TextField(label=u'タイトル, サブタイトルなど')
-    is_vetoed = fields.BooleanField(label=u"検索対象から除外したものだけを探す")
-    event_open = MaybeDateTimeField(label=u'イベント開始日')
+    freeword = fields.TextField(label=u'タイトル, サブタイトルなど', validators=[validators.Optional()])
+    is_vetoed = fields.BooleanField(label=u"検索対象から除外したものだけを探す", validators=[validators.Optional()])
+    event_open = MaybeDateTimeField(label=u'イベント開始日', validators=[validators.Optional()])
     # op_choice = ([("lte", u"より前") ,("eq", u"その日"), ("gte", u"より後")]) #lt, gt?
     op_choice = ([("lte", u"より前") , ("gte", u"より後")]) #lt, gt?
-    event_open_op = fields.SelectField(choices=op_choice)
-    event_close = MaybeDateTimeField(label=u'イベント終了日')
-    event_close_op = fields.SelectField(choices=op_choice)
-    deal_open = MaybeDateTimeField(label=u'販売開始日')
-    deal_open_op = fields.SelectField(choices=op_choice)
-    deal_close = MaybeDateTimeField(label=u'販売終了日')
-    deal_close_op = fields.SelectField(choices=op_choice)
-    created_at = MaybeDateTimeField(label=u'作成日')
-    created_at_op = fields.SelectField(choices=op_choice)
-    updated_at = MaybeDateTimeField(label=u'更新日')
-    updated_at_op = fields.SelectField(choices=op_choice)
+    event_open_op = fields.SelectField(choices=op_choice, validators=[validators.Optional()])
+    event_close = MaybeDateTimeField(label=u'イベント終了日', validators=[validators.Optional()])
+    event_close_op = fields.SelectField(choices=op_choice, validators=[validators.Optional()])
+    deal_open = MaybeDateTimeField(label=u'販売開始日', validators=[validators.Optional()])
+    deal_open_op = fields.SelectField(choices=op_choice, validators=[validators.Optional()])
+    deal_close = MaybeDateTimeField(label=u'販売終了日', validators=[validators.Optional()])
+    deal_close_op = fields.SelectField(choices=op_choice, validators=[validators.Optional()])
+    created_at = MaybeDateTimeField(label=u'作成日', validators=[validators.Optional()])
+    created_at_op = fields.SelectField(choices=op_choice, validators=[validators.Optional()])
+    updated_at = MaybeDateTimeField(label=u'更新日', validators=[validators.Optional()])
+    updated_at_op = fields.SelectField(choices=op_choice, validators=[validators.Optional()])
     category = dynamic_query_select_field_factory(
-        Category, allow_blank=True, label=u"カテゴリ",
+        Category, allow_blank=True, label=u"カテゴリ", validators=[validators.Optional()],
         get_label=lambda obj: obj.label or u"--なし--")
+
+    word = fields.TextField(validators=[validators.Optional()])
 
 class EventTakeinPageForm(Form):
     pageset = dynamic_query_select_field_factory(

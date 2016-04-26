@@ -31,6 +31,7 @@ from altair.app.ticketing.core import models as c_models
 from altair.app.ticketing.core import api as c_api
 from altair.app.ticketing.orders import models as order_models
 from altair.app.ticketing.mailmags.api import get_magazines_to_subscribe, multi_subscribe
+from altair.app.ticketing.users.word import word_subscribe
 from altair.app.ticketing.views import mobile_request
 from altair.app.ticketing.fanstatic import with_jquery, with_jquery_tools
 from altair.app.ticketing.payments.api import set_confirm_url, lookup_plugin
@@ -1327,9 +1328,21 @@ class ConfirmView(object):
                 raw_extra_form_data,
                 mode='entry'
                 )
+
+        ks = [ ]
+        organization = api.get_organization(self.request)
+        if organization.setting.enable_word == 1:
+            user = api.get_user(self.context.authenticated_user()) # これも読み直し
+            if user is not None:
+                res = api.get_keywords_from_cms(self.request, cart.performance_id)
+                for w in res["words"]:
+                    # TODO: subscribe状況をセットしてあげても良いが
+                    ks.append([ type('', (), { 'id': w["id"], 'label': w["label"] }), False ])
+
         return dict(
             cart=cart,
             mailmagazines_to_subscribe=magazines_to_subscribe,
+            keywords_to_subscribe=ks,
             form=form,
             delegator=delegator,
             membershipinfo = self.context.membershipinfo,
@@ -1338,13 +1351,19 @@ class ConfirmView(object):
         )
 
 # 完了画面の処理の『継続』 (http://ja.wikipedia.org/wiki/%E7%B6%99%E7%B6%9A)
-def cont_complete_view(context, request, order_no, magazine_ids):
+def cont_complete_view(context, request, order_no, magazine_ids, word_ids):
     cart = api.get_cart_by_order_no(request, order_no)
 
-    # メール購読
     user = api.get_user(context.authenticated_user()) # これも読み直し
+
+    # メール購読
     emails = cart.shipping_address.emails
     multi_subscribe(user, emails, magazine_ids)
+    
+    # お気に入り登録
+    organization = api.get_organization(request)
+    if organization.setting.enable_word == 1:
+        word_subscribe(request, user, word_ids)
 
     api.logout(request)
 
@@ -1418,10 +1437,12 @@ class CompleteView(object):
         order = api.make_order_from_cart(self.request, cart)
         order_no = order.order_no
         transaction.commit() # cont_complete_viewでエラーが出てロールバックされても困るので
+        logger.debug("keyword=%s" % ' '.join(self.request.params.getall('keyword')))
         return cont_complete_view(
             self.context, self.request,
             order_no,
-            magazine_ids=self.request.params.getall('mailmagazine')
+            magazine_ids=self.request.params.getall('mailmagazine'),
+            word_ids=self.request.params.getall('keyword')
             )
 
     @lbr_view_config(context=CompleteViewTicketingCartResource)

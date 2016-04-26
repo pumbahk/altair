@@ -166,6 +166,9 @@ class MyPageOrderReviewResource(OrderReviewResourceBase):
         return self.request.layout_manager.render_panel(panel_name, self.order, self.user_point_accounts)
 
 
+class MyPageResource(OrderReviewResourceBase):
+    pass
+
 class QRViewResource(OrderReviewResourceBase):
     pass
 

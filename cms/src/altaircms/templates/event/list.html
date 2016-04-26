@@ -68,7 +68,11 @@
 
 
 
-    <h3>イベント一覧</h3>
+    <h3>イベント一覧
+        % if word:
+          ( お気に入りワード「${word.label}」に紐づくイベント )
+        % endif
+    </h3>
 <%
 seq = h.paginate(request, events, item_count=events.count(), items_per_page=50)
 %>
