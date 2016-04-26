@@ -3,6 +3,13 @@
    import altair.app.ticketing.cart.helpers as ch
    import altair.app.ticketing.lots.helpers as h
 %>
+<%block name="css">
+<style>
+  .txt-favorite { font-weight: bold; padding: 10px 0; }
+  .list-favorite { width: 100%; text-align: left; }
+  .list-favorite li { width: 50%; float: left; }
+</style>
+</%block>
 <p class="pageTitle">お申込内容をご確認ください。</p>
 <form id="form1" name="form1" method="post" action="">        
   <input type="hidden" name="token" value="${token}" />
@@ -142,15 +149,17 @@
   % if keywords_to_subscribe:
   <div class="settlementBox">
 		<div class="settlementBoxInner">
-			<h2><!--<img src="${request.static_url('altair.app.ticketing.cart:static/RT/pc/images/title_magazine.gif')}" alt="お気に入りワード登録" width="177" height="30" />-->お気に入りワード登録</h2>
+			<h2 style="font-size: 18px; font-weight: normal; border-left: 2px #9d2325 solid; margin-left: 12px; height: 14px; padding-left: 4px; margin-top: 8px; line-height: 14px;"><!--<img src="${request.static_url('altair.app.ticketing.cart:static/RT/pc/images/title_magazine.gif')}" alt="お気に入りワード登録" width="177" height="30" />-->お気に入りワード登録</h2>
 			<div id="mailKeywordBox">
 				<div id="mailKeywordBoxInner">
 					<dl>
 						<dt>
-							お気に入りワード（アーティスト名等）を登録いただきますと、販売開始等の際にメールでお知らせいたします。
+							お気に入りワードに登録しておくと、発売開始等のタイミングでお知らせメールが届きます。<br />
+							お知らせメールのサービス開始は夏頃を予定しています。
 						</dt>
+
 						<dd>
-							<ul>
+							<ul class="list-favorite">
 								% for keyword, subscribed in keywords_to_subscribe:
 								<li ${subscribed and u'class="subscribed"' or u''|n}>
 									<div>
