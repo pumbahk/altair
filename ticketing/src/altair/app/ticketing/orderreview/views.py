@@ -184,6 +184,7 @@ class MypageView(object):
             orders=orders,
             lot_entries=entries,
             mailmagazines_to_subscribe=magazines_to_subscribe,
+            h=h,
             word_enabled=word_enabled,
             subscribe=subscribe_word,
         )
