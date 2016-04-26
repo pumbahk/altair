@@ -26,8 +26,6 @@
 --------------------------------------------------- */
 html {
 	font-size: 62.5%;
-	border-left: 10px solid transparent;
-	border-right: 10px solid transparent;
 }
 body {
 	color: #333;
