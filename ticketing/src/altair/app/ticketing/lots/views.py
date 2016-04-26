@@ -432,11 +432,14 @@ class ConfirmLotEntryView(object):
         if organization.setting.enable_word == 1:
             user = cart_api.get_user(self.context.authenticated_user()) # これも読み直し
             if user is not None:
-                for p in lot.performances:
-                    res = cart_api.get_keywords_from_cms(self.request, p.id)
-                    for w in res["words"]:
-                        # TODO: subscribe状況をセットしてあげても良いが
-                        ks[w["id"]] = [ type('', (), { 'id': w["id"], 'label': w["label"] }), False ]
+                try:
+                    for p in lot.performances:
+                        res = cart_api.get_keywords_from_cms(self.request, p.id)
+                        for w in res["words"]:
+                            # TODO: subscribe状況をセットしてあげても良いが
+                            ks[w["id"]] = [ type('', (), { 'id': w["id"], 'label': w["label"] }), False ]
+                except Exception as e:
+                    logger.warn("Failed to get words info from cms")
 
         logger.debug('wishes={0}'.format(entry['wishes']))
         wishes = api.build_temporary_wishes(entry['wishes'],

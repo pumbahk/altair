@@ -1334,10 +1334,14 @@ class ConfirmView(object):
         if organization.setting.enable_word == 1:
             user = api.get_user(self.context.authenticated_user()) # これも読み直し
             if user is not None:
-                res = api.get_keywords_from_cms(self.request, cart.performance_id)
-                for w in res["words"]:
-                    # TODO: subscribe状況をセットしてあげても良いが
-                    ks.append([ type('', (), { 'id': w["id"], 'label': w["label"] }), False ])
+                try:
+                    res = api.get_keywords_from_cms(self.request, cart.performance_id)
+                    if "words" in res:
+                        for w in res["words"]:
+                            # TODO: subscribe状況をセットしてあげても良いが
+                            ks.append([ type('', (), { 'id': w["id"], 'label': w["label"] }), False ])
+                except Exception as e:
+                    logger.warn("Failed to get words info from cms", e)
 
         return dict(
             cart=cart,
