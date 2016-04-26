@@ -875,11 +875,13 @@ class MypageWordView(object):
         custom_predicates=(override_auth_type,),
         renderer=selectable_renderer("mypage/word.html"),)
     def form(self):
+        word_enabled = self.request.organization.setting.enable_word == 1
+        if not word_enabled:
+            return { }
+
         subscriptions = WordSubscription.query.filter(WordSubscription.user_id==self.user.id).all()
         words = self._get_word(id=' '.join([ str(s.word_id) for s in subscriptions ]))
-        if words is not None:
-            return { "data": words }
-        return { }
+        return { "enabled": True, "words": words }
 
     @lbr_view_config(route_name='mypage.word.search',
         request_method="GET",
@@ -894,9 +896,7 @@ class MypageWordView(object):
             id = self.request.params.get('id')
             if id is not None and 0 < len(id) and re.match("[\d ]+", id):
                 words = self._get_word(id=id)
-        if words is not None:
-            return { "data": words }
-        return { }
+        return { "data": words }
 
     @lbr_view_config(route_name='mypage.word.configure',
         request_method="POST",
@@ -934,7 +934,7 @@ class MypageWordView(object):
                 return { }
 
             WordSubscription.add(WordSubscription(user_id=self.user.id, word_id=word_id))
-            return { "data": words }
+            return { "result": "OK", "data": words }
         return { }
 
     @lbr_view_config(route_name='mypage.word.unsubscribe',
@@ -952,6 +952,6 @@ class MypageWordView(object):
 
             ws.delete()
             DBSession.flush()
-            return { "data": words }
+            return { "result": "OK", "data": words }
 
         return { }

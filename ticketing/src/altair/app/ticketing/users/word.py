@@ -45,10 +45,10 @@ def get_word(request, id=None, q=None):
                 data = res.read()
                 logger.info("API call complete: %s" % data)
                 result = json.loads(data)
-                return result['data']
+                return result['words']
             except urllib2.HTTPError, e:
                 logging.warn("*api* HTTPError: url=%s errorno %s" % (communication_api.get_url(path), e))
     except urllib2.URLError, e:
         fmt = "*api* URLError: url=%s response status %s"
         logging.warn(fmt % (communication_api.get_url(path), e))
-    return None
+    return [ ]
