@@ -8,16 +8,6 @@
   <img src="${request.static_url('altair.app.ticketing.cart:static/SA/mobile/images/mobile_logo.gif')}" width="100%" alt="静岡朝日テレビ" />
 </div>
 <div>
-    <form action="${request.route_path('cart.logout')}" method="POST">
-      <div style="text-align: right">
-        % if (not getattr(request, 'context', None)) or request.context.authenticated_user()['is_guest']:
-          <input type="submit" value="会員でログイン"/>
-        % else:
-          <input type="submit" value="ログアウト"/>
-        % endif
-      </div>
-    </form>
-
 ${self.body()}
 <hr size="1" color="#888888" noshade="noshade" />
 <div align="center" style="font-size:x-small">
