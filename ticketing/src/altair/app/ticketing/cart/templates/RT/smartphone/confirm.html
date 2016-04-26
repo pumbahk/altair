@@ -242,6 +242,32 @@
   </div>
   % endif
 
+% if keywords_to_subscribe:
+  <div class="confirmBox">
+	<div class="confirmBoxInner">
+      <div class="dispBox">
+        <%m:header>お気に入りワード登録</%m:header>
+        <div class="dispBoxInner">
+<p>
+							お気に入りワードに登録しておくと、発売開始等のタイミングでお知らせメールが届きます。<br />
+							お知らせメールのサービス開始は夏頃を予定しています。
+</p>
+          <table id="confirmKeywordSubscription" class="methodArea">
+            % for keyword, subscribed in keywords_to_subscribe:
+            <tr>
+              <td scope="row">
+  <input type="checkbox" checked="checked" name="keyword" id="keyword-${keyword.id}" value="${keyword.id}" ${subscribed and u'disabled="disabled"' or u''|n} />
+  <label for="keyword-${keyword.id}">${keyword.label}</label>
+              </td>
+            </tr>
+            % endfor
+          </table>
+        </div>
+      </div>
+	</div>
+  </div>
+% endif
+
   <table>
     <tr>
       <td class="button_box">

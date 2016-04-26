@@ -123,6 +123,22 @@ ${shipping_address['address_2']}
 </dd>
 % endif
 
+% if keywords_to_subscribe:
+<dt class="creditHl">お気に入りワード登録</dt>
+<dd>
+<p>
+							お気に入りワードに登録しておくと、発売開始等のタイミングでお知らせメールが届きます。
+							お知らせメールのサービス開始は夏頃を予定しています。
+</p>
+% for keyword, subscribed in keywords_to_subscribe:
+  <p>
+  <input type="checkbox" checked="checked" name="keyword" id="keyword-${keyword.id}" value="${keyword.id}" ${subscribed and u'disabled="disabled"' or u''|n} />
+  <label for="keyword-${keyword.id}">${keyword.label}</label>
+  </p>
+% endfor
+</dd>
+% endif
+
 
 </dl>
 </div>
