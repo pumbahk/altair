@@ -36,3 +36,13 @@ def get_famiport_reflect_button_status(session, event):
                 return u'SOME_REFLECTED'
         else:
             return u'SOME_REFLECTED'
+
+
+def get_famiport_performance_ids(session, performances):
+    # ファミポート連携されている公演IDを取得
+    fm_performance_ids = []
+    altair_famiport_performances = session.query(AltairFamiPortPerformance)\
+        .filter(AltairFamiPortPerformance.performance_id.in_([performance.id for performance in performances])).all()
+    for altair_famiport_performance in altair_famiport_performances:
+        fm_performance_ids.append(altair_famiport_performance.performance_id)
+    return fm_performance_ids

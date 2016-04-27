@@ -39,6 +39,7 @@ from altair.app.ticketing.events.stock_holders.forms import StockHolderForm
 
 from ..api.impl import get_communication_api
 from ..api.impl import CMSCommunicationApi
+from .famiport_helpers import get_famiport_performance_ids
 from .api import get_cms_data, set_visible_event, set_invisible_event
 from altair.app.ticketing.events.performances.api import set_visible_performance, set_invisible_performance
 from .forms import EventForm, EventSearchForm, EventPublicForm
@@ -202,6 +203,7 @@ class Events(BaseView):
         return {
             'event':event,
             'performances':performances,
+            'fm_performance_ids': get_famiport_performance_ids(slave_session, performances),
             'famiport_reflect_button_status': famiport_reflect_button_status,
             'seat_stock_types':slave_session.query(StockType).filter_by(event_id=event_id, type=StockTypeEnum.Seat.v).order_by(StockType.display_order).all(),
             'non_seat_stock_types':slave_session.query(StockType).filter_by(event_id=event_id, type=StockTypeEnum.Other.v).order_by(StockType.display_order).all(),
