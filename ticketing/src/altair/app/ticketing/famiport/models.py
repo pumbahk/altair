@@ -855,8 +855,7 @@ class FamiPortTicket(Base, WithTimestamp):
     barcode_number            = sa.Column(sa.Unicode(13), nullable=False)
     template_code             = sa.Column(sa.Unicode(10), nullable=False)
     price                     = sa.Column(sa.Numeric(precision=9, scale=0), nullable=False, default=0)
-    userside_id               = sa.Column(Identifier, nullable=True) # OrderedProductItemToken.serial
-    userside_token_id         = sa.Column(Identifier, nullable=True) # OrderedProductItemToken.id
+    userside_id               = sa.Column(Identifier, nullable=True)
     data                      = sa.Column(sa.Unicode(4000), nullable=False)
     issued_at                 = sa.Column(sa.DateTime(), nullable=True)
 

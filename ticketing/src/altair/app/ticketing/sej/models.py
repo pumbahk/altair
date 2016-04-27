@@ -34,13 +34,13 @@ def need_ticketing(type):
 
 class SejTicketType(StandardEnum):
     # 1:本券(チケットバーコード有り)
-    TicketWithBarcode       = 1
-    # 2:本券(チケットバーコード無し)
     Ticket                  = 2
+    # 2:本券(チケットバーコード無し)
+    TicketWithBarcode       = 1
     # 3:本券以外(チケットバーコード有り)
-    ExtraTicketWithBarcode  = 3
-    # 4:本券以外(チケットバーコード無し)
     ExtraTicket             = 4
+    # 4:本券以外(チケットバーコード無し)
+    ExtraTicketWithBarcode  = 3
 
 code_from_ticket_type = dict((enum_.v, enum_) for enum_ in SejTicketType)
 
@@ -332,8 +332,6 @@ class SejTicket(Base, WithTimestamp, LogicallyDeleted):
     order_no                = Column(String(12), ForeignKey("SejOrder.order_no"), nullable=True)
     ticket_idx              = Column(Integer)
     product_item_id         = Column(Identifier, ForeignKey("ProductItem.id"), nullable=True)
-    ordered_product_item_token_id = Column(Identifier, ForeignKey("OrderedProductItemToken.id"), nullable=True)
-    ordered_product_item_token    = relationship("OrderedProductItemToken")
 
     def new_branch(self, **kwargs):
         values = dict(
@@ -347,8 +345,7 @@ class SejTicket(Base, WithTimestamp, LogicallyDeleted):
             order=self.order,
             order_no=self.order_no,
             ticket_idx=self.ticket_idx,
-            product_item_id=self.product_item_id,
-            ordered_product_item_token_id=self.ordered_product_item_token_id
+            product_item_id=self.product_item_id
             )
         values.update(kwargs)
         return self.__class__(**values)
