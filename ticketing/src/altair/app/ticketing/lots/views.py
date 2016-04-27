@@ -51,6 +51,8 @@ from altair.app.ticketing.core.models import (
     )
 from .exceptions import LotEntryWithdrawException
 
+from altair.app.ticketing.users.word import word_subscribe
+
 logger = logging.getLogger(__name__)
 
 LOT_ENTRY_ATTRIBUTE_SESSION_KEY = 'lot.entry.attribute'
@@ -425,6 +427,20 @@ class ConfirmLotEntryView(object):
 
         magazines_to_subscribe = get_magazines_to_subscribe(self.context.organization, [entry['shipping_address']['email_1']])
 
+        ks = { }
+        organization = self.context.organization
+        if organization.setting.enable_word == 1:
+            user = cart_api.get_user(self.context.authenticated_user()) # これも読み直し
+            if user is not None:
+                try:
+                    for p in lot.performances:
+                        res = cart_api.get_keywords_from_cms(self.request, p.id)
+                        for w in res["words"]:
+                            # TODO: subscribe状況をセットしてあげても良いが
+                            ks[w["id"]] = [ type('', (), { 'id': w["id"], 'label': w["label"] }), False ]
+                except Exception as e:
+                    logger.warn("Failed to get words info from cms")
+
         logger.debug('wishes={0}'.format(entry['wishes']))
         wishes = api.build_temporary_wishes(entry['wishes'],
                                             payment_delivery_method_pair=payment_delivery_method_pair,
@@ -462,6 +478,7 @@ class ConfirmLotEntryView(object):
                     memo=entry['memo'],
                     extra_form_data=extra_form_data,
                     mailmagazines_to_subscribe=magazines_to_subscribe,
+                    keywords_to_subscribe=ks.values(),
                     accountno=acc.account_number if acc else "",
                     membershipinfo = self.context.membershipinfo)
 
@@ -505,6 +522,7 @@ class ConfirmLotEntryView(object):
 
         try:
             self.request.session['lots.magazine_ids'] = [long(v) for v in self.request.params.getall('mailmagazine')]
+            self.request.session['lots.word_ids'] = [long(v) for v in self.request.params.getall('keyword')]
         except (TypeError, ValueError):
             raise HTTPBadRequest()
         logger.info(repr(self.request.session['lots.magazine_ids']))
@@ -578,14 +596,22 @@ class CompletionLotEntryView(object):
         except TypeError:
             pass
 
+        user = cart_api.get_or_create_user(self.context.authenticated_user())
+
         magazine_ids = self.request.session.get('lots.magazine_ids')
         if magazine_ids:
-            user = cart_api.get_or_create_user(self.context.authenticated_user())
             multi_subscribe(user, entry.shipping_address.emails, magazine_ids)
             try:
                 del self.request.session['lots.magazine_ids']
             except:
                 pass
+
+        # お気に入り登録
+        organization = self.context.organization
+        if organization.setting.enable_word == 1:
+            word_ids = self.request.session.get('lots.word_ids')
+            if word_ids:
+                word_subscribe(self.request, user, word_ids)
 
         # raw_extra_form_data = cart_api.load_extra_form_data(self.request)
         # extra_form_data = None

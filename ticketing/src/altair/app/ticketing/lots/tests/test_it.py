@@ -264,11 +264,12 @@ class EntryLotViewTests(unittest.TestCase):
 
 class ConfirmLotEntryViewTests(unittest.TestCase):
     def _add_datas(self, product_data):
-        from ...core.models import Organization, Host
+        from ...core.models import Organization, Host, OrganizationSetting
         from ...users.models import Membership, MemberGroup
         from ..testing import _add_lots, login
 
         organization = Organization(name='test', short_name='test')
+        organization._setting = OrganizationSetting(enable_word=1)
         host = Host(organization=organization, host_name='example.com:80')
         membership = Membership(organization=organization, name='test-membership')
         membergroup = MemberGroup(name='test-group', membership=membership)
@@ -377,6 +378,7 @@ class ConfirmLotEntryViewTests(unittest.TestCase):
                                             extra_form_fields=[],
                                             flavors=None,
                                             ),
+                                        authenticated_user=lambda:{'auth_identifier':None, 'is_guest':True, 'organization_id': 1, 'membership': "test-membership"},
                                         )
 
         target = self._makeOne(context, request)

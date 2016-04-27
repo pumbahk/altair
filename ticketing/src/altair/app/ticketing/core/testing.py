@@ -6,7 +6,7 @@ from datetime import datetime
 class CoreTestMixin(object):
     def setUp(self):
         from altair.app.ticketing.core.models import (
-            Organization,
+            Organization, OrganizationSetting,
             Host,
             Event,
             Performance,

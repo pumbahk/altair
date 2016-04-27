@@ -13,7 +13,6 @@ from altaircms.helpers.viewhelpers import get_endpoint
 from altaircms.subscribers import notify_model_create ## too-bad
 
 from sqlalchemy.sql.operators import ColumnOperators
-logger = logging.getLogger(__file__)
 
 """
 todo: resourceを登録する形式に変更
@@ -96,6 +95,8 @@ class CRUDResource(RootFactory): ## fixme
         raise self.AfterInput(form=form, context=self)
 
     def create_model_from_form(self, form):
+        from altaircms.auth.helpers import get_authenticated_organization
+        _ = get_authenticated_organization(self.request)
         obj = model_from_dict(self.model, form.data)
         DBSession.add(obj)
 

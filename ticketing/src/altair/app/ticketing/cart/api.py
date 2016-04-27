@@ -71,6 +71,23 @@ def get_event_info_from_cms(request, event_id):
         logging.warn(fmt % (communication_api.get_url(path), e))
     return {"event": []}
 
+def get_keywords_from_cms(request, performance_id):
+    communication_api = get_communication_api(request, CMSCommunicationApi)
+    path = "/api/word/?backend_performance_id=%(performance_id)s" % {"performance_id": performance_id}
+    req = communication_api.create_connection(path)
+    try:
+        with contextlib.closing(urllib2.urlopen(req)) as res:
+            try:
+                data = res.read()
+                return json.loads(data)
+            except urllib2.HTTPError, e:
+                logging.warn("*api* HTTPError: url=%s errorno %s" % (communication_api.get_url(path), e))
+    except urllib2.URLError, e:
+        fmt = "*api* URLError: url=%s response status %s"
+        logging.warn(fmt % (communication_api.get_url(path), e))
+    return {"words": []}
+
+
 def get_route_pattern(registry, name):
     mapper = registry.getUtility(IRoutesMapper)
     pattern = mapper.get_route(name).pattern

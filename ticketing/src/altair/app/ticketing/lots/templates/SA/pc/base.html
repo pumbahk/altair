@@ -24,17 +24,6 @@
   <!-- ========== header ========== -->
   <div id="grpheader">
     <img src="${request.static_url('altair.app.ticketing.lots:static/SA/pc/img/common/header.png')}" alt="静岡朝日テレビ" class="serviceLogo" width="950" height="64" /></p>
-    % if lot:
-      <form action="${request.route_path('lots.entry.logout', _query=dict(lot_id=lot.id, event_id=lot.event.id))}" method="POST">
-        <div style="text-align: right">
-          % if hasattr(request, 'context') and request.context.authenticated_user()['is_guest']:
-            <input type="submit" value="優待コードでログイン"/>
-          % else:
-            <input type="submit" value="ログアウト"/>
-          % endif
-        </div>
-      </form>
-    % endif
   </div>
   <!-- ========== /header ========== -->
   <hr />

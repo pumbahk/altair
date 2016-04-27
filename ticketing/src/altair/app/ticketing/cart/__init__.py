@@ -237,9 +237,9 @@ class CartInterface(object):
         from .api import make_order_from_cart
         return make_order_from_cart(request, cart)
 
-    def cont_complete_view(self, context, request, order_no, magazine_ids):
+    def cont_complete_view(self, context, request, order_no, magazine_ids, word_ids):
         from .views import cont_complete_view
-        return cont_complete_view(context, request, order_no, magazine_ids)
+        return cont_complete_view(context, request, order_no, magazine_ids, word_ids)
 
 def setup_cart_interface(config):
     config.set_cart_interface(CartInterface())

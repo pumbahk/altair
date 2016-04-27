@@ -32,6 +32,9 @@
   .message-complete {
     color: red;
   }
+  .txt-favorite { font-weight: bold; padding: 10px 0; }
+  .list-favorite { width: 100%; text-align: left; }
+  .list-favorite li { width: 50%; float: left; }
 </style>
 </%block>
 
@@ -190,6 +193,37 @@
 									</div>
 									<div>
 										${mailmagazine.description|n}
+									</div>
+								</li>
+								% endfor
+							</ul>
+						</dd>
+					</dl>
+				</div>
+			</div>
+		</div>
+  </div>
+  % endif
+
+  % if keywords_to_subscribe:
+  <div class="settlementBox">
+		<div class="settlementBoxInner">
+			<h2><img src="${request.static_url('altair.app.ticketing.cart:static/RT/pc/images/title_favorite.gif')}" alt="お気に入りワード登録" width="267" height="30" /></h2>
+			<div id="mailKeywordBox">
+				<div id="mailKeywordBoxInner">
+					<dl>
+						<dt>
+							お気に入りワードに登録しておくと、発売開始等のタイミングでお知らせメールが届きます。<br />
+							お知らせメールのサービス開始は夏頃を予定しています。
+						</dt>
+
+						<dd>
+							<ul class="list-favorite">
+								% for keyword, subscribed in keywords_to_subscribe:
+								<li ${subscribed and u'class="subscribed"' or u''|n}>
+									<div>
+										<input type="checkbox" checked="checked" name="keyword" id="keyword-${keyword.id}" value="${keyword.id}" ${subscribed and u'disabled="disabled"' or u''|n} />
+										<label for="keyword-${keyword.id}">${keyword.label}</label>
 									</div>
 								</li>
 								% endfor

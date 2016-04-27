@@ -40,6 +40,17 @@ ${render_mailmagazine(request)}
 
 </div></div><!-- ===== 　/メールマガジンの配信 ===== -->
 
+% if word_enabled:
+<!-- ===== お気に入りワード ===== -->
+<div class="confirm-wrap">
+<div class="confirm-wrap-inner confirm-magBox">
+<h2 class="heading heading_simple_line">お気に入りワードのお知らせメール</h2>
+
+${render_word(request)}
+
+</div></div><!-- ===== 　/お気に入りワード ===== -->
+%endif
+
 <!-- ===== 楽天ポイントのご確認 ===== -->
 <div class="confirm-wrap">
 <h2 class="heading heading_simple_line">楽天ポイントのご確認</h2>
@@ -162,4 +173,56 @@ ${result.pager(format=u"$link_first $link_previous 前を表示 ~3~ 次を表示
 </form>
 
   % endif
+</%def>
+
+<%def name="render_word(request)">
+<form id="word_form" name="word_form" class="confirmForm" method="post" action="${request.route_path('mypage.word.configure')}">
+  <p class="bold">お気に入りワードに登録しておくと、発売開始等のタイミングでお知らせメールが届きます.</p>
+  <p>≫ <a href="${request.route_path('mypage.word.show')}">お気に入りワードの確認・変更はこちら</a></p>
+<p class="mgtb10">
+<input type="radio" ${"checked" if subscribe else ""} name="subscribe" id="word-subscribe" value="1" />
+<label for="word-subscribe">受信する</label>
+% if subscribed:
+  <span class="icon_onmag">購読中</span>
+% endif
+&nbsp;
+<input type="radio" ${"" if subscribe else "checked"} name="subscribe" id="word-unsubscribe" value="0" />
+<label for="word-unsubscribe">受信しない</label>
+</p>
+
+<div class="confirm-btnBox">
+  <input class="btn btn-primary" type="submit" value="変更する" />
+</div>
+</form>
+<script>
+  $('#word_form').submit(function() {
+    var f = this;
+    var $s = $(f).find('input[type="submit"]');
+    $s.val('保存しています...').css({ opacity: 0.6 }).prop('disabled', true);
+
+    $.ajax({
+      url: f.action,
+      type: 'post',
+      data: $(f).serialize()
+    })
+    .done(function(r) {
+      if(r.result == 'OK') {
+        $s.val('保存しました').css({ opacity: null });
+        setTimeout(function() {
+          $s.animate({ opacity: 1.0 }, { duration: 'fast', complete: function() {
+            $s.val('変更する').prop('disabled', false);
+          }});
+        }, 1000);
+      } else {
+        alert('エラーが発生しました.');
+        $s.val('変更する').prop('disabled', false);
+      }
+    })
+    .fail(function() {
+      alert('エラーが発生しました.');
+      $s.val('変更する').prop('disabled', false);
+    });
+    return false;
+  });
+</script>
 </%def>

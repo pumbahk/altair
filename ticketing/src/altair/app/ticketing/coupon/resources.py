@@ -86,8 +86,14 @@ class CouponViewResource(CouponResourceBase):
 
     def can_use_performance_term(self):
         perf = self.session.query(Performance).filter(Performance.id == self.order.performance_id).first()
-        if perf.start_on > datetime.today() + timedelta(minutes=1):
-            return True
+        if perf.end_on:
+            # 終了日時が指定されている場合は、その時刻まで入場できる
+            if datetime.today() < perf.end_on:
+                return True
+        else:
+            # 終了日時が指定されていない場合は、公演時刻まで入れる
+            if datetime.today() <= perf.start_on:
+                return True
         return False
 
     @property
@@ -129,3 +135,5 @@ class CouponViewResource(CouponResourceBase):
         # 全てのクーポンが使用済みの場合、オーダーも発券済みとする。
         if self.all_coupon_used:
             self.order.printed_at = now
+            self.order.issued_at = now
+            self.order.issued = True

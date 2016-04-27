@@ -4,7 +4,7 @@
 <font size="-2">
     <div>
         <a href="http://www.ticketstar.jp/corporate">運営会社</a> |
-        <a href="mailto:popcircus@tstar.jp">お問い合わせ</a> |
+        <a href="http://www.pop-circus.co.jp/contact.html">お問い合わせ</a> |
         <a href="/privacy.html">個人情報保護方針</a> |
         <a href="/legal.html">特定商取引法に基づく表示</a>
     </div>

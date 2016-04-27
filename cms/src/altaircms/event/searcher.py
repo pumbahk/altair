@@ -1,7 +1,7 @@
 from .models import Event
 from .helpers import pageset_id_list_from_word
 from ..page.models import PageSet
-from ..models import Category
+from ..models import Category, Event_Word, Word
 
 def _op_choice(x, sop, y):
     if sop == "lte":
@@ -19,6 +19,11 @@ def make_event_search_query(request, data, qs=None):
     qs = make_event_search_by_category(qs, data)
     if data["is_vetoed"]:
         qs = qs.filter_by(is_searchable=False)
+    if "word" in data and 0 < len(data["word"]):
+        qs = qs.join(Event_Word)\
+               .join(Word)\
+               .filter(Word.id==int(data["word"]))\
+               .filter(Word.deleted_at==None)
     return qs
 
 def make_event_search_by_date(qs, data):

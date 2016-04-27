@@ -6,6 +6,7 @@ import sqlalchemy.orm as orm
 from altaircms.models import Base, BaseOriginalMixin
 from altaircms.models import WithOrganizationMixin
 from altaircms.models import DBSession
+from altaircms.models import Word, Event_Word
 from altaircms.auth.models import Organization
 from datetime import datetime
 from datetime import timedelta
@@ -42,6 +43,8 @@ class Event(BaseOriginalMixin, WithOrganizationMixin, Base):
     ticket_payment = sa.Column(sa.UnicodeText, doc=u"支払い方法")
     code = sa.Column(sa.String(12), doc=u"event code (backend)")
     in_preparation = sa.Column(sa.Boolean, default=False)
+
+    keywords = orm.relationship("Word", backref="events", secondary=Event_Word.__tablename__)
 
     @reify
     def organization(self):
