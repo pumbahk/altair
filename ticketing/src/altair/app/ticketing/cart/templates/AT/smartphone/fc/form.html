@@ -52,6 +52,18 @@ if label is None or label is True:
       </tr>
       <tr>
         <th>
+          枚数
+        </th>
+        <td>
+          <select id="quqntity" name="quantity">
+            % for num in range(13, 51):
+              <option value="${num}">${num}枚</option>
+            % endfor
+            </select>
+        </td>
+      </tr>
+      <tr>
+        <th>
           ${view_context.fc_name if view_context.fc_name else u'氏名'} <span class="red">*</span>
         </th>
         <td>
