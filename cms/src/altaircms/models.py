@@ -409,9 +409,9 @@ class Event_Word(Base):
     __tablename__ = "event_word"
     id = sa.Column(sa.Integer, primary_key=True)
     event_id = sa.Column(sa.Integer, sa.ForeignKey('event.id'))
-    event = relationship("Event", backref=orm.backref('event_word'))
+    event = relationship("Event", backref=orm.backref('event_word', cascade='all, delete-orphan'))
     word_id = sa.Column(sa.Integer, sa.ForeignKey('word.id'))
-    word = relationship("Word", backref=orm.backref('event_word'))
+    word = relationship("Word", backref=orm.backref('event_word', cascade='all, delete-orphan'))
     #sorting = sa.Column(sa.Integer)
     #subscribable = sa.Column(sa.Boolean, default=False)
 
@@ -422,9 +422,9 @@ class Performance_Word(Base):
     __tablename__ = "performance_word"
     id = sa.Column(sa.Integer, primary_key=True)
     performance_id = sa.Column(sa.Integer, sa.ForeignKey('performance.id'))
-    performance = relationship("Performance", backref=orm.backref('performance_word'))
+    performance = relationship("Performance", backref=orm.backref('performance_word', cascade='all, delete-orphan'))
     word_id = sa.Column(sa.Integer, sa.ForeignKey('word.id'))
-    word = relationship("Word", backref=orm.backref('performance_word'))
+    word = relationship("Word", backref=orm.backref('performance_word', cascade='all, delete-orphan'))
     #sorting = sa.Column(sa.Integer)
     #subscribable = sa.Column(sa.Boolean, default=False)
 
