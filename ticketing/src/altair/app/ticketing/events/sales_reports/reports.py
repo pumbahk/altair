@@ -896,7 +896,8 @@ def sendmail(settings, recipient, subject, html):
         recipient = recipient,
         subject = subject,
         body = '',
-        html = html.text
+        html = html.text,
+        encoding='utf-8'
     )
     try:
         mailer.send(sender, recipient.split(','))
