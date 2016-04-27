@@ -7,6 +7,12 @@ var zip_file_path = ${h.json_encode(request.static_url('altair.app.ticketing.car
 </script>
 </%block>
 <%block name="title">${view_context.title}</%block>
+% if request.session.peek_flash():
+  % for message in request.session.pop_flash():
+    <h4 style="color:red;">${message}</h4>
+  % endfor
+% endif
+
 % if view_context.orderreview_page_url != 'about:blank':
 <div class="title-right-description">
   申込受付履歴は<a href="${view_context.orderreview_page_url}">こちら</a>で確認できます

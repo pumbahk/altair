@@ -188,6 +188,17 @@ class FCIndexView(object):
         # 入会フォームで購入枚数が指定されている場合は、取得する
         quantity = 1
         if "quantity" in self.request.POST:
+            if not self.request.POST['quantity'].isdigit():
+                self.request.session.flash(u'指定された商品の枚数が不正です')
+                return dict(form=form, extra_form_fields=extra_form_fields)
+            if product.min_product_quantity:
+                if int(self.request.POST['quantity']) < product.min_product_quantity:
+                    self.request.session.flash(u'指定された商品の枚数が不正です')
+                    return dict(form=form, extra_form_fields=extra_form_fields)
+            if product.max_product_quantity:
+                if int(self.request.POST['quantity']) > product.max_product_quantity:
+                    self.request.session.flash(u'指定された商品の枚数が不正です')
+                    return dict(form=form, extra_form_fields=extra_form_fields)
             quantity = int(self.request.POST['quantity'])
 
         cart = api.order_products(
