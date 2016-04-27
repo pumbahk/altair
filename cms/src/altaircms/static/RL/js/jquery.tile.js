@@ -19,7 +19,8 @@
 	};
 })(jQuery);
 
-$(window).load(function () {
+
+$(window).load(function() {
   $(".tileImg").tile(4);
   $(".tileTitle").tile(4);
   $(".tileText").tile(4);

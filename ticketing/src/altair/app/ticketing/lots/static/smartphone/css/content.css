@@ -1,0 +1,432 @@
+@charset "utf-8";
+
+/*
+	File Name   : content.css
+	Description : コンテンツエリア関係 他
+*/
+
+
+/* 共通
+----------------------------------------------------------- */
+.align1 {
+	text-align: right;
+}
+
+.align2 {
+	text-align: center;
+}
+
+/* 共通設定
+----------------------------------------------------------- */
+
+.subbox{
+	background-color:#F7F7F0;
+	margin:15px 0;
+	-webkit-box-shadow: 0px 0px 3px rgba(51,51,51,0.6);
+	-moz-box-shadow: 0px 0px 3px rgba(51,51,51,0.6);
+	-ms-box-shadow: 0px 0px 3px rgba(51,51,51,0.6);
+	box-shadow: 0px 0px 3px rgba(51,51,51,0.6);
+	border-radius: 5px;
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px;
+	border:1px solid #F9F9F9;
+}
+
+.subbox > dl > dt{
+	background: -moz-linear-gradient(top,  #ffffff 0%, #f3f3e7 100%); /* FF3.6+ */
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#ffffff), color-stop(100%,#f3f3e7)); /* Chrome,Safari4+ */
+	background: -webkit-linear-gradient(top,  #ffffff 0%,#f3f3e7 100%); /* Chrome10+,Safari5.1+ */
+	background: -o-linear-gradient(top,  #ffffff 0%,#f3f3e7 100%); /* Opera 11.10+ */
+	background: -ms-linear-gradient(top,  #ffffff 0%,#f3f3e7 100%); /* IE10+ */
+	background: linear-gradient(to bottom,  #ffffff 0%,#f3f3e7 100%); /* W3C */
+	border-bottom:1px solid #efefef;
+	padding:5px;
+}
+
+.subbox > dl > dt p{
+	font-size:16px;
+	margin:0;
+	border-left:2px solid #CCCCCC;
+	font-weight:bold;
+	padding:5px 0 0 5px;
+	margin-left:5px;
+}
+
+.subbox > dl > dt p.lineRed{
+	border-left:2px solid #BF191F;
+}
+
+.subbox > dl > dd{
+	border-top:1px solid #fff;
+}
+
+.nextBtn{
+	text-align:center;
+}
+
+.nextBtn input{
+	width:200px;
+	height:50px;
+	outline: none;
+	cursor: pointer;
+	text-align: center;
+	text-decoration: none;
+	padding: .5em 2em .55em;
+	text-shadow: 0 1px 1px rgba(0,0,0,.3);
+	-webkit-border-radius: .5em;
+	-moz-border-radius: .5em;
+	border-radius: .5em;
+	-webkit-box-shadow: 0 1px 2px rgba(0,0,0,.2);
+	-moz-box-shadow: 0 1px 2px rgba(0,0,0,.2);
+	box-shadow: 0 1px 2px rgba(0,0,0,.2);
+	color: #fef4e9;
+	font-size:14px;
+	border: solid 1px #da7c0c;
+	background: #f78d1d;
+	background: -webkit-gradient(linear, left top, left bottom, from(#faa51a), to(#f47a20));
+	background: -moz-linear-gradient(top, #faa51a, #f47a20);
+	font-weight:bold;
+}
+
+/* チケット申し込み
+----------------------------------------------------------- */
+
+.infoList{
+	margin:3%;
+}
+
+.infoList dt{
+	font-weight:bold;
+	border-top:1px solid #fff;
+	padding:5px 0;
+	font-size:15px;
+}
+
+.infoList dt:first-child{
+	border-top: none;
+}
+
+.infoList dt span{
+	color:#BF191F;
+}
+
+.infoList dd{
+	padding-bottom:10px;
+}
+
+/* 希望選択
+----------------------------------------------------------- */
+
+.kibouList{
+	margin:3%;
+	background-color:#fff;
+	padding:1%;
+}
+
+.kibouList dt{
+	font-weight:bold;
+	border-top:1px solid #EFEFE1;
+	padding:5px 1%;
+	font-size:15px;
+	color:#B75555;
+}
+
+.kibouList dt:first-child{
+	border-top: none;
+}
+
+.kibouList dt span{
+	color:#BF191F;
+}
+
+.kibouList dd{
+	padding:0  1% 10px;
+}
+
+.tyuui{
+	font-size:11px;
+	color:#888888;
+}
+
+.tyuui2{
+	font-size:11px;
+	color:#FF0000;
+}
+
+/* お支払・お引取方法選択
+----------------------------------------------------------- */
+
+.subInner{
+	background-color:#FFF7E5;
+	padding:1% 0;
+}
+
+.subInner:first-child{
+	margin-top:0;
+	border-top:none;
+}
+
+.subInner2{
+	background-color:#FFF;
+	padding:1% 0;
+}
+
+.subInner2 .creditHl:first-child{
+	margin-top:10px !important;
+}
+
+.creditList dt{
+	color:#BF191F;
+	font-weight:bold;
+	font-size:14px;
+	padding:7px 1%;
+	margin:0 1%;
+}
+
+.creditList dt.creditHl{
+	margin:0;
+	color:#333;
+	background: -moz-linear-gradient(top,  #ffffff 0%, #f3f3e7 100%); /* FF3.6+ */
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#ffffff), color-stop(100%,#f3f3e7)); /* Chrome,Safari4+ */
+	background: -webkit-linear-gradient(top,  #ffffff 0%,#f3f3e7 100%); /* Chrome10+,Safari5.1+ */
+	background: -o-linear-gradient(top,  #ffffff 0%,#f3f3e7 100%); /* Opera 11.10+ */
+	background: -ms-linear-gradient(top,  #ffffff 0%,#f3f3e7 100%); /* IE10+ */
+	background: linear-gradient(to bottom,  #ffffff 0%,#f3f3e7 100%); /* W3C */
+	border-bottom:1px solid #efefef;
+	border-top:1px solid #efefef;
+	padding:7px;
+}
+
+.creditList dd{
+	padding:8px  1% 10px;
+}
+
+.creditList dd img{
+	width:220px;
+	display:block;
+	margin:0 auto;
+}
+
+.creditList dt input[type="radio"]{
+	margin-right:3px;
+}
+
+.creditList dd strong{
+	color:#BF191F;
+}
+
+.kakunin{
+	color:#FF0000;
+}
+
+.creditList dd input[type="text"]{
+	width:90%;
+}
+
+/* クレジットカードでお支払い
+----------------------------------------------------------- */
+
+.numberList{
+	padding:1%;
+}
+
+.numberInner{
+	background-color:#F7F7F0;
+}
+
+.numberList dd{
+	padding:5px 1%;
+	font-size:13px;
+}
+
+.numberList dt{
+	font-weight:bold;
+	border-top:1px solid #fff;
+	padding:7px 1%;
+	font-size:15px;
+}
+
+.numberList dt:first-child{
+	border-top: none;
+}
+
+.numberList dt span{
+	color:#BF191F;
+}
+
+.numberList dd input[type="text"]{
+	width:90%;
+}
+
+.numberList dd img{
+	width:220px;
+	display:block;
+	margin:0 auto;
+}
+
+/* 申込内容確認確認ページ
+----------------------------------------------------------- */
+
+.confirmList{
+	padding:1% 0;
+	border-top:1px dashed #BF191F;
+}
+
+.confirmList:first-child{
+	margin-top:0;
+	border-top:none;
+}
+
+.confirInner{
+	background-color:#fff;
+}
+
+.confirmList dt{
+	padding:7px 1%;
+	margin:0 1%;
+}
+
+.confirmList dt span{
+	color:#ff0000;
+	font-weight:bold;
+}
+
+.confirmList dd{
+	padding:8px  2%;
+	font-size:13px;
+}
+
+.confirmList dt.creditHl{
+	font-weight:bold;
+	margin:0;
+	color:#333;
+	background: -moz-linear-gradient(top,  #ffffff 0%, #f3f3e7 100%); /* FF3.6+ */
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#ffffff), color-stop(100%,#f3f3e7)); /* Chrome,Safari4+ */
+	background: -webkit-linear-gradient(top,  #ffffff 0%,#f3f3e7 100%); /* Chrome10+,Safari5.1+ */
+	background: -o-linear-gradient(top,  #ffffff 0%,#f3f3e7 100%); /* Opera 11.10+ */
+	background: -ms-linear-gradient(top,  #ffffff 0%,#f3f3e7 100%); /* IE10+ */
+	background: linear-gradient(to bottom,  #ffffff 0%,#f3f3e7 100%); /* W3C */
+	border-bottom:1px solid #efefef;
+	border-top:1px solid #efefef;
+	padding:7px;
+}
+
+.confirmList .detailBox{
+	background-color:#FFF7E5;
+	border:1px solid #E5E5CB;
+	padding:1% 2%;
+	margin:0 2%;
+}
+
+.detailBox table{
+	width:100%;
+    boxer:collapse;
+}
+
+.detailBox table tr{
+    border-bottom:1px solid #fff;
+}
+
+.detailBox table tr:nth-child(odd){
+    border-bottom: none;
+}
+
+.detailBox table tr:nth-child(odd) td{
+    text-align: left;
+}
+
+.detailBox table th{
+	text-align:left;
+	border-bottom:1px solid #fff;
+	padding:3px 0;
+}
+
+.detailBox table td{
+	text-align:right;
+	font-weight:bold;
+	padding:3px 0;
+}
+
+.selbtnList{
+	overflow:hidden;
+	margin-bottom:15px;
+	text-align:center;
+}
+
+.selbtnList input{
+	width:140px;
+	height:50px;
+	outline: none;
+	cursor: pointer;
+	text-align: center;
+	text-decoration: none;
+	padding: .5em 0 .55em;
+	text-shadow: 0 1px 1px rgba(0,0,0,.3);
+	-webkit-border-radius: .5em;
+	-moz-border-radius: .5em;
+	border-radius: .5em;
+	-webkit-box-shadow: 0 1px 2px rgba(0,0,0,.2);
+	-moz-box-shadow: 0 1px 2px rgba(0,0,0,.2);
+	box-shadow: 0 1px 2px rgba(0,0,0,.2);
+	color: #fef4e9;
+	font-size:14px;
+	border: solid 1px #da7c0c;
+	background: #f78d1d;
+	background: -webkit-gradient(linear, left top, left bottom, from(#faa51a), to(#f47a20));
+	background: -moz-linear-gradient(top, #faa51a, #f47a20);
+	font-weight:bold;
+	margin:0 2px;
+}
+
+.selbtnList dt{
+	display:inline-block;
+}
+
+.selbtnList dd{
+	display:inline-block;
+}
+
+
+.error {
+  margin: 0;
+  color: red;
+  font-weight: bold;
+  font-size: 16px;
+}
+
+
+
+
+
+
+
+
+
+/* お問い合わせ
+----------------------------------------------------------- */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

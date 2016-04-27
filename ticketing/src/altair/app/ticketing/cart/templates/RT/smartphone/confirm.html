@@ -215,32 +215,56 @@
   % endif
 
   % if mailmagazines_to_subscribe:
-  <div class="settlementBox">
-	<div class="settlementBoxInner">
-      <div class="dispBoxInner">
-        <div id="mailMagazineBox">
-          <div id="mailMagazineBoxInner">
-            <div class="dispBox">
-              <%m:header>メールマガジンの配信</%m:header>
-              ご利用いただいた方には、楽天チケットからのメールマガジンをお送りします。不要な方はチェックをはずしてください。<br/><br/>
-                % for mailmagazine, subscribed in mailmagazines_to_subscribe:
-                <div${subscribed and u' class="subscribed"' or u''|n}>
-                  <div>
+  <div class="confirmBox">
+	<div class="confirmBoxInner">
+      <div class="dispBox">
+        <%m:header>メールマガジンの配信</%m:header>
+        <div class="dispBoxInner">
+<p>
+  ご利用いただいた方には、楽天チケットからのメールマガジンをお送りします。不要な方はチェックをはずしてください。
+</p>
+          <table id="confirmMailmagazineSubscription" class="methodArea">
+            % for mailmagazine, subscribed in mailmagazines_to_subscribe:
+            <tr${subscribed and u' class="subscribed"' or u''|n}>
+              <td scope="row">
                     <input type="checkbox" checked="checked" name="mailmagazine" id="mailmagazine-${mailmagazine.id}" value="${mailmagazine.id}"${subscribed and u' disabled="disabled"' or u''|n} />
                     <label for="mailmagazine-${mailmagazine.id}">${mailmagazine.name}</label>
-                  </div>
-                  <div>
-                    ${mailmagazine.description|n}
-                  </div>
-                </div>
-                % endfor
-            </div>
-          </div>
+                    <div style="margin-left: 2em;">${mailmagazine.description|n}</div>
+              </td>
+            </tr>
+            % endfor
+          </table>
         </div>
       </div>
 	</div>
   </div>
   % endif
+
+% if keywords_to_subscribe:
+  <div class="confirmBox">
+	<div class="confirmBoxInner">
+      <div class="dispBox">
+        <%m:header>お気に入りワード登録</%m:header>
+        <div class="dispBoxInner">
+<p>
+							お気に入りワードに登録しておくと、発売開始等のタイミングでお知らせメールが届きます。
+							お知らせメールのサービス開始は夏頃を予定しています。
+</p>
+          <table id="confirmKeywordSubscription" class="methodArea">
+            % for keyword, subscribed in keywords_to_subscribe:
+            <tr>
+              <td scope="row">
+  <input type="checkbox" checked="checked" name="keyword" id="keyword-${keyword.id}" value="${keyword.id}" ${subscribed and u'disabled="disabled"' or u''|n} />
+  <label for="keyword-${keyword.id}">${keyword.label}</label>
+              </td>
+            </tr>
+            % endfor
+          </table>
+        </div>
+      </div>
+	</div>
+  </div>
+% endif
 
   <table>
     <tr>

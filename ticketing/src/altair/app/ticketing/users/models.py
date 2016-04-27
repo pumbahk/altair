@@ -82,6 +82,8 @@ class UserProfile(Base, BaseModel, LogicallyDeleted, WithTimestamp):
 
     rakuten_point_account = Column(String(20))
 
+    subscribe_word = Column(Boolean(), default=True)
+
     @hybrid_property
     def full_name_kana(self):
         return self.last_name_kana + u' ' + self.first_name_kana
@@ -261,3 +263,11 @@ class MemberGroup(Base, BaseModel, LogicallyDeleted, WithTimestamp):
 #     query = session.query_property()
 #     membership_id = Column(Identifier, ForeignKey('Membership.id'), primary_key=True)
 #     sales_segment_group_id = Column(Identifier, ForeignKey('SalesSegment.id'), primary_key=True)
+
+class WordSubscription(Base, BaseModel, LogicallyDeleted, WithTimestamp):
+    __tablename__ = 'WordSubscription'
+
+    id = Column(Identifier, primary_key=True)
+    user_id = Column(Identifier, ForeignKey('User.id'))
+    user = relationship('User', backref='wordsubscriptions')
+    word_id = Column(Integer)

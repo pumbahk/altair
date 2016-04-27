@@ -215,7 +215,7 @@ class FamiPortReservationInquiryResponseBuilder(FamiPortResponseBuilder):
                     if famiport_receipt.made_reissueable_at is not None:
                         logger.info(u'FamiPortReceipt(reserve_number=%s) has been made reissueable (%s).' % (famiport_receipt.reserve_number, famiport_receipt.made_reissueable_at))
                     else:
-                        logger.error(u'FamiPortReceipt(reserve_number=%s) already got the corresponding payment-ticketing request received (%s).' % (famiport_receipt.reserve_number, famiport_receipt.payment_request_received_at))
+                        logger.warning(u'FamiPortReceipt(reserve_number=%s) already got the corresponding payment-ticketing request received (%s).' % (famiport_receipt.reserve_number, famiport_receipt.payment_request_received_at))
                         replyCode = ReplyCodeEnum.TicketAlreadyIssuedError.value
                         famiport_receipt = None
                 elif famiport_receipt.payment_request_received_at is not None and \
@@ -223,7 +223,7 @@ class FamiPortReservationInquiryResponseBuilder(FamiPortResponseBuilder):
                     if famiport_receipt.made_reissueable_at is not None:
                         logger.info(u'FamiPortReceipt(reserve_number=%s) has been made reissueable (%s).' % (famiport_receipt.reserve_number, famiport_receipt.made_reissueable_at))
                     else:
-                        logger.error(u'FamiPortReceipt(reserve_number=%s) is already completed (%s).' % (famiport_receipt.reserve_number, famiport_receipt.completed_at))
+                        logger.warning(u'FamiPortReceipt(reserve_number=%s) is already completed (%s).' % (famiport_receipt.reserve_number, famiport_receipt.completed_at))
                         replyCode = ReplyCodeEnum.AlreadyPaidError.value
                         famiport_receipt = None
                 elif famiport_order.auth_number is not None and famiport_order.auth_number != authNumber:
@@ -234,7 +234,7 @@ class FamiPortReservationInquiryResponseBuilder(FamiPortResponseBuilder):
                     if famiport_receipt.type == FamiPortReceiptType.CashOnDelivery.value:
                         if famiport_order.payment_start_at is not None and  \
                            famiport_order.payment_start_at > ticketingDate:
-                            logger.error(u'ticketingDate is earlier than payment_start_at (%s)' % (famiport_order.payment_start_at, ))
+                            logger.warning(u'ticketingDate is earlier than payment_start_at (%s)' % (famiport_order.payment_start_at, ))
                             replyCode = ReplyCodeEnum.SearchKeyError.value
                             famiport_receipt = None
                         elif famiport_order.payment_due_at is not None and \
@@ -242,7 +242,7 @@ class FamiPortReservationInquiryResponseBuilder(FamiPortResponseBuilder):
                             if famiport_receipt.made_reissueable_at is not None:
                                 logger.warning(u'ticketingDate is later than payment_due_at (%s) but FamiPortReceipt(reserve_number=%s) has been made reissueable (%s).' % (famiport_order.payment_due_at, famiport_receipt.reserve_number, famiport_receipt.made_reissueable_at))
                             else:
-                                logger.error(u'ticketingDate is later than payment_due_at (%s)' % (famiport_order.payment_due_at, ))
+                                logger.warning(u'ticketingDate is later than payment_due_at (%s)' % (famiport_order.payment_due_at, ))
                                 replyCode = ReplyCodeEnum.PaymentDueError.value
                                 famiport_receipt = None
                         else:
@@ -255,12 +255,12 @@ class FamiPortReservationInquiryResponseBuilder(FamiPortResponseBuilder):
                     elif famiport_receipt.type == FamiPortReceiptType.Payment.value:
                         if famiport_order.payment_start_at is not None and  \
                            famiport_order.payment_start_at > ticketingDate:
-                            logger.error(u'ticketingDate is earlier than payment_start_at (%s)' % (famiport_order.payment_start_at, ))
+                            logger.warning(u'ticketingDate is earlier than payment_start_at (%s)' % (famiport_order.payment_start_at, ))
                             replyCode = ReplyCodeEnum.SearchKeyError.value
                             famiport_receipt = None
                         elif famiport_order.payment_due_at is not None and \
                              famiport_order.payment_due_at < ticketingDate:
-                            logger.error(u'ticketingDate is later than payment_due_at (%s)' % (famiport_order.payment_due_at, ))
+                            logger.warning(u'ticketingDate is later than payment_due_at (%s)' % (famiport_order.payment_due_at, ))
                             replyCode = ReplyCodeEnum.PaymentDueError.value
                             famiport_receipt = None
                         else:
@@ -277,7 +277,7 @@ class FamiPortReservationInquiryResponseBuilder(FamiPortResponseBuilder):
 
                         if famiport_order.ticketing_start_at is not None and  \
                            famiport_order.ticketing_start_at > ticketingDate:
-                            logger.error(u'ticketingDate is earlier than ticketing_start_at (%s)' % (famiport_order.ticketing_start_at, ))
+                            logger.warning(u'ticketingDate is earlier than ticketing_start_at (%s)' % (famiport_order.ticketing_start_at, ))
                             replyCode = ReplyCodeEnum.TicketingBeforeStartError.value
                             famiport_receipt = None
                         elif famiport_order.ticketing_end_at is not None and \
@@ -285,7 +285,7 @@ class FamiPortReservationInquiryResponseBuilder(FamiPortResponseBuilder):
                             if famiport_receipt.made_reissueable_at is not None:
                                 logger.warning(u'ticketingDate is later than ticketing_end_at (%s) but FamiPortReceipt(reserve_number=%s) has been made reissueable (%s).' % (famiport_order.ticketing_end_at, famiport_receipt.reserve_number, famiport_receipt.made_reissueable_at))
                             else:
-                                logger.error(u'ticketingDate is later than ticketing_end_at (%s)' % (famiport_order.ticketing_end_at, ))
+                                logger.warning(u'ticketingDate is later than ticketing_end_at (%s)' % (famiport_order.ticketing_end_at, ))
                                 replyCode = ReplyCodeEnum.TicketingDueError.value
                                 famiport_receipt = None
                         else:
@@ -447,11 +447,11 @@ class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
                     famiport_receipt = None
                 elif famiport_receipt.payment_request_received_at is not None:
                     if famiport_receipt.completed_at is not None:
-                        logger.error(u'FamiPortReceipt(reserve_number=%s, barcode_no=%s) is already paid or issued (%s).' % (famiport_receipt.reserve_number, famiport_receipt.barcode_no, famiport_receipt.completed_at))
+                        logger.warning(u'FamiPortReceipt(reserve_number=%s, barcode_no=%s) is already paid or issued (%s).' % (famiport_receipt.reserve_number, famiport_receipt.barcode_no, famiport_receipt.completed_at))
                         replyCode = ReplyCodeEnum.AlreadyPaidError.value
                         famiport_receipt = None
                     else:
-                        logger.error(u'FamiPortReceipt(reserve_number=%s, barcode_no=%s) already got the corresponding payment-ticketing request received (%s).' % (famiport_receipt.reserve_number, famiport_receipt.barcode_no, famiport_receipt.payment_request_received_at))
+                        logger.warning(u'FamiPortReceipt(reserve_number=%s, barcode_no=%s) already got the corresponding payment-ticketing request received (%s).' % (famiport_receipt.reserve_number, famiport_receipt.barcode_no, famiport_receipt.payment_request_received_at))
                         replyCode = ReplyCodeEnum.TicketAlreadyIssuedError.value
                         famiport_receipt = None
                 elif not famiport_receipt.can_payment(now):
@@ -473,7 +473,7 @@ class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
                     else:
                         if famiport_order.payment_start_at is not None \
                            and famiport_order.payment_start_at > ticketingDate:
-                            logger.error(u'ticketingDate (%s) is earlier than payment_start_at (%s)' % (
+                            logger.warning(u'ticketingDate (%s) is earlier than payment_start_at (%s)' % (
                                 ticketingDate,
                                 famiport_order.payment_start_at,
                                 ))
@@ -481,7 +481,7 @@ class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
                             famiport_receipt = None
                         elif famiport_order.payment_due_at is not None \
                                 and famiport_order.payment_due_at + self.moratorium < ticketingDate:
-                            logger.error(u'ticketingDate (%s) is later than payment_due_at (%s) + moratorium (%r)' % (
+                            logger.warning(u'ticketingDate (%s) is later than payment_due_at (%s) + moratorium (%r)' % (
                                 ticketingDate, famiport_order.payment_due_at, self.moratorium))
                             replyCode = ReplyCodeEnum.PaymentDueError.value
                             famiport_receipt = None
@@ -495,12 +495,12 @@ class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
                         if famiport_receipt.made_reissueable_at is not None:
                             logger.info(u'tickets for order are already issued at %s' % (famiport_receipt.completed_at, ))
                         else:
-                            logger.error(u'tickets for order are already issued at %s' % (famiport_order.issued_at, ))
+                            logger.warning(u'tickets for order are already issued at %s' % (famiport_order.issued_at, ))
                             replyCode = ReplyCodeEnum.TicketAlreadyIssuedError.value
                             famiport_receipt = None
                     elif famiport_order.ticketing_start_at is not None \
                             and famiport_order.ticketing_start_at > ticketingDate:
-                        logger.error(u'ticketingDate (%s) is earlier than ticketing_start_at (%s)' % (ticketingDate, famiport_order.ticketing_start_at,))
+                        logger.warning(u'ticketingDate (%s) is earlier than ticketing_start_at (%s)' % (ticketingDate, famiport_order.ticketing_start_at,))
                         replyCode = ReplyCodeEnum.TicketingBeforeStartError.value
                         famiport_receipt = None
                     elif famiport_order.ticketing_end_at is not None \
@@ -508,7 +508,7 @@ class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
                         if famiport_receipt.made_reissueable_at is not None:
                             logger.warning(u'ticketingDate (%s) is later than ticketing_end_at (%s) but FamiPortReceipt(reserve_number=%s, barcode_no=%s) has been made reissueable (%s).' % (ticketingDate, famiport_order.ticketing_end_at, famiport_receipt.reserve_number, famiport_receipt.barcode_no, famiport_receipt.made_reissueable_at))
                         else:
-                            logger.error(u'ticketingDate (%s) is later than ticketing_end_at (%s) + moratorium (%r)' % (
+                            logger.warning(u'ticketingDate (%s) is later than ticketing_end_at (%s) + moratorium (%r)' % (
                                 ticketingDate, famiport_order.ticketing_end_at, self.moratorium))
                             replyCode = ReplyCodeEnum.TicketingDueError.value
                             famiport_receipt = None
@@ -742,7 +742,7 @@ class FamiPortPaymentTicketingCompletionResponseBuilder(FamiPortResponseBuilder)
                     elif famiport_receipt.type == FamiPortReceiptType.Ticketing.value:
                         # 前払後日の発券 / 発券のみ
                         if famiport_receipt.made_reissueable_at is None and famiport_receipt.completed_at is not None:
-                            logger.error(u"FamiPortReceipt(type=%d, id=%ld, reserve_number=%s): already issued" % (famiport_receipt.type, famiport_receipt.id, famiport_receipt.reserve_number))
+                            logger.warning(u"FamiPortReceipt(type=%d, id=%ld, reserve_number=%s): already issued" % (famiport_receipt.type, famiport_receipt.id, famiport_receipt.reserve_number))
                             replyCode = ReplyCodeEnum.AlreadyPaidError.value
                         else:
                             logger.info(u"FamiPortReceipt(type=%d, id=%ld, reserve_number=%s): ticketing" % (famiport_receipt.type, famiport_receipt.id, famiport_receipt.reserve_number))

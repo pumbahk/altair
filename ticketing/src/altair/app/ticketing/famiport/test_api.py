@@ -892,6 +892,7 @@ class CreateFamiPortOrderTest(unittest.TestCase):
                     data=u'<ticket>test</ticket>',
                     price=500,
                     userside_id=1,
+                    userside_token_id=1,
                     logically_subticket=False
                     ),
                 dict(
@@ -901,6 +902,7 @@ class CreateFamiPortOrderTest(unittest.TestCase):
                     data=u'<ticket>test</ticket>',
                     price=500,
                     userside_id=2,
+                    userside_token_id=2,
                     logically_subticket=False
                     )
                 ],
@@ -938,6 +940,7 @@ class CreateFamiPortOrderTest(unittest.TestCase):
                     data=u'<ticket>test</ticket>',
                     price=500,
                     userside_id=1,
+                    userside_token_id=1,
                     logically_subticket=False
                     ),
                 dict(
@@ -947,6 +950,7 @@ class CreateFamiPortOrderTest(unittest.TestCase):
                     data=u'<ticket>test</ticket>',
                     price=500,
                     userside_id=2,
+                    userside_token_id=2,
                     logically_subticket=False
                     )
                 ],

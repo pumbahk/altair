@@ -39,6 +39,7 @@ from altair.app.ticketing.carturl.api import get_cart_url_builder, get_cart_now_
 from altair.app.ticketing.events.sales_segments.resources import (
     SalesSegmentAccessor,
 )
+from ..famiport_helpers import get_famiport_performance_ids
 from .api import set_visible_performance, set_invisible_performance
 
 logger = logging.getLogger(__name__)
@@ -396,16 +397,10 @@ class Performances(BaseView):
             url=paginate.PageURL_WebOb(self.request)
         )
 
-        fm_performance_ids = [] # FM連携済みのperformance_id
-        altair_famiport_performances = slave_session.query(AltairFamiPortPerformance)\
-            .filter(AltairFamiPortPerformance.performance_id.in_([performance.id for performance in performances])).all()
-        for altair_famiport_performance in altair_famiport_performances:
-            fm_performance_ids.append(altair_famiport_performance.performance_id)
-
         return {
             'event': self.context.event,
             'performances': performances,
-            'fm_performance_ids': fm_performance_ids,
+            'fm_performance_ids': get_famiport_performance_ids(slave_session, performances),
             'form': PerformanceForm(organization_id=self.context.user.organization_id),
         }
 

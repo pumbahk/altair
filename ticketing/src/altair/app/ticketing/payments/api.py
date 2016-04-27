@@ -50,9 +50,9 @@ def make_order_from_cart(request, cart):
     cart_if = request.registry.getUtility(ICartInterface)
     return cart_if.make_order_from_cart(request, cart)
 
-def cont_complete_view(context, request, order_no, magazine_ids):
+def cont_complete_view(context, request, order_no, magazine_ids, word_ids):
     cart_if = request.registry.getUtility(ICartInterface)
-    return cart_if.cont_complete_view(context, request, order_no, magazine_ids)
+    return cart_if.cont_complete_view(context, request, order_no, magazine_ids, word_ids)
 
 def get_confirm_url(request):
     cart_if = request.registry.getUtility(ICartInterface)
