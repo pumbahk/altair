@@ -178,6 +178,7 @@ def create_famiport_ticket(session, famiport_playguide, ticket_dict):
         template_code=ticket_dict['template'],
         price=ticket_dict['price'],
         userside_id=ticket_dict['userside_id'],
+        userside_token_id=ticket_dict['userside_token_id'],
         data=ticket_dict['data'],
         logically_subticket=ticket_dict['logically_subticket']
         )
