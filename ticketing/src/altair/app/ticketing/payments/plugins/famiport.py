@@ -216,7 +216,13 @@ def get_ticket_count(request, order_like):
 def build_ticket_dicts_from_order_like(request, order_like):
     tickets = []
     issuer = NumberIssuer()
-    for ordered_product in order_like.items:
+    # FamiPortTicket <=> OrderedProductItemToken間の関連をもつためになるべくOrderからticket_dictを作成したい
+    # mmm...
+    if order_like.order:
+        target = order_like.order
+    else:
+        target = order_like
+    for ordered_product in target.items:
         for ordered_product_item in ordered_product.elements:
             # XXX: OrderedProductLike is not reachable from OrderedProductItemLike
             if isinstance(ordered_product_item, OrderedProductItem):

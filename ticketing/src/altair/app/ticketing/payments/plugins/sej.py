@@ -657,7 +657,11 @@ class SejDeliveryPlugin(SejDeliveryPluginBase):
         tenant = userside_api.lookup_sej_tenant(request, order_like.organization_id)
         try:
             if isinstance(order_like, Cart):
-                tickets = get_tickets_from_cart(request, order_like, current_date)
+                # SejTicket <=> OrderedProductItemTokenの関連をもつために、なるべくOrderからtickets_dictを作りたい
+                if order_like.order:
+                    tickets = get_tickets(request, order_like.order)
+                else:
+                    tickets = get_tickets_from_cart(request, order_like, current_date)
             else:
                 tickets = get_tickets(request, order_like)
             sej_order = sej_api.create_sej_order(
