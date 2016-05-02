@@ -336,8 +336,7 @@ def build_sej_tickets_from_dicts(order_no, tickets, barcode_number_getter):
             ticket_template_id   = ticket.get('ticket_template_id'),
             ticket_data_xml      = ticket.get('xml'),
             product_item_id      = ticket.get('product_item_id'),
-            barcode_number       = barcode_number_getter(i + 1),
-            ordered_product_item_token_id = ticket.get('ordered_product_item_token_id')
+            barcode_number       = barcode_number_getter(i + 1)
             )
         for i, ticket in enumerate(tickets)
         ]

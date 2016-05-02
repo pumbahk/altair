@@ -1,0 +1,75 @@
+<%inherit file="${context['main_template'].uri}" />
+<%block name="title">お申し込み完了</%block>
+<div class="frame frame-inner">
+  <h3>受付番号</h3>
+  <span class="importantNumber">${order.order_no}</span>
+</div>
+
+<div class="frame frame-inner">
+  <h3>お申込内容</h3>
+  <table class="purchasedContents">
+    <thead>
+      <tr>
+        <th colspan="3">${_context.event.title}</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>${order.ordered_products[0].product.name}</td>
+        <td>　</td>
+        <td class="textR">￥${h.format_number(order.ordered_products[0].product.price)} × ${order.ordered_products[0].quantity}枚</td>
+      </tr>
+      <tr>
+        <td>決済手数料</td>
+        <td> </td>
+        <td class="textR">￥${h.format_number(order.transaction_fee)}</td>
+      </tr>
+% if order.delivery_fee > 0:
+      <tr>
+        <td>配送手数料</td>
+        <td> </td>
+        <td class="textR">￥${h.format_number(order.delivery_fee)}</td>
+      </tr>
+% endif
+% if order.system_fee > 0:
+      <tr>
+        <td>システム手数料</td>
+        <td> </td>
+        <td class="textR">￥${h.format_number(order.system_fee)}</td>
+      </tr>
+% endif
+% if order.special_fee > 0:
+      <tr>
+        <td>${order.special_fee_name}</td>
+        <td> </td>
+        <td class="textR">￥${h.format_number(order.special_fee)}</td>
+      </tr>
+% endif
+    </tbody>
+    <tfoot>
+      <tr>
+        <td>合計金額</td>
+        <td> </td>
+        <td class="textR">￥${h.format_number(order.total_amount)}</td>
+      </tr>
+    </tfoot>
+  </table>
+</div>
+
+<div class="frame frame-inner">
+  <h3>お支払い</h3>
+  ${h.render_payment_finished_viewlet(request, order)}
+</div>
+
+<div class="frame frame-inner">
+  <h3>注意事項</h3>
+  <ul>
+    <li>お申し込み時に、ご登録いただいたメールアドレス宛に、受付完了メールが送られます。しばらくたっても確認のメールが届かない場合は、入力されたメールアドレスが誤っている可能性があります。<a href="${view_context.contact_url}">${view_context.contact_name}</a> までご連絡ください。<br />
+      （お問い合わせの際は、お申込み時のお名前と電話番号を記載お願いします）</li>
+    <li>入力された個人情報は「個人情報保護方針」に基づき適切に取扱われます。</li>
+   	<li>入会後の会員プランの変更及び会費の返却には応じかねますのでご注意ください。</li>
+% if view_context.orderreview_page_url != 'about:blank':
+    <li>お申込内容は、「<a href="${view_context.orderreview_page_url}">履歴確認</a>」からもご確認いただけます。受付番号とご登録時のお電話番号をお手元にご用意の上、ご利用ください。</li>
+% endif
+  </ul>
+</div>
