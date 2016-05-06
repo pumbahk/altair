@@ -1651,6 +1651,13 @@ class SalesSegmentGroup(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 SalesSegmentKindEnum.added_lottery.k)
             )
 
+    def get_lots(self):
+        from ..lots.models import Lot
+        lots = []
+        for sales_segment in self.sales_segments:
+            lots = lots + Lot.query.filter(Lot.sales_segment_id == sales_segment.id).all()
+        return lots
+
     @hybrid_property
     def sales_counter(self):
         return self.kind == SalesSegmentKindEnum.sales_counter.k
