@@ -51,14 +51,3 @@ class WordManageView(object):
             "q": search if not None else '',
             "xs": h.paginate(self.request, qs, item_count=qs.count()),
         }
-
-    @view_config(request_method="GET")
-    def form(self):
-        id = self.request.matchdict['id']
-        logger.debug("id=%s" % id)
-        word = self.request.allowable(Word)\
-            .filter(Word.deleted_at==None)\
-            .filter(Word.id==id)\
-            .one()
-        form = WordForm(word=word)
-        return {"form": form, "word": word}
