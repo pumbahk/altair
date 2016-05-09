@@ -130,14 +130,14 @@ class TicketDictListBuilder(object):
         if carted_product_item.product_item.stock.stock_type.quantity_only:
             for i in range(0, carted_product_item.quantity):
                 d = {}
-                builder.build_dict_from_stock(carted_product_item.product_item.stock, d) # ???
+                builder.build_dict_from_stock(carted_product_item.product_item.stock, d) # 返り値を使っていないのでいらいかも？
                 d[u'発券番号'] = ticket_number_issuer(carted_product_item.product_item.id) if ticket_number_issuer else ""
                 d.update(extra)
                 retval.append((None, d))
         else:
             for seat in carted_product_item.seats:
                 d = builder.build_dict_from_seat(seat, ticket_number_issuer=ticket_number_issuer)
-                builder.build_dict_from_stock(carted_product_item.product_item.stock, d) # ???
+                builder.build_dict_from_stock(carted_product_item.product_item.stock, d) # 返り値を使っていないのでいらいかも？
                 d[u'発券番号'] = ticket_number_issuer(carted_product_item.product_item.id) if ticket_number_issuer else ""
                 d.update(extra)
                 retval.append((seat, d))
