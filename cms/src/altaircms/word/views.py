@@ -28,7 +28,7 @@ class WordManageView(object):
         self.context = context
         self.request = request
 
-    @view_config(route_name='word',
+    @view_config(route_name='word_list',
         request_method="GET",
         renderer="altaircms:templates/word/list.html",)
     def index(self):

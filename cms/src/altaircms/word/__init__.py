@@ -1,7 +1,7 @@
 # coding: utf-8
 
 def includeme(config):
-    config.add_route('word', '/word/')
+    config.add_route('word_list', '/word/')
     config.add_crud("word", title="word", model="..models.Word",
                     form=".forms.WordForm",
                     bind_actions=["create", "delete", "update"],
