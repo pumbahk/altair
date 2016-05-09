@@ -50,19 +50,7 @@ def truncated(string, n=142):
     return truncate(text(string), n)
 
 def translate_longtext_to_simple_html(string):
-    """
-    abcdef
-    xyz
-    => <p>abcdef</p><p>xyz</p>
-
-
-    abcdef
-
-    xyz
-    foo
-    => <p>abcdef<br/></p><p>xyz</p><p>foo</p>
-    """
-    return u"<p>%s</p>" % u"</p><p>".join(string.replace("\n\n", "<br/>").split("\n"))
+    return u"<br/>".join(string.replace("\n\n", "<br/>").split("\n"))
 
 def hidden_input(name, value, id=None):
     fmt = '<input id="%s" name="%s" type="hidden" value="%s" />'
