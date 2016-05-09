@@ -72,6 +72,9 @@ def main(argv=sys.argv[1:]):
                     for i, ticket in enumerate(sej_order.tickets):
                         # Todo:barcode_noの重複チェック
                         try:
+                            if not ticket.ordered_product_item_token:
+                                logger.warn('SejTicket.barcode_number={} has no relation with token.'.format(ticket.barcode_number))
+                                continue
                             if not ticket.ordered_product_item_token.seat:
                                 logger.warn('SejTicket.barcode_number={} is not seat selectable.'.format(ticket.barcode_number))
                                 continue
@@ -102,6 +105,9 @@ def main(argv=sys.argv[1:]):
                     ticket_likes = fm_order.get('famiport_tickets')
                     for i, ticket_like in enumerate(ticket_likes):
                         try:
+                            if not ticket_like.get('userside_token_id'):
+                                logger.warn('FamiPortTicket.barcode_number={} has no relation with token.'.format(ticket_like.get('barcode_number')))
+                                continue
                             token = get_token_by_id(session, ticket_like.get('userside_token_id'))
                             if not token.seat:
                                 logger.warn('FamiPortTicket.barcode_number={} is not seat selectable.'.format(ticket_like.get('barcode_number')))
