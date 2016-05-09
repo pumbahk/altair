@@ -9,4 +9,5 @@ def includeme(config):
                     mapper=".mappers.word_mapper",
                     events=dict(),
                     )
+    config.add_route('event_list_for_word', '/word/event')
     config.scan('.views')

@@ -15,6 +15,10 @@
     <input type="submit" value="検索" />
 </form>
 
+<div style="float: right;">
+    <a href="${request.route_path('event_list_for_word')}">イベント一覧</a>
+</div>
+
 <a href="${request.route_path('word_create', action='input')}">新規</a>
 
 <p>全${xs.opts.get("item_count") or xs.collection.count()}件</p>

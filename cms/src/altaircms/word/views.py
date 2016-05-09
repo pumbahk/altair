@@ -6,6 +6,7 @@ from sqlalchemy import func, distinct
 import sqlalchemy.orm as orm
 from sqlalchemy import or_
 import altaircms.helpers as h
+from datetime import datetime
 
 from ..event.word import api_word_get
 from .forms import WordForm
@@ -47,7 +48,38 @@ class WordManageView(object):
             .order_by(Word.label_kana)
         if search is not None and 0 < len(search):
             qs = qs.filter(or_(Word.label.contains(search), WordSearch.data.contains(search)))
+        elif self.request.params.get('id'):
+            qs = qs.filter(Word.id==int(self.request.params.get('id')))
         return {
             "q": search if not None else '',
             "xs": h.paginate(self.request, qs, item_count=qs.count()),
+        }
+
+    @view_config(route_name='event_list_for_word',
+        request_method="GET",
+        renderer="altaircms:templates/word/event_list.html",)
+    def event_index(self):
+        deal = self.request.params.get('deal')
+
+        query = DBSession.query(Event.id, Event.title,
+                                Event.keywords,
+                            )
+        qs = self.request.allowable(Event)\
+            .outerjoin(Event_Word)\
+            .outerjoin(Word)\
+            .filter(Word.deleted_at==None)\
+            .group_by(Event.id)\
+            .order_by(Event.deal_open)
+        if deal == 'closed':
+            qs = qs.filter(Event.deal_close < datetime.now())
+        elif deal == 'open':
+            qs = qs.filter(Event.deal_open <= datetime.now() <= Event.deal_close)
+        else: # future
+            deal = 'future'
+            qs = qs.filter(datetime.now() < Event.deal_open)
+
+        return {
+            "xs": h.paginate(self.request, qs, item_count=qs.count()),
+            "deal": deal,
+            "now": datetime.now(),
         }
