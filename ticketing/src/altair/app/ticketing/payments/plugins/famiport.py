@@ -218,7 +218,8 @@ def build_ticket_dicts_from_order_like(request, order_like):
     issuer = NumberIssuer()
     # FamiPortTicket <=> OrderedProductItemToken間の関連をもつためになるべくOrderからticket_dictを作成したい
     # mmm...
-    if order_like.order:
+    from altair.app.ticketing.cart.models import Cart
+    if isinstance(order_like, Cart) and order_like.order:
         target = order_like.order
     else:
         target = order_like
