@@ -36,8 +36,6 @@ class FlashMessage(object):
 def get_endpoint(request): #maybe
     if "endpoint" in request.GET:
         return request.GET["endpoint"]
-    logger.warn("invalid endpoint: url={r.url} referrer={r.referrer}".format(r=request))
-    return "/"
 
 def download_response(path, request=None, filename=None, **kwargs):
     filename = filename or path
