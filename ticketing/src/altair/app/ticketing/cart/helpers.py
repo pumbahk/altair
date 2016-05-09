@@ -103,9 +103,6 @@ def performance_end_date(performance):
 def japanese_date(date):
     return u"%d年%d月%d日(%s)" % (date.year, date.month, date.day, u"月火水木金土日"[date.weekday()])
 
-def japanese_week(date):
-    return u"%d年%d月%d日 %d時%02d分(%s)" % (date.year, date.month, date.day, date.hour, date.minute, u"月火水木金土日"[date.weekday()])
-
 def japanese_time(time):
     return u"%d時%02d分" % (time.hour, time.minute)
 

@@ -590,30 +590,32 @@ class Performances(BaseView):
     def manycopy_post(self):
         # original_perf_id, 1_name, 1_open_on, 1_start_on, 1_end_on, 1_display_order,
         # original_perf_id, 2_name, 2_open_on, 2_start_on, 2_end_on, 2_display_order,
-        params = self.request.params.items()
+        params = self.request.params.dict_of_lists()
         if len(params) == 0:
             self.request.session.flash(u'コピーするものがありません')
             return HTTPFound(location=route_path('events.index', self.request))
 
-        column_num = 5
-        target_total = len(params) / column_num
-
         origin_performance = Performance.get(
-            params[0][1], self.context.organization.id)
+            params['id'][0], self.context.organization.id)
+
+        target_total = 0
+        if 'name' in params:
+            target_total = len(params['name'])
 
         error_exist = self.validate_manycopy(params, target_total)
         if error_exist:
             forms = []
-            for cnt in range(0, target_total):
-                f = PerformanceManycopyForm()
-                f.id.data = origin_performance.id
-                f.name.data = params[cnt * column_num + 1][1]
-                if params[cnt * column_num + 2][1]:
-                    f.open_on.data = params[cnt * column_num + 2][1]
-                f.start_on.data = params[cnt * column_num + 3][1]
-                f.end_on.data = params[cnt * column_num + 4][1]
-                f.display_order.data = params[cnt * column_num + 5][1]
-                forms.append(f)
+            if target_total > 0:
+                for cnt in range(0, target_total):
+                    f = PerformanceManycopyForm()
+                    f.id.data = origin_performance.id
+                    f.name.data = params['name'][cnt]
+                    if params['open_on'][cnt]:
+                        f.open_on.data = params['open_on'][cnt]
+                    f.start_on.data = params['start_on'][cnt]
+                    f.end_on.data = params['end_on'][cnt]
+                    f.display_order.data = params['display_order'][cnt]
+                    forms.append(f)
 
             return {
                 'event': origin_performance.event,
@@ -630,12 +632,12 @@ class Performances(BaseView):
 
             # POST data
             new_performance.event_id = origin_performance.event_id
-            new_performance.name = params[cnt * column_num + 1][1]
-            if params[cnt * column_num + 2][1]:
-                new_performance.open_on = datetime.datetime.strptime(params[cnt * column_num + 2][1], '%Y-%m-%d %H:%M:%S')
-            new_performance.start_on = datetime.datetime.strptime(params[cnt * column_num + 3][1], '%Y-%m-%d %H:%M:%S')
-            new_performance.end_on = params[cnt * column_num + 4][1]
-            new_performance.display_order = params[cnt * column_num + 5][1]
+            new_performance.name = params['name'][cnt]
+            if params['open_on'][cnt]:
+                new_performance.open_on = datetime.datetime.strptime(params['open_on'][cnt], '%Y-%m-%d %H:%M:%S')
+            new_performance.start_on = datetime.datetime.strptime(params['start_on'][cnt], '%Y-%m-%d %H:%M:%S')
+            new_performance.end_on = params['end_on'][cnt]
+            new_performance.display_order = params['display_order'][cnt]
 
             # Copy data
             new_performance.code = self.create_performance_code(
@@ -697,17 +699,16 @@ class Performances(BaseView):
 
     def validate_manycopy(self, params, target_total):
         error_exist = False
-        column_num = 5
 
         for cnt in range(0, target_total):
-            if not params[cnt * column_num + 1][1]:
+            if not params['name'][cnt]:
                 self.request.session.flash(u'{}行目の公演名が未入力です。'.format(cnt + 1))
                 error_exist = True
 
-            if params[cnt * column_num + 2][1]:
+            if params['open_on'][cnt]:
                 try:
                     datetime.datetime.strptime(
-                        params[cnt * column_num + 2][1], '%Y-%m-%d %H:%M:%S')
+                        params['open_on'][cnt], '%Y-%m-%d %H:%M:%S')
                 except ValueError:
                     self.request.session.flash(
                         u'{}行目の開場時刻が不正です。'.format(cnt + 1))
@@ -715,17 +716,17 @@ class Performances(BaseView):
 
             try:
                 start = datetime.datetime.strptime(
-                    params[cnt * column_num + 3][1], '%Y-%m-%d %H:%M:%S')
-                if params[cnt * column_num + 2][1]:
+                    params['start_on'][cnt], '%Y-%m-%d %H:%M:%S')
+                if params['open_on'][cnt]:
                     open = datetime.datetime.strptime(
-                        params[cnt * column_num + 2][1], '%Y-%m-%d %H:%M:%S')
+                        params['open_on'][cnt], '%Y-%m-%d %H:%M:%S')
                     if open > start:
                         self.request.session.flash(
                             u'{}行目の開場時間が、公演開始時刻より後に設定されています。'.format(cnt + 1))
                         error_exist = True
-                if params[cnt * column_num + 4][1]:
+                if params['end_on'][cnt]:
                     end = datetime.datetime.strptime(
-                        params[cnt * column_num + 4][1], '%Y-%m-%d %H:%M:%S')
+                        params['end_on'][cnt], '%Y-%m-%d %H:%M:%S')
                     if end < start:
                         self.request.session.flash(
                             u'{}行目の終演時間が、公演開始時刻より前に設定されています。'.format(cnt + 1))
@@ -736,7 +737,7 @@ class Performances(BaseView):
                 error_exist = True
 
             try:
-                display_order = long(params[cnt * column_num + 5][1])
+                display_order = long(params['display_order'][cnt])
                 if -2147483648 > display_order or display_order > 2147483647:
                     self.request.session.flash(
                         u'{}行目の表示順は、-2147483648から、2147483647の間で指定できます。'.format(cnt))

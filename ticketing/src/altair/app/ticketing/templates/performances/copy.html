@@ -42,9 +42,9 @@ $(document).ready(function() {
   公演ID:${origin_performance.id}<br/>
   公演名:${origin_performance.name}<br/>
   会場:${origin_performance.venue.name}<br/>
-  開場日時:${cart_helper.japanese_week(origin_performance.open_on) if origin_performance.open_on else u""}<br/>
-  開演日時:${cart_helper.japanese_week(origin_performance.start_on)}<br/>
-  終演日時:${cart_helper.japanese_week(origin_performance.end_on) if origin_performance.end_on else u""}<br/>
+  開場日時:${cart_helper.japanese_datetime(origin_performance.open_on) if origin_performance.open_on else u""}<br/>
+  開演日時:${cart_helper.japanese_datetime(origin_performance.start_on)}<br/>
+  終演日時:${cart_helper.japanese_datetime(origin_performance.end_on) if origin_performance.end_on else u""}<br/>
   表示順:${origin_performance.display_order}<br/>
 </div>
 
