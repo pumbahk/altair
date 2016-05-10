@@ -233,7 +233,18 @@ class SearchResultRender(object):
         link = h.link.publish_page_from_pageset(self.request, self.pageset)
         link_label = self.pageset.event.title #xx?
         event = self.pageset.event
-        performances = [p for p in event.performances if p.start_on >= self.today and p.public]
+        performances = []
+        for p in event.performances:
+            if not p.public:
+                continue
+
+            if p.end_on:
+                if self.today <= p.end_on:
+                    performances.append(p)
+            else:
+                if p.start_on >= self.today:
+                    performances.append(p)
+
         perf_num = len(performances)
 
         if "prefectures" in self.query_params:
