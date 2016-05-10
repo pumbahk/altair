@@ -201,7 +201,7 @@ function init(tags, progressHandlers, uiUpdater) {
             var message = 'プリントサービスが起動していないか、プリントサービスの設定に誤りがあります';
             if (e != '')
                 message += ' (' + e + ')';
-            alert(message);
+            console.log(message);
         });
     }
     var formats = { };
