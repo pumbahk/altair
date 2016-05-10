@@ -890,7 +890,7 @@ class OrderRefundForm(OurForm):
         widget=CheckboxInput(),
     )
     include_delivery_fee = IntegerField(
-        label=u'配送手数料',
+        label=u'引取手数料',
         validators=[Optional()],
         default=0,
         widget=CheckboxInput(),
