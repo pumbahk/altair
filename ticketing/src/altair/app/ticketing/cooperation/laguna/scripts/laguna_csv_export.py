@@ -200,7 +200,7 @@ def export_csv_for_laguna(request, fileobj, organization_id, cancel_event_ids=[]
         .outerjoin(User, Order.user) \
         .outerjoin(UserProfile) \
         .outerjoin(UserCredential) \
-        .outerjoin(Member) \
+        .outerjoin(Member, Member.auth_identifier == UserCredential.auth_identifier) \
         .outerjoin(MemberGroup) \
         .outerjoin(Membership) \
         .filter(~Event.id.in_(cancel_event_ids)) \
