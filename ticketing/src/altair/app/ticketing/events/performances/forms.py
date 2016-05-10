@@ -320,6 +320,10 @@ class PerformanceManycopyForm(OurForm):
         label=u'開演時間',
         validators=[Required(), after1900],
     )
+    end_on = TextField(
+        label=u'終演時刻',
+        validators=[Required(), after1900],
+    )
     display_order = OurIntegerField(
         label=label_text_for(Performance.display_order),
         default=1,
