@@ -11,28 +11,27 @@
 
 <p style="text-align:center;">
 <div id="login_form">
-<div><font color="#E60048">■</font>会員の方はこちらから</font>
+<div><font color="#3389CB">■</font>関係者の方はこちらから</font>
 </div>
 
 </div>
 <form action="${request.route_path('fc_auth.login', membership=u'-', _query=dict(return_to=request.route_path('mypage.show')))}" method="post">
 <input type="hidden" name="membership" value="${view_context.organization_short_name}" />
 <div>
-  会員番号<br/>
+  <%doc>要望によりusernameのラベルをパスワードにします #TKT-1722</%doc>
+  パスワード<br/>
   <input type="text" name="username" size="22" value="" istyle="4">
   %if message:
-  <br/><span style="color: red">会員番号またはパスワードが一致しません</span>
+  <br/><span style="color: red">パスワードが一致しません</span>
   %endif
-  <br/>
-  パスワード<br/>
-  <input type="password" name="password" size="22" value="" istyle="4">
+  <input type="hidden" name="password" value="blueprint">
 </div>
 <input type="submit" value="ログイン" />
 </form>
 </div>
 
 <div>
-<div><font color="#E60048">■</font>一般の方はこちらから</font>
+<div><font color="#3389CB">■</font>一般の方はこちらから</font>
 </div>
 
 </div>
