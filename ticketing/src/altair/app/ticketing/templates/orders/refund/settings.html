@@ -59,6 +59,21 @@
 
       $('form').disableOnSubmit();
       $('[rel=popover]').popover({html:true});
+
+      // value_defaults
+      $('#start_at\\.hour').val('0');
+      $('#start_at\\.minute').val('0');
+      $('#start_at\\.second').val('0');
+      $('#end_at\\.hour').val('23');
+      $('#end_at\\.minute').val('59');
+      $('#end_at\\.second').val('59');
+
+      $('#start_at\\.hour').attr('readonly',true);
+      $('#start_at\\.minute').attr('readonly',true);
+      $('#start_at\\.second').attr('readonly',true);
+      $('#end_at\\.hour').attr('readonly',true);
+      $('#end_at\\.minute').attr('readonly',true);
+      $('#end_at\\.second').attr('readonly',true);
     });
   </script>
 
