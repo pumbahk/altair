@@ -156,6 +156,7 @@ def famiport_order_to_dict(famiport_order):
                 template=famiport_ticket.template_code,
                 data=famiport_ticket.data,
                 subticket=famiport_ticket.is_subticket,
+                userside_token_id=famiport_ticket.userside_token_id,
                 logically_subticket=famiport_ticket.logically_subticket
                 )
             for famiport_ticket in famiport_order.famiport_tickets

@@ -74,9 +74,10 @@ def get_ticketing_start_at(current_date, order_like):
 def get_ticketing_due_at(current_date, order_like):
     return order_like.issuing_end_at
 
-def get_sej_ticket_data(product_item, ticket_type, svg, ticket_template_id=None):
+def get_sej_ticket_data(product_item, ticket_type, svg, ticket_template_id=None, token_id=None):
     assert ticket_template_id is not None
     performance = product_item.performance
+
     return dict(
         ticket_type         = ticket_type,
         event_name          = re.sub('[ \-\.,;\'\"]', '', han2zen(performance.event.title)[:20]),
@@ -84,7 +85,8 @@ def get_sej_ticket_data(product_item, ticket_type, svg, ticket_template_id=None)
         ticket_template_id  = ticket_template_id,
         performance_datetime= performance.start_on,
         xml=svg,
-        product_item_id = product_item.id
+        product_item_id = product_item.id,
+        ordered_product_item_token_id=token_id
     )
 
 def applicable_tickets_iter(bundle):
@@ -115,10 +117,13 @@ def get_tickets(request, order, ticket_template_id=None):
             bundle = ordered_product_item.product_item.ticket_bundle
             for seat, dict_ in dicts:
                 for ticket in applicable_tickets_iter(bundle):
+                    #tkt1200 OrderedProductItemTokenが存在する場合はSejTicketと関連付けたい
+                    token_id = dict_.get(u'token_id')
                     if ticket.principal:
                         ticket_type = SejTicketType.TicketWithBarcode
                     else:
                         ticket_type = SejTicketType.ExtraTicket
+
                     ticket_format = ticket.ticket_format
                     ticket_template_id = get_ticket_template_id_from_ticket_format(ticket_format)
                     transform = transform_matrix_from_ticket_format(ticket_format)
@@ -137,7 +142,7 @@ def get_tickets(request, order, ticket_template_id=None):
                             ),
                         encoding=unicode
                         )
-                    ticket = get_sej_ticket_data(ordered_product_item.product_item, ticket_type, svg, ticket_template_id)
+                    ticket = get_sej_ticket_data(ordered_product_item.product_item, ticket_type, svg, ticket_template_id, token_id)
                     tickets.append(ticket)
     return tickets
 
@@ -154,6 +159,7 @@ def get_tickets_from_cart(request, cart, now):
                         ticket_type = SejTicketType.TicketWithBarcode
                     else:
                         ticket_type = SejTicketType.ExtraTicket
+
                     ticket_format = ticket.ticket_format
                     ticket_template_id = get_ticket_template_id_from_ticket_format(ticket_format)
                     transform = transform_matrix_from_ticket_format(ticket_format)
@@ -651,7 +657,11 @@ class SejDeliveryPlugin(SejDeliveryPluginBase):
         tenant = userside_api.lookup_sej_tenant(request, order_like.organization_id)
         try:
             if isinstance(order_like, Cart):
-                tickets = get_tickets_from_cart(request, order_like, current_date)
+                # SejTicket <=> OrderedProductItemTokenの関連をもつために、なるべくOrderからtickets_dictを作りたい
+                if order_like.order:
+                    tickets = get_tickets(request, order_like.order)
+                else:
+                    tickets = get_tickets_from_cart(request, order_like, current_date)
             else:
                 tickets = get_tickets(request, order_like)
             sej_order = sej_api.create_sej_order(
