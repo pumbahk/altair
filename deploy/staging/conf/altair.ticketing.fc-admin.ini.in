@@ -75,7 +75,7 @@ pipeline =
     fc_admin_zea
 
 
-[app:fc_admin_hogehoge]
+[app:fc_admin_rinne]
 use = config:%(here)s/../../baseconf/common.ini#fc-admin
 pyramid.includes = altair.findable_label ${altair:extra_pyramid_includes}
 
@@ -126,21 +126,21 @@ altair.ticketing.cart.mq.url = ${altair:ticketing.mq_url}
 
 altair.fc_admin.events = 3110
 
-[filter:prefix_hogehoge]
+[filter:prefix_rinne]
 use = egg:PasteDeploy#prefix
-prefix = /fc-admin/hogehoge
+prefix = /fc-admin/rinne
 
-[pipeline:pipeline_hogehoge]
+[pipeline:pipeline_rinne]
 pipeline =
-    prefix_hogehoge
+    prefix_rinne
     browserid
-    fc_admin_hogehoge
+    fc_admin_rinne
 
 
 [composite:default]
 use = egg:Paste#urlmap
 /fc-admin/zea = pipeline_zea
-/fc-admin/hogehoge = pipeline_hogehoge
+/fc-admin/rinne = pipeline_rinne
 /.www-check = www-check
 
 [server:main]

@@ -3,6 +3,7 @@ altair.cms.usersite.ini
 altair.newsletter.admin.ini
 altair.ticketing.admin.ini
 altair.ticketing.zea-admin.ini
+altair.ticketing.fc-admin.ini
 altair.ticketing.cart.ini
 altair.ticketing.worker.lots.ini
 altair.ticketing.worker.cart.ini
