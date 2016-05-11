@@ -29,6 +29,7 @@ from altair.augus.protocols import (
 
 from altair.app.ticketing.core.models import (
     Organization,
+    Performance,
     AugusAccount,
     AugusPerformance,
     AugusTicket,
@@ -299,9 +300,13 @@ class AugusWorker(object):
         logger.info('start augus distribition: augus_account_id={}'.format(self.augus_account.id))
         staging = self.path.send_dir_staging
         exporter = AugusAchievementExporter()
+        now = datetime.datetime.now()
+        moratorium = datetime.timedelta(days=90)
         qs = AugusPerformance\
           .query\
-          .filter(AugusPerformance.augus_account_id==self.augus_account.id)
+          .join(AugusPerformance.performance) \
+          .filter(AugusPerformance.augus_account_id==self.augus_account.id) \
+          .filter(sa.or_(Performance.start_on >= now - moratorium, Performance.end_on >= now - moratorium))
 
         if not all_:
             qs = qs.filter(AugusPerformance.is_report_target==True)
