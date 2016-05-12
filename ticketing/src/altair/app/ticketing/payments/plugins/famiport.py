@@ -140,13 +140,14 @@ def applicable_tickets_iter(bundle):
     return ApplicableTicketsProducer(bundle).famiport_only_tickets()
 
 
-def build_ticket_dict(type_, data, template_code, price, token_serial, logically_subticket):
+def build_ticket_dict(type_, data, template_code, price, token_serial, token_id, logically_subticket):
     return dict(
         type=type_,
         data=data,
         template=template_code,
         price=price,
         userside_id=token_serial,
+        userside_token_id=token_id,
         logically_subticket=logically_subticket
         )
 
@@ -215,7 +216,14 @@ def get_ticket_count(request, order_like):
 def build_ticket_dicts_from_order_like(request, order_like):
     tickets = []
     issuer = NumberIssuer()
-    for ordered_product in order_like.items:
+    # FamiPortTicket <=> OrderedProductItemToken間の関連をもつためになるべくOrderからticket_dictを作成したい
+    # mmm...
+    from altair.app.ticketing.cart.models import Cart
+    if isinstance(order_like, Cart) and order_like.order:
+        target = order_like.order
+    else:
+        target = order_like
+    for ordered_product in target.items:
         for ordered_product_item in ordered_product.elements:
             # XXX: OrderedProductLike is not reachable from OrderedProductItemLike
             if isinstance(ordered_product_item, OrderedProductItem):
@@ -240,6 +248,7 @@ def build_ticket_dicts_from_order_like(request, order_like):
                         template_code=template_code,
                         price=ordered_product_item.price,
                         token_serial=token.serial,
+                        token_id=token.id,
                         logically_subticket=logically_subticket
                         )
                     tickets.append(ticket)

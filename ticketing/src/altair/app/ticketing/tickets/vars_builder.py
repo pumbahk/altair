@@ -19,7 +19,7 @@ def datetime_as_dict(dt):
 def get_unique_string_for_qr_from_token(token):
     return u"発券時ユニークID: token.id={}".format(token.id)
 
-DummyToken = namedtuple('DummyToken', 'serial seat')
+DummyToken = namedtuple('DummyToken', 'id serial seat')
 
 class TicketCoverDictBuilder(object):
     def __init__(self, formatter):
@@ -158,14 +158,14 @@ class TicketDictListBuilder(object):
                 builder.build_dict_from_stock(carted_product_item.product_item.stock, d)
                 d[u'発券番号'] = ticket_number_issuer(carted_product_item.product_item.id) if ticket_number_issuer else ""
                 d.update(extra)
-                retval.append((DummyToken(serial=i, seat=None), d))
+                retval.append((DummyToken(id=None, serial=i, seat=None), d))
         else:
             for seat in carted_product_item.seats:
                 d = builder.build_dict_from_seat(seat, ticket_number_issuer=ticket_number_issuer)
                 builder.build_dict_from_stock(carted_product_item.product_item.stock, d)
                 d[u'発券番号'] = ticket_number_issuer(carted_product_item.product_item.id) if ticket_number_issuer else ""
                 d.update(extra)
-                retval.append((DummyToken(serial=None, seat=seat), d))
+                retval.append((DummyToken(id=None, serial=None, seat=seat), d))
         return retval
 
 
@@ -588,6 +588,7 @@ class TicketDictBuilder(object):
         if not ordered_product_item_token.valid:
             return None
         d = {}
+        d[u'token_id'] = ordered_product_item_token.id
         d[u'発券時ユニークID'] = get_unique_string_for_qr_from_token(ordered_product_item_token)
         d[u'serial'] = ordered_product_item_token.serial
         d[u'発券番号'] = ticket_number_issuer(ordered_product_item.product_item.id) if ticket_number_issuer else ""
