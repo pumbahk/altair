@@ -15,7 +15,7 @@ def can_use_coupon(request, token_id):
 
 
 def can_use_coupon_order(request, order):
-    if order.issued_at:
+    if order.printed_at:
         return False
     return True
 
