@@ -46,7 +46,7 @@
                     <table class="loginbox">
                         <thead>
                             <tr>
-                                <th>会員の方<small> はこちらから</small></th>
+                                <th>関係者の方<small> はこちらから</small></th>
                             </tr>
                         </thead>
                         <tr>
@@ -54,12 +54,13 @@
                                 <table width="323" cellpadding="0" cellspacing="0" class="member nobdr">
                                   <tbody>
                                     <tr>
-                                      <th style="text-align:right">会員番号</th>
+                                      <%doc>要望によりusernameのラベルをパスワードにします #TKT-1722</%doc>
+                                      <th style="text-align:right">パスワード</th>
                                       <td style="text-align:left">
                                         <div class="tal">
-                                            <input type="text" class="text" name="username">
+                                            <input type="password" class="text" name="username">
                                             %if message:
-                                            <br/><span class="small red">会員番号またはパスワードが一致しません</span>
+                                            <br/><span class="small red">パスワードが一致しません</span>
                                             %endif
                                         </div>
                                       </td>
@@ -68,7 +69,7 @@
                                       <th style="text-align:right">パスワード</th>
                                       <td style="text-align:left">
                                         <div class="tal">
-                                            <input type="password" class="text" name="password">
+                                            <input type="hidden" name="password" value="blueprint">
                                         </div>
                                       </td>
                                     </tr>

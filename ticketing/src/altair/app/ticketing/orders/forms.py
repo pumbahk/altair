@@ -890,7 +890,7 @@ class OrderRefundForm(OurForm):
         widget=CheckboxInput(),
     )
     include_delivery_fee = IntegerField(
-        label=u'配送手数料',
+        label=u'引取手数料',
         validators=[Optional()],
         default=0,
         widget=CheckboxInput(),
@@ -901,22 +901,22 @@ class OrderRefundForm(OurForm):
         choices=[e.v for e in OrderCancelReasonEnum],
         coerce=int
     )
-    start_at = DateField(
+    start_at = DateTimeField(
         label=u'払戻期間',
         validators=[Optional(), after1900],
         format='%Y-%m-%d',
-        widget=OurDateWidget()
+        widget=OurDateTimeWidget()
     )
-    end_at = DateField(
+    end_at = DateTimeField(
         label=u'払戻期間',
         validators=[Optional(), after1900],
         format='%Y-%m-%d',
         missing_value_defaults=dict(
             year=u'',
             month=Max,
-            day=Max
+            day=Max,
         ),
-        widget=OurDateWidget()
+        widget=OurDateTimeWidget()
     )
     need_stub = OurSelectField(
         label=u'半券要否区分',
