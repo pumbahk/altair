@@ -3,6 +3,7 @@ from altair.sqlahelper import get_db_session
 from altair.app.ticketing.orders.models import OrderedProductItemToken
 from altair.app.ticketing.core.models import Host
 
+
 def can_use_coupon(request, token_id):
     session = get_db_session(request, name="slave")
     token = session.query(OrderedProductItemToken).filter(OrderedProductItemToken.id == token_id).first()
@@ -11,6 +12,13 @@ def can_use_coupon(request, token_id):
     if token.printed_at:
         return False
     return True
+
+
+def can_use_coupon_order(request, order):
+    if order.issued_at:
+        return False
+    return True
+
 
 def get_host(request):
     session = get_db_session(request, name="slave")
