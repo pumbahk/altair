@@ -21,6 +21,7 @@ $(document).ready(function() {
           <td>${origin_performance_form.name}</td>\
           <td>${origin_performance_form.open_on}</td>\
           <td>${origin_performance_form.start_on}</td>\
+          <td>${origin_performance_form.end_on}</td>\
           <td>${origin_performance_form.display_order}</td>\
           <td><input deleteTarget="' + rowCount + '" class="deleteButton btn btn-primary" type="button" value="削除"></td>\
         </tr>');
@@ -41,7 +42,9 @@ $(document).ready(function() {
   公演ID:${origin_performance.id}<br/>
   公演名:${origin_performance.name}<br/>
   会場:${origin_performance.venue.name}<br/>
-  公演日:${cart_helper.performance_datetime(origin_performance)}<br/>
+  開場日時:${cart_helper.japanese_datetime(origin_performance.open_on) if origin_performance.open_on else u""}<br/>
+  開演日時:${cart_helper.japanese_datetime(origin_performance.start_on)}<br/>
+  終演日時:${cart_helper.japanese_datetime(origin_performance.end_on) if origin_performance.end_on else u""}<br/>
   表示順:${origin_performance.display_order}<br/>
 </div>
 
@@ -55,6 +58,7 @@ $(document).ready(function() {
           <td>公演名</td>
           <td>開場時間(例:2015-01-01 17:00:00)</td>
           <td>開演時間(例:2015-01-01 18:00:00)</td>
+          <td>終演時間(例:2015-01-01 18:00:00)</td>
           <td>表示順</td>
           <td></td>
         </tr>
@@ -65,6 +69,7 @@ $(document).ready(function() {
           <td>${form.name}</td>
           <td>${form.open_on}</td>
           <td>${form.start_on}</td>
+          <td>${form.end_on}</td>
           <td>${form.display_order}</td>
           <td><input deleteTarget="${num}" class="deleteButton btn btn-primary" type="button" value="削除"></td>
         </tr>

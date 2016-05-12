@@ -1,9 +1,0 @@
-<%inherit file="./base.html"/>
-<form method="post" action="${request.current_route_path(_query=request.GET)}">
-${agreement_body}
-<br/>
-<input type="checkbox" name="agree" value="agree" id="agree"/>
-<label for="agree">上記の注意事項を確認、同意し、公演に申し込みます。</label><br>
-
-  <input type="submit" value="同意する"/>
-</form>

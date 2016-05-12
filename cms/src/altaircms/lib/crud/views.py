@@ -64,8 +64,11 @@ class CRUDResource(RootFactory): ## fixme
 
     ## endpoint
     def get_endpoint(self):
-        endpoint = get_endpoint(self.request)
-        return endpoint or self.request.route_url(self.endpoint or "dashboard")
+        """
+        _GETに指定があればそのURL, なければディレクティブ指定されたview名から生成したURLを返す
+        :return: URL文字列
+        """
+        return get_endpoint(self.request) or self.request.route_url(self.endpoint or "dashboard")
 
     ## search
     def query_form(self, params):
@@ -327,7 +330,7 @@ class SimpleCRUDFactory(object):
         self.endpoint = endpoint or self._join("list")
         self.resource = resource = functools.partial(
             self.Resource, 
-            self.prefix, self.title, self.model, self.form, self.mapper, endpoint, self.filter_form, 
+            self.prefix, self.title, self.model, self.form, self.mapper, self.endpoint, self.filter_form,
             after_input_context=after_input_context, circle_type=circle_type, override_templates=override_templates, 
             **(events or {})) #events. e.g create_event, update_event, delete_event
 
