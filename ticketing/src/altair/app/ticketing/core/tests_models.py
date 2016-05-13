@@ -964,7 +964,9 @@ class SendCMSFeatureTest(unittest.TestCase):
         _teardown_db()
 
     def testEvent(self):
-        x = self.event.get_cms_data()
+        from pyramid.testing import DummyRequest
+        from datetime import datetime
+        x = self.event.get_cms_data(request=DummyRequest(),now=datetime.now())
         self.assertEqual(len(x['performances'][0]['sales']), 4)
 
 

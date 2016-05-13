@@ -593,7 +593,7 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         if now is None:
             now = datetime.now()
         # 販売終了していない販売区分内で直近のものを探す
-        not_ended_sales_segments = [ss for ss in self.sales_segments if ss.end_at >= now and ss.public is True and not ss.is_lottery()]
+        not_ended_sales_segments = [ss for ss in self.sales_segments if ss.is_not_finished(now) and ss.public and not ss.is_lottery()]
         if not_ended_sales_segments:
             recent_ss = min(not_ended_sales_segments, key=lambda s:s.start_at)
         else:
@@ -602,11 +602,10 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         # lots分も考慮する
         if self.lots:
             for lot in self.lots:
-                if lot.sales_segment.end_at > now and lot.sales_segment.public is True:
+                if lot.sales_segment.end_at > now and lot.sales_segment.public:
                     if not recent_ss:
                         recent_ss = lot.sales_segment
-                    # 販売開始日が同じであればlotのものを優先する
-                    elif lot.sales_segment.end_at >= now and recent_ss.start_at >= lot.sales_segment.start_at:
+                    elif lot.sales_segment.is_not_finished(now) and recent_ss.start_at > lot.sales_segment.start_at:
                         recent_ss = lot.sales_segment
         return recent_ss
 
@@ -3925,6 +3924,16 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     def is_lottery(self):
         """抽選の販売区分か判定"""
         return 'lottery' in self.kind
+
+    def is_not_finished(self, now):
+        """抽選期間が終了済でないことを確認する"""
+        if now is None:
+            now = datetime.now()
+        # 販売終了日がNoneのものは基本的にないが、null制約上は許しているので
+        if self.end_at:
+            return self.end_at > now
+        else:
+            return True
 
     def delete(self, force=False):
         # delete Product
