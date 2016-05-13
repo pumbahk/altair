@@ -580,6 +580,7 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     @property
     def lots(self):
+        """当公演を抽選対象としているLotを返す"""
         lots = set()
         for p in self.products:
             if p.sales_segment.lots:
@@ -588,6 +589,7 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return list(lots)
 
     def get_recent_sales_segment(self, now):
+        """公演に紐づく販売区分のうち直近のものを返す。抽選の販売区分も含む"""
         if now is None:
             now = datetime.now()
         # 販売終了していない販売区分内で直近のものを探す
@@ -603,7 +605,8 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 if lot.sales_segment.end_at > now and lot.sales_segment.public is True:
                     if not recent_ss:
                         recent_ss = lot.sales_segment
-                    elif lot.sales_segment.end_at >= now and recent_ss.start_at > lot.sales_segment.start_at:
+                    # 販売開始日が同じであればlotのものを優先する
+                    elif lot.sales_segment.end_at >= now and recent_ss.start_at >= lot.sales_segment.start_at:
                         recent_ss = lot.sales_segment
         return recent_ss
 
@@ -799,6 +802,7 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         recent_ss = self.get_recent_sales_segment(now=now)
 
         lot_cart_url = None
+        # 直近の販売区分が抽選なら連携データのpurchase_linkに抽選URLを入れる
         if recent_ss and recent_ss.is_lottery():
             from altair.app.ticketing.carturl.api import get_lots_cart_url_builder
             lot_cart_url = get_lots_cart_url_builder(request).build(request, self.event, recent_ss.lots[0])
