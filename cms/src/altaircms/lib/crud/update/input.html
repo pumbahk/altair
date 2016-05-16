@@ -38,3 +38,9 @@
 $('.row-fluid select:not([multiple])').chosen({single_only: true, no_results_text: '該当無し', placeholder_text_single: ' '});
 $('.row-fluid select[multiple]').chosen({no_results_text: '該当無し', placeholder_text_multiple: ' '});
 </script>
+
+<%namespace name="word_chosen" file="altaircms:templates/word/_script.html"/>
+<% from altaircms.event.forms import EventForm %>
+% if isinstance(form, EventForm):
+  ${word_chosen.install_handlers()}
+% endif
