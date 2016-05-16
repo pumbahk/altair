@@ -3,17 +3,22 @@
 <%namespace name="fco" file="../../../templates/formcomponents.html"/>
 <%namespace name="nco" file="../../../templates/navcomponents.html"/>
 <% from altaircms.slackoff.forms import PromotionForm, TopicForm,TopcontentForm %>
-<div class="circle ${request.context.circle_type} circle-top"></div>
-<h2>${master_env.title} 新規作成</h2>
 
-<div class="row-fluid">
-  <div class="span10">
-    ${nco.breadcrumbs(
+% if 'popup_view' in request.GET:
+  <!-- no navigation in popup -->
+% else:
+  <div class="circle ${request.context.circle_type} circle-top"></div>
+  <h2>${master_env.title} 新規作成</h2>
+
+  <div class="row-fluid">
+    <div class="span10">
+      ${nco.breadcrumbs(
         names=["Top", u"新規作成"], 
         urls=[request.route_path("dashboard"),])
-    }
+      }
+    </div>
   </div>
-</div>
+% endif
 
 <div class="row-fluid">
     <h3>${master_env.title}追加</h3>

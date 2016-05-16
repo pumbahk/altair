@@ -1,8 +1,11 @@
 ##<%inherit file='layout.html'/>
 <%inherit file="${context['main_template'].uri}"/>
 
-<%namespace name="nco" file="./navcomponents.html"/>
-<div class="row-fluid">
+% if 'popup_view' in request.GET:
+  ${self.body()}
+% else:
+  <%namespace name="nco" file="./navcomponents.html"/>
+  <div class="row-fluid">
   <div class="span1.5">
     ## sidebar
     <ul class="nav nav-list">
@@ -49,7 +52,8 @@
   </div>
   <div class="breadcrumbs"><%block name="breadcrumbs"/></div>
   <div class="span9">
-	  <%block name="flashmessage">${nco.flashmessage("flashmessage")}</%block>
-<%block name="contentright">${self.body()}</%block>
-</div>
-</div>
+    <%block name="flashmessage">${nco.flashmessage("flashmessage")}</%block>
+    <%block name="contentright">${self.body()}</%block>
+  </div>
+  </div>
+% endif
