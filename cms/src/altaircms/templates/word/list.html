@@ -21,16 +21,24 @@
 
 <a href="${request.route_path('word_create', action='input')}">新規</a>
 
+<%def name="sorter(c, s)">
+  % if s == o:
+    <strong>${c}▼</strong>
+  % else:
+    <a href="?o=${s}">${c}</a>
+  % endif
+</%def>
+
 <p>全${xs.opts.get("item_count") or xs.collection.count()}件</p>
 ${xs.pager()}
 
 <table class="table table-striped table-describe">
     <thead>
-    <tr><th class="word-index">idx</th><th class="word-label">Word</th><th># of aliases</th></th><th># of Events</th><th>updated</th><th>action</th></tr>
+    <tr><th class="word-index">${sorter('idx', 'kana')}</th><th class="word-label">Word</th><th># of aliases</th></th><th># of Events</th><th>${sorter(u'登録日時', 'created')}</th><th>action</th></tr>
     </thead>
     <tbody>
     % for word in xs.paginated():
-    <tr><td class="word-index">${word.label_kana[0] if word.label_kana is not None else ""}</td><td class="word-label"><a href="${request.route_path('word_update', action='input', id=word.id)}">${word.label}</a></td><td>${word.num_searches}</td><td><a href="${request.route_path('event_list', _query={ 'word': word.id})}">${word.num_events}</a></td><td>${word.updated_at}</td><td><a href="${request.route_path('word_delete', action='confirm', id=word.id)}">削除</a></td></tr>
+    <tr><td class="word-index">${word.label_kana[0] if word.label_kana is not None else ""}</td><td class="word-label"><a href="${request.route_path('word_update', action='input', id=word.id)}">${word.label}</a></td><td>${word.num_searches}</td><td><a href="${request.route_path('event_list', _query={ 'word': word.id})}">${word.num_events}</a></td><td>${word.created_at}</td><td><a href="${request.route_path('word_delete', action='confirm', id=word.id)}">削除</a></td></tr>
     % endfor
     </tbody>
 </table>

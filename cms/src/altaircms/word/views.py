@@ -37,22 +37,29 @@ class WordManageView(object):
         query = DBSession.query(Word.id, Word.label, Word.label_kana,
                             func.count(distinct(WordSearch.id)).label("num_searches"),
                             func.count(distinct(Event.id)).label("num_events"),
-                            Word.updated_at,
+                            Word.created_at, Word.updated_at,
                             )
         qs = self.request.allowable(Word, query)\
             .filter(Word.deleted_at==None)\
             .outerjoin(WordSearch)\
             .filter(WordSearch.deleted_at==None)\
             .outerjoin(Event_Word, Event)\
-            .group_by(Word.id)\
-            .order_by(Word.label_kana)
+            .group_by(Word.id)
         if search is not None and 0 < len(search):
             qs = qs.filter(or_(Word.label.contains(search), WordSearch.data.contains(search)))
         elif self.request.params.get('id'):
             qs = qs.filter(Word.id==int(self.request.params.get('id')))
+        if self.request.params.get('o') == 'created':
+            sorter = self.request.params.get('o')
+            qs = qs.order_by(Word.created_at.desc())
+        else:
+            sorter = 'kana'
+            qs = qs.order_by(Word.label_kana)
+
         return {
             "q": search if not None else '',
-            "xs": h.paginate(self.request, qs, item_count=qs.count()),
+            "o": sorter,
+            "xs": h.paginate(self.request, qs, item_count=qs.count(), items_per_page=50),
         }
 
     @view_config(route_name='event_list_for_word',
