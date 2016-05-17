@@ -36,6 +36,56 @@ ${ch.breadcrumbs(
 
 <hr />
 
+%if sales_segment_group.get_lots():
+<h3>抽選</h3>
+  <div class="row-fluid">
+    <div class="span12">
+      <table class="table fullwidth checkboxed_table" style="margin-bottom: 10px;">
+        <thead>
+          <tr>
+            <th>抽選名</th>
+            <th>受付期間</th>
+            <th>希望取得上限</th>
+            <th>申込上限回数</th>
+            <th>認証方法</th>
+            <th>抽選結果発表予定日</th>
+            <th>&nbsp;</th>
+            <th>&nbsp;</th>
+          </tr>
+        </thead>
+        <tbody>
+          <%
+             import datetime
+             early = datetime.datetime(1,1,1)
+             late = datetime.datetime(2999, 12, 31)
+             %>
+          %for lot in sales_segment_group.get_lots():
+          <tr>
+            <td><a href="${request.route_url('lots.show', lot_id=lot.id)}">${lot.name}</a></td>
+            <td>${vh.datetime(lot.start_at, with_weekday=True)} - ${vh.datetime(lot.end_at, with_weekday=True)}</td>
+            <td>${lot.limit_wishes}</td>
+            <td>${lot.entry_limit}</td>
+            <td>${lot.auth_type or u'なし'}</td>
+            <td>${vh.datetime(lot.lotting_announce_datetime, with_weekday=True)}</td>
+            <td>
+              <div class="btn-group">
+                <a href="${request.route_url('lots.edit', lot_id=lot.id)}" class="btn btn-small"><i class="icon-edit"></i> 編集</a>
+              </div>
+            </td>
+            <td>
+              <form action="${request.route_path('sales_segment_groups.lot_delete', lot_id=lot.id, sales_segment_group_id=sales_segment_group.id)}" method="POST">
+                <button type="submit" name="action-delete" class="btn"><i class="icon-minus"></i>削除</button>
+              </form>
+            </td>
+          </tr>
+          %endfor
+
+        </tbody>
+      </table>
+    </div>
+  </div>
+%endif
+
 <h3>決済引取方法</h3>
 <%include file="/payment_delivery_method_pairs/_list.html" args="payment_delivery_method_pairs=sales_segment_group.payment_delivery_method_pairs" />
 <%include file="/payment_delivery_method_pairs/_action_button.html" args="sales_segment_group=sales_segment_group" />

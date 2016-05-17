@@ -25,6 +25,7 @@ from altair.app.ticketing.events.sales_segments.views import SalesSegmentViewHel
 from altair.app.ticketing.memberships.forms import MemberGroupForm
 from altair.app.ticketing.users.models import MemberGroup, Membership
 from altair.app.ticketing.events.sales_segments.resources import SalesSegmentAccessor
+from altair.app.ticketing.lots.models import Lot
 
 from .forms import SalesSegmentGroupForm, MemberGroupToSalesSegmentForm
 
@@ -73,6 +74,25 @@ class SalesSegmentGroups(BaseView, SalesSegmentViewHelperMixin):
             'member_groups': self.context.sales_segment_group.membergroups, 
             'sales_segment_group':self.context.sales_segment_group,
             }
+
+    @view_config(route_name='sales_segment_groups.lot_delete', renderer='altair.app.ticketing:templates/sales_segment_groups/show.html', permission='event_viewer')
+    def lot_delete(self):
+        lot_id = self.request.matchdict.get('lot_id')
+
+        lot = Lot.query.filter(Lot.id==lot_id).first()
+        if lot:
+            if lot.entries:
+                self.request.session.flash(u'{0}は抽選申し込みが存在します。'.format(lot.name))
+            else:
+                lot.sales_segment.delete()
+                lot.delete()
+                self.request.session.flash(u"{0}を削除しました。".format(lot.name))
+
+        return {
+            'form_s': SalesSegmentForm(context=self.context),
+            'member_groups': self.context.sales_segment_group.membergroups,
+            'sales_segment_group':self.context.sales_segment_group,
+        }
 
     @view_config(route_name='sales_segment_groups.new', request_method='GET', renderer='altair.app.ticketing:templates/sales_segment_groups/_form.html', xhr=True)
     def new_xhr(self):
