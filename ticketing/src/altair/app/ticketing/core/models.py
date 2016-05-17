@@ -578,6 +578,37 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return sorted(list({s.stock_type for s in self.stocks if s.stock_type}),
                       key=lambda s: s.id)
 
+    @property
+    def lots(self):
+        """当公演を抽選対象としているLotを返す"""
+        lots = set()
+        for p in self.products:
+            if p.sales_segment.lots:
+                # SalesSegmentとLotは1:1なので複数返ってこない想定
+                lots.add(p.sales_segment.lots[0])
+        return list(lots)
+
+    def get_recent_sales_segment(self, now):
+        """公演に紐づく販売区分のうち直近のものを返す。抽選の販売区分も含む"""
+        if now is None:
+            now = datetime.now()
+        # 販売終了していない販売区分内で直近のものを探す
+        not_ended_sales_segments = [ss for ss in self.sales_segments if ss.is_not_finished(now) and ss.public and not ss.is_lottery()]
+        if not_ended_sales_segments:
+            recent_ss = min(not_ended_sales_segments, key=lambda s:s.start_at)
+        else:
+            recent_ss = None
+
+        # lots分も考慮する
+        if self.lots:
+            for lot in self.lots:
+                if lot.sales_segment.end_at > now and lot.sales_segment.public:
+                    if not recent_ss:
+                        recent_ss = lot.sales_segment
+                    elif lot.sales_segment.is_not_finished(now) and recent_ss.start_at > lot.sales_segment.start_at:
+                        recent_ss = lot.sales_segment
+        return recent_ss
+
     def add(self):
         logger.info('[copy] Stock start')
         BaseModel.add(self)
@@ -755,7 +786,7 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
         super(Performance, self).delete()
 
-    def get_cms_data(self):
+    def get_cms_data(self, request, now):
         start_on = isodate.datetime_isoformat(self.start_on) if self.start_on else ''
         end_on = isodate.datetime_isoformat(self.end_on) if self.end_on else ''
         open_on = isodate.datetime_isoformat(self.open_on) if self.open_on else ''
@@ -766,6 +797,14 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         # cmsでは日付は必須項目
         if not start_on and not self.deleted_at:
             raise Exception(u'パフォーマンスの日付を入力してください')
+
+        recent_ss = self.get_recent_sales_segment(now=now)
+
+        lot_cart_url = None
+        # 直近の販売区分が抽選なら連携データのpurchase_linkに抽選URLを入れる
+        if recent_ss and recent_ss.is_lottery():
+            from altair.app.ticketing.carturl.api import get_lots_cart_url_builder
+            lot_cart_url = get_lots_cart_url_builder(request).build(request, self.event, recent_ss.lots[0])
 
         data = {
             'id':self.id,
@@ -778,11 +817,12 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             "code": self.code or "",
             'sales':[s.get_cms_data() for s in sales_segments],
             'public':self.public,
-            'display_order':self.display_order
+            'display_order':self.display_order,
+            'purchase_link': lot_cart_url,
+            'mobile_purchase_link': lot_cart_url
         }
         if self.deleted_at:
             data['deleted'] = 'true'
-
         return data
 
     def query_sales_segments(self, user=None, now=None, type='available'):
@@ -1111,7 +1151,7 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 "organization_id": self.organization.id,
                 }
 
-    def get_cms_data(self, validation=True):
+    def get_cms_data(self, request, now, validation=True):
         '''
         CMSに連携するデータを生成する
         インターフェースのデータ構造は以下のとおり
@@ -1123,7 +1163,7 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         performances = DBSession.query(Performance, include_deleted=True).options(undefer(Performance.deleted_at)).filter_by(event_id=self.id).all()
         data = self._get_self_cms_data()
         data.update({
-            'performances':[p.get_cms_data() for p in performances],
+            'performances':[p.get_cms_data(request, now) for p in performances],
         })
         if self.deleted_at:
             data['deleted'] = 'true'
@@ -3880,6 +3920,20 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
         削除ができる状態の場合はTrueが返ります。
         """
         return not (bool(self.products) or bool(self.lots))
+
+    def is_lottery(self):
+        """抽選の販売区分か判定"""
+        return 'lottery' in self.kind
+
+    def is_not_finished(self, now):
+        """抽選期間が終了済でないことを確認する"""
+        if now is None:
+            now = datetime.now()
+        # 販売終了日がNoneのものは基本的にないが、null制約上は許しているので
+        if self.end_at:
+            return self.end_at > now
+        else:
+            return True
 
     def delete(self, force=False):
         # delete Product
