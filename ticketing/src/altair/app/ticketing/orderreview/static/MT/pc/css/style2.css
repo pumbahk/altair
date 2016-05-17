@@ -119,7 +119,7 @@ h1{
 }
 
 h2 {
-background: #E8240C; /* Old browsers */
+background: #000000; /* Old browsers */
 margin: 0 0 20px 0;
 padding: 10px 10px;
 color: #FFF;
@@ -913,12 +913,12 @@ margin: 10px auto;
 font-size: 20px;
 font-weight: bold;
 display: inline-block;
-background-color:#FB6F56;
+background-color:#666666;
 }
 
 .formWrapper table.form input.submit:hover,
 .btnLogin:hover {
-background-color:#FB6F56;
+background-color:#666666;
 }
 
 
