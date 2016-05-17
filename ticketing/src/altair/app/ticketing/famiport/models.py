@@ -764,30 +764,36 @@ class FamiPortOrder(Base, WithTimestamp):
             raise FamiPortUnsatisfiedPreconditionError(u'order is already invalidated')
         if self.canceled_at is not None:
             raise FamiPortUnsatisfiedPreconditionError(u'order is already canceled')
+        # tkt1770: 支払期日を過ぎている場合は、同席番再予約は実施できないようにする
+        if self.type != FamiPortOrderType.Ticketing.value and self.payment_due_at < now:
+            raise FamiPortUnsatisfiedPreconditionError(u'cannot make suborder after payment due date passed.')
         for famiport_receipt in self.famiport_receipts:
-            if famiport_receipt.canceled_at is None:
+            # 完了済みもしくはキャンセル済みでない場合に, レシートをキャンセルする
+            if famiport_receipt.canceled_at is None and famiport_receipt.completed_at is None:
                 famiport_receipt.mark_canceled(now, request, reason, cancel_reason_code, cancel_reason_text)
 
         if type_:
             logger.info("updated famiport_order.type to:{}".format(type_))
             self.type = type_
         self.add_receipts()
-        self.paid_at = None
-        self.issued_at = None
 
     def add_receipts(self):
         session = object_session(self)
         if self.type == FamiPortOrderType.Payment.value:
-            self.famiport_receipts.extend([
+            # 同席番再予約経由用。支払済みの場合はレシートを作りなおさない
+            if not self.paid_at:
+                self.famiport_receipts.append(
                 FamiPortReceipt.create(
                     session, self.famiport_client,
                     type=FamiPortReceiptType.Payment.value
-                    ),
+                    ))
+            # 同席番再予約経由用。発券済みの場合はレシートを作りなおさない
+            if not self.issued_at:
+                self.famiport_receipts.append(
                 FamiPortReceipt.create(
                     session, self.famiport_client,
                     type=FamiPortReceiptType.Ticketing.value
-                    )
-                ])
+                    ))
         else:
             if self.type == FamiPortOrderType.CashOnDelivery.value:
                 receipt_type = FamiPortReceiptType.CashOnDelivery.value
