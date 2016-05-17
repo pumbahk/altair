@@ -184,9 +184,6 @@ class MemberGroupView(BaseView):
         if not form.validate():
             return {"form": form}
         membership_id=membergroup.membership_id
-        sales_segment_groups = membergroup.sales_segment_groups
-        for ssg in sales_segment_groups:
-            ssg.membergroups.remove(membergroup)
         membergroup.delete()
         self.request.session.flash(u"membergroupを削除しました")
         dummy_url = self.request.route_path("memberships", action="show", membership_id=membership_id) ## this is dummy
