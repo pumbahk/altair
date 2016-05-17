@@ -633,10 +633,12 @@ class Performances(BaseView):
             # POST data
             new_performance.event_id = origin_performance.event_id
             new_performance.name = params['name'][cnt]
+            new_performance.name = new_performance.name.replace("&quote;", "\'")
             if params['open_on'][cnt]:
                 new_performance.open_on = datetime.datetime.strptime(params['open_on'][cnt], '%Y-%m-%d %H:%M:%S')
             new_performance.start_on = datetime.datetime.strptime(params['start_on'][cnt], '%Y-%m-%d %H:%M:%S')
-            new_performance.end_on = params['end_on'][cnt]
+            if new_performance.end_on:
+                new_performance.end_on = datetime.datetime.strptime(params['end_on'][cnt], '%Y-%m-%d %H:%M:%S')
             new_performance.display_order = params['display_order'][cnt]
 
             # Copy data
@@ -674,7 +676,7 @@ class Performances(BaseView):
     def create_origin_performance_form(self, origin_performance):
         f = PerformanceManycopyForm()
         f.id.data = origin_performance.id
-        f.name.data = origin_performance.name
+        f.name.data = origin_performance.name.replace("\'", "&quote;")
         f.open_on.data = origin_performance.open_on
         f.start_on.data = origin_performance.start_on
         f.end_on.data = origin_performance.end_on
