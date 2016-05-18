@@ -15,6 +15,7 @@ def includeme(config):
     config.add_route('events.copy', '/copy/{event_id}', factory=factory)
     config.add_route('events.delete', '/delete/{event_id}', factory=factory)
     config.add_route('events.send', '/send/{event_id}', factory=factory)
+    config.add_route('events.info_from_cms', '/cms_info/{event_id}', factory=factory)
     config.add_route('events.open', '/open/{event_id}/{public}', factory=factory)
     config.add_route('events.famiport.performance_groups.index', '/{event_id}/famiport/performance_groups', factory=factory)
     config.add_route('events.famiport.performance_groups.item.show', '/{event_id}/famiport/performance_groups/{altair_famiport_performance_group_id}/show', factory=factory)
