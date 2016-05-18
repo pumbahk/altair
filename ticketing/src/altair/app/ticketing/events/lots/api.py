@@ -4,6 +4,7 @@ from altair.app.ticketing.carturl.api import get_lots_cart_url_builder
 from altair.sqlahelper import get_db_session
 from altair.app.ticketing.core.models import Event
 from altair.app.ticketing.lots.models import Lot
+from altair.app.ticketing.core.models import DBSession
 
 def get_electing(request):
     return request.registry

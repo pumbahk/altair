@@ -5,6 +5,7 @@ from wtforms import HiddenField
 from wtforms.validators import Regexp, Length, Optional, ValidationError, NumberRange
 from wtforms.widgets import CheckboxInput, TableWidget
 from datetime import datetime, timedelta
+from altair.app.ticketing.security import get_plugin_names
 from altair.formhelpers import (
     OurTextField,
     OurTextAreaField,
@@ -419,6 +420,79 @@ class SalesSegmentGroupForm(OurForm):
             self._validate_display_seat_no,
             self._validate_public
             ]])
+
+
+class SalesSegmentGroupAndLotForm(SalesSegmentGroupForm):
+    lot_name = OurTextField(
+        label=u'抽選名',
+        validators=[
+            Optional(),
+            Length(max=255, message=u'255文字以内で入力してください'),
+        ],
+    )
+    limit_wishes = OurIntegerField(
+        label=u'希望取得上限',
+        validators=[
+            Optional(),
+        ],
+    )
+
+    entry_limit = OurIntegerField(
+        label=u'申込上限回数',
+        validators=[
+            Optional(),
+        ],
+    )
+
+    description = OurTextAreaField(
+        label=u'注意文言',
+        default=u'',
+    )
+
+    lotting_announce_datetime = OurDateTimeField(
+        label=u"抽選結果発表予定日",
+        format='%Y-%m-%d %H:%M',
+        validators=[
+            Optional(),
+        ],
+    )
+
+    lotting_announce_timezone = OurSelectField(
+        label=u"抽選予定時間帯",
+        validators=[
+            Optional(),
+        ],
+        choices=[
+              ('', u'時間まで表示')
+            , ('morning', u'午前(6:00 - 12:00)')
+            , ('day', u'昼以降(12:00 - 16:00)')
+            , ('evening', u'夕方以降(16:00 - 19:00)')
+            , ('night', u'夜(19:00 - 2:00)')
+            , ('next_morning', u'明朝(翌2:00 - 翌6:00)')
+        ],
+    )
+
+    custom_timezone_label = OurTextField(
+        label=u'抽選時間帯カスタムラベル（抽選予定時間帯より優先）',
+        validators=[
+            Optional(),
+            Length(max=255, message=u'255文字以内で入力してください'),
+        ],
+    )
+
+    def _auth_types(field):
+        retval = [('', u'なし')]
+        if hasattr(field._form, 'context'):
+            retval.extend(get_plugin_names(field._form.context.request))
+        return retval
+
+    auth_type = OurSelectField(
+        label=u"認証方法",
+        choices=_auth_types
+    )
+
+    def validate(self, *args, **kwargs):
+        return super(OurForm, self).validate()
 
 
 class MemberGroupToSalesSegmentForm(OurForm):

@@ -45,6 +45,7 @@ from altair.app.ticketing.core import api as core_api
 from altair.app.ticketing.core.models import (
     Event,
     SalesSegment,
+    SalesSegmentGroup,
     ShippingAddress,
     DBSession,
     Performance,
@@ -78,6 +79,7 @@ from altair.app.ticketing.payments.api import set_confirm_url
 from altair.app.ticketing.payments.payment import Payment
 from altair.app.ticketing.payments.plugins import MULTICHECKOUT_PAYMENT_PLUGIN_ID
 from altair.multicheckout.api import get_multicheckout_3d_api
+from altair.app.ticketing.events.sales_segments.resources import SalesSegmentAccessor
 
 from . import sendmail
 from .events import LotEntriedEvent
@@ -573,3 +575,34 @@ def get_lotting_announce_timezone(timezone):
     if timezone in labels:
         label = labels[timezone]
     return label
+
+
+def create_lot(event, form, sales_segment_group=None):
+    if sales_segment_group:
+        sales_segment_group_id = sales_segment_group.id
+    else:
+        sales_segment_group_id = form.data['sales_segment_group_id']
+        sales_segment_group = SalesSegmentGroup.query.filter(SalesSegmentGroup.id == form.data['sales_segment_group_id']).one()
+
+    lot = Lot(
+        event=event,
+        organization_id=event.organization_id,
+        name=form.data['name'],
+        limit_wishes=form.data['limit_wishes'],
+        entry_limit=form.data['entry_limit'],
+        description=form.data['description'],
+        lotting_announce_datetime=form.data['lotting_announce_datetime'],
+        lotting_announce_timezone=form.data['lotting_announce_timezone'],
+        custom_timezone_label=form.data['custom_timezone_label'],
+        auth_type=form.data['auth_type'],
+        )
+    accessor = SalesSegmentAccessor()
+    sales_segment = accessor.create_sales_segment_for_lot(sales_segment_group, lot)
+    sales_segment.sales_segment_group_id = sales_segment_group_id
+    sales_segment.start_at = sales_segment_group.start_at
+    sales_segment.end_at = sales_segment_group.end_at
+    sales_segment.max_quantity = sales_segment_group.max_quantity
+    sales_segment.seat_choice = False
+    sales_segment.auth3d_notice = sales_segment_group.auth3d_notice
+    sales_segment.account_id = sales_segment_group.account_id
+    return lot

@@ -25,6 +25,7 @@ from altair.app.ticketing.core.models import (
 )
 from altair.app.ticketing.events.sales_segments.resources import SalesSegmentAccessor
 from altair.app.ticketing.lots.models import Lot
+from altair.app.ticketing.lots import api
 from altair.app.ticketing.events.sales_reports.forms import ReportSettingForm
 
 from .models import LotEntryReportSetting
@@ -119,32 +120,7 @@ class LotForm(Form):
     )
 
     def create_lot(self, event):
-        sales_segment_group = SalesSegmentGroup.query.filter(SalesSegmentGroup.id==self.data['sales_segment_group_id']).one()
-
-        lot = Lot(
-            event=event,
-            organization_id=event.organization_id,
-            name=self.data['name'],
-            limit_wishes=self.data['limit_wishes'],
-            entry_limit=self.data['entry_limit'],
-            description=self.data['description'],
-            lotting_announce_datetime=self.data['lotting_announce_datetime'],
-            lotting_announce_timezone=self.data['lotting_announce_timezone'],
-            custom_timezone_label=self.data['custom_timezone_label'],
-            auth_type=self.data['auth_type'],
-            )
-        accessor = SalesSegmentAccessor()
-        sales_segment = accessor.create_sales_segment_for_lot(sales_segment_group, lot)
-        sales_segment.sales_segment_group_id=self.data['sales_segment_group_id']
-        sales_segment.start_at=sales_segment_group.start_at
-        sales_segment.end_at=sales_segment_group.end_at
-        sales_segment.max_quantity=sales_segment_group.max_quantity
-        sales_segment.seat_choice=False
-        sales_segment.auth3d_notice=sales_segment_group.auth3d_notice
-        sales_segment.account_id=sales_segment_group.account_id
-
-        return lot
-
+        return api.create_lot(event, self)
 
     def update_lot(self, lot):
         sales_segment = lot.sales_segment

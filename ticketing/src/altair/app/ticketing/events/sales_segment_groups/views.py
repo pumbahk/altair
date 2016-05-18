@@ -18,7 +18,7 @@ from altair.sqla import new_comparator
 from altair.app.ticketing.models import merge_session_with_post, record_to_multidict
 from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.fanstatic import with_bootstrap
-from altair.app.ticketing.core.models import Event, SalesSegment, SalesSegmentGroup, SalesSegmentGroupSetting, Product
+from altair.app.ticketing.core.models import Event, SalesSegment, SalesSegmentGroup, SalesSegmentGroupSetting, SalesSegmentKindEnum, Product, DBSession
 from altair.app.ticketing.events.payment_delivery_method_pairs.forms import PaymentDeliveryMethodPairForm
 from altair.app.ticketing.events.sales_segments.forms import SalesSegmentForm
 from altair.app.ticketing.events.sales_segments.views import SalesSegmentViewHelperMixin
@@ -26,8 +26,9 @@ from altair.app.ticketing.memberships.forms import MemberGroupForm
 from altair.app.ticketing.users.models import MemberGroup, Membership
 from altair.app.ticketing.events.sales_segments.resources import SalesSegmentAccessor
 from altair.app.ticketing.lots.models import Lot
+from altair.app.ticketing.lots.api import create_lot
 
-from .forms import SalesSegmentGroupForm, MemberGroupToSalesSegmentForm
+from .forms import SalesSegmentGroupForm, SalesSegmentGroupAndLotForm, MemberGroupToSalesSegmentForm
 
 logger = logging.getLogger(__name__)
 
@@ -97,13 +98,13 @@ class SalesSegmentGroups(BaseView, SalesSegmentViewHelperMixin):
     @view_config(route_name='sales_segment_groups.new', request_method='GET', renderer='altair.app.ticketing:templates/sales_segment_groups/_form.html', xhr=True)
     def new_xhr(self):
         return {
-            'form': SalesSegmentGroupForm(None, context=self.context, new_form=True),
+            'form': SalesSegmentGroupAndLotForm(None, context=self.context, new_form=True),
             'action': self.request.path,
             }
 
     @view_config(route_name='sales_segment_groups.new', request_method='POST', renderer='altair.app.ticketing:templates/sales_segment_groups/_form.html', xhr=True)
     def new_post(self):
-        f = SalesSegmentGroupForm(self.request.POST, context=self.context, new_form=True)
+        f = SalesSegmentGroupAndLotForm(self.request.POST, context=self.context, new_form=True)
         if f.validate():
             sales_segment_group = merge_session_with_post(
                 SalesSegmentGroup(
@@ -123,6 +124,11 @@ class SalesSegmentGroups(BaseView, SalesSegmentViewHelperMixin):
             accessor = SalesSegmentAccessor()
             for performance in self.context.event.performances:
                 accessor.create_sales_segment_for_performance(sales_segment_group, performance)
+
+            if sales_segment_group.kind in [SalesSegmentKindEnum.early_lottery.k, SalesSegmentKindEnum.added_lottery.k, SalesSegmentKindEnum.first_lottery.k]:
+                lot = create_lot(sales_segment_group.event, f, sales_segment_group)
+                DBSession.add(lot)
+
             self.request.session.flash(u'販売区分グループを保存しました')
             return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
         else:
@@ -131,8 +137,8 @@ class SalesSegmentGroups(BaseView, SalesSegmentViewHelperMixin):
                 'action': self.request.path,
                 }
 
-    @view_config(route_name='sales_segment_groups.copy', request_method='GET', renderer='altair.app.ticketing:templates/sales_segment_groups/_form.html', xhr=True)
-    @view_config(route_name='sales_segment_groups.edit', request_method='GET', renderer='altair.app.ticketing:templates/sales_segment_groups/_form.html', xhr=True)
+    @view_config(route_name='sales_segment_groups.copy', request_method='GET', renderer='altair.app.ticketing:templates/sales_segment_groups/_edit_form.html', xhr=True)
+    @view_config(route_name='sales_segment_groups.edit', request_method='GET', renderer='altair.app.ticketing:templates/sales_segment_groups/_edit_form.html', xhr=True)
     def edit_xhr(self):
         sales_segment_group = self.context.sales_segment_group
         form = SalesSegmentGroupForm(obj=sales_segment_group, context=self.context)
