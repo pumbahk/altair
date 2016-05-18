@@ -768,7 +768,7 @@ class FamiPortOrder(Base, WithTimestamp):
         if self.type != FamiPortOrderType.Ticketing.value and self.payment_due_at < now:
             raise FamiPortUnsatisfiedPreconditionError(u'cannot make suborder after payment due date passed.')
         for famiport_receipt in self.famiport_receipts:
-            # 完了済みもしくはキャンセル済みでない場合に, レシートをキャンセルする
+            # 完了済みでないかつキャンセル済みでない場合に, レシートをキャンセルする
             if famiport_receipt.canceled_at is None and famiport_receipt.completed_at is None:
                 famiport_receipt.mark_canceled(now, request, reason, cancel_reason_code, cancel_reason_text)
 
