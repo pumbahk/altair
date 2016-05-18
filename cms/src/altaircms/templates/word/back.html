@@ -1,0 +1,20 @@
+<%inherit file='../layout.html'/>
+
+<div id="params" data-cb="${cb}" data-obj-id="${word}"></div>
+<script>
+(function(opener) {
+  if(!opener) {
+    return;
+  }
+  var cb = $('#params').data('cb');
+  if(!opener[cb] || (typeof opener[cb]) != 'function' || !cb.match(/^cb/)) {
+    return;
+  }
+
+  var obj_id = $('#params').data('obj-id');
+  if(obj_id) {
+    opener[cb](obj_id);
+    window.close();
+  }
+})(window.opener);
+</script>
