@@ -775,25 +775,38 @@ class FamiPortOrder(Base, WithTimestamp):
         if type_:
             logger.info("updated famiport_order.type to:{}".format(type_))
             self.type = type_
-        self.add_receipts()
+        self.add_receipts(suborder=True)
 
-    def add_receipts(self):
+    def add_receipts(self, suborder=False):
         session = object_session(self)
         if self.type == FamiPortOrderType.Payment.value:
-            # 同席番再予約経由用。支払済みの場合はレシートを作りなおさない
-            if not self.paid_at:
-                self.famiport_receipts.append(
-                FamiPortReceipt.create(
-                    session, self.famiport_client,
-                    type=FamiPortReceiptType.Payment.value
-                    ))
-            # 同席番再予約経由用。発券済みの場合はレシートを作りなおさない
-            if not self.issued_at:
-                self.famiport_receipts.append(
-                FamiPortReceipt.create(
-                    session, self.famiport_client,
-                    type=FamiPortReceiptType.Ticketing.value
-                    ))
+            # 同席番再予約経由用
+            if suborder:
+                # 支払済みの場合はレシートを作りなおさない
+                if not self.paid_at:
+                    self.famiport_receipts.append(
+                    FamiPortReceipt.create(
+                        session, self.famiport_client,
+                        type=FamiPortReceiptType.Payment.value
+                        ))
+                # 発券済みの場合はレシートを作りなおさない
+                if not self.issued_at:
+                    self.famiport_receipts.append(
+                    FamiPortReceipt.create(
+                        session, self.famiport_client,
+                        type=FamiPortReceiptType.Ticketing.value
+                        ))
+            else:
+                self.famiport_receipts.extend([
+                    FamiPortReceipt.create(
+                      session, self.famiport_client,
+                      type=FamiPortReceiptType.Payment.value
+                    ),
+                    FamiPortReceipt.create(
+                      session, self.famiport_client,
+                      type=FamiPortReceiptType.Ticketing.value
+                    )
+                ])
         else:
             if self.type == FamiPortOrderType.CashOnDelivery.value:
                 receipt_type = FamiPortReceiptType.CashOnDelivery.value
