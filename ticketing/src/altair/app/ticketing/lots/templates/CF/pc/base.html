@@ -24,6 +24,13 @@
   <!-- ========== header ========== -->
   <div id="grpheader">
     <img src="${view_context.static_url('pc/images/pc_logo.png')}" alt="${view_context.team_name}" class="serviceLogo" width="950" height="64" /></p>
+
+    <div style="text-align:right;">
+      <a href="/howto.html" class="headerLink" target="_blank">申込方法</a>
+      <a href="/faq.html" class="headerLink" target="_blank">よくある質問</a>
+      <a href="/orderreview" class="headerLink" target="_blank">申込確認</a>
+    </div>
+
     % if lot:
       <!--
       <form action="${request.route_path('lots.entry.logout', _query=dict(lot_id=lot.id, event_id=lot.event.id))}" method="POST">
