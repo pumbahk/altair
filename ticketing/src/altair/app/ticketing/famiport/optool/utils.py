@@ -15,15 +15,15 @@ class ValidateUtils(object):
             logger.info('canceled receipt is not rebookable')
             errors.append(u'当予約はキャンセル済みです')
         # 申込ステータスが確定待ち出ない場合は処理不可
-        elif receipt.payment_request_received_at is None:
+        if receipt.payment_request_received_at is None:
             logger.info('non paid(issued) receipt is not rebookable')
             errors.append(u'当予約は入金(発券)要求が未済です')
         # 申込ステータスが完了済みの場合は処理不可
-        elif receipt.completed_at is not None:
+        if receipt.completed_at is not None:
             logger.info('payment(ticketing) completed receipt is not rebookable')
             errors.append(u'当予約は入金(発券)完了済みです')
         # 支払期日が過ぎている場合は同席番再予約はできないようにするtkt1770
-        elif receipt.famiport_order.type != FamiPortOrderType.Ticketing.value and receipt.famiport_order.payment_due_at < now:
+        if receipt.famiport_order.type != FamiPortOrderType.Ticketing.value and receipt.famiport_order.payment_due_at < now:
             logger.info('cannot rebook after payment due date is passed')
             errors.append(u'当予約は支払期日が過ぎているため同席番再予約できません')
         # TODO:期間バリデーション要追加

@@ -240,10 +240,10 @@ class FamiPortRebookOrderView(object):
 
                 new_management_number = new_receipt.reserve_number
             else:
-                error = u'・'.join(ValidateUtils.validate_rebook_cond(receipt, datetime.now()))
+                error = u'<br>・'.join(ValidateUtils.validate_rebook_cond(receipt, datetime.now()))
 
         else:
-            error = u'・'.join(sum(form.errors.values(), []))
+            error = u'<br>・'.join(sum(form.errors.values(), []))
 
         session.commit()
         return dict(old_identifier=old_management_number,
