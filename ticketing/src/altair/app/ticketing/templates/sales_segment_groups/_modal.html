@@ -18,6 +18,7 @@
             $(this).find('.copy-fields').css('display', 'none');
             var $kind = $(this).find('#kind');
             var $name = $(this).find('#name');
+            var $lot_name = $(this).find('#lot_name');
             if (!$name.val()) {
               var fillDefault = true;
               function onchange() {
@@ -26,6 +27,12 @@
                   $kind.children().each(function (_, n) {
                     if (selected == n.value || selected == null) {
                       $name.val(n.firstChild.nodeValue);
+                      $lot_name.val(n.firstChild.nodeValue);
+                      if ($kind.val() == "early_lottery" || $kind.val() == "added_lottery" || $kind.val() == "first_lottery") {
+                        $('#lot_area').show();
+                      } else {
+                        $('#lot_area').hide();
+                      }
                       return false;
                     }
                   });
