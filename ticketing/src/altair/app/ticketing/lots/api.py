@@ -38,6 +38,7 @@ from sqlalchemy.orm.exc import NoResultFound
 #from pyramid.interfaces import IRequest
 from webob.multidict import MultiDict
 from altair.now import get_now
+from ..products import api as product_api
 from altair.app.ticketing.cart import api as cart_api
 from altair.app.ticketing.utils import sensible_alnum_encode
 from altair.app.ticketing.core import api as core_api
@@ -609,3 +610,23 @@ def create_lot(event, form, sales_segment_group=None, lot_name=None):
     sales_segment.auth3d_notice = sales_segment_group.auth3d_notice
     sales_segment.account_id = sales_segment_group.account_id
     return lot
+
+
+def create_lot_with_goods(event, form, sales_segment_group=None, lot_name=None):
+    lot = create_lot(event, form, sales_segment_group, lot_name)
+    DBSession.add(lot)
+
+    for sales_segment in sales_segment_group.sales_segments:
+        for product in sales_segment.products:
+
+            # original_product_idが入っているのは抽選の商品
+            if not product.original_product_id:
+                # 抽選商品の登録
+                lot_product = product_api.add_lot_product(
+                    sales_segment_group=sales_segment_group,
+                    original_product=product
+                )
+
+                for product_item in product.items:
+                    # 抽選商品明細の登録
+                    product_api.add_lot_product_item(lot_product, product_item)

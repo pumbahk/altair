@@ -26,7 +26,7 @@ from altair.app.ticketing.memberships.forms import MemberGroupForm
 from altair.app.ticketing.users.models import MemberGroup, Membership
 from altair.app.ticketing.events.sales_segments.resources import SalesSegmentAccessor
 from altair.app.ticketing.lots.models import Lot
-from altair.app.ticketing.lots.api import create_lot
+from altair.app.ticketing.lots.api import create_lot, create_lot_with_goods
 
 from .forms import SalesSegmentGroupForm, SalesSegmentGroupAndLotForm, MemberGroupToSalesSegmentForm
 
@@ -226,8 +226,7 @@ class SalesSegmentGroups(BaseView, SalesSegmentViewHelperMixin):
                 accessor.update_sales_segment(sales_segment)
 
             if lot_create_flag:
-                lot = create_lot(sales_segment_group.event, f, sales_segment_group, f.lot_name.data)
-                DBSession.add(lot)
+                create_lot_with_goods(sales_segment_group.event, f, sales_segment_group, f.lot_name.data)
 
         self.request.session.flash(u'販売区分グループを保存しました')
         return None
