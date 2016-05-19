@@ -626,7 +626,3 @@ def create_lot_with_goods(event, form, sales_segment_group=None, lot_name=None):
                     sales_segment_group=sales_segment_group,
                     original_product=product
                 )
-
-                for product_item in product.items:
-                    # 抽選商品明細の登録
-                    product_api.add_lot_product_item(lot_product, product_item)

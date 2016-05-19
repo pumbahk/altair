@@ -20,7 +20,7 @@ from altair.app.ticketing.products.forms import ProductItemForm, ProductAndProdu
 from altair.app.ticketing.loyalty.models import PointGrantSetting
 from altair.app.ticketing.utils import moderate_name_candidates
 from .forms import PreviewImageDownloadForm
-from .api import add_lot_product, add_lot_product_item, get_lot_product, get_lot_product_item, edit_lot_product, edit_lot_product_item, delete_lot_product, delete_lot_product_item
+from .api import add_lot_product, add_lot_product_item, edit_lot_product, edit_lot_product_item, edit_lot_product_add_lot_product_item, delete_lot_product, delete_lot_product_item
 from decimal import Decimal
 logger = logging.getLogger(__name__)
 
@@ -90,13 +90,10 @@ class ProductAndProductItem(BaseView):
                 product_item.save()
 
                 # 抽選商品の登録
-                lot_product = add_lot_product(
+                add_lot_product(
                     sales_segment_group=sales_segment.sales_segment_group,
                     original_product=product
                 )
-
-                # 抽選商品明細の登録
-                add_lot_product_item(lot_product, product_item)
 
             self.request.session.flash(u'商品を保存しました')
             return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
@@ -191,14 +188,10 @@ class ProductAndProductItem(BaseView):
                 # 抽選の販売区分にコピーする場合
                 if copy_sales_segment.kind in [SalesSegmentKindEnum.early_lottery.k, SalesSegmentKindEnum.added_lottery.k, SalesSegmentKindEnum.first_lottery.k]:
                     # 抽選商品の登録
-                    lot_product = add_lot_product(
+                    add_lot_product(
                         sales_segment_group=copy_sales_segment.sales_segment_group,
                         original_product=product
                     )
-
-                    for product_item in product.items:
-                        # 抽選商品明細の登録
-                        add_lot_product_item(lot_product, product_item)
 
         self.request.session.flash(u'商品をコピーしました')
         return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
@@ -428,9 +421,6 @@ class ProductItems(BaseView):
             f.product.price = price
             f.product.save()
 
-            # 抽選商品の更新
-            edit_lot_product(f.product)
-
             stock = Stock.query.filter_by(
                 stock_type_id=f.stock_type_id.data,
                 stock_holder_id=f.stock_holder_id.data,
@@ -447,8 +437,8 @@ class ProductItems(BaseView):
             )
             product_item.save()
 
-            # 抽選商品明細の登録
-            add_lot_product_item(get_lot_product(f.product.id), product_item)
+            # 抽選商品の金額を更新し、抽選の商品明細を追加する
+            edit_lot_product_add_lot_product_item(f.product, product_item)
 
             self.request.session.flash(u'商品に在庫を割当てました')
             return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
@@ -494,9 +484,6 @@ class ProductItems(BaseView):
                     f.product.price += item.price * item.quantity
             f.product.save()
 
-            # 抽選の商品明細の修正
-            edit_lot_product(original_product=f.product)
-
             stock = Stock.query.filter_by(
                 stock_type_id=f.stock_type_id.data,
                 stock_holder_id=f.stock_holder_id.data,
@@ -512,7 +499,7 @@ class ProductItems(BaseView):
             ))
             product_item.save()
 
-            # 抽選の商品明細の修正
+            # 抽選の商品を金額のため更新し、商品明細を修正
             edit_lot_product_item(original_product_item=product_item)
 
             self.request.session.flash(u'商品明細を保存しました')
