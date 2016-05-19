@@ -942,12 +942,12 @@ class OrderRefundForm(OurForm):
                 if refund_order.is_issued():
                     # 発券済ならコンビニ払戻のみ可能
                     if refund_pm.payment_plugin_id != plugins.SEJ_PAYMENT_PLUGIN_ID:
-                        raise ValidationError('%s: %s(%s)' % (error_msg, u'既にコンビニ発券済なのでコンビニ払戻を選択してください', refund_order.order_no))
+                        raise ValidationError('%s: %s(%s)' % (error_msg, u'既にコンビニ発券済なのでコンビニ払戻(セブン)を選択してください', refund_order.order_no))
             elif settlement_delivery_plugin_id == plugins.FAMIPORT_DELIVERY_PLUGIN_ID:
                 if refund_order.is_issued():
                     # 発券済ならコンビニ払戻のみ可能
                     if refund_pm.payment_plugin_id != plugins.FAMIPORT_PAYMENT_PLUGIN_ID:
-                        raise ValidationError('%s: %s(%s)' % (error_msg, u'既にコンビニ発券済なのでコンビニ払戻を選択してください', refund_order.order_no))
+                        raise ValidationError('%s: %s(%s)' % (error_msg, u'既にコンビニ発券済なのでコンビニ払戻(ファミマ)を選択してください', refund_order.order_no))
             elif refund_pm.payment_plugin_id == plugins.SEJ_PAYMENT_PLUGIN_ID or refund_pm.payment_plugin_id == plugins.FAMIPORT_PAYMENT_PLUGIN_ID:
                 # コンビニ引取でないならコンビニ払戻は不可
                 raise ValidationError('%s: %s(%s)' % (error_msg, u'コンビニ引取ではありません', refund_order.order_no))
