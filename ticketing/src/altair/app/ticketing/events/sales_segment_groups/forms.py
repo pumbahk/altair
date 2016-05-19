@@ -426,21 +426,21 @@ class SalesSegmentGroupAndLotForm(SalesSegmentGroupForm):
     lot_name = OurTextField(
         label=u'抽選名',
         validators=[
-            Optional(),
+            Required(),
             Length(max=255, message=u'255文字以内で入力してください'),
         ],
     )
     limit_wishes = OurIntegerField(
         label=u'希望取得上限',
         validators=[
-            Optional(),
+            Required(),
         ],
     )
 
     entry_limit = OurIntegerField(
         label=u'申込上限回数',
         validators=[
-            Optional(),
+            Required(),
         ],
     )
 
@@ -453,7 +453,7 @@ class SalesSegmentGroupAndLotForm(SalesSegmentGroupForm):
         label=u"抽選結果発表予定日",
         format='%Y-%m-%d %H:%M',
         validators=[
-            Optional(),
+            Required(),
         ],
     )
 
@@ -492,7 +492,28 @@ class SalesSegmentGroupAndLotForm(SalesSegmentGroupForm):
     )
 
     def validate(self, *args, **kwargs):
-        return super(OurForm, self).validate()
+        if not all([fn(*args, **kwargs) for fn in [
+            self._validate_start,
+            self._validate_end,
+            self._validate_term,
+            self._validate_display_seat_no,
+            self._validate_public
+                ]]):
+            return False
+
+        if self.kind.data not in ["early_lottery", "added_lottery", "first_lottery"]:
+            return True
+
+        # 抽選が選択されている場合の追加のバリデーション
+        return all([fn((), {}) for fn in [
+            self.lot_name.validate,
+            self.limit_wishes.validate,
+            self.entry_limit.validate,
+            self.description.validate,
+            self.lotting_announce_datetime.validate,
+            self.lotting_announce_timezone.validate,
+            self.custom_timezone_label.validate,
+        ]])
 
 
 class MemberGroupToSalesSegmentForm(OurForm):
