@@ -126,7 +126,7 @@ class SalesSegmentGroups(BaseView, SalesSegmentViewHelperMixin):
                 accessor.create_sales_segment_for_performance(sales_segment_group, performance)
 
             if sales_segment_group.kind in [SalesSegmentKindEnum.early_lottery.k, SalesSegmentKindEnum.added_lottery.k, SalesSegmentKindEnum.first_lottery.k]:
-                lot = create_lot(sales_segment_group.event, f, sales_segment_group)
+                lot = create_lot(sales_segment_group.event, f, sales_segment_group, f.lot_name.data)
                 DBSession.add(lot)
 
             self.request.session.flash(u'販売区分グループを保存しました')
@@ -137,11 +137,11 @@ class SalesSegmentGroups(BaseView, SalesSegmentViewHelperMixin):
                 'action': self.request.path,
                 }
 
-    @view_config(route_name='sales_segment_groups.copy', request_method='GET', renderer='altair.app.ticketing:templates/sales_segment_groups/_edit_form.html', xhr=True)
-    @view_config(route_name='sales_segment_groups.edit', request_method='GET', renderer='altair.app.ticketing:templates/sales_segment_groups/_edit_form.html', xhr=True)
+    @view_config(route_name='sales_segment_groups.copy', request_method='GET', renderer='altair.app.ticketing:templates/sales_segment_groups/_form.html', xhr=True)
+    @view_config(route_name='sales_segment_groups.edit', request_method='GET', renderer='altair.app.ticketing:templates/sales_segment_groups/_form.html', xhr=True)
     def edit_xhr(self):
         sales_segment_group = self.context.sales_segment_group
-        form = SalesSegmentGroupForm(obj=sales_segment_group, context=self.context)
+        form = SalesSegmentGroupAndLotForm(obj=sales_segment_group, context=self.context)
         for k in SalesSegmentAccessor.setting_attributes:
             getattr(form, k).data = getattr(sales_segment_group.setting, k)
         return {
@@ -151,10 +151,17 @@ class SalesSegmentGroups(BaseView, SalesSegmentViewHelperMixin):
 
     # TODO: copyのときに、コピー先の販売区分グループの詳細画面に遷移しない
     def _edit_post(self):
-        f = SalesSegmentGroupForm(self.request.POST, context=self.context)
+        f = SalesSegmentGroupAndLotForm(self.request.POST, context=self.context)
         if not f.validate():
             return f
         sales_segment_group = self.context.sales_segment_group
+
+        lot_kind = ["early_lottery", "added_lottery", "first_lottery"]
+        lot_create_flag = False
+        if sales_segment_group.kind not in lot_kind and f.kind.data in lot_kind:
+            # 抽選に切り替わっている場合作る
+            lot_create_flag = True
+
         if self.request.matched_route.name == 'sales_segment_groups.copy':
             with_pdmp = bool(f.copy_payment_delivery_method_pairs.data)
             try:
@@ -217,6 +224,10 @@ class SalesSegmentGroups(BaseView, SalesSegmentViewHelperMixin):
             for sales_segment in sales_segment_group.sales_segments:
                 logger.info('propagating changes to sales_segment(id=%ld)' % sales_segment.id)
                 accessor.update_sales_segment(sales_segment)
+
+            if lot_create_flag:
+                lot = create_lot(sales_segment_group.event, f, sales_segment_group, f.lot_name.data)
+                DBSession.add(lot)
 
         self.request.session.flash(u'販売区分グループを保存しました')
         return None

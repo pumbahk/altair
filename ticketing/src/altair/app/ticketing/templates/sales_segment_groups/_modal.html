@@ -73,6 +73,28 @@
           url.replace(encodeURIComponent('{id}'), id),
           null,
           function () {
+            var $kind = $(this).find('#kind');
+            var $lot_name = $(this).find('#lot_name');
+            if (!$lot_name.val()) {
+              var fillDefault = true;
+              function onchange() {
+                if (fillDefault) {
+                  var selected = $kind.val();
+                  $kind.children().each(function (_, n) {
+                    if (selected == n.value || selected == null) {
+                      $lot_name.val(n.firstChild.nodeValue);
+                      return false;
+                    }
+                  });
+                }
+              }
+              $lot_name.change(function () {
+                fillDefault = false;
+              });
+              $kind.change(onchange);
+              onchange();
+            }
+
             if (!copy)
               $(this).find('.copy-fields').css('display', 'none');
           }

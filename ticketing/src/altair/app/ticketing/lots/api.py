@@ -577,17 +577,20 @@ def get_lotting_announce_timezone(timezone):
     return label
 
 
-def create_lot(event, form, sales_segment_group=None):
+def create_lot(event, form, sales_segment_group=None, lot_name=None):
     if sales_segment_group:
         sales_segment_group_id = sales_segment_group.id
     else:
         sales_segment_group_id = form.data['sales_segment_group_id']
         sales_segment_group = SalesSegmentGroup.query.filter(SalesSegmentGroup.id == form.data['sales_segment_group_id']).one()
 
+    if not lot_name:
+        lot_name = form.data['name']
+
     lot = Lot(
         event=event,
         organization_id=event.organization_id,
-        name=form.data['name'],
+        name=lot_name,
         limit_wishes=form.data['limit_wishes'],
         entry_limit=form.data['entry_limit'],
         description=form.data['description'],
