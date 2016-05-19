@@ -363,7 +363,6 @@ class FamiPortAPIView(object):
             famiport_receipt = self.session.query(FamiPortReceipt).filter(FamiPortReceipt.id == famiport_receipt_id, FamiPortReceipt.canceled_at.is_(None)).one()
         except NoResultFound:
             raise APINotFoundError()
-        import pdb;pdb.set_trace()
         # 前払のみの場合はチケットがないのでプレビュー不要
         if famiport_receipt.famiport_order.type == FamiPortOrderType.PaymentOnly.value:
             images = []
