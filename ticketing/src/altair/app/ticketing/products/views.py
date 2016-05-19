@@ -15,7 +15,7 @@ from altair.sqlahelper import get_db_session
 from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.models import merge_session_with_post, record_to_multidict
 from altair.app.ticketing.views import BaseView
-from altair.app.ticketing.core.models import Product, ProductItem, Event, Performance, Stock, SalesSegment, SalesSegmentGroup, Organization, StockHolder, TicketBundle
+from altair.app.ticketing.core.models import Product, ProductItem, Event, Performance, Stock, SalesSegment, SalesSegmentGroup, SalesSegmentKindEnum, Organization, StockHolder, TicketBundle
 from altair.app.ticketing.products.forms import ProductItemForm, ProductAndProductItemForm, ProductAndProductItemAPIForm, ProductCopyForm
 from altair.app.ticketing.loyalty.models import PointGrantSetting
 from altair.app.ticketing.utils import moderate_name_candidates
@@ -171,6 +171,7 @@ class ProductAndProductItem(BaseView):
         copy_sales_segments = form['copy_sales_segments'].data
 
         for copy_sales_segment_id in copy_sales_segments:
+
             copy_sales_segment = SalesSegment.get(copy_sales_segment_id)
             products = Product.query.filter(Product.sales_segment_id==origin_sales_segment.id).all()
 
@@ -186,7 +187,18 @@ class ProductAndProductItem(BaseView):
                         break
                 new_product.sales_segment = copy_sales_segment
                 new_product.sales_segment_id = copy_sales_segment.id
-                add_lot_product(new_product)
+
+                # 抽選の販売区分にコピーする場合
+                if copy_sales_segment.kind in [SalesSegmentKindEnum.early_lottery.k, SalesSegmentKindEnum.added_lottery.k, SalesSegmentKindEnum.first_lottery.k]:
+                    # 抽選商品の登録
+                    lot_product = add_lot_product(
+                        sales_segment_group=copy_sales_segment.sales_segment_group,
+                        original_product=product
+                    )
+
+                    for product_item in product.items:
+                        # 抽選商品明細の登録
+                        add_lot_product_item(lot_product, product_item)
 
         self.request.session.flash(u'商品をコピーしました')
         return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
