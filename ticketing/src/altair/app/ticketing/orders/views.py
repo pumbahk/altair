@@ -1065,7 +1065,7 @@ class OrdersRefundSettingsView(OrderBaseView):
         # 未発券のコンビニ払戻を警告
         from altair.app.ticketing.core.models import PaymentMethod
         refund_pm = PaymentMethod.query.filter_by(id=form_refund.payment_method_id.data).one()
-        if refund_pm.payment_plugin_id == payments_plugins.SEJ_PAYMENT_PLUGIN_ID:
+        if refund_pm.payment_plugin_id in [payments_plugins.SEJ_PAYMENT_PLUGIN_ID,payments_plugins.FAMIPORT_PAYMENT_PLUGIN_ID]:
             for order in orders:
                 if not order.is_issued():
                     errors_for_order = errors.get(order.order_no, )
