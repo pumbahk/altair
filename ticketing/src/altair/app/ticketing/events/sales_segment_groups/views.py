@@ -156,7 +156,7 @@ class SalesSegmentGroups(BaseView, SalesSegmentViewHelperMixin):
             return f
         sales_segment_group = self.context.sales_segment_group
 
-        lot_kind = ["early_lottery", "added_lottery", "first_lottery"]
+        lot_kind = [SalesSegmentKindEnum.early_lottery.k, SalesSegmentKindEnum.added_lottery.k, SalesSegmentKindEnum.first_lottery.k]
         lot_create_flag = False
         if sales_segment_group.kind not in lot_kind and f.kind.data in lot_kind:
             # 抽選に切り替わっている場合作る

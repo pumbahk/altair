@@ -501,7 +501,7 @@ class SalesSegmentGroupAndLotForm(SalesSegmentGroupForm):
                 ]]):
             return False
 
-        if self.kind.data not in ["early_lottery", "added_lottery", "first_lottery"]:
+        if self.kind.data not in [SalesSegmentKindEnum.early_lottery.k, SalesSegmentKindEnum.added_lottery.k, SalesSegmentKindEnum.first_lottery.k]:
             return True
 
         # 抽選が選択されている場合の追加のバリデーション
