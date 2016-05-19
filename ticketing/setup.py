@@ -73,7 +73,7 @@ requires = [
     'pystache == 0.5.2',
     'repoze.browserid',
     'redis',
-    'beaker-extensions == 0.2.0.post1',
+    'beaker-extensions == 0.2.0.post2',
     'boto',
     'fluent-logger == 0.3.3.post1',
     'Pillow',  # for qrcode.image.pil
