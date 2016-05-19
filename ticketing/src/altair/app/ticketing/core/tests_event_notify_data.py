@@ -45,6 +45,7 @@ class EventCMSDataTests(unittest.TestCase):
     def test_data_include_deleted_performance(self):
         from altair.app.ticketing.models import DBSession
         from altair.app.ticketing.core.models import Performance
+        from pyramid.testing import DummyRequest
 
         organization = get_organization(id=10000, short_name="org")
         
@@ -54,7 +55,7 @@ class EventCMSDataTests(unittest.TestCase):
         DBSession.add(performance)
         DBSession.flush()
 
-        result = target.get_cms_data(validation=False)
+        result = target.get_cms_data(request=DummyRequest(),now=datetime.now(),validation=False)
 
         self.assertEquals(len(result["performances"]), 1)
         self.assertTrue(result["performances"][0]["deleted"])

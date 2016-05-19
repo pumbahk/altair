@@ -68,7 +68,10 @@ class CRUDResource(RootFactory): ## fixme
         _GETに指定があればそのURL, なければディレクティブ指定されたview名から生成したURLを返す
         :return: URL文字列
         """
-        return get_endpoint(self.request) or self.request.route_url(self.endpoint or "dashboard")
+        try:
+            return get_endpoint(self.request) or self.request.route_url(self.endpoint or "dashboard")
+        except:
+            return self.request.route_url("dashboard")
 
     ## search
     def query_form(self, params):

@@ -195,6 +195,8 @@ class Scanner(object):
                 performance.code = record.get('code')
                 performance.public = record.get('public')
                 performance.display_order = record.get('display_order')
+                performance.purchase_link = record.get('purchase_link')
+                performance.mobile_purchase_link = record.get('mobile_purchase_link')
             except KeyError as e:
                 raise InvalidParamaterException("missing property '%s' in the performance record" % e.message)
         return r

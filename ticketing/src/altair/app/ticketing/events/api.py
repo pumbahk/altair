@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 import isodate
 from datetime import datetime
 import json
@@ -7,7 +9,7 @@ from . import VISIBLE_EVENT_SESSION_KEY
 def get_cms_data(request, organization, event, now=None):
     assert event.organization_id == organization.id
     now = now or datetime.now()
-    data = event.get_cms_data()
+    data = event.get_cms_data(request, now)
     hashed_value = hashlib.sha1(json.dumps(data)).hexdigest()
     if request.session.get("cms_send_data"):
         if request.session.get("cms_send_data") == hashed_value:

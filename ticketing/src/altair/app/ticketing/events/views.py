@@ -16,7 +16,7 @@ from sqlalchemy import sql
 from sqlalchemy.sql import func, and_
 from sqlalchemy.orm.util import class_mapper
 from pyramid.view import view_config, view_defaults
-from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPCreated
+from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPCreated, HTTPOk
 from pyramid.threadlocal import get_current_registry
 from pyramid.url import route_path
 from pyramid.response import Response
@@ -420,6 +420,26 @@ class Events(BaseView):
             self.request.session.flash(u'イベント送信に失敗しました')
 
         return HTTPFound(location=route_path('events.show', self.request, event_id=event.id))
+
+    @view_config(route_name='events.info_from_cms', renderer='json')
+    def get_cms_info(self):
+        event_id = int(self.request.matchdict.get('event_id', 0))
+        event = Event.get(event_id, organization_id=self.context.user.organization_id)
+        if event is None:
+            return HTTPNotFound('event id %d is not found' % event_id)
+
+        communication_api = get_communication_api(self.request, CMSCommunicationApi)
+        req = communication_api.create_connection("/api/word/?backend_event_id=%d" % event_id)
+
+        try:
+            with contextlib.closing(urllib2.urlopen(req)) as res:
+                data = res.read()
+                data = json.loads(data);
+                data['url'] = communication_api.get_url("/")
+                return data;
+        except Exception, e:
+            logger.error("cms info error: %s" % (e.message))
+        return dict()
 
     @view_config(route_name='events.open', request_method='GET',renderer='altair.app.ticketing:templates/events/_form_open.html')
     def open_get(self):

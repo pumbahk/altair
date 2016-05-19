@@ -394,6 +394,99 @@ class PerformanceTests(unittest.TestCase):
         result = target.query_orders_by_mailaddresses([mail_addr_other], filter_canceled=True).all()
         self.assertEqual(result, others)
 
+    def test_get_recent_sales_segment(self):
+        """現時点から直近に販売開始する(もしくは販売中)の販売区分を返す"""
+        from datetime import datetime
+        from altair.app.ticketing.core.models import Performance, SalesSegment, SalesSegmentGroup, Product
+        from altair.app.ticketing.lots.models import Lot
+        sales_segment_group = SalesSegmentGroup(
+            kind="normal"
+        )
+        sales_segment_group_lottery = SalesSegmentGroup(
+            kind="first_lottery"
+        )
+        sales_segment_first = SalesSegment(
+            start_at=datetime(2016,5,10),
+            end_at=datetime(2016,5,12,23,58),
+            public=True,
+            sales_segment_group=sales_segment_group
+        )
+        sales_segment_second = SalesSegment(
+            start_at=datetime(2016,5,13),
+            end_at=datetime(2016,5,15,23,59),
+            public=True,
+            sales_segment_group=sales_segment_group
+        )
+        sales_segment_third = SalesSegment(
+            start_at=datetime(2016,5,16),
+            end_at=datetime(2016,5,18,23,59),
+            public=True,
+            sales_segment_group=sales_segment_group
+        )
+        sales_segment_for_lot_dummy = SalesSegment(
+            start_at=datetime(2016,5,8),
+            end_at=datetime(2016,5,9),
+            public=True,
+            sales_segment_group=sales_segment_group_lottery
+        )
+        sales_segment_for_lot = SalesSegment(
+            start_at=datetime(2016,5,8),
+            end_at=datetime(2016,5,9),
+            public=True,
+            sales_segment_group=sales_segment_group_lottery
+        )
+        lot1 = Lot(sales_segment=sales_segment_for_lot)
+        sales_segment_for_lot.lots = [lot1]
+        performance = Performance(
+            sales_segments=[
+                sales_segment_first,
+                sales_segment_second,
+                sales_segment_third
+            ]
+        )
+        performance_with_lots = Performance(
+            sales_segments=[
+                sales_segment_first,
+                sales_segment_second,
+                sales_segment_third,
+                sales_segment_for_lot_dummy
+            ],
+            products=[
+                Product(
+                    sales_segment=sales_segment_for_lot
+                )
+            ]
+        )
+
+        target = performance
+
+        # 全抽選開始前は単純に一番開始日が若いものが選択される
+        now = datetime(2016,5,9)
+        result = target.get_recent_sales_segment(now=now)
+        self.assertEqual(result, sales_segment_first)
+
+        # １次抽選期間中は１次抽選が選択される
+        now = datetime(2016,5,11)
+        result = target.get_recent_sales_segment(now=now)
+        self.assertEqual(result, sales_segment_first)
+
+        # １次終了後だと２次抽選が選択される
+        now = datetime(2016,5,12,23,59)
+        result = target.get_recent_sales_segment(now=now)
+        self.assertEqual(result, sales_segment_second)
+
+        # １次終了後、２次抽選を非公開にすると３次が選択される
+        now = datetime(2016,5,12,23,59)
+        sales_segment_second.public = False
+        result = target.get_recent_sales_segment(now=now)
+        self.assertEqual(result, sales_segment_third)
+
+        # 抽選が一般の前にある場合は、抽選販売区分が選択されることを確認
+        target = performance_with_lots
+        now = datetime(2016,5,7,23,59)
+        result = target.get_recent_sales_segment(now=now)
+        self.assertEqual(result, sales_segment_for_lot)
+
 
 class EventTests(unittest.TestCase):
     def setUp(self):
@@ -964,7 +1057,9 @@ class SendCMSFeatureTest(unittest.TestCase):
         _teardown_db()
 
     def testEvent(self):
-        x = self.event.get_cms_data()
+        from pyramid.testing import DummyRequest
+        from datetime import datetime
+        x = self.event.get_cms_data(request=DummyRequest(),now=datetime.now())
         self.assertEqual(len(x['performances'][0]['sales']), 4)
 
 
