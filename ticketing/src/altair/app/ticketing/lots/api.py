@@ -622,7 +622,48 @@ def create_lot_with_goods(event, form, sales_segment_group=None, lot_name=None):
             # original_product_idが入っているのは抽選の商品
             if not product.original_product_id:
                 # 抽選商品の登録
-                lot_product = product_api.add_lot_product(
+                product_api.add_lot_product(
                     sales_segment_group=sales_segment_group,
                     original_product=product
                 )
+
+
+def copy_lot(sales_segment_group, new_sales_segment_group, with_goods=None):
+
+    for sales_segment in sales_segment_group.sales_segments:
+        lots = Lot.query.filter(Lot.sales_segment_id == sales_segment.id).all()
+        for lot in lots:
+            event = sales_segment_group.event
+            new_lot = Lot(
+                event=event,
+                organization_id=event.organization_id,
+                name=lot.name,
+                limit_wishes=lot.limit_wishes,
+                entry_limit=lot.entry_limit,
+                description=lot.description,
+                lotting_announce_datetime=lot.lotting_announce_datetime,
+                lotting_announce_timezone=lot.lotting_announce_timezone,
+                custom_timezone_label=lot.custom_timezone_label,
+                auth_type=lot.auth_type,
+                )
+            accessor = SalesSegmentAccessor()
+            new_sales_segment = accessor.create_sales_segment_for_lot(new_sales_segment_group, new_lot)
+            new_sales_segment.sales_segment_group_id = sales_segment_group.id
+            new_sales_segment.start_at = sales_segment_group.start_at
+            new_sales_segment.end_at = sales_segment_group.end_at
+            new_sales_segment.max_quantity = sales_segment_group.max_quantity
+            new_sales_segment.seat_choice = False
+            new_sales_segment.auth3d_notice = sales_segment_group.auth3d_notice
+            new_sales_segment.account_id = sales_segment_group.account_id
+
+            DBSession.add(new_lot)
+
+            if with_goods:
+                for product in sales_segment.products:
+                    # original_product_idが入っているのは抽選の商品
+                    if not product.original_product_id:
+                        # 抽選商品の登録
+                        product_api.add_lot_product(
+                            sales_segment_group=new_sales_segment_group,
+                            original_product=product
+                        )

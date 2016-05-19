@@ -26,7 +26,7 @@ from altair.app.ticketing.memberships.forms import MemberGroupForm
 from altair.app.ticketing.users.models import MemberGroup, Membership
 from altair.app.ticketing.events.sales_segments.resources import SalesSegmentAccessor
 from altair.app.ticketing.lots.models import Lot
-from altair.app.ticketing.lots.api import create_lot, create_lot_with_goods
+from altair.app.ticketing.lots.api import create_lot, create_lot_with_goods, copy_lot
 
 from .forms import SalesSegmentGroupForm, SalesSegmentGroupAndLotForm, MemberGroupToSalesSegmentForm
 
@@ -204,7 +204,10 @@ class SalesSegmentGroups(BaseView, SalesSegmentViewHelperMixin):
                 accessor.update_sales_segment(new_sales_segment)
 
             new_sales_segment_group.sync_member_group_to_children()
-            
+
+            # 抽選のコピー
+            copy_lot(sales_segment_group, new_sales_segment_group, True)
+
         else:
             sales_segment_group = merge_session_with_post(sales_segment_group, f.data, excludes=SalesSegmentAccessor.setting_attributes)
             if sales_segment_group.setting is None:
