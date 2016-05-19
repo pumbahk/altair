@@ -27,18 +27,31 @@
                   $kind.children().each(function (_, n) {
                     if (selected == n.value || selected == null) {
                       $name.val(n.firstChild.nodeValue);
-                      $lot_name.val(n.firstChild.nodeValue);
-                      if ($kind.val() == "early_lottery" || $kind.val() == "added_lottery" || $kind.val() == "first_lottery") {
-                        $('#lot_area').show();
-                      } else {
-                        $('#lot_area').hide();
-                      }
                       return false;
                     }
                   });
                 }
               }
               $name.change(function () {
+                fillDefault = false;
+              });
+              $kind.change(onchange);
+              onchange();
+            }
+            if (!$lot_name.val()) {
+              var fillDefault = true;
+              function onchange() {
+                if (fillDefault) {
+                  var selected = $kind.val();
+                  $kind.children().each(function (_, n) {
+                    if (selected == n.value || selected == null) {
+                      $lot_name.val(n.firstChild.nodeValue);
+                      return false;
+                    }
+                  });
+                }
+              }
+              $lot_name.change(function () {
                 fillDefault = false;
               });
               $kind.change(onchange);

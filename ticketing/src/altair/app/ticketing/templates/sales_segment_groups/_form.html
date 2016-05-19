@@ -84,6 +84,13 @@
       }).change();
 
       form.find('select[name="kind"]').change(function() {
+        // 抽選入力箇所の表示切替
+        if (form.find('select[name="kind"]').val() == "early_lottery" || form.find('select[name="kind"]').val() == "added_lottery" || form.find('select[name="kind"]').val() == "first_lottery") {
+          $('#lot_area').show();
+        } else {
+          $('#lot_area').hide();
+        }
+
         var public = form.find('#public');
         var public_kind = [${','.join(["'{0}'".format(pk) for pk in form.public_kind])|n}];
         var value = $(this).find('option:selected').val();
