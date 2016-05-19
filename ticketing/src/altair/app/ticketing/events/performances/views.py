@@ -637,7 +637,7 @@ class Performances(BaseView):
             if params['open_on'][cnt]:
                 new_performance.open_on = datetime.datetime.strptime(params['open_on'][cnt], '%Y-%m-%d %H:%M:%S')
             new_performance.start_on = datetime.datetime.strptime(params['start_on'][cnt], '%Y-%m-%d %H:%M:%S')
-            if new_performance.end_on:
+            if params['end_on'][cnt]:
                 new_performance.end_on = datetime.datetime.strptime(params['end_on'][cnt], '%Y-%m-%d %H:%M:%S')
             new_performance.display_order = params['display_order'][cnt]
 
