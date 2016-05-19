@@ -17,6 +17,7 @@ logger = logging.getLogger(__file__)
 @view_config(route_name="api_keyword", request_method="GET", renderer='json')
 def api_word_get(request):
     cart_performance = request.params.get('backend_performance_id')
+    cart_event = request.params.get('backend_event_id')
     if cart_performance:
         performance = request.allowable(Performance)\
             .options(joinedload(Performance.event))\
@@ -50,6 +51,35 @@ def api_word_get(request):
 
         event = dict(title=performance.event.title)
         return dict(performance=dict(title=performance.title, event=event), words=words)
+    elif cart_event:
+        event = request.allowable(Event)\
+            .filter_by(backend_id=cart_event)\
+            .first()
+        if event is None:
+            # no such event
+            return dict()
+
+        w1 = request.allowable(Word)\
+        .filter(Word.deleted_at==None)\
+        .join(Event_Word)\
+        .join(Event)\
+        .filter(Event.backend_id==cart_event)
+
+        words = list()
+        word_ids = set()
+        for word in w1.all():
+            words.append(dict(id=word.id, label=word.label, type=word.type))
+            word_ids.add(word.id)
+
+        include_performances = False
+        if include_performances:
+            performances = list()
+            for p in event.performances:
+                performances.append(dict(id=p.id, title=p.title))
+
+            return dict(event=dict(id=event.id, title=event.title), performances=performances, words=words)
+        else:
+            return dict(event=dict(id=event.id, title=event.title), words=words)
 
     # all words
     words = request.allowable(Word)\

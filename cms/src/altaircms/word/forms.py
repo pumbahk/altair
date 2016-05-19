@@ -7,7 +7,7 @@ from wtforms import fields, validators
 from altaircms.formhelpers import required_field, append_errors
 from altaircms.formhelpers import dynamic_query_select_field_factory
 
-from ..models import WordSearch
+from ..models import Word, WordSearch
 
 import logging
 logger = logging.getLogger(__file__)
@@ -37,3 +37,16 @@ class WordForm(Form):
     description = fields.TextAreaField(label=u'説明')
 
     __display_fields__ = [ "label", "label_kana", "type", "word_searches", "description" ]
+
+    def configure(self, request):
+        self.request = request
+
+    def object_validate(self, obj=None):
+        data = self.data
+        qs = self.request.allowable(Word).filter_by(label=data["label"])
+        if obj is not None:
+            qs = qs.filter(Word.id!=obj.id)
+        if qs.count() > 0:
+            append_errors(self.errors, "label", u'"%s" は既に登録されてます' % data["label"])
+            return False
+        return True

@@ -3,17 +3,22 @@
 <%namespace name="fco" file="../../../templates/formcomponents.html"/>
 <%namespace name="nco" file="../../../templates/navcomponents.html"/>
 <% from altaircms.slackoff.forms import PromotionForm, TopicForm,TopcontentForm %>
-<div class="circle ${request.context.circle_type} circle-top"></div>
-<h2>${master_env.title} 新規作成</h2>
 
-<div class="row-fluid">
-  <div class="span10">
-    ${nco.breadcrumbs(
+% if 'popup_view' in request.GET:
+  <!-- no navigation in popup -->
+% else:
+  <div class="circle ${request.context.circle_type} circle-top"></div>
+  <h2>${master_env.title} 新規作成</h2>
+
+  <div class="row-fluid">
+    <div class="span10">
+      ${nco.breadcrumbs(
         names=["Top", u"新規作成"], 
         urls=[request.route_path("dashboard"),])
-    }
+      }
+    </div>
   </div>
-</div>
+% endif
 
 <div class="row-fluid">
     <h3>${master_env.title}追加</h3>
@@ -42,9 +47,15 @@
     </form>
 </div>
 ## chosen
-<script src="${request.static_url('altaircms:static/chosen/js/jquery.chosen.js')}"></script>
-<link rel="stylesheet" type="text/css" href="${request.static_url('altaircms:static/chosen/css/chosen.css')}" />
+<script src="${request.static_url('altaircms:static/chosen/js/chosen.jquery.min.js')}"></script>
+<link rel="stylesheet" type="text/css" href="${request.static_url('altaircms:static/chosen/css/chosen.min.css')}" />
 <script type="text/javascript">
-$('.row-fluid select:not([multiple])').chosen({single_only: true, no_results_text: '該当無し'});
-$('.row-fluid select[multiple]').chosen({no_results_text: '該当無し'});
+$('.row-fluid select:not([multiple])').chosen({single_only: true, no_results_text: '該当無し', placeholder_text_single: ' '});
+$('.row-fluid select[multiple]').chosen({no_results_text: '該当無し', placeholder_text_multiple: ' '});
 </script>
+
+<%namespace name="word_chosen" file="altaircms:templates/word/_script.html"/>
+<% from altaircms.event.forms import EventForm %>
+% if isinstance(form, EventForm):
+  ${word_chosen.install_handlers()}
+% endif

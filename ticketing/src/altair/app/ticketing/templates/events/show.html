@@ -135,6 +135,46 @@ $(function(){
         <a href="${agreement_url}">${agreement_url}</a>  (<a href="${cart_now_cart_url}">時間指定してカート購入</a>)
       </td>
     </tr>
+    <tr>
+      <th>
+        CMS情報
+      </th>
+      <td>
+        <span id="cms-info">
+          Loading...
+        </span>
+        <script>
+          var get_cms_event_admin_url = function(base, event_id) {
+            return base + "event/" + event_id;
+          };
+          $(function() {
+            var target = $('#cms-info');
+            $.ajax({
+              url: "${request.route_path('events.info_from_cms', event_id=event.id)}"
+            }).done(function(r) {
+              if(r.event) {
+                target.html('');
+                var url = get_cms_event_admin_url(r.url, r.event.id);
+                $('<a></a>').text('CMS連携済').attr('href', url).attr('target', '_blank').appendTo(target);
+                $('<span>&nbsp;</span>').appendTo(target);
+                var favorite = $('<span></span>').append($('<span>お気に入りワード: </span>'));
+                if(r.words && 0 < r.words.length) {
+                  for(var i=0 ; i<r.words.length ; i++) {
+                    $('<span></span>').addClass('label').text(r.words[i].label).appendTo(favorite);
+                    $('<span>&nbsp;</span>').appendTo(favorite);
+                  }
+                  favorite.appendTo(target);
+                }
+              } else {
+                target.html('CMS未連携');
+              }
+            }).fail(function() {
+              target.html('エラー');
+            });
+          });
+        </script>
+      </td>
+    </tr>
   </tbody>
 </table>
 

@@ -23,9 +23,11 @@ def includeme(config):
     ## coupon
     config.add_route('coupon', '/{reserved_number}', factory='.resources.CouponViewResource')
     config.add_route('coupon.admission', '/{reserved_number}/use/{token_id}', factory='.resources.CouponViewResource')
+    config.add_route('coupon.order_admission', '/use/{reserved_number}', factory='.resources.CouponViewResource')
     config.add_route('coupon.notfound', '/notfound/', factory='.resources.CouponViewResource')
     config.add_route('coupon.out_term', '/out_term/{reserved_number}', factory='.resources.CouponViewResource')
     config.add_route('coupon.check_can_use', '/can_use/{token_id}', factory='.resources.CouponViewResource')
+    config.add_route('coupon.check_can_use_order', '/can_use/order/{reserved_number}', factory='.resources.CouponViewResource')
 
 def main(global_config, **local_config):
     settings = dict(global_config)

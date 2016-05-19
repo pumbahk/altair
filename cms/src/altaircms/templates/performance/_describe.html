@@ -4,7 +4,7 @@
     <tr>
       <th rowspan="5">公演情報</th>
       <th>公演名</th><td>
-        <a href="${request.route_path("performance_update",action="input",id=performance.id)}">${performance.title}</a>
+        <a href="${request.route_path("performance_update",action="input",id=performance.id, _query=dict(endpoint=request.url))}">${performance.title}</a>
         %if performance.canceld:
           <span class="label label-warning">検索対象から除外</span>
         %else:

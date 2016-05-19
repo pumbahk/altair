@@ -1,0 +1,25 @@
+<%def name="install_handlers()">
+<script>
+$(function() {
+  var target = $('select[name="keywords"]');
+  target.on('chosen:no_results', function(e, p) {
+    var m = p.chosen.get_search_text();
+    $('.chosen-results li.no-results')
+    .text('お気に入りワード 新規登録: ').append($('<span></span>').text(m))
+    .css({ cursor: 'pointer' })
+    .click(function() {
+      var cb = 'cb' + Math.floor((Math.random()+1)*10000000);
+      window[cb] = function(obj_id) {
+        target.append($('<option></option>').attr('value', obj_id).prop('selected', true).text(m))
+        .trigger('chosen:updated');
+        delete(window[cb]);
+      };
+      var endpoint = "${request.route_path('word_create_back')}?cb=" + encodeURIComponent(cb);
+      window.open("${request.route_path('word_create', action='input')}?label="+encodeURIComponent(m) + "&endpoint="+encodeURIComponent(endpoint) + "&popup_view=1");
+      $('.chosen-results li.no-results').remove();
+      target.trigger('chosen:hiding_dropdown');
+    });
+  });
+});
+</script>
+</%def>

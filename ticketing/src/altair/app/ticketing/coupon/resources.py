@@ -118,22 +118,30 @@ class CouponViewResource(CouponResourceBase):
                 return False
         return True
 
-    def use_coupon(self):
+    def use_coupon(self, token_id=None):
         now = datetime.now()
-        token_id = self.request.matchdict.get('token_id', None)
+        if not token_id:
+            token_id = self.request.matchdict.get('token_id', None)
 
         # 対象のクーポンだけ、発券済みにし、使用したこととする。
         for attr in self.order.items:
             for element in attr.elements:
                 for token in element.tokens:
-                    if str(token.id) == token_id:
+                    if str(token.id) == str(token_id) and not token.printed_at:
                         token.printed_at = now
 
-                    if self.ordered_product_item_used(element):
+                    if self.ordered_product_item_used(element) and not element.printed_at:
                         element.printed_at = now
 
         # 全てのクーポンが使用済みの場合、オーダーも発券済みとする。
         if self.all_coupon_used:
-            self.order.printed_at = now
             self.order.issued_at = now
             self.order.issued = True
+            if not self.order.printed_at:
+                self.order.printed_at = now
+
+    def use_all_coupon(self):
+        for item in self.order.items:
+            for element in item.elements:
+                for token in element.tokens:
+                    self.use_coupon(token.id)
