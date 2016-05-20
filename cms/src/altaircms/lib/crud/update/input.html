@@ -33,10 +33,14 @@
 
 ## chosen
 <script src="${request.static_url('altaircms:static/chosen/js/chosen.jquery.min.js')}"></script>
+<script src="${request.static_url('altaircms:static/chosen/js/chosen.ime_hack.js')}"></script>
 <link rel="stylesheet" type="text/css" href="${request.static_url('altaircms:static/chosen/css/chosen.min.css')}" />
 <script>
-$('.row-fluid select:not([multiple])').chosen({single_only: true, no_results_text: '該当無し', placeholder_text_single: ' '});
-$('.row-fluid select[multiple]').chosen({no_results_text: '該当無し', placeholder_text_multiple: ' '});
+$('.row-fluid select:not([multiple])').chosen({single_only: true, no_results_text: '該当無し', placeholder_text_single: ' ', search_contains: true});
+$('.row-fluid select[multiple]').chosen({no_results_text: '該当無し', placeholder_text_multiple: ' ', search_contains: true});
+$('.row-fluid select').each(function() {
+  chosen_ime_hack($(this).data('chosen'));
+});
 </script>
 
 <%namespace name="word_chosen" file="altaircms:templates/word/_script.html"/>
