@@ -12,6 +12,7 @@ from sqlalchemy.orm.exc import NoResultFound
 from wtforms.validators import ValidationError
 from altair.pyramid_tz.api import get_timezone
 from altair.pyramid_dynamic_renderer import lbr_view_config
+from altair.pyramid_dynamic_renderer.config import lbr_notfound_view_config
 from altair.request.adapters import UnicodeMultiDictAdapter
 from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.core.models import PaymentDeliveryMethodPair
@@ -36,6 +37,8 @@ from .adapters import (
     LotSessionCart,
     LotEntryController
 )
+from .rendering import selectable_renderer
+from .utils import add_session_clear_query
 from . import urls
 from altair.app.ticketing.cart.views import jump_maintenance_page_for_trouble
 from altair.app.ticketing.orderreview.views import (
@@ -727,6 +730,19 @@ def payment_plugin_exception(context, request):
     else:
         location = request.context.host_base_url
     return dict(message=Markup(u'決済中にエラーが発生しました。しばらく時間を置いてから<a href="%s">再度お試しください。</a>' % location))
+
+
+@lbr_notfound_view_config(
+    renderer=selectable_renderer('notfound.html'),
+    append_slash=True
+    )
+def notfound(context, request):
+    default_msg = u'該当の抽選申込みページは見つかりませんでした'
+    display_msg = context.comment or default_msg
+    session_clear_url = None
+    if context.detail == u'lots_session_conflict':
+        session_clear_url = add_session_clear_query(request.url)
+    return dict(display_msg=display_msg, session_clear_url=session_clear_url)
 
 
 @view_defaults(route_name='lots.entry.logout')

@@ -222,6 +222,7 @@ def main(global_config, **local_config):
     config.include(setup_mailtraverser)
     config.include(setup_routes)
 
+    config.include('.rendering')
     config.include('.sendmail')
     config.include('.subscribers')
 
