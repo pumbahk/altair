@@ -8,6 +8,22 @@
     $(location).attr('href', '/events/sales_reports/preview/?' + params);
   };
 </script>
+<script type="text/javascript">
+    $(document).ready(function() {
+        $("input[id^='limited']").on("change", function(e) {
+                var target = this.id.split('.')[1];
+                if (this.id.indexOf('from') !== -1) {
+                    if ($("input#limited_to\\." + target).val() === '') {
+                        $("input#limited_to\\." + target).val(this.value);
+                    }
+                } else {
+                    if ($("input#limited_from\\." + target).val() === '') {
+                        $("input#limited_from\\." + target).val(this.value);
+                    }
+                }
+            });
+    });
+</script>
 
 <%
   event_id = ''
@@ -28,9 +44,9 @@
       <table>
         <tr>
           <td valign="top" style="padding-top: 10px; width: 50px;">販売期間</td>
-          <td valign="top" style="padding-top: 10px;">${ch.form_item(form.limited_from, label=False, error_next_line=True)}</td>
+          <td valign="top" style="padding-top: 10px;">${ch.form_item(form.limited_from, label=False)}</td>
           <td valign="top" style="padding-top: 10px; width: 30px;"> 〜 </td>
-          <td valign="top" style="padding-top: 10px;">${ch.form_item(form.limited_to, label=False, error_next_line=True)}</td>
+          <td valign="top" style="padding-top: 10px;">${ch.form_item(form.limited_to, label=False)}</td>
         </tr>
       </table>
       <br/><br/>

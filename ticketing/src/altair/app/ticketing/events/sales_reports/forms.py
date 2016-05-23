@@ -104,7 +104,30 @@ class SalesReportSearchForm(OurForm):
         if not self.report_type.data:
             self.report_type.data = self.report_type.default
         return int(self.report_type.data) == ReportTypeEnum.Detail.v[0]
-
+    
+    def validate_event_from(form, field):
+        # validate event date
+        if form.data['event_from'] and form.data['event_to']:
+            if form.data['event_from'] > form.data['event_to']:
+                raise ValidationError(u'公演期間の指定した期間が、不正です')
+    
+    def validate_event_start_from(form, field):
+        # validate event start date
+        if form.data['event_start_from'] and form.data['event_start_to']:
+            if form.data['event_start_from'] > form.data['event_start_to']:
+                raise ValidationError(u'公演期間開始日の指定した期間が、不正です')
+    
+    def validate_event_end_from(form, field):
+        # validate event end date
+        if form.data['event_end_from'] and form.data['event_end_to']:
+            if form.data['event_end_from'] > form.data['event_end_to']:
+                raise ValidationError(u'公演期間終了日の指定した期間が、不正です')
+    
+    def validate_limited_from(form, field):
+        # validate limited date
+        if form.data['limited_from'] and form.data['limited_to']:
+            if form.data['limited_from'] > form.data['limited_to']:
+                raise ValidationError(u'絞り込み期間の指定した期間が、不正です')        
 
 class NumberOfPerformanceReportExportForm(OurForm):
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
