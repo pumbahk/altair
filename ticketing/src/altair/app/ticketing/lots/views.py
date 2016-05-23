@@ -739,10 +739,9 @@ def payment_plugin_exception(context, request):
 def notfound(context, request):
     default_msg = u'該当の抽選申込みページは見つかりませんでした'
     display_msg = context.comment or default_msg
+    session_clear_url = None
     if context.detail == u'lots_session_conflict':
         session_clear_url = add_session_clear_query(request.url)
-    else:
-        session_clear_url = None
     return dict(display_msg=display_msg, session_clear_url=session_clear_url)
 
 
