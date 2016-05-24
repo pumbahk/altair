@@ -206,6 +206,8 @@ class SalesSegmentGroups(BaseView, SalesSegmentViewHelperMixin):
             new_sales_segment_group.sync_member_group_to_children()
 
             # 抽選の販売区分間コピー
+            if lot_create_flag:
+                copy_lot(sales_segment_group.event, f, sales_segment_group, f.lot_name.data)
             copy_lots_between_sales_segmnent_group(sales_segment_group, new_sales_segment_group)
 
         else:
