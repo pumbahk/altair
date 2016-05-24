@@ -612,23 +612,20 @@ def create_lot(event, form, sales_segment_group=None, lot_name=None):
     return lot
 
 
-def create_lot_with_goods(event, form, sales_segment_group=None, lot_name=None):
+def copy_lot(event, form, sales_segment_group, lot_name):
     lot = create_lot(event, form, sales_segment_group, lot_name)
     DBSession.add(lot)
 
     for sales_segment in sales_segment_group.sales_segments:
         for product in sales_segment.products:
-
-            # original_product_idが入っているのは抽選の商品
             if not product.original_product_id:
-                # 抽選商品の登録
                 product_api.add_lot_product(
-                    sales_segment_group=sales_segment_group,
+                    lots=[lot],
                     original_product=product
                 )
 
 
-def copy_lot(sales_segment_group, new_sales_segment_group, with_goods=None):
+def copy_lots_between_sales_segmnent_group(sales_segment_group, new_sales_segment_group):
 
     for sales_segment in sales_segment_group.sales_segments:
         lots = Lot.query.filter(Lot.sales_segment_id == sales_segment.id).all()
@@ -658,12 +655,10 @@ def copy_lot(sales_segment_group, new_sales_segment_group, with_goods=None):
 
             DBSession.add(new_lot)
 
-            if with_goods:
-                for product in sales_segment.products:
-                    # original_product_idが入っているのは抽選の商品
+            for new_sales_segment in new_sales_segment_group.sales_segments:
+                for product in new_sales_segment.products:
                     if not product.original_product_id:
-                        # 抽選商品の登録
                         product_api.add_lot_product(
-                            sales_segment_group=new_sales_segment_group,
+                            lots=[new_lot],
                             original_product=product
                         )

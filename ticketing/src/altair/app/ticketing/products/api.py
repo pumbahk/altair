@@ -12,23 +12,27 @@ def get_lot_product_items(original_product_item_id):
     return ProductItem.query.filter(ProductItem.original_product_item_id == original_product_item_id).all()
 
 
-def add_lot_product(sales_segment_group, original_product):
+def add_lot_product(lots, original_product):
+    for lot in lots:
+        product = Product(name=original_product.name,
+                          price=original_product.price,
+                          display_order=original_product.display_order,
+                          description=original_product.description,
+                          seat_stock_type_id=original_product.seat_stock_type_id,
+                          performance_id=original_product.performance_id,
+                          sales_segment=lot.sales_segment,
+                          original_product_id=long(original_product.id))
+        DBSession.add(product)
+
+        # 抽選商品明細の登録
+        for product_item in original_product.items:
+            add_lot_product_item(product, product_item)
+
+
+def add_lot_product_all(sales_segment_group, original_product):
     for ss in sales_segment_group.sales_segments:
         lots = Lot.query.filter(Lot.sales_segment_id == ss.id).all()
-        for lot in lots:
-            product = Product(name=original_product.name,
-                              price=original_product.price,
-                              display_order=original_product.display_order,
-                              description=original_product.description,
-                              seat_stock_type_id=original_product.seat_stock_type_id,
-                              performance_id=original_product.performance_id,
-                              sales_segment=lot.sales_segment,
-                              original_product_id=long(original_product.id))
-            DBSession.add(product)
-
-            # 抽選商品明細の登録
-            for product_item in original_product.items:
-                add_lot_product_item(product, product_item)
+        add_lot_product(lots, original_product)
 
 
 def add_lot_product_item(lot_product, original_product_item):
