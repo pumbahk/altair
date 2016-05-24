@@ -11,7 +11,7 @@ altair.famiport.ticket_preview_api.endpoint_url = ${altair:famiport_ticket_previ
 altair.famiport.ticket_preview_api.cache_region = famiport_ticket_preview
 
 dogpile_cache.famiport_ticket_preview.backend = dogpile.cache.dbm
-dogpile_cache.famiport_ticket_preview.expire = 86400
+dogpile_cache.famiport_ticket_preview.arguments.redis_expiration_time = 86400
 dogpile_cache.famiport_ticket_preview.arguments.filename = %(here)s/../tmp/famiport_ticket_preview
 dogpile_cache.famiport_ticket_preview.arguments.host = 127.0.0.1
 dogpile_cache.famiport_ticket_preview.arguments.db = 1
