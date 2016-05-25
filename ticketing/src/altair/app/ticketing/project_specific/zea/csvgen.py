@@ -75,15 +75,6 @@ class CSVGen(object):
 
     def data_row(self, record):
         _record = Wrapper(record)
-        l = []
-        for _, f in self.columns:
-            try:
-                l.append(f.format(_record))
-            except:
-                import logging
-                logger = logging.getLogger(__name__)
-                logger.error("f={}, _record={}".format(f, _record))
-
         return [f.format(_record) for _, f in self.columns]
 
 base_columns = [
