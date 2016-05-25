@@ -860,6 +860,8 @@ class FamiPortSyncTest(unittest.TestCase):
 
         altair_famiport_performance = self.session.query(AltairFamiPortPerformance)\
                                                   .filter(AltairFamiPortPerformance.performance_id == performance1.id).one()
+        altair_famiport_performance_group = altair_famiport_performance.altair_famiport_performance_group
+        altair_famiport_venue = altair_famiport_performance_group.altair_famiport_venue
 
         self.assertEqual(performance1.start_on, altair_famiport_performance.start_at)
 
@@ -887,6 +889,7 @@ class FamiPortSyncTest(unittest.TestCase):
         self.assertEqual(famiport_event.id, famiport_performance.famiport_event_id)
         self.assertEqual(performance1.start_on, famiport_performance.start_at)
 
+        self.assertEqual(altair_famiport_venue.id, famiport_performance.famiport_event.venue.userside_id)
         self.assertEqual(famiport_performance.id, famiport_salessegment.famiport_performance_id)
         self.assertEqual(salessegment1.start_at, famiport_salessegment.start_at)
         self.assertEqual(salessegment1.end_at, famiport_salessegment.end_at)
