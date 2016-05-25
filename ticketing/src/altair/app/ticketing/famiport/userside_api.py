@@ -314,6 +314,9 @@ def build_famiport_performance_groups(request, session, datetime_formatter, tena
                             altair_famiport_performance.status = AltairFamiPortReflectionStatus.Editing.value
                             altair_famiport_performance.altair_famiport_performance_group_id = altair_famiport_performance_group.id
                             altair_famiport_performance.code = code
+                            altair_famiport_performance.type = type_
+                            altair_famiport_performance.ticket_name = ticket_name
+                            altair_famiport_performance.start_at = performance.start_on
                             altair_famiport_performance.updated_at = now
                         logs.append(u'公演「%s」(id=%ld) の連携値を更新しました' % (performance.name, performance.id))
                     else:
