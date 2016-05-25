@@ -740,6 +740,7 @@ def notfound(context, request):
     default_msg = u'該当の抽選申込みページは見つかりませんでした'
     display_msg = context.comment or default_msg
     session_clear_url = None
+    # session情報のconflictで404なった場合のみクリア用urlを入れる
     if context.detail == u'lots_session_conflict':
         session_clear_url = add_session_clear_query(request.url)
     return dict(display_msg=display_msg, session_clear_url=session_clear_url)
