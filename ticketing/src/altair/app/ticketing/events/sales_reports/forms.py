@@ -25,6 +25,26 @@ def validate_report_type(event_id, report_type):
             raise ValidationError(u'レポート対象が多すぎます。レポート内容で"合計"を選択してください。')
 
 
+def validate_from_to_date(label):
+    msg_exist = label + u'の指定した期間を両方入力ください。'
+    msg_wrong_date = label + u'の指定した期間が、不正です。'
+
+    def _validate_from_to_date(form, field):
+        this = field.id
+        other = this.replace('from', 'to')
+        
+        if not form.data[this] and not form.data[other]:
+            pass
+
+        if form.data[this] and form.data[other]:
+            if form.data[this] > form.data[other]:
+                raise ValidationError(msg_wrong_date)
+        elif form.data[this] or form.data[other]:
+            raise ValidationError(msg_exist)
+
+    return _validate_from_to_date
+
+
 class SalesReportSearchForm(OurForm):
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
         super(SalesReportSearchForm, self).__init__(formdata, obj, prefix, **kwargs)
@@ -42,7 +62,7 @@ class SalesReportSearchForm(OurForm):
 
     event_from = OurDateTimeField(
         label=u'公演期間',
-        validators=[Optional(), after1900],
+        validators=[validate_from_to_date(u'公演期間'), after1900],
         format='%Y-%m-%d %H:%M',
     )
     event_to = OurDateTimeField(
@@ -76,7 +96,7 @@ class SalesReportSearchForm(OurForm):
 
     limited_from = OurDateTimeField(
         label=u'絞り込み期間',
-        validators=[Optional(), after1900],
+        validators=[validate_from_to_date(u'絞り込み期間'), after1900],
         format='%Y-%m-%d %H:%M',
     )
     limited_to = OurDateTimeField(
@@ -104,7 +124,6 @@ class SalesReportSearchForm(OurForm):
         if not self.report_type.data:
             self.report_type.data = self.report_type.default
         return int(self.report_type.data) == ReportTypeEnum.Detail.v[0]
-
 
 class NumberOfPerformanceReportExportForm(OurForm):
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):

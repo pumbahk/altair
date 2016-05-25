@@ -63,6 +63,11 @@ class SalesReports(BaseView):
                 'export_form':NumberOfPerformanceReportExportForm(),
                 }
         else:
+
+            for field, errors in form.errors.items():
+                for err in errors:
+                    self.request.session.flash(err)
+
             return {
                 'form':form,
                 'export_form':NumberOfPerformanceReportExportForm(),
