@@ -75,6 +75,15 @@ class CSVGen(object):
 
     def data_row(self, record):
         _record = Wrapper(record)
+        l = []
+        for _, f in self.columns:
+            try:
+                l.append(f.format(_record))
+            except:
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.error("f={}, _record={}".format(f, _record))
+
         return [f.format(_record) for _, f in self.columns]
 
 base_columns = [
@@ -111,9 +120,10 @@ def build_extra_form_columns(event):
     extra_form_columns = []
     if event.setting.cart_setting.extra_form_fields:
         for f in event.setting.cart_setting.extra_form_fields:
-            key = f['name']
-            column = (key, u'{.attributes[%s]}' % key)
-            extra_form_columns.append(column)
+            if f['name']:
+                key = f['name']
+                column = (key, u'{.attributes[%s]}' % key)
+                extra_form_columns.append(column)
     return extra_form_columns
 
 
