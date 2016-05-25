@@ -21,10 +21,9 @@ class SubmissionWorkerResource(object):
 def submit_to_downstream(context, request):
     from .userside_api import submit_to_downstream_sync
     from altair.app.ticketing.models import DBSession as session
-    with session.begin(subtransactions=True):
-        event = session.query(Event).filter_by(id=request.params['event_id']).with_lockmode("update").one()
-        tenant = session.query(FamiPortTenant).filter_by(organization_id=event.organization.id).one()
-        submit_to_downstream_sync(request, session, tenant, event)
+    event = session.query(Event).filter_by(id=request.params['event_id']).one()
+    tenant = session.query(FamiPortTenant).filter_by(organization_id=event.organization.id).one()
+    submit_to_downstream_sync(request, session, tenant, event)
 
 def includeme(config):
     config.add_publisher_consumer('userside_famiport.submit_to_downstream', 'altair.ticketing.userside_famiport.mq')
