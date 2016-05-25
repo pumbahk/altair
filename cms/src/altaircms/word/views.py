@@ -103,15 +103,18 @@ class WordManageView(object):
             .outerjoin(Event_Word)\
             .outerjoin(Word)\
             .filter(Word.deleted_at==None)\
-            .group_by(Event.id)\
-            .order_by(Event.deal_open)
+            .group_by(Event.id)
         if deal == 'closed':
-            qs = qs.filter(Event.deal_close < datetime.now())
+            qs = qs.filter(Event.deal_close < datetime.now())\
+                .order_by(Event.deal_close.desc())
         elif deal == 'open':
-            qs = qs.filter(Event.deal_open <= datetime.now() <= Event.deal_close)
+            qs = qs.filter(Event.deal_open <= datetime.now())\
+                .filter(datetime.now() <= Event.deal_close)\
+                .order_by(Event.deal_open.desc())
         else: # future
             deal = 'future'
-            qs = qs.filter(datetime.now() < Event.deal_open)
+            qs = qs.filter(datetime.now() < Event.deal_open)\
+                .order_by(Event.deal_open)
 
         return {
             "xs": h.paginate(self.request, qs, item_count=qs.count()),
