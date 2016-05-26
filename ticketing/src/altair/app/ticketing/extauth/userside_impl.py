@@ -83,7 +83,7 @@ class OAuthNegotiator(OAuthAPIBase):
         finally:
             resp.close()
         if isinstance(resp, urllib2.HTTPError):
-            logger.error('%r' % retval)
+            logger.warn('%r' % retval)
             if retval is not None:
                 raise OAuthAPICommunicationError(u'%d %s (%s - %s)' % (e.code, e.msg, retval.get('error', u'(unknown error)'), retval.get('error_description', u'(no description provided)')))
             else:

@@ -110,6 +110,8 @@ class LotResource(LotResourceBase):
         self.now = get_now(request)
 
         self.organization = self.request.organization
+        if self.request.GET.get('clear'):
+            api.clear_lot_entry(self.request)
         lot_entry_dict = get_lot_entry_dict(self.request)
         lot_id_from_session = lot_entry_dict and lot_entry_dict['lot_id']
         lot_id = None
@@ -122,7 +124,10 @@ class LotResource(LotResourceBase):
         else:
             if lot_id_from_session is not None and lot_id != lot_id_from_session:
                 logger.info('lot_id (%ld) != lot_id_from_session (%ld)' % (lot_id, lot_id_from_session))
-                raise HTTPNotFound()
+                raise HTTPNotFound(
+                    detail=u'lots_session_conflict',
+                    comment=u'注意：未完了の抽選申込情報が見つかりました。申込情報をクリアして先に進んで良い場合は、下記リンクをクリックして下さい'
+                )
         event_id = None
         try:
             event_id = long(self.request.matchdict.get('event_id'))

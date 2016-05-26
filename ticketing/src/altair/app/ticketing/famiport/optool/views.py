@@ -363,28 +363,32 @@ class FamiPortAPIView(object):
             famiport_receipt = self.session.query(FamiPortReceipt).filter(FamiPortReceipt.id == famiport_receipt_id, FamiPortReceipt.canceled_at.is_(None)).one()
         except NoResultFound:
             raise APINotFoundError()
-        famiport_client = famiport_receipt.famiport_order.famiport_client
-        famiport_tickets = famiport_receipt.famiport_order.famiport_tickets
-        images = self.preview_pictures(
-            discrimination_code=unicode(famiport_client.playguide.discrimination_code_2),
-            client_code=famiport_client.code,
-            order_id=famiport_receipt.famiport_order_identifier,
-            barcode_no=famiport_receipt.barcode_no or u'0000000000000',
-            name=famiport_receipt.famiport_order.customer_name or u'',
-            member_id=u'',
-            address_1=famiport_receipt.famiport_order.customer_address_1 or u'',
-            address_2=famiport_receipt.famiport_order.customer_address_2 or u'',
-            identify_no=u'',
-            response_image_type='pdf',
-            tickets=[
-                dict(
-                    barcode_no=famiport_ticket.barcode_number,
-                    template_code=famiport_ticket.template_code,
-                    data=famiport_ticket.data
-                    )
-                for famiport_ticket in famiport_tickets
-                ]
-            )
+        # 前払のみの場合はチケットがないのでプレビュー不要
+        if famiport_receipt.famiport_order.type == FamiPortOrderType.PaymentOnly.value:
+            images = []
+        else:
+            famiport_client = famiport_receipt.famiport_order.famiport_client
+            famiport_tickets = famiport_receipt.famiport_order.famiport_tickets
+            images = self.preview_pictures(
+                discrimination_code=unicode(famiport_client.playguide.discrimination_code_2),
+                client_code=famiport_client.code,
+                order_id=famiport_receipt.famiport_order_identifier,
+                barcode_no=famiport_receipt.barcode_no or u'0000000000000',
+                name=famiport_receipt.famiport_order.customer_name or u'',
+                member_id=u'',
+                address_1=famiport_receipt.famiport_order.customer_address_1 or u'',
+                address_2=famiport_receipt.famiport_order.customer_address_2 or u'',
+                identify_no=u'',
+                response_image_type='pdf',
+                tickets=[
+                    dict(
+                        barcode_no=famiport_ticket.barcode_number,
+                        template_code=famiport_ticket.template_code,
+                        data=famiport_ticket.data
+                        )
+                    for famiport_ticket in famiport_tickets
+                    ]
+                )
         return images, famiport_receipt
 
     @view_config(route_name='receipt.ticket.info')

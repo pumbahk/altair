@@ -18,7 +18,13 @@ class DogpileBackedPersistentStore(object):
 
     @property
     def expiration_time(self):
-        retval = self._expiration_time if self._expiration_time is not None else self.region.expiration_time
+        expiration_time = 3600 * 24
+        if self.region.backend and self.region.backend.__dict__:
+            dic = self.region.backend.__dict__
+            for k in dic.keys():
+                if k.endswith('expiration_time'):
+                    expiration_time = dic[k]
+        retval = self._expiration_time or self.region.expiration_time or expiration_time
         if not isinstance(retval, timedelta):
             retval = timedelta(seconds=retval)
         return retval
