@@ -556,7 +556,10 @@ class Performances(BaseView):
                     if original.orion is not None:
                         performance.orion = OrionPerformance.clone(
                             original.orion, False, ['performance_id'])
+                performance.save()
 
+                # 抽選の商品を作成する
+                copy_lots_between_performance(original, performance)
             else:
                 try:
                     query = Performance.query.filter_by(id=performance.id)
@@ -583,11 +586,7 @@ class Performances(BaseView):
                 performance.setting.entry_limit = f.entry_limit.data
                 performance.setting.max_quantity_per_user = f.max_quantity_per_user.data
                 performance.setting.visible = f.visible.data
-
-            performance.save()
-
-            # 抽選の商品を作成する
-            copy_lots_between_performance(original, performance)
+                performance.save()
 
             self.request.session.flash(u'パフォーマンスを保存しました')
             return HTTPFound(location=route_path('performances.show', self.request, performance_id=performance.id))
