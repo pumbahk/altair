@@ -42,6 +42,7 @@ from ..products import api as product_api
 from altair.app.ticketing.cart import api as cart_api
 from altair.app.ticketing.utils import sensible_alnum_encode
 from altair.app.ticketing.core import api as core_api
+from altair.app.ticketing.core.models import SalesSegmentKindEnum
 
 from altair.app.ticketing.core.models import (
     Event,
@@ -665,6 +666,17 @@ def copy_lot(event, form, sales_segment_group, lot_name):
     create_lot_products(sales_segment_group, lot)
 
 
+def copy_lots_between_sales_segmnent(sales_segment, new_sales_segment):
+    # 動作未確認
+    lot = Lot.query.filter(Lot.sales_segment_id == sales_segment.id).first()
+    sales_segment_group = sales_segment.sales_segment_group
+    new_sales_segment_group = sales_segment.sales_segment_group
+    new_lot = create_lot_from_object(sales_segment_group.event, lot)
+    DBSession.add(new_lot)
+    copy_lot_sales_segment_between_sales_segment_group(sales_segment_group, new_sales_segment_group, new_lot)
+    create_lot_products(new_sales_segment_group, new_lot)
+
+
 def copy_lots_between_sales_segmnent_group(sales_segment_group, new_sales_segment_group):
     for sales_segment in sales_segment_group.sales_segments:
         lots = Lot.query.filter(Lot.sales_segment_id == sales_segment.id).all()
@@ -673,3 +685,21 @@ def copy_lots_between_sales_segmnent_group(sales_segment_group, new_sales_segmen
             DBSession.add(new_lot)
             copy_lot_sales_segment_between_sales_segment_group(sales_segment_group, new_sales_segment_group, new_lot)
             create_lot_products(new_sales_segment_group, new_lot)
+
+
+def copy_lots_between_performance(performance, new_performance):
+    for new_sales_segment in new_performance.sales_segments:
+        if new_sales_segment.kind not in [SalesSegmentKindEnum.early_lottery.k, SalesSegmentKindEnum.added_lottery.k, SalesSegmentKindEnum.first_lottery.k]:
+            continue
+
+        for product in new_sales_segment.products:
+            new_sales_segment_group = new_sales_segment.sales_segment_group
+            sales_segments_ids = [ss.id for ss in new_sales_segment_group.sales_segments]
+            lots = Lot.query.filter(Lot.sales_segment_id.in_(sales_segments_ids)).all()
+
+            for lot in lots:
+                if not product.original_product_id:
+                    product_api.add_lot_product(
+                        lots=[lot],
+                        original_product=product
+                    )

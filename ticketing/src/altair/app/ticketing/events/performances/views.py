@@ -25,6 +25,7 @@ from altair.app.ticketing.core.models import Event, Performance, PerformanceSett
 from altair.app.ticketing.famiport.userside_models import AltairFamiPortPerformance
 from altair.app.ticketing.orders.forms import OrderForm, OrderSearchForm, OrderImportForm
 from altair.app.ticketing.venues.api import get_venue_site_adapter
+from altair.app.ticketing.lots.api import copy_lots_between_performance
 
 from altair.app.ticketing.mails.forms import MailInfoTemplate
 from altair.app.ticketing.models import DBSession
@@ -555,6 +556,7 @@ class Performances(BaseView):
                     if original.orion is not None:
                         performance.orion = OrionPerformance.clone(
                             original.orion, False, ['performance_id'])
+
             else:
                 try:
                     query = Performance.query.filter_by(id=performance.id)
@@ -583,6 +585,10 @@ class Performances(BaseView):
                 performance.setting.visible = f.visible.data
 
             performance.save()
+
+            # 抽選の商品を作成する
+            copy_lots_between_performance(original, performance)
+
             self.request.session.flash(u'パフォーマンスを保存しました')
             return HTTPFound(location=route_path('performances.show', self.request, performance_id=performance.id))
         else:
@@ -691,6 +697,9 @@ class Performances(BaseView):
                     origin_performance.orion, False, ['performance_id'])
 
             new_performance.save()
+
+            # 抽選の商品を作成する
+            copy_lots_between_performance(origin_performance, new_performance)
 
         self.request.session.flash(u'パフォーマンスをコピーしました')
         return HTTPFound(location=route_path('performances.index', self.request, event_id=origin_performance.event.id))
