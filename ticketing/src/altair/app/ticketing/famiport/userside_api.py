@@ -472,106 +472,109 @@ def submit_to_downstream(request, event_id):
 
 def submit_to_downstream_sync(request, session, tenant, event):
     assert tenant.organization_id == event.organization_id
-    for altair_famiport_performance_group in session.query(AltairFamiPortPerformanceGroup).filter_by(event_id=event.id):
-        now = datetime.now()
+    with transaction.manager:
+        # Lock the FM reflection task with AltairFamiPortPerformanceGroup to avoid parallel execution from different worker process ref: TKT-1563
+        altair_famiport_performance_groups = session.query(AltairFamiPortPerformanceGroup).with_lockmode("update").filter_by(event_id=event.id).all()
+        for altair_famiport_performance_group in altair_famiport_performance_groups:
+            now = datetime.now()
 
-        try:
-            get_famiport_venue_by_userside_id(
-                request,
-                tenant.code,
-                altair_famiport_performance_group.altair_famiport_venue.id
-                )
-        except FamiPortAPINotFoundError:
-            prefecture = resolve_famiport_prefecture_by_name(request, altair_famiport_performance_group.altair_famiport_venue.siteprofile.prefecture)
-            result = create_or_update_famiport_venue(
-                request,
-                client_code=tenant.code,
-                id=None,
-                userside_id=altair_famiport_performance_group.altair_famiport_venue.id,
-                name=altair_famiport_performance_group.altair_famiport_venue.venue_name,
-                name_kana=u'',
-                prefecture=prefecture,
-                update_existing=True
-                )
-            altair_famiport_performance_group.altair_famiport_venue.famiport_venue_id = result['venue_id']
-        if altair_famiport_performance_group.status != AltairFamiPortReflectionStatus.AwaitingReflection.value:
-            logger.info('AltairFamiPortPerformanceGroup(id=%ld) is not marked AwaitingReflection; skipped' % altair_famiport_performance_group.id)
-            continue
-        result = create_or_update_famiport_event(
-            request,
-            tenant.code,
-            altair_famiport_performance_group.id,
-            code_1=altair_famiport_performance_group.code_1,
-            code_2=altair_famiport_performance_group.code_2,
-            name_1=altair_famiport_performance_group.name_1,
-            name_2=altair_famiport_performance_group.name_2,
-            sales_channel=altair_famiport_performance_group.sales_channel,
-            venue_id=altair_famiport_performance_group.altair_famiport_venue.famiport_venue_id,
-            purchasable_prefectures=altair_famiport_performance_group.direct_sales_data.get('purchasable_prefectures', None),
-            start_at=altair_famiport_performance_group.start_at,
-            end_at=altair_famiport_performance_group.end_at,
-            genre_1_code=altair_famiport_performance_group.direct_sales_data.get('genre_1_code', u'1'),
-            genre_2_code=altair_famiport_performance_group.direct_sales_data.get('genre_2_code', u''),
-            keywords=altair_famiport_performance_group.direct_sales_data.get('keywords', []),
-            search_code=altair_famiport_performance_group.direct_sales_data.get('search_code', u''),
-            update_existing=True
-            )
-        altair_famiport_performance_group.status = AltairFamiPortReflectionStatus.Reflected.value
-        altair_famiport_performance_group.last_reflected_at = now
-        if result['new']:
-            logger.info('AltairFamiPortPerformanceGroup(id=%ld) registered' % altair_famiport_performance_group.id)
-        else:
-            logger.info('AltairFamiPortPerformanceGroup(id=%ld) updated' % altair_famiport_performance_group.id)
-        for altair_famiport_performance in altair_famiport_performance_group.altair_famiport_performances.values():
-            if altair_famiport_performance.status != AltairFamiPortReflectionStatus.AwaitingReflection.value:
-                logger.info('AltairFamiPortPerformance(id=%ld) is not marked AwaitingReflection; skipped' % altair_famiport_performance.id)
-                continue
-            result = create_or_update_famiport_performance(
-                request,
-                client_code=tenant.code,
-                userside_id=altair_famiport_performance.id,
-                event_code_1=altair_famiport_performance_group.code_1,
-                event_code_2=altair_famiport_performance_group.code_2,
-                code=altair_famiport_performance.code,
-                name=altair_famiport_performance.name,
-                type_=altair_famiport_performance.type,
-                searchable=altair_famiport_performance.searchable,
-                sales_channel=altair_famiport_performance_group.sales_channel,
-                start_at=altair_famiport_performance.start_at,
-                ticket_name=altair_famiport_performance.ticket_name,
-                update_existing=True
-                )
-            altair_famiport_performance.status = AltairFamiPortReflectionStatus.Reflected.value
-            altair_famiport_performance.last_reflected_at = now
-            if result['new']:
-                logger.info('AltairFamiPortPerformance(id=%ld) registered' % altair_famiport_performance.id)
-            else:
-                logger.info('AltairFamiPortPerformance(id=%ld) updated' % altair_famiport_performance.id)
-            for altair_famiport_sales_segment_pair in altair_famiport_performance.altair_famiport_sales_segment_pairs:
-                if altair_famiport_sales_segment_pair.status != AltairFamiPortReflectionStatus.AwaitingReflection.value:
-                    logger.info('AltairFamiPortSalesSegmentPair(id=%ld) is not marked AwaitingReflection; skipped' % altair_famiport_sales_segment_pair.id)
-                    continue
-                result = create_or_update_famiport_sales_segment(
+            try:
+                get_famiport_venue_by_userside_id(
+                    request,
+                    tenant.code,
+                    altair_famiport_performance_group.altair_famiport_venue.id
+                    )
+            except FamiPortAPINotFoundError:
+                prefecture = resolve_famiport_prefecture_by_name(request, altair_famiport_performance_group.altair_famiport_venue.siteprofile.prefecture)
+                result = create_or_update_famiport_venue(
                     request,
                     client_code=tenant.code,
-                    userside_id=altair_famiport_sales_segment_pair.id,
-                    event_code_1=altair_famiport_performance_group.code_1,
-                    event_code_2=altair_famiport_performance_group.code_2,
-                    performance_code=altair_famiport_performance.code,
-                    code=altair_famiport_sales_segment_pair.code,
-                    name=altair_famiport_sales_segment_pair.name,
-                    sales_channel=altair_famiport_performance_group.sales_channel,
-                    published_at=altair_famiport_sales_segment_pair.published_at,
-                    start_at=altair_famiport_sales_segment_pair.start_at,
-                    end_at=altair_famiport_sales_segment_pair.end_at,
-                    auth_required=altair_famiport_sales_segment_pair.auth_required,
-                    auth_message=altair_famiport_sales_segment_pair.auth_message,
-                    seat_selection_start_at=altair_famiport_sales_segment_pair.seat_selection_start_at,
+                    id=None,
+                    userside_id=altair_famiport_performance_group.altair_famiport_venue.id,
+                    name=altair_famiport_performance_group.altair_famiport_venue.venue_name,
+                    name_kana=u'',
+                    prefecture=prefecture,
                     update_existing=True
                     )
-                altair_famiport_sales_segment_pair.status = AltairFamiPortReflectionStatus.Reflected.value
-                altair_famiport_sales_segment_pair.last_reflected_at = now
+                altair_famiport_performance_group.altair_famiport_venue.famiport_venue_id = result['venue_id']
+            if altair_famiport_performance_group.status != AltairFamiPortReflectionStatus.AwaitingReflection.value:
+                logger.info('AltairFamiPortPerformanceGroup(id=%ld) is not marked AwaitingReflection; skipped' % altair_famiport_performance_group.id)
+                continue
+            result = create_or_update_famiport_event(
+                request,
+                tenant.code,
+                altair_famiport_performance_group.id,
+                code_1=altair_famiport_performance_group.code_1,
+                code_2=altair_famiport_performance_group.code_2,
+                name_1=altair_famiport_performance_group.name_1,
+                name_2=altair_famiport_performance_group.name_2,
+                sales_channel=altair_famiport_performance_group.sales_channel,
+                venue_id=altair_famiport_performance_group.altair_famiport_venue.famiport_venue_id,
+                purchasable_prefectures=altair_famiport_performance_group.direct_sales_data.get('purchasable_prefectures', None),
+                start_at=altair_famiport_performance_group.start_at,
+                end_at=altair_famiport_performance_group.end_at,
+                genre_1_code=altair_famiport_performance_group.direct_sales_data.get('genre_1_code', u'1'),
+                genre_2_code=altair_famiport_performance_group.direct_sales_data.get('genre_2_code', u''),
+                keywords=altair_famiport_performance_group.direct_sales_data.get('keywords', []),
+                search_code=altair_famiport_performance_group.direct_sales_data.get('search_code', u''),
+                update_existing=True
+                )
+            altair_famiport_performance_group.status = AltairFamiPortReflectionStatus.Reflected.value
+            altair_famiport_performance_group.last_reflected_at = now
+            if result['new']:
+                logger.info('AltairFamiPortPerformanceGroup(id=%ld) registered' % altair_famiport_performance_group.id)
+            else:
+                logger.info('AltairFamiPortPerformanceGroup(id=%ld) updated' % altair_famiport_performance_group.id)
+            for altair_famiport_performance in altair_famiport_performance_group.altair_famiport_performances.values():
+                if altair_famiport_performance.status != AltairFamiPortReflectionStatus.AwaitingReflection.value:
+                    logger.info('AltairFamiPortPerformance(id=%ld) is not marked AwaitingReflection; skipped' % altair_famiport_performance.id)
+                    continue
+                result = create_or_update_famiport_performance(
+                    request,
+                    client_code=tenant.code,
+                    userside_id=altair_famiport_performance.id,
+                    event_code_1=altair_famiport_performance_group.code_1,
+                    event_code_2=altair_famiport_performance_group.code_2,
+                    code=altair_famiport_performance.code,
+                    name=altair_famiport_performance.name,
+                    type_=altair_famiport_performance.type,
+                    searchable=altair_famiport_performance.searchable,
+                    sales_channel=altair_famiport_performance_group.sales_channel,
+                    start_at=altair_famiport_performance.start_at,
+                    ticket_name=altair_famiport_performance.ticket_name,
+                    update_existing=True
+                    )
+                altair_famiport_performance.status = AltairFamiPortReflectionStatus.Reflected.value
+                altair_famiport_performance.last_reflected_at = now
                 if result['new']:
-                    logger.info('AltairFamiPortSalesSegmentPair(id=%ld) registered' % altair_famiport_sales_segment_pair.id)
+                    logger.info('AltairFamiPortPerformance(id=%ld) registered' % altair_famiport_performance.id)
                 else:
-                    logger.info('AltairFamiPortSalesSegmentPair(id=%ld) updated' % altair_famiport_sales_segment_pair.id)
+                    logger.info('AltairFamiPortPerformance(id=%ld) updated' % altair_famiport_performance.id)
+                for altair_famiport_sales_segment_pair in altair_famiport_performance.altair_famiport_sales_segment_pairs:
+                    if altair_famiport_sales_segment_pair.status != AltairFamiPortReflectionStatus.AwaitingReflection.value:
+                        logger.info('AltairFamiPortSalesSegmentPair(id=%ld) is not marked AwaitingReflection; skipped' % altair_famiport_sales_segment_pair.id)
+                        continue
+                    result = create_or_update_famiport_sales_segment(
+                        request,
+                        client_code=tenant.code,
+                        userside_id=altair_famiport_sales_segment_pair.id,
+                        event_code_1=altair_famiport_performance_group.code_1,
+                        event_code_2=altair_famiport_performance_group.code_2,
+                        performance_code=altair_famiport_performance.code,
+                        code=altair_famiport_sales_segment_pair.code,
+                        name=altair_famiport_sales_segment_pair.name,
+                        sales_channel=altair_famiport_performance_group.sales_channel,
+                        published_at=altair_famiport_sales_segment_pair.published_at,
+                        start_at=altair_famiport_sales_segment_pair.start_at,
+                        end_at=altair_famiport_sales_segment_pair.end_at,
+                        auth_required=altair_famiport_sales_segment_pair.auth_required,
+                        auth_message=altair_famiport_sales_segment_pair.auth_message,
+                        seat_selection_start_at=altair_famiport_sales_segment_pair.seat_selection_start_at,
+                        update_existing=True
+                        )
+                    altair_famiport_sales_segment_pair.status = AltairFamiPortReflectionStatus.Reflected.value
+                    altair_famiport_sales_segment_pair.last_reflected_at = now
+                    if result['new']:
+                        logger.info('AltairFamiPortSalesSegmentPair(id=%ld) registered' % altair_famiport_sales_segment_pair.id)
+                    else:
+                        logger.info('AltairFamiPortSalesSegmentPair(id=%ld) updated' % altair_famiport_sales_segment_pair.id)
