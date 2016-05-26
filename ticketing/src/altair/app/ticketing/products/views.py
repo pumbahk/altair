@@ -90,8 +90,9 @@ class ProductAndProductItem(BaseView):
                 product_item.save()
 
                 # 抽選商品の登録
+                # 商品に紐づく販売区分グループを指定する必要がある（全ての販売区分に追加に対応）
                 add_lot_product_all(
-                    sales_segment_group=sales_segment.sales_segment_group,
+                    sales_segment_group=product.sales_segment.sales_segment_group,
                     original_product=product
                 )
 
