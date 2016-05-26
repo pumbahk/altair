@@ -787,7 +787,7 @@ class FamiPortSyncTest(unittest.TestCase):
         self.assertEqual(salessegment1.end_at, famiport_salessegment.end_at)
         self.assertEqual(salessegmentgroup1.name, famiport_salessegment.name)
 
-    def test_performance_starton_change_without_altairfmvenue_and_fmvenue(self):
+    def test_venue_and_performance_starton_change_without_altairfmvenue_and_fmvenue(self):
         """2nd FM sync with performance.start.on change without existing AltairFamiPortVenue and FamiPortVenue
         """
 
@@ -839,7 +839,16 @@ class FamiPortSyncTest(unittest.TestCase):
         # Create FamiPort objects
         submit_to_downstream_sync(self.fm_request, self.session, self.rt_fmtenant, event1)
 
+        siteprofile2 = SiteProfile(id = 2, name = u'Zepp DiverCity KYOTO', prefecture = u'京都府')
+        site2 = Site(id = 2, siteprofile_id = 2, name = u'Zepp DiverCity KYOTO', visible = True)
+        venue2 = Venue(id = 2, site_id = 2, organization_id = 15, name = u'Zepp DiverCity KYOTO', performance_id = performance1.id)
+        performance1.venue = venue2
+        venue1.delete()
         performance1.start_on = datetime(2016, 3, 1, 11, 0, 0)
+
+        self.session.add(siteprofile2)
+        self.session.add(site2)
+        self.session.add(venue2)
         self.session.add(performance1)
         self.session.flush()
 
@@ -851,6 +860,8 @@ class FamiPortSyncTest(unittest.TestCase):
 
         altair_famiport_performance = self.session.query(AltairFamiPortPerformance)\
                                                   .filter(AltairFamiPortPerformance.performance_id == performance1.id).one()
+        altair_famiport_performance_group = altair_famiport_performance.altair_famiport_performance_group
+        altair_famiport_venue = altair_famiport_performance_group.altair_famiport_venue
 
         self.assertEqual(performance1.start_on, altair_famiport_performance.start_at)
 
@@ -878,6 +889,7 @@ class FamiPortSyncTest(unittest.TestCase):
         self.assertEqual(famiport_event.id, famiport_performance.famiport_event_id)
         self.assertEqual(performance1.start_on, famiport_performance.start_at)
 
+        self.assertEqual(altair_famiport_venue.id, famiport_performance.famiport_event.venue.userside_id)
         self.assertEqual(famiport_performance.id, famiport_salessegment.famiport_performance_id)
         self.assertEqual(salessegment1.start_at, famiport_salessegment.start_at)
         self.assertEqual(salessegment1.end_at, famiport_salessegment.end_at)

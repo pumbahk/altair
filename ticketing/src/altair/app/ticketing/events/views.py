@@ -201,6 +201,7 @@ class Events(BaseView):
         famiport_reflect_button_status = get_famiport_reflect_button_status(slave_session, event)
 
         return {
+            'organization_setting':self.context.organization.setting,
             'event':event,
             'performances':performances,
             'fm_performance_ids': get_famiport_performance_ids(slave_session, performances),
@@ -435,7 +436,10 @@ class Events(BaseView):
             with contextlib.closing(urllib2.urlopen(req)) as res:
                 data = res.read()
                 data = json.loads(data);
-                data['url'] = communication_api.get_url("/")
+
+                # ひとまずこの機能はお蔵入り
+                # data['url'] = communication_api.get_url("/")
+
                 return data;
         except Exception, e:
             logger.error("cms info error: %s" % (e.message))

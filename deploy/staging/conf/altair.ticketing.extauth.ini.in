@@ -12,21 +12,21 @@ altair.httpsession.persistence.lock_dir = %(here)s/../tmp/beaker/altair.app.tick
 
 ; dogpile.cache
 dogpile_cache.altair_extauth_oauth_code.backend = ${altair:dogpile_cache_backend_type}
-dogpile_cache.altair_extauth_oauth_code.expiration_time = 600
+dogpile_cache.altair_extauth_oauth_code.arguments.redis_expiration_time = 86400
 dogpile_cache.altair_extauth_oauth_code.key_mangler = altair.app.ticketing.extauth:key_mangler_oauth_code
 dogpile_cache.altair_extauth_oauth_code.arguments.filename = %(here)s/../tmp/altair_extauth
 dogpile_cache.altair_extauth_oauth_code.arguments.host = 127.0.0.1
 dogpile_cache.altair_extauth_oauth_code.arguments.db = 7
 
 dogpile_cache.altair_extauth_oauth_access_token.backend = ${altair:dogpile_cache_backend_type}
-dogpile_cache.altair_extauth_oauth_access_token.expiration_time = 900
+dogpile_cache.altair_extauth_oauth_access_token.arguments.redis_expiration_time = 86400
 dogpile_cache.altair_extauth_oauth_access_token.key_mangler = altair.app.ticketing.extauth:key_mangler_oauth_access_token
 dogpile_cache.altair_extauth_oauth_access_token.arguments.filename = %(here)s/../tmp/altair_extauth
 dogpile_cache.altair_extauth_oauth_access_token.arguments.host = 127.0.0.1
 dogpile_cache.altair_extauth_oauth_access_token.arguments.db = 7
 
 dogpile_cache.altair_extauth_openid_id_token.backend = ${altair:dogpile_cache_backend_type}
-dogpile_cache.altair_extauth_openid_id_token.expiration_time = 900
+dogpile_cache.altair_extauth_openid_id_token.arguments.redis_expiration_time = 86400
 dogpile_cache.altair_extauth_openid_id_token.key_mangler = altair.app.ticketing.extauth:key_mangler_openid_id_token
 dogpile_cache.altair_extauth_openid_id_token.arguments.filename = %(here)s/../tmp/altair_extauth
 dogpile_cache.altair_extauth_openid_id_token.arguments.host = 127.0.0.1
@@ -40,21 +40,21 @@ get altair.sqlahelper.sessions.extauth.url = altair.sqlahelper.sessions.extauth.
 get altair.sqlahelper.sessions.extauth_slave.url = altair.sqlahelper.sessions.extauth_slave.url
 
 get dogpile_cache.altair_extauth_oauth_code.backend = dogpile_cache.altair_extauth_oauth_code.backend
-get dogpile_cache.altair_extauth_oauth_code.expiration_time = dogpile_cache.altair_extauth_oauth_code.expiration_time
+get dogpile_cache.altair_extauth_oauth_code.arguments.redis_expiration_time = dogpile_cache.altair_extauth_oauth_code.arguments.redis_expiration_time
 get dogpile_cache.altair_extauth_oauth_code.key_mangler = dogpile_cache.altair_extauth_oauth_code.key_mangler
 get dogpile_cache.altair_extauth_oauth_code.arguments.filename = dogpile_cache.altair_extauth_oauth_code.arguments.filename
 get dogpile_cache.altair_extauth_oauth_code.arguments.host = dogpile_cache.altair_extauth_oauth_code.arguments.host
 get dogpile_cache.altair_extauth_oauth_code.arguments.db = dogpile_cache.altair_extauth_oauth_code.arguments.db
 
 get dogpile_cache.altair_extauth_oauth_access_token.backend = dogpile_cache.altair_extauth_oauth_access_token.backend
-get dogpile_cache.altair_extauth_oauth_access_token.expiration_time = dogpile_cache.altair_extauth_oauth_access_token.expiration_time
+get dogpile_cache.altair_extauth_oauth_access_token.arguments.redis_expiration_time = dogpile_cache.altair_extauth_oauth_access_token.arguments.redis_expiration_time
 get dogpile_cache.altair_extauth_oauth_access_token.key_mangler = dogpile_cache.altair_extauth_oauth_access_token.key_mangler
 get dogpile_cache.altair_extauth_oauth_access_token.arguments.filename = dogpile_cache.altair_extauth_oauth_access_token.arguments.filename
 get dogpile_cache.altair_extauth_oauth_access_token.arguments.host = dogpile_cache.altair_extauth_oauth_access_token.arguments.host
 get dogpile_cache.altair_extauth_oauth_access_token.arguments.db = dogpile_cache.altair_extauth_oauth_access_token.arguments.db
 
 get dogpile_cache.altair_extauth_openid_id_token.backend = dogpile_cache.altair_extauth_openid_id_token.backend
-get dogpile_cache.altair_extauth_openid_id_token.expiration_time = dogpile_cache.altair_extauth_openid_id_token.expiration_time
+get dogpile_cache.altair_extauth_openid_id_token.arguments.redis_expiration_time = dogpile_cache.altair_extauth_openid_id_token.arguments.redis_expiration_time
 get dogpile_cache.altair_extauth_openid_id_token.key_mangler = dogpile_cache.altair_extauth_openid_id_token.key_mangler
 get dogpile_cache.altair_extauth_openid_id_token.arguments.filename = dogpile_cache.altair_extauth_openid_id_token.arguments.filename
 get dogpile_cache.altair_extauth_openid_id_token.arguments.host = dogpile_cache.altair_extauth_openid_id_token.arguments.host
@@ -99,13 +99,13 @@ get altair.sqlahelper.sessions.extauth.url = altair.sqlahelper.sessions.extauth.
 get altair.sqlahelper.sessions.extauth_slave.url = altair.sqlahelper.sessions.extauth_slave.url
 
 get dogpile_cache.altair_extauth_oauth_code.backend = dogpile_cache.altair_extauth_oauth_code.backend
-get dogpile_cache.altair_extauth_oauth_code.expiration_time = dogpile_cache.altair_extauth_oauth_code.expiration_time
+get dogpile_cache.altair_extauth_oauth_code.arguments.redis_expiration_time = dogpile_cache.altair_extauth_oauth_code.arguments.redis_expiration_time
 get dogpile_cache.altair_extauth_oauth_code.arguments.filename = dogpile_cache.altair_extauth_oauth_code.arguments.filename
 get dogpile_cache.altair_extauth_oauth_code.arguments.host = dogpile_cache.altair_extauth_oauth_code.arguments.host
 get dogpile_cache.altair_extauth_oauth_code.arguments.db = dogpile_cache.altair_extauth_oauth_code.arguments.db
 
 get dogpile_cache.altair_extauth_oauth_access_token.backend = dogpile_cache.altair_extauth_oauth_access_token.backend
-get dogpile_cache.altair_extauth_oauth_access_token.expiration_time = dogpile_cache.altair_extauth_oauth_access_token.expiration_time
+get dogpile_cache.altair_extauth_oauth_access_token.arguments.redis_expiration_time = dogpile_cache.altair_extauth_oauth_access_token.arguments.redis_expiration_time
 get dogpile_cache.altair_extauth_oauth_access_token.arguments.filename = dogpile_cache.altair_extauth_oauth_access_token.arguments.filename
 get dogpile_cache.altair_extauth_oauth_access_token.arguments.host = dogpile_cache.altair_extauth_oauth_access_token.arguments.host
 get dogpile_cache.altair_extauth_oauth_access_token.arguments.db = dogpile_cache.altair_extauth_oauth_access_token.arguments.db

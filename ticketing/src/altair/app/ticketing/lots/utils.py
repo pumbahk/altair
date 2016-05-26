@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 from datetime import date
+import urlparse
+from urllib import urlencode
+
 from altair.formhelpers.fields import OurFormField
 
 from . import api
@@ -66,3 +69,10 @@ def create_form(request, context, formdata=None, **kwds):
         **kwds)
 
     return form
+
+def add_session_clear_query(url):
+    url_parts = list(urlparse.urlparse(url))
+    query = dict(urlparse.parse_qsl(url_parts[4]))
+    query.update({'clear': True})
+    url_parts[4] = urlencode(query)
+    return urlparse.urlunparse(url_parts)

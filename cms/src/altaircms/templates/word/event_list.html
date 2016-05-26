@@ -3,10 +3,8 @@
 <h1>お気に入りワード: イベント一覧</h1>
 
 <style>
-    .table-describe th, .table-describe td { min-width: 6em; white-space: nowrap; }
-    .table-describe .event { white-space: normal; }
-    .table-describe .pages { white-space: normal; }
-    .table-describe .words { white-space: normal; }
+    .table-describe th, .table-describe td { }
+    .table-describe .words a { white-space: nowrap; }
 </style>
 
 
@@ -39,11 +37,13 @@ ${xs.pager()}
 
 <table class="table table-striped table-describe">
     <thead>
-    <tr><th class="event">Event</th><th>販売期間</th><th>Words</th><th>Pages</th></tr>
+    <tr><th class="event">Event</th><th class="period">販売期間</th><th>Words</th><th>Pages</th></tr>
     </thead>
     <tbody>
     % for event in xs.paginated():
-    <tr><td class="event"><a href="${request.route_path('event', id=event.id)}">${event.title}</a> <a href="${request.route_path('event_update', id=event.id, action='input')}"><i class="icon-edit"></i></a></td><td>${h.base.jdate(event.deal_open)} - ${h.base.jdate(event.deal_close)}</td><td>
+    <tr><td class="event"><a href="${request.route_path('event', id=event.id)}">${event.title}</a> <a href="${request.route_path('event_update', id=event.id, action='input')}"><i class="icon-edit"></i></a></td>
+        <td class="period">${h.base.date_time_helper.term(event.deal_open, event.deal_close, omit_year_if_this_year=(event.deal_open.year==event.deal_close.year))}</td>
+        <td class="words">
         % for word in event.keywords:
             <a href="${request.route_path('word_list', _query={'id': word.id})}">${word.label}</a>
         % endfor
@@ -60,3 +60,18 @@ ${xs.pager()}
 </table>
 
 ${xs.pager()}
+
+<script>
+    $('table td.period').each(function() {
+        if(!$(this).html().match(/</)) {
+            var t = $(this).text();
+            var m = t.match(/^(.+)( 〜 .+)$/);
+            if(m.length == 3) {
+                $(this).text('');
+                $('<span></span>').css({ whiteSpace: 'nowrap' }).text(m[1]).appendTo(this);
+                $('<span> </span>').appendTo(this);
+                $('<span></span>').css({ whiteSpace: 'nowrap' }).text(m[2]).appendTo(this);
+            }
+        }
+    });
+</script>

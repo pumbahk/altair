@@ -51,7 +51,7 @@ altair.httpsession.http_backend.query_string_key = JSESSIONID
 
 ; dogpile.cache
 dogpile_cache.altair_oauth_auth_plugin_metadata.backend = ${altair:dogpile_cache_backend_type}
-dogpile_cache.altair_oauth_auth_plugin_metadata.expiration_time = 900
+dogpile_cache.altair_oauth_auth_plugin_metadata.arguments.redis_expiration_time = 86400
 dogpile_cache.altair_oauth_auth_plugin_metadata.arguments.filename = %(here)s/../tmp/altair_oauth_auth
 dogpile_cache.altair_oauth_auth_plugin_metadata.arguments.host = 127.0.0.1
 dogpile_cache.altair_oauth_auth_plugin_metadata.arguments.db = 6
