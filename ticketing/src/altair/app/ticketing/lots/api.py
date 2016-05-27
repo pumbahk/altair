@@ -689,7 +689,7 @@ def copy_lots_between_sales_segmnent_group(sales_segment_group, new_sales_segmen
 
 def copy_lots_between_performance(performance, new_performance):
     for new_sales_segment in new_performance.sales_segments:
-        if new_sales_segment.kind not in [SalesSegmentKindEnum.early_lottery.k, SalesSegmentKindEnum.added_lottery.k, SalesSegmentKindEnum.first_lottery.k]:
+        if not new_sales_segment.is_lottery():
             continue
 
         for product in new_sales_segment.products:

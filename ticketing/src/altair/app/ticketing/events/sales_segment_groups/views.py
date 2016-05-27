@@ -18,7 +18,7 @@ from altair.sqla import new_comparator
 from altair.app.ticketing.models import merge_session_with_post, record_to_multidict
 from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.fanstatic import with_bootstrap
-from altair.app.ticketing.core.models import Event, SalesSegment, SalesSegmentGroup, SalesSegmentGroupSetting, SalesSegmentKindEnum, Product, DBSession
+from altair.app.ticketing.core.models import Event, SalesSegment, SalesSegmentGroup, SalesSegmentGroupSetting, Product, DBSession
 from altair.app.ticketing.events.payment_delivery_method_pairs.forms import PaymentDeliveryMethodPairForm
 from altair.app.ticketing.events.sales_segments.forms import SalesSegmentForm
 from altair.app.ticketing.events.sales_segments.views import SalesSegmentViewHelperMixin
@@ -125,7 +125,7 @@ class SalesSegmentGroups(BaseView, SalesSegmentViewHelperMixin):
             for performance in self.context.event.performances:
                 accessor.create_sales_segment_for_performance(sales_segment_group, performance)
 
-            if sales_segment_group.kind in [SalesSegmentKindEnum.early_lottery.k, SalesSegmentKindEnum.added_lottery.k, SalesSegmentKindEnum.first_lottery.k]:
+            if sales_segment_group.is_lottery():
                 lot = create_lot(sales_segment_group.event, f, sales_segment_group, f.lot_name.data)
                 DBSession.add(lot)
 
@@ -156,11 +156,8 @@ class SalesSegmentGroups(BaseView, SalesSegmentViewHelperMixin):
             return f
         sales_segment_group = self.context.sales_segment_group
 
-        lot_kind = [SalesSegmentKindEnum.early_lottery.k, SalesSegmentKindEnum.added_lottery.k, SalesSegmentKindEnum.first_lottery.k]
-        lot_create_flag = False
-        if sales_segment_group.kind not in lot_kind and f.kind.data in lot_kind:
-            # 抽選に切り替わっている場合作る
-            lot_create_flag = True
+        # 抽選に切り替わっている場合作る
+        lot_create_flag = sales_segment_group.is_lottery and f.kind.data.count("lottery")
 
         if self.request.matched_route.name == 'sales_segment_groups.copy':
             with_pdmp = bool(f.copy_payment_delivery_method_pairs.data)

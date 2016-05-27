@@ -1676,6 +1676,10 @@ class SalesSegmentGroup(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def has_guest(self):
         return (not self.membergroups) or any(mg.is_guest for mg in self.membergroups)
 
+    def is_lottery(self):
+        """抽選の販売区分か判定"""
+        return 'lottery' in self.kind
+
     # 4423対応中の緩衝材メソッド
     def sync_member_group_to_children(self):
         for ss in self.sales_segments:

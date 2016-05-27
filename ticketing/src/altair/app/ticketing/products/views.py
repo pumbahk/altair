@@ -15,12 +15,12 @@ from altair.sqlahelper import get_db_session
 from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.models import merge_session_with_post, record_to_multidict
 from altair.app.ticketing.views import BaseView
-from altair.app.ticketing.core.models import Product, ProductItem, Event, Performance, Stock, SalesSegment, SalesSegmentGroup, SalesSegmentKindEnum, Organization, StockHolder, TicketBundle
+from altair.app.ticketing.core.models import Product, ProductItem, Stock, SalesSegment, Organization, StockHolder, TicketBundle
 from altair.app.ticketing.products.forms import ProductItemForm, ProductAndProductItemForm, ProductAndProductItemAPIForm, ProductCopyForm
 from altair.app.ticketing.loyalty.models import PointGrantSetting
 from altair.app.ticketing.utils import moderate_name_candidates
 from .forms import PreviewImageDownloadForm
-from .api import add_lot_product_all, add_lot_product_item, edit_lot_product, edit_lot_product_item, edit_lot_product_add_lot_product_item, delete_lot_product, delete_lot_product_item
+from .api import add_lot_product_all, edit_lot_product, edit_lot_product_item, edit_lot_product_add_lot_product_item, delete_lot_product, delete_lot_product_item
 from decimal import Decimal
 logger = logging.getLogger(__name__)
 
@@ -187,7 +187,7 @@ class ProductAndProductItem(BaseView):
                 new_product.sales_segment_id = copy_sales_segment.id
 
                 # 抽選の販売区分にコピーする場合
-                if copy_sales_segment.kind in [SalesSegmentKindEnum.early_lottery.k, SalesSegmentKindEnum.added_lottery.k, SalesSegmentKindEnum.first_lottery.k]:
+                if copy_sales_segment.is_lottery():
                     # 抽選商品の登録
                     add_lot_product_all(
                         sales_segment_group=copy_sales_segment.sales_segment_group,
