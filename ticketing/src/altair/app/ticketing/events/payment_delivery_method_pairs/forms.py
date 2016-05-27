@@ -41,6 +41,11 @@ from altair.app.ticketing.payments.plugins import (
     FAMIPORT_DELIVERY_PLUGIN_ID
 )
 
+def _get_msg(target):
+    msg = u'手数料は「予約ごと」または「{}」どちらか一方を入力してください。'
+    msg += u'取得しない手数料は「0」を入力してください。'
+    return msg.format(target)
+
 def required_when_absolute(field_name):
     return [
         SwitchOptionalBase(
@@ -579,24 +584,19 @@ class PaymentDeliveryMethodPairForm(OurForm):
         if form.data['delivery_fee_per_principal_ticket']  or  form.data['delivery_fee_per_subticket']:
             if form.data[field.name]:
                 if form.data['delivery_fee_per_principal_ticket']  and  form.data['delivery_fee_per_subticket']:
-                    raise ValidationError(u'引取手数料は「予約ごと」または「主券・副券」どちらか一方を入力してください。' +                
-                                          u'取得しない手数料は「0」を入力してください。')
+                    raise ValidationError(_get_msg(u'主券・副券'))
                 elif form.data['delivery_fee_per_principal_ticket']:
-                    raise ValidationError(u'引取手数料は「予約ごと」または「主券」どちらか一方を入力してください。' +
-                                          u'取得しない手数料は「0」を入力してください。')
+                    raise ValidationError(_get_msg(u'主券'))
                 elif form.data['delivery_fee_per_subticket']:
-                    raise ValidationError(u'引取手数料は「予約ごと」または「副券」どちらか一方を入力してください。' +
-                                          u'取得しない手数料は「0」を入力してください。')
+                    raise ValidationError(_get_msg(u'副券'))
 
     def validate_delivery_fee_per_principal_ticket(form, field):
         if form.data['delivery_fee_per_order'] and form.data[field.name]:
-            raise ValidationError(u'引取手数料は「予約ごと」または「主券」どちらか一方を入力してください。' +    
-                                  u'取得しない手数料は「0」を入力してください。')
+            raise ValidationError(_get_msg(u'主券'))
 
     def validate_delivery_fee_per_subticket(form, field):
         if form.data['delivery_fee_per_order'] and form.data[field.name]:
-            raise ValidationError(u'引取手数料は「予約ごと」または「副券」どちらか一方を入力してください。' +
-                                  u'取得しない手数料は「0」を入力してください。')
+            raise ValidationError(_get_msg(u'副券'))
 
 
     def validate(form):
