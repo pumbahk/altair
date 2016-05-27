@@ -89,13 +89,24 @@ class DeliveryMethodForm(OurForm):
                 raise ValidationError(u'数字（正数）のみ、入力できます。')
 
     def validate_fee_per_order(form, field):
-        if form.data['fee_per_principal_ticket']:
-            if form.data[field.name] != 0 and form.data['fee_per_principal_ticket'] != 0:
-                raise ValidationError(u'手数料は「予約ごと」または「チケットごと」どちらか一方を入力してください。' + 
-                                      u'取得しない手数料は「0」を入力してください。')
+        if form.data['fee_per_principal_ticket']  or  form.data['fee_per_subticket']:
+            if form.data[field.name]:
+                if form.data['fee_per_principal_ticket']  and  form.data['fee_per_subticket']:
+                    raise ValidationError(u'手数料は「予約ごと」または「チケットごと:主券・副券」どちらか一方を入力してください。' + 
+                                          u'取得しない手数料は「0」を入力してください。')
+                elif form.data['fee_per_principal_ticket']:
+                    raise ValidationError(u'手数料は「予約ごと」または「チケットごと:主券」どちらか一方を入力してください。' +
+                                          u'取得しない手数料は「0」を入力してください。')
+                elif form.data['fee_per_subticket']:
+                    raise ValidationError(u'手数料は「予約ごと」または「チケットごと:副券」どちらか一方を入力してください。' +
+                                          u'取得しない手数料は「0」を入力してください。')
 
     def validate_fee_per_principal_ticket(form, field):
-        if form.data['fee_per_order']:
-            if form.data[field.name] != 0 and form.data['fee_per_order'] != 0:
-                raise ValidationError(u'手数料は「予約ごと」または「チケットごと」どちらか一方を入力してください。' +  
-                                      u'取得しない手数料は「0」を入力してください。')
+        if form.data['fee_per_order'] and form.data[field.name]:
+            raise ValidationError(u'手数料は「予約ごと」または「チケットごと:主券」どちらか一方を入力してください。' +  
+                                  u'取得しない手数料は「0」を入力してください。')
+
+    def validate_fee_per_subticket(form, field):
+        if form.data['fee_per_order'] and form.data[field.name]:
+            raise ValidationError(u'手数料は「予約ごと」または「チケットごと:副券」どちらか一方を入力してください。' +
+                                  u'取得しない手数料は「0」を入力してください。')

@@ -574,6 +574,30 @@ class PaymentDeliveryMethodPairForm(OurForm):
             return
         elif form.special_fee.data > 0 and form.special_fee_name.data == "":
             raise ValidationError(u'特別手数料金額を設定する場合、特別手数料名も設定してください')
+    
+    def validate_delivery_fee_per_order(form, field):
+        if form.data['delivery_fee_per_principal_ticket']  or  form.data['delivery_fee_per_subticket']:
+            if form.data[field.name]:
+                if form.data['delivery_fee_per_principal_ticket']  and  form.data['delivery_fee_per_subticket']:
+                    raise ValidationError(u'引取手数料は「予約ごと」または「主券・副券」どちらか一方を入力してください。' +                
+                                          u'取得しない手数料は「0」を入力してください。')
+                elif form.data['delivery_fee_per_principal_ticket']:
+                    raise ValidationError(u'引取手数料は「予約ごと」または「主券」どちらか一方を入力してください。' +
+                                          u'取得しない手数料は「0」を入力してください。')
+                elif form.data['delivery_fee_per_subticket']:
+                    raise ValidationError(u'引取手数料は「予約ごと」または「副券」どちらか一方を入力してください。' +
+                                          u'取得しない手数料は「0」を入力してください。')
+
+    def validate_delivery_fee_per_principal_ticket(form, field):
+        if form.data['delivery_fee_per_order'] and form.data[field.name]:
+            raise ValidationError(u'引取手数料は「予約ごと」または「主券」どちらか一方を入力してください。' +    
+                                  u'取得しない手数料は「0」を入力してください。')
+
+    def validate_delivery_fee_per_subticket(form, field):
+        if form.data['delivery_fee_per_order'] and form.data[field.name]:
+            raise ValidationError(u'引取手数料は「予約ごと」または「副券」どちらか一方を入力してください。' +
+                                  u'取得しない手数料は「0」を入力してください。')
+
 
     def validate(form):
         status = super(type(form), form).validate()
