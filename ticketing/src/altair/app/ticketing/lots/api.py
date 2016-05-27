@@ -655,7 +655,7 @@ def create_lot_products(sales_segment_group, lot):
         for product in sales_segment.products:
             if not product.original_product_id:
                 product_api.add_lot_product(
-                    lots=[lot],
+                    lot=lot,
                     original_product=product
                 )
 
@@ -700,6 +700,6 @@ def copy_lots_between_performance(performance, new_performance):
             for lot in lots:
                 if not product.original_product_id:
                     product_api.add_lot_product(
-                        lots=[lot],
+                        lot=lot,
                         original_product=product
                     )
