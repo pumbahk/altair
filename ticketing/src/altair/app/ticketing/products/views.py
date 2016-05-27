@@ -20,7 +20,7 @@ from altair.app.ticketing.products.forms import ProductItemForm, ProductAndProdu
 from altair.app.ticketing.loyalty.models import PointGrantSetting
 from altair.app.ticketing.utils import moderate_name_candidates
 from .forms import PreviewImageDownloadForm
-from .api import add_lot_product_all, edit_lot_product, edit_lot_product_item, edit_lot_product_add_lot_product_item, delete_lot_product, delete_lot_product_item
+from .api import add_lot_product_all, sync_lot_product, sync_lot_product_item, sync_lot_product_add_lot_product_item, delete_lot_product, delete_lot_product_item
 from decimal import Decimal
 logger = logging.getLogger(__name__)
 
@@ -139,15 +139,15 @@ class ProductAndProductItem(BaseView):
                 product_item.ticket_bundle_id = f.ticket_bundle_id.data
                 product_item.save()
 
-                # 抽選の商品を更新
-                edit_lot_product_item(product_item)
+                # 抽選の商品を同期
+                sync_lot_product_item(product_item)
             else:
                 if len(product.items) == 1:
                     product.items[0].price = product.price / product.items[0].quantity
                     product.items[0].save()
 
-            # 抽選の商品を更新
-            edit_lot_product(product)
+            # 抽選の商品を同期
+            sync_lot_product(product)
 
             self.request.session.flash(u'商品を保存しました')
             return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
@@ -366,8 +366,8 @@ class ProductAndProductItem(BaseView):
                     product.performance_id = f.performance_id.data
                     product.save()
 
-                    # 抽選商品の更新
-                    edit_lot_product(product)
+                    # 抽選の商品を同期
+                    sync_lot_product(product)
 
                 stock = Stock.query.filter_by(
                     stock_type_id=f.stock_type_id.data,
@@ -383,8 +383,8 @@ class ProductAndProductItem(BaseView):
                 product_item.ticket_bundle_id = f.ticket_bundle_id.data
                 product_item.save()
 
-                # 抽選商品明細の更新
-                edit_lot_product_item(product_item)
+                # 抽選商品明細の同期
+                sync_lot_product_item(product_item)
 
         return {}
 
@@ -438,8 +438,8 @@ class ProductItems(BaseView):
             )
             product_item.save()
 
-            # 抽選商品の金額を更新し、抽選の商品明細を追加する
-            edit_lot_product_add_lot_product_item(f.product, product_item)
+            # 抽選商品の金額を同期し、抽選の商品明細を同期する
+            sync_lot_product_add_lot_product_item(f.product, product_item)
 
             self.request.session.flash(u'商品に在庫を割当てました')
             return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
@@ -501,7 +501,7 @@ class ProductItems(BaseView):
             product_item.save()
 
             # 抽選の商品を金額のため更新し、商品明細を修正
-            edit_lot_product_item(original_product_item=product_item)
+            sync_lot_product_item(original_product_item=product_item)
 
             self.request.session.flash(u'商品明細を保存しました')
             return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)

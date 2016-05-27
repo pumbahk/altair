@@ -579,7 +579,7 @@ def get_lotting_announce_timezone(timezone):
     return label
 
 
-def create_lot_from_form(event, form, sales_segment_group=None, lot_name=None):
+def _create_lot_from_form(event, form, sales_segment_group=None, lot_name=None):
     if not lot_name:
         lot_name = form.data['name']
     lot = Lot(
@@ -597,7 +597,7 @@ def create_lot_from_form(event, form, sales_segment_group=None, lot_name=None):
     return lot
 
 
-def create_lot_from_object(event, lot):
+def _create_lot_from_object(event, lot):
     lot = Lot(
         event=event,
         organization_id=event.organization_id,
@@ -613,7 +613,7 @@ def create_lot_from_object(event, lot):
     return lot
 
 
-def create_lot_sales_segment(sales_segment_group, lot, sales_segment_group_id):
+def _create_lot_sales_segment(sales_segment_group, lot, sales_segment_group_id):
     accessor = SalesSegmentAccessor()
     sales_segment = accessor.create_sales_segment_for_lot(sales_segment_group, lot)
     sales_segment.sales_segment_group_id = sales_segment_group_id
@@ -626,7 +626,7 @@ def create_lot_sales_segment(sales_segment_group, lot, sales_segment_group_id):
     return sales_segment
 
 
-def copy_lot_sales_segment_between_sales_segment_group(sales_segment_group, new_sales_segment_group, lot):
+def _copy_lot_sales_segment_between_sales_segment_group(sales_segment_group, new_sales_segment_group, lot):
     accessor = SalesSegmentAccessor()
     sales_segment = accessor.create_sales_segment_for_lot(new_sales_segment_group, lot)
     sales_segment.sales_segment_group_id = sales_segment_group.id
@@ -645,12 +645,12 @@ def create_lot(event, form, sales_segment_group=None, lot_name=None):
     else:
         sales_segment_group_id = form.data['sales_segment_group_id']
         sales_segment_group = SalesSegmentGroup.query.filter(SalesSegmentGroup.id == form.data['sales_segment_group_id']).one()
-    new_lot = create_lot_from_form(event, form, sales_segment_group, lot_name)
-    create_lot_sales_segment(sales_segment_group, new_lot, sales_segment_group_id)
+    new_lot = _create_lot_from_form(event, form, sales_segment_group, lot_name)
+    _create_lot_sales_segment(sales_segment_group, new_lot, sales_segment_group_id)
     return new_lot
 
 
-def create_lot_products(sales_segment_group, lot):
+def _create_lot_products(sales_segment_group, lot):
     for sales_segment in sales_segment_group.sales_segments:
         for product in sales_segment.products:
             if not product.original_product_id:
@@ -663,7 +663,7 @@ def create_lot_products(sales_segment_group, lot):
 def copy_lot(event, form, sales_segment_group, lot_name):
     lot = create_lot(event, form, sales_segment_group, lot_name)
     DBSession.add(lot)
-    create_lot_products(sales_segment_group, lot)
+    _create_lot_products(sales_segment_group, lot)
 
 
 def copy_lots_between_sales_segmnent(sales_segment, new_sales_segment):
@@ -671,20 +671,20 @@ def copy_lots_between_sales_segmnent(sales_segment, new_sales_segment):
     lot = Lot.query.filter(Lot.sales_segment_id == sales_segment.id).first()
     sales_segment_group = sales_segment.sales_segment_group
     new_sales_segment_group = sales_segment.sales_segment_group
-    new_lot = create_lot_from_object(sales_segment_group.event, lot)
+    new_lot = _create_lot_from_object(sales_segment_group.event, lot)
     DBSession.add(new_lot)
-    copy_lot_sales_segment_between_sales_segment_group(sales_segment_group, new_sales_segment_group, new_lot)
-    create_lot_products(new_sales_segment_group, new_lot)
+    _copy_lot_sales_segment_between_sales_segment_group(sales_segment_group, new_sales_segment_group, new_lot)
+    _create_lot_products(new_sales_segment_group, new_lot)
 
 
 def copy_lots_between_sales_segmnent_group(sales_segment_group, new_sales_segment_group):
     for sales_segment in sales_segment_group.sales_segments:
         lots = Lot.query.filter(Lot.sales_segment_id == sales_segment.id).all()
         for lot in lots:
-            new_lot = create_lot_from_object(sales_segment_group.event, lot)
+            new_lot = _create_lot_from_object(sales_segment_group.event, lot)
             DBSession.add(new_lot)
-            copy_lot_sales_segment_between_sales_segment_group(sales_segment_group, new_sales_segment_group, new_lot)
-            create_lot_products(new_sales_segment_group, new_lot)
+            _copy_lot_sales_segment_between_sales_segment_group(sales_segment_group, new_sales_segment_group, new_lot)
+            _create_lot_products(new_sales_segment_group, new_lot)
 
 
 def copy_lots_between_performance(performance, new_performance):

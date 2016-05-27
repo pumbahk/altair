@@ -4,11 +4,11 @@ from altair.app.ticketing.core.models import DBSession
 from altair.app.ticketing.core.models import Product, ProductItem
 
 
-def get_lot_products(original_product_id):
+def _get_lot_products(original_product_id):
     return Product.query.filter(Product.original_product_id == original_product_id).all()
 
 
-def get_lot_product_items(original_product_item_id):
+def _get_lot_product_items(original_product_item_id):
     return ProductItem.query.filter(ProductItem.original_product_item_id == original_product_item_id).all()
 
 
@@ -50,8 +50,8 @@ def add_lot_product_item(lot_product, original_product_item):
     return product_item
 
 
-def edit_lot_product(original_product):
-    lot_products = get_lot_products(original_product.id)
+def sync_lot_product(original_product):
+    lot_products = _get_lot_products(original_product.id)
 
     for lot_product in lot_products:
         lot_product.name = original_product.name
@@ -63,8 +63,8 @@ def edit_lot_product(original_product):
         lot_product.min_product_quantity = original_product.max_product_quantity
 
 
-def edit_lot_product_item(original_product_item):
-    lot_product_items = get_lot_product_items(original_product_item.id)
+def sync_lot_product_item(original_product_item):
+    lot_product_items = _get_lot_product_items(original_product_item.id)
     for lot_product_item in lot_product_items:
         lot_product_item.name = original_product_item.name
         lot_product_item.price = original_product_item.price
@@ -72,8 +72,8 @@ def edit_lot_product_item(original_product_item):
         lot_product_item.ticket_bundle_id = original_product_item.ticket_bundle_id
 
 
-def edit_lot_product_add_lot_product_item(original_product, original_product_item):
-    lot_products = get_lot_products(original_product.id)
+def sync_lot_product_add_lot_product_item(original_product, original_product_item):
+    lot_products = _get_lot_products(original_product.id)
     for lot_product in lot_products:
         lot_product.name = original_product.name
         lot_product.price = original_product.price
@@ -87,12 +87,12 @@ def edit_lot_product_add_lot_product_item(original_product, original_product_ite
 
 
 def delete_lot_product(original_product):
-    lot_products = get_lot_products(original_product.id)
+    lot_products = _get_lot_products(original_product.id)
     for lot_product in lot_products:
         lot_product.delete()
 
 
 def delete_lot_product_item(original_product_item):
-    lot_product_items = get_lot_product_items(original_product_item.id)
+    lot_product_items = _get_lot_product_items(original_product_item.id)
     for lot_product_item in lot_product_items:
         lot_product_item.delete()
