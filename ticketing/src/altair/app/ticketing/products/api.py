@@ -26,6 +26,7 @@ def add_lot_product(lot, original_product):
     # 抽選商品明細の登録
     for product_item in original_product.items:
         add_lot_product_item(product, product_item)
+    return product
 
 
 def add_lot_product_all(sales_segment_group, original_product):
