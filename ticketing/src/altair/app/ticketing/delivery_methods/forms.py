@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from wtforms.validators import Length, Optional
+from markupsafe import Markup
 
 from altair.formhelpers.form import OurForm
 from altair.formhelpers.fields import OurTextField, OurSelectField, OurDecimalField, OurHiddenField
@@ -10,6 +11,12 @@ from altair.formhelpers.validators import DynSwitchDisabled, ValidationError
 from altair.app.ticketing.core.models import DeliveryMethod, DeliveryMethodPlugin
 from altair.saannotation import get_annotations_for
 from altair.app.ticketing.payments.plugins import SEJ_DELIVERY_PLUGIN_ID, QR_DELIVERY_PLUGIN_ID, FAMIPORT_DELIVERY_PLUGIN_ID, RESERVE_NUMBER_DELIVERY_PLUGIN_ID
+
+def _get_msg(target):
+    msg = u'手数料は「予約ごと」または「{}」どちらか一方を入力してください。<br/>' 
+    msg += u'取得しない手数料は「0」を入力してください。'
+    msg = Markup(msg.format(target))
+    return msg
 
 class DeliveryMethodForm(OurForm):
 
@@ -89,13 +96,19 @@ class DeliveryMethodForm(OurForm):
                 raise ValidationError(u'数字（正数）のみ、入力できます。')
 
     def validate_fee_per_order(form, field):
-        if form.data['fee_per_principal_ticket']:
-            if form.data[field.name] != 0 and form.data['fee_per_principal_ticket'] != 0:
-                raise ValidationError(u'手数料は「予約ごと」または「チケットごと」どちらか一方を入力してください。' + 
-                                      u'取得しない手数料は「0」を入力してください。')
+        if form.data['fee_per_principal_ticket'] or form.data['fee_per_subticket']:
+            if form.data[field.name]:
+                if form.data['fee_per_principal_ticket'] and form.data['fee_per_subticket']:
+                    raise ValidationError(_get_msg(u'チケットごと:主券・副券'))
+                elif form.data['fee_per_principal_ticket']:
+                    raise ValidationError(_get_msg(u'チケットごと:主券'))
+                elif form.data['fee_per_subticket']:
+                    raise ValidationError(_get_msg(u'チケットごと:・副券'))
 
     def validate_fee_per_principal_ticket(form, field):
-        if form.data['fee_per_order']:
-            if form.data[field.name] != 0 and form.data['fee_per_order'] != 0:
-                raise ValidationError(u'手数料は「予約ごと」または「チケットごと」どちらか一方を入力してください。' +  
-                                      u'取得しない手数料は「0」を入力してください。')
+        if form.data['fee_per_order'] and form.data[field.name]:
+            raise ValidationError(_get_msg(u'チケットごと:主券'))
+
+    def validate_fee_per_subticket(form, field):
+        if form.data['fee_per_order'] and form.data[field.name]:
+            raise ValidationError(_get_msg(u'チケットごと:副券'))
