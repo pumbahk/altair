@@ -94,14 +94,11 @@ class DeliveryMethodForm(OurForm):
         if field.data:
             if str(field.data).isdigit() == False:
                 raise ValidationError(u'数字（正数）のみ、入力できます。')
-    
-    def _get_msg(self, target):
-        return u'手数料は「予約ごと」または「{}」どちらか一方を入力してください。取得しない手数料は「0」を入力してください。'.format(target)
 
     def validate_fee_per_order(form, field):
-        if form.data['fee_per_principal_ticket']  or  form.data['fee_per_subticket']:
+        if form.data['fee_per_principal_ticket'] or form.data['fee_per_subticket']:
             if form.data[field.name]:
-                if form.data['fee_per_principal_ticket']  and  form.data['fee_per_subticket']:
+                if form.data['fee_per_principal_ticket'] and form.data['fee_per_subticket']:
                     raise ValidationError(_get_msg(u'チケットごと:主券・副券'))
                 elif form.data['fee_per_principal_ticket']:
                     raise ValidationError(_get_msg(u'チケットごと:主券'))

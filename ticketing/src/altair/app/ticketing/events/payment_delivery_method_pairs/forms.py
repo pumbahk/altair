@@ -584,9 +584,9 @@ class PaymentDeliveryMethodPairForm(OurForm):
             raise ValidationError(u'特別手数料金額を設定する場合、特別手数料名も設定してください')
     
     def validate_delivery_fee_per_order(form, field):
-        if form.data['delivery_fee_per_principal_ticket']  or  form.data['delivery_fee_per_subticket']:
+        if form.data['delivery_fee_per_principal_ticket'] or form.data['delivery_fee_per_subticket']:
             if form.data[field.name]:
-                if form.data['delivery_fee_per_principal_ticket']  and  form.data['delivery_fee_per_subticket']:
+                if form.data['delivery_fee_per_principal_ticket'] and form.data['delivery_fee_per_subticket']:
                     raise ValidationError(_get_msg(u'主券・副券'))
                 elif form.data['delivery_fee_per_principal_ticket']:
                     raise ValidationError(_get_msg(u'主券'))
