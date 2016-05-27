@@ -41,10 +41,13 @@ from altair.app.ticketing.payments.plugins import (
     FAMIPORT_DELIVERY_PLUGIN_ID
 )
 
+from markupsafe import Markup
+
 def _get_msg(target):
-    msg = u'手数料は「予約ごと」または「{}」どちらか一方を入力してください。'
+    msg = u'手数料は「予約ごと」または「{}」どちらか一方を入力してください。<br/>'
     msg += u'取得しない手数料は「0」を入力してください。'
-    return msg.format(target)
+    msg = Markup(msg.format(target))
+    return msg
 
 def required_when_absolute(field_name):
     return [

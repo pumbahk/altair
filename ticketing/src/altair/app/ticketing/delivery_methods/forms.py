@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from wtforms.validators import Length, Optional
+from markupsafe import Markup
 
 from altair.formhelpers.form import OurForm
 from altair.formhelpers.fields import OurTextField, OurSelectField, OurDecimalField, OurHiddenField
@@ -12,9 +13,10 @@ from altair.saannotation import get_annotations_for
 from altair.app.ticketing.payments.plugins import SEJ_DELIVERY_PLUGIN_ID, QR_DELIVERY_PLUGIN_ID, FAMIPORT_DELIVERY_PLUGIN_ID, RESERVE_NUMBER_DELIVERY_PLUGIN_ID
 
 def _get_msg(target):
-    msg = u'手数料は「予約ごと」または「{}」どちらか一方を入力してください。' 
+    msg = u'手数料は「予約ごと」または「{}」どちらか一方を入力してください。<br/>' 
     msg += u'取得しない手数料は「0」を入力してください。'
-    return msg.format(target)
+    msg = Markup(msg.format(target))
+    return msg
 
 class DeliveryMethodForm(OurForm):
 
