@@ -516,6 +516,22 @@ class SalesSegmentGroupAndLotForm(SalesSegmentGroupForm):
         ]])
 
 
+class CopyLotForm(SalesSegmentGroupAndLotForm):
+    sales_segment_group = HiddenField()
+    lot = HiddenField()
+    def validate(self, *args, **kwargs):
+        # 抽選が選択されている場合の追加のバリデーション
+        return all([fn((), {}) for fn in [
+            self.lot_name.validate,
+            self.limit_wishes.validate,
+            self.entry_limit.validate,
+            self.description.validate,
+            self.lotting_announce_datetime.validate,
+            self.lotting_announce_timezone.validate,
+            self.custom_timezone_label.validate,
+        ]])
+
+
 class MemberGroupToSalesSegmentForm(OurForm):
     def _get_translations(self):
         return Translations()

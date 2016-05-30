@@ -51,6 +51,7 @@ ${ch.breadcrumbs(
             <th>抽選結果発表予定日</th>
             <th>&nbsp;</th>
             <th>&nbsp;</th>
+            <th>&nbsp;</th>
           </tr>
         </thead>
         <tbody>
@@ -70,6 +71,11 @@ ${ch.breadcrumbs(
             <td>
               <div class="btn-group">
                 <a href="${request.route_url('lots.edit', lot_id=lot.id)}" class="btn btn-small"><i class="icon-edit"></i> 編集</a>
+              </div>
+            </td>
+            <td>
+              <div class="btn-group">
+                <a href="${request.route_url('sales_segment_groups.copy_lot', lot_id=lot.id)}" class="btn btn-small"><i class="icon-edit"></i> コピー</a>
               </div>
             </td>
             <td>

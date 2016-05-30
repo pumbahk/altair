@@ -78,21 +78,18 @@ class SalesSegmentGroups(BaseView, SalesSegmentViewHelperMixin):
 
     @view_config(route_name='sales_segment_groups.lot_delete', renderer='altair.app.ticketing:templates/sales_segment_groups/show.html', permission='event_viewer')
     def lot_delete(self):
-        lot_id = self.request.matchdict.get('lot_id')
-
-        lot = Lot.query.filter(Lot.id==lot_id).first()
-        if lot:
-            if lot.entries:
-                self.request.session.flash(u'{0}は抽選申し込みが存在します。'.format(lot.name))
+        if self.context.lot:
+            if self.context.lot.entries:
+                self.request.session.flash(u'{0}は抽選申し込みが存在します。'.format(self.context.lot.name))
             else:
 
                 sales_segments_ids = [ss.id for ss in self.context.sales_segment_group.sales_segments]
                 lots = Lot.query.filter(Lot.sales_segment_id.in_(sales_segments_ids)).all()
 
                 if len(lots) > 1:
-                    lot.sales_segment.delete()
+                    self.context.lot.sales_segment.delete()
                     lot.delete()
-                    self.request.session.flash(u"{0}を削除しました。".format(lot.name))
+                    self.request.session.flash(u"{0}を削除しました。".format(self.context.lot.name))
                 else:
                     self.request.session.flash(u'抽選の販売区分グループの抽選をすべて消すことはできません')
 
@@ -163,9 +160,6 @@ class SalesSegmentGroups(BaseView, SalesSegmentViewHelperMixin):
             return f
         sales_segment_group = self.context.sales_segment_group
 
-        # 抽選に切り替わっている場合作る
-        lot_create_flag = sales_segment_group.is_lottery and f.kind.data.count("lottery")
-
         if self.request.matched_route.name == 'sales_segment_groups.copy':
             with_pdmp = bool(f.copy_payment_delivery_method_pairs.data)
             try:
@@ -208,10 +202,8 @@ class SalesSegmentGroups(BaseView, SalesSegmentViewHelperMixin):
                 accessor.update_sales_segment(new_sales_segment)
 
             new_sales_segment_group.sync_member_group_to_children()
-
-            # 抽選の販売区分間コピー
-            copy_lots_between_sales_segmnent_group(sales_segment_group, new_sales_segment_group)
-
+            if "lottery" in f.kind.data:
+                copy_lots_between_sales_segmnent_group(sales_segment_group, new_sales_segment_group)
         else:
             sales_segment_group = merge_session_with_post(sales_segment_group, f.data, excludes=SalesSegmentAccessor.setting_attributes)
             if sales_segment_group.setting is None:
@@ -231,9 +223,6 @@ class SalesSegmentGroups(BaseView, SalesSegmentViewHelperMixin):
             for sales_segment in sales_segment_group.sales_segments:
                 logger.info('propagating changes to sales_segment(id=%ld)' % sales_segment.id)
                 accessor.update_sales_segment(sales_segment)
-
-            if lot_create_flag:
-                copy_lot(sales_segment_group.event, f, sales_segment_group, f.lot_name.data)
 
         self.request.session.flash(u'販売区分グループを保存しました')
         return None
@@ -317,3 +306,22 @@ class SalesSegmentGroups(BaseView, SalesSegmentViewHelperMixin):
         self.request.session.flash(u'membergroupの結びつき変更しました')
         return HTTPFound(self.request.POST["redirect_to"])
 
+    @view_config(route_name='sales_segment_groups.copy_lot',
+                 renderer='altair.app.ticketing:templates/sales_segment_groups/_lot_copy.html',
+                 request_method="GET")
+    def get_copy_lot(self):
+        if not self.context.lot:
+            raise HTTPNotFound("指定された抽選がありません")
+        form = self.context.create_lot_copy_form(self.context, False)
+        return {'form': form}
+
+    @view_config(route_name='sales_segment_groups.copy_lot',
+                 renderer='altair.app.ticketing:templates/sales_segment_groups/_lot_copy.html',
+                 request_method="POST")
+    def post_copy_lot(self):
+        form = self.context.create_lot_copy_form_with_form_data(self.context)
+        if not form.validate():
+            return {'form': form}
+        copy_lot(form.sales_segment_group.data.event, form, form.sales_segment_group.data, form.lot_name.data)
+        return HTTPFound(self.request.route_path('sales_segment_groups.show',
+                         sales_segment_group_id=form.sales_segment_group.data.id))

@@ -1,0 +1,54 @@
+<%inherit file="/layout_2cols.html"/>
+<%namespace file="/common/helpers.html" name="ch"/>
+<script type="text/javascript">
+</script>
+<%block name="breadcrumbs">
+${ch.breadcrumbs(
+  names=[u'イベント', form.sales_segment_group.data.event.title, u'販売区分グループ', u'抽選コピー'],
+  urls=[
+    request.route_path('events.index'),
+    request.route_path('events.show', event_id=form.sales_segment_group.data.event.id),
+    request.route_path('sales_segment_groups.show', sales_segment_group_id=form.sales_segment_group.data.id),
+  ]
+)}
+</%block>
+
+<h2>コピー元情報</h2>
+
+<h3>販売区分グループ</h3>
+<table border="1">
+  <tr>
+    <td>ID</td>
+    <td>${form.sales_segment_group.data.id}</td>
+  </tr>
+  <tr>
+    <td>名称</td>
+    <td>${form.sales_segment_group.data.name}</td>
+  </tr>
+</table>
+
+<h3>元にする抽選</h3>
+<table border="1">
+  <tr>
+    <td>ID</td>
+    <td>${form.lot.data.id}</td>
+  </tr>
+  <tr>
+    <td>名称</td>
+    <td>${form.lot.data.name}</td>
+  </tr>
+</table>
+
+<form class="form-horizontal" action="${request.route_path('sales_segment_groups.copy_lot', lot_id=form.lot.data.id)}" method="POST">
+  ${ch.form_item(form.lot)}
+  ${ch.form_item(form.sales_segment_group)}
+  ${ch.form_item(form.lot_name)}
+  ${ch.form_item(form.limit_wishes)}
+  ${ch.form_item(form.entry_limit)}
+  ${ch.form_item(form.description)}
+  ${ch.form_item(form.lotting_announce_datetime)}
+  ${ch.form_item(form.lotting_announce_timezone)}
+  ${ch.form_item(form.custom_timezone_label)}
+  ${ch.form_item(form.auth_type)}
+  <input class="btn btn-success" type="submit" value="抽選コピーする"/>
+</form>
