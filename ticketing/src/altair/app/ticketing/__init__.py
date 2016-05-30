@@ -169,6 +169,7 @@ def main(global_config, **local_config):
         config.include('altair.app.ticketing.tickets' , route_prefix='/tickets')
         config.include('altair.app.ticketing.products' , route_prefix='/products')
         config.include('altair.app.ticketing.mailmags' , route_prefix='/mailmags')
+        config.include('altair.app.ticketing.announce' , route_prefix='/announce')
         config.include('altair.app.ticketing.venues' , route_prefix='/venues')
         config.include('altair.app.ticketing.cooperation', route_prefix='/cooperation')
         config.include('altair.app.ticketing.dashboard' , route_prefix='/dashboard')

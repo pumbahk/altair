@@ -11,6 +11,7 @@ from sqlalchemy.orm import joinedload
 from ..event.models import Event
 from ..models import Performance, Word, WordSearch, Performance_Word, Event_Word
 
+from altair.viewhelpers.datetime_ import dt2str
 logger = logging.getLogger(__file__)
 
 
@@ -49,7 +50,7 @@ def api_word_get(request):
                 words.append(dict(id=word.id, label=word.label, type=word.type))
                 word_ids.add(word.id)
 
-        event = dict(title=performance.event.title)
+        event = dict(id=performance.event.id, title=performance.event.title)
         return dict(performance=dict(title=performance.title, event=event), words=words)
     elif cart_event:
         event = request.allowable(Event)\
@@ -70,6 +71,19 @@ def api_word_get(request):
         for word in w1.all():
             words.append(dict(id=word.id, label=word.label, type=word.type))
             word_ids.add(word.id)
+
+        include_pages = True
+        if include_pages:
+            pages = list()
+            for ps in event.pagesets:
+                p = ps.current()
+                if p is not None:
+                    pages.append(dict(path=ps.url,
+                                      page_id=p.id,
+                                      publish_begin=p.publish_begin.isoformat() if p.publish_begin is not None else None,
+                                      publish_end=p.publish_end.isoformat() if p.publish_end is not None else None,
+                                      ))
+            return dict(event=dict(id=event.id, title=event.title), pages=pages, words=words)
 
         include_performances = False
         if include_performances:

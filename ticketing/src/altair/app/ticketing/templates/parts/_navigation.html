@@ -83,6 +83,11 @@
         % if HH.has_permission('event_editor'):
         <li><a href="${request.route_path('mailmags.index')}">メールマガジン</a></li>
         % endif
+
+        ## FIXME: permission
+        % if request.context.organization.setting.enable_word and HH.has_permission('event_editor'):
+        <li><a href="${request.route_path('announce.index')}">告知メール</a></li>
+        % endif
       </ul>
     </li>
   % endif

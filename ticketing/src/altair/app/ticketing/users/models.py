@@ -4,6 +4,7 @@ from sqlalchemy.sql.expression import case, null
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import join, backref, column_property
 from sqlalchemy.orm.collections import attribute_mapped_collection
+from sqlalchemy import func, distinct
 from pyramid.i18n import TranslationString as _
 from altair.saannotation import AnnotatedColumn
 
@@ -271,3 +272,42 @@ class WordSubscription(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     user_id = Column(Identifier, ForeignKey('User.id'))
     user = relationship('User', backref='wordsubscriptions')
     word_id = Column(Integer)
+
+class Announcement(Base, BaseModel, LogicallyDeleted, WithTimestamp):
+    __tablename__ = 'Announcement'
+
+    id = Column(Identifier, primary_key=True)
+    organization_id = Column(Identifier, ForeignKey('Organization.id'))
+    organization = relationship('Organization')
+    event_id = Column(Identifier, ForeignKey('Event.id'))
+    event = relationship('Event', backref='announcements')
+    note = Column(String(1024))
+    subject = Column(String(255))
+    message = Column(String(8000))
+    send_after = Column(DateTime)
+    words = Column(String(1024)) # comma separated id list
+    started_at = Column(DateTime)
+    completed_at = Column(DateTime)
+    subscriber_count = Column(Integer)
+
+    # userの存在とかはチェックしない, どうせメールが届くか等はわからないので
+    def get_subscriber_count(self):
+        try:
+            word_ids = [int(s) for s in self.words.split(",")]
+        except:
+            # TODO: wordsが不正なのでエラーを吐く
+            word_ids = [ ]
+        return session.query(func.count(distinct(WordSubscription.user_id)).label("num_subscribers"))\
+            .filter(WordSubscription.word_id.in_(word_ids)).first().num_subscribers
+
+class AnnouncementTemplate(Base, BaseModel):
+    __tablename__ = 'AnnouncementTemplate'
+
+    id = Column(Identifier, primary_key=True)
+    organization_id = Column(Identifier, ForeignKey('Organization.id'))
+    organization = relationship('Organization')
+    name = Column(String(64))
+    description = Column(String(255))
+    subject = Column(String(255))
+    message = Column(String(8000))
+    sort = Column(Integer)

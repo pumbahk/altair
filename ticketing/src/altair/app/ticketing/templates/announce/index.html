@@ -1,0 +1,55 @@
+<%inherit file="/layout_2cols.html"/>
+<%namespace file="/common/helpers.html" name="ch" />
+
+<%block name="breadcrumbs">
+  ${ch.breadcrumbs(
+      names=[u'トップ', u'告知メール'],
+      urls=[request.route_path('index')]
+  )}
+</%block>
+
+<%def name="tab(n, label)">
+  % if mode == n:
+    <b>${label}</b>
+  % else:
+    <a href="?mode=${n}">${label}</a>
+  % endif
+</%def>
+
+<div class="page-header">
+  <h1>告知メール</h1>
+</div>
+
+[ ${tab('todo', u'未送信')}
+| ${tab('done', u'送信済')}
+]
+
+
+<table class="table table-striped table-bordered" style="width: auto;">
+  <thead>
+  <tr>
+    <th class="span1">送信日時</th>
+    <th class="span1">状態</th>
+    <th>イベント</th>
+    <th>メール題名</th>
+    <th class="span1">対象ワード数</th>
+    <th class="span1">対象ユーザ数</th>
+  </tr>
+  </thead>
+  <tbody>
+    % for a in announcements:
+    <tr>
+        <td style="white-space: nowrap;">${vh.datetime(a.send_after, with_weekday=True)}</td>
+        <td style="white-space: nowrap;">${u'処理済' if a.completed_at else (u'処理中' if a.started_at else u'')}</td>
+        <td><a href="${request.route_path('announce.list', event_id=a.event.id)}">${a.event.title}</a></td>
+        <td><a href="${request.route_path('announce.edit', announce_id=a.id)}">${a.subject}</a></td>
+        <td>${len(a.words.split(",")) if 0 < len(a.words) else ''}</td>
+        <td>${a.get_subscriber_count()}</td>
+    </tr>
+    % endfor
+  </tbody>
+</table>
+
+${ch.pager(announcements)}
+
+<br />
