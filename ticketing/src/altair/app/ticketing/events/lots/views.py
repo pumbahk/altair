@@ -492,12 +492,12 @@ class LotEntries(BaseView):
 
         - フィルター (すべて、未処理)
         """
-
         slave_session = get_db_session(self.request, name="slave")
 
         self.check_organization(self.context.event)
         lot_id = self.context.lot_id
         lot = slave_session.query(Lot).filter(Lot.id==lot_id).one()
+
         form = EntryStatusForm(formdata=self.request.params)
         condition = None
         if 'do_export' in self.request.params and form.validate():
@@ -506,6 +506,11 @@ class LotEntries(BaseView):
 
         #entries = lots_api.get_lot_entries_iter(lot.id)
         entries = CSVExporter(slave_session, lot.id, condition)
+
+        if entries.all() and not entries.all()[0]:
+            self.request.session.flash(u"対象となる申込が1件もないため、ダウンロード出来ませんでした")
+            return HTTPFound(location=self.request.route_url('lots.entries.elect', lot_id=lot.id))
+
         filename='lot-{0.id}.csv'.format(lot)
         if self.request.matched_route.name == 'lots.entries.export':
             self.request.response.content_type = 'text/plain;charset=Shift_JIS'
