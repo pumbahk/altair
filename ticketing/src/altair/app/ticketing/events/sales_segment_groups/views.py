@@ -85,9 +85,16 @@ class SalesSegmentGroups(BaseView, SalesSegmentViewHelperMixin):
             if lot.entries:
                 self.request.session.flash(u'{0}は抽選申し込みが存在します。'.format(lot.name))
             else:
-                lot.sales_segment.delete()
-                lot.delete()
-                self.request.session.flash(u"{0}を削除しました。".format(lot.name))
+
+                sales_segments_ids = [ss.id for ss in self.context.sales_segment_group.sales_segments]
+                lots = Lot.query.filter(Lot.sales_segment_id.in_(sales_segments_ids)).all()
+
+                if len(lots) > 1:
+                    lot.sales_segment.delete()
+                    lot.delete()
+                    self.request.session.flash(u"{0}を削除しました。".format(lot.name))
+                else:
+                    self.request.session.flash(u'抽選の販売区分グループの抽選をすべて消すことはできません')
 
         return {
             'form_s': SalesSegmentForm(context=self.context),
