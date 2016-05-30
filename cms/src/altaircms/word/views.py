@@ -117,7 +117,7 @@ class WordManageView(object):
                 .order_by(Event.deal_open)
 
         return {
-            "xs": h.paginate(self.request, qs, item_count=qs.count()),
+            "xs": h.paginate(self.request, qs, item_count=qs.count(), items_per_page=50),
             "deal": deal,
             "now": datetime.now(),
         }
