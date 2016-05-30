@@ -16,7 +16,10 @@ import logging
 logger = logging.getLogger(__file__)
 
 def eventFormQueryFactory(model, request, allowable):
-    return allowable.filter(Word.deleted_at==None)
+    return allowable.filter(Word.deleted_at==None).order_by(Word.label_kana)
+
+def getLabelFromWord(word):
+    return "%s" % (word.label)
 
 class EventForm(Form):
     title = fields.TextField(label=u'タイトル', validators=[required_field()])
@@ -28,9 +31,9 @@ class EventForm(Form):
     performers = fields.TextField(label=u"出演者リスト", widget=widgets.TextArea())
     keywords = dynamic_query_select_field_factory(
         Word, allow_blank=True, label=u"お気に入りワード",
-        get_label=lambda obj: obj.label,
         multiple=True,
-        dynamic_query=eventFormQueryFactory, break_separate=False)
+        dynamic_query=eventFormQueryFactory, break_separate=False,
+        get_label=getLabelFromWord)
     ticket_pickup = fields.TextField(label=u"チケット引き取り方法", widget=widgets.TextArea())
     ticket_payment = fields.TextField(label=u"支払い方法", widget=widgets.TextArea())
     event_open = fields.DateTimeField(label=u'イベント開始日', validators=[required_field()])
