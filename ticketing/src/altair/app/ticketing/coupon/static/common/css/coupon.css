@@ -183,10 +183,10 @@
   height: 100px;
   width: 600px;
 
-  background-image: linear-gradient(top, #FF8C4E 0%, #FF7825 48%, #FF6000 50%, #FF7621);
-  background-image: -webkit-gradient(linear, left top, left bottom, from(#FF8C4E), color-stop(0.48, #FF7825), color-stop(0.5, #FF6000), to(#FF7621));
-  background-image: -webkit-linear-gradient(top, #FF8C4E 0%, #FF7825 48%, #FF6000 50%, #FF7621);
-  background-image: -moz-linear-gradient(top, #FF8C4E 0%, #FF7825 48%, #FF6000 50%, #FF7621);
+  background-image: -webkit-linear-gradient(top, #4E84FF 0%, #6680FF 48%, #3734FB 50%, #6680FF)
+  background-image: linear-gradient(top, #4E84FF 0%, #6680FF 48%, #3734FB 50%, #6680FF);
+  background-image: -webkit-gradient(linear, left top, left bottom, from(#4E84FF), color-stop(0.48, #6680FF), color-stop(0.5, #3734FB), to(#6680FF));
+  background-image: -moz-linear-gradient(top, #4E84FF 0%, #6680FF 48%, #3734FB 50%, #6680FF);
   box-shadow: 2px 2px 2px -1px rgba(0, 0, 0, .3), 0px 0px 0px 2px rgba(255, 255, 255, .3) inset;
 }
 
@@ -204,10 +204,10 @@
   height: 100px;
   width: 600px;
 
-  background-image: linear-gradient(top, #FF9856 0%, #FF9958 48%, #FF8741 50%, #FF8631);
-  background-image: -webkit-gradient(linear, left top, left bottom, from(#FF9856), color-stop(0.48, #FF9958), color-stop(0.5, #FF8741), to(#FF8631));
-  background-image: -webkit-linear-gradient(top, #FF9856 0%, #FF9958 48%, #FF8741 50%, #FF8631);
-  background-image: -moz-linear-gradient(top, #FF9856 0%, #FF9958 48%, #FF8741 50%, #FF8631);
+  background-image: -webkit-linear-gradient(top, #4E84FF 0%, #6680FF 48%, #3734FB 50%, #6680FF)
+  background-image: linear-gradient(top, #4E84FF 0%, #6680FF 48%, #3734FB 50%, #6680FF);
+  background-image: -webkit-gradient(linear, left top, left bottom, from(#4E84FF), color-stop(0.48, #6680FF), color-stop(0.5, #3734FB), to(#6680FF));
+  background-image: -moz-linear-gradient(top, #4E84FF 0%, #6680FF 48%, #3734FB 50%, #6680FF);
   box-shadow: 2px 2px 2px -1px rgba(0, 0, 0, .3), 0px 0px 0px 2px rgba(255, 255, 255, .3) inset;
 }
 
