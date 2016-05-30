@@ -127,7 +127,7 @@
     % elif order.payment_status == 'unpaid':
       ご入金後、利用が可能となります
     % elif order.payment_status == 'paid':
-      <input class="btnAllCoupon coupon_button" type="button" value="全てのクーポンを使用する"
+      <input class="btnAllCoupon coupon_button" type="button" value="全てのチケットを使用する"
         check_url=${request.route_path('coupon.check_can_use_order', reserved_number=reserved_number.number)}
         next_url=${request.route_path('coupon.order_admission', reserved_number=reserved_number.number)}>
     % endif

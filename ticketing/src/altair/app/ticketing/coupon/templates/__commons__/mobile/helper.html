@@ -82,7 +82,7 @@
       ご入金後、利用が可能となります
     % elif order.payment_status == 'paid':
       <form action="${request.route_path('coupon.order_admission', reserved_number=reserved_number.number)}" method="POST">
-        <input class="btnCoupon" type="submit" value="全てのクーポンを使用する"/>
+        <input class="btnCoupon" type="submit" value="全てのチケットを使用する"/>
       </form>
     % endif
   % endif

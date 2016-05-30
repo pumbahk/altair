@@ -1,7 +1,7 @@
 <%inherit file="layout.html" />
 <%namespace file="altair.app.ticketing.coupon:templates/__commons__/pc/helper.html" name="h" />
 <div id="modal-content">
-  <h2>チケット情報</h2>
+  <h2>入場チケット情報</h2>
   <form id="coupon_form" action="" method="POST">
     <input class="btnCoupon" type="submit" value="利用する"/>
     <input id="modal-close" class="btnCouponClose" type="button" value="やめる"/><br/><br/><br/>
@@ -17,7 +17,7 @@
 </div>
 
 <div id="alert-modal-content">
-  <h2>チケット情報</h2>
+  <h2>入場チケット情報</h2>
   <div class="super-attention">
 ※このチケットは既に使用されています。<br/>
   </div>
@@ -28,13 +28,13 @@
 </div>
 
 <div class="purchased">
-  <h2>入場チケット情報</h2>
-
   <div class="security_box">
     <span class="security_body" style="background-color:${coupon_security.color}">
       ${coupon_security.security_number}
     </span>
   </div>
+
+  <h2>入場チケット情報</h2>
 
   <table class="purchasedContents">
     <tbody>
@@ -71,9 +71,13 @@
     </tbody>
 
     ${h.render_coupon(order)}
+    <tr>
+      <td colspan="2">
+        ${h.render_all_coupon_button(order)}
+      </td>
+    </tr>
   </table>
   <p/>
-  ${h.render_all_coupon_button(order)}
 </div>
 
 <script>
