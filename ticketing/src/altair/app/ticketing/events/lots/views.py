@@ -492,12 +492,12 @@ class LotEntries(BaseView):
 
         - フィルター (すべて、未処理)
         """
+
         slave_session = get_db_session(self.request, name="slave")
 
         self.check_organization(self.context.event)
         lot_id = self.context.lot_id
         lot = slave_session.query(Lot).filter(Lot.id==lot_id).one()
-
         form = EntryStatusForm(formdata=self.request.params)
         condition = None
         if 'do_export' in self.request.params and form.validate():
