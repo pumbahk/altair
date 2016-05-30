@@ -21,7 +21,6 @@ def add_lot_product(lot, original_product):
                       performance_id=original_product.performance_id,
                       sales_segment=lot.sales_segment,
                       original_product_id=long(original_product.id))
-    DBSession.add(product)
 
     # 抽選商品明細の登録
     for product_item in original_product.items:
@@ -47,7 +46,6 @@ def add_lot_product_item(lot_product, original_product_item):
         ticket_bundle_id=original_product_item.ticket_bundle_id,
         original_product_item_id=original_product_item.id
     )
-    product_item.save()
     return product_item
 
 
