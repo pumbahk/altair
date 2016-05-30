@@ -507,6 +507,8 @@ class LotEntries(BaseView):
         #entries = lots_api.get_lot_entries_iter(lot.id)
         entries = CSVExporter(slave_session, lot.id, condition)
 
+        # entries.all()の返却値について、抽選申し込みのデータがない場合は[None]ですので、
+        # 下記のif文で抽選申し込みのデータが存在するかどうかを判断する。
         if entries.all() and not entries.all()[0]:
             self.request.session.flash(u"対象となる申込が1件もないため、ダウンロード出来ませんでした")
             return HTTPFound(location=self.request.route_url('lots.entries.elect', lot_id=lot.id))
