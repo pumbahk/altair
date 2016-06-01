@@ -650,9 +650,17 @@ def create_lot(event, form, sales_segment_group=None, lot_name=None):
     return new_lot
 
 
-def _create_lot_products(sales_segment_group, lot):
+def _create_lot_products(sales_segment_group, lot, exclude_performances=[]):
+    exclude_sales_segments_ids = []
+    if exclude_performances:
+        exclude_sales_segments = SalesSegment.query.filter(SalesSegment.performance_id.in_(exclude_performances)).all()
+        exclude_sales_segments_ids = [s.id for s in exclude_sales_segments]
+
     for sales_segment in sales_segment_group.sales_segments:
         for product in sales_segment.products:
+            if sales_segment.id in exclude_sales_segments_ids:
+                # 除外指定されたものは、コピーしない
+                continue
             if not product.original_product_id:
                 product_api.add_lot_product(
                     lot=lot,
@@ -660,10 +668,10 @@ def _create_lot_products(sales_segment_group, lot):
                 )
 
 
-def copy_lot(event, form, sales_segment_group, lot_name):
+def copy_lot(event, form, sales_segment_group, lot_name, exclude_performances):
     lot = create_lot(event, form, sales_segment_group, lot_name)
     DBSession.add(lot)
-    _create_lot_products(sales_segment_group, lot)
+    _create_lot_products(sales_segment_group, lot, exclude_performances)
 
 
 def copy_lots_between_sales_segmnent(sales_segment, new_sales_segment):

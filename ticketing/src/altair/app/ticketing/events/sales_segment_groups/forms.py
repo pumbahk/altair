@@ -516,9 +516,38 @@ class SalesSegmentGroupAndLotForm(SalesSegmentGroupForm):
         ]])
 
 
+class CheckedOurSelectMultipleField(OurSelectMultipleField):
+    def iter_choices(self):
+        current_value = self.data if self.data is not None else self.coerce(self.default)
+        for value, label in self.choices:
+            yield (value, label, self.coerce(value) == current_value)
+
+
 class CopyLotForm(SalesSegmentGroupAndLotForm):
+    def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
+        super(SalesSegmentGroupAndLotForm, self).__init__(formdata, obj, prefix, **kwargs)
+        perfs = self.context.lot.sales_segment.event.performances
+        self.performances.choices = [(p.id, p.name) for p in perfs]
+
     sales_segment_group = HiddenField()
     lot = HiddenField()
+    performances = CheckedOurSelectMultipleField(
+        label=u'コピーするパフォーマンス',
+        validators=[Optional()],
+        choices=[],
+        coerce=int,
+        default=27070,
+    )
+
+    def create_exclude_performance(self):
+        exclude_performances = []
+        for sales_segment in self.sales_segment_group.data.sales_segments:
+            if not sales_segment.performance:
+                continue
+            if sales_segment.performance.id not in self.performances.data:
+                exclude_performances.append(sales_segment.performance.id)
+        return exclude_performances
+
     def validate(self, *args, **kwargs):
         # 抽選が選択されている場合の追加のバリデーション
         return all([fn((), {}) for fn in [

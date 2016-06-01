@@ -322,6 +322,6 @@ class SalesSegmentGroups(BaseView, SalesSegmentViewHelperMixin):
         form = self.context.create_lot_copy_form_with_form_data(self.context)
         if not form.validate():
             return {'form': form}
-        copy_lot(form.sales_segment_group.data.event, form, form.sales_segment_group.data, form.lot_name.data)
+        copy_lot(form.sales_segment_group.data.event, form, form.sales_segment_group.data, form.lot_name.data, form.create_exclude_performance())
         return HTTPFound(self.request.route_path('sales_segment_groups.show',
                          sales_segment_group_id=form.sales_segment_group.data.id))
