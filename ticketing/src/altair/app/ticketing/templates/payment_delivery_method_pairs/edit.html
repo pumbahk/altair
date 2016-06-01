@@ -4,12 +4,17 @@
 <%
   if request.matched_route.name == 'payment_delivery_method_pairs.edit':
     is_edit = True
+    is_first = False
     route_name = u'編集'
     route_path = request.route_path('payment_delivery_method_pairs.edit', payment_delivery_method_pair_id=form.id.data)
   else:
     is_edit = False
     route_name = u'登録'
     route_path = request.route_path('payment_delivery_method_pairs.new', sales_segment_group_id=sales_segment_group.id)
+    if request.method == 'POST':
+      is_first = False
+    else:
+      is_first = True
 %>
 
 <style type="text/css">
@@ -31,6 +36,7 @@
     var issuing_interval_days_default = issuing_interval_days.val();
     var issuing_interval_days_changed = false;
     var is_edit = ${HH.json(is_edit)|n};
+    var is_first = ${HH.json(is_first)|n};
     var default_system_fee = ${system_fee or 0};
     var system_fee_type = ${HH.json(system_fee_type or 0)|n};
     var payment_method_data = ${HH.json(dict((int(pm.id), {'fee': unicode(pm.fee.quantize(0)), 'fee_type': pm.fee_type}) for pm in payment_methods))|n};
@@ -102,7 +108,7 @@
       display_cvs_field.call();
     }).change();
     $('#delivery_method_id').change(function() {
-      if (!is_edit) {
+      if (!is_edit && is_first) {
         var dm = delivery_method_data[parseInt($(this).val())];
         $('#delivery_fee_per_order').val(dm['fee_per_order']);
         $('#delivery_fee_per_principal_ticket').val(dm['fee_per_principal_ticket']);
