@@ -423,6 +423,7 @@ class SalesSegmentGroupForm(OurForm):
 
 
 class SalesSegmentGroupAndLotForm(SalesSegmentGroupForm):
+    new_flag = HiddenField(default=False)
     lot_name = OurTextField(
         label=u'抽選名',
         validators=[

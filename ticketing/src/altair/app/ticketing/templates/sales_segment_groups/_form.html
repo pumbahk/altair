@@ -9,6 +9,7 @@
     ${ch.form_item(form.copy_payment_delivery_method_pairs)}
     ${ch.form_item(form.copy_products)}
   </div>
+  ${ch.form_item(form.new_flag)}
   ${ch.form_item(form.id)}
   ${ch.form_item(form.event_id)}
   ${ch.form_item(form.kind, help=ch.help(form.kind))}
@@ -84,9 +85,13 @@
       }).change();
 
       form.find('select[name="kind"]').change(function() {
-        // 抽選入力箇所の表示切替
-        if (form.find('select[name="kind"]').val() == "early_lottery" || form.find('select[name="kind"]').val() == "added_lottery" || form.find('select[name="kind"]').val() == "first_lottery") {
-          $('#lot_area').show();
+        // 抽選入力箇所の表示切替(新規の際だけ、抽選の項目が出てくる)
+        if ($('#new_flag').val() == "True") {
+          if (form.find('select[name="kind"]').val() == "early_lottery" || form.find('select[name="kind"]').val() == "added_lottery" || form.find('select[name="kind"]').val() == "first_lottery") {
+            $('#lot_area').show();
+          } else {
+            $('#lot_area').hide();
+          }
         } else {
           $('#lot_area').hide();
         }

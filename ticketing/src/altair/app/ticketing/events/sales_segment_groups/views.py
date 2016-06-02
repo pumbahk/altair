@@ -87,9 +87,9 @@ class SalesSegmentGroups(BaseView, SalesSegmentViewHelperMixin):
                 lots = Lot.query.filter(Lot.sales_segment_id.in_(sales_segments_ids)).all()
 
                 if len(lots) > 1:
-                    self.context.lot.sales_segment.delete()
-                    lot.delete()
                     self.request.session.flash(u"{0}を削除しました。".format(self.context.lot.name))
+                    self.context.lot.sales_segment.delete()
+                    self.context.lot.delete()
                 else:
                     self.request.session.flash(u'抽選の販売区分グループの抽選をすべて消すことはできません')
 
@@ -101,8 +101,10 @@ class SalesSegmentGroups(BaseView, SalesSegmentViewHelperMixin):
 
     @view_config(route_name='sales_segment_groups.new', request_method='GET', renderer='altair.app.ticketing:templates/sales_segment_groups/_form.html', xhr=True)
     def new_xhr(self):
+        form = SalesSegmentGroupAndLotForm(None, context=self.context, new_form=True)
+        form.new_flag.data = True
         return {
-            'form': SalesSegmentGroupAndLotForm(None, context=self.context, new_form=True),
+            'form': form,
             'action': self.request.path,
             }
 
