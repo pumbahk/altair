@@ -24,6 +24,9 @@ altair.httpsession.persistence.type = ${altair:beaker_backend_type}
 altair.httpsession.persistence.data_dir = %(here)s/../tmp/beaker/data
 altair.httpsession.persistence.lock_dir = %(here)s/../tmp/beaker/lock
 
+; override common.ini
+mail.message.encoding = UTF-8
+
 [app:www-check]
 use = egg:Paste#static
 document_root = %(www_check_docroot)s

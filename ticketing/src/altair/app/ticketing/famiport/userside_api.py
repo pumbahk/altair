@@ -472,7 +472,9 @@ def submit_to_downstream(request, event_id):
 
 def submit_to_downstream_sync(request, session, tenant, event):
     assert tenant.organization_id == event.organization_id
-    for altair_famiport_performance_group in session.query(AltairFamiPortPerformanceGroup).filter_by(event_id=event.id):
+    # Lock the FM reflection task with AltairFamiPortPerformanceGroup to avoid parallel execution from different worker process ref: TKT-1563
+    altair_famiport_performance_groups = session.query(AltairFamiPortPerformanceGroup).with_lockmode("update").filter_by(event_id=event.id).all()
+    for altair_famiport_performance_group in altair_famiport_performance_groups:
         now = datetime.now()
 
         try:

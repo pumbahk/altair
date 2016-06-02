@@ -4,14 +4,20 @@
 <%namespace file="/common/confirm_modal.html" import="delete_modal"/>
 <%namespace file="/common/confirm_modal.html" import="download_modal"/>
 
-<script>
+<script type="text/javascript">
   $(function() {
-    $('#delete').click(function(){
+
+    $('#create').click(function(e) {
+      $(location).attr('href', "${request.route_path('newsletters.new')}");
+    });
+
+    $('#delete').click(function(e){
       $('#delete-modal').modal('toggle');
       $('#delete-modal #delete').attr('href', '/newsletters/delete/' + $('input[name=checked_id]:checked').val());
     });
 
-    $('#edit').click(function(){
+    $('#edit').click(function(e) {
+      console.log(e);
       $(location).attr('href', '/newsletters/edit/' + $('input[name=checked_id]:checked').val());
     });
 
@@ -19,6 +25,10 @@
       $(location).attr('href', '/newsletters/copy/' + $('input[name=checked_id]:checked').val());
     });
   });
+
+  function edit() {
+    console.log('pushed edit');
+  }
 
   function download(id) {
     $('#download-modal').modal('toggle');
@@ -92,17 +102,17 @@
 
 <div class="ui-toolbar">
   <div class="btn-group pull-right">                                                                     
-    <button class="btn">
-      <a href="${request.route_path('newsletters.new')}"><i class="icon-plus"></i> 新規</a>
+    <button class="btn" id="create">
+      <a><i class="icon-plus"></i> 新規</a>
     </button>
-    <button class="btn">
-      <a id="edit"><i class="icon-pencil"></i> 編集</a>
+    <button class="btn" id="edit">
+      <a><i class="icon-pencil"></i> 編集</a>
     </button>
     <a id="delete" class="btn" data-controls-modal="delete-modal" data-backdrop="true" data-keyboard="true">
       <i class="icon-minus"></i> 削除
     </a>
-    <button class="btn">
-      <a id="copy"><i class="icon-plus"></i> コピー</a>
+    <button class="btn" id="copy">
+      <a><i class="icon-plus"></i> コピー</a>
     </button>
   </div>
 </div>

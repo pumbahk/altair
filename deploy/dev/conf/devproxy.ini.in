@@ -39,6 +39,10 @@ altair.cms.admin =
     http://cms.stg.altr.jp(/.*)?
     http://%(_proxy_target)s:${altair:cms.admin.port}\1
 
+altair.newsletters.admin =
+    http://newsletters.stg.altr.jp(/.*)?
+    http://%(_proxy_target)s:8040\1
+
 [rewrite:zea-admin]
 zea-admin = 
     http://zea-admin.stg.altr.jp(/.*)
