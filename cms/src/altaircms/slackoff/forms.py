@@ -20,7 +20,7 @@ from altaircms.page.forms import url_not_conflict
 from ..event.models import Event
 from altaircms.models import Performance, Genre
 from ..models import Category, SalesSegment, SalesSegmentGroup, Ticket, Word
-from ..event.forms import eventFormQueryFactory
+from ..event.forms import eventFormQueryFactory, getLabelFromWord
 from ..asset.models import ImageAsset
 from ..page.models import PageSet, MobileTag
 from ..topic.models import TopicTag, Topcontent,TopcontentTag, PromotionTag, Promotion
@@ -128,9 +128,9 @@ class PerformanceForm(Form):
 
     keywords = dynamic_query_select_field_factory(
         Word, allow_blank=True, label=u"お気に入りワード",
-        get_label=lambda obj: obj.label,
         multiple=True,
-        dynamic_query=eventFormQueryFactory, break_separate=False)
+        dynamic_query=eventFormQueryFactory, break_separate=False,
+        get_label=getLabelFromWord)
 
     def validate(self, **kwargs):
         if super(PerformanceForm, self).validate():

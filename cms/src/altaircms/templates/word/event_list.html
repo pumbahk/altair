@@ -41,7 +41,7 @@ ${xs.pager()}
     </thead>
     <tbody>
     % for event in xs.paginated():
-    <tr><td class="event"><a href="${request.route_path('event', id=event.id)}">${event.title}</a> <a href="${request.route_path('event_update', id=event.id, action='input')}"><i class="icon-edit"></i></a></td>
+    <tr><td class="event"><a href="${request.route_path('event', id=event.id)}">${event.title}</a> <a href="${request.route_path('event_update', id=event.id, action='input', _query={'endpoint':request.url})}"><i class="icon-edit"></i></a></td>
         <td class="period">${h.base.date_time_helper.term(event.deal_open, event.deal_close, omit_year_if_this_year=(event.deal_open.year==event.deal_close.year))}</td>
         <td class="words">
         % for word in event.keywords:
