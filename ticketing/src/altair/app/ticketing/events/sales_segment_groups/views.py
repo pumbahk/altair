@@ -83,7 +83,7 @@ class SalesSegmentGroups(BaseView, SalesSegmentViewHelperMixin):
                 self.request.session.flash(u'{0}は抽選申し込みが存在します。'.format(self.context.lot.name))
             else:
 
-                sales_segments_ids = [ss.id for ss in self.context.sales_segment_group.sales_segments]
+                sales_segments_ids = [ss.id for ss in self.context.lot.sales_segment_group.sales_segments]
                 lots = Lot.query.filter(Lot.sales_segment_id.in_(sales_segments_ids)).all()
 
                 if len(lots) > 1:
