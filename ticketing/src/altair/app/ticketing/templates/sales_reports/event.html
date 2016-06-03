@@ -1,37 +1,5 @@
 <%inherit file="/layout_2cols.html"/>
 <%namespace file="/common/helpers.html" name="ch" />
-<script type="text/javascript">
-    $(window).load(function() {
-        field = ['year', 'month', 'day'];
-
-        $("input[id^='limited']").on("change", function(e, to_do) {
-            if (to_do === 'skip') return;
-            var target = this.id.split('.')[1];
-            if (to_do === 'date_only' && field.indexOf(target) === -1) return;
-
-            if (this.id.indexOf('from') !== -1) {
-                if ($("input#limited_to\\." + target).val() === '') {
-                    $("input#limited_to\\." + target).val(this.value);
-                    
-                    // 間接的に曜日を自動記入されるため 
-                    $("input#limited_to\\.day").trigger('change', 'skip');
-                }
-            } else {
-                if ($("input#limited_from\\." + target).val() === '') {
-                    $("input#limited_from\\." + target).val(this.value);
-
-                    // 間接的に曜日を自動記入されるため
-                    $("input#limited_from\\.day").trigger('change', 'skip');
-                }
-            }
-        });
-            
-        $('.datepicker').on('click', function() {
-            // datepickerで記入する場合は、日付のみ表示するため。
-            $("input[id^='limited']").trigger('change', 'date_only');
-        });
-    });
-</script>
 <%
   record = event_total_reporter.pop_data()
   form = event_total_reporter.form
