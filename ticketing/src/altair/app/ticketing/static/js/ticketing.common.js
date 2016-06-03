@@ -234,6 +234,42 @@ var get_datetime_for, set_datetime_for, attach_datepicker;
       }
     });
   };
+
+  copy_datetime_to_another = function ($item) {
+    // 値がある項目のみ対応する。
+    if ($item.value !== '') {
+      target_id = $item.id.indexOf('from') !== -1 ? $item.id.replace('from', 'to') : $item.id.replace('to', 'from');
+      target_id = target_id.replace('.', '\\.');
+      trigger = target_id.split('\\.')[0] + '\\.day';
+
+      // 対応の項目がブランクのみ自動記入される。
+      if ($("input#" + target_id).val() === '') {
+        $("input#" + target_id).val($item.value);
+        $("input#" + trigger).trigger('change');
+      }
+    }
+  };
+
+  date_auto_fill = function () {
+    // datepickerの対応項目自動入力を設定する。
+    $('.datetimewidget-container').find('.icon-calendar').parent().datepicker()
+      .on('changeDate', function() {
+        var siblings = $(this).siblings();
+        $(siblings).each( function() {
+          var item = $(this).find('input').get(0);
+          copy_datetime_to_another(item);
+        });
+      });
+
+    // 各日時のフォームの対応項目自動入力を設定する。
+    var items = $('.datetimewidget-container').find('input');
+    $(items).each( function() {
+        var item = $(this).get(0);
+        $(item).on("change", function() {
+            copy_datetime_to_another(this);
+      });
+    });
+  };
 })();
 
 !(function ($){
@@ -292,37 +328,4 @@ var get_datetime_for, set_datetime_for, attach_datepicker;
       });
     });
   };
-
-    $(window).load(function() {
-        field = ['year', 'month', 'day'];
-
-        $("input[id^='limited']").on("change", function(e, to_do) {
-            if (to_do === 'skip') return;
-            
-            var target = this.id.split('.')[1];
-            if (to_do === 'date_only' && field.indexOf(target) === -1) return;
-
-            if (this.id.indexOf('from') !== -1) {
-                if ($("input#limited_to\\." + target).val() === '') {
-                    $("input#limited_to\\." + target).val(this.value);
-                    
-                    // 間接的に曜日を自動記入されるため 
-                    $("input#limited_to\\.day").trigger('change', 'skip');
-                }
-            } else {
-                if ($("input#limited_from\\." + target).val() === '') {
-                    $("input#limited_from\\." + target).val(this.value);
-
-                    // 間接的に曜日を自動記入されるため
-                    $("input#limited_from\\.day").trigger('change', 'skip');
-                }
-            }
-        });
-            
-        $('.datepicker').on('click', function() {
-            // datepickerで記入する場合は、日付のみ表示するため。
-            $("input[id^='limited']").trigger('change', 'date_only');
-        });
-    });
-
 }(jQuery))
