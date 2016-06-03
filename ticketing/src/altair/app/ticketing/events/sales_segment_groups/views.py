@@ -309,7 +309,7 @@ class SalesSegmentGroups(BaseView, SalesSegmentViewHelperMixin):
         return HTTPFound(self.request.POST["redirect_to"])
 
     @view_config(route_name='sales_segment_groups.copy_lot',
-                 renderer='altair.app.ticketing:templates/sales_segment_groups/_lot_copy.html',
+                 renderer='altair.app.ticketing:templates/sales_segment_groups/lot_copy.html',
                  request_method="GET")
     def get_copy_lot(self):
         if not self.context.lot:
@@ -318,7 +318,7 @@ class SalesSegmentGroups(BaseView, SalesSegmentViewHelperMixin):
         return {'form': form}
 
     @view_config(route_name='sales_segment_groups.copy_lot',
-                 renderer='altair.app.ticketing:templates/sales_segment_groups/_lot_copy.html',
+                 renderer='altair.app.ticketing:templates/sales_segment_groups/lot_copy.html',
                  request_method="POST")
     def post_copy_lot(self):
         form = self.context.create_lot_copy_form_with_form_data(self.context)
