@@ -540,6 +540,21 @@ class CopyLotForm(SalesSegmentGroupAndLotForm):
         default=27070,
     )
 
+    def set_hidden_data(self, lot):
+        self.lot.data = lot
+        self.sales_segment_group.data = lot.sales_segment.sales_segment_group
+
+    def create_by_lot(self, lot):
+        self.set_hidden_data(lot)
+        self.lot_name.data = lot.name
+        self.limit_wishes.data = lot.limit_wishes
+        self.entry_limit.data = lot.entry_limit
+        self.description.data = lot.description
+        self.lotting_announce_datetime.data = lot.lotting_announce_datetime
+        self.lotting_announce_timezone.data = lot.lotting_announce_timezone
+        self.custom_timezone_label.data = lot.custom_timezone_label
+        self.auth_type.data = lot.auth_type
+
     def create_exclude_performance(self):
         exclude_performances = []
         for sales_segment in self.sales_segment_group.data.sales_segments:

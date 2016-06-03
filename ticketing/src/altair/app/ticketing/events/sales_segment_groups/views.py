@@ -12,6 +12,7 @@ from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPBadRequest
 from pyramid.renderers import render_to_response
 from pyramid.url import route_path
+from .forms import CopyLotForm
 
 from altair.sqla import new_comparator
 
@@ -314,14 +315,16 @@ class SalesSegmentGroups(BaseView, SalesSegmentViewHelperMixin):
     def get_copy_lot(self):
         if not self.context.lot:
             raise HTTPNotFound("指定された抽選がありません")
-        form = self.context.create_lot_copy_form(self.context, False)
+        form = CopyLotForm(None, context=self.context, new_form=False)
+        form.create_by_lot(self.context.lot)
         return {'form': form}
 
     @view_config(route_name='sales_segment_groups.copy_lot',
                  renderer='altair.app.ticketing:templates/sales_segment_groups/lot_copy.html',
                  request_method="POST")
     def post_copy_lot(self):
-        form = self.context.create_lot_copy_form_with_form_data(self.context)
+        form = CopyLotForm(self.request.POST, context=self.context)
+        form.set_hidden_data(self.context.lot)
         if not form.validate():
             return {'form': form}
         copy_lot(form.sales_segment_group.data.event, form, form.sales_segment_group.data, form.lot_name.data, form.create_exclude_performance())
