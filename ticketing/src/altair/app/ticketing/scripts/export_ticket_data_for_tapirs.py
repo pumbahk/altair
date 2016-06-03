@@ -119,7 +119,7 @@ def main(argv=sys.argv[1:]):
                             continue
 
                         retval = dict(
-                            barcode_no=ticket_like.get('barcode_number'),
+                            barcode_no='1{}'.format(ticket_like.get('barcode_number')),
                             order_no=order.order_no,
                             branch_no=i+1,
                             last_name=order.shipping_address.last_name.encode('utf-8'),
