@@ -221,15 +221,15 @@ class AltairFamiPortSalesSegmentPair(Base, WithTimestamp, LogicallyDeleted):
     seat_unselectable_sales_segment = orm.relationship('SalesSegment', primaryjoin=(seat_unselectable_sales_segment_id==SalesSegment.id), foreign_keys=[seat_unselectable_sales_segment_id])
     seat_selectable_sales_segment = orm.relationship('SalesSegment', primaryjoin=(seat_selectable_sales_segment_id==SalesSegment.id), foreign_keys=[seat_selectable_sales_segment_id])
 
-    def validate(self):
+    def validate(self, ignore_public=True):
         errors = []
-        if self.seat_unselectable_sales_segment is not None and self.seat_unselectable_sales_segment.public:
-            if self.seat_selectable_sales_segment is not None and self.seat_selectable_sales_segment.public:
+        if self.seat_unselectable_sales_segment is not None and (self.seat_unselectable_sales_segment.public or ignore_public):
+            if self.seat_selectable_sales_segment is not None and (self.seat_selectable_sales_segment.public or ignore_public):
                 if self.seat_unselectable_sales_segment is not None:
                     if self.seat_unselectable_sales_segment.end_at + timedelta(seconds=1) != self.seat_selectable_sales_segment.start_at:
                         errors.append(u'there is a gap between the sales term of the seat-unselectable sales segment and the seat-selectable sales segment; they should be adjacent')
         else:
-            if self.seat_selectable_sales_segment is None or not self.seat_selectable_sales_segment.public:
+            if self.seat_selectable_sales_segment is None or not (self.seat_selectable_sales_segment.public or ignore_public):
                 errors.append(u'neither seat-unselectable or seat-selectable sales segment is specified or public')
         return errors
 
@@ -245,7 +245,7 @@ class AltairFamiPortSalesSegmentPair(Base, WithTimestamp, LogicallyDeleted):
     @property
     def seat_selection_start_at(self):
         assert len(self.validate()) == 0
-        if self.seat_selectable_sales_segment is not None and self.seat_selectable_sales_segment.public:
+        if self.seat_selectable_sales_segment is not None:
             return self.seat_selectable_sales_segment.start_at
         else:
             return None
@@ -253,18 +253,18 @@ class AltairFamiPortSalesSegmentPair(Base, WithTimestamp, LogicallyDeleted):
     @property
     def start_at(self):
         assert len(self.validate()) == 0
-        if self.seat_unselectable_sales_segment is not None and self.seat_unselectable_sales_segment.public:
+        if self.seat_unselectable_sales_segment is not None:
             return self.seat_unselectable_sales_segment.start_at
-        elif self.seat_selectable_sales_segment is not None and self.seat_selectable_sales_segment.public:
+        elif self.seat_selectable_sales_segment is not None:
             return self.seat_selectable_sales_segment.start_at
         return None
 
     @property
     def end_at(self):
         assert len(self.validate()) == 0
-        if self.seat_selectable_sales_segment is not None and self.seat_selectable_sales_segment.public:
+        if self.seat_selectable_sales_segment is not None:
             return self.seat_selectable_sales_segment.end_at
-        elif self.seat_unselectable_sales_segment is not None and self.seat_unselectable_sales_segment.public:
+        elif self.seat_unselectable_sales_segment is not None:
             return self.seat_unselectable_sales_segment.end_at
         return None
 
