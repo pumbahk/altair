@@ -245,6 +245,9 @@ var get_datetime_for, set_datetime_for, attach_datepicker;
       // 対応の項目がブランクのみ自動記入される。
       if ($("input#" + target_id).val() === '') {
         $("input#" + target_id).val($item.value);
+        
+        // 曜日を括弧に記入するためにchangeイベントをファイアする。
+        // 該当changeイベントはrefresh_dowメソッドを実行する。
         $("input#" + trigger).trigger('change');
       }
     }
