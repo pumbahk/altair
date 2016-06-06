@@ -240,7 +240,6 @@ var get_datetime_for, set_datetime_for, attach_datepicker;
     if ($item.value !== '') {
       target_id = $item.id.indexOf('from') !== -1 ? $item.id.replace('from', 'to') : $item.id.replace('to', 'from');
       target_id = target_id.replace('.', '\\.');
-      trigger = target_id.split('\\.')[0] + '\\.day';
 
       // 対応の項目がブランクのみ自動記入される。
       if ($("input#" + target_id).val() === '') {
@@ -248,7 +247,7 @@ var get_datetime_for, set_datetime_for, attach_datepicker;
         
         // 曜日を括弧に記入するためにchangeイベントをファイアする。
         // 該当changeイベントはrefresh_dowメソッドを実行する。
-        $("input#" + trigger).trigger('change');
+        $("input#" + target_id).trigger('change');
       }
     }
   };
