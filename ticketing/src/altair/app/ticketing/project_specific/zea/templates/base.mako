@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
-  <title>ZE:A admin</title>
+  <title>FC admin</title>
   <style type="text/css">
 body {
   padding-top: 60px; /* 60px to make the container go all the way to the bottom of the topbar */
@@ -21,7 +21,7 @@ body {
   <div class="navbar navbar-fixed-top">
     <div class="navbar-inner">
       <div class="container">
-        <a class="brand" href="#">ZE:A admin</a>
+        <a class="brand" href="#">FC admin</a>
       </div>
     </div>
   </div>

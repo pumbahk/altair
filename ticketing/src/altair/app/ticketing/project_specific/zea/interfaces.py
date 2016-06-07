@@ -1,4 +1,4 @@
 from zope.interface import Interface, Attribute
 
-class IZeaAdminSettings(Interface):
+class IFCAdminSettings(Interface):
     event_ids = Attribute('')
