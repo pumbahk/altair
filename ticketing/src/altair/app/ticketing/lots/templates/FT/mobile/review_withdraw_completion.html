@@ -1,0 +1,127 @@
+<%inherit file="./base.html" />
+<%namespace file="./tags_mobile.html" name="mobile" />
+%if not error_msg:
+<div align="center">以下の抽選申込を取消いたしました</div><br/>
+%else:
+<div align="center" style="font-size:10px;margin:10px;">${error_msg}</div>
+%endif
+<div align="center" style="height:10px;magin:5px;">
+<a href="${request.route_path('lots.review.index')}" style="background-color:#FF6C0D;font-size:10px;padding: 5px 10px 5px 10px;color:white;border-radius: 2px;text-decoration: none;">入力画面に戻る</a>
+</div>
+<br/>
+
+<%mobile:header>詳細</%mobile:header>
+<%mobile:form_header>申込番号</%mobile:form_header>
+<div class="confirmBoxText">${entry.entry_no}</div>
+
+<%mobile:form_header>状態</%mobile:form_header>
+<div>
+%if h.lot_entry_display_status(entry, now) == u'抽選待ち表示':
+抽選待ち
+%else:
+<span style="color:red;">
+${h.lot_entry_status_as_string(entry)}
+</span>
+%endif
+<%mobile:band bgcolor="#ffffdd">
+%if h.lot_entry_display_status(entry, now) == u'抽選申込取消':
+お申込みいただいておりました以下の抽選受付を${h.withdraw_time_label(entry)}に取消いたしました。
+%elif h.lot_entry_display_status(entry, now) == u'当選表示':
+抽選の結果、お客様はご当選されました。
+払込票番号や引換票番号は、下記の購入履歴よりご確認いただけます。<br/>
+<a href="/orderreview/guest">■購入履歴確認ページ</a>をご確認ください。<br/>
+予約番号は ${entry.entry_no} です。
+%elif h.lot_entry_display_status(entry, now) == u'落選表示':
+抽選の結果、お客様は残念ながら落選となりました。<br />
+%elif h.lot_entry_display_status(entry, now) == u'抽選待ち表示':
+抽選結果発表は、${h.announce_time_label(entry.lot)}を予定しております。<br />
+抽選結果発表後、抽選結果確認ページにて当選・落選をご確認下さい。
+%endif
+</%mobile:band>
+
+<div>
+<%mobile:header>お申込内容</%mobile:header>
+<%mobile:form_header>決済方法</%mobile:form_header>
+${entry.payment_delivery_method_pair.payment_method.name}<br/>
+<%mobile:form_header>引取方法</%mobile:form_header>
+${entry.payment_delivery_method_pair.delivery_method.name}<br/>
+%for wish in wishes:
+  <div>
+  <strong>第${wish.wish_order + 1}希望</strong><span>${wish.performance.name}</span>
+  抽選結果<br/>
+  <div>
+  %if entry.is_ordered:
+    %if wish.elected_at:
+      ご用意できました
+    %else:
+      ご用意できませんでした
+    %endif
+  %elif entry.rejected_at:
+    ご用意できませんでした
+  %else:
+    抽選処理前です
+  %endif
+  </div>
+  <%mobile:form_header>公演日</%mobile:form_header>
+  ${h.japanese_datetime(wish.performance.start_on)}<br/>
+  <%mobile:form_header>会場</%mobile:form_header>
+  ${wish.performance.venue.name}<br/>
+  <%mobile:form_header>希望内容と手数料</%mobile:form_header>
+  <div>
+  %for lot_product in wish.products:
+    ${lot_product.product.name}
+    ${h.format_currency(lot_product.product.price)}×${lot_product.quantity}枚=${h.format_currency(lot_product.subtotal)} (税込)
+  %endfor
+  <%mobile:form_header>決済手数料</%mobile:form_header>
+  (${wish.lot_entry.payment_delivery_method_pair.payment_method.name})
+  ${h.format_currency(wish.transaction_fee)}<br/>
+  <%mobile:form_header>引取手数料</%mobile:form_header>
+  (${wish.lot_entry.payment_delivery_method_pair.delivery_method.name})
+  ${h.format_currency(wish.delivery_fee)}<br/>
+  <%mobile:form_header>システム利用料</%mobile:form_header>
+  ${h.format_currency(wish.system_fee)}
+  %if wish.special_fee > 0:
+    ${wish.special_fee_name}
+    ${h.format_currency(wish.special_fee)}
+  %endif
+  <br/>
+  <%mobile:form_header>合計</%mobile:form_header>
+  ${h.format_currency(wish.total_amount)} (税込)<br/>
+  </div>
+  </div>
+%endfor
+</div>
+
+<div>
+<%mobile:header>購入者情報</%mobile:header>
+<%mobile:form_header>購入者氏名</%mobile:form_header>
+${shipping_address.last_name} ${shipping_address.first_name}
+<%mobile:form_header>購入者氏名（カナ）</%mobile:form_header>
+${shipping_address.last_name_kana} ${shipping_address.first_name_kana}
+<%mobile:form_header>メールアドレス</%mobile:form_header>
+${shipping_address.email_1}
+<%mobile:form_header>電話番号</%mobile:form_header>
+${shipping_address.tel_1}
+<%mobile:form_header>住所</%mobile:form_header>
+〒${shipping_address.zip}<br/>
+${shipping_address.prefecture}${shipping_address.city}${shipping_address.address_1}
+${shipping_address.address_2}
+<%mobile:form_header>生年月日</%mobile:form_header>
+${u"{0.year} 年 {0.month}月 {0.day}日".format(birthday)}
+<%mobile:form_header>性別</%mobile:form_header>
+${h.format_gender(request, gender)}
+</div>
+
+<% extra_form_data = entry.get_lot_entry_attribute_pair_pairs(request) %>
+% if extra_form_data:
+<%mobile:header>追加情報</%mobile:header>
+% for _, (display_name, display_value) in extra_form_data:
+<div>
+<%mobile:form_header>${display_name}</%mobile:form_header>
+</div>
+<div>
+${h.sensible_coerce(request, display_value)}
+</div>
+% endfor
+% endif
+
