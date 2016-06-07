@@ -401,7 +401,9 @@ class Performances(BaseView):
             'event': self.context.event,
             'performances': performances,
             'fm_performance_ids': get_famiport_performance_ids(slave_session, performances),
-            'form': PerformanceForm(organization_id=self.context.user.organization_id),
+            'form': PerformanceForm(
+                        organization_id=self.context.user.organization_id,
+                        context=self.context),
         }
 
     def index_xml(self, event_query, query):
@@ -426,8 +428,11 @@ class Performances(BaseView):
 
     @view_config(route_name='performances.new', request_method='GET', renderer='altair.app.ticketing:templates/performances/edit.html')
     def new_get(self):
-        f = PerformanceForm(MultiDict(
-            code=self.context.event.code, visible=True), organization_id=self.context.user.organization_id)
+        f = PerformanceForm(
+            MultiDict(code=self.context.event.code, visible=True),
+            organization_id=self.context.user.organization_id,
+            context=self.context)
+        f.account_id.data = self.context.event.account_id
         return {
             'form': f,
             'event': self.context.event,
@@ -438,7 +443,11 @@ class Performances(BaseView):
     @view_config(route_name='performances.new', request_method='POST', renderer='altair.app.ticketing:templates/performances/edit.html')
     def new_post(self):
         f = PerformanceForm(
-            self.request.POST, organization_id=self.context.user.organization_id, event=self.context.event, visible=True)
+            self.request.POST,
+            organization_id=self.context.user.organization_id,
+            event=self.context.event,
+            context=self.context,
+            visible=True)
         if f.validate():
             performance = merge_session_with_post(
                 Performance(
@@ -480,7 +489,8 @@ class Performances(BaseView):
         f = PerformanceForm(
             obj=performance,
             organization_id=self.context.user.organization_id,
-            venue_id=performance.venue.id
+            venue_id=performance.venue.id,
+            context=self.context
         )
         f.order_limit.data = performance.setting and performance.setting.order_limit
         f.entry_limit.data = performance.setting and performance.setting.entry_limit
@@ -512,7 +522,8 @@ class Performances(BaseView):
             self.request.POST,
             organization_id=self.context.user.organization_id,
             event=performance.event,
-            venue_id=performance.venue.id
+            venue_id=performance.venue.id,
+            context=self.context
         )
         if f.validate():
             if is_copy:

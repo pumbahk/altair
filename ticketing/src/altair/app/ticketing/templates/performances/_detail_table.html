@@ -28,6 +28,10 @@
       <td style="border-bottom: 1px solid #dcdcdc;">${vh.datetime(performance.end_on, with_weekday=True)}</td>
     </tr>
     <tr>
+      <th>配券元</th>
+      <td>${performance.account.name}</td>
+    </tr>
+    <tr>
       <th>公演名副題</th>
       <td colspan="7">${performance.subtitle or u"-"}</td>
     </tr>
