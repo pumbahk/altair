@@ -1,3 +1,4 @@
+<% from altair.app.ticketing.famiport.userside_models import AltairFamiPortReflectionStatus %>
 <%inherit file="/layout_2cols.html" />
 <%namespace file="/common/modal.html" name="common_modal" />
 <%namespace file="/common/helpers.html" name="ch" />
@@ -35,9 +36,11 @@
   <h1>公演グループ「${altair_famiport_performance_group.name_1}」</h1>
 </div>
 
+% if altair_famiport_performance_group.status == AltairFamiPortReflectionStatus.Editing.value:
 <div>
 <a href="${request.route_path('events.famiport.performance_groups.item.edit', event_id=event.id, altair_famiport_performance_group_id=altair_famiport_performance_group.id)}" class="btn">編集</a>
 </div>
+% endif
 
 <table class="table">
   <tbody>
@@ -87,7 +90,9 @@
 % for altair_famiport_performance in sorted(altair_famiport_performance_group.altair_famiport_performances.values(), key=lambda altair_famiport_performance: altair_famiport_performance.code):
     <% rows = len(altair_famiport_performance.altair_famiport_sales_segment_pairs) %>
     <tr>
+      % if altair_famiport_performance_group.status == AltairFamiPortReflectionStatus.Editing.value:
       <td><input type="radio" name="altair_famiport_performance_id" value="${altair_famiport_performance.id}" /></td>
+      % endif
       <td rowspan="${rows or 1}">${view.not_reflected_label(altair_famiport_performance)}${view.status_label(altair_famiport_performance.status)}</td>
       <td rowspan="${rows or 1}">${altair_famiport_performance.code}</td>
       <td rowspan="${rows or 1}"><a href="${request.route_path('events.famiport.performances.item.show', event_id=event.id, altair_famiport_performance_group_id=altair_famiport_performance_group.id, altair_famiport_performance_id=altair_famiport_performance.id)}">${altair_famiport_performance.name}</a></td>
@@ -161,8 +166,9 @@ var item_delete_url = ${HH.json(request.route_path('events.famiport.performances
     </div>
 </div>
 
-
+% if altair_famiport_performance_group.status == AltairFamiPortReflectionStatus.Editing.value:
 <a class="btn" data-keyboard="true" data-controls-modal="modal-delete" data-backdrop="true" href="javascript:delete_performance();">
 <i class="icon-minus"></i>
 削除
 </a>
+% endif
