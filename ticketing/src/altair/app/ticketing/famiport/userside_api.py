@@ -75,8 +75,8 @@ def next_sales_segment_code(session, altair_famiport_performance_id):
         return u'001'
 
 # Pair up given sales_segments as (seat_unselectable_sales_segment, seat_selectable_sales_segment)
-# ignore_public=Trueのときは販売区分の公開区分に関わらず連携対象とする
-def find_sales_segment_pairs(session, sales_segments, ignore_public=True):
+# force_reflection=Trueのときは販売区分の公開区分に関わらず連携対象とする
+def find_sales_segment_pairs(session, sales_segments, force_reflection=True):
     def _cmp(a, b):
         if a.start_at is None:
             return -1
@@ -88,10 +88,10 @@ def find_sales_segment_pairs(session, sales_segments, ignore_public=True):
     i = 0
     while i < len(sales_segments):
         a = sales_segments[i]
-        if (a.public or ignore_public):
+        if (a.public or force_reflection):
             if i + 1 < len(sales_segments):
                 b = sales_segments[i + 1]
-                if (b.public or ignore_public) and \
+                if (b.public or force_reflection) and \
                    a.sales_segment_group_id == b.sales_segment_group_id and \
                    a.end_at is not None and b.start_at is not None and a.end_at + timedelta(seconds=1) == b.start_at and \
                    not a.seat_choice and b.seat_choice:
