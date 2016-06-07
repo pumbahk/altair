@@ -29,6 +29,8 @@ def guess_host_name_from_request(request, organization=None):
         host = qs.filter(Host.host_name.like("%.tstar.jp")).first()
     elif "stg" in url:
         host = qs.filter(Host.host_name.like("%stg%")).first()
+    elif "fmz" in url:
+        host = qs.filter(Host.host_name.like("%fmz%")).first()
     elif "dev" in url:
         host = qs.filter(Host.host_name.like("%dev%")).first()
     else:
