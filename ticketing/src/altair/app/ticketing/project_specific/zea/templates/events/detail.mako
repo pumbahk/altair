@@ -18,7 +18,6 @@
     <input type="submit" class="btn btn-primary btn-large" value="CSVダウンロードする" />
     <select name="encoding">
       <option value="CP932">Shift_JIS</option>
-      <option value="UTF-8">UTF-8</option>
     </select>
   </form>
 </div>
