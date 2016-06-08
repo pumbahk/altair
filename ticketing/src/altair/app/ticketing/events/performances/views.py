@@ -397,10 +397,16 @@ class Performances(BaseView):
             url=paginate.PageURL_WebOb(self.request)
         )
 
+        from ..famiport_helpers import get_famiport_reflection_warnings
+        warnings = {}
+        for p in performances:
+            warnings.update(get_famiport_reflection_warnings(self.request, slave_session, p))
+
         return {
             'event': self.context.event,
             'performances': performances,
-            'fm_performance_ids': get_famiport_performance_ids(slave_session, performances),
+            'fm_performance_ids': get_famiport_performance_ids(slave_session, performances),\
+            'famiport_reflect_warnings': warnings,
             'form': PerformanceForm(
                         organization_id=self.context.user.organization_id,
                         context=self.context),
