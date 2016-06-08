@@ -92,7 +92,7 @@
           </td>
           % endif
           <!--<td>${u'済' if fm_performance_ids and (performance.id in fm_performance_ids) else u'未'}</td>-->
-          <td>${u'-' if not warnings.get(performance.id) else warning_list_helper(warnings.get(performance.id))}</td>
+          <td>${u'-' if warnings.get(performance.id) is None else warning_list_helper(warnings.get(performance.id))}</td>
           <td>${performance.display_order}</td>
           <td>${vh.date(performance.start_on, with_weekday=True)}</td>
           <td style="white-space: nowrap; font-size: 10px; line-height: 12px">

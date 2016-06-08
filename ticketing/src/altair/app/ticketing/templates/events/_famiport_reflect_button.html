@@ -4,17 +4,17 @@
 % if event.organization.setting.famiport_enabled:
     <%
     if btn_status == u'NONE_REFLECTED':
-        btn_style = "btn-danger"
+        btn_style = "btn-secondary-outline disabled"
     elif btn_status == u'ALL_REFLECTED':
         btn_style = "btn-success"
     elif btn_status == u'SOME_REFLECTED':
         btn_style = "btn-warning"
     else:
-        btn_style = "btn-default"
+        btn_style = "btn-secondary-outline disabled"
     %>
     <a class="btn ${btn_style}" href="${request.route_path('events.famiport.performance_groups.index', event_id=event.id)}" style="margin-left: 5px;">
       Famiポート連携
     </a>
 % else:
-<input type="button" disabled class="btn btn-default" value="Famiポート連携" style="margin-left: 5px;"/>
+<input type="button" disabled class="btn btn-secondary-outline disabled" value="Famiポート連携" style="margin-left: 5px;"/>
 % endif

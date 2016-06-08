@@ -137,7 +137,7 @@ class Events(BaseView):
 
         famiport_reflect_button_status = {}
         for event in events:
-            famiport_reflect_button_status[event.id] = get_famiport_reflect_button_status(slave_session, event)
+            famiport_reflect_button_status[event.id] = get_famiport_reflect_button_status(self.request, slave_session, event)
 
         return {
             'form_search': form_search,
@@ -198,7 +198,7 @@ class Events(BaseView):
             performances = performances.filter(PerformanceSetting.visible == True)
         performances = performances.all()
 
-        famiport_reflect_button_status = get_famiport_reflect_button_status(slave_session, event)
+        famiport_reflect_button_status = get_famiport_reflect_button_status(self.request, slave_session, event)
         from .famiport_helpers import get_famiport_reflection_warnings
         warnings = {}
         for p in event.performances:
