@@ -125,18 +125,14 @@ class AltairFamiPortPerformanceGroupForm(OurForm):
         """
         FM興行名称はSJISで40バイト以内という制限のバリデーション
         """
-        if validate_convert_famiport_kogyo_name_style(field.data):
-            return True
-        else:
+        if not validate_convert_famiport_kogyo_name_style(field.data):
             raise ValidationError(u"全角20文字以内で入力してください")
 
     def validate_name_2(form, field):
         """
         FM興行名称はSJISで40バイト以内という制限のバリデーション
         """
-        if validate_convert_famiport_kogyo_name_style(field.data):
-            return True
-        else:
+        if not validate_convert_famiport_kogyo_name_style(field.data):
             raise ValidationError(u"全角20文字以内で入力してください")
 
     def slave_session(self):
@@ -183,9 +179,7 @@ class AltairFamiPortPerformanceForm(OurForm):
         """
         FM公演名称はSJIS40バイト以内という制限のバリデーション
         """
-        if validate_convert_famiport_kogyo_name_style(field.data):
-            return True
-        else:
+        if not validate_convert_famiport_kogyo_name_style(field.data):
             raise ValidationError(u"全角20文字以内で入力してください")
 
     def slave_session(self):
