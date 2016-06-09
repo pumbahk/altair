@@ -1,5 +1,10 @@
 <%inherit file="/layout_2cols.html"/>
 <%namespace file="/common/helpers.html" name="ch" />
+
+<script type="text/javascript">
+  $(window).load(function () { date_auto_fill() });
+</script>
+
 <%
   record = event_total_reporter.pop_data()
   form = event_total_reporter.form

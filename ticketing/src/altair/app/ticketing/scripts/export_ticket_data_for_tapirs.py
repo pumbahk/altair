@@ -118,8 +118,9 @@ def main(argv=sys.argv[1:]):
                             logger.warn('no result was found for StockType.id={}.(Order.order_no={}, FamiPortTicket.id={})'.format(stock_type_id, order.order_no, ticket_like.get('id')))
                             continue
 
+                        # famiportのバーコード番号には固定値で1が付与される。バーコード印字のタイミングでFM側で付与するものなのでチケスタDB内では付与されていない。
                         retval = dict(
-                            barcode_no=ticket_like.get('barcode_number'),
+                            barcode_no='{0}{1}'.format('1', ticket_like.get('barcode_number')),
                             order_no=order.order_no,
                             branch_no=i+1,
                             last_name=order.shipping_address.last_name.encode('utf-8'),

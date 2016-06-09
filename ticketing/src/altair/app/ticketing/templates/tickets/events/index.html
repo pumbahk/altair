@@ -94,10 +94,12 @@ ${ch.breadcrumbs(
        class="btn ajax-modal">
         <i class="icon-plus"></i> チケット券面追加
       </a>
+      <!--
       <a href="${request.route_path("events.tickets.easycreate",event_id=event.id)}"
          class="btn">
         <i class="icon-plus"></i> チケット券面簡易作成
       </a>
+        -->
       <a data-base-url="${request.route_path("events.tickets.boundtickets.edit",event_id=event.id, id="__id__")}"
          href="#" class="btn id-action">
         <i class="icon-pencil"></i> 編集

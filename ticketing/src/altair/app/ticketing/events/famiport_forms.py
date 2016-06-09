@@ -1,5 +1,6 @@
 # encoding: utf-8
 from wtforms.validators import Required, Length, Regexp, Optional
+from wtforms import ValidationError
 from altair.formhelpers.form import OurForm
 from altair.formhelpers.fields import OurTextField, OurSelectField, DelimitedTextsField, OurDateTimeField, OurBooleanField
 from altair.formhelpers.widgets import OurTextArea
@@ -11,6 +12,7 @@ from altair.app.ticketing.helpers.base import label_text_for
 from altair.app.ticketing.famiport.models import FamiPortSalesChannel, FamiPortPerformanceType
 from altair.app.ticketing.famiport.userside_models import AltairFamiPortVenue, AltairFamiPortPerformanceGroup, AltairFamiPortPerformance
 from altair.app.ticketing.famiport.api import get_genre_1_list, get_genre_2_list
+from altair.app.ticketing.famiport.utils import validate_convert_famiport_kogyo_name_style
 
 sales_channels = [
     (FamiPortSalesChannel.FamiPortOnly.value, u'直販のみ'),
@@ -82,16 +84,14 @@ class AltairFamiPortPerformanceGroupForm(OurForm):
         label=label_text_for(AltairFamiPortPerformanceGroup.name_1),
         validators=[
             Required(),
-            Zenkaku,
-            LengthInSJIS(max=80)
+            Zenkaku
             ]
         )
     name_2 = OurTextField(
         label=label_text_for(AltairFamiPortPerformanceGroup.name_2),
         validators=[
             Optional(),
-            Zenkaku,
-            LengthInSJIS(max=80)
+            Zenkaku
             ]
         )
     sales_channel = OurSelectField(
@@ -121,6 +121,20 @@ class AltairFamiPortPerformanceGroupForm(OurForm):
             ]
         )
 
+    def validate_name_1(form, field):
+        """
+        FM興行名称はSJISで40バイト以内という制限のバリデーション
+        """
+        if not validate_convert_famiport_kogyo_name_style(field.data):
+            raise ValidationError(u"全角20文字以内で入力してください")
+
+    def validate_name_2(form, field):
+        """
+        FM興行名称はSJISで40バイト以内という制限のバリデーション
+        """
+        if not validate_convert_famiport_kogyo_name_style(field.data):
+            raise ValidationError(u"全角20文字以内で入力してください")
+
     def slave_session(self):
         return get_db_session(self.request, 'slave')
 
@@ -142,8 +156,7 @@ class AltairFamiPortPerformanceForm(OurForm):
         label=label_text_for(AltairFamiPortPerformance.name),
         validators=[
             Required(),
-            Zenkaku,
-            LengthInSJIS(max=60)
+            Zenkaku
             ]
         )
     searchable = OurBooleanField(
@@ -161,6 +174,13 @@ class AltairFamiPortPerformanceForm(OurForm):
             DynSwitchDisabled(u'{type} <> "%d"' % FamiPortPerformanceType.Spanned.value)
             ]
         )
+
+    def validate_name(form, field):
+        """
+        FM公演名称はSJIS40バイト以内という制限のバリデーション
+        """
+        if not validate_convert_famiport_kogyo_name_style(field.data):
+            raise ValidationError(u"全角20文字以内で入力してください")
 
     def slave_session(self):
         return get_db_session(self.request, 'slave')

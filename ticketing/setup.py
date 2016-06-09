@@ -160,7 +160,7 @@ setup(name='altair.app.ticketing',
       entry_points="""\
       [paste.app_factory]
       main = altair.app.ticketing:main
-      zea-admin = altair.app.ticketing.project_specific.zea:main
+      fc-admin = altair.app.ticketing.project_specific.zea:main
       userside-famiport = altair.app.ticketing.famiport.userside_notification_handler:main
       [console_scripts]
       inquiry_demo=altair.app.ticketing.cart.commands:inquiry_demo

@@ -41,9 +41,12 @@
   <h1>公演「${altair_famiport_performance.name}」</h1>
 </div>
 
+<% from altair.app.ticketing.famiport.userside_models import AltairFamiPortReflectionStatus %>
+% if altair_famiport_performance.status == AltairFamiPortReflectionStatus.Editing.value:
 <div>
 <a href="${request.route_path('events.famiport.performances.item.edit', event_id=event.id, altair_famiport_performance_group_id=altair_famiport_performance.altair_famiport_performance_group_id, altair_famiport_performance_id=altair_famiport_performance.id)}" class="btn">編集</a>
 </div>
+% endif
 
 <table class="table">
   <tbody>

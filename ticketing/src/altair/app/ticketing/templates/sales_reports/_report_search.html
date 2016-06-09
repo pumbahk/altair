@@ -7,27 +7,8 @@
     if (email) params += '&recipient=' + encodeURIComponent(email);
     $(location).attr('href', '/events/sales_reports/preview/?' + params);
   };
-</script>
-<script type="text/javascript">
-    $(window).load(function() {
-        $("input[id^='limited']").on("change", function(e) {
-            var target = this.id.split('.')[1];
-            if (this.id.indexOf('from') !== -1) {
-                if ($("input#limited_to\\." + target).val() === '') {
-                    $("input#limited_to\\." + target).val(this.value);
-                }
-            } else {
-                if ($("input#limited_from\\." + target).val() === '') {
-                    $("input#limited_from\\." + target).val(this.value);
-                }
-            }
-        });
-            
 
-        $('.datepicker').on('click', function() {
-            $("input[id^='limited']").trigger('change');
-        });
-    });
+  $(window).load(function () { date_auto_fill() });
 </script>
 
 <%
@@ -42,6 +23,7 @@
   else:
     route_path = request.route_path('sales_reports.index')
 %>
+
 <form id="limitation" action="${route_path}" method="POST" style="margin-bottom: 0;">
   <div class="control-group">
     <div class="controls">

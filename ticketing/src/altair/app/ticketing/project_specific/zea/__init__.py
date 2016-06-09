@@ -4,6 +4,7 @@ import codecs
 from pyramid.config import Configurator
 import sqlahelper
 from sqlalchemy import engine_from_config
+from .resources import FCAdminEventIndexResource, FCAdminEventResource
 
 def replace_with_geta_handler(e):
     return (u'〓', e.start + 1)
@@ -27,5 +28,9 @@ def main(global_config, **local_config):
     config.include('pyramid_fanstatic')
     config.add_mako_renderer('.mako') 
     config.include('.resources')
+
+    config.add_route('index', '/', factory=FCAdminEventIndexResource)
+    config.add_route('detail', '/{event_id}', factory=FCAdminEventResource)
+    config.add_route('download', '/{event_id}/download', factory=FCAdminEventResource)
     config.scan('.')
-    return config.make_wsgi_app() 
+    return config.make_wsgi_app()

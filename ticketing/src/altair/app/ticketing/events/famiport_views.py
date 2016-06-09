@@ -108,6 +108,7 @@ class FamiPortView(BaseView):
         event = self.slave_session.query(Event).filter_by(organization_id=self.context.organization.id, id=event_id).one()
         tenant = self.session.query(FamiPortTenant).filter_by(organization_id=event.organization.id).one()
         datetime_formatter = create_date_time_formatter(self.request)
+        # 連携データの作成
         logs = build_famiport_performance_groups(self.request, self.session, datetime_formatter, tenant, event.id)
         if logs:
             for log in logs:
