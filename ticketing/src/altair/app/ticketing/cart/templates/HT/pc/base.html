@@ -16,6 +16,7 @@
 <body id="settlement">
   <p id="naviSkip"><a href="#main" tabindex="1" title="本文へジャンプ"><img src="${view_context.static_url('pc/images/skip.gif')}" alt="本文へジャンプ" width="1" height="1" /></a></p>
   <div id="container" style="position:relative">
+    <!--
     <form action="${request.route_path('cart.logout')}" method="POST">
       <div style="text-align: right">
         % if (not getattr(request, 'context', None)) or request.context.authenticated_user()['is_guest']:
@@ -25,6 +26,7 @@
         % endif
       </div>
     </form>
+    -->
     <!-- ========== header ========== -->
     <div id="grpheader" style="height:80px">
       <p id="siteID" style="float:none;position:absolute;z-index:100">

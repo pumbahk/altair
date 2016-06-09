@@ -234,6 +234,44 @@ var get_datetime_for, set_datetime_for, attach_datepicker;
       }
     });
   };
+
+  copy_datetime_to_another = function ($item) {
+    // 値がある項目のみ対応する。
+    if ($item.value !== '') {
+      target_id = $item.id.indexOf('from') !== -1 ? $item.id.replace('from', 'to') : $item.id.replace('to', 'from');
+      target_id = target_id.replace('.', '\\.');
+
+      // 対応の項目がブランクのみ自動記入される。
+      if ($("input#" + target_id).val() === '') {
+        $("input#" + target_id).val($item.value);
+        
+        // 曜日を括弧に記入するためにchangeイベントをファイアする。
+        // 該当changeイベントはrefresh_dowメソッドを実行する。
+        $("input#" + target_id).trigger('change');
+      }
+    }
+  };
+
+  date_auto_fill = function () {
+    // datepickerの対応項目自動入力を設定する。
+    $('.datetimewidget-container').find('.icon-calendar').parent().datepicker()
+      .on('changeDate', function() {
+        var siblings = $(this).siblings();
+        $(siblings).each( function() {
+          var item = $(this).find('input').get(0);
+          copy_datetime_to_another(item);
+        });
+      });
+
+    // 各日時のフォームの対応項目自動入力を設定する。
+    var items = $('.datetimewidget-container').find('input');
+    $(items).each( function() {
+        var item = $(this).get(0);
+        $(item).on("change", function() {
+            copy_datetime_to_another(this);
+      });
+    });
+  };
 })();
 
 !(function ($){

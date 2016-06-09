@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,user-scalable=no">
+<meta name = "format-detection" content = "telephone=no">
+<meta http-equiv="content-style-type" content="text/css">
+<meta http-equiv="content-script-type" content="text/javascript">
+<link rel="stylesheet" href="${view_context.static_url('smartphone/css/import.css', 'lots')}" type="text/css" media="all">
+<link rel="shortcut icon" href="${view_context.static_url('smartphone/images/favicon.ico')}">
+<script type="text/javascript" src="${request.static_url('altair.app.ticketing.lots:static/common/js/jquery.js')}"></script>
+<script type="text/javascript" src="${request.static_url('altair.app.ticketing.lots:static/common/js/underscore-min.js')}"></script>
+<script type="text/javascript" src="${request.static_url('altair.app.ticketing.cart:static/js/disable_on_submit.js')}"></script>
+<script type="text/javascript" src="${request.static_url('altair.app.ticketing.cart:static/js/ajaxzip3-https.js')}"></script>
+<script type="text/javascript">
+  $(function() {
+    $('form').disableOnSubmit();
+  });
+</script>
+<title>${view_context.team_name}</title>
+</head>
+<body>
+<p id="naviSkip"><a href="#main" tabindex="1" title="本文へジャンプ"><img src="${view_context.static_url('smartphone/images/skip.gif')}" alt="本文へジャンプ" width="1" height="1"></a></p>
+<div id="container">
+
+<div id="header">
+    <h1><img src="${view_context.static_url('smartphone/images/sp_logo.png')}" alt="${view_context.team_name}" width="100%"></h1>
+
+      <div style="text-align:right;">
+        <a href="/howto.html" class="headerLink" target="_blank">申込方法</a>
+        <a href="/faq.html" class="headerLink" target="_blank">よくある質問</a>
+      </div>
+
+      % if lot:
+        <!--
+        <form name="logout" action="${request.route_path('lots.entry.logout', _query=dict(lot_id=lot.id, event_id=lot.event.id))}" method="POST">
+          <div style="text-align: right">
+            % if hasattr(request, 'context') and request.context.authenticated_user()['is_guest']:
+              <input type="submit" value="会員でログイン"/>
+            % else:
+              <input type="submit" value="ログアウト"/>
+            % endif
+          </div>
+        </form>
+        -->
+      % endif
+    <h2>抽選申込ページ</h2>
+</div>
+
+  <!-- ========== main ========== -->
+    ${next.body()}
+  <!-- ========== /main ========== -->
+  <div class="footerCopy">
+    <div class="footernav">
+      <ul>
+<li><a href="${h.safe_get_contact_url(request)}">お問い合わせ</a></li>
+<li><a href="http://www.ticketstar.jp/legal">特定商取引法に基づく表示</a></li>
+<li><a href="http://www.ticketstar.jp/privacy/">個人情報保護方針</a></li>
+      </ul>
+    </div>
+    <div class="copyright">
+       &copy; TicketStar, Inc.
+    </div>
+  </div>
+
+<%def name="error(form, field, enclose=False)">
+%if form.errors.get(field):
+  %if enclose:
+  <div>
+  %endif
+  %for e in form.errors[field]:
+  <span class="validation-error">${e}</span>
+  %endfor
+  %if enclose:
+  </div>
+  %endif
+%endif
+</%def>
+
+</div>
+</body>
+</html>
