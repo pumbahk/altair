@@ -25,6 +25,12 @@
 
 <div id="header">
     <h1><img src="${view_context.static_url('smartphone/images/sp_logo.png')}" alt="${view_context.team_name}" width="100%"></h1>
+
+      <div style="text-align:right;">
+        <a href="/#about" class="headerLink" target="_blank">申込方法</a>
+        <a href="/#faq" class="headerLink" target="_blank">よくある質問</a>
+      </div>
+
       % if lot:
         <!--
         <form name="logout" action="${request.route_path('lots.entry.logout', _query=dict(lot_id=lot.id, event_id=lot.event.id))}" method="POST">
