@@ -1,0 +1,27 @@
+<%inherit file="/layout_2cols.html" />
+<%namespace file="/common/helpers.html" name="ch" />
+<style type="text/css">
+.table.point-grant-history span.error {
+  color: #f00;
+  font-weight: bold;
+}
+</style>
+<%block name="breadcrumbs">
+${ch.breadcrumbs(
+  names=[u'トップ', u'購入情報', order.performance.name, order.order_no],
+  urls=[
+    request.route_path('index'),
+    request.route_path('orders.index'),
+    request.route_path('performances.show', performance_id=order.performance_id) + '/order'
+  ]
+)}
+</%block>
+<div class="page-header">
+  <h1>配送日時変更</h1>
+  <form action="${request.route_path('orders.edit_delivered', order_id = order.id)}" method="POST">
+    ${ch.alert_message(form)}
+    ${form.delivered_at}
+    <p/>
+    <input class="btn btn-normal" type="submit" value="変更"/>
+  </form>
+</div>

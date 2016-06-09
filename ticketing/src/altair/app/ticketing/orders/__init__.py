@@ -20,6 +20,7 @@ def includeme(config):
     config.add_route('orders.delete'                    , '/delete/{order_id}')
     config.add_route('orders.delivered'                 , '/delivered/{order_id}')
     config.add_route('orders.undelivered'               , '/undelivered/{order_id}')
+    config.add_route('orders.edit_delivered'                 , '/edit/delivered/{order_id}')
     config.add_route('orders.change_status'             , '/change_status/{order_id}/{status}')
     config.add_route('orders.download'                  , '/download/')
     config.add_route('orders.sales_summary'             , '/sales_summary/', factory='.resources.OrderReservePageResource')

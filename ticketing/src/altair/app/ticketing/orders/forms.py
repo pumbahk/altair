@@ -1406,3 +1406,11 @@ def OrderMemoEditFormFactory(N, memo_field_name_fmt="memo_on_order{}",
         return result
     attrs["get_result"] = get_result
     return type("OrderMemoEditForm", (Form, ), attrs)
+
+
+class DeliverdEditForm(OurForm):
+    delivered_at = DateTimeField(
+        label=u'配送日時',
+        validators=[Required(message=u"配送時刻が指定されていません"), after1900],
+        format='%Y-%m-%d %H:%M',
+    )
