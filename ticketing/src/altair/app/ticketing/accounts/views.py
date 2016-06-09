@@ -76,9 +76,8 @@ class Accounts(BaseView):
         if f.validate():
             account = Account(
                 account_type=f.data['account_type'],
-                user_id=f.data['user_id'],
                 name=f.data['name'],
-                organization_id = self.context.user.organization.id
+                organization_id=self.context.user.organization.id
                 )
             account.save()
 
