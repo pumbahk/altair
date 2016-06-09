@@ -124,10 +124,10 @@ ${ch.breadcrumbs(
   <table class="table fullwidth checkboxed_table">
     <thead>
       <tr>
-      <th class="minwidth"></th>
-      <th><a href="#" class="sortable">名前</a></th>
-      <th><a href="#" class="sortable">チケット券面(Ticket)</a></th>
-      <th><a href="#" class="sortable">属性(TicketBundleAttribute)</a></th>
+      <th class="span1"></th>
+      <th class="span2"><a href="#" class="sortable">名前</a></th>
+      <th class="span2"><a href="#" class="sortable">チケット券面(Ticket)</a></th>
+      <th class="span11"><a href="#" class="sortable">属性(TicketBundleAttribute)</a></th>
       </tr>
     </thead>
     <tbody>
@@ -147,7 +147,7 @@ ${ch.breadcrumbs(
         <td>
           <ul>
             %for attribute in sorted(bundle.attributes_.itervalues(), key=lambda a: a.name):
-            <li>${attribute.name}: ${attribute.value[0:10]}${"..." if 10<len(attribute.value) else ""}</li>
+            <li>${attribute.name}: ${attribute.value}</li>
             %endfor		  
           </ul>
         </td>
