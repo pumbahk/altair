@@ -77,7 +77,8 @@ class Accounts(BaseView):
             account = Account(
                 account_type=f.data['account_type'],
                 name=f.data['name'],
-                organization_id=self.context.user.organization.id
+                organization_id=self.context.user.organization.id,
+                user_id=self.context.user.organization.user.id
                 )
             account.save()
 
