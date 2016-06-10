@@ -9,10 +9,10 @@ from altair.app.ticketing.testing import _setup_db, _teardown_db, DummyRequest
 from altair.app.ticketing.famiport.testing import _setup_db as fm_setup_db, _teardown_db as fm__teardown_db
 from userside_api import (
     find_sales_segment_pairs,
-    create_altair_famiport_venue,
-    build_famiport_performance_groups,
+    create_famiport_reflection_data,
     submit_to_downstream_sync
 )
+from userside_internal_api import create_altair_famiport_venue
 from api import resolve_famiport_prefecture_by_name
 
 
@@ -174,7 +174,7 @@ class FamiPortSyncTest(unittest.TestCase):
         self.fm_session.flush()
 
         datetime_formatter = create_date_time_formatter(self.request)
-        build_famiport_performance_groups(self.fm_request, self.session, datetime_formatter, self.rt_fmtenant, event1.id)
+        create_famiport_reflection_data(self.request, self.session, event1, datetime_formatter)
 
         # Retrieve created intermidiate objects: AltairFamiPortVenue, AltairFamiPortPerformanceGroup, AltairFamiPortPerformance, AltairFamiPortSalesSegmentPair
         altair_famiport_venue = self.session.query(AltairFamiPortVenue)\
@@ -257,11 +257,10 @@ class FamiPortSyncTest(unittest.TestCase):
         self.fm_session.flush()
 
         # Create dummy AltairFamiPortVenue and FamiPortVenue for existing ones check test
-        altair_famiport_venue1 = create_altair_famiport_venue(self.request, self.session, self.rt_org.id, self.rt_fmtenant.code, \
-                                                              venue1, site1.name, name_kana=u'',)
+        altair_famiport_venue1 = create_altair_famiport_venue(self.request, self.session, performance1, name_kana=u'')
 
         datetime_formatter = create_date_time_formatter(self.request)
-        build_famiport_performance_groups(self.fm_request, self.session, datetime_formatter, self.rt_fmtenant, event1.id)
+        create_famiport_reflection_data(self.request, self.session, event1, datetime_formatter)
 
         # Retrieve created intermidiate objects: AltairFamiPortVenue, AltairFamiPortPerformanceGroup, AltairFamiPortPerformance, AltairFamiPortSalesSegmentPair
         altair_famiport_venue = self.session.query(AltairFamiPortVenue)\
@@ -344,7 +343,7 @@ class FamiPortSyncTest(unittest.TestCase):
         self.fm_session.flush()
 
         datetime_formatter = create_date_time_formatter(self.request)
-        build_famiport_performance_groups(self.fm_request, self.session, datetime_formatter, self.rt_fmtenant, event1.id)
+        create_famiport_reflection_data(self.request, self.session, event1, datetime_formatter)
 
         # Retrieve created intermidiate objects: AltairFamiPortVenue, AltairFamiPortPerformanceGroup, AltairFamiPortPerformance, AltairFamiPortSalesSegmentPair
         altair_famiport_venue = self.session.query(AltairFamiPortVenue)\
@@ -366,7 +365,7 @@ class FamiPortSyncTest(unittest.TestCase):
         for entity in [altair_famiport_venue, altair_famiport_performance_group, altair_famiport_performance, altair_famiport_salessegment_pair]:
             self.__changeStatus(entity, AltairFamiPortReflectionStatus.Editing.value)
 
-        build_famiport_performance_groups(self.fm_request, self.session, datetime_formatter, self.rt_fmtenant, event1.id)
+        create_famiport_reflection_data(self.request, self.session, event1, datetime_formatter)
 
         altair_famiport_performance = self.session.query(AltairFamiPortPerformance)\
                                                   .filter(AltairFamiPortPerformance.performance_id == performance1.id).one()
@@ -448,11 +447,10 @@ class FamiPortSyncTest(unittest.TestCase):
         dummy_venue = Venue(id = 2, site_id = 1, organization_id = 15, name = u'Zepp DiverCity TOKYO Next', performance_id = None)
         self.session.add(dummy_venue)
         self.session.flush()
-        dummy_altair_famiport_venue = create_altair_famiport_venue(self.request, self.session, self.rt_org.id, \
-                                                                   self.rt_fmtenant.code, dummy_venue, site1.name, name_kana=u'',)
+        dummy_altair_famiport_venue = create_altair_famiport_venue(self.request, self.session, performance1, name_kana=u'')
 
         datetime_formatter = create_date_time_formatter(self.request)
-        build_famiport_performance_groups(self.fm_request, self.session, datetime_formatter, self.rt_fmtenant, event1.id)
+        create_famiport_reflection_data(self.request, self.session, event1, datetime_formatter)
 
         # Retrieve created intermidiate objects: AltairFamiPortVenue, AltairFamiPortPerformanceGroup, AltairFamiPortPerformance, AltairFamiPortSalesSegmentPair
         altair_famiport_venue = self.session.query(AltairFamiPortVenue)\
@@ -481,7 +479,7 @@ class FamiPortSyncTest(unittest.TestCase):
         for entity in [altair_famiport_venue, altair_famiport_performance_group, altair_famiport_performance, altair_famiport_salessegment_pair]:
             self.__changeStatus(entity, AltairFamiPortReflectionStatus.Editing.value)
 
-        build_famiport_performance_groups(self.fm_request, self.session, datetime_formatter, self.rt_fmtenant, event1.id)
+        create_famiport_reflection_data(self.request, self.session, event1, datetime_formatter)
 
         altair_famiport_venue = self.session.query(AltairFamiPortVenue)\
                                             .filter(AltairFamiPortVenue.siteprofile_id == venue1.site.siteprofile_id)\
@@ -567,7 +565,7 @@ class FamiPortSyncTest(unittest.TestCase):
         self.fm_session.flush()
 
         datetime_formatter = create_date_time_formatter(self.request)
-        build_famiport_performance_groups(self.fm_request, self.session, datetime_formatter, self.rt_fmtenant, event1.id)
+        create_famiport_reflection_data(self.request, self.session, event1, datetime_formatter)
 
         # Retrieve created intermidiate objects: AltairFamiPortVenue, AltairFamiPortPerformanceGroup, AltairFamiPortPerformance, AltairFamiPortSalesSegmentPair
         altair_famiport_venue = self.session.query(AltairFamiPortVenue)\
@@ -604,7 +602,7 @@ class FamiPortSyncTest(unittest.TestCase):
         for entity in [altair_famiport_venue, altair_famiport_performance_group, altair_famiport_performance, altair_famiport_salessegment_pair]:
             self.__changeStatus(entity, AltairFamiPortReflectionStatus.Editing.value)
 
-        build_famiport_performance_groups(self.fm_request, self.session, datetime_formatter, self.rt_fmtenant, event1.id)
+        create_famiport_reflection_data(self.request, self.session, event1, datetime_formatter)
 
         altair_famiport_performance = self.session.query(AltairFamiPortPerformance)\
                                                   .filter(AltairFamiPortPerformance.performance_id == performance1.id).one()
@@ -686,7 +684,7 @@ class FamiPortSyncTest(unittest.TestCase):
         self.fm_session.flush()
 
         datetime_formatter = create_date_time_formatter(self.request)
-        build_famiport_performance_groups(self.fm_request, self.session, datetime_formatter, self.rt_fmtenant, event1.id)
+        create_famiport_reflection_data(self.request, self.session, event1, datetime_formatter)
 
         # Retrieve created intermidiate objects: AltairFamiPortVenue, AltairFamiPortPerformanceGroup, AltairFamiPortPerformance, AltairFamiPortSalesSegmentPair
         altair_famiport_venue = self.session.query(AltairFamiPortVenue)\
@@ -730,7 +728,7 @@ class FamiPortSyncTest(unittest.TestCase):
            self.__changeStatus(entity, AltairFamiPortReflectionStatus.Editing.value)
 
         # Auto add again
-        build_famiport_performance_groups(self.fm_request, self.session, datetime_formatter, self.rt_fmtenant, event1.id)
+        create_famiport_reflection_data(self.request, self.session, event1, datetime_formatter)
 
         # Retrieve created intermidiate objects: AltairFamiPortVenue, AltairFamiPortPerformanceGroup, AltairFamiPortPerformance, AltairFamiPortSalesSegmentPair
         altair_famiport_venue = self.session.query(AltairFamiPortVenue)\
@@ -818,7 +816,7 @@ class FamiPortSyncTest(unittest.TestCase):
         self.fm_session.flush()
 
         datetime_formatter = create_date_time_formatter(self.request)
-        build_famiport_performance_groups(self.fm_request, self.session, datetime_formatter, self.rt_fmtenant, event1.id)
+        create_famiport_reflection_data(self.request, self.session, event1, datetime_formatter)
 
         # Retrieve created intermidiate objects: AltairFamiPortVenue, AltairFamiPortPerformanceGroup, AltairFamiPortPerformance, AltairFamiPortSalesSegmentPair
         altair_famiport_venue = self.session.query(AltairFamiPortVenue)\
@@ -856,7 +854,7 @@ class FamiPortSyncTest(unittest.TestCase):
         for entity in [altair_famiport_venue, altair_famiport_performance_group, altair_famiport_performance, altair_famiport_salessegment_pair]:
             self.__changeStatus(entity, AltairFamiPortReflectionStatus.Editing.value)
 
-        build_famiport_performance_groups(self.fm_request, self.session, datetime_formatter, self.rt_fmtenant, event1.id)
+        create_famiport_reflection_data(self.request, self.session, event1, datetime_formatter)
 
         altair_famiport_performance = self.session.query(AltairFamiPortPerformance)\
                                                   .filter(AltairFamiPortPerformance.performance_id == performance1.id).one()
@@ -927,7 +925,7 @@ class FamiPortSyncTest(unittest.TestCase):
         self.fm_session.flush()
 
         datetime_formatter = create_date_time_formatter(self.request)
-        build_famiport_performance_groups(self.fm_request, self.session, datetime_formatter, self.rt_fmtenant, event1.id)
+        create_famiport_reflection_data(self.request, self.session, event1, datetime_formatter)
 
         # Retrieve created intermidiate objects: AltairFamiPortVenue, AltairFamiPortPerformanceGroup, AltairFamiPortPerformance, AltairFamiPortSalesSegmentPair
         altair_famiport_venue = self.session.query(AltairFamiPortVenue)\
@@ -956,7 +954,7 @@ class FamiPortSyncTest(unittest.TestCase):
         for entity in [altair_famiport_venue, altair_famiport_performance_group, altair_famiport_performance, altair_famiport_salessegment_pair]:
             self.__changeStatus(entity, AltairFamiPortReflectionStatus.Editing.value)
 
-        build_famiport_performance_groups(self.fm_request, self.session, datetime_formatter, self.rt_fmtenant, event1.id)
+        create_famiport_reflection_data(self.request, self.session, event1, datetime_formatter)
 
         altair_famiport_salessegment_pair = self.session.query(AltairFamiPortSalesSegmentPair)\
                                                 .filter(AltairFamiPortSalesSegmentPair.altair_famiport_performance_id == altair_famiport_performance.id).one()
