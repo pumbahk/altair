@@ -60,12 +60,12 @@
       <th style="width: 14%;">商品</th>
       <th style="width: 8%;">価格</th>
       <th style="width: 4%;">配席数</th>
-      <th style="width: 4%;">残数</th>
       % if not reporter.is_simple_type():
       <th style="width: 6%;">受付数<br><span style="font-size: 75%;">購入確定数+予約数</span></th>
       % endif
       <th style="width: 5%;">購入確定数</th>
       <th style="width: 5%;">予約数</th>
+      <th style="width: 5%;">残席数</th>
       <th style="width: 8%;">受付金額</th>
       % if form.limited_from.data or form.limited_to.data:
         % if not reporter.is_simple_type():
@@ -73,6 +73,7 @@
         % endif
       <th style="width: 5%;">購入確定数</th>
       <th style="width: 5%;">予約数</th>
+      <th style="width: 5%;">残席数</th>
       <th style="width: 8%;">受付金額</th>
       % endif
     </tr>
@@ -106,13 +107,15 @@
       <td class="price">${vh.price(record.product_price/record.sales_unit)}</td>
         % if i == 0:
       <td rowspan="${count}" class="numeric">${vh.number(record.stock_quantity) or ''}</td>
-      <td rowspan="${count}" class="numeric">${vh.number(record.vacant_quantity) or ''}</td>
         % endif
         % if not reporter.is_simple_type():
       <td class="numeric">${vh.number(record.total_paid_quantity + record.total_unpaid_quantity) or ''}</td>
         % endif
       <td class="numeric">${vh.number(record.total_paid_quantity) or ''}</td>
       <td class="numeric">${vh.number(record.total_unpaid_quantity) or ''}</td>
+        % if i == 0:
+      <td rowspan="${count}" class="numeric">${vh.number(record.vacant_quantity) or ''}</td>
+        % endif
       <td class="price">${vh.price((record.total_paid_quantity + record.total_unpaid_quantity) / record.sales_unit * record.product_price)}</td>
         % if form.limited_from.data or form.limited_to.data:
           % if not reporter.is_simple_type():
