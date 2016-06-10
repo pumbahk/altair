@@ -126,13 +126,6 @@
             席番号 ${ticket.seat.name} <br />
             %endif
             <br />
-	    % if false:
-              % if ticket.printed_at:
-                  発行(印刷orメール送信)済 (${ticket.printed_at})
-              % else:
-                  未発行
-              % endif
-	    % endif
 	    % if ticket.performance.orion and ticket.performance.orion.qr_enabled:
               <form method="post" target="_blank" action="${request.route_path('order_review.qr_print')}">
                   <input type="hidden" name="order_no" value="${order.order_no}" />
