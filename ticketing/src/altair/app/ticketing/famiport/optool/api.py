@@ -85,7 +85,7 @@ def lookup_performance_by_searchform_data(request, formdata=None):
 
     if formdata.get('venue_name'):
         pattern = u'%{}%'.format(formdata.get('venue_name'))
-        query = query.filter(FamiPortEvent.venue.like(pattern))
+        query = query.filter(FamiPortEvent.venue.name.like(pattern))
 
     if formdata.get('performance_from'):
         req_from = formdata.get('performance_from') + ' 00:00:00'
