@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
+from datetime import timedelta
 from altair.app.ticketing.famiport.exc import FamiPortAPINotFoundError
 from altair.app.ticketing.famiport.userside_models import AltairFamiPortPerformance, AltairFamiPortReflectionStatus
+from altair.app.ticketing.famiport.models import FamiPortPerformanceType
 from altair.app.ticketing.payments import plugins
 from altair.app.ticketing.famiport import userside_api as fm_userside_api
 from altair.app.ticketing.famiport import api as fm_api
@@ -58,6 +60,16 @@ def get_famiport_reflection_warnings(request, session, performance):
             # 公演日が変更されていないかチェック
             if performance.start_on != altair_famiport_performance.start_at:
                 warnings.add(u'公演日相違')
+
+            # １日券or期間券が変更されていないかチェック
+            if performance.end_on is None or performance.end_on - performance.start_on < timedelta(days=1):
+                # 現状連携データが１日券でないならwarningを出す
+                if altair_famiport_performance.type != FamiPortPerformanceType.Normal.value:
+                    warnings.add(u'公演タイプ相違')
+            else:
+                # 現状連携データが期間券でないならwarningを出す
+                if altair_famiport_performance.type != FamiPortPerformanceType.Spanned.value:
+                    warnings.add(u'公演タイプ相違')
 
             # 会場が変更されていないかチェック
             altair_famiport_venue = altair_famiport_performance.altair_famiport_performance_group.altair_famiport_venue
