@@ -68,7 +68,7 @@ def filter_famiport_pdmp_sales_segments(sales_segments):
     fm_ss = []
     def has_famiport_pdmp(ss):
         for pdmp in ss.payment_delivery_method_pairs:
-            if pdmp.use_famiport_plugin():
+            if pdmp.use_famiport_plugin:
                 return True
         return False
 
