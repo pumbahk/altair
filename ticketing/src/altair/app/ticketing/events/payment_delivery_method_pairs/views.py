@@ -77,7 +77,8 @@ class PaymentDeliveryMethodPairs(BaseView):
             except SystemFeeDefaultDuplicated:
                 system_fee = f.system_fee.default
                 system_fee_type = f.system_fee_type.default
-                
+
+            self.request.session.flash(u'決済・引取方法の登録に失敗しました')
             return {
                 'form':f,
                 'sales_segment_group':sales_segment_group,

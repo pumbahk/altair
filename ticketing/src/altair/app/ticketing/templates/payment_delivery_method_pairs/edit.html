@@ -69,7 +69,7 @@
       }
 
       // 決済と引取によってディフォルト値を設定
-      if (!is_edit) {
+      if (!is_edit && is_first) {
         $.ajax({
           url: "${request.route_url('payment_delivery_method_pairs.default_values_for_pdmp')}",
           type: 'GET',
