@@ -146,11 +146,13 @@ def create_famiport_reflection_data(request, session, event, datetime_formatter)
                                                                         seat_selectable_ss,
                                                                         afm_performance)
                         except MultipleResultsFound:
+                            logger.error('(ERROR)MultipleResultsFound during lookup AltairFamiPortSalesSegmentPair with sales_segment_id={}'.format(origin_sales_segment.id))
                             request.session.flash(u'販売区分「%s」(id=%d) においてデータ不整合が発生してます。システム管理者までお知らせ下さい。' % (
                                             origin_sales_segment.sales_segment_group.name,
                                             origin_sales_segment.id
                                             ))
                     else:
+                        logger.error('Validating SalesSegment consistency failed. maybe mixing seat choice.(pID={},ssID={})'.format(performance.id,origin_sales_segment.id))
                         request.session.flash(u'販売区分「%s」(id=%d) においてデータ不整合が発生してます。システム管理者までお知らせ下さい。' % (
                                             origin_sales_segment.sales_segment_group.name,
                                             origin_sales_segment.id
