@@ -29,7 +29,7 @@ def next_event_code(session, event):
         code_2 = u'%04d' % (int(code_2) + 1)
         return code_1, code_2
 
-    code_1, = session.query(sqlf.max(AltairFamiPortPerformanceGroup.code_1)) \
+    (code_1,) = session.query(sqlf.max(AltairFamiPortPerformanceGroup.code_1)) \
         .filter(AltairFamiPortPerformanceGroup.organization_id == event.organization_id) \
         .with_lockmode('update') \
         .one()
