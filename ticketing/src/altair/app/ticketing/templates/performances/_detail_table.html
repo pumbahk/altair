@@ -29,7 +29,7 @@
     </tr>
     <tr>
       <th>配券元</th>
-      <td>${performance.account.name}</td>
+      <td>${performance.account.name if performance.account else performance.event.account.name}</td>
     </tr>
     <tr>
       <th>公演名副題</th>
