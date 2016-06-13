@@ -1973,6 +1973,11 @@ class PaymentDeliveryMethodPair(Base, BaseModel, WithTimestamp, LogicallyDeleted
     def accept_core_model_traverser(self, traverser):
         traverser.visit_payment_delivery_method_pair(self)
 
+    @property
+    def use_famiport_plugin(self):
+        return self.payment_method.payment_plugin_id == plugins.FAMIPORT_PAYMENT_PLUGIN_ID or \
+           self.delivery_method.delivery_plugin_id == plugins.FAMIPORT_DELIVERY_PLUGIN_ID
+
 
 class PaymentMethodPlugin(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'PaymentMethodPlugin'

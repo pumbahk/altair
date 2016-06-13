@@ -26,6 +26,8 @@ class FamiPortAlreadyIssuedError(FamiPortError):
 class FamiPortAlreadyCanceledError(FamiPortError):
     pass
 
+class FamiPortVenueCreateError(FamiPortError):
+    pass
 
 class FamiPortAPIError(Exception):
     def __init__(self, message, client_code=None):

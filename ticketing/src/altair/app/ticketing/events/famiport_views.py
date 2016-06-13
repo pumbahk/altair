@@ -13,7 +13,7 @@ from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.core.models import Event, FamiPortTenant
 from altair.app.ticketing.famiport.models import FamiPortPrefecture, FamiPortPerformanceType, FamiPortSalesChannel
 from altair.app.ticketing.famiport.userside_models import AltairFamiPortVenue, AltairFamiPortPerformanceGroup, AltairFamiPortPerformance, AltairFamiPortReflectionStatus, AltairFamiPortSalesSegmentPair
-from altair.app.ticketing.famiport.userside_api import build_famiport_performance_groups, submit_to_downstream
+from altair.app.ticketing.famiport.userside_api import create_famiport_reflection_data, submit_to_downstream
 
 from .famiport_forms import AltairFamiPortPerformanceGroupForm, AltairFamiPortPerformanceForm
 
@@ -105,16 +105,11 @@ class FamiPortView(BaseView):
     @view_config(request_method='POST', route_name='events.famiport.performance_groups.action', name='auto_add')
     def auto_add(self):
         event_id = self.request.matchdict['event_id']
-        event = self.slave_session.query(Event).filter_by(organization_id=self.context.organization.id, id=event_id).one()
+        event = self.session.query(Event).filter_by(organization_id=self.context.organization.id, id=event_id).one()
         tenant = self.session.query(FamiPortTenant).filter_by(organization_id=event.organization.id).one()
         datetime_formatter = create_date_time_formatter(self.request)
         # 連携データの作成
-        logs = build_famiport_performance_groups(self.request, self.session, datetime_formatter, tenant, event.id)
-        if logs:
-            for log in logs:
-                self.request.session.flash(log)
-        else:
-            self.request.session.flash(u'更新対象はありませんでした')
+        create_famiport_reflection_data(self.request, self.session, event, datetime_formatter)
         return HTTPFound(self.request.route_path('events.famiport.performance_groups.index', event_id=event.id))
 
     @view_config(request_method='POST', renderer='json', route_name='events.famiport.performance_groups.action', name='try_mark_checked', xhr=True)
