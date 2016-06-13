@@ -31,6 +31,10 @@ from .utils import (
 
 logger = logging.getLogger(__name__)
 
+def get_altair_famiport_performance_by_performance(session, performance):
+    return session.query(AltairFamiPortPerformance)\
+        .filter(AltairFamiPortPerformance.performance_id==performance.id)\
+        .first()
 
 def next_event_code(session, event):
     code_1, code_2 = session.query(AltairFamiPortPerformanceGroup.code_1, sqlf.max(AltairFamiPortPerformanceGroup.code_2)) \
