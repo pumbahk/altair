@@ -7,11 +7,11 @@ from altair.app.ticketing.famiport import api as fm_api
 
 
 def has_famiport_pdmp(sales_segment):
-            for pdmp in sales_segment.payment_delivery_method_pairs:
-                if pdmp.payment_method.payment_plugin_id == plugins.FAMIPORT_PAYMENT_PLUGIN_ID \
-                        or pdmp.delivery_method.delivery_plugin_id == plugins.FAMIPORT_DELIVERY_PLUGIN_ID:
-                    return True
-            return False
+    for pdmp in sales_segment.payment_delivery_method_pairs:
+        if pdmp.payment_method.payment_plugin_id == plugins.FAMIPORT_PAYMENT_PLUGIN_ID \
+                or pdmp.delivery_method.delivery_plugin_id == plugins.FAMIPORT_DELIVERY_PLUGIN_ID:
+            return True
+    return False
 
 def get_famiport_reflect_button_status(request, session, event):
     if needs_famiport_reflection(event.sales_segment_groups):
