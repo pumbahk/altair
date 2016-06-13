@@ -109,12 +109,7 @@ class FamiPortView(BaseView):
         tenant = self.session.query(FamiPortTenant).filter_by(organization_id=event.organization.id).one()
         datetime_formatter = create_date_time_formatter(self.request)
         # 連携データの作成
-        logs = create_famiport_reflection_data(self.request, self.session, event, datetime_formatter)
-        # if logs:
-        #     for log in logs:
-        #         self.request.session.flash(log)
-        # else:
-        #     self.request.session.flash(u'更新対象はありませんでした')
+        create_famiport_reflection_data(self.request, self.session, event, datetime_formatter)
         return HTTPFound(self.request.route_path('events.famiport.performance_groups.index', event_id=event.id))
 
     @view_config(request_method='POST', renderer='json', route_name='events.famiport.performance_groups.action', name='try_mark_checked', xhr=True)
