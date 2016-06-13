@@ -12,7 +12,7 @@ from altair.formhelpers.form import OurForm
 from altair.formhelpers.filters import zero_as_none
 from altair.formhelpers.fields import OurIntegerField, DateTimeField, OurGroupedSelectField, OurSelectField, OurBooleanField
 from altair.formhelpers import replace_ambiguous
-from altair.app.ticketing.core.models import Site, Venue, Performance, PerformanceSetting, Stock, SalesSegment
+from altair.app.ticketing.core.models import Account, Site, Venue, Performance, PerformanceSetting, Stock, SalesSegment
 from altair.app.ticketing.payments.plugins.sej import DELIVERY_PLUGIN_ID as SEJ_DELIVERY_PLUGIN_ID
 from altair.app.ticketing.core.utils import ApplicableTicketsProducer
 from altair.app.ticketing.helpers import label_text_for
@@ -24,7 +24,9 @@ PREFECTURE_ORDER = {u'北海道': 1, u'青森県': 2, u'岩手県': 3, u'宮城�
 class PerformanceForm(OurForm):
 
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
+        context = kwargs.pop('context')
         super(PerformanceForm, self).__init__(formdata, obj, prefix, **kwargs)
+        self.context = context
 
         self.event = None
         if 'event' in kwargs:
@@ -65,6 +67,12 @@ class PerformanceForm(OurForm):
     id = HiddenField(
         label=u'ID',
         validators=[Optional()],
+    )
+    account_id = OurSelectField(
+        label=u'配券元',
+        validators=[Required(u'選択してください')],
+        choices=lambda field: [(str(account.id), account.name) for account in Account.query.filter_by(organization_id=field._form.context.organization.id)],
+        coerce=int
     )
     name = TextField(
         label=u'公演名',

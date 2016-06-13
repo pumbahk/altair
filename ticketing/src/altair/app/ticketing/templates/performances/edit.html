@@ -28,10 +28,10 @@
       .on('changeDate', function () {
         createCode();
       });
-
     $('input[name^="start_on"]').change(function(){
         createCode();
     });
+    $("#account_id").chosen();
   });
 </script>
 
@@ -54,6 +54,7 @@
   <form class="form-horizontal" action="${route_path}" method="POST">
     <fieldset>
       ${ch.form_item(form.id)}
+      ${ch.form_item(form.account_id)}
       ${ch.form_item(form.original_id)}
       ${ch.form_item(form.name, class_='span8', maxlength=255)}
       ${ch.form_item(form.open_on)}

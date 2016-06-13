@@ -569,6 +569,9 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     setting = relationship('PerformanceSetting', backref='performance', uselist=False, cascade='all')
 
+    account_id = AnnotatedColumn(Identifier, ForeignKey('Account.id'), _a_label=_(u'配券元'))
+    account = relationship('Account', backref='performances')
+
     @property
     def products(self):
         return self.sale_segment.products if self.sales_segment_id else []

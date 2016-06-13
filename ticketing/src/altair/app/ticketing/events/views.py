@@ -212,7 +212,7 @@ class Events(BaseView):
             'agreement_url': agreement_url,
             "cart_now_cart_url": get_cart_now_url_builder(self.request).build(self.request, cart_url, event.id),
             'form':EventForm(context=self.context),
-            'form_performance':PerformanceForm(),
+            'form_performance':PerformanceForm(context=self.context),
             'form_stock_type':StockTypeForm(event_id=event_id),
             'form_stock_holder':StockHolderForm(organization_id=self.context.user.organization_id, event_id=event_id)
         }
