@@ -146,7 +146,7 @@ def create_famiport_reflection_data(request, session, event, datetime_formatter)
                                                                         seat_selectable_ss,
                                                                         afm_performance)
                         except MultipleResultsFound:
-                            logger.error('(ERROR)MultipleResultsFound during lookup AltairFamiPortSalesSegmentPair with sales_segment_id={}'.format(origin_sales_segment.id))
+                            logger.error('Multiple AltairFamiPortSalesSegmentPair with same sales_segment(id: {}) was found.'.format(origin_sales_segment.id))
                             request.session.flash(u'販売区分「%s」(id=%d) においてデータ不整合が発生してます。システム管理者までお知らせ下さい。' % (
                                             origin_sales_segment.sales_segment_group.name,
                                             origin_sales_segment.id
