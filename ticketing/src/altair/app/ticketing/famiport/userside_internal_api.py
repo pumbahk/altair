@@ -141,7 +141,7 @@ def update_altair_famiport_performance_if_needed(request, session, altair_famipo
     updated = False
     if altair_famiport_performance.altair_famiport_performance_group_id != altair_famiport_performance_group.id:
         code_ = next_performance_code(session, altair_famiport_performance_group.id)
-        altair_famiport_performance.altair_famiport_performance_group_id = altair_famiport_performance_group.id
+        altair_famiport_performance.altair_famiport_performance_group = altair_famiport_performance_group
         altair_famiport_performance.code = code_
         updated = True
 
@@ -161,7 +161,7 @@ def update_altair_famiport_performance_if_needed(request, session, altair_famipo
 
     if updated:
         altair_famiport_performance.updated_at = now
-        logger.info('AltairFamiPortPerformance.id={} was updated.'.format(altair_famiport_performance.id))
+        logger.info(u'AltairFamiPortPerformance.id={} was updated.'.format(altair_famiport_performance.id))
         request.session.flash(u'公演「%s」(id=%ld) の連携値を更新しました' % (performance.name, performance.id))
 
     altair_famiport_performance.status = AltairFamiPortReflectionStatus.AwaitingReflection.value
@@ -191,11 +191,12 @@ def update_altair_famiport_sales_segment_pair_if_needed(request, session, afm_sa
 
     afm_sales_segment_pair.status = AltairFamiPortReflectionStatus.AwaitingReflection.value
     afm_sales_segment_pair.updated_at = now
-    logger.info('AltairFamiPortSalesSegmentPair.id={} was updated.'.format(afm_sales_segment_pair.id))
+    logger.info(u'AltairFamiPortSalesSegmentPair.id={} was updated.'.format(afm_sales_segment_pair.id))
     request.session.flash(u'販売区分「%s」(id=%d) の連携値を更新しました' % (
         origin_sales_segment.sales_segment_group.name,
         origin_sales_segment.id
         ))
+    return afm_sales_segment_pair
 
 
 def sync_altair_famiport_venue(request, altair_famiport_venue, performance, client_code):
@@ -211,10 +212,10 @@ def sync_altair_famiport_venue(request, altair_famiport_venue, performance, clie
             prefecture=prefecture,
             )
     except FamiPortAPIError as fmerror:
-        logger.error('FamiPortVenueの作成に失敗しました:{}'.format(fmerror.message))
+        logger.error(u'FamiPortVenueの作成に失敗しました:{}'.format(fmerror.message))
         raise FamiPortVenueCreateError('error occured during FamiPortVenue creation.')
 
-    logger.info('new FamiPortVenue.id={} was created.'.format(famiport_venue_dict.get(id)))
+    logger.info(u'new FamiPortVenue.id={} was created.'.format(famiport_venue_dict.get(id)))
     return famiport_venue_dict
 
 
@@ -237,7 +238,7 @@ def create_altair_famiport_venue(request, session, performance, name_kana=u''):
         altair_famiport_venue.famiport_venue_id = int(famiport_venue_dict.get('venue_id'))
     session.flush()
 
-    logger.info('new AltairFamiPortVenue.id={}(name={}) was created.'.format(altair_famiport_venue.id, altair_famiport_venue.venue_name))
+    logger.info(u'new AltairFamiPortVenue.id={}(name={}) was created.'.format(altair_famiport_venue.id, altair_famiport_venue.venue_name))
     request.session.flash(u'新しく会場「%s」をFamiポート連携しました' % altair_famiport_venue.name)
     return altair_famiport_venue
 
@@ -268,7 +269,9 @@ def create_altair_famiport_performance_group(request, session, performance, alta
             ),
         status=AltairFamiPortReflectionStatus.AwaitingReflection.value
         )
-    logger.info('new AltairFamiPortPerformanceGroup.id={} was created.'.format(altair_famiport_performance_group.id))
+    session.add(altair_famiport_performance_group)
+    session.flush()
+    logger.info(u'new AltairFamiPortPerformanceGroup.id={} was created.'.format(altair_famiport_performance_group.id))
     request.session.flash(u'新しく公演グループ「%s」を連携対象にしました' % name_1)
     return altair_famiport_performance_group
 
@@ -295,7 +298,7 @@ def create_altair_famiport_performance(request, session, performance, altair_fam
         )
     session.add(altair_famiport_performance)
     session.flush()
-    logger.info('new AltairFamiPortPerformance.id={} was created'.format(altair_famiport_performance.id))
+    logger.info(u'new AltairFamiPortPerformance.id={} was created'.format(altair_famiport_performance.id))
     request.session.flash(u'新しく公演「%s」(id=%ld)を連携対象にしました' % (performance.name, performance.id))
     return altair_famiport_performance
 
@@ -327,6 +330,6 @@ def create_altair_famiport_sales_segment_pair(request, session, seat_unselectabl
         )
     session.add(altair_famiport_sales_segment_pair)
     session.flush()
-    logger.info('new AltairFamiPortSalesSegmentPair.id={} was created.'.format(altair_famiport_sales_segment_pair.id))
+    logger.info(u'new AltairFamiPortSalesSegmentPair.id={} was created.'.format(altair_famiport_sales_segment_pair.id))
     request.session.flash(u'新しく販売区分「%s」(id=%d) を連携対象にしました' % (name_, base_sales_segment.id))
     return altair_famiport_sales_segment_pair
