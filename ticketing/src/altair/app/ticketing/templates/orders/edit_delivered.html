@@ -21,7 +21,7 @@ ${ch.breadcrumbs(
   <form action="${request.route_path('orders.edit_delivered', order_id = order.id)}" method="POST">
     <p>
     ${ch.alert_message(form)}
-    ${form.delivered_at}
+    ${ch.form_item(form.delivered_at, label=False, date_time=form.delivered_at.data)}
     </p>
     <input class="btn btn-normal" type="submit" value="変更"/>
   </form>
