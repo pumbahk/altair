@@ -228,7 +228,7 @@ class FamiPortReflectionStatusLogicTest(unittest.TestCase):
         warnings = get_famiport_reflection_warnings(testing.DummyRequest, session, event.performances[0])
         status = get_famiport_reflect_button_status(testing.DummyRequest, session, event)
         self.assertEqual(warnings, {})
-        self.assertEqual(status, u"NONE_REFLECTED")
+        self.assertEqual(status, u"NO_NEED_REFLECTION")
 
     @mock.patch('altair.app.ticketing.famiport.api.get_famiport_sales_segment_by_userside_id')
     def test_reflection_completed_event(self, get_famiport_sales_segment_by_userside_id):

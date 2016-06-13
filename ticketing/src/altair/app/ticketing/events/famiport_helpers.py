@@ -21,7 +21,7 @@ def get_famiport_reflect_button_status(request, session, event):
                 return u'SOME_REFLECTED'
         return u'ALL_REFLECTED'
     else:
-        return u'NONE_REFLECTED'
+        return u'NO_NEED_REFLECTION'
 
 def get_famiport_performance_ids(session, performances):
     # ファミポート連携されている公演IDを取得
