@@ -944,11 +944,9 @@ class FamiPortSyncTest(unittest.TestCase):
         # Create FamiPort objects
         submit_to_downstream_sync(self.fm_request, self.session, self.rt_fmtenant, event1)
 
-        salessegment2 = SalesSegment(id = 2, sales_segment_group_id = 1, performance_id = 1, event_id = 1, \
+        salessegment2 = SalesSegment(sales_segment_group=salessegmentgroup1, performance=performance1, event=event1, \
                                      payment_delivery_method_pairs = [self.fm_pdmp], public = True, seat_choice = True, \
                                      start_at = datetime(2016, 3, 1, 0, 0, 0), end_at = datetime(2016, 3, 31, 23, 59, 59))
-        self.session.add(salessegment2)
-        self.session.flush()
 
         # Change status to Editing
         for entity in [altair_famiport_venue, altair_famiport_performance_group, altair_famiport_performance, altair_famiport_salessegment_pair]:

@@ -18,6 +18,8 @@ from .utils import (
     validate_convert_famiport_kogyo_name_style,
     )
 
+
+
 def next_event_code(session, event):
     """FamiPortEvent.codeの元になるデータを生成"""
     code_1, code_2 = session.query(AltairFamiPortPerformanceGroup.code_1, sqlf.max(AltairFamiPortPerformanceGroup.code_2)) \
@@ -175,6 +177,15 @@ def update_altair_famiport_sales_segment_pair_if_needed(request, session, afm_sa
     origin_sales_segment = unsele_ss or sele_ss
     if afm_sales_segment_pair.name != origin_sales_segment.sales_segment_group.name:
         afm_sales_segment_pair.name = origin_sales_segment.sales_segment_group.name
+
+    if afm_sales_segment_pair.seat_unselectable_sales_segment != unsele_ss:
+        afm_sales_segment_pair.seat_unselectable_sales_segment = unsele_ss
+
+    if afm_sales_segment_pair.seat_selectable_sales_segment != sele_ss:
+        afm_sales_segment_pair.seat_selectable_sales_segment = sele_ss
+
+    if afm_sales_segment_pair.published_at != origin_sales_segment.start_at:
+        afm_sales_segment_pair.published_at = origin_sales_segment.start_at
 
     afm_sales_segment_pair.status = AltairFamiPortReflectionStatus.AwaitingReflection.value
     afm_sales_segment_pair.updated_at = now
