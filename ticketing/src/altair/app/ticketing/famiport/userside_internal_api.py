@@ -106,7 +106,7 @@ def lookup_altair_famiport_sales_segment_pair(session, sales_segment):
     if sales_segment.seat_choice:
         ss_pair = session.query(AltairFamiPortSalesSegmentPair)\
             .filter(AltairFamiPortSalesSegmentPair.seat_selectable_sales_segment_id == sales_segment.id)\
-            .filter(AltairFamiPortSalesSegmentPair.daleted_at == None)\
+            .filter(AltairFamiPortSalesSegmentPair.deleted_at == None)\
             .one()
     else:
         ss_pair = session.query(AltairFamiPortSalesSegmentPair)\
@@ -215,11 +215,11 @@ def create_altair_famiport_venue(request, session, performance, name_kana=u''):
         status=AltairFamiPortReflectionStatus.AwaitingReflection.value
     )
     session.add(altair_famiport_venue)
-    tenant = session.query(FamiPortTenant).filter_by(organization_id=performance.event.organization.id).one()
+    tenant = session.query(FamiPortTenant).filter_by(organization_id=performance.event.organization_id).one()
     famiport_venue_dict = sync_altair_famiport_venue(request, altair_famiport_venue, performance, tenant.code)
     if famiport_venue_dict:
         # Update altair_famiport_venue.famiport_venue_id with created FamiPortVenue.id
-        altair_famiport_venue.famiport_venue_id = famiport_venue_dict.get('venue_id')
+        altair_famiport_venue.famiport_venue_id = int(famiport_venue_dict.get('venue_id'))
     session.flush()
 
     request.session.flash(u'新しく会場「%s」をFamiポート連携しました' % altair_famiport_venue.name)
@@ -236,8 +236,8 @@ def create_altair_famiport_performance_group(request, session, performance, alta
 
     altair_famiport_performance_group = AltairFamiPortPerformanceGroup(
         altair_famiport_venue=altair_famiport_venue,
-        organization_id=performance.event.organization.id,
-        event_id=performance.event.id,
+        organization_id=performance.event.organization_id,
+        event_id=performance.event_id,
         code_1=code_1,
         code_2=code_2,
         name_1=name_1,
