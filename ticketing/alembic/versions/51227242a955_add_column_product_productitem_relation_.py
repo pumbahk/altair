@@ -1,7 +1,7 @@
 """Add Column Product, ProductItem relation lot product
 
 Revision ID: 51227242a955
-Revises: 1173311eb7c3
+Revises: 1604dd750140
 Create Date: 2016-04-18 17:29:44.695436
 
 """
