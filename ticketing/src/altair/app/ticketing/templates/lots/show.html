@@ -122,6 +122,24 @@ ${tabs.tabs(request)}
 
 <hr>
 
+<h3>関連公演</h3>
+<table class="table table-bordered table-condensed">
+  <thead>
+    <tr>
+      <th>公演</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% performances = sorted(lot.performances, key=lambda performance: performance.name)%>
+    %for performance in performances:
+    <tr>
+      <td>${performance.name}</td>
+    </tr>
+    %endfor
+  </tbody>
+</table>
+
+
 <%include file="/lots/_product_list.html" args="lot=lot"/>
 
 <hr>
