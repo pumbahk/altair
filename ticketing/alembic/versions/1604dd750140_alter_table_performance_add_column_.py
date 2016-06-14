@@ -1,7 +1,7 @@
 """alter table Performance add column account_id
 
 Revision ID: 1604dd750140
-Revises: 51227242a955
+Revises: bf2ef09ab6c 
 Create Date: 2016-06-07 15:31:55.869975
 
 """
