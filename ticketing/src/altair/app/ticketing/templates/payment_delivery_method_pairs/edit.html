@@ -101,7 +101,7 @@
     };
 
     $('#payment_method_id').change(function() {
-      if (!is_edit) {
+      if (!is_edit && is_first) {
         var pm = payment_method_data[parseInt($(this).val())];
         $('#transaction_fee').val(pm['fee']);
       }
@@ -118,7 +118,7 @@
     }).change();
 
     $('#system_fee, #transaction_fee, #delivery_fee, #discount').load(function(){
-      if (!is_edit) {
+      if (!is_edit && is_first) {
         $('#system_fee').val(default_system_fee);
         options = $('#system_fee_type option');
         for(ii=0; ii<options.length; ii++){

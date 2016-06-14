@@ -12,6 +12,7 @@ from wtforms.widgets import Input, CheckboxInput, RadioInput
 from wtforms.widgets.core import HTMLString, html_params
 from wtforms.fields.core import _unset_value
 from cgi import escape
+from .pdmp_validation import validate_checkout_payment_and_fees, validate_payment_delivery_combination, validate_issuing_start_time
 from .relational_validation import RelationValidation
 
 from altair.formhelpers import DateTimeField, Translations, Required, after1900
@@ -605,8 +606,10 @@ class PaymentDeliveryMethodPairForm(OurForm):
 
     def validate(form):
         status = super(type(form), form).validate()
-        rv = RelationValidation(form)
-        status = rv.validate(status)
+        status = validate_payment_delivery_combination(status, form) and \
+                 validate_checkout_payment_and_fees(status, form) and \
+                 validate_issuing_start_time(status, form)
+
         return status
 
     def default_values_for_pdmp(self, payment_method_id, delivery_method_id):
