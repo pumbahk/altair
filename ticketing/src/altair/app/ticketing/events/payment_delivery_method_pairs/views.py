@@ -4,7 +4,7 @@ from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.url import route_path
 
-from altair.app.ticketing.models import merge_session_with_post, record_to_multidict
+from altair.app.ticketing.models import merge_session_with_post
 from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.core.models import SalesSegmentGroup, PaymentDeliveryMethodPair, PaymentMethod, DeliveryMethod

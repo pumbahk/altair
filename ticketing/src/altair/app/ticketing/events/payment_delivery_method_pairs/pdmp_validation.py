@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from altair.app.ticketing.core.models import SalesSegmentGroup, PaymentDeliveryMethodPair, PaymentMethod, DeliveryMethod
 from altair.app.ticketing.payments.api import get_payment_delivery_plugin_ids
-from altair.app.ticketing.models import merge_session_with_post
 from altair.app.ticketing.payments.plugins import CHECKOUT_PAYMENT_PLUGIN_ID
 from altair.app.ticketing.events.sales_segments.forms import validate_issuing_start_at, IssuingStartAtOutTermException
 

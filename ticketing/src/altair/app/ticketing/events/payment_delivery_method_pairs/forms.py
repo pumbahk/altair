@@ -2,7 +2,6 @@
 
 import re
 import json
-from collections import OrderedDict
 from altair.formhelpers.form import OurForm
 from altair.formhelpers.validators import SwitchOptionalBase
 from altair.formhelpers.fields import OurTextField, OurIntegerField, OurDecimalField, OurSelectField, OurBooleanField, OurField
@@ -13,18 +12,16 @@ from wtforms.widgets.core import HTMLString, html_params
 from wtforms.fields.core import _unset_value
 from cgi import escape
 from .pdmp_validation import validate_checkout_payment_and_fees, validate_payment_delivery_combination, validate_issuing_start_time
-from .relational_validation import RelationValidation
 
 from altair.formhelpers import DateTimeField, Translations, Required, after1900
 from altair.app.ticketing.core.models import (
-    SalesSegment,
     PaymentMethod,
     DeliveryMethod,
     PaymentDeliveryMethodPair,
     FeeTypeEnum,
     DateCalculationBase,
     )
-from altair.app.ticketing.payments.plugins import CHECKOUT_PAYMENT_PLUGIN_ID
+
 from altair.saannotation import get_annotations_for
 
 from altair.app.ticketing.payments.api import get_payment_delivery_plugin_ids
