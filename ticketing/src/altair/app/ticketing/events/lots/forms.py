@@ -119,22 +119,83 @@ class LotForm(Form):
         choices=[],
     )
 
+    start_at = DateTimeField(
+        label=u"販売開始日時",
+        format='%Y-%m-%d %H:%M',
+        validators=[
+            SwitchOptional('use_default_start_at'),
+            Required(),
+        ],
+    )
+
+    use_default_start_at = OurBooleanField(
+        label=u'グループの値を利用',
+        default=True,
+        widget=CheckboxInput()
+    )
+
+    end_at = DateTimeField(
+        label=u"販売終了日時",
+        format='%Y-%m-%d %H:%M',
+        missing_value_defaults=dict(
+            year=u'',
+            month=Max,
+            day=Max,
+            hour=Max,
+            minute=Max,
+            second=Max,
+        ),
+        validators=[
+            SwitchOptional('use_default_end_at'),
+            Required(),
+        ],
+    )
+
+    use_default_end_at = OurBooleanField(
+        label=u'グループの値を利用',
+        default=True,
+        widget=CheckboxInput(),
+    )
+
+    max_quantity = IntegerField(
+        label=u'購入上限枚数',
+        validators=[
+            Required(),
+            NumberRange(min=0, max=UPPER_LIMIT_OF_MAX_QUANTITY_LOTS, message=u'範囲外です'),
+        ],
+    )
+    auth3d_notice = TextAreaField(
+        label=u'クレジットカード 3D認証フォーム 注記事項',
+        validators=[Optional()],
+    )
+
+
+
     def create_lot(self, event):
         return api.create_lot(event, self)
+
 
     def update_lot(self, lot):
         sales_segment = lot.sales_segment
         sales_segment.sales_segment_group_id=self.data['sales_segment_group_id']
+        sales_segment.max_quantity=self.data['max_quantity']
         sales_segment.seat_choice=False
+        sales_segment.auth3d_notice = self.data['auth3d_notice']
         if self.data['sales_segment_group_id']:
             sales_segment.payment_delivery_method_pairs = PaymentDeliveryMethodPair.query.filter_by(sales_segment_group_id=sales_segment.sales_segment_group_id).all()
 
         sales_segment_group = sales_segment.sales_segment_group
-        sales_segment.start_at=sales_segment_group.start_at
-        sales_segment.end_at=sales_segment_group.end_at
-        sales_segment.max_quantity=sales_segment_group.max_quantity
-        sales_segment.seat_choice=False
-        sales_segment.auth3d_notice=sales_segment_group.auth3d_notice
+        sales_segment.use_default_start_at=self.data['use_default_start_at']
+        if sales_segment.use_default_start_at:
+            sales_segment.start_at=sales_segment_group.start_at
+        else:
+            sales_segment.start_at=self.data['start_at']
+
+        sales_segment.use_default_end_at=self.data['use_default_end_at']
+        if sales_segment.use_default_end_at:
+            sales_segment.end_at=sales_segment_group.end_at
+        else:
+            sales_segment.end_at=self.data['end_at']
 
         lot.name=self.data['name']
         lot.limit_wishes=self.data['limit_wishes']
@@ -148,8 +209,28 @@ class LotForm(Form):
 
         return lot
 
+    def _validate_terms(self):
+        ssg = SalesSegmentGroup.query.filter_by(id=self.sales_segment_group_id.data).one()
+        ss_start_at = self.start_at.data
+        ss_end_at = self.end_at.data
+        if self.use_default_start_at.data:
+            ss_start_at = ssg.start_at
+        if self.use_default_end_at.data:
+            ss_end_at = ssg.end_at
+
+        # 販売開始日時と販売終了日時の前後関係をチェックする
+        if ss_start_at is not None and ss_end_at is not None and ss_start_at > ss_end_at:
+            self.start_at.errors.append(u'販売開始日時が販売終了日時より後に設定されています')
+            self.end_at.errors.append(u'販売終了日時が販売開始日時より前に設定されています')
+            return False
+
+        return True
+
     def validate(self):
         if super(LotForm, self).validate():
+            if not self._validate_terms():
+                return False
+
             return True
 
     def __init__(self, *args, **kwargs):
