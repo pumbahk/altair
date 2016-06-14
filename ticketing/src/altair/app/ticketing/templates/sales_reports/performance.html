@@ -1,4 +1,9 @@
 <%inherit file="/layout_2cols.html"/>
+
+<script type="text/javascript">
+  $(window).load(function () { date_auto_fill() });
+</script>
+
 <%namespace file="/common/helpers.html" name="ch" />
 <%
   performance = performance_reporter.performance
