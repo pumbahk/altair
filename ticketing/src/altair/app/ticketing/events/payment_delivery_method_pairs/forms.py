@@ -440,7 +440,7 @@ class PaymentDeliveryMethodPairForm(OurForm):
 
     public = OurBooleanField(
         label=get_annotations_for(PaymentDeliveryMethodPair.public)['label'],
-        default=False,
+        default=True,
         widget=CheckboxInput(),
         )
 
