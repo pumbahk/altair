@@ -232,6 +232,12 @@ class SalesSegmentGroups(BaseView, SalesSegmentViewHelperMixin):
                 logger.info('propagating changes to sales_segment(id=%ld)' % sales_segment.id)
                 accessor.update_sales_segment(sales_segment)
 
+            # 一般に更新したら抽選を削除
+            if not sales_segment_group.kind.count("lottery"):
+                for lot in sales_segment_group.get_lots():
+                    lot.sales_segment.delete()
+                    lot.delete()
+
         self.request.session.flash(u'販売区分グループを保存しました')
         return None
 
