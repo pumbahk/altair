@@ -232,11 +232,17 @@ class SalesSegmentGroups(BaseView, SalesSegmentViewHelperMixin):
                 logger.info('propagating changes to sales_segment(id=%ld)' % sales_segment.id)
                 accessor.update_sales_segment(sales_segment)
 
-            # 一般に更新したら抽選を削除
+            # 一般の種別に更新したら抽選を削除
             if not sales_segment_group.kind.count("lottery"):
                 for lot in sales_segment_group.get_lots():
                     lot.sales_segment.delete()
                     lot.delete()
+
+            # 抽選の区分に更新したときに、１つも抽選がなかったら作成する
+            if sales_segment_group.is_lottery() and not sales_segment_group.get_lots():
+                lot = create_lot(sales_segment_group.event, f, sales_segment_group, f.lot_name.data)
+                DBSession.add(lot)
+
 
         self.request.session.flash(u'販売区分グループを保存しました')
         return None
