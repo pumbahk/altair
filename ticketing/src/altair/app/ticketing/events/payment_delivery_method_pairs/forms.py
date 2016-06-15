@@ -600,13 +600,14 @@ class PaymentDeliveryMethodPairForm(OurForm):
         if form.data['delivery_fee_per_order'] and form.data[field.name]:
             raise ValidationError(_get_msg(u'副券'))
 
-
-    def validate(form):
+    def validate(form, pdmp = None, sales_segments = None):
         status = super(type(form), form).validate()
         status = validate_payment_delivery_combination(status, form) and \
                  validate_checkout_payment_and_fees(status, form) and \
-                 validate_issuing_start_time(status, form)
-
+                 validate_issuing_start_time(status = status,
+                                             form = form,
+                                             pdmp = pdmp,
+                                             sales_segments = sales_segments)
         return status
 
     def default_values_for_pdmp(self, payment_method_id, delivery_method_id):

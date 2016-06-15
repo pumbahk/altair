@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from altair.app.ticketing.core.models import SalesSegmentGroup, PaymentDeliveryMethodPair, PaymentMethod, DeliveryMethod
+from altair.app.ticketing.core.models import PaymentDeliveryMethodPair, PaymentMethod, DeliveryMethod
 from altair.app.ticketing.payments.api import get_payment_delivery_plugin_ids
 from altair.app.ticketing.payments.plugins import CHECKOUT_PAYMENT_PLUGIN_ID
 from altair.app.ticketing.events.sales_segments.forms import validate_issuing_start_at, IssuingStartAtOutTermException
@@ -37,13 +37,10 @@ def validate_checkout_payment_and_fees(status, form):
                 status = False
     return status
 
-def validate_issuing_start_time(status, form):
+def validate_issuing_start_time(status, form, pdmp = None, sales_segments = None):
     if status:
-        is_new, pdmp = __pdmp_init(form)
-        if is_new:
-            sales_segments = SalesSegmentGroup.get(form.sales_segment_group_id.data).sales_segments
-        else:
-            sales_segments = pdmp.sales_segments
+        if not pdmp:
+            pdmp = _create_new_pdmp(form)
 
         for ss in sales_segments:
             # パフォーマンスのみチェエクを実行する。
@@ -75,20 +72,14 @@ def validate_issuing_start_time(status, form):
                 break
     return status
 
-def __pdmp_init(form):
-    pdmp = PaymentDeliveryMethodPair.query.filter_by(id=form.id.data)
-    is_new = False
-    if pdmp.count() > 0:
-        pdmp = pdmp.one()
-    else:
-        is_new = True
-        pdmp =PaymentDeliveryMethodPair()
-        payment_plugin_id, delivery_plugin_id = get_payment_delivery_plugin_ids(form.payment_method_id.data,
-                                                                                form.delivery_method_id.data)
-        pdmp.payment_method = PaymentMethod()
-        pdmp.delivery_method = DeliveryMethod()
-        pdmp.payment_method.payment_plugin_id = payment_plugin_id
-        pdmp.delivery_method.delivery_plugin_id = delivery_plugin_id
-        pdmp.payment_method.name = PaymentMethod.filter_by(id=form.payment_method_id.data).one().name
-        pdmp.delivery_method.name = DeliveryMethod.filter_by(id=form.delivery_method_id.data).one().name
-    return is_new, pdmp
+def _create_new_pdmp(form):
+    pdmp =PaymentDeliveryMethodPair()
+    payment_plugin_id, delivery_plugin_id = get_payment_delivery_plugin_ids(form.payment_method_id.data,
+                                                                            form.delivery_method_id.data)
+    pdmp.payment_method = PaymentMethod()
+    pdmp.delivery_method = DeliveryMethod()
+    pdmp.payment_method.payment_plugin_id = payment_plugin_id
+    pdmp.delivery_method.delivery_plugin_id = delivery_plugin_id
+    pdmp.payment_method.name = PaymentMethod.filter_by(id=form.payment_method_id.data).one().name
+    pdmp.delivery_method.name = DeliveryMethod.filter_by(id=form.delivery_method_id.data).one().name
+    return pdmp

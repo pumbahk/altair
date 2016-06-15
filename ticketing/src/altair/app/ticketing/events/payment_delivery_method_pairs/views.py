@@ -55,7 +55,7 @@ class PaymentDeliveryMethodPairs(BaseView):
             raise HTTPNotFound('sales_segment_group_id %d is not found' % sales_segment_group_id)
 
         f = PaymentDeliveryMethodPairForm(self.request.POST, organization_id=self.context.user.organization_id)
-        if f.validate():
+        if f.validate(pdmp = None, sales_segments = sales_segment_group.sales_segments):
             payment_delivery_method_pair = merge_session_with_post(PaymentDeliveryMethodPair(), f.data)
             payment_delivery_method_pair.payment_method_id = f.data['payment_method_id']
             payment_delivery_method_pair.delivery_method_id = f.data['delivery_method_id']
@@ -114,7 +114,7 @@ class PaymentDeliveryMethodPairs(BaseView):
         f.id.data = id
         f.payment_method_id.data = pdmp.payment_method_id
         f.delivery_method_id.data = pdmp.delivery_method_id
-        if f.validate():
+        if f.validate(pdmp = pdmp, sales_segments = pdmp.sales_segment_group.sales_segments):
             payment_delivery_method_pair = merge_session_with_post(PaymentDeliveryMethodPair(), f.data)
             payment_delivery_method_pair.save()
 
