@@ -40,7 +40,7 @@ def validate_checkout_payment_and_fees(status, form):
 def validate_issuing_start_time(status, form, pdmp = None, sales_segments = None):
     if status:
         if not pdmp:
-            pdmp = _create_new_pdmp(form)
+            pdmp = _build_pdmp_form_data(form)
 
         for ss in sales_segments:
             # パフォーマンスのみチェエクを実行する。
@@ -72,7 +72,7 @@ def validate_issuing_start_time(status, form, pdmp = None, sales_segments = None
                 break
     return status
 
-def _create_new_pdmp(form):
+def _build_pdmp_form_data(form):
     pdmp =PaymentDeliveryMethodPair()
     payment_plugin_id, delivery_plugin_id = get_payment_delivery_plugin_ids(form.payment_method_id.data,
                                                                             form.delivery_method_id.data)
