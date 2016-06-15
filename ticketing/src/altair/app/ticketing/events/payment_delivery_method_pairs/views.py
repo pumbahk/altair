@@ -4,7 +4,7 @@ from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.url import route_path
 
-from altair.app.ticketing.models import merge_session_with_post, record_to_multidict
+from altair.app.ticketing.models import merge_session_with_post
 from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.core.models import SalesSegmentGroup, PaymentDeliveryMethodPair, PaymentMethod, DeliveryMethod
@@ -55,7 +55,7 @@ class PaymentDeliveryMethodPairs(BaseView):
             raise HTTPNotFound('sales_segment_group_id %d is not found' % sales_segment_group_id)
 
         f = PaymentDeliveryMethodPairForm(self.request.POST, organization_id=self.context.user.organization_id)
-        if f.validate():
+        if f.validate(pdmp = None, sales_segments = sales_segment_group.sales_segments):
             payment_delivery_method_pair = merge_session_with_post(PaymentDeliveryMethodPair(), f.data)
             payment_delivery_method_pair.payment_method_id = f.data['payment_method_id']
             payment_delivery_method_pair.delivery_method_id = f.data['delivery_method_id']
@@ -77,7 +77,8 @@ class PaymentDeliveryMethodPairs(BaseView):
             except SystemFeeDefaultDuplicated:
                 system_fee = f.system_fee.default
                 system_fee_type = f.system_fee_type.default
-                
+
+            self.request.session.flash(u'決済・引取方法の登録に失敗しました')
             return {
                 'form':f,
                 'sales_segment_group':sales_segment_group,
@@ -113,7 +114,7 @@ class PaymentDeliveryMethodPairs(BaseView):
         f.id.data = id
         f.payment_method_id.data = pdmp.payment_method_id
         f.delivery_method_id.data = pdmp.delivery_method_id
-        if f.validate():
+        if f.validate(pdmp = pdmp, sales_segments = pdmp.sales_segment_group.sales_segments):
             payment_delivery_method_pair = merge_session_with_post(PaymentDeliveryMethodPair(), f.data)
             payment_delivery_method_pair.save()
 
