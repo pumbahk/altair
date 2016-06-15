@@ -103,7 +103,7 @@ class SalesSegmentGroups(BaseView, SalesSegmentViewHelperMixin):
     @view_config(route_name='sales_segment_groups.new', request_method='GET', renderer='altair.app.ticketing:templates/sales_segment_groups/_form.html', xhr=True)
     def new_xhr(self):
         form = SalesSegmentGroupAndLotForm(None, context=self.context, new_form=True)
-        form.new_flag.data = True
+        form.lot_form_flag.data = True
         return {
             'form': form,
             'action': self.request.path,
@@ -149,6 +149,10 @@ class SalesSegmentGroups(BaseView, SalesSegmentViewHelperMixin):
     def edit_xhr(self):
         sales_segment_group = self.context.sales_segment_group
         form = SalesSegmentGroupAndLotForm(obj=sales_segment_group, context=self.context)
+        if not sales_segment_group.kind.count("lottery"):
+            # 更新で種別が一般の場合、抽選のフォームを出せるようにする
+            form.lot_form_flag.data = True
+
         for k in SalesSegmentAccessor.setting_attributes:
             getattr(form, k).data = getattr(sales_segment_group.setting, k)
         return {
@@ -159,6 +163,7 @@ class SalesSegmentGroups(BaseView, SalesSegmentViewHelperMixin):
     # TODO: copyのときに、コピー先の販売区分グループの詳細画面に遷移しない
     def _edit_post(self):
         f = SalesSegmentGroupAndLotForm(self.request.POST, context=self.context)
+        f.original_sales_segment_group.data = self.context.sales_segment_group
         if not f.validate():
             return f
         sales_segment_group = self.context.sales_segment_group

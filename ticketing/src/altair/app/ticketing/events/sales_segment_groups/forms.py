@@ -423,7 +423,8 @@ class SalesSegmentGroupForm(OurForm):
 
 
 class SalesSegmentGroupAndLotForm(SalesSegmentGroupForm):
-    new_flag = HiddenField(default=False)
+    lot_form_flag = HiddenField(default=False)
+    original_sales_segment_group = HiddenField(default=False)
     lot_name = OurTextField(
         label=u'抽選名',
         validators=[
@@ -502,10 +503,19 @@ class SalesSegmentGroupAndLotForm(SalesSegmentGroupForm):
                 ]]):
             return False
 
-        if self.kind.data not in [SalesSegmentKindEnum.early_lottery.k, SalesSegmentKindEnum.added_lottery.k, SalesSegmentKindEnum.first_lottery.k]:
+        """
+        以下の場合抽選のバリデーションを実施しない
+        ・一般の種別のもの
+        ・抽選から抽選に更新した場合
+        """
+        if not self.kind.data.count("lottery"):
             return True
 
-        # 抽選が選択されている場合の追加のバリデーション
+        if self.original_sales_segment_group.data:
+            if self.original_sales_segment_group.data.kind.count("lottery") and self.kind.data.count("lottery"):
+                return True
+
+        # 抽選のバリデーション
         return all([fn((), {}) for fn in [
             self.lot_name.validate,
             self.limit_wishes.validate,
