@@ -24,11 +24,16 @@ def current_directory(dirname=None):
   finally:  
     os.chdir(curdir) 
 
-def create_zipfile_from_directory(path, writename):
+def create_zipfile_from_directory(path, writename, file_list = None):
     with zipfile.ZipFile(writename, "w") as myzip:
-        for root, d, files in os.walk(path):
-            for f in files:
-                myzip.write(os.path.join(root, f))
+        if not file_list:
+            for root, d, files in os.walk(path):
+                for f in files:
+                    myzip.write(os.path.join(root, f))
+        else:
+            for f in file_list:
+                if os.path.isfile(f):
+                    myzip.write(f)
 
 def is_zipfile(target):
     return zipfile.is_zipfile(target)
