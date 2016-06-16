@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 ## download manager
 import logging
 logger = logging.getLogger(__name__)
