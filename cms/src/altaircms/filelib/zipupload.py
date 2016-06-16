@@ -26,10 +26,13 @@ def current_directory(dirname=None):
 
 def create_zipfile_from_directory(path, writename, file_list = None):
     with zipfile.ZipFile(writename, "w") as myzip:
+        # file_listがない場合は、S3にあるファイルを全部ダウンロードする。
         if not file_list:
             for root, d, files in os.walk(path):
                 for f in files:
                     myzip.write(os.path.join(root, f))
+
+        # file_listがある場合は、file_listにあるファイルのみダウンロードする。
         else:
             for f in file_list:
                     myzip.write(f)
