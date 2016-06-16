@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import logging
 from datetime import timedelta
 from altair.app.ticketing.famiport.exc import FamiPortAPINotFoundError
 from altair.app.ticketing.famiport.userside_models import AltairFamiPortPerformance, AltairFamiPortReflectionStatus
@@ -7,6 +8,7 @@ from altair.app.ticketing.payments import plugins
 from altair.app.ticketing.famiport import userside_api as fm_userside_api
 from altair.app.ticketing.famiport import api as fm_api
 
+logger = logging.getLogger(__name__)
 
 def has_famiport_pdmp(sales_segment):
     for pdmp in sales_segment.payment_delivery_method_pairs:
@@ -86,13 +88,17 @@ def get_famiport_reflection_warnings(request, session, performance):
                 try:
                     fmss_dict = fm_api.get_famiport_sales_segment_by_userside_id(request, tenant.code, ss.id)
                     origin_ss = ss.seat_unselectable_sales_segment or ss.seat_selectable_sales_segment
-                    # 開始日が変更されていないかチェック
-                    if ss.start_at != fmss_dict.get('start_at'):
-                        warnings.add(u'販売開始日相違')
-                    if ss.end_at != fmss_dict.get('end_at'):
-                        warnings.add(u'販売終了日相違')
-                    if origin_ss.name != fmss_dict.get('name'):
-                        warnings.add(u'販売区分名相違')
+                    if not origin_ss:
+                        logger.warn(u'no origin sales segment was found for AltairFMSalesSegmentPair.id={}'.format(ss.id))
+                        continue
+                    else:
+                        # 開始日が変更されていないかチェック
+                        if ss.start_at != fmss_dict.get('start_at'):
+                            warnings.add(u'販売開始日相違')
+                        if ss.end_at != fmss_dict.get('end_at'):
+                            warnings.add(u'販売終了日相違')
+                        if origin_ss.name != fmss_dict.get('name'):
+                            warnings.add(u'販売区分名相違')
                 except FamiPortAPINotFoundError:
                     # famiport sales segment was not found
                     continue
