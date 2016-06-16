@@ -149,7 +149,7 @@ class SalesSegmentGroups(BaseView, SalesSegmentViewHelperMixin):
     def edit_xhr(self):
         sales_segment_group = self.context.sales_segment_group
         form = SalesSegmentGroupAndLotForm(obj=sales_segment_group, context=self.context)
-        if not sales_segment_group.kind.count("lottery"):
+        if not sales_segment_group.is_lottery():
             # 更新で種別が一般の場合、抽選のフォームを出せるようにする
             form.lot_form_flag.data = True
 
@@ -163,7 +163,7 @@ class SalesSegmentGroups(BaseView, SalesSegmentViewHelperMixin):
     # TODO: copyのときに、コピー先の販売区分グループの詳細画面に遷移しない
     def _edit_post(self):
         f = SalesSegmentGroupAndLotForm(self.request.POST, context=self.context)
-        f.original_sales_segment_group.data = self.context.sales_segment_group
+        f.original_kind.data = self.context.sales_segment_group.kind
         if not f.validate():
             return f
         sales_segment_group = self.context.sales_segment_group
@@ -213,6 +213,8 @@ class SalesSegmentGroups(BaseView, SalesSegmentViewHelperMixin):
             if "lottery" in f.kind.data:
                 copy_lots_between_sales_segmnent_group(sales_segment_group, new_sales_segment_group)
         else:
+            if not f.validate_kind(self.context.sales_segment_group):
+                return f
             sales_segment_group = merge_session_with_post(sales_segment_group, f.data, excludes=SalesSegmentAccessor.setting_attributes)
             if sales_segment_group.setting is None:
                 sales_segment_group.setting = SalesSegmentGroupSetting()
@@ -233,7 +235,7 @@ class SalesSegmentGroups(BaseView, SalesSegmentViewHelperMixin):
                 accessor.update_sales_segment(sales_segment)
 
             # 一般の種別に更新したら抽選を削除
-            if not sales_segment_group.kind.count("lottery"):
+            if not sales_segment_group.is_lottery():
                 for lot in sales_segment_group.get_lots():
                     lot.sales_segment.delete()
                     lot.delete()
@@ -242,7 +244,6 @@ class SalesSegmentGroups(BaseView, SalesSegmentViewHelperMixin):
             if sales_segment_group.is_lottery() and not sales_segment_group.get_lots():
                 lot = create_lot(sales_segment_group.event, f, sales_segment_group, f.lot_name.data)
                 DBSession.add(lot)
-
 
         self.request.session.flash(u'販売区分グループを保存しました')
         return None

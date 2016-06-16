@@ -424,7 +424,7 @@ class SalesSegmentGroupForm(OurForm):
 
 class SalesSegmentGroupAndLotForm(SalesSegmentGroupForm):
     lot_form_flag = HiddenField(default=False)
-    original_sales_segment_group = HiddenField(default=False)
+    original_kind = HiddenField(default=False)
     lot_name = OurTextField(
         label=u'抽選名',
         validators=[
@@ -493,6 +493,15 @@ class SalesSegmentGroupAndLotForm(SalesSegmentGroupForm):
         choices=_auth_types
     )
 
+    def validate_kind(self, sales_segment_group):
+        # 抽選に申込があった場合は、抽選の種別から一般の種別に変更できない
+        if self.original_kind.data.count("lottery") and not self.kind.data.count("lottery"):
+            for lot in sales_segment_group.get_lots():
+                if lot.entries:
+                    append_error(self.kind, ValidationError(u"抽選に申込があるため、種別の変更はできません。"))
+                    return False
+        return True
+
     def validate(self, *args, **kwargs):
         if not all([fn(*args, **kwargs) for fn in [
             self._validate_start,
@@ -511,8 +520,8 @@ class SalesSegmentGroupAndLotForm(SalesSegmentGroupForm):
         if not self.kind.data.count("lottery"):
             return True
 
-        if self.original_sales_segment_group.data:
-            if self.original_sales_segment_group.data.kind.count("lottery") and self.kind.data.count("lottery"):
+        if self.original_kind.data:
+            if self.original_kind.data.count("lottery") and self.kind.data.count("lottery"):
                 return True
 
         # 抽選のバリデーション
