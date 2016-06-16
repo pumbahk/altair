@@ -15,6 +15,7 @@ from . import forms
 from . import api
 from altair.app.ticketing.views import BaseView
 
+
 def correct_organization(info, request):
     """ [separation] super userか自身の所属するOrganizationのもののみ表示
     """
@@ -131,13 +132,15 @@ class MemberView(BaseView):
     def edit_member_dialog(self):
         membership_id = self.request.matchdict["membership_id"]
         membergroups = self.context.membergroups  
-        form = forms.MemberGroupChoicesForm(user_id_list=self.request.params["user_id_list"])
+        form = forms.MemberGroupChoicesForm(member_id_list=self.request.params.get("member_id_list", None))
         form = form.configure(membergroups)
 
-        members = Member.query\
-            .filter(Member.id.in_(json.loads(form.data["member_id_list"])))\
-            .options(orm.joinedload(Member.membergroup), 
-                     orm.joinedload(Member.membership))
+        members = []
+        if form.data["member_id_list"]:
+            members = Member.query\
+                .filter(Member.id.in_(json.loads(form.data["member_id_list"])))\
+                .options(orm.joinedload(Member.membergroup),
+                         orm.joinedload(Member.membership)).all()
         return {"members": members, "form": form, "membership_id": membership_id}
 
     @view_config(match_param="action=edit", 
@@ -150,7 +153,7 @@ class MemberView(BaseView):
             self.request.session.flash(unicode(form.errors))
             return HTTPFound(self.request.route_url("members.index", membership_id=membership_id))
 
-        api.edit_membergroup(self.request, Member.query.filter(Member.in_(form.data["member_id_list"])), 
+        api.edit_membergroup(self.request, Member.query.filter(Member.id.in_(form.data["member_id_list"])),
                              form.data["membergroup_id"])
 
         self.request.session.flash(u"membergroupを変更しました")

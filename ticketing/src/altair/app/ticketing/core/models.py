@@ -569,6 +569,9 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     setting = relationship('PerformanceSetting', backref='performance', uselist=False, cascade='all')
 
+    account_id = AnnotatedColumn(Identifier, ForeignKey('Account.id'), _a_label=_(u'配券元'))
+    account = relationship('Account', backref='performances')
+
     @property
     def products(self):
         return self.sale_segment.products if self.sales_segment_id else []
@@ -1969,6 +1972,11 @@ class PaymentDeliveryMethodPair(Base, BaseModel, WithTimestamp, LogicallyDeleted
 
     def accept_core_model_traverser(self, traverser):
         traverser.visit_payment_delivery_method_pair(self)
+
+    @property
+    def use_famiport_plugin(self):
+        return self.payment_method.payment_plugin_id == plugins.FAMIPORT_PAYMENT_PLUGIN_ID or \
+           self.delivery_method.delivery_plugin_id == plugins.FAMIPORT_DELIVERY_PLUGIN_ID
 
 
 class PaymentMethodPlugin(Base, BaseModel, WithTimestamp, LogicallyDeleted):

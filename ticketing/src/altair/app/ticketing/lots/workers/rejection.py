@@ -45,8 +45,8 @@ class RejectionWorkerResource(object):
     @reify
     def work(self):
         return lot_models.LotRejectWork.query.filter(
-            lot_models.LotRejectWork.lot_entry_no==self.entry_no
-        ).one()
+            lot_models.LotRejectWork.lot_entry_no == self.entry_no
+        ).first()
 
 
 @task_config(root_factory=RejectionWorkerResource,
@@ -56,6 +56,10 @@ class RejectionWorkerResource(object):
              timeout=600)
 def reject_lots_task(context, request):
     with named_transaction(request, "lot_work_history") as s:
+        if not context.work:
+            logger.info("nothing rejecting task: lot_id={lot_id}, entry_no={entry_no}".format(lot_id=context.lot.id, entry_no=context.entry_no))
+            return
+
         history = lot_models.LotWorkHistory(
             lot_id=context.lot.id, # 別トランザクションなのでID指定
             entry_no=context.work.lot_entry_no,

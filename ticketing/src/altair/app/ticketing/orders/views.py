@@ -69,7 +69,7 @@ from altair.app.ticketing.sej import api as sej_api
 from altair.app.ticketing.mails.api import get_mail_utility
 from altair.app.ticketing.mailmags.models import MailSubscription, MailMagazine, MailSubscriptionStatus
 from altair.app.ticketing.orders.export import OrderCSV, get_japanese_columns, RefundResultCSVExporter
-from altair.app.ticketing.orders.forms import (
+from .forms import (
     OrderForm,
     OrderInfoForm,
     OrderSearchForm,
@@ -84,6 +84,7 @@ from altair.app.ticketing.orders.forms import (
     SalesSegmentGroupSearchForm,
     TicketFormatSelectionForm,
     CartSearchForm,
+    DeliverdEditForm,
     )
 from altair.app.ticketing.orders.forms import OrderMemoEditFormFactory
 from altair.app.ticketing.views import BaseView
@@ -1372,6 +1373,31 @@ class OrderDetailView(OrderBaseView):
             self.request.session.flash(u'予約(%s)を未配送にしました' % order.order_no)
         else:
             self.request.session.flash(u'予約(%s)を未配送済みにできません' % order.order_no)
+        return HTTPFound(location=route_path('orders.show', self.request, order_id=order.id))
+
+    @view_config(route_name='orders.edit_delivered', permission='sales_editor', request_method='GET',
+                 renderer='altair.app.ticketing:templates/orders/edit_delivered.html')
+    def get_edit_delivered(self):
+        order_id = int(self.request.matchdict.get('order_id', 0))
+        order = Order.get(order_id, self.context.organization.id)
+        if order is None:
+            return HTTPNotFound('order id %d is not found' % order_id)
+        form = DeliverdEditForm()
+        form.delivered_at.data = order.delivered_at
+        return {'order': order, 'form': form}
+
+    @view_config(route_name='orders.edit_delivered', permission='sales_editor', request_method='POST',
+                 renderer='altair.app.ticketing:templates/orders/edit_delivered.html')
+    def post_edit_delivered(self):
+        order_id = int(self.request.matchdict.get('order_id', 0))
+        order = Order.get(order_id, self.context.organization.id)
+        if order is None:
+            return HTTPNotFound('order id %d is not found' % order_id)
+        form = DeliverdEditForm(self.request.POST)
+        if not form.validate():
+            return {'order': order, 'form': form}
+        order.delivered_at = form.delivered_at.data
+        self.request.session.flash(u'配送時刻を変更しました')
         return HTTPFound(location=route_path('orders.show', self.request, order_id=order.id))
 
     @view_config(route_name='orders.edit.shipping_address', request_method='POST', renderer='altair.app.ticketing:templates/orders/_modal_shipping_address.html')

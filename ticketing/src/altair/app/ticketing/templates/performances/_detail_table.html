@@ -28,6 +28,10 @@
       <td style="border-bottom: 1px solid #dcdcdc;">${vh.datetime(performance.end_on, with_weekday=True)}</td>
     </tr>
     <tr>
+      <th>配券元</th>
+      <td>${performance.account.name if performance.account else performance.event.account.name}</td>
+    </tr>
+    <tr>
       <th>公演名副題</th>
       <td colspan="7">${performance.subtitle or u"-"}</td>
     </tr>
@@ -81,6 +85,9 @@
     <tr>
       <td colspan="8">
         <div class="pull-right">
+          <a class="btn btn-normal" href="${request.route_path('sales_reports.performance', performance_id=performance.id)}" style="margin-left: 10px;">
+            売上レポート
+          </a>
           <%include file="/performances/_action_button.html" args="event=performance.event, order=['edit', 'delete', 'copy', 'mail']" />
         </div>
       </td>

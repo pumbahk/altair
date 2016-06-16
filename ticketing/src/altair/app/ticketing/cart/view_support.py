@@ -28,7 +28,7 @@ from altair.formhelpers.widgets.datetime import (
     DateFieldBuilder,
     DateSelectFormElementBuilder,
     )
-from wtforms.validators import Optional, Regexp
+from wtforms.validators import Optional, Regexp, Length
 from altair.formhelpers.translations import Translations
 from markupsafe import Markup
 from altair.app.ticketing.models import DBSession
@@ -456,6 +456,10 @@ class DynamicFormBuilder(object):
             validators.append(DynSwitchDisabled(u'NOT(%s)' % activation_conditions))
         if field_desc['required']:
             validators.append(Required())
+        if field_desc.get('max_length'):
+            max = field_desc.get('max_length')
+            message = u'{}文字以内で入力してください'.format(max)
+            validators.append(Length(max=max, message=message))
 
         validator_flags = {}
         all_enabled = True

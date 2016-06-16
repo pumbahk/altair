@@ -10,7 +10,6 @@
 	  %for field in form:
 	    ${form_item(field)}
 	  %endfor
-      選択されたユーザ
       <ul>
       <table class="table">
         <thead>
@@ -29,9 +28,14 @@
         </tbody>
       </table>
   </div>
+  % if not members:
+    <div style="color:red">変更対象の会員が選択されていません。</div>
+  % endif
 
   <div class="modal-footer">
 	<a href="#" class="btn" data-dismiss="modal">キャンセル</a>
-    <input class="btn btn-primary" type="submit" name="submit" value="選択したmembergroupに変更">
+      % if members:
+        <input class="btn btn-primary" type="submit" name="submit" value="選択したmembergroupに変更">
+      % endif
   </div>
  </form>

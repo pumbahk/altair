@@ -8,6 +8,7 @@ from altair.formhelpers import Translations, Required, BugFreeSelectField,\
     zero_as_none
 from altair.app.ticketing.core.models import Organization, Account, AccountTypeEnum
 
+
 class AccountSearchForm(Form):
     account_name = TextField(
         label=u'取引先名',
@@ -17,13 +18,10 @@ class AccountSearchForm(Form):
         ]
     )
 
-class AccountForm(Form):
 
+class AccountForm(Form):
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
         Form.__init__(self, formdata, obj, prefix, **kwargs)
-        self.user_id.choices = [(u'', u'')] + [
-            (organization.user_id, organization.name) for organization in Organization.all()
-        ]
         if 'organization_id' in kwargs:
             self.organization_id = kwargs['organization_id']
 
@@ -39,13 +37,6 @@ class AccountForm(Form):
         validators=[Required()],
         choices=[account_type.v for account_type in AccountTypeEnum],
         coerce=int
-    )
-    user_id = BugFreeSelectField(
-        label=u'取引先マスタ',
-        validators=[Optional()],
-        choices=[],
-        filters=[zero_as_none],
-        coerce=lambda v: int(v) if v else None
     )
     name = TextField(
         label=u'取引先名',
