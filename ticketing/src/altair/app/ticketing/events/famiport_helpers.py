@@ -76,7 +76,7 @@ def get_famiport_reflection_warnings(request, session, performance):
             # 会場が変更されていないかチェック
             altair_famiport_venue = altair_famiport_performance.altair_famiport_performance_group.altair_famiport_venue
             if performance.venue.site.siteprofile_id != altair_famiport_venue.siteprofile_id or \
-                performance.venue.name != altair_famiport_venue.name:
+                performance.venue.name != altair_famiport_venue.venue_name:
                 warnings.add(u'会場相違')
 
             # 販売区分チェック
