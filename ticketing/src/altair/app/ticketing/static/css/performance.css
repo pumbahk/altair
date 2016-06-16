@@ -56,3 +56,11 @@
 .tabs-horizontal .nav-tabs .active > a:hover {
     border-color:  #ddd #ddd transparent  #ddd;
 }
+
+.lot_performance a {
+    display:block;width:100%;height:100%;
+}
+
+.lot_performance a:hover {
+    background-color:#ffcccc;
+}
