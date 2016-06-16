@@ -32,7 +32,6 @@ def create_zipfile_from_directory(path, writename, file_list = None):
                     myzip.write(os.path.join(root, f))
         else:
             for f in file_list:
-                if os.path.isfile(f):
                     myzip.write(f)
 
 def is_zipfile(target):

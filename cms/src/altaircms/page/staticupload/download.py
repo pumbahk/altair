@@ -71,7 +71,7 @@ class S3Downloader(object):
     def __init__(self, request, static_page, prefix=""): ## slackoff
         self.request = request
         self.static_page = static_page
-        self.file_list = self.static_page.file_structure.keys()
+        self.file_list = [f for f in self.static_page.file_structure.keys() if not f.endswith('$')]
         self.prefix = prefix
         self.filters = []
 
