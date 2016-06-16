@@ -18,14 +18,11 @@
     ${ch.form_item(form.kind, help=ch.help(form.kind))}
   % endif
   ${ch.form_item(form.name, maxlength=255)}
-  <div id="lot_area">
+  <div class="lot_area">
   ${ch.form_item(form.lot_name, maxlength=255)}
   ${ch.form_item(form.limit_wishes)}
   ${ch.form_item(form.entry_limit)}
   ${ch.form_item(form.description)}
-  ${ch.form_item(form.lotting_announce_datetime)}
-  ${ch.form_item(form.lotting_announce_timezone)}
-  ${ch.form_item(form.custom_timezone_label)}
   ${ch.form_item(form.auth_type)}
   </div>
   ${ch.form_item(form.start_at)}
@@ -34,6 +31,11 @@
   ${ch.form_item(form.end_at)}
   ${ch.form_item(form.end_day_prior_to_performance)}
   ${ch.form_item(form.end_time)}
+  <div class="lot_area">
+  ${ch.form_item(form.lotting_announce_datetime)}
+  ${ch.form_item(form.lotting_announce_timezone)}
+  ${ch.form_item(form.custom_timezone_label)}
+  </div>
   ${ch.form_item(form.account_id, style='width:710px')}
   ${ch.form_item(form.margin_ratio)}
   ${ch.form_item(form.refund_ratio)}
@@ -60,7 +62,7 @@
   <link rel="stylesheet" type="text/css" href="${request.static_url('altair.app.ticketing:static/css/chosen.css')}" />
   <script type="text/javascript">
     function showLotForm() {
-      $('#lot_area').show();
+      $('.lot_area').show();
       $('#not_lot_area').hide();
       $("label[for='start_at']").text("抽選受付開始日時");
       $("label[for='start_day_prior_to_performance']").text("抽選受付開始日時(抽選結果発表日までの日数)");
@@ -71,7 +73,7 @@
     }
 
     function hideLotForm() {
-      $('#lot_area').hide();
+      $('.lot_area').hide();
       $('#not_lot_area').show();
       $("label[for='start_at']").text("販売開始日時");
       $("label[for='start_day_prior_to_performance']").text("販売開始日時(公演開始までの日数)");
