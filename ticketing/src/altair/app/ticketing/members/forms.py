@@ -8,7 +8,7 @@ from wtforms import fields
 from wtforms import widgets
 from wtforms import validators
 from collections import namedtuple, OrderedDict
-
+from wtforms.validators import ValidationError
 from altair.app.ticketing.users.models import Member
 
 logger = logging.getLogger(__name__)
@@ -85,6 +85,8 @@ class MemberGroupChoicesForm(Form):
 
     def validate_member_id_list(form, field):
         field.data = json.loads(field.data)
+        if not field.data:
+            raise ValidationError("更新対象がありません")
 
     def configure(self, membergroups):
         self.membergroup_id.choices = [(m.id, m.name) for m in membergroups]

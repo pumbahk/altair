@@ -2,7 +2,6 @@
 
 import re
 import json
-from collections import OrderedDict
 from altair.formhelpers.form import OurForm
 from altair.formhelpers.validators import SwitchOptionalBase
 from altair.formhelpers.fields import OurTextField, OurIntegerField, OurDecimalField, OurSelectField, OurBooleanField, OurField
@@ -12,17 +11,17 @@ from wtforms.widgets import Input, CheckboxInput, RadioInput
 from wtforms.widgets.core import HTMLString, html_params
 from wtforms.fields.core import _unset_value
 from cgi import escape
+from .pdmp_validation import validate_checkout_payment_and_fees, validate_payment_delivery_combination, validate_issuing_start_time
 
 from altair.formhelpers import DateTimeField, Translations, Required, after1900
 from altair.app.ticketing.core.models import (
-    SalesSegment,
     PaymentMethod,
     DeliveryMethod,
     PaymentDeliveryMethodPair,
     FeeTypeEnum,
     DateCalculationBase,
     )
-from altair.app.ticketing.payments.plugins import CHECKOUT_PAYMENT_PLUGIN_ID
+
 from altair.saannotation import get_annotations_for
 
 from altair.app.ticketing.payments.api import get_payment_delivery_plugin_ids
@@ -440,7 +439,7 @@ class PaymentDeliveryMethodPairForm(OurForm):
 
     public = OurBooleanField(
         label=get_annotations_for(PaymentDeliveryMethodPair.public)['label'],
-        default=False,
+        default=True,
         widget=CheckboxInput(),
         )
 
@@ -601,57 +600,14 @@ class PaymentDeliveryMethodPairForm(OurForm):
         if form.data['delivery_fee_per_order'] and form.data[field.name]:
             raise ValidationError(_get_msg(u'副券'))
 
-
-    def validate(form):
+    def validate(form, pdmp = None, sales_segments = None):
         status = super(type(form), form).validate()
-        if status:
-            # 有効な決済方法と引取方法の組み合わせかをチェックする
-            if not PaymentDeliveryMethodPair.is_valid_pair(int(form.payment_method_id.data), int(form.delivery_method_id.data)):
-                error_message = u'有効な決済方法と引取方法の組み合わせではありません'
-                form.payment_method_id.errors.append(error_message)
-                form.delivery_method_id.errors.append(error_message)
-                status = False
-
-            # 楽天ID決済の場合は、決済手数料と特別手数料は設定不可
-            payment_method = PaymentMethod.query.filter_by(id=form.payment_method_id.data).first()
-            if payment_method and payment_method.payment_plugin_id == CHECKOUT_PAYMENT_PLUGIN_ID:
-                error_message = u'楽天ID決済では、決済手数料は設定できません'
-                if form.transaction_fee.data > 0:
-                    form.transaction_fee.errors.append(error_message)
-                    status = False
-
-            # コンビニ発券開始日時をチェックする
-            if form.id.data:
-                from altair.app.ticketing.events.sales_segments.forms import validate_issuing_start_at
-                from altair.app.ticketing.events.sales_segments.exceptions import IssuingStartAtOutTermException
-                pdmp = PaymentDeliveryMethodPair.query.filter_by(id=form.id.data).one()
-                for ss in pdmp.sales_segments:
-                    if not ss.performance:
-                        continue
-                    performance_start_on = ss.performance.start_on
-                    performance_end_on = ss.performance.end_on or ss.performance.start_on
-                    ss_start_at = ss.start_at
-                    ss_end_at = ss.end_at
-                    if ss.use_default_end_at:
-                        ss_end_at = ss.sales_segment_group.end_for_performance(ss.performance)
-                    try:
-                        validate_issuing_start_at(
-                            performance_start_on=performance_start_on,
-                            performance_end_on=performance_end_on,
-                            sales_segment_start_at=ss_start_at,
-                            sales_segment_end_at=ss_end_at,
-                            pdmp=pdmp,
-                            issuing_start_day_calculation_base=form.issuing_start_day_calculation_base.data,
-                            issuing_start_at=form.issuing_start_at.data,
-                            issuing_interval_days=form.issuing_interval_days.data
-                            )
-                    except IssuingStartAtOutTermException as e:
-                        if form.issuing_start_at.data:
-                            form.issuing_start_at.errors.append(e.message)
-                        else:
-                            form.issuing_interval_days.errors.append(e.message)
-                        status = False
-                        break
+        status = validate_payment_delivery_combination(status, form) and \
+                 validate_checkout_payment_and_fees(status, form) and \
+                 validate_issuing_start_time(status = status,
+                                             form = form,
+                                             pdmp = pdmp,
+                                             sales_segments = sales_segments)
         return status
 
     def default_values_for_pdmp(self, payment_method_id, delivery_method_id):
@@ -751,6 +707,104 @@ class PaymentDeliveryMethodPairForm(OurForm):
             default_form_state['issuing_end_in_days_readonly'] = True
         elif payment_plugin_id == RESERVE_NUMBER_PAYMENT_PLUGIN_ID and delivery_plugin_id == RESERVE_NUMBER_DELIVERY_PLUGIN_ID:
             """決済方法：窓口支払　引取方法：窓口受取"""
+            # 支払期日
+            default_form_state['payment_period_days_two_readonly'] = True
+            default_form_state['payment_period_days_readonly'] = True
+            # コンビニ発券開始日時
+            default_form_state['issuing_interval_days_two_readonly'] = True
+            default_form_state['issuing_interval_days_readonly'] = True
+            # コンビニ発券期限日時
+            default_form_state['issuing_end_in_days_two_readonly'] = True
+            default_form_state['issuing_end_in_days_readonly'] = True
+        elif payment_plugin_id == MULTICHECKOUT_PAYMENT_PLUGIN_ID and delivery_plugin_id == RESERVE_NUMBER_DELIVERY_PLUGIN_ID:
+            """決済方法：クレジットカード　引取方法：窓口受取"""
+            # 選択不可期間
+            formdata['unavailable_period_days'] = 0
+            # 支払期日
+            default_form_state['payment_period_days_two_readonly'] = True
+            default_form_state['payment_period_days_readonly'] = True
+            # コンビニ発券開始日時
+            default_form_state['issuing_interval_days_two_readonly'] = True
+            default_form_state['issuing_interval_days_readonly'] = True
+            # コンビニ発券期限日時
+            default_form_state['issuing_end_in_days_two_readonly'] = True
+            default_form_state['issuing_end_in_days_readonly'] = True
+        elif (payment_plugin_id == SEJ_PAYMENT_PLUGIN_ID or payment_plugin_id == FAMIPORT_PAYMENT_PLUGIN_ID) and delivery_plugin_id == RESERVE_NUMBER_DELIVERY_PLUGIN_ID:
+            """決済方法：コンビニ　引取方法：窓口受取"""
+            # 選択不可期間
+            formdata['unavailable_period_days'] = 4
+            # コンビニ発券開始日時
+            default_form_state['issuing_interval_days_two_readonly'] = True
+            default_form_state['issuing_interval_days_readonly'] = True
+            # コンビニ発券期限日時
+            default_form_state['issuing_end_in_days_two_readonly'] = True
+            default_form_state['issuing_end_in_days_readonly'] = True
+        elif payment_plugin_id == CHECKOUT_PAYMENT_PLUGIN_ID and delivery_plugin_id == RESERVE_NUMBER_DELIVERY_PLUGIN_ID:
+            """決済方法：楽天ID　引取方法：窓口受取"""
+            # 選択不可期間
+            formdata['unavailable_period_days'] = 0
+            # 支払期日
+            default_form_state['payment_period_days_two_readonly'] = True
+            default_form_state['payment_period_days_readonly'] = True
+            # コンビニ発券開始日時
+            default_form_state['issuing_interval_days_two_readonly'] = True
+            default_form_state['issuing_interval_days_readonly'] = True
+            # コンビニ発券期限日時
+            default_form_state['issuing_end_in_days_two_readonly'] = True
+            default_form_state['issuing_end_in_days_readonly'] = True
+        elif payment_plugin_id == CHECKOUT_PAYMENT_PLUGIN_ID and delivery_plugin_id == SHIPPING_DELIVERY_PLUGIN_ID:
+            """決済方法：楽天ID　引取方法：配送"""
+            # 選択不可期間
+            formdata['unavailable_period_days'] = 14
+            # 支払期日
+            default_form_state['payment_period_days_two_readonly'] = True
+            default_form_state['payment_period_days_readonly'] = True
+            # コンビニ発券開始日時
+            default_form_state['issuing_interval_days_two_readonly'] = True
+            default_form_state['issuing_interval_days_readonly'] = True
+            # コンビニ発券期限日時
+            default_form_state['issuing_end_in_days_two_readonly'] = True
+            default_form_state['issuing_end_in_days_readonly'] = True
+        elif payment_plugin_id == CHECKOUT_PAYMENT_PLUGIN_ID and delivery_plugin_id == QR_DELIVERY_PLUGIN_ID:
+            """決済方法：楽天ID　引取方法：QRコード"""
+            # 選択不可期間
+            formdata['unavailable_period_days'] = 0
+            # 支払期日
+            default_form_state['payment_period_days_two_readonly'] = True
+            default_form_state['payment_period_days_readonly'] = True
+            # コンビニ発券開始日時
+            default_form_state['issuing_interval_days_two_readonly'] = True
+            default_form_state['issuing_interval_days_readonly'] = True
+            # コンビニ発券期限日時
+            default_form_state['issuing_end_in_days_two_readonly'] = True
+            default_form_state['issuing_end_in_days_readonly'] = True
+        elif payment_plugin_id == RESERVE_NUMBER_PAYMENT_PLUGIN_ID and (delivery_plugin_id == SEJ_DELIVERY_PLUGIN_ID or delivery_plugin_id == FAMIPORT_DELIVERY_PLUGIN_ID):
+            """決済方法：窓口支払　引取方法：コンビニ"""
+            # 選択不可期間
+            formdata['unavailable_period_days'] = 4
+            # 支払期日
+            default_form_state['payment_period_days_two_readonly'] = True
+            default_form_state['payment_period_days_readonly'] = True
+            # コンビニ発券期限日時
+            default_form_state['issuing_end_in_days_selected_choice'] = DateCalculationBase.PerformanceEndDate.v
+            formdata['issuing_end_in_days'] = 30
+        elif payment_plugin_id == RESERVE_NUMBER_PAYMENT_PLUGIN_ID and delivery_plugin_id == SHIPPING_DELIVERY_PLUGIN_ID:
+            """決済方法：窓口支払　引取方法：配送"""
+            # 選択不可期間
+            formdata['unavailable_period_days'] = 14
+            # 支払期日
+            default_form_state['payment_period_days_two_readonly'] = True
+            default_form_state['payment_period_days_readonly'] = True
+            # コンビニ発券開始日時
+            default_form_state['issuing_interval_days_two_readonly'] = True
+            default_form_state['issuing_interval_days_readonly'] = True
+            # コンビニ発券期限日時
+            default_form_state['issuing_end_in_days_two_readonly'] = True
+            default_form_state['issuing_end_in_days_readonly'] = True
+        elif payment_plugin_id == RESERVE_NUMBER_PAYMENT_PLUGIN_ID and delivery_plugin_id == QR_DELIVERY_PLUGIN_ID:
+            """決済方法：窓口支払　引取方法：QRコード"""
+            # 選択不可期間
+            formdata['unavailable_period_days'] = 0
             # 支払期日
             default_form_state['payment_period_days_two_readonly'] = True
             default_form_state['payment_period_days_readonly'] = True

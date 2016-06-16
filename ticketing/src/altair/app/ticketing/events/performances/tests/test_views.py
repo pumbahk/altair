@@ -40,7 +40,7 @@ class PerformanceViewTests(unittest.TestCase):
             Membership,
             MemberGroup,
             )
-        organization = Organization(name=u'xxx', short_name=u'xxx', code=u'xX')
+        organization = Organization(name=u'xxx', short_name=u'xxx', code=u'xX', id=15)
         event = Event(organization=organization, title=u'event')
         membership = Membership(organization=organization, name='membership')
         membergroup = MemberGroup(membership=membership, name='membergroup')
@@ -67,11 +67,13 @@ class PerformanceViewTests(unittest.TestCase):
             'start_on.month': '5',
             'start_on.day': '1',
             'venue_id': 1,
+            'account_id': 15,
         })
         context = DummyResource(
             request=request,
             event=event,
-            user=DummyModel(organization_id=organization.id)
+            user=DummyModel(organization_id=organization.id),
+            organization=organization,
             )
         target = self._makeOne(context, request)
         retval = target.new_post()

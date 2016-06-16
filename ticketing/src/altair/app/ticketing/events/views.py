@@ -137,7 +137,7 @@ class Events(BaseView):
 
         famiport_reflect_button_status = {}
         for event in events:
-            famiport_reflect_button_status[event.id] = get_famiport_reflect_button_status(slave_session, event)
+            famiport_reflect_button_status[event.id] = get_famiport_reflect_button_status(self.request, slave_session, event)
 
         return {
             'form_search': form_search,
@@ -198,7 +198,11 @@ class Events(BaseView):
             performances = performances.filter(PerformanceSetting.visible == True)
         performances = performances.all()
 
-        famiport_reflect_button_status = get_famiport_reflect_button_status(slave_session, event)
+        famiport_reflect_button_status = get_famiport_reflect_button_status(self.request, slave_session, event)
+        from .famiport_helpers import get_famiport_reflection_warnings
+        warnings = {}
+        for p in event.performances:
+            warnings.update(get_famiport_reflection_warnings(self.request, slave_session, p))
 
         return {
             'organization_setting':self.context.organization.setting,
@@ -206,13 +210,14 @@ class Events(BaseView):
             'performances':performances,
             'fm_performance_ids': get_famiport_performance_ids(slave_session, performances),
             'famiport_reflect_button_status': famiport_reflect_button_status,
+            'famiport_reflect_warnings': warnings,
             'seat_stock_types':slave_session.query(StockType).filter_by(event_id=event_id, type=StockTypeEnum.Seat.v).order_by(StockType.display_order).all(),
             'non_seat_stock_types':slave_session.query(StockType).filter_by(event_id=event_id, type=StockTypeEnum.Other.v).order_by(StockType.display_order).all(),
             'cart_url': cart_url,
             'agreement_url': agreement_url,
             "cart_now_cart_url": get_cart_now_url_builder(self.request).build(self.request, cart_url, event.id),
             'form':EventForm(context=self.context),
-            'form_performance':PerformanceForm(),
+            'form_performance':PerformanceForm(context=self.context),
             'form_stock_type':StockTypeForm(event_id=event_id),
             'form_stock_holder':StockHolderForm(organization_id=self.context.user.organization_id, event_id=event_id)
         }

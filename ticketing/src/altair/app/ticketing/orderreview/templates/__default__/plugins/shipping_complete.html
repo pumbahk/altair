@@ -10,7 +10,7 @@
         <dt>配送状況</dt>
         <dd>
           % if order.delivered_at:
-            ${h.safe_strftime(order.delivered_at)} 配送
+            ${h.japanese_date(order.delivered_at)} 配送
           % else:
            未配送
           % endif

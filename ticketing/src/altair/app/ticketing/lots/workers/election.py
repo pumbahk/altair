@@ -80,10 +80,10 @@ class ElectionWorkerResource(object):
     @reify
     def work(self):
         return lot_models.LotElectWork.query.filter(
-            lot_models.LotElectWork.lot_entry_no==self.entry_no
+            lot_models.LotElectWork.lot_entry_no == self.entry_no
         ).filter(
-            lot_models.LotElectWork.wish_order==self.wish_order
-        ).one()
+            lot_models.LotElectWork.wish_order == self.wish_order
+        ).first()
 
 
 def elect_lot_wish(request, wish, order=None):
@@ -122,6 +122,7 @@ def elect_lot_wish(request, wish, order=None):
 
     return order
 
+
 @task_config(root_factory=ElectionWorkerResource,
              name="lots.election",
              consumer="lots.election",
@@ -129,6 +130,10 @@ def elect_lot_wish(request, wish, order=None):
              timeout=600)
 def elect_lots_task(context, request):
     with named_transaction(request, "lot_work_history") as s:
+        if not context.work:
+            logger.info("nothing electing task: lot_id={lot_id}, entry_no={entry_no}".format(lot_id=context.lot.id, entry_no=context.entry_no))
+            return
+
         history = lot_models.LotWorkHistory(
             lot_id=context.lot.id, # 別トランザクションなのでID指定
             entry_no=context.work.lot_entry_no,

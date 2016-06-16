@@ -67,6 +67,7 @@
 <%def name="form_item(item, help=None, label=True, error_next_line=False, **options)">
   <% from wtforms.widgets import CheckboxInput %>
   <% from altair.formhelpers import CheckboxMultipleSelect %>
+  <% from altair.formhelpers.widgets import OurDateTimeWidget %>
   <% hide_on_new = getattr(item, 'hide_on_new', False) %>
   % if not getattr(getattr(item, 'form', None), 'new_form', False) or not hide_on_new:
   <% if hide_on_new: options['data-hide-on-new'] = 'hide-on-new' %>
@@ -139,6 +140,18 @@
         %endif
         ${validate_errors(item)}
       </div>
+
+      <% date_time = options.pop('date_time', None) %>
+      % if isinstance(item.widget, OurDateTimeWidget) and date_time:
+        <script>
+        $('#${item.id}\\.year').val(${date_time.strftime("%Y")});
+        $('#${item.id}\\.month').val(${date_time.strftime("%m")});
+        $('#${item.id}\\.day').val(${date_time.strftime("%d")});
+        $('#${item.id}\\.hour').val(${date_time.strftime("%H")});
+        $('#${item.id}\\.minute').val(${date_time.strftime("%M")});
+        </script>
+      % endif
+
     % endif
   </div>
   % endif

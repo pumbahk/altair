@@ -17,7 +17,8 @@ from ..models import (
     FamiPortTicket,
     FamiPortRefund,
     FamiPortRefundEntry,
-    FamiPortShop
+    FamiPortShop,
+    FamiPortVenue
 )
 from .models import FamiPortOperator
 
@@ -85,7 +86,8 @@ def lookup_performance_by_searchform_data(request, formdata=None):
 
     if formdata.get('venue_name'):
         pattern = u'%{}%'.format(formdata.get('venue_name'))
-        query = query.filter(FamiPortEvent.venue.like(pattern))
+        query = query.join(FamiPortVenue, FamiPortEvent.venue_id == FamiPortVenue.id)\
+                     .filter(FamiPortVenue.name.like(pattern))
 
     if formdata.get('performance_from'):
         req_from = formdata.get('performance_from') + ' 00:00:00'

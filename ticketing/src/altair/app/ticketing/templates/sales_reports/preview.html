@@ -2,6 +2,8 @@
 <%namespace file="/common/helpers.html" name="ch" />
 
 <script type="text/javascript">
+  $(window).load(function () { date_auto_fill() });
+
   function send_report(){
     var params = $('form').serialize();
     $(location).attr('href', '/events/sales_reports/send_mail/?' + params);
