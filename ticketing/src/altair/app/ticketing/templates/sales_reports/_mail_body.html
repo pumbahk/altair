@@ -117,13 +117,13 @@
   <tr>
     <td style="padding: 5px;" colspan="4">合計</td>
     <td style="padding: 5px; text-align: right;">${vh.number(total.stock_quantity) or ''}</td>
-    <td style="padding: 5px; text-align: right;">${vh.number(total.vacant_quantity) or ''}</td>
   % if need_total:
     % if not reporter.is_simple_type():
     <td style="padding: 5px; text-align: right;">${vh.number(total.total_paid_quantity + total.total_unpaid_quantity) or ''}</td>
     % endif
     <td style="padding: 5px; text-align: right;">${vh.number(total.total_paid_quantity) or ''}</td>
     <td style="padding: 5px; text-align: right;">${vh.number(total.total_unpaid_quantity) or ''}</td>
+    <td style="padding: 5px; text-align: right;">${vh.number(total.vacant_quantity) or ''}</td>
     <td style="padding: 5px; text-align: right;">${vh.price(total.total_sum_amount) or ''}</td>
   % endif
   % if form.limited_from.data or form.limited_to.data:
