@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import logging
 from datetime import timedelta
 from altair.app.ticketing.famiport.exc import FamiPortAPINotFoundError
 from altair.app.ticketing.famiport.userside_models import AltairFamiPortPerformance, AltairFamiPortReflectionStatus
@@ -7,6 +8,7 @@ from altair.app.ticketing.payments import plugins
 from altair.app.ticketing.famiport import userside_api as fm_userside_api
 from altair.app.ticketing.famiport import api as fm_api
 
+logger = logging.getLogger(__name__)
 
 def has_famiport_pdmp(sales_segment):
     for pdmp in sales_segment.payment_delivery_method_pairs:
