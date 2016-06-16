@@ -43,9 +43,11 @@
   ${ch.form_item(form.max_quantity_per_user)}
   ${ch.form_item(form.max_product_quatity)}
   ${ch.form_item(form.order_limit)}
+  <div id="not_lot_area">
   ${ch.form_item(form.seat_choice)}
   ${ch.form_item(form.display_seat_no)}
   ${ch.form_item(form.public)}
+  </div>
   ${ch.form_item(form.disp_orderreview)}
   ${ch.form_item(form.disp_agreement)}
   ${ch.form_item(form.reporting)}
@@ -57,6 +59,28 @@
   <script src="${request.static_url('altair.app.ticketing:static/js/jquery.chosen.js')}"></script>
   <link rel="stylesheet" type="text/css" href="${request.static_url('altair.app.ticketing:static/css/chosen.css')}" />
   <script type="text/javascript">
+    function showLotForm() {
+      $('#lot_area').show();
+      $('#not_lot_area').hide();
+      $("label[for='start_at']").text("抽選受付開始日時");
+      $("label[for='start_day_prior_to_performance']").text("抽選受付開始日時(抽選結果発表日までの日数)");
+      $("label[for='start_time']").text("抽選受付開始日時(時刻)");
+      $("label[for='end_at']").text("抽選受付終了日時");
+      $("label[for='end_day_prior_to_performance']").text("抽選受付終了日時(抽選結果発表日までの日数)");
+      $("label[for='end_time']").text("抽選受付終了日時(時刻)");
+    }
+
+    function hideLotForm() {
+      $('#lot_area').hide();
+      $('#not_lot_area').show();
+      $("label[for='start_at']").text("販売開始日時");
+      $("label[for='start_day_prior_to_performance']").text("販売開始日時(公演開始までの日数)");
+      $("label[for='start_time']").text("販売開始日時(時刻)");
+      $("label[for='end_at']").text("販売終了日時");
+      $("label[for='end_day_prior_to_performance']").text("販売終了日時(公演開始までの日数)");
+      $("label[for='end_time']").text("販売終了日時(時刻)");
+    }
+
     (function(form) {
       var acc = $(".form-horizontal *[name=account_id]");
       if (acc) {
@@ -91,13 +115,21 @@
       form.find('select[name="kind"]').change(function() {
         // 抽選入力箇所の表示切替
         if ($('#lot_form_flag').val() == "True") {
-          if (form.find('select[name="kind"]').val() == "early_lottery" || form.find('select[name="kind"]').val() == "added_lottery" || form.find('select[name="kind"]').val() == "first_lottery") {
-            $('#lot_area').show();
+          if (form.find('select[name="kind"]').val().match(/lottery/)) {
+            showLotForm();
           } else {
-            $('#lot_area').hide();
+            hideLotForm();
           }
         } else {
+          // 更新の抽選の場合
           $('#lot_area').hide();
+          $('#not_lot_area').hide();
+          $("label[for='start_at']").text("販売開始日時");
+          $("label[for='start_day_prior_to_performance']").text("販売開始日時(公演開始までの日数)");
+          $("label[for='start_time']").text("販売開始日時(時刻)");
+          $("label[for='end_at']").text("販売終了日時");
+          $("label[for='end_day_prior_to_performance']").text("販売終了日時(公演開始までの日数)");
+          $("label[for='end_time']").text("販売終了日時(時刻)");
         }
 
         var public = form.find('#public');
