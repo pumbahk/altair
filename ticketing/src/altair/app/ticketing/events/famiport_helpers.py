@@ -53,6 +53,9 @@ def get_famiport_reflection_warnings(request, session, performance):
             warnings.add(u'公演未連携')
         else:
             # 連携不足
+            # famiportDBへの反映が未処理の可能性あり
+            if altair_famiport_performance.status != AltairFamiPortReflectionStatus.Reflected.value:
+                warnings.add(u'反映ボタン未押下')
             # 連携されるべき販売区分が不足していないかチェック
             ss_need_reflection = [ss for ss in performance.sales_segments if has_famiport_pdmp(ss)]
             altair_famiport_sales_segment_pairs = altair_famiport_performance.altair_famiport_sales_segment_pairs
