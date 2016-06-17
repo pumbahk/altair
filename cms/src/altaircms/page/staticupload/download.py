@@ -72,8 +72,11 @@ class S3Downloader(object):
     def __init__(self, request, static_page, prefix=""): ## slackoff
         self.request = request
         self.static_page = static_page
-        # データベースの記録にあるファイルをリストに入れる。$をついてるやつはフォルダのため入れない。
-        self.file_list = [f for f in self.static_page.file_structure.keys() if not f.endswith('$')]
+        # データベースの記録にあるファイルをリストに入れる。
+        # $がついてるやつはフォルダのため入れない。
+        # .originalがついてるやつはバックアップのため入れない。
+        self.file_list = [f for f in self.static_page.file_structure.keys()
+                          if not f.endswith('$') and not f.endswith('.original')]
         self.prefix = prefix
         self.filters = []
 
