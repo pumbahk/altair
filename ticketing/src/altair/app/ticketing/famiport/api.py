@@ -1016,4 +1016,17 @@ def get_genre_2_list(request):
         logger.exception(u'internal error')
         raise FamiPortAPIError('internal error')
 
+@user_api
+def invalidate_famiport_event(request, userside_id, now=None):
+    try:
+        if now is None:
+            now = datetime.now()
+        session = get_db_session(request, 'famiport')
 
+        internal.invalidate_famiport_event(session, userside_id, now)
+        session.commit()
+    except NoResultFound:
+        raise FamiPortAPINotFoundError('no such famiport_event for userside_id: {}'.userside_id)
+    except:
+        logger.exception(u'internal error')
+        raise FamiPortAPIError('internal error')

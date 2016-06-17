@@ -53,6 +53,9 @@ def get_famiport_reflection_warnings(request, session, performance):
             warnings.add(u'公演未連携')
         else:
             # 連携不足
+            # famiportDBへの反映が未処理の可能性あり
+            if altair_famiport_performance.status != AltairFamiPortReflectionStatus.Reflected.value:
+                warnings.add(u'反映ボタン未押下')
             # 連携されるべき販売区分が不足していないかチェック
             ss_need_reflection = [ss for ss in performance.sales_segments if has_famiport_pdmp(ss)]
             altair_famiport_sales_segment_pairs = altair_famiport_performance.altair_famiport_sales_segment_pairs
@@ -76,7 +79,7 @@ def get_famiport_reflection_warnings(request, session, performance):
             # 会場が変更されていないかチェック
             altair_famiport_venue = altair_famiport_performance.altair_famiport_performance_group.altair_famiport_venue
             if performance.venue.site.siteprofile_id != altair_famiport_venue.siteprofile_id or \
-                performance.venue.name != altair_famiport_venue.name:
+                performance.venue.name != altair_famiport_venue.venue_name:
                 warnings.add(u'会場相違')
 
             # 販売区分チェック
