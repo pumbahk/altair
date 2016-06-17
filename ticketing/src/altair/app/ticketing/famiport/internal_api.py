@@ -784,3 +784,10 @@ def refund_order_by_order_no(
     for famiport_refund_entry in sorted(famiport_refund_entries_to_add, key=lambda famiport_refund_entry: famiport_refund_entry.famiport_ticket_id):
         session.add(famiport_refund_entry)
     famiport_refund.last_serial = serial
+
+def invalidate_famiport_event(session, userside_id, now):
+    famiport_event = session.query(FamiPortEvent)\
+        .filter(FamiPortEvent.userside_id == userside_id)\
+        .filter(FamiPortEvent.invalidated_at == None)\
+        .one()
+    famiport_event.invalidated_at = now
