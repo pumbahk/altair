@@ -13,7 +13,18 @@ from altair.mq import get_publisher
 from altair.app.ticketing.core.models import Site, Venue, Event, Performance, SalesSegment, SalesSegment_PaymentDeliveryMethodPair, PaymentDeliveryMethodPair, FamiPortTenant, PaymentMethod, DeliveryMethod
 from altair.app.ticketing.famiport.models import FamiPortPrefecture, FamiPortPerformanceType, FamiPortSalesChannel
 from altair.app.ticketing.famiport.exc import FamiPortAPIError, FamiPortAPINotFoundError, FamiPortVenueCreateError
-from altair.app.ticketing.famiport.api import get_famiport_venue_by_userside_id, get_famiport_venue_by_userside_id_or_name, get_famiport_venue_by_name, resolve_famiport_prefecture_by_name, create_or_get_famiport_venue, create_or_update_famiport_venue, create_or_update_famiport_event, create_or_update_famiport_performance, create_or_update_famiport_sales_segment
+from altair.app.ticketing.famiport.api import (
+    get_famiport_venue_by_userside_id,
+    get_famiport_venue_by_userside_id_or_name,
+    get_famiport_venue_by_name,
+    resolve_famiport_prefecture_by_name,
+    create_or_get_famiport_venue,
+    create_or_update_famiport_venue,
+    create_or_update_famiport_event,
+    create_or_update_famiport_performance,
+    create_or_update_famiport_sales_segment,
+    invalidate_famiport_event,
+)
 from altair.app.ticketing.famiport.userside_models import (
     AltairFamiPortVenue,
     AltairFamiPortVenue_Site,
@@ -202,6 +213,21 @@ def submit_to_downstream_sync(request, session, tenant, event):
                 update_existing=True
                 )
             altair_famiport_performance_group.altair_famiport_venue.famiport_venue_id = result['venue_id']
+        # 連携済みのAltairFamiPortPerformanceGroup配下に公演がない場合はFamiPortEventを無効化する
+        # TODO:FamiPortPerformance, FamiPortSalesSegmentも合わせて無効化した方が良い
+        if not altair_famiport_performance_group.altair_famiport_performances:
+            if altair_famiport_performance_group.last_reflected_at is not None:
+                try:
+                    invalidate_famiport_event(request, userside_id=altair_famiport_performance_group.id, now=now)
+                    altair_famiport_performance_group.deleted_at = now
+                except FamiPortAPINotFoundError:
+                    logger.error(u'FamiPortEvent was not found for userside_id={}'.format(altair_famiport_performance_group.id))
+                except FamiPortAPIError:
+                    logger.error(u'error occured while invalidating AltairFamiPortPerformanceGroup(altair_famiport_performance_group_id: {})'.format(altair_famiport_performance_group.id))
+            else:
+                # famiportDBに未反映のデータはそのままdeleteする
+                altair_famiport_performance_group.deleted_at = now
+            continue
         if altair_famiport_performance_group.status != AltairFamiPortReflectionStatus.AwaitingReflection.value:
             logger.info('AltairFamiPortPerformanceGroup(id=%ld) is not marked AwaitingReflection; skipped' % altair_famiport_performance_group.id)
             continue
