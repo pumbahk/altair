@@ -2098,7 +2098,6 @@ class OrdersReserveView(OrderBaseView):
         post_data = self.request.POST
         with_enqueue = post_data.get('with_enqueue', False)
         with_cover = post_data.get('with_cover', False)
-        import ipdb;ipdb.set_trace()
 
         try:
             # create order
