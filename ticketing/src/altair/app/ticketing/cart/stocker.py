@@ -76,7 +76,7 @@ class Stocker(object):
             if status.quantity < quantity:
                 raise NotEnoughStockException(status.stock, status.quantity, quantity)
             logger.info('take stock (id=%s, quantity=%d) - %d' % (status.stock_id, status.quantity, quantity))
-            status.quantity -= quantity
+            status.quantity = StockStatus.quantity - quantity
             results.append((status, quantity))
         return results
 
