@@ -74,6 +74,10 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
     <input id="sales-counter-button" type="button" class="btn btn-warning" style="vertical-align: baseline; font-size: 100%;" value="当日窓口発券モードにする" />
     <div id="sales-counter-toolbar" style="display:none">
       <label style="display:inline-block">
+        表紙印刷の使用
+        <input type="checkbox" id="useWithCover" style="vertical-align: baseline;" />
+      </label>
+      <label style="display:inline-block">
         ページ様式
         <select id="pageFormat" style="width:13em;vertical-align: baseline;"></select>
       </label>
@@ -320,6 +324,11 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
     var param = build_form_params($form);
     if (window.ticketPrinterService) {
       param['with_enqueue'] = true;
+      // add printer settings
+      if ($('#useWithCover').is(":checked")) {
+        param['with_cover'] = $('#useWithCover').is(":checked")
+      }
+      param['ticket_format_id'] = $('#ticketFormat').val();
     }
     $.ajax({
       type: 'post',
@@ -531,6 +540,7 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
       var currentPrintService = $printService.val();
       var currentTicketFormat = formats.ticket_formats[$ticketFormat.val()];
       var currentPageFormat = formats.page_formats[$pageFormat.val()];
+      var with_cover = $('#useWithCover').is(":checked");
       if (!currentPrintService) {
           alert('no print service');
           return;
@@ -547,7 +557,8 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
               "peek_url": location.origin + endpoints["peek"],
               "dequeue_url": location.origin + endpoints["dequeue"],
               "cookie": cookie,
-              "order_id": order_id
+              "order_id": order_id,
+              "with_cover": with_cover
           }),
           dataType: 'json'
         }).done(function(s) {
