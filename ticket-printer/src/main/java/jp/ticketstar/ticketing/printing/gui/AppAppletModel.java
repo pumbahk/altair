@@ -74,6 +74,9 @@ public class AppAppletModel implements AppModel {
             this.pageFormat = this.pageFormats.size() > 0 ? this.pageFormats.get(0): null;
             propertyChangeSupport.firePropertyChange("pageFormat", prevPageFormat, pageFormat);
         }
+        {
+            final Boolean preCoverStatus = this.coverStatus;
+            propertyChangeSupport.firePropertyChange("coverStatus", preCoverStatus, coverStatus);
     }
     
     /* (non-Javadoc)

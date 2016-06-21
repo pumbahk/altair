@@ -302,6 +302,10 @@ class AppAppletServiceImpl extends BasicAppService {
     public void addListenerForTicketFormat(PropertyChangeListener listener) {
        ((AppAppletModel)model).addPropertyChangeListener("ticketFormat", listener);
     }
+    
+    public void addLictenerForSetWithCover(PropertyChangeListener listener) {
+       ((AppAppletModel)model).addPropertyChangeListener("coverStatus", listener);
+    }
 
     public void filterByOrderId(String orderId) {
         logger.entering(this.getClass().getName(), "filterByOrderId");
