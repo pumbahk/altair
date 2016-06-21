@@ -650,7 +650,7 @@ def create_lot(event, form, sales_segment_group=None, lot_name=None):
     return new_lot
 
 
-def _create_lot_products(sales_segment_group, lot, exclude_performances=[]):
+def create_lot_products(sales_segment_group, lot, exclude_performances=[]):
     exclude_sales_segments_ids = []
     if exclude_performances:
         exclude_sales_segments = SalesSegment.query.filter(SalesSegment.performance_id.in_(exclude_performances)).all()
@@ -671,18 +671,15 @@ def _create_lot_products(sales_segment_group, lot, exclude_performances=[]):
 def copy_lot(event, form, sales_segment_group, lot_name, exclude_performances):
     lot = create_lot(event, form, sales_segment_group, lot_name)
     DBSession.add(lot)
-    _create_lot_products(sales_segment_group, lot, exclude_performances)
+    create_lot_products(sales_segment_group, lot, exclude_performances)
 
 
 def copy_lots_between_sales_segmnent(sales_segment, new_sales_segment):
-    # 動作未確認
     lot = Lot.query.filter(Lot.sales_segment_id == sales_segment.id).first()
     sales_segment_group = sales_segment.sales_segment_group
     new_sales_segment_group = sales_segment.sales_segment_group
-    new_lot = _create_lot_from_object(sales_segment_group.event, lot)
-    DBSession.add(new_lot)
     _copy_lot_sales_segment_between_sales_segment_group(sales_segment_group, new_sales_segment_group, new_lot)
-    _create_lot_products(new_sales_segment_group, new_lot)
+    create_lot_products(new_sales_segment_group, new_lot)
 
 
 def copy_lots_between_sales_segmnent_group(sales_segment_group, new_sales_segment_group):
@@ -692,7 +689,7 @@ def copy_lots_between_sales_segmnent_group(sales_segment_group, new_sales_segmen
             new_lot = _create_lot_from_object(sales_segment_group.event, lot)
             DBSession.add(new_lot)
             _copy_lot_sales_segment_between_sales_segment_group(sales_segment_group, new_sales_segment_group, new_lot)
-            _create_lot_products(new_sales_segment_group, new_lot)
+            create_lot_products(new_sales_segment_group, new_lot)
 
 
 def copy_lots_between_performance(performance, new_performance):

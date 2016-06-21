@@ -27,7 +27,7 @@ from altair.app.ticketing.memberships.forms import MemberGroupForm
 from altair.app.ticketing.users.models import MemberGroup, Membership
 from altair.app.ticketing.events.sales_segments.resources import SalesSegmentAccessor
 from altair.app.ticketing.lots.models import Lot
-from altair.app.ticketing.lots.api import create_lot, copy_lot, copy_lots_between_sales_segmnent_group
+from altair.app.ticketing.lots.api import create_lot, copy_lot, copy_lots_between_sales_segmnent_group, copy_lots_between_sales_segmnent, create_lot_products
 
 from .forms import SalesSegmentGroupForm, SalesSegmentGroupAndLotForm, MemberGroupToSalesSegmentForm
 
@@ -244,6 +244,8 @@ class SalesSegmentGroups(BaseView, SalesSegmentViewHelperMixin):
             if sales_segment_group.is_lottery() and not sales_segment_group.get_lots():
                 lot = create_lot(sales_segment_group.event, f, sales_segment_group, f.lot_name.data)
                 DBSession.add(lot)
+                create_lot_products(sales_segment_group, lot)
+
 
         self.request.session.flash(u'販売区分グループを保存しました')
         return None
