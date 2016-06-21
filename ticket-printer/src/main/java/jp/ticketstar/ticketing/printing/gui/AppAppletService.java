@@ -170,8 +170,8 @@ public class AppAppletService implements StandardAppService {
         impl.setWithCover(status);
     }
 
-    public void addLictenerForSetWithCover(PropertyChangeListener listener) {
-        impl.addLictenerForSetWithCover(listener);
+    public void addListenerForSetWithCover(PropertyChangeListener listener) {
+        impl.addListenerForSetWithCover(listener);
     }
 
     public void setPrintService(PrintService printService) {

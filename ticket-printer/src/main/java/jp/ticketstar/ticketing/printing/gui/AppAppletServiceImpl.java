@@ -109,7 +109,7 @@ class AppAppletServiceImpl extends BasicAppService {
                         }
                         writer.endArray();
                     }
-                    writer.name("printWithCover");
+                    writer.name("with_cover");
                     writer.value(coverStatus);
                     writer.endObject();
                     writer.flush();
@@ -133,6 +133,7 @@ class AppAppletServiceImpl extends BasicAppService {
         final String orderId = ((AppAppletModel)model).getOrderId();
         final TicketFormat ticketFormat = ((AppAppletModel)model).getTicketFormat();
         final OurPageFormat pageFormat = model.getPageFormat();
+        final Boolean coverStatus = ((AppAppletModel)model).getCoverStatus();
         final List<String> queueIds = ((AppAppletModel)model).getQueueIds();
         invokeWhenDocumentReady(new Runnable() {
             @Override
@@ -293,9 +294,13 @@ class AppAppletServiceImpl extends BasicAppService {
         logger.exiting(this.getClass().getName(), "setTicketFormat");
     }
     
+    public Boolean getCoverStatus() {
+    	return ((AppAppletModel)model).getCoverStatus();
+    }
+    
     public void setWithCover(Boolean status) {
         logger.entering(this.getClass().getName(), "setWithCover");
-        ((AppAppletModel)model).setCoverStatus(status);
+        ((AppAppletModel)model).setWithCover(status);
         logger.exiting(this.getClass().getName(), "setWithCover");
     }
 
@@ -303,7 +308,7 @@ class AppAppletServiceImpl extends BasicAppService {
        ((AppAppletModel)model).addPropertyChangeListener("ticketFormat", listener);
     }
     
-    public void addLictenerForSetWithCover(PropertyChangeListener listener) {
+    public void addListenerForSetWithCover(PropertyChangeListener listener) {
        ((AppAppletModel)model).addPropertyChangeListener("coverStatus", listener);
     }
 

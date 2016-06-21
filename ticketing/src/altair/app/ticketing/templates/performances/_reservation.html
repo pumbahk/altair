@@ -177,7 +177,7 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
 
   var callbackName = ${json.dumps(callback_name)|n};
   var appletCodeBase = ${json.dumps(request.application_url)|n};
-  var appletArchive = ${json.dumps(request.static_url('altair.app.ticketing:static/printing-0.0.1-jar-with-dependencies.jar'))|n};
+  var appletArchive = ${json.dumps(request.static_url('altair.app.ticketing:static/printing-0.0.4-jar-with-dependencies.jar'))|n};
   var appletEndpoints = ${json.dumps(endpoints_json)|n};
   var endpoints = ${endpoints_json|n};
   var cookie = ${json.dumps(request.headers.get('cookie'))|n};
@@ -324,6 +324,11 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
     var param = build_form_params($form);
     if (window.ticketPrinterService) {
       param['with_enqueue'] = true;
+      console.log('completeOrder')
+      console.log($('#printWithCover').is(":checked"))
+      if ($('#printWithCover').is(":checked")) {
+        param['with_cover'] = $('#printWithCover').is(":checked");
+      }
       param['ticket_format_id'] = $('#ticketFormat').val();
     }
     $.ajax({
@@ -536,7 +541,6 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
       var currentPrintService = $printService.val();
       var currentTicketFormat = formats.ticket_formats[$ticketFormat.val()];
       var currentPageFormat = formats.page_formats[$pageFormat.val()];
-      var with_cover = $('#useWithCover').is(":checked");
       if (!currentPrintService) {
           alert('no print service');
           return;

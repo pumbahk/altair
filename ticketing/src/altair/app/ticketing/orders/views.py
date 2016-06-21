@@ -2127,7 +2127,6 @@ class OrdersReserveView(OrderBaseView):
                 if v:
                     order.attributes[k] = v
 
-
             if with_enqueue:
                 if with_cover:
                     ticket_format_id = self.request.POST.get('ticket_format_id')

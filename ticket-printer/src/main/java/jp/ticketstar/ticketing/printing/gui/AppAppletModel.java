@@ -77,6 +77,7 @@ public class AppAppletModel implements AppModel {
         {
             final Boolean preCoverStatus = this.coverStatus;
             propertyChangeSupport.firePropertyChange("coverStatus", preCoverStatus, coverStatus);
+        }
     }
     
     /* (non-Javadoc)
@@ -175,7 +176,7 @@ public class AppAppletModel implements AppModel {
      * @see jp.ticketstar.ticketing.printing.gui.IAppWindowModel#getCoverStatus()
      */
     public void setWithCover(Boolean status){
-        final Boolean preValue = this.coverStatus;
+        final Boolean prevValue = this.coverStatus;
         this.coverStatus = status;
         propertyChangeSupport.firePropertyChange("coverStatus", prevValue, coverStatus);
     }  
