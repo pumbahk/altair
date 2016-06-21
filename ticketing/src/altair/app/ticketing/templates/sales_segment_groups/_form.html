@@ -124,14 +124,7 @@
           }
         } else {
           // 更新の抽選の場合
-          $('#lot_area').hide();
-          $('#not_lot_area').hide();
-          $("label[for='start_at']").text("販売開始日時");
-          $("label[for='start_day_prior_to_performance']").text("販売開始日時(公演開始までの日数)");
-          $("label[for='start_time']").text("販売開始日時(時刻)");
-          $("label[for='end_at']").text("販売終了日時");
-          $("label[for='end_day_prior_to_performance']").text("販売終了日時(公演開始までの日数)");
-          $("label[for='end_time']").text("販売終了日時(時刻)");
+          hideLotForm();
         }
 
         var public = form.find('#public');
