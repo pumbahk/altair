@@ -21,7 +21,8 @@ from altair.app.ticketing.famiport.userside_models import (
     AltairFamiPortVenue,
     AltairFamiPortPerformanceGroup,
     AltairFamiPortPerformance,
-    AltairFamiPortSalesSegmentPair
+    AltairFamiPortSalesSegmentPair,
+    AltairFamiPortReflectionStatus
 )
 from altair.app.ticketing.payments import plugins
 
@@ -196,20 +197,23 @@ class FamiPortReflectionStatusLogicTest(unittest.TestCase):
             organization_id=15,
             code_1=1,
             code_2=1,
-            altair_famiport_venue=altair_venue
+            altair_famiport_venue=altair_venue,
+            status=AltairFamiPortReflectionStatus.Reflected.value
         )
         session.add(altair_fmpg)
         altair_fmp = AltairFamiPortPerformance(
             performance=performance1,
             start_at=datetime(2016,6,30,10,0),
-            altair_famiport_performance_group=altair_fmpg
+            altair_famiport_performance_group=altair_fmpg,
+            status=AltairFamiPortReflectionStatus.Reflected.value
         )
         session.add(altair_fmp)
         altair_ssp = AltairFamiPortSalesSegmentPair(
             seat_unselectable_sales_segment=sales_segment1,
             altair_famiport_performance=altair_fmp,
             code=1,
-            name=u'一般販売'
+            name=u'一般販売',
+            status=AltairFamiPortReflectionStatus.Reflected.value
         )
         session.add(altair_ssp)
         tenant = FamiPortTenant(
