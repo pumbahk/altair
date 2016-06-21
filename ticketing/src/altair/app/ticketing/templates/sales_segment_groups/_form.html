@@ -125,6 +125,11 @@
         } else {
           // 更新の抽選の場合
           hideLotForm();
+          if (form.find('select[name="kind"]').val().match(/lottery/)) {
+            $('#not_lot_area').hide();
+          } else {
+            $('#not_lot_area').show();
+          }
         }
 
         var public = form.find('#public');
