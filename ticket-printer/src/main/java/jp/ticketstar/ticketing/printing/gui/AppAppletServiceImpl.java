@@ -294,7 +294,7 @@ class AppAppletServiceImpl extends BasicAppService {
     }
     
     public void setWithCover(Boolean status) {
-        ogger.entering(this.getClass().getName(), "setWithCover");
+        logger.entering(this.getClass().getName(), "setWithCover");
         ((AppAppletModel)model).setCoverStatus(status);
         logger.exiting(this.getClass().getName(), "setWithCover");
     }
