@@ -22,6 +22,7 @@ public class AppWindowModel implements AppModel {
     PageSetModel pageSetModel = null;
     PrintService printService = null;
     Boolean printingStatus = false;
+    Boolean coverStatus = false;
     GenericComboBoxModel<PrintService> printServices;
     OurPageFormat pageFormat = null;
     GenericComboBoxModel<OurPageFormat> pageFormats;
@@ -266,5 +267,12 @@ public class AppWindowModel implements AppModel {
     public GenericComboBoxModel<OurPageFormat> getPageFormats() {
         return pageFormats;
     }
+
+	@Override
+	public void setWithCover(Boolean status) {
+		final Boolean prevValue = this.coverStatus;
+        this.coverStatus = status;
+        propertyChangeSupport.firePropertyChange("coverStatus", prevValue, this.coverStatus);
+	}
 }
 
