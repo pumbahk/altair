@@ -109,7 +109,7 @@ public interface AppModel {
     public abstract void setPrintingStatus(Boolean status);
 
     /* (non-Javadoc)
-     * @see jp.ticketstar.ticketing.printing.gui.IAppWindowModel#setCoverStatus()
+     * @see jp.ticketstar.ticketing.printing.gui.IAppWindowModel#setWithCover()
      */
     public abstract void setWithCover(Boolean status); 
     

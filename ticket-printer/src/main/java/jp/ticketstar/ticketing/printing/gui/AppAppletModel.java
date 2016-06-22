@@ -173,7 +173,7 @@ public class AppAppletModel implements AppModel {
     }
 
     /* (non-Javadoc)
-     * @see jp.ticketstar.ticketing.printing.gui.IAppWindowModel#getCoverStatus()
+     * @see jp.ticketstar.ticketing.printing.gui.IAppWindowModel#setWithCover()
      */
     public void setWithCover(Boolean status){
         final Boolean prevValue = this.coverStatus;
