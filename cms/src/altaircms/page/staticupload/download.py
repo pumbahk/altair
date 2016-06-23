@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 ## download manager
 import logging
 logger = logging.getLogger(__name__)
@@ -53,7 +54,7 @@ class ZippedStaticFileManager(object):
         elif self.need_download(absroot):
             self.downloader.download_recursively(absroot)
         with zipupload.current_directory(absroot):
-            zipupload.create_zipfile_from_directory(".", writepath)
+            zipupload.create_zipfile_from_directory(".", writepath, self.downloader.file_list)
 
     def download_response(self, absroot, path=None, filename=None):
         path = path or self.zippath
@@ -71,6 +72,11 @@ class S3Downloader(object):
     def __init__(self, request, static_page, prefix=""): ## slackoff
         self.request = request
         self.static_page = static_page
+        # データベースの記録にあるファイルをリストに入れる。
+        # $がついてるやつはフォルダのため入れない。
+        # .originalがついてるやつはバックアップのため入れない。
+        self.file_list = [f for f in self.static_page.file_structure.keys()
+                          if not f.endswith('$') and not f.endswith('.original')]
         self.prefix = prefix
         self.filters = []
 
@@ -95,12 +101,18 @@ class S3Downloader(object):
         logger.info("download: bucket={bucket} prefix={prefix}".format(bucket=bucket.name, prefix=self.prefix))
         for io in bucket.list(prefix=self.prefix):
             subname = io.name.replace(self.prefix, "").lstrip("/")
+            # データベースの記録にないファイルを処理しない。
+            if not self._check_file_in_db_record(subname):
+                continue
             writepath = os.path.join(absroot, subname)
             dirname = os.path.dirname(writepath)
             if not os.path.exists(dirname):
                 os.makedirs(dirname)
             with open(writepath, "w") as wf:
                 for f in self.filters:
-                    # logger.debug("*debug subname: {}".format(subname))
-                    io = f(io, subname) #encoding?
+                    io = f(io, subname)
                 shutil.copyfileobj(io, wf)
+
+    # 対象ファイルはデータベースの記録にあるかどうかをチェックする。
+    def _check_file_in_db_record(self, subname):
+        return subname in self.file_list

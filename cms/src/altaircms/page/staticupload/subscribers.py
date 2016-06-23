@@ -142,4 +142,7 @@ def delete_completely_filesystem(after_delete_completely):
     event = after_delete_completely
     static_directory = event.static_directory
     root = static_directory.get_toplevelname(event.static_pageset)
-    shutil.rmtree(root)
+    if os.path.exists(root):
+        shutil.rmtree(root)
+    else:
+        logger.warn("サーバーに削除対象が存在していない。削除対象：{}。".format(root))

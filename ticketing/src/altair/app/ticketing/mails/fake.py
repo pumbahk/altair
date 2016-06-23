@@ -108,10 +108,12 @@ def create_fake_order(request, args):
 
     order = FakeObject("T")
     order.ordered_from = organization
+    order.organization_id = organization.id
     order.order_no = None
     order.created_at = now
     order.cart_setting_id = cart_setting_id
     order._cached_mail_traverser = None
+    order.shipping_address = create_shipping_address(request, args)
 
     if event:
         order.performance._fake_root = event
