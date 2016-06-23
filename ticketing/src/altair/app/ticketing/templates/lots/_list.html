@@ -4,7 +4,6 @@
 %if not lots:
 <p>
   登録されている抽選はありません。
-  <a href="${request.route_url('lots.new', event_id=event.id)}" class="btn"><i class="icon-plus"></i> 新規</a>
 </p>
 %else:
 <form action="${request.url}" method="post">
@@ -73,7 +72,6 @@
         </tbody>
       </table>
       <div class="btn-group">
-        <a href="${request.route_url('lots.new', event_id=event.id)}" class="btn"><i class="icon-plus"></i> 新規</a>
         <button type="submit" name="action-delete" class="btn"><i class="icon-minus"></i>削除</button>
       </div>
     </div>
