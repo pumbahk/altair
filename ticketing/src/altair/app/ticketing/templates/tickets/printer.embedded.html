@@ -170,7 +170,7 @@ writeAppletTag({
   width: 1, height: 1,
   code: 'jp.ticketstar.ticketing.printing.gui.AppApplet',
   codebase: ${json.dumps(request.application_url)|n},
-  archive: ${json.dumps(request.static_url('altair.app.ticketing:static/printing-0.0.4-jar-with-dependencies.jar'))|n},
+  archive: ${json.dumps(request.static_url('altair.app.ticketing:static/printing-0.0.1-jar-with-dependencies.jar'))|n},
   scriptable: true,
   id: 'applet',
   params: {

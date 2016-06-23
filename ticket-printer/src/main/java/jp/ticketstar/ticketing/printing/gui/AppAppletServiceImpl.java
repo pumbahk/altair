@@ -81,7 +81,7 @@ class AppAppletServiceImpl extends BasicAppService {
         }
     }
     
-    private Future<ExtendedSVG12OMDocument> loadDocument(final String orderId, final TicketFormat ticketFormat, final OurPageFormat pageFormat, final Boolean coverStatus, final List<String> queueIds) throws IOException {
+    private Future<ExtendedSVG12OMDocument> loadDocument(final String orderId, final TicketFormat ticketFormat, final OurPageFormat pageFormat, final List<String> queueIds) throws IOException {
         final URLConnection conn = applet.newURLConnection(applet.config.peekUrl);
         return loadDocument(conn, new RequestBodySender() {
             public String getRequestMethod() {
@@ -109,8 +109,6 @@ class AppAppletServiceImpl extends BasicAppService {
                         }
                         writer.endArray();
                     }
-                    writer.name("with_cover");
-                    writer.value(coverStatus);
                     writer.endObject();
                     writer.flush();
                     writer.close();
@@ -133,7 +131,6 @@ class AppAppletServiceImpl extends BasicAppService {
         final String orderId = ((AppAppletModel)model).getOrderId();
         final TicketFormat ticketFormat = ((AppAppletModel)model).getTicketFormat();
         final OurPageFormat pageFormat = model.getPageFormat();
-        final Boolean coverStatus = ((AppAppletModel)model).getCoverStatus();
         final List<String> queueIds = ((AppAppletModel)model).getQueueIds();
         invokeWhenDocumentReady(new Runnable() {
             @Override
@@ -146,7 +143,7 @@ class AppAppletServiceImpl extends BasicAppService {
                 logger.entering(this.getClass().getName() + " (doLoadTicketData)", "run");
                 try {
                     ticketDataLoadingNeeded = false;
-                    loadDocument(orderId, ticketFormat, pageFormat, coverStatus, queueIds).get();
+                    loadDocument(orderId, ticketFormat, pageFormat, queueIds).get();
                     if (continuation != null)
                         continuation.run();
                 } catch (Exception e) {
@@ -293,23 +290,9 @@ class AppAppletServiceImpl extends BasicAppService {
         ((AppAppletModel)model).setTicketFormat(ticketFormat);
         logger.exiting(this.getClass().getName(), "setTicketFormat");
     }
-    
-    public Boolean getCoverStatus() {
-    	return ((AppAppletModel)model).getCoverStatus();
-    }
-    
-    public void setWithCover(Boolean status) {
-        logger.entering(this.getClass().getName(), "setWithCover");
-        ((AppAppletModel)model).setWithCover(status);
-        logger.exiting(this.getClass().getName(), "setWithCover");
-    }
 
     public void addListenerForTicketFormat(PropertyChangeListener listener) {
        ((AppAppletModel)model).addPropertyChangeListener("ticketFormat", listener);
-    }
-    
-    public void addListenerForSetWithCover(PropertyChangeListener listener) {
-       ((AppAppletModel)model).addPropertyChangeListener("coverStatus", listener);
     }
 
     public void filterByOrderId(String orderId) {
@@ -344,7 +327,6 @@ class AppAppletServiceImpl extends BasicAppService {
         model.removePropertyChangeListener("pageFormat", changeListener);
         model.removePropertyChangeListener("ticketFormat", changeListener);
         model.removePropertyChangeListener("orderId", changeListener);
-        model.removePropertyChangeListener("coverStatus", changeListener);
         model.removePropertyChangeListener("queueIds", changeListener);
     }
     
@@ -352,7 +334,6 @@ class AppAppletServiceImpl extends BasicAppService {
         model.addPropertyChangeListener("pageFormat", changeListener);
         model.addPropertyChangeListener("ticketFormat", changeListener);
         model.addPropertyChangeListener("orderId", changeListener);
-        model.addPropertyChangeListener("coverStatus", changeListener);
         model.addPropertyChangeListener("queueIds", changeListener);
     }
 

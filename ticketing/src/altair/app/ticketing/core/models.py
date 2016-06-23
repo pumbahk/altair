@@ -3339,13 +3339,6 @@ class TicketPrintQueueEntry(Base, BaseModel):
         return q.all()
 
     @classmethod
-    def peek_cover(cls, order, operator):
-        return DBSession.query(TicketPrintQueueEntry)\
-            .filter_by(processed_at=None, operator=operator)\
-            .filter(TicketPrintQueueEntry.summary.like(u"表紙 {order.order_no}".format(order=order)))\
-            .first()
-
-    @classmethod
     def printing_order_condition(cls):
         return (TicketPrintQueueEntry.created_at, TicketPrintQueueEntry.id)
 

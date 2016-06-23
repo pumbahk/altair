@@ -2097,7 +2097,6 @@ class OrdersReserveView(OrderBaseView):
     def reserve_complete(self):
         post_data = self.request.POST
         with_enqueue = post_data.get('with_enqueue', False)
-        with_cover = post_data.get('with_cover', False)
 
         try:
             # create order
@@ -2127,10 +2126,8 @@ class OrdersReserveView(OrderBaseView):
                 if v:
                     order.attributes[k] = v
 
+
             if with_enqueue:
-                if with_cover:
-                    ticket_format_id = self.request.POST.get('ticket_format_id')
-                    utils.enqueue_cover(self.request, operator=self.context.user, order=order, ticket_format_id=ticket_format_id)
                 utils.enqueue_for_order(self.request, operator=self.context.user, order=order, delivery_plugin_ids=INNER_DELIVERY_PLUGIN_IDS)
 
             # clear session
