@@ -26,11 +26,6 @@ ${ch.breadcrumbs(
 <div id="sales_segment_groups-form">
   <%include file="./_modal.html" args="modal_id='modal-sales_segment_group', event=sales_segment_group.event" />
 </div>
-<div class="btn-group" style="float: left;">
-  <a class="btn" href="${request.route_path('lots.new', event_id=sales_segment_group.event.id)}?ssgid=${sales_segment_group.id}" style="margin-left: 10px;">
-        抽選
-  </a>
-</div>
 
 <div style="clear: left;"></div>
 
