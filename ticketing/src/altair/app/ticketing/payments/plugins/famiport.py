@@ -65,7 +65,7 @@ from ..exceptions import (
 import altair.app.ticketing.orders.models as order_models
 from . import FAMIPORT_PAYMENT_PLUGIN_ID as PAYMENT_PLUGIN_ID
 from . import FAMIPORT_DELIVERY_PLUGIN_ID as DELIVERY_PLUGIN_ID
-
+from altair.app.ticketing.mails.fake import FakeObject
 
 logger = logging.getLogger(__name__)
 
@@ -574,7 +574,15 @@ def payment_mail_viewlet(context, request):
     tenant = lookup_famiport_tenant(request, context.order)
     assert tenant is not None
     payment_method = context.order.payment_delivery_pair.payment_method
-    famiport_order = famiport_api.get_famiport_order(request, tenant.code, context.order.order_no)
+    if isinstance(context.order, FakeObject):
+        # Create Fake famiport_order for preview
+        famiport_order = dict(
+            payment_reserve_number="FAKEXXXXXXXX",
+            payment_start_at=datetime(1900,1,1,1,1),
+            payment_due_at=datetime(1900,10,10,10,10)
+        )
+    else:
+        famiport_order = famiport_api.get_famiport_order(request, tenant.code, context.order.order_no)
     return dict(
         payment_name=payment_method.name,
         description=Markup(payment_method.description),
@@ -601,7 +609,15 @@ def lot_payment_elect_entry_notice_viewlet(context, request):
     tenant = lookup_famiport_tenant(request, context.order)
     assert tenant is not None
     payment_method = context.order.payment_delivery_pair.payment_method
-    famiport_order = famiport_api.get_famiport_order(request, tenant.code, context.order.order_no)
+    if isinstance(context.order, FakeObject):
+        # Create Fake famiport_order for preview
+        famiport_order = dict(
+            payment_reserve_number="FAKEXXXXXXXX",
+            payment_start_at=datetime(1900,1,1,1,1),
+            payment_due_at=datetime(1900,10,10,10,10)
+        )
+    else:
+        famiport_order = famiport_api.get_famiport_order(request, tenant.code, context.order.order_no)
     return dict(
         payment_name=payment_method.name,
         description=Markup(payment_method.description),
@@ -693,7 +709,16 @@ def deliver_completion_mail_viewlet(context, request):
     tenant = lookup_famiport_tenant(request, context.order)
     assert tenant is not None
     delivery_method = context.order.payment_delivery_pair.delivery_method
-    famiport_order = famiport_api.get_famiport_order(request, tenant.code, context.order.order_no)
+    if isinstance(context.order, FakeObject):
+        # Create Fake famiport_order for preview
+        famiport_order = dict(
+            type=1,
+            ticketing_reserve_number="FAKEXXXXXXXX",
+            ticketing_start_at=datetime(1900,1,1,1,1),
+            ticketing_end_at=datetime(1900,10,10,10,10)
+        )
+    else:
+        famiport_order = famiport_api.get_famiport_order(request, tenant.code, context.order.order_no)
     return dict(
         delivery_name=delivery_method.name,
         description=Markup(delivery_method.description),
@@ -719,7 +744,16 @@ def lot_delivery_elect_entry_notice_viewlet(context, request):
     tenant = lookup_famiport_tenant(request, context.order)
     assert tenant is not None
     delivery_method = context.order.payment_delivery_pair.delivery_method
-    famiport_order = famiport_api.get_famiport_order(request, tenant.code, context.order.order_no)
+    if isinstance(context.order, FakeObject):
+        # Create Fake famiport_order for preview
+        famiport_order = dict(
+            type=1,
+            ticketing_reserve_number="FAKEXXXXXXXX",
+            ticketing_start_at=datetime(1900,1,1,1,1),
+            ticketing_end_at=datetime(1900,10,10,10,10)
+        )
+    else:
+        famiport_order = famiport_api.get_famiport_order(request, tenant.code, context.order.order_no)
     return dict(
         delivery_name=delivery_method.name,
         description=Markup(delivery_method.description),

@@ -23,6 +23,7 @@ public class AppAppletModel implements AppModel {
     PrintService printService = null;
     Boolean printingStatus = false;
     Boolean previewEnable = false;
+    Boolean coverStatus = false;
     GenericComboBoxModel<PrintService> printServices;
     OurPageFormat pageFormat = null;
     GenericComboBoxModel<OurPageFormat> pageFormats;
@@ -73,6 +74,10 @@ public class AppAppletModel implements AppModel {
             this.pageFormat = this.pageFormats.size() > 0 ? this.pageFormats.get(0): null;
             propertyChangeSupport.firePropertyChange("pageFormat", prevPageFormat, pageFormat);
         }
+        {
+            final Boolean preCoverStatus = this.coverStatus;
+            propertyChangeSupport.firePropertyChange("coverStatus", preCoverStatus, coverStatus);
+        }
     }
     
     /* (non-Javadoc)
@@ -89,6 +94,7 @@ public class AppAppletModel implements AppModel {
         propertyChangeSupport.firePropertyChange("orderId", null, orderId);
         propertyChangeSupport.firePropertyChange("queueIds", null, queueIds);
         propertyChangeSupport.firePropertyChange("printingStatus", true, false);
+        propertyChangeSupport.firePropertyChange("coverStatus", true, false);
     }
 
     /* (non-Javadoc)
@@ -158,6 +164,22 @@ public class AppAppletModel implements AppModel {
         propertyChangeSupport.firePropertyChange("printingStatus", prevValue, printingStatus);
     }
 
+    
+    /* (non-Javadoc)
+     * @see jp.ticketstar.ticketing.printing.gui.IAppWindowModel#getCoverStatus()
+     */
+    public Boolean getCoverStatus(){
+        return coverStatus;
+    }
+
+    /* (non-Javadoc)
+     * @see jp.ticketstar.ticketing.printing.gui.IAppWindowModel#setWithCover()
+     */
+    public void setWithCover(Boolean status){
+        final Boolean prevValue = this.coverStatus;
+        this.coverStatus = status;
+        propertyChangeSupport.firePropertyChange("coverStatus", prevValue, coverStatus);
+    }  
 
     /* (non-Javadoc)
      * @see jp.ticketstar.ticketing.printing.gui.IAppWindowModel#getPrintingStatus()
