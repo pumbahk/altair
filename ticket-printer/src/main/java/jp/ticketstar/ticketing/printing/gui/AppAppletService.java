@@ -161,18 +161,6 @@ public class AppAppletService implements StandardAppService {
     public String getMedia() {
         return impl.getMedia();
     }
-    
-    public boolean getCoverStatus() {
-        return impl.getCoverStatus();
-    }
-    
-    public void setWithCover(Boolean status) {
-        impl.setWithCover(status);
-    }
-
-    public void addListenerForSetWithCover(PropertyChangeListener listener) {
-        impl.addListenerForSetWithCover(listener);
-    }
 
     public void setPrintService(PrintService printService) {
         impl.setPrintService(printService);

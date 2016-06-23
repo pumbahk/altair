@@ -880,7 +880,6 @@ class TicketPrinter(BaseView):
         ticket_format_id = self.request.json_body['ticket_format_id']
         order_id = self.request.json_body.get('order_id')
         queue_ids = self.request.json_body.get('queue_ids')
-        with_cover = self.request.json_body.get('with_cover')
         page_format = DBSession.query(PageFormat).filter_by(id=page_format_id).one()
         ticket_format = DBSession.query(TicketFormat).filter_by(id=ticket_format_id).one()
         try:
@@ -889,13 +888,7 @@ class TicketPrinter(BaseView):
             logger.info(u'failed to create SvgPageSetBuilder', exc_info=sys.exc_info())
             builder = FallbackSvgPageSetBuilder(page_format.data, ticket_format.data)
         tickets_per_page = builder.tickets_per_page
-        entries = []
-        if with_cover:
-            order = DBSession.query(Order).filter_by(id=order_id).one()
-            entries.append(TicketPrintQueueEntry.peek_cover(order=order, operator=self.context.user))
-        entries.extend(TicketPrintQueueEntry.peek(self.context.user, ticket_format_id=ticket_format_id, order_id=order_id, queue_ids=queue_ids))
-
-        for entry in entries:
+        for entry in TicketPrintQueueEntry.peek(self.context.user, ticket_format_id=ticket_format_id, order_id=order_id, queue_ids=queue_ids):
             builder.add(etree.fromstring(entry.data['drawing']), entry.id, title=(entry.summary if tickets_per_page == 1 else None))
         return builder.root
 

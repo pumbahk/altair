@@ -15,8 +15,6 @@ public interface StandardAppService extends MinimumAppService {
     public void filterByQueueIds(List<String> queueIds);
     
     public void addListenerForTicketFormat(PropertyChangeListener listener);
-    
-    public void addListenerForSetWithCover(PropertyChangeListener listener);
 
     public void addPageEventListener(PageEventListener listener);
 }

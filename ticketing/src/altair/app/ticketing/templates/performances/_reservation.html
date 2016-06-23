@@ -74,10 +74,6 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
     <input id="sales-counter-button" type="button" class="btn btn-warning" style="vertical-align: baseline; font-size: 100%;" value="当日窓口発券モードにする" />
     <div id="sales-counter-toolbar" style="display:none">
       <label style="display:inline-block">
-        表紙印刷の使用
-        <input type="checkbox" id="printWithCover" style="vertical-align: baseline;" />
-      </label>
-      <label style="display:inline-block">
         ページ様式
         <select id="pageFormat" style="width:13em;vertical-align: baseline;"></select>
       </label>
@@ -177,7 +173,7 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
 
   var callbackName = ${json.dumps(callback_name)|n};
   var appletCodeBase = ${json.dumps(request.application_url)|n};
-  var appletArchive = ${json.dumps(request.static_url('altair.app.ticketing:static/printing-0.0.4-jar-with-dependencies.jar'))|n};
+  var appletArchive = ${json.dumps(request.static_url('altair.app.ticketing:static/printing-0.0.1-jar-with-dependencies.jar'))|n};
   var appletEndpoints = ${json.dumps(endpoints_json)|n};
   var endpoints = ${endpoints_json|n};
   var cookie = ${json.dumps(request.headers.get('cookie'))|n};
@@ -324,12 +320,6 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
     var param = build_form_params($form);
     if (window.ticketPrinterService) {
       param['with_enqueue'] = true;
-      console.log('completeOrder')
-      console.log($('#printWithCover').is(":checked"))
-      if ($('#printWithCover').is(":checked")) {
-        param['with_cover'] = $('#printWithCover').is(":checked");
-      }
-      param['ticket_format_id'] = $('#ticketFormat').val();
     }
     $.ajax({
       type: 'post',
@@ -557,8 +547,7 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
               "peek_url": location.origin + endpoints["peek"],
               "dequeue_url": location.origin + endpoints["dequeue"],
               "cookie": cookie,
-              "order_id": order_id,
-              "with_cover": with_cover
+              "order_id": order_id
           }),
           dataType: 'json'
         }).done(function(s) {
@@ -715,7 +704,6 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
         service.startBatchUpdate();
         service.setTicketFormat(currentTicketFormat);
         service.setPageFormat(currentPageFormat);
-        service.setWithCover($('#printWithCover').is(':checked'))
         service.setPrintService(currentPrintService);
         service.endBatchUpdate();
         service.printAll();
