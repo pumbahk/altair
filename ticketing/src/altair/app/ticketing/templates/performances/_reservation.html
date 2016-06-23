@@ -531,6 +531,7 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
       var currentPrintService = $printService.val();
       var currentTicketFormat = formats.ticket_formats[$ticketFormat.val()];
       var currentPageFormat = formats.page_formats[$pageFormat.val()];
+      var with_cover = $('#printWithCover').is(':checked');
       if (!currentPrintService) {
           alert('no print service');
           return;
