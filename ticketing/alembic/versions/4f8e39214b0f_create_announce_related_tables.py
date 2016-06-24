@@ -28,6 +28,7 @@ def upgrade():
         sa.Column('message', sa.String(length=8000), nullable=False),
         sa.Column('words', sa.String(length=1024)),
         sa.Column('send_after', sa.DateTime(), nullable=False),
+        sa.Column('is_draft', sa.Boolean(), default=False),
 
         sa.Column('template_name', sa.String(length=64)),
         sa.Column('note', sa.String(length=1024)),

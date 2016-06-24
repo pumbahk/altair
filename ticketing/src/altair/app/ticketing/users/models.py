@@ -286,6 +286,7 @@ class Announcement(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     message = Column(String(8000))
     send_after = Column(DateTime)
     words = Column(String(1024)) # comma separated id list
+    is_draft = Column(Boolean, default=False)
     started_at = Column(DateTime)
     completed_at = Column(DateTime)
     subscriber_count = Column(Integer)

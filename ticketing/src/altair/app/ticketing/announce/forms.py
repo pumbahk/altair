@@ -5,7 +5,7 @@ from wtforms import TextField, TextAreaField, HiddenField, SelectField
 from wtforms.validators import Length, Optional, ValidationError
 
 from altair.formhelpers import Translations, Required, BugFreeSelectField,\
-    zero_as_none, after1900, OurDateTimeWidget
+    zero_as_none, after1900, OurDateTimeWidget, OurBooleanField
 from altair.formhelpers.fields import DateTimeField
 from altair.app.ticketing.users.models import Announcement
 from datetime import date, datetime, timedelta
@@ -27,6 +27,7 @@ class AnnouncementForm(Form):
         announce.subject = self.subject.data
         announce.message = self.message.data
         announce.send_after = self.send_after.data
+        announce.is_draft = self.is_draft.data
         # TODO: check length of words
         announce.words = self.words.data
         announce.note = self.note.data
@@ -54,6 +55,12 @@ class AnnouncementForm(Form):
             Length(max=8000, message=u'8000文字以内で入力してください'),
         ]
     )
+
+    is_draft = OurBooleanField(
+        label=u'下書き',
+        default=False,
+        validators=[Required()],
+        )
 
     send_after = DateTimeField(
         label=u'送信日時',
