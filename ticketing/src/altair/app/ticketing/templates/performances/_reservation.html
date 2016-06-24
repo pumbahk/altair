@@ -324,12 +324,13 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
     var param = build_form_params($form);
     if (window.ticketPrinterService) {
       param['with_enqueue'] = true;
-      console.log('completeOrder')
-      console.log($('#printWithCover').is(":checked"))
+      console.log('completeOrder');
+      console.log($('#printWithCover').is(":checked"));
+      console.log($('#ticketFormat option:selected').attr('ticket_format_id'));
       if ($('#printWithCover').is(":checked")) {
         param['with_cover'] = $('#printWithCover').is(":checked");
       }
-      param['ticket_format_id'] = $('#ticketFormat').val();
+      param['ticket_format_id'] = $('#ticketFormat option:selected').attr('ticket_format_id');
     }
     $.ajax({
       type: 'post',
@@ -513,7 +514,7 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
             }
             formats.ticket_formats = s.data.ticket_formats;
             for(var i=0 ; i<s.data.ticket_formats.length ; i++) {
-                $('<option></option>').val(i).text(s.data.ticket_formats[i].name).appendTo($ticketFormat);
+                $('<option></option>').val(i).attr('ticket_format_id', s.data.ticket_formats[i].id).text(s.data.ticket_formats[i].name).appendTo($ticketFormat);
             }
             d.resolve();
        }).fail(function() {

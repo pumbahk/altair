@@ -890,6 +890,7 @@ class TicketPrinter(BaseView):
             builder = FallbackSvgPageSetBuilder(page_format.data, ticket_format.data)
         tickets_per_page = builder.tickets_per_page
         entries = []
+
         if with_cover:
             order = DBSession.query(Order).filter_by(id=order_id).one()
             entries.append(TicketPrintQueueEntry.peek_cover(order=order, operator=self.context.user))
