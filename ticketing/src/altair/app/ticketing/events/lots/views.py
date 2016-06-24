@@ -860,7 +860,8 @@ class LotEntries(BaseView):
                     closer=closer,
                     form=form,
                     process_possible=self._check_lot_entries_process_possible(),
-                    electing=electing)
+                    electing=electing,
+                    h=h)
 
     def _check_lot_entries_process_possible(self):
         lot = self.context.lot

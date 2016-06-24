@@ -1,3 +1,4 @@
+# -*- coding:utf-8 -*-
 from api import get_lots_cart_url
 from webhelpers.html.tags import link_to
 from altair.app.ticketing.lots.helpers import timezone_label
@@ -26,4 +27,12 @@ def is_quantity_only_stock_type(lot, seat_stock_type):
         if stock_type.id == seat_stock_type.id:
             if stock_type.quantity_only:
                 return True
+    return False
+
+
+def exist_not_quantity_only_stock_type(lot):
+    for product in lot.products:
+        if not is_quantity_only_stock_type(lot, product.seat_stock_type):
+            # 座席選択あり
+            return True
     return False
