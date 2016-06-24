@@ -1,0 +1,46 @@
+<%inherit file="/layout_2cols.html" />
+<%namespace file="/common/helpers.html" name="ch" />
+<style type="text/css">
+.table.point-grant-history span.error {
+  color: #f00;
+  font-weight: bold;
+}
+.warn-char {
+  color:red;
+  font-size:14px
+}
+</style>
+<%block name="breadcrumbs">
+${ch.breadcrumbs(
+  names=[u'トップ', u'強制セブン予約キャンセル'],
+  urls=[
+    request.route_path('index'),
+  ]
+)}
+</%block>
+<%
+link=u""
+button_va
+if order:
+  link = request.route_path('orders.seven_cancel_complete', order_no=order.order_no)
+%>
+<div class="page-header">
+  <h1>強制セブン予約キャンセル</h1>
+  % if order:
+    <%include file="./_show_order_table.html" args="order=order,vh=vh,HH=HH"/>
+  % endif
+  ${ch.alert_message(form)}
+  % if form.validated.data == True:
+    <div class="warn-char">強制的にセブン予約をキャンセルします！</div>
+    <div class="warn-char">本当によろしいですか？</div>
+  % endif
+  <form action="${link}" method="POST">
+    ${ch.form_item(form.validated)}
+    % if order:
+      ${ch.form_item(form.order_no, disabled=True)}
+    % else:
+      ${ch.form_item(form.order_no)}
+    % endif
+    <input class="btn btn-danger" type="submit" value="キャンセル"/>
+  </form>
+</div>

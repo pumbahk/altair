@@ -1414,3 +1414,40 @@ class DeliverdEditForm(OurForm):
         validators=[Required(message=u"配送時刻が指定されていません"), after1900],
         format='%Y-%m-%d %H:%M',
     )
+
+
+class SevenOrderCancelForm(OurForm):
+    validated = HiddenField(
+        label=u'バリデート済フラグ',
+        validators=[Optional()],
+    )
+    order_no = TextField(
+        label=u"セブン予約番号",
+        validators=[
+            Required(),
+        ]
+    )
+
+    def validate(self, *args, **kwargs):
+        err = None
+        order = None
+        if len(args):
+            order = args[0].pop('order', None)
+
+        if not order:
+            err = ValidationError(u"予約が見つかりません")
+
+        if order:
+            if order.payment_delivery_method_pair.delivery_method.delivery_plugin_id != plugins.SEJ_DELIVERY_PLUGIN_ID \
+                    and order.payment_delivery_method_pair.payment_method.payment_plugin_id != plugins.SEJ_PAYMENT_PLUGIN_ID:
+                    err = ValidationError(u"セブン-イレブンの予約ではありません")
+
+            if order.status == 'canceled':
+                err = ValidationError(u"既にキャンセルされています。")
+
+        if err:
+            if not hasattr(self.order_no.errors, 'append'):
+                self.order_no.errors = list(self.order_no.errors)
+            self.order_no.errors.append(err)
+            return False
+        return True
