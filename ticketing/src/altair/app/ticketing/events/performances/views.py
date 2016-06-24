@@ -492,6 +492,11 @@ class Performances(BaseView):
             route_name = u'コピー'
 
         is_copy = (self.request.matched_route.name == 'performances.copy')
+
+        # 配券元が存在しない場合、イベントのものを使う。（既存のパフォーマンスのみ発生TKT-1974）
+        if not performance.account_id:
+            performance.account_id = performance.event.account_id
+
         f = PerformanceForm(
             obj=performance,
             organization_id=self.context.user.organization_id,
