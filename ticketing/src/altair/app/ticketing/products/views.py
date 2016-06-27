@@ -191,7 +191,7 @@ class ProductAndProductItem(BaseView):
                     # 抽選商品の登録
                     add_lot_product_all(
                         sales_segment_group=copy_sales_segment.sales_segment_group,
-                        original_product=product
+                        original_product=new_product
                     )
 
         self.request.session.flash(u'商品をコピーしました')
