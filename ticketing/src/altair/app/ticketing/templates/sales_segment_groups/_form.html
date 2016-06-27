@@ -45,25 +45,27 @@
   ${ch.form_item(form.max_quantity_per_user)}
   ${ch.form_item(form.max_product_quatity)}
   ${ch.form_item(form.order_limit)}
-  <div id="not_lot_area">
+  <div class="not_lot_area">
   ${ch.form_item(form.seat_choice)}
   ${ch.form_item(form.display_seat_no)}
-  ${ch.form_item(form.public)}
   </div>
+  ${ch.form_item(form.public)}
   ${ch.form_item(form.disp_orderreview)}
   ${ch.form_item(form.disp_agreement)}
   ${ch.form_item(form.reporting)}
   ${ch.form_item(form.sales_counter_selectable, help=ch.help(form.sales_counter_selectable))}
   ${ch.form_item(form.auth3d_notice, style="width:80%; height:10em")}
   ${ch.form_item(form.agreement_body, style="width:80%; height:10em")}
+  <div class="not_lot_area">
   ${ch.form_item(form.extra_form_fields, class_="btn")}
+  </div>
 
   <script src="${request.static_url('altair.app.ticketing:static/js/jquery.chosen.js')}"></script>
   <link rel="stylesheet" type="text/css" href="${request.static_url('altair.app.ticketing:static/css/chosen.css')}" />
   <script type="text/javascript">
     function showLotForm() {
       $('.lot_area').show();
-      $('#not_lot_area').hide();
+      $('.not_lot_area').hide();
       $("label[for='start_at']").text("抽選受付開始日時");
       $("label[for='start_day_prior_to_performance']").text("抽選受付開始日時(抽選結果発表日までの日数)");
       $("label[for='start_time']").text("抽選受付開始日時(時刻)");
@@ -74,7 +76,7 @@
 
     function hideLotForm() {
       $('.lot_area').hide();
-      $('#not_lot_area').show();
+      $('.not_lot_area').show();
       $("label[for='start_at']").text("販売開始日時");
       $("label[for='start_day_prior_to_performance']").text("販売開始日時(公演開始までの日数)");
       $("label[for='start_time']").text("販売開始日時(時刻)");
@@ -126,9 +128,9 @@
           // 更新の抽選の場合
           hideLotForm();
           if (form.find('select[name="kind"]').val().match(/lottery/)) {
-            $('#not_lot_area').hide();
+            $('.not_lot_area').hide();
           } else {
-            $('#not_lot_area').show();
+            $('.not_lot_area').show();
           }
         }
 
