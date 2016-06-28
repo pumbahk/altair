@@ -97,6 +97,7 @@ class SalesSegmentGroupsTests(unittest.TestCase):
         sales_segment_group = SalesSegmentGroup(
             event=event,
             organization=organization,
+            kind="lottery",
             sales_segments=[
                 SalesSegment(),
             ],
