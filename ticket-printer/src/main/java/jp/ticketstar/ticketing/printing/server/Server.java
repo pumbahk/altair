@@ -152,6 +152,7 @@ class Job extends DeferredValue<Exception> {
     String cookie;
     int pageFormatId;
     int ticketFormatId;
+    Boolean coverStatus;
 
     // orderIdかqueueIdsのいずれか片方を受け取る
     // orderIdを受け取った場合は、peekして得たsvgの中にqueueIdsが埋めこまれている
@@ -178,7 +179,7 @@ class Job extends DeferredValue<Exception> {
     @Override
     public String toString() {
         return String.format(
-            "Job(id=%s, peekUrl=%s, dequeueUrl=%s, cookie=%s, pageFormatId=%d, ticketFormatId=%d, orderId=%d, queueIds=%s)",
+            "Job(id=%s, peekUrl=%s, dequeueUrl=%s, cookie=%s, pageFormatId=%d, ticketFormatId=%d, orderId=%d, queueIds=%s, coverStatus=%s)",
             id,
             peekUrl,
             dequeueUrl,
@@ -186,7 +187,8 @@ class Job extends DeferredValue<Exception> {
             pageFormatId,
             ticketFormatId,
             orderId,
-            queueIds==null ? "(null)" : Joiner.on(".").join(queueIds)
+            queueIds==null ? "(null)" : Joiner.on(".").join(queueIds),
+            coverStatus
         );
     }
 }
@@ -495,6 +497,18 @@ public class Server {
                 throw new HandlerException(String.format("required parameter \"%s\" is invalid", key), 400);
             }
         }
+        
+        private Boolean pickBooleanFromJsonObject(JsonObject obj, String key) throws HandlerException {
+            final JsonElement value = obj.get(key);
+            if (value == null) {
+                throw new HandlerException(String.format("required parameter \"%s\" is missing", key), 400);
+            }
+            try {
+                return value.getAsBoolean();
+            } catch (Exception e) {
+                throw new HandlerException(String.format("required parameter \"%s\" is invalid", key), 400);
+            }
+        }
 
         private Job jobFromJsonObject(JsonObject obj) throws HandlerException {
             final Job job = new Job();
@@ -506,6 +520,11 @@ public class Server {
             job.cookie = pickStringFromJsonObject(obj, "cookie");
             job.pageFormatId = pickIntFromJsonObject(obj, "page_format_id");
             job.ticketFormatId = pickIntFromJsonObject(obj, "ticket_format_id");
+            if(obj.has("with_cover")) {
+            	job.coverStatus = pickBooleanFromJsonObject(obj, "with_cover");
+            } else {
+            	job.coverStatus = false;
+            }
             if(obj.has("order_id")) {
                 job.orderId = pickIntFromJsonObject(obj, "order_id");
                 job.queueIds = null;
@@ -1034,6 +1053,7 @@ public class Server {
                                                     writer.beginObject();
                                                     writer.name("ticket_format_id").value(job.ticketFormatId);
                                                     writer.name("page_format_id").value(job.pageFormatId);
+                                                    writer.name("with_cover").value(job.coverStatus);
                                                     if (job.orderId != null) {
                                                         writer.name("order_id").value(job.orderId);
                                                     } else if (job.queueIds != null && !job.queueIds.isEmpty()) {
@@ -1189,7 +1209,12 @@ public class Server {
     }
 
     private HttpURLConnection openConnection(URL url) throws IOException {
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection(proxyFactory.getProxy());
+    	HttpURLConnection conn = null;
+    	if(proxyFactory.getProxy() != null) {
+    		conn = (HttpURLConnection) url.openConnection(proxyFactory.getProxy());
+    	} else {
+    		conn = (HttpURLConnection) url.openConnection();
+    	}
         if(authString != null && authString.contains(":")) {
             conn.addRequestProperty("Authorization", "Basic " + DatatypeConverter.printBase64Binary(authString.getBytes()));
         }
