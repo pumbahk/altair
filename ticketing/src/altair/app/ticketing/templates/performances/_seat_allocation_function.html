@@ -768,10 +768,11 @@ function transferStocks() {
       }
     }
 
-    if (!to_stock || to_stock.id == from_stock.id){
+    if (!to_stock || to_stock.id == from_stock.id || !to_stock.get('assignable')){
         errors.push(from_stock);
         continue;
     }
+
     if (stock_type.get('isSeat') && !stock_type.get('quantityOnly')) {
       if (venue.perStockSeatSet[from_stock.id]) {
         venue.perStockSeatSet[from_stock.id].each(function(seat){
