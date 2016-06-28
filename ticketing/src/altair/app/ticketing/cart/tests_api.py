@@ -306,10 +306,12 @@ class StockerTests(unittest.TestCase):
         return stock
 
     def test_take_stock_by_stock_id(self):
+        from altair.app.ticketing.core.models import StockStatus
         request = testing.DummyRequest()
         target = self._makeOne(request, self.session)
         stock = self._add_stock(10)
         result = target.take_stock_by_stock_id([(stock.id, 8)])
+        self.session.query(StockStatus).filter(StockStatus.stock_id==result[0][0].stock_id).one() # For the reflection of quantity subtraction
         self.assertEqual(result[0][0].quantity, 2)
         self.assertEqual(result[0][1], 8)
 
