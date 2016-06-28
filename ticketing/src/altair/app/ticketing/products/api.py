@@ -69,6 +69,7 @@ def sync_lot_product_item(original_product_item):
         lot_product_item.price = original_product_item.price
         lot_product_item.quantity = original_product_item.quantity
         lot_product_item.ticket_bundle_id = original_product_item.ticket_bundle_id
+        lot_product_item.stock_id = original_product_item.stock_id
 
 
 def sync_lot_product_add_lot_product_item(original_product, original_product_item):
