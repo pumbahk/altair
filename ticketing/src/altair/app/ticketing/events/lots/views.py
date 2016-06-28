@@ -742,7 +742,7 @@ class LotEntries(BaseView):
 
         if not hasattr(self.request.params["entries"], "file"):
             self.request.session.flash(u"ファイルを指定してください")
-            return HTTPFound(location=self.request.route_url('lots.entries.index', lot_id=lot.id))
+            return HTTPFound(location=self.request.route_url('lots.entries.elect', lot_id=lot.id))
         f = self.request.params['entries'].file
         try:
             elect_wishes, reject_entries, reset_entries = self._parse_import_file(f)
