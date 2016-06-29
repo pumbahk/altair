@@ -65,7 +65,7 @@
         <li><a href="${request.route_path('loyalty.point_grant_history_entry.import')}">ポイント一括付与</a></li>
         % endif
         % if HH.has_permission('administrator'):
-        <li><a style="color:red" href="${request.route_path('orders.seven_cancel')}">強制セブン予約キャンセル</a></li>
+        <li><a style="color:red" href="${request.route_path('orders.sej_cancel')}">強制セブン予約キャンセル</a></li>
         % endif
       </ul>
     </li>

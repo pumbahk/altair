@@ -85,7 +85,7 @@ from .forms import (
     TicketFormatSelectionForm,
     CartSearchForm,
     DeliverdEditForm,
-    SevenOrderCancelForm,
+    SejOrderCancelForm,
     )
 from altair.app.ticketing.orders.forms import OrderMemoEditFormFactory
 from altair.app.ticketing.views import BaseView
@@ -1288,27 +1288,27 @@ class OrderDetailView(OrderBaseView):
             self.request.session.flash(u'予約(%s)をキャンセルできません' % order.order_no)
             raise HTTPFound(location=route_path('orders.show', self.request, order_id=order.id))
 
-    @view_config(route_name='orders.seven_cancel', permission='administrator', request_method='GET'
-                 , renderer='altair.app.ticketing:templates/orders/seven_cancel.html')
-    def seven_cancel(self):
-        form = SevenOrderCancelForm()
+    @view_config(route_name='orders.sej_cancel', permission='administrator', request_method='GET'
+                 , renderer='altair.app.ticketing:templates/orders/sej_cancel.html')
+    def sej_cancel(self):
+        form = SejOrderCancelForm()
         form.validated.data = False
         return {'form': form}
 
-    @view_config(route_name='orders.seven_cancel', permission='administrator', request_method='POST'
-                 , renderer='altair.app.ticketing:templates/orders/seven_cancel.html')
-    def seven_confirm_cancel(self):
-        form = SevenOrderCancelForm(self.request.POST)
+    @view_config(route_name='orders.sej_cancel', permission='administrator', request_method='POST'
+                 , renderer='altair.app.ticketing:templates/orders/sej_cancel.html')
+    def sej_confirm_cancel(self):
+        form = SejOrderCancelForm(self.request.POST)
         order = get_order_by_order_no(self.request, form.order_no.data)
         if not form.validate({'order': order}):
             return {'form': form}
         form.validated.data = True
         return {'order': order, 'form': form}
 
-    @view_config(route_name='orders.seven_cancel_complete', permission='administrator', request_method='POST'
-                 , renderer='altair.app.ticketing:templates/orders/seven_cancel_complete.html')
-    def seven_complete_cancel(self):
-        form = SevenOrderCancelForm(self.request.POST)
+    @view_config(route_name='orders.sej_cancel_complete', permission='administrator', request_method='POST'
+                 , renderer='altair.app.ticketing:templates/orders/sej_cancel_complete.html')
+    def sej_complete_cancel(self):
+        form = SejOrderCancelForm(self.request.POST)
         if form.validated.data:
             order_no = self.request.matchdict.get('order_no', None)
             order = get_order_by_order_no(self.request, order_no)

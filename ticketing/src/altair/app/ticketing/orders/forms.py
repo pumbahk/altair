@@ -1416,7 +1416,7 @@ class DeliverdEditForm(OurForm):
     )
 
 
-class SevenOrderCancelForm(OurForm):
+class SejOrderCancelForm(OurForm):
     validated = HiddenField(
         label=u'バリデート済フラグ',
         validators=[Optional()],
