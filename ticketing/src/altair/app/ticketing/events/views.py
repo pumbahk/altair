@@ -139,7 +139,7 @@ class Events(BaseView):
         # FIXME: ハウステンボスは公演が多くこの処理がものすごく重い。一旦機能をオフにする。後で恒久対応必要
         for event in events:
             if self.context.organization.id == 66:
-                famiport_reflect_button_status[event.id] = "SOME_REFLECTED"
+                famiport_reflect_button_status[event.id] = "NO_NEED_REFLECTION"
             else:
                 famiport_reflect_button_status[event.id] = get_famiport_reflect_button_status(self.request, slave_session, event)
 
@@ -204,7 +204,7 @@ class Events(BaseView):
 
         # FIXME: ハウステンボスは公演が多くこの処理がものすごく重い。一旦機能をオフにする。後で恒久対応必要
         if event.organization_id == 66:
-            famiport_reflect_button_status = "SOME_REFLECTED"
+            famiport_reflect_button_status = "NO_NEED_REFLECTION"
         else:
             famiport_reflect_button_status = get_famiport_reflect_button_status(self.request, slave_session, event)
 
