@@ -136,8 +136,12 @@ class Events(BaseView):
             return self.index_xml(query, 50)
 
         famiport_reflect_button_status = {}
+        # FIXME: ハウステンボスは公演が多くこの処理がものすごく重い。一旦機能をオフにする。後で恒久対応必要
         for event in events:
-            famiport_reflect_button_status[event.id] = get_famiport_reflect_button_status(self.request, slave_session, event)
+            if self.context.organization.id == 66:
+                famiport_reflect_button_status[event.id] = "SOME_REFLECTED"
+            else:
+                famiport_reflect_button_status[event.id] = get_famiport_reflect_button_status(self.request, slave_session, event)
 
         return {
             'form_search': form_search,
@@ -198,11 +202,18 @@ class Events(BaseView):
             performances = performances.filter(PerformanceSetting.visible == True)
         performances = performances.all()
 
-        famiport_reflect_button_status = get_famiport_reflect_button_status(self.request, slave_session, event)
+        # FIXME: ハウステンボスは公演が多くこの処理がものすごく重い。一旦機能をオフにする。後で恒久対応必要
+        if event.organization_id == 66:
+            famiport_reflect_button_status = "SOME_REFLECTED"
+        else:
+            famiport_reflect_button_status = get_famiport_reflect_button_status(self.request, slave_session, event)
+
         from .famiport_helpers import get_famiport_reflection_warnings
         warnings = {}
-        for p in event.performances:
-            warnings.update(get_famiport_reflection_warnings(self.request, slave_session, p))
+        # FIXME: ハウステンボスは公演が多くこの処理がものすごく重い。一旦機能をオフにする。後で恒久対応必要
+        if event.organization_id != 66:
+            for p in event.performances:
+                warnings.update(get_famiport_reflection_warnings(self.request, slave_session, p))
 
         return {
             'organization_setting':self.context.organization.setting,
