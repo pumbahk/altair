@@ -177,7 +177,7 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
 
   var callbackName = ${json.dumps(callback_name)|n};
   var appletCodeBase = ${json.dumps(request.application_url)|n};
-  var appletArchive = ${json.dumps(request.static_url('altair.app.ticketing:static/printing-0.0.4-jar-with-dependencies.jar'))|n};
+  var appletArchive = ${json.dumps(request.static_url('altair.app.ticketing:static/printing-0.0.5-jar-with-dependencies.jar'))|n};
   var appletEndpoints = ${json.dumps(endpoints_json)|n};
   var endpoints = ${endpoints_json|n};
   var cookie = ${json.dumps(request.headers.get('cookie'))|n};
