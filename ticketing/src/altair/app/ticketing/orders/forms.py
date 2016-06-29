@@ -1445,6 +1445,9 @@ class SevenOrderCancelForm(OurForm):
             if order.status == 'canceled':
                 err = ValidationError(u"既にキャンセルされています。")
 
+            if order.status == 'refunded':
+                err = ValidationError(u"払戻されている予約になります。")
+
         if err:
             if not hasattr(self.order_no.errors, 'append'):
                 self.order_no.errors = list(self.order_no.errors)
