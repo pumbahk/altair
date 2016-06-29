@@ -3,6 +3,7 @@
 import unittest
 from pyramid import testing
 from altair.app.ticketing.testing import _setup_db, _teardown_db, DummyRequest
+from altair.app.ticketing.core.models import SalesSegmentKindEnum
 
 
 class SalesSegmentGroupsTests(unittest.TestCase):
@@ -97,7 +98,7 @@ class SalesSegmentGroupsTests(unittest.TestCase):
         sales_segment_group = SalesSegmentGroup(
             event=event,
             organization=organization,
-            kind="lottery",
+            kind=SalesSegmentKindEnum.early_lottery.k,
             sales_segments=[
                 SalesSegment(),
             ],
