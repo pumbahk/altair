@@ -324,9 +324,6 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
     var param = build_form_params($form);
     if (window.ticketPrinterService) {
       param['with_enqueue'] = true;
-      console.log('completeOrder');
-      console.log($('#printWithCover').is(":checked"));
-      console.log($('#ticketFormat option:selected').attr('ticket_format_id'));
       if ($('#printWithCover').is(":checked")) {
         param['with_cover'] = $('#printWithCover').is(":checked");
       }
