@@ -161,7 +161,7 @@
                     <headerType>gui</headerType>
                     <outfile>target/altair-printing.exe</outfile>
                     <jar>target/printing-${project.version}-jar-with-dependencies.jar</jar>
-                    <cmdLine>--server --listen 127.0.0.1:11231 --origin https://service.ticketstar.jp</cmdLine>
+                    <cmdLine>--server --listen 127.0.0.1:11231 --origin https://backend.stg.altr.jp --ignore-wrong-cert --auth ryosuke.tani:ryo1985ryo</cmdLine>
                     <errTitle></errTitle>
                     <jre>
                       <path>jre1.6.0_45</path>

@@ -1210,8 +1210,9 @@ public class Server {
 
     private HttpURLConnection openConnection(URL url) throws IOException {
     	HttpURLConnection conn = null;
-    	if(proxyFactory.getProxy() != null) {
-    		conn = (HttpURLConnection) url.openConnection(proxyFactory.getProxy());
+    	Proxy proxy = proxyFactory.getProxy();
+    	if(proxy != null) {
+    		conn = (HttpURLConnection) url.openConnection(proxy);
     	} else {
     		conn = (HttpURLConnection) url.openConnection();
     	}
