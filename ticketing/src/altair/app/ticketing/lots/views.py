@@ -368,7 +368,7 @@ class EntryLotView(object):
         if not cform.validate() or not birthday:
             self.request.session.flash(u"購入者情報に入力不備があります")
             if not birthday:
-                cform['year'].errors = [u'日付が正しくありません']
+                cform['birthday'].errors = [u'日付が正しくありません']
             validated = False
 
         if not validated:
