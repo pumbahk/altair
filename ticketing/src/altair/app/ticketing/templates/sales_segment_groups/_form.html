@@ -24,6 +24,9 @@
   ${ch.form_item(form.entry_limit)}
   ${ch.form_item(form.description)}
   ${ch.form_item(form.auth_type)}
+  % if request.context.user.organization.setting.lot_entry_user_withdraw:
+    ${ch.form_item(form.lot_entry_user_withdraw)}
+  % endif
   </div>
   ${ch.form_item(form.start_at)}
   ${ch.form_item(form.start_day_prior_to_performance)}

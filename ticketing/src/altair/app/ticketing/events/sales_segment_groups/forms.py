@@ -482,6 +482,12 @@ class SalesSegmentGroupAndLotForm(SalesSegmentGroupForm):
         ],
     )
 
+    lot_entry_user_withdraw = OurBooleanField(
+        label=u'抽選申込ユーザ取消',
+        default=True,
+        widget=CheckboxInput()
+    )
+
     def _auth_types(field):
         retval = [('', u'なし')]
         if hasattr(field._form, 'context'):

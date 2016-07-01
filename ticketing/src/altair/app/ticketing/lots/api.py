@@ -593,6 +593,7 @@ def _create_lot_from_form(event, form, sales_segment_group=None, lot_name=None):
         lotting_announce_timezone=form.data['lotting_announce_timezone'],
         custom_timezone_label=form.data['custom_timezone_label'],
         auth_type=form.data['auth_type'],
+        lot_entry_user_withdraw=form.data['lot_entry_user_withdraw']
         )
     return lot
 
@@ -609,6 +610,7 @@ def _create_lot_from_object(event, lot):
         lotting_announce_timezone=lot.lotting_announce_timezone,
         custom_timezone_label=lot.custom_timezone_label,
         auth_type=lot.auth_type,
+        lot_entry_user_withdraw=lot.lot_entry_user_withdraw
         )
     return lot
 
