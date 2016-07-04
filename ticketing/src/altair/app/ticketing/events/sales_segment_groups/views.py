@@ -12,21 +12,24 @@ from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPBadRequest
 from pyramid.renderers import render_to_response
 from pyramid.url import route_path
+from .forms import CopyLotForm
 
 from altair.sqla import new_comparator
 
 from altair.app.ticketing.models import merge_session_with_post, record_to_multidict
 from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.fanstatic import with_bootstrap
-from altair.app.ticketing.core.models import Event, SalesSegment, SalesSegmentGroup, SalesSegmentGroupSetting, Product
+from altair.app.ticketing.core.models import Event, SalesSegment, SalesSegmentGroup, SalesSegmentGroupSetting, Product, DBSession
 from altair.app.ticketing.events.payment_delivery_method_pairs.forms import PaymentDeliveryMethodPairForm
 from altair.app.ticketing.events.sales_segments.forms import SalesSegmentForm
 from altair.app.ticketing.events.sales_segments.views import SalesSegmentViewHelperMixin
 from altair.app.ticketing.memberships.forms import MemberGroupForm
 from altair.app.ticketing.users.models import MemberGroup, Membership
 from altair.app.ticketing.events.sales_segments.resources import SalesSegmentAccessor
+from altair.app.ticketing.lots.models import Lot
+from altair.app.ticketing.lots.api import create_lot, copy_lot, copy_lots_between_sales_segmnent_group, copy_lots_between_sales_segmnent, create_lot_products
 
-from .forms import SalesSegmentGroupForm, MemberGroupToSalesSegmentForm
+from .forms import SalesSegmentGroupForm, SalesSegmentGroupAndLotForm, MemberGroupToSalesSegmentForm
 
 logger = logging.getLogger(__name__)
 
@@ -74,16 +77,41 @@ class SalesSegmentGroups(BaseView, SalesSegmentViewHelperMixin):
             'sales_segment_group':self.context.sales_segment_group,
             }
 
+    @view_config(route_name='sales_segment_groups.lot_delete', renderer='altair.app.ticketing:templates/sales_segment_groups/show.html', permission='event_viewer')
+    def lot_delete(self):
+        if self.context.lot:
+            if self.context.lot.entries:
+                self.request.session.flash(u'{0}は抽選申し込みが存在します。'.format(self.context.lot.name))
+            else:
+
+                sales_segments_ids = [ss.id for ss in self.context.lot.sales_segment_group.sales_segments]
+                lots = Lot.query.filter(Lot.sales_segment_id.in_(sales_segments_ids)).all()
+
+                if len(lots) > 1:
+                    self.request.session.flash(u"{0}を削除しました。".format(self.context.lot.name))
+                    self.context.lot.sales_segment.delete()
+                    self.context.lot.delete()
+                else:
+                    self.request.session.flash(u'抽選の販売区分グループの抽選をすべて消すことはできません')
+
+        return {
+            'form_s': SalesSegmentForm(context=self.context),
+            'member_groups': self.context.sales_segment_group.membergroups,
+            'sales_segment_group':self.context.sales_segment_group,
+        }
+
     @view_config(route_name='sales_segment_groups.new', request_method='GET', renderer='altair.app.ticketing:templates/sales_segment_groups/_form.html', xhr=True)
     def new_xhr(self):
+        form = SalesSegmentGroupAndLotForm(None, context=self.context, new_form=True)
+        form.lot_form_flag.data = True
         return {
-            'form': SalesSegmentGroupForm(None, context=self.context, new_form=True),
+            'form': form,
             'action': self.request.path,
             }
 
     @view_config(route_name='sales_segment_groups.new', request_method='POST', renderer='altair.app.ticketing:templates/sales_segment_groups/_form.html', xhr=True)
     def new_post(self):
-        f = SalesSegmentGroupForm(self.request.POST, context=self.context, new_form=True)
+        f = SalesSegmentGroupAndLotForm(self.request.POST, context=self.context, new_form=True)
         if f.validate():
             sales_segment_group = merge_session_with_post(
                 SalesSegmentGroup(
@@ -103,6 +131,11 @@ class SalesSegmentGroups(BaseView, SalesSegmentViewHelperMixin):
             accessor = SalesSegmentAccessor()
             for performance in self.context.event.performances:
                 accessor.create_sales_segment_for_performance(sales_segment_group, performance)
+
+            if sales_segment_group.is_lottery():
+                lot = create_lot(sales_segment_group.event, f, sales_segment_group, f.lot_name.data)
+                DBSession.add(lot)
+
             self.request.session.flash(u'販売区分グループを保存しました')
             return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
         else:
@@ -115,7 +148,11 @@ class SalesSegmentGroups(BaseView, SalesSegmentViewHelperMixin):
     @view_config(route_name='sales_segment_groups.edit', request_method='GET', renderer='altair.app.ticketing:templates/sales_segment_groups/_form.html', xhr=True)
     def edit_xhr(self):
         sales_segment_group = self.context.sales_segment_group
-        form = SalesSegmentGroupForm(obj=sales_segment_group, context=self.context)
+        form = SalesSegmentGroupAndLotForm(obj=sales_segment_group, context=self.context)
+        if not sales_segment_group.is_lottery():
+            # 更新で種別が一般の場合、抽選のフォームを出せるようにする
+            form.lot_form_flag.data = True
+
         for k in SalesSegmentAccessor.setting_attributes:
             getattr(form, k).data = getattr(sales_segment_group.setting, k)
         return {
@@ -125,10 +162,12 @@ class SalesSegmentGroups(BaseView, SalesSegmentViewHelperMixin):
 
     # TODO: copyのときに、コピー先の販売区分グループの詳細画面に遷移しない
     def _edit_post(self):
-        f = SalesSegmentGroupForm(self.request.POST, context=self.context)
+        f = SalesSegmentGroupAndLotForm(self.request.POST, context=self.context)
+        f.original_kind.data = self.context.sales_segment_group.kind
         if not f.validate():
             return f
         sales_segment_group = self.context.sales_segment_group
+
         if self.request.matched_route.name == 'sales_segment_groups.copy':
             with_pdmp = bool(f.copy_payment_delivery_method_pairs.data)
             try:
@@ -171,8 +210,11 @@ class SalesSegmentGroups(BaseView, SalesSegmentViewHelperMixin):
                 accessor.update_sales_segment(new_sales_segment)
 
             new_sales_segment_group.sync_member_group_to_children()
-            
+            if "lottery" in f.kind.data:
+                copy_lots_between_sales_segmnent_group(sales_segment_group, new_sales_segment_group)
         else:
+            if not f.validate_kind(self.context.sales_segment_group):
+                return f
             sales_segment_group = merge_session_with_post(sales_segment_group, f.data, excludes=SalesSegmentAccessor.setting_attributes)
             if sales_segment_group.setting is None:
                 sales_segment_group.setting = SalesSegmentGroupSetting()
@@ -191,6 +233,19 @@ class SalesSegmentGroups(BaseView, SalesSegmentViewHelperMixin):
             for sales_segment in sales_segment_group.sales_segments:
                 logger.info('propagating changes to sales_segment(id=%ld)' % sales_segment.id)
                 accessor.update_sales_segment(sales_segment)
+
+            # 一般の種別に更新したら抽選を削除
+            if not sales_segment_group.is_lottery():
+                for lot in sales_segment_group.get_lots():
+                    lot.sales_segment.delete()
+                    lot.delete()
+
+            # 抽選の区分に更新したときに、１つも抽選がなかったら作成する
+            if sales_segment_group.is_lottery() and not sales_segment_group.get_lots():
+                lot = create_lot(sales_segment_group.event, f, sales_segment_group, f.lot_name.data)
+                DBSession.add(lot)
+                create_lot_products(sales_segment_group, lot)
+
 
         self.request.session.flash(u'販売区分グループを保存しました')
         return None
@@ -274,3 +329,24 @@ class SalesSegmentGroups(BaseView, SalesSegmentViewHelperMixin):
         self.request.session.flash(u'membergroupの結びつき変更しました')
         return HTTPFound(self.request.POST["redirect_to"])
 
+    @view_config(route_name='sales_segment_groups.copy_lot',
+                 renderer='altair.app.ticketing:templates/sales_segment_groups/lot_copy.html',
+                 request_method="GET")
+    def get_copy_lot(self):
+        if not self.context.lot:
+            raise HTTPNotFound("指定された抽選がありません")
+        form = CopyLotForm(None, context=self.context, new_form=False)
+        form.create_by_lot(self.context.lot)
+        return {'form': form}
+
+    @view_config(route_name='sales_segment_groups.copy_lot',
+                 renderer='altair.app.ticketing:templates/sales_segment_groups/lot_copy.html',
+                 request_method="POST")
+    def post_copy_lot(self):
+        form = CopyLotForm(self.request.POST, context=self.context)
+        form.set_hidden_data(self.context.lot)
+        if not form.validate():
+            return {'form': form}
+        copy_lot(form.sales_segment_group.data.event, form, form.sales_segment_group.data, form.lot_name.data, form.create_exclude_performance())
+        return HTTPFound(self.request.route_path('sales_segment_groups.show',
+                         sales_segment_group_id=form.sales_segment_group.data.id))

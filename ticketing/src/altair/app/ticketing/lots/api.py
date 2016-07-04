@@ -38,13 +38,16 @@ from sqlalchemy.orm.exc import NoResultFound
 #from pyramid.interfaces import IRequest
 from webob.multidict import MultiDict
 from altair.now import get_now
+from ..products import api as product_api
 from altair.app.ticketing.cart import api as cart_api
 from altair.app.ticketing.utils import sensible_alnum_encode
 from altair.app.ticketing.core import api as core_api
+from altair.app.ticketing.core.models import SalesSegmentKindEnum
 
 from altair.app.ticketing.core.models import (
     Event,
     SalesSegment,
+    SalesSegmentGroup,
     ShippingAddress,
     DBSession,
     Performance,
@@ -78,6 +81,7 @@ from altair.app.ticketing.payments.api import set_confirm_url
 from altair.app.ticketing.payments.payment import Payment
 from altair.app.ticketing.payments.plugins import MULTICHECKOUT_PAYMENT_PLUGIN_ID
 from altair.multicheckout.api import get_multicheckout_3d_api
+from altair.app.ticketing.events.sales_segments.resources import SalesSegmentAccessor
 
 from . import sendmail
 from .events import LotEntriedEvent
@@ -573,3 +577,136 @@ def get_lotting_announce_timezone(timezone):
     if timezone in labels:
         label = labels[timezone]
     return label
+
+
+def _create_lot_from_form(event, form, sales_segment_group=None, lot_name=None):
+    if not lot_name:
+        lot_name = form.data['name']
+    lot = Lot(
+        event=event,
+        organization_id=event.organization_id,
+        name=lot_name,
+        limit_wishes=form.data['limit_wishes'],
+        entry_limit=form.data['entry_limit'],
+        description=form.data['description'],
+        lotting_announce_datetime=form.data['lotting_announce_datetime'],
+        lotting_announce_timezone=form.data['lotting_announce_timezone'],
+        custom_timezone_label=form.data['custom_timezone_label'],
+        auth_type=form.data['auth_type'],
+        lot_entry_user_withdraw=form.data['lot_entry_user_withdraw']
+        )
+    return lot
+
+
+def _create_lot_from_object(event, lot):
+    lot = Lot(
+        event=event,
+        organization_id=event.organization_id,
+        name=lot.name,
+        limit_wishes=lot.limit_wishes,
+        entry_limit=lot.entry_limit,
+        description=lot.description,
+        lotting_announce_datetime=lot.lotting_announce_datetime,
+        lotting_announce_timezone=lot.lotting_announce_timezone,
+        custom_timezone_label=lot.custom_timezone_label,
+        auth_type=lot.auth_type,
+        lot_entry_user_withdraw=lot.lot_entry_user_withdraw
+        )
+    return lot
+
+
+def _create_lot_sales_segment(sales_segment_group, lot, sales_segment_group_id):
+    accessor = SalesSegmentAccessor()
+    sales_segment = accessor.create_sales_segment_for_lot(sales_segment_group, lot)
+    sales_segment.sales_segment_group_id = sales_segment_group_id
+    sales_segment.start_at = sales_segment_group.start_at
+    sales_segment.end_at = sales_segment_group.end_at
+    sales_segment.max_quantity = sales_segment_group.max_quantity
+    sales_segment.seat_choice = False
+    sales_segment.auth3d_notice = sales_segment_group.auth3d_notice
+    sales_segment.account_id = sales_segment_group.account_id
+    return sales_segment
+
+
+def _copy_lot_sales_segment_between_sales_segment_group(sales_segment_group, new_sales_segment_group, lot):
+    accessor = SalesSegmentAccessor()
+    sales_segment = accessor.create_sales_segment_for_lot(new_sales_segment_group, lot)
+    sales_segment.sales_segment_group_id = sales_segment_group.id
+    sales_segment.start_at = sales_segment_group.start_at
+    sales_segment.end_at = sales_segment_group.end_at
+    sales_segment.max_quantity = sales_segment_group.max_quantity
+    sales_segment.seat_choice = False
+    sales_segment.auth3d_notice = sales_segment_group.auth3d_notice
+    sales_segment.account_id = sales_segment_group.account_id
+    return sales_segment
+
+
+def create_lot(event, form, sales_segment_group=None, lot_name=None):
+    if sales_segment_group:
+        sales_segment_group_id = sales_segment_group.id
+    else:
+        sales_segment_group_id = form.data['sales_segment_group_id']
+        sales_segment_group = SalesSegmentGroup.query.filter(SalesSegmentGroup.id == form.data['sales_segment_group_id']).one()
+    new_lot = _create_lot_from_form(event, form, sales_segment_group, lot_name)
+    _create_lot_sales_segment(sales_segment_group, new_lot, sales_segment_group_id)
+    return new_lot
+
+
+def create_lot_products(sales_segment_group, lot, exclude_performances=[]):
+    exclude_sales_segments_ids = []
+    if exclude_performances:
+        exclude_sales_segments = SalesSegment.query.filter(SalesSegment.performance_id.in_(exclude_performances)).all()
+        exclude_sales_segments_ids = [s.id for s in exclude_sales_segments]
+
+    for sales_segment in sales_segment_group.sales_segments:
+        for product in sales_segment.products:
+            if sales_segment.id in exclude_sales_segments_ids:
+                # 除外指定されたものは、コピーしない
+                continue
+            if not product.original_product_id:
+                product_api.add_lot_product(
+                    lot=lot,
+                    original_product=product
+                )
+
+
+def copy_lot(event, form, sales_segment_group, lot_name, exclude_performances):
+    lot = create_lot(event, form, sales_segment_group, lot_name)
+    DBSession.add(lot)
+    create_lot_products(sales_segment_group, lot, exclude_performances)
+
+
+def copy_lots_between_sales_segmnent(sales_segment, new_sales_segment):
+    lot = Lot.query.filter(Lot.sales_segment_id == sales_segment.id).first()
+    sales_segment_group = sales_segment.sales_segment_group
+    new_sales_segment_group = sales_segment.sales_segment_group
+    _copy_lot_sales_segment_between_sales_segment_group(sales_segment_group, new_sales_segment_group, new_lot)
+    create_lot_products(new_sales_segment_group, new_lot)
+
+
+def copy_lots_between_sales_segmnent_group(sales_segment_group, new_sales_segment_group):
+    for sales_segment in sales_segment_group.sales_segments:
+        lots = Lot.query.filter(Lot.sales_segment_id == sales_segment.id).all()
+        for lot in lots:
+            new_lot = _create_lot_from_object(sales_segment_group.event, lot)
+            DBSession.add(new_lot)
+            _copy_lot_sales_segment_between_sales_segment_group(sales_segment_group, new_sales_segment_group, new_lot)
+            create_lot_products(new_sales_segment_group, new_lot)
+
+
+def copy_lots_between_performance(performance, new_performance):
+    for new_sales_segment in new_performance.sales_segments:
+        if not new_sales_segment.is_lottery():
+            continue
+
+        for product in new_sales_segment.products:
+            new_sales_segment_group = new_sales_segment.sales_segment_group
+            sales_segments_ids = [ss.id for ss in new_sales_segment_group.sales_segments]
+            lots = Lot.query.filter(Lot.sales_segment_id.in_(sales_segments_ids)).all()
+
+            for lot in lots:
+                if not product.original_product_id:
+                    product_api.add_lot_product(
+                        lot=lot,
+                        original_product=product
+                    )

@@ -1,0 +1,132 @@
+<%page args="form, action='#'" />
+<%namespace file="/common/helpers.html" name="ch" />
+<form class="form-horizontal" action="${action}" method="POST">
+  <div class="copy-fields">
+    <span class="copy-products-fields" style="display: none;">
+      ${ch.form_item(form.copy_to_stock_holder)}
+    </span>
+    ${ch.form_item(form.copy, style="display: none;")}
+    ${ch.form_item(form.copy_payment_delivery_method_pairs)}
+    ${ch.form_item(form.copy_products)}
+  </div>
+  ${ch.form_item(form.id)}
+  ${ch.form_item(form.event_id)}
+  ${ch.form_item(form.kind, help=ch.help(form.kind))}
+  ${ch.form_item(form.name, maxlength=255)}
+  ${ch.form_item(form.start_at)}
+  ${ch.form_item(form.start_day_prior_to_performance)}
+  ${ch.form_item(form.start_time)}
+  ${ch.form_item(form.end_at)}
+  ${ch.form_item(form.end_day_prior_to_performance)}
+  ${ch.form_item(form.end_time)}
+  ${ch.form_item(form.account_id, style='width:710px')}
+  ${ch.form_item(form.margin_ratio)}
+  ${ch.form_item(form.refund_ratio)}
+  ${ch.form_item(form.printing_fee)}
+  ${ch.form_item(form.registration_fee)}
+  ${ch.form_item(form.max_quantity)}
+  ${ch.form_item(form.max_quantity_per_user)}
+  ${ch.form_item(form.max_product_quatity)}
+  ${ch.form_item(form.order_limit)}
+  ${ch.form_item(form.seat_choice)}
+  ${ch.form_item(form.display_seat_no)}
+  ${ch.form_item(form.public)}
+  ${ch.form_item(form.disp_orderreview)}
+  ${ch.form_item(form.disp_agreement)}
+  ${ch.form_item(form.reporting)}
+  ${ch.form_item(form.sales_counter_selectable, help=ch.help(form.sales_counter_selectable))}
+  ${ch.form_item(form.auth3d_notice, style="width:80%; height:10em")}
+  ${ch.form_item(form.agreement_body, style="width:80%; height:10em")}
+  ${ch.form_item(form.extra_form_fields, class_="btn")}
+
+  <script src="${request.static_url('altair.app.ticketing:static/js/jquery.chosen.js')}"></script>
+  <link rel="stylesheet" type="text/css" href="${request.static_url('altair.app.ticketing:static/css/chosen.css')}" />
+  <script type="text/javascript">
+    (function(form) {
+      var acc = $(".form-horizontal *[name=account_id]");
+      if (acc) {
+        acc.chosen();
+      }
+
+      form.find("input[type='checkbox']").change(function() {
+        if ($(this).attr('checked')) {
+          $(this).val(1);
+        } else {
+          $(this).val(0);
+        }
+      }).change();
+
+      form.find('#copy_products').change(function() {
+        if ($(this).attr('checked')) {
+          $('#copy-products-fields').css('display', 'block');
+        } else {
+          $('#copy-products-fields').css('display', 'none');
+        }
+      }).change();
+
+      form.find('#seat_choice').change(function() {
+        var display_seat_no = form.find('#display_seat_no');
+        if ($(this).attr('checked')) {
+          display_seat_no.attr('disabled', 'disabled').attr('checked','checked').change();
+        } else {
+          display_seat_no.removeAttr('disabled');
+        }
+      }).change();
+
+      form.find('select[name="kind"]').change(function() {
+        var public = form.find('#public');
+        var public_kind = [${','.join(["'{0}'".format(pk) for pk in form.public_kind])|n}];
+        var value = $(this).find('option:selected').val();
+        if ($.inArray(value, public_kind) < 0) {
+          public.attr('disabled', 'disabled').removeAttr('checked').change();
+        } else {
+          public.removeAttr('disabled');
+        }
+      }).change();
+
+      var warning_entry = function (selector, validators){
+          $(selector).on('change', function (event){
+              var msg;
+              var target = $(event.target);
+              var next_el = $(event.target.nextSibling);
+              if (! next_el.hasClass('message')){
+                  msg = $('<span class="message"></span>').css({
+                      'color': 'red'
+                  });
+                  target.after(msg);
+              }else{
+                  msg = next_el;
+              }
+              target.css({
+                  'background-color': 'transparent'
+              });
+              msg.text("");
+              $.each(validators, function (message, validator){
+                  if(validator(event)){
+                      msg.text(message);
+                      target.css({
+                          'background-color': 'yellow'
+                      });
+                  }
+              });
+          });
+      }
+
+      var ratio_validators = {
+          "不正な値が指定されています": function (event) {
+              console.log("S");
+              return Number.isNaN(parseFloat(event.target.value));
+          },
+          '100%以上の値が指定されています': function (event) {
+              return parseFloat(event.target.value) >= 100;
+          }
+      };
+
+      warning_entry('input#margin_ratio', ratio_validators);
+      warning_entry('input#refund_ratio', ratio_validators);
+
+      $('[rel=popover]').popover({html:true});
+    })($('script:last').parent());
+  </script>
+</form>
+<%include file="../sales_segments/_extra_form_editor_button.html" />

@@ -5,6 +5,7 @@ from wtforms import HiddenField
 from wtforms.validators import Regexp, Length, Optional, ValidationError, NumberRange
 from wtforms.widgets import CheckboxInput, TableWidget
 from datetime import datetime, timedelta
+from altair.app.ticketing.security import get_plugin_names
 from altair.formhelpers import (
     OurTextField,
     OurTextAreaField,
@@ -419,6 +420,187 @@ class SalesSegmentGroupForm(OurForm):
             self._validate_display_seat_no,
             self._validate_public
             ]])
+
+
+class SalesSegmentGroupAndLotForm(SalesSegmentGroupForm):
+    lot_form_flag = HiddenField(default=False)
+    original_kind = HiddenField(default=False)
+    lot_name = OurTextField(
+        label=u'抽選名',
+        validators=[
+            Required(),
+            Length(max=255, message=u'255文字以内で入力してください'),
+        ],
+    )
+    limit_wishes = OurIntegerField(
+        label=u'希望取得上限',
+        validators=[
+            Required(),
+        ],
+    )
+
+    entry_limit = OurIntegerField(
+        label=u'申込上限回数',
+        validators=[
+            Required(),
+        ],
+    )
+
+    description = OurTextAreaField(
+        label=u'注意文言',
+        default=u'',
+    )
+
+    lotting_announce_datetime = OurDateTimeField(
+        label=u"抽選結果発表予定日",
+        format='%Y-%m-%d %H:%M',
+        validators=[
+            Required(),
+        ],
+    )
+
+    lotting_announce_timezone = OurSelectField(
+        label=u"抽選予定時間帯",
+        validators=[
+            Optional(),
+        ],
+        choices=[
+              ('', u'時間まで表示')
+            , ('morning', u'午前(6:00 - 12:00)')
+            , ('day', u'昼以降(12:00 - 16:00)')
+            , ('evening', u'夕方以降(16:00 - 19:00)')
+            , ('night', u'夜(19:00 - 2:00)')
+            , ('next_morning', u'明朝(翌2:00 - 翌6:00)')
+        ],
+    )
+
+    custom_timezone_label = OurTextField(
+        label=u'抽選時間帯カスタムラベル（抽選予定時間帯より優先）',
+        validators=[
+            Optional(),
+            Length(max=255, message=u'255文字以内で入力してください'),
+        ],
+    )
+
+    lot_entry_user_withdraw = OurBooleanField(
+        label=u'抽選申込ユーザ取消',
+        default=True,
+        widget=CheckboxInput()
+    )
+
+    def _auth_types(field):
+        retval = [('', u'なし')]
+        if hasattr(field._form, 'context'):
+            retval.extend(get_plugin_names(field._form.context.request))
+        return retval
+
+    auth_type = OurSelectField(
+        label=u"認証方法",
+        choices=_auth_types
+    )
+
+    def validate_kind(self, sales_segment_group):
+        # 抽選に申込があった場合は、抽選の種別から一般の種別に変更できない
+        if self.original_kind.data.count("lottery") and not self.kind.data.count("lottery"):
+            for lot in sales_segment_group.get_lots():
+                if lot.entries:
+                    append_error(self.kind, ValidationError(u"抽選に申込があるため、種別の変更はできません。"))
+                    return False
+        return True
+
+    def validate(self, *args, **kwargs):
+        if not all([fn(*args, **kwargs) for fn in [
+            self._validate_start,
+            self._validate_end,
+            self._validate_term,
+            self._validate_display_seat_no,
+            self._validate_public
+                ]]):
+            return False
+
+        """
+        以下の場合抽選のバリデーションを実施しない
+        ・一般の種別のもの
+        ・抽選から抽選に更新した場合
+        """
+        if not self.kind.data.count("lottery"):
+            return True
+
+        if self.original_kind.data:
+            if self.original_kind.data.count("lottery") and self.kind.data.count("lottery"):
+                return True
+
+        # 抽選のバリデーション
+        return all([fn((), {}) for fn in [
+            self.lot_name.validate,
+            self.limit_wishes.validate,
+            self.entry_limit.validate,
+            self.description.validate,
+            self.lotting_announce_datetime.validate,
+            self.lotting_announce_timezone.validate,
+            self.custom_timezone_label.validate,
+        ]])
+
+
+class CheckedOurSelectMultipleField(OurSelectMultipleField):
+    def iter_choices(self):
+        current_value = self.data if self.data is not None else self.coerce(self.default)
+        for value, label in self.choices:
+            yield (value, label, self.coerce(value) == current_value)
+
+
+class CopyLotForm(SalesSegmentGroupAndLotForm):
+    def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
+        super(SalesSegmentGroupAndLotForm, self).__init__(formdata, obj, prefix, **kwargs)
+        perfs = self.context.lot.sales_segment.event.performances
+        self.performances.choices = [(p.id, p.name) for p in perfs]
+
+    sales_segment_group = HiddenField()
+    lot = HiddenField()
+    performances = CheckedOurSelectMultipleField(
+        label=u'コピーするパフォーマンス',
+        validators=[Optional()],
+        choices=[],
+        coerce=int,
+        default=27070,
+    )
+
+    def set_hidden_data(self, lot):
+        self.lot.data = lot
+        self.sales_segment_group.data = lot.sales_segment.sales_segment_group
+
+    def create_by_lot(self, lot):
+        self.set_hidden_data(lot)
+        self.lot_name.data = lot.name
+        self.limit_wishes.data = lot.limit_wishes
+        self.entry_limit.data = lot.entry_limit
+        self.description.data = lot.description
+        self.lotting_announce_datetime.data = lot.lotting_announce_datetime
+        self.lotting_announce_timezone.data = lot.lotting_announce_timezone
+        self.custom_timezone_label.data = lot.custom_timezone_label
+        self.auth_type.data = lot.auth_type
+        self.lot_entry_user_withdraw.data = lot.lot_entry_user_withdraw
+
+    def create_exclude_performance(self):
+        exclude_performances = []
+        for sales_segment in self.sales_segment_group.data.sales_segments:
+            if not sales_segment.performance:
+                continue
+            if sales_segment.performance.id not in self.performances.data:
+                exclude_performances.append(sales_segment.performance.id)
+        return exclude_performances
+
+    def validate(self, *args, **kwargs):
+        # 抽選が選択されている場合の追加のバリデーション
+        return all([fn((), {}) for fn in [
+            self.lot_name.validate,
+            self.limit_wishes.validate,
+            self.entry_limit.validate,
+            self.description.validate,
+            self.lotting_announce_datetime.validate,
+            self.lotting_announce_timezone.validate,
+            self.custom_timezone_label.validate,
+        ]])
 
 
 class MemberGroupToSalesSegmentForm(OurForm):

@@ -3,6 +3,8 @@ from sqlalchemy.orm.exc import NoResultFound
 
 from altair.app.ticketing.resources import TicketingAdminResource
 from altair.app.ticketing.core.models import SalesSegment, SalesSegmentGroup, Performance, Event, Organization, PaymentDeliveryMethodPair
+from altair.app.ticketing.lots.models import Lot
+from .forms import CopyLotForm
 
 class SalesSegmentGroupAdminResource(TicketingAdminResource):
     def __init__(self, request):
@@ -55,3 +57,8 @@ class SalesSegmentGroupAdminResource(TicketingAdminResource):
                 self.event = self.sales_segment_group.event
         else:
             self.sales_segment_group = None
+
+    @property
+    def lot(self):
+        lot_id = self.request.matchdict.get('lot_id')
+        return Lot.query.filter(Lot.id == lot_id).first()
