@@ -1,0 +1,55 @@
+<%inherit file="./base.html"/>
+<%namespace file="tags_smartphone.html" name="t" />
+<%block name="css">
+<style type="text/css">
+form {
+  padding: 0 0;
+  margin: 0 0;
+}
+.error-list {
+  color: #ff0000;
+}
+.error {
+  color: #ff0000;
+}
+.methodArea {
+  border: 1px solid #000000;
+  background-color: cornsilk;
+}
+</style>
+</%block>
+
+%if request.session.peek_flash():
+    %for message in request.session.pop_flash():
+    <div class="error">${message}</div>
+    %endfor
+%endif
+<form id="form1" name="form1" method="post" action="${request.url}">
+  <h2 class="glitter red">追加情報の入力</h2>
+  <div class="confirmBox">
+    <div class="confirmBoxInner">
+      % for i, field in enumerate(form_fields):
+      <div class="dispBox">
+      % if field['field']:
+        <%t:header>${field['field'].label}</%t:header>
+        <div class="dispBoxInner">
+          % if field['field'].description:
+          <div>${field['field'].description}</div>
+          % endif
+          <div>
+            ${field['field'](_widget=h.sensible_widget(request, field['field'].widget))}
+            ${h.error_list(request, field['field'])}
+          </div>
+          % if field['field']._note:
+          <div>${field['field']._note}</div>
+          % endif
+      % else:
+        <div>${field['description']}</div>
+      % endif
+      % endfor
+    </div>
+  </div>
+  <div class="buttonbox">
+    <button class="btn btn-primary btn-large">次へ</button>
+  </div>
+</form>
