@@ -579,6 +579,7 @@ class CopyLotForm(SalesSegmentGroupAndLotForm):
         self.lotting_announce_timezone.data = lot.lotting_announce_timezone
         self.custom_timezone_label.data = lot.custom_timezone_label
         self.auth_type.data = lot.auth_type
+        self.lot_entry_user_withdraw.data = lot.lot_entry_user_withdraw
 
     def create_exclude_performance(self):
         exclude_performances = []
