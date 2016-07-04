@@ -9,36 +9,16 @@
     ${ch.form_item(form.copy_payment_delivery_method_pairs)}
     ${ch.form_item(form.copy_products)}
   </div>
-  ${ch.form_item(form.lot_form_flag)}
   ${ch.form_item(form.id)}
   ${ch.form_item(form.event_id)}
-  % if request.current_route_url().count("copy"):
-    ${ch.form_item(form.kind, help=ch.help(form.kind), disabled=None)}
-  % else:
-    ${ch.form_item(form.kind, help=ch.help(form.kind))}
-  % endif
+  ${ch.form_item(form.kind, help=ch.help(form.kind))}
   ${ch.form_item(form.name, maxlength=255)}
-  <div class="lot_area">
-  ${ch.form_item(form.lot_name, maxlength=255)}
-  ${ch.form_item(form.limit_wishes)}
-  ${ch.form_item(form.entry_limit)}
-  ${ch.form_item(form.description)}
-  ${ch.form_item(form.auth_type)}
-  % if request.context.user.organization.setting.lot_entry_user_withdraw:
-    ${ch.form_item(form.lot_entry_user_withdraw)}
-  % endif
-  </div>
   ${ch.form_item(form.start_at)}
   ${ch.form_item(form.start_day_prior_to_performance)}
   ${ch.form_item(form.start_time)}
   ${ch.form_item(form.end_at)}
   ${ch.form_item(form.end_day_prior_to_performance)}
   ${ch.form_item(form.end_time)}
-  <div class="lot_area">
-  ${ch.form_item(form.lotting_announce_datetime)}
-  ${ch.form_item(form.lotting_announce_timezone)}
-  ${ch.form_item(form.custom_timezone_label)}
-  </div>
   ${ch.form_item(form.account_id, style='width:710px')}
   ${ch.form_item(form.margin_ratio)}
   ${ch.form_item(form.refund_ratio)}
@@ -48,10 +28,8 @@
   ${ch.form_item(form.max_quantity_per_user)}
   ${ch.form_item(form.max_product_quatity)}
   ${ch.form_item(form.order_limit)}
-  <div class="not_lot_area">
   ${ch.form_item(form.seat_choice)}
   ${ch.form_item(form.display_seat_no)}
-  </div>
   ${ch.form_item(form.public)}
   ${ch.form_item(form.disp_orderreview)}
   ${ch.form_item(form.disp_agreement)}
@@ -59,39 +37,11 @@
   ${ch.form_item(form.sales_counter_selectable, help=ch.help(form.sales_counter_selectable))}
   ${ch.form_item(form.auth3d_notice, style="width:80%; height:10em")}
   ${ch.form_item(form.agreement_body, style="width:80%; height:10em")}
-  <div class="not_lot_area">
   ${ch.form_item(form.extra_form_fields, class_="btn")}
-  </div>
 
   <script src="${request.static_url('altair.app.ticketing:static/js/jquery.chosen.js')}"></script>
   <link rel="stylesheet" type="text/css" href="${request.static_url('altair.app.ticketing:static/css/chosen.css')}" />
   <script type="text/javascript">
-    function showLotForm() {
-      $('.lot_area').show();
-      $('.not_lot_area').hide();
-      $("label[for='start_at']").text("抽選受付開始日時");
-      /*
-      $("label[for='start_day_prior_to_performance']").text("抽選受付開始日時(抽選結果発表日までの日数)");
-      $("label[for='start_time']").text("抽選受付開始日時(時刻)");
-      $("label[for='end_at']").text("抽選受付終了日時");
-      $("label[for='end_day_prior_to_performance']").text("抽選受付終了日時(抽選結果発表日までの日数)");
-      $("label[for='end_time']").text("抽選受付終了日時(時刻)");
-      */
-    }
-
-    function hideLotForm() {
-      $('.lot_area').hide();
-      $('.not_lot_area').show();
-      $("label[for='start_at']").text("販売開始日時");
-      /*
-      $("label[for='start_day_prior_to_performance']").text("販売開始日時(公演開始までの日数)");
-      $("label[for='start_time']").text("販売開始日時(時刻)");
-      $("label[for='end_at']").text("販売終了日時");
-      $("label[for='end_day_prior_to_performance']").text("販売終了日時(公演開始までの日数)");
-      $("label[for='end_time']").text("販売終了日時(時刻)");
-      */
-    }
-
     (function(form) {
       var acc = $(".form-horizontal *[name=account_id]");
       if (acc) {
@@ -124,23 +74,6 @@
       }).change();
 
       form.find('select[name="kind"]').change(function() {
-        // 抽選入力箇所の表示切替
-        if ($('#lot_form_flag').val() == "True") {
-          if (form.find('select[name="kind"]').val().match(/lottery/)) {
-            showLotForm();
-          } else {
-            hideLotForm();
-          }
-        } else {
-          // 更新の抽選の場合
-          hideLotForm();
-          if (form.find('select[name="kind"]').val().match(/lottery/)) {
-            $('.not_lot_area').hide();
-          } else {
-            $('.not_lot_area').show();
-          }
-        }
-
         var public = form.find('#public');
         var public_kind = [${','.join(["'{0}'".format(pk) for pk in form.public_kind])|n}];
         var value = $(this).find('option:selected').val();

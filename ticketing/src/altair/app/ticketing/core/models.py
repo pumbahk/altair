@@ -1651,6 +1651,13 @@ class SalesSegmentGroup(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 SalesSegmentKindEnum.added_lottery.k)
             )
 
+    def get_lots(self):
+        from ..lots.models import Lot
+        lots = []
+        for sales_segment in self.sales_segments:
+            lots = lots + Lot.query.filter(Lot.sales_segment_id == sales_segment.id).all()
+        return lots
+
     @hybrid_property
     def sales_counter(self):
         return self.kind == SalesSegmentKindEnum.sales_counter.k
@@ -1668,6 +1675,10 @@ class SalesSegmentGroup(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     @property
     def has_guest(self):
         return (not self.membergroups) or any(mg.is_guest for mg in self.membergroups)
+
+    def is_lottery(self):
+        """抽選の販売区分か判定"""
+        return 'lottery' in self.kind
 
     # 4423対応中の緩衝材メソッド
     def sync_member_group_to_children(self):
@@ -2221,6 +2232,8 @@ class ProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     quantity = Column(Integer, nullable=False, default=1, server_default='1')
     ticket_bundle_id = Column(Identifier, ForeignKey('TicketBundle.id'), nullable=True)
 
+    original_product_item_id = Column(Integer, nullable=True)
+
     @property
     def stock_type_id(self):
         return self.stock.stock_type_id
@@ -2236,6 +2249,12 @@ class ProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             return self.seatStatus
         else:
             return None
+
+    def get_original(self):
+        if not self.original_product_item_id:
+            return None
+
+        return ProductItem.get(self.original_product_item_id)
 
     def delete(self):
         # 既に予約されている場合は削除できない
@@ -2770,6 +2789,8 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     augus_ticket_id = Column(Identifier, ForeignKey('AugusTicket.id'), nullable=True)
     augus_ticket = relationship('AugusTicket', backref='products')
 
+    original_product_id = Column(Integer, nullable=True)
+
     @staticmethod
     def find(performance_id=None, event_id=None, sales_segment_group_id=None, stock_id=None, include_deleted=False):
         query = DBSession.query(Product, include_deleted=include_deleted)
@@ -2848,6 +2869,12 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             item.seatStatus.status = SeatStatusEnum.Vacant.v
         DBSession.flush()
         return True
+
+    def get_original(self):
+        if not self.original_product_id:
+            return None
+
+        return Product.get(self.original_product_id)
 
     def put_in_cart(self):
         if self.get_for_update() == False:

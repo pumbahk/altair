@@ -125,57 +125,64 @@ ${tabs.tabs(request)}
 
 <div>
   <h3>当落確定</h3>
-  <div class="alert alert-warning">
-    最終的な当選、落選を確定します。<br>
-    当選、落選を確定すると、ユーザーに当選メールおよび落選メールが送信されます。<br>
-    また、クレジットカードで申込された抽選申込は、オーソリ(与信枠)が確保されている為、当選 / 落選の確定後にすべて開放してください。<br>
-    オーソリ開放は、当選 / 落選 の確定後のみ実行可能です。
-  </div>
-  %if lot.is_finished():
-    この抽選は終了しました
-  %else:
-  <p>
-    <ul>
-    %for blocker in electing.blockers:
-      <li>${blocker}</li>
-    %endfor
-    </ul>
-  </p>
-  <div class="pull-left">
+  % if h.exist_not_quantity_only_stock_type(lot):
+    <div class="alert alert-error">
+      <div>抽選に、座席選択ありの商品があります。</div>
+      <div>そのため、当選、落選処理ができません。</div>
+    </div>
+  % else:
+    <div class="alert alert-warning">
+      最終的な当選、落選を確定します。<br>
+      当選、落選を確定すると、ユーザーに当選メールおよび落選メールが送信されます。<br>
+      また、クレジットカードで申込された抽選申込は、オーソリ(与信枠)が確保されている為、当選 / 落選の確定後にすべて開放してください。<br>
+      オーソリ開放は、当選 / 落選 の確定後のみ実行可能です。
+    </div>
+    %if lot.is_finished():
+      この抽選は終了しました
+    %else:
     <p>
-      <button ${"disabled" if electing.blockers or not process_possible else ""} id="btn-election"
-              class="btn btn-large btn-primary pull-left" style="margin-right: 5px;">
-        当選確定する
-      </button>
-      <button ${"disabled" if electing.blockers or not process_possible else ""} id="btn-rejection"
-              class="btn btn-large btn-info" style="margin-right: 5px;">
-        落選確定する
-      </button>
-      <button id="btn-entries-close" ${"disabled" if not closer.can_close() or not process_possible else ""} class="btn btn-large btn-warning"
-              style="margin-right: 5px;" data-toggle="popover" data-placement="right" data-original-title=""
-              data-content="当落の確定していない申込があるか、メールが未送信のためオーソリ開放できません" >
-        オーソリ開放する
-      </button>
+      <ul>
+      %for blocker in electing.blockers:
+        <li>${blocker}</li>
+      %endfor
+      </ul>
     </p>
-    <p>
-      <button id="btn-send-election-mail"  class="btn btn-large btn-primary"
-              data-toggle="popover" data-placement="right" data-content="" data-original-title="">
-        当選結果通知
-      </button>
-      <button id="btn-send-rejection-mail" class="btn btn-large btn-info"
-              data-toggle="popover" data-placement="right" data-content="" data-original-title="">
-        落選結果通知
-      </button>
-    </p>
-    %if not closer.can_close():
-    <script>
-    $(function() {
-      $('#btn-entries-close').popover('show');
-    })
-    </script>
+    <div class="pull-left">
+      <p>
+        <button ${"disabled" if electing.blockers or not process_possible else ""} id="btn-election"
+                class="btn btn-large btn-primary pull-left" style="margin-right: 5px;">
+          当選確定する
+        </button>
+        <button ${"disabled" if electing.blockers or not process_possible else ""} id="btn-rejection"
+                class="btn btn-large btn-info" style="margin-right: 5px;">
+          落選確定する
+        </button>
+        <button id="btn-entries-close" ${"disabled" if not closer.can_close() or not process_possible else ""} class="btn btn-large btn-warning"
+                style="margin-right: 5px;" data-toggle="popover" data-placement="right" data-original-title=""
+                data-content="当落の確定していない申込があるか、メールが未送信のためオーソリ開放できません" >
+          オーソリ開放する
+        </button>
+      </p>
+      <p>
+        <button id="btn-send-election-mail"  class="btn btn-large btn-primary"
+                data-toggle="popover" data-placement="right" data-content="" data-original-title="">
+          当選結果通知
+        </button>
+        <button id="btn-send-rejection-mail" class="btn btn-large btn-info"
+                data-toggle="popover" data-placement="right" data-content="" data-original-title="">
+          落選結果通知
+        </button>
+      </p>
+      %if not closer.can_close():
+      <script>
+      $(function() {
+        $('#btn-entries-close').popover('show');
+      })
+      </script>
+      %endif
+    </div>
     %endif
-  </div>
-  %endif
+  % endif
 </div>
 
 

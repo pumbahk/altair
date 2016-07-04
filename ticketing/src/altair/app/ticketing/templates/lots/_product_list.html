@@ -2,7 +2,11 @@
 <%
   from altair.app.ticketing.cart.helpers import format_currency
 %>
-
+<style>
+table tr.not_quantity_only td{
+  background-color: #DC143C;
+}
+</style>
 <div>
   <h3>対象商品</h3>
   %if not lot.products:
@@ -25,12 +29,17 @@
       </thead>
       <tbody>
         %for product in lot.products:
-        <tr>
+        <% quantity_only = h.is_quantity_only_stock_type(lot, product.seat_stock_type) %>
+        % if quantity_only:
+          <tr>
+        % else:
+          <tr class="not_quantity_only">
+        % endif
           <td><input type="checkbox" name="product_id" value="${product.id}"></td>
           <td>${product.performance.name}</td>
           <td>${vh.datetime(product.performance.start_on, with_weekday=True)}</td>
           <td>${product.name}</td>
-          <td>${product.seat_stock_type.name}</td>
+          <td>${product.seat_stock_type.name}${"" if quantity_only else u"(座席指定)"}</td>
           <td style="text-align: right;">${format_currency(product.price)}</td>
           <td>${product.display_order}</td>
           <td><a class="btn btn-small" href="${request.route_url('lots.product_edit', product_id=product.id)}"><i class="icon-edit"></i>編集</a>
