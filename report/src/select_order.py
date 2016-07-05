@@ -58,7 +58,17 @@ sql_select_per_order = """
             SELECT UserCredential.auth_identifier
             FROM UserCredential
             WHERE UserCredential.user_id = `Order`.user_id AND UserCredential.deleted_at IS NULL
-        ), '') AS fc_id
+        ), '') AS fc_id,
+        IF(`Order`.user_id > 0, (
+            SELECT User.id
+            FROM User
+            WHERE User.id = `Order`.user_id AND User.deleted_at IS NULL
+        ), '') AS user_id,
+        IF(`Order`.user_id > 0, (
+            SELECT UserCredential.authz_identifier
+            FROM UserCredential
+            WHERE UserCredential.user_id = `Order`.user_id AND UserCredential.deleted_at IS NULL
+        ), '') AS member_id
     FROM `Order`
     JOIN Cart ON Cart.order_id = `Order`.id
     JOIN Performance ON Performance.id = `Order`.performance_id
@@ -99,6 +109,8 @@ cols = [
     ('delivery_method', int),
     ('fc_type', unicode),
     ('fc_id', unicode),
+    ('user_id', unicode),
+    ('member_id', unicode),
     ('total', int),
     ('fee', int),
     ('qty', int),
@@ -135,6 +147,12 @@ def main():
             # fc_id
             if row['fc_id'] is None:
                 row['fc_id'] = ''
+
+            if row['user_id'] is None:
+                row['user_id'] = ''
+
+            if row['member_id'] is None:
+                row['member_id'] = ''
 
             # point
             if row['point'] is None:
