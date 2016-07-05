@@ -26,7 +26,7 @@ create table order201605 (
     fc_type varchar(1023) not null,
     fc_id varchar(1023) not null,
     user_id varchar(1023) not null,
-    member_id varchar(1023) not null,
+    authz_identifier varchar(1023) not null,
     total int unsigned not null,
     fee int unsigned not null,
     qty int unsigned not null,

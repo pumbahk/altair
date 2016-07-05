@@ -68,7 +68,7 @@ sql_select_per_order = """
             SELECT UserCredential.authz_identifier
             FROM UserCredential
             WHERE UserCredential.user_id = `Order`.user_id AND UserCredential.deleted_at IS NULL
-        ), '') AS member_id
+        ), '') AS authz_identifier
     FROM `Order`
     JOIN Cart ON Cart.order_id = `Order`.id
     JOIN Performance ON Performance.id = `Order`.performance_id
@@ -110,7 +110,7 @@ cols = [
     ('fc_type', unicode),
     ('fc_id', unicode),
     ('user_id', unicode),
-    ('member_id', unicode),
+    ('authz_identifier', unicode),
     ('total', int),
     ('fee', int),
     ('qty', int),
@@ -151,8 +151,8 @@ def main():
             if row['user_id'] is None:
                 row['user_id'] = ''
 
-            if row['member_id'] is None:
-                row['member_id'] = ''
+            if row['authz_identifier'] is None:
+                row['authz_identifier'] = ''
 
             # point
             if row['point'] is None:

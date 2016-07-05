@@ -20,7 +20,7 @@ select
     fc_type,
     IF(fc_type ='', '', fc_id) AS fc_id,
     user_id,
-    member_id,
+    authz_identifier,
     total,
     fee,
     qty,
