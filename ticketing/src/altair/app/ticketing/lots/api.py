@@ -663,6 +663,10 @@ def create_lot_products(sales_segment_group, lot, exclude_performances=[]):
             if sales_segment.id in exclude_sales_segments_ids:
                 # 除外指定されたものは、コピーしない
                 continue
+
+            if not sales_segment.performance_id:
+                continue
+
             if not product.original_product_id:
                 product_api.add_lot_product(
                     lot=lot,
