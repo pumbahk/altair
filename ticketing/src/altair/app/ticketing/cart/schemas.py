@@ -125,7 +125,7 @@ class ClientForm(OurDynamicForm):
         validators=[
             SwitchOptional('tel_2'),
             Required(),
-            Length(min=1, max=11),
+            Length(min=10, max=11),
             Regexp(r'^\d*$', message=u'-(ハイフン)を抜いた半角数字のみを入力してください'),
             ]
         )
@@ -135,7 +135,7 @@ class ClientForm(OurDynamicForm):
         filters=[ignore_space_hyphen, NFKC],
         validators=[
             Optional(),
-            Length(min=1, max=11),
+            Length(min=10, max=11),
             Regexp(r'^\d*$', message=u'-(ハイフン)を抜いた半角数字のみを入力してください'),
             ]
         )
@@ -145,7 +145,7 @@ class ClientForm(OurDynamicForm):
         filters=[ignore_space_hyphen, NFKC],
         validators=[
             Optional(),
-            Length(min=1, max=11),
+            Length(min=10, max=11),
             Phone(u'FAX番号を確認してください'),
             ]
         )
