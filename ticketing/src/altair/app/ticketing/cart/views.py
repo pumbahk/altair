@@ -422,7 +422,8 @@ class IndexView(IndexViewMixin):
                 return sales_segments_selection[0][1][0]
 
             first_ss_id = get_first_selection_obj(sales_segments_selection).get('id')
-            selected_sales_segment = filter(lambda ss:ss.id==first_ss_id, sales_segments)[0]
+            ss_filtered_by_id = filter(lambda ss:ss.id==first_ss_id, sales_segments)
+            selected_sales_segment = ss_filtered_by_id[0] if ss_filtered_by_id else sales_segments[0]
         else:
             # パフォーマンスIDから販売区分の解決を試みる
             # performance_id で指定される Performance は
