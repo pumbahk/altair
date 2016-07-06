@@ -47,6 +47,11 @@ table tr.not_quantity_only td{
         %endfor
       </tbody>
     </table>
+    % if h.exist_not_quantity_only_stock_type(lot):
+    <div style="color:red">
+    数受けではない席種の商品があります
+    </div>
+    % endif
     <div class="btn-group">
       <a href="${request.route_url('lots.product_new', lot_id=lot.id)}" class="btn"><i class="icon-plus"></i>新規</a>
       <button type="submit" name="action-delete" class="btn"><i class="icon-minus"></i>削除</button>
