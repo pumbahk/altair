@@ -991,6 +991,8 @@ class PrintedReportSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     operator_id = Column(Identifier, nullable=False)
     start_on = Column(DateTime, nullable=True, default=None)
     end_on = Column(DateTime, nullable=True, default=None)
+    time = Column(Time, nullable=True, default=None)
+    last_sent_at = Column(DateTime, nullable=True, default=None)
     recipients = relationship('PrintedReportRecipient', secondary=PrinttedReportSetting_PrintedReportRecipient.__table__, backref='settings')
 
     def format_recipients(self):

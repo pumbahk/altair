@@ -2,13 +2,13 @@
 import logging
 import sys
 import argparse
-from datetime import datetime, timedelta
+from datetime import datetime, time, timedelta
 from sqlalchemy.sql import func
 from altair.app.ticketing.orders.models import Order, OrderedProduct, OrderedProductItem, OrderedProductItemToken
-from altair.app.ticketing.core.models import Stock, StockType, ProductItem, Event
 from pyramid.renderers import render_to_response
 from pyramid.paster import bootstrap, setup_logging
-import sqlahelper
+from altair.app.ticketing.models import DBSession
+import transaction
 
 logger = logging.getLogger(__name__)
 
@@ -30,17 +30,38 @@ def main(argv=sys.argv):
     now = datetime.now().replace(second=0)
     settings = registry.settings
 
-    query = PrintedReportSetting.query \
+    session = DBSession
+    report_settings = session.query(PrintedReportSetting) \
         .filter(PrintedReportSetting.start_on <= now) \
-        .filter(PrintedReportSetting.end_on > now)
+        .filter(PrintedReportSetting.end_on > now).all()
 
-    for cnt, report_setting in enumerate(query.all()):
-        logger.info('printed_report_setting_id: {0}'.format(report_setting.id))
-        if not report_setting.recipients:
-            continue
-
+    for cnt, report_setting in enumerate(report_settings):
         today = datetime.now()
         yesterday = today - timedelta(days=1)
+
+        # 日付が変わっていたら、last_sent_atをクリアして、再度メールを送れるようにする
+        if report_setting.last_sent_at:
+            if today.day != report_setting.last_sent_at.day:
+                report_setting.last_sent_at = None
+
+        if report_setting.last_sent_at:
+            # 本日送信済み
+            logger.info('printed_report_setting_id: {0}, It was delivered today.'.format(report_setting.id))
+            continue
+
+        if not report_setting.recipients:
+            # 配信者なし
+            logger.info('printed_report_setting_id: {0}, There isn\'t a transmission target.'.format(report_setting.id))
+            continue
+
+        # 指定時刻が指定されていない場合は、日付が変わったら送る
+        if report_setting.time:
+            today_time = time(today.hour, today.minute, today.second)
+            if report_setting.time > today_time:
+                logger.info('printed_report_setting_id: {0}, It isn\'t the transmission time.'.format(report_setting.id))
+                continue
+
+        logger.info('printed_report_setting_id: {0}'.format(report_setting.id))
 
         date_format = '%Y-%m-%d 00:00'
         period = u"{0} - {1}".format(yesterday.strftime(date_format), today.strftime(date_format))
@@ -48,7 +69,6 @@ def main(argv=sys.argv):
         event = report_setting.event
         performance_printed_num = {}
 
-        session = sqlahelper.get_session()
         performance_printed_query = session.query(OrderedProductItem, func.count(OrderedProductItemToken.printed_at)) \
             .join(OrderedProductItemToken, OrderedProductItemToken.ordered_product_item_id == OrderedProductItem.id) \
             .join(OrderedProduct, OrderedProductItem.ordered_product_id == OrderedProduct.id)\
@@ -66,7 +86,11 @@ def main(argv=sys.argv):
 
         html = render_to_response('altair.app.ticketing:templates/printed_reports/daily.html', render_param)
         sendmail(settings, report_setting.format_emails(), subject, html)
+        report_setting.last_sent_at = today
         logger.info('end send_printed_report batch (sent={0}, report_setting_id={1})'.format(cnt, report_setting.id))
+
+    transaction.commit()
+
 
 if __name__ == '__main__':
     main()
