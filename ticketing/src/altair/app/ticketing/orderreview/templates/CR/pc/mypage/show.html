@@ -52,7 +52,7 @@ ${render_mailmagazine(request)}
   <div id="mypageHistory">
     % for entry in lot_entries:
       <div class="box">
-        <p><img src="${request.static_url('altair.app.ticketing.orderreview:static/RT/pc/images/mypage/' + h.get_entry_status_image(request, entry))}" alt="${h.get_entry_status(request, entry)}" width="60" height="60" /></p>
+        <p><img src="${request.static_url('altair.app.ticketing.orderreview:static/CR/pc/images/mypage/' + h.get_entry_status_image(request, entry))}" alt="${h.get_entry_status(request, entry)}" width="60" height="60" /></p>
         <dl>
           <form id="lots${entry.entry_no}" name="${entry.entry_no}" action="/lots/review" method="POST">
             <input type="hidden" name="entry_no" value="${entry.entry_no}"/>
@@ -92,8 +92,8 @@ else:
 %>
 
 <div class="box">
-<p><img src="${request.static_url('altair.app.ticketing.orderreview:static/RT/pc/images/mypage/' + h.get_order_status_image(order))}" alt="${h.get_order_status(order)}" width="60" height="60" /></p>
-<p><img src="${request.static_url('altair.app.ticketing.orderreview:static/RT/pc/images/mypage/' + h.get_payment_status_image(order))}" alt="${h.get_payment_status(order)}" width="60" height="60" /></p>
+<p><img src="${request.static_url('altair.app.ticketing.orderreview:static/CR/pc/images/mypage/' + h.get_order_status_image(order))}" alt="${h.get_order_status(order)}" width="60" height="60" /></p>
+<p><img src="${request.static_url('altair.app.ticketing.orderreview:static/CR/pc/images/mypage/' + h.get_payment_status_image(order))}" alt="${h.get_payment_status(order)}" width="60" height="60" /></p>
 <dl>
 <form id="${order.order_no}" name="${order.order_no}" action="${request.route_path('mypage.order.show')}" method="POST">
 <input type="hidden" name="order_no" value="${order.order_no}"/>
@@ -123,7 +123,7 @@ ${result.pager(format=u"$link_first $link_previous 前を表示 ~3~ 次を表示
 
   <form id="mail_form" name="mail_form" method="post" action="${request.route_path('mypage.mailmag.confirm')}">
   <div id="mypageHistory">
-    楽天チケットからのメールマガジンの購読を選択できます。<br/><br/>
+    主催者メールマガジンの購読を選択できます。<br/><br/>
     % for mailmagazine, subscribed in mailmagazines_to_subscribe:
       <div class="box">
         <dl>
