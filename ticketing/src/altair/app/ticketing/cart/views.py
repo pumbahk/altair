@@ -417,7 +417,12 @@ class IndexView(IndexViewMixin):
         preferred_performance = None
         if not performance_id:
             # GETパラメータ指定がなければ、選択肢の1つ目を採用
-            selected_sales_segment = sales_segments[0]
+            # sales_segments_selectionの先頭の販売区分を初期値とする
+            def get_first_selection_obj(sales_segments_selection):
+                return sales_segments_selection[0][1][0]
+
+            first_ss_id = get_first_selection_obj(sales_segments_selection).get('id')
+            selected_sales_segment = filter(lambda ss:ss.id==first_ss_id, sales_segments)[0]
         else:
             # パフォーマンスIDから販売区分の解決を試みる
             # performance_id で指定される Performance は
