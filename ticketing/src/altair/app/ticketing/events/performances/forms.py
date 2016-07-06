@@ -198,6 +198,11 @@ class PerformanceForm(OurForm):
         default=True,
     )
 
+    def validate_name(form, field):
+        if field:
+            if field.data.count('\t'):
+                raise ValidationError(u'公演名称にタブが入っています')
+
     def validate_start_on(form, field):
         if field.data and form.open_on.data and field.data < form.open_on.data:
             raise ValidationError(u'開場日時より過去の日時は入力できません')

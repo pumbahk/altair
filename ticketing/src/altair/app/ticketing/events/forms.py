@@ -205,6 +205,16 @@ class EventForm(OurForm):
         default=True,
         )
 
+    def validate_title(form, field):
+        if field:
+            if field.data.count('\t'):
+                raise ValidationError(u'タイトルにタブが入っています')
+
+    def validate_abbreviated_title(form, field):
+        if field:
+            if field.data.count('\t'):
+                raise ValidationError(u'タイトル略称にタブが入っています')
+
     def validate_code(form, field):
         if field.data:
             expected_len = {7}
