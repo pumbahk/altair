@@ -1,4 +1,4 @@
-<div class="kadomaru">
+<div class="section">
   <h3>購入情報</h3>
   <table class="purchasedContents">
     <tbody>
@@ -69,9 +69,9 @@
   </table>
 </div>
 
-<% extra_form_data = order.get_order_attribute_pair_pairs(request) %>
+<% extra_form_data = order.get_order_attribute_pair_pairs(request, mode='orderreview') %>
 % if extra_form_data:
-<div class="kadomaru">
+<div class="section">
   <h3>追加情報</h3>
   <table summary="追加情報">
     %for _, (display_name, display_value) in extra_form_data:
@@ -83,12 +83,20 @@
     </tr>
     %endfor
   </table>
+  % if len(order.get_order_attribute_pair_pairs(request, mode='editable')) > 0 and order.status != 'canceled' and order.payment_status != 'refunded':
+  <form method="post" action="${request.route_path('order_review.edit_order_attributes.form')}">
+    <input type="hidden" name="action" value="edit_order_attributes.form" />
+    <input type="hidden" name="order_no" value="${order.order_no}" />
+    <input type="hidden" name="tel" value="${order.shipping_address.tels[0]}" />
+    <input type="submit" class="historySearchBtn" value="入力情報の編集" />
+  </form>
+  % endif
 </div>
 % endif
 
 <% shipping_address = order.shipping_address %>
 % if order.status == 'canceled':
-<div class="kadomaru">
+<div class="section">
   <h3><span class="red">この購入/予約はキャンセルされました</span></h3>
   <p>キャンセル処理は、下記のような理由によりおこなっております。</p>
   <ul class="cancel-list-style">
@@ -100,13 +108,13 @@
 % elif order.status != 'canceled' and order.payment_status == 'refunded':
 % else:
 <div class="_2columns">
-  <div class="kadomaru">
+  <div class="column section">
     <h3>お支払</h3>
     <div class="section-inner">
     ${h.render_payment_finished_viewlet(request, order)}
     </div>
   </div>
-  <div class="kadomaru">
+  <div class="column section">
     <h3>お引取</h3>
     <div class="section-inner">
     ${h.render_delivery_finished_viewlet(request, order)}
@@ -114,7 +122,7 @@
   </div>
 </div>
 % endif
-<div class="kadomaru">
+<div class="section">
   <h3>購入者情報</h3>
   <table class="purchasedContents" summary="配送先情報">
     <tbody>

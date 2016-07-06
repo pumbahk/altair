@@ -119,7 +119,7 @@ h1{
 }
 
 h2 {
-background: #E8240C; /* Old browsers */
+background: #672E8E; /* Old browsers */
 margin: 0 0 20px 0;
 padding: 10px 10px;
 color: #FFF;
@@ -132,13 +132,13 @@ h3 {
 margin:20px 0;
 font-weight:700;
 font-size:15px;
-color:#FFF;
+color:#000;
 line-height:1;
-border-left:5px solid #F0F0E1;
-border-top:1px solid #686859;
-border-bottom:1px solid #686859;
-border-right:1px solid #686859;
-background:#686859;
+border-left:5px solid #872E8E;
+border-top:1px solid #FFB700;
+border-bottom:1px solid #FFB700;
+border-right:1px solid #FFB700;
+background:#FFB700;
 padding:4px 0 4px 10px;
 }
 
@@ -482,12 +482,12 @@ cursor: default;
 
 table tbody th {
   color: #686859;
-  background-color:#F0F0E1;
+  background-color:#EFEFEF;
 }
 
 table thead th {
-  color:#686859;
-  background-color:#F0F0E1;
+  color: #686859;
+  background-color:#EFEFEF;
 }
 
 table thead th:first-child {
@@ -495,12 +495,12 @@ border-bottom:none;
 }
 
 table thead th {
-border-bottom:1px solid #686859;
+border-bottom:1px solid #872E8E;
 }
 
 table th:last-child {
-border-right:1px solid #686859;
-border-left:1px solid #686859;
+border-right:1px solid #872E8E;
+border-left:1px solid #872E8E;
 }
 
 table tr td {
@@ -776,18 +776,18 @@ height: 240px;
 }
 
 .loginbox thead th {
-background-color: #686859;
+background-color: #672E8E;
 color: #fff;
 font-size: 20px;
 height: 30px;
 }
 
 .loginbox td {
-background: #F0F0E1;
+background: #EFEFEF;
 }
 
 .loginbox th {
-background: #F0F0E1;
+background: #EFEFEF;
 }
 
 .member th {
@@ -858,14 +858,14 @@ border-collapse: collapse;
 margin: 0px auto 20px auto;
 padding: 10px;
 width: 100%;
-border: 5px solid #686859;
+border: 5px solid #672E8E;
 }
 
 .formWrapper table.form tbody th{
 background-color: #F0F0E1;
 border-collapse: collapse;
 padding: 10px;
-border-bottom: 1px solid #686859;
+border-bottom: 1px solid #672E8E;
 text-align: right;
 color: #686859`;
 }
@@ -875,7 +875,7 @@ color: #686859`;
 background-color: #efefef;
 border-collapse: collapse;
 padding: 10px;
-border-bottom: 1px solid #686859;
+border-bottom: 1px solid #672E8E;
 font-size: 16px;
 color: #000;
 }
@@ -884,7 +884,7 @@ color: #000;
 .formWrapper table.form td{
 background-color: #fff;
 padding: 20px 10px;
-border-bottom: 1px solid #686859;
+border-bottom: 1px solid #672E8E;
 text-align: left;
 
 }
@@ -892,13 +892,13 @@ text-align: left;
 .formWrapper table.form tfoot td{
 background-color: #fff;
 padding: 10px;
-border-top: 2px solid #686859;
+border-top: 2px solid #672E8E;
 font-size: 16px;
 text-align: left;
 }
 
 .formWrapper table.form input{
-border: 1px solid #686859;
+border: 1px solid #672E8E;
 font-size: 20px;
 line-height: 120%;
 height: 30px;
@@ -908,17 +908,17 @@ height: 30px;
 .btnLogin {
 text-align: center;
 color: #FFF;
-border:1px solid #000000;
+border:1px solid #000;
 margin: 10px auto;
 font-size: 20px;
 font-weight: bold;
 display: inline-block;
-background-color:#FB6F56;
+background-color:#672E8E;
 }
 
 .formWrapper table.form input.submit:hover,
 .btnLogin:hover {
-background-color:#FB6F56;
+background-color:#b08bc9;
 }
 
 

@@ -14,7 +14,7 @@
     text-align: left;
     margin: 0 3px 5px 2px;
     padding: 8px 0 10px 12px;
-    background: url(${view_context.static_url("pc/images/bg_line.gif")}) repeat-x left bottom;
+    background: url(${request.static_url("altair.app.ticketing.orderreview:static/RT/pc/images/bg_line.gif")}) repeat-x left bottom;
 }
 
 .OrderBox .confirmBoxText{
@@ -22,7 +22,7 @@
 }
 
 table {
-	margin: 0 0 0 1em;
+  margin: 0 0 0 0;
   padding; 0 0;
   width: 100%;
 }
@@ -40,20 +40,23 @@ table th {
 .commission th {
 	vertical-align: top;
 	padding: 2px 20px 2px 2px;
-	border-bottom: 1px solid .e6e6e6;
+	border-bottom: 1px solid #E6E6E6;
 	font-weight: normal;
 	white-space: nowrap;
 }
 
 .itemize td {
 	padding: 2px;
-	border-bottom: 1px solid .e6e6e6;
+	border-bottom: 1px solid #E6E6E6;
 }
 
 .itemize tr:last-child th,
 .itemize tr:last-child td {
-	border: none;
+  /*border: none;*/
+  border-bottom: 1px solid #000000;
 }
+
+
 
 </style>
 <h2>受付履歴確認 検索結果</h2>
@@ -124,8 +127,7 @@ shipping =order.shipping_address
           <td>${shipping.zip} ${shipping.prefecture}${shipping.city}${shipping.address_1}${shipping.address_2}</td>
         </tr>
         <tr>
-          <td colspan="2">※ご購入時に入力された情報が表示されております。
-</td>
+          <td colspan="2" style="border-top: 1px #00000">※ご購入時に入力された情報が表示されております。</td>
         </tr>
     </table>
   </div>
@@ -222,7 +224,7 @@ shipping =order.shipping_address
         </tr>
         %endif
         <tr id="total">
-          <th scope="row"><img src="${view_context.static_url("pc/images/total.gif")}" alt="合計金額" width="67" height="16" /></th>
+          <th scope="row"><img src="${request.static_url("altair.app.ticketing.orderreview:static/RT/pc/images/total.gif")}" alt="合計金額" width="67" height="16" /></th>
           <td>&nbsp;</td>
           <td>&nbsp;</td>
           <td class="align1">￥${h.format_number(order.total_amount)}</td>
