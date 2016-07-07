@@ -139,10 +139,10 @@ class Events(BaseView):
         for event in events:
             # FM連携状態判定機能をオフの場合は、一律連携済み状態にする
             if self.context.organization.setting.famiport_enabled and \
-                    not self.context.organization.setting.enable_fm_reflection_func:
-                famiport_reflect_button_status[event.id] = "ALL_REFLECTED"
-            else:
+                    self.context.organization.setting.enable_fm_reflection_func:
                 famiport_reflect_button_status[event.id] = get_famiport_reflect_button_status(self.request, slave_session, event)
+            else:
+                famiport_reflect_button_status[event.id] = "ALL_REFLECTED"
 
         return {
             'form_search': form_search,
@@ -204,17 +204,14 @@ class Events(BaseView):
         performances = performances.all()
 
         # FM連携状態判定機能をオフの場合は、一律連携済み状態にする
-        if event.organization.setting.famiport_enabled and not event.organization.setting.enable_fm_reflection_func:
-            famiport_reflect_button_status = "ALL_REFLECTED"
-        else:
-            famiport_reflect_button_status = get_famiport_reflect_button_status(self.request, slave_session, event)
-
-        from .famiport_helpers import get_famiport_reflection_warnings
         warnings = {}
-        # FM連携状態判定機能をオフの場合は、一律連携済み状態にする
         if event.organization.setting.famiport_enabled and event.organization.setting.enable_fm_reflection_func:
+            famiport_reflect_button_status = get_famiport_reflect_button_status(self.request, slave_session, event)
+            from .famiport_helpers import get_famiport_reflection_warnings
             for p in event.performances:
                 warnings.update(get_famiport_reflection_warnings(self.request, slave_session, p))
+        else:
+            famiport_reflect_button_status = "ALL_REFLECTED"
 
         return {
             'organization_setting':self.context.organization.setting,
