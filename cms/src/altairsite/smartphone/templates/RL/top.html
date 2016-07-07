@@ -2,10 +2,11 @@
 <%namespace file="common/tags_smartphone.html" name="m" />
 <%block name="title">トップ</%block>
 
-<a href="/howto">
-  <img src="${request.static_url('altaircms:static/RL/smartphone/img/howto.png')}" width="100%"/>
-</a>
-<br/>
+<div style="margin-bottom:5px">
+  <a href="/howto">
+    <img src="${request.static_url('altaircms:static/RL/smartphone/img/howto.png')}" width="100%"/>
+  </a>
+</div>
 <%include file="search/search.html" args="form=form"/>
 <%include file="common/_menu.html"/>
 <%include file="common/_pickup.html" args="promotions=promotions, helper=helper"/>
