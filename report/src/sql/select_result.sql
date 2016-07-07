@@ -19,6 +19,8 @@ select
     CASE delivery_method WHEN 1 THEN '配送' WHEN 2 THEN 'セブン' WHEN 3 THEN '窓口' WHEN 4 THEN 'QR認証' WHEN 5 THEN 'イベントゲート' WHEN 6 THEN' ファミマ' ELSE '不明' END AS delivery,
     fc_type,
     IF(fc_type ='', '', fc_id) AS fc_id,
+    user_id,
+    authz_identifier,
     total,
     fee,
     qty,
