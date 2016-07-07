@@ -1,7 +1,7 @@
 <%inherit file="./base.html"/>
 <p>誠に申し訳ございませんが</p>
 % if which == 'next':
-<p>${event.title} (${performance.name}) の販売期間は</p>
+<p>${event.title} の販売期間は</p>
 <p>
 ${h.japanese_datetime(start_at)}
 %   if end_at:
