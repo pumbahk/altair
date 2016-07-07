@@ -737,6 +737,11 @@ class Performances(BaseView):
                 self.request.session.flash(u'{}行目の公演名が未入力です。'.format(cnt + 1))
                 error_exist = True
 
+            if params['name'][cnt]:
+                if params['name'][cnt].count('\t'):
+                    self.request.session.flash(u'{}行目の公演名にタブが入っています。'.format(cnt + 1))
+                    error_exist = True
+
             if params['open_on'][cnt]:
                 try:
                     datetime.datetime.strptime(
