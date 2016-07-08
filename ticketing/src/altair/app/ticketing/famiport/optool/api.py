@@ -103,8 +103,7 @@ def lookup_performance_by_searchform_data(request, formdata=None):
         query = query.filter(FamiPortPerformance.start_at >= req_from,
                              FamiPortPerformance.start_at <= req_to)
 
-    performances = query.all()
-    return performances
+    return query
 
 def lookup_refund_performance_by_searchform_data(request, formdata=None, now=None):
     if now is None:
@@ -151,12 +150,10 @@ def lookup_refund_performance_by_searchform_data(request, formdata=None, now=Non
         query = query.filter(FamiPortPerformance.start_at >= req_from,
                              FamiPortPerformance.start_at <= req_to)
 
-    performances = query.all()
-    return performances
+    return query
 
-def lookup_receipt_by_searchform_data(request, formdata=None):
-    fami_session = get_db_session(request, name="famiport")
 
+def lookup_receipt_by_searchform_data(request, fami_session, formdata=None):
     query = fami_session.query(FamiPortReceipt) \
                         .join(FamiPortOrder, FamiPortReceipt.famiport_order_id == FamiPortOrder.id) \
                         .outerjoin(FamiPortTicket, FamiPortOrder.id == FamiPortTicket.famiport_order_id) \
@@ -196,8 +193,7 @@ def lookup_receipt_by_searchform_data(request, formdata=None):
         query = query.filter(or_(and_(FamiPortOrder.paid_at >= req_from, FamiPortOrder.paid_at <= req_to),
                                  and_(FamiPortOrder.issued_at >= req_from, FamiPortOrder.issued_at <= req_to)))
 
-    receipts = query.all()
-    return receipts
+    return query
 
 def search_refund_ticket_by(request, params, now=None):
     if now is None:
@@ -254,7 +250,7 @@ def search_refund_ticket_by(request, params, now=None):
     if performance_end_date:
         query = query.filter(FamiPortPerformance.start_at <= performance_end_date)
     query = query.order_by(FamiPortRefundEntry.refunded_at)
-    return query.all()
+    return query
 
 def get_famiport_shop_by_code(request, shop_code):
     session = get_db_session(request, 'famiport')

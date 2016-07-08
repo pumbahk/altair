@@ -48,16 +48,16 @@
   </form>
 </div>
 <div id="table-content">
-  % if paginator:
+  % if performances:
   <div class="row">
     <div class="col-md-3 text-center">
       <h4>公演検索結果</h4>
     </div>
     <div class="col-md-9 text-left">
-      <h4>検索結果件数${paginator.item_count}件</h4>
+      <h4>検索結果件数${performances.item_count}件</h4>
     </div>
   </div>
-  ${paginator.pager(link_attr={"class": "btn small"}, curpage_attr={"class": "btn primary small disabled"})}
+  ${performances.pager(link_attr={"class": "btn small"}, curpage_attr={"class": "btn primary small disabled"})}
   <table class="table table-hover">
     <thead>
       <tr>
@@ -70,7 +70,7 @@
       </tr>
     </thead>
     <tbody>
-      % for performance in paginator.items:
+      % for performance in performances:
       <tr>
         <td>${performance.famiport_event_id}</td>
         <td>${performance.famiport_event.code_1}-${performance.famiport_event.code_2}</td>

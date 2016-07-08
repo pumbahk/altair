@@ -47,6 +47,7 @@ def main(global_conf, **local_conf):
     settings.update(local_conf)
     settings['mako.directories'] = '%s:templates' % __name__
     config = Configurator(settings=settings)
+    config.include('pyramid_debugtoolbar')
     config.set_root_factory('.resources.BaseResource')
     config.set_authentication_policy(SessionAuthenticationPolicy(callback=auth_callback))
     config.set_authorization_policy(ACLAuthorizationPolicy())
