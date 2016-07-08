@@ -621,8 +621,12 @@ class TicketTemplates(BaseView):
         if template is None:
             raise HTTPNotFound("this is not found")
 
-        template.delete()
-        self.request.session.flash(u'チケットテンプレートを削除しました')
+        covers = template.cover
+        if covers:
+            self.request.session.flash(u'このテンプレートを使用している表紙があるため、削除することができません')
+        else:
+            template.delete()
+            self.request.session.flash(u'チケットテンプレートを削除しました')
 
         return self.context.after_ticket_action_redirect()
 
