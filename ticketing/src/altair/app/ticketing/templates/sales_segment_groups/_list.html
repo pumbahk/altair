@@ -38,7 +38,7 @@
           <td ${rowspan}>${vh.datetime(sales_segment_group.end_at, with_weekday=True)}</td>
           <td ${rowspan}>${sales_segment_group.account.name}</td>
           <td ${rowspan}>
-            ${u'%s枚' % sales_segment_group.max_quantity if sales_segment_group.max_quantity else u'-'} / ${u'%s枚' % sales_segment_group.setting.max_quantity_per_user if sales_segment_group.setting and sales_segment_group.setting.max_quantity_per_user else u'-'} /${u'%s個' % sales_segment_group.max_product_quatity if sales_segment_group.max_product_quatity else u'-'}
+            ${u'%s枚' % sales_segment_group.max_quantity if sales_segment_group.max_quantity else u'-'} / ${u'%s枚' % sales_segment_group.setting.max_quantity_per_user if sales_segment_group.setting and sales_segment_group.setting.max_quantity_per_user else u'-'} / ${u'%s個' % sales_segment_group.max_product_quatity if sales_segment_group.max_product_quatity else u'-'}
           </td>
           <%doc><td ${rowspan}>${sales_segment_group.order_limit or u''}</td></%doc>
           <td ${rowspan}>${u'選択可' if sales_segment_group.seat_choice else u'×選択不可'}</td>
