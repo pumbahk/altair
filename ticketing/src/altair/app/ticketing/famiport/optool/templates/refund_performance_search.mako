@@ -44,16 +44,16 @@
   </form>
 </div>
 <div id="table-content">
-  % if paginator:
+  % if refund_performances:
   <div class="row">
     <div class="col-md-3 text-center">
       <h4>払戻公演検索結果一覧</h4>
     </div>
     <div class="col-md-9 text-center">
-      <h4>検索結果件数${paginator.item_count}件</h4>
+      <h4>検索結果件数${refund_performances.item_count}件</h4>
     </div>
   </div>
-  ${paginator.pager(link_attr={"class": "btn small"}, curpage_attr={"class": "btn primary small disabled"})}
+  ${refund_performances.pager(link_attr={"class": "btn small"}, curpage_attr={"class": "btn primary small disabled"})}
   <table class="table table-hover">
     <thead>
       <tr>
@@ -68,7 +68,7 @@
       </tr>
     </thead>
     <tbody>
-    % for entry in paginator.items:
+    % for entry in refund_performances:
     <% refund_entry = entry.FamiPortRefundEntry %>
     <% performance = entry.FamiPortPerformance %>
     <% url_with_eventcode = '{}?event_code={}&event_subcode={}'.format(request.route_url('search.refund_ticket'), performance.famiport_event.code_1, performance.famiport_event.code_2) %>

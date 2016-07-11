@@ -63,16 +63,16 @@
 </form>
 </div>
 <div id="table-content">
-  % if paginator:
+  % if entries:
   <div class="row">
     <div class="col-md-3">
       <h4>払戻チケット一覧</h4>
     </div>
     <div class="col-md-9 text-center">
-      <h4>検索結果件数${paginator.item_count}件</h4>
+      <h4>検索結果件数${entries.item_count}件</h4>
     </div>
   </div>
-  ${paginator.pager(link_attr={"class": "btn small"}, curpage_attr={"class": "btn primary small disabled"})}
+  ${entries.pager(link_attr={"class": "btn small"}, curpage_attr={"class": "btn primary small disabled"})}
       <table class="table table-hover">
         <thead>
           <tr>
@@ -84,7 +84,7 @@
         </thead>
 
         <tbody>
-        % for entry in paginator.items:
+        % for entry in entries:
         <% famiport_refund_entry = entry.FamiPortRefundEntry %>
         <% famiport_receipt = entry.FamiPortReceipt %>
         <% famiport_shop = rts_helper.get_famiport_shop_by_code(famiport_refund_entry.shop_code) %>
