@@ -254,6 +254,9 @@ class LotForm(Form):
         return True
 
     def _validate_performances(self, lot):
+        if not lot:
+            return True
+
         original_performance_ids = set([p.id for p in lot.performances])
         new_performance_ids = set(self.performances.data)
         deleted_performance_ids = original_performance_ids - new_performance_ids
@@ -267,14 +270,7 @@ class LotForm(Form):
         return True
 
     def validate(self, lot=None):
-        if super(LotForm, self).validate():
-            if not self._validate_terms():
-                return False
-            if lot:
-                if not self._validate_performances(lot):
-                    return False
-
-            return True
+        return all([super(LotForm, self).validate(), self._validate_terms(), self._validate_performances(lot)])
 
     def __init__(self, event=None, lot=None, *args, **kwargs):
         self.context = kwargs.pop('context')
