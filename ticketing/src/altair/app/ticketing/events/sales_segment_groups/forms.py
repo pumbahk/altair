@@ -400,7 +400,7 @@ class SalesSegmentGroupForm(OurForm):
                             sales_segment_end_at=ss_end_at,
                             pdmp=pdmp)
                     except IssuingStartAtOutTermException as e:
-                        self.end_at.errors.append(e.message)
+                        append_error(self.end_at, ValidationError(e.message))
                         return False
 
         return True
