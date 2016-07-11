@@ -2,6 +2,7 @@
 import logging
 from datetime import timedelta, datetime
 from sqlalchemy.sql import func as sqlf
+from sqlalchemy import cast, VARBINARY
 from altair.app.ticketing.famiport.exc import FamiPortVenueCreateError, FamiPortAPIError
 from altair.app.ticketing.famiport.userside_models import (
     AltairFamiPortVenue,
@@ -76,7 +77,7 @@ def lookup_altair_famiport_venue(session, performance):
     return session.query(AltairFamiPortVenue)\
         .filter(AltairFamiPortVenue.organization_id == performance.event.organization_id)\
         .filter(AltairFamiPortVenue.siteprofile_id == performance.venue.site.siteprofile_id)\
-        .filter(AltairFamiPortVenue.venue_name == performance.venue.name)\
+        .filter(AltairFamiPortVenue.venue_name == cast(performance.venue.name, VARBINARY))\
         .filter(AltairFamiPortVenue.deleted_at == None)\
         .one()
 
