@@ -276,7 +276,9 @@ class LotForm(Form):
         self.context = kwargs.pop('context')
         super(LotForm, self).__init__(*args, **kwargs)
 
-        self.performances.choices = [(s.id, s.name) for s in event.performances or []]
+        if event:
+            self.performances.choices = [(s.id, s.name) for s in event.performances or []]
+
         if lot:
             self.performances.data = [s.id for s in lot.performances]
 
