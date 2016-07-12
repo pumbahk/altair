@@ -425,7 +425,7 @@ class Lot(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     @property
     def products(self):
-        return self.sales_segment.products
+        return sorted(self.sales_segment.products, key=lambda product: product.performance.start_on)
 
     @property
     def performances(self):
