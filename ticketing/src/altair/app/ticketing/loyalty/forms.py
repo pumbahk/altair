@@ -3,7 +3,7 @@
 from wtforms.fields import HiddenField
 from wtforms.validators import Optional, NumberRange
 from altair.app.ticketing.helpers import label_text_for
-from altair.formhelpers import Translations
+from altair.formhelpers import Translations, after1900
 from altair.formhelpers.form import OurForm
 from altair.formhelpers.validators import Required
 from altair.formhelpers.fields import OurTextField, OurDecimalField, OurDateField, OurDateTimeField, PercentageField, OurSelectField, OurGroupedSelectMultipleField
@@ -60,12 +60,12 @@ class PointGrantSettingForm(OurForm):
 
     start_at = OurDateTimeField(
         label=label_text_for(PointGrantSetting.start_at),
-        validators=[Optional()]
+        validators=[Optional(), after1900]
         )
 
     end_at = OurDateTimeField(
         label=label_text_for(PointGrantSetting.end_at),
-        validators=[Optional()]
+        validators=[Optional(), after1900]
         )
 
     def validate_name(self, field):
@@ -78,35 +78,15 @@ class PointGrantSettingForm(OurForm):
             return False
         return True
 
-    def _validate_start_at(self):
-        return validate_datetime(self.start_at)
-
-    def _validate_end_at(self):
-        return validate_datetime(self.end_at)
-
     def validate(self, *args, **kwargs):
         return all([
             super(self.__class__, self).validate(*args, **kwargs),
             self._validate_rate(),
-            self._validate_start_at(),
-            self._validate_end_at(),
          ])
 
     def __init__(self, *args, **kwargs):
         self.context = kwargs.pop('context', None)
         super(PointGrantSettingForm, self).__init__(*args, **kwargs)
-
-
-def validate_datetime(field):
-    if not field.data:
-        return True
-
-    try:
-        field.data.strftime("%Y-%m-%d %H:%M:%S")
-    except ValueError:
-        field.errors.append(u'{}が、不正な日付です'.format(field.label.text))
-        return False
-    return True
 
 
 class PointGrantHistoryEntryForm(OurForm):
