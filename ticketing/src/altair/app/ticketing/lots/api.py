@@ -714,3 +714,7 @@ def copy_lots_between_performance(performance, new_performance):
                         lot=lot,
                         original_product=product
                     )
+
+
+def copy_lot_products_from_performance(performance, lot):
+    pass

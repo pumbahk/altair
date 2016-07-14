@@ -436,3 +436,277 @@ class LotEntryBuildingTest(TestCase):
     def _callFUT(self, *args, **kwds):
         from ..api import build_lot_entry
         return build_lot_entry(*args, **kwds)
+
+
+# 新抽選
+class CreatingLotsFromFormTest(TestCase):
+    """画面(form)から抽選が作成されることを確認"""
+    def _callFUT(self, *args, **kwds):
+        from ..api import create_lot
+        return create_lot(*args, **kwds)
+
+    def setUp(self):
+        self.session = _setup_db(modules=dependency_modules)
+
+    def tearDown(self):
+        testing.tearDown()
+        _teardown_db()
+
+    @mock.patch('altair.app.ticketing.events.sales_segments.resources.SalesSegmentAccessor.update_sales_segment')
+    def test_create_lot_from_form(self, mock_update_sales_segment):
+        """新規で抽選用のSalesSegmentGroupを作成するとき, Lot(+SalesSegment)も作成される
+        """
+        from datetime import datetime
+        from altair.app.ticketing.core.models import Event, SalesSegmentGroup, SalesSegment
+        from altair.app.ticketing.lots.models import Lot
+        from altair.app.ticketing.events.sales_segment_groups.forms import SalesSegmentGroupAndLotForm
+        mock_update_sales_segment.return_value = None
+        event1 = Event(
+            title=u'テストイベント'
+        )
+        self.session.add(event1)
+        self.session.flush()
+        ssg1 = SalesSegmentGroup(
+            event=event1,
+            kind='early_lottery'
+        )
+        form = testing.DummyModel(
+            data=dict(
+                name=u'テスト抽選',
+                limit_wishes=3,
+                entry_limit=1,
+                description='',
+                lotting_announce_datetime=datetime(2016,7,1,0,0),
+                lotting_announce_timezone='night',
+                custom_timezone_label='',
+                auth_type='',
+                lot_entry_user_withdraw=True
+            )
+        )
+
+        self._callFUT(event1, form, ssg1)
+
+        lot = self.session.query(Lot).filter(Lot.name == u'テスト抽選').first()
+        ss = self.session.query(SalesSegment).filter(SalesSegment.event_id == event1.id).first()
+        self.assertTrue(lot)
+        self.assertIs(ss, lot.sales_segment)
+
+    # TODO:SalesSegmentGroupを渡さない場合
+    # def test_create_without_ssg(self):
+
+
+class CreatingLotsProductTest(TestCase):
+    def _callFUT(self, *args, **kwds):
+        from ..api import create_lot_products
+        return create_lot_products(*args, **kwds)
+
+    def setUp(self):
+        self.session = _setup_db(modules=dependency_modules)
+
+    def tearDown(self):
+        testing.tearDown()
+        _teardown_db()
+
+    def _setup_test_data(self):
+        from datetime import datetime
+        from altair.app.ticketing.core.models import Event, SalesSegmentGroup, SalesSegment, Performance, Product
+        from altair.app.ticketing.lots.models import Lot
+        event = Event(
+            title=u'テストイベント'
+        )
+        self.session.add(event)
+        self.ssg = SalesSegmentGroup(
+            event=event,
+            name=u'先行抽選',
+            kind='early_lottery'
+        )
+        self.session.add(self.ssg)
+        self.lot = Lot(name=u'抽選１')
+        lot_ss = SalesSegment(
+            sales_segment_group=self.ssg
+        )
+        self.session.add(lot_ss)
+        lot_ss.lots.append(self.lot)
+        ss1 = SalesSegment(
+            sales_segment_group=self.ssg,
+            performance=Performance(
+                name=u'公演１',
+                start_on=datetime(2016, 7, 1)
+            )
+        )
+        self.session.add(ss1)
+        ss1.products.append(Product(name=u'商品１', price=100))
+        ss2 = SalesSegment(
+            sales_segment_group=self.ssg,
+            performance=Performance(
+                name=u'公演２',
+                start_on=datetime(2016, 7, 2)
+            )
+        )
+        self.session.add(ss2)
+        ss2.products.append(Product(name=u'商品２', price=200))
+        ss3 = SalesSegment(
+            sales_segment_group=self.ssg,
+            performance=Performance(
+                name=u'公演３',
+                start_on=datetime(2016, 7, 3)
+            )
+        )
+        self.session.add(ss3)
+        ss3.products.append(Product(name=u'商品３', price=300))
+        self.session.flush()
+
+    def test_create_lot_products(self):
+        """販売区分グループ配下にある商品を、抽選の商品としてコピーする"""
+        self._setup_test_data()
+
+        self._callFUT(self.ssg, self.lot)
+
+        for p in self.lot.sales_segment.products:
+            self.assertIn(p.name, [u'商品１', u'商品２', u'商品３'])
+
+    def test_excluding_performance(self):
+        """指定した公演を含む商品は追加されない"""
+        from altair.app.ticketing.core.models import Performance
+        self._setup_test_data()
+        exclude_performances = []
+        performance2 = self.session.query(Performance).filter(Performance.name == u'公演２').first()
+        exclude_performances.append(performance2.id)
+
+        self._callFUT(self.ssg, self.lot, exclude_performances)
+
+        copied_product_names = [p.name for p in self.lot.sales_segment.products]
+        self.assertIn(u'商品１', copied_product_names)
+        self.assertNotIn(u'商品２', copied_product_names)
+        self.assertIn(u'商品３', copied_product_names)
+
+
+class CopyingLotsWhenSSGCopyTest(TestCase):
+    """コンテキスト：販売区分グループコピー時の抽選コピー"""
+    def _callFUT(self, *args, **kwds):
+        from ..api import copy_lots_between_sales_segmnent_group
+        return copy_lots_between_sales_segmnent_group(*args, **kwds)
+
+    def setUp(self):
+        self.session = _setup_db(modules=dependency_modules)
+
+    def tearDown(self):
+        testing.tearDown()
+        _teardown_db()
+
+    def _setup_test_data(self):
+        from altair.app.ticketing.core.models import Event, SalesSegmentGroup, SalesSegment, Product, Performance
+        from altair.app.ticketing.lots.models import Lot
+        event = Event(title=u'テストイベント')
+        self.session.add(event)
+        self.ssg1 = SalesSegmentGroup(
+            name=u'先行抽選',
+            kind='early_lottery',
+            event=event,
+            sales_segments=[
+                SalesSegment(
+                    lots=[Lot(name=u'抽選１')],
+                    products=[
+                        Product(name=u'抽選商品１', price=100, original_product_id=3),
+                        Product(name=u'抽選商品２', price=200, original_product_id=4)
+                    ]
+                ),
+                SalesSegment(
+                    performance=Performance(name=u'公演１'),
+                    products=[
+                        Product(name=u'商品１', price=100, original_product_id=None),
+                        Product(name=u'商品２', price=200, original_product_id=None)
+                    ]
+                )
+            ]
+        )
+        self.ssg2 = SalesSegmentGroup(
+            name=u'コピー先行抽選',
+            kind='early_lottery',
+            event=event,
+            sales_segments=[
+                SalesSegment(
+                    performance=Performance(name=u'コピー公演１'),
+                    products=[
+                        Product(name=u'コピー商品１', price=100, original_product_id=None),
+                        Product(name=u'コピー商品２', price=200, original_product_id=None)
+                    ]
+                )
+            ]
+        )
+        self.session.add(self.ssg1)
+        self.session.add(self.ssg2)
+        self.session.flush()
+
+    @mock.patch('altair.app.ticketing.events.sales_segments.resources.SalesSegmentAccessor.update_sales_segment')
+    def test_copy_lots_between_sales_segmnent_group(self, mock_update_sales_segment):
+        """販売区分グループ配下の抽選(+販売区分)を別の販売区分グループにコピーする
+        (公演に紐づく販売区分と商品は、このメソッド実行前に作成されている前提)
+        """
+        mock_update_sales_segment.return_value = None
+        self._setup_test_data()
+
+        self._callFUT(self.ssg1, self.ssg2)
+
+        ssg2_lots = self.ssg2.get_lots()
+        self.assertTrue(ssg2_lots)
+        self.assertTrue(ssg2_lots[0].sales_segment)
+        self.assertTrue(ssg2_lots[0].sales_segment.products)
+        self.assertEqual(ssg2_lots[0].sales_segment.products[0].name, u'コピー商品１')
+
+
+class CopyingLotProductsTests(TestCase):
+    """抽選商品を公演商品から作成する"""
+    def _callFUT(self, *args, **kwds):
+        from ..api import copy_lot_products_from_performance
+        return copy_lot_products_from_performance(*args, **kwds)
+
+    def setUp(self):
+        self.session = _setup_db(modules=dependency_modules)
+
+    def tearDown(self):
+        testing.tearDown()
+        _teardown_db()
+
+    def _setup_test_data(self):
+        from altair.app.ticketing.core.models import Performance, SalesSegmentGroup, SalesSegment, Product
+        from altair.app.ticketing.lots.models import Lot
+        ssg = SalesSegmentGroup(
+            name=u'先行抽選',
+            kind='early_lottery'
+        )
+        self.lot1 = Lot(
+            name=u'抽選１',
+            sales_segment=SalesSegment(
+                sales_segment_group=ssg,
+                products=[]
+            )
+        )
+        self.performance1 = Performance(
+            sales_segments=[
+                SalesSegment(
+                    sales_segment_group=ssg,
+                    performance=Performance(name=u'公演１'),
+                    products=[
+                        Product(name=u'商品１', price=100, original_product_id=None),
+                        Product(name=u'商品２', price=200, original_product_id=None)
+                    ]
+                )
+            ]
+        )
+        self.session.add(self.lot1)
+        self.session.add(self.performance1)
+        self.session.flush()
+
+    def test_copy_lots_between_performance(self):
+        """抽選商品を公演商品から作成する"""
+        self._setup_test_data()
+
+        self._callFUT(self.performance1, self.lot1)
+
+        self.assertEqual(len(self.lot1.sales_segment.products), 2)
+
+    def test_copy_no_lots_performance(self):
+        """コピー元公演に紐づく抽選商品がない場合は、何もしない"""
+        pass
+
