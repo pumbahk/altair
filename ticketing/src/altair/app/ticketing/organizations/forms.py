@@ -437,6 +437,9 @@ class OrganizationSettingForm(OrganizationSettingSimpleForm):
     famiport_enabled = OurBooleanField(
         label=get_annotations_for(c_models.OrganizationSetting.famiport_enabled)['label']
         )
+    enable_fm_reflection_func = OurBooleanField(
+        label=get_annotations_for(c_models.OrganizationSetting.enable_fm_reflection_func)['label']
+        )
 
     def validate_multicheckout_shop_name(form, field):
         org_setting = OrganizationSetting.query.\

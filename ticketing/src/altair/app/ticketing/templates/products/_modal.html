@@ -6,26 +6,32 @@
   $(function() {
     (function (modal_product) {
       new_product = function new_product(sales_segment_id) {
-        if (!sales_segment_id) return false;
-        load_modal_form(
-          modal_product,
-          '${request.route_path('products.new', _query=dict(sales_segment_id='__sales_segment_id__'))}'.replace('__sales_segment_id__', sales_segment_id),
-          null,
-          null
-        );
-        $('#submitButton').text('保存');
-        modal_product.find('.modal-header h3').text('商品＆商品明細 登録');
+        if (!sales_segment_id) {
+          alert("販売区分がないため、商品を作れません");
+        } else {
+          load_modal_form(
+            modal_product,
+            '${request.route_path('products.new', _query=dict(sales_segment_id='__sales_segment_id__'))}'.replace('__sales_segment_id__', sales_segment_id),
+            null,
+            null
+          );
+          $('#submitButton').text('保存');
+          modal_product.find('.modal-header h3').text('商品＆商品明細 登録');
+        }
       };
       copy_product = function copy_product(sales_segment_id) {
-        if (!sales_segment_id) return false;
-        load_modal_form(
-          modal_product,
-          '${request.route_path('products.copy', _query=dict(sales_segment_id='__sales_segment_id__'))}'.replace('__sales_segment_id__', sales_segment_id),
-          null,
-          null
-        );
-        $('#submitButton').text('コピー');
-        modal_product.find('.modal-header h3').text('販売区分間の商品コピー');
+        if (!sales_segment_id) {
+          alert("コピーする商品がありません");
+        } else {
+          load_modal_form(
+            modal_product,
+            '${request.route_path('products.copy', _query=dict(sales_segment_id='__sales_segment_id__'))}'.replace('__sales_segment_id__', sales_segment_id),
+            null,
+            null
+          );
+          $('#submitButton').text('コピー');
+          modal_product.find('.modal-header h3').text('販売区分間の商品コピー');
+        }
       };
       edit_product = function edit_product(id, product_item_id) {
         if (!id) return false;

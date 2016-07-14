@@ -57,16 +57,16 @@
   </form>
 </div>
 <div id="table-content">
-  % if paginator:
+  % if receipts:
   <div class="row">
     <div class="col-md-3 text-center">
       <h4>申込検索結果一覧</h4>
     </div>
     <div class="col-md-9 text-left">
-      <h4>検索結果件数${paginator.item_count}件</h4>
+      <h4>検索結果件数${receipts.item_count}件</h4>
     </div>
   </div>
-  ${paginator.pager(link_attr={"class": "btn small"}, curpage_attr={"class": "btn primary small disabled"})}
+  ${receipts.pager(link_attr={"class": "btn small"}, curpage_attr={"class": "btn primary small disabled"})}
   <% personal_info = request.context.user.has_perm_for_personal_info %>
   <a href="#" class="toggle-btn pull-right">残り項目表示</a>
   <table class="table table-hover">
@@ -103,7 +103,8 @@
       </tr>
     </thead>
     <tbody>
-    % for receipt in paginator.items:
+
+    % for receipt in receipts:
       <tr>
         <td><input type="radio" value="${receipt.id}" name="radio_gr"></td>
         <td nowrap="nowrap">

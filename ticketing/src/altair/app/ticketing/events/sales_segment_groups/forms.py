@@ -400,7 +400,7 @@ class SalesSegmentGroupForm(OurForm):
                             sales_segment_end_at=ss_end_at,
                             pdmp=pdmp)
                     except IssuingStartAtOutTermException as e:
-                        self.end_at.errors.append(e.message)
+                        append_error(self.end_at, ValidationError(e.message))
                         return False
 
         return True
@@ -557,12 +557,13 @@ class CopyLotForm(SalesSegmentGroupAndLotForm):
 
     sales_segment_group = HiddenField()
     lot = HiddenField()
-    performances = CheckedOurSelectMultipleField(
+    performances = OurSelectMultipleField(
         label=u'コピーするパフォーマンス',
         validators=[Optional()],
         choices=[],
+        widget=TableWidget(),
+        option_widget=CheckboxInput(),
         coerce=int,
-        default=27070,
     )
 
     def set_hidden_data(self, lot):
@@ -580,6 +581,7 @@ class CopyLotForm(SalesSegmentGroupAndLotForm):
         self.custom_timezone_label.data = lot.custom_timezone_label
         self.auth_type.data = lot.auth_type
         self.lot_entry_user_withdraw.data = lot.lot_entry_user_withdraw
+        self.performances.data = [s.id for s in lot.performances]
 
     def create_exclude_performance(self):
         exclude_performances = []

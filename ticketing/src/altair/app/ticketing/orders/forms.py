@@ -818,7 +818,7 @@ class OrderReserveForm(OurForm):
         filters=[ignore_space_hyphen],
         validators=[
             Optional(),
-            Length(min=1, max=11),
+            Length(min=10, max=11),
             Regexp(r'^\d*$', message=u'-(ハイフン)を抜いた半角数字のみを入力してください'),
             ]
         )

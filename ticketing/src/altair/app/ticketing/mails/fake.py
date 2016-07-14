@@ -160,10 +160,11 @@ class FakeLotEntryElectedWishPairFactory(object):
         now = args.get('now') or datetime.now()
 
         lot_entry = FakeObject("T")
-        lot_entry.entry_no = lot_entry.order_no = None
+        lot_entry.entry_no = lot_entry.order_no = 'ORG0000XXXXX'
         lot_entry.lot_entryed_from = organization
         lot_entry.created_at = now
         lot_entry._cached_mail_traverser = None
+        lot_entry.shipping_address = create_shipping_address(request, args)
 
         if performance:
             pass
@@ -196,6 +197,8 @@ class FakeLotEntryElectedWishPairFactory(object):
         return fake_lot_entry_product
 
     def create_fake_elected_wish(self, request, args):
+        organization = args.get('organization')
+        event = args.get('event')
         performance = args.get('performance')
 
         elected_wish = FakeObject("ElectedWish")
@@ -205,8 +208,17 @@ class FakeLotEntryElectedWishPairFactory(object):
         elected_wish.transaction_fee = 0
         elected_wish.delivery_fee = 0
         elected_wish.special_fee = 0
+
         if performance:
             elected_wish.performance = performance
+        else:
+            if event:
+                elected_wish.performance._fake_root = event
+            else:
+                elected_wish.performance._fake_root = organization
+
+            elected_wish.performance.start_on = datetime.now()
+
         elected_wish.products = [
             self.create_fake_lot_entry_product(request, args)
             ]

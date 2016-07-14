@@ -404,12 +404,14 @@ class ReceiptSearchTest(APITestBase, TestCase):
         # Search hits
         for barcode_no in self.barcode_nos:
             formdata['barcode_no'] = barcode_no
-            receipts = lookup_receipt_by_searchform_data(self.request, formdata)
+            query = lookup_receipt_by_searchform_data(self.request, self.session, formdata)
+            receipts = query.all()
             self.assertTrue(receipts, msg='Failed to lookup receipt by barcode_no: %s' % barcode_no)
         # Search does not hit
         for barcode_no in (u'00000000000000', u'test test test', u'abcdefghijklmn'):
             formdata['barcode_no'] = barcode_no
-            receipts = lookup_receipt_by_searchform_data(self.request, formdata)
+            query = lookup_receipt_by_searchform_data(self.request, self.session, formdata)
+            receipts = query.all()
             self.assertFalse(receipts, msg='Failed to lookup receipt by barcode_no: %s' % barcode_no)
 
 
@@ -419,12 +421,14 @@ class ReceiptSearchTest(APITestBase, TestCase):
         # Search hits
         for reserve_number in self.reserve_numbers:
             formdata['reserve_number'] = reserve_number
-            receipts = lookup_receipt_by_searchform_data(self.request, formdata)
+            query = lookup_receipt_by_searchform_data(self.request, self.session, formdata)
+            receipts = query.all()
             self.assertTrue(receipts, msg='Failed to lookup receipt by reserve_number: %s' % reserve_number)
         # Search does not hit
         for reserve_number in (u'0000000000000', u'test test test', u'abcdefghijklmn'):
             formdata['reserve_number'] = reserve_number
-            receipts = lookup_receipt_by_searchform_data(self.request, formdata)
+            query = lookup_receipt_by_searchform_data(self.request, self.session, formdata)
+            receipts = query.all()
             self.assertFalse(receipts, msg='Failed to lookup receipt by reserve_number: %s' % reserve_number)
 
     def test_search_receipt_by_management_number(self):
@@ -433,12 +437,14 @@ class ReceiptSearchTest(APITestBase, TestCase):
         # Search hits
         for management_number in self.management_numbers:
             formdata['management_number'] = management_number
-            receipts = lookup_receipt_by_searchform_data(self.request, formdata)
+            query = lookup_receipt_by_searchform_data(self.request, self.session, formdata)
+            receipts = query.all()
             self.assertTrue(receipts, msg='Failed to lookup receipt by management_number: %s' % management_number)
         # Search does not hit
         for management_number in (u'000000000', u'test test test', u'abcdefghi'):
             formdata['management_number'] = management_number
-            receipts = lookup_receipt_by_searchform_data(self.request, formdata)
+            query = lookup_receipt_by_searchform_data(self.request, self.session, formdata)
+            receipts = query.all()
             self.assertFalse(receipts, msg='Failed to lookup receipt by management_number: %s' % management_number)
 
     def test_search_receipt_by_barcode_number(self):
@@ -447,12 +453,14 @@ class ReceiptSearchTest(APITestBase, TestCase):
         # Search hits
         for barcode_number in self.barcode_numbers:
             formdata['barcode_number'] = barcode_number
-            receipts = lookup_receipt_by_searchform_data(self.request, formdata)
+            query = lookup_receipt_by_searchform_data(self.request, self.session, formdata)
+            receipts = query.all()
             self.assertTrue(receipts, msg='Failed to lookup receipt by barcode_number')
         # Search does not hit
         for barcode_number in (u'0000000000000', u'test test test', u'abcdefghijklmn'):
             formdata['barcode_number'] = barcode_number
-            receipts = lookup_receipt_by_searchform_data(self.request, formdata)
+            query = lookup_receipt_by_searchform_data(self.request, self.session, formdata)
+            receipts = query.all()
             self.assertFalse(receipts, msg='Failed to lookup receipt by barcode_number')
 
     def test_search_receipt_by_customer_phone_number(self):
@@ -461,12 +469,14 @@ class ReceiptSearchTest(APITestBase, TestCase):
         # Search hits
         for customer_phone_number in self.customer_phone_numbers:
             formdata['customer_phone_number'] = customer_phone_number
-            receipts = lookup_receipt_by_searchform_data(self.request, formdata)
+            query = lookup_receipt_by_searchform_data(self.request, self.session, formdata)
+            receipts = query.all()
             self.assertTrue(receipts, msg='Failed to lookup receipt by customer_phone_number: %s' % customer_phone_number)
         # Search does not hit
         for customer_phone_number in (u'1234567', u'0300000000', u'01234567'):
             formdata['customer_phone_number'] = customer_phone_number
-            receipts = lookup_receipt_by_searchform_data(self.request, formdata)
+            query = lookup_receipt_by_searchform_data(self.request, self.session, formdata)
+            receipts = query.all()
             self.assertFalse(receipts, msg='Failed to lookup receipt by customer_phone_number: %s' % customer_phone_number)
 
     def test_search_receipt_by_shop_code(self):
@@ -475,12 +485,14 @@ class ReceiptSearchTest(APITestBase, TestCase):
         # Search hits
         for shop_code in self.shop_codes:
             formdata['shop_code'] = shop_code
-            receipts = lookup_receipt_by_searchform_data(self.request, formdata)
+            query = lookup_receipt_by_searchform_data(self.request, self.session, formdata)
+            receipts = query.all()
             self.assertTrue(receipts, msg='Failed to lookup receipt by shop_code: %s' % shop_code)
         # Search does not hit
         for shop_code in (u'00000', u'11111', u'abcde'):
             formdata['shop_code'] = shop_code
-            receipts = lookup_receipt_by_searchform_data(self.request, formdata)
+            query = lookup_receipt_by_searchform_data(self.request, self.session, formdata)
+            receipts = query.all()
             self.assertFalse(receipts, msg='Failed to lookup receipt by shop_code: %s' % shop_code)
 
     def test_search_receipt_by_shop_name(self):
@@ -489,12 +501,14 @@ class ReceiptSearchTest(APITestBase, TestCase):
         # Search hits
         for shop_name in self.shop_names:
             formdata['shop_name'] = shop_name
-            receipts = lookup_receipt_by_searchform_data(self.request, formdata)
+            query = lookup_receipt_by_searchform_data(self.request, self.session, formdata)
+            receipts = query.all()
             self.assertTrue(receipts, msg='Failed to lookup receipt by shop_name: %s' % shop_name)
         # Search does not hit
         for shop_name in (u'新宿', u'二子玉', u'テスト', 'test'):
             formdata['shop_name'] = shop_name
-            receipts = lookup_receipt_by_searchform_data(self.request, formdata)
+            query = lookup_receipt_by_searchform_data(self.request, self.session, formdata)
+            receipts = query.all()
             self.assertFalse(receipts, msg=u'Failed to lookup receipt by shop_name: %s' % shop_name)
 
     @skip
@@ -503,16 +517,20 @@ class ReceiptSearchTest(APITestBase, TestCase):
                     'customer_phone_number': None, 'shop_code': None, 'shop_name': None, 'sales_from': None, 'sales_to': None}
         # Search hit
         formdata['sales_from'] = RefundTicketSearchHelper.format_date(self.sales_from - timedelta(days=10), format="%Y-%m-%d")
-        receipts = lookup_receipt_by_searchform_data(self.request, formdata)
+        query = lookup_receipt_by_searchform_data(self.request, self.session, formdata)
+        receipts = query.all()
         self.assertTrue(receipts, msg='Failed to lookup receipt by completed_date: %s - %s' % (formdata['sales_from'], formdata['sales_to']))
         formdata['sales_to'] = RefundTicketSearchHelper.format_date(self.sales_from + timedelta(days=10), format="%Y-%m-%d")
-        receipts = lookup_receipt_by_searchform_data(self.request, formdata)
+        query = lookup_receipt_by_searchform_data(self.request, self.session, formdata)
+        receipts = query.all()
         self.assertTrue(receipts, msg='Failed to lookup receipt by completed_date: %s - %s' % (formdata['sales_from'], formdata['sales_to']))
         # Search does not hit
         formdata['sales_from'] = RefundTicketSearchHelper.format_date(self.sales_from + timedelta(days=10), format="%Y-%m-%d")
-        receipts = lookup_receipt_by_searchform_data(self.request, formdata)
+        query = lookup_receipt_by_searchform_data(self.request, self.session, formdata)
+        receipts = query.all()
         self.assertFalse(receipts, msg='Failed to lookup receipt by completed_date: %s - %s' % (formdata['sales_from'], formdata['sales_to']))
-        receipts = lookup_receipt_by_searchform_data(self.request, formdata)
+        query = lookup_receipt_by_searchform_data(self.request, self.session, formdata)
+        receipts = query.all()
         self.assertFalse(receipts, msg='Failed to lookup receipt by completed_date: %s - %s' % (formdata['sales_from'], formdata['sales_to']))
 
     def test_search_receipt_by_customer_phone_number_and_shop_code(self):
@@ -521,12 +539,14 @@ class ReceiptSearchTest(APITestBase, TestCase):
         # Search hit
         formdata['customer_phone_number'] = self.customer_phone_numbers[0]
         formdata['shop_code'] = self.shop_codes[0]
-        receipts = lookup_receipt_by_searchform_data(self.request, formdata)
+        query = lookup_receipt_by_searchform_data(self.request, self.session, formdata)
+        receipts = query.all()
         self.assertTrue(receipts, msg='Failed to lookup receipt by customer_phone_numbers: %s and shop_code: %s' % (formdata['customer_phone_number'], formdata['shop_code']))
         # Search does not hit
         formdata['customer_phone_number'] = self.customer_phone_numbers[0]
         formdata['shop_code'] = self.shop_codes[2]
-        receipts = lookup_receipt_by_searchform_data(self.request, formdata)
+        query = lookup_receipt_by_searchform_data(self.request, self.session, formdata)
+        receipts = query.all()
         self.assertFalse(receipts, msg='Failed to lookup receipt by customer_phone_numbers: %s and shop_code: %s' % (formdata['customer_phone_number'], formdata['shop_code']))
 
 
@@ -927,8 +947,9 @@ class RefundTicketSearchTest(APITestBase, TestCase):
             params['before_refund'] = refund_term_flag[0]
             params['during_refund'] = refund_term_flag[1]
             params['after_refund'] = refund_term_flag[2]
-            refund_ticket = search_refund_ticket_by(self.request, params, now=datetime(2015, 7, 30, 0, 0, 0))
-            self.assertTrue(refund_ticket, msg='Failed to search refund ticket by refund term. %r' % params)
+            query = search_refund_ticket_by(self.request, params, now=datetime(2015, 7, 30, 0, 0, 0))
+            refund_tickets = query.all()
+            self.assertTrue(refund_tickets, msg='Failed to search refund ticket by refund term. %r' % params)
 
     def test_search_refund_ticket_by_management_number(self):
         params = {'before_refund': None, 'during_refund': None, 'after_refund': None, 'management_number': None, 'barcode_number': None, \
@@ -936,13 +957,15 @@ class RefundTicketSearchTest(APITestBase, TestCase):
         # Search hits
         for management_number in self.management_numbers:
             params['management_number'] = management_number
-            refund_ticket = search_refund_ticket_by(self.request, params)
-            self.assertTrue(refund_ticket, msg='Failed to search refund ticket by management_number: %s' % management_number)
+            query = search_refund_ticket_by(self.request, params)
+            refund_tickets = query.all()
+            self.assertTrue(refund_tickets, msg='Failed to search refund ticket by management_number: %s' % management_number)
         # Search does not hit
         for management_number in (u'000000000', u'test test test', u'abcdefghi'):
             params['management_number'] = management_number
-            refund_ticket = search_refund_ticket_by(self.request, params)
-            self.assertFalse(refund_ticket, msg='Failed to search refund ticket by management_number: %s' % management_number)
+            query = search_refund_ticket_by(self.request, params)
+            refund_tickets = query.all()
+            self.assertFalse(refund_tickets, msg='Failed to search refund ticket by management_number: %s' % management_number)
 
     def test_search_refund_ticket_by_barcode_number(self):
         params = {'before_refund': None, 'during_refund': None, 'after_refund': None, 'management_number': None, 'barcode_number': None, \
@@ -950,13 +973,15 @@ class RefundTicketSearchTest(APITestBase, TestCase):
         # Search hits
         for barcode_number in self.barcode_numbers:
             params['barcode_number'] = barcode_number
-            refund_ticket = search_refund_ticket_by(self.request, params)
-            self.assertTrue(refund_ticket, msg='Failed to search refund ticket by barcode_number: %s' % barcode_number)
+            query = search_refund_ticket_by(self.request, params)
+            refund_tickets = query.all()
+            self.assertTrue(refund_tickets, msg='Failed to search refund ticket by barcode_number: %s' % barcode_number)
         # Search does not hit
         for barcode_number in (u'0000000000000', u'test test test', u'abcdefghijklmn'):
             params['barcode_number'] = barcode_number
-            refund_ticket = search_refund_ticket_by(self.request, params)
-            self.assertFalse(refund_ticket, msg='Failed to search refund ticket by barcode_number: %s' % barcode_number)
+            query = search_refund_ticket_by(self.request, params)
+            refund_tickets = query.all()
+            self.assertFalse(refund_tickets, msg='Failed to search refund ticket by barcode_number: %s' % barcode_number)
 
     def test_search_refund_ticket_by_shop_code(self):
         params = {'before_refund': None, 'during_refund': None, 'after_refund': None, 'management_number': None, 'barcode_number': None, \
@@ -964,13 +989,15 @@ class RefundTicketSearchTest(APITestBase, TestCase):
         # Search hits
         for shop_code in self.shop_codes:
             params['refunded_shop_code'] = shop_code
-            refund_ticket = search_refund_ticket_by(self.request, params)
-            self.assertTrue(refund_ticket, msg='Failed to search refund ticket by refunded_shop_code: %s' % shop_code)
+            query = search_refund_ticket_by(self.request, params)
+            refund_tickets = query.all()
+            self.assertTrue(refund_tickets, msg='Failed to search refund ticket by refunded_shop_code: %s' % shop_code)
         # Search does not hit
         for shop_code in (u'00000', u'11111', u'abcde'):
             params['refunded_shop_code'] = shop_code
-            refund_ticket = search_refund_ticket_by(self.request, params)
-            self.assertFalse(refund_ticket, msg='Failed to search refund ticket by refunded_shop_code: %s' % shop_code)
+            query = search_refund_ticket_by(self.request, params)
+            refund_tickets = query.all()
+            self.assertFalse(refund_tickets, msg='Failed to search refund ticket by refunded_shop_code: %s' % shop_code)
 
     # def test_search_refund_ticket_by_event_code(self):
     #     params = {'before_refund': None, 'during_refund': None, 'after_refund': None, 'management_number': None, 'barcode_number': None, \
@@ -1026,13 +1053,15 @@ class RefundTicketSearchTest(APITestBase, TestCase):
         # Search hits
         params['refunded_shop_code'] = self.shop_codes[3]
         params['event_code'] = self.event_codes[1]
-        refund_ticket = search_refund_ticket_by(self.request, params)
-        self.assertTrue(refund_ticket, msg='Failed to search refund ticket by refunded_shop_code: %s, event_code: %s' % ( params['refunded_shop_code'], params['event_code']))
+        query = search_refund_ticket_by(self.request, params)
+        refund_tickets = query.all()
+        self.assertTrue(refund_tickets, msg='Failed to search refund ticket by refunded_shop_code: %s, event_code: %s' % ( params['refunded_shop_code'], params['event_code']))
         # Search does not hit
         params['refunded_shop_code'] = self.shop_codes[3]
         params['event_code'] = self.event_codes[0]
-        refund_ticket = search_refund_ticket_by(self.request, params)
-        self.assertFalse(refund_ticket, msg='Failed to search refund ticket by refunded_shop_code: %s, event_code: %s' % ( params['refunded_shop_code'], params['event_code']))
+        query = search_refund_ticket_by(self.request, params)
+        refund_tickets = query.all()
+        self.assertFalse(refund_tickets, msg='Failed to search refund ticket by refunded_shop_code: %s, event_code: %s' % ( params['refunded_shop_code'], params['event_code']))
 
 
 class RefundPerformanceSearchTest(APITestBase, TestCase):
@@ -1435,8 +1464,9 @@ class RefundPerformanceSearchTest(APITestBase, TestCase):
             formdata['before_refund'] = refund_term_flag[0]
             formdata['during_refund'] = refund_term_flag[1]
             formdata['after_refund'] = refund_term_flag[2]
-            refund_performance = lookup_refund_performance_by_searchform_data(self.request, formdata)
-            self.assertTrue(refund_performance, msg='Failed to search refund performance by refund term. before_refund: %s, during_refund: %s, after_refund: %s' % refund_term_flag)
+            query = lookup_refund_performance_by_searchform_data(self.request, formdata)
+            refund_performances = query.all()
+            self.assertTrue(refund_performances, msg='Failed to search refund performance by refund term. before_refund: %s, during_refund: %s, after_refund: %s' % refund_term_flag)
 
     # def test_search_refund_performance_by_performane_date(self):
     #     formdata = {'before_refund': None, 'during_refund': None, 'after_refund': None, 'performance_from': None, 'performance_to': None}

@@ -1,6 +1,7 @@
 ##<%page args="event,progress"/>
 <%inherit file="/layout_2cols.html" />
 <%namespace file="/common/helpers.html" name="ch" />
+<%namespace file="/printed_reports/helper.html" name="ph" />
 <% import altair.app.ticketing.cart.helpers as h %>
 <%block name="breadcrumbs">
   ${ch.breadcrumbs(
@@ -94,8 +95,9 @@
 <p/>
 
 <div>現在の送信設定時刻</div>
-<div>${printed_report_setting.start_on.strftime('%Y-%m-%d 00:00')}〜${printed_report_setting.end_on.strftime('%Y-%m-%d 00:00')}</div>
+<div>${ph.disp_printed_report_setting(printed_report_setting)}</div>
 <br/>
+
 
 送信対象者<br/>
 <table class="table table-striped table-bordered table-condensed" style="width:50%">
