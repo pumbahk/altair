@@ -422,10 +422,10 @@ class Lot(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return sql.and_(cls.sales_segment_id==Product.sales_segment_id,
                         Product.id==product.id)
 
-
     @property
     def products(self):
-        return sorted(self.sales_segment.products, key=lambda product: product.performance.start_on)
+        self.sales_segment.products.sort(cmp=sort_fn)
+        return self.sales_segment.products
 
     @property
     def performances(self):
@@ -520,6 +520,9 @@ class Lot(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             for setting in self.lot_entry_report_settings:
                 setting.deleted_at = self.deleted_at
 
+
+def sort_fn(x, y):
+    return cmp([x.display_order, x.performance.start_on], [y.display_order, y.performance.start_on])
 
 lot_entry_user_point_account_table = sa.Table(
     "LotEntry_UserPointAccount", Base.metadata,
