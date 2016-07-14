@@ -991,6 +991,8 @@ class PrintedReportSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     operator_id = Column(Identifier, nullable=False)
     start_on = Column(DateTime, nullable=True, default=None)
     end_on = Column(DateTime, nullable=True, default=None)
+    time = Column(Time, nullable=True, default=None)
+    last_sent_at = Column(DateTime, nullable=True, default=None)
     recipients = relationship('PrintedReportRecipient', secondary=PrinttedReportSetting_PrintedReportRecipient.__table__, backref='settings')
 
     def format_recipients(self):
@@ -4096,7 +4098,8 @@ class OrganizationSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     auth_type = AnnotatedColumn(Unicode(255), _a_label=u"認証方式")
 
-    famiport_enabled = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"Famiポートでの入金p 発券機能を利用", _a_label=u"Famiポートでの入金・発券機能を利用")
+    famiport_enabled = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"Famiポートでの入金・発券機能を利用", _a_label=u"Famiポートでの入金・発券機能を利用")
+    enable_fm_reflection_func = AnnotatedColumn(Boolean, nullable=False, default=True, doc=u"FM連携状態の判定機能を利用", _a_label=u"FM連携状態の判定機能を利用")
 
     def _render_cart_setting_id(self):
         return link_to_cart_setting(self.cart_setting)

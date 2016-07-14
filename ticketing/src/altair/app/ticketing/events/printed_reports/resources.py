@@ -21,13 +21,10 @@ class PrintedReportSettingAdminResource(TicketingAdminResource):
 
         self.printed_report_setting = api.get_or_create_printed_report_setting(request, self.event, self.user)
 
-    def update_printed_report_setting(self):
-        form = forms.PrintedReportSettingForm(self.request.POST)
-        if form.validate():
-            self.printed_report_setting.start_on = form.start_on.data
-            self.printed_report_setting.end_on = form.end_on.data
-
-        return form
+    def update_printed_report_setting(self, form):
+        self.printed_report_setting.start_on = form.start_on.data
+        self.printed_report_setting.end_on = form.end_on.data
+        self.printed_report_setting.time = form.time.data
 
     def update_recipient(self):
         form = forms.PrintedReportRecipientForm(self.request.POST)

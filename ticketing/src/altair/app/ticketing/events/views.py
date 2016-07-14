@@ -136,12 +136,13 @@ class Events(BaseView):
             return self.index_xml(query, 50)
 
         famiport_reflect_button_status = {}
-        # FIXME: ハウステンボスは公演が多くこの処理がものすごく重い。一旦機能をオフにする。後で恒久対応必要
         for event in events:
-            if self.context.organization.id == 66:
-                famiport_reflect_button_status[event.id] = "ALL_REFLECTED"
-            else:
+            # FM連携状態判定機能をオフの場合は、一律連携済み状態にする
+            if self.context.organization.setting.famiport_enabled and \
+                    self.context.organization.setting.enable_fm_reflection_func:
                 famiport_reflect_button_status[event.id] = get_famiport_reflect_button_status(self.request, slave_session, event)
+            else:
+                famiport_reflect_button_status[event.id] = "ALL_REFLECTED"
 
         return {
             'form_search': form_search,
@@ -202,18 +203,15 @@ class Events(BaseView):
             performances = performances.filter(PerformanceSetting.visible == True)
         performances = performances.all()
 
-        # FIXME: ハウステンボスは公演が多くこの処理がものすごく重い。一旦機能をオフにする。後で恒久対応必要
-        if event.organization_id == 66:
-            famiport_reflect_button_status = "ALL_REFLECTED"
-        else:
-            famiport_reflect_button_status = get_famiport_reflect_button_status(self.request, slave_session, event)
-
-        from .famiport_helpers import get_famiport_reflection_warnings
+        # FM連携状態判定機能をオフの場合は、一律連携済み状態にする
         warnings = {}
-        # FIXME: ハウステンボスは公演が多くこの処理がものすごく重い。一旦機能をオフにする。後で恒久対応必要
-        if event.organization_id != 66:
+        if event.organization.setting.famiport_enabled and event.organization.setting.enable_fm_reflection_func:
+            famiport_reflect_button_status = get_famiport_reflect_button_status(self.request, slave_session, event)
+            from .famiport_helpers import get_famiport_reflection_warnings
             for p in event.performances:
                 warnings.update(get_famiport_reflection_warnings(self.request, slave_session, p))
+        else:
+            famiport_reflect_button_status = "ALL_REFLECTED"
 
         return {
             'organization_setting':self.context.organization.setting,

@@ -124,8 +124,10 @@ class FamiPortSearchView(object):
             self.request.session.flash(errors)
             return dict(form=form)
         page = int(self.request.GET.get('page', 1))
-        paginator = get_paginator(self.request, lookup_receipt_by_searchform_data(self.request, self.request.GET), page)
-        return dict(form=form, paginator=paginator, vh=ViewHelpers(self.request))
+        session = get_db_session(self.request, 'famiport')
+        query = lookup_receipt_by_searchform_data(self.request, session, self.request.GET)
+        receipts = get_paginator(self.request, query, page)
+        return dict(form=form, receipts=receipts, vh=ViewHelpers(self.request))
 
     @view_config(route_name='search.performance', permission='operator',
                  renderer='altair.app.ticketing.famiport.optool:templates/performance_search.mako')
@@ -138,8 +140,9 @@ class FamiPortSearchView(object):
             self.request.session.flash(errors)
             return dict(form=form)
         page = int(self.request.GET.get('page', 1))
-        paginator = get_paginator(self.request, lookup_performance_by_searchform_data(self.request, self.request.GET), page)
-        return dict(form=form, paginator=paginator, vh=ViewHelpers(self.request))
+        query = lookup_performance_by_searchform_data(self.request, self.request.GET)
+        performances = get_paginator(self.request, query, page)
+        return dict(form=form, performances=performances, vh=ViewHelpers(self.request))
 
     @view_config(route_name='search.refund_performance', permission='operator',
                  renderer='altair.app.ticketing.famiport.optool:templates/refund_performance_search.mako')
@@ -152,8 +155,9 @@ class FamiPortSearchView(object):
             self.request.session.flash(errors)
             return dict(form=form)
         page = int(self.request.GET.get('page', 1))
-        paginator = get_paginator(self.request, lookup_refund_performance_by_searchform_data(self.request, self.request.GET), page)
-        return dict(form=form, paginator=paginator, vh=ViewHelpers(self.request))
+        query = lookup_refund_performance_by_searchform_data(self.request, self.request.GET)
+        refund_performances = get_paginator(self.request, query, page)
+        return dict(form=form, refund_performances=refund_performances, vh=ViewHelpers(self.request))
 
     @view_config(route_name='search.refund_ticket', request_method='GET', permission='operator',
                  renderer='altair.app.ticketing.famiport.optool:templates/refund_ticket_search.mako')
@@ -166,10 +170,11 @@ class FamiPortSearchView(object):
             self.request.session.flash(errors)
             return dict(form=form)
         page = int(self.request.GET.get('page', 1))
-        paginator = get_paginator(self.request, search_refund_ticket_by(self.request, self.request.GET), page)
+        query = search_refund_ticket_by(self.request, self.request.GET)
+        entries = get_paginator(self.request, query, page)
         rts_helper = RefundTicketSearchHelper(self.request)
         columns = rts_helper.get_columns()
-        return dict(form=form, paginator=paginator, rts_helper=rts_helper, columns=columns)
+        return dict(form=form, entries=entries, rts_helper=rts_helper, columns=columns)
 
 # TODO Make sure the permission of each operation
 class FamiPortDetailView(object):

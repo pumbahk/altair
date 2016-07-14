@@ -257,6 +257,7 @@ class OrganizationSettings(BaseView):
         organization_setting.lot_asid = f.lot_asid.data
         organization_setting.lot_entry_user_withdraw = f.lot_entry_user_withdraw.data
         organization_setting.famiport_enabled = f.famiport_enabled.data
+        organization_setting.enable_fm_reflection_func = f.enable_fm_reflection_func.data
         organization_setting.save()
 
         self.request.session.flash(u'その他の設定を保存しました')

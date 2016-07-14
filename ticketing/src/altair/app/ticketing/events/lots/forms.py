@@ -5,18 +5,19 @@ from datetime import datetime
 
 from wtforms import Form
 from wtforms import TextField, SelectField, HiddenField, IntegerField, BooleanField, TextAreaField
-from wtforms.widgets import CheckboxInput
+from wtforms.widgets import CheckboxInput, TableWidget
 from wtforms.validators import Length, Optional, ValidationError, NumberRange
 
 from altair.app.ticketing.security import get_plugin_names
 from altair.formhelpers import (
     DateTimeField, Translations, Required, Max, OurDateWidget, Email,
     after1900, LazySelectMultipleField, OurBooleanField, OurDecimalField,
-    OurSelectField, SwitchOptional,
+    OurSelectField, SwitchOptional, OurSelectMultipleField
     )
 from altair.app.ticketing.core.models import ReportFrequencyEnum, ReportPeriodEnum
 from altair.app.ticketing.core.models import (
     Product,
+    Performance,
     SalesSegment,
     SalesSegmentGroup,
     Operator,
@@ -27,6 +28,7 @@ from altair.app.ticketing.events.sales_segments.resources import SalesSegmentAcc
 from altair.app.ticketing.lots.models import Lot
 from altair.app.ticketing.lots import api
 from altair.app.ticketing.events.sales_reports.forms import ReportSettingForm
+from altair.app.ticketing.products.api import add_lot_product
 
 from .models import LotEntryReportSetting
 
@@ -109,6 +111,15 @@ class LotForm(Form):
         widget=CheckboxInput()
     )
 
+    performances = OurSelectMultipleField(
+        label=u'コピーするパフォーマンス',
+        validators=[Optional()],
+        choices=[],
+        widget=TableWidget(),
+        option_widget=CheckboxInput(),
+        coerce=int,
+    )
+
     ### 販売区分
 
     sales_segment_group_id = SelectField(
@@ -169,11 +180,8 @@ class LotForm(Form):
         validators=[Optional()],
     )
 
-
-
     def create_lot(self, event):
         return api.create_lot(event, self)
-
 
     def update_lot(self, lot):
         sales_segment = lot.sales_segment
@@ -207,6 +215,25 @@ class LotForm(Form):
         lot.auth_type = self.data['auth_type']
         lot.lot_entry_user_withdraw = self.data['lot_entry_user_withdraw']
 
+        original_performance_ids = set([p.id for p in lot.performances])
+        new_performance_ids = set(self.performances.data)
+        deleted_performance_ids = original_performance_ids - new_performance_ids
+        added_performance_ids = new_performance_ids - original_performance_ids
+
+        # 更新後にパフォーマンスが追加されていたら追加
+        performances = Performance.query.filter(Performance.id.in_(added_performance_ids)).all()
+        for performance in performances:
+            for original_product in performance.products:
+                if not original_product.original_product_id:
+                    # 抽選の商品は追加しない
+                    add_lot_product(lot, original_product)
+
+        # 更新後にパフォーマンスが減らされていた場合は削除
+        for performance in deleted_performance_ids:
+            for product in lot.products:
+                if product.performance_id == performance:
+                    product.delete()
+
         return lot
 
     def _validate_terms(self):
@@ -226,16 +253,35 @@ class LotForm(Form):
 
         return True
 
-    def validate(self):
-        if super(LotForm, self).validate():
-            if not self._validate_terms():
-                return False
-
+    def _validate_performances(self, lot):
+        if not lot:
             return True
 
-    def __init__(self, *args, **kwargs):
+        original_performance_ids = set([p.id for p in lot.performances])
+        new_performance_ids = set(self.performances.data)
+        deleted_performance_ids = original_performance_ids - new_performance_ids
+
+        for performance in deleted_performance_ids:
+            for product in lot.products:
+                if product.performance_id == performance:
+                    if product.lot_entry_products:
+                        self.performances.errors.append(u"抽選申込がある為、削除できません")
+                        return False
+        return True
+
+    def validate(self, lot=None):
+        return all([super(LotForm, self).validate(), self._validate_terms(), self._validate_performances(lot)])
+
+    def __init__(self, event=None, lot=None, *args, **kwargs):
         self.context = kwargs.pop('context')
         super(LotForm, self).__init__(*args, **kwargs)
+
+        if event:
+            self.performances.choices = [(s.id, s.name) for s in event.performances or []]
+
+        if lot:
+            self.performances.data = [s.id for s in lot.performances]
+
 
 class ProductForm(Form):
     name = TextField(

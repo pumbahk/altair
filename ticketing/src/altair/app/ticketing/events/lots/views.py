@@ -366,8 +366,9 @@ class Lots(BaseView):
             h=h,
             )
 
-    @view_config(route_name='lots.edit', renderer='altair.app.ticketing:templates/lots/edit.html', permission='event_viewer')
-    def edit(self):
+    @view_config(route_name='lots.edit', renderer='altair.app.ticketing:templates/lots/edit.html'
+                            , permission='event_viewer', request_method="GET")
+    def edit_get(self):
         self.check_organization(self.context.event)
         lot = self.context.lot
         event = self.context.event
@@ -375,18 +376,59 @@ class Lots(BaseView):
         org_withdraw = False
 
         organization_setting = OrganizationSetting.query \
-                                .filter_by(organization_id=organization.id) \
-                                .first()
+            .filter_by(organization_id=organization.id) \
+            .first()
+
         if organization_setting:
             org_withdraw = organization_setting.lot_entry_user_withdraw
+
         sales_segment_groups = event.sales_segment_groups
         sales_segment_group_choices = [
             (str(s.id), s.name)
             for s in sales_segment_groups
             ]
-        form = LotForm(formdata=self.request.POST, obj=lot, context=self.context)
+
+        form = LotForm(obj=lot, event=event, lot=lot, context=self.context)
         form.sales_segment_group_id.choices = sales_segment_group_choices
-        if self.request.POST and form.validate():
+        manage_sales_segment_group_link = Link(label=u"+", url=self.request.route_url('sales_segment_groups.index', event_id=event.id))
+
+        return dict(
+            lot=lot,
+            event=event,
+            org_withdraw=org_withdraw,
+            form=form,
+            manage_sales_segment_group_link=manage_sales_segment_group_link,
+            )
+
+    @view_config(route_name='lots.edit', renderer='altair.app.ticketing:templates/lots/edit.html'
+                            , permission='event_viewer', request_method="POST")
+    def edit_post(self):
+        self.check_organization(self.context.event)
+        lot = self.context.lot
+        event = self.context.event
+        organization = event.organization
+        org_withdraw = False
+
+        organization_setting = OrganizationSetting.query \
+            .filter_by(organization_id=organization.id) \
+            .first()
+
+        if organization_setting:
+            org_withdraw = organization_setting.lot_entry_user_withdraw
+
+        sales_segment_groups = event.sales_segment_groups
+        sales_segment_group_choices = [
+            (str(s.id), s.name)
+            for s in sales_segment_groups
+            ]
+        form = LotForm(formdata=self.request.POST, event=event, context=self.context)
+
+        form.sales_segment_group_id.choices = sales_segment_group_choices
+
+        # この画面からは、販売区分グループを変更できないようになりました
+        form.sales_segment_group_id.data = str(lot.sales_segment_group.id)
+
+        if form.validate(lot):
             form.update_lot(lot)
             return HTTPFound(self.request.route_url("lots.show", lot_id=lot.id))
 
@@ -399,7 +441,6 @@ class Lots(BaseView):
             form=form,
             manage_sales_segment_group_link=manage_sales_segment_group_link,
             )
-
 
     @view_config(route_name='lots.product_new', renderer='altair.app.ticketing:templates/lots/product_new.html', permission='event_viewer')
     def product_new(self):
