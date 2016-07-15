@@ -241,7 +241,7 @@ class SalesSegmentGroups(BaseView, SalesSegmentViewHelperMixin):
                     lot.delete()
 
             # 抽選の区分に更新したときに、１つも抽選がなかったら作成する
-            if sales_segment_group.kind != f.original_kind.data:
+            if sales_segment_group.is_lottery() != f.original_kind.data.count("lottery"):
                 if sales_segment_group.is_lottery() and not sales_segment_group.get_lots():
                     lot = create_lot(sales_segment_group.event, f, sales_segment_group, f.lot_name.data)
                     DBSession.add(lot)
