@@ -49,6 +49,9 @@
     % endif
     <th style="width: 5%;">購入確定数</th>
     <th style="width: 5%;">予約数</th>
+    % if not (form.limited_from.data or form.limited_to.data):
+      <th style="width: 4%;">残数</th>
+    % endif
     <th style="width: 8%;">受付金額</th>
   % endif
   % if form.limited_from.data or form.limited_to.data:
@@ -58,8 +61,8 @@
     <th style="width: 5%;">購入確定数</th>
     <th style="width: 5%;">予約数</th>
     <th style="width: 8%;">受付金額</th>
-  % endif
     <th style="width: 4%;">残数</th>
+  % endif
   </tr>
   <%
     group_key = None
@@ -98,6 +101,11 @@
         % endif
       <td style="padding: 5px; text-align: right;">${vh.number(report.total_paid_quantity) or ''}</td>
       <td style="padding: 5px; text-align: right;">${vh.number(report.total_unpaid_quantity) or ''}</td>
+        % if not (form.limited_from.data or form.limited_to.data):
+          % if i == 0:
+      <td style="padding: 5px; text-align: right;" rowspan="${count}">${vh.number(report.vacant_quantity) or ''}</td>
+          % endif
+        % endif
       <td style="padding: 5px; text-align: right;">${vh.price((report.total_paid_quantity + report.total_unpaid_quantity) / report.sales_unit * report.product_price)}</td>
       % endif
       % if form.limited_from.data or form.limited_to.data:
@@ -107,9 +115,9 @@
       <td style="padding: 5px; text-align: right;">${vh.number(report.paid_quantity) or ''}</td>
       <td style="padding: 5px; text-align: right;">${vh.number(report.unpaid_quantity) or ''}</td>
       <td style="padding: 5px; text-align: right;">${vh.price((report.paid_quantity + report.unpaid_quantity) / report.sales_unit * report.product_price)}</td>
-      % endif
-      % if i == 0:
+        % if i == 0:
       <td style="padding: 5px; text-align: right;" rowspan="${count}">${vh.number(report.vacant_quantity) or ''}</td>
+        % endif
       % endif
     </tr>
     % endfor
@@ -124,6 +132,9 @@
     % endif
     <td style="padding: 5px; text-align: right;">${vh.number(total.total_paid_quantity) or ''}</td>
     <td style="padding: 5px; text-align: right;">${vh.number(total.total_unpaid_quantity) or ''}</td>
+    % if not (form.limited_from.data or form.limited_to.data):
+    <td style="padding: 5px; text-align: right;">${vh.number(total.vacant_quantity) or ''}</td>
+    % endif
     <td style="padding: 5px; text-align: right;">${vh.price(total.total_sum_amount) or ''}</td>
   % endif
   % if form.limited_from.data or form.limited_to.data:
@@ -133,8 +144,8 @@
     <td style="padding: 5px; text-align: right;">${vh.number(total.paid_quantity) or ''}</td>
     <td style="padding: 5px; text-align: right;">${vh.number(total.unpaid_quantity) or ''}</td>
     <td style="padding: 5px; text-align: right;">${vh.price(total.sum_amount) or ''}</td>
-  % endif
     <td style="padding: 5px; text-align: right;">${vh.number(total.vacant_quantity) or ''}</td>
+  % endif
   </tr>
 </table>
 % endfor
