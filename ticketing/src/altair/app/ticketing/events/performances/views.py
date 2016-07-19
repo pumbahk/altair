@@ -25,7 +25,7 @@ from altair.app.ticketing.core.models import Event, Performance, PerformanceSett
 from altair.app.ticketing.famiport.userside_models import AltairFamiPortPerformance
 from altair.app.ticketing.orders.forms import OrderForm, OrderSearchForm, OrderImportForm
 from altair.app.ticketing.venues.api import get_venue_site_adapter
-from altair.app.ticketing.lots.api import copy_lots_between_performance
+from altair.app.ticketing.lots.api import copy_lots_between_performance, copy_lot_products_from_performance
 
 from altair.app.ticketing.mails.forms import MailInfoTemplate
 from altair.app.ticketing.models import DBSession
@@ -697,7 +697,11 @@ class Performances(BaseView):
 
             new_performance.save()
 
+            import ipdb;ipdb.set_trace()
             # 抽選の商品を作成する
+            # コピー公演の商品を抽選にもコピーする
+            # for lot in origin_performance.event.lots:
+            #     copy_lot_products_from_performance(new_performance, lot)
             copy_lots_between_performance(origin_performance, new_performance)
 
         self.request.session.flash(u'パフォーマンスをコピーしました')

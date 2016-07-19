@@ -671,25 +671,44 @@ class CopyingLotProductsTests(TestCase):
     def _setup_test_data(self):
         from altair.app.ticketing.core.models import Performance, SalesSegmentGroup, SalesSegment, Product
         from altair.app.ticketing.lots.models import Lot
-        ssg = SalesSegmentGroup(
+        lottery_ssg = SalesSegmentGroup(
             name=u'先行抽選',
             kind='early_lottery'
+        )
+        normal_ssg = SalesSegmentGroup(
+            name=u'一般発売',
+            kind='normal'
         )
         self.lot1 = Lot(
             name=u'抽選１',
             sales_segment=SalesSegment(
-                sales_segment_group=ssg,
+                sales_segment_group=lottery_ssg,
+                products=[]
+            )
+        )
+        self.lot2 = Lot(
+            name=u'抽選２',
+            sales_segment=SalesSegment(
+                sales_segment_group=lottery_ssg,
                 products=[]
             )
         )
         self.performance1 = Performance(
+            name=u'公演１',
             sales_segments=[
                 SalesSegment(
-                    sales_segment_group=ssg,
-                    performance=Performance(name=u'公演１'),
+                    sales_segment_group=lottery_ssg,
                     products=[
-                        Product(name=u'商品１', price=100, original_product_id=None),
-                        Product(name=u'商品２', price=200, original_product_id=None)
+                        Product(name=u'抽選商品１', price=100, original_product_id=None),
+                        Product(name=u'抽選商品２', price=200, original_product_id=None)
+                    ]
+                ),
+                SalesSegment(
+                    sales_segment_group=normal_ssg,
+                    products=[
+                        Product(name=u'一般商品１', price=1000, original_product_id=None),
+                        Product(name=u'一般商品２', price=2000, original_product_id=None),
+                        Product(name=u'一般商品３', price=3000, original_product_id=None)
                     ]
                 )
             ]
@@ -699,14 +718,18 @@ class CopyingLotProductsTests(TestCase):
         self.session.flush()
 
     def test_copy_lots_between_performance(self):
-        """抽選商品を公演商品から作成する"""
+        """抽選商品を公演商品から作成する
+        一般商品はコピーされないことも確認する"""
         self._setup_test_data()
 
         self._callFUT(self.performance1, self.lot1)
 
         self.assertEqual(len(self.lot1.sales_segment.products), 2)
 
-    def test_copy_no_lots_performance(self):
-        """コピー元公演に紐づく抽選商品がない場合は、何もしない"""
-        pass
+    def test_not_copy_to_other_lots(self):
+        """コピー対象としていない抽選には商品がコピーされない"""
+        self._setup_test_data()
 
+        self._callFUT(self.performance1, self.lot1)
+
+        self.assertEqual(len(self.lot2.sales_segment.products), 0)
