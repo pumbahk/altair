@@ -697,11 +697,7 @@ class Performances(BaseView):
 
             new_performance.save()
 
-            import ipdb;ipdb.set_trace()
             # 抽選の商品を作成する
-            # コピー公演の商品を抽選にもコピーする
-            # for lot in origin_performance.event.lots:
-            #     copy_lot_products_from_performance(new_performance, lot)
             copy_lots_between_performance(origin_performance, new_performance)
 
         self.request.session.flash(u'パフォーマンスをコピーしました')
