@@ -150,13 +150,13 @@ def detect_fraud():
 
     logging.info('start detect_fraud batch')
 
-    # クレジットカード決済 x セブンイレブン発券
+    # クレジットカード決済 x (セブンイレブン発券, ファミポート発券) #TKT-1630 ファミポート追加
     query = Order.query.filter(Order.canceled_at==None, Order.fraud_suspect==None)
     query = query.join(Order.payment_delivery_pair)
     query = query.join(PaymentDeliveryMethodPair.payment_method)
     query = query.filter(PaymentMethod.payment_plugin_id==plugins.MULTICHECKOUT_PAYMENT_PLUGIN_ID)
     query = query.join(PaymentDeliveryMethodPair.delivery_method)
-    query = query.filter(DeliveryMethod.delivery_plugin_id==plugins.SEJ_DELIVERY_PLUGIN_ID)
+    query = query.filter(DeliveryMethod.delivery_plugin_id.in_([plugins.SEJ_DELIVERY_PLUGIN_ID, plugins.FAMIPORT_DELIVERY_PLUGIN_ID]))
     # 指定期間
     query = query.filter(period_from<=Order.created_at, Order.created_at<=period_to)
     # 同一人物(user_idまたはメールアドレス)による同一公演の予約枚数が8枚以上、または合計金額が10万以上
@@ -172,12 +172,13 @@ def detect_fraud():
     query = query.filter(not_(Order.channel.in_(Order.inner_channels())))
 
     # {{{ XXX: 当面のあいだ乃木坂認証用のユーザも除外 (refs #10114)
+    # TKT-1630 user_idがNULLまたは乃木坂認証以外という条件に変更(NOT IN (nogizaka46_auth_user_ids) の場合, user_id=NULLもHITしないため)
     from altair.app.ticketing.users.models import UserCredential
     nogizaka46_auth_identifier = settings.get('altair.nogizaka46_auth.username', '::nogizaka46::') # manner in nogizaka46/auth.py
     nogizaka46_auth_user_ids = UserCredential.query\
         .filter(UserCredential.auth_identifier==nogizaka46_auth_identifier)\
         .with_entities(UserCredential.user_id).subquery()
-    query = query.filter(not_(Order.user_id.in_(nogizaka46_auth_user_ids)))
+    query = query.filter(or_(Order.user_id==None, not_(Order.user_id.in_(nogizaka46_auth_user_ids))))
     # }}}
 
     query = query.with_entities(Order.organization_id, Order.performance_id, func.ifnull(Order.user_id, ShippingAddress.email_1))
@@ -205,7 +206,7 @@ def detect_fraud():
     sender = settings['mail.message.sender']
     for organization_id, fraud_list in frauds.items():
         organization = Organization.filter_by(id=organization_id).one()
-        recipient = u'dev@ticketstar.jp,' + organization.contact_email
+        recipient = u'dev-ticket-all@mail.rakuten.com,' + organization.contact_email
         subject = u'[alert] 不正予約'
         render_params = dict(frauds=fraud_list, period_from=period_from, period_to=period_to)
         html = render_to_response('altair.app.ticketing:templates/orders/_fraud_alert_mail.html', render_params, request=None)
