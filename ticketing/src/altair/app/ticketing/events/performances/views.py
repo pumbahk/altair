@@ -25,7 +25,7 @@ from altair.app.ticketing.core.models import Event, Performance, PerformanceSett
 from altair.app.ticketing.famiport.userside_models import AltairFamiPortPerformance
 from altair.app.ticketing.orders.forms import OrderForm, OrderSearchForm, OrderImportForm
 from altair.app.ticketing.venues.api import get_venue_site_adapter
-from altair.app.ticketing.lots.api import copy_lots_between_performance
+from altair.app.ticketing.lots.api import copy_lots_between_performance, copy_lot_products_from_performance
 
 from altair.app.ticketing.mails.forms import MailInfoTemplate
 from altair.app.ticketing.models import DBSession

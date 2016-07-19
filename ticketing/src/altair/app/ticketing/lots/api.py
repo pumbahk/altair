@@ -714,3 +714,13 @@ def copy_lots_between_performance(performance, new_performance):
                         lot=lot,
                         original_product=product
                     )
+
+
+def copy_lot_products_from_performance(performance, lot):
+    target_ss = [ss for ss in performance.sales_segments if ss.sales_segment_group == lot.sales_segment.sales_segment_group]
+    for sales_segment in target_ss:
+        for product in sales_segment.products:
+            product_api.add_lot_product(
+                lot=lot,
+                original_product=product
+            )
