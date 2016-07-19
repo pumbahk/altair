@@ -42,7 +42,7 @@ class SalesReports(BaseView):
         chk_result = True
         if form.limited_from.data and form.limited_to.data:
             if form.limited_from.data > form.limited_to.data:
-                form.limited_from.errors += (u'集計開始日を集計終了日より先に設定ください。',)
+                form.limited_from.errors += (u'開始日時は終了日時よりも前に設定してください。',)
                 chk_result = False
 
         return chk_result
