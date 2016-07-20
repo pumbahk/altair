@@ -205,6 +205,48 @@ class ProductItemFormMixin(object):
         coerce=int
         )
 
+    def validate_product_item_quantity(self, field):
+        if field.data is not None and field.data < 1:
+            raise ValidationError(u'1以上の数値を入力してください')
+
+    def _require_for_product_form(self):
+        status = True
+        error_message = u'入力してください'
+        required_fields = [
+            self.product_id,
+            self.product_item_quantity,
+            self.product_item_name,
+            self.ticket_bundle_id,
+            self.stock_holder_id,
+            self.stock_type_id
+        ]
+        for field in required_fields:
+            # 0は入力あると判定したいため、「is None」で入力なしことをチェックする
+            # OurIntegerFieldのバリテーションはエラーになる値を渡さなさそうため、
+            # 「field.data」と「field.errors」両方がない場合のみ入力なしだと判断される。
+            if field.data is None and not field.errors:
+                field.errors.append(error_message)
+                status = False
+        return status
+
+    def _required_for_papi_form(self):
+        status = True
+        if not self.id.data or self.product_item_id.data:
+            error_message = u'入力ください'
+            required_fields = [
+                self.stock_holder_id,
+                self.product_item_quantity,
+                self.ticket_bundle_id
+            ]
+            for field in required_fields:
+                # 0は入力あると判定したいため、「is None」で入力なしことをチェックする
+                # OurIntegerFieldのバリテーションはエラーになる値を渡さなさそうため、
+                # 「field.data」と「field.errors」両方がない場合のみ入力なしだと判断される。
+                if field.data is None and not field.errors:
+                    field.errors.append(error_message)
+                    status = False
+        return status
+
     def validate_stock_holder_id(form, field):
         # 既に予約があるならStockHolderの変更は不可
         if form.product_item_id.data:
@@ -260,7 +302,10 @@ class ProductAndProductItemForm(OurForm, ProductFormMixin, ProductItemFormMixin)
         if self.name.data and not self.product_item_name.data:
             self.product_item_name.data = self.name.data
         if self.price.data and not self.product_item_price.data:
-            self.product_item_price.data = self.price.data / Decimal(self.product_item_quantity.data)
+            try:
+                self.product_item_price.data = self.price.data / Decimal(self.product_item_quantity.data)
+            except Exception:
+                pass
         if not self.product_item_price.data:
             # 0円商品
             self.product_item_price.data = 0
@@ -318,25 +363,22 @@ class ProductAndProductItemForm(OurForm, ProductFormMixin, ProductItemFormMixin)
                     if st.is_seat and st.id != field.data:
                         raise ValidationError(u'商品の席種と異なる在庫を登録することはできません')
 
-    def validate(self, *args, **kwargs):
-        status = super(ProductAndProductItemForm, self).validate(*args, **kwargs)
+    def _papim_validate(self):
+        status = True
         if status:
-            status = self.validate_product(*args, **kwargs)
+            status = self.validate_product()
         if status:
-            status = self.validate_product_item(*args, **kwargs)
+            status = self.validate_product_item()
             self.price.errors += self.product_item_price.errors
-        if not self.id.data or self.product_item_id.data:
-            error_message = u'入力してください'
-            required_fields = [
-                self.stock_holder_id,
-                self.product_item_quantity,
-                self.ticket_bundle_id
-                ]
-            for field in required_fields:
-                if not field.data:
-                    field.errors.append(error_message)
-                    status = False
+
         return status
+
+    def validate(self, *args, **kwargs):
+        return all([
+            super(self.__class__, self).validate(*args, **kwargs),
+            self._required_for_papi_form(),
+            self._papim_validate(),
+        ])
 
 
 class ProductItemForm(OurForm, ProductItemFormMixin):
@@ -379,24 +421,11 @@ class ProductItemForm(OurForm, ProductItemFormMixin):
                     raise ValidationError(u'商品の席種と異なる在庫を登録することはできません')
 
     def validate(self, *args, **kwargs):
-        status = super(ProductItemForm, self).validate(*args, **kwargs)
-        if status:
-            status = self.validate_product_item(*args, **kwargs)
-
-        error_message = u'入力してください'
-        required_fields = [
-            self.product_id,
-            self.product_item_quantity,
-            self.product_item_name,
-            self.ticket_bundle_id,
-            self.stock_holder_id,
-            self.stock_type_id
-            ]
-        for field in required_fields:
-            if not field.data:
-                field.errors.append(error_message)
-                status = False
-        return status
+        return all([
+            super(self.__class__, self).validate(*args, **kwargs),
+            self._require_for_product_form(),
+            self.validate_product_item(),
+        ])
 
 class ProductCopyForm(OurForm):
     def __init__(self, formdata=None, obj=None, prefix='', copy_sales_segments=None, **kwargs):
