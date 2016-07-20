@@ -12,10 +12,10 @@
 
 <%block name="breadcrumbs">
   ${ch.breadcrumbs(
-      names=[u'トップ',u'売上レポート', u'イベント'],
+      names=[u'トップ', event.title, u'売上レポート'],
       urls=[
         request.route_path('index'),
-        request.route_path('sales_reports.index')]
+        request.route_path('events.show', event_id=event.id)]
   )}
 </%block>
 
