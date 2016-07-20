@@ -188,15 +188,17 @@ class SalesTotalReporter(object):
             func.min(SalesSegment.start_at),
             func.max(SalesSegment.end_at),
         ).group_by(self.group_by)
-
-        for id, title, start_on, sales_start_day, sales_end_day in query.all():
-            self.reports[id] = SalesReportRecord(
-                id=id,
-                title=title,
-                start_on=start_on,
-                sales_start_day=sales_start_day,
-                sales_end_day=sales_end_day,
-            )
+        try:
+            for id, title, start_on, sales_start_day, sales_end_day in query.all():
+                self.reports[id] = SalesReportRecord(
+                    id=id,
+                    title=title,
+                    start_on=start_on,
+                    sales_start_day=sales_start_day,
+                    sales_end_day=sales_end_day,
+                )
+        except ValueError:
+            self.reports = {}
 
     def _create_where(self, query, from_date, to_date, target):
         if from_date and to_date:
@@ -301,13 +303,17 @@ class SalesTotalReporter(object):
                 query = query.filter(Order.created_at >= self.form.limited_from.data)
             if self.form.limited_to.data:
                 query = query.filter(Order.created_at < self.form.limited_to.data)
-            for id, order_amount, order_quantity in query.all():
-                if id not in self.reports:
-                    logger.info('invalid key (%s:%s) get_order_data' % (self.group_by, id))
-                    continue
-                record = self.reports[id]
-                record.order_amount = order_amount or 0
-                record.order_quantity = order_quantity or 0
+            try:
+                for id, order_amount, order_quantity in query.all():
+                    if id not in self.reports:
+                        logger.info('invalid key (%s:%s) get_order_data' % (self.group_by, id))
+                        continue
+                    record = self.reports[id]
+                    record.order_amount = order_amount or 0
+                    record.order_quantity = order_quantity or 0
+            except ValueError:
+                pass
+
         else:
             for record in self.reports.values():
                 record.order_amount = record.total_order_amount
@@ -560,15 +566,18 @@ class SalesDetailReporter(object):
             func.sum(OrderedProductItem.quantity)
         ).group_by(func.ifnull(Product.base_product_id, Product.id))
 
-        for id, paid_quantity in paid_query.all():
-            if id not in self.reports:
-                logger.warn('invalid key (product_id:%s) paid_quantity query' % id)
-                continue
-            record = self.reports[id]
-            if all_period:
-                record.total_paid_quantity += paid_quantity
-            else:
-                record.paid_quantity += paid_quantity
+        try:
+            for id, paid_quantity in paid_query.all():
+                if id not in self.reports:
+                    logger.warn('invalid key (product_id:%s) paid_quantity query' % id)
+                    continue
+                record = self.reports[id]
+                if all_period:
+                    record.total_paid_quantity += paid_quantity
+                else:
+                    record.paid_quantity += paid_quantity
+        except ValueError:
+            pass
 
         # 未入金
         unpaid_query = query.filter(Order.paid_at==None)
@@ -576,16 +585,18 @@ class SalesDetailReporter(object):
             func.ifnull(Product.base_product_id, Product.id),
             func.sum(OrderedProductItem.quantity)
         ).group_by(func.ifnull(Product.base_product_id, Product.id))
-
-        for id, unpaid_quantity in unpaid_query.all():
-            if id not in self.reports:
-                logger.warn('invalid key (product_id:%s) unpaid_quantity query' % id)
-                continue
-            record = self.reports[id]
-            if all_period:
-                record.total_unpaid_quantity += unpaid_quantity
-            else:
-                record.unpaid_quantity += unpaid_quantity
+        try:
+            for id, unpaid_quantity in unpaid_query.all():
+                if id not in self.reports:
+                    logger.warn('invalid key (product_id:%s) unpaid_quantity query' % id)
+                    continue
+                record = self.reports[id]
+                if all_period:
+                    record.total_unpaid_quantity += unpaid_quantity
+                else:
+                    record.unpaid_quantity += unpaid_quantity
+        except ValueError:
+            pass
 
     def sort_key(self):
         return lambda x:(x.stock_type_display_order, x.stock_type_id, x.stock_id, x.product_display_order, x.product_name, x.product_price)

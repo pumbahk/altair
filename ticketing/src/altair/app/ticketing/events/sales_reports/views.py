@@ -38,17 +38,6 @@ logger = logging.getLogger(__name__)
 @view_defaults(decorator=with_bootstrap, permission='sales_viewer')
 class SalesReports(BaseView):
 
-    def _limited_date_from_to_check(self, form):
-        chk_result = True
-        if form.limited_from.data and form.limited_to.data:
-            if form.limited_from.data > form.limited_to.data:
-                form.limited_from.errors += (u'開始日時は終了日時よりも前に設定してください。',)
-                chk_result = False
-
-        return chk_result
-
-
-
     @view_config(route_name='sales_reports.index', request_method='GET', renderer='altair.app.ticketing:templates/sales_reports/index.html')
     def index(self):
         form = SalesReportSearchForm()
@@ -89,21 +78,17 @@ class SalesReports(BaseView):
 
         event = self.context.event
         form = SalesReportForm(self.request.params, event_id=event.id)
-        a = self._limited_date_from_to_check(form)
-        if not self._limited_date_from_to_check(form) or not form.validate():
-            if form.limited_from.errors or form.limited_to.errors:
-                # 検索結果を出さないため、集計期間を1900-01-01に設定する。
-                form.limited_from.data = datetime(1900,1,1)
-                form.limited_to.data = datetime(1900,1,1)
-
-                msg_set = set()
-                msg_set.update(form.limited_from.errors, form.limited_to.errors)
-
-                for msg in msg_set:
-                    self.request.session.flash(msg)
-
         event_total_reporter = SalesTotalReporter(self.request, form, self.context.organization)
         performance_total_reporter = SalesTotalReporter(self.request, form, self.context.organization, group_by='Performance')
+
+        if not form.validate():
+            # SalesReportFormの集計期間のみ使いますので、集計期間に関わるエラーメッセージのみ画面で表示する。
+            if form.limited_from.errors or form.limited_to.errors:
+                # 同じエラーメッセージを二回出さないため、setを利用する
+                msg_set = set()
+                msg_set.update(form.limited_from.errors, form.limited_to.errors)
+                for msg in msg_set:
+                    self.request.session.flash(msg)
 
         return {
             'event':event,
@@ -117,25 +102,21 @@ class SalesReports(BaseView):
     def performance(self):
         performance = self.context.performance
         form = SalesReportForm(self.request.params, performance_id=performance.id)
+        performance_reporter = PerformanceReporter(self.request, form, performance)
 
-        msg_date_set = set()
-        if not self._limited_date_from_to_check(form) or not form.validate():
+        if not form.validate():
+            # SalesReportFormの集計期間のみ使いますので、集計期間に関わるエラーメッセージのみ画面で表示する。
             if form.limited_from.errors or form.limited_to.errors:
-                # 期間集計しないように全期間の結果を表示する。
-                form.limited_from.data = None
-                form.limited_to.data = None
+                # 同じエラーメッセージを二回出さないため、setを利用する
+                msg_date_set = set()
                 msg_date_set.update(form.limited_from.errors, form.limited_to.errors)
-
                 for msg in msg_date_set:
                     self.request.session.flash(msg)
-
-        performance_reporter = PerformanceReporter(self.request, form, performance)
 
         return {
             'form_report_setting':ReportSettingForm(MultiDict(performance_id=performance.id), context=self.context),
             'report_settings':ReportSetting.filter_by(performance_id=performance.id).all(),
-            'performance_reporter':performance_reporter,
-            'msg_date_set': msg_date_set
+            'performance_reporter':performance_reporter
             }
 
     @view_config(route_name='sales_reports.preview', renderer='altair.app.ticketing:templates/sales_reports/preview.html')
@@ -166,15 +147,12 @@ class SalesReports(BaseView):
         if not form.subject.data:
             form.subject.data = u'[売上レポート|%s] %s' % (self.context.user.organization.name, subject)
 
-        # validationをしないでもISEにならないので、エラーメッセージを出すために最後にする。
-        if not self._limited_date_from_to_check(form) or not form.validate():
-            # 集計期間の更新と最初にプレビュー画面に入る時に件名のエラーメッセージを出さないようにする。
-            if form.subject.errors:
-                form.subject.errors = ()
-            # 集計期間の更新と最初にプレビュー画面に入る時に送信先のエラーメッセージを出さないようにする。
-            if form.recipient.errors:
-                form.recipient.errors = ()
+        # 集計期間を再設定するときに集計期間を検証する。
+        if not form.validate():
+            # 件名や送信先のエラーメッセージを削除する。
+            form.preview_validate_msg()
             if form.limited_from.errors or form.limited_to.errors:
+                # 同じエラーメッセージを二回出さないため、setを利用する
                 msg_set = set()
                 msg_set.update(form.limited_from.errors, form.limited_to.errors)
 

@@ -8,7 +8,10 @@
 <%
   performance = performance_reporter.performance
   form = performance_reporter.form
-  date_error = True if msg_date_set else False
+  if form.limited_from.errors or form.limited_to.errors:
+    date_error = True
+  else:
+    date_error = False
 %>
 <%block name="breadcrumbs">
   <% performance = performance_reporter.performance %>

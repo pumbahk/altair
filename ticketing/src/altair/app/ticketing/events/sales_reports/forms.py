@@ -249,6 +249,32 @@ class SalesReportForm(OurForm):
             self.report_type.data = self.report_type.default
         return int(self.report_type.data) == ReportTypeEnum.Detail.v[0]
 
+    def _date_from_to_check(self, from_date, to_date):
+        status = True
+        if from_date and to_date:
+            if from_date > to_date:
+                status = False
+        return status
+
+    def _check_limited_from_to(self):
+        status = self._date_from_to_check(self.limited_from.data, self.limited_to.data)
+        if not status:
+            self.limited_from.errors += (u'開始日時は終了日時よりも前に設定してください。', )
+        return status
+
+    def preview_validate_msg(self):
+        # プレビューの場合、件名と受信先のエラーメッセージを出さない。
+        if self.subject.errors:
+            self.subject.errors = ()
+
+        if self.recipient.errors:
+            self.recipient.errors = ()
+
+    def validate(self, *args, **kwargs):
+        return all([
+            super(self.__class__, self).validate(*args, **kwargs),
+            self._check_limited_from_to(),
+        ])
 
 class ReportSettingForm(OurForm):
 
