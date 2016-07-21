@@ -1,4 +1,4 @@
-<%page args="event, order=None, small=False" />
+<%page args="event, order=None, small=False, split=False" />
 <%namespace file="/common/helpers.html" name="ch" />
 <%namespace file="/common/modal.html" import="delete_modal" />
 
@@ -50,8 +50,17 @@
 
   order = iter(order or ['new', 'show', 'edit', 'delete', 'copy'])
 %>
-<div style="float: left;">
-  ${HH.action_button(actions, order, vertical=False, extra_classes=[u'btn-small'] if small else [])}
-</div>
+
+% if split:
+  <div style="float: left; margin-right: 10px;">
+  % for item in order:
+      ${HH.action_button(actions, iter([item]), vertical=False, extra_classes=[u'btn-small'] if small else [])}
+  % endfor
+  </div>
+% else:
+    <div style="float: left;">
+      ${HH.action_button(actions, order, vertical=False, extra_classes=[u'btn-small'] if small else [])}
+    </div>
+% endif
 
 ${delete_modal()}
