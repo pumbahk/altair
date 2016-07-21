@@ -31,6 +31,7 @@
       label=u'削除',
       url='javascript:delete_event(%d);' % event.id,
       icon='icon-minus',
+      attrs={'class':'btn-danger'},
       route_name='events.delete',
     ),
     'show':dict(
@@ -40,7 +41,7 @@
       route_name='events.show',
     ),
     'copy':dict(
-      label=u'コピーして新規',
+      label=u'コピー',
       url='javascript:copy_event(%d);' % event.id,
       icon='icon-plus',
       route_name='events.copy',
@@ -50,7 +51,7 @@
   order = iter(order or ['new', 'show', 'edit', 'delete', 'copy'])
 %>
 <div style="float: left;">
-  ${HH.action_button(actions, order, extra_classes=[u'btn-small'] if small else [])}
+  ${HH.action_button(actions, order, vertical=False, extra_classes=[u'btn-small'] if small else [])}
 </div>
 
 ${delete_modal()}

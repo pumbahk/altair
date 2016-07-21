@@ -9,16 +9,11 @@
       <a href="javascript:void(0);" onclick="$('#search-event').submit();" class="btn">
         <i class="icon-search"></i> 検索
       </a>
-      <button class="btn dropdown-toggle" data-toggle="dropdown">
-        <span class="caret"></span>
-      </button>
-      <ul class="dropdown-menu">
-        <li>
-          <a data-toggle="modal" href="#modal-search">
-            <i class=""></i> 詳細検索
-          </a>
-        </li>
-      </ul>
+    </div>
+    <div class="btn-group">
+      <a data-toggle="modal" href="#modal-search" class="btn">
+        <i class=""></i> 詳細検索
+      </a>
     </div>
     <div class="btn-group">
       <a href="${request.route_path('events.index')}" class="btn">
