@@ -10,12 +10,16 @@
   form = performance_reporter.form
 %>
 <%block name="breadcrumbs">
+  <% performance = performance_reporter.performance %>
   ${ch.breadcrumbs(
-      names=[u'トップ', u'売上レポート', u'イベント', u'公演'],
+      names=[u'トップ',
+        performance.event.title,
+        performance.name,
+        u'売上レポート'],
       urls=[
         request.route_path('index'),
-        request.route_path('sales_reports.index'),
-        request.route_path('sales_reports.event', event_id=performance_reporter.performance.event_id)
+        request.route_path('events.show', event_id=performance.event.id),
+        request.route_path('performances.show', performance_id=performance.id),
       ]
   )}
 </%block>
