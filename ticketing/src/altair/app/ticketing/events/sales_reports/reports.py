@@ -658,11 +658,13 @@ class SalesDetailReporter(object):
 
 class PerformanceReporter(object):
 
-    def __init__(self, request, form, performance):
-        # formを新作成したら、エラーになった時に入力した日付をリセットするため、
-        # 渡してくれるformを流用するようにする。
-        #self.form = SalesReportForm(**form.data)
-        self.form = form
+    def __init__(self, request, form, performance, new_form=False):
+        # formを新作成したら、エラーになった時に入力した日付はリセットされるため、
+        # 売上レポートの場合のみ渡したformを流用する。
+        if new_form:
+            self.form = SalesReportForm(**form.data)
+        else:
+            self.form = form
         self.performance = performance
         self.reporters = {}
 
