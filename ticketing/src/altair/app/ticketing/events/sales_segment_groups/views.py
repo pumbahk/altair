@@ -192,6 +192,9 @@ class SalesSegmentGroups(BaseView, SalesSegmentViewHelperMixin):
 
             accessor = SalesSegmentAccessor()
             for sales_segment in sales_segment_group.sales_segments:
+                if not sales_segment.performance_id:
+                    # 抽選の商品は別途作成
+                    continue
                 id_map = SalesSegment.create_from_template(
                     sales_segment,
                     sales_segment_group_id=new_sales_segment_group.id

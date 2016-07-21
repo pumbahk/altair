@@ -625,6 +625,7 @@ def _create_lot_sales_segment(sales_segment_group, lot, sales_segment_group_id):
     sales_segment.seat_choice = False
     sales_segment.auth3d_notice = sales_segment_group.auth3d_notice
     sales_segment.account_id = sales_segment_group.account_id
+    sales_segment.reporting = False
     return sales_segment
 
 
@@ -638,6 +639,7 @@ def _copy_lot_sales_segment_between_sales_segment_group(sales_segment_group, new
     sales_segment.seat_choice = False
     sales_segment.auth3d_notice = sales_segment_group.auth3d_notice
     sales_segment.account_id = sales_segment_group.account_id
+    sales_segment.reporting = False
     return sales_segment
 
 
@@ -714,3 +716,13 @@ def copy_lots_between_performance(performance, new_performance):
                         lot=lot,
                         original_product=product
                     )
+
+
+def copy_lot_products_from_performance(performance, lot):
+    target_ss = [ss for ss in performance.sales_segments if ss.sales_segment_group == lot.sales_segment.sales_segment_group]
+    for sales_segment in target_ss:
+        for product in sales_segment.products:
+            product_api.add_lot_product(
+                lot=lot,
+                original_product=product
+            )
