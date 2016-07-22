@@ -116,6 +116,7 @@ class SalesTotalReporter(object):
         ).filter(
             or_(SalesSegment.performance_id==None, SalesSegment.id==ss.id)
         )
+
         return query
 
     def get_event_data(self):
@@ -457,6 +458,10 @@ class SalesDetailReporter(object):
             .join(StockHolder).filter(StockHolder.event==self.event, StockHolder.account_id.in_([a.id for a in self.accounts]))\
             .join(ProductItem)\
             .join(Product).filter(Product.seat_stock_type_id==Stock.stock_type_id)
+
+        # 新抽選で作成したものだけ除外する
+        query = query.filter(Product.original_product_id==None)
+
         query = self.add_sales_segment_filter(query)
         if self.form.performance_id.data:
             query = query.filter(ProductItem.performance_id==self.form.performance_id.data)
