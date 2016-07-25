@@ -764,6 +764,14 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                         valid=True #valid=Falseの時は何時だろう？
                         )
                     ordered_product_item.tokens.append(token)
+
+        # bind attributes
+        from altair.app.ticketing.cart.api import load_extra_form_data, coerce_extra_form_data
+        request = get_current_request()
+        extra_form_data = load_extra_form_data(request)
+        if extra_form_data:
+            order.attributes = coerce_extra_form_data(request, extra_form_data)
+
         DBSession.flush() # これとっちゃだめ
         return order
 
