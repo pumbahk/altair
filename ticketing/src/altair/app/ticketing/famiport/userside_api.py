@@ -102,8 +102,10 @@ def create_famiport_reflection_data(request, session, event, datetime_formatter)
 
     if filter_famiport_pdmp_sales_segments(event.sales_segment_groups):
         for performance in event.performances:
+            # 既に予約が存在する公演については連携対象外とする
+            if performance.has_order:
+                continue
             # AltairFamiPortPerformance作成
-
             # Group取得のためにVenueを探すor作る
             try:
                 afm_venue = internal.lookup_altair_famiport_venue(session, performance)
