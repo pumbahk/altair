@@ -1,9 +1,20 @@
 ## breadcrumbs widget output template
 ## 
+<style>
+  .breadcrumbs ul li {
+    display: inline;
+  }
+</style>
 
 <div class="breadcrumbs">
-	%for n in reversed(widget.get_ancestor_pages(page)):
-	  <a class="breadcrumb" href="${h.link.publish_page_from_pageset(request,n) }">${n.name}</a> &raquo;
-  %endfor
-    <span class="breadcrumb">${page.name}</span>
+  <ul>
+    %for n in reversed(widget.get_ancestor_pages(page)):
+      <li>
+        <a class="breadcrumb" href="${h.link.publish_page_from_pageset(request,n) }"><span>${n.name}</span></a> &raquo;
+      </li>
+    %endfor
+    <li>
+      <span class="breadcrumb">${page.name}</span>
+    </li>
+  </ul>
 </div>
