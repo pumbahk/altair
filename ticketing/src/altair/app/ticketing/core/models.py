@@ -591,6 +591,18 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 lots.add(p.sales_segment.lots[0])
         return list(lots)
 
+    @property
+    def has_order(self):
+        from altair.app.ticketing.orders.models import Order
+        order = DBSession.query(Order).filter(Order.performance_id == self.id)\
+                                      .filter(Order.canceled_at == None)\
+                                      .filter(Order.deleted_at == None)\
+                                      .first()
+        if order:
+            return True
+        else:
+            return False
+
     def get_recent_sales_segment(self, now):
         """公演に紐づく販売区分のうち直近のものを返す。抽選の販売区分も含む"""
         if now is None:
