@@ -1,5 +1,14 @@
-<%page args="event, btn_status" />
+<%page args="event, btn_status, small=False" />
 <%namespace file="/common/helpers.html" name="ch" />
+<%
+if small:
+    btn_size = "btn-small"
+    style = ""
+else:
+    btn_size = ""
+    style = "margin-left: 5px;"
+endif
+%>
 
 % if event.organization.setting.famiport_enabled:
     <%
@@ -12,9 +21,9 @@
     else:
         btn_style = "btn-secondary-outline disabled"
     %>
-    <a class="btn ${btn_style}" href="${request.route_path('events.famiport.performance_groups.index', event_id=event.id)}" style="margin-left: 5px;">
+    <a class="btn ${btn_size} ${btn_style}" href="${request.route_path('events.famiport.performance_groups.index', event_id=event.id)}" style="${style}">
       Famiポート連携
     </a>
 % else:
-<input type="button" disabled class="btn btn-secondary-outline disabled" value="Famiポート連携" style="margin-left: 5px;"/>
+<input type="button" disabled class="btn btn-secondary-outline disabled" value="Famiポート連携" style="${style}"/>
 % endif
