@@ -38,6 +38,10 @@ logger = logging.getLogger(__name__)
 @view_defaults(decorator=with_bootstrap, permission='sales_viewer')
 class SalesReports(BaseView):
 
+    def flash_limited_err_msg(self, limited_errors):
+        for msg in limited_errors:
+            self.request.session.flash(msg)
+
     @view_config(route_name='sales_reports.index', request_method='GET', renderer='altair.app.ticketing:templates/sales_reports/index.html')
     def index(self):
         form = SalesReportSearchForm()
@@ -75,28 +79,43 @@ class SalesReports(BaseView):
 
     @view_config(route_name='sales_reports.event', renderer='altair.app.ticketing:templates/sales_reports/event.html')
     def event(self):
+
         event = self.context.event
         form = SalesReportForm(self.request.params, event_id=event.id)
-        event_total_reporter = SalesTotalReporter(self.request, form, self.context.organization)
-        performance_total_reporter = SalesTotalReporter(self.request, form, self.context.organization, group_by='Performance')
+        event_total_reporter = None
+        performance_total_reporter = None
 
-        return {
-            'event':event,
-            'form_report_setting':ReportSettingForm(MultiDict(event_id=event.id), context=self.context),
-            'report_settings':ReportSetting.filter_by(event_id=event.id).all(),
-            'event_total_reporter':event_total_reporter,
-            'performance_total_reporter':performance_total_reporter
-            }
+        form.validate()
+        self.flash_limited_err_msg(form.limited_from.errors)
+        if not form.limited_from.errors:
+            event_total_reporter = SalesTotalReporter(self.request, form, self.context.organization)
+            performance_total_reporter = SalesTotalReporter(self.request, form, self.context.organization, group_by='Performance')
+
+        return {'event':event,
+                'form_report_setting':ReportSettingForm(MultiDict(event_id=event.id), context=self.context),
+                'report_settings':ReportSetting.filter_by(event_id=event.id).all(),
+                'event_total_reporter':event_total_reporter,
+                'performance_total_reporter':performance_total_reporter,
+                'form':form
+                }
 
     @view_config(route_name='sales_reports.performance', renderer='altair.app.ticketing:templates/sales_reports/performance.html')
     def performance(self):
         performance = self.context.performance
         form = SalesReportForm(self.request.params, performance_id=performance.id)
+        performance_reporter = None
+
+        form.validate()
+        self.flash_limited_err_msg(form.limited_from.errors)
+        if not form.limited_from.errors:
+            performance_reporter = PerformanceReporter(self.request, form, performance)
 
         return {
             'form_report_setting':ReportSettingForm(MultiDict(performance_id=performance.id), context=self.context),
             'report_settings':ReportSetting.filter_by(performance_id=performance.id).all(),
-            'performance_reporter':PerformanceReporter(self.request, form, performance),
+            'performance_reporter':performance_reporter,
+            'performance': performance,
+            'form':form
             }
 
     @view_config(route_name='sales_reports.preview', renderer='altair.app.ticketing:templates/sales_reports/preview.html')
@@ -121,11 +140,15 @@ class SalesReports(BaseView):
         else:
             raise HTTPNotFound('event and performance id is not found')
 
-        form = SalesReportForm(self.request.params)
+        form = SalesReportForm(formdata=self.request.params, is_preview=True)
         if not form.recipient.data:
             form.recipient.data = ', '.join([rs.format_emails() for rs in report_settings])
         if not form.subject.data:
             form.subject.data = u'[売上レポート|%s] %s' % (self.context.user.organization.name, subject)
+
+        # 集計期間を再設定するときに集計期間を検証する。
+        form.validate()
+        self.flash_limited_err_msg(form.limited_from.errors)
 
         return {
             'form':form,

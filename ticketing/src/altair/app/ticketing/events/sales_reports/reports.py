@@ -301,6 +301,7 @@ class SalesTotalReporter(object):
                 query = query.filter(Order.created_at >= self.form.limited_from.data)
             if self.form.limited_to.data:
                 query = query.filter(Order.created_at < self.form.limited_to.data)
+
             for id, order_amount, order_quantity in query.all():
                 if id not in self.reports:
                     logger.info('invalid key (%s:%s) get_order_data' % (self.group_by, id))
@@ -308,6 +309,7 @@ class SalesTotalReporter(object):
                 record = self.reports[id]
                 record.order_amount = order_amount or 0
                 record.order_quantity = order_quantity or 0
+
         else:
             for record in self.reports.values():
                 record.order_amount = record.total_order_amount

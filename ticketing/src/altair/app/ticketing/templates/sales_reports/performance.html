@@ -6,11 +6,14 @@
 
 <%namespace file="/common/helpers.html" name="ch" />
 <%
-  performance = performance_reporter.performance
-  form = performance_reporter.form
+
+  if form.limited_from.errors or form.limited_to.errors:
+    date_error = True
+  else:
+    date_error = False
+
 %>
 <%block name="breadcrumbs">
-  <% performance = performance_reporter.performance %>
   ${ch.breadcrumbs(
       names=[u'トップ',
         performance.event.title,
@@ -34,6 +37,9 @@
 </div>
 
 <h3>開催日: ${vh.datetime(performance.start_on, with_weekday=True)}　${performance.name}</h3>
+% if date_error:
+<h4 style="margin-left: 30px; margin-top: 20px;">レポート対象データがありません</h4>
+% else:
 
 <%
   sales_segments = performance_reporter.sort_index()
@@ -75,9 +81,6 @@
       % endif
       <th style="width: 5%;">購入確定数</th>
       <th style="width: 5%;">予約数</th>
-      % if not (form.limited_from.data or form.limited_to.data):
-      <th style="width: 4%;">残数</th>
-      % endif
       <th style="width: 8%;">受付金額</th>
       % if form.limited_from.data or form.limited_to.data:
         % if not reporter.is_simple_type():
@@ -86,9 +89,8 @@
       <th style="width: 5%;">購入確定数</th>
       <th style="width: 5%;">予約数</th>
       <th style="width: 8%;">受付金額</th>
-      <th style="width: 4%;">残数</th>
       % endif
-
+      <th style="width: 4%;">残席数</th>
     </tr>
     <%
       group_key = None
@@ -126,11 +128,6 @@
         % endif
       <td class="numeric">${vh.number(record.total_paid_quantity) or ''}</td>
       <td class="numeric">${vh.number(record.total_unpaid_quantity) or ''}</td>
-          % if not (form.limited_from.data or form.limited_to.data):
-            % if i == 0:
-      <td rowspan="${count}" class="numeric">${vh.number(record.vacant_quantity) or ''}</td>
-            % endif
-          % endif
       <td class="price">${vh.price((record.total_paid_quantity + record.total_unpaid_quantity) / record.sales_unit * record.product_price)}</td>
         % if form.limited_from.data or form.limited_to.data:
           % if not reporter.is_simple_type():
@@ -139,11 +136,10 @@
       <td class="numeric">${vh.number(record.paid_quantity) or ''}</td>
       <td class="numeric">${vh.number(record.unpaid_quantity) or ''}</td>
       <td class="price">${vh.price((record.paid_quantity + record.unpaid_quantity) / record.sales_unit * record.product_price)}</td>
-          % if i == 0:
-      <td rowspan="${count}" class="numeric">${vh.number(record.vacant_quantity) or ''}</td>
-          % endif
         % endif
-
+        % if i == 0:
+      <td rowspan="${count}" class="numeric">${vh.number(record.vacant_quantity) or ''}</td>
+        % endif
     </tr>
       % endfor
     % endfor
@@ -156,9 +152,6 @@
     % endif
       <td class="numeric">${vh.number(total.total_paid_quantity) or ''}</td>
       <td class="numeric">${vh.number(total.total_unpaid_quantity) or ''}</td>
-    % if not (form.limited_from.data or form.limited_to.data):
-      <td class="numeric">${vh.number(total.vacant_quantity) or ''}</td>
-    % endif
       <td class="price">${vh.price(total.total_sum_amount) or ''}</td>
     % if form.limited_from.data or form.limited_to.data:
       % if not reporter.is_simple_type():
@@ -167,11 +160,12 @@
       <td class="numeric">${vh.number(total.paid_quantity) or ''}</td>
       <td class="numeric">${vh.number(total.unpaid_quantity) or ''}</td>
       <td class="price">${vh.price(total.sum_amount) or ''}</td>
-      <td class="numeric">${vh.number(total.vacant_quantity) or ''}</td>
     % endif
+      <td class="numeric">${vh.number(total.vacant_quantity) or ''}</td>
     </tr>
   </table>
   % else:
   <p style="margin-left: 30px; margin-top: 20px;">商品がありません</p>
   % endif
 % endfor
+% endif
