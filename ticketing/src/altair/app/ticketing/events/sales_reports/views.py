@@ -38,12 +38,8 @@ logger = logging.getLogger(__name__)
 @view_defaults(decorator=with_bootstrap, permission='sales_viewer')
 class SalesReports(BaseView):
 
-    def flash_limited_err_msg(self, limited_from_errors, limited_to_errors):
-        # 集計期間のエラーメッセージのみ画面で表示する。
-        # 同じエラーメッセージを二回出さないため、setを利用する
-        msg_set = set()
-        msg_set.update(limited_from_errors, limited_to_errors)
-        for msg in msg_set:
+    def flash_limited_err_msg(self, limited_errors):
+        for msg in limited_errors:
             self.request.session.flash(msg)
 
     @view_config(route_name='sales_reports.index', request_method='GET', renderer='altair.app.ticketing:templates/sales_reports/index.html')
@@ -86,15 +82,14 @@ class SalesReports(BaseView):
 
         event = self.context.event
         form = SalesReportForm(self.request.params, event_id=event.id)
+        event_total_reporter = None
+        performance_total_reporter = None
 
         form.validate()
-        if not (form.limited_from.errors or form.limited_to.errors):
+        self.flash_limited_err_msg(form.limited_from.errors)
+        if not form.limited_from.errors:
             event_total_reporter = SalesTotalReporter(self.request, form, self.context.organization)
             performance_total_reporter = SalesTotalReporter(self.request, form, self.context.organization, group_by='Performance')
-        else:
-            self.flash_limited_err_msg(form.limited_from.errors, form.limited_to.errors)
-            event_total_reporter = None
-            performance_total_reporter = None
 
         return {'event':event,
                 'form_report_setting':ReportSettingForm(MultiDict(event_id=event.id), context=self.context),
@@ -108,13 +103,12 @@ class SalesReports(BaseView):
     def performance(self):
         performance = self.context.performance
         form = SalesReportForm(self.request.params, performance_id=performance.id)
+        performance_reporter = None
 
         form.validate()
+        self.flash_limited_err_msg(form.limited_from.errors)
         if not (form.limited_from.errors or form.limited_to.errors):
             performance_reporter = PerformanceReporter(self.request, form, performance)
-        else:
-            self.flash_limited_err_msg(form.limited_from.errors, form.limited_to.errors)
-            performance_reporter = None
 
         return {
             'form_report_setting':ReportSettingForm(MultiDict(performance_id=performance.id), context=self.context),
@@ -154,8 +148,7 @@ class SalesReports(BaseView):
 
         # 集計期間を再設定するときに集計期間を検証する。
         form.validate()
-        if form.limited_from.errors or form.limited_to.errors:
-            self.flash_limited_err_msg(form.limited_from.errors, form.limited_to.errors)
+        self.flash_limited_err_msg(form.limited_from.errors)
 
         return {
             'form':form,

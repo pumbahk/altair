@@ -262,14 +262,24 @@ class SalesReportForm(OurForm):
 
     def _preview_validate_msg(self):
         # プレビューの場合、件名と受信先のエラーメッセージを出さない。
-        if self.subject.errors:
-            self.subject.errors = ()
+        self.subject.errors = ()
+        self.recipient.errors = ()
 
-        if self.recipient.errors:
-            self.recipient.errors = ()
+    def _rearrange_limited_after1990_msg(self):
+        # 出力したい集計期間のエラーメッセージを整理する
+        if self.limited_to.errors:
+            msg_set = set()
+            msg_set.update(self.limited_from.errors, self.limited_to.errors)
+
+            # 重複しないため、全ての集計期間のエラーメッセージをlimited_fromに入れる
+            self.limited_from.errors = list(msg_set)
+
+            # limited_toのエラーメッセージをクリアする。
+            self.limited_to.errors = []
 
     def validate(self, *args, **kwargs):
         status = super(self.__class__, self).validate(*args, **kwargs)
+        self._rearrange_limited_after1990_msg()
         if not status and self.is_preview:
             self._preview_validate_msg()
 
