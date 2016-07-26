@@ -5,6 +5,10 @@
   .confirm-message{
     margin-left: 7px;
   }
+  .disp-order_no{
+    font-size: 20px;
+    color: #cc0000;
+  }
   th {
       text-align: left;
   }
@@ -37,7 +41,7 @@
     <div class="dispBox">
       <%m:header>受付番号</%m:header>
       <div class="dispBoxInner">
-        <div class="confirm-message">
+        <div class="confirm-message disp-order_no">
           ${order.order_no}
         </div>
       </div>
