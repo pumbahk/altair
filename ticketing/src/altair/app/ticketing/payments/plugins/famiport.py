@@ -40,6 +40,8 @@ from altair.app.ticketing.cart.models import CartedProductItem
 from altair.app.ticketing.core.models import FamiPortTenant
 from altair.app.ticketing.famiport.exc import FamiPortAPIError
 from altair.app.ticketing.orders.models import OrderedProductItem
+import altair.app.ticketing.orders.models as order_models
+from altair.app.ticketing.orders.api import bind_attributes
 from altair.app.ticketing.core.modelmanage import ApplicableTicketsProducer
 from altair.app.ticketing.famiport.userside_models import (
     AltairFamiPortSalesSegmentPair,
@@ -62,7 +64,6 @@ from ..exceptions import (
     OrderLikeValidationFailure,
     CancellationValidationFailure
     )
-import altair.app.ticketing.orders.models as order_models
 from . import FAMIPORT_PAYMENT_PLUGIN_ID as PAYMENT_PLUGIN_ID
 from . import FAMIPORT_DELIVERY_PLUGIN_ID as DELIVERY_PLUGIN_ID
 from altair.app.ticketing.mails.fake import FakeObject
@@ -645,6 +646,7 @@ class FamiPortPaymentPlugin(object):
     def finish(self, request, cart):
         """確定処理"""
         order = order_models.Order.create_from_cart(cart)
+        order = bind_attributes(request, order)
         cart.finish()
         self.finish2(request, order)
         return order
@@ -824,6 +826,7 @@ class FamiPortPaymentDeliveryPlugin(object):
     def finish(self, request, cart):
         """ 確定時処理 """
         order = order_models.Order.create_from_cart(cart)
+        order = bind_attributes(request, order)
         cart.finish()
         self.finish2(request, order)
         return order
