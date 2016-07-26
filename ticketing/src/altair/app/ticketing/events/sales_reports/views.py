@@ -107,7 +107,7 @@ class SalesReports(BaseView):
 
         form.validate()
         self.flash_limited_err_msg(form.limited_from.errors)
-        if not (form.limited_from.errors or form.limited_to.errors):
+        if not form.limited_from.errors:
             performance_reporter = PerformanceReporter(self.request, form, performance)
 
         return {
