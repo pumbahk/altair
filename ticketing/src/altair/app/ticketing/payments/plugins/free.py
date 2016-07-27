@@ -9,6 +9,7 @@ from zope.interface import implementer
 from altair.pyramid_dynamic_renderer import lbr_view_config
 from altair.app.ticketing.core import models as c_models
 from altair.app.ticketing.orders import models as order_models
+from altair.app.ticketing.orders.api import bind_attributes
 from altair.app.ticketing.payments.interfaces import IPaymentPlugin, IOrderPayment
 from altair.app.ticketing.cart.interfaces import ICartPayment
 from altair.app.ticketing.mails.interfaces import (
@@ -77,6 +78,7 @@ class FreePaymentPlugin(object):
     def finish(self, request, cart):
         """ 確定処理 """
         order = order_models.Order.create_from_cart(cart)
+        order = bind_attributes(request, order)
         from datetime import datetime
         order.paid_at = datetime.now()
         cart.finish()
