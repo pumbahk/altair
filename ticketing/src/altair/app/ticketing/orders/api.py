@@ -757,6 +757,14 @@ def call_payment_delivery_plugin(request, order_like, included_payment_plugin_id
         delivery_plugin.finish2(request, order_like)
 
 
+def bind_attributes(request, order):
+    # bind attributes
+    from altair.app.ticketing.cart.api import load_extra_form_data, coerce_extra_form_data
+    extra_form_data = load_extra_form_data(request)
+    if extra_form_data:
+        order.attributes = coerce_extra_form_data(request, extra_form_data)
+    return order
+
 def create_inner_order(request, order_like, note, session=None):
     if session is None:
         from altair.app.ticketing.models import DBSession
@@ -770,6 +778,7 @@ def create_inner_order(request, order_like, note, session=None):
     else:
         if IPaymentCart.providedBy(order_like):
             order = Order.create_from_cart(order_like)
+            order = bind_attributes(request, order)
             order.organization_id = order.performance.event.organization_id
             session.add(order)
         else:

@@ -11,6 +11,7 @@ from sqlalchemy.orm.exc import NoResultFound
 from altair.pyramid_dynamic_renderer import lbr_view_config
 from altair.app.ticketing.core import models as c_models
 from altair.app.ticketing.orders import models as order_models
+from altair.app.ticketing.orders.api import bind_attributes
 from altair.app.ticketing.payments.interfaces import IPaymentPlugin, IOrderPayment, IDeliveryPlugin, IOrderDelivery
 from altair.app.ticketing.cart.interfaces import ICartDelivery, ICartPayment
 from altair.app.ticketing.mails.interfaces import (
@@ -209,6 +210,7 @@ class ReservedNumberPaymentPlugin(object):
 
     def finish(self, request, cart):
         order = order_models.Order.create_from_cart(cart)
+        order = bind_attributes(request, order)
         self.finish2(request, order)
         cart.finish()
         return order

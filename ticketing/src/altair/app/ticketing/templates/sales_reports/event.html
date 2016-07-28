@@ -6,8 +6,10 @@
 </script>
 
 <%
-  record = event_total_reporter.pop_data()
-  form = event_total_reporter.form
+  if form.limited_from.errors or form.limited_to.errors:
+    record = None
+  else:
+    record = event_total_reporter.pop_data()
 %>
 
 <%block name="breadcrumbs">
@@ -68,11 +70,6 @@
 <h3>公演</h3>
 <%include file="./_list.html" args="form=form, reporter=performance_total_reporter" />
 
-% else:
-レポート対象データがありません
-<br /><br />
-% endif
-
 <div>
   <a href="${request.route_path("sales_reports.export")}?event_id=${event.id}">CSVダウンロード</a> (β)
   <a href="#" onclick="$(this).nextAll('div').eq(0).slideDown('fast'); $(this).remove(); return false;">詳しく条件指定...</a> <br />
@@ -96,3 +93,9 @@
     </form>
   </div>
 </div>
+
+% else:
+<p style="margin-left: 30px; margin-top: 20px;">レポート対象データがありません</p>
+<br /><br />
+% endif
+

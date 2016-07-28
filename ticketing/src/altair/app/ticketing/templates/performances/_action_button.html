@@ -1,4 +1,4 @@
-<%page args="event, order=None" />
+<%page args="event, order=None, split=False" />
 <%namespace file="/common/modal.html" import="delete_modal" />
 
 <script type="text/javascript">
@@ -76,6 +76,7 @@
     'delete':dict(
       label=u'削除',
       url='javascript:delete_performance();',
+      attrs={'class':'btn-danger'},
       icon='icon-minus',
     ),
     'show':dict(
@@ -84,12 +85,12 @@
       icon='icon-th-list',
     ),
     'copy':dict(
-      label=u'コピーして新規作成',
+      label=u'コピー',
       url='javascript:copy_performance();',
       icon='icon-plus',
     ),
     'manycopy':dict(
-      label=u'公演を複数コピー',
+      label=u'複数コピー',
       url='javascript:many_copy_performance();',
       icon='icon-plus',
     ),
@@ -99,9 +100,15 @@
       icon="icon-envelope",
     )
   }
-  order = iter(order or ['new', 'show', 'edit', 'delete', 'copy', 'manycopy'])
+  order = iter(order or ['new', 'show', 'edit', 'copy', 'manycopy', 'delete'])
 %>
-${HH.action_button(actions, order)}
+% if split:
+%   for item in order:
+      ${HH.action_button(actions, iter([item]), vertical=False)}
+%   endfor
+% else:
+  ${HH.action_button(actions, order, vertical=False)}
+% endif
 
 ${delete_modal()}
 

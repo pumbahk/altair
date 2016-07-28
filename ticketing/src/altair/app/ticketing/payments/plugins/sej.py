@@ -21,6 +21,7 @@ from altair.app.ticketing.mails.interfaces import (
 from altair.app.ticketing.utils import clear_exc
 from altair.app.ticketing.core import models as c_models
 from altair.app.ticketing.orders import models as order_models
+from altair.app.ticketing.orders.api import bind_attributes
 from altair.app.ticketing.sej import userside_api
 from altair.app.ticketing.sej.exceptions import SejErrorBase, SejError
 from altair.app.ticketing.sej.models import SejOrder, SejPaymentType, SejTicketType, SejOrderUpdateReason
@@ -558,6 +559,7 @@ class SejPaymentPlugin(object):
         """ 売り上げ確定 """
         logger.debug('Sej Payment')
         order = order_models.Order.create_from_cart(cart)
+        order = bind_attributes(request, order)
         cart.finish()
         self.finish2(request, order)
         return order
@@ -741,6 +743,7 @@ class SejPaymentDeliveryPlugin(SejDeliveryPluginBase):
         """  """
         logger.debug('Sej Payment and Delivery')
         order = order_models.Order.create_from_cart(cart)
+        order = bind_attributes(request, order)
         cart.finish()
         self.finish2(request, order)
         return order

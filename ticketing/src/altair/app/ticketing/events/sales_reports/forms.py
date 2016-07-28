@@ -154,13 +154,16 @@ class NumberOfPerformanceReportExportForm(OurForm):
 
 class SalesReportForm(OurForm):
 
-    def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
+    def __init__(self, formdata=None, obj=None, prefix='', is_preview=False, **kwargs):
         super(SalesReportForm, self).__init__(formdata, obj, prefix, **kwargs)
         for name, field in iteritems(self._fields):
             if name in kwargs:
                 field.data = kwargs[name]
         if formdata and not 'need_total' in formdata:
             self.need_total.data = True
+
+        # previewの画面で集計期間の日付のエラーメッセージのみを出すためのflag
+        self.is_preview = is_preview
 
     def _get_translations(self):
         return Translations()
@@ -249,6 +252,38 @@ class SalesReportForm(OurForm):
             self.report_type.data = self.report_type.default
         return int(self.report_type.data) == ReportTypeEnum.Detail.v[0]
 
+    def _check_limited_from_to(self):
+        status = True
+        if self.limited_from.data and self.limited_to.data:
+            status = self.limited_from.data <= self.limited_to.data
+        if not status:
+            self.limited_from.errors.append(u'開始日時は終了日時よりも前に設定してください。')
+        return status
+
+    def _preview_validate_msg(self):
+        # プレビューの場合、件名と受信先のエラーメッセージを出さない。
+        self.subject.errors = ()
+        self.recipient.errors = ()
+
+    def _rearrange_limited_after1990_msg(self):
+        # 出力したい集計期間のエラーメッセージを整理する
+        if self.limited_to.errors:
+            msg_set = set()
+            msg_set.update(self.limited_from.errors, self.limited_to.errors)
+
+            # 重複しないため、全ての集計期間のエラーメッセージをlimited_fromに入れる
+            self.limited_from.errors = list(msg_set)
+
+            # limited_toのエラーメッセージをクリアする。
+            self.limited_to.errors = []
+
+    def validate(self, *args, **kwargs):
+        status = super(self.__class__, self).validate(*args, **kwargs)
+        self._rearrange_limited_after1990_msg()
+        if not status and self.is_preview:
+            self._preview_validate_msg()
+
+        return all([status, self._check_limited_from_to()])
 
 class ReportSettingForm(OurForm):
 

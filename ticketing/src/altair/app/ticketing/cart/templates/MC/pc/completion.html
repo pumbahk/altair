@@ -4,6 +4,10 @@
   .confirm-message{
     margin-left: 7px;
   }
+  .disp-order_no{
+    font-size: 36px;
+    color: #cc0000;
+  }
   .next-action{
     margin-top: 20px;
   }
@@ -19,7 +23,7 @@ ${self.widget.flow_widget(4)}
 <div class="confirmBox">
   <div class="confirmBoxInner">
     <h2><img src="${view_context.static_url('pc/images/title_order_number.gif')}" alt="注文番号" width="103" height="30" /></h2>
-    <div class="confirm-message">
+    <div class="confirm-message disp-order_no">
       ${order.order_no}
     </div>
   </div>

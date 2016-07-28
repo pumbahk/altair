@@ -1,4 +1,4 @@
-<%page args="order=None" />
+<%page args="order=None, split=False, stock_holder_id=''" />
 <%namespace file="/common/helpers.html" name="ch" />
 <%namespace file="/common/modal.html" import="delete_modal" />
 
@@ -57,8 +57,8 @@
     }
     modal.modal('toggle');
   }
-  function delete_stock_holder() {
-    var id = get_id('stock_holder_id');
+  function delete_stock_holder(id) {
+    var id = id || get_id('stock_holder_id');
     if (!id) return;
     var modal = $('#modal-delete');
     modal.find('#delete').attr('href', '/events/stock_holders/delete/' + id);
@@ -117,17 +117,23 @@
     ),
     'edit':dict(
       label=u'編集',
-      url='javascript:edit_stock_holder();',
+      url='javascript:edit_stock_holder({});'.format(stock_holder_id),
       icon='icon-pencil',
     ),
     'delete':dict(
       label=u'削除',
-      url='javascript:delete_stock_holder();',
+      url='javascript:delete_stock_holder({});'.format(stock_holder_id),
+      attrs={'class':'btn-danger'},
       icon='icon-minus',
     ),
   }
   order = iter(order or ['new', 'edit', 'delete'])
 %>
-${HH.action_button(actions, order)}
-
+% if split:
+  % for item in order:
+    ${HH.action_button(actions, iter([item]), vertical=False)}
+  % endfor
+% else:
+  ${HH.action_button(actions, order, vertical=False)}
+% endif
 ${delete_modal()}

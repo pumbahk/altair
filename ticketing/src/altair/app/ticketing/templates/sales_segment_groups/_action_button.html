@@ -1,4 +1,4 @@
-<%page args="order=None" />
+<%page args="order=None, split=False" />
 <%namespace file="/common/helpers.html" name="ch" />
 <%namespace file="/common/modal.html" import="delete_modal" />
 <script type="text/javascript">
@@ -24,6 +24,7 @@ var get_selected_sales_segment_group_id;
     'delete':dict(
       label=u'削除',
       url='javascript:delete_sales_segment_group(get_selected_sales_segment_group_id());',
+      attrs={'class':'btn-danger'},
       icon='icon-minus',
     ),
     'show':dict(
@@ -35,7 +36,13 @@ var get_selected_sales_segment_group_id;
   order = iter(order or ['new', 'copy', 'edit', 'delete'])
 %>
 <div style="float: left;">
-  ${HH.action_button(actions, order)}
+  % if split:
+    % for item in order:
+      ${HH.action_button(actions, iter([item]), vertical=False)}
+    % endfor
+  % else:
+    ${HH.action_button(actions, order, vertical=False)}
+  % endif
 </div>
 
 ${delete_modal()}
