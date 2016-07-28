@@ -516,6 +516,8 @@ class TicketDictBuilder(object):
             retval[u"予約時補助文言2"] = attributes["memo_on_order2"]
         if u"memo_on_order3" in attributes:
             retval[u"予約時補助文言3"] = attributes["memo_on_order3"]
+        for key, value in attributes.items():
+            retval[key] = value
         return retval
 
     def build_dict_from_payment_delivery_method_pair(self, payment_delivery_method_pair, retval=None):

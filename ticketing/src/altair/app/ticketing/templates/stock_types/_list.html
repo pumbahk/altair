@@ -18,12 +18,9 @@
 <div class="row-fluid">
   % if seat_stock_types and (not request.params.get('page') or int(request.params.get('page')) <= seat_stock_types.last_page):
   <div class="span6">
-    <h4>席種</h4>
-
     <table class="table table-striped table-bordered table-condensed" style="margin-bottom: 10px;">
       <thead>
         <tr>
-          <th style="width:30px"></th>
           <th style="width:20px"></th>
           <th style="width: 60px">名称</th>
           <th>席数</th>
@@ -32,6 +29,7 @@
           <th style="width:40px">カート表示</th>
           <th style="width:40px">表示順</th>
           <th>説明</th>
+          <th></th>
         </tr>
       </thead>
       <tbody>
@@ -42,9 +40,6 @@
           quantity = stock_type.num_seats(**conditions) or 0
         %>
         <tr>
-          <td>
-            <input type="radio" name="stock_type_id" value=${stock_type.id} />
-          </td>
           <td>
             ${ch.seat_style(stock_type.style)}
           </td>
@@ -84,6 +79,9 @@
           </td>
           <td>
             ${stock_type.description or ''}
+          </td>
+          <td style="width:1%; white-space:nowrap;"> <!-- to fit the button in the table cell -->
+            <%include file="/stock_types/_action_button.html" args="event=event, order=['edit', 'delete'], split=True, stock_type_id=stock_type.id" />
           </td>
         </tr>
       % endfor
@@ -152,6 +150,9 @@
           </td>
           <td>
             ${stock_type.description}
+          </td>
+          <td>
+            <%include file="/stock_types/_action_button.html" args="event=event, order=['edit', 'delete'], split=True, id=stock_type.id" />
           </td>
         </tr>
       % endfor

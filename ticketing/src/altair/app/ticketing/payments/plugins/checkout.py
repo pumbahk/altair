@@ -30,6 +30,7 @@ from altair.app.ticketing.cart.exceptions import NoCartError
 from altair.app.ticketing.core.models import Product, PaymentDeliveryMethodPair
 from altair.app.ticketing.core.models import MailTypeEnum, ChannelEnum
 from altair.app.ticketing.orders.models import Order
+from altair.app.ticketing.orders.api import bind_attributes
 from altair.app.ticketing.cart import api as cart_api
 from altair.app.ticketing.cart.interfaces import ICartPayment
 from altair.app.ticketing.cart.rendering import selectable_renderer
@@ -121,6 +122,7 @@ class CheckoutPlugin(object):
 
     def finish(self, request, cart):
         order = Order.create_from_cart(cart)
+        order = bind_attributes(request, order)
         order.paid_at = datetime.now()
         cart.finish()
         return order
