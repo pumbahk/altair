@@ -2,6 +2,9 @@
 
 import logging
 from altair.app.ticketing.famiport.models import FamiPortReceiptType, FamiPortOrderType
+from . import AES_SECRET_KEY
+from Crypto.Cipher import AES
+from Crypto import Random
 
 logger = logging.getLogger(__name__)
 
@@ -59,3 +62,37 @@ class ValidateUtils(object):
             errors.append(u'当予約は未発券です')
 
         return errors
+
+class AESEncryptor(object):
+
+    @classmethod
+    def get_cipher(cls, iv=None):
+        if not iv:
+            iv = Random.new().read(AES.block_size)
+        cipher = AES.new(AES_SECRET_KEY, AES.MODE_CFB, iv)
+        return cipher, iv
+
+    @classmethod
+    def verify_token(cls, token):
+        try:
+            token = token.decode('hex')
+            iv = token[:16]
+            cipher, _ = cls.get_cipher(iv)
+            user_id = cipher.decrypt(token[16:])
+            return int(user_id)
+        except (ValueError, TypeError):
+            return None
+
+    def _convert_int_to_str(self, user_id):
+        user_id_str = str(user_id)
+        # AESの暗号化が16(32) byteの文字列しか暗号化できないため、長さが16の文字列にする。
+        return ''.join(['0'] * (16 - len(user_id_str))) + user_id_str
+
+    def get_token(self, user_id):
+        if not user_id:
+            return None
+
+        user_id_str = self._convert_int_to_str(user_id)
+        cipher, iv = self.get_cipher()
+        token = iv + cipher.encrypt(user_id_str)
+        return token.encode('hex')

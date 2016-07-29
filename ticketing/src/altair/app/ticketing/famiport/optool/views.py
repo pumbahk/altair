@@ -2,12 +2,13 @@
 
 import logging
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 from pyramid.view import view_defaults, view_config
 from pyramid.httpexceptions import HTTPFound
 from pyramid.security import remember, forget
 from pyramid.response import Response
 from pyramid.decorator import reify
+from webob.multidict import MultiDict
 from webhelpers import paginate
 from sqlalchemy.orm.exc import NoResultFound
 from altair.sqlahelper import get_db_session
@@ -29,7 +30,9 @@ from .api import (
     lookup_performance_by_searchform_data,
     lookup_refund_performance_by_searchform_data,
     lookup_receipt_by_searchform_data,
-    search_refund_ticket_by
+    search_refund_ticket_by,
+    encrypt_password,
+    lookup_user_by_id
 )
 from .forms import (
     LoginForm,
@@ -37,9 +40,10 @@ from .forms import (
     SearchReceiptForm,
     RebookOrderForm,
     SearchRefundPerformanceForm,
-    RefundTicketSearchForm
+    RefundTicketSearchForm,
+    ChangePassWordForm
 )
-from .utils import ValidateUtils
+from .utils import ValidateUtils, AESEncryptor
 from .helpers import (
     ViewHelpers,
     get_paginator,
@@ -63,6 +67,38 @@ class FamiPortOpLoginView(object):
         self.context = context
         self.request = request
 
+    def _can_login(self, operator):
+        status = True
+        errors = []
+        if operator is None:
+            errors.append(u'ユーザ名とパスワードの組み合わせが誤っています。')
+            status = False
+        elif operator.expired_at and datetime.now() - operator.expired_at > timedelta(days=30):
+            errors.append(u'このアカウントの使用期限は切ったため、ご利用されることはできません。')
+            errors.append(u'ご利用したい場合はログインフォーム下のリマインダーリンクで復旧してください。')
+            status = False
+
+        if errors:
+            for msg in errors:
+                self.request.session.flash(msg)
+        return status
+
+    def _need_change_password(self, operator):
+        status = False
+        warnings = []
+
+        if not operator.active:
+            status = True
+            warnings.append(u'初めてログインしたため、パスワードをご変更ください。')
+        elif operator.expired_at and datetime.now() > operator.expired_at:
+            status = True
+            warnings.append(u'パスワードの有効期限が切りましたため、パスワードをご変更ください。')
+
+        if warnings:
+            for msg in warnings:
+                self.request.session.flash(msg)
+        return status
+
     @view_config(route_name='login', renderer='login.mako')
     def get(self):
         return_url = self.request.params.get('return_url', '')
@@ -76,16 +112,18 @@ class FamiPortOpLoginView(object):
         form = LoginForm(formdata=self.request.POST)
         if not form.validate():
             return dict(form=form, return_url=return_url)
-        user = lookup_user_by_credentials(
+        operator = lookup_user_by_credentials(
             self.request,
             form.user_name.data,
             form.password.data
             )
-        if user is None:
-            self.request.session.flash(u'ユーザ名とパスワードの組み合わせが誤っています')
+        if not self._can_login(operator):
             return dict(form=form, return_url=return_url)
+        else:
+            remember(self.request, operator.id)
+        if self._need_change_password(operator):
+            return HTTPFound(location=self.request.route_url('change_password'))
 
-        remember(self.request, user.id)
         return HTTPFound(return_url)
 
 class FamiPortOpLogoutView(object):
@@ -97,6 +135,64 @@ class FamiPortOpLogoutView(object):
     def get(self):
         forget(self.request)
         return HTTPFound(self.request.route_path('login'))
+
+class FamiPortChangePassWord(object):
+    def __init__(self, context, request):
+        self.context = context
+        self.request = request
+
+    def _can_change_password(self, form, operator):
+        status = True
+        errors = []
+
+        if operator:
+            encrypted_password = encrypt_password(form.password.data, operator.password)
+            if not encrypted_password == operator.password:
+                status = False
+                errors.append(u'ご利用しているパスワードは間違っているため、ご確認ください。')
+        else:
+            status = False
+            errors.append(u'パスワードを変更するユーザのアカウントは見つからないため、ご確認ください。')
+        if errors:
+            for msg in errors:
+                self.request.session.flash(msg)
+        return status
+
+    @view_config(route_name='change_password', renderer='change_password.mako', request_method='GET')
+    def change_password_get(self):
+        # 認証した情報からユーザIDを取得
+        id_by_authenticated = self.request.authenticated_userid
+        # TokenのバリーデトでユーザIDを取得
+        token = self.request.GET.get('token')
+        id_by_token = AESEncryptor.verify_token(token) if token else None
+        user_id = id_by_token or id_by_authenticated
+
+        # 以上二つ方法しかユーザIDを取得する方法がない。
+        if not user_id:
+            self.request.session.flash(u'パスワードを変更するユーザのアカウントは見つからないため、ご確認ください。')
+            return HTTPFound(self.request.route_path('login'))
+        else:
+            return dict(form=ChangePassWordForm(formdata=MultiDict(user_id=user_id)))
+
+    @view_config(route_name='change_password', renderer='change_password.mako', request_method='POST')
+    def change_password_post(self):
+        form = ChangePassWordForm(formdata=self.request.POST)
+        if form.validate():
+            operator, session = lookup_user_by_id(request=self.request, id=form.user_id.data, return_session=True)
+            if self._can_change_password(form, operator):
+                new_encrypted_password = encrypt_password(form.new_password.data)
+                operator.password = new_encrypted_password
+
+                if not operator.active:
+                    operator.active = True
+
+                session.commit()
+                session.close()
+                self.request.session.flash(u'パスワードを変更しました。')
+                return HTTPFound(self.request.route_url('top'))
+
+        return dict(form=form)
+
 
 class FamiPortOpToolExampleView(object):
     def __init__(self, context, request):

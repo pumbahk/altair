@@ -24,6 +24,15 @@ from .models import FamiPortOperator
 
 logger = logging.getLogger(__name__)
 
+def encrypt_password(password, existed_password=None):
+    salt = existed_password[0:32] if existed_password \
+        else u''.join('%02x' % six.byte2int(c) for c in urandom(16))
+
+    h = hashlib.sha256()
+    h.update(salt + password)
+    password_digest = h.hexdigest()
+    return salt + password_digest
+
 def create_user(request, user_name, password, role):
     salt = u''.join('%02x' % six.byte2int(c) for c in urandom(16))
     h = hashlib.sha256()
@@ -44,23 +53,42 @@ def lookup_user_by_credentials(request, user_name, password):
         operator = session.query(FamiPortOperator) \
             .filter(FamiPortOperator.user_name == user_name) \
             .one()
-        h = hashlib.sha256()
-        h.update(operator.password[0:32] + password)
-        password_digest = h.hexdigest()
-        if operator.password[32:] != password_digest:
+        encrypted_password = encrypt_password(password, operator.password)
+        if operator.password != encrypted_password:
+            session.close()
             return None
         return operator
     except NoResultFound:
+        session.close()
         return None
 
-def lookup_user_by_id(request, id):
+def lookup_user_by_id(request, id, return_session=False):
     session = get_db_session(request, 'famiport')
     try:
-        return session.query(FamiPortOperator) \
-            .filter(FamiPortOperator.id == id) \
+        operator = session.query(FamiPortOperator)\
+            .filter(FamiPortOperator.id == id)\
             .one()
     except NoResultFound:
-        return None
+        session.close()
+        operator = None
+    if return_session:
+        return operator, session
+    else:
+        return operator
+
+def lookup_user_by_username(request, user_name, return_session=False):
+    session = get_db_session(request, 'famiport')
+    try:
+        operator = session.query(FamiPortOperator)\
+            .filter(FamiPortOperator.user_name == user_name)\
+            .one()
+    except NoResultFound:
+        session.close()
+        operator = None
+    if return_session:
+        return operator, session
+    else:
+        return operator
 
 def lookup_performance_by_searchform_data(request, formdata=None):
     fami_session = get_db_session(request, name="famiport")

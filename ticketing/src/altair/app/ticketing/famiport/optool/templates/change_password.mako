@@ -1,36 +1,45 @@
 <%inherit file="/_base.mako" />
-<%block name="title">ログイン</%block>
+<%block name="title">パスワード変更</%block>
 <style>
     body {
         background-color: #eee;
     }
 </style>
 
-<form id="signin-form" class="form-horizontal col-lg-4 col-lg-offset-4" action="${request.current_route_path(_query=dict(return_url=return_url))}" method="POST">
-    <h3 class="form-heading">Famiポート運用ツール</h3>
-
+<form id="change-password-form" class="form-horizontal col-lg-4 col-lg-offset-4" action="${request.route_url('change_password')}" method="POST">
+    <h3 class="form-heading">パスワード変更</h3>
     %for field in form:
     <div class="form-group has-feedback">
+        %if field.widget.input_type != 'hidden':
         <label class="control-label" for=${field.name}>${field.label}</label>
+        %endif
         ${field(class_="form-control", placeholder=field.label.text)}
     </div>
     %endfor
-    <button type="submit" class="btn btn-lg btn-primary btn-block">Sign in</button>
+    <br/>
+    <br/>
+    <button type="submit" class="btn btn-lg btn-primary btn-block">Send</button>
 </form>
+
 <%block name="footer_extras">
 <script src="${request.static_url('altair.app.ticketing.famiport.optool:static/js/jquery.validate.min.js')}"></script>
 <script src="${request.static_url('altair.app.ticketing.famiport.optool:static/js/messages_ja.min.js')}"></script>
 <script>
-$("form#signin-form").validate({
+$("form#change-password-form").validate({
     rules: {
-
-        user_name: {
-            required: true
-        },
-
         password: {
             required: true
         },
+
+        new_password: {
+            minlength: 7,
+            required: true
+        },
+
+        new_password_confirm: {
+            required: true,
+            equalTo: "#new_password"
+        }
     },
 
     highlight: function(element) {

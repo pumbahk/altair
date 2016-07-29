@@ -15,7 +15,9 @@ from altair.formhelpers.widgets import (
     OurDateWidget,
 )
 from altair.formhelpers import Max, after1900
-from wtforms.validators import Required, Length, Optional
+from wtforms.validators import Required, Length, Optional, EqualTo
+from wtforms.compat import iteritems
+from wtforms import HiddenField
 from wtforms import ValidationError
 
 class LoginForm(OurForm):
@@ -31,6 +33,38 @@ class LoginForm(OurForm):
             Required()
             ]
         )
+
+class ChangePassWordForm(OurForm):
+    def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
+        super(ChangePassWordForm, self).__init__(formdata, obj, prefix, **kwargs)
+        for name, field in iteritems(self._fields):
+            if name in kwargs:
+                field.data = kwargs[name]
+
+    user_id = HiddenField(
+        validators=[Optional()]
+    )
+    password = OurTextField(
+        widget=OurPasswordInput(),
+        validators=[Required()]
+    )
+    new_password = OurTextField(
+        widget=OurPasswordInput(),
+        validators=[
+            Required(),
+            Length(min=7, message=u'パスワードは7桁以上で設定してください。')
+        ]
+    )
+    new_password_confirm = OurTextField(
+        widget=OurPasswordInput(),
+        validators=[
+            Required(),
+            EqualTo('new_password', message=u'新しいパスワードと一致していない。')
+        ]
+    )
+    def validate_new_password(form, field):
+        if form.password.data == field.data:
+            raise ValueError(u'ご利用しているパスワードと同じな値に設定できません。')
 
 class SearchReceiptForm(OurForm):
     barcode_no = OurTextField(

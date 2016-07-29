@@ -12,6 +12,7 @@
         <li><a href="${request.route_path('search.refund_ticket')}">払戻チケットデータ検索</a></li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
+        <li class="active"><a href="${request.route_path('change_password')}">パスワード変更<span class="sr-only">(current)</span></a></li>
         <li class="active"><a href="${request.route_path('logout')}">logout <span class="sr-only">(current)</span></a></li>
       </ul>
     </div>
