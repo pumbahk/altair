@@ -1,5 +1,5 @@
 <%inherit file="/_base.mako" />
-<%block name="title">ログイン</%block>
+<%block name="title">アカウントリマインダー</%block>
 <style>
     body {
         background-color: #eee;
@@ -7,39 +7,44 @@
 </style>
 
 <div class="row">
-<form id="signin-form" class="form-horizontal" action="${request.current_route_path(_query=dict(return_url=return_url))}" method="POST">
-    <h3 class="form-heading">Famiポート運用ツール</h3>
-
+<form id="account-reminder-form" class="form-horizontal" action="${request.route_url('account_reminder')}" method="POST">
+    <h3 class="form-heading">アカウントリマインダー</h3>
     %for field in form:
     <div class="form-group has-feedback">
+        %if field.widget.input_type != 'hidden':
         <label class="control-label" for=${field.name}>${field.label}</label>
+        %endif
         ${field(class_="form-control", placeholder=field.label.text)}
     </div>
     %endfor
     <br />
-    <button type="submit" class="btn btn-lg btn-primary btn-block">Sign in</button>
+    <button type="submit" class="btn btn-lg btn-primary btn-block">Send</button>
 </form>
 </div>
 
 <div class="row" style="text-align: center;">
-<p class="extra-info-str">アカウントを復活する場合は<a href="${request.route_path('account_reminder')}">こちら</a>へ</p>
+<p class="extra-info-str"><a href="${request.route_path('login')}">ログインへ</a></p>
 </div>
 
-
+<!--
+%if reminder_url:
+<a href="${reminder_url}">reminder_url</a>
+%endif
+-->
 <%block name="footer_extras">
 <script src="${request.static_url('altair.app.ticketing.famiport.optool:static/js/jquery.validate.min.js')}"></script>
 <script src="${request.static_url('altair.app.ticketing.famiport.optool:static/js/messages_ja.min.js')}"></script>
 <script>
-$("form#signin-form").validate({
+$("form#change-password-form").validate({
     rules: {
-
         user_name: {
             required: true
         },
 
-        password: {
+        email: {
+            maxlength: 120,
             required: true
-        },
+        }
     },
 
     highlight: function(element) {

@@ -32,7 +32,8 @@ from .api import (
     lookup_receipt_by_searchform_data,
     search_refund_ticket_by,
     encrypt_password,
-    lookup_user_by_id
+    lookup_user_by_id,
+    lookup_user_by_username
 )
 from .forms import (
     LoginForm,
@@ -41,7 +42,8 @@ from .forms import (
     RebookOrderForm,
     SearchRefundPerformanceForm,
     RefundTicketSearchForm,
-    ChangePassWordForm
+    ChangePassWordForm,
+    AccountReminderForm
 )
 from .utils import ValidateUtils, AESEncryptor
 from .helpers import (
@@ -192,6 +194,47 @@ class FamiPortChangePassWord(object):
                 return HTTPFound(self.request.route_url('top'))
 
         return dict(form=form)
+
+class AccountReminder(object):
+    def __init__(self, context, request):
+        self.context = context
+        self.request = request
+
+    def _create_reminder_url(self, token):
+        base_url = self.request.route_url('change_password')
+        params = u'token={}'.format(token)
+        return u'?'.join([base_url, params])
+
+    def _is_valid_account(self, form, operator):
+        status = True
+        errors = []
+
+        if operator:
+            if not (operator.email and operator.email == form.email.data):
+                status = False
+                errors.append(u'ご提供したEMAILアドレスは登録されていないので、EMAILアドレスをご確認してください。')
+        else:
+            errors.append(u'パスワードを変更するユーザのアカウントは見つからないため、管理者にお問い合わせください。')
+
+        if errors:
+            for msg in errors:
+                self.request.session.flash(msg)
+        return status
+
+    @view_config(route_name='account_reminder', renderer='account_reminder.mako')
+    def account_reminder(self):
+        if self.request.method == 'POST':
+            form = AccountReminderForm(self.request.POST)
+            if form.validate():
+                operator = lookup_user_by_username(self.request, form.user_name.data)
+                if self._is_valid_account(form, operator):
+                    aes = AESEncryptor()
+                    token = aes.get_token(operator.id)
+                    reminder_url = self._create_reminder_url(token)
+                    return dict(form=AccountReminderForm(),reminder_url=reminder_url)
+
+                return dict(form=form)
+        return dict(form=AccountReminderForm())
 
 
 class FamiPortOpToolExampleView(object):

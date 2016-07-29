@@ -66,6 +66,26 @@ class ChangePassWordForm(OurForm):
         if form.password.data == field.data:
             raise ValueError(u'ご利用しているパスワードと同じな値に設定できません。')
 
+class AccountReminderForm(OurForm):
+    def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
+        super(AccountReminderForm, self).__init__(formdata, obj, prefix, **kwargs)
+        for name, field in iteritems(self._fields):
+            if name in kwargs:
+                field.data = kwargs[name]
+
+    user_name = OurTextField(
+        validators=[
+            Required(),
+            Length(max=32)
+        ]
+    )
+    email = OurTextField(
+        validators=[
+            Required(),
+            Length(max=120)
+        ]
+    )
+
 class SearchReceiptForm(OurForm):
     barcode_no = OurTextField(
         label=u'払込票番号：',

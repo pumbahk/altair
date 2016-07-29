@@ -6,7 +6,7 @@
     }
 </style>
 
-<form id="change-password-form" class="form-horizontal col-lg-4 col-lg-offset-4" action="${request.route_url('change_password')}" method="POST">
+<form id="change-password-form" class="form-horizontal" action="${request.route_url('change_password')}" method="POST">
     <h3 class="form-heading">パスワード変更</h3>
     %for field in form:
     <div class="form-group has-feedback">
@@ -16,8 +16,7 @@
         ${field(class_="form-control", placeholder=field.label.text)}
     </div>
     %endfor
-    <br/>
-    <br/>
+    <br />
     <button type="submit" class="btn btn-lg btn-primary btn-block">Send</button>
 </form>
 
