@@ -46,6 +46,7 @@ from altair.app.ticketing.temp_store import TemporaryStoreError
 from . import api
 from . import helpers as h
 from . import schemas
+from . import forms_ja, forms_en, forms_zh_cn, forms_zh_tw
 from .api import set_rendered_event, is_smartphone, is_point_input_required, is_fc_auth_organization
 from altair.mobile.api import set_we_need_pc_access, set_we_invalidate_pc_access
 from .reserving import InvalidSeatSelectionException, NotEnoughAdjacencyException
@@ -88,6 +89,7 @@ from .resources import EventOrientedTicketingCartResource, PerformanceOrientedTi
 from .limiting import LimiterDecorators
 from . import flow
 from .interfaces import IPageFlowPredicate, IPageFlowAction
+from altair.app.ticketing.i18n import custom_locale_negotiator
 
 logger = logging.getLogger(__name__)
 
@@ -268,7 +270,7 @@ class PerEventAgreementView(IndexViewMixin):
     def post(self):
         agree = self.request.params.get('agree')
         if not agree:
-            self.request.session.flash(u"注意事項を確認、同意し、公演に申し込んでください。")
+            self.request.session.flash(h._message(u"注意事項を確認、同意し、公演に申し込んでください。"))
             return HTTPFound(self.request.current_route_path(_query=self.request.GET))
         else:
             return HTTPFound(self.request.route_url('cart.index', event_id=self.context.event.id, _query=self.request.GET))
@@ -297,7 +299,7 @@ class PerPerformanceAgreementView(object):
     def post(self):
         agree = self.request.params.get('agree')
         if not agree:
-            self.request.session.flash(u"注意事項を確認、同意し、公演に申し込んでください。")
+            self.request.session.flash(h._message(u"注意事項を確認、同意し、公演に申し込んでください。"))
             return HTTPFound(self.request.current_route_path(_query=self.request.GET))
         else:
             return HTTPFound(self.request.route_url('cart.index2', performance_id=self.context.performance.id, _query=self.request.GET))
@@ -846,13 +848,13 @@ class ReserveView(object):
                 return dict(
                     result='NG',
                     reason="ticket_count_below_lower_bound",
-                    message="枚数は合計{.min_quantity}以上で選択してください".format(e)
+                    message=h._message(u"枚数は合計{.min_quantity}以上で選択してください").format(e)
                     )
             else:
                 return dict(
                     result='NG',
                     reason="ticket_count_over_upper_bound",
-                    message="枚数は合計{.max_quantity}以内で選択してください".format(e)
+                    message=h._message(u"枚数は合計{.max_quantity}以内で選択してください").format(e)
                     )
         except ProductQuantityOutOfBoundsError as e:
             transaction.abort()
@@ -861,13 +863,13 @@ class ReserveView(object):
                 return dict(
                     result='NG',
                     reason="product_count_below_lower_bound",
-                    message="商品個数は合計{.min_quantity}以上で選択してください".format(e)
+                    message=h._message(u"商品個数は合計{.min_quantity}以上で選択してください").format(e)
                     )
             else:
                 return dict(
                     result='NG',
                     reason="product_count_over_upper_bound",
-                    message="商品個数は合計{.max_quantity}以内で選択してください".format(e)
+                    message=h._message(u"商品個数は合計{.max_quantity}以内で選択してください").format(e)
                     )
         except PerStockTypeQuantityOutOfBoundsError as e:
             transaction.abort()
@@ -876,13 +878,13 @@ class ReserveView(object):
                 return dict(
                     result='NG',
                     reason="ticket_count_below_lower_bound",
-                    message="枚数は合計{.min_quantity}以上で選択してください".format(e)
+                    message=h._message(u"商品個数は合計{.min_quantity}以上で選択してください").format(e)
                     )
             else:
                 return dict(
                     result='NG',
                     reason="ticket_count_over_upper_bound",
-                    message="枚数は合計{.max_quantity}以内で選択してください".format(e)
+                    message=h._message(u"商品個数は合計{.max_quantity}以内で選択してください").format(e)
                     )
         except (PerStockTypeProductQuantityOutOfBoundsError, PerProductProductQuantityOutOfBoundsError) as e:
             transaction.abort()
@@ -891,13 +893,13 @@ class ReserveView(object):
                 return dict(
                     result='NG',
                     reason="product_count_below_lower_bound",
-                    message="商品個数は合計{.min_quantity}以上で選択してください".format(e)
+                    message=h._message(u"商品個数は合計{.min_quantity}以上で選択してください").format(e)
                     )
             else:
                 return dict(
                     result='NG',
                     reason="product_count_over_upper_bound",
-                    message="商品個数は合計{.max_quantity}以内で選択してください".format(e)
+                    message=h._message(u"商品個数は合計{.max_quantity}以内で選択してください").format(e)
                     )
         except NotEnoughAdjacencyException:
             transaction.abort()
@@ -965,11 +967,12 @@ class PaymentView(object):
         self.request = request
 
     def get_payment_delivery_method_pairs(self, sales_segment):
+        slave_session = get_db_session(self.request, name="slave")
         return [
             pdmp
             for pdmp in self.context.available_payment_delivery_method_pairs(sales_segment)
             if pdmp.payment_method.public
-            ]
+        ]
 
     @lbr_view_config(request_method="GET")
     def get(self):
@@ -994,48 +997,97 @@ class PaymentView(object):
         metadata = getattr(self.request, 'altair_auth_metadata', {})
         if self.request.altair_auth_info['membership_source'] == 'altair.oauth_auth.plugin.OAuthAuthPlugin':
             metadata = metadata[u'profile']
-        form = schemas.ClientForm(
-            context=self.context,
-            flavors=(self.context.cart_setting.flavors or {}),
-            _data=dict(
-                last_name=metadata.get('last_name'),
-                last_name_kana=metadata.get('last_name_kana'),
-                first_name=metadata.get('first_name'),
-                first_name_kana=metadata.get('first_name_kana'),
-                tel_1=metadata.get('tel_1'),
-                fax=metadata.get('fax'),
-                zip=metadata.get('zip'),
-                prefecture=metadata.get('prefecture'),
-                city=metadata.get('city'),
-                address_1=metadata.get('address_1'),
-                address_2=metadata.get('address_2'),
-                email_1=metadata.get('email_1'),
-                email_2=metadata.get('email_2')
+
+        shipping_address_info = dict(
+            last_name=metadata.get('last_name'),
+            last_name_kana=metadata.get('last_name_kana'),
+            tel_1=metadata.get('tel_1'),
+            fax=metadata.get('fax'),
+            zip=metadata.get('zip'),
+            prefecture=metadata.get('prefecture'),
+            city=metadata.get('city'),
+            address_1=metadata.get('address_1'),
+            address_2=metadata.get('address_2'),
+            email_1=metadata.get('email_1'),
+            email_2=metadata.get('email_2')
+        )
+
+        if self.request.organization.setting.i18n:
+            if custom_locale_negotiator(self.request)==u'ja':
+                shipping_address_info['last_name_kana']=metadata.get('last_name_kana')
+                shipping_address_info['first_name_kana']=metadata.get('first_name_kana')
+                shipping_address_info['country']=metadata.get('country')
+                form = forms_ja.ClientForm(
+                    context=self.context,
+                    flavors=(self.context.cart_setting.flavors or {}),
+                    _data=shipping_address_info
+                    )
+                form.country.choices = [(c, c) for c in forms_ja.countries]
+            elif custom_locale_negotiator(self.request)==u'en':
+                shipping_address_info['country']=metadata.get('country')
+                form = forms_en.ClientForm(
+                    context=self.context,
+                    flavors=(self.context.cart_setting.flavors or {}),
+                    _data=shipping_address_info
+                    )
+                form.country.choices = [(c, c) for c in forms_en.countries]
+            elif custom_locale_negotiator(self.request)==u'zh_CN':
+                shipping_address_info['country']=metadata.get('country')
+                form = forms_zh_cn.ClientForm(
+                    context=self.context,
+                    flavors=(self.context.cart_setting.flavors or {}),
+                    _data=shipping_address_info
+                    )
+                form.country.choices = [(c, c) for c in forms_zh_cn.countries]
+            elif custom_locale_negotiator(self.request)==u'zh_TW':
+                shipping_address_info['country']=metadata.get('country')
+                form = forms_zh_tw.ClientForm(
+                    context=self.context,
+                    flavors=(self.context.cart_setting.flavors or {}),
+                    _data=shipping_address_info
+                    )
+                form.country.choices = [(c, c) for c in forms_zh_tw.countries]
+        else:
+            shipping_address_info['last_name_kana']=metadata.get('last_name_kana')
+            shipping_address_info['first_name_kana']=metadata.get('first_name_kana')
+            form = schemas.ClientForm(
+                context=self.context,
+                flavors=(self.context.cart_setting.flavors or {}),
+                _data=shipping_address_info
                 )
-            )
         default_prefecture = self.context.cart_setting.default_prefecture
         if default_prefecture is not None:
             form['prefecture'].data = default_prefecture
         return dict(
             form=form,
-            payment_delivery_methods=payment_delivery_methods
+            payment_delivery_methods=payment_delivery_methods,
+            custom_locale_negotiator=custom_locale_negotiator(self.request) if self.request.organization.setting.i18n else ""
             )
 
     def get_validated_address_data(self):
         """フォームから ShippingAddress などの値を取りたいときはこれで"""
         form = self.form
+        if self.request.organization.setting.i18n:
+            first_name_kana=form.data['first_name_kana'] if custom_locale_negotiator(self.request)==u'ja' else ''
+            last_name_kana=form.data['last_name_kana'] if custom_locale_negotiator(self.request)==u'ja' else ''
+            country=form.data['country']
+        else:
+            first_name_kana=form.data['first_name_kana']
+            last_name_kana=form.data['last_name_kana']
+            country='日本国'
+
         if form.validate():
             return dict(
                 first_name=form.data['first_name'],
                 last_name=form.data['last_name'],
-                first_name_kana=form.data['first_name_kana'],
-                last_name_kana=form.data['last_name_kana'],
+                first_name_kana=first_name_kana,
+                last_name_kana=last_name_kana,
                 zip=form.data['zip'],
                 prefecture=form.data['prefecture'],
                 city=form.data['city'],
                 address_1=form.data['address_1'],
                 address_2=form.data['address_2'],
-                country=u"日本国",
+                country=country,
                 email_1=form.data['email_1'],
                 email_2=form.data['email_2'],
                 tel_1=form.data['tel_1'],
@@ -1049,10 +1101,10 @@ class PaymentView(object):
         if not payment_delivery_pair or shipping_address_params is None:
             if not payment_delivery_pair:
                 logger.debug("invalid : %s" % 'payment_delivery_method_pair_id')
-                raise self.ValidationFailed(u"お支払／引取方法をお選びください")
+                raise self.ValidationFailed(h._message(u'お支払／引取方法をお選びください'))
             else:
                 logger.debug("invalid : %s" % self.form.errors)
-                raise self.ValidationFailed(u'購入者情報の入力内容を確認してください')
+                raise self.ValidationFailed(h._message(u'購入者情報の入力内容を確認してください'))
 
     @back(back_to_top, back_to_product_list_for_mobile)
     @lbr_view_config(request_method="POST")
@@ -1068,7 +1120,22 @@ class PaymentView(object):
         payment_delivery_method_pair_id = self.request.params.get('payment_delivery_method_pair_id', 0)
         payment_delivery_pair = c_models.PaymentDeliveryMethodPair.query.filter_by(id=payment_delivery_method_pair_id).first()
 
-        self.form = schemas.ClientForm(formdata=self.request.params, context=self.context)
+        if self.request.organization.setting.i18n:
+            if custom_locale_negotiator(self.request)==u'ja':
+                self.form = forms_ja.ClientForm(formdata=self.request.params, context=self.context)
+                self.form.country.choices = [(c, c) for c in forms_ja.countries]
+            elif custom_locale_negotiator(self.request)==u'en':
+                self.form = forms_en.ClientForm(formdata=self.request.params, context=self.context)
+                self.form.country.choices = [(c, c) for c in forms_en.countries]
+            elif custom_locale_negotiator(self.request)==u'zh_CN':
+                self.form = forms_zh_cn.ClientForm(formdata=self.request.params, context=self.context)
+                self.form.country.choices = [(c, c) for c in forms_zh_cn.countries]
+            elif custom_locale_negotiator(self.request)==u'zh_TW':
+                self.form = forms_zh_tw.ClientForm(formdata=self.request.params, context=self.context)
+                self.form.country.choices = [(c, c) for c in forms_zh_tw.countries]
+        else:
+            self.form = schemas.ClientForm(formdata=self.request.params, context=self.context)
+
         shipping_address_params = self.get_validated_address_data()
 
         try:
@@ -1087,9 +1154,9 @@ class PaymentView(object):
                         plugin.validate_order(self.request, cart)
             except OrderLikeValidationFailure as e:
                 if e.path == 'order.total_amount':
-                    raise self.ValidationFailed(u'合計金額が選択された決済方法では取り扱えない金額となっています。他の決済方法を選択してください')
+                    raise self.ValidationFailed(h._message(u'合計金額が選択された決済方法では取り扱えない金額となっています。他の決済方法を選択してください'))
                 else:
-                    raise self.ValidationFailed(u'現在の予約内容では選択された決済 / 引取方法で購入を進めることができません。他の決済・引取方法を選択してください。')
+                    raise self.ValidationFailed(h._message(u'現在の予約内容では選択された決済 / 引取方法で購入を進めることができません。他の決済・引取方法を選択してください。'))
         except self.ValidationFailed as e:
             self.request.session.flash(e.message)
             start_on = cart.performance.start_on
@@ -1102,7 +1169,8 @@ class PaymentView(object):
                 raise PaymentMethodEmptyError.from_resource(self.context, self.request)
             return dict(
                 form=self.form,
-                payment_delivery_methods=payment_delivery_methods
+                payment_delivery_methods=payment_delivery_methods,
+                custom_locale_negotiator=custom_locale_negotiator(self.request) if self.request.organization.setting.i18n else ""
                 )
 
 
@@ -1357,7 +1425,8 @@ class ConfirmView(object):
             delegator=delegator,
             membershipinfo = self.context.membershipinfo,
             extra_form_data=extra_form_data,
-            accountno=acc.account_number if acc else ""
+            accountno=acc.account_number if acc else "",
+            custom_locale_negotiator=custom_locale_negotiator(self.request) if self.request.organization.setting.i18n else ""
         )
 
 # 完了画面の処理の『継続』 (http://ja.wikipedia.org/wiki/%E7%B6%99%E7%B6%9A)
@@ -1369,7 +1438,7 @@ def cont_complete_view(context, request, order_no, magazine_ids, word_ids):
     # メール購読
     emails = cart.shipping_address.emails
     multi_subscribe(user, emails, magazine_ids)
-    
+
     # お気に入り登録
     organization = api.get_organization(request)
     if organization.setting.enable_word == 1:

@@ -587,3 +587,11 @@ def lighten(a, r):
     if isinstance(a, basestring):
         a = parse_color(a)
     return _natural_blend(a, rgba(255, 255, 255, 1.), r)
+
+def _message(msg):
+    request = get_current_request()
+    if request.organization.setting.i18n:
+        _ = request.translate
+        return _(msg)
+    else:
+        return msg

@@ -11,6 +11,7 @@ from . import api
 from .interfaces import ICartResource
 from .resources import PerformanceOrientedTicketingCartResource
 from .exceptions import CartException
+from . import helpers as h
 
 import logging
 
@@ -125,6 +126,7 @@ def get_cart_view_context_factory(default_package):
             template = u'※ 注文受付完了、確認メール等をメールでご案内します。「{domain}」からのメールを受信できるよう、お申し込み前にドメイン指定の設定を必ずお願いいたします。'
             if self.cart_setting and self.cart_setting.mail_filter_domain_notice_template:
                 template = self.cart_setting.mail_filter_domain_notice_template
+            template = h._message(template)
 
             try:
                 if hasattr(self.context, 'performance'):
