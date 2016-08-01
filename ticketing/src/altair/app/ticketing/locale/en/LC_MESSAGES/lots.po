@@ -1,0 +1,444 @@
+# English translations for PACKAGE package
+# This file is distributed under the same license as the PACKAGE package.
+# Cho <ts-jingqiang.a.zhang@rakuten.com>, 2016.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE 1.0\n"
+"POT-Creation-Date: 2016-05-12 10:03+0900\n"
+"PO-Revision-Date: 2016-05-12 10:03+0900\n"
+"Last-Translator: Cho <ts-jingqiang.a.zhang@rakuten.com>\n"
+"Language-Team: en\n"
+"Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Lingua 3.11\n"
+
+# common
+
+msgid "チケット情報・販売・購入・予約"
+msgstr "Ticket information, sell, purchase, order"
+
+msgid "チケット申込"
+msgstr "Ticket application"
+
+msgid "運営会社"
+msgstr "Management company"
+
+msgid "お問い合わせ"
+msgstr "Contact us"
+
+msgid "個人情報保護方針"
+msgstr "Privacy policy"
+
+msgid "特定商取引法に基づく表示"
+msgstr "Display based on specific trade law"
+
+msgid "サービス利用規約"
+msgstr "Terms of service"
+
+# review form
+
+msgid "抽選申し込み番号"
+msgstr "Lottery application number"
+
+msgid "必須"
+msgstr "Required"
+
+msgid "半角英数"
+msgstr "number"
+
+msgid "電話番号"
+msgstr "Telephone number"
+
+msgid "電話番号はご登録時の電話番号をご入力ください。"
+msgstr "Telephone number, please enter the telephone number at the time of your registration."
+
+msgid "（携帯・自宅をどちらもご登録した場合どちらの番号でも構いません。）"
+msgstr "(It does not matter either the number If you both register your mobile phone and home.)"
+
+msgid "{0}または{1}が違います"
+msgstr "{0} or {1} is different"
+
+msgid "確認する"
+msgstr "Confirm"
+
+msgid "抽選結果"
+msgstr "Lots result"
+
+msgid "お申込みいただいておりました以下の抽選受付を{0}に取消いたしました。"
+msgstr "The lots you applied on {0} has been canceled."
+
+msgid "抽選の結果、お客様はご当選されました。"
+msgstr "The lots result, you are elected."
+
+msgid "払込票番号や引換票番号は、下記の購入履歴よりご確認いただけます。"
+msgstr "Payment slip number and exchange form number, you can confirm from the purchase history of the following."
+
+msgid "<a href=\"/orderreview/guest\" target=\"_blank\">■購入履歴確認ページ</a>をご確認ください。"
+msgstr "Purchase history confirm page"
+
+msgid "予約番号は{0}です"
+msgstr "Application number is {0}"
+
+msgid "抽選の結果、お客様は残念ながら落選となりました。"
+msgstr "The lots result, you are rejected."
+
+msgid "抽選結果発表は、{0}を予定しております。抽選結果発表後、抽選結果確認ページにて当選・落選をご確認下さい。"
+msgstr "We will public the lots result on {0}. After we public the result, please confirm the elected/rejected on the Lots result confirm page."
+
+msgid "お申込内容"
+msgstr "The application content"
+
+msgid "決済方法"
+msgstr "Payment method"
+
+msgid "引取方法"
+msgstr "Delivery method"
+
+# index
+
+msgid "イベント詳細"
+msgstr "Event Detail"
+
+msgid "イベント詳細情報"
+msgstr "Event Detail Information"
+
+msgid "イベント名"
+msgstr "Event name"
+
+msgid "申込受付期間"
+msgstr "Application acceptance period"
+
+msgid "抽選結果発表予定日"
+msgstr "Lottery result announcement Date"
+
+msgid "制限枚数"
+msgstr "Limit the number"
+
+msgid "1希望の申込で{0}枚まで"
+msgstr "In application of 1 hope {0}"
+
+msgid "申込回数制限"
+msgstr "Application limit on the number of times"
+
+msgid "{0} 回"
+msgstr "{0} times"
+
+msgid "受付希望数"
+msgstr "Accepted desired number"
+
+msgid "一度の申込で第{0}希望まで"
+msgstr "In a single application {0}"
+
+msgid "注意事項"
+msgstr "Notice"
+
+msgid "公演一覧"
+msgstr "Performance List"
+
+msgid "公演日"
+msgstr "Performance date"
+
+msgid "会場"
+msgstr "Venue"
+
+msgid "希望選択"
+msgstr "Hope selection"
+
+msgid "第{0}希望"
+msgstr "No {0} hope"
+
+msgid "希望する公演と券種の選択"
+msgstr "Selection of performances and ticket species hope"
+
+msgid "公演日・会場"
+msgstr "Performance date/Venue"
+
+msgid "席種"
+msgstr "Seat type"
+
+msgid "お支払・お引取り方法選択"
+msgstr "Select payment/delivery method"
+
+msgid "利用料・手数料"
+msgstr "Use fee and commission"
+
+msgid "システム利用料"
+msgstr "System fee"
+
+msgid "注文受付完了、確認メール等をメールでご案内します。「tstar.jp」からのメールを受信できるよう、お申し込み前にドメイン指定の設定を必ずお願いいたします。"
+msgstr "Order acceptance completion, it will guide you through the confirmation e-mail, etc. by e-mail. So that you can receive mail from the 'tstar.jp', please be sure the settings for the domain specified before you sign up."
+
+msgid "上記の利用料・手数料がかかります。"
+msgstr "The above usage fee and commission is cost."
+
+msgid "購入者情報"
+msgstr "Purchaser information"
+
+msgid "購入者氏名（全角）"
+msgstr "Purchaser Name"
+
+msgid "姓"
+msgstr "Last name"
+
+msgid "名"
+msgstr "First name"
+
+msgid "メールアドレス"
+msgstr "Email"
+
+msgid "メールアドレス (確認)"
+msgstr "Email(Confirmation)"
+
+msgid "電話番号 (携帯)"
+msgstr "Telephone number(Mobile)"
+
+msgid "住所"
+msgstr "Address"
+
+msgid "国・地域"
+msgstr "Country/Area"
+
+msgid "郵便番号"
+msgstr "Zipcode"
+
+msgid "都道府県"
+msgstr "Prefecture"
+
+msgid "市区町村"
+msgstr "City"
+
+msgid "町名番地"
+msgstr "Address 1"
+
+msgid "建物名等"
+msgstr "Address 2"
+
+msgid "例: 1030001"
+msgstr "Example: 1030001"
+
+msgid "例: 東京都"
+msgstr "Example: Tokyo"
+
+msgid "例: 中央区"
+msgstr "Example: Chuo-ku"
+
+msgid "例: 日本橋x-xx-xx"
+msgstr "Example: Nihonbashi x-xx-xx"
+
+msgid "例: yyビルz階"
+msgstr "Example: yy bill z floor"
+
+msgid "例: 080xxxxyyyy"
+msgstr "Example: 080xxxxyyyy"
+
+msgid "生年月日"
+msgstr "Birthday"
+
+msgid "性別"
+msgstr "Gender"
+
+msgid "メモ欄"
+msgstr "Memo"
+
+msgid "ご質問を入力されても返信はいたしかねます。"
+msgstr "It is input to your question reply will not do."
+
+msgid "ご質問がある場合はお問合せフォームよりお願いいたします。"
+msgstr "If you have any questions thank you from the inquiry form."
+
+msgid "次へ"
+msgstr "Next"
+
+msgid "公演「{0}」への申込は{1}回までとなっております。"
+msgstr "Application to the performance '{0}' has become up to {1} times."
+
+msgid "抽選への申込は{0}回までとなっております。"
+msgstr "Application to the lottery is ordered and up to {0} times."
+
+msgid "申し込み内容に入力不備があります"
+msgstr "There is input deficiencies in the application content"
+
+msgid "同一商品が複数回希望されています。"
+msgstr "The same product has been desired more than once."
+
+msgid "各希望ごとの合計枚数は最大{0}枚までにしてください"
+msgstr "The total number of each wish, please have at most {0} sheets"
+
+msgid "選択された券種が見つかりません。もう一度はじめから選択してください。"
+msgstr "The selected denomination can not be found. Please select from the beginning again."
+
+msgid "お支払お引き取り方法を選択してください"
+msgstr "Please select a payment pick up your way"
+
+msgid "購入者情報に入力不備があります"
+msgstr "There is input defect to the purchaser information"
+
+msgid "日付が正しくありません"
+msgstr "Date is incorrect"
+
+msgid "セッションに問題が発生しました。"
+msgstr "There was a problem in the session."
+
+# agreement
+
+msgid "注意事項を確認、同意し、公演に申し込んでください。"
+msgstr "Check the notes, I agree, please subscribe to the performances."
+
+# payment 3d
+
+msgid "クレジットカードでお支払い"
+msgstr "Payment by credit card"
+
+msgid "カード番号"
+msgstr "Card number"
+
+msgid "半角数字(16桁)"
+msgstr "number (16 digits)"
+
+msgid "有効期限"
+msgstr "expiration date"
+
+msgid "半角数字"
+msgstr "number"
+
+msgid "月"
+msgstr "month"
+
+msgid "年"
+msgstr "year"
+
+msgid "名義人"
+msgstr "Nominee"
+
+msgid "半角ローマ字"
+msgstr "roma alphabet"
+
+msgid "セキュリティコード"
+msgstr "Security code"
+
+msgid "半角"
+msgstr "number"
+
+msgid "セキュリティコードは、カード裏面の署名欄に印刷されている下3桁の数字です。"
+msgstr "Security code, is under three-digit number that is printed on the signature panel on the back of your card."
+
+msgid "ブラウザの「戻る」ボタンを使用するとエラーになります。"
+msgstr "It is an error to use the 'back' button on your browser."
+
+msgid "ページによってはブラウザの「更新」ボタンを使用するとエラーになる場合があります。"
+msgstr "Depending on the page may result in an error when you use the 'Update' button on your browser."
+
+msgid "購入完了と同時に決済され、即時予約確定となります(抽選受付の場合は、当選と同時に決済されます)。"
+msgstr "Purchase completion and are settled at the same time, it will be the immediate booking is confirmed (in the case of a lottery accepted, are settled elected at the same time)."
+
+msgid "支払回数は≪1回払い≫のみのお取扱いとなります。 以下のクレジットカードがご利用できます。"
+msgstr "Number of payments will be handling of <<1 time payment>> only. The following credit card is available."
+
+msgid "以下のクレジットカードがご利用できます。"
+msgstr "The following credit card is available."
+
+msgid "カード情報入力時に、ご利用カードの有効性の確認（オーソリ確認）を実施しております。"
+msgstr "At the time of card information input, we have conducted a verification of the effectiveness of the available card (authorization check)."
+
+msgid "お客様のカードによっては、チケットの予約・購入が完了していない場合でも、上記の有効性確認に伴い、カード利用案内メール等が配信される場合があります。"
+msgstr "Depending on your card, even if the reservation and purchase of the ticket has not been completed, along with the validation of the above, there is a case where card usage guide mail, and the like are delivered."
+
+msgid "ご購入されたチケットは、理由の如何を問わず、取替・変更・キャンセルはお受けできません。"
+msgstr "Ticket that has been purchased is, regardless of the reason, replacement, change, and cancellation can not be accepted."
+
+# confirm
+
+msgid "申込内容をご確認ください。"
+msgstr "Please confirm the application content."
+
+msgid "チケット購入の絞り込み"
+msgstr "Narrowing of the ticket purchase"
+
+msgid "希望内容と手数料"
+msgstr "Hope content and fees"
+
+msgid "枚"
+msgstr "Sheet"
+
+msgid "(税込)"
+msgstr "(tax included)"
+
+msgid "決済手数料"
+msgstr "Settlement commission"
+
+msgid "引取手数料"
+msgstr "Take-off fee"
+
+msgid "合計"
+msgstr "Total amount"
+
+msgid "メールマガジンの配信"
+msgstr "Delivery of e-mail magazine"
+
+msgid "お申し込みいただいた方に、楽天チケットからのメールマガジンをお送りします。不要な方はチェックをはずしてください。"
+msgstr "For those who sign up, you will receive an e-mail newsletter from the Rakuten ticket. Please unnecessary one, remove the check."
+
+msgid "申込内容確認"
+msgstr "Application Content Confirmation"
+
+msgid "まだ申し込みは完了していません"
+msgstr "Not yet application is complete"
+
+msgid "ご注文内容をご確認いただき「確定する」ボタンで購入してください"
+msgstr "Please purchase your order at your confirmation received 'confirm' button"
+
+msgid "システム手数料"
+msgstr "System commission"
+
+msgid "合計(税込)"
+msgstr "Total (tax included)"
+
+msgid "自宅"
+msgstr "Home"
+
+msgid "携帯"
+msgstr "Mobile"
+
+msgid "配達受取を選択した場合"
+msgstr "If you select a delivery receipt"
+
+msgid "確定する"
+msgstr "Determine"
+
+msgid "初めに戻る"
+msgstr "Back to beginning"
+
+msgid "初めに戻るボタンを押すと、ここまでのお申込内容がクリアされます。"
+msgstr "If you press the Back to beginning button, your application content up to here will be cleared."
+
+# completion
+
+msgid "申込完了"
+msgstr "Application completed"
+
+msgid "申込を完了しました"
+msgstr "Application was completed"
+
+msgid "下記の受付番号はとても大切な番号です。すぐにメモして保管してください。"
+msgstr "Acceptance number of the following is a very important number. Please keep a note immediately."
+
+msgid "申込番号"
+msgstr "Application number"
+
+msgid "お申込み時に、ご登録いただいたメールアドレス宛に、受付完了メールが送られます。しばらくたっても確認のメールが届かない場合は、入力されたメールアドレスが誤りがあるか、メールの受信設定により受信できていない可能性があります。"
+msgstr "At the time of your application, to the email address you registered, accepted completion mail will be sent. If even after a while do not receive a confirmation e-mail, or input e-mail address is there is an error, you might not be able to receive by e-mail reception setting."
+
+msgid "登録内容、受信設定を確認のうえ、<a href=\"{0}\">こちら</a>よりお問合せください。"
+msgstr "Confirm registration contents, the reception setting, <a href=\"{0}\">here</a>"
+
+msgid "お問合せの際は、お申し込み時のお名前、電話番号、公演名、受付番号を記載お願いいたします。"
+msgstr "When contacting us, your name at the time of your application, phone number, performance name, thank you describe the acceptance number."
+
+msgid "お申込内容は、「<a href=\"/lots/review\">申込確認ページ</a>」からもご確認いただけます。受付番号とご登録時のお電話番号をお手元にご用意の上、ご利用ください。"
+msgstr "Your application content, 「<a href=\"/lots/review\">Application confirmation page</a>」"
+
+msgid "決済中にエラーが発生しました。しばらく時間を置いてから<a href=\"{0}\">再度お試しください。</a>"
+msgstr "An error occurred during the settlement. Please try <a href=\"{0}\"> again at some time. </a>"
