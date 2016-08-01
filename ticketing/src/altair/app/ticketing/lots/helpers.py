@@ -33,6 +33,7 @@ from altair.app.ticketing.cart.helpers import (
     performance_datetime,
 )
 from altair.app.ticketing.helpers.base import is_required
+from pyramid.threadlocal import get_current_request
 
 SHIPPING_ATTRS = (
     "email_1",
@@ -387,3 +388,11 @@ def render_label(field):
             )
         ]
     return Markup(u''.join(buf))
+
+def _message(msg):
+    request = get_current_request()
+    if request.organization.setting.i18n:
+        _ = request.translate
+        return _(msg)
+    else:
+        return msg
