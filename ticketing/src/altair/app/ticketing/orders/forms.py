@@ -301,7 +301,6 @@ class SearchFormBase(Form):
             if event is None:
                 events = Event.query.join(Event.setting) \
                                     .filter(Event.organization_id==organization.id) \
-                                    .filter(EventSetting.visible==True) \
                                     .order_by(Event.created_at.desc())
                 self.event_id.choices = [('', u'(すべて)')]+[(e.id, e.title) for e in events]
             else:
@@ -329,7 +328,6 @@ class SearchFormBase(Form):
                 performances = Performance.query.join(Event) \
                                                 .join(Event.setting) \
                                                 .filter(Event.organization_id == organization.id) \
-                                                .filter(EventSetting.visible == True) \
                                                 .order_by(Event.created_at.desc())
             else:
                 performances = Performance.query
