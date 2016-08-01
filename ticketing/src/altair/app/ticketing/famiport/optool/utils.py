@@ -96,3 +96,22 @@ class AESEncryptor(object):
         cipher, iv = self.get_cipher()
         token = iv + cipher.encrypt(user_id_str)
         return token.encode('hex')
+
+def sendmail(settings, recipient, subject, html):
+    from altair.mailhelpers import Mailer
+    sender = settings['mail.message.sender']
+    mailer = Mailer(settings)
+    mailer.create_message(
+        sender = sender,
+        recipient = recipient,
+        subject = subject,
+        body = '',
+        html = html.text,
+        encoding='utf-8'
+    )
+    try:
+        mailer.send(sender, recipient)
+        return True
+    except Exception, e:
+        logging.error(u'メール送信失敗 %s' % e.message)
+        return False

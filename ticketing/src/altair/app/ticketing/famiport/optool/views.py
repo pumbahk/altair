@@ -8,6 +8,7 @@ from pyramid.httpexceptions import HTTPFound
 from pyramid.security import remember, forget
 from pyramid.response import Response
 from pyramid.decorator import reify
+from pyramid.renderers import render_to_response
 from webob.multidict import MultiDict
 from webhelpers import paginate
 from sqlalchemy.orm.exc import NoResultFound
@@ -46,6 +47,7 @@ from .forms import (
     AccountReminderForm
 )
 from .utils import ValidateUtils, AESEncryptor
+from .utils import sendmail
 from .helpers import (
     ViewHelpers,
     get_paginator,
@@ -195,15 +197,10 @@ class FamiPortChangePassWord(object):
 
         return dict(form=form)
 
-class AccountReminder(object):
+class FamiPortAccountReminder(object):
     def __init__(self, context, request):
         self.context = context
         self.request = request
-
-    def _create_reminder_url(self, token):
-        base_url = self.request.route_url('change_password')
-        params = u'token={}'.format(token)
-        return u'?'.join([base_url, params])
 
     def _is_valid_account(self, form, operator):
         status = True
@@ -221,6 +218,17 @@ class AccountReminder(object):
                 self.request.session.flash(msg)
         return status
 
+    def _get_reminder_url(self, token):
+        base_url = self.request.route_url('change_password')
+        params = u'token={}'.format(token)
+        return u'?'.join([base_url, params])
+
+    def _get_html(self, token):
+        reminder_url = self._get_reminder_url(token)
+        render_param = dict(reminder_url=reminder_url)
+        html = render_to_response('altair.app.ticketing:famiport/optool/templates/_mail_content.mako', render_param,request=self.request)
+        return html
+
     @view_config(route_name='account_reminder', renderer='account_reminder.mako')
     def account_reminder(self):
         if self.request.method == 'POST':
@@ -230,8 +238,14 @@ class AccountReminder(object):
                 if self._is_valid_account(form, operator):
                     aes = AESEncryptor()
                     token = aes.get_token(operator.id)
-                    reminder_url = self._create_reminder_url(token)
-                    return dict(form=AccountReminderForm(),reminder_url=reminder_url)
+                    html = self._get_html(token)
+                    settings = self.request.registry.settings
+                    recipient = form.email.data
+                    subject = u'FamiPort OPTOOLのアカウント復活について'
+
+                    if sendmail(settings, recipient, subject, html):
+                        self.request.session.flash(u'アカウント復活についてのご連絡はご登録いただいたEmailアドレスに送りました。ご確認ください。')
+                        return HTTPFound(self.request.route_path('login'))
 
                 return dict(form=form)
         return dict(form=AccountReminderForm())
