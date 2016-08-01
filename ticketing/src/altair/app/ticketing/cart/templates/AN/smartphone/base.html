@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ja">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no">
+    <title>${_(u'チケット情報・販売・購入・予約')}</title>
+		<meta name="description" content="チケット情報・販売・購入・予約は「楽天チケット」で！">
+		<meta name="keywords" content="楽天チケット, チケット,チケット予約, チケット購入, イベント">
+
+		<!-- OG Tag -->
+		<meta property="og:title" content="チケット情報・販売・購入・予約 | 楽天チケット">
+		<meta property="og:type" content="article">
+		<meta property="og:url" content="http://ticket.rakuten.co.jp/">
+		<meta property="og:image" content="http://ticket.rakuten.co.jp/static/AN/img/renewal/logo.square.gif">
+		<meta property="og:description" content="チケット情報・販売・購入・予約は「楽天チケット」で！">
+		<meta property="og:site_name" content="楽天チケット">
+		<meta property="fb:app_id" content="253316378120995">
+		<meta name="viewport" content="width=1080, user-scalable=yes">
+
+		<!-- Cascading Style Sheets -->
+		<link rel="shortcut icon" href="${request.static_url('altair.app.ticketing.cart:static/AN/smartphone/images/rakuten.ico')}">
+		<link rel="stylesheet" href="${request.static_url('altair.app.ticketing.cart:static/AN/smartphone/css/default2.css')}" type="text/css" media="all">
+	</head>
+
+<body id="settlement">
+  <div id="container" class="page">
+    <!-- ========== header ========== -->
+    <div class="header">
+      <div class="grpheader">
+        <div class="siteID">
+          <a href="/">
+            <img src="${request.static_url('altair.app.ticketing.cart:static/RT/smartphone/images/logo.gif')}" alt="楽天チケット" class="serviceLogo" />
+          </a>
+        </div>
+      </div>
+      % if getattr(request, 'context', None) and hasattr(request.context, 'switch_pc_url'):
+          <div class="side-action-buttons">
+            <a href="${request.context.switch_pc_url}" class="btn btn-supplementary"><span class="btn-inner">PCサイトで購入する</span></a>
+          </div>
+      % endif
+      <div class="band">
+        <h1>${_(u'チケット購入')}</h1>
+      </div>
+    </div>
+    <!-- ========== /header ========== -->
+
+    <!-- ========== main ========== -->
+    <div id="main">
+      ${self.body()}
+    </div>
+    <!-- ========== /main ========== -->
+  </div>
+  <!-- /container -->
+  <%block name="extras" />
+  % if request.organization.setting.sitecatalyst_use:
+    <%include file="altair.app.ticketing.cart:templates/RT/common/sitecatalyst.html"/>
+  % endif
+</body>
+
+</html>
