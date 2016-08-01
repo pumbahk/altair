@@ -15,8 +15,17 @@
   ${ch.form_item(form.hide_voucher)}
   ${ch.form_item(form.payment_sheet_text)}
   ${ch.form_item(form.description, style='width:500px;height:100px;')}
+  % if i18n_org == u"True":
+  ${ch.form_item(form.name_en, maxlength=255)}
+  ${ch.form_item(form.description_en, style='width:500px;height:100px;')}
+  ${ch.form_item(form.name_zh_cn, maxlength=255)}
+  ${ch.form_item(form.description_zh_cn, style='width:500px;height:100px;')}
+  ${ch.form_item(form.name_zh_tw, maxlength=255)}
+  ${ch.form_item(form.description_zh_tw, style='width:500px;height:100px;')}
+  % endif
 <%def name="__post__(registry_var)">
 ${fh.inject_js(registry_var)}
 </%def>
 </%fh:render_block>
 </form>
+

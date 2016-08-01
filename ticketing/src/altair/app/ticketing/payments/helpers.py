@@ -10,6 +10,7 @@ from .plugins import (
     RESERVE_NUMBER_DELIVERY_PLUGIN_ID,
     QR_DELIVERY_PLUGIN_ID,
 )
+from pyramid.threadlocal import get_current_request
 
 
 def payment_status(pdmp, auth, sej):
@@ -66,3 +67,11 @@ def sej_exchange_status(sej):
         return u"引換番号： {sej.exchange_number}".format(sej=sej)
     else:
         return u"-"
+
+def _message(msg):
+    request = get_current_request()
+    if request.organization.setting.i18n:
+        _ = request.translate
+        return _(msg)
+    else:
+        return msg
