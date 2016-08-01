@@ -105,13 +105,15 @@ class StaticPageForm(Form):
                                                 )
     publish_begin = fields.DateTimeField(label=u"掲載開始", validators=[validators.Optional()])
     publish_end = MaybeDateTimeField(label=u"掲載終了", validators=[validators.Optional()])
+    description = fields.TextField(label=u"概要", validators=[validators.Optional()])
+    keywords = fields.TextField(label=u"キーワード", validators=[validators.Optional()])
     last_editor = fields.HiddenField(validators=[validators.Optional()])
 
     def configure(self, request):
         self.request = request
         self.static_directory = get_static_page_utility(request)
 
-    __display_fields__ = ["name", "label", "layout", "publish_begin", "publish_end", "last_editor"]
+    __display_fields__ = ["name", "label", "layout", "publish_begin", "publish_end", "description", "keywords", "last_editor"]
 
     def validate(self):
         queue = ValidationQueue()

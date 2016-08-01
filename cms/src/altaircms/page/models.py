@@ -264,6 +264,8 @@ class StaticPage(BaseOriginalMixin,
     layout_id = Column(Integer, ForeignKey("layout.id"))    
     layout = relationship(Layout, backref='static_pages', uselist=False)
     interceptive = Column(sa.Boolean, default=False)
+    description = sa.Column(sa.UnicodeText)
+    keywords = sa.Column(sa.UnicodeText)
 
     @reify
     def file_structure(self):
@@ -272,10 +274,6 @@ class StaticPage(BaseOriginalMixin,
     @property
     def prefix(self):
         return self.pageset.hash
-
-    @property
-    def description(self):
-        return self.label or self.name or u""
 
     @hybrid_method
     def in_term(self, dt):
