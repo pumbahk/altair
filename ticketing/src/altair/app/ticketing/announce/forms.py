@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 
-from wtforms import Form
-from wtforms import TextField, TextAreaField, HiddenField, SelectField
+from wtforms import TextField, TextAreaField, HiddenField, SelectField, FieldList, FormField, Form
 from wtforms.validators import Length, Optional, ValidationError
+from wtforms.widgets.core import HTMLString
+from wtforms.widgets import ListWidget, html_params
+from wtforms.compat import text_type
 
-from altair.formhelpers import Translations, Required, BugFreeSelectField,\
+from altair.formhelpers import Translations, Required, BugFreeSelectField, OurTextField, OurHiddenField, \
     zero_as_none, after1900, OurDateTimeWidget, OurBooleanField
 from altair.formhelpers.fields import DateTimeField
 from altair.app.ticketing.users.models import Announcement
@@ -14,6 +16,39 @@ from altair.formhelpers.validators import DateTimeInRange
 now = datetime.now()
 limit = now + timedelta(hours=2) - timedelta(minutes=now.minute, seconds=now.second)
 send_after_range = DateTimeInRange(from_=limit)
+
+class ParameterForm(Form):
+
+    key = HiddenField()
+    value = TextField()
+
+class SimpleListWidget(ListWidget):
+    def __call__(self, field, **kwargs):
+        kwargs.setdefault('id', field.id)
+        html = ['<div>']
+        for subfield in field:
+            html.append('<div>%s</div>' % subfield())
+        html.append('</div>')
+        return HTMLString(''.join(html))
+
+class KeyValueWidget(object):
+
+    def __init__(self, style=""):
+        self.style = style
+
+    def __call__(self, field, **kwargs):
+        html = ['<table %s>' % html_params(style=self.style)]
+        hidden = ''
+        for subfield in field:
+            if subfield.type == 'HiddenField':
+                hidden += '<th>%s%s</th>' % (text_type(subfield), text_type(subfield.data))
+            else:
+                html.append('%s<td>%s</td>' % (hidden, text_type(subfield)))
+                hidden = ''
+        if hidden:
+            html.append(hidden)
+        html.append('</table>')
+        return HTMLString(''.join(html))
 
 class AnnouncementForm(Form):
 
@@ -26,6 +61,9 @@ class AnnouncementForm(Form):
     def update_obj(self, announce):
         announce.subject = self.subject.data
         announce.message = self.message.data
+        announce.parameters = dict()
+        for kv in self.parameters.data:
+            announce.parameters[kv["key"]] = text_type(kv["value"])
         announce.send_after = self.send_after.data
         announce.is_draft = self.is_draft.data
         # TODO: check length of words
@@ -54,6 +92,12 @@ class AnnouncementForm(Form):
             Required(),
             Length(max=8000, message=u'8000文字以内で入力してください'),
         ]
+    )
+
+    parameters = FieldList(
+        FormField(ParameterForm, widget=KeyValueWidget(style="background-color: transparent;")),
+        label=u'パラメータ',
+        widget=SimpleListWidget(),
     )
 
     is_draft = OurBooleanField(

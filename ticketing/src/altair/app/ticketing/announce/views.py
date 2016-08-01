@@ -2,6 +2,7 @@
 
 import logging
 import webhelpers.paginate as paginate
+from collections import namedtuple
 
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
@@ -12,7 +13,7 @@ from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.core.models import Event, Product, SalesSegmentGroup, SalesSegment
 from altair.app.ticketing.users.models import Announcement, AnnouncementTemplate, WordSubscription
-from .forms import AnnouncementForm
+from .forms import AnnouncementForm, ParameterForm
 
 from altair.sqlahelper import get_db_session
 from altair.app.ticketing.core.utils import PageURL_WebOb_Ex
@@ -22,6 +23,8 @@ from altair.app.ticketing.helpers.base import date_time_helper
 import re
 
 logger = logging.getLogger(__name__)
+
+Parameter = namedtuple('Parameter', ['key', 'value'])
 
 class MacroEngine:
     def build(self, template, data):
@@ -37,6 +40,13 @@ class MacroEngine:
                 else:
                     result.append(unicode(r))
         return "".join(result)
+
+    def fields(self, template):
+        result = set()
+        for m in re.finditer(r'(.+?)(?:{{([0-9a-z_]+(?:\.[0-9a-z_]+)*)}}|\Z)', template, re.MULTILINE | re.DOTALL):
+            if m.group(2) is not None:
+                result.add(m.group(2))
+        return sorted(result)
 
     def _macro(self, name, data):
         names = name.split(".")
@@ -158,7 +168,12 @@ class Announce(BaseView):
                         name=ssg.name if ssg else None,
                         start_at=date_time_helper.datetime(ssg.start_at) if ssg else None))
                     f.subject.process_data(engine.build(template.subject, data))
-                    f.message.process_data(engine.build(template.message, data))
+                    #f.message.process_data(engine.build(template.message, data))
+                    f.message.process_data(template.message)
+
+                    for v in engine.fields(template.message):
+                        f.parameters.append_entry(Parameter(v, engine._macro(v, data)))
+
             if 'send_after' in self.request.GET and 0 < len(self.request.GET['send_after']):
                 f.send_after.process_data(datetime.strptime(self.request.GET['send_after'], '%Y-%m-%d %H:%M:%S'))
 
@@ -196,6 +211,11 @@ class Announce(BaseView):
 
                 self.request.session.flash(u'告知メールを更新しました')
                 return HTTPFound(location=route_path('announce.list', self.request, event_id=announce.event.id))
+
+        f.parameters.entries = [ ]
+        engine = MacroEngine()
+        for v in engine.fields(announce.message):
+            f.parameters.append_entry(Parameter(v, announce.parameters[v] if announce.parameters is not None and v in announce.parameters else ''))
 
         return dict(
             id=announce_id,

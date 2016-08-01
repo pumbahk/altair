@@ -9,7 +9,8 @@ from pyramid.i18n import TranslationString as _
 from altair.saannotation import AnnotatedColumn
 
 from standardenum import StandardEnum
-from altair.app.ticketing.models import relationship
+from altair.app.ticketing.models import relationship, MutationDict, JSONEncodedDict
+
 from altair.app.ticketing.master.models import *
 from altair.app.ticketing.utils import is_nonmobile_email_address
 import sqlahelper
@@ -284,6 +285,7 @@ class Announcement(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     note = Column(String(1024))
     subject = Column(String(255))
     message = Column(String(8000))
+    parameters = Column(MutationDict.as_mutable(JSONEncodedDict(8000)))
     send_after = Column(DateTime)
     words = Column(String(1024)) # comma separated id list
     is_draft = Column(Boolean, default=False)

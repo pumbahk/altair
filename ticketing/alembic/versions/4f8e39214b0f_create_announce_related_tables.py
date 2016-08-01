@@ -26,6 +26,7 @@ def upgrade():
         sa.Column('event_id', Identifier(), sa.ForeignKey('Event.id'), nullable=False),
         sa.Column('subject', sa.String(length=255), nullable=False),
         sa.Column('message', sa.String(length=8000), nullable=False),
+        sa.Column('parameters', sa.String(length=8000), nullable=False),
         sa.Column('words', sa.String(length=1024)),
         sa.Column('send_after', sa.DateTime(), nullable=False),
         sa.Column('is_draft', sa.Boolean(), default=False),
