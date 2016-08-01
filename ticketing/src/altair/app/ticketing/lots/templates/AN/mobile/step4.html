@@ -1,0 +1,156 @@
+<%inherit file="./base.html"/>
+<%namespace file="./tags_mobile.html" name="mobile" />
+<div align="center" style="text-align:center">
+${event.title}<br />
+${lot.name}
+</div>
+<%mobile:messages messages="${messages}" />
+<%mobile:header>お客様情報の入力</%mobile:header>
+<form method="post" action="${request.current_route_path()}">
+<%mobile:form_header>申込者氏名(全角)${h.mobile_required_mark()}</%mobile:form_header>
+<div>
+  ${form['last_name'].label}
+  ${form['last_name'](istyle="1", iprof="name1")}
+  ${h.mobile_error_list(request, form, 'last_name')}
+</div>
+<div>
+  ${form['first_name'].label}
+  ${form['first_name'](istyle="1", iprof="name2")}
+  ${h.mobile_error_list(request, form, 'first_name')}
+</div>
+
+<%mobile:form_header>申込者氏名(カナ)${h.mobile_required_mark()}</%mobile:form_header>
+<div>
+  ${form['last_name_kana'].label}
+  ${form['last_name_kana'](istyle="2", iprod="kana1")}
+  ${h.mobile_error_list(request, form, 'last_name_kana')}
+</div>
+<div>
+  ${form['first_name_kana'].label}
+  ${form['first_name_kana'](istyle="2", iprod="kana2")}
+  ${h.mobile_error_list(request, form, 'first_name_kana')}
+</div>
+
+<%mobile:form_header>${form['sex'].label}${h.mobile_required_mark()}</%mobile:form_header>
+<div>
+  ${form['sex'](_widget=h.mobile_list_widget(request))}
+  ${h.mobile_error_list(request, form, 'sex')}
+</div>
+
+<%mobile:form_header>誕生日${h.mobile_required_mark()}</%mobile:form_header>
+<div>
+  ${form['birthday'](_widget=h.sensible_widget(request, form['birthday'].widget), istyle="4")}
+  ${h.mobile_error_list(request, form, 'birthday', with_label=True)}
+</div>
+
+<%mobile:form_header>${form['email_1'].label}${h.mobile_required_mark()}</%mobile:form_header>
+<div>
+  ${form['email_1'](istyle="3", iprof="mail1")}
+  ${h.mobile_error_list(request, form, 'email_1')}
+</div>
+
+<%mobile:form_header>${form['email_1_confirm'].label}${h.mobile_required_mark()}</%mobile:form_header>
+<div>
+  ${form['email_1_confirm'](istyle="3", iprof="mail1")}
+  ${h.mobile_error_list(request, form, 'email_1_confirm')}
+</div>
+<p>${view_context.mail_filter_domain_notice}</p>
+
+<%mobile:form_header>住所</%mobile:form_header>
+<div>
+  ${form['zip'].label}${h.mobile_required_mark()}(例:1410022)<br/>
+  ${form['zip'](istyle="4")}
+  ${h.mobile_error_list(request, form, 'zip')}
+</div>
+<div>
+  ${form['prefecture'].label}${h.mobile_required_mark()}<br/>
+  ${form['prefecture']}
+  ${h.mobile_error_list(request, form, 'prefecture')}
+</div>
+<div>
+  ${form['city'].label}${h.mobile_required_mark()}<br/>
+  ${form['city'](istyle="1", iprof="address2")}
+  ${h.mobile_error_list(request, form, 'city')}
+</div>
+<div>
+  町名番地${h.mobile_required_mark()}<br/>
+  ${form['address_1'](istyle="1", iprof="address3")}<br/>
+  建物名等<br/>
+  ${form['address_2'](istyle="1", iprof="address4")}
+  ${h.mobile_error_list(request, form, 'address_1')}
+</div>
+
+<%mobile:form_header>${form['tel_1'].label}${h.mobile_required_mark()}</%mobile:form_header>
+<div>
+  ${form['tel_1'](istyle="4")}
+  ${h.mobile_error_list(request, form, 'tel_1')}
+</div>
+
+<%mobile:form_header>${form['memo'].label.text}</%mobile:form_header>
+<div>
+  ${form['memo']}
+  ${h.mobile_error_list(request, form, 'memo')}
+  <div style="font-size: 80%;">
+  ※ご質問を入力されても返信はいたしかねます。<br>
+  ご質問がある場合はお問合せフォームよりお願いいたします。
+  </div>
+</div>
+
+<hr />
+<div>
+代金の支払方法を指定して、「次へ進む」ボタンをクリックして下さい。<br>
+購入時には、代金のほかに支払方法により、手数料がかかる場合があります。
+</div>
+<% checked_id = request.params.get('payment_delivery_method_pair_id') %>
+
+%if pdmp_messages:
+    %for message in pdmp_messages:
+    <div style="color:red">** ${message} **</div>
+    %endfor
+%endif
+
+%for m in payment_delivery_methods:
+<hr />
+<% checked = 'checked' if str(m.id) == checked_id else '' %>
+<input type="radio" name="payment_delivery_method_pair_id" id="radio2" value="${m.id}" ${checked}>
+${m.payment_method.name}+${m.delivery_method.name}+システム利用料
+%if m.special_fee > 0:
++${m.special_fee_name}
+%endif
+<br/>
+手数料:${h.format_currency(m.transaction_fee)} (${h.fee_type(m.payment_method.fee_type)}) +
+${h.format_currency(m.delivery_fee)} (${h.fee_type(m.delivery_method.fee_type)}) +
+${h.format_currency(m.system_fee)} (${h.fee_type(m.system_fee_type)})
+%if m.special_fee > 0:
+${h.format_currency(m.special_fee)} (${h.fee_type(m.special_fee_type)})
+%endif
+<br />
+<div>
+% if m.payment_method.payment_plugin_id == 1:
+<font size="-2">
+予約受付完了と同時に決済され、即時予約確定となります。支払回数は≪1回払い≫のみのお取扱いとなります。以下のクレジットカードがご利用できます。<br />
+<img src="${request.static_url('altair.app.ticketing.cart:static/RT/mobile/images/kc_logo_rakuten.gif')}" height="30px" />
+<img src="${request.static_url('altair.app.ticketing.cart:static/RT/mobile/images/visa.gif')}" height="30px" />
+<img src="${request.static_url('altair.app.ticketing.cart:static/RT/mobile/images/master.gif')}" height="30px" />
+<img src="${request.static_url('altair.app.ticketing.cart:static/RT/mobile/images/jcb.gif')}" height="30px" />
+<img src="${request.static_url('altair.app.ticketing.cart:static/RT/mobile/images/amex_logo.gif')}" height="30px" />
+</font>
+% elif m.payment_method.payment_plugin_id == 2:
+<font size="-2">
+楽天会員IDでお支払いいただけます。<br />
+お支払い額に応じて楽天スーパーポイントが貯まります。<br />
+※ 楽天サイトに移動して、お支払い手続きを行っていただきます。<br />
+<img src='https://checkout.rakuten.co.jp/p/common/img/img_cardface_h4.gif?c9cc8c1b9ae94c18920540a80b95c16a' border='0' width="100%"/>
+</font>
+% elif m.payment_method.payment_plugin_id == 3:
+<font size="-2">
+予約有効期日までにお支払頂きます。<br />
+お支払が確認できた時点で予約確定となります。<br />
+</font>
+% endif
+</div>
+%endfor
+<hr />
+<div style="text-align:center" align="center"><input type="submit" value="次に進む" /></div>
+<div style="text-align:center" align="center"><input type="submit" name="back" value="戻る" /></div>
+</form>
