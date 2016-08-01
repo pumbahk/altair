@@ -1,0 +1,647 @@
+# English translations for PACKAGE package
+# This file is distributed under the same license as the PACKAGE package.
+# Cho <ts-jingqiang.a.zhang@rakuten.com>, 2016.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE 1.0\n"
+"POT-Creation-Date: 2016-04-21 10:16+0900\n"
+"PO-Revision-Date: 2016-04-21 10:17+0900\n"
+"Last-Translator: Cho <ts-jingqiang.a.zhang@rakuten.com>\n"
+"Language-Team: en\n"
+"Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Lingua 3.11\n"
+
+# common
+
+msgid "チケット情報・販売・購入・予約"
+msgstr "Ticket information/Sells/Purchase/Order"
+
+msgid "チケット購入"
+msgstr "Buy Ticket"
+
+# index
+
+msgid "合計金額"
+msgstr "Total Price"
+
+msgid "内訳"
+msgstr "Breakdown"
+
+msgid "座席・枚数を選びなおす"
+msgstr "Re-select seat and number"
+
+msgid "購入する"
+msgstr "Purchase"
+
+msgid "上記座席を確保しました。{0}分以内に購入を完了してください"
+msgstr "It was to ensure the above-mentioned seat.{0} minute complete the purchase, pleas"
+
+msgid "（完了しない場合は、確保解除となります）"
+msgstr "(Unpin if not complete)"
+
+msgid "スマホサイトで購入する"
+msgstr "Purchase by smartphone site"
+
+msgid "誠に申し訳ございませんが、選択された公演「{0}」<u>現在販売しておりません</u>"
+msgstr "Sorry that the selected performance <u>does not sell currently</u>"
+
+msgid "他の日時／会場を下記よりお選びいただけます。"
+msgstr "You can choose other date and venue from the following."
+
+msgid "開催日"
+msgstr "Event Date"
+
+msgid "対象試合"
+msgstr "Event"
+
+msgid "日付・会場"
+msgstr "Date/Venue"
+
+msgid "選択中の公演"
+msgstr "Performances in the selection"
+
+msgid "席種選択"
+msgstr "Please select seat"
+
+msgid "席種、枚数を選択して下さい。"
+msgstr "Seat species, please select the number."
+
+msgid "席種をお選びください"
+msgstr "Select seat, please."
+
+msgid "座席を選んで購入"
+msgstr "Purchase select a seat"
+
+msgid "おまかせで購入"
+msgstr "Help to purchase"
+
+msgid "購入"
+msgstr "Purchase"
+
+msgid "チケット購入方法"
+msgstr "Tichet Purchase Method"
+
+msgid "1. 左側の席種一覧から希望の席種をクリックしてください。"
+msgstr "1. Please click on the seat species of hope from the seat species list on the left."
+
+msgid "2. 希望の券種と購入枚数を選択してください。"
+msgstr "2. Please select the denomination and purchase the number of hope."
+
+msgid "3. 購入方法を選び、座席を確保してください。"
+msgstr "3. Select the purchase method, please ensure the seat."
+
+msgid "「おまかせで購入」ボタンをクリックすると、選択された席種の中から前方より座席を自動配席します。暫くお待ち頂くと、確保できた座席番号が表示されますので、ご確認の上、購入ステップにお進みください。"
+msgstr "When you click the 'buy at Random' button, automatically Haiseki the seat from the front from the seat species that have been selected. If you wait a while, will appear seat number can be secured, on the check, please proceed to purchase step."
+
+msgid "「座席を選んで購入」の場合、右側（この欄）に座席図が表示されます。座席図上で、選択いただいた購入枚数分の座席をクリックし、下部の「選択」ボタンを押してください。"
+msgstr "In the case of 'buy select a seat', it will be displayed seat diagram on the right side (in this column). On the diagram seat, click on the seat of the purchase number of sheets, based on your selection, please press the 'Select' button at the bottom."
+
+msgid "色のついた座席が選択可能な席です。"
+msgstr "It is marked with seat-selectable seat color."
+
+msgid "座席をクリックすることで座席の色が変わり、選択された状態になります。"
+msgstr "The color of the seat changes by clicking the seat will be in the state that is selected."
+
+msgid "座席図の下にある「選択」ボタンをクリックすると座席選択は完了です。"
+msgstr "When you click the 'Select' button at the bottom of the seat Figure seat selection is complete."
+
+msgid "座席が小さくてみづらい場合には、左側のズーム機能を使って座席を拡大してください。"
+msgstr "If hard to see seat is small, please expand the seat using the left side of the zoom function."
+
+msgid "座席を選び直す場合は、一度選択した座席をクリックし、選択カーソルを解除することで選び直すことができます。"
+msgstr "If you re-select a seat, click once the seat you choose, you can re-select by releasing the selection cursor."
+
+msgid "4. 席種を選び直したい場合は「キャンセル」ボタンをクリックしてください。"
+msgstr "4. If you want to re-select a seat species, please click the 'Cancel' button."
+
+msgid "座席指定はできません"
+msgstr "You can not seat designation"
+
+msgid "席種・券種・枚数を選択の上、ご購入ください"
+msgstr "On the Select a seat species-denomination, number of sheets, please purchase"
+
+msgid "キャンセル"
+msgstr "Cancel"
+
+msgid "イベント詳細"
+msgstr "Event Details"
+
+msgid "イベント名"
+msgstr "Event name"
+
+msgid "開催日時"
+msgstr "Dates"
+
+msgid "会場"
+msgstr "Venue"
+
+msgid "販売期間"
+msgstr "Sales period"
+
+msgid "その他"
+msgstr "Others"
+
+msgid "枚数は合計{.min_quantity}以上で選択してください"
+msgstr "Please select a total number of {.min_quantity} or more"
+
+msgid "枚数は合計{.max_quantity}以内で選択してください"
+msgstr "Please select the total number within {.max_quantity}"
+
+msgid "商品個数は合計{.min_quantity}以上で選択してください"
+msgstr "Please number of products are selected in total {.min_quantity} or more"
+
+msgid "商品個数は合計{.max_quantity}以内で選択してください"
+msgstr "Please number of products are selected in within total {.max_quantity}"
+
+# payment
+
+msgid "お支払い･お引取り方法の指定"
+msgstr "Selete a payment and delivery method"
+
+msgid "どれかひとつをお選びください"
+msgstr "choose one from the following"
+
+msgid "楽天チケットでご利用いただけるチケットの受取方法と支払方法の中からひとつを選択してください。"
+msgstr "Please choose one from among the receiving method and the method of payment of the tickets available at Rakuten ticket."
+
+msgid "選択すると、お支払・お引取方法についての注意事項が表示されます。"
+msgstr "please choose one payment method, and check the information shown below it"
+
+msgid "このページに記載されている料金はすべて消費税込です。"
+msgstr "Rates listed on this page are all consumption tax."
+
+msgid "手数料"
+msgstr "Commission"
+
+msgid "1申込当り"
+msgstr "1 application per"
+
+msgid "1枚ごと"
+msgstr "1 sheet per"
+
+msgid "上記以外の利用料・手数料"
+msgstr "Use fees and commissions other than the above"
+
+msgid "上記の利用料・手数料がかかります。"
+msgstr "You will be charged by choosing the payment method."
+
+msgid "上記の{0}がかかります。"
+msgstr "You will be charged by using {0}."
+
+msgid "上記のシステム利用料がかかります。"
+msgstr "You will be charged with system fee."
+
+msgid "チケット1枚につき"
+msgstr "Per ticket"
+
+msgid "システム利用料"
+msgstr "System usage fee"
+
+msgid "注文受付完了、確認メール等をメールでご案内します。「{domain}」からのメールを受信できるよう、お申し込み前にドメイン指定の設定を必ずお願いいたします。"
+msgstr "Order acceptance completion, it will guide you through the confirmation e-mail, etc. by e-mail. So that you can receive mail from the 「{domain}」, please be sure the settings for the domain specified before you sign up."
+
+msgid "購入者情報入力"
+msgstr "Purchaser Information"
+
+msgid "10文字以内で入力してください"
+msgstr "Please enter within 10 characters"
+
+msgid "購入者氏名"
+msgstr "Purchaser name"
+
+msgid "姓"
+msgstr "First name"
+
+msgid "名"
+msgstr "Last name"
+
+msgid "メールアドレス"
+msgstr "Email"
+
+msgid "確認用"
+msgstr "Confirmation"
+
+msgid "住所"
+msgstr "Address"
+
+msgid "国・地域"
+msgstr "Country/Area"
+
+msgid "郵便番号"
+msgstr "Zip"
+
+msgid "都道府県"
+msgstr "Prefecture"
+
+msgid "市区町村"
+msgstr "City"
+
+msgid "町名番地"
+msgstr "Address 1"
+
+msgid "建物名等"
+msgstr "Address 2"
+
+msgid "電話番号"
+msgstr "Phone number"
+
+msgid "例: 1030001"
+msgstr "Example: 1030001"
+
+msgid "例: 東京都"
+msgstr "Example: Tokyo"
+
+msgid "例: 中央区"
+msgstr "Example: Chuo-ku"
+
+msgid "例: 日本橋x-xx-xx"
+msgstr "Example: Nihonbashi x-xx-xx"
+
+msgid "例: yyビルz階"
+msgstr "Example: yy bill z floor"
+
+msgid "例: 080xxxxyyyy"
+msgstr "Example: 080xxxxyyyy"
+
+msgid "次へ"
+msgstr "Next"
+
+msgid "注意事項を確認、同意し、公演に申し込んでください。"
+msgstr "Please check the notes, agree, subscribe to the performances."
+
+msgid "お支払／引取方法をお選びください"
+msgstr "Please select payment and delivery method."
+
+msgid "購入者情報の入力内容を確認してください"
+msgstr "Please check inputed information about purchaser."
+
+msgid "合計金額が選択された決済方法では取り扱えない金額となっています。他の決済方法を選択してください"
+msgstr "It has become the amount of money that can not be handled in the settlement method that the total amount of money has been selected. Please choose other payment method"
+
+msgid "現在の予約内容では選択された決済 / 引取方法で購入を進めることができません。他の決済・引取方法を選択してください。"
+msgstr "We can not proceed with the purchase at the take-off method. Please select the other settlement take-off method."
+
+# payment 3d
+
+msgid "クレジットカードでお支払い"
+msgstr "Payment by credit card"
+
+msgid "カード番号"
+msgstr "Card number"
+
+msgid "半角数字(16桁)"
+msgstr "number (16 digits)"
+
+msgid "有効期限"
+msgstr "expiration date"
+
+msgid "半角数字"
+msgstr "number"
+
+msgid "月"
+msgstr "month"
+
+msgid "年"
+msgstr "year"
+
+msgid "名義人"
+msgstr "Nominee"
+
+msgid "半角ローマ字"
+msgstr "roma alphabet"
+
+msgid "セキュリティコード"
+msgstr "Security code"
+
+msgid "半角"
+msgstr "number"
+
+msgid "セキュリティコードは、カード裏面の署名欄に印刷されている下3桁の数字です。"
+msgstr "Security code, is under three-digit number that is printed on the signature panel on the back of your card."
+
+msgid "ブラウザの「戻る」ボタンを使用するとエラーになります。"
+msgstr "It is an error to use the 'back' button on your browser."
+
+msgid "ページによってはブラウザの「更新」ボタンを使用するとエラーになる場合があります。"
+msgstr "Depending on the page may result in an error when you use the 'Update' button on your browser."
+
+msgid "購入完了と同時に決済され、即時予約確定となります(抽選受付の場合は、当選と同時に決済されます)。"
+msgstr "Purchase completion and are settled at the same time, it will be the immediate booking is confirmed (in the case of a lottery accepted, are settled elected at the same time)."
+
+msgid "支払回数は≪1回払い≫のみのお取扱いとなります。 以下のクレジットカードがご利用できます。"
+msgstr "Number of payments will be handling of <<1 time payment>> only. The following credit card is available."
+
+msgid "以下のクレジットカードがご利用できます。"
+msgstr "The following credit card is available."
+
+msgid "カード情報入力時に、ご利用カードの有効性の確認（オーソリ確認）を実施しております。"
+msgstr "At the time of card information input, we have conducted a verification of the effectiveness of the available card (authorization check)."
+
+msgid "お客様のカードによっては、チケットの予約・購入が完了していない場合でも、上記の有効性確認に伴い、カード利用案内メール等が配信される場合があります。"
+msgstr "Depending on your card, even if the reservation and purchase of the ticket has not been completed, along with the validation of the above, there is a case where card usage guide mail, and the like are delivered."
+
+msgid "ご購入されたチケットは、理由の如何を問わず、取替・変更・キャンセルはお受けできません。"
+msgstr "Ticket that has been purchased is, regardless of the reason, replacement, change, and cancellation can not be accepted."
+
+# confirm
+
+msgid "支払"
+msgstr "payment"
+
+msgid "まだお申し込みは完了していません"
+msgstr "Do not sign up yet been completed"
+
+msgid "ご注文内容をご確認いただき「購入する」ボタンより、購入を完了させてください。"
+msgstr "Please be than Please confirm your order 'buy' button, to complete the purchase."
+
+msgid "お買い物内容"
+msgstr "Shopping content"
+
+msgid "席種、金額などのお買い物内容"
+msgstr "Seat species, shopping content, such as amount of money"
+
+msgid "枚"
+msgstr "Sheet"
+
+msgid "決済手数料"
+msgstr "Settlement commission"
+
+msgid "発券/引取手数料"
+msgstr "Ticketing / take-off fee"
+
+msgid "追加情報"
+msgstr "Additional Information"
+
+msgid "お支払い"
+msgstr "Payment"
+
+msgid "お引き取り"
+msgstr "Delivery"
+
+msgid "購入者情報"
+msgstr "Purchaser information"
+
+msgid "配送先住所"
+msgstr "Shipping address"
+
+msgid "配送受取を選択した場合"
+msgstr "If you select a delivery receipt"
+
+msgid "メールマガジンの配信"
+msgstr "Delivery of e-mail magazine"
+
+msgid "ご利用いただいた方には、楽天チケットからのメールマガジンをお送りします。不要な方はチェックをはずしてください。"
+msgstr "For those who had you use, you will receive an e-mail newsletter from the Rakuten ticket. Please unnecessary one, remove the check."
+
+msgid "座席選択にもどる"
+msgstr "Back to seat selection"
+
+msgid "ここまでのお申し込みがキャンセルになります。"
+msgstr "Application of so far will be canceled."
+
+msgid "以下の住所に配送します"
+msgstr "will be sent to the following address"
+
+msgid "宛名"
+msgstr "addressee"
+
+msgid "様"
+msgstr ""
+
+msgid "※お申込み確定後は、理由の如何を問わず、"
+msgstr "After your application is finalized, "
+
+msgid "取替・変更・キャンセルをお受けできません。"
+msgstr "regardless of the reason,You can not receive a replacement, change, cancel."
+
+# complete
+
+msgid "購入を完了いたしました。"
+msgstr "Purchase was completed."
+
+msgid "下記の受付番号はとても大切な番号です。すぐにメモするか印刷して保管してください。"
+msgstr "Acceptance number of the following is a very important number. Please keep or print immediately memo."
+
+msgid "受付番号"
+msgstr "Receipt number"
+
+msgid "予定"
+msgstr "Plans"
+
+msgid "注意事項"
+msgstr "Notes"
+
+msgid "お申し込み時に、ご登録いただいたメールアドレス宛に、受付完了メールが送られます。"
+msgstr "At the time of your application, to the email address you registered, accepted completion mail will be sent."
+
+msgid "しばらくたっても確認のメールが届かない場合は、入力されたメールアドレスが誤っている可能性があります。"
+msgstr "If even after a while do not receive the confirmation email, you may have incorrectly entered e-mail address."
+
+msgid "<a href=\"/inquiry\">お問い合わせフォーム</a>よりお問い合わせください。"
+msgstr "<a href=\"/inquiry\">inquiry form</a> contact us"
+
+msgid "（お問い合わせの際は、お申し込み時のお名前と電話番号を記載お願いします）"
+msgstr "(When contacting us, please describe your name and phone number at the time of your application)"
+
+msgid "お申し込み内容は、「<a href=\"/orderreview\">履歴確認</a>」からもご確認いただけます。受付番号とご登録時のお電話番号をお手元にご用意の上、ご利用ください。"
+msgstr "Application contents, 「<a href=\"/orderreview\">History confirmation</a>」"
+
+msgid "他のチケットを購入する"
+msgstr "Buy other tickets"
+
+msgid "トップにもどる"
+msgstr "Back To Top"
+
+# fc_auth
+
+msgid "ログインページ"
+msgstr "Login Page"
+
+msgid "一般の方"
+msgstr "General user"
+
+msgid "はこちらから"
+msgstr " from here"
+
+msgid "次へ進む"
+msgstr "Next"
+
+msgid "会員の方"
+msgstr "Member user"
+
+msgid "会員番号"
+msgstr "Member number"
+
+msgid "会員番号またはパスワードが一致しません"
+msgstr "Member number or password is not right."
+
+msgid "パスワード"
+msgstr "Password"
+
+msgid "ログイン"
+msgstr "Login"
+
+msgid "携帯電話､スマートフォンの各キャリアの受信拒否設定から、購入確認メールが受け取れない場合がございますので、"
+msgstr "Mobile phone, from the reception rejection setting of each carrier of the smartphone, because there are times when the purchase confirmation e-mail does not receive,"
+
+msgid "@tstar.jpのドメイン指定受信許可設定を行ってください"
+msgstr "Please do domain specification reception permission setting of @tstar.jp"
+
+msgid "受付開始直後は回線が大変込み合う場合がございますので、予めご了承ください。"
+msgstr "Since the reception immediately after the start there are times when the line is crowded very, please note."
+
+msgid "会員番号・パスワードは半角でご入力ください。"
+msgstr "Membership number, password, please input half-width."
+
+msgid "購入履歴の確認は<a href=\"/orderreview\" target=\"_blank\">こちら</a>から行ってください。"
+msgstr "Confirmation of purchase history <a href=\"/orderreview\" target=\"_blank\">from here</a>"
+
+msgid "パスワードをお忘れの場合<a href=\"{0}\" target=\"_blank\">こちら</a>からお問合せください。"
+msgstr "Forgot your password? <a href=\"{0}\" target=\"_blank\">here</a>"
+
+msgid "運営会社"
+msgstr "Management company"
+
+msgid "お問い合わせ"
+msgstr "Contact us"
+
+msgid "個人情報保護方針"
+msgstr "Privacy policy"
+
+msgid "特定商取引法に基づく表示"
+msgstr "Display based on specific trade law"
+
+# payments & delivery
+
+# sej
+
+msgid "セブン-イレブン支払い"
+msgstr "Payment at 7-11"
+
+msgid "セブン-イレブン受け取り"
+msgstr "Delivery at 7-11"
+
+msgid "セブン-イレブン"
+msgstr "7-11"
+
+msgid "セブンイレブン"
+msgstr "7-11"
+
+msgid "クレジットカード"
+msgstr "card"
+
+msgid "郵送"
+msgstr "Post"
+
+msgid "窓口支払"
+msgstr "windonw pay"
+
+msgid "窓口受取"
+msgstr "window get"
+
+msgid "ファミマ"
+msgstr "famiport"
+
+msgid "当選の場合、お支払期日までにお支払頂きます。"
+msgstr "In the case of winning, you pay until the payment due date."
+
+msgid "お支払が確認できた時点で当選申込が確定となります。"
+msgstr "Application winning at the time the payment has been confirmed will be confirmed."
+
+msgid "各種手数料の他、公演によりシステム利用料がかかります。"
+msgstr "Application winning at the time the payment has been confirmed will be confirmed."
+
+msgid "払込票番号"
+msgstr "Application number"
+
+msgid "払込票を表示"
+msgstr "Show ticket"
+
+msgid "支払期日"
+msgstr "Payment date"
+
+msgid "上記支払期日までに、払込票番号をお持ちの上、セブン-イレブン店舗レジにてお支払いください。（払込票を表示、印刷した上で店頭にお持ちいただくとスムーズです）"
+msgstr "Before the payment due date, on top of you have a payment slip number, Seven"
+
+msgid "支払期日までに入金されない場合は予約が無効となりますので、ご注意ください。"
+msgstr "Because if you do not be credited until the payment due date will be invalid reservation, please note."
+
+msgid "お申込後の、公演日・席種・枚数等の変更はできませんのでご容赦ください。"
+msgstr "After your application, please forgive that you can not change, such as a performance date, seat species, number of sheets."
+
+msgid "チケットは代金と引換です。"
+msgstr "Tickets are exchange for a price."
+
+msgid "引換票番号は後ほどメールにてお送りいたします。"
+msgstr "Exchange vote number will send later by e-mail."
+
+msgid "詳細はそちらをご確認頂き、指定発券日以降にレジにてチケットをお受取ください。"
+msgstr "For more information please confirm the there, please receive the ticket at the cash register on or after the specified date of issue."
+
+msgid "引換票番号"
+msgstr "Exchange for vote number"
+
+msgid "引換票を表示"
+msgstr "Display the exchange vote"
+
+msgid "引取受付期間"
+msgstr "Delivery acceptance period"
+
+msgid "購入いただいた日の翌日{0}から引き取りが可能となります。"
+msgstr "The day following the date you purchased {0}"
+
+msgid "セブン-イレブン発券の際には引換票番号が必要です。"
+msgstr "During Eleven ticketing is required on delivery slip number."
+
+msgid "<a href=\"/orderreview\">予約・購入履歴確認画面</a>より、「引換票」を印刷するか、または番号をお控え下さい。"
+msgstr "<a href=\"/orderreview\">confirm </a>More, please refrain from or number, to print the"
+
+msgid "<a href=\"/orderreview\">予約・購入履歴確認画面</a>にて表示される引換票番号をお控え下さい。"
+msgstr "<a href=\"/orderreview\">confirm </a>Please refrain from the exchange slip number to be displayed in."
+
+msgid "引取受付期間内に、セブン-イレブン店頭レジにてチケットをお引取り下さい。"
+msgstr "In the take-off acceptance period, please take your pull the ticket at Seven Eleven over-the-counter cash register."
+
+msgid "クレジットカード情報"
+msgstr "Credit card information"
+
+msgid "予約成立と同時に、ご登録のクレジットカードにて自動的に決済手続きを行わせて頂きます。"
+msgstr "Reservation is made at the same time, it will automatically carry out the settlement procedure at your registered credit card."
+
+msgid "お申込の取消、公演日・席種・枚数等の変更は出来ませんのでご注意ください。"
+msgstr "Your application of cancellation, please note that you can not change, such as a performance date, seat species, number of sheets."
+
+# credit card
+
+msgid "クレジットカードによる決済を受け付けました。ご登録のクレジットカードにて自動的に決済手続きを行わせて頂きます。"
+msgstr "We have received a payment by credit card. We will automatically carry out the settlement procedure at your registered credit card"
+
+msgid "お申込の取消、公演日・席種・枚数等の変更はできませんのでご注意ください。"
+msgstr "Your application of cancellation, please note that you can not change, such as a performance date, seat species, number of sheets."
+
+# famiport
+
+msgid "Famiポート決済"
+msgstr "Pay by Famiport"
+
+msgid "Famiポート引取"
+msgstr "Get by Famiport"
+
+msgid "Famiポートでお引き取り"
+msgstr "Pick up you at Famiport"
+
+msgid "Famiポート予約番号"
+msgstr "Famiport reservation number"
+
+msgid "発券可能期間"
+msgstr "Ticketing period"
+
+msgid "Famiポートでお支払い"
+msgstr "Payment in Famiport"
+
+msgid "支払期限"
+msgstr "Due date for payment"
