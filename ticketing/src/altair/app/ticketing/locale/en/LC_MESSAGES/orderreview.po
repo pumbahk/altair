@@ -1,0 +1,352 @@
+# English translations for PACKAGE package
+# This file is distributed under the same license as the PACKAGE package.
+# Cho <ts-jingqiang.a.zhang@rakuten.com>, 2016.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE 1.0\n"
+"POT-Creation-Date: 2016-05-12 10:03+0900\n"
+"PO-Revision-Date: 2016-05-12 10:03+0900\n"
+"Last-Translator: Cho <ts-jingqiang.a.zhang@rakuten.com>\n"
+"Language-Team: en\n"
+"Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Lingua 3.11\n"
+
+# common
+
+msgid "チケット情報・販売・購入・予約"
+msgstr "Ticket information, sales, purchase and reservation"
+
+msgid "購入履歴の確認"
+msgstr "Confirm Purchase History"
+
+msgid "運営会社"
+msgstr "Management company"
+
+msgid "お問い合わせ"
+msgstr "Contact us"
+
+msgid "個人情報保護方針"
+msgstr "Privacy policy"
+
+msgid "特定商取引法に基づく表示"
+msgstr "Display based on specific trade law"
+
+msgid "サービス利用規約"
+msgstr "Terms of service"
+
+# index
+
+msgid "一般の方のチケット確認はこちらから"
+msgstr "Ticket confirmation of the general public from here"
+
+msgid "抽選の方のチケット確認はこちらから"
+msgstr "Ticket confirmation towards the lottery from here"
+
+msgid "次へすすむ"
+msgstr "Go to next"
+
+msgid "会員の方はこちらから"
+msgstr "Member from here"
+
+msgid "ログイン"
+msgstr "Login"
+
+msgid "注意事項"
+msgstr "Notice"
+
+msgid "発売開始直後は回線が大変込み合う場合がございますので、予めご了承ください。"
+msgstr "Since the sale immediately after the start there are times when the line is crowded very, please note."
+
+# form
+
+msgid "受付履歴確認 検索結果"
+msgstr "Reception history verification results"
+
+msgid "受付番号"
+msgstr "Receipt number"
+
+msgid "必須"
+msgstr "Required"
+
+msgid "半角英数"
+msgstr "number"
+
+msgid "電話番号"
+msgstr "Telephone number"
+
+msgid "電話番号はご登録時の電話番号をご入力ください。"
+msgstr "Telephone number, please enter the telephone number at the time of your registration."
+
+msgid "（携帯・自宅をどちらもご登録した場合どちらの番号でも構いません。）"
+msgstr "(It does not matter either the number If you both register your mobile phone and home.)"
+
+msgid "ご予約時に登録した電話番号をご入力してください。"
+msgstr "Input the ordered telephone number, please."
+
+# show
+
+msgid "受付番号または電話番号が違います。"
+msgstr "Whether application number or telephone number is wrong."
+
+msgid "受付日"
+msgstr "Receipt date"
+
+msgid "ステータス"
+msgstr "Status"
+
+msgid "発送日"
+msgstr "Delivered at"
+
+msgid "発券日時"
+msgstr "Issued at"
+
+msgid "購入者情報"
+msgstr "Purchaser information"
+
+msgid "配送先情報"
+msgstr "Shipping information"
+
+msgid "氏名（漢字）"
+msgstr "Name"
+
+msgid "メールアドレス"
+msgstr "Email"
+
+msgid "住所"
+msgstr "Address"
+
+msgid "ご購入時に入力された情報が表示されております。"
+msgstr "It is displayed information that was entered at the time of purchase is."
+
+msgid "登録情報変更をご希望の場合は、<a href=\"https://ticket.rakuten.co.jp/inquiry\" target=\"_blank\">問合せフォームより</a>ご連絡下さい。"
+msgstr "If you would like the registration information changes, <a href=\"https://ticket.rakuten.co.jp/inquiry\" target=\"_blank\">here</a>"
+
+msgid "購入したイベントの情報"
+msgstr "Information of the purchase event"
+
+msgid "イベント名"
+msgstr "Event name"
+
+msgid "公演・試合名"
+msgstr "Performance-game name"
+
+msgid "公演日"
+msgstr "Performance date"
+
+msgid "会場"
+msgstr "Venue"
+
+msgid "注文内容"
+msgstr "Order content"
+
+msgid "席種、金額などのお買い物内容"
+msgstr "Seat species, shopping content, such as amount of money"
+
+msgid "枚"
+msgstr "Sheet"
+
+msgid "決済手数料"
+msgstr "Transaction fee"
+
+msgid "発券/引取手数料"
+msgstr "Delivery fee"
+
+msgid "システム利用料"
+msgstr "System fee"
+
+msgid "合計金額"
+msgstr "Total amount"
+
+msgid "追加情報"
+msgstr "Additional Information"
+
+msgid "入力情報の編集"
+msgstr "Edit the input information"
+
+msgid "この購入/予約はキャンセルされました"
+msgstr "The purchase / reservation has been canceled"
+
+msgid "キャンセル処理は、下記のような理由によりおこなっております。"
+msgstr "Cancellation process, has been carried out by the following reasons."
+
+msgid "期限内のご入金がなくキャンセル扱いとしたため"
+msgstr "Since the payment of the due date has been treated as canceled without"
+
+msgid "弊社判断によるキャンセル処理を行ったため"
+msgstr "For your cancellation request has been processed by our judgment"
+
+msgid "お支払"
+msgstr "Payment"
+
+msgid "お引取"
+msgstr "Delivery"
+
+msgid "コンビニ（セブン-イレブン）店頭でのお受取です。"
+msgstr "Convenience store (Seven - Eleven) is a pick up in the shop."
+
+msgid "公演日約1週間前までに、セブン-イレブン店頭レジでチケット引取をする際に必要な引換票番号をメールにてお送りいたします(当選メールとは別のメールになります)。詳細は、そちらをご確認ください。"
+msgstr "About one week before performance date, Seven - we will send you a delivery slip number needed to the ticket take-Eleven shop cash register by e-mail (and winning e-mail will be another e-mail). For more information, please check there."
+
+msgid "入力された個人情報は「個人情報保護方針」に基づき適切に取扱われます。"
+msgstr "Personal information that has been input is handled appropriately based on the 'personal information protection policy'."
+
+msgid "セブン-イレブン決済の際には払込票番号が必要です。下記、「払込票印刷」ボタンをクリックし、払込票を印刷してお持ちになるか、上記の払込票番号をお控えいただき、レジでお伝え下さい。"
+msgstr "Seven - When Eleven settlement requires payment slip number. Below, click on the 'payment slip Print' button, or will you have to print a payment slip, please refrain from the payment slip number of the above, please tell at the cash register."
+
+msgid "予約有効期限までに、払込票または払込票番号をセブン-イレブン店頭レジにてお申し出の上、代金をお支払いください。"
+msgstr "Until the reservation expiration date, payment slip or Seven of the payment slip number - on top of the offer at Eleven over-the-counter cash register, please pay the price."
+
+msgid "支払期日までに入金されない場合は、申込が無効となりますのでご注意ください。"
+msgstr "If you do not be credited until the due date, please note that the application will be invalid."
+
+msgid "お申込時に受付内容を記載した確認のメールが、ご登録いただいたメールアドレス宛に送られます。しばらくたっても確認のメールが届かない場合は、入力されたメールアドレスが誤っている可能性があります。"
+msgstr "Confirmation of the email with the accepted content at the time of your application will be sent addressed to your registered e-mail address. If even after a while do not receive the confirmation email, you may have incorrectly entered e-mail address."
+
+msgid "こちら"
+msgstr "From here"
+
+msgid "までご連絡ください。"
+msgstr " contact us."
+
+# paymend & delivery
+
+# qr
+
+msgid "商品名"
+msgstr "Product name"
+
+msgid "席番号"
+msgstr "Seat number"
+
+msgid "発行(印刷orメール送信)済"
+msgstr "Published (print or send mail)"
+
+msgid "未発行"
+msgstr "Not published yet"
+
+msgid "QRコードを表示する"
+msgstr "Show QR code"
+
+msgid "メールで送る"
+msgstr "Send mail"
+
+msgid "お支払い完了後、このページにQRコードを表示するためのボタンが表示されます。表示されたQRコードを印刷、あるいは、PC/携帯へメール送信の上、試合当日、指定の入場ゲートにてQRコード（印刷したもの、あるいは携帯画面）をお見せください。"
+msgstr "After completion of the payment, you will see a button to display a QR code on this page. Print the QR code that appears, or, on top of the e-mail sent to the PC / mobile, game day, QR code by the specification of the entrance gate (those that have been printed, or mobile screen) Please show you."
+
+msgid "印刷する"
+msgstr "Print"
+
+# sej
+
+msgid "セブン-イレブン支払い"
+msgstr "Payment at 7-11"
+
+msgid "セブン-イレブン受け取り"
+msgstr "Delivery at 7-11"
+
+msgid "当選の場合、お支払期日までにお支払頂きます。"
+msgstr "In the case of winning, you pay until the payment due date."
+
+msgid "お支払が確認できた時点で当選申込が確定となります。"
+msgstr "Application winning at the time the payment has been confirmed will be confirmed."
+
+msgid "各種手数料の他、公演によりシステム利用料がかかります。"
+msgstr "Application winning at the time the payment has been confirmed will be confirmed."
+
+msgid "払込票番号"
+msgstr "Application number"
+
+msgid "払込票を表示"
+msgstr "Show ticket"
+
+msgid "支払期日"
+msgstr "Payment date"
+
+msgid "上記支払期日までに、払込票番号をお持ちの上、セブン-イレブン店舗レジにてお支払いください。（払込票を表示、印刷した上で店頭にお持ちいただくとスムーズです）"
+msgstr "Before the payment due date, on top of you have a payment slip number, Seven"
+
+msgid "支払期日までに入金されない場合は予約が無効となりますので、ご注意ください。"
+msgstr "Because if you do not be credited until the payment due date will be invalid reservation, please note."
+
+msgid "お申込後の、公演日・席種・枚数等の変更はできませんのでご容赦ください。"
+msgstr "After your application, please forgive that you can not change, such as a performance date, seat species, number of sheets."
+
+msgid "チケットは代金と引換です。"
+msgstr "Tickets are exchange for a price."
+
+msgid "引換票番号は後ほどメールにてお送りいたします。"
+msgstr "Exchange vote number will send later by e-mail."
+
+msgid "詳細はそちらをご確認頂き、指定発券日以降にレジにてチケットをお受取ください。"
+msgstr "For more information please confirm the there, please receive the ticket at the cash register on or after the specified date of issue."
+
+msgid "引換票番号"
+msgstr "Exchange for vote number"
+
+msgid "引換票を表示"
+msgstr "Display the exchange vote"
+
+msgid "引取受付期間"
+msgstr "Delivery acceptance period"
+
+msgid "購入いただいた日の翌日{0}から引き取りが可能となります。"
+msgstr "The day following the date you purchased{0}"
+
+msgid "セブン-イレブン発券の際には引換票番号が必要です。"
+msgstr "During Eleven ticketing is required on delivery slip number."
+
+msgid "<a href=\"/orderreview\">予約・購入履歴確認画面</a>より、「引換票」を印刷するか、または番号をお控え下さい。"
+msgstr "<a href=\"/orderreview\">here </a>Reservations and purchase history confirmation screen"
+
+msgid "<a href=\"/orderreview\">予約・購入履歴確認画面</a>にて表示される引換票番号をお控え下さい。"
+msgstr "<a href=\"/orderreview\">here </a>Please refrain from the exchange slip number to be displayed in."
+
+msgid "引取受付期間内に、セブン-イレブン店頭レジにてチケットをお引取り下さい。"
+msgstr "In the take-off acceptance period, please take your pull the ticket at Seven Eleven over-the-counter cash register."
+
+msgid "クレジットカード情報"
+msgstr "Credit card information"
+
+msgid "予約成立と同時に、ご登録のクレジットカードにて自動的に決済手続きを行わせて頂きます。"
+msgstr "Reservation is made at the same time, it will automatically carry out the settlement procedure at your registered credit card."
+
+msgid "お申込の取消、公演日・席種・枚数等の変更は出来ませんのでご注意ください。"
+msgstr "Your application of cancellation, please note that you can not change, such as a performance date, seat species, number of sheets."
+
+# credit card
+
+msgid "クレジットカードによる決済を受け付けました。ご登録のクレジットカードにて自動的に決済手続きを行わせて頂きます。"
+msgstr "We have received a payment by credit card. We will automatically carry out the settlement procedure at your registered credit card"
+
+msgid "お申込の取消、公演日・席種・枚数等の変更はできませんのでご注意ください。"
+msgstr "Your application of cancellation, please note that you can not change, such as a performance date, seat species, number of sheets."
+
+# famiport
+
+msgid "Famiポート決済"
+msgstr "Pay by Famiport"
+
+msgid "Famiポート引取"
+msgstr "Get by Famiport"
+
+msgid "チケットは代金と引換です。"
+msgstr "Tickets are exchange for a price."
+
+msgid "Famiポートでお引き取り"
+msgstr "Pick up you at Famiport"
+
+msgid "Famiポート予約番号"
+msgstr "Famiport reservation number"
+
+msgid "発券可能期間"
+msgstr "Ticketing period"
+
+msgid "Famiポートでお支払い"
+msgstr "Payment in Famiport"
+
+msgid "支払期限"
+msgstr "Due date for payment"
