@@ -1,4 +1,4 @@
-<%page args="sales_segment_group=None, sales_segment=None" />
+<%page args="sales_segment_group=None, sales_segment=None, split=False" />
 <%namespace file="/common/modal.html" import="delete_modal" />
 
 <script type="text/javascript">
@@ -19,7 +19,19 @@
     modal.modal('toggle');
   }
 </script>
-
+% if split:
+<div class="btn-group">
+  <a href="javascript:new_pdmp()" class="btn" style="margin-right: 10px;">
+    <i class="icon-pencil"></i> 決済・引取方法を追加
+  </a>
+  <a href="javascript:edit_pdmp()" class="btn" style="margin-right: 10px;">
+        <i class="icon-pencil"></i> 編集
+  </a>
+  <a href="javascript:delete_pdmp()" class="btn btn-danger" data-controls-modal="delete-modal" data-backdrop="true" data-keyboard="true">
+        <i class="icon-minus"></i> 削除
+  </a>
+</div>
+%else:
 <div class="btn-group">
   <a href="javascript:new_pdmp()" class="btn">
     <i class="icon-pencil"></i> 決済・引取方法を追加
@@ -40,5 +52,5 @@
     </li>
   </ul>
 </div>
-
+%endif
 ${delete_modal()}

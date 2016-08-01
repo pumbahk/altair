@@ -13,14 +13,14 @@ else:
 </%block>
 
 <div class="page-header">
-  <h1>販売区分</h1>
+  <h1>販売区分a</h1>
 </div>
 
 <form>
 <%include file="/sales_segments/_list.html" args="form=form_sales_segment_group, sales_segment_groups=sales_segment_groups" />
 </form>
 <div class="pull-left">
-  <%include file="/sales_segments/_action_button.html" />
+  <%include file="/sales_segments/_action_button.html" args="split=True" />
 </div>
 <div id="sales_segments-form">
   <%include file="/sales_segments/_modal.html" args="modal_id='modal-sales_segment'" />
