@@ -90,7 +90,7 @@ require([], function () {});
   </tbody>
 </table>
 <div class="pull-left">
-  <%include file="/sales_segments/_action_button.html" args="order=['edit', 'delete']" />
+  <%include file="/sales_segments/_action_button.html" args="order=['edit', 'delete'], split=True" />
 </div>
 <div class="clearfix" id="sales_segments-form" style="margin-bottom: 20px;">
   <%include file="/sales_segments/_modal.html" args="modal_id='modal-sales_segment'" />
@@ -108,7 +108,7 @@ require([], function () {});
 <p>ポイント付与設定は全パフォーマンス・販売区分で共通です。追加は<a href="${request.route_path('point_grant_settings.index')}">こちら</a></p>
 <form method="post" action="#">
 <%include file="/point_grant_settings/_list.html" args="point_grant_settings=sales_segment.point_grant_settings, organization_setting=sales_segment.sales_segment_group.event.organization.setting" />
-<%include file="./_action_button_modal_point_grant_setting.html" args="sales_segment=sales_segment" />
+<%include file="./_action_button_modal_point_grant_setting.html" args="sales_segment=sales_segment, split=True" />
 <script type="text/javascript">
 var get_selected_point_grant_setting_ids;
 var add_point_grant_setting, remove_point_grant_settings;
@@ -141,6 +141,6 @@ var add_point_grant_setting, remove_point_grant_settings;
 
 <h3>商品</h3>
 <%include file="/products/_list.html" args="products=sales_segment.products, sales_segment=sales_segment" />
-<%include file="/products/_action_button.html" />
+<%include file="/products/_action_button.html" args="split=True" />
 <%include file="/products/_modal.html" args="modal_id='modal-product'" />
 <%include file="/product_items/_modal.html" args="modal_id='modal-product-item'" />

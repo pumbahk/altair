@@ -22,7 +22,7 @@ ${ch.breadcrumbs(
 
 <%include file="/sales_segment_groups/_detail.html", args="sales_segment_group=sales_segment_group"/>
 
-<%include file="/sales_segment_groups/_action_button.html" args="order=['edit', 'copy', 'delete']" />
+<%include file="/sales_segment_groups/_action_button.html" args="order=['edit', 'copy', 'delete'], split=True" />
 <div id="sales_segment_groups-form">
   <%include file="./_modal.html" args="modal_id='modal-sales_segment_group', event=sales_segment_group.event" />
 </div>
@@ -75,7 +75,7 @@ ${ch.breadcrumbs(
             </td>
             <td>
               <form action="${request.route_path('sales_segment_groups.lot_delete', lot_id=lot.id, sales_segment_group_id=sales_segment_group.id)}" method="POST">
-                <button type="submit" name="action-delete" class="btn"><i class="icon-minus"></i>削除</button>
+                <button type="submit" name="action-delete" class="btn btn-danger"><i class="icon-minus"></i>削除</button>
               </form>
             </td>
           </tr>
@@ -89,7 +89,7 @@ ${ch.breadcrumbs(
 
 <h3>決済引取方法</h3>
 <%include file="/payment_delivery_method_pairs/_list.html" args="payment_delivery_method_pairs=sales_segment_group.payment_delivery_method_pairs" />
-<%include file="/payment_delivery_method_pairs/_action_button.html" args="sales_segment_group=sales_segment_group" />
+<%include file="/payment_delivery_method_pairs/_action_button.html" args="sales_segment_group=sales_segment_group, split=True" />
 
 <hr />
 
@@ -178,7 +178,7 @@ ${ch.breadcrumbs(
         })($('script:last').closest('form'));
       </script>
     </form>
-    <%include file="/sales_segments/_action_button.html" />
+    <%include file="/sales_segments/_action_button.html" args="split=True" />
     <%include file="/sales_segments/_modal.html" args="modal_id='modal-sales_segment'" />
   </div>
 </div>

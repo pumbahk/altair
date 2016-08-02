@@ -135,29 +135,32 @@ ${ch.breadcrumbs(
 
 <div class="row-fluid well">
   <div class="btn-group">
-    <a href="${request.route_path("events.tickets.boundtickets.edit",event_id=event.id, id=template.id)}" class="btn">
+    <a href="${request.route_path("events.tickets.boundtickets.edit",event_id=event.id, id=template.id)}"
+       class="btn"
+       style="margin-right: 10px;">
       <i class="icon-pencil"></i> 編集
     </a>
-    <button class="btn dropdown-toggle" data-toggle="dropdown">
-      <span class="caret"></span>
-    </button>
-    <ul class="dropdown-menu">
-      <li>
-        <a href="#deleteModal" data-toggle="modal">
-          <i class="icon-minus"></i> 削除
-        </a>
-      </li>
-		  <li>
-			  <a href="${request.route_path("events.tickets.boundtickets.download",event_id=event.id, id=template.id)}">
-			    <i class="icon-minus"></i> 登録されている内容をdownload
-			  </a>
-		  </li>
-		  <li>
-        <a href="${request.route_path("events.tickets.boundtickets.download",event_id=event.id, id=template.id, _query=dict(raw=u'1'))}">
-        <i class="icon-minus"></i> 登録されている内容の元データをdownload</a>
-      </li>
-      <li><a id="preview_btn"> <i class="icon-eye-open"></i> preview</a></li>
-    </ul>
+    <a href="${request.route_path("events.tickets.boundtickets.download",event_id=event.id, id=template.id)}"
+       class="btn"
+       style="margin-right: 10px;">
+       <i class="icon-minus"></i> 登録内容をdownload
+    </a>
+    <a href="${request.route_path("events.tickets.boundtickets.download",event_id=event.id, id=template.id, _query=dict(raw=u'1'))}"
+       class="btn"
+       style="margin-right: 10px;">
+       <i class="icon-minus"></i> 登録内容の元データをdownload
+    </a>
+    <a id="preview_btn"
+       class="btn"
+       style="margin-right: 10px;">
+       <i class="icon-eye-open"></i> preview
+    </a>
+    <a href="#deleteModal"
+       data-toggle="modal"
+       class="btn btn-danger"
+       style="margin-right: 10px;">
+       <i class="icon-minus"></i> 削除
+    </a>
   </div>
 </div>
 
