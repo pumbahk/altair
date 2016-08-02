@@ -440,12 +440,6 @@ class SalesDetailReporter(object):
                 SalesSegmentGroup.id==form.sales_segment_group_id.data,
                 SalesSegmentGroup.deleted_at==None
             ))
-            ssg = self.slave_session.query(SalesSegmentGroup).filter(
-                SalesSegmentGroup.id == self.form.sales_segment_group_id.data).first()
-            # 新抽選の場合、二重で表示されてしまうため、公演に紐づくほうは出さない
-            if ssg.kind.count("lottery"):
-                query = query.filter(Product.original_product_id != None)
-
         if form.performance_id.data:
             ss = aliased(SalesSegment, name='SalesSegment_alias')
             query = query.outerjoin(ss, and_(
