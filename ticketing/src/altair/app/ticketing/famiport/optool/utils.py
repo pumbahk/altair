@@ -74,6 +74,7 @@ class AESEncryptor(object):
 
     @classmethod
     def verify_token(cls, token):
+    # tokenを復号して、ユーザID情報を返す。
         try:
             token = token.decode('hex')
             iv = token[:16]
@@ -89,6 +90,7 @@ class AESEncryptor(object):
         return ''.join(['0'] * (16 - len(user_id_str))) + user_id_str
 
     def get_token(self, user_id):
+    # ユーザIDを使って暗号化する。
         if not user_id:
             return None
 

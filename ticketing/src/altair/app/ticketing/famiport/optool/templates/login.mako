@@ -17,7 +17,7 @@
     </div>
     %endfor
     <br />
-    <button type="submit" class="btn btn-lg btn-primary btn-block">Sign in</button>
+    <button type="submit" class="btn btn-lg btn-primary btn-block">ログイン</button>
 </form>
 </div>
 
@@ -30,6 +30,7 @@
 <script src="${request.static_url('altair.app.ticketing.famiport.optool:static/js/jquery.validate.min.js')}"></script>
 <script src="${request.static_url('altair.app.ticketing.famiport.optool:static/js/messages_ja.min.js')}"></script>
 <script>
+# クライアント側のバリデーション
 $("form#signin-form").validate({
     rules: {
 

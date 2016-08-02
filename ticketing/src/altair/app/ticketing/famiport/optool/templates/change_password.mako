@@ -17,13 +17,14 @@
     </div>
     %endfor
     <br />
-    <button type="submit" class="btn btn-lg btn-primary btn-block">Send</button>
+    <button type="submit" class="btn btn-lg btn-primary btn-block">登録</button>
 </form>
 
 <%block name="footer_extras">
 <script src="${request.static_url('altair.app.ticketing.famiport.optool:static/js/jquery.validate.min.js')}"></script>
 <script src="${request.static_url('altair.app.ticketing.famiport.optool:static/js/messages_ja.min.js')}"></script>
 <script>
+# クライアント側のバリデーション
 $("form#change-password-form").validate({
     rules: {
         password: {
@@ -32,7 +33,8 @@ $("form#change-password-form").validate({
 
         new_password: {
             minlength: 7,
-            required: true
+            required: true,
+            password_rule: true
         },
 
         new_password_confirm: {
@@ -59,5 +61,13 @@ $("form#change-password-form").validate({
         }
     }
 });
+jQuery.validator.addMethod('password_rule', function (val) {
+  var pattern = /^(?=.*[0-9])(?=.*[a-zA-Z])([a-zA-Z0-9]+)$/
+  if (!pattern.test(val)) {
+    return false;
+  } else {
+    return true;
+  }
+}, "パスワードは数字と英文字の両方を含む7文字以上で設定ください。");
 </script>
 </%block>

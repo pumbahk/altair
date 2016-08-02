@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import re
 from altair.formhelpers.form import OurForm
 from altair.formhelpers.fields import (
     OurTextField,
@@ -17,21 +18,22 @@ from altair.formhelpers.widgets import (
 from altair.formhelpers import Max, after1900
 from wtforms.validators import Required, Length, Optional, EqualTo
 from wtforms.compat import iteritems
-from wtforms import HiddenField
-from wtforms import ValidationError
+from wtforms import HiddenField, ValidationError
 
 class LoginForm(OurForm):
     user_name = OurTextField(
         validators=[
             Required(),
             Length(max=32)
-            ]
+            ],
+        label=u'ユーザ名'
         )
     password = OurTextField(
         widget=OurPasswordInput(),
         validators=[
             Required()
-            ]
+            ],
+        label=u'パスワード'
         )
 
 class ChangePassWordForm(OurForm):
@@ -46,25 +48,34 @@ class ChangePassWordForm(OurForm):
     )
     password = OurTextField(
         widget=OurPasswordInput(),
-        validators=[Required()]
+        validators=[Required()],
+        label=u'パスワード'
     )
     new_password = OurTextField(
         widget=OurPasswordInput(),
         validators=[
             Required(),
             Length(min=7, message=u'パスワードは7桁以上で設定してください。')
-        ]
+        ],
+        label=u'新しいパスワード'
     )
     new_password_confirm = OurTextField(
         widget=OurPasswordInput(),
         validators=[
             Required(),
             EqualTo('new_password', message=u'新しいパスワードと一致していない。')
-        ]
+        ],
+        label=u'新しいパスワードの確認'
     )
+
     def validate_new_password(form, field):
+        pattern = r'^(?=.*[0-9])(?=.*[a-zA-Z])([a-zA-Z0-9]+)$'
+        if not re.match(pattern, field.data):
+            raise ValidationError(u'パスワードは数字と英文字の両方を含む7文字以上で設定ください。')
+
         if form.password.data == field.data:
-            raise ValueError(u'ご利用しているパスワードと同じな値に設定できません。')
+            raise ValidationError(u'ご利用しているパスワードと同じな値に設定できません。')
+
 
 class AccountReminderForm(OurForm):
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
@@ -77,13 +88,15 @@ class AccountReminderForm(OurForm):
         validators=[
             Required(),
             Length(max=32)
-        ]
+        ],
+        label=u'ユーザ名'
     )
     email = OurTextField(
         validators=[
             Required(),
             Length(max=120)
-        ]
+        ],
+        label=u'EMailアドレス'
     )
 
 class SearchReceiptForm(OurForm):

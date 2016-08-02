@@ -34,14 +34,12 @@ def encrypt_password(password, existed_password=None):
     return salt + password_digest
 
 def create_user(request, user_name, password, role):
-    salt = u''.join('%02x' % six.byte2int(c) for c in urandom(16))
-    h = hashlib.sha256()
-    h.update(salt + password)
-    password_digest = h.hexdigest()
+    encrypted_password = encrypt_password(password)
     operator = FamiPortOperator(
         user_name=user_name,
-        password=(salt + password_digest),
-        role=role
+        password=encrypted_password,
+        role=role,
+        email=u'{}@example.com'.format(user_name)
         )
     session = get_db_session(request, 'famiport')
     session.add(operator)

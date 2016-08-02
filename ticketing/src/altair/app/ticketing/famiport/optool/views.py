@@ -56,6 +56,10 @@ from .helpers import (
 
 logger = logging.getLogger(__name__)
 
+def flash_error_message(request, errors):
+    for error in errors:
+        request.session.flash(error)
+
 class FamiPortOpToolTopView(object):
     def __init__(self, context, request):
         self.context = context
@@ -78,13 +82,12 @@ class FamiPortOpLoginView(object):
             errors.append(u'ユーザ名とパスワードの組み合わせが誤っています。')
             status = False
         elif operator.expired_at and datetime.now() - operator.expired_at > timedelta(days=30):
-            errors.append(u'このアカウントの使用期限は切ったため、ご利用されることはできません。')
-            errors.append(u'ご利用したい場合はログインフォーム下のリマインダーリンクで復旧してください。')
+            errors.append(u'このアカウントの使用期限（７ヶ月以上）は切りましたため、ご利用されることはできません。')
+            errors.append(u'ご利用したい場合はログインフォーム下のリマインダーリンクで復活してください。')
             status = False
 
-        if errors:
-            for msg in errors:
-                self.request.session.flash(msg)
+        flash_error_message(self.request, errors)
+
         return status
 
     def _need_change_password(self, operator):
@@ -93,14 +96,13 @@ class FamiPortOpLoginView(object):
 
         if not operator.active:
             status = True
-            warnings.append(u'初めてログインしたため、パスワードをご変更ください。')
+            warnings.append(u'初めてのログインのため、パスワードの変更をお願いいたします。')
         elif operator.expired_at and datetime.now() > operator.expired_at:
             status = True
-            warnings.append(u'パスワードの有効期限が切りましたため、パスワードをご変更ください。')
+            warnings.append(u'パスワードの有効期限（６ヶ月以上）が切りましたため、パスワードをご変更ください。')
 
-        if warnings:
-            for msg in warnings:
-                self.request.session.flash(msg)
+        flash_error_message(self.request, warnings)
+
         return status
 
     @view_config(route_name='login', renderer='login.mako')
@@ -157,9 +159,9 @@ class FamiPortChangePassWord(object):
         else:
             status = False
             errors.append(u'パスワードを変更するユーザのアカウントは見つからないため、ご確認ください。')
-        if errors:
-            for msg in errors:
-                self.request.session.flash(msg)
+
+        flash_error_message(self.request, errors)
+
         return status
 
     @view_config(route_name='change_password', renderer='change_password.mako', request_method='GET')
@@ -171,7 +173,7 @@ class FamiPortChangePassWord(object):
         id_by_token = AESEncryptor.verify_token(token) if token else None
         user_id = id_by_token or id_by_authenticated
 
-        # 以上二つ方法しかユーザIDを取得する方法がない。
+        # 以上二つ方法しかで取得したユーザIDを認めない。
         if not user_id:
             self.request.session.flash(u'パスワードを変更するユーザのアカウントは見つからないため、ご確認ください。')
             return HTTPFound(self.request.route_path('login'))
@@ -194,6 +196,8 @@ class FamiPortChangePassWord(object):
                 session.close()
                 self.request.session.flash(u'パスワードを変更しました。')
                 return HTTPFound(self.request.route_url('top'))
+        else:
+            flash_error_message(self.request, form.errors.values())
 
         return dict(form=form)
 
@@ -213,9 +217,8 @@ class FamiPortAccountReminder(object):
         else:
             errors.append(u'パスワードを変更するユーザのアカウントは見つからないため、管理者にお問い合わせください。')
 
-        if errors:
-            for msg in errors:
-                self.request.session.flash(msg)
+        flash_error_message(self.request, errors)
+
         return status
 
     def _get_reminder_url(self, token):
@@ -226,7 +229,7 @@ class FamiPortAccountReminder(object):
     def _get_html(self, token):
         reminder_url = self._get_reminder_url(token)
         render_param = dict(reminder_url=reminder_url)
-        html = render_to_response('altair.app.ticketing:famiport/optool/templates/_mail_content.mako', render_param,request=self.request)
+        html = render_to_response('altair.app.ticketing:famiport/optool/templates/_account_reminder_mail_content.mako', render_param,request=self.request)
         return html
 
     @view_config(route_name='account_reminder', renderer='account_reminder.mako')
@@ -246,8 +249,10 @@ class FamiPortAccountReminder(object):
                     if sendmail(settings, recipient, subject, html):
                         self.request.session.flash(u'アカウント復活についてのご連絡はご登録いただいたEmailアドレスに送りました。ご確認ください。')
                         return HTTPFound(self.request.route_path('login'))
-
                 return dict(form=form)
+            else:
+                flash_error_message(self.request, form.errors.values())
+
         return dict(form=AccountReminderForm())
 
 

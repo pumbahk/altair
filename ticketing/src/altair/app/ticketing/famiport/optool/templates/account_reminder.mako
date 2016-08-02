@@ -18,7 +18,7 @@
     </div>
     %endfor
     <br />
-    <button type="submit" class="btn btn-lg btn-primary btn-block">Send</button>
+    <button type="submit" class="btn btn-lg btn-primary btn-block">送信</button>
 </form>
 </div>
 
@@ -26,15 +26,11 @@
 <p class="extra-info-str"><a href="${request.route_path('login')}">ログインへ</a></p>
 </div>
 
-<!--
-%if reminder_url:
-<a href="${reminder_url}">reminder_url</a>
-%endif
--->
 <%block name="footer_extras">
 <script src="${request.static_url('altair.app.ticketing.famiport.optool:static/js/jquery.validate.min.js')}"></script>
 <script src="${request.static_url('altair.app.ticketing.famiport.optool:static/js/messages_ja.min.js')}"></script>
 <script>
+# クライアント側のバリデーション
 $("form#change-password-form").validate({
     rules: {
         user_name: {

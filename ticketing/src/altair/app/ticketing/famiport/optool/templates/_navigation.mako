@@ -2,7 +2,7 @@
 <nav class="navbar navbar-default">
   <div class="container-fluid">
     <div class="navbar-header">
-      <a class="navbar-brand" href="#">famiport</a>
+      <a class="navbar-brand" href="${request.route_url('search.receipt')}"><strong>Famiポート</strong></a>
     </div>
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
@@ -13,7 +13,7 @@
       </ul>
       <ul class="nav navbar-nav navbar-right">
         <li class="active"><a href="${request.route_path('change_password')}">パスワード変更<span class="sr-only">(current)</span></a></li>
-        <li class="active"><a href="${request.route_path('logout')}">logout <span class="sr-only">(current)</span></a></li>
+        <li class="active"><a href="${request.route_path('logout')}">ログアウト<span class="sr-only">(current)</span></a></li>
       </ul>
     </div>
     <!--/.nav-collapse -->
