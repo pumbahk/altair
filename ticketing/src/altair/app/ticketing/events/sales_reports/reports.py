@@ -461,9 +461,6 @@ class SalesDetailReporter(object):
             .join(ProductItem)\
             .join(Product).filter(Product.seat_stock_type_id==Stock.stock_type_id)
 
-        # 新抽選で作成したものだけ除外する
-        query = query.filter(Product.original_product_id==None)
-
         query = self.add_sales_segment_filter(query)
         if self.form.performance_id.data:
             query = query.filter(ProductItem.performance_id==self.form.performance_id.data)
