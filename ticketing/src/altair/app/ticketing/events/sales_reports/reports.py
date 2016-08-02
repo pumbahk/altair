@@ -440,12 +440,6 @@ class SalesDetailReporter(object):
                 SalesSegmentGroup.id==form.sales_segment_group_id.data,
                 SalesSegmentGroup.deleted_at==None
             ))
-            ssg = self.slave_session.query(SalesSegmentGroup).filter(
-                SalesSegmentGroup.id == self.form.sales_segment_group_id.data).first()
-            # 新抽選の場合、二重で表示されてしまうため、公演に紐づくほうは出さない
-            if ssg.kind.count("lottery"):
-                query = query.filter(Product.original_product_id != None)
-
         if form.performance_id.data:
             ss = aliased(SalesSegment, name='SalesSegment_alias')
             query = query.outerjoin(ss, and_(
@@ -466,6 +460,9 @@ class SalesDetailReporter(object):
             .join(StockHolder).filter(StockHolder.event==self.event, StockHolder.account_id.in_([a.id for a in self.accounts]))\
             .join(ProductItem)\
             .join(Product).filter(Product.seat_stock_type_id==Stock.stock_type_id)
+
+        # 新抽選で作成したものだけ除外する
+        query = query.filter(Product.original_product_id==None)
 
         query = self.add_sales_segment_filter(query)
         if self.form.performance_id.data:
