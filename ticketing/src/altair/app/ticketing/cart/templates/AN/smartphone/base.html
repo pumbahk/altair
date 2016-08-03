@@ -29,7 +29,7 @@
       <div class="grpheader">
         <div class="siteID">
           <a href="/">
-            <img src="${request.static_url('altair.app.ticketing.cart:static/RT/smartphone/images/logo.gif')}" alt="楽天チケット" class="serviceLogo" />
+            <img src="${request.static_url('altair.app.ticketing.cart:static/AN/smartphone/images/logo.gif')}" alt="楽天チケット" class="serviceLogo" />
           </a>
         </div>
       </div>
@@ -53,7 +53,7 @@
   <!-- /container -->
   <%block name="extras" />
   % if request.organization.setting.sitecatalyst_use:
-    <%include file="altair.app.ticketing.cart:templates/RT/common/sitecatalyst.html"/>
+    <%include file="altair.app.ticketing.cart:templates/AN/common/sitecatalyst.html"/>
   % endif
 </body>
 

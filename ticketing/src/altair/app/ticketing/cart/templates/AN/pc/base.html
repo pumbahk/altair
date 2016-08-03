@@ -18,15 +18,15 @@
 </head>
 
 <body id="settlement">
-  <p id="naviSkip"><a href="#main" tabindex="1" title="本文へジャンプ"><img src="${request.static_url('altair.app.ticketing.cart:static/RT/pc/images/skip.gif')}" alt="本文へジャンプ" width="1" height="1" /></a></p>
+  <p id="naviSkip"><a href="#main" tabindex="1" title="本文へジャンプ"><img src="${request.static_url('altair.app.ticketing.cart:static/AN/pc/images/skip.gif')}" alt="本文へジャンプ" width="1" height="1" /></a></p>
   <div id="container">
     <!-- ========== header ========== -->
     <div id="grpheader">
       <p id="siteID">
 	<a href="http://ticket.rakuten.co.jp/">
-	  <img src="${request.static_url('altair.app.ticketing.cart:static/RT/pc/images/header_logo_01.gif')}" alt="楽天チケット" class="serviceLogo" width="97" height="35" /></a>
+	  <img src="${request.static_url('altair.app.ticketing.cart:static/AN/pc/images/header_logo_01.gif')}" alt="楽天チケット" class="serviceLogo" width="97" height="35" /></a>
 	<a href="http://ticket.rakuten.co.jp/">
-	  <img src="${request.static_url('altair.app.ticketing.cart:static/RT/pc/images/header_logo_02.gif')}" alt="チケット" class="serviceTitle" width="88" height="23" /></a>
+	  <img src="${request.static_url('altair.app.ticketing.cart:static/AN/pc/images/header_logo_02.gif')}" alt="チケット" class="serviceTitle" width="88" height="23" /></a>
       </p>
     </div>
     <!-- ========== /header ========== -->
@@ -43,7 +43,7 @@
   <!-- /container -->
   <%block name="extras" />
   % if request.organization.setting.sitecatalyst_use:
-    <%include file="altair.app.ticketing.cart:templates/RT/common/sitecatalyst.html"/>
+    <%include file="altair.app.ticketing.cart:templates/AN/common/sitecatalyst.html"/>
   % endif
 </body>
 
