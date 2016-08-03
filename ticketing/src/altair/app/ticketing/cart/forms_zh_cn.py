@@ -56,7 +56,7 @@ countries = [
     u'津巴布韦'
 ]
 
-length_limit_for_sej_cn = Length(max=4, message=u'4文字以内で入力してください')
+length_limit_for_sej_cn = Length(max=20, message=u'请输入长度小于20的拼音字母')
 class ClientForm(OurDynamicForm):
     """国際化の簡体中国語フォーム"""
     def _get_translations(self):
@@ -68,6 +68,7 @@ class ClientForm(OurDynamicForm):
         validators=[
             Required(u'请输入'),
             length_limit_for_sej_cn,
+            Regexp(r'^[A-z]+$', message=u'请输入与护照等身份证件一致的拼音拼写'),
             ],
         )
     first_name = OurTextField(
@@ -76,6 +77,7 @@ class ClientForm(OurDynamicForm):
         validators=[
             Required(u'请输入'),
             length_limit_for_sej_cn,
+            Regexp(r'^[A-z]+$', message=u'请输入与护照等身份证件一致的拼音拼写'),
             ]
         )
     tel_1 = OurTextField(
