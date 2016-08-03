@@ -98,9 +98,14 @@
       label=u"メール付加情報",
       url="javascript:mail_info()",
       icon="icon-envelope",
+    ),
+    'report': dict(
+      label=u"売上レポート",
+      url=request.route_path('sales_reports.performance', performance_id=performance.id),
+      icon=None,
     )
   }
-  order = iter(order or ['new', 'show', 'edit', 'copy', 'manycopy', 'delete'])
+  order = iter(order or ['new', 'show', 'edit', 'copy', 'manycopy', 'report', 'delete'])
 %>
 % if split:
 %   for item in order:
