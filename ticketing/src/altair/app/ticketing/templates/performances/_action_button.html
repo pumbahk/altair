@@ -35,6 +35,11 @@
     if (!id) return;
     $(location).attr('href', '/events/performances/mailinfo/' + id);
   }
+  function sales_report(){
+    var id = get_id('performance_id');
+    if (!id) return;
+    $(location).attr('href', '/events/sales_reports/performance/' + id);
+  }
   function confirm_open_performance(id){
     var modal = '#modal-performance-open';
     var form = '#performance-open-form';
@@ -101,11 +106,11 @@
     ),
     'report': dict(
       label=u"売上レポート",
-      url=request.route_path('sales_reports.performance', performance_id=performance.id),
+      url='javascript:sales_report();',
       icon=None,
     )
   }
-  order = iter(order or ['new', 'show', 'edit', 'copy', 'manycopy', 'report', 'delete'])
+  order = iter(order or ['new', 'show', 'edit', 'copy', 'manycopy', 'delete'])
 %>
 % if split:
 %   for item in order:
