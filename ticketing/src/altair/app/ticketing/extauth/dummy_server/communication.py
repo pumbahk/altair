@@ -105,7 +105,7 @@ class MembershipCheckAPIRequestHandler(object):
                     ]
             else:
                 retval[u'members'] = []
-                retval[u'membership'] = []
+
         else:
             retval[u'status'] = u'NG'
             retval[u'message'] = value
