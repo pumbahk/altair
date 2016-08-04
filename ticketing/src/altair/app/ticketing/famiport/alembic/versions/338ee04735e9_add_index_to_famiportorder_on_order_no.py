@@ -22,4 +22,4 @@ def upgrade():
     op.create_index('ix_famiport_order_no', 'FamiPortOrder', ['order_no'])
 
 def downgrade():
-    op.drop_indexx('ix_famiport_order_no', 'FamiPortOrder')
+    op.drop_index('ix_famiport_order_no', 'FamiPortOrder')
