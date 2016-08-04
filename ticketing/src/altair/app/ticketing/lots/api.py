@@ -625,7 +625,6 @@ def _create_lot_sales_segment(sales_segment_group, lot, sales_segment_group_id):
     sales_segment.seat_choice = False
     sales_segment.auth3d_notice = sales_segment_group.auth3d_notice
     sales_segment.account_id = sales_segment_group.account_id
-    sales_segment.reporting = False
     return sales_segment
 
 
@@ -639,7 +638,6 @@ def _copy_lot_sales_segment_between_sales_segment_group(sales_segment_group, new
     sales_segment.seat_choice = False
     sales_segment.auth3d_notice = sales_segment_group.auth3d_notice
     sales_segment.account_id = sales_segment_group.account_id
-    sales_segment.reporting = False
     return sales_segment
 
 
