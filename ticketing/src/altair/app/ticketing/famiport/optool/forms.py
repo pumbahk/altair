@@ -63,7 +63,7 @@ class ChangePassWordForm(OurForm):
         widget=OurPasswordInput(),
         validators=[
             Required(),
-            EqualTo('new_password', message=u'新しいパスワードと一致していない。')
+            EqualTo('new_password', message=u'新しいパスワードと同じ値をもう一度入力してください。')
         ],
         label=u'新しいパスワードの確認'
     )
@@ -74,7 +74,7 @@ class ChangePassWordForm(OurForm):
             raise ValidationError(u'パスワードは数字と英文字の両方を含む7文字以上で設定ください。')
 
         if form.password.data == field.data:
-            raise ValidationError(u'ご利用しているパスワードと同じな値に設定できません。')
+            raise ValidationError(u'現在のパスワードと同じものには変更できません。')
 
 
 class AccountReminderForm(OurForm):
@@ -96,7 +96,7 @@ class AccountReminderForm(OurForm):
             Required(),
             Length(max=120)
         ],
-        label=u'EMailアドレス'
+        label=u'メールアドレス'
     )
 
 class SearchReceiptForm(OurForm):

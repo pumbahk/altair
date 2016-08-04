@@ -1,6 +1,5 @@
-from os import urandom
-import hashlib
-import six
+# encoding: utf-8
+
 import logging
 from datetime import datetime
 from dateutil.parser import parse as parsedate
@@ -21,25 +20,18 @@ from ..models import (
     FamiPortVenue
 )
 from .models import FamiPortOperator
+from .utils import encrypt_password
 
 logger = logging.getLogger(__name__)
 
-def encrypt_password(password, existed_password=None):
-    salt = existed_password[0:32] if existed_password \
-        else u''.join('%02x' % six.byte2int(c) for c in urandom(16))
-
-    h = hashlib.sha256()
-    h.update(salt + password)
-    password_digest = h.hexdigest()
-    return salt + password_digest
-
-def create_user(request, user_name, password, role):
+def create_user(request, user_name, password, role, email=None):
     encrypted_password = encrypt_password(password)
+    email = email or u'{}@example.com'.format(user_name)
     operator = FamiPortOperator(
         user_name=user_name,
         password=encrypted_password,
         role=role,
-        email=u'{}@example.com'.format(user_name)
+        email=email
         )
     session = get_db_session(request, 'famiport')
     session.add(operator)
@@ -53,40 +45,28 @@ def lookup_user_by_credentials(request, user_name, password):
             .one()
         encrypted_password = encrypt_password(password, operator.password)
         if operator.password != encrypted_password:
-            session.close()
             return None
         return operator
     except NoResultFound:
-        session.close()
         return None
 
-def lookup_user_by_id(request, id, return_session=False):
+def lookup_user_by_id(request, id):
     session = get_db_session(request, 'famiport')
     try:
-        operator = session.query(FamiPortOperator)\
-            .filter(FamiPortOperator.id == id)\
-            .one()
+        return session.query(FamiPortOperator)\
+                      .filter(FamiPortOperator.id == id)\
+                      .one()
     except NoResultFound:
-        session.close()
-        operator = None
-    if return_session:
-        return operator, session
-    else:
-        return operator
+        return None
 
-def lookup_user_by_username(request, user_name, return_session=False):
+def lookup_user_by_username(request, user_name):
     session = get_db_session(request, 'famiport')
     try:
-        operator = session.query(FamiPortOperator)\
-            .filter(FamiPortOperator.user_name == user_name)\
-            .one()
+        return session.query(FamiPortOperator)\
+                      .filter(FamiPortOperator.user_name == user_name)\
+                      .one()
     except NoResultFound:
-        session.close()
-        operator = None
-    if return_session:
-        return operator, session
-    else:
-        return operator
+        return None
 
 def lookup_performance_by_searchform_data(request, formdata=None):
     fami_session = get_db_session(request, name="famiport")

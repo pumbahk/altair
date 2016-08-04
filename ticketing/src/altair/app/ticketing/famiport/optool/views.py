@@ -46,13 +46,14 @@ from .forms import (
     ChangePassWordForm,
     AccountReminderForm
 )
-from .utils import ValidateUtils, AESEncryptor
-from .utils import sendmail
+from .utils import ValidateUtils, AESEncryptor, sendmail
 from .helpers import (
     ViewHelpers,
     get_paginator,
     RefundTicketSearchHelper,
 )
+
+from .models import FamiPortOperator
 
 logger = logging.getLogger(__name__)
 
@@ -75,36 +76,6 @@ class FamiPortOpLoginView(object):
         self.context = context
         self.request = request
 
-    def _can_login(self, operator):
-        status = True
-        errors = []
-        if operator is None:
-            errors.append(u'ユーザ名とパスワードの組み合わせが誤っています。')
-            status = False
-        elif operator.expired_at and datetime.now() - operator.expired_at > timedelta(days=30):
-            errors.append(u'このアカウントの使用期限（７ヶ月以上）は切りましたため、ご利用されることはできません。')
-            errors.append(u'ご利用したい場合はログインフォーム下のリマインダーリンクで復活してください。')
-            status = False
-
-        flash_error_message(self.request, errors)
-
-        return status
-
-    def _need_change_password(self, operator):
-        status = False
-        warnings = []
-
-        if not operator.active:
-            status = True
-            warnings.append(u'初めてのログインのため、パスワードの変更をお願いいたします。')
-        elif operator.expired_at and datetime.now() > operator.expired_at:
-            status = True
-            warnings.append(u'パスワードの有効期限（６ヶ月以上）が切りましたため、パスワードをご変更ください。')
-
-        flash_error_message(self.request, warnings)
-
-        return status
-
     @view_config(route_name='login', renderer='login.mako')
     def get(self):
         return_url = self.request.params.get('return_url', '')
@@ -117,20 +88,37 @@ class FamiPortOpLoginView(object):
             return_url = self.request.route_path('top')
         form = LoginForm(formdata=self.request.POST)
         if not form.validate():
+            flash_error_message(self.request, form.errors.values())
+            form.password.data = None
             return dict(form=form, return_url=return_url)
+
         operator = lookup_user_by_credentials(
             self.request,
             form.user_name.data,
             form.password.data
             )
-        if not self._can_login(operator):
-            return dict(form=form, return_url=return_url)
-        else:
-            remember(self.request, operator.id)
-        if self._need_change_password(operator):
-            return HTTPFound(location=self.request.route_url('change_password'))
 
-        return HTTPFound(return_url)
+        if not operator:
+            self.request.session.flash(u'ユーザ名とパスワードの組み合わせが誤っています。')
+            form.password.data = None
+            return dict(form=form, return_url=return_url)
+
+        if operator.is_deactivated:
+            self.request.session.flash(u'当アカウントは現在停止されております。')
+            self.request.session.flash(u'ご利用したい場合はログインフォーム下のリマインダーリンクで復活してください。')
+            form.password.data = None
+            return dict(form=form, return_url=return_url)
+        elif operator.is_first or operator.is_expired:
+            remember(self.request, operator.id)
+            if operator.is_first:
+                self.request.session.flash(u'初めてのログインのため、パスワードの変更をお願いいたします。')
+            elif operator.is_expired:
+                self.request.session.flash(u'パスワードの有効期限が切れております。新パスワードへ変更して下さい。')
+            return HTTPFound(location=self.request.route_url('change_password'))
+        else :
+            remember(self.request, operator.id)
+            return HTTPFound(return_url)
+
 
 class FamiPortOpLogoutView(object):
     def __init__(self, context, request):
@@ -147,22 +135,11 @@ class FamiPortChangePassWord(object):
         self.context = context
         self.request = request
 
-    def _can_change_password(self, form, operator):
-        status = True
-        errors = []
-
-        if operator:
-            encrypted_password = encrypt_password(form.password.data, operator.password)
-            if not encrypted_password == operator.password:
-                status = False
-                errors.append(u'ご利用しているパスワードは間違っているため、ご確認ください。')
-        else:
-            status = False
-            errors.append(u'パスワードを変更するユーザのアカウントは見つからないため、ご確認ください。')
-
-        flash_error_message(self.request, errors)
-
-        return status
+    def _reset_password(self, form):
+        form.password.data = None
+        form.new_password.data = None
+        form.new_password_confirm.data = None
+        return form
 
     @view_config(route_name='change_password', renderer='change_password.mako', request_method='GET')
     def change_password_get(self):
@@ -184,20 +161,27 @@ class FamiPortChangePassWord(object):
     def change_password_post(self):
         form = ChangePassWordForm(formdata=self.request.POST)
         if form.validate():
-            operator, session = lookup_user_by_id(request=self.request, id=form.user_id.data, return_session=True)
-            if self._can_change_password(form, operator):
+            session = get_db_session(self.request, 'famiport')
+            operator = session.query(FamiPortOperator).filter(FamiPortOperator.id == form.user_id.data).one()
+            if operator and operator.is_matched_password(form.password.data):
                 new_encrypted_password = encrypt_password(form.new_password.data)
                 operator.password = new_encrypted_password
 
                 if not operator.active:
                     operator.active = True
-
                 session.commit()
-                session.close()
                 self.request.session.flash(u'パスワードを変更しました。')
                 return HTTPFound(self.request.route_url('top'))
-        else:
-            flash_error_message(self.request, form.errors.values())
+            else:
+                if not operator:
+                    self.request.session.flash(u'アカウントは見つかりません。入力値をご確認ください。')
+                else:
+                    self.request.session.flash(u'現在のパスワードは間違っています。入力値ご確認ください。')
+
+        form = self._reset_password(form)
+        errors_set = form.errors.values()
+        for errors in errors_set:
+            flash_error_message(self.request, errors)
 
         return dict(form=form)
 
@@ -205,21 +189,6 @@ class FamiPortAccountReminder(object):
     def __init__(self, context, request):
         self.context = context
         self.request = request
-
-    def _is_valid_account(self, form, operator):
-        status = True
-        errors = []
-
-        if operator:
-            if not (operator.email and operator.email == form.email.data):
-                status = False
-                errors.append(u'ご提供したEMAILアドレスは登録されていないので、EMAILアドレスをご確認してください。')
-        else:
-            errors.append(u'パスワードを変更するユーザのアカウントは見つからないため、管理者にお問い合わせください。')
-
-        flash_error_message(self.request, errors)
-
-        return status
 
     def _get_reminder_url(self, token):
         base_url = self.request.route_url('change_password')
@@ -232,28 +201,36 @@ class FamiPortAccountReminder(object):
         html = render_to_response('altair.app.ticketing:famiport/optool/templates/_account_reminder_mail_content.mako', render_param,request=self.request)
         return html
 
-    @view_config(route_name='account_reminder', renderer='account_reminder.mako')
-    def account_reminder(self):
-        if self.request.method == 'POST':
-            form = AccountReminderForm(self.request.POST)
-            if form.validate():
-                operator = lookup_user_by_username(self.request, form.user_name.data)
-                if self._is_valid_account(form, operator):
-                    aes = AESEncryptor()
-                    token = aes.get_token(operator.id)
-                    html = self._get_html(token)
-                    settings = self.request.registry.settings
-                    recipient = form.email.data
-                    subject = u'FamiPort OPTOOLのアカウント復活について'
-
-                    if sendmail(settings, recipient, subject, html):
-                        self.request.session.flash(u'アカウント復活についてのご連絡はご登録いただいたEmailアドレスに送りました。ご確認ください。')
-                        return HTTPFound(self.request.route_path('login'))
-                return dict(form=form)
-            else:
-                flash_error_message(self.request, form.errors.values())
-
+    @view_config(route_name='account_reminder', renderer='account_reminder.mako', request_method='GET')
+    def account_reminder_get(self):
         return dict(form=AccountReminderForm())
+
+    @view_config(route_name='account_reminder', renderer='account_reminder.mako', request_method='POST')
+    def account_reminder_post(self):
+        form = AccountReminderForm(self.request.POST)
+        if form.validate():
+            operator = lookup_user_by_username(request=self.request, user_name=form.user_name.data)
+            if operator and operator.is_valid_email(form.email.data):
+                aes = AESEncryptor()
+                token = aes.get_token(operator.id)
+                html = self._get_html(token)
+                settings = self.request.registry.settings
+                recipient = form.email.data
+                subject = u'FamiPort OPTOOLのアカウント復活について'
+
+                if sendmail(settings, recipient, subject, html):
+                    self.request.session.flash(u'アカウント復活についてのご連絡はご登録いただいたEmailアドレスに送りました。ご確認ください。')
+                    return HTTPFound(self.request.route_path('login'))
+            else:
+                if not operator:
+                    self.request.session.flash(u'パスワードを変更するユーザのアカウントは見つからないため、管理者にお問い合わせください。')
+                else:
+                    self.request.session.flash(u'ご入力されたメールアドレスは登録されておりません。入力内容をご確認ください')
+
+        errors_set = form.errors.values()
+        for errors in errors_set:
+            flash_error_message(self.request, errors)
+        return dict(form=form)
 
 
 class FamiPortOpToolExampleView(object):

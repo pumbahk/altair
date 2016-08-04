@@ -27,7 +27,7 @@ def fill_email_column():
 
 def upgrade():
     created_time = sa.func.current_timestamp()
-    print
+
     op.add_column('FamiPortOperator', sa.Column('created_at', sa.DateTime, nullable=False, server_default=created_time))
     op.add_column('FamiPortOperator', sa.Column('updated_at', sa.DateTime, nullable=False, server_default=created_time))
     op.add_column('FamiPortOperator', sa.Column('expired_at', sa.DateTime))

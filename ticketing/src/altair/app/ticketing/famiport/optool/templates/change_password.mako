@@ -24,7 +24,7 @@
 <script src="${request.static_url('altair.app.ticketing.famiport.optool:static/js/jquery.validate.min.js')}"></script>
 <script src="${request.static_url('altair.app.ticketing.famiport.optool:static/js/messages_ja.min.js')}"></script>
 <script>
-# クライアント側のバリデーション
+// クライアント側のバリデーション
 $("form#change-password-form").validate({
     rules: {
         password: {

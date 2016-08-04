@@ -63,6 +63,17 @@ class ValidateUtils(object):
 
         return errors
 
+def encrypt_password(password, existed_password=None):
+    import hashlib, six
+    from os import urandom
+    salt = existed_password[0:32] if existed_password \
+        else u''.join('%02x' % six.byte2int(c) for c in urandom(16))
+
+    h = hashlib.sha256()
+    h.update(salt + password)
+    password_digest = h.hexdigest()
+    return salt + password_digest
+
 class AESEncryptor(object):
 
     @classmethod
