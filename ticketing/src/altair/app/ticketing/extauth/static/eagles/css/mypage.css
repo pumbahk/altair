@@ -790,6 +790,10 @@ color:#860010;
 @media only screen and (min-width: 480px) {
 .login-box .login-guest-btn { margin-top: 100px; }
 .none-pc { display: none; }
+.rakuten-login-button { 
+  margin-top: 85px; 
+  margin-bottom: 10px;
+}
 }
 @media screen and (max-width: 480px){
 .content_m { width: 100%; }
@@ -835,4 +839,5 @@ text-align: center;
 #guestlogintitle { cursor: pointer; }
 #rakulogin { display: none; }
 #guestlogin { display: none; }
+.rakuten-login-button { margin-top: 20px; }
 }
