@@ -35,6 +35,11 @@
     if (!id) return;
     $(location).attr('href', '/events/performances/mailinfo/' + id);
   }
+  function sales_report(){
+    var id = get_id('performance_id');
+    if (!id) return;
+    $(location).attr('href', '/events/sales_reports/performance/' + id);
+  }
   function confirm_open_performance(id){
     var modal = '#modal-performance-open';
     var form = '#performance-open-form';
@@ -98,6 +103,11 @@
       label=u"メール付加情報",
       url="javascript:mail_info()",
       icon="icon-envelope",
+    ),
+    'report': dict(
+      label=u"売上レポート",
+      url='javascript:sales_report();',
+      icon=None,
     )
   }
   order = iter(order or ['new', 'show', 'edit', 'copy', 'manycopy', 'delete'])

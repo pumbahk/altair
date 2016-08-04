@@ -135,3 +135,5 @@
 % if request.organization.setting.sitecatalyst_use:
   <%include file="altair.app.ticketing.lots:templates/RT/common/sc_completion.html"/>
 % endif
+
+${(view_context.embedded_html_complete_page or u'')|n}
