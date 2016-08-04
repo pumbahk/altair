@@ -120,3 +120,5 @@ ${h.format_gender(request, gender)}
 <div>・お申込内容は、「<a href="/lots/review">申込確認ページ</a>」からもご確認いただけます。受付番号とご登録時のお電話番号をお手元にご用意の上、ご利用ください。</div>
 <hr />
 <a href="${request.context.host_base_url}" accesskey="0">トップに戻る</a>
+
+${(view_context.embedded_html_complete_page_mobile or u'')|n}

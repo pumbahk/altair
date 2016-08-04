@@ -85,10 +85,7 @@
     <tr>
       <td colspan="8">
         <div class="pull-right">
-          <a class="btn btn-normal" href="${request.route_path('sales_reports.performance', performance_id=performance.id)}" style="margin-left: 10px;">
-            売上レポート
-          </a>
-          <%include file="/performances/_action_button.html" args="event=performance.event, order=['edit', 'delete', 'copy', 'mail']" />
+          <%include file="/performances/_action_button.html" args="event=performance.event, order=['edit', 'copy', 'mail', 'report', 'delete'], split=True" />
         </div>
       </td>
     </tr>

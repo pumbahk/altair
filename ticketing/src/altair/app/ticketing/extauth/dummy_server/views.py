@@ -22,10 +22,10 @@ class EaglesExtauthCheckMembershipAPI(object):
         response = handler.build_response(
             self.request,
             flavor='json',
-            successful=False,
-            value=u'user not found'
+            successful=True,
+            value=None
             )
-        response.status = 404
+        response.status = 200
         return response
 
     @view_config(route_name='eagles_extauth.check_memberships', context=BadRequestError)

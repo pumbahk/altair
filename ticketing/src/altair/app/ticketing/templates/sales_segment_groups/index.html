@@ -14,7 +14,7 @@ ${ch.breadcrumbs(
 
 <form>
 <%include file="/sales_segment_groups/_list.html" args="form=form_sales_segment_group, sales_segment_groups=sales_segment_groups" />
-<%include file="/sales_segment_groups/_action_button.html" />
+<%include file="/sales_segment_groups/_action_button.html" args="split=True" />
 </form>
 <div id="sales_segment_groups-form">
   <%include file="/sales_segment_groups/_modal.html" args="modal_id='modal-sales_segment_group',event=event" />

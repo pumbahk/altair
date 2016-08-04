@@ -90,18 +90,22 @@ class MembershipCheckAPIRequestHandler(object):
             }
         if successful:
             retval[u'status'] = u'OK'
-            retval[u'members'] = [
-                {
-                    u'fc_member_id': membership.membership_id,
-                    u'fc_member_no': self.mask_member_no(membership.membership_id),
-                    u'course_id': membership.kind.id,
-                    u'course_name': membership.kind.name,
-                    u'year': membership.valid_since.year,
-                    u'admission_date': self.format_datetime(membership.created_at),
-                    u'rakuten_relation_date': self.format_datetime(membership.user.related_at),
-                    }
-                for membership in value
-                ]
+            if value is not None:
+                retval[u'members'] = [
+                    {
+                        u'fc_member_id': membership.membership_id,
+                        u'fc_member_no': self.mask_member_no(membership.membership_id),
+                        u'course_id': membership.kind.id,
+                        u'course_name': membership.kind.name,
+                        u'year': membership.valid_since.year,
+                        u'admission_date': self.format_datetime(membership.created_at),
+                        u'rakuten_relation_date': self.format_datetime(membership.user.related_at),
+                        }
+                    for membership in value
+                    ]
+            else:
+                retval[u'members'] = []
+
         else:
             retval[u'status'] = u'NG'
             retval[u'message'] = value
