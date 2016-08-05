@@ -21,6 +21,15 @@
   %if product:
   <font size="5">商品名 ${product.name} (${product.id})</font><br />
   %endif
+  %if ordered_products:
+    <div>
+      <ul style="list-style: none; padding: 0; margin: 0">
+        %for ordered_product in ordered_products:
+          <li><font size="5">${ordered_product.product.name}： ${ordered_product.quantity}席</font></li>
+        %endfor
+      </ul>
+    </div>
+  %endif
   %if gate:
   <font size="5">入場ゲート ${gate}</font> <br />
   %endif
