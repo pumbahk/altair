@@ -45,7 +45,7 @@ from altair.app.ticketing.orderreview.views import (
     jump_maintenance_page_om_for_trouble,
     jump_infomation_page_om_for_10873,
     )
-from . import utils, utils_ja, utils_en, utils_zh_cn, utils_zh_tw
+from . import utils, utils_i18n
 from pyramid.session import check_csrf_token
 from altair.app.ticketing.mails.api import get_mail_utility
 from altair.app.ticketing.core.models import (
@@ -239,14 +239,7 @@ class EntryLotView(object):
         """希望入力と配送先情報と追加情報入力用のフォームを返す
         """
         if self.request.organization.setting.i18n:
-            if custom_locale_negotiator(self.request)==u'ja':
-                return utils_ja.create_form(self.request, self.context, **kwds)
-            if custom_locale_negotiator(self.request)==u'en':
-                return utils_en.create_form(self.request, self.context, **kwds)
-            if custom_locale_negotiator(self.request)==u'zh_CN':
-                return utils_zh_cn.create_form(self.request, self.context, **kwds)
-            if custom_locale_negotiator(self.request)==u'zh_TW':
-                return utils_zh_tw.create_form(self.request, self.context, **kwds)
+            return utils_i18n.create_form(self.request, self.context, **kwds)
         else:
             return utils.create_form(self.request, self.context, **kwds)
 

@@ -4,10 +4,9 @@ from altair.formhelpers.fields import OurFormField
 
 from . import api
 from . import schemas
-from . import forms_en
-from altair.app.ticketing.cart import forms_en as cart_forms_en
 from altair.app.ticketing.cart import api as cart_api
 from altair.app.ticketing.users.models import SexEnum
+from importlib import import_module
 
 def create_form(request, context, formdata=None, **kwds):
     """希望入力と配送先情報と追加情報入力用のフォームを返す(English)
@@ -59,13 +58,20 @@ def create_form(request, context, formdata=None, **kwds):
         if data.get('birthday') is None:
             data['birthday'] = date(1980,1,1)
 
-    form = forms_en.ClientForm(
+    client_form, cart_form = get_base_form(request)
+    form = client_form.ClientForm(
         context=context,
         flavors=flavors,
         _fields=fields,
         _data=data,
         formdata=formdata,
         **kwds)
-    form.country.choices = [(h, h) for h in cart_forms_en.countries]
+    form.country.choices = [(h, h) for h in cart_form.countries]
 
     return form
+
+def get_base_form(request):
+    locale_name = request.locale_name.lower()
+    client_form = getattr(import_module('altair.app.ticketing.lots'), '{0}_{1}'.format('forms', locale_name))
+    cart_form = getattr(import_module('altair.app.ticketing.cart'), '{0}_{1}'.format('forms', locale_name))
+    return client_form, cart_form

@@ -34,7 +34,7 @@ from .models import (
 )
 from . import urls
 from altair.app.ticketing.cart.views import jump_maintenance_page_for_trouble
-from . import utils, utils_ja, utils_en, utils_zh_cn, utils_zh_tw
+from . import utils, utils_i18n
 from altair.app.ticketing.i18n import custom_locale_negotiator
 
 logger = logging.getLogger(__name__)
@@ -110,14 +110,7 @@ class EntryLotView(object):
         """希望入力と配送先情報と追加情報入力用のフォームを返す
         """
         if self.request.organization.setting.i18n:
-            if custom_locale_negotiator(self.request)==u'ja':
-                return utils_ja.create_form(self.request, self.context, **kwds)
-            if custom_locale_negotiator(self.request)==u'en':
-                return utils_en.create_form(self.request, self.context, **kwds)
-            if custom_locale_negotiator(self.request)==u'zh_CN':
-                return utils_zh_cn.create_form(self.request, self.context, **kwds)
-            if custom_locale_negotiator(self.request)==u'zh_TW':
-                return utils_zh_tw.create_form(self.request, self.context, **kwds)
+            return utils_i18n.create_form(self.request, self.context, **kwds)
         else:
             return utils.create_form(self.request, self.context, **kwds)
 
