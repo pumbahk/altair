@@ -631,7 +631,7 @@ def _create_lot_sales_segment(sales_segment_group, lot, sales_segment_group_id):
 def _copy_lot_sales_segment_between_sales_segment_group(sales_segment_group, new_sales_segment_group, lot):
     accessor = SalesSegmentAccessor()
     sales_segment = accessor.create_sales_segment_for_lot(new_sales_segment_group, lot)
-    sales_segment.sales_segment_group_id = sales_segment_group.id
+    sales_segment.sales_segment_group_id = new_sales_segment_group.id
     sales_segment.start_at = sales_segment_group.start_at
     sales_segment.end_at = sales_segment_group.end_at
     sales_segment.max_quantity = sales_segment_group.max_quantity
