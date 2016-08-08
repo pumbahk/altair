@@ -2,6 +2,7 @@
 #-*- coding: utf-8 -*-
 
 import sys
+import re
 from pyramid.paster import bootstrap, setup_logging
 import locale
 import logging
@@ -29,6 +30,22 @@ def message(msg, auxiliary=False):
     pad = '  ' if auxiliary else ''
     print >>sys.stderr, (pad + msg).encode(charset)
 
+def upload(uri, data, resolver, dry_run):
+    key = resolver.resolve(uri).get_key()
+    if key:
+        if dry_run:
+            sys.stdout.write("DRY-RUN: %s\n" % uri)
+            sys.stdout.write(json.dumps(data))
+        else:
+            key.set_contents_from_string(json.dumps(data))
+            sys.stdout.write("upload successfully: %s\n" % uri)
+            key.make_public()
+            sys.stdout.write("update acl successfully.\n")
+            key.set_metadata("Content-Type", "application/json")
+            sys.stdout.write("update content-type successfully.\n")
+    else:
+        raise
+
 def main():
     parser = ArgumentParser()
     parser.add_argument('--config', type=str, required=True)
@@ -43,10 +60,10 @@ def main():
     request = env['request']
     session = sqlahelper.get_session()
     resolver = get_resolver(env['registry'])
-    target = opts.target
+
+    mode = "all" if re.search(r"\.json$", opts.target) else "each"
 
     try:
-        organization = None
         try:
             organization = session.query(Organization) \
                 .filter(
@@ -64,6 +81,13 @@ def main():
 
         now = datetime.now()
 
+        seat_types_index = dict()
+        global_data = dict(
+            updated_at=now.strftime(format),
+            seat_types=[],
+            performances=[],
+        )
+
         performances = session.query(Performance) \
             .join(Event, Performance.event_id==Event.id) \
             .filter(Event.organization_id == organization.id) \
@@ -72,46 +96,48 @@ def main():
             if p.start_on < now:
                 continue
 
-            stocks = [ ]
             sys.stdout.write("performance start=%s\n" % p.start_on)
             sales_segments = [s for s in p.query_sales_segments(now=now) if s.kind == "normal" ]
             if len(sales_segments) == 1:
                 sales_segment = sales_segments[0]
-
                 seat_types = get_seat_type_dicts(request, sales_segment)
-                for seat_type in seat_types:
-                    stocks.append(dict(name=seat_type["name"], availability=seat_type["availability"]))
 
-                # データ作る
+                # 全部入りデータ
+                by_name = dict()
+                for seat_type in seat_types:
+                    if seat_type["name"] not in seat_types_index:
+                        seat_types_index[seat_type["name"]] = len(seat_types)
+                        global_data["seat_types"].append(seat_type["name"])
+                    by_name[seat_type["name"]] = seat_type
+                stocks = [by_name[name]["availability"] if (name in by_name) else None for name in seat_types_index]
+                global_data["performances"].append(dict(
+                    name=p.name,
+                    start_on=p.start_on.strftime(format),
+                    stocks=stocks,
+                ))
+
+                # 個別データ作る
                 data = dict(
                     updated_at=now.strftime(format),
                     performance=dict(name=p.name, start_on=p.start_on.strftime(format)),
-                    seat_types=stocks,
+                    seat_types=[dict(name=s["name"], availability=s["availability"]) for s in seat_types],
                 )
 
-                # 書き出す
-                dst_filename = "%d-%d.json" % (p.id, sales_segment.id)
-                sys.stdout.write("filename=%s\n" % dst_filename)
-                path = "%s/%s" % (target.strip("/"), dst_filename)
-
-                key = resolver.resolve(path).get_key()
-                if key:
-                    if opts.dry_run:
-                        sys.stdout.write("DRY-RUN: %s\n" % path)
-                    else:
-                        key.set_contents_from_string(json.dumps(data))
-                        sys.stdout.write("upload successfully: %s\n" % path)
-                        key.make_public()
-                        sys.stdout.write("update acl successfully.\n")
-                        key.set_metadata("Content-Type", "application/json")
-                        sys.stdout.write("update content-type successfully.\n")
-                else:
-                    raise
+                # 個別データ書き出す
+                if mode == "each":
+                    dst = "%s/%d-%d.json" % (opts.target.strip("/"), p.id, sales_segment.id)
+                    upload(dst, data, resolver, opts.dry_run)
             else:
                 sys.stdout.write("skipped (no sales segment with kind=normal).\n")
+
+        # 全部入りデータ書き出す
+        if mode == "all":
+            upload(opts.target, global_data, resolver, opts.dry_run)
+
     except:
         raise
-    return 0
 
     sys.stdout.write("done\n")
     sys.stdout.flush()
+
+    return 0
