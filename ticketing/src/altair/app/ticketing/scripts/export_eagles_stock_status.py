@@ -35,7 +35,7 @@ def upload(uri, data, resolver, dry_run):
     if key:
         if dry_run:
             sys.stdout.write("DRY-RUN: %s\n" % uri)
-            sys.stdout.write(json.dumps(data))
+            sys.stdout.write("%s\n" % json.dumps(data))
         else:
             key.set_contents_from_string(json.dumps(data))
             sys.stdout.write("upload successfully: %s\n" % uri)
@@ -45,6 +45,13 @@ def upload(uri, data, resolver, dry_run):
             sys.stdout.write("update content-type successfully.\n")
     else:
         raise
+
+def select_sales_segment(sales_segments):
+    sales_segments = [s for s in sales_segments if s.kind == "normal" ]
+    if 1 <= len(sales_segments):
+        # cart/views.pyによると、単純に[0]を選ぶという戦略で問題ないようだ
+        return sales_segments[0]
+    return None
 
 def main():
     parser = ArgumentParser()
@@ -88,6 +95,11 @@ def main():
             performances=[],
         )
 
+        # 初登場のseat type nameだったら、seat_types_indexに登録する
+        def register_seat_type(name):
+            if name not in global_data["seat_types"]:
+                global_data["seat_types"].append(name)
+
         performances = session.query(Performance) \
             .join(Event, Performance.event_id==Event.id) \
             .filter(Event.organization_id == organization.id) \
@@ -97,23 +109,27 @@ def main():
                 continue
 
             sys.stdout.write("performance start=%s\n" % p.start_on)
-            sales_segments = [s for s in p.query_sales_segments(now=now) if s.kind == "normal" ]
-            if len(sales_segments) == 1:
-                sales_segment = sales_segments[0]
+
+            sales_segment = select_sales_segment(p.query_sales_segments(now=now))
+            if sales_segment:
                 seat_types = get_seat_type_dicts(request, sales_segment)
 
                 # 全部入りデータ
-                by_name = dict()
                 for seat_type in seat_types:
-                    if seat_type["name"] not in seat_types_index:
-                        seat_types_index[seat_type["name"]] = len(seat_types)
-                        global_data["seat_types"].append(seat_type["name"])
-                    by_name[seat_type["name"]] = seat_type
-                stocks = [by_name[name]["availability"] if (name in by_name) else None for name in seat_types_index]
+                    register_seat_type(seat_type["name"])
+
+                seat_type_by_name = dict()
+                for seat_type in seat_types:
+                    seat_type_by_name[seat_type["name"]] = seat_type
+
+                def get_availability_by_name(name):
+                    return seat_type_by_name[name]["availability"] if name in seat_type_by_name else None
+
                 global_data["performances"].append(dict(
                     name=p.name,
                     start_on=p.start_on.strftime(format),
-                    stocks=stocks,
+                    sales_segment=sales_segment.name,
+                    stocks=[get_availability_by_name(name) for name in global_data["seat_types"]],
                 ))
 
                 # 個別データ作る
