@@ -903,9 +903,4 @@ def sendmail(settings, recipient, subject, html):
         html = html.text,
         encoding='utf-8'
     )
-    try:
-        mailer.send(sender, recipient.split(','))
-        return True
-    except Exception, e:
-        logging.error(u'メール送信失敗 %s' % e.message)
-        return False
+    mailer.send(sender, recipient.split(','))

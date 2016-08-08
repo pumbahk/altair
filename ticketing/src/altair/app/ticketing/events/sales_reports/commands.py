@@ -4,6 +4,7 @@ import logging
 import os
 import sys
 import argparse
+import traceback
 from datetime import datetime, timedelta
 from paste.util.multidict import MultiDict
 from pyramid.renderers import render_to_response
@@ -136,7 +137,14 @@ def main(argv=sys.argv):
             logging.error('event/performance not found (report_setting_id=%s)' % report_setting.id)
             continue
 
-        sendmail(settings, report_setting.format_emails(), u'[売上レポート|%s] %s' % (organization.name, subject), reports[form])
+        try:
+            sendmail(settings, report_setting.format_emails(), u'[売上レポート|%s] %s' % (organization.name, subject), reports[form])
+        except Exception as e:
+            logging.error(
+                u"売上レポートメール送信失敗 ReportSetitng.id={}, エラータイプ:{}, エラー内容:{}, スタックトレース:{}".format(report_setting.id, type(e),
+                                                                                              e.message,
+                                                                                              traceback.format_exc()))
+
         i += 1
 
     logger.info('end send_sales_report batch (sent=%s)' % i)
