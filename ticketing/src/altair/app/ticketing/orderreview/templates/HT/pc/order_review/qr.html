@@ -23,7 +23,7 @@
   %endif
   %if ordered_products:
     <div>
-      <ul style="list-style: none; padding: 0; margin: 0">
+      <ul class="product-list">
         %for ordered_product in ordered_products:
           <li><font size="5">${ordered_product.product.name}： ${ordered_product.quantity}席</font></li>
         %endfor
