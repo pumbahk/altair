@@ -169,7 +169,7 @@ class DatePerformanceSelector(_PerformanceSelector):
 
 
     def select_value(self, sales_segment):
-        return create_date_label(sales_segment.performance.start_on, sales_segment.performance.end_on)
+        return create_time_label(sales_segment.performance.start_on, sales_segment.performance.end_on, False)
 
     def __call__(self):
         selection = []
