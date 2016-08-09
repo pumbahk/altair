@@ -31,6 +31,8 @@ from altair.app.ticketing.cart.helpers import (
     sensible_widget,
     sensible_coerce,
     performance_datetime,
+    delivery_method_get_info,
+    payment_method_get_info,
 )
 from altair.app.ticketing.helpers.base import is_required
 from pyramid.threadlocal import get_current_request

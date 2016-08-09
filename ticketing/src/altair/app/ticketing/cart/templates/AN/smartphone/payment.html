@@ -56,8 +56,7 @@ $(document).ready(function(){
         <div class="settlementPayBoxInner">
           <% checked = 'checked' if str(m.id) == checked_id else '' %>
           <input type="radio" name="payment_delivery_method_pair_id" id="radio2" value="${m.id}" ${checked} />
-          <%include file="../common/_payment_method.html" args="custom_locale_negotiator=custom_locale_negotiator, m=m, target='name'" /> \
-           & <%include file="../common/_delivery_method.html" args="custom_locale_negotiator=custom_locale_negotiator, m=m, target='name'" />
+          ${h.payment_method_get_info(custom_locale_negotiator, m, 'name')} & ${h.delivery_method_get_info(custom_locale_negotiator, m, 'name')}
         </div>
       </div>
       <div class="dispBox">
@@ -67,10 +66,10 @@ $(document).ready(function(){
           <div class="dispBox paymentFee_${h.format_number(m.transaction_fee)}">
             <span class="paymentFee">${h.format_currency(m.transaction_fee)}</span>
             <span class="paymentFeeType">
-            <%include file="../common/_payment_method.html" args="custom_locale_negotiator=custom_locale_negotiator, m=m, target='name'" />
+            ${h.payment_method_get_info(custom_locale_negotiator, m, 'name') | n}
             </span>
             <div class="description">
-            <%include file="../common/_payment_method.html" args="custom_locale_negotiator=custom_locale_negotiator, m=m, target='description'" />
+            ${h.payment_method_get_info(custom_locale_negotiator, m, 'description') | n}
             </div>
           </div>
           <%t:header>${_(u'システム利用料')}</%t:header>
@@ -93,10 +92,10 @@ $(document).ready(function(){
           <div class="dispBox devlieryFee_${h.format_number(m.delivery_fee)}">
             <span class="deliveryFee">${h.format_currency(m.delivery_fee)}</span>
             <span class="deliveryFeeType">
-            <%include file="../common/_delivery_method.html" args="custom_locale_negotiator=custom_locale_negotiator, m=m, target='name'" />
+            ${h.delivery_method_get_info(custom_locale_negotiator, m, 'name') | n}
             </span>
             <div class="description">
-            <%include file="../common/_delivery_method.html" args="custom_locale_negotiator=custom_locale_negotiator, m=m, target='description'" />
+            ${h.delivery_method_get_info(custom_locale_negotiator, m, 'description') | n}
             </div>
           </div>
         </div>

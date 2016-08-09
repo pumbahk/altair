@@ -56,9 +56,9 @@
 <p>
   <input id="radio${m.id}" type="radio" name="payment_delivery_method_pair_id" value="${m.id}" ${checked} />
   <label for="radio${m.id}">
-    <%include file="../common/_payment_method.html" args="custom_locale_negotiator=custom_locale_negotiator, m=m, target='name'" />
+    ${h.payment_method_get_info(custom_locale_negotiator, m, 'name')}
     / 
-    <%include file="../common/_delivery_method.html" args="custom_locale_negotiator=custom_locale_negotiator, m=m, target='name'" />
+    ${h.delivery_method_get_info(custom_locale_negotiator, m, 'name')}
   </label>
 </p>
 % endfor
@@ -69,20 +69,20 @@
 % for m in payment_delivery_pairs:
 <dl class="methodExplanation">
 <dt class="creditHl">
-  <%include file="../common/_payment_method.html" args="custom_locale_negotiator=custom_locale_negotiator, m=m, target='name'" />
+  ${h.payment_method_get_info(custom_locale_negotiator, m, 'name')}
 </dt>
 <dd>
 <p>${_(u'手数料')} <strong>${h.format_currency(m.transaction_fee)}</strong> (${h.fee_type(m.payment_method.fee_type)})<br>
-  <%include file="../common/_payment_method.html" args="custom_locale_negotiator=custom_locale_negotiator, m=m, target='description'" />
+  ${h.payment_method_get_info(custom_locale_negotiator, m, 'description') | n}
 </dd>
 
 <dt class="creditHl">
-  <%include file="../common/_delivery_method.html" args="custom_locale_negotiator=custom_locale_negotiator, m=m, target='name'" />
+  ${h.delivery_method_get_info(custom_locale_negotiator, m, 'name')}
 </dt>
 <dd>
 <p>
   <strong>${h.format_currency(m.delivery_fee)}</strong> (${h.fee_type(m.delivery_method.fee_type)})<br>
-  <%include file="../common/_delivery_method.html" args="custom_locale_negotiator=custom_locale_negotiator, m=m, target='description'" />
+  ${h.delivery_method_get_info(custom_locale_negotiator, m, 'description') | n}
 </dd>
 
 %if m.system_fee > 0:

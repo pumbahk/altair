@@ -595,3 +595,19 @@ def _message(msg):
         return _(msg)
     else:
         return msg
+
+def delivery_method_get_info(locale_name, dm, target):
+    if locale_name == 'jp' and hasattr(dm.delivery_method, target):
+        return getattr(dm.delivery_method, target)
+    elif locale_name in dm.delivery_method.preferences and target in dm.delivery_method.preferences[locale_name]:
+            return dm.delivery_method.preferences[locale_name][target]
+    elif hasattr(dm.delivery_method, target):
+        return getattr(dm.delivery_method, target)
+
+def payment_method_get_info(locale_name, pm, target):
+    if locale_name == 'jp' and hasattr(pm.payment_method, target):
+        return getattr(pm.payment_method, target)
+    elif locale_name in pm.payment_method.preferences and target in pm.payment_method.preferences[locale_name]:
+        return pm.payment_method.preferences[locale_name][target]
+    elif hasattr(pm.payment_method, target):
+        return getattr(pm.payment_method, target)

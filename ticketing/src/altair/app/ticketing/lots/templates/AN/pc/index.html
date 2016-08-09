@@ -181,18 +181,18 @@ if label is None or label is True:
                 <td>
                   <dl class="left">
                     <dt>
-                      <%include file="../common/_payment_method.html" args="custom_locale_negotiator=custom_locale_negotiator, m=m, target='name'" />
+                      ${h.payment_method_get_info(custom_locale_negotiator, m, 'name')}
                       ${h.format_currency(m.transaction_fee)} (${h.fee_type(m.payment_method.fee_type)})</dt>
                     <dd>
-                      <%include file="../common/_payment_method.html" args="custom_locale_negotiator=custom_locale_negotiator, m=m, target='description'" />
+                      ${h.payment_method_get_info(custom_locale_negotiator, m, 'description') | n}
                     <br /></dd>
                   </dl>
                   <dl class="left">
                     <dt>
-                      <%include file="../common/_delivery_method.html" args="custom_locale_negotiator=custom_locale_negotiator, m=m, target='name'" />
+                      ${h.delivery_method_get_info(custom_locale_negotiator, m, 'name')}
                       ${h.format_currency(m.delivery_fee)} (${h.fee_type(m.delivery_method.fee_type)})</dt>
                     <dd>
-                      <%include file="../common/_delivery_method.html" args="custom_locale_negotiator=custom_locale_negotiator, m=m, target='description'" />
+                      ${h.delivery_method_get_info(custom_locale_negotiator, m, 'description') | n}
                     </dd>
                   </dl>
                 </td>

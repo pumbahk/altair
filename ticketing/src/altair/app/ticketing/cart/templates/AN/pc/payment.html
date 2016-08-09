@@ -43,14 +43,14 @@ $(function(){
               <td class='fold' onclick="$(this).parents('table').find('input').click();">
                 <dl>
                   <dt>
-                  <%include file="../common/_payment_method.html" args="custom_locale_negotiator=custom_locale_negotiator, m=m, target='name'" />
+                  ${h.payment_method_get_info(custom_locale_negotiator, m, 'name')}
                   </dt>
                 </dl>
               </td>
               <td class='fold' onclick="$(this).parents('table').find('input').click();">
                 <dl>
                   <dt>
-                  <%include file="../common/_delivery_method.html" args="custom_locale_negotiator=custom_locale_negotiator, m=m, target='name'" />
+                  ${h.delivery_method_get_info(custom_locale_negotiator, m, 'name')}
                   </dt>
                 </dl>
               </td>
@@ -63,7 +63,7 @@ $(function(){
                   <span class="paymentFee">${h.format_currency(m.transaction_fee)}</span>
                   <span class="paymentFeeType">(${_(h.fee_type(m.payment_method.fee_type))})</span>
                   <div class="description">
-                  <%include file="../common/_payment_method.html" args="custom_locale_negotiator=custom_locale_negotiator, m=m, target='description'" />
+                  ${h.payment_method_get_info(custom_locale_negotiator, m, 'description') | n}
                   </div>
                   </dd>
                 </dl>
@@ -75,7 +75,7 @@ $(function(){
                   <span class="deliveryFee">${h.format_currency(m.delivery_fee)}</span>
                   <span class="deliveryFeeType">(${_(h.fee_type(m.delivery_method.fee_type))})</span>
                   <div class="description">
-                  <%include file="../common/_delivery_method.html" args="custom_locale_negotiator=custom_locale_negotiator, m=m, target='description'" />
+                  ${h.delivery_method_get_info(custom_locale_negotiator, m, 'description') | n}
                   </div>
                   </dd>
                 </dl>
