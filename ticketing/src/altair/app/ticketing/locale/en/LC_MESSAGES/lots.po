@@ -596,9 +596,6 @@ msgstr "Canada"
 msgid "country_40"
 msgstr "Dominica"
 
-msgid "country_41"
-msgstr "Dominicana"
-
 msgid "country_42"
 msgstr "Germany"
 
@@ -798,7 +795,7 @@ msgid "country_107"
 msgstr "Philippines"
 
 msgid "country_108"
-msgstr "Polska"
+msgstr "Poland"
 
 msgid "country_109"
 msgstr "Portugal"

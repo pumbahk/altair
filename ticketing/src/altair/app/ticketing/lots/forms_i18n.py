@@ -89,7 +89,7 @@ class ClientFormFactory(object):
 
             last_name = OurTextField(
                 label=_(u"姓"),
-                note=_(u"(全角)") + _(u"スポートと一致しているものを入力してください"),
+                note=_(u"(全角)") + _(u"パスポートと一致しているものを入力してください"),
                 filters=[strip_spaces],
                 validators=h.last_name_validators(request)
                 )
@@ -105,7 +105,7 @@ class ClientFormFactory(object):
                 ) if locale_name == 'ja' else None
             first_name = OurTextField(
                 label=_(u"名"),
-                note=_(u"(全角)") + _(u"スポートと一致しているものを入力してください"),
+                note=_(u"(全角)") + _(u"パスポートと一致しているものを入力してください"),
                 filters=[strip_spaces],
                 validators=h.first_name_validators(request)
                 )

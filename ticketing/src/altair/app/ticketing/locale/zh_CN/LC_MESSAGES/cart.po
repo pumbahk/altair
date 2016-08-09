@@ -802,9 +802,6 @@ msgstr "加拿大"
 msgid "country_40"
 msgstr "多米尼加"
 
-msgid "country_41"
-msgstr "多明尼加"
-
 msgid "country_42"
 msgstr "德国"
 

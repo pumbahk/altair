@@ -15,7 +15,7 @@ from altair.app.ticketing.i18n import custom_locale_negotiator
 countries = [
     u"country_1",u"country_2",u"country_3",u"country_4",u"country_5",u"country_6",u"country_7",u"country_8",u"country_9",u"country_10",u"country_11",u"country_12",u"country_13",u"country_14",u"country_15",u"country_16",u"country_17",u"country_18",u"country_19",u"country_20",
     u"country_21",u"country_22",u"country_23",u"country_24",u"country_25",u"country_26",u"country_27",u"country_28",u"country_29",u"country_30",u"country_31",u"country_32",u"country_33",u"country_34",u"country_35",u"country_36",u"country_37",u"country_38",u"country_39",u"country_40",
-    u"country_41",u"country_42",u"country_43",u"country_44",u"country_45",u"country_46",u"country_47",u"country_48",u"country_49",u"country_50",u"country_51",u"country_52",u"country_53",u"country_54",u"country_55",u"country_56",u"country_57",u"country_58",u"country_59",u"country_60",
+    u"country_42",u"country_43",u"country_44",u"country_45",u"country_46",u"country_47",u"country_48",u"country_49",u"country_50",u"country_51",u"country_52",u"country_53",u"country_54",u"country_55",u"country_56",u"country_57",u"country_58",u"country_59",u"country_60",
     u"country_61",u"country_62",u"country_63",u"country_64",u"country_65",u"country_66",u"country_67",u"country_68",u"country_69",u"country_70",u"country_71",u"country_72",u"country_73",u"country_74",u"country_75",u"country_76",u"country_77",u"country_78",u"country_79",u"country_80",
     u"country_81",u"country_82",u"country_83",u"country_84",u"country_85",u"country_86",u"country_87",u"country_88",u"country_89",u"country_90",u"country_91",u"country_92",u"country_93",u"country_94",u"country_95",u"country_96",u"country_97",u"country_98",u"country_99",u"country_100",
     u"country_101",u"country_102",u"country_103",u"country_104",u"country_105",u"country_106",u"country_107",u"country_108",u"country_109",u"country_110",u"country_111",u"country_112",u"country_113",u"country_114",u"country_115",u"country_116",u"country_117",u"country_118",u"country_119",u"country_120",
@@ -32,7 +32,7 @@ def name_validators(request):
     locale_name = custom_locale_negotiator(request)
     length_limit_for_sej_alphabet = Length(max=20, message=_(u'{0}文字以内で入力してください').format(20))
     base = [Required(_(u'入力してください'))]
-    if locale_name == 'jp':
+    if locale_name == 'ja':
         return base + [Zenkaku, length_limit_for_sej]
     if locale_name == 'en':
         return base + [length_limit_for_sej_alphabet]

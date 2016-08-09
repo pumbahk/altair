@@ -498,7 +498,7 @@ msgid "country_8"
 msgstr "オーストリア"
 
 msgid "country_9"
-msgstr "アングィラ"
+msgstr "アンギラ"
 
 msgid "country_10"
 msgstr "アンティグアバーブーダ"
@@ -592,9 +592,6 @@ msgstr "カナダ"
 
 msgid "country_40"
 msgstr "ドミニカ"
-
-msgid "country_41"
-msgstr "ドミニカーナ"
 
 msgid "country_42"
 msgstr "ドイツ"
@@ -732,7 +729,7 @@ msgid "country_86"
 msgstr "マレーシア"
 
 msgid "country_87"
-msgstr "ミクロネシア連邦州"
+msgstr "ミクロネシア連邦"
 
 msgid "country_88"
 msgstr "モンゴル"
@@ -795,7 +792,7 @@ msgid "country_107"
 msgstr "フィリピン"
 
 msgid "country_108"
-msgstr "ポルスカ"
+msgstr "ポーランド"
 
 msgid "country_109"
 msgstr "ポルトガル"
@@ -825,7 +822,7 @@ msgid "country_117"
 msgstr "セネガル"
 
 msgid "country_118"
-msgstr "セイシェル"
+msgstr "セーシェル"
 
 msgid "country_119"
 msgstr "シエラレオネ"
@@ -861,7 +858,7 @@ msgid "country_129"
 msgstr "スウェーデン"
 
 msgid "country_130"
-msgstr "セントキッツ＆ネイビス"
+msgstr "セントクリストファー・ネイビス連邦"
 
 msgid "country_131"
 msgstr "セントルシア"
@@ -894,10 +891,10 @@ msgid "country_140"
 msgstr "トルコ"
 
 msgid "country_141"
-msgstr "トリニダード＆トバゴ"
+msgstr "トリニダード・トバゴ"
 
 msgid "country_142"
-msgstr "タークス＆カイコス"
+msgstr "タークス・カイコス諸島"
 
 msgid "country_143"
 msgstr "ウガンダ"
