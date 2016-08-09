@@ -38,8 +38,17 @@ msgstr "半形英数"
 msgid "電話番号"
 msgstr "電話號碼"
 
+msgid "FAX番号"
+msgstr "FAX"
+
+msgid "確認してください"
+msgstr "請確認輸入"
+
 msgid "電話番号はご登録時の電話番号をご入力ください。"
 msgstr "請輸入您登錄的電話號碼。"
+
+msgid "電話番号は自宅か携帯かどちらかを入力してください"
+msgstr "請輸入家庭電話或手機號碼"
 
 msgid "（携帯・自宅をどちらもご登録した場合どちらの番号でも構いません。）"
 msgstr "（（手機或家用電話號碼都可以進行登錄。）"
@@ -166,11 +175,38 @@ msgstr "購買人姓名（全形）"
 msgid "姓"
 msgstr "姓"
 
+msgid "(全角)"
+msgstr ""
+
+msgid "姓(カナ)"
+msgstr ""
+
+msgid "(全角カナ)"
+msgstr ""
+
+msgid "入力してください"
+msgstr "請輸入"
+
 msgid "名"
 msgstr "名"
 
+msgid "名(カナ)"
+msgstr ""
+
+msgid "アルファベットのみを入力してください"
+msgstr "請輸入英文字母"
+
+msgid "パスポートと一致しているものを入力してください"
+msgstr "請輸入與護照一致的拼音拼寫信息"
+
 msgid "メールアドレス"
 msgstr "電子郵件"
+
+msgid "メールアドレスと確認メールアドレスが一致していません。"
+msgstr "郵件與確認信息不一致。"
+
+msgid "(半角英数)"
+msgstr "英文字母或數字"
 
 msgid "メールアドレス (確認)"
 msgstr "電子郵件（確認）"
@@ -184,8 +220,17 @@ msgstr "住址"
 msgid "国・地域"
 msgstr "國家／地區"
 
+msgid "リストから選択してください。"
+msgstr "請從列表選擇輸入。"
+
 msgid "郵便番号"
 msgstr "郵遞區號"
+
+msgid "(半角英数7ケタ)"
+msgstr "7位數字，字母"
+
+msgid "-(ハイフン)を抜いた半角数字のみを入力してください"
+msgstr "請輸入數字，省略'-'"
 
 msgid "都道府県"
 msgstr "市縣"

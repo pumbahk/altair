@@ -193,8 +193,8 @@ msgstr "Order acceptance completion, it will guide you through the confirmation 
 msgid "購入者情報入力"
 msgstr "Purchaser Information"
 
-msgid "10文字以内で入力してください"
-msgstr "Please enter within 10 characters"
+msgid "{0}文字以内で入力してください"
+msgstr "Please enter within {0} characters"
 
 msgid "購入者氏名"
 msgstr "Purchaser name"
@@ -202,11 +202,38 @@ msgstr "Purchaser name"
 msgid "姓"
 msgstr "First name"
 
+msgid "(全角)"
+msgstr ""
+
+msgid "姓(カナ)"
+msgstr ""
+
+msgid "(全角カナ)"
+msgstr ""
+
+msgid "入力してください"
+msgstr "please input"
+
 msgid "名"
 msgstr "Last name"
 
+msgid "名(カナ)"
+msgstr ""
+
+msgid "アルファベットのみを入力してください"
+msgstr "please input alphabet only"
+
+msgid "パスポートと一致しているものを入力してください"
+msgstr ""
+
 msgid "メールアドレス"
 msgstr "Email"
+
+msgid "メールアドレスと確認メールアドレスが一致していません。"
+msgstr "email and confirm email are different."
+
+msgid "(半角英数)"
+msgstr ""
 
 msgid "確認用"
 msgstr "Confirmation"
@@ -217,8 +244,14 @@ msgstr "Address"
 msgid "国・地域"
 msgstr "Country/Area"
 
+msgid "リストから選択してください。"
+msgstr "please choose from the list."
+
 msgid "郵便番号"
 msgstr "Zip"
+
+msgid "-(ハイフン)を抜いた半角数字のみを入力してください"
+msgstr "Please input alphabet only without hyphen."
 
 msgid "都道府県"
 msgstr "Prefecture"
@@ -235,8 +268,23 @@ msgstr "Address 2"
 msgid "電話番号"
 msgstr "Phone number"
 
+msgid "電話番号 (携帯)"
+msgstr "Mobile Phone"
+
+msgid "電話番号は自宅か携帯かどちらかを入力してください"
+msgstr "Input your home phone number or you mobile phone number."
+
+msgid "FAX番号"
+msgstr "FAX"
+
+msgid "確認してください"
+msgstr "Please check your input."
+
 msgid "例: 1030001"
 msgstr "Example: 1030001"
+
+msgid "(半角英数7ケタ)"
+msgstr "Alphanumeric 7-digit"
 
 msgid "例: 東京都"
 msgstr "Example: Tokyo"
@@ -631,6 +679,8 @@ msgstr "Payment in Famiport"
 
 msgid "支払期限"
 msgstr "Due date for payment"
+
+# 国名
 
 msgid "country_1"
 msgstr "Japan"

@@ -38,8 +38,17 @@ msgstr "数字"
 msgid "電話番号"
 msgstr "电话号码"
 
+msgid "FAX番号"
+msgstr "FAX"
+
+msgid "確認してください"
+msgstr "请确认输入信息"
+
 msgid "電話番号はご登録時の電話番号をご入力ください。"
 msgstr "请输入注册时填写的电话号码。"
+
+msgid "電話番号は自宅か携帯かどちらかを入力してください"
+msgstr "请输入家庭电话或手机号码。"
 
 msgid "（携帯・自宅をどちらもご登録した場合どちらの番号でも構いません。）"
 msgstr "（家庭，手机电话都没关系。）"
@@ -166,11 +175,38 @@ msgstr "购买者姓名"
 msgid "姓"
 msgstr "姓"
 
+msgid "(全角)"
+msgstr ""
+
+msgid "姓(カナ)"
+msgstr ""
+
+msgid "(全角カナ)"
+msgstr ""
+
+msgid "入力してください"
+msgstr "请输入"
+
 msgid "名"
 msgstr "名"
 
+msgid "名(カナ)"
+msgstr ""
+
+msgid "アルファベットのみを入力してください"
+msgstr "请输入拼音拼写"
+
+msgid "パスポートと一致しているものを入力してください"
+msgstr "请输入与护照一致的拼音拼写信息"
+
 msgid "メールアドレス"
 msgstr "电子邮件"
+
+msgid "メールアドレスと確認メールアドレスが一致していません。"
+msgstr "邮件地址与确认信息不一致。"
+
+msgid "(半角英数)"
+msgstr ""
 
 msgid "メールアドレス (確認)"
 msgstr "电子邮件（确认）"
@@ -184,8 +220,17 @@ msgstr "住址"
 msgid "国・地域"
 msgstr "国家／地区"
 
+msgid "リストから選択してください。"
+msgstr "请从列表选择输入。"
+
 msgid "郵便番号"
 msgstr "邮政编码"
+
+msgid "(半角英数7ケタ)"
+msgstr "(7位数字或字母)"
+
+msgid "-(ハイフン)を抜いた半角数字のみを入力してください"
+msgstr "请输入半角数字，省略'-'"
 
 msgid "都道府県"
 msgstr "省"
@@ -425,6 +470,8 @@ msgstr "您的应用程序的内容，「<a href=\"/lots/review\">申请确认�
 
 msgid "決済中にエラーが発生しました。しばらく時間を置いてから<a href=\"{0}\">再度お試しください。</a>"
 msgstr "结算时发生错误。请在一段时间后再次<a href=\"{0}\">尝试</a>。"
+
+# 国名
 
 msgid "country_1"
 msgstr "日本"

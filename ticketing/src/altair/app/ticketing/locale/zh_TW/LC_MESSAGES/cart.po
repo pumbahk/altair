@@ -196,17 +196,44 @@ msgstr "請輸入購買人資訊"
 msgid "購入者氏名"
 msgstr "購買人姓名"
 
-msgid "10文字以内で入力してください"
-msgstr "輸入內容請在10個文字以內"
+msgid "{0}文字以内で入力してください"
+msgstr "輸入內容請在{0}個文字以內"
 
 msgid "姓"
 msgstr "姓"
 
+msgid "(全角)"
+msgstr ""
+
+msgid "姓(カナ)"
+msgstr ""
+
+msgid "(全角カナ)"
+msgstr ""
+
+msgid "入力してください"
+msgstr "請輸入"
+
 msgid "名"
 msgstr "名"
 
+msgid "名(カナ)"
+msgstr ""
+
+msgid "アルファベットのみを入力してください"
+msgstr "請輸入英文字母"
+
+msgid "パスポートと一致しているものを入力してください"
+msgstr "請輸入與護照一致的拼音拼寫信息"
+
 msgid "メールアドレス"
 msgstr "電字郵件信箱"
+
+msgid "メールアドレスと確認メールアドレスが一致していません。"
+msgstr "郵件與確認信息不一致。"
+
+msgid "(半角英数)"
+msgstr "英文字母或數字"
 
 msgid "確認用"
 msgstr "確認用"
@@ -217,8 +244,14 @@ msgstr "地址"
 msgid "国・地域"
 msgstr "國家／地區"
 
+msgid "リストから選択してください。"
+msgstr "請從列表選擇輸入。"
+
 msgid "郵便番号"
 msgstr "郵政編碼"
+
+msgid "-(ハイフン)を抜いた半角数字のみを入力してください"
+msgstr "請輸入數字，省略'-'"
 
 msgid "都道府県"
 msgstr "省"
@@ -235,8 +268,23 @@ msgstr "建築物名稱"
 msgid "電話番号"
 msgstr "電話號碼"
 
+msgid "電話番号 (携帯)"
+msgstr "手機號碼"
+
+msgid "電話番号は自宅か携帯かどちらかを入力してください"
+msgstr "請輸入家庭電話或手機號碼"
+
+msgid "FAX番号"
+msgstr "FAX"
+
+msgid "確認してください"
+msgstr "請確認輸入"
+
 msgid "例: 1030001"
 msgstr "例: 1030001"
+
+msgid "(半角英数7ケタ)"
+msgstr "7位數字，字母"
 
 msgid "例: 東京都"
 msgstr "例: 東京都"
@@ -631,6 +679,8 @@ msgstr "Famiport付款"
 
 msgid "支払期限"
 msgstr "付款期限"
+
+# 国名
 
 msgid "country_1"
 msgstr "日本"

@@ -38,8 +38,17 @@ msgstr "number"
 msgid "電話番号"
 msgstr "Telephone number"
 
+msgid "FAX番号"
+msgstr "FAX"
+
+msgid "確認してください"
+msgstr "Please check your input."
+
 msgid "電話番号はご登録時の電話番号をご入力ください。"
 msgstr "Telephone number, please enter the telephone number at the time of your registration."
+
+msgid "電話番号は自宅か携帯かどちらかを入力してください"
+msgstr "Input your home phone number or you mobile phone number."
 
 msgid "（携帯・自宅をどちらもご登録した場合どちらの番号でも構いません。）"
 msgstr "(It does not matter either the number If you both register your mobile phone and home.)"
@@ -169,11 +178,38 @@ msgstr "Purchaser Name"
 msgid "姓"
 msgstr "Last name"
 
+msgid "(全角)"
+msgstr ""
+
+msgid "姓(カナ)"
+msgstr ""
+
+msgid "(全角カナ)"
+msgstr ""
+
+msgid "入力してください"
+msgstr "please input"
+
 msgid "名"
 msgstr "First name"
 
+msgid "名(カナ)"
+msgstr ""
+
+msgid "アルファベットのみを入力してください"
+msgstr "please input alphabet only"
+
+msgid "パスポートと一致しているものを入力してください"
+msgstr ""
+
 msgid "メールアドレス"
 msgstr "Email"
+
+msgid "メールアドレスと確認メールアドレスが一致していません。"
+msgstr "email and confirm email are different."
+
+msgid "(半角英数)"
+msgstr ""
 
 msgid "メールアドレス (確認)"
 msgstr "Email(Confirmation)"
@@ -187,8 +223,17 @@ msgstr "Address"
 msgid "国・地域"
 msgstr "Country/Area"
 
+msgid "リストから選択してください。"
+msgstr "please choose from the list."
+
 msgid "郵便番号"
 msgstr "Zipcode"
+
+msgid "(半角英数7ケタ)"
+msgstr "Alphanumeric 7-digit"
+
+msgid "-(ハイフン)を抜いた半角数字のみを入力してください"
+msgstr "Please input alphabet only without hyphen."
 
 msgid "都道府県"
 msgstr "Prefecture"
@@ -428,6 +473,8 @@ msgstr "Your application content, 「<a href=\"/lots/review\">Application confir
 
 msgid "決済中にエラーが発生しました。しばらく時間を置いてから<a href=\"{0}\">再度お試しください。</a>"
 msgstr "An error occurred during the settlement. Please try <a href=\"{0}\"> again at some time. </a>"
+
+# 国名
 
 msgid "country_1"
 msgstr "Japan"

@@ -196,17 +196,44 @@ msgstr "購入者情報入力"
 msgid "購入者氏名"
 msgstr "購入者氏名"
 
-msgid "10文字以内で入力してください"
-msgstr "10文字以内で入力してください"
+msgid "{0}文字以内で入力してください"
+msgstr "{0}文字以内で入力してください"
 
 msgid "姓"
 msgstr "姓"
 
+msgid "(全角)"
+msgstr "(全角)"
+
+msgid "姓(カナ)"
+msgstr "姓(カナ)"
+
+msgid "(全角カナ)"
+msgstr "(全角カナ)"
+
+msgid "入力してください"
+msgstr "入力してください"
+
 msgid "名"
 msgstr "名"
 
+msgid "名(カナ)"
+msgstr "名(カナ)"
+
+msgid "アルファベットのみを入力してください"
+msgstr "アルファベットのみを入力してください"
+
+msgid "パスポートと一致しているものを入力してください"
+msgstr ""
+
 msgid "メールアドレス"
 msgstr "メールアドレス"
+
+msgid "メールアドレスと確認メールアドレスが一致していません。"
+msgstr "メールアドレスと確認メールアドレスが一致していません。"
+
+msgid "(半角英数)"
+msgstr "(半角英数)"
 
 msgid "確認用"
 msgstr "確認用"
@@ -217,8 +244,14 @@ msgstr "住所"
 msgid "国・地域"
 msgstr "国・地域"
 
+msgid "リストから選択してください。"
+msgstr "リストから選択してください。"
+
 msgid "郵便番号"
 msgstr "郵便番号"
+
+msgid "-(ハイフン)を抜いた半角数字のみを入力してください"
+msgstr "-(ハイフン)を抜いた半角数字のみを入力してください"
 
 msgid "都道府県"
 msgstr "都道府県"
@@ -235,8 +268,23 @@ msgstr "建物名等"
 msgid "電話番号"
 msgstr "電話番号"
 
+msgid "電話番号 (携帯)"
+msgstr "電話番号 (携帯)"
+
+msgid "電話番号は自宅か携帯かどちらかを入力してください"
+msgstr "電話番号は自宅か携帯かどちらかを入力してください"
+
+msgid "FAX番号"
+msgstr "FAX番号"
+
+msgid "確認してください"
+msgstr "確認してください"
+
 msgid "例: 1030001"
 msgstr "例: 1030001"
+
+msgid "(半角英数7ケタ)"
+msgstr "(半角英数7ケタ)"
 
 msgid "例: 東京都"
 msgstr "例: 東京都"
@@ -631,6 +679,8 @@ msgstr "Famiポートでお支払い"
 
 msgid "支払期限"
 msgstr "支払期限"
+
+# 国名
 
 msgid "country_1"
 msgstr "日本"
