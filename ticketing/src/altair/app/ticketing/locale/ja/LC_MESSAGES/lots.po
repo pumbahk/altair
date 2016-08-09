@@ -1,19 +1,5 @@
-# English translations for PACKAGE package
-# This file is distributed under the same license as the PACKAGE package.
-# Cho <ts-jingqiang.a.zhang@rakuten.com>, 2016.
-#
 msgid ""
 msgstr ""
-"Project-Id-Version: PACKAGE 1.0\n"
-"POT-Creation-Date: 2016-05-12 10:03+0900\n"
-"PO-Revision-Date: 2016-05-12 10:03+0900\n"
-"Last-Translator: Cho <ts-jingqiang.a.zhang@rakuten.com>\n"
-"Language-Team: ja\n"
-"Language: ja\n"
-"MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Lingua 3.11\n"
 
 # common
 
@@ -439,3 +425,462 @@ msgstr "お申込内容は、「<a href=\"/lots/review\">申込確認ページ</
 
 msgid "決済中にエラーが発生しました。しばらく時間を置いてから<a href=\"{0}\">再度お試しください。</a>"
 msgstr "決済中にエラーが発生しました。しばらく時間を置いてから<a href=\"{0}\">再度お試しください。</a>"
+
+msgid "country_1"
+msgstr "日本"
+
+msgid "country_2"
+msgstr "アルジェリア"
+
+msgid "country_3"
+msgstr "アンゴラ"
+
+msgid "country_4"
+msgstr "アルメニア"
+
+msgid "country_5"
+msgstr "アゼルバイジャン"
+
+msgid "country_6"
+msgstr "オーストラリア"
+
+msgid "country_7"
+msgstr "アルバニア"
+
+msgid "country_8"
+msgstr "オーストリア"
+
+msgid "country_9"
+msgstr "アングィラ"
+
+msgid "country_10"
+msgstr "アンティグアバーブーダ"
+
+msgid "country_11"
+msgstr "アルゼンチン"
+
+msgid "country_12"
+msgstr "バーレーン"
+
+msgid "country_13"
+msgstr "ベニン"
+
+msgid "country_14"
+msgstr "ボツワナ"
+
+msgid "country_15"
+msgstr "ブルキナファソ"
+
+msgid "country_16"
+msgstr "ブータン"
+
+msgid "country_17"
+msgstr "ブルネイ・ダルサラーム"
+
+msgid "country_18"
+msgstr "ベラルーシ"
+
+msgid "country_19"
+msgstr "ベルギー"
+
+msgid "country_20"
+msgstr "ブルガリア"
+
+msgid "country_21"
+msgstr "バハマ"
+
+msgid "country_22"
+msgstr "バルバドス"
+
+msgid "country_23"
+msgstr "ベリーズ"
+
+msgid "country_24"
+msgstr "バミューダ"
+
+msgid "country_25"
+msgstr "ボリビア"
+
+msgid "country_26"
+msgstr "ブラジル"
+
+msgid "country_27"
+msgstr "カーボベルデ"
+
+msgid "country_28"
+msgstr "チャド"
+
+msgid "country_29"
+msgstr "コンゴ共和国"
+
+msgid "country_30"
+msgstr "カンボジア"
+
+msgid "country_31"
+msgstr "中国"
+
+msgid "country_32"
+msgstr "クロアチア"
+
+msgid "country_33"
+msgstr "チェコ共和国"
+
+msgid "country_34"
+msgstr "キプロス"
+
+msgid "country_35"
+msgstr "ケイマン諸島"
+
+msgid "country_36"
+msgstr "チリ"
+
+msgid "country_37"
+msgstr "コロンビア"
+
+msgid "country_38"
+msgstr "コスタリカ"
+
+msgid "country_39"
+msgstr "カナダ"
+
+msgid "country_40"
+msgstr "ドミニカ"
+
+msgid "country_41"
+msgstr "ドミニカーナ"
+
+msgid "country_42"
+msgstr "ドイツ"
+
+msgid "country_43"
+msgstr "エジプト"
+
+msgid "country_44"
+msgstr "エストニア"
+
+msgid "country_45"
+msgstr "エクアドル"
+
+msgid "country_46"
+msgstr "エルサルバドル"
+
+msgid "country_47"
+msgstr "フィジー"
+
+msgid "country_48"
+msgstr "フランス"
+
+msgid "country_49"
+msgstr "フィンランド"
+
+msgid "country_50"
+msgstr "ガンビア"
+
+msgid "country_51"
+msgstr "ガーナ"
+
+msgid "country_52"
+msgstr "ギニアビサウ"
+
+msgid "country_53"
+msgstr "ギリシャ"
+
+msgid "country_54"
+msgstr "グレナダ"
+
+msgid "country_55"
+msgstr "グアテマラ"
+
+msgid "country_56"
+msgstr "ガイアナ"
+
+msgid "country_57"
+msgstr "香港"
+
+msgid "country_58"
+msgstr "ハンガリー"
+
+msgid "country_59"
+msgstr "ホンジュラス"
+
+msgid "country_60"
+msgstr "インド"
+
+msgid "country_61"
+msgstr "イスラエル"
+
+msgid "country_62"
+msgstr "インドネシア"
+
+msgid "country_63"
+msgstr "アイスランド"
+
+msgid "country_64"
+msgstr "アイルランド"
+
+msgid "country_65"
+msgstr "イタリア"
+
+msgid "country_66"
+msgstr "ヨルダン"
+
+msgid "country_67"
+msgstr "ジャマイカ"
+
+msgid "country_68"
+msgstr "ケニア"
+
+msgid "country_69"
+msgstr "クウェート"
+
+msgid "country_70"
+msgstr "カザフスタン"
+
+msgid "country_71"
+msgstr "韓国"
+
+msgid "country_72"
+msgstr "キルギスタン"
+
+msgid "country_73"
+msgstr "リベリア"
+
+msgid "country_74"
+msgstr "ラオス"
+
+msgid "country_75"
+msgstr "レバノン"
+
+msgid "country_76"
+msgstr "ラトビア"
+
+msgid "country_77"
+msgstr "リトアニア"
+
+msgid "country_78"
+msgstr "ルクセンブルグ"
+
+msgid "country_79"
+msgstr "マダガスカル"
+
+msgid "country_80"
+msgstr "マラウイ"
+
+msgid "country_81"
+msgstr "マリ"
+
+msgid "country_82"
+msgstr "モーリタニア"
+
+msgid "country_83"
+msgstr "モーリシャス"
+
+msgid "country_84"
+msgstr "モザンビーク"
+
+msgid "country_85"
+msgstr "マカオ"
+
+msgid "country_86"
+msgstr "マレーシア"
+
+msgid "country_87"
+msgstr "ミクロネシア連邦州"
+
+msgid "country_88"
+msgstr "モンゴル"
+
+msgid "country_89"
+msgstr "マケドニア"
+
+msgid "country_90"
+msgstr "マルタ"
+
+msgid "country_91"
+msgstr "モルドバ"
+
+msgid "country_92"
+msgstr "メキシコ"
+
+msgid "country_93"
+msgstr "モントセラト"
+
+msgid "country_94"
+msgstr "ナミビア"
+
+msgid "country_95"
+msgstr "ニジェール"
+
+msgid "country_96"
+msgstr "ナイジェリア"
+
+msgid "country_97"
+msgstr "ネパール"
+
+msgid "country_98"
+msgstr "ニュージーランド"
+
+msgid "country_99"
+msgstr "オランダ"
+
+msgid "country_100"
+msgstr "ノルウェー"
+
+msgid "country_101"
+msgstr "ニカラグア"
+
+msgid "country_102"
+msgstr "オマーン"
+
+msgid "country_103"
+msgstr "カタール"
+
+msgid "country_104"
+msgstr "パキスタン"
+
+msgid "country_105"
+msgstr "パラオ"
+
+msgid "country_106"
+msgstr "パプアニューギニア"
+
+msgid "country_107"
+msgstr "フィリピン"
+
+msgid "country_108"
+msgstr "ポルスカ"
+
+msgid "country_109"
+msgstr "ポルトガル"
+
+msgid "country_110"
+msgstr "パナマ"
+
+msgid "country_111"
+msgstr "パラグアイ"
+
+msgid "country_112"
+msgstr "ペルー"
+
+msgid "country_113"
+msgstr "ルーマニア"
+
+msgid "country_114"
+msgstr "ロシア"
+
+msgid "country_115"
+msgstr "サントメプリンシペ"
+
+msgid "country_116"
+msgstr "サウジアラビア"
+
+msgid "country_117"
+msgstr "セネガル"
+
+msgid "country_118"
+msgstr "セイシェル"
+
+msgid "country_119"
+msgstr "シエラレオネ"
+
+msgid "country_120"
+msgstr "南アフリカ"
+
+msgid "country_121"
+msgstr "スワジランド"
+
+msgid "country_122"
+msgstr "シンガポール"
+
+msgid "country_123"
+msgstr "ソロモン諸島"
+
+msgid "country_124"
+msgstr "スリランカ"
+
+msgid "country_125"
+msgstr "スペイン"
+
+msgid "country_126"
+msgstr "スイス"
+
+msgid "country_127"
+msgstr "スロバキア"
+
+msgid "country_128"
+msgstr "スロベニア"
+
+msgid "country_129"
+msgstr "スウェーデン"
+
+msgid "country_130"
+msgstr "セントキッツ＆ネイビス"
+
+msgid "country_131"
+msgstr "セントルシア"
+
+msgid "country_132"
+msgstr "セントビンセント・グレナディーン"
+
+msgid "country_133"
+msgstr "スリナム"
+
+msgid "country_134"
+msgstr "タンザニア"
+
+msgid "country_135"
+msgstr "チュニジア"
+
+msgid "country_136"
+msgstr "台湾"
+
+msgid "country_137"
+msgstr "タジキスタン"
+
+msgid "country_138"
+msgstr "タイ"
+
+msgid "country_139"
+msgstr "トルクメニスタン"
+
+msgid "country_140"
+msgstr "トルコ"
+
+msgid "country_141"
+msgstr "トリニダード＆トバゴ"
+
+msgid "country_142"
+msgstr "タークス＆カイコス"
+
+msgid "country_143"
+msgstr "ウガンダ"
+
+msgid "country_144"
+msgstr "アラブ首長国連邦"
+
+msgid "country_145"
+msgstr "ウズベキスタン"
+
+msgid "country_146"
+msgstr "イギリス"
+
+msgid "country_147"
+msgstr "ウルグアイ"
+
+msgid "country_148"
+msgstr "米国"
+
+msgid "country_149"
+msgstr "ベトナム"
+
+msgid "country_150"
+msgstr "ベネズエラ"
+
+msgid "country_151"
+msgstr "イギリス領バージン諸島"
+
+msgid "country_152"
+msgstr "イエメン"
+
+msgid "country_153"
+msgstr "ジンバブエ"

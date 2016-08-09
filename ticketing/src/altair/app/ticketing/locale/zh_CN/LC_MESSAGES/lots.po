@@ -1,19 +1,5 @@
-# English translations for PACKAGE package
-# This file is distributed under the same license as the PACKAGE package.
-# Cho <ts-jingqiang.a.zhang@rakuten.com>, 2016.
-#
 msgid ""
 msgstr ""
-"Project-Id-Version: PACKAGE 1.0\n"
-"POT-Creation-Date: 2016-05-12 10:03+0900\n"
-"PO-Revision-Date: 2016-05-12 10:03+0900\n"
-"Last-Translator: Cho <ts-jingqiang.a.zhang@rakuten.com>\n"
-"Language-Team: zh_CN\n"
-"Language: zh_CN\n"
-"MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Lingua 3.11\n"
 
 # common
 
@@ -439,3 +425,462 @@ msgstr "您的应用程序的内容，「<a href=\"/lots/review\">申请确认�
 
 msgid "決済中にエラーが発生しました。しばらく時間を置いてから<a href=\"{0}\">再度お試しください。</a>"
 msgstr "结算时发生错误。请在一段时间后再次<a href=\"{0}\">尝试</a>。"
+
+msgid "country_1"
+msgstr "日本"
+
+msgid "country_2"
+msgstr "阿尔及利亚"
+
+msgid "country_3"
+msgstr "安哥拉"
+
+msgid "country_4"
+msgstr "亚美尼亚"
+
+msgid "country_5"
+msgstr "阿塞拜疆"
+
+msgid "country_6"
+msgstr "澳大利亚"
+
+msgid "country_7"
+msgstr "阿尔巴尼亚"
+
+msgid "country_8"
+msgstr "奥地利"
+
+msgid "country_9"
+msgstr "安圭拉"
+
+msgid "country_10"
+msgstr "安提瓜和巴布达"
+
+msgid "country_11"
+msgstr "阿根廷"
+
+msgid "country_12"
+msgstr "巴林"
+
+msgid "country_13"
+msgstr "贝宁"
+
+msgid "country_14"
+msgstr "博茨瓦纳"
+
+msgid "country_15"
+msgstr "布基纳法索"
+
+msgid "country_16"
+msgstr "不丹"
+
+msgid "country_17"
+msgstr "文莱达鲁萨兰国"
+
+msgid "country_18"
+msgstr "白俄罗斯"
+
+msgid "country_19"
+msgstr "比利时"
+
+msgid "country_20"
+msgstr "保加利亚"
+
+msgid "country_21"
+msgstr "巴哈马"
+
+msgid "country_22"
+msgstr "巴巴多斯"
+
+msgid "country_23"
+msgstr "伯利兹"
+
+msgid "country_24"
+msgstr "百慕大"
+
+msgid "country_25"
+msgstr "玻利维亚"
+
+msgid "country_26"
+msgstr "巴西"
+
+msgid "country_27"
+msgstr "佛得角"
+
+msgid "country_28"
+msgstr "乍得"
+
+msgid "country_29"
+msgstr "刚果共和国"
+
+msgid "country_30"
+msgstr "柬埔寨"
+
+msgid "country_31"
+msgstr "中国"
+
+msgid "country_32"
+msgstr "克罗地亚"
+
+msgid "country_33"
+msgstr "捷克共和国"
+
+msgid "country_34"
+msgstr "塞浦路斯"
+
+msgid "country_35"
+msgstr "开曼群岛"
+
+msgid "country_36"
+msgstr "智利"
+
+msgid "country_37"
+msgstr "哥伦比亚"
+
+msgid "country_38"
+msgstr "哥斯达黎加"
+
+msgid "country_39"
+msgstr "加拿大"
+
+msgid "country_40"
+msgstr "多米尼加"
+
+msgid "country_41"
+msgstr "多明尼加"
+
+msgid "country_42"
+msgstr "德国"
+
+msgid "country_43"
+msgstr "埃及"
+
+msgid "country_44"
+msgstr "爱沙尼亚"
+
+msgid "country_45"
+msgstr "厄瓜多尔"
+
+msgid "country_46"
+msgstr "萨尔瓦多"
+
+msgid "country_47"
+msgstr "斐济"
+
+msgid "country_48"
+msgstr "法国"
+
+msgid "country_49"
+msgstr "芬兰"
+
+msgid "country_50"
+msgstr "冈比亚"
+
+msgid "country_51"
+msgstr "加纳"
+
+msgid "country_52"
+msgstr "几内亚比绍"
+
+msgid "country_53"
+msgstr "希腊"
+
+msgid "country_54"
+msgstr "格林纳达"
+
+msgid "country_55"
+msgstr "危地马拉"
+
+msgid "country_56"
+msgstr "圭亚那"
+
+msgid "country_57"
+msgstr "香港"
+
+msgid "country_58"
+msgstr "匈牙利"
+
+msgid "country_59"
+msgstr "洪都拉斯"
+
+msgid "country_60"
+msgstr "印度"
+
+msgid "country_61"
+msgstr "以色列"
+
+msgid "country_62"
+msgstr "印度尼西亚"
+
+msgid "country_63"
+msgstr "冰岛"
+
+msgid "country_64"
+msgstr "爱尔兰"
+
+msgid "country_65"
+msgstr "意大利"
+
+msgid "country_66"
+msgstr "约旦"
+
+msgid "country_67"
+msgstr "牙买加"
+
+msgid "country_68"
+msgstr "肯尼亚"
+
+msgid "country_69"
+msgstr "科威特"
+
+msgid "country_70"
+msgstr "哈萨克斯坦"
+
+msgid "country_71"
+msgstr "韩国"
+
+msgid "country_72"
+msgstr "吉尔吉斯斯坦"
+
+msgid "country_73"
+msgstr "利比里亚"
+
+msgid "country_74"
+msgstr "老挝"
+
+msgid "country_75"
+msgstr "黎巴嫩"
+
+msgid "country_76"
+msgstr "拉脱维亚"
+
+msgid "country_77"
+msgstr "立陶宛"
+
+msgid "country_78"
+msgstr "卢森堡"
+
+msgid "country_79"
+msgstr "马达加斯加"
+
+msgid "country_80"
+msgstr "马拉维"
+
+msgid "country_81"
+msgstr "马里"
+
+msgid "country_82"
+msgstr "毛里塔尼亚"
+
+msgid "country_83"
+msgstr "毛里求斯"
+
+msgid "country_84"
+msgstr "莫桑比克"
+
+msgid "country_85"
+msgstr "澳门"
+
+msgid "country_86"
+msgstr "马来西亚"
+
+msgid "country_87"
+msgstr "密克罗尼西亚联邦国家"
+
+msgid "country_88"
+msgstr "蒙古"
+
+msgid "country_89"
+msgstr "马其顿"
+
+msgid "country_90"
+msgstr "马耳他"
+
+msgid "country_91"
+msgstr "摩尔多瓦"
+
+msgid "country_92"
+msgstr "墨西哥"
+
+msgid "country_93"
+msgstr "蒙特塞拉特"
+
+msgid "country_94"
+msgstr "纳米比亚"
+
+msgid "country_95"
+msgstr "尼日尔"
+
+msgid "country_96"
+msgstr "尼日利亚"
+
+msgid "country_97"
+msgstr "尼泊尔"
+
+msgid "country_98"
+msgstr "新西兰"
+
+msgid "country_99"
+msgstr "荷兰"
+
+msgid "country_100"
+msgstr "挪威"
+
+msgid "country_101"
+msgstr "尼加拉瓜"
+
+msgid "country_102"
+msgstr "阿曼"
+
+msgid "country_103"
+msgstr "卡塔尔"
+
+msgid "country_104"
+msgstr "巴基斯坦"
+
+msgid "country_105"
+msgstr "帕劳"
+
+msgid "country_106"
+msgstr "巴布亚新几内亚"
+
+msgid "country_107"
+msgstr "菲律宾"
+
+msgid "country_108"
+msgstr "波兰"
+
+msgid "country_109"
+msgstr "葡萄牙"
+
+msgid "country_110"
+msgstr "巴拿马"
+
+msgid "country_111"
+msgstr "巴拉圭"
+
+msgid "country_112"
+msgstr "秘鲁"
+
+msgid "country_113"
+msgstr "罗马尼亚"
+
+msgid "country_114"
+msgstr "俄国"
+
+msgid "country_115"
+msgstr "圣多美和普林西比"
+
+msgid "country_116"
+msgstr "沙特阿拉伯"
+
+msgid "country_117"
+msgstr "塞内加尔"
+
+msgid "country_118"
+msgstr "塞舌尔"
+
+msgid "country_119"
+msgstr "塞拉利昂"
+
+msgid "country_120"
+msgstr "南非"
+
+msgid "country_121"
+msgstr "斯威士兰"
+
+msgid "country_122"
+msgstr "新加坡"
+
+msgid "country_123"
+msgstr "所罗门群岛"
+
+msgid "country_124"
+msgstr "斯里兰卡"
+
+msgid "country_125"
+msgstr "西班牙"
+
+msgid "country_126"
+msgstr "瑞士"
+
+msgid "country_127"
+msgstr "斯洛伐克"
+
+msgid "country_128"
+msgstr "斯洛文尼亚"
+
+msgid "country_129"
+msgstr "瑞典"
+
+msgid "country_130"
+msgstr "圣基茨和尼维斯"
+
+msgid "country_131"
+msgstr "圣卢西亚"
+
+msgid "country_132"
+msgstr "圣文森特和格林纳丁斯"
+
+msgid "country_133"
+msgstr "苏里南"
+
+msgid "country_134"
+msgstr "坦桑尼亚"
+
+msgid "country_135"
+msgstr "突尼斯"
+
+msgid "country_136"
+msgstr "台湾"
+
+msgid "country_137"
+msgstr "塔吉克斯坦"
+
+msgid "country_138"
+msgstr "泰国"
+
+msgid "country_139"
+msgstr "土库曼斯坦"
+
+msgid "country_140"
+msgstr "土耳其"
+
+msgid "country_141"
+msgstr "特立尼达和多巴哥"
+
+msgid "country_142"
+msgstr "特克斯和凯科斯群岛"
+
+msgid "country_143"
+msgstr "乌干达"
+
+msgid "country_144"
+msgstr "阿拉伯联合酋长国"
+
+msgid "country_145"
+msgstr "乌兹别克斯坦"
+
+msgid "country_146"
+msgstr "英国"
+
+msgid "country_147"
+msgstr "乌拉圭"
+
+msgid "country_148"
+msgstr "美国"
+
+msgid "country_149"
+msgstr "越南"
+
+msgid "country_150"
+msgstr "委内瑞拉"
+
+msgid "country_151"
+msgstr "维尔京群岛"
+
+msgid "country_152"
+msgstr "也门"
+
+msgid "country_153"
+msgstr "津巴布韦"
