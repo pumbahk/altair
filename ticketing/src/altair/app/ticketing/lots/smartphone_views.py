@@ -27,14 +27,13 @@ from altair.app.ticketing.cart.view_support import render_view_to_response_with_
 from . import api
 from . import helpers as h
 from . import schemas
-from . import forms_ja, forms_en, forms_zh_cn, forms_zh_tw
 from .exceptions import NotElectedException, OverEntryLimitException, OverEntryLimitPerPerformanceException
 from .models import (
     LotEntry,
 )
 from . import urls
 from altair.app.ticketing.cart.views import jump_maintenance_page_for_trouble
-from . import utils, utils_i18n
+from . import utils, utils_i18n, forms_i18n
 from altair.app.ticketing.i18n import custom_locale_negotiator
 
 logger = logging.getLogger(__name__)
@@ -308,27 +307,13 @@ class EntryLotView(object):
                     for k, errors in errors.items():
                         for error in errors:
                             if self.request.organization.setting.i18n:
-                                if custom_locale_negotiator(self.request)==u'ja':
-                                    self.request.session.flash(u'%s: %s' % (forms_ja.client_form_fields.get(k, k), error))
-                                elif custom_locale_negotiator(self.request)==u'en':
-                                    self.request.session.flash(u'%s: %s' % (forms_en.client_form_fields.get(k, k), error))
-                                elif custom_locale_negotiator(self.request)==u'zh_CN':
-                                    self.request.session.flash(u'%s: %s' % (forms_zh_cn.client_form_fields.get(k, k), error))
-                                elif custom_locale_negotiator(self.request)==u'zh_TW':
-                                    self.request.session.flash(u'%s: %s' % (forms_zh_tw.client_form_fields.get(k, k), error))
+                                self.request.session.flash(u'%s: %s' % (forms_i18n.ClientFormFactory(self.request).get_client_form_fields().get(k, k), error))
                             else:
                                 self.request.session.flash(u'%s: %s' % (schemas.client_form_fields.get(k, k), error))
                 else:
                     for error in errors:
                         if self.request.organization.setting.i18n:
-                            if custom_locale_negotiator(self.request)==u'ja':
-                                self.request.session.flash(u'%s: %s' % (forms_ja.client_form_fields.get(k, k), error))
-                            elif custom_locale_negotiator(self.request)==u'en':
-                                self.request.session.flash(u'%s: %s' % (forms_en.client_form_fields.get(k, k), error))
-                            elif custom_locale_negotiator(self.request)==u'zh_CN':
-                                self.request.session.flash(u'%s: %s' % (forms_zh_cn.client_form_fields.get(k, k), error))
-                            elif custom_locale_negotiator(self.request)==u'zh_TW':
-                                self.request.session.flash(u'%s: %s' % (forms_zh_tw.client_form_fields.get(k, k), error))
+                            self.request.session.flash(u'%s: %s' % (forms_i18n.ClientFormFactory(self.request).get_client_form_fields().get(k, k), error))
                         else:
                             self.request.session.flash(u'%s: %s' % (schemas.client_form_fields.get(k, k), error))
 

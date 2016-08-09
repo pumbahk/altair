@@ -6,8 +6,8 @@ from . import api
 from . import schemas
 from altair.app.ticketing.cart import api as cart_api
 from altair.app.ticketing.users.models import SexEnum
-from importlib import import_module
-
+from .forms_i18n import ClientFormFactory
+from altair.app.ticketing.cart.forms_i18n import ClientFormFactory as Cart_ClientFormFactory
 def create_form(request, context, formdata=None, **kwds):
     """希望入力と配送先情報と追加情報入力用のフォームを返す(English)
     """
@@ -58,20 +58,18 @@ def create_form(request, context, formdata=None, **kwds):
         if data.get('birthday') is None:
             data['birthday'] = date(1980,1,1)
 
-    client_form, cart_form = get_base_form(request)
-    form = client_form.ClientForm(
+    client_form = get_base_form(request)
+    form = client_form(
         context=context,
         flavors=flavors,
         _fields=fields,
         _data=data,
         formdata=formdata,
         **kwds)
-    form.country.choices = [(h, h) for h in cart_form.countries]
+    form.country.choices = [(h, h) for h in Cart_ClientFormFactory(request).get_countries()]
 
     return form
 
 def get_base_form(request):
-    locale_name = request.locale_name.lower()
-    client_form = getattr(import_module('altair.app.ticketing.lots'), '{0}_{1}'.format('forms', locale_name))
-    cart_form = getattr(import_module('altair.app.ticketing.cart'), '{0}_{1}'.format('forms', locale_name))
-    return client_form, cart_form
+    client_form = ClientFormFactory(request).make_form()
+    return client_form

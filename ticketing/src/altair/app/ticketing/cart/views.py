@@ -46,7 +46,7 @@ from altair.app.ticketing.temp_store import TemporaryStoreError
 from . import api
 from . import helpers as h
 from . import schemas
-from . import forms_ja, forms_en, forms_zh_cn, forms_zh_tw
+from . import forms_i18n
 from .api import set_rendered_event, is_smartphone, is_point_input_required, is_fc_auth_organization
 from altair.mobile.api import set_we_need_pc_access, set_we_invalidate_pc_access
 from .reserving import InvalidSeatSelectionException, NotEnoughAdjacencyException
@@ -1013,40 +1013,16 @@ class PaymentView(object):
         )
 
         if self.request.organization.setting.i18n:
-            if custom_locale_negotiator(self.request)==u'ja':
-                shipping_address_info['last_name_kana']=metadata.get('last_name_kana')
-                shipping_address_info['first_name_kana']=metadata.get('first_name_kana')
-                shipping_address_info['country']=metadata.get('country')
-                form = forms_ja.ClientForm(
-                    context=self.context,
-                    flavors=(self.context.cart_setting.flavors or {}),
-                    _data=shipping_address_info
-                    )
-                form.country.choices = [(c, c) for c in forms_ja.countries]
-            elif custom_locale_negotiator(self.request)==u'en':
-                shipping_address_info['country']=metadata.get('country')
-                form = forms_en.ClientForm(
-                    context=self.context,
-                    flavors=(self.context.cart_setting.flavors or {}),
-                    _data=shipping_address_info
-                    )
-                form.country.choices = [(c, c) for c in forms_en.countries]
-            elif custom_locale_negotiator(self.request)==u'zh_CN':
-                shipping_address_info['country']=metadata.get('country')
-                form = forms_zh_cn.ClientForm(
-                    context=self.context,
-                    flavors=(self.context.cart_setting.flavors or {}),
-                    _data=shipping_address_info
-                    )
-                form.country.choices = [(c, c) for c in forms_zh_cn.countries]
-            elif custom_locale_negotiator(self.request)==u'zh_TW':
-                shipping_address_info['country']=metadata.get('country')
-                form = forms_zh_tw.ClientForm(
-                    context=self.context,
-                    flavors=(self.context.cart_setting.flavors or {}),
-                    _data=shipping_address_info
-                    )
-                form.country.choices = [(c, c) for c in forms_zh_tw.countries]
+            shipping_address_info['last_name_kana']=metadata.get('last_name_kana',u'　')
+            shipping_address_info['first_name_kana']=metadata.get('first_name_kana',u'　')
+            shipping_address_info['country']=metadata.get('country')
+            client_form = forms_i18n.ClientFormFactory(self.request).make_form()
+            form = client_form(
+                context=self.context,
+                flavors=(self.context.cart_setting.flavors or {}),
+                _data=shipping_address_info
+                )
+            form.country.choices = [(c, c) for c in forms_i18n.ClientFormFactory(self.request).get_countries()]
         else:
             shipping_address_info['last_name_kana']=metadata.get('last_name_kana')
             shipping_address_info['first_name_kana']=metadata.get('first_name_kana')
@@ -1068,8 +1044,8 @@ class PaymentView(object):
         """フォームから ShippingAddress などの値を取りたいときはこれで"""
         form = self.form
         if self.request.organization.setting.i18n:
-            first_name_kana=form.data['first_name_kana'] if custom_locale_negotiator(self.request)==u'ja' else ''
-            last_name_kana=form.data['last_name_kana'] if custom_locale_negotiator(self.request)==u'ja' else ''
+            first_name_kana=form.data['first_name_kana'] if custom_locale_negotiator(self.request)==u'ja' else u'　'
+            last_name_kana=form.data['last_name_kana'] if custom_locale_negotiator(self.request)==u'ja' else u'　'
             country=form.data['country']
         else:
             first_name_kana=form.data['first_name_kana']
@@ -1121,18 +1097,9 @@ class PaymentView(object):
         payment_delivery_pair = c_models.PaymentDeliveryMethodPair.query.filter_by(id=payment_delivery_method_pair_id).first()
 
         if self.request.organization.setting.i18n:
-            if custom_locale_negotiator(self.request)==u'ja':
-                self.form = forms_ja.ClientForm(formdata=self.request.params, context=self.context)
-                self.form.country.choices = [(c, c) for c in forms_ja.countries]
-            elif custom_locale_negotiator(self.request)==u'en':
-                self.form = forms_en.ClientForm(formdata=self.request.params, context=self.context)
-                self.form.country.choices = [(c, c) for c in forms_en.countries]
-            elif custom_locale_negotiator(self.request)==u'zh_CN':
-                self.form = forms_zh_cn.ClientForm(formdata=self.request.params, context=self.context)
-                self.form.country.choices = [(c, c) for c in forms_zh_cn.countries]
-            elif custom_locale_negotiator(self.request)==u'zh_TW':
-                self.form = forms_zh_tw.ClientForm(formdata=self.request.params, context=self.context)
-                self.form.country.choices = [(c, c) for c in forms_zh_tw.countries]
+            client_form = forms_i18n.ClientFormFactory(self.request).make_form()
+            self.form = client_form(formdata=self.request.params, context=self.context)
+            self.form.country.choices = [(c, c) for c in forms_i18n.ClientFormFactory(self.request).get_countries()]
         else:
             self.form = schemas.ClientForm(formdata=self.request.params, context=self.context)
 
