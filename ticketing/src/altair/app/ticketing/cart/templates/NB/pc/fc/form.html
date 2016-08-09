@@ -242,14 +242,6 @@ $(zip.getUIElements()).on('keyup', function () {
   );
 });
 })(${registry_var|n});
-
-// 日付の年の並びを降順にする。
-$(document).ready(function(){
-  var year_option_list = $('select.datetimewidget-year option');
-  year_option_list.sort(function(a, b) {return b.value - a.value;});
-  $('select.datetimewidget-year').html(year_option_list);
-  $('select.datetimewidget-year option').last().insertBefore($('select.datetimewidget-year option').first());
-});
 </script>
   </%def>
   </%fh:render_block>
