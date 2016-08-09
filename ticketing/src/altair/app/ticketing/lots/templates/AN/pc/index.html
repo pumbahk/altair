@@ -378,15 +378,7 @@ if label is None or label is True:
   <p class="align2"><input type="image" src="${view_context.static_url('pc/img/settlement/btn_next.gif', 'lots')}" alt="次へ" width="226" height="46" /></p>
 </form>
 <%def name="product_select_tmpl()">
-% if custom_locale_negotiator == 'en':
-<%include file="_product_selection_en.html_" />
-% elif custom_locale_negotiator == 'ja':
-<%include file="_product_selection.html_" />
-% elif custom_locale_negotiator == 'zh_CN':
-<%include file="_product_selection_zh_cn.html_" />
-% elif custom_locale_negotiator == 'zh_TW':
-<%include file="_product_selection_zh_tw.html_" />
-% endif
+<%include file="_product_selection_i18n.html_" />
 </%def>
 <script type="text/javascript">
 var product_select_tmpl = _.template(decodeURIComponent('${capture(product_select_tmpl)|u,n}'.replace(/\+/g, ' ')));

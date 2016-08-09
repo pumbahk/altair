@@ -6,7 +6,7 @@
 <tr class="product-select-tr<%= j + 1 == products.length ? ' settlementSelectEnd': '' %>">
 	<th>
         <% if (j == 0) { %>
-        <label>票種</label>
+        <label>__(u'券種')</label>
         <% } else { %>
         &nbsp;
         <% } %>
@@ -21,7 +21,7 @@
         <% for (var k=0; k < upperLimit; k++) { %>
         <option value="<%= k + 1 %>"><%= k + 1 %></option>
         <% } %> 
-      </select>张
+      </select>__(u'枚')
     </div>
     <% if (product.description) { %>
     <span class="product-description"><%= product.description %></span>
