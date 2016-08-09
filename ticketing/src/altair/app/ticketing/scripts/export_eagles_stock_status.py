@@ -9,26 +9,28 @@ import logging
 from argparse import ArgumentParser
 from datetime import datetime
 
-import sqlahelper
+from altair.sqlahelper import get_db_session
 from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 
 import json
 
 from altair.pyramid_assets import get_resolver
 
-from altair.app.ticketing.core.models import Organization, Event, Performance, SalesSegment
+from altair.app.ticketing.core.models import Organization, Event, EventSetting, Performance
 
 from altair.app.ticketing.cart.view_support import get_seat_type_dicts
 
 logger = logging.getLogger(__name__)
 charset = locale.getpreferredencoding()
 
-format = "%Y/%m/%d %H:%M"
+datetime_format = "%Y/%m/%d %H:%M"
+
 
 def message(msg, auxiliary=False):
     logger.log(auxiliary and logging.DEBUG or logging.INFO, msg)
     pad = '  ' if auxiliary else ''
     print >>sys.stderr, (pad + msg).encode(charset)
+
 
 def upload(uri, data, resolver, dry_run):
     key = resolver.resolve(uri).get_key()
@@ -37,14 +39,14 @@ def upload(uri, data, resolver, dry_run):
             sys.stdout.write("DRY-RUN: %s\n" % uri)
             sys.stdout.write("%s\n" % json.dumps(data))
         else:
-            key.set_contents_from_string(json.dumps(data))
+            headers = { "Content-Type": "application/json"}
+            key.set_contents_from_string(json.dumps(data), headers=headers)
             sys.stdout.write("upload successfully: %s\n" % uri)
             key.make_public()
             sys.stdout.write("update acl successfully.\n")
-            key.set_metadata("Content-Type", "application/json")
-            sys.stdout.write("update content-type successfully.\n")
     else:
         raise
+
 
 def select_sales_segment(sales_segments):
     sales_segments = [s for s in sales_segments if s.kind == "normal" ]
@@ -52,6 +54,7 @@ def select_sales_segment(sales_segments):
         # cart/views.pyによると、単純に[0]を選ぶという戦略で問題ないようだ
         return sales_segments[0]
     return None
+
 
 def main():
     parser = ArgumentParser()
@@ -65,7 +68,7 @@ def main():
     setup_logging(opts.config)
     env = bootstrap(opts.config)
     request = env['request']
-    session = sqlahelper.get_session()
+    session = get_db_session(request, name='slave')
     resolver = get_resolver(env['registry'])
 
     mode = "all" if re.search(r"\.json$", opts.target) else "each"
@@ -88,63 +91,93 @@ def main():
 
         now = datetime.now()
 
-        seat_types_index = dict()
-        global_data = dict(
-            updated_at=now.strftime(format),
-            seat_types=[],
-            performances=[],
-        )
+        global_seat_types = []
 
         # 初登場のseat type nameだったら、seat_types_indexに登録する
-        def register_seat_type(name):
-            if name not in global_data["seat_types"]:
-                global_data["seat_types"].append(name)
+        def register_seat_type(seat_type_name):
+            if seat_type_name not in global_seat_types:
+                sys.stdout.write("register seat type: %s\n" % seat_type_name)
+                global_seat_types.append(seat_type_name)
+
+        by_start_on = dict()
 
         performances = session.query(Performance) \
             .join(Event, Performance.event_id==Event.id) \
+            .join(EventSetting, Event.id==EventSetting.event_id) \
             .filter(Event.organization_id == organization.id) \
+            .filter(now <= Performance.start_on) \
+            .filter(EventSetting.visible != 0) \
+            .filter(Performance.public != 0) \
+            .order_by(Event.display_order, Performance.start_on) \
             .all()
         for p in performances:
-            if p.start_on < now:
+            sys.stdout.write("performance(start=%s, id=%d, name=%s)\n" % (p.start_on, p.id, p.name))
+
+            sales_segment = p.get_recent_sales_segment(now=now)
+            if not sales_segment:
                 continue
 
-            sys.stdout.write("performance start=%s\n" % p.start_on)
+            seat_types = get_seat_type_dicts(request, sales_segment)
 
-            sales_segment = select_sales_segment(p.query_sales_segments(now=now))
-            if sales_segment:
-                seat_types = get_seat_type_dicts(request, sales_segment)
+            for seat_type in seat_types:
+                register_seat_type(seat_type["name"])
 
-                # 全部入りデータ
-                for seat_type in seat_types:
-                    register_seat_type(seat_type["name"])
+            if p.start_on not in by_start_on:
+                by_start_on[p.start_on] = []
+            by_start_on[p.start_on].append(dict(
+                id=p.id,
+                name=p.name,
+                event=p.event.title,
+                sales_segment=sales_segment.name,
+                seat_types=seat_types,
+            ))
 
-                seat_type_by_name = dict()
-                for seat_type in seat_types:
-                    seat_type_by_name[seat_type["name"]] = seat_type
+        global_data = dict(
+            updated_at=now.strftime(datetime_format),
+            seat_types=global_seat_types,
+            performances=[],
+        )
 
-                def get_availability_by_name(name):
-                    return seat_type_by_name[name]["availability"] if name in seat_type_by_name else None
+        for start_on, performances in sorted(by_start_on.items()):
+            sys.stdout.write("start_on=%s\n" % start_on)
+            seat_type_by_name = dict()
+            for performance in performances:
+                sys.stdout.write("  performance(id=%d, event=%s)\n" % (performance["id"], performance["event"]))
+                for seat_type in performance["seat_types"]:
+                    if seat_type["name"] in seat_type_by_name:
+                        sys.stdout.write("*** warn *** found seat type with same name: %s\n" % seat_type["name"])
+                        seat_type_by_name[seat_type["name"]].append(seat_type)
+                    else:
+                        seat_type_by_name[seat_type["name"]] = [ seat_type ]
 
-                global_data["performances"].append(dict(
-                    name=p.name,
-                    start_on=p.start_on.strftime(format),
-                    sales_segment=sales_segment.name,
-                    stocks=[get_availability_by_name(name) for name in global_data["seat_types"]],
-                ))
+            def get_availability_by_name(n):
+                if n in seat_type_by_name:
+                    stock = 0
+                    for seat_type in seat_type_by_name[n]:
+                        stock = stock + seat_type["availability"]
+                    return stock
+                else:
+                    return None
 
-                # 個別データ作る
+            global_data["performances"].append(dict(
+                start_on=start_on.strftime(datetime_format),
+                events=[performance["event"] for performance in performances],
+                names=[performance["name"] for performance in performances],
+                stocks=[get_availability_by_name(name) for name in global_seat_types],
+            ))
+
+            # 個別データ書き出す
+            if mode == "each":
+                raise Error("not implemented.")
+
+                dst = "%s/%s.json" % (opts.target.strip("/"), start_on.strftime("%Y%m%d-%H%M"))
                 data = dict(
-                    updated_at=now.strftime(format),
-                    performance=dict(name=p.name, start_on=p.start_on.strftime(format)),
-                    seat_types=[dict(name=s["name"], availability=s["availability"]) for s in seat_types],
+                    updated_at=now.strftime(datetime_format),
+                    start_on=start_on.strftime(datetime_format),
+                    seat_types=[],
+                    stocks=[],
                 )
-
-                # 個別データ書き出す
-                if mode == "each":
-                    dst = "%s/%d-%d.json" % (opts.target.strip("/"), p.id, sales_segment.id)
-                    upload(dst, data, resolver, opts.dry_run)
-            else:
-                sys.stdout.write("skipped (no sales segment with kind=normal).\n")
+                upload(dst, data, resolver, opts.dry_run)
 
         # 全部入りデータ書き出す
         if mode == "all":
