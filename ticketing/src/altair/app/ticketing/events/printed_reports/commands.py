@@ -2,6 +2,7 @@
 import logging
 import sys
 import argparse
+import traceback
 from datetime import datetime, time, timedelta
 from sqlalchemy.sql import func
 from altair.app.ticketing.orders.models import Order, OrderedProduct, OrderedProductItem, OrderedProductItemToken
@@ -90,7 +91,16 @@ def main(argv=sys.argv):
                 render_param = dict(event=event, period=period, performance_printed_num=performance_printed_num)
 
                 html = render_to_response('altair.app.ticketing:templates/printed_reports/daily.html', render_param)
-                sendmail(settings, report_setting.format_emails(), subject, html)
+
+                try:
+                    sendmail(settings, report_setting.format_emails(), subject, html)
+                except Exception as e:
+                    logging.error(
+                        u"発券進捗メール送信失敗 PrintedReportSetitng.id={}, エラータイプ:{}, エラー内容:{}, スタックトレース:{}".format(report_setting.id,
+                                                                                                      type(e),
+                                                                                                      e.message,
+                                                                                                      traceback.format_exc()))
+
                 logger.info('end send_printed_report batch (sent={0}, report_setting_id={1})'.format(cnt, report_setting.id))
 
             transaction.commit()
