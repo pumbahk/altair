@@ -93,7 +93,7 @@ def main():
 
         global_seat_types = []
 
-        # 初登場のseat type nameだったら、seat_types_indexに登録する
+        # 初登場のseat type nameだったら、global_seat_typesに登録する
         def register_seat_type(seat_type_name):
             if seat_type_name not in global_seat_types:
                 sys.stdout.write("register seat type: %s\n" % seat_type_name)
@@ -144,11 +144,10 @@ def main():
             for performance in performances:
                 sys.stdout.write("  performance(id=%d, event=%s)\n" % (performance["id"], performance["event"]))
                 for seat_type in performance["seat_types"]:
-                    if seat_type["name"] in seat_type_by_name:
-                        sys.stdout.write("*** warn *** found seat type with same name: %s\n" % seat_type["name"])
-                        seat_type_by_name[seat_type["name"]].append(seat_type)
-                    else:
+                    if seat_type["name"] not in seat_type_by_name:
                         seat_type_by_name[seat_type["name"]] = [ seat_type ]
+                    else:
+                        seat_type_by_name[seat_type["name"]].append(seat_type)
 
             def get_availability_by_name(n):
                 if n in seat_type_by_name:
