@@ -12,23 +12,29 @@ $(function() {
 <style>
   .button_box{
     width: 320px;
+    padding: 30px 0 8px;
     text-align: center;
     vertical-align: top;
   }
   #btn-back {
     border: 0;
-    width: 226px;
-    height: 46px;
+    background: #ed4a27 none repeat scroll 0 0;
+    width: 230px;
+    height: 53px;
     vertical-align: top;
     padding: 1px;
     margin-right: 20px;
-    background: url("${request.static_url('altair.app.ticketing.cart:static/AN/pc/images/btn_back_to_selection.gif')}") left top no-repeat;
+    color: #fff;
+    font-size:16px;
+    font-weight: bold;
   }
   #btn-complete {
+    background: #ed4a27 none repeat scroll 0 0;
     border: 0;
-    width: 226px;
-    height: 46px;
-    background: url("${request.static_url('altair.app.ticketing.cart:static/AN/pc/images/btn_buy.gif')}") left top no-repeat;
+    width: 230px;
+    height: 53px;
+    color: #fff;
+    font-weight: bold;
   }
   .message-complete {
     color: red;
@@ -58,8 +64,8 @@ $(function() {
 
     <!-- ===== お買い物内容 ===== -->
     <div class="confirmBox">
-      <div class="confirmBoxInner">
-        <h2 class="heading heading_simple_line">${__(u'お買い物内容')}</h2>
+      <h2 class="heading heading_simple_line">${__(u'お買い物内容')}</h2>
+        <div class="confirmBoxInner">
         <!-- ===== purchase-wrap ===== -->
           <p class="purchase-title">${cart.performance.event.title} ${cart.performance.name} ${h.performance_datetime(cart.performance)}(${__(u'予定')}) ${cart.performance.venue.name}</p>
             <table id="contentsOfShopping" summary="${__(u'席種、金額などのお買い物内容')}">
@@ -150,17 +156,16 @@ $(function() {
 
     <!-- ===== お引き取り ===== -->
     <div class="confirmBox">
+      <h2 class="heading heading_simple_line">${__(u'お引き取り')}</h2>
       <div class="confirmBoxInner">
-        <h2 class="heading heading_simple_line">${__(u'お引き取り')}</h2>
         <p>${h.render_delivery_confirm_viewlet(request, cart)}</p>
       </div>
     </div><!-- ===== / お引き取り ===== -->
 
     <!-- ===== 購入者情報 ===== -->
     <div class="confirmBox">
+      <h2 class="heading heading_simple_line">${__(u'購入者情報')}</h2>
         <div class="confirmBoxInner">
-        <h2 class="heading heading_simple_line">${__(u'購入者情報')}</h2>
-
         <!-- ===== customerBox ===== -->
             <table class="customer-table">
                 <tbody>
@@ -202,7 +207,7 @@ $(function() {
 
     % if mailmagazines_to_subscribe:
     <!-- ===== メールマガジンの配信 ===== -->
-    <div class="confirm-wrap">
+    <div class="confirmBox">
         <div class="confirm-wrap-inner confirm-magBox">
           <h2 class="heading heading_simple_line">${__(u'メールマガジンの配信')}</h2>
 

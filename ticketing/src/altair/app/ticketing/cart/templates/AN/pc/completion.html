@@ -24,8 +24,8 @@
 <!-- ===== お買い物内容 ===== -->
 <div class="confirmBox">
     <!-- ===== purchase-wrap ===== -->
-    <div class="confirmBoxInner">
     <h2 class="heading heading_simple_line">${__(u'お買い物内容')}</h2>
+      <div class="confirmBoxInner">
         <p class="purchase-title">${order.performance.event.title} ${order.performance.name} ${h.performance_datetime(order.performance)}${__(u'(予定)')} ${order.performance.venue.name}</p>
         <table class="purchase-table" summary="${__(u'席種、金額などのお買い物内容')}">
             <tbody>
@@ -102,24 +102,24 @@
 
 <!-- ===== お支払い ===== -->
 <div class="confirmBox">
+  <h2 class="heading heading_simple_line">${__(u'お支払い')}</h2>
   <div class="confirmBoxInner">
-    <h2 class="heading heading_simple_line">${__(u'お支払い')}</h2>
     ${h.render_payment_finished_viewlet(request, order)}
   </div>
 </div><!-- ===== / お支払い ===== -->
 
 <!-- ===== お引き取り ===== -->
 <div class="confirmBox">
+  <h2 class="heading heading_simple_line">${__(u'お引き取り')}</h2>
   <div class="confirmBoxInner">
-    <h2 class="heading heading_simple_line">${__(u'お引き取り')}</h2>
     ${h.render_delivery_finished_viewlet(request, order)}
   </div>
 </div><!-- ===== / お引き取り ===== -->
 
 <!-- ===== 注意事項 ===== -->
 <div class="confirmBox">
+  <h2 class="heading heading_simple_line">${__(u'注意事項')}</h2>
   <div class="confirmBoxInner">
-    <h2 class="heading heading_simple_line">${__(u'注意事項')}</h2>
     <p>${__(u'お申し込み時に、ご登録いただいたメールアドレス宛に、受付完了メールが送られます。')}<br>
     ${__(u'しばらくたっても確認のメールが届かない場合は、入力されたメールアドレスが誤っている可能性があります。')}<br>
     ${__(u'<a href=\"/inquiry\">お問い合わせフォーム</a>よりお問い合わせください。')|n}<br>

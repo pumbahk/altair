@@ -11,9 +11,11 @@
 ----------------------------------------------------------- */
 #container {
 	width: 950px;
-	margin: 0 auto;
+	margin: 0 auto 20px;
+	padding: 20px 20px 1px;
 	background: #fff none repeat scroll 0 0;
 	text-align: left;
+	box-sizing: border-box;
 }
 
 
@@ -36,7 +38,6 @@
 
 /* ヘッダ全体枠 */
 div#grpheader {
-	padding-top: 10px;
 	font-size: 120%;
 	text-align: left; /* for Quirks Mode */
 }
@@ -372,6 +373,7 @@ dl#topicPath dd {
 	position: static;
 	float: none;
 	width: auto;
+	margin: 10px 0 30px;
 }
 
 

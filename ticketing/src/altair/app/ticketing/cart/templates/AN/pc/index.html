@@ -84,7 +84,7 @@ $(function() {cart.init(salesSegmentsSelection, selected, cartReleaseUrl, true, 
         </a>
     % endif
 
-    <h2 id="ticketName">${event['title']}</h2>
+    <div id="ticketName">${event['title']}</div>
     % if preferred_performance:
     <div class="settlementNotice">
       <p>${_(u'誠に申し訳ございませんが、選択された公演「{0}」<u>現在販売しておりません</u>').format(h.format_name(request, performance=preferred_performance))}</p>
@@ -95,7 +95,7 @@ $(function() {cart.init(salesSegmentsSelection, selected, cartReleaseUrl, true, 
     <form id="form1" name="form1" method="post" action="">
       <div id="settlementSelectBox">
         <div id="settlementSelectBoxInner">
-          <table summary="チケット購入の絞り込み">
+          <table summary="チケット購入の絞り込み" class="details">
             <tr>
               <th>${_(selection_label)}</th>
               <td>
@@ -114,9 +114,9 @@ $(function() {cart.init(salesSegmentsSelection, selected, cartReleaseUrl, true, 
     </form>
     </div>
 
-    <div id="settlementOperation" class="settlementBox2">
+    <div id="settlementOperation">
       <div class="settlementBoxInner2">
-        <h2 id="hallName">
+        <h2 id="hallName" class="heading heading_simple_line">
           <span id="performanceDate">-</span>
           <span id="performanceVenue">-</span>
         </h2>
@@ -253,9 +253,9 @@ $(function() {cart.init(salesSegmentsSelection, selected, cartReleaseUrl, true, 
     </div>
 
 <!-- ===== イベント詳細 ===== -->
-<div class="settlementBox2 confirm-wrap" id="settlementEventDetail" style="clear:both">
-<div class="settlementBoxInner2">
-  <h2 class="heading heading_simple_line">${_(u'イベント詳細')}</h2>
+<div class="confirm-wrap mgt20" id="settlementEventDetail" style="clear:both">
+<h2 class="heading heading_simple_line">${_(u'イベント詳細')}</h2>
+<div class="settlementBoxInner2 mgt20">
 <!-- ===== customerBox ===== -->
 <div class="customerBox">
 <table class="customer-table">
