@@ -238,10 +238,7 @@ class EntryLotView(object):
     def _create_form(self, **kwds):
         """希望入力と配送先情報と追加情報入力用のフォームを返す
         """
-        if self.request.organization.setting.i18n:
-            return utils_i18n.create_form(self.request, self.context, **kwds)
-        else:
-            return utils.create_form(self.request, self.context, **kwds)
+        return utils_i18n.create_form(self.request, self.context, **kwds)
 
     @lbr_view_config(request_method="GET")
     def get(self, form=None):

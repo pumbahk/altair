@@ -1012,25 +1012,17 @@ class PaymentView(object):
             email_2=metadata.get('email_2')
         )
 
+        shipping_address_info['last_name_kana']=metadata.get('last_name_kana',u'　')
+        shipping_address_info['first_name_kana']=metadata.get('first_name_kana',u'　')
+        client_form = forms_i18n.ClientFormFactory(self.request).make_form()
+        form = client_form(
+            context=self.context,
+            flavors=(self.context.cart_setting.flavors or {}),
+            _data=shipping_address_info
+            )
         if self.request.organization.setting.i18n:
-            shipping_address_info['last_name_kana']=metadata.get('last_name_kana',u'　')
-            shipping_address_info['first_name_kana']=metadata.get('first_name_kana',u'　')
             shipping_address_info['country']=metadata.get('country')
-            client_form = forms_i18n.ClientFormFactory(self.request).make_form()
-            form = client_form(
-                context=self.context,
-                flavors=(self.context.cart_setting.flavors or {}),
-                _data=shipping_address_info
-                )
             form.country.choices = [(c, c) for c in forms_i18n.ClientFormFactory(self.request).get_countries()]
-        else:
-            shipping_address_info['last_name_kana']=metadata.get('last_name_kana')
-            shipping_address_info['first_name_kana']=metadata.get('first_name_kana')
-            form = schemas.ClientForm(
-                context=self.context,
-                flavors=(self.context.cart_setting.flavors or {}),
-                _data=shipping_address_info
-                )
         default_prefecture = self.context.cart_setting.default_prefecture
         if default_prefecture is not None:
             form['prefecture'].data = default_prefecture

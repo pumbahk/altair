@@ -66,7 +66,7 @@ class ClientFormFactory(object):
                     Katakana,
                     length_limit_for_sej,
                     ]
-                ) if locale_name == 'ja' else None
+                ) if locale_name == 'ja' or not request.organization.setting.i18n else None
             first_name = OurTextField(
                 label=_(u"名"),
                 note=_(u"(全角)") + _(u"パスポートと一致しているものを入力してください"),
@@ -82,7 +82,7 @@ class ClientFormFactory(object):
                     Katakana,
                     length_limit_for_sej,
                     ]
-                ) if locale_name == 'ja' else None
+                ) if locale_name == 'ja' or not request.organization.setting.i18n else None
             tel_1 = OurTextField(
                 label=_(u"電話番号"),
                 note=_(u"例: 080xxxxyyyy"),
@@ -131,7 +131,7 @@ class ClientFormFactory(object):
                     Required(_(u"入力してください")),
                     AnyOf(countries, message=_(u"リストから選択してください。"))
                     ]
-                )
+                ) if request.organization.setting.i18n else None
             prefecture = OurTextField(
                 label=_(u"都道府県"),
                 filters=[strip_spaces],

@@ -32,7 +32,7 @@ def name_validators(request):
     locale_name = custom_locale_negotiator(request)
     length_limit_for_sej_alphabet = Length(max=20, message=_(u'{0}文字以内で入力してください').format(20))
     base = [Required(_(u'入力してください'))]
-    if locale_name == 'ja':
+    if locale_name == 'ja' or not request.organization.setting.i18n:
         return base + [Zenkaku, length_limit_for_sej]
     if locale_name == 'en':
         return base + [length_limit_for_sej_alphabet]
@@ -51,7 +51,7 @@ def city_validators(request):
     locale_name = custom_locale_negotiator(request)
     _ = request.translate
     base_validators = [Required(_(u'入力してください')), Length(max=255, message=_(u'{0}文字以内で入力してください').format(255))]
-    if locale_name == 'ja':
+    if locale_name == 'ja' or not request.organization.setting.i18n:
         return base_validators + [CP932]
     else:
         return base_validators
@@ -60,7 +60,7 @@ def address_validators(request):
     locale_name = custom_locale_negotiator(request)
     _ = request.translate
     base_validators = [Length(max=255, message=_(u'{0}文字以内で入力してください').format(255))]
-    if locale_name == 'ja':
+    if locale_name == 'ja' or not request.organization.setting.i18n:
         return base_validators + [CP932]
     else:
         return base_validators

@@ -149,7 +149,7 @@ $(function(){
             </ul>
           </td>
         </tr>
-        % if custom_locale_negotiator=='ja':
+        % if custom_locale_negotiator=='ja' or not request.organization.setting.i18n:
         <tr>
           <th scope="row">購入者氏名(全角カナ)</th>
           <td>
@@ -195,9 +195,11 @@ $(function(){
           <td>
             <ul>
               <li>
-                ${form['country'].label}
-                ${form['country']}
-                ${h.error_list(request, form, 'country')}
+                % if request.organization.setting.i18n:
+                  ${form['country'].label}
+                  ${form['country']}
+                  ${h.error_list(request, form, 'country')}
+                % endif
               </li>
 
               <li>${form['zip'].label}
@@ -260,4 +262,4 @@ $(function(){
 % endif
 
 <%include file="../../__commons__/footer.html" />
-<%include file="../../__commons__/i18n.html" />
+${h.create_url(request) |n}

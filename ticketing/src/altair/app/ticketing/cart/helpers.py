@@ -27,6 +27,8 @@ from altair.app.ticketing.mails.helpers import render_delivery_lots_rejected_mai
 from altair.app.ticketing.core.models import FeeTypeEnum, SalesSegment, StockTypeEnum
 from .resources import OrderDelivery, CartDelivery, OrderPayment, CartPayment
 from . import api
+from altair.app.ticketing.i18n import custom_locale_negotiator
+from collections import OrderedDict
 
 logger = logging.getLogger(__name__)
 
@@ -611,3 +613,18 @@ def payment_method_get_info(locale_name, pm, target):
         return pm.payment_method.preferences[locale_name][target]
     elif hasattr(pm.payment_method, target):
         return getattr(pm.payment_method, target)
+
+def create_url(request):
+    str = u""
+    if not request.organization.setting.i18n:
+        return str
+    i18n_dict = OrderedDict([(u'en', u'English'), (u'ja', u'日本語'), (u'zh_CN', u'简体中文'), (u'zh_TW', u'繁体中文')])
+    if request.organization and request.organization.setting.i18n:
+        locale_name = custom_locale_negotiator(request)
+        for local in i18n_dict:
+            if local != locale_name:
+                str = str + u'<a href="/locale?language={0}">{1}</a>   '.format(local, i18n_dict[local])
+            else:
+                str = str + i18n_dict[local] + '   '
+    return str
+

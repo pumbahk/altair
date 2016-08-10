@@ -28,23 +28,23 @@ def add_localizer(event):
     request.translate = auto_translate
 
 def custom_locale_negotiator(request):
-    """
-    1. Set value from parameter
-    2. Set value from cookies
-    3. Set value from browser default language
-    4. Set value from application default settting
-    """
     name = '_LOCALE_'
     locale_name = getattr(request, name, None)
 
+    # Set value with parameter
     if locale_name is None:
         locale_name = request.params.get(name)
+    # Set value with cookies
     if locale_name is None:
         locale_name = request.cookies.get(name)
-    if locale_name is None:
-        locale_name = request.accept_language.best_match(LOCALES, request.registry.settings.default_locale_name)
+    # Set value with browser default language
+    #if locale_name is None:
+    #    locale_name = request.accept_language.best_match(LOCALES, request.registry.settings.default_locale_name)
+    # Set value with application default settting
     if not request.accept_language:
         locale_name = request.registry.settings.default_locale_name
+    if locale_name is None:
+        locale_name = 'ja'
 
     return locale_name
 
