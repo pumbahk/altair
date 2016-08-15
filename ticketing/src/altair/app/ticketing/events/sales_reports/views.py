@@ -2,6 +2,7 @@
 
 import json
 import logging
+import traceback
 from datetime import datetime, timedelta
 import urllib
 
@@ -260,10 +261,13 @@ class SalesReports(BaseView):
             settings = self.request.registry.settings
             recipient = form.recipient.data
             subject = form.subject.data
-            if sendmail(settings, recipient, subject, html):
+            try:
+                sendmail(settings, recipient, subject, html)
                 self.request.session.flash(u'レポートを送信しました')
-            else:
-                self.request.session.flash(u'レポート送信に失敗しました')
+            except Exception as e:
+                logging.error(
+                    "sales report failed. event_id = {}, error: {}({})".format(event.id, type(e), e.message))
+                self.request.session.flash(u'レポート送信に失敗しました。送信先にはメールアドレスのみ指定してください。')
         else:
             self.request.session.flash(u'入力されていません')
 

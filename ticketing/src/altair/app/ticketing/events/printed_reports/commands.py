@@ -95,11 +95,7 @@ def main(argv=sys.argv):
                 try:
                     sendmail(settings, report_setting.format_emails(), subject, html)
                 except Exception as e:
-                    logging.error(
-                        u"発券進捗メール送信失敗 PrintedReportSetitng.id={}, エラータイプ:{}, エラー内容:{}, スタックトレース:{}".format(report_setting.id,
-                                                                                                      type(e),
-                                                                                                      e.message,
-                                                                                                      traceback.format_exc()))
+                    logging.error("printed report failed. report_setting_id = {}, error: {}({})".format(report_setting.id, type(e), e.message))
 
                 logger.info('end send_printed_report batch (sent={0}, report_setting_id={1})'.format(cnt, report_setting.id))
 
