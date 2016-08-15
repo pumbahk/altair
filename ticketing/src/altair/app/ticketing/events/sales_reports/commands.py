@@ -140,10 +140,7 @@ def main(argv=sys.argv):
         try:
             sendmail(settings, report_setting.format_emails(), u'[売上レポート|%s] %s' % (organization.name, subject), reports[form])
         except Exception as e:
-            logging.error(
-                u"売上レポートメール送信失敗 ReportSetitng.id={}, エラータイプ:{}, エラー内容:{}, スタックトレース:{}".format(report_setting.id, type(e),
-                                                                                              e.message,
-                                                                                              traceback.format_exc()))
+            logging.error("sales report failed. report_setting_id = {}".format(report_setting.id))
 
         i += 1
 

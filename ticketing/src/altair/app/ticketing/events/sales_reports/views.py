@@ -265,8 +265,7 @@ class SalesReports(BaseView):
                 sendmail(settings, recipient, subject, html)
                 self.request.session.flash(u'レポートを送信しました')
             except Exception as e:
-                logging.error(
-                    u"売上レポートメール手動送信失敗 Event.id={}, error={}, スタックトレース={}".format(event.id, type(e), traceback.format_exc()))
+                logging.error("sales report failed. event_id = {}".format(event.id))
                 self.request.session.flash(u'レポート送信に失敗しました。送信先にはメールアドレスのみ指定してください。')
         else:
             self.request.session.flash(u'入力されていません')
