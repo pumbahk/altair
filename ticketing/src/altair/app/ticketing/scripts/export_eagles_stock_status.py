@@ -105,7 +105,7 @@ def main():
             .join(Event, Performance.event_id==Event.id) \
             .join(EventSetting, Event.id==EventSetting.event_id) \
             .filter(Event.organization_id == organization.id) \
-            .filter(now <= Performance.start_on) \
+            .filter(now.date() <= Performance.start_on) \
             .filter(EventSetting.visible != 0) \
             .filter(Performance.public != 0) \
             .order_by(Event.display_order, Performance.start_on) \
