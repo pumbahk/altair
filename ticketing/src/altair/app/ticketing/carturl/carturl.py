@@ -60,8 +60,11 @@ class CartURLBuilder(object):
     def __init__(self, path_prefix):
         self.path_prefix = path_prefix.rstrip("/")
 
-    def build_path(self, event):
+    def build_path(self, event, performance):
         suffix = unicode(event.id)
+        if performance:
+            self.path_prefix = "/cart/performances"
+            suffix = unicode(performance.id)
         return u"{0}/{1}".format(self.path_prefix, suffix.lstrip("/"))
 
     def build_hostname(self, request, organization):
@@ -69,15 +72,16 @@ class CartURLBuilder(object):
 
     def build_query(self, performance):
         query = {}
-        if performance:
-            query["performance"] = performance.id
+        # tkt2128
+        # if performance:
+        #    query["performance"] = performance.id
         return query
 
     def build(self, request, event, performance=None, organization=None):
         organization = organization or request.context.organization
         scheme = _get_scheme_from_request(request)
         host_name = self.build_hostname(request, organization)
-        path = self.build_path(event)
+        path = self.build_path(event, performance)
         query = self.build_query(performance)
         return _url_builder(scheme, host_name, path, query)
 
@@ -113,8 +117,11 @@ class AgreementCartURLBuilder(object):
     def __init__(self, path_prefix):
         self.path_prefix = path_prefix.rstrip("/")
 
-    def build_path(self, event):
+    def build_path(self, event, performance):
         suffix = unicode(event.id)
+        if performance:
+            self.path_prefix = "/cart/performances"
+            suffix = unicode(performance.id)
         return u"{0}/{1}/agreement".format(self.path_prefix, suffix.lstrip("/"))
 
     def build_hostname(self, request, organization):
@@ -122,8 +129,9 @@ class AgreementCartURLBuilder(object):
 
     def build_query(self, performance):
         query = {}
-        if performance:
-            query["performance"] = performance.id
+        # tkt2128
+        # if performance:
+        #    query["performance"] = performance.id
         return query
 
     def build(self, request, event, performance=None, organization=None):
