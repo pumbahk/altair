@@ -113,6 +113,13 @@ def japanese_datetime(dt):
         logger.warn("dt is None")
         return ""
 
+
+def datetime(dt):
+    if dt:
+        return dt.strftime('%Y-%m-%d %H:%M')
+    return None
+
+
 def mail_date(date):
     return u'{d.year}年 {d.month}月 {d.day}日 {d.hour:02}時 {d.minute:02}分'.format(d=date)
 
