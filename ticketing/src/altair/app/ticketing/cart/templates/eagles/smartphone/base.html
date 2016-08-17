@@ -32,6 +32,7 @@
             % if (not getattr(request, 'context', None)) or request.context.authenticated_user()['is_guest']:
               <a onclick="document.logout.submit()" class="btn btn-supplementary"><span class="btn-inner">会員でログイン</span></a>
             % else:
+              ${request.context.authenticated_user()['membergroup']}でログイン中<br>
               <a onclick="document.logout.submit()" class="btn btn-supplementary"><span class="btn-inner">ログアウト</span></a>
             % endif
             % if getattr(request, 'context', None) and hasattr(request.context, 'switch_pc_url'):

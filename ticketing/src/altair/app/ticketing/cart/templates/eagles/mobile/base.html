@@ -13,6 +13,7 @@
         % if (not getattr(request, 'context', None)) or request.context.authenticated_user()['is_guest']:
           <input type="submit" value="会員でログイン"/>
         % else:
+          ${request.context.authenticated_user()['membergroup']}でログイン中
           <input type="submit" value="ログアウト"/>
         % endif
         <a href="${request.route_path('cart.exit')}">トップへ</a>
