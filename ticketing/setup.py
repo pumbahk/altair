@@ -216,6 +216,7 @@ setup(name='altair.app.ticketing',
       send_mail=altair.app.ticketing.scripts.send_mail:main
       laguna_csv_export=altair.app.ticketing.cooperation.laguna.scripts.laguna_csv_export:main
       famic=altair.app.ticketing.famiport.client.commands:main
+      export_eagles_stock_status=altair.app.ticketing.scripts.export_eagles_stock_status:main
       """,
       dependency_links=[
         'file:../altairlib/altair.versiontools#egg=altair.versiontools-1.0',
