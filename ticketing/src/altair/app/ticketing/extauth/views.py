@@ -148,6 +148,7 @@ class View(object):
     def navigate_to_select_account(self):
         oauth_params = self.request.session['oauth_params']
         data = self.request.session['retrieved']
+
         if len(data['memberships']) == 1:
             return HTTPFound(
                 location=self.request.route_path(
@@ -159,7 +160,7 @@ class View(object):
                         membership_id=data['memberships'][0]['membership_id']
                         )
                     ),
-                )
+            )
         elif len(data['memberships']) > 1:
             if 'select_account' not in oauth_params['prompt']:
                 raise OpenIDAccountSelectionRequired()
@@ -234,6 +235,7 @@ class View(object):
         )
     def select_account(self):
         data = self.request.session['retrieved']
+
         if len(data['memberships']) == 1:
             return HTTPFound(
                 location=self.request.route_path(
@@ -254,6 +256,7 @@ class View(object):
     @lbr_view_config(route_name='extauth.authorize', permission='authenticated')
     def authorize(self):
         check_csrf_token(self.request, '_')
+
         try:
             member_kind_id_str = self.request.params['member_kind_id']
             membership_id = self.request.params['membership_id']
@@ -274,6 +277,12 @@ class View(object):
         oauth_params = dict(self.request.session['oauth_params'])
         state = oauth_params.pop('state')
         id_ = extract_identifer(self.request)
+
+        # 一般ユーザーの場合ログインIDでファンクラブIDを上書きする
+        pseudo_fanclub = retrieved_profile.get('pseudo_fanclub', False)
+        if pseudo_fanclub:
+            membership_id=id_
+
         identity = dict(
             id=id_,
             profile=self.request.altair_auth_metadata,
@@ -468,7 +477,22 @@ class View(object):
         permission='authenticated'
         )
     def no_valid_memberships(self):
-        return dict()
+        data = self.request.session['retrieved']
+        pseudo_fanclub = data.get('pseudo_fanclub', False)
+
+        # フラグを持っている場合は一般ユーザー情報を取得する
+        if pseudo_fanclub:
+            pseudo_data = get_communicator(self.request, self.request.organization.fanclub_api_type).get_pseudo_user_profile()
+            self.request.session['retrieved'] = dict(
+                                                    pseudo_fanclub = pseudo_fanclub,
+                                                    memberships = pseudo_data['memberships']
+                                                )
+            return dict(
+                       memberships = pseudo_data['memberships']
+                   )
+                       
+        else:
+            return dict()
 
 
 @lbr_view_config(route_name='extauth.logout')

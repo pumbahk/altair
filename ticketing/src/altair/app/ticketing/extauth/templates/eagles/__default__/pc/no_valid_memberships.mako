@@ -1,17 +1,27 @@
 <%inherit file="base.mako" />
-<%
-member_set = _context.member_sets[0]
-guest_member_kinds = [member_kind for member_kind in member_set.member_kinds if member_kind.show_in_landing_page and member_kind.enable_guests]
-%>
 
-<p class="box bold tac fs18" style="color: red;">有効なファンクラブが確認できません</p>
+<p class="box bold tac fs18" style="color: red;">ご入力いただいた楽天会員IDはファンクラブ会員IDと連携していない楽天会員IDです。<br>一般（非ファンクラブ会員）の方は「次へ進む」からお進みください。</p>
 
 <div class="box clearfix">
 
-<!-- FC LOGIN BOX -->
-<div class="col2_1 tile2 login-box">
+<!-- guest LOGIN BOX -->
+<div class="col2 tile2 login-box">
 <dl>
-<dt class="login-name"><span>ファンクラブに入会済み</span>の方はこちら</dt>
+<dt class="login-name"><span>一般の方</span></dt>
+<dd class="login-inbox">
+% for membership in memberships:
+<a href="${_context.route_path('extauth.authorize', _query=dict(_=request.session.get_csrf_token(), member_kind_id=membership['kind']['id'], membership_id=membership['membership_id']))}">
+<p class="mgt20 mgb20"><button class="btnA btnA_l">次へ進む</button></p>
+</a>
+% endfor
+</dd>
+</dl>
+</div>
+
+<!-- FC LOGIN BOX -->
+<div class="col2 tile2 login-box">
+<dl>
+<dt class="login-name"><span>ファンクラブに入会済み</span></dt>
 <dd class="login-inbox">
 <%!
 from datetime import datetime
@@ -21,24 +31,6 @@ thisyear = datetime.now().strftime('%Y')
 </dd>
 </dl>
 </div>
-
-<!-- guest LOGIN BOX -->
-% if guest_member_kinds:
-<div class="col2_2 tile2 login-box">
-<form action="${_context.route_path('extauth.login',_query=request.GET)}" method="POST">
-<dl>
-<dt class="login-name"><span>一般の方</span>はこちら</dt>
-<dd class="login-inbox">
-% for member_kind in guest_member_kinds:
-<p class="mgt20 mgb20"><button class="btnA btnA_l" name="doGuestLoginAs${member_kind.name}">次へ進む</button></p>
-% endfor
-</dd>
-</dl>
-<input type="hidden" name="member_set" value="${member_set.name}" />
-<input type="hidden" name="_" value="${request.session.get_csrf_token()}" />
-</form>
-</div>
-% endif
 
 <div class="box clearfix">
 <p style="text-align:center">
@@ -52,3 +44,4 @@ thisyear = datetime.now().strftime('%Y')
 %>
 <%include file="../common/sc_basic.html" args="sc=sc" />
 <!--/SiteCatalyst-->
+
