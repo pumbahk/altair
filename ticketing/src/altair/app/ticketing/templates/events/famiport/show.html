@@ -2,9 +2,6 @@
 <%namespace file="/common/modal.html" name="common_modal" />
 <%namespace file="/common/helpers.html" name="ch" />
 
-<script type="text/javascript">
-$('form').disableOnSubmit();
-</script>
 
 <style type="text/css">
 .attached-action {
@@ -41,6 +38,7 @@ $('form').disableOnSubmit();
 </div>
 
 <form method="POST" action="${request.route_path('events.famiport.performance_groups.action', event_id=event.id, traverse='action_dispatch')}">
+  <input type="hidden" name="token" value="${token}"/>
   <h2>公演グループ</h2>
   <div class="attached-action">
     <div class="attached-action-inner">
