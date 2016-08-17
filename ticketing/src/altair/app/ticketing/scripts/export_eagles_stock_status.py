@@ -21,7 +21,10 @@ from altair.app.ticketing.core.models import Organization, Event, EventSetting, 
 from altair.app.ticketing.cart.view_support import get_seat_type_dicts
 
 logger = logging.getLogger(__name__)
+
 charset = locale.getpreferredencoding()
+if charset == 'US-ASCII':
+    charset = 'utf-8'
 
 datetime_format = "%Y/%m/%d %H:%M"
 
@@ -29,21 +32,21 @@ datetime_format = "%Y/%m/%d %H:%M"
 def message(msg, auxiliary=False):
     logger.log(auxiliary and logging.DEBUG or logging.INFO, msg)
     pad = '  ' if auxiliary else ''
-    print >>sys.stderr, (pad + msg).encode(charset)
+    print >>sys.stdout, (pad + msg).encode(charset)
 
 
 def upload(uri, data, resolver, dry_run):
     key = resolver.resolve(uri).get_key()
     if key:
         if dry_run:
-            sys.stdout.write("DRY-RUN: %s\n" % uri)
-            sys.stdout.write("%s\n" % json.dumps(data))
+            message("DRY-RUN: %s" % uri)
+            message("%s" % json.dumps(data))
         else:
             headers = { "Content-Type": "application/json"}
             key.set_contents_from_string(json.dumps(data), headers=headers)
-            sys.stdout.write("upload successfully: %s\n" % uri)
+            message("upload successfully: %s" % uri)
             key.make_public()
-            sys.stdout.write("update acl successfully.\n")
+            message("update acl successfully.")
     else:
         raise
 
@@ -96,7 +99,7 @@ def main():
         # 初登場のseat type nameだったら、global_seat_typesに登録する
         def register_seat_type(seat_type_name):
             if seat_type_name not in global_seat_types:
-                sys.stdout.write("register seat type: %s\n" % seat_type_name)
+                message("register seat type: %s" % seat_type_name)
                 global_seat_types.append(seat_type_name)
 
         by_start_on = dict()
@@ -111,7 +114,7 @@ def main():
             .order_by(Event.display_order, Performance.start_on) \
             .all()
         for p in performances:
-            sys.stdout.write("performance(start=%s, id=%d, name=%s)\n" % (p.start_on, p.id, p.name))
+            message("performance(start=%s, id=%d, name=%s)" % (p.start_on, p.id, p.name))
 
             sales_segment = p.get_recent_sales_segment(now=now)
             if not sales_segment:
@@ -139,10 +142,10 @@ def main():
         )
 
         for start_on, performances in sorted(by_start_on.items()):
-            sys.stdout.write("start_on=%s\n" % start_on)
+            message("start_on=%s" % start_on)
             seat_type_by_name = dict()
             for performance in performances:
-                sys.stdout.write("  performance(id=%d, event=%s)\n" % (performance["id"], performance["event"]))
+                message("  performance(id=%d, event=%s)" % (performance["id"], performance["event"]))
                 for seat_type in performance["seat_types"]:
                     if seat_type["name"] not in seat_type_by_name:
                         seat_type_by_name[seat_type["name"]] = [ seat_type ]
@@ -185,7 +188,6 @@ def main():
     except:
         raise
 
-    sys.stdout.write("done\n")
-    sys.stdout.flush()
+    message("done")
 
     return 0
