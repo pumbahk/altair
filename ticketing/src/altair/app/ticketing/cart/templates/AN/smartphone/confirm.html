@@ -9,53 +9,6 @@ $(function() {
 });
 </script>
 </%block>
-<%block name="css">
-<style>
-  .button_box{
-    width: 40%;
-    vertical-align: top;
-  }
-  #btn-back {
-    width: 100%;
-    height: 46px;
-    vertical-align: top;
-    padding: 1px;
-    margin-right: 10px;
-  }
-  #btn-complete {
-    width: 100%;
-    height: 46px;
-    margin-left: 10px;
-  }
-  th {
-      text-align: left;
-  }
-  .dispBox {
-    margin-right: 20px
-  }
-  .methodArea {
-    border: 1px solid #000000;
-    background-color: cornsilk;
-    width: 100%;
-  }
-  .align1 {
-    text-align: right;
-  }
-  .dispBox {
-    margin: 10px;
-  }
-  .dispBoxInner {
-    margin-left: 17px;
-  }
-  .titleSpace {
-    width: 90px;
-  }
-  .message-complete {
-    color: red;
-  }
-</style>
-</%block>
-
 
 % if request.session.peek_flash():
   % for message in request.session.pop_flash():
@@ -63,200 +16,196 @@ $(function() {
   % endfor
 % endif
 
-<h1 class="heading heading-primary">${__(u'チケット購入')}</h1>
-
+<!-- ******************** contents [start] ******************** -->
 <div class="confirm-attBox-a mgt30">
-  <p class="clr_red bold fs18">${__(u'まだお申し込みは完了していません')}</p>
-  <p>${__(u'ご注文内容をご確認いただき「購入する」ボタンより、購入を完了させてください。')}</p>
+<p class="clr_red bold fs18">${__(u'まだお申し込みは完了していません')}</p>
+<p>${__(u'ご注文内容をご確認いただき「購入する」ボタンより、購入を完了させてください。')}</p>
 </div>
 
-<form id="form1" action="${delegator['url'] if delegator else request.route_url('payment.confirm')}" method="post">
+
+<form id="form1" class="confirmForm" action="${delegator['url'] if delegator else request.route_url('payment.confirm')}" method="post">
   ${form.csrf_token()}
-  <input type="hidden" name="event_id" value="${cart.performance.event.id}"/>
+<!-- ===== お買い物内容 ===== -->
+<input type="hidden" name="event_id" value="${cart.performance.event.id}"/>
+<div class="confirm-wrap">
+<h2 class="heading heading_simple_line">${__(u'お買い物内容')}</h2>
 
-  <div class="confirmBox">
-	<div class="confirmBoxInner">
-      <div class="dispBox">
-        <%m:header>${__(u'お買い物内容')}</%m:header>
-        <div class="dispBoxInner">
-          <div id="name">
-            ${cart.performance.event.title}<br/>
-            ${h.performance_datetime(cart.performance)}(予定)<br/>
-            ${cart.performance.venue.name}
-          </div>
-          <br/>
 
-          <table id="contentsOfShopping" summary="${__(u'席種、金額などのお買い物内容')}" class="methodArea">
-            %for product in cart.items:
-                <tr id="commission">
-                  % if len(product.items) == 1:
-                    <th scope="row"><img src="${request.static_url('altair.app.ticketing.cart:static/AN/smartphone/images/icon_dummy.gif')}" alt="" width="21" height="21" />${product.product.name}<strong> ${product.seat_quantity}</strong>枚<br/></th>
-                  % else:
-                    <th scope="row"><img src="${request.static_url('altair.app.ticketing.cart:static/AN/smartphone/images/icon_dummy.gif')}" alt="" width="21" height="21" />${product.product.name} ×<strong>${product.quantity}</strong><br/></th>
-                  % endif
-                  <td>&nbsp;</td>
-                  <td>&nbsp;</td>
-                  <td class="align1">￥${h.format_number(product.product.price * product.quantity)}</td>
-                </tr>
-                % if product.product.sales_segment.setting.display_seat_no:
-                  % for seat in product.seats:
-                    <tr id="commission">
-                      <th scope="row" colspan="4">　　${seat['name']}</th>
-                    </tr>
-                  % endfor
-                % endif
-            %endfor
-            <tr id="commission">
-              <th scope="row">${__(u'決済手数料')}</th>
-              <td>&nbsp;</td>
-              <td>&nbsp;</td>
-              <td class="align1">￥${h.format_number(cart.transaction_fee)}</td>
-            </tr>
-            <tr id="commission">
-              <th scope="row">${__(u'発券/引取手数料')}</th>
-              <td>&nbsp;</td>
-              <td>&nbsp;</td>
-              <td class="align1">￥${h.format_number(cart.delivery_fee)}</td>
-            </tr>
-            <tr id="commission">
-              <th scope="row">${__(u'システム利用料')}</th>
-              <td>&nbsp;</td>
-              <td>&nbsp;</td>
-              <td class="align1">￥${h.format_number(cart.system_fee)}</td>
-            </tr>
-            %if cart.special_fee > 0:
-            <tr id="commission">
-              <th scope="row">${cart.special_fee_name}</th>
-              <td>&nbsp;</td>
-              <td>&nbsp;</td>
-              <td class="align1">￥${h.format_number(cart.special_fee)}</td>
-            </tr>
-            %endif
-            <tr id="total">
-              <th scope="row">${__(u'合計金額')}</th>
-              <td>&nbsp;</td>
-              <td>&nbsp;</td>
-              <td class="align1">￥${h.format_number(cart.total_amount)}</td>
-            </tr>
-          </table>
-        </div>
-      </div>
-	</div>
-  </div>
+<!-- ===== purchase-wrap ===== -->
+<div class="purchase-wrap">
+<div class="purchase-title">
+<p>${cart.performance.event.title}</p>
+<p>${h.performance_datetime(cart.performance)}(予定) ${cart.performance.venue.name}</p>
+</div>
+<table class="purchase-table" summary="${__(u'席種、金額などのお買い物内容')}">
+<tbody>
+%for product in cart.items:
+<tr>
+  <th scope="row">${product.product.name}</th>
+  % if len(product.items) == 1:
+    <td nowrap><strong>${product.seat_quantity}</strong>枚</td>
+  % else:
+    <td nowrap>×<strong>${product.quantity}</strong>枚</td>
+  % endif
+  <td>￥${h.format_number(product.product.price * product.quantity)}</td>
+</tr>
+%endfor
 
-  <%
+<tr>
+<th scope="row">${__(u'決済手数料')}</th>
+<td>&nbsp;</td>
+<td>￥${h.format_number(cart.transaction_fee)}</td>
+</tr>
+<tr>
+<th scope="row">${__(u'発券/引取手数料')}</th>
+<td>&nbsp;</td>
+<td>￥${h.format_number(cart.delivery_fee)}</td>
+</tr>
+<tr>
+<th scope="row">${__(u'システム利用料')}</th>
+<td>&nbsp;</td>
+<td>￥${h.format_number(cart.system_fee)}</td>
+</tr>
+%if cart.special_fee > 0:
+<tr>
+<th scope="row">${cart.special_fee_name}</th>
+<td>&nbsp;</td>
+<td>￥${h.format_number(cart.special_fee)}</td>
+</tr>
+%endif
+<tr class="purchase-table-total">
+<th scope="row">${__(u'合計金額')}</th>
+<td>&nbsp;</td>
+<td>￥${h.format_number(cart.total_amount)}</td>
+</tr>
+</tbody></table>
+</div>
+</div><!-- ===== / お買い物内容 ===== -->
+
+
+<%
 	 shipping = cart.shipping_address
 	 %>
 
-  <div class="confirmBox">
-	<div class="confirmBoxInner">
-      <div class="dispBox">
-        <%m:header>${__(u'お支払い')}</%m:header>
-        <div class="dispBoxInner">
-          ${h.render_payment_confirm_viewlet(request, cart)}
-        </div>
-      </div>
-    </div>
-  </div>
 
-  <div class="confirmBox">
-	<div class="confirmBoxInner">
-      <div class="dispBox">
-        <%m:header>${__(u'お引き取り')}</%m:header>
-        <div class="dispBoxInner">
-          ${h.render_delivery_confirm_viewlet(request, cart)}
-        </div>
-      </div>
-    </div>
-  </div>
+<!-- ===== お支払い ===== -->
+<div class="confirm-wrap">
+<h2 class="heading heading_simple_line">${__(u'お支払い')}</h2>
+<p>${h.render_payment_confirm_viewlet(request, cart)}</p>
+</div><!-- ===== / お支払い ===== -->
 
-  <div class="confirmBox">
-	<div class="confirmBoxInner">
-      <div class="dispBox">
-        <%m:header>${__(u'購入者情報')}</%m:header>
-        <div class="dispBoxInner">
-          <table id="confirmDelivery" summary="配送先情報" class="methodArea">
-            <tr>
-              <th scope="row" class="titleSpace">${__(u'購入者氏名')}
-              % if custom_locale_negotiator=='ja':
-                  (漢字)
-              % endif
-              </th>
-              <td>${shipping.last_name} ${shipping.first_name}</td>
-            </tr>
-            % if custom_locale_negotiator=='ja':
-            <tr>
-              <th scope="row">氏名(カナ)</th>
-              <td>${shipping.last_name_kana} ${shipping.first_name_kana}</td>
-            </tr>
-            % endif
-            <tr>
-              <th scope="row">${__(u'電話番号')}</th>
-              <td>${shipping.tel_1}</td>
-            </tr>
-            <tr>
-              <th scope="row">${__(u'配送先住所')} <br />※${__(u'配送受取を選択した場合')}</th>
-              <td>${shipping.zip} ${shipping.prefecture}${shipping.city}${shipping.address_1}${shipping.address_2}
-              </td>
-            </tr>
-          </table>
-        </div>
-      </div>
-	</div>
-  </div>
 
-  % if extra_form_data:
-  <div class="confirmBox">
-	<div class="confirmBoxInner">
-      <div class="dispBox">
-        <%m:header>${__(u'追加情報')}</%m:header>
-        <div class="dispBoxInner">
-          <table id="confirmDelivery" summary="${__(u'配送先情報')}" class="methodArea">
-          % for _, (display_name, display_value) in extra_form_data:
-            <tr>
-              <th scope="row">${display_name}</th>
-              <td>${h.sensible_coerce(request, display_value)}</td>
-            </tr>
-          % endfor
-          </table>
-        </div>
-      </div>
-	</div>
-  </div>
+
+
+
+<!-- ===== お引き取り ===== -->
+<div class="confirm-wrap">
+<h2 class="heading heading_simple_line">${__(u'お引き取り')}</h2>
+<p>${h.render_delivery_confirm_viewlet(request, cart)}</p>
+</div><!-- ===== / お引き取り ===== -->
+
+
+
+
+
+<!-- ===== 購入者情報 ===== -->
+<div class="confirm-wrap">
+<h2 class="heading heading_simple_line">${__(u'購入者情報')}</h2>
+
+
+<!-- ===== customerBox ===== -->
+<div class="customerBox">
+<table class="customer-table" summary="配送先情報">
+<tbody>
+<tr>
+<th>
+  ${__(u'購入者氏名')}
+  % if custom_locale_negotiator=='ja':
+    <br><span>漢字</span>
   % endif
+</th>
+</tr>
+<tr>
+<td>
+${shipping.last_name} ${shipping.first_name}
+</td>
+</tr>
+% if custom_locale_negotiator=='ja':
+  <tr>
+  <th>購入者氏名<br><span>カナ</span></th>
+  </tr>
+  <tr>
+  <td>
+    ${shipping.last_name_kana} ${shipping.first_name_kana}
+  </td>
+  </tr>
+% endif
+<tr>
+<th>${__(u'電話番号')}</th>
+</tr>
+<tr>
+<td>
+${shipping.tel_1}
+</td>
+</tr>
+<tr>
+<th>${__(u'配送先住所')}<br><span>※${__(u'配送受取を選択した場合')}</span></th>
+</tr>
+<tr>
+<td>
+${shipping.zip}<br/>
+${shipping.prefecture}${shipping.city}${shipping.address_1}${shipping.address_2}
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div><!-- ===== / 購入者情報 ===== -->
 
-  % if mailmagazines_to_subscribe:
-  <div class="confirmBox">
-	<div class="confirmBoxInner">
-      <div class="dispBox">
-        <%m:header>${__(u'メールマガジンの配信')}</%m:header>
-        <div class="dispBoxInner">
-<p>
-${__(u'ご利用いただいた方には、楽天チケットからのメールマガジンをお送りします。不要な方はチェックをはずしてください。')}
+% if extra_form_data:
+<div class="confirm-wrap">
+      ${__(u'追加情報')}
+      <div class="customerBox">
+        <table summary="${__(u'配送先情報')}" class="methodArea">
+        % for _, (display_name, display_value) in extra_form_data:
+          <tr>
+            <th scope="row">${display_name}</th>
+            <td>${h.sensible_coerce(request, display_value)}</td>
+          </tr>
+        % endfor
+        </table>
+      </div>
+    </div>
+</div>
+</div>
+% endif
+
+<!-- ===== メールマガジンの配信 ===== -->
+% if mailmagazines_to_subscribe:
+<div class="confirm-wrap">
+<div class="confirm-magBox">
+<h2 class="heading heading_simple_line">${__(u'メールマガジンの配信')}</h2>
+
+
+<p class="bold">${__(u'ご利用いただいた方には、楽天チケットからのメールマガジンをお送りします。不要な方はチェックをはずしてください。')}</p>
+  % for mailmagazine, subscribed in mailmagazines_to_subscribe:
+<p class="mgtb10">
+<input type="checkbox" checked="checked" name="mailmagazine" id="mailmagazine-${mailmagazine.id}" value="${mailmagazine.id}"${subscribed and u' disabled="disabled"' or u''|n} />
+<label for="mailmagazine-${mailmagazine.id}">${mailmagazine.name}</label>
+  %if subscribed:
+  <sapn class="icon_onmag">購読中</sapn>
+  %endif
 </p>
-          <table id="confirmMailmagazineSubscription" class="methodArea">
-            % for mailmagazine, subscribed in mailmagazines_to_subscribe:
-            <tr${subscribed and u' class="subscribed"' or u''|n}>
-              <td scope="row">
-                    <input type="checkbox" checked="checked" name="mailmagazine" id="mailmagazine-${mailmagazine.id}" value="${mailmagazine.id}"${subscribed and u' disabled="disabled"' or u''|n} />
-                    <label for="mailmagazine-${mailmagazine.id}">${mailmagazine.name}</label>
-                    <div style="margin-left: 2em;">${mailmagazine.description|n}</div>
-              </td>
-            </tr>
-            % endfor
-          </table>
-        </div>
-      </div>
-	</div>
-  </div>
-  % endif
+<p class="fs12">${mailmagazine.description|n}</p>
+  % endfor
+</div>
+</div>
+% endif
 
 % if keywords_to_subscribe:
-  <div class="confirmBox">
-	<div class="confirmBoxInner">
-      <div class="dispBox">
-        <%m:header>お気に入りワード登録</%m:header>
-        <div class="dispBoxInner">
+  <div class="confirm-wrap">
+	<div class="confirm-magBox">
+    <h2 class="heading heading_simple_line">お気に入りワード登録</h2>
 <p>
 							お気に入りワードに登録しておくと、発売開始等のタイミングでお知らせメールが届きます。
 							お知らせメールのサービス開始は夏頃を予定しています。
@@ -271,36 +220,24 @@ ${__(u'ご利用いただいた方には、楽天チケットからのメール�
             </tr>
             % endfor
           </table>
-        </div>
-      </div>
 	</div>
   </div>
 % endif
 
-  <table>
-    <tr>
-      <td class="button_box">
-        <input id="btn-back" class="btn btn-primary" type="submit" name="back" value="${__(u'座席選択にもどる')}" />
-        <div class="dispBox">
-          <div class="dispBoxInner">
-            ※${__(u'ここまでのお申し込みがキャンセルになります。')}
-          </div>
-        </div>
-      </td>
-      <td class="button_box">
-        % if delegator:
-          ${delegator['submit']}
-        % else:
-          <input id="btn-complete" class="btn btn-primary" type="submit" value="${__(u'購入する')}" />
-          <div class="dispBox">
-            <div class="dispBoxInner message-complete">
-            ${__(u'※お申込み確定後は、理由の如何を問わず、')} ${__(u'取替・変更・キャンセルをお受けできません。')}
-            </div>
-          </div>
-        % endif
-      </td>
-    </tr>
-  </table>
+<!-- ===== BTN ===== -->
+<div class="confirm-btnBox">
+<ul class="confirm-btnBox-column2 clearfix">
+<li>
+<input id="btn-complete" class="btn btn-primary" type="submit" value="${__(u'購入する')}" />
+<p class="fs12 clr_red">※${__(u'お申込み確定後は、理由の如何を問わず、')}<br>${__(u'取替・変更・キャンセルをお受けできません。')}</p>
+</li>
+<li>
+<input id="btn-back" class="btn btn-secondly" type="submit" name="back" value="${__(u'座席選択にもどる')}" />
+<p class="fs12">※${__(u'ここまでのお申し込みがキャンセルになります。')}</p>
+</li>
+</ul>
+</div>
 </form>
+
 <%include file="../../__commons__/footer.html" />
 ${h.create_url(request) |n}

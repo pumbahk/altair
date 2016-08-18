@@ -1,225 +1,240 @@
 <%inherit file="./base.html"/>
 <%namespace file="tags_smartphone.html" name="t" />
-<style type="text/css">
-form {
-  padding: 0 0;
-  margin: 0 0;
-}
-</style>
 
 <%block name="javascript">
 <script type="text/javascript" src="${request.static_url('altair.app.ticketing.cart:static/js/ajaxzip3-https.js')}"></script>
 <script type="text/javascript">
+
 $(document).ready(function(){
   $(".methodExplanation").hide();
-  $("input:radio").click(function() {
-    $(".methodExplanation").hide();
-    var index = $("input:radio[name='payment_delivery_method_pair_id']").index(this);
-    $(".methodExplanation:eq(" + index + ")").show();
+  $("label[for^='radio']").on('click', function() {
+    var index = $("label[for^='radio']").index(this);
+    if (!$(".methodExplanation:eq(" + index + ")").is(':visible')) {
+      $(".methodExplanation").slideUp();
+      $(".methodExplanation:eq(" + index + ")").slideDown();
+    }
   });
 });
+
 </script>
 </%block>
 
-<%block name="css">
-<style>
-.error-list {
-  color: #ff0000;
-}
-    .error {
-      color: #ff0000;
-    }
-    .methodArea {
-      border: 1px solid #000000;
-      background-color: cornsilk;
-    }
-</style>
-</%block>
+<!-- ******************** contents [start] ******************** -->
+
+<!-- ===== お支払い･お引取り方法の指定 ===== -->
+<div class="confirm-wrap">
+<h2 class="heading heading_simple_line">${_(u'お支払い･お引取り方法の指定')}</h2>
 %if request.session.peek_flash():
     %for message in request.session.pop_flash():
     <div class="error">${message}</div>
     %endfor
 %endif
+<p class="mgb20">
+${_(u'楽天チケットでご利用いただけるチケットの受取方法と支払方法の中からひとつを選択してください。')}<br>
+※${_(u'このページに記載されている料金はすべて消費税込です。')}<br>
+</p>
+
+
+<!-- ===== settlement ===== -->
 <form id="form1" class="confirmForm" name="form1" method="post" action="${request.url}">
-  <div class="dispBox">
-    <%t:header>${_(u'お支払い･お引取り方法の指定')}</%t:header>
-    <p class="mgb20">
-    ${_(u'楽天チケットでご利用いただけるチケットの受取方法と支払方法の中からひとつを選択してください。')}<br>
-    ※${_(u'このページに記載されている料金はすべて消費税込です。')}<br>
-    </p>
-    <div class="dispBoxInner">
-        ${_(u'どれかひとつをお選びください')}<br/>
-        ${_(u'選択すると、お支払・お引取方法についての注意事項が表示されます。')}<br/><br/>
-      <% checked_id = request.params.get('payment_delivery_method_pair_id') %>
-      %for m in payment_delivery_methods:
-      <div class="settlementPayBox selectMethod">
-        <div class="settlementPayBoxInner">
-          <% checked = 'checked' if str(m.id) == checked_id else '' %>
-          <input type="radio" name="payment_delivery_method_pair_id" id="radio2" value="${m.id}" ${checked} />
-          ${h.payment_method_get_info(custom_locale_negotiator, m, 'name')} & ${h.delivery_method_get_info(custom_locale_negotiator, m, 'name')}
-        </div>
-      </div>
-      <div class="dispBox">
-      <div class="methodArea settlementPayBox methodExplanation">
-      <div class="settlementPayBoxInner">
-          <%t:header>${_(m.payment_method.name)}</%t:header>
-          <div class="dispBox paymentFee_${h.format_number(m.transaction_fee)}">
-            <span class="paymentFee">${h.format_currency(m.transaction_fee)}</span>
-            <span class="paymentFeeType">
-            ${h.payment_method_get_info(custom_locale_negotiator, m, 'name') | n}
-            </span>
-            <div class="description">
-            ${h.payment_method_get_info(custom_locale_negotiator, m, 'description') | n}
-            </div>
-          </div>
-          <%t:header>${_(u'システム利用料')}</%t:header>
-          <div class="dispBox paymentFee_${h.format_number(m.transaction_fee)}">
-            <span class="paymentFee">${h.format_currency(m.system_fee)}</span> 
-            <span class="paymentFeeType">(${_(h.fee_type(m.system_fee_type))})</span>            
-            <div class="description">${_(u'上記のシステム利用料がかかります。')}</div>
-          </div>
-          <br/>
-          %if m.special_fee > 0:
-          <%t:header>${m.special_fee_name}</%t:header>
-          <div class="dispBox paymentFee_${h.format_number(m.transaction_fee)}">
-            <span class="paymentFee">${h.format_currency(m.special_fee)}</span> 
-            <span class="paymentFeeType">(${h.fee_type(m.special_fee_type)})</span>            
-            <div class="description">${_(u'上記の{0}がかかります。').format(m.special_fee_name)}</div>
-          </div>
-          <br/>
-          %endif
-          <%t:header>${_(m.delivery_method.name)}</%t:header>
-          <div class="dispBox devlieryFee_${h.format_number(m.delivery_fee)}">
-            <span class="deliveryFee">${h.format_currency(m.delivery_fee)}</span>
-            <span class="deliveryFeeType">
-            ${h.delivery_method_get_info(custom_locale_negotiator, m, 'name') | n}
-            </span>
-            <div class="description">
-            ${h.delivery_method_get_info(custom_locale_negotiator, m, 'description') | n}
-            </div>
-          </div>
-        </div>
-      </div>
-      </div>
-      %endfor
-    </div>
+  ${_(u'どれかひとつをお選びください')}<br/>
+  ${_(u'選択すると、お支払・お引取方法についての注意事項が表示されます。')}<br/><br/>
+  <%
+  checked_id = request.params.get('payment_delivery_method_pair_id')
+  radio_cnt = 0
+  %>
+  %for m in payment_delivery_methods:
+  <% radio_cnt += 1 %>
+  <div class="settlement-wrap">
+    <dl class="settlement-accordion">
+      <dt class="settlement-list">
+        <% checked = 'checked' if str(m.id) == checked_id else '' %>
+        <input type="radio" name="payment_delivery_method_pair_id" id=${"radio{}".format(radio_cnt)} value="${m.id}" ${checked} />
+        <label for=${"radio{}".format(radio_cnt)}>
+        <p class="settlement-list-typeA icon-credit"><span>${h.payment_method_get_info(custom_locale_negotiator, m, 'name')}</span></p>
+        <p class="settlement-list-typeB icon-seven"><span>${h.delivery_method_get_info(custom_locale_negotiator, m, 'name')}</span></p>
+        </label>
+      </dt>
+        <dd class="settlement-detail methodExplanation">
+          <table class="settlement-table">
+          <thead><tr><th>${_(m.payment_method.name)}</th></tr></thead>
+          <tbody>
+          <tr>
+          <td class="fs12">
+          ${h.payment_method_get_info(custom_locale_negotiator, m, 'description') | n}
+          </td>
+          </tr>
+          <tr>
+          <td>
+          <p class="commission">${_(u'手数料')}</p>
+          ※${_(h.fee_type(m.payment_method.fee_type))}<br>
+          ${h.format_currency(m.transaction_fee)}
+          </td>
+          </tr>
+          </tbody>
+          </table>
+
+          <table class="settlement-table">
+          <thead><tr><th>${_(m.delivery_method.name)}</th></tr></thead>
+          <tbody>
+          <tr>
+          <td class="fs12">
+          ${h.delivery_method_get_info(custom_locale_negotiator, m, 'description') | n}
+          </td>
+          </tr>
+          <tr>
+          <td>
+          <p class="commission">${_(u'手数料')}</p>
+          ※${_(h.fee_type(m.delivery_method.fee_type))}<br>
+          ${h.format_currency(m.delivery_fee)}
+          </td>
+          </tr>
+          </tbody>
+          </table>
+
+          <table class="settlement-table">
+          <thead><tr><th colspan="2">${_(u'上記以外の利用料・手数料')}</th></tr></thead>
+          <tbody>
+          <tr>
+          <td colspan="2">
+          <p class="commission">${_(u'手数料')}</p>
+          ※${_(h.fee_type(m.system_fee_type))}<br>
+          ${_(u'システム利用料')}　${h.format_currency(m.system_fee)}
+          </td>
+          </tr>
+          </tbody>
+          </table>
+          </dd>
+          </dl>
+
   </div>
 
-    <div class="dispBox">
-      <p class="dispBoxInner">${view_context.mail_filter_domain_notice}</p>
-    </div>
+  %endfor
+  <p>${view_context.mail_filter_domain_notice}/p>
 
-    <h2 class="glitter red">${_(u'購入者情報')}</h2>
 
-  <div id="payment" class="confirmBox">
-    <div class="confirmBoxInner">
-    <div class="dispBox">
-      <%t:header>${_(u'購入者氏名')}
-      % if custom_locale_negotiator=='ja':
-        <br><span>全角</span>
-      % endif
-      </%t:header>
-      <div class="dispBoxInner">
-      ${form['last_name'].label}<br/>
-      ${form['last_name']}
-      ${h.error_list(request, form, 'last_name')}<br/>
-      ${form['first_name'].label}<br/>
-      ${form['first_name']}
-      ${h.error_list(request, form, 'first_name')}
-      </div>
-    </div>
+  <!-- ===== / クレジットカードでお支払い ===== -->
 
+  <!-- ===== 購入者情報入力 ===== -->
+  <h2 class="heading heading_simple_line">${_(u'購入者情報')}</h2>
+
+
+  <!-- ===== customerBox ===== -->
+  <div class="customerBox">
+  <table class="customer-table">
+  <tbody>
+  <tr>
+  <th>
+    ${_(u'購入者氏名')}
     % if custom_locale_negotiator=='ja':
-    <div class="dispBox">
-      <%t:header>購入者氏名(全角カナ)</%t:header>
-      <div class="dispBoxInner">
-        ${form['last_name_kana'].label}<br/>
-        ${form['last_name_kana']}
-        ${h.error_list(request, form, 'last_name_kana')}<br/>
-        ${form['first_name_kana'].label}<br/>
-        ${form['first_name_kana']}
-        ${h.error_list(request, form, 'first_name_kana')}
-      </div>
-    </div>
+        <br><span>全角</span>
     % endif
+  </th>
+  </tr>
+  <tr>
+  <td>
+  <!--<p class="error">エラーテキストを入れる</p>-->
+  <p>
+  <label class="fs12" for="last_name">姓</label>
+  <input id="last_name" name="last_name" value="" type="text" placeholder="例）山田">
+  </p>
+  <p>
+  <label class="fs12" for="first_name">名</label>
+  <input id="first_name" name="first_name" value="" type="text" placeholder="例）太郎">
+  </p>
+  </td>
+  </tr>
 
-    <div class="dispBox">
-        <%t:header>${form['email_1'].label}
-        % if custom_locale_negotiator=='ja':
-        (半角英数)
-        % endif
-        </%t:header>
-      <div class="dispBoxInner">
-        ${form['email_1'].label}<br/>
-        ${form['email_1']}
-        ${h.error_list(request, form, 'email_1')}<br/>
-        ${form['email_1_confirm'].label}<br/>
-        ${form['email_1_confirm']}
-        ${h.error_list(request, form, 'email_1_confirm')}
-      </div>
-      <p class="dispBox">
-        ${view_context.mail_filter_domain_notice}
+  % if custom_locale_negotiator=='ja':
+  <tr>
+  <th>購入者氏名<br><span>全角カナ</span></th>
+  </tr>
+  <tr>
+  <td>
+  <p>
+    <label class="fs12" for="last_name_kana">姓(カナ)</label>
+    <input id="last_name_kana" name="last_name_kana" value="" type="text" placeholder="例）ヤマダ">
+  </p>
+  <p>
+    <label class="fs12" for="first_name_kana">名(カナ)</label>
+    <input id="first_name_kana" name="first_name_kana" value="" type="text" placeholder="例）タロウ">
+  </p>
+  </td>
+  </tr>
+  % endif
+
+  <tr>
+  <th>
+    <label for="email_1">メールアドレス</label><br><span>${_(u'半角英数')}</span>
+  </th>
+  </tr>
+  <tr>
+  <td>
+  <ul>
+  <li>
+  <input id="email_1" name="email_1" value="" type="text" placeholder="例）mail@example.ne.jp" style="ime-mode:disabled;">
+  </li>
+  <li>
+  <input id="email_1_confirm" name="email_1_confirm" value="" type="text" placeholder="例）mail@example.ne.jp" style="ime-mode:disabled;">
+  <label for="email_1_confirm"><span class="fs12">(確認用)</span></label>
+  </li>
+  </ul>
+  <p class="annot">${view_context.mail_filter_domain_notice}</p>
+  </td>
+  </tr>
+  <tr>
+  <th>${_(u'住所')}</th>
+  </tr>
+  <tr>
+  <td>
+  <ul>
+    <li>
+      <p>
+      ${form['country'].label}
+      ${form['country']}
       </p>
-    </div>
+    </li>
+    <li>
+      <label class="fs12" for="zip">${_(u'郵便番号')}</label>
+      <% path = request.static_url('altair.app.ticketing.cart:static/js/zipdata') %>
+      <input id="zip" name="zip" onkeyup="AjaxZip3.zip2addr('//tstar.s3.amazonaws.com/cart/static/js/zipdata',
+        'zip','','prefecture','city','', 'address_1');" value="" type="text" placeholder="例）1030001" style="ime-mode:disabled;">
+    </li>
+    <li>
+      <label class="fs12" for="prefecture">${_(u'都道府県')}</label>
+      <input id="prefecture" name="prefecture" value="" type="text" placeholder="例）東京都">
+    </li>
+    <li>
+      <label class="fs12" for="city">${_(u'市区町村')}</label>
+      <input id="city" name="city" value="" type="text" placeholder="例）中央区">
 
-    <div class="dispBox">
-      <%t:header>${_(u'住所')}</%t:header>
-      <div class="dispBoxInner">
-        ${form['country'].label}
-        ${form['country']}
-        ${h.error_list(request, form, 'country')}<br/>
-        ${form['zip'].label}<br/>
-        <% path = request.static_url('altair.app.ticketing.cart:static/js/zipdata') %>
-        ${form['zip'](onKeyUp="AjaxZip3.zip2addr('" + path + "', 'zip','','prefecture','city','', 'address_1');")}
-        (${_(u'例: 1030001')})<br/>
-        ${h.error_list(request, form, 'zip')}<br/>
-        ${form['prefecture'].label}<br/>
-        ${form['prefecture']}
-        (${_(u'例: 東京都')})<br/>
-        ${h.error_list(request, form, 'prefecture')}<br/>
-        ${form['city'].label}<br/>
-        ${form['city']}
-        (${_(u'例: 中央区')})<br/>
-        ${h.error_list(request, form, 'city')}<br/>
-        <label for="address_1">${form['address_1'].label}</label><br/>
-        ${form['address_1']}
-        (${_(u'例: 日本橋x-xx-xx')})<br/>
-        ${h.error_list(request, form, 'address_1')}<br/>
-        <label for="address_2">${form['address_2'].label}</label><br/>
-        ${form['address_2']}
-        (${_(u'例: yyビルz階')})<br/>
-        ${h.error_list(request, form, 'address_2')}
-      </div>
-    </div>
-
-    <div class="dispBox">
-        <%t:header>${form['tel_1'].label}</%t:header>
-        % if custom_locale_negotiator=='ja':
-          <br><span>半角数字</span>
-        % endif
-      <div class="dispBoxInner">
-        ${form['tel_1'].label}
-        ${form['tel_1']}
-        (${_(u'例: 080xxxxyyyy')})
-        ${h.error_list(request, form, 'tel_1')}
-      </div>
-    </div>
-
-<!--
-  </div>
-  </div>
-  -->
-    </div>
-  </div>
-
-</div>
-<div class="buttonbox">
-    <button onclick="$('#form1').submit()" class="btn btn-primary btn-large">${_(u'次へ')}</button>
+    </li>
+    <li>
+      <label class="fs12" for="address_1">${_(u'町名番地')}</label>
+      <input id="address_1" name="address_1" value="" type="text" placeholder="例）日本橋x-xx-xx" style="width:  80%;">
+    </li>
+    <li>
+      <label class="fs12" for="address_2">${_(u'建物名等')}</label>
+      <input id="address_2" name="address_2" value="" type="text" placeholder="例）yyビルz階" style="width: 80%;">
+    </li>
+  </ul>
+  </td>
+  </tr>
+  <tr>
+  <th>
+    <label for="tel_1">${_(u'電話番号')}</label><br><span>${_(u'半角数字')}</span></th>
+  </th>
+  </tr>
+  <tr>
+  <td>
+  <input id="tel_1" name="tel_1" value="" type="text" placeholder="例）080xxxxyyyy" style="ime-mode:disabled;">
+  </td>
+  </tr>
+  </tbody>
+  </table>
+  <p class="confirm-btnBox"><input class="btn btn-primary" type="button" value="${_(u'次へ')}" onclick="$('#form1').submit()"></p>
 </div>
 </form>
-
-% if request.organization.setting.sitecatalyst_use:
-    <%include file="../common/sc_payment.html" />
-% endif
-<%include file="../../__commons__/footer.html" />
 ${h.create_url(request) |n}
+</div><!-- ===== / 購入者情報入力 ===== -->
+<!-- ******************** contents [end] ******************** -->

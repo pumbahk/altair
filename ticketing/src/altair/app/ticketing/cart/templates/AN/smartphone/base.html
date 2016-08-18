@@ -19,34 +19,51 @@
 
 		<!-- Cascading Style Sheets -->
 		<link rel="shortcut icon" href="${request.static_url('altair.app.ticketing.cart:static/AN/smartphone/images/rakuten.ico')}">
-		<link rel="stylesheet" href="${request.static_url('altair.app.ticketing.cart:static/AN/smartphone/css/default2.css')}" type="text/css" media="all">
+    <link rel="stylesheet" href="${request.static_url('altair.app.ticketing.cart:static/AN/smartphone/css/sp_common.css')}" type="text/css" media="all">
+    <link rel="stylesheet" href="${request.static_url('altair.app.ticketing.cart:static/AN/smartphone/css/sp_confirm.css')}" type="text/css" media="all">
+    <link rel="stylesheet" href="${request.static_url('altair.app.ticketing.cart:static/AN/smartphone/css/sp_helper.css')}" type="text/css" media="all">
+		<!--<link rel="stylesheet" href="${request.static_url('altair.app.ticketing.cart:static/AN/smartphone/css/default2.css')}" type="text/css" media="all">-->
 	</head>
 
 <body id="settlement">
-  <div id="container" class="page">
+  <div id="container" class="ts-wrapper">
     <!-- ========== header ========== -->
-    <div class="header">
-      <div class="grpheader">
-        <div class="siteID">
+    <header class="ts-header">
+      <div class="ts-header-inner">
+        <!-- ===== ts-header-wrap [start] ===== -->
+        <div class="ts-header-wrap">
+          <div class="ts-header-logobox clearfix">
+            <h1 class="ts-header-logo">
+              <a href="/"><span class="offleft">楽天チケット</span></a>
+            </h1>
+          <!--
           <a href="/">
             <img src="${request.static_url('altair.app.ticketing.cart:static/AN/smartphone/images/logo.gif')}" alt="楽天チケット" class="serviceLogo" />
           </a>
+          -->
+            </div>
         </div>
       </div>
+      <!--
       % if getattr(request, 'context', None) and hasattr(request.context, 'switch_pc_url'):
           <div class="side-action-buttons">
             <a href="${request.context.switch_pc_url}" class="btn btn-supplementary"><span class="btn-inner">PCサイトで購入する</span></a>
           </div>
       % endif
+
       <div class="band">
         <h1>${_(u'チケット購入')}</h1>
       </div>
-    </div>
+      -->
+    </header>
     <!-- ========== /header ========== -->
 
     <!-- ========== main ========== -->
-    <div id="main">
-      ${self.body()}
+    <div id="main" class="ts-contents" style="margin-bottom: 65px;">
+      <div class="ts-contents-inner">
+        <h1 class="heading-primary">${__(u'チケット購入')}</h1>
+        ${self.body()}
+      </div>
     </div>
     <!-- ========== /main ========== -->
   </div>
