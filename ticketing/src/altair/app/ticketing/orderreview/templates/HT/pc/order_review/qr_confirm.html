@@ -2,6 +2,7 @@
 <html>
 <head>
   <title>${event.title} - ${performance.name}</title>
+  <link rel="stylesheet" type="text/css" href="${view_context.static_url('pc/css/common/qr2.css')}" media="all" />
 </head>
 <body>
 <div><font color="#872434">■</font>イベント名</div>
@@ -12,9 +13,18 @@
 <div>${performance.start_on.strftime("%Y年%m月%d日").decode('utf-8')} (${u'月火水木金土日'[performance.start_on.weekday()]}) ${performance.start_on.strftime(u"%H:%M").decode('utf-8')}−</div>
 <div><font color="#872434">■</font>会場名</div>
 <div>${performance.venue.name}</div>
-<div><font color="#872434">■</font>券種名</div>
+<div><font color="#872434">■</font>商品名</div>
 %if product:
 <div>${product.name}</div>
+%endif
+%if ordered_products:
+<div>
+  <ul class="product-list">
+    %for ordered_product in ordered_products:
+      <li>${ordered_product.product.name}： ${ordered_product.quantity}席</li>
+    %endfor
+  </ul>
+</div>
 %endif
 <%mobile:form_get action="${request.route_path('order_review.qr', ticket_id=ticket.id, sign=sign)}" target="_blank">
 <div align="center" border="2px" bordercolor="#b59557" style="background-color:#ffe0d0; border:2px solid #ECAC00">
