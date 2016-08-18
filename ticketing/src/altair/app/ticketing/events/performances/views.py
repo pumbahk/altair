@@ -662,10 +662,10 @@ class Performances(BaseView):
             new_performance.name = params['name'][cnt]
             new_performance.name = new_performance.name.replace("&quote;", "\'")
             if params['open_on'][cnt]:
-                new_performance.open_on = datetime.datetime.strptime(params['open_on'][cnt], '%Y-%m-%d %H:%M:%S')
-            new_performance.start_on = datetime.datetime.strptime(params['start_on'][cnt], '%Y-%m-%d %H:%M:%S')
+                new_performance.open_on = datetime.datetime.strptime(params['open_on'][cnt], '%Y-%m-%d %H:%M')
+            new_performance.start_on = datetime.datetime.strptime(params['start_on'][cnt], '%Y-%m-%d %H:%M')
             if params['end_on'][cnt]:
-                new_performance.end_on = datetime.datetime.strptime(params['end_on'][cnt], '%Y-%m-%d %H:%M:%S')
+                new_performance.end_on = datetime.datetime.strptime(params['end_on'][cnt], '%Y-%m-%d %H:%M')
             new_performance.display_order = params['display_order'][cnt]
 
             # Copy data
@@ -707,9 +707,9 @@ class Performances(BaseView):
         f = PerformanceManycopyForm()
         f.id.data = origin_performance.id
         f.name.data = origin_performance.name.replace("\'", "&quote;")
-        f.open_on.data = origin_performance.open_on
-        f.start_on.data = origin_performance.start_on
-        f.end_on.data = origin_performance.end_on
+        f.open_on.data = cart_helper.datetime(origin_performance.open_on)
+        f.start_on.data = cart_helper.datetime(origin_performance.start_on)
+        f.end_on.data = cart_helper.datetime(origin_performance.end_on)
         f.display_order.data = origin_performance.display_order
         return f
 
@@ -745,7 +745,7 @@ class Performances(BaseView):
             if params['open_on'][cnt]:
                 try:
                     datetime.datetime.strptime(
-                        params['open_on'][cnt], '%Y-%m-%d %H:%M:%S')
+                        params['open_on'][cnt], '%Y-%m-%d %H:%M')
                 except ValueError:
                     self.request.session.flash(
                         u'{}行目の開場時刻が不正です。'.format(cnt + 1))
@@ -753,17 +753,17 @@ class Performances(BaseView):
 
             try:
                 start = datetime.datetime.strptime(
-                    params['start_on'][cnt], '%Y-%m-%d %H:%M:%S')
+                    params['start_on'][cnt], '%Y-%m-%d %H:%M')
                 if params['open_on'][cnt]:
                     open = datetime.datetime.strptime(
-                        params['open_on'][cnt], '%Y-%m-%d %H:%M:%S')
+                        params['open_on'][cnt], '%Y-%m-%d %H:%M')
                     if open > start:
                         self.request.session.flash(
                             u'{}行目の開場時間が、公演開始時刻より後に設定されています。'.format(cnt + 1))
                         error_exist = True
                 if params['end_on'][cnt]:
                     end = datetime.datetime.strptime(
-                        params['end_on'][cnt], '%Y-%m-%d %H:%M:%S')
+                        params['end_on'][cnt], '%Y-%m-%d %H:%M')
                     if end < start:
                         self.request.session.flash(
                             u'{}行目の終演時間が、公演開始時刻より前に設定されています。'.format(cnt + 1))
