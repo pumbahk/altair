@@ -3,142 +3,127 @@
 <!-- ******************** contents [start] ******************** -->
 
 <div class="mgt20">
-<p class="tac bold fs24">${__(u'購入を完了いたしました。')}</p>
-<p class="tac">${__(u'下記の受付番号はとても大切な番号です。すぐにメモするか印刷して保管してください。')}</p>
+  <p class="tac bold fs24">${__(u'購入を完了いたしました。')}</p>
+  <p class="tac">${__(u'下記の受付番号はとても大切な番号です。すぐにメモするか印刷して保管してください。')}</p>
 </div>
-
-
 
 <!-- ===== 受付番号 ===== -->
 <div class="confirm-wrap">
-<h2 class="heading heading_simple_line">${__(u'受付番号')}</h2>
-<p class="bold">${order.order_no}</p>
+  <h2 class="heading heading_simple_line">${__(u'受付番号')}</h2>
+  <p class="bold">${order.order_no}</p>
 </div><!-- ===== / 受付番号 ===== -->
 
-
-
-
 <form id="form1" class="confirmForm" action="${request.route_url("cart.index", event_id=order.performance.event.id, _query={'performance':order.performance_id})}" method="post">
-<!-- ===== お買い物内容 ===== -->
-<div class="confirm-wrap">
-<h2 class="heading heading_simple_line">${__(u'お買い物内容')}</h2>
+  <!-- ===== お買い物内容 ===== -->
+  <div class="confirm-wrap">
+    <h2 class="heading heading_simple_line">${__(u'お買い物内容')}</h2>
 
+    <!-- ===== purchase-wrap ===== -->
+    <div class="purchase-wrap">
+      <div class="purchase-title">
+        <p>${order.performance.event.title}</p>
+        <p>${h.performance_datetime(order.performance)}(予定) ${order.performance.venue.name}</p>
+      </div>
+      <table class="purchase-table" summary="${__(u'席種、金額などのお買い物内容')}">
+        <tbody>
+          % for product in order.ordered_products:
+            <tr>
+              % if len(product.elements) == 1:
+                <th scope="row">${product.product.name}</th>
+                <td nowrap><strong>${product.seat_quantity}</strong>枚</td>
+              % else:
+                <td nowrap>×<strong>${product.quantity}</strong>枚</td>
+              % endif
+            <td>￥${h.format_number(product.product.price * product.quantity)}</td>
+            </tr>
+          % endfor
+          <tr>
+            <th scope="row">${__(u'決済手数料')}</th>
+            <td>&nbsp;</td>
+            <td>￥${h.format_number(order.transaction_fee)}</td>
+          </tr>
+          <tr>
+            <th scope="row">${__(u'発券/引取手数料')}</th>
+            <td>&nbsp;</td>
+            <td>￥${h.format_number(order.delivery_fee)}</td>
+          </tr>
+          <tr>
+            <th scope="row">${__(u'システム利用料')}</th>
+            <td>&nbsp;</td>
+            <td>￥${h.format_number(order.system_fee)}</td>
+          </tr>
+          %if order.special_fee > 0:
+            <tr>
+              <th scope="row">${order.special_fee_name}</th>
+              <td>&nbsp;</td>
+              <td class="align1">￥${h.format_number(order.special_fee)}</td>
+            </tr>
+          %endif
+          <tr class="purchase-table-total">
+            <th scope="row">${__(u'合計金額')}</th>
+            <td>&nbsp;</td>
+            <td>￥${h.format_number(order.total_amount)}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <!-- ===== / お買い物内容 ===== -->
 
-<!-- ===== purchase-wrap ===== -->
-<div class="purchase-wrap">
-<div class="purchase-title">
-<p>${order.performance.event.title}</p>
-<p>${h.performance_datetime(order.performance)}(予定) ${order.performance.venue.name}</p>
-</div>
-<table class="purchase-table" summary="${__(u'席種、金額などのお買い物内容')}">
-<tbody>
-% for product in order.ordered_products:
-<tr>
-  % if len(product.elements) == 1:
-  <th scope="row">${product.product.name}</th>
-    <td nowrap><strong>${product.seat_quantity}</strong>枚</td>
-  % else:
-    <td nowrap>×<strong>${product.quantity}</strong>枚</td>
+  <% extra_form_data = order.get_order_attribute_pair_pairs(request, for_='cart', mode='entry') %>
+  % if extra_form_data:
+  <div class="confirm-wrap">
+    <h2 class="heading heading_simple_line">${__(u'追加情報')}</h2>
+    <div class="customerBox">
+      <table summary="${__(u'配送先情報')}">
+      % for _, (display_name, display_value) in extra_form_data:
+        <tr>
+          <th scope="row">${display_name}</th>
+          <td>${h.sensible_coerce(request, display_value)}</td>
+        </tr>
+      % endfor
+      </table>
+    </div>
+  </div>
   % endif
-<td>￥${h.format_number(product.product.price * product.quantity)}</td>
-</tr>
-% endfor
-<tr>
-<th scope="row">${__(u'決済手数料')}</th>
-<td>&nbsp;</td>
-<td>￥${h.format_number(order.transaction_fee)}</td>
-</tr>
-<tr>
-<th scope="row">${__(u'発券/引取手数料')}</th>
-<td>&nbsp;</td>
-<td>￥${h.format_number(order.delivery_fee)}</td>
-</tr>
-<tr>
-<th scope="row">${__(u'システム利用料')}</th>
-<td>&nbsp;</td>
-<td>￥${h.format_number(order.system_fee)}</td>
-</tr>
-%if order.special_fee > 0:
-<tr>
-<th scope="row">${order.special_fee_name}</th>
-<td>&nbsp;</td>
-<td class="align1">￥${h.format_number(order.special_fee)}</td>
-</tr>
-%endif
-<tr class="purchase-table-total">
-<th scope="row">${__(u'合計金額')}</th>
-<td>&nbsp;</td>
-<td>￥${h.format_number(order.total_amount)}</td>
-</tr>
-</tbody></table>
-</div>
-</div>
-<!-- ===== / お買い物内容 ===== -->
 
-<% extra_form_data = order.get_order_attribute_pair_pairs(request, for_='cart', mode='entry') %>
-% if extra_form_data:
-<div class="confirm-wrap">
-<h2 class="heading heading_simple_line">${__(u'追加情報')}</h2>
-<div class="customerBox">
-  <table summary="${__(u'配送先情報')}">
-  % for _, (display_name, display_value) in extra_form_data:
-    <tr>
-      <th scope="row">${display_name}</th>
-      <td>${h.sensible_coerce(request, display_value)}</td>
-    </tr>
-  % endfor
-  </table>
-</div>
-</div>
-% endif
+  <!-- ===== お支払い ===== -->
+  <div class="confirm-wrap">
+    <h2 class="heading heading_simple_line">${__(u'お支払い')}</h2>
+    <p class="tac bold">払込票番号：<span>1234567890</span></p>
+    <p class="tac bold">支払期日：<span>2015年xx月xx日（xx）23時59分</span></p>
+    <p class="tac"><input class="btn btn-primary-border" type="button" value="払込票を表示"></p>
+    <p>${h.render_payment_finished_viewlet(request, order)}</p>
 
+    <p>上記支払期日までに、払込票番号をお持ちの上、セブン-イレブン店舗レジにてお支払いください。<br>
+    （払込票を表示、印刷した上で店頭にお持ちいただくとスムーズです。）</p>
+    <p class="bold att-text-a">支払期日までに入金されない場合は、予約が無効となりますので、ご注意ください。</p>
+    <p class="bold att-text-a">お申し込み後の、公演日･席種･枚数等の変更はできませんのでご容赦ください。</p>
+  </div><!-- ===== / お支払い ===== -->
 
+  <!-- ===== お引き取り ===== -->
+  <div class="confirm-wrap">
+    <h2 class="heading heading_simple_line">${__(u'お引き取り')}</h2>
+    <p>${h.render_delivery_finished_viewlet(request, order)}</p>
+  </div><!-- ===== / お引き取り ===== -->
 
-<!-- ===== お支払い ===== -->
-<div class="confirm-wrap">
-<h2 class="heading heading_simple_line">${__(u'お支払い')}</h2>
-<p class="tac bold">払込票番号：<span>1234567890</span></p>
-<p class="tac bold">支払期日：<span>2015年xx月xx日（xx）23時59分</span></p>
-<p class="tac"><input class="btn btn-primary-border" type="button" value="払込票を表示"></p>
-<p>${h.render_payment_finished_viewlet(request, order)}</p>
+  <!-- ===== 注意事項 ===== -->
+  <div class="confirm-wrap">
+    <h2 class="heading heading_simple_line">注意事項</h2>
+    <p>
+      ${__(u'お申し込み時に、ご登録いただいたメールアドレス宛に、受付完了メールが送られます。')}<br>
+      ${__(u'しばらくたっても確認のメールが届かない場合は、入力されたメールアドレスが誤っている可能性があります。')}<br>
+      ${__(u'<a href=\"/inquiry\">お問い合わせフォーム</a>よりお問い合わせください。')|n}<br>
+      ${__(u'（お問い合わせの際は、お申し込み時のお名前と電話番号を記載お願いします）')}<br>
+      ${__(u'お申し込み内容は、「<a href=\"/orderreview\">履歴確認</a>」からもご確認いただけます。受付番号とご登録時のお電話番号をお手元にご用意の上、ご利用ください。')|n}
+    </p>
+  </div><!-- ===== / 注意事項 ===== -->
 
-<p>上記支払期日までに、払込票番号をお持ちの上、セブン-イレブン店舗レジにてお支払いください。<br>
-（払込票を表示、印刷した上で店頭にお持ちいただくとスムーズです。）</p>
-<p class="bold att-text-a">支払期日までに入金されない場合は、予約が無効となりますので、ご注意ください。</p>
-<p class="bold att-text-a">お申し込み後の、公演日･席種･枚数等の変更はできませんのでご容赦ください。</p>
-</div><!-- ===== / お支払い ===== -->
-
-
-
-
-
-<!-- ===== お引き取り ===== -->
-<div class="confirm-wrap">
-<h2 class="heading heading_simple_line">${__(u'お引き取り')}</h2>
-<p>${h.render_delivery_finished_viewlet(request, order)}</p>
-</div><!-- ===== / お引き取り ===== -->
-
-
-
-
-<!-- ===== 注意事項 ===== -->
-<div class="confirm-wrap">
-<h2 class="heading heading_simple_line">注意事項</h2>
-<p>${__(u'お申し込み時に、ご登録いただいたメールアドレス宛に、受付完了メールが送られます。')}<br>
-${__(u'しばらくたっても確認のメールが届かない場合は、入力されたメールアドレスが誤っている可能性があります。')}<br>
-${__(u'<a href=\"/inquiry\">お問い合わせフォーム</a>よりお問い合わせください。')|n}<br>
-${__(u'（お問い合わせの際は、お申し込み時のお名前と電話番号を記載お願いします）')}<br>
-${__(u'お申し込み内容は、「<a href=\"/orderreview\">履歴確認</a>」からもご確認いただけます。受付番号とご登録時のお電話番号をお手元にご用意の上、ご利用ください。')|n}</p>
-</div><!-- ===== / 注意事項 ===== -->
-
-
-  
-  
-<!-- ===== BTN ===== -->
-<div class="confirm-btnBox">
-<input class="btn btn-primary" type="submit" value="他のチケットを購入する" />
-<p><a href="${request.context.host_base_url}">${__(u'トップにもどる')}</a></p>
-</div>
+  <!-- ===== BTN ===== -->
+  <div class="confirm-btnBox">
+    <input class="btn btn-primary" type="submit" value="他のチケットを購入する" />
+    <p><a href="${request.context.host_base_url}">${__(u'トップにもどる')}</a></p>
+  </div>
 </form>
 
 <%include file="../../__commons__/footer.html" />

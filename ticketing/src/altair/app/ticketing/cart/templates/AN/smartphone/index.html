@@ -58,28 +58,28 @@ $(function () {
 <!-- ===== 日時･会場 ===== -->
 <h3 class="heading-secondly">${_(u'日時・会場')}</h3>
 <div class="confirm-wrap">
-<div class="selectdate-box">
-<form id="form1" name="form1" method="post" action="">
-<dl class="clearfix">
-<dt>${_(u'開催日')}</dt>
-<dd>
-<select name="select" id="date-select"></select>
-</dd>
-<dt>${_(u'日付・会場')}</dt>
-<dd>
-<select name="select2" id="venue-select"></select>
-</dd>
-<dt>${_(u'選択中の公演')}</dt>
-<dd>
-<span id="performanceDate">-</span>
-</dd>
-<dt>${_(u'会場')}</dt>
-<dd>
-<span id="performanceVenue">-</span>
-</dd>
-</dl>
-</form>
-</div>
+  <div class="selectdate-box">
+    <form id="form1" name="form1" method="post" action="">
+      <dl class="clearfix">
+        <dt>${_(u'開催日')}</dt>
+        <dd>
+          <select name="select" id="date-select"></select>
+        </dd>
+        <dt>${_(u'日付・会場')}</dt>
+        <dd>
+          <select name="select2" id="venue-select"></select>
+        </dd>
+        <dt>${_(u'選択中の公演')}</dt>
+        <dd>
+          <span id="performanceDate">-</span>
+        </dd>
+        <dt>${_(u'会場')}</dt>
+        <dd>
+          <span id="performanceVenue">-</span>
+        </dd>
+      </dl>
+    </form>
+  </div>
 </div><!-- ===== / 日時･会場 ===== -->
 
 
@@ -88,53 +88,53 @@ $(function () {
 <!-- ===== 席種選択 ===== -->
 <h3 class="heading-secondly">${_(u'席種選択')}</h3>
 <div class="confirm-wrap">
-<p>${_(u'席種、枚数を選択して下さい。')}</p>
-<div id="selectSeatType" class="focused">
-<form name="form2" class="confirmForm" method="post" action="" class="main" onsubmit="return false;">
-<input type="hidden" name="performance_id" id="current-performance-id"/>
-<div class="seatListContainer main">
-<ul id="seatTypeList"></ul>
-<script type="text/javascript">
-                (function () {
-                  var selectSeatType = $('#selectSeatType');
-                  var ul = selectSeatType.find('.seatListContainer ul');
+  <p>${_(u'席種、枚数を選択して下さい。')}</p>
+  <div id="selectSeatType" class="focused">
+    <form name="form2" class="confirmForm" method="post" action="" class="main" onsubmit="return false;">
+      <input type="hidden" name="performance_id" id="current-performance-id"/>
+      <div class="seatListContainer main">
+        <ul id="seatTypeList"></ul>
+        <script type="text/javascript">
+          (function () {
+            var selectSeatType = $('#selectSeatType');
+            var ul = selectSeatType.find('.seatListContainer ul');
 
-                  var selected = ul.find("dd.selected");
-                  var ulTopOffset = ul.parent()[0].offsetTop;
-                  function select(it) {
-                    if (!selectSeatType.hasClass('focused'))
-                      return;
-                    if (!it) {
-                      if (selected)
-                        selected.removeClass('activated');
-                      selected = null;
-                      return;
-                    }
-                    if (!it.hasClass('activated')) {
-                      selected.removeClass('activated');
-                      it.addClass('activated');
-                      selected = it;
-                    }
-                    var radio = it.find(':radio');
-                    if (radio.length) {
-                      radio[0].checked = true;
-                      radio.change();
-                    }
-                  }
-                  ul.delegate('.seatListItemInner', 'click', function () {
-                    select($(this).closest('dt'));
-                  });
-                })();
-              </script>
-<div style="display:none; overflow: hidden" class="selectProduct" id="selectProductTemplate">
-  <div class="productListContainer">
-    <div class="payment-seat-products"></div>
-    <fieldset style="display:none;" class="selected-seats"></fieldset>
+            var selected = ul.find("dd.selected");
+            var ulTopOffset = ul.parent()[0].offsetTop;
+            function select(it) {
+              if (!selectSeatType.hasClass('focused'))
+                return;
+              if (!it) {
+                if (selected)
+                  selected.removeClass('activated');
+                selected = null;
+                return;
+              }
+              if (!it.hasClass('activated')) {
+                selected.removeClass('activated');
+                it.addClass('activated');
+                selected = it;
+              }
+              var radio = it.find(':radio');
+              if (radio.length) {
+                radio[0].checked = true;
+                radio.change();
+              }
+            }
+            ul.delegate('.seatListItemInner', 'click', function () {
+              select($(this).closest('dt'));
+            });
+          })();
+        </script>
+        <div style="display:none; overflow: hidden" class="selectProduct" id="selectProductTemplate">
+          <div class="productListContainer">
+            <div class="payment-seat-products"></div>
+            <fieldset style="display:none;" class="selected-seats"></fieldset>
+          </div>
+        </div>
+      </div>
+    </form>
   </div>
-</div>
-</div>
-</form>
-</div>
 </div><!-- ===== / 席種選択 ===== -->
 
 
@@ -142,12 +142,12 @@ $(function () {
 
 <!-- ===== 購入 ===== -->
 <div class="selectseat-btn">
-<dl class="clearfix">
-<dt>
-<p class="chk-info-title blod fs12">${_(u'席種')}</p><p id="chk-seattype" class="bold fs12">-</p>
-<p class="chk-info-title blod fs12">${_(u'枚数')}</p><p id="chk-quantity" class="bold fs12">-</p>
-</dt>
-<dd><p class="tac"><a class="btn-primary btn btn-buy deactivated">${_(u'購入')}</a></p></dd>
+  <dl class="clearfix">
+    <dt>
+      <p class="chk-info-title blod fs12">${_(u'席種')}</p><p id="chk-seattype" class="bold fs12">-</p>
+      <p class="chk-info-title blod fs12">${_(u'枚数')}</p><p id="chk-quantity" class="bold fs12">-</p>
+    </dt>
+    <dd><p class="tac"><a class="btn-primary btn btn-buy deactivated">${_(u'購入')}</a></p></dd>
 </dl>
 </div>
 <!-- ===== / 購入 ===== -->
@@ -158,54 +158,54 @@ $(function () {
 
 <!-- ===== イベント詳細 ===== -->
 <div class="confirm-wrap">
-<h2 class="heading heading_simple_line">${_(u'イベント詳細')}</h2>
+  <h2 class="heading heading_simple_line">${_(u'イベント詳細')}</h2>
 
 
-<!-- ===== customerBox ===== -->
-<div class="customerBox">
-<table class="customer-table">
-<tbody>
-<tr>
-<th>${_(u'イベント名')}</th>
-</tr>
-<tr>
-<td>${event["title"]}</td>
-</tr>
-<tr>
-<th>${_(u'開催日時')}</th>
-</tr>
-<tr>
-<td><span id="descPerformanceDate"></span></td>
-</tr>
-<tr>
-<th>${_(u'会場')}</th>
-</tr>
-<tr>
-<td>${", ".join(set(event['venues']))}</td>
-</tr>
-<tr>
-<th>${_(u'販売期間')}</th>
-</tr>
-<tr>
-<td>${event['sales_start_on']} 〜 ${event['sales_end_on']}</td>
-</tr>
-<tr>
-<th>${_(u'その他')}</th>
-</tr>
-<tr>
-<td>
-  %if event_extra_info:
-    %for v in event_extra_info:
-        ${v['label']}
-        ${v['content']|n}<br/>
-    %endfor
-  %endif
-</td>
-</tr>
-</tbody>
-</table>
-${h.create_url(request)|n}
-</div>
+  <!-- ===== customerBox ===== -->
+  <div class="customerBox">
+    <table class="customer-table">
+      <tbody>
+        <tr>
+        <th>${_(u'イベント名')}</th>
+        </tr>
+        <tr>
+        <td>${event["title"]}</td>
+        </tr>
+        <tr>
+        <th>${_(u'開催日時')}</th>
+        </tr>
+        <tr>
+        <td><span id="descPerformanceDate"></span></td>
+        </tr>
+        <tr>
+        <th>${_(u'会場')}</th>
+        </tr>
+        <tr>
+        <td>${", ".join(set(event['venues']))}</td>
+        </tr>
+        <tr>
+        <th>${_(u'販売期間')}</th>
+        </tr>
+        <tr>
+        <td>${event['sales_start_on']} 〜 ${event['sales_end_on']}</td>
+        </tr>
+        <tr>
+        <th>${_(u'その他')}</th>
+        </tr>
+        <tr>
+        <td>
+          %if event_extra_info:
+            %for v in event_extra_info:
+                ${v['label']}
+                ${v['content']|n}<br/>
+            %endfor
+          %endif
+        </td>
+        </tr>
+      </tbody>
+    </table>
+  ${h.create_url(request)|n}
+  </div>
 </div><!-- ===== / 購入者情報 ===== -->
 <!-- ******************** contents [end] ******************** -->
 
