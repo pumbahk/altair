@@ -145,9 +145,7 @@ def validate_length_dict(encoding_method, order_dict, target_dict):
     for key in keys:
         if order_dict.has_key(key):
             try:
-                if(order_dict.get(key).encode(encoding_method) > target_dict.get(key)):
+                if(len(order_dict.get(key).encode(encoding_method)) > target_dict.get(key)):
                     raise OrderLikeValidationFailure(u'too long', 'shipping_address.{0}'.format(key))
             except UnicodeEncodeError:
-                logger.error('encoding error: shipping_address.{0} contains a character that is not encodable as {1}'.format(key, encoding_method))
-            except:
-                logger.error('can not validate string shipping_address.{0} length'.format(key))
+                raise OrderLikeValidationFailure('shipping_address.{0} contains a character that is not encodable as {1}'.format(key, encoding_method), 'shipping_address.{0}'.format(key))

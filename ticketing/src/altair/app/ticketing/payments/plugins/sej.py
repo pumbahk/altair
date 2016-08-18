@@ -505,9 +505,11 @@ def validate_order_like(request, current_date, order_like, update=False, ticketi
         if not order_like.organization.setting.i18n or (request.localizer and request.localizer.locale_name == 'ja'):
             validate_length_dict('CP932', {'user_name':user_name}, {'user_name':40})
         if order_like.organization.setting.i18n and (request.localizer and request.localizer.locale_name == 'zh_CN'):
-            validate_length_dict('gbk', {'user_name':user_name}, {'user_name':16})
+            validate_length_dict('UTF-8', {'user_name':user_name}, {'user_name':40})
         if order_like.organization.setting.i18n and (request.localizer and request.localizer.locale_name == 'zh_TW'):
-            validate_length_dict('gbk', {'user_name':user_name}, {'user_name':40})
+            validate_length_dict('UTF-8', {'user_name':user_name}, {'user_name':40})
+        if order_like.organization.setting.i18n and (request.localizer and request.localizer.locale_name == 'en'):
+            validate_length_dict('UTF-8', {'user_name':user_name}, {'user_name':40})
         user_name_kana = build_user_name_kana(order_like.shipping_address)
         validate_length_dict('CP932', {'user_name_kana':user_name_kana}, {'user_name_kana':40})
 
