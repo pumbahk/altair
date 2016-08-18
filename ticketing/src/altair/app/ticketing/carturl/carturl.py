@@ -60,26 +60,22 @@ class CartURLBuilder(object):
     def __init__(self, path_prefix):
         self.path_prefix = path_prefix.rstrip("/")
 
-    def build_path(self, event):
+    def build_path(self, event, performance):
         suffix = unicode(event.id)
+        if performance:
+            self.path_prefix = "/cart/performances"
+            suffix = unicode(performance.id)
         return u"{0}/{1}".format(self.path_prefix, suffix.lstrip("/"))
 
     def build_hostname(self, request, organization):
         return guess_host_name_from_request(request, organization=organization)    
 
-    def build_query(self, performance):
-        query = {}
-        if performance:
-            query["performance"] = performance.id
-        return query
-
     def build(self, request, event, performance=None, organization=None):
         organization = organization or request.context.organization
         scheme = _get_scheme_from_request(request)
         host_name = self.build_hostname(request, organization)
-        path = self.build_path(event)
-        query = self.build_query(performance)
-        return _url_builder(scheme, host_name, path, query)
+        path = self.build_path(event, performance)
+        return _url_builder(scheme, host_name, path, {})
 
 @implementer(IURLBuilder)
 class LotsCartURLBuilder(object):
@@ -113,26 +109,22 @@ class AgreementCartURLBuilder(object):
     def __init__(self, path_prefix):
         self.path_prefix = path_prefix.rstrip("/")
 
-    def build_path(self, event):
+    def build_path(self, event, performance):
         suffix = unicode(event.id)
+        if performance:
+            self.path_prefix = "/cart/performances"
+            suffix = unicode(performance.id)
         return u"{0}/{1}/agreement".format(self.path_prefix, suffix.lstrip("/"))
 
     def build_hostname(self, request, organization):
         return guess_host_name_from_request(request, organization=organization)
 
-    def build_query(self, performance):
-        query = {}
-        if performance:
-            query["performance"] = performance.id
-        return query
-
     def build(self, request, event, performance=None, organization=None):
         organization = organization or request.context.organization
         scheme = _get_scheme_from_request(request)
         host_name = self.build_hostname(request, organization)
-        path = self.build_path(event)
-        query = self.build_query(performance)
-        return _url_builder(scheme, host_name, path, query)
+        path = self.build_path(event, performance)
+        return _url_builder(scheme, host_name, path, {})
 
 @implementer(IURLBuilder)
 class AgreementLotsCartURLBuilder(object):
