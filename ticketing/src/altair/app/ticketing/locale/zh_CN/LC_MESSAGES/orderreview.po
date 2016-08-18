@@ -1,24 +1,10 @@
-# English translations for PACKAGE package
-# This file is distributed under the same license as the PACKAGE package.
-# Cho <ts-jingqiang.a.zhang@rakuten.com>, 2016.
-#
 msgid ""
 msgstr ""
-"Project-Id-Version: PACKAGE 1.0\n"
-"POT-Creation-Date: 2016-05-12 10:03+0900\n"
-"PO-Revision-Date: 2016-05-12 10:03+0900\n"
-"Last-Translator: Cho <ts-jingqiang.a.zhang@rakuten.com>\n"
-"Language-Team: zh_CN\n"
-"Language: zh_CN\n"
-"MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Lingua 3.11\n"
 
 # common
 
 msgid "チケット情報・販売・購入・予約"
-msgstr "票务信息，销售，购买和预订"
+msgstr "相关信息・销售・购买・预约"
 
 msgid "購入履歴の確認"
 msgstr "购买记录的确认"
@@ -30,10 +16,10 @@ msgid "お問い合わせ"
 msgstr "联系我们"
 
 msgid "個人情報保護方針"
-msgstr "隐私政策"
+msgstr "个人隐私政策"
 
 msgid "特定商取引法に基づく表示"
-msgstr "显示基于特定贸易法"
+msgstr "相关商务法规"
 
 msgid "サービス利用規約"
 msgstr "服务条款"
@@ -44,7 +30,7 @@ msgid "一般の方のチケット確認はこちらから"
 msgstr "一般用户从这里开始"
 
 msgid "抽選の方のチケット確認はこちらから"
-msgstr "抽选用户从这里开始"
+msgstr "抽签用户从这里开始"
 
 msgid "次へすすむ"
 msgstr "下一步"
@@ -59,38 +45,38 @@ msgid "注意事項"
 msgstr "注意事项"
 
 msgid "発売開始直後は回線が大変込み合う場合がございますので、予めご了承ください。"
-msgstr "销售马上开始后系统可能有延迟，请理解。"
+msgstr "售票开始时可能会出现系统繁忙不能访问的情况。"
 
 # form
 
 msgid "受付番号"
-msgstr "收据号码"
+msgstr "订单号码"
 
 msgid "必須"
 msgstr "必须"
 
 msgid "半角英数"
-msgstr "数字"
+msgstr "数字或英文字母"
 
 msgid "電話番号"
 msgstr "电话号码"
 
 msgid "電話番号はご登録時の電話番号をご入力ください。"
-msgstr "请输入您在注册时的电话号码。"
+msgstr "请输入您在注册时使用的电话号码。"
 
 msgid "（携帯・自宅をどちらもご登録した場合どちらの番号でも構いません。）"
-msgstr "（无论是注册您的手机和家庭都不要紧。）"
+msgstr "（家庭电话或手机号码均可。）"
 
 msgid "ご予約時に登録した電話番号をご入力してください。"
-msgstr "请输入预约时填写的电话号码。"
+msgstr "请输入购买操作时使用的电话号码。"
 
 # show
 
 msgid "受付番号または電話番号が違います。"
-msgstr "受理号码或电话号码是不同的。"
+msgstr "订单号码或电话号码不正确。"
 
 msgid "受付履歴確認 検索結果"
-msgstr "受理记录确认 查询结果"
+msgstr "订单记录确认 查询结果"
 
 msgid "受付日"
 msgstr "受理日期"
@@ -108,7 +94,7 @@ msgid "購入者情報"
 msgstr "购买者信息"
 
 msgid "配送先情報"
-msgstr "送货信息"
+msgstr "邮寄信息"
 
 msgid "氏名（漢字）"
 msgstr "名称"
@@ -120,22 +106,22 @@ msgid "住所"
 msgstr "地址"
 
 msgid "ご購入時に入力された情報が表示されております。"
-msgstr "显示购买时填写的信息"
+msgstr "显示您购买操作时登录的信息。"
 
 msgid "登録情報変更をご希望の場合は、<a href=\"https://ticket.rakuten.co.jp/inquiry\" target=\"_blank\">問合せフォームより</a>ご連絡下さい。"
-msgstr "如果想更改注册信息，<a href=\"https://ticket.rakuten.co.jp/inquiry\" target=\"_blank\">这里</a>"
+msgstr "如果想更改登录信息，请从<a href=\"https://ticket.rakuten.co.jp/inquiry\" target=\"_blank\">这里</a>联系我们。"
 
 msgid "購入したイベントの情報"
-msgstr "购买的活动信息"
+msgstr "已购票的演出信息"
 
 msgid "イベント名"
-msgstr "活动名称"
+msgstr "演出名称"
 
 msgid "公演・試合名"
-msgstr "表演／比赛名"
+msgstr "演出・比赛名"
 
 msgid "公演日"
-msgstr "表演日期"
+msgstr "演出日期"
 
 msgid "会場"
 msgstr "会场"
@@ -144,16 +130,16 @@ msgid "注文内容"
 msgstr "订单内容"
 
 msgid "席種、金額などのお買い物内容"
-msgstr "座椅种，购物的金额内容"
+msgstr "座位种类，购票金额等内容"
 
 msgid "枚"
 msgstr "张"
 
 msgid "決済手数料"
-msgstr "购买手续费"
+msgstr "支付手续费"
 
 msgid "発券/引取手数料"
-msgstr "领取手续费"
+msgstr "印票/领票手续费"
 
 msgid "システム利用料"
 msgstr "系统使用费"
@@ -165,46 +151,46 @@ msgid "追加情報"
 msgstr "追加信息"
 
 msgid "入力情報の編集"
-msgstr "编辑填写的信息"
+msgstr "修改填写的信息"
 
 msgid "この購入/予約はキャンセルされました"
-msgstr "这个购买／预约被取消了"
+msgstr "本次订单已被取消。"
 
 msgid "キャンセル処理は、下記のような理由によりおこなっております。"
-msgstr "下面是取消的原因。"
+msgstr "由于以下原因本次订单已被取消。"
 
 msgid "期限内のご入金がなくキャンセル扱いとしたため"
-msgstr "在期间内没有支付而取消"
+msgstr "支付期间内无法确认支付完成"
 
 msgid "弊社判断によるキャンセル処理を行ったため"
-msgstr "根据本公司判断进行取消处理"
+msgstr "根据本公司规定取消订单"
 
 msgid "お支払"
 msgstr "支付"
 
 msgid "お引取"
-msgstr "领取"
+msgstr "领票"
 
 msgid "コンビニ（セブン-イレブン）店頭でのお受取です。"
-msgstr "在便利店（711）领取。"
+msgstr "在便利店（7-11）领取。"
 
 msgid "公演日約1週間前までに、セブン-イレブン店頭レジでチケット引取をする際に必要な引換票番号をメールにてお送りいたします(当選メールとは別のメールになります)。詳細は、そちらをご確認ください。"
-msgstr "执行日期大约一个星期前，我们会向您发送电子邮件需要对取票711便利店收银（和赢取电子邮件将成为另一个电子邮件）交货单号。欲了解更多信息，请检查那里。"
+msgstr "在演出日期前一周系统会将7-11店铺取票所需的领票号码通过电子邮件发送给您（不同于中签的通知邮件）。请确认详细情况。"
 
 msgid "入力された個人情報は「個人情報保護方針」に基づき適切に取扱われます。"
-msgstr "已输入的个人信息处理恰当基于'个人信息保护政策'。"
+msgstr "输入的个人信息基于'个人信息保护政策'条款受到保护。"
 
 msgid "セブン-イレブン決済の際には払込票番号が必要です。下記、「払込票印刷」ボタンをクリックし、払込票を印刷してお持ちになるか、上記の払込票番号をお控えいただき、レジでお伝え下さい。"
-msgstr "711时要求结算付款单号。下面，点击“付款票据打印”按钮，否则你就必须打印付款单据，请从上面的付款单据数量不要，请告诉在收银台。"
+msgstr "7－11店铺支付时需要支付单号码。请点击下面的印刷按钮后持打印的支付单或记下支付单号到7-11进行支付操作。"
 
 msgid "予約有効期限までに、払込票または払込票番号をセブン-イレブン店頭レジにてお申し出の上、代金をお支払いください。"
-msgstr "直到预约截止日期，付款单或付款单数的七 - 由要约的顶部十一点过的柜台收银，请付出代价。"
+msgstr "请在支付截止日期前持支付单号码到7-11店铺进行支付操作。"
 
 msgid "支払期日までに入金されない場合は、申込が無効となりますのでご注意ください。"
-msgstr "如果你不记，直到截止日期，请注意，应用程序将是无效的。"
+msgstr "如果截止日期后不能确认付款系统会自动取消预定。"
 
 msgid "お申込時に受付内容を記載した確認のメールが、ご登録いただいたメールアドレス宛に送られます。しばらくたっても確認のメールが届かない場合は、入力されたメールアドレスが誤っている可能性があります。"
-msgstr "与应用程序的时候接受的内容的电子邮件的确认将被发送给您注册的邮件地址。如果连一段时间后，没有收到确认电子邮件，您可能没有正确输入电子邮件地址。"
+msgstr "购买完成后系统会发送邮件至登录的电子邮箱。如果未收到确认邮件，可能是邮件地址输入错误或邮箱设置问题。"
 
 msgid "こちら"
 msgstr "这里"
@@ -226,7 +212,7 @@ msgid "発行(印刷orメール送信)済"
 msgstr "发行完毕（印刷或邮件发送）"
 
 msgid "未発行"
-msgstr "未发行"
+msgstr "未领票"
 
 msgid "QRコードを表示する"
 msgstr "显示QR号码"
@@ -235,7 +221,7 @@ msgid "メールで送る"
 msgstr "用邮件发送"
 
 msgid "お支払い完了後、このページにQRコードを表示するためのボタンが表示されます。表示されたQRコードを印刷、あるいは、PC/携帯へメール送信の上、試合当日、指定の入場ゲートにてQRコード（印刷したもの、あるいは携帯画面）をお見せください。"
-msgstr "支付完成后，你会看到一个按钮，此页面上显示一个QR码。通过大门口的规格（那些已被打印或手机屏幕），请出示您打印显示的QR码，或者在发送到PC /移动电子邮件，比赛当天，QR码的顶部。"
+msgstr "支付完成后，会显示用来获取QR码的按钮。可以选择打印QR码或者将其发送至手机，在演出当天请出示QR码入场。"
 
 msgid "印刷する"
 msgstr "印刷"
@@ -243,70 +229,70 @@ msgstr "印刷"
 # sej
 
 msgid "セブン-イレブン支払い"
-msgstr "在7-11支付"
+msgstr "7-11支付"
 
 msgid "セブン-イレブン受け取り"
-msgstr "在7-11领取"
+msgstr "7-11领票"
 
 msgid "当選の場合、お支払期日までにお支払頂きます。"
-msgstr "在获胜的情况下，你支付，直到付款到期日。"
+msgstr "中签后请于支付截止日期前完成支付操作。"
 
 msgid "お支払が確認できた時点で当選申込が確定となります。"
-msgstr "应用在付款已被证实的时候获胜将得到确认。"
+msgstr "在确认票款支付后中签正式成立。"
 
 msgid "各種手数料の他、公演によりシステム利用料がかかります。"
-msgstr "各种其他费用，它通过性能需要一个系统的费用。"
+msgstr "除去各种费用之外，有的演出需要交付系统使用费。"
 
 msgid "払込票番号"
-msgstr "付款单数"
+msgstr "付款单号"
 
 msgid "払込票を表示"
 msgstr "显示付款单"
 
 msgid "支払期日"
-msgstr "付款到期日"
+msgstr "付款截止日期"
 
 msgid "上記支払期日までに、払込票番号をお持ちの上、セブン-イレブン店舗レジにてお支払いください。（払込票を表示、印刷した上で店頭にお持ちいただくとスムーズです）"
-msgstr "付款到期日之前，你上面有付款单号，请在711便利店收银。 （查看付款单，你就会有购物上打印流畅）"
+msgstr "请于付款截止日之前持付款单号到7-11进行支付操作（打印付款单进行支付操作会更方便）。"
 
 msgid "支払期日までに入金されない場合は予約が無効となりますので、ご注意ください。"
-msgstr "因为如果你不记，直到付款到期日将是无效的保留，请注意。"
+msgstr "如果截止日期后不能确认付款系统会自动取消订单。"
 
 msgid "お申込後の、公演日・席種・枚数等の変更はできませんのでご容赦ください。"
-msgstr "您的应用程序后，请原谅，你无法改变，如执行日期，座位种类，张数。"
+msgstr "请注意购买完成后我们不受理一切更改或取消请求。"
 
 msgid "チケットは代金と引換です。"
-msgstr "门票换来的代价。"
+msgstr "使用现金买票。"
 
 msgid "引換票番号は後ほどメールにてお送りいたします。"
-msgstr "交易所票数将通过电子邮件稍后发送。"
+msgstr "领取号码稍后会由系统邮件发送。"
 
 msgid "詳細はそちらをご確認頂き、指定発券日以降にレジにてチケットをお受取ください。"
-msgstr "欲了解更多信息，请确认那里，请收到或发出的指定日期后，在收银台的车票。"
+msgstr "请确认相关说明，并于领票开始日后按指定方式领票。"
 
 msgid "引換票番号"
-msgstr "交易所票数"
+msgstr "领票号码"
 
 msgid "引換票を表示"
-msgstr "显示Exchange投票"
+msgstr "显示领票号码"
 
 msgid "引取受付期間"
 msgstr "领取受理期间"
 
 msgid "購入いただいた日の翌日{0}から引き取りが可能となります。"
-msgstr "以下日期您购买的一天{0}"
+msgstr "可以在购买完成后的第二天{0}进行操作。"
 
 msgid "セブン-イレブン発券の際には引換票番号が必要です。"
-msgstr "十一期间售票需要在交货单号。"
+msgstr "在7-11领票时需要提交领票号码。"
 
 msgid "<a href=\"/orderreview\">予約・購入履歴確認画面</a>より、「引換票」を印刷するか、または番号をお控え下さい。"
-msgstr "<a href=\"/orderreview\">这里</a> 预订和购买记录确认屏幕"
+msgstr "请从 <a href=\"/orderreview\">这里</a> 打印或记录订单信息。"
 
 msgid "<a href=\"/orderreview\">予約・購入履歴確認画面</a>にて表示される引換票番号をお控え下さい。"
-msgstr "<a href=\"/orderreview\">这里</a> 请从要显示在交换滑移数避免。"
+msgstr "请从 <a href=\"/orderreview\">这里</a> 确认领票信息。"
 
 msgid "引取受付期間内に、セブン-イレブン店頭レジにてチケットをお引取り下さい。"
-msgstr "在起飞验收期间，请把你拉票711过的柜台收银机。"
+msgstr "请确认领票期间，并于期间内到7-11柜台领票。"
 
 msgid "クレジットカード情報"
 msgstr "信用卡信息"
@@ -337,16 +323,16 @@ msgid "チケットは代金と引換です。"
 msgstr "门票换来的代价。"
 
 msgid "Famiポートでお引き取り"
-msgstr "在Fami通口拿起你"
+msgstr "Famiport领票"
 
 msgid "Famiポート予約番号"
-msgstr "Fami通口预约号"
+msgstr "Famiport订单号"
 
 msgid "発券可能期間"
-msgstr "售票时间"
+msgstr "领票期间"
 
 msgid "Famiポートでお支払い"
-msgstr "支付Fami通口"
+msgstr "Famiport支付"
 
 msgid "支払期限"
-msgstr "付款到期日"
+msgstr "支付截止日期"
