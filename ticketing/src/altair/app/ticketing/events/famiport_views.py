@@ -4,6 +4,8 @@ from markupsafe import Markup
 from pyramid.view import view_defaults, view_config, render_view_to_response
 from pyramid.renderers import render_to_response
 from pyramid.httpexceptions import HTTPForbidden, HTTPFound
+from pyramid.exceptions import BadCSRFToken
+from pyramid.session import check_csrf_token
 from sqlalchemy.sql import func as sqlf
 from altair.sqlahelper import get_db_session
 from altair.viewhelpers.datetime_ import create_date_time_formatter
@@ -82,18 +84,27 @@ class FamiPortView(BaseView):
         else:
             return famiport_performance_group.last_reflected_at
 
-
     @view_config(route_name='events.famiport.performance_groups.index', renderer=u'events/famiport/show.html')
     def show(self):
+        token = self.request.session.new_csrf_token()
         event_id = self.request.matchdict['event_id']
         event = self.slave_session.query(Event).filter_by(organization_id=self.context.organization.id, id=event_id).one()
         altair_famiport_performance_groups = self.slave_session.query(AltairFamiPortPerformanceGroup).filter(AltairFamiPortPerformanceGroup.event_id == event_id)
-        return dict(event=event, altair_famiport_performance_groups=altair_famiport_performance_groups)
+        return dict(token=token, event=event, altair_famiport_performance_groups=altair_famiport_performance_groups)
 
     @view_config(request_method='POST', route_name='events.famiport.performance_groups.action', name='action_dispatch')
     def _action_dispatch(self):
         event_id = self.request.matchdict['event_id']
         event = self.slave_session.query(Event).filter_by(organization_id=self.context.organization.id, id=event_id).one()
+
+        # 二度押しチェック
+        try:
+            check_csrf_token(self.request, 'token')
+        except BadCSRFToken as e:
+            logger.info("events.famiport.performance_groups.action Press twice event_id:{0}".format(event.id))
+            raise e
+        self.request.session['_csrft_'] = None
+
         for k in self.request.POST.keys():
             if k.startswith('do_'):
                 action = k[3:]
