@@ -10,8 +10,10 @@ from altair.app.ticketing.cart.helpers import japanese_date, japanese_datetime
 from altair.formhelpers.widgets.generic import GenericHiddenInput
 from altair.app.ticketing.cart.helpers import (
     create_url,
+    _message,
 )
-
+import logging
+logger = logging.getLogger(__name__)
 
 __all__ = [
     "japanese_date",
@@ -155,11 +157,3 @@ def get_entry_status_image(request, entry):
         return u"icon_rakusen.gif"
     else:
         return u"icon_kekkachusenmachi.gif"
-
-def _message(msg):
-    request = get_current_request()
-    if request.organization.setting.i18n:
-        _ = request.translate
-        return _(msg)
-    else:
-        return msg

@@ -90,7 +90,7 @@ from .limiting import LimiterDecorators
 from . import flow
 from .interfaces import IPageFlowPredicate, IPageFlowAction
 from altair.app.ticketing.i18n import custom_locale_negotiator
-
+from functools import partial
 logger = logging.getLogger(__name__)
 
 limiter = LimiterDecorators('altair.cart.limit_per_unit_time', TooManyCartsCreated)
@@ -237,6 +237,7 @@ class PerEventAgreementView(IndexViewMixin):
     def __init__(self, context, request):
         self.context = context
         self.request = request
+        self._message = partial(h._message, request=self.request)
 
     @lbr_view_config(request_method="GET")
     def get(self):
@@ -270,7 +271,7 @@ class PerEventAgreementView(IndexViewMixin):
     def post(self):
         agree = self.request.params.get('agree')
         if not agree:
-            self.request.session.flash(h._message(u"注意事項を確認、同意し、公演に申し込んでください。"))
+            self.request.session.flash(self._message(u"注意事項を確認、同意し、公演に申し込んでください。"))
             return HTTPFound(self.request.current_route_path(_query=self.request.GET))
         else:
             return HTTPFound(self.request.route_url('cart.index', event_id=self.context.event.id, _query=self.request.GET))
@@ -286,6 +287,7 @@ class PerPerformanceAgreementView(object):
     def __init__(self, context, request):
         self.context = context
         self.request = request
+        self._message = partial(h._message, request=self.request)
 
     @lbr_view_config(request_method="GET")
     def get(self):
@@ -299,7 +301,7 @@ class PerPerformanceAgreementView(object):
     def post(self):
         agree = self.request.params.get('agree')
         if not agree:
-            self.request.session.flash(h._message(u"注意事項を確認、同意し、公演に申し込んでください。"))
+            self.request.session.flash(self._message(u"注意事項を確認、同意し、公演に申し込んでください。"))
             return HTTPFound(self.request.current_route_path(_query=self.request.GET))
         else:
             return HTTPFound(self.request.route_url('cart.index2', performance_id=self.context.performance.id, _query=self.request.GET))
@@ -505,6 +507,7 @@ class IndexAjaxView(object):
     def __init__(self, context, request):
         self.context = context
         self.request = request
+        self._message = partial(h._message, request=self.request)
 
     def get_frontend_drawing_urls(self, venue):
         sales_segment = self.context.sales_segment
@@ -775,7 +778,7 @@ class ReserveView(object):
     def __init__(self, context, request):
         self.context = context
         self.request = request
-
+        self._message = partial(h._message, request=self.request)
 
     def iter_ordered_items(self):
         for key, value in self.request.params.iteritems():
@@ -848,13 +851,13 @@ class ReserveView(object):
                 return dict(
                     result='NG',
                     reason="ticket_count_below_lower_bound",
-                    message=h._message(u"枚数は合計{.min_quantity}以上で選択してください").format(e)
+                    message=self._message(u"枚数は合計{.min_quantity}以上で選択してください").format(e)
                     )
             else:
                 return dict(
                     result='NG',
                     reason="ticket_count_over_upper_bound",
-                    message=h._message(u"枚数は合計{.max_quantity}以内で選択してください").format(e)
+                    message=self._message(u"枚数は合計{.max_quantity}以内で選択してください").format(e)
                     )
         except ProductQuantityOutOfBoundsError as e:
             transaction.abort()
@@ -863,13 +866,13 @@ class ReserveView(object):
                 return dict(
                     result='NG',
                     reason="product_count_below_lower_bound",
-                    message=h._message(u"商品個数は合計{.min_quantity}以上で選択してください").format(e)
+                    message=self._message(u"商品個数は合計{.min_quantity}以上で選択してください").format(e)
                     )
             else:
                 return dict(
                     result='NG',
                     reason="product_count_over_upper_bound",
-                    message=h._message(u"商品個数は合計{.max_quantity}以内で選択してください").format(e)
+                    message=self._message(u"商品個数は合計{.max_quantity}以内で選択してください").format(e)
                     )
         except PerStockTypeQuantityOutOfBoundsError as e:
             transaction.abort()
@@ -878,13 +881,13 @@ class ReserveView(object):
                 return dict(
                     result='NG',
                     reason="ticket_count_below_lower_bound",
-                    message=h._message(u"商品個数は合計{.min_quantity}以上で選択してください").format(e)
+                    message=self._message(u"商品個数は合計{.min_quantity}以上で選択してください").format(e)
                     )
             else:
                 return dict(
                     result='NG',
                     reason="ticket_count_over_upper_bound",
-                    message=h._message(u"商品個数は合計{.max_quantity}以内で選択してください").format(e)
+                    message=self._message(u"商品個数は合計{.max_quantity}以内で選択してください").format(e)
                     )
         except (PerStockTypeProductQuantityOutOfBoundsError, PerProductProductQuantityOutOfBoundsError) as e:
             transaction.abort()
@@ -893,13 +896,13 @@ class ReserveView(object):
                 return dict(
                     result='NG',
                     reason="product_count_below_lower_bound",
-                    message=h._message(u"商品個数は合計{.min_quantity}以上で選択してください").format(e)
+                    message=self._message(u"商品個数は合計{.min_quantity}以上で選択してください").format(e)
                     )
             else:
                 return dict(
                     result='NG',
                     reason="product_count_over_upper_bound",
-                    message=h._message(u"商品個数は合計{.max_quantity}以内で選択してください").format(e)
+                    message=self._message(u"商品個数は合計{.max_quantity}以内で選択してください").format(e)
                     )
         except NotEnoughAdjacencyException:
             transaction.abort()
@@ -965,6 +968,7 @@ class PaymentView(object):
     def __init__(self, context, request):
         self.context = context
         self.request = request
+        self._message = partial(h._message, request=self.request)
 
     def get_payment_delivery_method_pairs(self, sales_segment):
         slave_session = get_db_session(self.request, name="slave")
@@ -1069,10 +1073,10 @@ class PaymentView(object):
         if not payment_delivery_pair or shipping_address_params is None:
             if not payment_delivery_pair:
                 logger.debug("invalid : %s" % 'payment_delivery_method_pair_id')
-                raise self.ValidationFailed(h._message(u'お支払／引取方法をお選びください'))
+                raise self.ValidationFailed(self._message(u'お支払／引取方法をお選びください'))
             else:
                 logger.debug("invalid : %s" % self.form.errors)
-                raise self.ValidationFailed(h._message(u'購入者情報の入力内容を確認してください'))
+                raise self.ValidationFailed(self._message(u'購入者情報の入力内容を確認してください'))
 
     @back(back_to_top, back_to_product_list_for_mobile)
     @lbr_view_config(request_method="POST")
@@ -1113,9 +1117,9 @@ class PaymentView(object):
                         plugin.validate_order(self.request, cart)
             except OrderLikeValidationFailure as e:
                 if e.path == 'order.total_amount':
-                    raise self.ValidationFailed(h._message(u'合計金額が選択された決済方法では取り扱えない金額となっています。他の決済方法を選択してください'))
+                    raise self.ValidationFailed(self._message(u'合計金額が選択された決済方法では取り扱えない金額となっています。他の決済方法を選択してください'))
                 else:
-                    raise self.ValidationFailed(h._message(u'現在の予約内容では選択された決済 / 引取方法で購入を進めることができません。他の決済・引取方法を選択してください。'))
+                    raise self.ValidationFailed(self._message(u'現在の予約内容では選択された決済 / 引取方法で購入を進めることができません。他の決済・引取方法を選択してください。'))
         except self.ValidationFailed as e:
             self.request.session.flash(e.message)
             start_on = cart.performance.start_on

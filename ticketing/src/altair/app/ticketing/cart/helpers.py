@@ -590,8 +590,10 @@ def lighten(a, r):
         a = parse_color(a)
     return _natural_blend(a, rgba(255, 255, 255, 1.), r)
 
-def _message(msg):
-    request = get_current_request()
+def _message(msg, request):
+    if not request:
+        logger.warning('can not get request {0}'.format(msg))
+        return msg
     if request.organization.setting.i18n:
         _ = request.translate
         return _(msg)

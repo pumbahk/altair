@@ -24,6 +24,7 @@ from .views import unsuspicious_order_filter
 from .schemas import OrderReviewSchema
 from .exceptions import InvalidForm
 from . import helpers as h
+from functools import partial
 
 logger = logging.getLogger(__name__)
 
@@ -110,6 +111,7 @@ class OrderReviewResource(OrderReviewResourceBase):
     def __init__(self, request):
         super(OrderReviewResource, self).__init__(request)
         form = OrderReviewSchema(self.request.POST)
+        _message = partial(h._message, request=request)
         if not form.validate():
             raise InvalidForm(form)
         order_no = form.order_no.data
@@ -119,10 +121,10 @@ class OrderReviewResource(OrderReviewResourceBase):
             filter(Order.order_no==order_no).first()
         logger.info("organization_id=%s, order_no=%s, order=%s" % (self.organization.id, order_no, order))
         if order is None:
-            raise InvalidForm(form, errors=[h._message(u'受付番号または電話番号が違います。')])
+            raise InvalidForm(form, errors=[_message(u'受付番号または電話番号が違います。')])
         tel = form.tel.data
         if not order.shipping_address or tel not in [_tel.replace('-', '') for _tel in order.shipping_address.tels]:
-            raise InvalidForm(form, errors=[h._message(u'受付番号または電話番号が違います。')])
+            raise InvalidForm(form, errors=[_message(u'受付番号または電話番号が違います。')])
         if order.payment_delivery_pair.delivery_method.delivery_plugin_id == plugins.ORION_DELIVERY_PLUGIN_ID and \
            (order.performance is None or order.performance.orion is None):
             logger.warn("Performance %s has not OrionPerformance." % order.performance.code)
