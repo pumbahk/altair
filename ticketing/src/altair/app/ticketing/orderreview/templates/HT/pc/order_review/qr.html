@@ -25,7 +25,7 @@
     <div>
       <ul class="product-list">
         %for ordered_product_item in ordered_product_items:
-          <li><font size="5">${ordered_product_item.product_item.name}： ${ordered_product_item.quantity}席</font></li>
+          <li><font size="5">${ordered_product_item.product_item.name} × ${ordered_product_item.quantity}</font></li>
         %endfor
       </ul>
     </div>
