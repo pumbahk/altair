@@ -523,10 +523,10 @@ class QRView(object):
 
         ticket = build_qr_by_history_id(self.request, ticket_id)
 
-        ordered_products = None
+        ordered_product_items = None
         # 一括の場合はticketがproductの情報を持たない。
         if not ticket.product:
-            ordered_products = [element.ordered_product for item in ticket.order.items for element in item.elements]
+            ordered_product_items = [element for item in ticket.order.items for element in item.elements]
 
         if ticket == None or ticket.sign != sign:
             raise HTTPNotFound()
@@ -538,7 +538,7 @@ class QRView(object):
             performance = ticket.performance,
             event = ticket.event,
             product = ticket.product,
-            ordered_products = ordered_products
+            ordered_product_items = ordered_product_items
             )
 
     @lbr_view_config(
@@ -550,10 +550,10 @@ class QRView(object):
 
         ticket = build_qr_by_history_id(self.request, ticket_id)
 
-        ordered_products = None
+        ordered_product_items = None
         # 一括の場合はticketがproductの情報を持たない。
         if not ticket.product:
-            ordered_products = [element.ordered_product for item in ticket.order.items for element in item.elements]
+            ordered_product_items = [element for item in ticket.order.items for element in item.elements]
 
         if ticket == None or ticket.sign != sign:
             raise HTTPNotFound()
@@ -572,7 +572,7 @@ class QRView(object):
             performance = ticket.performance,
             event = ticket.event,
             product = ticket.product,
-            ordered_products = ordered_products,
+            ordered_product_items = ordered_product_items,
             gate = gate
         )
 

@@ -21,11 +21,11 @@
   %if product:
   <font size="5">商品名 ${product.name} (${product.id})</font><br />
   %endif
-  %if ordered_products:
+  %if ordered_product_items:
     <div>
       <ul class="product-list">
-        %for ordered_product in ordered_products:
-          <li><font size="5">${ordered_product.product.name}： ${ordered_product.quantity}席</font></li>
+        %for ordered_product_item in ordered_product_items:
+          <li><font size="5">${ordered_product_item.product_item.name}： ${ordered_product_item.quantity}席</font></li>
         %endfor
       </ul>
     </div>
