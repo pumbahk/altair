@@ -875,7 +875,7 @@ def can_receive_from_next_day(now, sej_order):
 @lbr_view_config(context=ICartDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID,
              renderer=_overridable_delivery('sej_delivery_confirm.html'))
 def sej_delivery_confirm_viewlet(context, request):
-    return Response(text=_message(u'セブン-イレブン受け取り'))
+    return Response(text=_message(u'セブン-イレブン受け取り', request))
 
 @lbr_view_config(context=IOrderPayment, name="payment-%d" % PAYMENT_PLUGIN_ID,
              renderer=_overridable_delivery('sej_payment_complete.html'))
@@ -895,7 +895,7 @@ def sej_payment_viewlet(context, request):
 
 @lbr_view_config(context=ICartPayment, name="payment-%d" % PAYMENT_PLUGIN_ID, renderer=_overridable_payment('sej_payment_confirm.html'))
 def sej_payment_confirm_viewlet(context, request):
-    return Response(text=_message(u'セブン-イレブン支払い'))
+    return Response(text=_message(u'セブン-イレブン支払い', request))
 
 
 @lbr_view_config(context=ICompleteMailResource, name="payment-%d" % PAYMENT_PLUGIN_ID, renderer=_overridable_payment('sej_payment_mail_complete.html', fallback_ua_type='mail'))
