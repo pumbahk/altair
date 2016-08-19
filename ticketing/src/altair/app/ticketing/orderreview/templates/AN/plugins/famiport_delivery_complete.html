@@ -1,5 +1,11 @@
 %if payment_type == 'CashOnDelivery':
-<p>${_(u'チケットは代金と引換です。')}</p>
+<table class="customer-table">
+  <tbody>
+    <tr>
+    <td>${_(u'チケットは代金と引換です。')}</td>
+    </tr>
+  </tbody>
+</table>
 %else:
 <div>
   <h4>${_(u'Famiポートでお引き取り')}</h4>

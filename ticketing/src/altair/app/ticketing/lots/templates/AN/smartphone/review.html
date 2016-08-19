@@ -64,7 +64,7 @@ dl.cost-detail > dd {
         % if h.lot_entry_display_status(entry, now) == u'当選表示':
         ${_(u'抽選の結果、お客様はご当選されました。')}
         ${_(u'払込票番号や引換票番号は、下記の購入履歴よりご確認いただけます。')}<br/>
-        ${_(u'<a href=\"/orderreview/guest\" target=\"_blank\">■購入履歴確認ページ</a>をご確認ください。')}<br/>
+        ${_(u'<a href=\"/orderreview/guest\" target=\"_blank\">■購入履歴確認ページ</a>をご確認ください。') |n}<br/>
         ${_(u'予約番号は{0}です').format(entry.entry_no)}
         % elif h.lot_entry_display_status(entry, now) == u'落選表示':
         ${_(u'抽選の結果、お客様は残念ながら落選となりました。')}

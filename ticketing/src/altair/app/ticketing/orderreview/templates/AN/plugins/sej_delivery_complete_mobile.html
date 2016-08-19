@@ -19,7 +19,7 @@ ${_(u'購入いただいた日の翌日')}${h.japanese_time(sej_order.ticketing_
 <br/>
 ${_(u'セプン-イレブン発券の際には引換票番号が必要です。')}
 %if not delivery_method.hide_voucher:
-${_(u'<a href=\"/orderreview\">予約・購入履歴確認画面</a>より、「引換票」を印刷するか、または番号をお控え下さい。')}<br/>
+${_(u'<a href=\"/orderreview\">予約・購入履歴確認画面</a>より、「引換票」を印刷するか、または番号をお控え下さい。') |n}<br/>
 %endif
 ${_(u'引取受付期間内に、セブン-イレブン店頭レジにてチケットをお引取り下さい。')}<br/>
 %endif

@@ -2,7 +2,7 @@
 <div class="settlementBox2 OrderBox">
   <div class="settlementBoxInner2">
     <h3>${__(u'受付番号')}</h3>
-    <table class="itemize">
+    <table class="customer-table">
       <tr>
         <th scope="row">${__(u'受付番号')}</th>
         <td>${order.order_no}</td>
@@ -34,7 +34,7 @@
 <div class="settlementBox2 OrderBox">
   <div class="settlementBoxInner2">
     <h3>${__(u'購入者情報')}</h3>
-    <table class="itemize" summary="${__(u'配送先情報')}">
+    <table class="customer-table" summary="${__(u'配送先情報')}">
       <tr>
         <th scope="row">${__(u'氏名（漢字）')}</th>
         <td>${shipping_address.last_name} ${shipping_address.first_name}</td>
@@ -66,7 +66,7 @@
         <tr>
           <td colspan="2">
               ※${__(u'ご購入時に入力された情報が表示されております。')}<br/>
-              ${__(u'登録情報変更をご希望の場合は、<a href=\"https://ticket.rakuten.co.jp/inquiry\" target=\"_blank\">問合せフォームより</a>ご連絡下さい。')}
+              ${__(u'登録情報変更をご希望の場合は、<a href=\"https://ticket.rakuten.co.jp/inquiry\" target=\"_blank\">問合せフォームより</a>ご連絡下さい。') |n}
           </td>
         </tr>
     </table>
@@ -76,7 +76,7 @@
 <div class="settlementBox2 OrderBox">
   <div class="settlementBoxInner2">
     <h3>${__(u'購入したイベントの情報')}</h3>
-    <table class="itemize">
+    <table class="customer-table">
       <tr>
         <th scope="row">${__(u'イベント名')}</th>
         <td>${order.performance.event.title}</td>
@@ -115,10 +115,10 @@
 <div class="settlementBox OrderBox">
   <div class="settlementBoxInner">
     <h3>${__(u'注文内容')}</h3>
-    <table id="contentsOfShopping" summary="${__(u'席種、金額などのお買い物内容')}">
+    <table id="contentsOfShopping" class="customer-table" summary="${__(u'席種、金額などのお買い物内容')}">
      %for product in order.items:
       <tr>
-        <th scope="row"><span style="background-color:${getattr(product.product.items[0].stock_type, 'style', {}).get('fill', {}).get('color') or '#000'}; width:12px; height:12px; border: 1px solid #888; border-radius:2px; display:inline-block; margin-right: 0.5em;"></span>${product.product.name}
+        <th scope="row"><span style="background-color:#ff0000; width:13px; height:13px; display:inline-block; margin-right: 0.5em; position:relative; top:1px;"></span>${product.product.name}
         </th>
         <td><strong>${product.seat_quantity}</strong>${__(u'枚')}</td>
         <td>
@@ -172,7 +172,7 @@
 <div class="settlementBox OrderBox">
   <div class="settlementBoxInner">
     <h3>${__(u'追加情報')}</h3>
-    <table class="itemize" summary="${__(u'追加情報')}">
+    <table class="customer-table" summary="${__(u'追加情報')}">
       %for _, (display_name, display_value) in extra_form_data:
       <tr>
         <th scope="row" class="display_name">${display_name}</th>
@@ -238,9 +238,13 @@
   <div class="settlementBoxInner2">
     <h3>${__(u'注意事項')}</h3>
     <div class="confirmBoxText">
-      <p>
-        ${__(u'入力された個人情報は「個人情報保護方針」に基づき適切に取扱われます。')}
-      </p>
+      <table class="customer-table">
+        <tbody>
+          <tr>
+            <td>${__(u'入力された個人情報は「個人情報保護方針」に基づき適切に取扱われます。')}</td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   </div>
 </div>

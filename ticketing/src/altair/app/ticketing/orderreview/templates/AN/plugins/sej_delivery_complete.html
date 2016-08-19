@@ -1,5 +1,11 @@
 %if payment_type == 'CashOnDelivery':
-<p>${_(u'チケットは代金と引換です。')}</p>
+<table class="customer-table">
+  <tbody>
+    <tr>
+    <td>${_(u'チケットは代金と引換です。')}</td>
+    </tr>
+  </tbody>
+</table>
 %else:
 %if delivery_method.hide_voucher:
 <p>${_(u'引換票番号は後ほどメールにてお送りいたします。')}</p>
@@ -23,9 +29,9 @@ ${h.japanese_datetime(sej_order.ticketing_due_at)}
 <p>${_(u'セブン-イレブン発券の際には引換票番号が必要です。')}
 %if not delivery_method.hide_voucher:
 %if payment_type == 'Paid':
-${_(u'<a href=\"/orderreview\">予約・購入履歴確認画面</a>より、「引換票」を印刷するか、または番号をお控え下さい。')}
+${_(u'<a href=\"/orderreview\">予約・購入履歴確認画面</a>より、「引換票」を印刷するか、または番号をお控え下さい。') |n}
 %else:
-${_(u'<a href=\"/orderreview\">予約・購入履歴確認画面</a>にて表示される引換票番号をお控え下さい。')}
+${_(u'<a href=\"/orderreview\">予約・購入履歴確認画面</a>にて表示される引換票番号をお控え下さい。') |n}
 %endif
 </p>
 %endif
