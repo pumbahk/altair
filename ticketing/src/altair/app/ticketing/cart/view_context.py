@@ -1,6 +1,8 @@
 # encoding: utf-8
 
+import os.path
 from pyramid.decorator import reify
+from pyramid.path import AssetResolver
 from altair.mobile.interfaces import IMobileRequest, ISmartphoneRequest
 from altair.app.ticketing.mails.api import get_sender_address
 from altair.app.ticketing.core.models import MailTypeEnum
@@ -162,6 +164,23 @@ def get_cart_view_context_factory(default_package):
             if module is None:
                 module = 'cart'
             return self.request.static_url("altair.app.ticketing.%(module)s:static/%(organization_short_name)s/%(path)s" % dict(organization_short_name=self.organization_short_name, path=path, module=module), *args, **kwargs)
+
+        def include_template_path(self, path, module=None, * args, **kwargs):
+            if module is None:
+                module = 'cart'
+
+            include_path = "altair.app.ticketing.%(module)s:templates/%(organization_short_name)s/include/%(path)s" % dict(
+                module=module,
+                organization_short_name=self.organization_short_name,
+                path=path)
+
+            # check file
+            assetresolver = AssetResolver()
+            physical_path = assetresolver.resolve(include_path).abspath()
+            if os.path.exists(physical_path):
+                return include_path
+            else:
+                return None
 
         def __getattr__(self, k):
             return getattr(self.cart_setting, k, None)
