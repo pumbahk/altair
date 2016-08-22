@@ -51,8 +51,8 @@ $(document).ready(function(){
           <% checked = 'checked' if str(m.id) == checked_id else '' %>
           <input type="radio" name="payment_delivery_method_pair_id" id=${"radio{}".format(radio_cnt)} value="${m.id}" ${checked} />
           <label for=${"radio{}".format(radio_cnt)}>
-            <p class="settlement-list-typeA icon-credit"><span>${h.payment_method_get_info(custom_locale_negotiator, m, 'name')}</span></p>
-            <p class="settlement-list-typeB icon-seven"><span>${h.delivery_method_get_info(custom_locale_negotiator, m, 'name')}</span></p>
+            <p class="settlement-list-typeA"><span>${h.payment_method_get_info(custom_locale_negotiator, m, 'name')}</span></p>
+            <p class="settlement-list-typeB"><span>${h.delivery_method_get_info(custom_locale_negotiator, m, 'name')}</span></p>
           </label>
         </dt>
         <dd class="settlement-detail methodExplanation">

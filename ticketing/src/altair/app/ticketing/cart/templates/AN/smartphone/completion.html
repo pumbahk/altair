@@ -90,15 +90,7 @@
   <!-- ===== お支払い ===== -->
   <div class="confirm-wrap">
     <h2 class="heading heading_simple_line">${__(u'お支払い')}</h2>
-    <p class="tac bold">払込票番号：<span>1234567890</span></p>
-    <p class="tac bold">支払期日：<span>2015年xx月xx日（xx）23時59分</span></p>
-    <p class="tac"><input class="btn btn-primary-border" type="button" value="払込票を表示"></p>
     <p>${h.render_payment_finished_viewlet(request, order)}</p>
-
-    <p>上記支払期日までに、払込票番号をお持ちの上、セブン-イレブン店舗レジにてお支払いください。<br>
-    （払込票を表示、印刷した上で店頭にお持ちいただくとスムーズです。）</p>
-    <p class="bold att-text-a">支払期日までに入金されない場合は、予約が無効となりますので、ご注意ください。</p>
-    <p class="bold att-text-a">お申し込み後の、公演日･席種･枚数等の変更はできませんのでご容赦ください。</p>
   </div><!-- ===== / お支払い ===== -->
 
   <!-- ===== お引き取り ===== -->
