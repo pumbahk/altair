@@ -25,12 +25,12 @@ def run():
     nwts = NWTS(
         tmpdir=os.path.join(os.path.dirname(__file__), 'tmp'),
         params={
-            '-s':'Inwts2.sej.co.jp',
-            '-d':'/sdmt',
+            '-s':'ifile2.sej.co.jp',
+            '-d':'/nwtsweb/ticket/upload',
             '-t':'60022000',
             '-p':'60022a',
             '-f':'SEIT020U',  #'TEST010U'
-            '-e':'tpayback.asp',
+            '-e':'payback.seam',
             }
         )
     httpd = make_server(host, port, nwts)
