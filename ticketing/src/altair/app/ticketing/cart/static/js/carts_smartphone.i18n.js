@@ -740,46 +740,7 @@ cart.StockTypeListView = Backbone.View.extend({
                 radio.val(), radio.data('stockType'));
         });
         this.updateUIState();
-    }
-    /*
-        var self = this;
-        var ul = $('#seatTypeList');
-        ul.empty();
-        var i = 0;
-        this.collection.each(function(stockType) {
-            var style = stockType.get("style");
-            var li = $('<li class="panelgroup"></li>')
-                .append($('<div class="seatListItemInner panelgroup-label"></div>')
-                   .append($('<div class="panelgroup-label-inner"></div>')
-                     .append(
-                       $('<input type="radio" name="seat_type"/>')
-                       .attr('value', stockType.get("products_url"))
-                       .data('stockType', stockType))
-                     .append(
-                       $('<span class="seatColor"></span>')
-                       .css('background-color', style && style.fill && style.fill.color ? style.fill.color: 'white'))
-                     .append(
-                       $('<span class="seatName"></span>')
-                       .text(stockType.get("name")))
-                     .append(
-                       $('<span class="seatState"></span>')
-                       .text(stockType.get("availability_text")))))
-                .append($('<div class="seatListItemAux panelgroup-inner"></div>'));
-            if (!stockType.get('actual_availability'))
-                li.addClass("unavailable")
-            li.appendTo(ul)
-            i++;
-        });
-        var self = this;
-        $(ul.closest('form')).find(':radio').change(function () {
-            var radio = $(this);
-            self.selected = radio.closest('li');
-            self.trigger(cart.events.ON_STOCK_TYPE_SELECTED, 
-                radio.val(), radio.data('stockType'));
-        });
-        this.updateUIState();
-    }
-    */,
+    },
 
     initialize: function() {
         this.selected = null;
@@ -1061,12 +1022,23 @@ cart.OrderFormView = Backbone.View.extend({
                 queue: false,
                 duration: 300,
                 complete: function () {
+
+                    // psp is "payment_seat_products" object
+                    var get_local_total_seat_quantity = function(psp) {
+                        var total_quantity = 0;
+                        inputs = psp.find('input#selected-seats');
+                        for (var i = 0; i < inputs.length; i++) {
+                            total_quantity += +inputs[i].value
+                        }
+                        return total_quantity;
+                    }
+
                     aux.find('.btn-selectseat').on('click', function() {
                         if ($(this).hasClass('btn-seat-active')) {
                           var btns = $(this).parent();
 
                           var btn_type = $(this).attr('class').split(' ')[1];
-                          var seat_type = btns.parent().prev().text();
+                          var seat_type = aux.prev().find('span.seatName').text();
                           var seat_quantity = btns.prev().find('input');
 
                           if (seat_quantity.val() === '') {
@@ -1078,37 +1050,49 @@ cart.OrderFormView = Backbone.View.extend({
                                   seat_quantity.val(+seat_quantity.val() - 1);
                               }
                           }
-                          $('#chk-quantity').text(+seat_quantity.val());
+
                           if (+seat_quantity.val() >= 1) {
                               is_selected = true;
                               btns.find('.btn-seat-minus').addClass('btn-seat-active');
-                              $('#chk-seattype').text(seat_type);
-                              $('dd p.tac a').removeClass('deactivated');
                           } else if (+seat_quantity.val() === 0) {
                               is_selected = false;
                               btns.find('.btn-seat-minus').removeClass('btn-seat-active');
+                          }
+                          var total_local_seat_quantity = get_local_total_seat_quantity(aux.find('.payment-seat-products'));
+                          $('#chk-quantity').text(+total_local_seat_quantity);
+                          if (total_local_seat_quantity >= 1) {
+                              $('dd p.tac a').removeClass('deactivated');
+                              $('#chk-seattype').text(seat_type);
+                          } else if (total_local_seat_quantity === 0) {
+                              $('dd p.tac a').addClass('deactivated');
                               $('#chk-seattype').text('-');
                               $('dd p.tac a').addClass('deactivated');
                           }
                         }
                     });
 
-                    $('input#selected-seats').on('change', function(){
+                    aux.find('input#selected-seats').on('change', function(){
                         var quantity = +$(this).val();
-                        var seat_type = $(this).parent().parent().prev().text();
+                        var seat_type = aux.prev().find('span.seatName').text();
                         var btns = $(this).parent().next();
+
                         if (quantity > 0) {
                             btns.find('.btn-seat-minus').addClass('btn-seat-active');
-                            $('#chk-seattype').text(seat_type);
-                            $('#chk-quantity').text(quantity);
-                            $('dd p.tac a').removeClass('deactivated');
                         } else if (quantity <= 0) {
                             $(this).val(0);
                             btns.find('.btn-seat-minus').removeClass('btn-seat-active');
+                        }
+
+                        var total_local_seat_quantity = get_local_total_seat_quantity(aux.find('.payment-seat-products'));
+                        if (total_local_seat_quantity >= 1) {
+                            $('#chk-seattype').text(seat_type);
+                            $('dd p.tac a').removeClass('deactivated');
+                        } else if (total_local_seat_quantity === 0) {
                             $('#chk-seattype').text('-');
-                            $('#chk-quantity').text(quantity);
                             $('dd p.tac a').addClass('deactivated');
                         }
+                        $('#chk-quantity').text(total_local_seat_quantity);
+
                     });
 
                     done && done();
@@ -1131,33 +1115,7 @@ cart.OrderFormView = Backbone.View.extend({
             description.remove();
         else
             description.html(descriptionText);
-        // var btn_select_seat = orderForm.find('.btn-select-buy');
-        // var btn_entrust = orderForm.find('.btn-entrust-buy');
-        // var btn_buy = orderForm.find('.btn-buy');
-        // var btn_buy = $('.btn-buy');
 
-        /*
-        if (stock_type.get("quantity_only")) {
-            btn_select_seat.parent().css('display', 'none');
-            btn_entrust.parent().css('display', 'none');
-            btn_buy.parent().css('display', null);
-        } else {
-            if (self.seatSelectionEnabled && stock_type.get("seat_choice")) {
-                btn_select_seat.parent().css('display', null);
-                btn_entrust.parent().css('display', null);
-            } else {
-                btn_select_seat.parent().css('display', 'none');
-                btn_entrust.parent().css('display', null);
-            }
-            btn_buy.parent().css('display', 'none');
-        }
-        btn_select_seat.click(function () { self.presenter.onSelectSeatPressed(); return false; });
-        btn_entrust.one('click', function () {
-            self.presenter.onEntrustPressed();
-            $(this).one('click', arguments.callee);
-            return false;
-        });
-        */
         $('.btn-buy').unbind('click');
         $('.btn-buy').one('click', function () {
             self.presenter.onBuyPressed();
@@ -1182,6 +1140,7 @@ cart.OrderFormView = Backbone.View.extend({
                                 .append($('<input />')
                                 .attr('id', 'selected-seats')
                                 .attr('type', 'text')
+                                .attr('value', '0')
                                 .attr('name', 'product-' + product.id)
                                 .attr('maxlength', '2')
                                 .css('width', '20px'))
@@ -1201,49 +1160,6 @@ cart.OrderFormView = Backbone.View.extend({
             .append(price_quantity)
             .append(description);
     }
-    /*
-    buildProduct: function(product, singleton) {
-        var min_product_quantity_per_product = product.get('min_product_quantity_per_product');
-        var max_product_quantity_per_product = product.get('max_product_quantity_per_product');
-        var min_product_quantity_from_product = product.get('min_product_quantity_from_product');
-        var must_be_chosen = product.get('must_be_chosen');
-        if (must_be_chosen === undefined)
-            must_be_chosen = false;
-        var name = $('<span class="productName"></span>');
-        name.text(product.get("name"));
-        var payment = $('<span class="productPrice"></span>');
-        payment.text(' ￥' + product.get("price") + " ");
-        var quantityBox = $('<span class="productQuantity"></span>');
-        var pullDown = $('<select />').attr('name', 'product-' + product.id);
-        var possible_quantities = [];
-        var min = 0, max = max_product_quantity_per_product;
-        if (singleton)
-            min = min_product_quantity_per_product;
-        if (min_product_quantity_from_product !== null)
-            min = Math.max(min, min_product_quantity_from_product);
-        if (min > 0 && !must_be_chosen)
-            possible_quantities.push(0);
-        if (min == 0 && must_be_chosen)
-            min = 1;
-        for (var i = min; i <= max; i++) {
-            possible_quantities.push(i);
-        }
-        for (var i = 0; i < possible_quantities.length; i++) {
-            var quantity = possible_quantities[i];
-            $('<option></option>').text(quantity).val(quantity).appendTo(pullDown);
-        }
-        var descriptionText = product.get('description');
-        var description = descriptionText ?
-            $('<div class="productListItem-description"></div>').html(product.get('description')): //xxx.
-            $();
-        cart.util.render_template_into(quantityBox, product.get("unit_template"), { num: pullDown });
-        return $('<li class="productListItem"></li>')
-            .append(name)
-            .append(payment)
-            .append('<br/>')
-            .append(description)
-            .append(quantityBox);
-    }*/
 });
 
 
