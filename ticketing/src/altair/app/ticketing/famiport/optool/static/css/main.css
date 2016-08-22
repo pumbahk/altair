@@ -6,7 +6,7 @@ body {
 
 #signin-form,
 #change-password-form,
-#account-reminder-form {
+#password-reminder-form {
   max-width: 330px;
   padding: 15px;
   margin: 0 auto;
@@ -21,7 +21,7 @@ form .form-heading
 }
 #signin-form .form-control,
 #change-password-form .form-control,
-#account-reminder-form .form-control
+#password-reminder-form .form-control
  {
   position: relative;
   height: auto;
@@ -34,7 +34,7 @@ form .form-heading
 
 #signin-form .form-control:focus,
 #change-password-form .form-control:focus,
-#account-reminder-form .form-control:focus
+#password-reminder-form .form-control:focus
 {
   z-index: 2;
 }

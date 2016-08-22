@@ -22,7 +22,7 @@
 </div>
 
 <div class="row" style="text-align: center;">
-<p class="extra-info-str">アカウントを復活する場合は<a href="${request.route_path('account_reminder')}">こちら</a>へ</p>
+<p class="extra-info-str">パスワードを忘れた方はこちら<a href="${request.route_path('password_reminder')}">こちら</a>へ</p>
 </div>
 
 

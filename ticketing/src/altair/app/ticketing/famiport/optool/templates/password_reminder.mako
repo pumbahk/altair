@@ -1,5 +1,5 @@
 <%inherit file="/_base.mako" />
-<%block name="title">アカウントリマインダー</%block>
+<%block name="title">パスワードリマインダー</%block>
 <style>
     body {
         background-color: #eee;
@@ -7,8 +7,8 @@
 </style>
 
 <div class="row">
-<form id="account-reminder-form" class="form-horizontal" action="${request.route_url('account_reminder')}" method="POST">
-    <h3 class="form-heading">アカウントリマインダー</h3>
+<form id="password-reminder-form" class="form-horizontal" action="${request.route_url('password_reminder')}" method="POST">
+    <h3 class="form-heading">パスワードリマインダー</h3>
     %for field in form:
     <div class="form-group has-feedback">
         %if field.widget.input_type != 'hidden':
@@ -30,17 +30,12 @@
 <script src="${request.static_url('altair.app.ticketing.famiport.optool:static/js/jquery.validate.min.js')}"></script>
 <script src="${request.static_url('altair.app.ticketing.famiport.optool:static/js/messages_ja.min.js')}"></script>
 <script>
-# クライアント側のバリデーション
-$("form#change-password-form").validate({
+// クライアント側のバリデーション
+$("form#password-reminder-form").validate({
     rules: {
         user_name: {
             required: true
         },
-
-        email: {
-            maxlength: 120,
-            required: true
-        }
     },
 
     highlight: function(element) {

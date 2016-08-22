@@ -46,11 +46,6 @@ class ChangePassWordForm(OurForm):
     user_id = HiddenField(
         validators=[Optional()]
     )
-    password = OurTextField(
-        widget=OurPasswordInput(),
-        validators=[Required()],
-        label=u'パスワード'
-    )
     new_password = OurTextField(
         widget=OurPasswordInput(),
         validators=[
@@ -73,13 +68,9 @@ class ChangePassWordForm(OurForm):
         if not re.match(pattern, field.data):
             raise ValidationError(u'パスワードは数字と英文字の両方を含む7文字以上で設定ください。')
 
-        if form.password.data == field.data:
-            raise ValidationError(u'現在のパスワードと同じものには変更できません。')
-
-
-class AccountReminderForm(OurForm):
+class PasswordReminderForm(OurForm):
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
-        super(AccountReminderForm, self).__init__(formdata, obj, prefix, **kwargs)
+        super(PasswordReminderForm, self).__init__(formdata, obj, prefix, **kwargs)
         for name, field in iteritems(self._fields):
             if name in kwargs:
                 field.data = kwargs[name]
@@ -90,13 +81,6 @@ class AccountReminderForm(OurForm):
             Length(max=32)
         ],
         label=u'ユーザ名'
-    )
-    email = OurTextField(
-        validators=[
-            Required(),
-            Length(max=120)
-        ],
-        label=u'メールアドレス'
     )
 
 class SearchReceiptForm(OurForm):
