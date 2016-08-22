@@ -144,7 +144,7 @@ $(document).ready(function(){
             </td>
           </tr>
 
-          % if custom_locale_negotiator=='ja':
+          % if custom_locale_negotiator=='ja' or not request.organization.setting.i18n:
 
           <tr>
             <th>購入者氏名<br><span>全角カナ</span></th>
@@ -191,8 +191,10 @@ $(document).ready(function(){
               <ul>
                 <li>
                   <p>
-                  ${form['country'].label}
-                  ${form['country']}
+                  % if request.organization.setting.i18n:
+                    ${form['country'].label}
+                    ${form['country']}
+                  % endif
                   </p>
                 </li>
                 <li>
