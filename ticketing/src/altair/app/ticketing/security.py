@@ -212,10 +212,7 @@ class RakutenAuthURLBuilder(object):
         return True
 
     def build_base_url(self, request):
-        subdomain = request.host.split('.', 1)[0]
-        return self.proxy_url_pattern.format(
-            subdomain=subdomain
-            )
+        return request.host_url
 
     def build_return_to_url(self, request):
         return urljoin(self.build_base_url(request).rstrip('/') + '/', request.route_path('rakuten_auth.verify').lstrip('/'))
