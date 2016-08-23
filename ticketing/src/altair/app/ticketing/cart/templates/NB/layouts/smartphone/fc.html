@@ -1,0 +1,447 @@
+<%
+h2_bg_lighten = h.to_hex_color(h.lighten(view_context.mobile_header_background_color, .6))
+h2_bg = view_context.mobile_header_background_color
+h2_bg_darken = h.to_hex_color(h.darken(view_context.mobile_header_background_color, .5))
+h2_border = view_context.mobile_header_background_color
+h3_border = view_context.mobile_header_background_color
+form_th_bg = h.to_hex_color(h.lighten(view_context.mobile_marker_color, .95))
+frame_border = view_context.mobile_header_background_color
+btn_bg = [
+  h.to_hex_color(h.lighten(view_context.mobile_marker_color, .5)),
+  view_context.mobile_marker_color,
+  h.to_hex_color(h.darken(view_context.mobile_marker_color, .2)),
+  h.to_hex_color(h.darken(view_context.mobile_marker_color, .05)),
+  ]
+btn_bg_hover = [
+  h.to_hex_color(h.lighten(view_context.mobile_marker_color, .7)),
+  h.to_hex_color(h.lighten(view_context.mobile_marker_color, .5)),
+  h.to_hex_color(h.lighten(view_context.mobile_marker_color, .3)),
+  view_context.mobile_marker_color,
+  ]
+%>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="ja">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+  <meta name="viewport" content="width=320,user-scalable=no">
+  <title>${view_context.title}</title>
+  <style type="text/css">
+body {
+    margin: 0;
+    padding: 0;
+    background-color: #fff;
+}
+
+img.headerImage {
+    width: 100%;
+    height: auto;
+}
+
+table.layout {
+    border: 0;
+    border-collapse: collapse;
+    border-spacing: 0;
+    background-color: #fff;
+    color: #000;
+}
+
+table.layout tr {
+    padding: 0 0;
+    margin: 0 0;
+}
+table.layout td {
+    padding: 0 0;
+    margin: 0 0;
+    text-align: left;
+}
+
+
+img {
+    border: 0;
+    vertical-align: bottom;
+}
+
+img a {
+    border: 0;
+}
+
+h1 {
+    display: none;
+}
+
+h2 {
+    background: ${h2_bg}; /* Old browsers */
+    background: -moz-linear-gradient(top, ${h2_bg_lighten} 0%, ${h2_bg_darken} 100%); /* FF3.6+ */
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, ${h2_bg_lighten}), color-stop(100%, ${h2_bg_darken})); /* Chrome,Safari4+ */
+    background: -webkit-linear-gradient(top, ${h2_bg_lighten} 0%,${h2_bg_darken} 100%); /* Chrome10+,Safari5.1+ */
+    background: -o-linear-gradient(top, ${h2_bg_lighten} 0%,${h2_bg_darken} 100%); /* Opera 11.10+ */
+    background: -ms-linear-gradient(top, ${h2_bg_lighten} 0%,${h2_bg_darken} 100%); /* IE10+ */
+    background: linear-gradient(to bottom, ${h2_bg_lighten} 0%,${h2_bg_darken} 100%); /* W3C */
+    text-align: center;
+    color: #FFF;
+    padding: 5px 10px;
+    margin: 0px auto;
+    font-size: 1.5em;
+    position: relative;
+}
+
+.title-right-description {
+    color: black;
+    width: 100%;
+    font-weight: normal;
+    text-align: center;
+}
+
+h3 {
+    text-align: left;
+    color: #000;
+    border-left: 4px solid ${h3_border};
+    padding: 2px 2px 2px 4px;
+    margin: 0 0 5px 0;
+}
+
+.main {
+    width: 100%;
+    margin: 0 auto;
+}
+
+.main > p {
+    color: #fff; 
+    font-weight: bold;
+    padding-left: 1%;
+}
+
+.main form {
+    padding: 0;
+    margin: 0;
+}
+
+.main ul.error {
+    width: 100%;
+    text-align: left;
+    padding-left: 1.5em;
+    background-color: #fee;
+    box-sizing: border-box;
+}
+
+.main ul.error li {
+    margin-left: 0;
+    padding: 4px;
+}
+
+.marginal {
+    width: 100%;
+    text-align: left;
+}
+
+.frame {
+    margin: 0px auto 20px auto !important;
+    border-sizing: border-box;
+    text-align: left;
+}
+
+table.frame {
+    width: 100% !important;
+    border-sizing: border-box;
+}
+
+.frame-inner {
+    background-color: #fff;
+    padding: 10px;
+}
+
+.frame.frame-inner {}
+
+.frame-inner p {
+    margin-top: 0;
+}
+    
+table.form {
+    width: 100%;
+    padding: 0;
+    margin: 0;
+    border-collapse: collapse;
+    border: none;
+}
+
+table.form,
+table.form > *,
+table.form > * > tr,
+table.form > * > tr > td,
+table.form > * > tr > th,
+table.form > * > tr > td,
+table.form > * > tr > th {
+    display: block;
+}
+
+table.form tbody th {
+    background-color: ${form_th_bg};
+    border-collapse: collapse;
+    padding: 10px;
+    border-bottom: 1px solid #fff;
+}
+
+table.form thead th {
+    background-color: ${form_th_bg};
+    border-collapse: collapse;
+    padding: 10px;
+    border-bottom: 1px solid #fff;
+    text-align: left;
+}
+
+table.form th > label {
+    display: block;
+}
+
+table.form td {
+    background-color: #fff;
+    padding: 10px;
+    border-bottom: 1px solid #fff;
+}
+
+table.form tfoot td {
+    background-color: #fff;
+    padding: 10px;
+    border-top: 2px solid ${frame_border};
+    text-align: center;
+}
+
+.control-segment ul {
+    list-style-type: none;
+    padding: 0 0;
+    margin: 0 0;
+}
+
+.field-note {
+    display: inline-block;
+    font-size: 0.8em;
+}
+
+.control-segment .error {
+    display: inline-block;
+}
+
+.red {
+    color: #970018;
+}
+
+.textRight {
+    text-align: right;
+}
+
+.textR {
+    text-align: right !important;    
+}
+
+.textL {
+    text-align: left !important;    
+}
+
+.textC {
+    text-align: center !important;    
+}
+
+.clear {
+    clear: both !important;
+}
+
+input.submit {
+    background: ${btn_bg[0]}; /* Old browsers */
+    background: -moz-linear-gradient(top, ${btn_bg[0]} 0%, ${btn_bg[1]} 50%, ${btn_bg[2]} 51%, ${btn_bg[3]} 100%); /* FF3.6+ */
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,${btn_bg[0]}), color-stop(50%,${btn_bg[1]}), color-stop(51%,${btn_bg[2]}), color-stop(100%,${btn_bg[3]})); /* Chrome,Safari4+ */
+    background: -webkit-linear-gradient(top, ${btn_bg[0]} 0%,${btn_bg[1]} 50%,${btn_bg[2]} 51%,${btn_bg[3]} 100%); /* Chrome10+,Safari5.1+ */
+    background: -o-linear-gradient(top, ${btn_bg[0]} 0%,${btn_bg[1]} 50%,${btn_bg[2]} 51%,${btn_bg[3]} 100%); /* Opera 11.10+ */
+    background: -ms-linear-gradient(top, ${btn_bg[0]} 0%,${btn_bg[1]} 50%,${btn_bg[2]} 51%,${btn_bg[3]} 100%); /* IE10+ */
+    background: linear-gradient(top, ${btn_bg[0]} 0%,${btn_bg[1]} 50%,${btn_bg[2]} 51%,${btn_bg[3]} 100%); /* W3C */
+    text-shadow: 0 0 5px rgba(0, 0, 0, .5);
+    text-align: center;
+    color: #fff;
+    padding: 3px;
+    border: 2px solid ${btn_bg[0]};
+    margin: 0px auto;
+    font-size: 20px;
+    font-weight: bold;
+    display: inline-block;
+    width: 100%;
+    height: 2em;
+    box-sizing: border-box;
+}
+
+input.submit.half {
+    width: 48%; 
+}
+
+input.submit:hover {
+    background: ${btn_bg_hover[0]}; /* Old browsers */
+    background: -moz-linear-gradient(top, ${btn_bg_hover[0]} 0%, ${btn_bg_hover[1]} 50%, ${btn_bg_hover[2]} 51%, ${btn_bg_hover[3]} 100%); /* FF3.6+ */
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,${btn_bg_hover[0]}), color-stop(50%,${btn_bg_hover[1]}), color-stop(51%,${btn_bg_hover[2]}), color-stop(100%,${btn_bg_hover[3]})); /* Chrome,Safari4+ */
+    background: -webkit-linear-gradient(top, ${btn_bg_hover[0]} 0%,${btn_bg_hover[1]} 50%,${btn_bg_hover[2]} 51%,${btn_bg_hover[3]} 100%); /* Chrome10+,Safari5.1+ */
+    background: -o-linear-gradient(top, ${btn_bg_hover[0]} 0%,${btn_bg_hover[1]} 50%,${btn_bg_hover[2]} 51%,${btn_bg_hover[3]} 100%); /* Opera 11.10+ */
+    background: -ms-linear-gradient(top, ${btn_bg_hover[0]} 0%,${btn_bg_hover[1]} 50%,${btn_bg_hover[2]} 51%,${btn_bg_hover[3]} 100%); /* IE10+ */
+    background: linear-gradient(top, ${btn_bg_hover[0]} 0%,${btn_bg_hover[1]} 50%,${btn_bg_hover[2]} 51%,${btn_bg_hover[3]} 100%); /* W3C */
+    color: #fff;
+    border: 2px solid ${btn_bg_hover[0]};
+}
+
+table.purchasedContents {
+    border-collapse: collapse;
+    width: 100%;
+    background: #fff;
+    margin: 0 auto;
+}
+
+table.purchasedContents thead th {
+    border: none;
+    text-align: left;
+    padding: 10px;
+}
+
+table.purchasedContents thead th span {
+    border-left: 2px #888 solid;
+    padding: 5px;
+}
+
+table.purchasedContents tbody tr {
+    border-top: 1px #efefef solid;
+}
+
+table.purchasedContents td {
+    padding: 3px 18px;
+}
+
+table.purchasedContents td ul {
+    padding: 0 0 0 20px;
+}
+
+table.purchasedContents td ul li {
+    margin-top: 3px;
+}
+
+table.purchasedContents tfoot td {
+    border-top: 1px #ccc solid;
+    text-align: left;
+    padding: 10px 18px;
+}
+
+table.purchasedContents tfoot td .paymentCoupon {
+    -moz-box-shadow:inset 0px 1px 0px 0px #d67c75;
+    -webkit-box-shadow:inset 0px 1px 0px 0px #d67c75;
+    box-shadow:inset 0px 1px 0px 0px #d67c75;
+    background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #ad271d), color-stop(1, #661d16) );
+    background:-moz-linear-gradient( center top, #ad271d 5%, #661d16 100% );
+    background-color:#ad271d;
+    -moz-border-radius:6px;
+    -webkit-border-radius:6px;
+    border-radius:6px;
+    border:1px solid #d83526;
+    display:inline-block;
+    color:#ffffff;
+    font-family:arial;
+    font-weight:bold;
+    padding:6px 60px;
+    text-decoration:none;
+    text-shadow:1px 1px 0px #98231a;
+}
+
+table.purchasedContents tfoot td .paymentCoupon:hover {
+    background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #661d16), color-stop(1, #ad271d) );
+    background:-moz-linear-gradient( center top, #661d16 5%, #ad271d 100% );
+    background-color:#661d16;
+}
+
+table.purchasedContents tfoot td .paymentCoupon:active {
+    position:relative;
+    top:1px;
+}
+
+
+.footer {
+    -webkit-border-radius: 10px 10px 0 0 /  10px 10px 0 0;
+    -moz-border-radius: 10px 10px 0 0 /  10px 10px 0 0;
+    -webkit-box-shadow: 0px 0px 10px #696969;
+    -moz-box-shadow: 0px 0px 10px #696969;
+    box-shadow: 0px 0px 10px #696969;
+    background-color: #FFFFFF;
+    color: #555;
+    text-align: center;
+    padding: 10px 0;
+    margin: 0 auto;    
+}
+
+.footer .footernav {
+    margin: 10px auto;
+}
+
+.footer .footernav ul {
+    display: inline;
+    font-size: 75%;
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
+
+.footer .footernav ul li.first {
+    border-left: medium none;
+}
+
+.footer .footernav ul li {
+    border-left: 1px solid #534741;
+    display: inline;
+    padding: 0 6px;
+    white-space: nowrap;
+}
+
+.footer .copyright {
+    color: #CCCCCC;
+    font-size: 75%;
+}
+
+.error {
+    margin: 0;
+    color: red;
+    font-weight: bold;
+}
+
+.form-field-message {
+    color: #970018;
+}
+
+.importantNumber {
+    font-size: 1.5em;
+    font-weight: bold;
+}
+</style>
+  <link rel="shortcut icon" href="${view_context.static_url("pc/images/favicon.ico")}" />
+  <script type="text/javascript" src="${request.static_url('altair.app.ticketing.cart:static/js/disable_on_submit.js')}"></script>
+  <script type="text/javascript">
+$(function() {
+  $('form').disableOnSubmit('input[type=submit][name!="back"]');
+});
+</script>
+  <%block name="javascript"></%block>
+</head>
+<body>
+  <div align="center">
+    <div class="header">
+      <img src="${view_context.header_image_url}" alt="${view_context.team_name}" class="headerImage" />
+    </div>
+    <h1 class="title">${view_context.title}</h1>
+    <div class="main">
+      <h2><%block name="title"></%block></h2>
+      ${self.body()}
+    </div>
+    <div class="footer">
+      <div class="footernav">
+        <ul>
+          <li class="first"><a href="${view_context.contact_url}">お問い合わせ</a></li>
+          <li><a target="_blank" href="${view_context.privacy_policy_page_url}">個人情報保護方針</a></li>
+          <li class="last"><a target="_blank" href="${view_context.legal_notice_page_url}">特定商取引法に基づく表示</a></li>
+        </ul>
+      </div>
+      <div class="copyright">
+         &copy; TicketStar, Inc. 
+      </div>
+    </div>
+  </div>
+</body>
+</html>
