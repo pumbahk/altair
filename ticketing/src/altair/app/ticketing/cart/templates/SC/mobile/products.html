@@ -44,6 +44,6 @@
 <%mobile:form_header>会場</%mobile:form_header>
 <div>${venue.name}</div>
 <%mobile:form_header>日程</%mobile:form_header>
-<div>${h.performance_date(performance)}</div>
+<div>${h.create_time_label(sales_segment.performance.start_on, sales_segment.performance.end_on, True)}</div>
 <%mobile:form_header>席種</%mobile:form_header>
 <div>${seat_type.name}</div>
