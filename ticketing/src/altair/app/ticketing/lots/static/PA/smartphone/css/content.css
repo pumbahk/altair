@@ -356,6 +356,11 @@
 	padding:3px 0;
 }
 
+.disp-entry_no {
+  font-size: 20px;
+  color: #cc0000;
+}
+
 .selbtnList{
 	overflow:hidden;
 	margin-bottom:15px;
@@ -411,10 +416,8 @@ label.required:after {
 }
 
 
-
 /* お問い合わせ
 ----------------------------------------------------------- */
-
 
 
 a.withdrawConfirmButtonSP{
