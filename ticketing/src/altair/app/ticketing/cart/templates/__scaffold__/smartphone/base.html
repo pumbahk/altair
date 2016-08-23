@@ -29,10 +29,9 @@
       <div class="side-action-buttons">
         <form name="logout" action="${request.route_path('cart.logout')}" method="POST">
           <div style="text-align: right">
-            % if (not getattr(request, 'context', None)) or request.context.authenticated_user()['is_guest']:
-              <a onclick="document.logout.submit()" class="btn btn-supplementary"><span class="btn-inner">会員でログイン</span></a>
-            % else:
-              <a onclick="document.logout.submit()" class="btn btn-supplementary"><span class="btn-inner">ログアウト</span></a>
+            <%doc>ログイン/ログアウト</%doc>
+            % if view_context.get_include_template_path('login_status.html') is not None:
+              <%include file="${view_context.get_include_template_path('login_status.html')}" args="device=view_context.ua_type" />
             % endif
             % if getattr(request, 'context', None) and hasattr(request.context, 'switch_pc_url'):
               <a href="${request.context.switch_pc_url}" class="btn btn-supplementary"><span class="btn-inner">PCサイトで購入する</span></a>
@@ -40,6 +39,11 @@
           </div>
         </form>
       </div>
+
+      <%doc>申込方法・FAQ・申込確認へのリンク</%doc>
+      % if view_context.get_include_template_path('links.html') is not None:
+          <%include file="${view_context.get_include_template_path('links.html')}" args="device=view_context.ua_type" />
+      % endif
 
       <div class="band">
         <h1>チケット購入</h1>

@@ -17,6 +17,7 @@ def includeme(config):
             config.registry.__name__,
             lambda name, package, registry, request, **kwargs: request.view_context,
             [
+                '%(package)s:templates/%(organization_short_name)s/fc_auth/%(ua_type)s/%(path)s',
                 '%(package)s:templates/%(organization_short_name)s/%(ua_type)s/fc_auth/%(membership)s/%(path)s',
                 '%(package)s:templates/%(organization_short_name)s/%(ua_type)s/fc_auth/%(path)s',
                 '%(their_package)s:templates/%(organization_short_name)s/%(ua_type)s/%(path)s',
