@@ -16,21 +16,21 @@
 <body id="settlement">
   <p id="naviSkip"><a href="#main" tabindex="1" title="本文へジャンプ"><img src="${view_context.static_url('pc/images/skip.gif')}" alt="本文へジャンプ" width="1" height="1" /></a></p>
   <div id="container" style="position:relative">
-    <form action="${request.route_path('cart.logout')}" method="POST">
-      <div style="text-align: right">
-        % if (not getattr(request, 'context', None)) or request.context.authenticated_user()['is_guest']:
-          <input type="submit" value="会員でログイン"/>
-        % else:
-          <input type="submit" value="ログアウト"/>
-        % endif
-      </div>
-    </form>
+    <%doc>ログイン/ログアウト</%doc>
+    % if view_context.get_include_template_path('login_status.html') is not None:
+        <%include file="${view_context.get_include_template_path('login_status.html')}" args="device=view_context.ua_type" />
+    % endif
     <!-- ========== header ========== -->
     <div id="grpheader" style="height:80px">
       <p id="siteID" style="float:none;position:absolute;z-index:100">
         <img src="${view_context.static_url('pc/images/pc_logo.png')}" alt="${view_context.team_name}" width="950" height="64"  />
       </p>
     </div>
+
+    <%doc>申込方法・FAQ・申込確認へのリンク</%doc>
+    % if view_context.get_include_template_path('links.html') is not None:
+        <%include file="${view_context.get_include_template_path('links.html')}" args="device=view_context.ua_type" />
+    % endif
     <!-- ========== /header ========== -->
 
     <hr />

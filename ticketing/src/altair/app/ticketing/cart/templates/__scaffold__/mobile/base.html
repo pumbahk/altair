@@ -10,13 +10,10 @@
 <div>
     <form action="${request.route_path('cart.logout')}" method="POST">
       <div style="text-align: right">
-        <!--
-        % if (not getattr(request, 'context', None)) or request.context.authenticated_user()['is_guest']:
-          <input type="submit" value="会員でログイン"/>
-        % else:
-          <input type="submit" value="ログアウト"/>
+        <%doc>ログイン/ログアウト</%doc>
+        % if view_context.get_include_template_path('login_status.html') is not None:
+            <%include file="${view_context.get_include_template_path('login_status.html')}" args="device=view_context.ua_type" />
         % endif
-        -->
       </div>
     </form>
 
