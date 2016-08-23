@@ -1,4 +1,4 @@
-<%inherit file="${context['main_template'].uri}" />
+<%inherit file="../../layouts/pc/fc.html" />
 <%block name="title">申込内容確認</%block>
 <form id="form1" action="${request.route_path('payment.confirm')}" method="post">
   ${form.csrf_token()}

@@ -12,7 +12,7 @@
 </div>
 % endif
 <div>
-<input size="10" maxlength="16" type="text" name="card_number" istyle="4" /><br />
+<input size="16" maxlength="16" type="text" name="card_number" istyle="4" /><br />
 ${h.error(['card_number'])}
 </div>
 <%mobile:form_header required="true">有効期限</%mobile:form_header>
@@ -25,12 +25,12 @@ ${h.error(['exp_month','exp_year'])}
 </div>
 <%mobile:form_header required="true">カード名義</%mobile:form_header>
 <div>
-<input type="text" name="card_holder_name" istyle="3" /><br />
+<input size="16" type="text" name="card_holder_name" istyle="3" /><br />
 ${h.error(['card_holder_name'])}
 </div>
 <%mobile:form_header required="true">セキュリティコード</%mobile:form_header>
 <div>
-<input type="text" name="secure_code" istyle="4" /><br />
+<input size=3 type="text" name="secure_code" istyle="4" /><br />
 ${h.error(['secure_code'])}
 <font size="-2">
 ※半角 (例:123)<br />
