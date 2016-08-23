@@ -165,7 +165,7 @@ def get_cart_view_context_factory(default_package):
                 module = 'cart'
             return self.request.static_url("altair.app.ticketing.%(module)s:static/%(organization_short_name)s/%(path)s" % dict(organization_short_name=self.organization_short_name, path=path, module=module), *args, **kwargs)
 
-        def include_template_path(self, path, module=None, * args, **kwargs):
+        def get_include_template_path(self, path, module=None, * args, **kwargs):
             if module is None:
                 module = 'cart'
 
