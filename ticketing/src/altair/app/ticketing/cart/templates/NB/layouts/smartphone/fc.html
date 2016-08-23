@@ -1,11 +1,11 @@
 <%
-h2_bg_lighten = h.to_hex_color(h.lighten(view_context.mobile_header_background_color, .6))
-h2_bg = view_context.mobile_header_background_color
+h2_bg_lighten = "#01a7e5"
+h2_bg = "#01a7e5"
 h2_bg_darken = h.to_hex_color(h.darken(view_context.mobile_header_background_color, .5))
-h2_border = view_context.mobile_header_background_color
+h2_border = "#2c20af"
 h3_border = view_context.mobile_header_background_color
 form_th_bg = h.to_hex_color(h.lighten(view_context.mobile_marker_color, .95))
-frame_border = view_context.mobile_header_background_color
+frame_border = "#01a7e5"
 btn_bg = [
   h.to_hex_color(h.lighten(view_context.mobile_marker_color, .5)),
   view_context.mobile_marker_color,
@@ -70,13 +70,7 @@ h1 {
 }
 
 h2 {
-    background: ${h2_bg}; /* Old browsers */
-    background: -moz-linear-gradient(top, ${h2_bg_lighten} 0%, ${h2_bg_darken} 100%); /* FF3.6+ */
-    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, ${h2_bg_lighten}), color-stop(100%, ${h2_bg_darken})); /* Chrome,Safari4+ */
-    background: -webkit-linear-gradient(top, ${h2_bg_lighten} 0%,${h2_bg_darken} 100%); /* Chrome10+,Safari5.1+ */
-    background: -o-linear-gradient(top, ${h2_bg_lighten} 0%,${h2_bg_darken} 100%); /* Opera 11.10+ */
-    background: -ms-linear-gradient(top, ${h2_bg_lighten} 0%,${h2_bg_darken} 100%); /* IE10+ */
-    background: linear-gradient(to bottom, ${h2_bg_lighten} 0%,${h2_bg_darken} 100%); /* W3C */
+    background: #01a7e5;
     text-align: center;
     color: #FFF;
     padding: 5px 10px;
@@ -246,18 +240,11 @@ table.form tfoot td {
 }
 
 input.submit {
-    background: ${btn_bg[0]}; /* Old browsers */
-    background: -moz-linear-gradient(top, ${btn_bg[0]} 0%, ${btn_bg[1]} 50%, ${btn_bg[2]} 51%, ${btn_bg[3]} 100%); /* FF3.6+ */
-    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,${btn_bg[0]}), color-stop(50%,${btn_bg[1]}), color-stop(51%,${btn_bg[2]}), color-stop(100%,${btn_bg[3]})); /* Chrome,Safari4+ */
-    background: -webkit-linear-gradient(top, ${btn_bg[0]} 0%,${btn_bg[1]} 50%,${btn_bg[2]} 51%,${btn_bg[3]} 100%); /* Chrome10+,Safari5.1+ */
-    background: -o-linear-gradient(top, ${btn_bg[0]} 0%,${btn_bg[1]} 50%,${btn_bg[2]} 51%,${btn_bg[3]} 100%); /* Opera 11.10+ */
-    background: -ms-linear-gradient(top, ${btn_bg[0]} 0%,${btn_bg[1]} 50%,${btn_bg[2]} 51%,${btn_bg[3]} 100%); /* IE10+ */
-    background: linear-gradient(top, ${btn_bg[0]} 0%,${btn_bg[1]} 50%,${btn_bg[2]} 51%,${btn_bg[3]} 100%); /* W3C */
-    text-shadow: 0 0 5px rgba(0, 0, 0, .5);
+    background: #01a7e5;
     text-align: center;
     color: #fff;
     padding: 3px;
-    border: 2px solid ${btn_bg[0]};
+    border: 2px solid #01a7e5;
     margin: 0px auto;
     font-size: 20px;
     font-weight: bold;
@@ -272,15 +259,9 @@ input.submit.half {
 }
 
 input.submit:hover {
-    background: ${btn_bg_hover[0]}; /* Old browsers */
-    background: -moz-linear-gradient(top, ${btn_bg_hover[0]} 0%, ${btn_bg_hover[1]} 50%, ${btn_bg_hover[2]} 51%, ${btn_bg_hover[3]} 100%); /* FF3.6+ */
-    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,${btn_bg_hover[0]}), color-stop(50%,${btn_bg_hover[1]}), color-stop(51%,${btn_bg_hover[2]}), color-stop(100%,${btn_bg_hover[3]})); /* Chrome,Safari4+ */
-    background: -webkit-linear-gradient(top, ${btn_bg_hover[0]} 0%,${btn_bg_hover[1]} 50%,${btn_bg_hover[2]} 51%,${btn_bg_hover[3]} 100%); /* Chrome10+,Safari5.1+ */
-    background: -o-linear-gradient(top, ${btn_bg_hover[0]} 0%,${btn_bg_hover[1]} 50%,${btn_bg_hover[2]} 51%,${btn_bg_hover[3]} 100%); /* Opera 11.10+ */
-    background: -ms-linear-gradient(top, ${btn_bg_hover[0]} 0%,${btn_bg_hover[1]} 50%,${btn_bg_hover[2]} 51%,${btn_bg_hover[3]} 100%); /* IE10+ */
-    background: linear-gradient(top, ${btn_bg_hover[0]} 0%,${btn_bg_hover[1]} 50%,${btn_bg_hover[2]} 51%,${btn_bg_hover[3]} 100%); /* W3C */
+    background: #2c20af;
     color: #fff;
-    border: 2px solid ${btn_bg_hover[0]};
+    border: 2px solid #2c20af;
 }
 
 table.purchasedContents {
