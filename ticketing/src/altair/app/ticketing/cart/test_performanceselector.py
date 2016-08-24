@@ -256,7 +256,6 @@ class DatePerformanceSelectorTests(unittest.TestCase):
                           'name_smartphone': u'テスト会場 前売券',
                           'name_mobile': u'2013年3月31日(日) - 4月1日(月) テスト会場 前売券',
                           })
-        import ipdb;ipdb.set_trace()
         self.assertEqual(result[1][0], u'2013年4月1日(月) - 4月2日(火)')
         self.assertEqual(result[1][1][0],
                          {'id': 3,
