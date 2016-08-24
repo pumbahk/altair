@@ -25,6 +25,11 @@
 
 <div id="header">
     <h1><img src="${view_context.static_url('smartphone/images/sp_logo.png')}" alt="${view_context.team_name}" width="100%"></h1>
+      <%doc>申込方法・FAQ・申込確認へのリンク</%doc>
+      % if view_context.get_include_template_path('links.html', 'lots') is not None:
+        <%include file="${view_context.get_include_template_path('links.html', 'lots')}" args="device=view_context.ua_type" />
+      % endif
+
       % if lot:
         <!--
         <form name="logout" action="${request.route_path('lots.entry.logout', _query=dict(lot_id=lot.id, event_id=lot.event.id))}" method="POST">
