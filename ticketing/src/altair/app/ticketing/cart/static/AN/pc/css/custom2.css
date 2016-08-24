@@ -10,17 +10,16 @@ p.cartNickname{
 
 
 /* modal */
-/*
 .btn-redo {
   display: inline-block;
   width: 206px;
+  background: url(../images/btn_redo.gif) no-repeat 0 0;
   border: none;
   padding: 46px 0 0 0;
   height: 0px;
   font-size: 0px;
   line-height: -1px;
 }
-*/
 
 .btn-close {
   display: inline-block;
@@ -62,21 +61,21 @@ p.cartNickname{
 }
 
 .modal-header {
-  background: url(../images/bg_box_modal_top.gif) no-repeat 0 0;
-  padding: 8px 8px 8px 8px;
-  height: 20px;
+  background: #fff none repeat scroll 0 0;
+  padding: 15px;
 }
 
 .modal-header h2 {
   margin-left: 3px;
-  border-left: 2px solid #800;
+  border-left: 5px double #999;
+  background: #efefef none repeat scroll 0 0;
   line-height: 20px;
   font-size: 16px;
-  padding: 4px 4px 2px 6px;
+  padding: 8px 4px 5px 8px;
 }
 
 .modal-inner {
-  background: url(../images/bg_box_modal_bottom.gif) no-repeat left bottom;
+  background: #fff none repeat scroll 0 0;
   padding: 10px 10px;
 }
 
@@ -90,9 +89,10 @@ p.cartNickname{
 }
 
 .modal-body table {
-  width: 610px;
-  background: url(../images/bg_seat_top.png) no-repeat 0 0;
+  width: 100%;
+  margin-top: 3px;
   margin-bottom: 15px;
+  border: 2px solid #eee;
 }
 
 .modal-body th {
@@ -109,10 +109,6 @@ p.cartNickname{
 .modal-body tr.last-child th,
 .modal-body tr.last-child td {
   border: none;
-}
-
-.modal-body tr.last-child {
-  background: url(../images/bg_seat_bottom.gif) no-repeat left bottom;
 }
 
 .flow-widget {

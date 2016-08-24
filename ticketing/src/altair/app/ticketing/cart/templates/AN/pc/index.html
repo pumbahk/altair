@@ -48,7 +48,7 @@ $(function() {cart.init(salesSegmentsSelection, selected, cartReleaseUrl, true, 
     <div class="modal-header"></div>
     <div class="modal-inner">
       <div class="modal-body">
-        <h3>${_(u'合計金額')}</h3>
+        <h3 class="mgl5">${_(u'合計金額')}</h3>
         <table>
           <tbody>
             <tr class="last-child">
@@ -56,7 +56,7 @@ $(function() {cart.init(salesSegmentsSelection, selected, cartReleaseUrl, true, 
             </tr>
           </tbody>
         </table>
-        <h3>${_(u'内訳')}</h3>
+        <h3 class="mgl5">${_(u'内訳')}</h3>
         <table>
           <tbody class="contentsOfShopping">
           </tbody>
@@ -67,7 +67,7 @@ $(function() {cart.init(salesSegmentsSelection, selected, cartReleaseUrl, true, 
         <a class="ok-button btn-buy">${_(u'購入する')}</a>
       </div>
       <div>
-        <p>${_(u'上記座席を確保しました。{0}分以内に購入を完了してください').format(h.cart_timeout(request))}<br>${_(u'（完了しない場合は、確保解除となります）')}</p>
+        <p class="tac fs14 mgt5">${_(u'上記座席を確保しました。{0}分以内に購入を完了してください').format(h.cart_timeout(request))}<br>${_(u'（完了しない場合は、確保解除となります）')}</p>
       </div>
     </div>
   </div>
