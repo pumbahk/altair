@@ -169,7 +169,7 @@ def get_cart_view_context_factory(default_package):
             if module is None:
                 module = 'cart'
 
-            include_path = "altair.app.ticketing.%(module)s:templates/%(organization_short_name)s/include/%(path)s" % dict(
+            include_path = "altair.app.ticketing.%(module)s:templates/%(organization_short_name)s/includes/%(path)s" % dict(
                 module=module,
                 organization_short_name=self.organization_short_name,
                 path=path)
