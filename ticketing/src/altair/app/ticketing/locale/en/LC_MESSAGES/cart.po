@@ -9,6 +9,15 @@ msgstr "Ticket information/Sells/Purchase/Order"
 msgid "チケット購入"
 msgstr "Buy Ticket"
 
+msgid "公演日時・会場選択"
+msgstr "Date/Venue"
+
+msgid "支払・引取方法選択"
+msgstr "Payment/Delivery"
+
+msgid "購入情報確認"
+msgstr "Confirm"
+
 # index
 
 msgid "合計金額"
@@ -45,6 +54,9 @@ msgid "対象試合"
 msgstr "Event"
 
 msgid "日付・会場"
+msgstr "Date/Venue"
+
+msgid "日時・会場"
 msgstr "Date/Venue"
 
 msgid "選択中の公演"
@@ -188,7 +200,7 @@ msgid "システム利用料"
 msgstr "System usage fee"
 
 msgid "注文受付完了、確認メール等をメールでご案内します。「{domain}」からのメールを受信できるよう、お申し込み前にドメイン指定の設定を必ずお願いいたします。"
-msgstr "Order acceptance completion, it will guide you through the confirmation e-mail, etc. by e-mail. So that you can receive mail from the 「{domain}」, please be sure the settings for the domain specified before you sign up."
+msgstr "Order acceptance completion, it will guide you through the confirmation e-mail, etc. <br> by e-mail. So that you can receive mail from the 「{domain}」, please be sure the settings for the domain specified before you sign up."
 
 msgid "購入者情報入力"
 msgstr "Purchaser Information"
@@ -203,13 +215,13 @@ msgid "姓"
 msgstr "First name"
 
 msgid "(全角)"
-msgstr ""
+msgstr " "
 
 msgid "姓(カナ)"
-msgstr ""
+msgstr " "
 
 msgid "(全角カナ)"
-msgstr ""
+msgstr " "
 
 msgid "入力してください"
 msgstr "please input"
@@ -218,22 +230,28 @@ msgid "名"
 msgstr "Last name"
 
 msgid "名(カナ)"
-msgstr ""
+msgstr " "
 
 msgid "アルファベットのみを入力してください"
 msgstr "please input alphabet only"
 
 msgid "パスポートと一致しているものを入力してください"
-msgstr ""
+msgstr " "
 
 msgid "メールアドレス"
 msgstr "Email"
+
+msgid "例）mail@example.ne.jp"
+msgstr "Example: mail@example.ne.jp"
 
 msgid "メールアドレスと確認メールアドレスが一致していません。"
 msgstr "email and confirm email are different."
 
 msgid "(半角英数)"
-msgstr ""
+msgstr " "
+
+msgid "半角英数"
+msgstr " "
 
 msgid "確認用"
 msgstr "Confirmation"
@@ -284,6 +302,9 @@ msgid "例: 1030001"
 msgstr "Example: 1030001"
 
 msgid "(半角英数7ケタ)"
+msgstr "Alphanumeric 7-digit"
+
+msgid "半角英数7ケタ"
 msgstr "Alphanumeric 7-digit"
 
 msgid "例: 東京都"
@@ -444,9 +465,9 @@ msgid "宛名"
 msgstr "addressee"
 
 msgid "様"
-msgstr ""
+msgstr " "
 
-msgid "※お申込み確定後は、理由の如何を問わず、"
+msgid "お申込み確定後は、理由の如何を問わず、"
 msgstr "After your application is finalized, "
 
 msgid "取替・変更・キャンセルをお受けできません。"

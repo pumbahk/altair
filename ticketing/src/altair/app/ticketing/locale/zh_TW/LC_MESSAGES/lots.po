@@ -176,13 +176,13 @@ msgid "姓"
 msgstr "姓"
 
 msgid "(全角)"
-msgstr ""
+msgstr " "
 
 msgid "姓(カナ)"
-msgstr ""
+msgstr " "
 
 msgid "(全角カナ)"
-msgstr ""
+msgstr " "
 
 msgid "入力してください"
 msgstr "請輸入"
@@ -191,7 +191,7 @@ msgid "名"
 msgstr "名"
 
 msgid "名(カナ)"
-msgstr ""
+msgstr " "
 
 msgid "アルファベットのみを入力してください"
 msgstr "請輸入英文字母"
@@ -227,6 +227,9 @@ msgid "郵便番号"
 msgstr "郵遞區號"
 
 msgid "(半角英数7ケタ)"
+msgstr "7位數字，字母"
+
+msgid "半角英数7ケタ"
 msgstr "7位數字，字母"
 
 msgid "-(ハイフン)を抜いた半角数字のみを入力してください"

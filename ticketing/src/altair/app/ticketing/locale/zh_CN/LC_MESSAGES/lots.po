@@ -176,13 +176,13 @@ msgid "姓"
 msgstr "姓"
 
 msgid "(全角)"
-msgstr ""
+msgstr " "
 
 msgid "姓(カナ)"
-msgstr ""
+msgstr " "
 
 msgid "(全角カナ)"
-msgstr ""
+msgstr " "
 
 msgid "入力してください"
 msgstr "请输入"
@@ -191,7 +191,7 @@ msgid "名"
 msgstr "名"
 
 msgid "名(カナ)"
-msgstr ""
+msgstr " "
 
 msgid "アルファベットのみを入力してください"
 msgstr "请输入拼音拼写"
@@ -206,7 +206,7 @@ msgid "メールアドレスと確認メールアドレスが一致していま�
 msgstr "邮件地址与确认信息不一致。"
 
 msgid "(半角英数)"
-msgstr ""
+msgstr " "
 
 msgid "メールアドレス (確認)"
 msgstr "电子邮件（确认）"
@@ -228,6 +228,9 @@ msgstr "邮政编码"
 
 msgid "(半角英数7ケタ)"
 msgstr "(7位数字或字母)"
+
+msgid "半角英数7ケタ"
+msgstr "7位数字或字母"
 
 msgid "-(ハイフン)を抜いた半角数字のみを入力してください"
 msgstr "请输入半角数字，省略'-'"

@@ -158,7 +158,7 @@ class ClientFormFactory(object):
                     Regexp(r'^\d{7}$', message=_(u'-(ハイフン)を抜いた半角数字(7桁)のみを入力してください')),
                     Length(min=7, max=7, message=_(u'確認してください')),
                     ],
-                note=_(u'(半角英数7ケタ)')
+                note=_(u'半角英数7ケタ')
                 )
             country = OurSelectField(
                 label=_(u"国・地域"),
@@ -192,7 +192,7 @@ class ClientFormFactory(object):
                 )
             email_1 = OurTextField(
                 label=_(u"メールアドレス"),
-                note=_(u"(半角英数)"),
+                note=_(u"半角英数"),
                 filters=[strip_spaces, NFKC],
                 description=lambda field: field._form.context.request.view_context.mail_filter_domain_notice if hasattr(field._form.context.request, 'view_context') else u'',
                 validators=h.required_mail_validators(request)

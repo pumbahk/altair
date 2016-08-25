@@ -33,7 +33,7 @@ msgid "必須"
 msgstr "Required"
 
 msgid "半角英数"
-msgstr "number"
+msgstr " "
 
 msgid "電話番号"
 msgstr "Telephone number"
@@ -179,13 +179,13 @@ msgid "姓"
 msgstr "Last name"
 
 msgid "(全角)"
-msgstr ""
+msgstr " "
 
 msgid "姓(カナ)"
-msgstr ""
+msgstr " "
 
 msgid "(全角カナ)"
-msgstr ""
+msgstr " "
 
 msgid "入力してください"
 msgstr "please input"
@@ -194,13 +194,13 @@ msgid "名"
 msgstr "First name"
 
 msgid "名(カナ)"
-msgstr ""
+msgstr " "
 
 msgid "アルファベットのみを入力してください"
 msgstr "please input alphabet only"
 
 msgid "パスポートと一致しているものを入力してください"
-msgstr ""
+msgstr " "
 
 msgid "メールアドレス"
 msgstr "Email"
@@ -209,7 +209,7 @@ msgid "メールアドレスと確認メールアドレスが一致していま�
 msgstr "email and confirm email are different."
 
 msgid "(半角英数)"
-msgstr ""
+msgstr " "
 
 msgid "メールアドレス (確認)"
 msgstr "Email(Confirmation)"
@@ -230,6 +230,9 @@ msgid "郵便番号"
 msgstr "Zipcode"
 
 msgid "(半角英数7ケタ)"
+msgstr "Alphanumeric 7-digit"
+
+msgid "半角英数7ケタ"
 msgstr "Alphanumeric 7-digit"
 
 msgid "-(ハイフン)を抜いた半角数字のみを入力してください"

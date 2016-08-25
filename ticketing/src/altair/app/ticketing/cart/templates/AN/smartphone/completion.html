@@ -101,7 +101,7 @@
 
   <!-- ===== 注意事項 ===== -->
   <div class="confirm-wrap">
-    <h2 class="heading heading_simple_line">注意事項</h2>
+    <h2 class="heading heading_simple_line">${__(u'注意事項')}</h2>
     <p>
       ${__(u'お申し込み時に、ご登録いただいたメールアドレス宛に、受付完了メールが送られます。')}<br>
       ${__(u'しばらくたっても確認のメールが届かない場合は、入力されたメールアドレスが誤っている可能性があります。')}<br>
@@ -113,7 +113,9 @@
 
   <!-- ===== BTN ===== -->
   <div class="confirm-btnBox">
-    <input class="btn btn-primary" type="submit" value="他のチケットを購入する" />
+    <a class="btn-primary btn btn-buy" href="${request.route_url('cart.index', event_id=order.performance.event.id, _query={'performance': order.performance_id})}">
+    ${__(u'他のチケットを購入する')}
+    </a>
     <p><a href="${request.context.host_base_url}">${__(u'トップにもどる')}</a></p>
   </div>
 </form>

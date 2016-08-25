@@ -17,6 +17,14 @@ $(function(){
 </script>
 </%block>
 
+<nav class="nav-stepbar clearfix mgb30">
+  <ol>
+    <li><dl><dt>STEP1</dt><dd>${_(u'公演日時・会場選択')}</dd></dl></li>
+    <li class="current"><dl><dt>STEP2</dt><dd>${_(u'支払・引取方法選択')}</dd></dl></li>
+    <li><dl><dt>STEP3</dt><dd>${_(u'購入情報確認')}</dd></dl></li>
+  </ol>
+</nav>
+
 %if request.session.peek_flash():
     %for message in request.session.pop_flash():
     <div class="error">${message}</div>
@@ -28,7 +36,7 @@ $(function(){
     <div class="settlementBoxInner">
       <h2>${_(u'お支払い･お引取り方法の指定')}</h2>
       %if len(payment_delivery_methods) > 1:
-      <p style="margin-left:20px;">${_(u'どれかひとつをお選びください')}</p>
+      <p class="fs9 bold mgl5">${_(u'どれかひとつをお選びください')}</p>
       %endif
       <% checked_id = request.params.get('payment_delivery_method_pair_id') %>
       %for m in payment_delivery_methods:

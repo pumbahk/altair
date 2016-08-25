@@ -9,6 +9,16 @@ msgstr "相关信息・销售・购买・预约"
 msgid "チケット購入"
 msgstr "购票"
 
+msgid "公演日時・会場選択"
+msgstr "演出时间・地点"
+
+msgid "支払・引取方法選択"
+msgstr "支付・领票方式"
+
+msgid "購入情報確認"
+msgstr "输入情报确认"
+
+
 # index
 
 msgid "合計金額"
@@ -45,6 +55,9 @@ msgid "対象試合"
 msgstr "演出"
 
 msgid "日付・会場"
+msgstr "日期・地点"
+
+msgid "日時・会場"
 msgstr "日期・地点"
 
 msgid "選択中の公演"
@@ -203,13 +216,13 @@ msgid "姓"
 msgstr "姓"
 
 msgid "(全角)"
-msgstr ""
+msgstr " "
 
 msgid "姓(カナ)"
-msgstr ""
+msgstr " "
 
 msgid "(全角カナ)"
-msgstr ""
+msgstr " "
 
 msgid "入力してください"
 msgstr "请输入"
@@ -218,7 +231,7 @@ msgid "名"
 msgstr "名"
 
 msgid "名(カナ)"
-msgstr ""
+msgstr " "
 
 msgid "アルファベットのみを入力してください"
 msgstr "请输入拼音拼写"
@@ -229,11 +242,17 @@ msgstr "请输入与护照一致的拼音拼写信息"
 msgid "メールアドレス"
 msgstr "电子邮件"
 
+msgid "例）mail@example.ne.jp"
+msgstr "例）mail@example.ne.jp"
+
 msgid "メールアドレスと確認メールアドレスが一致していません。"
 msgstr "邮件地址与确认信息不一致。"
 
 msgid "(半角英数)"
-msgstr ""
+msgstr " "
+
+msgid "半角英数"
+msgstr " "
 
 msgid "確認用"
 msgstr "确认用"
@@ -285,6 +304,9 @@ msgstr "例: 1030001"
 
 msgid "(半角英数7ケタ)"
 msgstr "(7位数字或字母)"
+
+msgid "半角英数7ケタ"
+msgstr "7位数字或字母"
 
 msgid "例: 東京都"
 msgstr "例: 北京"
@@ -444,9 +466,9 @@ msgid "宛名"
 msgstr "收件人"
 
 msgid "様"
-msgstr ""
+msgstr " "
 
-msgid "※お申込み確定後は、理由の如何を問わず、"
+msgid "お申込み確定後は、理由の如何を問わず、"
 msgstr "购买完成后，"
 
 msgid "取替・変更・キャンセルをお受けできません。"

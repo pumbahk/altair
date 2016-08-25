@@ -134,12 +134,12 @@ $(document).ready(function(){
           <tr>
             <td>
               <p>
-                <label class="fs12" for="last_name">姓</label>
-                <input id="last_name" name="last_name" value="" type="text" placeholder="例）山田">
+                <label class="fs12" for="last_name">${_(u'姓')}</label>
+                <input id="last_name" name="last_name" value="" type="text">
               </p>
               <p>
-                <label class="fs12" for="first_name">名</label>
-                <input id="first_name" name="first_name" value="" type="text" placeholder="例）太郎">
+                <label class="fs12" for="first_name">${_(u'名')}</label>
+                <input id="first_name" name="first_name" value="" type="text">
               </p>
             </td>
           </tr>
@@ -166,18 +166,18 @@ $(document).ready(function(){
 
           <tr>
             <th>
-              <label for="email_1">メールアドレス</label><br><span>${_(u'半角英数')}</span>
+              <label for="email_1">${_(u'メールアドレス')}</label><br><span>${_(u"半角英数")}</span>
             </th>
           </tr>
           <tr>
             <td>
               <ul>
                 <li>
-                  <input id="email_1" name="email_1" value="" type="text" placeholder="例）mail@example.ne.jp" style="ime-mode:disabled;">
+                  <input id="email_1" name="email_1" value="" type="text" placeholder="${_(u'例）mail@example.ne.jp')}" style="ime-mode:disabled;">
                 </li>
                 <li>
-                  <input id="email_1_confirm" name="email_1_confirm" value="" type="text" placeholder="例）mail@example.ne.jp" style="ime-mode:disabled;">
-                  <label for="email_1_confirm"><span class="fs12">(確認用)</span></label>
+                  <input id="email_1_confirm" name="email_1_confirm" value="" type="text" placeholder="${_(u'例）mail@example.ne.jp')}" style="ime-mode:disabled;">
+                  <label for="email_1_confirm"><span class="fs12">${_(u'確認用')}</span></label>
                 </li>
               </ul>
               <p class="annot">${view_context.mail_filter_domain_notice}</p>
@@ -201,24 +201,24 @@ $(document).ready(function(){
                   <label class="fs12" for="zip">${_(u'郵便番号')}</label>
                   <% path = request.static_url('altair.app.ticketing.cart:static/js/zipdata') %>
                   <input id="zip" name="zip" onkeyup="AjaxZip3.zip2addr('//tstar.s3.amazonaws.com/cart/static/js/zipdata',
-                    'zip','','prefecture','city','', 'address_1');" value="" type="text" placeholder="例）1030001" style="ime-mode:disabled;">
+                    'zip','','prefecture','city','', 'address_1');" value="" type="text" placeholder="${_(u'例: 1030001')}" style="ime-mode:disabled;">
                 </li>
                 <li>
                   <label class="fs12" for="prefecture">${_(u'都道府県')}</label>
-                  <input id="prefecture" name="prefecture" value="" type="text" placeholder="例）東京都">
+                  <input id="prefecture" name="prefecture" value="" type="text" placeholder="${_(u'例: 東京都')}">
                 </li>
                 <li>
                   <label class="fs12" for="city">${_(u'市区町村')}</label>
-                  <input id="city" name="city" value="" type="text" placeholder="例）中央区">
+                  <input id="city" name="city" value="" type="text" placeholder="${_(u'例: 中央区')}">
 
                 </li>
                 <li>
                   <label class="fs12" for="address_1">${_(u'町名番地')}</label>
-                  <input id="address_1" name="address_1" value="" type="text" placeholder="例）日本橋x-xx-xx" style="width:  80%;">
+                  <input id="address_1" name="address_1" value="" type="text" placeholder="${_(u'例: 日本橋x-xx-xx')}" style="width:  80%;">
                 </li>
                 <li>
                   <label class="fs12" for="address_2">${_(u'建物名等')}</label>
-                  <input id="address_2" name="address_2" value="" type="text" placeholder="例）yyビルz階" style="width: 80%;">
+                  <input id="address_2" name="address_2" value="" type="text" placeholder="${_(u'例: yyビルz階')}" style="width: 80%;">
                 </li>
               </ul>
             </td>
@@ -230,7 +230,7 @@ $(document).ready(function(){
           </tr>
           <tr>
             <td>
-              <input id="tel_1" name="tel_1" value="" type="text" placeholder="例）080xxxxyyyy" style="ime-mode:disabled;">
+              <input id="tel_1" name="tel_1" value="" type="text" placeholder="${_(u'例: 080xxxxyyyy')}" style="ime-mode:disabled;">
             </td>
           </tr>
         </tbody>
