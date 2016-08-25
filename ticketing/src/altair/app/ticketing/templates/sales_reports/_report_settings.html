@@ -36,17 +36,11 @@
 
 % if form_report_setting:
 <h4>レポート送信設定</h4>
-<%include file="/sales_reports/_action_button.html" args="event=event, performance=performance" />
+<%include file="/sales_reports/_action_button.html" args="event=event, performance=performance, split=True" />
 <%include file="/sales_reports/_modal.html" args="modal_id='modal-report_setting'" />
 <div class="btn-group">
-  <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
-    レポートプレビュー 全送信先
-    <span class="caret"></span>
-  </a>
-  <ul class="dropdown-menu">
-    <li><a href="javascript:preview();">詳細</a></li>
-    <li><a href="javascript:preview('', ${ReportTypeEnum.Summary.v[0]});">合計</a></li>
-  </ul>
+  <a class="btn" href="javascript:preview();" style="margin-right: 10px">レポートプレビュー 全送信先 - 詳細</a>
+  <a class="btn" href="javascript:preview('', ${ReportTypeEnum.Summary.v[0]});">レポートプレビュー 全送信先 - 合計</a>
 </div>
 % endif
 
