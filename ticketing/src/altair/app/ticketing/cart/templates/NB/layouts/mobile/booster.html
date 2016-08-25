@@ -1,0 +1,23 @@
+<%namespace file="altair.app.ticketing.cart:templates/__commons__/tags_mobile.html" name="mobile" inheritable="True" />
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+  <title>${view_context.title}</title>
+  <link rel="shortcut icon" href="${view_context.static_url("mobile/images/favicon.ico")}" />
+</head>
+<body>
+  <img src="${view_context.static_url('mobile/images/booster_header.jpg')}" alt="${view_context.team_name}" width="232" height="104" />
+  <div align="center">
+  <%block name="header">${view_context.title}</%block>
+  </div>
+  ${next.body()}
+  <hr />
+  <a href="${view_context.contact_url_mobile}">お問い合わせ</a> / <a href="${view_context.privacy_policy_page_url_mobile}">個人情報保護方針</a> / <a href="${view_context.legal_notice_page_url_mobile}">特定商取引法に基づく表示</a>
+% for f in view_context.extra_footer_links_mobile:
+/ <a href="${f['url']}">${f['text']}</a>
+% endfor
+  <div>
+     &copy; TicketStar, Inc. 
+  </div>
+</body>
+</html>

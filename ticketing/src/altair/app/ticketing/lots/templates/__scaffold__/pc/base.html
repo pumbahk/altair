@@ -24,6 +24,10 @@
   <!-- ========== header ========== -->
   <div id="grpheader">
     <img src="${view_context.static_url('pc/images/pc_logo.png')}" alt="${view_context.team_name}" class="serviceLogo" width="950" height="64" /></p>
+    <%doc>申込方法・FAQ・申込確認へのリンク</%doc>
+    % if view_context.get_include_template_path('links.html', 'lots') is not None:
+      <%include file="${view_context.get_include_template_path('links.html', 'lots')}" args="device=view_context.ua_type" />
+    % endif
     % if lot:
       <!--
       <form action="${request.route_path('lots.entry.logout', _query=dict(lot_id=lot.id, event_id=lot.event.id))}" method="POST">
