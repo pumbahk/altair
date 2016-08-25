@@ -621,6 +621,7 @@ def create_url(request):
     if not request.organization.setting.i18n:
         return str
     i18n_dict = OrderedDict([(u'en', u'English'), (u'ja', u'日本語'), (u'zh_CN', u'简体中文'), (u'zh_TW', u'繁体中文')])
+    str = u'<p class="tac mgt20 mgb20">'
     if request.organization and request.organization.setting.i18n:
         locale_name = custom_locale_negotiator(request)
         for local in i18n_dict:
@@ -628,5 +629,6 @@ def create_url(request):
                 str = str + u'<a href="/locale?language={0}">{1}</a>   '.format(local, i18n_dict[local])
             else:
                 str = str + i18n_dict[local] + '   '
+    str = str + u'</p>'
     return str
 

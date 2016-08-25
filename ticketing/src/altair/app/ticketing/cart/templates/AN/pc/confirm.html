@@ -18,7 +18,7 @@ $(function() {
   }
   #btn-back {
     border: 0;
-    background: #ed4a27 none repeat scroll 0 0;
+    background: #999 none repeat scroll 0 0;
     width: 230px;
     height: 53px;
     vertical-align: top;
@@ -27,14 +27,26 @@ $(function() {
     color: #fff;
     font-size:16px;
     font-weight: bold;
+    cursor: pointer;
+  }
+  #btn-back:hover {
+    opacity: 0.8;
   }
   #btn-complete {
     background: #ed4a27 none repeat scroll 0 0;
     border: 0;
     width: 230px;
     height: 53px;
+    font-size: 16px;
     color: #fff;
     font-weight: bold;
+    cursor: pointer;
+  }
+  #btn-complete:hover {
+    opacity: 0.8;
+  }
+  #btn-complete:hover {
+    background: #ff8631 none repeat scroll 0 0;
   }
   .message-complete {
     color: red;
@@ -45,7 +57,13 @@ $(function() {
 </style>
 </%block>
 
-
+<nav class="nav-stepbar clearfix mgb30">
+  <ol>
+    <li><dl><dt>STEP1</dt><dd>${__(u'公演日時・会場選択')}</dd></dl></li>
+    <li><dl><dt>STEP2</dt><dd>${__(u'支払・引取方法選択')}</dd></dl></li>
+    <li class="current"><dl><dt>STEP3</dt><dd>${__(u'購入情報確認')}</dd></dl></li>
+  </ol>
+</nav>
 
 % if request.session.peek_flash():
   % for message in request.session.pop_flash():
@@ -54,8 +72,8 @@ $(function() {
 % endif
 
 <div style="margin-left:10px; margin-bottom: 10px;">
-    <p class="clr_red bold fs18">${__(u'まだお申し込みは完了していません')}</p>
-    <p>${__(u'ご注文内容をご確認いただき「購入する」ボタンより、購入を完了させてください。')}</p>
+    <p class="clr_red bold fs18 tac">${__(u'まだお申し込みは完了していません')}</p>
+    <p class="tac mgb30">${__(u'ご注文内容をご確認いただき「購入する」ボタンより、購入を完了させてください。')}</p>
 </div>
 
 <form id="form1" action="${delegator['url'] if delegator else request.route_url('payment.confirm')}" method="post">
@@ -117,7 +135,7 @@ $(function() {
                     %endif
 
                     <tr class="purchase-table-total">
-                        <th scope="row">${__(u'合計金額')}</th>
+                        <th scope="row" class="fs14">${__(u'合計金額')}</th>
                         <td>&nbsp;</td>
                         <td>&nbsp;</td>
                         <td class="align1">￥${h.format_number(cart.total_amount)}</td>
@@ -148,8 +166,8 @@ $(function() {
 
     <!-- ===== お支払い ===== -->
     <div class="confirmBox">
+      <h2 class="heading heading_simple_line">${__(u'お支払い')}</h2>
       <div class="confirmBoxInner">
-        <h2 class="heading heading_simple_line">${__(u'お支払い')}</h2>
         <p>${h.render_payment_confirm_viewlet(request, cart)}</p>
       </div>
     </div><!-- ===== / お支払い ===== -->
@@ -259,7 +277,7 @@ $(function() {
         <tr>
             <td class="button_box">
               <input class="btn btn-secondly" id="btn-back" name="back" type="submit" value="${__(u'座席選択にもどる')}">
-              <p class="fs12">※${__(u'ここまでのお申し込みがキャンセルになります。')}</p>
+              <p class="fs7 mgt10">※${__(u'ここまでのお申し込みがキャンセルになります。')}</p>
             </td>
             <td class="button_box">
                 % if delegator:
@@ -267,8 +285,8 @@ $(function() {
                 % else:
                 <input class="btn btn-primary" id="btn-complete" type="submit" value="${__(u'購入する')}" />
                 <br />
-                <p class="fs12 clr_red">
-                ※${__(u'※お申込み確定後は、理由の如何を問わず、')}&nbsp;&nbsp;<br/>
+                <p class="fs7 clr_red mgt10">
+                ※${__(u'お申込み確定後は、理由の如何を問わず、')}&nbsp;&nbsp;<br/>
                 ${__(u'取替・変更・キャンセルをお受けできません。')}
                 </p>
                 % endif

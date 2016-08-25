@@ -16,17 +16,19 @@
 </div>
 
 <!-- ===== 受付番号 ===== -->
-<div class="confirm-wrap">
+<div class="confirmBox">
     <h2 class="heading heading_simple_line">${__(u'受付番号')}</h2>
-    <p class="bold">${order.order_no}</p>
+    <div class="confirmBoxInner">
+      <p class="bold fs16">${order.order_no}</p>
+    </div>
 </div><!-- ===== / 受付番号 ===== -->
 
 <!-- ===== お買い物内容 ===== -->
 <div class="confirmBox">
     <!-- ===== purchase-wrap ===== -->
     <h2 class="heading heading_simple_line">${__(u'お買い物内容')}</h2>
+      <p class="purchase-title mgb10">${order.performance.event.title} ${order.performance.name} ${h.performance_datetime(order.performance)}${__(u'(予定)')} ${order.performance.venue.name}</p>
       <div class="confirmBoxInner">
-        <p class="purchase-title">${order.performance.event.title} ${order.performance.name} ${h.performance_datetime(order.performance)}${__(u'(予定)')} ${order.performance.venue.name}</p>
         <table class="purchase-table" summary="${__(u'席種、金額などのお買い物内容')}">
             <tbody>
                 %for product in order.ordered_products:

@@ -71,11 +71,11 @@ html {
 
 table {
 	width: 100%;
-	margin: 20px 0 0;
+	margin: 0;
 	border-collapse: collapse;
-	border-top: 2px solid #ccc;
 }
 .purchase-table tr.purchase-table-total th, .purchase-table tr.purchase-table-total td {
+	content: "";
 	border-top: 2px solid #ccc;
 }
 table th {
@@ -89,6 +89,10 @@ table td {
 	border-top: 1px solid #efefef;
 	font-size: 14px;
 }
+table tr:first-child th, table tr:first-child td {
+	border-top: none;
+}
+
 table.purchase-table td:last-child {
 	text-align: right;
 }
@@ -200,8 +204,8 @@ body {
 	font-weight: bold;
 }
 
-
 .cancel-button.btn-redo, .ok-button.btn-buy {
+	display: inline;
 	padding: 8px 14px;
 	background: #c00 none repeat scroll 0 0;
 	color: #fff;
@@ -239,6 +243,38 @@ a:active {
 	left: 0;
 	margin: 0;
 }
+
+.btn-primary {
+	width: 230px;
+	height: 53px;
+	border: none;
+	background: #ed4a27 none repeat scroll 0 0;
+	color: #fff;
+	font-size: 16px;
+	font-weight: bold;
+	cursor: pointer;
+
+}
+.btn-primary:hover {
+	opacity: 0.8;
+}
+/*.totopPage {
+	display: inline-block;
+	width: 230px;
+	height: 40px;
+	padding: 17px 20px 0;
+	border: none;
+	background: #c00 none repeat scroll 0 0;
+	color: #fff !important;
+	font-size: 16px !important;
+	font-weight: bold;
+	text-decoration: none !important;
+	cursor: pointer;
+
+}
+.totopPage:hover {
+	opacity: 0.8;
+}*/
 
 /* helper
 --------------------------------------------------- */
