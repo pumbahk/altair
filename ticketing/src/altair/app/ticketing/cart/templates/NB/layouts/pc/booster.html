@@ -1,0 +1,40 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="ja">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+  <title>${view_context.title}</title>
+  <link rel="stylesheet" type="text/css" href="${view_context.static_url('pc/css/booster.css')}" media="all" />
+  <link rel="shortcut icon" href="${view_context.static_url("pc/images/favicon.ico")}" />
+  <script type="text/javascript" src="${request.static_url('altair.app.ticketing.cart:static/js/disable_on_submit.js')}"></script>
+  <script type="text/javascript">
+$(function() {
+  $('form').disableOnSubmit('input[type=submit][name!="back"]');
+});
+</script>
+  <%block name="javascript"></%block>
+</head>
+<body>
+  <div align="center">
+    <div class="header">
+      <img src="${view_context.static_url('pc/images/booster_header.png')}" alt="${view_context.team_name}" width="780" height="135" />
+    </div>
+    <h1 class="title">${view_context.title}</h1>
+    <div class="main">
+      <h2><%block name="title"></%block></h2>
+      ${self.body()}
+    </div>
+    <div class="footer">
+      <div class="footernav">
+        <ul>
+          <li class="first"><a href="${view_context.contact_url}">お問い合わせ</a></li>
+          <li><a target="_blank" href="${view_context.privacy_policy_page_url}">個人情報保護方針</a></li>
+          <li class="last"><a target="_blank" href="http://www.ticketstar.jp/legal">特定商取引法に基づく表示</a></li>
+        </ul>
+      </div>
+      <div class="copyright">
+         &copy; TicketStar, Inc. 
+      </div>
+    </div>
+  </div>
+</body>
+</html>

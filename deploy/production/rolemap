@@ -4,10 +4,12 @@ apbv3.1a.vpc.altr	adminapp
 apbv3.1c.vpc.altr	adminapp
 apcs2.1c.vpc.altr	gateapp
 apcs2.1a.vpc.altr	gateapp
+
 btmv1.1a.vpc.altr	batch
 btmv1.1c.vpc.altr	batch
 wkmv1.1a.vpc.altr	worker
 wkmv1.1c.vpc.altr	worker
+
 apmv2.1a.vpc.altr	userapp-usersite
 apmv2.1c.vpc.altr	userapp-usersite
 apmv3.1a.vpc.altr	userapp-usersite
@@ -18,10 +20,9 @@ apmv5.1a.vpc.altr	userapp-cart
 apmv5.1c.vpc.altr	userapp-cart
 apmv7.1a.vpc.altr	userapp-cart
 apmv7.1c.vpc.altr	userapp-cart
-apmv8.1a.vpc.altr	userapp-cart-api
-apmv8.1c.vpc.altr	userapp-cart-api
 apmv9.1a.vpc.altr	userapp-cart
 apmv9.1c.vpc.altr	userapp-cart
+
 apmv11.1a.vpc.altr	userapp-cart
 apmv11.1c.vpc.altr	userapp-cart
 apmv12.1a.vpc.altr	userapp-cart
@@ -38,11 +39,13 @@ apmv17.1a.vpc.altr	userapp-cart
 apmv17.1c.vpc.altr	userapp-cart
 apmv18.1a.vpc.altr	userapp-cart
 apmv18.1c.vpc.altr	userapp-cart
-apmv19.1a.vpc.altr	userapp-extauth
-apmv19.1c.vpc.altr	userapp-extauth
+apmv19.1a.vpc.altr	userapp-cart
+apmv19.1c.vpc.altr	userapp-cart
 
 apcv1.1c.vpc.altr	sej
 apcv1.1a.vpc.altr	sej
+apze2.1c.vpc.altr	fcadmin
+apze2.1a.vpc.altr	fcadmin
 
 apcv2.1a.vpc.altr	famiport-userside-api
 apcv2.1c.vpc.altr	famiport-userside-api
