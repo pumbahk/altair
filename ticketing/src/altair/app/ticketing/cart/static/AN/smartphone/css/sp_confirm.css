@@ -6,7 +6,7 @@
 #settlement a { text-decoration: underline; }
 #settlement a:hover { text-decoration: none; }
 #settlement .list-disc li { list-style: outside disc; margin: 0 0 1rem 20px; }
-#settlement .error {
+#settlement .error-list li {
 	background: #FCC url(../images/icon_error.png) no-repeat 5px center;
 	color: #C00;
 	font-weight: bold;

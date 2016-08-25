@@ -17,6 +17,7 @@
           <tr>
             <td>
             <input name="card_number" type="text" id="textfield" length="16" placeholder="1234123412341234"/>
+            ${h.error_list(request, form, 'card_number')}
           </td>
           </tr>
             <tr>
@@ -28,6 +29,8 @@
               ${_(u'月')}　
               ${form.exp_year(id="select2")}
               ${_(u'年')}
+              ${h.error_list(request, form, 'exp_month')}
+              ${h.error_list(request, form, 'exp_year')}
             </td>
           </tr>
           <tr>
@@ -36,6 +39,7 @@
           <tr>
             <td>
               <input name="card_holder_name" type="text" id="textfield5" placeholder="TARO YAMADA">
+              ${h.error_list(request, form, 'card_holder_name')}
             </td>
           </tr>
           <tr>
@@ -44,6 +48,7 @@
           <tr>
             <td>
               <input name="secure_code" type="text" id="textfield6" size="5">
+              ${h.error_list(request, form, 'secure_code')}
             </td>
           </tr>
         </tbody>
