@@ -1146,8 +1146,8 @@ cart.OrderFormView = Backbone.View.extend({
                                 .css('width', '20px'))
         );
         price_quantity.append($('<ul class="seat-count"></ul>')
-                                .append($('<li class="btn-selectseat btn-seat-minus"></li>').text('1枚減らす'))
-                                .append($('<li class="btn-selectseat btn-seat-plus btn-seat-active"></li>').text('1枚増やす'))
+                                .append($('<li class="btn-selectseat btn-seat-minus"></li>').text('-1'))
+                                .append($('<li class="btn-selectseat btn-seat-plus btn-seat-active"></li>').text('+1'))
 
         );
         var descriptionText = product.get('description');

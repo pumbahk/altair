@@ -422,7 +422,7 @@ body {
 
 .selectseat-accordion .selectseat-seat { font-weight: bold; }
 .selectseat-accordion .selectseat-price { display: table; width: 100%; margin-bottom: 10px; }
-.selectseat-accordion .selectseat-price li { display: inline-table; width: 49%; padding: 10px 0; }
+.selectseat-accordion .selectseat-price li { display: inline-table; width: 49%; padding: 0; }
 .selectseat-accordion .attBox{
 	background: #f4f3f1;
 	font-size: 1.2rem;
@@ -468,7 +468,7 @@ body {
     display: inline-block;
     border: none !important;
     color: #FFF !important;
-    font-size: 1.2rem;
+    font-size: 2.7rem;
     font-weight: bold;
     text-align: center;
     text-decoration: none !important;
