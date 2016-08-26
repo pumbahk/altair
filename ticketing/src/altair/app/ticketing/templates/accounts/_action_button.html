@@ -1,5 +1,8 @@
+<%page args="account=None, order=None, small=False, split=False" />
 <%namespace file="/common/modal.html" import="delete_modal" />
+
 <%
+  account_id = account.id if account else ''
   actions = {
     'new':dict(
       label=u'新規',
@@ -8,16 +11,27 @@
     ),
     'edit':dict(
       label=u'編集',
-      url='javascript:edit_account(get_selected_account_id());',
+      url='javascript:edit_account({});'.format(account_id),
       icon='icon-pencil',
     ),
     'delete':dict(
       label=u'削除',
-      url='javascript:delete_account(get_selected_account_id());',
+      url='javascript:delete_account({});'.format(account_id),
+      attrs={'class':'btn-danger'},
       icon='icon-minus',
     ),
   }
-  order = iter(['new', 'edit', 'delete'])
+  order = iter(order or ['new', 'edit', 'delete'])
 %>
-${HH.action_button(actions, order)}
+% if split:
+  <div style="float: left; margin-right: 10px;">
+  % for item in order:
+      ${HH.action_button(actions, iter([item]), vertical=False, extra_classes=[u'btn-small'] if small else [])}
+  % endfor
+  </div>
+% else:
+    <div style="float: left;">
+      ${HH.action_button(actions, order, vertical=False, extra_classes=[u'btn-small'] if small else [])}
+    </div>
+% endif
 ${delete_modal()}
