@@ -675,8 +675,8 @@ class FamiPortOrder(Base, WithTimestamp):
     @property
     def issuing_shop_code(self):
         for receipt in self.famiport_receipts:
-            if receipt.type in (FamiPortReceiptType.CashOnDelivery, FamiPortReceiptType.Ticketing) \
-                    and receipt.canceled_at is not None:
+            if receipt.type in (FamiPortReceiptType.CashOnDelivery.value, FamiPortReceiptType.Ticketing.value) \
+                    and receipt.canceled_at is None:
                 return receipt.shop_code
         return None
 
