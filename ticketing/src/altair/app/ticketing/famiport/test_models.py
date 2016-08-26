@@ -692,4 +692,4 @@ class FamiPortOrderTest(TestCase):
     def test_issuing_shop_code_with_payment_only(self):
         """前払いのみ予約の発券店舗を取得するテスト"""
         target = self.famiport_order_payment_only
-        self.assertEqual(target.issuing_shop_code, None)
+        self.assertEqual(target.issuing_shop_code, u'')
