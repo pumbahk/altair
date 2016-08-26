@@ -369,7 +369,7 @@ class FamiPortOrderTest(TestCase):
                     type=FamiPortReceiptType.CashOnDelivery.value,
                     barcode_no=u'01234012340123',
                     famiport_order_identifier=u'000011112223',
-                    shop_code=u'00009',
+                    shop_code=u'00001',
                     reserve_number=u'4321043210432'
                     ),
                 ],
@@ -423,14 +423,14 @@ class FamiPortOrderTest(TestCase):
                     type=FamiPortReceiptType.Payment.value,
                     barcode_no=u'01234012340124',
                     famiport_order_identifier=u'000011112224',
-                    shop_code=u'00009',
+                    shop_code=u'00002',
                     reserve_number=u'4321043210433',
                     ),
                 FamiPortReceipt(
                     type=FamiPortReceiptType.Ticketing.value,
                     barcode_no=u'01234012340125',
                     famiport_order_identifier=u'000011112225',
-                    shop_code=u'00009',
+                    shop_code=u'00999',
                     reserve_number=u'4321043210434',
                     )
                 ],
@@ -484,7 +484,7 @@ class FamiPortOrderTest(TestCase):
                     type=FamiPortReceiptType.Payment.value,
                     famiport_order_identifier=u'000011112227',
                     barcode_no=u'01234012340126',
-                    shop_code=u'00009',
+                    shop_code=u'00003',
                     reserve_number=u'4321043210435'
                     ),
                 ],
@@ -539,7 +539,7 @@ class FamiPortOrderTest(TestCase):
                     type=FamiPortReceiptType.Ticketing.value,
                     famiport_order_identifier=u'000011112229',
                     barcode_no=u'01234012340127',
-                    shop_code=u'00009',
+                    shop_code=u'00004',
                     reserve_number=u'4321043210436'
                     ),
                 ],
@@ -674,3 +674,22 @@ class FamiPortOrderTest(TestCase):
         self.assertEqual(target.expired(datetime(2015, 5, 23, 23, 59, 59)), None)
         self.assertEqual(target.expired(datetime(2015, 5, 24, 0, 0, 0)), None)
 
+    def test_issuing_shop_code_with_cash_on_delivery(self):
+        """代引予約の発券店舗を取得するテスト"""
+        target = self.famiport_order_cash_on_delivery
+        self.assertEqual(target.issuing_shop_code, u'00001')
+
+    def test_issuing_shop_code_with_payment(self):
+        """前払い後日予約の発券店舗を取得するテスト"""
+        target = self.famiport_order_payment
+        self.assertEqual(target.issuing_shop_code, u'00999')
+
+    def test_issuing_shop_code_with_ticketing(self):
+        """代済み予約の発券店舗を取得するテスト"""
+        target = self.famiport_order_ticketing_only
+        self.assertEqual(target.issuing_shop_code, u'00004')
+
+    def test_issuing_shop_code_with_payment_only(self):
+        """前払いのみ予約の発券店舗を取得するテスト"""
+        target = self.famiport_order_payment_only
+        self.assertEqual(target.issuing_shop_code, u'')
