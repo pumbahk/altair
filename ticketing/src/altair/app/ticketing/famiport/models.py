@@ -678,7 +678,7 @@ class FamiPortOrder(Base, WithTimestamp):
             if receipt.type in (FamiPortReceiptType.CashOnDelivery.value, FamiPortReceiptType.Ticketing.value) \
                     and receipt.canceled_at is None:
                 return receipt.shop_code
-        return None
+        return u''
 
     @property
     def get_type_in_str(self):
