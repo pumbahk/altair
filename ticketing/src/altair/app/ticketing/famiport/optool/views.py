@@ -147,18 +147,16 @@ class FamiPortChangePassWord(object):
 
     @view_config(route_name='change_password', renderer='change_password.mako', request_method='GET')
     def change_password_get(self):
-        can_get_page = True
-        # 認証した情報からユーザIDを取得
-        user_id = self.request.authenticated_userid
-        # TokenのバリーデトでユーザIDを取得
-        token = self.request.GET.get('token')
 
-        if user_id and token:
-            # ログインされてる状況はパスワードリマインダーによるパスワード変更できない、トップページに戻す（ログイン画面でトップに遷移する）。
-            self.request.session.flash(u'ログアウトしてから、もう一度パスワードリマインダーのURLにアクセスしてください。')
-            can_get_page = False
-        elif user_id is None and token:
+        token = self.request.GET.get('token')
+        if token:
+            # パスワードリマインダーのURLでアクセスする場合は強制にログアウトする
+            forget(self.request)
+            # TokenでユーザIDを取得
             user_id = AESEncryptor.get_id_from_token(token)
+        else:
+            # 認証した情報からユーザIDを取得
+            user_id = self.request.authenticated_userid
 
         # 以上二つ方法しかで取得したユーザIDを認めない。
         if not user_id:
@@ -166,12 +164,9 @@ class FamiPortChangePassWord(object):
                 self.request.session.flash(u'パスワード再発行用のURLの有効期限が切れています。パスワードリマインダーで再発行して下さい。')
             else:
                 self.request.session.flash(u'パスワードを変更するアカウントが見つかりませんでした。入力内容をご確認下さい。')
-            can_get_page = False
+                return HTTPFound(self.request.route_path('login'))
 
-        if can_get_page:
-            return dict(form=ChangePassWordForm(formdata=MultiDict(user_id=user_id)))
-        else:
-            return HTTPFound(self.request.route_path('login'))
+        return dict(form=ChangePassWordForm(formdata=MultiDict(user_id=user_id)))
 
     @view_config(route_name='change_password', renderer='change_password.mako', request_method='POST')
     def change_password_post(self):
