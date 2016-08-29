@@ -4112,6 +4112,7 @@ class OrganizationSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     famiport_enabled = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"Famiポートでの入金・発券機能を利用", _a_label=u"Famiポートでの入金・発券機能を利用")
     enable_fm_reflection_func = AnnotatedColumn(Boolean, nullable=False, default=True, doc=u"FM連携状態の判定機能を利用", _a_label=u"FM連携状態の判定機能を利用")
+    orderreview_index = AnnotatedColumn(Integer, nullable=False, default=1, server_default='0', _a_label=u"購入履歴の認証画面選択")
 
     def _render_cart_setting_id(self):
         return link_to_cart_setting(self.cart_setting)
@@ -4665,3 +4666,8 @@ class GettiiSeat(Base, BaseModel):
     seat_id = Column(Identifier, ForeignKey('Seat.id'), nullable=True)
     gettii_venue = relationship('GettiiVenue', backref='gettii_seats')
     seat = relationship('Seat')
+
+class OrderreviewIndexEnum(StandardEnum):
+    Index     = (0, u'index.htmlに従う')
+    OrderNo   = (1, u'予約番号')
+    UserLogin = (2, u'会員認証')
