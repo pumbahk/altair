@@ -78,9 +78,7 @@ class FamiPortOpLoginView(object):
 
     @view_config(route_name='login', renderer='login.mako')
     def get(self):
-        return_url = self.request.params.get('return_url', '')
-        if not return_url:
-            return_url = self.request.route_path('top')
+        return_url = self.request.params.get('return_url', self.request.route_path('top'))
 
         # loginされてる場合はreturn_urlに移動する
         if self.request.authenticated_userid:
@@ -166,8 +164,8 @@ class FamiPortChangePassWord(object):
                 if not self.request.GET:
                     self.request.session.flash(u'パスワードの変更はログインまたはパスワードリマインダーでアクセスしてください。')
                 else:
-                    self.request.session.flash(u'予想外のエラーになりました。アカウント管理者と連絡ください。')
-                logger.error(u'不正なURLでアクセスなど状況がありそう。user_id:{0}, authenticated_id:{1}, GET:{2}'\
+                    self.request.session.flash(u'予期せぬエラーが発生しました。システム管理者へご連絡下さい。')
+                logger.error(u'not correct format of the token or accessing without login. user_id:{0}, authenticated_id:{1}, GET:{2}'\
                              .format(user_id,
                                      self.request.authenticated_userid,
                                      self.request.GET))
