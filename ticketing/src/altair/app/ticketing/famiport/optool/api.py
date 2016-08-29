@@ -27,26 +27,26 @@ logger = logging.getLogger(__name__)
 def create_user(request, user_name, password, role, email=None):
     encrypted_password = encrypt_password(password)
     email = email or u'{}@example.com'.format(user_name)
-    operator = FamiPortOperator(
+    user = FamiPortOperator(
         user_name=user_name,
         password=encrypted_password,
         role=role,
         email=email
         )
     session = get_db_session(request, 'famiport')
-    session.add(operator)
+    session.add(user)
     session.commit()
 
 def lookup_user_by_credentials(request, user_name, password):
     session = get_db_session(request, 'famiport')
     try:
-        operator = session.query(FamiPortOperator) \
+        user = session.query(FamiPortOperator) \
             .filter(FamiPortOperator.user_name == user_name) \
             .one()
-        encrypted_password = encrypt_password(password, operator.password)
-        if operator.password != encrypted_password:
+        encrypted_password = encrypt_password(password, user.password)
+        if user.password != encrypted_password:
             return None
-        return operator
+        return user
     except NoResultFound:
         return None
 

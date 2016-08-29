@@ -80,7 +80,7 @@ class FamiPortOpLoginView(object):
     def get(self):
         return_url = self.request.params.get('return_url', '')
         return dict(form=LoginForm(), return_url=return_url)
-        
+
     @view_config(route_name='login', request_method='POST', renderer='login.mako')
     def post(self):
         return_url = self.request.params.get('return_url')
@@ -92,31 +92,31 @@ class FamiPortOpLoginView(object):
             form.password.data = None
             return dict(form=form, return_url=return_url)
 
-        operator = lookup_user_by_credentials(
+        user = lookup_user_by_credentials(
             self.request,
             form.user_name.data,
             form.password.data
             )
 
-        if not operator:
+        if not user:
             self.request.session.flash(u'ユーザ名とパスワードの組み合わせが誤っています。')
             form.password.data = None
             return dict(form=form, return_url=return_url)
 
-        if operator.is_deactivated:
+        if user.is_deactivated:
             self.request.session.flash(u'当アカウントは現在停止されております。')
             self.request.session.flash(u'ご利用したい場合はログインフォーム下のリマインダーリンクで復活してください。')
             form.password.data = None
             return dict(form=form, return_url=return_url)
-        elif operator.is_first or operator.is_expired:
-            remember(self.request, operator.id)
-            if operator.is_first:
+        elif user.is_first or user.is_expired:
+            remember(self.request, user.id)
+            if user.is_first:
                 self.request.session.flash(u'初めてのログインのため、パスワードの変更をお願いいたします。')
-            elif operator.is_expired:
+            elif user.is_expired:
                 self.request.session.flash(u'パスワードの有効期限が切れております。新パスワードへ変更して下さい。')
             return HTTPFound(location=self.request.route_url('change_password'))
         else :
-            remember(self.request, operator.id)
+            remember(self.request, user.id)
             return HTTPFound(return_url)
 
 
@@ -146,7 +146,7 @@ class FamiPortChangePassWord(object):
         id_by_authenticated = self.request.authenticated_userid
         # TokenのバリーデトでユーザIDを取得
         token = self.request.GET.get('token')
-        id_by_token = AESEncryptor.verify_token(token) if token else None
+        id_by_token = AESEncryptor.get_id_from_token(token) if token else None
         user_id = id_by_token or id_by_authenticated
 
         # 以上二つ方法しかで取得したユーザIDを認めない。
@@ -164,16 +164,16 @@ class FamiPortChangePassWord(object):
         form = ChangePassWordForm(formdata=self.request.POST)
         if form.validate():
             session = get_db_session(self.request, 'famiport')
-            operator = session.query(FamiPortOperator).filter(FamiPortOperator.id == form.user_id.data).one()
-            if operator:
-                if operator.is_matched_password(form.new_password.data):
+            user = session.query(FamiPortOperator).filter(FamiPortOperator.id == form.user_id.data).one()
+            if user:
+                if user.is_matched_password(form.new_password.data):
                     self.request.session.flash(u'現在のパスワードと同じものには変更できません。')
                 else:
                     new_encrypted_password = encrypt_password(form.new_password.data)
-                    operator.password = new_encrypted_password
+                    user.password = new_encrypted_password
 
-                    if not operator.active:
-                        operator.active = True
+                    if not user.active:
+                        user.active = True
                     session.commit()
                     self.request.session.flash(u'パスワードを変更しました。')
                     return HTTPFound(self.request.route_url('top'))
@@ -211,13 +211,13 @@ class FamiPortPasswordReminder(object):
     def password_reminder_post(self):
         form = PasswordReminderForm(self.request.POST)
         if form.validate():
-            operator = lookup_user_by_username(request=self.request, user_name=form.user_name.data)
+            user = lookup_user_by_username(request=self.request, user_name=form.user_name.data)
 
             aes = AESEncryptor()
-            token = aes.get_token(operator.id)
+            token = aes.get_token(user.id)
             html = self._get_html(token)
             settings = self.request.registry.settings
-            recipient = operator.email
+            recipient = user.email
             subject = u'FamiPort OPTOOLのアカウント復活について'
 
             if sendmail(settings, recipient, subject, html):

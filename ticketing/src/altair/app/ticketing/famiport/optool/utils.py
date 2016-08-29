@@ -77,25 +77,16 @@ def encrypt_password(password, existed_password=None):
 class AESEncryptor(object):
 
     @classmethod
-    def _is_token_expried(self, created_at_str):
+    def _is_token_expried(cls, created_at_str):
         from datetime import datetime, timedelta
         created_at = datetime.strptime(created_at_str, "%Y%m%d%H%M")
         now = datetime.now()
         # 発行したパスワードを変更するURLの有効期限は3時間
         return now > created_at + timedelta(hours=3)
 
-    def _build_encrypting_str(self, user_id):
-        # キーを作成するタイミングの情報を作成
-        from datetime import datetime
-        created_at = datetime.now().strftime("%Y%m%d%H%M")
-
-        # ユーザIDを文字列にする
-        user_id_str = str(user_id)
-
-        user_id_time_str = user_id_str + created_at
-
-        # AESの暗号化が16(32) byteの文字列しか暗号化できないため、長さが16の文字列にする。
-        return ''.join(['0'] * (16 - len(user_id_time_str))) + user_id_time_str
+    def _build_encrypting_str(self, text):
+        # AESの暗号化が16 byteの文字列しか暗号化できないため、長さが16の文字列にする。
+        return ''.join(['0'] * (16 - len(text))) + text
 
     @classmethod
     def get_cipher(cls, iv=None):
@@ -105,31 +96,48 @@ class AESEncryptor(object):
         return cipher, iv
 
     @classmethod
-    def verify_token(cls, token):
+    def get_id_from_token(cls, token):
     # tokenを復号して、ユーザID情報を返す。
         try:
             token = token.decode('hex')
+            # 暗号化の副キーを取得
             iv = token[:16]
+            # 暗号化したユーザID
+            encrypted_user_id = token[16:32]
+            # 暗号化した作成時間
+            encrypted_created_at = token[32:]
+
+            # 復号化
             cipher, _ = cls.get_cipher(iv)
-            user_id_time_str = cipher.decrypt(token[16:])
-            user_id = user_id_time_str[0:4]
-            created_at_str = user_id_time_str[4:]
+            user_id_str = cipher.decrypt(encrypted_user_id)
+            created_at_str = cipher.decrypt(encrypted_created_at)[4:]
 
             if not cls._is_token_expried(created_at_str):
-                return int(user_id)
+                return int(user_id_str)
             else:
                 return None
         except (ValueError, TypeError):
             return None
 
+    # ユーザIDとトークンの作成時間を使って暗号化する。
     def get_token(self, user_id):
-    # ユーザIDを使って暗号化する。
         if not user_id:
             return None
 
-        user_id_time_str = self._build_encrypting_str(user_id)
+        from datetime import datetime
+        created_at_str = datetime.now().strftime("%Y%m%d%H%M")
+
+        # 文字列を16byteにする
+        user_id_str = self._build_encrypting_str(str(user_id))
+        created_at_str = self._build_encrypting_str(created_at_str)
+
+        # 暗号化
         cipher, iv = self.get_cipher()
-        token = iv + cipher.encrypt(user_id_time_str)
+        encrypted_user_id = cipher.encrypt(user_id_str)
+        encrypted_created_at = cipher.encrypt(created_at_str)
+
+        # トークンを作成
+        token = iv + encrypted_user_id + encrypted_created_at
         return token.encode('hex')
 
 def sendmail(settings, recipient, subject, html):
