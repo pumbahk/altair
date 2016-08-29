@@ -440,6 +440,12 @@ class OrganizationSettingForm(OrganizationSettingSimpleForm):
     enable_fm_reflection_func = OurBooleanField(
         label=get_annotations_for(c_models.OrganizationSetting.enable_fm_reflection_func)['label']
         )
+    orderreview_index = OurSelectField(
+        label=get_annotations_for(c_models.OrganizationSetting.orderreview_index)['label'],
+        coerce=lambda x: int(x) if x else None,
+        choices=[e.v for e in c_models.OrderreviewIndexEnum],
+        validators=[]
+        )
 
     def validate_multicheckout_shop_name(form, field):
         org_setting = OrganizationSetting.query.\
