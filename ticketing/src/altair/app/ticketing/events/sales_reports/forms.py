@@ -444,6 +444,8 @@ class ReportSettingForm(OurForm):
 
                 if not validate_email(row[0].strip()):
                     raise ValidationError(u'メールアドレスの形式が不正です。{}行目'.format(str(num)))
+                if not validate_zenkaku(row[0].strip()):
+                    raise ValidationError(u'メールアドレスに全角が含まれています。{}行目'.format(str(num)))
                 emails.append(row[0].strip())
                 if not check_orverlap_email(emails):
                     raise ValidationError(u'メールアドレスが重複しています。{}行目'.format(str(num)))
@@ -454,6 +456,8 @@ class ReportSettingForm(OurForm):
                     raise ValidationError(u'空白は指定できません。{}行目'.format(str(num)))
                 if not validate_email(row[1].strip()):
                     raise ValidationError(u'メールアドレスの形式が不正です。{}行目'.format(str(num)))
+                if not validate_zenkaku(row[1].strip()):
+                    raise ValidationError(u'メールアドレスに全角が含まれています。{}行目'.format(str(num)))
                 emails.append(row[1].strip())
                 if not check_orverlap_email(emails):
                     raise ValidationError(u'メールアドレスが重複しています。{}行目'.format(str(num)))
@@ -481,6 +485,14 @@ def validate_email(data):
     check_form = OnlyEmailCheckForm()
     check_form.email.data = data
     if not check_form.validate():
+        return False
+    return True
+
+
+def validate_zenkaku(data):
+    try:
+        str(data)
+    except UnicodeEncodeError as e:
         return False
     return True
 

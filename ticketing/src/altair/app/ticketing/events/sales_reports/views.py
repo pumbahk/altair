@@ -261,9 +261,12 @@ class SalesReports(BaseView):
             settings = self.request.registry.settings
             recipient = form.recipient.data
             subject = form.subject.data
+
             try:
                 sendmail(settings, recipient, subject, html)
                 self.request.session.flash(u'レポートを送信しました')
+            except UnicodeEncodeError as e:
+                self.request.session.flash(u'メールアドレスに全角が含まれています')
             except Exception as e:
                 logging.error(
                     "sales report failed. event_id = {}, error: {}({})".format(event.id, type(e), e.message))
