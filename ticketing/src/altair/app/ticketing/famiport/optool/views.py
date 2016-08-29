@@ -163,11 +163,14 @@ class FamiPortChangePassWord(object):
             if token:
                 self.request.session.flash(u'パスワード再発行用のURLの有効期限が切れています。パスワードリマインダーで再発行して下さい。')
             else:
-                self.request.session.flash(u'予想外のエラーになりました。アカウント管理者と連絡ください。')
-                logger.error(u'不正なURLでアクセスなど状況がありそう。user_id:{0}, authenticated_id:{1}, token:{2}'\
+                if not self.request.GET:
+                    self.request.session.flash(u'パスワードの変更はログインまたはパスワードリマインダーでアクセスしてください。')
+                else:
+                    self.request.session.flash(u'予想外のエラーになりました。アカウント管理者と連絡ください。')
+                logger.error(u'不正なURLでアクセスなど状況がありそう。user_id:{0}, authenticated_id:{1}, GET:{2}'\
                              .format(user_id,
                                      self.request.authenticated_userid,
-                                     token))
+                                     self.request.GET))
             return HTTPFound(self.request.route_path('login'))
         return dict(form=ChangePassWordForm(formdata=MultiDict(user_id=user_id)))
 
