@@ -152,9 +152,9 @@ class FamiPortChangePassWord(object):
         # 以上二つ方法しかで取得したユーザIDを認めない。
         if not user_id:
             if token:
-                self.request.session.flash(u'パスワードリマインダーで作成したURLの有効期限は切りましたため、パスワードリマインダーで再発行ください。')
+                self.request.session.flash(u'パスワード再発行用のURLの有効期限が切れています。パスワードリマインダーで再発行して下さい。')
             else:
-                self.request.session.flash(u'パスワードを変更するアカウントは見つからないため、ご確認ください。')
+                self.request.session.flash(u'パスワードを変更するアカウントが見つかりませんでした。入力内容をご確認下さい。')
             return HTTPFound(self.request.route_path('login'))
         else:
             return dict(form=ChangePassWordForm(formdata=MultiDict(user_id=user_id)))
@@ -178,7 +178,7 @@ class FamiPortChangePassWord(object):
                     self.request.session.flash(u'パスワードを変更しました。')
                     return HTTPFound(self.request.route_url('top'))
             else:
-                self.request.session.flash(u'アカウントは見つかりません。入力値をご確認ください。')
+                self.request.session.flash(u'アカウントが見つかりませんでした。入力値をご確認ください。')
 
         form = self._reset_password(form)
         errors_set = form.errors.values()
