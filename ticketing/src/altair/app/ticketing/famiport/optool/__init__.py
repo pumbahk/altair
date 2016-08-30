@@ -4,6 +4,8 @@ from pyramid.authorization import ACLAuthorizationPolicy
 from pyramid.httpexceptions import HTTPFound
 from altair.sqlahelper import from_settings
 
+AES_SECRET_KEY="THIS_IS_SECRET_KEY_FOR_REMINDER!"
+
 def auth_callback(user_id, request):
     from .api import lookup_user_by_id
     user = lookup_user_by_id(request, user_id)
@@ -65,6 +67,8 @@ def main(global_conf, **local_conf):
     config.add_forbidden_view(lambda context, request: HTTPFound(request.route_path('login', _query=dict(return_url=request.path))))
     config.add_route('logout',  '/logout')
     config.add_route('login',  '/login')
+    config.add_route('change_password', '/change_password')
+    config.add_route('password_reminder', '/password_reminder')
     config.add_route('top',  '/', factory='.resources.TopResource')
     config.add_route('example.page_needs_authentication',  '/.example/page_needs_authentication', factory='.resources.ExampleResource')
     # Search

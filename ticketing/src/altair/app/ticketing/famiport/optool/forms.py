@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import re
 from altair.formhelpers.form import OurForm
 from altair.formhelpers.fields import (
     OurTextField,
@@ -15,22 +16,72 @@ from altair.formhelpers.widgets import (
     OurDateWidget,
 )
 from altair.formhelpers import Max, after1900
-from wtforms.validators import Required, Length, Optional
-from wtforms import ValidationError
+from wtforms.validators import Required, Length, Optional, EqualTo
+from wtforms.compat import iteritems
+from wtforms import HiddenField, ValidationError
 
 class LoginForm(OurForm):
     user_name = OurTextField(
         validators=[
             Required(),
             Length(max=32)
-            ]
+            ],
+        label=u'ユーザ名'
         )
     password = OurTextField(
         widget=OurPasswordInput(),
         validators=[
             Required()
-            ]
+            ],
+        label=u'パスワード'
         )
+
+class ChangePassWordForm(OurForm):
+    def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
+        super(ChangePassWordForm, self).__init__(formdata, obj, prefix, **kwargs)
+        for name, field in iteritems(self._fields):
+            if name in kwargs:
+                field.data = kwargs[name]
+
+    user_id = HiddenField(
+        validators=[Optional()]
+    )
+    new_password = OurTextField(
+        widget=OurPasswordInput(),
+        validators=[
+            Required(),
+            Length(min=7, message=u'パスワードは7桁以上で設定してください。')
+        ],
+        label=u'新しいパスワード'
+    )
+    new_password_confirm = OurTextField(
+        widget=OurPasswordInput(),
+        validators=[
+            Required(),
+            EqualTo('new_password', message=u'新しいパスワードと同じ値をもう一度入力してください。')
+        ],
+        label=u'新しいパスワードの確認'
+    )
+
+    def validate_new_password(form, field):
+        pattern = r'^(?=.*[0-9])(?=.*[a-zA-Z])([a-zA-Z0-9]+)$'
+        if not re.match(pattern, field.data):
+            raise ValidationError(u'パスワードは数字と英文字の両方を含む7文字以上で設定ください。')
+
+class PasswordReminderForm(OurForm):
+    def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
+        super(PasswordReminderForm, self).__init__(formdata, obj, prefix, **kwargs)
+        for name, field in iteritems(self._fields):
+            if name in kwargs:
+                field.data = kwargs[name]
+
+    user_name = OurTextField(
+        validators=[
+            Required(),
+            Length(max=32)
+        ],
+        label=u'ユーザ名'
+    )
 
 class SearchReceiptForm(OurForm):
     barcode_no = OurTextField(

@@ -4,16 +4,25 @@ body {
   padding-bottom: 40px;
 }
 
-.form-signin {
+#signin-form,
+#change-password-form,
+#password-reminder-form {
   max-width: 330px;
   padding: 15px;
   margin: 0 auto;
 }
-.form-signin .form-signin-heading,
-.form-signin .checkbox {
+
+form .form-heading
+{
+  font-weight: bold;
   margin-bottom: 10px;
+  margin-left: -15px;
+
 }
-.form-signin .form-control {
+#signin-form .form-control,
+#change-password-form .form-control,
+#password-reminder-form .form-control
+ {
   position: relative;
   height: auto;
   -webkit-box-sizing: border-box;
@@ -21,20 +30,13 @@ body {
           box-sizing: border-box;
   padding: 10px;
   font-size: 16px;
-  width: 300px;
 }
-.form-signin .form-control:focus {
+
+#signin-form .form-control:focus,
+#change-password-form .form-control:focus,
+#password-reminder-form .form-control:focus
+{
   z-index: 2;
-}
-.form-signin input[type="text"] {
-  margin-bottom: -1px;
-  border-bottom-right-radius: 0;
-  border-bottom-left-radius: 0;
-}
-.form-signin input[type="password"] {
-  margin-bottom: 10px;
-  border-top-left-radius: 0;
-  border-top-right-radius: 0;
 }
 
 /* optool */
@@ -133,4 +135,16 @@ span .info {
 
 .btn-xs {
   font-size: 10px;
+}
+
+.extra-info-str {
+    font-weight: bold;
+    font-size: 16px;
+}
+
+.extra-info-str a:link,
+.extra-info-str a:visited,
+.extra-info-str a:hover,
+.extra-info-str a:active {
+    text-decoration: none;
 }
