@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import logging
-
+import re
 from wtforms import Form, TextField, SelectField, HiddenField
 from wtforms.validators import Regexp, Length, Optional, ValidationError, Email
 from wtforms.compat import iteritems
@@ -443,9 +443,7 @@ class ReportSettingForm(OurForm):
                     raise ValidationError(u'空白は指定できません。{}行目'.format(str(num)))
 
                 if not validate_email(row[0].strip()):
-                    raise ValidationError(u'メールアドレスの形式が不正です。{}行目'.format(str(num)))
-                if not validate_zenkaku(row[0].strip()):
-                    raise ValidationError(u'メールアドレスに全角が含まれています。{}行目'.format(str(num)))
+                    raise ValidationError(u'メールアドレスの形式が不正です。全角は使用できません。{}行目'.format(str(num)))
                 emails.append(row[0].strip())
                 if not check_orverlap_email(emails):
                     raise ValidationError(u'メールアドレスが重複しています。{}行目'.format(str(num)))
@@ -455,9 +453,7 @@ class ReportSettingForm(OurForm):
                 if not row[0].strip() or not row[1].strip():
                     raise ValidationError(u'空白は指定できません。{}行目'.format(str(num)))
                 if not validate_email(row[1].strip()):
-                    raise ValidationError(u'メールアドレスの形式が不正です。{}行目'.format(str(num)))
-                if not validate_zenkaku(row[1].strip()):
-                    raise ValidationError(u'メールアドレスに全角が含まれています。{}行目'.format(str(num)))
+                    raise ValidationError(u'メールアドレスの形式が不正です。全角は使用できません。{}行目'.format(str(num)))
                 emails.append(row[1].strip())
                 if not check_orverlap_email(emails):
                     raise ValidationError(u'メールアドレスが重複しています。{}行目'.format(str(num)))
@@ -471,30 +467,11 @@ class ReportSettingForm(OurForm):
         return status
 
 
-class OnlyEmailCheckForm(OurForm):
-    email = TextField(
-        label=u'メールアドレス',
-        validators=[
-            Required(),
-            Email()
-        ]
-    )
-
-
 def validate_email(data):
-    check_form = OnlyEmailCheckForm()
-    check_form.email.data = data
-    if not check_form.validate():
-        return False
-    return True
-
-
-def validate_zenkaku(data):
-    try:
-        str(data)
-    except UnicodeEncodeError as e:
-        return False
-    return True
+    email = data.strip()
+    if re.match(r'^[a-zA-Z0-9_+\-*/=.]+@[^.][a-zA-Z0-9_\-.]*\.[a-z]{2,10}$', email) is not None:
+        return True
+    return False
 
 
 def check_orverlap_email(emails):

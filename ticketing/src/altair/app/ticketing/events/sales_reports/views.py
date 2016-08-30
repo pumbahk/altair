@@ -6,6 +6,7 @@ import traceback
 from datetime import datetime, timedelta
 import urllib
 
+from .forms import validate_email
 import webhelpers.paginate as paginate
 from webob.multidict import MultiDict
 from pyramid.view import view_config, view_defaults
@@ -25,7 +26,6 @@ from altair.app.ticketing.events.sales_reports.forms import (
     SalesReportSearchForm,
     SalesReportForm,
     ReportSettingForm,
-    OnlyEmailCheckForm,
     NumberOfPerformanceReportExportForm,
     )
 
@@ -262,11 +262,14 @@ class SalesReports(BaseView):
             recipient = form.recipient.data
             subject = form.subject.data
 
+            if not validate_email(recipient):
+                logging.info("sales report manual transmission failed. event_id = {}".format(event_id))
+                self.request.session.flash(u'メールアドレスが不正です。全角は使用できません。')
+                return {'form': form}
+
             try:
                 sendmail(settings, recipient, subject, html)
                 self.request.session.flash(u'レポートを送信しました')
-            except UnicodeEncodeError as e:
-                self.request.session.flash(u'メールアドレスに全角が含まれています')
             except Exception as e:
                 logging.error(
                     "sales report failed. event_id = {}, error: {}({})".format(event.id, type(e), e.message))
