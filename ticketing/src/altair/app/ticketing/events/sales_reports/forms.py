@@ -277,13 +277,29 @@ class SalesReportForm(OurForm):
             # limited_toのエラーメッセージをクリアする。
             self.limited_to.errors = []
 
+    def validate_recipient(form, field):
+        if not field.data:
+            append_error(field, ValidationError(u"メールアドレスが指定されていません。"))
+            return False
+
+        recipients = field.data.replace(' ', '')
+        recipients = recipients.split(",")
+        status = list()
+
+        for recipient in recipients:
+            status.append(validate_email(recipient))
+
+        if not all(status):
+            append_error(field, ValidationError(u"メールアドレスが不正です。全角は使えません"))
+        return all(status)
+
     def validate(self, *args, **kwargs):
         status = super(self.__class__, self).validate(*args, **kwargs)
         self._rearrange_limited_after1990_msg()
         if not status and self.is_preview:
             self._preview_validate_msg()
-
         return all([status, self._check_limited_from_to()])
+
 
 class ReportSettingForm(OurForm):
 
@@ -467,7 +483,16 @@ class ReportSettingForm(OurForm):
         return status
 
 
+def append_error(field, error):
+    if not hasattr(field.errors, 'append'):
+        field.errors = list(field.errors)
+    field.errors.append(error)
+
+
 def validate_email(data):
+    if not data:
+        return False
+
     email = data.strip()
     if re.match(r'^[a-zA-Z0-9_+\-*/=.]+@[^.][a-zA-Z0-9_\-.]*\.[a-z]{2,10}$', email) is not None:
         return True

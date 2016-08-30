@@ -262,11 +262,6 @@ class SalesReports(BaseView):
             recipient = form.recipient.data
             subject = form.subject.data
 
-            if not validate_email(recipient):
-                logging.info("sales report manual transmission failed. event_id = {}".format(event_id))
-                self.request.session.flash(u'メールアドレスが不正です。全角は使用できません。')
-                return {'form': form}
-
             try:
                 sendmail(settings, recipient, subject, html)
                 self.request.session.flash(u'レポートを送信しました')
@@ -274,12 +269,7 @@ class SalesReports(BaseView):
                 logging.error(
                     "sales report failed. event_id = {}, error: {}({})".format(event.id, type(e), e.message))
                 self.request.session.flash(u'レポート送信に失敗しました。送信先にはメールアドレスのみ指定してください。')
-        else:
-            self.request.session.flash(u'入力されていません')
-
-        return {
-            'form':form,
-            }
+        return {'form': form}
 
 
 @view_defaults(decorator=with_bootstrap, permission='sales_editor')
