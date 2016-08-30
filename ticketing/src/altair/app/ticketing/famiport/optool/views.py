@@ -113,6 +113,8 @@ class FamiPortOpLoginView(object):
             return dict(form=form, return_url=return_url)
         elif user.is_first or user.is_expired:
             remember(self.request, user.id)
+            # パスワードの変更が必要なアカウントの場合は強制にログアウトする
+            self.request.session['need_logout'] = True
             if user.is_first:
                 self.request.session.flash(u'初めてのログインのため、パスワードの変更をお願いいたします。')
             elif user.is_expired:
@@ -155,6 +157,10 @@ class FamiPortChangePassWord(object):
         else:
             # 認証した情報からユーザIDを取得
             user_id = self.request.authenticated_userid
+            # パスワードの変更が必要なアカウントの場合は強制にログアウトする
+            if self.request.session.get('need_logout'):
+                self.request.session.pop('need_logout')
+                forget(self.request)
 
         # 以上二つ方法しかで取得したユーザIDを認めない。
         if not user_id:
