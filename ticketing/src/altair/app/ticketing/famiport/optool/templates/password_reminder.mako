@@ -23,7 +23,7 @@
 </div>
 
 <div class="row" style="text-align: center;">
-<p class="extra-info-str"><a href="${request.route_path('login')}">ログインへ</a></p>
+<p class="extra-info-str"><a href="${request.route_path('login')}">ログイン画面に戻る</a></p>
 </div>
 
 <%block name="footer_extras">
