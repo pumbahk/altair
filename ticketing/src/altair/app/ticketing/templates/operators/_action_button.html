@@ -1,4 +1,4 @@
-<%page args="operator=None, order=None" />
+<%page args="operator=None, order=None, split=False" />
 <%namespace file="/common/helpers.html" name="ch" />
 <%namespace file="/common/modal.html" import="delete_modal" />
 
@@ -76,6 +76,18 @@
 
   order = iter(order)
 %>
+
+% if split:
+  <div style="float: left; margin-right: 10px;">
+  % for item in order:
+      ${HH.action_button(actions, iter([item]), vertical=False)}
+  % endfor
+  </div>
+% else:
+    <div style="float: left;">
+      ${HH.action_button(actions, order, vertical=False)}
+    </div>
+% endif
 
 ${HH.action_button(actions, order, vertical=False)}
 
