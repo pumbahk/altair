@@ -205,7 +205,7 @@ def get_display_name(request, plugin_name):
 
 @implementer(IRakutenOpenIDURLBuilder)
 class RakutenAuthURLBuilder(object):
-    def __init__(self, proxy_url_pattern, **kwargs):
+    def __init__(self, proxy_url_pattern=None, **kwargs):
         self.proxy_url_pattern = proxy_url_pattern
 
     def extra_verify_url_exists(self, request):
