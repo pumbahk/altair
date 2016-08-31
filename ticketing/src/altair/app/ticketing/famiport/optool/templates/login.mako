@@ -22,7 +22,7 @@
 </div>
 
 <div class="row" style="text-align: center;">
-<p class="extra-info-str">パスワードを忘れた方は<a href="${request.route_path('password_reminder')}">こちら</a>へ</p>
+<p class="extra-info-str">パスワードを忘れた方は<a href="${request.route_path('password_reminder')}">こちら</a></p>
 </div>
 
 
