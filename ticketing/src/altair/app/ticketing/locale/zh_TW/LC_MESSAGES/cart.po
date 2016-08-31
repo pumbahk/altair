@@ -550,6 +550,38 @@ msgstr "購買其他票券"
 msgid "トップにもどる"
 msgstr "返回頁首"
 
+# out_term_sales
+
+msgid "誠に申し訳ございませんが"
+msgstr "非常抱歉"
+
+msgid "event.title(performance.name) の販売期間は"
+msgstr "{0} ({1}) 的售票時間為"
+
+msgid "となっております。"
+msgstr " "
+
+msgid "販売期間内にアクセスしていただきますようお願いいたします。"
+msgstr "請於售票期間內再次訪問此售票頁面。"
+
+msgid "event.title (performance.name) の販売は"
+msgstr "{0} ({1}) 的售票截止日期為"
+
+msgid "end_at まで"
+msgstr "{0}"
+
+msgid "とさせていただいております。"
+msgstr " "
+
+msgid "他の公演のチケットは<a href=\"request.context.host_base_url\">こちら</a>からお買い求めくださいますようお願いいたします。"
+msgstr "其他表演的售票資訊請至<a href=\"{0}\">這裡</a>瞭解詳情"
+
+msgid "performance.name (sales_segment.name) の販売は"
+msgstr "{0} ({1}) 的售票時間為"
+
+msgid "なお、本公演の他の日付、会場のチケットは下記からお買い求めいただけます。"
+msgstr "其他的表演日期、會場的售票資訊，請至下方連結瞭解詳情。"
+
 # fc_auth
 
 msgid "ログインページ"

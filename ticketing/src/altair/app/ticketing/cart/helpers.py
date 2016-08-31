@@ -107,8 +107,14 @@ def performance_end_date(performance):
 def japanese_date(date):
     return u"%d年%d月%d日(%s)" % (date.year, date.month, date.day, u"月火水木金土日"[date.weekday()])
 
+def i18n_date(date):
+    return u"%d-%d-%d(%s)" % (date.year, date.month, date.day, ('Mon.','Tue.','Wed.','Thu.','Fri.','Sat.','Sun.')[date.weekday()])
+
 def japanese_time(time):
     return u"%d時%02d分" % (time.hour, time.minute)
+
+def i18n_time(time):
+    return u" %d:%02d" % (time.hour, time.minute)
 
 def japanese_datetime(dt):
     try:
@@ -123,6 +129,12 @@ def datetime(dt):
         return dt.strftime('%Y-%m-%d %H:%M')
     return None
 
+def i18n_datetime(dt):
+    try:
+        return i18n_date(dt)+i18n_time(dt)
+    except:
+        logger.warn("dt is None")
+        return ""
 
 def mail_date(date):
     return u'{d.year}年 {d.month}月 {d.day}日 {d.hour:02}時 {d.minute:02}分'.format(d=date)

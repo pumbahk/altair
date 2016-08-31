@@ -550,6 +550,38 @@ msgstr "Buy other tickets"
 msgid "トップにもどる"
 msgstr "Back To Top"
 
+# out_term_sales
+
+msgid "誠に申し訳ございませんが"
+msgstr "Sorry!"
+
+msgid "event.title(performance.name) の販売期間は"
+msgstr "You can buy ticket for {0} ({1}) during the following period."
+
+msgid "となっております。"
+msgstr " "
+
+msgid "販売期間内にアクセスしていただきますようお願いいたします。"
+msgstr "Please access our site during this period."
+
+msgid "event.title (performance.name) の販売は"
+msgstr "You can buy ticket for {0} ({1}) until "
+
+msgid "end_at まで"
+msgstr "{0} "
+
+msgid "とさせていただいております。"
+msgstr " "
+
+msgid "他の公演のチケットは<a href=\"request.context.host_base_url\">こちら</a>からお買い求めくださいますようお願いいたします。"
+msgstr "And you can buy other tickets from <a href=\"{0}\">here</a>"
+
+msgid "performance.name (sales_segment.name) の販売は"
+msgstr "You can buy ticket for {0} ({1}) during the following period."
+
+msgid "なお、本公演の他の日付、会場のチケットは下記からお買い求めいただけます。"
+msgstr "For other date, venue information please access the following links."
+
 # fc_auth
 
 msgid "ログインページ"

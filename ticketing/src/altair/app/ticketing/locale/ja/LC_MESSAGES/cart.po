@@ -550,6 +550,38 @@ msgstr "他のチケットを購入する"
 msgid "トップにもどる"
 msgstr "トップにもどる"
 
+# out_term_sales
+
+msgid "誠に申し訳ございませんが"
+msgstr "誠に申し訳ございませんが"
+
+msgid "event.title(performance.name) の販売期間は"
+msgstr "{0} ({1}) の販売期間は"
+
+msgid "となっております。"
+msgstr "となっております。"
+
+msgid "販売期間内にアクセスしていただきますようお願いいたします。"
+msgstr "販売期間内にアクセスしていただきますようお願いいたします。"
+
+msgid "event.title (performance.name) の販売は"
+msgstr "{0} ({1}) の販売は"
+
+msgid "end_at まで"
+msgstr "{0} まで"
+
+msgid "とさせていただいております。"
+msgstr "とさせていただいております。"
+
+msgid "他の公演のチケットは<a href=\"request.context.host_base_url\">こちら</a>からお買い求めくださいますようお願いいたします。"
+msgstr "他の公演のチケットは<a href=\"{0}\">こちら</a>からお買い求めくださいますようお願いいたします。"
+
+msgid "performance.name (sales_segment.name) の販売は"
+msgstr "{0} ({1}) の販売は"
+
+msgid "なお、本公演の他の日付、会場のチケットは下記からお買い求めいただけます。"
+msgstr "なお、本公演の他の日付、会場のチケットは下記からお買い求めいただけます。"
+
 # fc_auth
 
 msgid "ログインページ"
