@@ -248,7 +248,7 @@ class FamiPortPasswordReminder(object):
                     self.request.session.flash(u'パスワードの更新かアカウントの復活についてのご連絡はご登録いただいたEmailアドレスに送りました。ご確認ください。')
                     return HTTPFound(self.request.route_path('login'))
                 except Exception, e:
-                    logging.error(
+                    logger.error(
                         "password reminder failed. user_id = {}, error: {}({})".format(user.id, type(e), e.message))
                     self.request.session.flash(u'メールの送信が失敗しました。システム管理者へご連絡下さい。')
             else:
