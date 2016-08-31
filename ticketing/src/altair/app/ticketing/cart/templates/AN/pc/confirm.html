@@ -83,9 +83,9 @@ $(function() {
     <!-- ===== お買い物内容 ===== -->
     <div class="confirmBox">
       <h2 class="heading heading_simple_line">${__(u'お買い物内容')}</h2>
+        <p class="purchase-title">${cart.performance.event.title} ${cart.performance.name} ${h.performance_datetime(cart.performance)}(${__(u'予定')}) ${cart.performance.venue.name}</p>
         <div class="confirmBoxInner">
         <!-- ===== purchase-wrap ===== -->
-          <p class="purchase-title">${cart.performance.event.title} ${cart.performance.name} ${h.performance_datetime(cart.performance)}(${__(u'予定')}) ${cart.performance.venue.name}</p>
             <table id="contentsOfShopping" summary="${__(u'席種、金額などのお買い物内容')}">
                 <tbody>
                     % for product in cart.items:
@@ -285,7 +285,7 @@ $(function() {
                 % else:
                 <input class="btn btn-primary" id="btn-complete" type="submit" value="${__(u'購入する')}" />
                 <br />
-                <p class="fs7 clr_red mgt10">
+                <p class="fs7 clr_red mgt10" style="color:#c01920;">
                 ※${__(u'お申込み確定後は、理由の如何を問わず、')}&nbsp;&nbsp;<br/>
                 ${__(u'取替・変更・キャンセルをお受けできません。')}
                 </p>

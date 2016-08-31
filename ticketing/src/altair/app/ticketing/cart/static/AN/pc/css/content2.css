@@ -34,6 +34,7 @@
 	color: #fff;
 	font-size: 16px;
 	font-weight: bold;
+	cursor: pointer;
 }
 .align2:hover {
 	opacity: 0.8;
@@ -1628,9 +1629,8 @@
 }
 
 #selectSeatType.focused h3 {
-	padding: 32px 0 0 0;
-	height: 0px;
-	overflow: hidden;
+	font-size: 14px;
+	font-weight: bold;
 }
 
 #selectSeatType .arrow {
@@ -1732,6 +1732,7 @@
 	height: 60px;
 }
 
+/*
 #selectSeatType .selectProduct .btn-select-buy {
 	display: inline-block;
 	width: 140px;
@@ -1775,6 +1776,7 @@
 #selectSeatType.blur .selectProduct .btn-entrust-buy {
 	background-image: url(../images/btn_entrust_buy.small.d.gif);
 }
+*/
 
 #selectSeatType .selectProduct .btn-buy {
 	position: relative;
@@ -1809,11 +1811,12 @@
 }
 
 #selectSeatType .selectProduct ul.productList {
-  　margin: 0 0;
+	height: 45px;
+    margin: 0 0;
 	padding: 0 0;
 }
 #selectSeatType .selectProduct ul.productList li.productListItem {
-	padding: 4px 0;
+	padding: 2px 0;
 	clear: both;
 }
 
@@ -2009,12 +2012,11 @@
 	width: 85px;
 	height: 27px;
 	padding: 5px 0 0;
-	background: #c00 none repeat scroll 0 0;
+	background: #999 none repeat scroll 0 0;
 	color: #fff;
 	font-size: 14px;
 	font-weight: bold;
 	text-align: center;
-	cursor: pointer;
 }
 #selectSeat.focused .btn-select-seat {
 	display: inline-block;
@@ -2029,21 +2031,16 @@
 	cursor: pointer;
 }
 
-#selectSeat.focused .btn-select-seat:hover {
-	opacity: 0.8;
-}
-
 #selectSeat .btn-cancel {
 	display: inline-block;
 	width: 85px;
 	height: 27px;
 	padding: 5px 0 0;
-	background: #c00 none repeat scroll 0 0;
+	background: #999 none repeat scroll 0 0;
 	color: #fff;
 	font-size: 14px;
 	font-weight: bold;
 	text-align: center;
-	cursor: pointer;
 }
 #selectSeat.focused .btn-cancel {
 	display: inline-block;
@@ -2057,7 +2054,9 @@
 	text-align: center;
 	cursor: pointer;
 }
-
+#selectSeat.focused .btn-select-seat:hover {
+	opacity: 0.8;
+}
 #cancelSeat.focused .btn-cancel:hover {
 	opacity: 0.8;
 }
@@ -2068,11 +2067,9 @@
 	text-align: right;
 }
 
-#selectSeatType ul.buttonSet li {
-	display: inline-block;
+#selectSeatType ul.buttonSet li a {
 	width: auto;
-	height: 28px;
-	padding: 10px 10px 0;
+	padding: 5px 18px;
 	background: #c00 none repeat scroll 0 0;
 	color: #fff;
 	text-align: center;
@@ -2159,16 +2156,14 @@
 }
 
 .settlementPayBox {
-	width: 934px;
+	width: 100%;
 	margin: 0 0 5px 7px;
 }
 
-/*.settlementPayBoxInner {
-
-}*/
-
 .settlementPayBox table {
-	width: 100%;
+	display: table-caption;
+	width: auto;
+	border: 3px solid #eee;
 }
 
 .settlementPayBox dl {
@@ -2485,8 +2480,17 @@
 }
 
 #confirmDelivery td label {
-	font-weight: bold;
 	display: inline-block;
+}
+
+#confirmDelivery input[type="text"] {
+    -webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
+    border-radius: 3px;
+    border: 1px solid #CCC;
+    background: #f4f3f1;
+    padding: 5px;
+    margin: 3px;
 }
 
 /* メールマガジンの配信 */

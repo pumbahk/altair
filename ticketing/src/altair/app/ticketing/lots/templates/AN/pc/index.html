@@ -231,7 +231,7 @@ if label is None or label is True:
       </div>
       %endfor
     </div>
-    <p style="margin-left:10px; font-size:90%; color:#333;">${__(u'注文受付完了、確認メール等をメールでご案内します。「tstar.jp」からのメールを受信できるよう、お申し込み前にドメイン指定の設定を必ずお願いいたします。')}</p>
+    <p style="margin-left:10px; font-size:90%; color:#333;">${__(u'注文受付完了、確認メール等をメールでご案内します。「tstar.jp」からのメールを受信できるよう、お申し込み前にドメイン指定の設定を必ずお願いいたします。') |n}</p>
   </div>
 
   <div class="settlementBox">
@@ -285,7 +285,7 @@ if label is None or label is True:
                   ${form['email_1_confirm']}
                   ${self.error(form, 'email_1_confirm')}
                 </div>
-                <p>${__(u'注文受付完了、確認メール等をメールでご案内します。「tstar.jp」からのメールを受信できるよう、お申し込み前にドメイン指定の設定を必ずお願いいたします。')}</p>
+                <p>${__(u'注文受付完了、確認メール等をメールでご案内します。「tstar.jp」からのメールを受信できるよう、お申し込み前にドメイン指定の設定を必ずお願いいたします。') |n}</p>
               </td>
             </tr>
             <tr>

@@ -15,7 +15,7 @@
 <dd class="login-inbox" id="rakulogin">
 <form id="form1" name="form1" action="${request.route_path('order_review.form')}" method="get">
 <p class="tac mgt20 mgb10">
-<input type="submit" value="${_(u'次へすすむ')}" class="btn btn-primary">
+<input type="submit" value="${_(u'次に進む')}" class="btn btn-primary">
 </p>
 </form>
 </dd>
@@ -23,7 +23,7 @@
 <dd class="login-inbox" id="rakulogin">
 <form id="form2" name="form2" action="/lots/review" method="get">
 <p class="tac mgt20 mgb10">
-<input type="submit" value="${_(u'次へすすむ')}" class="btn btn-primary">
+<input type="submit" value="${_(u'次に進む')}" class="btn btn-primary">
 </p>
 </form>
 </dd>

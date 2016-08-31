@@ -109,6 +109,10 @@ p.cartNickname{
 .modal-body tr.last-child td {
   border: none;
 }
+.modal-body table tr:first-child td:nth-child(1) {
+	content: "";
+	width: 70%;
+}
 
 .flow-widget {
   width: 700px;

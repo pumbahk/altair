@@ -7,7 +7,7 @@
 %else:
 <p>${_(u'引換票番号')}: <strong>${sej_order.exchange_number or sej_order.billing_number}</strong>
 %if payment_type == 'Paid':
-<%include file="sej_exchange_sheet.html" args="label=u'引換票を表示'" />
+<%include file="sej_exchange_sheet.html" args="label=_(u'引換票を表示')" />
 %endif
 </p>
 <p>${_(u'引取受付期間')}: <strong>${h.japanese_datetime(sej_order.ticketing_start_at)}</strong> 〜
