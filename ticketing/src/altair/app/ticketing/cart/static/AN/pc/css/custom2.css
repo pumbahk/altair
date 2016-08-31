@@ -111,7 +111,7 @@ p.cartNickname{
 }
 .modal-body table tr:first-child td:nth-child(1) {
 	content: "";
-	width: 70%;
+	width: 60%;
 }
 
 .flow-widget {

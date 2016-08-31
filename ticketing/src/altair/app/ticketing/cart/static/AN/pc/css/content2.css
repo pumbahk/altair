@@ -1811,7 +1811,6 @@
 }
 
 #selectSeatType .selectProduct ul.productList {
-	height: 45px;
     margin: 0 0;
 	padding: 0 0;
 }
@@ -1929,8 +1928,9 @@
 #selectSeat .venueViewer,
 #selectSeat .venueViewerWrapper,
 #selectSeat .guidanceBackground {
-  width: 490px;
+  width: 480px;
   height: 430px;
+  border: 1px solid #efefef;
 }
 
 #selectSeat .venueViewerWrapper {
@@ -2068,10 +2068,14 @@
 }
 
 #selectSeatType ul.buttonSet li a {
-	width: auto;
-	padding: 5px 18px;
+	display: inline-block;
+	overflow: hidden;
+	width: 40%;
+	margin: 0 0 8px;
+	padding: 10px;
 	background: #c00 none repeat scroll 0 0;
 	color: #fff;
+	font-size: 14px;
 	text-align: center;
 }
 
@@ -2481,6 +2485,7 @@
 
 #confirmDelivery td label {
 	display: inline-block;
+	width: 20%;
 }
 
 #confirmDelivery input[type="text"] {
