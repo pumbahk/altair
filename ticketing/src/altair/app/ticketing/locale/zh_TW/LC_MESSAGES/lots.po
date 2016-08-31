@@ -69,10 +69,10 @@ msgid "抽選の結果、お客様はご当選されました。"
 msgstr "抽選的結果,恭喜您當選了。"
 
 msgid "払込票番号や引換票番号は、下記の購入履歴よりご確認いただけます。"
-msgstr "購買憑證號碼和兌換票號碼，請從下方的購買記錄確認。"
+msgstr "購買憑證號碼和兌換票號碼，請從下方的購買紀錄確認。"
 
 msgid "<a href=\"/orderreview/guest\" target=\"_blank\">■購入履歴確認ページ</a>をご確認ください。"
-msgstr "<a href=\"/orderreview/guest\" target=\"_blank\">■購買記錄確認頁面</a>をご確認ください。"
+msgstr "<a href=\"/orderreview/guest\" target=\"_blank\">■購買紀錄確認頁面</a>をご確認ください。"
 
 msgid "予約番号は{0}です"
 msgstr "訂票號碼是{0}"

@@ -24,21 +24,26 @@ $(document).ready(function(){
 <!-- ===== お支払い･お引取り方法の指定 ===== -->
 <div class="confirm-wrap">
   <h2 class="heading heading_simple_line">${_(u'お支払い･お引取り方法の指定')}</h2>
-  %if request.session.peek_flash():
-      %for message in request.session.pop_flash():
-      <div class="error">${message}</div>
-      %endfor
-  %endif
+
   <p class="mgb20">
   ${_(u'楽天チケットでご利用いただけるチケットの受取方法と支払方法の中からひとつを選択してください。')}<br>
-  ※${_(u'このページに記載されている料金はすべて消費税込です。')}<br>
+  ${_(u'※このページに記載されている料金はすべて消費税込です。')}<br>
   </p>
-
+  %if len(payment_delivery_methods) > 1:
+      ${_(u'どれかひとつをお選びください')}<br/>
+  %endif
+    ${_(u'選択すると、お支払・お引取方法についての注意事項が表示されます。')}<br/><br/>
+  %if request.session.peek_flash():
+    <ul class="error-list">
+      %for message in request.session.pop_flash():
+      <li>${message}</li>
+      %endfor
+    </ul>
+  %endif
 
   <!-- ===== settlement ===== -->
   <form id="form1" class="confirmForm" name="form1" method="post" action="${request.url}">
-    ${_(u'どれかひとつをお選びください')}<br/>
-    ${_(u'選択すると、お支払・お引取方法についての注意事項が表示されます。')}<br/><br/>
+
     <%
     checked_id = request.params.get('payment_delivery_method_pair_id')
     radio_cnt = 0
@@ -135,12 +140,12 @@ $(document).ready(function(){
             <td>
               <p>
                 ${form['last_name'].label(class_=u'fs12')}
-                ${form['last_name'](placeholder=_(u'例）山田'))}
+                ${form['last_name'](placeholder=_(u'例: 山田'))}
                 ${h.error_list(request, form, 'last_name')}
               </p>
               <p>
                 ${form['first_name'].label(class_=u'fs12')}
-                ${form['first_name'](placeholder=_(u'例）太郎'))}
+                ${form['first_name'](placeholder=_(u'例: 太郎'))}
                 ${h.error_list(request, form, 'first_name')}
               </p>
             </td>
@@ -155,12 +160,12 @@ $(document).ready(function(){
             <td>
               <p>
                 ${form['last_name_kana'].label(class_=u'fs12')}
-                ${form['last_name_kana'](placeholder=_(u'例）ヤマダ'))}
+                ${form['last_name_kana'](placeholder=_(u'例: ヤマダ'))}
                 ${h.error_list(request, form, 'last_name_kana')}
               </p>
               <p>
                 ${form['first_name_kana'].label(class_=u'fs12')}
-                ${form['first_name_kana'](placeholder=_(u'例）タロウ'))}
+                ${form['first_name_kana'](placeholder=_(u'例: タロウ'))}
                 ${h.error_list(request, form, 'first_name_kana')}
               </p>
             </td>
@@ -251,6 +256,6 @@ $(document).ready(function(){
       <p class="confirm-btnBox"><input class="btn btn-primary" type="button" value="${_(u'次へ')}" onclick="$('#form1').submit()"></p>
     </div>
   </form>
-  ${h.create_url(request) |n}
 </div><!-- ===== / 購入者情報入力 ===== -->
 <!-- ******************** contents [end] ******************** -->
+${h.create_url(request) |n}

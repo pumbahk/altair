@@ -2,6 +2,24 @@
 
 var cart = {};
 
+cart.i18n = function (messages){
+		    var result;
+		    $.ajax({
+		        url: carti18nUrl,
+		        dataType:'text',
+		        data: {message:messages},
+		        type:'POST',
+		        async: false,
+		        success: function(translated_message) {
+		            result = translated_message;
+		        },
+		        fail() {
+		            result = messages.join("");
+		        }
+		        });
+		    return result;
+}
+
 cart.util = {
     datestring_japanize: function(datestring){
         // year, month, day, rest
@@ -60,25 +78,25 @@ cart.order_messages = {
         message: '枚数を減らして購入してください'
     }, 
     'ticket_count_over_upper_bound': {
-        title: '上限枚数を超えて購入しようとしています', 
+        title: '上限枚数を超えて購入しようとしています',
         message: function(order_form_presenter, data) {
             return cart.showErrorDialog(null, data.message, 'btn-close');
         }
     },
     'ticket_count_below_lower_bound': {
-        title: '購入枚数が少なすぎます', 
+        title: '購入枚数が少なすぎます',
         message: function(order_form_presenter, data) {
             return cart.showErrorDialog(null, data.message, 'btn-close');
         }
     },
     'product_count_over_upper_bound': {
-        title: '購入数上限を超えて購入しようとしています', 
+        title: '購入数上限を超えて購入しようとしています',
         message: function(order_form_presenter, data) {
             return cart.showErrorDialog(null, data.message, 'btn-close');
         }
     },
     'product_count_below_lower_bound': {
-        title: '購入数が少なすぎます', 
+        title: '購入数が少なすぎます',
         message: function(order_form_presenter, data) {
             return cart.showErrorDialog(null, data.message, 'btn-close');
         }
@@ -167,10 +185,10 @@ cart.events = {
     ON_CART_ORDERED: "onCartOredered",
     ON_VENUE_DATASOURCE_UPDATED: "onVenueDataSourceUpdated"
 };
-cart.init = function(salesSegmentsSelection, selected, cartReleaseUrl, venueEnabled, spinnerPictureUrl) {
+cart.init = function(salesSegmentsSelection, selected, cartReleaseUrl, carti18nUrl, venueEnabled, spinnerPictureUrl) {
     this.app = new cart.ApplicationController();
     venueEnabled = venueEnabled && (!$.browser.msie || parseInt($.browser.version) >= 9);
-    this.app.init(salesSegmentsSelection, selected, cartReleaseUrl, venueEnabled, spinnerPictureUrl);
+    this.app.init(salesSegmentsSelection, selected, cartReleaseUrl, carti18nUrl, venueEnabled, spinnerPictureUrl);
     $('body').bind('selectstart', function() { return false; });
 };
 
@@ -234,7 +252,7 @@ cart.proceedToCheckout = function proceedToCheckout(performance, reservationData
     inCartProductList.find("tr").last().addClass("last-child");
     totalAmount.text(cart.util.format_currency(reservationData.cart.total_amount));
 
-    var body = "合計金額 ¥" + reservationData.cart.total_amount + "\n";
+    var body = cart.i18n(["合計金額"]) + " ¥" + reservationData.cart.total_amount + "\n";
     for (var product_index=0; product_index<products.length; product_index++) {
 
         // 席種
@@ -245,7 +263,7 @@ cart.proceedToCheckout = function proceedToCheckout(performance, reservationData
             if (products[product_index].first_product_item_quantity > 1) {
                 body += products[product_index].first_product_item_quantity
             }
-            body += "×" + products[product_index].quantity + "枚\n"
+            body += "×" + products[product_index].quantity + " " + cart.i18n(["枚"]) + "\n"
         } else {
             body += "×" + products[product_index].quantity + "\n"
         }
@@ -301,7 +319,7 @@ cart.showSeparateSeatOrderDialog = function showSeparateSeatOrderDialog(title, p
 cart.ApplicationController = function() {
 };
 
-cart.ApplicationController.prototype.init = function(salesSegmentsSelection, selected, cartReleaseUrl, venueEnabled, spinnerPictureUrl) {
+cart.ApplicationController.prototype.init = function(salesSegmentsSelection, selected, cartReleaseUrl, carti18nUrl, venueEnabled, spinnerPictureUrl) {
     this.performanceSearch = new cart.PerformanceSearch({
         salesSegmentsSelection: salesSegmentsSelection,
         key: selected[1],
@@ -885,27 +903,27 @@ cart.OrderFormPresenter.prototype = {
         this.onEntrustPressed(cart.app.performance.get('order_separate_seats_url'));
     },
     showNoSelectProductMessage: function(){
-        cart.showErrorDialog(null, '商品を1つ以上選択してください', 'btn-close');
+        cart.showErrorDialog(null, cart.i18n(['商品を1つ以上選択してください']), 'btn-close');
         return;
     },
     showTicketCountAboveUpperBoundMessage: function(max_quantity) {
-        cart.showErrorDialog(null, '枚数は合計' + max_quantity + '枚以内で選択してください', 'btn-close');
+        cart.showErrorDialog(null, cart.i18n(['枚数は合計', String(max_quantity), '枚以内で選択してください']), 'btn-close');
         return;
     },
     showTicketCountBelowLowerBoundMessage: function(min_quantity) {
-        cart.showErrorDialog(null, '枚数は合計' + min_quantity + '枚以上で選択してください', 'btn-close');
+        cart.showErrorDialog(null, cart.i18n(['枚数は合計', String(min_quantity), '枚以上で選択してください']), 'btn-close');
         return;
     },
     showProductCountAboveUpperBoundMessage: function(max_quantity) {
-        cart.showErrorDialog(null, '商品個数は合計' + max_quantity + '個以内にしてください', 'btn-close');
+        cart.showErrorDialog(null, cart.i18n(['商品個数は合計', String(max_quantity), '個以内にしてください']), 'btn-close');
         return;
     },
     showProductCountBelowLowerBoundMessage: function(min_quantity) {
-        cart.showErrorDialog(null, '商品個数は合計' + min_quantity + '個以上にしてください', 'btn-close');
+        cart.showErrorDialog(null, cart.i18n(['商品個数は合計',  String(min_quantity), '個以上にしてください']), 'btn-close');
         return;
     },
     showInfeasiblePurchaseMessage: function() {
-        cart.showErrorDialog(null, '申し訳ございませんが、その商品の組み合わせはお選びいただけません', 'btn-close');
+        cart.showErrorDialog(null, cart.i18n(['申し訳ございませんが、その商品の組み合わせはお選びいただけません']), 'btn-close');
         return;
     },
     onBuyPressed: function () {
