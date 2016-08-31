@@ -98,6 +98,27 @@ msgstr "受付日"
 msgid "ステータス"
 msgstr "ステータス"
 
+msgid "無効"
+msgstr "無効"
+
+msgid "発送済"
+msgstr "発送済"
+
+msgid "配送済み"
+msgstr "配送済み"
+
+msgid "払戻済み(中止)"
+msgstr "払戻済み(中止)"
+
+msgid "払戻済み"
+msgstr "払戻済み"
+
+msgid "入金済み"
+msgstr "入金済み"
+
+msgid "未入金"
+msgstr "未入金"
+
 msgid "発送日"
 msgstr "発送日"
 

@@ -84,6 +84,27 @@ msgstr "受理日期"
 msgid "ステータス"
 msgstr "状态"
 
+msgid "無効"
+msgstr "无效"
+
+msgid "発送済"
+msgstr "已发送"
+
+msgid "配送済み"
+msgstr "已发送"
+
+msgid "払戻済み(中止)"
+msgstr "已退款(中止)"
+
+msgid "払戻済み"
+msgstr "已退款"
+
+msgid "入金済み"
+msgstr "已付款"
+
+msgid "未入金"
+msgstr "未付款"
+
 msgid "発送日"
 msgstr "发送日期"
 

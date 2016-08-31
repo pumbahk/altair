@@ -98,6 +98,27 @@ msgstr "Receipt date"
 msgid "ステータス"
 msgstr "Status"
 
+msgid "無効"
+msgstr "Invalid"
+
+msgid "発送済"
+msgstr "Delivered"
+
+msgid "配送済み"
+msgstr "Delivered"
+
+msgid "払戻済み(中止)"
+msgstr "Refunded(cancel)"
+
+msgid "払戻済み"
+msgstr "Refunded"
+
+msgid "入金済み"
+msgstr "Paid"
+
+msgid "未入金"
+msgstr "Unpaid"
+
 msgid "発送日"
 msgstr "Delivered at"
 
