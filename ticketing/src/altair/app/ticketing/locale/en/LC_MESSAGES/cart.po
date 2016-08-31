@@ -582,6 +582,50 @@ msgstr "You can buy ticket for {0} ({1}) during the following period."
 msgid "なお、本公演の他の日付、会場のチケットは下記からお買い求めいただけます。"
 msgstr "For other date, venue information please access the following links."
 
+# errors
+
+msgid "指定されたページが見つかりません"
+msgstr "The link you accessed can not be found."
+
+msgid "なおリンクをクリックされていた場合、ページが削除された、またはURL（ページアドレス）が変更された可能性があります。"
+msgstr "The page might be deleted or the address has been changed."
+
+msgid "ブラウザの再読み込みを行う"
+msgstr "Reload this page with the reload button on your browser."
+
+msgid "入力したURL（ページアドレス）にタイプミスがないか確認する"
+msgstr "Please check if there is any typo in your input."
+
+msgid "ブラウザの「戻る」ボタンを押して前画面からやり直す"
+msgstr "Backward to the previous page and try access again."
+
+msgid "購入完了画面の表示期限を過ぎています"
+msgstr "The completion page has expired."
+
+msgid "購入完了画面は一定時間経過後表示できなくなります。"
+msgstr "The completion page will expired soon when your shopping is done."
+
+msgid "誠にお手数ですが、ご購入内容の確認は、購入完了時に送信される購入完了メールをご覧ください。"
+msgstr "Please check your mail for the purchase infomation."
+
+msgid "支払・引取方法についての詳細は、「<a href=\"/orderreview\">購入履歴確認</a>」にて照会いただけます。"
+msgstr "For information about your payment/delivery, please access <a href=\"/orderreview\">here</a>."
+
+msgid "ご注意"
+msgstr "Notice"
+
+msgid "混雑時などに、正常な購入処理が行われた際にも、まれにこの画面が表示されることがございます。"
+msgstr "This page maybe be shown when our site is busy even your purchase finished successfully."
+
+msgid "そのような状況で、メール受信設定などの理由で購入完了メールの確認ができない場合は、<a href=\"default_contact_url\">こちら</a>にお問い合わせください。"
+msgstr "If you can not receive email from us or not sure about the status of your order, please contact us from <a href=\"{0}\">here</a>."
+
+msgid "セッションがタイムアウトされました。"
+msgstr "Oops, timeout happened to load this page."
+
+msgid "再度、最初からご購入をお試しください。<a href=\"request.context.host_base_url\">トップに戻る</a>"
+msgstr "Please try again from <a href=\"{0}\">here</a>."
+
 # fc_auth
 
 msgid "ログインページ"
