@@ -83,7 +83,7 @@ $(function() {
     <!-- ===== お買い物内容 ===== -->
     <div class="confirmBox">
       <h2 class="heading heading_simple_line">${__(u'お買い物内容')}</h2>
-        <p class="purchase-title">${cart.performance.event.title} ${cart.performance.name} ${h.performance_datetime(cart.performance)}(${__(u'予定')}) ${cart.performance.venue.name}</p>
+        <p class="purchase-title">${cart.performance.event.title} ${cart.performance.name} ${h.performance_datetime(cart.performance, i18n)}(${__(u'予定')}) ${cart.performance.venue.name}</p>
         <div class="confirmBoxInner">
         <!-- ===== purchase-wrap ===== -->
             <table id="contentsOfShopping" summary="${__(u'席種、金額などのお買い物内容')}">

@@ -22,7 +22,7 @@
     <div class="purchase-wrap">
       <div class="purchase-title">
         <p>${order.performance.event.title}</p>
-        <p>${h.performance_datetime(order.performance)}(予定) ${order.performance.venue.name}</p>
+        <p>${h.performance_datetime(order.performance, i18n)}(予定) ${order.performance.venue.name}</p>
       </div>
       <table class="purchase-table" summary="${__(u'席種、金額などのお買い物内容')}">
         <tbody>

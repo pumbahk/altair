@@ -47,10 +47,15 @@ def form_log(request, message):
 
 cart_timeout = api.get_cart_expire_time
 
-def create_date_label(start, end):
-    only_start_format = u"{start.year}年{start.month}月{start.day}日"
-    range_format = u"{start.year}年{start.month}月{start.day}日 - {end.year}年{end.month}月{end.day}日"
-    same_year_format = u"{start.year}年{start.month}月{start.day}日 - {end.month}月{end.day}日"
+def create_date_label(start, end, i18n=False):
+    if i18n:
+        only_start_format = u"{start.year}-{start.month}-{start.day}"
+        range_format = u"{start.year}-{start.month}-{start.day} ~ {end.year}-{end.month}-{end.day}"
+        same_year_format = u"{start.year}-{start.month}-{start.day} ~ {end.month}-{end.day}"
+    else:
+        only_start_format = u"{start.year}年{start.month}月{start.day}日"
+        range_format = u"{start.year}年{start.month}月{start.day}日 - {end.year}年{end.month}月{end.day}日"
+        same_year_format = u"{start.year}年{start.month}月{start.day}日 - {end.month}月{end.day}日"
 
     date_format = only_start_format
 
@@ -63,12 +68,21 @@ def create_date_label(start, end):
     return date_format.format(start=start, end=end)
 
 WEEK =[u"月", u"火", u"水", u"木", u"金", u"土", u"日"]
-def create_time_label(start, end, disp_time=True):
-    only_start_format = u"{start.year}年{start.month}月{start.day}日({start_week})"
+def create_time_label(start, end, disp_time=True, i18n=False):
     if disp_time:
-        only_start_format = u"{start.year}年{start.month}月{start.day}日({start_week}) {start:%H:%M}"
-    range_format = u"{start.year}年{start.month}月{start.day}日({start_week}) - {end.year}年{end.month}月{end.day}日({end_week})"
-    same_year_format = u"{start.year}年{start.month}月{start.day}日({start_week}) - {end.month}月{end.day}日({end_week})"
+        start_time = " {start:%H:%M}"
+    else:
+        start_time = ""
+    if i18n:
+        WEEK =[u"Mon.", u"Tue.", u"Wed.", u"Thu.", u"Fri.", u"Sat.", u"Sun."]
+        only_start_format = u"{start.year}-{start.month}-{start.day}({start_week})" + start_time
+        range_format = u"{start.year}-{start.month}-{start.day}({start_week}) ~ {end.year}-{end.month}-{end.day}({end_week})"
+        same_year_format = u"{start.year}-{start.month}-{start.day}({start_week}) ~ {end.month}-{end.day}({end_week})"
+    else:
+        WEEK =[u"月", u"火", u"水", u"木", u"金", u"土", u"日"]
+        only_start_format = u"{start.year}年{start.month}月{start.day}日({start_week})" + start_time
+        range_format = u"{start.year}年{start.month}月{start.day}b日({start_week}) - {end.year}年{end.month}月{end.day}日({end_week})"
+        same_year_format = u"{start.year}年{start.month}月{start.day}c日({start_week}) - {end.month}月{end.day}日({end_week})"
 
     date_format = only_start_format
 
@@ -92,13 +106,13 @@ def create_time_only_label(start, end):
 
     return time_format.format(start=start)
 
-def performance_date(performance):
-    return create_date_label(performance.start_on, performance.end_on)
+def performance_date(performance, i18n=False):
+    return create_date_label(performance.start_on, performance.end_on, i18n)
 
-def performance_datetime(performance):
+def performance_datetime(performance, i18n=False):
     """Return date and time of the performance.
     """
-    return create_time_label(performance.start_on, performance.end_on)
+    return create_time_label(performance.start_on, performance.end_on, i18n)
 
 def performance_end_date(performance):
     s = performance.start_on

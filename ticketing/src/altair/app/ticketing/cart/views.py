@@ -340,7 +340,7 @@ def jump_maintenance_page_for_trouble(organization):
     #if organization is None or organization.code not in ['RT', 'ZZ', 'KE', 'KT', 'JC', 'PC', 'TH', 'YT', 'OG', 'TC', 'SC', '89', 'IB', 'NH', 'BT', 'VV', 'TS', 'KH', 'TG', 'CR', 'VS', 'LS', 'FC', 'BA', 'RE', 'VK', 'RK']:
     #    raise HTTPFound('/maintenance.html')
 
-def create_event_dict(view, performance_id, sales_segments):
+def create_event_dict(view, performance_id, sales_segments, i18n=False):
     try:
         performance_id = long(performance_id)
     except (ValueError, TypeError):
@@ -362,8 +362,12 @@ def create_event_dict(view, performance_id, sales_segments):
         sales_start_on = u''
         sales_end_on = u''
         if sales_segment:
-            sales_start_on = unicode(sales_segment.start_at.strftime("%Y年%m月%d日 %H:%M").decode("utf-8"))
-            sales_end_on = unicode(sales_segment.end_at.strftime("%Y年%m月%d日 %H:%M").decode("utf-8"))
+            if i18n:
+                sales_start_on = unicode(sales_segment.start_at.strftime("%Y-%m-%d %H:%M").decode("utf-8"))
+                sales_end_on = unicode(sales_segment.end_at.strftime("%Y-%m-%d %H:%M").decode("utf-8"))
+            else:
+                sales_start_on = unicode(sales_segment.start_at.strftime("%Y年%m月%d日 %H:%M").decode("utf-8"))
+                sales_end_on = unicode(sales_segment.end_at.strftime("%Y年%m月%d日 %H:%M").decode("utf-8"))
 
         return dict(
             id=view.context.event.id,
@@ -376,13 +380,20 @@ def create_event_dict(view, performance_id, sales_segments):
             product=view.context.event.products
             )
 
+    if i18n:
+        sales_start_on=unicode(view.context.event.sales_start_on.strftime("%Y-%m-%d %H:%M").decode("utf-8"))
+        sales_end_on=unicode(view.context.event.sales_end_on.strftime("%Y-%m-%d %H:%M").decode("utf-8"))
+    else:
+        sales_start_on=unicode(view.context.event.sales_start_on.strftime("%Y年%m月%d日 %H:%M").decode("utf-8"))
+        sales_end_on=unicode(view.context.event.sales_end_on.strftime("%Y年%m月%d日 %H:%M").decode("utf-8"))
+
     return dict(
         id=view.context.event.id,
         code=view.context.event.code,
         title=view.context.event.title,
         abbreviated_title=view.context.event.abbreviated_title,
-        sales_start_on=unicode(view.context.event.sales_start_on.strftime("%Y年%m月%d日 %H:%M").decode("utf-8")),
-        sales_end_on=unicode(view.context.event.sales_end_on.strftime("%Y年%m月%d日 %H:%M").decode("utf-8")),
+        sales_start_on=sales_start_on,
+        sales_end_on=sales_end_on,
         venues=set(p.venue.name for p in view.context.event.performances if p.public==True),
         product=view.context.event.products
         )
@@ -451,7 +462,7 @@ class IndexView(IndexViewMixin):
         set_rendered_event(self.request, self.context.event)
 
         return dict(
-            event=create_event_dict(self, performance_id, sales_segments),
+            event=create_event_dict(self, performance_id, sales_segments, self.request.organization.setting.i18n),
             dates=sorted(list(set([p.start_on.strftime("%Y-%m-%d %H:%M") for p in self.context.event.performances]))),
             cart_release_url=self.request.route_url('cart.release'),
             cart_i18n_url=self.request.route_url('cart.i18n'),
@@ -488,7 +499,7 @@ class IndexView(IndexViewMixin):
         selected_sales_segment = sales_segments[0]
 
         return dict(
-            event=create_event_dict(self, self.request.matchdict['performance_id'], sales_segments),
+            event=create_event_dict(self, self.request.matchdict['performance_id'], sales_segments, self.request.organization.setting.i18n),
             dates=sorted(list(set([p.start_on.strftime("%Y-%m-%d %H:%M") for p in self.context.event.performances]))),
             cart_release_url=self.request.route_url('cart.release'),
             cart_i18n_url=self.request.route_url('cart.i18n'),
@@ -576,7 +587,7 @@ class IndexAjaxView(object):
                 ],
             event_name=sales_segment.performance.event.title,
             performance_name=sales_segment.performance.name,
-            performance_start=h.performance_date(sales_segment.performance),
+            performance_start=h.performance_date(sales_segment.performance, self.request.organization.setting.i18n),
             performance_id=sales_segment.performance.id,
             sales_segment_id=sales_segment.id,
             order_url=self.request.route_url("cart.order", sales_segment_id=sales_segment.id),
@@ -1391,7 +1402,8 @@ class ConfirmView(object):
             membershipinfo = self.context.membershipinfo,
             extra_form_data=extra_form_data,
             accountno=acc.account_number if acc else "",
-            custom_locale_negotiator=custom_locale_negotiator(self.request) if self.request.organization.setting.i18n else ""
+            custom_locale_negotiator=custom_locale_negotiator(self.request) if self.request.organization.setting.i18n else "",
+            i18n=self.request.organization.setting.i18n,
         )
 
 # 完了画面の処理の『継続』 (http://ja.wikipedia.org/wiki/%E7%B6%99%E7%B6%9A)
@@ -1504,7 +1516,7 @@ class CompleteView(object):
             raise CompletionPageNotRenderered()
         self.request.response.expires = datetime.utcnow() + timedelta(seconds=3600) # XXX
         self.request.response.cache_control = 'max-age=3600'
-        return dict(order=order)
+        return dict(order=order, i18n=self.request.organization.setting.i18n)
 
 
 def is_kt_organization(out_term_exception, request):
