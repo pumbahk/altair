@@ -32,6 +32,9 @@ msgstr "Re-select seat and number"
 msgid "購入する"
 msgstr "Purchase"
 
+msgid "数量"
+msgstr "Quantiry"
+
 msgid "上記座席を確保しました。{0}分以内に購入を完了してください"
 msgstr "It was to ensure the above-mentioned seat.{0} minute complete the purchase, pleas"
 
@@ -300,6 +303,18 @@ msgstr "Please check your input."
 
 msgid "例: 1030001"
 msgstr "Example: 1030001"
+
+msgid "例: 山田"
+msgstr "Example: Smith"
+
+msgid "例: 太郎"
+msgstr "Example: John"
+
+msgid "例: ヤマダ"
+msgstr " "
+
+msgid "例: タロウ"
+msgstr " "
 
 msgid "(半角英数7ケタ)"
 msgstr "Alphanumeric 7-digit"

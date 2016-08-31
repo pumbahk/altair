@@ -32,7 +32,7 @@ msgstr "一般用户从这里开始"
 msgid "抽選の方のチケット確認はこちらから"
 msgstr "抽签用户从这里开始"
 
-msgid "次へすすむ"
+msgid "次に進む"
 msgstr "下一步"
 
 msgid "会員の方はこちらから"

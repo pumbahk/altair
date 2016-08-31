@@ -46,7 +46,7 @@ msgstr "Ticket confirmation of the general public from here"
 msgid "抽選の方のチケット確認はこちらから"
 msgstr "Ticket confirmation towards the lottery from here"
 
-msgid "次へすすむ"
+msgid "次に進む"
 msgstr "Go to next"
 
 msgid "会員の方はこちらから"

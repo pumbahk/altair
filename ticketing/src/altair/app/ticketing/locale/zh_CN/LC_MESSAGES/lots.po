@@ -250,6 +250,18 @@ msgstr "建筑物名"
 msgid "例: 1030001"
 msgstr "例: 1030001"
 
+msgid "例: 山田"
+msgstr "例: 王"
+
+msgid "例: 太郎"
+msgstr "例: 小明"
+
+msgid "例: ヤマダ"
+msgstr " "
+
+msgid "例: タロウ"
+msgstr " "
+
 msgid "例: 東京都"
 msgstr "例: 北京"
 
