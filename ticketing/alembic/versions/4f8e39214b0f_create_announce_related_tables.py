@@ -1,14 +1,14 @@
 """Create Announce related tables
 
 Revision ID: 4f8e39214b0f
-Revises: 209707809135
+Revises: 4fdd3d5caa94
 Create Date: 2016-06-06 14:19:49.817439
 
 """
 
 # revision identifiers, used by Alembic.
 revision = '4f8e39214b0f'
-down_revision = '209707809135'
+down_revision = '4fdd3d5caa94'
 
 from alembic import op
 import sqlalchemy as sa
