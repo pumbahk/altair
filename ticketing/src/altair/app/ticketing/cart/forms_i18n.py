@@ -118,7 +118,7 @@ class ClientFormFactory(object):
                 label=_(u"郵便番号"),
                 filters=[ignore_space_hyphen, NFKC],
                 validators=[
-                    Optional(),
+                    Required(_(u"入力してください")),
                     Regexp(r'^\d{7}$', message=_(u'-(ハイフン)を抜いた半角数字のみを入力してください')),
                     Length(min=7, max=7, message=_(u'確認してください')),
                     ],
