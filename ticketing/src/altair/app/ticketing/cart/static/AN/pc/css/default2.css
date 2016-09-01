@@ -163,6 +163,7 @@ acronym, abbr {
 	border: 3px solid #ccc;
 }
 .customer-table th {
+	width: 33%;
 	padding: 15px 20px 15px 10px;
 	border: 1px solid #ccc;
 	background: #fbfbfb none repeat scroll 0 0;
@@ -218,9 +219,9 @@ body {
 
 .cancel-button.btn-redo {
 	display: inline-block;
-	width: 35%;
+	width: 20%;
 	height: auto;
-	padding: 8px 5px 6px;
+	padding: 8px 20px 6px;
 	background: #999 none repeat scroll 0 0;
 	color: #fff;
 	font-size: 14px;
@@ -232,7 +233,7 @@ body {
 }
 .ok-button.btn-buy {
 	display: inline-block;
-	width: auto;
+	width: 20%;
 	height: auto;
 	padding: 8px 20px 6px;
     background: #ed4a27 none repeat scroll 0 0;

@@ -23,12 +23,17 @@ p.cartNickname{
 .btn-close {
   display: inline-block;
   width: 142px;
-  background: #c00 none repeat scroll 0 0;
+  background: #ed4a27 none repeat scroll 0 0;
   border: none;
   padding: 10px 5px 8px;
+  color: #fff;
+  font-weight: bold;
   font-size: 14px;
   line-height: -1px;
   cursor: pointer;
+}
+.btn-close:hover {
+	opacity: 0.8;
 }
 
 /*.btn-buy {

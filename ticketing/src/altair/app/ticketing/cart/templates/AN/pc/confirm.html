@@ -183,7 +183,6 @@ $(function() {
     <!-- ===== 購入者情報 ===== -->
     <div class="confirmBox">
       <h2 class="heading heading_simple_line">${__(u'購入者情報')}</h2>
-        <div class="confirmBoxInner">
         <!-- ===== customerBox ===== -->
             <table class="customer-table">
                 <tbody>
@@ -219,7 +218,6 @@ $(function() {
                     </tr>
                 </tbody>
             </table>
-        </div>
     </div><!-- ===== / 購入者情報 ===== -->
 
 
@@ -235,7 +233,7 @@ $(function() {
             <input type="checkbox" checked="checked" name="mailmagazine" id="mailmagazine-${mailmagazine.id}" value="${mailmagazine.id}"${subscribed and u' disabled="disabled"' or u''|n} />
             <label for="mailmagazine-${mailmagazine.id}">${mailmagazine.name}</label>
             </p>
-            <p class="fs12">${mailmagazine.description|n}</p>
+            <p class="fs8">${mailmagazine.description|n}</p>
             % endfor
         </div>
     </div>
