@@ -1,14 +1,14 @@
 """add i18n column to OrganizationSetting
 
 Revision ID: 4a99f47c1bd4
-Revises: 209707809135
+Revises: 4fdd3d5caa94
 Create Date: 2016-05-25 14:34:30.786634
 
 """
 
 # revision identifiers, used by Alembic.
 revision = '4a99f47c1bd4'
-down_revision = '209707809135'
+down_revision = '4fdd3d5caa94'
 
 from alembic import op
 import sqlalchemy as sa
