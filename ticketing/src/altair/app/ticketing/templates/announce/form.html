@@ -81,7 +81,7 @@
 <h3>告知メール ${ u'編集' if id is not None else u'登録' }</h3>
 
 <div class="well">
-  <form class="form-horizontal" method="POST">
+  <form class="form-horizontal" method="POST" id="form-announce">
     <fieldset>
       ${ch.form_item(form.subject, class_="span12")}
       ${ch.form_item(form.message, class_="span12", style="height: 300px;", readonly="readonly")}
@@ -124,6 +124,8 @@
   % else:
    <input type="submit" class="btn" value="登録"/>
   % endif
+
+   <input type="button" class="btn" value="プレビュー" id="preview" />
 
   </form>
 </div>
@@ -173,7 +175,11 @@
                   if($('#word_ids_autofill').val() == 'YES') {
                     if(0 < r.pages.length) {
                       var url = r.base_url.replace(/\/$/, '') + '/' + r.pages[0].path.replace(/^\//, '');
-                      $('textarea[name="message"]').val($('textarea[name="message"]').val().replace(/@@url@@/, url));
+
+                      // @@url@@は使わない
+                      // $('textarea[name="message"]').val($('textarea[name="message"]').val().replace(/@@url@@/, url));
+                      var name = $('input[type="hidden"][value="url"]');
+                      $('input[name="'+name.prop('name').replace(/-key/, '-value')+'"]').val(url).css({ width: 400 });
                     }
                   }
                 }
@@ -209,4 +215,26 @@ $('#word_selection').on('change', 'input', function() {
   });
 });
 })();
+
+$('#preview').click(function() {
+  var f = $('#form-announce').get(0);
+  var html = $('*[name="message"]', f).val();
+
+  var data = { };
+  var i = 0;
+  while(f["parameters-"+i+"-key"]) {
+    data[f["parameters-"+i+"-key"].value] = f["parameters-"+i+"-value"].value;
+    i++;
+  }
+
+  $.ajax({
+    url: "${request.route_path('announce.macro')}",
+    type: "POST",
+    contentType: "application/json; charset=utf-8",
+    data: JSON.stringify({ template: html, data: data })
+  }).done(function(r) {
+    var w = window.open();
+    w.document.write(r.result);
+  });
+});
 </script>

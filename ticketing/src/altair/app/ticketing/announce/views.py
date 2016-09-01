@@ -2,7 +2,7 @@
 
 import logging
 import webhelpers.paginate as paginate
-from collections import namedtuple
+from collections import namedtuple, Iterable
 
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
@@ -18,51 +18,13 @@ from .forms import AnnouncementForm, ParameterForm
 from altair.sqlahelper import get_db_session
 from altair.app.ticketing.core.utils import PageURL_WebOb_Ex
 from datetime import datetime
-from altair.app.ticketing.helpers.base import date_time_helper
 
-import re
+from .utils import MacroEngine
 
 logger = logging.getLogger(__name__)
 
 Parameter = namedtuple('Parameter', ['key', 'value'])
 
-class MacroEngine:
-    def build(self, template, data):
-        result = [ ]
-        for m in re.finditer(r'(.+?)(?:{{([0-9a-z_]+(?:\.[0-9a-z_]+)*)}}|\Z)', template, re.MULTILINE | re.DOTALL):
-            result.append(m.group(1))
-            if m.group(2) is not None and 0 < len(m.group(2)):
-                r = self._macro(m.group(2), data)
-                if r is None:
-                    # 置換失敗時にマクロを残す
-                    # これだと、結果がNoneだった場合と区別がつかない
-                    result.append("{{%s}}" % m.group(2))
-                else:
-                    result.append(unicode(r))
-        return "".join(result)
-
-    def fields(self, template):
-        result = set()
-        for m in re.finditer(r'(.+?)(?:{{([0-9a-z_]+(?:\.[0-9a-z_]+)*)}}|\Z)', template, re.MULTILINE | re.DOTALL):
-            if m.group(2) is not None:
-                result.add(m.group(2))
-        return sorted(result)
-
-    def _macro(self, name, data):
-        names = name.split(".")
-        name = names.pop(0)
-
-        if hasattr(data, name):
-            r = getattr(data, name)
-        elif name in data:
-            r = data[name]
-        else:
-            return
-
-        if len(names) == 0:
-            return r
-        else:
-            return self._macro(".".join(names), r)
 
 @view_defaults(decorator=with_bootstrap, permission='event_editor')
 class Announce(BaseView):
@@ -164,13 +126,17 @@ class Announce(BaseView):
                         result = min(ssg_query.all(), key=lambda x:x.SalesSegment.start_at)
                     if result:
                         ssg = result.SalesSegmentGroup
-                    data = dict(event=event, sales_segment=dict(
-                        name=ssg.name if ssg else None,
-                        start_at=date_time_helper.datetime(ssg.start_at) if ssg else None))
+                    data = dict(
+                        event=event,
+                        sales_segment=dict(
+                            name=ssg.name if ssg else None,
+                            start_at=ssg.start_at if ssg else None)
+                    )
                     f.subject.process_data(engine.build(template.subject, data))
                     #f.message.process_data(engine.build(template.message, data))
                     f.message.process_data(template.message)
 
+                    # テンプレートからプレースホルダーを抽出する
                     for v in engine.fields(template.message):
                         f.parameters.append_entry(Parameter(v, engine._macro(v, data)))
 
@@ -238,3 +204,15 @@ class Announce(BaseView):
         except Exception as e:
             logger.warn(e)
             return dict()
+
+    @view_config(route_name='announce.macro', request_method='POST', renderer='json')
+    def render(self):
+        """templateとdataを受け取ってmacro engineでrenderする"""
+        req = self.request.json_body
+
+        try:
+            engine = MacroEngine()
+            return dict(result=engine.build(req["template"], req["data"], cache_mode=True))
+
+        except Exception as e:
+            return dict(error=e.message)
