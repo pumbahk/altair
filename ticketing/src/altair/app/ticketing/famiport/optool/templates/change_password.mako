@@ -8,6 +8,7 @@
 
 <form id="change-password-form" class="form-horizontal" action="${request.route_url('change_password')}" method="POST">
     <h3 class="form-heading">パスワード変更</h3>
+    <p class="bg-danger">パスワードは数字と英文字の両方を含む7文字以上で設定ください。</p>
     %for field in form:
     <div class="form-group has-feedback">
         %if field.widget.input_type != 'hidden':

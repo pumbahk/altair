@@ -235,16 +235,24 @@ class FamiPortPasswordReminder(object):
         if form.validate():
             user = lookup_user_by_username(request=self.request, user_name=form.user_name.data)
 
-            aes = AESEncryptor()
-            token = aes.get_token(user.id)
-            html = self._get_html(token)
-            settings = self.request.registry.settings
-            recipient = user.email
-            subject = u'FamiPort OPTOOLのアカウント復活について'
+            if user:
+                aes = AESEncryptor()
+                token = aes.get_token(user.id)
+                html = self._get_html(token)
+                settings = self.request.registry.settings
+                recipient = user.email
+                subject = u'FamiPort OPTOOLのアカウント復活について'
 
-            if sendmail(settings, recipient, subject, html):
-                self.request.session.flash(u'パスワードの更新かアカウントの復活についてのご連絡はご登録いただいたEmailアドレスに送りました。ご確認ください。')
-                return HTTPFound(self.request.route_path('login'))
+                try:
+                    sendmail(settings, recipient, subject, html)
+                    self.request.session.flash(u'パスワードの更新かアカウントの復活についてのご連絡はご登録いただいたEmailアドレスに送りました。ご確認ください。')
+                    return HTTPFound(self.request.route_path('login'))
+                except Exception, e:
+                    logger.error(
+                        "password reminder failed. user_id = {}, error: {}({})".format(user.id, type(e), e.message))
+                    self.request.session.flash(u'メールの送信が失敗しました。システム管理者へご連絡下さい。')
+            else:
+                self.request.session.flash(u'アカウントが見つかりませんでした。入力値をご確認ください。')
 
         errors_set = form.errors.values()
         for errors in errors_set:
