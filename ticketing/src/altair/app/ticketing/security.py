@@ -205,17 +205,14 @@ def get_display_name(request, plugin_name):
 
 @implementer(IRakutenOpenIDURLBuilder)
 class RakutenAuthURLBuilder(object):
-    def __init__(self, proxy_url_pattern, **kwargs):
+    def __init__(self, proxy_url_pattern=None, **kwargs):
         self.proxy_url_pattern = proxy_url_pattern
 
     def extra_verify_url_exists(self, request):
         return True
 
     def build_base_url(self, request):
-        subdomain = request.host.split('.', 1)[0]
-        return self.proxy_url_pattern.format(
-            subdomain=subdomain
-            )
+        return request.host_url
 
     def build_return_to_url(self, request):
         return urljoin(self.build_base_url(request).rstrip('/') + '/', request.route_path('rakuten_auth.verify').lstrip('/'))

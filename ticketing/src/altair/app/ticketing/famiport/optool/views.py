@@ -2,12 +2,14 @@
 
 import logging
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 from pyramid.view import view_defaults, view_config
 from pyramid.httpexceptions import HTTPFound
 from pyramid.security import remember, forget
 from pyramid.response import Response
 from pyramid.decorator import reify
+from pyramid.renderers import render_to_response
+from webob.multidict import MultiDict
 from webhelpers import paginate
 from sqlalchemy.orm.exc import NoResultFound
 from altair.sqlahelper import get_db_session
@@ -29,7 +31,10 @@ from .api import (
     lookup_performance_by_searchform_data,
     lookup_refund_performance_by_searchform_data,
     lookup_receipt_by_searchform_data,
-    search_refund_ticket_by
+    search_refund_ticket_by,
+    encrypt_password,
+    lookup_user_by_id,
+    lookup_user_by_username
 )
 from .forms import (
     LoginForm,
@@ -37,16 +42,24 @@ from .forms import (
     SearchReceiptForm,
     RebookOrderForm,
     SearchRefundPerformanceForm,
-    RefundTicketSearchForm
+    RefundTicketSearchForm,
+    ChangePassWordForm,
+    PasswordReminderForm
 )
-from .utils import ValidateUtils
+from .utils import ValidateUtils, AESEncryptor, sendmail
 from .helpers import (
     ViewHelpers,
     get_paginator,
     RefundTicketSearchHelper,
 )
 
+from .models import FamiPortOperator
+
 logger = logging.getLogger(__name__)
+
+def flash_error_message(request, errors):
+    for error in errors:
+        request.session.flash(error)
 
 class FamiPortOpToolTopView(object):
     def __init__(self, context, request):
@@ -65,28 +78,52 @@ class FamiPortOpLoginView(object):
 
     @view_config(route_name='login', renderer='login.mako')
     def get(self):
-        return_url = self.request.params.get('return_url', '')
+        return_url = self.request.params.get('return_url', self.request.route_path('top'))
+
+        # loginされてる場合はreturn_urlに移動する
+        if self.request.authenticated_userid:
+            return HTTPFound(return_url)
+
         return dict(form=LoginForm(), return_url=return_url)
-        
+
     @view_config(route_name='login', request_method='POST', renderer='login.mako')
     def post(self):
         return_url = self.request.params.get('return_url')
-        if not return_url:
-            return_url = self.request.route_path('top')
         form = LoginForm(formdata=self.request.POST)
         if not form.validate():
+            flash_error_message(self.request, form.errors.values())
+            form.password.data = None
             return dict(form=form, return_url=return_url)
+
         user = lookup_user_by_credentials(
             self.request,
             form.user_name.data,
             form.password.data
             )
-        if user is None:
-            self.request.session.flash(u'ユーザ名とパスワードの組み合わせが誤っています')
+
+        if not user:
+            self.request.session.flash(u'ユーザ名とパスワードの組み合わせが誤っています。')
+            form.password.data = None
             return dict(form=form, return_url=return_url)
 
-        remember(self.request, user.id)
-        return HTTPFound(return_url)
+        if user.is_deactivated:
+            self.request.session.flash(u'当アカウントは現在停止されております。')
+            self.request.session.flash(u'ご利用したい場合はログインフォーム下のリマインダーリンクで復活してください。')
+            form.password.data = None
+            return dict(form=form, return_url=return_url)
+        elif user.is_first or user.is_expired:
+            remember(self.request, user.id)
+            # パスワードの変更が必要なアカウントの場合は強制にログアウトする
+            self.request.session['need_logout'] = True
+            if user.is_first:
+                self.request.session.flash(u'初めてのログインのため、パスワードの変更をお願いいたします。')
+            elif user.is_expired:
+                self.request.session.flash(u'パスワードの有効期限が切れております。新パスワードへ変更して下さい。')
+            return HTTPFound(location=self.request.route_url('change_password'))
+        else :
+            remember(self.request, user.id)
+            return HTTPFound(return_url)
+
 
 class FamiPortOpLogoutView(object):
     def __init__(self, context, request):
@@ -97,6 +134,131 @@ class FamiPortOpLogoutView(object):
     def get(self):
         forget(self.request)
         return HTTPFound(self.request.route_path('login'))
+
+class FamiPortChangePassWord(object):
+    def __init__(self, context, request):
+        self.context = context
+        self.request = request
+
+    def _reset_password(self, form):
+        form.new_password.data = None
+        form.new_password_confirm.data = None
+        return form
+
+    @view_config(route_name='change_password', renderer='change_password.mako', request_method='GET')
+    def change_password_get(self):
+
+        token = self.request.GET.get('token')
+        if token:
+            # パスワードリマインダーのURLでアクセスする場合は強制にログアウトする
+            forget(self.request)
+            # TokenでユーザIDを取得
+            user_id = AESEncryptor.get_id_from_token(token)
+        else:
+            # 認証した情報からユーザIDを取得
+            user_id = self.request.authenticated_userid
+            # パスワードの変更が必要なアカウントの場合は強制にログアウトする
+            if self.request.session.get('need_logout'):
+                self.request.session.pop('need_logout')
+                forget(self.request)
+
+        # 以上二つ方法しかで取得したユーザIDを認めない。
+        if not user_id:
+            if token:
+                self.request.session.flash(u'パスワード再発行用のURLの有効期限が切れています。パスワードリマインダーで再発行して下さい。')
+            else:
+                if not self.request.GET:
+                    self.request.session.flash(u'パスワードの変更はログインまたはパスワードリマインダーでアクセスしてください。')
+                else:
+                    self.request.session.flash(u'予期せぬエラーが発生しました。システム管理者へご連絡下さい。')
+                logger.error(u'not correct format of the token or accessing without login. user_id:{0}, authenticated_id:{1}, GET:{2}'\
+                             .format(user_id,
+                                     self.request.authenticated_userid,
+                                     self.request.GET))
+            return HTTPFound(self.request.route_path('login'))
+        return dict(form=ChangePassWordForm(formdata=MultiDict(user_id=user_id)))
+
+    @view_config(route_name='change_password', renderer='change_password.mako', request_method='POST')
+    def change_password_post(self):
+        form = ChangePassWordForm(formdata=self.request.POST)
+        if form.validate():
+            session = get_db_session(self.request, 'famiport')
+
+            try:
+                user = session.query(FamiPortOperator).filter(FamiPortOperator.id == form.user_id.data).one()
+
+                if user.is_matched_password(form.new_password.data):
+                    self.request.session.flash(u'現在のパスワードと同じものには変更できません。')
+                else:
+                    new_encrypted_password = encrypt_password(form.new_password.data)
+                    user.password = new_encrypted_password
+
+                    if not user.active:
+                        user.active = True
+                    session.commit()
+                    self.request.session.flash(u'パスワードを変更しました。')
+                    return HTTPFound(self.request.route_url('top'))
+
+            except NoResultFound:
+                self.request.session.flash(u'アカウントが見つかりませんでした。入力値をご確認ください。')
+
+        form = self._reset_password(form)
+        errors_set = form.errors.values()
+        for errors in errors_set:
+            flash_error_message(self.request, errors)
+
+        return dict(form=form)
+
+class FamiPortPasswordReminder(object):
+    def __init__(self, context, request):
+        self.context = context
+        self.request = request
+
+    def _get_reminder_url(self, token):
+        base_url = self.request.route_url('change_password')
+        params = u'token={}'.format(token)
+        return u'?'.join([base_url, params])
+
+    def _get_html(self, token):
+        reminder_url = self._get_reminder_url(token)
+        render_param = dict(reminder_url=reminder_url)
+        html = render_to_response('altair.app.ticketing:famiport/optool/templates/_password_reminder_mail_content.mako', render_param,request=self.request)
+        return html
+
+    @view_config(route_name='password_reminder', renderer='password_reminder.mako', request_method='GET')
+    def password_reminder_get(self):
+        return dict(form=PasswordReminderForm())
+
+    @view_config(route_name='password_reminder', renderer='password_reminder.mako', request_method='POST')
+    def password_reminder_post(self):
+        form = PasswordReminderForm(self.request.POST)
+        if form.validate():
+            user = lookup_user_by_username(request=self.request, user_name=form.user_name.data)
+
+            if user:
+                aes = AESEncryptor()
+                token = aes.get_token(user.id)
+                html = self._get_html(token)
+                settings = self.request.registry.settings
+                recipient = user.email
+                subject = u'FamiPort OPTOOLのアカウント復活について'
+
+                try:
+                    sendmail(settings, recipient, subject, html)
+                    self.request.session.flash(u'パスワードの更新かアカウントの復活についてのご連絡はご登録いただいたEmailアドレスに送りました。ご確認ください。')
+                    return HTTPFound(self.request.route_path('login'))
+                except Exception, e:
+                    logger.error(
+                        "password reminder failed. user_id = {}, error: {}({})".format(user.id, type(e), e.message))
+                    self.request.session.flash(u'メールの送信が失敗しました。システム管理者へご連絡下さい。')
+            else:
+                self.request.session.flash(u'アカウントが見つかりませんでした。入力値をご確認ください。')
+
+        errors_set = form.errors.values()
+        for errors in errors_set:
+            flash_error_message(self.request, errors)
+        return dict(form=form)
+
 
 class FamiPortOpToolExampleView(object):
     def __init__(self, context, request):

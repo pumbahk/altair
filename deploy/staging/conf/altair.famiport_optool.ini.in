@@ -6,7 +6,7 @@ altair.sqlahelper.sessions.famiport_slave.url = ${altair:famiport.db_url.slave}
 
 [app:famiport]
 use = config:%(here)s/../../baseconf/common.ini#famiport_optool
-pyramid.includes = pyramid_tm pyramid_fanstatic pyramid_mailer
+pyramid.includes = pyramid_tm pyramid_fanstatic pyramid_mailer altair.findable_label
 
 get altair.sqlahelper.sessions.famiport.url = altair.sqlahelper.sessions.famiport.url
 get altair.sqlahelper.sessions.famiport_slave.url = altair.sqlahelper.sessions.famiport_slave.url

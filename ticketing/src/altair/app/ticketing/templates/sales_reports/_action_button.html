@@ -1,4 +1,4 @@
-<%page args="order=None, event=None, performance=None" />
+<%page args="order=None, event=None, performance=None, split=False" />
 <%namespace file="/common/helpers.html" name="ch" />
 <%namespace file="/common/modal.html" import="delete_modal" />
 
@@ -23,12 +23,23 @@
     ),
     'delete':dict(
       label=u'削除',
+      attrs={'class':'btn-danger'},
       url='javascript:delete_report_setting(get_selected_report_setting_id());',
       icon='icon-minus',
     ),
   }
   order = iter(order or ['new', 'edit', 'delete'])
 %>
-${HH.action_button(actions, order)}
+% if split:
+  <div style="float: left; margin-right: 10px;">
+  % for item in order:
+      ${HH.action_button(actions, iter([item]), vertical=False, extra_classes=[u'btn-small'] if small else [])}
+  % endfor
+  </div>
+% else:
+    <div style="float: left;">
+      ${HH.action_button(actions, order, vertical=False, extra_classes=[u'btn-small'] if small else [])}
+    </div>
+% endif
 
 ${delete_modal()}

@@ -4,16 +4,15 @@
 <table class="table table-striped table-bordered">
   <thead>
   <tr>
-    <th class="span1"></th>
     <th class="span1">${ch.sortable(form.id)}</th>
     <th>${ch.sortable(form.account_type)}</th>
     <th>${ch.sortable(form.name)}</th>
+    <th></th>
   </tr>
   </thead>
   <tbody>
   % for account in accounts.items:
   <tr id="account-${account.id}">
-    <td><input name="account_id" type="radio" value="${account.id}" /></td>
     <td><div name="id">${account.id}</div></td>
     <td>${account.account_type_label}</td>
     <td>
@@ -23,16 +22,11 @@
       <div name="name">${account.name}</div>
     % endif
     </td>
+    <td style="width: 1%; white-space: nowrap;">
+      <%include file="/accounts/_action_button.html" args="account=account, order=['edit', 'delete'], small=True, split=True" />
+    </td>
   </tr>
   % endfor
   </tbody>
-  <script type="text/javascript">
-var get_selected_account_id;
-(function (table) {
-  get_selected_account_id = function get_selected_account_id() {
-    return table.find(':radio:checked').val();
-  };
-})($('script:last').parent());
-</script>
 </table>
 ${ch.pager(accounts)}
