@@ -380,6 +380,60 @@ msgstr "您的总额不适用所选支付方式。请选择其他支付方法。
 msgid "現在の予約内容では選択された決済 / 引取方法で購入を進めることができません。他の決済・引取方法を選択してください。"
 msgstr "所选支付・领取方式不适用于现在的预约内容，请选择其他的支付・领取方法。"
 
+msgid "メールアドレスが正しくありません"
+msgstr "邮件地址不正确"
+
+msgid "選択してください"
+msgstr "请选择"
+
+msgid "数字または小数で入力してください"
+msgstr "请输入数字或者小数"
+
+msgid "数字で入力してください"
+msgstr "请输入数字"
+
+msgid "入力が正しくありません"
+msgstr "输入不正确"
+
+msgid "%(min)d文字以上で入力してください。"
+msgstr "请输入%(min)d文字以上。"
+
+msgid "%(max)d文字以内で入力してください。"
+msgstr "请输入%(max)d文字以内。"
+
+msgid "%(min)d文字から%(max)d文字の間で入力してください。"
+msgstr "请输入%(min)d个到%(max)d个文字。"
+
+msgid "日時の形式を確認してください"
+msgstr "请确认日期时间格式"
+
+msgid "日付の形式を確認してください"
+msgstr "请确认日期的格式"
+
+msgid "%(field)sに不正な値が入力されています"
+msgstr "%(field)s的输入值不正确"
+
+msgid "「%(field)s」が空欄になっています"
+msgstr "「%(field)s」不能为空"
+
+msgid "%(datetime)s 以降にしてください"
+msgstr "请输入%(datetime)s 以后的时间"
+
+msgid "%(datetime)s より前にしてください"
+msgstr "请输入%(datetime)s 之前的时间"
+
+msgid "日"
+msgstr "日"
+
+msgid "時"
+msgstr "点"
+
+msgid "分"
+msgstr "分"
+
+msgid "秒"
+msgstr "秒"
+
 # payment 3d
 
 msgid "クレジットカードでお支払い"

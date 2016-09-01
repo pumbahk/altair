@@ -379,6 +379,60 @@ msgstr "It has become the amount of money that can not be handled in the settlem
 msgid "現在の予約内容では選択された決済 / 引取方法で購入を進めることができません。他の決済・引取方法を選択してください。"
 msgstr "We can not proceed with the purchase at the take-off method. Please select the other settlement take-off method."
 
+msgid "メールアドレスが正しくありません"
+msgstr "mail address is invalid"
+
+msgid "選択してください"
+msgstr "please choose one"
+
+msgid "数字または小数で入力してください"
+msgstr "please input number or decimal"
+
+msgid "数字で入力してください"
+msgstr "please input number"
+
+msgid "入力が正しくありません"
+msgstr "input is invalid"
+
+msgid "%(min)d文字以上で入力してください。"
+msgstr "please input more than %(min)d characters."
+
+msgid "%(max)d文字以内で入力してください。"
+msgstr "please input less than %(max)d characters."
+
+msgid "%(min)d文字から%(max)d文字の間で入力してください。"
+msgstr "please input between %(min)d and %(max)d characters."
+
+msgid "日時の形式を確認してください"
+msgstr "please check the format of your input"
+
+msgid "日付の形式を確認してください"
+msgstr "please check the format of your input"
+
+msgid "%(field)sに不正な値が入力されています"
+msgstr "input of %(field)s is invalid"
+
+msgid "「%(field)s」が空欄になっています"
+msgstr "「%(field)s」can not be blank"
+
+msgid "%(datetime)s 以降にしてください"
+msgstr "please inpute after %(datetime)s"
+
+msgid "%(datetime)s より前にしてください"
+msgstr "please input before %(datetime)s"
+
+msgid "日"
+msgstr "-"
+
+msgid "時"
+msgstr " "
+
+msgid "分"
+msgstr "M"
+
+msgid "秒"
+msgstr "S"
+
 # payment 3d
 
 msgid "クレジットカードでお支払い"

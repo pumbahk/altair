@@ -379,6 +379,60 @@ msgstr "合計金額が選択された決済方法では取り扱えない金額
 msgid "現在の予約内容では選択された決済 / 引取方法で購入を進めることができません。他の決済・引取方法を選択してください。"
 msgstr "現在の予約内容では選択された決済 / 引取方法で購入を進めることができません。他の決済・引取方法を選択してください。"
 
+msgid "メールアドレスが正しくありません"
+msgstr "メールアドレスが正しくありません"
+
+msgid "選択してください"
+msgstr "選択してください"
+
+msgid "数字または小数で入力してください"
+msgstr "数字または小数で入力してください"
+
+msgid "数字で入力してください"
+msgstr "数字で入力してください"
+
+msgid "入力が正しくありません"
+msgstr "入力が正しくありません"
+
+msgid "%(min)d文字以上で入力してください。"
+msgstr "%(min)d文字以上で入力してください。"
+
+msgid "%(max)d文字以内で入力してください。"
+msgstr "%(max)d文字以内で入力してください。"
+
+msgid "%(min)d文字から%(max)d文字の間で入力してください。"
+msgstr "%(min)d文字から%(max)d文字の間で入力してください。"
+
+msgid "日時の形式を確認してください"
+msgstr "日時の形式を確認してください"
+
+msgid "日付の形式を確認してください"
+msgstr "日付の形式を確認してください"
+
+msgid "%(field)sに不正な値が入力されています"
+msgstr "%(field)sに不正な値が入力されています"
+
+msgid "「%(field)s」が空欄になっています"
+msgstr "「%(field)s」が空欄になっています"
+
+msgid "%(datetime)s 以降にしてください"
+msgstr "%(datetime)s 以降にしてください"
+
+msgid "%(datetime)s より前にしてください"
+msgstr "%(datetime)s より前にしてください"
+
+msgid "日"
+msgstr "日"
+
+msgid "時"
+msgstr "時"
+
+msgid "分"
+msgstr "分"
+
+msgid "秒"
+msgstr "秒"
+
 # payment 3d
 
 msgid "クレジットカードでお支払い"
