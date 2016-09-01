@@ -218,12 +218,12 @@ $(function(){
                 ${h.error_list(request, form, 'city')}
               </li>
               <li>
-                <label for="address_1">${form['address_1'].label}</label>
+                ${form['address_1'].label}
                 ${form['address_1'](style=u'width:20em', placeholder=_(u'例: 日本橋x-xx-xx'))}
                 ${h.error_list(request, form, 'address_1')}
               </li>
               <li>
-                <label for="address_2">${form['address_2'].label}</label>
+                ${form['address_2'].label}
                 ${form['address_2'](style=u'width:20em', placeholder=_(u'例: yyビルz階'))}
                 ${h.error_list(request, form, 'address_2')}
               </li>

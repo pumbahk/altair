@@ -23,11 +23,10 @@ p.cartNickname{
 .btn-close {
   display: inline-block;
   width: 142px;
-  background: url(../images/btn_close.gif) no-repeat 0 0;
+  background: #c00 none repeat scroll 0 0;
   border: none;
-  padding: 47px 0 0 0;
-  height: 0px;
-  font-size: 0px;
+  padding: 10px 5px 8px;
+  font-size: 14px;
   line-height: -1px;
   cursor: pointer;
 }

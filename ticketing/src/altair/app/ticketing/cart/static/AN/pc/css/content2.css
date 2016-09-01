@@ -1672,7 +1672,7 @@
 	position: relative;
 	width: 369px;
 	height: 26px;
-	margin: 10px 0 2px;
+	margin: 20px 0 2px;
 	padding: 0;
 	border: 1px solid #ccc;
 	cursor: pointer;
@@ -1781,7 +1781,6 @@
 #selectSeatType .selectProduct .btn-buy {
 	position: relative;
 	top: 7px;
-	height: 0px;
 	margin: 0 0;
 	font-size: 14px;
 }
@@ -1991,6 +1990,7 @@
 	display: block;
 	background: #efefef none repeat scroll 0 0;
 	color: #000;
+	overflow: scroll;
 }
 
 #selectSeat.blur #selectProduct h3 {
@@ -2077,6 +2077,7 @@
 	color: #fff;
 	font-size: 14px;
 	text-align: center;
+	cursor: pointer;
 }
 
 #selectSeatType .selectProduct {
@@ -2485,7 +2486,7 @@
 
 #confirmDelivery td label {
 	display: inline-block;
-	width: 20%;
+	width: 14%;
 }
 
 #confirmDelivery input[type="text"] {
