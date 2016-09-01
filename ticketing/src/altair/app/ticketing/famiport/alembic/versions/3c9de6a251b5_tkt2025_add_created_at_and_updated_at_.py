@@ -1,14 +1,14 @@
 """#tkt2025 add created_at_and_updated_at to FamiPortOperator
 
 Revision ID: 3c9de6a251b5
-Revises: d068c02f6e6
+Revises: 338ee04735e9
 Create Date: 2016-07-22 19:48:25.423598
 
 """
 
 # revision identifiers, used by Alembic.
 revision = '3c9de6a251b5'
-down_revision = 'd068c02f6e6'
+down_revision = '338ee04735e9'
 
 from alembic import op
 import sqlalchemy as sa
