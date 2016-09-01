@@ -4,6 +4,7 @@
 import sys
 import re
 from pyramid.paster import bootstrap, setup_logging
+import StringIO
 import locale
 import logging
 from argparse import ArgumentParser
@@ -28,11 +29,27 @@ if charset == 'US-ASCII':
 
 datetime_format = "%Y/%m/%d %H:%M"
 
+quiet = False
+
+output = sys.stdout
+
+
+def set_quiet(q):
+    global quiet, output
+    if q:
+        output = StringIO.StringIO()
+    else:
+        if quiet:
+            print >>sys.stdout, output.getvalue()
+            output.close()
+        output = sys.stdout
+    quiet = q
+
 
 def message(msg, auxiliary=False):
     logger.log(auxiliary and logging.DEBUG or logging.INFO, msg)
     pad = '  ' if auxiliary else ''
-    print >>sys.stdout, (pad + msg).encode(charset)
+    print >>output, (pad + msg).encode(charset)
 
 
 def upload(uri, data, resolver, dry_run):
@@ -48,7 +65,8 @@ def upload(uri, data, resolver, dry_run):
             key.make_public()
             message("update acl successfully.")
     else:
-        raise
+        set_quiet(False)
+        raise Exception("wrong uri: " % uri)
 
 
 def select_sales_segment(sales_segments):
@@ -64,9 +82,12 @@ def main():
     parser.add_argument('--config', type=str, required=True)
     parser.add_argument('--organization', type=str, required=True)
     parser.add_argument('--target', type=str, required=True)
+    parser.add_argument('--quiet', action='store_true', default=False)
     parser.add_argument('--dry-run', action='store_true', default=False)
 
     opts = parser.parse_args()
+
+    set_quiet(opts.quiet)
 
     setup_logging(opts.config)
     env = bootstrap(opts.config)
@@ -75,6 +96,9 @@ def main():
     resolver = get_resolver(env['registry'])
 
     mode = "all" if re.search(r"\.json$", opts.target) else "each"
+
+    message("mode: %s" % mode)
+    message("target: %s" % opts.target)
 
     try:
         try:
@@ -86,9 +110,11 @@ def main():
                     | (Organization.code == opts.organization)) \
                 .one()
         except NoResultFound:
+            set_quiet(False)
             message('No such organization identifiable with %s' % opts.organization)
             return 1
         except MultipleResultsFound:
+            set_quiet(False)
             message('Multiple organizations that match to %s' % opts.organization)
             return 1
 
@@ -170,6 +196,7 @@ def main():
 
             # 個別データ書き出す
             if mode == "each":
+                set_quiet(False)
                 raise Error("not implemented.")
 
                 dst = "%s/%s.json" % (opts.target.strip("/"), start_on.strftime("%Y%m%d-%H%M"))
@@ -186,6 +213,7 @@ def main():
             upload(opts.target, global_data, resolver, opts.dry_run)
 
     except:
+        set_quiet(False)
         raise
 
     message("done")

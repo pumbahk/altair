@@ -10,9 +10,8 @@
 <div class="page-header">
   <h1>取引先</h1>
 </div>
-
-<%include file="./_action_button.html" />
-<p/>
+<%include file="./_action_button.html" args="account=None, order=['new'], small=False, split=True" />
+<p style="clear: both"><p/>
 
 <form method="get">
   ${search_form.account_name.label}${search_form.account_name}<br/>

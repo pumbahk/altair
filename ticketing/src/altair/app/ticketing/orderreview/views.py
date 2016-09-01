@@ -21,7 +21,7 @@ from altair.app.ticketing.core.api import get_default_contact_url
 from altair.request.adapters import UnicodeMultiDictAdapter
 from altair.now import get_now, is_now_set
 
-from altair.app.ticketing.core.models import ShippingAddress
+from altair.app.ticketing.core.models import ShippingAddress, OrderreviewIndexEnum
 from altair.app.ticketing.core.utils import IssuedAtBubblingSetter
 from altair.app.ticketing.mailmags.api import get_magazines_to_subscribe, multi_subscribe, multi_unsubscribe
 from altair.app.ticketing.payments import plugins
@@ -277,7 +277,16 @@ class OrderReviewView(object):
         renderer=selectable_renderer("order_review/index.html")
         )
     def index(self):
+
         jump_maintenance_page_om_for_trouble(self.request.organization)
+        orderreview_index = self.request.organization.setting.orderreview_index
+
+        # orderreview_indexがindex.html以外を指定している場合はそちらに遷移する
+        if orderreview_index == OrderreviewIndexEnum.OrderNo.v[0]:
+            return HTTPFound(location=self.request.route_path("order_review.form"))
+        elif orderreview_index == OrderreviewIndexEnum.UserLogin.v[0]:
+            return HTTPFound(location=self.request.route_path("mypage.show"))
+
         form = schemas.OrderReviewSchema(self.request.params)
         return {"form": form}
 

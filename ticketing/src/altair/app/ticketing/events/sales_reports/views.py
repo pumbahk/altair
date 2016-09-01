@@ -6,6 +6,7 @@ import traceback
 from datetime import datetime, timedelta
 import urllib
 
+from .forms import validate_email
 import webhelpers.paginate as paginate
 from webob.multidict import MultiDict
 from pyramid.view import view_config, view_defaults
@@ -25,7 +26,6 @@ from altair.app.ticketing.events.sales_reports.forms import (
     SalesReportSearchForm,
     SalesReportForm,
     ReportSettingForm,
-    OnlyEmailCheckForm,
     NumberOfPerformanceReportExportForm,
     )
 
@@ -261,6 +261,7 @@ class SalesReports(BaseView):
             settings = self.request.registry.settings
             recipient = form.recipient.data
             subject = form.subject.data
+
             try:
                 sendmail(settings, recipient, subject, html)
                 self.request.session.flash(u'レポートを送信しました')
@@ -268,12 +269,7 @@ class SalesReports(BaseView):
                 logging.error(
                     "sales report failed. event_id = {}, error: {}({})".format(event.id, type(e), e.message))
                 self.request.session.flash(u'レポート送信に失敗しました。送信先にはメールアドレスのみ指定してください。')
-        else:
-            self.request.session.flash(u'入力されていません')
-
-        return {
-            'form':form,
-            }
+        return {'form': form}
 
 
 @view_defaults(decorator=with_bootstrap, permission='sales_editor')

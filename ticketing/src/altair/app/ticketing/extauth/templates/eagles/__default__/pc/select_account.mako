@@ -1,7 +1,7 @@
 <%inherit file="base.mako" />
 <div class="statusBox">
 
-<p class="statusText">購入するファンクラブ会員ステータスを選択してください</p>
+<p class="statusText">ファンクラブ会員を選択してください</p>
 
 <ul class="statusList clearfix">
 %for membership in memberships:
