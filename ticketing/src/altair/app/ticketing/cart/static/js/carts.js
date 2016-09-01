@@ -179,10 +179,10 @@ cart.events = {
     ON_CART_ORDERED: "onCartOredered",
     ON_VENUE_DATASOURCE_UPDATED: "onVenueDataSourceUpdated"
 };
-cart.init = function(salesSegmentsSelection, selected, cartReleaseUrl, venueEnabled, spinnerPictureUrl) {
+cart.init = function(salesSegmentsSelection, selected, cartReleaseUrl, carti18nUrl, venueEnabled, spinnerPictureUrl) {
     this.app = new cart.ApplicationController();
     venueEnabled = venueEnabled && (!$.browser.msie || parseInt($.browser.version) >= 9);
-    this.app.init(salesSegmentsSelection, selected, cartReleaseUrl, venueEnabled, spinnerPictureUrl);
+    this.app.init(salesSegmentsSelection, selected, cartReleaseUrl, carti18nUrl, venueEnabled, spinnerPictureUrl);
     $('body').bind('selectstart', function() { return false; });
 };
 
@@ -217,6 +217,23 @@ cart.createContentOfShoppingElement = function(product) {
     return item;
 };
 
+cart.i18n = function i18n(message, footer_button_class){
+    var result;
+    $.ajax({
+        url: carti18nUrl,
+        dataType:'text',
+        data: {message:message},
+        type:'POST',
+        async: false,
+        success: function(message){
+            result = message;
+        },
+        error: function(){
+            result = message.join("")
+        }
+    });
+    return result;
+}
 cart.proceedToCheckout = function proceedToCheckout(performance, reservationData) {
     var dialog = new cart.Dialog($('#order-reserved'), {
         ok: function () {
@@ -307,7 +324,7 @@ cart.showSeparateSeatOrderDialog = function showSeparateSeatOrderDialog(title, p
 cart.ApplicationController = function() {
 };
 
-cart.ApplicationController.prototype.init = function(salesSegmentsSelection, selected, cartReleaseUrl, venueEnabled, spinnerPictureUrl) {
+cart.ApplicationController.prototype.init = function(salesSegmentsSelection, selected, cartReleaseUrl, carti18nUrl, venueEnabled, spinnerPictureUrl) {
     this.performanceSearch = new cart.PerformanceSearch({
         salesSegmentsSelection: salesSegmentsSelection,
         key: selected[1],
@@ -995,27 +1012,27 @@ cart.OrderFormPresenter.prototype = {
         this.onEntrustPressed(cart.app.performance.get('order_separate_seats_url'));
     },
     showNoSelectProductMessage: function(){
-        cart.showErrorDialog(null, '商品を1つ以上選択してください', 'btn-close');
+        cart.showErrorDialog(null, cart.i18n(['商品を1つ以上選択してください']), 'btn-close');
         return;
     },
     showTicketCountAboveUpperBoundMessage: function(max_quantity) {
-        cart.showErrorDialog(null, '枚数は合計' + max_quantity + '枚以内で選択してください', 'btn-close');
+        cart.showErrorDialog(null, cart.i18n(['枚数は合計', String(max_quantity), '枚以内で選択してください']), 'btn-close');
         return;
     },
     showTicketCountBelowLowerBoundMessage: function(min_quantity) {
-        cart.showErrorDialog(null, '枚数は合計' + min_quantity + '枚以上で選択してください', 'btn-close');
+        cart.showErrorDialog(null, cart.i18n(['枚数は合計', String(min_quantity), '枚以上で選択してください']), 'btn-close');
         return;
     },
     showProductCountAboveUpperBoundMessage: function(max_quantity) {
-        cart.showErrorDialog(null, '商品個数は合計' + max_quantity + '個以内にしてください', 'btn-close');
+        cart.showErrorDialog(null, cart.i18n(['商品個数は合計', String(max_quantity), '個以内にしてください']), 'btn-close');
         return;
     },
     showProductCountBelowLowerBoundMessage: function(min_quantity) {
-        cart.showErrorDialog(null, '商品個数は合計' + min_quantity + '個以上にしてください', 'btn-close');
+        cart.showErrorDialog(null, cart.i18n(['商品個数は合計', String(min_quantity), '個以上にしてください']), 'btn-close');
         return;
     },
     showInfeasiblePurchaseMessage: function() {
-        cart.showErrorDialog(null, '申し訳ございませんが、その商品の組み合わせはお選びいただけません', 'btn-close');
+        cart.showErrorDialog(null, cart.i18n(['申し訳ございませんが、その商品の組み合わせはお選びいただけません']), 'btn-close');
         return;
     },
     onBuyPressed: function () {

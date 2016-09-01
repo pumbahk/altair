@@ -454,6 +454,7 @@ class IndexView(IndexViewMixin):
             event=create_event_dict(self, performance_id, sales_segments),
             dates=sorted(list(set([p.start_on.strftime("%Y-%m-%d %H:%M") for p in self.context.event.performances]))),
             cart_release_url=self.request.route_url('cart.release'),
+            cart_i18n_url=self.request.route_url('cart.i18n'),
             selected=Markup(
                 json.dumps([
                     performance_selector.select_value(selected_sales_segment),
@@ -490,6 +491,7 @@ class IndexView(IndexViewMixin):
             event=create_event_dict(self, self.request.matchdict['performance_id'], sales_segments),
             dates=sorted(list(set([p.start_on.strftime("%Y-%m-%d %H:%M") for p in self.context.event.performances]))),
             cart_release_url=self.request.route_url('cart.release'),
+            cart_i18n_url=self.request.route_url('cart.i18n'),
             selected=Markup(
                 json.dumps([
                     performance_selector.select_value(selected_sales_segment),
@@ -1573,6 +1575,12 @@ def switch_pc(context, request):
     response = _create_response(request=request, params=request.GET)
     set_we_need_pc_access(response)
     return response
+
+@view_config(route_name='cart.i18n', renderer='string')
+def cart_i18n(request):
+    message = request.params.getall('message[]')
+    _ = request.translate
+    return ''.join(_(msg) for msg in message)
 
 @view_config(route_name='cart.switchpc.perf')
 def switch_pc_perf(context, request):

@@ -374,6 +374,7 @@ def setup_routes(config):
     config.add_route('payment.finish', 'completed', factory='.resources.CompleteViewTicketingCartResource')
 
     config.add_route('cart.contact', 'contact')
+    config.add_route('cart.i18n', 'message')
 
 def main(global_config, **local_config):
     settings = dict(global_config)

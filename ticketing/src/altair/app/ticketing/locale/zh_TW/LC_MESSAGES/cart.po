@@ -158,6 +158,30 @@ msgstr "請選擇合計商品個數在{.min_quantity}以上的選項"
 msgid "商品個数は合計{.max_quantity}以内で選択してください"
 msgstr "請選擇合計商品個數以內{.max_quantity}以内的選項"
 
+msgid "商品を1つ以上選択してください"
+msgstr "請至少選購一件商品"
+
+msgid "枚数は合計"
+msgstr "合計可購買張數為"
+
+msgid "枚以内で選択してください"
+msgstr "張以內"
+
+msgid "枚以上で選択してください"
+msgstr "張以上"
+
+msgid "商品個数は合計"
+msgstr "合計可購買商品數量為"
+
+msgid "個以内にしてください"
+msgstr "個以內"
+
+msgid "個以上にしてください"
+msgstr "個以上"
+
+msgid "申し訳ございませんが、その商品の組み合わせはお選びいただけません"
+msgstr "非常抱歉，你所設定的商品組合無法選購"
+
 # payment
 
 msgid "お支払い･お引取り方法の指定"

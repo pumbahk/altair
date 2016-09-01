@@ -158,6 +158,30 @@ msgstr "Please number of products are selected in total {.min_quantity} or more"
 msgid "商品個数は合計{.max_quantity}以内で選択してください"
 msgstr "Please number of products are selected in within total {.max_quantity}"
 
+msgid "商品を1つ以上選択してください"
+msgstr "Please choose more than one item."
+
+msgid "枚数は合計"
+msgstr "Total number of items should be "
+
+msgid "枚以内で選択してください"
+msgstr " or less than it."
+
+msgid "枚以上で選択してください"
+msgstr " or more than it."
+
+msgid "商品個数は合計"
+msgstr "Totla number of items should be "
+
+msgid "個以内にしてください"
+msgstr " or less than it."
+
+msgid "個以上にしてください"
+msgstr " or more than it."
+
+msgid "申し訳ございませんが、その商品の組み合わせはお選びいただけません"
+msgstr "Sorry, the items you have chosen can not be bought as one set."
+
 # payment
 
 msgid "お支払い･お引取り方法の指定"
