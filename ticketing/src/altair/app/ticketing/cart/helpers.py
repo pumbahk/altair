@@ -112,7 +112,7 @@ def performance_date(performance, i18n=False):
 def performance_datetime(performance, i18n=False):
     """Return date and time of the performance.
     """
-    return create_time_label(performance.start_on, performance.end_on, i18n)
+    return create_time_label(performance.start_on, performance.end_on, i18n=i18n)
 
 def performance_end_date(performance):
     s = performance.start_on

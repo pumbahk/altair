@@ -75,7 +75,7 @@ class _PerformanceSelector(object):
 
     def time_label(self, sales_segment, i18n=False):
         v = self.venue_label(sales_segment)
-        t = create_time_label(sales_segment.performance.start_on, sales_segment.performance.end_on, i18n)
+        t = create_time_label(sales_segment.performance.start_on, sales_segment.performance.end_on, i18n=i18n)
         return t + " " + v
 
     def venue_label(self, sales_segment):
