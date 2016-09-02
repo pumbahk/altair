@@ -163,7 +163,7 @@ class ClientFormFactory(object):
                     Required(_(u"入力してください")),
                     AnyOf(countries, message=_(u"リストから選択してください。"))
                     ]
-                )
+                ) if request.organization.setting.i18n else None
             prefecture = OurTextField(
                 label=_(u"都道府県"),
                 filters=[strip_spaces],
@@ -241,7 +241,7 @@ class ClientFormFactory(object):
                         city=self.data['city'],
                         address_1=self.data['address_1'],
                         address_2=self.data['address_2'],
-                        country=self.data['country'],
+                        country=self.data['country'] if request.organization.setting.i18n else None,
                         email_1=self.data['email_1'],
                         tel_1=self.data['tel_1'],
                         tel_2=self.data['tel_2'],

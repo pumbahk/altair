@@ -66,7 +66,8 @@ def create_form(request, context, formdata=None, **kwds):
         _data=data,
         formdata=formdata,
         **kwds)
-    form.country.choices = [(h, h) for h in Cart_ClientFormFactory(request).get_countries()]
+    if form.country:
+        form.country.choices = [(h, h) for h in Cart_ClientFormFactory(request).get_countries()]
 
     return form
 
