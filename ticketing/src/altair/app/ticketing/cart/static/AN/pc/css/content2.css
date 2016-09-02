@@ -2069,15 +2069,14 @@
 }
 #selectSeatType ul.buttonSet li {
 	float: right;
-	width: 30%;
-	margin: 0 0 0 8px;
+	width: 40%;
 }
 
 #selectSeatType ul.buttonSet li a {
 	display: inline-block;
 	overflow: hidden;
 	margin: 0 0 8px;
-	padding: 10px;
+	padding: 10px 15px;
 	background: #c00 none repeat scroll 0 0;
 	color: #fff;
 	font-size: 14px;

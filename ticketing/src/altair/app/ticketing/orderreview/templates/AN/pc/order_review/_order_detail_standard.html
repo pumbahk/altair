@@ -1,7 +1,7 @@
 <% shipping_address = order.shipping_address %>
 <div class="settlementBox2 OrderBox">
   <div class="settlementBoxInner2">
-    <h3>${__(u'受付番号')}</h3>
+    <h3 class="bold mgb5 fs16">${__(u'受付番号')}</h3>
     <table class="customer-table">
       <tr>
         <th scope="row">${__(u'受付番号')}</th>
@@ -33,7 +33,7 @@
 
 <div class="settlementBox2 OrderBox">
   <div class="settlementBoxInner2">
-    <h3>${__(u'購入者情報')}</h3>
+    <h3 class="bold mgt20 mgb5 fs16">${__(u'購入者情報')}</h3>
     <table class="customer-table" summary="${__(u'配送先情報')}">
       <tr>
         <th scope="row">${__(u'氏名（漢字）')}</th>
@@ -75,7 +75,7 @@
 
 <div class="settlementBox2 OrderBox">
   <div class="settlementBoxInner2">
-    <h3>${__(u'購入したイベントの情報')}</h3>
+    <h3 class="bold mgt20 mgb5 fs16">${__(u'購入したイベントの情報')}</h3>
     <table class="customer-table">
       <tr>
         <th scope="row">${__(u'イベント名')}</th>
@@ -114,7 +114,7 @@
 
 <div class="settlementBox OrderBox">
   <div class="settlementBoxInner">
-    <h3>${__(u'注文内容')}</h3>
+    <h3 class="bold mgt20 mgb5 fs16">${__(u'注文内容')}</h3>
     <table id="contentsOfShopping" class="customer-table" summary="${__(u'席種、金額などのお買い物内容')}">
      %for product in order.items:
       <tr>
@@ -196,7 +196,7 @@
 % if order.status == 'canceled':
   <div class="settlementBox2 OrderBox">
     <div class="settlementBoxInner2">
-      <h3><span class="red">${__(u'この購入/予約はキャンセルされました')}</span></h3>
+      <h3 class="bold mgt20 mgb5 fs16"><span class="red">${__(u'この購入/予約はキャンセルされました')}</span></h3>
       <div class="confirmBoxText">
         <p>
       ${__(u'キャンセル処理は、下記のような理由によりおこなっております。')}<br />
@@ -210,7 +210,7 @@
 % else:
   <div class="settlementBox2 OrderBox">
     <div class="settlementBoxInner2">
-      <h3>${__(u'お支払')}</h3>
+      <h3 class="bold mgt20 mgb5 fs16">${__(u'お支払')}</h3>
       <div class="confirmBoxText">
         ${h.render_payment_finished_viewlet(request, order)}
       </div>
@@ -219,7 +219,7 @@
 
   <div class="settlementBox2 OrderBox">
     <div class="settlementBoxInner2">
-        <h3>${__(u'お引取')}</h3>
+      <h3 class="bold mgt20 fs16">${__(u'お引取')}</h3>
       <div class="confirmBoxText">
         % if order.payment_delivery_pair.delivery_method.id == 71:
          <div>
@@ -236,7 +236,7 @@
 
 <div class="settlementBox2 OrderBox">
   <div class="settlementBoxInner2">
-    <h3>${__(u'注意事項')}</h3>
+    <h3 class="bold mgt20 mgb5 fs16">${__(u'注意事項')}</h3>
     <div class="confirmBoxText">
       <table class="customer-table">
         <tbody>
