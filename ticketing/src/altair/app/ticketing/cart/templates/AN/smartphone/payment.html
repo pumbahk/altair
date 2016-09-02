@@ -7,11 +7,44 @@
 
 $(document).ready(function(){
   $(".methodExplanation").hide();
-  $("label[for^='radio']").on('click', function() {
-    var index = $("label[for^='radio']").index(this);
-    if (!$(".methodExplanation:eq(" + index + ")").is(':visible')) {
+  // show the info that is already clicked
+  var clicked_item = $("input[id^='radio']").filter(':checked');
+  $(clicked_item).parent().next().show();
+
+  $("dt.settlement-list").on('click', function() {
+    var clicked_radio = $(this).find("input[id^='radio']");
+    var index = $("input[id^='radio']").index(clicked_radio);
+    var vis_item = $(".methodExplanation:visible");
+
+    // uncheck the radio and close the info block when it is clicked again
+    if ($(clicked_radio).is(':checked') & $(this).next().is(':visible')) {
+      $(clicked_radio).prop('checked', false);
+      $(this).next().slideUp();
+    } else {
+      var do_shift = false;
+      var shift = 0;
+
+      // decide whether the position setting needs to include the height of previous info block
+      if ($(vis_item).length === 1) {
+        var vis_index =  $(".methodExplanation").index($(vis_item));
+        // if the index of visible item is less than that of the clicked item.
+        do_shift = vis_index < index;
+      }
+
+      // set the position to be shifted.
+      if (do_shift) {
+        var margin = +$(vis_item).css('margin-top').replace("px", "");
+        margin += +$(vis_item).css('margin-bottom').replace("px", "");
+        shift = $(vis_item).height() + margin;
+      }
       $(".methodExplanation").slideUp();
-      $(".methodExplanation:eq(" + index + ")").slideDown();
+      $(this).next().slideDown();
+      $(clicked_radio).prop('checked', true);
+
+      // shift the position to show the info properly
+      $('html, body').animate({
+        scrollTop: $(this).offset().top - shift
+      });
     }
   });
 });
