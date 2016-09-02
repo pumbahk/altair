@@ -114,9 +114,11 @@
   <!-- ===== BTN ===== -->
   <div class="confirm-btnBox">
     <a class="btn-primary btn btn-buy" href="${request.route_url('cart.index', event_id=order.performance.event.id, _query={'performance': order.performance_id})}">
-    ${__(u'他のチケットを購入する')}
+      ${__(u'他のチケットを購入する')}
     </a>
-    <p><a href="${request.context.host_base_url}">${__(u'トップにもどる')}</a></p>
+    <a class="btn-primary btn btn-buy" href="${request.context.host_base_url}">
+      ${__(u'トップにもどる')}
+    </a>
   </div>
 </form>
 
