@@ -179,10 +179,10 @@ cart.events = {
     ON_CART_ORDERED: "onCartOredered",
     ON_VENUE_DATASOURCE_UPDATED: "onVenueDataSourceUpdated"
 };
-cart.init = function(salesSegmentsSelection, selected, cartReleaseUrl, carti18nUrl, venueEnabled, spinnerPictureUrl) {
+cart.init = function(salesSegmentsSelection, selected, cartReleaseUrl, venueEnabled, spinnerPictureUrl, carti18nUrl) {
     this.app = new cart.ApplicationController();
     venueEnabled = venueEnabled && (!$.browser.msie || parseInt($.browser.version) >= 9);
-    this.app.init(salesSegmentsSelection, selected, cartReleaseUrl, carti18nUrl, venueEnabled, spinnerPictureUrl);
+    this.app.init(salesSegmentsSelection, selected, cartReleaseUrl, venueEnabled, spinnerPictureUrl, carti18nUrl);
     $('body').bind('selectstart', function() { return false; });
 };
 
@@ -219,6 +219,8 @@ cart.createContentOfShoppingElement = function(product) {
 
 cart.i18n = function i18n(message, footer_button_class){
     var result;
+    if (typeof carti18nUrl == 'undefined')
+        return message.join("")
     $.ajax({
         url: carti18nUrl,
         dataType:'text',
@@ -324,7 +326,7 @@ cart.showSeparateSeatOrderDialog = function showSeparateSeatOrderDialog(title, p
 cart.ApplicationController = function() {
 };
 
-cart.ApplicationController.prototype.init = function(salesSegmentsSelection, selected, cartReleaseUrl, carti18nUrl, venueEnabled, spinnerPictureUrl) {
+cart.ApplicationController.prototype.init = function(salesSegmentsSelection, selected, cartReleaseUrl, venueEnabled, spinnerPictureUrl, carti18nUrl) {
     this.performanceSearch = new cart.PerformanceSearch({
         salesSegmentsSelection: salesSegmentsSelection,
         key: selected[1],
