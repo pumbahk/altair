@@ -1,4 +1,13 @@
 <%inherit file="./base.html"/>
+<%block name="css">
+<style type="text/css">
+  .disp-order_no{
+    margin-left: 7px;
+    font-size: 20px;
+    color: #cc0000;
+  }
+</style>
+</%block>
 
 <!-- ******************** contents [start] ******************** -->
 
@@ -10,7 +19,7 @@
 <!-- ===== 受付番号 ===== -->
 <div class="confirm-wrap">
   <h2 class="heading heading_simple_line">${__(u'受付番号')}</h2>
-  <p class="bold">${order.order_no}</p>
+  <p class="bold disp-order_no">${order.order_no}</p>
 </div><!-- ===== / 受付番号 ===== -->
 
 <form id="form1" class="confirmForm" action="${request.route_url("cart.index", event_id=order.performance.event.id, _query={'performance':order.performance_id})}" method="post">
