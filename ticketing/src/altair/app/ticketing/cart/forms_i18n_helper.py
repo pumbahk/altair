@@ -65,6 +65,15 @@ def city_validators(request):
     else:
         return base_validators + [Regexp(r'^[\w\s\.\-,]+$', message=_(u'アルファベット、数字、-(ハイフン)、.(点)、,(コンマ)、空白を入力してください'))]
 
+def zip_validators(request):
+    locale_name = custom_locale_negotiator(request)
+    _ = request.translate
+    base_validators = [Regexp(r'^\d{7}$', message=_(u'-(ハイフン)を抜いた半角数字のみを入力してください')), Length(min=7, max=7, message=_(u'確認してください'))]
+    if locale_name == 'ja' or not request.organization.setting.i18n:
+        return base_validators + [Required(_(u"入力してください"))]
+    else:
+        return base_validators + [Optional()]
+
 def address_1_validators(request):
     _ = request.translate
     locale_name = custom_locale_negotiator(request)

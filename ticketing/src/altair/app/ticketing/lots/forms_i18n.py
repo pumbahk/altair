@@ -153,11 +153,7 @@ class ClientFormFactory(object):
             zip = OurTextField(
                 label=_(u"郵便番号"),
                 filters=[ignore_space_hyphen, NFKC],
-                validators=[
-                    Optional(),
-                    Regexp(r'^\d{7}$', message=_(u'-(ハイフン)を抜いた半角数字(7桁)のみを入力してください')),
-                    Length(min=7, max=7, message=_(u'確認してください')),
-                    ],
+                validators=h.zip_validators(request),
                 note=_(u'半角英数7ケタ')
                 )
             country = OurSelectField(
