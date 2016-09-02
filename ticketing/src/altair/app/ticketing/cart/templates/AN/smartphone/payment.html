@@ -282,6 +282,7 @@ $(document).ready(function(){
           <tr>
             <td>
               ${form['tel_1'](placeholder=_(u'例: 080xxxxyyyy'), style=u"ime-mode:disabled;")}
+              ${h.error_list(request, form, 'tel_1')}
             </td>
           </tr>
         </tbody>
