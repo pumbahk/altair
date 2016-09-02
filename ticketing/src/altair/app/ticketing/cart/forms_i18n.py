@@ -30,7 +30,7 @@ from altair.formhelpers.filters import (
     NFKC,
     lstrip,
     )
-from .schemas import length_limit_for_sej
+from .schemas import length_limit_for_sej, japanese_prefecture_select_input
 import forms_i18n_helper as h
 
 class ClientFormFactory(object):
