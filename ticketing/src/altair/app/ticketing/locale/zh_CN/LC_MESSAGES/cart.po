@@ -84,6 +84,9 @@ msgstr "自动指定座位购买"
 msgid "購入"
 msgstr "购买"
 
+msgid "選択"
+msgstr "选座"
+
 msgid "チケット購入方法"
 msgstr "购票方法"
 
@@ -182,6 +185,9 @@ msgstr "個以上"
 
 msgid "申し訳ございませんが、その商品の組み合わせはお選びいただけません"
 msgstr "抱歉，您所选择的商品复合不能同时购买"
+
+msgid "閉じる"
+msgstr "返回"
 
 # payment
 
@@ -335,6 +341,9 @@ msgstr "例: Wang"
 msgid "例: 太郎"
 msgstr "例: xiaoming"
 
+msgid "YAMADA TARO"
+msgstr "Wang xiaoming"
+
 msgid "例: ヤマダ"
 msgstr " "
 
@@ -433,6 +442,9 @@ msgstr "分"
 
 msgid "秒"
 msgstr "秒"
+
+msgid "追加情報の入力"
+msgstr "附加信息"
 
 # payment 3d
 
@@ -543,8 +555,8 @@ msgstr "如果您选择邮寄取票方式"
 msgid "メールマガジンの配信"
 msgstr "订阅电子杂志"
 
-msgid "ご利用いただいた方には、楽天チケットからのメールマガジンをお送りします。不要な方はチェックをはずしてください。"
-msgstr "乐天购票会为您发送电子杂志，反选会取消这个服务。"
+msgid "ご利用いただいた方には、メールマガジンをお送りします。不要な方はチェックをはずしてください。"
+msgstr "我们会为您发送电子杂志，反选会取消这个服务。"
 
 msgid "座席選択にもどる"
 msgstr "返回到座位选择"

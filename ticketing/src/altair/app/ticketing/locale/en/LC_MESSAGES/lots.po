@@ -424,8 +424,8 @@ msgstr "Total amount"
 msgid "メールマガジンの配信"
 msgstr "Delivery of e-mail magazine"
 
-msgid "お申し込みいただいた方に、楽天チケットからのメールマガジンをお送りします。不要な方はチェックをはずしてください。"
-msgstr "For those who sign up, you will receive an e-mail newsletter from the Rakuten ticket. Please unnecessary one, remove the check."
+msgid "お申し込みいただいた方に、メールマガジンをお送りします。不要な方はチェックをはずしてください。"
+msgstr "For those who sign up, you will receive an e-mail newsletter. Please unnecessary one, remove the check."
 
 msgid "申込内容確認"
 msgstr "Application Content Confirmation"

@@ -8,7 +8,7 @@
 <form id="form1" name="form1" method="post" action="${request.url}">
   <div class="confirmBox">
     <div class="confirmBoxInner">
-      <h2>追加情報の入力</h2>
+      <h2>${_(u'追加情報の入力')}</h2>
       <%fh:render_block>
       <% beginning_of_group = True %>
       % for field in form_fields:
@@ -51,5 +51,6 @@
       </%fh:render_block>
     </div>
   </div>
-  <p class="align2"><image onclick="$('#form1').submit()" src="${request.static_url('altair.app.ticketing.cart:static/ticketstar/pc/images/btn_next.gif')}" alt="次へ" width="226" height="46" /></p>
+  <p class="align2" onclick="$('#form1').submit()">${_(u'次へ')}</p>
 </form>
+${h.create_url(request) |n}

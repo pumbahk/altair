@@ -227,7 +227,7 @@ $(function() {
         <div class="confirm-wrap-inner confirm-magBox">
           <h2 class="heading heading_simple_line">${__(u'メールマガジンの配信')}</h2>
 
-          <p class="bold">${__(u'ご利用いただいた方には、楽天チケットからのメールマガジンをお送りします。不要な方はチェックをはずしてください。')}</p>
+          <p class="bold">${__(u'ご利用いただいた方には、メールマガジンをお送りします。不要な方はチェックをはずしてください。')}</p>
             % for mailmagazine, subscribed in mailmagazines_to_subscribe:
             <p class="mgtb10">
             <input type="checkbox" checked="checked" name="mailmagazine" id="mailmagazine-${mailmagazine.id}" value="${mailmagazine.id}"${subscribed and u' disabled="disabled"' or u''|n} />

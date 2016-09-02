@@ -363,8 +363,8 @@ def create_event_dict(view, performance_id, sales_segments, i18n=False):
         sales_end_on = u''
         if sales_segment:
             if i18n:
-                sales_start_on = unicode(sales_segment.start_at.strftime("%Y-%m-%d %H:%M").decode("utf-8"))
-                sales_end_on = unicode(sales_segment.end_at.strftime("%Y-%m-%d %H:%M").decode("utf-8"))
+                sales_start_on = unicode(sales_segment.start_at.strftime("%Y/%m/%d %H:%M").decode("utf-8"))
+                sales_end_on = unicode(sales_segment.end_at.strftime("%Y/%m/%d %H:%M").decode("utf-8"))
             else:
                 sales_start_on = unicode(sales_segment.start_at.strftime("%Y年%m月%d日 %H:%M").decode("utf-8"))
                 sales_end_on = unicode(sales_segment.end_at.strftime("%Y年%m月%d日 %H:%M").decode("utf-8"))
@@ -381,8 +381,8 @@ def create_event_dict(view, performance_id, sales_segments, i18n=False):
             )
 
     if i18n:
-        sales_start_on=unicode(view.context.event.sales_start_on.strftime("%Y-%m-%d %H:%M").decode("utf-8"))
-        sales_end_on=unicode(view.context.event.sales_end_on.strftime("%Y-%m-%d %H:%M").decode("utf-8"))
+        sales_start_on=unicode(view.context.event.sales_start_on.strftime("%Y/%m/%d %H:%M").decode("utf-8"))
+        sales_end_on=unicode(view.context.event.sales_end_on.strftime("%Y/%m/%d %H:%M").decode("utf-8"))
     else:
         sales_start_on=unicode(view.context.event.sales_start_on.strftime("%Y年%m月%d日 %H:%M").decode("utf-8"))
         sales_end_on=unicode(view.context.event.sales_end_on.strftime("%Y年%m月%d日 %H:%M").decode("utf-8"))

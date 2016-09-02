@@ -96,7 +96,7 @@ ${shipping_address['address_2']}
 % if mailmagazines_to_subscribe:
 <dt class="creditHl">${_(u'メールマガジンの配信')}</dt>
 <dd>
-<p>${_(u'ご利用いただいた方には、楽天チケットからのメールマガジンをお送りします。不要な方はチェックをはずしてください。')}</p>
+<p>${_(u'ご利用いただいた方には、メールマガジンをお送りします。不要な方はチェックをはずしてください。')}</p>
   % for mailmagazine, subscribed in mailmagazines_to_subscribe:
     <p>
       <input type="checkbox" checked="checked" name="mailmagazine" id="mailmagazine-${mailmagazine.id}" value="${mailmagazine.id}"${subscribed and u' disabled="disabled"' or u''|n} />

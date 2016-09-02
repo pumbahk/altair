@@ -46,16 +46,16 @@ $(function(){
             <tr>
               <% checked = 'checked' if str(m.id) == checked_id else '' %>
               <td class="settlementPayRadio"${' rowspan="3"' if m.system_fee > 0 or m.special_fee > 0 else u' rowspan="2" '|n}>
-                <input type="radio" name="payment_delivery_method_pair_id" id="radio2" value="${m.id}" autocomplete="off" ${checked} />
+                <input class='fold' type="radio" name="payment_delivery_method_pair_id" id="radio2" value="${m.id}" autocomplete="off" ${checked} />
               </td>
-              <td class='fold' onclick="$(this).parents('table').find('input').click();">
+              <td class='fold' onclick="$(this).parents('table').find('input').attr('checked', 'checked');">
                 <dl>
                   <dt>
                   ${h.payment_method_get_info(custom_locale_negotiator, m, 'name')}
                   </dt>
                 </dl>
               </td>
-              <td class='fold' onclick="$(this).parents('table').find('input').click();">
+              <td class='fold' onclick="$(this).parents('table').find('input').attr('checked', 'checked');">
                 <dl>
                   <dt>
                   ${h.delivery_method_get_info(custom_locale_negotiator, m, 'name')}
@@ -63,7 +63,7 @@ $(function(){
                 </dl>
               </td>
             </tr>
-            <tr class="content" style="display: none;" onclick="$(this).parents('table').find('input').click();">
+            <tr class="content" style="display: none;" onclick="$(this).parents('table').find('input').attr('checked', 'checked');">
                 <td>
                 <dl>
                   <dd class="paymentFee_${h.format_number(m.transaction_fee)}">
@@ -90,7 +90,7 @@ $(function(){
               </td>
             </tr>
             % if m.system_fee > 0 or m.special_fee > 0:
-            <tr class="content" style="display: none;" onclick="$(this).parents('table').find('input').click();">
+            <tr class="content" style="display: none;" onclick="$(this).parents('table').find('input').attr('checked', 'checked');">
               <td colspan="2">
                 <dl class="fullwidth">
                   <dt>${_(u'上記以外の利用料・手数料')}</dt>
@@ -159,13 +159,13 @@ $(function(){
           <th scope="row">購入者氏名(全角カナ)</th>
           <td>
             <ul>
-              <li>${h.error_list(request, form, 'last_name_kana')} ${h.error_list(request, form, 'first_name_kana')}</li>
               <li>
                 ${form['last_name_kana'].label}
                 ${form['last_name_kana'](placeholder=_(u'例: ヤマダ'))}
                 ${form['first_name_kana'].label}
                 ${form['first_name_kana'](placeholder=_(u'例: タロウ'))}
               </li>
+              <li>${h.error_list(request, form, 'last_name_kana')} ${h.error_list(request, form, 'first_name_kana')}</li>
             </ul>
           </td>
         </tr>

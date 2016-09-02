@@ -83,6 +83,9 @@ msgstr "Help to purchase"
 msgid "購入"
 msgstr "Purchase"
 
+msgid "選択"
+msgstr "Select"
+
 msgid "チケット購入方法"
 msgstr "Tichet Purchase Method"
 
@@ -181,6 +184,9 @@ msgstr " or more than it."
 
 msgid "申し訳ございませんが、その商品の組み合わせはお選びいただけません"
 msgstr "Sorry, the items you have chosen can not be bought as one set."
+
+msgid "閉じる"
+msgstr "Close"
 
 # payment
 
@@ -334,6 +340,9 @@ msgstr "Example: Smith"
 msgid "例: 太郎"
 msgstr "Example: John"
 
+msgid "YAMADA TARO"
+msgstr "John Smith"
+
 msgid "例: ヤマダ"
 msgstr " "
 
@@ -432,6 +441,9 @@ msgstr "M"
 
 msgid "秒"
 msgstr "S"
+
+msgid "追加情報の入力"
+msgstr "Extra Information"
 
 # payment 3d
 
@@ -542,8 +554,8 @@ msgstr "If you select a delivery receipt"
 msgid "メールマガジンの配信"
 msgstr "Delivery of e-mail magazine"
 
-msgid "ご利用いただいた方には、楽天チケットからのメールマガジンをお送りします。不要な方はチェックをはずしてください。"
-msgstr "For those who had you use, you will receive an e-mail newsletter from the Rakuten ticket. Please unnecessary one, remove the check."
+msgid "ご利用いただいた方には、メールマガジンをお送りします。不要な方はチェックをはずしてください。"
+msgstr "For those who had you use, you will receive an e-mail newsletter. Please unnecessary one, remove the check."
 
 msgid "座席選択にもどる"
 msgstr "Back to seat selection"
