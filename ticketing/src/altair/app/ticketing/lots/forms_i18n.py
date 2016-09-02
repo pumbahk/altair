@@ -6,7 +6,7 @@ from wtforms import Form
 from wtforms import widgets
 from wtforms.validators import Regexp, Length, Optional, EqualTo, AnyOf, ValidationError
 
-from altair.app.ticketing.cart.schemas import ExtraForm
+from altair.app.ticketing.cart.schemas import ExtraForm, japanese_prefecture_select_input
 from altair.app.ticketing.cart.view_support import build_dynamic_form, filter_extra_form_schema
 from altair.app.ticketing.users.models import SexEnum
 from altair.formhelpers import (
