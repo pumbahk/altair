@@ -35,7 +35,7 @@ def name_validators(request):
     if locale_name == 'ja' or not request.organization.setting.i18n:
         return base + [Zenkaku, length_limit_for_sej]
     if locale_name == 'en':
-        return base + [length_limit_for_sej_alphabet]
+        return base + [length_limit_for_sej_alphabet, Regexp(r'^[A-z]+$', message=_(u'アルファベットのみを入力してください'))]
     if locale_name == 'zh_CN':
         return base + [length_limit_for_sej_alphabet, Regexp(r'^[A-z]+$', message=_(u'アルファベットのみを入力してください'))]
     if locale_name == 'zh_TW':
@@ -47,6 +47,15 @@ def last_name_validators(request):
 def first_name_validators(request):
     return name_validators(request)
 
+def prefecture_validators(request):
+    locale_name = custom_locale_negotiator(request)
+    _ = request.translate
+    base_validators = [Required(_(u'入力してください')), Length(max=64, message=_(u'{0}文字以内で入力してください').format(64))]
+    if locale_name == 'ja' or not request.organization.setting.i18n:
+        return base_validators + [CP932]
+    else:
+        return base_validators + [Regexp(r'^[\w\s\.\-,]+$', message=_(u'アルファベット、数字、-(ハイフン)、.(点)、,(コンマ)、空白を入力してください'))]
+
 def city_validators(request):
     locale_name = custom_locale_negotiator(request)
     _ = request.translate
@@ -54,23 +63,25 @@ def city_validators(request):
     if locale_name == 'ja' or not request.organization.setting.i18n:
         return base_validators + [CP932]
     else:
-        return base_validators
+        return base_validators + [Regexp(r'^[\w\s\.\-,]+$', message=_(u'アルファベット、数字、-(ハイフン)、.(点)、,(コンマ)、空白を入力してください'))]
 
-def address_validators(request):
-    locale_name = custom_locale_negotiator(request)
+def address_1_validators(request):
     _ = request.translate
+    locale_name = custom_locale_negotiator(request)
     base_validators = [Length(max=255, message=_(u'{0}文字以内で入力してください').format(255))]
     if locale_name == 'ja' or not request.organization.setting.i18n:
         return base_validators + [CP932]
     else:
-        return base_validators
-
-def address_1_validators(request):
-    _ = request.translate
-    return address_validators(request) + [Required(_(u'入力してください'))]
+        return base_validators +[Required(_(u'入力してください')), Regexp(r'^[\w\s\.\-,]+$', message=_(u'アルファベット、数字、-(ハイフン)、.(点)、,(コンマ)、空白を入力してください'))]
 
 def address_2_validators(request):
-    return address_validators(request)
+    _ = request.translate
+    locale_name = custom_locale_negotiator(request)
+    base_validators = [Length(max=255, message=_(u'{0}文字以内で入力してください').format(255))]
+    if locale_name == 'ja' or not request.organization.setting.i18n:
+        return base_validators + [CP932]
+    else:
+        return base_validators + [Regexp(r'^[\w\s\.\-,]*$', message=_(u'アルファベット、数字、-(ハイフン)、.(点)、,(コンマ)、空白を入力してください'))]
 
 def mail_validators(request):
     return [SejCompliantEmail()]

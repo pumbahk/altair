@@ -171,9 +171,7 @@ class ClientFormFactory(object):
             prefecture = OurTextField(
                 label=_(u"都道府県"),
                 filters=[strip_spaces],
-                validators=[
-                    Required(_(u"入力してください"))
-                    ]
+                validators=h.prefecture_validators(request)
                 )
             city = OurTextField(
                 label=_(u"市区町村"),
