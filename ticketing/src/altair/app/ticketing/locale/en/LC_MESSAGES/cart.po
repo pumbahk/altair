@@ -27,16 +27,16 @@ msgid "内訳"
 msgstr "Detail"
 
 msgid "座席・枚数を選びなおす"
-msgstr "Re-select seat and number"
+msgstr "Reselect"
 
 msgid "購入する"
 msgstr "Purchase"
 
 msgid "数量"
-msgstr "Quantiry"
+msgstr "Quantity"
 
 msgid "上記座席を確保しました。{0}分以内に購入を完了してください"
-msgstr Tentative reservation is made. Please complete your reservation in '{0} minutes'."
+msgstr "Tentative reservation is made. Please complete your reservation in '{0} minutes'."
 
 msgid "（完了しない場合は、確保解除となります）"
 msgstr "(After 15 minutes, the tentative reservation will be released.)"
@@ -75,10 +75,10 @@ msgid "席種をお選びください"
 msgstr "Please, select a seat type."
 
 msgid "座席を選んで購入"
-msgstr "Select seat from map"
+msgstr "Self-Select"
 
 msgid "おまかせで購入"
-msgstr "Select for Me"
+msgstr "Auto-Select"
 
 msgid "購入"
 msgstr "Purchase"
@@ -99,10 +99,10 @@ msgid "3. 購入方法を選び、座席を確保してください。"
 msgstr "3. Click on the 'Purchase' button and make tentative reservation."
 
 msgid "「おまかせで購入」ボタンをクリックすると、選択された席種の中から前方より座席を自動配席します。暫くお待ち頂くと、確保できた座席番号が表示されますので、ご確認の上、購入ステップにお進みください。"
-msgstr "'Select for Me' button will automatically select a seat for you. After the seat is selected, a confirm dialog will appear. Please confirm the detail before going to the next step."
+msgstr "'Auto-Select' button will automatically select a seat for you. After the seat is selected, a confirm dialog will appear. Please confirm the detail before going to the next step."
 
 msgid "「座席を選んで購入」の場合、右側（この欄）に座席図が表示されます。座席図上で、選択いただいた購入枚数分の座席をクリックし、下部の「選択」ボタンを押してください。"
-msgstr "If 'Select seat from map' button is clicked, a seat map will displayed in this box. After selecting seats, please press the 'Select' button at the bottom."
+msgstr "If 'Self-Select' button is clicked, a seat map will displayed in this box. After selecting seats, please press the 'Select' button at the bottom."
 
 msgid "色のついた座席が選択可能な席です。"
 msgstr "Selectable seats will be filled with color.(not gray)"
@@ -120,7 +120,7 @@ msgid "座席を選び直す場合は、一度選択した座席をクリック�
 msgstr "If you want to cancel the selection, please click on the seat you have selected."
 
 msgid "4. 席種を選び直したい場合は「キャンセル」ボタンをクリックしてください。"
-msgstr "4. If you want to re-select a seat type, please click the 'Cancel' button."
+msgstr "4. If you want to reselect a seat type, please click the 'Cancel' button."
 
 msgid "座席指定はできません"
 msgstr "Seat designation is not available."
@@ -272,7 +272,7 @@ msgid "アルファベット、数字、-(ハイフン)、.(点)、,(コンマ)�
 msgstr "please input alphabet, number, -, .(dot), comma or blank"
 
 msgid "パスポートと一致しているものを入力してください"
-msgstr " "
+msgstr "Please provide your name as it appears on your passport"
 
 msgid "メールアドレス"
 msgstr "E-mail"
@@ -377,16 +377,16 @@ msgid "次へ"
 msgstr "Next"
 
 msgid "注意事項を確認、同意し、公演に申し込んでください。"
-msgstr "Please check the notes, before you subscribe."
+msgstr "Please check the notes, before you submit."
 
 msgid "お支払／引取方法をお選びください"
 msgstr "Please select a payment / delivery method."
 
 msgid "購入者情報の入力内容を確認してください"
-msgstr "Please check inputs in the "Purchaser Information" form."
+msgstr "Please check inputs on the "Purchaser Information" form."
 
 msgid "合計金額が選択された決済方法では取り扱えない金額となっています。他の決済方法を選択してください"
-msgstr "The total amount exceeded the upper limit of the chosen payment method. Please try choosing another payment method"
+msgstr "The total amount exceeded the upper limit of the chosen payment method. Please try another payment method"
 
 msgid "現在の予約内容では選択された決済 / 引取方法で購入を進めることができません。他の決済・引取方法を選択してください。"
 msgstr "We can not proceed with the chosen payment / delivery method. Please try another payment / delivery method."
@@ -428,10 +428,10 @@ msgid "「%(field)s」が空欄になっています"
 msgstr "「%(field)s」can not be blank"
 
 msgid "%(datetime)s 以降にしてください"
-msgstr "please inpute after %(datetime)s"
+msgstr "please input the date after %(datetime)s"
 
 msgid "%(datetime)s より前にしてください"
-msgstr "please input before %(datetime)s"
+msgstr "please input the date before %(datetime)s"
 
 msgid "日"
 msgstr "-"
@@ -472,10 +472,10 @@ msgid "年"
 msgstr "year"
 
 msgid "名義人"
-msgstr "Nominee"
+msgstr "Cardholder's Name"
 
 msgid "半角ローマ字"
-msgstr "roma alphabet"
+msgstr "alphabet"
 
 msgid "セキュリティコード"
 msgstr "Security code"
@@ -484,16 +484,16 @@ msgid "半角"
 msgstr "number"
 
 msgid "セキュリティコードは、カード裏面の署名欄に印刷されている下3桁の数字です。"
-msgstr "Security code, is a three-digit number that is printed on the signature panel on the back of your card."
+msgstr "Security code, is a three-digit number printed on the signature panel on the back of your card."
 
 msgid "ブラウザの「戻る」ボタンを使用するとエラーになります。"
-msgstr "'back' button on your browser is not available."
+msgstr "Using 'back' button may cause errors."
 
 msgid "ページによってはブラウザの「更新」ボタンを使用するとエラーになる場合があります。"
-msgstr "'Update' button on your browser may cause errors."
+msgstr "Using 'Refresh' button may cause errors."
 
 msgid "購入完了と同時に決済され、即時予約確定となります(抽選受付の場合は、当選と同時に決済されます)。"
-msgstr "Purchase completion and settlement will be done at once.(in case of lottery accepted, it will be settled when the lottery is elected.)."
+msgstr "Purchase completion and settlement will be done at the same time.(in case of lottery accepted, it will be settled when the lottery is elected.)."
 
 msgid "支払回数は≪1回払い≫のみのお取扱いとなります。 以下のクレジットカードがご利用できます。"
 msgstr "For number of payments, <<1 time payment>> is only available. The following credit card is available."
@@ -502,7 +502,7 @@ msgid "以下のクレジットカードがご利用できます。"
 msgstr "The following credit card is available."
 
 msgid "カード情報入力時に、ご利用カードの有効性の確認（オーソリ確認）を実施しております。"
-msgstr "After the card information input, the system will conduct the verification of the effectiveness of the card (authorization check)."
+msgstr "After the card information input, the system will verify the effectiveness of the card (authorization check)."
 
 msgid "お客様のカードによっては、チケットの予約・購入が完了していない場合でも、上記の有効性確認に伴い、カード利用案内メール等が配信される場合があります。"
 msgstr "Depending on the verification result of your card, even if the reservation and purchase of the ticket has not been completed, card usage guide e-mail may be delivered."
