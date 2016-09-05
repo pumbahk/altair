@@ -60,25 +60,25 @@ cart.order_messages = {
         message: '座席を選んで購入してください'
     },
     'ticket_count_over_upper_bound': {
-        title: '上限枚数を超えて購入しようとしています', 
+        title: '上限枚数を超えて購入しようとしています',
         message: function(order_form_presenter, data) {
             return cart.showErrorDialog(null, data.message, 'btn-close');
         }
     },
     'ticket_count_below_lower_bound': {
-        title: '購入枚数が少なすぎます', 
+        title: '購入枚数が少なすぎます',
         message: function(order_form_presenter, data) {
             return cart.showErrorDialog(null, data.message, 'btn-close');
         }
     },
     'product_count_over_upper_bound': {
-        title: '購入数上限を超えて購入しようとしています', 
+        title: '購入数上限を超えて購入しようとしています',
         message: function(order_form_presenter, data) {
             return cart.showErrorDialog(null, data.message, 'btn-close');
         }
     },
     'product_count_below_lower_bound': {
-        title: '購入数が少なすぎます', 
+        title: '購入数が少なすぎます',
         message: function(order_form_presenter, data) {
             return cart.showErrorDialog(null, data.message, 'btn-close');
         }
@@ -245,7 +245,7 @@ cart.proceedToCheckout = function proceedToCheckout(performance, reservationData
             $.ajax({
                 url: cartReleaseUrl, // global
                 dataType: 'json',
-                type: 'POST',  
+                type: 'POST',
                 success: function() {}
             });
             this.close();
@@ -712,7 +712,7 @@ cart.PerformanceSearchView = Backbone.View.extend({
     },
     onKeyChanged: function(key) {
         this.selection.val(key);
-        this.model.set("defaultSalesSegmentId", this.model.getSalesSegments(key)[0].id); 
+        this.model.set("defaultSalesSegmentId", this.model.getSalesSegments(key)[0].id);
         this.renderSalesSegmentSelection();
     },
     render: function() {
@@ -746,7 +746,7 @@ cart.PerformanceSearch = Backbone.Model.extend({
                 return selections[i][1];
             }
         }
-        return [];   
+        return [];
     },
     getSalesSegment: function(id) {
         var salesSegments = this.getSalesSegments(this.get("key"));
@@ -848,7 +848,7 @@ cart.StockTypeListView = Backbone.View.extend({
                      $('<span class="seatColor"></span>')
                      .css('background-color', style && style.fill && style.fill.color ? style.fill.color: 'white'))
                    .append(
-                     $('<span class="seatName"></span>')
+                     $('<span class="seatName" style="padding-top: 2px; display: inline-block"></span>')
                      .text(stockType.get("name")))
                    .append(
                      $('<span class="seatState"></span>')
@@ -862,7 +862,7 @@ cart.StockTypeListView = Backbone.View.extend({
         $(ul.closest('form')).find(':radio').change(function () {
             var radio = $(this);
             self.selected = radio.closest('li');
-            self.trigger(cart.events.ON_STOCK_TYPE_SELECTED, 
+            self.trigger(cart.events.ON_STOCK_TYPE_SELECTED,
                 radio.val(), radio.data('stockType'));
         });
         this.updateUIState();
@@ -1245,7 +1245,7 @@ cart.Product = Backbone.Model.extend({
         unit_template: null
     },
     initialize: function() {
-        
+
     }
 });
 
@@ -1369,7 +1369,7 @@ cart.VenueView = Backbone.View.extend({
                        svg.style.width = (svg.style.width.replace(/px/, '') * 1 + 0.01) + "px";
                    }
                 }
-          
+
             },
             load: function (viewer) {
                 self.zoomRatioMin = viewer.zoomRatioMin;
@@ -1488,7 +1488,7 @@ cart.VenueView = Backbone.View.extend({
                     lastPosition = { x: e.pageX, y: e.pageY };
                     if (self.tooltip) {
                         self.tooltip.css({
-                            left: (lastPosition.x + 10) + 'px', 
+                            left: (lastPosition.x + 10) + 'px',
                             top:  (lastPosition.y + 10) + 'px'
                         });
                     }

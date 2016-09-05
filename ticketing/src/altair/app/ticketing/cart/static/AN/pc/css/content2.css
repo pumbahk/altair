@@ -1671,9 +1671,8 @@
 #selectSeatType .seatListContainer li .seatListItemInner {
 	position: relative;
 	width: 369px;
-	height: 26px;
-	margin: 20px 0 2px;
-	padding: 0;
+	height: auto;
+	margin: 10px 0 4px;
 	border: 1px solid #ccc;
 	cursor: pointer;
 }
@@ -1684,25 +1683,29 @@
 	line-height: 14px;
 	font-size: 10px;
 	left: 9px;
-	top: 6px;
+	top: 7px;
 }
 
 #selectSeatType .seatListContainer li .seatListItemInner .seatName {
-	position: absolute;
-	height: 16px;
-	padding: 5px 6px;
-	width: 288px;
+	display: inline-block;
+	position: relative;
+	height: auto;
+	padding: 5px;
+	width: 300px;
 	left: 32px;
 	top: 0px;
 	overflow: hidden;
+	word-break: break-all;
+	vertical-align: middle;
 }
 
 #selectSeatType .seatListContainer li .seatListItemInner .seatState {
 	float: right;
 	position: relative;
-	right: 8px;
-	top: 5px;
+	right: 7px;
+	top: 3px;
 	width: auto;
+	font-size: 15px;
 }
 #selectSeatType .seatListContainer li .seatListItemInner .seatState:after {
 	content: "";
@@ -1817,11 +1820,12 @@
 	padding: 2px 0;
 	clear: both;
 }
-
+#selectSeatType .selectProduct ul.productList li.productListItem .productName {
+	padding: 2px 0 0;
+}
 #selectSeatType .selectProduct ul.productList li.productListItem .productPrice {
-	padding-left: 4px;
-	padding-right: 4px;
 	float: right;
+	padding: 2px 6px 0;
 }
 
 #selectSeatType .selectProduct ul.productList li.productListItem .productQuantity {
