@@ -227,7 +227,10 @@ class EntryLotViewTests(unittest.TestCase):
             translate=lambda t:t,
             accept_language=testing.DummyModel(
                 best_match=lambda a,b:'ja'
-            )
+            ),
+            organization=testing.DummyModel(
+                setting=testing.DummyModel(i18n=False),
+            ),
         )
         lot.event.organization._setting=OrganizationSetting(i18n=False)
         context = testing.DummyResource(
@@ -256,7 +259,7 @@ class EntryLotViewTests(unittest.TestCase):
             {'address_1': u'代々木１丁目',
              'address_2': u'森京ビル',
              'city': u'渋谷区',
-             'country': u'country_1',
+             'country': None,
              'email_1': u'test@example.com',
              'fax': u'01234567899',
              'first_name': u'あ',

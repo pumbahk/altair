@@ -82,7 +82,7 @@ def create_time_label(start, end, disp_time=True, i18n=False):
         WEEK =[u"月", u"火", u"水", u"木", u"金", u"土", u"日"]
         only_start_format = u"{start.year}年{start.month}月{start.day}日({start_week})" + start_time
         range_format = u"{start.year}年{start.month}月{start.day}b日({start_week}) - {end.year}年{end.month}月{end.day}日({end_week})"
-        same_year_format = u"{start.year}年{start.month}月{start.day}c日({start_week}) - {end.month}月{end.day}日({end_week})"
+        same_year_format = u"{start.year}年{start.month}月{start.day}日({start_week}) - {end.month}月{end.day}日({end_week})"
 
     date_format = only_start_format
 
