@@ -1,3 +1,4 @@
+<%page args="payment_id=None, order=None, small=False, split=False" />
 <%namespace file="/common/helpers.html" name="ch" />
 <%namespace file="/common/modal.html" import="delete_modal" />
 
@@ -43,17 +44,29 @@ var new_payment_method, edit_payment_method, delete_payment_method, get_selected
     ),
     'edit':dict(
       label=u'編集',
-      url='javascript:edit_payment_method(get_selected_payment_method_id());',
+      url='javascript:edit_payment_method({});'.format(payment_id),
       icon='icon-pencil',
     ),
     'delete':dict(
       label=u'削除',
-      url='javascript:delete_payment_method(get_selected_payment_method_id());',
+      url='javascript:delete_payment_method({});'.format(payment_id),
+      attrs={'class':'btn-danger'},
       icon='icon-minus',
     ),
   }
-  order = iter(['new', 'edit', 'delete'])
+  order = iter(order or ['new', 'edit', 'delete'])
 %>
-${HH.action_button(actions, order)}
+
+% if split:
+  <div style="float: left;">
+  % for item in order:
+      ${HH.action_button(actions, iter([item]), vertical=False, extra_classes=[u'btn-small'] if small else [])}
+  % endfor
+  </div>
+% else:
+    <div style="float: left;">
+      ${HH.action_button(actions, order, vertical=False, extra_classes=[u'btn-small'] if small else [])}
+    </div>
+% endif
 
 ${delete_modal()}
