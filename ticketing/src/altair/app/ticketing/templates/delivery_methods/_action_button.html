@@ -1,3 +1,4 @@
+<%page args="delivery_id=None, order=None, small=False, split=False" />
 <%namespace file="/common/helpers.html" name="ch" />
 <%namespace file="/common/modal.html" import="delete_modal" />
 
@@ -43,17 +44,29 @@ var new_delivery_method, edit_delivery_method, delete_delivery_method, get_selec
     ),
     'edit':dict(
       label=u'編集',
-      url='javascript:edit_delivery_method(get_selected_delivery_method_id());',
+      url='javascript:edit_delivery_method({});'.format(delivery_id),
       icon='icon-pencil',
     ),
     'delete':dict(
       label=u'削除',
-      url='javascript:delete_delivery_method(get_selected_delivery_method_id());',
+      url='javascript:delete_delivery_method({});'.format(delivery_id),
+      attrs={'class':'btn-danger'},
       icon='icon-minus',
     ),
   }
-  order = iter(['new', 'edit', 'delete'])
+  order = iter(order or ['new', 'edit', 'delete'])
 %>
-${HH.action_button(actions, order)}
+
+% if split:
+  <div style="float: left;">
+  % for item in order:
+      ${HH.action_button(actions, iter([item]), vertical=False, extra_classes=[u'btn-small'] if small else [])}
+  % endfor
+  </div>
+% else:
+    <div style="float: left;">
+      ${HH.action_button(actions, order, vertical=False, extra_classes=[u'btn-small'] if small else [])}
+    </div>
+% endif
 
 ${delete_modal()}
