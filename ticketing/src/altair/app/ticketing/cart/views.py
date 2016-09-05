@@ -1016,8 +1016,10 @@ class PaymentView(object):
             metadata = metadata[u'profile']
 
         shipping_address_info = dict(
+            first_name=metadata.get('first_name'),
+            first_name_kana=metadata.get('first_name_kana', u'　'),
             last_name=metadata.get('last_name'),
-            last_name_kana=metadata.get('last_name_kana'),
+            last_name_kana=metadata.get('last_name_kana', u'　'),
             tel_1=metadata.get('tel_1'),
             fax=metadata.get('fax'),
             zip=metadata.get('zip'),
@@ -1029,8 +1031,6 @@ class PaymentView(object):
             email_2=metadata.get('email_2')
         )
 
-        shipping_address_info['last_name_kana']=metadata.get('last_name_kana',u'　')
-        shipping_address_info['first_name_kana']=metadata.get('first_name_kana',u'　')
         client_form = forms_i18n.ClientFormFactory(self.request).make_form()
         form = client_form(
             context=self.context,
