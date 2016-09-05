@@ -1,7 +1,10 @@
 from .interfaces import IURLBuilder
 from . import BUILDERS
 
-def get_cart_url_builder(request, name=BUILDERS.cart):
+def get_event_cart_url_builder(request, name=BUILDERS.cart_events):
+    return request.registry.getUtility(IURLBuilder, name=name)
+
+def get_performance_cart_url_builder(request, name=BUILDERS.cart_performances):
     return request.registry.getUtility(IURLBuilder, name=name)
 
 def get_cart_now_url_builder(request, name=BUILDERS.cart_now):

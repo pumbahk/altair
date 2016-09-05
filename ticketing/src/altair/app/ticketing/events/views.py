@@ -45,7 +45,7 @@ from altair.app.ticketing.events.performances.api import set_visible_performance
 from .forms import EventForm, EventSearchForm, EventPublicForm
 from .helpers import EventHelper
 from .famiport_helpers import get_famiport_reflect_button_status
-from altair.app.ticketing.carturl.api import get_cart_url_builder, get_cart_now_url_builder, get_agreement_cart_url_builder
+from altair.app.ticketing.carturl.api import get_event_cart_url_builder, get_cart_now_url_builder, get_agreement_cart_url_builder
 logger = logging.getLogger()
 
 @view_defaults(decorator=with_bootstrap, permission='event_editor')
@@ -190,7 +190,7 @@ class Events(BaseView):
         event = Event.get(event_id, organization_id=self.context.user.organization_id)
         if event is None:
             return HTTPNotFound('event id %d is not found' % event_id)
-        cart_url = get_cart_url_builder(self.request).build(self.request, event)
+        cart_url = get_event_cart_url_builder(self.request).build(self.request, event)
         agreement_url = get_agreement_cart_url_builder(self.request).build(self.request, event)
         performances = slave_session.query(Performance) \
             .outerjoin(PerformanceSetting, Performance.id == PerformanceSetting.performance_id) \
