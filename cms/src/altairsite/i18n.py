@@ -4,8 +4,6 @@ tsf = TranslationStringFactory('search')
 
 def add_localizer(event):
     request = event.request
-    localizer = get_localizer(request)
     def auto_translate(*args, **kwargs):
-        return localizer.translate(tsf(*args, **kwargs))
-    request.localizer = localizer
+        return request.localizer.translate(tsf(*args, **kwargs))
     request.translate = auto_translate
