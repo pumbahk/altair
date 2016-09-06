@@ -46,7 +46,15 @@ class MatchUpPerformanceSelectorTests(unittest.TestCase):
         self.config.add_route('cart.seat_types2', '/testing/seat_types2/{performance_id}/{sales_segment_id}')
         self.config.add_route('cart.order', '/testing/order/{sales_segment_id}')
         from datetime import datetime
-        request = testing.DummyRequest()
+        request = testing.DummyRequest(
+            translate=lambda t:t,
+            accept_language=testing.DummyModel(
+                best_match=lambda a,b:'ja'
+            ),
+            organization=testing.DummyModel(
+                setting=testing.DummyModel(i18n=False),
+            ),
+        )
         request.context = testing.DummyResource(
             request=request,
             event=DummyEvent(id=123),
@@ -176,7 +184,15 @@ class DatePerformanceSelectorTests(unittest.TestCase):
         self.config.add_route('cart.seat_types2', '/testing/seat_types2/{performance_id}/{sales_segment_id}')
         self.config.add_route('cart.order', '/testing/order/{sales_segment_id}')
         from datetime import datetime
-        request = testing.DummyRequest()
+        request = testing.DummyRequest(
+            translate=lambda t:t,
+            accept_language=testing.DummyModel(
+                best_match=lambda a,b:'ja'
+            ),
+            organization=testing.DummyModel(
+                setting=testing.DummyModel(i18n=False),
+            ),
+        )
         request.context = testing.DummyResource(
             request=request,
             event=DummyEvent(id=123),
