@@ -49,7 +49,6 @@ import urllib
 import urllib2
 import contextlib
 import re
-from functools import partial
 
 def jump_maintenance_page_om_for_trouble(organization):
     """https://redmine.ticketstar.jp/issues/10878
@@ -327,7 +326,6 @@ class OrderReviewShowView(object):
     def __init__(self, context, request):
         self.context = context
         self.request = request
-        self._message = partial(h._message, request=self.request)
 
     @lbr_view_config(
         route_name='order_review.show',
@@ -351,10 +349,10 @@ class OrderReviewShowView(object):
                 announce_datetime = lot_entry.lot.lotting_announce_datetime
         if announce_datetime is not None:
             if announce_datetime > now:
-                raise InvalidForm(form, [self._message(u'受付番号または電話番号が違います。')])
+                raise InvalidForm(form, [u'受付番号または電話番号が違います。'])
 
         if order is None or order.shipping_address is None:
-            raise InvalidForm(form, [self._message(u'受付番号または電話番号が違います。')])
+            raise InvalidForm(form, [u'受付番号または電話番号が違います。'])
         return dict(order=order)
 
 @view_defaults(renderer=selectable_renderer("order_review/edit_order_attributes.html"), request_method='POST')

@@ -446,9 +446,6 @@ class OrganizationSettingForm(OrganizationSettingSimpleForm):
         choices=[e.v for e in c_models.OrderreviewIndexEnum],
         validators=[]
         )
-    i18n = OurBooleanField(
-        label=get_annotations_for(c_models.OrganizationSetting.i18n)['label']
-        )
 
     def validate_multicheckout_shop_name(form, field):
         org_setting = OrganizationSetting.query.\

@@ -30,26 +30,19 @@ class Translations(object):
         }
     def __init__(self, request=None, messages=None):
         if request is None:
-            request = get_current_request()
-        self.request = request
+            request = get_current_request() 
         if messages:
             self.messages = dict(self.messages, **messages)
         self.formatter = create_date_time_formatter(request)
 
     def gettext(self, string):
-        msg = self.messages.get(string, string)
-        if hasattr(self.request, 'translate'):
-            return self.request.translate(msg)
-        else:
-            return msg
+        return self.messages.get(string, string)
+
     def ngettext(self, singular, plural, n):
         ural = singular if n == 1 else plural
         message  = self.messages.get(ural)
         if message:
-            if hasattr(self.request, 'translate'):
-                return self.request.translate(message)
-            else:
-                return message
+            return message
         else:
             logger.warn("localize message not found: '%s'", ural)
             return ural

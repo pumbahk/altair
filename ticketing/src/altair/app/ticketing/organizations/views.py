@@ -259,7 +259,6 @@ class OrganizationSettings(BaseView):
         organization_setting.famiport_enabled = f.famiport_enabled.data
         organization_setting.enable_fm_reflection_func = f.enable_fm_reflection_func.data
         organization_setting.orderreview_index = f.orderreview_index.data
-        organization_setting.i18n = f.i18n.data
         organization_setting.save()
 
         self.request.session.flash(u'その他の設定を保存しました')

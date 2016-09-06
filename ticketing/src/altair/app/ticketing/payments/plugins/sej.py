@@ -42,9 +42,6 @@ from ..interfaces import IPaymentPlugin, IOrderPayment, IDeliveryPlugin, IPaymen
 from ..exceptions import PaymentPluginException, OrderLikeValidationFailure
 from . import SEJ_PAYMENT_PLUGIN_ID as PAYMENT_PLUGIN_ID
 from . import SEJ_DELIVERY_PLUGIN_ID as DELIVERY_PLUGIN_ID
-from altair.app.ticketing.cart import api as cart_api
-from ..helpers import _message
-from ..api import validate_length_dict
 
 logger = logging.getLogger(__name__)
 
@@ -485,38 +482,28 @@ def validate_order_like(request, current_date, order_like, update=False, ticketi
             raise OrderLikeValidationFailure(u'no phone number specified', 'shipping_address.tel_1')
         elif len(tel) > 12 or re.match(ur'[^0-9]', tel):
             raise OrderLikeValidationFailure(u'invalid phone number', 'shipping_address.tel_2')
-        if not order_like.organization.setting.i18n or (request.localizer and request.localizer.locale_name == 'ja'):
-            if not order_like.shipping_address.last_name:
-                raise OrderLikeValidationFailure(u'no last name specified', 'shipping_address.last_name')
-            if not order_like.shipping_address.first_name:
-                raise OrderLikeValidationFailure(u'no first name specified', 'shipping_address.first_name')
-            if not re.match(katakana_regex, order_like.shipping_address.last_name_kana):
-                raise OrderLikeValidationFailure(u'last name (kana) contains non-katakana characters', 'shipping_address.last_name_kana')
-            if not re.match(katakana_regex, order_like.shipping_address.first_name_kana):
-                raise OrderLikeValidationFailure(u'first name (kana) contains non-katakana characters', 'shipping_address.first_name_kana')
-
-        """DBに名前のカナデータがない場合、「カナ」に設定"""
-        if not order_like.shipping_address.last_name_kana:
-            order_like.shipping_address.last_name_kana = u'　'
-        if not order_like.shipping_address.first_name_kana:
-            order_like.shipping_address.first_name_kana = u'　'
-
+        if not order_like.shipping_address.last_name:
+            raise OrderLikeValidationFailure(u'no last name specified', 'shipping_address.last_name')
+        if not order_like.shipping_address.first_name:
+            raise OrderLikeValidationFailure(u'no first name specified', 'shipping_address.first_name')
         user_name = build_user_name(order_like.shipping_address)
-        if not order_like.organization.setting.i18n or (request.localizer and request.localizer.locale_name == 'ja'):
-            validate_length_dict('CP932', {'user_name':user_name}, {'user_name':40})
-        if order_like.organization.setting.i18n and (request.localizer and request.localizer.locale_name == 'zh_CN'):
-            validate_length_dict('UTF-8', {'user_name':user_name}, {'user_name':40})
-        if order_like.organization.setting.i18n and (request.localizer and request.localizer.locale_name == 'zh_TW'):
-            validate_length_dict('UTF-8', {'user_name':user_name}, {'user_name':40})
-        if order_like.organization.setting.i18n and (request.localizer and request.localizer.locale_name == 'en'):
-            validate_length_dict('UTF-8', {'user_name':user_name}, {'user_name':40})
-        user_name_kana = build_user_name_kana(order_like.shipping_address)
-        validate_length_dict('CP932', {'user_name_kana':user_name_kana}, {'user_name_kana':40})
-
+        try:
+            user_name_sjis = user_name.encode('CP932')
+        except UnicodeEncodeError:
+            raise OrderLikeValidationFailure(u'user name contains a character that is not encodable as CP932', 'shipping_address.last_name')
+        if len(user_name_sjis) > 40:
+            raise OrderLikeValidationFailure(u'user name too long', 'shipping_address.last_name')
         if not order_like.shipping_address.last_name_kana:
             raise OrderLikeValidationFailure(u'no last name (kana) specified', 'shipping_address.last_name_kana')
+        if not re.match(katakana_regex, order_like.shipping_address.last_name_kana):
+            raise OrderLikeValidationFailure(u'last name (kana) contains non-katakana characters', 'shipping_address.last_name_kana')
         if not order_like.shipping_address.first_name_kana:
             raise OrderLikeValidationFailure(u'no first name (kana) specified', 'shipping_address.first_name_kana')
+        if not re.match(katakana_regex, order_like.shipping_address.first_name_kana):
+            raise OrderLikeValidationFailure(u'first name (kana) contains non-katakana characters', 'shipping_address.first_name_kana')
+        user_name_kana = build_user_name_kana(order_like.shipping_address)
+        if len(user_name_kana.encode('CP932')) > 40:
+            raise OrderLikeValidationFailure(u'user name kana too long', 'shipping_address.last_name_kana')
         if order_like.shipping_address.zip and not re.match(ur'^[0-9]{7}$', order_like.shipping_address.zip.replace(u'-', u'')):
             raise OrderLikeValidationFailure(u'invalid zipcode specified', 'shipping_address.zip')
         email = order_like.shipping_address.email_1 or order_like.shipping_address.email_2
@@ -582,7 +569,7 @@ class SejPaymentPlugin(object):
         current_date = datetime.now()
         tenant = userside_api.lookup_sej_tenant(request, order_like.organization_id)
         try:
-            sej_order = sej_api.create_sej_order(
+            sej_order = sej_api.create_sej_order(   
                 request,
                 **build_sej_args(SejPaymentType.PrepaymentOnly, order_like, current_date, None)
                 )
@@ -875,7 +862,7 @@ def can_receive_from_next_day(now, sej_order):
 @lbr_view_config(context=ICartDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID,
              renderer=_overridable_delivery('sej_delivery_confirm.html'))
 def sej_delivery_confirm_viewlet(context, request):
-    return Response(text=_message(u'セブン-イレブン受け取り', request))
+    return Response(text=u'セブン-イレブン受け取り')
 
 @lbr_view_config(context=IOrderPayment, name="payment-%d" % PAYMENT_PLUGIN_ID,
              renderer=_overridable_delivery('sej_payment_complete.html'))
@@ -895,7 +882,7 @@ def sej_payment_viewlet(context, request):
 
 @lbr_view_config(context=ICartPayment, name="payment-%d" % PAYMENT_PLUGIN_ID, renderer=_overridable_payment('sej_payment_confirm.html'))
 def sej_payment_confirm_viewlet(context, request):
-    return Response(text=_message(u'セブン-イレブン支払い', request))
+    return Response(text=u'セブン-イレブン支払い')
 
 
 @lbr_view_config(context=ICompleteMailResource, name="payment-%d" % PAYMENT_PLUGIN_ID, renderer=_overridable_payment('sej_payment_mail_complete.html', fallback_ua_type='mail'))
@@ -977,4 +964,3 @@ def payment_mail_notice_viewlet(context, request):
 @lbr_view_config(context=ILotsAcceptedMailResource, name="delivery-%d" % DELIVERY_PLUGIN_ID)
 def delivery_mail_notice_viewlet(context, request):
     return Response(context.mail_data("D", "notice"))
-

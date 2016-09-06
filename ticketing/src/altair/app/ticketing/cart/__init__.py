@@ -21,8 +21,6 @@ from .interfaces import ICartResource
 from .exceptions import CartException
 from ..api.impl import bind_communication_api ## cmsとの通信
 
-from altair.app.ticketing.i18n import custom_locale_negotiator
-
 logger = logging.getLogger(__name__)
 
 
@@ -374,7 +372,6 @@ def setup_routes(config):
     config.add_route('payment.finish', 'completed', factory='.resources.CompleteViewTicketingCartResource')
 
     config.add_route('cart.contact', 'contact')
-    config.add_route('cart.i18n', 'message')
 
 def main(global_config, **local_config):
     settings = dict(global_config)
@@ -429,10 +426,6 @@ def main(global_config, **local_config):
     config.include('.preview')
 
     config.add_subscriber('.subscribers.add_helpers', 'pyramid.events.BeforeRender')
-    config.add_subscriber('altair.app.ticketing.i18n.add_renderer_globals', 'pyramid.events.BeforeRender')
-    config.add_subscriber('.i18n.add_localizer', 'pyramid.events.NewRequest')
-    config.add_translation_dirs('altair.app.ticketing:locale')
-    config.set_locale_negotiator(custom_locale_negotiator)
 
     config.scan()
 
@@ -445,4 +438,3 @@ def main(global_config, **local_config):
 
 def includeme(config):
     config.include('.request')
-

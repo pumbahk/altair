@@ -16,7 +16,6 @@ from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.core.models import PaymentMethod
 from altair.app.ticketing.payment_methods.forms import PaymentMethodForm
 from altair.app.ticketing.payments.plugins import FAMIPORT_PAYMENT_PLUGIN_ID
-from altair.app.ticketing.core import models as c_models
 
 @view_defaults(decorator=with_bootstrap, permission='master_editor')
 class PaymentMethods(BaseView):
@@ -46,27 +45,17 @@ class PaymentMethods(BaseView):
 
     @view_config(route_name='payment_methods.new', request_method='GET', renderer='altair.app.ticketing:templates/payment_methods/_form.html')
     def new(self):
-        organization_setting = c_models.OrganizationSetting.filter_by(organization_id=self.context.user.organization_id).one()
         return {
             'form': PaymentMethodForm(),
-            'i18n_org': u"True" if organization_setting.i18n else "False"
             }
 
     @view_config(route_name='payment_methods.new', request_method='POST', renderer='altair.app.ticketing:templates/payment_methods/_form.html')
     def new_post(self):
         f = PaymentMethodForm(self.request.POST)
-        organization_setting = c_models.OrganizationSetting.filter_by(organization_id=self.context.user.organization_id).one()
         if f.validate():
             payment_method = merge_session_with_post(PaymentMethod(), f.data, excludes={'payment_sheet_text'})
             payment_method.organization_id = self.context.user.organization_id
             payment_method.preferences.setdefault(unicode(FAMIPORT_PAYMENT_PLUGIN_ID), {})['payment_sheet_text'] = f.payment_sheet_text.data
-            if organization_setting.i18n:
-                payment_method.preferences.setdefault(u'en', {})['name'] = f.name_en.data
-                payment_method.preferences.setdefault(u'en', {})['description'] = f.description_en.data
-                payment_method.preferences.setdefault(u'zh_CN', {})['name'] = f.name_zh_cn.data
-                payment_method.preferences.setdefault(u'zh_CN', {})['description'] = f.description_zh_cn.data
-                payment_method.preferences.setdefault(u'zh_TW', {})['name'] = f.name_zh_tw.data
-                payment_method.preferences.setdefault(u'zh_TW', {})['description'] = f.description_zh_tw.data
             payment_method.save()
 
             self.request.session.flash(u'決済方法を保存しました')
@@ -74,7 +63,6 @@ class PaymentMethods(BaseView):
         else:
             return {
                 'form':f,
-                'i18n_org': u"True" if organization_setting.i18n else "False"
             }
 
     @view_config(route_name='payment_methods.edit', request_method='GET', renderer='altair.app.ticketing:templates/payment_methods/_form.html')
@@ -83,17 +71,8 @@ class PaymentMethods(BaseView):
         obj = PaymentMethod.query.filter_by(id=payment_method_id).one()
         form = PaymentMethodForm(obj=obj)
         form.payment_sheet_text.data = obj.preferences.get(unicode(FAMIPORT_PAYMENT_PLUGIN_ID), {}).get('payment_sheet_text', u'')
-        organization_setting = c_models.OrganizationSetting.filter_by(organization_id=self.context.user.organization_id).one()
-        if organization_setting.i18n:
-            form.name_en.data = obj.preferences.get(u'en', {}).get('name', u'')
-            form.description_en.data = obj.preferences.get(u'en', {}).get('description', u'')
-            form.name_zh_cn.data = obj.preferences.get(u'zh_CN', {}).get('name', u'')
-            form.description_zh_cn.data = obj.preferences.get(u'zh_CN', {}).get('description', u'')
-            form.name_zh_tw.data = obj.preferences.get(u'zh_TW', {}).get('name', u'')
-            form.description_zh_tw.data = obj.preferences.get(u'zh_TW', {}).get('description', u'')
         return {
             'form': form,
-            'i18n_org': u"True" if organization_setting.i18n else "False"
             }
 
     @view_config(route_name='payment_methods.edit', request_method='POST', renderer='altair.app.ticketing:templates/payment_methods/_form.html')
@@ -104,18 +83,10 @@ class PaymentMethods(BaseView):
             return HTTPNotFound('payment_method id %d is not found' % payment_method_id)
 
         f = PaymentMethodForm(self.request.POST)
-        organization_setting = c_models.OrganizationSetting.filter_by(organization_id=self.context.user.organization_id).one()
         if f.validate():
             payment_method = merge_session_with_post(payment_method, f.data)
             payment_method.organization_id = self.context.user.organization_id
             payment_method.preferences.setdefault(unicode(FAMIPORT_PAYMENT_PLUGIN_ID), {})['payment_sheet_text'] = f.payment_sheet_text.data
-            if organization_setting.i18n:
-                payment_method.preferences.setdefault(u'en', {})['name'] = f.name_en.data
-                payment_method.preferences.setdefault(u'en', {})['description'] = f.description_en.data
-                payment_method.preferences.setdefault(u'zh_CN', {})['name'] = f.name_zh_cn.data
-                payment_method.preferences.setdefault(u'zh_CN', {})['description'] = f.description_zh_cn.data
-                payment_method.preferences.setdefault(u'zh_TW', {})['name'] = f.name_zh_tw.data
-                payment_method.preferences.setdefault(u'zh_TW', {})['description'] = f.description_zh_tw.data
             payment_method.save()
 
             self.request.session.flash(u'決済方法を保存しました')
@@ -123,7 +94,6 @@ class PaymentMethods(BaseView):
         else:
             return {
                 'form':f,
-                'i18n_org': u"True" if organization_setting.i18n else "False"
             }
 
     @view_config(route_name='payment_methods.delete')
@@ -142,4 +112,3 @@ class PaymentMethods(BaseView):
             raise HTTPFound(location=location)
 
         return HTTPFound(location=location)
-
