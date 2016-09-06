@@ -17,6 +17,7 @@ import sqlahelper
 
 from .interfaces import ILotResource
 
+from altair.app.ticketing.i18n import custom_locale_negotiator
 
 class RakutenAuthContext(object):
     def __init__(self, request):
@@ -229,6 +230,10 @@ def main(global_config, **local_config):
     config.add_tween('altair.app.ticketing.tweens.session_cleaner_factory', under=INGRESS)
 
     config.add_subscriber(register_globals, 'pyramid.events.BeforeRender')
+    config.add_subscriber('altair.app.ticketing.i18n.add_renderer_globals', 'pyramid.events.BeforeRender')
+    config.add_subscriber('.i18n.add_localizer', 'pyramid.events.NewRequest')
+    config.add_translation_dirs('altair.app.ticketing:locale')
+    config.set_locale_negotiator(custom_locale_negotiator)
 
     config.scan(".views")
     config.scan(".mobile_views")
@@ -244,3 +249,4 @@ def main(global_config, **local_config):
         CART_STATIC_URL_PREFIX: CART_STATIC_ASSET_SPEC,
         FC_AUTH_URL_PREFIX: FC_AUTH_STATIC_ASSET_SPEC,
     })(global_config, app)
+

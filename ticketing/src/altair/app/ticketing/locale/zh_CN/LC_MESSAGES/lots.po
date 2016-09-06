@@ -1,0 +1,948 @@
+msgid ""
+msgstr ""
+
+# common
+
+msgid "チケット情報・販売・購入・予約"
+msgstr "相关信息・销售・购买・预约"
+
+msgid "チケット申込"
+msgstr "购票"
+
+msgid "運営会社"
+msgstr "运营公司"
+
+msgid "お問い合わせ"
+msgstr "联系我们"
+
+msgid "個人情報保護方針"
+msgstr "个人隐私条款"
+
+msgid "特定商取引法に基づく表示"
+msgstr "相关商务法规"
+
+msgid "サービス利用規約"
+msgstr "服务条款"
+
+# review form
+
+msgid "抽選申し込み番号"
+msgstr "抽签申请号"
+
+msgid "必須"
+msgstr "必须"
+
+msgid "半角英数"
+msgstr "数字或英文字母"
+
+msgid "電話番号"
+msgstr "电话号码"
+
+msgid "FAX番号"
+msgstr "FAX"
+
+msgid "確認してください"
+msgstr "请确认输入信息"
+
+msgid "電話番号はご登録時の電話番号をご入力ください。"
+msgstr "请输入注册时填写的电话号码。"
+
+msgid "電話番号は自宅か携帯かどちらかを入力してください"
+msgstr "请输入家庭电话或手机号码。"
+
+msgid "（携帯・自宅をどちらもご登録した場合どちらの番号でも構いません。）"
+msgstr "（家庭电话或手机号码均可。）"
+
+msgid "{0}または{1}が違います"
+msgstr "{0}或者{1}不同"
+
+msgid "確認する"
+msgstr "确认"
+
+msgid "抽選結果"
+msgstr "抽签结果"
+
+msgid "お申込みいただいておりました以下の抽選受付を{0}に取消いたしました。"
+msgstr "抽签申请已于{0}取消。"
+
+msgid "抽選の結果、お客様はご当選されました。"
+msgstr "恭喜您在抽签中中签。"
+
+msgid "払込票番号や引換票番号は、下記の購入履歴よりご確認いただけます。"
+msgstr "请从下面的购买「记录确认」确认您的支付号码或领票号码。"
+
+msgid "<a href=\"/orderreview/guest\" target=\"_blank\">■購入履歴確認ページ</a>をご確認ください。"
+msgstr "请从<a href=\"/orderreview/guest\" target=\"_blank\">■购买记录页面</a>确认。"
+
+msgid "予約番号は{0}です"
+msgstr "预约号码为{0}"
+
+msgid "抽選の結果、お客様は残念ながら落選となりました。"
+msgstr "很遗憾，您的抽签没用中签。"
+
+msgid "抽選結果発表は、{0}を予定しております。抽選結果発表後、抽選結果確認ページにて当選・落選をご確認下さい。"
+msgstr "抽签结果会于{0}发布，请于结果发布后从确认界面确认结果。"
+
+msgid "お申込内容"
+msgstr "订单内容"
+
+msgid "決済方法"
+msgstr "支付方法"
+
+msgid "引取方法"
+msgstr "领票方法"
+
+# index
+
+msgid "イベント詳細"
+msgstr "演出详细"
+
+msgid "イベント詳細情報"
+msgstr "演出详细信息"
+
+msgid "イベント名"
+msgstr "演出名"
+
+msgid "申込受付期間"
+msgstr "订单受理期间"
+
+msgid "抽選結果発表予定日"
+msgstr "抽签结果发表预定日期"
+
+msgid "制限枚数"
+msgstr "限制张数"
+
+msgid "1希望の申込で{0}枚まで"
+msgstr "从个抽签目标购买上限为{0}张"
+
+msgid "申込回数制限"
+msgstr "抽签次数限制"
+
+msgid "{0} 回"
+msgstr "{0} 次"
+
+msgid "受付希望数"
+msgstr "受理抽签目标数"
+
+msgid "一度の申込で第{0}希望まで"
+msgstr "一次抽签所选抽签目标上限为{0}"
+
+msgid "注意事項"
+msgstr "注意事項"
+
+msgid "公演日"
+msgstr "演出日期"
+
+msgid "会場"
+msgstr "会场"
+
+msgid "希望選択"
+msgstr "抽签目标选择"
+
+msgid "第{0}希望"
+msgstr "第{0}抽签目标"
+
+msgid "希望する公演と券種の選択"
+msgstr "选择演出和票种"
+
+msgid "公演日・会場"
+msgstr "演出日期／会场"
+
+msgid "席種"
+msgstr "座位种类"
+
+msgid "お支払・お引取り方法選択"
+msgstr "选择支付・领取方法"
+
+msgid "利用料・手数料"
+msgstr "利用费・手续费"
+
+msgid "システム利用料"
+msgstr "系统使用费"
+
+msgid "注文受付完了、確認メール等をメールでご案内します。「tstar.jp」からのメールを受信できるよう、お申し込み前にドメイン指定の設定を必ずお願いいたします。"
+msgstr "购票完成后系统会发送确认邮件。请接收从「{domain}」域名发来的邮件。"
+
+msgid "上記の利用料・手数料がかかります。"
+msgstr "上述支付方式需要交付手续费。"
+
+msgid "購入者情報"
+msgstr "购买者信息"
+
+msgid "購入者氏名（全角）"
+msgstr "购买者姓名"
+
+msgid "姓"
+msgstr "姓"
+
+msgid "(全角)"
+msgstr " "
+
+msgid "姓(カナ)"
+msgstr " "
+
+msgid "(全角カナ)"
+msgstr " "
+
+msgid "入力してください"
+msgstr "请输入"
+
+msgid "名"
+msgstr "名"
+
+msgid "名(カナ)"
+msgstr " "
+
+msgid "アルファベットのみを入力してください"
+msgstr "请输入拼音拼写"
+
+msgid "アルファベット、数字、-(ハイフン)、.(点)、,(コンマ)、空白を入力してください"
+msgstr "请输入英文字母、数字、-(连字符号)、.(点)、逗号或空白"
+
+msgid "パスポートと一致しているものを入力してください"
+msgstr "请输入与护照一致的拼音拼写信息"
+
+msgid "メールアドレス"
+msgstr "电子邮件"
+
+msgid "メールアドレスと確認メールアドレスが一致していません。"
+msgstr "邮件地址与确认信息不一致。"
+
+msgid "(半角英数)"
+msgstr " "
+
+msgid "メールアドレス (確認)"
+msgstr "电子邮件（确认）"
+
+msgid "電話番号 (携帯)"
+msgstr "手机号码"
+
+msgid "住所"
+msgstr "住址"
+
+msgid "国・地域"
+msgstr "国家・地区"
+
+msgid "リストから選択してください。"
+msgstr "请从列表选择输入。"
+
+msgid "郵便番号"
+msgstr "邮政编码"
+
+msgid "(半角英数7ケタ)"
+msgstr "(7位数字或字母)"
+
+msgid "半角英数7ケタ"
+msgstr "7位数字或字母"
+
+msgid "-(ハイフン)を抜いた半角数字のみを入力してください"
+msgstr "请输入半角数字，省略'-'"
+
+msgid "都道府県"
+msgstr "省"
+
+msgid "市区町村"
+msgstr "市区"
+
+msgid "町名番地"
+msgstr "街道"
+
+msgid "建物名等"
+msgstr "建筑物名"
+
+msgid "例: 1030001"
+msgstr "例: 1030001"
+
+msgid "例: 山田"
+msgstr "例: 王"
+
+msgid "例: 太郎"
+msgstr "例: 小明"
+
+msgid "例: ヤマダ"
+msgstr " "
+
+msgid "例: タロウ"
+msgstr " "
+
+msgid "例: 東京都"
+msgstr "例: 北京"
+
+msgid "例: 中央区"
+msgstr "例: 朝阳区"
+
+msgid "例: 日本橋x-xx-xx"
+msgstr "例: 朝外街道xx号"
+
+msgid "例: yyビルz階"
+msgstr "例: 大厦xx号"
+
+msgid "例: 080xxxxyyyy"
+msgstr "例: 180xxxxyyyy"
+
+msgid "生年月日"
+msgstr "出生日期"
+
+msgid "性別"
+msgstr "性别"
+
+msgid "メモ欄"
+msgstr "备注栏"
+
+msgid "ご質問を入力されても返信はいたしかねます。"
+msgstr "请不要在这里输入询问请求。"
+
+msgid "ご質問がある場合はお問合せフォームよりお願いいたします。"
+msgstr "如果您有任何问题，请从「联系我们」进行咨询。"
+
+msgid "次へ"
+msgstr "下一步"
+
+msgid "公演「{0}」への申込は{1}回までとなっております。"
+msgstr "演出「{0}」的抽签申请上限为{1}次"
+
+msgid "抽選への申込は{0}回までとなっております。"
+msgstr "抽签申请上限为{0}次。"
+
+msgid "申し込み内容に入力不備があります"
+msgstr "内容输入不完整。"
+
+msgid "同一商品が複数回希望されています。"
+msgstr "同一抽签目标不能多次制定。"
+
+msgid "各希望ごとの合計枚数は最大{0}枚までにしてください"
+msgstr "所有抽签目标的张数总和上限为{0}张"
+
+msgid "選択された券種が見つかりません。もう一度はじめから選択してください。"
+msgstr "所选票种不存在，请重新进行购买操作。"
+
+msgid "お支払お引き取り方法を選択してください"
+msgstr "请选择支付和领取的方式"
+
+msgid "購入者情報に入力不備があります"
+msgstr "购买者信息输入不完整"
+
+msgid "日付が正しくありません"
+msgstr "日期不正确"
+
+msgid "セッションに問題が発生しました。"
+msgstr "发生系统问题。"
+
+# agreement
+
+msgid "注意事項を確認、同意し、公演に申し込んでください。"
+msgstr "请确认注意事项并签署同意后继续购买操作。"
+
+# payment 3d
+
+msgid "クレジットカードでお支払い"
+msgstr "信用卡支付"
+
+msgid "カード番号"
+msgstr "卡号"
+
+msgid "半角数字(16桁)"
+msgstr "数字（16位）"
+
+msgid "有効期限"
+msgstr "有效期限"
+
+msgid "半角数字"
+msgstr "数字"
+
+msgid "月"
+msgstr "月"
+
+msgid "年"
+msgstr "年"
+
+msgid "名義人"
+msgstr "名义人"
+
+msgid "半角ローマ字"
+msgstr "拼音"
+
+msgid "セキュリティコード"
+msgstr "安全码"
+
+msgid "半角"
+msgstr "数字"
+
+msgid "セキュリティコードは、カード裏面の署名欄に印刷されている下3桁の数字です。"
+msgstr "安全码，是根据该印在信用卡背面签名栏上的三位数字。"
+
+msgid "ブラウザの「戻る」ボタンを使用するとエラーになります。"
+msgstr "使用浏览器的返回按钮会发生错误。"
+
+msgid "ページによってはブラウザの「更新」ボタンを使用するとエラーになる場合があります。"
+msgstr "使用浏览器的更新按钮可能会出现错误。"
+
+msgid "購入完了と同時に決済され、即時予約確定となります(抽選受付の場合は、当選と同時に決済されます)。"
+msgstr "购买完成的同时发生支付（抽签购买时会在中签时发生支付）。"
+
+msgid "支払回数は≪1回払い≫のみのお取扱いとなります。 以下のクレジットカードがご利用できます。"
+msgstr "支付只支持<<一次性付款>>。可使用下面的信用卡。"
+
+msgid "以下のクレジットカードがご利用できます。"
+msgstr "可使用下面的信用卡。"
+
+msgid "カード情報入力時に、ご利用カードの有効性の確認（オーソリ確認）を実施しております。"
+msgstr "在卡信息输入后系统会做有效性验证。"
+
+msgid "お客様のカードによっては、チケットの予約・購入が完了していない場合でも、上記の有効性確認に伴い、カード利用案内メール等が配信される場合があります。"
+msgstr "当不能完成购买时，会发生系统送信确认信用卡有效性及使用方法的情况。"
+
+msgid "ご購入されたチケットは、理由の如何を問わず、取替・変更・キャンセルはお受けできません。"
+msgstr "对已售出的票不受理退票请求。"
+
+# confirm
+
+msgid "申込内容をご確認ください。"
+msgstr "请确认订单内容。"
+
+msgid "チケット購入の絞り込み"
+msgstr "购票确认"
+
+msgid "希望内容と手数料"
+msgstr "抽签内容和费用"
+
+msgid "枚"
+msgstr "张"
+
+msgid "(税込)"
+msgstr "（含税）"
+
+msgid "決済手数料"
+msgstr "支付手续费"
+
+msgid "引取手数料"
+msgstr "领票手续费"
+
+msgid "合計"
+msgstr "合计"
+
+msgid "メールマガジンの配信"
+msgstr "订阅电子杂志"
+
+msgid "お申し込みいただいた方に、メールマガジンをお送りします。不要な方はチェックをはずしてください。"
+msgstr "我们会为您发送电子杂志，反选会取消这个服务。"
+
+msgid "申込内容確認"
+msgstr "确认订单内容"
+
+msgid "まだ申し込みは完了していません"
+msgstr "购票操作未完毕"
+
+msgid "ご注文内容をご確認いただき「確定する」ボタンで購入してください"
+msgstr "确认订单内容后按「确定」按钮进行购买"
+
+msgid "システム手数料"
+msgstr "系统手续费"
+
+msgid "合計(税込)"
+msgstr "合计（税后）"
+
+msgid "自宅"
+msgstr "家庭"
+
+msgid "携帯"
+msgstr "手机"
+
+msgid "配達受取を選択した場合"
+msgstr "如果您选择邮寄领票"
+
+msgid "確定する"
+msgstr "确定"
+
+msgid "初めに戻る"
+msgstr "回到开始"
+
+msgid "初めに戻るボタンを押すと、ここまでのお申込内容がクリアされます。"
+msgstr "如果按返回按钮，您的目前为止的输入内容将被清除。"
+
+# completion
+
+msgid "申込完了"
+msgstr "购买完成"
+
+msgid "申込を完了しました"
+msgstr "购买操作成功"
+
+msgid "下記の受付番号はとても大切な番号です。すぐにメモして保管してください。"
+msgstr "以下订单号码是非常重要的购买凭证。请立刻打印或记入备忘录。"
+
+msgid "申込番号"
+msgstr "订单号码"
+
+msgid "お申込み時に、ご登録いただいたメールアドレス宛に、受付完了メールが送られます。しばらくたっても確認のメールが届かない場合は、入力されたメールアドレスが誤りがあるか、メールの受信設定により受信できていない可能性があります。"
+msgstr "购买完成后系统会发送邮件至登录的电子邮箱。如果未收到确认邮件，可能是邮件地址输入错误或邮箱设置问题。"
+
+msgid "登録内容、受信設定を確認のうえ、<a href=\"{0}\">こちら</a>よりお問合せください。"
+msgstr "请确认订单内容后从<a href=\"{0}\">这里</a>联系我们。"
+
+msgid "お問合せの際は、お申し込み時のお名前、電話番号、公演名、受付番号を記載お願いいたします。"
+msgstr "当与我们联系，请输入购买操作时使用的姓名，电话，订单信息与演出名。"
+
+msgid "お申込内容は、「<a href=\"/lots/review\">申込確認ページ</a>」からもご確認いただけます。受付番号とご登録時のお電話番号をお手元にご用意の上、ご利用ください。"
+msgstr "使用订单号码和抽签时登录的电话号码，您可以从「<a href=\"/lots/review\">申请确认页面</a>」确认抽签内容。"
+
+msgid "決済中にエラーが発生しました。しばらく時間を置いてから<a href=\"{0}\">再度お試しください。</a>"
+msgstr "结算时发生错误。请稍候再次从<a href=\"{0}\">这里</a>操作。"
+
+# 国名
+
+msgid "country_1"
+msgstr "日本"
+
+msgid "country_2"
+msgstr "阿尔及利亚"
+
+msgid "country_3"
+msgstr "安哥拉"
+
+msgid "country_4"
+msgstr "亚美尼亚"
+
+msgid "country_5"
+msgstr "阿塞拜疆"
+
+msgid "country_6"
+msgstr "澳大利亚"
+
+msgid "country_7"
+msgstr "阿尔巴尼亚"
+
+msgid "country_8"
+msgstr "奥地利"
+
+msgid "country_9"
+msgstr "安圭拉"
+
+msgid "country_10"
+msgstr "安提瓜和巴布达"
+
+msgid "country_11"
+msgstr "阿根廷"
+
+msgid "country_12"
+msgstr "巴林"
+
+msgid "country_13"
+msgstr "贝宁"
+
+msgid "country_14"
+msgstr "博茨瓦纳"
+
+msgid "country_15"
+msgstr "布基纳法索"
+
+msgid "country_16"
+msgstr "不丹"
+
+msgid "country_17"
+msgstr "文莱达鲁萨兰国"
+
+msgid "country_18"
+msgstr "白俄罗斯"
+
+msgid "country_19"
+msgstr "比利时"
+
+msgid "country_20"
+msgstr "保加利亚"
+
+msgid "country_21"
+msgstr "巴哈马"
+
+msgid "country_22"
+msgstr "巴巴多斯"
+
+msgid "country_23"
+msgstr "伯利兹"
+
+msgid "country_24"
+msgstr "百慕大"
+
+msgid "country_25"
+msgstr "玻利维亚"
+
+msgid "country_26"
+msgstr "巴西"
+
+msgid "country_27"
+msgstr "佛得角"
+
+msgid "country_28"
+msgstr "乍得"
+
+msgid "country_29"
+msgstr "刚果共和国"
+
+msgid "country_30"
+msgstr "柬埔寨"
+
+msgid "country_31"
+msgstr "中国"
+
+msgid "country_32"
+msgstr "克罗地亚"
+
+msgid "country_33"
+msgstr "捷克共和国"
+
+msgid "country_34"
+msgstr "塞浦路斯"
+
+msgid "country_35"
+msgstr "开曼群岛"
+
+msgid "country_36"
+msgstr "智利"
+
+msgid "country_37"
+msgstr "哥伦比亚"
+
+msgid "country_38"
+msgstr "哥斯达黎加"
+
+msgid "country_39"
+msgstr "加拿大"
+
+msgid "country_40"
+msgstr "多米尼加"
+
+msgid "country_42"
+msgstr "德国"
+
+msgid "country_43"
+msgstr "埃及"
+
+msgid "country_44"
+msgstr "爱沙尼亚"
+
+msgid "country_45"
+msgstr "厄瓜多尔"
+
+msgid "country_46"
+msgstr "萨尔瓦多"
+
+msgid "country_47"
+msgstr "斐济"
+
+msgid "country_48"
+msgstr "法国"
+
+msgid "country_49"
+msgstr "芬兰"
+
+msgid "country_50"
+msgstr "冈比亚"
+
+msgid "country_51"
+msgstr "加纳"
+
+msgid "country_52"
+msgstr "几内亚比绍"
+
+msgid "country_53"
+msgstr "希腊"
+
+msgid "country_54"
+msgstr "格林纳达"
+
+msgid "country_55"
+msgstr "危地马拉"
+
+msgid "country_56"
+msgstr "圭亚那"
+
+msgid "country_57"
+msgstr "香港"
+
+msgid "country_58"
+msgstr "匈牙利"
+
+msgid "country_59"
+msgstr "洪都拉斯"
+
+msgid "country_60"
+msgstr "印度"
+
+msgid "country_61"
+msgstr "以色列"
+
+msgid "country_62"
+msgstr "印度尼西亚"
+
+msgid "country_63"
+msgstr "冰岛"
+
+msgid "country_64"
+msgstr "爱尔兰"
+
+msgid "country_65"
+msgstr "意大利"
+
+msgid "country_66"
+msgstr "约旦"
+
+msgid "country_67"
+msgstr "牙买加"
+
+msgid "country_68"
+msgstr "肯尼亚"
+
+msgid "country_69"
+msgstr "科威特"
+
+msgid "country_70"
+msgstr "哈萨克斯坦"
+
+msgid "country_71"
+msgstr "韩国"
+
+msgid "country_72"
+msgstr "吉尔吉斯斯坦"
+
+msgid "country_73"
+msgstr "利比里亚"
+
+msgid "country_74"
+msgstr "老挝"
+
+msgid "country_75"
+msgstr "黎巴嫩"
+
+msgid "country_76"
+msgstr "拉脱维亚"
+
+msgid "country_77"
+msgstr "立陶宛"
+
+msgid "country_78"
+msgstr "卢森堡"
+
+msgid "country_79"
+msgstr "马达加斯加"
+
+msgid "country_80"
+msgstr "马拉维"
+
+msgid "country_81"
+msgstr "马里"
+
+msgid "country_82"
+msgstr "毛里塔尼亚"
+
+msgid "country_83"
+msgstr "毛里求斯"
+
+msgid "country_84"
+msgstr "莫桑比克"
+
+msgid "country_85"
+msgstr "澳门"
+
+msgid "country_86"
+msgstr "马来西亚"
+
+msgid "country_87"
+msgstr "密克罗尼西亚联邦国家"
+
+msgid "country_88"
+msgstr "蒙古"
+
+msgid "country_89"
+msgstr "马其顿"
+
+msgid "country_90"
+msgstr "马耳他"
+
+msgid "country_91"
+msgstr "摩尔多瓦"
+
+msgid "country_92"
+msgstr "墨西哥"
+
+msgid "country_93"
+msgstr "蒙特塞拉特"
+
+msgid "country_94"
+msgstr "纳米比亚"
+
+msgid "country_95"
+msgstr "尼日尔"
+
+msgid "country_96"
+msgstr "尼日利亚"
+
+msgid "country_97"
+msgstr "尼泊尔"
+
+msgid "country_98"
+msgstr "新西兰"
+
+msgid "country_99"
+msgstr "荷兰"
+
+msgid "country_100"
+msgstr "挪威"
+
+msgid "country_101"
+msgstr "尼加拉瓜"
+
+msgid "country_102"
+msgstr "阿曼"
+
+msgid "country_103"
+msgstr "卡塔尔"
+
+msgid "country_104"
+msgstr "巴基斯坦"
+
+msgid "country_105"
+msgstr "帕劳"
+
+msgid "country_106"
+msgstr "巴布亚新几内亚"
+
+msgid "country_107"
+msgstr "菲律宾"
+
+msgid "country_108"
+msgstr "波兰"
+
+msgid "country_109"
+msgstr "葡萄牙"
+
+msgid "country_110"
+msgstr "巴拿马"
+
+msgid "country_111"
+msgstr "巴拉圭"
+
+msgid "country_112"
+msgstr "秘鲁"
+
+msgid "country_113"
+msgstr "罗马尼亚"
+
+msgid "country_114"
+msgstr "俄国"
+
+msgid "country_115"
+msgstr "圣多美和普林西比"
+
+msgid "country_116"
+msgstr "沙特阿拉伯"
+
+msgid "country_117"
+msgstr "塞内加尔"
+
+msgid "country_118"
+msgstr "塞舌尔"
+
+msgid "country_119"
+msgstr "塞拉利昂"
+
+msgid "country_120"
+msgstr "南非"
+
+msgid "country_121"
+msgstr "斯威士兰"
+
+msgid "country_122"
+msgstr "新加坡"
+
+msgid "country_123"
+msgstr "所罗门群岛"
+
+msgid "country_124"
+msgstr "斯里兰卡"
+
+msgid "country_125"
+msgstr "西班牙"
+
+msgid "country_126"
+msgstr "瑞士"
+
+msgid "country_127"
+msgstr "斯洛伐克"
+
+msgid "country_128"
+msgstr "斯洛文尼亚"
+
+msgid "country_129"
+msgstr "瑞典"
+
+msgid "country_130"
+msgstr "圣基茨和尼维斯"
+
+msgid "country_131"
+msgstr "圣卢西亚"
+
+msgid "country_132"
+msgstr "圣文森特和格林纳丁斯"
+
+msgid "country_133"
+msgstr "苏里南"
+
+msgid "country_134"
+msgstr "坦桑尼亚"
+
+msgid "country_135"
+msgstr "突尼斯"
+
+msgid "country_136"
+msgstr "台湾"
+
+msgid "country_137"
+msgstr "塔吉克斯坦"
+
+msgid "country_138"
+msgstr "泰国"
+
+msgid "country_139"
+msgstr "土库曼斯坦"
+
+msgid "country_140"
+msgstr "土耳其"
+
+msgid "country_141"
+msgstr "特立尼达和多巴哥"
+
+msgid "country_142"
+msgstr "特克斯和凯科斯群岛"
+
+msgid "country_143"
+msgstr "乌干达"
+
+msgid "country_144"
+msgstr "阿拉伯联合酋长国"
+
+msgid "country_145"
+msgstr "乌兹别克斯坦"
+
+msgid "country_146"
+msgstr "英国"
+
+msgid "country_147"
+msgstr "乌拉圭"
+
+msgid "country_148"
+msgstr "美国"
+
+msgid "country_149"
+msgstr "越南"
+
+msgid "country_150"
+msgstr "委内瑞拉"
+
+msgid "country_151"
+msgstr "维尔京群岛"
+
+msgid "country_152"
+msgstr "也门"
+
+msgid "country_153"
+msgstr "津巴布韦"

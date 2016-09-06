@@ -33,7 +33,8 @@ from .models import (
 )
 from . import urls
 from altair.app.ticketing.cart.views import jump_maintenance_page_for_trouble
-from . import utils
+from . import utils, utils_i18n, forms_i18n
+from altair.app.ticketing.i18n import custom_locale_negotiator
 
 logger = logging.getLogger(__name__)
 
@@ -107,7 +108,10 @@ class EntryLotView(object):
     def _create_form(self, **kwds):
         """希望入力と配送先情報と追加情報入力用のフォームを返す
         """
-        return utils.create_form(self.request, self.context, **kwds)
+        if self.request.organization.setting.i18n:
+            return utils_i18n.create_form(self.request, self.context, **kwds)
+        else:
+            return utils.create_form(self.request, self.context, **kwds)
 
     @lbr_view_config(route_name='lots.entry.index', request_method="GET", renderer=selectable_renderer("index.html"))
     def index(self):
@@ -197,6 +201,7 @@ class EntryLotView(object):
         """
         購入情報入力
         """
+        _ = self.request.translate
         form = self.request.environ.get('cform')
         if form is None:
             form = self._create_form()
@@ -220,17 +225,17 @@ class EntryLotView(object):
 
         # 商品チェック
         if not wishes:
-            self.request.session.flash(u"申し込み内容に入力不備があります")
+            self.request.session.flash(_(u"申し込み内容に入力不備があります"))
             validated = False
         elif not h.check_duplicated_products(wishes):
-            self.request.session.flash(u"同一商品が複数回希望されています。")
+            self.request.session.flash(_(u"同一商品が複数回希望されています。"))
             validated = False
         elif not h.check_quantities(wishes, lot.max_quantity):
-            self.request.session.flash(u"各希望ごとの合計枚数は最大{0}枚までにしてください".format(lot.max_quantity))
+            self.request.session.flash(_(u"各希望ごとの合計枚数は最大{0}枚までにしてください").format(lot.max_quantity))
             validated = False
         elif not h.check_valid_products(wishes):
             logger.debug('Product.performance_id mismatch')
-            self.request.session.flash(u"選択された券種が見つかりません。もう一度はじめから選択してください。")
+            self.request.session.flash(_(u"選択された券種が見つかりません。もう一度はじめから選択してください。"))
             validated = False
 
         if not validated:
@@ -242,13 +247,16 @@ class EntryLotView(object):
 
         return dict(form=form, event=event, lot=lot,
             payment_delivery_pairs=payment_delivery_pairs, wishes=wishes,
-            payment_delivery_method_pair_id=self.request.params.get('payment_delivery_method_pair_id'))
+            payment_delivery_method_pair_id=self.request.params.get('payment_delivery_method_pair_id'),
+            custom_locale_negotiator=custom_locale_negotiator(self.request) if self.request.organization.setting.i18n else ""
+                    )
 
     @lbr_view_config(route_name='lots.entry.sp_step3', renderer=selectable_renderer("step3.html"), custom_predicates=())
     def step3(self):
         """
         申し込み確認
         """
+        _ = self.request.translate
         self.request.session.pop_flash()
         event = self.context.event
         lot = self.context.lot
@@ -273,24 +281,24 @@ class EntryLotView(object):
         try:
             self.context.check_entry_limit(wishes, user=user, email=cform.email_1.data)
         except OverEntryLimitPerPerformanceException as e:
-            self.request.session.flash(u"公演「{0}」への申込は{1}回までとなっております。".format(e.performance_name, e.entry_limit))
+            self.request.session.flash(_(u"公演「{0}」への申込は{1}回までとなっております。").format(e.performance_name, e.entry_limit))
             validated = False
         except OverEntryLimitException as e:
-            self.request.session.flash(u"抽選への申込は{0}回までとなっております。".format(e.entry_limit))
+            self.request.session.flash(_(u"抽選への申込は{0}回までとなっております。").format(e.entry_limit))
             validated = False
 
         # 決済・引取方法選択
         if payment_delivery_method_pair_id not in [str(m.id) for m in payment_delivery_pairs]:
-            self.request.session.flash(u"お支払お引き取り方法を選択してください")
+            self.request.session.flash(_(u"お支払お引き取り方法を選択してください"))
             validated = False
 
         birthday = cform['birthday'].data
 
         # 購入者情報
         if not cform.validate() or not birthday:
-            self.request.session.flash(u"購入者情報に入力不備があります")
+            self.request.session.flash(_(u"購入者情報に入力不備があります"))
             if not birthday:
-                cform['birthday'].errors = [u'日付が正しくありません']
+                cform['birthday'].errors = [_(u'日付が正しくありません')]
             validated = False
 
         if not validated:
@@ -298,10 +306,16 @@ class EntryLotView(object):
                 if isinstance(errors, dict):
                     for k, errors in errors.items():
                         for error in errors:
-                            self.request.session.flash(u'%s: %s' % (schemas.client_form_fields.get(k, k), error))
+                            if self.request.organization.setting.i18n:
+                                self.request.session.flash(u'%s: %s' % (forms_i18n.ClientFormFactory(self.request).get_client_form_fields().get(k, k), error))
+                            else:
+                                self.request.session.flash(u'%s: %s' % (schemas.client_form_fields.get(k, k), error))
                 else:
                     for error in errors:
-                        self.request.session.flash(u'%s: %s' % (schemas.client_form_fields.get(k, k), error))
+                        if self.request.organization.setting.i18n:
+                            self.request.session.flash(u'%s: %s' % (forms_i18n.ClientFormFactory(self.request).get_client_form_fields().get(k, k), error))
+                        else:
+                            self.request.session.flash(u'%s: %s' % (schemas.client_form_fields.get(k, k), error))
 
             def retoucher(subrequest):
                 subrequest.session = self.request.session
@@ -331,7 +345,7 @@ class EntryLotView(object):
 
         entry = api.get_lot_entry_dict(self.request)
         if entry is None:
-            self.request.session.flash(u"セッションに問題が発生しました。")
+            self.request.session.flash(_(u"セッションに問題が発生しました。"))
             return self.back_to_form()
 
         self.request.session['lots.entry.time'] = get_now(self.request)

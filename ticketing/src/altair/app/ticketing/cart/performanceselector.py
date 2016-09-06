@@ -43,14 +43,14 @@ class _PerformanceSelector(object):
         # さらにキーで束ねられたエントリを指定の条件でソート
         return sorted(key_to_sales_segments_map.items(), lambda a, b: self.sorter(a[1][0], b[1][0]))
 
-    def sales_segment_to_dict(self, sales_segment):
+    def sales_segment_to_dict(self, sales_segment, i18n=False):
 
         return dict(
             id=sales_segment.id,
-            name=self._create_name(sales_segment),
-            name_pc=self.time_label(sales_segment),
+            name=self._create_name(sales_segment, i18n),
+            name_pc=self.time_label(sales_segment, i18n),
             name_mobile=self.time_label(sales_segment),
-            name_smartphone=self.time_label(sales_segment),
+            name_smartphone=self.time_label(sales_segment, i18n),
             order_url=self.request.route_url(
                 'cart.order',
                 sales_segment_id=sales_segment.id),
@@ -62,8 +62,8 @@ class _PerformanceSelector(object):
                 event_id=self.context.event.id)
             )
 
-    def _create_name(self, sales_segment):
-        return self.time_label(sales_segment)
+    def _create_name(self, sales_segment, i18n=False):
+        return self.time_label(sales_segment, i18n)
 
     def time_only_label(self, sales_segment):
         v = self.venue_label(sales_segment)
@@ -73,9 +73,9 @@ class _PerformanceSelector(object):
         else:
             return v
 
-    def time_label(self, sales_segment):
+    def time_label(self, sales_segment, i18n=False):
         v = self.venue_label(sales_segment)
-        t = create_time_label(sales_segment.performance.start_on, sales_segment.performance.end_on)
+        t = create_time_label(sales_segment.performance.start_on, sales_segment.performance.end_on, i18n=i18n)
         return t + " " + v
 
     def venue_label(self, sales_segment):
@@ -117,7 +117,7 @@ class MatchUpPerformanceSelector(_PerformanceSelector):
         key_to_sales_segments_map = self.build_key_to_sales_segments_map()
         for k, sales_segments in key_to_sales_segments_map:
             selection.append((k, [
-                self.sales_segment_to_dict(sales_segment)
+                self.sales_segment_to_dict(sales_segment, self.request.organization.setting.i18n)
                 for sales_segment in sales_segments
                 ]))
         return selection
@@ -185,9 +185,9 @@ class DatePerformanceSelector(_PerformanceSelector):
 
         return dict(
             id=sales_segment.id,
-            name=self._create_name(sales_segment),
+            name=self._create_name(sales_segment, self.request.organization.setting.i18n),
             name_pc=self.time_only_label(sales_segment),
-            name_mobile=self.time_label(sales_segment),
+            name_mobile=self.time_label(sales_segment, self.request.organization.setting.i18n),
             name_smartphone=self.time_only_label(sales_segment),
             order_url=self.request.route_url(
                 'cart.order',

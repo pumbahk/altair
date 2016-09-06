@@ -43,6 +43,7 @@ from altair.app.ticketing.orders.models import OrderedProductItem
 import altair.app.ticketing.orders.models as order_models
 from altair.app.ticketing.orders.api import bind_attributes
 from altair.app.ticketing.core.modelmanage import ApplicableTicketsProducer
+from ..api import validate_length_dict
 from altair.app.ticketing.famiport.userside_models import (
     AltairFamiPortSalesSegmentPair,
     AltairFamiPortPerformance,
@@ -861,10 +862,6 @@ class FamiPortPaymentDeliveryPlugin(object):
 
 FAMIPORT_MAX_ALLOWED_AMOUNT = Decimal('999999')
 FAMIPORT_MAX_TICKET_COUNT = 23
-FAMIPORT_MAX_CUSTOMER_NAME_LENGTH = 42
-FAMIPORT_MAX_ADDRESS_1_LENGTH = 200
-FAMIPORT_MAX_ADDRESS_2_LENGTH = 200
-
 
 def validate_order_like(request, order_like, plugin, update=False):
     """FamiPort用の予約として作成しても問題ないかどうか検証する
@@ -899,17 +896,14 @@ def validate_order_like(request, order_like, plugin, update=False):
 
     famiport_order_dict = build_famiport_order_dict_customer_address(request, order_like, tenant.code, famiport_order_type)
     if order_like.shipping_address is not None:
-        # お客様氏名
-        if len(famiport_order_dict.get('customer_name', '').encode('cp932')) > FAMIPORT_MAX_CUSTOMER_NAME_LENGTH:
-            raise OrderLikeValidationFailure(u'too long', 'shipping_address.last_name')
-
-        # 住所1
-        if len(famiport_order_dict.get('customer_address_1', '').encode('cp932')) > FAMIPORT_MAX_ADDRESS_1_LENGTH:
-            raise OrderLikeValidationFailure(u'too long', 'shipping_address.address_1')
-
-        # 住所2
-        if len(famiport_order_dict.get('customer_address_2', '').encode('cp932')) > FAMIPORT_MAX_ADDRESS_2_LENGTH:
-            raise OrderLikeValidationFailure(u'too long', 'shipping_address.address_2')
+        if not order_like.organization.setting.i18n or (request.localizer and request.localizer.locale_name == 'ja'):
+            validate_length_dict('cp932', famiport_order_dict, {'customer_name':42, 'customer_address_1':200, 'customer_address_2':200})
+        if order_like.organization.setting.i18n and (request.localizer and request.localizer.locale_name == 'zh_CN'):
+            validate_length_dict('gbk', famiport_order_dict, {'customer_name':42, 'customer_address_1':200, 'customer_address_2':200})
+        if order_like.organization.setting.i18n and (request.localizer and request.localizer.locale_name == 'zh_TW'):
+            validate_length_dict('gbk', famiport_order_dict, {'customer_name':42, 'customer_address_1':200, 'customer_address_2':200})
+        if order_like.organization.setting.i18n and (request.localizer and request.localizer.locale_name == 'en'):
+            validate_length_dict('utf-8', famiport_order_dict, {'customer_name':42, 'customer_address_1':200, 'customer_address_2':200})
 
     # チケット枚数
     if famiport_order_type != FamiPortOrderType.PaymentOnly.value:

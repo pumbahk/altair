@@ -27,6 +27,8 @@ from altair.app.ticketing.mails.helpers import render_delivery_lots_rejected_mai
 from altair.app.ticketing.core.models import FeeTypeEnum, SalesSegment, StockTypeEnum
 from .resources import OrderDelivery, CartDelivery, OrderPayment, CartPayment
 from . import api
+from altair.app.ticketing.i18n import custom_locale_negotiator
+from collections import OrderedDict
 
 logger = logging.getLogger(__name__)
 
@@ -45,10 +47,15 @@ def form_log(request, message):
 
 cart_timeout = api.get_cart_expire_time
 
-def create_date_label(start, end):
-    only_start_format = u"{start.year}年{start.month}月{start.day}日"
-    range_format = u"{start.year}年{start.month}月{start.day}日 - {end.year}年{end.month}月{end.day}日"
-    same_year_format = u"{start.year}年{start.month}月{start.day}日 - {end.month}月{end.day}日"
+def create_date_label(start, end, i18n=False):
+    if i18n:
+        only_start_format = u"{start.year}/{start.month}/{start.day}"
+        range_format = u"{start.year}/{start.month}/{start.day} ~ {end.year}/{end.month}/{end.day}"
+        same_year_format = u"{start.year}/{start.month}/{start.day} ~ {end.month}/{end.day}"
+    else:
+        only_start_format = u"{start.year}年{start.month}月{start.day}日"
+        range_format = u"{start.year}年{start.month}月{start.day}日 - {end.year}年{end.month}月{end.day}日"
+        same_year_format = u"{start.year}年{start.month}月{start.day}日 - {end.month}月{end.day}日"
 
     date_format = only_start_format
 
@@ -61,12 +68,21 @@ def create_date_label(start, end):
     return date_format.format(start=start, end=end)
 
 WEEK =[u"月", u"火", u"水", u"木", u"金", u"土", u"日"]
-def create_time_label(start, end, disp_time=True):
-    only_start_format = u"{start.year}年{start.month}月{start.day}日({start_week})"
+def create_time_label(start, end, disp_time=True, i18n=False):
     if disp_time:
-        only_start_format = u"{start.year}年{start.month}月{start.day}日({start_week}) {start:%H:%M}"
-    range_format = u"{start.year}年{start.month}月{start.day}日({start_week}) - {end.year}年{end.month}月{end.day}日({end_week})"
-    same_year_format = u"{start.year}年{start.month}月{start.day}日({start_week}) - {end.month}月{end.day}日({end_week})"
+        start_time = " {start:%H:%M}"
+    else:
+        start_time = ""
+    if i18n:
+        WEEK =[u"Mon.", u"Tue.", u"Wed.", u"Thu.", u"Fri.", u"Sat.", u"Sun."]
+        only_start_format = u"{start.year}/{start.month}/{start.day}({start_week})" + start_time
+        range_format = u"{start.year}/{start.month}/{start.day}({start_week}) ~ {end.year}/{end.month}/{end.day}({end_week})"
+        same_year_format = u"{start.year}/{start.month}/{start.day}({start_week}) ~ {end.month}/{end.day}({end_week})"
+    else:
+        WEEK =[u"月", u"火", u"水", u"木", u"金", u"土", u"日"]
+        only_start_format = u"{start.year}年{start.month}月{start.day}日({start_week})" + start_time
+        range_format = u"{start.year}年{start.month}月{start.day}b日({start_week}) - {end.year}年{end.month}月{end.day}日({end_week})"
+        same_year_format = u"{start.year}年{start.month}月{start.day}日({start_week}) - {end.month}月{end.day}日({end_week})"
 
     date_format = only_start_format
 
@@ -90,13 +106,13 @@ def create_time_only_label(start, end):
 
     return time_format.format(start=start)
 
-def performance_date(performance):
-    return create_date_label(performance.start_on, performance.end_on)
+def performance_date(performance, i18n=False):
+    return create_date_label(performance.start_on, performance.end_on, i18n)
 
-def performance_datetime(performance):
+def performance_datetime(performance, i18n=False):
     """Return date and time of the performance.
     """
-    return create_time_label(performance.start_on, performance.end_on)
+    return create_time_label(performance.start_on, performance.end_on, i18n=i18n)
 
 def performance_end_date(performance):
     s = performance.start_on
@@ -105,8 +121,14 @@ def performance_end_date(performance):
 def japanese_date(date):
     return u"%d年%d月%d日(%s)" % (date.year, date.month, date.day, u"月火水木金土日"[date.weekday()])
 
+def i18n_date(date):
+    return u"%d-%d-%d(%s)" % (date.year, date.month, date.day, ('Mon.','Tue.','Wed.','Thu.','Fri.','Sat.','Sun.')[date.weekday()])
+
 def japanese_time(time):
     return u"%d時%02d分" % (time.hour, time.minute)
+
+def i18n_time(time):
+    return u" %d:%02d" % (time.hour, time.minute)
 
 def japanese_datetime(dt):
     try:
@@ -121,6 +143,12 @@ def datetime(dt):
         return dt.strftime('%Y-%m-%d %H:%M')
     return None
 
+def i18n_datetime(dt):
+    try:
+        return i18n_date(dt)+i18n_time(dt)
+    except:
+        logger.warn("dt is None")
+        return ""
 
 def mail_date(date):
     return u'{d.year}年 {d.month}月 {d.day}日 {d.hour:02}時 {d.minute:02}分'.format(d=date)
@@ -587,3 +615,46 @@ def lighten(a, r):
     if isinstance(a, basestring):
         a = parse_color(a)
     return _natural_blend(a, rgba(255, 255, 255, 1.), r)
+
+def _message(msg, request):
+    if not request:
+        logger.warning('can not get request {0}'.format(msg))
+        return msg
+    if request.organization.setting.i18n:
+        _ = request.translate
+        return _(msg)
+    else:
+        return msg
+
+def delivery_method_get_info(locale_name, dm, target):
+    if locale_name == 'ja' and hasattr(dm.delivery_method, target):
+        return getattr(dm.delivery_method, target)
+    elif locale_name in dm.delivery_method.preferences and target in dm.delivery_method.preferences[locale_name]:
+        return dm.delivery_method.preferences[locale_name][target]
+    elif hasattr(dm.delivery_method, target):
+        return getattr(dm.delivery_method, target)
+
+def payment_method_get_info(locale_name, pm, target):
+    if locale_name == 'ja' and hasattr(pm.payment_method, target):
+        return getattr(pm.payment_method, target)
+    elif locale_name in pm.payment_method.preferences and target in pm.payment_method.preferences[locale_name]:
+        return pm.payment_method.preferences[locale_name][target]
+    elif hasattr(pm.payment_method, target):
+        return getattr(pm.payment_method, target)
+
+def create_url(request):
+    str = u""
+    if not request.organization.setting.i18n:
+        return str
+    i18n_dict = OrderedDict([(u'en', u'English'), (u'ja', u'日本語'), (u'zh_CN', u'简体中文'), (u'zh_TW', u'繁体中文')])
+    str = u'<p class="tac mgt20 mgb20">'
+    if request.organization and request.organization.setting.i18n:
+        locale_name = custom_locale_negotiator(request)
+        for local in i18n_dict:
+            if local != locale_name:
+                str = str + u'<a href="/locale?language={0}">{1}</a>   '.format(local, i18n_dict[local])
+            else:
+                str = str + i18n_dict[local] + '   '
+    str = str + u'</p>'
+    return str
+
