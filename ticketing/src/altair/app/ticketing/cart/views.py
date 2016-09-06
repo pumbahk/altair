@@ -46,7 +46,6 @@ from altair.app.ticketing.temp_store import TemporaryStoreError
 from . import api
 from . import helpers as h
 from . import schemas
-from . import forms_i18n
 from .api import set_rendered_event, is_smartphone, is_point_input_required, is_fc_auth_organization
 from altair.mobile.api import set_we_need_pc_access, set_we_invalidate_pc_access
 from .reserving import InvalidSeatSelectionException, NotEnoughAdjacencyException
@@ -89,8 +88,7 @@ from .resources import EventOrientedTicketingCartResource, PerformanceOrientedTi
 from .limiting import LimiterDecorators
 from . import flow
 from .interfaces import IPageFlowPredicate, IPageFlowAction
-from altair.app.ticketing.i18n import custom_locale_negotiator
-from functools import partial
+
 logger = logging.getLogger(__name__)
 
 limiter = LimiterDecorators('altair.cart.limit_per_unit_time', TooManyCartsCreated)
@@ -237,7 +235,6 @@ class PerEventAgreementView(IndexViewMixin):
     def __init__(self, context, request):
         self.context = context
         self.request = request
-        self._message = partial(h._message, request=self.request)
 
     @lbr_view_config(request_method="GET")
     def get(self):
@@ -271,7 +268,7 @@ class PerEventAgreementView(IndexViewMixin):
     def post(self):
         agree = self.request.params.get('agree')
         if not agree:
-            self.request.session.flash(self._message(u"注意事項を確認、同意し、公演に申し込んでください。"))
+            self.request.session.flash(u"注意事項を確認、同意し、公演に申し込んでください。")
             return HTTPFound(self.request.current_route_path(_query=self.request.GET))
         else:
             return HTTPFound(self.request.route_url('cart.index', event_id=self.context.event.id, _query=self.request.GET))
@@ -287,7 +284,6 @@ class PerPerformanceAgreementView(object):
     def __init__(self, context, request):
         self.context = context
         self.request = request
-        self._message = partial(h._message, request=self.request)
 
     @lbr_view_config(request_method="GET")
     def get(self):
@@ -301,7 +297,7 @@ class PerPerformanceAgreementView(object):
     def post(self):
         agree = self.request.params.get('agree')
         if not agree:
-            self.request.session.flash(self._message(u"注意事項を確認、同意し、公演に申し込んでください。"))
+            self.request.session.flash(u"注意事項を確認、同意し、公演に申し込んでください。")
             return HTTPFound(self.request.current_route_path(_query=self.request.GET))
         else:
             return HTTPFound(self.request.route_url('cart.index2', performance_id=self.context.performance.id, _query=self.request.GET))
@@ -340,7 +336,7 @@ def jump_maintenance_page_for_trouble(organization):
     #if organization is None or organization.code not in ['RT', 'ZZ', 'KE', 'KT', 'JC', 'PC', 'TH', 'YT', 'OG', 'TC', 'SC', '89', 'IB', 'NH', 'BT', 'VV', 'TS', 'KH', 'TG', 'CR', 'VS', 'LS', 'FC', 'BA', 'RE', 'VK', 'RK']:
     #    raise HTTPFound('/maintenance.html')
 
-def create_event_dict(view, performance_id, sales_segments, i18n=False):
+def create_event_dict(view, performance_id, sales_segments):
     try:
         performance_id = long(performance_id)
     except (ValueError, TypeError):
@@ -362,12 +358,8 @@ def create_event_dict(view, performance_id, sales_segments, i18n=False):
         sales_start_on = u''
         sales_end_on = u''
         if sales_segment:
-            if i18n:
-                sales_start_on = unicode(sales_segment.start_at.strftime("%Y/%m/%d %H:%M").decode("utf-8"))
-                sales_end_on = unicode(sales_segment.end_at.strftime("%Y/%m/%d %H:%M").decode("utf-8"))
-            else:
-                sales_start_on = unicode(sales_segment.start_at.strftime("%Y年%m月%d日 %H:%M").decode("utf-8"))
-                sales_end_on = unicode(sales_segment.end_at.strftime("%Y年%m月%d日 %H:%M").decode("utf-8"))
+            sales_start_on = unicode(sales_segment.start_at.strftime("%Y年%m月%d日 %H:%M").decode("utf-8"))
+            sales_end_on = unicode(sales_segment.end_at.strftime("%Y年%m月%d日 %H:%M").decode("utf-8"))
 
         return dict(
             id=view.context.event.id,
@@ -380,20 +372,13 @@ def create_event_dict(view, performance_id, sales_segments, i18n=False):
             product=view.context.event.products
             )
 
-    if i18n:
-        sales_start_on=unicode(view.context.event.sales_start_on.strftime("%Y/%m/%d %H:%M").decode("utf-8"))
-        sales_end_on=unicode(view.context.event.sales_end_on.strftime("%Y/%m/%d %H:%M").decode("utf-8"))
-    else:
-        sales_start_on=unicode(view.context.event.sales_start_on.strftime("%Y年%m月%d日 %H:%M").decode("utf-8"))
-        sales_end_on=unicode(view.context.event.sales_end_on.strftime("%Y年%m月%d日 %H:%M").decode("utf-8"))
-
     return dict(
         id=view.context.event.id,
         code=view.context.event.code,
         title=view.context.event.title,
         abbreviated_title=view.context.event.abbreviated_title,
-        sales_start_on=sales_start_on,
-        sales_end_on=sales_end_on,
+        sales_start_on=unicode(view.context.event.sales_start_on.strftime("%Y年%m月%d日 %H:%M").decode("utf-8")),
+        sales_end_on=unicode(view.context.event.sales_end_on.strftime("%Y年%m月%d日 %H:%M").decode("utf-8")),
         venues=set(p.venue.name for p in view.context.event.performances if p.public==True),
         product=view.context.event.products
         )
@@ -462,10 +447,9 @@ class IndexView(IndexViewMixin):
         set_rendered_event(self.request, self.context.event)
 
         return dict(
-            event=create_event_dict(self, performance_id, sales_segments, self.request.organization.setting.i18n),
+            event=create_event_dict(self, performance_id, sales_segments),
             dates=sorted(list(set([p.start_on.strftime("%Y-%m-%d %H:%M") for p in self.context.event.performances]))),
             cart_release_url=self.request.route_url('cart.release'),
-            cart_i18n_url=self.request.route_url('cart.i18n'),
             selected=Markup(
                 json.dumps([
                     performance_selector.select_value(selected_sales_segment),
@@ -499,10 +483,9 @@ class IndexView(IndexViewMixin):
         selected_sales_segment = sales_segments[0]
 
         return dict(
-            event=create_event_dict(self, self.request.matchdict['performance_id'], sales_segments, self.request.organization.setting.i18n),
+            event=create_event_dict(self, self.request.matchdict['performance_id'], sales_segments),
             dates=sorted(list(set([p.start_on.strftime("%Y-%m-%d %H:%M") for p in self.context.event.performances]))),
             cart_release_url=self.request.route_url('cart.release'),
-            cart_i18n_url=self.request.route_url('cart.i18n'),
             selected=Markup(
                 json.dumps([
                     performance_selector.select_value(selected_sales_segment),
@@ -520,7 +503,6 @@ class IndexAjaxView(object):
     def __init__(self, context, request):
         self.context = context
         self.request = request
-        self._message = partial(h._message, request=self.request)
 
     def get_frontend_drawing_urls(self, venue):
         sales_segment = self.context.sales_segment
@@ -587,7 +569,7 @@ class IndexAjaxView(object):
                 ],
             event_name=sales_segment.performance.event.title,
             performance_name=sales_segment.performance.name,
-            performance_start=h.performance_date(sales_segment.performance, self.request.organization.setting.i18n),
+            performance_start=h.performance_date(sales_segment.performance),
             performance_id=sales_segment.performance.id,
             sales_segment_id=sales_segment.id,
             order_url=self.request.route_url("cart.order", sales_segment_id=sales_segment.id),
@@ -791,7 +773,7 @@ class ReserveView(object):
     def __init__(self, context, request):
         self.context = context
         self.request = request
-        self._message = partial(h._message, request=self.request)
+
 
     def iter_ordered_items(self):
         for key, value in self.request.params.iteritems():
@@ -864,13 +846,13 @@ class ReserveView(object):
                 return dict(
                     result='NG',
                     reason="ticket_count_below_lower_bound",
-                    message=self._message(u"枚数は合計{.min_quantity}以上で選択してください").format(e)
+                    message="枚数は合計{.min_quantity}以上で選択してください".format(e)
                     )
             else:
                 return dict(
                     result='NG',
                     reason="ticket_count_over_upper_bound",
-                    message=self._message(u"枚数は合計{.max_quantity}以内で選択してください").format(e)
+                    message="枚数は合計{.max_quantity}以内で選択してください".format(e)
                     )
         except ProductQuantityOutOfBoundsError as e:
             transaction.abort()
@@ -879,13 +861,13 @@ class ReserveView(object):
                 return dict(
                     result='NG',
                     reason="product_count_below_lower_bound",
-                    message=self._message(u"商品個数は合計{.min_quantity}以上で選択してください").format(e)
+                    message="商品個数は合計{.min_quantity}以上で選択してください".format(e)
                     )
             else:
                 return dict(
                     result='NG',
                     reason="product_count_over_upper_bound",
-                    message=self._message(u"商品個数は合計{.max_quantity}以内で選択してください").format(e)
+                    message="商品個数は合計{.max_quantity}以内で選択してください".format(e)
                     )
         except PerStockTypeQuantityOutOfBoundsError as e:
             transaction.abort()
@@ -894,13 +876,13 @@ class ReserveView(object):
                 return dict(
                     result='NG',
                     reason="ticket_count_below_lower_bound",
-                    message=self._message(u"商品個数は合計{.min_quantity}以上で選択してください").format(e)
+                    message="枚数は合計{.min_quantity}以上で選択してください".format(e)
                     )
             else:
                 return dict(
                     result='NG',
                     reason="ticket_count_over_upper_bound",
-                    message=self._message(u"商品個数は合計{.max_quantity}以内で選択してください").format(e)
+                    message="枚数は合計{.max_quantity}以内で選択してください".format(e)
                     )
         except (PerStockTypeProductQuantityOutOfBoundsError, PerProductProductQuantityOutOfBoundsError) as e:
             transaction.abort()
@@ -909,13 +891,13 @@ class ReserveView(object):
                 return dict(
                     result='NG',
                     reason="product_count_below_lower_bound",
-                    message=self._message(u"商品個数は合計{.min_quantity}以上で選択してください").format(e)
+                    message="商品個数は合計{.min_quantity}以上で選択してください".format(e)
                     )
             else:
                 return dict(
                     result='NG',
                     reason="product_count_over_upper_bound",
-                    message=self._message(u"商品個数は合計{.max_quantity}以内で選択してください").format(e)
+                    message="商品個数は合計{.max_quantity}以内で選択してください".format(e)
                     )
         except NotEnoughAdjacencyException:
             transaction.abort()
@@ -981,15 +963,13 @@ class PaymentView(object):
     def __init__(self, context, request):
         self.context = context
         self.request = request
-        self._message = partial(h._message, request=self.request)
 
     def get_payment_delivery_method_pairs(self, sales_segment):
-        slave_session = get_db_session(self.request, name="slave")
         return [
             pdmp
             for pdmp in self.context.available_payment_delivery_method_pairs(sales_segment)
             if pdmp.payment_method.public
-        ]
+            ]
 
     @lbr_view_config(request_method="GET")
     def get(self):
@@ -1014,65 +994,48 @@ class PaymentView(object):
         metadata = getattr(self.request, 'altair_auth_metadata', {})
         if self.request.altair_auth_info['membership_source'] == 'altair.oauth_auth.plugin.OAuthAuthPlugin':
             metadata = metadata[u'profile']
-
-        shipping_address_info = dict(
-            first_name=metadata.get('first_name'),
-            first_name_kana=metadata.get('first_name_kana', u'　'),
-            last_name=metadata.get('last_name'),
-            last_name_kana=metadata.get('last_name_kana', u'　'),
-            tel_1=metadata.get('tel_1'),
-            fax=metadata.get('fax'),
-            zip=metadata.get('zip'),
-            prefecture=metadata.get('prefecture'),
-            city=metadata.get('city'),
-            address_1=metadata.get('address_1'),
-            address_2=metadata.get('address_2'),
-            email_1=metadata.get('email_1'),
-            email_2=metadata.get('email_2')
-        )
-
-        client_form = forms_i18n.ClientFormFactory(self.request).make_form()
-        form = client_form(
+        form = schemas.ClientForm(
             context=self.context,
             flavors=(self.context.cart_setting.flavors or {}),
-            _data=shipping_address_info
+            _data=dict(
+                last_name=metadata.get('last_name'),
+                last_name_kana=metadata.get('last_name_kana'),
+                first_name=metadata.get('first_name'),
+                first_name_kana=metadata.get('first_name_kana'),
+                tel_1=metadata.get('tel_1'),
+                fax=metadata.get('fax'),
+                zip=metadata.get('zip'),
+                prefecture=metadata.get('prefecture'),
+                city=metadata.get('city'),
+                address_1=metadata.get('address_1'),
+                address_2=metadata.get('address_2'),
+                email_1=metadata.get('email_1'),
+                email_2=metadata.get('email_2')
+                )
             )
-        if self.request.organization.setting.i18n:
-            shipping_address_info['country']=metadata.get('country')
-            form.country.choices = [(c, c) for c in forms_i18n.ClientFormFactory(self.request).get_countries()]
         default_prefecture = self.context.cart_setting.default_prefecture
         if default_prefecture is not None:
             form['prefecture'].data = default_prefecture
         return dict(
             form=form,
-            payment_delivery_methods=payment_delivery_methods,
-            custom_locale_negotiator=custom_locale_negotiator(self.request) if self.request.organization.setting.i18n else ""
+            payment_delivery_methods=payment_delivery_methods
             )
 
     def get_validated_address_data(self):
         """フォームから ShippingAddress などの値を取りたいときはこれで"""
         form = self.form
-        if self.request.organization.setting.i18n:
-            first_name_kana=form.data['first_name_kana'] if custom_locale_negotiator(self.request)==u'ja' else u'　'
-            last_name_kana=form.data['last_name_kana'] if custom_locale_negotiator(self.request)==u'ja' else u'　'
-            country=form.data['country']
-        else:
-            first_name_kana=form.data['first_name_kana']
-            last_name_kana=form.data['last_name_kana']
-            country='日本国'
-
         if form.validate():
             return dict(
                 first_name=form.data['first_name'],
                 last_name=form.data['last_name'],
-                first_name_kana=first_name_kana,
-                last_name_kana=last_name_kana,
+                first_name_kana=form.data['first_name_kana'],
+                last_name_kana=form.data['last_name_kana'],
                 zip=form.data['zip'],
                 prefecture=form.data['prefecture'],
                 city=form.data['city'],
                 address_1=form.data['address_1'],
                 address_2=form.data['address_2'],
-                country=country,
+                country=u"日本国",
                 email_1=form.data['email_1'],
                 email_2=form.data['email_2'],
                 tel_1=form.data['tel_1'],
@@ -1086,10 +1049,10 @@ class PaymentView(object):
         if not payment_delivery_pair or shipping_address_params is None:
             if not payment_delivery_pair:
                 logger.debug("invalid : %s" % 'payment_delivery_method_pair_id')
-                raise self.ValidationFailed(self._message(u'お支払／引取方法をお選びください'))
+                raise self.ValidationFailed(u"お支払／引取方法をお選びください")
             else:
                 logger.debug("invalid : %s" % self.form.errors)
-                raise self.ValidationFailed(self._message(u'購入者情報の入力内容を確認してください'))
+                raise self.ValidationFailed(u'購入者情報の入力内容を確認してください')
 
     @back(back_to_top, back_to_product_list_for_mobile)
     @lbr_view_config(request_method="POST")
@@ -1105,13 +1068,7 @@ class PaymentView(object):
         payment_delivery_method_pair_id = self.request.params.get('payment_delivery_method_pair_id', 0)
         payment_delivery_pair = c_models.PaymentDeliveryMethodPair.query.filter_by(id=payment_delivery_method_pair_id).first()
 
-        if self.request.organization.setting.i18n:
-            client_form = forms_i18n.ClientFormFactory(self.request).make_form()
-            self.form = client_form(formdata=self.request.params, context=self.context)
-            self.form.country.choices = [(c, c) for c in forms_i18n.ClientFormFactory(self.request).get_countries()]
-        else:
-            self.form = schemas.ClientForm(formdata=self.request.params, context=self.context)
-
+        self.form = schemas.ClientForm(formdata=self.request.params, context=self.context)
         shipping_address_params = self.get_validated_address_data()
 
         try:
@@ -1130,9 +1087,9 @@ class PaymentView(object):
                         plugin.validate_order(self.request, cart)
             except OrderLikeValidationFailure as e:
                 if e.path == 'order.total_amount':
-                    raise self.ValidationFailed(self._message(u'合計金額が選択された決済方法では取り扱えない金額となっています。他の決済方法を選択してください'))
+                    raise self.ValidationFailed(u'合計金額が選択された決済方法では取り扱えない金額となっています。他の決済方法を選択してください')
                 else:
-                    raise self.ValidationFailed(self._message(u'現在の予約内容では選択された決済 / 引取方法で購入を進めることができません。他の決済・引取方法を選択してください。'))
+                    raise self.ValidationFailed(u'現在の予約内容では選択された決済 / 引取方法で購入を進めることができません。他の決済・引取方法を選択してください。')
         except self.ValidationFailed as e:
             self.request.session.flash(e.message)
             start_on = cart.performance.start_on
@@ -1145,8 +1102,7 @@ class PaymentView(object):
                 raise PaymentMethodEmptyError.from_resource(self.context, self.request)
             return dict(
                 form=self.form,
-                payment_delivery_methods=payment_delivery_methods,
-                custom_locale_negotiator=custom_locale_negotiator(self.request) if self.request.organization.setting.i18n else ""
+                payment_delivery_methods=payment_delivery_methods
                 )
 
 
@@ -1401,9 +1357,7 @@ class ConfirmView(object):
             delegator=delegator,
             membershipinfo = self.context.membershipinfo,
             extra_form_data=extra_form_data,
-            accountno=acc.account_number if acc else "",
-            custom_locale_negotiator=custom_locale_negotiator(self.request) if self.request.organization.setting.i18n else "",
-            i18n=self.request.organization.setting.i18n,
+            accountno=acc.account_number if acc else ""
         )
 
 # 完了画面の処理の『継続』 (http://ja.wikipedia.org/wiki/%E7%B6%99%E7%B6%9A)
@@ -1415,7 +1369,7 @@ def cont_complete_view(context, request, order_no, magazine_ids, word_ids):
     # メール購読
     emails = cart.shipping_address.emails
     multi_subscribe(user, emails, magazine_ids)
-
+    
     # お気に入り登録
     organization = api.get_organization(request)
     if organization.setting.enable_word == 1:
@@ -1516,7 +1470,7 @@ class CompleteView(object):
             raise CompletionPageNotRenderered()
         self.request.response.expires = datetime.utcnow() + timedelta(seconds=3600) # XXX
         self.request.response.cache_control = 'max-age=3600'
-        return dict(order=order, i18n=self.request.organization.setting.i18n)
+        return dict(order=order)
 
 
 def is_kt_organization(out_term_exception, request):
@@ -1587,12 +1541,6 @@ def switch_pc(context, request):
     response = _create_response(request=request, params=request.GET)
     set_we_need_pc_access(response)
     return response
-
-@view_config(route_name='cart.i18n', renderer='string')
-def cart_i18n(request):
-    message = request.params.getall('message[]')
-    _ = request.translate
-    return ''.join(_(msg) for msg in message)
 
 @view_config(route_name='cart.switchpc.perf')
 def switch_pc_perf(context, request):

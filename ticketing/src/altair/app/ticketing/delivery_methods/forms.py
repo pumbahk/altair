@@ -13,7 +13,7 @@ from altair.saannotation import get_annotations_for
 from altair.app.ticketing.payments.plugins import SEJ_DELIVERY_PLUGIN_ID, QR_DELIVERY_PLUGIN_ID, FAMIPORT_DELIVERY_PLUGIN_ID, RESERVE_NUMBER_DELIVERY_PLUGIN_ID
 
 def _get_msg(target):
-    msg = u'手数料は「予約ごと」または「{}」どちらか一方を入力してください。<br/>'
+    msg = u'手数料は「予約ごと」または「{}」どちらか一方を入力してください。<br/>' 
     msg += u'取得しない手数料は「0」を入力してください。'
     msg = Markup(msg.format(target))
     return msg
@@ -61,36 +61,6 @@ class DeliveryMethodForm(OurForm):
         )
     description = OurTextField(
         label=get_annotations_for(DeliveryMethod.description)['label'],
-        widget=OurTextArea()
-        )
-    name_en = OurTextField(
-        label=u'引取方法名(英語)',
-        validators=[
-            Length(max=255, message=u'255文字以内で入力してください'),
-            ]
-        )
-    description_en = OurTextField(
-        label=u"説明文(HTML)(英語)",
-        widget=OurTextArea()
-        )
-    name_zh_cn = OurTextField(
-        label=u'引取方法名(簡体中国語)',
-        validators=[
-            Length(max=255, message=u'255文字以内で入力してください'),
-            ]
-        )
-    description_zh_cn = OurTextField(
-        label=u"説明文(HTML)(簡体中国語)",
-        widget=OurTextArea()
-        )
-    name_zh_tw = OurTextField(
-        label=u'引取方法名(繁体中国語)',
-        validators=[
-            Length(max=255, message=u'255文字以内で入力してください'),
-            ]
-        )
-    description_zh_tw = OurTextField(
-        label=u"説明文(HTML)(繁体中国語)",
         widget=OurTextArea()
         )
     hide_voucher = OurBooleanField(

@@ -67,36 +67,6 @@ class PaymentMethodForm(OurForm):
             ],
         widget=OurTextArea()
         )
-    name_en = OurTextField(
-        label=u'決済方法名(英語)',
-        validators=[
-            Length(max=255, message=u'255文字以内で入力してください'),
-            ]
-        )
-    description_en = OurTextField(
-        label=u"説明文(HTML)(英語)",
-        widget=OurTextArea()
-        )
-    name_zh_cn = OurTextField(
-        label=u'決済方法名(簡体中国語)',
-        validators=[
-            Length(max=255, message=u'255文字以内で入力してください'),
-            ]
-        )
-    description_zh_cn = OurTextField(
-        label=u"説明文(HTML)(簡体中国語)",
-        widget=OurTextArea()
-        )
-    name_zh_tw = OurTextField(
-        label=u'決済方法名(繁体中国語)',
-        validators=[
-            Length(max=255, message=u'255文字以内で入力してください'),
-            ]
-        )
-    description_zh_tw = OurTextField(
-        label=u"説明文(HTML)(繁体中国語)",
-        widget=OurTextArea()
-        )
     public = OurBooleanField(
         label=u'公開する'
         )
@@ -118,4 +88,3 @@ class PaymentMethodForm(OurForm):
     def validate_payment_plugin_id(form, field):
         if field.data == CHECKOUT_PAYMENT_PLUGIN_ID and form.fee.data > 0:
             raise ValidationError(u'楽天ID決済では、決済手数料は設定できません')
-

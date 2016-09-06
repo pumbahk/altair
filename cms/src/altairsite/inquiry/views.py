@@ -9,15 +9,9 @@ from altairsite.config import usersite_view_config
 from altairsite.smartphone.page.forms import InquiryForm
 from altairsite.mobile.core.helper import log_info, log_error
 
-from altair.app.ticketing.i18n import set_locale_cookie
-
 ##workaround.
 def pc_access(info, request):
     return not is_mobile_request(request)
-
-@usersite_view_config(route_name='locale', request_method="GET", custom_predicates=(pc_access, ))
-def set_cookie(request):
-    return set_locale_cookie(request)
 
 @usersite_view_config(route_name='usersite.inquiry', request_method="GET",
              custom_predicates=(pc_access, ),
@@ -61,4 +55,3 @@ def send_inquiry(request):
 
     log_info("send_inquiry", "end")
     return {'form': form, 'result': ret}
-

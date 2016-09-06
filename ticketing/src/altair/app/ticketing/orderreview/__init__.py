@@ -9,8 +9,6 @@ from sqlalchemy.pool import NullPool
 import sqlahelper
 from altair.app.ticketing.cart.rendering import selectable_renderer
 
-from altair.app.ticketing.i18n import custom_locale_negotiator
-
 class RakutenAuthContext(object):
     def __init__(self, request):
         self.request = request
@@ -142,10 +140,6 @@ def main(global_config, **local_config):
     config.include(setup_auth)
 
     config.add_subscriber('.subscribers.add_helpers', 'pyramid.events.BeforeRender')
-    config.add_subscriber('altair.app.ticketing.i18n.add_renderer_globals', 'pyramid.events.BeforeRender')
-    config.add_subscriber('.i18n.add_localizer', 'pyramid.events.NewRequest')
-    config.add_translation_dirs('altair.app.ticketing:locale')
-    config.set_locale_negotiator(custom_locale_negotiator)
 
     config.include(setup_static_views)
     config.include('.')
@@ -157,4 +151,3 @@ def main(global_config, **local_config):
     setup_cms_communication_api(config)
 
     return config.make_wsgi_app()
-

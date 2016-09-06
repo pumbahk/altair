@@ -217,7 +217,6 @@ class FamiPortTestBase(CoreTestMixin, CartTestMixin):
             id=99,
             code='XX',
             famiport_tenant=self.famiport_tenant,
-            setting = DummyModel(i18n=False)
             )
 
         orders = []
