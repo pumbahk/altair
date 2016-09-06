@@ -1,0 +1,1162 @@
+<%inherit file="/layout_2cols.html" />
+<%namespace file="../performances/_venue_view.html" name="vv" />
+<%namespace file="/common/helpers.html" name="ch" />
+<%namespace file="/common/modal.html" name="m" />
+
+<%block name="breadcrumbs">
+  ${ch.breadcrumbs(
+      names=[u'イベント', performance.event.title, u'パフォーマンス', performance.name],
+      urls=[
+        request.route_path('events.index'),
+        request.route_path('events.show', event_id=performance.event.id),
+        request.route_path('performances.index', event_id=performance.event.id),
+      ]
+  )}
+</%block>
+
+<%block name="javascript">
+<script type="text/javascript" src="/static/js/fashion.js"></script>
+<![if !(lt IE 9)]>
+<script type="text/javascript" src="/static/js/fashion.svg.js"></script>
+<![endif]>
+<!--[if (lt IE 9)]>
+<script type="text/javascript" src="/static/js/fashion.vml.js"></script>
+<![endif]-->
+<script type="text/javascript" src="/static/js/jquery.decentcolorpicker.js"></script>
+<script type="text/javascript" src="/static/js/ticketing.performance.js"></script>
+<script type="text/javascript" src="/static/js/ticketing.venue-editor.js"></script>
+</%block>
+
+<script type="text/javascript" src="${request.static_url('altair.app.ticketing:static/js/ticketing.order.js')}"></script>
+<%
+import json, random
+endpoints_json = json.dumps(endpoints, ensure_ascii=False)
+callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _ in range(0, 10))
+%>
+<style>
+<link rel="stylesheet" type="text/css" href="/static/css/decentcolorpicker.css" />
+<link rel="stylesheet" type="text/css" href="/static/css/performance.css" />
+
+#venue-editor .venue-editor-main .venue-editor-main-root {
+  width: 100%;
+}
+
+#venue-editor .venue-editor-main .venue-editor-main-side {
+  width: 0%;
+}
+
+.modal-backdrop.fade.in {
+  opacity: 0.1;
+}
+
+#screen {
+  position: fixed;
+  left: 0px;
+  top: 0px;
+  width: 100%;
+  height: 100%;
+  margin: 0 0;
+  padding: 0 0;
+  z-index: 10000;
+  background-color: #000;
+  filter: alpha(opacity=50);
+  opacity: .5;
+}
+
+#screen .splash {
+  position: fixed;
+  width: 30%;
+  height: 100px;
+  left: 50%;
+  top: 50%;
+  margin: -50px 0 0 -15%;
+  background-color: #eee;
+  color: #000;
+  font-size: 20px;
+  text-align: center;
+  line-height: 100px;
+}
+
+#venue-viewer-guide {
+  position: absolute;
+  width: 400px;
+  height: 300px;
+  left: 50%;
+  top: 50%;
+  margin-left: -200px;
+  margin-top: -150px;
+  text-align: center;
+}
+</style>
+
+
+<%include file="../performances/_detail_table.html" args="expanded=false" />
+<div>
+  <div class="pull-left">
+    <form class="form-horizontal" id="sales_segment-form" style="margin:0 0 5px 5px;"></form>
+  </div>
+  <div class="pull-left">
+    <form class="form-horizontal" id="performance-form" style="margin:0 0 5px 25px;"></form>
+  </div>
+  <div class="pull-right">
+    <input id="sales-counter-button" type="button" class="btn btn-warning" style="vertical-align: baseline; font-size: 100%;" value="当日窓口発券モードにする" />
+    <div id="sales-counter-toolbar" style="display:none">
+      <label style="display:inline-block">
+        表紙印刷の使用
+        <input type="checkbox" id="printWithCover" style="vertical-align: baseline;" />
+      </label>
+      <label style="display:inline-block">
+        ページ様式
+        <select id="pageFormat" style="width:13em;vertical-align: baseline;"></select>
+      </label>
+      <label style="display:inline-block">
+        チケット様式
+        <select id="ticketFormat" style="width:13em;vertical-align: baseline;"></select>
+      </label>
+      <label style="display:inline-block">
+        プリンタ
+        <select id="printService" style="width:13em;vertical-align: baseline;"></select>
+      </label>
+    </div>
+  </div>
+</div>
+<div style="clear: both;"></div>
+
+<div class="row-fluid">
+  <%vv:venueeditor data_source="${data_source}">
+    <%def name="toolbar_extra()">
+    <input id="show-vacant-btn" type="button" class="btn btn-info" style="margin-left: 15px;" value="全ての座席を表示" />
+    <script type="text/javascript">
+      $('#show-vacant-btn').click(function() {changeSeatDisplayMode();});
+    </script>
+    <div style="float:right">
+      <span class="btn-group">
+        % if HH.has_permission('event_editor'):
+        <div class="btn venue-editor-main-side-toggle" data-toggle="seat_allocation">配席</div>
+        % endif
+        <div class="btn venue-editor-main-side-toggle" data-toggle="order">予約情報</div>
+      </span>
+      <button class="btn btn-primary action-openOrderForm">座席指定予約</button>
+    </div>
+    </%def>
+    <%def name="venue_editor_side_extra()">
+    <div class="venue-editor-main-side-tab" data-tab="order">
+      <div style="float:right">
+        <form class="form-horizontal search-order-form" style="margin: 0;" action="javascript:void(0);">
+          ${form_search.order_no(minlength=12, placeholder=u'予約番号')}
+          <a href="javascript:void(0);" onclick="javascript:searchOrder();" class="btn">
+            <i class="icon-search"></i> 検索
+          </a>
+        </form>
+      </div>
+      <ul class="nav nav-tabs">
+        <li class="active"><a href="#venue-editor-main-side-tab3" data-toggle="tab">予約情報</a></li>
+      </ul>
+      <div class="tab-content" style="overflow: visible;">
+        <div class="tab-pane active" id="venue-editor-main-side-tab3"></div>
+      </div>
+    </div>
+    % if HH.has_permission('event_editor'):
+    <div class="venue-editor-main-side-tab hide" data-tab="seat_allocation">
+      <div style="float:right">
+        <a name="save" href="javascript:saveStocks();" class="btn btn-primary">保存</a>
+      </div>
+      <ul class="nav nav-tabs">
+        <li class="active"><a href="#venue-editor-main-side-tab0" data-toggle="tab">配席(枠)</a></li>
+        <li><a href="#venue-editor-main-side-tab1" data-toggle="tab">配席(席種)</a></li>
+        <li><a href="#venue-editor-main-side-tab2" data-toggle="tab">選択座席<span class="selection-count badge"></span></a></li>
+      </ul>
+      <div class="tab-content" style="overflow: visible;">
+        <div class="tab-pane active" id="venue-editor-main-side-tab0"></div>
+        <div class="tab-pane" id="venue-editor-main-side-tab1"></div>
+        <div class="tab-pane" id="venue-editor-main-side-tab2"></div>
+      </div>
+    </div>
+    % endif
+    </%def>
+
+    <%def name="post()">
+<%include file="../performances/_seat_allocation_function.html" args="performance=performance" />
+
+<script type="text/javascript">
+  % if HH.has_permission('event_editor'):
+  $('.venue-editor-main-side-toggle').mousedown(function() {
+    var tab = $(this).data('toggle');
+    if (tab == 'seat_allocation' && uiFilter != 'all') {
+      showAlert('配席機能を利用するには、全ての座席を表示する必要があります。');
+      return false;
+    }
+  });
+  $('.venue-editor-main-side-toggle').click(function() {
+    var tab = $(this).data('toggle');
+    var self_tab = $('.venue-editor-main-side-tab[data-tab=' + tab + ']');
+    var other_tab = $('.venue-editor-main-side-tab[data-tab!=' + tab + ']');
+    if ($(this).hasClass('active')) {
+      self_tab.removeClass('hide');
+      other_tab.addClass('hide');
+    } else {
+      self_tab.addClass('hide');
+      other_tab.removeClass('hide');
+    }
+    var other = $('.venue-editor-main-side-toggle[data-toggle!=' + tab + ']');
+    other.removeClass('active');
+  });
+  % endif
+
+  var callbackName = ${json.dumps(callback_name)|n};
+  var appletCodeBase = ${json.dumps(request.application_url)|n};
+  var appletArchive = ${json.dumps(request.static_url('altair.app.ticketing:static/printing-0.0.5-jar-with-dependencies.jar'))|n};
+  var appletEndpoints = ${json.dumps(endpoints_json)|n};
+  var endpoints = ${endpoints_json|n};
+  var cookie = ${json.dumps(request.headers.get('cookie'))|n};
+  var uiMode = 'normal';  // normal, salesCounter
+  var uiFilter = 'vacant';  // vacant, all
+
+  // todo rewrite:
+  var Pager = function Pager(el, current){
+    this.$el = $(el);
+    this.current = current;
+  };
+  Pager.prototype.on_reserve_input = function(){
+    if("reserve" === this.current){
+       return;
+    }
+    this.$el.find(".memo-area").hide();
+    this.$el.find(".reserve-area").show();
+    this.$el.find("#reserve-tab").tab("show");
+  };
+  Pager.prototype.on_memo_input = function(){
+    if("memo" === this.current){
+       return;
+    }
+    this.$el.find(".reserve-area").hide();
+    this.$el.find(".memo-area").show();
+    this.$el.find("#memo-tab").tab("show")
+  };
+  Pager.prototype.next = function(target){
+    switch(target){
+      case "reserve":
+        this.on_reserve_input(); break;
+      case "memo":
+        this.on_memo_input(); break;
+    }
+    this.current = target;
+  };
+
+  function setMetadata(params) {
+    var metadata = "${data_source.get('metadata')|n}";
+    metadata += '&sales_segment_id=' + $('#sales_segment-form').find('select[name="sales_segment_id"]').val()
+    if (uiFilter == 'all') metadata += '&load_all_seat=true';
+    venueEditorRoot.data('venueeditor').dataSource.metadata = metadata;
+  }
+
+  function showAlert(message) {
+    var dialog = $('<div class="modal hide"></div>');
+    var header = $('<div class="modal-header"><a class="close" data-dismiss="modal">&times;</a><h3>エラー</h3></div>');
+    var alert_msg = $('<div class="alert alert-error"></div>').text(message);
+    var body = $('<div class="modal-body"></div>').append(alert_msg);
+    var close_btn = $('<button class="btn" data-dismiss="modal">閉じる</button>');
+    var footer = $('<div class="modal-footer"></div>').append(close_btn);
+    dialog.append(header);
+    dialog.append(body);
+    dialog.append(footer);
+    dialog.modal('show');
+  }
+
+  function getErrorMessage(xhr) {
+    var messages = '';
+    try {
+      var responseText = JSON.parse(xhr.responseText);
+      messages = responseText['message'] || xhr.statusText;
+    } catch(e) {
+      messages = 'エラーが発生しました。もう一度やり直してください。'
+    }
+    return messages;
+  }
+
+  var orderFormOpening = false;
+  function getOrderForm(stock_id) {
+    if (orderFormOpening)
+      return;
+    orderFormOpening = true;
+    var param = {'seats':[], 'stocks':[], 'performance_id':${performance.id}};
+    var sales_segment_id = $('#sales_segment-form').find('select[name="sales_segment_id"]').val();
+    if (sales_segment_id) param['sales_segment_id'] = sales_segment_id;
+    if (stock_id) {
+      param['stocks'].push(stock_id);
+    } else {
+      var selection = venueEditorRoot.venueeditor('selection');
+      selection.each(function (seat) {
+        param['seats'].push(seat.id);
+        var stock_id = seat.get('stock').get('id');
+        if ($.inArray(stock_id, param['stocks']) == -1)
+          param['stocks'].push(stock_id);
+      });
+    }
+    $.ajax({
+      type: 'post',
+      url: '${request.route_path('orders.reserve.form')}',
+      data: param,
+      dataType: 'html',
+      complete: function () {
+        orderFormOpening = false;
+      },
+      success: function(data) {
+        $('#reserve-form').html(data);
+        $('#modal-reserve').modal({'backdrop':'static', 'keyboard':false});
+        $('#modal-reserve').modal('show');
+      },
+      error: function(xhr, text) {
+        var messages = getErrorMessage(xhr);
+        showAlert(messages);
+      }
+    });
+  }
+
+  function confirmOrder() {
+    var modal = $('#modal-reserve');
+    modal.find('.modal-body .alert').remove();
+    var $form = modal.find('form');
+    var param = build_form_params($form)
+    $.ajax({
+      type: 'post',
+      url: "${request.route_path('orders.reserve.confirm')}",
+      data: param,
+      dataType: 'html',
+      success: function(data) {
+        $('#modal-reserve').modal('hide');
+        $('#reserve-form').html(data);
+        $('#modal-reserve').modal({'backdrop':'static', 'keyboard':false});
+        $('#modal-reserve').modal('show');
+      },
+      error: function(xhr, text) {
+        var messages = getErrorMessage(xhr);
+        var errors = '';
+        if (typeof messages == 'string') {
+          errors += '<li>' + messages + '</li>';
+        } else {
+          for (i in messages)
+            errors += '<li>' + messages[i] + '</li>';
+        }
+        modal.find('.modal-body').prepend('<div class="alert alert-error"><ul>' + errors + '</ul></div>');
+        modal.trigger("*onFailure");
+        modal.disableOnSubmit();
+      }
+    });
+  }
+
+  function completeOrder() {
+    var modal = $('#modal-reserve');
+    modal.find('.modal-body .alert').remove();
+    var $form = modal.find('form');;
+    var param = build_form_params($form);
+    if (window.ticketPrinterService) {
+      param['with_enqueue'] = true;
+      if ($('#printWithCover').is(":checked")) {
+        param['with_cover'] = $('#printWithCover').is(":checked");
+      }
+      param['ticket_format_id'] = $('#ticketFormat option:selected').attr('ticket_format_id');
+    }
+    $.ajax({
+      type: 'post',
+      url: "${request.route_path('orders.reserve.complete')}",
+      dataType: 'json',
+      data: param,
+      success: function(result) {
+        $('#modal-reserve').modal('hide');
+        onReservationComplete(result);
+      },
+      error: function(xhr, text) {
+        var messages = getErrorMessage(xhr);
+        var errors = '';
+        if (typeof messages == 'string') {
+          errors += '<li>' + messages + '</li>';
+        } else {
+          for (i in messages)
+            errors += '<li>' + messages[i] + '</li>';
+        }
+        modal.find('.modal-body').prepend('<div class="alert alert-error"><ul>' + errors + '</ul></div>');
+        modal.disableOnSubmit();
+      }
+    });
+  }
+
+  function reselectOrder() {
+    var modal = $('#modal-reserve');
+    var $form = modal.find('form');;
+    var param = build_form_params($form);
+    $.ajax({
+      type: 'post',
+      url: '${request.route_path('orders.reserve.reselect')}',
+      dataType: 'html',
+      data: param,
+      success: function(data) {
+        $('#modal-reserve').modal('hide');
+      },
+      error: function(xhr, text) {
+        $('#modal-reserve').modal('hide');
+        var messages = getErrorMessage(xhr);
+        showAlert(messages);
+      }
+    });
+  }
+
+  function getSalesSummary() {
+    var form = $('#sales_segment-form');
+    var body = form.serialize();
+    var table = '#sales-summary';
+    var url = '${request.route_path('orders.sales_summary')}';
+    $.ajax({
+      type: 'post',
+      url: url,
+      dataType: 'html',
+      data: body,
+      success: function(data) {
+        $('#sales-summary').html(data);
+      }
+    });
+  }
+
+  function onReservationComplete(result) {
+    if (window.ticketPrinterService)
+      printOrder(result.order_id); // _printer.html
+    window.open('/orders/show/' + result.order_id, '_blank');
+    var venue = venueEditorRoot.venueeditor('model');
+    if (venue)
+      venueEditorRoot.venueeditor('refresh');
+    getSalesSummary();
+  }
+
+  function searchOrder() {
+    var order_no = $('.search-order-form').find('#order_no').val();
+    showOrder(null, order_no);
+  }
+
+  function showOrder(seat, order_no) {
+    var params = {'performance_id':${performance.id}};
+    if (seat) params['l0_id'] = seat.id;
+    if (order_no) params['order_no'] = order_no;
+    $.ajax({
+      url: '${request.route_path('orders.api.get.html')}',
+      data: params,
+      dataType: 'html',
+      success: function(data) {
+        tab3.empty().append(data);
+        venueEditorSide.animate({scrollTop: 0});
+      },
+      error: function(xhr, text) {
+        var responseText = JSON.parse(xhr.responseText);
+        var messages = responseText['message'] || xhr.statusText
+        var alert = $('<div />').addClass('alert alert-error');
+        alert.append($('<a class="close" data-dismiss="alert">&times;</a>'));
+        alert.append($('<h4 class="alert-heading"/>').text(messages));
+        tab3.find('.alert').remove();
+        tab3.prepend(alert);
+      }
+    });
+  }
+
+  function switchToSalesCounterMode() {
+    if (uiMode == 'salesCounter')
+      return;
+    uiMode = 'salesCounter';
+
+    var api = 'http://localhost:11231';
+    if (location.hash == '#local' || (navigator.appVersion.match(/Chrome\/(\d+)\./) && 45 <= parseInt(RegExp.$1))) {
+      connectToPrintServer(api);
+    } else {
+      loadApplet();
+    }
+    $('#sales-counter-button').css('display', 'none');
+    $('#sales-counter-toolbar').css('display', 'block');
+  }
+
+  function changeSeatDisplayMode() {
+    if (uiFilter == 'vacant') {
+      var modal = $('#modal-confirm');
+      var form = modal.find('form');
+      form.attr('action', 'javascript:loadAllSeat();');
+      form.find('input[type=submit]').val('全ての座席を表示');
+      var message = '予約済み/予約中の座席を含め、全ての購入可能な座席を表示します。<br>この処理は時間がかかる場合があります。よろしいですか？';
+      modal.find('.message').html('<p>' + message + '</p>');
+      modal.modal('toggle');
+    } else {
+      uiFilter = 'vacant';
+      setMetadata();
+      venueEditorRoot.venueeditor('showVacantSeat');
+      $('#show-vacant-btn').val('全ての座席を表示');
+    }
+  }
+
+  function loadAllSeat() {
+    var modal = $('#modal-confirm');
+    modal.modal('toggle');
+    uiFilter = 'all';
+    setMetadata();
+    venueEditorRoot.venueeditor('load');
+    $('#venue-viewer-guide').remove();
+    $('#show-vacant-btn').val('空席のみ表示');
+    $('form[name="modal-confirm-form"]').find('input').removeAttr('disabled');
+  }
+
+  function connectToPrintServer(api) {
+    var $printService = $('#printService');
+    var $pageFormat = $('#pageFormat');
+    var $ticketFormat = $('#ticketFormat');
+
+    function refreshPrintServices() {
+        $printService.empty();
+        $.ajax({
+            url: api + '/printers',
+            type: 'GET',
+            dataType: 'json'
+        }).done(function(s) {
+            for(var i=0 ; i<s.printers.length ; i++) {
+                $('<option></option>').val(s.printers[i]).text(s.printers[i]).appendTo($printService);
+            }
+        }).fail(function(_, s, e) {
+            var message = 'プリントサービスが起動していないようです';
+            if (e != '')
+                message += ' (' + e + ')';
+            alert(message);
+        });
+    }
+    var formats = { };
+    function refreshFormats() {
+        $pageFormat.empty();
+        $ticketFormat.empty();
+        var d = $.Deferred();
+        $.ajax({
+            url: endpoints.formats,
+            type: 'GET',
+            dataType: 'json'
+        }).done(function(s) {
+            if(s.status != 'success')
+                return;
+            formats.page_formats = s.data.page_formats;
+            for(var i=0 ; i<s.data.page_formats.length ; i++) {
+                $('<option></option>').val(i).text(s.data.page_formats[i].name).appendTo($pageFormat);
+            }
+            formats.ticket_formats = s.data.ticket_formats;
+            for(var i=0 ; i<s.data.ticket_formats.length ; i++) {
+                $('<option></option>').val(i).attr('ticket_format_id', s.data.ticket_formats[i].id).text(s.data.ticket_formats[i].name).appendTo($ticketFormat);
+            }
+            d.resolve();
+       }).fail(function() {
+            d.reject();
+       });
+       return d;
+    }
+    function onPageFormatChange() {
+      //refreshQueueEntryList();
+    }
+    function onPrintingCompleted() {
+
+    }
+    function reportError(message) {
+        alert("印刷に失敗しました." + message);
+        onPrintingCompleted();
+    }
+    $pageFormat.change(onPageFormatChange);
+    refreshPrintServices();
+    refreshFormats();
+    onPageFormatChange();
+
+    window.ticketPrinterService = true;
+    window.printOrder = function(order_id) {
+      var currentPrintService = $printService.val();
+      var currentTicketFormat = formats.ticket_formats[$ticketFormat.val()];
+      var currentPageFormat = formats.page_formats[$pageFormat.val()];
+      var with_cover = $('#printWithCover').is(':checked');
+      if (!currentPrintService) {
+          alert('no print service');
+          return;
+      }
+      $.ajax({
+          url: api + "/process",
+          type: 'POST',
+          contentType: 'application/json',
+          data: JSON.stringify({
+              "printer": currentPrintService,
+              "page": currentPageFormat,
+              "page_format_id": currentPageFormat.id,
+              "ticket_format_id": currentTicketFormat.id,
+              "peek_url": location.origin + endpoints["peek"],
+              "dequeue_url": location.origin + endpoints["dequeue"],
+              "cookie": cookie,
+              "order_id": order_id,
+              "with_cover": with_cover
+          }),
+          dataType: 'json'
+        }).done(function(s) {
+            if(s.status == "success") {
+              function poll() {
+                $.ajax({
+                  url: api + s.poll_url,
+                  type: 'GET',
+                  data: { 'timeout': 3000 }
+                }).done(function (s) {
+                  switch (s.status) {
+                  case 'success':
+                    if (s.error_class != null) {
+                      reportError(s.error_message);
+                    } else {
+                      onPrintingCompleted();
+                    }
+                    break;
+                  case 'error':
+                    reportError(s.message);
+                    break;
+                  case 'timeout':
+                    poll();
+                    break;
+                  }
+                });
+              }
+              poll();
+            } else {
+              reportError(s.message);
+            }
+        });
+    };
+  }
+
+  window[callbackName] = function (applet) {
+    var service = applet.getService();
+    var createProxy = function () { return applet.createPropertyChangeListenerProxy.apply(applet, arguments); };
+    var $page = $('#page');
+    var $printService = $('#printService');
+    var $pageFormat = $('#pageFormat');
+    var $ticketFormat = $('#ticketFormat');
+    var pageFormatToPrintServiceMap = {};
+    function refreshPages() {
+      var pages = service.getPages();
+      $page.empty();
+      if (pages) {
+        for (var i = pages.iterator(); i.hasNext();) {
+          var page = i.next();
+          $page.append($('<option></option>').text(page.getName()));
+        }
+      }
+    }
+    function refreshPrintServices() {
+      var printServices = service.getPrintServices();
+      $printService.empty();
+      if (printServices) {
+        for (var i = printServices.iterator(); i.hasNext();) {
+          var printService = i.next();
+          var name = printService.getName();
+          $printService.append(
+            $('<option></option>')
+              .attr('value', name)
+              .text(name)
+          );
+        }
+      }
+    }
+    function refreshPageFormats() {
+      var pageFormats = service.getPageFormats();
+      $pageFormat.empty();
+      if (pageFormats) {
+        for (var i = pageFormats.iterator(); i.hasNext();) {
+          var pageFormat = i.next();
+          var id = pageFormat.getId();
+          var name = pageFormat.getName();
+          $pageFormat.append($('<option></option>').attr('value', id).text(name));
+          pageFormatToPrintServiceMap[id] = pageFormat.getPreferredPrinterName();
+        }
+      }
+    }
+    function refreshTicketFormats() {
+      var ticketFormats = service.getTicketFormats();
+      $ticketFormat.empty();
+      if (ticketFormats) {
+        for (var i = ticketFormats.iterator(); i.hasNext();) {
+          var ticketFormat = i.next();
+          var id = ticketFormat.getId();
+          var name = ticketFormat.getName();
+          $ticketFormat.append($('<option></option>').attr('value', id).text(name));
+        }
+      }
+    }
+
+    function getTicketFormatById(id) {
+      var ticketFormats = service.getTicketFormats();
+      if (ticketFormats) {
+        for (var i = ticketFormats.iterator(); i.hasNext();) {
+          var ticketFormat = i.next();
+          if (ticketFormat.getId() == id) {
+            return ticketFormat;
+          }
+        }
+      }
+      return null;
+    }
+
+    function getPageFormatById(id) {
+      var pageFormats = service.getPageFormats();
+      if (pageFormats) {
+        for (var i = pageFormats.iterator(); i.hasNext();) {
+          var pageFormat = i.next();
+          if (pageFormat.getId() == id) {
+            return pageFormat;
+          }
+        }
+      }
+      return null;
+    }
+
+    function getPrintServiceByName(name) {
+      var printServices = service.getPrintServices();
+      if (printServices) {
+        for (var i = printServices.iterator(); i.hasNext();) {
+          var printService = i.next();
+          if (printService.getName() == name)
+            return printService;
+        }
+      }
+      return null;
+    }
+
+    function onPageFormatChange() {
+      var id = $pageFormat.val();
+      $printService.val(pageFormatToPrintServiceMap[id]);
+    }
+
+    $pageFormat.change(onPageFormatChange);
+    service.addListenerForPages(createProxy(refreshPages));
+    refreshPages();
+    refreshPrintServices();
+    refreshPageFormats();
+    refreshTicketFormats();
+    onPageFormatChange();
+
+    function printOrder(orderId) {
+        service.filterByOrderId(orderId);
+        var currentPrintService = getPrintServiceByName($printService.val());
+        var currentPageFormat = getPageFormatById($pageFormat.val());
+        if (!currentPrintService) {
+            alert('no print service');
+        }
+        var currentTicketFormat = getTicketFormatById($ticketFormat.val());
+        service.startBatchUpdate();
+        service.setTicketFormat(currentTicketFormat);
+        service.setPageFormat(currentPageFormat);
+        service.setWithCover($('#printWithCover').is(':checked'))
+        service.setPrintService(currentPrintService);
+        service.endBatchUpdate();
+        service.printAll();
+    };
+
+    function heartbeat() {
+      var alertShown = false;
+      setInterval(function () {
+        var exited = false;
+        if (typeof applet.getService == 'undefined') {
+          exited = true;
+        } else {
+          try {
+            applet.getService();
+          } catch (e) {
+            if (e.toString().indexOf("exited") >= 0) {
+              exited = true;
+            }
+          }
+        }
+        if (exited) {
+          if (!alertShown) {
+            alertShown = true;
+            if (confirm("Appletが突然終了しました。\n大量発券を一度に行ったりするとこの問題が発生することがあります。\n\nOKを押すとページがリロードされます。")) {
+              location.reload(true);
+            }
+          }
+        }
+      }, 5000);
+    }
+
+    window.ticketPrinterService = service;
+    window.printOrder = printOrder;
+    heartbeat();
+    $('#screen').hide();
+  };
+
+  function writeAppletTag(options) {
+    var buf = [];
+    var version = options.version.split('.');
+    var width = (0|options.width) || 100;
+    var height = (0|options.height) || 100;
+    var id = options.id;
+    var code = options.code;
+    var codebase = options.codebase;
+    var archive = options.archive;
+    var scriptable = options.scriptable || false;
+    var params = options.params;
+
+    function escapeHTMLSpecials(text) {
+      return ("" + text)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function buildHTMLForIE() {
+      buf.push(
+        '<object',
+        ' classid="clsid:8AD9C840-044E-11D1-B3E9-00805F499D93"',
+        ' codebase="http://javadl-esd.sun.com/update/', version.slice(0, 3).join('.'), '/jinstall-6u35-windows-i586.cab#Version=', version.join(','), '"',
+        ' width="', width, '"',
+        ' height="', height, '"');
+      if (id)
+        buf.push(' id="', escapeHTMLSpecials(id), '"');
+      buf.push('>');
+      buf.push('<param name="type" value="application/x-java-applet;version=', version[0], '.', version[1], '" />');
+      buf.push('<param name="code" value="', escapeHTMLSpecials(code), '" />');
+      if (codebase)
+        buf.push('<param name="codebase" value="', escapeHTMLSpecials(codebase), '" />');
+      if (archive)
+        buf.push('<param name="archive" value="', escapeHTMLSpecials(archive), '" />');
+      buf.push('<param name="scriptable" value="', (scriptable ? 'true': 'false'), '" />');
+      for (var k in params)
+        buf.push('<param name="', escapeHTMLSpecials(k), '" value="', escapeHTMLSpecials(params[k]), '" />');
+      buf.push('</object>');
+    }
+
+    function buildHTMLForOthers() {
+      buf.push('<embed',
+        ' type="application/x-java-applet;version=', version[0], '.', version[1], '"',
+        ' pluginspage="http://java.sun.com/products/plugin/index.html#download"',
+        ' code="', escapeHTMLSpecials(code), '"',
+        ' width="', width, '"',
+        ' height="', height, '"',
+        ' scriptable="', (scriptable ? 'true': 'false'), '"');
+      if (codebase)
+        buf.push(' codebase="', escapeHTMLSpecials(codebase), '"');
+      if (archive)
+        buf.push(' archive="', escapeHTMLSpecials(archive), '"');
+      if (id) {
+        buf.push(' name="', escapeHTMLSpecials(id), '"');
+        buf.push(' id="', escapeHTMLSpecials(id), '"');
+      }
+      for (var k in params)
+        buf.push(' ', escapeHTMLSpecials(k), '="', escapeHTMLSpecials(params[k]), '"');
+      buf.push('></embed>');
+    }
+
+    function buildHTMLApplet() {
+      buf.push('<applet',
+        ' code="', escapeHTMLSpecials(code), '"',
+        ' width="', width, '"',
+        ' height="', height, '"',
+        ' scriptable="', (scriptable ? 'true': 'false'), '"');
+      if (codebase)
+        buf.push(' codebase="', escapeHTMLSpecials(codebase), '"');
+      if (archive)
+        buf.push(' archive="', escapeHTMLSpecials(archive), '"');
+      if (id) {
+        buf.push(' name="', escapeHTMLSpecials(id), '"');
+        buf.push(' id="', escapeHTMLSpecials(id), '"');
+      }
+      buf.push('>');
+      for (var k in params)
+        buf.push('<param name="', escapeHTMLSpecials(k), '" value="', escapeHTMLSpecials(params[k]), '" />');
+      buf.push('</applet>');
+    }
+
+    if (navigator.userAgent.indexOf('MSIE') >= 0)
+      buildHTMLForIE();
+    else
+      buildHTMLForOthers();
+    $('#applet-tag').empty().append(buf.join(''));
+  }
+
+  function loadApplet() {
+    $('#screen').show();
+    writeAppletTag({
+      version: '1.6.0.35',
+      width: 1, height: 1,
+      code: 'jp.ticketstar.ticketing.printing.gui.AppApplet',
+      codebase: appletCodeBase,
+      archive: appletArchive,
+      scriptable: true,
+      id: 'applet',
+      params: {
+        endpoints: appletEndpoints,
+        cookie: cookie,
+        embedded: true,
+        callback: callbackName
+      }
+    });
+  }
+
+  var tab3 = venueEditorSide.find("#venue-editor-main-side-tab3");
+  % if HH.has_permission('event_editor'):
+  var tab0 = venueEditorSide.find("#venue-editor-main-side-tab0");
+  var tab1 = venueEditorSide.find("#venue-editor-main-side-tab1");
+  var tab2 = venueEditorSide.find("#venue-editor-main-side-tab2");
+  % endif
+
+  callbacks.load = callbacks.refresh = function (viewer) {
+    tab3.empty();
+    % if HH.has_permission('event_editor'):
+    tab0.empty();
+    tab0.append(buildStockHolderTypeTables(viewer.venue));
+    tab1.empty();
+    tab1.append(buildStockTypeHolderTables(viewer.venue));
+    tab2.empty();
+    tab2.append(buildSeatDetailTable(venueEditorRoot.venueeditor('selection')));
+    % endif
+  };
+
+  callbacks.select = function (viewer, selection) {
+    update_selection_table(selection);
+  }
+
+  callbacks.click = function (seat) {
+    var el = $('.venue-editor-main-side-toggle[data-toggle="order"]');
+    if (!el.hasClass('active')) return;
+    if (el.data('toggle') == 'order') showOrder(seat);
+  };
+
+  /* application */
+  var reservation = {};
+
+  reservation.init = function(options) {
+    this.app = new reservation.ApplicationController();
+    this.app.init(options);
+
+    $('#sales-counter-button').click(function() { switchToSalesCounterMode(); });
+
+    // 「おまかせ」ボタンはajaxで追加されるので、delegateを使わないとうまく動かない
+    var openOrderFormButtons = $(document.body).delegate(".action-openOrderForm", "click", function () {
+      var stock_id = $(this).data('stock-id');
+      getOrderForm(stock_id ? parseInt(stock_id): void(0));
+    });
+
+    getSalesSummary();
+  };
+
+  reservation.ApplicationController = function() {
+  };
+
+  reservation.ApplicationController.prototype.init = function(options) {
+    this.GuidePresenter = new reservation.GuidePresenter({viewType: reservation.GuideView});
+    this.GuidePresenter.initialize(options);
+    this.GuidePresenter.show();
+
+    this.SalesSegmentSelectPresenter = new reservation.SalesSegmentSelectPresenter(
+      {viewType: reservation.SalesSegmentSelectView, guide: this.GuidePresenter}
+    );
+    this.SalesSegmentSelectPresenter.initialize(options);
+    this.SalesSegmentSelectPresenter.show();
+
+    this.PerformanceSelectPresenter = new reservation.PerformanceSelectPresenter({viewType: reservation.PerformanceSelectView});
+    this.PerformanceSelectPresenter.initialize(options);
+    this.PerformanceSelectPresenter.show();
+  };
+
+  /* presenter */
+  reservation.GuidePresenter = function(params) {
+    for (var k in params) this[k] = params[k];
+  };
+
+  reservation.GuidePresenter.prototype = {
+    defaults: {
+    },
+    initialize: function(options) {
+      var self = this;
+      this.options = options;
+      this.view = new this.viewType({
+        el: $('<div id="venue-viewer-guide"/>'),
+        presenter: this,
+      });
+    },
+    show: function() {
+      this.view.render();
+    }
+  }
+
+  reservation.SalesSegmentSelectPresenter = function(params) {
+    for (var k in params) this[k] = params[k];
+  };
+
+  reservation.SalesSegmentSelectPresenter.prototype = {
+    defaults: {
+    },
+    initialize: function(options) {
+      var self = this;
+      this.options = options;
+      this.view = new this.viewType({
+        el: $('#sales_segment-form'),
+        presenter: this,
+      });
+    },
+    removeGuide: function() {
+      this.guide.view.remove();
+    },
+    show: function() {
+      this.view.render();
+    }
+  }
+
+  reservation.PerformanceSelectPresenter = function(params) {
+    for (var k in params) this[k] = params[k];
+  };
+
+  reservation.PerformanceSelectPresenter.prototype = {
+    defaults: {
+    },
+    initialize: function(options) {
+      var self = this;
+      this.options = options;
+      this.view = new this.viewType({
+        el: $('#performance-form'),
+        presenter: this,
+      });
+    },
+    show: function() {
+      this.view.render();
+    }
+  }
+
+  /* view */
+  reservation.GuideView = Backbone.View.extend({
+    initialize: function() {
+      this.el = this.options.el;
+      this.presenter = this.options.presenter;
+    },
+    events: {
+      'click .btn-init-load': 'load'
+    },
+    load: function() {
+      venueEditorRoot.venueeditor('load');
+      this.remove();
+    },
+    remove: function() {
+      this.$el.remove();
+    },
+    render: function() {
+      var self = this;
+      var div = $('<div class="hero-unit"/>');
+      div.append($('<h2>会場図で座席選択</h2>'));
+      div.append($('<p>予約を確認したり、座席を選択して予約することができます。</p>'));
+      div.append($('<p><a class="btn btn-primary btn-init-load">表示</a></p>'));
+      this.$el.append(div);
+      venueEditorRoot.append(this.$el);
+    }
+  });
+
+  reservation.SalesSegmentSelectView = Backbone.View.extend({
+    initialize: function() {
+      this.el = this.options.el;
+      this.presenter = this.options.presenter;
+    },
+    events: {
+      'change select[name="sales_segment_id"]': 'onChange'
+    },
+    onChange: function(e) {
+      setMetadata();
+      if (venueEditorRoot.venueeditor('model')) {
+        venueEditorRoot.venueeditor('load');
+        this.presenter.removeGuide();
+      }
+      getSalesSummary();
+    },
+    render: function() {
+      var self = this;
+
+      var performance_id = $('<input type="hidden" name="performance_id" value="${performance.id}" />');
+      this.$el.append(performance_id);
+
+      var label = $('<label style="display:inline-block" for="sales_segment_id" />');
+      label.append('販売区分');
+      this.$el.append(label);
+
+      var select = $('<select id="sales_segment_id" name="sales_segment_id" style="width:10em; margin-left:3px;" />');
+      select.append($('<option value="">(すべて)</option>'));
+      % for sales_segment in _context.available_sales_segments:
+      select.append($('<option value="${sales_segment.id}" ${'selected=""' if sales_segment.id == int(sales_segment_id or 0) else ''|n}>${sales_segment.name}</option>'));
+      % endfor
+      this.$el.append(select);
+    }
+  });
+
+  reservation.PerformanceSelectView = Backbone.View.extend({
+    initialize: function() {
+      this.el = this.options.el;
+      this.presenter = this.options.presenter;
+      this.current = ${performance.id};
+    },
+    events: {
+      'change select[name="performance_id"]': 'onChangeSelect',
+      'click input[type="checkbox"]': 'onChangeCheckbox',
+      'click a.btn': 'reset'
+    },
+    onChangeSelect: function(e) {
+      var id = $(e.target).val();
+      if (id != this.current) {
+        var url = "${request.route_path('performances.show', performance_id='{id}')|n}";
+        url = url.replace(encodeURIComponent('{id}'), id);
+        var btn = this.el.find('.btn');
+        btn.attr('href', url + '/reservation');
+      }
+    },
+    onChangeCheckbox: function(e) {
+      var target = ($(e.target).attr('checked') ? '_blank' : '_self');
+      var btn = this.el.find('.btn');
+      btn.attr('target', target);
+    },
+    reset: function(e) {
+      if ($('#performance_opener').attr('checked')) {
+        this.el.find('select[name="performance_id"]').val(this.current);
+      }
+    },
+    render: function() {
+      var self = this;
+
+      var label = $('<label style="display:inline-block" for="performance_selector" />');
+      label.append('公演');
+      this.$el.append(label);
+
+      var select = $('<select id="performance_selector" name="performance_id" style="width:35em; margin: 0 3px 0 3px;" />');
+      % for p in performance.event.performances:
+        select.append($('<option value="${p.id}">${u"{0} - {1} - {2} - {3}".format(p.code, p.name, vh.datetime(p.start_on, with_weekday=True), p.venue.name)}</option>'));
+      % endfor
+      select.val(this.current);
+      this.$el.append(select);
+
+      var btn = $('<a href="#" class="btn btn-primary btn-small" rel="noreferrer" target="_blank" />');
+      btn.text('開く');
+      this.$el.append(btn);
+
+      var checkbox = $('<input type="checkbox" id="performance_opener" class="checkbox" checked="checked" style="margin:3px;" />');
+      this.$el.append(checkbox);
+
+      label = $('<label style="display:inline-block" for="performance_opener" />');
+      label.append('別画面');
+      this.$el.append(label);
+    }
+  });
+
+  $(function() {
+    reservation.init();
+  });
+</script>
+    </%def>
+  </%vv:venueeditor>
+</div>
+
+<div>
+  <%include file="../performances/_legend_seat_status.html" />
+</div>
+
+<div id="sales-summary"></div>
+<div id="reserve-form"></div>
+<div id="applet-tag"></div>
+<div id="screen" style="display:none;">
+  <div class="splash">
+    Now loading...
+  </div>
+</div>
+
+${m.confirm_modal()}

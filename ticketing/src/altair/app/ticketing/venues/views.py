@@ -101,7 +101,7 @@ class VenueSiteDrawingHandler(object):
                 return resp
 
 
-@view_config(route_name="api.get_site_drawing", request_method="GET", permission='event_viewer')
+@view_config(route_name="api.get_site_drawing", request_method="GET", permission='venue_viewer')
 def get_site_drawing(context, request):
     return request.registry.getUtility(IVenueSiteDrawingHandler)(context, request)
 
@@ -115,7 +115,7 @@ def create_text_element(parent, name, text):
     e = etree.SubElement(parent, name)
     e.text = text
 
-@view_config(route_name="api.seat_info", request_method="GET", renderer="lxml", permission="event_viewer")
+@view_config(route_name="api.seat_info", request_method="GET", renderer="lxml", permission="venue_viewer")
 def get_seat_info(context, request):
     slave_session = get_db_session(request, 'slave')
     x_result = etree.Element("result")
@@ -250,7 +250,7 @@ def update_seat_info(context, request):
 
     return lxml_result("success", "ok, %u records updated." % updated)
 
-@view_config(route_name="api.seat_priority", request_method="GET", renderer="lxml", permission="event_viewer")
+@view_config(route_name="api.seat_priority", request_method="GET", renderer="lxml", permission="venue_viewer")
 def get_seat_priority(context, request):
     x_result = etree.Element("result")
     slave_session = get_db_session(request, 'slave')
@@ -300,7 +300,7 @@ def update_seat_priority(context, request):
     
     return lxml_result("success", "ok, %u records updated." % updated)
 
-@view_config(route_name="api.group", request_method="GET", renderer="lxml", permission="event_viewer")
+@view_config(route_name="api.group", request_method="GET", renderer="lxml", permission="venue_viewer")
 def get_seat_group(context, request):
     x_result = etree.Element("result")
 
@@ -393,7 +393,7 @@ def update_seat_group(context, request):
 
     return lxml_result("success", "ok")
 
-@view_config(route_name="api.get_seats", request_method="GET", renderer='json', permission='event_viewer')
+@view_config(route_name="api.get_seats", request_method="GET", renderer='json', permission='venue_viewer')
 def get_seats(request):
     slave_session = get_db_session(request, 'slave')
     venue = request.context.venue
@@ -408,8 +408,7 @@ def get_seats(request):
     sale_only = (u'sale_only' in filter_params)
     if loaded_at:
         loaded_at = datetime.fromtimestamp(float(loaded_at))
-    permit_operator = isinstance(has_permission('event_editor', request.context, request), ACLAllowed)
-
+    permit_operator = isinstance(has_permission('venue_viewer', request.context, request), ACLAllowed)
     retval = {}
 
     if u'areas' in necessary_params:
@@ -594,7 +593,7 @@ def index(request):
 
     return dict(items=items, form=form)
 
-@view_config(route_name="api.get_frontend", request_method="GET", permission='event_viewer')
+@view_config(route_name="api.get_frontend", request_method="GET", permission='venue_viewer')
 def frontend_drawing(request):
     venue = request.context.venue
     part = request.matchdict.get('part')
