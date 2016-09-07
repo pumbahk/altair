@@ -38,7 +38,6 @@ def _overridable(path, fallback_ua_type=None):
 
 @lbr_view_config(context=ICartDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer=_overridable("orion_confirm.html"))
 def deliver_confirm_viewlet(context, request):
-    logger.debug(u"イベントゲート")
     cart = context.cart
     delivery_method = cart.payment_delivery_pair.delivery_method
     return dict(delivery_name=delivery_method.name, description=Markup(delivery_method.description))
@@ -71,7 +70,7 @@ def deliver_completion_viewlet(context, request):
         order=order,
         tel=order.shipping_address.tel_1,
         tickets=tickets,
-        description=delivery_method.description
+        description=Markup(delivery_method.description)
         )
 
 @lbr_view_config(context=ICompleteMailResource, name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer=_overridable("orion_mail_complete.html", fallback_ua_type='mail'))
