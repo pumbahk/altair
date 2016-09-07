@@ -80,6 +80,8 @@ class Events(BaseView):
         return HTTPFound(self.request.route_path("events.show", event_id=event_id))
 
     @view_config(route_name='events.index', renderer='altair.app.ticketing:templates/events/index.html', permission='event_viewer')
+    @view_config(route_name='events.reservation.index', renderer='altair.app.ticketing:templates/reservation/index.html'
+                            , permission='reservation_editor')
     def index(self):
         slave_session = get_db_session(self.request, name="slave")
 
@@ -180,6 +182,9 @@ class Events(BaseView):
         return Response(ElementTree.tostring(root), headers=[ ('Content-Type', 'text/xml') ])
 
     @view_config(route_name='events.show', renderer='altair.app.ticketing:templates/events/show.html', permission='event_viewer')
+    @view_config(route_name='events.reservation.show'
+                            , renderer='altair.app.ticketing:templates/reservation/show.html'
+                            , permission='reservation_editor')
     def show(self):
         slave_session = get_db_session(self.request, name="slave")
         try:
