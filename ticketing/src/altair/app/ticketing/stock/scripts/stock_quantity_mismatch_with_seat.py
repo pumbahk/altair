@@ -65,7 +65,7 @@ def main():
     data = cur.fetchall()
 
     for datum in data:
-        msg = "Stock quantity mismatch with seat Stock ID = {0.stock_id}, Total = {0.total}, Rest = {0.rest}"
-        logger.error(msg.format(datum))
+        msg = "Stock quantity mismatch with seat Stock ID = {0}, Total = {1}, Rest = {2}"
+        logger.error(msg.format(datum[0], datum[1], datum[2]))
 
     logger.info("Stock quantity mismatch with seat end")
