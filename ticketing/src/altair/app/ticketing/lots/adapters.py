@@ -411,6 +411,8 @@ class LotEntryStatus(object):
             Order.id==LotEntry.order_id
         ).filter(
             Order.paid_at==None
+        ).filter(
+            Order.canceled_at==None
         ).count()
         return reserved_count
 
