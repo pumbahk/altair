@@ -1,5 +1,6 @@
 class BUILDERS:
-    cart = "cart"
+    cart_events = "cart.events"
+    cart_performances = "cart.performances"
     cart_now = "cart.now"
     lots_cart = "cart.lots"
     agreement_cart = "cart.agreement"
@@ -8,8 +9,11 @@ class BUILDERS:
 
 def includeme(config):
     from .interfaces import IURLBuilder
-    from .carturl import CartURLBuilder
-    config.registry.registerUtility(CartURLBuilder(path_prefix="/cart/events"), IURLBuilder, name=BUILDERS.cart)
+    from .carturl import CartURLEventsBuilder
+    config.registry.registerUtility(CartURLEventsBuilder(path_prefix="/cart/events"), IURLBuilder, name=BUILDERS.cart_events)
+
+    from .carturl import CartURLPerformanceBuilder
+    config.registry.registerUtility(CartURLPerformanceBuilder(path_prefix="/cart/performances"), IURLBuilder, name=BUILDERS.cart_performances)
 
     from .carturl import CartNowURLBuilder
     config.registry.registerUtility(CartNowURLBuilder(path_prefix="/whattime/login"), IURLBuilder, name=BUILDERS.cart_now)

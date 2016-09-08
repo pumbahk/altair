@@ -56,7 +56,7 @@ class CartNowURLBuilder(object):
         return _url_builder(scheme, hostname, path, {"redirect_to": cart_url, "backend_event_id": event_id})
 
 @implementer(IURLBuilder)
-class CartURLBuilder(object):
+class CartURLEventsBuilder(object):
     def __init__(self, path_prefix):
         self.path_prefix = path_prefix.rstrip("/")
 
@@ -80,6 +80,25 @@ class CartURLBuilder(object):
         path = self.build_path(event)
         query = self.build_query(performance)
         return _url_builder(scheme, host_name, path, query)
+
+@implementer(IURLBuilder)
+class CartURLPerformanceBuilder(object):
+    def __init__(self, path_prefix):
+        self.path_prefix = path_prefix.rstrip("/")
+
+    def build_path(self, performance):
+        suffix = unicode(performance.id)
+        return u"{0}/{1}".format(self.path_prefix, suffix.lstrip("/"))
+
+    def build_hostname(self, request, organization):
+        return guess_host_name_from_request(request, organization=organization)
+
+    def build(self, request, performance, organization=None):
+        organization = organization or request.context.organization
+        scheme = _get_scheme_from_request(request)
+        host_name = self.build_hostname(request, organization)
+        path = self.build_path(performance)
+        return _url_builder(scheme, host_name, path, {})
 
 @implementer(IURLBuilder)
 class LotsCartURLBuilder(object):

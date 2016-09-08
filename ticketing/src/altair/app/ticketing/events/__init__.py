@@ -5,10 +5,12 @@ from .resources import EventAdminResource
 def includeme(config):
     factory = newRootFactory(EventAdminResource)
     config.add_route('events.index', '/', factory=factory)
+    config.add_route('events.reservation.index', '/reservation', factory=factory)
     config.add_route('events.visible', '/visible', factory=factory)
     config.add_route('events.invisible', '/invisible', factory=factory)
     config.add_route('events.new', '/new', factory=factory)
     config.add_route('events.show', '/show/{event_id}', factory=factory)
+    config.add_route('events.reservation.show', '/reservation/show/{event_id}', factory=factory)
     config.add_route('events.show.performances.visible', '/show/performances/visible/{event_id}', factory=factory)
     config.add_route('events.show.performances.invisible', '/show/performances/invisible/{event_id}', factory=factory)
     config.add_route('events.edit', '/edit/{event_id}', factory=factory)

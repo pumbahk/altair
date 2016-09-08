@@ -1,0 +1,334 @@
+<%inherit file="/layout_2cols.html" />
+<%namespace file="/common/helpers.html" name="ch" />
+
+<script>
+// ajax modal
+$(function(){
+  $("a.id-action").click(function() {
+    var form = $(this).closest('form');
+    var pk = form.find("input:radio:checked, input:checkbox:checked").val();
+    if(!pk){ return false; }
+    $(this).attr("href", $(this).attr("data-base-url").replace("__id__", pk));
+    return true;
+  });
+
+	$("a.ajax-modal[data-toggle=modal]").click(function(){
+    $($(this).attr("data-target")).load($(this).attr("href"));
+	});
+});
+</script>
+
+<%block name="breadcrumbs">
+  ${ch.breadcrumbs(
+      names=[u'イベント', event.title],
+      urls=[request.route_path('events.reservation.index')]
+  )}
+</%block>
+
+<%block name="style">
+<link rel="stylesheet" type="text/css" href="/static/css/decentcolorpicker.css" />
+<script type="text/javascript" src="/static/js/jquery.decentcolorpicker.js"></script>
+</%block>
+
+
+<script>
+  $(function() {
+    $('[rel=popover]').popover()
+  });
+</script>
+
+<div class="page-header">
+  <h1 style="word-wrap: break-word;">${event.title}</h1>
+</div>
+
+<table class="table table-bordered fullwidth">
+  <tbody>
+    <tr>
+      <th class="span3">${form.title.label.text}</th>
+      <td>${event.title}</td>
+    </tr>
+    <tr>
+      <th>${form.abbreviated_title.label.text}</th>
+      <td>${event.abbreviated_title}</td>
+    </tr>
+    <tr>
+      <th>${form.code.label.text}</th>
+      <td>${event.code}</td>
+    </tr>
+    <tr>
+      <th>${form.account_id.label.text}</th>
+      <td>${event.account.name} 様</td>
+    </tr>
+    <tr>
+      <th>
+        販売開始日時
+        <span class="help-inline">
+          <a rel="popover" data-original-title="販売開始日時" data-content="登録済みの商品のうち最初の販売開始日時">
+            <i class="icon-question-sign"></i>
+          </a>
+        </span>
+      </th>
+      <td>${vh.datetime(event.sales_start_on, with_weekday=True)}</td>
+    </tr>
+    <tr>
+      <th>
+        販売終了日時
+        <span class="help-inline">
+          <a rel="popover" data-original-title="販売終了日時" data-content="登録済みの商品のうち最後の販売終了日時">
+            <i class="icon-question-sign"></i>
+          </a>
+        </span>
+      </th>
+      <td>${vh.datetime(event.sales_end_on, with_weekday=True)}</td>
+    </tr>
+    <tr>
+      <th>初回公演日時</th>
+      <td>
+        ${vh.datetime(event.first_start_on, with_weekday=True)}
+        % if event.first_performance:
+        (<a href="${request.route_path('performances.show', event_id=event.id, performance_id=event.first_performance.id)}">
+         ${event.first_performance.venue.name} 公演 </a>)
+        % endif
+      </td>
+    </tr>
+    <tr>
+      <th>最終公演日時</th>
+      <td>
+        ${vh.datetime(event.final_start_on, with_weekday=True)}
+        % if event.final_performance:
+        (<a href="${request.route_path('performances.show', event_id=event.id, performance_id=event.final_performance.id)}">
+         ${event.final_performance.venue.name} 公演 </a>)
+        % endif
+      </td>
+    </tr>
+    %if event.setting:
+      %for (k, _), (label, v) in HH.describe_iter(event.setting):
+        <tr>
+          <th>${label}</th>
+          <td colspan="7">${v or u'-'}</td>
+        </tr>
+      %endfor
+    %endif
+    <tr>
+      <th>
+        カートURL
+        <span class="help-inline">
+          <a rel="popover" data-original-title="カートURL" data-content="購入カートのURL">
+            <i class="icon-question-sign"></i>
+          </a>
+        </span>
+      </th>
+      <td>
+        <a href="${cart_url}">${cart_url}</a>  (<a href="${cart_now_cart_url}">時間指定してカート購入</a>)
+      </td>
+    </tr>
+    <tr>
+      <th>
+        同意カートURL
+        <span class="help-inline">
+          <a rel="popover" data-original-title="カートURL" data-content="同意購入カートのURL">
+            <i class="icon-question-sign"></i>
+          </a>
+        </span>
+      </th>
+      <td>
+        <a href="${agreement_url}">${agreement_url}</a>  (<a href="${cart_now_cart_url}">時間指定してカート購入</a>)
+      </td>
+    </tr>
+
+    % if organization_setting.enable_word:
+
+    <tr>
+      <th>
+        CMS情報
+      </th>
+      <td>
+        <span id="cms-info">
+          Loading...
+        </span>
+        <script>
+          $(function() {
+            var target = $('#cms-info');
+            $.ajax({
+              url: "${request.route_path('events.info_from_cms', event_id=event.id)}"
+            }).done(function(r) {
+              if(r.event) {
+                target.html('');
+                $('<span></span>').text('CMS連携済').appendTo(target);
+                $('<span>&nbsp;</span>').appendTo(target);
+                var favorite = $('<span></span>').append($('<span>お気に入りワード: </span>'));
+                if(r.words && 0 < r.words.length) {
+                  for(var i=0 ; i<r.words.length ; i++) {
+                    $('<span></span>').addClass('label').text(r.words[i].label).appendTo(favorite);
+                    $('<span>&nbsp;</span>').appendTo(favorite);
+                  }
+                  favorite.appendTo(target);
+                }
+              } else {
+                target.html('CMS未連携');
+              }
+            }).fail(function() {
+              target.html('エラー');
+            });
+          });
+        </script>
+      </td>
+    </tr>
+
+    % endif
+
+  </tbody>
+</table>
+
+<div style="clear: left;"></div>
+</div>
+<hr />
+
+<div id="performances">
+  <h3>パフォーマンス</h3>
+  <div style="margin-top: 20px;">
+<% paging = False if limit else True %>
+<% display_only = True if request.matched_route.name == 'events.index' else False %>
+
+<%def name="warning_list_helper(warnings)">
+  % if warnings:
+    % for warn in warnings:
+      <span class="label label-warning small">${warn}</span><br>
+    % endfor
+  % else:
+    <span>済</span>
+  % endif
+</%def>
+
+<style>
+  .checkboxed_table tr th, .checkboxed_table tr td {
+    vertical-align: middle;
+  }
+</style>
+
+<script>
+  $(function() {
+    $('[rel=popover]').popover()
+  });
+</script>
+
+<div class="row-fluid">
+  <div class="span12">
+
+    <% from altair.app.ticketing.events.performances import VISIBLE_PERFORMANCE_SESSION_KEY %>
+    % if request.session.get(VISIBLE_PERFORMANCE_SESSION_KEY, None):
+        % if request.matched_route.name == 'events.show.performances.visible' or request.matched_route.name == 'events.show':
+            <a href="${request.route_path('events.show.performances.invisible', event_id=event.id)}">非表示のパフォーマンスを隠す</a>
+        % else:
+            <a href="${request.route_path('performances.invisible', event_id=event.id)}">非表示のパフォーマンスを隠す</a>
+        % endif
+    % else:
+        % if request.matched_route.name == 'events.show.performances.invisible' or request.matched_route.name == 'events.show':
+            <a href="${request.route_path('events.show.performances.visible', event_id=event.id)}">パフォーマンスを全部表示する</a>
+        % else:
+            <a href="${request.route_path('performances.visible', event_id=event.id)}"> パフォーマンスを全部表示する</a>
+        % endif
+    % endif
+
+    <button class="btn btn-info btn-mini" type="button" onclick="javascript:confirm_open_event(${event.id}, true);">全て公開にする</button>
+    <button class="btn btn-warning btn-mini" type="button" onclick="javascript:confirm_open_event(${event.id}, false);">全て非公開にする</button>
+
+    % if performances:
+    <table class="table fullwidth checkboxed_table" style="margin-bottom: 10px;">
+      <thead>
+        <tr>
+          % if not display_only:
+          <th style="width:2em"></th>
+          <th style="width:6em">
+            状態
+            <span class="help-inline">
+              <a rel="popover" data-original-title="状態" data-content="現在の公開状態です。<br>ボタン押下で公開または非公開状態に変更できます。">
+                <i class="icon-question-sign"></i>
+              </a>
+            </span>
+          </th>
+          % endif
+          <th style="width:6em">FM連携</th>
+          <th style="width:6em">表示順</th>
+          <th style="width:12em">公演日</th>
+          <th style="width:12em">時刻</th>
+          <th>${ch.sortable(form_performance.name, paging)}</th>
+          <th>会場</th>
+        </tr>
+      </thead>
+      <tbody>
+      % for i, performance in enumerate(performances):
+        <% if limit and i >= limit: break %>
+        <!-- warningが空listは連携完了、noneは連携対象外 -->
+        %if not famiport_reflect_warnings.get(performance.id):
+        <tr>
+        %else:
+        <tr style="background-color: #ffd0d0">
+        %endif
+          % if not display_only:
+          <td><input type="radio" name="performance_id" value="${performance.id}" /></td>
+          <td>
+            <div>
+              % if performance.public:
+              <button class="btn btn-info btn-mini" type="button" onclick="javascript:confirm_open_performance(${performance.id});">公　開</button>
+              % else:
+              <button class="btn btn-warning btn-mini" type="button" onclick="javascript:confirm_open_performance(${performance.id});">未公開</button>
+              % endif
+            </div>
+          </td>
+          % endif
+          <!--<td>${u'済' if fm_performance_ids and (performance.id in fm_performance_ids) else u'未'}</td>-->
+          <td>${u'-' if famiport_reflect_warnings.get(performance.id) is None else warning_list_helper(famiport_reflect_warnings.get(performance.id))}</td>
+          <td>${performance.display_order}</td>
+          <td>${vh.date(performance.start_on, with_weekday=True)}</td>
+          <td style="white-space: nowrap; font-size: 10px; line-height: 12px">
+            <div>
+              <span>${form_performance.open_on.label.text}</span>
+              <span>${performance.open_on.strftime("%H:%M") if performance.open_on else ''}</span>
+            </div>
+            <div>
+              <span>${form_performance.start_on.label.text}</span>
+              <span>${performance.start_on.strftime("%H:%M") if performance.start_on else ''}</span>
+            </div>
+            <div>
+              <span>${form_performance.end_on.label.text}</span>
+              <span style="white-space: nowrap">${performance.end_on.strftime("%H:%M") if performance.end_on else ''}</span>
+            </div>
+          </td>
+
+          <td><a href="${request.route_path('performances.reservation', performance_id=performance.id)}">
+					    ${performance.name}
+              <%
+                from datetime import timedelta
+                end_on = performance.end_on or (performance.start_on + timedelta(days=1)).replace(hour=0, minute=0, second=0)
+              %>
+              %if request.now > end_on:
+                <span class="label">終了</span>
+              %endif
+					  </a>
+					</td>
+          <td>
+            ${performance.venue.name if performance.venue else u'(なし)'}
+			% if performance.venue.sub_name != None:
+				<div class="sub_name">${performance.venue.sub_name}</div>
+			% endif
+		  </td>
+        </tr>
+      % endfor
+      </tbody>
+    </table>
+    % if limit and len(performances) > limit:
+    <div class="pull-right">
+      ${len(performances)}件中${limit}件を表示
+      <a href="${request.route_path('performances.index', event_id=performances[0].event.id)}">もっと見る</a>
+    </div>
+    % endif
+    % endif
+  </div>
+</div>
+
+% if paging:
+  ${ch.pager(performances)}
+% endif
+  </div>
+</div>

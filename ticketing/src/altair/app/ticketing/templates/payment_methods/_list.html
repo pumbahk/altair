@@ -6,7 +6,6 @@
 <table class="table table-striped table-bordered">
   <thead>
   <tr>
-    <th class="span1"></th>
     <th class="span1">${ch.sortable(form.id)}</th>
     <th>${ch.sortable(form.name)}</th>
     <th>${ch.sortable(form.fee)}</th>
@@ -15,14 +14,12 @@
     <th>${form.public.label}</th>
     <th>${form.display_order.label}</th>
     <th>${form.selectable.label}</th>
+    <th></th>
   </tr>
   </thead>
   <tbody>
   % for payment_method in payment_methods.items:
   <tr id="payment_method-${payment_method.id}">
-    <td>
-      <input name="payment_method_id" type="radio" value=${payment_method.id} />
-    </td>
     <td><span class="id">${payment_method.id}</span></td>
     <td><a href="javascript:edit_payment_method(${payment_method.id});"><span id="name">${payment_method.name}</span></a></td>
     <td><span class="fee">${vh.price(payment_method.fee)}</span></td>
@@ -31,6 +28,9 @@
     <td><span class="public">${u'公開' if payment_method.public else u'非公開'}</span></td>
     <td><span class="display_order">${payment_method.display_order}</span></td>
     <td><span class="selectable">${u'使用可' if payment_method.selectable else u'使用不可'}</span></td>
+    <td style="width: 1%; white-space: nowrap;">
+      <%include file="/payment_methods/_action_button.html" args="payment_id=payment_method.id, order=['edit', 'delete'], small=True, split=True"/>
+    </td>
   </tr>
   % endfor
   </tbody>
