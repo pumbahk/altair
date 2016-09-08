@@ -11,7 +11,7 @@
 </div>
 
 <%include file="/delivery_methods/_list.html" args="form=form, delivery_methods=delivery_methods" />
-<%include file="/delivery_methods/_action_button.html" />
+<%include file="/delivery_methods/_action_button.html" args="order=['new'], small=False, split=True" />
 
 <div id="modal-delivery_method" class="modal hide">
   <div class="modal-header">

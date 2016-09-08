@@ -36,7 +36,7 @@ from altair.app.ticketing.orders.models import OrderSummary, OrderImportTask, Im
 from altair.app.ticketing.orders.importer import OrderImporter, ImportCSVReader
 from altair.app.ticketing.orders import helpers as order_helpers
 from altair.app.ticketing.cart import helpers as cart_helper
-from altair.app.ticketing.carturl.api import get_cart_url_builder, get_cart_now_url_builder
+from altair.app.ticketing.carturl.api import get_performance_cart_url_builder, get_cart_now_url_builder
 from altair.app.ticketing.events.sales_segments.resources import (
     SalesSegmentAccessor,
 )
@@ -44,6 +44,41 @@ from ..famiport_helpers import get_famiport_performance_ids
 from .api import set_visible_performance, set_invisible_performance
 
 logger = logging.getLogger(__name__)
+
+
+@view_defaults(decorator=with_bootstrap, permission='reservation_editor',
+               renderer='altair.app.ticketing:templates/reservation/reservation.html')
+class ReservationView(BaseView):
+
+    def __init__(self, context, request):
+        super(ReservationView, self).__init__(context, request)
+        self.performance = self.context.performance
+
+    @view_config(route_name='performances.reservation')
+    def reservation(self):
+        query = {u'n': u'seats|stock_types|stock_holders|stocks'}
+        query.update({u'f': u'sale_only'} or dict())
+        data_source = dict(
+            drawing=get_venue_site_adapter(
+                self.request, self.performance.venue.site).direct_drawing_url,
+            metadata=self.request.route_path(
+                'api.get_seats',
+                venue_id=self.performance.venue.id,
+                _query=query
+            )
+        )
+
+        data = {
+            'performance': self.performance,
+            'form_search': OrderSearchForm(
+                self.request.params, event_id=self.performance.event_id),
+            'data_source': data_source,
+            'endpoints': dict(
+                (key, self.request.route_path('tickets.printer.api.%s' % key))
+                for key in ['formats', 'peek', 'dequeue']
+            )
+        }
+        return data
 
 
 @view_defaults(decorator=with_bootstrap, permission='event_editor', renderer='altair.app.ticketing:templates/performances/show.html')
@@ -127,8 +162,8 @@ class PerformanceShowView(BaseView):
         )
 
         # cart url
-        cart_url = get_cart_url_builder(self.request).build(
-            self.request, self.performance.event, self.performance)
+        cart_url = get_performance_cart_url_builder(self.request).build(
+            self.request, self.performance)
         data.update(dict(
             cart_url=cart_url,
             cart_now_cart_url=get_cart_now_url_builder(self.request).build(

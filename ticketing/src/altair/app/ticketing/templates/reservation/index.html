@@ -1,0 +1,213 @@
+<%inherit file="/layout_2cols.html"/>
+<%namespace file="/common/helpers.html" name="ch" />
+<%! from altair.app.ticketing.core.models import Event %>
+<%!
+  label_classes = [
+    'label-important',
+    'label-warning',
+    'label-default',
+    'label-success',
+    'label-info',
+    'label-inverse'
+  ]
+%>
+
+<script>
+  $(document).ready(function(){
+    var event_rows = event_table.rows.length - 1;
+    if (event_rows < 0) event_rows = 0;
+
+    for (var sec_no=0; sec_no<50; sec_no++) {
+      var row_no=1;
+      while(1) {
+        if (!$("." + sec_no + "_" + row_no).length) {
+          break;
+        }
+        $("." + sec_no + "_" + row_no).hide();
+        row_no++;
+      }
+    }
+  });
+
+  function toggle_detail(section_no) {
+    var row_no=1;
+    while(1) {
+      if (!$("." + section_no + "_" + row_no).length) {
+        break;
+      }
+
+      if ($("." + section_no + "_" + row_no).css("display") != "none") {
+        $("." + section_no + "_" + row_no).hide();
+      } else {
+        $("." + section_no + "_" + row_no).show();
+      }
+      row_no++;
+    }
+  }
+
+</script>
+
+<%def name="general_disp()">
+  <table id="event_table" class="table bordered">
+    <thead>
+      <tr>
+        <th>${ch.sortable(Event.title)}</th>
+        <th>${ch.sortable(Event.display_order)}</th>
+      </tr>
+    </thead>
+    <tbody>
+    <% row_no = 0 %>
+    % for event in events:
+      <tr>
+        <td>
+          <a href="${request.route_path('events.reservation.show', event_id=event.id)}">${event.title}123</a>
+          % for i, sales_segment_group in enumerate(event.sales_segment_groups):
+            <span class="label ${label_classes[i%6]}">${sales_segment_group.name}</span>
+          % endfor
+        </td>
+        <td>
+          ${event.display_order}
+        </td>
+      </tr>
+      <% row_no += 1 %>
+    % endfor
+    </tbody>
+  </table>
+</%def>
+
+
+<%def name="search_disp()">
+  ${search_query}
+  <table id="event_table" class="table bordered">
+    <thead>
+      <tr>
+        <th>${ch.sortable(Event.title)}</th>
+        <th>販売区分</th>
+        <th>公演期間</th>
+        <th>販売期間</th>
+        <th>登録公演数</th>
+      </tr>
+    </thead>
+    <tbody>
+    <% section_no = 0 %>
+    % for event in events:
+      <% row_no = 0 %>
+
+      % if len(event.performances) <= 0:
+        <tr class="${section_no}_0">
+          <td>
+            <a href="${request.route_path('events.reservation.show', event_id=event.id)}">${event.title}</a>
+            <br/>
+          </td>
+          <td>
+          </td>
+          <td>
+          </td>
+          <td>
+          </td>
+        </tr>
+        <% section_no += 1 %>
+      % endif
+
+      % for perf in event.performances:
+
+        % if len(perf.sales_segments) <= 0:
+          <tr class="${section_no}_${row_no}">
+            <td>
+              <a href="${request.route_path('events.reservation.show', event_id=event.id)}">${event.title}</a><br/>
+              ${perf.name}
+            </td>
+            <td>
+            </td>
+            <td>
+              ${h.get_performance_range(perf)}
+            </td>
+            <td>
+            </td>
+            <td>
+              % if row_no == 0:
+                % if h.get_performance_count(event) > 1:
+                  <div class="btn-group">
+                    <a href="javascript:toggle_detail(${section_no});" class="btn">
+                      <i class=""></i> ${h.get_performance_count(event)}公演開く
+                    </a>
+                  </div>
+                % endif
+              % endif
+            </td>
+          </tr>
+        % endif
+
+
+        % for segment in perf.sales_segments:
+        <tr class="${section_no}_${row_no}">
+          <td>
+            % if row_no == 0:
+                <a href="${request.route_path('events.reservation.show', event_id=event.id)}">${event.title}</a>
+              % for i, sales_segment_group in enumerate(event.sales_segment_groups):
+                <span class="label ${label_classes[i%6]}">${sales_segment_group.name}</span>
+              % endfor
+              <br/>
+              ${perf.name}
+            % else:
+              ${perf.name}
+            % endif
+          </td>
+          <td>
+            ${segment.sales_segment_group.name}
+          </td>
+          <td>
+            ${h.get_performance_range(perf)}
+          </td>
+          <td>
+            ${h.get_deal_range(segment)}
+          </td>
+          <td>
+            % if row_no == 0:
+              % if h.get_performance_count(event) > 1 or len(event.sales_segments) > 1:
+              <div class="btn-group">
+                <a href="javascript:toggle_detail(${section_no});" class="btn">
+                  <i class=""></i> ${h.get_performance_count(event)}公演開く
+                </a>
+              </div>
+              % endif
+            % endif
+          </td>
+        <% row_no += 1 %>
+      % endfor
+    % endfor
+    <% section_no += 1 %>
+  % endfor
+    </tbody>
+  </table>
+</%def>
+
+
+
+<%block name="breadcrumbs">
+  ${ch.breadcrumbs(
+      names=[u'トップ', u'イベント'],
+      urls=[request.route_path('events.reservation.index')]
+  )}
+</%block>
+
+<div class="page-header">
+  <h1>イベント</h1>
+</div>
+
+<div class="events" style="clear: both">
+<% from altair.app.ticketing.events import VISIBLE_EVENT_SESSION_KEY %>
+% if request.session.get(VISIBLE_EVENT_SESSION_KEY, None):
+  <a href="${request.route_path('events.invisible')}">非表示のイベントを表示しない</a>
+% else:
+  <a href="${request.route_path('events.visible')}">非表示のイベントを表示する</a>
+% endif
+
+  % if search_query:
+    ${search_disp()}
+  % else:
+    ${general_disp()}
+  % endif
+
+  ${ch.pager(events)}
+</div>

@@ -40,7 +40,7 @@ class CMSAccessKeyGetter(object):
         AccesskeyPermissionData.create_from_dict(data, secret=secret).dump(request)
         return data
 
-from altair.app.ticketing.carturl.api import get_cart_url_builder
+from altair.app.ticketing.carturl.api import get_event_cart_url_builder
 from altair.app.ticketing.core.models import Event
 
 class CandidatesURLDictBuilder(object):
@@ -70,7 +70,7 @@ class CandidatesURLDictBuilder(object):
     def build_backend_side(self, event):
         return {
             "urls": {
-                "cart": [get_cart_url_builder(self.request).build(self.request, event, organization=self.organization)], 
+                "cart": [get_event_cart_url_builder(self.request).build(self.request, event, organization=self.organization)], 
                 }
             }
 

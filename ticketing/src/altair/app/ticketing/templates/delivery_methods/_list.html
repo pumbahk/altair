@@ -6,7 +6,6 @@
 <table class="table table-striped table-bordered">
   <thead>
   <tr>
-    <th class="span1"></th>
     <th class="span1">${ch.sortable(DeliveryMethod.id)}</th>
     <th>${ch.sortable(DeliveryMethod.name)}</th>
     <th>${ch.sortable(DeliveryMethod.fee_per_order)}</th>
@@ -14,15 +13,12 @@
     <th>${ch.sortable(DeliveryMethod.fee_per_subticket)}</th>
     <th>${form.display_order.label}</th>
     <th>${form.selectable.label}</th>
+    <th></th>
   </tr>
   </thead>
   <tbody>
   % for delivery_method in delivery_methods.items:
   <tr id="delivery_method-${delivery_method.id}">
-    <td>
-      <input name="delivery_method_id" type="radio" value=${delivery_method.id} />
-      <span style="display: none;" class="delivery_method_description">${delivery_method.description or '' | n,x}</span>
-  	</td>
     <td><span id="id">${delivery_method.id}</span></td>
     <td><a href="javascript:edit_delivery_method(${delivery_method.id});"><span id="name">${delivery_method.name}</span></a></td>
     <td><span id="fee_per_order">${vh.price(delivery_method.fee_per_order)}</span></td>
@@ -30,6 +26,9 @@
     <td><span id="fee_per_subticket" value="${delivery_method.fee_per_subticket}">${vh.price(delivery_method.fee_per_subticket)}</span></td>
     <td><span id="display_order">${delivery_method.display_order}</span></td>
     <td><span id="selectable">${u'使用可' if delivery_method.selectable else u'使用不可'}</span></td>
+    <td style="width: 1%; white-space: nowrap;">
+      <%include file="/delivery_methods/_action_button.html" args="delivery_id=delivery_method.id, order=['edit', 'delete'], small=True, split=True"/>
+    </td>
   </tr>
   % endfor
   </tbody>
