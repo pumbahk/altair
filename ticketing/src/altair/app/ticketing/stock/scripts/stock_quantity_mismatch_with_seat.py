@@ -19,19 +19,10 @@ def main():
     setup_logging(args.config)
     bootstrap(args.config)
 
-    # 多重起動防止
-    LOCK_NAME = "stock_quantity_mismatch"
-    LOCK_TIMEOUT = 10
-    conn = sqlahelper.get_engine().connect()
-    status = conn.scalar("select get_lock(%s,%s)", (LOCK_NAME, LOCK_TIMEOUT))
-    if status != 1:
-        logging.warn('lock timeout: already running process')
-        return
-
     logger.info("Stock quantity mismatch with seat start")
 
-    url = sqlahelper.get_engine().url
-    client = pymysql.connect(host=url.host, db=url.database, user=url.username, passwd=url.password)
+    url = sqlahelper.get_engine("standby").url
+    client = pymysql.connect(host=url.host, db=url.database, user=url.username, passwd=url.password, charset='utf8')
 
     cur = client.cursor()
 
