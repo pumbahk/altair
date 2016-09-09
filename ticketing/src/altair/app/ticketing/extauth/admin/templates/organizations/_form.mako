@@ -1,4 +1,13 @@
 <div class="control-group">
+  <label class="control-label" for="organization-form--short_name">${form.short_name.label.text}</label>
+  <div class="controls">
+    ${form.short_name(id="organization-form--short_name")}
+    %if form.short_name.errors:
+    <span class="help-inline">${u' / '.join(form.short_name.errors)}</span>
+    % endif
+  </div>
+</div>
+<div class="control-group">
   <label class="control-label" for="organization-form--maximum_oauth_scope">${form.maximum_oauth_scope.label.text}</label>
   <div class="controls">
     ${form.maximum_oauth_scope(id="organization-form--maximum_oauth_scope")}

@@ -112,7 +112,6 @@ class OrganizationsView(object):
         request_method='GET'
         )
     def new(self):
-        session = get_db_session(self.request, 'extauth')
         form = OrganizationForm(request=self.request)
         return dict(
             form=form
@@ -126,13 +125,23 @@ class OrganizationsView(object):
         )
     def new_post(self):
         session = get_db_session(self.request, 'extauth')
-        organization = Organization()
-        form = OrganizationForm(formdata=self.request.POST, obj=organization, request=self.request)
+        form = OrganizationForm(formdata=self.request.POST, request=self.request)
         if not form.validate():
             return dict(
                 form=form
                 )
-        form.populate_obj(organization)
+        organization = Organization(
+            maximum_oauth_scope=form.maximum_oauth_scope.data,
+            canonical_host_name=form.canonical_host_name.data,
+            emergency_exit_url=form.emergency_exit_url.data,
+            settings=form.settings.data,
+            short_name=form.short_name.data,
+            fanclub_api_type=form.fanclub_api_type.data,
+            maximum_oauth_client_expiration_time=form.maximum_oauth_client_expiration_time.data,
+            invalidate_client_http_session_on_access_token_revocation=form.invalidate_client_http_session_on_access_token_revocation.data
+        )
+        session.add(organization)
+        session.flush()
         session.commit()
         self.request.session.flash(u'オーガニゼーション %s を新規作成しました' % organization.short_name)
         return HTTPFound(location=self.request.route_path('organizations.edit', id=organization.id))

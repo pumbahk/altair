@@ -65,7 +65,7 @@ class DictBackedFormField(OurFormField):
         candidate = obj.get(name, None)
         if candidate is None:
             if self._obj is None:
-                raise TypeError('fetch_value_from_obj: cannot find a value to populate fom the provided obj or input data/defaults')
+                raise TypeError('fetch_value_from_obj: cannot find a value to populate from the provided obj or input data/defaults')
             candidate = self._obj
         return candidate[name]
 
@@ -73,7 +73,7 @@ class DictBackedFormField(OurFormField):
         candidate = obj.get(name, None)
         if candidate is None:
             if self._obj is None:
-                raise TypeError('populate_obj: cannot find a value to populate fom the provided obj or input data/defaults')
+                raise TypeError('populate_obj: cannot find a value to populate from the provided obj or input data/defaults')
             candidate = self._obj
             obj[name] = candidate
         self.form.populate_obj(candidate)
@@ -108,6 +108,11 @@ class OrganizationSettingsForm(DictBackedForm):
 
 
 class OrganizationForm(OurForm):
+    short_name = OurTextField(
+        label=u'ショートネーム',
+        validators=[Required()]
+        )
+
     maximum_oauth_scope = OurSelectMultipleField(
         label=u'デフォルトOAuthスコープ',
         choices=[
