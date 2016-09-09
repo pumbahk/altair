@@ -61,7 +61,7 @@ def main():
     results = session.execute(sql)
 
     for result in results:
-        msg = "Stock quantity mismatch with seat Stock ID = {0}, Total = {1}, Rest = {2}"
+        msg = u"Stock quantity mismatch with seat Stock ID = {0}, Total = {1}, Rest = {2}"
         logger.error(msg.format(result[0], result[1], result[2]))
 
     logger.info("Stock quantity mismatch with seat end")
