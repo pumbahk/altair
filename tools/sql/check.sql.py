@@ -26,7 +26,7 @@ def check_sql(file):
     data = data.lower()
     data = data.replace('\n', '')
     data = data.replace('\r', '')
-    data = data.replace('\g', '')
+    data = data.replace('\g', ';')
 
     for actual_cnt, line in enumerate(data.split(";")):
         # 空行は読み飛ばす
