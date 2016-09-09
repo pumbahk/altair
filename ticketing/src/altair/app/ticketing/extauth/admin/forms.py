@@ -126,7 +126,7 @@ class OrganizationForm(OurForm):
         choices=lambda field: \
             get_db_session(field._form.request, 'extauth') \
                 .query(Host.host_name, Host.host_name) \
-                .filter(Host.organization_id == field._form.request.operator.organization_id) \
+                .filter(Host.organization_id == field._form.organization_id) \
                 .all()
         )
 
@@ -155,7 +155,20 @@ class OrganizationForm(OurForm):
 
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop('request', None)
+        organization = kwargs.get('obj', None)
+        self.organization_id = organization.id if organization else None
         super(OrganizationForm, self).__init__(*args, **kwargs)
+
+
+class HostForm(OurForm):
+    host_name = OurTextField(
+        label=u'ホスト名',
+        validators=[Required()]
+        )
+
+    def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop('request', None)
+        super(HostForm, self).__init__(*args, **kwargs)
 
 
 class OperatorForm(OurForm):

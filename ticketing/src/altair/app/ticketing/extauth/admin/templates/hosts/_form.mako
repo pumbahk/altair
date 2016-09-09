@@ -21,7 +21,7 @@
   <div class="controls">
     ${form.canonical_host_name(id="organization-form--canonical_host_name")}
     %if 'edit' in request.path:
-    <a href="${request.route_path('hosts.new', id=request.matchdict['id'])}">新規ホスト追加</a>
+    <a href="${request.route_path('hosts.new')}">新規ホスト追加</a>
     %endif
     %if form.canonical_host_name.errors:
     <span class="help-inline">${u' / '.join(form.canonical_host_name.errors)}</span>

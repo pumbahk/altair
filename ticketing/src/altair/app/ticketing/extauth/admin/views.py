@@ -15,8 +15,9 @@ from .api import create_operator, lookup_operator_by_credentials
 from ..models import MemberSet, MemberKind, Member, Membership, OAuthClient
 from ..api import create_member
 from ..utils import digest_secret, generate_salt, generate_random_alnum_string
-from .forms import LoginForm, OrganizationForm, OperatorForm, MemberSetForm, MemberKindForm, MemberForm, OAuthClientForm
+from .forms import LoginForm, OrganizationForm, OperatorForm, MemberSetForm, MemberKindForm, MemberForm, OAuthClientForm, HostForm
 from .models import Operator
+from ..models import Organization, Host
 from . import import_export
 
 logger = logging.getLogger(__name__)
@@ -92,6 +93,51 @@ class OrganizationsView(object):
         self.request = request
 
     @view_config(
+        route_name='organizations.index',
+        renderer='organizations/index.mako',
+        permission='manage_my_organization',
+        request_method='GET'
+        )
+    def index(self):
+        session = get_db_session(self.request, 'extauth')
+        organizations = session.query(Organization).all()
+        return dict(
+            organizations=organizations
+            )
+
+    @view_config(
+        route_name='organizations.new',
+        renderer='organizations/edit.mako',
+        permission='manage_my_organization',
+        request_method='GET'
+        )
+    def new(self):
+        session = get_db_session(self.request, 'extauth')
+        form = OrganizationForm(request=self.request)
+        return dict(
+            form=form
+            )
+
+    @view_config(
+        route_name='organizations.new',
+        renderer='organizations/edit.mako',
+        permission='manage_my_organization',
+        request_method='POST'
+        )
+    def new_post(self):
+        session = get_db_session(self.request, 'extauth')
+        organization = Organization()
+        form = OrganizationForm(formdata=self.request.POST, obj=organization, request=self.request)
+        if not form.validate():
+            return dict(
+                form=form
+                )
+        form.populate_obj(organization)
+        session.commit()
+        self.request.session.flash(u'オーガニゼーション %s を新規作成しました' % organization.short_name)
+        return HTTPFound(location=self.request.route_path('organizations.edit', id=organization.id))
+
+    @view_config(
         route_name='organizations.edit',
         renderer='organizations/edit.mako',
         permission='manage_my_organization',
@@ -122,6 +168,48 @@ class OrganizationsView(object):
         session.commit()
         self.request.session.flash(u'オーガニゼーション %s を変更しました' % organization.short_name)
         return HTTPFound(location=self.request.route_path('organizations.edit', id=organization.id))
+
+
+@view_defaults(
+    decorator=(with_bootstrap,)
+    )
+class HostsView(object):
+    def __init__(self, context, request):
+        self.context = context
+        self.request = request
+
+    @view_config(
+        route_name='hosts.new',
+        renderer='hosts/edit.mako',
+        permission='manage_my_organization',
+        request_method='GET'
+        )
+    def new(self):
+        form = HostForm(request=self.request)
+        return dict(
+            form=form
+            )
+
+    @view_config(
+        route_name='hosts.new',
+        renderer='hosts/edit.mako',
+        permission='manage_my_organization',
+        request_method='POST'
+        )
+    def new_post(self):
+        session = get_db_session(self.request, 'extauth')
+        host = Host()
+        form = HostForm(formdata=self.request.POST, obj=host, request=self.request)
+        if not form.validate():
+            return dict(
+                form=form
+                )
+        host.host_name = form.host_name.data
+        host.organization_id = self.request.matchdict['id']
+        session.add(host)
+        session.commit()
+        self.request.session.flash(u'ホスト %s を新規作成しました' % host.host_name)
+        return HTTPFound(location=self.request.route_path('organizations.edit', id=self.request.matchdict['id']))
 
 
 @view_defaults(
