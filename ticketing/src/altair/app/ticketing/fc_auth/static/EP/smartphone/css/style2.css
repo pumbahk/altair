@@ -119,7 +119,7 @@ h1{
 }
 
 h2 {
-background: #205A86; /* Old browsers */
+background: #0867A9;
 background: -moz-linear-gradient(top, #205A86 0%, #154A6B 50%, #09355F 51%, #09355F 100%); /* FF3.6+ */
 background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#2222aa), color-stop(50%,#111199), color-stop(51%,#09355F), color-stop(100%,#09355F)); /* Chrome,Safari4+ */
 background: -webkit-linear-gradient(top, #205A86 0%,#154A6B 50%,#09355F 51%,#09355F 100%); /* Chrome10+,Safari5.1+ */
@@ -141,11 +141,11 @@ font-weight:700;
 font-size:15px;
 color:#FFF;
 line-height:1;
-border-left:5px solid #0A50AA;
-border-top:1px dotted #0A50AA;
-border-bottom:1px dotted #0A50AA;
-border-right:1px dotted #0A50AA;
-background:#32A0DC;
+border-left:5px solid #0867A9;
+border-top:1px dotted #0867A9;
+border-bottom:1px dotted #0867A9;
+border-right:1px dotted #0867A9;
+background:#0867A9;
 padding:4px 0 4px 10px;
 }
 
@@ -761,7 +761,7 @@ width: 420px;
 height: 450px;
 }
 .loginbox thead th{
-background: #0A50AA;
+background: #0867A9;
 font-size: 20px;
 height: 30px;
 color: #FFF;
@@ -772,7 +772,7 @@ background: #FFFCE1;
 }
 
 .loginbox th{
-background: #0A50AA;
+background: #0867A9;
 color: #FFF;
 }
 
@@ -910,10 +910,10 @@ margin: 10px auto;
 font-size: 20px;
 font-weight: bold;
 display: inline-block;
-background-color:#32A0DC;
+background-color:#E21826;
 }
 
 table.form input.submit:hover,
 .btnLogin:hover {
-background-color:#F0F222;
+background-color:#ED747C;
 }
