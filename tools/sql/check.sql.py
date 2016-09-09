@@ -21,17 +21,14 @@ def check_sql(file):
         return
 
     cnt = 0
-    actual_cnt = 0
     status = list()
     data = f.read()
+    data = data.lower()
     data = data.replace('\n', '')
     data = data.replace('\r', '')
-    data = data.lower()
+    data = data.replace('\g', '')
 
-    for line in data.split(";"):
-        # 実際の行数
-        actual_cnt += 1
-
+    for actual_cnt, line in enumerate(data.split(";")):
         # 空行は読み飛ばす
         line = line.strip()
         if not line:
@@ -103,19 +100,23 @@ def check_select(actual_cnt, line):
 
     where_point = line.find("where")
 
-    if before_where:
-        if not before_where == line[where_point:]:
-            print(u"{0}行目のSELECT文が、WHERE句が一致しません。".format(actual_cnt))
-            status = False
-
     if last_select:
+        # 更新後のSQLの場合
+        if before_where:
+            if not before_where == line[where_point:]:
+                print(u"{0}行目のSELECT文が、WHERE句が一致しません。".format(actual_cnt))
+                status = False
+
         if line != last_select:
             print(u"{0}行目のSELECT文が、前回のSELECT文と一致しません。サンドイッチしてください。".format(actual_cnt))
             status = False
+        last_select = None
+    else:
+        # 更新前のSQLを保存
+        last_select = line
 
     before_where = line[where_point:]
     before_type = "select"
-    last_select = line
     return status
 
 
