@@ -24,10 +24,9 @@ def main():
     # 多重起動防止
     LOCK_NAME = "stock_quantity_mismatch"
     LOCK_TIMEOUT = 10
-    conn = sqlahelper.get_engine().connect()
-    status = conn.scalar("select get_lock(%s,%s)", (LOCK_NAME, LOCK_TIMEOUT))
+    results = session.execute("select get_lock('{0}', {1})".format(LOCK_NAME, LOCK_TIMEOUT)).first()
 
-    if status != 1:
+    if results[0] == 0:
         logging.warn('lock timeout: already running process')
         return
 
@@ -46,4 +45,5 @@ def main():
         msg = u"Stock quantity mismatch kazuuke Stock ID = {0}, Diff = {1}"
         logger.error(msg.format(result[0], result[1]))
 
+    session.execute("select release_lock('{0}')".format(LOCK_NAME)).first()
     logger.info("Stock quantity mismatch end")
