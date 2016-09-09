@@ -2,6 +2,7 @@
 <h2>メニュー</h2>
 <ul>
 % if request.has_permission('manage_my_organization'):
+  <li><a href="${request.route_path('organizations.index')}">オーガニゼーション</a></li>
   <li><a href="${request.route_path('organizations.edit', id=request.operator.organization_id)}">オーガニゼーションの編集</a></li>
 % endif
 % if request.has_permission('manage_operators'):
