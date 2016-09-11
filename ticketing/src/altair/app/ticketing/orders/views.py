@@ -2080,15 +2080,14 @@ class OrdersReserveView(OrderBaseView):
             cart.channel = ChannelEnum.INNER.v
             cart.operator = self.context.user
 
-            # コンビニ決済は通知を行うので購入者情報が必要
-            if cart.payment_delivery_pair in self.context.convenience_payment_delivery_method_pairs:
-                cart.shipping_address = ShippingAddress(
-                    first_name=self.context.form.first_name.data,
-                    last_name=self.context.form.last_name.data,
-                    first_name_kana=self.context.form.first_name_kana.data,
-                    last_name_kana=self.context.form.last_name_kana.data,
-                    tel_1=self.context.form.tel_1.data,
-                )
+            cart.shipping_address = ShippingAddress(
+                first_name=self.context.form.first_name.data,
+                last_name=self.context.form.last_name.data,
+                first_name_kana=self.context.form.first_name_kana.data,
+                last_name_kana=self.context.form.last_name_kana.data,
+                tel_1=self.context.form.tel_1.data,
+                tel_2=""
+            )
             validate_order_like(self.request, cart)
 
             DBSession.add(cart)
