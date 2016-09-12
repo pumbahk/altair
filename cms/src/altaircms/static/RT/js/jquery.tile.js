@@ -24,4 +24,7 @@ $(function() {
   $(".tileImg").tile(4);
   $(".tileTitle").tile(4);
   $(".tileText").tile(4);
+  $('.tileTopContent').each(function(i){
+    $(this).find('li').tile(4);
+  });
 });
