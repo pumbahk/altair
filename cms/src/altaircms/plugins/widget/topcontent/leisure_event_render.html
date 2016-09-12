@@ -52,7 +52,7 @@
   <div class="${style} tsGenreTopics">
     <h3>${genre}</h3>
 
-    <ul class=" clearfix">
+    <ul class="clearfix tileTopContent">
       % for content in h.chunk(qs, 1):
         <% link = h.link.get_link_from_topcontent(request,content[0]) %>
       <li>
