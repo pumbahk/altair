@@ -28,7 +28,7 @@ def run():
             '-s':'ifile2.sej.co.jp',
             '-d':'/nwtsweb/ticket/upload',
             '-t':'60022000',
-            '-p':'60022a',
+            '-p':'600220',
             '-f':'SEIT020U',  #'TEST010U'
             '-e':'payback.seam',
             }
