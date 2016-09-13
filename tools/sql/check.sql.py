@@ -65,13 +65,13 @@ def check_first_line(line):
 
 def check_line(actual_cnt, line):
     status = True
-    if line.count("begin"):
+    if line.startswith("begin"):
         status = check_begin(actual_cnt, line)
-    if line.count("select"):
+    elif line.startswith("select"):
         status = check_select(actual_cnt, line)
-    if line.count("update"):
+    elif line.startswith("update"):
         status = check_update(actual_cnt, line)
-    if line.count("delete"):
+    elif line.startswith("delete"):
         status = check_delete(actual_cnt, line)
     return status
 
