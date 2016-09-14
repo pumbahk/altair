@@ -1,4 +1,4 @@
-# encoding: utf-8 
+# encoding: utf-8
 from __future__ import absolute_import
 
 import os
@@ -86,7 +86,7 @@ class SejRefundRecordProvider(object):
         self.target_from = datetime.combine(target_date + timedelta(days=-1), time(6,0))
         self.target_to = datetime.combine(target_date, time(6,0))
         self.session = session
-   
+
     def _populate_refund_events(self):
         if self._refund_events is not None:
             return
@@ -341,7 +341,7 @@ def send_refund_file(registry, nwts_info, zip_file_path):
         password=nwts_info.nwts_password
         )
     uploader(
-        application='tpayback.asp',
+        application='payback.seam',
         file_id='SEIT020U',
         data=open(zip_file_path).read(),
         )

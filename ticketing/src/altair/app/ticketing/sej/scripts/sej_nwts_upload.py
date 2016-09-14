@@ -14,9 +14,9 @@ def main(argv=sys.argv):
     '''
     NWTS アップローダー
       ex) 払戻ファイル転送
-        python sej_nwts_upload.py payback.zip -c ticketing.ini -t tpayback.asp -f SEIT020U
+        python sej_nwts_upload.py payback.zip -c ticketing.ini -t payback.seam -f SEIT020U
       ex) テンプレートファイル転送
-        python sej_nwts_upload.py payback.zip -c ticketing.ini -t tpayback.asp -f SDMT010U
+        python sej_nwts_upload.py payback.zip -c ticketing.ini -t payback.seam -f SDMT010U
     '''
 
     parser = optparse.OptionParser(
@@ -26,7 +26,7 @@ def main(argv=sys.argv):
 
     parser.add_option('-t', '--type',
         dest='type',
-        help='tpayback.asp or ttemplate.asp',
+        help='payback.seam or template.seam',
         metavar='TYPE'
     )
     parser.add_option('-f', '--file',
@@ -44,8 +44,8 @@ def main(argv=sys.argv):
 
     type = options.type
 
-    if type is None or type not in ('tpayback.asp', 'ttemplate.asp'):
-        print 'You must set type tpayback.asp or ttemplate.asp'
+    if type is None or type not in ('payback.seam', 'template.seam'):
+        print 'You must set type payback.seam or template.seam'
         return
 
     # configuration
