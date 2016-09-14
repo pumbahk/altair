@@ -5,10 +5,11 @@
   <strong>${message}</strong>
 </div>
 % endfor
-<a href="${request.route_path('member_sets.new')}">新規会員種別</a>
+<h2>会員種別一覧</h2>
+<a class="btn" style="margin:10px 0;" href="${request.route_path('member_sets.new')}"><i class="icon-plus"></i> 新規会員種別</a>
 ${h.render_bootstrap_pager(member_sets)}
 <form action="${request.route_path('member_sets.delete')}" method="POST">
-<input type="submit" name="doDelete" class="btn" value="削除する" data-submit-confirmation-prompt="選択された会員種別を削除します。よろしいですか?" />
+
 <table class="table">
   <thead>
     <tr>
@@ -31,6 +32,7 @@ ${h.render_bootstrap_pager(member_sets)}
 % endfor
   </tbody>
 </table>
+<input type="submit" name="doDelete" class="btn btn-danger" value="削除する" data-submit-confirmation-prompt="選択された会員種別を削除します。よろしいですか?" />
 </form>
 ${h.render_bootstrap_pager(member_sets)}
 

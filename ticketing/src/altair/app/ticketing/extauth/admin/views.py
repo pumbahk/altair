@@ -571,14 +571,18 @@ class MembersView(object):
     def index(self):
         session = get_db_session(self.request, 'extauth')
         query = session.query(Member).join(Member.member_set).filter_by(organization_id=self.request.operator.organization_id).order_by(Member.id)
+        if self.request.params.get('member_set_id'):
+            query = query.filter(MemberSet.id==self.request.params.get('member_set_id'))
         members = paginate.Page(
             query,
             page=int(self.request.params.get('page', 0)),
             items_per_page=50,
             url=paginate.PageURL_WebOb(self.request)
             )
+        member_sets = session.query(MemberSet).filter_by(organization_id=self.request.operator.organization_id).all()
         return dict(
-            members=members
+            members=members,
+            member_sets=member_sets
             )
 
     @view_config(

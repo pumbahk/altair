@@ -5,10 +5,11 @@
   <strong>${message}</strong>
 </div>
 % endfor
-<a href="${request.route_path('operators.new')}">新規オペレーター</a>
+<h2>オペレータ一覧</h2>
+<a class="btn" href="${request.route_path('operators.new')}"><i class="icon-plus"></i>新規オペレーター</a>
 ${h.render_bootstrap_pager(operators)}
 <form action="${request.route_path('operators.delete')}" method="POST">
-<input type="submit" name="doDelete" class="btn" value="削除する" data-submit-confirmation-prompt="選択されたオペレーターを削除します。よろしいですか?" />
+
 <table class="table">
   <thead>
     <tr>
@@ -27,6 +28,7 @@ ${h.render_bootstrap_pager(operators)}
 % endfor
   </tbody>
 </table>
+<input type="submit" name="doDelete" class="btn btn-danger" value="削除する" data-submit-confirmation-prompt="選択されたオペレーターを削除します。よろしいですか?" />
 </form>
 ${h.render_bootstrap_pager(operators)}
 

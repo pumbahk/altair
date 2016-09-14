@@ -4,6 +4,10 @@
 .table.members tr.disabled > td a {
   color: #ccc; 
 }
+.member_set_btn a {
+  background-color: #196f3e;
+  color: #fff;
+}
 </style>
 % for message in request.session.pop_flash():
 <div class="alert">
@@ -11,12 +15,17 @@
   <strong>${message}</strong>
 </div>
 % endfor
-<a href="${request.route_path('members.new')}">新規メンバー</a>
-<a href="#modal-csv-import" data-toggle="modal">CSVインポート</a>
-<a href="#modal-csv-export" data-toggle="modal">CSVエクスポート</a>
+<h2>会員一覧</h2>
+<a class="btn" href="${request.route_path('members.new')}"><i class="icon-plus"></i> 新規メンバー</a>
+<a class="btn" href="#modal-csv-import" data-toggle="modal">CSVインポート</a>
+<a class="btn" href="#modal-csv-export" data-toggle="modal">CSVエクスポート</a>
 ${h.render_bootstrap_pager(members)}
 <form action="${request.route_path('members.delete')}" method="POST">
-<input type="submit" name="doDelete" class="btn" value="削除する" data-submit-confirmation-prompt="選択されたメンバーを削除します。よろしいですか?" />
+<ul class="nav nav-pills">
+  % for member_set in member_sets:
+    <li class="member_set_btn"><a href="${request.route_path('members.index') + u'?member_set_id=' + unicode(member_set.id)}">${member_set.name}</a></li>
+  % endfor
+</ul>
 <table class="table members">
   <thead>
     <tr>
@@ -48,6 +57,7 @@ ${h.render_bootstrap_pager(members)}
 % endfor
   </tbody>
 </table>
+<input type="submit" name="doDelete" class="btn btn-danger" value="削除する" data-submit-confirmation-prompt="選択されたメンバーを削除します。よろしいですか?" />
 </form>
 ${h.render_bootstrap_pager(members)}
 <form id="modal-csv-import" class="modal hide" role="dialog" aria-hidden="true" action="${request.route_path('members.bulk_add')}" method="POST" enctype="multipart/form-data">
