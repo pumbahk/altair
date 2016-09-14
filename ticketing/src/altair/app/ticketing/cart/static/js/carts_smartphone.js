@@ -891,27 +891,27 @@ cart.OrderFormPresenter.prototype = {
     showNoSelectProductMessage: function(){
         cart.showErrorDialog(null, '商品を1つ以上選択してください', 'btn-close');
         return;
-    }, 
-    showTicketCountAboveUpperBoundMessage: function(min_quantity) {
-        cart.showErrorDialog(null, '枚数は合計' + min_quantity + '枚以内で選択してください', 'btn-close');
+    },
+    showTicketCountAboveUpperBoundMessage: function(max_quantity) {
+        cart.showErrorDialog(null, '枚数は合計' + max_quantity + '枚以内で選択してください', 'btn-close');
         return;
-    }, 
-    showTicketCountBelowLowerBoundMessage: function(max_quantity) {
-        cart.showErrorDialog(null, '枚数は合計' + max_quantity + '枚以上で選択してください', 'btn-close');
+    },
+    showTicketCountBelowLowerBoundMessage: function(min_quantity) {
+        cart.showErrorDialog(null, '枚数は合計' + min_quantity + '枚以上で選択してください', 'btn-close');
         return;
-    }, 
-    showProductCountAboveUpperBoundMessage: function(min_quantity) {
-        cart.showErrorDialog(null, '商品個数は合計' + min_quantity + '個以内にしてください', 'btn-close');
+    },
+    showProductCountAboveUpperBoundMessage: function(max_quantity) {
+        cart.showErrorDialog(null, '商品個数は合計' + max_quantity + '個以内にしてください', 'btn-close');
         return;
-    }, 
-    showProductCountBelowLowerBoundMessage: function(max_quantity) {
-        cart.showErrorDialog(null, '商品個数は合計' + max_quantity + '個以上にしてください', 'btn-close');
+    },
+    showProductCountBelowLowerBoundMessage: function(min_quantity) {
+        cart.showErrorDialog(null, '商品個数は合計' + min_quantity + '個以上にしてください', 'btn-close');
         return;
-    }, 
+    },
     showInfeasiblePurchaseMessage: function() {
         cart.showErrorDialog(null, '申し訳ございませんが、その商品の組み合わせはお選びいただけません', 'btn-close');
         return;
-    }, 
+    },
     onBuyPressed: function () {
         this.setSeats([]);
         this.doOrder();

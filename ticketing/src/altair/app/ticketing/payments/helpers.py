@@ -10,7 +10,12 @@ from .plugins import (
     RESERVE_NUMBER_DELIVERY_PLUGIN_ID,
     QR_DELIVERY_PLUGIN_ID,
 )
-
+from pyramid.threadlocal import get_current_request
+from altair.app.ticketing.cart.helpers import (
+    _message,
+)
+import logging
+logger = logging.getLogger(__name__)
 
 def payment_status(pdmp, auth, sej):
 

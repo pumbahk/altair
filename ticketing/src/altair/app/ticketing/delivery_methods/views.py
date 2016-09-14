@@ -13,6 +13,7 @@ from altair.app.ticketing.models import merge_session_with_post
 from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.core.models import DeliveryMethod
 from altair.app.ticketing.delivery_methods.forms import DeliveryMethodForm
+from altair.app.ticketing.core import models as c_models
 
 @view_defaults(decorator=with_bootstrap, permission='master_editor')
 class DeliveryMethods(BaseView):
@@ -42,17 +43,27 @@ class DeliveryMethods(BaseView):
 
     @view_config(route_name='delivery_methods.new', request_method='GET', renderer='altair.app.ticketing:templates/delivery_methods/_form.html')
     def new(self):
+        organization_setting = c_models.OrganizationSetting.filter_by(organization_id=self.context.user.organization_id).one()
         return {
             'form': DeliveryMethodForm(),
+            'i18n_org': u"True" if organization_setting.i18n else "False"
         }
 
     @view_config(route_name='delivery_methods.new', request_method='POST', renderer='altair.app.ticketing:templates/delivery_methods/_form.html')
     def new_post(self):
         f = DeliveryMethodForm(self.request.POST)
+        organization_setting = c_models.OrganizationSetting.filter_by(organization_id=self.context.user.organization_id).one()
         if f.validate():
             delivery_method = merge_session_with_post(DeliveryMethod(), f.data, excludes={'single_qr_mode', 'expiration_date'})
             delivery_method.preferences.setdefault(unicode(QR_DELIVERY_PLUGIN_ID), {})['single_qr_mode'] = f.single_qr_mode.data
             delivery_method.preferences.setdefault(unicode(RESERVE_NUMBER_DELIVERY_PLUGIN_ID), {})['expiration_date'] = f.expiration_date.data
+            if organization_setting.i18n:
+                delivery_method.preferences.setdefault(u'en', {})['name'] = f.name_en.data
+                delivery_method.preferences.setdefault(u'en', {})['description'] = f.description_en.data
+                delivery_method.preferences.setdefault(u'zh_CN', {})['name'] = f.name_zh_cn.data
+                delivery_method.preferences.setdefault(u'zh_CN', {})['description'] = f.description_zh_cn.data
+                delivery_method.preferences.setdefault(u'zh_TW', {})['name'] = f.name_zh_tw.data
+                delivery_method.preferences.setdefault(u'zh_TW', {})['description'] = f.description_zh_tw.data
             delivery_method.organization_id = self.context.user.organization_id
             delivery_method.save()
 
@@ -61,6 +72,7 @@ class DeliveryMethods(BaseView):
         else:
             return {
                 'form':f,
+                'i18n_org': u"True" if organization_setting.i18n else "False"
             }
 
     @view_config(route_name='delivery_methods.edit', request_method='GET', renderer='altair.app.ticketing:templates/delivery_methods/_form.html')
@@ -70,8 +82,17 @@ class DeliveryMethods(BaseView):
         form = DeliveryMethodForm(obj=obj)
         form.single_qr_mode.data = obj.preferences.get(unicode(QR_DELIVERY_PLUGIN_ID), {}).get('single_qr_mode', False)
         form.expiration_date.data = obj.preferences.get(unicode(RESERVE_NUMBER_DELIVERY_PLUGIN_ID), {}).get('expiration_date', None)
+        organization_setting = c_models.OrganizationSetting.filter_by(organization_id=self.context.user.organization_id).one()
+        if organization_setting.i18n:
+            form.name_en.data = obj.preferences.get(u'en', {}).get('name', u'')
+            form.description_en.data = obj.preferences.get(u'en', {}).get('description', u'')
+            form.name_zh_cn.data = obj.preferences.get(u'zh_CN', {}).get('name', u'')
+            form.description_zh_cn.data = obj.preferences.get(u'zh_CN', {}).get('description', u'')
+            form.name_zh_tw.data = obj.preferences.get(u'zh_TW', {}).get('name', u'')
+            form.description_zh_tw.data = obj.preferences.get(u'zh_TW', {}).get('description', u'')
         return {
-            'form': form
+            'form': form,
+            'i18n_org': u"True" if organization_setting.i18n else "False"
             }
 
     @view_config(route_name='delivery_methods.edit', request_method='POST', renderer='altair.app.ticketing:templates/delivery_methods/_form.html')
@@ -82,10 +103,18 @@ class DeliveryMethods(BaseView):
             return HTTPNotFound('delivery_method id %d is not found' % delivery_method_id)
 
         f = DeliveryMethodForm(self.request.POST)
+        organization_setting = c_models.OrganizationSetting.filter_by(organization_id=self.context.user.organization_id).one()
         if f.validate():
             delivery_method = merge_session_with_post(delivery_method, f.data, excludes={'single_qr_mode', 'expiration_date'})
             delivery_method.preferences.setdefault(unicode(QR_DELIVERY_PLUGIN_ID), {})['single_qr_mode'] = f.single_qr_mode.data
             delivery_method.preferences.setdefault(unicode(RESERVE_NUMBER_DELIVERY_PLUGIN_ID), {})['expiration_date'] = f.expiration_date.data
+            if organization_setting.i18n:
+                delivery_method.preferences.setdefault(u'en', {})['name'] = f.name_en.data
+                delivery_method.preferences.setdefault(u'en', {})['description'] = f.description_en.data
+                delivery_method.preferences.setdefault(u'zh_CN', {})['name'] = f.name_zh_cn.data
+                delivery_method.preferences.setdefault(u'zh_CN', {})['description'] = f.description_zh_cn.data
+                delivery_method.preferences.setdefault(u'zh_TW', {})['name'] = f.name_zh_tw.data
+                delivery_method.preferences.setdefault(u'zh_TW', {})['description'] = f.description_zh_tw.data
             delivery_method.organization_id = self.context.user.organization_id
             delivery_method.save()
 
@@ -94,6 +123,7 @@ class DeliveryMethods(BaseView):
         else:
             return {
                 'form':f,
+                'i18n_org': u"True" if organization_setting.i18n else "False"
             }
 
     @view_config(route_name='delivery_methods.delete')
@@ -112,3 +142,4 @@ class DeliveryMethods(BaseView):
             raise HTTPFound(location=location)
 
         return HTTPFound(location=location)
+

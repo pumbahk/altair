@@ -91,6 +91,7 @@ requires = [
     "jumon",
     "jctconv",
     "babel",
+    'lingua',
     "altair.augus",
     "altair.auth",
     "altair.sqla",
@@ -224,4 +225,10 @@ setup(name='altair.app.ticketing',
         'file:../altairlib/altair.versiontools#egg=altair.versiontools-1.0',
         ],
       paster_plugins=['pyramid'],
+      message_extractors = { '.': [
+          ('**.py', 'lingua_python', None ),
+          ('**/templates/**.html', 'mako', None),
+          ('**/static/**', 'ignore', None)
+          ]},
       )
+

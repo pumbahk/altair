@@ -45,7 +45,7 @@ from altair.app.ticketing.orderreview.views import (
     jump_maintenance_page_om_for_trouble,
     jump_infomation_page_om_for_10873,
     )
-from . import utils
+from . import utils, utils_i18n
 from pyramid.session import check_csrf_token
 from altair.app.ticketing.mails.api import get_mail_utility
 from altair.app.ticketing.core.models import (
@@ -55,7 +55,8 @@ from altair.app.ticketing.core.models import (
 from .exceptions import LotEntryWithdrawException
 
 from altair.app.ticketing.users.word import word_subscribe
-
+from altair.app.ticketing.i18n import custom_locale_negotiator
+from functools import partial
 logger = logging.getLogger(__name__)
 
 LOT_ENTRY_ATTRIBUTE_SESSION_KEY = 'lot.entry.attribute'
@@ -122,6 +123,7 @@ class AgreementLotView(object):
     def __init__(self, context, request):
         self.request = request
         self.context = context
+        self._message = partial(h._message, request=self.request)
 
     def validate_return_to(self, url):
         _url = urlparse.urlparse(url)
@@ -164,7 +166,7 @@ class AgreementLotView(object):
         return_to = return_to and self.validate_return_to(return_to)
 
         if agree is None or return_to is None:
-            self.request.session.flash(u"注意事項を確認、同意し、公演に申し込んでください。")
+            self.request.session.flash(self._message(u"注意事項を確認、同意し、公演に申し込んでください。"))
             return HTTPFound(self.request.route_url('lots.entry.agreement', event_id=event.id, lot_id=lot.id, _query=self.request.GET))
 
         return HTTPFound(return_to)
@@ -197,6 +199,7 @@ class EntryLotView(object):
     def __init__(self, context, request):
         self.request = request
         self.context = context
+        self._message = partial(h._message, request=self.request)
 
     def cr2br(self, t):
         return h.cr2br(t)
@@ -237,7 +240,7 @@ class EntryLotView(object):
     def _create_form(self, **kwds):
         """希望入力と配送先情報と追加情報入力用のフォームを返す
         """
-        return utils.create_form(self.request, self.context, **kwds)
+        return utils_i18n.create_form(self.request, self.context, **kwds)
 
     @lbr_view_config(request_method="GET")
     def get(self, form=None):
@@ -302,7 +305,9 @@ class EntryLotView(object):
             stock_types=stock_types,
             selected_performance=selected_performance,
             payment_delivery_method_pair_id=self.request.params.get('payment_delivery_method_pair_id'),
-            lot=lot, performances=performances, performance_map=performance_map)
+            lot=lot, performances=performances, performance_map=performance_map,
+            custom_locale_negotiator=custom_locale_negotiator(self.request) if self.request.organization.setting.i18n else ""
+                    )
 
     @lbr_view_config(request_method="POST")
     def post(self):
@@ -336,39 +341,39 @@ class EntryLotView(object):
         try:
             self.context.check_entry_limit(wishes, user=user, email=cform.email_1.data)
         except OverEntryLimitPerPerformanceException as e:
-            self.request.session.flash(u"公演「{0}」への申込は{1}回までとなっております。".format(e.performance_name, e.entry_limit))
+            self.request.session.flash(self._message(u"公演「{0}」への申込は{1}回までとなっております。").format(e.performance_name, e.entry_limit))
             validated = False
         except OverEntryLimitException as e:
-            self.request.session.flash(u"抽選への申込は{0}回までとなっております。".format(e.entry_limit))
+            self.request.session.flash(self._message(u"抽選への申込は{0}回までとなっております。").format(e.entry_limit))
             validated = False
 
         # 商品チェック
         if not wishes:
-            self.request.session.flash(u"申し込み内容に入力不備があります")
+            self.request.session.flash(self._message(u"申し込み内容に入力不備があります"))
             validated = False
         elif not h.check_duplicated_products(wishes):
-            self.request.session.flash(u"同一商品が複数回希望されています。")
+            self.request.session.flash(self._message(u"同一商品が複数回希望されています。"))
             validated = False
         elif not h.check_quantities(wishes, lot.max_quantity):
-            self.request.session.flash(u"各希望ごとの合計枚数は最大{0}枚までにしてください".format(lot.max_quantity))
+            self.request.session.flash(self._message(u"各希望ごとの合計枚数は最大{0}枚までにしてください").format(lot.max_quantity))
             validated = False
         elif not h.check_valid_products(wishes):
             logger.debug('Product.performance_id mismatch')
-            self.request.session.flash(u"選択された券種が見つかりません。もう一度はじめから選択してください。")
+            self.request.session.flash(self._message(u"選択された券種が見つかりません。もう一度はじめから選択してください。"))
             validated = False
 
         # 決済・引取方法選択
         if payment_delivery_method_pair_id not in [str(m.id) for m in payment_delivery_pairs]:
-            self.request.session.flash(u"お支払お引き取り方法を選択してください")
+            self.request.session.flash(self._message(u"お支払お引き取り方法を選択してください"))
             validated = False
 
         birthday = cform['birthday'].data
 
         # 購入者情報
         if not cform.validate() or not birthday:
-            self.request.session.flash(u"購入者情報に入力不備があります")
+            self.request.session.flash(self._message(u"購入者情報に入力不備があります"))
             if not birthday:
-                cform['birthday'].errors = [u'日付が正しくありません']
+                cform['birthday'].errors = [_(u'日付が正しくありません')] if self.request.organization.setting.i18n else [u'日付が正しくありません']
             validated = False
 
         if not validated:
@@ -391,7 +396,7 @@ class EntryLotView(object):
 
         entry = api.get_lot_entry_dict(self.request)
         if entry is None:
-            self.request.session.flash(u"セッションに問題が発生しました。")
+            self.request.session.flash(self._message(u"セッションに問題が発生しました。"))
             return self.back_to_form()
 
         self.request.session['lots.entry.time'] = get_now(self.request)
@@ -411,6 +416,7 @@ class ConfirmLotEntryView(object):
     def __init__(self, context, request):
         self.context = context
         self.request = request
+        self._message = partial(h._message, request=self.request)
 
     @lbr_view_config(request_method="GET", renderer=selectable_renderer("confirm.html"))
     def get(self):
@@ -419,7 +425,7 @@ class ConfirmLotEntryView(object):
         if entry is None:
             return self.back_to_form()
         if not entry.get('token'):
-            self.request.session.flash(u"セッションに問題が発生しました。")
+            self.request.session.flash(self._message(u"セッションに問題が発生しました。"))
             return self.back_to_form()
         # wishesを表示内容にする
         event = self.context.event
@@ -483,7 +489,9 @@ class ConfirmLotEntryView(object):
                     mailmagazines_to_subscribe=magazines_to_subscribe,
                     keywords_to_subscribe=ks.values(),
                     accountno=acc.account_number if acc else "",
-                    membershipinfo = self.context.membershipinfo)
+                    membershipinfo = self.context.membershipinfo,
+                    custom_locale_negotiator=custom_locale_negotiator(self.request) if self.request.organization.setting.i18n else ""
+                    )
 
     def back_to_form(self):
         return HTTPFound(location=urls.entry_index(self.request))
@@ -494,21 +502,21 @@ class ConfirmLotEntryView(object):
             return self.back_to_form()
 
         if not h.validate_token(self.request):
-            self.request.session.flash(u"セッションに問題が発生しました。")
+            self.request.session.flash(self._message(u"セッションに問題が発生しました。"))
             return self.back_to_form()
         basetime = self.request.session.get('lots.entry.time')
         if basetime is None:
-            self.request.session.flash(u"セッションに問題が発生しました。")
+            self.request.session.flash(self._message(u"セッションに問題が発生しました。"))
             return self.back_to_form()
 
         if basetime + timedelta(minutes=15) < get_now(self.request):
-            self.request.session.flash(u"セッションに問題が発生しました。")
+            self.request.session.flash(self._message(u"セッションに問題が発生しました。"))
             return self.back_to_form()
 
 
         entry = api.get_lot_entry_dict(self.request)
         if entry is None:
-            self.request.session.flash(u"セッションに問題が発生しました。")
+            self.request.session.flash(self._message(u"セッションに問題が発生しました。"))
             return self.back_to_form()
 
         entry.pop('token')
@@ -580,6 +588,7 @@ class CompletionLotEntryView(object):
     def __init__(self, context, request):
         self.context = context
         self.request = request
+        self._message = partial(h._message, request=self.request)
 
     @lbr_view_config(request_method="GET", renderer=selectable_renderer("completion.html"))
     def get(self):
@@ -589,7 +598,7 @@ class CompletionLotEntryView(object):
         entry_no = self.request.session.get('lots.entry_no')
         entry = DBSession.query(LotEntry).filter(LotEntry.entry_no==entry_no).one()
         if entry is None:
-            self.request.session.flash(u"セッションに問題が発生しました。")
+            self.request.session.flash(self._message(u"セッションに問題が発生しました。"))
             return self.back_to_form()
 
         cart_api.logout(self.request)
@@ -638,7 +647,8 @@ class CompletionLotEntryView(object):
             wishes=entry.wishes,
             gender=entry.gender,
             birthday=entry.birthday,
-            memo=entry.memo
+            memo=entry.memo,
+            custom_locale_negotiator=custom_locale_negotiator(self.request) if self.request.organization.setting.i18n else ""
             )
 
 @view_defaults(route_name='lots.review.index')
@@ -648,6 +658,7 @@ class LotReviewView(object):
     def __init__(self, context, request):
         self.context = context
         self.request = request
+        self._message = partial(h._message, request=self.request)
 
     @lbr_view_config(request_method="GET", renderer=selectable_renderer("review_form.html"))
     def get(self):
@@ -668,7 +679,7 @@ class LotReviewView(object):
             tel_no = form.tel_no.data
             lot_entry = api.get_entry(self.request, entry_no, tel_no)
             if lot_entry is None or lot_entry.canceled_at:
-                form.entry_no.errors.append(u'%sまたは%sが違います' % (form.entry_no.label.text, form.tel_no.label.text))
+                form.entry_no.errors.append(self._message(u'{0}または{1}が違います').format(form.entry_no.label.text, form.tel_no.label.text))
                 raise ValidationError()
         except ValidationError:
             return dict(form=form)
@@ -725,11 +736,12 @@ def out_term_exception(context, request):
     renderer=selectable_renderer('message.html')
     )
 def payment_plugin_exception(context, request):
+    _message = partial(h._message, request=request)
     if context.back_url is not None:
         return HTTPFound(location=context.back_url)
     else:
         location = request.context.host_base_url
-    return dict(message=Markup(u'決済中にエラーが発生しました。しばらく時間を置いてから<a href="%s">再度お試しください。</a>' % location))
+    return dict(message=Markup(_message(u'決済中にエラーが発生しました。しばらく時間を置いてから<a href="{0}">再度お試しください。</a>').format(location)))
 
 
 @lbr_notfound_view_config(
@@ -866,3 +878,4 @@ class LotReviewWithdrawView(object):
             error_msg=self.error_msg,
             now = now,
         )
+

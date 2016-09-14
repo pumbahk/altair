@@ -220,6 +220,10 @@ def main(global_config, **local_config):
         event_push_communication.bind_instance(config)
 
         config.add_subscriber(register_globals, 'pyramid.events.BeforeRender')
+        config.add_subscriber('altair.app.ticketing.i18n.add_renderer_globals',
+                              'pyramid.events.BeforeRender')
+        config.add_subscriber('altair.app.ticketing.i18n.add_localizer',
+                              'pyramid.events.NewRequest')
 
         config.scan(".views")
         config.scan(".response")
@@ -244,3 +248,4 @@ def main(global_config, **local_config):
                 '.views.default_challenge_view'))
 
         return config.make_wsgi_app()
+
