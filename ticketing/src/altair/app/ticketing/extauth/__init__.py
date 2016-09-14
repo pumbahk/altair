@@ -111,6 +111,7 @@ def setup_oauth_provider(config):
 
 def setup_communicators(config):
     config.include('.eagles_communicator')
+    config.include('.vissel_communicator')
 
 def register_template_globals(event):
     from altair.viewhelpers import Namespace
