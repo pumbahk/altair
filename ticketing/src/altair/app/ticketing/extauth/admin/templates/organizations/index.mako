@@ -7,9 +7,9 @@
 </div>
 % endfor
 
-<a href="${request.route_path('organizations.new')}">新規Orgを作成する</a>
+<a style="margin:10px 0;" class="btn" href="${request.route_path('organizations.new')}"><i class="icon-plus"></i>新規Orgを作成する</a>
 
-<ul>
+<ul class="nav nav-tabs nav-stacked">
   % for org in organizations:
   <li><a href="${request.route_path('organizations.edit', id=org.id)}">${org.short_name}</a></li>
   % endfor
