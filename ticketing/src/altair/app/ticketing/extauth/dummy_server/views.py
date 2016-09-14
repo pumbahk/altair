@@ -11,66 +11,6 @@ from .exceptions import BadRequestError
 logger = logging.getLogger(__name__)
 
 
-def _eagles_user_profile(self):
-    handler = self.get_request_handler('check_memberships')
-    params = handler.handle_request(self.request)
-    openid_claimed_id = params['openid_claimed_id']
-    include_permanent_memberships = params['include_permanent_memberships']
-    user = self.request.sa_session.query(EaglesUser) \
-        .filter(EaglesUser.openid_claimed_id == openid_claimed_id) \
-        .one()
-    cond = sa.and_(
-        (EaglesMembership.valid_since == None) \
-        | (EaglesMembership.valid_since <= datetime(params['start_year'], 1, 1)),
-        (EaglesMembership.expire_at == None) \
-        | (EaglesMembership.expire_at >= datetime(params['end_year'] + 1, 1, 1))
-        )
-    if not include_permanent_memberships:
-        cond = sa.and_(
-            cond,
-            (EaglesMembership.valid_since != None) | (EaglesMembership.expire_at != None)
-            )
-    memberships = self.request.sa_session.query(EaglesMembership) \
-        .filter(EaglesMembership.user_id == user.id) \
-        .filter(cond) \
-        .all()
-    return handler.build_response(
-        self.request,
-        flavor='json',
-        successful=True,
-        value=memberships
-        )
-
-def _vissel_user_profile(self):
-    handler = self.get_request_handler('check_memberships')
-    params = handler.handle_request(self.request)
-    openid_claimed_id = params['openid_claimed_id']
-    include_permanent_memberships = params['include_permanent_memberships']
-    user = self.request.sa_session.query(VisselUser) \
-        .filter(VisselUser.openid_claimed_id == openid_claimed_id) \
-        .one()
-    cond = sa.and_(
-        (VisselMembership.valid_since == None) \
-        | (VisselMembership.valid_since <= datetime(params['start_year'], 1, 1)),
-        (VisselMembership.expire_at == None) \
-        | (VisselMembership.expire_at >= datetime(params['end_year'] + 1, 1, 1))
-        )
-    if not include_permanent_memberships:
-        cond = sa.and_(
-            cond,
-            (VisselMembership.valid_since != None) | (VisselMembership.expire_at != None)
-            )
-    memberships = self.request.sa_session.query(VisselMembership) \
-        .filter(VisselMembership.user_id == user.id) \
-        .filter(cond) \
-        .all()
-    return handler.build_response(
-        self.request,
-        flavor='json',
-        successful=True,
-        value=memberships
-        )
-
 @view_defaults(renderer='json')
 class ExtauthCheckMembershipAPI(object):
     def __init__(self, context, request):
@@ -104,13 +44,70 @@ class ExtauthCheckMembershipAPI(object):
         response.status = 400
         return response
 
+    def eagles_user_profile(self):
+        handler = self.get_request_handler('check_memberships')
+        params = handler.handle_request(self.request)
+        openid_claimed_id = params['openid_claimed_id']
+        include_permanent_memberships = params['include_permanent_memberships']
+        user = self.request.sa_session.query(EaglesUser) \
+            .filter(EaglesUser.openid_claimed_id == openid_claimed_id) \
+            .one()
+        cond = sa.and_(
+            (EaglesMembership.valid_since == None) \
+            | (EaglesMembership.valid_since <= datetime(params['start_year'], 1, 1)),
+            (EaglesMembership.expire_at == None) \
+            | (EaglesMembership.expire_at >= datetime(params['end_year'] + 1, 1, 1))
+            )
+        if not include_permanent_memberships:
+            cond = sa.and_(
+                cond,
+                (EaglesMembership.valid_since != None) | (EaglesMembership.expire_at != None)
+                )
+        memberships = self.request.sa_session.query(EaglesMembership) \
+            .filter(EaglesMembership.user_id == user.id) \
+            .filter(cond) \
+            .all()
+        return handler.build_response(
+            self.request,
+            flavor='json',
+            successful=True,
+            value=memberships
+            )
+
+    def vissel_user_profile(self):
+        handler = self.get_request_handler('check_memberships')
+        params = handler.handle_request(self.request)
+        openid_claimed_id = params['openid_claimed_id']
+        include_permanent_memberships = params['include_permanent_memberships']
+        user = self.request.sa_session.query(VisselUser) \
+            .filter(VisselUser.openid_claimed_id == openid_claimed_id) \
+            .one()
+        cond = sa.and_(
+            (VisselMembership.valid_since == None) \
+            | (VisselMembership.valid_since <= datetime(params['start_year'], 1, 1)),
+            (VisselMembership.expire_at == None) \
+            | (VisselMembership.expire_at >= datetime(params['end_year'] + 1, 1, 1))
+            )
+        if not include_permanent_memberships:
+            cond = sa.and_(
+                cond,
+                (VisselMembership.valid_since != None) | (VisselMembership.expire_at != None)
+                )
+        memberships = self.request.sa_session.query(VisselMembership) \
+            .filter(VisselMembership.user_id == user.id) \
+            .filter(cond) \
+            .all()
+        return handler.build_response(
+            self.request,
+            flavor='json',
+            successful=True,
+            value=memberships
+            )
+
     @view_config(route_name='extauth_dummy.check_memberships')
     def user_profile(self):
         port = self.request.environ['SERVER_PORT']
         if port == '8044':
-            response = _eagles_user_profile(self)
+            return self.eagles_user_profile()
         elif port == '8045':
-            response = _vissel_user_profile(self)
-
-        return response
-
+            return self.vissel_user_profile()
