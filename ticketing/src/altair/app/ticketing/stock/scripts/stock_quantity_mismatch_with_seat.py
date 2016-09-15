@@ -2,8 +2,8 @@
 import logging
 import argparse
 import sqlahelper
+from altair.sqlahelper import get_db_session
 from pyramid.paster import bootstrap, setup_logging
-import pymysql
 
 
 def main():
@@ -17,23 +17,20 @@ def main():
     args = parser.parse_args()
 
     setup_logging(args.config)
-    bootstrap(args.config)
+    env = bootstrap(args.config)
+    request = env['request']
+    session = get_db_session(request, 'standby')
 
     # 多重起動防止
-    LOCK_NAME = "stock_quantity_mismatch"
+    LOCK_NAME = "stock_quantity_mismatch_with_seat"
     LOCK_TIMEOUT = 10
-    conn = sqlahelper.get_engine().connect()
-    status = conn.scalar("select get_lock(%s,%s)", (LOCK_NAME, LOCK_TIMEOUT))
-    if status != 1:
+    results = session.execute("select get_lock('{0}', {1})".format(LOCK_NAME, LOCK_TIMEOUT)).first()
+
+    if results[0] == 0:
         logging.warn('lock timeout: already running process')
         return
 
     logger.info("Stock quantity mismatch with seat start")
-
-    url = sqlahelper.get_engine().url
-    client = pymysql.connect(host=url.host, db=url.database, user=url.username, passwd=url.password)
-
-    cur = client.cursor()
 
     sql = "SELECT A.stock_id, A.total, A.rest, IFNULL(A.ordered, 0), IFNULL(B.in_cart, 0) \
     FROM ( \
@@ -60,12 +57,11 @@ def main():
     GROUP BY s.id \
     ) B ON A.stock_id = B.stock_id \
     WHERE A.total - A.rest - IFNULL(A.ordered, 0) - IFNULL(B.in_cart, 0) <> 0"
+    results = session.execute(sql)
 
-    cur.execute(sql)
-    data = cur.fetchall()
+    for result in results:
+        msg = u"Stock quantity mismatch with seat Stock ID = {0}, Total = {1}, Rest = {2}"
+        logger.error(msg.format(result[0], result[1], result[2]))
 
-    for datum in data:
-        msg = "Stock quantity mismatch with seat Stock ID = {0}, Total = {1}, Rest = {2}"
-        logger.error(msg.format(datum[0], datum[1], datum[2]))
-
+    session.execute("select release_lock('{0}')".format(LOCK_NAME)).first()
     logger.info("Stock quantity mismatch with seat end")

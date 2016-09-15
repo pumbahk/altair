@@ -29,11 +29,11 @@
       $('[id^=product_quantity]:first').val(${len(_context.seats_form.seats.data)});
     }
     $('#payment_delivery_method_pair_id').change(function(){
-      var shipping_address = $('.shipping-address');
+      var seven_only = $('.seven_only');
       if ($.inArray(parseInt($(this).val()), ${HH.json([payment_delivery_method_pair.id for payment_delivery_method_pair in _context.convenience_payment_delivery_method_pairs])|n}) == -1) {
-        shipping_address.css('display', 'none');
+        seven_only.css('display', 'none');
       } else {
-        shipping_address.css('display', 'block');
+        seven_only.css('display', 'block');
       }
     }).change();
     $('.draggable').draggable({scroll: true, handle:$('.draggable .modal-header')});
@@ -239,7 +239,7 @@
       <div class="shipping-address">
         <div class="control-group">
           <div class="controls">
-            <p style="color: #BA0000;">※ コンビニ決済およびコンビニ受取は、払込票番号・引換票を発行する為に購入者情報が必要です。</p>
+            <p style="color: #BA0000;">※ コンビニ決済およびコンビニ受取は、払込票番号・引換票を発行する為に購入者情報が必須です。</p>
           </div>
         </div>
         <div class="control-group">
@@ -259,10 +259,12 @@
         ${ch.form_item(form.tel_1)}
       </div>
 
-      ${ch.form_item(form.sales_counter_payment_method_id, class_='span10')}
-      <div class="control-group">
-        <div class="controls">
-          <p>※ 当日窓口決済を選択すると、予約のステータスが「入金済み」になります</p>
+      <div class="seven_only">
+        ${ch.form_item(form.sales_counter_payment_method_id, class_='span10')}
+        <div class="control-group">
+          <div class="controls">
+            <p>※ 当日窓口決済を選択すると、予約のステータスが「入金済み」になります</p>
+          </div>
         </div>
       </div>
       ${_context.preconditions_form.performance_id}

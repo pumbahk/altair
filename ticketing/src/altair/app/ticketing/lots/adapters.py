@@ -411,6 +411,8 @@ class LotEntryStatus(object):
             Order.id==LotEntry.order_id
         ).filter(
             Order.paid_at==None
+        ).filter(
+            Order.canceled_at==None
         ).count()
         return reserved_count
 
@@ -493,7 +495,7 @@ class LotEntryStatus(object):
             ],
             else_=0).label('ordered_quantity'),
             case([
-                (and_(LotEntry.order_id != None, Order.paid_at == None,
+                (and_(LotEntry.order_id != None, Order.paid_at == None, Order.canceled_at == None,
                       LotEntryWish.elected_at != None),
                  LotEntryProduct.quantity)
             ],
