@@ -1,4 +1,5 @@
 <%inherit file="/base.mako" />
+
 % for message in request.session.pop_flash():
 <div class="alert">
   <button type="button" class="close" data-dismiss="alert">&times;</button>
@@ -14,6 +15,7 @@ ${h.render_bootstrap_pager(operators)}
   <thead>
     <tr>
       <th>✔</th>
+      <th>組織名</th>
       <th>ログインID</th>
       <th>役割</th>
     </tr>
@@ -22,6 +24,7 @@ ${h.render_bootstrap_pager(operators)}
 % for operator in operators:
     <tr>
       <td><input type="checkbox" name="id" value="${operator.id}"></td>
+      <td>${operator.organization.short_name}</td>
       <td><a href="${request.route_path('operators.edit', id=operator.id)}">${operator.auth_identifier}</a></td>
       <td>${operator.role}</td>
     </tr>

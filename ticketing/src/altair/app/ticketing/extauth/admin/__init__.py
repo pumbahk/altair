@@ -79,7 +79,7 @@ def main(global_config, **local_config):
     config.add_route('member_kinds.edit', '/member_kinds/{id}')
     config.add_route('operators.index', '/operators', request_method='GET')
     config.add_route('operators.delete', '/operators', request_method='POST', request_param='doDelete')
-    config.add_route('operators.new', '/operators/+')
+    config.add_route('operators.new', '/operators/new')
     config.add_route('operators.edit', '/operators/{id}')
     config.add_route('oauth_clients.index', '/oauth_clients', request_method='GET')
     config.add_route('oauth_clients.new', '/oauth_clients/+')

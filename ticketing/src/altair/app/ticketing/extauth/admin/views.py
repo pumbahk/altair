@@ -237,7 +237,7 @@ class OperatorsView(object):
         )
     def index(self):
         session = get_db_session(self.request, 'extauth')
-        query = session.query(Operator).filter_by(organization_id=self.request.operator.organization_id)
+        query = session.query(Operator).all()
         operators = paginate.Page(
             query,
             page=int(self.request.params.get('page', 0)),
@@ -255,8 +255,7 @@ class OperatorsView(object):
         )
     def edit(self):
         session = get_db_session(self.request, 'extauth')
-        query = session.query(Operator).filter_by(organization_id=self.request.operator.organization_id)
-        operator = query.filter_by(id=self.request.matchdict['id']).one()
+        operator = session.query(Operator).filter_by(id=self.request.matchdict['id']).one()
         form = OperatorForm(obj=operator, auth_secret=u'', request=self.request)
         return dict(
             form=form
@@ -269,8 +268,7 @@ class OperatorsView(object):
         )
     def edit_post(self):
         session = get_db_session(self.request, 'extauth')
-        query = session.query(Operator).filter_by(organization_id=self.request.operator.organization_id)
-        operator = query.filter_by(id=self.request.matchdict['id']).one()
+        operator = session.query(Operator).filter_by(id=self.request.matchdict['id']).one()
         form = OperatorForm(formdata=self.request.POST, obj=operator, request=self.request)
         if not form.validate():
             return dict(
@@ -309,7 +307,7 @@ class OperatorsView(object):
                 )
         operator = create_operator(
             self.request,
-            organization=self.request.operator.organization,
+            organization_name=form.organization_name.data,
             auth_identifier=form.auth_identifier.data,
             auth_secret=form.auth_secret.data,
             role=form.role.data
