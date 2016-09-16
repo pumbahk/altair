@@ -33,7 +33,17 @@ $(function(){
 
 <script>
   $(function() {
-    $('[rel=popover]').popover()
+    $('[rel=popover]').hover(
+    function() {
+      $(this).popover({
+        title: $(this).attr("data-original-title"),
+        content: $(this).attr("data-content"),
+        html: true
+      }).popover('show');
+    },
+    function() {
+      $(this).popover('hide');
+    });
   });
 </script>
 
@@ -303,7 +313,7 @@ $(function(){
   <h3>パフォーマンス</h3>
   <div style="margin-top: 20px;">
     <%include file="/performances/_list.html" args="form=form_performance, performances=performances, limit=10, event=event, warnings=famiport_reflect_warnings" />
-    <%include file="/performances/_action_button.html" args="event=event, split=True" />
+    <%include file="/performances/_action_button.html" args="event=event, order=['new'], split=True" />
     <script type="text/javascript">
       var is_sending = {};
       $("#send_event").click(function(e){

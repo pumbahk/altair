@@ -85,7 +85,10 @@
     <tr>
       <td colspan="8">
         <div class="pull-right">
-          <%include file="/performances/_action_button.html" args="event=performance.event, order=['edit', 'copy', 'mail', 'report', 'delete'], split=True" />
+          <%include file="/performances/_action_button.html" args="event=performance.event,
+                                                                    performance_id=performance.id,
+                                                                    order=['edit', 'copy', 'manycopy', 'mail', 'report', 'delete'],
+                                                                    split=True" />
         </div>
       </td>
     </tr>
