@@ -37,7 +37,7 @@ from altair.formhelpers import Max, after1900
 from wtforms.validators import Required, Length, Optional
 from wtforms import ValidationError
 from altair.sqlahelper import get_db_session
-from ..models import MemberSet, MemberKind, Member, Host
+from ..models import MemberSet, MemberKind, Member, Host, Organization
 from ..utils import period_overlaps
 from ..interfaces import ICommunicator
 from .api import lookup_operator_by_auth_identifier
@@ -209,6 +209,17 @@ class OperatorForm(OurForm):
             (u'administrator', u'管理者'),
             (u'operator', u'オペレーター'),
             ],
+        validators=[
+            Required(),
+            ]
+        )
+
+    organization_name = OurSelectField(
+        label=u'所属組織',
+        choices=lambda field: \
+            get_db_session(field._form.request, 'extauth') \
+                .query(Organization.short_name, Organization.short_name) \
+                .all(),
         validators=[
             Required(),
             ]

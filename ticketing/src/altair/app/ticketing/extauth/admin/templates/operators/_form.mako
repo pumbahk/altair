@@ -1,3 +1,14 @@
+% if 'new' in request.path:
+<div class="control-group">
+  <label class="control-label" for="operator-form--organization_name">${form.organization_name.label.text}</label>
+  <div class="controls">
+    ${form.organization_name(id="operator-form--organization_name")}
+    %if form.organization_name.errors:
+    <span class="help-inline">${u' / '.join(form.organization_name.errors)}</span>
+    % endif
+  </div>
+</div>
+% endif
 <div class="control-group">
   <label class="control-label" for="operator-form--auth_identifier">${form.auth_identifier.label.text}</label>
   <div class="controls">
