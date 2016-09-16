@@ -55,6 +55,15 @@
     % endif
   </div>
 </div>
+<div class="control-group">
+  <label class="control-label" for="organization-form--fanclub_api_available">${form.fanclub_api_available.label.text}</label>
+  <div class="controls">
+    ${form.fanclub_api_available(id="organization-form--fanclub_api_available")}
+    %if form.fanclub_api_available.errors:
+    <span class="help-inline">${u' / '.join(form.fanclub_api_available.errors)}</span>
+    % endif
+  </div>
+</div>
 % if form.fanclub_api_available:
 <div class="control-group">
   <label class="control-label" for="organization-form--fanclub_api_type">${form.fanclub_api_type.label.text}</label>
