@@ -137,6 +137,7 @@ class OrganizationsView(object):
             settings=form.settings.data,
             short_name=form.short_name.data,
             fanclub_api_type=form.fanclub_api_type.data,
+            fanclub_api_available=form.fanclub_api_available.data,
             maximum_oauth_client_expiration_time=form.maximum_oauth_client_expiration_time.data,
             invalidate_client_http_session_on_access_token_revocation=form.invalidate_client_http_session_on_access_token_revocation.data
         )

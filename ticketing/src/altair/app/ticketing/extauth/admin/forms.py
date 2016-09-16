@@ -135,6 +135,10 @@ class OrganizationForm(OurForm):
                 .all()
         )
 
+    fanclub_api_available = OurBooleanField(
+        label=u'ファンクラブAPI有効化'
+        )
+
     invalidate_client_http_session_on_access_token_revocation = OurBooleanField(
         label=u'アクセストークンの無効化時にHTTPセッションも無効化する'
         )
@@ -148,14 +152,14 @@ class OrganizationForm(OurForm):
         label=u'ファンクラブAPIの種類',
         choices=lambda field: [(name, name) for name, _ in field._form.request.registry.getUtilitiesFor(ICommunicator)],
         validators=[
-            SwitchOptionalBase(predicate=lambda form, field: not form.fanclub_api_available),
+            SwitchOptionalBase(predicate=lambda form, field: not form.is_fanclub_api_available),
             ]
         )
 
     settings = OurFormField(OrganizationSettingsForm)
 
     @property
-    def fanclub_api_available(self):
+    def is_fanclub_api_available(self):
         return self.request and self.request.operator and self.request.operator.organization.fanclub_api_available
 
     def __init__(self, *args, **kwargs):
