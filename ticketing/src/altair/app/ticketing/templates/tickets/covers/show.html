@@ -40,21 +40,8 @@ ${ch.breadcrumbs(
 </div>
 
 <div class="row-fluid well">
-  <div class="btn-group">
-    <a href="${request.route_path("tickets.covers.edit",id=cover.id)}" class="btn">
-      <i class="icon-pencil"></i> 編集
-    </a>
-        <button class="btn dropdown-toggle" data-toggle="dropdown">
-          <span class="caret"></span>
-        </button>
-        <ul class="dropdown-menu">
-          <li>
-            <a href="#deleteModal" data-toggle="modal">
-              <i class="icon-minus"></i> 削除
-            </a>
-          </li>
-        </ul>
-  </div>
+  <a href="${request.route_path("tickets.covers.edit",id=cover.id)}" class="btn"><i class="icon-pencil"></i> 編集</a>
+  <a href="#deleteModal" data-toggle="modal" class="btn btn-danger"><i class="icon-minus"></i> 削除</a>
 </div>
 
 <div class="modal hide" id="deleteModal">
@@ -66,9 +53,9 @@ ${ch.breadcrumbs(
     この表紙を削除します。よろしいですか？
   </div>
   <div class="modal-footer">
-    <a href="#" class="btn" data-dismiss="modal">キャンセル</a>
+    <a href="#" class="btn" data-dismiss="modal" style="width:98px; padding: 3.2px 0;">キャンセル</a>
     <form action="${request.route_path("tickets.covers.delete",id=cover.id)}" method="POST">
-      <button type="submit" class="btn">削除する</button>
+      <button type="submit" class="btn btn-danger" style="width:100px; margin-top:10px; padding: 3.2px 0;">削除する</button>
     </form>
   </div>
 </div>

@@ -6,20 +6,17 @@
 <table class="table table-striped table-bordered">
   <thead>
   <tr>
-    <th class="span1"></th>
     <th class="span1">${ch.sortable(form.id)}</th>
     <th>${ch.sortable(form.name)}</th>
     <th>${ch.sortable(form.fee)}</th>
     <th>${ch.sortable(form.fee_type)}</th>
     <th>${ch.sortable(form.system_fee_default)}</th>
+    <th></th>
   </tr>
   </thead>
   <tbody>
   % for service_fee_method in service_fee_methods.items:
   <tr id="service_fee_method-${service_fee_method.id}">
-    <td>
-      <input name="service_fee_method_id" type="radio" value=${service_fee_method.id} />
-    </td>
     <td><span class="id">${service_fee_method.id}</span></td>
     <td><a href="javascript:edit_service_fee_method(${service_fee_method.id});"><span id="name">${service_fee_method.name}</span></a></td>
     <td><span class="fee">${vh.price(service_fee_method.fee)}</span></td>
@@ -29,6 +26,9 @@
           ○
         % endif
     </span></td>
+    <td style="width:1%; white-space:nowrap;"> <!-- to fit the button in the table cell -->
+      <%include file="/service_fee_methods/_action_button.html" args="service_fee_method_id=service_fee_method.id, order=['edit', 'delete'], split=True, small=True" />
+    </td>
   </tr>
   % endfor
   </tbody>
