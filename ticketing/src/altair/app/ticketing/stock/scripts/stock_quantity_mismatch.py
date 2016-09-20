@@ -32,13 +32,31 @@ def main():
 
     logger.info("Stock quantity mismatch start")
 
-    sql = "SELECT Stock.id, StockStatus.quantity - COUNT(DISTINCT Seat.id) AS diff \
-    FROM Stock JOIN StockStatus ON StockStatus.stock_id = Stock.id \
-    JOIN Seat ON Seat.stock_id = Stock.id JOIN SeatStatus ON SeatStatus.seat_id = Seat.id \
-    WHERE Stock.deleted_at IS NULL AND StockStatus.deleted_at IS NULL \
-    AND Seat.deleted_at IS NULL AND SeatStatus.deleted_at IS NULL \
-    AND SeatStatus.status NOT IN (2, 3) \
-    GROUP BY Stock.id HAVING diff <> 0"
+    sql = "SELECT A.stock_id, A.total, A.rest, IFNULL(A.ordered, 0), IFNULL(B.in_cart, 0) \
+    FROM ( \
+    SELECT s.id AS stock_id, s.quantity AS total, ss.quantity AS rest, SUM(opi.quantity) AS ordered \
+    FROM Stock s, StockStatus ss, Performance p, StockType st, ProductItem pi \
+    LEFT OUTER JOIN OrderedProductItem opi ON pi.id = opi.product_item_id \
+    LEFT OUTER JOIN OrderedProduct op ON opi.ordered_product_id = op.id \
+    LEFT OUTER JOIN ticketing.Order o ON op.order_id = o.id \
+    WHERE s.id = ss.stock_id AND s.performance_id = p.id AND s.stock_type_id = st.id AND st.quantity_only = 1 \
+    AND s.id = pi.stock_id AND pi.deleted_at IS NULL AND o.deleted_at IS NULL AND op.deleted_at IS NULL AND opi.deleted_at IS NULL \
+    AND o.canceled_at IS NULL AND o.released_at IS NULL AND o.id IS NOT NULL \
+    GROUP BY s.id \
+    ) A LEFT OUTER JOIN \
+    ( \
+    SELECT s.id AS stock_id, IFNULL(SUM(cpi.quantity), 0) AS in_cart \
+    FROM Stock s, StockStatus ss, Performance p, StockType st, ProductItem pi \
+    LEFT OUTER JOIN CartedProductItem cpi ON pi.id = cpi.product_item_id \
+    LEFT OUTER JOIN CartedProduct cp ON cpi.carted_product_id = cp.id AND cp.cart_id IS NOT NULL \
+    LEFT OUTER JOIN Cart c ON cp.cart_id = c.id \
+    WHERE s.id = ss.stock_id AND s.performance_id = p.id AND s.stock_type_id = st.id AND st.quantity_only = 1 \
+    AND s.id = pi.stock_id AND pi.deleted_at IS NULL \
+    AND c.order_id IS NULL AND c.deleted_at IS NULL AND c.id IS NOT NULL AND cp.id IS NOT NULL AND cpi.id IS NOT NULL \
+    AND c.finished_at IS NULL AND cp.finished_at IS NULL AND cpi.finished_at IS NULL \
+    GROUP BY s.id \
+    ) B ON A.stock_id = B.stock_id \
+    WHERE A.total - A.rest - IFNULL(A.ordered, 0) - IFNULL(B.in_cart, 0) <> 0"
     results = session.execute(sql)
 
     for result in results:
