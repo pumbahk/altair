@@ -17,6 +17,7 @@ def empty_resource_factory(request):
 def setup_auth(config):
     config.include('altair.auth')
     config.include('altair.rakuten_auth')
+    config.include('altair.fanclub_auth')
     config.include('.internal_auth')
 
     config.set_who_api_decider(lambda request, classification: None)
