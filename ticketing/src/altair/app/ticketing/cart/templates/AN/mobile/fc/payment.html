@@ -1,0 +1,51 @@
+<%inherit file="${context['main_template'].uri}" />
+<%namespace file="altair.app.ticketing.cart:templates/__commons__/tags_mobile.html" name="mobile" />
+<form method="post" action="${request.current_route_path()}">
+<%mobile:header>支払方法選択</%mobile:header>
+%if request.session.peek_flash():
+<div>
+  %for message in request.session.pop_flash():
+  <font color="red">・${message}</font><br />
+  %endfor
+</div>
+%endif
+<div>
+代金の支払方法を指定して、「次へ進む」ボタンをクリックして下さい。<br>
+購入時には、代金のほかに支払方法により、手数料がかかる場合があります。
+</div>
+<% checked_id = request.params.get('payment_delivery_method_pair_id') %>
+%for m in payment_delivery_methods:
+<hr />
+<% checked = 'checked' if str(m.id) == checked_id else '' %>
+<input type="radio" name="payment_delivery_method_pair_id" id="radio2" value="${m.id}" ${checked}>${m.payment_method.name}<br/>
+決済手数料:${h.format_currency(m.transaction_fee)} (${h.fee_type(m.payment_method.fee_type)})<br />
+% if m.delivery_fee > 0:
+引取手数料:${h.format_currency(m.delivery_fee)} (${h.fee_type(m.delivery_method.fee_type)})<br />
+% endif
+% if m.system_fee > 0:
+システム手数料:${h.format_currency(m.system_fee)} (${h.fee_type(m.system_fee_type)})<br />
+% endif
+% if m.special_fee > 0:
+${m.special_fee_name}:${h.format_currency(m.special_fee)} (${h.fee_type(m.special_fee_type)})<br />
+% endif
+<div>
+% if m.payment_method.payment_plugin_id == 1:
+<font size="-2">
+予約受付完了と同時に決済され、即時予約確定となります。支払回数は≪1回払い≫のみのお取扱いとなります。以下のクレジットカードがご利用できます。<br />
+<img src="${view_context.static_url('mobile/images/kc_logo_rakuten.gif')}" height="30px" />
+<img src="${view_context.static_url('mobile/images/visa.gif')}" height="30px" />
+<img src="${view_context.static_url('mobile/images/master.gif')}" height="30px" />
+<img src="${view_context.static_url('mobile/images/jcb.gif')}" height="30px" />
+</font>
+% elif m.payment_method.payment_plugin_id == 3:
+<font size="-2">
+予約有効期日までにお支払頂きます。<br />
+お支払が確認できた時点で予約確定となります。<br />
+</font>
+% endif
+</div>
+%endfor
+<hr />
+<input type="submit" name="back" value="戻る" class="submit" />
+<input type="submit" value="次に進む" class="submit" />
+</form>

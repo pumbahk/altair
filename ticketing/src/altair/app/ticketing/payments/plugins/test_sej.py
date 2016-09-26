@@ -2359,6 +2359,9 @@ class ValidateOrderLikeTest(unittest.TestCase):
             issuing_end_at=current_date + timedelta(seconds=1),
             payment_due_at=current_date + timedelta(seconds=1),
             total_amount=1,
+            organization=testing.DummyModel(
+                 setting=testing.DummyModel(i18n=False)
+                ),
             payment_delivery_pair=mock.Mock(
                 payment_method=mock.Mock(
                     payment_plugin_id=SEJ_PAYMENT_PLUGIN_ID
@@ -2369,12 +2372,12 @@ class ValidateOrderLikeTest(unittest.TestCase):
                 )
             )
         with self.assertRaises(OrderLikeValidationFailure) as e:
-            self._callFUT(testing.DummyRequest(), current_date, order_like, ticketing=False)
-        self.assertEquals(e.exception.path, 'shipping_address.last_name')
+            self._callFUT(testing.DummyRequest(translate=lambda t:t, params={'_LOCAL_':'ja'}), current_date, order_like, ticketing=False)
+        self.assertEquals(e.exception.path, 'shipping_address.user_name')
 
     def test_shipping_address_name_too_long(self):
         from . import SEJ_PAYMENT_PLUGIN_ID, SEJ_DELIVERY_PLUGIN_ID
-        from ..exceptions import OrderLikeValidationFailure 
+        from ..exceptions import OrderLikeValidationFailure
         current_date = datetime.now()
         order_like = mock.Mock(
             shipping_address=mock.Mock(
@@ -2401,8 +2404,8 @@ class ValidateOrderLikeTest(unittest.TestCase):
                 )
             )
         with self.assertRaises(OrderLikeValidationFailure) as e:
-            self._callFUT(testing.DummyRequest(), current_date, order_like, ticketing=False)
-        self.assertEquals(e.exception.path, 'shipping_address.last_name')
+            self._callFUT(testing.DummyRequest(translate=lambda t:t, params={'_LOCALE_':'ja'}), current_date, order_like, ticketing=False)
+        self.assertEquals(e.exception.path, 'shipping_address.user_name')
 
         order_like = mock.Mock(
             shipping_address=mock.Mock(
@@ -2429,12 +2432,12 @@ class ValidateOrderLikeTest(unittest.TestCase):
                 )
             )
         with self.assertRaises(OrderLikeValidationFailure) as e:
-            self._callFUT(testing.DummyRequest(), current_date, order_like, ticketing=False)
-        self.assertEquals(e.exception.path, 'shipping_address.last_name')
+            self._callFUT(testing.DummyRequest(translate=lambda t:t, params={'_LOCALE_':'ja'}), current_date, order_like, ticketing=False)
+        self.assertEquals(e.exception.path, 'shipping_address.user_name')
 
     def test_shipping_address_invalid_name_kana(self):
         from . import SEJ_PAYMENT_PLUGIN_ID, SEJ_DELIVERY_PLUGIN_ID
-        from ..exceptions import OrderLikeValidationFailure 
+        from ..exceptions import OrderLikeValidationFailure
         current_date = datetime.now()
         order_like = mock.Mock(
             shipping_address=mock.Mock(
@@ -2461,12 +2464,12 @@ class ValidateOrderLikeTest(unittest.TestCase):
                 )
             )
         with self.assertRaises(OrderLikeValidationFailure) as e:
-            self._callFUT(testing.DummyRequest(), current_date, order_like, ticketing=False)
-        self.assertEquals(e.exception.path, 'shipping_address.last_name_kana')
+            self._callFUT(testing.DummyRequest(translate=lambda t:t, params={'_LOCAL_':'ja'}), current_date, order_like, ticketing=False)
+        self.assertEquals(e.exception.path, 'shipping_address.user_name_kana')
 
     def test_no_shipping_address(self):
         from . import SEJ_PAYMENT_PLUGIN_ID, SEJ_DELIVERY_PLUGIN_ID
-        from ..exceptions import OrderLikeValidationFailure 
+        from ..exceptions import OrderLikeValidationFailure
         current_date = datetime.now()
         order_like = mock.Mock(
             shipping_address=None,
