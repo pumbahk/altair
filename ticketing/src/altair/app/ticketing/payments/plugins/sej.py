@@ -20,6 +20,7 @@ from altair.app.ticketing.mails.interfaces import (
     )
 from altair.app.ticketing.utils import clear_exc
 from altair.app.ticketing.core import models as c_models
+from altair.app.ticketing.core.models import Organization
 from altair.app.ticketing.orders import models as order_models
 from altair.app.ticketing.orders.api import bind_attributes
 from altair.app.ticketing.sej import userside_api
@@ -485,7 +486,10 @@ def validate_order_like(request, current_date, order_like, update=False, ticketi
             raise OrderLikeValidationFailure(u'no phone number specified', 'shipping_address.tel_1')
         elif len(tel) > 12 or re.match(ur'[^0-9]', tel):
             raise OrderLikeValidationFailure(u'invalid phone number', 'shipping_address.tel_2')
-        if not order_like.organization.setting.i18n or (request.localizer and request.localizer.locale_name == 'ja'):
+        organization = order_like.organization
+        if not organization:
+            organization =  Organization.get(id=order_like.organization_id)
+        if not organization.setting.i18n or (request.localizer and request.localizer.locale_name == 'ja'):
             if not order_like.shipping_address.last_name:
                 raise OrderLikeValidationFailure(u'no last name specified', 'shipping_address.last_name')
             if not order_like.shipping_address.first_name:
@@ -502,13 +506,13 @@ def validate_order_like(request, current_date, order_like, update=False, ticketi
             order_like.shipping_address.first_name_kana = u'　'
 
         user_name = build_user_name(order_like.shipping_address)
-        if not order_like.organization.setting.i18n or (request.localizer and request.localizer.locale_name == 'ja'):
+        if not organization.setting.i18n or (request.localizer and request.localizer.locale_name == 'ja'):
             validate_length_dict('CP932', {'user_name':user_name}, {'user_name':40})
-        if order_like.organization.setting.i18n and (request.localizer and request.localizer.locale_name == 'zh_CN'):
+        if organization.setting.i18n and (request.localizer and request.localizer.locale_name == 'zh_CN'):
             validate_length_dict('UTF-8', {'user_name':user_name}, {'user_name':40})
-        if order_like.organization.setting.i18n and (request.localizer and request.localizer.locale_name == 'zh_TW'):
+        if organization.setting.i18n and (request.localizer and request.localizer.locale_name == 'zh_TW'):
             validate_length_dict('UTF-8', {'user_name':user_name}, {'user_name':40})
-        if order_like.organization.setting.i18n and (request.localizer and request.localizer.locale_name == 'en'):
+        if organization.setting.i18n and (request.localizer and request.localizer.locale_name == 'en'):
             validate_length_dict('UTF-8', {'user_name':user_name}, {'user_name':40})
         user_name_kana = build_user_name_kana(order_like.shipping_address)
         validate_length_dict('CP932', {'user_name_kana':user_name_kana}, {'user_name_kana':40})
