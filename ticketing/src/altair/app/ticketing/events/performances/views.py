@@ -21,7 +21,7 @@ from altair.app.ticketing.models import merge_session_with_post, record_to_multi
 from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.events.performances.forms import PerformanceForm, PerformanceManycopyForm, PerformancePublicForm, OrionPerformanceForm
-from altair.app.ticketing.core.models import Event, Performance, PerformanceSetting, OrionPerformance
+from altair.app.ticketing.core.models import Event, Performance, PerformanceSetting, OrionPerformance, Organization
 from altair.app.ticketing.famiport.userside_models import AltairFamiPortPerformance
 from altair.app.ticketing.orders.forms import OrderForm, OrderSearchForm, OrderImportForm
 from altair.app.ticketing.venues.api import get_venue_site_adapter
@@ -249,7 +249,7 @@ class PerformanceShowView(BaseView):
         order_import_task, errors = importer(
             reader=ImportCSVReader(StringIO(f.order_csv.data.value), encoding='cp932:normalized-tilde'),
             operator=self.context.user,
-            organization=self.context.organization,
+            organization=self.context.organization if self.context.organization else Organization.get(id=self.context.organization.id),
             performance=self.performance
         )
         self.request.session[self.IMPORT_ERRORS_KEY] = dict(
