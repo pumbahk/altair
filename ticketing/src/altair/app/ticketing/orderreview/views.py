@@ -12,6 +12,7 @@ from pyramid.httpexceptions import HTTPNotFound, HTTPFound
 from pyramid.decorator import reify
 from pyramid.interfaces import IRouteRequest, IRequest
 from pyramid.security import forget
+from pyramid.renderers import render_to_response
 
 from altair.auth.api import get_who_api
 from altair.rakuten_auth.api import get_rakuten_id_api2_factory
@@ -281,14 +282,24 @@ class OrderReviewView(object):
 
         jump_maintenance_page_om_for_trouble(self.request.organization)
         orderreview_index = self.request.organization.setting.orderreview_index
-
-        # orderreview_indexがindex.html以外を指定している場合はそちらに遷移する
-        if orderreview_index == OrderreviewIndexEnum.OrderNo.v[0]:
-            return HTTPFound(location=self.request.route_path("order_review.form"))
-        elif orderreview_index == OrderreviewIndexEnum.UserLogin.v[0]:
-            return HTTPFound(location=self.request.route_path("mypage.show"))
-
         form = schemas.OrderReviewSchema(self.request.params)
+
+        # orderreview_indexがindex.html以外を指定している場合はそれぞれのログイン画面を表示する
+        # /orderreviewのHTTPレスポンスは200で返す必要があるのでリダイレクトはNG (監視要件)
+        if orderreview_index == OrderreviewIndexEnum.OrderNo.v[0]:
+            form_template = self.request.view_context.get_template_path("order_review/form.html")
+            return render_to_response(form_template, {"form": form, "view_context": self.request.view_context}, request = self.request)
+
+        elif orderreview_index == OrderreviewIndexEnum.FcAuth.v[0]:
+            # 認証方法がfc_authの場合のみ、fc_authログイン画面を表示する。
+            # fc_auth以外のケースはorderreview_indexの値がfc_authを指していてもindex.htmlを表示する
+            if cart_api.is_fc_auth_organization(self.context, self.request):
+                fc_auth_template = self.request.view_context.get_fc_login_template()
+
+                # fc_auth_templateがない場合もindex.htmlを表示する
+                if fc_auth_template is not None:
+                    return render_to_response(fc_auth_template, dict(view_context=self.request.view_context), request=self.request)
+
         return {"form": form}
 
     @lbr_view_config(route_name='order_review.guest')

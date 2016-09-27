@@ -1,7 +1,9 @@
 # encoding: utf-8
 
 import logging
+import os
 from pyramid.decorator import reify
+from pyramid.path import AssetResolver
 from altair.mobile.interfaces import IMobileRequest, ISmartphoneRequest
 from altair.app.ticketing.mails.interfaces import IMailRequest
 from altair.app.ticketing.cart import api as cart_api
@@ -100,6 +102,40 @@ def get_orderreview_view_context_factory(default_package):
                 organization_short_name=organization_short_name,
                 ua_type=self.ua_type,
                 path=path)
+
+        def get_fc_login_template(self, package=None, template_name='login.html'):
+            organization_short_name = self.organization_short_name or "__default__"
+            if package is None:
+                package = default_package
+
+            # __scaffold__シムリンクのORGのfc_authテンプレート
+            # こちらの方を優先
+            template_path = '{package}:templates/{organization_short_name}/fc_auth/{ua_type}/{template_name}'\
+                .format(package=package,
+                organization_short_name=organization_short_name,
+                ua_type=self.ua_type,
+                template_name=template_name)
+
+            # 存在確認
+            assetresolver = AssetResolver()
+            physical_path = assetresolver.resolve(template_path).abspath()
+            if os.path.exists(physical_path):
+                return template_path
+
+            # scaffoldシムリンク系のORGでない場合
+            # 従来のORG設定で作成していたfc_authテンプレートを確認
+            template_path = '{package}:templates/{organization_short_name}/{ua_type}/fc_auth/{template_name}'\
+                .format(package=package,
+                organization_short_name=organization_short_name,
+                ua_type=self.ua_type,
+                template_name=template_name)
+
+            # 存在確認
+            physical_path = assetresolver.resolve(template_path).abspath()
+            if os.path.exists(physical_path):
+                return template_path
+            else:
+                return None
 
         def static_url(self, path, module=None, *args, **kwargs):
             if module is None:
