@@ -119,6 +119,13 @@ class EntryLotViewTests(unittest.TestCase):
 
         request = DummyRequest(
             matchdict=dict(event_id=1111, lot_id=lot.id),
+            translate = lambda t:t,
+            accept_language=testing.DummyModel(
+                best_match=lambda a,b:'ja'
+            ),
+            organization=testing.DummyModel(
+                 setting=testing.DummyModel(i18n=False),
+            ),
         )
 
         context = DummyAuthenticatedResource(
@@ -154,7 +161,7 @@ class EntryLotViewTests(unittest.TestCase):
 
     @mock.patch("altair.app.ticketing.cart.api.get_organization")
     def test_post(self, mock_get_organization):
-        from altair.app.ticketing.core.models import Organization
+        from altair.app.ticketing.core.models import Organization, OrganizationSetting
         mock_get_organization.return_value = Organization(code='RL', short_name='RL')
         from altair.app.ticketing.payments.interfaces import IPaymentDeliveryPlugin, IPaymentPreparer
         self.config.add_route('lots.entry.confirm', '/lots/events/{event_id}/entry/{lot_id}/confirm')
@@ -184,12 +191,11 @@ class EntryLotViewTests(unittest.TestCase):
 
         data = self._params(**{
             "first_name": u'あ',
-            "first_name_kana": u'イ',
             "last_name": u'う',
-            "last_name_kana": u'エ',
             "tel_1": u"01234567899",
             "fax": u"01234567899",
             "zip": u'1234567',
+            "country":u'country_1',
             "prefecture": u'東京都',
             "city": u'渋谷区',
             "address_1": u"代々木１丁目",
@@ -217,8 +223,16 @@ class EntryLotViewTests(unittest.TestCase):
         request = DummyRequest(
             matchdict=dict(event_id=lot.event_id, lot_id=lot.id),
             params=data,
-            registry=self.config.registry
+            registry=self.config.registry,
+            translate=lambda t:t,
+            accept_language=testing.DummyModel(
+                best_match=lambda a,b:'ja'
+            ),
+            organization=testing.DummyModel(
+                setting=testing.DummyModel(i18n=False),
+            ),
         )
+        lot.event.organization._setting=OrganizationSetting(i18n=False)
         context = testing.DummyResource(
             request=request,
             event=lot.event, lot=lot,
@@ -245,13 +259,13 @@ class EntryLotViewTests(unittest.TestCase):
             {'address_1': u'代々木１丁目',
              'address_2': u'森京ビル',
              'city': u'渋谷区',
-             'country': u'日本国',
+             'country': None,
              'email_1': u'test@example.com',
              'fax': u'01234567899',
              'first_name': u'あ',
-             'first_name_kana': u'イ',
+             'first_name_kana': u'　',
              'last_name': u'う',
-             'last_name_kana': u'エ',
+             'last_name_kana': u'　',
              'prefecture': u'東京都',
              'tel_1': u'01234567899',
              'tel_2': u'',
@@ -368,6 +382,9 @@ class ConfirmLotEntryViewTests(unittest.TestCase):
                     'memo': u"",
                 }, #lots.entry
             }, #session
+            organization=testing.DummyModel(
+                 setting=testing.DummyModel(i18n=False)
+            )
         )
         context = testing.DummyResource(event=testing.DummyModel(),
                                         lot=lot,
@@ -422,6 +439,9 @@ class ConfirmLotEntryViewTests(unittest.TestCase):
         self.config.add_route('lots.entry.index', '/back/to/form')
         request = DummyRequest(
             host='example.com:80',
+            organization=testing.DummyModel(
+                setting=testing.DummyModel(i18n=False)
+                )
             )
         request.session['lots.entry'] = {}
         context = testing.DummyResource()

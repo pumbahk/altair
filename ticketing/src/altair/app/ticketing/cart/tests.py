@@ -1220,7 +1220,13 @@ class PaymentViewTests(unittest.TestCase):
 
     def setUp(self):
         self.config = testing.setUp()
+        from altair.sqlahelper import register_sessionmaker_with_engine
         self.session = _setup_db()
+        register_sessionmaker_with_engine(
+            self.config.registry,
+            'slave',
+            self.session.bind
+            )
 
     def tearDown(self):
         testing.tearDown()
@@ -1265,7 +1271,16 @@ class PaymentViewTests(unittest.TestCase):
             'membership': 'membership',
             'organization_id': 1
             }
-        request = DummyRequest(altair_auth_info=altair_auth_info)
+        request = DummyRequest(
+            altair_auth_info=altair_auth_info,
+            translate=lambda t:t,
+            accept_language=testing.DummyModel(
+                best_match=lambda a,b:'ja'
+            ),
+            organization=testing.DummyModel(
+                setting=testing.DummyModel(i18n=False),
+            ),
+        )
         request.registry.settings = {'altair_cart.expire_time': "15"}
 
         payment_method = testing.DummyModel(payment_plugin_id=1)

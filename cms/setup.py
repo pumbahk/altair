@@ -42,7 +42,9 @@ requires = [
     "altair.extracodecs",
     'pyramid_layout >= 0.9',
     'lxml',
-    'waitress'
+    'waitress',
+    'babel',
+    'lingua',
     ]
 
 solr_require = [
@@ -114,5 +116,11 @@ setup(name='altair-cms',
         'file:../altairlib/altair.versiontools#egg=altair.versiontools-1.0',
         ],
       paster_plugins=['pyramid'],
+      message_extractors = { '.': [
+          ('**.py', 'lingua_python', None ),
+          ('**/templates/**.html', 'mako', None),
+          ('**/static/**', 'ignore', None)
+          ]},
       )
+
 

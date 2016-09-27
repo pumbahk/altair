@@ -11,7 +11,8 @@ from . import api
 from .interfaces import ICartResource
 from .resources import PerformanceOrientedTicketingCartResource
 from .exceptions import CartException
-
+from . import helpers as h
+from functools import partial
 import logging
 
 logger = logging.getLogger(__name__)
@@ -25,6 +26,7 @@ def get_cart_view_context_factory(default_package):
         def __init__(self, request):
             self.request = request
             self.context = getattr(request, 'context', None) # will not be available for exception views
+            self._message = partial(h._message, request=self.request)
 
         @reify
         def ua_type(self):
@@ -125,6 +127,7 @@ def get_cart_view_context_factory(default_package):
             template = u'※ 注文受付完了、確認メール等をメールでご案内します。「{domain}」からのメールを受信できるよう、お申し込み前にドメイン指定の設定を必ずお願いいたします。'
             if self.cart_setting and self.cart_setting.mail_filter_domain_notice_template:
                 template = self.cart_setting.mail_filter_domain_notice_template
+            template = self._message(template)
 
             try:
                 if hasattr(self.context, 'performance'):

@@ -60,25 +60,25 @@ cart.order_messages = {
         message: '座席を選んで購入してください'
     },
     'ticket_count_over_upper_bound': {
-        title: '上限枚数を超えて購入しようとしています', 
+        title: '上限枚数を超えて購入しようとしています',
         message: function(order_form_presenter, data) {
             return cart.showErrorDialog(null, data.message, 'btn-close');
         }
     },
     'ticket_count_below_lower_bound': {
-        title: '購入枚数が少なすぎます', 
+        title: '購入枚数が少なすぎます',
         message: function(order_form_presenter, data) {
             return cart.showErrorDialog(null, data.message, 'btn-close');
         }
     },
     'product_count_over_upper_bound': {
-        title: '購入数上限を超えて購入しようとしています', 
+        title: '購入数上限を超えて購入しようとしています',
         message: function(order_form_presenter, data) {
             return cart.showErrorDialog(null, data.message, 'btn-close');
         }
     },
     'product_count_below_lower_bound': {
-        title: '購入数が少なすぎます', 
+        title: '購入数が少なすぎます',
         message: function(order_form_presenter, data) {
             return cart.showErrorDialog(null, data.message, 'btn-close');
         }
@@ -179,10 +179,10 @@ cart.events = {
     ON_CART_ORDERED: "onCartOredered",
     ON_VENUE_DATASOURCE_UPDATED: "onVenueDataSourceUpdated"
 };
-cart.init = function(salesSegmentsSelection, selected, cartReleaseUrl, venueEnabled, spinnerPictureUrl) {
+cart.init = function(salesSegmentsSelection, selected, cartReleaseUrl, venueEnabled, spinnerPictureUrl, carti18nUrl) {
     this.app = new cart.ApplicationController();
     venueEnabled = venueEnabled && (!$.browser.msie || parseInt($.browser.version) >= 9);
-    this.app.init(salesSegmentsSelection, selected, cartReleaseUrl, venueEnabled, spinnerPictureUrl);
+    this.app.init(salesSegmentsSelection, selected, cartReleaseUrl, venueEnabled, spinnerPictureUrl, carti18nUrl);
     $('body').bind('selectstart', function() { return false; });
 };
 
@@ -217,6 +217,25 @@ cart.createContentOfShoppingElement = function(product) {
     return item;
 };
 
+cart.i18n = function i18n(message, footer_button_class){
+    var result;
+    if (typeof carti18nUrl == 'undefined')
+        return message.join("")
+    $.ajax({
+        url: carti18nUrl,
+        dataType:'text',
+        data: {message:message},
+        type:'POST',
+        async: false,
+        success: function(message){
+            result = message;
+        },
+        error: function(){
+            result = message.join("")
+        }
+    });
+    return result;
+}
 cart.proceedToCheckout = function proceedToCheckout(performance, reservationData) {
     var dialog = new cart.Dialog($('#order-reserved'), {
         ok: function () {
@@ -226,7 +245,7 @@ cart.proceedToCheckout = function proceedToCheckout(performance, reservationData
             $.ajax({
                 url: cartReleaseUrl, // global
                 dataType: 'json',
-                type: 'POST',  
+                type: 'POST',
                 success: function() {}
             });
             this.close();
@@ -272,7 +291,7 @@ cart.showErrorDialog = function showErrorDialog(title, message, footer_button_cl
     });
     errorDialog.header(title ? $('<h2></h2>').text(title): null);
     errorDialog.body($('<div style="text-align:center"></div>').text(message));
-    errorDialog.footer($('<a class="ok-button">閉じる</a>').addClass(footer_button_class));
+    errorDialog.footer($('<a class="ok-button">'+cart.i18n(['閉じる'])+'</a>').addClass(footer_button_class));
     errorDialog.load();
 };
 
@@ -307,7 +326,7 @@ cart.showSeparateSeatOrderDialog = function showSeparateSeatOrderDialog(title, p
 cart.ApplicationController = function() {
 };
 
-cart.ApplicationController.prototype.init = function(salesSegmentsSelection, selected, cartReleaseUrl, venueEnabled, spinnerPictureUrl) {
+cart.ApplicationController.prototype.init = function(salesSegmentsSelection, selected, cartReleaseUrl, venueEnabled, spinnerPictureUrl, carti18nUrl) {
     this.performanceSearch = new cart.PerformanceSearch({
         salesSegmentsSelection: salesSegmentsSelection,
         key: selected[1],
@@ -693,7 +712,7 @@ cart.PerformanceSearchView = Backbone.View.extend({
     },
     onKeyChanged: function(key) {
         this.selection.val(key);
-        this.model.set("defaultSalesSegmentId", this.model.getSalesSegments(key)[0].id); 
+        this.model.set("defaultSalesSegmentId", this.model.getSalesSegments(key)[0].id);
         this.renderSalesSegmentSelection();
     },
     render: function() {
@@ -727,7 +746,7 @@ cart.PerformanceSearch = Backbone.Model.extend({
                 return selections[i][1];
             }
         }
-        return [];   
+        return [];
     },
     getSalesSegment: function(id) {
         var salesSegments = this.getSalesSegments(this.get("key"));
@@ -829,7 +848,7 @@ cart.StockTypeListView = Backbone.View.extend({
                      $('<span class="seatColor"></span>')
                      .css('background-color', style && style.fill && style.fill.color ? style.fill.color: 'white'))
                    .append(
-                     $('<span class="seatName"></span>')
+                     $('<span class="seatName" style="padding-top: 2px; display: inline-block"></span>')
                      .text(stockType.get("name")))
                    .append(
                      $('<span class="seatState"></span>')
@@ -843,7 +862,7 @@ cart.StockTypeListView = Backbone.View.extend({
         $(ul.closest('form')).find(':radio').change(function () {
             var radio = $(this);
             self.selected = radio.closest('li');
-            self.trigger(cart.events.ON_STOCK_TYPE_SELECTED, 
+            self.trigger(cart.events.ON_STOCK_TYPE_SELECTED,
                 radio.val(), radio.data('stockType'));
         });
         this.updateUIState();
@@ -995,29 +1014,29 @@ cart.OrderFormPresenter.prototype = {
         this.onEntrustPressed(cart.app.performance.get('order_separate_seats_url'));
     },
     showNoSelectProductMessage: function(){
-        cart.showErrorDialog(null, '商品を1つ以上選択してください', 'btn-close');
+        cart.showErrorDialog(null, cart.i18n(['商品を1つ以上選択してください']), 'btn-close');
         return;
-    }, 
-    showTicketCountAboveUpperBoundMessage: function(min_quantity) {
-        cart.showErrorDialog(null, '枚数は合計' + min_quantity + '枚以内で選択してください', 'btn-close');
+    },
+    showTicketCountAboveUpperBoundMessage: function(max_quantity) {
+        cart.showErrorDialog(null, cart.i18n(['枚数は合計', String(max_quantity), '枚以内で選択してください']), 'btn-close');
         return;
-    }, 
-    showTicketCountBelowLowerBoundMessage: function(max_quantity) {
-        cart.showErrorDialog(null, '枚数は合計' + max_quantity + '枚以上で選択してください', 'btn-close');
+    },
+    showTicketCountBelowLowerBoundMessage: function(min_quantity) {
+        cart.showErrorDialog(null, cart.i18n(['枚数は合計', String(min_quantity), '枚以上で選択してください']), 'btn-close');
         return;
-    }, 
-    showProductCountAboveUpperBoundMessage: function(min_quantity) {
-        cart.showErrorDialog(null, '商品個数は合計' + min_quantity + '個以内にしてください', 'btn-close');
+    },
+    showProductCountAboveUpperBoundMessage: function(max_quantity) {
+        cart.showErrorDialog(null, cart.i18n(['商品個数は合計', String(max_quantity), '個以内にしてください']), 'btn-close');
         return;
-    }, 
-    showProductCountBelowLowerBoundMessage: function(max_quantity) {
-        cart.showErrorDialog(null, '商品個数は合計' + max_quantity + '個以上にしてください', 'btn-close');
+    },
+    showProductCountBelowLowerBoundMessage: function(min_quantity) {
+        cart.showErrorDialog(null, cart.i18n(['商品個数は合計', String(min_quantity), '個以上にしてください']), 'btn-close');
         return;
-    }, 
+    },
     showInfeasiblePurchaseMessage: function() {
-        cart.showErrorDialog(null, '申し訳ございませんが、その商品の組み合わせはお選びいただけません', 'btn-close');
+        cart.showErrorDialog(null, cart.i18n(['申し訳ございませんが、その商品の組み合わせはお選びいただけません']), 'btn-close');
         return;
-    }, 
+    },
     onBuyPressed: function () {
         this.setSeats([]);
         this.doOrder();
@@ -1226,7 +1245,7 @@ cart.Product = Backbone.Model.extend({
         unit_template: null
     },
     initialize: function() {
-        
+
     }
 });
 
@@ -1350,7 +1369,7 @@ cart.VenueView = Backbone.View.extend({
                        svg.style.width = (svg.style.width.replace(/px/, '') * 1 + 0.01) + "px";
                    }
                 }
-          
+
             },
             load: function (viewer) {
                 self.zoomRatioMin = viewer.zoomRatioMin;
@@ -1469,7 +1488,7 @@ cart.VenueView = Backbone.View.extend({
                     lastPosition = { x: e.pageX, y: e.pageY };
                     if (self.tooltip) {
                         self.tooltip.css({
-                            left: (lastPosition.x + 10) + 'px', 
+                            left: (lastPosition.x + 10) + 'px',
                             top:  (lastPosition.y + 10) + 'px'
                         });
                     }

@@ -8,7 +8,7 @@ from pyramid.interfaces import IRequest
 from zope.deprecation import deprecation
 
 from .interfaces import ICartInterface
-from .exceptions import PaymentDeliveryMethodPairNotFound, PaymentCartNotAvailable
+from .exceptions import PaymentDeliveryMethodPairNotFound, PaymentCartNotAvailable, OrderLikeValidationFailure
 from .interfaces import IPaymentPreparerFactory, IPaymentPreparer, IPaymentDeliveryPlugin, IPaymentPlugin, IDeliveryPlugin
 from .directives import Discriminator
 from altair.app.ticketing.core.models import PaymentMethod, DeliveryMethod
@@ -85,7 +85,7 @@ def get_payment_delivery_plugin(request_or_registry, payment_plugin_id, delivery
 def get_preparer(request, payment_delivery_pair):
     if payment_delivery_pair is None:
         raise PaymentDeliveryMethodPairNotFound
-    payment_delivery_plugin = get_payment_delivery_plugin(request, 
+    payment_delivery_plugin = get_payment_delivery_plugin(request,
         payment_delivery_pair.payment_method.payment_plugin_id,
         payment_delivery_pair.delivery_method.delivery_plugin_id,)
 
@@ -139,3 +139,13 @@ def get_payment_delivery_plugin_ids(payment_method_id, delivery_method_id):
     delivery_plugin_id = DeliveryMethod.filter_by(id=delivery_method_id).one().delivery_plugin_id
 
     return payment_plugin_id, delivery_plugin_id
+
+def validate_length_dict(encoding_method, order_dict, target_dict):
+    keys = target_dict.keys()
+    for key in keys:
+        if order_dict.has_key(key):
+            try:
+                if(len(order_dict.get(key).encode(encoding_method)) > target_dict.get(key)):
+                    raise OrderLikeValidationFailure(u'too long', 'shipping_address.{0}'.format(key))
+            except UnicodeEncodeError:
+                raise OrderLikeValidationFailure('shipping_address.{0} contains a character that is not encodable as {1}'.format(key, encoding_method), 'shipping_address.{0}'.format(key))

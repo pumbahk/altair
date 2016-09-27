@@ -1,0 +1,373 @@
+# English translations for PACKAGE package
+# This file is distributed under the same license as the PACKAGE package.
+# Cho <ts-jingqiang.a.zhang@rakuten.com>, 2016.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE 1.0\n"
+"POT-Creation-Date: 2016-05-12 10:03+0900\n"
+"PO-Revision-Date: 2016-05-12 10:03+0900\n"
+"Last-Translator: Cho <ts-jingqiang.a.zhang@rakuten.com>\n"
+"Language-Team: zh_TW\n"
+"Language: zh_TW\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Lingua 3.11\n"
+
+# common
+
+msgid "チケット情報・販売・購入・予約"
+msgstr "售票資訊，售票，購票，訂票"
+
+msgid "購入履歴の確認"
+msgstr "確認購票記錄"
+
+msgid "運営会社"
+msgstr "管理公司"
+
+msgid "お問い合わせ"
+msgstr "聯繫我們"
+
+msgid "個人情報保護方針"
+msgstr "隱私政策"
+
+msgid "特定商取引法に基づく表示"
+msgstr "基於特定商取引法表示"
+
+msgid "サービス利用規約"
+msgstr "服務條款"
+
+# index
+
+msgid "一般の方のチケット確認はこちらから"
+msgstr "一般消費者從這裡確認購票資訊"
+
+msgid "抽選の方のチケット確認はこちらから"
+msgstr "抽選消費者從這裡確認購票資訊"
+
+msgid "次に進む"
+msgstr "下一步"
+
+msgid "会員の方はこちらから"
+msgstr "會員從這裡"
+
+msgid "ログイン"
+msgstr "登入"
+
+msgid "注意事項"
+msgstr "注意事項"
+
+msgid "発売開始直後は回線が大変込み合う場合がございますので、予めご了承ください。"
+msgstr "開放購票的時段可能會有網路塞車的情況，請多多見諒。"
+
+# form
+
+msgid "受付番号"
+msgstr "受理號碼"
+
+msgid "必須"
+msgstr "必须"
+
+msgid "半角英数"
+msgstr "半形英數"
+
+msgid "電話番号"
+msgstr "電話號碼"
+
+msgid "電話番号はご登録時の電話番号をご入力ください。"
+msgstr "請輸入您登錄的電話號碼。"
+
+msgid "（携帯・自宅をどちらもご登録した場合どちらの番号でも構いません。）"
+msgstr "（手機或家用電話號碼都可以進行登錄。）"
+
+msgid "ご予約時に登録した電話番号をご入力してください。"
+msgstr "請輸入訂票時登錄的電話號碼。"
+
+# show
+
+msgid "受付番号または電話番号が違います。"
+msgstr "受理號碼或電話號碼錯誤。"
+
+msgid "受付履歴確認 検索結果"
+msgstr "確認受理記錄 查詢結果"
+
+msgid "受付日"
+msgstr "受理日期"
+
+msgid "ステータス"
+msgstr "狀態"
+
+msgid "無効"
+msgstr " 無效"
+
+msgid "発送済"
+msgstr "已送出"
+
+msgid "配送済み"
+msgstr "已配送"
+
+msgid "払戻済み(中止)"
+msgstr "退款完成(中止)"
+
+msgid "払戻済み"
+msgstr "退款完成"
+
+msgid "入金済み"
+msgstr "已付款"
+
+msgid "未入金"
+msgstr "未付款"
+
+msgid "発送日"
+msgstr "発送日期"
+
+msgid "発券日時"
+msgstr "發票時間"
+
+msgid "購入者情報"
+msgstr "購買人資訊"
+
+msgid "配送先情報"
+msgstr "郵寄資訊"
+
+msgid "氏名（漢字）"
+msgstr "姓名"
+
+msgid "メールアドレス"
+msgstr "電子信箱地址"
+
+msgid "住所"
+msgstr "地址"
+
+msgid "ご購入時に入力された情報が表示されております。"
+msgstr "顯示資訊為購票時所登錄的資訊。"
+
+msgid "登録情報変更をご希望の場合は、<a href=\"https://ticket.rakuten.co.jp/inquiry\" target=\"_blank\">問合せフォームより</a>ご連絡下さい。"
+msgstr "如果有需要更改登錄資訊的情況，<a href=\"https://ticket.rakuten.co.jp/inquiry\" target=\"_blank\">請洽這裡</a>"
+
+msgid "購入したイベントの情報"
+msgstr "已購票的活動資勳"
+
+msgid "イベント名"
+msgstr "活動名稱"
+
+msgid "公演・試合名"
+msgstr "表演／比賽名稱"
+
+msgid "公演日"
+msgstr "表演日期"
+
+msgid "会場"
+msgstr "會場"
+
+msgid "注文内容"
+msgstr "訂票內容"
+
+msgid "席種、金額などのお買い物内容"
+msgstr "座席種類、金額等購買資訊"
+
+msgid "枚"
+msgstr "張"
+
+msgid "決済手数料"
+msgstr "手續費"
+
+msgid "発券/引取手数料"
+msgstr "票務/取票手續費"
+
+msgid "システム利用料"
+msgstr "系統使用費"
+
+msgid "合計金額"
+msgstr "總額"
+
+msgid "追加情報"
+msgstr "追加資訊"
+
+msgid "入力情報の編集"
+msgstr "編輯登錄資訊"
+
+msgid "この購入/予約はキャンセルされました"
+msgstr "購買/訂票已取消"
+
+msgid "キャンセル処理は、下記のような理由によりおこなっております。"
+msgstr "因為以下的原因，您的訂票已被取消。"
+
+msgid "期限内のご入金がなくキャンセル扱いとしたため"
+msgstr "若期限內未完成付款，您的訂票將會被取消"
+
+msgid "弊社判断によるキャンセル処理を行ったため"
+msgstr "根據敝社的判斷，您的訂票已被取消"
+
+msgid "お支払"
+msgstr "付款"
+
+msgid "お引取"
+msgstr "取票"
+
+msgid "コンビニ（セブン-イレブン）店頭でのお受取です。"
+msgstr "超商（7-11）取票。"
+
+msgid "公演日約1週間前までに、セブン-イレブン店頭レジでチケット引取をする際に必要な引換票番号をメールにてお送りいたします(当選メールとは別のメールになります)。詳細は、そちらをご確認ください。"
+msgstr "表演開始一個星期前，您會收到在7-11收銀台取票號碼的電子郵件（和當選通知的電子郵件為不同的電子郵件）。欲了解詳情，請確認這裡。"
+
+msgid "入力された個人情報は「個人情報保護方針」に基づき適切に取扱われます。"
+msgstr "登錄的個人訊息會根據“個人信息保護政策”妥善處理。"
+
+msgid "セブン-イレブン決済の際には払込票番号が必要です。下記、「払込票印刷」ボタンをクリックし、払込票を印刷してお持ちになるか、上記の払込票番号をお控えいただき、レジでお伝え下さい。"
+msgstr "選擇在7-11付款的消費者，請點擊下方“列印購買憑證”列印購買憑證。請攜帶購買憑證至7-11，並告知店員購買憑證號碼。"
+
+msgid "予約有効期限までに、払込票または払込票番号をセブン-イレブン店頭レジにてお申し出の上、代金をお支払いください。"
+msgstr "訂票有效期限之前，請攜帶購買憑證或是購買憑證號碼至7-11付款。"
+
+msgid "支払期日までに入金されない場合は、申込が無効となりますのでご注意ください。"
+msgstr "請注意，付款期限內未付款完成的話，您的訂票將會失效。"
+
+msgid "お申込時に受付内容を記載した確認のメールが、ご登録いただいたメールアドレス宛に送られます。しばらくたっても確認のメールが届かない場合は、入力されたメールアドレスが誤っている可能性があります。"
+msgstr "訂票時登錄的資訊將會寄到您登入的電子郵件信箱。若是過一段時間尚未收到確認郵件，請確認您的垃圾郵件信箱或是您登錄的電子郵件地址有誤。"
+
+msgid "こちら"
+msgstr "這裡"
+
+msgid "までご連絡ください。"
+msgstr "與我們聯繫。"
+
+# paymend & delivery
+
+# qr
+
+msgid "商品名"
+msgstr "商品名稱"
+
+msgid "席番号"
+msgstr "座位號碼"
+
+msgid "発行(印刷orメール送信)済"
+msgstr "發行（印刷或郵件發送）"
+
+msgid "未発行"
+msgstr "未發行"
+
+msgid "QRコードを表示する"
+msgstr "顯示QR碼"
+
+msgid "メールで送る"
+msgstr "發送郵件"
+
+msgid "お支払い完了後、このページにQRコードを表示するためのボタンが表示されます。表示されたQRコードを印刷、あるいは、PC/携帯へメール送信の上、試合当日、指定の入場ゲートにてQRコード（印刷したもの、あるいは携帯画面）をお見せください。"
+msgstr "完成付款後，此頁面會出現「顯示QR碼」的按鈕。您可以將QR碼列印或是郵寄到您（智慧型）手機可利用的電子信箱。比賽當日，請至指定入口向工作人員出示QR碼。"
+
+msgid "印刷する"
+msgstr "印刷"
+
+# sej
+
+msgid "セブン-イレブン支払い"
+msgstr "7-11付款"
+
+msgid "セブン-イレブン受け取り"
+msgstr "7-11取票"
+
+msgid "当選の場合、お支払期日までにお支払頂きます。"
+msgstr "若是您當選了，請在指定日期之前完成付款。"
+
+msgid "お支払が確認できた時点で当選申込が確定となります。"
+msgstr "您的當選資格將會在我們確定您的付款成功紀錄時確定。"
+
+msgid "各種手数料の他、公演によりシステム利用料がかかります。"
+msgstr "除了各種手續費之外，有些表演需要您負擔額外的系統使用費。"
+
+msgid "払込票番号"
+msgstr "付款憑證號碼"
+
+msgid "払込票を表示"
+msgstr "顯示付款憑證"
+
+msgid "支払期日"
+msgstr "付款期日"
+
+msgid "上記支払期日までに、払込票番号をお持ちの上、セブン-イレブン店舗レジにてお支払いください。（払込票を表示、印刷した上で店頭にお持ちいただくとスムーズです）"
+msgstr "請在上方標示的付款日期之前，攜帶購買憑證至7-11付款。（為節省您的時間，請您攜帶列印的購買憑證）"
+
+msgid "支払期日までに入金されない場合は予約が無効となりますので、ご注意ください。"
+msgstr "請注意，若未在付款期限內完成付款，您的訂票將會失效。"
+
+msgid "お申込後の、公演日・席種・枚数等の変更はできませんのでご容赦ください。"
+msgstr "訂票確定後，表演日期，座席種類和張數無法變更，敬請見諒。"
+
+msgid "チケットは代金と引換です。"
+msgstr "現金購票。"
+
+msgid "引換票番号は後ほどメールにてお送りいたします。"
+msgstr "稍後我們會透過電子郵件通知您的兌換票號碼。"
+
+msgid "詳細はそちらをご確認頂き、指定発券日以降にレジにてチケットをお受取ください。"
+msgstr "請在「這裡」確認詳情，指定發票日之後請到超商或售票櫃檯取票。"
+
+msgid "引換票番号"
+msgstr "兌換票號碼"
+
+msgid "引換票を表示"
+msgstr "顯示兌換票"
+
+msgid "引取受付期間"
+msgstr "受理取票期間"
+
+msgid "購入いただいた日の翌日{0}から引き取りが可能となります。"
+msgstr "購買日期的{0}天後可以取票"
+
+msgid "セブン-イレブン発券の際には引換票番号が必要です。"
+msgstr "在7-11取票時，請務必出示兌換票。"
+
+msgid "<a href=\"/orderreview\">予約・購入履歴確認画面</a>より、「引換票」を印刷するか、または番号をお控え下さい。"
+msgstr "請至<a href=\"/orderreview\">訂票及購票確認</a>確認您的「兌換票」。您可以列印或是記下「兌換票」號碼。"
+
+msgid "<a href=\"/orderreview\">予約・購入履歴確認画面</a>にて表示される引換票番号をお控え下さい。"
+msgstr "請妥善保管在<a href=\"/orderreview\">訂票及購票確認</a>顯示的兌換票號碼。"
+
+msgid "引取受付期間内に、セブン-イレブン店頭レジにてチケットをお引取り下さい。"
+msgstr "請在受理取票時間內至7-11的櫃檯取票。"
+
+msgid "クレジットカード情報"
+msgstr "信用卡資訊"
+
+msgid "予約成立と同時に、ご登録のクレジットカードにて自動的に決済手続きを行わせて頂きます。"
+msgstr "訂票確定的同時，將會自動進行信用卡付款。"
+
+msgid "お申込の取消、公演日・席種・枚数等の変更は出来ませんのでご注意ください。"
+msgstr "請注意，訂票確定之後，將無法取消訂票或是表演日、座席種類或張數的變更。"
+
+# credit card
+
+msgid "クレジットカードによる決済を受け付けました。ご登録のクレジットカードにて自動的に決済手続きを行わせて頂きます。"
+msgstr "我們已收到信用卡付款請求。將自動利用您登錄的信用卡資訊進行付款程序。"
+
+msgid "お申込の取消、公演日・席種・枚数等の変更はできませんのでご注意ください。"
+msgstr "請注意，訂票確定之後，將無法取消訂票或是表演日、座席種類或張數的變更。"
+
+# famiport
+
+msgid "Famiポート決済"
+msgstr "Famiport付款"
+
+msgid "Famiポート引取"
+msgstr "Famiport取票"
+
+msgid "チケットは代金と引換です。"
+msgstr "現金購票。"
+
+msgid "Famiポートでお引き取り"
+msgstr "Famiport取票"
+
+msgid "Famiポート予約番号"
+msgstr "Famiport訂票號碼"
+
+msgid "発券可能期間"
+msgstr "發票時間"
+
+msgid "Famiポートでお支払い"
+msgstr "Famiport付款"
+
+msgid "支払期限"
+msgstr "付款期限"

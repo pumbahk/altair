@@ -248,7 +248,10 @@ class FamiPortPaymentPluginTest(FamiPortTestCase):
                 address_2=u'五反田HSビル9F',
                 tel_1=u'0123456789'
                 ),
-            items=[]
+            items=[],
+            organization=DummyModel(
+                 setting=DummyModel(i18n=False)
+                )
             )
         lookup_famiport_tenant.return_value = DummyModel(code=u'00001')
         build_famiport_order_dict = {}
