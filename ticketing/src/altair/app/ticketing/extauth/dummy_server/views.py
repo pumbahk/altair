@@ -1,3 +1,5 @@
+# encoding: UTF-8
+
 import logging
 from datetime import datetime
 from pyramid.view import view_defaults, view_config
@@ -106,8 +108,10 @@ class ExtauthCheckMembershipAPI(object):
 
     @view_config(route_name='extauth_dummy.check_memberships')
     def user_profile(self):
+        # viewをorgごとに分離できると良かったがなかなか難しかったので
+        # client_nameで切り分けてmethodを呼び分ける
         port = self.request.environ['SERVER_PORT']
-        if port == '8044':
+        if self.request.params['client_name'] == 'eaglesticket':
             return self.eagles_user_profile()
-        elif port == '8045':
+        elif self.request.params['client_name'] == 'visselticket':
             return self.vissel_user_profile()
