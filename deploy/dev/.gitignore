@@ -3,6 +3,7 @@ var/*
 log/*
 *.pid
 altair*.ini
+dummy_*.ini
 develop-eggs
 eggs
 parts
