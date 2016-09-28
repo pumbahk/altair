@@ -165,14 +165,7 @@ class MultiCheckoutPlugin(object):
         multicheckout_api = get_multicheckout_3d_api(request, organization.setting.multicheckout_shop_name)
         status = multicheckout_api.get_order_status_by_order_no(order_no)
         # オーソリ済みであること
-        if status is None:
-            raise MultiCheckoutSettlementFailure(
-                message='multicheckout status is not authorized (%s)' % order_no,
-                order_no=order_no,
-                back_url=back_url(request)
-            )
-
-        if status.Status is not None:
+        if status is None or status.Status is not None:
             if status.Status == str(MultiCheckoutStatusEnum.Authorized):
                 pass
             elif status.Status in (str(MultiCheckoutStatusEnum.Settled), str(MultiCheckoutStatusEnum.PartCanceled)):
@@ -188,7 +181,7 @@ class MultiCheckoutPlugin(object):
                     message='multicheckout status is not authorized (%s)' % order_no,
                     order_no=order_no,
                     back_url=back_url(request)
-                )
+                    )
 
     @clear_exc
     def finish(self, request, cart):
