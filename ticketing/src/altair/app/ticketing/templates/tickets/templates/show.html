@@ -105,27 +105,14 @@ ${ch.breadcrumbs(
 </div>
 
 <div class="row-fluid well">
-  <div class="btn-group">
-    <a href="${request.route_path("tickets.templates.edit",id=template.id)}" class="btn">
-      <i class="icon-pencil"></i> 編集
-    </a>
-    <button class="btn dropdown-toggle" data-toggle="dropdown">
-      <span class="caret"></span>
-    </button>
-    <ul class="dropdown-menu">
-      <li><a href="#deleteModal" data-toggle="modal"><i class="icon-minus"></i> 削除</a></li>
-		  <li><a href="${request.route_path("tickets.templates.download",id=template.id)}"><i class="icon-minus"></i> 登録されている内容をdownload</a></li>
-		  <li><a href="${request.route_path("tickets.templates.download",id=template.id, _query=dict(raw=u'1'))}"><i class="icon-minus"></i> 登録されている内容の元データをdownload</a></li>
-      <li><a id="preview_btn"> <i class="icon-eye-open"></i> preview</a></li>
-<%doc>
-          <li>
-            <a href="${request.route_path("tickets.templates.new",_query=dict(id=template.id))}">
-              <i class="icon-plus"></i> コピーして新規作成
-            </a>
-          </li>
-</%doc>
-        </ul>
-  </div>
+  <a href="${request.route_path("tickets.templates.edit",id=template.id)}" class="btn"><i class="icon-pencil"></i> 編集</a>
+  <a class="btn btn-danger" href="#deleteModal" data-toggle="modal"><i class="icon-minus"></i> 削除</a>
+  <a class="btn" href="${request.route_path("tickets.templates.download",id=template.id)}"><i class="icon-minus"></i> 登録されている内容をdownload</a>
+  <a class="btn" href="${request.route_path("tickets.templates.download",id=template.id, _query=dict(raw=u'1'))}"><i class="icon-minus"></i> 登録されている内容の元データをdownload</a>
+  <a class="btn" id="preview_btn"> <i class="icon-eye-open"></i> preview</a>
+  <!--
+  <a href="${request.route_path("tickets.templates.new",_query=dict(id=template.id))}"><i class="icon-plus"></i> コピーして新規作成</a>
+  -->
 </div>
 
 <div id="ticket-viewer"></div>
@@ -139,9 +126,9 @@ ${ch.breadcrumbs(
     このチケットテンプレートを削除します。よろしいですか？
   </div>
   <div class="modal-footer">
-    <a href="#" class="btn" data-dismiss="modal">キャンセル</a>
+    <a href="#" class="btn" data-dismiss="modal" style="width:98px; padding: 3.2px 0;">キャンセル</a>
     <form action="${request.route_path("tickets.templates.delete",id=template.id)}" method="POST">
-      <button type="submit" class="btn">削除する</button>
+      <button type="submit" class="btn btn-danger" style="width:100px; margin-top:10px; padding: 3.2px 0;">削除する</button>
     </form>
   </div>
 </div>

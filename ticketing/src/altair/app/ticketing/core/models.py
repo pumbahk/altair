@@ -4670,5 +4670,5 @@ class GettiiSeat(Base, BaseModel):
 
 class OrderreviewIndexEnum(StandardEnum):
     Index     = (0, u'index.htmlに従う')
-    OrderNo   = (1, u'予約番号')
-    UserLogin = (2, u'会員認証')
+    OrderNo   = (1, u'予約番号ログイン画面')
+    FcAuth    = (2, u'fc会員認証ログイン画面')

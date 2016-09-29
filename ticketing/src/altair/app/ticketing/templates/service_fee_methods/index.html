@@ -13,7 +13,7 @@
 </div>
 
 <%include file="/service_fee_methods/_list.html" args="form=form, service_fee_methods=service_fee_methods" />
-<%include file="/service_fee_methods/_action_button.html" />
+<%include file="/service_fee_methods/_action_button.html" args="service_fee_method_id=None, order=['new'], small=False, split=False" />
 
 <div id="modal-service_fee_method" class="modal hide">
   <div class="modal-header">

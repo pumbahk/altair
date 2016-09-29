@@ -4,8 +4,9 @@ import logging
 from pyramid.decorator import reify
 logger = logging.getLogger(__name__)
 
+
 def setup_routes(config):
-    config.add_route('eagles_extauth.check_memberships', '/api/members-check')
+    config.add_route('extauth_dummy.check_memberships', '/api/members-check')
 
 def setup_renderers(config):
     config.include('pyramid_mako')
@@ -44,11 +45,11 @@ def setup_request_handlers(config):
     settings = registry.settings
     from .communication import MembershipCheckAPIRequestHandler
     from .interfaces import IRequestHandler
-    hash_key = settings['dummy_eagles_extauth_server.hash_key']
+    hash_key = settings['dummy_extauth_server.hash_key']
     clients = {}
     for k, v in settings.items():
-        if k.startswith('dummy_eagles_extauth_server.client.'):
-            client_name = k[len('dummy_eagles_extauth_server.client.'):]
+        if k.startswith('dummy_extauth_server.client.'):
+            client_name = k[len('dummy_extauth_server.client.'):]
             logger.info('client %s registered' % client_name)
             clients[client_name] = v
     registry.registerUtility(
