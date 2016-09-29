@@ -25,9 +25,14 @@ supervisorctl> reread
 supervisorctl> update
 supervisorctl> restart all
 ```
-5. seed data の導入
+5-1. eagles dummy_serverの作成
 ```
 $ sqlite3 deploy/dev/var/dummy_eagles_extauth_server/dummy_server.db < ticketing/src/altair/app/ticketing/extauth/dummy_server/seeds.sql
+```
+5-2. vissel dummy_serverの作成
+```
+$ test ! -d deploy/dev/var/dummy_vissel_extauth_server/ && mkdir -p deploy/dev/var/dummy_vissel_extauth_server/
+$ sqlite3 deploy/dev/var/dummy_vissel_extauth_server/dummy_server.db < ticketing/src/altair/app/ticketing/extauth/dummy_server/seeds4vissel.sql
 ```
 
 テンプレート

@@ -113,7 +113,7 @@ ${shipping.email_1}<br />
 詳細は、そちらをご確認ください。
 % elif order.payment_delivery_pair.delivery_method.delivery_plugin.id == 1:
 <div>郵送</div>
-下記、ご登録送付先住所へチケットを配送いたします。
+下記、ご登録送付先住所へ配送いたします。
 <% shipping = order.shipping_address %>
 <%mobile:form_header>氏名</%mobile:form_header>
 ${shipping.last_name} ${shipping.first_name}

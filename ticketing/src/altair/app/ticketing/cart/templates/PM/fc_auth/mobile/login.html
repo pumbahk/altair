@@ -18,13 +18,13 @@
 <form action="${request.path}" method="post">
 <input type="hidden" name="membership" value="${view_context.organization_short_name}" />
 <div>
-  会員番号<br/>
+  ご登録のメールアドレス<br/>
   <input type="text" name="username" size="22" value="" istyle="4">
   %if message:
-  <br/><span style="color: red">会員番号またはパスワードが一致しません</span>
+  <br/><span style="color: red">ご登録のメールアドレスまたはご登録のお電話番号が一致しません</span>
   %endif
   <br/>
-  パスワード<br/>
+  ご登録のお電話番号<br/>
   <input type="password" name="password" size="22" value="" istyle="4">
 </div>
 <input type="submit" value="ログイン" />

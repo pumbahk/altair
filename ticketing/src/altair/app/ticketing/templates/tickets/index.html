@@ -9,22 +9,21 @@ ${ch.breadcrumbs(
 
 <script type="text/javascript">
   $(function(){
-    $("#pageformat_menu a.id-action").click(
+  target_text = {
+    "PageFormat": "出力形式",
+    "Format": "チケット様式",
+    "Template": "チケットテンプレート",
+    "Cover": "表紙"
+  }
+    $("a.id-delegate-action").click(
      function(){
-       var pk = $("input[name='format_id']:checked").val();
-       if(!pk){ return false; }
-       $(this).attr("href", $(this).attr("data-base-url").replace("__id__", pk));
-       return true;
-    });
+       var delete_target=$(this).attr("data-delegated");
+       var modalMsg=["この", target_text[delete_target], "を削除します。よろしいですか？"].join("");
+       var target_url=$(this).attr("data-base-url");
 
-    $("#pageformat_menu a.id-delegate-action").click(
-     function(){
-       var pk = $("input[name='format_id']:checked").val();
-       if(!pk){ return false; }
-       var delegated=$(this).attr("data-delegated");
-// fixme
-       var form = $(delegated).find("form")
-       $(form).attr("action",$(form).attr("data-base-url").replace("__id__", pk));
+       var delegated=$("#deleteModal");
+       $(delegated).find("form").attr("action",target_url);
+       $(delegated).find(".modal-body").text(modalMsg);
        $(delegated).modal();
        return true;
     });
@@ -40,84 +39,47 @@ ${ch.breadcrumbs(
 </div>
 
 <h3>出力形式</h3>
-<div id="pageformat_menu" class="btn-group">
-  <a href="${request.route_path("tickets.pageformats.new")}" class="btn">
+<a href="${request.route_path("tickets.pageformats.new")}" class="btn">
     <i class="icon-plus"></i> 新規
-  </a>
-      <button class="btn dropdown-toggle" data-toggle="dropdown">
-        <span class="caret"></span>
-      </button>
-      <ul class="dropdown-menu">
-        <li>
-          <a class="id-action" href="#"
-             data-base-url="${request.route_path("tickets.pageformats.edit",id="__id__")}">
-            <i class="icon-pencil"></i> 編集
-          </a>
-        </li>
-        <li>
-          <a class="id-delegate-action" href="#"
-             data-delegated="#deletePageFormat"
-             data-base-url="${request.route_path("tickets.pageformats.delete",id="__id__")}"
-             href="#deletePageFormat" data-toggle="modal">
-            <i class="icon-minus"></i> 削除
-          </a>
-        </li>
-        <li>
-          <a class="id-action" href="#"
-             data-base-url="${request.route_path("tickets.pageformats.new",_query=dict(id="__id__"))}">
-            <i class="icon-plus"></i> コピーして新規作成
-          </a>
-        </li>
-      </ul>
-</div>
+</a>
 
 <% sortable = lambda *args, **kwargs: h.sortable('page_format', *args, **kwargs) %>
 <table class="table fullwidth checkboxed_table">
   <thead>
     <tr>
-      <th class="minwidth"></th>
       <th><a href="${sortable(request, "name")}" class="sortable">名前</a></th>
       <th><a href="${sortable(request, "display_order")}" class="sortable">表示順</a></th>
       <th><a href="${sortable(request, "updated_at", direction="desc")}" class="sortable">更新日時</a></th>
       <th><a href="${sortable(request, "created_at", direction="desc")}" class="sortable">作成日時</a></th>
+      <th></th>
     </tr>
   </thead>
   <tbody>
   % for format in page_formats:
     <tr>
-      <td><input type="radio" name="format_id" value="${format.id}" /></td>
       <td><a href="${request.route_url('tickets.pageformats.show', id=format.id)}">${format.name}</a></td>
       <td>${format.display_order}</td>
       <td>${format.updated_at}</td>
       <td>${format.created_at}</td>
+      <td id="pageformat_menu" style="width:1%; white-space:nowrap;"> <!-- to fit the button in the table cell -->
+        <a class="id-action btn btn-small" href="${request.route_url('tickets.pageformats.edit', id=format.id)}">
+            <i class="icon-pencil"></i> 編集
+        </a>
+        <a class="id-delegate-action btn btn-small btn-danger"
+             href="#" data-toggle="modal"
+             data-delegated="PageFormat"
+             data-base-url="${request.route_path('tickets.pageformats.delete', id=format.id)}"
+        >
+            <i class="icon-minus"></i> 削除
+        </a>
+        <a class="id-action btn btn-small" href="${request.route_url('tickets.pageformats.new', _query=dict(id=format.id))}">
+            <i class="icon-plus"></i> コピー
+        </a>
+      </td>
     </tr>
   % endfor
   </tbody>
 </table>
-
-<script type="text/javascript">
-  $(function(){
-    $("#ticketformat_menu a.id-action").click(
-     function(){
-       var pk = $("input[name='format_id']:checked").val();
-       if(!pk){ return false; }
-       $(this).attr("href", $(this).attr("data-base-url").replace("__id__", pk));
-       return true;
-    });
-
-    $("#ticketformat_menu a.id-delegate-action").click(
-     function(){
-       var pk = $("input[name='format_id']:checked").val();
-       if(!pk){ return false; }
-       var delegated=$(this).attr("data-delegated");
-// fixme
-       var form = $(delegated).find("form")
-       $(form).attr("action",$(form).attr("data-base-url").replace("__id__", pk));
-       $(delegated).modal();
-       return true;
-    });
-  });
-</script>
 
 <hr/>
 
@@ -129,42 +91,13 @@ ${ch.breadcrumbs(
     <a href="${request.route_path('tickets.ticketformats.visible')}">チケット様式を全部表示する</a>
 % endif
 <br/>
-<div id="ticketformat_menu" class="btn-group">
-  <a href="${request.route_path("tickets.ticketformats.new")}" class="btn">
+<a href="${request.route_path("tickets.ticketformats.new")}" class="btn">
     <i class="icon-plus"></i> 新規
-  </a>
-      <button class="btn dropdown-toggle" data-toggle="dropdown">
-        <span class="caret"></span>
-      </button>
-      <ul class="dropdown-menu">
-        <li>
-          <a class="id-action" href="#"
-             data-base-url="${request.route_path("tickets.ticketformats.edit",id="__id__")}">
-            <i class="icon-pencil"></i> 編集
-          </a>
-        </li>
-        <li>
-          <a class="id-delegate-action" href="#"
-             data-delegated="#deleteModalFormat"
-             data-base-url="${request.route_path("tickets.ticketformats.delete",id="__id__")}"
-             href="#deleteModalFormat" data-toggle="modal">
-            <i class="icon-minus"></i> 削除
-          </a>
-        </li>
-        <li>
-          <a class="id-action" href="#"
-             data-base-url="${request.route_path("tickets.ticketformats.new",_query=dict(id="__id__"))}">
-            <i class="icon-plus"></i> コピーして新規作成
-          </a>
-        </li>
-      </ul>
-</div>
-
+</a>
 <% sortable = lambda *args, **kwargs: h.sortable('ticket_format', *args, **kwargs) %>
 <table class="table fullwidth checkboxed_table">
   <thead>
     <tr>
-      <th class="minwidth"></th>
       <th><a href="${sortable(request, "name")}" class="sortable">名前</a></th>
       <th><a href="#" class="sortable">用紙サイズ</a></th>
       <th><a href="#" class="sortable">引取方法</a></th>
@@ -172,12 +105,12 @@ ${ch.breadcrumbs(
       <th><a href="${sortable(request, "visible", direction="desc")}" class="sortable">使用</a></th>
       <th><a href="${sortable(request, "updated_at", direction="desc")}" class="sortable">更新日時</a></th>
       <th><a href="${sortable(request, "created_at", direction="desc")}" class="sortable">作成日時</a></th>
+      <th></th>
     </tr>
   </thead>
   <tbody>
   % for format in ticket_formats:
     <tr>
-      <td><input type="radio" name="format_id" value="${format.id}" /></td>
       <td><a href="${request.route_url('tickets.ticketformats.show', id=format.id)}">${format.name}</a></td>
       <td>${h.format_size(h.extract_paper_size(format))}
       <td>${u' / '.join(dm.name for dm in format.delivery_methods)}</td>
@@ -185,34 +118,25 @@ ${ch.breadcrumbs(
       <td>${u'可' if format.visible else u'不可'}</td>
       <td>${format.updated_at}</td>
       <td>${format.created_at}</td>
+      <td id="ticketformat_menu" style="width:1%; white-space:nowrap;"> <!-- to fit the button in the table cell -->
+        <a class="id-action btn btn-small" href="${request.route_url('tickets.ticketformats.edit', id=format.id)}">
+            <i class="icon-pencil"></i> 編集
+          </a>
+        <a class="id-delegate-action btn btn-small btn-danger"
+             href="#" data-toggle="modal"
+             data-delegated="Format"
+             data-base-url="${request.route_path("tickets.ticketformats.delete",id=format.id)}"
+        >
+            <i class="icon-minus"></i> 削除
+          </a>
+        <a class="id-action btn btn-small" href="${request.route_path("tickets.ticketformats.new",_query=dict(id=format.id))}">
+            <i class="icon-plus"></i> コピー
+          </a>
+      </td>
     </tr>
   % endfor
   </tbody>
 </table>
-
-<script type="text/javascript">
-  $(function(){
-    $("#template_menu a.id-action").click(
-     function(){
-       var pk = $("input[name='template_id']:checked").val();
-       if(!pk){ return false; }
-       $(this).attr("href", $(this).attr("data-base-url").replace("__id__", pk));
-       return true;
-    });
-
-    $("#template_menu a.id-delegate-action").click(
-     function(){
-       var pk = $("input[name='template_id']:checked").val();
-       if(!pk){ return false; }
-       var delegated=$(this).attr("data-delegated");
-// fixme
-       var form = $(delegated).find("form")
-       $(form).attr("action",$(form).attr("data-base-url").replace("__id__", pk));
-       $(delegated).modal();
-       return true;
-    });
-  });
-</script>
 
 <hr/>
 
@@ -224,227 +148,119 @@ ${ch.breadcrumbs(
     <a href="${request.route_path('tickets.templates.visible')}">テンプレートを全部表示する</a>
 % endif
 <br/>
-<div class="btn-group" id="template_menu">
-  <a href="${request.route_path("tickets.templates.new")}" class="btn">
-    <i class="icon-plus"></i> 新規
-  </a>
-      <button class="btn dropdown-toggle" data-toggle="dropdown">
-        <span class="caret"></span>
-      </button>
-      <ul class="dropdown-menu">
-        <li>
-          <a class="id-action" href="#"
-             data-base-url="${request.route_path("tickets.templates.edit",id="__id__")}">
-            <i class="icon-pencil"></i> 編集
-          </a>
-        </li>
-        <li>
-          <a id="preview_ticket" href="#">
-            <i class="icon-eye-open"></i> 券面preview
-          </a>
-        </li>
-        <li>
-          <a class="id-delegate-action" href="#" 
-             data-delegated="#deleteModalTemplate"
-             data-base-url="${request.route_path("tickets.templates.delete",id="__id__")}"
-             href="#deleteModalTemplate" data-toggle="modal">
-            <i class="icon-minus"></i> 削除
-          </a>
-        </li>
-<%doc>
-        <li>
-          <a class="id-action" href="#"
-             data-base-url="${request.route_path("tickets.templates.new",_query=dict(id="__id__"))}">
-            <i class="icon-plus"></i> コピーして新規作成
-          </a>
-        </li>
-</%doc>
-      </ul>
-</div>
+<a href="${request.route_path("tickets.templates.new")}" class="btn">
+  <i class="icon-plus"></i> 新規
+</a>
 <% sortable = lambda *args, **kwargs: h.sortable('ticket_template', *args, **kwargs) %>
 <table class="table fullwidth checkboxed_table">
   <thead>
     <tr>
-      <th class="minwidth"></th>
       <th><a href="${sortable(request, "name")}" class="sortable">名前</a></th>
       <th><a href="${sortable(request, "filename")}" class="sortable">ファイル名</a></th>
       <th><a href="#" class="sortable">チケット様式</a></th>
       <th><a href="${sortable(request, "visible")}" class="sortable">使用</a></th>
       <th><a href="${sortable(request, "updated_at", direction="desc")}" class="sortable">更新日時</a></th>
       <th><a href="${sortable(request, "created_at", direction="desc")}" class="sortable">作成日時</a></th>
+      <th></th>
     </tr>
   </thead>
   <tbody>
   % for template in templates:
     <tr>
-      <td class="ticketTemplate"><input type="radio" name="template_id" value="${template.id}" /></td>
       <td><a href="${request.route_url('tickets.templates.show', id=template.id)}">${template.name}</a></td>
       <td>${template.filename}</td>
       <td>${template.ticket_format.name}</td>
       <td>${u'可' if template.visible else u'不可'}</td>
       <td>${template.updated_at}</td>
       <td>${template.created_at}</td>
+      <td id="template_menu" style="width:1%; white-space:nowrap;"> <!-- to fit the button in the table cell -->
+        <a class="id-action btn btn-small" href="${request.route_path("tickets.templates.edit",id=template.id)}">
+          <i class="icon-pencil"></i> 編集
+        </a>
+        <a id="preview_ticket" class="btn btn-small" data-template-id="${template.id}" href="#">
+          <i class="icon-eye-open"></i> 券面preview
+        </a>
+        <a class="id-delegate-action btn btn-small btn-danger"
+           href="#" data-toggle="modal"
+           data-delegated="Template"
+           data-base-url="${request.route_path("tickets.templates.delete",id=template.id)}"
+        >
+          <i class="icon-minus"></i> 削除
+        </a>
+        <!--
+        <a class="id-action btn btn-small" href="#"
+           data-base-url="${request.route_path("tickets.templates.new",_query=dict(id="__id__"))}">
+          <i class="icon-plus"></i> コピーして新規作成
+        </a>
+        -->
+      </td>
     </tr>
   % endfor
   </tbody>
 </table>
 
 <hr/>
-<script type="text/javascript">
-  $(function(){
-    $("#cover_menu a.id-action").click(
-     function(){
-       var pk = $("input[name='cover_id']:checked").val();
-       if(!pk){ return false; }
-       $(this).attr("href", $(this).attr("data-base-url").replace("__id__", pk));
-       return true;
-    });
-
-    $("#cover_menu a.id-delegate-action").click(
-     function(){
-       var pk = $("input[name='cover_id']:checked").val();
-       if(!pk){ return false; }
-       var delegated=$(this).attr("data-delegated");
-// fixme
-       var form = $(delegated).find("form")
-       $(form).attr("action",$(form).attr("data-base-url").replace("__id__", pk));
-       $(delegated).modal();
-       return true;
-    });
-  });
-</script>
-
 
 <h3>表紙</h3>
-<div class="btn-group" id="cover_menu">
-  <a href="${request.route_path("tickets.covers.new")}" class="btn">
+<a href="${request.route_path("tickets.covers.new")}" class="btn">
     <i class="icon-plus"></i> 新規
-  </a>
-      <button class="btn dropdown-toggle" data-toggle="dropdown">
-        <span class="caret"></span>
-      </button>
-      <ul class="dropdown-menu">
-        <li>
-          <a class="id-action" href="#"
-             data-base-url="${request.route_path("tickets.covers.edit",id="__id__")}">
-            <i class="icon-pencil"></i> 編集
-          </a>
-        </li>
-        <li>
-          <a class="id-delegate-action" href="#" 
-             data-delegated="#deleteModalCover"
-             data-base-url="${request.route_path("tickets.covers.delete",id="__id__")}"
-             href="#deleteModalCover" data-toggle="modal">
-            <i class="icon-minus"></i> 削除
-          </a>
-        </li>
-<%doc>
-        <li>
-          <a class="id-action" href="#"
-             data-base-url="${request.route_path("tickets.covers.new",_query=dict(id="__id__"))}">
-            <i class="icon-plus"></i> コピーして新規作成
-          </a>
-        </li>
-</%doc>
-      </ul>
-</div>
-
+</a>
 <% sortable = lambda *args, **kwargs: h.sortable('ticket_template', *args, **kwargs) %>
 <table class="table fullwidth checkboxed_table">
   <thead>
     <tr>
-      <th class="minwidth"></th>
       <th><a href="${sortable(request, "name")}" class="sortable">名前</a></th>
       <th><a href="#" class="sortable">テンプレート</a></th>
       <th><a href="${sortable(request, "updated_at", direction="desc")}" class="sortable">更新日時</a></th>
       <th><a href="${sortable(request, "created_at", direction="desc")}" class="sortable">作成日時</a></th>
+      <th></th>
     </tr>
   </thead>
   <tbody>
   % for cover in covers:
     <tr>
-      <td class="ticketCover"><input type="radio" name="cover_id" value="${cover.id}" /></td>
       <td><a href="${request.route_url('tickets.covers.show', id=cover.id)}">${cover.name}</a></td>
       <td>${cover.ticket.name}</td>
       <td>${cover.updated_at}</td>
       <td>${cover.created_at}</td>
+      <td id="cover_menu" style="width:1%; white-space:nowrap;"> <!-- to fit the button in the table cell -->
+        <a class="id-action btn btn-small" href="${request.route_path("tickets.covers.edit",id=cover.id)}">
+          <i class="icon-pencil"></i> 編集
+        </a>
+        <a class="id-delegate-action btn btn-small btn-danger"
+           href="#" data-toggle="modal"
+           data-delegated="Cover"
+           data-base-url="${request.route_path("tickets.covers.delete",id=cover.id)}"
+        >
+          <i class="icon-minus"></i> 削除
+        </a>
+        <!--
+        <a class="id-action" href="#"
+           data-base-url="${request.route_path("tickets.covers.new",_query=dict(id="__id__"))}">
+          <i class="icon-plus"></i> コピーして新規作成
+        </a>
+        -->
+      </td>
     </tr>
   % endfor
   </tbody>
 </table>
 
-## delete page format
-
-<div class="modal hide" id="deletePageFormat">
+## deleteModal
+<div class="modal hide" id="deleteModal">
   <div class="modal-header">
     <button type="button" class="close" data-dismiss="modal">×</button>
     <h3>確認</h3>
   </div>
   <div class="modal-body">
-    このチケット様式を削除します。よろしいですか？
   </div>
   <div class="modal-footer">
-    <a href="#" class="btn" data-dismiss="modal">キャンセル</a>
-    <form action="#" data-base-url="${request.route_path("tickets.pageformats.delete",id="__id__")}" method="POST">
-      <button type="submit" class="btn">削除する</button>
+    <a href="#" class="btn" data-dismiss="modal" style="width:98px; padding: 3.2px 0;">キャンセル</a>
+    <form action="#" method="POST">
+      <button type="submit" class="btn btn-danger" style="width:100px; margin-top:10px; padding: 3.2px 0;">削除する</button>
     </form>
   </div>
 </div>
-
-## delete ticket format
-
-<div class="modal hide" id="deleteModalFormat">
-  <div class="modal-header">
-    <button type="button" class="close" data-dismiss="modal">×</button>
-    <h3>確認</h3>
-  </div>
-  <div class="modal-body">
-    このチケット様式を削除します。よろしいですか？
-  </div>
-  <div class="modal-footer">
-    <a href="#" class="btn" data-dismiss="modal">キャンセル</a>
-    <form action="#" data-base-url="${request.route_path("tickets.ticketformats.delete",id="__id__")}" method="POST">
-      <button type="submit" class="btn">削除する</button>
-    </form>
-  </div>
-</div>
-
-## delete ticket template
-
-<div class="modal hide" id="deleteModalTemplate">
-  <div class="modal-header">
-    <button type="button" class="close" data-dismiss="modal">×</button>
-    <h3>確認</h3>
-  </div>
-  <div class="modal-body">
-    このチケットテンプレートを削除します。よろしいですか？
-  </div>
-  <div class="modal-footer">
-    <a href="#" class="btn" data-dismiss="modal">キャンセル</a>
-    <form action="#" data-base-url="${request.route_path("tickets.templates.delete",id="__id__")}" method="POST">
-      <button type="submit" class="btn">削除する</button>
-    </form>
-  </div>
-</div>
-
-## delete cover
-
-<div class="modal hide" id="deleteModalCover">
-  <div class="modal-header">
-    <button type="button" class="close" data-dismiss="modal">×</button>
-    <h3>確認</h3>
-  </div>
-  <div class="modal-body">
-      この表紙を削除します。よろしいですか？
-  </div>
-  <div class="modal-footer">
-    <a href="#" class="btn" data-dismiss="modal">キャンセル</a>
-    <form action="#" data-base-url="${request.route_path("tickets.covers.delete",id="__id__")}" method="POST">
-      <button type="submit" class="btn">削除する</button>
-    </form>
-  </div>
-</div>
-
 
 ## preview ticket template
 ## ticket preview
@@ -461,8 +277,8 @@ ${ch.breadcrumbs(
     $("a#preview_ticket").on("click", function(){
 
       var $el = $(this);
-      var pk = $(".ticketTemplate").find("input[name='template_id']:checked").val();
-      if(!pk){ pk = $(".ticketTemplate").find("input[name='template_id']:first").val();}
+      var pk = $(this).attr("data-template-id");
+      if(!pk){return false;}
       if(!!modalView){
         modalView.onClick();
         apps["loadsvg"].model.changeHolder({pk: pk, name: modelname})

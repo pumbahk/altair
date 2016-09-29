@@ -90,26 +90,15 @@ $('#pageformat-viewer').pageformatviewer(options).pageformatviewer('load');
 </script>
 </div>
 <div class="row-fluid well">
-  <div class="btn-group">
-    <a href="${request.route_path("tickets.pageformats.edit",id=format.id)}" class="btn">
+  <a href="${request.route_path("tickets.pageformats.edit",id=format.id)}" class="btn">
       <i class="icon-pencil"></i> 編集
-    </a>
-        <button class="btn dropdown-toggle" data-toggle="dropdown">
-          <span class="caret"></span>
-        </button>
-        <ul class="dropdown-menu">
-          <li>
-            <a href="#deleteModal" data-toggle="modal">
-              <i class="icon-minus"></i> 削除
-            </a>
-          </li>
-          <li>
-            <a href="${request.route_path("tickets.pageformats.new",_query=dict(id=format.id))}">
-              <i class="icon-plus"></i> コピーして新規作成
-            </a>
-          </li>
-        </ul>
-  </div>
+  </a>
+  <a class="btn btn-danger" href="#deleteModal" data-toggle="modal">
+    <i class="icon-minus"></i> 削除
+  </a>
+  <a class="btn" href="${request.route_path("tickets.pageformats.new",_query=dict(id=format.id))}">
+    <i class="icon-plus"></i> コピー
+  </a>
 </div>
 
 <div class="modal hide" id="deleteModal">
@@ -121,9 +110,9 @@ $('#pageformat-viewer').pageformatviewer(options).pageformatviewer('load');
     この出力形式を削除します。よろしいですか？
   </div>
   <div class="modal-footer">
-    <a href="#" class="btn" data-dismiss="modal">キャンセル</a>
+    <a href="#" class="btn" data-dismiss="modal" style="width:98px; padding: 3.2px 0;">キャンセル</a>
     <form action="${request.route_path("tickets.pageformats.delete",id=format.id)}" method="POST">
-      <button type="submit" class="btn">削除する</button>
+      <button type="submit" class="btn btn-danger" style="width:100px; margin-top:10px; padding: 3.2px 0;">削除する</button>
     </form>
   </div>
 </div>
