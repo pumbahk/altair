@@ -119,12 +119,12 @@ h1{
 }
 
 h2 {
-background: #FFD464; /* Old browsers */
+background: #FFFFFF;
 margin: 0 0 20px 0;
 padding: 10px 10px;
 color: #000;
-font-size: 24px;
-line-height: 24px;
+font-size: 27px;
+line-height: 27px;
 
 }
 
@@ -480,7 +480,7 @@ table tbody th {
 }
 */
 table thead th {
-  background-color:#1253A4;
+  background-color:#228B22;
   border-bottom:1px solid #820000;
   color:#FFF;
 }
@@ -1146,4 +1146,31 @@ table td.display_value ul li {
 
 .coupon_name {
 	background-color: #FCF8E3;
+}
+
+.btnCoupon {
+    background-image: none !important;
+    background-color: #ED6D00 !important;
+}
+
+.btnCoupon:hover {
+    background-color: #FF8C4E !important;
+}
+
+.btnCouponClose {
+    background-image: none !important;
+    background-color: #D1D1D1 !important;
+}
+
+.btnCouponClose:hover {
+    background-color: #E2E2E2 !important;
+}
+
+.btnAllCoupon {
+    background-image: none !important;
+    background-color: #228B22 !important;
+}
+
+.btnAllCoupon:hover {
+    background-color: #90C590 !important;
 }
