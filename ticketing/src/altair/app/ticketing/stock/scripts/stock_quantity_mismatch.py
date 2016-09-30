@@ -60,8 +60,8 @@ def main():
     results = session.execute(sql)
 
     for result in results:
-        msg = u"Stock quantity mismatch with seat Stock ID = {0}, Total = {1}, Rest = {2}"
-        logger.error(msg.format(result[0], result[1], result[2]))
+        msg = u"Stock quantity mismatch Stock ID = {0}, Total = {1}, Rest = {2}, Ordered = {3}, in_cart = {4}"
+        logger.error(msg.format(result[0], result[1], result[2], result[3], result[4]))
 
     session.execute("select release_lock('{0}')".format(LOCK_NAME)).first()
     logger.info("Stock quantity mismatch end")
