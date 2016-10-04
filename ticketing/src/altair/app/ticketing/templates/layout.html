@@ -13,6 +13,12 @@
       body {
         padding-top: 50px; /* 50px to make the container go all the way to the bottom of the topbar */
       }
+
+      .icon-copy {
+        background-image: url("${request.static_url('altair.app.ticketing:static/css/images/copy-icon.png')}");
+        background-size: 14px 14px;
+        background-position: center center;
+      }
     </style>
     <script type="text/javascript" src="/static/js/require.js"></script>
 		<% from altair.dynpredicate.fanstatic import js as dynpredicate_js %>
