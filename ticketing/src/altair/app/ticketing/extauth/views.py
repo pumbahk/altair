@@ -1,5 +1,6 @@
 # encoding: UTF-8
 import logging
+import sys
 import re
 import urllib2
 from datetime import datetime
@@ -165,6 +166,8 @@ class View(object):
             if 'select_account' not in oauth_params['prompt']:
                 raise OpenIDAccountSelectionRequired()
         elif len(data['memberships']) == 0:
+            # fanclubの情報がないのでフラグを倒す
+            self.request.session['is_fanclub'] = False
             raise HTTPFound(location=self.request.route_path('extauth.no_valid_memberships', subtype=self.context.subtype))
         return HTTPFound(location=self.request.route_path('extauth.select_account', subtype=self.context.subtype))
 
@@ -201,6 +204,10 @@ class View(object):
         )
     def entry(self):
         oauth_params = self.request.session['oauth_params']
+
+        # fanclub利用有無をsessionに格納
+        self.request.session['is_fanclub'] = self.request.organization.fanclub_api_available
+
         if Authenticated in self.request.effective_principals:
             if u'login' in oauth_params['prompt']:
                 self.request.response.headers.update(forget(self.request))
@@ -226,7 +233,20 @@ class View(object):
             if 'none' in oauth_params['prompt']:
                 raise OpenIDLoginRequired()
             return challenge_rakuten_id(self.request)
-        return self.navigate_to_select_account_rakuten_auth()
+
+        # fanclubを利用しないORGの場合はfanclubのコースチェックを行わない
+        if self.request.session['is_fanclub']:
+            return self.navigate_to_select_account_rakuten_auth()
+        else:
+            return HTTPFound(
+                location=self.request.route_path(
+                    'extauth.authorize',
+                    subtype=self.context.subtype,
+                    _query=dict(
+                        _=self.request.session.get_csrf_token()
+                        )
+                    ),
+            )
 
     @lbr_view_config(
         route_name='extauth.select_account',
@@ -256,42 +276,51 @@ class View(object):
     @lbr_view_config(route_name='extauth.authorize', permission='authenticated')
     def authorize(self):
         check_csrf_token(self.request, '_')
-
-        try:
-            member_kind_id_str = self.request.params['member_kind_id']
-            membership_id = self.request.params['membership_id']
-        except KeyError as e:
-            raise HTTPBadRequest('missing parameter: %s' % e.message)
-        try:
-            member_kind_id = int(member_kind_id_str)
-        except (TypeError, ValueError):
-            raise HTTPBadRequest('invalid parameter: member_kind_id')
-        retrieved_profile = self.request.session['retrieved']
-        member_kinds = {
-            membership['kind']['id']: membership['kind']['name']
-            for membership in retrieved_profile['memberships']
-            }
-        if member_kind_id not in member_kinds:
-            raise HTTPBadRequest('invalid parameter: member_kind_id')
+        
         provider = get_oauth_provider(self.request)
         oauth_params = dict(self.request.session['oauth_params'])
         state = oauth_params.pop('state')
         id_ = extract_identifer(self.request)
 
-        # 一般ユーザーの場合ログインIDでファンクラブIDを上書きする
-        pseudo_fanclub = retrieved_profile.get('pseudo_fanclub', False)
-        if pseudo_fanclub:
-            membership_id=id_
+        # fanclubの情報が取れる(=True)場合はfanclubの情報をidentityに含める
+        if self.request.session['is_fanclub']:
+            try:
+                member_kind_id_str = self.request.params['member_kind_id']
+                membership_id = self.request.params['membership_id']
+            except KeyError as e:
+                raise HTTPBadRequest('missing parameter: %s' % e.message)
+            try:
+                member_kind_id = int(member_kind_id_str)
+            except (TypeError, ValueError):
+                raise HTTPBadRequest('invalid parameter: member_kind_id')
+            retrieved_profile = self.request.session['retrieved']
+            member_kinds = {
+                membership['kind']['id']: membership['kind']['name']
+                for membership in retrieved_profile['memberships']
+                }
+            if member_kind_id not in member_kinds:
+                raise HTTPBadRequest('invalid parameter: member_kind_id')
 
-        identity = dict(
-            id=id_,
-            profile=self.request.altair_auth_metadata,
-            member_kind=dict(
-                id=member_kind_id,
-                name=member_kinds[member_kind_id]
-                ),
-            membership_id=membership_id
-            )
+            identity = dict(
+                id=id_,
+                profile=self.request.altair_auth_metadata,
+                member_kind=dict(
+                    id=member_kind_id,
+                    name=member_kinds[member_kind_id]
+                    ),
+                membership_id=membership_id
+                )
+
+        # fanclubの情報がない(=False)場合は一般ユーザーという固定値をfanclubコース名の代わりに与える
+        # この名称をORGごとに変えたいという要件が出てきた場合はDBから取得するように実装を変更してください
+        else:
+            identity = dict(
+                id=id_,
+                profile=self.request.altair_auth_metadata,
+                member_kind=dict(name=u'一般ユーザー'),
+                membership_id=id_
+                )
+
         nonce = oauth_params.pop('nonce')
         max_age = oauth_params.pop('max_age')
         authenticated_at = oauth_params.pop('authenticated_at')
@@ -477,22 +506,7 @@ class View(object):
         permission='authenticated'
         )
     def no_valid_memberships(self):
-        data = self.request.session['retrieved']
-        pseudo_fanclub = data.get('pseudo_fanclub', False)
-
-        # フラグを持っている場合は一般ユーザー情報を取得する
-        if pseudo_fanclub:
-            pseudo_data = get_communicator(self.request, self.request.organization.fanclub_api_type).get_pseudo_user_profile()
-            self.request.session['retrieved'] = dict(
-                                                    pseudo_fanclub = pseudo_fanclub,
-                                                    memberships = pseudo_data['memberships']
-                                                )
-            return dict(
-                       memberships = pseudo_data['memberships']
-                   )
-                       
-        else:
-            return dict()
+        return dict()
 
 
 @lbr_view_config(route_name='extauth.logout')

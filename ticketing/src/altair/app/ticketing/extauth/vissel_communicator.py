@@ -16,7 +16,6 @@ from altair.app.ticketing.utils import parse_content_type
 
 logger = logging.getLogger(__name__)
 
-
 @implementer(ICommunicator)
 class VisselCommunicator(object):
     def __init__(self, endpoint_base, opener_factory, client_name, hash_key, style_classes={}, request_charset='utf-8', timeout=None):
@@ -114,11 +113,6 @@ class VisselCommunicator(object):
             )
         try:
             members = data['members']
-
-            # ファンクラブが見つからなかった場合、一般ユーザーとして擬似ファンクラブログインさせるフラグ
-            # 実際の会員情報はget_pseudo_user_profileを参照のこと
-            if len(members) == 0:
-                return dict(pseudo_fanclub=True, memberships=[])
         except:
             raise InvalidPayloadError(u'"members" field is missing')
         if not all(isinstance(member, dict) for member in members):
@@ -146,19 +140,6 @@ class VisselCommunicator(object):
         except KeyError as e:
             raise InvalidPayloadError(u'"%s" field is missing in member' % e.message)
 
-    def get_pseudo_user_profile(self):
-            return dict(
-                memberships=[
-                    dict(
-                        membership_id=0, #この時点では0を入れるが最終的にopen_idで上書き
-                        kind=dict(
-                            id=0,
-                            name=u'一般ユーザー',
-                            )
-                        )
-                    ]
-                )
-
 def includeme(config):
     from altair.app.ticketing.urllib2ext import opener_factory_from_config
 
@@ -180,4 +161,3 @@ def includeme(config):
         ICommunicator,
         name='vissel'
         )
-   
