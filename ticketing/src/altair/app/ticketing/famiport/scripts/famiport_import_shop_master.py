@@ -342,7 +342,6 @@ def main(argv=sys.argv):
     args = parser.parse_args(argv[1:])
 
     setup_logging(args.config)
-    logger.info('aaaaaa')
     env = bootstrap(args.config)
     registry = env['registry']
     settings = registry.settings
