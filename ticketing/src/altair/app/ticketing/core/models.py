@@ -701,9 +701,52 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 template_products = Product.query.filter_by(sales_segment_id=template_sales_segment.id)\
                                                  .filter_by(performance_id=template_performance.id).all()
                 for template_product in template_products:
-                    convert_map['product'].update(
-                        Product.create_from_template(template=template_product, performance_id=self.id, **convert_map)
-                    )
+                    # 公演に紐づく商品の作成
+                    product_map = Product.create_from_template(template=template_product, performance_id=self.id, **convert_map)
+                    convert_map['product'].update(product_map)
+
+                    # コピー元の商品をオリジナルとしている、コピー元抽選商品があり、その商品の抽選がコピー対象の場合実行する
+                    # コピー元の商品をオリジナルとして持つ、コピー元の抽選商品を取得
+                    original_lot_products = Product.query.filter(Product.original_product_id == template_product.id).all()
+
+                    for original_lot_product in original_lot_products:
+                        # コピー元の抽選商品からコピー元の抽選を取得
+                        original_lot = original_lot_product.sales_segment.lots[0]
+
+                        # コピー対象の抽選（現在のイベントに紐づく抽選で、コピー中のものを取得）
+                        target_lots = [new_lot for new_lot in self.event.lots if new_lot.original_lot_id == original_lot.id]
+
+                        # コピー元の抽選をオリジナルとして持つコピー後抽選にある場合、配下に商品、商品明細を作成する
+                        for target_lot in target_lots:
+                            if any([product for product in original_lot.products if product.original_product_id == template_product.id]):
+
+                                res = Product.create_from_template(
+                                    template_product,
+                                    with_product_items=False,
+                                    event_id=self.event_id,
+                                    performance_id=self.id,
+                                    **convert_map
+                                )
+
+                                new_product = Product.query.filter(Product.id == product_map[template_product.id]).one()
+                                new_lot_product = Product.query.filter(Product.id == res[template_product.id]).one()
+                                new_lot_product.original_product_id = new_product.id
+                                new_lot_product.sales_segment_id = target_lot.sales_segment_id
+
+                                logger.info('[COPY] Lot Product id = {}'.format(res))
+
+                                for pitem_src in original_lot_product.items:
+                                    res = ProductItem.create_from_template_for_lot(
+                                        pitem_src,
+                                        product_id=new_lot_product.id,
+                                        performance_id=self.id,
+                                        sales_segment_id=convert_map['sales_segment'][template_product.sales_segment_id],
+                                    )
+                                    convert_map['product_item'] = res
+                                    pitem_id = res.values()[0]
+                                    pitem_dst = ProductItem.get(id=pitem_id)
+                                    pitem_dst.original_product_item_id = pitem_src.id
+                                    pitem_dst.save()
 
                 # 関連テーブルのproduct_idを書き換える
                 for org_id, new_id in convert_map['product'].iteritems():
@@ -1240,6 +1283,24 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                     SalesSegmentGroup.create_from_template(template=template_sales_segment_group, with_payment_delivery_method_pairs=True, event_id=self.id)
                 )
 
+            # create Lot
+            for lot_src in template_event.lots:
+
+                ssg_src = lot_src.sales_segment.sales_segment_group
+                ssg_id = convert_map['sales_segment_group'][ssg_src.id]
+                ss_src = lot_src.sales_segment
+                res = SalesSegment.create_from_template(ss_src, sales_segment_group_id=ssg_id)
+                convert_map['sales_segment'].update(res)
+
+                lot = lot_src.create_from_template(
+                    lot_src,
+                    event_id=self.id,
+                    sales_segment_id=convert_map['sales_segment'][ss_src.id],
+                    )
+                lot.original_lot_id = lot_src.id
+                convert_map['lot'][lot_src.id] = lot.id
+                logger.info('[COPY] Lot id={}'.format(lot.id))
+
             # create Ticket
             for template_ticket in template_event.tickets:
                 convert_map['ticket'].update(
@@ -1269,45 +1330,6 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             for key, src_dst in convert_map.items():
                 for src, dst in src_dst.items():
                     logger.info('[COPY] CONVERT: {}: {} -> {}'.format(key, src, dst))
-            # create Lot
-            for lot_src in template_event.lots:
-
-                ssg_src = lot_src.sales_segment.sales_segment_group
-                ssg_id = convert_map['sales_segment_group'][ssg_src.id]
-                ss_src = lot_src.sales_segment
-                res = SalesSegment.create_from_template(ss_src, sales_segment_group_id=ssg_id)
-                convert_map['sales_segment'].update(res)
-
-                lot = lot_src.create_from_template(
-                    lot_src,
-                    event_id=self.id,
-                    sales_segment_id=convert_map['sales_segment'][ss_src.id],
-                    )
-                convert_map['lot'][lot_src.id] = lot.id
-                logger.info('[COPY] Lot id={}'.format(lot.id))
-
-                for prod_src in ss_src.products:
-
-                    res = Product.create_from_template(
-                        prod_src,
-                        with_product_items=False,
-                        event_id=self.id,
-                        performance_id=convert_map['performance'][prod_src.performance_id],
-                        **convert_map
-                        )
-                    convert_map['product'].update(res)
-                    logger.info('[COPY] Lot Product id = {}'.format(res))
-                    for pitem_src in ProductItem.query.filter(ProductItem.product_id == prod_src.id):
-                        res = ProductItem.create_from_template_for_lot(
-                            pitem_src,
-                            product_id=convert_map['product'][prod_src.id],
-                            performance_id=convert_map['performance'][pitem_src.stock.performance_id],
-                            sales_segment_id=convert_map['sales_segment'][prod_src.sales_segment_id],
-                            )
-                        convert_map['product_item'].update(res)
-                        pitem_id = res.values()[0]
-                        pitem_dst = ProductItem.get(id=pitem_id)
-                        pitem_dst.save()
 
             for key, src_dst in convert_map.items():
                 for src, dst in src_dst.items():
