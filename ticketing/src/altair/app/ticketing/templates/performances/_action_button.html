@@ -1,4 +1,4 @@
-<%page args="event, order=None, split=False" />
+<%page args="event, performance_id=None, order=None, split=False, small=False, with_text=True" />
 <%namespace file="/common/modal.html" import="delete_modal" />
 
 <script type="text/javascript">
@@ -69,57 +69,60 @@
 <%
   actions = {
     'new':dict(
-      label=u'新規',
+      label=u'新規' if with_text else u'',
       url=request.route_path('performances.new', event_id=event.id),
       icon='icon-plus',
     ),
     'edit':dict(
-      label=u'編集',
-      url='javascript:edit_performance();',
+      label=u'編集' if with_text else u'',
+      url=request.route_path('performances.edit', performance_id=performance_id),
       icon='icon-pencil',
     ),
     'delete':dict(
-      label=u'削除',
+      label=u'削除' if with_text else u'',
       url='javascript:delete_performance();',
       attrs={'class':'btn-danger'},
       icon='icon-minus',
     ),
     'show':dict(
-      label=u'詳細',
-      url='javascript:show_performance();',
+      label=u'詳細' if with_text else u'',
+      url=request.route_path('performances.show', performance_id=performance_id),
       icon='icon-th-list',
     ),
     'copy':dict(
-      label=u'コピー',
-      url='javascript:copy_performance();',
-      icon='icon-plus',
+      label=u'コピー' if with_text else u'',
+      url=request.route_path('performances.copy', performance_id=performance_id),
+      icon='icon-copy',
     ),
     'manycopy':dict(
-      label=u'複数コピー',
-      url='javascript:many_copy_performance();',
-      icon='icon-plus',
+      label=u'複数コピー' if with_text else u'',
+      url=request.route_path('performances.manycopy', performance_id=performance_id),
+      icon='icon-th-large',
     ),
     'mail': dict(
-      label=u"メール付加情報",
-      url="javascript:mail_info()",
+      label=u"メール付加情報" if with_text else u'',
+      url=request.route_path('performances.mailinfo.index', performance_id=performance_id),
       icon="icon-envelope",
     ),
     'report': dict(
-      label=u"売上レポート",
-      url='javascript:sales_report();',
+      label=u"売上レポート" if with_text else u'',
+      url=request.route_path('sales_reports.performance', performance_id=performance_id),
       icon=None,
     )
   }
   order = iter(order or ['new', 'show', 'edit', 'copy', 'manycopy', 'delete'])
 %>
 % if split:
-%   for item in order:
-      ${HH.action_button(actions, iter([item]), vertical=False)}
-%   endfor
+  <div style="float: left;">
+  % for item in order:
+      ${HH.action_button(actions, iter([item]), vertical=False, extra_classes=[u'btn-small'] if small else [])}
+  % endfor
+  </div>
 % else:
-  ${HH.action_button(actions, order, vertical=False)}
+    <div style="float: left;">
+      ${HH.action_button(actions, order, vertical=False, extra_classes=[u'btn-small'] if small else [])}
+    </div>
 % endif
-
 ${delete_modal()}
 
 <div id="performance-open-form"></div>
