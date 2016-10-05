@@ -140,8 +140,9 @@ def get_cart_view_context_factory(default_package):
                     sender = get_sender_address(self.request, organization=self.context.organization, mail_type=MailTypeEnum.PurchaseCompleteMail.v)
                 else:
                     raise NotImplemented("context must have any one of the following attributes: performance, event and organization")
-                _, _, domain = sender.partition('@')
-                return template.format(domain=domain)
+                # _, _, domain = sender.partition('@') ←今後必要になったら、コメントマークを外せば、使える。
+                # 基本的に'tstar.jp'しかないため、domainを'tstar.jp'に設定する。
+                return template.format(domain='tstar.jp')
             except:
                 logger.exception('oops')
                 raise
