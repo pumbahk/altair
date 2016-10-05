@@ -315,8 +315,8 @@ class ShopMasterProcessor(object):
                             shop.renewal_start_at = row['renewal_start_at']
                         if row['renewal_end_at_updated'] != 0:
                             shop.renewal_end_at = row['renewal_end_at']
-                        if shop.business_status != row['status']:
-                            shop.business_status = row['status']
+                        if shop.business_status != int(row['status']):
+                            shop.business_status = int(row['status'])
                         if shop.paused != row['paused']:
                             shop.paused = row['paused']
                         if shop.deleted != row['deleted']:
