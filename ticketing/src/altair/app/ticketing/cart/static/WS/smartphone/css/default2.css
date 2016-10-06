@@ -38,6 +38,7 @@ body {
   padding: 4px 0;
   margin: 0 0;
   font-size: 17px;
+  background: #7D5534;
 }
 
 ul.menu {
@@ -651,18 +652,18 @@ table.panellist.margined > tbody > tr > td.panel.navigable:active {
 }
 
 .btn-primary {
-  background-image: linear-gradient(top, #FF8C4E 0%, #FF7825 48%, #FF6000 50%, #FF7621);
-  background-image: -webkit-gradient(linear, left top, left bottom, from(#FF8C4E), color-stop(0.48, #FF7825), color-stop(0.5, #FF6000), to(#FF7621));
-  background-image: -webkit-linear-gradient(top, #FF8C4E 0%, #FF7825 48%, #FF6000 50%, #FF7621);
-  background-image: -moz-linear-gradient(top, #FF8C4E 0%, #FF7825 48%, #FF6000 50%, #FF7621);
+  background-image: linear-gradient(top, #d0b87a 0%, #caaf6a 48%, #c5a75a 50%, #b19651);
+  background-image: -webkit-gradient(linear, left top, left bottom, from(#d0b87a), color-stop(0.48, #caaf6a), color-stop(0.5, #c5a75a), to(#b19651));
+  background-image: -webkit-linear-gradient(top, #d0b87a 0%, #caaf6a 48%, #c5a75a 50%, #b19651);
+  background-image: -moz-linear-gradient(top, #d0b87a 0%, #caaf6a 48%, #c5a75a 50%, #b19651);
   box-shadow: 2px 2px 2px -1px rgba(0, 0, 0, .3), 0px 0px 0px 2px rgba(255, 255, 255, .3) inset;
 }
 
 .btn-primary:hover {
-  background-image: linear-gradient(top, #FF9856 0%, #FF9958 48%, #FF8741 50%, #FF8631);
-  background-image: -webkit-gradient(linear, left top, left bottom, from(#FF9856), color-stop(0.48, #FF9958), color-stop(0.5, #FF8741), to(#FF8631));
-  background-image: -webkit-linear-gradient(top, #FF9856 0%, #FF9958 48%, #FF8741 50%, #FF8631);
-  background-image: -moz-linear-gradient(top, #FF9856 0%, #FF9958 48%, #FF8741 50%, #FF8631);
+  background-image: linear-gradient(top, #d6c18b 0%, #d0b87a 48%, #caaf6a 50%, #c5a75a);
+  background-image: -webkit-gradient(linear, left top, left bottom, from(#d6c18b), color-stop(0.48, #d0b87a), color-stop(0.5, #caaf6a), to(#c5a75a));
+  background-image: -webkit-linear-gradient(top, #d6c18b 0%, #d0b87a 48%, #caaf6a 50%, #c5a75a);
+  background-image: -moz-linear-gradient(top, #d6c18b 0%, #d0b87a 48%, #caaf6a 50%, #c5a75a);
   box-shadow: 2px 2px 2px -1px rgba(0, 0, 0, .3), 0px 0px 0px 2px rgba(255, 255, 255, .3) inset;
 }
 
@@ -892,10 +893,10 @@ h2.glitter.red {
   overflow: hidden;
   vertical-align: middle;
   padding: 0px 0px 0px 20px;
-  background-image: linear-gradient(top, #cd4b4f 0%, #c63035 48%, #c01920 50%, #c52d33);
-  background-image: -webkit-gradient(linear, left top, left bottom, from(#cd4b4f), color-stop(0.48, #c63035), color-stop(0.5, #c01920), to(#c52d33));
-  background-image: -webkit-linear-gradient(top, #cd4b4f 0%, #c63035 48%, #c01920 50%, #c52d33);
-  background-image: -moz-linear-gradient(top, #cd4b4f 0%, #c63035 48%, #c01920 50%, #c52d33);
+  background-image: linear-gradient(top, #97765c 0%, #8a6648 48%, #7d5534 50%, #704c2e);
+  background-image: -webkit-gradient(linear, left top, left bottom, from(#97765c), color-stop(0.48, #8a6648), color-stop(0.5, #7d5534), to(#704c2e));
+  background-image: -webkit-linear-gradient(top, #97765c 0%, #8a6648 48%, #7d5534 50%, #704c2e);
+  background-image: -moz-linear-gradient(top, #97765c 0%, #8a6648 48%, #7d5534 50%, #704c2e);
   box-shadow: 2px 2px 2px -1px rgba(0, 0, 0, .3), 0px 0px 0px 2px rgba(255, 255, 255, .3) inset;
   text-shadow: 1px 1px 1px rgba(0, 0, 0, .4);
   user-select: none;

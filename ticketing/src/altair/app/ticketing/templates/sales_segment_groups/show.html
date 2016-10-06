@@ -22,7 +22,7 @@ ${ch.breadcrumbs(
 
 <%include file="/sales_segment_groups/_detail.html", args="sales_segment_group=sales_segment_group"/>
 
-<%include file="/sales_segment_groups/_action_button.html" args="order=['edit', 'copy', 'delete'], split=True" />
+<%include file="/sales_segment_groups/_action_button.html" args="sales_segment_group_id=sales_segment_group.id, order=['edit', 'copy', 'delete'], split=True" />
 <div id="sales_segment_groups-form">
   <%include file="./_modal.html" args="modal_id='modal-sales_segment_group', event=sales_segment_group.event" />
 </div>

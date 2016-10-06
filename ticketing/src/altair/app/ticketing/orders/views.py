@@ -1818,7 +1818,7 @@ class OrderDetailView(OrderBaseView):
             return HTTPBadRequest()
         ticket_format_id = form.ticket_format_id.data
         qs = DBSession.query(Order)\
-            .filter(Order.deleted_at==None).filter(Order.id.in_(self.context.order_ids))\
+            .filter(Order.deleted_at==None).filter(Order.canceled_at==None).filter(Order.id.in_(self.context.order_ids))\
             .filter(Order.issued==False)\
 
         will_removes = []
@@ -1844,7 +1844,7 @@ class OrderDetailView(OrderBaseView):
         self.request.session["orders"] = session_values
 
         if not break_p:
-            self.request.session.flash(u'%d個中%d個の注文を印刷キューに追加しました. (既に印刷済みの注文は印刷キューに追加されません)' % (total, count))
+            self.request.session.flash(u'%d個中%d個の注文を印刷キューに追加しました. (既に印刷済みの注文とキャンセル済みの注文は印刷キューに追加されません)' % (total, count))
             if self.request.POST.get("redirect_url"):
                 return HTTPFound(location=self.request.POST.get("redirect_url"))
 

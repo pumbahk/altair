@@ -315,9 +315,13 @@ class ShopMasterProcessor(object):
                             shop.renewal_start_at = row['renewal_start_at']
                         if row['renewal_end_at_updated'] != 0:
                             shop.renewal_end_at = row['renewal_end_at']
-                        shop.business_status = row['status']
-                        shop.paused = row['paused']
-                        shop.deleted = row['deleted']
+                        if shop.business_status != int(row['status']):
+                            shop.business_status = int(row['status'])
+                        if shop.paused != row['paused']:
+                            shop.paused = row['paused']
+                        if shop.deleted != row['deleted']:
+                            shop.deleted = row['deleted']
+
             self.session.commit()
             logger.info('done processing %s (records=%d, errors=%d)' % (path, i, len(errors)))
             if self.reporter is not None:
