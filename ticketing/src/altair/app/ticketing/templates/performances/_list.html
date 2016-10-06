@@ -22,7 +22,17 @@
 
 <script>
   $(function() {
-    $('[rel=popover]').popover()
+    $('[rel=popover]').hover(
+    function() {
+      $(this).popover({
+        title: $(this).attr("data-original-title"),
+        content: $(this).attr("data-content"),
+        html: true
+      }).popover('show');
+    },
+    function() {
+      $(this).popover('hide');
+    });
   });
 </script>
 
@@ -52,11 +62,10 @@
       <thead>
         <tr>
           % if not display_only:
-          <th style="width:2em"></th>
           <th style="width:6em">
             状態
             <span class="help-inline">
-              <a rel="popover" data-original-title="状態" data-content="現在の公開状態です。<br>ボタン押下で公開または非公開状態に変更できます。">
+              <a rel="popover" data-original-title="状態" data-content="現在の公開状態です。<br />ボタン押下で公開または非公開状態に変更できます。">
                 <i class="icon-question-sign"></i>
               </a>
             </span>
@@ -68,6 +77,9 @@
           <th style="width:12em">時刻</th>
           <th>${ch.sortable(form.name, paging)}</th>
           <th>会場</th>
+          <th>詳細</th>
+          <th>編集</th>
+          <th>コピー</th>
         </tr>
       </thead>
       <tbody>
@@ -80,7 +92,6 @@
         <tr style="background-color: #ffd0d0">
         %endif
           % if not display_only:
-          <td><input type="radio" name="performance_id" value="${performance.id}" /></td>
           <td>
             <div>
               % if performance.public:
@@ -123,10 +134,34 @@
 					</td>
           <td>
             ${performance.venue.name if performance.venue else u'(なし)'}
-			% if performance.venue.sub_name != None:
-				<div class="sub_name">${performance.venue.sub_name}</div>
-			% endif
-		  </td>
+			      % if performance.venue.sub_name != None:
+				      <div class="sub_name">${performance.venue.sub_name}</div>
+			      % endif
+		      </td>
+          <td style="width:1%; white-space:nowrap;">
+            <%include file="/performances/_action_button.html" args="event=event,
+                                                                      performance_id=performance.id,
+                                                                      order=['show'],
+                                                                      split=True,
+                                                                      small=True,
+                                                                      with_text=False" />
+          </td>
+          <td style="width:1%; white-space:nowrap;">
+            <%include file="/performances/_action_button.html" args="event=event,
+                                                                      performance_id=performance.id,
+                                                                      order=['edit'],
+                                                                      split=True,
+                                                                      small=True,
+                                                                      with_text=False" />
+          </td>
+          <td style="width:1%; white-space:nowrap;">
+            <%include file="/performances/_action_button.html" args="event=event,
+                                                                      performance_id=performance.id,
+                                                                      order=['copy'],
+                                                                      split=True,
+                                                                      small=True,
+                                                                      with_text=False" />
+          </td>
         </tr>
       % endfor
       </tbody>

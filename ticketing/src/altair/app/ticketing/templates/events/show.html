@@ -33,7 +33,17 @@ $(function(){
 
 <script>
   $(function() {
-    $('[rel=popover]').popover()
+    $('[rel=popover]').hover(
+    function() {
+      $(this).popover({
+        title: $(this).attr("data-original-title"),
+        content: $(this).attr("data-content"),
+        html: true
+      }).popover('show');
+    },
+    function() {
+      $(this).popover('hide');
+    });
   });
 </script>
 
@@ -289,7 +299,7 @@ $(function(){
   <div style="margin-top: 20px;">
     <form>
     <%include file="/sales_segment_groups/_list.html" args="form=form_sales_segment_group, sales_segment_groups=event.sales_segment_groups, limit=10" />
-    <%include file="/sales_segment_groups/_action_button.html" args="split=True" />
+    <%include file="/sales_segment_groups/_action_button.html" args="order=['new'], split=True" />
     </form>
     <div id="sales_segment_groups-form">
       <%include file="/sales_segment_groups/_modal.html" args="modal_id='modal-sales_segment_group', event=event" />
@@ -303,7 +313,7 @@ $(function(){
   <h3>パフォーマンス</h3>
   <div style="margin-top: 20px;">
     <%include file="/performances/_list.html" args="form=form_performance, performances=performances, limit=10, event=event, warnings=famiport_reflect_warnings" />
-    <%include file="/performances/_action_button.html" args="event=event, split=True" />
+    <%include file="/performances/_action_button.html" args="event=event, order=['new'], split=True" />
     <script type="text/javascript">
       var is_sending = {};
       $("#send_event").click(function(e){

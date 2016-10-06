@@ -1,4 +1,4 @@
-<%page args="order=None, split=False" />
+<%page args="sales_segment_group_id=None, order=None, split=False, small=False, with_text=True" />
 <%namespace file="/common/helpers.html" name="ch" />
 <%namespace file="/common/modal.html" import="delete_modal" />
 <script type="text/javascript">
@@ -12,37 +12,39 @@ var get_selected_sales_segment_group_id;
       icon='icon-plus',
     ),
     'copy':dict(
-      label=u'コピーして新規作成',
-      url='javascript:edit_sales_segment_group(get_selected_sales_segment_group_id(), true);',
-      icon='icon-plus',
+      label=u'コピーして新規作成' if with_text else u'',
+      url='javascript:edit_sales_segment_group({}, true);'.format(sales_segment_group_id),
+      icon='icon-copy',
     ),
     'edit':dict(
-      label=u'編集',
-      url='javascript:edit_sales_segment_group(get_selected_sales_segment_group_id(), false);',
+      label=u'編集' if with_text else u'',
+      url='javascript:edit_sales_segment_group({}, false);'.format(sales_segment_group_id),
       icon='icon-pencil',
     ),
     'delete':dict(
-      label=u'削除',
-      url='javascript:delete_sales_segment_group(get_selected_sales_segment_group_id());',
+      label=u'削除' if with_text else u'',
+      url='javascript:delete_sales_segment_group({});'.format(sales_segment_group_id),
       attrs={'class':'btn-danger'},
       icon='icon-minus',
     ),
     'show':dict(
-      label=u'詳細',
-      url='javascript:show_sales_segment_group(get_selected_sales_segment_group_id());',
+      label=u'詳細' if with_text else u'',
+      url='javascript:show_sales_segment_group({});'.format(sales_segment_group_id),
       icon='icon-th-list',
     ),
   }
   order = iter(order or ['new', 'copy', 'edit', 'delete'])
 %>
-<div style="float: left;">
-  % if split:
-    % for item in order:
-      ${HH.action_button(actions, iter([item]), vertical=False)}
-    % endfor
-  % else:
-    ${HH.action_button(actions, order, vertical=False)}
-  % endif
-</div>
+% if split:
+  <div style="float: left;">
+  % for item in order:
+      ${HH.action_button(actions, iter([item]), vertical=False, extra_classes=[u'btn-small'] if small else [])}
+  % endfor
+  </div>
+% else:
+    <div style="float: left;">
+      ${HH.action_button(actions, order, vertical=False, extra_classes=[u'btn-small'] if small else [])}
+    </div>
+% endif
 
 ${delete_modal()}
