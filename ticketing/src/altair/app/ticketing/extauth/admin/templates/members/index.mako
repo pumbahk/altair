@@ -15,7 +15,7 @@
   <strong>${message}</strong>
 </div>
 % endfor
-<h2>会員一覧</h2>
+<h2>会員(Member) 一覧</h2>
 <a class="btn" href="${request.route_path('members.new')}"><i class="icon-plus"></i> 新規メンバー</a>
 <a class="btn" href="#modal-csv-import" data-toggle="modal">CSVインポート</a>
 <a class="btn" href="#modal-csv-export" data-toggle="modal">CSVエクスポート</a>
