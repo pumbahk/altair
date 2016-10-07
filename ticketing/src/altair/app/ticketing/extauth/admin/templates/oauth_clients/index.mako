@@ -44,8 +44,8 @@
   <strong>${message}</strong>
 </div>
 % endfor
-<h2>OAuthクライアント一覧</h2>
-<a href="#modal-new-oauth-client" data-toggle="modal" class="btn" style="margin:10px 0;"><i class="icon-plus"></i>新規OAuthクライアント</a>
+<h2>OAuthClient 一覧</h2>
+<a href="#modal-new-oauth-client" data-toggle="modal" class="btn" style="margin:10px 0;"><i class="icon-plus"></i>新規OAuthClient</a>
 <form action="${request.route_path('oauth_clients.delete')}" method="POST">
 
 <table class="table">
@@ -76,12 +76,12 @@
 % endfor
   </tbody>
 </table>
-<input type="submit" name="doDelete" class="btn btn-danger" value="削除する" data-submit-confirmation-prompt="選択されたOAuthクライアントを削除します。よろしいですか?" />
+<input type="submit" name="doDelete" class="btn btn-danger" value="削除する" data-submit-confirmation-prompt="選択されたOAuthClientを削除します。よろしいですか?" />
 </form>
 <div id="modal-new-oauth-client" class="modal hide" role="dialog" aria-hidden="true">
   <div class="modal-header">
     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-    <h3>OAuthクライアント登録</h3>
+    <h3>OAuthClient 登録</h3>
   </div>
   <div class="modal-body">
     ${panel('oauth_clients.new')}

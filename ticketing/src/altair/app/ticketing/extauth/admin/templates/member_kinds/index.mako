@@ -5,7 +5,7 @@
   <strong>${message}</strong>
 </div>
 % endfor
-<h2>会員区分一覧</h2>
+<h2>会員区分(MemberKind) 一覧</h2>
 <a class="btn" href="${request.route_path('member_kinds.new')}" style="margin:10px 0;"><i class="icon-plus"></i>新規会員区分</a>
 ${h.render_bootstrap_pager(member_kinds)}
 <form action="${request.route_path('member_kinds.delete')}" method="POST">

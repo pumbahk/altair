@@ -144,7 +144,7 @@ class OrganizationsView(object):
         session.add(organization)
         session.flush()
         session.commit()
-        self.request.session.flash(u'オーガニゼーション %s を新規作成しました' % organization.short_name)
+        self.request.session.flash(u'Organization %s を新規作成しました' % organization.short_name)
         return HTTPFound(location=self.request.route_path('organizations.edit', id=organization.id))
 
     @view_config(
@@ -176,7 +176,7 @@ class OrganizationsView(object):
                 )
         form.populate_obj(organization)
         session.commit()
-        self.request.session.flash(u'オーガニゼーション %s を変更しました' % organization.short_name)
+        self.request.session.flash(u'Organization %s を変更しました' % organization.short_name)
         return HTTPFound(location=self.request.route_path('organizations.edit', id=organization.id))
 
 
@@ -218,7 +218,7 @@ class HostsView(object):
         host.organization_id = self.request.matchdict['id']
         session.add(host)
         session.commit()
-        self.request.session.flash(u'ホスト %s を新規作成しました' % host.host_name)
+        self.request.session.flash(u'Host %s を新規作成しました' % host.host_name)
         return HTTPFound(location=self.request.route_path('organizations.edit', id=self.request.matchdict['id']))
 
 
@@ -279,7 +279,7 @@ class OperatorsView(object):
             operator.auth_secret = digest_secret(form.auth_secret.data, generate_salt())
         session.add(operator)
         session.commit()
-        self.request.session.flash(u'オペレーター %s を変更しました' % operator.auth_identifier)
+        self.request.session.flash(u'Operator %s を変更しました' % operator.auth_identifier)
         return HTTPFound(location=self.request.route_path('operators.edit', id=operator.id))
 
     @view_config(
@@ -313,7 +313,7 @@ class OperatorsView(object):
             role=form.role.data
             )
         session.commit()
-        self.request.session.flash(u'オペレーター %s を作成しました' % operator.auth_identifier)
+        self.request.session.flash(u'Operator %s を作成しました' % operator.auth_identifier)
         return HTTPFound(location=self.request.route_path('operators.index'))
 
     @view_config(route_name='operators.delete')
@@ -321,12 +321,12 @@ class OperatorsView(object):
         session = get_db_session(self.request, 'extauth')
         id_list = [long(id) for id in self.request.params.getall('id')]
         if self.request.operator.id in id_list:
-            self.request.session.flash(u'オペレーター %s は現在ログイン中のユーザのため削除できません' % self.request.operator.auth_identifier)
+            self.request.session.flash(u'Operator %s は現在ログイン中のユーザのため削除できません' % self.request.operator.auth_identifier)
             return HTTPFound(location=self.request.route_path('operators.index'))
         query = session.query(Operator).filter_by(organization_id=self.request.operator.organization_id).filter(Operator.id.in_(id_list))
         n = query.delete(False)
         session.commit()
-        self.request.session.flash(u'%d オペレーターを削除しました' % n)
+        self.request.session.flash(u'%d Operatorを削除しました' % n)
         return HTTPFound(location=self.request.route_path('operators.index'))
 
 
@@ -392,7 +392,7 @@ class MemberSetsView(object):
         member_set.auth_secret_field_name = form.auth_secret_field_name.data
         session.add(member_set)
         session.commit()
-        self.request.session.flash(u'会員種別 %s を変更しました' % member_set.name)
+        self.request.session.flash(u'MemberSet %s を変更しました' % member_set.name)
         return HTTPFound(location=self.request.route_path('member_sets.edit', id=member_set.id))
 
     @view_config(
@@ -429,7 +429,7 @@ class MemberSetsView(object):
             )
         session.add(member_set)
         session.commit()
-        self.request.session.flash(u'会員種別 %s を作成しました' % member_set.name)
+        self.request.session.flash(u'MemberSet %s を作成しました' % member_set.name)
         return HTTPFound(location=self.request.route_path('member_sets.index'))
 
     @view_config(route_name='member_sets.delete')
@@ -439,7 +439,7 @@ class MemberSetsView(object):
         query = session.query(MemberSet).filter_by(organization_id=self.request.operator.organization_id).filter(MemberSet.id.in_(id_list))
         n = query.delete(False)
         session.commit()
-        self.request.session.flash(u'%d 会員種別を削除しました' % n)
+        self.request.session.flash(u'%d MemberSet を削除しました' % n)
         return HTTPFound(location=self.request.route_path('member_sets.index'))
 
 
@@ -504,7 +504,7 @@ class MemberKindsView(object):
         member_kind.enable_guests = form.enable_guests.data
         session.add(member_kind)
         session.commit()
-        self.request.session.flash(u'会員区分 %s を変更しました' % member_kind.name)
+        self.request.session.flash(u'会員区分 (MemberKind) %s を変更しました' % member_kind.name)
         return HTTPFound(location=self.request.route_path('member_kinds.edit', id=member_kind.id))
 
     @view_config(
@@ -539,7 +539,7 @@ class MemberKindsView(object):
             )
         session.add(member_kind)
         session.commit()
-        self.request.session.flash(u'会員区分 %s を作成しました' % member_kind.name)
+        self.request.session.flash(u'会員区分 (MemberKind) %s を作成しました' % member_kind.name)
         return HTTPFound(location=self.request.route_path('member_kinds.index'))
 
     @view_config(route_name='member_kinds.delete')
@@ -550,7 +550,7 @@ class MemberKindsView(object):
         query = session.query(MemberKind).filter(MemberKind.id.in_(id_list))
         n = query.delete(False)
         session.commit()
-        self.request.session.flash(u'%d 会員区分を削除しました' % n)
+        self.request.session.flash(u'%d 会員区分 (MemberKind) を削除しました' % n)
         return HTTPFound(location=self.request.route_path('member_kinds.index'))
 
 
@@ -657,7 +657,7 @@ class MembersView(object):
             session.delete(deleted_membership)
         session.add(member)
         session.commit()
-        self.request.session.flash(u'会員 %s を変更しました' % member.name)
+        self.request.session.flash(u'会員 (Member) %s を変更しました' % member.name)
         return HTTPFound(location=self.request.route_path('members.edit', id=member.id))
 
     @view_config(
@@ -717,7 +717,7 @@ class MembersView(object):
                         member.memberships.append(membership)
         session.add(member)
         session.commit()
-        self.request.session.flash(u'会員 %s を作成しました' % member.auth_identifier)
+        self.request.session.flash(u'会員 (Member) %s を作成しました' % member.auth_identifier)
         return HTTPFound(location=self.request.route_path('members.index'))
 
     @view_config(route_name='members.delete')
@@ -728,7 +728,7 @@ class MembersView(object):
         query = session.query(Member).filter(Member.id.in_(id_list))
         n = query.delete(False)
         session.commit()
-        self.request.session.flash(u'%d 会員を削除しました' % n)
+        self.request.session.flash(u'%d 会員 (Member) を削除しました' % n)
         return HTTPFound(location=self.request.route_path('members.index'))
 
     @view_config(route_name='members.bulk_add')
@@ -831,7 +831,7 @@ class OAuthClientsView(object):
             )
         session.add(oauth_client)
         session.commit()
-        self.request.session.flash(u'OAuthアカウントを作成しました')
+        self.request.session.flash(u'OAuthClient を作成しました')
         return HTTPFound(location=self.request.route_path('oauth_clients.index'))
 
     @view_config(route_name='oauth_clients.delete')
@@ -841,5 +841,5 @@ class OAuthClientsView(object):
         query = session.query(OAuthClient.id).filter_by(organization_id=self.request.operator.organization_id).filter(OAuthClient.id.in_(id_list))
         n = query.delete(False)
         session.commit()
-        self.request.session.flash(u'%d アカウントを削除しました' % n)
+        self.request.session.flash(u'%d OAuthClient を削除しました' % n)
         return HTTPFound(location=self.request.route_path('oauth_clients.index'))

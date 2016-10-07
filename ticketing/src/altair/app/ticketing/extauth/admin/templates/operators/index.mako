@@ -6,7 +6,7 @@
   <strong>${message}</strong>
 </div>
 % endfor
-<h2>オペレータ一覧</h2>
+<h2>Operator 一覧</h2>
 <a class="btn" href="${request.route_path('operators.new')}"><i class="icon-plus"></i>新規オペレーター</a>
 ${h.render_bootstrap_pager(operators)}
 <form action="${request.route_path('operators.delete')}" method="POST">
