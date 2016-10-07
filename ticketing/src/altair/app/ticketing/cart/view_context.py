@@ -140,13 +140,7 @@ def get_cart_view_context_factory(default_package):
                     sender = get_sender_address(self.request, organization=self.context.organization, mail_type=MailTypeEnum.PurchaseCompleteMail.v)
                 else:
                     raise NotImplemented("context must have any one of the following attributes: performance, event and organization")
-
                 _, _, domain = sender.partition('@')
-                #こちらのドメインはorganization_settingsのBCCメールのドメインであり、
-                #基本的には'tstar.jp'ですが、楽天チケットのドメインはticket.rakuten.co.jpです。
-                if domain not in [u'ticket.rakuten.co.jp', u'tstar.jp']:
-                    domain = u'tstar.jp'
-
                 return template.format(domain=domain)
             except:
                 logger.exception('oops')
