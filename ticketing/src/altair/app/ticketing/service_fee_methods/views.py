@@ -42,13 +42,18 @@ class ServiceFeeMethods(BaseView):
 
     @view_config(route_name='service_fee_methods.new', request_method='GET', renderer='altair.app.ticketing:templates/service_fee_methods/_form.html')
     def new(self):
+        form = ServiceFeeMethodForm(organization_id=self.context.user.organization_id)
         return {
-            'form': ServiceFeeMethodForm(),
+            'form': form,
             'action': self.request.route_path('service_fee_methods.new'),
             }
 
     @view_config(route_name='service_fee_methods.new', request_method='POST', renderer='altair.app.ticketing:templates/service_fee_methods/_form.html')
     def new_post(self):
+        if long(self.request.POST.get('organization_id', 0)) != self.context.user.organization_id:
+            self.request.session.flash(u'手数料の保存は失敗しました')
+            return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
+
         f = ServiceFeeMethodForm(self.request.POST)
         if f.validate():
             if f.system_fee_default.data:
@@ -84,6 +89,9 @@ class ServiceFeeMethods(BaseView):
         service_fee_method = ServiceFeeMethod.query.filter_by(id=service_fee_method_id).one()
         if service_fee_method is None:
             return HTTPNotFound('service_fee_method id %d is not found' % service_fee_method_id)
+        if service_fee_method.organization_id != self.context.user.organization_id:
+            self.request.session.flash(u'手数料の保存は失敗しました')
+            return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
 
         f = ServiceFeeMethodForm(self.request.POST)
         if f.validate():
