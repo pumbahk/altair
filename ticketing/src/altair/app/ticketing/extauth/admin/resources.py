@@ -16,6 +16,7 @@ class BaseResource(object):
         (Allow, 'administrator', 'manage_member_sets'),
         (Allow, 'administrator', 'manage_member_kinds'),
         (Allow, 'administrator', 'manage_members'),
+        (Allow, 'operator', 'manage_member_sets'),
         (Allow, 'operator', 'manage_members'),
         (Allow, 'operator', 'manage_member_kinds'),
         DENY_ALL,
