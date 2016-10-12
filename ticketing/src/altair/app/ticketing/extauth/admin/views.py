@@ -392,7 +392,7 @@ class MemberSetsView(object):
         member_set.auth_secret_field_name = form.auth_secret_field_name.data
         session.add(member_set)
         session.commit()
-        self.request.session.flash(u'MemberSet %s を変更しました' % member_set.name)
+        self.request.session.flash(u'会員種別 (MemberSet) %s を変更しました' % member_set.name)
         return HTTPFound(location=self.request.route_path('member_sets.edit', id=member_set.id))
 
     @view_config(

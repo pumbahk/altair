@@ -17,7 +17,7 @@
   <li class="menu-item"><a href="${request.route_path('oauth_clients.index')}">OAuthClient</a></li>
 % endif
 % if request.has_permission('manage_member_sets'):
-  <li class="menu-item"><a href="${request.route_path('member_sets.index')}">MemberSet</a></li>
+  <li class="menu-item"><a href="${request.route_path('member_sets.index')}">会員種別 (MemberSet)</a></li>
 % endif
 % if request.has_permission('manage_member_kinds'):
   <li class="menu-item"><a href="${request.route_path('member_kinds.index')}">会員区分 (MemberKind)</a></li>
