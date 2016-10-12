@@ -56,7 +56,7 @@ class PaymentMethods(BaseView):
     @view_config(route_name='payment_methods.new', request_method='POST', renderer='altair.app.ticketing:templates/payment_methods/_form.html')
     def new_post(self):
         if long(self.request.POST.get('organization_id', 0)) != self.context.user.organization_id:
-            self.request.session.flash(u'決済方法の保存は失敗しました')
+            self.request.session.flash(u'ユーザーを切り替えたため、決済方法の保存は失敗しました')
             return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
         f = PaymentMethodForm(self.request.POST)
         organization_setting = c_models.OrganizationSetting.filter_by(organization_id=self.context.user.organization_id).one()
@@ -107,7 +107,7 @@ class PaymentMethods(BaseView):
         if payment_method is None:
             return HTTPNotFound('payment_method id %d is not found' % payment_method_id)
         if payment_method.organization_id != self.context.user.organization_id:
-            self.request.session.flash(u'決済方法の保存は失敗しました')
+            self.request.session.flash(u'ユーザーを切り替えたため、決済方法の保存は失敗しました')
             return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
 
         f = PaymentMethodForm(self.request.POST)
