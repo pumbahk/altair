@@ -53,7 +53,7 @@ class DeliveryMethods(BaseView):
     @view_config(route_name='delivery_methods.new', request_method='POST', renderer='altair.app.ticketing:templates/delivery_methods/_form.html')
     def new_post(self):
         if long(self.request.POST.get('organization_id'), 0) != self.context.user.organization_id:
-            self.request.session.flash(u'引取方法の保存は失敗しました')
+            self.request.session.flash(u'ユーザーを切り替えたため、引取方法の保存は失敗しました')
             return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
         f = DeliveryMethodForm(self.request.POST)
         organization_setting = c_models.OrganizationSetting.filter_by(organization_id=self.context.user.organization_id).one()
@@ -106,7 +106,7 @@ class DeliveryMethods(BaseView):
         if delivery_method is None:
             return HTTPNotFound('delivery_method id %d is not found' % delivery_method_id)
         if delivery_method.organization_id != self.context.user.organization_id:
-            self.request.session.flash(u'引取方法の保存は失敗しました')
+            self.request.session.flash(u'ユーザーを切り替えたため、引取方法の保存は失敗しました')
             return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
 
         f = DeliveryMethodForm(self.request.POST)
