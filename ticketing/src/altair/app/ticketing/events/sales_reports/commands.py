@@ -109,6 +109,10 @@ def main(argv=sys.argv):
             _event = Event.get(id=performance.event_id)
             organization = Organization.get(id=_event.organization_id)
         elif event:
+            # 販売開始前のものは送らない
+            if not event.sales_start_on:
+                continue
+
             # 販売終了日の翌日まで自動レポートの送信対象に含める
             sales_end_on = None
             if event.sales_end_on:
