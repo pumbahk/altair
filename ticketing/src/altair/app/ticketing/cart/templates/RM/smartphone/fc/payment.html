@@ -1,4 +1,5 @@
 <%inherit file="${context['main_template'].uri}" />
+<% from altair.app.ticketing.payments.plugins import SEJ_PAYMENT_PLUGIN_ID, FAMIPORT_PAYMENT_PLUGIN_ID %>
 <%block name="title">支払方法選択</%block>
 % if request.session.peek_flash():
 <ul class="error">
@@ -64,7 +65,7 @@
             <img src="${request.static_url('altair.app.ticketing.cart:static/__commons__/images/master.gif')}" height="30px" />
             <img src="${request.static_url('altair.app.ticketing.cart:static/__commons__/images/jcb.gif')}" height="30px" />
           </p>
-        % elif m.payment_method.payment_plugin_id == 3 or m.payment_method.payment_plugin_id == 6:
+        % elif m.payment_method.payment_plugin_id == SEJ_PAYMENT_PLUGIN_ID or m.payment_method.payment_plugin_id == FAMIPORT_PAYMENT_PLUGIN_ID:
           <p>
             予約有効期日までにお支払頂きます。
             お支払が確認できた時点で予約確定となります。
