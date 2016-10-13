@@ -1,4 +1,4 @@
-<form action="${request.route_path('oauth_clients.new')}" method="GET" onsubmit="return false;">
+<form action="${request.route_path('oauth_clients.new')}" method="POST" onsubmit="return false;">
   <div class="control-group">
     ${form.organization_name.label}
     ${form.organization_name()}
