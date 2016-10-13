@@ -8,12 +8,7 @@ def create_operator(request, organization_name, auth_identifier, auth_secret, ro
     salt = generate_salt()
     digest = digest_secret(auth_secret, salt)
     session = get_db_session(request, 'extauth')
-    try:
-        organization = session.query(Organization).filter_by(short_name=organization_name).one()
-    except NoResultFound as e:
-        raise e
-    except MultipleResultsFound as e:
-        raise e
+    organization = lookup_organization_by_name(request, organization_name)
     operator = Operator(
         organization=organization,
         auth_identifier=auth_identifier,
@@ -60,3 +55,14 @@ def lookup_operator_by_credentials(request, auth_identifier, auth_secret):
         return operator
     except NoResultFound:
         return None
+
+def lookup_organization_by_name(request, organization_name):
+    session = get_db_session(request, 'extauth')
+    try:
+        organization = session.query(Organization).filter_by(short_name=organization_name).one()
+    except NoResultFound as e:
+        raise e
+    except MultipleResultsFound as e:
+        raise e
+
+    return organization

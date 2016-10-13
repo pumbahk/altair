@@ -52,6 +52,7 @@
   <thead>
     <tr>
       <th>✔</th>
+      <th>組織名</th>
       <th>アプリケーション名</th>
       <th>Client ID</th>
       <th>Client Secret</th>
@@ -64,6 +65,7 @@
 % for oauth_client in oauth_clients:
     <tr>
       <td><input type="checkbox" name="id" value="${oauth_client.id}"></td>
+      <td>${oauth_client.organization.short_name}</td>
       <td>${oauth_client.name}</td>
       <td><span class="client-credential">${oauth_client.client_id}</a></td>
       <td>
@@ -101,6 +103,7 @@
       type: 'POST',
       dataType: 'html',
       data: {
+        organization_name: $form.find('select[name=organization_name]').val(),
         name: $form.find('input[name=name]').val(),
         redirect_uri: $form.find('input[name=redirect_uri]').val()
       },
