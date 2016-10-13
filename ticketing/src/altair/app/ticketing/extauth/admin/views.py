@@ -11,7 +11,7 @@ from pyramid_layout.panel import panel_config
 from webhelpers import paginate
 from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.sqlahelper import get_db_session
-from .api import create_operator, lookup_operator_by_credentials
+from .api import create_operator, lookup_operator_by_credentials, lookup_organization_by_name
 from ..models import MemberSet, MemberKind, Member, Membership, OAuthClient
 from ..api import create_member
 from ..utils import digest_secret, generate_salt, generate_random_alnum_string
@@ -788,7 +788,7 @@ class OAuthClientsView(object):
         )
     def index(self):
         session = get_db_session(self.request, 'extauth')
-        query = session.query(OAuthClient).filter_by(organization_id=self.request.operator.organization_id)
+        query = session.query(OAuthClient).order_by(OAuthClient.organization_id)
         return dict(
             oauth_clients=query
             )
@@ -803,7 +803,7 @@ class OAuthClientsView(object):
         renderer='oauth_clients/_new.mako'
         )
     def new(self):
-        form = OAuthClientForm()
+        form = OAuthClientForm(request=self.request)
         return dict(form=form)
 
     @view_config(
@@ -813,14 +813,14 @@ class OAuthClientsView(object):
         )
     def new_post(self):
         session = get_db_session(self.request, 'extauth')
-        form = OAuthClientForm(self.request.POST)
+        form = OAuthClientForm(formdata=self.request.POST, request=self.request)
         if not form.validate():
             self.request.response.status = 400
             return dict(form=form)
         valid_since = self.request.now
-        organization = self.request.operator.organization
+        organization = lookup_organization_by_name(self.request, form.organization_name.data)
         oauth_client = OAuthClient(
-            organization_id=organization.id,
+            organization=organization,
             name=form.name.data,
             client_id=generate_random_alnum_string(32),
             client_secret=generate_random_alnum_string(32),
@@ -838,7 +838,7 @@ class OAuthClientsView(object):
     def delete(self):
         session = get_db_session(self.request, 'extauth')
         id_list = [long(id) for id in self.request.params.getall('id')]
-        query = session.query(OAuthClient.id).filter_by(organization_id=self.request.operator.organization_id).filter(OAuthClient.id.in_(id_list))
+        query = session.query(OAuthClient.id).filter(OAuthClient.id.in_(id_list))
         n = query.delete(False)
         session.commit()
         self.request.session.flash(u'%d OAuthClient を削除しました' % n)
