@@ -28,7 +28,7 @@
 <img src="${view_context.static_url('mobile/images/master.gif')}" height="30px" />
 <img src="${view_context.static_url('mobile/images/jcb.gif')}" height="30px" />
 </font>
-% elif m.payment_method.payment_plugin_id == 3:
+% elif m.payment_method.payment_plugin_id == 3 or m.payment_method.payment_plugin_id == 6:
 <font size="-2">
 予約有効期日までにお支払頂きます。<br />
 お支払が確認できた時点で予約確定となります。<br />

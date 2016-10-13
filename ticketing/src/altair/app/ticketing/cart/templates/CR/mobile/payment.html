@@ -150,7 +150,7 @@ ${m.special_fee_name}:${h.format_currency(m.special_fee)} (${h.fee_type(m.specia
 <img src="${request.static_url('altair.app.ticketing.cart:static/CR/mobile/images/master.gif')}" height="30px" />
 <img src="${request.static_url('altair.app.ticketing.cart:static/CR/mobile/images/jcb.gif')}" height="30px" />
 </font>
-% elif m.payment_method.payment_plugin_id == 3:
+% elif m.payment_method.payment_plugin_id == 3 or m.payment_method.payment_plugin_id == 6:
 <font size="-2">
 予約有効期日までにお支払頂きます。<br />
 お支払が確認できた時点で予約確定となります。<br />
