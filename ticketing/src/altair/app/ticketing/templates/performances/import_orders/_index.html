@@ -22,7 +22,7 @@
       % for task in order_import_tasks:
       <tr>
         <td>${task.id}</td>
-        <td>${task.operator.name}</td>
+        <td>${task.operator.name if task.operator else u"削除されたユーザ"}</td>
         <td>${task.count}</td>
         <td>${oh.get_order_import_task_status_label(task.status)}</td>
         <td>${u'Yes' if task.enable_random_import else u'No'}</td>
