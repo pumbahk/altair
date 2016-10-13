@@ -166,8 +166,6 @@ class View(object):
             if 'select_account' not in oauth_params['prompt']:
                 raise OpenIDAccountSelectionRequired()
         elif len(data['memberships']) == 0:
-            # fanclubの情報がないのでフラグを倒す
-            self.request.session['is_fanclub'] = False
             raise HTTPFound(location=self.request.route_path('extauth.no_valid_memberships', subtype=self.context.subtype))
         return HTTPFound(location=self.request.route_path('extauth.select_account', subtype=self.context.subtype))
 
@@ -205,9 +203,6 @@ class View(object):
     def entry(self):
         oauth_params = self.request.session['oauth_params']
 
-        # fanclub利用有無をsessionに格納
-        self.request.session['is_fanclub'] = self.request.organization.fanclub_api_available
-
         if Authenticated in self.request.effective_principals:
             if u'login' in oauth_params['prompt']:
                 self.request.response.headers.update(forget(self.request))
@@ -234,8 +229,8 @@ class View(object):
                 raise OpenIDLoginRequired()
             return challenge_rakuten_id(self.request)
 
-        # fanclubを利用しないORGの場合はfanclubのコースチェックを行わない
-        if self.request.session['is_fanclub']:
+        # fanclubを利用するORGはコースチェックへ、しないORGはauthorizeへ
+        if self.request.organization.fanclub_api_available:
             return self.navigate_to_select_account_rakuten_auth()
         else:
             return HTTPFound(
@@ -281,9 +276,10 @@ class View(object):
         oauth_params = dict(self.request.session['oauth_params'])
         state = oauth_params.pop('state')
         id_ = extract_identifer(self.request)
+        use_fanclub = self.request.params['use_fanclub'] if self.request.params.has_key('use_fanclub') else True
 
-        # fanclubの情報が取れる(=True)場合はfanclubの情報をidentityに含める
-        if self.request.session['is_fanclub']:
+        # fanclubAPIが有効(=True)な場合はfanclubの情報をidentityに含める
+        if self.request.organization.fanclub_api_available is True and use_fanclub is True:
             try:
                 member_kind_id_str = self.request.params['member_kind_id']
                 membership_id = self.request.params['membership_id']
@@ -311,7 +307,7 @@ class View(object):
                 membership_id=membership_id
                 )
 
-        # fanclubの情報がない(=False)場合は一般ユーザーという固定値をfanclubコース名の代わりに与える
+        # fanclubAPIが無効(=False)な場合は一般ユーザーという固定値をfanclubコース名の代わりに与える
         # この名称をORGごとに変えたいという要件が出てきた場合はDBから取得するように実装を変更してください
         else:
             identity = dict(
