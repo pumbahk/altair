@@ -57,6 +57,7 @@ $(function () {
           }
         });
         target.addClass('activated');
+        $('html, body').animate({ scrollTop: target.offset().top});
       }
       return false;
     });
