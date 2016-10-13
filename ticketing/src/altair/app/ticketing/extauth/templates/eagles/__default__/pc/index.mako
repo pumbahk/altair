@@ -28,7 +28,7 @@ thisyear = datetime.now().strftime('%Y')
 <p>※会員ID・パスワードを忘れてしまった方は<a href="https://member.id.rakuten.co.jp/rms/nid/upkfwd" target="_blank">こちら</a></p>
 <!-- stockholder LOGIN BOX -->
 <div class="btn-stockholder">
-<p class="clear tar pdt10 pdr20">&raquo; <a href="${_context.route_path('extauth.login', _query=dict(member_set=member_set.name))}"><span>その他会員の方はこちらから</span></a></p>
+<p class="clear tar pdt10 pdr20">&raquo; <a href="${_context.route_path('extauth.login', _query=dict(member_set=member_set.name))}"><span>B+特別先行・その他会員の方はこちらから</span></a></p>
 </div>
 </dd>
 </dl>
