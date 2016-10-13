@@ -47,13 +47,17 @@ class PaymentMethods(BaseView):
     @view_config(route_name='payment_methods.new', request_method='GET', renderer='altair.app.ticketing:templates/payment_methods/_form.html')
     def new(self):
         organization_setting = c_models.OrganizationSetting.filter_by(organization_id=self.context.user.organization_id).one()
+        form = PaymentMethodForm(organization_id=self.context.user.organization_id)
         return {
-            'form': PaymentMethodForm(),
+            'form': form,
             'i18n_org': u"True" if organization_setting.i18n else "False"
             }
 
     @view_config(route_name='payment_methods.new', request_method='POST', renderer='altair.app.ticketing:templates/payment_methods/_form.html')
     def new_post(self):
+        if long(self.request.POST.get('organization_id', 0)) != self.context.user.organization_id:
+            self.request.session.flash(u'ユーザーを切り替えたため、決済方法の保存は失敗しました')
+            return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
         f = PaymentMethodForm(self.request.POST)
         organization_setting = c_models.OrganizationSetting.filter_by(organization_id=self.context.user.organization_id).one()
         if f.validate():
@@ -102,6 +106,9 @@ class PaymentMethods(BaseView):
         payment_method = PaymentMethod.query.filter_by(id=payment_method_id).one()
         if payment_method is None:
             return HTTPNotFound('payment_method id %d is not found' % payment_method_id)
+        if payment_method.organization_id != self.context.user.organization_id:
+            self.request.session.flash(u'ユーザーを切り替えたため、決済方法の保存は失敗しました')
+            return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
 
         f = PaymentMethodForm(self.request.POST)
         organization_setting = c_models.OrganizationSetting.filter_by(organization_id=self.context.user.organization_id).one()

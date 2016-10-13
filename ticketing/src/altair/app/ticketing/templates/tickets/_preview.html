@@ -32,10 +32,24 @@
     color: #777
   }
 
-  #subnav.navbar .nav > li > a:hover {
+  #subnav.navbar .nav > li > a {
     background-color: transparent;
-    color: #faf;
+    color: #000000;
     text-decoration: none;
+  }
+
+  #params_settings_nav > li {
+    display: inline;
+    margin-right: 5px;
+  }
+
+  #params_settings_nav > li:nth-child(4):after {
+    content: "\A";
+    white-space: pre;
+  }
+  
+  #params_settings_nav > li:nth-child(5) {
+    clear: left;
   }
 </style>
 
@@ -53,27 +67,19 @@
     <div class="navbar-inner">
       <a class="brand" href="#">preview画像表示</a>
       <ul class="nav" id="params_settings_nav">
-        <li>
-          <div class="btn-group">
-            <a id="redraw_btn" class="btn" href="#"><i class="icon-pencil icon-black"></i> preview画像を再描画</a>
-            <a class="btn dropdown-toggle" data-toggle="dropdown">
-              <span class="caret"></span>
-            </a>
-            <ul class="dropdown-menu">
-              <li><a id="combobox_btn" href="#"><i class="icon-plus"></i> 入力補助ダイアログ</a></li>
-              <li><a id="download_btn" href="#"><i class="icon-download"></i> 現在のsvgをdownload</a></li>
-              <li><a id="enqueue_btn" href="#"><i class="icon-print"></i> 印刷キューに追加</a></li>
-            </ul>
-          </div>
-        </li>
-        <li style="margin-left:50px;">チケット様式の選択
-            <select id="ticket_format" class="inline input-medium">
+        <li><a id="redraw_btn" class="btn" href="#"><i class="icon-pencil icon-black"></i> preview画像を再描画</a></li>
+        <li><a id="combobox_btn" class="btn" href="#"><i class="icon-plus"></i> 入力補助ダイアログ</a></li>
+        <li><a id="download_btn" class="btn" href="#"><i class="icon-download"></i> 現在のsvgをdownload</a></li>
+        <li><a id="enqueue_btn" class="btn" href="#"><i class="icon-print"></i> 印刷キューに追加</a></li>
+
+        <li>チケット様式の選択
+            <select id="ticket_format" class="input-medium">
               %for tf in ticket_formats:
                 <option data-preview="${tf["type"]}" value="${tf["pk"]}">${tf["name"]}:${tf["type"]}</option>
               %endfor
             </select>
         </li>
-        <li style="margin-left:20px;">縮尺の設定
+        <li style="margin-left: 20px;">縮尺の設定
           <form class="" id="transform_form" style="display:inline;">　 
             x: <input class="inline input-mini" type="number" name="sx" min="0" max="10.0" step="0.1" value="1.0"></input>
             y: <input class="inline input-mini" type="number" name="sy" min="0" max="10.0" step="0.1" value="1.0"></input>
