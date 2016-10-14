@@ -166,7 +166,7 @@ class AgreementLotView(object):
         return_to = return_to and self.validate_return_to(return_to)
 
         if agree is None or return_to is None:
-            self.request.session.flash(self._message(u"注意事項を確認、同意し、公演に申し込んでください。"))
+            self.request.session.flash(self._message(u"内容を同意の上、チェックを入れてください。"))
             return HTTPFound(self.request.route_url('lots.entry.agreement', event_id=event.id, lot_id=lot.id, _query=self.request.GET))
 
         return HTTPFound(return_to)
