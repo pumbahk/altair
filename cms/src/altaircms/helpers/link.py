@@ -20,7 +20,7 @@ def get_purchase_page_from_performance(request, performance):
 
     if performance.backend_id is None:
         logger.warn("event id=%d performance id=%d: performance backend_id is not found" % (performance.event.id, performance.id))
-    return u"%s/cart/performances/%s" % (request.cart_domain, performance.backend_id)
+    return u"%s/cart/performances/agreement/%s" % (request.cart_domain, performance.backend_id)
 
 
 def get_searchpage(request, kind=None, value=None, page=None):
