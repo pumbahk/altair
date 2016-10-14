@@ -334,7 +334,7 @@ msgstr "There was a problem in the session."
 # agreement
 
 msgid "内容を同意の上、チェックを入れてください。"
-msgstr "Check the notes, I agree, please subscribe to the performances."
+msgstr "Please check here to indicate that you have confirmed the contents above."
 
 # payment 3d
 
