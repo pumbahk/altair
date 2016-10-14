@@ -13,8 +13,7 @@ from altairsite.mobile.core.disphelper import DispHelper
 from altairsite.mobile.core.eventhelper import EventHelper
 from altairsite.exceptions import UsersiteException
 from altairsite.separation import selectable_renderer
-from altairsite.separation import enable_full_usersite_function as enable_search_function
-# from altairsite.separation import enable_search_function
+from altairsite.separation import enable_full_usersite_function
 from altair.now import get_now
 
 class ValidationFailure(UsersiteException):
@@ -29,7 +28,7 @@ def get_page_published(request, event_id, dt):
             ).first()
     return page
 
-@mobile_site_view_config(custom_predicates=(enable_search_function, ), route_name='eventdetail', request_type="altair.mobile.interfaces.IMobileRequest"
+@mobile_site_view_config(custom_predicates=(enable_full_usersite_function, ), route_name='eventdetail', request_type="altair.mobile.interfaces.IMobileRequest"
     , renderer=selectable_renderer('altairsite.mobile:templates/%(prefix)s/eventdetail/eventdetail.mako'))
 def move_eventdetail(request):
 

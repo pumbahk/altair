@@ -242,6 +242,8 @@ class OrganizationView(object):
                 org.use_full_usersite = False
             if org.use_only_one_static_page_type == None:
                 org.use_only_one_static_page_type = False
+            if org.enable_search == None:
+                org.enable_search = False
             ## flash messsage
             mes = u'新しい組織を追加しました'
             FlashMessage.success(mes, request=self.request)
