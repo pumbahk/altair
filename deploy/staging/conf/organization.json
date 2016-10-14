@@ -63,7 +63,7 @@
         },
         "HT": {
             "auth_source": "oauth",
-            "backend_id": 54,
+            "backend_id": 66,
             "short_name": "HT"
         },
         "sound-creator": {
