@@ -5,6 +5,17 @@ logger = logging.getLogger(__name__)
 %>
 
 <%def name="calendar_table(cal, id, hidden)">
+
+<style>
+.saturday {
+    color: blue;
+}
+
+.sunday {
+    color: red;
+}
+</style>
+
       <table id="${id}"${'style="display:none"'if not hidden else ""|n}>
        <thead>
          <tr>
@@ -13,8 +24,8 @@ logger = logging.getLogger(__name__)
            <th scope="col">水</th>
            <th scope="col">木</th>
            <th scope="col">金</th>
-           <th scope="col">土</th>
-           <th scope="col" class="last">日</th>
+           <th scope="col" class="saturday">土</th>
+           <th scope="col" class="last sunday">日</th>
          </tr>
        </thead>
        <tbody>
