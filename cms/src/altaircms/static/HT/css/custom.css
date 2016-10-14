@@ -651,4 +651,10 @@ salessegment icon
     visibility: hidden;
 }
 
+.saturday {
+    color: blue;
+}
 
+.sunday {
+    color: red;
+}

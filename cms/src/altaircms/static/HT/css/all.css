@@ -1849,6 +1849,7 @@ td.event img {
     font-weight: bold;
     text-decoration: none;
     background: url(../img/detail/bg_month_active_right.gif) no-repeat top right;
+    cursor: unset;
 }
 
 #detailSchedule table {
@@ -1922,7 +1923,7 @@ td.event img {
 }
 
 #detailSchedule tbody td {
-    height: 59px;
+    height: 80px;
 }
 
 #detailSchedule th.month-col {

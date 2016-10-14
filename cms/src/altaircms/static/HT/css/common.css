@@ -23,9 +23,6 @@ ol,ul {
 caption,th {
     text-align:left;
 }
-h1,h2,h3,h4,h5,h6 {
-    font-size:100%;
-}
 q:before,q:after {
     content:'';
 }
@@ -35,6 +32,7 @@ abbr,acronym {
 a {
 /*\*/
     overflow: hidden;
+    cursor: pointer;
 /**/
 }
 li img,dt img,dd img{
