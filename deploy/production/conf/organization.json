@@ -71,6 +71,11 @@
             "backend_id": 57,
             "short_name": "RL"
         },
+        "HT": {
+            "auth_source": "oauth",
+            "backend_id": 66,
+            "short_name": "HT"
+        },
         "sound-creator": {
             "auth_source": "oauth", 
             "backend_id": null, 
