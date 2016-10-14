@@ -333,7 +333,7 @@ msgstr "There was a problem in the session."
 
 # agreement
 
-msgid "注意事項を確認、同意し、公演に申し込んでください。"
+msgid "内容を同意の上、チェックを入れてください。"
 msgstr "Check the notes, I agree, please subscribe to the performances."
 
 # payment 3d
