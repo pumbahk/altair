@@ -653,6 +653,23 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             Stock.create_default(self.event, performance_id=self.id)
         logger.info('[copy] Stock end')
 
+    # コピー先抽選販売区分を取得
+    def get_copied_lot_sales_segments(self):
+        return [lot.sales_segment for lot in self.event.lots]
+
+    def check_copy_target_lot(self, product, copied_lot_sales_segment):
+        # コピー元の商品を親としている、抽選商品を取得する。
+        # 抽選商品から抽選をたどり、現在追加しようとしている抽選販売区分から抽選をたどり親だったら追加する。
+        lot_products = Product.query.filter(Product.original_product_id == product.id).all()
+        lot_sales_segment_ids = [p.sales_segment.id for p in lot_products]
+        from ..lots.models import Lot
+        lots = Lot.query.filter(Lot.sales_segment_id.in_(lot_sales_segment_ids)).all()
+        copied_lot = Lot.query.filter(Lot.sales_segment_id == copied_lot_sales_segment.id).first()
+        for lot in lots:
+            if lot.id == copied_lot.original_lot_id:
+                return True
+        return False
+
     def save(self):
         BaseModel.save(self)
 
@@ -705,37 +722,30 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                     product_map = Product.create_from_template(template=template_product, performance_id=self.id, **convert_map)
                     convert_map['product'].update(product_map)
 
-                    # コピー元の商品をオリジナルとしている、コピー元抽選商品があり、その商品の抽選がコピー対象の場合実行する
-                    # コピー元の商品をオリジナルとして持つ、コピー元の抽選商品を取得
-                    original_lot_products = Product.query.filter(Product.original_product_id == template_product.id).all()
+                    if template_sales_segment.is_lottery:
+                        copied_lot_sales_segments = self.get_copied_lot_sales_segments()
+                        for lot_sales_segment in copied_lot_sales_segments:
+                            if not self.check_copy_target_lot(template_product, lot_sales_segment):
+                                continue
 
-                    for original_lot_product in original_lot_products:
-                        # コピー元の抽選商品からコピー元の抽選を取得
-                        original_lot = original_lot_product.sales_segment.lots[0]
+                            res = Product.create_from_template(
+                                template_product,
+                                with_product_items=False,
+                                event_id=self.event_id,
+                                performance_id=self.id,
+                                **convert_map
+                            )
 
-                        # コピー対象の抽選（現在のイベントに紐づく抽選で、コピー中のものを取得）
-                        target_lots = [new_lot for new_lot in self.event.lots if new_lot.original_lot_id == original_lot.id]
+                            new_product = Product.query.filter(Product.id == product_map[template_product.id]).one()
+                            new_lot_product = Product.query.filter(Product.id == res[template_product.id]).one()
+                            new_lot_product.original_product_id = new_product.id
+                            new_lot_product.sales_segment_id = lot_sales_segment.id
 
-                        # コピー元の抽選をオリジナルとして持つコピー後抽選にある場合、配下に商品、商品明細を作成する
-                        for target_lot in target_lots:
-                            if any([product for product in original_lot.products if product.original_product_id == template_product.id]):
+                            logger.info('[COPY] Lot Product id = {}'.format(res))
 
-                                res = Product.create_from_template(
-                                    template_product,
-                                    with_product_items=False,
-                                    event_id=self.event_id,
-                                    performance_id=self.id,
-                                    **convert_map
-                                )
-
-                                new_product = Product.query.filter(Product.id == product_map[template_product.id]).one()
-                                new_lot_product = Product.query.filter(Product.id == res[template_product.id]).one()
-                                new_lot_product.original_product_id = new_product.id
-                                new_lot_product.sales_segment_id = target_lot.sales_segment_id
-
-                                logger.info('[COPY] Lot Product id = {}'.format(res))
-
-                                for pitem_src in original_lot_product.items:
+                            for pitem_src in template_product.items:
+                                if pitem_src.performance.event.id == self.event.id:
+                                    # イベントコピー後の商品明細をコピーする
                                     res = ProductItem.create_from_template_for_lot(
                                         pitem_src,
                                         product_id=new_lot_product.id,
