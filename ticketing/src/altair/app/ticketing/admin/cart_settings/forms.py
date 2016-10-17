@@ -371,6 +371,19 @@ class CartSettingForm(OurForm):
         #    ]
         )
 
+    service_providers = OurSelectMultipleField(
+        label=_(u'認証サービスプロバイダ'),
+        choices=[
+            (u'rakuten', u'楽天認証'),
+            (u'pollux', u'ファンクラブ認証'),
+            ],
+        widget=CheckboxMultipleSelect(multiple=True)
+        # XXX: orderreviewで使われる可能性あり (暫定措置、終わったら元に戻す)
+        #validators=[
+        #    DynSwitchDisabled('{auth_type}<>"altair.oauth_auth.plugin.OAuthAuthPlugin"'),
+        #    ]
+        )
+
     def validate_secondary_auth_type(self, field):
         if self.auth_type.data != None and self.auth_type.data == field.data:
             raise ValidationError(u'主認証方式と同じ認証方式は設定できません')
