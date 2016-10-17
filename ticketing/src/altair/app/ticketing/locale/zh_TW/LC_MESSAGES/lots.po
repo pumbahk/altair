@@ -266,7 +266,7 @@ msgid "例: タロウ"
 msgstr " "
 
 msgid "例: 東京都"
-msgstr "例: Taibei"
+msgstr "例: Taipei"
 
 msgid "例: 中央区"
 msgstr "例: Xinyi District"
