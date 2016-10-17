@@ -40,13 +40,15 @@ def clear_user_profile(request):
     if FC_SESSION_KEY in request.session:
         del request.session[FC_SESSION_KEY]
 
-def store_user_profile(request, user_profile):
-    logger.debug('stored user profile=%r' % user_profile)
-    request.session[FC_SESSION_KEY] = user_profile
 
-def load_user_profile(request):
+def store_user_profile(request, user_profile, performance_id):
+    logger.debug('stored user profile=%r' % user_profile)
+    request.session["{}{}".format(FC_SESSION_KEY, performance_id)] = user_profile
+
+
+def load_user_profile(request, performance_id):
     logger.debug('loaded user profile=%r' % request.session.get(FC_SESSION_KEY))
-    return request.session.get(FC_SESSION_KEY)
+    return request.session.get("{}{}".format(FC_SESSION_KEY, performance_id))
 
 def back_to_top2(request):
     performance_id = request.context.performance.id
@@ -167,7 +169,7 @@ class FCIndexView(object):
     @lbr_view_config(request_method='GET')
     def get(self):
         jump_maintenance_page_for_trouble(self.request.organization)
-        form, extra_form_fields = self.product_form_from_user_profile(load_user_profile(self.request))
+        form, extra_form_fields = self.product_form_from_user_profile(load_user_profile(self.request, self.context.performance.id))
         return dict(form=form, extra_form_fields=extra_form_fields)
 
     @lbr_view_config(request_method='POST')
@@ -212,7 +214,7 @@ class FCIndexView(object):
         logger.debug('cart %s' % cart)
         api.set_cart(self.request, cart)
         data = extract_form_data(form)
-        store_user_profile(self.request, data)
+        store_user_profile(self.request, data, cart.performance_id)
         logger.debug('OK redirect')
         return HTTPFound(location=self.request.route_url("cart.payment", sales_segment_id=cart.sales_segment.id))
 
@@ -226,7 +228,7 @@ class FCIndexView(object):
 class FCPaymentView(PaymentView):
     @reify
     def _user_profile(self):
-        return load_user_profile(self.request)
+        return load_user_profile(self.request, self.context.performance.id)
 
     def get_validated_address_data(self):
         address_data = self._user_profile
@@ -267,7 +269,7 @@ class FCPaymentView(PaymentView):
     @back(back_to_top2)
     @lbr_view_config(request_method="POST")
     def post(self):
-        data = load_user_profile(self.request)
+        data = load_user_profile(self.request, self.context.performance.id)
         extra_data = data.get('extra')
         if extra_data is not None:
             extra_data = dict(
