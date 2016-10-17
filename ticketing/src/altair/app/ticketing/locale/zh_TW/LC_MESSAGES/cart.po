@@ -359,16 +359,16 @@ msgid "半角英数7ケタ"
 msgstr "7位數字，字母"
 
 msgid "例: 東京都"
-msgstr "例: 東京都"
+msgstr "例: Taibei"
 
 msgid "例: 中央区"
-msgstr "例: 中央區"
+msgstr "例: Xinyi District"
 
 msgid "例: 日本橋x-xx-xx"
-msgstr "例: 日本橋 x-xx-xx"
+msgstr "例: Street xx"
 
 msgid "例: yyビルz階"
-msgstr "例: yy大樓z樓"
+msgstr "例: Building xx, Room xx"
 
 msgid "例: 080xxxxyyyy"
 msgstr "例: 080xxxxyyyy"
