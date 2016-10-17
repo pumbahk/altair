@@ -118,10 +118,10 @@ class ICartResource(Interface):
     def get_payment_delivery_method_pair(start_at=None):
         pass
 
-    def store_user_profile(data):
+    def store_user_profile(data, performance_id):
         """after product form validation,  validation is success,  store data"""
 
-    def load_user_profile():
+    def load_user_profile(performance_id):
         pass
 
     def remove_user_profile():
