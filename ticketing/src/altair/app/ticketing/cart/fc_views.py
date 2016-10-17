@@ -143,12 +143,18 @@ class FCIndexView(object):
             flavors=(self.context.cart_setting.flavors or {}),
             _fields=fields
             )
+
         def _(f, data):
             for k, v in data.items():
                 if isinstance(v, dict):
                     _(f[k], v)
                 else:
-                    f[k].data = v
+                    try:
+                        f[k].data = v
+                    except KeyError:
+                        logger.info("deleted extra_form data. performance_id={}, key_name={}".format(
+                            self.context.performance.id, k.encode('utf-8')))
+
         if params is None and data is not None:
             _(retval, data)
         if issubclass(extra_form_type, schemas.DynamicExtraForm):
