@@ -702,3 +702,11 @@ div#grpRakutenLinkArea div#serviceList dl {
     font-size: 14px;
     height: 30px;
 }
+
+.selectwrapper {
+     height: 30px;
+}
+
+.selectdiv {
+    clear: both;
+}

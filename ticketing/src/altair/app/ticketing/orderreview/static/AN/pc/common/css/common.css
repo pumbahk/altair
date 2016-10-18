@@ -88,3 +88,7 @@ a:hover,a.selected{ text-decoration: underline; }
     font-size: 14px;
     height: 30px;
 }
+
+.selectwrapper {
+     height: 50px;
+}
