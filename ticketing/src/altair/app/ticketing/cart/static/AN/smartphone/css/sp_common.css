@@ -73,3 +73,17 @@ vertical-align:bottom;
     display: block;
 }
 /* End hide from IE-mac */
+
+.selectpicker {
+    float: right;
+    margin: 5px;
+    border: 1px solid #111;
+    width: 100px;
+    padding: 5px 35px 5px 5px;
+    font-size: 14px;
+    height: 30px;
+}
+
+.selectwrapper {
+     height: 15px;
+}
