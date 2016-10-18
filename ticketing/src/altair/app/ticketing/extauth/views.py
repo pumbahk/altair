@@ -87,7 +87,9 @@ class OAuthParamsReceiver(object):
 
     def __call__(self, fn):
         def _(context, request):
-            if request.params or 'oauth_params' not in request.session:
+            if 'oauth_params' in request.session:
+                return fn(context, request)
+            elif request.params:
                 oauth_params = None
                 try:
                     oauth_params = self.oauth_request_parser.parse_grant_authorization_code_request(request)
@@ -229,8 +231,11 @@ class View(object):
                 raise OpenIDLoginRequired()
             return challenge_rakuten_id(self.request)
 
+        # fanclubのコースチェックを行うparameter。存在しない場合はdefault True
+        use_fanclub = self.request.params['use_fanclub'] if self.request.params.has_key('use_fanclub') else True
+
         # fanclubを利用するORGはコースチェックへ、しないORGはauthorizeへ
-        if self.request.organization.fanclub_api_available:
+        if self.request.organization.fanclub_api_available is True and use_fanclub is True:
             return self.navigate_to_select_account_rakuten_auth()
         else:
             return HTTPFound(
@@ -238,7 +243,8 @@ class View(object):
                     'extauth.authorize',
                     subtype=self.context.subtype,
                     _query=dict(
-                        _=self.request.session.get_csrf_token()
+                        _=self.request.session.get_csrf_token(),
+                        use_fanclub=use_fanclub
                         )
                     ),
             )
