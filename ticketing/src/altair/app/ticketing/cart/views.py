@@ -1028,7 +1028,8 @@ class PaymentView(object):
             address_1=metadata.get('address_1'),
             address_2=metadata.get('address_2'),
             email_1=metadata.get('email_1'),
-            email_2=metadata.get('email_2')
+            email_2=metadata.get('email_2'),
+            email_1_confirm=metadata.get('email_1')
         )
 
         client_form = forms_i18n.ClientFormFactory(self.request).make_form()
