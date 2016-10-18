@@ -603,6 +603,10 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         else:
             return False
 
+    @property
+    def lot_sales_segments(self):
+        return [lot.sales_segment for lot in self.event.lots]
+
     def get_recent_sales_segment(self, now):
         """公演に紐づく販売区分のうち直近のものを返す。抽選の販売区分も含む"""
         if now is None:
@@ -652,23 +656,6 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             # create default Stock
             Stock.create_default(self.event, performance_id=self.id)
         logger.info('[copy] Stock end')
-
-    # コピー先抽選販売区分を取得
-    def get_copied_lot_sales_segments(self):
-        return [lot.sales_segment for lot in self.event.lots]
-
-    def check_copy_target_lot(self, product, copied_lot_sales_segment):
-        # コピー元の商品を親としている、抽選商品を取得する。
-        # 抽選商品から抽選をたどり、現在追加しようとしている抽選販売区分から抽選をたどり親だったら追加する。
-        lot_products = Product.query.filter(Product.original_product_id == product.id).all()
-        lot_sales_segment_ids = [p.sales_segment.id for p in lot_products]
-        from ..lots.models import Lot
-        lots = Lot.query.filter(Lot.sales_segment_id.in_(lot_sales_segment_ids)).all()
-        copied_lot = Lot.query.filter(Lot.sales_segment_id == copied_lot_sales_segment.id).first()
-        for lot in lots:
-            if lot.id == copied_lot.original_lot_id:
-                return True
-        return False
 
     def save(self):
         BaseModel.save(self)
@@ -723,9 +710,9 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                     convert_map['product'].update(product_map)
 
                     if template_sales_segment.is_lottery:
-                        copied_lot_sales_segments = self.get_copied_lot_sales_segments()
+                        copied_lot_sales_segments = self.lot_sales_segments
                         for lot_sales_segment in copied_lot_sales_segments:
-                            if not self.check_copy_target_lot(template_product, lot_sales_segment):
+                            if not lot_sales_segment.can_copy_lot_product(template_product):
                                 continue
 
                             res = Product.create_from_template(
@@ -4080,6 +4067,23 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
         for product in self.products:
             product.accept_core_model_traverser(traverser)
         traverser.end_sales_segment(self)
+
+    def can_copy_lot_product(self, template_product):
+        # コピー元の商品を親としている、抽選商品を取得する。
+        # 抽選商品から抽選をたどり、現在追加しようとしている抽選販売区分から抽選をたどり親だったら追加する。
+        lot_products = Product.query.filter(Product.original_product_id == template_product.id).all()
+        lot_sales_segment_ids = [p.sales_segment.id for p in lot_products]
+        from ..lots.models import Lot
+        lots = Lot.query.filter(Lot.sales_segment_id.in_(lot_sales_segment_ids)).all()
+        copied_lot = Lot.query.filter(Lot.sales_segment_id == self.id).first()
+        for lot in lots:
+            if lot.id == copied_lot.original_lot_id:
+                # このコードをいれる前のバグで、オリジナルIDが同じ商品がイベントをまたいでいるため、
+                # 以下のコードを入れて対処
+                if lot.event.id == template_product.sales_segment.event.id:
+                    return True
+        return False
+
 
 class SalesReportTypeEnum(StandardEnum):
     Default = 1
