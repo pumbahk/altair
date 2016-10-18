@@ -28,6 +28,9 @@
     <hr />
 
     <!-- ========== main ========== -->
+    <div style='height:30px;'>
+      ${h.create_url(request) |n}
+    </div>
     <div id="main">
       <h1>${_(u'チケット購入')}</h1>
       ${self.body()}
@@ -36,6 +39,5 @@
   </div>
   <!-- /container -->
   <%block name="extras" />
-  ${h.create_url(request) |n}
 </body>
 </html>

@@ -692,3 +692,13 @@ div#grpRakutenLinkArea div#serviceList dl {
 	overflow: hidden;
 	zoom: 1;
 }
+
+.selectpicker {
+    float: right;
+    margin: 5px;
+    border: 1px solid #111;
+    width: 100px;
+    padding: 5px 35px 5px 5px;
+    font-size: 14px;
+    height: 30px;
+}
