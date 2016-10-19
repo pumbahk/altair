@@ -445,34 +445,7 @@ class ReportSettingForm(OurForm):
             self.performance_id.data = None
 
     def validate_recipients(form, field):
-        num = 0
-        emails = []
-        for line in field.data.splitlines():
-            num += 1
-            row = line.split(',')
-            if len(row) > 2:
-                raise ValidationError(u'入力された形式が不正です。（例：名前,メールアドレス {}行目'.format(str(num)))
-
-            # メアドのみ
-            if len(row) == 1:
-                if not row[0].strip():
-                    raise ValidationError(u'空白は指定できません。{}行目'.format(str(num)))
-
-                if not validate_email(row[0].strip()):
-                    raise ValidationError(u'メールアドレスの形式が不正です。全角は使用できません。{}行目'.format(str(num)))
-                emails.append(row[0].strip())
-                if not check_orverlap_email(emails):
-                    raise ValidationError(u'メールアドレスが重複しています。{}行目'.format(str(num)))
-
-            # 名前とメアド
-            elif len(row) == 2:
-                if not row[0].strip() or not row[1].strip():
-                    raise ValidationError(u'空白は指定できません。{}行目'.format(str(num)))
-                if not validate_email(row[1].strip()):
-                    raise ValidationError(u'メールアドレスの形式が不正です。全角は使用できません。{}行目'.format(str(num)))
-                emails.append(row[1].strip())
-                if not check_orverlap_email(emails):
-                    raise ValidationError(u'メールアドレスが重複しています。{}行目'.format(str(num)))
+        validate_recipients(field)
 
     def validate(self):
         status = super(ReportSettingForm, self).validate()
@@ -487,6 +460,37 @@ def append_error(field, error):
     if not hasattr(field.errors, 'append'):
         field.errors = list(field.errors)
     field.errors.append(error)
+
+
+def validate_recipients(field):
+    num = 0
+    emails = []
+    for line in field.data.splitlines():
+        num += 1
+        row = line.split(',')
+        if len(row) > 2:
+            raise ValidationError(u'入力された形式が不正です。（例：名前,メールアドレス {}行目'.format(str(num)))
+
+        # メアドのみ
+        if len(row) == 1:
+            if not row[0].strip():
+                raise ValidationError(u'空白は指定できません。{}行目'.format(str(num)))
+
+            if not validate_email(row[0].strip()):
+                raise ValidationError(u'メールアドレスの形式が不正です。全角は使用できません。{}行目'.format(str(num)))
+            emails.append(row[0].strip())
+            if not check_orverlap_email(emails):
+                raise ValidationError(u'メールアドレスが重複しています。{}行目'.format(str(num)))
+
+        # 名前とメアド
+        elif len(row) == 2:
+            if not row[0].strip() or not row[1].strip():
+                raise ValidationError(u'空白は指定できません。{}行目'.format(str(num)))
+            if not validate_email(row[1].strip()):
+                raise ValidationError(u'メールアドレスの形式が不正です。全角は使用できません。{}行目'.format(str(num)))
+            emails.append(row[1].strip())
+            if not check_orverlap_email(emails):
+                raise ValidationError(u'メールアドレスが重複しています。{}行目'.format(str(num)))
 
 
 def validate_email(data):

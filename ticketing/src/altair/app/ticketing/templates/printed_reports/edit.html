@@ -35,5 +35,10 @@
 <h3>送信対象者</h3>
 <form action="${request.route_path('printed_reports.recipients_update', event_id=event.id)}" method="POST">
 <input type="submit" class="btn normal" value="送信者を変更"/><br/>
+<div class="alert-error">
+  % for error in recipients_form.recipients.errors:
+    ${error}
+  % endfor
+</div>
 ${recipients_form.recipients(style='width:80%; height:300px')}
 </form>
