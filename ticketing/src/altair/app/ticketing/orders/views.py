@@ -2086,6 +2086,11 @@ class OrdersReserveView(OrderBaseView):
                 first_name_kana=self.context.form.first_name_kana.data,
                 last_name_kana=self.context.form.last_name_kana.data,
                 country=u'日本',
+                prefecture=self.context.form.prefecture.data,
+                city=self.context.form.city.data,
+                address_1=self.context.form.address_1.data,
+                address_2=self.context.form.address_2.data,
+                email_1=self.context.form.email_1.data,
                 tel_1=self.context.form.tel_1.data,
                 tel_2=""
             )

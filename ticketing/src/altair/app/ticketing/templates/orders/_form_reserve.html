@@ -3,12 +3,18 @@
 <%namespace file="/common/helpers.html" name="ch" />
 
 <style type="text/css">
+  #modal-reserve {
+    width: auto;
+  }
   #modal-reserve .product_quantity {
     width: 50px;
     padding: 2px;
     margin: 0;
   }
   #modal-reserve input {
+    width: 257px;
+  }
+  #modal-reserve input.name {
     width: 120px;
   }
   #modal-reserve .form-horizontal .control-group {
@@ -16,6 +22,14 @@
   }
   #modal-reserve .form-horizontal ul {
     padding-top: 5px;
+  }
+  #store_warning {
+    color: #BA0000;
+    display: none;
+    padding: 0 50px;
+  }
+  #shipping-address-btn {
+    margin: 10px 0;
   }
 </style>
 
@@ -29,15 +43,25 @@
       $('[id^=product_quantity]:first').val(${len(_context.seats_form.seats.data)});
     }
     $('#payment_delivery_method_pair_id').change(function(){
-      var seven_only = $('.seven_only');
+      var delivery_at_store = $('.delivery_at_store');
+      var store_warning = $('#store_warning');
       if ($.inArray(parseInt($(this).val()), ${HH.json([payment_delivery_method_pair.id for payment_delivery_method_pair in _context.convenience_payment_delivery_method_pairs])|n}) == -1) {
-        seven_only.css('display', 'none');
+        delivery_at_store.css('display', 'none');
+        store_warning.css('display', 'none');
       } else {
-        seven_only.css('display', 'block');
+        delivery_at_store.css('display', 'block');
+        store_warning.css('display', 'block');
       }
     }).change();
     $('.draggable').draggable({scroll: true, handle:$('.draggable .modal-header')});
     $('#modal-reserve').disableOnSubmit();
+
+    $('.shipping-address').on('hidden.bs.collapse', function() {
+        $('button#shipping-address-btn').html('配送情報編集フォームを開く');
+    });
+    $('.shipping-address').on('show.bs.collapse', function() {
+        $('button#shipping-address-btn').html('配送情報編集フォームを閉じる');
+    });
 
     // pager (see:templates/performances/_reservation.html)
     var pager = new Pager("#modal-reserve", "reserve");
@@ -236,30 +260,40 @@
       </script>
       ${ch.form_item(_context.settings_form.sales_segment_id, class_='span10')}
       ${ch.form_item(form.payment_delivery_method_pair_id, class_='span10')}
-      <div class="shipping-address">
-        <div class="control-group">
-          <div class="controls">
-            <p style="color: #BA0000;">※ コンビニ決済およびコンビニ受取は、払込票番号・引換票を発行する為に購入者情報が必須です。</p>
-          </div>
-        </div>
+      <div id="store_warning">
+        <p>※ コンビニ決済およびコンビニ受取は、払込票番号・引換票を発行する為に購入者情報が必須です。</p>
+      </div>
+      <script>
+
+      </script>
+      <button id="shipping-address-btn" class="btn btn-danger" type="button" data-toggle="collapse" data-target="div.shipping-address">
+        配送情報編集フォームを開く
+      </button>
+      <div class="shipping-address collapse">
         <div class="control-group">
           <label class="control-label">氏名</label>
           <div class="controls">
-            ${form.last_name(maxlength=u'10')}
-            ${form.first_name(maxlength=u'10')}
+            ${form.last_name(maxlength=u'10', placeholder=u'姓）山田', class_="name")}
+            ${form.first_name(maxlength=u'10', placeholder=u'名）太郎', class_="name")}
           </div>
         </div>
         <div class="control-group">
           <label class="control-label">氏名(カナ)</label>
           <div class="controls">
-            ${form.last_name_kana(maxlength=u'10')}
-            ${form.first_name_kana(maxlength=u'10')}
+            ${form.last_name_kana(maxlength=u'10', placeholder=u"姓（カナ）ヤマダ", class_="name")}
+            ${form.first_name_kana(maxlength=u'10', placeholder=u"名（カナ）タロウ", class_="name")}
           </div>
         </div>
-        ${ch.form_item(form.tel_1)}
+        ${ch.form_item(form.zip, placeholder=u'例）1030001')}
+        ${ch.form_item(form.prefecture, placeholder=u'例）東京都')}
+        ${ch.form_item(form.city, placeholder=u'例）中央区')}
+        ${ch.form_item(form.address_1, placeholder=u'例）日本橋x-xx-xx')}
+        ${ch.form_item(form.address_2, placeholder=u'例）yyビルz階')}
+        ${ch.form_item(form.email_1, placeholder=u'例）customer_name@example.com')}
+        ${ch.form_item(form.tel_1, placeholder=u'例）08012345678')}
       </div>
 
-      <div class="seven_only">
+      <div class="delivery_at_store">
         ${ch.form_item(form.sales_counter_payment_method_id, class_='span10')}
         <div class="control-group">
           <div class="controls">
