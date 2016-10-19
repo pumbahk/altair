@@ -4,18 +4,33 @@
 
 <style type="text/css">
   #modal-reserve {
-    width: auto;
+    width: 60%;
+    left: 20%;
+    margin: auto;
+  }
+  #modal-body {
+    height: 100%;
   }
   #modal-reserve .product_quantity {
     width: 50px;
     padding: 2px;
     margin: 0;
   }
-  #modal-reserve input {
-    width: 257px;
+  #modal-reserve .shipping-address .controls input.name {
+    width: 48%;
   }
-  #modal-reserve input.name {
-    width: 120px;
+  #modal-reserve .shipping-address .controls input.name:last-child {
+    margin-left: 2%;
+  }
+  #modal-reserve .shipping-address .controls,
+  #modal-reserve .delivery_at_store .controls {
+    width: 60%;
+  }
+  #modal-reserve .shipping-address .controls input,
+  #modal-reserve .delivery_at_store .controls select {
+    margin-left: -6px;
+    padding-right: 0;
+    width: 100%;
   }
   #modal-reserve .form-horizontal .control-group {
     margin-bottom: 5px;
@@ -49,7 +64,7 @@
         delivery_at_store.css('display', 'none');
         store_warning.css('display', 'none');
       } else {
-        delivery_at_store.css('display', 'block');
+        delivery_at_store.css('display', 'inline');
         store_warning.css('display', 'block');
       }
     }).change();
@@ -294,7 +309,7 @@
       </div>
 
       <div class="delivery_at_store">
-        ${ch.form_item(form.sales_counter_payment_method_id, class_='span10')}
+        ${ch.form_item(form.sales_counter_payment_method_id)}
         <div class="control-group">
           <div class="controls">
             <p>※ 当日窓口決済を選択すると、予約のステータスが「入金済み」になります</p>
