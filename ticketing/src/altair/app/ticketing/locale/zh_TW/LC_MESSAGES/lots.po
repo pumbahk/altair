@@ -254,10 +254,10 @@ msgid "例: 1030001"
 msgstr "例: 1030001"
 
 msgid "例: 山田"
-msgstr "例: 王"
+msgstr "例: Wang"
 
 msgid "例: 太郎"
-msgstr "例: 小明"
+msgstr "例: Xiaoming"
 
 msgid "例: ヤマダ"
 msgstr " "
@@ -266,16 +266,16 @@ msgid "例: タロウ"
 msgstr " "
 
 msgid "例: 東京都"
-msgstr "例: 東京都"
+msgstr "例: Taipei"
 
 msgid "例: 中央区"
-msgstr "例: 中央區"
+msgstr "例: Xinyi District"
 
 msgid "例: 日本橋x-xx-xx"
-msgstr "例: 日本橋 x-xx-xx"
+msgstr "例: xx Street"
 
 msgid "例: yyビルz階"
-msgstr "例: yy大樓z樓"
+msgstr "例: Building xx, Room xx"
 
 msgid "例: 080xxxxyyyy"
 msgstr "例: 080xxxxyyyy"

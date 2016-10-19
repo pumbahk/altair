@@ -360,16 +360,16 @@ msgid "半角英数7ケタ"
 msgstr "7位数字或字母"
 
 msgid "例: 東京都"
-msgstr "例: 北京"
+msgstr "例: Beijing"
 
 msgid "例: 中央区"
-msgstr "例: 朝阳区"
+msgstr "例: Chaoyang District"
 
 msgid "例: 日本橋x-xx-xx"
-msgstr "例: 朝外街道xx号"
+msgstr "例: Chaowai Street, Number xx "
 
 msgid "例: yyビルz階"
-msgstr "例: 大厦xx号"
+msgstr "例: Building xx, Room xx"
 
 msgid "例: 080xxxxyyyy"
 msgstr "例: 180xxxxyyyy"
