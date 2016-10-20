@@ -83,6 +83,7 @@ class AuthenticationPolicy(object):
         groups = self._get_groups(identities, request)
         if groups is not None:
             principals.extend(groups)
+        logger.debug('yielded principals with groups=%r' % principals)
         return principals
 
     def remember(self, request, principal, **kw):

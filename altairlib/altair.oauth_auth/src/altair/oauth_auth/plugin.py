@@ -165,6 +165,7 @@ class OAuthAuthPlugin(object):
             u'client_id': client_id,
             u'state': verification_token,
             u'redirect_uri': self.get_redirect_uri(request),
+            u'service_providers': u','.join(request.context.cart_setting.data.get('service_providers'))  # CartSettingで認証サービスプロバイダを指定
             }
         if scope:
             params['scope'] = u' '.join(scope)

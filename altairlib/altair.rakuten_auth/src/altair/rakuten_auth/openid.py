@@ -435,6 +435,7 @@ class RakutenOpenID(object):
             for session_keeper in auth_context.session_keepers:
                 auth_factors_for_session_keeper = auth_factors.get(session_keeper.name)
                 if auth_factors_for_session_keeper:
+                    import ipdb;ipdb.set_trace()
                     identity.update(auth_factors_for_session_keeper)
         if openid_params is not None:
             # verify から呼ばれた場合
@@ -451,6 +452,7 @@ class RakutenOpenID(object):
             del auth_factors_for_this_plugin[self.IDENT_OPENID_PARAMS_KEY]
         elif stored_identity is not None:
             # extra_verify; identity はセッションに保存されている
+            import ipdb;ipdb.set_trace()
             identity = stored_identity
             del auth_factors_for_this_plugin[self.EXTRA_VERIFY_KEY]
 
@@ -465,6 +467,7 @@ class RakutenOpenID(object):
             cache = self._get_cache()
 
             def get_extras():
+                import ipdb;ipdb.set_trace()
                 retval = self._get_extras(request, identity)
                 browserid = get_browserid(request)
                 retval['browserid'] = browserid

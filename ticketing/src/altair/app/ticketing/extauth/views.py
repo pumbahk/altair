@@ -72,10 +72,10 @@ JUST_AUTHENTICATED_KEY = '%s.just_authenticated' % __name__
 def rakuten_auth_challenge_succeeded(request, plugin, identity, metadata):
     request.session[JUST_AUTHENTICATED_KEY] = True
 
-def challenge_rakuten_id(request):
+def challenge_service_provider(request, challenger_name):
     api = get_auth_api(request)
     response = HTTPForbidden()
-    if api.challenge(request, response, challenger_name='rakuten'):
+    if api.challenge(request, response, challenger_name=challenger_name):
         return response
     else:
         logger.error('WTF?')
@@ -203,8 +203,11 @@ class View(object):
         decorator=(receives_oauth_params, )
         )
     def entry(self):
+        # usersideからextauthへのリクエストにあるSPを指定するパラメタをセッションに格納して使いまわす
+        if self.request.params.get('service_providers'):
+            self.request.session['service_providers'] = self.request.params.get('service_providers').split(',')
         oauth_params = self.request.session['oauth_params']
-
+        logger.debug('effective_principals: {}'.format(self.request.effective_principals))
         if Authenticated in self.request.effective_principals:
             if u'login' in oauth_params['prompt']:
                 self.request.response.headers.update(forget(self.request))
@@ -219,17 +222,18 @@ class View(object):
         )
     def rakuten_entry(self):
         oauth_params = self.request.session['oauth_params']
+        logger.debug('effective_principals: {}'.format(self.request.effective_principals))
         if 'altair.auth.authenticator:rakuten' in self.request.effective_principals:
             if self.request.session.get(JUST_AUTHENTICATED_KEY, False):
                 del self.request.session[JUST_AUTHENTICATED_KEY]
             else:
                 if 'login' in oauth_params['prompt']:
                     self.request.response.headers.update(forget(self.request))
-                    return challenge_rakuten_id(self.request)
+                    return challenge_service_provider(self.request, 'rakuten')
         else:
             if 'none' in oauth_params['prompt']:
                 raise OpenIDLoginRequired()
-            return challenge_rakuten_id(self.request)
+            return challenge_service_provider(self.request, 'rakuten')
 
         # fanclubのコースチェックを行うparameter。存在しない場合はdefault True
         use_fanclub = self.request.params['use_fanclub'] if self.request.params.has_key('use_fanclub') else True
@@ -248,6 +252,27 @@ class View(object):
                         )
                     ),
             )
+
+    @lbr_view_config(
+        route_name='extauth.pollux.entry',
+        request_method='GET',
+        decorator=(receives_oauth_params, )
+        )
+    def pollux_entry(self):
+        oauth_params = self.request.session['oauth_params']
+        logger.debug('effective_principals: {}'.format(self.request.effective_principals))
+        if 'altair.auth.authenticator:pollux' in self.request.effective_principals:
+            if self.request.session.get(JUST_AUTHENTICATED_KEY, False):
+                del self.request.session[JUST_AUTHENTICATED_KEY]
+            else:
+                if 'login' in oauth_params['prompt']:
+                    self.request.response.headers.update(forget(self.request))
+                    return challenge_service_provider(self.request, 'pollux')
+        else:
+            if 'none' in oauth_params['prompt']:
+                raise OpenIDLoginRequired()
+            return challenge_service_provider(self.request, 'pollux')
+
 
     @lbr_view_config(
         route_name='extauth.select_account',
