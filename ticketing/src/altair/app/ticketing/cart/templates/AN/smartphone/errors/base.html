@@ -34,6 +34,9 @@
     <!-- ========== /header ========== -->
 
     <!-- ========== main ========== -->
+    <div>
+      ${h.create_url_link(request) |n}
+    </div>
     <div id="main" class="ts-contents" style="margin-bottom: 65px;">
       <div class="ts-contents-inner">
         <h1 class="heading-primary">${__(u'チケット購入')}</h1>
@@ -44,7 +47,6 @@
   </div>
   <!-- /container -->
   <%block name="extras" />
-  ${h.create_url(request) |n}
   % if request.organization.setting.sitecatalyst_use:
     <%include file="altair.app.ticketing.cart:templates/AN/common/sitecatalyst.html"/>
   % endif

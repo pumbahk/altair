@@ -359,16 +359,16 @@ msgid "半角英数7ケタ"
 msgstr "7位數字，字母"
 
 msgid "例: 東京都"
-msgstr "例: 東京都"
+msgstr "例: Taipei"
 
 msgid "例: 中央区"
-msgstr "例: 中央區"
+msgstr "例: Xinyi District"
 
 msgid "例: 日本橋x-xx-xx"
-msgstr "例: 日本橋 x-xx-xx"
+msgstr "例: Street xx"
 
 msgid "例: yyビルz階"
-msgstr "例: yy大樓z樓"
+msgstr "例: Building xx, Room xx"
 
 msgid "例: 080xxxxyyyy"
 msgstr "例: 080xxxxyyyy"
@@ -376,7 +376,7 @@ msgstr "例: 080xxxxyyyy"
 msgid "次へ"
 msgstr "下一步"
 
-msgid "注意事項を確認、同意し、公演に申し込んでください。"
+msgid "内容を同意の上、チェックを入れてください。"
 msgstr "若要訂購表演的票券，請確認並同意注意事項。"
 
 msgid "お支払／引取方法をお選びください"

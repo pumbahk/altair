@@ -10,6 +10,7 @@ from altair.app.ticketing.cart.helpers import japanese_date, japanese_datetime, 
 from altair.formhelpers.widgets.generic import GenericHiddenInput
 from altair.app.ticketing.cart.helpers import (
     create_url,
+    create_url_link,
     _message,
 )
 import logging

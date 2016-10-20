@@ -96,8 +96,12 @@ class OrganizationForm(Form):
         label=u"smartphoneでのPCページ閲覧",
         default=True
     )
+    enable_search = fields.BooleanField(
+        label=u"検索機能有効化",
+        default=True
+    )
 
-    __display_fields__ = ["name", "backend_id", "short_name", "code", "prefecture", "address", "email", "auth_source", "use_full_usersite", "use_only_one_static_page_type"]
+    __display_fields__ = ["name", "backend_id", "short_name", "code", "prefecture", "address", "email", "auth_source", "use_full_usersite", "use_only_one_static_page_type", "enable_search"]
 
 class HostForm(Form):
     organization_id = fields.SelectField(

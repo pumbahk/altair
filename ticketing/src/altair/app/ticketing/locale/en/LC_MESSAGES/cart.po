@@ -376,8 +376,8 @@ msgstr "Example: 080xxxxyyyy"
 msgid "次へ"
 msgstr "Next"
 
-msgid "注意事項を確認、同意し、公演に申し込んでください。"
-msgstr "Please check the notes, before you submit."
+msgid "内容を同意の上、チェックを入れてください。"
+msgstr "Please check here to indicate that you have confirmed the contents above."
 
 msgid "お支払／引取方法をお選びください"
 msgstr "Please select a payment / delivery method."

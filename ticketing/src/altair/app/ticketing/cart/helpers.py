@@ -647,7 +647,23 @@ def create_url(request):
     if not request.organization.setting.i18n:
         return str
     i18n_dict = OrderedDict([(u'en', u'English'), (u'ja', u'日本語'), (u'zh_CN', u'简体中文'), (u'zh_TW', u'繁体中文')])
-    str = u'<p class="tac mgt20 mgb20">'
+    str = u'<select onchange="location = this.value;" class="selectpicker">'
+    if request.organization and request.organization.setting.i18n:
+        locale_name = custom_locale_negotiator(request)
+        for local in i18n_dict:
+            if local != locale_name:
+                str = str + u'<option value="/locale?language={0}">{1}</option>   '.format(local, i18n_dict[local])
+            else:
+                str = str + u'<option value="/locale?language={0}" selected>{1}</option>   '.format(local, i18n_dict[local])
+    str = str + u'</select>'
+    return str
+
+def create_url_link(request):
+    str = u""
+    if not request.organization.setting.i18n:
+        return str
+    i18n_dict = OrderedDict([(u'en', u'English'), (u'ja', u'日本語'), (u'zh_CN', u'简体中文'), (u'zh_TW', u'繁体中文')])
+    str = u'<p class"tar mgt20 mgb20">'
     if request.organization and request.organization.setting.i18n:
         locale_name = custom_locale_negotiator(request)
         for local in i18n_dict:

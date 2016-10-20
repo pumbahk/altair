@@ -182,7 +182,7 @@ class EntryLotView(object):
                         product.seat_stock_type.display_order,
                         product.seat_stock_type.description
                         )
-                    for product in sales_segment.products
+                    for product in sales_segment.products if product.seat_stock_type.quantity_only is True
                     ),
                 lambda a, b: cmp(a[2], b[2])
                 )
