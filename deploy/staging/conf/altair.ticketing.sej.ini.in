@@ -29,6 +29,14 @@ altair.httpsession.persistence.type = ${altair:beaker_backend_type}
 altair.httpsession.persistence.data_dir = %(here)s/../tmp/beaker/data
 altair.httpsession.persistence.lock_dir = %(here)s/../tmp/beaker/lock
 
+; dummy_sej
+sej.inticket_api_url = http://localhost:8046
+sej.terminal_id = 1001
+sej.shop_id = 1001
+sej.password = 1001
+sej.api_key = 1001
+
+
 [app:www-check]
 use = egg:Paste#static
 document_root = %(www_check_docroot)s
