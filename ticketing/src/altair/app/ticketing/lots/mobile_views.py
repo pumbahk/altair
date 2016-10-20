@@ -146,7 +146,7 @@ class EntryLotView(object):
             products=sorted(
                 [
                     products_per_stock_type
-                    for _, products_per_stock_type in products.items()
+                    for _, products_per_stock_type in products.items() if products_per_stock_type[0].seat_stock_type.quantity_only is True
                     ],
                 lambda a, b: cmp(a[0].seat_stock_type.display_order, a[0].seat_stock_type.display_order,)
                 ),

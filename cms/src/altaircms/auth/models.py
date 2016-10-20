@@ -247,6 +247,9 @@ class Organization(BaseOriginalMixin, Base):
     use_only_one_static_page_type = Column(sa.Boolean, default=True, nullable=False,
                                       doc=u"これがtrueのとき、smartphoneアクセスでもpcの静的ページを見に行く"
     ) ## todo:修正
+    enable_search = Column(sa.Boolean, default=True, nullable=False,
+                                      doc=u"これがtrueのときのみ、検索機能を使える。"
+    )
     name = Column(Unicode(255))
     prefecture = Column(Unicode(255))
     address = Column(Unicode(255))

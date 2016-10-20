@@ -32,6 +32,9 @@
     <hr />
 
     <!-- ========== main ========== -->
+    <div class="selectwrapper">
+      ${h.create_url(request) |n}
+    </div>
     <div id="main">
       <h1>${_(u'チケット購入')}</h1>
       ${self.body()}

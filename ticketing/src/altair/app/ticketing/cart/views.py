@@ -271,7 +271,7 @@ class PerEventAgreementView(IndexViewMixin):
     def post(self):
         agree = self.request.params.get('agree')
         if not agree:
-            self.request.session.flash(self._message(u"注意事項を確認、同意し、公演に申し込んでください。"))
+            self.request.session.flash(self._message(u"内容を同意の上、チェックを入れてください。"))
             return HTTPFound(self.request.current_route_path(_query=self.request.GET))
         else:
             return HTTPFound(self.request.route_url('cart.index', event_id=self.context.event.id, _query=self.request.GET))
@@ -301,7 +301,7 @@ class PerPerformanceAgreementView(object):
     def post(self):
         agree = self.request.params.get('agree')
         if not agree:
-            self.request.session.flash(self._message(u"注意事項を確認、同意し、公演に申し込んでください。"))
+            self.request.session.flash(self._message(u"内容を同意の上、チェックを入れてください。"))
             return HTTPFound(self.request.current_route_path(_query=self.request.GET))
         else:
             return HTTPFound(self.request.route_url('cart.index2', performance_id=self.context.performance.id, _query=self.request.GET))
@@ -1028,7 +1028,8 @@ class PaymentView(object):
             address_1=metadata.get('address_1'),
             address_2=metadata.get('address_2'),
             email_1=metadata.get('email_1'),
-            email_2=metadata.get('email_2')
+            email_2=metadata.get('email_2'),
+            email_1_confirm=metadata.get('email_1')
         )
 
         client_form = forms_i18n.ClientFormFactory(self.request).make_form()

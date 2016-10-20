@@ -7,6 +7,9 @@
     <link rel="stylesheet" type="text/css" href="${view_context.static_url('pc/css/style2.css', 'fc_auth')}" media="all" />
   </head>
   <body>
+    <div class="selectdiv">
+      ${h.create_url(request) |n}
+    </div>
     <div class="header" id="top">
       <div class="header-inner">
         <h1>
@@ -111,10 +114,6 @@
         </div>
         <div class="copyright clear">
           &copy; TicketStar, Inc.
-        </div>
-
-        <div style="clear: both;">
-          ${h.create_url(request) |n}
         </div>
 
       </div>

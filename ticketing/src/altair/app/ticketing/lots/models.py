@@ -120,6 +120,7 @@ class Lot(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     organization = orm.relationship('Organization', backref='lots')
 
     lot_entry_user_withdraw = sa.Column('lot_entry_user_withdraw', sa.Boolean(), nullable=False, default=False)
+    original_lot_id = sa.Column(sa.Integer, nullable=True)
 
     @staticmethod
     def create_from_template(template, **kwds):
