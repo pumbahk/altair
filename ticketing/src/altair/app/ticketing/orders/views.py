@@ -307,7 +307,7 @@ class OrderBaseView(BaseView):
 
 
 
-@view_defaults(decorator=with_bootstrap, renderer='altair.app.ticketing:templates/orders/index.html', permission='sales_counter')
+@view_defaults(decorator=with_bootstrap, renderer='altair.app.ticketing:templates/orders/index.html', permission='order_viewer')
 class OrderIndexView(OrderBaseView):
 
     @view_config(route_name='orders.index')
