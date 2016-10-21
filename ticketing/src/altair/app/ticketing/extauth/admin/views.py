@@ -138,7 +138,6 @@ class OrganizationsView(object):
             short_name=form.short_name.data,
             fanclub_api_type=form.fanclub_api_type.data,
             fanclub_api_available=form.fanclub_api_available.data,
-            maximum_oauth_client_expiration_time=form.maximum_oauth_client_expiration_time.data,
             invalidate_client_http_session_on_access_token_revocation=form.invalidate_client_http_session_on_access_token_revocation.data
         )
         session.add(organization)
@@ -817,7 +816,6 @@ class OAuthClientsView(object):
         if not form.validate():
             self.request.response.status = 400
             return dict(form=form)
-        valid_since = self.request.now
         organization = lookup_organization_by_name(self.request, form.organization_name.data)
         oauth_client = OAuthClient(
             organization=organization,
@@ -825,9 +823,7 @@ class OAuthClientsView(object):
             client_id=generate_random_alnum_string(32),
             client_secret=generate_random_alnum_string(32),
             redirect_uri=form.redirect_uri.data,
-            authorized_scope=organization.maximum_oauth_scope,
-            valid_since=valid_since,
-            expire_at=valid_since + timedelta(seconds=organization.maximum_oauth_client_expiration_time)
+            authorized_scope=organization.maximum_oauth_scope
             )
         session.add(oauth_client)
         session.commit()

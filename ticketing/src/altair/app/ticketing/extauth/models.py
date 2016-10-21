@@ -1,4 +1,4 @@
-from datetime import datetime
+ from datetime import datetime
 from urlparse import urlparse
 from zope.interface import implementer
 from pyramid.threadlocal import get_current_request
@@ -25,7 +25,6 @@ class Organization(Base):
     short_name = sa.Column(sa.Unicode(32), nullable=False)
     canonical_host_name = sa.Column(sa.Unicode(128), sa.ForeignKey('Host.host_name', use_alter=True, name=u'Organization_ibfk_1'), nullable=True)
     maximum_oauth_scope = sa.Column(MutableSpaceDelimitedList.as_mutable(SpaceDelimitedList(255)), nullable=False, default=u'')
-    maximum_oauth_client_expiration_time = sa.Column(sa.Integer(), nullable=False, default=63072000)
     invalidate_client_http_session_on_access_token_revocation = sa.Column(sa.Boolean(), nullable=False, default=False)
     emergency_exit_url = sa.Column(sa.Unicode(255), nullable=True, default=None)
     settings = sa.Column(MutationDict.as_mutable(JSONEncodedDict(2048)))
@@ -147,8 +146,6 @@ class OAuthClient(Base, WithCreatedAt):
     client_secret = sa.Column(sa.Unicode(128), nullable=False)
     authorized_scope = sa.Column(MutableSpaceDelimitedList.as_mutable(SpaceDelimitedList(255)), nullable=False, default=u'')
     redirect_uri = sa.Column(sa.Unicode(384), nullable=True)
-    valid_since = sa.Column(sa.DateTime(), nullable=True)
-    expire_at = sa.Column(sa.DateTime(), nullable=True)
 
     organization = orm.relationship(Organization, foreign_keys=[organization_id])
 

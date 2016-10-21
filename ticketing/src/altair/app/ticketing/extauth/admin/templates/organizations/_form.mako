@@ -17,15 +17,6 @@
   </div>
 </div>
 <div class="control-group">
-  <label class="control-label" for="organization-form--maximum_oauth_client_expiration_time">${form.maximum_oauth_client_expiration_time.label.text}</label>
-  <div class="controls">
-    ${form.maximum_oauth_client_expiration_time(id="organization-form--maximum_oauth_client_expiration_time")}
-    %if form.maximum_oauth_client_expiration_time.errors:
-    <span class="help-inline">${u' / '.join(form.maximum_oauth_client_expiration_time.errors)}</span>
-    % endif
-  </div>
-</div>
-<div class="control-group">
   <label class="control-label" for="organization-form--canonical_host_name">${form.canonical_host_name.label.text}</label>
   <div class="controls">
     ${form.canonical_host_name(id="organization-form--canonical_host_name")}
