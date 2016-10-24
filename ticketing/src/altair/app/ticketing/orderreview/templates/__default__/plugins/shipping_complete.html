@@ -1,18 +1,18 @@
 <div>
-    <h4>以下の住所に郵送します</h4>
+    <h4>${_(u'以下の住所に郵送します')}</h4>
     <dl>
-        <dt>郵便番号</dt>
+        <dt>${_(u'郵便番号')}</dt>
         <dd>${shipping_address.zip}</dd>
-        <dt>住所</dt>
+        <dt>${_(u'住所')}</dt>
         <dd>${shipping_address.prefecture}${shipping_address.city}${shipping_address.address_1}${shipping_address.address_2}</dd>
-        <dt>宛名</dt>
-        <dd>${shipping_address.last_name} ${shipping_address.first_name} 様</dd>
-        <dt>配送状況</dt>
+        <dt>${_(u'宛名')}</dt>
+        <dd>${shipping_address.last_name} ${shipping_address.first_name} ${_(u'様')}</dd>
+        <dt>${_(u'配送状況')}</dt>
         <dd>
           % if order.delivered_at:
-            ${h.japanese_date(order.delivered_at)} 配送
+            ${h.japanese_date(order.delivered_at)} ${_(u'配送')}
           % else:
-           未配送
+            ${_(u'未配送')}
           % endif
         </dd>
     </dl>

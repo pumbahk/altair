@@ -354,9 +354,6 @@ msgstr "Famiport付款"
 msgid "Famiポート引取"
 msgstr "Famiport取票"
 
-msgid "チケットは代金と引換です。"
-msgstr "現金購票。"
-
 msgid "Famiポートでお引き取り"
 msgstr "Famiport取票"
 
@@ -371,3 +368,26 @@ msgstr "Famiport付款"
 
 msgid "支払期限"
 msgstr "付款期限"
+
+# post
+
+msgid "以下の住所に郵送します"
+msgstr "郵寄到以下地址"
+
+msgid "郵便番号"
+msgstr "郵政編碼"
+
+msgid "宛名"
+msgstr "收信人"
+
+msgid "様"
+msgstr " "
+
+msgid "配送状況"
+msgstr "郵寄狀態"
+
+msgid "配送"
+msgstr "已郵寄"
+
+msgid "未配送"
+msgstr "未郵寄"
