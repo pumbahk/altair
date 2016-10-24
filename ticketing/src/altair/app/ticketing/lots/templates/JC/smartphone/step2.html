@@ -137,14 +137,14 @@ ${m.delivery_method.description or '' | n}
 <div class="subbox">
 <dl>
 <dt>
-<p class="lineRed">エントリー代表者情報</p>
+<p class="lineRed">エントリー者情報</p>
 <div class="tyuui2">*印の項目は入力が必須です</div>
 </dt>
 <dd>
 <div class="subInner2">
 <dl class="creditList">
 
-<dt class="creditHl">エントリー代表者氏名（全角）</dt>
+<dt class="creditHl">エントリー者氏名（全角）</dt>
 <dd>
 <p>
 ${h.render_label(form['last_name'])}<br/>
@@ -160,7 +160,7 @@ ${self.error(form, 'first_name')}
 </p>
 </dd>
 
-<dt class="creditHl">エントリー代表者氏名（全角カナ）</dt>
+<dt class="creditHl">エントリー者氏名（全角カナ）</dt>
 <dd>
 <p>
 ${h.render_label(form['last_name_kana'])}<br/>
