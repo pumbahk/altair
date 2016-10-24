@@ -27,7 +27,7 @@
 %if h.lot_entry_display_status(entry, now) == u'抽選申込取消':
   <div class="confirmBox">
     <dl>
-      <dt><img src="${request.static_url('altair.app.ticketing.lots:static/JC/pc/img/order/title_election_result.gif')}" alt="抽選結果" /></dt>
+      <dt><img src="${request.static_url('altair.app.ticketing.lots:static/JC/pc/img/order/title_election_result.gif')}" alt="受付結果" /></dt>
       <dd>
         <div class="subinner2">
         お申込みいただいておりました以下の抽選受付を${h.withdraw_time_label(entry)}に取消いたしました。
@@ -38,7 +38,7 @@
 %else:
   <div class="confirmBox">
     <dl>
-      <dt><img src="${request.static_url('altair.app.ticketing.lots:static/JC/pc/img/order/title_election_result.gif')}" alt="抽選結果" /></dt>
+      <dt><img src="${request.static_url('altair.app.ticketing.lots:static/JC/pc/img/order/title_election_result.gif')}" alt="受付結果" /></dt>
       <dd>
       <div class="confirmBoxText">
         % if h.lot_entry_display_status(entry, now) == u'当選表示':
@@ -49,7 +49,7 @@
         % elif h.lot_entry_display_status(entry, now) == u'落選表示':
 抽選の結果、お客様は残念ながら落選となりました。
         % elif h.lot_entry_display_status(entry, now) == u'抽選待ち表示':
-抽選結果発表は、${h.announce_time_label(entry.lot)}を予定しております。抽選結果発表後、抽選結果確認ページにて当選・落選をご確認下さい。
+受付結果発表は、${h.announce_time_label(entry.lot)}を予定しております。受付結果発表後、受付結果確認ページにて当選・落選をご確認下さい。
         % endif
         </div>
       </dd>
@@ -82,7 +82,7 @@
         <p class="header"><strong>第${wish.wish_order + 1}希望</strong><span>${wish.performance.name}</span></p>
         <table summary="第一希望">
           <tr>
-            <th>抽選結果</th>
+            <th>受付結果</th>
             <td>
               %if entry.is_ordered:
                 %if wish.elected_at:

@@ -29,7 +29,7 @@
 <%mobile:form_header>申込番号</%mobile:form_header>
 <div>${entry.entry_no}</div>
 
-<%mobile:form_header>抽選結果</%mobile:form_header>
+<%mobile:form_header>受付結果</%mobile:form_header>
 %if h.lot_entry_display_status(entry, now) == u'抽選待ち表示':
 抽選待ち
 %else:
@@ -47,8 +47,8 @@ ${h.lot_entry_status_as_string(entry)}
 %elif h.lot_entry_display_status(entry, now) == u'落選表示':
 抽選の結果、お客様は残念ながら落選となりました。<br />
 %elif h.lot_entry_display_status(entry, now) == u'抽選待ち表示':
-抽選結果発表は、${h.announce_time_label(entry.lot)}を予定しております。<br />
-抽選結果発表後、抽選結果確認ページにて当選・落選をご確認下さい。
+受付結果発表は、${h.announce_time_label(entry.lot)}を予定しております。<br />
+受付結果発表後、受付結果確認ページにて当選・落選をご確認下さい。
 %endif
 </%mobile:band>
 
@@ -62,7 +62,7 @@ ${entry.payment_delivery_method_pair.delivery_method.name}<br/>
 %for wish in wishes:
   <div>
   <strong>第${wish.wish_order + 1}希望</strong><span>${wish.performance.name}</span>
-  抽選結果<br/>
+  受付結果<br/>
   <div>
   %if entry.is_ordered:
     %if wish.elected_at:

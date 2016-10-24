@@ -58,7 +58,7 @@ dl.cost-detail > dd {
   %else:
   <div class="subbox">
     <dl>
-      <dt><p class="linered">抽選結果</p></dt>
+      <dt><p class="linered">受付結果</p></dt>
       <dd>
         <div class="subinner2">
         % if h.lot_entry_display_status(entry, now) == u'当選表示':
@@ -67,7 +67,7 @@ dl.cost-detail > dd {
         % elif h.lot_entry_display_status(entry, now) == u'落選表示':
 抽選の結果、お客様は残念ながら落選となりました。
         % elif h.lot_entry_display_status(entry, now) == u'抽選待ち表示':
-抽選結果発表は、${h.announce_time_label(entry.lot)}を予定しております。抽選結果発表後、抽選結果確認ページにて当選・落選をご確認下さい。
+受付結果発表は、${h.announce_time_label(entry.lot)}を予定しております。受付結果発表後、受付結果確認ページにて当選・落選をご確認下さい。
         % endif
         </div>
       </dd>
