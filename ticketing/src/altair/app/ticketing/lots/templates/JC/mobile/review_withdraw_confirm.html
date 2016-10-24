@@ -2,7 +2,7 @@
 <%namespace file="./tags_mobile.html" name="mobile" />
 %if can_withdraw:
 <div align="center">
-<h3>この抽選申込を取消しますか?</h3>
+<h3>この申込を取消しますか?</h3>
 <form method="POST" id="withdrawForm" action="${request.route_path('lots.review.withdraw.withdraw')}">
     <input type="hidden" name="csrf_token" value=${request.session.get_csrf_token()}>
     <input type="hidden" name="entry_no" value=${entry_no}>
@@ -16,7 +16,7 @@
     <input type="submit" style="width:100px;height:30px;background-color:#FF6C0D;font-size:12px;padding: 5px 15px 5px 15px;color:white;border-radius: 7px;text-decoration: none; text-align:center;" value="いいえ">
 </form>
 </div>
-<span style="color:red">(取消した抽選申込を有効な抽選申込に戻す事はできません)</span>
+<span style="color:red">(取消した申込を有効な申込に戻す事はできません)</span>
 %endif
 %if error_msg:
 <div align="center" style="font-size:10px;height:30px;margin:5px;">${error_msg}</div>
@@ -38,7 +38,7 @@ ${h.lot_entry_status_as_string(entry)}
 </span>
 %endif
 <%mobile:band bgcolor="#ffffdd">
-%if h.lot_entry_display_status(entry, now) == u'抽選申込取消':
+%if h.lot_entry_display_status(entry, now) == u'申込取消':
 お申込みいただいておりました以下の抽選受付を${h.withdraw_time_label(entry)}に取消いたしました。
 %elif h.lot_entry_display_status(entry, now) == u'当選表示':
 抽選の結果、お客様はご当選されました。

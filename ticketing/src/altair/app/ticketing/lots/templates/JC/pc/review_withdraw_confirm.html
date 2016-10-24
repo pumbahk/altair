@@ -1,7 +1,7 @@
 <%inherit file="${context['main_template'].uri}" />
 %if can_withdraw:
 <div align="center">
-<h1>この抽選申込を取消しますか?</h1>
+<h1>この申込を取消しますか?</h1>
 </div>
 <div class="withdrawConfirmBox" align="center">
 <table>
@@ -24,7 +24,7 @@
 </table>
 </div>
 <div align="center">
-<span style="color:red">(取消した抽選申込を有効な抽選申込に戻す事はできません)</span>
+<span style="color:red">(取消した申込を有効な申込に戻す事はできません)</span>
 </div>
 %endif
 %if error_msg:
@@ -40,10 +40,10 @@
     <div class="confirmBoxText">${entry.entry_no}</div>
   </div>
 </div>
-%if h.lot_entry_display_status(entry, now) == u'抽選申込取消':
+%if h.lot_entry_display_status(entry, now) == u'申込取消':
 <div class="confirmBox">
   <div class="confirmBoxInner">
-    <h2 style="font-size:18px">抽選申込取消</h2>
+    <h2 style="font-size:18px">申込取消</h2>
     <div class="confirmBoxText">
         お申込みいただいておりました以下の抽選受付を${h.withdraw_time_label(entry)}に取消いたしました。
     </div>

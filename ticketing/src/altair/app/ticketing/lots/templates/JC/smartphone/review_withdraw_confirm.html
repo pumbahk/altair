@@ -6,7 +6,7 @@
 %>
 %if can_withdraw:
 <div align="center">
-<h1>この抽選申込を取消しますか?</h1>
+<h1>この申込を取消しますか?</h1>
 </div>
 <div class="withdrawConfirmBox">
 <table>
@@ -29,7 +29,7 @@
 </table>
 </div>
 <div align="center">
-<span style="color:red">(取消した抽選申込を有効な抽選申込に戻す事はできません)</span>
+<span style="color:red">(取消した申込を有効な申込に戻す事はできません)</span>
 </div>
 %endif
 %if error_msg:
@@ -46,7 +46,7 @@
     <div class="confirmBoxText">${entry.entry_no}</div>
   </div>
 </div>
-%if h.lot_entry_display_status(entry, now) == u'抽選申込取消':
+%if h.lot_entry_display_status(entry, now) == u'申込取消':
   <div class="confirmBox">
     <dl>
       <dt><img src="${request.static_url('altair.app.ticketing.lots:static/JC/pc/img/order/title_election_result.gif')}" alt="受付結果" /></dt>

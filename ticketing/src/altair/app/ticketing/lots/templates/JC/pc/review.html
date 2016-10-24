@@ -6,10 +6,10 @@
   </div>
 </div>
 
-%if h.lot_entry_display_status(entry, now) == u'抽選申込取消':
+%if h.lot_entry_display_status(entry, now) == u'申込取消':
 <div class="confirmBox">
   <div class="confirmBoxInner">
-    <h2 style="font-size:18px">抽選申込取消</h2>
+    <h2 style="font-size:18px">申込取消</h2>
     <div class="confirmBoxText">
         お申込みいただいておりました以下の抽選受付を${h.withdraw_time_label(entry)}に取消いたしました。
     </div>
