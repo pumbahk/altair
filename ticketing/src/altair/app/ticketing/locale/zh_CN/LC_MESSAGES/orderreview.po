@@ -340,9 +340,6 @@ msgstr "Famiport支付"
 msgid "Famiポート引取"
 msgstr "Famiport领取"
 
-msgid "チケットは代金と引換です。"
-msgstr "门票换来的代价。"
-
 msgid "Famiポートでお引き取り"
 msgstr "Famiport领票"
 
@@ -357,3 +354,26 @@ msgstr "Famiport支付"
 
 msgid "支払期限"
 msgstr "支付截止日期"
+
+# post
+
+msgid "以下の住所に郵送します"
+msgstr "邮寄到以下住址"
+
+msgid "郵便番号"
+msgstr "邮政编码"
+
+msgid "宛名"
+msgstr "收信人"
+
+msgid "様"
+msgstr " "
+
+msgid "配送状況"
+msgstr "发送状态"
+
+msgid "配送"
+msgstr "已发送"
+
+msgid "未配送"
+msgstr "未发送"
