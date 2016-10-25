@@ -238,6 +238,9 @@ class View(object):
         # fanclubのコースチェックを行うparameter。存在しない場合はdefault True
         use_fanclub = self.request.params.get('use_fanclub', True)
 
+        # fanclubのコースチェックを行うparameter。存在しない場合はdefault True
+        use_fanclub = self.request.params['use_fanclub'] if self.request.params.has_key('use_fanclub') else True
+
         # fanclubを利用するORGはコースチェックへ、しないORGはauthorizeへ
         if self.request.organization.fanclub_api_available is True and use_fanclub is True:
             return self.navigate_to_select_account_rakuten_auth()
