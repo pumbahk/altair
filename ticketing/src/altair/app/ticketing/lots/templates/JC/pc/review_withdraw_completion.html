@@ -17,34 +17,6 @@
     <div class="confirmBoxText">${entry.entry_no}</div>
   </div>
 </div>
-%if h.lot_entry_display_status(entry, now) == u'申込取消':
-<div class="confirmBox">
-  <div class="confirmBoxInner">
-    <h2 style="font-size:18px">申込取消</h2>
-    <div class="confirmBoxText">
-        お申込みいただいておりました以下の受付を${h.withdraw_time_label(entry)}に取消いたしました。
-    </div>
-  </div>
-</div>
-%else:
-<div class="confirmBox">
-  <div class="confirmBoxInner">
-    <h2><img src="${request.static_url('altair.app.ticketing.lots:static/JC/pc/img/order/title_election_result.gif')}" alt="受付結果" /></h2>
-    <div class="confirmBoxText">
-      % if h.lot_entry_display_status(entry, now) == u'当選表示':
-お客様はご当選されました。
-払込票番号や引換票番号は、下記の購入履歴よりご確認いただけます。<br/>
-<a href="/orderreview/guest" target="_blank">■購入履歴確認ページ</a>をご確認ください。<br/>
-予約番号は ${entry.entry_no} です。
-      % elif h.lot_entry_display_status(entry, now) == u'落選表示':
-お客様は残念ながら落選となりました。
-      % elif h.lot_entry_display_status(entry, now) == u'抽選待ち表示':
-受付結果発表は、${h.announce_time_label(entry.lot)}を予定しております。受付結果発表後、受付結果確認ページにて当選・落選をご確認下さい。
-      % endif
-    </div>
-  </div>
-</div>
-%endif
 
 <div class="settlementBox">
   <div class="settlementBoxInner">

@@ -38,8 +38,6 @@
 %else:
   <div class="confirmBox">
     <dl>
-      <dt><img src="${request.static_url('altair.app.ticketing.lots:static/JC/pc/img/order/title_election_result.gif')}" alt="受付結果" /></dt>
-      <dd>
       <div class="confirmBoxText">
         % if h.lot_entry_display_status(entry, now) == u'当選表示':
 お客様はご当選されました。
