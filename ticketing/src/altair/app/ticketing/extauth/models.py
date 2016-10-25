@@ -1,4 +1,4 @@
- from datetime import datetime
+from datetime import datetime
 from urlparse import urlparse
 from zope.interface import implementer
 from pyramid.threadlocal import get_current_request
