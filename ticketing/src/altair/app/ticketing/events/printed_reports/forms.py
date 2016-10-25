@@ -2,7 +2,7 @@
 from wtforms.validators import Optional, Required
 from altair.formhelpers import OurForm, after1900
 from altair.formhelpers.fields import OurSelectField, DateTimeField, OurTextAreaField, TimeField
-
+from ..sales_reports.forms import validate_email, check_orverlap_email, validate_recipients
 
 class PrintedReportSettingForm(OurForm):
     start_on = DateTimeField(
@@ -32,3 +32,6 @@ class PrintedReportRecipientForm(OurForm):
         validators=[Optional()],
         hide_on_new=True
     )
+
+    def validate_recipients(form, field):
+        validate_recipients(field)
