@@ -25,7 +25,7 @@ ${h.lot_entry_status_as_string(entry)}
 %endif
 <%mobile:band bgcolor="#ffffdd">
 %if h.lot_entry_display_status(entry, now) == u'申込取消':
-お申込みいただいておりました以下の受付を${h.withdraw_time_label(entry)}に取消いたしました。
+お申込いただいておりました以下の受付を${h.withdraw_time_label(entry)}に取消いたしました。
 %elif h.lot_entry_display_status(entry, now) == u'当選表示':
 お客様はご当選されました。
 払込票番号や引換票番号は、下記の購入履歴よりご確認いただけます。<br/>
