@@ -121,11 +121,6 @@ class OrganizationForm(OurForm):
         default=[u'user_info']
         )
 
-    maximum_oauth_client_expiration_time = OurIntegerField(
-        label=u'OAuthクライアント有効期限 (秒)',
-        default=63072000
-        )
-
     canonical_host_name = OurSelectField(
         label=u'正規ホスト名',
         choices=lambda field: \
