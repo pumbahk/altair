@@ -58,7 +58,6 @@
       <th>Client Secret</th>
       <th>リダイレクトURI</th>
       <th>スコープ</th>
-      <th>有効期限</th>
     </tr>
   </thead>
   <tbody>
@@ -73,7 +72,6 @@
       </td>
       <td>${oauth_client.redirect_uri}</td>
       <td>${u' / '.join(oauth_client.authorized_scope)}</td>
-      <td>${h.term(oauth_client.valid_since, oauth_client.expire_at)}</td>
     </tr>
 % endfor
   </tbody>
