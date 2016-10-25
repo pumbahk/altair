@@ -31,7 +31,7 @@
 
 <%mobile:form_header>受付結果</%mobile:form_header>
 %if h.lot_entry_display_status(entry, now) == u'抽選待ち表示':
-抽選待ち
+受付結果表示待ち
 %else:
 <span style="color:red;">
 ${h.lot_entry_status_as_string(entry)}
@@ -73,7 +73,7 @@ ${entry.payment_delivery_method_pair.delivery_method.name}<br/>
   %elif entry.rejected_at:
     ご用意できませんでした
   %else:
-    抽選処理前です
+    受付結果表示前です
   %endif
   </div>
   <%mobile:form_header>公演日</%mobile:form_header>
