@@ -3,6 +3,7 @@ import logging
 import sys
 import re
 import urllib2
+import distutils.util
 from datetime import datetime
 from urlparse import urljoin, urlparse
 from urllib import urlencode, quote
@@ -236,10 +237,10 @@ class View(object):
             return challenge_service_provider(self.request, 'rakuten')
 
         # fanclubのコースチェックを行うparameter。存在しない場合はdefault True
-        use_fanclub = self.request.params.get('use_fanclub', True)
+        use_fanclub = distutils.util.strtobool(self.request.params.get('use_fanclub', 'True'))
 
         # fanclubを利用するORGはコースチェックへ、しないORGはauthorizeへ
-        if self.request.organization.fanclub_api_available is True and use_fanclub is True:
+        if self.request.organization.fanclub_api_available and use_fanclub:
             return self.navigate_to_select_account_rakuten_auth()
         else:
             return HTTPFound(
@@ -307,10 +308,10 @@ class View(object):
         oauth_params = dict(self.request.session['oauth_params'])
         state = oauth_params.pop('state')
         id_ = extract_identifer(self.request)
-        use_fanclub = self.request.params['use_fanclub'] if self.request.params.has_key('use_fanclub') else True
+        use_fanclub = distutils.util.strtobool(self.request.params.get('use_fanclub', 'True'))
 
         # fanclubAPIが有効(=True)な場合はfanclubの情報をidentityに含める
-        if self.request.organization.fanclub_api_available is True and use_fanclub is True:
+        if self.request.organization.fanclub_api_available and use_fanclub:
             try:
                 member_kind_id_str = self.request.params['member_kind_id']
                 membership_id = self.request.params['membership_id']
