@@ -68,7 +68,7 @@ from altair.app.ticketing.orders.models import (
 from altair.app.ticketing.sej import api as sej_api
 from altair.app.ticketing.mails.api import get_mail_utility
 from altair.app.ticketing.mailmags.models import MailSubscription, MailMagazine, MailSubscriptionStatus
-from altair.app.ticketing.orders.export import OrderCSV, get_japanese_columns, RefundResultCSVExporter
+from altair.app.ticketing.orders.export import OrderCSV, OrderDeltaCSV, get_japanese_columns, RefundResultCSVExporter
 from .forms import (
     OrderForm,
     OrderInfoForm,
@@ -788,6 +788,146 @@ class OrderDownloadView(OrderBaseView):
                          [[encode_to_cp932(render(h, columns.get(h)))
                            for h in csv_headers]
                           for columns in results])
+        return response
+
+class OrderDeltaBaseView(BaseView):
+    @reify
+    def endpoints(self):
+        return {
+            'enqueue_orders': self.request.route_path('orders.checked.queue'),
+        }
+
+@view_defaults(decorator=with_bootstrap, renderer='altair.app.ticketing:templates/orders/delta.html', permission='sales_counter')
+class OrderDeltaIndexView(OrderDeltaBaseView):
+    @view_config(route_name='orders.delta')
+    def index(self):
+        request = self.request
+        slave_session  = get_db_session(request, name="slave")
+
+        organization_id = request.context.organization.id
+        params = MultiDict(request.params)
+        params["order_no"] = " ".join(request.params.getall("order_no"))
+
+        form_search = OrderSearchForm(params, organization_id=organization_id)
+
+        orders = None
+        page = int(request.params.get('page', 0))
+        if request.params:
+            from .download import OrderSummary, OrderProductItemSummary
+            if form_search.validate():
+                query = OrderSummary(self.request,
+                                     slave_session,
+                                     organization_id,
+                                     condition=form_search)
+            else:
+                return {
+                    'form': OrderForm(context=self.context),
+                    'form_search': form_search,
+                    'orders': orders,
+                    'page': page,
+                    'endpoints': self.endpoints,
+                }
+
+            if request.params.get('action') == 'checked':
+                checked_orders = [o.lstrip('o:')
+                                  for o in request.session.get('orders', [])
+                                  if o.startwith('o:')]
+                query.target_order_ids = checked_orders
+
+            count = query.count()
+
+            orders = paginate.Page(
+                query,
+                page=page,
+                item_count=count,
+                items_per_page=40,
+                url=paginate.PageURL_WebOb(request)
+            )
+
+        from altair.app.ticketing.orders.export import japanese_columns
+        order_list = {}
+        return {
+            'form': OrderForm(context=self.context),
+            'form_search': form_search,
+            'orders': orders,
+            'page': page,
+            'endpoints': self.endpoints,
+            'japanese_columns': japanese_columns,
+            'order_list': order_list
+        }
+
+@view_defaults(decorator=with_bootstrap, permission='sales_editor')
+class OrderDeltaDownloadView(OrderDeltaBaseView):
+    @view_config(route_name='orders.delta.download')
+    def download(self):
+        slave_session = get_db_session(self.request, name="slave")
+
+        organization_id = self.context.organization.id
+        query = slave_session.query(OrderSummary).filter(OrderSummary.organization_id==organization_id, OrderSummary.deleted_at==None)
+
+        if self.request.params.get('action') == 'checked':
+            checked_orders = [o.lstrip('o:') for o in self.request.session.get('orders', []) if o.startswith('o:')]
+            if len(checked_orders) > 0:
+                query = query.filter(Order.id.in_(checked_orders))
+            else:
+                raise HTTPFound(location=route_path('orders.index', self.request))
+        else:
+            form_search = OrderSearchForm(self.request.params, organization_id=organization_id)
+            form_search.sort.data = None
+            try:
+                builder = OrderSummarySearchQueryBuilder(form_search.data, lambda key: form_search[key].label.text,
+                                                         sort=False)
+                query = builder(
+                    slave_session.query(OrderSummary).filter(OrderSummary.organization_id == organization_id,
+                                                             OrderSummary.deleted_at == None))
+            except QueryBuilderError as e:
+                self.request.session.flash(e.message)
+                raise HTTPFound(location=route_path('orders.index', self.request))
+            ordered_term = None
+            if form_search.ordered_from.data and form_search.ordered_to.data:
+                ordered_term = form_search.ordered_to.data - form_search.ordered_from.data
+            if not form_search.performance_id.data and (ordered_term is None or ordered_term.days > 0):
+                if query.count() >= 100000:
+                    self.request.session.flash(u'対象件数が多すぎます。(予約期間を1日にするか、公演を指定すれば制限はありません)')
+                    raise HTTPFound(location=route_path('orders.index', self.request))
+
+        query._request = self.request
+        orders = query
+
+        headers = [('Content-Type', 'application/octet-stream; charset=Windows-31J'),
+                   ('Content-Disposition', 'attachment; filename=orders_{date}.csv'.format(date=datetime.now().strftime('%Y%m%d%H%M%S')))]
+        response = Response(headers=headers)
+
+        export_type = int(self.request.params.get('export_type', OrderCSV.EXPORT_TYPE_ORDER))
+        excel_csv = bool(self.request.params.get('excel_csv'))
+        kwargs = {}
+        if export_type:
+            kwargs['export_type'] = export_type
+        if excel_csv:
+            kwargs['excel_csv'] = True
+        option_columns = self.request.params.getall('selected-columns')
+
+        order_csv = OrderDeltaCSV(self.request,
+                                  organization_id=self.context.organization.id,
+                                  localized_columns=get_japanese_columns(self.request),
+                                  session=slave_session,
+                                  option_columns=option_columns,
+                                  **kwargs)
+        def _orders(orders):
+            prev_order = None
+            for order in orders:
+                if prev_order is not None:
+                    make_transient(prev_order)
+                prev_order = order
+                yield order
+
+        def writer_factory(f):
+            writer = csv.writer(f, delimiter=',', quoting=csv.QUOTE_ALL)
+            def writerow(columns):
+                writer.writerow([encode_to_cp932(column) for column in columns])
+            return writerow
+
+        response.app_iter = order_csv(_orders(orders), writer_factory)
         return response
 
 

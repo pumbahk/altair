@@ -1,0 +1,191 @@
+<%namespace file="/common/helpers.html" name="ch" />
+<%page args="form, japanese_columns, order_list" />
+<!-- font-awesome -->
+<link href="/static/css/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet"></link>
+
+<!-- select2 -->
+<link rel="stylesheet" href="/static/js/select2/3.5.1/select2.css">
+<script src="/static/js/select2/3.5.1/select2.min.js"></script>
+
+<!-- momentjs -->
+<script src="/static/js/moment.min.js"></script>
+
+<style>
+#available-columns, #selected-columns {
+    width: 200px;
+    height: 500px;
+}
+
+</style>
+<script>
+    $(document).ready(function() {
+
+        /** columnの出力をする/しないを変更
+         */
+        function move_columns(src_selector, dst_selector){
+            var src_columns = $(src_selector);
+            var dst_columns = $(dst_selector);
+
+            var src_options = src_columns.find('option:selected');
+            src_options.each(function (ii, src_option){
+                var new_option = $('<option value=""></option>');
+                new_option\
+                    .attr('value', src_option.value)\
+                    .text(src_option.text)\
+                    .appendTo(dst_columns);
+                src_option.remove();
+            });
+        }
+
+        /** columnの出力順序を変更
+         */
+        function move_column_order(selector, direction){
+            var columns = $(selector);
+            var options = columns.find('option:selected');
+
+            var move = function(option){
+                if (direction == 'up'){
+                    $(option).prev().before(option);
+                }else if(direction == 'down'){
+                    $(option).next().after(option);
+                }else{
+                    console.log('ValueError: unexpected argument value(direction): ' + direction);
+                }
+            }
+
+            options.each(function (ii, option){
+                move(option);
+            });
+        }
+
+        /** columnの追加
+         */
+        $('#insert-column').on('click', function(event){
+            move_columns('#available-columns', '#selected-columns');
+        });
+
+
+        /** columnの削除
+         */
+        $('#delete-column').on('click', function(event){
+            move_columns('#selected-columns', '#available-columns');
+        });
+
+        /** columnの順序を1つ前にする
+         */
+        $('#up-column').on('click', function(event){
+            move_column_order('#selected-columns', 'up');
+        });
+
+        /** columnの順序を1つ後ろにする
+         */
+        $('#down-column').on('click', function(event){
+            move_column_order('#selected-columns', 'down');
+        });
+    });
+
+    function download_orders() {
+      var params = $('#modal-download_orders').parent('form').serialize();
+      $('#selected-columns option').prop('selected', true);
+      var parmas_options = $('form#options').serialize();
+      $('#selected-columns option').prop('selected', false);
+      detail = $('#detail_search');
+      detail.find('#search').attr('action', 'download/?' + params + '&' + parmas_options).submit();
+      $('#modal-download_orders').modal('hide');
+    }
+</script>
+
+<div class="page-header">
+  <h3 style="color: red; float='left'">使用上の注意</h3>
+  <div>この購入情報ダウンロード機能は<b style="color: red; ">デルタ版</b>で、<b style="color: red;">試験段階</b>です。</div>
+  <div>そのため<b style="color: red;">仕様が変更になる事もあります</b>し、
+    <b style="color: red;">正しく動作しない事もあります</b>。
+    ご注意ください。</div>
+  <div>安定した機能をご希望の方は
+    <b style="color: red;">既存の購入情報検索機能をお使いください</b>。
+    ${ order_list }
+  </div>
+</div>
+
+<table class="condition-table">
+  <tbody>
+    <tr>
+      <td class="condition-table-cel">
+        <form id="options">
+          <span>オプション</span>
+          <table>
+            <tbody>
+              <tr>
+                <td>
+                  <select id="available-columns" multiple="multiple">
+                    % for key, val in japanese_columns.items():
+                    <option value="${key}">${val}</option>
+                    % endfor
+                  </select>
+                </td>
+                <td>
+                  <a class="btn fa fa-arrow-circle-right" id="insert-column"></a><br />
+                  <a class="btn fa fa-arrow-circle-left" id="delete-column"></a>
+                </td>
+                <td>
+                  <select id="selected-columns" multiple="multiple" name="selected-columns">
+                  </select>
+                </td>
+                <td>
+                  <a class="btn fa fa-arrow-circle-up" id="up-column"></a><br />
+                  <a class="btn fa fa-arrow-circle-down" id="down-column"></a>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </form>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="btn-group" style="float: left;">
+  <a class="btn btn-inverse" style="margin-left: 10px;" data-toggle="modal" href="#modal-download_orders">
+    <i class="icon-download icon-white"></i> ダウンロード
+  </a>
+</div>
+<div style="clear: left;"></div>
+
+<form id="download" class="form-horizontal" action="${request.route_path('orders.download')}" method="POST">
+<div id="modal-download_orders" class="modal hide">
+  <div class="modal-header">
+    <a href="#" class="close">&times;</a>
+    <h3>確認</h3>
+  </div>
+
+  <div class="modal-body">
+    <p>購入情報(CSV)をダウンロードします。よろしいですか？<br>
+      % if not form.get_conditions():
+        <div class="alert alert-error">
+          <div style="margin-bottom: 5px;">検索条件がありません。<br>対象が多すぎると時間がかかる可能性があるので条件を指定してください。</div>
+        </div>
+      % endif
+      <%include file="/orders/_search_condition.html" args="form=form" />
+    </p>
+    <fieldset>
+      <div>
+        <input id="export_type_1" name="export_type" type="radio" value="1" style="float: left; margin-right: 5px;" checked>
+        <label for="export_type_1">予約ごとに1行ずつ出力する</label>
+      </div>
+      <div>
+        <input id="export_type_2" name="export_type" type="radio" value="2" style="float: left; margin-right: 5px;">
+        <label for="export_type_2">座席ごとに1行ずつ出力する</label>
+      </div>
+    </fieldset>
+  </div>
+
+  <div class="modal-footer">
+    <div class="control-group" style="text-align:left; float: left; white-space: nowrap">
+      <input id="excel_csv" name="excel_csv" type="checkbox" value="1" checked="checked" style="float: left; margin-right: 5px;">
+      <label for="excel_csv">Excel形式のCSVを出力する</label>
+    </div>
+    <a href="javascript:void(0);" onclick="$('#modal-download_orders').modal('hide');" class="btn secondary">キャンセル</a>
+    <a href="javascript:download_orders();" class="btn danger">ダウンロード</a>
+  </div>
+</div>
+</form>

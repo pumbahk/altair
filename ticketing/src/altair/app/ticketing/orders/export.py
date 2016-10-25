@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import os
+import os, sys
 import logging
 import tempfile
 import pickle
@@ -75,10 +75,10 @@ japanese_columns = {
     u'order.cart_setting_id': u'カート設定',
     u'order.type':u'予約タイプ',
     u'order.count':u'チケット枚数',
-    u'anshin_checkout.order_id': u'楽天ID決済 注文番号',
-    u'anshin_checkout.order_control_id': u'楽天ID決済 注文管理番号',
-    u'anshin_checkout.used_point': u'楽天ID決済 利用ポイント数',
-    u'anshin_checkout.sales_at': u'楽天ID決済 売上日時',
+    #u'anshin_checkout.order_id': u'楽天ID決済 注文番号',
+    #u'anshin_checkout.order_control_id': u'楽天ID決済 注文管理番号',
+    #u'anshin_checkout.used_point': u'楽天ID決済 利用ポイント数',
+    #u'anshin_checkout.sales_at': u'楽天ID決済 売上日時',
     u'sej_order.pay_store_name': u'SEJ払込店舗',
     u'sej_order.ticketing_store_name': u'SEJ引換店舗',
     u'sej_order.billing_number': u'SEJ払込票番号',
@@ -587,6 +587,153 @@ class OrderCSV(object):
             localized_columns=self.localized_columns
             )
 
+class OrderDeltaCSV(OrderCSV):
+    EXPORT_TYPE_ORDER = 1
+    EXPORT_TYPE_SEAT = 2
+
+    common_columns_dict = {u'order.order_no': PlainTextRenderer(u'order.order_no'),
+        u'order.status': PlainTextRenderer(u'order.status'),
+        u'order.payment_status': PlainTextRenderer(u'order.payment_status'),
+        u'order.created_at': PlainTextRenderer(u'order.created_at'),
+        u'order.paid_at': PlainTextRenderer(u'order.paid_at'),
+        u'order.delivered_at': PlainTextRenderer(u'order.delivered_at'),
+        u'order.canceled_at': PlainTextRenderer(u'order.canceled_at'),
+        u'order.created_from_lot_entry.lot.name': PlainTextRenderer(u'order.created_from_lot_entry.lot.name'),
+        u'order.total_amount': CurrencyRenderer(u'order.total_amount'),
+        u'order.transaction_fee': CurrencyRenderer(u'order.transaction_fee'),
+        u'order.delivery_fee': CurrencyRenderer(u'order.delivery_fee'),
+        u'order.system_fee': CurrencyRenderer(u'order.system_fee'),
+        u'order.special_fee': CurrencyRenderer(u'order.special_fee'),
+        u'order.margin': MarginRenderer(u'order', u'order.margin'),
+        u'order.refund_total_amount': CurrencyRenderer(u'order.refund_total_amount'),
+        u'order.refund_transaction_fee': CurrencyRenderer(u'order.refund_transaction_fee'),
+        u'order.refund_delivery_fee': CurrencyRenderer(u'order.refund_delivery_fee'),
+        u'order.refund_system_fee': CurrencyRenderer(u'order.refund_system_fee'),
+        u'order.refund_special_fee': CurrencyRenderer(u'order.refund_special_fee'),
+        u'order.note': PlainTextRenderer(u'order.note'),
+        u'order.special_fee_name': PlainTextRenderer(u'order.special_fee_name'),
+        u'order.card_brand': PlainTextRenderer(u'order.card_brand'),
+        u'order.card_ahead_com_code': PlainTextRenderer(u'order.card_ahead_com_code'),
+        u'order.card_ahead_com_name': PlainTextRenderer(u'order.card_ahead_com_name'),
+        u'order.issuing_start_at': PlainTextRenderer(u'order.issuing_start_at'),
+        u'order.issuing_end_at': PlainTextRenderer(u'order.issuing_end_at'),
+        u'order.payment_start_at': PlainTextRenderer(u'order.payment_start_at'),
+        u'order.payment_due_at': PlainTextRenderer(u'order.payment_due_at'),
+        u'sej_order.billing_number': PlainTextRenderer(u'sej_order.billing_number'),
+        u'sej_order.exchange_number': PlainTextRenderer(u'sej_order.exchange_number'),
+        u'user_profile.last_name': PlainTextRenderer(u'user_profile.last_name'),
+        u'user_profile.first_name': PlainTextRenderer(u'user_profile.first_name'),
+        u'user_profile.last_name_kana': PlainTextRenderer(u'user_profile.last_name_kana'),
+        u'user_profile.first_name_kana': PlainTextRenderer(u'user_profile.first_name_kana'),
+        u'user_profile.nick_name': PlainTextRenderer(u'user_profile.nick_name'),
+        u'user_profile.sex': PlainTextRenderer(u'user_profile.sex'),
+        u'membership.name': PlainTextRenderer(u'membership.name'),
+        u'membergroup.name': PlainTextRenderer(u'membergroup.name'),
+        u'user_credential.authz_identifier': PlainTextRenderer(u'user_credential.authz_identifier'),
+        u'shipping_address.last_name': PlainTextRenderer(u'shipping_address.last_name'),
+        u'shipping_address.first_name': PlainTextRenderer(u'shipping_address.first_name'),
+        u'shipping_address.last_name_kana': PlainTextRenderer(u'shipping_address.last_name_kana'),
+        u'shipping_address.first_name_kana': PlainTextRenderer(u'shipping_address.first_name_kana'),
+        u'shipping_address.zip': ZipRenderer(u'shipping_address.zip'),
+        u'shipping_address.country': PlainTextRenderer(u'shipping_address.country'),
+        u'shipping_address.prefecture': PlainTextRenderer(u'shipping_address.prefecture'),
+        u'shipping_address.city': PlainTextRenderer(u'shipping_address.city'),
+        u'shipping_address.address_1': PlainTextRenderer(u'shipping_address.address_1'),
+        u'shipping_address.address_2': PlainTextRenderer(u'shipping_address.address_2'),
+        u'shipping_address.tel_1': PlainTextRenderer(u'shipping_address.tel_1', fancy=True),
+        u'shipping_address.tel_2': PlainTextRenderer(u'shipping_address.tel_2', fancy=True),
+        u'shipping_address.fax': PlainTextRenderer(u'shipping_address.fax', fancy=True),
+        u'shipping_address.email_1': PlainTextRenderer(u'shipping_address.email_1'),
+        u'shipping_address.email_2': PlainTextRenderer(u'shipping_address.email_2'),
+        u'payment_method.name': PlainTextRenderer(u'payment_method.name'),
+        u'delivery_method.name': PlainTextRenderer(u'delivery_method.name'),
+        u'event.title': PlainTextRenderer(u'event.title'),
+        u'performance.name': PlainTextRenderer(u'performance.name'),
+        u'performance.code': PlainTextRenderer(u'performance.code'),
+        u'performance.start_on': PlainTextRenderer(u'performance.start_on'),
+        u'venue.name': PlainTextRenderer(u'venue.name'),
+        u'mail_magazine.mail_permission': MailMagazineSubscriptionStateRenderer(
+        u'shipping_address.emails', u'mail_magazine.mail_permission'),
+    }
+
+    export_type_related_columns_dict = {
+        # ordered product
+        u'ordered_product.price': CurrencyRenderer(u'ordered_product.price'),
+        u'ordered_product.quantity': PlainTextRenderer(u'ordered_product.quantity'),
+        u'ordered_product.refund_price': CurrencyRenderer(u'ordered_product.refund_price'),
+        u'ordered_product.product.name': PlainTextRenderer(u'ordered_product.product.name'),
+        u'ordered_product.product.sales_segment.sales_segment_group.name': PlainTextRenderer(u'ordered_product.product.sales_segment.sales_segment_group.name'),
+        u'ordered_product.product.sales_segment.margin_ratio': PlainTextRenderer(u'ordered_product.product.sales_segment.margin_ratio'),
+
+        # ordered product item
+        u'ordered_product_item.product_item.name': PlainTextRenderer(u'ordered_product_item.product_item.name'),
+        u'ordered_product_item.price': CurrencyRenderer(u'ordered_product_item.price'),
+        u'ordered_product_item.quantity': PlainTextRenderer(u'ordered_product_item.quantity'),
+        u'ordered_product_item.refund_price': CurrencyRenderer(u'ordered_product_item.refund_price'),
+        u'ordered_product_item.print_histories': PrintHistoryRenderer(u'ordered_product_item',u'ordered_product_item.print_histories'),
+
+        # seat
+        u'seat.name': PlainTextRenderer(u'seat.name'),
+
+        # attribute
+        u'attribute': AttributeRenderer(u'ordered_product_item.attributes', u'attribute'),
+    }
+
+    def dynamic_get_renderer(self, func_name):
+        return getattr(sys.modules[__name__], "{}".format(func_name))
+
+    def __init__(self, request, export_type=OrderCSV.EXPORT_TYPE_ORDER, organization_id=None, localized_columns={}, excel_csv=False, session=DBSession, option_columns=None):
+        super(OrderDeltaCSV, self).__init__(request, export_type, organization_id, localized_columns, excel_csv, session)
+        if option_columns:
+            self.column_renderers = self.get_export_column(export_type, option_columns)
+
+    def get_export_column(self, export_type, option_columns):
+        common_columns = []
+        export_type_related_columns = []
+
+        for option in option_columns:
+            # common
+            if option in self.common_columns_dict:
+                common_columns.append(self.common_columns_dict[option])
+
+            # column structure changes with export type
+            if option in self.export_type_related_columns_dict:
+                if export_type == self.EXPORT_TYPE_ORDER:
+                    ordered_product = []
+                    ordered_product_item = []
+
+                    # リファクタリング予定、今ハードコードで書き込んでる。
+                    if option.startswith(u'ordered_product_item'):
+                        ordered_product_item.append(self.export_type_related_columns_dict[option])
+                    elif option.startswith(u'ordered_product'):
+                        ordered_product.append(self.export_type_related_columns_dict[option])
+                    elif option.startswith(u'seat'):
+                        ordered_product_item.append(CollectionRenderer(u'ordered_product_item.seats', u'seat',
+                                                                       [self.export_type_related_columns_dict[option]]))
+                    elif option.startswith(u'attribute'):
+                        ordered_product_item.append(self.export_type_related_columns_dict[option])
+                    else:
+                        pass
+
+                    if ordered_product_item:
+                        ordered_product.append(
+                            CollectionRenderer(u'ordered_product.ordered_product_items', u'ordered_product_item',
+                                ordered_product_item))
+
+                    if ordered_product:
+                        export_type_related_columns.append(
+                            CollectionRenderer(u'ordered_products', u'ordered_product', ordered_product))
+
+                elif export_type == self.EXPORT_TYPE_SEAT:
+                    export_type_related_columns.append(self.export_type_related_columns_dict[option])
+                else:
+                    raise ValueError('export_type')
+
+        return common_columns + export_type_related_columns
+
+
+    def __call__(self, orders, writer_factory):
+        return super(OrderDeltaCSV, self).__call__(orders, writer_factory)
 
 class RefundResultCSVExporter(object):
     csv_header = [
