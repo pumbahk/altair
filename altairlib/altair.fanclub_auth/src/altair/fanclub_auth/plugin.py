@@ -228,7 +228,6 @@ class FanclubAuthPlugin(object):
         pass
 
     def on_verify(self, request):
-        import ipdb;ipdb.set_trace()
         pass
 
     def on_extra_verify(self, request):
