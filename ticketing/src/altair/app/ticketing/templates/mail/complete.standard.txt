@@ -1,13 +1,20 @@
 ${header}
 ${name}　様
 
-
 以下のご注文の受付が完了しました。ご利用ありがとうございました。
+%if i18n:
+The following order has been completed. Thank you for using our service.
+%endif
 
 -----
 %if get("name_kana").status:
+%if not i18n:
 ■${get("name_kana").label}
 ${get("name_kana").body}
+%else:
+■${get("name_kana").label}
+${get("name").body}
+%endif
 %endif
 %if get("tel").status:
 ■${get("tel").label}
@@ -23,6 +30,9 @@ ${get("mail").body}
 ■${get("order_no").label}
 ${get("order_no").body}
 予約内容確認の際などに必要です。必ずお控え下さい。
+%if i18n:
+THIS NUMBER IS VERY IMPORTANT, PLEASE SHOW THIS NUMBER IN ORDER TO GET YOUR TICKET.
+%endif
 %endif
 
 %if get("order_datetime").status:
@@ -50,7 +60,11 @@ ${get("for_seat").body}
 ${get("for_product").body}
 %endif
 
+%if i18n:
+■サービス利用料・手数料/System fee
+%else:
 ■サービス利用料・手数料
+%endif
 %if get("system_fee").status:
 ${get("system_fee").label}: ${get("system_fee").body}
 %endif
@@ -96,5 +110,9 @@ ${notice}
 
 ※本メールは自動配信メールとなり、こちらに返信されても返答はいたしかねます。
 ※営利目的としたチケットの転売は禁止となっております。
+%if i18n:
+※This email is sent by our system automatically, please do not reply this mail.
+※Do not resale your ticket for profit, this is forbidden.
+%endif
 
 ${footer}

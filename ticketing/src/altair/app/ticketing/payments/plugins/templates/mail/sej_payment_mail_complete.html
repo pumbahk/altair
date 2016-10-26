@@ -1,4 +1,5 @@
 ＜セブン-イレブンでのお支払いの方＞
+支払いの際は、「払込票番号（13桁）」をメモするか「払込票」をプリントアウトし、支払期限までに店舗レジにて代金をお支払いになり、店員より発券されたチケットをお受け取りください。
 %if payment_method.hide_voucher or (payment_type == 'CashOnDelivery' and delivery_method.hide_voucher):
 当選の場合、お支払期日までにお支払頂きます。
 お支払が確認できた時点で当選申込が確定となります。
@@ -10,4 +11,38 @@
 支払期日：${h.japanese_datetime(sej_order.payment_due_at)}
 %endif
 %endif
+
+%if i18n:
+＜How to pay at 7-11 shop.＞
+Please pay for your order(s) with your 「Payment slip number」or「Payment slip」at the counter of 7-Eleven before due date of payment. And take your ticket(s) from the staffs.
+%if payment_method.hide_voucher or (payment_type == 'CashOnDelivery' and delivery_method.hide_voucher):
+In the case of winning, please pay until the payment due date.
+Application winning at the time the payment has been done the reservation will be completed.
+
+Application winning at the time the payment has been done the reservation will be completed.
+%else:
+%if sej_order:
+Payment slip number: ${sej_order.billing_number}
+Payment due date: ${h.i18n_datetime(sej_order.payment_due_at)}
+%endif
+%endif
+%endif
+
+%if i18n:
+＜如何在7-11付款＞
+付款期限前，請攜帶「付款票號碼（13碼）」或「付款票」影本至便利商店櫃台付款，並向店員領取票券。
+%if payment_method.hide_voucher or (payment_type == 'CashOnDelivery' and delivery_method.hide_voucher):
+若是您當選了，請在指定日期之前完成付款。
+您的當選資格將會在我們確定您的付款成功紀錄時確定。
+
+除了各種手續費之外，有些表演需要您負擔額外的系統使用費。
+%else:
+%if sej_order:
+付款票: ${sej_order.billing_number}
+付款截止期日: ${h.i18n_datetime(sej_order.payment_due_at)}
+%endif
+%endif
+%endif
+
+
 ${notice}
