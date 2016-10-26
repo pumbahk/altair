@@ -8,6 +8,14 @@
     % endif
   </div>
 </div>
+% else:
+<div class="control-group">
+  <label class="control-label" for="operator-form--organization_name">${form.organization_name.label.text}</label>
+  <div class="controls">
+    ${operator.organization_name}
+    <input type="hidden" name="organization_name" value="${operator.organization_name}">
+  </div>
+</div>
 % endif
 <div class="control-group">
   <label class="control-label" for="operator-form--auth_identifier">${form.auth_identifier.label.text}</label>

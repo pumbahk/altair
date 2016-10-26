@@ -66,3 +66,12 @@ def lookup_organization_by_name(request, organization_name):
         raise e
 
     return organization
+
+def lookup_organization_by_id(request, organization_id):
+    session = get_db_session(request, 'extauth')
+    try:
+        organization = session.query(Organization).filter_by(id=organization_id).one()
+    except NoResultFound as e:
+        raise e
+
+    return organization
