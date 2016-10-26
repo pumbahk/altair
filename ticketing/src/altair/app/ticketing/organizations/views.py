@@ -260,6 +260,7 @@ class OrganizationSettings(BaseView):
         organization_setting.enable_fm_reflection_func = f.enable_fm_reflection_func.data
         organization_setting.orderreview_index = f.orderreview_index.data
         organization_setting.i18n = f.i18n.data
+        organization_setting.auto_cms = f.auto_cms.data
         organization_setting.save()
 
         self.request.session.flash(u'その他の設定を保存しました')
@@ -356,6 +357,7 @@ class OrganizationSettingSimples(BaseView):
 
                     organization_setting.notify_remind_mail = f.notify_remind_mail.data
                     organization_setting.notify_print_remind_mail = f.notify_print_remind_mail.data
+                    organization_setting.auto_cms = f.auto_cms.data
                     self.request.session.flash(u'その他の設定を保存しました')
                     return HTTPFound(location=route_path(
                         'organizations.settings.edit.simple',
