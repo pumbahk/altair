@@ -8,9 +8,20 @@
     left: 5%;
     top: 5%;
     margin: auto;
+    height: 90%;
+  }
+  #modal-reserve .modal-header {
+    height: 5%;
   }
   #modal-reserve .modal-body {
-    max-height:none;
+    max-height:none !important;
+    height: 87% !important;
+    padding: 1% 15px !important;
+    position: relative !important;
+  }
+  #modal-reserve .modal-footer {
+    position: relative;
+    bottom: 0;
   }
   #modal-reserve .product_quantity {
     width: 50px;
@@ -309,7 +320,7 @@
         </div>
         <div style="clear:both"></div>
         <div id="store_warning">
-          <p>※ コンビニ決済およびコンビニ受取は、払込票番号・引換票を発行する為に購入者情報が必須です。</p>
+          <p>※ コンビニ決済およびコンビニ受取は氏名、氏名（カナ）、TELが必須です。</p>
         </div>
       </div>
 
@@ -331,6 +342,8 @@
           </div>
             </div>
         </div>
+        ${ch.form_item(form.tel_1, placeholder=u'例）08012345678')}
+        <br/>
         <div class="half" style="float:left">
             ${ch.form_item(form.zip, placeholder=u"例）1030001")}
         </div>
@@ -345,13 +358,12 @@
             ${ch.form_item(form.address_1, placeholder=u"例）日本橋x-xx-xx")}
         </div>
         <div style="clear:both"></div>
-
         ${ch.form_item(form.address_2, placeholder=u'例）yyビルz階')}
         ${ch.form_item(form.email_1, placeholder=u'例）customer_name@example.com')}
-        ${ch.form_item(form.tel_1, placeholder=u'例）08012345678')}
       </div>
 
       <div class="delivery_at_store">
+        <br/>
         ${ch.form_item(form.sales_counter_payment_method_id)}
         <div class="control-group">
           <div class="controls">
