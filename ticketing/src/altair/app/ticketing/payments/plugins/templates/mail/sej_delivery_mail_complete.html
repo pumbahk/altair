@@ -18,14 +18,14 @@
 %endif
 
 %if i18n:
-＜Get Ticket From 7-11＞
-Please take your ticket(s) with your 「Exchange slip number」or「Exchange slip」at the counter of 7-Eleven.
+＜Get Ticket From 7-Eleven＞
+Please show「a exchange number (13 digits)」or printed「voucher」to the 7-Eleven shop for issuing the ticket(s).
 %if payment_type == 'CashOnDelivery':
-Pay at the 7-11 shop to get your ticket.
+Pay at the 7-Eleven shop to get your ticket.
 %else:
 %if delivery_method.hide_voucher:
-Exchange vote number will send later by e-mail.
-Please confirm the e-mail for detail and get your ticket during the exchange period.
+We will send you an email later to notify the exchange number.
+Please confirm the email for detail and get your ticket during the exchange period.
 %else:
 %if sej_order:
 Exchange Number: ${sej_order.exchange_number or sej_order.billing_number}
@@ -39,10 +39,10 @@ You can get your ticket after ${h.i18n_time(sej_order.ticketing_start_at)}.
 %endif
 
 %if i18n:
-＜如何在7-11領票＞
+＜如何在7-Eleven領票＞
 請攜帶「兌換票號碼（13碼）」或「兌換票」影本至便利商店櫃台向店員領取票券。
 %if payment_type == 'CashOnDelivery':
-請在7-11付款後領票。
+請在7-Eleven付款後領票。
 %else:
 %if delivery_method.hide_voucher:
 稍後我們會透過電子郵件通知您的兌換票號碼。

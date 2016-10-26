@@ -4,6 +4,7 @@ ${name}　様
 以下のご注文の受付が完了しました。ご利用ありがとうございました。
 %if i18n:
 The following order has been completed. Thank you for using our service.
+※Some information is given in English/此郵件包含部分中文信息。
 %endif
 
 -----
@@ -31,7 +32,7 @@ ${get("mail").body}
 ${get("order_no").body}
 予約内容確認の際などに必要です。必ずお控え下さい。
 %if i18n:
-THIS NUMBER IS VERY IMPORTANT, PLEASE SHOW THIS NUMBER IN ORDER TO GET YOUR TICKET.
+THIS NUMBER IS VERY IMPORTANT, PLEASE SAVE IT IN ORDER TO CONFIRM YOUR RESERVATION INFORMATION.
 %endif
 %endif
 
@@ -111,8 +112,8 @@ ${notice}
 ※本メールは自動配信メールとなり、こちらに返信されても返答はいたしかねます。
 ※営利目的としたチケットの転売は禁止となっております。
 %if i18n:
-※This email is sent by our system automatically, please do not reply this mail.
-※Do not resale your ticket for profit, this is forbidden.
+※This is an automatically generated email, please do not reply.
+※It is prohibited to make a profit by reselling.
 %endif
 
 ${footer}
