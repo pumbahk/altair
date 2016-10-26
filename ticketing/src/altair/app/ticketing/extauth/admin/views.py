@@ -11,7 +11,7 @@ from pyramid_layout.panel import panel_config
 from webhelpers import paginate
 from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.sqlahelper import get_db_session
-from .api import create_operator, lookup_operator_by_credentials, lookup_organization_by_name
+from .api import create_operator, lookup_operator_by_credentials, lookup_organization_by_name, lookup_organization_by_id
 from ..models import MemberSet, MemberKind, Member, Membership, OAuthClient
 from ..api import create_member
 from ..utils import digest_secret, generate_salt, generate_random_alnum_string
@@ -255,9 +255,12 @@ class OperatorsView(object):
     def edit(self):
         session = get_db_session(self.request, 'extauth')
         operator = session.query(Operator).filter_by(id=self.request.matchdict['id']).one()
+        organization = lookup_organization_by_id(self.request, operator.organization_id)
+        operator.organization_name = organization.short_name
         form = OperatorForm(obj=operator, auth_secret=u'', request=self.request)
         return dict(
-            form=form
+            form=form,
+            operator=operator
             )
 
     @view_config(
@@ -268,12 +271,16 @@ class OperatorsView(object):
     def edit_post(self):
         session = get_db_session(self.request, 'extauth')
         operator = session.query(Operator).filter_by(id=self.request.matchdict['id']).one()
+        organization = lookup_organization_by_id(self.request, operator.organization_id)
+        operator.organization_name = organization.short_name
         form = OperatorForm(formdata=self.request.POST, obj=operator, request=self.request)
         if not form.validate():
             return dict(
-                form=form
+                form=form,
+                operator=operator
                 )
         operator.role = form.role.data
+        operator.auth_identifier = form.auth_identifier.data
         if form.auth_secret.data:
             operator.auth_secret = digest_secret(form.auth_secret.data, generate_salt())
         session.add(operator)
