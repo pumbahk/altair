@@ -92,6 +92,7 @@ japanese_columns = {
     u'membership.name': u'会員種別名',
     u'membergroup.name': u'会員グループ名',
     u'user_credential.authz_identifier': u'会員種別ID',
+    u'user_point_account.account_number': u'ポイント口座番号',
     u'shipping_address.last_name': u'配送先姓',
     u'shipping_address.first_name': u'配送先名',
     u'shipping_address.last_name_kana': u'配送先姓(カナ)',
@@ -591,7 +592,8 @@ class OrderDeltaCSV(OrderCSV):
     EXPORT_TYPE_ORDER = 1
     EXPORT_TYPE_SEAT = 2
 
-    common_columns_dict = {u'order.order_no': PlainTextRenderer(u'order.order_no'),
+    common_columns_dict = {
+        u'order.order_no': PlainTextRenderer(u'order.order_no'),
         u'order.status': PlainTextRenderer(u'order.status'),
         u'order.payment_status': PlainTextRenderer(u'order.payment_status'),
         u'order.created_at': PlainTextRenderer(u'order.created_at'),
@@ -629,6 +631,7 @@ class OrderDeltaCSV(OrderCSV):
         u'user_profile.sex': PlainTextRenderer(u'user_profile.sex'),
         u'membership.name': PlainTextRenderer(u'membership.name'),
         u'membergroup.name': PlainTextRenderer(u'membergroup.name'),
+        u'user_point_account.account_number': PlainTextRenderer(u'user_point_account.account_number'),
         u'user_credential.authz_identifier': PlainTextRenderer(u'user_credential.authz_identifier'),
         u'shipping_address.last_name': PlainTextRenderer(u'shipping_address.last_name'),
         u'shipping_address.first_name': PlainTextRenderer(u'shipping_address.first_name'),
@@ -659,21 +662,37 @@ class OrderDeltaCSV(OrderCSV):
     export_type_related_columns_dict = {
         # ordered product
         u'ordered_product.price': CurrencyRenderer(u'ordered_product.price'),
-        u'ordered_product.quantity': PlainTextRenderer(u'ordered_product.quantity'),
         u'ordered_product.refund_price': CurrencyRenderer(u'ordered_product.refund_price'),
         u'ordered_product.product.name': PlainTextRenderer(u'ordered_product.product.name'),
-        u'ordered_product.product.sales_segment.sales_segment_group.name': PlainTextRenderer(u'ordered_product.product.sales_segment.sales_segment_group.name'),
-        u'ordered_product.product.sales_segment.margin_ratio': PlainTextRenderer(u'ordered_product.product.sales_segment.margin_ratio'),
+        u'ordered_product.quantity': PlainTextRenderer(u'ordered_product.quantity'),
+
+        u'ordered_product.product.sales_segment.sales_segment_group.name':
+            PlainTextRenderer(u'ordered_product.product. sales_segment.sales_segment_group.name'),
+
+        u'ordered_product.product.sales_segment.margin_ratio':
+            PlainTextRenderer(u'ordered_product.product.sales_segment.margin_ratio'),
 
         # ordered product item
         u'ordered_product_item.product_item.name': PlainTextRenderer(u'ordered_product_item.product_item.name'),
         u'ordered_product_item.price': CurrencyRenderer(u'ordered_product_item.price'),
-        u'ordered_product_item.quantity': PlainTextRenderer(u'ordered_product_item.quantity'),
         u'ordered_product_item.refund_price': CurrencyRenderer(u'ordered_product_item.refund_price'),
-        u'ordered_product_item.print_histories': PrintHistoryRenderer(u'ordered_product_item',u'ordered_product_item.print_histories'),
+
+        u'ordered_product_item.print_histories': PrintHistoryRenderer(u'ordered_product_item',
+                                                                      u'ordered_product_item.print_histories'
+                                                                      ),
+        u'ordered_product_item.quantity': {
+            EXPORT_TYPE_ORDER: PlainTextRenderer(u'ordered_product_item.quantity'),
+            EXPORT_TYPE_SEAT: PerSeatQuantityRenderer(u'ordered_product_item', u'ordered_product_item.quantity')
+        },
 
         # seat
-        u'seat.name': PlainTextRenderer(u'seat.name'),
+        u'seat.name': {
+            EXPORT_TYPE_ORDER:
+                CollectionRenderer(u'ordered_product_item.seats', u'seat', PlainTextRenderer(u'seat.name')),
+
+            EXPORT_TYPE_SEAT:
+                PlainTextRenderer(u'seat.name')
+        },
 
         # attribute
         u'attribute': AttributeRenderer(u'ordered_product_item.attributes', u'attribute'),
@@ -691,49 +710,128 @@ class OrderDeltaCSV(OrderCSV):
         common_columns = []
         export_type_related_columns = []
 
+        ordered_product = []
+        ordered_product_item = []
+
         for option in option_columns:
-            # common
+            # 共通カラム
             if option in self.common_columns_dict:
                 common_columns.append(self.common_columns_dict[option])
 
-            # column structure changes with export type
+            # エクスポートタイプによる内容が変わるカラム
             if option in self.export_type_related_columns_dict:
-                if export_type == self.EXPORT_TYPE_ORDER:
-                    ordered_product = []
-                    ordered_product_item = []
+                render = self.export_type_related_columns_dict[option]
 
-                    # リファクタリング予定、今ハードコードで書き込んでる。
-                    if option.startswith(u'ordered_product_item'):
-                        ordered_product_item.append(self.export_type_related_columns_dict[option])
+                # レンダーがエクスポートタイプに紐づくことを確認
+                if isinstance(render, dict):
+                    render = render[export_type]
+
+                if export_type == self.EXPORT_TYPE_ORDER:
+                    if option.startswith(u'ordered_product_item') or option.startswith(u'seat') or option.startswith(u'attribute'):
+                        ordered_product_item.append(render)
                     elif option.startswith(u'ordered_product'):
-                        ordered_product.append(self.export_type_related_columns_dict[option])
-                    elif option.startswith(u'seat'):
-                        ordered_product_item.append(CollectionRenderer(u'ordered_product_item.seats', u'seat',
-                                                                       [self.export_type_related_columns_dict[option]]))
-                    elif option.startswith(u'attribute'):
-                        ordered_product_item.append(self.export_type_related_columns_dict[option])
+                        ordered_product.append(render)
                     else:
                         pass
-
-                    if ordered_product_item:
-                        ordered_product.append(
-                            CollectionRenderer(u'ordered_product.ordered_product_items', u'ordered_product_item',
-                                ordered_product_item))
-
-                    if ordered_product:
-                        export_type_related_columns.append(
-                            CollectionRenderer(u'ordered_products', u'ordered_product', ordered_product))
-
                 elif export_type == self.EXPORT_TYPE_SEAT:
-                    export_type_related_columns.append(self.export_type_related_columns_dict[option])
+                    export_type_related_columns.append(render)
                 else:
                     raise ValueError('export_type')
 
+        if ordered_product_item:
+            ordered_product.append(
+                CollectionRenderer(
+                    u'ordered_product.ordered_product_items',
+                    u'ordered_product_item',
+                    ordered_product_item
+                ))
+
+        if ordered_product:
+            export_type_related_columns.append(
+                CollectionRenderer(
+                    u'ordered_products',
+                    u'ordered_product',
+                    ordered_product
+                ))
+
         return common_columns + export_type_related_columns
 
+    # 予約に紐づくポイントインポート口座オブジェクトを取得
+    def lookup_user_point_account(self, order):
+        from altair.app.ticketing.orders.models import order_user_point_account_table
+        from altair.app.ticketing.users.models import UserPointAccount
+        from sqlalchemy.orm.exc import NoResultFound
+
+        query = UserPointAccount.query.join(order_user_point_account_table,
+                                            UserPointAccount.id == order_user_point_account_table.c.user_point_account_id)\
+                                      .join(Order, order_user_point_account_table.c.order_id == Order.id)\
+                                      .filter(Order.id == order.id)
+        try:
+            return query.one()
+        except NoResultFound:
+            return None
+
+
+    def iter_records_for_order(self, order):
+        user_credential = order.user.user_credential if order.user else None
+        member = order.user.member if order.user and order.user.member else None
+
+        user_point_account = self.lookup_user_point_account(order)
+
+        common_record = {
+            u'order': order,
+            u'sej_order': order.sej_order if order.sej_order else None,
+            u'user_profile': order.user.user_profile if order.user else None,
+            u'membership': order.membership,
+            u'membergroup': order.membergroup,
+            u'user_credential': user_credential,
+            u'shipping_address': order.shipping_address,
+            u'payment_method': order.payment_delivery_pair.payment_method,
+            u'delivery_method': order.payment_delivery_pair.delivery_method,
+            u'organization': self.organization, # XXX
+            u'event': order.performance.event,
+            u'performance': order.performance,
+            u'venue': order.performance.venue,
+            u'user_point_account': user_point_account,
+            }
+        if self.export_type == self.EXPORT_TYPE_ORDER:
+            record = dict(common_record)
+            record[u'ordered_products'] = order.ordered_products
+            yield record
+        elif self.export_type == self.EXPORT_TYPE_SEAT:
+            for ordered_product in order.ordered_products:
+                for ordered_product_item in ordered_product.ordered_product_items:
+                    if ordered_product_item.seats:
+                        for seat in ordered_product_item.seats:
+                            record = dict(common_record)
+                            record[u'seat'] = seat
+                            record[u'stock_holder'] = ordered_product_item.product_item.stock.stock_holder
+                            record[u'ordered_product_item'] = ordered_product_item
+                            record[u'ordered_product'] = ordered_product
+                            yield record
+                    else:
+                        record = dict(common_record)
+                        record[u'seat'] = None
+                        record[u'ordered_product_item'] = ordered_product_item
+                        record[u'ordered_product'] = ordered_product
+                        yield record
+        else:
+            raise ValueError(self.export_type)
 
     def __call__(self, orders, writer_factory):
-        return super(OrderDeltaCSV, self).__call__(orders, writer_factory)
+        return CSVRendererWrapper(
+            renderer=CSVRenderer(self.column_renderers, self),
+            temporary_file_factory=lambda: tempfile.SpooledTemporaryFile(max_size=16777216),
+            writer_factory=writer_factory,
+            marshaller_factory=self.marshaller_factory,
+            records=(
+                record
+                for order in orders
+                for record in self.iter_records_for_order(order)
+                ),
+            localized_columns=self.localized_columns
+            )
+
 
 class RefundResultCSVExporter(object):
     csv_header = [
