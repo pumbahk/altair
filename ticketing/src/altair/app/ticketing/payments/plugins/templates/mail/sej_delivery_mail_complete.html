@@ -45,14 +45,14 @@ You can get your ticket after ${h.i18n_time(sej_order.ticketing_start_at)}.
 請在7-Eleven付款後領票。
 %else:
 %if delivery_method.hide_voucher:
-稍後我們會透過電子郵件通知您的兌換票號碼。
-請確認詳情，指定發票日之後請到超商或售票櫃檯取票。
+稍後我們會透過電子郵件通知兌換票號碼。
+請確認詳情，指定發票日之後請到超商或售票櫃台取票。
 %else:
 %if sej_order:
 兌換票號碼: ${sej_order.exchange_number or sej_order.billing_number}
 受理取票期間: ${h.i18n_datetime(sej_order.ticketing_start_at)} 〜 ${h.i18n_datetime(sej_order.ticketing_due_at) if sej_order.ticketing_due_at else u''}
 %if can_receive_from_next_day:
-您可在 ${h.i18n_time(sej_order.ticketing_start_at)} 之後領票。
+可在購票隔日 ${h.i18n_time(sej_order.ticketing_start_at)} 之後領票。
 %endif
 %endif
 %endif
