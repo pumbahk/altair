@@ -44,13 +44,13 @@ dl.cost-detail > dd {
     </dl>
   </div>
 
-  %if h.lot_entry_display_status(entry, now) == u'抽選申込取消':
+  %if h.lot_entry_display_status(entry, now) == u'申込取消':
   <div class="subbox">
     <dl>
-      <dt><p class="linered">抽選取消</p></dt>
+      <dt><p class="linered">申込取消</p></dt>
       <dd>
         <div class="subinner2">
-        お申込みいただいておりました以下の抽選受付を${h.withdraw_time_label(entry)}に取消いたしました。
+        お申込いただいておりました以下の受付を${h.withdraw_time_label(entry)}に取消いたしました。
         </div>
       </dd>
     </dl>
@@ -58,16 +58,16 @@ dl.cost-detail > dd {
   %else:
   <div class="subbox">
     <dl>
-      <dt><p class="linered">抽選結果</p></dt>
+      <dt><p class="linered">受付結果</p></dt>
       <dd>
         <div class="subinner2">
         % if h.lot_entry_display_status(entry, now) == u'当選表示':
-抽選の結果、お客様はご当選されました。
+お客様はご当選されました。
 <a href="/orderreview/form" target="_blank">購入履歴確認ページ</a>をご確認ください。 予約番号は ${entry.entry_no} です。
         % elif h.lot_entry_display_status(entry, now) == u'落選表示':
-抽選の結果、お客様は残念ながら落選となりました。
+お客様は残念ながら落選となりました。
         % elif h.lot_entry_display_status(entry, now) == u'抽選待ち表示':
-抽選結果発表は、${h.announce_time_label(entry.lot)}を予定しております。抽選結果発表後、抽選結果確認ページにて当選・落選をご確認下さい。
+受付結果発表は、${h.announce_time_label(entry.lot)}を予定しております。受付結果発表後、受付結果確認ページにて当選・落選をご確認下さい。
         % endif
         </div>
       </dd>
@@ -127,13 +127,13 @@ dl.cost-detail > dd {
 
   <div class="subbox">
     <dl>
-      <dt><p class="lineRed">エントリー代表者情報</p></dt>
+      <dt><p class="lineRed">エントリー者情報</p></dt>
       <dd>
         <div class="subInner2">
           <dl class="creditList">
-            <dt class="creditHl">エントリー代表者氏名</dt>
+            <dt class="creditHl">エントリー者氏名</dt>
             <dd>${shipping_address.last_name} ${shipping_address.first_name}</dd>
-            <dt class="creditHl">エントリー代表者氏名（カナ）</dt>
+            <dt class="creditHl">エントリー者氏名（カナ）</dt>
             <dd>${shipping_address.last_name_kana} ${shipping_address.first_name_kana}</dd>
             <dt class="creditHl">メールアドレス</dt>
             <dd>${shipping_address.email_1}</dd>

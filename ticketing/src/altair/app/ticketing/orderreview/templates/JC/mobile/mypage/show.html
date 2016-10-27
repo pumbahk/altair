@@ -7,11 +7,11 @@
   購入履歴がありません。
 % endif
 
-<%mobile:header>抽選申込み照会</%mobile:header>
+<%mobile:header>申込照会</%mobile:header>
 % if lot_entries:
   ${render_lot_entries(lot_entries)}
 % else:
-  抽選申込みがありません。
+  申込がありません。
 % endif
 
 <%include file="../../../__commons__/trouble_message.html" />
@@ -83,14 +83,14 @@ ${entry.entry_no}<br/>
 ${h.japanese_datetime(entry.created_at)}<br/>
 ステータス：
 ${h.get_entry_status(request, entry)}<br/>
-抽選名称：
+受付名称：
 ${entry.lot.name}<br/>
 % if entry.shipping_address:
 <form name="" action="/lots/review" method="POST">
   <input type="hidden" name="entry_no" value="${entry.entry_no}"/>
   <input type="hidden" name="tel_no" value="${entry.shipping_address.tel_1}"/>
   % if not h.is_disabled_order(entry):
-  <input type="submit" value="抽選申込み内容詳細">
+  <input type="submit" value="申込内容詳細">
   % endif
 </form>
 % endif

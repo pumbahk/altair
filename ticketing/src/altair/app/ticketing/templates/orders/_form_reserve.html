@@ -3,13 +3,55 @@
 <%namespace file="/common/helpers.html" name="ch" />
 
 <style type="text/css">
+  #modal-reserve {
+    width: 90%;
+    left: 5%;
+    top: 5%;
+    margin: auto;
+    height: 90%;
+  }
+  #modal-reserve .modal-header {
+    height: 5%;
+  }
+  #modal-reserve .modal-body {
+    max-height:none !important;
+    height: 87% !important;
+    padding: 1% 15px !important;
+    position: relative !important;
+  }
+  #modal-reserve .modal-footer {
+    position: relative;
+    bottom: 0;
+  }
   #modal-reserve .product_quantity {
     width: 50px;
     padding: 2px;
     margin: 0;
   }
-  #modal-reserve input {
-    width: 120px;
+  #modal-reserve .shipping-address .name {
+    width: 100%;
+  }
+  #modal-reserve .shipping-address .name .controls{
+    float: left !important;
+    margin-left: 20px !important;
+    width: 70% !important;
+  }
+  #modal-reserve .shipping-address .name .controls input{
+    float: left !important;
+    width: 45% !important;
+  }
+  #modal-reserve .shipping-address .name .controls input:last-child {
+    margin-left: 20px;
+  }
+  #modal-reserve .shipping-address .controls,
+  #modal-reserve .delivery_at_store .controls {
+    width: auto;
+  }
+  #modal-reserve .shipping-address .controls input,
+  #modal-reserve .delivery_at_store .controls select {
+    margin-left: -6px;
+    padding-right: 0;
+    width: 100%;
   }
   #modal-reserve .form-horizontal .control-group {
     margin-bottom: 5px;
@@ -17,6 +59,38 @@
   #modal-reserve .form-horizontal ul {
     padding-top: 5px;
   }
+  #store_warning {
+    color: #BA0000;
+    display: none;
+    padding: 0 50px;
+  }
+  #shipping-address-btn {
+    margin: 10px 0;
+  }
+  #modal-reserve .control-label {
+    width: 105px !important;
+  }
+  .controls {
+    margin-left: 125px !important;
+  }
+  .half {
+    width: 50%;
+    float: left;
+  }
+  .ss-pdmd {
+    width: 100%;
+  }
+  .ss-pdmd .controls{
+    margin-left: 120px !important;
+  }
+  .ss-pdmd .control-label{
+    width: 120px !important;
+  }
+  #sales_segment_id,
+  #payment_delivery_method_pair_id {
+    width: 100%;
+  }
+
 </style>
 
 <script type="text/javascript">
@@ -29,11 +103,14 @@
       $('[id^=product_quantity]:first').val(${len(_context.seats_form.seats.data)});
     }
     $('#payment_delivery_method_pair_id').change(function(){
-      var seven_only = $('.seven_only');
+      var delivery_at_store = $('.delivery_at_store');
+      var store_warning = $('#store_warning');
       if ($.inArray(parseInt($(this).val()), ${HH.json([payment_delivery_method_pair.id for payment_delivery_method_pair in _context.convenience_payment_delivery_method_pairs])|n}) == -1) {
-        seven_only.css('display', 'none');
+        delivery_at_store.css('display', 'none');
+        store_warning.css('display', 'none');
       } else {
-        seven_only.css('display', 'block');
+        delivery_at_store.css('display', 'inline');
+        store_warning.css('display', 'block');
       }
     }).change();
     $('.draggable').draggable({scroll: true, handle:$('.draggable .modal-header')});
@@ -234,33 +311,60 @@
           });
         });
       </script>
-      ${ch.form_item(_context.settings_form.sales_segment_id, class_='span10')}
-      ${ch.form_item(form.payment_delivery_method_pair_id, class_='span10')}
-      <div class="shipping-address">
-        <div class="control-group">
-          <div class="controls">
-            <p style="color: #BA0000;">※ コンビニ決済およびコンビニ受取は、払込票番号・引換票を発行する為に購入者情報が必須です。</p>
-          </div>
+      <div class="ss-pdmd">
+        <div class="half" style="float:left">
+            ${ch.form_item(_context.settings_form.sales_segment_id)}
         </div>
-        <div class="control-group">
-          <label class="control-label">氏名</label>
-          <div class="controls">
-            ${form.last_name(maxlength=u'10')}
-            ${form.first_name(maxlength=u'10')}
-          </div>
+        <div class="half" style="float:right">
+            ${ch.form_item(form.payment_delivery_method_pair_id)}
         </div>
-        <div class="control-group">
-          <label class="control-label">氏名(カナ)</label>
-          <div class="controls">
-            ${form.last_name_kana(maxlength=u'10')}
-            ${form.first_name_kana(maxlength=u'10')}
-          </div>
+        <div style="clear:both"></div>
+        <div id="store_warning">
+          <p>※ コンビニ決済およびコンビニ受取は氏名、氏名（カナ）、TELが必須です。</p>
         </div>
-        ${ch.form_item(form.tel_1)}
       </div>
 
-      <div class="seven_only">
-        ${ch.form_item(form.sales_counter_payment_method_id, class_='span10')}
+      <div class="shipping-address">
+
+        <div class="control-group name">
+          <div class="half" style="float:left">
+          <label class="control-label">氏名</label>
+          <div class="controls">
+            ${form.last_name(maxlength=u'10', placeholder=u'姓）山田')}
+            ${form.first_name(maxlength=u'10', placeholder=u'名）太郎')}
+          </div>
+            </div>
+          <div class="half" style="float:right">
+          <label class="control-label">氏名(カナ)</label>
+          <div class="controls">
+            ${form.last_name_kana(maxlength=u'10', placeholder=u"姓（カナ）ヤマダ")}
+            ${form.first_name_kana(maxlength=u'10', placeholder=u"名（カナ）タロウ")}
+          </div>
+            </div>
+        </div>
+        ${ch.form_item(form.tel_1, placeholder=u'例）08012345678')}
+        <br/>
+        <div class="half" style="float:left">
+            ${ch.form_item(form.zip, placeholder=u"例）1030001")}
+        </div>
+        <div class="half" style="float:right">
+            ${ch.form_item(form.prefecture, placeholder=u"例）東京都")}
+        </div>
+        <div style="clear:both"></div>
+        <div class="half" style="float:left">
+            ${ch.form_item(form.city, placeholder=u"例）中央区")}
+        </div>
+        <div class="half" style="float:right">
+            ${ch.form_item(form.address_1, placeholder=u"例）日本橋x-xx-xx")}
+        </div>
+        <div style="clear:both"></div>
+        ${ch.form_item(form.address_2, placeholder=u'例）yyビルz階')}
+        ${ch.form_item(form.email_1, placeholder=u'例）customer_name@example.com')}
+      </div>
+
+      <div class="delivery_at_store">
+        <br/>
+        ${ch.form_item(form.sales_counter_payment_method_id)}
         <div class="control-group">
           <div class="controls">
             <p>※ 当日窓口決済を選択すると、予約のステータスが「入金済み」になります</p>

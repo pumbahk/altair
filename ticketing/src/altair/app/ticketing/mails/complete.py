@@ -87,18 +87,20 @@ class PurchaseCompleteMail(object):
     def build_message(self, request, subject, traverser):
         mail_body = self.build_mail_body(request, subject, traverser)
         return self.build_message_from_mail_body(request, subject, traverser, mail_body)
-        
+
     def _body_tmpl_vars(self, request, order, traverser):
-        sa = order.shipping_address 
+        sa = order.shipping_address
         pair = order.payment_delivery_pair
         info_renderder = SubjectInfoRenderer(request, order, traverser.data, default_impl=get_subject_info_default())
-        value = dict(h=ch, 
+        i18n = request.organization.setting.i18n
+        value = dict(h=ch,
                      order=order,
+                     i18n=i18n,
                      extra_form_data=order.get_order_attribute_pair_pairs(request, mode='entry'),
-                     get=info_renderder.get, 
+                     get=info_renderder.get,
                      name=u"{0} {1}".format(sa.last_name, sa.first_name),
-                     payment_method_name=pair.payment_method.name, 
-                     delivery_method_name=pair.delivery_method.name, 
+                     payment_method_name=pair.payment_method.name,
+                     delivery_method_name=pair.delivery_method.name,
                      ### mail info
                      footer = traverser.data["footer"],
                      notice = traverser.data["notice"],

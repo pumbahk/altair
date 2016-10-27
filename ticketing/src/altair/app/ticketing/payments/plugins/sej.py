@@ -850,11 +850,15 @@ def sej_delivery_viewlet(context, request):
     delivery_method = context.order.payment_delivery_pair.delivery_method
     payment_type = payment_type_to_string(sej_order.payment_type)
     now = datetime.now()
+    i18n = False
+    if hasattr(request, 'organization') and request.organization and request.organization.setting.i18n:
+        i18n = request.organization.setting.i18n
 
     return dict(
         order=order,
         payment_type=payment_type,
         can_receive_from_next_day= can_receive_from_next_day(now, sej_order),
+        i18n=i18n,
         sej_order=sej_order,
         payment_method=payment_method,
         delivery_method=delivery_method
@@ -889,11 +893,16 @@ def sej_payment_viewlet(context, request):
     payment_method = context.order.payment_delivery_pair.payment_method
     delivery_method = context.order.payment_delivery_pair.delivery_method
     payment_type = payment_type_to_string(sej_order.payment_type)
+    i18n = False
+    if hasattr(request, 'organization') and request.organization and request.organization.setting.i18n:
+        i18n = request.organization.setting.i18n
+
     return dict(
         order=order,
         sej_order=sej_order,
         payment_type=payment_type,
         payment_method=payment_method,
+        i18n=i18n,
         delivery_method=delivery_method
         )
 
@@ -923,10 +932,15 @@ def payment_mail_viewlet(context, request):
             if delivery_plugin_id == DELIVERY_PLUGIN_ID
             else SejPaymentType.PrepaymentOnly
             )
+    i18n = False
+    if hasattr(request, 'organization') and request.organization and request.organization.setting.i18n:
+        i18n = request.organization.setting.i18n
+
     return dict(
         sej_order=sej_order,
         h=cart_helper,
         notice=context.mail_data("P", "notice"),
+        i18n=i18n,
         payment_type=payment_type,
         payment_method=payment_method,
         delivery_method=delivery_method
@@ -960,11 +974,15 @@ def delivery_mail_viewlet(context, request):
             )
         _can_receive_from_next_day = (payment_plugin_id != PAYMENT_PLUGIN_ID)
 
+    i18n = False
+    if hasattr(request, 'organization') and request.organization and request.organization.setting.i18n:
+        i18n = request.organization.setting.i18n
     return dict(
         sej_order=sej_order,
         h=cart_helper,
         payment_type=payment_type,
         can_receive_from_next_day=_can_receive_from_next_day,
+        i18n=i18n,
         notice=context.mail_data("D", "notice"),
         payment_method=payment_method,
         delivery_method=delivery_method

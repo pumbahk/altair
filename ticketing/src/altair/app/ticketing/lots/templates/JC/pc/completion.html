@@ -53,16 +53,16 @@
 </div>
 <div class="settlementBox">
   <div class="settlementBoxInner">
-    <h2><img src="${request.static_url('altair.app.ticketing.lots:static/JC/pc/img/order/title_buyer.gif')}" alt="エントリー代表者情報" width="97" height="30" /></h2>
+    <h2><img src="${request.static_url('altair.app.ticketing.lots:static/JC/pc/img/order/title_buyer.gif')}" alt="エントリー者情報" width="97" height="30" /></h2>
     <div class="settlementSelectBox">
       <div class="settlementSelectBoxInner02">
-        <table summary="エントリー代表者情報">
+        <table summary="エントリー者情報">
           <tr>
-            <th>エントリー代表者氏名</th>
+            <th>エントリー者氏名</th>
             <td>${shipping_address.last_name} ${shipping_address.first_name}</td>
           </tr>
           <tr>
-            <th>エントリー代表者氏名（カナ）</th>
+            <th>エントリー者氏名（カナ）</th>
             <td>${shipping_address.last_name_kana} ${shipping_address.first_name_kana}</td>
           </tr>
           <tr>
@@ -116,7 +116,7 @@
     <h2>注意事項</h2>
     <div class="settlementSelectBox">
       <div class="settlementSelectBoxInner02">
-        <p>お申込み時に、ご登録いただいたメールアドレス宛に、受付完了メールが送られます。しばらくたっても確認のメールが届かない場合は、入力されたメールアドレスが誤りがあるか、メールの受信設定により受信できていない可能性があります。</p>
+        <p>お申込時に、ご登録いただいたメールアドレス宛に、受付完了メールが送られます。しばらくたっても確認のメールが届かない場合は、入力されたメールアドレスが誤りがあるか、メールの受信設定により受信できていない可能性があります。</p>
         <p>登録内容、受信設定を確認のうえ、 <a href="${h.safe_get_contact_url(request)}">こちら</a>よりお問合せください。</p>
         <p>お問合せの際は、お申し込み時のお名前、電話番号、大会名、受付番号を記載お願いいたします。</p>
         <p>お申込内容は、「<a href="/lots/review">申込確認ページ</a>」からもご確認いただけます。受付番号とご登録時のお電話番号をお手元にご用意の上、ご利用ください。</p>

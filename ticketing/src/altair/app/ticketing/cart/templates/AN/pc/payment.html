@@ -205,8 +205,12 @@ $(function(){
               </li>
 
               <li>${form['zip'].label}
-                <% path = request.static_url('altair.app.ticketing.cart:static/js/zipdata') %>
-                ${form['zip'](onKeyUp="AjaxZip3.zip2addr('" + path + "', 'zip','','prefecture','city','', 'address_1');", placeholder=_(u'例: 1030001'))}
+                % if custom_locale_negotiator=='ja' or not request.organization.setting.i18n:
+                  <% path = request.static_url('altair.app.ticketing.cart:static/js/zipdata') %>
+                  ${form['zip'](onKeyUp="AjaxZip3.zip2addr('" + path + "', 'zip','','prefecture','city','', 'address_1');", placeholder=_(u'例: 1030001'))}
+                % else:
+                  ${form['zip'](placeholder=_(u'例: 1030001'))}
+                % endif
                 ${h.error_list(request, form, 'zip')}
               </li>
               <li>${form['prefecture'].label}

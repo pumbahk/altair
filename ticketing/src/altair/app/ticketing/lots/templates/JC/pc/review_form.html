@@ -7,7 +7,7 @@
         <form action="${request.url}" class="bigform" method="post">
           <table>
             <tr>
-              <th>${form['entry_no'].label}</th>
+              <th>申込番号</th>
               <td>
                 ${form['entry_no'](class_="text")}（例：JC00000000AB）
                 ${self.error(form, 'entry_no', enclose=True)}

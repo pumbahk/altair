@@ -28,7 +28,6 @@ from altair.app.ticketing.events.sales_reports.forms import (
     )
 
 from altair.app.ticketing.events.sales_reports.reports import SalesTotalReporter, PerformanceReporter, EventReporter, ExportableReporter, sendmail, ExportNumberOfPerformanceReporter
-from altair.app.ticketing.events.sales_reports.exceptions import ReportSettingValidationError
 from altair.app.ticketing.utils import get_safe_filename
 from .forms import PrintedReportSettingForm, PrintedReportRecipientForm
 
@@ -72,6 +71,15 @@ class PrintedReports(BaseView):
 
     @view_config(route_name='printed_reports.recipients_update', request_method='POST')
     def recipient_update(self):
+        form = PrintedReportRecipientForm(self.request.POST)
+        if not form.validate():
+            return dict(
+                event=self.context.event,
+                report_setting=self.context.printed_report_setting,
+                report_setting_form=PrintedReportSettingForm(),
+                recipients_form=form,
+            )
+
         self.context.update_recipient()
         self.request.session.flash(u"発券進捗メールの送信先を変更しました。")
         return dict(

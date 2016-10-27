@@ -3,6 +3,14 @@
 <%namespace file="/common/helpers.html" name="ch" />
 
 <style type="text/css">
+  #modal-reserve {
+    width: 60%;
+    left: 20%;
+    margin: auto;
+  }
+  #modal-body {
+    height: 100%;
+  }
   #modal-reserve .form-horizontal .control-group {
     margin-bottom: 5px;
   }
@@ -141,6 +149,7 @@
       </div>
       % if cart.shipping_address is not None:
       <div class="shipping-address">
+        % if cart.shipping_address.last_name and cart.shipping_address.first_name:
         <div class="control-group">
           <label class="control-label">氏名</label>
           <div class="controls">
@@ -148,6 +157,8 @@
             ${form.first_name.data}
           </div>
         </div>
+        % endif
+        % if cart.shipping_address.last_name_kana and cart.shipping_address.first_name_kana:
         <div class="control-group">
           <label class="control-label">氏名(カナ)</label>
           <div class="controls">
@@ -155,12 +166,18 @@
             ${form.first_name_kana.data}
           </div>
         </div>
-        <div class="control-group">
-          <label class="control-label">TEL</label>
-          <div class="controls">
-            ${form.tel_1.data}
-          </div>
-        </div>
+        % endif
+
+        % for field in form:
+          % if field.name in ["zip", "prefecture", "city", "address_1", "address_2", "email_1", "tel_1"] and field.data:
+            <div class="control-group">
+              <label class="control-label">${field.label.text}</label>
+              <div class="controls">
+                ${field.data}
+              </div>
+            </div>
+          % endif
+        % endfor
       </div>
       % endif
 
