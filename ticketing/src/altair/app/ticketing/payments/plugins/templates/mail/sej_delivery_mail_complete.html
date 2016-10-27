@@ -1,4 +1,5 @@
 ＜セブン-イレブンでお引取りの方＞
+発券の際は、「引換票番号（13桁）」をメモするか「引換票」をプリントアウトし、店舗レジに直接お持ちになり、チケットを発券してください。
 %if payment_type == 'CashOnDelivery':
 チケットは代金と引換です。
 %else:
@@ -15,4 +16,48 @@
 %endif
 %endif
 %endif
+
+%if i18n:
+＜Get Ticket From 7-Eleven＞
+Please note your "Exchange number (13 digits)" or print out the "voucher", and bring it to the 7-Eleven shop to get your ticket(s).
+%if payment_type == 'CashOnDelivery':
+Pay at the 7-Eleven shop to get your ticket.
+%else:
+%if delivery_method.hide_voucher:
+We will send you an email later to notify the Exchange number.
+Please confirm the email for detail and get your ticket during the exchange period.
+%else:
+%if sej_order:
+Exchange Number: ${sej_order.exchange_number or sej_order.billing_number}
+Exchange period: ${h.i18n_datetime(sej_order.ticketing_start_at)} 〜 ${h.i18n_datetime(sej_order.ticketing_due_at) if sej_order.ticketing_due_at else u''}
+%if can_receive_from_next_day:
+You can get your ticket after ${h.i18n_time(sej_order.ticketing_start_at)}.
+%endif
+%endif
+%endif
+%endif
+%endif
+
+%if i18n:
+＜如何在7-Eleven領票＞
+請攜帶「兌換票號碼（13碼）」或「兌換票」影本至便利商店櫃台向店員領取票券。
+%if payment_type == 'CashOnDelivery':
+請在7-Eleven付款後領票。
+%else:
+%if delivery_method.hide_voucher:
+稍後我們會透過電子郵件通知您的兌換票號碼。
+請確認詳情，指定發票日之後請到超商或售票櫃檯取票。
+%else:
+%if sej_order:
+兌換票號碼: ${sej_order.exchange_number or sej_order.billing_number}
+受理取票期間: ${h.i18n_datetime(sej_order.ticketing_start_at)} 〜 ${h.i18n_datetime(sej_order.ticketing_due_at) if sej_order.ticketing_due_at else u''}
+%if can_receive_from_next_day:
+您可在 ${h.i18n_time(sej_order.ticketing_start_at)} 之後領票。
+%endif
+%endif
+%endif
+%endif
+%endif
+
+
 ${notice}

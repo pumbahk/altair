@@ -63,13 +63,19 @@ class SubjectInfoDefaultMixin(object):
         if sa is None:
             return u""
         return u"{0} {1}".format(sa.last_name_kana, sa.first_name_kana)
+    def get_name(request, subject):
+        sa = subject.shipping_address
+        if sa is None:
+            return u""
+        return u"{0} {1}".format(sa.last_name, sa.first_name)
 
     name_kana = SubjectInfo(name="name_kana", label=u"お名前カナ", getval=get_name_kana)
+    name = SubjectInfo(name="name", label=u"お名前", getval=get_name)
     tel = SubjectInfo(name="tel", label=u"電話番号", getval=lambda request, subject : subject.shipping_address.tel_1 or "" if subject.shipping_address else u"")
     mail = SubjectInfo(name="mail", label=u"メールアドレス", getval=lambda request, subject : subject.shipping_address.email_1 if subject.shipping_address else u"")
     order_datetime = SubjectInfo(name="order_datetime", label=u"受付日", getval=lambda request, order: ch.mail_date(order.created_at))
     bcc = SubjectInfoWithValue(name="bcc", label=None, form_label=u"bcc", getval=lambda request, order: None, value=None)
-   
+
 
 def sensible_text_coerce(v):
     if v is None:
@@ -92,14 +98,18 @@ class OrderInfoDefaultMixin(object):
         return u"{0} {1}".format(performance.event.title, performance.name)
 
     def get_performance_date(request, order):
+        i18n = False
+        if hasattr(request, 'organization') and request.organization and request.organization.setting.i18n:
+            i18n = request.organization.setting.i18n
+
         if order.performance.end_on:
             o = order.performance.start_on
             c = order.performance.end_on
-            period = ch.japanese_date(o) + u'〜' + ch.japanese_date(c)
+            period = ch.japanese_date(o) + u'〜' + ch.japanese_date(c) if not i18n else ch.i18n_date(o) + u'〜' + ch.i18n_date(c)
             if o.year==c.year and o.month==c.month and o.day==c.day:
-                period = ch.japanese_datetime(o)
+                period = ch.japanese_datetime(o) if not i18n else ch.i18n_datetime(o)
         else:
-            period = ch.japanese_datetime(order.performance.start_on)
+            period = ch.japanese_datetime(order.performance.start_on) if not i18n else ch.i18n_datetime(order.performance.start_on)
         return period
 
     def get_seat_no(request, order):

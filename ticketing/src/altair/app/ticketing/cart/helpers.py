@@ -153,6 +153,9 @@ def i18n_datetime(dt):
 def mail_date(date):
     return u'{d.year}年 {d.month}月 {d.day}日 {d.hour:02}時 {d.minute:02}分'.format(d=date)
 
+def i18n_mail_date(date):
+    return u'{d.year}-{d.month}-{d.day} {d.hour:02}:{d.minute:02}'.format(d=date)
+
 # TODO: requestをパラメータから排除
 def error_list(request, form_or_field, name=None):
     if isinstance(form_or_field, Field):
