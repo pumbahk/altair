@@ -825,7 +825,7 @@ msgid "引換票番号"
 msgstr "Exchange number"
 
 msgid "引換票を表示"
-msgstr "Display the exchange number"
+msgstr "Display the Exchange number"
 
 msgid "引取受付期間"
 msgstr "Exchange period"
