@@ -28,7 +28,7 @@ from altair.viewhelpers.datetime_ import create_date_time_formatter, DateTimeHel
 from altair.formhelpers import (
     Translations,
     Max,
-    Required, after1900, NFKC, Zenkaku, Katakana,
+    Required, after1900, NFKC, Zenkaku, Katakana, SejCompliantEmail,
     strip_spaces, ignore_space_hyphen, OurForm)
 from altair.formhelpers.fields import (
     OurBooleanField,
@@ -811,6 +811,51 @@ class OrderReserveForm(OurForm):
             Length(max=10, message=u'10文字以内で入力してください'),
             ]
         )
+    zip = OurTextField(
+        label=u'郵便番号',
+        filters=[ignore_space_hyphen, NFKC],
+        validators=[
+            Optional(),
+            Length(min=7, max=7),
+            Regexp(r'^\d{7}$', message=u'-(ハイフン)を抜いた半角数字のみを入力してください')
+        ]
+    )
+    prefecture = OurTextField(
+        label=u"都道府県",
+        filters=[strip_spaces],
+        validators=[
+            Optional(),
+        ]
+    )
+    city = OurTextField(
+        label=u"市区町村",
+        filters=[strip_spaces],
+        validators=[
+            Optional(),
+        ]
+    )
+    address_1 = OurTextField(
+        label=u"町名番地",
+        filters=[strip_spaces],
+        validators=[
+            Optional(),
+        ]
+    )
+    address_2 = OurTextField(
+        label=u"建物名等",
+        filters=[strip_spaces],
+        validators=[
+            Optional(),
+        ]
+    )
+    email_1 = OurTextField(
+        label=u"メールアドレス",
+        filters=[strip_spaces, NFKC],
+        validators=[
+            Optional(),
+            SejCompliantEmail()
+        ]
+    )
     tel_1 = OurTextField(
         label=u'TEL',
         filters=[ignore_space_hyphen],
@@ -818,15 +863,16 @@ class OrderReserveForm(OurForm):
             Optional(),
             Length(min=10, max=11),
             Regexp(r'^\d*$', message=u'-(ハイフン)を抜いた半角数字のみを入力してください'),
-            ]
-        )
+        ]
+    )
 
     def validate_payment_delivery_method_pair_id(form, field):
         if field.data and any(True for payment_delivery_method_pair in form.context.convenience_payment_delivery_method_pairs if field.data == payment_delivery_method_pair.id):
             for field_name in ['last_name', 'first_name', 'last_name_kana', 'first_name_kana', 'tel_1']:
                 f = getattr(form, field_name)
                 if not f.data:
-                    raise ValidationError(u'購入者情報を入力してください')
+                    err_msg = u'{}を入力してください'.format(f.label.text)
+                    raise ValidationError(err_msg)
 
             # 決済せずにコンビニ受取できるのはadministratorのみ (不正行為対策)
             pdmp = DBSession.query(PaymentDeliveryMethodPair).filter_by(id=field.data).one()

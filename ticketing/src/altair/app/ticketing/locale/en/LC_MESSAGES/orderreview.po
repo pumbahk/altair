@@ -264,19 +264,19 @@ msgstr "Print"
 # sej
 
 msgid "セブン-イレブン支払い"
-msgstr "Payment at 7-11"
+msgstr "Payment at 7-Eleven"
 
 msgid "セブン-イレブン受け取り"
-msgstr "Delivery at 7-11"
+msgstr "Delivery at 7-Eleven"
 
 msgid "当選の場合、お支払期日までにお支払頂きます。"
 msgstr "In the case of winning, you pay until the payment due date."
 
 msgid "お支払が確認できた時点で当選申込が確定となります。"
-msgstr "Application winning at the time the payment has been confirmed will be confirmed."
+msgstr "Election of the Application will be completed after payment."
 
 msgid "各種手数料の他、公演によりシステム利用料がかかります。"
-msgstr "Application winning at the time the payment has been confirmed will be confirmed."
+msgstr "In some cases system fee will be changed."
 
 msgid "払込票番号"
 msgstr "Application number"
@@ -354,9 +354,6 @@ msgstr "Pay by Famiport"
 msgid "Famiポート引取"
 msgstr "Get by Famiport"
 
-msgid "チケットは代金と引換です。"
-msgstr "Tickets are exchange for a price."
-
 msgid "Famiポートでお引き取り"
 msgstr "Pick up you at Famiport"
 
@@ -371,3 +368,26 @@ msgstr "Payment in Famiport"
 
 msgid "支払期限"
 msgstr "Due date for payment"
+
+# post
+
+msgid "以下の住所に郵送します"
+msgstr "Post to the following address."
+
+msgid "郵便番号"
+msgstr "Zip"
+
+msgid "宛名"
+msgstr "To"
+
+msgid "様"
+msgstr " "
+
+msgid "配送状況"
+msgstr "Delivery status"
+
+msgid "配送"
+msgstr "Delivered"
+
+msgid "未配送"
+msgstr "Waiting"

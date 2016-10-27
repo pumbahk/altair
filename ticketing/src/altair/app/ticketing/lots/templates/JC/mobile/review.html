@@ -2,7 +2,7 @@
 <%namespace file="./tags_mobile.html" name="mobile" />
 <%def name="enclose_if(tag, condition, **kwargs)">${h._enclose_if(capture(caller.body), tag, condition, **kwargs)}</%def>
 <div align="center" style="text-align:center">
-抽選申込確認
+申込ページ(参加確定後支払)
 </div>
 <%mobile:header>詳細</%mobile:header>
 <%mobile:form_header>申込番号</%mobile:form_header>
@@ -10,23 +10,23 @@
 <%mobile:form_header>状態</%mobile:form_header>
 <div>
 %if h.lot_entry_display_status(entry, now) == u'抽選待ち表示':
-抽選待ち
+結果待ち
 %else:
 <span style="color:red;">
 ${h.lot_entry_status_as_string(entry)}
 </span>
 %endif
 <%mobile:band bgcolor="#ffffdd">
-%if h.lot_entry_display_status(entry, now) == u'抽選申込取消':
-お申込みいただいておりました以下の抽選受付を${h.withdraw_time_label(entry)}に取消いたしました。
+%if h.lot_entry_display_status(entry, now) == u'申込取消':
+お申込いただいておりました以下の受付を${h.withdraw_time_label(entry)}に取消いたしました。
 %elif h.lot_entry_display_status(entry, now) == u'当選表示':
-抽選の結果、お客様はご当選されました。
+お客様はご当選されました。
 <a href="/orderreview/guest">■購入履歴確認ページ</a>をご確認ください。<br/>
 %elif h.lot_entry_display_status(entry, now) == u'落選表示':
-抽選の結果、お客様は残念ながら落選となりました。<br />
+お客様は残念ながら落選となりました。<br />
 %elif h.lot_entry_display_status(entry, now) == u'抽選待ち表示':
-抽選結果発表は、${h.announce_time_label(entry.lot)}を予定しております。<br />
-抽選結果発表後、抽選結果確認ページにて当選・落選をご確認下さい。
+受付結果発表は、${h.announce_time_label(entry.lot)}を予定しております。<br />
+受付結果発表後、受付結果確認ページにて当選・落選をご確認下さい。
 %endif
 </%mobile:band>
 </div>
@@ -82,12 +82,12 @@ ${h.format_currency(wish.special_fee)}
 </div>
 </div>
 %endfor
-<%mobile:header>エントリー代表者情報</%mobile:header>
-<%mobile:form_header>エントリー代表者氏名</%mobile:form_header>
+<%mobile:header>エントリー者情報</%mobile:header>
+<%mobile:form_header>エントリー者氏名</%mobile:form_header>
 <div>
 ${shipping_address.last_name} ${shipping_address.first_name}
 </div>
-<%mobile:form_header>エントリー代表者氏名(カナ)</%mobile:form_header>
+<%mobile:form_header>エントリー者氏名(カナ)</%mobile:form_header>
 <div>
 ${shipping_address.last_name_kana} ${shipping_address.first_name_kana}
 </div>

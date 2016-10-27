@@ -759,16 +759,16 @@ msgstr "Display based on specific trade law"
 # sej
 
 msgid "セブン-イレブン支払い"
-msgstr "Payment at 7-11"
+msgstr "Payment at 7-Eleven"
 
 msgid "セブン-イレブン受け取り"
-msgstr "Delivery at 7-11"
+msgstr "Delivery at 7-Eleven"
 
 msgid "セブン-イレブン"
-msgstr "7-11"
+msgstr "7-Eleven"
 
 msgid "セブンイレブン"
-msgstr "7-11"
+msgstr "7-Eleven"
 
 msgid "クレジットカード"
 msgstr "card"
@@ -789,10 +789,10 @@ msgid "当選の場合、お支払期日までにお支払頂きます。"
 msgstr "In the case of winning, please pay until the payment due date."
 
 msgid "お支払が確認できた時点で当選申込が確定となります。"
-msgstr "Application winning at the time the payment has been done the reservation will be completed."
+msgstr "Election of the Application will be completed after payment."
 
 msgid "各種手数料の他、公演によりシステム利用料がかかります。"
-msgstr "Application winning at the time the payment has been done the reservation will be completed."
+msgstr "In some cases system fee will be changed."
 
 msgid "払込票番号"
 msgstr "Payment slip number"
@@ -825,7 +825,7 @@ msgid "引換票番号"
 msgstr "Exchange number"
 
 msgid "引換票を表示"
-msgstr "Display the exchange number"
+msgstr "Display the Exchange number"
 
 msgid "引取受付期間"
 msgstr "Exchange period"

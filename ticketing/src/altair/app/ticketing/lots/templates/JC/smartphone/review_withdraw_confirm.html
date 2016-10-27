@@ -6,7 +6,7 @@
 %>
 %if can_withdraw:
 <div align="center">
-<h1>この抽選申込を取消しますか?</h1>
+<h1>この申込を取消しますか?</h1>
 </div>
 <div class="withdrawConfirmBox">
 <table>
@@ -29,7 +29,7 @@
 </table>
 </div>
 <div align="center">
-<span style="color:red">(取消した抽選申込を有効な抽選申込に戻す事はできません)</span>
+<span style="color:red">(取消した申込を有効な申込に戻す事はできません)</span>
 </div>
 %endif
 %if error_msg:
@@ -46,13 +46,11 @@
     <div class="confirmBoxText">${entry.entry_no}</div>
   </div>
 </div>
-%if h.lot_entry_display_status(entry, now) == u'抽選申込取消':
+%if h.lot_entry_display_status(entry, now) == u'申込取消':
   <div class="confirmBox">
     <dl>
-      <dt><img src="${request.static_url('altair.app.ticketing.lots:static/JC/pc/img/order/title_election_result.gif')}" alt="抽選結果" /></dt>
-      <dd>
         <div class="confirmBoxText">
-        お申込みいただいておりました以下の抽選受付を${h.withdraw_time_label(entry)}に取消いたしました。
+        お申込いただいておりました以下の受付を${h.withdraw_time_label(entry)}に取消いたしました。
         </div>
       </dd>
     </dl>
@@ -60,17 +58,17 @@
 %else:
   <div class="confirmBox">
     <dl>
-      <dt><img src="${request.static_url('altair.app.ticketing.lots:static/JC/pc/img/order/title_election_result.gif')}" alt="抽選結果" /></dt>
+      <dt><img src="${request.static_url('altair.app.ticketing.lots:static/JC/pc/img/order/title_election_result.gif')}" alt="受付結果" /></dt>
       <dd>
         <div class="confirmBoxText">
         % if h.lot_entry_display_status(entry, now) == u'当選表示':
-抽選の結果、お客様はご当選されました。
+お客様はご当選されました。
 <a href="/orderreview/guest" target="_blank">■購入履歴確認ページ</a>をご確認ください。<br/>
 予約番号は ${entry.entry_no} です。
         % elif h.lot_entry_display_status(entry, now) == u'落選表示':
-抽選の結果、お客様は残念ながら落選となりました。
+お客様は残念ながら落選となりました。
         % elif h.lot_entry_display_status(entry, now) == u'抽選待ち表示':
-抽選結果発表は、${h.announce_time_label(entry.lot)}を予定しております。抽選結果発表後、抽選結果確認ページにて当選・落選をご確認下さい。
+受付結果発表は、${h.announce_time_label(entry.lot)}を予定しております。受付結果発表後、受付結果確認ページにて当選・落選をご確認下さい。
         % endif
         </div>
       </dd>
@@ -103,7 +101,7 @@
         <p class="header"><strong>第${wish.wish_order + 1}希望</strong><span>${wish.performance.name}</span></p>
         <table summary="第一希望">
           <tr>
-            <th>抽選結果</th>
+            <th>受付結果</th>
             <td>
               %if entry.is_ordered:
                 %if wish.elected_at:
@@ -114,7 +112,7 @@
               %elif entry.rejected_at:
                 ご用意できませんでした
               %else:
-                抽選処理前です
+                受付結果表示前です
               %endif
             </td>
           </tr>
@@ -159,11 +157,11 @@
       <div class="settlementSelectBoxInner02">
         <table summary="お支払・お引取り方法選択">
           <tr>
-            <th>エントリー代表者氏名</th>
+            <th>エントリー者氏名</th>
             <td>${shipping_address.last_name} ${shipping_address.first_name}</td>
           </tr>
           <tr>
-            <th>エントリー代表者氏名（カナ）</th>
+            <th>エントリー者氏名（カナ）</th>
             <td>${shipping_address.last_name_kana} ${shipping_address.first_name_kana}</td>
           </tr>
           <tr>
