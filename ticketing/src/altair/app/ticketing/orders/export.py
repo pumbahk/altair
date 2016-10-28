@@ -75,6 +75,7 @@ japanese_columns = {
     u'order.cart_setting_id': u'カート設定',
     u'order.type':u'予約タイプ',
     u'order.count':u'チケット枚数',
+    u'order.printed_at':u'発券日時（予約単位）',
     #u'anshin_checkout.order_id': u'楽天ID決済 注文番号',
     #u'anshin_checkout.order_control_id': u'楽天ID決済 注文管理番号',
     #u'anshin_checkout.used_point': u'楽天ID決済 利用ポイント数',
@@ -126,6 +127,7 @@ japanese_columns = {
     u'ordered_product_item.quantity': u'商品明細個数',
     u'ordered_product_item.refund_price': u'払戻商品明細単価',
     u'ordered_product_item.print_histories': u'発券作業者',
+    u'ordered_product_item.printed_at':u'発券日時（座席単位）',
     u'mail_magazine.mail_permission': u'メールマガジン受信可否',
     u'seat.name': u'座席名',
     u'stock_holder.name': u'枠名',
@@ -621,6 +623,7 @@ class OrderDeltaCSV(OrderCSV):
         u'order.issuing_end_at': PlainTextRenderer(u'order.issuing_end_at'),
         u'order.payment_start_at': PlainTextRenderer(u'order.payment_start_at'),
         u'order.payment_due_at': PlainTextRenderer(u'order.payment_due_at'),
+        u'order.printed_at':PlainTextRenderer(u'order.printed_at'),
         u'sej_order.billing_number': PlainTextRenderer(u'sej_order.billing_number'),
         u'sej_order.exchange_number': PlainTextRenderer(u'sej_order.exchange_number'),
         u'user_profile.last_name': PlainTextRenderer(u'user_profile.last_name'),
@@ -676,6 +679,7 @@ class OrderDeltaCSV(OrderCSV):
         u'ordered_product_item.product_item.name': PlainTextRenderer(u'ordered_product_item.product_item.name'),
         u'ordered_product_item.price': CurrencyRenderer(u'ordered_product_item.price'),
         u'ordered_product_item.refund_price': CurrencyRenderer(u'ordered_product_item.refund_price'),
+        u'ordered_product_item.printed_at': PlainTextRenderer(u'ordered_product_item.printed_at'),
 
         u'ordered_product_item.print_histories': PrintHistoryRenderer(u'ordered_product_item',
                                                                       u'ordered_product_item.print_histories'
