@@ -51,6 +51,7 @@ from altair.app.ticketing.core.models import (
     SeatStatusEnum,
     SalesSegment,
     FamiPortTenant,
+    Account,
 )
 from altair.app.ticketing.users.models import (
     User,
@@ -153,14 +154,19 @@ class SummarizedVenue(object):
     def __init__(self, name):
         self.name = name
 
+class SummarizedAccount(object):
+    def __init__(self, name):
+        self.name = name
+
 class SummarizedPerformance(object):
-    def __init__(self, id, name, code, start_on, event, venue):
+    def __init__(self, id, name, code, start_on, event, venue, account):
         self.id = id
         self.name = name
         self.code = code
         self.start_on = start_on
         self.event = event
         self.venue = venue
+        self.account = account
 
 class SummarizedShippingAddress(ShippingAddressMixin):
     def __init__(self, last_name, first_name, last_name_kana, first_name_kana, zip, country, prefecture, city, address_1, address_2, tel_1, tel_2, fax, email_1, email_2):
@@ -191,6 +197,7 @@ def _get_performances(request, organization_id):
                 Performance.code,
                 Performance.start_on,
                 Venue.name.label('venue_name'),
+                Account.name.label('account_name'),
             ],
             Event.organization_id==organization_id,
             from_obj=[
@@ -198,6 +205,9 @@ def _get_performances(request, organization_id):
                     Event.__table__,
                 ).join(
                     Venue.__table__,
+                ).join(
+                    Account.__table__,
+                    and_(Performance.__table__.c.account_id==Account.__table__.c.id)
                 )]).execute()
 
         performances = {}
@@ -211,7 +221,8 @@ def _get_performances(request, organization_id):
                     row.event_id,
                     row.title
                     ),
-                SummarizedVenue(row.venue_name)
+                SummarizedVenue(row.venue_name),
+                SummarizedAccount(row.account_name)
                 )
         request._performances = performances
     return request._performances

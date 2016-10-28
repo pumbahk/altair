@@ -132,6 +132,7 @@ japanese_columns = {
     u'mail_magazine.mail_permission': u'メールマガジン受信可否',
     u'seat.name': u'座席名',
     u'stock_holder.name': u'枠名',
+    u'account.name': u'配券元',
     u'stock_type.name': u'席種',
     }
 
@@ -677,6 +678,7 @@ class OrderDeltaCSV(OrderCSV):
         u'venue.name': PlainTextRenderer(u'venue.name'),
         u'mail_magazine.mail_permission': MailMagazineSubscriptionStateRenderer(
         u'shipping_address.emails', u'mail_magazine.mail_permission'),
+        u'account.name': PlainTextRenderer(u'account.name'),
         u'stock_type.name': PlainTextRenderer(u'stock_type.name'),
     }
 
@@ -823,7 +825,8 @@ class OrderDeltaCSV(OrderCSV):
             u'performance': order.performance,
             u'venue': order.performance.venue,
             u'user_point_account': user_point_account,
-            u'stock_type': order.ordered_products[0].product.seat_stock_type if order.ordered_products[0] else None
+            u'stock_type': order.ordered_products[0].product.seat_stock_type if order.ordered_products[0] else None,
+            u'account': order.performance.account
             }
         if self.export_type == self.EXPORT_TYPE_ORDER:
             record = dict(common_record)
