@@ -57,6 +57,7 @@ japanese_columns = {
     u'order.system_fee': u'システム利用料',
     u'order.special_fee': u'特別手数料',
     u'order.margin': u'内手数料金額',
+    u'order.total_amount_ordered_product': u'チケット代金',
     u'order.refund_total_amount': u'払戻合計金額',
     u'order.refund_transaction_fee': u'払戻決済手数料',
     u'order.refund_delivery_fee': u'払戻配送手数料',
@@ -131,6 +132,7 @@ japanese_columns = {
     u'mail_magazine.mail_permission': u'メールマガジン受信可否',
     u'seat.name': u'座席名',
     u'stock_holder.name': u'枠名',
+    u'stock_type.name': u'席種',
     }
 
 def get_japanese_columns(request):
@@ -270,6 +272,20 @@ class OrderAttributeRenderer(object):
             retval.extend(renderer(dict(_=attr_value), context))
         return retval
 
+
+class TotalAmountOrderedProductRenderer(object):
+    def __init__(self, key, column_name):
+        self.key = key
+        self.column_name = column_name
+
+    def __call__(self, record, context):
+        order = dereference(record, self.key)
+        rendered_value = 0
+        for ordered_product in order.ordered_products:
+            rendered_value += (ordered_product.price * ordered_product.quantity)
+        return [
+            ((u"", self.column_name, u""), unicode(rendered_value))
+        ]
 
 class CSVRendererWrapper(object):
     def __init__(self, renderer, temporary_file_factory, writer_factory, marshaller_factory, records, localized_columns={}, block_size=131072):
@@ -609,6 +625,7 @@ class OrderDeltaCSV(OrderCSV):
         u'order.system_fee': CurrencyRenderer(u'order.system_fee'),
         u'order.special_fee': CurrencyRenderer(u'order.special_fee'),
         u'order.margin': MarginRenderer(u'order', u'order.margin'),
+        u'order.total_amount_ordered_product': TotalAmountOrderedProductRenderer(u'order', u'order.total_amount_ordered_product'),
         u'order.refund_total_amount': CurrencyRenderer(u'order.refund_total_amount'),
         u'order.refund_transaction_fee': CurrencyRenderer(u'order.refund_transaction_fee'),
         u'order.refund_delivery_fee': CurrencyRenderer(u'order.refund_delivery_fee'),
@@ -660,6 +677,7 @@ class OrderDeltaCSV(OrderCSV):
         u'venue.name': PlainTextRenderer(u'venue.name'),
         u'mail_magazine.mail_permission': MailMagazineSubscriptionStateRenderer(
         u'shipping_address.emails', u'mail_magazine.mail_permission'),
+        u'stock_type.name': PlainTextRenderer(u'stock_type.name'),
     }
 
     export_type_related_columns_dict = {
@@ -687,6 +705,14 @@ class OrderDeltaCSV(OrderCSV):
         u'ordered_product_item.quantity': {
             EXPORT_TYPE_ORDER: PlainTextRenderer(u'ordered_product_item.quantity'),
             EXPORT_TYPE_SEAT: PerSeatQuantityRenderer(u'ordered_product_item', u'ordered_product_item.quantity')
+        },
+
+        # total amount of ordered product
+        u'order.total_amount_ordered_product': {
+            EXPORT_TYPE_ORDER: TotalAmountOrderedProductRenderer(u'order', u'order.total_amount_ordered_product'),
+
+            # 座席単位：座席に紐づく商品明細の商品単価
+            EXPORT_TYPE_SEAT: CurrencyRenderer(u'ordered_product_item.price')
         },
 
         # seat
@@ -797,6 +823,7 @@ class OrderDeltaCSV(OrderCSV):
             u'performance': order.performance,
             u'venue': order.performance.venue,
             u'user_point_account': user_point_account,
+            u'stock_type': order.ordered_products[0].product.seat_stock_type if order.ordered_products[0] else None
             }
         if self.export_type == self.EXPORT_TYPE_ORDER:
             record = dict(common_record)
