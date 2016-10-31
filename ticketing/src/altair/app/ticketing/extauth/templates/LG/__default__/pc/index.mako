@@ -1,6 +1,6 @@
 <%inherit file="base.mako" />
 <ul>
-  <li><p><a href="${_context.route_path('extauth.pollux.entry')}">LGファンクラブ会員としてログイン</a></p></li>
+  <li><p><a href="${_context.route_path('extauth.fanclub.entry')}">LGファンクラブ会員としてログイン</a></p></li>
   <li><p><a href="${_context.route_path('extauth.rakuten.entry')}">楽天会員としてログイン</a></p></li>
   % for member_set in _context.member_sets:
   <li>

@@ -226,10 +226,11 @@ class AuthAPIAdapter(object):
             decider=self.decider
             )
 
-    def challenge(self, challenger_name=None, challenger_iface=None):
+    def challenge(self, response=None, challenger_name=None, challenger_iface=None):
+        _response = response or self.request.response
         self.api.challenge(
             self.request,
-            self.request.response,
+            _response,
             classification=self.classification,
             challenger_name=challenger_name,
             challenger_iface=challenger_iface,
