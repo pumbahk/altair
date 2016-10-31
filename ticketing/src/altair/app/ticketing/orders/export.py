@@ -134,6 +134,8 @@ japanese_columns = {
     u'stock_holder.name': u'枠名',
     u'account.name': u'配券元',
     u'stock_type.name': u'席種',
+    u'famiport_receipt_payment.reserve_number': u'FM払込票番号',
+    u'famiport_receipt_ticketing.reserve_number': u'FM引換票番号',
     }
 
 def get_japanese_columns(request):
@@ -680,6 +682,8 @@ class OrderDeltaCSV(OrderCSV):
         u'shipping_address.emails', u'mail_magazine.mail_permission'),
         u'account.name': PlainTextRenderer(u'account.name'),
         u'stock_type.name': PlainTextRenderer(u'stock_type.name'),
+        u'famiport_receipt_payment.reserve_number': PlainTextRenderer(u'famiport_receipt_payment.reserve_number'),
+        u'famiport_receipt_ticketing.reserve_number': PlainTextRenderer(u'famiport_receipt_ticketing.reserve_number'),
     }
 
     export_type_related_columns_dict = {
@@ -803,12 +807,50 @@ class OrderDeltaCSV(OrderCSV):
         except NoResultFound:
             return None
 
+    # 決済方法か取引方法がファミポートの場合のみ情報を取得する。それ以外の場合はNoneを返す
+    def lookup_famiport_order(self, order):
+        from altair.app.ticketing.payments.plugins import famiport
+        from altair.sqlahelper import get_db_session
+        from altair.app.ticketing.famiport.models import FamiPortOrder
+        from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
+
+        tenant = famiport.lookup_famiport_tenant(self.request, order)
+        if tenant is not None:
+            session = get_db_session(self.request, 'famiport')
+            try:
+                famiport_order = session.query(FamiPortOrder)\
+                                        .filter(FamiPortOrder.client_code == tenant.code)\
+                                        .filter(FamiPortOrder.order_no == order.order_no)\
+                                        .filter(FamiPortOrder.invalidated_at == None)\
+                                        .one()
+                return famiport_order
+            except (MultipleResultsFound, NoResultFound):
+                pass
+        return None
+
+    def lookup_famiport_receipt(self, order, payment_flag=False, ticketing_flag=False):
+        if not payment_flag and not ticketing_flag:
+            return None
+
+        from altair.app.ticketing.payments.plugins import FAMIPORT_PAYMENT_PLUGIN_ID, FAMIPORT_DELIVERY_PLUGIN_ID
+        is_famiport_payment = order.payment_delivery_pair.payment_method.payment_plugin_id == FAMIPORT_PAYMENT_PLUGIN_ID
+        is_famiport_delivery = order.payment_delivery_pair.delivery_method.delivery_plugin_id == FAMIPORT_DELIVERY_PLUGIN_ID
+
+        if (payment_flag and is_famiport_payment) or (ticketing_flag and is_famiport_delivery):
+            famiport_order = self.lookup_famiport_order(order)
+            if famiport_order is not None:
+                return famiport_order.famiport_receipts[0]
+
+        return None
+
 
     def iter_records_for_order(self, order):
         user_credential = order.user.user_credential if order.user else None
         member = order.user.member if order.user and order.user.member else None
 
         user_point_account = self.lookup_user_point_account(order)
+        famiport_receipt_payment = self.lookup_famiport_receipt(order, payment_flag=True)
+        famiport_receipt_ticketing = self.lookup_famiport_receipt(order, ticketing_flag=True)
 
         common_record = {
             u'order': order,
@@ -826,7 +868,9 @@ class OrderDeltaCSV(OrderCSV):
             u'venue': order.performance.venue,
             u'user_point_account': user_point_account,
             u'stock_type': order.ordered_products[0].product.seat_stock_type if order.ordered_products[0] else None,
-            u'account': order.performance.account
+            u'account': order.performance.account,
+            u'famiport_receipt_payment': famiport_receipt_payment,
+            u'famiport_receipt_ticketing': famiport_receipt_ticketing
             }
         if self.export_type == self.EXPORT_TYPE_ORDER:
             record = dict(common_record)

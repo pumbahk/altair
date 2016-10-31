@@ -205,7 +205,7 @@ def _get_performances(request, organization_id):
                     Event.__table__,
                 ).join(
                     Venue.__table__,
-                ).join(
+                ).outerjoin(
                     Account.__table__,
                     and_(Performance.__table__.c.account_id==Account.__table__.c.id)
                 )]).execute()
