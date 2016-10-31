@@ -81,10 +81,10 @@ altair.rakuten_auth.session.data_dir = %(here)s/../tmp/beaker/altair.rakuten_aut
 altair.rakuten_auth.session.lock_dir = %(here)s/../tmp/beaker/altair.rakuten_auth/lock
 
 ; altair.fanclub_auth
-altair.fanclub_auth.url_builder_factory = ${altair:extauth.rakuten_auth.url_builder_factory}
-altair.fanclub_auth.oauth.consumer_key = ${altair:extauth.rakuten_auth.oauth.consumer_key}
-altair.fanclub_auth.oauth.secret = ${altair:extauth.rakuten_auth.oauth.secret}
-
+altair.fanclub_auth.challenge_success_callback = altair.app.ticketing.extauth.views.rakuten_auth_challenge_succeeded
+altair.fanclub_auth.url_builder_factory = ${altair:extauth.fanclub_auth.url_builder_factory}
+altair.fanclub_auth.oauth.consumer_key = ${altair:extauth.fanclub_auth.oauth.consumer_key}
+altair.fanclub_auth.oauth.secret = ${altair:extauth.fanclub_auth.oauth.secret}
 
 ; altair.httpsession
 get altair.httpsession.persistence = altair.httpsession.persistence
