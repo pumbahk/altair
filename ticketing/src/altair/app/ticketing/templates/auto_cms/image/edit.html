@@ -1,0 +1,31 @@
+<%inherit file="/layout_2cols.html" />
+<%namespace file="/common/helpers.html" name="ch" />
+<% import altair.app.ticketing.cart.helpers as h %>
+<%block name="breadcrumbs">
+  ${ch.breadcrumbs(
+      names=[u'イベント', performance.event.title, u'イベント画像情報', u'パフォーマンス情報'],
+      urls=[request.route_path('events.index'),
+            request.route_path('events.show', event_id=performance.event.id),
+            request.route_path('auto_cms.image.index', event_id=performance.event.id)
+           ]
+  )}
+</%block>
+
+<script>
+  $(function() {
+    $('[rel=popover]').popover()
+  });
+</script>
+
+<h3>パフォーマンス画像</h3>
+<h4>パフォーマンスID：${performance.id}</h4>
+<h4>パフォーマンス名称：${performance.name}<h4/>
+<form action="${request.route_path('auto_cms.image.edit', performance_id=performance.id)}"
+      method="POST" accept-charset="utf-8" enctype="multipart/form-data">
+  ${form.upload_file}
+  <input type="submit" value="アップロードする"/>
+</form>
+% for field in form.errors:
+  <div class="alert-danger">${form.errors[field][0]}</div>
+% endfor
+<img src="${request.static_url('altair.app.ticketing.auto_cms:static/{}/main.png'.format(performance.id))}"></img>
