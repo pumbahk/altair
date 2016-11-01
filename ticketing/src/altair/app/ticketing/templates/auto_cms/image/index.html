@@ -1,0 +1,49 @@
+<%inherit file="/layout_2cols.html" />
+<%namespace file="/common/helpers.html" name="ch" />
+<% import altair.app.ticketing.cart.helpers as h %>
+<%block name="breadcrumbs">
+  ${ch.breadcrumbs(
+      names=[u'イベント', event.title, u'イベント画像'],
+      urls=[request.route_path('events.index'),
+            request.route_path('events.show', event_id=event.id)
+           ]
+  )}
+</%block>
+
+<script>
+  $(function() {
+    $('[rel=popover]').popover()
+  });
+</script>
+
+<h3>画像情報</h3>
+
+<a href="${request.route_path('auto_cms.image.all_edit', event_id=event.id)}"><div class="btn btn-danger">すべての画像を編集</div></a>
+
+<table class="table table-bordered fullwidth">
+  <tbody>
+    <tr>
+      <th class="span2">パフォーマンスID</th>
+      <th class="span7">パフォーマンス名称</th>
+      <!--
+      <th class="span6">登録画像</th>
+      -->
+      <th class="span1"></th>
+    </tr>
+    % for performance in event.performances:
+    <tr>
+      <td><a href="${request.route_path('auto_cms.image.edit', performance_id=performance.id)}">${performance.id}</a></td>
+      <td><a href="${request.route_path('auto_cms.image.edit', performance_id=performance.id)}">${performance.name}</a></td>
+      <!--
+      <td>
+        <a href="${request.route_path('auto_cms.image.edit', performance_id=performance.id)}">
+          <img width="100" height="100" src="${request.static_url('altair.app.ticketing.auto_cms:static/{}/main.png'.format(performance.id))}"/>
+        </a>
+      </td>
+      -->
+      <td><a href="${request.route_path('auto_cms.image.edit', performance_id=performance.id)}"><div class="btn btn-primary">編集</div></a></td>
+    </tr>
+    % endfor
+  </tbody>
+</table>
+

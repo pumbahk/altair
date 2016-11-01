@@ -355,6 +355,9 @@ class OrganizationSettingSimpleForm(OurForm):
     lot_entry_user_withdraw = OurBooleanField(
         label=get_annotations_for(c_models.OrganizationSetting.lot_entry_user_withdraw)['label']
     )
+    auto_cms = OurBooleanField(
+        label=get_annotations_for(c_models.OrganizationSetting.auto_cms)['label']
+    )
 
     def __init__(self, *args, **kwargs):
         context = kwargs.pop('context')
@@ -448,6 +451,9 @@ class OrganizationSettingForm(OrganizationSettingSimpleForm):
         )
     i18n = OurBooleanField(
         label=get_annotations_for(c_models.OrganizationSetting.i18n)['label']
+        )
+    auto_cms = OurBooleanField(
+        label=get_annotations_for(c_models.OrganizationSetting.auto_cms)['label']
         )
 
     def validate_multicheckout_shop_name(form, field):
