@@ -11,7 +11,7 @@ class ImageUploadForm(Form):
     upload_file = fields.FileField(label=u"imageファイル")
 
     def validate_upload_file(form, field):
-        if not field.data:
+        if not hasattr(field.data, "filename"):
             raise ValidationError(u"ファイルを指定してください")
 
         if not field.data.filename.endswith('png'):
