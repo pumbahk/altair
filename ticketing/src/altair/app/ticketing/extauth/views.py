@@ -286,15 +286,30 @@ class View(object):
             return challenge_service_provider(self.request, 'pollux')
 
         # TODO: 複数会員資格が返ってきたときはイーグルスみたいに選ばせる必要がある
-        if len(self.request.altair_auth_metadata['memberships']) > 1:
-            logger.debug('multiple memberships found: {}'.format(self.request.altair_auth_metadata['memberships']))
+        def normalize_received_data(received_data):
+                norm_data = {}
+                norm_data['memberships'] = [dict(
+                    membership_id=None,
+                    kind=dict(
+                        id=index+1,
+                        name=data.get('membership_name')
+                    )
+                ) for index, data in enumerate(received_data)]
+                return norm_data
+
+        data = normalize_received_data(self.request.altair_auth_metadata['memberships'])
+        self.request.session['retrieved'] = data
+        if len(data['memberships']) == 0:
+            return HTTPFound(location=self.request.route_path('extauth.no_valid_memberships', subtype=self.context.subtype))
+        elif len(data['memberships']) > 1:
+            return HTTPFound(location=self.request.route_path('extauth.select_account', subtype=self.context.subtype))
         return HTTPFound(
                 location=self.request.route_path(
                     'extauth.authorize',
                     subtype=self.context.subtype,
                     _query=dict(
                         _=self.request.session.get_csrf_token(),
-                        member_kind_name=self.request.altair_auth_metadata['memberships'][0]['membership_name']
+                        member_kind_name=data['memberships'][0]['membership_name']
                         )
                     ),
             )
@@ -379,6 +394,14 @@ class View(object):
                 member_kind_name = self.request.params['member_kind_name']
             except KeyError as e:
                 raise HTTPBadRequest('missing parameter: %s' % e.message)
+            retrieved_profile = self.request.session['retrieved']
+            member_kinds = {
+                 membership['kind']['id']: membership['kind']['name']
+                 for membership in retrieved_profile['memberships']
+                 }
+            # FIXME: 会員資格文字列で正当性検証するのは微妙
+            if member_kind_name not in member_kinds.values():
+                raise HTTPBadRequest('invalid parameter: member_kind_name')
             identity = dict(
                 id=id_,
                 profile=self.request.altair_auth_metadata,

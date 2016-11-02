@@ -236,6 +236,7 @@ class FanclubAuthPlugin(object):
                     identity.update(auth_factors_for_session_keeper)
         if received_params is not None:
             assert self.AUTHENTICATED_KEY not in request.environ
+            self._flush_cache('oauth_request_token')
             if not self.verify_authentication(request, received_params):
                 logger.debug('authentication failed')
                 return None, None
@@ -271,7 +272,8 @@ class FanclubAuthPlugin(object):
             extras = None
             try:
                 extras = cache.get(
-                    key=identity['oauth_request_token'],
+                    key=request.session.id,
+                    expiretime=3600,
                     createfunc=get_extras
                 )
                 logger.debug("retrieved extra information ({})".format(extras))
@@ -294,6 +296,13 @@ class FanclubAuthPlugin(object):
             __name__ + '.' + self.__class__.__name__,
             self.cache_region
             )
+
+    def _flush_cache(self, key):
+        try:
+            self._get_cache().remove_value(key)
+        except:
+            import sys
+            logger.warning("failed to flush metadata cache for %s" % key, exc_info=sys.exc_info())
 
     def _get_extras(self, request, identity):
         if 'oauth_access_token' not in identity:
