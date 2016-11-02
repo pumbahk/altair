@@ -7,6 +7,9 @@
 
 <h2>メニュー</h2>
 <ul class="nav nav-tabs nav-stacked">
+% if request.has_permission('manage_service_providers'):
+  <li class="menu-item"><a href="${request.route_path('service_providers.index')}">OAuthServiceProvider</a></li>
+% endif
 % if request.has_permission('manage_my_organization'):
   <li class="menu-item"><a href="${request.route_path('organizations.index')}">Organization</a></li>
 % endif

@@ -36,6 +36,8 @@ class Organization(Base):
         )
     fanclub_api_available = sa.Column(sa.Boolean(), nullable=False, default=False)
     fanclub_api_type = sa.Column(sa.Unicode(32), nullable=True, default=None)
+    oauth_service_provider_id = sa.Column(Identifier, sa.ForeignKey('OAuthServiceProvider.id'))
+    oauth_service_provider = orm.relationship('OAuthServiceProvider')
 
 
 class Host(Base):
@@ -171,3 +173,15 @@ class OAuthClient(Base, WithCreatedAt):
 
     def validate_secret(self, secret):
         return self.client_secret == secret
+
+
+class OAuthServiceProvider(Base, WithCreatedAt):
+    __tablename__ = 'OAuthServiceProvider'
+    id = sa.Column(Identifier, autoincrement=True, primary_key=True, nullable=False)
+    name = sa.Column(sa.Unicode(32), nullable=False)
+    display_name = sa.Column(sa.Unicode(255), nullable=False)
+    auth_type = sa.Column(sa.Unicode(64), nullable=False)
+    endpoint_base = sa.Column(sa.Unicode(255), nullable=False)
+    consumer_key = sa.Column(sa.Unicode(255), nullable=False)
+    consumer_secret = sa.Column(sa.Unicode(255), nullable=False)
+    scope = sa.Column(sa.Unicode(255), nullable=True, default=u'')

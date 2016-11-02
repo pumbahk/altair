@@ -10,6 +10,7 @@ class BaseResource(object):
     __acl__ = [
         (Allow, Authenticated, 'authenticated'),
         (Allow, 'administrator', 'manage_organizations'),
+        (Allow, 'administrator', 'manage_service_providers'),
         (Allow, 'administrator', 'manage_my_organization'),
         (Allow, 'administrator', 'manage_operators'),
         (Allow, 'administrator', 'manage_oauth_clients'),
