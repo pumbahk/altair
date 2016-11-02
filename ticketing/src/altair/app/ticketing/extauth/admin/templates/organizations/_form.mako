@@ -38,6 +38,15 @@
   </div>
 </div>
 <div class="control-group">
+  <label class="control-label" for="organization-form--oauth_service_provider_id">${form.oauth_service_provider_id.label.text}</label>
+  <div class="controls">
+    ${form.oauth_service_provider_id(id="organization-form--oauth_service_provider_id")}
+    %if form.oauth_service_provider_id.errors:
+    <span class="help-inline">${u' / '.join(form.oauth_service_provider_id.errors)}</span>
+    % endif
+  </div>
+</div>
+<div class="control-group">
   <label class="control-label" for="organization-form--invalidate_client_http_session_on_access_token_revocation">${form.invalidate_client_http_session_on_access_token_revocation.label.text}</label>
   <div class="controls">
     ${form.invalidate_client_http_session_on_access_token_revocation(id="organization-form--invalidate_client_http_session_on_access_token_revocation")}
