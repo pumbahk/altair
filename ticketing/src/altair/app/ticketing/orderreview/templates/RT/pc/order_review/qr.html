@@ -40,6 +40,8 @@
   <hr size="10" color="#16499b" />
   <a href="javascript:window.close();">閉じる</a>
 </div>
-
+%if request.organization.setting.sitecatalyst_use:
+<%include file="altair.app.ticketing.orderreview:templates/RT/common/sitecatalyst.html"/>
+%endif
 </body>
 </html>
