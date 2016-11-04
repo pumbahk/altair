@@ -48,8 +48,9 @@ class AutoCmsImageResource(TicketingAdminResource):
         for performance in performances:
             try:
                 s3upload(connection, bucket_name, file_path, S3_DIRECTORY.format(performance.id), "main.png")
+                logger.info("auto_cms image saved. user={}, performanceID={}".format(self.user.name.encode("utf-8"), performance.id))
             except S3ResponseError as e:
-                logger.info("Image did not save. PerformanceID = {}".format(performance.id))
+                logger.info("Image did not save. PerformanceID={}".format(performance.id))
                 self.request.session.flash(u"{}の画像が保存できませんでした。ID:{}".format(performance.name, performance.id))
 
         os.remove(file_path)
