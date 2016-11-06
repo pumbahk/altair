@@ -1,0 +1,17 @@
+<form method="post" action="{ACTION}">
+username: <input type="text" name="u" value="" /> <br />
+password: <input type="text" name="p" value="" /> <br />
+<input type="submit" value="LOGIN" />
+
+<input type="hidden" name="openid.return_to" value="{RETURN_TO}">
+<input type="hidden" name="service_id" value="i36">
+<input type="hidden" name="openid.ns" value="http://specs.openid.net/auth/2.0">
+<input type="hidden" name="openid.oauth.consumer" value="rakuten_ticket">
+<input type="hidden" name="openid.mode" value="checkid_setup">
+<input type="hidden" name="internal.id.mode" value="auth">
+<input type="hidden" name="openid.oauth.scope" value="rakutenid_basicinfo,rakutenid_contactinfo,rakutenid_pointaccount">
+<input type="hidden" name="openid.identity" value="http://specs.openid.net/auth/2.0/identifier_select">
+<input type="hidden" name="openid.claimed_id" value="http://specs.openid.net/auth/2.0/identifier_select">
+<input type="hidden" name="openid.ns.oauth" value="http://specs.openid.net/extenstions/oauth/1.0">
+
+</form>
