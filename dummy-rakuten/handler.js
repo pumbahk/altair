@@ -18,7 +18,7 @@ var handler = function(req, res) {
   this.res = res;
   this.query = get_query(req.url);
 
-  this.host = "localhost:8443";
+  this.base = "localhost";
   this.userHandler = function(u, p) { return 'https://myid.rakuten.co.jp/openid/user/123412341234123412341234'; };
   this.sessionHandler = function(s) { return { _id: 'a9999' } };
 };
