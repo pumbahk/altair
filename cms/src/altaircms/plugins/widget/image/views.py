@@ -101,7 +101,7 @@ class ImageWidgetView(object):
         max_of_pages = service.max_of_pages(widget)
         params = widget.to_dict()
         params.update(widget.attributes or {})
-        setting_form = forms.ImageInfoForm(**AlignChoiceField.normalize_params({}))
+        setting_form = forms.ImageInfoForm(**AlignChoiceField.normalize_params(params))
         return {"assets": assets, "form": setting_form, "widget": widget, "pk": form.pk.data, "max_of_pages": max_of_pages}
 
 
