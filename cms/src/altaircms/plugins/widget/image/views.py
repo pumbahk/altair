@@ -94,13 +94,16 @@ class ImageWidgetView(object):
         service = self.context.fetch_service
         form = service.try_form(self.request.GET, FailureException=HTTPNotFound)
         widget = self.context.widget_repository.get_or_create(form.pk.data)
+        if not widget:
+            return {"assets": None, "form": forms.ImageInfoForm(), "widget": None, "pk": form.pk.data, "max_of_pages": 0}
+
         assets = service.get_assets_list(widget, form.page.data) #pagination
         max_of_pages = service.max_of_pages(widget)
-
         params = widget.to_dict()
         params.update(widget.attributes or {})
-        setting_form = forms.ImageInfoForm(**AlignChoiceField.normalize_params(params))
+        setting_form = forms.ImageInfoForm(**AlignChoiceField.normalize_params({}))
         return {"assets": assets, "form": setting_form, "widget": widget, "pk": form.pk.data, "max_of_pages": max_of_pages}
+
 
 @view_defaults(custom_predicates=(require_login,))
 class ImageWidgetAPIView(object):
