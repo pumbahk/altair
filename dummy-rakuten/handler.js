@@ -131,7 +131,11 @@ handler.prototype.handle = function() {
     console.log('[step 3] receive account credential');
     var user = this.userHandler(q['u'], q['p']);
     if(!user) {
-      // TODO:
+      return this.form(this.base+"/rms/nid/logini", {
+        'ERROR': 'no such user',
+        'WRONG_U': require('escape-html')(q['u']),
+        'RETURN_TO': q['openid.return_to']
+      });
     }
     var s = this.sessionHandler();
     s.user = user;
