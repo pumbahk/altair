@@ -29,6 +29,10 @@ handler.prototype.end = function(code, headers, text, opt) {
   this.res.end(text);
 };
 
+handler.prototype.error = function(code) {
+  this.end(code, { }, "Error");
+};
+
 handler.prototype.redirect = function(location, q, mode) {
   if(q) {
     var base = get_query(location);
@@ -42,7 +46,7 @@ handler.prototype.redirect = function(location, q, mode) {
   }
   if(mode == 'html') {
 	  // TODO: should html escape
-    this.end(200, { }, '<meta http-equiv="Refresh" content="0; url=' + location + '">', location);
+    this.end(200, { 'Content-Type': 'text/html; charset=UTF-8' }, '<meta http-equiv="Refresh" content="0; url=' + location + '">', location);
 	} else {
 		this.end(301, {
 			'Location': location
@@ -94,6 +98,9 @@ handler.prototype.handle = function() {
     } else if(q['openid.mode'] == 'id_res') {
       console.log('[step 5] redirect to altair');
       var s = this.sessionHandler(q['dummy_rakuten_token']);
+      if(!s.user) {
+        return this.error(400);
+      }
       return this.redirect(this.query['openid.return_to'], {
 			 'openid.ns': 'http://specs.openid.net/auth/2.0',
 			 'openid.ns.oauth': 'http://specs.openid.net/extenstions/oauth/1.0',
