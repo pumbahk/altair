@@ -1,5 +1,6 @@
 import re
 import radix
+import logging
 from zope.interface import implementer, directlyProvides
 from uamobile import detect
 from uamobile.context import Context
@@ -79,6 +80,7 @@ class UAMobileUserAgentWrapper(object):
         self._carrier = self.impl_map[impl.__class__.__name__]
         self._uo_fetcher = self.uo_fetcher_map[impl.__class__.__name__]
 
+
 @implementer(IMobileCarrierDetector)
 class DefaultCarrierDetector(object):
     def detect_from_fqdn(self, fqdn):
@@ -88,7 +90,11 @@ class DefaultCarrierDetector(object):
         return UAMobileUserAgentWrapper(detect(environ, self.uamobile_context)) # XXX
 
     def detect_from_ip_address(self, address):
-        node = self.cidr_block_trie.search_best(address)
+        try:
+            node = self.cidr_block_trie.search_best(address)
+        except ValueError:
+            logging.info("The address can't be judged.It's made all except for mobile.IP={}".format(address))
+            return NonMobile
         if node is None:
             return NonMobile
         return node.data['carrier']
