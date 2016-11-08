@@ -7,7 +7,8 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
-  "license": "Unlicensed",
+  "license": "UNLICENSED",
+  "private": true,
   "dependencies": {
     "argv": "0.0.2",
     "escape-html": "^1.0.3",
