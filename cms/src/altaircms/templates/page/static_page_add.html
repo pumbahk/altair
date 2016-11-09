@@ -50,14 +50,14 @@
 
   // 該当静的ページセットの名前を記録
   var suffix = "";
-  // 現在のパンクズリストの内容を記録
+  // 現在のパンくずリストの内容を記録
   var breadcrumb_str = "";
-  // 現在のパンクズリストのジャンルを記録
+  // 現在のパンくずリストのジャンルを記録
   var breadcrumb_list=[];
-  // 現在のパンクズリストの階層を記録
+  // 現在のパンくずリストの階層を記録
   var cur_dict = genre_dict;
 
-  // パンクズリストのセレクトを追加
+  // パンくずリストのセレクトを追加
   add_row = function (val = "") {
     $clone = $('#option-template').clone();
     $clone.removeClass('hide')
@@ -71,7 +71,7 @@
     }
   }
 
-  // パンクズリストのセレクトのオプションを記入
+  // パンくずリストのセレクトのオプションを記入
   add_option_value = function($target) {
     $target.append($("<option></option>")
                    .attr("value", "dummy")
@@ -85,7 +85,7 @@
     }
   }
 
-  // パンクズリストのセレクトを削除（それ以下のセレクトを全部削除）
+  // パンくずリストのセレクトを削除（それ以下のセレクトを全部削除）
   remove_row = function ($target) {
     var index = $target.prevAll().length;
     breadcrumb_list.splice(index, breadcrumb_list.length - index);
@@ -93,7 +93,7 @@
     $target.remove();
   }
 
-  // パンクズリストの内容を作り直す
+  // パンくずリストの内容を作り直す
   refresh_breadcrumb_str = function() {
     breadcrumb_str = "";
     for (var i = 0; i < breadcrumb_list.length; i++) {
@@ -102,7 +102,7 @@
     $('div#breadcrumb-preview').text(breadcrumb_str + suffix);
   }
 
-  // 現在のパンクズリストの階層を探し直す
+  // 現在のパンくずリストの階層を探し直す
   refresh_cur_dict = function() {
     cur_dict = genre_dict;
     for (var i = 0; i < breadcrumb_list.length; i++) {
@@ -123,7 +123,7 @@
 
     suffix = $('input#label').val();
 
-    // 動的にページ名によりプレビューのパンクズリストを更新
+    // 動的にページ名によりプレビューのパンくずリストを更新
     $('input#label').on('input', function() {
       suffix = $('input#label').val();
       $('div#breadcrumb-preview').text(breadcrumb_str + suffix);
@@ -132,13 +132,13 @@
     // （初期化）1個目のセレクトにオプションを記入
     add_option_value($('select#first-option'));
 
-    // （初期化）パンクズリストの記録が存在する場合、1個目（トップ）の階層とセレクトに更新
+    // （初期化）パンくずリストの記録が存在する場合、1個目（トップ）の階層とセレクトに更新
     if (breadcrumb_list.length !== 0) {
       $('select#first-option').val(breadcrumb_list[0]);
       cur_dict = cur_dict[breadcrumb_list[0]];
     }
 
-    // （初期化）パンクズリストの記録が存在する場合、2個目の階層とセレクトを追加
+    // （初期化）パンくずリストの記録が存在する場合、2個目の階層とセレクトを追加
     for (var i = 1; i < breadcrumb_list.length; i++) {
         add_row(breadcrumb_list[i]);
         cur_dict = cur_dict[breadcrumb_list[i]];
@@ -197,11 +197,11 @@
 <table class="table breadcrumbs-box">
   <tbody>
     <tr>
-      <th><label for="breadcrumb-preview">パンクズリストプレビュー</label></th>
+      <th><label for="breadcrumb-preview">パンくずリストプレビュー</label></th>
       <td><div id="breadcrumb-preview"></td>
     </tr>
     <tr>
-      <th>パンクズリスト</th>
+      <th>パンくずリスト</th>
       <td>
         <div class="breadcrumb-options">
           <div class="option"><select id="first-option"></select></div>

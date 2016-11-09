@@ -34,7 +34,7 @@ class StaticPageCreateView(BaseView):
                  renderer="altaircms:templates/page/static_page_add.html")
     def input(self):
         form = self.context.form(forms.StaticPageCreateForm)
-        pg = ParseGenre(self.request.organization.id)
+        pg = ParseGenre(self.request)
         genre_dict, genre_id_dict = pg.get_genre_pagesets()
         return {"form": form,
                 "genre_dict": genre_dict,
@@ -46,7 +46,7 @@ class StaticPageCreateView(BaseView):
     def create(self):
         form = self.context.form(forms.StaticPageCreateForm, self.request.POST)
         if not form.validate():
-            pg = ParseGenre(self.request.organization.id)
+            pg = ParseGenre(self.request)
             genre_dict, genre_id_dict = pg.get_genre_pagesets()
             return {"form": form,
                     "genre_dict": genre_dict,
@@ -118,7 +118,7 @@ class StaticPageSetView(BaseView):
         form.url.data = static_pageset.url
         form.genre_id.data = static_pageset.genre_id
 
-        pg = ParseGenre(self.request.organization.id)
+        pg = ParseGenre(self.request)
         genre_dict, genre_id_dict = pg.get_genre_pagesets()
 
         if static_pageset.genre_id:
@@ -141,7 +141,7 @@ class StaticPageSetView(BaseView):
         static_pageset = get_or_404(self.request.allowable(StaticPageSet), StaticPageSet.id == pk)
 
         if not form.validate():
-            pg = ParseGenre(self.request.organization.id)
+            pg = ParseGenre(self.request)
             genre_dict, genre_id_dict = pg.get_genre_pagesets()
 
             if static_pageset.genre_id:

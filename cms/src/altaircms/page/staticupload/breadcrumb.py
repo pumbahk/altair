@@ -1,7 +1,4 @@
 # coding: utf-8
-import logging
-from altaircms.modellib import DBSession
-from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 from altaircms.modelmanager.ancestors import GetWithGenrePagesetAncestor
 from altaircms.page.models import PageSet
 from altaircms.models import Genre
@@ -9,15 +6,13 @@ import json
 
 class ParseGenre(object):
 
-    def __init__(self, organization_id):
-        self.organization_id = organization_id
+    def __init__(self, request):
+        self.request = request
 
     def get_genre_pagesets(self):
-        query = DBSession.query(PageSet)
-        query = query.filter(PageSet.organization_id == self.organization_id,
-                             Genre.organization_id == self.organization_id,
-                             Genre.category_top_pageset_id == PageSet.id,
-                             PageSet.event_id == None)
+        query = self.request.allowable(PageSet).filter(Genre.organization_id == PageSet.organization_id,
+                                                       Genre.category_top_pageset_id == PageSet.id,
+                                                       PageSet.event_id == None)
 
         genre_dict, genre_id_dict = self.list_to_dict([page for page in query.all()])
 
