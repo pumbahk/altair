@@ -1,40 +1,56 @@
 <%inherit file="base.mako" />
-<ul>
-  <li><p><a href="${_context.route_path('extauth.rakuten.entry')}">楽天会員としてログイン</a></p></li>
-  % for member_set in _context.member_sets:
-  <li>
-    <%
-    _username = _password = _message = u''
-    if member_set == selected_member_set:
-      _username = username
-      _password = password
-      _message = message
-    %> 
-    <p>${member_set.display_name}ログイン</p>
-    <p>会員種別: ${u' / '.join(member_kind.name for member_kind in member_set.member_kinds if member_kind.show_in_landing_page)}</p>
-    <form action="${_context.route_path('extauth.login',_query=request.GET)}" method="POST">
-      <p>
-      % for member_kind in member_set.member_kinds:
-      % if member_kind.show_in_landing_page and member_kind.enable_guests:
-      <input type="submit" name="doGuestLoginAs${member_kind.name}" value="${member_kind.display_name}としてゲストログイン" />
-      % endif
-      % endfor
-      </p>
-    </form>
-    <form action="${_context.route_path('extauth.login',_query=request.GET)}" method="POST">
-      % if _message:
-      <p>${_message}</p>
-      % endif
-      <label for="stockholder-username">${h.auth_identifier_field_name(member_set)}</label>
-      <input id="stockholder-username" type="text" name="username" value="${_username}" />
-      % if member_set.use_password:
-      <label for="stockholder-password">${h.auth_secret_field_name(member_set)}</label>
-      <input id="stockholder-password" type="password" name="password" value="${_password}" />
-      % endif
-      <input type="hidden" name="member_set" value="${member_set.name}" />
-      <input type="hidden" name="_" value="${request.session.get_csrf_token()}" />
-      <input type="submit" value="ログイン" />
-    </form>
-  </li>
-  % endfor
+<% member_set = selected_member_set %>
+<section class="main idlogin">
+<div class="wrap">
+<div class="boxArea clearfix">
+<div class="box">
+<div class="login-box">
+<dl>
+<dt class="login-name"><span>各種会員IDをお持ちの方</span>はこちらから</dt>
+<dd class="login-inbox">
+<!--<ul class="fcType clearfix">
+<li class="fcType-L"><img src="" alt=""></li>
+<li class="fcType-L"><img src="" alt=""></li>
+<li class="fcType-L"><img src="" alt=""></li>
+<li class="fcType-L"><img src="" alt=""></li>
+</ul>//-->
+<form action="${_context.route_path('extauth.login',_query=request.GET)}" method="POST">
+<table class="loginTable">
+<tbody>
+<tr>
+<th>${h.auth_identifier_field_name(member_set)}</th>
+<td><input type="text" class="text" name="username" value="${username}" /></td>
+</tr>
+<tr>
+<th>${h.auth_secret_field_name(member_set)}</th>
+<td><input type="password" name="password" value="${password}" /></td>
+</tr>
+</tbody>
+</table>
+<p><input type="submit" class="btnA btnA_l" value="ログイン"></p>
+<input type="hidden" name="member_set" value="${selected_member_set.name}" />
+<input type="hidden" name="_" value="${request.session.get_csrf_token()}" />
+</form>
+</dd>
+</dl>
+</div><!--/login-box -->
+<p class="column">&raquo; <a href="${_context.route_path('extauth.entry')}"><span>ファンクラブ会員の方、一般の方はコチラから</span></a></p>
+</div><!--/box -->
+
+<article>
+<h3 class="noteHead">注意事項</h3>
+<ul class="noteList">
+<li>会員の方も、受付番号（VEから始まる12ケタ）から確認することができます。</li>
+<li>会員ID・パスワードは半角でご入力ください。</li>
 </ul>
+</article>
+<article>
+<h3 class="noteHead">お問い合わせ</h3>
+<ul class="noteList">
+<li>楽天ヴィッセルチケットセンター<br>TEL: 000-0000-0000（平日10時～18時）※不定休</li>
+</ul>
+</article>
+</div>
+</div><!-- /wrap -->
+<!-- back to top--><div id="topButton"><a>▲<br>上へ</a></div><!-- /back to top-->
+</section><!-- /main -->
