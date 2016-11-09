@@ -32,16 +32,7 @@
 </style>
 
 <div class="circle circle-page circle-top"></div>
-<h2>静的ページの追加</h2>
-
-<div class="row-fluid">
-  <div class="span12">
-    ${nco.breadcrumbs(
-	    names=["Top", u"新しいページの追加"], 
-	    urls=[request.route_path("dashboard")]
-	)}
-  </div>
-</div>
+<h2>静的ページの更新</h2>
 
 <script>
 
@@ -119,13 +110,21 @@
     return true;
   }
 
+
   $(document).ready(function(){
 
-    suffix = $('input#label').val();
+    // 初期化
+    suffix = $('input#name').val();
+    breadcrumb_list = ${cur_ancestor_list|n}
 
     // 動的にページ名によりプレビューのパンクズリストを更新
-    $('input#label').on('input', function() {
-      suffix = $('input#label').val();
+    if (breadcrumb_list.length != 0) {
+      refresh_breadcrumb_str();
+    }
+
+    // （初期化）一つ目のセレクトにオプションを記入
+    $('input#name').on('input', function() {
+      suffix = $('input#name').val();
       $('div#breadcrumb-preview').text(breadcrumb_str + suffix);
     });
 
@@ -189,15 +188,15 @@
 
   });
 </script>
-<form id="main" action="${h.current_route_path_override(request, action="create")}"
+<form id="main" action="${h.current_route_path_override(request, action="update")}"
 	  method="POST" enctype="multipart/form-data">
-  ${fco.form_as_table_strict(form,["name", "label", "zipfile","publish_begin", "publish_end", "layout"])}
-  <input type="hidden" id="genre_id" name="genre_id" value="">
+  ${fco.form_as_table_strict(form,["name", "url"])}
+  <input type="hidden" id="genre_id" name="genre_id" value=${form.genre_id.data}>
 </form>
 <table class="table breadcrumbs-box">
   <tbody>
     <tr>
-      <th><label for="breadcrumb-preview">パンクズリストプレビュー</label></th>
+      <th><label>パンクズリストプレビュー</label></th>
       <td><div id="breadcrumb-preview"></td>
     </tr>
     <tr>
@@ -206,6 +205,7 @@
         <div class="breadcrumb-options">
           <div class="option"><select id="first-option"></select></div>
         </div>
+
         <!--オプションのテンプレート-->
         <div id="option-template" class="hide">
           <div class="option"><select></select></div>
@@ -215,4 +215,4 @@
     </tr>
   </tbody>
 </table>
-<button type="submit" class="btn" form="main">zipでupload</button>
+<button type="submit" class="btn" form="main">保存</button>

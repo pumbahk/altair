@@ -1,23 +1,26 @@
 #-*- coding:utf-8 -*-
 import copy
 import os
+import json
 from pyramid.httpexceptions import HTTPFound, HTTPForbidden, HTTPNotFound
 from pyramid.view import view_config
 from pyramid.view import view_defaults
 from altaircms.lib.fanstatic_decorator import with_bootstrap
 
-from altaircms.helpers.viewhelpers import FlashMessage
+from altaircms.helpers.viewhelpers import FlashMessage, get_endpoint
 from altaircms.auth.api import get_or_404
 from .. import StaticPageNotFound
 from .api import get_static_page_utility
 from .api import as_static_page_response
 from altaircms.models import DBSession
 from altaircms.page.models import StaticPageSet, StaticPage, PageType
+from altaircms.models import Genre
 from . import forms
 from . import creation
 from .download import ZippedStaticFileManager, S3Downloader
 from .renderable import static_page_directory_renderer
 from .refine import refine_link_on_download_factory
+from .breadcrumb import ParseGenre
 import logging
 logger = logging.getLogger(__name__)
 from altaircms.viewlib import BaseView
@@ -31,7 +34,11 @@ class StaticPageCreateView(BaseView):
                  renderer="altaircms:templates/page/static_page_add.html")
     def input(self):
         form = self.context.form(forms.StaticPageCreateForm)
-        return {"form": form}
+        pg = ParseGenre(self.request.organization.id)
+        genre_dict, genre_id_dict = pg.get_genre_pagesets()
+        return {"form": form,
+                "genre_dict": genre_dict,
+                "genre_id_dict": genre_id_dict}
 
     @view_config(match_param="action=create", request_method="POST", 
                  decorator=with_bootstrap,
@@ -39,12 +46,20 @@ class StaticPageCreateView(BaseView):
     def create(self):
         form = self.context.form(forms.StaticPageCreateForm, self.request.POST)
         if not form.validate():
-            return {"form": form}
+            pg = ParseGenre(self.request.organization.id)
+            genre_dict, genre_id_dict = pg.get_genre_pagesets()
+            return {"form": form,
+                    "genre_dict": genre_dict,
+                    "genre_id_dict": genre_id_dict}
+
         creator = self.context.creation(creation.StaticPageCreate, form.data)
         pagetype = get_or_404(self.request.allowable(PageType), PageType.name==self.request.matchdict["pagetype"])
+        genre = Genre.query.filter_by(id=form.genre_id.data).first()
+
         try:
             static_page = creator.create()
             static_page.pageset.pagetype = pagetype
+            static_page.pageset.genre = genre
             FlashMessage.success(u"%sが作成されました" % static_page.label, request=self.request)
             return HTTPFound(self.context.endpoint(static_page))
         except StaticUploadAssertionError as e:
@@ -91,6 +106,62 @@ class StaticPageSetView(BaseView):
                 "tree_renderer": tree_renderer,
                 "now": get_now(self.request),
                 "active_page": active_page}
+
+    @view_config(match_param="action=input", renderer="altaircms:templates/page/static_page_update.html",
+                 decorator=with_bootstrap)
+    def input(self):
+        pk = self.request.matchdict["static_page_id"]
+        static_pageset = get_or_404(self.request.allowable(StaticPageSet), StaticPageSet.id == pk)
+
+        form = self.context.form(forms.StaticPageSetForm)
+        form.name.data = static_pageset.name
+        form.url.data = static_pageset.url
+        form.genre_id.data = static_pageset.genre_id
+
+        pg = ParseGenre(self.request.organization.id)
+        genre_dict, genre_id_dict = pg.get_genre_pagesets()
+
+        if static_pageset.genre_id:
+            cur_ancestor_list = [int(pageset.genre_id) for pageset in reversed(static_pageset.get_ancestor_pages())]
+        else:
+            cur_ancestor_list = []
+
+        cur_ancestor_list = json.dumps(cur_ancestor_list)
+
+        return {"form": form,
+                "genre_dict": genre_dict,
+                "genre_id_dict": genre_id_dict,
+                "cur_ancestor_list": cur_ancestor_list}
+
+    @view_config(match_param="action=update", renderer="altaircms:templates/page/static_page_update.html",
+                 decorator=with_bootstrap)
+    def update(self):
+        form = self.context.form(forms.StaticPageSetForm, self.request.POST)
+        pk = self.request.matchdict["static_page_id"]
+        static_pageset = get_or_404(self.request.allowable(StaticPageSet), StaticPageSet.id == pk)
+
+        if not form.validate():
+            pg = ParseGenre(self.request.organization.id)
+            genre_dict, genre_id_dict = pg.get_genre_pagesets()
+
+            if static_pageset.genre_id:
+                cur_ancestor_list = [int(pageset.genre_id) for pageset in reversed(static_pageset.get_ancestor_pages())]
+            else:
+                cur_ancestor_list = []
+
+            cur_ancestor_list = json.dumps(cur_ancestor_list)
+            return {"form": form,
+                    "genre_dict": genre_dict,
+                    "genre_id_dict": genre_id_dict,
+                    "cur_ancestor_list": cur_ancestor_list}
+
+        genre = Genre.query.filter_by(id=form.genre_id.data).first()
+
+        static_pageset.name = form.name.data
+        static_pageset.url = form.url.data
+        static_pageset.genre = genre
+        FlashMessage.success(u"%sが更新されました" % static_pageset.name, request=self.request)
+        return HTTPFound(get_endpoint(self.request))
 
     @view_config(match_param="action=preview", request_param="path", decorator=with_bootstrap)
     def preview(self):
