@@ -26,6 +26,7 @@ class StaticPageCreateForm(Form):
                                                 )
     publish_begin = fields.DateTimeField(label=u"掲載開始", validators=[validators.Optional()])
     publish_end = MaybeDateTimeField(label=u"掲載終了", validators=[validators.Optional()])
+    genre_id = fields.HiddenField(validators=[validators.Optional()])
 
 
     def configure(self, request):
@@ -125,8 +126,9 @@ class StaticPageForm(Form):
 class StaticPageSetForm(Form):
     name = fields.TextField(label=u"name", validators=[validators.Required()])    
     url = fields.TextField(label=u"url")
+    genre_id = fields.HiddenField()
 
-    __display_fields__ = ["name", "url"]    
+    __display_fields__ = ["name", "url"]
 
     def object_validate(self, obj):
         data = self.data

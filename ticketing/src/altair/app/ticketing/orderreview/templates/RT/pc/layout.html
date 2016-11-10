@@ -91,6 +91,8 @@ ${next.body()}
 
 </div>
 <!-- ***** wrapper [end] ***** -->
-
+%if request.organization.setting.sitecatalyst_use:
+<%include file="altair.app.ticketing.orderreview:templates/RT/common/sitecatalyst.html"/>
+%endif
 </body>
 </html>

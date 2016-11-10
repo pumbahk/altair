@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import logging
+from altair.app.ticketing.cart import helpers as h
 from pyramid.view import view_config, view_defaults
 from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.fanstatic import with_bootstrap
@@ -15,6 +16,7 @@ class AutoCmsImage(BaseView):
                  renderer='altair.app.ticketing:templates/auto_cms/image/index.html')
     def index(self):
         return dict(
+            h=h,
             event=self.context.event
         )
 
