@@ -970,7 +970,10 @@ class ImportCSVParser(object):
                     raise exc(u'インポート対象の公演「%s」とCSVで指定された公演「%s」が異なっています' % (self.performance.name, performance.name))
                 # 公演日時がCSVに存在する場合、取り込む先のパフォーマンスの公演日時と一致していない場合はエラーにする
                 if "performance.start_on" in row:
-                    if self.performance.start_on.strftime("%Y/%m/%d %H:%M:%S") != row['performance.start_on']:
+                    p_start_on = row['performance.start_on']
+                    if u'-' in p_start_on:
+                        p_start_on = p_start_on.replace(u'-', u'/')
+                    if self.performance.start_on.strftime("%Y/%m/%d %H:%M:%S") != p_start_on:
                         raise exc(u'インポート対象の公演と元にする申込に紐づく公演の公演開始時刻が異なっています')
                 sales_segment = context.get_sales_segment(row, performance)
                 pdmp = context.get_pdmp(row, sales_segment)
