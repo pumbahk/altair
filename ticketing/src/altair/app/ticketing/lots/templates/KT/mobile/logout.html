@@ -1,8 +1,8 @@
 <%inherit file="base.html" />
 % if hasattr(_context, 'message'):
-<p>${_context.message}</p>
+<p>${_context.message |n}</p>
 % endif
-<p>ログアウトするには下のボタンを押してください</p>
+<p>別のアカウントでログインするには下記のボタンより再度ログインしてください。</p>
 <form action="${request.route_path('lots.entry.logout')}" method="POST">
   % if request.context.lot is not None:
   <input type="hidden" name="lot_id" value="${request.context.lot.id}" />
