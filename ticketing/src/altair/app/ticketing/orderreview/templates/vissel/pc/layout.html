@@ -17,38 +17,35 @@
 <body>
 	<div class="header">
 		<div class="header-inner">
-      <a href="http://vissel.tstar.jp/">
+      <a href="/">
         <img src="${request.static_url('altair.app.ticketing.orderreview:static/vissel/pc/images/logo.gif')}" alt="ヴィッセル神戸公式チケットサイト" />
       </a>
       <h1 class="title">ヴィッセル神戸公式チケットサイト</h1>
 		</div>
 	</div>
-  <div class="wrapper">
-    <div class="maincol">
-      <table class="layout wrapper">
-        <tr>
-          <td>
-            ${self.body()}
-          </td>
-        </tr>
-      </table>
-    </div>
-  </div>
+
+  ${self.body()}
+
   <div class="footer">
-    <div class="footer-inner">
-      <img src="${request.static_url('altair.app.ticketing.orderreview:static/vissel/pc/images/slogun.png')}" alt="" />
-      <div class="footernav">
-        <ul>
-          <li class="first"><a href="http://www.ticketstar.jp/corporate/">運営会社</a></li>
+    <div class="wrap clearfix">
+      <div class="box">
+      <p class="for-sp-img">
+      <img src="//tstar.s3.amazonaws.com/asset/vissel/2014-03-06/c887e7171e7342d2916ffb7b08f4501e.png" alt="" />
+      </p>
+      </div>
+      <div class="box">
+      <!-- /menu -->
+        <nav class="nav-footer">
+        <ul class="clearfix">
+          <li class="first"><a href="//www.ticketstar.jp/corporate/">運営会社</a></li>
           <li><a href="${h.safe_get_contact_url(request)}">お問い合わせ</a></li>
-          <li><a href="http://www.ticketstar.jp/privacy/">個人情報保護方針</a></li>
-          <li class="last"><a href="http://www.ticketstar.jp/legal/">特定商取引法に基づく表示</a></li>
+          <li><a href="//www.ticketstar.jp/privacy/">個人情報保護方針</a></li>
+          <li class="last"><a href="//www.ticketstar.jp/legal/">特定商取引法に基づく表示</a></li>
         </ul>
+        </nav><!-- /menu-->
+        <p class="copyright">&copy; TicketStar, Inc.</p>
       </div>
-      <div class="copyright">
-         &copy; TicketStar, Inc. 
-      </div>
-    </div>
-  </div>
+     </div><!-- /wrap -->
+  </div><!-- /footer -->
 </body>
 </html>
