@@ -24,23 +24,21 @@
   <tbody>
     <tr>
       <th class="span2">パフォーマンスID</th>
+      <th class="span2">公演開始日時</th>
       <th class="span7">パフォーマンス名称</th>
-      <!--
-      <th class="span6">登録画像</th>
-      -->
+      <th class="span4">登録画像</th>
       <th class="span1"></th>
     </tr>
     % for performance in event.performances:
     <tr>
       <td><a href="${request.route_path('auto_cms.image.edit', performance_id=performance.id)}">${performance.id}</a></td>
+      <td><a href="${request.route_path('auto_cms.image.edit', performance_id=performance.id)}">${h.performance_datetime(performance)}</a></td>
       <td><a href="${request.route_path('auto_cms.image.edit', performance_id=performance.id)}">${performance.name}</a></td>
-      <!--
       <td>
         <a href="${request.route_path('auto_cms.image.edit', performance_id=performance.id)}">
           <img width="100" height="100" src="${request.static_url('altair.app.ticketing.auto_cms:static/{}/main.png'.format(performance.id))}"/>
         </a>
       </td>
-      -->
       <td><a href="${request.route_path('auto_cms.image.edit', performance_id=performance.id)}"><div class="btn btn-primary">編集</div></a></td>
     </tr>
     % endfor

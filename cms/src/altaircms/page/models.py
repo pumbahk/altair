@@ -3,7 +3,7 @@ import logging
 logger = logging.getLogger(__name__)
 import json
 from sqlalchemy.ext.declarative import declared_attr
-from altaircms.modelmanager.ancestors import HasAncestorMixin
+from altaircms.modelmanager.ancestors import HasAncestorMixin, GetWithGenrePagesetAncestor
 from datetime import datetime
 from pyramid.decorator import reify
 import sqlalchemy as sa
@@ -226,6 +226,10 @@ class StaticPageSet(Base,
 
     pagetype_id = Column(sa.Integer, ForeignKey("pagetype.id"))
     pagetype = orm.relationship("PageType", backref="static_pagesets", uselist=False)
+
+    genre_id = Column(sa.Integer, ForeignKey("genre.id"))
+    genre = orm.relationship("Genre", backref="static_pageset", uselist=False, primaryjoin="StaticPageSet.genre_id==Genre.id")
+
     hash = sa.Column(sa.String(length=32), nullable=False)
 
     def current(self, dt=None, published=True):
@@ -235,6 +239,13 @@ class StaticPageSet(Base,
             where = where & (StaticPage.published == published)
         qs = StaticPage.query.filter(StaticPage.pageset==self).filter(where)
         return qs.order_by(sa.desc(StaticPage.publish_begin), StaticPage.publish_end).limit(1).first()
+
+    def get_ancestor_pages(self):
+        if self.genre and self.genre.category_top_pageset:
+            root = self.genre.category_top_pageset
+            return GetWithGenrePagesetAncestor(root).get_ancestors()
+        else:
+            return None
 
     @declared_attr
     def __table_args__(cls):

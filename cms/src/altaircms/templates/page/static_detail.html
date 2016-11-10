@@ -7,6 +7,49 @@
 h3{ 
   margin-top:20px;
 }
+
+.breadcrumbsNavi {
+	margin: 0;
+	font-size: 12px;
+}
+.breadcrumbsNavi ul {
+	padding: 0;
+	margin: 0;
+}
+.breadcrumbsNavi ul li {
+	float: left;
+	width: auto;
+	list-style: outside none none;
+}
+.breadcrumbsNavi ul li a {
+	margin: 0 6px;
+	text-decoration: underline;
+}
+.breadcrumbsNavi ul li a:link {
+	color: #5353f2;
+}
+.breadcrumbsNavi ul li a:hover {
+	text-decoration: none;
+}
+.breadcrumbsNavi ul li a:visited {
+	color: #800080;
+}
+.breadcrumbsNavi ul li span {
+	margin: 0 0 0 6px;
+	font-weight: bold;
+}
+.breadcrumbsNavi ul li:after {
+	content: ">>";
+}
+.breadcrumbsNavi ul li:last-child:after {
+	content: "";
+}
+.breadcrumbsNavi ul:after {
+	content: "";
+	display: block;
+	clear: both;
+}
+
 </style>
 </%block>
 
@@ -58,6 +101,25 @@ ${active_page.name}
     <th class="span2">urlの一部</th><td>${static_pageset.url}</td>
   </tr>
   <tr>
+    <th class="span2">パンくずリスト</th>
+    <td class="breadcrumbsNavi">
+    % if static_pageset.genre:
+      <ul>
+      % for n in reversed(static_pageset.get_ancestor_pages()):
+        <li>
+          <a href="${h.link.publish_page_from_pageset(request,n) }"><span>${n.name}</span></a>
+        </li>
+      % endfor
+        <li>
+          <span>${static_pageset.name}</span>
+        </li>
+      </ul>
+    % else:
+      パンくずリストは登録されていません。
+    % endif
+    </td>
+  </tr>
+  <tr>
     <th> preview</th>
     <td>
       <form action="${request.route_path("static_pageset", pagetype=pagetype.name, static_page_id=static_pageset.id, action="preview")}" method="GET">
@@ -70,7 +132,7 @@ ${active_page.name}
 
 <div class="btn-group">
   <a class="btn btn-primary"
-	   href="${request.route_path("static_pageset_update", action="input", id=static_pageset.id, _query=dict(endpoint=request.url, pagetype=pagetype.name))}"> 
+	   href="${request.route_path("static_pageset", action="input", pagetype=pagetype.name, static_page_id=static_pageset.id, _query=dict(endpoint=request.url, pagetype=pagetype.name))}">
     <i class="icon-cog"></i> 変更
   <a class="btn btn-danger"
 	   href="${request.route_path("static_pageset_delete", action="confirm", id=static_pageset.id, _query=dict(endpoint=request.route_path("pageset_list", pagetype=pagetype.name), pagetype=pagetype.name))}"> 

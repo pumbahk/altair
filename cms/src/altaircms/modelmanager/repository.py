@@ -117,5 +117,5 @@ class WidgetRepository(object):
         if pk is None or pk=="null":
             return self.Model()
         else:
-            logger.info("%s -- %s",  self.Model, pk)
+            logger.info("%s -- %s", self.Model, pk)
             return self.request.allowable(self.Model).get(pk)

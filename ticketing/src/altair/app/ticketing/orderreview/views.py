@@ -673,6 +673,11 @@ class QRView(object):
         renderer=selectable_renderer("order_review/qr.html")
         )
     def order_review_qr_print(self):
+        if 'order_no' not in self.request.params:
+            return HTTPFound(self.request.route_path("order_review.index"))
+        if 'token' not in self.request.params:
+            return HTTPFound(self.request.route_path("order_review.index"))
+
         order_no = self.request.params['order_no']
         token_id = self.request.params['token']
         if token_id:

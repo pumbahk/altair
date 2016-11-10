@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import logging
 import os
 import uuid
 import shutil
@@ -8,8 +9,10 @@ from pyramid.httpexceptions import HTTPNotFound
 from sqlalchemy.orm.exc import NoResultFound
 from altair.app.ticketing.resources import TicketingAdminResource
 from altair.app.ticketing.core.models import Event, Performance
+from boto.exception import S3ResponseError
 
 S3_DIRECTORY = "auto_cms/static/{}/"
+logger = logging.getLogger(__name__)
 
 
 class AutoCmsImageResource(TicketingAdminResource):
@@ -43,5 +46,11 @@ class AutoCmsImageResource(TicketingAdminResource):
         connection = S3ConnectionFactory(self.request)()
         bucket_name = self.request.registry.settings["s3.bucket_name"]
         for performance in performances:
-            s3upload(connection, bucket_name, file_path, S3_DIRECTORY.format(performance.id), "main.png")
+            try:
+                s3upload(connection, bucket_name, file_path, S3_DIRECTORY.format(performance.id), "main.png")
+                logger.info("auto_cms image saved. user={}, performanceID={}".format(self.user.name.encode("utf-8"), performance.id))
+            except S3ResponseError as e:
+                logger.info("Image did not save. PerformanceID={}".format(performance.id))
+                self.request.session.flash(u"{}の画像が保存できませんでした。ID:{}".format(performance.name, performance.id))
+
         os.remove(file_path)
