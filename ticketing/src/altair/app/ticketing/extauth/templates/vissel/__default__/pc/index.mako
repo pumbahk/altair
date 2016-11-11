@@ -66,7 +66,7 @@ thisyear = datetime.now().strftime('%Y')
 
 <!--SiteCatalyst-->
 <%
-    sc = {"pagename": "extauth-index"}
+    sc = {"pagename": "index"}
 %>
 <%include file="../common/sc_basic.html" args="sc=sc" />
 <!--/SiteCatalyst-->
