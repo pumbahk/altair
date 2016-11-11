@@ -54,3 +54,10 @@
 </div><!-- /wrap -->
 <!-- back to top--><div id="topButton"><a>▲<br>上へ</a></div><!-- /back to top-->
 </section><!-- /main -->
+
+<!--SiteCatalyst-->
+<%
+    sc = {"pagename": "extauth-login"}
+%>
+<%include file="../common/sc_basic.html" args="sc=sc" />
+<!--/SiteCatalyst-->
