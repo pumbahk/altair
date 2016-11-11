@@ -12,6 +12,7 @@ from pyramid.traversal import DefaultRootFactory
 from pyramid.decorator import reify
 from sqlalchemy.sql import or_
 from sqlalchemy.orm import make_transient, joinedload
+from sqlalchemy.orm.exc import DetachedInstanceError
 
 from altair.now import get_now
 from altair.app.ticketing.cart.api import get_auth_info
@@ -58,7 +59,11 @@ class LotResourceBase(object):
 
     @reify
     def cart_setting(self):
-        return self.event and (self.event.setting.cart_setting or self.event.organization.setting.cart_setting)
+        try:
+            cart_setting_exist = (self.event.setting.cart_setting or self.event.organization.setting.cart_setting)
+        except DetachedInstanceError:
+            cart_setting_exist = False
+        return self.event and cart_setting_exist
 
     @reify
     def host_base_url(self):
