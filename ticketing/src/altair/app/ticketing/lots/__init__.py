@@ -98,10 +98,11 @@ def forbidden_handler(context, request):
     session = get_db_session(request, 'slave')
     membership_name=request.altair_auth_info['membership']
     membership=session.query(Membership).filter(Membership.organization_id==request.organization.id).filter(Membership.name==membership_name).one()
-    request.context.message = u'現在{membership}としてログインしています。{lot_name}にエントリーするには再ログインが必要となります。'.format(
-        membership=membership.display_name if membership.display_name else membership.name,
-        lot_name=request.context.lot.name
-        )
+    request.context.message = u'{membergroup_name} としてログインしています。<br/>恐れ入りますが、現在、こちらのアカウントでは {event_name} {lot_name} の受付を行っておりません。<br/>本受付の対象アカウントでログインしていただけますようお願いいたします。'.format(
+        lot_name=request.context.lot.name,
+        event_name=request.context.lot.event.title,
+        membergroup_name=request.altair_auth_info['membergroup'],
+    )
     response = render_view_to_response_with_derived_request(
         context_factory=lambda _:request.context,
         request=request,
