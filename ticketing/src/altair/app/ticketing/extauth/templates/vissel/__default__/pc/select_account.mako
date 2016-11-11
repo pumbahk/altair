@@ -21,7 +21,7 @@
 
 <!--SiteCatalyst-->
 <%
-    sc = {"pagename": "extauth-select_accoun"}
+    sc = {"pagename": "select_accoun"}
 %>
 <%include file="../common/sc_basic.html" args="sc=sc" />
 <!--/SiteCatalyst-->

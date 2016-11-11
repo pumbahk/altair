@@ -57,7 +57,7 @@
 
 <!--SiteCatalyst-->
 <%
-    sc = {"pagename": "extauth-login"}
+    sc = {"pagename": "login"}
 %>
 <%include file="../common/sc_basic.html" args="sc=sc" />
 <!--/SiteCatalyst-->
