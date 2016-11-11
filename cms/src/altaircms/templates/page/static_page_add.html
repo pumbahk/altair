@@ -45,9 +45,10 @@
 
 <script>
 
-  var genre_dict = ${genre_dict|n}
-  var genre_id_dict = ${genre_id_dict|n}
-
+  var genre_dict = ${genre_dict|n};
+  var genre_id_dict = ${genre_id_dict|n};
+  // セレクトを消す用のダミーID
+  var DUMMY_ID = 0;
   // 該当静的ページセットの名前を記録
   var suffix = "";
   // 現在のパンくずリストの内容を記録
@@ -58,23 +59,21 @@
   var cur_dict = genre_dict;
 
   // パンくずリストのセレクトを追加
-  add_row = function (val = "") {
-    $clone = $('#option-template').clone();
-    $clone.removeClass('hide')
-          .removeAttr('id')
-          .addClass('breadcrumb-options')
-          .insertBefore($('#option-template'));
-
-    add_option_value($clone.find('select'));
+  add_row = function (val = null) {
+    var select_row = $('<div class="option"></div>')
+    var select = $('<select/>')
+    add_option_value(select);
     if (val !== "") {
-      $clone.find('select').val(val);
+      select.val(val);
     }
+    select_row.append(select);
+    $('div.breadcrumb-options').append(select_row);
   }
 
   // パンくずリストのセレクトのオプションを記入
   add_option_value = function($target) {
     $target.append($("<option></option>")
-                   .attr("value", "dummy")
+                   .attr("value", DUMMY_ID)
                    .text("")
             );
     for (var key in cur_dict) {
@@ -87,9 +86,9 @@
 
   // パンくずリストのセレクトを削除（それ以下のセレクトを全部削除）
   remove_row = function ($target) {
-    var index = $target.prevAll().length;
+    var index = $target.prevAll('.option').length;
     breadcrumb_list.splice(index, breadcrumb_list.length - index);
-    $target.nextAll('.breadcrumb-options').remove();
+    $target.nextAll('.option').remove();
     $target.remove();
   }
 
@@ -111,43 +110,29 @@
   }
 
   // 現在の階層は最低層かどうかをチェック
-  is_last = function(obj) {
-    if (obj === null) return true;
-    for (var key in obj) {
-      if (hasOwnProperty.call(obj, key)) return false;
-    }
-    return true;
+  has_next = function(obj) {
+    if (obj === null) return false;
+    return Object.keys(obj).length > 0
   }
 
   $(document).ready(function(){
 
+    // 初期化
     suffix = $('input#label').val();
 
-    // 動的にページ名によりプレビューのパンくずリストを更新
+    // （初期化）1個目のセレクトにオプションを記入
+    add_option_value($('select#first-option'));
+
+    // イベントハンドリング
     $('input#label').on('input', function() {
       suffix = $('input#label').val();
       $('div#breadcrumb-preview').text(breadcrumb_str + suffix);
     });
 
-    // （初期化）1個目のセレクトにオプションを記入
-    add_option_value($('select#first-option'));
-
-    // （初期化）パンくずリストの記録が存在する場合、1個目（トップ）の階層とセレクトに更新
-    if (breadcrumb_list.length !== 0) {
-      $('select#first-option').val(breadcrumb_list[0]);
-      cur_dict = cur_dict[breadcrumb_list[0]];
-    }
-
-    // （初期化）パンくずリストの記録が存在する場合、2個目の階層とセレクトを追加
-    for (var i = 1; i < breadcrumb_list.length; i++) {
-        add_row(breadcrumb_list[i]);
-        cur_dict = cur_dict[breadcrumb_list[i]];
-    }
-
-    $('table.breadcrumbs-box')
-    .on('change', '.breadcrumb-options select', function() {
-      var index = $(this).parent().parent().prevAll().length;
-      var val = $(this).val();
+    $('div.breadcrumb-options')
+    .on('change', 'select', function() {
+      var index = $(this).parent().prevAll('.option').length;
+      var val = +$(this).val();
 
       if (breadcrumb_list.length == index) {
 
@@ -156,25 +141,22 @@
         cur_dict = cur_dict[val];
 
       } else {
-        if (breadcrumb_list[index] !== val) {
-          remove_row($(this).parent().parent().next());
+
+        if (breadcrumb_list[index] !== val && $(this).parent().next('.option').length > 0) {
+          remove_row($(this).parent().next());
         }
 
-        if (val === "dummy") {
+        if (val === DUMMY_ID) {
           breadcrumb_list.pop(index);
-          remove_row($(this).parent().parent());
         } else {
           breadcrumb_list[index] = val;
         }
+
         refresh_breadcrumb_str();
         refresh_cur_dict();
       }
 
-      if (is_last(cur_dict)) {
-        if ($(this).parent().parent().nextAll('.breadcrumb-options').length > 0) {
-            remove_row($(this).parent().parent().next());
-         }
-      } else {
+      if (has_next(cur_dict) && breadcrumb_list.length > 0 && val !== DUMMY_ID) {
         add_row();
       }
     });
@@ -206,11 +188,6 @@
         <div class="breadcrumb-options">
           <div class="option"><select id="first-option"></select></div>
         </div>
-        <!--オプションのテンプレート-->
-        <div id="option-template" class="hide">
-          <div class="option"><select></select></div>
-        </div>
-        <!--オプションのテンプレート-->
       </td>
     </tr>
   </tbody>
