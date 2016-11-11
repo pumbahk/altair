@@ -80,23 +80,4 @@ ${self.body()}
 </div>
 </div><!-- /wrap -->
 </footer><!-- /footer -->
-
-<!--SiteCatalyst-->
-<!--<script type="text/javascript">
-var trackingParam = {};
-trackingParam.pageName="cart:fc_login"
-trackingParam.channel="cart"
-</script>//-->
-
-<!-- SiteCatalyst tags -->
-<!--<script type="text/javascript" src="//a.ichiba.jp.rakuten-static.com/com/rat/vissel-kobe.co.jp/s_accountSetting.js?v=20160129"></script>
-<script type="text/javascript" src="//a.ichiba.jp.rakuten-static.com/com/rat/sc/s_codeCommon.js?v=20160129"></script>
-<script type="text/javascript" src="//www.rakuten.co.jp/com/rat/vissel-kobe.co.jp/s_customTracking.js?v=20160129"></script>//-->
-
-<!-- /SiteCatalyst tags -->
-<!-- RAT tags -->
-<!--<script type="text/javascript" src="//a.ichiba.jp.rakuten-static.com/com/rat/vissel-kobe.co.jp/ral-vissel-kobe.co.jp.js?v=20160129" async defer></script> -->
-<!-- /RAT tags -->
-<!--/SiteCatalyst-->
-<!--<iframe src="//www.rakuten.co.jp/com/rat/plugin/external/ral-iframe-rakuten.co.jp.html?o-id=https%3A%2F%2Fvissel.tstar.jp" style="display: none; visibility: hidden;"></iframe> -->
 </body></html>

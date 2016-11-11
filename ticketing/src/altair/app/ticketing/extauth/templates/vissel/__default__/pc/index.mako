@@ -63,3 +63,10 @@ thisyear = datetime.now().strftime('%Y')
 </div><!-- /wrap -->
 <!-- back to top--><div id="topButton"><a>▲<br>上へ</a></div><!-- /back to top-->
 </section><!-- /main -->
+
+<!--SiteCatalyst-->
+<%
+    sc = {"pagename": "extauth-index"}
+%>
+<%include file="../common/sc_basic.html" args="sc=sc" />
+<!--/SiteCatalyst-->
