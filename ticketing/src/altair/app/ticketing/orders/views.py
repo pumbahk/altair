@@ -831,7 +831,7 @@ class OrderDeltaIndexView(OrderDeltaBaseView):
             if request.params.get('action') == 'checked':
                 checked_orders = [o.lstrip('o:')
                                   for o in request.session.get('orders', [])
-                                  if o.startwith('o:')]
+                                  if o.startswith('o:')]
                 query.target_order_ids = checked_orders
 
             count = query.count()
@@ -845,15 +845,14 @@ class OrderDeltaIndexView(OrderDeltaBaseView):
             )
 
         from altair.app.ticketing.orders.export import japanese_columns
-        order_list = {}
+
         return {
             'form': OrderForm(context=self.context),
             'form_search': form_search,
             'orders': orders,
             'page': page,
             'endpoints': self.endpoints,
-            'japanese_columns': japanese_columns,
-            'order_list': order_list
+            'japanese_columns': japanese_columns
         }
 
 @view_defaults(decorator=with_bootstrap, permission='sales_editor')
