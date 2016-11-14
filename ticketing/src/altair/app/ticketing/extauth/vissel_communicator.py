@@ -99,14 +99,16 @@ class VisselCommunicator(object):
         h.update(self.hash_key)
         token = six.text_type(h.hexdigest())
         this_year = six.text_type(datetime.now().year)
+
+        # start_year, end_year recovery ticket: TKT-2727
         data = self._do_request(
             urljoin(self.endpoint_base, '/api/members-check'),
             {
                 u'open_id': openid_claimed_id,
                 u'client_name': self.client_name,
                 u'token': token,
-                u'start_year': this_year,
-                u'end_year':  this_year,
+                u'start_year': u'2016',
+                u'end_year':  u'2017',
                 u'ticket_only': u'1' if ticket_only else u'0',
                 u'is_eternal': u'1' if is_eternal else u'0',
                 }
