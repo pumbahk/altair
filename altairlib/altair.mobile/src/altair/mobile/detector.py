@@ -9,7 +9,6 @@ from uamobile.ezweb import EZwebUserAgent
 from uamobile.softbank import SoftBankUserAgent
 from uamobile.willcom import WillcomUserAgent
 from uamobile.nonmobile import NonMobileUserAgent
-
 from .carriers import (
     carriers,
     DoCoMo,
@@ -27,6 +26,9 @@ from .interfaces import (
 
 ## for smartphone
 SMARTPHONE_USER_AGENT_RX = re.compile("iPhone|iPod|Opera Mini|Android.*Mobile|NetFront|PSP|BlackBerry")
+
+logging.getLogger(__name__)
+
 
 @implementer(IMobileUserAgent)
 class UAMobileUserAgentWrapper(object):
