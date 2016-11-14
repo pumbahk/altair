@@ -1009,6 +1009,7 @@ class ReportSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     end_on = Column(DateTime, nullable=True, default=None)
     report_type = Column(Integer, nullable=False, default=1, server_default='1')
     recipients = relationship('ReportRecipient', secondary=ReportSetting_ReportRecipient.__table__, backref='settings')
+    last_sent_at = Column(DateTime, nullable=True, default=None)
 
     def format_recipients(self):
         return u', '.join([r.format_recipient() for r in self.recipients])
