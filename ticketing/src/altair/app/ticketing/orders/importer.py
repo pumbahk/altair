@@ -600,7 +600,8 @@ class ImportCSVParserContext(object):
             k2 = desc['key']
             v = row.get(k2)
             if v is not None:
-                v = v.strip()
+                if len(v) > 1:
+                    v = v.strip()
             else:
                 v = u''
             if v:
