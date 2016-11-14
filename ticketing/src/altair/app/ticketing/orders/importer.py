@@ -600,6 +600,7 @@ class ImportCSVParserContext(object):
             k2 = desc['key']
             v = row.get(k2)
             if v is not None:
+                # 意図的にvにspaceを入力した場合にstripしない
                 if len(v) > 1:
                     v = v.strip()
             else:
