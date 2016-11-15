@@ -1,3 +1,4 @@
+# -*- coding:utf-8 -*-
 import logging
 import urllib
 import urllib2
@@ -7,13 +8,27 @@ import six
 import hmac
 import json
 import hashlib
+from urlparse import urljoin
 from zope.interface import implementer
 
 from .interfaces import IFanclubOAuth, IFanclubAPI, IFanclubAPIFactory
 from .exceptions import FanclubAuthError, FanclubAPIError
+from . import CONFIG_PREFIX
 
 logger = logging.getLogger(__name__)
 
+
+def setting_for_stg_if_need(auth_req, request):
+    import ssl
+    import base64
+    context = None
+    username = request.registry.settings.get(CONFIG_PREFIX + 'stg_setting.basic_username', None)
+    password = request.registry.settings.get(CONFIG_PREFIX + 'stg_setting.basic_password', None)
+    if username and password:
+        context = ssl._create_unverified_context()
+        base64string = base64.b64encode('%s:%s' % (username, password))
+        auth_req.add_header("Authorization", "Basic %s" % base64string)
+    return auth_req, context
 
 def create_signature_base(method, url, oauth_consumer_key, oauth_signature_method, oauth_timestamp, oauth_nonce, oauth_callback, oauth_verifier, oauth_token):
     if oauth_callback:
@@ -71,14 +86,14 @@ def create_oauth_signature(method, url, oauth_consumer_key, secret, oauth_signat
 
 @implementer(IFanclubOAuth)
 class FanclubOAuth(object):
-    def __init__(self, req_endpoint, access_endpoint, consumer_key, secret, timeout=10):
-        self.request_token_endpoint = req_endpoint
-        self.access_token_endpoint = access_endpoint
+    def __init__(self, consumer_key, secret, endpoint_builder, timeout=10):
         self.consumer_key = consumer_key
         self.secret = secret
         self.timeout = int(timeout)
+        self.endpoint_builder = endpoint_builder
 
     def get_access_token(self, request, request_token, request_token_secret, verifier):
+        endpoint = self.endpoint_builder.access_token_endpoint(request)
         consumer_key = self.consumer_key
         if callable(consumer_key):
             consumer_key = consumer_key(request)
@@ -92,7 +107,7 @@ class FanclubOAuth(object):
 
         req_signature = create_oauth_signature(
             method=u'GET',
-            url=self.access_token_endpoint,
+            url=endpoint,
             oauth_consumer_key=consumer_key,
             secret=consumer_secret + '&' + request_token_secret,
             oauth_signature_method=oauth_signature_method,
@@ -112,11 +127,16 @@ class FanclubOAuth(object):
             (u'oauth_verifier', verifier)
             ]
 
-        url = self.access_token_endpoint + '?' + urllib.urlencode([(k.encode('utf-8'), v.encode('utf-8')) for k, v in req_query])
+        url = endpoint + '?' + urllib.urlencode([(k.encode('utf-8'), v.encode('utf-8')) for k, v in req_query])
         try:
             f = None
-            logger.info('try getting access token. (url={})'.format(url))
-            f = urllib2.urlopen(url)
+            logger.info('try request to get access token. (url={})'.format(url))
+            opener = urllib2.build_opener(urllib2.HTTPSHandler())
+            urllib2.install_opener(opener)
+            auth_req = urllib2.Request(url)
+            # FIXME: polluxSTG環境は証明書があれなのとbasic認証をくぐり抜けないといけない
+            auth_req, context = setting_for_stg_if_need(auth_req, request)
+            f = urllib2.urlopen(auth_req, context=context)
             res = json.loads(f.read())
         except Exception as e:
             logger.error(e.message)
@@ -127,7 +147,8 @@ class FanclubOAuth(object):
 
         return res['data']['oauth_token'], res['data']['oauth_token_secret']
 
-    def get_request_token(self, callback_url):
+    def get_request_token(self, request, callback_url):
+        endpoint = self.endpoint_builder.request_token_endpoint(request)
         consumer_key = self.consumer_key
         if callable(consumer_key):
             consumer_key = consumer_key(request)
@@ -141,7 +162,7 @@ class FanclubOAuth(object):
 
         req_signature = create_oauth_signature(
             method=u'GET',
-            url=self.request_token_endpoint,
+            url=endpoint,
             oauth_consumer_key=consumer_key,
             secret=consumer_secret + '&',
             oauth_signature_method=oauth_signature_method,
@@ -159,11 +180,17 @@ class FanclubOAuth(object):
             (u'oauth_callback', callback_url)
             ]
 
-        url = self.request_token_endpoint + '?' + urllib.urlencode([(k.encode('utf-8'), v.encode('utf-8')) for k, v in req_query])
+        data = urllib.urlencode([(k.encode('utf-8'), v.encode('utf-8')) for k, v in req_query])
         try:
             f = None
-            logger.info('try getting request token. (url={})'.format(url))
-            f = urllib2.urlopen(url)
+            url = endpoint + '?' + data
+            logger.info('try request to get request token. (url={})'.format(url))
+            opener = urllib2.build_opener(urllib2.HTTPSHandler())
+            urllib2.install_opener(opener)
+            auth_req = urllib2.Request(url)
+            # FIXME:
+            auth_req, context = setting_for_stg_if_need(auth_req, request)
+            f = urllib2.urlopen(auth_req, context=context)
             res = json.loads(f.read())
         except Exception as e:
             logger.error(e.message)
@@ -177,22 +204,22 @@ class FanclubOAuth(object):
 
 @implementer(IFanclubAPI)
 class FanclubAPI(object):
-    def __init__(self, request, endpoints, cosumuer_key, consumer_secret, token, secret):
+    def __init__(self, request, endpoint_builder, consumer_key, consumer_secret, token, secret):
         self.request = request
-        self.endpoints = endpoints
-        self.consumer_key = cosumuer_key
+        self.endpoint_builder = endpoint_builder
+        self.consumer_key = consumer_key
         self.consumer_secret = consumer_secret
         self.access_token = token
         self.access_secret = secret
 
     def get_member_info(self):
-        endpoint = self.endpoints.get('member_info')
+        endpoint = self.endpoint_builder.member_info_endpoint(self.request)
         consumer_key = self.consumer_key
         if callable(consumer_key):
-            consumer_key = consumer_key(request)
+            consumer_key = consumer_key(self.request)
         consumer_secret = self.consumer_secret
         if callable(consumer_secret):
-            consumer_secret = consumer_secret(request)
+            consumer_secret = consumer_secret(self.request)
 
         oauth_signature_method = u'HMAC-SHA1'
         oauth_timestamp = six.text_type(int(time.time() * 1000))
@@ -221,8 +248,14 @@ class FanclubAPI(object):
         url = endpoint + '?' + urllib.urlencode([(k.encode('utf-8'), v.encode('utf-8')) for k, v in query])
         try:
             f = None
+            context = None
             logger.info('try request to get member info. (url={})'.format(url))
-            f = urllib2.urlopen(url)
+            opener = urllib2.build_opener(urllib2.HTTPSHandler())
+            urllib2.install_opener(opener)
+            auth_req = urllib2.Request(url)
+            # FIXME:
+            auth_req, context = setting_for_stg_if_need(auth_req, self.request)
+            f = urllib2.urlopen(auth_req, context=context)
             res = json.loads(f.read())
             if res.get('code') == 200:
                 res = res.get('data')
@@ -266,12 +299,13 @@ def fanclub_oauth_from_config(config, prefix):
     settings = config.registry.settings
     consumer_key = get_oauth_consumer_key_from_config(config, prefix)
     consumer_secret = get_oauth_consumer_secret_from_config(config, prefix)
+    endpoint_builder_factory = config.maybe_dotted(settings[prefix + 'endpoint_builder_factory'])
+    endpoint_builder = endpoint_builder_factory()
     return FanclubOAuth(
-        req_endpoint=settings[prefix + 'oauth.endpoint.request_token'],
-        access_endpoint=settings[prefix + 'oauth.endpoint.access_token'],
         consumer_key=consumer_key,
         secret=consumer_secret,
-        timeout=settings[prefix + 'timeout']
+        timeout=settings[prefix + 'timeout'],
+        endpoint_builder=endpoint_builder
         )
 
 
@@ -279,10 +313,12 @@ def fanclub_api_factory_from_config(config, prefix):
     settings = config.registry.settings
 
     def factory(request, access_token, access_secret):
+        endpoint_builder_factory = config.maybe_dotted(settings[prefix + 'endpoint_builder_factory'])
+        endpoint_builder = endpoint_builder_factory()
         return FanclubAPI(
             request=request,
-            endpoints=dict(member_info=settings.get(prefix + 'api.endpoint.member_info')),
-            cosumuer_key=get_oauth_consumer_key_from_config(config, prefix),
+            endpoint_builder=endpoint_builder,
+            consumer_key=get_oauth_consumer_key_from_config(config, prefix),
             consumer_secret=get_oauth_consumer_secret_from_config(config, prefix),
             token=access_token,
             secret=access_secret

@@ -145,7 +145,6 @@ class OrganizationsView(object):
             maximum_oauth_scope=form.maximum_oauth_scope.data,
             canonical_host_name=form.canonical_host_name.data,
             emergency_exit_url=form.emergency_exit_url.data,
-            oauth_service_provider_id=form.oauth_service_provider_id.data,
             settings=form.settings.data,
             short_name=form.short_name.data,
             fanclub_api_type=form.fanclub_api_type.data,
@@ -911,7 +910,8 @@ class OAuthServiceProvidersView(object):
             endpoint_base=form.endpoint_base.data,
             consumer_key=form.consumer_key.data,
             consumer_secret=form.consumer_secret.data,
-            scope=form.scope.data
+            scope=form.scope.data,
+            organization_id=form.organization_id.data
         )
         session.add(service_providers)
         session.flush()

@@ -1,4 +1,13 @@
 <div class="control-group">
+  <label class="control-label" for="host-form--organization_id">${form.organization_id.label.text}</label>
+  <div class="controls">
+    ${form.organization_id(id="host-form--organization_id")}
+    %if form.organization_id.errors:
+    <span class="help-inline">${u' / '.join(form.organization_id.errors)}</span>
+    % endif
+  </div>
+</div>
+<div class="control-group">
   <label class="control-label" for="host-form--name">${form.name.label.text}</label>
   <div class="controls">
     ${form.name(id="host-form--name")}

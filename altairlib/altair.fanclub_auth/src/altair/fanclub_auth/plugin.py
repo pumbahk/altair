@@ -114,7 +114,7 @@ class FanclubAuthPlugin(object):
 
     def __init__(self,
                  plugin_name,
-                 endpoint,
+                 endpoint_builder,
                  url_builder,
                  consumer_key,
                  consumer_secret,
@@ -129,7 +129,7 @@ class FanclubAuthPlugin(object):
         self.name = plugin_name
         self.cache_region = cache_region
         self.url_builder = url_builder
-        self.endpoint = urlparse(endpoint)
+        self.endpoint_builder = endpoint_builder
         self.consumer_key = consumer_key
         self.consumer_secret = consumer_secret
         self.session_factory = session_factory
@@ -138,9 +138,11 @@ class FanclubAuthPlugin(object):
         self.timeout = int(timeout)
         self.challenge_success_callback = challenge_success_callback
 
-    def build_endpoint_request_url(self, query, params=()):
+    def build_endpoint_request_url(self, request, query, params=()):
+        endpoint = self.endpoint_builder.authorization_endpoint(request)
+        endpoint = urlparse(endpoint)
         params_str = \
-            (self.endpoint.params + u';' if self.endpoint.params else u'') \
+            (endpoint.params + u';' if endpoint.params else u'') \
             + u';'.join(
                 six.text_type(urllib.quote(k.encode(self.encoding), safe='')) \
                 + u'=' \
@@ -148,7 +150,7 @@ class FanclubAuthPlugin(object):
                 for k, v in params
                 )
         query_str = \
-            (self.endpoint.query + u'&' if self.endpoint.query else u'') \
+            (endpoint.query + u'&' if endpoint.query else u'') \
             + u'&'.join(
                 six.text_type(urllib.quote(k.encode(self.encoding), safe='')) \
                 + u'='
@@ -156,12 +158,12 @@ class FanclubAuthPlugin(object):
                 for k, v in query
                 )
         return urlunparse((
-            self.endpoint.scheme,
-            self.endpoint.netloc,
-            self.endpoint.path,
+            endpoint.scheme,
+            endpoint.netloc,
+            endpoint.path,
             params_str,
             query_str,
-            self.endpoint.fragment,
+            endpoint.fragment,
             ))
 
     def get_oauth_scope(self, request):
@@ -199,7 +201,7 @@ class FanclubAuthPlugin(object):
         """ ユーザの認可リクエストエンドポイントを返す """
         return_to = self.url_builder.build_return_to_url(request)
         return_to = self.combine_session_id(request, session, return_to)
-        oauth_request_token, oauth_request_secret = get_fanclub_oauth(request).get_request_token(return_to)
+        oauth_request_token, oauth_request_secret = get_fanclub_oauth(request).get_request_token(request, return_to)
         # access_token取得時に使用
         session['oauth_request_token'] = oauth_request_token
         session['oauth_request_secret'] = oauth_request_secret
@@ -209,7 +211,7 @@ class FanclubAuthPlugin(object):
             (u'oauth_token', oauth_request_token),
             (u'xoauth_memberships_required', urllib.urlencode(u''))
         ]
-        return self.build_endpoint_request_url(query)
+        return self.build_endpoint_request_url(request, query)
 
     def get_return_url(self, session):
         return session.get(self.__class__.__name__ + '.return_url')
@@ -441,6 +443,8 @@ def fanclub_auth_from_config(config, prefix):
     consumer_key = get_oauth_consumer_key_from_config(config, prefix)
     consumer_secret = get_oauth_consumer_secret_from_config(config, prefix)
     url_builder_factory = settings.get(prefix + 'url_builder_factory')
+    endpoint_builder_factory = config.maybe_dotted(settings[prefix + 'endpoint_builder_factory'])
+    endpoint_builder = endpoint_builder_factory()
     if url_builder_factory is None:
         verify_url = settings.get(prefix + 'verify_url')
         extra_verify_url = settings.get(prefix + 'extra_verify_url')
@@ -477,7 +481,7 @@ def fanclub_auth_from_config(config, prefix):
     return FanclubAuthPlugin(
         plugin_name=AUTH_PLUGIN_NAME,
         cache_region=None,
-        endpoint=settings[prefix + 'endpoint'],
+        endpoint_builder=endpoint_builder,
         url_builder=url_builder,
         consumer_key=consumer_key,
         consumer_secret=consumer_secret,
