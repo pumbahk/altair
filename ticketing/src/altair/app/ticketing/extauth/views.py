@@ -291,7 +291,7 @@ class View(object):
                 norm_data['memberships'] = [dict(
                     membership_id=None,
                     kind=dict(
-                        id=index+1,
+                        id=index,
                         name=data.get('membership_name')
                     )
                 ) for index, data in enumerate(received_data)]

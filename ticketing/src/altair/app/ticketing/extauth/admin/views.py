@@ -9,15 +9,26 @@ from pyramid.httpexceptions import HTTPFound
 from pyramid.security import remember, forget
 from pyramid_layout.panel import panel_config
 from webhelpers import paginate
+from sqlalchemy.orm.exc import NoResultFound
 from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.sqlahelper import get_db_session
 from .api import create_operator, lookup_operator_by_credentials, lookup_organization_by_name, lookup_organization_by_id
 from ..models import MemberSet, MemberKind, Member, Membership, OAuthClient
 from ..api import create_member
 from ..utils import digest_secret, generate_salt, generate_random_alnum_string
-from .forms import LoginForm, OrganizationForm, OperatorForm, MemberSetForm, MemberKindForm, MemberForm, OAuthClientForm, HostForm
+from .forms import (
+    LoginForm,
+    OrganizationForm,
+    OperatorForm,
+    MemberSetForm,
+    MemberKindForm,
+    MemberForm,
+    OAuthClientForm,
+    HostForm,
+    OAuthServiceProviderForm
+)
 from .models import Operator
-from ..models import Organization, Host
+from ..models import Organization, Host, OAuthServiceProvider
 from . import import_export
 
 logger = logging.getLogger(__name__)
@@ -846,3 +857,101 @@ class OAuthClientsView(object):
         session.commit()
         self.request.session.flash(u'%d OAuthClient を削除しました' % n)
         return HTTPFound(location=self.request.route_path('oauth_clients.index'))
+
+
+@view_defaults(
+    decorator=(with_bootstrap,),
+    permission='manage_service_providers'
+    )
+class OAuthServiceProvidersView(object):
+    def __init__(self, context, request):
+        self.context = context
+        self.request = request
+
+    @view_config(
+        route_name='service_providers.index',
+        renderer='service_providers/index.mako',
+        request_method='GET'
+        )
+    def index(self):
+        session = get_db_session(self.request, 'extauth')
+        service_providers = session.query(OAuthServiceProvider).all()
+        return dict(
+            service_providers=service_providers
+            )
+
+    @view_config(
+        route_name='service_providers.new',
+        renderer='service_providers/edit.mako',
+        request_method='GET'
+        )
+    def new(self):
+        form = OAuthServiceProviderForm(request=self.request)
+        return dict(
+            form=form
+            )
+
+    @view_config(
+        route_name='service_providers.new',
+        renderer='service_providers/edit.mako',
+        request_method='POST'
+        )
+    def new_post(self):
+        session = get_db_session(self.request, 'extauth')
+        form = OAuthServiceProviderForm(formdata=self.request.POST, request=self.request)
+        if not form.validate():
+            return dict(
+                form=form
+                )
+        service_providers = OAuthServiceProvider(
+            name=form.name.data,
+            display_name=form.display_name.data,
+            auth_type=form.auth_type.data,
+            endpoint_base=form.endpoint_base.data,
+            consumer_key=form.consumer_key.data,
+            consumer_secret=form.consumer_secret.data,
+            scope=form.scope.data,
+            organization_id=form.organization_id.data
+        )
+        session.add(service_providers)
+        session.flush()
+        session.commit()
+        self.request.session.flash(u'OAuthServiceProvider %s を新規作成しました' % service_providers.display_name)
+        return HTTPFound(location=self.request.route_path('service_providers.edit', id=service_providers.id))
+
+    @view_config(
+        route_name='service_providers.edit',
+        renderer='service_providers/edit.mako',
+        request_method='GET'
+        )
+    def edit(self):
+        session = get_db_session(self.request, 'extauth')
+        try:
+            service_provider = session.query(OAuthServiceProvider).filter_by(id=self.request.matchdict['id']).one()
+        except NoResultFound as e:
+            raise e
+        form = OAuthServiceProviderForm(obj=service_provider, request=self.request)
+        return dict(
+            form=form
+            )
+
+    @view_config(
+        route_name='service_providers.edit',
+        renderer='service_providers/edit.mako',
+        request_method='POST'
+        )
+    def edit_post(self):
+        session = get_db_session(self.request, 'extauth')
+        try:
+            service_provider = session.query(OAuthServiceProvider).filter_by(id=self.request.matchdict['id']).one()
+        except NoResultFound as e:
+            raise e
+        form = OAuthServiceProviderForm(formdata=self.request.POST, obj=service_provider, request=self.request)
+        if not form.validate():
+            return dict(
+                form=form
+                )
+        form.populate_obj(service_provider)
+        session.commit()
+        self.request.session.flash(u'OAuthServiceProvider %s を変更しました' % service_provider.display_name)
+        return HTTPFound(location=self.request.route_path('service_providers.edit', id=service_provider.id))

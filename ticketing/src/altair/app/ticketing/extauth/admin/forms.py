@@ -37,7 +37,7 @@ from altair.formhelpers import Max, after1900
 from wtforms.validators import Required, Length, Optional
 from wtforms import ValidationError
 from altair.sqlahelper import get_db_session
-from ..models import MemberSet, MemberKind, Member, Host, Organization
+from ..models import MemberSet, MemberKind, Member, Host, Organization, OAuthServiceProvider
 from ..utils import period_overlaps
 from ..interfaces import ICommunicator
 from .api import lookup_operator_by_auth_identifier
@@ -701,3 +701,70 @@ class OAuthClientForm(OurForm):
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop('request', None)
         super(OAuthClientForm, self).__init__(*args, **kwargs)
+
+
+class OAuthServiceProviderForm(OurForm):
+    name = OurTextField(
+        label=u'OAuthプロバイダ名(英字)',
+        validators=[
+            Required(),
+            Length(max=32)
+            ]
+        )
+    organization_id = OurSelectField(
+        label=u'Organization',
+        choices=lambda field: \
+            get_db_session(field._form.request, 'extauth') \
+                .query(Organization.id, Organization.short_name) \
+                .all(),
+        coerce=int,
+        validators=[
+            Required(),
+            ]
+        )
+    display_name = OurTextField(
+        label=u'OAuthプロバイダ名(表示名)',
+        validators=[
+            Required(),
+            Length(max=255)
+            ]
+        )
+    auth_type = OurSelectField(
+        label=u'認証方式',
+        choices=[(u'rakuten', u'楽天認証'), (u'pollux', u'Pollux認証')],
+        validators=[
+            Required()
+            ]
+        )
+    endpoint_base = OurTextField(
+        label=u'OAuthエンドポイント(Base URL)',
+        validators=[
+            Required(),
+            Length(max=255)
+            ]
+        )
+    consumer_key = OurTextField(
+        label=u'OAuth Consumer Key',
+        validators=[
+            Required(),
+            Length(max=255)
+            ]
+        )
+    consumer_secret = OurTextField(
+        label=u'OAuth Consumer Secret',
+        validators=[
+            Required(),
+            Length(max=255)
+            ]
+        )
+    scope = OurTextField(
+        label=u'OAuthスコープ',
+        validators=[
+            Optional(),
+            Length(max=255)
+            ]
+        )
+
+    def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop('request', None)
+        super(OAuthServiceProviderForm, self).__init__(*args, **kwargs)

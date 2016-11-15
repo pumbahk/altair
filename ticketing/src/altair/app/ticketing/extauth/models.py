@@ -171,3 +171,17 @@ class OAuthClient(Base, WithCreatedAt):
 
     def validate_secret(self, secret):
         return self.client_secret == secret
+
+
+class OAuthServiceProvider(Base, WithCreatedAt):
+    __tablename__ = 'OAuthServiceProvider'
+    id = sa.Column(Identifier, autoincrement=True, primary_key=True, nullable=False)
+    name = sa.Column(sa.Unicode(32), nullable=False)
+    display_name = sa.Column(sa.Unicode(255), nullable=False)
+    auth_type = sa.Column(sa.Unicode(64), nullable=False)
+    endpoint_base = sa.Column(sa.Unicode(255), nullable=False)
+    consumer_key = sa.Column(sa.Unicode(255), nullable=False)
+    consumer_secret = sa.Column(sa.Unicode(255), nullable=False)
+    scope = sa.Column(sa.Unicode(255), nullable=True, default=u'')
+    organization_id = sa.Column(Identifier, sa.ForeignKey('Organization.id'))
+    organization = orm.relationship('Organization', backref='oauth_service_provider')  # 1:1
