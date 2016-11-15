@@ -130,15 +130,6 @@ class OrganizationForm(OurForm):
                 .all()
         )
 
-    oauth_service_provider_id = OurSelectField(
-        label=u'認証プロバイダ',
-        choices=lambda field: \
-            get_db_session(field._form.request, 'extauth') \
-                .query(OAuthServiceProvider.id, OAuthServiceProvider.display_name) \
-                .all(),
-        coerce=int
-        )
-
     fanclub_api_available = OurBooleanField(
         label=u'ファンクラブAPI有効化'
         )
@@ -718,6 +709,17 @@ class OAuthServiceProviderForm(OurForm):
         validators=[
             Required(),
             Length(max=32)
+            ]
+        )
+    organization_id = OurSelectField(
+        label=u'Organization',
+        choices=lambda field: \
+            get_db_session(field._form.request, 'extauth') \
+                .query(Organization.id, Organization.short_name) \
+                .all(),
+        coerce=int,
+        validators=[
+            Required(),
             ]
         )
     display_name = OurTextField(

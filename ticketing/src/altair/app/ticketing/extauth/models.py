@@ -36,8 +36,6 @@ class Organization(Base):
         )
     fanclub_api_available = sa.Column(sa.Boolean(), nullable=False, default=False)
     fanclub_api_type = sa.Column(sa.Unicode(32), nullable=True, default=None)
-    oauth_service_provider_id = sa.Column(Identifier, sa.ForeignKey('OAuthServiceProvider.id'))
-    oauth_service_provider = orm.relationship('OAuthServiceProvider')
 
 
 class Host(Base):
@@ -185,3 +183,5 @@ class OAuthServiceProvider(Base, WithCreatedAt):
     consumer_key = sa.Column(sa.Unicode(255), nullable=False)
     consumer_secret = sa.Column(sa.Unicode(255), nullable=False)
     scope = sa.Column(sa.Unicode(255), nullable=True, default=u'')
+    organization_id = sa.Column(Identifier, sa.ForeignKey('Organization.id'))
+    organization = orm.relationship('Organization', backref='oauth_service_provider')  # 1:1

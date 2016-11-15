@@ -29,10 +29,9 @@ def upgrade():
         sa.Column('consumer_key', sa.Unicode(255), nullable=False),
         sa.Column('consumer_secret', sa.Unicode(255), nullable=False),
         sa.Column('scope', sa.Unicode(255), nullable=True, default=u''),
+        sa.Column('organization_id', Identifier, nullable=False),
         sa.Column('created_at', sa.DateTime(), nullable=True, server_default=text(u'CURRENT_TIMESTAMP()'))
         )
-     op.add_column('Organization', sa.Column('oauth_service_provider_id', Identifier, nullable=False))
 
 def downgrade():
     op.drop_table('OAuthServiceProvider')
-    op.drop_column('Organization', 'oauth_service_provider_id')
