@@ -1060,7 +1060,7 @@ class PaymentView(object):
         else:
             first_name_kana=form.data['first_name_kana']
             last_name_kana=form.data['last_name_kana']
-            country='日本'
+            country='日本国'
 
         if form.validate():
             return dict(

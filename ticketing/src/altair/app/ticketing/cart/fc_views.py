@@ -250,7 +250,7 @@ class FCPaymentView(PaymentView):
             address_2=address_data['address_2'],
             email_1=address_data['email_1'],
             email_2=address_data.get('email_2'), # optional
-            country=u"日本",
+            country=u"日本国",
             tel_1=address_data['tel_1'],
             tel_2=address_data['tel_2'],
             fax=address_data.get("fax"),
