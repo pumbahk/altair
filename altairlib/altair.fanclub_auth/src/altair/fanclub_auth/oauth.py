@@ -115,7 +115,7 @@ class FanclubOAuth(object):
         url = self.access_token_endpoint + '?' + urllib.urlencode([(k.encode('utf-8'), v.encode('utf-8')) for k, v in req_query])
         try:
             f = None
-            logger.info('try request to get access token. (url={})'.format(url))
+            logger.info('try getting access token. (url={})'.format(url))
             f = urllib2.urlopen(url)
             res = json.loads(f.read())
         except Exception as e:
@@ -162,7 +162,7 @@ class FanclubOAuth(object):
         url = self.request_token_endpoint + '?' + urllib.urlencode([(k.encode('utf-8'), v.encode('utf-8')) for k, v in req_query])
         try:
             f = None
-            logger.info('try request to get request token. (url={})'.format(url))
+            logger.info('try getting request token. (url={})'.format(url))
             f = urllib2.urlopen(url)
             res = json.loads(f.read())
         except Exception as e:
