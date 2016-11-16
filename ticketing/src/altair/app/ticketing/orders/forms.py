@@ -1452,3 +1452,16 @@ class SejOrderCancelForm(OurForm):
             self.order_no.errors.append(err)
             return False
         return True
+
+class DownloadItemsPatternForm(OurForm):
+    organization_id = HiddenField(
+        validators=[Required()]
+    )
+    pattern_name = OurTextField(
+        label=u'',
+        validators=[Required()]
+    )
+    pattern_content = OurTextField(
+        label=u'',
+        validators=[Required()]
+    )

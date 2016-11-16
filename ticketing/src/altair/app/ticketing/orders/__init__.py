@@ -81,6 +81,8 @@ def includeme(config):
     # latest search and download page
     config.add_route('orders.delta', '/delta/')
     config.add_route('orders.delta.download', '/delta/download/')
+    config.add_route('orders.delta.pattern.add', '/delta/pattern/add/')
+    config.add_route('orders.delta.pattern.delete', '/delta/pattern/delete/')
 
     config.include('.info')
     config.scan(".")

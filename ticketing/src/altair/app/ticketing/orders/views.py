@@ -64,6 +64,7 @@ from altair.app.ticketing.orders.models import (
     OrderedProductItemToken,
     OrderedProductAttribute,
     ProtoOrder,
+    DownloadItemsPattern,
     )
 from altair.app.ticketing.sej import api as sej_api
 from altair.app.ticketing.mails.api import get_mail_utility
@@ -86,6 +87,7 @@ from .forms import (
     CartSearchForm,
     DeliverdEditForm,
     SejOrderCancelForm,
+    DownloadItemsPatternForm,
     )
 from altair.app.ticketing.orders.forms import OrderMemoEditFormFactory
 from altair.app.ticketing.views import BaseView
@@ -845,6 +847,7 @@ class OrderDeltaIndexView(OrderDeltaBaseView):
             )
 
         from altair.app.ticketing.orders.export import japanese_columns
+        patterns = self.get_patterns(slave_session, organization_id)
 
         return {
             'form': OrderForm(context=self.context),
@@ -852,8 +855,19 @@ class OrderDeltaIndexView(OrderDeltaBaseView):
             'orders': orders,
             'page': page,
             'endpoints': self.endpoints,
-            'japanese_columns': japanese_columns
+            'japanese_columns': japanese_columns,
+            'patterns': patterns
         }
+
+    def get_patterns(self, session, organization_id):
+        from collections import OrderedDict
+        pattern_dict = OrderedDict()
+        patterns = session.query(DownloadItemsPattern).filter(DownloadItemsPattern.organization_id==organization_id).all()
+        for pattern in patterns:
+            pattern_content = filter(None, pattern.pattern_content.split(','))
+            pattern_dict[pattern.pattern_name] = pattern_content
+
+        return pattern_dict
 
 @view_defaults(decorator=with_bootstrap, permission='sales_editor')
 class OrderDeltaDownloadView(OrderDeltaBaseView):
@@ -928,6 +942,41 @@ class OrderDeltaDownloadView(OrderDeltaBaseView):
 
         response.app_iter = order_csv(_orders(orders), writer_factory)
         return response
+
+@view_defaults(decorator=with_bootstrap, permission='sales_editor')
+class OrderDeltaPatternView(OrderDeltaBaseView):
+    @view_config(route_name='orders.delta.pattern.add', request_method="POST", renderer='json')
+    def add(self):
+        organization_id = self.request.POST.get('organization_id', None)
+        pattern_name = self.request.POST.get('pattern_name', None)
+
+        pattern = DownloadItemsPattern.query.filter_by(organization_id=organization_id,
+                                                       pattern_name=pattern_name).first() \
+                  or DownloadItemsPattern()
+
+        form_pattern = DownloadItemsPatternForm(self.request.POST)
+        if form_pattern.validate():
+            form_pattern.populate_obj(pattern)
+            try:
+                pattern.save()
+                return {pattern.pattern_name: filter(None, pattern.pattern_content.split(','))}
+            except Exception, e:
+                raise HTTPBadRequest(body=json.dumps({'message': str(e)}))
+
+    @view_config(route_name='orders.delta.pattern.delete', request_method="POST", renderer='json')
+    def delete(self):
+        organization_id = self.request.POST.get('organization_id', None)
+        pattern_name = self.request.POST.get('pattern_name', None)
+
+        if organization_id and pattern_name:
+            try:
+                pattern = DownloadItemsPattern.query.filter(and_(DownloadItemsPattern.organization_id==organization_id,
+                                                          DownloadItemsPattern.pattern_name==pattern_name))
+
+                pattern.delete()
+                return {"status": True}
+            except Exception, e:
+                raise HTTPBadRequest(body=json.dumps({'message': str(e) }))
 
 
 @view_defaults(decorator=with_bootstrap, permission='event_editor', renderer='altair.app.ticketing:templates/orders/refund/index.html')

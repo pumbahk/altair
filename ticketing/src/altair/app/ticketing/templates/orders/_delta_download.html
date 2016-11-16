@@ -2,68 +2,90 @@
 <%page args="form, japanese_columns" />
 <!-- font-awesome -->
 <link href="/static/css/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet"></link>
-
-<!-- select2 -->
-<link rel="stylesheet" href="/static/js/select2/3.5.1/select2.css">
-<script src="/static/js/select2/3.5.1/select2.min.js"></script>
-
-<!-- momentjs -->
-<script src="/static/js/moment.min.js"></script>
+<%
+  import json
+  patterns_js = json.dumps(patterns)
+%>
 
 <style>
 #available-columns, #selected-columns {
     width: 200px;
     height: 500px;
 }
-
+#save-pattern,
+#available-pattern {
+  padding: 0 20px;
+}
+#available-pattern ul {
+  list-style-type: none;
+  padding: 0;
+  margin: auto;
+}
 </style>
 <script>
-    $(document).ready(function() {
+    var patterns = ${patterns_js|n};
 
-        /** columnの出力をする/しないを変更
-         */
-        function move_columns(src_selector, dst_selector){
-            var src_columns = $(src_selector);
-            var dst_columns = $(dst_selector);
+    /** columnの出力をする/しないを変更
+     */
+    function move_columns(src_selector, dst_selector){
+        var src_columns = $(src_selector);
+        var dst_columns = $(dst_selector);
 
-            var src_options = src_columns.find('option:selected');
-            src_options.each(function (ii, src_option){
-                var new_option = $('<option value=""></option>');
-                new_option\
-                    .attr('value', src_option.value)\
-                    .text(src_option.text)\
-                    .appendTo(dst_columns);
-                src_option.remove();
-            });
-        }
+        var src_options = src_columns.find('option:selected');
+        src_options.each(function (ii, src_option){
+            var new_option = $('<option value=""></option>');
+            new_option\
+                .attr('value', src_option.value)\
+                .text(src_option.text)\
+                .appendTo(dst_columns);
+            src_option.remove();
+        });
+    }
 
-        /** columnの出力順序を変更
-         */
-        function move_column_order(selector, direction){
-            var columns = $(selector);
-            var options = columns.find('option:selected');
+    /** columnの出力順序を変更
+     */
+    function move_column_order(selector, direction){
+        var columns = $(selector);
+        var options = columns.find('option:selected');
 
-            var move = function(option){
-                if (direction == 'up'){
-                    $(option).prev().before(option);
-                }else if(direction == 'down'){
-                    $(option).next().after(option);
-                }else{
-                    console.log('ValueError: unexpected argument value(direction): ' + direction);
-                }
+        var move = function(option){
+            if (direction == 'up'){
+                $(option).prev().before(option);
+            }else if(direction == 'down'){
+                $(option).next().after(option);
+            }else{
+                console.log('ValueError: unexpected argument value(direction): ' + direction);
             }
-
-            options.each(function (ii, option){
-                move(option);
-            });
         }
+
+        options.each(function (ii, option){
+            move(option);
+        });
+    }
+
+    function clear_activated_button() {
+        $('button.saved.btn-info').removeClass("btn-info");
+    }
+
+    function clear_selected_columns() {
+        var selected_item = $('#selected-columns option').remove();
+        selected_item.appendTo('#available-columns');
+    }
+
+    function add_pattern_button(pattern_name) {
+        var pattern_button = $('<button></button>').addClass('btn saved').text(pattern_name);
+        $('<li></li>').append(pattern_button)
+                      .append($('<button class="btn del">削除</button>'))
+                      .appendTo($('div#available-pattern ul'));
+    }
+
+    $(document).ready(function() {
 
         /** columnの追加
          */
         $('#insert-column').on('click', function(event){
             move_columns('#available-columns', '#selected-columns');
         });
-
 
         /** columnの削除
          */
@@ -82,6 +104,38 @@
         $('#down-column').on('click', function(event){
             move_column_order('#selected-columns', 'down');
         });
+
+        /** load saved columns
+         */
+        $('#available-pattern')
+        .on('click', 'button.saved', function() {
+          if ($(this).hasClass("btn-info")) {
+            clear_selected_columns()
+            $(this).removeClass("btn-info");
+          } else {
+            clear_selected_columns()
+            clear_activated_button()
+            $(this).addClass("btn-info");
+            var pattern_name = $(this).text();
+            var saved_options = patterns[pattern_name];
+
+            saved_options.forEach(function(val){
+              var option = $('#available-columns option').filter(function() {return this.value === val}).remove();
+              option.appendTo($('#selected-columns'));
+            });
+          }
+        })
+        .on('click', 'button.del', function() {
+          if ($(this).prev().hasClass("btn-info")) {
+            clear_selected_columns();
+          }
+          var post_content = {
+            "organization_id": ${request.context.organization.id},
+            "pattern_name": $(this).prev().text()
+          };
+          del_pattern(post_content);
+          $(this).parent().remove();
+        });
     });
 
     function download_orders() {
@@ -93,6 +147,84 @@
       detail.find('#search').attr('action', 'download/?' + params + '&' + parmas_options).submit();
       $('#modal-download_orders').modal('hide');
     }
+
+    function save_pattern() {
+
+      if ($('#selected-columns option').length === 0) {
+        alert("ダウンロード項目を選んでください。");
+        return;
+      }
+
+      var is_update = false;
+
+      if ($('#pattern_name').val().trim() === "") {
+        alert("保存するパターン名を記入ください。");
+        $('#pattern_name').val("");
+        return;
+      } else if ($('button.saved').filter(function () {return $(this).text()==$('#pattern_name').val()}).length > 0 ){
+
+        var res = window.confirm("パターン「" + $('#pattern_name').val() + "」を更新しますか？");
+
+        if (res == false) {
+          return;
+        }
+
+      }
+
+      var selected_items = "";
+      $('#selected-columns option').each( function () {
+        selected_items += $(this).val() + ",";
+      });
+
+      var post_content = {
+        'organization_id': ${request.context.organization.id},
+        'pattern_name': $('#pattern_name').val().trim(),
+        'pattern_content': selected_items
+      };
+
+      $.ajax({
+        url: "${request.route_url('orders.delta.pattern.add')}",
+        type: "POST",
+        data: post_content,
+
+        success: function(json) {
+          $('input#pattern_name').val("");
+          clear_selected_columns();
+          for (var key in json) {
+            if (!(key in patterns)) {
+              add_pattern_button(key);
+            }
+            patterns[key] = json[key];
+            alert("ダウンロードパターンを保存しました。");
+          }
+        },
+
+        error: function(json) {
+            alert("ダウンロードパターンの保存が失敗しました。");
+            console.log(json["errors"]);
+        }
+      });
+    }
+
+    function del_pattern(post_content) {
+      $.ajax({
+        url: "${request.route_url('orders.delta.pattern.delete')}",
+        type: "POST",
+        data: post_content,
+
+        success: function(json) {
+          if (json["status"]) {
+            alert("ダウンロードパターンを削除しました。");
+          }
+        },
+        error: function(json) {
+            alert("ダウンロードパターンの削除が失敗しました。");
+            console.log(json["errors"]);
+        }
+      });
+    }
+
+
 </script>
 
 <div class="page-header">
@@ -110,11 +242,12 @@
   <tbody>
     <tr>
       <td class="condition-table-cel">
-        <form id="options">
+
           <span>オプション</span>
           <table>
             <tbody>
               <tr>
+                <form id="options">
                 <td>
                   <select id="available-columns" multiple="multiple">
                     % for key, val in japanese_columns.items():
@@ -134,10 +267,31 @@
                   <a class="btn fa fa-arrow-circle-up" id="up-column"></a><br />
                   <a class="btn fa fa-arrow-circle-down" id="down-column"></a>
                 </td>
+                  </form>
+                <td>
+                  <div id="save-pattern">
+                    <form id="submit-pattern">
+                      <label for="pattern_name">保存するパターン名</label>
+                      <input id="pattern_name" name="pattern_name">
+                    </form>
+                    <a class="btn btn-inverse" href="javascript:save_pattern()" >
+                      <i class="fa fa-save" aria-hidden="true"></i><p style="display:inline-block; margin: 0 0 0 10px;">保存</p>
+                    </a>
+                  </div>
+                  <div id="available-pattern">
+                    <ul>
+                    % if patterns:
+                      % for pattern_name, pattern_content in patterns.items():
+                        <li><button class="btn saved">${pattern_name}</button><button class="btn del">削除</button></li>
+                      % endfor
+                    % endif
+                    </ul>
+                  </div>
+                </td>
               </tr>
             </tbody>
           </table>
-        </form>
+
       </td>
     </tr>
   </tbody>
@@ -150,7 +304,7 @@
 </div>
 <div style="clear: left;"></div>
 
-<form id="download" class="form-horizontal" action="${request.route_path('orders.download')}" method="POST">
+<form id="download" class="form-horizontal" action="" method="POST">
 <div id="modal-download_orders" class="modal hide">
   <div class="modal-header">
     <a href="#" class="close">&times;</a>
@@ -184,7 +338,7 @@
       <label for="excel_csv">Excel形式のCSVを出力する</label>
     </div>
     <a href="javascript:void(0);" onclick="$('#modal-download_orders').modal('hide');" class="btn secondary">キャンセル</a>
-    <a href="javascript:download_orders();" class="btn danger">ダウンロード</a>
+    <a href="javascript:download_orders();" class="btn btn-danger">ダウンロード</a>
   </div>
 </div>
 </form>

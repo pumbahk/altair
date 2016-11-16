@@ -1537,3 +1537,13 @@ class OrderSummary(Base):
         self.request = context.query._request
 
 sqlalchemy.event.listen(OrderSummary, 'load', OrderSummary._init_on_load)
+
+class DownloadItemsPattern(Base, BaseModel, WithTimestamp):
+    __tablename__ = 'DownloadItemsPattern'
+
+    id = sa.Column(Identifier, primary_key=True, nullable=False, autoincrement=True)
+    organization_id = sa.Column(Identifier, sa.ForeignKey("Organization.id"))
+    pattern_name = sa.Column(sa.Unicode(255), nullable=False)
+    pattern_content = sa.Column(sa.Unicode(4095), nullable=False)
+
+    __table_args__ = (sa.UniqueConstraint('organization_id', 'pattern_name', name='_customer_location_uc'),)
