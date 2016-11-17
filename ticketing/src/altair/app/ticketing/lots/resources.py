@@ -115,9 +115,10 @@ class LotResourceBase(object):
             client_id=self.cart_setting.oauth_client_id,
             client_secret=self.cart_setting.oauth_client_secret,
             endpoint_api=self.cart_setting.oauth_endpoint_api,
+            endpoint_token=self.cart_setting.oauth_endpoint_token,
             endpoint_token_revocation=self.cart_setting.oauth_endpoint_token_revocation,
             scope=self.cart_setting.oauth_scope,
-            openid_promt=self.cart_setting.openid_prompt,
+            openid_prompt=self.cart_setting.openid_prompt,
             endpoint_authz=self.cart_setting.oauth_endpoint_authz
         )
 

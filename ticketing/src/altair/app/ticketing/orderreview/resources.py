@@ -78,20 +78,28 @@ class OrderReviewResourceBase(object):
     def oauth_service_providers(self):
         if 'oauth_service_provider' in self.request.params.keys():
             return [self.request.params['oauth_service_provider']]
+        elif self.organization.setting.oauth_service_provider:
+            return [self.organization.setting.oauth_service_provider]
         elif self.cart_setting.auth_type == u'altair.oauth_auth.plugin.OAuthAuthPlugin':
             return [self.cart_setting.oauth_service_provider]
         return []
 
     @reify
     def oauth_params(self):
+        prompt = self.organization.setting.openid_prompt
+        # XXX: polluxの時は会員選択画面を見せずに行きたい
+        if self.organization.setting.oauth_service_provider == 'pollux':
+            if 'select_account' in prompt:
+                prompt.remove('select_account')
         return dict(
-            client_id=self.organization.setting.default_oauth_setting['oauth_client_id'],
-            client_secret=self.organization.setting.default_oauth_setting['oauth_client_secret'],
-            endpoint_api=self.organization.setting.default_oauth_setting['oauth_endpoint_api'],
-            endpoint_token_revocation=self.organization.setting.default_oauth_setting['oauth_endpoint_token_revocation'],
-            scope=self.organization.setting.default_oauth_setting['oauth_scope'],
-            openid_promt=self.organization.setting.default_oauth_setting['openid_prompt'],
-            endpoint_authz=self.organization.setting.default_oauth_setting['oauth_endpoint_authz']
+            client_id=self.organization.setting.oauth_client_id,
+            client_secret=self.organization.setting.oauth_client_secret,
+            endpoint_api=self.organization.setting.oauth_endpoint_api,
+            endpoint_token=self.organization.setting.oauth_endpoint_token,
+            endpoint_token_revocation=self.organization.setting.oauth_endpoint_token_revocation,
+            scope=self.organization.setting.oauth_scope,
+            openid_prompt=prompt,
+            endpoint_authz=self.organization.setting.oauth_endpoint_authz
         )
 
 
