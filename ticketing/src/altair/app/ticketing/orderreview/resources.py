@@ -67,11 +67,32 @@ class OrderReviewResourceBase(object):
 
     def authenticated_user(self):
         """現在認証中のユーザ"""
-        return get_auth_info(self.request)
+        return self.request.altair_auth_info
 
     @reify
     def cart_setting(self):
         return self.organization.setting.cart_setting
+
+    # 今後複数認証を並行で使うことも想定してリストで返すことにする
+    @reify
+    def oauth_service_providers(self):
+        if 'oauth_service_provider' in self.request.params.keys():
+            return [self.request.params['oauth_service_provider']]
+        elif self.cart_setting.auth_type == u'altair.oauth_auth.plugin.OAuthAuthPlugin':
+            return [self.cart_setting.oauth_service_provider]
+        return []
+
+    @reify
+    def oauth_params(self):
+        return dict(
+            client_id=self.organization.setting.default_oauth_setting['oauth_client_id'],
+            client_secret=self.organization.setting.default_oauth_setting['oauth_client_secret'],
+            endpoint_api=self.organization.setting.default_oauth_setting['oauth_endpoint_api'],
+            endpoint_token_revocation=self.organization.setting.default_oauth_setting['oauth_endpoint_token_revocation'],
+            scope=self.organization.setting.default_oauth_setting['oauth_scope'],
+            openid_promt=self.organization.setting.default_oauth_setting['openid_prompt'],
+            endpoint_authz=self.organization.setting.default_oauth_setting['oauth_endpoint_authz']
+        )
 
 
 class LandingViewResource(OrderReviewResourceBase):

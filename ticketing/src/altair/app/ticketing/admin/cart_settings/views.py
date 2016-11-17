@@ -21,7 +21,7 @@ def populate_cart_setting_with_form_data(cart_setting, form):
     if form.data['type'] is not None:
         cart_setting.type = form.data['type']
     cart_setting.auth_type = form.data['auth_type']
-    cart_setting.service_providers = form.data['service_providers']
+    cart_setting.oauth_service_provider = form.data['oauth_service_provider']
     cart_setting.secondary_auth_type = form.data['secondary_auth_type']
     cart_setting.nogizaka46_auth_key = form.data['nogizaka46_auth_key']
     cart_setting.performance_selector = form.data['performance_selector']

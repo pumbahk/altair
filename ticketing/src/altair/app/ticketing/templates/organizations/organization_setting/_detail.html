@@ -1,6 +1,7 @@
 <%page args="organization_setting" />
 <%namespace file="/common/helpers.html" name="ch" />
 <%! from altair.app.ticketing.core import models as c_models %>
+<%! from altair.app.ticketing.organizations.forms import OrganizationSettingForm as f %>
 <%include file="./_action_button.html" args="organization_setting=organization_setting, order=['edit']" />
 <table class="table table-bordered fullwidth" style="margin-top: 10px;">
   <thead>
@@ -157,6 +158,42 @@
     <tr>
       <th>${HH.label_text_for(c_models.OrganizationSetting.i18n)}</th>
       <td>${u'○' if organization_setting.i18n else u'×'}</td>
+    </tr>
+    <tr>
+      <th>${f.oauth_service_provider.kwargs['label']}</th>
+      <td>${organization_setting.oauth_service_provider}</td>
+    </tr>
+    <tr>
+      <th>${f.oauth_client_id.kwargs['label']}</th>
+      <td>${organization_setting.oauth_client_id}</td>
+    </tr>
+    <tr>
+      <th>${f.oauth_client_secret.kwargs['label']}</th>
+      <td>${organization_setting.oauth_client_secret}</td>
+    </tr>
+    <tr>
+      <th>${f.oauth_endpoint_authz.kwargs['label']}</th>
+      <td>${organization_setting.oauth_endpoint_authz}</td>
+    </tr>
+    <tr>
+      <th>${f.oauth_endpoint_api.kwargs['label']}</th>
+      <td>${organization_setting.oauth_endpoint_api}</td>
+    </tr>
+    <tr>
+      <th>${f.oauth_endpoint_token.kwargs['label']}</th>
+      <td>${organization_setting.oauth_endpoint_token}</td>
+    </tr>
+    <tr>
+      <th>${f.oauth_endpoint_token_revocation.kwargs['label']}</th>
+      <td>${organization_setting.oauth_endpoint_token_revocation}</td>
+    </tr>
+    <tr>
+      <th>${f.oauth_scope.kwargs['label']}</th>
+      <td>${organization_setting.oauth_scope}</td>
+    </tr>
+    <tr>
+      <th>${f.openid_prompt.kwargs['label']}</th>
+      <td>${organization_setting.openid_prompt}</td>
     </tr>
   <tbody>
 </table>

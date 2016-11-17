@@ -1,10 +1,19 @@
 # -*- coding: utf-8 -*-
 
+from pyramid.i18n import TranslationString as _
 from altair.formhelpers.form import OurForm
 from wtforms.fields import PasswordField, HiddenField, FormField
 from altair.formhelpers import filters
-from altair.formhelpers.widgets import OurTextInput
-from altair.formhelpers.fields import OurTextField, OurIntegerField, OurSelectField, OurBooleanField, OurDecimalField
+from altair.formhelpers.widgets import OurTextInput, CheckboxMultipleSelect
+from altair.formhelpers.fields import (
+    OurTextField,
+    OurIntegerField,
+    OurSelectField,
+    OurBooleanField,
+    OurDecimalField,
+    DelimitedTextsField,
+    OurSelectMultipleField
+)
 from altair.formhelpers.validators import DynSwitchDisabled
 from wtforms.validators import Length, Regexp, Optional, ValidationError
 from wtforms.compat import iteritems
@@ -448,6 +457,55 @@ class OrganizationSettingForm(OrganizationSettingSimpleForm):
         )
     i18n = OurBooleanField(
         label=get_annotations_for(c_models.OrganizationSetting.i18n)['label']
+        )
+    oauth_client_id = OurTextField(
+        label=_(u'OAuthクライアントID')
+        )
+
+    oauth_client_secret = OurTextField(
+        label=_(u'OAuthクライアントシークレット')
+        )
+
+    oauth_endpoint_authz = OurTextField(
+        label=_(u'OAuth認可エンドポイント')
+        )
+
+    oauth_endpoint_token = OurTextField(
+        label=_(u'OAuthトークン発行エンドポイント')
+        )
+
+    oauth_endpoint_token_revocation = OurTextField(
+        label=_(u'OAuthトークン無効化エンドポイント')
+        )
+
+    oauth_endpoint_api = OurTextField(
+        label=_(u'OAuthAPIエンドポイント')
+        )
+
+    oauth_scope = DelimitedTextsField(
+        label=_(u'OAuthスコープ (スペース区切り)'),
+        delimiter_pattern=ur'\s+',
+        canonical_delimiter=u' ',
+        widget=OurTextInput()
+        )
+
+    openid_prompt = OurSelectMultipleField(
+        label=_(u'OpenID Connectのログインプロンプト設定'),
+        choices=[
+            (u'none', u'一切のユーザーへのプロンプトを許可しない'),
+            (u'login', u'すでにOPで認証済みでもログイン画面を出す'),
+            (u'select_account', u'アカウントの選択を要求'),
+            ],
+        widget=CheckboxMultipleSelect(multiple=True)
+        )
+
+    oauth_service_provider = OurSelectField(
+        label=_(u'認証サービスプロバイダ(OAuth使用時のみ指定)'),
+        choices=[
+            (u'', u'なし'),
+            (u'rakuten', u'楽天認証'),
+            (u'pollux', u'ファンクラブ認証(pollux)'),
+            ]
         )
 
     def validate_multicheckout_shop_name(form, field):

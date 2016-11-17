@@ -208,16 +208,17 @@ def includeme(config):
         return request.session[CLIENT_CREDENTIALS_KEY][0]
 
     def authz_endpoint(request):
+        oauth_params = request.context.oauth_params
         request.session[CLIENT_CREDENTIALS_KEY] = (
-            request.context.cart_setting.oauth_client_id,
-            request.context.cart_setting.oauth_client_secret
+            oauth_params['oauth_client_id'],
+            oauth_params['oauth_client_secret']
             )
-        request.session[ENDPOINT_API_KEY] = request.context.cart_setting.oauth_endpoint_api
-        request.session[ENDPOINT_TOKEN_KEY] = request.context.cart_setting.oauth_endpoint_token
-        request.session[ENDPOINT_TOKEN_REVOCATION_KEY] = request.context.cart_setting.oauth_endpoint_token_revocation
-        request.session[OAUTH_SCOPE] = request.context.cart_setting.oauth_scope
-        request.session[OPENID_PROMPT] = request.context.cart_setting.openid_prompt
-        return request.context.cart_setting.oauth_endpoint_authz
+        request.session[ENDPOINT_API_KEY] = oauth_params['oauth_endpoint_api']
+        request.session[ENDPOINT_TOKEN_KEY] = oauth_params['oauth_endpoint_token']
+        request.session[ENDPOINT_TOKEN_REVOCATION_KEY] = oauth_params['oauth_endpoint_token_revocation']
+        request.session[OAUTH_SCOPE] = oauth_params['oauth_scope']
+        request.session[OPENID_PROMPT] = oauth_params['openid_prompt']
+        return oauth_params['oauth_endpoint_authz']
 
     def api_endpoint(request):
         return request.session[ENDPOINT_API_KEY]

@@ -260,6 +260,15 @@ class OrganizationSettings(BaseView):
         organization_setting.enable_fm_reflection_func = f.enable_fm_reflection_func.data
         organization_setting.orderreview_index = f.orderreview_index.data
         organization_setting.i18n = f.i18n.data
+        organization_setting.oauth_service_provider = f.oauth_service_provider.data
+        organization_setting.oauth_client_id = f.oauth_client_id.data
+        organization_setting.oauth_client_secret = f.oauth_client_secret.data
+        organization_setting.oauth_endpoint_authz = f.oauth_endpoint_authz.data
+        organization_setting.oauth_endpoint_token = f.oauth_endpoint_token.data
+        organization_setting.oauth_endpoint_token_revocation = f.oauth_endpoint_token_revocation.data
+        organization_setting.oauth_endpoint_api = f.oauth_endpoint_api.data
+        organization_setting.oauth_scope = f.oauth_scope.data
+        organization_setting.openid_prompt = f.openid_prompt.data
         organization_setting.save()
 
         self.request.session.flash(u'その他の設定を保存しました')
