@@ -598,14 +598,14 @@ class CartSetting(Base, WithTimestamp, LogicallyDeleted):
         return retval
 
     @property
-    def service_providers(self):
-        return self.data.get('service_providers')
+    def oauth_service_provider(self):
+        return self.data.get('oauth_service_provider')
 
-    @service_providers.setter
-    def service_providers(self, value):
+    @oauth_service_provider.setter
+    def oauth_service_provider(self, value):
         if self.data is None:
             self.data = {}
-        self.data['service_providers'] = value
+        self.data['oauth_service_provider'] = value
 
     @property
     def default_prefecture(self):

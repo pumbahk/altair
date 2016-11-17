@@ -107,6 +107,25 @@ class LotResourceBase(object):
     def membershipinfo(self):
         return cart_api.get_membership(self.authenticated_user())
 
+    # 今後複数認証を並行で使うことも想定してリストで返すことにする
+    @reify
+    def oauth_service_providers(self):
+        if self.cart_setting.auth_type == u'altair.oauth_auth.plugin.OAuthAuthPlugin':
+            return [self.cart_setting.oauth_service_provider] or []
+        return []
+
+    @reify
+    def oauth_params(self):
+        return dict(
+            client_id=self.cart_setting.oauth_client_id,
+            client_secret=self.cart_setting.oauth_client_secret,
+            endpoint_api=self.cart_setting.oauth_endpoint_api,
+            endpoint_token_revocation=self.cart_setting.oauth_endpoint_token_revocation,
+            scope=self.cart_setting.oauth_scope,
+            openid_promt=self.cart_setting.openid_prompt,
+            endpoint_authz=self.cart_setting.oauth_endpoint_authz
+        )
+
 
 @implementer(ILotResource)
 class LotResource(LotResourceBase):

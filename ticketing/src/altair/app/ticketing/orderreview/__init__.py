@@ -25,7 +25,7 @@ def decide_auth_types(request, classification):
     auth_type = request.organization.setting.cart_setting.auth_type
     if auth_type is not None:
         return [auth_type]
-    return None
+    return []
 
 
 def setup_static_views(config):

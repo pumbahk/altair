@@ -371,13 +371,13 @@ class CartSettingForm(OurForm):
         #    ]
         )
 
-    service_providers = OurSelectMultipleField(
-        label=_(u'認証サービスプロバイダ'),
+    oauth_service_provider = OurSelectField(
+        label=_(u'認証サービスプロバイダ(OAuth使用時のみ指定)'),
         choices=[
+            (u'', u'なし'),
             (u'rakuten', u'楽天認証'),
             (u'pollux', u'ファンクラブ認証(pollux)'),
-            ],
-        widget=CheckboxMultipleSelect(multiple=True)
+            ]
         # XXX: orderreviewで使われる可能性あり (暫定措置、終わったら元に戻す)
         #validators=[
         #    DynSwitchDisabled('{auth_type}<>"altair.oauth_auth.plugin.OAuthAuthPlugin"'),
