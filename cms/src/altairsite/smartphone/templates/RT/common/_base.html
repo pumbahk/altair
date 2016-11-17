@@ -10,6 +10,9 @@
 <link rel="stylesheet" type="text/css" href=${request.static_url('altaircms:static/RT/smartphone/css/jquery-ui-1.9.2.custom.min.css')} />
 <link rel="stylesheet" type="text/css" href="${request.static_url('altaircms:static/RT/smartphone/css/default.css')}" />
 <title>楽天チケット-<%block name="title"/></title>
+% if request.path == '/smartphone/':
+<link rel="canonical" href="/"/>
+% endif
 </head>
 <body>
 

@@ -10,10 +10,12 @@ from paste.util.multidict import MultiDict
 from pyramid.renderers import render_to_response
 from pyramid.paster import bootstrap, setup_logging
 from sqlalchemy import or_, and_
+import transaction
 
 from altair.app.ticketing.events.sales_reports.reports import EventReporter, PerformanceReporter
 
 logger = logging.getLogger(__name__)
+
 
 def main(argv=sys.argv):
     from altair.app.ticketing.core.models import ReportSetting,\
@@ -48,6 +50,9 @@ def main(argv=sys.argv):
     reports = {}
     for report_setting in query.all():
         logger.info('report_setting_id: %s' % report_setting.id)
+        if report_setting.frequency == ReportFrequencyEnum.Onetime.v[0]:
+            if report_setting.last_sent_at:
+                continue
 
         from_date = now
         to_date = now
@@ -143,11 +148,14 @@ def main(argv=sys.argv):
 
         try:
             sendmail(settings, report_setting.format_emails(), u'[売上レポート|%s] %s' % (organization.name, subject), reports[form])
+            report_setting.last_sent_at = datetime.now()
         except Exception as e:
             logging.error(
                 "sales report failed. report_setting_id = {}, error: {}({})".format(report_setting.id, type(e), e.message))
 
         i += 1
+
+    transaction.commit()
 
     logger.info('end send_sales_report batch (sent=%s)' % i)
 
