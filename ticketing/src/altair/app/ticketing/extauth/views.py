@@ -301,7 +301,7 @@ class View(object):
         self.request.session['retrieved'] = data
         if len(data['memberships']) == 0:
             return HTTPFound(location=self.request.route_path('extauth.no_valid_memberships', subtype=self.context.subtype))
-        elif len(data['memberships']) > 1:
+        elif len(data['memberships']) > 1 and u'select_account' in oauth_params['prompt']:
             return HTTPFound(location=self.request.route_path('extauth.select_account', subtype=self.context.subtype))
         return HTTPFound(
                 location=self.request.route_path(
@@ -309,7 +309,7 @@ class View(object):
                     subtype=self.context.subtype,
                     _query=dict(
                         _=self.request.session.get_csrf_token(),
-                        member_kind_name=data['memberships'][0]['membership_name']
+                        member_kind_name=data['memberships'][0]['kind']['name']
                         )
                     ),
             )

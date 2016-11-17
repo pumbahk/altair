@@ -210,15 +210,15 @@ def includeme(config):
     def authz_endpoint(request):
         oauth_params = request.context.oauth_params
         request.session[CLIENT_CREDENTIALS_KEY] = (
-            oauth_params['oauth_client_id'],
-            oauth_params['oauth_client_secret']
+            oauth_params['client_id'],
+            oauth_params['client_secret']
             )
-        request.session[ENDPOINT_API_KEY] = oauth_params['oauth_endpoint_api']
-        request.session[ENDPOINT_TOKEN_KEY] = oauth_params['oauth_endpoint_token']
-        request.session[ENDPOINT_TOKEN_REVOCATION_KEY] = oauth_params['oauth_endpoint_token_revocation']
-        request.session[OAUTH_SCOPE] = oauth_params['oauth_scope']
+        request.session[ENDPOINT_API_KEY] = oauth_params['endpoint_api']
+        request.session[ENDPOINT_TOKEN_KEY] = oauth_params['endpoint_token']
+        request.session[ENDPOINT_TOKEN_REVOCATION_KEY] = oauth_params['endpoint_token_revocation']
+        request.session[OAUTH_SCOPE] = oauth_params['scope']
         request.session[OPENID_PROMPT] = oauth_params['openid_prompt']
-        return oauth_params['oauth_endpoint_authz']
+        return oauth_params['endpoint_authz']
 
     def api_endpoint(request):
         return request.session[ENDPOINT_API_KEY]
