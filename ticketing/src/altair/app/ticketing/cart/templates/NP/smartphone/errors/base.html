@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ja">
+	<head>
+		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <title>${_(u'チケット情報・販売・購入・予約')}</title>
+		<meta name="description" content="チケット情報・販売・購入・予約は「楽天チケット」で！">
+		<meta name="keywords" content="楽天チケット, チケット,チケット予約, チケット購入, イベント">
+    <meta http-equiv="content-style-type" content="text/css" />
+    <meta http-equiv="content-script-type" content="text/javascript" />
+
+		<!-- Cascading Style Sheets -->
+		<link rel="shortcut icon" href="${request.static_url('altair.app.ticketing.cart:static/NP/smartphone/images/rakuten.ico')}">
+    <link rel="stylesheet" href="${request.static_url('altair.app.ticketing.cart:static/NP/smartphone/css/sp_common.css')}" type="text/css" media="all">
+    <link rel="stylesheet" href="${request.static_url('altair.app.ticketing.cart:static/NP/smartphone/css/sp_helper.css')}" type="text/css" media="all">
+    <link rel="stylesheet" href="${request.static_url('altair.app.ticketing.cart:static/NP/smartphone/css/sp_confirm.css')}" type="text/css" media="all">
+	</head>
+
+<body id="settlement">
+  <div id="container" class="ts-wrapper">
+    <!-- ========== header ========== -->
+    <header class="ts-header">
+      <div class="ts-header-inner">
+        <!-- ===== ts-header-wrap [start] ===== -->
+        <div class="ts-header-wrap">
+          <div class="ts-header-logobox clearfix">
+            <h1 class="ts-header-logo">
+              <a href="/"><span class="offleft">楽天チケット</span></a>
+            </h1>
+            </div>
+        </div>
+      </div>
+    </header>
+    <!-- ========== /header ========== -->
+
+    <!-- ========== main ========== -->
+    <div>
+      ${h.create_url_link(request) |n}
+    </div>
+    <div id="main" class="ts-contents" style="margin-bottom: 65px;">
+      <div class="ts-contents-inner">
+        <h1 class="heading-primary">${__(u'チケット購入')}</h1>
+        ${self.body()}
+      </div>
+    </div>
+    <!-- ========== /main ========== -->
+  </div>
+  <!-- /container -->
+  <%block name="extras" />
+  % if request.organization.setting.sitecatalyst_use:
+    <%include file="altair.app.ticketing.cart:templates/NP/common/sitecatalyst.html"/>
+  % endif
+</body>
+</html>
