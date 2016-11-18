@@ -14,7 +14,10 @@ logger = logging.getLogger(__name__)
 def send_lot_accepted_mail(event):
     entry = event.lot_entry
     request = event.request
-    sendmail.send_accepted_mail(request, entry)
+    try:
+        sendmail.send_accepted_mail(request, entry)
+    except Exception as e:
+        logger.exception(e)
 
 
 @subscriber('altair.app.ticketing.lots.events.LotElectedEvent')
