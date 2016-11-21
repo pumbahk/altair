@@ -335,9 +335,12 @@ class LotReviewWithdrawResource(LotReviewResource):
         self.organization = self.request.organization
 
     def get_lot_entry(self):
-        entry_no = self.request.params['entry_no']
-        tel_no = self.request.params['tel_no']
-        return api.get_entry(self.request, entry_no, tel_no)
+        entry_no = self.request.params.get('entry_no')
+        tel_no = self.request.params.get('tel_no')
+        lot_entry = api.get_entry(self.request, entry_no, tel_no)
+        if not lot_entry:
+            raise HTTPNotFound
+        return lot_entry
 
     @reify
     def entry(self):
