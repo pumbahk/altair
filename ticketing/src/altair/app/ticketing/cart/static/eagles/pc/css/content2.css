@@ -2561,6 +2561,13 @@
 	margin: 0 0;
 }
 
+/* 個人情報保護 */
+.personalInformationProtection {
+    text-align: center;
+    width: 100%;
+}
+
+
 /*
  * vim: sts=2 sw=2 ts=2 noet
  */
