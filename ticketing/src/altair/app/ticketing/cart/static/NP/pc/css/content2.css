@@ -15,8 +15,8 @@
 	left: -1px;
 	margin: 0 0 10px;
 	padding: 0 0 3px 10px;
-	border-bottom: 2px solid #bf0000;
-	color: #c01920;
+	border-bottom: 2px solid #0c1b6f;
+	color: #0c1b6f;
 	font-size: 18px;
 	font-weight: bold;
 }
@@ -1431,7 +1431,7 @@
 /* チケット購入
 ----------------------------------------------------------- */
 #main h1 {
-	background: #bf191f none repeat scroll 0 0;
+	background: #0c1b6f none repeat scroll 0 0;
 	margin: 0 0 20px;
 	padding: 8px;
 	color: #fff;
@@ -1789,7 +1789,7 @@
 }
 
 #selectSeatType .selectProduct .btn-buy:hover {
-	background: #c00;
+	background: #FE5200;
 	opacity: 0.8;
 	cursor: pointer;
 }
@@ -2081,7 +2081,7 @@
 	overflow: hidden;
 	margin: 0 0 8px;
 	padding: 10px 15px;
-	background: #c00 none repeat scroll 0 0;
+	background: #FE5200 none repeat scroll 0 0;
 	color: #fff;
 	font-size: 14px;
 	text-align: center;
@@ -2185,7 +2185,7 @@
 
 .settlementPayBox dt {
 	padding: 15px 10px 10px;
-	color: #bf191f;
+	color: #FE5200;
 	font-size: 116.7%;
 	font-weight: bold;
 }
@@ -2197,7 +2197,7 @@
 
 .settlementPayBox dd .deliveryFee,
 .settlementPayBox dd .paymentFee {
-	color: #bf191f;
+	color: #FE5200;
 	font-weight: bold;
 	font-size: 116.7%;
 }
@@ -2248,7 +2248,7 @@
 }
 
 .settlementPayBox dd dl dd .paymentFee {
-	color: #bf191f;
+	color: #FE5200;
 	font-weight: bold;
 	font-size: 100%;
 }
@@ -2299,7 +2299,7 @@
 .settlementDeliveryInput th {
 	vertical-align: top;
 	padding: 10px 20px 10px 10px;
-	color: #bf191f;
+	color: #FE5200;
 	font-size: 116.7%;
 	font-weight: bold;
 	white-space: nowrap;
