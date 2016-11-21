@@ -40,6 +40,7 @@ from altair.app.ticketing.carturl.api import get_performance_cart_url_builder, g
 from altair.app.ticketing.events.sales_segments.resources import (
     SalesSegmentAccessor,
 )
+from .generator import PerformanceCodeGenerator
 from ..famiport_helpers import get_famiport_performance_ids
 from .api import set_visible_performance, set_invisible_performance
 
@@ -688,6 +689,7 @@ class Performances(BaseView):
                 'route_path': self.request.path,
             }
 
+        code_generator = PerformanceCodeGenerator(self.request)
         for cnt in range(0, target_total):
 
             new_performance = Performance()
@@ -704,8 +706,7 @@ class Performances(BaseView):
             new_performance.display_order = params['display_order'][cnt]
 
             # Copy data
-            new_performance.code = self.create_performance_code(
-                origin_performance.code)
+            new_performance.code = code_generator.generate(origin_performance.code)
             new_performance.venue_id = origin_performance.venue.id
             new_performance.create_venue_id = origin_performance.venue.id
             new_performance.original_id = origin_performance.id
@@ -747,22 +748,6 @@ class Performances(BaseView):
         f.end_on.data = cart_helper.datetime(origin_performance.end_on)
         f.display_order.data = origin_performance.display_order
         return f
-
-    def create_performance_code(self, code):
-        # 末尾から順にカット(Z-Aを繰り返し、使用していないコードを見つける）
-        for cut_num in range(1, 11):
-            # Z-A
-            for moji_code in reversed(range(65, 91)):
-                created_code = "{0}{1}".format(code[0:11], chr(moji_code))
-                if cut_num > 12:
-                    created_code = "{0}{1}{2}".format(
-                        code[0:-cut_num], chr(moji_code), code[-cut_num: 12])
-
-                perf = Performance.query.filter_by(code=created_code).all()
-                if len(perf) == 0:
-                    return created_code
-
-        return code
 
     def validate_manycopy(self, params, target_total):
         error_exist = False
