@@ -2,9 +2,9 @@
 
 <h1 class="heading heading-primary">チケット購入</h1>
 
-    <%
+<%
 	shipping =order.shipping_address
-	%>
+%>
 
 	<!-- ===== 受付番号 ===== -->
 	<div class="confirm-wrap">
@@ -130,27 +130,29 @@
 						</p>
 					</td>
 				</tr>
+				% for product in order.items:
 				<tr>
 					<td>
 						<span style="background-color:#ff0000; width:13px; height:13px; display:inline-block; margin-right: 0.5em; position:relative; top:1px;"></span>
 						${product.product.name}</td>
 				  % if product.seats:
-					% if product.product.sales_segment.setting.display_seat_no:
-					  <td><strong>${product.seat_quantity}</strong>枚</td>
-					  <td>
-					  % for seat in product.seats:
-						${seat['name']}<br/>
-					  % endfor
-					  </td>
+						% if product.product.sales_segment.setting.display_seat_no:
+							<td><strong>${product.seat_quantity}</strong>枚</td>
+							<td>
+							% for seat in product.seats:
+								${seat['name']}<br/>
+							% endfor
+							</td>
+						% else:
+							<td colspan="2"><strong>${product.seat_quantity}</strong>枚</td>
+						% endif
 					% else:
-					  <td colspan="2"><strong>${product.seat_quantity}</strong>枚</td>
-					% endif
-				  % else:
-					<td colspan="2"><strong>${product.quantity}</strong>枚</td>
+						<td colspan="2"><strong>${product.quantity}</strong>枚</td>
 				  % endif
-			        <td class="tar">￥${h.format_number(product.price * product.quantity)}</td>
+					<td class="tar">￥${h.format_number(product.price * product.quantity)}</td>
 				</tr>
-                <tr>
+				% endfor
+				<tr>
 					<th scope="row">決済手数料</th>
 					<td colspan="2" class="tar">￥${h.format_number(order.transaction_fee)}</td>
 				</tr>
