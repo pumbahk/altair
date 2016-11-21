@@ -58,11 +58,3 @@ class FanclubMetaDataConvertUtil(object):
         if code:
             return PREFECTURE.get(code, u'')
 
-    @staticmethod
-    def convert_to_date(datetime_str):
-        try:
-            datetime = dt.strptime(datetime_str, '%Y-%m-%dT%H:%M:%S')
-            return datetime.date()
-        except:
-            return None
-

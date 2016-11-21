@@ -329,7 +329,7 @@ class FanclubAuthPlugin(object):
             last_name_kana=member_info['last_name_kana'],
             sex=member_info['sex'],
             fax=member_info['fax_number'],
-            birthday=util.convert_to_date(member_info['birthday']),
+            birthday=member_info['birthday'],
             email_1=member_info['email_address'],
             tel_1=member_info['phone_number'],
             tel_2=member_info['mobile_phone_number'],
