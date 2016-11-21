@@ -25,8 +25,6 @@
 % else:
   <p>抽選申込みがありません。</p>
 % endif
-<p>特定期間の予約申込については安全が確認されているものであっても万全を期すために非表示としているものがあります。</p>
-<p>&raquo; <a href="https://rt.tstar.jp/orderreview/information">予約申込が見当たらない場合はこちら</a></p>
 </div><!-- ===== / 抽選申込み照会 ===== -->
 
 
@@ -39,7 +37,7 @@
 <%def name="render_mailmagazine(request)">
   % if mailmagazines_to_subscribe:
 
-<form id="form1" class="confirmForm" action="https://rt.tstar.jp/cart/confirm" method="post">
+<form id="form1" class="confirmForm" action="${request.route_path('mypage.mailmag.confirm')}" method="post">
 <p class="bold">楽天チケットからのメールマガジンの購読を選択できます。</p>
     % for mailmagazine, subscribed in mailmagazines_to_subscribe:
 <p class="mgtb10">
@@ -58,11 +56,3 @@
 <input class="btn btn-primary" type="submit" value="変更する"></p>
 </div>
 </form>
-
-
-
-<!-- ===== 楽天ポイントのご確認 ===== -->
-<div class="confirm-wrap">
-<h2 class="heading heading_simple_line">楽天ポイントのご確認</h2>
-<p>&raquo; <a href="https://point.rakuten.co.jp/">楽天ポイントのご確認はこちら</a></p>
-</div><!-- ===== / 楽天ポイントのご確認 ===== -->

@@ -61,12 +61,6 @@
           <th scope="row">住所</th>
           <td>${shipping_address.zip} ${shipping_address.prefecture}${shipping_address.city}${shipping_address.address_1}${shipping_address.address_2}</td>
         </tr>
-        <tr>
-          <td colspan="2">
-              ※ご購入時に入力された情報が表示されております。<br/>
-登録情報変更をご希望の場合は、<a href="https://ticket.rakuten.co.jp/inquiry" target="_blank">問合せフォームより</a>ご連絡下さい。
-          </td>
-        </tr>
     </table>
   </div>
 </div>
@@ -156,7 +150,7 @@
       </tr>
       %endif
       <tr id="total">
-        <th scope="row"><img src="${request.static_url("altair.app.ticketing.orderreview:static/NP/pc/images/total.gif")}" alt="合計金額" width="67" height="16" /></th>
+        <th scope="row"><img src="${view_context.static_url("pc/images/total.gif")}" alt="合計金額" width="67" height="16" /></th>
         <td>&nbsp;</td>
         <td>&nbsp;</td>
         <td class="align1">￥${h.format_number(order.total_amount)}</td>
