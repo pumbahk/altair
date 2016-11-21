@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from wtforms.validators import ValidationError, email, Required
 from wtforms import Form, TextField, TextAreaField, SelectField, HiddenField
+import re
 
 class InquiryForm(Form):
 
@@ -26,3 +27,12 @@ class InquiryForm(Form):
         if field.data == u"選択なし":
             raise ValidationError(u'選択してください')
         return
+
+    def validate_mail(form, field):
+        if not field.data:
+            raise ValidationError(u'メールアドレスを入力してください')
+
+        email = field.data.strip()
+        if re.match(r'^[a-zA-Z0-9_+\-*/=.]+@[^.][a-zA-Z0-9_\-.]*\.[a-z]{2,10}$', email) is not None:
+            return True
+        raise ValidationError(u'メールアドレスの形式が不正です。全角は使用できません。')
