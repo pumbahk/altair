@@ -242,7 +242,7 @@ body {
 .btn:hover { opacity: 0.6; }
 .btn-primary {
 	border: none !important;
-	background: #ED4A27 !important;
+	background: #FE5200 !important;
 	color: #FFF !important;
 }
 .btn-primary-border {
@@ -259,13 +259,13 @@ body {
 .deactivated {
     pointer-events: none;
     cursor: default;
-    background: #F2846C !important;
+    opacity: 0.6;
     
 }
 
 /* heading ============================== */
 .heading-primary {
-	background: #bf0000;
+	background: #0c1b6f;
 	font-size: 2.0rem;
 	color: #FFF;
 	font-weight: bold;
@@ -283,9 +283,9 @@ body {
 
 .heading_simple_line {
 	font-size: 1.8rem;
-	color: #c01920;
+	color: #0c1b6f;
 	font-weight: bold;
-	border-bottom: 2px solid #bf0000;
+	border-bottom: 2px solid #0c1b6f;
 	padding: 10px;
 	margin: 0 0 20px 0;
 }
@@ -516,7 +516,7 @@ li.btn-seat-plus:after {
 
 .btn-seat-active {
     cursor: pointer;
-    background: #ED4A27;
+    background: #FE5200;
 }
 
 
@@ -617,12 +617,12 @@ li.btn-seat-plus.btn-seat-active:after {
 
 /* confirm_attBox ============================== */
 .confirm-attBox-a {
-	background: #FFE8E8;
+	background: #e6e8f0;
 	text-align: center;
 	padding: 10px;
 }
 .confirm-attBox-b {
-	background: #FEF1EF;
+	background: #e6e8f0;
 	text-align: center;
 	padding: 10px;
 }
