@@ -2,14 +2,14 @@
 """add defaut_oauth_setting column to OrganizationSetting
 
 Revision ID: 3b52df7b7879
-Revises: 4a99f47c1bd4
+Revises: 8d3e9ae2ecf
 Create Date: 2016-11-17 10:07:21.893349
 
 """
 
 # revision identifiers, used by Alembic.
 revision = '3b52df7b7879'
-down_revision = '4a99f47c1bd4'
+down_revision = '8d3e9ae2ecf'
 
 from alembic import op
 import sqlalchemy as sa
