@@ -50,6 +50,9 @@ ${order.performance.venue.name}<br />
 </form>
 % endif
 % endif
+
+${order.performance.event.setting.cart_setting.embedded_html_complete_page_mobile |n}
+
 <% shipping_address = order.shipping_address %>
 <%mobile:form_header>氏名</%mobile:form_header>
 ${shipping_address.last_name} ${shipping_address.first_name}
