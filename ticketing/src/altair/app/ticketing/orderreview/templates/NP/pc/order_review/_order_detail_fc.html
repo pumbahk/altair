@@ -1,3 +1,10 @@
+<style type="text/css">
+  .disp-order_no{
+    font-size: 2rem;
+    font-weight: bold;
+    color: #bf191f;
+  }
+</style>
 <div class="section">
   <h3>購入情報</h3>
   <table class="purchasedContents">
@@ -9,7 +16,7 @@
       </tr>
       <tr>
         <td colspan="3">受付番号</td>
-        <td class="textR">${order.order_no}</td>
+        <td class="textR"><div class="disp-order_no">${order.order_no}</div></td>
       </tr>
       %for product in order.items:
       <tr>

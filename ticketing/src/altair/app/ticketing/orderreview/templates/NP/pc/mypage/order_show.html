@@ -1,4 +1,11 @@
 <%inherit file="../layout_resp.html" />
+<style type="text/css">
+  .disp-order_no{
+    font-size: 2rem;
+    font-weight: bold;
+    color: #bf191f;
+  }
+</style>
 
 <h1 class="heading heading-primary">チケット購入</h1>
 
@@ -13,7 +20,7 @@
 			<tbody>
 				<tr>
 					<th scope="row">受付番号</th>
-					<td>${order.order_no}</td>
+					<td><div class="disp-order_no">${order.order_no}</div></td>
 				</tr>
 				<tr>
 					<th scope="row">受付日</th>

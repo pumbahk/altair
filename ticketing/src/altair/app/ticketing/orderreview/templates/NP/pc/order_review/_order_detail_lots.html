@@ -1,11 +1,18 @@
 <% shipping_address = order.shipping_address %>
+<style type="text/css">
+  .disp-order_no{
+    font-size: 2rem;
+    font-weight: bold;
+    color: #bf191f;
+  }
+</style>
 <div class="settlementBox2 OrderBox">
   <div class="settlementBoxInner2">
     <h3>受付番号</h3>
     <table class="customer-table">
       <tr>
         <th scope="row">受付番号</th>
-        <td>${order.order_no}</td>
+        <td><div class="disp-order_no">${order.order_no}</div></td>
       </tr>
       <tr>
         <th scope="row">受付日</th>
