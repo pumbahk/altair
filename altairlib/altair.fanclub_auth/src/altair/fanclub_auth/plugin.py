@@ -24,6 +24,7 @@ from altair.httpsession.idgen import _generate_id
 from . import AUTH_PLUGIN_NAME
 from .interfaces import IFanclubAuth
 from .api import get_fanclub_oauth, get_fanclub_api_factory
+from .util import FanclubMetaDataConvertUtil as util
 from pyramid.path import DottedNameResolver
 
 from altair.mobile.interfaces import IMobileRequest
@@ -323,14 +324,20 @@ class FanclubAuthPlugin(object):
         return dict(
             member_id=member_info['external_member_id'],
             first_name=member_info['first_name'],
+            first_name_kana=member_info['first_name_kana'],
             last_name=member_info['last_name'],
-            email=member_info['email_address'],
+            last_name_kana=member_info['last_name_kana'],
+            sex=member_info['sex'],
+            fax=member_info['fax_number'],
+            birthday=member_info['birthday'],
+            email_1=member_info['email_address'],
             tel_1=member_info['phone_number'],
             tel_2=member_info['mobile_phone_number'],
             zip=member_info['postcode'],
-            prefecture_code=member_info['prefecture_code'],
+            prefecture=util.prefeture_code_to_str(member_info['prefecture_code']),
             city=member_info['city'],
-            street=member_info['address1'],
+            address_1=member_info['address1'],
+            address_2=member_info['address2'],
             memberships=member_info['memberships']
             )
 

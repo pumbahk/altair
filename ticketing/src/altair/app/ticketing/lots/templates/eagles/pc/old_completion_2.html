@@ -1,0 +1,116 @@
+<%inherit file="${context['main_template'].uri}" />
+<p class="pageTitle">申込を完了しました</p>
+<div class="confirmBox">
+  <div class="confirmBoxInner">
+    <h2><img src="${request.static_url('altair.app.ticketing.lots:static/RL/pc/img/order/title_number.gif')}" alt="申込番号" width="97" height="30" /></h2>
+    <div class="confirmBoxText">${order.order_no}</div>
+  </div>
+</div>
+<div class="settlementBox3" id="settlementEventDetail">
+  <div class="settlementBoxInner3">
+    <h2><img src="${request.static_url('altair.app.ticketing.lots:static/RL/pc/img/order/title_content.gif')}" alt="公演一覧" width="97" height="30" /></h2>
+    <table class="border" summary="イベント詳細情報">
+      <tr>
+        <th colspan="2" scope="row"><span>${order.performance.name}</span></th>
+      </tr>
+      <tr class="none">
+        <th scope="row">公演日</th>
+        <td>${h.japanese_datetime(order.performance.open_on)} 開演</td>
+      </tr>
+      <tr>
+        <th scope="row">会場</th>
+        <td>${order.performance.venue.name}</td>
+      </tr>
+      <tr>
+        <td colspan="2" scope="row">
+          <table border="0">
+            %for op in order.ordered_products:
+            <tr>
+              <th>${op.product.name}　${op.quantity}枚</th>
+              <td>${h.format_currency(op.price)}</td>
+            </tr>
+            %endfor
+            <tr>
+              <th>決済手数料</th>
+              <td>${h.format_currency(order.transaction_fee)}</td>
+            </tr>
+            <tr>
+              <th>発券/配達手数料</th>
+              <td>${h.format_currency(order.delivery_fee)}</td>
+            </tr>
+            <tr>
+              <th class="line">システム利用料</th>
+              <td class="line">${h.format_currency(order.system_fee)}</td>
+            </tr>
+            %if order.special_fee > 0:
+            <tr>
+              <th class="line">${order.special_fee_name}</th>
+              <td class="line">${h.format_currency(order.special_fee)}</td>
+            </tr>
+            %endif
+            <tr>
+              <th><strong>合計金額</strong></th>
+              <td><strong>${h.format_currency(order.total_amount)}</strong></td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </div>
+</div>
+<div class="confirmBox">
+  <div class="confirmBoxInner">
+    <h2><img src="${request.static_url('altair.app.ticketing.lots:static/RL/pc/img/order/title_how.gif')}" alt="お支払・お引取り方法選択" width="208" height="30" /></h2>
+    <div class="confirmBoxText">
+      <p>${payment_delivery_method_pair.payment_method.name}　${h.format_currency(payment_delivery_method_pair.transaction_fee)}</p>
+      <p>${payment_delivery_method_pair.delivery_method.name}　${h.format_currency(payment_delivery_method_pair.delivery_fee)}</p>
+    </div>
+  </div>
+</div>
+<div class="settlementBox">
+  <div class="settlementBoxInner">
+    <h2><img src="${request.static_url('altair.app.ticketing.lots:static/RL/pc/img/order/title_buyer.gif')}" alt="購入者情報" width="97" height="30" /></h2>
+    <div id="settlementSelectBox">
+      <div id="settlementSelectBoxInner02">
+        <table summary="お支払・お引取り方法選択">
+          <tr>
+            <th><label>購入者氏名（全角）</label></th>
+            <td>${shipping_address.last_name} ${shipping_address.first_name}</td>
+          </tr>
+          <tr>
+            <th><label>購入者氏名（カナ）</label></th>
+            <td>${shipping_address.last_name_kana} ${shipping_address.first_name_kana}</td>
+          </tr>
+          <tr>
+            <th><label>電話番号</label></th>
+            <td>${shipping_address.tel_1}</td>
+          </tr>
+          <tr>
+            <th><label>住所</label></th>
+            <td>
+              ${shipping_address.zip}
+              ${shipping_address.prefecture}
+              ${shipping_address.city}
+              ${shipping_address.address_1}
+              ${shipping_address.address_2}
+            </td>
+          </tr>
+          <tr>
+            <th><label>生年月日</label></th>
+            <td>${u"{0.year} 年 {0.month}月 {0.day}日".format(lot_entry.birthday)}</td>
+          </tr>
+          <tr>
+            <th><label>性別</label></th>
+            <td>${h.format_gender(request, lot_entry.gender)}</td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="confirmBox">
+  <div class="confirmBoxInner">
+    <h2><img src="${request.static_url('altair.app.ticketing.lots:static/RL/pc/img/order/title_caution.gif')}" alt="注意事項" width="97" height="30" /></h2>
+    <div class="confirmBoxText">${lot.description}</div>
+  </div>
+</div>

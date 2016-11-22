@@ -77,6 +77,7 @@ def setup_auth(config):
     config.include('altair.auth')
     config.include('altair.rakuten_auth')
     config.include('altair.app.ticketing.fc_auth')
+    config.include('altair.app.ticketing.extauth.userside_impl')
     config.include(setup_nogizaka_auth)
 
     config.set_who_api_decider(decide_auth_types)
