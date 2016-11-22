@@ -2185,7 +2185,7 @@
 
 .settlementPayBox dt {
 	padding: 15px 10px 10px;
-	color: #FE5200;
+	color: #bf191f;
 	font-size: 116.7%;
 	font-weight: bold;
 }
@@ -2197,7 +2197,7 @@
 
 .settlementPayBox dd .deliveryFee,
 .settlementPayBox dd .paymentFee {
-	color: #FE5200;
+	color: #bf191f;
 	font-weight: bold;
 	font-size: 116.7%;
 }
@@ -2248,7 +2248,7 @@
 }
 
 .settlementPayBox dd dl dd .paymentFee {
-	color: #FE5200;
+	color: #bf191f;
 	font-weight: bold;
 	font-size: 100%;
 }
@@ -2299,7 +2299,7 @@
 .settlementDeliveryInput th {
 	vertical-align: top;
 	padding: 10px 20px 10px 10px;
-	color: #FE5200;
+	color: #bf191f;
 	font-size: 116.7%;
 	font-weight: bold;
 	white-space: nowrap;

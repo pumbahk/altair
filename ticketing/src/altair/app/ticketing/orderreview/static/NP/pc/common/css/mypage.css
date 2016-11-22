@@ -478,7 +478,13 @@ body {
 	border-radius:3px;
 }
 
+/* order number style */
 
+.disp-order_no{
+    font-size: 2rem;
+    font-weight: bold;
+    color: #bf191f;
+ }
 
 /* Responsive ============================== */
 @media screen and (max-width: 480px){
