@@ -9,7 +9,7 @@
       </tr>
       <tr>
         <th scope="row">${__(u'受付日')}</th>
-        <td>${h.i18n_date(order.created_at)}</td>
+        <td>${h.japanese_date(order.created_at)}</td>
       </tr>
       <tr>
         <th scope="row">${__(u'ステータス')}</th>
@@ -18,13 +18,13 @@
       % if order.status == 'delivered':
       <tr>
         <th scope="row">${__(u'発送日')}</th>
-        <td>${h.i18n_date(order.delivered_at)}</td>
+        <td>${h.japanese_date(order.delivered_at)}</td>
       </tr>
       % endif
       %  if order.is_issued() and order.deliver_at_store():
       <tr>
         <th scope="row">${__(u'発券日時')}</th>
-        <td>${h.i18n_datetime(order.issued_at)}</td>
+        <td>${h.japanese_datetime(order.issued_at)}</td>
       </tr>
       % endif
     </table>
@@ -87,14 +87,14 @@
 <%
     o = order.performance.start_on
     c = order.performance.end_on
-    period = h.i18n_date(o) + u'〜' + h.i18n_date(c)
+    period = h.japanese_date(o) + u'〜' + h.japanese_date(c)
     if o.year==c.year and o.month==c.month and o.day==c.day:
-        period = h.i18n_date(o)
+        period = h.japanese_date(o)
 %>
             <span class="date">${period}</span>
           % else:
-            <span class="date">${h.i18n_date(order.performance.start_on)}</span>
-            <span class="time">${h.i18n_time(order.performance.start_on)}</span>
+            <span class="date">${h.japanese_date(order.performance.start_on)}</span>
+            <span class="time">${h.japanese_time(order.performance.start_on)}</span>
           % endif
         </td>
       </tr>
