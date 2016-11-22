@@ -1,6 +1,5 @@
 [app:main]
 paste.app_factory = altair.app.ticketing.sej.dummy_server.server:main
-sqlalchemy.url = sqlite:///%(here)s/../var/dummy_sej_server/dummy_sej_server.db
 
 [server:main]
 use = egg:waitress
