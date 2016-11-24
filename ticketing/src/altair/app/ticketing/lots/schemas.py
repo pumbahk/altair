@@ -91,7 +91,7 @@ class ClientForm(_ClientForm):
                 city=self.data['city'],
                 address_1=self.data['address_1'],
                 address_2=self.data['address_2'],
-                country=u"日本国",
+                country=u"日本",
                 email_1=self.data['email_1'],
                 tel_1=self.data['tel_1'],
                 tel_2=self.data['tel_2'],

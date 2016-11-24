@@ -572,14 +572,9 @@ class ConfirmLotEntryView(object):
         # extra_form_data = cart_api.load_extra_form_data(self.request)
         # if extra_form_data is not None:
         #    entry.attributes = coerce_extra_form_data(self.request, extra_form_data)
-
-        try:
-            api.notify_entry_lot(self.request, entry)
-        except Exception:
-            logger.exception(u'error orccured during sending mail.')
-
-
+        api.notify_entry_lot(self.request, entry)
         return HTTPFound(location=urls.entry_completion(self.request))
+
 
 @view_defaults(route_name='lots.entry.completion')
 class CompletionLotEntryView(object):

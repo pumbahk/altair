@@ -57,13 +57,9 @@ class LotResourceBase(object):
     def authenticated_user(self):
         return get_auth_info(self.request)
 
-    @reify
+    @property
     def cart_setting(self):
-        try:
-            cart_setting_exist = (self.event.setting.cart_setting or self.event.organization.setting.cart_setting)
-        except DetachedInstanceError:
-            cart_setting_exist = False
-        return self.event and cart_setting_exist
+        return self.event and (self.event.setting.cart_setting or self.event.organization.setting.cart_setting)
 
     @reify
     def host_base_url(self):
@@ -141,7 +137,7 @@ class LotResource(LotResourceBase):
         self._event_id = event_id
         self._lot_id = lot_id
 
-    @reify
+    @property
     def lot(self):
         lot = Lot.query \
             .options(joinedload(Lot.event)) \
@@ -335,9 +331,12 @@ class LotReviewWithdrawResource(LotReviewResource):
         self.organization = self.request.organization
 
     def get_lot_entry(self):
-        entry_no = self.request.params['entry_no']
-        tel_no = self.request.params['tel_no']
-        return api.get_entry(self.request, entry_no, tel_no)
+        entry_no = self.request.params.get('entry_no')
+        tel_no = self.request.params.get('tel_no')
+        lot_entry = api.get_entry(self.request, entry_no, tel_no)
+        if not lot_entry:
+            raise HTTPNotFound
+        return lot_entry
 
     @reify
     def entry(self):
