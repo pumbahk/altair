@@ -7,6 +7,8 @@
 
 <%mobile:header>受付番号</%mobile:header>
 <div style="color:red;font-weight:bold">${order.order_no}</div>
+<div>${(view_context.embedded_html_complete_page_mobile or u'')|n}</div>
+
 <%mobile:header>お買い物内容</%mobile:header>
 <div>
 ${order.performance.event.title} ${order.performance.name} ${h.performance_datetime(order.performance)} ${order.performance.venue.name}
