@@ -351,7 +351,7 @@ class View(object):
         use_fanclub = distutils.util.strtobool(self.request.params.get('use_fanclub', 'True'))
 
         # fanclubAPIが有効(=True)な場合はfanclubの情報をidentityに含める
-        if authenticator_name == 'rakuten':
+        if authenticator_name == 'rakuten' or authenticator_name == 'internal':
             if self.request.organization.fanclub_api_available and use_fanclub:
                 try:
                     member_kind_id_str = self.request.params['member_kind_id']
