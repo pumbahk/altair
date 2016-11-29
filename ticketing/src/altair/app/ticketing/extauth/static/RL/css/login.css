@@ -1,0 +1,484 @@
+@charset "UTF-8";
+*, *:before, *:after {
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  -ms-box-sizing: border-box;
+  box-sizing: border-box;
+}
+
+html, body, div, span, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+abbr, address, cite, code,
+del, dfn, em, img, ins, kbd, q, samp,
+small, strong, sub, sup, var,
+b, i,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td,
+article, aside, canvas, details, figcaption, figure,
+footer, header, hgroup, menu, nav, section, summary,
+time, mark, audio, video {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  font-size: 100%;
+  vertical-align: baseline;
+  background: transparent;
+}
+
+body {
+  line-height: 1;
+}
+
+article, aside, details, figcaption, figure,
+footer, header, hgroup, menu, nav, section {
+  display: block;
+}
+
+nav ul {
+  list-style: none;
+}
+
+blockquote, q {
+  quotes: none;
+}
+
+blockquote:before, blockquote:after,
+q:before, q:after {
+  content: '';
+  content: none;
+}
+
+a {
+  margin: 0;
+  padding: 0;
+  font-size: 100%;
+  vertical-align: baseline;
+  background: transparent;
+}
+
+ins {
+  background-color: #ff9;
+  color: #000;
+  text-decoration: none;
+}
+
+mark {
+  background-color: #ff9;
+  color: #000;
+  font-style: italic;
+  font-weight: bold;
+}
+
+del {
+  text-decoration: line-through;
+}
+
+abbr[title], dfn[title] {
+  border-bottom: 1px dotted;
+  cursor: help;
+}
+
+ol, ul {
+  list-style: none;
+}
+
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+hr {
+  display: block;
+  height: 1px;
+  border: 0;
+  border-top: 1px solid #cccccc;
+  margin: 1em 0;
+  padding: 0;
+}
+
+input, select {
+  vertical-align: middle;
+}
+
+/* Common
+---------------------------------------------- */
+html {
+  font-size: 62.5%;
+}
+
+body {
+  background: #FFF;
+  -webkit-text-size-adjust: 100%;
+  font-size: 1.4rem;
+  line-height: 1.5;
+  font-family: "Hiragino Kaku Gothic ProN",Meiryo,MS-PGothic,sans-serif;
+  /*font-family:"Helvetica Neue",Helvetica,YuGothic,"游ゴシック",Meiryo,"メイリオ",HiraKakuPro-W3,"ヒラギノ角ゴ Pro W3",Arial,"ＭＳ Ｐゴシック",sans-serif; */
+}
+
+.clear {
+  clear: both;
+}
+
+.clearfix::after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+.no-pc {
+  display: none;
+}
+
+@media only screen and (max-width: 787px) {
+  .no-pc {
+    display: block;
+  }
+
+  .no-sp {
+    display: none;
+  }
+}
+.offleft {
+  position: absolute;
+  text-indent: -9999px;
+}
+
+/* layout
+---------------------------------------------- */
+body {
+  width: 100%;
+}
+
+@media only screen and (max-width: 787px) {
+  body {
+    border: none;
+  }
+}
+/* h ==================== */
+@media only screen and (max-width: 499px) {
+  h2 {
+    margin: 0 auto 10px auto;
+  }
+}
+/* header ==================== */
+.header {
+  width: 100%;
+  background: #FFF;
+  margin: 0 0 24px;
+  position: relative;
+  font-size: 1.2rem;
+}
+.header #tsHeader {
+  width: 950px;
+  margin: 0 auto;
+}
+.header .grpH-site-id {
+  width: 505px;
+}
+.header .nav-global {
+  display: none;
+}
+.header #grpHeader .grpH-inner {
+  padding: 0;
+}
+
+@media only screen and (max-width: 787px) {
+  .header {
+    margin: 0;
+    position: fixed;
+    z-index: 999;
+    border-bottom: 1px #CCC solid;
+  }
+  .header .grpH-utility, .header .grpH-site-menu {
+    display: none;
+  }
+  .header #tsHeader {
+    width: 100%;
+  }
+  .header .grpH-site-id {
+    width: auto;
+    margin: 4px 0 4px 4px;
+  }
+  .header .nav-global {
+    display: block;
+  }
+}
+/* footer ==================== */
+.footer {
+  width: 950px;
+  margin: 0 auto 18px;
+}
+
+@media only screen and (max-width: 787px) {
+  .footer {
+    width: 100%;
+    text-align: center;
+  }
+  .footer .rc-f-standard {
+    display: none;
+  }
+
+  div#grpRakutenLinkArea div#companyFooter ul li {
+    float: none;
+    display: inline-block;
+  }
+}
+/* contents ==================== */
+.main {
+  max-width: 950px;
+  margin: 0 auto 20px;
+  overflow: hidden;
+}
+
+@media only screen and (max-width: 787px) {
+  .main {
+    width: 100%;
+    margin: 0 0 20px;
+    padding: 80px 1% 0 1%;
+    -webkit-border-radius: 0;
+    -moz-border-radius: 0;
+    -ms-border-radius: 0;
+    border-radius: 0;
+  }
+}
+/* LOGIN */
+/* ---------------------------------------------- */
+/* login
+---------------------------------------------- */
+.loginArea {
+  overflow: hidden;
+  line-height: 1.4;
+}
+.loginArea dl {
+  width: 48%;
+  margin: 0 0 20px;
+  padding: 0;
+  -webkit-border-radius: 4px;
+  -moz-border-radius: 4px;
+  -ms-border-radius: 4px;
+  border-radius: 4px;
+  border: 1px #D9D9CE solid;
+  text-align: center;
+}
+.loginArea dl:nth-child(odd) {
+  float: left;
+}
+.loginArea dl:nth-child(even) {
+  float: right;
+}
+.loginArea dt {
+  margin: 0 0 26px;
+  padding: 12px 20px;
+  background: #1253A4;
+  text-align: center;
+  color: #FFF;
+  font-size: 1.8rem;
+  font-weight: bold;
+}
+.loginArea dd {
+  margin: 0 0 20px;
+}
+.loginArea ul {
+  margin: 0 auto;
+  text-align: left;
+}
+.loginArea li {
+  width: 80%;
+  margin: 0 auto 3px;
+  font-size: 1.2rem;
+  line-height: 1.4;
+}
+.loginArea .no-sp {
+  height: 46px;
+}
+
+@media only screen and (max-width: 787px) {
+  .loginArea dl {
+    width: 100%;
+    margin: 0 0 20px;
+    padding: 0;
+    -webkit-border-radius: 0;
+    -moz-border-radius: 0;
+    -ms-border-radius: 0;
+    border-radius: 0;
+    border: none;
+  }
+  .loginArea dt {
+    font-size: 1.6rem;
+    padding: 10px 0;
+  }
+}
+.btnLogin {
+  width: 80%;
+  margin: 0 auto;
+  padding: 15px 20px;
+  background: #BF0000;
+  border: none;
+  -webkit-border-radius: 3px;
+  -moz-border-radius: 3px;
+  -ms-border-radius: 3px;
+  border-radius: 3px;
+  display: inline-block;
+  text-decoration: none;
+  font-size: 1.8rem;
+  font-weight: bold;
+  cursor: pointer;
+  color: #FFF;
+}
+.btnLogin:hover {
+  color: #FC0;
+  text-decoration: none;
+  opacity: 0.85;
+  filter: alpha(opacity=85);
+}
+.btnLogin:active {
+  position: relative;
+  top: 1px;
+}
+
+@media only screen and (max-width: 787px) {
+  .btnLogin {
+    padding: 20px;
+  }
+}
+@media only screen and (max-width: 339px) {
+  .btnLogin {
+    font-size: 1.4rem;
+  }
+}
+.btnID {
+  width: 64%;
+  margin: 0 auto;
+  padding: 10px 20px;
+  background: #EFEFEF;
+  border: 1px solid #999;
+  -webkit-border-radius: 3px;
+  -moz-border-radius: 3px;
+  -ms-border-radius: 3px;
+  border-radius: 3px;
+  color: #000;
+  font-weight: bold;
+  display: inline-block;
+  text-decoration: none;
+  cursor: pointer;
+}
+.btnID img {
+  width: 50px;
+}
+.btnID:hover {
+  opacity: 0.8;
+  color: #333;
+}
+.btnID:active {
+  position: relative;
+  top: 1px;
+}
+
+@media only screen and (max-width: 499px) {
+  .btnID {
+    width: 80%;
+    font-size: 1.4rem;
+    padding: 15px 20px;
+  }
+}
+.login-fc-btn {
+  background: url(../img/logo_rakuten.png) no-repeat left center;
+  padding-left: 60px;
+}
+
+/* Toggle
+---------------------------------------------- */
+@media only screen and (min-width: 788px) {
+  #toggle {
+    display: none;
+  }
+}
+@media only screen and (max-width: 787px) {
+  .nav-global {
+    border: none;
+  }
+
+  .nav-global ul {
+    display: none;
+  }
+
+  .nav-global ul li {
+    width: 100%;
+    border-bottom: 1px solid #DEDEDE;
+    background: #EFEFEF;
+    /*background: #FFD464;*/
+    padding: 10px;
+  }
+
+  .nav-global ul li a {
+    display: block;
+    color: #000;
+  }
+
+  #toggle {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    display: block;
+    width: 43px;
+    background: #FFF;
+  }
+
+  #toggle a {
+    display: block;
+    position: relative;
+    padding: 12px 0 10px;
+    color: #000;
+    text-align: center;
+    text-decoration: none;
+    font-weight: bold;
+  }
+
+  #toggle:before {
+    display: block;
+    content: "";
+    position: absolute;
+    top: 50%;
+    right: 10px;
+    width: 20px;
+    height: 20px;
+    margin-top: -10px;
+    background: #BF0000;
+  }
+
+  #toggle a:before, #toggle a:after {
+    display: block;
+    content: "";
+    position: absolute;
+    top: 50%;
+    right: 10px;
+    width: 20px;
+    height: 4px;
+    background: #FFF;
+  }
+
+  #toggle a:before {
+    margin-top: -6px;
+  }
+
+  #toggle a:after {
+    margin-top: 2px;
+  }
+}
+/* ERROR */
+/* -----------------------------------------*/
+.error .errorText {
+  font-weight: bold;
+  font-size: 2.4rem;
+  color: #C00;
+}
+
+@media only screen and (max-width: 787px) {
+  .error .errorText {
+    font-size: 1.6rem;
+    text-align: center;
+  }
+}

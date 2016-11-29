@@ -1,2 +1,5 @@
 <%inherit file="base.mako" />
-<h1>致命的なエラーが発生しました</h1>
+<div class="main error">
+<p class="errorText">エラーが発生しました。もう一度やり直してください。</p>
+</div><!-- /error -->
+
