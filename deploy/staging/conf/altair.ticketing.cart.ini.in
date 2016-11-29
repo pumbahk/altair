@@ -69,6 +69,14 @@ dogpile_cache.altair_oauth_auth_plugin_metadata.arguments.filename = %(here)s/..
 dogpile_cache.altair_oauth_auth_plugin_metadata.arguments.host = 127.0.0.1
 dogpile_cache.altair_oauth_auth_plugin_metadata.arguments.db = 6
 
+; dummy_sej 利用する時に下記５行の;を外す
+;sej.inticket_api_url = http://localhost:8046
+;sej.terminal_id = 1001
+;sej.shop_id = 1001
+;sej.password = 1001
+;sej.api_key = 1001
+
+
 [app:www-check]
 use = egg:Paste#static
 document_root = %(www_check_docroot)s
