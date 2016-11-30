@@ -25,7 +25,7 @@ class CouponHelper(object):
         perf = Performance.filter(Performance.id == order.performance_id).first()
         if perf.end_on:
             fmt = u"%Y年%m月%d日%H時%M分まで、ご入場できます。"
-            perf.end_on.strftime(fmt.encode('utf-8')).decode('utf-8')
+            return perf.end_on.strftime(fmt.encode('utf-8')).decode('utf-8')
 
         fmt = u"%Y年%m月%d日%H時%M分まで、ご入場できます。"
         return perf.start_on.strftime(fmt.encode('utf-8')).decode('utf-8')
