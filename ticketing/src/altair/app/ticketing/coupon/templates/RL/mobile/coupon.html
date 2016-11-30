@@ -18,6 +18,10 @@
 <div>${order.order_no}</div>
 <br/>
 
+${request.context.helper.get_term_end_str(order) |n}
+<br/>
+<br/>
+
 <%mobile:form_header>ご購入チケット</%mobile:form_header>
 ${h.render_coupon(order)}
 </div>
