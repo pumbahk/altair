@@ -351,7 +351,35 @@ class View(object):
         use_fanclub = distutils.util.strtobool(self.request.params.get('use_fanclub', 'True'))
 
         # fanclubAPIが有効(=True)な場合はfanclubの情報をidentityに含める
-        if authenticator_name == 'rakuten' or authenticator_name == 'internal':
+        if authenticator_name == 'internal':
+            try:
+                member_kind_id_str = self.request.params['member_kind_id']
+                membership_id = self.request.params['membership_id']
+            except KeyError as e:
+                raise HTTPBadRequest('missing parameter: %s' % e.message)
+            try:
+                member_kind_id = int(member_kind_id_str)
+            except (TypeError, ValueError):
+               raise HTTPBadRequest('invalid parameter: member_kind_id')
+            retrieved_profile = self.request.session['retrieved']
+            member_kinds = {
+                membership['kind']['id']: membership['kind']['name']
+                for membership in retrieved_profile['memberships']
+                }
+            if member_kind_id not in member_kinds:
+                raise HTTPBadRequest('invalid parameter: member_kind_id')
+
+            identity = dict(
+                id=id_,
+                profile=self.request.altair_auth_metadata,
+                member_kind=dict(
+                    id=member_kind_id,
+                    name=member_kinds[member_kind_id]
+                    ),
+                membership_id=membership_id
+                )
+
+        elif authenticator_name == 'rakuten':
             if self.request.organization.fanclub_api_available and use_fanclub:
                 try:
                     member_kind_id_str = self.request.params['member_kind_id']
