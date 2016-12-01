@@ -1,4 +1,4 @@
-<%inherit file="${context['main_template'].uri}" />
+<%inherit file="layout.html" />
 <% from altair.app.ticketing.payments.plugins import SEJ_PAYMENT_PLUGIN_ID, FAMIPORT_PAYMENT_PLUGIN_ID %>
 <%block name="title">支払方法選択</%block>
 % if request.session.peek_flash():
@@ -77,7 +77,7 @@
     </tbody>
   </table>
 
-  <div class="frame frame-inner textC">
+  <div>
     <input type="submit" name="back" value="戻る" class="submit half" />
     <input type="submit" value="次に進む" class="submit half" />
   </div>
