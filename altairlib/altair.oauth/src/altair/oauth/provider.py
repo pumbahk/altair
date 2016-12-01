@@ -1,3 +1,4 @@
+# encoding: UTF-8
 import logging
 from zope.interface import implementer
 from .interfaces import IOAuthProvider
@@ -152,3 +153,79 @@ class OAuthProvider(object):
             return self.access_token_store[access_token]
         except KeyError:
             raise OAuthNoSuchAccessTokenError(access_token)
+
+    def _is_using_rakuten_fanclub(self, request):
+        import distutils.util
+        use_fanclub = distutils.util.strtobool(request.params.get('use_fanclub', 'True'))
+        return request.organization.fanclub_api_available and use_fanclub
+
+    def _retrieved_member_kinds(self, request):
+        retrieved_profile = request.session['retrieved']
+        member_kinds = {
+            membership['kind']['id']: membership['kind']['name']
+            for membership in retrieved_profile['memberships']
+            }
+        return member_kinds
+
+    def validate_authz_request(self, request, authenticator_name):
+        from pyramid.httpexceptions import HTTPBadRequest
+        if authenticator_name == 'internal' or \
+                (authenticator_name == 'rakuten' and self._is_using_rakuten_fanclub(request)):
+            try:
+                member_kind_id_str = request.params['member_kind_id']
+                membership_id = request.params['membership_id']
+            except KeyError as e:
+                raise HTTPBadRequest('missing parameter: %s' % e.message)
+            try:
+                member_kind_id = int(member_kind_id_str)
+            except (TypeError, ValueError):
+               raise HTTPBadRequest('invalid parameter: member_kind_id')
+            member_kinds = self._retrieved_member_kinds(request)
+            if member_kind_id not in member_kinds:
+                raise HTTPBadRequest('invalid parameter: member_kind_id')
+            return True
+        elif authenticator_name == 'pollux':
+            try:
+                member_kind_name = request.params['member_kind_name']
+            except KeyError as e:
+                raise HTTPBadRequest('missing parameter: %s' % e.message)
+            retrieved_member_kinds = self._retrieved_member_kinds(request)
+            # FIXME: 会員資格文字列で正当性検証するのは微妙
+            if member_kind_name not in retrieved_member_kinds.values():
+                raise HTTPBadRequest('invalid parameter: member_kind_name')
+            return True
+        return False
+
+    def build_identity(self, request, id_, authenticator_name):
+        if authenticator_name == 'internal' or \
+                (authenticator_name == 'rakuten' and self._is_using_rakuten_fanclub(request)):
+            membership_id = request.params['membership_id']
+            member_kind_id = int(request.params['member_kind_id'])
+            member_kinds = self._retrieved_member_kinds(request)
+            return dict(
+                id=id_,
+                profile=request.altair_auth_metadata,
+                member_kind=dict(
+                    id=request.params['membership_id'],
+                    name=member_kinds[member_kind_id]
+                    ),
+                membership_id=membership_id
+            )
+        elif authenticator_name == 'rakuten' and not self._is_using_rakuten_fanclub(request):
+            # fanclubAPIが無効(=False)な場合は一般ユーザーという固定値をfanclubコース名の代わりに与える
+            # この名称をORGごとに変えたいという要件が出てきた場合はDBから取得するように実装を変更してください
+            return dict(
+                id=id_,
+                profile=request.altair_auth_metadata,
+                member_kind=dict(name=u'一般ユーザー'),
+                membership_id=id_
+            )
+        elif authenticator_name == 'pollux':
+            member_kind_name = request.params['member_kind_name']
+            return dict(
+                id=id_,
+                profile=request.altair_auth_metadata,
+                member_kind=dict(name=member_kind_name),
+                membership_id=id_
+            )
+        return None
