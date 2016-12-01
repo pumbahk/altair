@@ -190,6 +190,7 @@ class FCIndexView(object):
         q = c_models.Product.query \
             .join(c_models.Product.seat_stock_type) \
             .filter(c_models.Product.sales_segment_id == self.sales_segment.id) \
+            .filter(c_models.Product.public == True) \
             .filter(c_models.Product.name == member_type)
         product = q.one()
 

@@ -86,7 +86,12 @@ def set_extra_resource(config, configparser, stage):
         raise ConfigurationError("extra_resource section is not found. %s" % configparser._filename)
 
     mapping = get_organization_mapping(config)
-    keys = mapping.get_keypair(configparser.get("base", "organization.name"))
+    organization_name = configparser.get("base", "organization.name")
+    try:
+        keys = mapping.get_keypair(organization_name)
+    except KeyError:
+        logger.warn("no such organization: %s" % organization_name)
+        return
     params = ExtraResource(configparser.items("extra_resource"), stage) #xxx:
 
     logger.info("add -- extra resource %s" % str(keys))
@@ -104,7 +109,13 @@ def set_widget_aggregator_dispatcher(config, configparsers, validator=aggregate.
     for configparser in configparsers:
         waconfig = aggregate.WidgetAggregatorConfig(config, configparser)
         logger.info("loading...%s" % configparser._filename)
-        dispatcher.add_dispatch_cont(waconfig.get_keys, 
+        try:
+            keys = waconfig.get_keys
+        except KeyError:
+            logger.warn("found plugin ini but unknown organization: %s" % waconfig.organization_name)
+            continue
+
+        dispatcher.add_dispatch_cont(keys,
                                      waconfig.dispatch_function,
                                      waconfig.create_subdispatch_dict(config, validator=validator)
                                      )
