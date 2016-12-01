@@ -127,7 +127,8 @@ from .api import (
     get_order_by_id,
     refresh_order,
     OrderAttributeIO,
-    get_payment_delivery_plugin_info
+    get_payment_delivery_plugin_info,
+    get_patterns_info
 )
 
 from .exceptions import OrderCreationError, MassOrderCreationError, InnerCartSessionException
@@ -846,8 +847,7 @@ class OrderDeltaIndexView(OrderDeltaBaseView):
                 url=paginate.PageURL_WebOb(request)
             )
 
-        from altair.app.ticketing.orders.export import japanese_columns
-        patterns = self.get_patterns(slave_session, organization_id)
+        patterns = get_patterns_info(request)
 
         return {
             'form': OrderForm(context=self.context),
@@ -855,19 +855,9 @@ class OrderDeltaIndexView(OrderDeltaBaseView):
             'orders': orders,
             'page': page,
             'endpoints': self.endpoints,
-            'japanese_columns': japanese_columns,
+            'japanese_columns': get_japanese_columns(request),
             'patterns': patterns
         }
-
-    def get_patterns(self, session, organization_id):
-        from collections import OrderedDict
-        pattern_dict = OrderedDict()
-        patterns = session.query(DownloadItemsPattern).filter(DownloadItemsPattern.organization_id==organization_id).all()
-        for pattern in patterns:
-            pattern_content = filter(None, pattern.pattern_content.split(','))
-            pattern_dict[pattern.pattern_name] = pattern_content
-
-        return pattern_dict
 
 @view_defaults(decorator=with_bootstrap, permission='sales_editor')
 class OrderDeltaDownloadView(OrderDeltaBaseView):
@@ -943,40 +933,64 @@ class OrderDeltaDownloadView(OrderDeltaBaseView):
         response.app_iter = order_csv(_orders(orders), writer_factory)
         return response
 
-@view_defaults(decorator=with_bootstrap, permission='sales_editor')
+@view_defaults(decorator=with_bootstrap, renderer='altair.app.ticketing:templates/orders/delta_pattern.html', permission='sales_editor')
 class OrderDeltaPatternView(OrderDeltaBaseView):
-    @view_config(route_name='orders.delta.pattern.add', request_method="POST", renderer='json')
-    def add(self):
+    @view_config(route_name='orders.delta.pattern', request_method="GET")
+    def index(self):
+        japanese_columns = get_japanese_columns(self.request)
+        patterns = get_patterns_info(self.request)
+
+        return {
+            'patterns': patterns,
+            'japanese_columns': japanese_columns
+        }
+
+    @view_config(route_name='orders.delta.pattern.operate', request_method="POST", renderer="json")
+    def operate(self):
         organization_id = self.request.POST.get('organization_id', None)
         pattern_name = self.request.POST.get('pattern_name', None)
+        op_type = self.request.POST.get('op_type', None)
 
-        pattern = DownloadItemsPattern.query.filter_by(organization_id=organization_id,
-                                                       pattern_name=pattern_name).first() \
-                  or DownloadItemsPattern()
+        if not organization_id or not pattern_name or not op_type:
+            emsg = u"送信したデータに不備がある、ダウンロードパターンに関する操作はできません。"
+            raise HTTPBadRequest(body=json.dumps({'emsg': emsg}))
 
-        form_pattern = DownloadItemsPatternForm(self.request.POST)
-        if form_pattern.validate():
-            form_pattern.populate_obj(pattern)
-            try:
-                pattern.save()
-                return {pattern.pattern_name: filter(None, pattern.pattern_content.split(','))}
-            except Exception, e:
-                raise HTTPBadRequest(body=json.dumps({'message': str(e)}))
+        if op_type in ['add', 'update']:
+            pattern_form = DownloadItemsPatternForm(self.request.POST)
+            if pattern_form.validate():
 
-    @view_config(route_name='orders.delta.pattern.delete', request_method="POST", renderer='json')
-    def delete(self):
-        organization_id = self.request.POST.get('organization_id', None)
-        pattern_name = self.request.POST.get('pattern_name', None)
+                pattern = DownloadItemsPattern.query.filter_by(organization_id=organization_id,
+                                                               pattern_name=pattern_name).first() \
+                          or DownloadItemsPattern()
 
-        if organization_id and pattern_name:
-            try:
-                pattern = DownloadItemsPattern.query.filter(and_(DownloadItemsPattern.organization_id==organization_id,
+                pattern_form.populate_obj(pattern)
+
+                try:
+                    pattern.save()
+                    return {pattern.pattern_name: filter(None, pattern.pattern_content.split(','))}
+                except Exception, e:
+                    raise HTTPBadRequest(body=json.dumps({'emsg': str(e)}))
+            else:
+                emsg = u""
+
+                for field, errors in pattern_form.errors.items():
+                    for error in errors:
+                        emsg += "{0}: {1}\n".format(field, error)
+
+                raise HTTPBadRequest(body=json.dumps({'emsg': emsg}))
+        elif op_type in ['del']:
+
+            pattern = DownloadItemsPattern.query.filter(and_(DownloadItemsPattern.organization_id==organization_id,
                                                           DownloadItemsPattern.pattern_name==pattern_name))
-
+            try:
                 pattern.delete()
-                return {"status": True}
+                return {"pattern_name": pattern_name}
             except Exception, e:
-                raise HTTPBadRequest(body=json.dumps({'message': str(e) }))
+                raise HTTPBadRequest(body=json.dumps({'emsg': str(e)}))
+
+        else:
+            emsg = u"操作タイプを確定できないため、ダウンロードパターンに関する操作はできません。"
+            raise HTTPBadRequest(body=json.dumps({'emsg': emsg}))
 
 
 @view_defaults(decorator=with_bootstrap, permission='event_editor', renderer='altair.app.ticketing:templates/orders/refund/index.html')

@@ -734,9 +734,6 @@ class OrderDeltaCSV(OrderCSV):
         u'attribute': AttributeRenderer(u'ordered_product_item.attributes', u'attribute'),
     }
 
-    def dynamic_get_renderer(self, func_name):
-        return getattr(sys.modules[__name__], "{}".format(func_name))
-
     def __init__(self, request, export_type=OrderCSV.EXPORT_TYPE_ORDER, organization_id=None, localized_columns={}, excel_csv=False, session=DBSession, option_columns=None):
         super(OrderDeltaCSV, self).__init__(request, export_type, organization_id, localized_columns, excel_csv, session)
         if option_columns:
