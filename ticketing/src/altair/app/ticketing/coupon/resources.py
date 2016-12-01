@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 
 import logging
+from .helper import CouponHelper
 from pyramid.decorator import reify
 from datetime import datetime, timedelta
 from altair.sqlahelper import get_db_session
@@ -25,6 +26,7 @@ class CouponResourceBase(object):
     def __init__(self, request):
         self.request = request
         self.session = get_db_session(request, name="slave")
+        self.helper = CouponHelper()
 
     @reify
     def organization(self):
