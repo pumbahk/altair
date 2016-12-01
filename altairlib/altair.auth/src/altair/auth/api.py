@@ -322,7 +322,7 @@ def get_who_api(request):
                 return True
             plugin_names = decide(request, classification)
             logger.debug('candidate plugin {}'.format(plugin.name))
-            logger.debug('decide with {}'.format(','.join(plugin_names)))
+            logger.debug('decide with {}'.format(','.join(plugin_names) if plugin_names else "nothing"))
             return plugin.name in plugin_names if plugin_names is not None else True
         adapter = request.environ['repoze.who.api'] = AuthAPIAdapter(request, auth_api, classification, decider)
     return adapter
