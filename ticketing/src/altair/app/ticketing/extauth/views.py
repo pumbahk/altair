@@ -348,94 +348,13 @@ class View(object):
         logger.debug('the state for now is: {}'.format(oauth_params['state']))
         state = oauth_params.pop('state')
         id_, authenticator_name = extract_identifer(self.request)
-        use_fanclub = distutils.util.strtobool(self.request.params.get('use_fanclub', 'True'))
 
-        # fanclubAPIが有効(=True)な場合はfanclubの情報をidentityに含める
-        if authenticator_name == 'internal':
-            try:
-                member_kind_id_str = self.request.params['member_kind_id']
-                membership_id = self.request.params['membership_id']
-            except KeyError as e:
-                raise HTTPBadRequest('missing parameter: %s' % e.message)
-            try:
-                member_kind_id = int(member_kind_id_str)
-            except (TypeError, ValueError):
-               raise HTTPBadRequest('invalid parameter: member_kind_id')
-            retrieved_profile = self.request.session['retrieved']
-            member_kinds = {
-                membership['kind']['id']: membership['kind']['name']
-                for membership in retrieved_profile['memberships']
-                }
-            if member_kind_id not in member_kinds:
-                raise HTTPBadRequest('invalid parameter: member_kind_id')
+        # raise error if something goes wrong.
+        provider.validate_authz_request(self.request, authenticator_name)
 
-            identity = dict(
-                id=id_,
-                profile=self.request.altair_auth_metadata,
-                member_kind=dict(
-                    id=member_kind_id,
-                    name=member_kinds[member_kind_id]
-                    ),
-                membership_id=membership_id
-                )
-
-        elif authenticator_name == 'rakuten':
-            if self.request.organization.fanclub_api_available and use_fanclub:
-                try:
-                    member_kind_id_str = self.request.params['member_kind_id']
-                    membership_id = self.request.params['membership_id']
-                except KeyError as e:
-                    raise HTTPBadRequest('missing parameter: %s' % e.message)
-                try:
-                    member_kind_id = int(member_kind_id_str)
-                except (TypeError, ValueError):
-                    raise HTTPBadRequest('invalid parameter: member_kind_id')
-                retrieved_profile = self.request.session['retrieved']
-                member_kinds = {
-                    membership['kind']['id']: membership['kind']['name']
-                    for membership in retrieved_profile['memberships']
-                    }
-                if member_kind_id not in member_kinds:
-                    raise HTTPBadRequest('invalid parameter: member_kind_id')
-
-                identity = dict(
-                    id=id_,
-                    profile=self.request.altair_auth_metadata,
-                    member_kind=dict(
-                        id=member_kind_id,
-                        name=member_kinds[member_kind_id]
-                        ),
-                    membership_id=membership_id
-                    )
-
-            # fanclubAPIが無効(=False)な場合は一般ユーザーという固定値をfanclubコース名の代わりに与える
-            # この名称をORGごとに変えたいという要件が出てきた場合はDBから取得するように実装を変更してください
-            else:
-                identity = dict(
-                    id=id_,
-                    profile=self.request.altair_auth_metadata,
-                    member_kind=dict(name=u'一般ユーザー'),
-                    membership_id=id_
-                    )
-        elif authenticator_name == 'pollux':
-            try:
-                member_kind_name = self.request.params['member_kind_name']
-            except KeyError as e:
-                raise HTTPBadRequest('missing parameter: %s' % e.message)
-            retrieved_profile = self.request.session['retrieved']
-            member_kinds = {
-                 membership['kind']['id']: membership['kind']['name']
-                 for membership in retrieved_profile['memberships']
-                 }
-            # FIXME: 会員資格文字列で正当性検証するのは微妙
-            if member_kind_name not in member_kinds.values():
-                raise HTTPBadRequest('invalid parameter: member_kind_name')
-            identity = dict(
-                id=id_,
-                profile=self.request.altair_auth_metadata,
-                member_kind=dict(name=member_kind_name),
-                membership_id=id_
-                )
+        identity = provider.build_identity(self.request, id_, authenticator_name)
+        if identity is None:
+            raise OAuthBadRequestError('could not build identity')
 
         nonce = oauth_params.pop('nonce')
         max_age = oauth_params.pop('max_age')
