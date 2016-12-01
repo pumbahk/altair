@@ -22,7 +22,7 @@ from altair.app.ticketing.core import api as core_api
 from altair.app.ticketing.cart import api as cart_api
 from .views import unsuspicious_order_filter
 from .schemas import OrderReviewSchema
-from .exceptions import InvalidForm
+from .exceptions import InvalidForm, OAuthRequiredSettingError
 from . import helpers as h
 from functools import partial
 
@@ -74,7 +74,7 @@ class OrderReviewResourceBase(object):
         return self.organization.setting.cart_setting
 
     # 今後複数認証を並行で使うことも想定してリストで返すことにする
-    @reify
+    @property
     def oauth_service_providers(self):
         if 'oauth_service_provider' in self.request.params.keys():
             return [self.request.params['oauth_service_provider']]
@@ -84,23 +84,42 @@ class OrderReviewResourceBase(object):
             return [self.cart_setting.oauth_service_provider]
         return []
 
-    @reify
+    def _validate_required_oauth_params(self, params):
+        # 必須項目が不足している場合は、アラートをあげるようにする
+        if self.cart_setting.auth_type == u'altair.oauth_auth.plugin.OAuthAuthPlugin':
+            if not (params['client_id'] and
+                        params['client_secret'] and
+                        params['endpoint_api'] and
+                        params['endpoint_token'] and
+                        params['endpoint_token_revocation'] and
+                        params['openid_prompt'] and
+                        params['endpoint_authz']):
+                raise OAuthRequiredSettingError('required oauth setting is not specified.')
+
+    @property
     def oauth_params(self):
-        prompt = self.organization.setting.openid_prompt
+        prompt = self.organization.setting.openid_prompt or self.cart_setting.openid_prompt
         # XXX: polluxの時は会員選択画面を見せずに行きたい
         if self.organization.setting.oauth_service_provider == 'pollux':
             if 'select_account' in prompt:
                 prompt.remove('select_account')
-        return dict(
-            client_id=self.organization.setting.oauth_client_id,
-            client_secret=self.organization.setting.oauth_client_secret,
-            endpoint_api=self.organization.setting.oauth_endpoint_api,
-            endpoint_token=self.organization.setting.oauth_endpoint_token,
-            endpoint_token_revocation=self.organization.setting.oauth_endpoint_token_revocation,
-            scope=self.organization.setting.oauth_scope,
+        # 基本的にはOrg設定から取ることを想定。fallbackとしてカート設定の値を使うようにしたけど...
+        params = dict(
+            client_id=self.organization.setting.oauth_client_id or self.cart_setting.oauth_client_id,
+            client_secret=self.organization.setting.oauth_client_secret or self.cart_setting.oauth_client_secret,
+            endpoint_api=self.organization.setting.oauth_endpoint_api or self.cart_setting.oauth_endpoint_api,
+            endpoint_token=self.organization.setting.oauth_endpoint_token or self.cart_setting.oauth_endpoint_token,
+            endpoint_token_revocation=self.organization.setting.oauth_endpoint_token_revocation or self.cart_setting.oauth_endpoint_token_revocation,
+            scope=self.organization.setting.oauth_scope or self.cart_setting.oauth_scope,
             openid_prompt=prompt,
-            endpoint_authz=self.organization.setting.oauth_endpoint_authz
+            endpoint_authz=self.organization.setting.oauth_endpoint_authz or self.cart_setting.oauth_endpoint_authz
         )
+        try:
+            self._validate_required_oauth_params(params)
+        except OAuthRequiredSettingError as e:
+            raise e
+        return params
+
 
 
 class LandingViewResource(OrderReviewResourceBase):

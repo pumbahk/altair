@@ -22,7 +22,7 @@ from altair.app.ticketing.cart import api as cart_api
 from altair.app.ticketing.users.models import UserPointAccountTypeEnum
 
 from .interfaces import ILotResource
-from .exceptions import OutTermException, OverEntryLimitException, OverEntryLimitPerPerformanceException
+from .exceptions import OutTermException, OverEntryLimitException, OverEntryLimitPerPerformanceException, OAuthRequiredSettingError
 from .models import Lot, LotEntry, LotEntryWish
 from .api import get_lot_entry_dict
 from . import api
@@ -110,17 +110,29 @@ class LotResourceBase(object):
         return cart_api.get_membership(self.authenticated_user())
 
     # 今後複数認証を並行で使うことも想定してリストで返すことにする
-    @reify
+    @property
     def oauth_service_providers(self):
         # XXX: Lots.oauth_service_providerを持った方がいいのかもしれない
         if self.lot.auth_type == u'altair.oauth_auth.plugin.OAuthAuthPlugin':
             return [self.cart_setting.oauth_service_provider] or []
         return []
 
-    @reify
+    def _validate_required_oauth_params(self, params):
+        # 必須項目が不足している場合は、アラートをあげるようにする
+        if self.cart_setting.auth_type == u'altair.oauth_auth.plugin.OAuthAuthPlugin':
+            if not (params['client_id'] and
+                        params['client_secret'] and
+                        params['endpoint_api'] and
+                        params['endpoint_token'] and
+                        params['endpoint_token_revocation'] and
+                        params['openid_prompt'] and
+                        params['endpoint_authz']):
+                raise OAuthRequiredSettingError('required oauth setting is not specified.')
+
+    @property
     def oauth_params(self):
         # XXX: 抽選イベントだとカート設定をする意識がないと思うので微妙かも
-        return dict(
+        params = dict(
             client_id=self.cart_setting.oauth_client_id or self.request.organization.setting.oauth_client_id,
             client_secret=self.cart_setting.oauth_client_secret or self.request.organization.setting.oauth_client_secret,
             endpoint_api=self.cart_setting.oauth_endpoint_api or self.request.organization.setting.oauth_endpoint_api,
@@ -130,6 +142,11 @@ class LotResourceBase(object):
             openid_prompt=self.cart_setting.openid_prompt or self.request.organization.setting.openid_prompt,
             endpoint_authz=self.cart_setting.oauth_endpoint_authz or self.request.organization.setting.oauth_endpoint_authz
         )
+        try:
+            self._validate_required_oauth_params(params)
+        except OAuthRequiredSettingError as e:
+            raise e
+        return params
 
 
 @implementer(ILotResource)
