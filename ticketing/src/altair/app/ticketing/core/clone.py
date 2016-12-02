@@ -194,6 +194,7 @@ class CoreModelCloner(object):
                 'start_time': sales_segment_group.start_time,
                 'end_day_prior_to_performance': sales_segment_group.end_day_prior_to_performance,
                 'end_time': sales_segment_group.end_time,
+                'stock_holder_id': sales_segment_group.stock_holder_id,
                 'created_at': self.now,
                 'updated_at': self.now,
                 }
@@ -502,6 +503,7 @@ class CoreModelCloner(object):
                 'account_id': sales_segment.account_id,
                 'auth3d_notice': sales_segment.auth3d_notice,
                 'organization_id': sales_segment.organization_id,
+                'stock_holder_id': sales_segment.stock_holder_id,
                 'use_default_seat_choice': sales_segment.use_default_seat_choice,
                 'use_default_public': sales_segment.use_default_public,
                 'use_default_reporting': sales_segment.use_default_reporting,
@@ -516,6 +518,7 @@ class CoreModelCloner(object):
                 'use_default_printing_fee': sales_segment.use_default_printing_fee,
                 'use_default_registration_fee': sales_segment.use_default_registration_fee,
                 'use_default_auth3d_notice': sales_segment.use_default_auth3d_notice,
+                'use_default_stock_holder_id': sales_segment.use_default_stock_holder_id,
                 'created_at': self.now,
                 'updated_at': self.now,
                 }

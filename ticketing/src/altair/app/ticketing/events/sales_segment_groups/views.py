@@ -213,6 +213,8 @@ class SalesSegmentGroups(BaseView, SalesSegmentViewHelperMixin):
                 accessor.update_sales_segment(new_sales_segment)
 
             new_sales_segment_group.sync_member_group_to_children()
+            new_sales_segment_group.sync_stock_holder()
+
             if "lottery" in f.kind.data:
                 copy_lots_between_sales_segmnent_group(sales_segment_group, new_sales_segment_group)
         else:
@@ -249,6 +251,7 @@ class SalesSegmentGroups(BaseView, SalesSegmentViewHelperMixin):
                     lot = create_lot(sales_segment_group.event, f, sales_segment_group, f.lot_name.data)
                     DBSession.add(lot)
                     create_lot_products(sales_segment_group, lot)
+            sales_segment_group.sync_stock_holder()
 
         self.request.session.flash(u'販売区分グループを保存しました')
         return None
