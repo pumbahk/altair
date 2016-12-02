@@ -1,4 +1,4 @@
-<%inherit file="base.mako" />
+<%inherit file="base_for_error_page.mako" />
 <div class="errorBox">
 <p class="errorText">指定されたURLは正しくありません</p>
 </div>
