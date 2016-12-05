@@ -53,6 +53,7 @@ if label is None or label is True:
       <tr>
         <th>
           ${view_context.fc_name if view_context.fc_name else u'氏名'} <span class="red">*</span>
+          <br><span class="note">全角</span>
         </th>
         <td>
           ${render_field(form.last_name, label=True)}
@@ -61,7 +62,8 @@ if label is None or label is True:
       </tr>
       <tr>
         <th>
-          ${view_context.fc_name if view_context.fc_name else u'氏名'}（フリガナ） <span class="red">*</span>
+          ${view_context.fc_name if view_context.fc_name else u'氏名'}<span class="red">*</span>
+          <br><span class="note">全角カナ</span>
         </th>
         <td>
           ${render_field(form.last_name_kana, label=True)}
@@ -70,17 +72,10 @@ if label is None or label is True:
       </tr>
       <tr>
         <th>
-          郵便番号 <span class="red">*</span>
-        </th>
-        <td>
-          ${render_field(form['zip'])}
-        </td>
-      </tr>
-      <tr>
-        <th>
           住所 <span class="red">*</span>
         </th>
         <td>
+          ${render_field(form['zip'], label=True)}
           ${render_field(form['prefecture'], label=True)}
           ${render_field(form['city'], label=True, _note=u'(例：千代田区)')}
           ${render_field(form['address_1'], label=True, _note=u'(例：丸の内1-1)')}
