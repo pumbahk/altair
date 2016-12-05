@@ -483,7 +483,6 @@ class TicketingCartResourceBase(object):
                         params['endpoint_api'] and
                         params['endpoint_token'] and
                         params['endpoint_token_revocation'] and
-                        params['openid_prompt'] and
                         params['endpoint_authz']):
                 raise OAuthRequiredSettingError('required oauth setting is not specified.')
 
