@@ -12,7 +12,7 @@ var zip_file_path = ${h.json_encode(request.static_url('altair.app.ticketing.car
   申込受付履歴は<a href="${view_context.orderreview_page_url}">こちら</a>で確認できます
 </div>
 % endif
-<%def name="render_field(field, label=False, _description=None, _note=None, _suffix=u'', **kwargs)">
+<%def name="render_field(field, label=False, _description=None, show_note=True, _note=None, _suffix=u'', **kwargs)">
 <%
 _description = _description or field.description
 _note = _note or field._note
@@ -28,8 +28,10 @@ if label is None or label is True:
       ${label}
     % endif
     ${fh.render(field, **kwargs)}${_suffix}
-    % if _note:
-    <div class="field-note">${_note}</div>
+    % if show_note:
+      % if _note:
+      <div class="field-note">${_note}</div>
+      % endif
     % endif
     ${h.error(field.name)}
   </div>
@@ -56,8 +58,8 @@ if label is None or label is True:
           <br><span class="note">全角</span>
         </th>
         <td>
-          ${render_field(form.last_name, label=True)}
-          ${render_field(form.first_name, label=True)}
+          ${render_field(form.last_name, label=True, show_note=False)}
+          ${render_field(form.first_name, label=True, show_note=False)}
         </td>
       </tr>
       <tr>
@@ -66,8 +68,8 @@ if label is None or label is True:
           <br><span class="note">全角カナ</span>
         </th>
         <td>
-          ${render_field(form.last_name_kana, label=True)}
-          ${render_field(form.first_name_kana, label=True)}
+          ${render_field(form.last_name_kana, label=True, show_note=False)}
+          ${render_field(form.first_name_kana, label=True, show_note=False)}
         </td>
       </tr>
       <tr>
@@ -75,8 +77,8 @@ if label is None or label is True:
           住所 <span class="red">*</span>
         </th>
         <td>
-          ${render_field(form['zip'], label=True)}
-          ${render_field(form['prefecture'], label=True)}
+          ${render_field(form['zip'], label=True, _note=u'(例：1030001)')}
+          ${render_field(form['prefecture'], label=True, _note=u'(例：東京都)')}
           ${render_field(form['city'], label=True, _note=u'(例：千代田区)')}
           ${render_field(form['address_1'], label=True, _note=u'(例：丸の内1-1)')}
           ${render_field(form['address_2'], label=True, _note=u'(例：XXビル253号)')}
@@ -114,14 +116,7 @@ if label is None or label is True:
         </th>
         <td>
           ${render_field(form['email_1'])}
-        </td>
-      </tr>
-      <tr>
-        <th>
-          PCメールアドレス（確認用） <span class="red">*</span>
-        </th>
-        <td>
-          ${render_field(form['email_1_confirm'])}
+          ${render_field(form['email_1_confirm'], _note=u'(確認用)'))}
         </td>
       </tr>
       <tr>
@@ -130,14 +125,7 @@ if label is None or label is True:
         </th>
         <td>
           ${render_field(form['email_2'])}
-        </td>
-      </tr>
-      <tr>
-        <th>
-          携帯メールアドレス（確認用）
-        </th>
-        <td>
-          ${render_field(form['email_2_confirm'])}
+          ${render_field(form['email_2_confirm'], _note=u'(確認用)'))}
         </td>
       </tr>
       % else:
@@ -146,15 +134,8 @@ if label is None or label is True:
           メールアドレス <span class="red">*</span>
         </th>
         <td>
-          ${render_field(form['email_1'])}
-        </td>
-      </tr>
-      <tr>
-        <th>
-          メールアドレス（確認用） <span class="red">*</span>
-        </th>
-        <td>
-          ${render_field(form['email_1_confirm'])}
+          ${render_field(form['email_1'], show_note=False)}
+          ${render_field(form['email_1_confirm'], _note=u'(確認用)')}
         </td>
       </tr>
       % endif
