@@ -1,4 +1,4 @@
-<%inherit file="${context['main_template'].uri}" />
+<%inherit file="layout.html" />
 <%namespace name="fh" module="altair.formhelpers.utils.mako" />
 <%block name="javascript">
   <script type="text/javascript" src="${request.static_url('altair.app.ticketing.cart:static/js/ajaxzip3-https.js')}"></script>
@@ -215,7 +215,7 @@ $(zip.getUIElements()).on('keyup', function () {
 </script>
   </%def>
   </%fh:render_block>
-  <div class="frame frame-inner textC">
+  <div class="textC">
     <input type="submit" value="次に進む" class="submit">
   </div>
 </form>
