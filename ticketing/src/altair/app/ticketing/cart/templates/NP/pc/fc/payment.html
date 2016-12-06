@@ -1,5 +1,5 @@
-<%inherit file="${context['main_template'].uri}" />
-<% from altair.app.ticketing.payments.plugins import SEJ_PAYMENT_PLUGIN_ID, FAMIPORT_PAYMENT_PLUGIN_ID %>
+<%inherit file="layout.html" />
+<% from altair.app.ticketing.payments.plugins import MULTICHECKOUT_PAYMENT_PLUGIN_ID, SEJ_PAYMENT_PLUGIN_ID, FAMIPORT_PAYMENT_PLUGIN_ID %>
 <%block name="title">支払方法選択</%block>
 % if request.session.peek_flash():
 <ul class="error">
@@ -21,24 +21,45 @@
       % for m in payment_delivery_methods:
       <% checked = 'checked' if str(m.id) == checked_id else '' %>
       <tr>
-        <th style="text-align:left;">
+        <th style="text-align:left;left;width:50%;vertical-align:top;">
           <label><input type="radio" name="payment_delivery_method_pair_id" id="radio2" value="${m.id}" ${checked}> ${m.payment_method.name}</label>
+        </th>
+        <th style="text-align:left;width:50%;vertical-align:top;">
+          <label>${m.delivery_method.name}</label>
         </th>
       </tr>
       <tr>
-        <td>
+        <td style="vertical-align:top">
           <div>
             決済手数料
             ${h.format_currency(m.transaction_fee)}
             (${h.fee_type(m.payment_method.fee_type)})
           </div>
-          % if m.delivery_fee > 0:
           <div>
-            配送手数料
-            ${h.format_currency(m.delivery_fee)}
-            (${h.fee_type(m.delivery_method.fee_type)})
+            ${m.payment_method.description |n}
           </div>
+          % if m.payment_method.payment_plugin_id == MULTICHECKOUT_PAYMENT_PLUGIN_ID:
+          <p style="font-size: 90%;">
+            予約受付完了と同時に決済され、即時予約確定となります。
+            支払回数は≪1回払い≫のみのお取扱いとなります。
+            以下のクレジットカードがご利用できます。
+          </p>
+          <p>
+            <img src="${request.static_url('altair.app.ticketing.cart:static/__commons__/images/kc_logo_rakuten.gif')}" height="30px" />
+            <img src="${request.static_url('altair.app.ticketing.cart:static/__commons__/images/visa.gif')}" height="30px" />
+            <img src="${request.static_url('altair.app.ticketing.cart:static/__commons__/images/master.gif')}" height="30px" />
+            <img src="${request.static_url('altair.app.ticketing.cart:static/__commons__/images/jcb.gif')}" height="30px" />
+          </p>
           % endif
+        </td>
+        <td style="vertical-align:top">
+          <div>
+            引取手数料
+            ${h.format_currency(m.delivery_fee)}
+            % if m.delivery_fee > 0:
+            (${h.fee_type(m.delivery_method.fee_type)})
+            % endif
+          </div>
           % if m.system_fee > 0:
           <div>
             システム手数料
@@ -53,31 +74,13 @@
             (${h.fee_type(m.special_fee_type)})
           </div>
           % endif
-        % if m.payment_method.payment_plugin_id == 1:
-          <p style="font-size: 90%;">
-            予約受付完了と同時に決済され、即時予約確定となります。
-            支払回数は≪1回払い≫のみのお取扱いとなります。
-            以下のクレジットカードがご利用できます。
-          </p>
-          <p>
-            <img src="${request.static_url('altair.app.ticketing.cart:static/__commons__/images/kc_logo_rakuten.gif')}" height="30px" />
-            <img src="${request.static_url('altair.app.ticketing.cart:static/__commons__/images/visa.gif')}" height="30px" />
-            <img src="${request.static_url('altair.app.ticketing.cart:static/__commons__/images/master.gif')}" height="30px" />
-            <img src="${request.static_url('altair.app.ticketing.cart:static/__commons__/images/jcb.gif')}" height="30px" />
-          </p>
-        % elif m.payment_method.payment_plugin_id == SEJ_PAYMENT_PLUGIN_ID or m.payment_method.payment_plugin_id == FAMIPORT_PAYMENT_PLUGIN_ID:
-          <p>
-            予約有効期日までにお支払頂きます。
-            お支払が確認できた時点で予約確定となります。
-          </p>
-        % endif
         </td>
       </tr>
       % endfor
     </tbody>
   </table>
 
-  <div class="frame frame-inner textC">
+  <div>
     <input type="submit" name="back" value="戻る" class="submit half" />
     <input type="submit" value="次に進む" class="submit half" />
   </div>
