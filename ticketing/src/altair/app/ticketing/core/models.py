@@ -1766,6 +1766,7 @@ class SalesSegmentGroup(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         traverser.end_sales_segment_group(self)
 
     def sync_stock_holder(self):
+        update_list = list()
         from altair.app.ticketing.orders.models import Order, OrderedProduct, OrderedProductItem
         for sales_segment in self.sales_segments:
             for product in sales_segment.products:
@@ -1780,8 +1781,12 @@ class SalesSegmentGroup(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                             performance_id=product.performance_id
                         ).one()
 
+                        update_list.append((product_item.id, product_item.stock_id, stock.id))
                         product_item.stock_id = stock.id
 
+        for _ in update_list:
+            if _[1] != _[2]:
+                logger.info("Sync stock holder. ProductItem ID = {0}, old_stock_id = {1} -> stock_id = {2}".format(_[0], _[1], _[2]))
 
 SalesSegment_PaymentDeliveryMethodPair = Table(
     "SalesSegment_PaymentDeliveryMethodPair",
