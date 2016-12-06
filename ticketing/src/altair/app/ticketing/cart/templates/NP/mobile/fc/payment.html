@@ -1,5 +1,5 @@
 <%inherit file="${context['main_template'].uri}" />
-<% from altair.app.ticketing.payments.plugins import SEJ_PAYMENT_PLUGIN_ID, FAMIPORT_PAYMENT_PLUGIN_ID %>
+<% from altair.app.ticketing.payments.plugins import MULTICHECKOUT_PAYMENT_PLUGIN_ID, SEJ_PAYMENT_PLUGIN_ID, FAMIPORT_PAYMENT_PLUGIN_ID %>
 <%namespace file="altair.app.ticketing.cart:templates/__commons__/tags_mobile.html" name="mobile" />
 <form method="post" action="${request.current_route_path()}">
 <%mobile:header>支払方法選択</%mobile:header>
@@ -18,19 +18,12 @@
 %for m in payment_delivery_methods:
 <hr />
 <% checked = 'checked' if str(m.id) == checked_id else '' %>
-<input type="radio" name="payment_delivery_method_pair_id" id="radio2" value="${m.id}" ${checked}>${m.payment_method.name}<br/>
+<input type="radio" name="payment_delivery_method_pair_id" id="radio2" value="${m.id}" ${checked}>${m.payment_method.name} & ${m.delivery_method.name}<br/>
+${m.payment_method.name}<br/>
 決済手数料:${h.format_currency(m.transaction_fee)} (${h.fee_type(m.payment_method.fee_type)})<br />
-% if m.delivery_fee > 0:
-引取手数料:${h.format_currency(m.delivery_fee)} (${h.fee_type(m.delivery_method.fee_type)})<br />
-% endif
-% if m.system_fee > 0:
-システム手数料:${h.format_currency(m.system_fee)} (${h.fee_type(m.system_fee_type)})<br />
-% endif
-% if m.special_fee > 0:
-${m.special_fee_name}:${h.format_currency(m.special_fee)} (${h.fee_type(m.special_fee_type)})<br />
-% endif
+<div>${m.payment_method.description |n}</div>
+% if m.payment_method.payment_plugin_id == MULTICHECKOUT_PAYMENT_PLUGIN_ID:
 <div>
-% if m.payment_method.payment_plugin_id == 1:
 <font size="-2">
 予約受付完了と同時に決済され、即時予約確定となります。支払回数は≪1回払い≫のみのお取扱いとなります。以下のクレジットカードがご利用できます。<br />
 <img src="${view_context.static_url('mobile/images/kc_logo_rakuten.gif')}" height="30px" />
@@ -38,13 +31,24 @@ ${m.special_fee_name}:${h.format_currency(m.special_fee)} (${h.fee_type(m.specia
 <img src="${view_context.static_url('mobile/images/master.gif')}" height="30px" />
 <img src="${view_context.static_url('mobile/images/jcb.gif')}" height="30px" />
 </font>
-% elif m.payment_method.payment_plugin_id == SEJ_PAYMENT_PLUGIN_ID or m.payment_method.payment_plugin_id == FAMIPORT_PAYMENT_PLUGIN_ID:
-<font size="-2">
-予約有効期日までにお支払頂きます。<br />
-お支払が確認できた時点で予約確定となります。<br />
-</font>
-% endif
 </div>
+% endif
+<br/>
+
+${m.delivery_method.name}<br/>
+引取手数料:${h.format_currency(m.delivery_fee)}
+% if m.delivery_fee > 0:
+(${h.fee_type(m.delivery_method.fee_type)})<br />
+% endif
+<div>${m.delivery_method.description |n}</div>
+
+% if m.system_fee > 0:
+システム手数料:${h.format_currency(m.system_fee)} (${h.fee_type(m.system_fee_type)})<br />
+% endif
+% if m.special_fee > 0:
+${m.special_fee_name}:${h.format_currency(m.special_fee)} (${h.fee_type(m.special_fee_type)})<br />
+% endif
+
 %endfor
 <hr />
 <input type="submit" name="back" value="戻る" class="submit" />

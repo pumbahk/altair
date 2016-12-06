@@ -1,4 +1,4 @@
-<%inherit file="${context['main_template'].uri}" />
+<%inherit file="layout.html" />
 <%block name="title">クレジットカード決済情報</%block>
 % if request.session.peek_flash():
 <table class="frame form">
@@ -62,7 +62,7 @@
     </tbody>
   </table>
 
-  <div class="frame frame-inner textC">
+  <div class="textC">
     <input type="submit" value="送信" class="submit" />
   </div>
 </form>
