@@ -338,6 +338,24 @@ table.purchasedContents tfoot td .paymentCoupon:active {
     font-size: 1.5em;
     font-weight: bold;
 }
+input[type="submit"],
+input[type="button"] {
+  border-radius: 0;
+  -webkit-box-sizing: content-box;
+  -webkit-appearance: button;
+  appearance: button;
+  border: none;
+  box-sizing: border-box;
+  cursor: pointer;
+}
+input[type="submit"]::-webkit-search-decoration,
+input[type="button"]::-webkit-search-decoration {
+  display: none;
+}
+input[type="submit"]::focus,
+input[type="button"]::focus {
+  outline-offset: -2px;
+}
 </style>
   <link rel="shortcut icon" href="${view_context.static_url("pc/images/favicon.ico")}" />
   <script type="text/javascript" src="${request.static_url('altair.app.ticketing.cart:static/js/disable_on_submit.js')}"></script>
