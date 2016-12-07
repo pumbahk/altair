@@ -3817,7 +3817,7 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     account_id = AnnotatedColumn(Identifier, ForeignKey('Account.id'),
                                  _a_label=_(u'配券元'))
     account = relationship('Account', backref='sales_segments')
-    stock_holder_id = Column(Identifier, ForeignKey('StockHolder.id'), nullable=False)
+    stock_holder_id = Column(Identifier, ForeignKey('StockHolder.id'), nullable=True)
     stock_holder = relationship('StockHolder', backref='sales_segment_group')
     seat_stock_types = association_proxy('products', 'seat_stock_type')
     stocks = association_proxy_many('products', 'stock')
