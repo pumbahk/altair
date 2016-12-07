@@ -46,6 +46,9 @@
             (${h.fee_type(m.delivery_method.fee_type)})
             % endif
           </div>
+          <div>
+            ${m.delivery_method.description |n}
+          </div>
           % if m.system_fee > 0:
           <div>
             システム手数料
