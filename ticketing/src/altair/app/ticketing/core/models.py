@@ -1773,7 +1773,7 @@ class SalesSegmentGroup(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 for product_item in product.items:
                     count = Order.query.join(OrderedProduct, OrderedProductItem, ProductItem).filter(
                         ProductItem.id == product_item.id).count()
-                    if count == 0:
+                    if count == 0 and self.stock_holder_id:
 
                         stock = Stock.query.filter_by(
                             stock_type_id=product.seat_stock_type_id,
