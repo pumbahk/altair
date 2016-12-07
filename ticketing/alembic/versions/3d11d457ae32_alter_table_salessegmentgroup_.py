@@ -1,14 +1,14 @@
 """alter table SalesSegmentGroup, SalesSegment add column stock_holder_id
 
 Revision ID: 3d11d457ae32
-Revises: 8d3e9ae2ecf
+Revises: 3b52df7b7879
 Create Date: 2016-12-02 11:39:45.194868
 
 """
 
 # revision identifiers, used by Alembic.
 revision = '3d11d457ae32'
-down_revision = '8d3e9ae2ecf'
+down_revision = '3b52df7b7879'
 
 from alembic import op
 import sqlalchemy as sa
