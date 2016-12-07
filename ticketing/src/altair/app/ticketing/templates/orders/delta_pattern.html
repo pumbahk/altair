@@ -109,7 +109,7 @@
   <div class="setting-area">
     <div class="pattern-settings">
       <span class="sub-title">パターン名</span>
-      <form id="pattern-settings" name="pattern-settings">
+      <form id="pattern-settings">
         <select id="saved-patterns">
           <option value="">ダウンロードパターンを選んでください</option>
           % if patterns:
@@ -128,7 +128,7 @@
     </div>
     <div class="cloumn-settings">
       <span class="sub-title">ダウンロード</span>
-      <form id="column-settings" name="column-settings">
+      <form id="column-settings">
       <table>
         <tbody>
           <tr>
@@ -164,7 +164,7 @@
 <script type="text/javascript">
     var patterns = ${patterns_js|n};
 
-    /* columnの出力をする/しないを変更 */
+    /* パターンにcolumnの登録/削除を変更 */
     function move_columns(src_selector, dst_selector){
         var src_columns = $(src_selector);
         var dst_columns = $(dst_selector);
@@ -200,18 +200,13 @@
         });
     }
 
-    /* selected columnsの内容が変更されるとき、ダウンロードパターンの内容と確認する */
-    function check_pattern() {
-
-    }
-
     /* selected columnsの内容をクリアする */
     function clear_selected_columns() {
         var selected_item = $('#selected-columns option').remove();
         selected_item.appendTo('#available-columns');
     }
 
-    /* 操作内容をajaxでbackendに送って、結果によって画面上の内容を変更する */
+    /* 操作内容をajaxでbackendに送って、backendの処理結果によってsuccess_funcかerror_funcを実行する */
     function post_pattern(post_content, success_func, error_func) {
       $.ajax({
         url: "${request.route_url('orders.delta.pattern.operate')}",
@@ -227,6 +222,11 @@
     }
 
     $(document).ready(function() {
+        /* 最初にアクセスするか再読み込む時の初期化 */
+        $('select#saved-patterns').val("");
+        $('input#pattern-name').val("");
+        clear_selected_columns();
+
 
         /* columnの追加 */
         $('#in-column').on('click', function(event){
@@ -252,6 +252,7 @@
             $('select#saved-patterns').val("");
         });
 
+        /* クリアボタン */
         $('#clear-setting-area').on('click', function() {
             $('select#saved-patterns').val("");
             $('input#pattern-name').val("");
@@ -273,8 +274,8 @@
             }
         });
 
-        /* operations */
-        /* パターンの新規追加 */
+        /* 操作 */
+        /* パターンの新規登録 */
         $('a#add-pattern').on('click', function() {
 
             var pattern_name = $('input#pattern-name').val().trim();
@@ -322,9 +323,12 @@
 
         /* パターンの更新 */
         $('a#update-pattern').on('click', function() {
-            var pattern_name = $('select#saved-patterns').val().trim();
+            var pattern_name = $('input#pattern-name').val().trim();
             if (!pattern_name) {
-                alert("パターンを選んで最初からもう一度操作してください。");
+                alert("更新したいパターン名を設定してから更新してください。");
+                return;
+            } else if (!pattern_name in patterns) {
+                alert("更新したいパターンの記録はないため、新規登録で登録してください。");
                 $('select#saved-patterns').val("");
                 return;
             } else {
@@ -353,6 +357,7 @@
                 function(json) {
                     patterns[pattern_name] = json[pattern_name];
                     alert("ダウンロードパターンを更新しました。");
+                    $('select#saved-patterns').val(pattern_name);
                 },
                 function(json) {
                     alert("ダウンロードパターンの更新が失敗しました。");
@@ -367,9 +372,12 @@
             var pattern_name = $('select#saved-patterns').val().trim();
 
             if (!pattern_name) {
-                alert("パターンを選んでもう一度削除してください。");
+                alert("パターンを選んでから削除してください。");
                 $('select#saved-patterns').val("");
                 return;
+            } else {
+                var res = window.confirm("パターン「" + pattern_name + "」を削除しますか？");
+                if (res == false) { return; }
             }
             var post_content = {
                 "organization_id": ${request.context.organization.id},

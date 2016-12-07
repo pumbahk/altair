@@ -908,7 +908,7 @@ class OrderDeltaDownloadView(OrderDeltaBaseView):
             kwargs['export_type'] = export_type
         if excel_csv:
             kwargs['excel_csv'] = True
-        option_columns = self.request.params.getall('selected-columns')
+        option_columns = self.request.params.getall('download-option')
 
         order_csv = OrderDeltaCSV(self.request,
                                   organization_id=self.context.organization.id,

@@ -406,13 +406,13 @@ class SearchFormBase(Form):
     start_on_from = DateTimeField(
         label=u'公演日',
         validators=[Optional(), after1900],
-        format='%Y-%m-%d',
-        widget=OurDateWidget()
+        format='%Y-%m-%d %H:%M',
+        widget=OurDateTimeWidget()
     )
     start_on_to = DateTimeField(
         label=u'公演日',
         validators=[Optional(), after1900],
-        format='%Y-%m-%d',
+        format='%Y-%m-%d %H:%M',
         missing_value_defaults=dict(
             year=u'',
             month=Max,
@@ -421,7 +421,7 @@ class SearchFormBase(Form):
             minute=Max,
             second=Max,
             ),
-        widget=OurDateWidget()
+        widget=OurDateTimeWidget()
     )
     sort = HiddenField(
         validators=[Optional()],

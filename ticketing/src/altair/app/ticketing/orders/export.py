@@ -740,16 +740,14 @@ class OrderDeltaCSV(OrderCSV):
             self.column_renderers = self.get_export_column(export_type, option_columns)
 
     def get_export_column(self, export_type, option_columns):
-        common_columns = []
-        export_type_related_columns = []
-
-        ordered_product = []
-        ordered_product_item = []
+        export_columns = []
 
         for option in option_columns:
+            ordered_product = []
+            ordered_product_item = []
             # 共通カラム
             if option in self.common_columns_dict:
-                common_columns.append(self.common_columns_dict[option])
+                export_columns.append(self.common_columns_dict[option])
 
             # エクスポートタイプによる内容が変わるカラム
             if option in self.export_type_related_columns_dict:
@@ -767,27 +765,27 @@ class OrderDeltaCSV(OrderCSV):
                     else:
                         pass
                 elif export_type == self.EXPORT_TYPE_SEAT:
-                    export_type_related_columns.append(render)
+                    export_columns.append(render)
                 else:
                     raise ValueError('export_type')
 
-        if ordered_product_item:
-            ordered_product.append(
-                CollectionRenderer(
-                    u'ordered_product.ordered_product_items',
-                    u'ordered_product_item',
-                    ordered_product_item
-                ))
+            if ordered_product_item:
+                ordered_product.append(
+                    CollectionRenderer(
+                        u'ordered_product.ordered_product_items',
+                        u'ordered_product_item',
+                        ordered_product_item
+                    ))
 
-        if ordered_product:
-            export_type_related_columns.append(
-                CollectionRenderer(
-                    u'ordered_products',
-                    u'ordered_product',
-                    ordered_product
-                ))
+            if ordered_product:
+                export_columns.append(
+                    CollectionRenderer(
+                        u'ordered_products',
+                        u'ordered_product',
+                        ordered_product
+                    ))
 
-        return common_columns + export_type_related_columns
+        return export_columns
 
     # 予約に紐づくポイントインポート口座オブジェクトを取得
     def lookup_user_point_account(self, order):
