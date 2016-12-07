@@ -33,6 +33,7 @@ class ProductAndProductItem(BaseView):
         # 商品、商品明細一括登録画面
         sales_segment = self.context.sales_segment
         f = ProductAndProductItemForm(sales_segment=sales_segment, new_form=True)
+        f.stock_holder_id.data = sales_segment.sales_segment_group.stock_holder_id
 
         ticket_bundles = TicketBundle.query.filter_by(event_id=sales_segment.sales_segment_group.event_id).all()
         if len(ticket_bundles) == 1:
@@ -167,7 +168,7 @@ class ProductAndProductItem(BaseView):
         origin_sales_segment = self.context.sales_segment
         form = ProductCopyForm(self.request.POST, origin_sales_segment)
         copy_sales_segments = form['copy_sales_segments'].data
-
+        sales_segment_group = SalesSegment.get(copy_sales_segments[0]).sales_segment_group
         for copy_sales_segment_id in copy_sales_segments:
 
             copy_sales_segment = SalesSegment.get(copy_sales_segment_id)
@@ -194,6 +195,7 @@ class ProductAndProductItem(BaseView):
                         original_product=new_product
                     )
 
+        sales_segment_group.sync_stock_holder()
         self.request.session.flash(u'商品をコピーしました')
         return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
 
