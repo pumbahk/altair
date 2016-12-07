@@ -17,26 +17,19 @@
 </head>
 
 <body id="settlement">
-    <p id="naviSkip"><a href="#main" tabindex="1" title="本文へジャンプ"><img src="${view_context.static_url('pc/images/skip.gif')}" alt="本文へジャンプ" width="1" height="1" /></a></p>  
+  <p id="naviSkip"><a href="#main" tabindex="1" title="本文へジャンプ"><img src="${view_context.static_url('pc/images/skip.gif')}" alt="本文へジャンプ" width="1" height="1" /></a></p>
+  <!-- ========== header ========== -->
+  <img src="${view_context.static_url('pc/images/pc_logo.png')}" alt="${view_context.team_name}" width="950" height="64"  />
+  <!-- ========== /header ========== -->
   <div id="container">
     <%doc>ログイン/ログアウト</%doc>
     % if view_context.get_include_template_path('login_status.html') is not None:
       <%include file="${view_context.get_include_template_path('login_status.html')}" args="device=view_context.ua_type" />
     % endif
-    <!-- ========== header ========== -->
-    <div id="grpheader">
-      <p id="siteID">
-      <img src="${view_context.static_url('pc/images/pc_logo.png')}" alt="${view_context.team_name}" width="950" height="64"  />
-      </p>
-    </div>
-    <!-- ========== /header ========== -->
     
     <hr />
 
     <!-- ========== main ========== -->
-    <div class="selectwrapper">
-      ${h.create_url(request) |n}
-    </div>
     <div id="main">
       <h1>${_(u'チケット購入')}</h1>
       ${self.body()}
