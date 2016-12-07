@@ -1,14 +1,14 @@
 """add_download_pattern_table
 
 Revision ID: 36ad59179092
-Revises: 8d3e9ae2ecf
+Revises: 3d11d457ae32
 Create Date: 2016-12-06 15:32:20.235239
 
 """
 
 # revision identifiers, used by Alembic.
 revision = '36ad59179092'
-down_revision = '8d3e9ae2ecf'
+down_revision = '3d11d457ae32'
 
 from alembic import op
 import sqlalchemy as sa
