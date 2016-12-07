@@ -1,4 +1,5 @@
-from traceback import extract_stack, format_list
+from traceback import format_list
+import sys
 import itertools
 import os
 import types
@@ -97,6 +98,25 @@ class MarkerQuery(Query):
         if comment is not None:
             context.statement = make_marked_clause_element(context.statement, comment)
         return context
+
+
+def extract_stack():
+    try:
+        raise ZeroDivisionError
+    except ZeroDivisionError:
+        f = sys.exc_info()[2].tb_frame.f_back
+    list = []
+    n = 0
+    while f is not None:
+        lineno = f.f_lineno
+        co = f.f_code
+        filename = co.co_filename
+        name = co.co_name
+        list.append((filename, lineno, name, None))
+        f = f.f_back
+        n = n+1
+    list.reverse()
+    return list
 
 
 def find_caller(excluded=set()):
