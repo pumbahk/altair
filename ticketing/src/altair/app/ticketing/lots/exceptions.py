@@ -24,3 +24,6 @@ class OverEntryLimitPerPerformanceException(OverEntryLimitException):
 
 class LotEntryWithdrawException(Exception):
     pass
+
+class OAuthRequiredSettingError(Exception):
+    pass

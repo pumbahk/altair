@@ -1,5 +1,5 @@
 <%inherit file="/base.mako" />
-<h2>オーガニゼーション編集</h2>
+<h2>Organization 編集</h2>
 % for message in request.session.pop_flash():
 <div class="alert">
   <button type="button" class="close" data-dismiss="alert">&times;</button>

@@ -12,9 +12,6 @@ class ClientRepository(object):
         client = None
         try:
             client = dbsession.query(OAuthClient).filter_by(client_id=client_id).one()
-            if now < client.valid_since or now >= client.expire_at:
-                logger.info("OAuthClient(client_id=%s) expired" % client_id)
-                client = None
         except NoResultFound:
             pass
         return client

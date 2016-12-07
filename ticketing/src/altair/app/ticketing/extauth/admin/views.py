@@ -9,14 +9,26 @@ from pyramid.httpexceptions import HTTPFound
 from pyramid.security import remember, forget
 from pyramid_layout.panel import panel_config
 from webhelpers import paginate
+from sqlalchemy.orm.exc import NoResultFound
 from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.sqlahelper import get_db_session
-from .api import create_operator, lookup_operator_by_credentials
+from .api import create_operator, lookup_operator_by_credentials, lookup_organization_by_name, lookup_organization_by_id
 from ..models import MemberSet, MemberKind, Member, Membership, OAuthClient
 from ..api import create_member
 from ..utils import digest_secret, generate_salt, generate_random_alnum_string
-from .forms import LoginForm, OrganizationForm, OperatorForm, MemberSetForm, MemberKindForm, MemberForm, OAuthClientForm
+from .forms import (
+    LoginForm,
+    OrganizationForm,
+    OperatorForm,
+    MemberSetForm,
+    MemberKindForm,
+    MemberForm,
+    OAuthClientForm,
+    HostForm,
+    OAuthServiceProviderForm
+)
 from .models import Operator
+from ..models import Organization, Host, OAuthServiceProvider
 from . import import_export
 
 logger = logging.getLogger(__name__)
@@ -92,6 +104,60 @@ class OrganizationsView(object):
         self.request = request
 
     @view_config(
+        route_name='organizations.index',
+        renderer='organizations/index.mako',
+        permission='manage_my_organization',
+        request_method='GET'
+        )
+    def index(self):
+        session = get_db_session(self.request, 'extauth')
+        organizations = session.query(Organization).all()
+        return dict(
+            organizations=organizations
+            )
+
+    @view_config(
+        route_name='organizations.new',
+        renderer='organizations/edit.mako',
+        permission='manage_my_organization',
+        request_method='GET'
+        )
+    def new(self):
+        form = OrganizationForm(request=self.request)
+        return dict(
+            form=form
+            )
+
+    @view_config(
+        route_name='organizations.new',
+        renderer='organizations/edit.mako',
+        permission='manage_my_organization',
+        request_method='POST'
+        )
+    def new_post(self):
+        session = get_db_session(self.request, 'extauth')
+        form = OrganizationForm(formdata=self.request.POST, request=self.request)
+        if not form.validate():
+            return dict(
+                form=form
+                )
+        organization = Organization(
+            maximum_oauth_scope=form.maximum_oauth_scope.data,
+            canonical_host_name=form.canonical_host_name.data,
+            emergency_exit_url=form.emergency_exit_url.data,
+            settings=form.settings.data,
+            short_name=form.short_name.data,
+            fanclub_api_type=form.fanclub_api_type.data,
+            fanclub_api_available=form.fanclub_api_available.data,
+            invalidate_client_http_session_on_access_token_revocation=form.invalidate_client_http_session_on_access_token_revocation.data
+        )
+        session.add(organization)
+        session.flush()
+        session.commit()
+        self.request.session.flash(u'Organization %s を新規作成しました' % organization.short_name)
+        return HTTPFound(location=self.request.route_path('organizations.edit', id=organization.id))
+
+    @view_config(
         route_name='organizations.edit',
         renderer='organizations/edit.mako',
         permission='manage_my_organization',
@@ -120,8 +186,50 @@ class OrganizationsView(object):
                 )
         form.populate_obj(organization)
         session.commit()
-        self.request.session.flash(u'オーガニゼーション %s を変更しました' % organization.short_name)
+        self.request.session.flash(u'Organization %s を変更しました' % organization.short_name)
         return HTTPFound(location=self.request.route_path('organizations.edit', id=organization.id))
+
+
+@view_defaults(
+    decorator=(with_bootstrap,)
+    )
+class HostsView(object):
+    def __init__(self, context, request):
+        self.context = context
+        self.request = request
+
+    @view_config(
+        route_name='hosts.new',
+        renderer='hosts/edit.mako',
+        permission='manage_my_organization',
+        request_method='GET'
+        )
+    def new(self):
+        form = HostForm(request=self.request)
+        return dict(
+            form=form
+            )
+
+    @view_config(
+        route_name='hosts.new',
+        renderer='hosts/edit.mako',
+        permission='manage_my_organization',
+        request_method='POST'
+        )
+    def new_post(self):
+        session = get_db_session(self.request, 'extauth')
+        host = Host()
+        form = HostForm(formdata=self.request.POST, obj=host, request=self.request)
+        if not form.validate():
+            return dict(
+                form=form
+                )
+        host.host_name = form.host_name.data
+        host.organization_id = self.request.matchdict['id']
+        session.add(host)
+        session.commit()
+        self.request.session.flash(u'Host %s を新規作成しました' % host.host_name)
+        return HTTPFound(location=self.request.route_path('organizations.edit', id=self.request.matchdict['id']))
 
 
 @view_defaults(
@@ -139,7 +247,7 @@ class OperatorsView(object):
         )
     def index(self):
         session = get_db_session(self.request, 'extauth')
-        query = session.query(Operator).filter_by(organization_id=self.request.operator.organization_id)
+        query = session.query(Operator).all()
         operators = paginate.Page(
             query,
             page=int(self.request.params.get('page', 0)),
@@ -157,11 +265,13 @@ class OperatorsView(object):
         )
     def edit(self):
         session = get_db_session(self.request, 'extauth')
-        query = session.query(Operator).filter_by(organization_id=self.request.operator.organization_id)
-        operator = query.filter_by(id=self.request.matchdict['id']).one()
+        operator = session.query(Operator).filter_by(id=self.request.matchdict['id']).one()
+        organization = lookup_organization_by_id(self.request, operator.organization_id)
+        operator.organization_name = organization.short_name
         form = OperatorForm(obj=operator, auth_secret=u'', request=self.request)
         return dict(
-            form=form
+            form=form,
+            operator=operator
             )
 
     @view_config(
@@ -171,19 +281,22 @@ class OperatorsView(object):
         )
     def edit_post(self):
         session = get_db_session(self.request, 'extauth')
-        query = session.query(Operator).filter_by(organization_id=self.request.operator.organization_id)
-        operator = query.filter_by(id=self.request.matchdict['id']).one()
+        operator = session.query(Operator).filter_by(id=self.request.matchdict['id']).one()
+        organization = lookup_organization_by_id(self.request, operator.organization_id)
+        operator.organization_name = organization.short_name
         form = OperatorForm(formdata=self.request.POST, obj=operator, request=self.request)
         if not form.validate():
             return dict(
-                form=form
+                form=form,
+                operator=operator
                 )
         operator.role = form.role.data
+        operator.auth_identifier = form.auth_identifier.data
         if form.auth_secret.data:
             operator.auth_secret = digest_secret(form.auth_secret.data, generate_salt())
         session.add(operator)
         session.commit()
-        self.request.session.flash(u'オペレーター %s を変更しました' % operator.auth_identifier)
+        self.request.session.flash(u'Operator %s を変更しました' % operator.auth_identifier)
         return HTTPFound(location=self.request.route_path('operators.edit', id=operator.id))
 
     @view_config(
@@ -211,13 +324,13 @@ class OperatorsView(object):
                 )
         operator = create_operator(
             self.request,
-            organization=self.request.operator.organization,
+            organization_name=form.organization_name.data,
             auth_identifier=form.auth_identifier.data,
             auth_secret=form.auth_secret.data,
             role=form.role.data
             )
         session.commit()
-        self.request.session.flash(u'オペレーター %s を作成しました' % operator.auth_identifier)
+        self.request.session.flash(u'Operator %s を作成しました' % operator.auth_identifier)
         return HTTPFound(location=self.request.route_path('operators.index'))
 
     @view_config(route_name='operators.delete')
@@ -225,12 +338,12 @@ class OperatorsView(object):
         session = get_db_session(self.request, 'extauth')
         id_list = [long(id) for id in self.request.params.getall('id')]
         if self.request.operator.id in id_list:
-            self.request.session.flash(u'オペレーター %s は現在ログイン中のユーザのため削除できません' % self.request.operator.auth_identifier)
+            self.request.session.flash(u'Operator %s は現在ログイン中のユーザのため削除できません' % self.request.operator.auth_identifier)
             return HTTPFound(location=self.request.route_path('operators.index'))
         query = session.query(Operator).filter_by(organization_id=self.request.operator.organization_id).filter(Operator.id.in_(id_list))
         n = query.delete(False)
         session.commit()
-        self.request.session.flash(u'%d オペレーターを削除しました' % n)
+        self.request.session.flash(u'%d Operatorを削除しました' % n)
         return HTTPFound(location=self.request.route_path('operators.index'))
 
 
@@ -296,7 +409,7 @@ class MemberSetsView(object):
         member_set.auth_secret_field_name = form.auth_secret_field_name.data
         session.add(member_set)
         session.commit()
-        self.request.session.flash(u'会員種別 %s を変更しました' % member_set.name)
+        self.request.session.flash(u'会員種別 (MemberSet) %s を変更しました' % member_set.name)
         return HTTPFound(location=self.request.route_path('member_sets.edit', id=member_set.id))
 
     @view_config(
@@ -333,7 +446,7 @@ class MemberSetsView(object):
             )
         session.add(member_set)
         session.commit()
-        self.request.session.flash(u'会員種別 %s を作成しました' % member_set.name)
+        self.request.session.flash(u'MemberSet %s を作成しました' % member_set.name)
         return HTTPFound(location=self.request.route_path('member_sets.index'))
 
     @view_config(route_name='member_sets.delete')
@@ -343,7 +456,7 @@ class MemberSetsView(object):
         query = session.query(MemberSet).filter_by(organization_id=self.request.operator.organization_id).filter(MemberSet.id.in_(id_list))
         n = query.delete(False)
         session.commit()
-        self.request.session.flash(u'%d 会員種別を削除しました' % n)
+        self.request.session.flash(u'%d MemberSet を削除しました' % n)
         return HTTPFound(location=self.request.route_path('member_sets.index'))
 
 
@@ -408,7 +521,7 @@ class MemberKindsView(object):
         member_kind.enable_guests = form.enable_guests.data
         session.add(member_kind)
         session.commit()
-        self.request.session.flash(u'会員区分 %s を変更しました' % member_kind.name)
+        self.request.session.flash(u'会員区分 (MemberKind) %s を変更しました' % member_kind.name)
         return HTTPFound(location=self.request.route_path('member_kinds.edit', id=member_kind.id))
 
     @view_config(
@@ -443,7 +556,7 @@ class MemberKindsView(object):
             )
         session.add(member_kind)
         session.commit()
-        self.request.session.flash(u'会員区分 %s を作成しました' % member_kind.name)
+        self.request.session.flash(u'会員区分 (MemberKind) %s を作成しました' % member_kind.name)
         return HTTPFound(location=self.request.route_path('member_kinds.index'))
 
     @view_config(route_name='member_kinds.delete')
@@ -454,7 +567,7 @@ class MemberKindsView(object):
         query = session.query(MemberKind).filter(MemberKind.id.in_(id_list))
         n = query.delete(False)
         session.commit()
-        self.request.session.flash(u'%d 会員区分を削除しました' % n)
+        self.request.session.flash(u'%d 会員区分 (MemberKind) を削除しました' % n)
         return HTTPFound(location=self.request.route_path('member_kinds.index'))
 
 
@@ -474,14 +587,18 @@ class MembersView(object):
     def index(self):
         session = get_db_session(self.request, 'extauth')
         query = session.query(Member).join(Member.member_set).filter_by(organization_id=self.request.operator.organization_id).order_by(Member.id)
+        if self.request.params.get('member_set_id'):
+            query = query.filter(MemberSet.id==self.request.params.get('member_set_id'))
         members = paginate.Page(
             query,
             page=int(self.request.params.get('page', 0)),
             items_per_page=50,
             url=paginate.PageURL_WebOb(self.request)
             )
+        member_sets = session.query(MemberSet).filter_by(organization_id=self.request.operator.organization_id).all()
         return dict(
-            members=members
+            members=members,
+            member_sets=member_sets
             )
 
     @view_config(
@@ -557,7 +674,7 @@ class MembersView(object):
             session.delete(deleted_membership)
         session.add(member)
         session.commit()
-        self.request.session.flash(u'会員 %s を変更しました' % member.name)
+        self.request.session.flash(u'会員 (Member) %s を変更しました' % member.name)
         return HTTPFound(location=self.request.route_path('members.edit', id=member.id))
 
     @view_config(
@@ -617,7 +734,7 @@ class MembersView(object):
                         member.memberships.append(membership)
         session.add(member)
         session.commit()
-        self.request.session.flash(u'会員 %s を作成しました' % member.auth_identifier)
+        self.request.session.flash(u'会員 (Member) %s を作成しました' % member.auth_identifier)
         return HTTPFound(location=self.request.route_path('members.index'))
 
     @view_config(route_name='members.delete')
@@ -628,7 +745,7 @@ class MembersView(object):
         query = session.query(Member).filter(Member.id.in_(id_list))
         n = query.delete(False)
         session.commit()
-        self.request.session.flash(u'%d 会員を削除しました' % n)
+        self.request.session.flash(u'%d 会員 (Member) を削除しました' % n)
         return HTTPFound(location=self.request.route_path('members.index'))
 
     @view_config(route_name='members.bulk_add')
@@ -688,7 +805,7 @@ class OAuthClientsView(object):
         )
     def index(self):
         session = get_db_session(self.request, 'extauth')
-        query = session.query(OAuthClient).filter_by(organization_id=self.request.operator.organization_id)
+        query = session.query(OAuthClient).order_by(OAuthClient.organization_id)
         return dict(
             oauth_clients=query
             )
@@ -703,7 +820,7 @@ class OAuthClientsView(object):
         renderer='oauth_clients/_new.mako'
         )
     def new(self):
-        form = OAuthClientForm()
+        form = OAuthClientForm(request=self.request)
         return dict(form=form)
 
     @view_config(
@@ -713,33 +830,128 @@ class OAuthClientsView(object):
         )
     def new_post(self):
         session = get_db_session(self.request, 'extauth')
-        form = OAuthClientForm(self.request.POST)
+        form = OAuthClientForm(formdata=self.request.POST, request=self.request)
         if not form.validate():
             self.request.response.status = 400
             return dict(form=form)
-        valid_since = self.request.now
-        organization = self.request.operator.organization
+        organization = lookup_organization_by_name(self.request, form.organization_name.data)
         oauth_client = OAuthClient(
-            organization_id=organization.id,
+            organization=organization,
             name=form.name.data,
             client_id=generate_random_alnum_string(32),
             client_secret=generate_random_alnum_string(32),
             redirect_uri=form.redirect_uri.data,
-            authorized_scope=organization.maximum_oauth_scope,
-            valid_since=valid_since,
-            expire_at=valid_since + timedelta(seconds=organization.maximum_oauth_client_expiration_time)
+            authorized_scope=organization.maximum_oauth_scope
             )
         session.add(oauth_client)
         session.commit()
-        self.request.session.flash(u'OAuthアカウントを作成しました')
+        self.request.session.flash(u'OAuthClient を作成しました')
         return HTTPFound(location=self.request.route_path('oauth_clients.index'))
 
     @view_config(route_name='oauth_clients.delete')
     def delete(self):
         session = get_db_session(self.request, 'extauth')
         id_list = [long(id) for id in self.request.params.getall('id')]
-        query = session.query(OAuthClient.id).filter_by(organization_id=self.request.operator.organization_id).filter(OAuthClient.id.in_(id_list))
+        query = session.query(OAuthClient.id).filter(OAuthClient.id.in_(id_list))
         n = query.delete(False)
         session.commit()
-        self.request.session.flash(u'%d アカウントを削除しました' % n)
+        self.request.session.flash(u'%d OAuthClient を削除しました' % n)
         return HTTPFound(location=self.request.route_path('oauth_clients.index'))
+
+
+@view_defaults(
+    decorator=(with_bootstrap,),
+    permission='manage_service_providers'
+    )
+class OAuthServiceProvidersView(object):
+    def __init__(self, context, request):
+        self.context = context
+        self.request = request
+
+    @view_config(
+        route_name='service_providers.index',
+        renderer='service_providers/index.mako',
+        request_method='GET'
+        )
+    def index(self):
+        session = get_db_session(self.request, 'extauth')
+        service_providers = session.query(OAuthServiceProvider).all()
+        return dict(
+            service_providers=service_providers
+            )
+
+    @view_config(
+        route_name='service_providers.new',
+        renderer='service_providers/edit.mako',
+        request_method='GET'
+        )
+    def new(self):
+        form = OAuthServiceProviderForm(request=self.request)
+        return dict(
+            form=form
+            )
+
+    @view_config(
+        route_name='service_providers.new',
+        renderer='service_providers/edit.mako',
+        request_method='POST'
+        )
+    def new_post(self):
+        session = get_db_session(self.request, 'extauth')
+        form = OAuthServiceProviderForm(formdata=self.request.POST, request=self.request)
+        if not form.validate():
+            return dict(
+                form=form
+                )
+        service_providers = OAuthServiceProvider(
+            name=form.name.data,
+            display_name=form.display_name.data,
+            auth_type=form.auth_type.data,
+            endpoint_base=form.endpoint_base.data,
+            consumer_key=form.consumer_key.data,
+            consumer_secret=form.consumer_secret.data,
+            scope=form.scope.data,
+            organization_id=form.organization_id.data
+        )
+        session.add(service_providers)
+        session.flush()
+        session.commit()
+        self.request.session.flash(u'OAuthServiceProvider %s を新規作成しました' % service_providers.display_name)
+        return HTTPFound(location=self.request.route_path('service_providers.edit', id=service_providers.id))
+
+    @view_config(
+        route_name='service_providers.edit',
+        renderer='service_providers/edit.mako',
+        request_method='GET'
+        )
+    def edit(self):
+        session = get_db_session(self.request, 'extauth')
+        try:
+            service_provider = session.query(OAuthServiceProvider).filter_by(id=self.request.matchdict['id']).one()
+        except NoResultFound as e:
+            raise e
+        form = OAuthServiceProviderForm(obj=service_provider, request=self.request)
+        return dict(
+            form=form
+            )
+
+    @view_config(
+        route_name='service_providers.edit',
+        renderer='service_providers/edit.mako',
+        request_method='POST'
+        )
+    def edit_post(self):
+        session = get_db_session(self.request, 'extauth')
+        try:
+            service_provider = session.query(OAuthServiceProvider).filter_by(id=self.request.matchdict['id']).one()
+        except NoResultFound as e:
+            raise e
+        form = OAuthServiceProviderForm(formdata=self.request.POST, obj=service_provider, request=self.request)
+        if not form.validate():
+            return dict(
+                form=form
+                )
+        form.populate_obj(service_provider)
+        session.commit()
+        self.request.session.flash(u'OAuthServiceProvider %s を変更しました' % service_provider.display_name)
+        return HTTPFound(location=self.request.route_path('service_providers.edit', id=service_provider.id))

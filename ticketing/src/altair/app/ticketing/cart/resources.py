@@ -37,6 +37,7 @@ from .exceptions import (
     OverOrderLimitException,
     OverQuantityLimitException,
     InvalidCartStatusError,
+    OAuthRequiredSettingError
 )
 from zope.deprecation import deprecate
 from altair.now import get_now
@@ -466,6 +467,42 @@ class TicketingCartResourceBase(object):
         else:
             cart_setting = get_default_cart_setting(self.request)
         return cart_setting
+
+    # 今後複数認証を並行で使うことも想定してリストで返すことにする
+    @reify
+    def oauth_service_providers(self):
+        if self.cart_setting.auth_type == u'altair.oauth_auth.plugin.OAuthAuthPlugin':
+            return [self.cart_setting.oauth_service_provider] or []
+        return []
+
+    def _validate_required_oauth_params(self, params):
+        # 必須項目が不足している場合は、アラートをあげるようにする
+        if self.cart_setting.auth_type == u'altair.oauth_auth.plugin.OAuthAuthPlugin':
+            if not (params['client_id'] and
+                        params['client_secret'] and
+                        params['endpoint_api'] and
+                        params['endpoint_token'] and
+                        params['endpoint_token_revocation'] and
+                        params['endpoint_authz']):
+                raise OAuthRequiredSettingError('required oauth setting is not specified.')
+
+    @reify
+    def oauth_params(self):
+        params = dict(
+            client_id=self.cart_setting.oauth_client_id,
+            client_secret=self.cart_setting.oauth_client_secret,
+            endpoint_api=self.cart_setting.oauth_endpoint_api,
+            endpoint_token=self.cart_setting.oauth_endpoint_token,
+            endpoint_token_revocation=self.cart_setting.oauth_endpoint_token_revocation,
+            scope=self.cart_setting.oauth_scope,
+            openid_prompt=self.cart_setting.openid_prompt,
+            endpoint_authz=self.cart_setting.oauth_endpoint_authz
+        )
+        try:
+            self._validate_required_oauth_params(params)
+        except OAuthRequiredSettingError as e:
+            raise e
+        return params
 
 
 class EventOrientedTicketingCartResource(TicketingCartResourceBase):

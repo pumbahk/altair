@@ -39,7 +39,7 @@ thisyear = datetime.now().strftime('%Y')
 <dl>
 <dt class="login-name" id="guestlogintitle"><span>一般の方</span></dt>
 <dd class="login-inbox" id="guestlogin">
-<p class="tac rakuten-login-button"><a href="${_context.route_path('extauth.rakuten.entry')}" class="btnA btnA_l"><span class="login-fc-btn">楽天会員IDでログイン</span></a></p>
+<p class="tac rakuten-login-button"><a href="${_context.route_path('extauth.rakuten.entry', _query=dict(use_fanclub=False))}" class="btnA btnA_l"><span class="login-fc-btn">楽天会員IDでログイン</span></a></p>
 <p class="tac mgt20"><a href="https://grp03.id.rakuten.co.jp/rms/nid/registfwdi?openid.return_to=https%3A%2F%2Feagles.tstar.jp&service_id=e17&openid.ns=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0&openid.oauth.consumer=e_tkt&openid.mode=checkid_setup&internal.id.mode=auth&openid.oauth.scope=rakutenid_basicinfo%2Crakutenid_contactinfo%2Crakutenid_pointaccount&openid.identity=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select&openid.claimed_id=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select&openid.ns.oauth=http%3A%2F%2Fspecs.openid.net%2Fextenstions%2Foauth%2F1.0" class="btnID" target="_blank">楽天会員に新規登録(無料)してサービスを利用する</a></p>
 </dd>
 </dl>

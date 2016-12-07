@@ -63,6 +63,7 @@ LOT_ENTRY_ATTRIBUTE_SESSION_KEY = 'lot.entry.attribute'
 
 
 def make_performance_map(request, performances):
+    performances = sorted(performances, key=operator.attrgetter('start_on'))
     tz = get_timezone(request)
     performance_map = {}
     for performance in performances:
@@ -242,42 +243,8 @@ class EntryLotView(object):
         """
         return utils_i18n.create_form(self.request, self.context, **kwds)
 
-    @lbr_view_config(request_method="GET")
-    def get(self, form=None):
-        """
-        """
-        jump_maintenance_page_for_trouble(self.request.organization)
-
-        if form is None:
-            form = self._create_form()
-
-        event = self.context.event
-        lot = self.context.lot
-
-        if not lot:
-            logger.debug('lot not not found')
-            raise HTTPNotFound()
-
-        performances = lot.performances
-        if not performances:
-            logger.debug('lot performances not found')
-            raise HTTPNotFound()
-        performances = sorted(performances, key=operator.attrgetter('start_on'))
-
-        performance_map = make_performance_map(self.request, performances)
-
-        performance_id = self.request.params.get('performance')
-        selected_performance = None
-        if performance_id:
-            for p in lot.performances:
-                if str(p.id) == performance_id:
-                    selected_performance = p
-                    break
-
-        sales_segment = lot.sales_segment
-        payment_delivery_pairs = [pdmp for pdmp in sales_segment.payment_delivery_method_pairs if pdmp.public]
-        performance_product_map = self._create_performance_product_map(sales_segment.products)
-        stock_types = [
+    def _stock_type_from_products(self, products):
+        return [
             dict(
                 id=rec[0],
                 name=rec[1],
@@ -292,22 +259,50 @@ class EntryLotView(object):
                         product.seat_stock_type.display_order,
                         product.seat_stock_type.description
                         )
-                    for product in sales_segment.products if product.seat_stock_type.quantity_only is True
+                    for product in products if product.seat_stock_type.quantity_only is True
                     ),
                 lambda a, b: cmp(a[2], b[2])
                 )
             ]
 
-        return dict(form=form, event=event, sales_segment=sales_segment,
+    @lbr_view_config(request_method="GET")
+    def get(self, form=None):
+        jump_maintenance_page_for_trouble(self.request.organization)
+        if form is None:
+            form = self._create_form()
+        event = self.context.event
+        lot = self.context.lot
+        performances = lot.performances
+        performance_map = make_performance_map(self.request, performances)
+
+        performance_id = self.request.params.get('performance')
+        selected_performance = None
+        if performance_id:
+            for p in lot.performances:
+                if str(p.id) == performance_id:
+                    selected_performance = p
+                    break
+
+        sales_segment = lot.sales_segment
+        payment_delivery_pairs = [pdmp for pdmp in sales_segment.payment_delivery_method_pairs if pdmp.public]
+        performance_product_map = self._create_performance_product_map(sales_segment.products)
+        stock_types = self._stock_type_from_products(sales_segment.products)
+
+        return dict(
+            form=form,
+            event=event,
+            sales_segment=sales_segment,
             payment_delivery_pairs=payment_delivery_pairs,
             posted_values=dict(self.request.POST),
             performance_product_map=performance_product_map,
             stock_types=stock_types,
             selected_performance=selected_performance,
             payment_delivery_method_pair_id=self.request.params.get('payment_delivery_method_pair_id'),
-            lot=lot, performances=performances, performance_map=performance_map,
+            lot=lot,
+            performances=performances,
+            performance_map=performance_map,
             custom_locale_negotiator=custom_locale_negotiator(self.request) if self.request.organization.setting.i18n else ""
-                    )
+        )
 
     @lbr_view_config(request_method="POST")
     def post(self):

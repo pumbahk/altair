@@ -186,16 +186,17 @@ class AuthAPI(object):
                 merged_auth_factors.setdefault(auth_factor_provider_name, {}).update(auth_factors_for_provider)
         logger.debug('merged_auth_factors: %r' % merged_auth_factors)
         # allow IMetadataProvider plugins to scribble on the identity
-        metadata = self._get_metadata(request, classification, identities)
+        metadata = self._get_metadata(request, classification, identities, decider)
         request.environ['altair.auth.auth_factors'] = merged_auth_factors
         request.environ['altair.auth.identities'] = identities
         request.environ['altair.auth.metadata'] = metadata
         return identities, merged_auth_factors, metadata
 
-    def _get_metadata(self, request, classification, identities):
+    def _get_metadata(self, request, classification, identities, decider=None):
         """ See IAPI.
         """
-        mdproviders = self._query_plugins(request, IMetadataProvider, classification=classification)        
+        mdproviders = self._query_plugins(request, IMetadataProvider, classification=classification, decider=decider)
+        logger.debug('mdprovider plugins matched for classification "%s": %s' % (classification, mdproviders))
         metadata = {}
         for mdprovider in mdproviders:
             _metadata = mdprovider.get_metadata(request, self, identities)
@@ -225,10 +226,11 @@ class AuthAPIAdapter(object):
             decider=self.decider
             )
 
-    def challenge(self, challenger_name=None, challenger_iface=None):
+    def challenge(self, response=None, challenger_name=None, challenger_iface=None):
+        _response = response or self.request.response
         self.api.challenge(
             self.request,
-            self.request.response,
+            _response,
             classification=self.classification,
             challenger_name=challenger_name,
             challenger_iface=challenger_iface,
@@ -319,6 +321,8 @@ def get_who_api(request):
             if ISessionKeeper.providedBy(plugin):
                 return True
             plugin_names = decide(request, classification)
+            logger.debug('candidate plugin {}'.format(plugin.name))
+            logger.debug('decide with {}'.format(','.join(plugin_names) if plugin_names else "nothing"))
             return plugin.name in plugin_names if plugin_names is not None else True
         adapter = request.environ['repoze.who.api'] = AuthAPIAdapter(request, auth_api, classification, decider)
     return adapter

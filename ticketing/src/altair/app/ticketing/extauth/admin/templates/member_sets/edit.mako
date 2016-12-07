@@ -1,6 +1,5 @@
 <%inherit file="/base.mako" />
-<%inherit file="/base.mako" />
-<h2>会員種別編集</h2>
+<h2>MemberSet 編集</h2>
 % for message in request.session.pop_flash():
 <div class="alert">
   <button type="button" class="close" data-dismiss="alert">&times;</button>

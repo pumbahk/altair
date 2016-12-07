@@ -1,7 +1,9 @@
 # encoding: UTF-8
 import logging
+import sys
 import re
 import urllib2
+import distutils.util
 from datetime import datetime
 from urlparse import urljoin, urlparse
 from urllib import urlencode, quote
@@ -13,11 +15,12 @@ from pyramid.session import check_csrf_token
 from sqlalchemy.orm.exc import NoResultFound
 
 from altair.pyramid_dynamic_renderer.config import lbr_view_config, lbr_notfound_view_config
-from altair.auth.api import get_plugin_registry, get_auth_api
+from altair.auth.api import get_plugin_registry, get_auth_api, get_who_api
 from altair.oauth.api import get_oauth_provider, get_openid_provider
 from altair.oauth.request import WebObOAuthRequestParser
 from altair.oauth.exceptions import OAuthRenderableError, OAuthBadRequestError, OpenIDAccountSelectionRequired, OpenIDLoginRequired
 from altair.rakuten_auth.openid import RakutenOpenID
+from altair.fanclub_auth.plugin import FanclubAuthPlugin
 from altair.exclog.api import log_exception_message, build_exception_message
 from altair.sqlahelper import get_db_session
 from redis.exceptions import ResponseError
@@ -56,13 +59,15 @@ def extract_identifer(request):
         if isinstance(authenticator, RakutenOpenID):
             # if the session is authenticated both by RakutenOpenID and InternalAuth, then
             # InternalAuth will take precedence.
-            retval = identity['claimed_id']
+            retval = identity['claimed_id'], authenticator_name
+        if isinstance(authenticator, FanclubAuthPlugin):
+            retval = identity['pollux_member_id'], authenticator_name
         elif isinstance(authenticator, InternalAuthPlugin):
             retval = u'acct:%s+%s@%s' % (
                 quote(identity.get('auth_identifier') or u'*'),
                 quote(identity['member_set']),
                 quote(identity['host_name'])
-                )
+                ), authenticator_name
             break
     return retval
 
@@ -71,10 +76,10 @@ JUST_AUTHENTICATED_KEY = '%s.just_authenticated' % __name__
 def rakuten_auth_challenge_succeeded(request, plugin, identity, metadata):
     request.session[JUST_AUTHENTICATED_KEY] = True
 
-def challenge_rakuten_id(request):
-    api = get_auth_api(request)
+def challenge_service_provider(request, challenger_name):
+    api = get_who_api(request)
     response = HTTPForbidden()
-    if api.challenge(request, response, challenger_name='rakuten'):
+    if api.challenge(response=response, challenger_name=challenger_name):
         return response
     else:
         logger.error('WTF?')
@@ -86,7 +91,16 @@ class OAuthParamsReceiver(object):
 
     def __call__(self, fn):
         def _(context, request):
-            if request.params or 'oauth_params' not in request.session:
+            logger.debug('oauth request parser: {}'.format(request.url))
+            def _has_oauth_params(params):
+                oauth_params_keys = ['scope', 'client_id', 'state', 'authenticated_at', 'aux',
+                                     'max_age', 'nonce', 'prompt', 'response_type', 'redirect_uri']
+                for param in params.keys():
+                    if param in oauth_params_keys:
+                        return True
+                return False
+
+            if _has_oauth_params(request.params) or 'oauth_params' not in request.session:
                 oauth_params = None
                 try:
                     oauth_params = self.oauth_request_parser.parse_grant_authorization_code_request(request)
@@ -200,11 +214,16 @@ class View(object):
         decorator=(receives_oauth_params, )
         )
     def entry(self):
+        # usersideからextauthへのリクエストにあるSPを指定するパラメタをセッションに格納して使いまわす
+        if self.request.params.get('service_providers'):
+            self.request.session['service_providers'] = self.request.params.get('service_providers').split(',')
         oauth_params = self.request.session['oauth_params']
-        if Authenticated in self.request.effective_principals:
+        logger.debug('the state for now is: {}'.format(oauth_params['state']))
+        principals = self.request.effective_principals
+        if Authenticated in principals:
             if u'login' in oauth_params['prompt']:
                 self.request.response.headers.update(forget(self.request))
-            elif u'altair.auth.authenticator:rakuten' in self.request.effective_principals:
+            elif u'altair.auth.authenticator:rakuten' in principals:
                 return self.navigate_to_select_account_rakuten_auth()
         return dict()
 
@@ -215,18 +234,85 @@ class View(object):
         )
     def rakuten_entry(self):
         oauth_params = self.request.session['oauth_params']
+        logger.debug('the state for now is: {}'.format(oauth_params['state']))
+        logger.debug('effective_principals: {}'.format(self.request.effective_principals))
         if 'altair.auth.authenticator:rakuten' in self.request.effective_principals:
             if self.request.session.get(JUST_AUTHENTICATED_KEY, False):
                 del self.request.session[JUST_AUTHENTICATED_KEY]
             else:
                 if 'login' in oauth_params['prompt']:
                     self.request.response.headers.update(forget(self.request))
-                    return challenge_rakuten_id(self.request)
+                    return challenge_service_provider(self.request, 'rakuten')
         else:
             if 'none' in oauth_params['prompt']:
                 raise OpenIDLoginRequired()
-            return challenge_rakuten_id(self.request)
-        return self.navigate_to_select_account_rakuten_auth()
+            return challenge_service_provider(self.request, 'rakuten')
+
+        # fanclubのコースチェックを行うparameter。存在しない場合はdefault True
+        use_fanclub = distutils.util.strtobool(self.request.params.get('use_fanclub', 'True'))
+
+        # fanclubを利用するORGはコースチェックへ、しないORGはauthorizeへ
+        if self.request.organization.fanclub_api_available and use_fanclub:
+            return self.navigate_to_select_account_rakuten_auth()
+        else:
+            return HTTPFound(
+                location=self.request.route_path(
+                    'extauth.authorize',
+                    subtype=self.context.subtype,
+                    _query=dict(
+                        _=self.request.session.get_csrf_token(),
+                        use_fanclub=use_fanclub
+                        )
+                    ),
+            )
+
+    @lbr_view_config(
+        route_name='extauth.fanclub.entry',
+        request_method='GET',
+        decorator=(receives_oauth_params, )
+        )
+    def fanclub_entry(self):
+        oauth_params = self.request.session['oauth_params']
+        if 'altair.auth.authenticator:pollux' in self.request.effective_principals:
+            if self.request.session.get(JUST_AUTHENTICATED_KEY, False):
+                del self.request.session[JUST_AUTHENTICATED_KEY]
+            else:
+                if 'login' in oauth_params['prompt']:
+                    self.request.response.headers.update(forget(self.request))
+                    return challenge_service_provider(self.request, 'pollux')
+        else:
+            if 'none' in oauth_params['prompt']:
+                raise Exception('not implemented')
+            return challenge_service_provider(self.request, 'pollux')
+
+        # TODO: 複数会員資格が返ってきたときはイーグルスみたいに選ばせる必要がある
+        def normalize_received_data(received_data):
+                norm_data = {}
+                norm_data['memberships'] = [dict(
+                    membership_id=None,
+                    kind=dict(
+                        id=index,
+                        name=data.get('membership_name')
+                    )
+                ) for index, data in enumerate(received_data)]
+                return norm_data
+
+        data = normalize_received_data(self.request.altair_auth_metadata['memberships'])
+        self.request.session['retrieved'] = data
+        if len(data['memberships']) == 0:
+            return HTTPFound(location=self.request.route_path('extauth.no_valid_memberships', subtype=self.context.subtype))
+        elif len(data['memberships']) > 1 and u'select_account' in oauth_params['prompt']:
+            return HTTPFound(location=self.request.route_path('extauth.select_account', subtype=self.context.subtype))
+        return HTTPFound(
+                location=self.request.route_path(
+                    'extauth.authorize',
+                    subtype=self.context.subtype,
+                    _query=dict(
+                        _=self.request.session.get_csrf_token(),
+                        member_kind_name=data['memberships'][0]['kind']['name']
+                        )
+                    ),
+            )
 
     @lbr_view_config(
         route_name='extauth.select_account',
@@ -256,42 +342,20 @@ class View(object):
     @lbr_view_config(route_name='extauth.authorize', permission='authenticated')
     def authorize(self):
         check_csrf_token(self.request, '_')
-
-        try:
-            member_kind_id_str = self.request.params['member_kind_id']
-            membership_id = self.request.params['membership_id']
-        except KeyError as e:
-            raise HTTPBadRequest('missing parameter: %s' % e.message)
-        try:
-            member_kind_id = int(member_kind_id_str)
-        except (TypeError, ValueError):
-            raise HTTPBadRequest('invalid parameter: member_kind_id')
-        retrieved_profile = self.request.session['retrieved']
-        member_kinds = {
-            membership['kind']['id']: membership['kind']['name']
-            for membership in retrieved_profile['memberships']
-            }
-        if member_kind_id not in member_kinds:
-            raise HTTPBadRequest('invalid parameter: member_kind_id')
+        
         provider = get_oauth_provider(self.request)
         oauth_params = dict(self.request.session['oauth_params'])
+        logger.debug('the state for now is: {}'.format(oauth_params['state']))
         state = oauth_params.pop('state')
-        id_ = extract_identifer(self.request)
+        id_, authenticator_name = extract_identifer(self.request)
 
-        # 一般ユーザーの場合ログインIDでファンクラブIDを上書きする
-        pseudo_fanclub = retrieved_profile.get('pseudo_fanclub', False)
-        if pseudo_fanclub:
-            membership_id=id_
+        # raise error if something goes wrong.
+        provider.validate_authz_request(self.request, authenticator_name)
 
-        identity = dict(
-            id=id_,
-            profile=self.request.altair_auth_metadata,
-            member_kind=dict(
-                id=member_kind_id,
-                name=member_kinds[member_kind_id]
-                ),
-            membership_id=membership_id
-            )
+        identity = provider.build_identity(self.request, id_, authenticator_name)
+        if identity is None:
+            raise OAuthBadRequestError('could not build identity')
+
         nonce = oauth_params.pop('nonce')
         max_age = oauth_params.pop('max_age')
         authenticated_at = oauth_params.pop('authenticated_at')
@@ -477,22 +541,7 @@ class View(object):
         permission='authenticated'
         )
     def no_valid_memberships(self):
-        data = self.request.session['retrieved']
-        pseudo_fanclub = data.get('pseudo_fanclub', False)
-
-        # フラグを持っている場合は一般ユーザー情報を取得する
-        if pseudo_fanclub:
-            pseudo_data = get_communicator(self.request, self.request.organization.fanclub_api_type).get_pseudo_user_profile()
-            self.request.session['retrieved'] = dict(
-                                                    pseudo_fanclub = pseudo_fanclub,
-                                                    memberships = pseudo_data['memberships']
-                                                )
-            return dict(
-                       memberships = pseudo_data['memberships']
-                   )
-                       
-        else:
-            return dict()
+        return dict()
 
 
 @lbr_view_config(route_name='extauth.logout')

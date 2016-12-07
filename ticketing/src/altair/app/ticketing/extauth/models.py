@@ -25,7 +25,6 @@ class Organization(Base):
     short_name = sa.Column(sa.Unicode(32), nullable=False)
     canonical_host_name = sa.Column(sa.Unicode(128), sa.ForeignKey('Host.host_name', use_alter=True, name=u'Organization_ibfk_1'), nullable=True)
     maximum_oauth_scope = sa.Column(MutableSpaceDelimitedList.as_mutable(SpaceDelimitedList(255)), nullable=False, default=u'')
-    maximum_oauth_client_expiration_time = sa.Column(sa.Integer(), nullable=False, default=63072000)
     invalidate_client_http_session_on_access_token_revocation = sa.Column(sa.Boolean(), nullable=False, default=False)
     emergency_exit_url = sa.Column(sa.Unicode(255), nullable=True, default=None)
     settings = sa.Column(MutationDict.as_mutable(JSONEncodedDict(2048)))
@@ -147,8 +146,6 @@ class OAuthClient(Base, WithCreatedAt):
     client_secret = sa.Column(sa.Unicode(128), nullable=False)
     authorized_scope = sa.Column(MutableSpaceDelimitedList.as_mutable(SpaceDelimitedList(255)), nullable=False, default=u'')
     redirect_uri = sa.Column(sa.Unicode(384), nullable=True)
-    valid_since = sa.Column(sa.DateTime(), nullable=True)
-    expire_at = sa.Column(sa.DateTime(), nullable=True)
 
     organization = orm.relationship(Organization, foreign_keys=[organization_id])
 
@@ -174,3 +171,17 @@ class OAuthClient(Base, WithCreatedAt):
 
     def validate_secret(self, secret):
         return self.client_secret == secret
+
+
+class OAuthServiceProvider(Base, WithCreatedAt):
+    __tablename__ = 'OAuthServiceProvider'
+    id = sa.Column(Identifier, autoincrement=True, primary_key=True, nullable=False)
+    name = sa.Column(sa.Unicode(32), nullable=False)
+    display_name = sa.Column(sa.Unicode(255), nullable=False)
+    auth_type = sa.Column(sa.Unicode(64), nullable=False)
+    endpoint_base = sa.Column(sa.Unicode(255), nullable=False)
+    consumer_key = sa.Column(sa.Unicode(255), nullable=False)
+    consumer_secret = sa.Column(sa.Unicode(255), nullable=False)
+    scope = sa.Column(sa.Unicode(255), nullable=True, default=u'')
+    organization_id = sa.Column(Identifier, sa.ForeignKey('Organization.id'))
+    organization = orm.relationship('Organization', backref='oauth_service_provider')  # 1:1

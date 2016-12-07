@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from datetime import datetime as dt
 from datetime import date
 from altair.formhelpers.fields import OurFormField
 
@@ -29,27 +30,30 @@ def create_form(request, context, formdata=None, **kwds):
     if formdata is None:
         # デフォルト値で populate
         user = cart_api.get_or_create_user(context.authenticated_user())
-        if context.membershipinfo is not None and \
-           context.membershipinfo.enable_auto_input_form and \
-           user is not None and user.user_profile is not None:
-            user_profile = user.user_profile
+        metadata = getattr(request, 'altair_auth_metadata', {})
+        if request.altair_auth_info['membership_source'] == 'altair.oauth_auth.plugin.OAuthAuthPlugin':
+            metadata = metadata[u'profile']
+        if context.membershipinfo is not None and context.membershipinfo.enable_auto_input_form:
+            birthday = None
+            if metadata.get('birthday'):
+                birthday = dt.strptime(metadata.get('birthday'), '%Y-%m-%dT%H:%M:%S').date()
             data = dict(
-                last_name=user_profile.last_name,
-                last_name_kana=user_profile.last_name_kana,
-                first_name=user_profile.first_name,
-                first_name_kana=user_profile.first_name_kana,
-                tel_1=user_profile.tel_1,
-                fax=user_profile.fax,
-                zip=user_profile.zip,
-                prefecture=user_profile.prefecture,
-                city=user_profile.city,
-                address_1=user_profile.address_1,
-                address_2=user_profile.address_2,
-                email_1=user_profile.email_1,
-                email_2=user_profile.email_2,
-                sex=user_profile.sex,
-                birthday=user_profile.birthday
-                )
+                last_name=metadata.get('last_name'),
+                last_name_kana=metadata.get('last_name_kana'),
+                first_name=metadata.get('first_name'),
+                first_name_kana=metadata.get('first_name_kana'),
+                tel_1=metadata.get('tel_1'),
+                fax=metadata.get('fax'),
+                zip=metadata.get('zip'),
+                prefecture=metadata.get('prefecture'),
+                city=metadata.get('city'),
+                address_1=metadata.get('address_1'),
+                address_2=metadata.get('address_2'),
+                email_1=metadata.get('email_1'),
+                email_2=metadata.get('email_2'),
+                sex=metadata.get('sex'),
+                birthday=birthday
+            )
         else:
             data = {}
         # xxx:ゆるふわなデフォルト値
@@ -66,6 +70,9 @@ def create_form(request, context, formdata=None, **kwds):
         _data=data,
         formdata=formdata,
         **kwds)
+    # emailアドレスが取れた場合は、確認用も埋めてしまう
+    if form.email_1.data:
+        form.email_1_confirm.data = form.email_1.data
     if form.country:
         form.country.choices = [(h, h) for h in Cart_ClientFormFactory(request).get_countries()]
 

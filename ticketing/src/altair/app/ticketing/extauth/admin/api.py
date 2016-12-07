@@ -1,18 +1,20 @@
 from sqlalchemy.orm.exc import NoResultFound
 from altair.sqlahelper import get_db_session
 from .models import Operator
+from ..models import Organization
 from ..utils import generate_salt, digest_secret
 
-def create_operator(request, organization, auth_identifier, auth_secret, role):
+def create_operator(request, organization_name, auth_identifier, auth_secret, role):
     salt = generate_salt()
     digest = digest_secret(auth_secret, salt)
+    session = get_db_session(request, 'extauth')
+    organization = lookup_organization_by_name(request, organization_name)
     operator = Operator(
         organization=organization,
         auth_identifier=auth_identifier,
         auth_secret=digest,
         role=role
         )
-    session = get_db_session(request, 'extauth')
     session.add(operator)
     session.flush()
     return operator
@@ -53,3 +55,23 @@ def lookup_operator_by_credentials(request, auth_identifier, auth_secret):
         return operator
     except NoResultFound:
         return None
+
+def lookup_organization_by_name(request, organization_name):
+    session = get_db_session(request, 'extauth')
+    try:
+        organization = session.query(Organization).filter_by(short_name=organization_name).one()
+    except NoResultFound as e:
+        raise e
+    except MultipleResultsFound as e:
+        raise e
+
+    return organization
+
+def lookup_organization_by_id(request, organization_id):
+    session = get_db_session(request, 'extauth')
+    try:
+        organization = session.query(Organization).filter_by(id=organization_id).one()
+    except NoResultFound as e:
+        raise e
+
+    return organization
