@@ -199,3 +199,6 @@ class PaymentError(ContextualCartException):
 
 class CompletionPageNotRenderered(CartException):
     pass
+
+class OAuthRequiredSettingError(Exception):
+    pass

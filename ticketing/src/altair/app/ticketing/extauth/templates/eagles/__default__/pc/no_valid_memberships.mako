@@ -9,11 +9,9 @@
 <dl>
 <dt class="login-name"><span>一般の方</span></dt>
 <dd class="login-inbox">
-% for membership in memberships:
-<a href="${_context.route_path('extauth.authorize', _query=dict(_=request.session.get_csrf_token(), member_kind_id=membership['kind']['id'], membership_id=membership['membership_id']))}">
+<a href="${_context.route_path('extauth.authorize', _query=dict(_=request.session.get_csrf_token(), use_fanclub=False))}">
 <p class="mgt20 mgb20"><button class="btnA btnA_l">次へ進む</button></p>
 </a>
-% endfor
 </dd>
 </dl>
 </div>

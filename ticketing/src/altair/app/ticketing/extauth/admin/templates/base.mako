@@ -117,6 +117,7 @@ $(function () {
         <div class="nav-collapse">
           <ul class="nav pull-right">
             % if request.operator is not None:
+            <li><span style="line-height: 28px;">${request.operator.auth_identifier}</span></li>
             <li><a href="${request.route_path('logout')}"><i class="icon-off"></i> ログアウト</a></li>
             % endif
           </ul>

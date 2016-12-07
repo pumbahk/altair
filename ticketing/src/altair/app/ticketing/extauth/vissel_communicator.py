@@ -16,7 +16,6 @@ from altair.app.ticketing.utils import parse_content_type
 
 logger = logging.getLogger(__name__)
 
-
 @implementer(ICommunicator)
 class VisselCommunicator(object):
     def __init__(self, endpoint_base, opener_factory, client_name, hash_key, style_classes={}, request_charset='utf-8', timeout=None):
@@ -100,25 +99,22 @@ class VisselCommunicator(object):
         h.update(self.hash_key)
         token = six.text_type(h.hexdigest())
         this_year = six.text_type(datetime.now().year)
+
+        # start_year, end_year recovery ticket: TKT-2727
         data = self._do_request(
             urljoin(self.endpoint_base, '/api/members-check'),
             {
                 u'open_id': openid_claimed_id,
                 u'client_name': self.client_name,
                 u'token': token,
-                u'start_year': this_year,
-                u'end_year':  this_year,
+                u'start_year': u'2016',
+                u'end_year':  u'2017',
                 u'ticket_only': u'1' if ticket_only else u'0',
                 u'is_eternal': u'1' if is_eternal else u'0',
                 }
             )
         try:
             members = data['members']
-
-            # ファンクラブが見つからなかった場合、一般ユーザーとして擬似ファンクラブログインさせるフラグ
-            # 実際の会員情報はget_pseudo_user_profileを参照のこと
-            if len(members) == 0:
-                return dict(pseudo_fanclub=True, memberships=[])
         except:
             raise InvalidPayloadError(u'"members" field is missing')
         if not all(isinstance(member, dict) for member in members):
@@ -146,19 +142,6 @@ class VisselCommunicator(object):
         except KeyError as e:
             raise InvalidPayloadError(u'"%s" field is missing in member' % e.message)
 
-    def get_pseudo_user_profile(self):
-            return dict(
-                memberships=[
-                    dict(
-                        membership_id=0, #この時点では0を入れるが最終的にopen_idで上書き
-                        kind=dict(
-                            id=0,
-                            name=u'一般ユーザー',
-                            )
-                        )
-                    ]
-                )
-
 def includeme(config):
     from altair.app.ticketing.urllib2ext import opener_factory_from_config
 
@@ -180,4 +163,3 @@ def includeme(config):
         ICommunicator,
         name='vissel'
         )
-   

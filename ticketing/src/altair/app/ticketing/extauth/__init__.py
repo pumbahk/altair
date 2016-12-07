@@ -14,12 +14,27 @@ ENDPOINT_PATH = {
 def empty_resource_factory(request):
     return None
 
+# IWhoAPIDecider
+def decide_auth_plugin(request, classification):
+    # plugin_name = request.organization.fanclub_api_type  # 仮
+    if request.params.get('service_providers'):
+        plugin_names = request.params.get('service_providers').split(',')
+    else:
+        plugin_names = request.session['service_providers']
+    if u'internal' not in plugin_names:
+        plugin_names.append(u'internal')  # (extauth)Internal は常に使うようにする
+    if not plugin_names:
+        logger.error('invalid request: service_providers parameter is missing. {}'.format(request.url))
+        raise  # カート設定で必ず選択されるように保証すべき
+    return plugin_names
+
 def setup_auth(config):
     config.include('altair.auth')
     config.include('altair.rakuten_auth')
+    config.include('altair.fanclub_auth')
     config.include('.internal_auth')
 
-    config.set_who_api_decider(lambda request, classification: None)
+    #config.set_who_api_decider(lambda request, classification: None)
     from altair.auth import set_auth_policy
     from .rakuten_auth import add_claimed_id_to_principals
     set_auth_policy(config, add_claimed_id_to_principals)
@@ -63,6 +78,11 @@ def setup_auth(config):
     config.add_route('rakuten_auth.verify', '/.openid/verify', factory=empty_resource_factory)
     config.add_route('rakuten_auth.verify2', '/.openid/verify2', factory=empty_resource_factory)
     config.add_route('rakuten_auth.error', '/.openid/error', factory=empty_resource_factory)
+
+    # ファンクラブ認証URL
+    config.add_route('fanclub_auth.verify', '/.fanclub/verify', factory=empty_resource_factory)
+    config.add_route('fanclub_auth.verify2', '/.fanclub/verify2', factory=empty_resource_factory)
+    config.add_route('fanclub_auth.error', '/.fanclub/error', factory=empty_resource_factory)
 
 def setup_beaker_cache(config):
     from pyramid_beaker import set_cache_regions_from_settings
@@ -173,6 +193,7 @@ def webapp_main(global_config, **local_config):
     config.add_route('extauth.reset_and_continue', '/reset/*path', factory=empty_resource_factory)
     config.add_route('extauth.entry', '/{subtype}/', traverse='/{subtype}')
     config.add_route('extauth.rakuten.entry', '/{subtype}/rid', traverse='/{subtype}')
+    config.add_route('extauth.fanclub.entry', '/{subtype}/fanclub', traverse='/{subtype}')
     config.add_route('extauth.unknown_user', '/{subtype}/unknown', traverse='/{subtype}')
     config.add_route('extauth.no_valid_memberships', '/{subtype}/none', traverse='/{subtype}')
     config.add_route('extauth.select_account', '/{subtype}/select_account', traverse='/{subtype}')

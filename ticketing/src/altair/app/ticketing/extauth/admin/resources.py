@@ -9,12 +9,15 @@ from ..models import Organization
 class BaseResource(object):
     __acl__ = [
         (Allow, Authenticated, 'authenticated'),
+        (Allow, 'administrator', 'manage_organizations'),
+        (Allow, 'administrator', 'manage_service_providers'),
         (Allow, 'administrator', 'manage_my_organization'),
         (Allow, 'administrator', 'manage_operators'),
         (Allow, 'administrator', 'manage_oauth_clients'),
         (Allow, 'administrator', 'manage_member_sets'),
         (Allow, 'administrator', 'manage_member_kinds'),
         (Allow, 'administrator', 'manage_members'),
+        (Allow, 'operator', 'manage_member_sets'),
         (Allow, 'operator', 'manage_members'),
         (Allow, 'operator', 'manage_member_kinds'),
         DENY_ALL,

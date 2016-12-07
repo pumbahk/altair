@@ -44,25 +44,27 @@
   <strong>${message}</strong>
 </div>
 % endfor
-<a href="#modal-new-oauth-client" data-toggle="modal" class="btn">新規OAuthクライアント</a>
+<h2>OAuthClient 一覧</h2>
+<a href="#modal-new-oauth-client" data-toggle="modal" class="btn" style="margin:10px 0;"><i class="icon-plus"></i>新規OAuthClient</a>
 <form action="${request.route_path('oauth_clients.delete')}" method="POST">
-<input type="submit" name="doDelete" class="btn" value="削除する" data-submit-confirmation-prompt="選択されたOAuthクライアントを削除します。よろしいですか?" />
+
 <table class="table">
   <thead>
     <tr>
       <th>✔</th>
+      <th>組織名</th>
       <th>アプリケーション名</th>
       <th>Client ID</th>
       <th>Client Secret</th>
       <th>リダイレクトURI</th>
       <th>スコープ</th>
-      <th>有効期限</th>
     </tr>
   </thead>
   <tbody>
 % for oauth_client in oauth_clients:
     <tr>
       <td><input type="checkbox" name="id" value="${oauth_client.id}"></td>
+      <td>${oauth_client.organization.short_name}</td>
       <td>${oauth_client.name}</td>
       <td><span class="client-credential">${oauth_client.client_id}</a></td>
       <td>
@@ -70,16 +72,16 @@
       </td>
       <td>${oauth_client.redirect_uri}</td>
       <td>${u' / '.join(oauth_client.authorized_scope)}</td>
-      <td>${h.term(oauth_client.valid_since, oauth_client.expire_at)}</td>
     </tr>
 % endfor
   </tbody>
 </table>
+<input type="submit" name="doDelete" class="btn btn-danger" value="削除する" data-submit-confirmation-prompt="選択されたOAuthClientを削除します。よろしいですか?" />
 </form>
 <div id="modal-new-oauth-client" class="modal hide" role="dialog" aria-hidden="true">
   <div class="modal-header">
     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-    <h3>OAuthクライアント登録</h3>
+    <h3>OAuthClient 登録</h3>
   </div>
   <div class="modal-body">
     ${panel('oauth_clients.new')}
@@ -99,6 +101,7 @@
       type: 'POST',
       dataType: 'html',
       data: {
+        organization_name: $form.find('select[name=organization_name]').val(),
         name: $form.find('input[name=name]').val(),
         redirect_uri: $form.find('input[name=redirect_uri]').val()
       },

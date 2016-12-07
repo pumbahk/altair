@@ -1,7 +1,6 @@
 *{
 margin:0;
 padding:0;
-border:none;
 }
 
 
@@ -138,44 +137,47 @@ a:hover img {
 
 .header{
     background: url(../images/header-bg.gif) repeat scroll 0 0 transparent;
-    height: 82px;
     width:100%;
+	height: 76px;	
 	margin:0;
 	padding: 0;
 	position: relative;
 }
-
+.header img {
+  height: 70px;
+}
 .header .history {
+	position: absolute;
 	margin: 65px 0 0 500px ;
 }
 
 .historybtn {
-	-moz-box-shadow:inset 0px 1px 0px 0px #faeec0;
-	-webkit-box-shadow:inset 0px 1px 0px 0px #faeec0;
-	box-shadow:inset 0px 1px 0px 0px #faeec0;
-	background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #ffd147), color-stop(1, #ba862c) );
-	background:-moz-linear-gradient( center top, #ffd147 5%, #ba862c 100% );
-	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffd147', endColorstr='#ba862c');
-	background-color:#ffd147;
+	-moz-box-shadow:inset 0px 1px 0px 0px #fce2c1;
+	-webkit-box-shadow:inset 0px 1px 0px 0px #fce2c1;
+	box-shadow:inset 0px 1px 0px 0px #fce2c1;
+	background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #ffc145), color-stop(1, #c79354) );
+	background:-moz-linear-gradient( center top, #ffc145 5%, #c79354 100% );
+	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffc145', endColorstr='#c79354');
+	background-color:#ffc145;
 	-moz-border-radius:6px;
 	-webkit-border-radius:6px;
 	border-radius:6px;
-	border:1px solid #eeb44f;
+	border:1px solid #edaf51;
 	display:inline-block;
 	color:#ffffff;
 	font-family:arial;
 	font-size:15px;
 	font-weight:bold;
-	padding:6px 63px;
+	padding:6px 80px;
 	text-decoration:none;
 	text-shadow:1px 1px 0px #946315;
 	margin-bottom: 8px;
 }
 .historybtn:hover {
-	background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #ba862c), color-stop(1, #ffd147) );
-	background:-moz-linear-gradient( center top, #ba862c 5%, #ffd147 100% );
-	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#ba862c', endColorstr='#ffd147');
-	background-color:#ba862c;
+	background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #c79354), color-stop(1, #ffc145) );
+	background:-moz-linear-gradient( center top, #c79354 5%, #ffc145 100% );
+	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#c79354', endColorstr='#ffc145');
+	background-color:#c79354;
 	color:#ffffff;
 }
 .historybtn:active {
@@ -185,20 +187,17 @@ a:hover img {
 }
 
 .header .header-inner{
-	width: 975px;
+	width: 980px;
 	margin: 0 auto;
-    position: relative;
 }
-
 .gnavi{
 	font-size: 12px;
-	width: 250px;
+	width: 500px;
 	margin: 0px auto 0 auto;
 	padding: 14px 0 0 0;
 	text-align: right;	
-	position: absolute;
-    top: 0px;
-    right: 0px;
+	position: relative;
+	float: right;
 }
 
 .main-top{
@@ -255,14 +254,6 @@ a:hover img {
 	text-decoration: none;
 }
 
-img.partnerlogo{
-	position: absolute;
-	top:10px;
-	left:476px;
-	display:block;
-}
-
-
 .functions-inner table{
 	margin: 2px auto 0 auto;
 }
@@ -279,7 +270,6 @@ img.partnerlogo{
 
 }
 
-
 .kadomaru{
 	width:924px;
 	margin: 20px auto;
@@ -290,6 +280,7 @@ img.partnerlogo{
 	-moz-border-radius: 10px;
 	clear: both;
 }
+
 
 .kadomaru ul{
 	padding: 0 0 0 40px;
@@ -308,20 +299,61 @@ img.partnerlogo{
 	margin:0;
 }
 
+.kadomaru table.form {
+	margin: 0px 0px 20px 0px;
+	border-spacing: 5px;
+	width: auto; 
+}
+
+.kadomaru table.form tbody th {
+	padding: 5px;
+	border-right: 2px solid #ddd;
+	width: 200px;
+}
+
+.kadomaru table.form thead th {
+	padding: 5px;
+	text-align: left;
+}
+
+.kadomaru table.form td {
+	padding: 5px;
+}
+
+.kadomaru table.form tfoot td {
+	padding: 5px;
+}
+
+.kadomaru table.form tr td ul {
+	list-style-type: none;
+	padding: 0 0;
+	margin: 0 0;
+}
+
+.kadomaru .form-footer {
+    text-align: center;
+}
+
+
 
 .redBG{
-	background: #9b0020;
+	background: #900027;
 	color: #fff;
 }
 
 a{
-	color:#9b0020;
+	color:#900027;
 }
 
-a:hover{
-	color:#480013;
+a:hover {
+	color: #480013;
 }
 
+
+table.layout {
+    width: 100%;
+    border-collapse:collapse;
+}
 
 
 img{
@@ -423,7 +455,7 @@ border: 0;
 }
 
 h1{
-	margin-left: 50px;
+	display: none;
 }
 
 h2{
@@ -468,7 +500,7 @@ h4{
 
 
 h4 span.order{
-	background: #9b0020;
+	background: #900027;
 	color: #fff;
 	font-size: 14px;
 	font-weight: bold;
@@ -480,11 +512,6 @@ h4 span.order{
 
 .purchased{
 	padding: 10px 20px;
-}
-
-.purchased h2{
-	background: none;
-	padding: 0 30px;
 }
 
 
@@ -509,7 +536,7 @@ h4 span.order{
 .purchased table.purchasedContents{
 	border: 2px #efefef solid;
 	border-collapse: collapse;
-	width: 620px;
+	width: 100%;
 }
 
 .purchased table.purchasedContents thead th{
@@ -785,9 +812,9 @@ dl.faq{
 
 dl.faq dt{
 	font-size: 14px;
-	color: #9b0020;
+	color: #900027;
 	font-weight: bold;
-	border-left: #9b0020 3px solid;
+	border-left: #900027 3px solid;
 	padding-left: 10px;
 	margin-bottom: 5px;
 }
@@ -804,7 +831,7 @@ dl.faq dd{
 	font-weight: bold;
 	margin: 5px;
 	font-size: 10px;
-	border-left: 3px #9b0020 double;
+	border-left: 3px #900027 double;
 }
 
 .function{
@@ -829,7 +856,7 @@ dl.faq dd{
 
 
 table.ticketAmount {
-	border-top: 3px #9b0020 solid;
+	border-top: 3px #900027 solid;
 	border-left: 1px #ccc solid;
 	border-right: 1px #ccc solid;
 	border-bottom: 1px #ccc solid;
@@ -949,12 +976,12 @@ div#performance-calendar table {
 
 div#performance-calendar table td,
 div#performance-calendar table th {
-  border: 1px solid #9b0020;
+  border: 1px solid #900027;
   background: #fff;
   }
 
 div#performance-calendar table thead th {
-  border-top: 2px solid #9b0020;
+  border-top: 2px solid #900027;
   text-align: center;
   font-weight: bold;
   height: 20px;
@@ -963,17 +990,17 @@ div#performance-calendar table thead th {
 
 div#performance-calendar table tr.last th,
 div#performance-calendar table tr.last td {
-  border-bottom: 2px solid #9b0020;
+  border-bottom: 2px solid #900027;
 }
 
 div#performance-calendar table th.first,
 div#performance-calendar table td.first {
-  border-left: 2px solid #9b0020;
+  border-left: 2px solid #900027;
 }
 
 div#performance-calendar table th.last,
 div#performance-calendar table td.last {
-  border-right: 2px solid #9b0020;
+  border-right: 2px solid #900027;
 }
 
 div#performance-calendar table td.empty {
@@ -1080,7 +1107,7 @@ table.phone th{
 
 div#performance-calendar .month-tab span{
 	margin: 2px 10px;
-	background-color: #9b0020;
+	background-color: #900027;
 	padding: 10px 20px 5px 20px;
 	color: #fff;
 	border-radius: 5px 5px 0px 0px;
@@ -1103,75 +1130,50 @@ div#performance-calendar .month-tab span a{
 	text-decoration: underline;
 }
 
-
-
+/* footer ==================== */
 .footer {
-    background: url(../images/header-bg.gif) repeat scroll 0 0 transparent;
-    clear: both;
-    text-align: right;
-    width:100%;
-    padding: 10px 0 10px 0;   
-    color: #fff;
+  background: url(../images/header-bg.gif) repeat scroll 0 0 transparent;
+  padding: 10px 0;
+  overflow: hidden;
+font-size: 101.4%;
 }
-
-.footer-inner{
-	width: 984px;	
-	margin: 0 auto;
-	height: 80px;
+.footer .wrap {
+  width: 980px;
+  margin: 0 auto;
 }
-
-.footer-inner img{
-	float: left;
+.footer .box {
+  width: 48%;
+  margin: 0 auto;
 }
-
-.footer .footernav {
-    color: #fff;
-    font-size: 14px;
-    width: 500px;
-    float: right;
-    padding-top: 15px;
-}
-
-
 .footer .copyright {
-    color: #555;
-    font-size: 85%;
-    margin: 10px auto;
-    color: #fff;
-    float: right;
+  color: #fff;
+  margin: 10px auto;
+  clear: both;
 }
-
-.footer .footernav ul {
-    font-size: 75%;
-    list-style-type: none;
-    padding: 0;
+.footer .nav-footer {
+  color: #fff;
+  padding-top: 15px;
 }
-
-.footer .footernav ul li.first {
-    border-left: medium none;
+.footer .nav-footer li {
+  border-left: 1px solid #fff;
+  display: inline;
+  padding: 0 6px;
+  line-height: 1.8;	
 }
-
-.footer .footernav ul li {
-    border-left: 1px solid #9b0020;
-    display: inline;
-    padding: 0 6px;
-    #fff-space: nowrap;
-}
-
-.footer .footernav ul li a{
-    color: #fff;
-    text-decoration: none;
-}
-
-.footer .footernav ul li a:hover{
-    color: #fc0;
-}
+.footer .nav-footer li a { color: #fff; text-decoration: none; }
+.footer .nav-footer li a:hover { color: #fc0; }
+.footer .nav-footer li:first-child { border: none; }
+.footer .for-sp-img { margin: 10px; }
+.footer .for-sp-img img { width: 90%; }
+.footer .box:nth-child(odd) { float: left; }
+.footer .box:nth-child(even) { float: right; }
+/* footer END==================== */
 
 .red{
 	color:#f00;
 }
 
-.#fff{
+.white{
 	color: #fff;
 }
 
@@ -1190,7 +1192,7 @@ table.login{
 
 
 table.login thead th{
-	background: #9b0020;
+	background: #900027;
 	color: #fff;
 	font-weight: bold;
 	padding: 5px 10px;
@@ -1250,3 +1252,82 @@ table.schedule tr.row td.presale, table.schedule tr.row td.onsale {
 }
 
 
+/* added */
+table.formvissel{
+	border-collapse: collapse;
+	margin: 0px auto 20px auto;
+	padding: 10px;
+	width: 924px;
+	border: 5px solid #811527;
+}
+
+table.formvissel tbody th{
+	background-color: #efefef;
+	border-collapse: collapse;
+	padding: 10px;
+	border-bottom: 1px solid #bc1739;
+	text-align: right;
+}
+
+
+table.formvissel thead th{
+	background-color: #efefef;
+	border-collapse: collapse;
+	padding: 10px;
+	border-bottom: 1px solid #bc1739;
+	text-align: left;
+	font-size: 16px;
+}
+
+
+table.formvissel td{
+	background-color: #fff;
+	padding: 10px;
+	border-bottom: 1px solid #bc1739;
+}
+
+table.formvissel tfoot td{
+	background-color: #fff;
+	padding: 10px;
+	border-top: 2px solid #bc1739;
+	font-size: 16px;
+}
+
+table.formvissel input{
+  border: 1px solid #bc1739;
+  font-size: 20px;
+  line-height: 120%;
+  height: 30px;
+}
+
+table.formvissel input.submit {
+  text-align: center;
+  color: #fff;
+  padding: 5px;
+  border: 1px solid #A3A3A3;
+  margin: 10px auto;
+  font-size: 20px;
+  font-weight: bold;
+  display: inline-block;
+  background: #B7B7B7; /* Old browsers */
+  background: -moz-linear-gradient(top, #D7D7D7 0%, #C7C7C7 50%, #B7B7B7 51%, #A7A7A7 75%, #A7A7A7 100%); /* FF3.6+ */
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#D7D7D7), color-stop(50%,#C7C7C7), color-stop(51%,#B7B7B7), color-stop(75%,#A7A7A7), color-stop(100%,#A7A7A7)); /* Chrome,Safari4+ */
+  background: -webkit-linear-gradient(top, #D7D7D7 0%,#C7C7C7 50%,#B7B7B7 51%,#A7A7A7 75%,#A7A7A7 100%); /* Chrome10+,Safari5.1+ */
+  background: -o-linear-gradient(top, #D7D7D7 0%,#C7C7C7 50%,#B7B7B7 51%,#A7A7A7 75%,#A7A7A7 100%); /* Opera 11.10+ */
+  background: -ms-linear-gradient(top, #D7D7D7 0%,#C7C7C7 50%,#B7B7B7 51%,#A7A7A7 75%,#A7A7A7 100%); /* IE10+ */
+  background: linear-gradient(top, #D7D7D7 0%,#C7C7C7 50%,#B7B7B7 51%,#A7A7A7 75%,#A7A7A7 100%); /* W3C */
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#D7D7D7', endColorstr='#A7A7A7',GradientType=0); /* IE6-9 */
+}
+
+table.formvissel input.submit:hover {
+  background: #747474; /* Old browsers */
+  background: -moz-linear-gradient(top, #A7A7A7 0%, #9F9F9F 50%, #848484 51%, #747474 75%, #747474 100%); /* FF3.6+ */
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#A7A7A7), color-stop(50%,#9F9F9F), color-stop(51%,#848484), color-stop(75%,#747474), color-stop(100%,#747474)); /* Chrome,Safari4+ */
+  background: -webkit-linear-gradient(top, #A7A7A7 0%,#9F9F9F 50%,#848484 51%,#747474 75%,#747474 100%); /* Chrome10+,Safari5.1+ */
+  background: -o-linear-gradient(top, #A7A7A7 0%,#9F9F9F 50%,#848484 51%,#747474 75%,#747474 100%); /* Opera 11.10+ */
+  background: -ms-linear-gradient(top, #A7A7A7 0%,#9F9F9F 50%,#848484 51%,#747474 75%,#747474 100%); /* IE10+ */
+  background: linear-gradient(top, #A7A7A7 0%,#9F9F9F 50%,#848484 51%,#747474 75%,#747474 100%); /* W3C */
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#A7A7A7', endColorstr='#747474',GradientType=0 ); /* IE6-9 */
+}
+
+/* form中のinput要素に枠をつける */

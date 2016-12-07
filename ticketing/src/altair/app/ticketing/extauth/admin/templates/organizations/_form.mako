@@ -1,4 +1,13 @@
 <div class="control-group">
+  <label class="control-label" for="organization-form--short_name">${form.short_name.label.text}</label>
+  <div class="controls">
+    ${form.short_name(id="organization-form--short_name")}
+    %if form.short_name.errors:
+    <span class="help-inline">${u' / '.join(form.short_name.errors)}</span>
+    % endif
+  </div>
+</div>
+<div class="control-group">
   <label class="control-label" for="organization-form--maximum_oauth_scope">${form.maximum_oauth_scope.label.text}</label>
   <div class="controls">
     ${form.maximum_oauth_scope(id="organization-form--maximum_oauth_scope")}
@@ -8,18 +17,12 @@
   </div>
 </div>
 <div class="control-group">
-  <label class="control-label" for="organization-form--maximum_oauth_client_expiration_time">${form.maximum_oauth_client_expiration_time.label.text}</label>
-  <div class="controls">
-    ${form.maximum_oauth_client_expiration_time(id="organization-form--maximum_oauth_client_expiration_time")}
-    %if form.maximum_oauth_client_expiration_time.errors:
-    <span class="help-inline">${u' / '.join(form.maximum_oauth_client_expiration_time.errors)}</span>
-    % endif
-  </div>
-</div>
-<div class="control-group">
   <label class="control-label" for="organization-form--canonical_host_name">${form.canonical_host_name.label.text}</label>
   <div class="controls">
     ${form.canonical_host_name(id="organization-form--canonical_host_name")}
+    %if 'edit' in request.path:
+    <a href="${request.route_path('hosts.new', id=request.matchdict['id'])}">新規ホスト追加</a>
+    %endif
     %if form.canonical_host_name.errors:
     <span class="help-inline">${u' / '.join(form.canonical_host_name.errors)}</span>
     % endif
@@ -40,6 +43,15 @@
     ${form.invalidate_client_http_session_on_access_token_revocation(id="organization-form--invalidate_client_http_session_on_access_token_revocation")}
     %if form.invalidate_client_http_session_on_access_token_revocation.errors:
     <span class="help-inline">${u' / '.join(form.invalidate_client_http_session_on_access_token_revocation.errors)}</span>
+    % endif
+  </div>
+</div>
+<div class="control-group">
+  <label class="control-label" for="organization-form--fanclub_api_available">${form.fanclub_api_available.label.text}</label>
+  <div class="controls">
+    ${form.fanclub_api_available(id="organization-form--fanclub_api_available")}
+    %if form.fanclub_api_available.errors:
+    <span class="help-inline">${u' / '.join(form.fanclub_api_available.errors)}</span>
     % endif
   </div>
 </div>

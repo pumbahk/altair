@@ -3,4 +3,5 @@ class InvalidForm(Exception):
         self.form = form
         self.errors = errors
 
-
+class OAuthRequiredSettingError(Exception):
+    pass

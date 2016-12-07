@@ -37,7 +37,7 @@ from altair.formhelpers import Max, after1900
 from wtforms.validators import Required, Length, Optional
 from wtforms import ValidationError
 from altair.sqlahelper import get_db_session
-from ..models import MemberSet, MemberKind, Member, Host
+from ..models import MemberSet, MemberKind, Member, Host, Organization, OAuthServiceProvider
 from ..utils import period_overlaps
 from ..interfaces import ICommunicator
 from .api import lookup_operator_by_auth_identifier
@@ -65,7 +65,7 @@ class DictBackedFormField(OurFormField):
         candidate = obj.get(name, None)
         if candidate is None:
             if self._obj is None:
-                raise TypeError('fetch_value_from_obj: cannot find a value to populate fom the provided obj or input data/defaults')
+                raise TypeError('fetch_value_from_obj: cannot find a value to populate from the provided obj or input data/defaults')
             candidate = self._obj
         return candidate[name]
 
@@ -73,7 +73,7 @@ class DictBackedFormField(OurFormField):
         candidate = obj.get(name, None)
         if candidate is None:
             if self._obj is None:
-                raise TypeError('populate_obj: cannot find a value to populate fom the provided obj or input data/defaults')
+                raise TypeError('populate_obj: cannot find a value to populate from the provided obj or input data/defaults')
             candidate = self._obj
             obj[name] = candidate
         self.form.populate_obj(candidate)
@@ -108,6 +108,11 @@ class OrganizationSettingsForm(DictBackedForm):
 
 
 class OrganizationForm(OurForm):
+    short_name = OurTextField(
+        label=u'ショートネーム',
+        validators=[Required()]
+        )
+
     maximum_oauth_scope = OurSelectMultipleField(
         label=u'デフォルトOAuthスコープ',
         choices=[
@@ -116,18 +121,17 @@ class OrganizationForm(OurForm):
         default=[u'user_info']
         )
 
-    maximum_oauth_client_expiration_time = OurIntegerField(
-        label=u'OAuthクライアント有効期限 (秒)',
-        default=63072000
-        )
-
     canonical_host_name = OurSelectField(
         label=u'正規ホスト名',
         choices=lambda field: \
             get_db_session(field._form.request, 'extauth') \
                 .query(Host.host_name, Host.host_name) \
-                .filter(Host.organization_id == field._form.request.operator.organization_id) \
+                .filter(Host.organization_id == field._form.organization_id) \
                 .all()
+        )
+
+    fanclub_api_available = OurBooleanField(
+        label=u'ファンクラブAPI有効化'
         )
 
     invalidate_client_http_session_on_access_token_revocation = OurBooleanField(
@@ -143,19 +147,32 @@ class OrganizationForm(OurForm):
         label=u'ファンクラブAPIの種類',
         choices=lambda field: [(name, name) for name, _ in field._form.request.registry.getUtilitiesFor(ICommunicator)],
         validators=[
-            SwitchOptionalBase(predicate=lambda form, field: not form.fanclub_api_available),
+            SwitchOptionalBase(predicate=lambda form, field: not form.is_fanclub_api_available),
             ]
         )
 
     settings = OurFormField(OrganizationSettingsForm)
 
     @property
-    def fanclub_api_available(self):
+    def is_fanclub_api_available(self):
         return self.request and self.request.operator and self.request.operator.organization.fanclub_api_available
 
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop('request', None)
+        organization = kwargs.get('obj', None)
+        self.organization_id = organization.id if organization else None
         super(OrganizationForm, self).__init__(*args, **kwargs)
+
+
+class HostForm(OurForm):
+    host_name = OurTextField(
+        label=u'ホスト名',
+        validators=[Required()]
+        )
+
+    def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop('request', None)
+        super(HostForm, self).__init__(*args, **kwargs)
 
 
 class OperatorForm(OurForm):
@@ -187,6 +204,17 @@ class OperatorForm(OurForm):
             (u'administrator', u'管理者'),
             (u'operator', u'オペレーター'),
             ],
+        validators=[
+            Required(),
+            ]
+        )
+
+    organization_name = OurSelectField(
+        label=u'所属組織',
+        choices=lambda field: \
+            get_db_session(field._form.request, 'extauth') \
+                .query(Organization.short_name, Organization.short_name) \
+                .all(),
         validators=[
             Required(),
             ]
@@ -650,6 +678,17 @@ class OAuthClientForm(OurForm):
             ]
         )
 
+    organization_name = OurSelectField(
+        label=u'組織名 (Organization)',
+        choices=lambda field: \
+            get_db_session(field._form.request, 'extauth') \
+                .query(Organization.short_name, Organization.short_name) \
+                .all(),
+        validators=[
+            Required(),
+            ]
+        )
+
     def validate_redirect_uri(form, field):
         parsed = None
         try:
@@ -662,3 +701,70 @@ class OAuthClientForm(OurForm):
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop('request', None)
         super(OAuthClientForm, self).__init__(*args, **kwargs)
+
+
+class OAuthServiceProviderForm(OurForm):
+    name = OurTextField(
+        label=u'OAuthプロバイダ名(英字)',
+        validators=[
+            Required(),
+            Length(max=32)
+            ]
+        )
+    organization_id = OurSelectField(
+        label=u'Organization',
+        choices=lambda field: \
+            get_db_session(field._form.request, 'extauth') \
+                .query(Organization.id, Organization.short_name) \
+                .all(),
+        coerce=int,
+        validators=[
+            Required(),
+            ]
+        )
+    display_name = OurTextField(
+        label=u'OAuthプロバイダ名(表示名)',
+        validators=[
+            Required(),
+            Length(max=255)
+            ]
+        )
+    auth_type = OurSelectField(
+        label=u'認証方式',
+        choices=[(u'rakuten', u'楽天認証'), (u'pollux', u'Pollux認証')],
+        validators=[
+            Required()
+            ]
+        )
+    endpoint_base = OurTextField(
+        label=u'OAuthエンドポイント(Base URL)',
+        validators=[
+            Required(),
+            Length(max=255)
+            ]
+        )
+    consumer_key = OurTextField(
+        label=u'OAuth Consumer Key',
+        validators=[
+            Required(),
+            Length(max=255)
+            ]
+        )
+    consumer_secret = OurTextField(
+        label=u'OAuth Consumer Secret',
+        validators=[
+            Required(),
+            Length(max=255)
+            ]
+        )
+    scope = OurTextField(
+        label=u'OAuthスコープ',
+        validators=[
+            Optional(),
+            Length(max=255)
+            ]
+        )
+
+    def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop('request', None)
+        super(OAuthServiceProviderForm, self).__init__(*args, **kwargs)

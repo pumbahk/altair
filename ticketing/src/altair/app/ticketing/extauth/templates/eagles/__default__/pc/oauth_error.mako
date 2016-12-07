@@ -1,4 +1,4 @@
-<%inherit file="base.mako" />
+<%inherit file="base_for_error_page.mako" />
 <div class="errorBox">
 <p class="errorText">ただいま大変込み合っております。（E003）</p>
 アクセス混雑などのため、現在ページが表示しにくい状態となっております。<br/>

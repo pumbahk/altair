@@ -65,6 +65,9 @@ cache.type = file
 cache.data_dir = %(here)s/../tmp/beaker/altair.app.ticketing.extauth/data
 cache.lock_dir = %(here)s/../tmp/beaker/altair.app.ticketing.extauth/lock
 
+; altair.auth
+altair.auth.decider = altair.app.ticketing.extauth:decide_auth_plugin
+
 ; altair.rakuten_auth
 altair.rakuten_auth.url_builder_factory = ${altair:extauth.rakuten_auth.url_builder_factory}
 altair.rakuten_auth.oauth.consumer_key_builder = ${altair:extauth.rakuten_auth.oauth.consumer_key_builder}
@@ -76,6 +79,15 @@ altair.rakuten_auth.session = ${altair:httpsession_persistence_backend_type}
 altair.rakuten_auth.session.type = ${altair:beaker_backend_type}
 altair.rakuten_auth.session.data_dir = %(here)s/../tmp/beaker/altair.rakuten_auth/data
 altair.rakuten_auth.session.lock_dir = %(here)s/../tmp/beaker/altair.rakuten_auth/lock
+
+; altair.fanclub_auth
+altair.fanclub_auth.challenge_success_callback = altair.app.ticketing.extauth.views.rakuten_auth_challenge_succeeded
+altair.fanclub_auth.url_builder_factory = ${altair:extauth.fanclub_auth.url_builder_factory}
+altair.fanclub_auth.oauth.consumer_key = ${altair:extauth.fanclub_auth.oauth.consumer_key}
+altair.fanclub_auth.oauth.secret = ${altair:extauth.fanclub_auth.oauth.secret}
+altair.fanclub_auth.endpoint_builder_factory = altair.app.ticketing.extauth.fanclub_auth.FanclubEndpointBuilder
+altair.fanclub_auth.stg_setting.basic_username = dev-ticket-qa
+altair.fanclub_auth.stg_setting.basic_password = ticket2015
 
 ; altair.httpsession
 get altair.httpsession.persistence = altair.httpsession.persistence

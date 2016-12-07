@@ -23,6 +23,11 @@ def generate_verification_token():
     from hashlib import md5
     return md5(__name__ + os.urandom(64)).hexdigest()
 
+
+class OAuthAuthPluginError(Exception):
+    pass
+
+
 @implementer(IAuthenticator, ILoginHandler, IChallenger, IMetadataProvider, IRequestInterceptor, ISessionKeeper)
 class OAuthAuthPlugin(object):
     ACCESS_TOKEN_KEY = 'access_token'
@@ -160,11 +165,15 @@ class OAuthAuthPlugin(object):
         scope = self.scope
         if callable(scope):
             scope = scope(request)
+        sp = request.context.oauth_service_providers
+        if not sp:
+            raise OAuthAuthPluginError('service provider was not specified')
         params = {
             u'response_type': u'code',
             u'client_id': client_id,
             u'state': verification_token,
             u'redirect_uri': self.get_redirect_uri(request),
+            u'service_providers': u','.join(sp)
             }
         if scope:
             params['scope'] = u' '.join(scope)

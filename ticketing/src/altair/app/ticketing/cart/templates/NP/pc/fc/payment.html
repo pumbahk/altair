@@ -1,5 +1,4 @@
 <%inherit file="layout.html" />
-<% from altair.app.ticketing.payments.plugins import MULTICHECKOUT_PAYMENT_PLUGIN_ID, SEJ_PAYMENT_PLUGIN_ID, FAMIPORT_PAYMENT_PLUGIN_ID %>
 <%block name="title">支払方法選択</%block>
 % if request.session.peek_flash():
 <ul class="error">
@@ -38,19 +37,6 @@
           <div>
             ${m.payment_method.description |n}
           </div>
-          % if m.payment_method.payment_plugin_id == MULTICHECKOUT_PAYMENT_PLUGIN_ID:
-          <p style="font-size: 90%;">
-            予約受付完了と同時に決済され、即時予約確定となります。
-            支払回数は≪1回払い≫のみのお取扱いとなります。
-            以下のクレジットカードがご利用できます。
-          </p>
-          <p>
-            <img src="${request.static_url('altair.app.ticketing.cart:static/__commons__/images/kc_logo_rakuten.gif')}" height="30px" />
-            <img src="${request.static_url('altair.app.ticketing.cart:static/__commons__/images/visa.gif')}" height="30px" />
-            <img src="${request.static_url('altair.app.ticketing.cart:static/__commons__/images/master.gif')}" height="30px" />
-            <img src="${request.static_url('altair.app.ticketing.cart:static/__commons__/images/jcb.gif')}" height="30px" />
-          </p>
-          % endif
         </td>
         <td style="vertical-align:top">
           <div>
