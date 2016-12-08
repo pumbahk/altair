@@ -9,7 +9,7 @@ var zip_file_path = ${h.json_encode(request.static_url('altair.app.ticketing.car
 <%block name="title">${view_context.title}</%block>
 % if view_context.orderreview_page_url != 'about:blank':
 <div class="title-right-description">
-  申込受付履歴は<a href="${view_context.orderreview_page_url}">こちら</a>で確認できます
+  申込受付履歴は<a href="${view_context.orderreview_page_url}" target="_blank">こちら</a>で確認できます
 </div>
 % endif
 <%def name="render_field(field, label=False, _description=None, show_note=True, _note=None, _suffix=u'', **kwargs)">
