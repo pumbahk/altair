@@ -24,6 +24,13 @@ altair.httpsession.persistence.type = ${altair:beaker_backend_type}
 altair.httpsession.persistence.data_dir = %(here)s/../tmp/beaker/data
 altair.httpsession.persistence.lock_dir = %(here)s/../tmp/beaker/lock
 
+; spdb
+spdb.var_dir = %(here)s/var/altair/ticketing/spdb/
+spdb.host = ftp.bi.admintool.rakuten.co.jp
+spdb.port = 22
+spdb_user = odin_ticket
+spdb_private_key = /home/ticketstar/.ssh/spdb_rsa
+
 [loggers]
 keys = root, ticketing
 

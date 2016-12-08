@@ -1600,6 +1600,8 @@ class SalesSegmentGroup(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     registration_fee = AnnotatedColumn(Numeric(precision=16, scale=2), nullable=False, default=0, server_default='0', _a_label=_(u'登録手数料(円/公演)'))
     account_id = AnnotatedColumn(Identifier, ForeignKey('Account.id'), _a_label=_(u'配券元'))
     account = relationship('Account', backref='sales_segment_groups')
+    stock_holder_id = AnnotatedColumn(Identifier, ForeignKey('StockHolder.id'), nullable=True, _a_label=_(u'配券先'))
+    stock_holder = relationship('StockHolder')
 
     event_id = AnnotatedColumn(Identifier, ForeignKey('Event.id'), _a_label=_(u'イベント'))
     event = relationship('Event')
@@ -1763,6 +1765,28 @@ class SalesSegmentGroup(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             sales_segment.accept_core_model_traverser(traverser)
         traverser.end_sales_segment_group(self)
 
+    def sync_stock_holder(self):
+        update_list = list()
+        from altair.app.ticketing.orders.models import Order, OrderedProduct, OrderedProductItem
+        for sales_segment in self.sales_segments:
+            for product in sales_segment.products:
+                for product_item in product.items:
+                    count = Order.query.join(OrderedProduct, OrderedProductItem, ProductItem).filter(
+                        ProductItem.id == product_item.id).count()
+                    if count == 0 and self.stock_holder_id:
+
+                        stock = Stock.query.filter_by(
+                            stock_type_id=product.seat_stock_type_id,
+                            stock_holder_id=self.stock_holder_id,
+                            performance_id=product.performance_id
+                        ).one()
+
+                        update_list.append((product_item.id, product_item.stock_id, stock.id))
+                        product_item.stock_id = stock.id
+
+        for _ in update_list:
+            if _[1] != _[2]:
+                logger.info("Sync stock holder. ProductItem ID = {0}, old_stock_id = {1} -> stock_id = {2}".format(_[0], _[1], _[2]))
 
 SalesSegment_PaymentDeliveryMethodPair = Table(
     "SalesSegment_PaymentDeliveryMethodPair",
@@ -3793,7 +3817,8 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     account_id = AnnotatedColumn(Identifier, ForeignKey('Account.id'),
                                  _a_label=_(u'配券元'))
     account = relationship('Account', backref='sales_segments')
-
+    stock_holder_id = Column(Identifier, ForeignKey('StockHolder.id'), nullable=True)
+    stock_holder = relationship('StockHolder', backref='sales_segment_group')
     seat_stock_types = association_proxy('products', 'seat_stock_type')
     stocks = association_proxy_many('products', 'stock')
     payment_delivery_method_pairs = relationship("PaymentDeliveryMethodPair",
@@ -3825,6 +3850,7 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     use_default_printing_fee = Column(Boolean)
     use_default_registration_fee = Column(Boolean)
     use_default_auth3d_notice = Column(Boolean)
+    use_default_stock_holder_id = Column(Boolean)
 
     setting = relationship('SalesSegmentSetting', uselist=False, backref='sales_segment', cascade='all', lazy='joined')
 
