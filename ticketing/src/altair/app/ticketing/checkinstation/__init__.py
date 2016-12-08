@@ -15,7 +15,7 @@ def includeme(config):
 
     ## sample eagles clutch. todo: �����ǽ��
     config.add_ad_image("eagles", imagespec="altair.app.ticketing.checkinstation:static/ad/eagles/clutch.gif")
-    #config.add_ad_image("default", imagespec="altair.app.ticketing.checkinstation:static/ad/default/sample.jpg")
+    config.add_ad_image("default", imagespec="altair.app.ticketing.checkinstation:static/ad/default/sample.jpg")
 
     ## endpoint
     config.include(".endpointcollector")
