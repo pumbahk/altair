@@ -8,6 +8,7 @@ import re
 import urllib
 import urllib2
 import json
+from datetime import datetime
 from urlparse import urlparse, urlunparse, urljoin
 from zope.interface import implementer
 from beaker.cache import Cache, CacheManager, cache_regions
@@ -321,6 +322,14 @@ class FanclubAuthPlugin(object):
         api = get_fanclub_api_factory(request)(request, access_token, access_secret)
         logger.debug('api: {}, token={}, secret={}'.format(api, api.access_token, api.access_secret))
         member_info = api.get_member_info()
+
+        birthday = None
+        try:
+            birthday = datetime.strptime(member_info.get('birthday'), '%Y-%m-%dT%H:%M:%S')
+        except (ValueError, TypeError):
+            # 生年月日未登録
+            pass
+
         return dict(
             member_id=member_info['external_member_id'],
             first_name=member_info['first_name'],
@@ -329,7 +338,7 @@ class FanclubAuthPlugin(object):
             last_name_kana=member_info['last_name_kana'],
             sex=member_info['sex'],
             fax=member_info['fax_number'],
-            birthday=member_info['birthday'],
+            birthday=birthday,
             email_1=member_info['email_address'],
             tel_1=member_info['phone_number'],
             tel_2=member_info['mobile_phone_number'],

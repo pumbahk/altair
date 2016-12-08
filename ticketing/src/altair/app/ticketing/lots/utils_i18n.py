@@ -35,8 +35,8 @@ def create_form(request, context, formdata=None, **kwds):
             metadata = metadata[u'profile']
         if context.membershipinfo is not None and context.membershipinfo.enable_auto_input_form:
             birthday = None
-            if metadata.get('birthday'):
-                birthday = dt.strptime(metadata.get('birthday'), '%Y-%m-%dT%H:%M:%S').date()
+            if isinstance(metadata.get('birthday'), dt):
+                birthday = metadata.get('birthday').date()
             data = dict(
                 last_name=metadata.get('last_name'),
                 last_name_kana=metadata.get('last_name_kana'),
