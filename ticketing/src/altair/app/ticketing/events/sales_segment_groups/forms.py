@@ -70,6 +70,9 @@ class SalesSegmentGroupForm(OurForm):
         if 'new_form' in kwargs:
             self.reporting.data = True
 
+        stock_holders = StockHolder.get_own_stock_holders(event=context.event)
+        self.stock_holder_id.choices = [(sh.id, sh.name) for sh in stock_holders]
+
         self.public_kind = [
             SalesSegmentKindEnum.normal.k,
             SalesSegmentKindEnum.early_firstcome.k,
@@ -282,6 +285,12 @@ class SalesSegmentGroupForm(OurForm):
         filters=[blank_as_none],
         validators=[Optional()],
         widget=ExtraFormEditorWidget()
+        )
+    stock_holder_id = OurSelectField(
+        label=u'配券先(予約がある商品明細以外は、すべて変更されます)',
+        validators=[Optional()],
+        choices=[],
+        coerce=int
         )
 
     def _validate_start(self, *args, **kwargs):

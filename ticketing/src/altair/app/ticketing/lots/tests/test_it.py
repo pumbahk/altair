@@ -313,7 +313,8 @@ class ConfirmLotEntryViewTests(unittest.TestCase):
         self._get_altair_auth_info_patch = mock.patch('altair.app.ticketing.cart.request.get_altair_auth_info')
         self._get_altair_auth_info = self._get_altair_auth_info_patch.start()
         self._get_altair_auth_info.return_value = dict(
-            organization_id=1
+            organization_id=1,
+            membership_source=None,
             )
         self.config.include('altair.auth')
         self.config.include('pyramid_layout')

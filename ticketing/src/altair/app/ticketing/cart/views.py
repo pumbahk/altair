@@ -1013,10 +1013,10 @@ class PaymentView(object):
 
         metadata = dict()
         # 自動入力設定がオンの時だけmetadataをとってくる
-        # if self.request.context.membershipinfo.enable_auto_input_form:
-        #     metadata = getattr(self.request, 'altair_auth_metadata', {})
-        #     if self.request.altair_auth_info['membership_source'] == 'altair.oauth_auth.plugin.OAuthAuthPlugin':
-        #         metadata = metadata[u'profile']
+        if self.request.context.membershipinfo is not None and self.request.context.membershipinfo.enable_auto_input_form:
+            metadata = getattr(self.request, 'altair_auth_metadata', {})
+            if self.request.altair_auth_info['membership_source'] == 'altair.oauth_auth.plugin.OAuthAuthPlugin':
+                metadata = metadata[u'profile']
 
         shipping_address_info = dict(
             first_name=metadata.get('first_name'),
