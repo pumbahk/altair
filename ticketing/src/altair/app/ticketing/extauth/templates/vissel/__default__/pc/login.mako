@@ -19,7 +19,12 @@
 <tbody>
 <tr>
 <th>${h.auth_identifier_field_name(member_set)}</th>
-<td><input type="text" class="text" name="username" value="${username}" /></td>
+<td>
+<input type="text" class="text" name="username" value="${username}" />
+% if message:
+<p class="red">${message}</p>
+% endif
+</td>
 </tr>
 <tr>
 <th>${h.auth_secret_field_name(member_set)}</th>
