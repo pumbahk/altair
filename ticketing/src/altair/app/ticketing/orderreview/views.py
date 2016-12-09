@@ -159,10 +159,9 @@ class MypageView(object):
         user = cart_api.get_user(authenticated_user)
         per = 10
 
-        if not user:
-            raise HTTPNotFound()
-
-        shipping_address = self.get_shipping_address(user)
+        shipping_address = None
+        if user:
+            shipping_address = self.get_shipping_address(user)
         page = self.request.params.get("page", 1)
         orders = self.context.get_orders(user, page, per)
         entries = self.context.get_lots_entries(user, page, per)
