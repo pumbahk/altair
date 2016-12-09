@@ -1,0 +1,14 @@
+<%def name="exclude_protocol(url)">
+  <%
+    from urlparse import urlparse, urlunparse
+    url = urlparse(url)
+    return urlunparse((
+      '',
+      url.netloc,
+      url.path,
+      url.params,
+      url.query,
+      url.fragment
+    ))
+  %>
+</%def>
