@@ -48,6 +48,9 @@ class WDispositionResource(security.RootFactory):
         return wdisposition.bind_page(page, DBSession)
 
     def delete_disposition(self, wdisposition):
+        # delete対象をdefaultに設定しているレイアウトがあれば外しておく
+        if wdisposition.layout.disposition_id == wdisposition.id:
+            wdisposition.layout.disposition_id = None
         wdisposition.delete_widgets()
         self.delete(wdisposition)
 
