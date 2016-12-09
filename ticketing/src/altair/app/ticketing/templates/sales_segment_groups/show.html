@@ -114,7 +114,6 @@ ${ch.breadcrumbs(
       <table class="table table-striped table-bordered table-condensed" style="margin-bottom: 10px;">
         <thead>
           <tr>
-            <th class="minwidth"></th>
             <th class="minwidth">id</th>
             <th>パフォーマンス</th>
             <th>公演日</th>
@@ -129,12 +128,13 @@ ${ch.breadcrumbs(
             <th>購入履歴表示/非表示</th>
             <th>規約表示/非表示</th>
             <th>レポート対象</th>
+            <th class="minwidth">編集</th>
+            <th class="minwidth">削除</th>
           </tr>
         </thead>
         <tbody>
         % for i, sales_segment in enumerate(sales_segment_group.sales_segments):
           <tr>
-            <td><input type="radio" name="sales_segment_id" value="${sales_segment.id}" /></td>
             <td>${sales_segment.id}</td>
             <td>
               % if sales_segment.performance is not None:
@@ -165,6 +165,20 @@ ${ch.breadcrumbs(
             <td>${u'表示' if sales_segment.setting and sales_segment.setting.disp_orderreview else u'非表示'}</td>
             <td>${u'表示' if sales_segment.setting and sales_segment.setting.disp_agreement else u'非表示'}</td>
             <td>${u'対象' if sales_segment.reporting else u'×対象外'}</td>
+            <td align="center" style="width:1%; white-space:nowrap;">
+              <%include file="/sales_segments/_action_button.html" args="sales_segment_id=sales_segment.id,
+                                                                             order=['edit'],
+                                                                             split=True,
+                                                                             small=True,
+                                                                             with_label=False" />
+            </td>
+            <td align="center" style="width:1%; white-space:nowrap;">
+              <%include file="/sales_segments/_action_button.html" args="sales_segment_id=sales_segment.id,
+                                                                             order=['delete'],
+                                                                             split=True,
+                                                                             small=True,
+                                                                             with_label=False" />
+            </td>
           </tr>
         % endfor
         </tbody>
@@ -177,7 +191,7 @@ ${ch.breadcrumbs(
         })($('script:last').closest('form'));
       </script>
     </form>
-    <%include file="/sales_segments/_action_button.html" args="split=True" />
+    <%include file="/sales_segments/_action_button.html" args="order=['new'], split=True" />
     <%include file="/sales_segments/_modal.html" args="modal_id='modal-sales_segment'" />
   </div>
 </div>
