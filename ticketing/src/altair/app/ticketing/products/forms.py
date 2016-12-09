@@ -274,7 +274,7 @@ class ProductAndProductItemForm(OurForm, ProductFormMixin, ProductItemFormMixin)
         self.stock_holder_id.choices = [(sh.id, sh.name) for sh in stock_holders]
 
         ticket_bundles = TicketBundle.query.filter_by(event_id=event.id).all()
-        self.ticket_bundle_id.choices = [(u'', u'(なし)')] + [(tb.id, tb.name) for tb in ticket_bundles]
+        self.ticket_bundle_id.choices = [(tb.id, tb.name) for tb in ticket_bundles] if ticket_bundles else [(u'', u'(なし)')]
         if self.name.data and not self.product_item_name.data:
             self.product_item_name.data = self.name.data
         if self.price.data and not self.product_item_price.data:
@@ -288,12 +288,6 @@ class ProductAndProductItemForm(OurForm, ProductFormMixin, ProductItemFormMixin)
 
     def _get_translations(self):
         return Translations()
-
-    ticket_bundle_id = OurSelectField(
-        label=u'券面構成',
-        validators=[Optional()],
-        coerce=lambda v: None if not v else int(v)
-        )
 
     @classmethod
     def from_model(cls, product, product_item=None):
@@ -377,7 +371,7 @@ class ProductItemForm(OurForm, ProductItemFormMixin):
         self.stock_type_id.choices = [(st.id, st.name) for st in stock_types]
 
         ticket_bundles = TicketBundle.filter_by(event_id=event.id)
-        self.ticket_bundle_id.choices = [(u'', u'(なし)')] + [(tb.id, tb.name) for tb in ticket_bundles]
+        self.ticket_bundle_id.choices = [(tb.id, tb.name) for tb in ticket_bundles] if ticket_bundles else [(u'', u'(なし)')]
 
     def _get_translations(self):
         return Translations()
@@ -435,7 +429,7 @@ class ProductAndProductItemAPIForm(OurForm, ProductFormMixin, ProductItemFormMix
         self.stock_type_id.choices = [(st.id, st.name) for st in stock_types]
 
         ticket_bundles = TicketBundle.filter_by(event_id=event.id)
-        self.ticket_bundle_id.choices = [(u'', u'(なし)')] + [(tb.id, tb.name) for tb in ticket_bundles]
+        self.ticket_bundle_id.choices = [(tb.id, tb.name) for tb in ticket_bundles] if ticket_bundles else [(u'', u'(なし)')]
 
         if formdata:
             self.id.data = formdata['product_id']
