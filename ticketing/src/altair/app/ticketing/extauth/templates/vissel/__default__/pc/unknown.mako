@@ -6,7 +6,7 @@ guest_member_kinds = [member_kind for member_kind in member_set.member_kinds if 
 
 <section class="main error">
 <div class="wrap">
-<p class="errorText">ファンクラブ連携が確認できません</p>
+<p class="errorText">ファンクラブ連携が確認できません（V011）</p>
 
 <p style="text-align:center">
 <a href="/">トップへ戻る</a>
