@@ -72,7 +72,7 @@ class FamiPortView(BaseView):
     def performance_type_label(self, status):
         if status == FamiPortPerformanceType.Normal.value:
             label = u'標準'
-        elif status == AltairFamiPortReflectionStatus.AwaitingReflection.value:
+        elif status == FamiPortPerformanceType.Spanned.value:
             label = u'期間内有効'
         else:
             label = u'???'

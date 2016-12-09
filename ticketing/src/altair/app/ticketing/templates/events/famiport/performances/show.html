@@ -75,14 +75,8 @@
       <td>${view.performance_type_label(altair_famiport_performance.type)}</td>
     </tr>
     <tr>
-      <th>公演日時</th>
-      <td>
-        % if altair_famiport_performance.type == FamiPortPerformanceType.Normal.value:
-          ${vh.datetime(altair_famiport_performance.start_at)}
-        % else:
-          - 
-        % endif
-      </td>
+      <th>公演開始日時</th>
+      <td>${vh.datetime(altair_famiport_performance.start_at)}</td>
     </tr>
     <tr>
       <th>チケット名称</th>
