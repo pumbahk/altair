@@ -123,9 +123,6 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
 <div class="row-fluid">
   <%vv:venueeditor data_source="${data_source}">
     <%def name="toolbar_extra()">
-    % if HH.has_permission('event_editor'):
-    <input id="show-vacant-btn" type="button" class="btn btn-info" style="margin-left: 15px;" value="全ての座席を表示" />
-    % endif
     <script type="text/javascript">
       $('#show-vacant-btn').click(function() {changeSeatDisplayMode();});
     </script>
