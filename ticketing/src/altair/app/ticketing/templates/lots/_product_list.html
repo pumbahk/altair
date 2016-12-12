@@ -36,10 +36,10 @@ table tr.not_quantity_only td{
           <tr class="not_quantity_only">
         % endif
           <td><input type="checkbox" name="product_id" value="${product.id}"></td>
-          <td>${product.performance.name}</td>
+          <td>${product.performance.name | h}</td>
           <td>${vh.datetime(product.performance.start_on, with_weekday=True)}</td>
-          <td>${product.name}</td>
-          <td>${product.seat_stock_type.name}${"" if quantity_only else u"(座席指定)"}</td>
+          <td>${product.name | h}</td>
+          <td>${product.seat_stock_type.name |h}${"" if quantity_only else u"(座席指定)"}</td>
           <td style="text-align: right;">${format_currency(product.price)}</td>
           <td>${product.display_order}</td>
           <td><a class="btn btn-small" href="${request.route_url('lots.product_edit', product_id=product.id)}"><i class="icon-edit"></i>編集</a>
