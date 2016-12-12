@@ -24,7 +24,7 @@ from altair.app.ticketing.users import models as u_models
 from altair.app.ticketing.utils import memoize
 from . import models as m
 from . import api as cart_api
-from .exceptions import NoCartError
+from .exceptions import NoCartError, DeletedProductError
 from .interfaces import (
     ICartResource,
     ICartPayment,
@@ -398,6 +398,11 @@ class TicketingCartResourceBase(object):
                 if total_quantity + cart_total_quantity > max_quantity_per_user:
                     logger.info("order_limit exceeded: %d >= %d" % (total_quantity, max_quantity_per_user))
                     raise OverQuantityLimitException.from_resource(self, self.request, quantity_limit=max_quantity_per_user)
+
+    def check_deleted_product(self, cart):
+        for carted_product in cart.products:
+            if not carted_product.product:
+                raise DeletedProductError("商品が削除されています")
 
     def _login_required(self, auth_type):
         if auth_type == 'fc_auth':
