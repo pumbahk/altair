@@ -18,6 +18,9 @@ class NoEventError(CartException):
 class NoPerformanceError(CartException):
     pass
 
+class DeletedProductError(CartException):
+    pass
+
 class TooManyCartsCreated(CartException):
     def __init__(self, id_=None):
         super(TooManyCartsCreated, self).__init__()
