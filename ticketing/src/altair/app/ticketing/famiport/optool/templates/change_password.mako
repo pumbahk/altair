@@ -70,6 +70,6 @@ jQuery.validator.addMethod('password_rule', function (val) {
   } else {
     return true
   }
-}, "数字と英文字両方の必要がり、表示の記号しか使えません。");
+}, "半角英数字混在でご入力下さい。（使用可能な記号については表記の通りです）");
 </script>
 </%block>
