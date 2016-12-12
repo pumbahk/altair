@@ -113,7 +113,7 @@ class CommonErrorView(object):
     @lbr_view_config(context=DeletedProductError)
     def deleted_product(self):
         # カートに入った商品が、購入確定時に削除された
-        return dict(message=Markup(u'こちらの商品は現在ご購入いただけません。'))
+        return dict(message=Markup(self.context.message))
 
     @lbr_view_config(context=PaymentMethodEmptyError)
     def payment_method_is_empty(self):

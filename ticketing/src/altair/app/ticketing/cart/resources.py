@@ -400,9 +400,11 @@ class TicketingCartResourceBase(object):
                     raise OverQuantityLimitException.from_resource(self, self.request, quantity_limit=max_quantity_per_user)
 
     def check_deleted_product(self, cart):
+        # カートに紐付いた商品が消されていないか確認
         for carted_product in cart.products:
             if not carted_product.product:
-                raise DeletedProductError("商品が削除されています")
+                logger.info(u"Product is deleted. CartID = {0}".format(cart.id))
+                raise DeletedProductError(u"こちらの商品は現在ご購入いただけません。")
 
     def _login_required(self, auth_type):
         if auth_type == 'fc_auth':
