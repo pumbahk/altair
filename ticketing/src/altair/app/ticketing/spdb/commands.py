@@ -246,8 +246,7 @@ def main():
         file_operator.write_tmp_file(u"PrimaryKey,予約番号,ステータス,支払いステータス,予約時間,ユーザID,イベントID,イベントタイトル,パフォーマンスID,パフォーマンス名,開演時間,商品明細名,席名,商品明細金額,商品明細個数,手数料,合計金額,authz_identifier,会員種別名,会員区分名,ポイント,支払い方法,引取方法,デバイス\n".encode('utf-8'))
         for row in orders:
             row = chop_none(row)
-            device = detect_ua_type(row['user_agent'])
-            file_operator.write_tmp_file(u"{0[PrimaryKey]},{0[order_no]},{0[order_status]},{0[payment_status]},{0[created_at]},{0[user_id]},{0[event_id]},{0[event_title]},{0[performance_id]},{0[performance_name]},{0[performance_start_on]},{0[product_item_name]},{0[seat_name]},{0[product_item_price]},{0[product_item_quantity]},{0[fee]},{0[total_amount]},{0[authz_identifier]},{0[membership_name]},{0[membergroup_name]},{0[point]},{0[payment_method]},{0[delivery_method]},{1}\n".format(row, device).encode('utf-8'))
+            file_operator.write_tmp_file(u"{0[PrimaryKey]},{0[order_no]},{0[order_status]},{0[payment_status]},{0[created_at]},{0[user_id]},{0[event_id]},{0[event_title]},{0[performance_id]},{0[performance_name]},{0[performance_start_on]},{0[product_item_name]},{0[seat_name]},{0[product_item_price]},{0[product_item_quantity]},{0[fee]},{0[total_amount]},{0[authz_identifier]},{0[membership_name]},{0[membergroup_name]},{0[point]},{0[payment_method]},{0[delivery_method]},{0[user_agent]}\n".format(row).encode('utf-8'))
 
         file_operator.close_tmp_file()
         file_operator.upload()
@@ -268,31 +267,6 @@ def chop_none(row):
             row[val] = u''
     return row
 
-
-def detect_ua_type(user_agent):
-    try:
-        ua = woothee.parse(user_agent)
-    except UnicodeDecodeError:
-        sys.stderr.write(repr(user_agent) + "\n")
-        return 'pc'
-
-    if ua['category'] == 'smartphone':
-        if ua['os'] == 'Android':
-            if 'Mobile' not in user_agent:
-                ret = 'atab'
-            else:
-                ret = 'asp'
-        elif ua['os'] in ['iPhone']:
-            ret = 'isp'
-        elif ua['os'] in ['iPad', 'iPod']:
-            ret = 'itab'
-        else:
-            ret = 'sp'
-    elif ua['category'] == 'mobilephone':
-        ret = 'fp'
-    else:
-        ret = 'pc'
-    return ret
 
 if __name__ == '__main__':
     main()
