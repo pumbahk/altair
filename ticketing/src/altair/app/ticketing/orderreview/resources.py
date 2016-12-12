@@ -128,6 +128,9 @@ from .views import unsuspicious_order_filter
 
 class MyPageListViewResource(OrderReviewResourceBase):
     def get_orders(self, user, page, per):
+        if not user:
+            return None
+
         now = get_now(self.request)
         #disp_orderreviewは、マイページに表示するかしないかのフラグとなった
         orders = self.session.query(Order).join(SalesSegment, Order.sales_segment_id==SalesSegment.id). \
@@ -144,6 +147,9 @@ class MyPageListViewResource(OrderReviewResourceBase):
         return orders
 
     def get_lots_entries(self, user, page, per):
+        if not user:
+            return None
+
         entries = LotEntry.query.filter(
             LotEntry.user_id==user.id
         ).order_by(LotEntry.updated_at.desc())
