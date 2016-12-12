@@ -215,8 +215,10 @@
         success: function(json) {
           success_func(json);
         },
-        error: function(json) {
-          error_func(json);
+        error: function(xhr) {
+          var responseText = JSON.parse(xhr.responseText);
+          var emsgs = responseText['emsgs'] || xhr.statusText
+          error_func(emsgs);
         }
       });
     }
@@ -280,27 +282,12 @@
 
             var pattern_name = $('input#pattern-name').val().trim();
 
-            if (!pattern_name) {
-                alert("保存するパターン名を記入ください。");
-                $('#pattern_name').val("");
-                return;
-            } else if (pattern_name in patterns) {
-                alert("保存したいパターン名はすでに存在していますので、別のパターン名を設定か「上書き保存」ボタンで保存してください。");
-                return;
-            }
-
-            if ($('#selected-columns option').length === 0) {
-                alert("ダウンロード項目を選んでください。");
-                return;
-            }
-
             var selected_items = "";
             $('#selected-columns option').each( function () {
                 selected_items += $(this).val() + ",";
             });
 
             var post_content = {
-                'organization_id': ${request.context.organization.id},
                 'pattern_name': pattern_name,
                 'pattern_content': selected_items,
                 'op_type': 'add'
@@ -312,11 +299,14 @@
                     var option = $('<option value=' + pattern_name + '>' + pattern_name + '</option>');
                     option.appendTo($('select#saved-patterns'));
                     $('select#saved-patterns').val(pattern_name);
-                    alert("ダウンロードパターンを追加しました。");
+                    alert("ダウンロードパターンを新規登録しました。");
                 },
-                function(json) {
-                    alert("ダウンロードパターンの追加が失敗しました。");
-                    console.log(json["emsg"]);
+                function(emsgs) {
+                    alert_msgs = "ダウンロードパターンの追加が失敗しました。"
+                    for (var i = 0; i < emsgs.length; i++) {
+                        alert_msgs += '\n' + emsgs[i];
+                    }
+                    alert(alert_msgs);
                 }
             );
         });
@@ -324,22 +314,8 @@
         /* パターンの更新 */
         $('a#update-pattern').on('click', function() {
             var pattern_name = $('input#pattern-name').val().trim();
-            if (!pattern_name) {
-                alert("更新したいパターン名を設定してから更新してください。");
-                return;
-            } else if (!pattern_name in patterns) {
-                alert("更新したいパターンの記録はないため、新規登録で登録してください。");
-                $('select#saved-patterns').val("");
-                return;
-            } else {
-                var res = window.confirm("パターン「" + pattern_name + "」を更新しますか？");
-                if (res == false) { return; }
-            }
-
-            if ($('#selected-columns option').length === 0) {
-                alert("ダウンロード項目を選んでください。");
-                return;
-            }
+            var res = window.confirm("パターン「" + pattern_name + "」を更新しますか？");
+            if (res == false) { return; }
 
             var selected_items = "";
                 $('#selected-columns option').each( function () {
@@ -347,7 +323,6 @@
             });
 
             var post_content = {
-                'organization_id': ${request.context.organization.id},
                 'pattern_name': pattern_name,
                 'pattern_content': selected_items,
                 'op_type': 'update'
@@ -359,9 +334,12 @@
                     alert("ダウンロードパターンを更新しました。");
                     $('select#saved-patterns').val(pattern_name);
                 },
-                function(json) {
-                    alert("ダウンロードパターンの更新が失敗しました。");
-                    console.log(json["emsg"]);
+                function(emsgs) {
+                    alert_msgs = "ダウンロードパターンの更新が失敗しました。"
+                    for (var i = 0; i < emsgs.length; i++) {
+                        alert_msgs += '\n' + emsgs[i];
+                    }
+                    alert(alert_msgs);
                 }
             );
 
@@ -371,16 +349,9 @@
         $('a#del-pattern').on('click', function() {
             var pattern_name = $('select#saved-patterns').val().trim();
 
-            if (!pattern_name) {
-                alert("パターンを選んでから削除してください。");
-                $('select#saved-patterns').val("");
-                return;
-            } else {
-                var res = window.confirm("パターン「" + pattern_name + "」を削除しますか？");
-                if (res == false) { return; }
-            }
+            var res = window.confirm("パターン「" + pattern_name + "」を削除しますか？");
+            if (res == false) { return; }
             var post_content = {
-                "organization_id": ${request.context.organization.id},
                 "pattern_name": pattern_name,
                 'op_type': 'del'
             }
@@ -394,9 +365,12 @@
                     clear_selected_columns()
                     alert("ダウンロードパターン「" + pattern_name + "」を削除しました。");
                 },
-                function(json) {
-                    alert("ダウンロードパターンの削除が失敗しました。");
-                    console.log(json["emsg"]);
+                function(emsgs) {
+                    alert_msgs = "ダウンロードパターンの削除が失敗しました。"
+                    for (var i = 0; i < emsgs.length; i++) {
+                        alert_msgs += '\n' + emsgs[i];
+                    }
+                    alert(alert_msgs);
                 }
             );
 

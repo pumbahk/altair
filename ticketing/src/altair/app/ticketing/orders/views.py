@@ -898,7 +898,7 @@ class OrderDeltaDownloadView(OrderDeltaBaseView):
         orders = query
 
         headers = [('Content-Type', 'application/octet-stream; charset=Windows-31J'),
-                   ('Content-Disposition', 'attachment; filename=orders_{date}.csv'.format(date=datetime.now().strftime('%Y%m%d%H%M%S')))]
+                   ('Content-Disposition', 'attachment; filename=orders_{org_id}_{date}.csv'.format(org_id=organization_id,date=datetime.now().strftime('%Y%m%d%H%M%S')))]
         response = Response(headers=headers)
 
         export_type = int(self.request.params.get('export_type', OrderCSV.EXPORT_TYPE_ORDER))
@@ -945,52 +945,86 @@ class OrderDeltaPatternView(OrderDeltaBaseView):
             'japanese_columns': japanese_columns
         }
 
+    def submit_validate(self, pattern_name, pattern_content, op_type):
+        emsgs = []
+
+        if not op_type or op_type not in ['add', 'update', 'del']:
+            emsgs.append(u"操作タイプは認知できないため、ダウンロードパターンに関する操作はできません。")
+            return emsgs
+
+        ope = {'add': u'新規登録', 'update': u'更新', 'del': u'削除'}
+        if not pattern_name:
+            emsgs.append(u"{}するパターン名を記入ください。".format(ope[op_type]))
+
+        if op_type in ['add', 'update'] and not pattern_content:
+            emsgs.append(u"ダウンロード項目を選んでください。")
+
+        return emsgs
+
+    def create_or_update(self, form, pattern_object):
+        emsgs = []
+        if form.validate():
+            form.populate_obj(pattern_object)
+
+            try:
+                pattern_object.save()
+            except Exception, e:
+                emsgs.append(str(e))
+        else:
+            for field, errors in form.errors.items():
+                for error in errors:
+                    emsgs.append(u"{0}: {1}".format(field, error))
+        return emsgs
+
     @view_config(route_name='orders.delta.pattern.operate', request_method="POST", renderer="json")
     def operate(self):
-        organization_id = self.request.POST.get('organization_id', None)
+        organization_id = self.context.organization.id
         pattern_name = self.request.POST.get('pattern_name', None)
+        pattern_content = self.request.POST.get('pattern_content', None)
         op_type = self.request.POST.get('op_type', None)
 
-        if not organization_id or not pattern_name or not op_type:
-            emsg = u"送信したデータに不備がある、ダウンロードパターンに関する操作はできません。"
-            raise HTTPBadRequest(body=json.dumps({'emsg': emsg}))
+        emsgs = self.submit_validate(pattern_name, pattern_content, op_type)
+        if emsgs:
+            raise HTTPBadRequest(body=json.dumps({'emsgs': emsgs}))
 
-        if op_type in ['add', 'update']:
-            pattern_form = DownloadItemsPatternForm(self.request.POST)
-            if pattern_form.validate():
+        pattern_form = DownloadItemsPatternForm(self.request.POST)
+        pattern_form.organization_id.data = organization_id
 
-                pattern = DownloadItemsPattern.query.filter_by(organization_id=organization_id,
-                                                               pattern_name=pattern_name).first() \
-                          or DownloadItemsPattern()
+        pattern = DownloadItemsPattern.query.filter_by(organization_id=organization_id,
+                                                       pattern_name=pattern_name)
 
-                pattern_form.populate_obj(pattern)
-
-                try:
-                    pattern.save()
-                    return {pattern.pattern_name: filter(None, pattern.pattern_content.split(','))}
-                except Exception, e:
-                    raise HTTPBadRequest(body=json.dumps({'emsg': str(e)}))
+        context = {}
+        if op_type == 'add':
+            if pattern.first():
+                emsgs.append(u"保存したいパターン名はすでに存在していますので、別のパターン名を設定か「上書き保存」ボタンで保存してください。")
             else:
-                emsg = u""
+                pattern = DownloadItemsPattern()
+                emsgs = self.create_or_update(pattern_form, pattern)
 
-                for field, errors in pattern_form.errors.items():
-                    for error in errors:
-                        emsg += "{0}: {1}\n".format(field, error)
+            if not emsgs:
+                context = {pattern.pattern_name: filter(None, pattern.pattern_content.split(','))}
 
-                raise HTTPBadRequest(body=json.dumps({'emsg': emsg}))
-        elif op_type in ['del']:
+        elif op_type == 'update':
+            pattern = pattern.first()
+            emsgs = self.create_or_update(pattern_form, pattern)
+            if not emsgs:
+                context = {pattern.pattern_name: filter(None, pattern.pattern_content.split(','))}
 
-            pattern = DownloadItemsPattern.query.filter(and_(DownloadItemsPattern.organization_id==organization_id,
-                                                          DownloadItemsPattern.pattern_name==pattern_name))
+        elif op_type == 'del':
             try:
                 pattern.delete()
-                return {"pattern_name": pattern_name}
+                context = {"pattern_name": pattern_name}
             except Exception, e:
-                raise HTTPBadRequest(body=json.dumps({'emsg': str(e)}))
-
+                emsgs.append(str(e))
         else:
-            emsg = u"操作タイプを確定できないため、ダウンロードパターンに関する操作はできません。"
-            raise HTTPBadRequest(body=json.dumps({'emsg': emsg}))
+            emsgs.append(u"操作タイプを確定できないため、ダウンロードパターンに関する操作はできません。")
+
+
+        if emsgs:
+            raise HTTPBadRequest(body=json.dumps({'emsgs': emsgs}))
+        else:
+            return context
+
 
 
 @view_defaults(decorator=with_bootstrap, permission='event_editor', renderer='altair.app.ticketing:templates/orders/refund/index.html')
