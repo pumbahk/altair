@@ -2242,3 +2242,18 @@ def get_payment_delivery_plugin_info(request, order, flavor='html'):
         delivery_plugin_info = None
     return payment_plugin_info, delivery_plugin_info
 
+def get_patterns_info(request):
+    from altair.sqlahelper import get_db_session
+    from collections import OrderedDict
+    from .models import DownloadItemsPattern
+
+    session = get_db_session(request, name="slave")
+    organization_id = request.context.organization.id
+
+    pattern_dict = OrderedDict()
+    patterns = session.query(DownloadItemsPattern).filter(DownloadItemsPattern.organization_id==organization_id).all()
+    for pattern in patterns:
+        pattern_content = filter(None, pattern.pattern_content.split(','))
+        pattern_dict[pattern.pattern_name] = pattern_content
+
+    return pattern_dict

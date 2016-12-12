@@ -58,6 +58,8 @@
         % if HH.has_permission('sales_counter'):
         <li><a href="${request.route_path('orders.index')}">予約検索</a></li>
         <li><a href="${request.route_path('orders.beta')}">予約検索(ベータ版)</a></li>
+        <li><a href="${request.route_path('orders.delta')}">予約検索(デルタ版)</a></li>
+        <li><a href="${request.route_path('orders.delta.pattern')}">ダウンロードパターン編集(デルタ版)</a></li>
         % endif
         % if HH.has_permission('event_editor'):
         <li><a href="${request.route_path('orders.refund.index')}">払戻一覧</a></li>
