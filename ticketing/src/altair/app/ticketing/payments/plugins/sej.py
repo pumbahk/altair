@@ -356,10 +356,29 @@ def cancel_order(request, tenant, order, now=None):
         except SejError:
             raise SejPluginFailure('cancel_order', order_no=order.order_no, back_url=None)
 
-def build_sej_args(payment_type, order_like, now, regrant_number_due_at):
+def build_non_updatable_args(order_like):
+    old_sej_order = sej_api.get_sej_order(order_like.order_no)
     shipping_address = order_like.shipping_address
-    tel1 = shipping_address.tel_1 and shipping_address.tel_1.replace('-', '')
-    tel2 = shipping_address.tel_2 and shipping_address.tel_2.replace('-', '')
+    # 同予約番号でSejOrderが存在する場合、ユーザ個人情報はShippingAddressの現在値よりSejOrderの値を優先する #tkt2130
+    # SejOrderは再付番時にユーザ個人情報の更新をさせてくれない仕様
+    if old_sej_order:
+        tel1 = old_sej_order.tel
+        tel2 = ''
+        user_name = old_sej_order.user_name
+        user_name_kana = old_sej_order.user_name_kana
+        zip_code = old_sej_order.zip_code
+        email = old_sej_order.email
+    else:
+        tel1 = shipping_address.tel_1 and shipping_address.tel_1.replace('-', '')
+        tel2 = shipping_address.tel_2 and shipping_address.tel_2.replace('-', '')
+        user_name = build_user_name(shipping_address)
+        user_name_kana = build_user_name_kana(shipping_address)
+        zip_code = shipping_address.zip.replace('-', '') if shipping_address.zip else ''
+        email = shipping_address.email_1 or shipping_address.email_2 or ''
+    return user_name, user_name_kana, tel1, tel2, zip_code, email
+
+def build_sej_args(payment_type, order_like, now, regrant_number_due_at):
+    user_name, user_name_kana, tel1, tel2, zip_code, email = build_non_updatable_args(order_like)
     ticketing_start_at = get_ticketing_start_at(now, order_like)
     ticketing_due_at = get_ticketing_due_at(now, order_like)
     if int(payment_type) == int(SejPaymentType.Paid):
@@ -410,11 +429,11 @@ def build_sej_args(payment_type, order_like, now, regrant_number_due_at):
     return dict(
         payment_type        = u'%d' % int(payment_type),
         order_no            = order_like.order_no,
-        user_name           = build_user_name(shipping_address),
-        user_name_kana      = build_user_name_kana(shipping_address),
+        user_name           = user_name,
+        user_name_kana      = user_name_kana,
         tel                 = tel1 if tel1 else tel2,
-        zip_code            = shipping_address.zip.replace('-', '') if shipping_address.zip else '',
-        email               = shipping_address.email_1 or shipping_address.email_2 or '',
+        zip_code            = zip_code,
+        email               = email,
         total_price         = total_price,
         ticket_price        = ticket_price,
         commission_fee      = commission_fee,
