@@ -48,13 +48,13 @@ class Operators(BaseView):
             'operator':self.context.operator,
             }
 
-    @view_config(route_name='operators.new', request_method='GET', renderer='altair.app.ticketing:templates/operators/edit.html')
+    @view_config(route_name='operators.new', request_method='GET', renderer='altair.app.ticketing:templates/operators/edit.html', check_csrf=True)
     def new_get(self):
         return {
             'form':OperatorForm(organization_id=self.context.organization.id),
             }
 
-    @view_config(route_name='operators.new', request_method='POST', renderer='altair.app.ticketing:templates/operators/edit.html')
+    @view_config(route_name='operators.new', request_method='POST', renderer='altair.app.ticketing:templates/operators/edit.html', check_csrf=True)
     def new_post(self):
         f = OperatorForm(self.request.POST, request=self.request, organization_id=self.context.organization.id)
         if f.validate():
