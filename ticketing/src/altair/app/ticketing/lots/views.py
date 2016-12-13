@@ -273,6 +273,7 @@ class EntryLotView(object):
         event = self.context.event
         lot = self.context.lot
         performances = lot.performances
+        performances = sorted(performances, key=lambda p: (p.display_order, p.start_on))
         performance_map = make_performance_map(self.request, performances)
 
         performance_id = self.request.params.get('performance')
