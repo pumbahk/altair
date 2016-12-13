@@ -150,6 +150,12 @@ class FileOperator(object):
         return "delta_{0}{1}.csv".format(self.org_name, self.term_str)
 
     @property
+    def gzip_file_name(self):
+        if self._args.delete:
+            return "delete_{0}{1}.csv.gz".format(self.org_name, self.term_str)
+        return "delta_{0}{1}.csv.gz".format(self.org_name, self.term_str)
+
+    @property
     def tmp_dir(self):
         return self.spdb_info.var_dir
 
@@ -177,7 +183,7 @@ class FileOperator(object):
             ssh.set_missing_host_key_policy(AutoAddPolicy())
             ssh.connect(self.spdb_info.host, self.spdb_info.port, self.spdb_info.user, key_filename=self.spdb_info.private_key)
             sftp = ssh.open_sftp()
-            sftp.put(upload_gzip_name, "{0}{1}".format(remote_path, upload_gzip_name))
+            sftp.put(upload_gzip_name, "{0}{1}".format(remote_path, self.gzip_file_name))
             sftp.close()
             ssh.close()
 
