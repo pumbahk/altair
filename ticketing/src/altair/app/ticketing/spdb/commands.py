@@ -200,8 +200,8 @@ class SpdbInfo(object):
         return self.settings['spdb.host']
 
     @property
-    def prot(self):
-        return self.settings['spdb.port']
+    def port(self):
+        return int(self.settings['spdb.port'])
 
     @property
     def user(self):
