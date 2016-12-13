@@ -1781,8 +1781,10 @@ class BuildSejArgsTest(unittest.TestCase):
         from .sej import build_sej_args
         return build_sej_args(*args, **kwargs)
 
-    def testPaid(self):
+    @mock.patch('altair.app.ticketing.sej.api.get_sej_order')
+    def testPaid(self, get_sej_order):
         from altair.app.ticketing.sej.models import SejPaymentType
+        get_sej_order.return_value = None
         self.assertEqual(len(self.orders), len(self.expectations_paid))
         for i, (expectation, order) in enumerate(zip(self.expectations_paid, self.orders)):
             args = self._callFUT(SejPaymentType.Paid, order, self.now, self.now + timedelta(days=365))
@@ -1814,8 +1816,10 @@ class BuildSejArgsTest(unittest.TestCase):
                 else:
                     self.assertEqual(self.now + timedelta(days=365), args[k], '[%d].%s: %s != %s' % (i, k, expectation[k], args[k]))
 
-    def testPrepayment(self):
+    @mock.patch('altair.app.ticketing.sej.api.get_sej_order')
+    def testPrepayment(self, get_sej_order):
         from altair.app.ticketing.sej.models import SejPaymentType
+        get_sej_order.return_value = None
         self.assertEqual(len(self.orders), len(self.expectations_prepayment))
         for i, (expectation, order) in enumerate(zip(self.expectations_prepayment, self.orders)):
             args = self._callFUT(SejPaymentType.Prepayment, order, self.now, self.now + timedelta(days=365))
@@ -1847,8 +1851,10 @@ class BuildSejArgsTest(unittest.TestCase):
                 else:
                     self.assertEqual(self.now + timedelta(days=365), args[k], '[%d].%s: %s != %s' % (i, k, expectation[k], args[k]))
 
-    def testPrepaymentOnly(self):
+    @mock.patch('altair.app.ticketing.sej.api.get_sej_order')
+    def testPrepaymentOnly(self, get_sej_order):
         from altair.app.ticketing.sej.models import SejPaymentType
+        get_sej_order.return_value = None
         self.assertEqual(len(self.orders), len(self.expectations_prepayment_only))
         for i, (expectation, order) in enumerate(zip(self.expectations_prepayment_only, self.orders)):
             args = self._callFUT(SejPaymentType.PrepaymentOnly, order, self.now, self.now + timedelta(days=365))
@@ -1880,8 +1886,10 @@ class BuildSejArgsTest(unittest.TestCase):
                 else:
                     self.assertEqual(self.now + timedelta(days=365), args[k], '[%d].%s: %s != %s' % (i, k, expectation[k], args[k]))
 
-    def testCashOnDelivery(self):
+    @mock.patch('altair.app.ticketing.sej.api.get_sej_order')
+    def testCashOnDelivery(self, get_sej_order):
         from altair.app.ticketing.sej.models import SejPaymentType
+        get_sej_order.return_value = None
         self.assertEqual(len(self.orders), len(self.expectations_cash_on_delivery))
         for i, (expectation, order) in enumerate(zip(self.expectations_cash_on_delivery, self.orders)):
             args = self._callFUT(SejPaymentType.CashOnDelivery, order, self.now, self.now + timedelta(days=365))
