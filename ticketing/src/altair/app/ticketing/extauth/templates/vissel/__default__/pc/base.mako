@@ -6,7 +6,7 @@
 <link rel="stylesheet" type="text/css" href="${view_context.static_url('css/common.css')}" media="all" />
 <link rel="stylesheet" type="text/css" href="${view_context.static_url('css/toggle.css')}" media="all" />
 <script type="text/javascript" src="${view_context.static_url('js/jquery-1.7.2.min.js')}"></script>
-<script type="text/javascript" src="${view_context.static_url('js/scroll.js')}"></script><script>
+<script type="text/javascript" src="${view_context.static_url('js/scroll.js')}"></script>
 <script>
 $(function(){
   $("#toggle").click(function(){
@@ -21,6 +21,14 @@ $(function(){
     } else {
       $(".nav-global ul").hide();
     }
+  });
+  $("#rakulogintitle").click(function(){
+      $("#rakulogin").show();
+    return false;
+  });
+  $("#guestlogintitle").click(function(){
+      $("#guestlogin").show();
+    return false;
   });
 });
 </script>
