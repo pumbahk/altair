@@ -177,7 +177,7 @@ class FileOperator(object):
             ssh.set_missing_host_key_policy(AutoAddPolicy())
             ssh.connect(self.spdb_info.host, self.spdb_info.port, self.spdb_info.user, key_filename=self.spdb_info.private_key)
             sftp = ssh.open_sftp()
-            sftp.put(upload_gzip_name, "{0}{1}".format(remote_path, self.file_name))
+            sftp.put(upload_gzip_name, "{0}{1}".format(remote_path, upload_gzip_name))
             sftp.close()
             ssh.close()
 
