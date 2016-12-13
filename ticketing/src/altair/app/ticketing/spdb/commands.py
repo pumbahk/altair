@@ -8,7 +8,6 @@ import gzip
 import shutil
 from pymysql import connect, cursors
 from pyramid.paster import bootstrap, setup_logging
-import woothee
 import argparse
 from datetime import datetime, timedelta
 from paramiko import SSHClient, AutoAddPolicy
