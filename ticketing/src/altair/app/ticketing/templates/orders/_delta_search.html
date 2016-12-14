@@ -47,8 +47,8 @@
   width: 100%;
   -ms-box-sizing:content-box;
   -moz-box-sizing:content-box;
-  box-sizing:content-box;
   -webkit-box-sizing:content-box;
+  box-sizing:content-box;
 }
 #search-delta a.show-ordered-time-btn,
 #search-delta a.show-start-on-time-btn {
@@ -147,7 +147,6 @@
 
   function parse_options_to_params(pattern_name, patterns) {
       var loaded_options = "";
-
       var options=patterns[pattern_name];
       for (var i = 0; i < options.length; i++) {
         loaded_options += "&download-option=" + options[i];
@@ -413,11 +412,20 @@
 </div>
 
 <div class="btn-group" style="float: left;">
-  <a class="btn btn-inverse" style="margin-left: 10px;" data-toggle="modal" href="#modal-download_orders">
+  <button class="btn btn-inverse" style="margin-left: 10px;" id="download-orders">
     <i class="icon-download icon-white"></i> ダウンロード
-  </a>
+  </button>
 </div>
-
+<script type="text/javascript">
+    $('#download-orders').on('click', function() {
+        var pattern_name = $('#saved-patterns').val();
+        if (!pattern_name) {
+            alert('ダウンロードパターンを選択してください。');
+        } else {
+            $('#modal-download_orders').modal();
+        }
+    });
+</script>
 <div class="download-patterns">
   <div class="btn-group">
     <a class="btn" href="${request.route_path('orders.delta.pattern')}" target="_blank">
