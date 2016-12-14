@@ -694,7 +694,7 @@ class OrderDeltaCSV(OrderCSV):
         u'ordered_product.quantity': PlainTextRenderer(u'ordered_product.quantity'),
 
         u'ordered_product.product.sales_segment.sales_segment_group.name':
-            PlainTextRenderer(u'ordered_product.product. sales_segment.sales_segment_group.name'),
+            PlainTextRenderer(u'ordered_product.product.sales_segment.sales_segment_group.name'),
 
         u'ordered_product.product.sales_segment.margin_ratio':
             PlainTextRenderer(u'ordered_product.product.sales_segment.margin_ratio'),
@@ -724,7 +724,7 @@ class OrderDeltaCSV(OrderCSV):
         # seat
         u'seat.name': {
             EXPORT_TYPE_ORDER:
-                CollectionRenderer(u'ordered_product_item.seats', u'seat', PlainTextRenderer(u'seat.name')),
+                CollectionRenderer(u'ordered_product_item.seats', u'seat', [PlainTextRenderer(u'seat.name')]),
 
             EXPORT_TYPE_SEAT:
                 PlainTextRenderer(u'seat.name')

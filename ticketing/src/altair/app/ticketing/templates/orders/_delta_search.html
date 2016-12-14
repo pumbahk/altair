@@ -47,8 +47,8 @@
   width: 100%;
   -ms-box-sizing:content-box;
   -moz-box-sizing:content-box;
-  box-sizing:content-box;
   -webkit-box-sizing:content-box;
+  box-sizing:content-box;
 }
 #search-delta a.show-ordered-time-btn,
 #search-delta a.show-start-on-time-btn {
@@ -70,16 +70,17 @@
   margin: 2.5px 0;
 }
 .download-patterns {
-  float: right;
+  float: left;
+  margin-left: 10px;
 }
 .download-patterns select#saved-patterns {
-  float: right;
+  float: left;
   margin-right: 10px;
   width: 400px;
   border-radius: 4px;
 }
 .download-patterns .btn-group {
-  float: right;
+  float: left;
 }
 </style>
 <script type="text/javascript">
@@ -147,7 +148,6 @@
 
   function parse_options_to_params(pattern_name, patterns) {
       var loaded_options = "";
-
       var options=patterns[pattern_name];
       for (var i = 0; i < options.length; i++) {
         loaded_options += "&download-option=" + options[i];
@@ -412,18 +412,25 @@
   </ul>
 </div>
 
-<div class="btn-group" style="float: left;">
-  <a class="btn btn-inverse" style="margin-left: 10px;" data-toggle="modal" href="#modal-download_orders">
-    <i class="icon-download icon-white"></i> ダウンロード
-  </a>
-</div>
+<!--float styleのエフェクトをクリア（改行のため）-->
+<div style="clear:both"></div>
 
+<div class="btn-group" style="float: left;">
+  <button class="btn btn-inverse" style="margin-left: 10px;" id="download-orders">
+    <i class="icon-download icon-white"></i> ダウンロード
+  </button>
+</div>
+<script type="text/javascript">
+    $('#download-orders').on('click', function() {
+        var pattern_name = $('#saved-patterns').val();
+        if (!pattern_name) {
+            alert('テンプレートを選択してください。');
+        } else {
+            $('#modal-download_orders').modal();
+        }
+    });
+</script>
 <div class="download-patterns">
-  <div class="btn-group">
-    <a class="btn" href="${request.route_path('orders.delta.pattern')}" target="_blank">
-      <i class="fa fa-cog" aria-hidden="true"></i> 設定
-    </a>
-  </div>
   <select id="saved-patterns" class="styled-select">
     <option value="">ダウンロードパターンを選んでください</option>
     % if patterns:
@@ -432,6 +439,11 @@
       % endfor
     % endif
   </select>
+  <div class="btn-group">
+    <a class="btn" href="${request.route_path('orders.delta.pattern')}" target="_blank">
+      <i class="fa fa-cog" aria-hidden="true"></i> 設定
+    </a>
+  </div>
 </div>
 
 <!--float styleのエフェクトをクリア-->

@@ -9,7 +9,7 @@
 
 <%block name="breadcrumbs">
   ${ch.breadcrumbs(
-    names=[u'トップ', u'予約検索'],
+    names=[u'トップ', u'ダウンロード設定（テスト版）'],
     urls=[request.route_path('index')]
   )}
 </%block>
@@ -27,6 +27,12 @@
     width: 500px;
   }
   span.sub-title {
+    font-size: 14px;
+    font-weight: 600;
+  }
+  p.guide {
+    margin: 0;
+    color: red;
     font-weight: 600;
   }
 
@@ -40,15 +46,16 @@
   }
   #saved-patterns,
   #pattern-name {
-    width: 428px;
-    height: 16px;
+    width: 430px;
+    height: 24.4px;
     margin: 5px auto;
     padding: 3.2px 6px;
 
-    -ms-box-sizing:content-box;
-    -moz-box-sizing:content-box;
-    box-sizing:content-box;
-    -webkit-box-sizing:content-box;
+    -ms-box-sizing:border-box;
+    -moz-box-sizing:border-box;
+    -webkit-box-sizing:border-box;
+    box-sizing:border-box;
+
   }
   #saved-patterns {
     border-radius: 4px;
@@ -74,9 +81,6 @@
     width: 36px;
     padding: 0 2px;
   }
-
-
-
   #save-pattern,
   #available-pattern {
     padding: 0 20px;
@@ -89,11 +93,11 @@
 </style>
 
 <div class="page-header">
-  <h1>予約検索</h1>
+  <h1>ダウンロード設定（テスト版）</h1>
 </div>
 <div class="page-header">
   <h3>使用上の注意</h3>
-  <div>この購入情報ダウンロード機能は<b>デルタ版</b>で、<b>試験段階</b>です。</div>
+  <div>この購入情報ダウンロード機能は<b>テスト版</b>で、<b>試験段階</b>です。</div>
   <div>
     そのため<b>仕様が変更になる事もあります</b>し、<b>正しく動作しない事もあります</b>。ご注意ください。
   </div>
@@ -104,14 +108,14 @@
 
 <div class="main-body">
   <div>
-    <h3>ダウンロードパターン設定</h3>
+    <h3>テンプレート設定</h3>
   </div>
   <div class="setting-area">
     <div class="pattern-settings">
-      <span class="sub-title">パターン名</span>
+      <span class="sub-title">テンプレート名</span>
       <form id="pattern-settings">
         <select id="saved-patterns">
-          <option value="">ダウンロードパターンを選んでください</option>
+          <option value="">テンプレートを選んでください</option>
           % if patterns:
             % for key, val in patterns.items():
               <option value="${key}">${key}</option>
@@ -127,7 +131,9 @@
       </div>
     </div>
     <div class="cloumn-settings">
-      <span class="sub-title">ダウンロード</span>
+      <span class="sub-title">項目設定</span>
+      <p class="guide">ダウンロードしたい項目を左側で項目を選択し、右側へ移してください。</p>
+      <p class="guide">ダウンロードされる項目はリストの上にあるものから順番に配置されます。</p>
       <form id="column-settings">
       <table>
         <tbody>
