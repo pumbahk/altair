@@ -70,6 +70,7 @@ class Operators(BaseView):
         else:
             return {
                 'form': f,
+                'token': self.request.session.get_csrf_token()
                 }
 
     @view_config(route_name='operators.edit', request_method='GET', renderer='altair.app.ticketing:templates/operators/edit.html')
