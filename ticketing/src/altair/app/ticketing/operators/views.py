@@ -50,10 +50,9 @@ class Operators(BaseView):
 
     @view_config(route_name='operators.new', request_method='GET', renderer='altair.app.ticketing:templates/operators/edit.html')
     def new_get(self):
-        token = self.request.session.new_csrf_token()
         return {
             'form':OperatorForm(organization_id=self.context.organization.id),
-            'token': token
+            'token': self.request.session.new_csrf_token()
             }
 
     @view_config(route_name='operators.new', request_method='POST', renderer='altair.app.ticketing:templates/operators/edit.html', check_csrf=True)
@@ -70,7 +69,7 @@ class Operators(BaseView):
         else:
             return {
                 'form': f,
-                'token': self.request.session.get_csrf_token()
+                'token': self.request.session.new_csrf_token()
                 }
 
     @view_config(route_name='operators.edit', request_method='GET', renderer='altair.app.ticketing:templates/operators/edit.html')
@@ -84,9 +83,10 @@ class Operators(BaseView):
 
         return {
             'form':f,
+            'token': self.request.session.new_csrf_token()
             }
 
-    @view_config(route_name='operators.edit', request_method='POST', renderer='altair.app.ticketing:templates/operators/edit.html')
+    @view_config(route_name='operators.edit', request_method='POST', renderer='altair.app.ticketing:templates/operators/edit.html', check_csrf=True)
     def edit_post(self):
         operator = self.context.operator
 
@@ -103,6 +103,7 @@ class Operators(BaseView):
         else:
             return {
                 'form':f,
+                'token': self.request.session.new_csrf_token()
                 }
 
     @view_config(route_name='operators.delete')
