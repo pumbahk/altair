@@ -75,6 +75,8 @@ class SalesSegmentGroups(BaseView, SalesSegmentViewHelperMixin):
             'form_s': SalesSegmentForm(context=self.context),
             'member_groups': self.context.sales_segment_group.membergroups, 
             'sales_segment_group':self.context.sales_segment_group,
+            # 表示される決済引取方法の内容は編集・削除できる
+            'pdmp_editable': True
             }
 
     @view_config(route_name='sales_segment_groups.lot_delete', renderer='altair.app.ticketing:templates/sales_segment_groups/show.html', permission='event_viewer')
