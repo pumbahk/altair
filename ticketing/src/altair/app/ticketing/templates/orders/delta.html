@@ -3,15 +3,32 @@
 
 <%block name="breadcrumbs">
   ${ch.breadcrumbs(
-    names=[u'トップ', u'予約検索'],
+    names=[u'トップ', u'予約検索（テスト版）'],
     urls=[request.route_path('index')]
   )}
 </%block>
 
 <div class="page-header">
-  <h1>予約検索</h1>
+  <h1>予約検索（テスト版）</h1>
 </div>
-
+<div class="page-header">
+  <style type="text/css">
+    .page-header h3 {
+      color: red;
+    }
+    .page-header div b {
+      color: red;
+    }
+  </style>
+  <h3>使用上の注意</h3>
+  <div>この購入情報ダウンロード機能は<b>テスト版</b>で、<b>試験段階</b>です。</div>
+  <div>
+    そのため<b>仕様が変更になる事もあります</b>し、<b>正しく動作しない事もあります</b>。ご注意ください。
+  </div>
+  <div>安定した機能をご希望の方は
+    <b>既存の購入情報検索機能をお使いください</b>。
+  </div>
+</div>
 <div style="float: left;">
   <%include file="/orders/_delta_search.html" args="form=form_search" />
 </div>
