@@ -20,6 +20,7 @@
 </div>
 
 <form class="form-horizontal" action="${request.path}" method="POST">
+  <input type="hidden" name="csrf_token" value="${token}"/>
   <fieldset>
     ${ch.form_item(form.name, class_='span5', maxlength=255)}
     ${ch.form_item(form.login_id)}

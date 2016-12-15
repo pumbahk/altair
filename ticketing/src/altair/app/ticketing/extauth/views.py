@@ -249,7 +249,10 @@ class View(object):
             return challenge_service_provider(self.request, 'rakuten')
 
         # fanclubのコースチェックを行うparameter。存在しない場合はdefault True
-        use_fanclub = distutils.util.strtobool(self.request.params.get('use_fanclub', 'True'))
+        if self.request.organization.fanclub_api_available:
+            use_fanclub = distutils.util.strtobool(self.request.params.get('use_fanclub', 'True'))
+        else:
+            use_fanclub = False
 
         # fanclubを利用するORGはコースチェックへ、しないORGはauthorizeへ
         if self.request.organization.fanclub_api_available and use_fanclub:

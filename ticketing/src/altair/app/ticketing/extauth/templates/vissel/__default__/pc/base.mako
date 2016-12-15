@@ -6,18 +6,11 @@
 <link rel="stylesheet" type="text/css" href="${view_context.static_url('css/common.css')}" media="all" />
 <link rel="stylesheet" type="text/css" href="${view_context.static_url('css/toggle.css')}" media="all" />
 <script type="text/javascript" src="${view_context.static_url('js/jquery-1.7.2.min.js')}"></script>
-<script type="text/javascript" src="${view_context.static_url('js/scroll.js')}"></script><script>
+<script type="text/javascript" src="${view_context.static_url('js/scroll.js')}"></script>
+<script>
 $(function(){
   $("#toggle").click(function(){
     $(".nav-global ul").slideToggle();
-    return false;
-  });
-  $("#rakulogintitle").click(function(){
-      $("#rakulogin").show();
-    return false;
-  });
-  $("#guestlogintitle").click(function(){
-      $("#guestlogin").show();
     return false;
   });
   $(window).resize(function(){
@@ -28,6 +21,14 @@ $(function(){
     } else {
       $(".nav-global ul").hide();
     }
+  });
+  $("#rakulogintitle").click(function(){
+      $("#rakulogin").show();
+    return false;
+  });
+  $("#guestlogintitle").click(function(){
+      $("#guestlogin").show();
+    return false;
   });
 });
 </script>
@@ -43,14 +44,10 @@ $(function(){
 <!-- headder -->
 <header class="header">
 <div class="wrap">
-<h1 class="header-logo"><a href="//vissel.tstar.jp/"><img src="${view_context.static_url('images/logo.gif')}" alt="ヴィッセルチケット"></a></h1>
-<!-- menu -->
-<nav class="nav-global">
-<div id="toggle"><a href="#">&nbsp;</a></div>
-<ul class="clearfix">
-<li><a href="//vissel.tstar.jp/">TOP</a></li>
-</ul>
-</nav>
+<h1 class="header-logo"><a href="/"><img src="${view_context.static_url('images/logo.gif')}" alt="ヴィッセルチケット"></a></h1>
+% if request.authenticated_userid and hasattr(_context, 'route_path'):
+<p class="logout-btnbox"><a href="${_context.route_path('extauth.logout')}" class="logoutBtn">ログアウト</a></p>
+% endif
 <!-- /menu -->
 </div><!-- /wrap -->
 </header><!-- /headder -->

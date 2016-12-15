@@ -1493,6 +1493,7 @@ class CompleteView(object):
             else:
                 raise
 
+        self.context.check_deleted_product(cart)
         self.context.check_order_limit() # 最終チェック
         order = api.make_order_from_cart(self.request, cart)
         order_no = order.order_no

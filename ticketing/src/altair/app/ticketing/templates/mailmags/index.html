@@ -30,7 +30,7 @@ ${ch.breadcrumbs(
           <a href="${request.route_path('mailmags.show', id=mailmag.id)}">${mailmag.name}</a>
         </td>
         <td>
-          ${(mailmag.description or u'')|n}
+          ${(mailmag.description or u'')|h}
         </td>
         <td>
           ${(u"有効" if mailmag.status else u"無効")|n}

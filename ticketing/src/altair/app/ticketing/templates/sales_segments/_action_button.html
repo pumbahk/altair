@@ -1,24 +1,21 @@
-<%page args="order=None, split=False" />
+<%page args="sales_segment_id=None, order=None, split=False, small=False, with_label=True" />
 <%namespace file="/common/helpers.html" name="ch" />
 <%namespace file="/common/modal.html" import="delete_modal" />
-<script type="text/javascript">
-var get_selected_sales_segment_id;
-</script>
 <%
   actions = {
     'new':dict(
-      label=u'新規',
+      label=u'新規' if with_label else u'',
       url='javascript:new_sales_segment();',
       icon='icon-plus',
     ),
     'edit':dict(
-      label=u'編集',
-      url='javascript:edit_sales_segment(get_selected_sales_segment_id());',
+      label=u'編集' if with_label else u'',
+      url='javascript:edit_sales_segment({});'.format(sales_segment_id),
       icon='icon-pencil',
     ),
     'delete':dict(
-      label=u'削除',
-      url='javascript:delete_sales_segment(get_selected_sales_segment_id());',
+      label=u'削除' if with_label else u'',
+      url='javascript:delete_sales_segment({});'.format(sales_segment_id),
       icon='icon-minus',
       attrs={'class':'btn-danger'},
     ),
@@ -27,14 +24,14 @@ var get_selected_sales_segment_id;
 %>
 
 % if split:
-  <div style="float: left; margin-right: 10px;">
+  <div style="float: left;">
   % for item in order:
-      ${HH.action_button(actions, iter([item]), vertical=False)}
+      ${HH.action_button(actions, iter([item]), vertical=False, extra_classes=[u'btn-small'] if small else [])}
   % endfor
   </div>
 % else:
     <div style="float: left;">
-      ${HH.action_button(actions, order, vertical=False)}
+      ${HH.action_button(actions, order, vertical=False, extra_classes=[u'btn-small'] if small else [])}
     </div>
 % endif
 ${delete_modal()}
