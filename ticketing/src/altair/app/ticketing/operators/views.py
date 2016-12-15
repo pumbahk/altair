@@ -50,11 +50,13 @@ class Operators(BaseView):
 
     @view_config(route_name='operators.new', request_method='GET', renderer='altair.app.ticketing:templates/operators/edit.html')
     def new_get(self):
+        token = self.request.session.new_csrf_token()
         return {
             'form':OperatorForm(organization_id=self.context.organization.id),
+            'token': token
             }
 
-    @view_config(route_name='operators.new', request_method='POST', renderer='altair.app.ticketing:templates/operators/edit.html')
+    @view_config(route_name='operators.new', request_method='POST', renderer='altair.app.ticketing:templates/operators/edit.html', check_csrf=True)
     def new_post(self):
         f = OperatorForm(self.request.POST, request=self.request, organization_id=self.context.organization.id)
         if f.validate():

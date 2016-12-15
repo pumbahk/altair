@@ -30,6 +30,7 @@ from ..exceptions import (
     TooManyCartsCreated,
     PaymentError,
     CompletionPageNotRenderered,
+    DeletedProductError,
 )
 from ..reserving import InvalidSeatSelectionException, NotEnoughAdjacencyException
 from ..stocker import InvalidProductSelectionException, NotEnoughStockException
@@ -108,6 +109,11 @@ class CommonErrorView(object):
     def __init__(self, context, request):
         self.context = context
         self.request = request
+
+    @lbr_view_config(context=DeletedProductError)
+    def deleted_product(self):
+        # カートに入った商品が、購入確定時に削除された
+        return dict(message=Markup(self.context.message))
 
     @lbr_view_config(context=PaymentMethodEmptyError)
     def payment_method_is_empty(self):

@@ -260,12 +260,12 @@ class SalesSegmentGroupForm(OurForm):
     )
     copy_payment_delivery_method_pairs = OurIntegerField(
         label=u'決済・引取方法をコピーする',
-        default=0,
+        default=1,
         widget=CheckboxInput(),
     )
     copy_products = OurIntegerField(
         label=u'商品をコピーする',
-        default=0,
+        default=1,
         widget=CheckboxInput(),
     )
     copy_to_stock_holder = OurSelectField(

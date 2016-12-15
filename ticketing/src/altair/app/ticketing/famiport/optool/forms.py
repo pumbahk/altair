@@ -64,9 +64,10 @@ class ChangePassWordForm(OurForm):
     )
 
     def validate_new_password(form, field):
-        pattern = r'^(?=.*[0-9])(?=.*[a-zA-Z])([a-zA-Z0-9]+)$'
+        # 数字と英文字の両方を含む7文字以上が必要。使える記号は　~!@#$%^&*()_+-=[]{}|;:<>?,./
+        pattern = r'^(?=.*[a-zA-Z])(?=.*[0-9])([A-Za-z0-9' + re.escape('~!@#$%^&*()_+-=[]{}|;:<>?,./') + ']+)$'
         if not re.match(pattern, field.data):
-            raise ValidationError(u'パスワードは数字と英文字の両方を含む7文字以上で設定ください。')
+            raise ValidationError(u'半角英数字混在でご入力下さい。（使用可能な記号については表記の通りです）')
 
 class PasswordReminderForm(OurForm):
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):

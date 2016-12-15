@@ -111,6 +111,8 @@ class SalesSegments(BaseView, SalesSegmentViewHelperMixin):
         return {
             'sales_segment': self.context.sales_segment,
             'form_pdmp':PaymentDeliveryMethodPairForm(),
+            # 表示される決済引取方法の内容は編集・削除できない
+            'pdmp_editable': False,
             }
 
 

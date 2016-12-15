@@ -5,6 +5,7 @@ import logging
 from datetime import datetime
 import webhelpers.paginate as paginate
 import sqlalchemy.orm as orm
+from markupsafe import Markup, escape
 from sqlalchemy import func
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPBadRequest
@@ -232,7 +233,7 @@ class ProductAndProductItem(BaseView):
                 ),
                 product=dict(
                     id=product.id,
-                    name=product.name,
+                    name=u"{}".format(escape(product.name)),
                     price=int(product.price),
                     display_order=product.display_order,
                     public=product.public,
@@ -259,7 +260,7 @@ class ProductAndProductItem(BaseView):
                     ),
                     product_item=dict(
                         id=product_item.id,
-                        name=product_item.name,
+                        name=u"{}".format(escape(product_item.name)),
                         price=int(product_item.price),
                         quantity=product_item.quantity,
                     ),
