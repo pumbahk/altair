@@ -171,7 +171,12 @@ class SalesSegmentGroups(BaseView, SalesSegmentViewHelperMixin):
         sales_segment_group = self.context.sales_segment_group
 
         if self.request.matched_route.name == 'sales_segment_groups.copy':
-            with_pdmp = bool(f.copy_payment_delivery_method_pairs.data)
+            with_pdmp = False
+            try:
+                with_pdmp = bool(self.request.POST['copy_payment_delivery_method_pairs'])
+            except KeyError:
+                pass
+
             try:
                 # id_map は { テンプレートのid: 新しいSalesSegmentGroupのid }
                 id_map = SalesSegmentGroup.create_from_template(sales_segment_group, with_payment_delivery_method_pairs=with_pdmp)
@@ -201,7 +206,12 @@ class SalesSegmentGroups(BaseView, SalesSegmentViewHelperMixin):
                     sales_segment,
                     sales_segment_group_id=new_sales_segment_group.id
                     )
-                if bool(f.copy_products.data):
+                with_products = False
+                try:
+                    with_products = bool(self.request.POST['copy_products'])
+                except KeyError:
+                    pass
+                if with_products:
                     for product in sales_segment.products:
                         Product.create_from_template(
                             template=product,
