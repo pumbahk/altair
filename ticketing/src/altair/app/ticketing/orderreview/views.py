@@ -175,10 +175,11 @@ class MypageView(object):
         word_enabled = self.request.organization.setting.enable_word == 1
         subscribe_word = False
         if word_enabled:
-            profile = UserProfile.query.filter(UserProfile.user_id==user.id).first()
-            logger.debug(profile)
-            if profile is not None and profile.subscribe_word:
-                subscribe_word = True
+            if user:
+                profile = UserProfile.query.filter(UserProfile.user_id==user.id).first()
+                logger.debug(profile)
+                if profile is not None and profile.subscribe_word:
+                    subscribe_word = True
 
         return dict(
             shipping_address=shipping_address,
