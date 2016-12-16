@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import re
-from altair.formhelpers.form import OurForm
+from altair.formhelpers.form import OurForm, SecureFormMixin
 from altair.formhelpers.fields import (
     OurTextField,
     DateTimeField,
@@ -16,9 +16,15 @@ from altair.formhelpers.widgets import (
     OurDateWidget,
 )
 from altair.formhelpers import Max, after1900
+from wtforms.ext.csrf.fields import CSRFTokenField
+from wtforms.ext.csrf.session import SessionSecureForm
 from wtforms.validators import Required, Length, Optional, EqualTo
 from wtforms.compat import iteritems
 from wtforms import HiddenField, ValidationError
+from .utils import get_csrf_token
+
+class CSRFSecureForm(SessionSecureForm):
+    SECRET_KEY = get_csrf_token()
 
 class LoginForm(OurForm):
     user_name = OurTextField(
@@ -36,7 +42,8 @@ class LoginForm(OurForm):
         label=u'パスワード'
         )
 
-class ChangePassWordForm(OurForm):
+class ChangePassWordForm(OurForm, CSRFSecureForm):
+
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
         super(ChangePassWordForm, self).__init__(formdata, obj, prefix, **kwargs)
         for name, field in iteritems(self._fields):

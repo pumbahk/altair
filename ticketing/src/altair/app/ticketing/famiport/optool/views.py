@@ -147,7 +147,7 @@ class FamiPortChangePassWord(object):
 
     @view_config(route_name='change_password', renderer='change_password.mako', request_method='GET')
     def change_password_get(self):
-
+        form = ChangePassWordForm(csrf_context=self.request.session)
         token = self.request.GET.get('token')
         if token:
             # パスワードリマインダーのURLでアクセスする場合は強制にログアウトする
@@ -176,11 +176,12 @@ class FamiPortChangePassWord(object):
                                      self.request.authenticated_userid,
                                      self.request.GET))
             return HTTPFound(self.request.route_path('login'))
-        return dict(form=ChangePassWordForm(formdata=MultiDict(user_id=user_id)))
+        form.user_id.date = user_id
+        return dict(form=form)
 
     @view_config(route_name='change_password', renderer='change_password.mako', request_method='POST')
     def change_password_post(self):
-        form = ChangePassWordForm(formdata=self.request.POST)
+        form = ChangePassWordForm(formdata=self.request.POST, csrf_context=self.request.session)
         if form.validate():
             session = get_db_session(self.request, 'famiport')
 
