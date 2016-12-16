@@ -18,7 +18,7 @@ class CouponHelper(object):
         if 'expiration_date' in preferences:
             expiration_date = preferences['expiration_date']
             if str(expiration_date).isdigit():
-                fmt = u"%Y年%m月%d日 00:00まで入場できます。<br/>購入日当日は、ご入場できません。"
+                fmt = u"%Y年%m月%d日 00:00まで入場できます。"
                 return (order.created_at.date() + timedelta(days=(int(expiration_date) + 1))) \
                     .strftime(fmt.encode('utf-8')).decode('utf-8')
 
