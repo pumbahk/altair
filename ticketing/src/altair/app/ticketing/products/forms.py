@@ -353,8 +353,6 @@ class ProductAndProductItemForm(OurForm, ProductFormMixin, ProductItemFormMixin)
                 status = False
         return all([status, self._papim_validate(status)])
 
-class ProductForm(OurForm, ProductFormMixin):
-    pass
 
 class ProductItemForm(OurForm, ProductItemFormMixin):
 
