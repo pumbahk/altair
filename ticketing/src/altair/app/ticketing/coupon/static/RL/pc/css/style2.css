@@ -1147,3 +1147,16 @@ table td.display_value ul li {
 .coupon_name {
 	background-color: #FCF8E3;
 }
+
+.alert {
+    color:red;
+}
+
+.message{
+    font-size:24px;
+}
+
+.alert-message{
+    color:red;
+    font-size:60px;
+}
