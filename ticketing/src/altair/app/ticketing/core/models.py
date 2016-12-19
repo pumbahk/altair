@@ -839,6 +839,13 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         # delete Venue
         self.venue.delete()
 
+        # delte AltairFamiPortPerformance
+        from datetime import datetime
+        from altair.app.ticketing.famiport.userside_models import AltairFamiPortPerformance
+        famiport_performances = DBSession.query(AltairFamiPortPerformance).filter(AltairFamiPortPerformance.performance_id == self.id).all()
+        for perf in famiport_performances:
+            perf.deleted_at = datetime.now()
+
         super(Performance, self).delete()
 
     def get_cms_data(self, request, now):
