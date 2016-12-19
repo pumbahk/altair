@@ -50,9 +50,6 @@ class ChangePassWordForm(OurForm, CSRFSecureForm):
             if name in kwargs:
                 field.data = kwargs[name]
 
-    user_id = HiddenField(
-        validators=[Optional()]
-    )
     new_password = OurTextField(
         widget=OurPasswordInput(),
         validators=[
