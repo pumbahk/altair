@@ -7,7 +7,7 @@
 </style>
 
 <div class="row">
-<form id="signin-form" class="form-horizontal" action="${request.current_route_path(_query=dict(return_url=return_url))}" method="POST">
+<form id="signin-form" class="form-horizontal" action="${request.current_route_path(_query=dict(return_url=return_url))}" method="POST" autocomplete="off">
     <h3 class="form-heading">Famiポート運用ツール</h3>
 
     %for field in form:
