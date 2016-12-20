@@ -603,6 +603,18 @@ class MemberForm(OurForm):
         default=True
         )
 
+    search_name = OurTextField(
+        label=u'氏名(前後方一致)'
+        )
+
+    search_auth_identifier = OurTextField(
+        label=u'ログインID(完全一致)'
+        )
+
+    search_tel_1 = OurTextField(
+        label=u'電話番号(完全一致)'
+        )
+
     def validate_auth_secret_confirm(form, field):
         if form.auth_secret.data != '' and field.data != form.auth_secret.data:
             raise ValidationError(u'パスワードが一致しません')
@@ -659,7 +671,6 @@ class MemberForm(OurForm):
         self.request = kwargs.pop('request', None)
         self._obj = kwargs.get('obj')
         super(MemberForm, self).__init__(*args, **kwargs)
-
 
 class OAuthClientForm(OurForm):
     name = OurTextField(

@@ -4,10 +4,6 @@
 .table.members tr.disabled > td a {
   color: #ccc; 
 }
-.member_set_btn a {
-  background-color: #196f3e;
-  color: #fff;
-}
 </style>
 % for message in request.session.pop_flash():
 <div class="alert">
@@ -16,16 +12,54 @@
 </div>
 % endfor
 <h2>会員(Member) 一覧</h2>
+<div class="col-xs-12">
+<div class="btn-toolbar">
+<div class="btn-group" role="group">
 <a class="btn" href="${request.route_path('members.new')}"><i class="icon-plus"></i> 新規メンバー</a>
 <a class="btn" href="#modal-csv-import" data-toggle="modal">CSVインポート</a>
 <a class="btn" href="#modal-csv-export" data-toggle="modal">CSVエクスポート</a>
-${h.render_bootstrap_pager(members)}
-<form action="${request.route_path('members.delete')}" method="POST">
-<ul class="nav nav-pills">
+</div>
+<!-- Search Form -->
+<fieldset>
+<legend>検索条件</legend>
+<form action="${request.route_path('members.index')}" method="GET" class="form-inline">
+<div class="form-group">
+  <%
+      search_name = "" if request.params.get('search_name') == None else request.params.get('search_name')
+      search_auth_identifier = "" if request.params.get('search_auth_identifier') == None else request.params.get('search_auth_identifier')
+      search_tel_1 = "" if request.params.get('search_tel_1') == None else request.params.get('search_tel_1')
+  %>
+  ${form.search_name(placeholder=form.search_name.label.text, value=search_name)}
+  ${form.search_auth_identifier(placeholder=form.search_auth_identifier.label.text, value=search_auth_identifier)}
+  ${form.search_tel_1(placeholder=form.search_tel_1.label.text, value=search_tel_1)}
+  <button type="submit" class="btn">検索</button>
+</div>
+</fieldset>
+</form>
+<!-- /Search Form -->
   % for member_set in member_sets:
-    <li class="member_set_btn"><a href="${request.route_path('members.index') + u'?member_set_id=' + unicode(member_set.id)}">${member_set.name}</a></li>
+    <div class="btn-group" role="group">
+    <%
+       active_member_set=""
+       if request.params.get('member_set_id') and int(request.params.get('member_set_id')) == member_set.id:
+           active_member_set = u"active"
+    %>
+    <a class="btn btn-info ${active_member_set}" href="${request.route_path('members.index') + u'?member_set_id=' + unicode(member_set.id)}">${member_set.name}</a>
+    % for member_kind in member_kinds:
+      % if member_kind.member_set_id==member_set.id:
+        <%
+           active_member_kind=""
+           if request.params.get('member_kind_id') and int(request.params.get('member_kind_id')) == member_kind.id:
+               active_member_kind = u"active"
+        %>
+        <a class="btn btn-link ${active_member_kind}" href="${request.route_path('members.index') + u'?member_set_id=' + unicode(member_set.id) + u'&member_kind_id=' + unicode(member_kind.id)}">${member_kind.display_name}</a>
+      % endif
+    % endfor
+    </div>
   % endfor
-</ul>
+</div>
+</div>
+<form action="${request.route_path('members.delete')}" method="POST">
 <table class="table members">
   <thead>
     <tr>

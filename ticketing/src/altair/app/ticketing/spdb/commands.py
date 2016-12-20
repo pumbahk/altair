@@ -146,14 +146,20 @@ class FileOperator(object):
     @property
     def file_name(self):
         if self._args.delete:
-            return "delete_{0}{1}.csv".format(self.org_name, self.term_str)
-        return "delta_{0}{1}.csv".format(self.org_name, self.term_str)
+            return "{0}.{1}.delete.csv".format(self.org_name, self.term_str)
+        return "{0}.{1}.delta.csv".format(self.org_name, self.term_str)
 
     @property
     def gzip_file_name(self):
         if self._args.delete:
-            return "delete_{0}{1}.csv.gz".format(self.org_name, self.term_str)
-        return "delta_{0}{1}.csv.gz".format(self.org_name, self.term_str)
+            return "{0}.{1}.delete.csv.gz".format(self.org_name, self.term_str)
+        return "{0}.{1}.delta.csv.gz".format(self.org_name, self.term_str)
+
+    @property
+    def flg_file_name(self):
+        if self._args.delete:
+            return "{0}.{1}.delete.csv.gz.flg".format(self.org_name, self.term_str)
+        return "{0}.{1}.delta.csv.gz.flg".format(self.org_name, self.term_str)
 
     @property
     def tmp_dir(self):
@@ -170,9 +176,17 @@ class FileOperator(object):
         if self.tmp_file:
             self.tmp_file.close()
 
+    def touch_file(self, file_name):
+        f = open(file_name, 'a')
+        f.close()
+
     def upload(self, remote_path="/home/odin_ticket/from_ticket/"):
         upload_file_name = "{0}{1}".format(self.tmp_dir, self.file_name)
         upload_gzip_name = "{0}.gz".format(upload_file_name)
+        upload_flg_name = "{0}.flg".format(upload_gzip_name)
+
+        self.touch_file(upload_flg_name)
+
         os.rename(self.tmp_file_name, upload_file_name)
 
         with open(upload_file_name, 'rb') as f_in, gzip.open(upload_gzip_name, 'wb') as f_out:
@@ -184,6 +198,7 @@ class FileOperator(object):
             ssh.connect(self.spdb_info.host, self.spdb_info.port, self.spdb_info.user, key_filename=self.spdb_info.private_key)
             sftp = ssh.open_sftp()
             sftp.put(upload_gzip_name, "{0}{1}".format(remote_path, self.gzip_file_name))
+            sftp.put(upload_flg_name, "{0}{1}".format(remote_path, self.flg_file_name))
             sftp.close()
             ssh.close()
 
@@ -192,6 +207,9 @@ class FileOperator(object):
 
             if os.path.exists(upload_gzip_name):
                 os.remove(upload_gzip_name)
+
+            if os.path.exists(upload_flg_name):
+                os.remove(upload_flg_name)
 
 
 class SpdbInfo(object):

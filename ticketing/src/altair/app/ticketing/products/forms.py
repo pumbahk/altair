@@ -188,7 +188,7 @@ class ProductItemFormMixin(object):
         )
     ticket_bundle_id = OurSelectField(
         label=u'券面構成',
-        validators=[Required()],
+        validators=[Optional()],
         coerce=lambda v: None if not v else int(v)
         )
 
@@ -211,6 +211,7 @@ class ProductItemFormMixin(object):
         required_fields = [
             self.product_id,
             self.product_item_name,
+            self.ticket_bundle_id,
             self.stock_holder_id,
             self.stock_type_id
         ]
@@ -343,13 +344,14 @@ class ProductAndProductItemForm(OurForm, ProductFormMixin, ProductItemFormMixin)
 
     def validate(self, *args, **kwargs):
         status = super(self.__class__, self).validate(*args, **kwargs)
+        # 商品明細編集の時は配券先入力が必須
+        # XXX: 商品明細にしかない項目をRequiredにすると商品編集の時に変にvalidationエラーになるらしい...
         if not self.id.data or self.product_item_id.data:
             error_message = u'入力してください'
             if not self.stock_holder_id.data:
                 self.stock_holder_id.errors.append(error_message)
                 status = False
         return all([status, self._papim_validate(status)])
-
 
 
 class ProductItemForm(OurForm, ProductItemFormMixin):

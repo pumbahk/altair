@@ -586,9 +586,23 @@ class MembersView(object):
         )
     def index(self):
         session = get_db_session(self.request, 'extauth')
-        query = session.query(Member).join(Member.member_set).filter_by(organization_id=self.request.operator.organization_id).order_by(Member.id)
+        query = session.query(Member)\
+                .join(Membership, Membership.member_id==Member.id)\
+                .join(MemberKind, MemberKind.id==Membership.member_kind_id)\
+                .join(MemberSet, MemberSet.id==Member.member_set_id)\
+                .filter(MemberSet.organization_id==self.request.operator.organization_id)\
+                .order_by(Member.id)
         if self.request.params.get('member_set_id'):
-            query = query.filter(MemberSet.id==self.request.params.get('member_set_id'))
+                query = query.filter(MemberSet.id==self.request.params.get('member_set_id'))
+        if self.request.params.get('member_kind_id'):
+                query = query.filter(MemberKind.id==self.request.params.get('member_kind_id'))
+        if self.request.params.get('search_name'):
+                query = query.filter(Member.name.like(u"%%%s%%" % self.request.params.get('search_name')))
+        if self.request.params.get('search_auth_identifier'):
+                query = query.filter(Member.auth_identifier==self.request.params.get('search_auth_identifier'))
+        if self.request.params.get('search_tel_1'):
+                query = query.filter(Member.tel_1==self.request.params.get('search_tel_1'))
+
         members = paginate.Page(
             query,
             page=int(self.request.params.get('page', 0)),
@@ -596,9 +610,16 @@ class MembersView(object):
             url=paginate.PageURL_WebOb(self.request)
             )
         member_sets = session.query(MemberSet).filter_by(organization_id=self.request.operator.organization_id).all()
+        member_kinds = session.query(MemberKind).join(MemberKind.member_set).filter_by(organization_id=self.request.operator.organization_id).all()
+        form = MemberForm(
+            auth_secret=u'',
+            request=self.request
+            )
         return dict(
             members=members,
-            member_sets=member_sets
+            member_sets=member_sets,
+            member_kinds=member_kinds,
+            form=form,
             )
 
     @view_config(
