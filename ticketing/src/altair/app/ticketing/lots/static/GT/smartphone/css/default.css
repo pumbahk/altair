@@ -1,0 +1,116 @@
+@charset "utf-8";
+
+/*
+	File Name   : default.css
+	Description : デフォルトのスタイルのリセット及び基本設定
+*/
+
+
+/* Universal reset
+----------------------------------------------------------- */
+* {
+	margin: 0;
+	padding: 0;
+	font-style: normal;
+}
+
+html {
+	overflow-y: scroll;
+}
+
+table {
+	border-collapse: collapse;
+	border-spacing: 0;
+	empty-cells: show;
+	font-size: 100%;
+}
+
+caption, th {
+	text-align: left;
+}
+
+object, embed {
+	vertical-align: top;
+}
+
+hr, legend {
+	display: none;
+}
+
+h1, h2, h3, h4, h5, h6 {
+	font-size: 100%;
+}
+
+img {
+	border: none;
+	vertical-align: bottom;
+}
+
+li {
+	list-style: none;
+}
+
+p {
+	margin-bottom: 1em;
+}
+
+input {
+	padding: 1px;
+}
+
+textarea {
+	padding: 2px;
+	overflow: auto;
+	font-size: 100%;
+}
+
+option {
+	padding-right: 10px;
+}
+
+*+html option {
+	padding-right: 0; /* for IE7&Opera */
+}
+
+* html option {
+	padding-right: 0; /* for IE6 */
+}
+
+acronym, abbr {
+	cursor: help;
+}
+
+
+/* Body setting
+----------------------------------------------------------- */
+body {
+	color: #333;
+	font-family: "メイリオ", Meiryo, "ヒラギノ角ゴ Pro W3", "Hiragino Kaku Gothic Pro", Osaka, "ＭＳ Ｐゴシック", "MS PGothic", sans-serif;
+	font-size:14px;
+	background: #fff;
+}
+
+
+/* Link setting
+----------------------------------------------------------- */
+a:link {
+	text-decoration: none;
+}
+
+a:visited {
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: none;
+}
+
+a:active {
+}
+
+#naviSkip {
+	position: absolute;
+	top: 0;
+	left: 0;
+	margin: 0;
+}

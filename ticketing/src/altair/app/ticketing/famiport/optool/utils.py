@@ -153,3 +153,7 @@ def sendmail(settings, recipient, subject, html):
         encoding='utf-8'
     )
     mailer.send(sender, recipient)
+
+def get_csrf_token(length=32):
+    import string, random
+    return ''.join(random.choice(string.ascii_letters + string.digits))
