@@ -949,12 +949,12 @@ class OrderDeltaPatternView(OrderDeltaBaseView):
         emsgs = []
 
         if not op_type or op_type not in ['add', 'update', 'del']:
-            emsgs.append(u"操作タイプは認知できないため、ダウンロードパターンに関する操作はできません。")
+            emsgs.append(u"操作タイプは認知できないため、テンプレートに関する操作はできません。")
             return emsgs
 
         ope = {'add': u'新規登録', 'update': u'更新', 'del': u'削除'}
         if not pattern_name:
-            emsgs.append(u"{}するパターン名を記入ください。".format(ope[op_type]))
+            emsgs.append(u"{}するテンプレート名を記入ください。".format(ope[op_type]))
 
         if op_type in ['add', 'update'] and not pattern_content:
             emsgs.append(u"ダウンロード項目を選んでください。")
