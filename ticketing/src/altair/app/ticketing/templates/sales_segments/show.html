@@ -90,7 +90,7 @@ require([], function () {});
   </tbody>
 </table>
 <div class="pull-left">
-  <%include file="/sales_segments/_action_button.html" args="order=['edit', 'delete'], split=True" />
+  <%include file="/sales_segments/_action_button.html" args="order=['edit', 'delete'], sales_segment_id=sales_segment.id, split=True" />
 </div>
 <div class="clearfix" id="sales_segments-form" style="margin-bottom: 20px;">
   <%include file="/sales_segments/_modal.html" args="modal_id='modal-sales_segment'" />
