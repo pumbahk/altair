@@ -772,7 +772,8 @@ class MemberDataExporter(object):
         .outerjoin(Membership.__table__, Member.id == Membership.member_id) \
         .outerjoin(MemberKind.__table__, Membership.member_kind_id == MemberKind.id)
 
-    def __init__(self, slave_session, organization_id):
+    def __init__(self, request, slave_session, organization_id):
+        self.request = request
         self.slave_session = slave_session
         self.organization_id = organization_id
 
@@ -781,6 +782,18 @@ class MemberDataExporter(object):
             .select_from(self.select_from) \
             .where(MemberSet.organization_id == self.organization_id) \
             .order_by(Member.id)
+
+        if self.request.params.get('member_set_id'):
+                q = q.where(MemberSet.id==self.request.params.get('member_set_id'))
+        if self.request.params.get('member_kind_id'):
+                q = q.where(MemberKind.id==self.request.params.get('member_kind_id'))
+        if self.request.params.get('search_name'):
+                q = q.where(Member.name.like(u"%%%s%%" % self.request.params.get('search_name')))
+        if self.request.params.get('search_auth_identifier'):
+                q = q.where(Member.auth_identifier==self.request.params.get('search_auth_identifier'))
+        if self.request.params.get('search_tel_1'):
+                q = q.where(Member.tel_1==self.request.params.get('search_tel_1'))
+
         for raw_record in self.slave_session.execute(q):
             record = {k: v for (k, _), v in zip(self.record_spec, raw_record)}
             if record['auth_secret']:
