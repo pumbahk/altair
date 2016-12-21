@@ -116,6 +116,10 @@
     width: 36px;
     padding: 0 2px;
   }
+  td.in-out-column button:first-child,
+  td.up-down-column button:first-child {
+    margin-bottom: 20px;
+  }
   #save-pattern,
   #available-pattern {
     padding: 0 20px;
@@ -185,17 +189,15 @@
               </select>
             </td>
             <td class="in-out-column">
-              <a class="btn fa fa-arrow-circle-right" id="in-column"></a>
-              <br />
-              <a class="btn fa fa-arrow-circle-left" id="out-column"></a>
+              <button class="btn fa fa-arrow-circle-right" id="in-column"></button>
+              <button class="btn fa fa-arrow-circle-left" id="out-column"></button>
             </td>
             <td>
               <select id="selected-columns" multiple="multiple" name="selected_columns"></select>
             </td>
             <td class="up-down-column">
-              <a class="btn fa fa-arrow-circle-up" id="up-column"></a>
-              <br />
-              <a class="btn fa fa-arrow-circle-down" id="down-column"></a>
+              <button class="btn fa fa-arrow-circle-up" id="up-column"></button>
+              <button class="btn fa fa-arrow-circle-down" id="down-column"></button>
             </td>
           </tr>
         </tbody>
