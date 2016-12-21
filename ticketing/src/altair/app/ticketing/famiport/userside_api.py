@@ -141,8 +141,27 @@ def create_famiport_reflection_data(request, session, event, datetime_formatter)
             fm_sales_segments = filter_famiport_pdmp_sales_segments(performance.sales_segments)
             if afm_performance and fm_sales_segments:
                 sales_segment_pairs = list(find_sales_segment_pairs(session, fm_sales_segments))
+
                 for seat_unselectable_ss, seat_selectable_ss in sales_segment_pairs:
+
                     origin_sales_segment = seat_unselectable_ss or seat_selectable_ss
+
+                    # 座席選択を切替られた場合を考慮
+                    from datetime import datetime
+                    from altair.app.ticketing.famiport.userside_models import AltairFamiPortPerformance, AltairFamiPortSalesSegmentPair
+
+                    query = session.query(AltairFamiPortSalesSegmentPair) \
+                        .join(AltairFamiPortPerformance, AltairFamiPortPerformance.id == AltairFamiPortSalesSegmentPair.altair_famiport_performance_id) \
+                        .filter(AltairFamiPortPerformance.performance_id == origin_sales_segment.performance.id)
+
+                    if seat_unselectable_ss:
+                        pair = query.filter(AltairFamiPortSalesSegmentPair.seat_selectable_sales_segment_id != None).first()
+                    else:
+                        pair = query.filter(AltairFamiPortSalesSegmentPair.seat_unselectable_sales_segment_id != None).first()
+
+                    if pair:
+                        pair.deleted_at = datetime.now()
+
                     if internal.validate_sales_segment_consistency(seat_unselectable_ss, seat_selectable_ss):
                         try:
                             afm_sales_segment_pair = internal.lookup_altair_famiport_sales_segment_pair(session, origin_sales_segment)
@@ -191,6 +210,7 @@ def submit_to_downstream_sync(request, session, tenant, event):
     # Lock the FM reflection task with AltairFamiPortPerformanceGroup to avoid parallel execution from different worker process ref: TKT-1563
     altair_famiport_performance_groups = session.query(AltairFamiPortPerformanceGroup).with_lockmode("update").filter_by(event_id=event.id).all()
     for altair_famiport_performance_group in altair_famiport_performance_groups:
+        from datetime import datetime
         now = datetime.now()
 
         try:
@@ -280,6 +300,7 @@ def submit_to_downstream_sync(request, session, tenant, event):
                 logger.info('AltairFamiPortPerformance(id=%ld) registered' % altair_famiport_performance.id)
             else:
                 logger.info('AltairFamiPortPerformance(id=%ld) updated' % altair_famiport_performance.id)
+
             for altair_famiport_sales_segment_pair in altair_famiport_performance.altair_famiport_sales_segment_pairs:
                 if altair_famiport_sales_segment_pair.status != AltairFamiPortReflectionStatus.AwaitingReflection.value:
                     logger.info('AltairFamiPortSalesSegmentPair(id=%ld) is not marked AwaitingReflection; skipped' % altair_famiport_sales_segment_pair.id)

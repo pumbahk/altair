@@ -841,9 +841,11 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
         # delte AltairFamiPortPerformance
         from datetime import datetime
-        from altair.app.ticketing.famiport.userside_models import AltairFamiPortPerformance
+        from altair.app.ticketing.famiport.userside_models import AltairFamiPortPerformance, AltairFamiPortSalesSegmentPair
         famiport_performances = DBSession.query(AltairFamiPortPerformance).filter(AltairFamiPortPerformance.performance_id == self.id).all()
         for perf in famiport_performances:
+            for sales_segment_pair in perf.altair_famiport_sales_segment_pairs:
+                sales_segment_pair.deleted_at = datetime.now()
             perf.deleted_at = datetime.now()
 
         super(Performance, self).delete()
