@@ -179,14 +179,6 @@
           <td colspan="2">
             ${form.order_no(minlength=12)}
           </td>
-          <td style="vertical-align:top;">
-            <a class="plusone btn btn-small"><i class="icon-plus"></i></a>
-            <script>
-              var target = $('input[name="order_no"]');
-              var target_parent = target.parent();
-              $('.plusone').click(function(){ target_parent.append(target.clone().val(""));});
-            </script>
-          </td>
         </tr>
         <tr>
           <th><label for="name">${form.name.label.text}</label></th>
