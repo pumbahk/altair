@@ -1,0 +1,19 @@
+<%
+import urllib
+skulist=""
+qlist=""
+amtlist=""
+namelist=""
+bbb = ""
+for wish in entry.wishes:
+    for entry_product in wish.products:
+        skulist+="{0}{1}".format(str(entry_product.id), "|")
+        qlist+="{0}{1}".format(str(entry_product.quantity), "|")
+        amtlist+="{0}{1}".format(str(entry_product.product.price*entry_product.quantity)[:-3], "|")
+        name = entry_product.product.name
+        namelist+="{0}{1}".format(urllib.quote(entry_product.product.name.encode('utf-8')), "|".encode('utf-8'))
+        #namelist+="{0}{1}".format(entry_product.product.name.encode('utf-8'), "|".encode('utf-8'))
+%>
+
+<img src="https://track.linksynergy.com/ep?mid=42286&ord=${entry.entry_no}
+&skulist=${skulist[:-1]}&qlist=${qlist[:-1]}&amtlist=${amtlist[:-1]}&cur=JPY&namelist=${namelist[:-1]}" width="1" height="1" >
