@@ -69,7 +69,7 @@ from altair.app.ticketing.orders.models import (
 from altair.app.ticketing.sej import api as sej_api
 from altair.app.ticketing.mails.api import get_mail_utility
 from altair.app.ticketing.mailmags.models import MailSubscription, MailMagazine, MailSubscriptionStatus
-from altair.app.ticketing.orders.export import OrderCSV, OrderDeltaCSV, get_japanese_columns, RefundResultCSVExporter
+from altair.app.ticketing.orders.export import OrderCSV, OrderDeltaCSV, get_japanese_columns, RefundResultCSVExporter, get_ordered_ja_col
 from .forms import (
     OrderForm,
     OrderInfoForm,
@@ -855,7 +855,6 @@ class OrderDeltaIndexView(OrderDeltaBaseView):
             'orders': orders,
             'page': page,
             'endpoints': self.endpoints,
-            'japanese_columns': get_japanese_columns(request),
             'patterns': patterns
         }
 
@@ -937,7 +936,7 @@ class OrderDeltaDownloadView(OrderDeltaBaseView):
 class OrderDeltaPatternView(OrderDeltaBaseView):
     @view_config(route_name='orders.delta.pattern', request_method="GET")
     def index(self):
-        japanese_columns = get_japanese_columns(self.request)
+        japanese_columns = get_ordered_ja_col()
         patterns = get_patterns_info(self.request)
 
         return {
