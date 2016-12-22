@@ -89,6 +89,7 @@ from .forms import (
     SejOrderCancelForm,
     DownloadItemsPatternForm,
     )
+from .forms_delta import OrderSearchForm as OrderSearchFormDelta
 from altair.app.ticketing.orders.forms import OrderMemoEditFormFactory
 from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.fanstatic import with_bootstrap
@@ -805,13 +806,14 @@ class OrderDeltaIndexView(OrderDeltaBaseView):
     @view_config(route_name='orders.delta')
     def index(self):
         request = self.request
+        patterns = get_patterns_info(request)
         slave_session  = get_db_session(request, name="slave")
 
         organization_id = request.context.organization.id
         params = MultiDict(request.params)
         params["order_no"] = " ".join(request.params.getall("order_no"))
 
-        form_search = OrderSearchForm(params, organization_id=organization_id)
+        form_search = OrderSearchFormDelta(params, organization_id=organization_id)
 
         orders = None
         page = int(request.params.get('page', 0))
@@ -829,6 +831,7 @@ class OrderDeltaIndexView(OrderDeltaBaseView):
                     'orders': orders,
                     'page': page,
                     'endpoints': self.endpoints,
+                    'patterns': patterns
                 }
 
             if request.params.get('action') == 'checked':
@@ -846,8 +849,6 @@ class OrderDeltaIndexView(OrderDeltaBaseView):
                 items_per_page=40,
                 url=paginate.PageURL_WebOb(request)
             )
-
-        patterns = get_patterns_info(request)
 
         return {
             'form': OrderForm(context=self.context),
