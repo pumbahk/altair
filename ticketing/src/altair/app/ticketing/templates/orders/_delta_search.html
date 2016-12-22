@@ -12,6 +12,9 @@
 <link href="/static/css/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet"></link>
 
 <style type="text/css">
+.order-msg {
+  font-weight: normal;
+}
 .form-horizontal .control-label {
   width: 120px;
 }
@@ -173,7 +176,7 @@
     <table>
       <tbody>
         <tr>
-          <th><label for="order_no">${form.order_no.label.text}</label></th>
+          <th colspan="2"><label for="order_no">${form.order_no.label.text} <span class="order-msg">※複数の予約番号での検索時はスペース(全角/半角)で区切ってご入力ください。</span></label></th>
         </tr>
         <tr>
           <td colspan="2">
