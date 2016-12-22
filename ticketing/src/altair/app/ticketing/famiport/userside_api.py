@@ -155,9 +155,9 @@ def create_famiport_reflection_data(request, session, event, datetime_formatter)
                         .filter(AltairFamiPortPerformance.performance_id == origin_sales_segment.performance.id)
 
                     if seat_unselectable_ss:
-                        pair = query.filter(AltairFamiPortSalesSegmentPair.seat_selectable_sales_segment_id != None).first()
+                        pair = query.filter(AltairFamiPortSalesSegmentPair.seat_selectable_sales_segment_id == origin_sales_segment.id).first()
                     else:
-                        pair = query.filter(AltairFamiPortSalesSegmentPair.seat_unselectable_sales_segment_id != None).first()
+                        pair = query.filter(AltairFamiPortSalesSegmentPair.seat_unselectable_sales_segment_id == origin_sales_segment.id).first()
 
                     if pair:
                         pair.deleted_at = datetime.now()
