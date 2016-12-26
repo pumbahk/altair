@@ -282,9 +282,10 @@ class SearchFormBase(Form):
         self.delivery_method.choices = [(dm.id, dm.name) for dm in
                                         DeliveryMethod.filter_by_organization_id(organization.id)]
 
-        event_id = kwargs.pop('event_id', self.event_id.data)
-        performance_id = kwargs.pop('performance_id', self.performance_id.data)
-        sales_segment_group_id = kwargs.pop('sales_segment_group_id', self.sales_segment_group_id.data)
+        # 引数として入力された場合のみ、指定だと判断する。
+        event_id = kwargs.pop('event_id', None)
+        performance_id = kwargs.pop('performance_id', None)
+        sales_segment_group_id = kwargs.pop('sales_segment_group_id', None)
 
         if event_id:
             event = Event.get(event_id)
@@ -293,6 +294,7 @@ class SearchFormBase(Form):
         if sales_segment_group_id:
             sales_segment_group = SalesSegmentGroup.get(sales_segment_group_id)
 
+        # Performanceが指定される場合のみ、紐づくEventをとります。
         if event is None and performance is not None:
             event = performance.event
 
@@ -304,10 +306,19 @@ class SearchFormBase(Form):
         else:
             self.event_id.choices = [(event.id, event.title)]
 
+        # Eventが指定されていなかったらフォームから取得を試みる
+        if event is None and self.event_id.data:
+            event = Event.get(self.event_id.data)
+
+        # Performanceが指定されていなかったらフォームから取得を試みる
+        if not performance and self.performance_id:
+            performance = Performance.get(self.performance_id.data)
         if performance:
             dthelper = DateTimeHelper(create_date_time_formatter(self.request))
             self.performance_id.choices = [(performance.id, '%s (%s)' % (performance.name, dthelper.datetime(performance.start_on, with_weekday=True)))]
 
+        if not sales_segment_group and self.sales_segment_group_id:
+            sales_segment_group = SalesSegmentGroup.get(sales_segment_group_id)
         if sales_segment_group:
             self.sales_segment_group_id.choices = [(sales_segment_group.id, sales_segment_group.name)]
 
