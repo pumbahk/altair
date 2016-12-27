@@ -273,6 +273,11 @@ class SearchFormBase(Form):
         performance = None
         sales_segment_group = None
 
+        # 検索フォームの初期化：
+        # １（デフォルト）：orgに紐づくイベント一覧を取る。
+        # ２：引数でイベントとパフォーマンスを指定する場合。
+
+        ## 基本的にorganization_idが指定されない場合がない前提で
         if 'organization_id' in kwargs:
             organization_id = kwargs.pop('organization_id')
             organization = Organization.get(organization_id)
@@ -282,7 +287,7 @@ class SearchFormBase(Form):
         self.delivery_method.choices = [(dm.id, dm.name) for dm in
                                         DeliveryMethod.filter_by_organization_id(organization.id)]
 
-        # 引数として入力された場合のみ、指定だと判断する。
+        ## 引数として入力された場合のみ、指定だと判断する。
         event_id = kwargs.pop('event_id', None)
         performance_id = kwargs.pop('performance_id', None)
         sales_segment_group_id = kwargs.pop('sales_segment_group_id', None)
@@ -294,33 +299,36 @@ class SearchFormBase(Form):
         if sales_segment_group_id:
             sales_segment_group = SalesSegmentGroup.get(sales_segment_group_id)
 
-        # Performanceが指定される場合のみ、紐づくEventをとります。
+        ## もし、Eventが指定されていなくて、Performanceが指定される場合のみ、紐づくEventを取る。
         if event is None and performance is not None:
             event = performance.event
 
+        ## Eventが指定されていない場合はorgに紐づくEvent一覧をとる。
         if event is None:
             events = Event.query.with_entities(Event.id, Event.title) \
                                 .filter(Event.organization_id==organization.id) \
                                 .order_by(Event.created_at.desc())
             self.event_id.choices = [('', u'(イベントを選んでください。)')]+[(e.id, e.title) for e in events]
+        ## Eventが指定される場合は該当Eventのみ表示する（Performance配下の購入情報タブの場合）。
         else:
             self.event_id.choices = [(event.id, event.title)]
 
-        # Eventが指定されていなかったらフォームから取得を試みる
-        if event is None and self.event_id.data:
-            event = Event.get(self.event_id.data)
-
-        # Performanceが指定されていなかったらフォームから取得を試みる
-        if not performance and self.performance_id:
-            performance = Performance.get(self.performance_id.data)
+        ## Performanceが指定される場合は該当Performanceのみ表示する（Performance配下の購入情報タブの場合）。
         if performance:
             dthelper = DateTimeHelper(create_date_time_formatter(self.request))
             self.performance_id.choices = [(performance.id, '%s (%s)' % (performance.name, dthelper.datetime(performance.start_on, with_weekday=True)))]
 
-        if not sales_segment_group and self.sales_segment_group_id:
-            sales_segment_group = SalesSegmentGroup.get(sales_segment_group_id)
-        if sales_segment_group:
-            self.sales_segment_group_id.choices = [(sales_segment_group.id, sales_segment_group.name)]
+        # POSTされた場合の設定
+        ## Eventのみが絞られる場合、該当Eventに紐づくPerformanceとsales_segment_groupを取る
+        if self.event_id.data:
+            dthelper = DateTimeHelper(create_date_time_formatter(self.request))
+            performances = Performance.query.join(Event) \
+                                            .filter(Event.id == self.event_id.data) \
+                                            .order_by(Performance.created_at.desc())
+            self.performance_id.choices = [('', u'')] + [(p.id, '%s (%s)' % (p.name, dthelper.datetime(p.start_on, with_weekday=True))) for p in performances]
+
+            sales_segment_groups = SalesSegmentGroup.query.filter(SalesSegmentGroup.event_id == self.event_id.data)
+            self.sales_segment_group_id.choices = [(sales_segment_group.id, sales_segment_group.name) for sales_segment_group in sales_segment_groups]
 
 
     order_no = TextField(

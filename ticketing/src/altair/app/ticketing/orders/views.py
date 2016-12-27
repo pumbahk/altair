@@ -803,52 +803,61 @@ class OrderDeltaBaseView(BaseView):
 
 @view_defaults(decorator=with_bootstrap, renderer='altair.app.ticketing:templates/orders/delta.html', permission='sales_counter')
 class OrderDeltaIndexView(OrderDeltaBaseView):
-    @view_config(route_name='orders.delta')
-    def index(self):
+    @view_config(route_name='orders.delta', request_method="GET")
+    def get(self):
         request = self.request
         patterns = get_patterns_info(request)
-        slave_session  = get_db_session(request, name="slave")
-
         organization_id = request.context.organization.id
-        params = MultiDict(request.params)
-        params["order_no"] = " ".join(request.params.getall("order_no"))
 
+        form_search = OrderSearchFormDelta(organization_id=organization_id)
+
+        return {
+            'form_search': form_search,
+            'endpoints': self.endpoints,
+            'patterns': patterns
+        }
+
+    @view_config(route_name='orders.delta', request_method="POST")
+    def post(self):
+        request = self.request
+        patterns = get_patterns_info(request)
+        slave_session = get_db_session(request, name="slave")
+        organization_id = request.context.organization.id
+
+        params = MultiDict(request.POST)
+        params["order_no"] = " ".join(request.POST.getall("order_no"))
         form_search = OrderSearchFormDelta(params, organization_id=organization_id)
-
         orders = None
-        page = int(request.params.get('page', 0))
-        if request.params:
-            from .download import OrderSummary, OrderProductItemSummary
-            if form_search.validate():
-                query = OrderSummary(self.request,
-                                     slave_session,
-                                     organization_id,
-                                     condition=form_search)
-            else:
-                return {
-                    'form': OrderForm(context=self.context),
-                    'form_search': form_search,
-                    'orders': orders,
-                    'page': page,
-                    'endpoints': self.endpoints,
-                    'patterns': patterns
-                }
+        page = int(request.GET.get('page', 0))
 
-            if request.params.get('action') == 'checked':
-                checked_orders = [o.lstrip('o:')
-                                  for o in request.session.get('orders', [])
-                                  if o.startswith('o:')]
-                query.target_order_ids = checked_orders
+        from .download import OrderSummary
+        if form_search.validate():
+            query = OrderSummary(self.request,
+                                 slave_session,
+                                 organization_id,
+                                 condition=form_search)
+        else:
+            return {
+                'form': OrderForm(context=self.context),
+                'form_search': form_search,
+                'orders': orders,
+                'page': page,
+                'endpoints': self.endpoints,
+                'patterns': patterns
+            }
 
-            count = query.count()
+        if request.params.get('action') == 'checked':
+            checked_orders = [o.lstrip('o:') for o in request.session.get('orders', []) if o.startswith('o:')]
+            query.target_order_ids = checked_orders
 
-            orders = paginate.Page(
-                query,
-                page=page,
-                item_count=count,
-                items_per_page=40,
-                url=paginate.PageURL_WebOb(request)
-            )
+        count = query.count()
+        orders = paginate.Page(
+            query,
+            page=page,
+            item_count=count,
+            items_per_page=40,
+            url=paginate.PageURL_WebOb(request)
+        )
 
         return {
             'form': OrderForm(context=self.context),
