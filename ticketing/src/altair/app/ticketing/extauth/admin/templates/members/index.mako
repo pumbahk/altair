@@ -16,8 +16,9 @@
 <div class="btn-toolbar">
 <div class="btn-group" role="group">
 <a class="btn" href="${request.route_path('members.new')}"><i class="icon-plus"></i> 新規メンバー</a>
-<a class="btn" href="#modal-csv-import" data-toggle="modal">CSVインポート</a>
-<a class="btn" href="#modal-csv-export" data-toggle="modal">CSVエクスポート</a>
+<a class="btn" href="#modal-csv-import" data-toggle="modal">インポート</a>
+<a class="btn" href="#modal-csv-export" data-toggle="modal">エクスポート</a>
+<a class="btn" href="#modal-delete-import" data-toggle="modal">メンバー一括削除</a>
 </div>
 <!-- Search Form -->
 <fieldset>
@@ -103,7 +104,6 @@ ${h.render_bootstrap_pager(members)}
     以下のような形式のxls / xlsx / csvファイルを受け取ります。
 <pre>
 <b>ログインID,パスワード,会員種別,会員区分,会員ID,開始日,有効期限,削除フラグ</b>
-&lt;ログインID(A)&gt;,&lt;パスワード&gt;,&lt会員種別1&gt;,&lt会員区分1&gt;,&lt;会員ID1&gt;,&lt;開始日&gt;,&lt;有効期限&gt;
 &lt;ログインID(A)&gt;,&lt;パスワード&gt;,&lt会員種別1&gt;,&lt会員区分2&gt;,&lt;会員ID2&gt;,&lt;開始日&gt;,&lt;有効期限&gt;
 &lt;ログインID(B)&gt;,&lt;パスワード&gt;,&lt会員種別1&gt;,&lt会員区分1&gt;,&lt;会員ID3&gt;,&lt;開始日&gt;,&lt;有効期限&gt;
 &lt;ログインID(C)&gt;,&lt;パスワード&gt;,&lt会員種別2&gt;,&lt会員区分3&gt;,&lt;会員ID4&gt;,&lt;開始日&gt;,&lt;有効期限&gt;
@@ -132,3 +132,18 @@ ${h.render_bootstrap_pager(members)}
     <button class="btn" data-dismiss="modal" aria-hidden="true">閉じる</button>
   </div>
 </div>
+<form id="modal-delete-import" class="modal hide" role="dialog" aria-hidden="true" action="${request.route_path('members.bulk_delete')}" method="POST" enctype="multipart/form-data">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3>メンバー一括削除</h3>
+  </div>
+  <div class="modal-body">
+    エクスポート機能で出力された xls / xlsx / csv ファイルと同じ形式のデータを受け取ります。
+    <p style="color:red">ログインIDに紐付くすべての会員データが削除されます。<br>この操作は元に戻せません。<br>データを戻すには削除に用いたファイルで再度インポートしてください。</p>
+    <input type="file" name="file" />
+  </div>
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">キャンセル</button>
+    <button class="btn btn-danger" name="doBulkDelete">削除</button>
+  </div>
+</form>
