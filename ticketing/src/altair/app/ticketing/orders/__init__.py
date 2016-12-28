@@ -19,6 +19,8 @@ def includeme(config):
     config.add_route('orders.cancel'                    , '/cancel/{order_id}')
     config.add_route('orders.sej_cancel'                , '/sej/cancel')
     config.add_route('orders.sej_cancel_complete'       , '/sej/cancel/complete/{order_no}')
+    config.add_route('orders.famiport_cancel'           , '/famiport/cancel')
+    config.add_route('orders.famiport_cancel_complete'  , '/famiport/cancel/complete/{order_no}')
     config.add_route('orders.delete'                    , '/delete/{order_id}')
     config.add_route('orders.delivered'                 , '/delivered/{order_id}')
     config.add_route('orders.undelivered'               , '/undelivered/{order_id}')
