@@ -39,7 +39,7 @@
 </dd>
 </dl>
 </div><!--/login-box -->
-<p class="column">&raquo; <a href="${_context.route_path('extauth.entry')}"><span>ファンクラブ会員の方、一般の方はコチラから</span></a></p>
+<p class="column">&raquo; <a href="${_context.route_path('extauth.entry')}"><span>一般の方はコチラから</span></a></p>
 </div><!--/box -->
 
 <article>
