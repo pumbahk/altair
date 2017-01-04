@@ -1,0 +1,17 @@
+<%
+import urllib
+skulist=""
+qlist=""
+amtlist=""
+namelist=""
+
+for ordered_product in order.ordered_products:
+    for ordered_product_item in ordered_product.ordered_product_items:
+        skulist+="{0}|".format(str(ordered_product_item.product_item.id))
+        qlist+="{0}|".format(str(ordered_product_item.quantity))
+        amtlist+="{0}|".format(str(ordered_product_item.product_item.price*ordered_product_item.quantity)[:-3])
+        namelist+="{0}|".format(urllib.quote(ordered_product_item.product_item.name.encode('utf-8')))
+%>
+
+<img src="https://track.linksynergy.com/ep?mid=42286&ord=${order.order_no}
+&skulist=${skulist[:-1]}&qlist=${qlist[:-1]}&amtlist=${amtlist[:-1]}&cur=JPY&namelist=${namelist[:-1]}" width="1" height="1" >
