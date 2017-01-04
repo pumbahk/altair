@@ -1583,10 +1583,6 @@ class OrderDetailView(OrderBaseView):
             payment_plugin.cancel(self.request, order)
             order.release()
             order.mark_canceled()
-
-            if order.payment_delivery_pair.payment_method.payment_plugin_id != payments_plugins.FAMIPORT_PAYMENT_PLUGIN_ID:
-                delivery_plugin = get_delivery_plugin(self.request, order.payment_delivery_pair.delivery_method.delivery_plugin_id)
-                delivery_plugin.cancel(self.request, order)
             return {'order': order, 'form': form}
 
     @view_config(route_name='orders.delete', permission='sales_editor')
