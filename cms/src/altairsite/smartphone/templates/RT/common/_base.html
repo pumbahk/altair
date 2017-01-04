@@ -12,6 +12,8 @@
 <title>楽天チケット-<%block name="title"/></title>
 % if request.path == '/smartphone/':
 <link rel="canonical" href="/"/>
+% elif request.path == '/smartphone/detail':
+<link rel="canonical" href="/${helper.get_pageset_from_evnet_id(request, event.id).url}"/>
 % endif
 </head>
 <body>
