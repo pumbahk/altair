@@ -1584,12 +1584,9 @@ class OrderDetailView(OrderBaseView):
             order.release()
             order.mark_canceled()
 
-            from altair.sqlahelper import get_db_session
-            session = get_db_session(self.request, 'famiport')
-            from altair.app.ticketing.famiport.models import FamiPortOrder, FamiPortReceipt
-            famiport_order = session.query(FamiPortOrder).filter(FamiPortOrder.order_no==order.order_no).first()
-            famiport_receipt = session.query(FamiPortReceipt).filter(FamiPortReceipt.famiport_order_id==famiport_order.id).first()
-            famiport_receipt.canceled_at = datetime.now()
+            if order.payment_delivery_pair.payment_method.payment_plugin_id != payments_plugins.FAMIPORT_PAYMENT_PLUGIN_ID:
+                delivery_plugin = get_delivery_plugin(self.request, order.payment_delivery_pair.delivery_method.delivery_plugin_id)
+                delivery_plugin.cancel(self.request, order)
             return {'order': order, 'form': form}
 
     @view_config(route_name='orders.delete', permission='sales_editor')
