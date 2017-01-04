@@ -60,7 +60,7 @@
     % for event in events:
       <tr>
         <td>
-          <a href="${request.route_path('events.reservation.show', event_id=event.id)}">${event.title}123</a>
+          <a href="${request.route_path('events.reservation.show', event_id=event.id)}">${event.title}</a>
           % for i, sales_segment_group in enumerate(event.sales_segment_groups):
             <span class="label ${label_classes[i%6]}">${sales_segment_group.name}</span>
           % endfor
