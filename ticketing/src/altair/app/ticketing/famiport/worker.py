@@ -63,6 +63,7 @@ def main(global_config, **local_config):
     config.include('altair.sqlahelper')
     config.include('.datainterchange')
     config.include('.communication')
+    config.include('.subscribers')
     config.include(__name__)
 
     return config.make_wsgi_app()
