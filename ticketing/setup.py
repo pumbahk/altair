@@ -218,10 +218,9 @@ setup(name='altair.app.ticketing',
       laguna_csv_export=altair.app.ticketing.cooperation.laguna.scripts.laguna_csv_export:main
       famic=altair.app.ticketing.famiport.client.commands:main
       export_eagles_stock_status=altair.app.ticketing.scripts.export_eagles_stock_status:main
-      stock_quantity_mismatch=altair.app.ticketing.stock.scripts.stock_quantity_mismatch:main
-      stock_quantity_mismatch_with_seat=altair.app.ticketing.stock.scripts.stock_quantity_mismatch_with_seat:main
       check_stock_quantity_mismatch_kazuuke=altair.app.ticketing.stock.scripts.check_stock_quantity_mismatch_kazuuke:main
       check_stock_quantity_mismatch_seat=altair.app.ticketing.stock.scripts.check_stock_quantity_mismatch_seat:main
+      check_double_booking=altair.app.ticketing.stock.scripts.check_double_booking:main
       send_spdb=altair.app.ticketing.spdb.commands:main
       """,
       dependency_links=[
