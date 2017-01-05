@@ -106,7 +106,6 @@ def extract_stack():
     except ZeroDivisionError:
         f = sys.exc_info()[2].tb_frame.f_back
     list = []
-    n = 0
     while f is not None:
         lineno = f.f_lineno
         co = f.f_code
@@ -114,7 +113,6 @@ def extract_stack():
         name = co.co_name
         list.append((filename, lineno, name, None))
         f = f.f_back
-        n = n+1
     list.reverse()
     return list
 
