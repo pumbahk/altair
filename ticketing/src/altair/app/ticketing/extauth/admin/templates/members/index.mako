@@ -101,6 +101,9 @@ ${h.render_bootstrap_pager(members)}
     <h3>CSVインポート</h3>
   </div>
   <div class="modal-body">
+    <p>
+    詳しいマニュアルは<a href="https://confluence.rakuten-it.com/confluence/pages/viewpage.action?pageId=1098881060" target="_blank">こちらのページ (Confluence)</a>を参照してください
+    </p>
     以下のような形式のxls / xlsx / csvファイルを受け取ります。
 <pre>
 <b>ログインID,パスワード,会員種別,会員区分,会員ID,開始日,有効期限,削除フラグ</b>
@@ -122,6 +125,9 @@ ${h.render_bootstrap_pager(members)}
     <h3>CSVエクスポート</h3>
   </div>
   <div class="modal-body">
+    <p>
+    詳しいマニュアルは<a href="https://confluence.rakuten-it.com/confluence/pages/viewpage.action?pageId=1098881060" target="_blank">こちらのページ (Confluence)</a>を参照してください
+    </p>
     <ul>
       <li><a href="${request.route_path('members.export', ext='xlsx')}?${request.query_string}">.xlsx形式 (Microsoft Excel 2007以降)</a></li>
       <li><a href="${request.route_path('members.export', ext='xls')}?${request.query_string}">.xls形式 (Microsoft Excel 2007より前)</a></li>
@@ -138,6 +144,9 @@ ${h.render_bootstrap_pager(members)}
     <h3>メンバー一括削除</h3>
   </div>
   <div class="modal-body">
+    <p>
+    詳しいマニュアルは<a href="https://confluence.rakuten-it.com/confluence/pages/viewpage.action?pageId=1098881060" target="_blank">こちらのページ (Confluence)</a>を参照してください
+    </p>
     エクスポート機能で出力された xls / xlsx / csv ファイルと同じ形式のデータを受け取ります。
     <p style="color:red">ログインIDに紐付くすべての会員データが削除されます。<br>この操作は元に戻せません。<br>データを戻すには削除に用いたファイルで再度インポートしてください。</p>
     <input type="file" name="file" />
