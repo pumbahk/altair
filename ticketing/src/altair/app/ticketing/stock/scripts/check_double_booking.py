@@ -33,7 +33,7 @@ def main():
 
     sql = """\
 SELECT
-    seat_id
+    seat_id,
     GROUP_CONCAT(DISTINCT order_no ORDER BY order_no)
 FROM ticketing.Order AS o
 JOIN OrderedProduct AS op ON op.order_id = o.id
