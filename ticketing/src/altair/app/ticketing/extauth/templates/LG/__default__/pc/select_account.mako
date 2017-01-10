@@ -1,4 +1,5 @@
 <%inherit file="base.mako" />
+<h1>会員資格をご選択ください</h1>
 <ul>
 %for membership in memberships:
   <li>
@@ -11,3 +12,4 @@
   </li>
 %endfor
 </ul>
+

@@ -3,7 +3,7 @@
 <!-- ******************** header [start] ******************** -->
 <header class="ts-header">
 % if hasattr(_context, 'subtype') and request.authenticated_userid:
-楽天会員としてログイン (<a href="${request.route_path('extauth.logout', subtype=_context.subtype)}">ログアウトする</a>)
+ログイン中 (<a href="${request.route_path('extauth.logout', subtype=_context.subtype)}">ログアウトする</a>)
 % endif
 <div class="ts-header-inner">
 

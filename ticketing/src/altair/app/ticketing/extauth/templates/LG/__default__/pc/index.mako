@@ -1,41 +1,32 @@
 <%inherit file="base.mako" />
-<ul>
-  <li><p><a href="${_context.route_path('extauth.fanclub.entry')}">LGファンクラブ会員としてログイン</a></p></li>
-  <li><p><a href="${_context.route_path('extauth.rakuten.entry')}">楽天会員としてログイン</a></p></li>
-  % for member_set in _context.member_sets:
-  <li>
-    <%
-    _username = _password = _message = u''
-    if member_set == selected_member_set:
-      _username = username
-      _password = password
-      _message = message
-    %> 
-    <p>${member_set.display_name}ログイン</p>
-    <p>会員種別: ${u' / '.join(member_kind.name for member_kind in member_set.member_kinds if member_kind.show_in_landing_page)}</p>
-    <form action="${_context.route_path('extauth.login',_query=request.GET)}" method="POST">
-      <p>
-      % for member_kind in member_set.member_kinds:
-      % if member_kind.show_in_landing_page and member_kind.enable_guests:
-      <input type="submit" name="doGuestLoginAs${member_kind.name}" value="${member_kind.display_name}としてゲストログイン" />
-      % endif
-      % endfor
-      </p>
-    </form>
-    <form action="${_context.route_path('extauth.login',_query=request.GET)}" method="POST">
-      % if _message:
-      <p>${_message}</p>
-      % endif
-      <label for="stockholder-username">${h.auth_identifier_field_name(member_set)}</label>
-      <input id="stockholder-username" type="text" name="username" value="${_username}" />
-      % if member_set.use_password:
-      <label for="stockholder-password">${h.auth_secret_field_name(member_set)}</label>
-      <input id="stockholder-password" type="password" name="password" value="${_password}" />
-      % endif
-      <input type="hidden" name="member_set" value="${member_set.name}" />
-      <input type="hidden" name="_" value="${request.session.get_csrf_token()}" />
-      <input type="submit" value="ログイン" />
-    </form>
-  </li>
-  % endfor
-</ul>
+<div class="main">
+
+    <div class="login-area clearfix">
+        <div class="login-box login-box-1">
+            <dl>
+                <dt class="login-name">ファンクラブ会員の方</dt>
+                <dd><a href="${_context.route_path('extauth.fanclub.entry')}" class="btn-login">ファンクラブ会員IDでログイン</a></dd>
+                <dd><a href="${_context.route_path('extauth.fanclub.entry')}" class="btn-regist" target="_blank">ファンクラブ会員に登録する</a></dd>
+            </dl>
+        </div><!-- /login-box-->
+    </div><!-- /login-area-->
+
+    <dl class="login-note">
+        <dt>注意事項</dt>
+        <dd>
+        <ul>
+            <li>会員の方も、受付番号から確認することができます。</li>
+            <li>会員ID・パスワードは半角でご入力ください。</li>
+        </ul>
+        </dd>
+    </dl>
+    <dl class="login-note">
+        <dt>お問い合わせ</dt>
+        <dd>
+        <ul>
+            <li>チケットスター TEL: 000-0000-0000（平日10時～18時）※不定休</li>
+        </ul>
+        </dd>
+    </dl>
+
+</div><!--main-->

@@ -1,6 +1,21 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="ja">
 <head>
+<!--[if lt IE 9]>
+<script type="text/javascript" src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+<![endif]-->
+<meta charset="UTF-8">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="cache-control" content="no-cache">
+<meta http-equiv="expires" content="0">
+<title>ラグーナテンボス ログイン</title>
+
+<!-- Cascading Style Sheets -->
+<link rel="shortcut icon" href="${view_context.static_url('pc/images/favicon.ico')}" />
+<link rel="stylesheet" href="${view_context.static_url('pc/css/main.css')}" type="text/css" media="all">
+<link rel="stylesheet" href="${view_context.static_url('pc/css/style.css')}" type="text/css" media="all">
+<link rel="stylesheet" href="${view_context.static_url('pc/css/login.css')}" type="text/css" media="all">
+
 <style type="text/css">
 .btn {
   display: inline-block;
@@ -17,16 +32,10 @@
 </style>
 </head>
 <body>
-<header style="margin-top: 50px;">
-% if hasattr(_context, 'subtype') and request.authenticated_userid:
-LGファンクラブ会員としてログイン (<a href="${request.route_path('extauth.logout', subtype=_context.subtype)}">ログアウトする</a>)
-% endif
-</header>
+<%include file="./_header.mako" />
 <main>
 ${self.body()}
 </main>
-<footer>
-footer
-</footer>
+<%include file="./_footer.mako" />
 </body>
 </html>
