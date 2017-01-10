@@ -36,7 +36,6 @@ setup(name='altair.muhelpers',
           # -*- Extra requirements: -*-
           ],
       tests_require=[
-          'pytz',
           ],
       test_suite='altair.muhelpers',
       entry_points="""

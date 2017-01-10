@@ -3,7 +3,6 @@
 import unittest
 import json
 from datetime import datetime
-from pytz import UTC
 
 class MailerTest(unittest.TestCase):
     def test_it(self):
