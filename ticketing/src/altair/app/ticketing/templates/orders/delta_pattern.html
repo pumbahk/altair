@@ -310,10 +310,10 @@
                 .appendTo($('#op-msg').find('ul'));
 
         for (var i = 0; i < errors.length; i++) {
-            var item = template.clone()
-                .text(errors[i])
-                .addClass(classname)
-                .appendTo($('#op-msg').find('ul'));
+            template.clone()
+                    .text(errors[i])
+                    .addClass(classname)
+                    .appendTo($('#op-msg').find('ul'));
         }
         op_msg.show();
     }
