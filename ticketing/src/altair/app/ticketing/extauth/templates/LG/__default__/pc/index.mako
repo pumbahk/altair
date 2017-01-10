@@ -4,9 +4,9 @@
     <div class="login-area clearfix">
         <div class="login-box login-box-2">
             <dl>
-                <dt class="login-name">ファンクラブ会員の方</dt>
-                <dd><a href="${_context.route_path('extauth.fanclub.entry')}" class="btn-login">ファンクラブ会員IDでログイン</a></dd>
-                <dd><a href="${_context.route_path('extauth.fanclub.entry')}" class="btn-regist" target="_blank">ファンクラブ会員に登録する</a></dd>
+                <dt class="login-name">会員の方</dt>
+                <dd><a href="${_context.route_path('extauth.fanclub.entry')}" class="btn-login">会員IDでログイン</a></dd>
+                <dd><a href="${_context.route_path('extauth.fanclub.entry')}" class="btn-regist" target="_blank">会員登録する</a></dd>
             </dl>
         </div><!-- /login-box-->
         <div class="login-box login-box-2">
