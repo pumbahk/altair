@@ -1,86 +1,118 @@
-<!DOCTYPE html>
-<html><head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no">
-<title>イーグルスチケット ログイン</title>
-<link rel="shortcut icon" href="${view_context.static_url('images/eagles.ico')}" />
-<link rel="stylesheet" type="text/css" href="${view_context.static_url('css/mypage.css')}" media="all">
-<link rel="stylesheet" type="text/css" href="${view_context.static_url('css/toggle.css')}" media="all">
-<script type="text/javascript" src="${view_context.static_url('js/jquery.min.js')}"></script>
-<script type="text/javascript" src="${view_context.static_url('js/jquery.tile.js')}"></script>
-<script>
-$(function(){
-  $("#toggle").click(function(){
-    $(".nav-global ul").slideToggle();
-    return false;
-  });
-  $("#rakulogintitle").click(function(){
-      $("#rakulogin").show();
-    return false;
-  });
-  $("#guestlogintitle").click(function(){
-      $("#guestlogin").show();
-    return false;
-  });
-  $(window).resize(function(){
-    var win = $(window).width();
-    var p = 480;
-    if(win > p){
-      $(".nav-global ul").show();
-    } else {
-      $(".nav-global ul").hide();
+<!doctype html>
+<html lang="ja" class="no-js">
+<head>
+  <title>ログイン | イーグルスチケット（Eチケ）</title>
+  <meta charset="utf-8">
+<meta http-equiv="x-ua-compatible" content="ie=edge">
+<script type="text/javascript">
+if ((navigator.userAgent.indexOf('iPhone') > 0) || navigator.userAgent.indexOf('iPod') > 0 || navigator.userAgent.indexOf('Android') > 0) {
+        document.write('<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">');
+    }else{
+        document.write('<meta name="viewport" content="width=1040, user-scalable=yes">');
     }
-  });
-});
 </script>
-<!--[if lt IE 9]>
-<script src="http://html5shiv.googlecode.com/svn/trunk/html5.js" type="text/javascript"></script>
-<![endif]-->
-<!--[if lt IE 9]>
-<script src="http://css3-mediaqueries-js.googlecode.com/svn/trunk/css3-mediaqueries.js"></script>
-<![endif]-->
-</head>
-<body class="login">
+<meta name="description" content="プロ野球 東北楽天ゴールデンイーグルスのオフィシャルチケットサイト。チケット購入は『イーグルスチケット（Eチケ）』で！
+">
+<meta name="keywords" content="Eチケ,イーチケ,イーグルスチケット,EAGLES TICKET,eagles ticket,楽天イーグルス,RAKUTEN EAGLES,rakuten eagles,イーグルス,EAGLES,rakuten,楽天イーグルス チケット,RAKUTEN EAGLES TICKET,rakuten eagles ticket">
 
-<div class="wrapper">
-<!-- ========== HEADER [start] ========== -->
-<header class="content_l header">
-<div class="content_m">
-<h1 class="header-logo"><a href="http://eagles.tstar.jp/"><img src="${view_context.static_url('images/eticket_logo.png')}" alt="イーグルスチケット"></a></h1>
-% if request.authenticated_userid and hasattr(_context, 'route_path'):
-<p class="logout-btnbox"><a href="${_context.route_path('extauth.logout')}" class="logoutBtn">ログアウト</a></p>
-% endif
-</div>
-<nav class="content_l nav-global">
-<div id="toggle"><a href="#">&nbsp;</a></div>
-<ul class="content_m clearfix">
-<li><a href="http://eagles.tstar.jp/">TOP</a></li>
-</ul>
-</nav>
+<script src="https://use.typekit.net/etv4epw.js"></script>
+<script>try{Typekit.load({ async: true });}catch(e){}</script>
+
+<link rel="shortcut icon" type="image/vnd.microsoft.icon" href="${view_context.static_url('images/eagles.ico')}">
+<link rel="apple-touch-icon" sizes="180x180" href="${view_context.static_url('images/libs/touch.png')}">
+<link rel="apple-touch-icon-precomposed" href="${view_context.static_url('images/libs/touch.png')}">
+<link rel="shortcut icon" href="${view_context.static_url('images/libs/touch.png')}">
+<link rel="icon" sizes="192x192" href="${view_context.static_url('images/libs/touch.png')}">
+<link rel="stylesheet" href="${view_context.static_url('css/common.css')}">
+<link rel="stylesheet" href="${view_context.static_url('css/login.css')}">
+<script src="${view_context.static_url('js/libs/modernizr-custom.js')}"></script>
+<!--[if IE]>
+<link rel="stylesheet" href="${view_context.static_url('css/polyfill.css')}">
+<script src="${view_context.static_url('js/flexbility.js')}"></script>
+<![endif]--></head>
+
+<body>
+<div id="fb-root"></div>
+<div class="page">
+    <header>
+  <div class="inner">
+    <h1 class="title"><a href="/"><img src="${view_context.static_url('images/logo.png')}" alt="イーグルスチケット"></a></h1>
+  </div>
+  <a href="/orderreview" class="buy-link sp">購入履歴</a>
+  <div class="hbg" id="showBtn">
+    <button>
+      <span></span>
+    </button>
+    <nav class="humberger-menu-wrap">
+      <div class="hbg-inner">
+        <h1 class="hum-logo sp"><a href="/"><img src="${view_context.static_url('images/logo.png')}" alt="イーグルスチケット" title="イーグルスチケット"></a></h1>
+        <ul class="humberger-menu-list-box">
+          <li class="parent-menu humberger-menu-list">
+            <h2 class="humberger-menu-ttl js-has-sub-menu">公式戦チケットを購入する<span></span></h2>
+            <ul class="sub-menu">
+              <li><a href="/">3・4月</a></li>
+              <li><a href="/?slideId=1">5月</a></li>
+              <li><a href="/?slideId=2">6月</a></li>
+              <li><a href="/?slideId=3">7月</a></li>
+              <li><a href="/?slideId=4">8月</a></li>
+              <li><a href="/?slideId=5">9月</a></li>
+              <li><a href="/?slideId=6">10月</a></li>
+              <li><a href="/kikaku">スペシャルチケット一覧</a></li>
+
+            </ul>
+          </li>
+          <li class="parent-menu humberger-menu-list">
+            <h2 class="humberger-menu-ttl js-has-sub-menu">ご利用ガイド<span></span></h2>
+            <ul class="sub-menu">
+              <li><a href="/help">チケット購入方法</a></li>
+              <li><a href="/payment">支払・受取方法</a></li>
+              <li><a href="/help">よくある質問</a></li>
+              <li><a href="/caution">ご購入前の注意</a></li>
+            </ul>
+          </li>
+          <li class="parent-menu humberger-menu-list">
+              <h2 class="humberger-menu-ttl js-has-sub-menu">サイトについて<span></span></h2>
+              <ul class="sub-menu">
+                <li><a href="//privacy.rakuten.co.jp/" class="ex-link" target="_blank">個人情報保護方針<img src="${view_context.static_url('images/icon-link-white.png')}" alt="リンク"></a></li>
+                <li><a href="/legal">特定商取引に基づく表示</a></li>
+                <li><a href="/agreement">サービス利用規約</a></li>
+                <li><a href="//f.msgs.jp/webapp/hear/org/showEnquete.do?enqueteid=3&clientid=13074&databaseid=wit" target="_blank" class="ex-link">お問い合わせ<img src="${view_context.static_url('images/icon-link-white.png')}" alt="リンク"></a></li>
+              </ul>
+          </li>
+          <li class="parent-menu humberger-menu-list">
+            <h2 class="humberger-menu-ttl js-has-sub-menu">チケット購入<span></span></h2>
+            <ul class="sub-menu">
+              <li><a href="/help">購入方法</a></li>
+              <li><a href="/orderreview">購入履歴の確認</a></li>
+              <li><a href="/price">チケット価格について</a></li>
+
+            </ul>
+          </li>
+          <li class="humberger-menu-list"><a href="//www.rakuteneagles.jp/stadium/access/" target="_blank" class="ex-link">アクセス<img src="${view_context.static_url('images/icon-link-white.png')}" alt="リンク"></a></li>
+          <li class="humberger-menu-list"><a href="//www.tenki.jp/leisure/baseball/2/7/31015.html" target="_blank" class="ex-link">天気予報<img src="${view_context.static_url('images/icon-link-white.png')}" alt="リンク"></a></li>
+        </ul>
+      </div>
+    </nav>
+  </div>
+
 </header>
-<!-- ========== HEADER [end] ========== -->
-<!-- ========== CONTENTS [start] ========== -->
-<section class="content_l main">
-<div class="content_m radius_l">
+
 ${self.body()}
-</div>
-</section>
-<!-- ========== CONTENTS [end] ========== -->
-<!-- ========== FOOTER [start] ========== -->
-<footer class="content_l footer">
-<div class="content_m">
-<nav class="nav-footer">
-<ul class="clearfix">
-<li><a href="http://www.ticketstar.jp/corporate/" target="_blank">運営会社</a></li>
-<li><a href="https://f.msgs.jp/webapp/hear/org/showEnquete.do?enqueteid=3&amp;clientid=13074&amp;databaseid=wit" target="_blank">お問い合わせ</a></li>
-<li><a href="http://privacy.rakuten.co.jp/" target="_blank">個人情報保護方針</a></li>
-<li><a href="http://eagles.tstar.jp/legal" target="_blank">特定商取引法に基づく表示</a></li>
-</ul>
-</nav>
-<p class="copyright clear">&copy; TicketStar Inc.</p>
-</div>
-</footer>
-<!-- ========== FOOTER [end] ========== -->
-</div>
-</body>
+
+<footer>
+  <div class="page-top-box">
+    <a href="#" class="sp page-top" id="pageTop">
+      <span class="arrow top"></span>
+    </a>
+  </div>
+
+  <p class="copyright">
+    <small>&copy; TicketStar, Inc.</small>
+  </p>
+</footer>  </div>
+  <!-- /.page -->
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+<script> (window.jQuery || document .write('<script src="${view_context.static_url('js/jquery.js')}"><\/script>')); </script>
+<script src="${view_context.static_url('js/app.js')}"></script>
+<script src="${view_context.static_url('js/common.js')}"></script>
 </html>
