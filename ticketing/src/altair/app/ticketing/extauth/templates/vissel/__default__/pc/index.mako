@@ -56,15 +56,7 @@ thisyear = datetime.now().strftime('%Y')
 <!-- 一時的にコメントアウトここまで--></%doc>\
 <article>
 <div class="login_adBox">
-<p>座席選択を快適にご利用していただくために、以下のブラウザでのご利用を推奨します。</p>
-<dl>
-<dt>Windows</dt>
-<dd>Google Chrome</dd>
-<dd>Mozilla Firefox 13.0以降</dd>
-<dd>Internet Explorer 9.x以降</dd>
-<dt>Mac</dt>
-<dd>Safari 5.0以降</dd>
-</dl>
+<p>座席選択を快適にご利用していただくために、各ブラウザ最新バージョンでのご利用を推奨します。</p>
 <div class="login_adInner">
 <p>
 ※Internet Explorer 8.x, 7.x, 6.x をお使いの方は、座席を選んでの購入が出来ません。「おまかせ」のみの購入となります。
