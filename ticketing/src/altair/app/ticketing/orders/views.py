@@ -87,6 +87,7 @@ from .forms import (
     CartSearchForm,
     DeliverdEditForm,
     SejOrderCancelForm,
+    FamiPortOrderCancelForm,
     DownloadItemsPatternForm,
     )
 from altair.app.ticketing.orders.forms import OrderMemoEditFormFactory
@@ -1545,6 +1546,36 @@ class OrderDetailView(OrderBaseView):
                  , renderer='altair.app.ticketing:templates/orders/sej_cancel_complete.html')
     def sej_complete_cancel(self):
         form = SejOrderCancelForm(self.request.POST)
+        if form.validated.data:
+            order_no = self.request.matchdict.get('order_no', None)
+            order = get_order_by_order_no(self.request, order_no)
+            payment_plugin = get_payment_plugin(self.request, order.payment_delivery_pair.payment_method.payment_plugin_id)
+            payment_plugin.cancel(self.request, order)
+            order.release()
+            order.mark_canceled()
+            return {'order': order, 'form': form}
+
+    @view_config(route_name='orders.famiport_cancel', permission='administrator', request_method='GET'
+                 , renderer='altair.app.ticketing:templates/orders/famiport_cancel.html')
+    def famiport_cancel(self):
+        form = FamiPortOrderCancelForm()
+        form.validated.data = False
+        return {'form': form}
+
+    @view_config(route_name='orders.famiport_cancel', permission='administrator', request_method='POST'
+                 , renderer='altair.app.ticketing:templates/orders/famiport_cancel.html')
+    def famiport_confirm_cancel(self):
+        form = FamiPortOrderCancelForm(self.request.POST)
+        order = get_order_by_order_no(self.request, form.order_no.data)
+        if not form.validate({'order': order}):
+            return {'form': form}
+        form.validated.data = True
+        return {'order': order, 'form': form}
+
+    @view_config(route_name='orders.famiport_cancel_complete', permission='administrator', request_method='POST'
+                 , renderer='altair.app.ticketing:templates/orders/famiport_cancel_complete.html')
+    def famiport_complete_cancel(self):
+        form = FamiPortOrderCancelForm(self.request.POST)
         if form.validated.data:
             order_no = self.request.matchdict.get('order_no', None)
             order = get_order_by_order_no(self.request, order_no)

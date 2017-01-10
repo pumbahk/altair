@@ -1460,17 +1460,20 @@ class DeliverdEditForm(OurForm):
     )
 
 
-class SejOrderCancelForm(OurForm):
+class CancelForm(OurForm):
     validated = HiddenField(
         label=u'バリデート済フラグ',
         validators=[Optional()],
     )
     order_no = TextField(
-        label=u"セブン予約番号",
+        label=u"予約番号",
         validators=[
             Required(),
         ]
     )
+
+
+class SejOrderCancelForm(CancelForm):
 
     def validate(self, *args, **kwargs):
         err = None
@@ -1498,6 +1501,37 @@ class SejOrderCancelForm(OurForm):
             self.order_no.errors.append(err)
             return False
         return True
+
+
+class FamiPortOrderCancelForm(CancelForm):
+
+    def validate(self, *args, **kwargs):
+        err = None
+        order = None
+        if len(args):
+            order = args[0].pop('order', None)
+
+        if not order:
+            err = ValidationError(u"予約が見つかりません")
+
+        if order:
+            if order.payment_delivery_method_pair.delivery_method.delivery_plugin_id != plugins.FAMIPORT_DELIVERY_PLUGIN_ID \
+                    and order.payment_delivery_method_pair.payment_method.payment_plugin_id != plugins.FAMIPORT_PAYMENT_PLUGIN_ID:
+                    err = ValidationError(u"ファミマの予約ではありません")
+
+            if order.status == 'canceled':
+                err = ValidationError(u"既にキャンセルされています。")
+
+            if order.status == 'refunded':
+                err = ValidationError(u"払戻されている予約になります。")
+
+        if err:
+            if not hasattr(self.order_no.errors, 'append'):
+                self.order_no.errors = list(self.order_no.errors)
+            self.order_no.errors.append(err)
+            return False
+        return True
+
 
 class DownloadItemsPatternForm(OurForm):
     organization_id = HiddenField(

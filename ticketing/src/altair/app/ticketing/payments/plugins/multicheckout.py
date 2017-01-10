@@ -13,7 +13,7 @@ from wtforms.validators import Regexp, Length
 from wtforms.ext.csrf.fields import CSRFTokenField
 
 import markupsafe
-
+from .. import plugins as payments_plugins
 from altair.multicheckout import helpers as m_h
 from altair.multicheckout.api import get_multicheckout_3d_api
 from altair.multicheckout.util import get_multicheckout_ahead_com_name
@@ -51,6 +51,7 @@ from ..exceptions import PaymentPluginException, OrderLikeValidationFailure
 from altair.app.ticketing.views import mobile_request
 from altair.app.ticketing.fanstatic import with_jquery
 from altair.app.ticketing.payments.api import get_cart, get_confirm_url
+from altair.app.ticketing.payments.api import get_delivery_plugin
 
 logger = logging.getLogger(__name__)
 
@@ -415,6 +416,12 @@ class MultiCheckoutPlugin(object):
                     error_code=res.CmnErrorCd,
                     card_error_code=res.CardErrorCd
                     )
+
+        # クレカファミマの対応
+        if order.payment_delivery_pair.delivery_method.delivery_plugin_id == payments_plugins.FAMIPORT_DELIVERY_PLUGIN_ID:
+            delivery_plugin = get_delivery_plugin(request,
+                                                  order.payment_delivery_pair.delivery_method.delivery_plugin_id)
+            delivery_plugin.cancel(request, order)
 
     def get_order_info(self, request, order):
         if order.payment_delivery_pair.payment_method.payment_plugin_id != PLUGIN_ID:
