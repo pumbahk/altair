@@ -25,10 +25,7 @@ if ((navigator.userAgent.indexOf('iPhone') > 0) || navigator.userAgent.indexOf('
 <link rel="icon" sizes="192x192" href="${view_context.static_url('images/libs/touch.png')}">
 <link rel="stylesheet" href="${view_context.static_url('css/common.css')}">
 <script src="${view_context.static_url('js/libs/modernizr-custom.js')}"></script>
-<!--[if IE]>
-<link rel="stylesheet" href="${view_context.static_url('css/polyfill.css')}">
-<script src="${view_context.static_url('js/flexbility.js')}"></script>
-<![endif]--></head>
+</head>
 
 <body>
 <div id="fb-root"></div>
