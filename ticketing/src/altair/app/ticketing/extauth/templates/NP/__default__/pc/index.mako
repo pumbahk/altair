@@ -2,20 +2,31 @@
 <div class="main">
 
     <div class="login-area clearfix">
-        <div class="login-box login-box-1">
+        <div class="login-box login-box-2">
             <dl>
                 <dt class="login-name">ファンクラブ会員の方</dt>
                 <dd><a href="${_context.route_path('extauth.fanclub.entry')}" class="btn-login">ファンクラブ会員IDでログイン</a></dd>
                 <dd><a href="${_context.route_path('extauth.fanclub.entry')}" class="btn-regist" target="_blank">ファンクラブ会員に登録する</a></dd>
             </dl>
         </div><!-- /login-box-->
+        <div class="login-box login-box-2">
+            <dl>
+                <dt>一般の方はこちら</dt>
+                <dd>
+                    <form action="${_context.route_path('extauth.login',_query=request.GET)}" method="POST">
+                        <input type="submit" name="doGuestLoginAsGuest" class="btn-login" value="購入する">
+                        <input type="hidden" name="member_set" value="NP">
+                        <input type="hidden" name="_" value="${request.session.get_csrf_token()}" />
+                    </form>
+                </dd>
+            </dl>
+        </div>
     </div><!-- /login-area-->
 
     <dl class="login-note">
         <dt>注意事項</dt>
         <dd>
         <ul>
-            <li>会員の方も、受付番号から確認することができます。</li>
             <li>会員ID・パスワードは半角でご入力ください。</li>
         </ul>
         </dd>
@@ -24,7 +35,7 @@
         <dt>お問い合わせ</dt>
         <dd>
         <ul>
-            <li>チケットスター TEL: 000-0000-0000（平日10時～18時）※不定休</li>
+            <li>お手数ですが、<a href="mailto:parceiro@tstar.jp">こちら</a>までお問い合わせください。</li>
         </ul>
         </dd>
     </dl>
