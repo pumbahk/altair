@@ -181,4 +181,5 @@ ${self.body()}
 <script> (window.jQuery || document .write('<script src="${view_context.static_url('js/jquery.js')}"><\/script>')); </script>
 <script src="${view_context.static_url('js/app.js')}"></script>
 <script src="${view_context.static_url('js/common.js')}"></script>
+</body>
 </html>
