@@ -1832,13 +1832,14 @@
 	top: 0px;
 	left: 392px;
 	width: 513px;
-	height: 490px;
+	height: 595px;
 	margin-bottom: 10px;
 	border: 1px solid #eee;
 	border-right: 2px solid #ccc;
 	border-bottom: 2px solid #ccc;
 	background-color: #ffffff;
 	z-index: 10;
+	padding-top: 80px;
 }
 
 .selectSeatLeftPane {
