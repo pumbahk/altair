@@ -178,7 +178,9 @@ class Announce(BaseView):
                 self.request.session.flash(u'告知メールを更新しました')
                 return HTTPFound(location=route_path('announce.list', self.request, event_id=announce.event.id))
 
-        f.parameters.entries = [ ]
+        f.parameters.process(None, [ ])
+        f.parameters.last_index = -1
+
         engine = MacroEngine()
         for v in engine.fields(announce.message):
             f.parameters.append_entry(Parameter(v, announce.parameters[v] if announce.parameters is not None and v in announce.parameters else ''))
