@@ -7,6 +7,11 @@
                 <dt class="login-name">会員の方はこちら</dt>
                 <dd><a href="${_context.route_path('extauth.fanclub.entry')}" class="btn-login">会員IDでログイン</a></dd>
                 <dd><a href="${_context.route_path('extauth.fanclub.entry')}" class="btn-regist" target="_blank">会員登録する</a></dd>
+                <dd>
+                <ul>
+                    <li>※ 会員ID・パスワードは半角でご入力ください。</li>
+                </ul>
+                </dd>
             </dl>
         </div><!-- /login-box-->
         <div class="login-box login-box-2">
@@ -24,10 +29,10 @@
     </div><!-- /login-area-->
 
     <dl class="login-note">
-        <dt>注意事項</dt>
+        <dt>ご購入前にご確認ください！</dt>
         <dd>
         <ul>
-            <li>会員ID・パスワードは半角でご入力ください。</li>
+            <li><span style="font-weight: bold;">@tstar.jp / @ticketstar.jp</span>からのメールが受け取れるよう設定してください。お客様ご自身でドメイン指定の設定をお願い致します。（お持ちの<span style="font-weight: bold;">PC・スマートフォン</span>の設定をご確認ください）</li>
         </ul>
         </dd>
     </dl>
