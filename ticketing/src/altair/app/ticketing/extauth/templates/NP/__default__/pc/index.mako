@@ -15,7 +15,7 @@
                 <dd>
                     <form action="${_context.route_path('extauth.login',_query=request.GET)}" method="POST">
                         <input type="submit" name="doGuestLoginAsGuest" class="btn-login" value="購入する">
-                        <input type="hidden" name="member_set" value="LG">
+                        <input type="hidden" name="member_set" value="NP">
                         <input type="hidden" name="_" value="${request.session.get_csrf_token()}" />
                     </form>
                 </dd>
@@ -35,7 +35,7 @@
         <dt>お問い合わせ</dt>
         <dd>
         <ul>
-            <li>お手数ですが、<a href="mailto:lagunatenbosch@tstar.jp">こちら</a>までお問い合わせください。</li>
+            <li>お手数ですが、<a href="mailto:parceiro@tstar.jp">こちら</a>までお問い合わせください。</li>
         </ul>
         </dd>
     </dl>

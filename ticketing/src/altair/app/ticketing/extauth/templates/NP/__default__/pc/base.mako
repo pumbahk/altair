@@ -9,10 +9,10 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="cache-control" content="no-cache">
 <meta http-equiv="expires" content="0">
-<title>ラグーナテンボス ログイン</title>
+<title>AC長野パルセイロオンラインチケット ログイン</title>
 
 <!-- Cascading Style Sheets -->
-<link rel="shortcut icon" href="${view_context.static_url('pc/images/favicon.ico')}" />
+<link rel="shortcut icon" href="${view_context.static_url('pc/img/favicon.ico')}" />
 <link rel="stylesheet" href="${view_context.static_url('pc/css/main.css')}" type="text/css" media="all">
 <link rel="stylesheet" href="${view_context.static_url('pc/css/style.css')}" type="text/css" media="all">
 <link rel="stylesheet" href="${view_context.static_url('pc/css/login.css')}" type="text/css" media="all">
