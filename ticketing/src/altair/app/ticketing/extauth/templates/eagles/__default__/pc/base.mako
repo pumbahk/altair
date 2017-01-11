@@ -19,10 +19,10 @@ if ((navigator.userAgent.indexOf('iPhone') > 0) || navigator.userAgent.indexOf('
 <script>try{Typekit.load({ async: true });}catch(e){}</script>
 
 <link rel="shortcut icon" type="image/vnd.microsoft.icon" href="${view_context.static_url('images/eagles.ico')}">
-<link rel="apple-touch-icon" sizes="180x180" href="${view_context.static_url('images/libs/touch.png')}">
-<link rel="apple-touch-icon-precomposed" href="${view_context.static_url('images/libs/touch.png')}">
-<link rel="shortcut icon" href="${view_context.static_url('images/libs/touch.png')}">
-<link rel="icon" sizes="192x192" href="${view_context.static_url('images/libs/touch.png')}">
+<link rel="apple-touch-icon" sizes="180x180" href="${view_context.static_url('images/touch.png')}">
+<link rel="apple-touch-icon-precomposed" href="${view_context.static_url('images/touch.png')}">
+<link rel="shortcut icon" href="${view_context.static_url('images/touch.png')}">
+<link rel="icon" sizes="192x192" href="${view_context.static_url('images/touch.png')}">
 <link rel="stylesheet" href="${view_context.static_url('css/common.css')}">
 <link rel="stylesheet" href="${view_context.static_url('css/login.css')}">
 <script src="${view_context.static_url('js/libs/modernizr-custom.js')}"></script>
@@ -35,7 +35,20 @@ if ((navigator.userAgent.indexOf('iPhone') > 0) || navigator.userAgent.indexOf('
   <div class="inner">
     <h1 class="title"><a href="/"><img src="${view_context.static_url('images/logo.png')}" alt="イーグルスチケット"></a></h1>
   </div>
-  <a href="/orderreview" class="buy-link sp">購入履歴</a>
+% if request.authenticated_userid and hasattr(_context, 'route_path'):
+  <div class="g-nav-box">
+    <nav class="g-nav-list">
+      <ul>
+        <li>
+        <li class="pc">
+          <a href="${_context.route_path('extauth.logout')}">ログアウト</a>
+        </li>
+      </ul>
+    </nav>
+    <!-- /.g_nav -->
+  </div>
+  <a href="${_context.route_path('extauth.logout')}" class="buy-link sp">ログアウト</a>
+% endif
   <div class="hbg" id="showBtn">
     <button>
       <span></span>
