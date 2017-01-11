@@ -4047,6 +4047,17 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
             return True
 
     def delete(self, force=False):
+        # delete AltairFamiPortSalesSegmentPair
+        if self.performance:
+            from altair.app.ticketing.famiport.userside_models import AltairFamiPortPerformance, AltairFamiPortSalesSegmentPair
+            famiport_sales_segment_pair = DBSession.query(AltairFamiPortSalesSegmentPair) \
+                .join(AltairFamiPortPerformance,
+                      AltairFamiPortPerformance.id == AltairFamiPortSalesSegmentPair.altair_famiport_performance_id) \
+                .filter(AltairFamiPortPerformance.performance_id == self.performance.id) \
+                .filter(or_(AltairFamiPortSalesSegmentPair.seat_unselectable_sales_segment_id == self.id, AltairFamiPortSalesSegmentPair.seat_selectable_sales_segment_id == self.id)).first()
+            if famiport_sales_segment_pair:
+                famiport_sales_segment_pair.deleted_at = datetime.now()
+
         # delete Product
         for product in self.products:
             product.delete()
