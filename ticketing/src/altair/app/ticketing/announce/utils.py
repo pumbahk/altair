@@ -7,6 +7,8 @@ from collections import Iterable
 
 from altair.app.ticketing.helpers.base import date_time_helper
 
+import logging
+logger = logging.getLogger(__name__)
 
 class MacroEngine:
     # 正規表現のparseには限界がある...
@@ -18,7 +20,7 @@ class MacroEngine:
                 if cache_mode:
                     # _macro()を使わず、単にdict参照のみで変換
                     if data and m.group(2) in data:
-                        result.append(unicode(data[m.group(2)]))
+                        result.append(data[m.group(2)])
                 else:
                     r = self._macro(m.group(2), data)
                     if r is None:
@@ -26,8 +28,8 @@ class MacroEngine:
                         # これだと、結果がNoneだった場合と区別がつかない
                         result.append("{{%s}}" % m.group(2))
                     else:
-                        result.append(unicode(r))
-        return "".join(result)
+                        result.append(r)
+        return u"".join(result)
 
     def fields(self, template):
         result = []
@@ -54,85 +56,111 @@ class MacroEngine:
         else:
             return r
 
+    def label(self, macro):
+        labeled = self._macro(macro, None, get_as=True)
+
+        return macro if labeled is None else labeled
+
     # 先頭から1つ処理して、残りについて再帰呼び出し
-    def _macro(self, macro, data, to_string=True):
+    def _macro(self, macro, data, to_string=True, get_as=False):
         # データの前処理
         if hasattr(data, '__call__'):
             data = data()
 
+        if macro is None:
+            # no more macro
+            if to_string:
+                # 文字列化して出力したい場合, names is Noneの時に限る
+                return self._stringify(data)
+            else:
+                return data
+
         # マクロの処理
-        if macro is not None:
-            macro = unicode(macro)
-            m = re.match(r"([0-9a-z_]+(?:\(.*?\))?)(?:\.(.+))?", macro)
-            if not m:
-                # 異常なnameが渡された
-                # return "?"
-                raise Exception("wrong macro: %s" % macro)
-            name = m.group(1)
-            names = m.group(2)
+        if not isinstance(macro, unicode):
+            raise Exception("macro should be unicode")
 
-            # .format(f) -> str
-            m = re.match(r"format\(\"([^\"]+)\"\)", name)
-            if m:
-                format = m.group(1)
-                return self._macro(names, format.format(self._stringify(data)), to_string=to_string)
+        m = re.match(r"([0-9a-z_]+(?:\(.*?\))?)(?:\.(.+))?", macro)
+        if not m:
+            # 異常なnameが渡された
+            # return "?"
+            raise Exception("wrong macro: %s" % macro)
+        name = m.group(1)
+        names = m.group(2)
 
-            # .join(sep) -> str
-            m = re.match(r"join\(\"([^\"]+)\"\)", name)
-            if m:
-                if isinstance(data, list):
-                    result = [ ]
-                    for e in data:
-                        if e is None:
-                            pass
-                        elif e == "":
-                            pass
-                        else:
-                            # FIXME: strにできない可能性あり
-                            result.append(self._macro(None, e, to_string=True))
-                    return self._macro(names, m.group(1).join(result), to_string=to_string)
-                else:
-                    # 非配列に対して.join()指定された
-                    return
+        def process_next(data):
+            return self._macro(names, data, to_string=to_string, get_as=get_as)
 
-            # .unique() -> cont
-            # ソートされていなくても良い
-            if name == "unique()":
-                if isinstance(data, list):
-                    result = [ ]
-                    for e in data:
-                        if e not in result:
-                            result.append(e)
-                    return self._macro(names, result, to_string=to_string)
-                else:
-                    # 非配列に対して.unique()指定された
-                    return
+        m = re.match(r"as\(([^\"]+)\)", name)
+        if m:
+            if get_as:
+                return m.group(1)
+            else:
+                return process_next(data)
 
-            # .map(.name) -> cont
-            m = re.match(r"map\(\.([0-9a-z_]+)\)", name)
-            if m:
-                subname = m.group(1)
-                if isinstance(data, list):
-                    result = []
-                    for e in data:
-                        result.append(self._macro(subname, e, to_string=False))
-                    return self._macro(names, result, to_string=to_string)
-                else:
-                    # 非配列に対して.map()指定された
-                    return
+        # .format(f) -> str
+        m = re.match(r"format\(\"([^\"]+)\"\)", name)
+        if m:
+            format = m.group(1)
+            return process_next(format.format(self._stringify(data)))
 
-            # method形式じゃなくてpropertyの場合
+        # .join(sep) -> str
+        m = re.match(r"join\(\"([^\"]+)\"\)", name)
+        if m:
+            if isinstance(data, list):
+                result = [ ]
+                for e in data:
+                    if e is None:
+                        pass
+                    elif e == "":
+                        pass
+                    else:
+                        # FIXME: strにできない可能性あり
+                        result.append(self._macro(None, e, to_string=True, get_as=get_as))
+                return process_next(m.group(1).join(result))
+            else:
+                # 非配列に対して.join()指定された
+                return process_next(None)
+
+        # .unique() -> cont
+        # ソートされていなくても良い
+        if name == "unique()":
+            if isinstance(data, list):
+                result = [ ]
+                for e in data:
+                    if e not in result:
+                        result.append(e)
+                return process_next(result)
+            else:
+                # 非配列に対して.unique()指定された
+                return process_next(None)
+
+        # .map(.name) -> cont
+        m = re.match(r"map\(\.([0-9a-z_]+)\)", name)
+        if m:
+            subname = m.group(1)
+            if isinstance(data, list):
+                result = []
+                for e in data:
+                    result.append(self._macro(subname, e, to_string=False, get_as=get_as))
+                return process_next(result)
+            else:
+                # 非配列に対して.map()指定された
+                return process_next(None)
+
+        try:
             if hasattr(data, name):
-                r = getattr(data, name)
+                return process_next(getattr(data, name))
             elif isinstance(data, Iterable) and name in data:
-                r = data[name]
+                return process_next(data[name])
             else:
                 # 未知のproperty
                 # return "<unknown property: %s in type: %s>" % (name, type(data))
-                return ""
-            return self._macro(names, r, to_string=to_string)
-        elif to_string:
-            # 文字列化して出力したい場合, names is Noneの時に限る
-            return self._stringify(data)
-        else:
-            return data
+                logger.debug("Unknown property: %s" % name)
+                if get_as:
+                    return process_next(None)
+                else:
+                    return ""
+        except UnicodeEncodeError as e:
+            # 変数名がmultibyteというのは、基本的にはサポートしない
+            logger.warn(e.message)
+            return ""

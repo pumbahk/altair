@@ -137,8 +137,9 @@ class Announce(BaseView):
                     f.message.process_data(template.message)
 
                     # テンプレートからプレースホルダーを抽出する
-                    for v in engine.fields(template.message):
-                        f.parameters.append_entry(Parameter(v, engine._macro(v, data)))
+                    for v in engine.fields((template.subject + template.message).encode('utf-8')):
+                        v = v.decode('utf-8')
+                        f.parameters.append_entry(Parameter(engine.label(v), engine._macro(v, data)))
 
             if 'send_after' in self.request.GET and 0 < len(self.request.GET['send_after']):
                 f.send_after.process_data(datetime.strptime(self.request.GET['send_after'], '%Y-%m-%d %H:%M:%S'))
@@ -182,8 +183,10 @@ class Announce(BaseView):
         f.parameters.last_index = -1
 
         engine = MacroEngine()
-        for v in engine.fields(announce.message):
-            f.parameters.append_entry(Parameter(v, announce.parameters[v] if announce.parameters is not None and v in announce.parameters else ''))
+        for v in engine.fields(announce.message.encode('utf-8')):
+            v = v.decode('utf-8')
+            label = engine.label(v)
+            f.parameters.append_entry(Parameter(label, announce.parameters[label] if announce.parameters is not None and label in announce.parameters else ''))
 
         return dict(
             id=announce_id,
@@ -213,8 +216,13 @@ class Announce(BaseView):
         req = self.request.json_body
 
         try:
+            data = dict()
             engine = MacroEngine()
-            return dict(result=engine.build(req["template"], req["data"], cache_mode=True))
+            for param in engine.fields(req["template"]):
+                label = engine.label(param)
+                if label in req["data"]:
+                    data[param] = req["data"][label]
+            return dict(result=engine.build(req["template"], data, cache_mode=True))
 
         except Exception as e:
             return dict(error=e.message)
