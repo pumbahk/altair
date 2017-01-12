@@ -403,30 +403,6 @@ body {
 .mypage-box .br:after { content: "　"; }
 
 
-/* login-box ============================== */
-.login-box {
-	-webkit-border-radius: 3px;
-	-moz-border-radius: 3px;
-	border-radius: 3px;
-	border: 1px solid #ABABAB;
-	margin-bottom: 20px;
-}
-.login-name {
-	background: #EFEFEF;
-	text-align: center;
-	font-weight: bold;
-	font-size: 14px;
-	padding: 10px 0;
-	margin: 10px 10px 0 10px;
-}
-.login-name span {
-	font-size: 20px; font-weight: bold;
-}
-.login-inbox {
-	text-align: center;
-	padding: 10px;
-}
-
 
 /* .customer-table ============================== */
 .customer-table {
