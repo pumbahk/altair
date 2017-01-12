@@ -68,6 +68,7 @@
         % endif
         % if HH.has_permission('administrator'):
         <li><a style="color:red" href="${request.route_path('orders.sej_cancel')}">強制セブン予約キャンセル</a></li>
+        <li><a style="color:red" href="${request.route_path('orders.famiport_cancel')}">強制ファミマ予約キャンセル</a></li>
         % endif
       </ul>
     </li>

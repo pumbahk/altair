@@ -75,9 +75,14 @@ class ProductAndProductItem(BaseView):
                 product.save()
 
                 # 商品明細の登録
+                stock_holder_id = f.stock_holder_id.data
+                if sales_segment.id != sales_segment_for_product.id:
+                    # 全ての販売区分に追加の場合は、販売区分グループの配券先にする
+                    stock_holder_id = sales_segment_for_product.sales_segment_group.stock_holder_id
+
                 stock = Stock.query.filter_by(
                     stock_type_id=f.seat_stock_type_id.data,
-                    stock_holder_id=f.stock_holder_id.data,
+                    stock_holder_id=stock_holder_id,
                     performance_id=sales_segment_for_product.performance.id
                 ).one()
                 product_item = ProductItem(

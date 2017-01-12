@@ -10,6 +10,11 @@
 <link rel="stylesheet" type="text/css" href=${request.static_url('altaircms:static/RL/smartphone/css/jquery-ui-1.9.2.custom.min.css')} />
 <link rel="stylesheet" type="text/css" href="${request.static_url('altaircms:static/RL/smartphone/css/default.css')}" />
 <title>レジャーチケット-<%block name="title"/></title>
+% if request.path == '/smartphone/':
+<link rel="canonical" href="/"/>
+% elif request.path == '/smartphone/detail':
+<link rel="canonical" href="/${helper.get_pageset_from_evnet_id(request, event.id).url}"/>
+% endif
 </head>
 <body>
 

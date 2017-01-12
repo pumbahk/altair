@@ -7,6 +7,7 @@ from altairsite.mobile.core.eventhelper import EventHelper
 import logging
 from markupsafe import Markup
 from altaircms.datelib import get_now
+from altaircms.page.api import get_pageset_from_event_id
 
 logger = logging.getLogger(__file__)
 
@@ -249,3 +250,6 @@ class SmartPhoneHelper(object):
                 self.disp_date_week(close) if close is not None else u'',
                 )
         return period
+
+    def get_pageset_from_evnet_id(self, request, event_id):
+        return get_pageset_from_event_id(request, event_id)

@@ -800,7 +800,7 @@ class MembersView(object):
         type_ = self.request.matchdict.get('ext', 'csv')
         organization_id = self.request.operator.organization_id
         resp = Response(status=200)
-        exporter = import_export.MemberDataExporter(slave_session, organization_id)
+        exporter = import_export.MemberDataExporter(self.request, slave_session, organization_id)
         writer = import_export.TabularDataWriter(resp.body_file, import_export.japanese_columns.values(), import_export.japanese_columns.keys(), type=type_)
         date_time_formatter = lambda dt: dt.strftime("%Y-%m-%d %H:%M:%S").decode("ASCII")
         date_formatter = lambda dt: dt.strftime("%Y-%m-%d").decode("ASCII")

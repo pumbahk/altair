@@ -123,9 +123,9 @@ ${h.render_bootstrap_pager(members)}
   </div>
   <div class="modal-body">
     <ul>
-      <li><a href="${request.route_path('members.export', ext='xlsx')}">.xlsx形式 (Microsoft Excel 2007以降)</a></li>
-      <li><a href="${request.route_path('members.export', ext='xls')}">.xls形式 (Microsoft Excel 2007より前)</a></li>
-      <li><a href="${request.route_path('members.export', ext='csv')}">CSV形式</a></li>
+      <li><a href="${request.route_path('members.export', ext='xlsx')}?${request.query_string}">.xlsx形式 (Microsoft Excel 2007以降)</a></li>
+      <li><a href="${request.route_path('members.export', ext='xls')}?${request.query_string}">.xls形式 (Microsoft Excel 2007より前)</a></li>
+      <li><a href="${request.route_path('members.export', ext='csv')}?${request.query_string}">CSV形式</a></li>
     </ul>
   </div>
   <div class="modal-footer">
