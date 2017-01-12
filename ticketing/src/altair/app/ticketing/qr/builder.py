@@ -4,7 +4,7 @@ import re
 import hashlib
 from struct import pack, unpack
 from zope.interface import implementer
-from .interfaces import IQRDataBuilder
+from .interfaces import IQRDataBuilder, IQRDataAESBuilder
 from altair.aes_urlsafe import AESURLSafe
 
 tag2int = {
@@ -205,7 +205,7 @@ class DataExtractorFromSigned(object):
         """
         return self.sign_header == r_sign
 
-@implementer(IQRDataBuilder)
+@implementer(IQRDataAESBuilder)
 class qr_aes:
 
     def __init__(self):
