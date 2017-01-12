@@ -1,4 +1,5 @@
 <%inherit file="base.mako" />
+
 <div class="main">
 
     <div class="login-area clearfix">
