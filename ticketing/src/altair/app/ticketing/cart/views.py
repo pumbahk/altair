@@ -998,6 +998,8 @@ class PaymentView(object):
         start_on = self.context.cart.performance.start_on
         sales_segment = self.context.sales_segment
         cart = self.context.read_only_cart
+        self.context.check_deleted_product(cart)
+
         payment_delivery_methods = self.get_payment_delivery_method_pairs(sales_segment)
         payment_delivery_methods = [
             payment_delivery_pair
@@ -1101,6 +1103,7 @@ class PaymentView(object):
         """ 支払い方法、引き取り方法選択
         """
         cart = self.context.cart
+        self.context.check_deleted_product(cart)
         user = api.get_or_create_user(self.context.authenticated_user())
         if user is not None:
             # 一旦ここでポイント口座をセットする
@@ -1272,6 +1275,7 @@ class PointAccountEnteringView(object):
     @lbr_view_config(request_method="GET")
     def point(self):
         cart = self.context.read_only_cart
+        self.context.check_deleted_product(cart)
         if cart.payment_delivery_pair is None or cart.shipping_address is None:
             # 不正な画面遷移
             raise NoCartError()
@@ -1313,6 +1317,7 @@ class PointAccountEnteringView(object):
         self.form = schemas.PointForm(formdata=self.request.params)
 
         cart = self.context.read_only_cart
+        self.context.check_deleted_product(cart)
         if cart.payment_delivery_pair is None or cart.shipping_address is None:
             # 不正な画面遷移
             raise NoCartError()
@@ -1361,6 +1366,7 @@ class ConfirmView(object):
     def get(self):
         form = schemas.CSRFSecureForm(csrf_context=self.request.session)
         cart = self.context.cart
+        self.context.check_deleted_product(cart)
         if cart.shipping_address is None:
             raise InvalidCartStatusError(cart.id)
 

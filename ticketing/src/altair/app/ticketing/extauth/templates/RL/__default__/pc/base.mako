@@ -53,7 +53,7 @@
 <ul class="grpH-help-nav">
 <li class="first"><a href="/howto">購入の流れ</a></li>
 <li><a href="/faq">よくある質問</a></li>
-<li><a href="http://emagazine.rakuten.co.jp/#17">メルマガを購読する</a></li>
+<li><a href="//emagazine.rakuten.co.jp/#17">メルマガを購読する</a></li>
 % if hasattr(_context, 'subtype') and request.authenticated_userid:
 <li><a href="${request.route_path('extauth.logout', subtype=_context.subtype)}">ログアウトする</a></li>
 % endif
@@ -69,7 +69,7 @@
 <ul class="clearfix">
 <li class="first"><a href="/howto">購入の流れ</a></li>
 <li><a href="/faq">よくある質問</a></li>
-<li><a href="http://emagazine.rakuten.co.jp/#17">メルマガを購読する</a></li>
+<li><a href="//emagazine.rakuten.co.jp/#17">メルマガを購読する</a></li>
 </ul>
 </nav>
 <!-- /menu -->

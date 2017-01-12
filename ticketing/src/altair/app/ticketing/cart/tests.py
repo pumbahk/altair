@@ -1316,7 +1316,8 @@ class PaymentViewTests(unittest.TestCase):
             membershipinfo = membership,
             authenticated_user = lambda: altair_auth_info,
             get_payment_delivery_method_pair = lambda: payment_delivery_method_pair,
-            sales_segment = testing.DummyModel()
+            sales_segment = testing.DummyModel(),
+            check_deleted_product=lambda x: True,
             )
         target = self._makeOne(context, request)
         result = target.get()

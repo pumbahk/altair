@@ -4,6 +4,7 @@ logger = logging.getLogger(__name__)
 
 from altaircms.solr import api as solr
 from altaircms.modelmanager.searcher import IPublishingModelSearcher
+from altaircms.page.models import PageSet
 from . import StaticPageNotFound
 from .staticupload.api import get_static_page_utility
 from .staticupload.api import set_static_page_utility
@@ -79,4 +80,7 @@ def ftsearch_delete_register_from_page(request, page, ftsearch=None):
     except Exception, e:
         logger.error("solr delete failed")
         logger.exception(str(e))
-   
+
+
+def get_pageset_from_event_id(request, event_id):
+    return request.allowable(PageSet).filter(PageSet.event_id==event_id).first()

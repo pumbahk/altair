@@ -39,22 +39,9 @@
 </dd>
 </dl>
 </div><!--/login-box -->
-<p class="column">&raquo; <a href="${_context.route_path('extauth.entry')}"><span>ファンクラブ会員の方、一般の方はコチラから</span></a></p>
+<p class="column">&raquo; <a href="${_context.route_path('extauth.entry')}"><span>一般の方はコチラから</span></a></p>
 </div><!--/box -->
 
-<article>
-<h3 class="noteHead">注意事項</h3>
-<ul class="noteList">
-<li>会員の方も、受付番号（VEから始まる12ケタ）から確認することができます。</li>
-<li>会員ID・パスワードは半角でご入力ください。</li>
-</ul>
-</article>
-<article>
-<h3 class="noteHead">お問い合わせ</h3>
-<ul class="noteList">
-<li>楽天ヴィッセルチケットセンター<br>TEL: 000-0000-0000（平日10時～18時）※不定休</li>
-</ul>
-</article>
 </div>
 </div><!-- /wrap -->
 <!-- back to top--><div id="topButton"><a>▲<br>上へ</a></div><!-- /back to top-->

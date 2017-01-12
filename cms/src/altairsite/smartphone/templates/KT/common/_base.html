@@ -9,6 +9,11 @@
 <link rel="stylesheet" type="text/css" href="${request.static_url('altaircms:static/KT/smartphone/css/default.css')}" />
 <link rel="shurtcut icon" type="text/css" href="${request.static_url('altaircms:static/KT/images/ktohoku.ico')}" />
 <title>キョードー東北モバイルチケット-<%block name="title"/></title>
+% if request.path == '/smartphone/':
+<link rel="canonical" href="/"/>
+% elif request.path == '/smartphone/detail':
+<link rel="canonical" href="/${helper.get_pageset_from_evnet_id(request, event.id).url}"/>
+% endif
 </head>
 <body>
 
