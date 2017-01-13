@@ -79,6 +79,7 @@ function showAllAccordionFunc($accodionAllClassName){
       $(this).removeClass('show').parent('dl').children('dd').slideUp('fast');
     } else {
       // 常に一つだけの処理
+      $accodionAllClassName.removeClass('show');
       $(this).addClass('show').parent('dl').children('dd').slideUp('fast');
       $(this).next('dd').slideDown('fast');
       // 個別に処理する場合（デフォルトコメントアウト）
@@ -214,7 +215,6 @@ function showTopPageSliderFunc(){
 
   var slideIdQuery = GetQueryString();
   var slideId = slideIdQuery['slideId'];
-
   var mainSlider = $('#sliderCalender').bxSlider({
       nextText: '次の月',
       prevText: '前の月',
@@ -240,7 +240,11 @@ function showTopPageSliderFunc(){
     });
 
     if(slideId){
-      mainSlider.goToSlide(slideId);
+      if(slideId == 0){
+        // 0の値が来た時には何もデフォルト表示
+      }else{
+        mainSlider.goToSlide(slideId);
+      }
     }
 
     bxControlCopyFunc();
@@ -279,7 +283,11 @@ pageTopPageObj.pcMainSlideFunc = function (){
       }
     });
     if(slideId){
-      mainSlider.goToSlide(slideId);
+      if(slideId == 0){
+        // 0の値が来た時には何もデフォルト表示
+      }else{
+        mainSlider.goToSlide(slideId);
+      }
     }
 
     bxControlCopyFunc();
@@ -304,25 +312,29 @@ function showPopupPcSeatDetailFunc($targetClassName){
 
   var showPopuFlg = false;
   var $targetClassName = $($targetClassName);
+  var modalHeight = $('.modal-wrap').outerHeight(true);
+  var winHeight = window.innerHeight;
+  var nowY = y;
+  var outerCommonHeight = 0;
+
+  if(modalHeight > winHeight){
+    outerCommonHeight = modalHeight;
+  }else if(modalHeight < winHeight){
+    outerCommonHeight = winHeight;
+  }
 
   $targetClassName.click(function(){
+    console.log(outerCommonHeight);
     showPopuFlg = true;
 
     var loadUrl = $(this).data('url');
-    $('#loadFrameArea iframe').attr('src' , loadUrl);
+    if(loadUrl){
+      $('#loadFrameArea iframe').attr('src' , loadUrl);
+    }
 
     if(showPopuFlg){
       $('.modal-out-wrap').addClass('show');
-      var modalHeight = $('.modal-wrap').outerHeight(true);
-      var winHeight = window.innerHeight;
-      var nowY = y;
-      var outerCommonHeight = 0;
-
-      if(modalHeight > winHeight){
-        outerCommonHeight = modalHeight;
-      }else if(modalHeight < winHeight){
-        outerCommonHeight = winHeight;
-      }
+      
 
       $('body').scrollTop(0);
       $('.page').css({
@@ -333,18 +345,6 @@ function showPopupPcSeatDetailFunc($targetClassName){
 
       $('.modal-out-wrap').css('height',outerCommonHeight+'px');
 
-      $('#closeBtn, #modalWrapOuter').click(function(){
-        $('.modal-out-wrap').removeClass('show');
-        $('body').scrollTop(nowY);
-        $('.page').css({
-          'overflow':'auto',
-          'height':'auto'
-        });
-        $('.modal-out-wrap').css('height','auto');
-        showPopuFlg = false;
-        return false;
-      });      
-
     }
 
     positionCenterModal();
@@ -352,6 +352,19 @@ function showPopupPcSeatDetailFunc($targetClassName){
     return false;
     
   });
+
+  $('#closeBtn, #modalWrapOuter').click(function(){
+    $('.modal-out-wrap').removeClass('show');
+    $('body').scrollTop(nowY);
+    $('.page').css({
+      'overflow-y':'auto',
+      'height':'auto'
+    });
+    $('.modal-out-wrap').css('height','auto');
+    showPopuFlg = false;
+    return false;
+  }); 
+
 
 }
 
@@ -359,45 +372,27 @@ function showPopupPcSeatDetailFunc($targetClassName){
 //汎用シート詳細ポップアップ関数(SP)
 //-------------------------------------------------------------
 function showPopupSpSeatDetailFunc($targetClassName){
-
+  var thisModalWrapHeight = $('#modalWrapOuter').outerHeight(true);
   var showPopuFlg = false;
   var $targetClassName = $($targetClassName);
+  var nowY = y;
+
   $targetClassName.click(function(){
-    showPopuFlg = true;
-    console.log(iframeHeight);
+  showPopuFlg = true;
 
     var loadUrl = $(this).data('url');
-    $('#loadFrameArea iframe').attr('src' , loadUrl);
+    if(loadUrl){
+      $('#loadFrameArea iframe').attr('src' , loadUrl);
+    }
    
-    // console.log(thisIframeHeight);
     if(showPopuFlg){
       $('.modal-out-wrap').addClass('show');
-      // var modalHeight = $('.modal-wrap').outerHeight(true);
       var modalHeight = 5000;
-      var nowY = y;
-      // $('#loadFrameArea iframe').attr('height',modalHeight+'px');
       $('body').scrollTop(0);
       $('.page').css({
         'overflow-y':'hidden'
-        // 'height': modalHeight+'px'
-        // 'min-width' : '1000px'
       });
-      // $('.modal-out-wrap').css('height',modalHeight+'px');
-      // $('.modal-wrap').css('height',modalHeight+'px');
-
-
-      $('#closeBtn, #modalWrapOuter').click(function(){
-        $('.modal-out-wrap').removeClass('show');
-        $('body').scrollTop(nowY);
-        $('.page').css({
-          'overflow':'scroll',
-          'height':'auto'
-        });
-        $('.modal-out-wrap').css('height','auto');
-        showPopuFlg = false;
-        return false;
-      });      
-
+      $('#modalWrapOuter, .page').css('height',thisModalWrapHeight+'px');
     }
 
     positionCenterModal();
@@ -406,6 +401,19 @@ function showPopupSpSeatDetailFunc($targetClassName){
     
   });
 
+  $('#closeBtn, #modalWrapOuter').click(function(){
+    event.preventDefault();
+    console.log(y);
+    $('.modal-out-wrap').removeClass('show');
+    $('body').scrollTop(nowY);
+    $('.page').css({
+      'overflow':'scroll',
+      'height':'auto'
+    });
+    $('.modal-out-wrap').css('height','auto');
+    showPopuFlg = false;
+
+  });  
 }
 
 
@@ -421,22 +429,20 @@ function positionCenterModal(){
     if(desktopFlg){
       if(w < 1100){
         $('.modal-wrap').css('width', '1020px');
-        $("#modalWrap").css({"left":"0px"});
+         $("#modalWrap").css({"left": ((w - cw)/2) + "px"});
 
-      }else if(w > 1100){
-         $('.modal-wrap').css('width', '90%');
+      }else if(w > 1100 && w < 1170){
+         $('.modal-wrap').css('width', '93%');
+       $("#modalWrap").css({"left": ((w - cw)/2) + "px"});
+
+      }else if(w > 1170){
+       $('.modal-wrap').css('width', '90%');
        $("#modalWrap").css({"left": ((w - cw)/2) + "px"});
 
       }
     }else{
       $("#modalWrap").css({"left": ((w - cw)/2) + "px"});
     }
-    
-    //センタリングを実行する
-      // $("#modalWrap").css({"left": ((w - cw)/2) + "px"});
-
-    // $("#modalWrap").css({"left": ((w - cw)/2) + "px","top": ((h - ch)/2) + "px"});
-
 
 }
 
@@ -455,13 +461,11 @@ function moveSeatDetailAllFunc(){
     $(this).addClass('now-cursor');
 
     if(desktopFlg){
-      console.log('CHECK');
-
       $("#seatPriceTargetWrap").animate({
         scrollTop: pos
       },300, "swing");    
     }else if(smartphoneFlg){
-      $('#seatPage', window.parent.document).animate({
+      $( 'html,body', window.parent.document).animate({
         scrollTop: pos - sh + 260
       },300, "swing");   
     }
@@ -475,7 +479,6 @@ function moveSeatDetailAllFunc(){
   $('#seatPriceTarget tr')
     // マウスポインターが画像に乗った時の動作
     .mouseover(function(e) {
-      // var thisNumber = $(this).find('.number').text();
       var thisNumber = $(this).children('.number').attr('id');
       if(thisNumber != 'undefined'){
         $('#goToSeatPrice li#'+thisNumber+'Number a').addClass('now-cursor');
@@ -496,18 +499,13 @@ function moveSeatDetailAllFunc(){
             scrollTop: 0
           },300, "swing");
       }else if(smartphoneFlg){
-          $('#seatPage', window.parent.document).animate({
+          $( 'html,body', parent.document).animate({
             scrollTop: 0
           },300, "swing");
       }
     });
 
-
-
-
 }
-
-
 
 
 //ハンバーガーメニュー 用関数
@@ -521,12 +519,30 @@ function showGlobalMenuFunc(){
   });
 }
 
+
+//チケット情報のみハンバーガーメニュー 用関数
+//-------------------------------------------------------------
+function showTicketMenuFunc(){
+  var showFlg = false;
+  $('#showTicketModal').click(function(){
+    $('#showBtn').toggleClass('show');
+    $('body').toggleClass('body-fixed');  
+    $('body').toggleClass('ticket-menu');     
+    return false;
+  });
+    $('#showBtn button').on('click',function(){
+      $('body').removeClass('ticket-menu'); 
+    });
+
+}
+
+
+
 //汎用ハンバーガーメニュー内開閉メニュー
 //-------------------------------------------------------------
 function showSubMenuFunc(){
   $('.js-has-sub-menu').click(function(){
     $(this).parent('li').toggleClass('show-sub-menu');
-    console.log('TEST');
     return false;
   });
 }
@@ -569,12 +585,26 @@ function showSploginAreaAccordionFunc($accodionClassName){
 function attentionCommponBoxFunc($targetIdName){
   var $targetIdName = $($targetIdName);
   $targetIdName.click(function() {
-    $(this).parents('div').hide();
+    $(this).parent('#attentionCommon').hide();
     return false;
   });
   
+}
+
+
+// SPECIAL SPモーダル高さHTMLに反映
+//-------------------------------------------------------------
+function getSpModalFunc(){
+
+  var thisModalWrapHeight = $('#modalWrapOuter').outerHeight(true);
+  $('#modalWrapOuter, .page').css('height',thisModalWrapHeight+'px');
 
 }
+
+function hiddenSpecialMenuFunc(){
+  $('.humberger-menu-list-box li:first-child, #showTicketModal').hide();
+}
+
 
 // ============================================================
 // ATTENTION & COMMON RULE!!
@@ -621,6 +651,7 @@ $(function(){
   showAllAccordionFunc('.js-all-accordion');
   showTabFunc('.js-tab','.js-tab-child');
   showGlobalMenuFunc();
+  showTicketMenuFunc();
   showSubMenuFunc();
   showSploginAreaAccordionFunc();
   attentionCommponBoxFunc('#attentionCloseBtn');
@@ -668,9 +699,25 @@ $(function(){
     moveSeatDetailAllFunc();
     if(smartphoneFlg){
       getIframeFunc();
+      console.log('cje');
     }
   }
 
+  // PAYMENT PAGE
+  if($('#paymentPage').length){
+    $('.payment-flow li').matchHeight();
+  }
 
+  // SPECIAL PAGE 
+  if($('#specialPage').length){
+    hiddenSpecialMenuFunc();   
+    if(smartphoneFlg){
+      showPopupSpSeatDetailFunc('.js-show-pooup-detail-seat');   
+      // getSpModalFunc();
+        
+    }else if(desktopFlg){
+      showPopupPcSeatDetailFunc('.js-show-pooup-detail-seat');
+    }
+  }  
 
 });
