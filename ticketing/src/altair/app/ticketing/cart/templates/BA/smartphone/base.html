@@ -3,13 +3,13 @@
 <head>
   <meta http-equiv="content-type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-  <title>チケット販売 - ブラウブリッツチケット</title>
-  <meta name="description" content="ブラウブリッツチケットは、チケットのオンラインショッピングサイトです。" />
+  <title>チケット販売 - ${view_context.team_name}</title>
+  <meta name="description" content="${view_context.team_name}は、チケットのオンラインショッピングサイトです。" />
   <meta name="keywords" content="チケット" />
   <meta http-equiv="content-style-type" content="text/css" />
   <meta http-equiv="content-script-type" content="text/javascript" />
-  <link rel="shortcut icon" href="${request.static_url('altair.app.ticketing.cart:static/BA/smartphone/images/blaublitz.ico')}">
-  <link rel="stylesheet" href="${request.static_url('altair.app.ticketing.cart:static/BA/smartphone/css/default2.css')}" type="text/css" />
+  <link rel="shortcut icon" href="${view_context.static_url('smartphone/images/favicon.ico')}">
+  <link rel="stylesheet" href="${view_context.static_url('smartphone/css/default2.css')}" type="text/css" />
   <%block name="javascript"></%block>
   <%block name="css"></%block>
 </head>
@@ -18,21 +18,32 @@
   <div id="container" class="page">
     <!-- ========== header ========== -->
     <div class="header">
-      <div class="grpheader">
+      <div class="grpheader" style="width:100%;">
         <div class="siteID">
-          <a href="http://blaublitz.tstar.jp/">
-            <img src="${request.static_url('altair.app.ticketing.cart:static/BA/smartphone/images/blaublitz_logo.png')}" width="120" alt="ブラウブリッツチケット" class="serviceLogo" />
+          <a href="/">
+            <img src="${view_context.static_url('smartphone/images/sp_logo.png')}" alt="${view_context.team_name}" class="serviceLogo" width="100%"/>
           </a>
         </div>
       </div>
 
       <div class="side-action-buttons">
+        <form name="logout" action="${request.route_path('cart.logout')}" method="POST">
           <div style="text-align: right">
+            <%doc>ログイン/ログアウト</%doc>
+            % if view_context.get_include_template_path('login_status.html') is not None:
+              <%include file="${view_context.get_include_template_path('login_status.html')}" args="device=view_context.ua_type" />
+            % endif
             % if getattr(request, 'context', None) and hasattr(request.context, 'switch_pc_url'):
               <a href="${request.context.switch_pc_url}" class="btn btn-supplementary"><span class="btn-inner">PCサイトで購入する</span></a>
             % endif
           </div>
+        </form>
       </div>
+
+      <%doc>申込方法・FAQ・申込確認へのリンク</%doc>
+      % if view_context.get_include_template_path('links.html') is not None:
+          <%include file="${view_context.get_include_template_path('links.html')}" args="device=view_context.ua_type" />
+      % endif
 
       <div class="band">
         <h1>チケット購入</h1>

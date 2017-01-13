@@ -78,9 +78,9 @@
             %for product in cart.products:
                 <tr id="commission">
                   % if len(product.items) == 1:
-                    <th scope="row"><img src="${request.static_url('altair.app.ticketing.cart:static/BA/smartphone/images/icon_dummy.gif')}" alt="" width="21" height="21" />${product.product.name}<strong> ${product.seat_quantity}</strong>枚<br/></th>
+                    <th scope="row"><img src="${view_context.static_url('smartphone/images/icon_dummy.gif')}" alt="" width="21" height="21" />${product.product.name}<strong> ${product.seat_quantity}</strong>枚<br/></th>
                   % else:
-                    <th scope="row"><img src="${request.static_url('altair.app.ticketing.cart:static/BA/smartphone/images/icon_dummy.gif')}" alt="" width="21" height="21" />${product.product.name} ×<strong>${product.quantity}</strong><br/></th>
+                    <th scope="row"><img src="${view_context.static_url('smartphone/images/icon_dummy.gif')}" alt="" width="21" height="21" />${product.product.name} ×<strong>${product.quantity}</strong><br/></th>
                   % endif
                   <td>&nbsp;</td>
                   <td>&nbsp;</td>
@@ -189,7 +189,7 @@
 
   % if extra_form_data:
   <div class="confirmBox">
-	 <div class="confirmBoxInner">
+	<div class="confirmBoxInner">
       <div class="dispBox">
         <%m:header>追加情報</%m:header>
         <div class="dispBoxInner">
@@ -203,7 +203,35 @@
           </table>
         </div>
       </div>
-	 </div>
+	</div>
+  </div>
+  % endif
+
+  % if mailmagazines_to_subscribe:
+  <div class="settlementBox">
+	<div class="settlementBoxInner">
+      <div class="dispBoxInner">
+        <div id="mailMagazineBox">
+          <div id="mailMagazineBoxInner">
+            <div class="dispBox">
+              <%m:header>メールマガジンの配信</%m:header>
+              ご利用いただいた方には、${view_context.team_name}からのメールマガジンをお送りします。不要な方はチェックをはずしてください。<br/><br/>
+                % for mailmagazine, subscribed in mailmagazines_to_subscribe:
+                <div${subscribed and u' class="subscribed"' or u''|n}>
+                  <div>
+                    <input type="checkbox" checked="checked" name="mailmagazine" id="mailmagazine-${mailmagazine.id}" value="${mailmagazine.id}"${subscribed and u' disabled="disabled"' or u''|n} />
+                    <label for="mailmagazine-${mailmagazine.id}">${mailmagazine.name}</label>
+                  </div>
+                  <div>
+                    ${mailmagazine.description|n}
+                  </div>
+                </div>
+                % endfor
+            </div>
+          </div>
+        </div>
+      </div>
+	</div>
   </div>
   % endif
 
