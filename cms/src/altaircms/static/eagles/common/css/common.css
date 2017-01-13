@@ -3182,6 +3182,7 @@ a {
     height: 50px;
     background: transparent;
     border: none;
+    z-index: 2;
   }
   header .hbg button span {
     width: 25px;
