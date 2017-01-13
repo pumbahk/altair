@@ -319,7 +319,7 @@ function showPopupPcSeatDetailFunc($targetClassName){
 
   if(modalHeight > winHeight){
     outerCommonHeight = modalHeight;
-  }else if(modalHeight < winHeight){
+  } else {
     outerCommonHeight = winHeight;
   }
 
