@@ -107,7 +107,7 @@ def make_data_for_qr(history):
     performance = qr_ticket_obj.performance
 
     params['valid_date_from'] = performance.open_on.strftime('%Y%m%d') if performance.open_on else '00000000'
-    params['valid_date_to'] = performance.end_on.strftime('%Y%m%d') if performance else '00000000'
+    params['valid_date_to'] = performance.end_on.strftime('%Y%m%d') if performance.end_on else '00000000'
     params['enterable_from'] = performance.open_on.strftime('%H%M') if performance.open_on else '0000'
     usable_date_to = qr_ticket_obj.order.created_at + timedelta(days=90)
     params['usable_date_to'] = usable_date_to.strftime('%Y%m%d')
