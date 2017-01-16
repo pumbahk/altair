@@ -9,7 +9,7 @@ __all__ = [
     'Mailer',
     ]
 
-class Receipient(object):
+class Recipient(object):
     def __init__(self, open_id, attributes):
         self.open_id = open_id
         self.attributes = attributes
@@ -34,6 +34,11 @@ class Mailer(object):
         # config
         self.attribute_keys = [ ]
 
+        # internal
+        self.parameter_name = "parameter.json" # IMPORTANT
+        self.template_name = "template_pc_html.html"
+        self.list_name = "recipients.txt"
+
     def set_attributes(self, attributes):
         pattern = re.compile(self.macro_pattern_internal)
         for a in attributes:
@@ -46,7 +51,9 @@ class Mailer(object):
         config = {
             "InputEncode": "UTF-8",
             "RequestEncode": "UTF-8",
-            "SendStartTime": start_time.strftime("%Y%m%d%H%M%S")
+            "SendStartTime": start_time.strftime("%Y%m%d%H%M%S"),
+            "TemplatePcHtml": self.template_name,
+            "SendList": self.list_name,
         }
 
         return json.dumps(config)
@@ -55,7 +62,7 @@ class Mailer(object):
         # return "".join(["%s=%s" % (k, v) for k, v in config ])
 
     # FIXME: use iterator and stream for large data?
-    def create_list(self, receipients):
+    def create_list(self, recipients):
         def escape(s):
             # TODO: more escape?
             escape_char = "\\"
@@ -65,7 +72,7 @@ class Mailer(object):
                 .replace(self.line_end, self.line_end_macro)
 
         buf = [ ]
-        for r in receipients:
+        for r in recipients:
             attribute_values = [ r.attributes.get(k, "") for k in self.attribute_keys ]
             buf.append(self.field_separater.join([ r.open_id, "", "", self.attr_separater.join([escape(a) for a in attribute_values]) ]) + self.line_end)
 
@@ -93,9 +100,9 @@ class Mailer(object):
         buf = io.BytesIO()
         zip = zipfile.ZipFile(buf, "a", zipfile.ZIP_DEFLATED, False)
         structure = [
-            [ "info.json", self.create_config(start_time) ],
-            [ "TemplatePC_TXT.txt", self.create_template(template).encode('utf-8') ],
-            [ "list.txt", self.create_list(receipients).encode('utf-8') ]
+            [ self.parameter_name, self.create_config(start_time) ],
+            [ self.template_name, self.create_template(template).encode('utf-8') ],
+            [ self.list_name, self.create_list(receipients).encode('utf-8') ]
         ]
         for s in structure:
             (filename, content) = s

@@ -122,6 +122,7 @@ requires = [
     'altair.types',
     'altair.oauth[openid]',
     'altair.oauth_auth',
+    'altair.muhelpers',
     ]
 
 tests_require = [
@@ -222,6 +223,7 @@ setup(name='altair.app.ticketing',
       check_stock_quantity_mismatch_seat=altair.app.ticketing.stock.scripts.check_stock_quantity_mismatch_seat:main
       check_double_booking=altair.app.ticketing.stock.scripts.check_double_booking:main
       send_spdb=altair.app.ticketing.spdb.commands:main
+      export_mu_jobs=altair.app.ticketing.scripts.export_mu_jobs:main
       """,
       dependency_links=[
         'file:../altairlib/altair.versiontools#egg=altair.versiontools-1.0',

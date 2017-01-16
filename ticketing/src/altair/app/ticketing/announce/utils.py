@@ -57,6 +57,9 @@ class MacroEngine:
             return r
 
     def label(self, macro):
+        """
+            label('a.func().as(LABEL)') -> 'LABEL'
+        """
         labeled = self._macro(macro, None, get_as=True)
 
         return macro if labeled is None else labeled
