@@ -78,3 +78,9 @@ class AESToolTest(unittest.TestCase):
     def test_aes_key_with_different_object_fail(self):
         new_aes = AESURLSafe("ABCDEFGHABCDEFGHABCDEFGHABCDEFGH")
         self.assertRaises(SecretKeyException, new_aes.decrypt, (self.aes_key.encrypt(u"ABC")))
+
+
+    def test_aes_update_key(self):
+        new_aes = AESURLSafe()
+        new_aes.update_key(self.custom_key)
+        self.assertEquals(new_aes.decrypt(self.aes_key.encrypt(u"ABC")), u"ABC")

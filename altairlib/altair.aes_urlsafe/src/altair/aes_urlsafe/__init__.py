@@ -21,6 +21,9 @@ class AESURLSafe(object):
         cipher = AES.new(self.key, AES.MODE_CFB, iv)
         return cipher, iv
 
+    def update_key(self, key):
+        self.key = key
+
     def encrypt(self, s):
         s = s.encode('utf-8')
         if len(s) % self.size != 0:
