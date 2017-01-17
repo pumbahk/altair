@@ -747,20 +747,6 @@ class MemberDeleteImporter(object):
     def __init__(self, master_session, organization_id):
         self.master_session = master_session
         self.organization_id = organization_id
-        self.members_reflected = {}
-
-    def map_to_member_column(self, record):
-        return dict(id=record['member_id'])
-
-    def map_to_membership_column(self, record):
-        return dict(
-            id=record['membership_id'],
-            member_id=record['member_id'],
-            member_kind_id=record['member_kind'].id,
-            membership_identifier=record['membership_identifier'],
-            valid_since=record['valid_since'],
-            expire_at=record['expire_at']
-            )
 
     def __call__(self, parser):
         num_records = 0
