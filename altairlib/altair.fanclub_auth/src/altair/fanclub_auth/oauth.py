@@ -19,16 +19,13 @@ logger = logging.getLogger(__name__)
 
 
 def setting_for_stg_if_need(auth_req, request):
-    import ssl
     import base64
-    context = None
     username = request.registry.settings.get(CONFIG_PREFIX + 'stg_setting.basic_username', None)
     password = request.registry.settings.get(CONFIG_PREFIX + 'stg_setting.basic_password', None)
     if username and password:
-        context = ssl._create_unverified_context()
         base64string = base64.b64encode('%s:%s' % (username, password))
         auth_req.add_header("Authorization", "Basic %s" % base64string)
-    return auth_req, context
+    return auth_req
 
 def create_signature_base(method, url, oauth_consumer_key, oauth_signature_method, oauth_timestamp, oauth_nonce, oauth_callback, oauth_verifier, oauth_token):
     if oauth_callback:
@@ -135,8 +132,8 @@ class FanclubOAuth(object):
             urllib2.install_opener(opener)
             auth_req = urllib2.Request(url)
             # FIXME: polluxSTG環境は証明書があれなのとbasic認証をくぐり抜けないといけない
-            auth_req, context = setting_for_stg_if_need(auth_req, request)
-            f = urllib2.urlopen(auth_req, context=context)
+            auth_req = setting_for_stg_if_need(auth_req, request)
+            f = urllib2.urlopen(auth_req)
             res = json.loads(f.read())
         except Exception as e:
             logger.error(e.message)
@@ -189,8 +186,8 @@ class FanclubOAuth(object):
             urllib2.install_opener(opener)
             auth_req = urllib2.Request(url)
             # FIXME:
-            auth_req, context = setting_for_stg_if_need(auth_req, request)
-            f = urllib2.urlopen(auth_req, context=context)
+            auth_req = setting_for_stg_if_need(auth_req, request)
+            f = urllib2.urlopen(auth_req)
             res = json.loads(f.read())
         except Exception as e:
             logger.error(e.message)
@@ -248,14 +245,13 @@ class FanclubAPI(object):
         url = endpoint + '?' + urllib.urlencode([(k.encode('utf-8'), v.encode('utf-8')) for k, v in query])
         try:
             f = None
-            context = None
             logger.info('try request to get member info. (url={})'.format(url))
             opener = urllib2.build_opener(urllib2.HTTPSHandler())
             urllib2.install_opener(opener)
             auth_req = urllib2.Request(url)
             # FIXME:
-            auth_req, context = setting_for_stg_if_need(auth_req, self.request)
-            f = urllib2.urlopen(auth_req, context=context)
+            auth_req = setting_for_stg_if_need(auth_req, self.request)
+            f = urllib2.urlopen(auth_req)
             res = json.loads(f.read())
             if res.get('code') == 200:
                 res = res.get('data')
