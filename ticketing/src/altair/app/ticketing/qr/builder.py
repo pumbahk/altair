@@ -208,8 +208,11 @@ class DataExtractorFromSigned(object):
 @implementer(IQRDataAESBuilder)
 class qr_aes:
 
-    def __init__(self):
-        self.aes = AESURLSafe()
+    def __init__(self, key=None):
+        self.aes = AESURLSafe(key)
+
+    def update_key(self, key):
+        self.aes.update_key(key)
 
     def make(self, data):
         header = data['header'] if 'header' in data else ''

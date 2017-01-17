@@ -142,14 +142,16 @@ class QrAESTest(unittest.TestCase):
 
     HEADER = 'http://www.shop-huistenbosch.jp/3'
 
-    QR_DATA = 'http://www.shop-huistenbosch.jp/3nYyHHNKDT0-Cq2jKGvb2GK_bKVTCknjugFQQpm2a0MUkg-pH8d3ZFSx2lVryOmEkCd7bcZsQuzbZKcM1IMCE6zsfE1skMQrtTYbQiB9Jx8ZxBRAUGr8bdc6vVAnmxZm8'
+    # QR_DATAの暗号化された文字列はsetUPのcustom_keyで暗号化されたもの
+    QR_DATA = 'http://www.shop-huistenbosch.jp/3obfWHL4rkQB009ZU3OTaGi2-aZHNY8FfmsVPtRgjGLdARQDRW31pZDiuAXVXaIGv1vjUZxo81n8OK6QEfyVuOwYRq0RTLtXpJkQ2ciRVoLXW9OS28VmlD1TFXv91EL9v'
 
     def setUp(self):
-        self.builder = qr_aes()
+        self.custom_key = "!THIS_KEY_IS_FOR_THE_UNIT_TESTS!"
+        self.builder = qr_aes(self.custom_key)
 
     def test_make_function(self):
         from altair.aes_urlsafe import AESURLSafe
-        aes = AESURLSafe()
+        aes = AESURLSafe(self.custom_key)
         data = {'header': self.HEADER, 'content': self.CONTENT}
         qr_data = self.builder.make(data)
         qr_data = qr_data[len(self.HEADER):]
