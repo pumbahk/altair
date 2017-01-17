@@ -1,13 +1,38 @@
-<%inherit file="../layout.html"/>
-<h4>指定されたページが見つかりません </h4>
-なおリンクをクリックされていた場合、ページが削除された、またはURL（ページアドレス）が変更された可能性があります。
-<ul>
-  <li> ブラウザの再読み込みを行う</li>
-  <li> 入力したURL（ページアドレス）にタイプミスがないか確認する</li>
-  <li> ブラウザの「戻る」ボタンを押して前画面からやり直す</li>
-</ul>
+<%inherit file="../base.html"/>
 
-<!-- SiteCatalyst -->
+  <div class="error-page">
+    <div class="contents">
+
+      <div class="bread-box">
+        <div class="inner">
+          <ul class="bread-list-box">
+            <li class="bread-list"><a href="/" class="bread-link">Eチケトップ</a></li>
+            <li class="bread-list">エラー</li>
+          </ul>
+        </div>
+      </div>
+
+      <section class="bg-contents">
+        <div class="inner">
+          <h2 class="page-ttl">エラー</h2>
+          <div class="sub-contents">
+            <h3 class="common-title">指定されたページが見つかりません</h3>
+            <p>
+              なおリンクをクリックされていた場合、ページが削除された、またはURL（ページアドレス）が変更された可能性があります。<br>
+                ・ ブラウザの再読み込みを行う<br>
+                ・ 入力したURL（ページアドレス）にタイプミスがないか確認する<br>
+                ・ ブラウザの「戻る」ボタンを押して前画面からやり直す<br>
+            </p>
+          </div>
+        </div>
+      </section>
+
+    </div>
+    <!-- .contents -->
+  </div>
+  <!-- .error-page -->
+
+
 % if request.organization.setting.sitecatalyst_use:
 <!--SiteCatalyst-->
 <%

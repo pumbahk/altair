@@ -1,8 +1,24 @@
-<%inherit file="../layout.html" />
+<%inherit file="../base.html" />
 
-<h2>マイページ</h2>
+    <div class="orderreview-list-page">
+      <div class="contents">
+        <div class="bread-box">
+          <div class="inner">
+            <ul class="bread-list-box">
+              <li class="bread-list"><a href="//eagles.tstar.jp/" class="bread-link">Eチケトップ</a></li>
+              <li class="bread-list">購入履歴</li>
+            </ul>
+          </div>
+        </div>
 
-<h3>購入履歴の確認</h3>
+        <section class="bg-contents">
+          <div class="inner">
+            <h2 class="page-ttl">マイページ</h2>
+            <div class="sub-contents">
+             
+            <h3 class="sub-ttl tac">購入履歴の確認</h3>
+
+
 % if orders:
   ${render_orders(orders)}
 % else:
@@ -21,9 +37,21 @@
 % endif
 
 
-<br>
+<p class="payment-attention-txt">
 会員ログインせずに購入されたご予約はマイページには表示されません。<br>
-受付番号にて購入履歴をご確認ください。<br>
+受付番号にて購入履歴をご確認ください。
+</p>
+
+            </div>
+            </div>      
+          </div>
+        </section>
+
+      </div>
+      <!-- .contents -->
+    </div>
+    <!-- .orderreview-list-page -->
+
 
 <%def name="render_shipping_address(shipping_address)">
   <table class="purchasedContents" summary="配送先情報">
@@ -74,30 +102,43 @@ ${render_pager(lot_entries)}
 </%def>
 
 <%def name="render_orders(orders)">
-<div id="mypageHistory">
-  <div class="inner">
-
+            <div class="orderreview-list-wrap">
+              <ul class="orderreview-list">
   % for order in orders:
-        <div class="box">
-            <p><img src="${request.static_url('altair.app.ticketing.orderreview:static/eagles/pc/images/mypage/' + h.get_order_status_image(order))}" alt="${h.get_order_status(order)}" width="60" height="60" /></p>
-            <p><img src="${request.static_url('altair.app.ticketing.orderreview:static/eagles/pc/images/mypage/' + h.get_payment_status_image(order))}" alt="${h.get_payment_status(order)}" width="60" height="60" /></p>
-            <dl>
-              <form id="${order.order_no}" name="${order.order_no}" action="${request.route_path('mypage.order.show')}" method="POST">
-                <input type="hidden" name="order_no" value="${order.order_no}"/>
-                <dt><a href="javascript:void(0);" onclick="document.getElementById('${order.order_no}').submit()">${order.performance.name}</a></dt>
-                <dd>受付番号：${order.order_no}　予約日時：${h.japanese_datetime(order.created_at)}</dd>
-                <dd>${h.japanese_datetime(order.performance.start_on)}開演 ${order.performance.venue.name}</dd>
-              </form>
-            </dl>
-        </div>
+                <li>
+                  <table class="orderreview-tbl">
+                      <tr>
+                        <th>
+                          <ul class="sate-list">
+                            <li class="${h.get_order_status_style(order)}">
+                              ${h.get_order_status(order)}
+                            </li>
+                            <li class="${h.get_payment_status_style(order)}">
+                              ${h.get_payment_status(order)}
+                            </li>
+                          </ul>
+                        </th>
+                        <td class="payment-detail">
+                          <form id="${order.order_no}" name="${order.order_no}" action="${request.route_path('mypage.order.show')}" method="POST">
+                          <input type="hidden" name="order_no" value="${order.order_no}"/>
+                          <p class="payment-detail-title">${order.performance.name}</p>
+                          <div class="payment-detail-box">
+                            <p><span>受付番号</span>:${order.order_no}<br class="sp"></p>
+                            <p><span>予約日時</span>:${h.japanese_datetime(order.created_at)}</p>
+                            <p>${h.japanese_datetime(order.performance.start_on)}開演 ${order.performance.venue.name}</p>
+                          </div>
+                          </form>
+                        </td>
+                        <td class="confirm-box">
+                          <a a href="javascript:void(0);" onclick="document.getElementById('${order.order_no}').submit()" class="payment-confirm-btn">確認する</a>
+                        </td>
+                      </tr>
+                    </table>
+                </li>
+
   % endfor
-
-  </div>
-</div>
-
-<div style="text-align: right">
-  ${render_pager(orders)}
-</div>
+${render_pager(orders)}
+              </ul>
 </%def>
 
 <%def name="render_pager(result)">
