@@ -8,7 +8,7 @@ import StringIO
 import locale
 import logging
 from argparse import ArgumentParser
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import sqlahelper
 from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
@@ -16,6 +16,9 @@ from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 import json
 import urllib2
 import contextlib
+import transaction
+
+import altair.multilock
 
 from altair.pyramid_assets import get_resolver
 
@@ -27,6 +30,7 @@ from altair.muhelpers.mu import Mailer, Recipient
 
 from altair.app.ticketing.api.impl import get_communication_api, CMSCommunicationApi
 
+JOB_NAME = __name__
 
 logger = logging.getLogger(__name__)
 
@@ -64,7 +68,6 @@ def upload(uri, data, resolver, dry_run):
     if key:
         if dry_run:
             message("DRY-RUN: %s" % uri)
-            message("%s" % json.dumps(data))
         else:
             headers = { "Content-Type": "application/zip"}
             key.set_contents_from_string(data, headers=headers)
@@ -76,6 +79,52 @@ def upload(uri, data, resolver, dry_run):
         raise Exception("wrong uri: " % uri)
 
 
+def create_recipients(request, session, announcement):
+    api = get_communication_api(request, CMSCommunicationApi)
+
+    words = dict()
+    req = api.create_connection("/api/word/?backend_event_id=%d" % announcement.event_id)
+    try:
+        with contextlib.closing(urllib2.urlopen(req)) as res:
+            cms_info = json.loads(res.read())
+            for w in cms_info['words']:
+                words[w['id']] = w['label']
+    except Exception, e:
+        logger.error("cms info error: %s" % (e.message))
+        raise
+    #message("found words in cms: %s" % ", ".join([str(w) for w in words.keys()]))
+
+    #message("found words in job: %s" % ", ".join([str(w) for w in words.keys()]))
+
+    announce_words = [ int(w) for w in announcement.words.split(",") ]
+
+    # words is subset of cms word_ids
+    # ignore id unless contained in cms word_ids
+    word_ids = [ w for w in announce_words if w in words.keys() ]
+
+    #message("search subscriptions for word_id: %s" % ", ".join([str(w) for w in word_ids]))
+
+    if len(word_ids) == 0:
+        logger.warn("no words found for event_id=%d, announcement_id=%d" % (announcement.event_id, announcement.id))
+        return [ ]
+
+    subscriptions = session.query(UserCredential.auth_identifier, WordSubscription.word_id) \
+        .filter(WordSubscription.word_id.in_(word_ids)) \
+        .filter(WordSubscription.user_id == UserCredential.user_id) \
+        .all()
+
+    by_user = dict()
+    for s in subscriptions:
+        open_id = s[0]
+        if open_id not in by_user:
+            by_user[open_id] = dict(words=[])
+        word = words[s[1]]
+        by_user[open_id]['words'].append(word)
+        # ここのソート順は気にしなくて良いか?
+
+    return [Recipient(open_id, dict(keyword=", ".join(attr['words']))) for open_id, attr in by_user.items()]
+
+
 def main():
     parser = ArgumentParser()
     parser.add_argument('--config', type=str, required=True)
@@ -83,6 +132,7 @@ def main():
     parser.add_argument('--target', type=str, required=True, help="ex. s3://bucket/path/to/upload")
     parser.add_argument('--quiet', action='store_true', default=False)
     parser.add_argument('--dry-run', action='store_true', default=False)
+    parser.add_argument('--ahead', type=int, default=3*3600, help="process job in advance [sec]")
 
     opts = parser.parse_args()
 
@@ -93,6 +143,8 @@ def main():
     request = env['request']
     session = sqlahelper.get_session()
     resolver = get_resolver(env['registry'])
+
+    now = datetime.now()
 
     try:
         try:
@@ -112,72 +164,52 @@ def main():
             message('Multiple organizations that match to %s' % opts.organization)
             return 1
 
-        # now = datetime.now()
+        message("getting multilock as '%s'" % JOB_NAME)
+        with altair.multilock.MultiStartLock(JOB_NAME):
 
-        announces = session.query(Announcement) \
-            .filter(Announcement.organization_id == organization.id) \
-            .filter(Announcement.is_draft == 0) \
-            .filter(Announcement.started_at == None) \
-        .all()
+            announces = session.query(Announcement) \
+                .filter(Announcement.organization_id == organization.id) \
+                .filter(Announcement.is_draft == 0) \
+                .filter(Announcement.started_at == None) \
+            .all()
 
-        api = get_communication_api(request, CMSCommunicationApi)
+            if len(announces) == 0:
+                message("nothing to do")
 
-        for a in announces:
-            message("announce(timer=%s, id=%d)" % (a.send_after, a.id))
+            for a in announces:
+                if now + timedelta(seconds=opts.ahead) < a.send_after:
+                    message("announce(timer=%s, id=%d) -> skipped" % (a.send_after, a.id))
+                    continue
 
-            # FIXME: skip when send_after is too large
+                message("announce(timer=%s, id=%d)" % (a.send_after, a.id))
 
-            engine = MacroEngine()
+                # prepare recipients
+                recipients = create_recipients(request, session, a)
+                message("found %d recipients" % len(recipients))
 
-            base_dict = dict()
-            for f in engine.fields(a.message):
-                label = engine.label(f)
-                base_dict[f] = a.parameters[label]
-            body = engine.build(a.message, base_dict, cache_mode=True)
+                # build message
+                engine = MacroEngine()
 
-            # from ticketing db
-            word_ids = sorted(a.words.split(","))
+                base_dict = dict()
+                for f in engine.fields(a.message):
+                    label = engine.label(f)
+                    base_dict[f] = a.parameters[label]
+                body = engine.build(a.message, base_dict, cache_mode=True)
 
-            words = dict()
-            req = api.create_connection("/api/word/?backend_event_id=%d" % a.event_id)
-            try:
-                with contextlib.closing(urllib2.urlopen(req)) as res:
-                    cms_info = json.loads(res.read())
-                    for w in cms_info['words']:
-                        words[w['id']] = w['label']
-            except Exception, e:
-                logger.error("cms info error: %s" % (e.message))
-                return dict()
+                m = Mailer()
+                m.set_attributes(["name", "keyword"])
+                job_zip = m.pack_as_zip(a.send_after, body, recipients)
 
-            word_ids_from_cms = sorted(words.keys())
+                dst = "%s/%s_%d.zip" % (opts.target.strip("/"), a.send_after.strftime("%Y%m%d_%H%M"), a.id)
 
-            # TODO: word_idsとword_ids_from_cmsが違う場合にwarn?
+                upload(dst, job_zip, resolver, opts.dry_run)
 
-            subscriptions = session.query(UserCredential.auth_identifier, WordSubscription.word_id) \
-                .filter(WordSubscription.word_id.in_(word_ids)) \
-                .filter(WordSubscription.user_id == UserCredential.user_id) \
-                .all()
-
-            by_user = dict()
-            for s in subscriptions:
-                open_id = s[0]
-                if open_id not in by_user:
-                    by_user[open_id] = dict(words=[ ])
-                word = words[s[1]]
-                by_user[open_id]['words'].append(word)
-                # ここのソート順は気にしなくて良いか?
-
-            recipients = [ Recipient(open_id, dict(keyword=", ".join(attr['words']))) for open_id, attr in by_user.items() ]
-
-            m = Mailer()
-            m.set_attributes([ "name", "keyword" ])
-            zip = m.pack_as_zip(a.send_after, body, recipients)
-
-            dst = "%s/%s_%d.zip" % (opts.target.strip("/"), a.send_after.strftime("%Y%m%d_%H%M"), a.id)
-
-            upload(dst, zip, resolver, opts.dry_run)
-
-            # TODO: update db, set started_at
+                if not opts.dry_run:
+                    a.started_at = datetime.now()
+                    a.subscriber_count = len(recipients)
+                    a.save()
+                    transaction.commit()
+                    message("set started")
 
     except:
         set_quiet(False)

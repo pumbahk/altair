@@ -1,4 +1,4 @@
-# cencoding: utf-8
+# encoding: utf-8
 
 import re
 import json
@@ -9,6 +9,7 @@ __all__ = [
     'Mailer',
     ]
 
+
 class Recipient(object):
     def __init__(self, open_id, attributes):
         self.open_id = open_id
@@ -18,13 +19,14 @@ class Recipient(object):
 # muhelpers側では、ユーザの氏名は取得できないので、
 # attribute 1固定とする、等の決めが必要
 
+
 class Mailer(object):
     def __init__(self):
         # Mu sepc
-        self.field_separater = "_M#8"
+        self.field_separator = "_M#8"
         self.line_end = "\n"
         self.line_end_macro = "###_BR_###"
-        self.attr_separater = "|"
+        self.attr_separator = "|"
         self.attribute_macro = "###_ATTRIBUTE%d_###"
 
         # our spec
@@ -67,14 +69,14 @@ class Mailer(object):
             # TODO: more escape?
             escape_char = "\\"
             return s\
-                .replace(self.attr_separater, escape_char + self.attr_separater)\
+                .replace(self.attr_separator, escape_char + self.attr_separator)\
                 .replace(escape_char, escape_char + escape_char)\
                 .replace(self.line_end, self.line_end_macro)
 
         buf = [ ]
         for r in recipients:
             attribute_values = [ r.attributes.get(k, "") for k in self.attribute_keys ]
-            buf.append(self.field_separater.join([ r.open_id, "", "", self.attr_separater.join([escape(a) for a in attribute_values]) ]) + self.line_end)
+            buf.append(self.field_separator.join([r.open_id, "", "", self.attr_separator.join([escape(a) for a in attribute_values])]) + self.line_end)
 
         return "".join(buf)
 
@@ -96,13 +98,13 @@ class Mailer(object):
         return re.sub(pattern, attr, template)
 
     # TODO: tune parameters
-    def pack_as_zip(self, start_time, template, receipients):
+    def pack_as_zip(self, start_time, template, recipients):
         buf = io.BytesIO()
         zip = zipfile.ZipFile(buf, "a", zipfile.ZIP_DEFLATED, False)
         structure = [
             [ self.parameter_name, self.create_config(start_time) ],
             [ self.template_name, self.create_template(template).encode('utf-8') ],
-            [ self.list_name, self.create_list(receipients).encode('utf-8') ]
+            [ self.list_name, self.create_list(recipients).encode('utf-8') ]
         ]
         for s in structure:
             (filename, content) = s

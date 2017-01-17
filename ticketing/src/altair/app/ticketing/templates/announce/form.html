@@ -100,9 +100,9 @@
         </div>
       </div>
       <div class="control-group">
-        <label class="control-label">送信者数 (${u'予定' if not completed_at else u'確定'})</label>
+        <label class="control-label">送信者数 (${u'予定' if not announce.completed_at else u'確定'})</label>
         <div class="controls" style="margin-top: 6px;" id="subscriber_count">
-          &nbsp;
+          ${announce.subscriber_count if announce.completed_at or announce.started_at else ''}
         </div>
       </div>
       ${ch.form_item(form.note)}
@@ -170,6 +170,8 @@
                       $('#words-'+id).prop('checked', true);
                     });
                   }
+
+                  // not work when disabled
                   $('input[type="checkbox"]', checkboxes).eq(0).trigger('change');
 
                   if($('#word_ids_autofill').val() == 'YES') {

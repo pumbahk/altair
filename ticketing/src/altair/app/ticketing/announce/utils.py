@@ -158,7 +158,8 @@ class MacroEngine:
             else:
                 # 未知のproperty
                 # return "<unknown property: %s in type: %s>" % (name, type(data))
-                logger.debug("Unknown property: %s" % name)
+                if data is not None:
+                    logger.debug("Unknown property: %s" % name)
                 if get_as:
                     return process_next(None)
                 else:
