@@ -43,7 +43,7 @@ class AESURLSafe(object):
         cipher, iv = self.__cipher(iv)
         decrypted_list = map(cipher.decrypt, decryptable_list)
         try:
-            # 違う秘密キーで復号した文字列はUTF-8のディコーダーにされたら、エラーになる
+            # 違う秘密キーで復号した文字列はUTF-8にdecodeできない
             return ''.join(decrypted_list).strip().decode('utf-8')
         except UnicodeDecodeError:
             raise SecretKeyException('The secret key is different from that used to encrypt')
