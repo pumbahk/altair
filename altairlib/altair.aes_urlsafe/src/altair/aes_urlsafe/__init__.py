@@ -4,9 +4,14 @@ from Crypto.Cipher import AES
 from Crypto import Random
 import base64
 
+DEFAULT_KEY = "!ALTAIR_AES_ENCRYPTION_URL_SAFE!"
+
+class SecretKeyException(Exception):
+    pass
+
 class AESURLSafe(object):
-    def __init__(self):
-        self.key = "THIS_IS_SECRET_KEY_FOR_QR_CODE!!"
+    def __init__(self, key=None):
+        self.key = key or DEFAULT_KEY
         self.size = AES.block_size
 
     def __cipher(self, iv=None):
@@ -34,4 +39,8 @@ class AESURLSafe(object):
         decryptable_list = [s[i:i + self.size] for i in range(0, len(s), self.size)]
         cipher, iv = self.__cipher(iv)
         decrypted_list = map(cipher.decrypt, decryptable_list)
-        return ''.join(decrypted_list).strip().decode('utf-8')
+        try:
+            # 違う秘密キーで復号した文字列はUTF-8のディコーダーにされたら、エラーになる
+            return ''.join(decrypted_list).strip().decode('utf-8')
+        except UnicodeDecodeError:
+            raise SecretKeyException('The secret key is different from that used to encrypt')
