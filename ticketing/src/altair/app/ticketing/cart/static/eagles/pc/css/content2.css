@@ -2621,8 +2621,9 @@ header {
   }
   .fullbox {
     width: 100%;
-    background: #64000D;
     table-layout:fixed;
+    position: absolute;
+    top: -70px
   }
   .height70 {
     height: 70px;

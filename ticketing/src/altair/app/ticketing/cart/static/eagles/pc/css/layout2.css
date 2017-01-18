@@ -10,7 +10,7 @@
 /* Container
 ----------------------------------------------------------- */
 #container {
-	width: 950px;
+	width: 980px;
 	margin: 0 auto;
 	text-align: left;
 }
@@ -344,15 +344,15 @@ dl#topicPath dd {
 /* Main
 ----------------------------------------------------------- */
 #main {
-	position: relative;
-	left: 1px;
-	float: right;
-	width: 740px;
-	line-height: 1.5;
-	margin-bottom: 20px;
-	padding-top: 0px;
-	font-size: 120%;
-	background-color: #FFF;
+    position: relative;
+    left: 1px;
+    float: right;
+    width: 740px;
+    line-height: 1.5;
+    margin: 90px 0 20px;
+    padding: 15px;
+    font-size: 120%;
+    background-color: #FFF;
 }
 
 * html #main {
