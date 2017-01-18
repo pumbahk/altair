@@ -70,6 +70,7 @@ $(function() {cart.init(salesSegmentsSelection, selected, cartReleaseUrl, true, 
     </div>
   </div>
 </%block>
+<div class="fullbox">
     <%
         from altair.mobile import PC_ACCESS_COOKIE_NAME
         link = request.context.switch_sp_url
@@ -77,11 +78,12 @@ $(function() {cart.init(salesSegmentsSelection, selected, cartReleaseUrl, true, 
             link = request.context.switch_sp_url
     %>
     % if request.cookies.get(PC_ACCESS_COOKIE_NAME):
+
         <a href="${link}">
           <button class="switch_pc">スマホサイトで購入する</button>
         </a>
     % endif
-
+</div>
     ${self.widget.flow_widget(1)}
     <h2 id="ticketName">${event['title']} (<span class="performanceNameSpace"></span>)</h2>
     % if preferred_performance:
