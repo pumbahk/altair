@@ -69,7 +69,7 @@ from altair.app.ticketing.orders.models import (
 from altair.app.ticketing.sej import api as sej_api
 from altair.app.ticketing.mails.api import get_mail_utility
 from altair.app.ticketing.mailmags.models import MailSubscription, MailMagazine, MailSubscriptionStatus
-from altair.app.ticketing.orders.export import OrderCSV, OrderDeltaCSV, get_japanese_columns, RefundResultCSVExporter
+from altair.app.ticketing.orders.export import OrderCSV, OrderDeltaCSV, get_japanese_columns, RefundResultCSVExporter, get_ordered_ja_col
 from .forms import (
     OrderForm,
     OrderInfoForm,
@@ -90,6 +90,7 @@ from .forms import (
     FamiPortOrderCancelForm,
     DownloadItemsPatternForm,
     )
+from .forms_delta import OrderSearchForm as OrderSearchFormDelta
 from altair.app.ticketing.orders.forms import OrderMemoEditFormFactory
 from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.fanstatic import with_bootstrap
@@ -803,52 +804,61 @@ class OrderDeltaBaseView(BaseView):
 
 @view_defaults(decorator=with_bootstrap, renderer='altair.app.ticketing:templates/orders/delta.html', permission='sales_counter')
 class OrderDeltaIndexView(OrderDeltaBaseView):
-    @view_config(route_name='orders.delta')
-    def index(self):
+    @view_config(route_name='orders.delta', request_method="GET")
+    def get(self):
         request = self.request
-        slave_session  = get_db_session(request, name="slave")
-
-        organization_id = request.context.organization.id
-        params = MultiDict(request.params)
-        params["order_no"] = " ".join(request.params.getall("order_no"))
-
-        form_search = OrderSearchForm(params, organization_id=organization_id)
-
-        orders = None
-        page = int(request.params.get('page', 0))
-        if request.params:
-            from .download import OrderSummary, OrderProductItemSummary
-            if form_search.validate():
-                query = OrderSummary(self.request,
-                                     slave_session,
-                                     organization_id,
-                                     condition=form_search)
-            else:
-                return {
-                    'form': OrderForm(context=self.context),
-                    'form_search': form_search,
-                    'orders': orders,
-                    'page': page,
-                    'endpoints': self.endpoints,
-                }
-
-            if request.params.get('action') == 'checked':
-                checked_orders = [o.lstrip('o:')
-                                  for o in request.session.get('orders', [])
-                                  if o.startswith('o:')]
-                query.target_order_ids = checked_orders
-
-            count = query.count()
-
-            orders = paginate.Page(
-                query,
-                page=page,
-                item_count=count,
-                items_per_page=40,
-                url=paginate.PageURL_WebOb(request)
-            )
-
         patterns = get_patterns_info(request)
+        organization_id = request.context.organization.id
+
+        form_search = OrderSearchFormDelta(organization_id=organization_id)
+
+        return {
+            'form_search': form_search,
+            'endpoints': self.endpoints,
+            'patterns': patterns
+        }
+
+    @view_config(route_name='orders.delta', request_method="POST")
+    def post(self):
+        request = self.request
+        patterns = get_patterns_info(request)
+        slave_session = get_db_session(request, name="slave")
+        organization_id = request.context.organization.id
+
+        params = MultiDict(request.POST)
+        params["order_no"] = " ".join(request.POST.getall("order_no"))
+        form_search = OrderSearchFormDelta(params, organization_id=organization_id)
+        orders = None
+        page = int(request.GET.get('page', 0))
+
+        from .download import OrderSummary
+        if form_search.validate():
+            query = OrderSummary(self.request,
+                                 slave_session,
+                                 organization_id,
+                                 condition=form_search)
+        else:
+            return {
+                'form': OrderForm(context=self.context),
+                'form_search': form_search,
+                'orders': orders,
+                'page': page,
+                'endpoints': self.endpoints,
+                'patterns': patterns
+            }
+
+        if request.params.get('action') == 'checked':
+            checked_orders = [o.lstrip('o:') for o in request.session.get('orders', []) if o.startswith('o:')]
+            query.target_order_ids = checked_orders
+
+        count = query.count()
+        orders = paginate.Page(
+            query,
+            page=page,
+            item_count=count,
+            items_per_page=40,
+            url=paginate.PageURL_WebOb(request)
+        )
 
         return {
             'form': OrderForm(context=self.context),
@@ -856,7 +866,6 @@ class OrderDeltaIndexView(OrderDeltaBaseView):
             'orders': orders,
             'page': page,
             'endpoints': self.endpoints,
-            'japanese_columns': get_japanese_columns(request),
             'patterns': patterns
         }
 
@@ -938,7 +947,7 @@ class OrderDeltaDownloadView(OrderDeltaBaseView):
 class OrderDeltaPatternView(OrderDeltaBaseView):
     @view_config(route_name='orders.delta.pattern', request_method="GET")
     def index(self):
-        japanese_columns = get_japanese_columns(self.request)
+        japanese_columns = get_ordered_ja_col()
         patterns = get_patterns_info(self.request)
 
         return {
@@ -950,12 +959,12 @@ class OrderDeltaPatternView(OrderDeltaBaseView):
         emsgs = []
 
         if not op_type or op_type not in ['add', 'update', 'del']:
-            emsgs.append(u"操作タイプは認知できないため、ダウンロードパターンに関する操作はできません。")
+            emsgs.append(u"操作タイプは認知できないため、テンプレートに関する操作はできません。")
             return emsgs
 
         ope = {'add': u'新規登録', 'update': u'更新', 'del': u'削除'}
         if not pattern_name:
-            emsgs.append(u"{}するパターン名を記入ください。".format(ope[op_type]))
+            emsgs.append(u"{}するテンプレート名を記入ください。".format(ope[op_type]))
 
         if op_type in ['add', 'update'] and not pattern_content:
             emsgs.append(u"ダウンロード項目を選んでください。")

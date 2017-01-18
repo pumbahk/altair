@@ -22,6 +22,39 @@
     color: red;
   }
 
+  /* メッセージ */
+  #op-msg ul {
+    margin:0;
+  }
+  .list-group {
+    padding-left: 0;
+    margin-bottom: 0;
+  }
+  .list-group-item {
+    position: relative;
+    display: block;
+    padding: .75rem 1.25rem;
+    margin-bottom: -1px;
+    background-color: #fff;
+    border: 1px solid #ddd;
+  }
+  .list-group-item:first-child {
+    border-top-right-radius: .25rem;
+    border-top-left-radius: .25rem;
+  }
+  .list-group-item:last-child {
+    margin-bottom: 0;
+    border-bottom-right-radius: .25rem;
+    border-bottom-left-radius: .25rem;
+  }
+  .list-group-item-success {
+    color: #3c763d;
+    background-color: #dff0d8;
+  }
+  .list-group-item-danger {
+    color: #a94442;
+    background-color: #ebcccc;
+  }
   /* setting-area */
   .setting-area {
     width: 500px;
@@ -62,12 +95,14 @@
   }
   .setting-btn {
     margin: 5px auto;
+    white-space: normal;
+    width: 430px;
   }
   .setting-btn a {
     border-radius: 4px !important;
   }
-  .setting-btn a:not(:first-child):not(:last-child) {
-    margin: 0 5px;
+  .setting-btn a:first-child {
+    margin-right: 5px;
   }
 
   /* column-options-settings */
@@ -80,6 +115,10 @@
   td.up-down-column {
     width: 36px;
     padding: 0 2px;
+  }
+  td.in-out-column button:first-child,
+  td.up-down-column button:first-child {
+    margin-bottom: 20px;
   }
   #save-pattern,
   #available-pattern {
@@ -94,6 +133,10 @@
 
 <div class="page-header">
   <h1>ダウンロード設定（テスト版）</h1>
+</div>
+<div id="op-msg" class="hide">
+  <ul class="list-group">
+  </ul>
 </div>
 <div class="page-header">
   <h3>使用上の注意</h3>
@@ -127,7 +170,7 @@
       <div class="setting-btn btn-group">
         <a id="add-pattern" class="btn">新規登録</a>
         <a id="update-pattern" class="btn">上書き保存</a>
-        <a id="del-pattern" class="btn btn-danger">削除</a>
+        <a id="del-pattern" class="btn btn-danger pull-right">削除</a>
       </div>
     </div>
     <div class="cloumn-settings">
@@ -146,23 +189,39 @@
               </select>
             </td>
             <td class="in-out-column">
-              <a class="btn fa fa-arrow-circle-right" id="in-column"></a>
-              <br />
-              <a class="btn fa fa-arrow-circle-left" id="out-column"></a>
+              <button type="button" class="btn fa fa-arrow-circle-right" id="in-column"></button>
+              <button type="button" class="btn fa fa-arrow-circle-left" id="out-column"></button>
             </td>
             <td>
               <select id="selected-columns" multiple="multiple" name="selected_columns"></select>
             </td>
             <td class="up-down-column">
-              <a class="btn fa fa-arrow-circle-up" id="up-column"></a>
-              <br />
-              <a class="btn fa fa-arrow-circle-down" id="down-column"></a>
+              <button type="button" class="btn fa fa-arrow-circle-up" id="up-column"></button>
+              <button type="button" class="btn fa fa-arrow-circle-down" id="down-column"></button>
             </td>
           </tr>
         </tbody>
       </table>
       </form>
       <a id="clear-setting-area" class="btn">選択をクリア</a>
+    </div>
+  </div>
+</div>
+
+<!-- 確定用のモダール -->
+<div id="msg-modal" class="modal fade" role="dialog" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title"></h3>
+      </div>
+      <div class="modal-body">
+        <p class="modal-msg"></p>
+      </div>
+      <div class="modal-footer">
+        <button id="btn-confirm" type="button" class="btn btn-danger" data-dismiss="modal">確定</button>
+        <button id="btn-cancel" type="button" class="btn btn-default" data-dismiss="modal">キャンセル</button>
+      </div>
     </div>
   </div>
 </div>
@@ -228,6 +287,43 @@
         }
       });
     }
+
+    /* メッセージリストをクリア */
+    function clear_op_msg() {
+        $('#op-msg').find('li').remove();
+    }
+
+    /* 処理結果メッセージを表示 */
+    function show_msg(main_text, errors=[]) {
+        clear_op_msg();
+        var template = $('<li class="list-group-item"></li>');
+        var op_msg = $('#op-msg');
+        var classname = '';
+        if (errors.length > 0) {
+            classname = 'list-group-item-danger';
+        } else {
+            classname = 'list-group-item-success';
+        }
+        template.clone()
+                .text(main_text)
+                .addClass(classname)
+                .appendTo($('#op-msg').find('ul'));
+
+        for (var i = 0; i < errors.length; i++) {
+            template.clone()
+                    .text(errors[i])
+                    .addClass(classname)
+                    .appendTo($('#op-msg').find('ul'));
+        }
+        op_msg.show();
+    }
+    function fill_modal(title_val, msg_val, button_val, func) {
+        var modal = $('#msg-modal');
+        modal.find('.modal-title').text(title_val);
+        modal.find('.modal-msg').text(msg_val);
+        return modal;
+    }
+
 
     $(document).ready(function() {
         /* 最初にアクセスするか再読み込む時の初期化 */
@@ -305,14 +401,10 @@
                     var option = $('<option value=' + pattern_name + '>' + pattern_name + '</option>');
                     option.appendTo($('select#saved-patterns'));
                     $('select#saved-patterns').val(pattern_name);
-                    alert("ダウンロードパターンを新規登録しました。");
+                    show_msg("テンプレート「" + pattern_name + "」を新規登録しました。");
                 },
                 function(emsgs) {
-                    alert_msgs = "ダウンロードパターンの追加が失敗しました。"
-                    for (var i = 0; i < emsgs.length; i++) {
-                        alert_msgs += '\n' + emsgs[i];
-                    }
-                    alert(alert_msgs);
+                    show_msg("テンプレート「" + pattern_name + "」の新規登録は失敗しました。", emsgs);
                 }
             );
         });
@@ -320,8 +412,7 @@
         /* パターンの更新 */
         $('a#update-pattern').on('click', function() {
             var pattern_name = $('input#pattern-name').val().trim();
-            var res = window.confirm("パターン「" + pattern_name + "」を更新しますか？");
-            if (res == false) { return; }
+            var msg = "パターン「" + pattern_name + "」を更新しますか？"
 
             var selected_items = "";
                 $('#selected-columns option').each( function () {
@@ -334,51 +425,50 @@
                 'op_type': 'update'
             };
 
-            post_pattern(post_content,
+            var modal = fill_modal("パターンの更新", msg);
+            modal.find('#btn-confirm').off('click').click(function() {
+              post_pattern(post_content,
                 function(json) {
                     patterns[pattern_name] = json[pattern_name];
-                    alert("ダウンロードパターンを更新しました。");
-                    $('select#saved-patterns').val(pattern_name);
+                    show_msg("テンプレート「" + pattern_name + "」を更新しました。");
                 },
                 function(emsgs) {
-                    alert_msgs = "ダウンロードパターンの更新が失敗しました。"
-                    for (var i = 0; i < emsgs.length; i++) {
-                        alert_msgs += '\n' + emsgs[i];
-                    }
-                    alert(alert_msgs);
+                    show_msg("テンプレート「" + pattern_name + "」の更新は失敗しました。", emsgs);
                 }
-            );
-
+              );
+            });
+            modal.modal('show');
         });
 
         /* パターンの削除 */
         $('a#del-pattern').on('click', function() {
             var pattern_name = $('select#saved-patterns').val().trim();
 
-            var res = window.confirm("パターン「" + pattern_name + "」を削除しますか？");
-            if (res == false) { return; }
+            msg = "パターン「" + pattern_name + "」を削除しますか？"
+
             var post_content = {
                 "pattern_name": pattern_name,
                 'op_type': 'del'
             }
 
-            post_pattern(post_content,
+            var modal = fill_modal("パターンの削除", msg);
+
+            modal.find('#btn-confirm').off('click').click(function() {
+              post_pattern(post_content,
                 function(json) {
                     delete patterns[pattern_name];
                     $('select#saved-patterns option[value="' + pattern_name + '"]').remove();
                     $('select#saved-patterns').val("");
                     $('input#pattern-name').val("");
                     clear_selected_columns()
-                    alert("ダウンロードパターン「" + pattern_name + "」を削除しました。");
+                    show_msg("テンプレート「" + pattern_name + "」を削除しました。");
                 },
                 function(emsgs) {
-                    alert_msgs = "ダウンロードパターンの削除が失敗しました。"
-                    for (var i = 0; i < emsgs.length; i++) {
-                        alert_msgs += '\n' + emsgs[i];
-                    }
-                    alert(alert_msgs);
+                    show_msg("テンプレート「" + pattern_name + "」の削除は失敗しました。", emsgs);
                 }
-            );
+              );
+            });
+            modal.modal('show');
 
         });
     });
