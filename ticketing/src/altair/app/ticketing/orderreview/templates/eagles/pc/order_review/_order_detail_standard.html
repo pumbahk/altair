@@ -19,19 +19,21 @@
 % for product in order.items:
                   <tr>
                     <th class="buy-info-ttl bg-dark">商品名</th>
-                    <td class="buy-info-txt bg-light"><span class="area-icon free"></span>${product.product.name}</td>
+                    <td class="buy-info-txt bg-light">${product.product.name}</td>
                   </tr>
   % if product.product.sales_segment.setting.display_seat_no and product.seats:
                   <tr>
                     <th class="buy-info-ttl bg-dark">枚数</th>
                     <td class="buy-info-txt bg-light">${product.seat_quantity}枚</td>
                   </tr>
-    % for seat in product.seats:
                   <tr>
                     <th class="buy-info-ttl bg-dark">座席</th>
-                    <td class="buy-info-txt bg-light">${seat['name']}<br></td>
-                  </tr>
+                    <td class="buy-info-txt bg-light">
+    % for seat in product.seats:
+                      ${seat['name']}<br>
     % endfor
+                    </td>
+                  </tr>
   % else:
     % if product.seats:
                   <tr>
@@ -47,10 +49,6 @@
   % endif
 % endfor
                   <tr>
-                    <th class="buy-info-ttl bg-dark">金額</th>
-                    <td class="buy-info-txt bg-light">¥${h.format_number(product.price * product.quantity)}</td>
-                  </tr>
-                  <tr>
                     <th class="buy-info-ttl bg-dark">ステータス</th>
                     <td class="buy-info-txt bg-light">${h.get_order_status(order)}</td>
                   </tr>
@@ -61,6 +59,10 @@
                   <tr>
                     <th class="buy-info-ttl bg-dark">発券状況</th>
                     <td class="buy-info-txt bg-light">${h.get_print_status(order)}</td>
+                  </tr>
+                  <tr>
+                    <th class="buy-info-ttl bg-dark">金額</th>
+                    <td class="buy-info-txt bg-light">¥${h.format_number(product.price * product.quantity)}</td>
                   </tr>
                   <tr>
                     <th class="buy-info-ttl bg-dark">決済手数料</th>
@@ -149,7 +151,7 @@
                   </tr>
                   <tr>
                     <th class="buy-info-ttl bg-dark">住所</th>
-                    <td class="buy-info-txt bg-light">${shipping_address.zip} ${shipping_address.prefecture}${shipping_address.city}${shipping_address.address_1}${shipping_address.address_2}</td>
+                    <td class="buy-info-txt bg-light">${shipping_address.zip} ${shipping_address.prefecture}${shipping_address.city}${shipping_address.address_1} ${shipping_address.address_2}</td>
                   </tr>
                 </table>
               </li>

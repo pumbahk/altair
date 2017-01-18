@@ -66,6 +66,9 @@
                   <% beginning_of_group = True %>
   % endif
 % endfor
+% if not beginning_of_group:
+                  </table>
+% endif
     <%def name="__post__(registry_var)">
     ${fh.inject_js(registry_var, predefined_symbols=view._predefined_symbols)}
     </%def>

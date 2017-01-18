@@ -105,11 +105,11 @@ def get_order_status_image(order):
 
 def get_order_status_style(order):
     if order.status == 'canceled':
-        return u""
+        return u"cancel"
     elif order.status == 'delivered':
-        return u""
+        return u"done-delivery"
     else:
-        return u""
+        return u"done-send"
 
 def get_payment_status(order):
     if order.payment_status == 'refunded' and order.cancel_reason == str(OrderCancelReasonEnum.CallOff.v[0]):
@@ -134,13 +134,13 @@ def get_payment_status_image(order):
 
 def get_payment_status_style(order):
     if order.payment_status == 'refunded' and order.cancel_reason == str(OrderCancelReasonEnum.CallOff.v[0]):
-        return u""
+        return u"cancel-refund"
     elif order.payment_status == 'refunded':
-        return u""
+        return u"done-refund"
     elif order.payment_status in ['paid', 'refunding']:
-        return u""
+        return u"done-payment"
     elif order.payment_status == 'unpaid':
-        return u""
+        return u"not-payment"
     return ""
 
 def get_print_status(order):
