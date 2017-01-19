@@ -47,6 +47,11 @@ if ((navigator.userAgent.indexOf('iPhone') > 0) || navigator.userAgent.indexOf('
         <li class="pc">
           <a href="/price"><img src="${view_context.static_url('images/icon03.png')}" class="pc" alt="">チケット価格について</a>
         </li>
+        % if request.authenticated_userid:
+        <li class="pc">
+          <a href="${request.route_path('mypage.logout')}">ログアウト</a>
+        </li>
+        % endif
         <%doc>
         <li class="pc">
           <a href="/orderreview">購入履歴</a>
@@ -57,6 +62,9 @@ if ((navigator.userAgent.indexOf('iPhone') > 0) || navigator.userAgent.indexOf('
     <!-- /.g_nav -->
   </div>
   <%doc><a href="/orderreview" class="buy-link sp">購入履歴</a></%doc>
+  % if request.authenticated_userid:
+  <a href="${request.route_path('mypage.logout')}" class="buy-link sp">ログアウト</a>
+  % endif
   <div class="hbg" id="showBtn">
     <button>
       <span></span>
