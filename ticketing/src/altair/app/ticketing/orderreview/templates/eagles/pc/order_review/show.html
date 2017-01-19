@@ -1,5 +1,16 @@
-<%inherit file="../layout.html" />
-<div class="purchased">
-  <h2>購入履歴の確認 検索結果</h2>
-  ${_context.order_detail_panel(order)}
-</div>
+<%inherit file="../base.html" />
+    <div class="buy-page buy-history-page" id="buyPage">
+      <div class="contents">
+
+        <div class="bread-box">
+          <div class="inner">
+            <ul class="bread-list-box">
+              <li class="bread-list"><a href="/" class="bread-link">Eチケトップ</a></li>
+              <li class="bread-list">購入履歴</li>
+            </ul>
+          </div>
+        </div>
+      ${_context.order_detail_panel(order)}
+      </div>
+      <!-- .contents -->
+    </div>

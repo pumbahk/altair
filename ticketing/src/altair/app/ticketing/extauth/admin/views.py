@@ -811,6 +811,30 @@ class MembersView(object):
         self.request.session.flash(u'%d件をエクスポートしました' % num_records)
         return resp
 
+    @view_config(route_name='members.bulk_delete')
+    def bulk_delete(self):
+        master_session = get_db_session(self.request, 'extauth')
+        slave_session = get_db_session(self.request, 'extauth_slave')
+        organization_id = self.request.operator.organization_id
+        file_fs = self.request.POST['file']
+        if file_fs is None:
+            self.request.session.flash(u'ファイルを指定してください')
+        else:
+            try:
+                num_records = import_export.MemberDeleteImporter(master_session, organization_id)(
+                    import_export.MemberDataParser(slave_session, organization_id)(
+                        import_export.TabularDataReader(file_fs.file, file_fs.filename, import_export.japanese_columns)
+                        )
+                    )
+                master_session.commit()
+                self.request.session.flash(u'%d件を削除しました' % num_records)
+            except import_export.MemberImportExportErrors as e:
+                m = u'%s (%d行目)' % (e.errors[0].message, e.errors[0].line_num)
+                if len(e.errors) > 1:
+                    m += '。ほか%d個の問題がありました' % len(e.errors) - 1
+                self.request.session.flash(u'%s (削除件数:%d)' % (m, e.num_records))
+        return HTTPFound(location=self.request.route_path('members.index'))
+
 @view_defaults(
     permission='manage_oauth_clients',
     decorator=(with_bootstrap,)

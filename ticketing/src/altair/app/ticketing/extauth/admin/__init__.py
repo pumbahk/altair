@@ -67,6 +67,7 @@ def main(global_config, **local_config):
     config.add_route('members.export', '/members.{ext}', request_method='GET')
     config.add_route('members.delete', '/members', request_method='POST', request_param='doDelete')
     config.add_route('members.bulk_add', '/members', request_method='POST', request_param='doBulkAdd')
+    config.add_route('members.bulk_delete', '/members', request_method='POST', request_param='doBulkDelete')
     config.add_route('members.new', '/members/+')
     config.add_route('members.edit', '/members/{id}')
     config.add_route('member_sets.index', '/member_sets', request_method='GET')

@@ -1,0 +1,283 @@
+/* PC,SP共通 */
+
+/* ご購入前の注意 */
+
+.special .cover img{
+  width: 100%;
+}
+
+.special .desc{
+  color: #fff;
+  text-align: center;
+  margin-bottom: 20px;
+  line-height: 2;
+}
+
+.price-table table {
+  width: 100%;
+  text-align: center;
+  letter-spacing: 0.1em;
+  font-size: 12px;
+  color: #818181;
+}
+
+
+
+.price-table thead th {
+  background: #ece9de;
+  border-right: 2px #fff solid;
+  line-height: 1.4;
+  border-top: 2px solid #fff;
+}
+
+.price-table tbody th {
+  background: #ece9de;
+  border-top: 2px #fff solid;
+  border-right: 2px #fff solid;
+  border-bottom: 2px #fff solid;
+  width:auto;
+}
+
+.price-table td {
+  border: 1px solid #fff;
+}
+
+.price-table a{
+  color: #860010;
+  text-decoration: underline;
+}
+
+.price-table td a {
+  color: #860010;
+  padding-left: 13px;
+  position: relative;
+}
+.price-table td a:before {
+  content: "";
+  display: block;
+  position: absolute;
+  top: 6px;
+  left: 0;
+  border: 4px solid transparent;
+  border-top: 8px solid #860010;
+}
+.link-faq a,
+.link-orderreview a {
+    color: #860010;
+    text-decoration: underline;
+}
+/* PC,SP共通　END*/
+
+
+/* PC */
+
+@media screen and (min-width: 768px) {
+  .modal-out-wrap .modal-wrap {
+    width: 1020px!important;
+}
+
+.price-table td {
+  width: 100px;
+}
+.price-table thead .menu-child th{
+  width:100px;
+}
+  .price-table thead .menu th.price-area {
+    width: 100px;
+}
+.price-table thead .menu th.day{
+  width: 110px;
+}
+.price-table thead .menu th.card{
+  width: 140px;
+}
+  .price-table table {
+  }
+.price-table .tbl-primary  td {
+  transition: 200ms all ease;
+}
+.price-table .tbl-primary tr:hover td {
+  background: #ece9de;
+}
+.tbl-primary th, .tbl-primary td {
+    padding: 10px;
+}
+
+.month-ttl{
+  color: #fff;
+  font-size: 34px;
+  text-align: center;
+  letter-spacing: 0.2em;
+}
+
+.month-ttl .num{
+  font-size: 80px;
+}
+
+.calender-block {
+    padding: 40px 0 40px;
+}
+.calender-tbl td.team {
+    width: 23%;
+}
+.calender-tbl td.state {
+    width: 50px;
+    }
+.calender-tbl td.link-faq {width: 110px;letter-spacing: 0.1em;}
+
+.calender-tbl td.link-orderreview {
+    width: 140px;
+    letter-spacing: 0.1em;
+}
+.calender-tbl td.link-faq img,
+.calender-tbl td.link-orderreview img{
+vertical-align:middle;
+display:inline-block;
+padding-left:5px;
+}
+.calender-tbl td.price{
+    width: 90px;
+
+}
+.calender-tbl td.link-faq,
+.calender-tbl td.link-orderreview {
+    text-align: center;
+    letter-spacing: 0.1em;
+  }
+  .calender-tbl td.link-faq a,
+    .calender-tbl td.link-orderreview a {
+    border-bottom: solid 1px;
+    padding-bottom: 2px;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 14px;
+  }
+  .modal-out-wrap .modal-wrap .inner-area {
+      margin: 0 auto;
+      width: 100%;
+  }
+  .inner-area{
+    padding: 80px 0;
+  }
+.price-table{
+    width: 980px;
+    margin:0 auto;
+
+}
+.calender-tbl td.time {
+    display: none;
+}
+
+}
+
+/* SP */
+
+@media screen and (max-width: 767px) {
+  .contents{
+    margin:0 auto;
+  }
+  .g-nav-list{
+    display: none;
+  }
+  .price-table thead .menu-child th{
+  width:100px;
+}
+  .price-table thead .menu th.price-area {
+    width: 100px;
+}
+.price-table thead .menu th.day{
+  width: 120px;
+}
+.price-table thead .menu th.card{
+  width: 160px;
+}
+  .calender-block .month-ttl {
+    margin-bottom: 40px;
+}
+  .tbl-primary th, .tbl-primary td {
+    padding: 5px;
+  }
+  .price-table{
+  width: 800px;
+
+  }
+.price-table table {
+  margin-top: 0px!important;
+}
+  .calender-block {
+    padding: 40px 0 40px;
+}
+
+.modal-out-wrap .modal-wrap {
+  padding:10px;
+}
+.modal-inner {
+    overflow: auto;
+}
+.special-seat-price-page{
+}
+.price-table{
+  overflow: auto;
+}
+.modal-inner::-webkit-scrollbar {
+  background: #F1F1F1;
+    height: 5px;
+}
+.modal-inner::-webkit-scrollbar-track {
+    background: #F1F1F1;
+}
+.modal-inner::-webkit-scrollbar-thumb {
+ background: #BCBCBC;
+}
+
+.btn-area{
+  background: #fff;
+  padding:10px;
+  box-sizing: border-box;
+}
+.btn-area img{
+vertical-align:middle;
+display:inline-block;
+padding-left:5px;
+}
+
+.btn-area a{
+  margin-bottom: 10px;
+}
+.calender-tbl td.team {
+    width: 40%;
+}
+iframe{
+  overflow-x: scroll;
+}
+  .inner-area{
+    padding: 10px 0;
+  }
+
+
+}
+
+
+@media (min-width: 768px) and (max-width: 1290px) {
+  .calender-tbl th.date {
+    width: 80px;
+}
+  .calender-tbl td.team {
+    width: 20%;
+}
+.calender-tbl td.link-faq a,
+.calender-tbl td.link-orderreview a,
+.calender-tbl td.price .price-txt {
+    font-size:12px;
+}
+
+}
+
+@media (min-width: 768px) and (max-width: 1100px) {
+
+  .calender-tbl td.team {
+    width: 14%;
+}
+
+
+}

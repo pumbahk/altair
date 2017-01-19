@@ -4,7 +4,8 @@ import re
 import hashlib
 from struct import pack, unpack
 from zope.interface import implementer
-from .interfaces import IQRDataBuilder
+from .interfaces import IQRDataBuilder, IQRDataAESBuilder
+from altair.aes_urlsafe import AESURLSafe
 
 tag2int = {
     "serial": 1,
@@ -23,6 +24,9 @@ C32r = dict([(C32[i], i) for i in range(len(C32))])
 C42r = dict([(C42[i], i) for i in range(len(C42))])
 
 class InvalidSignedString(Exception):
+    pass
+
+class InvalidItemList(Exception):
     pass
 
 @implementer(IQRDataBuilder)
@@ -200,3 +204,49 @@ class DataExtractorFromSigned(object):
         """ QRコードに入ったsigned stringとそこから生成されたデータを元に改めて作成したsigneヘッダが等しいか調べる
         """
         return self.sign_header == r_sign
+
+@implementer(IQRDataAESBuilder)
+class qr_aes:
+
+    def __init__(self, key=None):
+        self.aes = AESURLSafe(key)
+
+    def update_key(self, key):
+        self.aes.update_key(key)
+
+    def make(self, data):
+        header = data['header'] if 'header' in data else ''
+        content = self.aes.encrypt(data['content']) if 'content' in data else ''
+        return header + content
+
+    def __validate(self, item_list, decrypted_data):
+        from collections import OrderedDict
+        if not item_list:
+            return False
+
+        if not sum(item_list.values()) == len(decrypted_data) or not isinstance(item_list, OrderedDict):
+            return False
+
+        return True
+
+
+    def extract(self, qr_data, header, item_list):
+
+        # 暗号化されないヘッダーを除く
+        qr_data = qr_data[len(header):] if header else qr_data
+        # 暗号化された内容を復号化
+        decrypted_data = self.aes.decrypt(qr_data)
+
+        if self.__validate(item_list, decrypted_data):
+            # dictでデータ内容を保存する
+            sub_start = 0
+            origin_data = dict()
+
+            for key, val in item_list.items():
+                sub_end = sub_start + val
+                origin_data[key] = decrypted_data[sub_start:sub_end]
+                sub_start = sub_end
+
+            return origin_data
+        else:
+            raise InvalidItemList("The item list for data extraction from AES QR data is not consistent with QR data.")

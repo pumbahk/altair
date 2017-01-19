@@ -1,25 +1,38 @@
-<html>
-<head>
-</head>
-<body>
+<%inherit file="../base.html" />
+    <div class="buy-page buy-history-page" id="buyPage">
+      <div class="contents">
 
+        <div class="bread-box">
+          <div class="inner">
+            <ul class="bread-list-box">
+              <li class="bread-list"><a href="/" class="bread-link">Eチケトップ</a></li>
+              <li class="bread-list">購入履歴</li>
+            </ul>
+          </div>
+        </div>
+
+          <section class="bg-contents">
+          <div class="inner">
+            <h2 class="page-ttl">メール送信</h2>
+            <div class="sub-contents">
 % if result:
 % for r in result:
   % if r['result'] == 'success':
-    ${r['seat']} ${mail}宛にメールを送信しました. <br />
+    <h3 class="common-title">${r['seat']} ${mail}宛にメールを送信しました. </h3>
   % else:
-    <span style="color: red;">${r['seat']} ${r['reason']}</span> <br />
+    <h3 class="common-title">${r['seat']} ${r['reason']}</h3>
   % endif
 % endfor
 % else:
-  <span style="color: red;">${message}</span> <br />
+  <p>${message}</p>
 % endif
 
 <script>
 document.write('<a href="javascript:window.close();">閉じる</a>');
 </script>
-<noscript>
-</noscript>
-
-</body>
-</html>
+            </div>      
+          </div>
+        </section>
+      </div>
+      <!-- .contents -->
+    </div>
