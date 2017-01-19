@@ -2615,6 +2615,12 @@ header {
     color:#FFF;
     font-weight:bold;
     text-decoration: underline;
+    vertical-align: middle;
+    font-family: "ＭＳ Ｐゴシック", arial, helvetica, clean, sans-serif;
+    position: relative;
+    margin: 0 4px 2px 0;
+    *margin-right: 3px;
+    top: -1px;
   }
   header nav input:hover{
     text-decoration: none;
