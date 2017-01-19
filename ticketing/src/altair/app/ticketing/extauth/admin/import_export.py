@@ -1,4 +1,5 @@
 # encoding: utf-8
+import logging
 import six
 from collections import OrderedDict
 from datetime import date, datetime, timedelta
@@ -9,6 +10,9 @@ from ..models import MemberSet, MemberKind, Member, Membership
 from ..utils import generate_salt, digest_secret, DIGESTED_SECRET_LEN
 from altair.tabular_data_io import lookup_reader, lookup_writer
 from altair.tabular_data_io.impl.csv import CsvTabularDataReader, CsvTabularDataWriter
+
+logger = logging.getLogger(__name__)
+
 
 __all__ = [
     'TabularDataReader',
@@ -739,6 +743,27 @@ class MemberDataImporter(object):
             raise MemberImportExportErrors(u'インポート中にエラーが発生しました', errors_for_row, num_records)
         return num_records
 
+class MemberDeleteImporter(object):
+    def __init__(self, master_session, organization_id):
+        self.master_session = master_session
+        self.organization_id = organization_id
+
+    def __call__(self, parser):
+        num_records = 0
+        errors = []
+        for errors_for_row, record in parser:
+            num_records += 1
+            if errors_for_row:
+                errors.extend(errors_for_row)
+                continue
+            auth_identifier = record['auth_identifier']
+            query = self.master_session.query(Member).filter(Member.auth_identifier == auth_identifier)
+            n = query.delete(False)
+            self.master_session.commit()
+
+        if errors:
+            raise MemberImportExportErrors(u'削除インポート中にエラーが発生しました', errors_for_row, num_records)
+        return num_records
 
 class MemberDataExporter(object):
     record_spec = [

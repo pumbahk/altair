@@ -1529,7 +1529,7 @@
 }
 
 #settlementOperation .settlementOperationPaneInner {
-	height: 500px;
+	height: 680px;
 	overflow: hidden;
 }
 
@@ -1572,7 +1572,7 @@
 
 #selectSeatType .seatListContainer {
 	width: 395px;
-  height: 462px;
+  height: 650px;
 	overflow: auto;
 	position: relative;
 }
@@ -1832,13 +1832,14 @@
 	top: 0px;
 	left: 392px;
 	width: 513px;
-	height: 490px;
+	height: 595px;
 	margin-bottom: 10px;
 	border: 1px solid #eee;
 	border-right: 2px solid #ccc;
 	border-bottom: 2px solid #ccc;
 	background-color: #ffffff;
 	z-index: 10;
+	padding-top: 80px;
 }
 
 .selectSeatLeftPane {
@@ -2571,3 +2572,80 @@
 /*
  * vim: sts=2 sw=2 ts=2 noet
  */
+/*--------------------------------------------
+    header
+---------------------------------------------*/
+
+header {
+    width: 100%;
+    height: 80px;
+    margin: 0 auto 20px;
+    padding: 20px;
+    background: #860010;
+    box-sizing: border-box;
+  }
+  header .inner {
+    width: 950px;
+    margin : 0 auto;
+    text-align: left;
+    position: relative;
+  }
+  header nav ul {
+    color :#FFF;
+    font-size: 0.8rem;
+    position: absolute;
+    top: 50%;
+    -webkit-transform: translateY(-50%);
+    -ms-transform: translateY(-50%);
+    transform: translateY(-50%);
+    right: 0px;
+    text-align: right;
+  }
+  header nav ul li {
+    margin: 0 0 0 20px;
+    color: #F6AA00;
+    float: left;
+  }
+ header nav ul li a{
+    color: #FFF!important;
+  }
+  header nav input{
+    background: none;
+    border: none;
+    color:#FFF;
+    font-weight:bold;
+    text-decoration: underline;
+    vertical-align: middle;
+    font-family: "ＭＳ Ｐゴシック", arial, helvetica, clean, sans-serif;
+    position: relative;
+    margin: 0 4px 2px 0;
+    *margin-right: 3px;
+    top: -1px;
+  }
+  header nav input:hover{
+    text-decoration: none;
+  }
+  .fullbox {
+    width: 100%;
+    table-layout:fixed;
+    position: absolute;
+    top: -70px
+  }
+  .height70 {
+    height: 70px;
+  }
+
+  /*--------------------------------------------
+    footer
+  ---------------------------------------------*/
+  footer {
+    margin: 40px 0 0;
+    padding: 0;
+    background: #860010;
+    text-align: center;
+  }
+  footer .copyright {
+    font-size: 1.0rem;
+    color: #fff;
+    padding: 20px;
+  }

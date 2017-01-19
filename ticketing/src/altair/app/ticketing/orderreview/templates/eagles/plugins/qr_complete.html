@@ -1,54 +1,58 @@
-<div>
-    <h4>スタジアム・会場発券（QRコード）</h4>
+    <ul class="buy-info-list">
+    <li class="buy-info-txt">
+    1.指定の場所に設置してあるチケット発券ステーションに取得したQRコードをかざしていただき、画面にしたがってチケットを発券してください。
+    </li>
+    <li class="buy-info-txt">
+    2.発券されたチケットをお取りになり、ご入場ください。
+    </li>
+    </ul>
 
-    <p>
-    1.指定の場所に設置してあるチケット発券ステーションに取得したQRコードをかざしていただき、画面にしたがってチケットを発券してください。<br />
-    2.発券されたチケットをお取りになり、ご入場ください。<br />
-　　 </p>
-
-    <p>QRコードは１席につき１つずつ発行されます。会場内にてお待ち合わせをされる場合や別々にご入場される場合には、同行者様に事前にQRコードをお渡しください。<br/>
+    <p class="buy-info-txt-sub">QRコードは１席につき１つずつ発行されます。会場内にてお待ち合わせをされる場合や別々にご入場される場合には、同行者様に事前にQRコードをお渡しください。<br/>
     下記よりご指定のメールアドレスへQRコードを簡単にメールで送ることができます。<br/>
     同行者様のドメイン指定の設定にご不安等がある場合は、まずご自身のメールアドレスへ送っていただき、受信したメールを同行者様に転送することでQRコードを簡単にお渡しいただけます。<br/>
     なお、お客様によるQRコードの転送間違い、お渡し間違い等に起因するトラブル等にはご対応いたしかねますのでご注意ください。<br/>
+    QRコードはデンソーウェーブの登録商標です。
     </p>
-　　　<br/>
 
 % if paid:
 
     % for ticket in tickets:
-        <div style="border: 1px solid gray; padding: 8px; margin-bottom: 4px;"
-            %if ticket.product:
-            商品名 ${ticket.product.name} (${ticket.product.id}) <br />
-            %endif
-            %if ticket.seat:
-            席番号 ${ticket.seat.name} (${ticket.seat.l0_id}) <br />
-            %endif
-            <br />
-
-            <form method="post" target="_blank" action="${request.route_path('order_review.qr_print')}">
-                <input type="hidden" name="order_no" value="${order.order_no}" />
-                <input type="hidden" name="tel" value="${tel}" />
-                <input type="hidden" name="token" value="${ticket.token.id if ticket.token else ""}" />
-                <input type="submit" value="QRコードを表示する" style="WIDTH: 150px; HEIGHT: 40px" />
-            </form>
-    　　　　　<br />
-            <form method="post" target="_blank" action="${request.route_path('order_review.qr_send')}">
-                <input type="hidden" name="order_no" value="${order.order_no}" />
-                <input type="hidden" name="tel" value="${tel}" />
-                <input type="hidden" name="token" value="${ticket.token.id if ticket.token else ""}" />
-                メールアドレス: <input type="text" name="mail" size="40" />
-                <input type="submit" name="send" value="メールで送る" />
-                <p class="red">携帯電話へQRコードを送信される場合は、 @tstar.jp からのメールが受信できるよう、《事前に》お客様ご自身でドメイン指定の設定を必ずお願いいたします。</p>
-            </form>
-        </div>
+                 <table class="tbl-primary">
+                   <tr>
+                     <td class="code-box bg-dark">
+                       <h4 class="buy-info-txt">QRコードを表示</h4>
+                       <div class="btn-box">
+      % if ticket.product:
+                        商品名 ${ticket.product.name} (${ticket.product.id})
+      % endif
+      % if ticket.seat:
+                        席番号 ${ticket.seat.name} (${ticket.seat.l0_id})
+      % endif
+                        <form method="post" target="_blank" action="${request.route_path('order_review.qr_print')}">
+                        <input type="hidden" name="order_no" value="${order.order_no}" />
+                        <input type="hidden" name="tel" value="${tel}" />
+                        <input type="hidden" name="token" value="${ticket.token.id if ticket.token else ""}" />
+                        <input type="submit" value="表示する" class="btn btn-buy" />
+                        </form>
+                      </div>
+                     </td>
+                     <td class="code-box bg-light">
+                       <h4 class="buy-info-txt">QRコードをメールで送る</h4>
+                       <form method="post" target="_blank" action="${request.route_path('order_review.qr_send')}" class="code-form">
+                       <input type="hidden" name="order_no" value="${order.order_no}" />
+                       <input type="hidden" name="tel" value="${tel}" />
+                       <input type="hidden" name="token" value="${ticket.token.id if ticket.token else ""}" />
+                       <input type="text" name="mail" class="input-mail" placeholder="メールアドレスを入力してください。">
+                       <input type="submit" name="send" value="送信する" class="btn btn-buy" />
+                       </form>
+                       <p class="buy-info-txt-sub">
+                        携帯電話へQRコードを送信される場合は、@tstarjpからのメールが受信できるよう、<br>
+                        事前にお客様ご自身でドメイン指定の設定を必ずお願いいたします。
+                       </p>
+                     </td>
+                   </tr>
+                 </table>
     % endfor
 % else:
 お支払い完了後、このページにQRコードを表示するためのボタンが表示されます。表示されたQRコードを印刷、あるいは、PC/携帯へメール送信の上、試合当日、指定の入場ゲートにてQRコード（印刷したもの、あるいは携帯画面）をお見せください。
 % endif
-</div>
-
-<br/>
-<div>
-    QRコードはデンソーウェーブの登録商標です。
-</div>
-

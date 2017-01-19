@@ -1,43 +1,68 @@
-<%inherit file="../layout.html" />
+<%inherit file="../base.html" />
 
-<h2>購入履歴の確認</h2>
-<p><a href="${request.route_path('mypage.show', _query=dict(auth_type='altair.oauth_auth.plugin.OAuthAuthPlugin'))}">ファンクラブ会員・各種優待の方はこちらから</a></p>
-<form id="form1" name="form1" action="${request.route_path('order_review.show')}" method="post">
-  <!-- wrapper -->
-  <div class="formWrapper">
-    <table cellpadding="0" cellspacing="0" class="formeagles">
-      <colgroup>
-        <col style="width:180px;">
-        <col style="width:310px;">
-      </colgroup>
-      <tbody>
-        <tr>
-          <th>受付番号 <span class="red">*</span></th>
-          <td>
-            ${form.order_no}
-            (例: RE00000000AB)
-            <span class="red">${h.render_errors(request, form.order_no.errors)}</span>
-          </td>
-        </tr>
-        <tr>
-          <th>電話番号 <span class="red">*</span></th>
-          <td>
-            ${form.tel}
-            (例: 080xxxxyyyy)
-            <span class="red">${h.render_errors(request, form.tel.errors)}</span><br/>
-            電話番号は、ご登録時の電話番号をご入力ください（携帯・自宅をどちらもご登録した場合、どちらの番号でも構いません)
+    <div class="buy-page">
+      <div class="contents">
+
+        <div class="bread-box">
+          <div class="inner">
+            <ul class="bread-list-box">
+              <li class="bread-list"><a href="/" class="bread-link">Eチケトップ</a></li>
+              <li class="bread-list">購入履歴</li>
             </ul>
-          </td>
-        </tr>
-        <tr>
-            <td colspan="2" style="text-align:center">
-             <input type="submit" value="次に進む" class="submit" style="width:400px;height:50px;">
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-</form>
+          </div>
+        </div>
+
+        <section class="bg-contents">
+          <div class="inner">
+            <h2 class="page-ttl">購入履歴</h2>
+            <div class="sub-contents">
+              <form action="${request.route_path('order_review.show')}" method="post">
+                <table class="login-tbl">
+                  <tr>
+                    <th class="login-ttl">受付番号<span class="required">必須</span></th>
+                    <td class="login-cts">
+                      ${form.order_no} (例: RE00000000AB)
+                      <span style="color:red">${h.render_errors(request, form.order_no.errors)}</span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <th class="login-ttl">電話番号<span class="required">必須</span></th>
+                    <td class="login-cts">
+                      ${form.tel} (例: 080●●●●●●●●)
+                      <span style="color:red">${h.render_errors(request, form.tel.errors)}</span>
+                      <p class="login-txt"> 電話番号は、ご登録時の電話番号をご入力ください。</p>
+                    </td>
+                  </tr>
+                </table>
+                <div class="btn-box">
+                
+                  <button type='submit' class="btn btn-primary">次に進む</button>
+
+                </div>
+                <a href="${request.route_path('mypage.show', _query=dict(auth_type='altair.oauth_auth.plugin.OAuthAuthPlugin'))}" class="login-link">ファンクラブ会員・各種優待の方はこちらから</a>
+              </form>
+            </div>      
+          </div>
+        </section>
+
+        <section class="info-box">
+          <div class="inner">
+            <ul class="info-list-box">
+              <li class="info-list">
+                <h3 class="sub-ttl">注意事項</h3>
+                <p class="info-txt">会員ID・パスワードは半角でご入力ください。<br>購入履歴の確認は、会員の方も受付番号（REから始まる12ケタ）から確認することができます。</p>
+              </li>
+              <li class="info-list">
+                <h3 class="sub-ttl">お問い合わせ</h3>
+                <p class="info-txt">楽天野球団チケットセンター<br>TEL:050-5817-8192（10:00〜18:00）</p>
+              </li>
+            </ul>
+          </div>
+        </section>
+      </div>
+      <!-- .contents -->
+    </div>
+    <!-- .buy-page -->
 
 % if request.organization.setting.sitecatalyst_use:
 <!--SiteCatalyst-->

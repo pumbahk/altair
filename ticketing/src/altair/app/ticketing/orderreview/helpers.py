@@ -27,8 +27,10 @@ __all__ = [
     "safe_strftime",
     "get_order_status",
     "get_order_status_image",
+    "get_order_status_style",
     "get_payment_status",
     "get_payment_status_image",
+    "get_payment_status_style",
     "get_print_status",
     "generic_hidden_input",
     "is_disabled_order",
@@ -101,6 +103,14 @@ def get_order_status_image(order):
     else:
         return u"icon_uketsuke.gif"
 
+def get_order_status_style(order):
+    if order.status == 'canceled':
+        return u"cancel"
+    elif order.status == 'delivered':
+        return u"done-delivery"
+    else:
+        return u"done-receipt"
+
 def get_payment_status(order):
     if order.payment_status == 'refunded' and order.cancel_reason == str(OrderCancelReasonEnum.CallOff.v[0]):
         return u"払戻済(中止)"
@@ -120,6 +130,17 @@ def get_payment_status_image(order):
         return u"icon_payment.gif"
     elif order.payment_status == 'unpaid':
         return u"icon_minyukin.gif"
+    return ""
+
+def get_payment_status_style(order):
+    if order.payment_status == 'refunded' and order.cancel_reason == str(OrderCancelReasonEnum.CallOff.v[0]):
+        return u"cancel-refund"
+    elif order.payment_status == 'refunded':
+        return u"done-refund"
+    elif order.payment_status in ['paid', 'refunding']:
+        return u"done-payment"
+    elif order.payment_status == 'unpaid':
+        return u"not-payment"
     return ""
 
 def get_print_status(order):

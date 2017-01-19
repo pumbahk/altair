@@ -297,7 +297,6 @@ cart.showErrorDialog = function showErrorDialog(title, message, footer_button_cl
 
 cart.showSeparateSeatOrderDialog = function showSeparateSeatOrderDialog(title, presenter) {
     var message = '連席でお席をご用意することができません。<br>'
-                + 'それでもお席を確保したい場合は「購入する」を、<br>'
                 + '改めて席を選び直す場合は「座席・枚数を選びなおす」をお選びください。';
     var error_modal = $('#order-error-template');
     var retry_modal = error_modal.clone().attr('id', 'order-retry-template');
@@ -318,7 +317,7 @@ cart.showSeparateSeatOrderDialog = function showSeparateSeatOrderDialog(title, p
     dialog.footer(
         $('<div>')
             .append($('<a class="cancel-button btn-redo">座席・枚数を選びなおす</a>'))
-            .append($('<a class="ok-button btn-buy">購入する</a>'))
+            .append($('<a class="ok-button btn-buy">次へ</a>'))
     );
     dialog.load();
 };

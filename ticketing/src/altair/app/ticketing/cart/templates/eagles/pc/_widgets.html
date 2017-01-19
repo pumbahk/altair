@@ -7,8 +7,10 @@ steps = {
   3: u'お申込内容の確認',
   4: u'お申込の完了'
   }
-%> 
-<div class="flow-widget">
-  <img class="flow-widget-body" src="${request.static_url('altair.app.ticketing.cart:static/eagles/pc/images/purchase_flow_%02d.jpg' % step)}" alt="${steps[step]}" />
+%>
+<div class="fullbox height70" >
+  <div class="flow-widget">
+    <img class="flow-widget-body" src="${request.static_url('altair.app.ticketing.cart:static/eagles/pc/images/purchase_flow_%02d.jpg' % step)}" alt="${steps[step]}" />
+  </div>
 </div>
 </%def>

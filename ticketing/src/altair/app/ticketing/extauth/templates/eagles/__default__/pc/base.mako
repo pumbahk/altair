@@ -76,7 +76,7 @@ if ((navigator.userAgent.indexOf('iPhone') > 0) || navigator.userAgent.indexOf('
             <ul class="sub-menu">
               <li><a href="/help">チケット購入方法</a></li>
               <li><a href="/payment">支払・受取方法</a></li>
-              <li><a href="/help">よくある質問</a></li>
+              <li><a href="/faq">よくある質問</a></li>
               <li><a href="/caution">ご購入前の注意</a></li>
             </ul>
           </li>

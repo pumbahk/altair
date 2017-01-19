@@ -28,7 +28,7 @@
                 <div class="img-box"><img src="${view_context.static_url('images/culb-rank.png')}" alt="クラブ"></div>
                 <div class="btn-box">
                   <a href="${_context.route_path('extauth.rakuten.entry')}" class="btn btn-eagles">
-                    <img src="${view_context.static_url('images/logo_rakuten.png')}" class="logo" width="70px" alt="楽天">
+                    <img src="${view_context.static_url('images/logo_rakuten.jpg')}" class="logo" width="70px" alt="楽天">
                     <span>楽天会員IDでログイン</span>
                   </a>
                 </div>
@@ -43,7 +43,7 @@ thisyear = datetime.now().strftime('%Y')
                 </div>
                 <a href="https://member.id.rakuten.co.jp/rms/nid/upkfwd" target="_blank" class="login-link">会員ID・パスワードを忘れてしまった方はこちら</a>
                 <div class="btn-box">
-                  <a href="${_context.route_path('extauth.login', _query=dict(member_set=member_set.name))}" class="btn btn-has-ohter-id">各種会員IDをお持ちの方<br>Sign in with other ID</a>
+                  <a href="${_context.route_path('extauth.login', _query=dict(member_set=member_set.name))}" class="btn btn-has-ohter-id">超先行販売用IDをお持ちの方はこちら<br>Sign in with other ID</a>
                 </div>
                 <div class="page-top-box js-show-box">
                   <a href="#" class="sp page-top">
@@ -55,7 +55,7 @@ thisyear = datetime.now().strftime('%Y')
                 <h3 class="sub-ttl">一般の方</h3>
                 <div class="btn-box for-general">
                   <a href="${_context.route_path('extauth.rakuten.entry', _query=dict(use_fanclub=False))}" class="btn btn-eagles">
-                    <img src="${view_context.static_url('images/logo_rakuten.png')}" class="logo" width="70px" alt="楽天">
+                    <img src="${view_context.static_url('images/logo_rakuten.jpg')}" class="logo" width="70px" alt="楽天">
                     <span>楽天会員IDでログイン</span>
                   </a>
                 </div>

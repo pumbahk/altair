@@ -17,27 +17,30 @@
 </head>
 <body id="settlement">
   <p id="naviSkip"><a href="#main" tabindex="1" title="本文へジャンプ"><img src="${request.static_url('altair.app.ticketing.cart:static/eagles/pc/images/skip.gif')}" alt="本文へジャンプ" width="1" height="1" /></a></p>
-  <div id="container" style="position:relative">
-    <form action="${request.route_path('cart.logout')}" method="POST">
-      <div style="text-align: right">
-        % if (not getattr(request, 'context', None)) or request.context.authenticated_user()['is_guest']:
-          <input type="submit" value="会員でログイン"/>
-        % else:
-          ${request.context.authenticated_user()['membergroup']}でログイン中
-          <input type="submit" value="ログアウト"/>
-        % endif
-        <a href="${request.route_path('cart.exit')}">トップへ</a>
-      </div>
-    </form>
-    <!-- ========== header ========== -->
-    <div id="grpheader" style="height:80px">
-      <p id="siteID" style="float:none;position:absolute;z-index:100">
-        <img src="${request.static_url('altair.app.ticketing.cart:static/eagles/pc/images/logo.jpg')}" alt="イーグルスチケット" width="950" height="64"  />
-      </p>
-    </div>
-    <!-- ========== /header ========== -->
+<!-- ========== header ========== -->
+    <header>
+      <div class="inner">
+        <h1><a href="//eagles.tstar.jp/"><img src="${request.static_url('altair.app.ticketing.cart:static/eagles/pc/images/logo.png')}" alt="イーグルスチケット"></a></h1>
 
-    <hr />
+      <nav>
+        <form action="https://eagles.stg.altr.jp/cart/logout" method="POST">
+          <ul>
+            % if (not getattr(request, 'context', None)) or request.context.authenticated_user()['is_guest']:
+              <li><input type="submit" value="会員でログイン"/></li>
+            % else:
+              <li>${request.context.authenticated_user()['membergroup']}でログイン中</li>
+              <li><input value="ログアウト" type="submit"></li>
+            % endif
+            <li><a href="https://eagles.stg.altr.jp/cart/top">トップへ</a></li>
+          </ul>
+        </form>
+      </nav>
+      </div>
+    </header>
+<!-- ========== /header ========== -->
+
+<!-- ========== main ========== -->
+<div id="container" style="position: relative;">
     <!-- ========== main ========== -->
     <div id="main">
       ${self.body()}
@@ -45,5 +48,9 @@
     <!-- ========== /main ========== -->
   </div>
   <!-- /container -->
+
+<footer>
+  <div class="copyright">&copy; TicketStar, Inc.</div>
+</footer>
 </body>
 </html>

@@ -109,12 +109,10 @@ form {
     <%t:header>購入者氏名(全角)</%t:header>
       <div class="dispBoxInner">
         ${form['last_name'].label}<br/>
-        ${form['last_name']}
-        (例：山田)<br/>
+        ${form.last_name(placeholder=u"（例）山田")}<br/>
         ${h.error_list(request, form, 'last_name')}<br/>
         ${form['first_name'].label}<br/>
-        ${form['first_name']}
-        (例：太郎)<br/>
+        ${form.first_name(placeholder=u"（例）太郎")}<br/>
         ${h.error_list(request, form, 'first_name')}
       </div>
     </div>
@@ -123,12 +121,10 @@ form {
       <%t:header>購入者氏名(全角カナ)</%t:header>
       <div class="dispBoxInner">
         ${form['last_name_kana'].label}<br/>
-        ${form['last_name_kana']}
-        (例：ヤマダ)<br/>
+        ${form.last_name_kana(placeholder=u"（例）ヤマダ")}<br/>
         ${h.error_list(request, form, 'last_name_kana')}<br/>
         ${form['first_name_kana'].label}<br/>
-        ${form['first_name_kana']}
-        (例：タロウ)<br/>
+        ${form.first_name_kana(placeholder=u"（例）タロウ")}<br/>
         ${h.error_list(request, form, 'first_name_kana')}
       </div>
     </div>
@@ -137,12 +133,10 @@ form {
       <%t:header>${form['email_1'].label}(半角英数)</%t:header>
       <div class="dispBoxInner">
         ${form['email_1'].label}<br/>
-        ${form['email_1']}
-        (例：mail@example.ne.jp)<br/>
+        ${form.email_1(placeholder=u"（例）mail@example.ne.jp")}<br/>
         ${h.error_list(request, form, 'email_1')}<br/>
         ${form['email_1_confirm'].label}<br/>
-        ${form['email_1_confirm']}
-        (例：mail@example.ne.jp)<br/>
+        ${form.email_1_confirm(placeholder=u"（例）mail@example.ne.jp")}<br/>
         ${h.error_list(request, form, 'email_1_confirm')}
       </div>
       <p class="dispBox">
@@ -155,24 +149,19 @@ form {
       <div class="dispBoxInner">
         ${form['zip'].label}<br/>
         <% path = request.static_url('altair.app.ticketing.cart:static/js/zipdata') %>
-        ${form['zip'](onKeyUp="AjaxZip3.zip2addr('" + path + "', 'zip','','prefecture','city','', 'address_1');")}
-        (例: 1030001)<br/>
+        ${form.zip(placeholder=u"（例）9830045", onKeyUp="AjaxZip3.zip2addr('" + path + "', 'zip','','prefecture','city','', 'address_1');")}<br/>
         ${h.error_list(request, form, 'zip')}<br/>
         ${form['prefecture'].label}<br/>
-        ${form['prefecture']}
-        (例: 東京都)<br/>
+        ${form.prefecture(placeholder=u"（例）宮城県")}<br/>
         ${h.error_list(request, form, 'prefecture')}<br/>
         ${form['city'].label}<br/>
-        ${form['city']}
-        (例: 中央区)<br/>
+        ${form.city(placeholder=u"（例）仙台市")}<br/>
         ${h.error_list(request, form, 'city')}<br/>
         <label for="address_1">町名番地</label><br/>
-        ${form['address_1']}
-        (例: 日本橋x-xx-xx)<br/>
+        ${form.address_1(placeholder=u"（例）宮城野区宮城野2-11-6")}<br/>
         ${h.error_list(request, form, 'address_1')}<br/>
         <label for="address_2">建物名等</label><br/>
-        ${form['address_2']}
-        (例: yyビルz階)<br/>
+        ${form.address_2(placeholder=u"（例）yyビルz階")}<br/>
         ${h.error_list(request, form, 'address_2')}
       </div>
     </div>
@@ -181,8 +170,7 @@ form {
       <%t:header>電話番号(半角数字)</%t:header>
       <div class="dispBoxInner">
         ${form['tel_1'].label}
-        ${form['tel_1']}
-        (例: 080xxxxyyyy)
+        ${form.tel_1(placeholder=u"（例）080xxxxyyyy")}<br/>
         ${h.error_list(request, form, 'tel_1')}
       </div>
     </div>
