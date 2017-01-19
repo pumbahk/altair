@@ -93,11 +93,11 @@
 % if order.status == 'canceled':
               <li class="buy-info">
                 <h3 class="sub-ttl">この購入/予約はキャンセルされました</h3>
-                <p class="buy-info-txt">キャンセル処理は、下記のような理由によりおこなっております。</p>
-                <ul class="buy-info-list">
-                  <li class="buy-info-txt">お客様からキャンセルのご連絡があったため</li>
-                  <li class="buy-info-txt">期限内のご入金がなくキャンセル扱いとしたため</li>
-                  <li class="buy-info-txt">二重注文により、ひとつをキャンセル処理したため</li>
+                <p>キャンセル処理は、下記のような理由によりおこなっております。</p>
+                <ul>
+                  <li>　お客様からキャンセルのご連絡があったため</li>
+                  <li>　期限内のご入金がなくキャンセル扱いとしたため</li>
+                  <li>　二重注文により、ひとつをキャンセル処理したため</li>
                 </ul>
               </li>
 % elif order.status != 'canceled' and order.payment_status == 'refunded':
