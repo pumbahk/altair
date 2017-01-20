@@ -21,9 +21,9 @@
                 1/21（土）～超先行販売、1/28（土）～郡山・秋田・盛岡の先行購入は、お届けしたハガキに記載のIDを利用いただき、青色の「その他会員IDをお持ちの方はこちら」ボタンよりログインをお願いします。<br>
                 先行販売におけるファンクラブ会員の方の楽天会員IDログインは 2/11（土・祝）より可能となります。
               </p>
-                <div class="btn-box">
-                  <a href="${_context.route_path('extauth.login', _query=dict(member_set=member_set.name))}" class="btn btn-has-ohter-id">その他会員IDをお持ちの方はこちら<br>Sign in with other ID</a>
-                </div>
+              <div class="btn-box">
+                <a href="${_context.route_path('extauth.login', _query=dict(member_set=member_set.name))}" class="btn btn-has-ohter-id">その他会員IDをお持ちの方はこちら<br>Sign in with other ID</a>
+              </div>
             </div>
           </div>
 
