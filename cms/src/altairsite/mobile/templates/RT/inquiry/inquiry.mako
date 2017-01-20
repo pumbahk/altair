@@ -34,11 +34,11 @@
 
 ■楽天イーグルス(Eチケ)<br/>
 よくあるお問合せ： <a href="http://eagles.tstar.jp/faq">http://eagles.tstar.jp/faq</a><br/>
-お問い合わせ先: <a href="https://f.msgs.jp/webapp/hear/org/showEnquete.do?enqueteid=3&clientid=13074&databaseid=wit">お問合せフォーム</a><br/><br/>
+楽天イーグルスへのお問い合わせ先: <a href="https://f.msgs.jp/webapp/hear/org/showEnquete.do?enqueteid=3&clientid=13074&databaseid=wit">楽天イーグルス・お問合せフォーム</a><br/><br/>
 
 ■ヴィッセル神戸オフィシャルチケット<br/>
 よくあるお問合せ： <a href="http://vissel.tstar.jp/faq">http://vissel.tstar.jp/faq</a><br/>
-お問い合わせ先: <a href="mailto:vissel@tstar.jp">vissel@tstar.jp</a><br/><br/>
+ヴィッセル神戸へのお問い合わせ先: <a href="mailto:vissel@tstar.jp">vissel@tstar.jp</a><br/><br/>
 
 % if form.send.data == "Success":
     <div class="line" style="background:#FFFFFF"><img src="${request.mobile_static_url("altaircms:static/RT/mobile/clear.gif")}" alt="" width="1" height="1" /></div>
