@@ -17,7 +17,13 @@
           <h2 class="page-ttl">ファンクラブ会員、一般選択</h2>
           <div class="attention-wrap">
             <div class="inner">
-              <p>イーグルスチケットでのチケットのお求めには楽天会員IDが必要になりました。<br>楽天会員IDをお持ちでないお客様は会員登録をお願いします。</p>
+              <p>
+                1/21（土）～超先行販売、1/28（土）～郡山・秋田・盛岡の先行購入は、お届けしたハガキに記載のIDを利用いただき、青色の「その他会員IDをお持ちの方はこちら」ボタンよりログインをお願いします。<br>
+                先行販売におけるファンクラブ会員の方の楽天会員IDログインは 2/11（土・祝）より可能となります。
+              </p>
+              <div class="btn-box">
+                <a href="${_context.route_path('extauth.login', _query=dict(member_set=member_set.name))}" class="btn btn-has-ohter-id">その他会員IDをお持ちの方はこちら<br>Sign in with other ID</a>
+              </div>
             </div>
           </div>
 
@@ -43,7 +49,7 @@ thisyear = datetime.now().strftime('%Y')
                 </div>
                 <a href="https://member.id.rakuten.co.jp/rms/nid/upkfwd" target="_blank" class="login-link">会員ID・パスワードを忘れてしまった方はこちら</a>
                 <div class="btn-box">
-                  <a href="${_context.route_path('extauth.login', _query=dict(member_set=member_set.name))}" class="btn btn-has-ohter-id">超先行販売用IDをお持ちの方はこちら<br>Sign in with other ID</a>
+                  <a href="${_context.route_path('extauth.login', _query=dict(member_set=member_set.name))}" class="btn btn-has-ohter-id">その他会員IDをお持ちの方はこちら<br>Sign in with other ID</a>
                 </div>
                 <div class="page-top-box js-show-box">
                   <a href="#" class="sp page-top">
