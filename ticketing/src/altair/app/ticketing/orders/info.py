@@ -140,6 +140,7 @@ def register_descriptors(config):
         SEJ_DELIVERY_PLUGIN_ID,
         RESERVE_NUMBER_DELIVERY_PLUGIN_ID,
         QR_DELIVERY_PLUGIN_ID,
+        QR_AES_DELIVERY_PLUGIN_ID,
         ORION_DELIVERY_PLUGIN_ID,
         FAMIPORT_DELIVERY_PLUGIN_ID,
         )

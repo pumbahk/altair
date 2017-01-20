@@ -144,6 +144,9 @@ from altair.app.ticketing.tickets.preview.transform import SVGTransformer
 from altair.app.ticketing.tickets.utils import build_cover_dict_from_order
 from altair.app.ticketing.core.models import TicketCover
 
+## ハウステンボス専用のQRコードユーティリティ
+from altair.app.ticketing.project_specific.huistenbosch.qr_utilits import build_ht_qr_by_token
+
 # XXX
 INNER_DELIVERY_PLUGIN_IDS = [
     payments_plugins.SHIPPING_DELIVERY_PLUGIN_ID,
@@ -1456,29 +1459,37 @@ class OrderDetailView(OrderBaseView):
     def show_qr(self):
         order_id = int(self.request.matchdict.get('order_id', 0))
         order = Order.get(order_id, self.context.organization.id)
+        qr_type = order.payment_delivery_method_pair.delivery_method.delivery_plugin_id
         url_builder = get_orderreview_qr_url_builder(self.request)
         qr_preferences = order.payment_delivery_pair.delivery_method.preferences.get(unicode(payments_plugins.QR_DELIVERY_PLUGIN_ID), {})
         single_qr_mode = qr_preferences.get('single_qr_mode', False)
         tickets = []
         if single_qr_mode:
             qr = build_qr_by_order(self.request, order)
+            qr_id = qr.id
+            qr_sign = qr.sign if hasattr(qr, 'sign') else None
             tickets.append({
                 'token': None,
                 'element': None,
                 'item': None,
                 'qr': qr,
-                'url': url_builder.build(self.request, qr.id, qr.sign)
+                'url': url_builder.build(self.request, qr_id, qr_sign)
                 })
         else:
             tokens = [(token, element, item) for item in order.items for element in item.elements for token in element.tokens]
             for token, element, item in tokens:
-                qr = build_qr_by_token(self.request, order.order_no, token)
+                if qr_type == payments_plugins.QR_AES_DELIVERY_PLUGIN_ID:
+                    qr = build_ht_qr_by_token(self.request, order.order_no, token)
+                    url = url_builder.build_aes(self.request, qr.id)
+                else:
+                    qr = build_qr_by_token(self.request, order.order_no, token)
+                    url = url_builder.build(self.request, qr.id, qr.sign)
                 tickets.append({
                     'token': token,
                     'element': element,
                     'item': item,
                     'qr': qr,
-                    'url': url_builder.build(self.request, qr.id, qr.sign)
+                    'url': url
                 })
         return { 'order': order, 'tickets': tickets }
 
