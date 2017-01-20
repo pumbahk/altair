@@ -474,6 +474,20 @@ class OrderBetaDownloadView(OrderBaseView):
         exporter.exportfp(res, json_=json_str)
         return res
 
+
+@view_defaults(decorator=with_bootstrap, permission='sales_editor') # sales_counter ではない!
+class OrderReportDownloadView(OrderBaseView):
+
+    @view_config(route_name='orders.report_download')
+    def report_download(self):
+        """
+        予約管理者のレポートダウンロード
+        Operator_name_201701_00001.xls
+        通番は5桁とし、Orderの件数とする
+        """
+        response = self.context.create_reservation_report()
+        return response
+
 @view_defaults(decorator=with_bootstrap, permission='sales_editor') # sales_counter ではない!
 class OrderDownloadView(OrderBaseView):
     # downloadに関しては古いコードがイキ
@@ -1450,6 +1464,7 @@ class OrderDetailView(OrderBaseView):
             "objects_for_describe_product_item": joined_objects_for_product_item(),
             'build_candidate_id': build_candidate_id,
             'endpoints': self.endpoints,
+            'reservation': self.context.user.is_reservation
             }
 
     @view_config(route_name='orders.show.qr', permission='sales_editor', request_method='GET', renderer='altair.app.ticketing:templates/orders/_show_qr.html')

@@ -66,6 +66,9 @@ altair.ticketing.userside_famiport.mq.url = ${altair:ticketing.mq_url}
 altair.ticketing.cooperation.augus.bucket = tstar
 altair.ticketing.cooperation.augus.tort = cooperation/ftp/augus/upload/test
 
+; 予約管理者の帳票用
+reservation.var_dir = %(here)s/var/altair/ticketing/reservation/
+
 [app:ticketing_default]
 use = ticketing
 altair.ticketing.admin.authentication.challenge_view = altair.app.ticketing.views.default_challenge_view

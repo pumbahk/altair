@@ -1,4 +1,4 @@
-<%page args="order, sort=None, vertical=False" />
+<%page args="order, sort=None, vertical=False, reservation=False" />
 <%namespace file="/common/helpers.html" name="ch" />
 <%namespace file="/common/modal.html" name="m" />
 
@@ -251,6 +251,13 @@ actions = {
     icon='icon-print',
     route_name='orders.print.queue',
   ),
+  'report_download':dict(
+    label=u'チケットをダウンロードする',
+    url=request.route_path("orders.report_download", order_id=order.id),
+    icon='icon-remove',
+    attrs={'class': 'btn-warning'},
+    route_name='orders.report_download',
+  ),
   'cancel':dict(
     label=u'キャンセル',
     url='javascript:cancel_order(%d);' % order.id,
@@ -333,22 +340,34 @@ actions = {
     icon='icon-qrcode'
   )
 }
-sort = sort or ['mailinfo', 'delivered', 'cancel', 'refund']
-
+sort = sort or ['mailinfo', 'delivered', 'report_download', 'cancel', 'refund']
+if 'edit_order_info' in sort:
+  if reservation:
+    sort.remove('edit_order_info')
 if 'mailinfo' in sort:
   if not order.shipping_address:
+    sort.remove('mailinfo')
+  if reservation:
     sort.remove('mailinfo')
 if 'paid' in sort:
   if not (order.payment_status != 'paid' and order.payment_status_changable('paid')):
     sort.remove('paid')
+  elif reservation:
+    sort.remove('paid')
 if 'unpaid' in sort:
   if not (order.payment_status != 'unpaid' and order.payment_status_changable('unpaid')):
+    sort.remove('unpaid')
+  elif reservation:
     sort.remove('unpaid')
 if 'cancel' in sort:
   if not order.can_cancel():
     sort.remove('cancel')
+  if reservation:
+    sort.remove('cancel')
 if 'refund' in sort:
   if not order.can_refund() or order.refund_id:
+    sort.remove('refund')
+  if order.can_refund() and reservation:
     sort.remove('refund')
 if 'refund_info' in sort:
   if not order.refund_id:
@@ -359,12 +378,16 @@ if 'release_stocks' in sort:
 if 'delivered' in sort:
   if not order.can_deliver():
     sort.remove('delivered')
+  elif reservation:
+    sort.remove('delivered')
 if 'print' in sort:
   if order.is_canceled():
     sort.remove('print')
   elif order.issued or order.queued:
     sort.remove('print')
     sort.append('force_print')
+  elif reservation:
+    sort.remove('print')
 if 'delete' in sort:
   if not order.can_delete():
     sort.remove('delete')
