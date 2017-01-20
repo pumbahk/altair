@@ -141,11 +141,11 @@ font-weight:700;
 font-size:15px;
 color:#FFF;
 line-height:1;
-border-left:5px solid #F0F0E1;
-border-top:1px dotted #686859;
-border-bottom:1px dotted #686859;
-border-right:1px dotted #686859;
-background:#686859;
+border-left:5px solid #000000;
+border-top:1px dotted #666666;
+border-bottom:1px dotted #666666;
+border-right:1px dotted #666666;
+background:#666666;
 padding:4px 0 4px 10px;
 }
 
@@ -761,7 +761,7 @@ width: 420px;
 height: 240px;
 }
 .loginbox thead th{
-background: #686859;
+background: #000000;
 font-size: 20px;
 height: 30px;
 color: #fff;
@@ -772,7 +772,7 @@ background: #F0F0E1;
 }
 
 .loginbox th{
-background: #686859;
+background: #000000;
 color: #fff;
 }
 
@@ -910,10 +910,10 @@ margin: 10px auto;
 font-size: 20px;
 font-weight: bold;
 display: inline-block;
-background-color:#FB6F56;
+background-color:#666666;
 }
 
 table.form input.submit:hover,
 .btnLogin:hover {
-background-color:#FB6F56;
+background-color:#000000;
 }
