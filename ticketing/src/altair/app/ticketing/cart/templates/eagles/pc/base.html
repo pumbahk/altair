@@ -23,7 +23,7 @@
         <h1><a href="//eagles.tstar.jp/"><img src="${request.static_url('altair.app.ticketing.cart:static/eagles/pc/images/logo.png')}" alt="イーグルスチケット"></a></h1>
 
       <nav>
-        <form action="https://eagles.stg.altr.jp/cart/logout" method="POST">
+        <form action="${request.route_path('cart.logout')}" method="POST">
           <ul>
             % if (not getattr(request, 'context', None)) or request.context.authenticated_user()['is_guest']:
               <li><input type="submit" value="会員でログイン"/></li>
@@ -31,7 +31,7 @@
               <li>${request.context.authenticated_user()['membergroup']}でログイン中</li>
               <li><input value="ログアウト" type="submit"></li>
             % endif
-            <li><a href="https://eagles.stg.altr.jp/cart/top">トップへ</a></li>
+            <li><a href="/cart/top">トップへ</a></li>
           </ul>
         </form>
       </nav>
