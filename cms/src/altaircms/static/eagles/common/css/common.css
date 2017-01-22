@@ -853,6 +853,41 @@ a {
     border-radius: 30px;
     margin: 0 auto;
   }
+  .state-few .state-icon,
+  .state-piece-seat .state-icon,
+  .state-infield-few .state-icon {
+    display: block;
+    width: 31px;
+    height: 31px;
+    margin: 0 auto;
+    position: relative;
+  }
+  .state-few .state-icon:before,
+  .state-piece-seat .state-icon:before,
+  .state-infield-few .state-icon:before {
+    content: "";    
+    width: 31px;
+    height: 31px;
+    border-style: solid;
+    border-width: 0 15.5px 26.8px 15.5px;
+    border-color: transparent transparent #fff transparent;
+    position: absolute;
+    left: 0;
+  }
+  .state-infield-few .state-icon:after {
+    content: "";    
+    width: 25px;
+    height: 25px;
+    border-style: solid;
+    border-width:  0 12.5px 21.7px 12.5px;
+    border-color: transparent transparent #ad6a72 transparent;
+    position: absolute;
+    left: 0;
+    top: 1px;
+    bottom: 0;
+    right: 0;
+    margin: auto;
+  }
   .state-sold .state-icon {
     display: block;
     width: 30px;
@@ -1206,8 +1241,13 @@ a {
     background: #ad6a72;
     color: #fff;
   }
+  .calender-tbl td.state.state-has-seat,
+  .calender-tbl td.state.state-has-seat-full{
+    background: #2a6eaf;
+  }
   .calender-tbl td.state .state-txt {
-    font-size: 12px;
+    font-size: 10px;
+    line-height: 1.2;
     margin-top: 5px;
   }
   .calender-tbl td.state-sold {
@@ -2744,6 +2784,41 @@ a {
     border-radius: 30px;
     margin: 0 auto;
   }
+  .state-few .state-icon,
+  .state-piece-seat .state-icon,
+  .state-infield-few .state-icon {
+    display: block;
+    width: 18px;
+    height: 18px;
+    margin: 0 auto;
+    position: relative;
+  }
+  .state-few .state-icon:before,
+  .state-piece-seat .state-icon:before,
+  .state-infield-few .state-icon:before {
+    content: "";    
+    width: 18px;
+    height: 18px;
+    border-style: solid;
+    border-width: 0 9px 15.6px 9px;
+    border-color: transparent transparent #fff transparent;
+    position: absolute;
+    left: 0;
+  }
+  .state-infield-few .state-icon:after {
+    content: "";    
+    width: 12px;
+    height: 12px;
+    border-style: solid;
+    border-width: 0 6px 10.4px 6px;
+    border-color: transparent transparent #ad6a72 transparent;
+    position: absolute;
+    left: 0;
+    top: 1px;
+    bottom: 0;
+    right: 0;
+    margin: auto;
+  }
   .state-sold .state-icon {
     display: block;
     width: 18px;
@@ -2932,7 +3007,7 @@ a {
   }
   .calender-tbl th, .calender-tbl td {
     vertical-align: middle;
-    padding: 5px;
+    padding: 3px;
   }
   .calender-tbl th a, .calender-tbl td a {
     color: #585858;
@@ -2969,7 +3044,7 @@ a {
     width: 40px;
   }
   .calender-tbl td.team {
-    width: 17%;
+    width: 26%;
   }
   .calender-tbl td.team .team-name {
     font-size: 11px;
@@ -3001,7 +3076,6 @@ a {
     padding: 6%;
   }
   .calender-tbl td.state {
-    width: 13%;
     text-align: center;
     color: #fff;
   }
@@ -3010,7 +3084,12 @@ a {
   }
   .calender-tbl td.state .state-box {
     background: #ad6a72;
-    padding: 10px 5px 5px 5px;
+    padding: 4px 3px 3px;
+    width: 46px;
+  }
+  .calender-tbl td.state.state-has-seat .state-box,
+  .calender-tbl td.state.state-has-seat-full .state-box{
+    background: #2a6eaf;
   }
   .calender-tbl td.state .state-txt {
     font-size: 10px;
@@ -3102,6 +3181,7 @@ a {
     right: 3px;
     bottom: 20px;
     -webkit-transform: rotate(135deg);
+
     -ms-transform: rotate(135deg);
     transform: rotate(135deg);
   }
