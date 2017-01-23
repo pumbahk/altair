@@ -207,6 +207,7 @@ class FanclubAuthPlugin(object):
         # access_token取得時に使用
         session['oauth_request_token'] = oauth_request_token
         session['oauth_request_secret'] = oauth_request_secret
+        session.save()
         logger.info('add req_token:{} & req_secret:{} to session_id={}'.format(oauth_request_token, oauth_request_secret, session.id))
         # xoauth_memberships_requiredは求められる会員資格を指定する場合に設定
         # カンマ区切りで複数指定可能
