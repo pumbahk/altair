@@ -207,6 +207,7 @@ class FanclubAuthPlugin(object):
         # access_token取得時に使用
         session['oauth_request_token'] = oauth_request_token
         session['oauth_request_secret'] = oauth_request_secret
+        logger.info('add req_token:{} & req_secret:{} to session_id={}'.format(oauth_request_token, oauth_request_secret, session.id))
         # xoauth_memberships_requiredは求められる会員資格を指定する場合に設定
         # カンマ区切りで複数指定可能
         query = [
@@ -223,7 +224,7 @@ class FanclubAuthPlugin(object):
 
     # IAuthenticator
     def authenticate(self, request, auth_context, auth_factors):
-        logger.debug('[pollox] authenticate (request.path_url=%s, auth_factors=%s)' % (request.path_url, auth_factors))
+        logger.info('[pollox] authenticate (request.path_url=%s, auth_factors=%s)' % (request.path_url, auth_factors))
 
         auth_factors_for_this_plugin = auth_factors.get(self.name)
         identity = {}
@@ -372,7 +373,8 @@ class FanclubAuthPlugin(object):
 
     # ILoginHandler
     def get_auth_factors(self, request, auth_context, credentials=None):
-        logger.debug('GET Auth Factors Pollux auth')
+        if credentials:
+            logger.info('auth_factors for pollux:{}'.format(credentials))
         return credentials
 
     # IMetadataProvider
@@ -390,6 +392,7 @@ class FanclubAuthPlugin(object):
             oauth_verifier=request.GET.get('oauth_verifier')
         )
         session = self.get_session(request)
+        logger.info('on_verify session-> {}'.format(session.__dict__))
         if session is None:
             logger.info('could not retrieve the temporary session')
             return HTTPFound(location=self.url_builder.build_error_to_url(request))
@@ -425,7 +428,7 @@ class FanclubAuthPlugin(object):
         if session.get('oauth_request_token') != received_request_token:
             # 一連の認証リクエストであることを確認
             # raiseするか保留
-            logger.error('received invalid request_token')
+            logger.error('received invalid request_token(in_session:{}, received:{})'.format(session.get('oauth_request_token'), received_request_token))
 
     def _on_success(self, request, session, identity, metadata, response):
         if identity is None:
