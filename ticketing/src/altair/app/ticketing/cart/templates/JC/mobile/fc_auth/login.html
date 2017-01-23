@@ -25,6 +25,9 @@
       登録番号<br/>
       <input type="text" name="username" size="22" value="" istyle="4"><br/>
       <font size="2">※登録証記載の11桁の番号<br>（例：00ME1234567）</font>
+      %if message:
+        <br/><span class="small red">該当する登録証番号が見つかりません</span>
+      %endif
       <input type="hidden" name="password" size="22" value="jcf">
     </div>
     <br/>

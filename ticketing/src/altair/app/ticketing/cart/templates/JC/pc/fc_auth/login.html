@@ -48,6 +48,9 @@
                             <div class="tal">
                               <input type="text" class="text" name="username"><br>
                               ※登録証記載の11桁の番号<br>（例：00ME1234567）
+                              %if message:
+                                <br/><span class="small red">該当する登録証番号が見つかりません</span>
+                              %endif
                               <input type="hidden" name="password" value="jcf">
                             </div>
                           </td>
