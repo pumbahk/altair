@@ -96,6 +96,7 @@ def delivery_notice_viewlet(context, request):
 class QRAESTicketDeliveryPlugin(object):
     def validate_order(self, request, order_like, update=False):
         """ なにかしたほうが良い?"""
+        pass
 
     def validate_order_cancellation(self, request, order, now):
         """ キャンセルバリデーション """

@@ -52,7 +52,7 @@ import contextlib
 import re
 from functools import partial
 
-from altair.app.ticketing.project_specific.huistenbosch.qr_utilits import build_ht_qr_by_history_id, build_ht_qr_by_token_id, build_ht_qr_by_order
+from altair.app.ticketing.project_specific.huistenbosch.qr_utilits import build_ht_qr_by_ticket_id, build_ht_qr_by_token_id, build_ht_qr_by_order
 
 def jump_maintenance_page_om_for_trouble(organization):
     """https://redmine.ticketstar.jp/issues/10878
@@ -872,7 +872,7 @@ class QRAESView(object):
         renderer=selectable_renderer("order_review/qr_aes_confirm.html"))
     def qr_aes_confirm(self):
         ticket_id = int(self.request.matchdict.get('ticket_id', 0))
-        ticket = build_ht_qr_by_history_id(self.request, ticket_id)
+        ticket = build_ht_qr_by_ticket_id(self.request, ticket_id)
 
         if ticket == None:
             raise HTTPNotFound()
@@ -891,7 +891,7 @@ class QRAESView(object):
     def qr_aes_html(self):
         ticket_id = int(self.request.matchdict.get('ticket_id', 0))
 
-        ticket = build_ht_qr_by_history_id(self.request, ticket_id)
+        ticket = build_ht_qr_by_ticket_id(self.request, ticket_id)
 
         if ticket is None:
             raise HTTPNotFound()
@@ -919,7 +919,7 @@ class QRAESView(object):
     def qr_aes_image(self):
         ticket_id = int(self.request.matchdict.get('ticket_id', 0))
 
-        ticket = build_ht_qr_by_history_id(self.request, ticket_id)
+        ticket = build_ht_qr_by_ticket_id(self.request, ticket_id)
         if ticket is None:
             raise HTTPNotFound()
 

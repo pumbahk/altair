@@ -52,7 +52,7 @@ def build_ht_qr_by_token(request, order_no, token):
     return build_ht_qr_by_history(request, history)
 
 
-def build_ht_qr_by_history_id(request, ticket_id):
+def build_ht_qr_by_ticket_id(request, ticket_id):
     try:
         history = TicketPrintHistory \
             .filter_by(id=ticket_id) \

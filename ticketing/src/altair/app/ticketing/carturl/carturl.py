@@ -203,7 +203,7 @@ class OrderReviewQRURLBuilder(object):
         path = self.build_path(ticket_id, sign)
         return _url_builder(scheme, host_name, path, {})
 
-    def build_aes(self, request, ticket_id, organization=None):
+    def build_aes_url(self, request, ticket_id, organization=None):
         organization = organization or request.context.organization
         scheme = _get_scheme_from_request(request)
         host_name = self.build_hostname(request, organization)

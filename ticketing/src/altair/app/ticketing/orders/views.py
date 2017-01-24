@@ -1480,7 +1480,7 @@ class OrderDetailView(OrderBaseView):
             for token, element, item in tokens:
                 if qr_type == payments_plugins.QR_AES_DELIVERY_PLUGIN_ID:
                     qr = build_ht_qr_by_token(self.request, order.order_no, token)
-                    url = url_builder.build_aes(self.request, qr.id)
+                    url = url_builder.build_aes_url(self.request, qr.id)
                 else:
                     qr = build_qr_by_token(self.request, order.order_no, token)
                     url = url_builder.build(self.request, qr.id, qr.sign)
