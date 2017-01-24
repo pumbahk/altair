@@ -104,6 +104,7 @@ class QRAESTicketDeliveryPlugin(object):
 
     def prepare(self, request, cart):
         """ 前処理 """
+        pass
 
     def finish(self, request, cart):
         """ 確定時処理 """
