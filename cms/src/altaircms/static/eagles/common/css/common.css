@@ -2076,31 +2076,28 @@ a {
     left:51%;
   }
   .popup-seat-detail .inner .price-list-wrap .price-table tbody tr .seat-01 {
-    background: #000;
-  }
-  .popup-seat-detail .inner .price-list-wrap .price-table tbody tr .seat-01 {
     background: #ed7700;
   }
   .popup-seat-detail .inner .price-list-wrap .price-table tbody tr .seat-02 {
-    background: #fd0e07;
+    background: #e15541;
   }
   .popup-seat-detail .inner .price-list-wrap .price-table tbody tr .seat-03 {
-    background: #bd94a7;
+    background: #d9222a;
   }
   .popup-seat-detail .inner .price-list-wrap .price-table tbody tr .seat-04 {
-    background: #585858;
+    background: #f35d28;
   }
   .popup-seat-detail .inner .price-list-wrap .price-table tbody tr .seat-05 {
-    background: #ffc000;
+    background: #ccda33;
   }
   .popup-seat-detail .inner .price-list-wrap .price-table tbody tr .seat-06 {
-    background: #76aa24;
+    background: #f6bc26;
   }
   .popup-seat-detail .inner .price-list-wrap .price-table tbody tr .seat-07 {
-    background: #fe0;
+    background: #71a041;
   }
   .popup-seat-detail .inner .price-list-wrap .price-table tbody tr .seat-08 {
-    background: #da2276;
+    background: #fff104;
   }
   .popup-seat-detail .inner .price-list-wrap .price-table tbody tr .seat-09 {
     background: #da2276;
@@ -2109,229 +2106,265 @@ a {
     background: #da2276;
   }
   .popup-seat-detail .inner .price-list-wrap .price-table tbody tr .seat-11 {
-    background: #878887;
+    background: #da2276;
   }
   .popup-seat-detail .inner .price-list-wrap .price-table tbody tr .seat-12 {
-    background: #f2ca00;
+    background: #878887;
   }
   .popup-seat-detail .inner .price-list-wrap .price-table tbody tr .seat-13 {
-    background: #76aa24;
+    background: #f6bc26;
   }
   .popup-seat-detail .inner .price-list-wrap .price-table tbody tr .seat-14 {
     background: #0075c7;
   }
   .popup-seat-detail .inner .price-list-wrap .price-table tbody tr .seat-15 {
-    background: #04c1ff;
+    background: #71a041;
   }
   .popup-seat-detail .inner .price-list-wrap .price-table tbody tr .seat-16 {
-    background: #56499b;
+    background: #b04f86;
   }
   .popup-seat-detail .inner .price-list-wrap .price-table tbody tr .seat-17 {
-    background: #e2b0d0;
+    background: #0474b0;
   }
   .popup-seat-detail .inner .price-list-wrap .price-table tbody tr .seat-18 {
-    background: #a74799;
+    background: #545091;
   }
   .popup-seat-detail .inner .price-list-wrap .price-table tbody tr .seat-19 {
-    background: #f86b84;
+    background: #ecc5de;
   }
   .popup-seat-detail .inner .price-list-wrap .price-table tbody tr .seat-20 {
-    background: #da2276;
+    background: #934e8e;
   }
   .popup-seat-detail .inner .price-list-wrap .price-table tbody tr .seat-21 {
-    background: #ee250d;
+    background: #da2276;
   }
   .popup-seat-detail .inner .price-list-wrap .price-table tbody tr .seat-22 {
     background: #05baf4;
   }
   .popup-seat-detail .inner .price-list-wrap .price-table tbody tr .seat-23 {
-    background: #878887;
+    background: #91c33f;
   }
   .popup-seat-detail .inner .price-list-wrap .price-table tbody tr .seat-24 {
-    background: #da2276;
+    background: #722a7b;
   }
   .popup-seat-detail .inner .price-list-wrap .price-table tbody tr .seat-25 {
-    background: #da2276;
+    background: #6fa5df;
   }
   .popup-seat-detail .inner .price-list-wrap .price-table tbody tr .seat-26 {
-    background: #da2276;
+    background: #b94f90;
   }
   .popup-seat-detail .inner .price-list-wrap .price-table tbody tr .seat-27 {
-    background: #87090f;
+    background: #18accd;
   }
   .popup-seat-detail .inner .price-list-wrap .price-table tbody tr .seat-28 {
-    background: #87090f;
+    background: #09a9e3;
   }
   .popup-seat-detail .inner .price-list-wrap .price-table tbody tr .seat-29 {
-    background: #585858;
+    background: #da2276;
   }
   .popup-seat-detail .inner .price-list-wrap .price-table tbody tr .seat-30 {
-    background: #79cdf6;
+    background: #da2276;
   }
   .popup-seat-detail .inner .price-list-wrap .price-table tbody tr .seat-31 {
-    background: #01602c;
+    background: #da2276;
   }
   .popup-seat-detail .inner .price-list-wrap .price-table tbody tr .seat-32 {
-    background: #02518d;
+    background: #610b21;
   }
   .popup-seat-detail .inner .price-list-wrap .price-table tbody tr .seat-33 {
-    background: #99c11d;
+    background: #610b21;
+  }
+  .popup-seat-detail .inner .price-list-wrap .price-table tbody tr .seat-34 {
+    background: #585858;
+  }
+  .popup-seat-detail .inner .price-list-wrap .price-table tbody tr .seat-35 {
+    background: #70c9e5;
+  }
+  .popup-seat-detail .inner .price-list-wrap .price-table tbody tr .seat-36 {
+    background: #205597;
+  }
+  .popup-seat-detail .inner .price-list-wrap .price-table tbody tr .seat-37 {
+    background: #c8d733;
   }
   .popup-seat-detail .inner .stadium-area ul li.num-01 {
-    left: 271px;
-    top: 375px;
+    left: 256px;
+    top: 330px;
   }
   .popup-seat-detail .inner .stadium-area ul li.num-02 {
-    left: 271px;
-    top: 418px;
+    left: 257px;
+    top: 362px;
   }
   .popup-seat-detail .inner .stadium-area ul li.num-03 {
-    left: 209px;
-    top: 259px;
+    left: 205px;
+    top: 340px;
   }
   .popup-seat-detail .inner .stadium-area ul li.num-03-01 {
-    left: 339px;
-    top: 260px;
+    left: 316px;
+    top: 340px;
   }
   .popup-seat-detail .inner .stadium-area ul li.num-04 {
-    left: 184px;
-    top: 237px;
+    left: 205px;
+    top: 241px;
   }
   .popup-seat-detail .inner .stadium-area ul li.num-04-01 {
-    left: 360px;
-    top: 237px;
+    left: 311px;
+    top: 240px;
   }
   .popup-seat-detail .inner .stadium-area ul li.num-05 {
-    left: 181px;
-    top: 277px;
+    left: 177px;
+    top: 220px;
+  }
+    .popup-seat-detail .inner .stadium-area ul li.num-05-01 {
+    left: 336px;
+    top: 220px;
   }
   .popup-seat-detail .inner .stadium-area ul li.num-06 {
-    left: 141px;
-    top: 199px;
+    left: 173px;
+    top: 255px;
   }
   .popup-seat-detail .inner .stadium-area ul li.num-07 {
-    left: 153px;
-    top: 301px;
+    left: 135px;
+    top: 190px;
   }
   .popup-seat-detail .inner .stadium-area ul li.num-08 {
-    left: 70px;
-    top: 523px;
+    left: 145px;
+    top: 275px;
   }
   .popup-seat-detail .inner .stadium-area ul li.num-09 {
     left: 65px;
-    top: 408px;
+    top: 496px;
   }
   .popup-seat-detail .inner .stadium-area ul li.num-10 {
-    left: 102px;
-    top: 510px;
+    left: 50px;
+    top: 368px;
   }
   .popup-seat-detail .inner .stadium-area ul li.num-11 {
-    left: 390px;
-    top: 330px;
+    left: 110px;
+    top: 483px;
   }
   .popup-seat-detail .inner .stadium-area ul li.num-12 {
-    left: 367px;
-    top: 276px;
+    left: 357px;
+    top: 299px;
   }
   .popup-seat-detail .inner .stadium-area ul li.num-13 {
-    left: 406px;
-    top: 175px;
+    left: 331px;
+    top: 260px;
   }
   .popup-seat-detail .inner .stadium-area ul li.num-14 {
-    left: 154px;
-    top: 113px;
-  }
-  .popup-seat-detail .inner .stadium-area ul li.num-14-01 {
-    left: 401px;
-    top: 136px;
+    left: 394px;
+    top: 234px;
   }
   .popup-seat-detail .inner .stadium-area ul li.num-15 {
-    left: 255px;
-    top: 76px;
+    left: 377px;
+    top: 181px;
   }
   .popup-seat-detail .inner .stadium-area ul li.num-16 {
-    left: 405px;
-    top: 74px;
-  }
-  .popup-seat-detail .inner .stadium-area ul li.num-16-01 {
-    left: 117px;
-    top: 110px;
+    left: 407px;
+    top: 172px;
   }
   .popup-seat-detail .inner .stadium-area ul li.num-17 {
-    left: 438px;
+    left: 370px;
     top: 130px;
+  }
+    .popup-seat-detail .inner .stadium-area ul li.num-17-01 {
+    left: 150px;
+    top: 124px;
   }
   .popup-seat-detail .inner .stadium-area ul li.num-18 {
-    left: 210px;
-    top: 54px;
+    left: 120px;
+    top: 106px;
+  }
+    .popup-seat-detail .inner .stadium-area ul li.num-18-01 {
+    left: 383px;
+    top: 94px;
   }
   .popup-seat-detail .inner .stadium-area ul li.num-19 {
-    left: 79px;
-    top: 121px;
+    left: 411px;
+    top: 127px;
   }
   .popup-seat-detail .inner .stadium-area ul li.num-20 {
-    left: 74px;
-    top: 459px;
+    left: 200px;
+    top: 72px;
   }
   .popup-seat-detail .inner .stadium-area ul li.num-21 {
-    left: 318px;
-    top: 385px;
+    left: 60px;
+    top: 421px;
   }
   .popup-seat-detail .inner .stadium-area ul li.num-22 {
-    left: 390px;
-    top: 286px;
-  }
-  .popup-seat-detail .inner .stadium-area ul li.num-22-01 {
-    left: 424px;
-    top: 243px;
+    left: 240px;
+    top: 93px;
   }
   .popup-seat-detail .inner .stadium-area ul li.num-23 {
-    left: 416px;
-    top: 286px;
+    left: 170px;
+    top: 40px;
   }
   .popup-seat-detail .inner .stadium-area ul li.num-24 {
-    left: 62px;
-    top: 486px;
+    left: 285px;
+    top: 339px;
   }
   .popup-seat-detail .inner .stadium-area ul li.num-25 {
-    left: 60px;
-    top: 434px;
+    left: 168px;
+    top: 192px;
+  }
+  .popup-seat-detail .inner .stadium-area ul li.num-25-01 {
+    left: 346px;
+    top: 192px;
   }
   .popup-seat-detail .inner .stadium-area ul li.num-26 {
-    left: 21px;
-    top: 437px;
+    left: 399px;
+    top: 202px;
+  }
+    .popup-seat-detail .inner .stadium-area ul li.num-26-01 {
+    left: 359px;
+    top: 272px;
   }
   .popup-seat-detail .inner .stadium-area ul li.num-27 {
-    left: 192px;
-    top: 118px;
+    left: 373px;
+    top: 249px;
   }
   .popup-seat-detail .inner .stadium-area ul li.num-28 {
-    left: 363px;
-    top: 130px;
+    left: 430px;
+    top: 150px;
   }
   .popup-seat-detail .inner .stadium-area ul li.num-29 {
-    left: 368px;
-    top: 92px;
+    left: 55px;
+    top: 456px;
   }
   .popup-seat-detail .inner .stadium-area ul li.num-30 {
-    left: 332px;
-    top: 45px;
+    left: 46px;
+    top: 393px;
   }
   .popup-seat-detail .inner .stadium-area ul li.num-31 {
-    left: 172px;
-    top: 197px;
+    left: 1px;
+    top: 400px;
   }
   .popup-seat-detail .inner .stadium-area ul li.num-31-01 {
     left: 375px;
     top: 209px;
   }
   .popup-seat-detail .inner .stadium-area ul li.num-32 {
-    left: 226px;
-    top: 92px;
+    left: 186px;
+    top: 130px;
   }
   .popup-seat-detail .inner .stadium-area ul li.num-33 {
-    left: 174px;
-    top: 15px;
+    left: 337px;
+    top: 139px;
+  }
+    .popup-seat-detail .inner .stadium-area ul li.num-34 {
+    left: 343px;
+    top: 100px;
+  }
+    .popup-seat-detail .inner .stadium-area ul li.num-35 {
+    left: 311px;
+    top: 65px;
+  }
+    .popup-seat-detail .inner .stadium-area ul li.num-36 {
+    left: 210px;
+    top: 106px;
+  }
+    .popup-seat-detail .inner .stadium-area ul li.num-37 {
+    left: 242px;
+    top: 14px;
   }
   .modal-out-wrap {
     display: none;
@@ -4017,31 +4050,28 @@ a {
     left:51.5%;
   }
   .popup-seat-detail .inner .price-list-wrap .price-table tbody tr .seat-01 {
-    background: #000;
-  }
-  .popup-seat-detail .inner .price-list-wrap .price-table tbody tr .seat-01 {
     background: #ed7700;
   }
   .popup-seat-detail .inner .price-list-wrap .price-table tbody tr .seat-02 {
-    background: #fd0e07;
+    background: #e15541;
   }
   .popup-seat-detail .inner .price-list-wrap .price-table tbody tr .seat-03 {
-    background: #bd94a7;
+    background: #d9222a;
   }
   .popup-seat-detail .inner .price-list-wrap .price-table tbody tr .seat-04 {
-    background: #585858;
+    background: #f35d28;
   }
   .popup-seat-detail .inner .price-list-wrap .price-table tbody tr .seat-05 {
-    background: #ffc000;
+    background: #ccda33;
   }
   .popup-seat-detail .inner .price-list-wrap .price-table tbody tr .seat-06 {
-    background: #76aa24;
+    background: #f6bc26;
   }
   .popup-seat-detail .inner .price-list-wrap .price-table tbody tr .seat-07 {
-    background: #fe0;
+    background: #71a041;
   }
   .popup-seat-detail .inner .price-list-wrap .price-table tbody tr .seat-08 {
-    background: #da2276;
+    background: #fff104;
   }
   .popup-seat-detail .inner .price-list-wrap .price-table tbody tr .seat-09 {
     background: #da2276;
@@ -4050,229 +4080,269 @@ a {
     background: #da2276;
   }
   .popup-seat-detail .inner .price-list-wrap .price-table tbody tr .seat-11 {
-    background: #878887;
+    background: #da2276;
   }
   .popup-seat-detail .inner .price-list-wrap .price-table tbody tr .seat-12 {
-    background: #f2ca00;
+    background: #878887;
   }
   .popup-seat-detail .inner .price-list-wrap .price-table tbody tr .seat-13 {
-    background: #76aa24;
+    background: #f6bc26;
   }
   .popup-seat-detail .inner .price-list-wrap .price-table tbody tr .seat-14 {
     background: #0075c7;
   }
   .popup-seat-detail .inner .price-list-wrap .price-table tbody tr .seat-15 {
-    background: #04c1ff;
+    background: #71a041;
   }
   .popup-seat-detail .inner .price-list-wrap .price-table tbody tr .seat-16 {
-    background: #56499b;
+    background: #b04f86;
   }
   .popup-seat-detail .inner .price-list-wrap .price-table tbody tr .seat-17 {
-    background: #e2b0d0;
+    background: #0474b0;
   }
   .popup-seat-detail .inner .price-list-wrap .price-table tbody tr .seat-18 {
-    background: #a74799;
+    background: #545091;
   }
   .popup-seat-detail .inner .price-list-wrap .price-table tbody tr .seat-19 {
-    background: #f86b84;
+    background: #ecc5de;
   }
   .popup-seat-detail .inner .price-list-wrap .price-table tbody tr .seat-20 {
-    background: #da2276;
+    background: #934e8e;
   }
   .popup-seat-detail .inner .price-list-wrap .price-table tbody tr .seat-21 {
-    background: #ee250d;
+    background: #da2276;
   }
   .popup-seat-detail .inner .price-list-wrap .price-table tbody tr .seat-22 {
     background: #05baf4;
   }
   .popup-seat-detail .inner .price-list-wrap .price-table tbody tr .seat-23 {
-    background: #878887;
+    background: #91c33f;
   }
   .popup-seat-detail .inner .price-list-wrap .price-table tbody tr .seat-24 {
-    background: #da2276;
+    background: #722a7b;
   }
   .popup-seat-detail .inner .price-list-wrap .price-table tbody tr .seat-25 {
-    background: #da2276;
+    background: #6fa5df;
   }
   .popup-seat-detail .inner .price-list-wrap .price-table tbody tr .seat-26 {
-    background: #da2276;
+    background: #b94f90;
   }
   .popup-seat-detail .inner .price-list-wrap .price-table tbody tr .seat-27 {
-    background: #87090f;
+    background: #18accd;
   }
   .popup-seat-detail .inner .price-list-wrap .price-table tbody tr .seat-28 {
-    background: #87090f;
+    background: #09a9e3;
   }
   .popup-seat-detail .inner .price-list-wrap .price-table tbody tr .seat-29 {
-    background: #585858;
+    background: #da2276;
   }
   .popup-seat-detail .inner .price-list-wrap .price-table tbody tr .seat-30 {
-    background: #79cdf6;
+    background: #da2276;
   }
   .popup-seat-detail .inner .price-list-wrap .price-table tbody tr .seat-31 {
-    background: #01602c;
+    background: #da2276;
   }
   .popup-seat-detail .inner .price-list-wrap .price-table tbody tr .seat-32 {
-    background: #02518d;
+    background: #610b21;
   }
   .popup-seat-detail .inner .price-list-wrap .price-table tbody tr .seat-33 {
-    background: #99c11d;
+    background: #610b21;
   }
-  .popup-seat-detail .inner .stadium-area ul li.num-01 {
-    left: 167px;
-    top: 224px;
+  .popup-seat-detail .inner .price-list-wrap .price-table tbody tr .seat-34 {
+    background: #585858;
+  }
+  .popup-seat-detail .inner .price-list-wrap .price-table tbody tr .seat-35 {
+    background: #70c9e5;
+  }
+  .popup-seat-detail .inner .price-list-wrap .price-table tbody tr .seat-36 {
+    background: #205597;
+  }
+  .popup-seat-detail .inner .price-list-wrap .price-table tbody tr .seat-37 {
+    background: #c8d733;
+  }
+.popup-seat-detail .inner .stadium-area ul li.num-01 {
+    left: 154px;
+    top: 197px;
   }
   .popup-seat-detail .inner .stadium-area ul li.num-02 {
-    left: 166px;
-    top: 251px;
+    left: 154px;
+    top: 222px;
   }
   .popup-seat-detail .inner .stadium-area ul li.num-03 {
-    left: 199px;
-    top: 155px;
+    left: 125px;
+    top: 202px;
   }
   .popup-seat-detail .inner .stadium-area ul li.num-03-01 {
-    left: 128px;
-    top: 156px;
+    left: 192px;
+    top: 204px;
   }
   .popup-seat-detail .inner .stadium-area ul li.num-04 {
-    left: 107px;
-    top: 140px;
+    left: 125px;
+    top: 146px;
   }
   .popup-seat-detail .inner .stadium-area ul li.num-04-01 {
-    left: 220px;
-    top: 145px;
+    left: 181px;
+    top: 146px;
   }
   .popup-seat-detail .inner .stadium-area ul li.num-05 {
-    left: 103px;
-    top: 166px;
+    left: 110px;
+    top: 131px;
+  }
+    .popup-seat-detail .inner .stadium-area ul li.num-05-01 {
+    left: 196px;
+    top: 129px;
   }
   .popup-seat-detail .inner .stadium-area ul li.num-06 {
-    left: 82px;
-    top: 120px;
+    left: 105px;
+    top: 155px;
   }
   .popup-seat-detail .inner .stadium-area ul li.num-07 {
-    left: 88px;
-    top: 185px;
+    left: 73px;
+    top: 110px;
   }
   .popup-seat-detail .inner .stadium-area ul li.num-08 {
-    left: 40px;
-    top: 320px;
+    left: 85px;
+    top: 164px;
   }
   .popup-seat-detail .inner .stadium-area ul li.num-09 {
-    left: 43px;
-    top: 241px;
+    left: 35px;
+    top: 296px;
   }
   .popup-seat-detail .inner .stadium-area ul li.num-10 {
-    left: 65px;
-    top: 311px;
+    left: 30px;
+    top: 214px;
   }
   .popup-seat-detail .inner .stadium-area ul li.num-11 {
-    left: 240px;
-    top: 200px;
+    left: 66px;
+    top: 287px;
   }
   .popup-seat-detail .inner .stadium-area ul li.num-12 {
-    left: 219px;
-    top: 170px;
+    left: 226px;
+    top: 181px;
   }
   .popup-seat-detail .inner .stadium-area ul li.num-13 {
-    left: 247px;
-    top: 105px;
+    left: 204px;
+    top: 152px;
   }
   .popup-seat-detail .inner .stadium-area ul li.num-14 {
-    left: 246px;
-    top: 77px;
+    left: 230px;
+    top: 135px;
   }
   .popup-seat-detail .inner .stadium-area ul li.num-14-01 {
-    left: 95px;
-    top: 65px;
+    left: 401px;
+    top: 136px;
   }
   .popup-seat-detail .inner .stadium-area ul li.num-15 {
-    left: 155px;
-    top: 43px;
+    left: 225px;
+    top: 111px;
   }
   .popup-seat-detail .inner .stadium-area ul li.num-16 {
-    left: 70px;
-    top: 60px;
-  }
-  .popup-seat-detail .inner .stadium-area ul li.num-16-01 {
-    left: 247px;
-    top: 41px;
+    left: 240px;
+    top: 96px;
   }
   .popup-seat-detail .inner .stadium-area ul li.num-17 {
-    left: 270px;
-    top: 77px;
+    left: 90px;
+    top: 68px;
   }
-  .popup-seat-detail .inner .stadium-area ul li.num-18 {
-    left: 129px;
-    top: 28px;
-  }
-  .popup-seat-detail .inner .stadium-area ul li.num-19 {
-    left: 49px;
-    top: 72px;
-  }
-  .popup-seat-detail .inner .stadium-area ul li.num-20 {
-    left: 54px;
-    top: 272px;
-  }
-  .popup-seat-detail .inner .stadium-area ul li.num-21 {
-    left: 195px;
-    top: 233px;
-  }
-  .popup-seat-detail .inner .stadium-area ul li.num-22 {
-    left: 262px;
-    top: 143px;
-  }
-  .popup-seat-detail .inner .stadium-area ul li.num-22-01 {
-    left: 237px;
-    top: 171px;
-  }
-  .popup-seat-detail .inner .stadium-area ul li.num-23 {
-    left: 257px;
-    top: 174px;
-  }
-  .popup-seat-detail .inner .stadium-area ul li.num-24 {
-    left: 37px;
-    top: 291px;
-  }
-  .popup-seat-detail .inner .stadium-area ul li.num-25 {
-    left: 32px;
-    top: 262px;
-  }
-  .popup-seat-detail .inner .stadium-area ul li.num-26 {
-    left: 8px;
-    top: 268px;
-  }
-  .popup-seat-detail .inner .stadium-area ul li.num-27 {
-    left: 120px;
-    top: 70px;
-  }
-  .popup-seat-detail .inner .stadium-area ul li.num-28 {
-    left: 220px;
+    .popup-seat-detail .inner .stadium-area ul li.num-17-01 {
+    left: 229px;
     top: 78px;
   }
-  .popup-seat-detail .inner .stadium-area ul li.num-29 {
-    left: 222px;
+  .popup-seat-detail .inner .stadium-area ul li.num-18 {
+    left: 70px;
+    top: 56px;
+  }
+    .popup-seat-detail .inner .stadium-area ul li.num-18-01 {
+    left: 233px;
     top: 49px;
   }
+  .popup-seat-detail .inner .stadium-area ul li.num-19 {
+    left: 250px;
+    top: 68px;
+  }
+  .popup-seat-detail .inner .stadium-area ul li.num-20 {
+    left: 122px;
+    top: 42px;
+  }
+  .popup-seat-detail .inner .stadium-area ul li.num-21 {
+    left: 40px;
+    top: 258px;
+  }
+  .popup-seat-detail .inner .stadium-area ul li.num-22 {
+    left: 150px;
+    top: 54px;
+  }
+  .popup-seat-detail .inner .stadium-area ul li.num-23 {
+    left: 96px;
+    top: 20px;
+  }
+  .popup-seat-detail .inner .stadium-area ul li.num-24 {
+    left: 171px;
+    top: 207px;
+  }
+  .popup-seat-detail .inner .stadium-area ul li.num-25 {
+    left: 99px;
+    top: 113px;
+  }
+  .popup-seat-detail .inner .stadium-area ul li.num-25-01 {
+    left: 205px;
+    top: 112px;
+  }
+  .popup-seat-detail .inner .stadium-area ul li.num-26 {
+    left: 207px;
+    top: 171px;
+  }
+    .popup-seat-detail .inner .stadium-area ul li.num-26-01 {
+    left: 246px;
+    top: 118px;
+  }
+  .popup-seat-detail .inner .stadium-area ul li.num-27 {
+    left: 232px;
+    top: 156px;
+  }
+  .popup-seat-detail .inner .stadium-area ul li.num-28 {
+    left: 261px;
+    top: 88px;
+  }
+  .popup-seat-detail .inner .stadium-area ul li.num-29 {
+    left: 26px;
+    top: 276px;
+  }
   .popup-seat-detail .inner .stadium-area ul li.num-30 {
-    left: 200px;
-    top: 23px;
+    left: 30px;
+    top: 237px;
   }
   .popup-seat-detail .inner .stadium-area ul li.num-31 {
-    left: 107px;
-    top: 114px;
+    left: 1px;
+    top: 234px;
   }
   .popup-seat-detail .inner .stadium-area ul li.num-31-01 {
-    left: 228px;
-    top: 120px;
+    left: 375px;
+    top: 209px;
   }
   .popup-seat-detail .inner .stadium-area ul li.num-32 {
-    left: 137px;
-    top: 52px;
+    left: 109px;
+    top: 77px;
   }
   .popup-seat-detail .inner .stadium-area ul li.num-33 {
-    left: 107px;
-    top: 8px;
+    left: 207px;
+    top: 79px;
+  }
+    .popup-seat-detail .inner .stadium-area ul li.num-34 {
+    left: 209px;
+    top: 50px;
+  }
+    .popup-seat-detail .inner .stadium-area ul li.num-35 {
+    left: 190px;
+    top: 35px;
+  }
+    .popup-seat-detail .inner .stadium-area ul li.num-36 {
+    left: 130px;
+    top: 66px;
+  }
+    .popup-seat-detail .inner .stadium-area ul li.num-37 {
+    left: 142px;
+    top: 11px;
   }
   .modal-out-wrap {
     display: none;
@@ -4441,167 +4511,193 @@ a {
     width:260px;
     margin:0 auto;
   }
-
-
-
 .popup-seat-detail .inner .stadium-area ul li.num-01 {
-    left: 137px;
-    top: 190px;
+    left: 130px;
+    top: 167px;
   }
   .popup-seat-detail .inner .stadium-area ul li.num-02 {
-    left: 136px;
-    top: 215px;
+    left: 129px;
+    top: 190px;
   }
   .popup-seat-detail .inner .stadium-area ul li.num-03 {
-    left: 166px;
-    top: 127px;
+    left: 105px;
+    top: 178px;
   }
   .popup-seat-detail .inner .stadium-area ul li.num-03-01 {
-    left: 108px;
-    top: 128px;
+    left: 165px;
+    top: 184px;
   }
   .popup-seat-detail .inner .stadium-area ul li.num-04 {
-    left: 87px;
-    top: 120px;
+    left: 103px;
+    top: 126px;
   }
   .popup-seat-detail .inner .stadium-area ul li.num-04-01 {
-    left: 188px;
-    top: 117px;
+    left: 162px;
+    top: 122px;
   }
   .popup-seat-detail .inner .stadium-area ul li.num-05 {
-    left: 93px;
-    top: 146px;
+    left: 92px;
+    top: 110px;
+  }
+    .popup-seat-detail .inner .stadium-area ul li.num-05-01 {
+    left: 171px;
+    top: 109px;
   }
   .popup-seat-detail .inner .stadium-area ul li.num-06 {
-    left: 62px;
-    top: 100px;
+    left: 85px;
+    top: 135px;
   }
   .popup-seat-detail .inner .stadium-area ul li.num-07 {
-    left: 70px;
-    top: 155px;
+    left: 66px;
+    top: 101px;
   }
   .popup-seat-detail .inner .stadium-area ul li.num-08 {
-    left: 30px;
-    top: 277px;
+    left: 72px;
+    top: 149px;
   }
   .popup-seat-detail .inner .stadium-area ul li.num-09 {
-    left: 27px;
-    top: 205px;
+    left: 32px;
+    top: 259px;
   }
   .popup-seat-detail .inner .stadium-area ul li.num-10 {
-    left: 55px;
-    top: 268px;
+    left: 25px;
+    top: 183px;
   }
   .popup-seat-detail .inner .stadium-area ul li.num-11 {
-    left: 196px;
-    top: 170px;
+    left: 56px;
+    top: 247px;
   }
   .popup-seat-detail .inner .stadium-area ul li.num-12 {
-    left: 180px;
-    top: 144px;
+    left: 188px;
+    top: 160px;
   }
   .popup-seat-detail .inner .stadium-area ul li.num-13 {
-    left: 213px;
-    top: 85px;
+    left: 166px;
+    top: 139px;
   }
   .popup-seat-detail .inner .stadium-area ul li.num-14 {
-    left: 206px;
-    top: 62px;
-  }
-  .popup-seat-detail .inner .stadium-area ul li.num-14-01 {
-    left: 75px;
-    top: 55px;
+    left: 192px;
+    top: 114px;
   }
   .popup-seat-detail .inner .stadium-area ul li.num-15 {
-    left: 135px;
-    top: 35px;
+    left: 193px;
+    top: 90px;
   }
   .popup-seat-detail .inner .stadium-area ul li.num-16 {
-    left: 53px;
-    top: 57px;
-  }
-  .popup-seat-detail .inner .stadium-area ul li.num-16-01 {
-    left: 207px;
-    top: 30px;
+    left: 214px;
+    top: 85px;
   }
   .popup-seat-detail .inner .stadium-area ul li.num-17 {
-    left: 230px;
+    left: 73px;
     top: 60px;
+  }
+    .popup-seat-detail .inner .stadium-area ul li.num-17-01 {
+    left: 192px;
+    top: 65px;
   }
   .popup-seat-detail .inner .stadium-area ul li.num-18 {
-    left: 101px;
-    top: 20px;
+    left: 53px;
+    top: 49px;
   }
-  .popup-seat-detail .inner .stadium-area ul li.num-19 {
-    left: 31px;
-    top: 60px;
-  }
-  .popup-seat-detail .inner .stadium-area ul li.num-20 {
-    left: 40px;
-    top: 232px;
-  }
-  .popup-seat-detail .inner .stadium-area ul li.num-21 {
-    left: 165px;
-    top: 197px;
-  }
-  .popup-seat-detail .inner .stadium-area ul li.num-22 {
-    left: 202px;
-    top: 143px;
-  }
-  .popup-seat-detail .inner .stadium-area ul li.num-22-01 {
-    left: 217px;
-    top: 121px;
-  }
-  .popup-seat-detail .inner .stadium-area ul li.num-23 {
-    left: 220px;
-    top: 154px;
-  }
-  .popup-seat-detail .inner .stadium-area ul li.num-24 {
-    left: 30px;
-    top: 251px;
-  }
-  .popup-seat-detail .inner .stadium-area ul li.num-25 {
-    left: 19px;
-    top: 228px;
-  }
-  .popup-seat-detail .inner .stadium-area ul li.num-26 {
-    left: 0px;
-    top: 228px;
-  }
-  .popup-seat-detail .inner .stadium-area ul li.num-27 {
-    left: 100px;
-    top: 61px;
-  }
-  .popup-seat-detail .inner .stadium-area ul li.num-28 {
-    left: 183px;
-    top: 67px;
-  }
-  .popup-seat-detail .inner .stadium-area ul li.num-29 {
-    left: 190px;
-    top: 45px;
-  }
-  .popup-seat-detail .inner .stadium-area ul li.num-30 {
-    left: 169px;
-    top: 15px;
-  }
-  .popup-seat-detail .inner .stadium-area ul li.num-31 {
-    left: 87px;
-    top: 96px;
-  }
-  .popup-seat-detail .inner .stadium-area ul li.num-31-01 {
-    left: 198px;
-    top: 102px;
-  }
-  .popup-seat-detail .inner .stadium-area ul li.num-32 {
-    left: 110px;
+    .popup-seat-detail .inner .stadium-area ul li.num-18-01 {
+    left: 206px;
     top: 42px;
   }
-  .popup-seat-detail .inner .stadium-area ul li.num-33 {
-    left: 82px;
-    top: 5px;
+  .popup-seat-detail .inner .stadium-area ul li.num-19 {
+    left: 214px;
+    top: 63px;
   }
+  .popup-seat-detail .inner .stadium-area ul li.num-20 {
+    left: 102px;
+    top: 32px;
+  }
+  .popup-seat-detail .inner .stadium-area ul li.num-21 {
+    left: 39px;
+    top: 220px;
+  }
+  .popup-seat-detail .inner .stadium-area ul li.num-22 {
+    left: 127px;
+    top: 40px;
+  }
+  .popup-seat-detail .inner .stadium-area ul li.num-23 {
+    left: 84px;
+    top: 15px;
+  }
+  .popup-seat-detail .inner .stadium-area ul li.num-24 {
+    left: 151px;
+    top: 170px;
+  }
+  .popup-seat-detail .inner .stadium-area ul li.num-25 {
+    left: 87px;
+    top: 92px;
+  }
+  .popup-seat-detail .inner .stadium-area ul li.num-25-01 {
+    left: 171px;
+    top: 93px;
+  }
+  .popup-seat-detail .inner .stadium-area ul li.num-26 {
+    left: 185px;
+    top: 143px;
+  }
+    .popup-seat-detail .inner .stadium-area ul li.num-26-01 {
+    left: 209px;
+    top: 106px;
+  }
+  .popup-seat-detail .inner .stadium-area ul li.num-27 {
+    left: 200px;
+    top: 130px;
+  }
+  .popup-seat-detail .inner .stadium-area ul li.num-28 {
+    left: 236px;
+    top: 72px;
+  }
+  .popup-seat-detail .inner .stadium-area ul li.num-29 {
+    left: 23px;
+    top: 240px;
+  }
+  .popup-seat-detail .inner .stadium-area ul li.num-30 {
+    left: 21px;
+    top: 204px;
+  }
+  .popup-seat-detail .inner .stadium-area ul li.num-31 {
+    left: -3px;
+    top: 202px;
+  }
+  .popup-seat-detail .inner .stadium-area ul li.num-31-01 {
+    left: 375px;
+    top: 209px;
+  }
+  .popup-seat-detail .inner .stadium-area ul li.num-32 {
+    left: 91px;
+    top: 69px;
+  }
+  .popup-seat-detail .inner .stadium-area ul li.num-33 {
+    left: 170px;
+    top: 72px;
+  }
+    .popup-seat-detail .inner .stadium-area ul li.num-34 {
+    left: 180px;
+    top: 46px;
+  }
+    .popup-seat-detail .inner .stadium-area ul li.num-35 {
+    left: 164px;
+    top: 31px;
+  }
+    .popup-seat-detail .inner .stadium-area ul li.num-36 {
+    left: 110px;
+    top: 56px;
+  }
+    .popup-seat-detail .inner .stadium-area ul li.num-37 {
+    left: 129px;
+    top: -1px;
+  }
+.popup-seat-detail .inner .stadium-area ul li a {
+    width: 24px;
+    height: 24px;
+    border-radius: 12px;
+    line-height: 24px;
 
-
+}
   .popup-seat-detail .inner .price-list-wrap .price-table thead th, .popup-seat-detail .inner .price-list-wrap .price-head-table thead th {
     padding: 5px;
     border: solid 1px #c1c1c1;
