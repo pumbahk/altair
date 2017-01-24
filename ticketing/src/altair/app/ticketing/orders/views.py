@@ -1459,7 +1459,7 @@ class OrderDetailView(OrderBaseView):
     def show_qr(self):
         order_id = int(self.request.matchdict.get('order_id', 0))
         order = Order.get(order_id, self.context.organization.id)
-        qr_type = order.payment_delivery_method_pair.delivery_method.delivery_plugin_id
+        qr_type = order.delivery_plugin_id
         url_builder = get_orderreview_qr_url_builder(self.request)
         qr_preferences = order.payment_delivery_pair.delivery_method.preferences.get(unicode(payments_plugins.QR_DELIVERY_PLUGIN_ID), {})
         single_qr_mode = qr_preferences.get('single_qr_mode', False)
