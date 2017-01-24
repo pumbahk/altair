@@ -16,7 +16,6 @@
 
 </div>
 <form action="${request.route_path('fc_auth.login', membership=u'-', _query=dict(return_to=request.route_path('mypage.show')))}" method="post">
-<input type="hidden" name="membership" value="${view_context.organization_short_name}" />
 <div>
   会員番号<br/>
   <input type="text" name="username" size="22" value="" istyle="4">
