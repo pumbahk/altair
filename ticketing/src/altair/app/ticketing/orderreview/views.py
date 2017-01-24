@@ -947,7 +947,7 @@ class QRAESView(object):
                 gate = token.seat.attributes.get("gate", None)
 
 
-            if token.item.ordered_product.order.payment_delivery_pair.delivery_method.delivery_plugin_id == plugins.QR_AES_DELIVERY_PLUGIN_ID:
+            if token.item.ordered_product.order.delivery_plugin_id == plugins.QR_AES_DELIVERY_PLUGIN_ID:
                 # altair
                 ticket = build_ht_qr_by_token_id(self.request, self.request.params['order_no'], self.request.params['token'])
 
@@ -966,7 +966,7 @@ class QRAESView(object):
             tel = self.request.POST['tel']
             if tel not in order.shipping_address.tels:
                 raise HTTPNotFound
-            if order.payment_delivery_pair.delivery_method.delivery_plugin_id == plugins.QR_AES_DELIVERY_PLUGIN_ID:
+            if order.delivery_plugin_id == plugins.QR_AES_DELIVERY_PLUGIN_ID:
                 # altair
                 ticket = build_ht_qr_by_order(self.request, order)
 
