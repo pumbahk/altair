@@ -36,10 +36,9 @@ class FanclubEndpointBuilder(object):
         session = get_db_session(request, 'extauth')
         try:
             # 1 OrgにSPが複数紐付いている場合はプロバイダ名で指定する
-            q = session.query(OAuthServiceProvider).filter_by(organization_id=request.organization.id)
-            if request.params.get('service_provider_name'):
-                q = q.filter_by(name=request.params.get('service_provider_name'))
-            sp = q.one()
+            sp = session.query(OAuthServiceProvider).filter_by(organization_id=request.organization.id) \
+                    .filter_by(name=request.session.get('service_provider_name')) \
+                    .one()
         except NoResultFound as e:
             raise e
         except MultipleResultsFound as e:
