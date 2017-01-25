@@ -785,7 +785,7 @@ class OAuthServiceProviderForm(OurForm):
         super(OAuthServiceProviderForm, self).__init__(*args, **kwargs)
 
     def validate_name(form, field):
-        sp = get_db_session(field._form.request, 'extauth') \
+        sp = get_db_session(form.request, 'extauth') \
                 .query(OAuthServiceProvider) \
                 .filter(OAuthServiceProvider.organization_id == form.organization_id.data) \
                 .filter(OAuthServiceProvider.name == field.data) \
