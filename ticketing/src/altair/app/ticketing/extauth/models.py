@@ -185,3 +185,4 @@ class OAuthServiceProvider(Base, WithCreatedAt):
     scope = sa.Column(sa.Unicode(255), nullable=True, default=u'')
     organization_id = sa.Column(Identifier, sa.ForeignKey('Organization.id'))
     organization = orm.relationship('Organization', backref='oauth_service_provider')  # 1:1
+    visible = sa.Column(sa.Boolean(), nullable=False, default=True)

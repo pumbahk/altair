@@ -3,7 +3,7 @@ from pyramid.security import Everyone, Allow, Authenticated, DENY_ALL
 from pyramid.decorator import reify
 from altair.sqlahelper import get_db_session
 from sqlalchemy.orm.exc import NoResultFound
-from .models import MemberSet, MemberKind
+from .models import MemberSet, MemberKind, OAuthServiceProvider
 
 class ExtAuthBase(object):
     __acl__ = [
@@ -40,3 +40,11 @@ class ExtAuthSubTypeResource(ExtAuthBase):
     
     def route_url(self, *args, **kwargs):
         return self.request.route_url(*args, subtype=self.subtype, **kwargs)
+
+    @property
+    def visible_oauth_service_providers(self):
+        dbsession = get_db_session(self.request, 'extauth_slave')
+        return dbsession.query(OAuthServiceProvider) \
+            .filter_by(organization_id=self.request.organization.id) \
+            .filter_by(visible=True) \
+            .all()

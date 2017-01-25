@@ -1,8 +1,11 @@
 # encoding: UTF-8
+import logging
 from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 from altair.sqlahelper import get_db_session
 from urlparse import urljoin
 from .models import OAuthServiceProvider
+
+logger = logging.getLogger(__name__)
 
 def get_fanclub_auth_setting(request, k):
     settings = request.organization.settings
@@ -32,12 +35,15 @@ class FanclubEndpointBuilder(object):
     def _get_service_provider(self, request):
         session = get_db_session(request, 'extauth')
         try:
-            # extauthのrequest.organizationは関連をもっていない
-            # 現状はorg:spは1:1の前提
-            sp = session.query(OAuthServiceProvider).filter_by(organization_id=request.organization.id).one()
+            # 1 OrgにSPが複数紐付いている場合はプロバイダ名で指定する
+            q = session.query(OAuthServiceProvider).filter_by(organization_id=request.organization.id)
+            if request.params.get('service_provider_name'):
+                q = q.filter_by(name=request.params.get('service_provider_name'))
+            sp = q.one()
         except NoResultFound as e:
             raise e
         except MultipleResultsFound as e:
+            logger.error('need to specify a oauth service provider by request params')
             raise e
         return sp
 

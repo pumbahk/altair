@@ -956,7 +956,8 @@ class OAuthServiceProvidersView(object):
             consumer_key=form.consumer_key.data,
             consumer_secret=form.consumer_secret.data,
             scope=form.scope.data,
-            organization_id=form.organization_id.data
+            organization_id=form.organization_id.data,
+            visible=form.visible.data
         )
         session.add(service_providers)
         session.flush()

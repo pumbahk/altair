@@ -225,7 +225,8 @@ class View(object):
                 self.request.response.headers.update(forget(self.request))
             elif u'altair.auth.authenticator:rakuten' in principals:
                 return self.navigate_to_select_account_rakuten_auth()
-        return dict()
+
+        return dict(oauth_service_providers=self.context.visible_oauth_service_providers)
 
     @lbr_view_config(
         route_name='extauth.rakuten.entry',
