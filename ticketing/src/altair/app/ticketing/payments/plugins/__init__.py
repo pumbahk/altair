@@ -27,6 +27,7 @@ RESERVE_NUMBER_DELIVERY_PLUGIN_ID = 3
 QR_DELIVERY_PLUGIN_ID = 4
 ORION_DELIVERY_PLUGIN_ID = 5
 FAMIPORT_DELIVERY_PLUGIN_ID = 6
+QR_AES_DELIVERY_PLUGIN_ID = 7
 
 
 class Env(text_type):
@@ -113,6 +114,7 @@ def includeme(config):
     config.include(".sej")
     config.include(".checkout")
     config.include(".qr")
+    config.include(".qr_aes")
     config.include(".orion")
     config.include(".free")
     config.include(".famiport")

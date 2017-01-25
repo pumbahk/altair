@@ -58,6 +58,13 @@ def includeme(config):
     config.add_route('order_review.qr_confirm', '/qr/{ticket_id}/{sign}/', factory='.resources.QRViewResource')
     config.add_route('order_review.qrdraw', '/qr/{ticket_id}/{sign}/image', factory='.resources.QRViewResource')
 
+    ## qr aes
+    config.add_route('order_review.qr_aes_print', '/qr_aes/print', factory='.resources.QRViewResource')
+    config.add_route('order_review.qr_aes_send', '/qr_aes/send', factory='.resources.QRViewResource')
+    config.add_route('order_review.qr_aes', '/qr_aes/{ticket_id}/ticket', factory='.resources.QRViewResource')
+    config.add_route('order_review.qr_aes_confirm', '/qr_aes/{ticket_id}', factory='.resources.QRViewResource')
+    config.add_route('order_review.qr_aes_draw', '/qr_aes/{ticket_id}/image', factory='.resources.QRViewResource')
+
     ## orion
     config.add_route('order_review.orion_send', '/qr/eg_send', factory='.resources.EventGateViewResource')
     config.add_route('order_review.orion_draw', '/qr/eg_print/{token}/{serial}/{sign}', factory='.resources.EventGateViewResource')
