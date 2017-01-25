@@ -70,3 +70,12 @@
     % endif
   </div>
 </div>
+<div class="control-group">
+  <label class="control-label" for="host-form--visible">${form.visible.label.text}</label>
+  <div class="controls">
+    ${form.visible(id="host-form--visible")}
+    %if form.visible.errors:
+    <span class="help-inline">${u' / '.join(form.visible.errors)}</span>
+    % endif
+  </div>
+</div>
