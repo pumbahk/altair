@@ -791,6 +791,12 @@ class OAuthServiceProviderForm(OurForm):
                 .filter(OAuthServiceProvider.name == field.data) \
                 .first()
         # 同Org内で名前が重複しないようにする
-        if sp and sp.id != int(form.request.matchdict.get('id')):
-            raise ValidationError(u'「%s」は同org内で既に使用されております' % field.data)
+        # editの時
+        if form.request.matchdict.get('id'):
+            if sp and sp.id != int(form.request.matchdict.get('id')):
+                raise ValidationError(u'「%s」は同org内で既に使用されております' % field.data)
+        # newの時
+        else:
+            if sp:
+                raise ValidationError(u'「%s」は同org内で既に使用されております' % field.data)
 
