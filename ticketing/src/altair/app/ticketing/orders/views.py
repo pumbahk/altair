@@ -24,6 +24,7 @@ from sqlalchemy.orm import joinedload, undefer
 from sqlalchemy.orm.session import make_transient
 from webob.multidict import MultiDict
 import transaction
+from .reservation import ReservationReportOperator
 
 from altair.sqlahelper import get_db_session
 import  altair.viewhelpers.datetime_
@@ -143,6 +144,9 @@ from altair.app.ticketing.tickets.preview.api import get_placeholders_from_ticke
 from altair.app.ticketing.tickets.preview.transform import SVGTransformer
 from altair.app.ticketing.tickets.utils import build_cover_dict_from_order
 from altair.app.ticketing.core.models import TicketCover
+
+## ハウステンボス専用のQRコードユーティリティ
+from altair.app.ticketing.project_specific.huistenbosch.qr_utilits import build_ht_qr_by_token
 
 # XXX
 INNER_DELIVERY_PLUGIN_IDS = [
@@ -473,6 +477,20 @@ class OrderBetaDownloadView(OrderBaseView):
         exporter = altair_order_dump.OrderExporter(session, self.context.organization.id)
         exporter.exportfp(res, json_=json_str)
         return res
+
+
+@view_defaults(decorator=with_bootstrap, permission='sales_editor') # sales_counter ではない!
+class OrderReportDownloadView(OrderBaseView):
+
+    @view_config(route_name='orders.report_download')
+    def report_download(self):
+        """
+        予約管理者のレポートダウンロード
+        Operator_name_201701_00001.xls
+        通番は5桁とし、Orderの件数とする
+        """
+        operator = ReservationReportOperator(self.request, self.context.order, self.context.user)
+        return operator.create_report_response()
 
 @view_defaults(decorator=with_bootstrap, permission='sales_editor') # sales_counter ではない!
 class OrderDownloadView(OrderBaseView):
@@ -1450,35 +1468,44 @@ class OrderDetailView(OrderBaseView):
             "objects_for_describe_product_item": joined_objects_for_product_item(),
             'build_candidate_id': build_candidate_id,
             'endpoints': self.endpoints,
+            'reservation': self.context.user.is_reservation
             }
 
     @view_config(route_name='orders.show.qr', permission='sales_editor', request_method='GET', renderer='altair.app.ticketing:templates/orders/_show_qr.html')
     def show_qr(self):
         order_id = int(self.request.matchdict.get('order_id', 0))
         order = Order.get(order_id, self.context.organization.id)
+        qr_type = order.delivery_plugin_id
         url_builder = get_orderreview_qr_url_builder(self.request)
         qr_preferences = order.payment_delivery_pair.delivery_method.preferences.get(unicode(payments_plugins.QR_DELIVERY_PLUGIN_ID), {})
         single_qr_mode = qr_preferences.get('single_qr_mode', False)
         tickets = []
         if single_qr_mode:
             qr = build_qr_by_order(self.request, order)
+            qr_id = qr.id
+            qr_sign = qr.sign if hasattr(qr, 'sign') else None
             tickets.append({
                 'token': None,
                 'element': None,
                 'item': None,
                 'qr': qr,
-                'url': url_builder.build(self.request, qr.id, qr.sign)
+                'url': url_builder.build(self.request, qr_id, qr_sign)
                 })
         else:
             tokens = [(token, element, item) for item in order.items for element in item.elements for token in element.tokens]
             for token, element, item in tokens:
-                qr = build_qr_by_token(self.request, order.order_no, token)
+                if qr_type == payments_plugins.QR_AES_DELIVERY_PLUGIN_ID:
+                    qr = build_ht_qr_by_token(self.request, order.order_no, token)
+                    url = url_builder.build_aes_url(self.request, qr.id)
+                else:
+                    qr = build_qr_by_token(self.request, order.order_no, token)
+                    url = url_builder.build(self.request, qr.id, qr.sign)
                 tickets.append({
                     'token': token,
                     'element': element,
                     'item': item,
                     'qr': qr,
-                    'url': url_builder.build(self.request, qr.id, qr.sign)
+                    'url': url
                 })
         return { 'order': order, 'tickets': tickets }
 

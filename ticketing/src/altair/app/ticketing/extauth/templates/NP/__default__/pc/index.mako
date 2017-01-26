@@ -5,8 +5,11 @@
         <div class="login-box login-box-2">
             <dl>
                 <dt class="login-name">会員の方はこちら</dt>
-                <dd><a href="${_context.route_path('extauth.fanclub.entry')}" class="btn-login">会員IDでログイン</a></dd>
-                <dd><a href="${_context.route_path('extauth.fanclub.entry')}" class="btn-regist" target="_blank">会員登録する</a></dd>
+                % if oauth_service_providers:
+                % for provider in oauth_service_providers:
+                <dd><a href="${_context.route_path('extauth.fanclub.entry', _query=dict(service_provider_name=provider.name))}" class="btn-login">${provider.display_name}<span style="font-size:80%">でログイン</span></a></dd>
+                % endfor
+                % endif
                 <dd>
                 <ul>
                     <li>※ 会員ID・パスワードは半角でご入力ください。</li>
@@ -23,6 +26,12 @@
                         <input type="hidden" name="member_set" value="NP">
                         <input type="hidden" name="_" value="${request.session.get_csrf_token()}" />
                     </form>
+                </dd>
+                <dd>
+                <ul>
+                    <li><span style="color:red;font-size:90%;">「会員の方はこちら」から各会員への新規登録が可能です</span></li>
+                    <li><img src="${view_context.static_url('images/fc_login_capture.png')}" alt="logo" width="85%" /></li>
+                </ul>
                 </dd>
             </dl>
         </div>

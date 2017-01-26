@@ -225,7 +225,8 @@ class View(object):
                 self.request.response.headers.update(forget(self.request))
             elif u'altair.auth.authenticator:rakuten' in principals:
                 return self.navigate_to_select_account_rakuten_auth()
-        return dict()
+
+        return dict(oauth_service_providers=self.context.visible_oauth_service_providers)
 
     @lbr_view_config(
         route_name='extauth.rakuten.entry',
@@ -282,10 +283,14 @@ class View(object):
             else:
                 if 'login' in oauth_params['prompt']:
                     self.request.response.headers.update(forget(self.request))
+                    # XXX:polluxで認証するときはどのfanclubで認証するのか特定する必要がある
+                    self.request.session['service_provider_name'] = self.context.challenge_service_provider_name
                     return challenge_service_provider(self.request, 'pollux')
         else:
             if 'none' in oauth_params['prompt']:
                 raise Exception('not implemented')
+            # XXX:polluxで認証するときはどのfanclubで認証するのか特定する必要がある
+            self.request.session['service_provider_name'] = self.context.challenge_service_provider_name
             return challenge_service_provider(self.request, 'pollux')
 
         # TODO: 複数会員資格が返ってきたときはイーグルスみたいに選ばせる必要がある

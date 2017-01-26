@@ -52,6 +52,8 @@ import contextlib
 import re
 from functools import partial
 
+from altair.app.ticketing.project_specific.huistenbosch.qr_utilits import build_ht_qr_by_ticket_id, build_ht_qr_by_token_id, build_ht_qr_by_order
+
 def jump_maintenance_page_om_for_trouble(organization):
     """https://redmine.ticketstar.jp/issues/10878
     誤表示問題の時に使用していたコード
@@ -860,6 +862,160 @@ class QRView(object):
                     result=result,
                     )
 
+class QRAESView(object):
+    def __init__(self, context, request):
+        self.context = context
+        self.request = request
+
+    @lbr_view_config(
+        route_name='order_review.qr_aes_confirm',
+        renderer=selectable_renderer("order_review/qr_aes_confirm.html"))
+    def qr_aes_confirm(self):
+        ticket_id = int(self.request.matchdict.get('ticket_id', 0))
+        ticket = build_ht_qr_by_ticket_id(self.request, ticket_id)
+
+        if ticket == None:
+            raise HTTPNotFound()
+
+        return dict(
+            order = ticket.order,
+            ticket = ticket,
+            performance = ticket.performance,
+            event = ticket.event,
+            product = ticket.product
+            )
+
+    @lbr_view_config(
+        route_name='order_review.qr_aes',
+        renderer=selectable_renderer("order_review/qr_aes.html"))
+    def qr_aes_html(self):
+        ticket_id = int(self.request.matchdict.get('ticket_id', 0))
+
+        ticket = build_ht_qr_by_ticket_id(self.request, ticket_id)
+
+        if ticket is None:
+            raise HTTPNotFound()
+
+        if ticket.seat is None:
+            gate = None
+        else:
+            gate = ticket.seat.attributes.get("gate", None)
+
+        return dict(
+            token = ticket.item_token and ticket.item_token.id, # dummy
+            serial = ticket_id,           # dummy
+            order = ticket.order,
+            ticket = ticket,
+            performance = ticket.performance,
+            event = ticket.event,
+            product = ticket.product,
+            gate = gate
+        )
+
+    @lbr_view_config(
+        route_name='order_review.qr_aes_draw',
+        xhr=False
+        )
+    def qr_aes_image(self):
+        ticket_id = int(self.request.matchdict.get('ticket_id', 0))
+
+        ticket = build_ht_qr_by_ticket_id(self.request, ticket_id)
+        if ticket is None:
+            raise HTTPNotFound()
+
+        return qrdata_as_image_response(ticket)
+
+    @lbr_view_config(
+        route_name='order_review.qr_aes_print',
+        request_method='POST',
+        renderer=selectable_renderer("order_review/qr_aes.html")
+        )
+    def order_review_qr_aes_print(self):
+        if 'order_no' not in self.request.params:
+            return HTTPFound(self.request.route_path("order_review.index"))
+        if 'token' not in self.request.params:
+            return HTTPFound(self.request.route_path("order_review.index"))
+
+        order_no = self.request.params['order_no']
+        token_id = self.request.params['token']
+        if token_id:
+            token = get_matched_token_from_token_id(order_no, token_id)
+
+            if token.seat is None:
+                gate = None
+            else:
+                gate = token.seat.attributes.get("gate", None)
+
+
+            if token.item.ordered_product.order.delivery_plugin_id == plugins.QR_AES_DELIVERY_PLUGIN_ID:
+                # altair
+                ticket = build_ht_qr_by_token_id(self.request, self.request.params['order_no'], self.request.params['token'])
+
+                return dict(
+                    token = token.id,    # dummy
+                    serial = ticket.id,  # dummy
+                    order = ticket.order,
+                    ticket = ticket,
+                    performance = ticket.performance,
+                    event = ticket.event,
+                    product = ticket.product,
+                    gate = gate
+                )
+        else:
+            order = get_order_by_order_no(self.request, order_no)
+            tel = self.request.POST['tel']
+            if tel not in order.shipping_address.tels:
+                raise HTTPNotFound
+            if order.delivery_plugin_id == plugins.QR_AES_DELIVERY_PLUGIN_ID:
+                # altair
+                ticket = build_ht_qr_by_order(self.request, order)
+
+                return dict(
+                    token=None,
+                    serial=None,
+                    order=ticket.order,
+                    ticket=ticket,
+                    performance=ticket.performance,
+                    event=ticket.event,
+                    product=None,
+                    gate=None
+                )
+
+    @lbr_view_config(
+        route_name='order_review.qr_aes_send',
+        request_method="POST",
+        renderer=selectable_renderer("order_review/send.html")
+        )
+    def send_mail(self):
+        # TODO: validate mail address
+
+        if 'mail' in self.request.params:
+            mail = self.request.params['mail']
+            # send mail using template
+            form = schemas.SendMailSchema(self.request.POST)
+
+            if not form.validate():
+                return dict(mail=mail,
+                            message=u"Emailの形式が正しくありません")
+
+            try:
+                sender = self.context.organization.setting.default_mail_sender
+                api.send_qr_aes_mail(self.request, self.context, mail, sender)
+            except Exception, e:
+                logger.error(e.message, exc_info=1)
+                ## この例外は違う...
+                raise HTTPNotFound()
+
+            message = u"%s宛にメールをお送りしました。" % mail
+            return dict(
+                mail = mail,
+                message = message
+                )
+        else:
+            message = u"メールが見つかりませんでした。"
+            return dict(
+                message = message
+                )
 
 @lbr_view_config(
     name="render.mail",
@@ -891,6 +1047,37 @@ def render_qrmail_viewlet(context, request):
         seat=ticket.seat,
         mail=request.params['mail'],
         url=request.route_url('order_review.qr_confirm', ticket_id=ticket.id, sign=sign),
+        )
+
+@lbr_view_config(
+    name="render.mail_aes",
+    renderer=selectable_renderer("order_review/qr_aes.txt")
+    )
+def render_qr_aes_mail_viewlet(context, request):
+    token = request.params['token']
+    order_no = request.params['order_no']
+    if token:
+        ticket = build_ht_qr_by_token_id(request, order_no, token)
+    else:
+        order = get_order_by_order_no(request, order_no)
+        ticket = build_ht_qr_by_order(request, order)
+
+    if ticket is None:
+        raise HTTPNotFound
+
+    name = u''
+    if ticket.order.shipping_address:
+        name = ticket.order.shipping_address.last_name + ticket.order.shipping_address.first_name
+
+    return dict(
+        h=h,
+        name=name,
+        event=ticket.event,
+        performance=ticket.performance,
+        product=ticket.product,
+        seat=ticket.seat,
+        mail=request.params['mail'],
+        url=request.route_url('order_review.qr_aes_confirm', ticket_id=ticket.id),
         )
 
 @view_defaults(custom_predicates=(is_mypage_organization, ),

@@ -7,46 +7,50 @@
   <img src="${request.static_url('altair.app.ticketing.fc_auth:static/JC/mobile/images/logo_mobile.gif')}" width="240" height="96" alt="日本自転車競技連盟" />
 </div>
 <div>
-<div style="background-color:#0A50AA" bgcolor="#0A50AA"><font color="white">お申込</font></div>
-
-<p style="text-align:center;">
-<div id="login_form">
-<div><font color="#E60048">■</font>競技者登録済みの方はこちらから</font>
+  <div style="background-color:#0A50AA" bgcolor="#0A50AA"><font color="white">登録証番号をご入力ください</font></div>
+  <div>
+    <p>
+    <font color="red" size="2">
+      ◆申し込み画面よりログインいただき、更新の手続きを行って下さい。<br>
+      ◆本システムは現加盟団体に継続して登録する方のみご利用できます。例：北海道→北海道<br>
+      ◆所属していない団体でお申込み手続きをしようとしても、ログインできませんのでご注意ください。<br>
+      ◆次年度移籍希望の方は現加盟団体にて抹消登録をしたうえで新加盟団体へ所定の登録申請書にて登録を行ってください。例：北海道→青森<br>
+      ◆登録証番号が不明な場合は、所属団体にお問い合わせ下さい。
+    </font>
+    </p>
+  </div>
+  <form action="${request.path}" method="post">
+    <input type="hidden" name="membership" value="JC" />
+    <div>
+      2016年度<br>登録証番号<br>(半角英数字)<br/>
+      <input type="text" name="username" size="22" value="" istyle="4"><br/>
+      <font size="2">※登録証記載の11桁の番号<br>（例：00ME1234567）</font>
+      %if message:
+        <br/><span class="small red">該当する登録証番号が見つかりません</span>
+      %endif
+      <input type="hidden" name="password" size="22" value="jcf">
+    </div>
+    <br/>
+    <input type="submit" value="ログイン" />
+  </form>
 </div>
-
-</div>
-<form action="${request.path}" method="post">
-<input type="hidden" name="membership" value="JC" />
-<div>
-  登録番号<br/>
-  <input type="text" name="username" size="22" value="" istyle="4">
-  %if message:
-  <br/><span style="color: red">登録番号またはパスワードが一致しません</span>
-  %endif
-  <br/>
-  パスワード<br/>
-  <input type="password" name="password" size="22" value="" istyle="4">
-</div>
-<input type="submit" value="ログイン" />
-</form>
-</div>
-
-<div>
-<div><font color="#E60048">■</font>一般の方はこちらから</font>
-</div>
-
-</div>
-<form action="${request.route_url('fc_auth.guest', membership=request.matchdict['membership'])}" method="post">
-<div style="text-align:center;">
+注意事項<br/>
+<font size="1">
+  ・携帯電話､スマートフォンの各キャリアの受信拒否設定から、購入確認メールが受け取れない場合がございますので、 <font color="red">jcf@tstar.jpのドメイン指定受信許可設定を行ってください。</font><br>
+  ・受付開始直後は回線が大変込み合う場合がございますので、予めご了承ください。<br>
+  ・登録証番号は半角でご入力ください。<br>
+</font>
 <br/>
-<input type="submit" value="&gt;&gt;申し込む&lt;&lt;"/><br />
-<div>
-大会によっては一般の方は<br/>お申込できない場合があります。
-</div>
-</div>
-</div>
-</form>
-</p>
+その他<br/>
+<font size="1">
+  ・購入履歴の確認は<a href="/orderreview">こちら</a>から行ってください。<br>
+  ・本システムによる継続更新は3月30日23時59分まで利用できます。<br>
+  ・4月初めからライセンスを必要とする場合は、3月10日までに登録及び決済を完了してください。<br>
+  ・住所はライセンス送付先になりますので正確に入力をしてください。<br/>
+  ・ライセンス送付先は日本国内に限ります。<br/>
+  ・顔写真は任意です。画像の容量は700kb以下。<br/>
+  ・画像は縁なし横2.4ｃｍ縦3.0ｃｍ、カラー、白黒、背景無地単色、正面、無帽、顔の長さが（縦）2.1～2.4ｃｍ、鮮明で容易に本人と認識できるものでなければならない。規格を満たさない場合は写真貼付無しと見なす事があります。<br/>
+</font>
 <hr size="1" color="#888888" noshade="noshade" />
 <div align="center" style="font-size:x-small">
   <div>

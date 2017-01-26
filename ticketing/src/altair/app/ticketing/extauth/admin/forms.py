@@ -775,7 +775,28 @@ class OAuthServiceProviderForm(OurForm):
             Length(max=255)
             ]
         )
+    visible = OurBooleanField(
+        label=u'公開',
+        default=True
+        )
 
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop('request', None)
         super(OAuthServiceProviderForm, self).__init__(*args, **kwargs)
+
+    def validate_name(form, field):
+        sp = get_db_session(form.request, 'extauth') \
+                .query(OAuthServiceProvider) \
+                .filter(OAuthServiceProvider.organization_id == form.organization_id.data) \
+                .filter(OAuthServiceProvider.name == field.data) \
+                .first()
+        # 同Org内で名前が重複しないようにする
+        # editの時
+        if form.request.matchdict.get('id'):
+            if sp and sp.id != int(form.request.matchdict.get('id')):
+                raise ValidationError(u'「%s」は同org内で既に使用されております' % field.data)
+        # newの時
+        else:
+            if sp:
+                raise ValidationError(u'「%s」は同org内で既に使用されております' % field.data)
+

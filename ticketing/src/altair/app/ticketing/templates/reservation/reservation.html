@@ -88,92 +88,16 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
 </style>
 
 
-<%include file="../performances/_detail_table.html" args="expanded=false" />
 <div>
   <div class="pull-left">
     <form class="form-horizontal" id="sales_segment-form" style="margin:0 0 5px 5px;"></form>
-  </div>
-  <div class="pull-left">
-    <form class="form-horizontal" id="performance-form" style="margin:0 0 5px 25px;"></form>
-  </div>
-  <div class="pull-right">
-    <input id="sales-counter-button" type="button" class="btn btn-warning" style="vertical-align: baseline; font-size: 100%;" value="当日窓口発券モードにする" />
-    <div id="sales-counter-toolbar" style="display:none">
-      <label style="display:inline-block">
-        表紙印刷の使用
-        <input type="checkbox" id="printWithCover" style="vertical-align: baseline;" />
-      </label>
-      <label style="display:inline-block">
-        ページ様式
-        <select id="pageFormat" style="width:13em;vertical-align: baseline;"></select>
-      </label>
-      <label style="display:inline-block">
-        チケット様式
-        <select id="ticketFormat" style="width:13em;vertical-align: baseline;"></select>
-      </label>
-      <label style="display:inline-block">
-        プリンタ
-        <select id="printService" style="width:13em;vertical-align: baseline;"></select>
-      </label>
-    </div>
   </div>
 </div>
 <div style="clear: both;"></div>
 
 <div class="row-fluid">
   <%vv:venueeditor data_source="${data_source}">
-    <%def name="toolbar_extra()">
-    <script type="text/javascript">
-      $('#show-vacant-btn').click(function() {changeSeatDisplayMode();});
-    </script>
-    <div style="float:right">
-      <span class="btn-group">
-        % if HH.has_permission('event_editor'):
-        <div class="btn venue-editor-main-side-toggle" data-toggle="seat_allocation">配席</div>
-        % endif
-        <div class="btn venue-editor-main-side-toggle" data-toggle="order">予約情報</div>
-      </span>
-      <button class="btn btn-primary action-openOrderForm">座席指定予約</button>
-    </div>
-    </%def>
-    <%def name="venue_editor_side_extra()">
-    <div class="venue-editor-main-side-tab" data-tab="order">
-      <div style="float:right">
-        <form class="form-horizontal search-order-form" style="margin: 0;" action="javascript:void(0);">
-          ${form_search.order_no(minlength=12, placeholder=u'予約番号')}
-          <a href="javascript:void(0);" onclick="javascript:searchOrder();" class="btn">
-            <i class="icon-search"></i> 検索
-          </a>
-        </form>
-      </div>
-      <ul class="nav nav-tabs">
-        <li class="active"><a href="#venue-editor-main-side-tab3" data-toggle="tab">予約情報</a></li>
-      </ul>
-      <div class="tab-content" style="overflow: visible;">
-        <div class="tab-pane active" id="venue-editor-main-side-tab3"></div>
-      </div>
-    </div>
-    % if HH.has_permission('event_editor'):
-    <div class="venue-editor-main-side-tab hide" data-tab="seat_allocation">
-      <div style="float:right">
-        <a name="save" href="javascript:saveStocks();" class="btn btn-primary">保存</a>
-      </div>
-      <ul class="nav nav-tabs">
-        <li class="active"><a href="#venue-editor-main-side-tab0" data-toggle="tab">配席(枠)</a></li>
-        <li><a href="#venue-editor-main-side-tab1" data-toggle="tab">配席(席種)</a></li>
-        <li><a href="#venue-editor-main-side-tab2" data-toggle="tab">選択座席<span class="selection-count badge"></span></a></li>
-      </ul>
-      <div class="tab-content" style="overflow: visible;">
-        <div class="tab-pane active" id="venue-editor-main-side-tab0"></div>
-        <div class="tab-pane" id="venue-editor-main-side-tab1"></div>
-        <div class="tab-pane" id="venue-editor-main-side-tab2"></div>
-      </div>
-    </div>
-    % endif
-    </%def>
-
     <%def name="post()">
-<%include file="../performances/_seat_allocation_function.html" args="performance=performance" />
 
 <script type="text/javascript">
   % if HH.has_permission('event_editor'):
@@ -1141,10 +1065,6 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
 </script>
     </%def>
   </%vv:venueeditor>
-</div>
-
-<div>
-  <%include file="../performances/_legend_seat_status.html" />
 </div>
 
 <div id="sales-summary"></div>
