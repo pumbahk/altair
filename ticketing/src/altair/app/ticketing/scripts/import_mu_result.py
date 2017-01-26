@@ -97,6 +97,9 @@ def main():
                 .all()
 
             for a in announces:
+                session.expunge(a)
+
+            for a in announces:
                 filename = '%s_%d.json' % (a.send_after.strftime("%Y%m%d_%H%M"), a.id)
                 message("filename=%s" % filename)
                 json_key = resolver.resolve('/'.join([opts.result_from, filename])).get_key()
@@ -115,6 +118,7 @@ def main():
                     if obj['ErrorCode'] == 0:
                         message("transId = %s" % obj['TransId'])
                         if not opts.dry_run:
+                            session.add(a)
                             a.mu_trans_id = obj['TransId']
                             a.save()
                             transaction.commit()
@@ -122,6 +126,7 @@ def main():
                     else:
                         message("errorCode = %s" % obj['ErrorCode'])
                         if not opts.dry_run:
+                            session.add(a)
                             a.mu_result = "refused"
                             a.save()
                             transaction.commit()

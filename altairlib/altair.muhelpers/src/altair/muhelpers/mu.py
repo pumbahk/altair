@@ -23,7 +23,7 @@ class Recipient(object):
 
 
 class Mailer(object):
-    def __init__(self, config=dict()):
+    def __init__(self, from_address, from_name="", config=dict()):
         # Mu sepc
         self.field_separator = "_M#8"
         self.line_end = "\n"
@@ -43,11 +43,13 @@ class Mailer(object):
         self.template_name = "template_pc_html.html"
         self.list_name = "recipients.txt"
 
+        self.from_name = from_name
+        self.from_address = from_address
+
         config_base = {
             "Command": "Send",
             "InputEncode": "UTF-8",
             "RequestEncode": "UTF-8",
-            "TemplatePcHtml": self.template_name,
             "SendList": self.list_name,
         }
 
@@ -61,9 +63,20 @@ class Mailer(object):
 
         self.attribute_keys = attributes
 
-    def create_config(self, start_time):
+    def create_config(self, start_time, subject):
         config = copy.deepcopy(self.config)
         config["SendStartTime"] = start_time.strftime("%Y%m%d%H%M%S")
+        config["TemplatePcHtml"] = self.field_separator.join([
+            self.template_name,
+            subject.encode('utf-8'),
+            self.from_address,
+            self.from_name,
+            "UTF-8",
+            "UTF-8",
+            "UTF-8",
+            ""
+        ])
+
         return json.dumps(config)
 
         # ini version
@@ -104,11 +117,11 @@ class Mailer(object):
         return re.sub(pattern, attr, template)
 
     # TODO: tune parameters
-    def pack_as_zip(self, start_time, template, recipients):
+    def pack_as_zip(self, start_time, subject, template, recipients):
         buf = io.BytesIO()
         zip = zipfile.ZipFile(buf, "a", zipfile.ZIP_DEFLATED, False)
         structure = [
-            [ self.parameter_name, self.create_config(start_time) ],
+            [ self.parameter_name, self.create_config(start_time, subject) ],
             [ self.template_name, self.create_template(template).encode('utf-8') ],
             [ self.list_name, self.create_list(recipients).encode('utf-8') ]
         ]

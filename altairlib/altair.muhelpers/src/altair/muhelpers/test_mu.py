@@ -36,7 +36,7 @@ class MailerTest(unittest.TestCase):
 
     def test_zip(self):
         from .mu import Mailer, Recipient
-        m = Mailer()
+        m = Mailer("test@example.org", "test sender")
 
         m.set_attributes([ "name", "keywords" ])
 

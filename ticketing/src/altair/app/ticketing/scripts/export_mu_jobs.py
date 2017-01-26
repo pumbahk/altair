@@ -182,6 +182,9 @@ def main():
                 message("nothing to do")
 
             for a in announces:
+                session.expunge(a)
+
+            for a in announces:
                 if now + timedelta(seconds=opts.ahead) < a.send_after:
                     message("announce(timer=%s, id=%d) -> skipped" % (a.send_after, a.id))
                     continue
@@ -196,19 +199,21 @@ def main():
                 engine = MacroEngine()
 
                 base_dict = dict()
-                for f in engine.fields(a.message):
+                for f in engine.fields("".join([ a.subject, a.message ])):
                     label = engine.label(f)
                     base_dict[f] = a.parameters[label]
                 body = engine.build(a.message, base_dict, cache_mode=True)
+                subject = engine.build(a.subject, base_dict, cache_mode=True)
 
                 mu.set_attributes(["name", "keyword"])
-                job_zip = mu.pack_as_zip(a.send_after, body, recipients)
+                job_zip = mu.pack_as_zip(a.send_after, subject, body, recipients)
 
                 dst = "%s/%s_%d.zip" % (opts.target.strip("/"), a.send_after.strftime("%Y%m%d_%H%M"), a.id)
 
                 upload(dst, job_zip, resolver, opts.dry_run)
 
                 if not opts.dry_run:
+                    session.add(a)
                     a.started_at = datetime.now()
                     a.subscriber_count = len(recipients)
                     a.save()
