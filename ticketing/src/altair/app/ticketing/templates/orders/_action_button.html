@@ -388,7 +388,8 @@ if 'print' in sort:
     sort.remove('print')
   elif order.issued or order.queued:
     sort.remove('print')
-    sort.append('force_print')
+    if not reservation:
+      sort.append('force_print')
   elif reservation:
     sort.remove('print')
 if 'delete' in sort:
