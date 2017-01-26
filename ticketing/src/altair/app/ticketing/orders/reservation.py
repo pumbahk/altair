@@ -71,6 +71,8 @@ class ReservationReportOperator():
         writer = ReservationReportWriter(self.download_file_path, self.get_order(), self.get_user())
         writer.write()
 
+        self.get_order().mark_issued_or_printed(issued=True)
+
         response = FileResponse(os.path.abspath(self.download_file_path))
         response.headers = [
             ('Content-Type', 'application/octet-stream; charset=utf-8'),
