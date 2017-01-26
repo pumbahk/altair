@@ -292,6 +292,11 @@ class Announcement(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     started_at = Column(DateTime)
     completed_at = Column(DateTime)
     subscriber_count = Column(Integer)
+    mu_trans_id = Column(String(255))
+    mu_status = Column(String(255))
+    mu_result = Column(String(255))
+    mu_accepted_count = Column(Integer)
+    mu_sent_count = Column(Integer)
 
     # userの存在とかはチェックしない, どうせメールが届くか等はわからないので
     def get_subscriber_count(self):

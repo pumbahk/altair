@@ -70,7 +70,11 @@ class Announce(BaseView):
         templates = AnnouncementTemplate.query.filter_by(organization_id=self.context.user.organization_id)\
             .order_by(AnnouncementTemplate.sort).all()
 
-        return dict(announcements=announcements, event=event, templates=templates)
+        return dict(
+            mu_admin_url=self.request.registry.settings.get("altair.mu.admin_url"),
+            announcements=announcements,
+            event=event,
+            templates=templates)
 
     @view_config(route_name='announce.new', renderer='altair.app.ticketing:templates/announce/form.html')
     def create(self):

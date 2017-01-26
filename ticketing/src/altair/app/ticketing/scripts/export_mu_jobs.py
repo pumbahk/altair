@@ -26,6 +26,8 @@ from altair.app.ticketing.core.models import Organization, UserCredential
 from altair.app.ticketing.users.models import Announcement, WordSubscription
 
 from altair.app.ticketing.announce.utils import MacroEngine
+
+from altair.muhelpers import IMuMailerFactory
 from altair.muhelpers.mu import Mailer, Recipient
 
 from altair.app.ticketing.api.impl import get_communication_api, CMSCommunicationApi
@@ -144,6 +146,9 @@ def main():
     session = sqlahelper.get_session()
     resolver = get_resolver(env['registry'])
 
+    mu_factory = env['registry'].getUtility(IMuMailerFactory)
+    mu = mu_factory()
+
     now = datetime.now()
 
     try:
@@ -196,9 +201,8 @@ def main():
                     base_dict[f] = a.parameters[label]
                 body = engine.build(a.message, base_dict, cache_mode=True)
 
-                m = Mailer()
-                m.set_attributes(["name", "keyword"])
-                job_zip = m.pack_as_zip(a.send_after, body, recipients)
+                mu.set_attributes(["name", "keyword"])
+                job_zip = mu.pack_as_zip(a.send_after, body, recipients)
 
                 dst = "%s/%s_%d.zip" % (opts.target.strip("/"), a.send_after.strftime("%Y%m%d_%H%M"), a.id)
 

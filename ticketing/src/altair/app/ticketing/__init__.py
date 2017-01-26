@@ -145,6 +145,8 @@ def main(global_config, **local_config):
         config.include('altair.auth:register_plugin_registry')
         config.include('altair.pyramid_dynamic_renderer')
 
+        config.include('altair.muhelpers')
+
         ### s3 assets
         config.include('altair.pyramid_assets')
         config.include('altair.pyramid_boto')

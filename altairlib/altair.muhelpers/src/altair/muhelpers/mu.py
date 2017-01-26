@@ -4,6 +4,8 @@ import re
 import json
 import zipfile
 import io
+import copy
+
 
 __all__ = [
     'Mailer',
@@ -21,7 +23,7 @@ class Recipient(object):
 
 
 class Mailer(object):
-    def __init__(self):
+    def __init__(self, config=dict()):
         # Mu sepc
         self.field_separator = "_M#8"
         self.line_end = "\n"
@@ -41,6 +43,16 @@ class Mailer(object):
         self.template_name = "template_pc_html.html"
         self.list_name = "recipients.txt"
 
+        config_base = {
+            "Command": "Send",
+            "InputEncode": "UTF-8",
+            "RequestEncode": "UTF-8",
+            "TemplatePcHtml": self.template_name,
+            "SendList": self.list_name,
+        }
+
+        self.config = {k: v for dic in [config, config_base] for k, v in dic.items()}
+
     def set_attributes(self, attributes):
         pattern = re.compile(self.macro_pattern_internal)
         for a in attributes:
@@ -50,14 +62,8 @@ class Mailer(object):
         self.attribute_keys = attributes
 
     def create_config(self, start_time):
-        config = {
-            "InputEncode": "UTF-8",
-            "RequestEncode": "UTF-8",
-            "SendStartTime": start_time.strftime("%Y%m%d%H%M%S"),
-            "TemplatePcHtml": self.template_name,
-            "SendList": self.list_name,
-        }
-
+        config = copy.deepcopy(self.config)
+        config["SendStartTime"] = start_time.strftime("%Y%m%d%H%M%S")
         return json.dumps(config)
 
         # ini version
