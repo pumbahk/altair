@@ -344,6 +344,9 @@ sort = sort or ['mailinfo', 'delivered', 'report_download', 'cancel', 'refund']
 if 'edit_order_info' in sort:
   if reservation:
     sort.remove('edit_order_info')
+if 'report_download' in sort:
+  if not reservation:
+    sort.remove('report_download')
 if 'mailinfo' in sort:
   if not order.shipping_address:
     sort.remove('mailinfo')
