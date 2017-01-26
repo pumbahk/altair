@@ -15,7 +15,7 @@ class DefaultMuMailerFactory(object):
         self.from_name = config.registry.settings.get('altair.mu.from_name')
 
     def __call__(self):
-        return Mailer(self.from_address, self.from_name, self.config)
+        return Mailer(self.from_address, self.from_name.encode('utf-8'), self.config)
 
 
 def includeme(config):

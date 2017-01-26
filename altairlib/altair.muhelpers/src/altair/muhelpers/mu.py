@@ -68,7 +68,7 @@ class Mailer(object):
         config["SendStartTime"] = start_time.strftime("%Y%m%d%H%M%S")
         config["TemplatePcHtml"] = self.field_separator.join([
             self.template_name,
-            subject.encode('utf-8'),
+            subject,
             self.from_address,
             self.from_name,
             "UTF-8",

@@ -7,10 +7,10 @@ from datetime import datetime
 class MailerTest(unittest.TestCase):
     def test_it(self):
         from .mu import Mailer, Recipient
-        m = Mailer()
+        m = Mailer("test@example.org", u"さしだしにん")
 
         start_time = datetime.strptime("2017/1/2 3:45:06", "%Y/%m/%d %H:%M:%S")
-        config_json = m.create_config(start_time)
+        config_json = m.create_config(start_time, u"さぶじぇくと")
         config = json.loads(config_json)
         self.assertEqual(config["SendStartTime"], "20170102034506")
 
@@ -36,19 +36,19 @@ class MailerTest(unittest.TestCase):
 
     def test_zip(self):
         from .mu import Mailer, Recipient
-        m = Mailer("test@example.org", "test sender")
+        m = Mailer("test@example.org", u"さしだしにん")
 
         m.set_attributes([ "name", "keywords" ])
 
         start_time = datetime.now()
         r1 = Recipient("https://open_id/123", { "name": u"ゆーざ", "keywords": u"あい, うえ"})
         r2 = Recipient("https://open_id/123", { "keywords": u"あい, うえ"})
-        zip_byte = m.pack_as_zip(start_time, u"あいう @@keywords@@", [ r1, r2 ])
+        zip_byte = m.pack_as_zip(start_time, u"さぶじぇくと", u"あいう @@keywords@@", [ r1, r2 ])
 
         import zipfile
         import io
         buf = io.BytesIO(zip_byte)
         zip = zipfile.ZipFile(buf, "r")
-        self.assertEqual([ f.filename for f in zip.filelist ], [ "info.json", "TemplatePC_TXT.txt", "list.txt" ])
+        self.assertEqual([ f.filename for f in zip.filelist ], [ "parameter.json", "template_pc_html.html", "recipients.txt" ])
         self.assertEqual(zip.read(zip.filelist[1].filename), u"あいう ###_ATTRIBUTE2_###".encode('utf-8'))
         self.assertEqual(len(zip.read(zip.filelist[2].filename).splitlines()), 2)
