@@ -39,7 +39,7 @@ class DeliveryMethodForm(OurForm):
 
         ## 暫定対応、QR_AESはHT以外のORGが見えないようにする。
         organization_id = self.organization_id.data or kwargs.get('organization_id')
-        self.delivery_plugin_id.choices=_set_pmp(organization_id)
+        self.delivery_plugin_id.choices=_set_pmp(int(organization_id)) if organization_id else []
 
     def _get_translations(self):
         return Translations()
