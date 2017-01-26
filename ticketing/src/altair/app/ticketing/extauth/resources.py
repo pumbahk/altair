@@ -60,5 +60,5 @@ class ExtAuthSubTypeResource(ExtAuthBase):
             .filter_by(organization_id=self.request.organization.id) \
             .first()
         if not sp:
-            raise ExtauthSettingError('need to register atleast one OAuthServiceProvider')
+            raise ExtauthSettingError('need to register at least one OAuthServiceProvider')
         return sp.name
