@@ -27,9 +27,6 @@ class ReservationReportOperator():
     def get_var_dir(self):
         return self.__var_dir
 
-    def get_var_dir(self):
-        return self.__var_dir
-
     def get_file_name(self):
         return self.__file_name
 
