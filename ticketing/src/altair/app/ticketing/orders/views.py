@@ -24,6 +24,7 @@ from sqlalchemy.orm import joinedload, undefer
 from sqlalchemy.orm.session import make_transient
 from webob.multidict import MultiDict
 import transaction
+from .reservation import ReservationReportOperator
 
 from altair.sqlahelper import get_db_session
 import  altair.viewhelpers.datetime_
@@ -485,8 +486,8 @@ class OrderReportDownloadView(OrderBaseView):
         Operator_name_201701_00001.xls
         通番は5桁とし、Orderの件数とする
         """
-        response = self.context.create_reservation_report()
-        return response
+        operator = ReservationReportOperator(self.request, self.context.order, self.context.user)
+        return operator.create_report_response()
 
 @view_defaults(decorator=with_bootstrap, permission='sales_editor') # sales_counter ではない!
 class OrderDownloadView(OrderBaseView):

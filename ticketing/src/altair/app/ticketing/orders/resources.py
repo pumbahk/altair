@@ -2,7 +2,6 @@
 import logging
 import json
 from datetime import datetime
-from .reservation import ReservationReportOperator
 from datetime import datetime
 from pyramid.decorator import reify
 from pyramid.httpexceptions import HTTPBadRequest
@@ -367,15 +366,6 @@ class CoverPreviewResource(OrderResource):
             return TicketFormat.query.filter_by(id=self.ticket_format_id).one()
 
 from altair.app.ticketing.events.performances.resources import SalesCounterResourceMixin
-
-
-class ReservationReportResource(OrderResource):
-    def create_reservation_report(self):
-        """
-        予約管理者の帳票機能
-        """
-        operator = ReservationReportOperator(self.request, self.order, self.user)
-        return operator.create_report_response()
 
 
 class OrderReserveResource(TicketingAdminResource, SalesCounterResourceMixin):
