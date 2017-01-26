@@ -1,22 +1,17 @@
 # -*- coding:utf-8 -*-
-import os
-import shutil
 import logging
 import json
-import urllib
-import glob
 from datetime import datetime
-from .reservation_writer import ReservationReportWriter
+from .reservation import ReservationReportOperator
 from datetime import datetime
 from pyramid.decorator import reify
 from pyramid.httpexceptions import HTTPBadRequest
-from pyramid.response import Response, FileResponse
+from pyramid.response import Response
 from sqlalchemy.sql.expression import or_, desc
 from sqlalchemy.orm import joinedload, joinedload_all, undefer, aliased
 
 # from paste.util.multidict import MultiDict
 from webob.multidict import MultiDict
-from altair.sqlahelper import get_db_session
 from altair.app.ticketing.resources import TicketingAdminResource
 from altair.app.ticketing.models import (
     DBSession,
@@ -379,34 +374,8 @@ class ReservationReportResource(OrderResource):
         """
         予約管理者の帳票機能
         """
-        # 前回のファイルを削除(オペレータごと)
-        var_dir = self.request.registry.settings.get('reservation.var_dir', False)
-        delete_files = glob.glob('{0}./*.xls'.format(var_dir))
-        for file in delete_files:
-            os.remove(file)
-
-        # 名前決定
-        now = datetime.now()
-        slave_session = get_db_session(self.request, name="slave")
-        order_count = slave_session.query(Order).filter(Order.operator_id == self.user.id).count()
-        file_name = u"{0}_{1}_{2:05d}.xls".format(self.user.name, now.strftime("%Y%m%d"), order_count).encode('utf-8')
-
-        # ワークディレクトリにコピー
-        template_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../templates/orders")
-        template_file = "{0}/{1}".format(template_dir, "reservation_report.xls")
-        tmp_file = os.path.join("{0}{1}".format(var_dir, file_name))
-        shutil.copyfile(template_file, tmp_file)
-
-        writer = ReservationReportWriter(tmp_file, self.order, self.user)
-        writer.write()
-
-        # ダウンロード
-        response = FileResponse(os.path.abspath(tmp_file))
-        response.headers = [
-            ('Content-Type', 'application/octet-stream; charset=utf-8'),
-            ('Content-Disposition', "attachment; filename*=utf-8''%s" % urllib.quote(file_name))
-        ]
-        return response
+        operator = ReservationReportOperator(self.request, self.order, self.user)
+        return operator.create_report_response()
 
 
 class OrderReserveResource(TicketingAdminResource, SalesCounterResourceMixin):

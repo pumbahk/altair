@@ -1,9 +1,85 @@
 # -*- coding: utf-8 -*-
-# 書き換え
-from datetime import datetime
+import os
+import shutil
+import urllib
+import glob
 import xlrd, xlwt
-from xlwt import Workbook, Font, Alignment, Borders, Pattern, Protection, Formula, XFStyle
+from altair.app.ticketing.orders.models import Order
+from pyramid.response import FileResponse
 from xlutils.copy import copy
+from datetime import datetime
+from altair.sqlahelper import get_db_session
+from xlwt import Workbook, Font, Alignment, Borders, Pattern, Protection, Formula, XFStyle
+
+
+class ReservationReportOperator():
+    def __init__(self, request, order, user):
+        self.__request = request
+        self.__var_dir = request.registry.settings.get('reservation.var_dir', False)
+        self.__user = user
+        self.__slave_session = get_db_session(request, name="slave")
+        self.__file_name = self.create_file_name()
+        self.__order = order
+
+    def get_slave_session(self):
+        return self.__slave_session
+
+    def get_var_dir(self):
+        return self.__var_dir
+
+    def get_var_dir(self):
+        return self.__var_dir
+
+    def get_file_name(self):
+        return self.__file_name
+
+    def get_order(self):
+        return self.__order
+
+    def get_user(self):
+        return self.__user
+
+    def create_file_name(self):
+        now = datetime.now()
+        order_count = self.get_slave_session().query(Order).filter(Order.operator_id == self.get_user().id).count()
+        file_name = u"{0}_{1}_{2:05d}.xls".format(self.get_user().name, now.strftime("%Y%m%d"), order_count).encode('utf-8')
+        return file_name
+
+    @property
+    def template_file_path(self):
+        template_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../templates/orders")
+        template_file = "{0}/{1}".format(template_dir, "reservation_report.xls")
+        return template_file
+
+    @property
+    def download_file_path(self):
+        download_file = os.path.join("{0}{1}".format(self.get_var_dir(), self.get_file_name()))
+        return download_file
+
+    def delete_used_file(self):
+        delete_files = glob.glob('{0}./*.xls'.format(self.get_var_dir()))
+        for file in delete_files:
+            os.remove(file)
+
+    def copy_template_file(self):
+        shutil.copyfile(self.template_file_path, self.download_file_path)
+
+    def create_report_response(self):
+        # 前回のファイルを削除(オペレータごと)
+        self.delete_used_file()
+
+        # ワークディレクトリにコピー
+        self.copy_template_file()
+
+        writer = ReservationReportWriter(self.download_file_path, self.get_order(), self.get_user())
+        writer.write()
+
+        response = FileResponse(os.path.abspath(self.download_file_path))
+        response.headers = [
+            ('Content-Type', 'application/octet-stream; charset=utf-8'),
+            ('Content-Disposition', "attachment; filename*=utf-8''%s" % urllib.quote(self.get_file_name()))
+        ]
+        return response
 
 
 class ReservationReportWriter():
