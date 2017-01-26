@@ -2,8 +2,10 @@
 import logging
 import json
 from datetime import datetime
+from datetime import datetime
 from pyramid.decorator import reify
 from pyramid.httpexceptions import HTTPBadRequest
+from pyramid.response import Response
 from sqlalchemy.sql.expression import or_, desc
 from sqlalchemy.orm import joinedload, joinedload_all, undefer, aliased
 
@@ -364,6 +366,7 @@ class CoverPreviewResource(OrderResource):
             return TicketFormat.query.filter_by(id=self.ticket_format_id).one()
 
 from altair.app.ticketing.events.performances.resources import SalesCounterResourceMixin
+
 
 class OrderReserveResource(TicketingAdminResource, SalesCounterResourceMixin):
     def __init__(self, request):
