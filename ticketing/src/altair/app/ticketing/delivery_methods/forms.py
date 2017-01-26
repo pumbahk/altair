@@ -12,13 +12,34 @@ from altair.app.ticketing.core.models import DeliveryMethod, DeliveryMethodPlugi
 from altair.saannotation import get_annotations_for
 from altair.app.ticketing.payments.plugins import SEJ_DELIVERY_PLUGIN_ID, QR_DELIVERY_PLUGIN_ID, FAMIPORT_DELIVERY_PLUGIN_ID, RESERVE_NUMBER_DELIVERY_PLUGIN_ID
 
+HT_ORG_ID = 66
+QR_AES_ID = 7
+
 def _get_msg(target):
     msg = u'手数料は「予約ごと」または「{}」どちらか一方を入力してください。<br/>'
     msg += u'取得しない手数料は「0」を入力してください。'
     msg = Markup(msg.format(target))
     return msg
 
+def _set_pmp(organization_id):
+    """
+    ## 暫定対応、QR_AESはHT以外のORGが見えないようにする。
+    :param organization_id:
+    :return pmps:
+    """
+    pmps = [(pmp.id, pmp.name) for pmp in DeliveryMethodPlugin.all()]
+    if organization_id != HT_ORG_ID:
+        pmps = [(pmp_id, pmp_name) for pmp_id, pmp_name in pmps if pmp_id != QR_AES_ID]
+
+    return pmps
+
 class DeliveryMethodForm(OurForm):
+    def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
+        OurForm.__init__(self, formdata, obj, prefix, **kwargs)
+
+        ## 暫定対応、QR_AESはHT以外のORGが見えないようにする。
+        organization_id = self.organization_id.data or kwargs.get('organization_id')
+        self.delivery_plugin_id.choices=_set_pmp(organization_id)
 
     def _get_translations(self):
         return Translations()
@@ -56,7 +77,7 @@ class DeliveryMethodForm(OurForm):
     delivery_plugin_id = OurSelectField(
         label=get_annotations_for(DeliveryMethod.delivery_plugin_id)['label'],
         validators=[Required(u'選択してください')],
-        choices=lambda field: [(pmp.id, pmp.name) for pmp in DeliveryMethodPlugin.all()],
+        choices=[],
         coerce=int
         )
     description = OurTextField(
