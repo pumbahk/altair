@@ -180,6 +180,10 @@ class Operator(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def is_superuser(self):
         return any(r.name == "superuser" for r in self.roles)
 
+    @property
+    def is_reservation(self):
+        return any(r.name == "reservation" for r in self.roles)
+
     def is_member_of_organization(self, has_organization):
         if unicode(self.organization_id) != unicode(has_organization.organization_id):
             logger.warn("operator(id={id}). is not organization({short_name})'s operator.".format(id=self.id, short_name=has_organization.organization.short_name))

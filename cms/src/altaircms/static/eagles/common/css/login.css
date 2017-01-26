@@ -249,7 +249,7 @@
   }
   .login-page .login-box .btn-eagles .logo {
     vertical-align: middle;
-    padding: 0 10px 6px 0;
+    padding: 0 10px 4px 0;
     width: 70px;
     height: auto;
   }
@@ -494,9 +494,34 @@
     border: solid 1px #ff0000;
 }
 .orderreview-list-page .orderreview-list-wrap .orderreview-list li .orderreview-tbl th .sate-list .done-payment{
+    background: #f07676;
+    color:#fff;
+    border: solid 1px #f07676;
+}
+.orderreview-list-page .orderreview-list-wrap .orderreview-list li .orderreview-tbl th .sate-list .cancel-refund{
+    background: #75bd0c;
+    color:#fff;
+    border: solid 1px #75bd0c;
+}
+.orderreview-list-page .orderreview-list-wrap .orderreview-list li .orderreview-tbl th .sate-list .done-refund{
+    background: #75bd0c;
+    color:#fff;
+    border: solid 1px #75bd0c;
+}
+.orderreview-list-page .orderreview-list-wrap .orderreview-list li .orderreview-tbl th .sate-list .done-send{
     background: #959595;
     color: #fff;
     border: solid 1px #959595;
+}
+.orderreview-list-page .orderreview-list-wrap .orderreview-list li .orderreview-tbl th .sate-list .done-delivery{
+    background: #f94e4e;
+    color:#fff;
+    border: solid 1px #f94e4e;
+}
+.orderreview-list-page .orderreview-list-wrap .orderreview-list li .orderreview-tbl th .sate-list .done-receipt{
+    background: #37bdde;
+    color:#fff;
+    border: solid 1px #37bdde;
 }
 .orderreview-list-page .orderreview-list-wrap .orderreview-list li .orderreview-tbl td{}
 .orderreview-list-page .orderreview-list-wrap .orderreview-list li .orderreview-tbl .payment-detail{
@@ -969,9 +994,34 @@ opacity: .7;
     border: solid 1px #ff0000;
 }
 .orderreview-list-page .orderreview-list-wrap .orderreview-list li .orderreview-tbl th .sate-list .done-payment{
+    background: #f07676;
+    color:#fff;
+    border: solid 1px #f07676;
+}
+.orderreview-list-page .orderreview-list-wrap .orderreview-list li .orderreview-tbl th .sate-list .cancel-refund{
+    background: #75bd0c;
+    color:#fff;
+    border: solid 1px #75bd0c;
+}
+.orderreview-list-page .orderreview-list-wrap .orderreview-list li .orderreview-tbl th .sate-list .done-refund{
+    background: #75bd0c;
+    color:#fff;
+    border: solid 1px #75bd0c;
+}
+.orderreview-list-page .orderreview-list-wrap .orderreview-list li .orderreview-tbl th .sate-list .done-send{
     background: #959595;
     color: #fff;
     border: solid 1px #959595;
+}
+.orderreview-list-page .orderreview-list-wrap .orderreview-list li .orderreview-tbl th .sate-list .done-delivery{
+    background: #f94e4e;
+    color:#fff;
+    border: solid 1px #f94e4e;
+}
+.orderreview-list-page .orderreview-list-wrap .orderreview-list li .orderreview-tbl th .sate-list .done-receipt{
+    background: #37bdde;
+    color:#fff;
+    border: solid 1px #37bdde;
 }
 .orderreview-list-page .orderreview-list-wrap .orderreview-list li .orderreview-tbl td{}
 .orderreview-list-page .orderreview-list-wrap .orderreview-list li .orderreview-tbl .payment-detail{

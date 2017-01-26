@@ -26,6 +26,10 @@ def send_qr_mail(request, context, recipient, sender):
     return _send_mail_simple(request, recipient, sender, mail_body, 
                              subject=u"QRチケットに関しまして", )
 
+def send_qr_aes_mail(request, context, recipient, sender):
+    mail_body = get_mailbody_from_viewlet(request, context, "render.mail_aes")
+    return _send_mail_simple(request, recipient, sender, mail_body, subject=u"QRチケットに関しまして",)
+
 def get_mailbody_from_viewlet(request, context, viewname):
     response = render_view_to_response(context, request, name=viewname)
     if response is None:

@@ -21,3 +21,6 @@ class GenericHTTPError(CommunicationError):
 
 class GenericError(CommunicationError):
     pass
+
+class ExtauthSettingError(Exception):
+    pass

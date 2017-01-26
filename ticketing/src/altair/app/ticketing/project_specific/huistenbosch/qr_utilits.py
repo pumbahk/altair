@@ -52,7 +52,7 @@ def build_ht_qr_by_token(request, order_no, token):
     return build_ht_qr_by_history(request, history)
 
 
-def build_ht_qr_by_history_id(request, ticket_id):
+def build_ht_qr_by_ticket_id(request, ticket_id):
     try:
         history = TicketPrintHistory \
             .filter_by(id=ticket_id) \
@@ -102,7 +102,7 @@ def make_data_for_qr(history):
     params['season_flag'] = HT_SEASON_FLAG
     params['special_flag'] = HT_SPECIAL_FLAG
 
-    _, params['ticket_code'], params['enterable_days'] = qr_ticket_obj.product.name.split('_')
+    _, params['ticket_code'], params['enterable_days'] = qr_ticket_obj.ordered_product_item.product_item.name.split('_')
 
     performance = qr_ticket_obj.performance
 

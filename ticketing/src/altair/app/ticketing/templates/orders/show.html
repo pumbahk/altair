@@ -7,14 +7,27 @@
 }
 </style>
 <%block name="breadcrumbs">
-${ch.breadcrumbs(
-  names=[u'トップ', u'購入情報', order.performance.name, order.order_no],
-  urls=[
-    request.route_path('index'),
-    request.route_path('orders.index'),
-    request.route_path('performances.show', performance_id=order.performance_id) + '/order'
-  ]
-)}
+<%
+
+if reservation:
+  ch.breadcrumbs(
+    names=[u'トップ', u'購入情報', order.performance.name, order.order_no],
+    urls=[
+        request.route_path('events.reservation.index'),
+        request.route_path('orders.index'),
+        request.route_path('performances.reservation', performance_id=order.performance_id)
+    ]
+  )
+else:
+  ch.breadcrumbs(
+    names=[u'トップ', u'購入情報', order.performance.name, order.order_no],
+    urls=[
+        request.route_path('index'),
+        request.route_path('orders.index'),
+        request.route_path('performances.show', performance_id=order.performance_id) + '/order'
+    ]
+  )
+%>
 </%block>
 <div class="page-header">
   <h1>購入情報</h1>
@@ -45,7 +58,7 @@ ${ch.breadcrumbs(
           </div>
           <%include file="./_show_order_table.html" args="order=order,vh=vh,HH=HH"/>
           <div class="pull-right">
-            <%include file="/orders/_action_button.html" args="order=order, sort=['edit_order_info', 'mailinfo', 'paid', 'unpaid', 'delivered', 'cancel', 'refund', 'refund_info', 'release_stocks', 'print', 'delete']" />
+            <%include file="/orders/_action_button.html" args="order=order, sort=['edit_order_info', 'mailinfo', 'paid', 'unpaid', 'delivered', 'report_download', 'cancel', 'refund', 'refund_info', 'release_stocks', 'print', 'delete'], reservation=reservation" />
           </div>
           <div id="order_info-form">
             <%include file="/orders/_modal_order_info.html" args="form=form_order_info" />
