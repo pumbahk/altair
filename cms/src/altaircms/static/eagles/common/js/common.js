@@ -319,7 +319,7 @@ function showPopupPcSeatDetailFunc($targetClassName){
 
   if(modalHeight > winHeight){
     outerCommonHeight = modalHeight;
-  } else {
+  }else if(modalHeight < winHeight){
     outerCommonHeight = winHeight;
   }
 
@@ -454,6 +454,9 @@ function moveSeatDetailAllFunc(){
 
   $("#goToSeatPrice li a").click(function(){
     var target = $(this).attr('href');
+    var fillTarget = target.split("seat");
+    // IDでは重複した場合対応できないので、class名に一部変更
+    var fillTargetClass = '.seat-'+fillTarget[1];
     var th = $(target).position();
     var sh = $("#seatPriceTargetWrap").scrollTop();
     var pos = th.top + sh -200;
@@ -471,7 +474,7 @@ function moveSeatDetailAllFunc(){
     }
     
     $('.price-table tr').removeClass('show-price');
-    $(target).parent('tr').addClass('show-price');
+    $(fillTargetClass).parent('tr').addClass('show-price');
     return false;
 
   });
