@@ -5,12 +5,15 @@ import urllib
 import glob
 import xlrd, xlwt
 from altair.app.ticketing.orders.models import Order
+from altair.app.ticketing.core.models import TicketPrintHistory
 from pyramid.response import FileResponse
 from xlutils.copy import copy
 from datetime import datetime
 from altair.sqlahelper import get_db_session
 from xlwt import Workbook, Font, Alignment, Borders, Pattern, Protection, Formula, XFStyle
+import sqlahelper
 
+DBSession = sqlahelper.get_session()
 
 class ReservationReportOperator():
     def __init__(self, request, order, user):
@@ -61,6 +64,19 @@ class ReservationReportOperator():
     def copy_template_file(self):
         shutil.copyfile(self.template_file_path, self.download_file_path)
 
+    def insert_ticket_print_history(self):
+        order = self.get_order()
+        for item in order.items:
+            for element in item.elements:
+                history = TicketPrintHistory(
+                    operator_id=self.get_user().id,
+                    ordered_product_item_id=element.id,
+                    order_id=order.id,
+                    item_token_id=element.tokens[0].id
+                    )
+                DBSession.add(history)
+                DBSession.flush()
+
     def create_report_response(self):
         # 前回のファイルを削除(オペレータごと)
         self.delete_used_file()
@@ -72,6 +88,9 @@ class ReservationReportOperator():
         writer.write()
 
         self.get_order().mark_issued_or_printed(issued=True)
+
+        # 発券作業者を埋める
+        self.insert_ticket_print_history()
 
         response = FileResponse(os.path.abspath(self.download_file_path))
         response.headers = [
