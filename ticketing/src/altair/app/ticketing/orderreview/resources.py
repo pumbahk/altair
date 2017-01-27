@@ -69,9 +69,13 @@ class OrderReviewResourceBase(object):
         """現在認証中のユーザ"""
         return self.request.altair_auth_info
 
-    @reify
+    @property
     def cart_setting(self):
         return self.organization.setting.cart_setting
+
+    @property
+    def request_auth_type(self):
+        return self.request.params.get('auth_type') or self.cart_setting.auth_type
 
     # 今後複数認証を並行で使うことも想定してリストで返すことにする
     @property
@@ -86,7 +90,7 @@ class OrderReviewResourceBase(object):
 
     def _validate_required_oauth_params(self, params):
         # 必須項目が不足している場合は、アラートをあげるようにする
-        if self.cart_setting.auth_type == u'altair.oauth_auth.plugin.OAuthAuthPlugin':
+        if self.request_auth_type == u'altair.oauth_auth.plugin.OAuthAuthPlugin':
             if not (params['client_id'] and
                         params['client_secret'] and
                         params['endpoint_api'] and
@@ -98,10 +102,11 @@ class OrderReviewResourceBase(object):
     @property
     def oauth_params(self):
         prompt = self.organization.setting.openid_prompt or self.cart_setting.openid_prompt
-        # XXX: polluxの時は会員選択画面を見せずに行きたい
+        # XXX: polluxの時はどの会員資格かは関係ないので会員資格選択画面を見せずに行きたい
         if self.organization.setting.oauth_service_provider == 'pollux':
             if 'select_account' in prompt:
-                prompt.remove('select_account')
+                # XXX: prompt.removeを使うとDB updateが走ってしまう...
+                prompt_list = [p for p in prompt if p != 'select_acount']
         # 基本的にはOrg設定から取ることを想定。fallbackとしてカート設定の値を使うようにしたけど...
         params = dict(
             client_id=self.organization.setting.oauth_client_id or self.cart_setting.oauth_client_id,
@@ -110,7 +115,7 @@ class OrderReviewResourceBase(object):
             endpoint_token=self.organization.setting.oauth_endpoint_token or self.cart_setting.oauth_endpoint_token,
             endpoint_token_revocation=self.organization.setting.oauth_endpoint_token_revocation or self.cart_setting.oauth_endpoint_token_revocation,
             scope=self.organization.setting.oauth_scope or self.cart_setting.oauth_scope,
-            openid_prompt=prompt,
+            openid_prompt=prompt_list,
             endpoint_authz=self.organization.setting.oauth_endpoint_authz or self.cart_setting.oauth_endpoint_authz
         )
         try:
