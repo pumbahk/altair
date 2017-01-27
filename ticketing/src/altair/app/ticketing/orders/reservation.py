@@ -71,7 +71,8 @@ class ReservationReportOperator():
                 history = TicketPrintHistory(
                     operator_id=self.get_user().id,
                     ordered_product_item_id=element.id,
-                    order_id=order.id
+                    order_id=order.id,
+                    item_token_id=element.tokens[0].id
                     )
                 DBSession.add(history)
                 DBSession.flush()
