@@ -106,7 +106,7 @@ class OrderReviewResourceBase(object):
         if self.organization.setting.oauth_service_provider == 'pollux':
             if 'select_account' in prompt:
                 # XXX: prompt.removeを使うとDB updateが走ってしまう...
-                prompt_list = [p for p in prompt if p != 'select_acount']
+                prompt = [p for p in prompt if p != 'select_acount']
         # 基本的にはOrg設定から取ることを想定。fallbackとしてカート設定の値を使うようにしたけど...
         params = dict(
             client_id=self.organization.setting.oauth_client_id or self.cart_setting.oauth_client_id,
@@ -115,7 +115,7 @@ class OrderReviewResourceBase(object):
             endpoint_token=self.organization.setting.oauth_endpoint_token or self.cart_setting.oauth_endpoint_token,
             endpoint_token_revocation=self.organization.setting.oauth_endpoint_token_revocation or self.cart_setting.oauth_endpoint_token_revocation,
             scope=self.organization.setting.oauth_scope or self.cart_setting.oauth_scope,
-            openid_prompt=prompt_list,
+            openid_prompt=prompt,
             endpoint_authz=self.organization.setting.oauth_endpoint_authz or self.cart_setting.oauth_endpoint_authz
         )
         try:
