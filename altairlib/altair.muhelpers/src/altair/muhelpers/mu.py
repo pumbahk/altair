@@ -48,6 +48,8 @@ class Mailer(object):
 
         config_base = {
             "Command": "Send",
+            "Alert": 0,
+            "EasyId": 1,
             "InputEncode": "UTF-8",
             "RequestEncode": "UTF-8",
             "SendList": self.list_name,
