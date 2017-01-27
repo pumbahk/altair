@@ -9,16 +9,7 @@
 <%block name="breadcrumbs">
 <%
 
-if reservation:
-  ch.breadcrumbs(
-    names=[u'トップ', u'購入情報', order.performance.name, order.order_no],
-    urls=[
-        request.route_path('events.reservation.index'),
-        request.route_path('orders.index'),
-        request.route_path('performances.reservation', performance_id=order.performance_id)
-    ]
-  )
-else:
+if not reservation:
   ch.breadcrumbs(
     names=[u'トップ', u'購入情報', order.performance.name, order.order_no],
     urls=[
