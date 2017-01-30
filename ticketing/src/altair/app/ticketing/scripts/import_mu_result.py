@@ -97,7 +97,6 @@ def main():
 
             for a in announces:
                 filename = '%s_%d.json' % (a.send_after.strftime("%Y%m%d_%H%M"), a.id)
-                message("filename=%s" % filename)
                 json_key = resolver.resolve('/'.join([opts.result_from, filename])).get_key()
                 if json_key.exists():
                     obj = json.loads(json_key.get_contents_as_string())
@@ -154,12 +153,19 @@ def main():
                 #  } ]
                 # }
 
-                if obj['Lambda']['ErrorMessage'] is not None or obj['Lambda']['ErrorCode'] != '0':
-                    # should skip this file
-                    message("skip file with error: %s" % status)
+                try:
+                    if obj['Lambda']['ErrorMessage'] is not None or obj['Lambda']['ErrorCode'] != '0':
+                        # should skip this file
+                        message("skip file with error: %s" % status)
+                        continue
+                except Exception as e:
+                    message("skip file with parse error in %s: %r" % (status, e))
                     continue
 
+                message("parse status file: %s" % status)
                 for trans in obj['Lambda']['TransStatus']['ID']:
+                    message("found trans_id=%s in status json" % trans['TransId'])
+
                     # FIXME: 1つずつ探すのは避ける方がよさそう
                     a = session.query(Announcement) \
                         .filter(Announcement.mu_trans_id == trans['TransId']) \
@@ -167,6 +173,7 @@ def main():
                     if a is None:
                         continue
 
+                    message("found Announcement with trans_id=%s" % a.mu_trans_id)
                     if not opts.dry_run:
                         a.mu_status = trans['StatusCode']
                         if a.mu_result is None and trans['ProcResultFlg'] != '0':
