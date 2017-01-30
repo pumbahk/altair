@@ -28,7 +28,9 @@ from altair.app.ticketing.users.models import Announcement, WordSubscription
 from altair.app.ticketing.announce.utils import MacroEngine
 
 from altair.muhelpers import IMuMailerFactory
-from altair.muhelpers.mu import Mailer, Recipient
+from altair.muhelpers.mu import Recipient
+from altair.muhelpers.s3 import MuS3ConnectionFactory
+from altair.pyramid_boto.s3.connection import IS3ConnectionFactory
 
 from altair.app.ticketing.api.impl import get_communication_api, CMSCommunicationApi
 
@@ -150,6 +152,8 @@ def main():
     mu = mu_factory()
 
     now = datetime.now()
+
+    env['registry'].registerUtility(MuS3ConnectionFactory()(), IS3ConnectionFactory)
 
     try:
         try:

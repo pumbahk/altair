@@ -2,33 +2,27 @@
 #-*- coding: utf-8 -*-
 
 import sys
-import re
 from pyramid.paster import bootstrap, setup_logging
 import StringIO
 import locale
 import logging
 from argparse import ArgumentParser
-from datetime import datetime, timedelta
+from datetime import datetime
 
 import sqlahelper
-from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 
 import json
-import urllib2
-import contextlib
 import transaction
 
 import altair.multilock
 
 from altair.pyramid_assets import get_resolver
 
-from altair.app.ticketing.core.models import Organization, UserCredential
-from altair.app.ticketing.users.models import Announcement, WordSubscription
+from altair.app.ticketing.users.models import Announcement
 
-from altair.app.ticketing.announce.utils import MacroEngine
-from altair.muhelpers.mu import Mailer, Recipient
+from altair.muhelpers.s3 import MuS3ConnectionFactory
+from altair.pyramid_boto.s3.connection import IS3ConnectionFactory
 
-from altair.app.ticketing.api.impl import get_communication_api, CMSCommunicationApi
 
 JOB_NAME = __name__
 
@@ -83,6 +77,8 @@ def main():
     resolver = get_resolver(env['registry'])
 
     now = datetime.now()
+
+    env['registry'].registerUtility(MuS3ConnectionFactory()(), IS3ConnectionFactory)
 
     try:
         message("getting multilock as '%s'" % JOB_NAME)
