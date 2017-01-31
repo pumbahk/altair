@@ -30,8 +30,8 @@ body {
 
 .header .band {
   clear: both;
-  background-color: #bf0000;
-  color: #fff;
+  background-color: #000000;
+  color: #FFF;
 }
 
 .header h1 {
@@ -892,10 +892,12 @@ h2.glitter.red {
   overflow: hidden;
   vertical-align: middle;
   padding: 0px 0px 0px 20px;
-  background-image: linear-gradient(top, #cd4b4f 0%, #c63035 48%, #c01920 50%, #c52d33);
-  background-image: -webkit-gradient(linear, left top, left bottom, from(#cd4b4f), color-stop(0.48, #c63035), color-stop(0.5, #c01920), to(#c52d33));
-  background-image: -webkit-linear-gradient(top, #cd4b4f 0%, #c63035 48%, #c01920 50%, #c52d33);
-  background-image: -moz-linear-gradient(top, #cd4b4f 0%, #c63035 48%, #c01920 50%, #c52d33);
+  background-image: linear-gradient(top, #afbdc0 0%, #6d7673 50%, #0a0f0b 50%, #0a0809 100%);
+  background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0.00, #afbdc0 ), color-stop(0.50, #6d7673 ), color-stop(0.50, #0a0f0b ), color-stop(1.00, #0a0809 ));
+  background-image: -webkit-linear-gradient(top, #afbdc0 0%, #6d7673 50%, #0a0f0b 50%, #0a0809 100%);
+  background-image: -moz-linear-gradient(top, #afbdc0 0%, #6d7673 50%, #0a0f0b 50%, #0a0809 100%);
+  background-image: -o-linear-gradient(top, #afbdc0 0%, #6d7673 50%, #0a0f0b 50%, #0a0809 100%);
+  background-image: -ms-linear-gradient(top, #afbdc0 0%, #6d7673 50%, #0a0f0b 50%, #0a0809 100%);
   box-shadow: 2px 2px 2px -1px rgba(0, 0, 0, .3), 0px 0px 0px 2px rgba(255, 255, 255, .3) inset;
   text-shadow: 1px 1px 1px rgba(0, 0, 0, .4);
   user-select: none;
