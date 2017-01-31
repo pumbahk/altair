@@ -100,7 +100,7 @@ def main():
                 json_key = resolver.resolve('/'.join([opts.result_from, filename])).get_key()
                 if json_key.exists():
                     obj = json.loads(json_key.get_contents_as_string())
-                    # {
+                    # { u'Lambda: {
                     #  u'ErrorMessage': u'TemplatePcHtml\u5165\u529b\u30d1\u30e9\u30e1\u30fc\u30bf\u304c\u4e0d\u6b63\u3067\u3059',
                     #  u'ErrorCode': u'1001',
                     #  u'@env': u'pro',
@@ -109,23 +109,27 @@ def main():
                     #  u'@action': u'send',
                     #  u'TransId': None,
                     #  u'@version': u'1.0'
-                    # }
-                    if obj['ErrorCode'] == 0:
-                        message("transId = %s" % obj['TransId'])
-                        if not opts.dry_run:
-                            session.add(a)
-                            a.mu_trans_id = obj['TransId']
-                            a.save()
-                            transaction.commit()
-                            message("set mu_trans_id")
-                    else:
-                        message("errorCode = %s" % obj['ErrorCode'])
-                        if not opts.dry_run:
-                            session.add(a)
-                            a.mu_result = "refused"
-                            a.save()
-                            transaction.commit()
-                            message("set result: refused")
+                    # } }
+                    try:
+                        if obj['Lambda']['ErrorCode'] == 0:
+                            message("transId = %s" % obj['Lambda']['TransId'])
+                            if not opts.dry_run:
+                                session.add(a)
+                                a.mu_trans_id = obj['Lambda']['TransId']
+                                a.save()
+                                transaction.commit()
+                                message("set mu_trans_id")
+                        else:
+                            message("errorCode = %s" % obj['Lambda']['ErrorCode'])
+                            if not opts.dry_run:
+                                session.add(a)
+                                a.mu_result = "refused"
+                                a.save()
+                                transaction.commit()
+                                message("set result: refused")
+                    except Exception as e:
+                        message("skip file with parse error in %s: %r" % (filename, e))
+                        continue
 
                     if not opts.dry_run:
                         # TODO: move?
@@ -138,7 +142,7 @@ def main():
             for status in sorted([x for x in status_list if x.endswith(".json")], reverse=True):
                 json_key = resolver.resolve('/'.join([opts.status_from, status])).get_key()
                 obj = json.loads(json_key.get_contents_as_string())
-                # u'Lambda: {
+                # { u'Lambda: {
                 #  u'ErrorMessage': None,
                 #  u'ErrorCode': u'0',
                 #  u'TransStatus': u'ID': [ {
@@ -151,7 +155,7 @@ def main():
                 #    u'StatusMessage': u'\u9001\u4fe1\u7d42\u4e86',
                 #    u'StatusCode': u'31'
                 #  } ]
-                # }
+                # } }
 
                 try:
                     if obj['Lambda']['ErrorMessage'] is not None or obj['Lambda']['ErrorCode'] != '0':
