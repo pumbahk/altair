@@ -13,7 +13,7 @@ class DefaultMuMailerFactory(object):
             "AuthKey": config.registry.settings.get('altair.mu.auth_key')
         }
         self.from_address = config.registry.settings.get('altair.mu.from_address')
-        self.from_name = config.registry.settings.get('altair.mu.from_name')
+        self.from_name = config.registry.settings.get('altair.mu.from_name').decode('utf-8')
 
     def __call__(self):
         return Mailer(self.from_address, self.from_name, self.config)
