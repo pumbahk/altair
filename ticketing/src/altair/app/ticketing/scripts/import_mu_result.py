@@ -111,7 +111,7 @@ def main():
                     #  u'@version': u'1.0'
                     # } }
                     try:
-                        if obj['Lambda']['ErrorCode'] == 0:
+                        if obj['Lambda']['ErrorCode'] == '0':
                             message("transId = %s" % obj['Lambda']['TransId'])
                             if not opts.dry_run:
                                 session.add(a)
@@ -168,7 +168,7 @@ def main():
 
                 message("parse status file: %s" % status)
                 for trans in obj['Lambda']['TransStatus']['ID']:
-                    message("found trans_id=%s in status json" % trans['TransId'])
+                    # message("found trans_id=%s in status json" % trans['TransId'])
 
                     # FIXME: 1つずつ探すのは避ける方がよさそう
                     a = session.query(Announcement) \
@@ -194,6 +194,8 @@ def main():
                             a.completed_at = datetime.now()
                         a.save()
                         transaction.commit()
+
+                break
 
     except:
         set_quiet(False)
