@@ -2214,26 +2214,6 @@ class DeliveryMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         else:
             return FeeTypeEnum.PerUnit.v[0]
 
-    @property
-    def fee(self):
-        if self.fee_per_order:
-            if self.fee_per_principal_ticket:
-                raise Exception('both fee_per_order and fee_per_ticket are non-zero')
-            else:
-                return self.fee_per_order
-        else:
-            return self.fee_per_principal_ticket
-
-    @property
-    def fee_type(self):
-        if self.fee_per_order:
-            if self.fee_per_principal_ticket:
-                raise Exception('both fee_per_order and fee_per_ticket are non-zero')
-            else:
-                return FeeTypeEnum.Once.v[0]
-        else:
-            return FeeTypeEnum.PerUnit.v[0]
-
     @hybrid_property
     def delivery_plugin(self):
         warn_deprecated("deprecated attribute `delivery_plugin' is accessed")
