@@ -67,7 +67,7 @@ class Mailer(object):
 
     def create_config(self, start_time, subject):
         config = copy.deepcopy(self.config)
-        config["SendStartTime"] = start_time.strftime("%Y%m%d%H%M%S")
+        config["SendStartTime"] = start_time.strftime("%Y-%m-%d %H:%M:%S")
         config["TemplatePcHtml"] = self.field_separator.join([
             self.template_name,
             subject,
@@ -97,7 +97,13 @@ class Mailer(object):
         buf = [ ]
         for r in recipients:
             attribute_values = [ r.attributes.get(k, "") for k in self.attribute_keys ]
-            buf.append(self.field_separator.join([r.open_id, "", "", self.attr_separator.join([escape(a) for a in attribute_values])]) + self.line_end)
+            buf.append(self.field_separator.join([
+                r.open_id,
+                "",
+                "",
+                self.attr_separator.join([escape(a) for a in attribute_values]),
+                ""
+            ]) + self.line_end)
 
         return "".join(buf)
 
