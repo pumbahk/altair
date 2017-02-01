@@ -44,6 +44,7 @@ from .forms import (
     SearchRefundPerformanceForm,
     RefundTicketSearchForm,
     ChangePassWordForm,
+    ReminderChangePassWordForm,
     PasswordReminderForm
 )
 from .utils import ValidateUtils, AESEncryptor, sendmail
@@ -60,6 +61,11 @@ logger = logging.getLogger(__name__)
 def flash_error_message(request, errors):
     for error in errors:
         request.session.flash(error)
+
+def reset_password(form):
+    form.new_password.data = None
+    form.new_password_confirm.data = None
+    return form
 
 class FamiPortOpToolTopView(object):
     def __init__(self, context, request):
@@ -140,50 +146,33 @@ class FamiPortChangePassWord(object):
         self.context = context
         self.request = request
 
-    def _reset_password(self, form):
-        form.new_password.data = None
-        form.new_password_confirm.data = None
-        return form
-
     @view_config(route_name='change_password', renderer='change_password.mako', request_method='GET')
     def get(self):
+        action_url = self.request.current_route_path()
         form = ChangePassWordForm(csrf_context=self.request.session)
-        reminder_token = self.request.GET.get('reminder_token', None)
-        action_url = self.request.current_route_path(reminder_token=reminder_token) if reminder_token else self.request.current_route_path()
-        if reminder_token:
-            # パスワードリマインダーのURLでアクセスする場合は強制にログアウトする
-            forget(self.request)
-            # TokenでユーザIDを取得
-            user_id = AESEncryptor.get_id_from_token(reminder_token)
-        else:
-            # 認証した情報からユーザIDを取得
-            user_id = self.request.authenticated_userid
+        # 認証した情報からユーザIDを取得
+        user_id = self.request.authenticated_userid
 
         # 以上二つ方法しかで取得したユーザIDを認めない。
         if not user_id:
-            if reminder_token:
-                self.request.session.flash(u'パスワード再発行用のURLの有効期限が切れています。パスワードリマインダーで再発行して下さい。')
+            if not self.request.GET:
+                self.request.session.flash(u'パスワードの変更はログインまたはパスワードリマインダーでアクセスしてください。')
             else:
-                if not self.request.GET:
-                    self.request.session.flash(u'パスワードの変更はログインまたはパスワードリマインダーでアクセスしてください。')
-                else:
-                    self.request.session.flash(u'予期せぬエラーが発生しました。システム管理者へご連絡下さい。')
-                logger.error(u'not correct format of the token or accessing without login. user_id:{0}, authenticated_id:{1}, GET:{2}'\
-                             .format(user_id,
-                                     self.request.authenticated_userid,
-                                     self.request.GET))
+                self.request.session.flash(u'予期せぬエラーが発生しました。システム管理者へご連絡下さい。')
+            logger.error(
+                u'not correct format of the token or accessing without login. user_id:{0}, authenticated_id:{1}, GET:{2}' \
+                .format(user_id,
+                        self.request.authenticated_userid,
+                        self.request.GET))
+
             return HTTPFound(self.request.route_path('login'))
-        return dict(form=form, action_url=action_url)
+        return dict(action_url=action_url, form=form)
 
     @view_config(route_name='change_password', renderer='change_password.mako', request_method='POST')
     def post(self):
+        action_url = self.request.current_route_path()
         form = ChangePassWordForm(formdata=self.request.POST, csrf_context=self.request.session)
-        reminder_token = self.request.params.get('reminder_token', None)
-        action_url = self.request.current_route_path(reminder_token=reminder_token) if reminder_token else self.request.current_route_path()
-        if reminder_token:
-            user_id = AESEncryptor.get_id_from_token(reminder_token)
-        else:
-            user_id = self.request.authenticated_userid
+        user_id = self.request.authenticated_userid
 
         if form.validate():
             session = get_db_session(self.request, 'famiport')
@@ -191,8 +180,8 @@ class FamiPortChangePassWord(object):
             try:
                 user = session.query(FamiPortOperator).filter(FamiPortOperator.id == user_id).one()
 
-                if user.is_matched_password(form.new_password.data):
-                    self.request.session.flash(u'現在のパスワードと同じものには変更できません。')
+                if not user.is_matched_password(form.old_password.data):
+                    self.request.session.flash(u'旧パスワードは間違います。')
                 else:
                     new_encrypted_password = encrypt_password(form.new_password.data)
                     user.password = new_encrypted_password
@@ -206,19 +195,18 @@ class FamiPortChangePassWord(object):
             except NoResultFound:
                 # パスワード変更のpostについて、userを取れない場合はないのため、userが取られない場合は「予期せぬエラー」を出す。
                 self.request.session.flash(u'予期せぬエラーが発生しました。システム管理者へご連絡下さい。')
-                logger.error(u'not correct format of the token or accessing without login. user_id:{0}, authenticated_id:{1}, reminder_token:{2}, GET:{3}' \
+                logger.error(u'not correct format of the token or accessing without login. user_id:{0}, authenticated_id:{1}, GET:{2}' \
                              .format(user_id,
                                      self.request.authenticated_userid,
-                                     reminder_token,
                                      self.request.GET))
                 return HTTPFound(self.request.route_path('login'))
 
-        form = self._reset_password(form)
+        form = reset_password(form)
         errors_set = form.errors.values()
         for errors in errors_set:
             flash_error_message(self.request, errors)
 
-        return dict(form=form, action_url=action_url)
+        return dict(action_url=action_url, form=form)
 
 class FamiPortPasswordReminder(object):
     def __init__(self, context, request):
@@ -226,7 +214,7 @@ class FamiPortPasswordReminder(object):
         self.request = request
 
     def _get_reminder_url(self, token):
-        base_url = self.request.route_url('change_password')
+        base_url = self.request.route_url('change_password_reminder')
         params = u'reminder_token={}'.format(token)
         return u'?'.join([base_url, params])
 
@@ -270,6 +258,75 @@ class FamiPortPasswordReminder(object):
             flash_error_message(self.request, errors)
         return dict(form=form)
 
+    @view_config(route_name='change_password_reminder', renderer='change_password_reminder.mako', request_method='GET')
+    def change_password_reminder_get(self):
+        reminder_token = self.request.GET.get('reminder_token', None)
+        if reminder_token is None:
+            self.request.session.flash(u'パスワード再発行用のURLが不正です。パスワードリマインダーで発行して下さい。')
+            return HTTPFound(self.request.route_path('login'))
+
+        action_url = self.request.current_route_path(reminder_token=reminder_token)
+        form = ReminderChangePassWordForm(csrf_context=self.request.session)
+
+        # パスワードリマインダーのURLでアクセスする場合は強制にログアウトする
+        forget(self.request)
+        # TokenでユーザIDを取得
+        user_id = AESEncryptor.get_id_from_token(reminder_token)
+
+        # 以上二つ方法しかで取得したユーザIDを認めない。
+        if not user_id:
+            self.request.session.flash(u'パスワード再発行用のURLの有効期限が切れています。パスワードリマインダーで再発行して下さい。')
+            return HTTPFound(self.request.route_path('login'))
+
+        return dict(form=form, action_url=action_url)
+
+    @view_config(route_name='change_password_reminder', renderer='change_password_reminder.mako', request_method='POST')
+    def change_password_reminder_post(self):
+        reminder_token = self.request.params.get('reminder_token', None)
+        if reminder_token is None:
+            self.request.session.flash(u'パスワード再発行用のURLが不正です。パスワードリマインダーで発行して下さい。')
+            return HTTPFound(self.request.route_path('login'))
+
+        action_url = self.request.current_route_path(reminder_token=reminder_token)
+        form = ReminderChangePassWordForm(formdata=self.request.POST, csrf_context=self.request.session)
+
+        user_id = AESEncryptor.get_id_from_token(reminder_token)
+
+        if form.validate():
+            session = get_db_session(self.request, 'famiport')
+
+            try:
+                user = session.query(FamiPortOperator).filter(FamiPortOperator.id == user_id).one()
+
+                if not user.is_valid_email(form.email.data):
+                    self.request.session.flash(u'Eメールアドレスが不正です。')
+                else:
+                    new_encrypted_password = encrypt_password(form.new_password.data)
+                    user.password = new_encrypted_password
+
+                    if not user.active:
+                        user.active = True
+                    session.commit()
+                    self.request.session.flash(u'パスワードを再設定しました。')
+                    return HTTPFound(self.request.route_path('top'))
+
+            except NoResultFound:
+                # パスワード再設定のpostについて、userを取れない場合はないのため、userが取られない場合は「予期せぬエラー」を出す。
+                self.request.session.flash(u'予期せぬエラーが発生しました。システム管理者へご連絡下さい。')
+                logger.error(
+                    u'not correct format of the token or accessing without login. user_id:{0}, authenticated_id:{1}, reminder_token:{2}, GET:{3}' \
+                    .format(user_id,
+                            self.request.authenticated_userid,
+                            reminder_token,
+                            self.request.GET))
+                return HTTPFound(self.request.route_path('login'))
+
+        form = reset_password(form)
+        errors_set = form.errors.values()
+        for errors in errors_set:
+            flash_error_message(self.request, errors)
+
+        return dict(form=form, action_url=action_url)
 
 class FamiPortOpToolExampleView(object):
     def __init__(self, context, request):
