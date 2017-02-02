@@ -15,13 +15,47 @@ from altair.formhelpers.widgets import (
     OurTextInput,
     OurDateWidget,
 )
+from altair.formhelpers.filters import (
+    strip_spaces,
+    NFKC,
+)
 from altair.formhelpers import Max, after1900
 from wtforms.ext.csrf.fields import CSRFTokenField
 from wtforms.ext.csrf.session import SessionSecureForm
-from wtforms.validators import Required, Length, Optional, EqualTo
+from wtforms.validators import Required, Length, Optional, EqualTo, Email
 from wtforms.compat import iteritems
 from wtforms import HiddenField, ValidationError
 from .utils import get_csrf_token
+
+class NotEqualTo(object):
+    """
+    Compares the values of two fields.
+
+    :param fieldname:
+        The name of the other field to compare to.
+    :param message:
+        Error message to raise in case of a validation error. Can be
+        interpolated with `%(other_label)s` and `%(other_name)s` to provide a
+        more helpful error.
+    """
+    def __init__(self, fieldname, message=None):
+        self.fieldname = fieldname
+        self.message = message
+
+    def __call__(self, form, field):
+        try:
+            other = form[self.fieldname]
+        except KeyError:
+            raise ValidationError(field.gettext("Invalid field name '%s'.") % self.fieldname)
+        if field.data == other.data:
+            d = {
+                'other_label': hasattr(other, 'label') and other.label.text or self.fieldname,
+                'other_name': self.fieldname
+            }
+            if self.message is None:
+                self.message = field.gettext('Field must be equal to %(other_name)s.')
+
+            raise ValidationError(self.message % d)
 
 class CSRFSecureForm(SessionSecureForm):
     SECRET_KEY = get_csrf_token()
@@ -50,6 +84,14 @@ class ChangePassWordForm(OurForm, CSRFSecureForm):
             if name in kwargs:
                 field.data = kwargs[name]
 
+    old_password = OurTextField(
+        widget=OurPasswordInput(),
+        validators=[
+            Required(),
+            NotEqualTo('new_password', message=u'現在のパスワードと同じものには変更できません。')
+        ],
+        label=u'旧パスワード'
+    )
     new_password = OurTextField(
         widget=OurPasswordInput(),
         validators=[
@@ -72,6 +114,25 @@ class ChangePassWordForm(OurForm, CSRFSecureForm):
         pattern = r'^(?=.*[a-zA-Z])(?=.*[0-9])([A-Za-z0-9' + re.escape('~!@#$%^&*()_+-=[]{}|;:<>?,./') + ']+)$'
         if not re.match(pattern, field.data):
             raise ValidationError(u'半角英数字混在でご入力下さい。（使用可能な記号については表記の通りです）')
+
+class ReminderChangePassWordForm(ChangePassWordForm):
+    def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
+        super(ReminderChangePassWordForm, self).__init__(formdata, obj, prefix, **kwargs)
+        # 旧パスワードのフィールドがいらないため、削除する。
+        del self.old_password
+        for name, field in iteritems(self._fields):
+            if name in kwargs:
+                field.data = kwargs[name]
+
+    # セキュリティー強化のため追加した。
+    email = OurTextField(
+        validators=[
+            Required(),
+            Email(message=u'有効なEメールアドレスを入力してください。')
+        ],
+        filters=[strip_spaces, NFKC],
+        label=u'Eメールアドレス'
+    )
 
 class PasswordReminderForm(OurForm):
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):

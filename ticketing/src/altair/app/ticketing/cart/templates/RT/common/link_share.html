@@ -13,5 +13,4 @@ for ordered_product in order.ordered_products:
         namelist+="{0}|".format(urllib.quote(ordered_product_item.product_item.name.encode('utf-8')))
 %>
 
-<img src="https://track.linksynergy.com/ep?mid=42286&ord=${order.order_no}
-&skulist=${skulist[:-1]}&qlist=${qlist[:-1]}&amtlist=${amtlist[:-1]}&cur=JPY&namelist=${namelist[:-1]}" width="1" height="1" >
+<img src="https://track.linksynergy.com/ep?mid=42286&ord=${order.order_no}&skulist=${skulist[:-1]}&qlist=${qlist[:-1]}&amtlist=${amtlist[:-1]}&cur=JPY&namelist=${namelist[:-1]}" width="1" height="1" >

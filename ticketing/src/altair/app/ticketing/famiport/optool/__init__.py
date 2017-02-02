@@ -69,6 +69,7 @@ def main(global_conf, **local_conf):
     config.add_route('login',  '/login')
     config.add_route('change_password', '/change_password')
     config.add_route('password_reminder', '/password_reminder')
+    config.add_route('change_password_reminder', '/change_password_reminder')
     config.add_route('top',  '/', factory='.resources.TopResource')
     config.add_route('example.page_needs_authentication',  '/.example/page_needs_authentication', factory='.resources.ExampleResource')
     # Search
