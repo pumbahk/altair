@@ -52,7 +52,10 @@ class Announce(BaseView):
             url=PageURL_WebOb_Ex(self.request)
         )
 
-        return dict(announcements=announcements, mode=mode)
+        return dict(
+            mu_admin_url=self.request.registry.settings.get("altair.mu.admin_url"),
+            announcements=announcements,
+            mode=mode)
 
     @view_config(route_name='announce.list', renderer='altair.app.ticketing:templates/announce/list.html')
     def list(self):
