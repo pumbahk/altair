@@ -261,6 +261,7 @@ class OrganizationSettings(BaseView):
         organization_setting.orderreview_index = f.orderreview_index.data
         organization_setting.i18n = f.i18n.data
         organization_setting.auto_cms = f.auto_cms.data
+        organization_setting.event_label = f.event_label.data
         organization_setting.oauth_service_provider = f.oauth_service_provider.data
         organization_setting.oauth_client_id = f.oauth_client_id.data
         organization_setting.oauth_client_secret = f.oauth_client_secret.data

@@ -164,6 +164,10 @@
       <td>${u'○' if organization_setting.auto_cms else u'×'}</td>
     </tr>
     <tr>
+      <th>${HH.label_text_for(c_models.OrganizationSetting.event_label)}</th>
+      <td>${u'○' if organization_setting.event_label else u'×'}</td>
+    </tr>
+    <tr>
       <th>${f.oauth_service_provider.kwargs['label']}</th>
       <td>${organization_setting.oauth_service_provider}</td>
     </tr>
