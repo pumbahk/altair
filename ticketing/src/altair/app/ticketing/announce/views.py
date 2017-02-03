@@ -38,11 +38,13 @@ class Announce(BaseView):
             .filter_by(organization_id=self.context.user.organization_id)\
             .order_by(Announcement.send_after)
 
+        # FIXME: 失敗したものがtodo側に残り続けるという問題がある...
+        # 手動で、失敗したものもcompletedに変えたい?
         if mode == 'todo':
-            query = query.filter_by(started_at=None)\
+            query = query.filter_by(completed_at=None)\
                 .order_by(Announcement.send_after)
         else:
-            query = query.filter(Announcement.started_at.isnot(None))\
+            query = query.filter(Announcement.completed_at.isnot(None))\
                 .order_by(Announcement.send_after.desc())
 
         announcements = paginate.Page(

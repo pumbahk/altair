@@ -20,8 +20,8 @@
   <h1>告知メール</h1>
 </div>
 
-[ ${tab('todo', u'未送信')}
-| ${tab('done', u'送信済')}
+[ ${tab('todo', u'未処理・処理中')}
+| ${tab('done', u'処理済')}
 ]
 
 
@@ -45,7 +45,7 @@
     % for a in announcements:
     <tr>
         <td style="white-space: nowrap;">${vh.datetime(a.send_after, with_weekday=True)}</td>
-        <td style="white-space: nowrap;">${u'処理済' if a.completed_at else (u'処理中' if a.started_at else u'')}</td>
+        <td style="white-space: nowrap;">${u'下書き' if a.is_draft else (u'処理済' if a.completed_at else (u'処理中' if a.started_at else u''))}</td>
         <td><a href="${request.route_path('announce.list', event_id=a.event.id)}">${a.event.title}</a></td>
         <td><a href="${request.route_path('announce.edit', announce_id=a.id)}">${a.subject}</a></td>
         <td>${len(a.words.split(",")) if 0 < len(a.words) else ''}</td>
