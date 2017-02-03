@@ -170,10 +170,10 @@ def main():
 
                 message("parse status file: %s" % status)
 
-                # 最新のstatusが30分以上古いってのは、異常
+                # 最新のstatusが3時間以上古いってのは、異常
                 created_at = datetime.strptime(obj['Lambda']['created_at'], '%Y-%m-%d %H:%M:%S')
                 age = (now - created_at).total_seconds()
-                if 30*60 < age:
+                if 3*3600 < age:
                     logger.warn('latest status json from postman is too old: %s' % status)
 
                 for trans in obj['Lambda']['TransStatus']['ID']:
