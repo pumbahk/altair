@@ -32,8 +32,6 @@ charset = locale.getpreferredencoding()
 if charset == 'US-ASCII':
     charset = 'utf-8'
 
-datetime_format = "%Y/%m/%d %H:%M"
-
 quiet = False
 
 output = sys.stdout
@@ -85,7 +83,6 @@ def main():
         with altair.multilock.MultiStartLock(JOB_NAME):
             # get announcement without trans_id
             announces = session.query(Announcement) \
-                .filter(Announcement.send_after < now) \
                 .filter(Announcement.started_at != None) \
                 .filter(Announcement.mu_trans_id == None) \
                 .filter(Announcement.mu_result == None) \
@@ -138,6 +135,11 @@ def main():
                 else:
                     message("not found in s3: %s" % filename)
 
+                    # startedしてから30分たっているのにtrans_idがないのは異常
+                    age = (now - a.started_at).total_seconds()
+                    if 30*60 < age:
+                        logger.warn('mu request may not be processed: Announce.id=%d' % a.id)
+
             status_list = resolver.resolve(opts.status_from).listdir()
             for status in sorted([x for x in status_list if x.endswith(".json")], reverse=True):
                 json_key = resolver.resolve('/'.join([opts.status_from, status])).get_key()
@@ -167,6 +169,13 @@ def main():
                     continue
 
                 message("parse status file: %s" % status)
+
+                # 最新のstatusが30分以上古いってのは、異常
+                created_at = datetime.strptime(obj['Lambda']['created_at'], '%Y-%m-%d %H:%M:%S')
+                age = (now - created_at).total_seconds()
+                if 30*60 < age:
+                    logger.warn('latest status json from postman is too old: %s' % status)
+
                 for trans in obj['Lambda']['TransStatus']['ID']:
                     # message("found trans_id=%s in status json" % trans['TransId'])
 
@@ -195,6 +204,7 @@ def main():
                         a.save()
                         transaction.commit()
 
+                # 最新の1件を処理したら、終了する
                 break
 
     except:
