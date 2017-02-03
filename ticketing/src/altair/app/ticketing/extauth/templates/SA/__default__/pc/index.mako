@@ -13,7 +13,7 @@
             <dl>
               <dt>クーポンをお持ちの方はこちら</dt>
               <dd>
-                  <form action="${_context.route_path('extauth.login', _query=dict(member_set=member_set.name))}" method="POST">
+                  <form action="${_context.route_path('extauth.login')}" method="POST">
                       <table class="table-login">
                         <tbody>
                         <tr>
