@@ -158,7 +158,7 @@ class MypageView(object):
     def show(self):
         jump_maintenance_page_om_for_trouble(self.request.organization)
         authenticated_user = self.context.authenticated_user()
-        user = cart_api.get_user(authenticated_user)
+        user = cart_api.get_or_create_user(authenticated_user)
         per = 10
 
         shipping_address = None
