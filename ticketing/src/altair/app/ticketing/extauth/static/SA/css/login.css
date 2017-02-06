@@ -107,7 +107,7 @@ body {
 /* login
 ---------------------------------------------- */
 .login-box { margin: 0 auto; }
-.login-box-1 { width: 64%; }
+.login-box-1 { width: 100%; }
 .login-box-2 { width: 48%; }
 .login-area .login-box-2:nth-child(odd) { float: left; }
 .login-area .login-box-2:nth-child(even) { float: right; }
@@ -124,7 +124,7 @@ body {
 .login-box dt {
   margin: 0 0 24px;
   padding: .5em;
-  background: #1253A4;
+  background: #000;
   color: #FFF;
   font-size: 1.8rem;
   font-weight: bold;
@@ -132,6 +132,9 @@ body {
 }
 .login-box dd {
   margin: 0 auto 20px;
+}
+#member-login-box dd {
+  margin-top: 80px;
 }
 .login-column {
   width: 80%;
@@ -155,7 +158,7 @@ body {
   width: 80%;
   margin: 0 auto;
   padding: 1em .5em;
-  background: #C21010;
+  background: #ED0000;
   border: none;
   -webkit-border-radius: 3px;
   -moz-border-radius: 3px;
@@ -166,6 +169,23 @@ body {
   display: inline-block;
   font-size: 1.8rem;
   font-weight: bold;  
+  text-decoration: none;
+}
+.btn-login-buy {
+  width: 36%;
+  margin: 0 auto;
+  padding: 1em;
+  background: #EFEFEF;
+  border: 1px solid #ccc;
+  -webkit-border-radius: 3px;
+  -moz-border-radius: 3px;
+  -ms-border-radius: 3px;
+  border-radius: 3px;
+  color: #000;
+  cursor: pointer;
+  display: inline-block;
+  font-weight: bold;
+  font-size: 100%;
   text-decoration: none;
 }
 .btn-login:hover {
@@ -230,6 +250,37 @@ body {
   list-style: outside disc;
 }
 
+/* TABLE*/
+/* -----------------------------------------*/
+.table-login {
+  border: 1px solid #CCC;
+  margin: 0 auto 20px;
+  border-collapse: collapse;
+  /* style.cssにあるwidth指定を打ち消すため */
+  width: auto;
+}
+.table-login th, .table-login td {
+  border: 1px solid #CCC;
+  padding: 10px;
+}
+/* style.cssにあるborder指定を打ち消すため */
+.table-login tbody tr td:last-child {
+  border-right: 1px solid #CCC;
+  border-left: 1px solid transparent;
+}
+.table-login tr {
+  border-bottom: 1px solid transparent;
+  border-left: 1px solid transparent;
+}
+.table-login th {
+  background: #EFEFEF;
+  font-weight: bold;
+}
+.table-login td input {
+  width: 90%;
+  padding: 3px;
+}
+
 /* ERROR */
 /* -----------------------------------------*/
 .error .errorText {
@@ -242,6 +293,7 @@ body {
 /* -----------------------------------------*/
 @media only screen and (max-width: 787px) {
   .main,  .login-box-1, .login-box-2 { width: 100%; }
+  .login-area { margin: 0}
   .login-box-2 { float: none; }
   .login-box dl {
     -webkit-border-radius: 0;
@@ -251,13 +303,44 @@ body {
     border: none;
   }
   .login-note { 
-  margin: 0 0 20px;
-  padding: 0;
-  border: none;
+    margin: 20px 0;
+    padding: 0;
+    border: none;
+  }
+  .table-login {
+    width: 80%;
+    border: none;
+    margin: 0 auto;
+  }
+   .table-login th, .table-login td {
+    width: 100%;
+    display: block;
+  }
+  .table-login tbody tr td:last-child {
+    border-right: 1px solid transparent;
+  }
+  .table-login th {
+    border-bottom: none;
+  }
+  .table-login td {
+    border: none;
+    padding: 0 0 20px;
+  }
+  .table-login td input {
+    width: 100%;
+    padding: 10px;
+  }
+ .btn-login-id, .btn-login-buy {
+    width: 80%;
+    margin: 0 auto;
+    padding: 1em;
   }
   .error .errorText {
-  font-size: 1.6rem;
-  text-align: center;
+      font-size: 1.6rem;
+      text-align: center;
+  }
+  #member-login-box dd {
+    margin-top: 0px;
   }
 }
 
@@ -266,11 +349,15 @@ body {
 @media only screen and (max-width: 499px) {
   .login-box dt { font-size: 1.6rem; }
   .btn-login {
-  padding: 1.4em .5em;
-  font-size: 1.6rem;
+      padding: 1.4em .5em;
+      font-size: 1.6rem;
   }
   .btn-regist {
-  width: 80%;
-  font-size: 1.4rem;
+      width: 80%;
+      font-size: 1.4rem;
+  }
+  .btn-login-id, .btn-login-buy {
+      padding: 1.4em .5em;
+      font-size: 1.6rem;
   }
 }
