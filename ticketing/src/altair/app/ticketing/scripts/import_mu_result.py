@@ -52,7 +52,7 @@ def set_quiet(q):
 def message(msg, auxiliary=False):
     logger.log(auxiliary and logging.DEBUG or logging.INFO, msg)
     pad = '  ' if auxiliary else ''
-    print >>output, (pad + repr(msg)).encode(charset)
+    print >>output, (pad + (msg if isinstance(msg, basestring) else repr(msg))).encode(charset)
 
 
 def main():
@@ -79,7 +79,7 @@ def main():
     env['registry'].registerUtility(MuS3ConnectionFactory()(), IS3ConnectionFactory)
 
     try:
-        message("getting multilock as '%s'" % JOB_NAME)
+        message("getting multilock as '%s'" % JOB_NAME, True)
         with altair.multilock.MultiStartLock(JOB_NAME):
             # get announcement without trans_id
             announces = session.query(Announcement) \
@@ -115,15 +115,15 @@ def main():
                                 a.mu_trans_id = obj['Lambda']['TransId']
                                 a.save()
                                 transaction.commit()
-                                message("set mu_trans_id")
+                                message("set mu_trans_id", True)
                         else:
                             message("errorCode = %s" % obj['Lambda']['ErrorCode'])
                             if not opts.dry_run:
                                 session.add(a)
-                                a.mu_result = "refused"
+                                a.mu_result = "refused" # FIXME?
                                 a.save()
                                 transaction.commit()
-                                message("set result: refused")
+                                message("set result: refused", True)
                     except Exception as e:
                         message("skip file with parse error in %s: %r" % (filename, e))
                         continue
@@ -133,7 +133,7 @@ def main():
                         # json_key.delete()
                         pass
                 else:
-                    message("not found in s3: %s" % filename)
+                    message("not found in s3: %s" % filename, True)
 
                     # startedしてから30分たっているのにtrans_idがないのは異常
                     age = (now - a.started_at).total_seconds()
@@ -168,7 +168,7 @@ def main():
                     message("skip file with parse error in %s: %r" % (status, e))
                     continue
 
-                message("parse status file: %s" % status)
+                message("parse status file: %s" % status, True)
 
                 # 最新のstatusが3時間以上古いってのは、異常
                 created_at = datetime.strptime(obj['Lambda']['created_at'], '%Y-%m-%d %H:%M:%S')
@@ -186,7 +186,7 @@ def main():
                     if a is None:
                         continue
 
-                    message("found Announcement with trans_id=%s" % a.mu_trans_id)
+                    message("found Announcement with trans_id=%s" % a.mu_trans_id, True)
                     if not opts.dry_run:
                         a.mu_status = trans['StatusCode']
                         if a.mu_result is None and trans['ProcResultFlg'] != '0':
@@ -211,6 +211,6 @@ def main():
         set_quiet(False)
         raise
 
-    message("done")
+    message("done", True)
 
     return 0

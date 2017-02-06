@@ -64,7 +64,7 @@ def set_quiet(q):
 def message(msg, auxiliary=False):
     logger.log(auxiliary and logging.DEBUG or logging.INFO, msg)
     pad = '  ' if auxiliary else ''
-    print >>output, (pad + repr(msg)).encode(charset)
+    print >>output, (pad + (msg if isinstance(msg, basestring) else repr(msg))).encode(charset)
 
 
 def upload(uri, data, resolver, dry_run):
@@ -173,7 +173,7 @@ def main():
             message('Multiple organizations that match to %s' % opts.organization)
             return 1
 
-        message("getting multilock as '%s'" % JOB_NAME)
+        message("getting multilock as '%s'" % JOB_NAME, True)
         with altair.multilock.MultiStartLock(JOB_NAME):
 
             announces = session.query(Announcement) \
@@ -183,14 +183,14 @@ def main():
             .all()
 
             if len(announces) == 0:
-                message("nothing to do")
+                message("nothing to do", True)
 
             for a in announces:
                 session.expunge(a)
 
             for a in announces:
                 if now + timedelta(seconds=opts.ahead) < a.send_after:
-                    message("announce(timer=%s, id=%d) -> skipped" % (a.send_after, a.id))
+                    message("announce(timer=%s, id=%d) -> skipped" % (a.send_after, a.id), True)
                     continue
 
                 message("announce(timer=%s, id=%d)" % (a.send_after, a.id))
@@ -228,6 +228,6 @@ def main():
         set_quiet(False)
         raise
 
-    message("done")
+    message("done", True)
 
     return 0
