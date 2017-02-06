@@ -29,6 +29,7 @@ class Mailer(object):
         self.line_end = "\n"
         self.line_end_macro = "###_BR_###"
         self.attr_separator = "|"
+        self.name_macro = "###_NAME_###"
         self.attribute_macro = "###_ATTRIBUTE%d_###"
 
         # our spec
@@ -116,8 +117,14 @@ class Mailer(object):
             index[item] = 1 + idx
 
         def attr(m):
-            if m and m.group(1) in index:
-                return self.attribute_macro % index[m.group(1)]
+            if m:
+                macro = m.group(1)
+                if macro == 'name':
+                    return self.name_macro
+                elif macro in index:
+                    return self.attribute_macro % index[macro]
+                else:
+                    return ''
             else:
                 # keep original
                 return m.group(0)
