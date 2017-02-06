@@ -157,16 +157,24 @@ class MypageView(object):
         )
     def show(self):
         jump_maintenance_page_om_for_trouble(self.request.organization)
+
         authenticated_user = self.context.authenticated_user()
         user = cart_api.get_or_create_user(authenticated_user)
+
+        DBSession.flush()
+        DBSession.refresh(user)
+
+        if user is None or user.id is None:
+            raise Exception("get_or_create_user() failed in orderreview")
+
         per = 10
 
-        shipping_address = None
-        if user:
-            shipping_address = self.get_shipping_address(user)
+        shipping_address = self.get_shipping_address(user)
+
         page = self.request.params.get("page", 1)
         orders = self.context.get_orders(user, page, per)
         entries = self.context.get_lots_entries(user, page, per)
+
         magazines_to_subscribe = None
         if shipping_address:
             magazines_to_subscribe = get_magazines_to_subscribe(
@@ -177,11 +185,9 @@ class MypageView(object):
         word_enabled = self.request.organization.setting.enable_word == 1
         subscribe_word = False
         if word_enabled:
-            if user:
-                profile = UserProfile.query.filter(UserProfile.user_id==user.id).first()
-                logger.debug(profile)
-                if profile is not None and profile.subscribe_word:
-                    subscribe_word = True
+            profile = UserProfile.query.filter(UserProfile.user_id==user.id).first()
+            if profile is not None and profile.subscribe_word:
+                subscribe_word = True
 
         return dict(
             shipping_address=shipping_address,
