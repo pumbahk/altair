@@ -312,21 +312,12 @@ function showPopupPcSeatDetailFunc($targetClassName){
 
   var showPopuFlg = false;
   var $targetClassName = $($targetClassName);
-  var modalHeight = $('.modal-wrap').outerHeight(true);
   var winHeight = window.innerHeight;
   var nowY = y;
-  var outerCommonHeight = 0;
-
-  if(modalHeight > winHeight){
-    outerCommonHeight = modalHeight;
-  }else if(modalHeight < winHeight){
-    outerCommonHeight = winHeight;
-  }
 
   $targetClassName.click(function(){
-    console.log(outerCommonHeight);
     showPopuFlg = true;
-
+    $('body').addClass('on-popup');
     var loadUrl = $(this).data('url');
     if(loadUrl){
       $('#loadFrameArea iframe').attr('src' , loadUrl);
@@ -334,17 +325,7 @@ function showPopupPcSeatDetailFunc($targetClassName){
 
     if(showPopuFlg){
       $('.modal-out-wrap').addClass('show');
-      
-
       $('body').scrollTop(0);
-      $('.page').css({
-        'overflow-y':'hidden',
-        'height': outerCommonHeight+'px',
-        'min-width' : '1000px'
-      });
-
-      $('.modal-out-wrap').css('height',outerCommonHeight+'px');
-
     }
 
     positionCenterModal();
@@ -356,6 +337,8 @@ function showPopupPcSeatDetailFunc($targetClassName){
   $('#closeBtn, #modalWrapOuter').click(function(){
     $('.modal-out-wrap').removeClass('show');
     $('body').scrollTop(nowY);
+    $('body').removeClass('on-popup');
+
     $('.page').css({
       'overflow-y':'auto',
       'height':'auto'
@@ -376,6 +359,8 @@ function showPopupSpSeatDetailFunc($targetClassName){
   var showPopuFlg = false;
   var $targetClassName = $($targetClassName);
   var nowY = y;
+  
+  $('#loadFrameArea iframe').attr('id' , 'parentIframe');
 
   $targetClassName.click(function(){
   showPopuFlg = true;
@@ -424,9 +409,18 @@ function positionCenterModal(){
     var w = $(window).width();
     var h = $(window).height();
     var cw = $("#modalWrap").outerWidth();
-    var ch = $("#modalWrap").outerHeight();
-    console.log(cw);
+    var ch = $("#modalWrap").outerHeight(true);
+    console.log(ch);
     if(desktopFlg){
+
+      $('.on-popup .page').css({
+        'overflow-y':'hidden',
+        'height': ch+'px',
+        'min-width' : '1000px'
+      });
+
+      $('.modal-out-wrap').css('height',ch+'px');
+
       if(w < 1100){
         $('.modal-wrap').css('width', '1020px');
          $("#modalWrap").css({"left": ((w - cw)/2) + "px"});
@@ -666,6 +660,7 @@ $(function(){
       pageTopPageObj.spMainSlideFunc();
       pageTopPageObj.topSlideFunc();
       // makeSpCalenderLinkFunc();
+      showPopupSpSeatDetailFunc('.js-show-pooup-detail-seat');
       
     }else if(desktopFlg){
       pageTopPageObj.pcMainSlideFunc();
