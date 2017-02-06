@@ -2,6 +2,8 @@
 #-*- coding: utf-8 -*-
 
 import sys
+
+from beaker.cache import Cache
 from pyramid.paster import bootstrap, setup_logging
 import StringIO
 import locale
@@ -94,6 +96,8 @@ def main():
 
             for a in announces:
                 filename = '%s_%d.json' % (a.send_after.strftime("%Y%m%d_%H%M"), a.id)
+
+                # without cache mechanism
                 json_key = resolver.resolve('/'.join([opts.result_from, filename])).get_key()
                 if json_key.exists():
                     obj = json.loads(json_key.get_contents_as_string())
@@ -140,7 +144,9 @@ def main():
                     if 30*60 < age:
                         logger.warn('mu request may not be processed: Announce.id=%d' % a.id)
 
-            status_list = resolver.resolve(opts.status_from).listdir()
+            status_dir = resolver.resolve(opts.status_from)
+            status_dir.retriever.entry_cache = Cache(__name__ + '.entry')   # disable redis cache
+            status_list = status_dir.listdir()
             for status in sorted([x for x in status_list if x.endswith(".json")], reverse=True):
                 json_key = resolver.resolve('/'.join([opts.status_from, status])).get_key()
                 obj = json.loads(json_key.get_contents_as_string())
