@@ -62,7 +62,7 @@ class Mailer(object):
 
         self.attribute_keys = attributes
 
-    def create_config(self, start_time, subject):
+    def create_config(self, start_time, subject, header=""):
         config = copy.deepcopy(self.config)
         config["SendStartTime"] = start_time.strftime("%Y-%m-%d %H:%M:%S")
         config["TemplatePcHtml"] = self.field_separator.join([
@@ -70,10 +70,10 @@ class Mailer(object):
             subject,
             self.from_address,
             self.from_name,
-            "UTF-8",
-            "UTF-8",
-            "UTF-8",
-            ""
+            "UTF-8",    # body encoding
+            "UTF-8",    # subject encoding
+            "UTF-8",    # from name encoding
+            header      # additional header
         ])
 
         return json.dumps(config)
@@ -120,19 +120,18 @@ class Mailer(object):
                 elif macro in index:
                     return self.attribute_macro % index[macro]
                 else:
-                    return ''
+                    return m.group(0)
             else:
-                # keep original
                 return m.group(0)
 
         return re.sub(pattern, attr, template)
 
     # TODO: tune parameters
-    def pack_as_zip(self, start_time, subject, template, recipients):
+    def pack_as_zip(self, start_time, subject, template, recipients, header=""):
         buf = io.BytesIO()
         zip = zipfile.ZipFile(buf, "a", zipfile.ZIP_DEFLATED, False)
         structure = [
-            [ self.parameter_name, self.create_config(start_time, subject) ],
+            [ self.parameter_name, self.create_config(start_time, subject, header) ],
             [ self.template_name, self.create_template(template).encode('utf-8') ],
             [ self.list_name, self.create_list(recipients).encode('utf-8') ]
         ]

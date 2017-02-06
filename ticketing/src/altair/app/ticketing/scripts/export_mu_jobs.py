@@ -210,7 +210,8 @@ def main():
                 subject = engine.build(a.subject, base_dict, cache_mode=True)
 
                 mu.set_attributes(["keyword"])
-                job_zip = mu.pack_as_zip(a.send_after, subject, body, recipients)
+                header = "X-TSA-Announce: %d" % a.id
+                job_zip = mu.pack_as_zip(a.send_after, subject, body, recipients, header)
 
                 dst = "%s/%s_%d.zip" % (opts.target.strip("/"), a.send_after.strftime("%Y%m%d_%H%M"), a.id)
 
