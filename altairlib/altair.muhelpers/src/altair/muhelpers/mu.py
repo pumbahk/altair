@@ -17,10 +17,6 @@ class Recipient(object):
         self.open_id = open_id
         self.attributes = attributes
 
-# TODO: for SPEC
-# muhelpers側では、ユーザの氏名は取得できないので、
-# attribute 1固定とする、等の決めが必要
-
 
 class Mailer(object):
     def __init__(self, from_address, from_name="", config=dict()):

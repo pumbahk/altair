@@ -1,0 +1,21 @@
+<%def name="mu_status(v)">
+  <% status_map = { '1': u'受付中', '2': u'受付済', '30': u'送信中', '31': u'送信終了', '40': u'ポーズ処理中', '41': u'ポーズ済’, ’50’: u’ストップ中', '51': u'ストップ済' } %>
+  % if v is None:
+
+  % elif v in status_map:
+    ${status_map[v]}
+  % else:
+    ${v}
+  % endif
+</%def>
+
+<%def name="mu_result(v)">
+  <% result_map = { '1': u'正常', '2': u'異常', 'refused': '' } %>
+  % if v is None:
+    ?
+  % elif v in result_map:
+    ${result_map[v]}
+  % else:
+    ${v}
+  % endif
+</%def>
