@@ -45,9 +45,7 @@ ${render_mailmagazine(request)}
 <div class="confirm-wrap">
 <div class="confirm-wrap-inner confirm-magBox">
 <h2 class="heading heading_simple_line">お気に入りワードのお知らせメール</h2>
-% if subscribe_word:
-  ${render_word(request)}
-% endif
+${render_word(request)}
 </div></div><!-- ===== 　/お気に入りワード ===== -->
 %endif
 

@@ -136,6 +136,9 @@ class MyPageListViewResource(OrderReviewResourceBase):
         if not user:
             return None
 
+        if user.id is None:
+            return None
+
         now = get_now(self.request)
         #disp_orderreviewは、マイページに表示するかしないかのフラグとなった
         orders = self.session.query(Order).join(SalesSegment, Order.sales_segment_id==SalesSegment.id). \
