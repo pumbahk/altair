@@ -698,6 +698,12 @@ a {
     font-size: 16px;
     color: #860010;
   }
+  .bg-ttl {
+    padding: 5px 10px;
+    background: #ddd;
+    color: #010101;
+    font-size: 16px;
+  }
   .ticket-ttl {
     background: #860010;
     padding: 15px 25px;
@@ -709,6 +715,28 @@ a {
   .ticket-ttl:before, .ticket-ttl:after {
     background: #fff;
   }
+  
+  .list-box {
+    margin-top: 30px;
+  }
+  .list-box .list-item {
+    
+  }
+  .list-box .list-item .list-item-txt {
+    line-height: 1.8;
+    padding: 16px 0 20px;
+  }
+  .caution-list-box .caution-list-item {
+    display: table;
+    width: 100%;
+  }
+  .caution-list-box .caution-list-item .caution-list-inner {
+    display: table-cell;
+  }
+  .caution-list-box .caution-list-item .caution-list-inner:first-child {
+    width: 17px;
+  }
+
   button {
     font-family: "Noto Sans Japanese", "游ゴシック体", "Yu Gothic", YuGothic, "ヒラギノ角ゴシック Pro", "Hiragino Kaku Gothic Pro", "メイリオ", Meiryo, Osaka, "ＭＳ Ｐゴシック", "MS PGothic", sans-serif;
   }
@@ -2511,6 +2539,32 @@ a {
     font-size: 16px;
 }
 
+/*--------------------------------------------
+    株主
+  ---------------------------------------------*/
+.kabunushi-page .page-ttl img {
+  width: 130px;
+  margin-bottom: 10px;
+}
+.kabunushi-page .sub-ttl {
+  font-size: 20px;
+}
+.kabunushi-page .caution {
+  font-size: 14px;
+  margin-bottom: 40px;
+}
+.kabunushi-page .img-box {
+  padding-bottom: 20px;
+}
+.kabunushi-page .list-box {
+  margin-bottom: 60px;
+}
+.kabunushi-page .list-box .list-item:nth-child(3) .list-item-txt {
+  padding-bottom: 0;
+}
+.kabunushi-page .caution-list-box {
+  margin-bottom: 20px;
+}
 /*PC END QUERY*************************/
 }
 /***************************************/
@@ -2687,6 +2741,12 @@ a {
     font-size: 16px;
     color: #860010;
   }
+  .bg-ttl {
+    padding: 5px 10px;
+    background: #ddd;
+    color: #010101;
+    font-size: 16px;
+  }
   .ticket-ttl {
     background: #860010;
     padding: 25px;
@@ -2697,6 +2757,27 @@ a {
   }
   .ticket-ttl:before, .ticket-ttl:after {
     background: #fff;
+  }
+
+  .list-box {
+    margin-top: 20px;
+  }
+  .list-box .list-item {
+    
+  }
+  .list-box .list-item .list-item-txt {
+    line-height: 1.8;
+    padding: 11px 0 15px;
+  }
+  .caution-list-box .caution-list-item {
+    display: table;
+    width: 100%;
+  }
+  .caution-list-box .caution-list-item .caution-list-inner {
+    display: table-cell;
+  }
+  .caution-list-box .caution-list-item .caution-list-inner:first-child {
+    width: 17px;
   }
   button {
     font-family: "Noto Sans Japanese", "游ゴシック体", "Yu Gothic", YuGothic, "ヒラギノ角ゴシック Pro", "Hiragino Kaku Gothic Pro", "メイリオ", Meiryo, Osaka, "ＭＳ Ｐゴシック", "MS PGothic", sans-serif;
@@ -4478,6 +4559,36 @@ a {
 
 .attention-wrap .inner{
     font-size: 16px;
+}
+
+/*--------------------------------------------
+    株主
+  ---------------------------------------------*/
+.kabunushi-page .page-ttl img {
+  width: 130px;
+  margin-bottom: 10px;
+}
+.kabunushi-page .sub-ttl {
+  font-size: 16px;
+}
+.kabunushi-page .caution {
+  font-size: 14px;
+  margin-bottom: 40px;
+}
+.kabunushi-page .img-box {
+  padding-bottom: 20px;
+}
+.kabunushi-page .img-box img {
+  max-width: 100%;
+}
+.kabunushi-page .list-box {
+  margin-bottom: 60px;
+}
+.kabunushi-page .list-box .list-item:nth-child(3) .list-item-txt {
+  padding-bottom: 0;
+}
+.kabunushi-page .caution-list-box {
+  margin-bottom: 20px;
 }
 
 /*SP END QUERY*************************/
