@@ -26,12 +26,12 @@
                 </tr>
                 <tr>
                   <th class="login-ttl">${h.auth_identifier_field_name(member_set)}</th>
-                  <td class="login-cts"><input type="text" class="text" name="username" value="${username}" /></td>
+                  <td class="login-cts"><input type="text" class="text" name="username" value="${username}" placeholder="Login ID" /></td>
                 </tr>
                 <tr>
                   <th class="login-ttl">${h.auth_secret_field_name(member_set)}</th>
                   <td class="login-cts">
-                    <input type="password" name="password" value="${password}" />
+                    <input type="password" name="password" value="${password}" placeholder="Password" />
                     % if message:
                     <p>${message}</p>
                     % endif
@@ -41,7 +41,7 @@
                 </tr>
               </table>
               <div class="btn-box">
-                <button type="submit" class="btn btn-primary">次に進む</button>
+                <button type="submit" class="btn btn-primary">次に進む/Login</button>
 
                 <a href="${_context.route_path('extauth.entry')}" class="btn btn-default">ファンクラブ会員の方<span class="pc">、</span><br class="sp">一般の方はこちらから</a>
 
