@@ -4879,6 +4879,14 @@ td.seat-name {
   max-width: 100px;
 }
 
-.trisect {
-  width: 33%;
+@media screen and (min-width: 768px) {
+    .trisect {
+      width: 33%;
+    }
+}
+
+@media screen and (max-width: 767px) {
+    .trisect {
+      width: 100%;
+    }
 }
