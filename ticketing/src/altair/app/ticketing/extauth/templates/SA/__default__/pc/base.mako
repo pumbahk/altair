@@ -11,10 +11,24 @@
 <title>静岡朝日テレビオンラインチケット ログイン</title>
 
 <!-- Cascading Style Sheets -->
-<link rel="shortcut icon" href="${view_context.static_url('pc/images/favicon.ico')}" />
-<link rel="stylesheet" href="${view_context.static_url('pc/css/main.css')}" type="text/css" media="all">
-<link rel="stylesheet" href="${view_context.static_url('pc/css/style.css')}" type="text/css" media="all">
-<link rel="stylesheet" href="${view_context.static_url('pc/css/login.css')}" type="text/css" media="all">
+<link rel="shortcut icon" href="${view_context.static_url('images/favicon.ico')}" />
+<link rel="stylesheet" href="${view_context.static_url('css/main.css')}" type="text/css" media="all">
+<link rel="stylesheet" href="${view_context.static_url('css/style.css')}" type="text/css" media="all">
+<link rel="stylesheet" href="${view_context.static_url('css/login.css')}" type="text/css" media="all">
+<script type="text/javascript" src="${view_context.static_url('js/jquery.js')}"></script>
+<script type="text/javascript" src="${view_context.static_url('js/jquery.tile.js')}"></script>
+<script type="text/javascript">
+$(function(){
+    $(window).on('load resize',function(){
+        if (787 <= $(this).width()) {
+        $(".login-box-2 dl").tile(2);
+        }
+        else {
+            $('.login-box-2 dl').removeAttr('style');
+        }
+    });
+});
+</script>
 
 <style type="text/css">
 .btn {

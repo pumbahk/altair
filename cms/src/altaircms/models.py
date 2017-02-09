@@ -466,4 +466,7 @@ class Word(Base, WithOrganizationMixin):
                 DBSession.delete(obj)
             value = fixed
 
+        if key in ('label', 'label_kana'):
+            value = value.strip()
+
         super(Word, self).__setattr__(key, value)

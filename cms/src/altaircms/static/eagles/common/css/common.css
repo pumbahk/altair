@@ -1296,7 +1296,7 @@ a {
     padding: 11px;
   }
   .slider-box {
-    padding: 20px 0;
+    padding: 20px 0 0;
     background: #dcdcdc;
     position: relative;
   }
@@ -1370,12 +1370,12 @@ a {
     transform: rotate(135deg);
   }
   .slider-box .bx-controls .bx-pager {
-    position: absolute;
+    position: relative;
     display: block;
     max-width: 1300px;
     min-width: 1000px;
     bottom: 40px;
-    right: 40px;
+    right: 20px;
     margin: auto;
     text-align: right;
 
@@ -1674,7 +1674,7 @@ a {
     background-size: cover;
   }
   .bg-contents {
-    background: url(../../common/img/bg-img.jpg) no-repeat #450008;
+    background: url(/common/img/bg-img.jpg) no-repeat #450008;
     background-size: 100% auto;
   }
   .sub-contents {
@@ -1790,6 +1790,27 @@ a {
   .bnr-list li:nth-child(even) {
     padding-left: 10px;
   }
+  .bnr-list.column4{
+    margin-left: -10px;
+    width: calc(100% + 20px);
+    margin-bottom: -20px;
+  }
+  .bnr-list.column4 li {
+    display: inline-block;
+    position: relative;
+    margin-bottom: 20px;
+    width: 25%;
+  }
+  .bnr-list.column4 li:nth-child(odd),.bnr-list.column4 li:nth-child(even) {
+    padding-right: 0px;
+    padding-left: 0px;
+
+  }
+
+  .bnr-list.column4 li{
+    padding:0 10px!important; 
+  }
+
   .bnr-list li a {
     display: block;
   }
@@ -1881,18 +1902,18 @@ a {
     font-size: 14px;
   }
   .ticket-wrap {
-    display: table;
-    width: 100%;
+    overflow:hidden;
+    width: calc(100% + 20px);
+    margin-left: -10px;
   }
   .ticket-box {
-    display: table-cell;
-    width: calc(50% - 10px);
+    float:left;
+    width: 50%;
     position: relative;
-    padding-right: 20px;
+    padding:0 10px;
+    margin-bottom: 20px;
   }
-  .ticket-box:last-child {
-    padding-right: 0;
-  }
+
   .ticket-box:last-child .ticket-ttl {
     width: 100%;
   }
@@ -1903,9 +1924,7 @@ a {
     width: 100%;
   }
   .ticket-box .ticket-ttl {
-    position: absolute;
     bottom: 0;
-    width: calc(100% - 20px);
   }
   .ticket-box .ticket-ttl.next:before {
     right: 20px;
@@ -2065,6 +2084,9 @@ a {
   }
   .popup-seat-detail .price-list-wrap .price-table tbody tr .price-child, .popup-seat-detail .price-list-wrap .price-head-table tbody tr .price-child {
     width: 100px;
+  }
+  .popup-seat-detail .price-list-wrap .price-table tbody tr .seat-name{
+    max-width: 100px;
   }
   .popup-seat-detail .price-list-wrap .price-head-table {
     border-top: solid 1px #c1c1c1;
@@ -3296,7 +3318,6 @@ a {
     right: 3px;
     bottom: 20px;
     -webkit-transform: rotate(135deg);
-
     -ms-transform: rotate(135deg);
     transform: rotate(135deg);
   }
@@ -3955,7 +3976,7 @@ a {
   }
   .ticket-page .calender-tbl th.date .day {
     display: block;
-    width: 29px;
+    width: 40px;
     font-size: 20px;
   }
   .ticket-page .calender-tbl td.time {
@@ -4098,6 +4119,9 @@ a {
   }
   .popup-seat-detail .inner .price-list-wrap .price-table tbody tr .price-child, .popup-seat-detail .inner .price-list-wrap .price-head-table tbody tr .price-child {
     width: 80px;
+  }
+  .popup-seat-detail .price-list-wrap .price-table tbody tr .seat-name {
+    max-width: 100px;
   }
   .popup-seat-detail .inner .price-list-wrap .price-head-table {
     border-top: solid 1px #c1c1c1;
@@ -4609,7 +4633,7 @@ a {
   iPhone 5
 ---------------------------------------------*/
 
-@media screen and (max-width: 320px){
+@media screen and (max-width: 360px){
 .calender-box .bx-pager .bx-pager-item a {
     padding: 0 2px;
     font-size: 11px;
@@ -4843,6 +4867,7 @@ a {
   .popup-seat-detail .inner .price-list-wrap .price-table tbody tr .price-child, .popup-seat-detail .inner .price-list-wrap .price-head-table tbody tr .price-child {
     width: 70px;
   }
+
   .popup-seat-detail .inner .price-list-wrap .price-head-table {
     font-size: 12px;
   }
@@ -4850,8 +4875,18 @@ a {
 /*IPHONE 5 END QUERY*************************/
 }
 /***************************************/
-
-
 td.seat-name {
   max-width: 100px;
+}
+
+@media screen and (min-width: 768px) {
+    .trisect {
+      width: 33%;
+    }
+}
+
+@media screen and (max-width: 767px) {
+    .trisect {
+      width: 100%;
+    }
 }

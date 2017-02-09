@@ -110,22 +110,28 @@ class Events(BaseView):
             query = query.order_by(direction(sort))
         query = query.order_by(sql.desc(Event.id))
 
-        form_search = EventSearchForm(self.request.params)
         search_query = None
-        if form_search.validate():
-            query = self.context.need_join(query, form_search)
-            query = self.context.create_like_where(query, form_search.event_name_or_code.data, Event.code, Event.title)
-            query = self.context.create_like_where(query, form_search.performance_name_or_code.data, Performance.code, Performance.name)
-            query = self.context.create_range_where(query, form_search.perf_range_start.data, form_search.perf_range_end.data, Performance.start_on, Performance.end_on)
-            query = self.context.create_range_where(query, form_search.deal_range_start.data, form_search.deal_range_end.data, SalesSegment.start_at, SalesSegment.end_at)
-            query = self.context.create_where(query, form_search.perf_open_start.data, form_search.perf_open_end.data, Performance.start_on)
-            query = self.context.create_where(query, form_search.perf_close_start.data, form_search.perf_close_end.data, Performance.end_on)
-            query = self.context.create_where(query, form_search.deal_open_start.data, form_search.deal_open_end.data, SalesSegment.start_at)
-            query = self.context.create_where(query, form_search.deal_close_start.data, form_search.deal_close_end.data, SalesSegment.end_at)
-            search_query = self.context.create_search_query(form_search)
 
-            if form_search.lot_only.data:
-                query = query.join(Event.lots)
+        # 検索内容がない場合は検索フォームをチェックしない、クエリを作らない
+        if self.__is_search(self.request.params):
+
+            form_search = EventSearchForm(self.request.params)
+            if form_search.validate():
+                query = self.context.need_join(query, form_search)
+                query = self.context.create_like_where(query, form_search.event_name_or_code.data, Event.code, Event.title)
+                query = self.context.create_like_where(query, form_search.performance_name_or_code.data, Performance.code, Performance.name)
+                query = self.context.create_range_where(query, form_search.perf_range_start.data, form_search.perf_range_end.data, Performance.start_on, Performance.end_on)
+                query = self.context.create_range_where(query, form_search.deal_range_start.data, form_search.deal_range_end.data, SalesSegment.start_at, SalesSegment.end_at)
+                query = self.context.create_where(query, form_search.perf_open_start.data, form_search.perf_open_end.data, Performance.start_on)
+                query = self.context.create_where(query, form_search.perf_close_start.data, form_search.perf_close_end.data, Performance.end_on)
+                query = self.context.create_where(query, form_search.deal_open_start.data, form_search.deal_open_end.data, SalesSegment.start_at)
+                query = self.context.create_where(query, form_search.deal_close_start.data, form_search.deal_close_end.data, SalesSegment.end_at)
+                search_query = self.context.create_search_query(form_search)
+
+                if form_search.lot_only.data:
+                    query = query.join(Event.lots)
+        else:
+            form_search = EventSearchForm()
 
         events = paginate.Page(
             query,
@@ -152,8 +158,19 @@ class Events(BaseView):
             'events':events,
             'search_query':search_query,
             'famiport_reflect_button_status': famiport_reflect_button_status,
-            'h':EventHelper()
+            'h':EventHelper(),
+            'event_label': self.context.organization.setting.event_label
         }
+
+    def __is_search(self, params):
+        if not params:
+            return False
+
+        for _, val in params.items():
+            if val:
+                return True
+
+        return False
 
     def index_xml(self, query, limit=50):
         import xml.etree.ElementTree as ElementTree
