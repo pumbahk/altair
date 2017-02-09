@@ -29,7 +29,7 @@
 from datetime import datetime
 thisyear = datetime.now().strftime('%Y')
 %>
-                    <a href="https://eagles.fanclub.rakuten.co.jp/mypage/login/ridLogin?year=${thisyear}" class="btn btn-primary">
+                    <a href="https://eagles.fanclub.rakuten.co.jp/mypage/login/ridLogin" class="btn btn-primary">
                       <span>楽天IDを連携する</span>
                     </a>
                   </div>

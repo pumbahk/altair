@@ -417,12 +417,6 @@ class MultiCheckoutPlugin(object):
                     card_error_code=res.CardErrorCd
                     )
 
-        # クレカファミマの対応
-        if order.payment_delivery_pair.delivery_method.delivery_plugin_id == payments_plugins.FAMIPORT_DELIVERY_PLUGIN_ID:
-            delivery_plugin = get_delivery_plugin(request,
-                                                  order.payment_delivery_pair.delivery_method.delivery_plugin_id)
-            delivery_plugin.cancel(request, order)
-
     def get_order_info(self, request, order):
         if order.payment_delivery_pair.payment_method.payment_plugin_id != PLUGIN_ID:
             raise ValueError('payment_delivery_method_pair.payment_method.payment_plugin_is not MULTICHECKOUT_PAYMENT_PLUGIN_ID')

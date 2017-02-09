@@ -464,6 +464,9 @@ class OrganizationSettingForm(OrganizationSettingSimpleForm):
     auto_cms = OurBooleanField(
         label=get_annotations_for(c_models.OrganizationSetting.auto_cms)['label']
     )
+    event_label = OurBooleanField(
+        label=get_annotations_for(c_models.OrganizationSetting.event_label)['label']
+    )
     oauth_client_id = OurTextField(
         label=_(u'OAuthクライアントID')
         )

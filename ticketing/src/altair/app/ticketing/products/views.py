@@ -88,7 +88,7 @@ class ProductAndProductItem(BaseView):
                         performance_id=sales_segment_for_product.performance.id
                     ).first()
 
-                    if group_stock:
+                    if group_stock and group_stock.stock_holder:
                         stock = group_stock
 
                 product_item = ProductItem(

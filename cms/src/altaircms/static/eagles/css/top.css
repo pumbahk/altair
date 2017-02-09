@@ -1,0 +1,25 @@
+@media screen and (min-width: 768px) {
+
+
+}
+
+@media screen and (max-width: 767px) {
+.calender-tbl td.event-logo {   
+    display: none;
+}
+.calender-tbl td.price {
+        display: table-cell;
+    width: 44%;
+    font-size: 11px;
+}
+.calender-tbl td.buy {
+  z-index: -1;
+}
+.calender-tbl td.price .click-area{
+	position: absolute;
+    left: 3%;
+    opacity: 0;
+    width: 94%;
+    height: auto;
+    margin-top: -6.7%;
+}

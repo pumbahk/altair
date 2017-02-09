@@ -11,7 +11,7 @@
 <div class="ts-header-wrap">
 
 <div class="ts-header-logobox clearfix">
-<img src="${view_context.static_url('pc/images/pc_logo.png')}" alt="logo" width="950" height="64"  />
+<img src="${view_context.static_url('images/pc_logo.png')}" alt="logo" width="950" height="64"  />
 </div>
 
 </div><!-- ===== ts-header-wrap [end] ===== -->
