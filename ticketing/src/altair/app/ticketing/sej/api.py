@@ -142,7 +142,8 @@ def refund_sej_order(request,
             SejRefundEvent.nwts_endpoint_url==tenant.nwts_endpoint_url,
             SejRefundEvent.nwts_terminal_id==tenant.nwts_terminal_id,
             SejRefundEvent.nwts_password==tenant.nwts_password,
-            SejRefundEvent.event_code_01==performance_code
+            SejRefundEvent.event_code_01==performance_code,
+            SejRefundEvent.deleted_at==None
         )).first()
         if not re:
             re = SejRefundEvent(
@@ -174,7 +175,8 @@ def refund_sej_order(request,
                 ticket_amount = ticket_price_getter(sej_ticket)
                 rt = session.query(SejRefundTicket).filter(and_(
                     SejRefundTicket.order_no==sej_order.order_no,
-                    SejRefundTicket.ticket_barcode_number==sej_ticket.barcode_number
+                    SejRefundTicket.ticket_barcode_number==sej_ticket.barcode_number,
+                    SejRefundTicket.deleted_at==None
                 )).first()
                 if not rt:
                     rt = SejRefundTicket()
