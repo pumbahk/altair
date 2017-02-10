@@ -77,6 +77,14 @@ def select_sales_segment(sales_segments):
     return None
 
 
+def get_recent_sales_segment_without_lots(p, now):
+    not_ended_sales_segments = [ss for ss in p.sales_segments if ss.is_not_finished(now) and ss.public and not ss.is_lottery()]
+    if not_ended_sales_segments:
+        return min(not_ended_sales_segments, key=lambda s: s.start_at)
+    else:
+        return None
+
+
 def main():
     parser = ArgumentParser()
     parser.add_argument('--config', type=str, required=True)
@@ -142,7 +150,11 @@ def main():
         for p in performances:
             message("performance(start=%s, id=%d, name=%s)" % (p.start_on, p.id, p.name))
 
-            sales_segment = p.get_recent_sales_segment(now=now)
+            # XXX: this method consumes large memory space
+            # sales_segment = p.get_recent_sales_segment(now=now)
+
+            sales_segment = get_recent_sales_segment_without_lots(p, now)
+
             if not sales_segment:
                 continue
 
