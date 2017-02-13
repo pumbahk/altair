@@ -4,7 +4,7 @@ import unittest
 import mock
 from pyramid import testing
 from altair.app.ticketing.testing import DummyRequest
-from datetime import datetime
+from datetime import datetime, timedelta
 from altair.app.ticketing.testing import _setup_db, _teardown_db
 from altair.app.ticketing.core.models import TicketPrintHistory
 from altair.app.ticketing.core.testing import CoreTestMixin
@@ -47,22 +47,24 @@ class QRUtilsTest(unittest.TestCase, CoreTestMixin):
             ('special_flag', 1)
         ])
         '''
+        issued_at = datetime.now().strftime('%Y%m%d')
+        usable_date_to = (datetime.now() + timedelta(days=90)).strftime('%Y%m%d')
         self.origin_data = {
             'id_code': HT_ID_CODE,
             'type_code': HT_TYPE_CODE,
             'ticket_code': u'123456',
             'serial_no': u'A1234560000000001',
-            'issued_at': u'20170209',
+            'issued_at': issued_at,
             'count_flag': HT_COUNT_FLAG,
             'season_flag': HT_SEASON_FLAG,
             'valid_date_from': u'20170101',
             'valid_date_to': u'20201231',
             'enterable_from': u'1000',
             'enterable_days': u'000',
-            'usable_date_to': u'20170510',
+            'usable_date_to': usable_date_to,
             'special_flag': HT_SPECIAL_FLAG
         }
-        self.content = 'HTB00000011123456A1234560000000001201702091120170101202012310001000201705100'
+        self.content = 'HTB00000011123456A1234560000000001{issued_at}1120170101202012310001000{usable_date_to}0'.format(issued_at=issued_at, usable_date_to=usable_date_to)
         self.header = 'http://www.shop-huistenbosch.jp/1'
 
         self.session = _setup_db([
@@ -101,9 +103,9 @@ class QRUtilsTest(unittest.TestCase, CoreTestMixin):
 
     def test_make_data_for_qr(self):
         data, _ = make_data_for_qr(self.history)
+        self.assertEquals(len(data['content']), 76)
         self.assertEquals(data['header'], HT_QR_DATA_HEADER)
         self.assertEquals(data['content'], self.content)
-        self.assertEquals(len(data['content']), 76)
 
     def test_build_ht_qr_by_history(self):
         request = testing.DummyRequest()
@@ -114,3 +116,5 @@ class QRUtilsTest(unittest.TestCase, CoreTestMixin):
 
         self.assertDictEqual(data, self.origin_data)
 
+'HTB00000011123456A1234560000000001201702131120170101202012310001000201705140'
+'HTB00000011123456A1234560000000001201702131120170101202012310001000201705100'
