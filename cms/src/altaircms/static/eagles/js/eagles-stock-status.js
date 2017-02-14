@@ -1,7 +1,6 @@
 (function() {
-    //var url = 'https://s3-ap-northeast-1.amazonaws.com/tstar/stocks/RE/all.json';
-    var url = 'https://s3-ap-northeast-1.amazonaws.com/tstar-dev/stocks/eagles/all-1.json';
-    
+    var url = 'https://s3-ap-northeast-1.amazonaws.com/tstar/stocks/RE/all.json';
+
     var combine = function(a, b) {
         var r = { };
         for(var i=0 ; i<a.length ; i++) {
@@ -111,12 +110,6 @@
     };
 
     $(function() {
-        // for dev
-        $('.state').each(function() {
-            $(this).attr('class', '');
-            $(this).find('p.state-txt').text('');
-        });
-
         load(url, function(result) {
             $('table').each(function() {
                 extend_table(this, result);
