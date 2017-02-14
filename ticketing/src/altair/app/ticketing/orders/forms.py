@@ -265,9 +265,13 @@ class OrderForm(Form):
 class SearchFormBase(Form):
 
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
+        """
+        検索フォームの初期化：
+        １（デフォルト）：orgに紐づくイベント一覧を取る。
+        ２：イベントIDかパフォーマンスIDをkwargsにある場合、選択肢は該当イベントかパフォーマンスしか表示さない。
+        """
         Form.__init__(self, formdata, obj, prefix, **kwargs)
         self.request = kwargs.pop('request', None)
-
         organization = None
         event = None
         performance = None
@@ -289,54 +293,55 @@ class SearchFormBase(Form):
             sales_segment_group_id = kwargs.pop('sales_segment_group_id')
             sales_segment_group = SalesSegmentGroup.get(sales_segment_group_id)
 
+        ## Eventが指定されていなくて、Performanceが指定される場合のみ、紐づくEventを取る。
         if event is None and performance is not None:
             event = performance.event
 
+        ## Organizationが取得されなくて、Eventが取得される場合は、紐づくOrganizationを取る。
         if organization is None and event is not None:
             organization = event.organization
 
-        if organization is not None:
-            self.payment_method.choices = [(pm.id, pm.name) for pm in PaymentMethod.filter_by_organization_id(organization.id)]
-            self.delivery_method.choices = [(dm.id, dm.name) for dm in DeliveryMethod.filter_by_organization_id(organization.id)]
+        # organiztion_id, event_idかperformance_idのいずれがkwagrsにあると、organizationを取得できる。
+        if organization:
+            self.payment_method.choices = [(pm.id, pm.name) for pm in
+                                           PaymentMethod.filter_by_organization_id(organization.id)]
+            self.delivery_method.choices = [(dm.id, dm.name) for dm in
+                                            DeliveryMethod.filter_by_organization_id(organization.id)]
+
+            ## Eventが指定されていない場合はorgに紐づくEvent一覧をとる。
             if event is None:
-                events = Event.query.join(Event.setting) \
-                                    .filter(Event.organization_id==organization.id) \
-                                    .order_by(Event.created_at.desc())
-                self.event_id.choices = [('', u'(すべて)')]+[(e.id, e.title) for e in events]
+                events = Event.query.with_entities(Event.id, Event.title) \
+                    .filter(Event.organization_id == organization.id) \
+                    .order_by(Event.created_at.desc())
+                self.event_id.choices = [('', u'(イベントを選んでください。)')] + [(e.id, e.title) for e in events]
+            ## Eventが指定される場合は該当Eventのみ表示する。
             else:
                 self.event_id.choices = [(event.id, event.title)]
 
-        # Event が指定されていなかったらフォームから取得を試みる
-        if event is None and self.event_id.data:
-            event = Event.get(self.event_id.data)
+            ## Performanceが指定される場合は該当Performanceのみ表示する。
+            if performance:
+                dthelper = DateTimeHelper(create_date_time_formatter(self.request))
+                self.performance_id.choices = [(performance.id, '%s (%s)' % (
+                performance.name, dthelper.datetime(performance.start_on, with_weekday=True)))]
 
-        dthelper = DateTimeHelper(create_date_time_formatter(self.request))
-        if event is not None:
-            if performance is None:
-                performances = Performance.filter_by(event_id=event.id)
-                self.performance_id.choices = [
-                    ('', u'(すべて)')]+[(p.id, '%s (%s)' % (p.name, dthelper.datetime(p.start_on, with_weekday=True))) for p in performances]
-            else:
-                self.performance_id.choices = [(performance.id, '%s (%s)' % (performance.name, dthelper.datetime(performance.start_on, with_weekday=True)))]
-            if sales_segment_group is None:
-                sales_segment_groups = SalesSegmentGroup.query.filter(SalesSegmentGroup.event_id == event.id)
-                self.sales_segment_group_id.choices = [(sales_segment_group.id, sales_segment_group.name) for sales_segment_group in sales_segment_groups]
-            else:
+            ## SalesSegmentGroupが指定される場合は該当SaleSegmentGroupのみ表示する。
+            if sales_segment_group:
                 self.sales_segment_group_id.choices = [(sales_segment_group.id, sales_segment_group.name)]
-        else:
-            if organization is not None:
-                performances = Performance.query.join(Event) \
-                                                .join(Event.setting) \
-                                                .filter(Event.organization_id == organization.id) \
-                                                .order_by(Event.created_at.desc())
-            else:
-                performances = Performance.query
-            self.performance_id.choices = [('', u'(すべて)')] + [(p.id, '%s (%s)' % (p.name, dthelper.datetime(p.start_on, with_weekday=True))) for p in performances]
 
-        # Performance が指定されていなかったらフォームから取得を試みる
-        if performance is None and self.performance_id.data:
-            if not isinstance(self.performance_id.data, list):
-                performance = Performance.get(self.performance_id.data)
+        # POSTされた場合（kwargにevent_idがないため、上のeventを取得できない）の設定
+        ## Eventが絞られる場合、該当Eventに紐づくPerformanceとsales_segment_groupを取る
+        if not event and self.event_id.data:
+            dthelper = DateTimeHelper(create_date_time_formatter(self.request))
+            performances = Performance.query.join(Event) \
+                .filter(Event.id == self.event_id.data) \
+                .order_by(Performance.created_at.desc())
+            self.performance_id.choices = [('', u'')] + [
+                (p.id, '%s (%s)' % (p.name, dthelper.datetime(p.start_on, with_weekday=True))) for p in
+                performances]
+
+            sales_segment_groups = SalesSegmentGroup.query.filter(SalesSegmentGroup.event_id == self.event_id.data)
+            self.sales_segment_group_id.choices = [(sales_segment_group.id, sales_segment_group.name) for
+                                                   sales_segment_group in sales_segment_groups]
 
     order_no = TextField(
         label=u'予約番号',
@@ -547,7 +552,6 @@ class OrderRefundSearchForm(OrderSearchForm):
 
         # すべては選択不可
         self.event_id.choices.pop(0)
-        self.performance_id.choices.pop(0)
 
     def _get_translations(self):
         return Translations()
