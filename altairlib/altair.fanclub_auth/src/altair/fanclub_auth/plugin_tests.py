@@ -76,7 +76,8 @@ class FanclubAuthPluginTests(unittest.TestCase):
     @mock.patch('altair.fanclub_auth.plugin.FanclubAuthPlugin._get_extras')
     @mock.patch('altair.fanclub_auth.plugin.FanclubAuthPlugin._get_cache')
     @mock.patch('beaker.cache.Cache.get')
-    def test_it(self, _get_extras, _get_cache, cache_get):
+    def fanclub_authentication_test(self, _get_extras, _get_cache, cache_get):
+        """ (auth_factorsに必要な情報が揃っていれば)認証処理が正常に動作することの確認 """
         from beaker.cache import Cache
         request = DummyRequest()
         request.session.id = 123456789
