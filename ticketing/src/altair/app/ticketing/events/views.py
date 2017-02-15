@@ -16,7 +16,7 @@ from sqlalchemy import sql
 from sqlalchemy.sql import func, and_
 from sqlalchemy.orm.util import class_mapper
 from pyramid.view import view_config, view_defaults
-from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPCreated, HTTPOk
+from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPCreated, HTTPServiceUnavailable
 from pyramid.threadlocal import get_current_registry
 from pyramid.url import route_path
 from pyramid.response import Response
@@ -488,7 +488,7 @@ class Events(BaseView):
                 data = json.loads(data);
         except Exception, e:
             logger.error("cms info error: %s" % (e.message))
-            return dict()
+            return HTTPServiceUnavailable()
 
         # ひとまずこの機能はお蔵入り
         # data['url'] = communication_api.get_url("/")
