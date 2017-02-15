@@ -4,6 +4,8 @@ import unittest
 import mock
 
 class CreateOauthSignatureTests(unittest.TestCase):
+    """OAuth Signatureを作成するメソッドのテスト"""
+
     def _callFUT(self, *args, **kwargs):
         from . import oauth
         return oauth.create_oauth_signature(*args, **kwargs)
@@ -35,6 +37,8 @@ class CreateOauthSignatureTests(unittest.TestCase):
         self.assertEqual(result, "0KnD/Q2NLb/Vu3gPoQIuNofV5AE=")
 
 class CreateSignatureBaseTests(unittest.TestCase):
+    """OAuthSignatureの元になるパラメータを返すメソッドのテスト"""
+
     def _callFUT(self, *args, **kwargs):
         from . import oauth
         return oauth.create_signature_base(*args, **kwargs)
