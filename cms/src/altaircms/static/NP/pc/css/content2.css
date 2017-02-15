@@ -2581,7 +2581,7 @@ header {
     height: 80px;
     margin: 0 auto 20px;
     padding: 20px;
-    background: #860010;
+    background: #0c1b6f;
     box-sizing: border-box;
   }
   header .inner {
@@ -2641,7 +2641,7 @@ header {
   footer {
     margin: 40px 0 0;
     padding: 0;
-    background: #860010;
+    background: #0c1b6f;
     text-align: center;
   }
   footer .copyright {

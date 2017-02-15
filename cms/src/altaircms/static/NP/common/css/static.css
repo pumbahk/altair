@@ -11,7 +11,7 @@
 .caution-page h3{
   text-align: center;
   letter-spacing: 0.15em;
-  color: #860010;
+  color: #0c1b6f;
   margin-bottom: 40px;
 }
 
@@ -31,7 +31,7 @@
 }
 
 .caution-page p a{
-	color: #860010;
+	color: #0c1b6f;
 }
 
 /*　支払・受取り方法　*/
@@ -73,12 +73,12 @@
 }
 
 .payment-page a{
-  color: #860010;
+  color: #0c1b6f;
   text-decoration: underline;
 }
 
 .payment-page td a {
-  color: #860010;
+  color: #0c1b6f;
   padding-left: 13px;
   position: relative;
 }
@@ -89,13 +89,13 @@
   top: 6px;
   left: 0;
   border: 4px solid transparent;
-  border-top: 8px solid #860010;
+  border-top: 8px solid #0c1b6f;
 }
 
 .payment-page .payment-flow{
   font-size: 0;
   padding: 60px 0 20px;
-  border-top: solid 2px #860010;
+  border-top: solid 2px #0c1b6f;
   margin-top: 60px;
 }
 .payment-page .payment-flow.payment-flow-first{
@@ -112,7 +112,7 @@
   vertical-align: top;
 }
 .payment-page .payment-flow li:first-child{
-  background: #860010;
+  background: #0c1b6f;
 }
 .payment-page .payment-flow li:nth-child(2){
   background: #a74551;
@@ -140,7 +140,7 @@
 color: #cc0000; 
 } 
 .link { 
-color: #860010; 
+color: #0c1b6f; 
 text-decoration: underline; 
 } 
 /* PC,SP共通　END*/
@@ -151,7 +151,7 @@ text-decoration: underline;
 @media screen and (min-width: 768px) {
 
 .link:hover { 
-color: #860010; 
+color: #0c1b6f; 
 opacity: .7;  
 }
 .rule-num-list-box { 
@@ -203,14 +203,14 @@ padding: 5px 0 5px 15px;
 color: #010101; 
 } 
 .square-ttl { 
-color: #860010; 
+color: #0c1b6f; 
 font-size: 18px;  
 } 
 .square-ttl:before {  
 content: "";  
 width: 14px;  
 height: 14px; 
-background: #860010;  
+background: #0c1b6f;  
 display: inline-block;  
 vertical-align: middle; 
 margin: 0 10px 3px 0; 
@@ -329,10 +329,10 @@ margin: 0 10px 3px 0;
 }
 .faq-page .faq-list-box .faq-q:hover {
   cursor: pointer;
-  color: #860010;
+  color: #0c1b6f;
 }
 .faq-page .faq-list-box .faq-q.show {
-  color: #860010;
+  color: #0c1b6f;
 }
 .faq-page .faq-list-box .faq-q.show .plus-icon:after {
     -webkit-transform: rotate(0deg);
@@ -367,7 +367,7 @@ margin: 0 10px 3px 0;
 ---------------------------------------------*/
 .help-page .help-step-ttl {
   font-size: 18px;
-  color: #860010;
+  color: #0c1b6f;
   margin-bottom: 10px;
   text-align: left;
 }
@@ -601,7 +601,7 @@ margin: 0 10px 3px 0;
   cursor: pointer;
 }
 .faq-page .faq-list-box .faq-q.show {
-  color: #860010;
+  color: #0c1b6f;
 }
 .faq-page .faq-list-box .faq-q.show .plus-icon:after {
     -webkit-transform: rotate(0deg);
@@ -633,7 +633,7 @@ margin: 0 10px 3px 0;
 ---------------------------------------------*/
 .help-page .help-step-ttl {
   font-size: 16px;
-  color: #860010;
+  color: #0c1b6f;
   margin: 20px 0 10px;
   text-align: left;
 }
