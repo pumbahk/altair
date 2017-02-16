@@ -25,7 +25,7 @@
                         <input type="submit" name="doGuestLoginAsGuest" class="btn-login" value="購入する">
                         <br/><br/>
                         <a href="https://parceiro.tstar.jp/cart/events/9657">
-                            <input type="button" name="doGuestLoginAsGuest" class="btn-regist" value="サポーターズクラブへの新規入会はこちら">
+                            <input type="button" class="btn-regist" value="サポーターズクラブへの新規入会はこちら">
                         </a>
                         <input type="hidden" name="member_set" value="NP">
                         <input type="hidden" name="_" value="${request.session.get_csrf_token()}" />
