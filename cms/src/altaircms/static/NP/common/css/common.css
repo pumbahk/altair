@@ -279,12 +279,12 @@ button {
 
 /*文字をメインカラーに*/
 .cm {
-  color: #860010 !important;
+  color: #0c1b6f !important;
 }
 
 /*背景をメインカラーに*/
 .bg {
-  background: #860010 !important;
+  background: #0c1b6f !important;
 }
 
 /*マージンボトム*/
@@ -542,14 +542,14 @@ a {
     font-size: 10px;
   }
   .price {
-    color: #860010;
+    color: #0c1b6f;
   }
   .price a {
-    color: #860010;
+    color: #0c1b6f;
     text-decoration: underline;
   }
   .price a:hover {
-    color: #860010;
+    color: #0c1b6f;
     opacity: .7;
   }
   .img-box {
@@ -575,13 +575,13 @@ a {
     padding-right: 0;
   }
   .bread-link {
-    color: #860010;
+    color: #0c1b6f;
     position: relative;
   }
   .bread-link:hover {
     text-decoration: none;
     opacity: .7;
-    color: #860010;
+    color: #0c1b6f;
   }
   .bread-link:before, .bread-link:after {
     content: "";
@@ -630,7 +630,7 @@ a {
     display: block;
     width: 15px;
     height: 4px;
-    background: #860010;
+    background: #0c1b6f;
     position: absolute;
   }
   .arrow.top:before {
@@ -696,7 +696,7 @@ a {
   }
   .sub-ttl {
     font-size: 16px;
-    color: #860010;
+    color: #0c1b6f;
   }
   .bg-ttl {
     padding: 5px 10px;
@@ -705,7 +705,7 @@ a {
     font-size: 16px;
   }
   .ticket-ttl {
-    background: #860010;
+    background: #0c1b6f;
     padding: 15px 25px;
     font-size: 14px;
     letter-spacing: 2px;
@@ -757,7 +757,7 @@ a {
     opacity: .7;
   }
   .btn-buy {
-    background: #860010;
+    background: #0c1b6f;
     color: #fff;
     font-size: 14px;
   }
@@ -773,7 +773,7 @@ a {
     opacity: .7;
   }
   .btn-primary {
-    background: #860010;
+    background: #0c1b6f;
     width: 340px;
     padding: 20px;
     color: #fff;
@@ -835,8 +835,8 @@ a {
     font-weight: normal;
   }
   .btn-more {
-    border: 1px solid #860010;
-    color: #860010;
+    border: 1px solid #0c1b6f;
+    color: #0c1b6f;
     width: 130px;
     text-align: center;
   }
@@ -966,7 +966,7 @@ a {
     background: #f8f7f3;
   }
   .calender-box {
-    background: url(../../common/img/bg-img.jpg) no-repeat;
+    background: url(../../common/img/bg-img.png) no-repeat;
     background-size: cover;
     position: relative;
     overflow-y: hidden;
@@ -1056,7 +1056,7 @@ a {
   }
   .calender-box .bx-pager .bx-pager-item a {
     font-size: 18px;
-    color: #860010;
+    color: #0c1b6f;
     padding: 0 10px;
     display: block;
     margin: 0 30px;
@@ -1067,7 +1067,7 @@ a {
     opacity: .7;
   }
   .calender-box .bx-pager .bx-pager-item a.active {
-    background: #860010;
+    background: #0c1b6f;
     color: #fff;
     text-decoration: none;
     position: relative;
@@ -1083,7 +1083,7 @@ a {
     margin: auto;
     bottom: -20px;
     border: 11px solid transparent;
-    border-bottom: 11px solid #60000c;
+    border-bottom: 11px solid #0c1b6f;
   }
   .calender-block {
     padding: 110px 0 40px;
@@ -1189,7 +1189,7 @@ a {
   .calender-tbl td.event-logo .popup-block {
     min-width: 130px;
     padding: 10px 15px 10px 10px;
-    border: 1px solid #860010;
+    border: 1px solid #0c1b6f;
     position: relative;
     background: #fff;
   }
@@ -1218,7 +1218,7 @@ a {
     height: 0px;
     border-style: solid;
     border-width: 0 10px 10px 10px;
-    border-color: transparent transparent #860010 transparent;
+    border-color: transparent transparent #0c1b6f transparent;
     z-index: 0;
   }
   .calender-tbl td.event-logo .popup-box {
@@ -1405,7 +1405,7 @@ a {
   ---------------------------------------------*/
   header {
     min-width: 1050px;
-    background: #860010;
+    background: #0c1b6f;
     padding: 20px;
     position: relative;
     height: 80px;
@@ -1448,7 +1448,7 @@ a {
     position: absolute;
     top: 0;
     right: 0;
-    background: #ad6a72;
+    background: #fe5200;
     display: inline-block;
     width: 140px;
     height: 80px;
@@ -1674,7 +1674,7 @@ a {
     background-size: cover;
   }
   .bg-contents {
-    background: url(/common/img/bg-img.jpg) no-repeat #450008;
+    background: url(/common/img/bg-img.png) no-repeat #0c1b6f;
     background-size: 100% auto;
   }
   .sub-contents {
@@ -1682,7 +1682,7 @@ a {
     padding: 80px 20px;
   }
   .sub-contents .common-title {
-    color: #860010;
+    color: #0c1b6f;
     font-size: 22px;
     text-align: center;
     letter-spacing: 2px;
@@ -1763,7 +1763,7 @@ a {
   }
   footer .copyright {
     text-align: center;
-    background: #860010;
+    background: #0c1b6f;
     color: #fff;
     padding: 20px;
   }
@@ -2047,7 +2047,7 @@ a {
     width: 100%;
     }
   .popup-seat-detail .price-list-wrap .price-table thead, .popup-seat-detail .price-list-wrap .price-head-table thead {
-    background: #860010;
+    background: #0c1b6f;
     color: #fff;
     /*display: none;*/
   }
@@ -2096,7 +2096,7 @@ a {
     /* overflow-y: scroll; */
   }
   .popup-seat-detail .price-list-wrap .scroll-top-btn {
-    background: #860010;
+    background: #0c1b6f;
     text-align: center;
     height: 40px;
     width: 100%;
@@ -2583,10 +2583,10 @@ a {
     font-size: 10px;
   }
   .price {
-    color: #860010;
+    color: #0c1b6f;
   }
   .price a {
-    color: #860010;
+    color: #0c1b6f;
   }
   .img-box {
     text-align: center;
@@ -2618,13 +2618,13 @@ a {
     padding-right: 0;
   }
   .bread-link {
-    color: #860010;
+    color: #0c1b6f;
     position: relative;
   }
   .bread-link:hover {
     text-decoration: none;
     opacity: .7;
-    color: #860010;
+    color: #0c1b6f;
   }
   .bread-link:before, .bread-link:after {
     content: "";
@@ -2674,7 +2674,7 @@ a {
     display: block;
     width: 15px;
     height: 3px;
-    background: #860010;
+    background: #0c1b6f;
     position: absolute;
   }
   .arrow.top:before {
@@ -2739,7 +2739,7 @@ a {
   }
   .sub-ttl {
     font-size: 16px;
-    color: #860010;
+    color: #0c1b6f;
   }
   .bg-ttl {
     padding: 5px 10px;
@@ -2748,7 +2748,7 @@ a {
     font-size: 16px;
   }
   .ticket-ttl {
-    background: #860010;
+    background: #0c1b6f;
     padding: 25px;
     font-size: 14px;
     letter-spacing: 2px;
@@ -2799,8 +2799,8 @@ a {
   }
   .btn-buy,
   .btn-primary {
-    border: 3px solid #860010;
-    background: #860010;
+    border: 3px solid #0c1b6f;
+    background: #0c1b6f;
     color: #fff;
     width: 100%;
     position: relative;
@@ -2812,7 +2812,7 @@ a {
     display: block;
     width: 15px;
     height: 4px;
-    background: #860010;
+    background: #0c1b6f;
     position: absolute;
   }
   .btn-buy:before,
@@ -2878,8 +2878,8 @@ a {
     font-size: 12px;
   }
   .btn-more {
-    border: 1px solid #860010;
-    color: #860010;
+    border: 1px solid #0c1b6f;
+    color: #0c1b6f;
     width: 130px;
     text-align: center;
   }
@@ -3003,7 +3003,7 @@ a {
     background: #f8f7f3;
   }
   .calender-box {
-    background: #60000c;
+    background: #0c1b6f;
     position: relative;
   }
   .calender-box .bx-controls:nth-child(3) {
@@ -3090,7 +3090,7 @@ a {
   }
   .calender-box .bx-pager .bx-pager-item a {
     font-size: 12px;
-    color: #860010;
+    color: #0c1b6f;
     padding: 0 5px;
     display: block;
     margin: 0 10px;
@@ -3099,7 +3099,7 @@ a {
     text-decoration: none;
   }
   .calender-box .bx-pager .bx-pager-item a.active {
-    background: #860010;
+    background: #0c1b6f;
     color: #fff;
     text-decoration: none;
     position: relative;
@@ -3115,7 +3115,7 @@ a {
     margin: auto;
     bottom: -20px;
     border: 11px solid transparent;
-    border-bottom: 11px solid #60000c;
+    border-bottom: 11px solid #0c1b6f;
   }
   .calender-block {
     padding: 80px 0 40px;
@@ -3352,7 +3352,7 @@ a {
   ---------------------------------------------*/
   header {
     width: 100%;
-    background: #860010;
+    background: #0c1b6f;
     position: relative;
     height: 50px;
     z-index: 1;
@@ -3458,7 +3458,7 @@ a {
   header .hbg .humberger-menu-wrap .hbg-inner {
     height: 100%;
     width: 80%;
-    background: #860010;
+    background: #0c1b6f;
   }
   header .hbg .humberger-menu-wrap ul.humberger-menu-list-box {
     overflow-y: scroll;
@@ -3514,7 +3514,7 @@ a {
     padding: 15px 20px;
     border-top: 1px solid #fff;
     position: relative;
-    background: #860010;
+    background: #0c1b6f;
   }
   header .hbg .humberger-menu-wrap ul.humberger-menu-list-box li.humberger-menu-list a {
     color: #fff;
@@ -3663,7 +3663,7 @@ a {
     background-size: cover;
   }
   .bg-contents {
-    background: #60000c;
+    background: #0c1b6f;
     padding-bottom: 30px;
   }
   .sub-contents {
@@ -3671,7 +3671,7 @@ a {
     padding: 20px;
   }
   .sub-contents .common-title {
-    color: #860010;
+    color: #0c1b6f;
     font-size: 15px;
     text-align: center;
     letter-spacing: 2px;
@@ -3700,7 +3700,7 @@ a {
   }
   .section-txt-box .btn-more {
     width: 100%;
-    border: 2px solid #860010;
+    border: 2px solid #0c1b6f;
   }
   .section-txt-box .btn-more.next:before {
     right: 5px;
@@ -3752,7 +3752,7 @@ a {
   }
   footer .copyright {
     text-align: center;
-    background: #860010;
+    background: #0c1b6f;
     color: #fff;
     padding: 20px;
   }
@@ -3851,7 +3851,7 @@ a {
     width: 40%;
   }
   .seat-page .calender-tbl td.info .arrow {
-    color: #860010;
+    color: #0c1b6f;
     font-size: 12px;
     text-align: center;
   }
@@ -3863,11 +3863,11 @@ a {
   }
   .seat-page .sp-ticket .ticket-ttl {
     color: #fff;
-    border-color: #860010;
+    border-color: #0c1b6f;
   }
   .seat-page .sp-ticket .next:before,
   .seat-page .sp-ticket .next:after {
-    background: #860010 !important;
+    background: #0c1b6f !important;
   }
   .date-list-box {
     text-align: center;
@@ -3928,8 +3928,8 @@ a {
   }
   .ticket-box .ticket-ttl {
     padding: 10px;
-    border: 2px solid #860010;
-    background: #860010;
+    border: 2px solid #0c1b6f;
+    background: #0c1b6f;
     color: #fff;
     margin-bottom: 10px;
     text-align: center;
@@ -3937,12 +3937,12 @@ a {
   .ticket-box .ticket-ttl.next:before {
     right: 5px;
     top: 14px;
-    background: #860010;
+    background: #0c1b6f;
   }
   .ticket-box .ticket-ttl.next:after {
     right: 5px;
     bottom: 15px;
-    background: #860010;
+    background: #0c1b6f;
   }
   /*--------------------------------------------
     SP スペシャルチケット
@@ -4083,7 +4083,7 @@ a {
     border-collapse: collapse;
   }
   .popup-seat-detail .inner .price-list-wrap .price-table thead, .popup-seat-detail .inner .price-list-wrap .price-head-table thead {
-    background: #860010;
+    background: #0c1b6f;
     color: #fff;
     /*display: none;*/
   }
@@ -4130,7 +4130,7 @@ a {
     border-bottom: none;
   }
   .popup-seat-detail .price-list-wrap .scroll-top-btn {
-    background: #860010;
+    background: #0c1b6f;
     text-align: center;
     height: 40px;
     width: 100%;
