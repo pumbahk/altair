@@ -11,7 +11,10 @@ def performance_purchase_text(request, performance_id, url="", sale=u"購入は�
     if not performance:
         return ""
 
-    salessegments = performance.salessegments
+    salessegments = [s for s in performance.salessegments if s.publicp]
+
+    if not salessegments:
+        return ""
 
     # 公演終了
     if performance.start_on < now and not performance.end_on:
@@ -37,8 +40,10 @@ def performance_purchase_text(request, performance_id, url="", sale=u"購入は�
         if salessegment.start_on <= now <= salessegment.end_on:
             return Markup(u"""<a class='btnV' href='{0}'>{1}</a>""".format(url, sale))
 
+    # これから販売の販売区分があると販売前
+    for salessegment in salessegments:
+        if now < salessegment.start_on:
+            return Markup(u"""<span class="btnO">{0}</span>""".format(before))
+
     # それ以外は、販売終了（販売期間の狭間でも、販売終了）
     return Markup(u"""<span class="btnN">{0}</span>""".format(after))
-
-
-
