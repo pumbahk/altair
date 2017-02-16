@@ -1649,6 +1649,17 @@ class OrderDetailView(OrderBaseView):
             context=self.context,
             orders=[order]
         )
+
+        # 未発券のコンビニ払戻を警告
+        if order.payment_plugin_id in [payments_plugins.SEJ_PAYMENT_PLUGIN_ID,
+                                       payments_plugins.FAMIPORT_PAYMENT_PLUGIN_ID]:
+            if not order.is_issued():
+                self.request.session.flash(u'未発券の予約（予約番号：{}）をコンビニ払戻しようとしています。'.format(order.order_no))
+                response = render_to_response('altair.app.ticketing:templates/orders/refund/_form.html', {'form': f},
+                                              request=self.request)
+                response.status_int = 400
+                return response
+
         if f.validate():
             refund_param = f.data
             refund_param.update(dict(
