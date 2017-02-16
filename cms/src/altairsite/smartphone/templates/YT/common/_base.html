@@ -16,7 +16,7 @@
 <link rel="canonical" href="/"/>
 % elif request.path == '/smartphone/detail':
     % if event:
-      <link rel="canonical" href="/${helper.get_pageset_from_evnet_id(request, event.id).url}"/>
+      <link rel="canonical" href="${request.environ['wsgi.url_scheme']}://${request.host}/${helper.get_pageset_from_evnet_id(request, event.id).url}"/>
     % endif
 % endif
 </head>
