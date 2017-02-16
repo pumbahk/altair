@@ -11,15 +11,7 @@ def performance_purchase_text(request, performance_id, url="", sale=u"購入は�
     if not performance:
         return ""
 
-    salessegment = performance.salessegments[0]
-
-    # 販売前
-    if now < salessegment.start_on:
-        return Markup(u"""<span class="btnO">{0}</span>""".format(before))
-
-    # 販売終了
-    if salessegment.end_on < now:
-        return Markup(u"""<span class="btnN">{0}</span>""".format(after))
+    salessegments = performance.salessegments
 
     # 公演終了
     if performance.start_on < now and not performance.end_on:
@@ -29,4 +21,24 @@ def performance_purchase_text(request, performance_id, url="", sale=u"購入は�
     if performance.end_on and performance.end_on < now:
         return Markup(u"""<span class="btnN">{0}</span>""".format(after))
 
-    return Markup(u"""<a class='btnV' href='{0}'>{1}</a>""".format(url, sale))
+    # １つも販売開始がなければ、販売前
+    start = False
+    for salessegment in salessegments:
+        # 販売開始
+        if now > salessegment.start_on:
+            start = True
+
+    if not start:
+        # 販売前
+        return Markup(u"""<span class="btnO">{0}</span>""".format(before))
+
+    # 販売期間に当てはまったら販売中
+    for salessegment in salessegments:
+        if salessegment.start_on <= now <= salessegment.end_on:
+            return Markup(u"""<a class='btnV' href='{0}'>{1}</a>""".format(url, sale))
+
+    # それ以外は、販売終了（販売期間の狭間でも、販売終了）
+    return Markup(u"""<span class="btnN">{0}</span>""".format(after))
+
+
+
