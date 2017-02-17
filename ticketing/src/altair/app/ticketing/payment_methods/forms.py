@@ -117,5 +117,5 @@ class PaymentMethodForm(OurForm):
 
     def validate_payment_plugin_id(form, field):
         if field.data == CHECKOUT_PAYMENT_PLUGIN_ID and form.fee.data > 0:
-            raise ValidationError(u'楽天ID決済では、決済手数料は設定できません')
+            raise ValidationError(u'楽天ペイでは、決済手数料は設定できません')
 

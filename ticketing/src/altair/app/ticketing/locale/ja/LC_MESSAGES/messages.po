@@ -759,13 +759,13 @@ msgid "payment-3:delivery-2:branches"
 msgstr "再付番前の情報"
 
 msgid "payment-2:order_id"
-msgstr "楽天ID決済注文ID"
+msgstr "楽天ペイ注文ID"
 
 msgid "payment-2:order_control_id"
-msgstr "楽天ID決済注文管理ID"
+msgstr "楽天ペイ注文管理ID"
 
 msgid "payment-2:used_point"
 msgstr "楽天IO決済利用ポイント"
 
 msgid "payment-2:sales_at"
-msgstr "楽天ID決済売上確定日時"
+msgstr "楽天ペイ売上確定日時"

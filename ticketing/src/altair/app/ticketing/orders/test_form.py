@@ -74,7 +74,7 @@ class OrderRefundFormTests(unittest.TestCase):
         self.session.add(PaymentMethod(
             organization=self.organization,
             payment_plugin_id=plugins.CHECKOUT_PAYMENT_PLUGIN_ID,
-            name=u'楽天ID決済',
+            name=u'楽天ペイ',
             fee=200,
         ))
         self.session.add(PaymentMethod(
