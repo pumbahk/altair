@@ -93,7 +93,7 @@
       </li>
       <li>
         <label>secure_code</label>
-        <input type="text" name="secure_code" />
+        <input type="password" name="secure_code" />
       </li>
     </ul>
     <button type="submit">Submit</button>
