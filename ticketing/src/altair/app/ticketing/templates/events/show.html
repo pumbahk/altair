@@ -121,6 +121,22 @@ $(function(){
     %endif
     <tr>
       <th>
+        登録担当者
+      </th>
+      <td>
+        ${event.event_creator or '-'}
+      </td>
+    </tr>
+    <tr>
+      <th>
+        運営担当者
+      </th>
+      <td>
+        ${event.event_operator or '-'}
+      </td>
+    </tr>
+    <tr>
+      <th>
         カートURL
         <span class="help-inline">
           <a rel="popover" data-original-title="カートURL" data-content="購入カートのURL">

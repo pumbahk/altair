@@ -276,6 +276,8 @@ class Events(BaseView):
                         middle_stock_threshold=f.middle_stock_threshold.data,
                         middle_stock_threshold_percent=f.middle_stock_threshold_percent.data,
                         cart_setting_id=f.cart_setting_id.data,
+                        event_creator=f.event_creator.data,
+                        event_operator=f.event_operator.data,
                         visible=f.visible.data
                         # performance_selector=f.get_performance_selector(),
                         # performance_selector_label1_override=f.performance_selector_label1_override.data,
@@ -360,6 +362,8 @@ class Events(BaseView):
                             middle_stock_threshold=f.middle_stock_threshold.data,
                             middle_stock_threshold_percent=f.middle_stock_threshold_percent.data,
                             cart_setting_id=f.cart_setting_id.data,
+                            event_creator=f.event_creator.data,
+                            event_operator=f.event_operator.data,
                             visible=True
                             # performance_selector=f.get_performance_selector(),
                             # performance_selector_label1_override=f.performance_selector_label1_override.data,

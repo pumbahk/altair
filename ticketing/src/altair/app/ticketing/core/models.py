@@ -1151,6 +1151,9 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     setting = relationship('EventSetting', backref='event', uselist=False, cascade='all')
 
+    event_creator = AnnotatedColumn(String(255), nullable=True, _a_label=_(u'登録担当者'))
+    event_operator = AnnotatedColumn(String(255), nullable=True, _a_label=_(u'運営担当者'))
+
     _first_performance = None
     _final_performance = None
 

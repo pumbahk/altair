@@ -200,6 +200,20 @@ class EventForm(OurForm):
         choices=lambda field: [(str(cart_setting.id), (cart_setting.name or u'(名称なし)')) for cart_setting in DBSession.query(CartSetting).filter_by(organization_id=field._form.context.organization.id)],
         coerce=int
         )
+    event_creator = TextField(
+        label=u'登録担当者',
+        validators=[
+            Optional(),
+            Length(max=20, message=u'20文字以内で入力してください'),
+        ]
+    )
+    event_operator = TextField(
+        label=u'運営担当者',
+        validators=[
+            Optional(),
+            Length(max=20, message=u'20文字以内で入力してください'),
+        ]
+    )
     visible = OurBooleanField(
         label=u'イベントの表示／非表示',
         default=True,
