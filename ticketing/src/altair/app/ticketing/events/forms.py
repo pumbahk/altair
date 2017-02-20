@@ -201,14 +201,14 @@ class EventForm(OurForm):
         coerce=int
         )
     event_creator = TextField(
-        label=u'登録担当者',
+        label=label_text_for(EventSetting.event_creator),
         validators=[
             Optional(),
             Length(max=60, message=u'60文字以内で入力してください'),
         ]
     )
     event_operator = TextField(
-        label=u'運営担当者',
+        label=label_text_for(EventSetting.event_operator),
         validators=[
             Optional(),
             Length(max=60, message=u'60文字以内で入力してください'),

@@ -257,8 +257,7 @@ class Events(BaseView):
     def new_get(self):
         f = EventForm(MultiDict(code=self.context.user.organization.code,
                                 event_creator=self.context.user.name,
-                                visible=True),
-                      context=self.context)
+                                visible=True), context=self.context)
         return {
             'form':f,
             'route_name': u'登録',
@@ -318,6 +317,8 @@ class Events(BaseView):
         f.middle_stock_threshold.data = event.setting and event.setting.middle_stock_threshold
         f.middle_stock_threshold_percent.data = event.setting and event.setting.middle_stock_threshold_percent
         f.cart_setting_id.data = event.setting and event.setting.cart_setting_id
+        f.event_creator.data = event.setting and event.setting.event_creator
+        f.event_operator.data = event.setting and event.setting.event_operator
         f.visible.data = event.setting and event.setting.visible
         if self.request.matched_route.name == 'events.edit':
             route_name = u'編集'
@@ -395,6 +396,8 @@ class Events(BaseView):
                 event.setting.visible = f.visible.data
                 if f.cart_setting_id.data is not None:
                     event.setting.cart_setting_id = f.cart_setting_id.data
+                event.setting.event_creator = f.event_creator.data
+                event.setting.event_operator = f.event_operator.data
             try:
                 event.save()
                 self.request.session.flash(u'イベントを保存しました')

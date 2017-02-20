@@ -19,9 +19,9 @@ Identifier = sa.BigInteger
 
 
 def upgrade():
-    op.add_column('Event', sa.Column('event_creator', sa.Unicode(length=255), nullable=True))
-    op.add_column('Event', sa.Column('event_operator', sa.Unicode(length=255), nullable=True))
+    op.add_column('EventSetting', sa.Column('event_creator', sa.Unicode(length=255), nullable=True))
+    op.add_column('EventSetting', sa.Column('event_operator', sa.Unicode(length=255), nullable=True))
 
 def downgrade():
-    op.drop_column('Event', 'event_creator')
-    op.drop_column('Event', 'event_operator')
+    op.drop_column('EventSetting', 'event_creator')
+    op.drop_column('EventSetting', 'event_operator')

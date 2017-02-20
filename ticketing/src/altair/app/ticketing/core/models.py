@@ -1151,9 +1151,6 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     setting = relationship('EventSetting', backref='event', uselist=False, cascade='all')
 
-    event_creator = AnnotatedColumn(String(255), nullable=True, _a_label=_(u'登録担当者'))
-    event_operator = AnnotatedColumn(String(255), nullable=True, _a_label=_(u'運営担当者'))
-
     _first_performance = None
     _final_performance = None
 
@@ -4324,6 +4321,8 @@ class EventSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     middle_stock_threshold_percent = AnnotatedColumn(Integer, default=None, _a_label=_(u'カート在庫閾値 (%)'), _a_visible_column=True)
     cart_setting_id = AnnotatedColumn(Identifier, ForeignKey('CartSetting.id'), default=None, _a_label=_(u'カートの種類'), _a_visible_column=True)
     cart_setting = relationship('CartSetting')
+    event_creator = AnnotatedColumn(String(255), nullable=True, _a_label=_(u'登録担当者'),  _a_visible_column=True)
+    event_operator = AnnotatedColumn(String(255), nullable=True, _a_label=_(u'運営担当者'),  _a_visible_column=True)
     visible = AnnotatedColumn(Boolean, default=True, _a_label=_(u'イベントの表示／非表示'))
 
     @property
