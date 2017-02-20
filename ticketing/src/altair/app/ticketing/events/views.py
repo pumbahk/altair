@@ -255,7 +255,10 @@ class Events(BaseView):
 
     @view_config(route_name='events.new', request_method='GET', renderer='altair.app.ticketing:templates/events/edit.html')
     def new_get(self):
-        f = EventForm(MultiDict(code=self.context.user.organization.code, visible=True), context=self.context)
+        f = EventForm(MultiDict(code=self.context.user.organization.code,
+                                event_creator=self.context.user.name,
+                                visible=True),
+                      context=self.context)
         return {
             'form':f,
             'route_name': u'登録',

@@ -204,14 +204,14 @@ class EventForm(OurForm):
         label=u'登録担当者',
         validators=[
             Optional(),
-            Length(max=20, message=u'20文字以内で入力してください'),
+            Length(max=60, message=u'60文字以内で入力してください'),
         ]
     )
     event_operator = TextField(
         label=u'運営担当者',
         validators=[
             Optional(),
-            Length(max=20, message=u'20文字以内で入力してください'),
+            Length(max=60, message=u'60文字以内で入力してください'),
         ]
     )
     visible = OurBooleanField(
