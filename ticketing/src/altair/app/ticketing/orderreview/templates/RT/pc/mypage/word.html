@@ -89,7 +89,7 @@
         return r;
     };
     var build = function(t, d) {
-        return $(t.replace(/{([^}]+)}/g, function(_, e) { return d[e]; }))
+        return $(t.replace(/{([^}]+)}/g, function(_, e) { return $('<span></span>').text(d[e]).html(); }))
         .css({ display: '' });
     };
     var pos = $('#word_template_container').eq(0);
