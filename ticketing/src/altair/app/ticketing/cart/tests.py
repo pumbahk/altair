@@ -1235,7 +1235,7 @@ class PaymentViewTests(unittest.TestCase):
     def _register_starndard_payment_methods(self):
         from ..core import models
         self.session.add(models.PaymentMethod(id=1, name=u"セブン-イレブン", fee=100))
-        self.session.add(models.PaymentMethod(id=2, name=u"楽天ID決済", fee=100))
+        self.session.add(models.PaymentMethod(id=2, name=u"楽天ペイ", fee=100))
         self.session.add(models.PaymentMethod(id=3, name=u"クレジットカード", fee=100))
         self.config.add_route('route.1', 'sej')
         self.config.add_route('route.2', 'checkout')
