@@ -136,7 +136,7 @@ def main():
     parser.add_argument('--target', type=str, required=True, help="ex. s3://bucket/path/to/upload")
     parser.add_argument('--quiet', action='store_true', default=False)
     parser.add_argument('--dry-run', action='store_true', default=False)
-    parser.add_argument('--ahead', type=int, default=3*3600, help="process job in advance [sec]")
+    parser.add_argument('--ahead', type=int, default=24*3600, help="process job in advance [sec]")
 
     opts = parser.parse_args()
 
