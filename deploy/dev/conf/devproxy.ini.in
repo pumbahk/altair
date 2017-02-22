@@ -80,6 +80,10 @@ altair.ticketing.lots =
     http://[^/.]+.stg.altr.jp(/lots(?:/.*)?)
     http://%(_proxy_target)s:${altair:ticketing.lots.port}\1
 
+altair.ticketing.cart.api =
+    http://[^/.]+.stg.altr.jp(/cart_api(?:/.*)?)
+    http://%(_proxy_target)s:${altair:ticketing.cart.api.port}\1
+
 altair.ticketing.cart =
     http://[^/.]+.stg.altr.jp(/cart(?:/.*)?)
     http://%(_proxy_target)s:${altair:ticketing.cart.port}\1
