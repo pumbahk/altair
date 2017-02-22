@@ -15,7 +15,7 @@ select
     o.order_status,
     o.payment_status,
     o.delivery_status,
-    CASE o.payment_method WHEN 1 THEN 'マルチ決済' WHEN 2 THEN 'ID決済' WHEN 3 THEN 'セブン' WHEN 4 THEN '窓口' WHEN 5 THEN '無料' WHEN 6 THEN 'ファミマ' ELSE '不明' END AS payment,
+    CASE o.payment_method WHEN 1 THEN 'マルチ決済' WHEN 2 THEN '楽天ペイ' WHEN 3 THEN 'セブン' WHEN 4 THEN '窓口' WHEN 5 THEN '無料' WHEN 6 THEN 'ファミマ' ELSE '不明' END AS payment,
     CASE o.delivery_method WHEN 1 THEN '配送' WHEN 2 THEN 'セブン' WHEN 3 THEN '窓口' WHEN 4 THEN 'QR認証' WHEN 5 THEN 'イベントゲート' WHEN 6 THEN' ファミマ' ELSE '不明' END AS delivery,
     o.fc_type,
     IF(o.fc_type ='', '', o.fc_id) AS fc_id,
