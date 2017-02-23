@@ -31,17 +31,6 @@
                 <dl>
                   <dt>${m.payment_method.name}</dt>
                   <dd class="paymentFee_${h.format_number(m.transaction_fee)}">
-                    <span class="paymentFeeLabel">手数料</span>
-                    <span class="paymentFee">${h.format_currency(m.transaction_fee)}</span>
-                    <span class="paymentFeeType">(${h.fee_type(m.payment_method.fee_type)})</span>
-                    <div class="description">${m.payment_method.description or '' | n}</div>
-                  </dd>
-                </dl>
-              </td>
-              <td onclick="$(this).parents('tr').find('input').click();">
-                <dl>
-                  <dt>${m.delivery_method.name}</dt>
-                  <dd class="devlieryFee_${h.format_number(m.delivery_fee)}">
                     % if m.delivery_fee_type == 0:
                       <span class="deliveryFeeLabel">手数料</span>
                       <span class="deliveryFee">${h.format_currency(m.delivery_fee)}</span>
@@ -60,6 +49,17 @@
                         </dd>
                       </dl>
                     % endif
+                    <div class="description">${m.payment_method.description or '' | n}</div>
+                  </dd>
+                </dl>
+              </td>
+              <td onclick="$(this).parents('tr').find('input').click();">
+                <dl>
+                  <dt>${m.delivery_method.name}</dt>
+                  <dd class="devlieryFee_${h.format_number(m.delivery_fee)}">
+                    <span class="deliveryFeeLabel">手数料</span>
+                    <span class="deliveryFee">${h.format_currency(m.delivery_fee)}</span>
+                    <span class="deliveryFeeType">(${h.fee_type(m.delivery_method.fee_type)})</span>
                     <div class="description">${m.delivery_method.description or '' | n}</div>
                   </dd>
                 </dl>
