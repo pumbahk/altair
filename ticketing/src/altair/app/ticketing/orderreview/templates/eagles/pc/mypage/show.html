@@ -45,7 +45,50 @@
             </div>
             </div>      
           </div>
-        </section>
+
+      <br/><br/><br/>
+
+    <div class="inner">
+        <div class="sub-contents m-maga">
+           <h3 class="sub-ttl tac">メールマガジンの配信</h3>
+            <div class="orderreview-list-wrap">
+              <ul class="orderreview-list">
+                <li>
+                  <form id="mail_form" name="mail_form" class="confirmForm" method="post" action="${request.route_path('mypage.mailmag.confirm')}">
+                    <table class="orderreview-tbl">
+                      <tr>
+                        <td class="payment-detail">
+                            <p class="payment-detail-title">イーグルスチケットからのメールマガジンの購読を選択できます。</p>
+                            % for mailmagazine, subscribed in mailmagazines_to_subscribe:
+                              <div class="payment-detail-box">
+                                <p class="fwb mb10">イーグルスチケットからのメールマガジンの購読を選択できます。</p>
+                                <p class="mb10">
+                                  <input type="checkbox" ${"checked" if subscribed else ""} name="mailmagazine" id="mailmagazine-${mailmagazine.id}" value="${mailmagazine.id}" />
+                                  % if subscribed:
+                                    <span class="icon_onmag">購読中</span>
+                                  % endif
+                                  <label for="mailmagazine-${mailmagazine.id}">${mailmagazine.name}</label>
+                                </p>
+                                <p class="fs12">${mailmagazine.description|n}</p>
+                              </div>
+                              </p>
+                            % endfor
+                        </td>
+                      </tr>
+                      <tr>
+                        <td class="confirm-box">
+                            <input class="payment-confirm-btn" value="変更する" type="submit">
+                        </td>
+                      </tr>
+                    </table>
+                  </form>
+                </li>
+              </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
 
       </div>
       <!-- .contents -->
