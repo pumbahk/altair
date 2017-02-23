@@ -1922,6 +1922,16 @@ class PaymentDeliveryMethodPair(Base, BaseModel, WithTimestamp, LogicallyDeleted
         return Decimal()
 
     @property
+    def delivery_fee_type(self):
+        if self.delivery_fee_per_order:
+            if self.delivery_fee_per_principal_ticket:
+                raise Exception('both fee_per_order and fee_per_ticket are non-zero')
+            else:
+                return FeeTypeEnum.Once.v[0]
+        else:
+            return FeeTypeEnum.PerUnit.v[0]
+
+    @property
     def delivery_fee(self):
         warn_deprecated("deprecated attribute `delivery_fee' is accessed")
         if self.delivery_fee_per_order:
@@ -1936,6 +1946,11 @@ class PaymentDeliveryMethodPair(Base, BaseModel, WithTimestamp, LogicallyDeleted
     def delivery_fee_per_ticket(self):
         warn_deprecated("deprecated attribute `delivery_fee_per_ticket' is accessed")
         return self.delivery_fee_per_principal_ticket
+
+    @property
+    def delivery_fee_per_sub_ticket(self):
+        warn_deprecated("deprecated attribute `delivery_fee_per_sub_ticket' is accessed")
+        return self.delivery_fee_per_subticket
 
     @property
     def transaction_fee_per_product(self):
@@ -2215,24 +2230,12 @@ class DeliveryMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             return FeeTypeEnum.PerUnit.v[0]
 
     @property
-    def fee(self):
-        if self.fee_per_order:
-            if self.fee_per_principal_ticket:
-                raise Exception('both fee_per_order and fee_per_ticket are non-zero')
-            else:
-                return self.fee_per_order
+    def get_fee_per_subticket(self):
+        if self.fee_tyep == FeeTypeEnum.PerUnit.v[0]:
+            return self.fee_per_subticket
         else:
-            return self.fee_per_principal_ticket
-
-    @property
-    def fee_type(self):
-        if self.fee_per_order:
-            if self.fee_per_principal_ticket:
-                raise Exception('both fee_per_order and fee_per_ticket are non-zero')
-            else:
-                return FeeTypeEnum.Once.v[0]
-        else:
-            return FeeTypeEnum.PerUnit.v[0]
+            logger.warning('fee_per_subticket should not be gotten as fee_tye is once (fee per order)')
+            return float(0.00)
 
     @hybrid_property
     def delivery_plugin(self):
