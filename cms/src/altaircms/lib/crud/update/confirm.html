@@ -36,7 +36,11 @@ else:
               <span style="border: 1px solid gray; border-radius: 3px ; padding: 2px;">${u | h}</span>
             % endfor
           % elif isinstance(v, basestring):
-            <span>${(" <br />\n".join(v.split("\n"))) | h}</span>
+            <span>
+            % for line in v.split("\n"):
+              ${line | h} <br />
+            % endfor
+            </span>
           % else:
             <span>${v}</span>
           % endif

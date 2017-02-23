@@ -31,6 +31,7 @@ create table order201605 (
     fee int unsigned not null,
     qty int unsigned not null,
     point int unsigned not null,
+    email varchar(1023) not null,
     primary key (id),
     key (order_id),
     key (order_no)

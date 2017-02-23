@@ -53,7 +53,7 @@ def _overridable(path, fallback_ua_type=None):
     return _template(path, type='overridable', for_='payments', plugin_type='payment', plugin_id=PAYMENT_PLUGIN_ID, fallback_ua_type=fallback_ua_type)
 
 def includeme(config):
-    # 決済系(楽天ID決済)
+    # 決済系(楽天ペイ)
     config.add_payment_plugin(CheckoutPlugin(), PAYMENT_PLUGIN_ID)
     config.add_route('payment.checkout.login', 'payment/checkout/login')
     config.add_route('payment.checkout.order_complete', 'payment/checkout/order_complete')
@@ -113,7 +113,7 @@ class CheckoutPlugin(object):
             submit = literal(
                 u'<input type="image" src="https://checkout.rakuten.co.jp/p/common/img/btn_check_01.gif?c9cc8c1b9ae94c18920540a80b95c16a" border="0">'
                 u'<br />'
-                u'※楽天ID決済へ移動します。'
+                u'※楽天ペイへ移動します。'
             )
         return {
             'url':request.route_url('payment.checkout.login'),
@@ -168,7 +168,7 @@ class CheckoutPlugin(object):
             service.request_change_order([(order_like, order_like)])
         except AnshinCheckoutAPIError as e:
             raise CheckoutSettlementFailure(
-                message=u'楽天ID決済の予約内容変更ができませんでした',
+                message=u'楽天ペイの予約内容変更ができませんでした',
                 order_no=order_like.order_no,
                 back_url=None,
                 error_code=e.error_code
@@ -181,7 +181,7 @@ class CheckoutPlugin(object):
             result = service.request_cancel_order([order_like])
         except AnshinCheckoutAPIError as e:
             raise CheckoutSettlementFailure(
-                message=u'楽天ID決済をキャンセルできませんでした',
+                message=u'楽天ペイをキャンセルできませんでした',
                 order_no=order_like.order_no,
                 back_url=None,
                 error_code=e.error_code
@@ -227,14 +227,14 @@ def confirm_viewlet(context, request):
     """ 確認画面表示
     :param context: ICartPayment
     """
-    return Response(text=u"楽天ID決済")
+    return Response(text=u"楽天ペイ")
 
 @lbr_view_config(context=IOrderPayment, name="payment-%d" % PAYMENT_PLUGIN_ID)
 def completion_viewlet(context, request):
     """ 完了画面表示
     :param context: IOrderPayment
     """
-    return Response(text=u"楽天ID決済")
+    return Response(text=u"楽天ペイ")
 
 @lbr_view_config(context=ICompleteMailResource, name="payment-%d" % PAYMENT_PLUGIN_ID, renderer=_overridable("checkout_mail_complete.html", fallback_ua_type='mail'))
 @lbr_view_config(context=ILotsElectedMailResource, name="payment-%d" % PAYMENT_PLUGIN_ID, renderer=_overridable("checkout_mail_complete.html", fallback_ua_type='mail'))
@@ -251,7 +251,7 @@ def notice_viewlet(context, request):
 
 
 class CheckoutView(object):
-    """ 楽天ID決済へ遷移する """
+    """ 楽天ペイへ遷移する """
 
     def __init__(self, request):
         self.request = request
@@ -290,7 +290,7 @@ class CheckoutView(object):
 
 
 class CheckoutCompleteView(object):
-    """ 楽天ID決済(API)からの完了通知受取 """
+    """ 楽天ペイ(API)からの完了通知受取 """
 
     def __init__(self, request):
         self.request = request
@@ -300,7 +300,7 @@ class CheckoutCompleteView(object):
     def order_complete(self):
         '''
         注文完了通知を保存し、予約確定する
-          - 楽天ID決済より注文完了通知が来たタイミングで、予約を確定させる
+          - 楽天ペイより注文完了通知が来たタイミングで、予約を確定させる
           - ここでOKを返すとオーソリが完了する、なのでCheckoutの売上処理はこのタイミングではやらない
           - NGの場合はオーソリもされないので、Cartも座席解放してfinished_atをセットする
           - Checkoutの売上処理は、バッチで行う
@@ -330,7 +330,7 @@ class CheckoutCompleteView(object):
 
 
 class CheckoutCallbackView(object):
-    """ 楽天ID決済からの戻り先 """
+    """ 楽天ペイからの戻り先 """
 
     def __init__(self, request):
         self.request = request

@@ -699,14 +699,14 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                     'product':dict(),
                 }
                 convert_map['sales_segment'].update(
-                    SalesSegment.create_from_template(template=template_sales_segment, performance_id=self.id)
+                    SalesSegment.create_from_template(template=template_sales_segment, with_point_grant_settings=True, performance_id=self.id)
                 )
 
                 template_products = Product.query.filter_by(sales_segment_id=template_sales_segment.id)\
                                                  .filter_by(performance_id=template_performance.id).all()
                 for template_product in template_products:
                     # 公演に紐づく商品の作成
-                    product_map = Product.create_from_template(template=template_product, performance_id=self.id, **convert_map)
+                    product_map = Product.create_from_template(template=template_product, performance_id=self.id, with_point_grant_settings=True, **convert_map)
                     convert_map['product'].update(product_map)
 
                     if template_sales_segment.is_lottery:
@@ -2968,7 +2968,7 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return self.seat_stock_type.name if self.seat_stock_type else ''
 
     @staticmethod
-    def create_from_template(template, with_product_items=False, **kwargs):
+    def create_from_template(template, with_product_items=False, with_point_grant_settings=False, **kwargs):
         product = Product.clone(template)
         product.event_id = None
         product.base_product_id = None
@@ -2982,6 +2982,9 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         if 'sales_segment' in kwargs:
             # 販売区分なしの場合の product もありえる
             product.sales_segment_id = template.sales_segment_id and kwargs['sales_segment'][template.sales_segment_id]
+        if with_point_grant_settings and template.point_grant_settings:
+            # ポイント付与設定のコピーはイベント、パフォーマンスがコピーされるときに実行する
+            product.point_grant_settings = template.point_grant_settings
         product.save()
 
         if with_product_items:
@@ -3998,7 +4001,7 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
         return data
 
     @staticmethod
-    def create_from_template(template, **kwargs):
+    def create_from_template(template, with_point_grant_settings=False, **kwargs):
         sales_segment = SalesSegment.clone(template)
         if template.setting is not None:
             sales_segment.setting = SalesSegmentSetting.create_from_template(template.setting)
@@ -4022,6 +4025,10 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
                 sales_segment.payment_delivery_method_pairs.append(new_pdmp)
         else:
             sales_segment.payment_delivery_method_pairs = template.payment_delivery_method_pairs
+
+        if with_point_grant_settings and template.point_grant_settings:
+        # ポイント付与設定のコピーはイベント、パフォーマンスがコピーされるときに実行する
+            sales_segment.point_grant_settings = template.point_grant_settings
         sales_segment.save()
         return {template.id:sales_segment.id}
 

@@ -19,7 +19,7 @@ from altair.app.ticketing.payments.plugins import CHECKOUT_PAYMENT_PLUGIN_ID
 from altair.app.ticketing.payments.plugins.checkout import CheckoutPlugin
 
 def rakuten_checkout_sales():
-    ''' 楽天ID決済の売上処理
+    ''' 楽天ペイの売上処理
     '''
     parser = argparse.ArgumentParser()
     parser.add_argument('config')
@@ -33,7 +33,7 @@ def rakuten_checkout_sales():
 
     orders_to_skip = set()
     while True:
-        # 楽天ID決済でオーソリ済みになっているOrderを売上済みにする
+        # 楽天ペイでオーソリ済みになっているOrderを売上済みにする
         query = m_order.Order.query \
             .join(m_checkout.Checkout, m_checkout.Checkout.orderCartId == m_order.Order.order_no) \
             .filter(m_order.Order.canceled_at==None) \

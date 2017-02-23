@@ -68,7 +68,12 @@ sql_select_per_order = """
             SELECT UserCredential.authz_identifier
             FROM UserCredential
             WHERE UserCredential.user_id = `Order`.user_id AND UserCredential.deleted_at IS NULL
-        ), '') AS authz_identifier
+        ), '') AS authz_identifier,
+        IF(`Order`.shipping_address_id > 0, (
+            SELECT ShippingAddress.email_1
+            FROM ShippingAddress
+            WHERE ShippingAddress.id = `Order`.shipping_address_id AND ShippingAddress.deleted_at IS NULL
+        ), '') AS email
     FROM `Order`
     JOIN Cart ON Cart.order_id = `Order`.id
     JOIN Performance ON Performance.id = `Order`.performance_id
@@ -115,6 +120,7 @@ cols = [
     ('fee', int),
     ('qty', int),
     ('point', int),
+    ('email', str),
 ]
 
 order_table_name = 'order201605'

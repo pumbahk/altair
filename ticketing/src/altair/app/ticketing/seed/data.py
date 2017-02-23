@@ -455,7 +455,7 @@ performance_names = [
 
 payment_method_names = [
     u'クレジットカード決済',
-    u'楽天ID決済',
+    u'楽天ペイ',
     u'コンビニ決済 (セブン-イレブン)',
     u'窓口支払',
     ]
