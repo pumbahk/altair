@@ -209,7 +209,7 @@ class CartBot(object):
         if pdmp_choices_made is None:
             pdmp_choices_made = self.pdmp_choices_map[sales_segment_id] = set()
 
-        choices = dict((pdmp['radio'].get('value'), pdmp) for pdmp in pdmps if u'楽天ID決済' not in pdmp['payment_method']['name'])
+        choices = dict((pdmp['radio'].get('value'), pdmp) for pdmp in pdmps if u'楽天ペイ' not in pdmp['payment_method']['name'])
         eligible_choices = set(choices.keys()).difference(pdmp_choices_made)
         if not eligible_choices:
             pdmp_choices_made.clear()

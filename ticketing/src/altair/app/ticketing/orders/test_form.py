@@ -74,7 +74,7 @@ class OrderRefundFormTests(unittest.TestCase):
         self.session.add(PaymentMethod(
             organization=self.organization,
             payment_plugin_id=plugins.CHECKOUT_PAYMENT_PLUGIN_ID,
-            name=u'楽天ID決済',
+            name=u'楽天ペイ',
             fee=200,
         ))
         self.session.add(PaymentMethod(
@@ -187,7 +187,7 @@ class OrderRefundFormTests(unittest.TestCase):
             self.assert_(False)
 
     def test_validate_payment_method_id_payment_checkout_and_refund_checkout(self):
-        """予約の支払方法が楽天ID、払戻方法が楽天IDならvalidation通る"""
+        """予約の支払方法が楽天ペイ、払戻方法が楽天ペイならvalidation通る"""
         orders = [self._order(
             payment_plugin_id=plugins.CHECKOUT_PAYMENT_PLUGIN_ID,
             delivery_plugin_id=plugins.SHIPPING_DELIVERY_PLUGIN_ID
@@ -202,7 +202,7 @@ class OrderRefundFormTests(unittest.TestCase):
             self.assert_(False)
 
     def test_validate_payment_method_id_payment_checkout_and_refund_bank(self):
-        """予約の支払方法が楽天ID、払戻方法が窓口ならvalidation通る"""
+        """予約の支払方法が楽天ペイ、払戻方法が窓口ならvalidation通る"""
         orders = [self._order(
             payment_plugin_id=plugins.CHECKOUT_PAYMENT_PLUGIN_ID,
             delivery_plugin_id=plugins.SHIPPING_DELIVERY_PLUGIN_ID

@@ -7,7 +7,7 @@ from altair.app.ticketing.events.sales_segments.forms import validate_issuing_st
 """
 決済・引取方法設定画面の項目関連チェックを行う。
 1. 有効な決済方法と引取方法の組み合わせかをチェックする。
-2. 楽天ID決済の場合は、決済手数料と特別手数料は設定不可。
+2. 楽天ペイの場合は、決済手数料と特別手数料は設定不可。
 3. コンビニで引取の場合、発券開始日時をチェックする。
 """
 
@@ -24,10 +24,10 @@ def validate_payment_delivery_combination(status, form):
 
 def validate_checkout_payment_and_fees(status, form):
     if status:
-        # 楽天ID決済の場合は、決済手数料と特別手数料は設定不可
+        # 楽天ペイの場合は、決済手数料と特別手数料は設定不可
         payment_method = PaymentMethod.query.filter_by(id=form.payment_method_id.data).first()
         if payment_method and payment_method.payment_plugin_id == CHECKOUT_PAYMENT_PLUGIN_ID:
-            error_message = u'楽天ID決済では、{}は設定できません'
+            error_message = u'楽天ペイでは、{}は設定できません'
             if form.transaction_fee.data > 0:
                 form.transaction_fee.errors.append(error_message.format(u'決済手数料'))
                 status = False
