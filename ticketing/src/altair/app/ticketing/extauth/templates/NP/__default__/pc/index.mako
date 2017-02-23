@@ -23,13 +23,17 @@
                 <dd>
                     <form action="${_context.route_path('extauth.login',_query=request.GET)}" method="POST">
                         <input type="submit" name="doGuestLoginAsGuest" class="btn-login" value="購入する">
+                        <br/><br/>
+                        <a href="https://parceiro.tstar.jp/cart/events/9657">
+                            <input type="button" class="btn-regist" value="サポーターズクラブへの新規入会はこちら">
+                        </a>
                         <input type="hidden" name="member_set" value="NP">
                         <input type="hidden" name="_" value="${request.session.get_csrf_token()}" />
                     </form>
                 </dd>
                 <dd>
                 <ul>
-                    <li><span style="color:red;font-size:90%;">「会員の方はこちら」から各会員への新規登録が可能です</span></li>
+                    <li><span style="color:red;font-size:90%;">※現在、下記からのご入会は受け付けておりません。</span></li>
                     <li><img src="${view_context.static_url('images/fc_login_capture.png')}" alt="logo" width="85%" /></li>
                 </ul>
                 </dd>
