@@ -32,7 +32,7 @@ def main(global_config, **local_config):
     config.include('altair.browserid')
     config.include('altair.exclog')
     config.include('altair.sqlahelper')
-    config.add_route('cart.api.index', '/', request_method='GET')
+    config.add_route('cart.api.index', '/api/v1/', request_method='GET')
 
     config.scan('.views')
 
