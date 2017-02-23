@@ -28,7 +28,7 @@ ${h.error_list(request, form, 'card_holder_name')}
 </div>
 <%mobile:form_header required="true">セキュリティコード(数字3〜4桁)</%mobile:form_header>
 <div>
-<input type="password" name="secure_code" istyle="4" /><br />
+<input type="text" name="secure_code" istyle="4" /><br />
 ${h.error_list(request, form, 'secure_code')}
 <font size="-2">
 カード裏面の署名欄に記載された数字のうち末尾3桁のセキュリティコードを入力して下さい。<br />
