@@ -4321,8 +4321,8 @@ class EventSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     middle_stock_threshold_percent = AnnotatedColumn(Integer, default=None, _a_label=_(u'カート在庫閾値 (%)'), _a_visible_column=True)
     cart_setting_id = AnnotatedColumn(Identifier, ForeignKey('CartSetting.id'), default=None, _a_label=_(u'カートの種類'), _a_visible_column=True)
     cart_setting = relationship('CartSetting')
-    event_creator = AnnotatedColumn(String(255), nullable=True, _a_label=_(u'登録担当者'),  _a_visible_column=True)
-    event_operator = AnnotatedColumn(String(255), nullable=True, _a_label=_(u'運営担当者'),  _a_visible_column=True)
+    event_operator_id = AnnotatedColumn(Identifier, nullable=True, _a_label=_(u'登録担当者'))
+    sales_person_id = AnnotatedColumn(Identifier, nullable=True, _a_label=_(u'営業担当者'))
     visible = AnnotatedColumn(Boolean, default=True, _a_label=_(u'イベントの表示／非表示'))
 
     @property
@@ -4332,6 +4332,16 @@ class EventSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     @property
     def container(self):
         return self.event
+
+    @property
+    def event_operator(self):
+        operator = Operator.query.filter_by(id=self.event_operator_id).first()
+        return operator.name if operator else u'-'
+
+    @property
+    def sales_person(self):
+        operator = Operator.query.filter_by(id=self.sales_person_id).first()
+        return operator.name if operator else u'-'
 
     @classmethod
     def create_from_template(cls, template, event_id=None, **kwargs):
