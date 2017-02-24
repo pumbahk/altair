@@ -33,7 +33,6 @@
     <th class="span1">状態</th>
     <th>イベント</th>
     <th>メール題名</th>
-    <th class="span1">対象ワード数</th>
     <th class="span1">対象ユーザ数</th>
     <th class="span1">Mu Trans ID</th>
     <th class="span1">Mu Status</th>
@@ -49,7 +48,6 @@
         <td style="white-space: nowrap;">${announce.status(a)}</td>
         <td><a href="${request.route_path('announce.list', event_id=a.event.id)}">${a.event.title}</a></td>
         <td><a href="${request.route_path('announce.edit', announce_id=a.id)}">${a.subject}</a></td>
-        <td class="numeric">${len(a.words.split(",")) if 0 < len(a.words) else ''}</td>
         <td class="numeric">${a.get_subscriber_count()}</td>
         <td>
           % if a.mu_trans_id:

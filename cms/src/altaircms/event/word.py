@@ -6,8 +6,8 @@ import json
 from pyramid.view import view_config
 from pyramid.httpexceptions import HTTPBadRequest
 from altaircms.modellib import DBSession
-from sqlalchemy import or_
-from sqlalchemy.orm import joinedload
+from sqlalchemy import or_, and_
+from sqlalchemy.orm import joinedload, aliased
 from ..event.models import Event
 from ..models import Performance, Word, WordSearch, Performance_Word, Event_Word
 
@@ -15,8 +15,27 @@ from altair.viewhelpers.datetime_ import dt2str
 logger = logging.getLogger(__file__)
 
 
+def make_words(tuples_list):
+    words = dict()
+    for tuples in tuples_list:
+        for word in tuples:
+            words[word.id] = dict([ (k, v) for (k, v) in word.__dict__.items() if k[0]!='_' ])
+            words[word.id]["merge"] = []
+
+    for tuples in tuples_list:
+        for word in tuples:
+            if word.merge_word_id:
+                if word.merge_word_id not in words[word.id]["merge"]:
+                    words[word.id]["merge"].append(word.merge_word_id)
+
+    return words.values()
+
+
 @view_config(route_name="api_keyword", request_method="GET", renderer='json')
 def api_word_get(request):
+    merge_word = aliased(Word)
+    query = DBSession.query(Word.id, Word.label, Word.type, merge_word.id.label('merge_word_id'))
+
     cart_performance = request.params.get('backend_performance_id')
     cart_event = request.params.get('backend_event_id')
     if cart_performance:
@@ -28,27 +47,21 @@ def api_word_get(request):
             # no such performance
             return dict()
 
-        w1 = request.allowable(Word)\
-        .filter(Word.deleted_at==None)\
+        w1 = request.allowable(Word, query)\
+        .filter(Word.merge_to_word_id==None)\
         .join(Performance_Word)\
         .join(Performance)\
+        .outerjoin(merge_word, and_(merge_word.merge_to_word_id==Word.id, merge_word.deleted_at==None))\
         .filter(Performance.backend_id==cart_performance)
 
-        w2 = request.allowable(Word)\
-        .filter(Word.deleted_at==None)\
+        w2 = request.allowable(Word, query)\
+        .filter(Word.merge_to_word_id==None)\
         .join(Event_Word)\
         .join(Event)\
+        .outerjoin(merge_word, and_(merge_word.merge_to_word_id==Word.id, merge_word.deleted_at==None))\
         .filter(Event.id==performance.event_id)
 
-        words = list()
-        word_ids = set()
-        for word in w1.all():
-            words.append(dict(id=word.id, label=word.label, type=word.type))
-            word_ids.add(word.id)
-        for word in w2.all():
-            if word.id not in word_ids:
-                words.append(dict(id=word.id, label=word.label, type=word.type))
-                word_ids.add(word.id)
+        words = make_words([ w1.all(), w2.all() ])
 
         event = dict(id=performance.event.id, title=performance.event.title)
         return dict(performance=dict(title=performance.title, event=event), words=words)
@@ -60,17 +73,14 @@ def api_word_get(request):
             # no such event
             return dict()
 
-        w1 = request.allowable(Word)\
-        .filter(Word.deleted_at==None)\
+        w1 = request.allowable(Word, query)\
+        .filter(Word.merge_to_word_id==None)\
         .join(Event_Word)\
         .join(Event)\
+        .outerjoin(merge_word, and_(merge_word.merge_to_word_id==Word.id, merge_word.deleted_at==None))\
         .filter(Event.backend_id==cart_event)
 
-        words = list()
-        word_ids = set()
-        for word in w1.all():
-            words.append(dict(id=word.id, label=word.label, type=word.type))
-            word_ids.add(word.id)
+        words = make_words([ w1.all() ])
 
         include_pages = True
         if include_pages:
@@ -96,23 +106,27 @@ def api_word_get(request):
             return dict(event=dict(id=event.id, title=event.title), words=words)
 
     # all words
-    words = request.allowable(Word)\
+    query = DBSession.query(Word.id, Word.label, Word.label_kana, Word.description, Word.type, merge_word.id.label('merge_word_id'))
+    words = request.allowable(Word, query)\
         .filter(Word.deleted_at==None)\
         .outerjoin(WordSearch)\
         .filter(WordSearch.deleted_at==None)
 
     id_list = request.params.get('id')
     if id_list is not None and 0 < len(id_list):
-        words = words.filter(Word.id.in_(id_list.split(' ')))
+        id_list = id_list.split(' ')
+        words = words\
+            .outerjoin(merge_word, and_(merge_word.merge_to_word_id==Word.id, merge_word.deleted_at==None))\
+            .filter(Word.merge_to_word_id == None)\
+            .filter(or_(Word.id.in_(id_list), (merge_word.id.in_(id_list))))
     else:
         q = request.params.get('q')
         if q is not None and 0 < len(q):
-            words = words.filter(or_(Word.label.contains(q), Word.label_kana.contains(q), WordSearch.data.contains(q)))
+            words = words\
+                .filter(Word.merge_to_word_id==None)\
+                .filter(or_(Word.label.contains(q), Word.label_kana.contains(q), WordSearch.data.contains(q)))
         else:
             raise HTTPBadRequest()
 
-    words = words.distinct().all()
-    word_dicts = list()
-    for word in words:
-        word_dicts.append(dict(id=word.id, label=word.label, label_kana=word.label_kana, description=word.description, type=word.type))
+    word_dicts = make_words([ words.distinct().all() ])
     return dict(words=word_dicts)
