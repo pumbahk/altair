@@ -124,10 +124,11 @@ def main():
                             message("errorCode = %s" % obj['Lambda']['ErrorCode'])
                             if not opts.dry_run:
                                 session.add(a)
-                                a.mu_result = "refused" # FIXME?
+                                a.mu_result = obj['Lambda']['ErrorCode']
                                 a.save()
                                 transaction.commit()
-                                message("set result: refused", True)
+                                message("set error code from mu", True)
+                                logger.warn('request is rejected by postman+mu by code: %s' % obj['Lambda']['ErrorCode'])
                     except Exception as e:
                         message("skip file with parse error in %s: %r" % (filename, e))
                         continue

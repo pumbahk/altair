@@ -5,17 +5,17 @@
   % elif v in status_map:
     ${status_map[v]}
   % else:
-    ${v}
+    [${v}]
   % endif
 </%def>
 
 <%def name="mu_result(v)">
-  <% result_map = { '1': u'正常', '2': u'異常', 'refused': '' } %>
+  <% result_map = { '1': u'正常', '2': u'異常' } %>
   % if v is None:
-    ?
+
   % elif v in result_map:
     ${result_map[v]}
   % else:
-    ${v}
+    エラー ${v}
   % endif
 </%def>
