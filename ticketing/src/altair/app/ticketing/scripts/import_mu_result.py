@@ -186,9 +186,11 @@ def main():
                 for trans in obj['Lambda']['TransStatus']['ID']:
                     # message("found trans_id=%s in status json" % trans['TransId'])
 
-                    # FIXME: 1つずつ探すのは避ける方がよさそう
+                    # FIXME: maybe slow
                     a = session.query(Announcement) \
                         .filter(Announcement.mu_trans_id == trans['TransId']) \
+                        .filter(Announcement.mu_result == None) \
+                        .filter(Announcement.completed_at == None) \
                         .first()
                     if a is None:
                         continue
