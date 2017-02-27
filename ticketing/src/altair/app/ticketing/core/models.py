@@ -4206,6 +4206,7 @@ class OrganizationSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     i18n = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"国際化Org判断用", _a_label=u"国際化Org")
     auto_cms = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"CMS自動化", _a_label=u"CMS自動化")
     event_label = AnnotatedColumn(Boolean, nullable=False, default=True, doc=u"イベント販売区分ラベル", _a_label=u"イベント販売区分ラベル")
+    show_event_op_and_sales = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"登録、営業担当者を表示", _a_label=u"登録、営業担当者を表示")
     default_oauth_setting = Column(MutationDict.as_mutable(JSONEncodedDict(16384)), nullable=False, default={}, server_default='{}')
 
     def _render_cart_setting_id(self):

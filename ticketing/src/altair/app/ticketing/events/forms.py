@@ -204,13 +204,15 @@ class EventForm(OurForm):
         label=label_text_for(EventSetting.event_operator_id),
         default=lambda field: field.context.user_id,
         choices=lambda field: [(str(0), u'')] + [(str(operator.id), (operator.name)) for operator in DBSession.query(Operator).filter_by(organization_id=field._form.context.organization.id)],
-        coerce=int
+        coerce=int,
+        validators=[Optional()]
     )
     sales_person_id = OurSelectField(
         label=label_text_for(EventSetting.sales_person_id),
         default=None,
         choices=lambda field: [(str(0), u'')] + [(str(operator.id), (operator.name)) for operator in DBSession.query(Operator).filter_by(organization_id=field._form.context.organization.id)],
-        coerce=int
+        coerce=int,
+        validators=[Optional()]
     )
     visible = OurBooleanField(
         label=u'イベントの表示／非表示',
