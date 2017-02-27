@@ -61,7 +61,6 @@
                             <p class="payment-detail-title">イーグルスチケットからのメールマガジンの購読を選択できます。</p>
                             % for mailmagazine, subscribed in mailmagazines_to_subscribe:
                               <div class="payment-detail-box">
-                                <p class="fwb mb10">イーグルスチケットからのメールマガジンの購読を選択できます。</p>
                                 <p class="mb10">
                                   <input type="checkbox" ${"checked" if subscribed else ""} name="mailmagazine" id="mailmagazine-${mailmagazine.id}" value="${mailmagazine.id}" />
                                   % if subscribed:
