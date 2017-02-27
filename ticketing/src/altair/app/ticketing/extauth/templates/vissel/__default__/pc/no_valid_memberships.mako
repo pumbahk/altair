@@ -25,13 +25,13 @@ thisyear = datetime.now().strftime('%Y')
 <dl>
 <dt class="login-name"><span>ファンクラブに入会済み</span></dt>
 <dd class="login-inbox">
-<p><a href="https://vissel.fanclub.rakuten.co.jp/mypage/login/ridLogin?year=${thisyear}" class="btnA">楽天ID連携をする</a></p>
+<p><a href="https://vissel.fanclub.rakuten.co.jp/mypage/login" class="btnA">楽天ID連携をする</a></p>
 </dd>
 </dl>
 </div>
 <div class="box clearfix">
 <p style="text-align:center">
-※ファンクラブに入会をご希望の方は<a href="">こちら</a>から
+※ファンクラブに入会をご希望の方は<a href="https://vissel.fanclub.rakuten.co.jp/">こちら</a>から
 </p>
 </div>
 </div><!-- /boxArea -->
