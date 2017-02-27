@@ -15,7 +15,7 @@
 from datetime import datetime
 thisyear = datetime.now().strftime('%Y')
 %>
-<p><a href="https://vissel.fanclub.rakuten.co.jp/mypage/login/ridLogin?year=${thisyear}" class="btnID" target="_blank">楽天会員ID連携がお済でない方はこちら</a></p>
+<p><a href="https://vissel.fanclub.rakuten.co.jp/mypage/login" class="btnID" target="_blank">楽天会員ID連携がお済でない方はこちら</a></p>
 <div class="textArea">
 <p class="caution">※ファンクラブ会員と連携した楽天会員ID・パスワードが必要です。</p>
 <p class="column">※楽天会員ID・パスワードを忘れてしまった方は<a href="https://member.id.rakuten.co.jp/rms/nid/upkfwd" target="_blank">こちら</a></p>
