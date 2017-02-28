@@ -64,7 +64,6 @@ def main():
     parser.add_argument('--status-from', type=str, required=True, help="ex. s3://bucket/path/from/download")
     parser.add_argument('--quiet', action='store_true', default=False)
     parser.add_argument('--dry-run', action='store_true', default=False)
-    parser.add_argument('--ahead', type=int, default=3*3600, help="process job in advance [sec]")
 
     opts = parser.parse_args()
 
