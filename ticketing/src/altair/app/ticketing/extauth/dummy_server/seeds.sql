@@ -77,4 +77,5 @@ INSERT INTO "EaglesMembership" (membership_id, user_id, kind_id, valid_since, ex
 INSERT INTO "EaglesMembership" (membership_id, user_id, kind_id, valid_since, expire_at) VALUES('0000-0000-0001-1900',19,10001,'2015-01-01 00:00:00.000000','2017-01-01 00:00:00.000000');
 INSERT INTO "EaglesMembership" (membership_id, user_id, kind_id, valid_since, expire_at) VALUES('0000-0000-0001-2000',20,10002,'2015-01-01 00:00:00.000000','2017-01-01 00:00:00.000000');
 INSERT INTO "EaglesMembership" (membership_id, user_id, kind_id, valid_since, expire_at) VALUES('0000-0000-0001-2000',20,10003,'2015-01-01 00:00:00.000000','2017-01-01 00:00:00.000000');
+UPDATE EaglesMembership set expire_at = '2030-01-01 00:00:00.000000';
 COMMIT;
