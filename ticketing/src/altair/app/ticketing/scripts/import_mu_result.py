@@ -99,7 +99,8 @@ def main():
                 # without cache mechanism
                 json_key = resolver.resolve('/'.join([opts.result_from, filename])).get_key()
                 if json_key.exists():
-                    obj = json.loads(json_key.get_contents_as_string())
+                    data = json_key.get_contents_as_string()
+                    obj = json.loads(data)
                     # { u'Lambda: {
                     #  u'ErrorMessage': u'TemplatePcHtml\u5165\u529b\u30d1\u30e9\u30e1\u30fc\u30bf\u304c\u4e0d\u6b63\u3067\u3059',
                     #  u'ErrorCode': u'1001',
@@ -133,9 +134,16 @@ def main():
                         continue
 
                     if not opts.dry_run:
-                        # TODO: move?
-                        # json_key.delete()
-                        pass
+                        if opts.result_from.endswith("staging"):
+                            try:
+                                result_sent = opts.result_from[0:-len("staging")] + "sent"
+                                json_key_sent = resolver.resolve('/'.join([result_sent, filename])).get_key()
+
+                                json_key_sent.set_contents_from_string(data)
+                                json_key.delete()
+                            except Exception as e:
+                                message("cannot move to sent directory: %s" % e)
+
                 else:
                     message("not found in s3: %s" % filename, True)
 
