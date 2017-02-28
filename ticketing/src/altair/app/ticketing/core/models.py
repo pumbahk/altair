@@ -4206,6 +4206,7 @@ class OrganizationSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     i18n = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"国際化Org判断用", _a_label=u"国際化Org")
     auto_cms = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"CMS自動化", _a_label=u"CMS自動化")
     event_label = AnnotatedColumn(Boolean, nullable=False, default=True, doc=u"イベント販売区分ラベル", _a_label=u"イベント販売区分ラベル")
+    show_event_op_and_sales = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"登録、営業担当者を表示", _a_label=u"登録、営業担当者を表示")
     default_oauth_setting = Column(MutationDict.as_mutable(JSONEncodedDict(16384)), nullable=False, default={}, server_default='{}')
 
     def _render_cart_setting_id(self):
@@ -4321,6 +4322,8 @@ class EventSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     middle_stock_threshold_percent = AnnotatedColumn(Integer, default=None, _a_label=_(u'カート在庫閾値 (%)'), _a_visible_column=True)
     cart_setting_id = AnnotatedColumn(Identifier, ForeignKey('CartSetting.id'), default=None, _a_label=_(u'カートの種類'), _a_visible_column=True)
     cart_setting = relationship('CartSetting')
+    event_operator_id = AnnotatedColumn(Identifier, nullable=True, _a_label=_(u'登録担当者'))
+    sales_person_id = AnnotatedColumn(Identifier, nullable=True, _a_label=_(u'営業担当者'))
     visible = AnnotatedColumn(Boolean, default=True, _a_label=_(u'イベントの表示／非表示'))
 
     @property
@@ -4330,6 +4333,16 @@ class EventSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     @property
     def container(self):
         return self.event
+
+    @property
+    def event_operator(self):
+        operator = Operator.query.filter_by(id=self.event_operator_id).first()
+        return operator.name if operator else u'-'
+
+    @property
+    def sales_person(self):
+        operator = Operator.query.filter_by(id=self.sales_person_id).first()
+        return operator.name if operator else u'-'
 
     @classmethod
     def create_from_template(cls, template, event_id=None, **kwargs):
