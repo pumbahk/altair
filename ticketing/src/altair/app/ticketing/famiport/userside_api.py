@@ -33,6 +33,8 @@ from altair.app.ticketing.famiport.userside_models import (
     AltairFamiPortReflectionStatus,
     AltairFamiPortSalesSegmentPair,
     )
+from altair.app.ticketing.events.famiport_helpers import has_famiport_pdmp
+from altair.app.ticketing.core.models import SalesSegment
 from altair.app.ticketing.payments.plugins import FAMIPORT_PAYMENT_PLUGIN_ID, FAMIPORT_DELIVERY_PLUGIN_ID
 from .utils import (
     convert_famiport_kogyo_name_style,
@@ -207,11 +209,27 @@ def submit_to_downstream(request, event_id):
 
 def submit_to_downstream_sync(request, session, tenant, event):
     assert tenant.organization_id == event.organization_id
+
     # Lock the FM reflection task with AltairFamiPortPerformanceGroup to avoid parallel execution from different worker process ref: TKT-1563
     altair_famiport_performance_groups = session.query(AltairFamiPortPerformanceGroup).with_lockmode("update").filter_by(event_id=event.id).all()
+
     for altair_famiport_performance_group in altair_famiport_performance_groups:
+
         from datetime import datetime
         now = datetime.now()
+
+        # tkt3258 販売区分からファミマの販売区分がなくなった場合、中間データを削除する
+        for altair_famiport_performance in altair_famiport_performance_group.altair_famiport_performances.values():
+
+            for sales_segment_pair in altair_famiport_performance.altair_famiport_sales_segment_pairs:
+                origin_sales_segmet = None
+                if sales_segment_pair.seat_unselectable_sales_segment_id:
+                    origin_sales_segmet = SalesSegment.get(sales_segment_pair.seat_unselectable_sales_segment_id)
+                else:
+                    origin_sales_segmet = SalesSegment.get(sales_segment_pair.seat_selectable_sales_segment_id)
+
+                if not has_famiport_pdmp(origin_sales_segmet):
+                    sales_segment_pair.deleted_at = now
 
         try:
             get_famiport_venue_by_userside_id(
