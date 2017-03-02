@@ -168,6 +168,10 @@
       <td>${u'○' if organization_setting.event_label else u'×'}</td>
     </tr>
     <tr>
+      <th>${HH.label_text_for(c_models.OrganizationSetting.show_event_op_and_sales)}</th>
+      <td>${u'○' if organization_setting.show_event_op_and_sales else u'×'}</td>
+    </tr>
+    <tr>
       <th>${f.oauth_service_provider.kwargs['label']}</th>
       <td>${organization_setting.oauth_service_provider}</td>
     </tr>
