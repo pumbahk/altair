@@ -255,7 +255,13 @@ class Events(BaseView):
 
     @view_config(route_name='events.new', request_method='GET', renderer='altair.app.ticketing:templates/events/edit.html')
     def new_get(self):
-        f = EventForm(MultiDict(code=self.context.user.organization.code, visible=True), context=self.context)
+        if self.context.organization.setting.show_event_op_and_sales:
+            f = EventForm(MultiDict(code=self.context.user.organization.code,
+                                    event_operator_id=self.context.user.id,
+                                    visible=True), context=self.context)
+        else:
+            f = EventForm(MultiDict(code=self.context.user.organization.code,
+                                    visible=True), context=self.context)
         return {
             'form':f,
             'route_name': u'登録',
@@ -276,6 +282,8 @@ class Events(BaseView):
                         middle_stock_threshold=f.middle_stock_threshold.data,
                         middle_stock_threshold_percent=f.middle_stock_threshold_percent.data,
                         cart_setting_id=f.cart_setting_id.data,
+                        event_operator_id=f.event_operator_id.data,
+                        sales_person_id=f.sales_person_id.data,
                         visible=f.visible.data
                         # performance_selector=f.get_performance_selector(),
                         # performance_selector_label1_override=f.performance_selector_label1_override.data,
@@ -313,6 +321,8 @@ class Events(BaseView):
         f.middle_stock_threshold.data = event.setting and event.setting.middle_stock_threshold
         f.middle_stock_threshold_percent.data = event.setting and event.setting.middle_stock_threshold_percent
         f.cart_setting_id.data = event.setting and event.setting.cart_setting_id
+        f.event_operator_id.data = event.setting and event.setting.event_operator_id
+        f.sales_person_id.data = event.setting and event.setting.sales_person_id
         f.visible.data = event.setting and event.setting.visible
         if self.request.matched_route.name == 'events.edit':
             route_name = u'編集'
@@ -360,6 +370,8 @@ class Events(BaseView):
                             middle_stock_threshold=f.middle_stock_threshold.data,
                             middle_stock_threshold_percent=f.middle_stock_threshold_percent.data,
                             cart_setting_id=f.cart_setting_id.data,
+                            event_operator_id=f.event_operator_id.data,
+                            sales_person_id=f.sales_person_id.data,
                             visible=True
                             # performance_selector=f.get_performance_selector(),
                             # performance_selector_label1_override=f.performance_selector_label1_override.data,
@@ -388,6 +400,8 @@ class Events(BaseView):
                 event.setting.visible = f.visible.data
                 if f.cart_setting_id.data is not None:
                     event.setting.cart_setting_id = f.cart_setting_id.data
+                event.setting.event_operator_id = f.event_operator_id.data
+                event.setting.sales_person_id = f.sales_person_id.data
             try:
                 event.save()
                 self.request.session.flash(u'イベントを保存しました')

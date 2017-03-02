@@ -13,7 +13,7 @@ from altair.formhelpers.widgets import OurTextInput, OurDateWidget
 from altair.formhelpers.filters import replace_ambiguous, zero_as_none, blank_as_none
 from altair.app.ticketing.helpers import label_text_for
 from altair.app.ticketing.models import DBSession
-from altair.app.ticketing.core.models import Event, EventSetting, Account
+from altair.app.ticketing.core.models import Event, EventSetting, Account, Operator
 from altair.app.ticketing.cart.models import CartSetting
 from altair.app.ticketing.payments.plugins.sej import DELIVERY_PLUGIN_ID as SEJ_DELIVERY_PLUGIN_ID
 from altair.app.ticketing.core.utils import ApplicableTicketsProducer
@@ -200,6 +200,20 @@ class EventForm(OurForm):
         choices=lambda field: [(str(cart_setting.id), (cart_setting.name or u'(名称なし)')) for cart_setting in DBSession.query(CartSetting).filter_by(organization_id=field._form.context.organization.id)],
         coerce=int
         )
+    event_operator_id = OurSelectField(
+        label=label_text_for(EventSetting.event_operator_id),
+        default=lambda field: field.context.user_id,
+        choices=lambda field: [(str(0), u'')] + [(str(operator.id), (operator.name)) for operator in DBSession.query(Operator).filter_by(organization_id=field._form.context.organization.id)],
+        coerce=int,
+        validators=[Optional()]
+    )
+    sales_person_id = OurSelectField(
+        label=label_text_for(EventSetting.sales_person_id),
+        default=None,
+        choices=lambda field: [(str(0), u'')] + [(str(operator.id), (operator.name)) for operator in DBSession.query(Operator).filter_by(organization_id=field._form.context.organization.id)],
+        coerce=int,
+        validators=[Optional()]
+    )
     visible = OurBooleanField(
         label=u'イベントの表示／非表示',
         default=True,

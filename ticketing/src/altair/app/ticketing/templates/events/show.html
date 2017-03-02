@@ -118,6 +118,16 @@ $(function(){
           <td colspan="7">${v or u'-'}</td>
         </tr>
       %endfor
+      % if organization_setting.show_event_op_and_sales:
+        <tr>
+          <th>${form.event_operator_id.label.text}</th>
+          <td colspan="7">${event.setting.event_operator}</td>
+        </tr>
+        <tr>
+          <th>${form.sales_person_id.label.text}</th>
+          <td colspan="7">${event.setting.sales_person}</td>
+        </tr>
+      % endif
     %endif
     <tr>
       <th>
