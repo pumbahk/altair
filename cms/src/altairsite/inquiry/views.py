@@ -9,7 +9,7 @@ from altairsite.config import usersite_view_config
 from altairsite.smartphone.page.forms import InquiryForm
 from altairsite.mobile.core.helper import log_info, log_error
 
-from altair.app.ticketing.i18n import set_locale_cookie
+from altair.i18n.api import set_locale_cookie
 
 ##workaround.
 def pc_access(info, request):
