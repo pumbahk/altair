@@ -19,7 +19,7 @@ from altair.sqlahelper import get_db_session
 from altair.app.ticketing.core.utils import PageURL_WebOb_Ex
 from datetime import datetime
 
-from .utils import MacroEngine
+from .utils import MacroEngine, html_filter
 
 logger = logging.getLogger(__name__)
 
@@ -231,7 +231,7 @@ class Announce(BaseView):
                 label = engine.label(param)
                 if label in req["data"]:
                     data[param] = req["data"][label]
-            return dict(result=engine.build(req["template"], data, cache_mode=True))
+            return dict(result=engine.build(req["template"], data, cache_mode=True, filters=[html_filter]))
 
         except Exception as e:
             return dict(error=e.message)

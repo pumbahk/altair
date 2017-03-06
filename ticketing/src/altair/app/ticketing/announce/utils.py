@@ -7,20 +7,31 @@ from collections import Iterable
 
 from altair.app.ticketing.helpers.base import date_time_helper
 
+import cgi
+
 import logging
 logger = logging.getLogger(__name__)
 
+
 class MacroEngine:
     # 正規表現のparseには限界がある...
-    def build(self, template, data, cache_mode=False):
+    def build(self, template, data, cache_mode=False, filters=[]):
         result = [ ]
         for m in re.finditer(r'(.+?)(?:{{([0-9a-z_]+(?:\.[0-9a-z_]+(\(.*?\))?)*)}}|\Z)', template, re.MULTILINE | re.DOTALL):
             result.append(m.group(1))
             if m.group(2) is not None and 0 < len(m.group(2)):
+                selected_filters = self._macro(m.group(2), [ ], get_attr='filter')
+                if len(selected_filters) == 0:
+                    selected_filters = filters
+
                 if cache_mode:
                     # _macro()を使わず、単にdict参照のみで変換
+
                     if data and m.group(2) in data:
-                        result.append(data[m.group(2)])
+                        r = data[m.group(2)]
+                        result.append(self.apply_filters(r, selected_filters))
+                    else:
+                        pass
                 else:
                     r = self._macro(m.group(2), data)
                     if r is None:
@@ -28,10 +39,36 @@ class MacroEngine:
                         # これだと、結果がNoneだった場合と区別がつかない
                         result.append("{{%s}}" % m.group(2))
                     else:
-                        result.append(r)
+                        # 処理成功
+                        result.append(self.apply_filters(r, selected_filters))
         return u"".join(result)
 
-    def fields(self, template):
+    @staticmethod
+    def apply_filters(s, filters=None):
+        def make_anchor(text, escape):
+            """
+                http文字列以外のところは、適切にhtml escapeする
+                http文字列のところは、Aタグにする
+            """
+
+            blocks = re.split(r'(https?://[\x23-\x26\x2b-\x3b\x3d\x3f-\x7e]+)', text)
+            result = [escape(blocks.pop(0))]
+
+            while (2 <= len(blocks)):
+                escaped_url = cgi.escape(blocks.pop(0), quote=True)
+                result.append('<a href="%s">%s</a>' % (escaped_url, escaped_url))
+                result.append(escape(blocks.pop(0)))
+            return ''.join(result)
+
+        for f in filters:
+            if f == 'link':
+                s = make_anchor(s, escape=cgi.escape).replace("\n", "<br />\n")
+            elif f == 'html':
+                s = cgi.escape(s).replace("\n", "<br />\n")
+        return s
+
+    @staticmethod
+    def fields(template):
         result = []
         for m in re.finditer(r'(.+?)(?:{{([0-9a-z_]+(?:\.[0-9a-z_]+(\(.*?\))?)*)}}|\Z)', template, re.MULTILINE | re.DOTALL):
             name = m.group(2)
@@ -40,7 +77,8 @@ class MacroEngine:
                     result.append(name)
         return result
 
-    def _stringify(self, r):
+    @staticmethod
+    def _stringify(r):
         if isinstance(r, datetime):
             r = date_time_helper.datetime(r)
         if isinstance(r, date):
@@ -53,6 +91,8 @@ class MacroEngine:
                 # raise TypeError(repr(o) + " is not JSON serializable")
 
             return json.dumps(r, default=dump_obj)
+        elif r is None:
+            return ""
         else:
             return r
 
@@ -60,19 +100,23 @@ class MacroEngine:
         """
             label('a.func().as(LABEL)') -> 'LABEL'
         """
-        labeled = self._macro(macro, None, get_as=True)
+        labeled = self._macro(macro, None, get_attr='as')
 
         return macro if labeled is None else labeled
 
     # 先頭から1つ処理して、残りについて再帰呼び出し
-    def _macro(self, macro, data, to_string=True, get_as=False):
+    def _macro(self, macro, data, to_string=True, get_attr=None):
+        logger.debug("macro=%s", macro)
+
         # データの前処理
         if hasattr(data, '__call__'):
             data = data()
 
         if macro is None:
             # no more macro
-            if to_string:
+            if get_attr is not None:
+                return data
+            elif to_string:
                 # 文字列化して出力したい場合, names is Noneの時に限る
                 return self._stringify(data)
             else:
@@ -91,14 +135,28 @@ class MacroEngine:
         names = m.group(2)
 
         def process_next(data):
-            return self._macro(names, data, to_string=to_string, get_as=get_as)
+            return self._macro(names, data, to_string=to_string, get_attr=get_attr)
 
+        # .as(label)
         m = re.match(r"as\(([^\"]+)\)", name)
         if m:
-            if get_as:
-                return m.group(1)
+            if get_attr == 'as':
+                return m.group(1) # stop macro processing
             else:
                 return process_next(data)
+
+        # .filter(name)
+        m = re.match(r"filter\(([^\"]+)\)", name)
+        if m:
+            if get_attr == 'filter':
+                data_copied = data[:]
+                data_copied.append(m.group(1)) # add only
+                return data_copied # stop macro processing
+            else:
+                return process_next(data)
+        else:
+            if get_attr == 'filter':
+                return process_next(data)  # use default filter as data param
 
         # .format(f) -> str
         m = re.match(r"format\(\"([^\"]+)\"\)", name)
@@ -118,7 +176,7 @@ class MacroEngine:
                         pass
                     else:
                         # FIXME: strにできない可能性あり
-                        result.append(self._macro(None, e, to_string=True, get_as=get_as))
+                        result.append(self._macro(None, e, to_string=True, get_attr=get_attr))
                 return process_next(m.group(1).join(result))
             else:
                 # 非配列に対して.join()指定された
@@ -144,7 +202,7 @@ class MacroEngine:
             if isinstance(data, list):
                 result = []
                 for e in data:
-                    result.append(self._macro(subname, e, to_string=False, get_as=get_as))
+                    result.append(self._macro(subname, e, to_string=False, get_attr=get_attr))
                 return process_next(result)
             else:
                 # 非配列に対して.map()指定された
@@ -160,7 +218,7 @@ class MacroEngine:
                 # return "<unknown property: %s in type: %s>" % (name, type(data))
                 if data is not None:
                     logger.debug("Unknown property: %s" % name)
-                if get_as:
+                if get_attr == 'as':
                     return process_next(None)
                 else:
                     return ""
@@ -168,3 +226,6 @@ class MacroEngine:
             # 変数名がmultibyteというのは、基本的にはサポートしない
             logger.warn(e.message)
             return ""
+
+
+html_filter = 'html'

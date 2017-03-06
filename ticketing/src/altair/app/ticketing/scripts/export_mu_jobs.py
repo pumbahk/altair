@@ -25,7 +25,7 @@ from altair.pyramid_assets import get_resolver
 from altair.app.ticketing.core.models import Organization, UserCredential
 from altair.app.ticketing.users.models import Announcement, WordSubscription
 
-from altair.app.ticketing.announce.utils import MacroEngine
+from altair.app.ticketing.announce.utils import MacroEngine, html_filter
 
 from altair.muhelpers import IMuMailerFactory
 from altair.muhelpers.mu import Recipient
@@ -206,7 +206,7 @@ def main():
                 for f in engine.fields("".join([ a.subject, a.message ])):
                     label = engine.label(f)
                     base_dict[f] = a.parameters[label]
-                body = engine.build(a.message, base_dict, cache_mode=True)
+                body = engine.build(a.message, base_dict, cache_mode=True, filters=[html_filter])
                 subject = engine.build(a.subject, base_dict, cache_mode=True)
 
                 mu.set_attributes(["keyword"])
