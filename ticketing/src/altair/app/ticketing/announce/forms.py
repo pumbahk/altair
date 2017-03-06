@@ -20,7 +20,7 @@ send_after_range = DateTimeInRange(from_=limit)
 class ParameterForm(Form):
 
     key = HiddenField()
-    value = TextField()
+    value = TextAreaField()
 
 class SimpleListWidget(ListWidget):
     def __call__(self, field, **kwargs):
