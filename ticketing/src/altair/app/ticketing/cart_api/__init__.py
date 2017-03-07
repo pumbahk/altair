@@ -2,12 +2,19 @@
 import sqlahelper
 
 from pyramid.config import Configurator
+from pyramid.tweens import INGRESS, MAIN, EXCVIEW
 from sqlalchemy import engine_from_config
 from sqlalchemy.pool import NullPool
 
+from altair.pyramid_extra_renderers.json import JSON
 
-def empty_resource_factory(request):
-    return None
+
+def setup_tweens(config):
+    config.add_tween('altair.app.ticketing.tweens.session_cleaner_factory', under=INGRESS)
+    config.add_tween('.tweens.OrganizationPathTween', over=EXCVIEW)
+    config.add_tween('.tweens.response_time_tween_factory', over=MAIN)
+    config.add_tween('.tweens.PaymentPluginErrorConverterTween', under=EXCVIEW)
+    config.add_tween('.tweens.CacheControlTween')
 
 
 def main(global_config, **local_config):
@@ -19,21 +26,20 @@ def main(global_config, **local_config):
 
     config = Configurator(
         settings=settings,
-        root_factory=empty_resource_factory
+        root_factory='altair.app.ticketing.cart.resources.PerformanceOrientedTicketingCartResource'
         )
 
-    from altair.httpsession.pyramid import register_utilities as register_httpsession_utilities
-    register_httpsession_utilities(config, skip_http_backend_registration=True)
-
-    from altair.pyramid_extra_renderers.json import JSON
     config.add_renderer('json', JSON())
     config.include('pyramid_tm')
     config.include('pyramid_dogpile_cache')
     config.include('altair.browserid')
     config.include('altair.exclog')
+    config.include('altair.httpsession.pyramid')
     config.include('altair.sqlahelper')
+    config.include('altair.app.ticketing.cart.request')
     config.add_route('cart.api.health_check', '/')
     config.add_route('cart.api.index', '/api/v1/', request_method='GET')
+    config.add_route('cart.api.performance', '/api/v1/performances/{performance_id}', request_method='GET')
 
     config.scan('.views')
 
