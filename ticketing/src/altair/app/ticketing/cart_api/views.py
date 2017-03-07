@@ -23,6 +23,25 @@ class CartAPIView(object):
     def index(self):
         return dict(status='OK')
 
+    @view_config(route_name='cart.api.performances')
+    def performances(self):
+        event = self.context.event
+        return dict(
+            performances=[dict(
+                performance_id=p.id,
+                performance_name=p.name,
+                open_on=p.open_on,
+                start_on=p.start_on,
+                end_on=p.end_on,
+                venue_id=p.venue.id,
+                venue_name=p.venue.name,
+                sales_segments=[dict(
+                    sales_segment_id=ss.id,
+                    sales_segment_name=ss.sales_segment_group.name
+                ) for ss in p.sales_segments]
+            ) for p in event.performances]
+        )
+
     @view_config(route_name='cart.api.performance')
     def performance(self):
         performance = self.context.performance
@@ -44,7 +63,7 @@ class CartAPIView(object):
                 end_on=performance.end_on,
                 order_limit=performance.setting.order_limit,
                 venue_id=performance.venue.id,
-                site_name=performance.venue.name
+                venue_name=performance.venue.name
             ),
             event=dict(
                 event_id=performance.event.id,

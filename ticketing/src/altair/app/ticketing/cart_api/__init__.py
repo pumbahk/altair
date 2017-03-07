@@ -39,6 +39,7 @@ def main(global_config, **local_config):
     config.include('altair.app.ticketing.cart.request')
     config.add_route('cart.api.health_check', '/')
     config.add_route('cart.api.index', '/api/v1/', request_method='GET')
+    config.add_route('cart.api.performances', '/api/v1/events/{event_id}/performances', request_method='GET', factory="altair.app.ticketing.cart.resources.EventOrientedTicketingCartResource")
     config.add_route('cart.api.performance', '/api/v1/performances/{performance_id}', request_method='GET')
 
     config.scan('.views')
