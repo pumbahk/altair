@@ -81,38 +81,19 @@ class CartAPIView(object):
 
     @view_config(route_name='cart.api.stock_types')
     def stock_types(self):
-        return {
-            "stock_types": [{
-                "stock_type_id": 12345,
-                "stock_type_name": "バックネット裏指定席S",
-                "is_quantity_only": False,
-                "description": "注意事項など",
-                "min_quantity": 1,
-                "max_quantity": 20,
-                "min_product_quantity": 1,
-                "max_product_quantity": 20
-            },
-            {
-                "stock_type_id": 12346,
-                "stock_type_name": "内野指定席1塁側",
-                "is_quantity_only": False,
-                "description": "注意事項など",
-                "min_quantity": 1,
-                "max_quantity": 20,
-                "min_product_quantity": 1,
-                "max_product_quantity": 20
-            },
-            {
-                "stock_type_id": 12347,
-                "stock_type_name": "外野自由エリア",
-                "is_quantity_only": True,
-                "description": "注意事項など",
-                "min_quantity": 1,
-                "max_quantity": 20,
-                "min_product_quantity": 1,
-                "max_product_quantity": 20
-            }]
-        }
+        stock_types = self.context.performance.stock_types
+        return dict(
+            stock_types=[dict(
+                stock_type_id=st.id,
+                stock_type_name=st.name,
+                is_quantity_only=st.quantity_only,
+                description=st.description,
+                min_quantity=st.min_quantity,
+                max_quantity=st.max_quantity,
+                min_product_quantity=st.min_product_quantity,
+                max_product_quantity=st.max_product_quantity
+            ) for st in stock_types]
+        )
 
     @view_config(route_name='cart.api.stock_type')
     def stock_type(self):
