@@ -3,7 +3,11 @@ import logging
 
 from pyramid.view import view_defaults, view_config
 from pyramid.httpexceptions import HTTPNotFound
+from sqlalchemy.orm.exc import NoResultFound
 
+from altair.sqlahelper import get_db_session
+
+from altair.app.ticketing.core.models import StockType
 from altair.app.ticketing.cart.exceptions import OutTermSalesException
 
 logger = logging.getLogger(__name__)
@@ -97,37 +101,68 @@ class CartAPIView(object):
 
     @view_config(route_name='cart.api.stock_type')
     def stock_type(self):
-        return {
-            "stock_type": {
-                "stock_type_id": 12345,
-                "stock_type_name": "バックネット裏指定席S",
-                "is_quantity_only": False,
-                "description": "注意事項など",
-                "min_quantity": 1,
-                "max_quantity": 20,
-                "min_product_quantity": 1,
-                "max_product_quantity": 20,
-                "products": [
-                    {
-                        "product_id": 10001,
-                        "product_name": "大人",
-                        "price": 5000,
-                        "min_product_quantity": 1,
-                        "max_product_quantity ": 20,
-                        "is_must_be_chosen": True
-                    },
-                    {
-                        "product_id": 10002,
-                        "product_name": "子供",
-                        "price": 2500,
-                        "min_product_quantity": 1,
-                        "max_product_quantity ": 20,
-                        "is_must_be_chosen": False
-                    }
-                ],
-                "blocks": ["b1", "b2", "b3"]
-            }
-        }
+        performance = self.context.performance
+        stock_type_id = self.request.matchdict.get('stock_type_id')
+        session = get_db_session(self.request, 'slave')
+        try:
+            stock_type = session.query(StockType).filter(StockType.id == stock_type_id).one()
+        except NoResultFound as e:
+            logger.warning("{} for stock_type_id={}".format(e.message, stock_type_id))
+            raise HTTPNotFound()
+        products = [p for p in stock_type.product if p.performance_id == performance.id]  # XXX: productだけどlistが返ってくる
+        # TODO: blocksが何者か確認して修正する
+        return dict(
+            stock_type=dict(
+                stock_type_id=stock_type.id,
+                stock_type_name=stock_type.name,
+                is_quantity_only=stock_type.quantity_only,
+                description=stock_type.description,
+                min_quantity=stock_type.min_quantity,
+                max_quantity=stock_type.max_quantity,
+                min_product_quantity=stock_type.min_product_quantity,
+                max_product_quantity=stock_type.max_product_quantity,
+                products=[dict(
+                    product_id=product.id,
+                    product_name=product.name,
+                    price=product.price,
+                    min_product_quantity=product.min_product_quantity,
+                    max_product_quantity=product.max_product_quantity,
+                    is_must_be_chosen=product.must_be_chosen
+                ) for product in products],
+                blocks=["dummy"]
+            )
+        )
+        # return {
+        #     "stock_type": {
+        #         "stock_type_id": 12345,
+        #         "stock_type_name": "バックネット裏指定席S",
+        #         "is_quantity_only": False,
+        #         "description": "注意事項など",
+        #         "min_quantity": 1,
+        #         "max_quantity": 20,
+        #         "min_product_quantity": 1,
+        #         "max_product_quantity": 20,
+        #         "products": [
+        #             {
+        #                 "product_id": 10001,
+        #                 "product_name": "大人",
+        #                 "price": 5000,
+        #                 "min_product_quantity": 1,
+        #                 "max_product_quantity ": 20,
+        #                 "is_must_be_chosen": True
+        #             },
+        #             {
+        #                 "product_id": 10002,
+        #                 "product_name": "子供",
+        #                 "price": 2500,
+        #                 "min_product_quantity": 1,
+        #                 "max_product_quantity ": 20,
+        #                 "is_must_be_chosen": False
+        #             }
+        #         ],
+        #         "blocks": ["b1", "b2", "b3"]
+        #     }
+        # }
 
     @view_config(route_name='cart.api.seats')
     def seats(self):
