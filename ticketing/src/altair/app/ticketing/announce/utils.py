@@ -126,7 +126,7 @@ class MacroEngine:
         if not isinstance(macro, unicode):
             raise Exception("macro should be unicode")
 
-        m = re.match(r"([0-9a-z_]+(?:\(.*?\))?)(?:\.(.+))?", macro)
+        m = re.match(r"([0-9a-z_]+(?:\(.*?\))?)(?:\.(.+))?", macro, re.DOTALL)
         if not m:
             # 異常なnameが渡された
             # return "?"
@@ -158,13 +158,18 @@ class MacroEngine:
             if get_attr == 'filter':
                 return process_next(data)  # use default filter as data param
 
-        # .format(f) -> str
+        # .default("v") -> str
+        m = re.match(r"default\(\"([^\"]+)\"\)", name, re.DOTALL)
+        if m:
+            return process_next(m.group(1) if data is None else data)
+
+        # .format("f") -> str
         m = re.match(r"format\(\"([^\"]+)\"\)", name)
         if m:
             format = m.group(1)
             return process_next(format.format(self._stringify(data)))
 
-        # .join(sep) -> str
+        # .join("sep") -> str
         m = re.match(r"join\(\"([^\"]+)\"\)", name)
         if m:
             if isinstance(data, list):
@@ -218,10 +223,7 @@ class MacroEngine:
                 # return "<unknown property: %s in type: %s>" % (name, type(data))
                 if data is not None:
                     logger.debug("Unknown property: %s" % name)
-                if get_attr == 'as':
-                    return process_next(None)
-                else:
-                    return ""
+                return process_next(None)
         except UnicodeEncodeError as e:
             # 変数名がmultibyteというのは、基本的にはサポートしない
             logger.warn(e.message)
