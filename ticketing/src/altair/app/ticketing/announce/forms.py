@@ -22,33 +22,35 @@ class ParameterForm(Form):
     key = HiddenField()
     value = TextAreaField()
 
+
 class SimpleListWidget(ListWidget):
-    def __call__(self, field, **kwargs):
-        kwargs.setdefault('id', field.id)
-        html = ['<div>']
-        for subfield in field:
-            html.append('<div>%s</div>' % subfield())
-        html.append('</div>')
-        return HTMLString(''.join(html))
-
-class KeyValueWidget(object):
-
-    def __init__(self, style=""):
+    def __init__(self, style=None):
+        super(SimpleListWidget, self).__init__()
         self.style = style
 
     def __call__(self, field, **kwargs):
-        html = ['<table %s>' % html_params(style=self.style)]
-        hidden = ''
+        kwargs.setdefault('id', field.id)
+        html = [('<table style="%s">' % self.style) if self.style is not None else '<table>']
         for subfield in field:
-            if subfield.type == 'HiddenField':
-                hidden += '<th>%s%s</th>' % (text_type(subfield), text_type(subfield.data))
-            else:
-                html.append('%s<td>%s</td>' % (hidden, text_type(subfield)))
-                hidden = ''
-        if hidden:
-            html.append(hidden)
+            html.append(subfield())
         html.append('</table>')
         return HTMLString(''.join(html))
+
+
+class KeyValueWidget(object):
+    def __init__(self, style="", layout="tr"):
+        self.style = style
+
+    def __call__(self, field, **kwargs):
+        html = ['<tr>']
+        for subfield in field:
+            if subfield.type == 'HiddenField':
+                html.append('<th>%s%s</th>' % (text_type(subfield), text_type(subfield.data)))
+            else:
+                html.append('<td>%s</td>' % text_type(subfield))
+        html.append('</tr>')
+        return HTMLString(''.join(html))
+
 
 class AnnouncementForm(Form):
 
@@ -95,9 +97,9 @@ class AnnouncementForm(Form):
     )
 
     parameters = FieldList(
-        FormField(ParameterForm, widget=KeyValueWidget(style="background-color: transparent;")),
+        FormField(ParameterForm, widget=KeyValueWidget()),
         label=u'パラメータ',
-        widget=SimpleListWidget(),
+        widget=SimpleListWidget(style="background-color: transparent;"),
     )
 
     is_draft = OurBooleanField(
