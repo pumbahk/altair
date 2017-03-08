@@ -8,7 +8,7 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="cache-control" content="no-cache">
 <meta http-equiv="expires" content="0">
-<title>静岡朝日テレビオンラインチケット ログイン</title>
+<title>Green Music ログイン</title>
 
 <!-- Cascading Style Sheets -->
 <link rel="shortcut icon" href="${view_context.static_url('images/favicon.ico')}" />
