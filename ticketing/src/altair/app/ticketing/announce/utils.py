@@ -17,7 +17,7 @@ class MacroEngine:
     # 正規表現のparseには限界がある...
     def build(self, template, data, cache_mode=False, filters=[]):
         result = [ ]
-        for m in re.finditer(r'(.+?)(?:{{([0-9a-z_]+(?:\.[0-9a-z_]+(\(.*?\))?)*)}}|\Z)', template, re.MULTILINE | re.DOTALL):
+        for m in re.finditer(r'(.+?)(?:{{([0-9a-z_]+(?:\.[0-9a-z_]+(\(.*?\))?)*)}}|\Z)', template, re.MULTILINE | re.DOTALL | re.IGNORECASE):
             result.append(m.group(1))
             if m.group(2) is not None and 0 < len(m.group(2)):
                 selected_filters = self._macro(m.group(2), [ ], get_attr='filter')
@@ -70,7 +70,7 @@ class MacroEngine:
     @staticmethod
     def fields(template):
         result = []
-        for m in re.finditer(r'(.+?)(?:{{([0-9a-z_]+(?:\.[0-9a-z_]+(\(.*?\))?)*)}}|\Z)', template, re.MULTILINE | re.DOTALL):
+        for m in re.finditer(r'(.+?)(?:{{([0-9a-z_]+(?:\.[0-9a-z_]+(\(.*?\))?)*)}}|\Z)', template, re.MULTILINE | re.DOTALL | re.IGNORECASE):
             name = m.group(2)
             if name is not None:
                 if name not in result:
@@ -125,7 +125,7 @@ class MacroEngine:
         if not isinstance(macro, unicode):
             raise Exception("macro should be unicode")
 
-        m = re.match(r"([0-9a-z_]+(?:\(.*?\))?)(?:\.(.+))?", macro, re.DOTALL)
+        m = re.match(r"([0-9a-z_]+(?:\(.*?\))?)(?:\.(.+))?", macro, re.DOTALL | re.IGNORECASE)
         if not m:
             # 異常なnameが渡された
             # return "?"
@@ -200,7 +200,7 @@ class MacroEngine:
                 return process_next(None)
 
         # .map(.name) -> cont
-        m = re.match(r"map\(\.([0-9a-z_]+)\)", name)
+        m = re.match(r"map\(\.([0-9a-z_]+)\)", name, re.IGNORECASE)
         if m:
             subname = m.group(1)
             if isinstance(data, list):
