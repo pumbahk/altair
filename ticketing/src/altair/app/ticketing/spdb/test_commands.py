@@ -3,21 +3,12 @@ from mock import MagicMock
 from unittest import TestCase
 from nose.tools import ok_, eq_
 from .commands import chop_none, SQLCreater
-
-
-class Args():
-    def __init__(self):
-        self.org = 15
-        self.term_from = "2016/01/01"
-        self.term_to = "2020/01/01"
-        self.all = False
-        self.delete = False
-
+from pyramid.testing import DummyModel
 
 class SQLCreaterTestCase(TestCase):
     @staticmethod
     def test_sql():
-        args = Args()
+        args = DummyModel(org=15, term_from="2016/01/01", term_to="2020/01/01", all=False, delete=False)
         sql = "select * from test"
         creater = SQLCreater(args, sql)
         eq_(creater.sql, "select * from test WHERE `Order`.organization_id = 15 AND `Order`.updated_at BETWEEN '2016-01-01 00:00:00' and '2020-01-02 00:00:00' AND `Order`.canceled_at IS NULL")
