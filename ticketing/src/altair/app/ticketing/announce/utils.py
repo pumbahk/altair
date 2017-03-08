@@ -99,10 +99,9 @@ class MacroEngine:
     def label(self, macro):
         """
             label('a.func().as(LABEL)') -> 'LABEL'
+            label('a') -> a
         """
-        labeled = self._macro(macro, None, get_attr='as')
-
-        return macro if labeled is None else labeled
+        return self._macro(macro, None, get_attr='as')
 
     # 先頭から1つ処理して、残りについて再帰呼び出し
     def _macro(self, macro, data, to_string=True, get_attr=None):
@@ -214,7 +213,9 @@ class MacroEngine:
                 return process_next(None)
 
         try:
-            if hasattr(data, name):
+            if get_attr == 'as':
+                return process_next(name)
+            elif hasattr(data, name):
                 return process_next(getattr(data, name))
             elif isinstance(data, Iterable) and name in data:
                 return process_next(data[name])
