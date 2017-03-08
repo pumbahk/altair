@@ -126,16 +126,17 @@
       ${ch.form_item(form.note)}
     </fieldset>
 
+   <script>
+     (function(e) {
+       e.replaceWith($('<input />').prop({ name: e.prop('name') }).val(e.val()));
+     })($('*[name="'+$('input[type="hidden"][value="URL"]').prop('name').replace(/-key/, '-value')+'"]'));
+   </script>
   % if id is not None:
     % if announce.started_at is None:
      <input type="submit" class="btn" value="更新"/>
      <input type="submit" class="btn btn-danger" style="float: right;" name="delete" value="削除"/>
     % else:
      <script>
-       (function(e) {
-         e.replaceWith($('<input />').prop({ name: e.prop('name') }).val(e.val()));
-       })($('*[name="'+$('input[type="hidden"][value="url"]').prop('name').replace(/-key/, '-value')+'"]'));
-
        $('form input, form textarea').prop('disabled', true);
      </script>
      <br />
