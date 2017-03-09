@@ -414,8 +414,9 @@ def main():
     bundle_base_url = myurljoin(site_base_url, parsed_args.base_url)
     if bundle_base_url[-1] != '/':
         bundle_base_url += '/'
-    hex_prefecture = parsed_args.prefecture
-    prefecture = hex_prefecture.decode('hex')
+    prefecture = parsed_args.prefecture
+    if re.match(r"[0-9A-Z]+", prefecture, re.IGNORECASE):
+        prefecture = prefecture.decode('hex')
     for svg_file in parsed_args.svg_files:
         import_or_update_svg(
             env,
