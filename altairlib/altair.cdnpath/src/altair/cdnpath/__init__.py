@@ -10,7 +10,8 @@ from pyramid.compat import (
     WIN,
     url_quote
     )
-from urlparse import urljoin, urlparse
+from urlparse import urljoin, urlparse, urlunparse
+from functools import wraps
 
 def validate_url(url):
     parsed = urlparse(url)
@@ -18,6 +19,17 @@ def validate_url(url):
         parsed.netloc):
         raise ConfigurationError("{0} is not valid url")
 
+def exclude_protocol(func):
+    @wraps(func)
+    def wrapped(*args, **kwargs):
+        url = func(*args, **kwargs)
+        parsed = urlparse(url)
+        if parsed.scheme == '':
+            return url
+        parsed = parsed._replace(scheme='')
+        url = urlunparse(parsed)
+        return url
+    return wrapped
 
 @implementer(IStaticURLInfo)
 class PrefixedStaticURLInfo(StaticURLInfo):
@@ -39,6 +51,7 @@ class PrefixedStaticURLInfo(StaticURLInfo):
     def _after_generate(self, path, request, kwargs):
         return "//{0}{1}".format(self.prefix, path)
 
+    @exclude_protocol
     def _generate_with_exclude(self, path, request, **kwargs):
         if self.exclude(path):
             return StaticURLInfo.generate(self, path, request, **kwargs)

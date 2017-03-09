@@ -64,7 +64,7 @@ class IntegrationTests(unittest.TestCase):
 
         request = makeRequest(self.config)
         self.assertEquals(request.static_url("altair.cdnpath:static/foo.js", _app_url="http://foo.bar.jp"),
-                          "http://foo.bar.jp/static/foo.js")
+                          "//foo.bar.jp/static/foo.js")
         self.assertEquals(request.static_url("altair.cdnpath:static/foo.txt", _app_url="http://foo.bar.jp"),
                           "//:bucket-name:.s3.amazonaws.com/static/foo.txt")
         

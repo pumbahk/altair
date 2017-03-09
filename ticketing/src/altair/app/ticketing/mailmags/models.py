@@ -42,7 +42,6 @@ class MailMagazine(Base, BaseModel, WithTimestamp):
 
     def unsubscribe(self, user, mail_address):
         subscription = MailSubscription.query.filter(
-            MailSubscription.user==user,
             MailSubscription.email==mail_address
         ).filter(
             MailSubscription.segment==self

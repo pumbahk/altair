@@ -8,7 +8,7 @@ import sqlahelper
 from altaircms.models import Base
 from altair.mobile import PC_ACCESS_COOKIE_NAME #dont't delete it
 from altair.extracodecs import register_codecs
-from altair.app.ticketing.i18n import custom_locale_negotiator
+from altair.i18n.api import custom_locale_negotiator
 
 def install_fetcher(config):
     settings = config.registry.settings
@@ -124,11 +124,11 @@ def main(global_config, **local_config):
 
     ## front
     config.add_route('front', '/{page_name:.*}', factory=".front.resources.PageRenderingResource") # fix-url after. implemnt preview
-    
-    config.add_subscriber(".subscribers.add_renderer_globals", 
+
+    config.add_subscriber(".subscribers.add_renderer_globals",
                           "pyramid.events.BeforeRender")
     # for i18n
-    config.add_subscriber('altair.app.ticketing.i18n.add_renderer_globals',
+    config.add_subscriber('altair.i18n.api.add_renderer_globals',
                           'pyramid.events.BeforeRender')
     config.add_subscriber('.i18n.add_localizer', 'pyramid.events.NewRequest')
     config.add_translation_dirs('altaircms:locale')

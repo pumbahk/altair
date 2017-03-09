@@ -1,0 +1,92 @@
+<%inherit file="../base.html" />
+
+    <div class="orderreview-list-page">
+      <div class="contents">
+        <div class="bread-box">
+          <div class="inner">
+            <ul class="bread-list-box">
+              <li class="bread-list"><a href="//eagles.tstar.jp/" class="bread-link">Eチケトップ</a></li>
+              <li class="bread-list">メールマガジンの購読</li>
+            </ul>
+          </div>
+        </div>
+        <section class="bg-contents">
+          <div class="inner">
+            <h2 class="page-ttl">メールマガジン</h2>
+            <div class="sub-contents">
+
+            <h3 class="sub-ttl tac">メールマガジンの購読</h3>
+              ${render_confirm_mailmagazine(mailmagazines_to_subscribe, subscribe_ids, mails)}
+            </div>
+            </div>
+        </section>
+      </div>
+    </div>
+
+<%def name="render_confirm_mailmagazine(mailmagazines_to_subscribe, subscribe_ids, mails)">
+
+  % for mailmagazine, subscribed in mailmagazines_to_subscribe:
+    % if str(mailmagazine.id) in subscribe_ids:
+      <h2>メールマガジンの購読</h2>
+      <div>
+      以下のメールマガジンを購読します。
+      </div>
+      <br/>
+      <b>${mailmagazine.name}</b>
+      <div>
+      ${mailmagazine.description|n}
+      </div>
+      <br/>
+
+      <div>
+        <b>購読するメールアドレス</b>
+      </div>
+      % for mail in mails:
+        <div>
+        ${mail}
+        </div>
+      % endfor
+    % endif
+  % endfor
+
+  % for mailmagazine, subscribed in mailmagazines_to_subscribe:
+    % if not str(mailmagazine.id) in subscribe_ids:
+      <h2>メールマガジンの購読解除</h2>
+      <div>
+        以下のメールマガジンを購読解除します。
+      </div>
+      <br/>
+      <b>${mailmagazine.name}</b>
+      <div>
+      ${mailmagazine.description|n}
+      </div>
+      <br/>
+
+      <div>
+        <b>購読するメールアドレス</b>
+      </div>
+      % for mail in mails:
+        <div>
+        ${mail}
+        </div>
+      % endfor
+    % endif
+  % endfor
+
+  <br/>
+  <div style="text-align: center">
+    <form id="mail_form" name="mail_form" action="${request.route_path('mypage.mailmag.complete')}" method="POST">
+      % for id in subscribe_ids:
+        <input type="hidden" name="mailmagazine" value="${id}" />
+      % endfor
+
+      <div class="confirm-btnBox">
+        <input class="btn btn-primary" type="submit" value="設定変更"></p>
+      </div>
+
+      <a href="${request.route_path('mypage.show')}">
+        <input type="button " value="戻る" class="btn btn-secondary" style="text-align: center;">
+      </a>
+    </form>
+  </div>
+</%def>

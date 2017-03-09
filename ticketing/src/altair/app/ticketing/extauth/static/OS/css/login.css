@@ -1,0 +1,364 @@
+@charset "UTF-8";
+/* Reset
+---------------------------------------------- */
+*, *:before, *:after {
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  -ms-box-sizing: border-box;
+  box-sizing: border-box;
+}
+html, body, div, span, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+abbr, address, cite, code,
+del, dfn, em, img, ins, kbd, q, samp,
+small, strong, sub, sup, var,
+b, i,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td,
+article, aside, canvas, details, figcaption, figure,
+footer, header, hgroup, menu, nav, section, summary,
+time, mark, audio, video {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  font-size: 100%;
+  vertical-align: baseline;
+  background: transparent;
+}
+body { line-height: 1; }
+article, aside, details, figcaption, figure,
+footer, header, hgroup, menu, nav, section {
+  display: block;
+}
+nav ul { list-style: none; }
+blockquote, q { quotes: none; }
+blockquote:before, blockquote:after,
+q:before, q:after {
+  content: '';
+  content: none;
+}
+a {
+  margin: 0;
+  padding: 0;
+  font-size: 100%;
+  vertical-align: baseline;
+  background: transparent;
+}
+ins {
+  background-color: #ff9;
+  color: #000;
+  text-decoration: none;
+}
+mark {
+  background-color: #ff9;
+  color: #000;
+  font-style: italic;
+  font-weight: bold;
+}
+del { text-decoration: line-through; }
+abbr[title], dfn[title] {
+  border-bottom: 1px dotted;
+  cursor: help;
+}
+ol, ul { list-style: none; }
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+hr {
+  display: block;
+  height: 1px;
+  border: 0;
+  border-top: 1px solid #cccccc;
+  margin: 1em 0;
+  padding: 0;
+}
+input, select { vertical-align: middle; }
+
+/* Common
+---------------------------------------------- */
+html { font-size: 62.5%; }
+body {
+  min-width: 320px;
+  background: #FFF;
+  -webkit-text-size-adjust: 100%;
+  font-size: 1.4rem;
+  line-height: 1.5;
+  font-family:"Helvetica Neue",Helvetica,YuGothic,"游ゴシック",Meiryo,"メイリオ",HiraKakuPro-W3,"ヒラギノ角ゴ Pro W3",Arial,"ＭＳ Ｐゴシック",sans-serif;
+}
+.clear { clear: both; }
+.clearfix::after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+/* layout
+---------------------------------------------- */
+.main {
+  max-width: 950px;
+  margin: 0 auto 20px;
+  text-align: center;
+}
+
+/* login
+---------------------------------------------- */
+.login-box { margin: 0 auto; }
+.login-box-1 { width: 100%; }
+.login-box-2 { width: 48%; }
+.login-area .login-box-2:nth-child(odd) { float: left; }
+.login-area .login-box-2:nth-child(even) { float: right; }
+.login-box dl {
+  background: #F0F0E1;
+  margin: 0 0 20px;
+  padding: 0 0 10px;
+  -webkit-border-radius: 4px;
+  -moz-border-radius: 4px;
+  -ms-border-radius: 4px;
+  border-radius: 4px;
+  border: 1px #D9D9CE solid;
+  text-align: center;
+}
+.login-box dt {
+  margin: 0 0 24px;
+  padding: .5em;
+  background: #000;
+  color: #FFF;
+  font-size: 1.8rem;
+  font-weight: bold;
+  text-align: center;
+}
+.login-box dd {
+  margin: 0 auto 20px;
+}
+#member-login-box dd {
+  margin-top: 80px;
+}
+.login-column {
+  width: 80%;
+  text-align: right;
+}
+.login-column a{
+  color: #666;
+  text-decoration: none;
+}
+.login-column a:visited{
+  color: #666;
+}
+.login-column a:hover{
+  color: #FC0;
+  text-decoration: underline;
+}
+
+/* Button
+---------------------------------------------- */
+.btn-login {
+  width: 80%;
+  margin: 0 auto;
+  padding: 1em .5em;
+  background: #666666;
+  border: none;
+  -webkit-border-radius: 3px;
+  -moz-border-radius: 3px;
+  -ms-border-radius: 3px;
+  border-radius: 3px;
+  color: #FFF;
+  cursor: pointer;
+  display: inline-block;
+  font-size: 1.8rem;
+  font-weight: bold;  
+  text-decoration: none;
+}
+.btn-login-buy {
+  width: 36%;
+  margin: 0 auto;
+  padding: 1em;
+  background: #EFEFEF;
+  border: 1px solid #ccc;
+  -webkit-border-radius: 3px;
+  -moz-border-radius: 3px;
+  -ms-border-radius: 3px;
+  border-radius: 3px;
+  color: #000;
+  cursor: pointer;
+  display: inline-block;
+  font-weight: bold;
+  font-size: 100%;
+  text-decoration: none;
+}
+.btn-login:hover {
+  color: #FC0;
+  opacity: 0.85;
+  filter: alpha(opacity=85);
+}
+.btn-regist {
+  width: 64%;
+  margin: 0 auto;
+  padding: .8em 1em;
+  background: #EFEFEF;
+  border: 1px solid #999;
+  -webkit-border-radius: 3px;
+  -moz-border-radius: 3px;
+  -ms-border-radius: 3px;
+  border-radius: 3px;
+  color: #000;
+  cursor: pointer;
+  display: inline-block;  
+  font-weight: bold;
+  text-decoration: none;
+}
+.btn-regist:hover {
+  color: #333;
+  opacity: 0.85;
+  filter: alpha(opacity=85);
+}
+.btn-login:active, .btn-regist:active {
+  position: relative;
+  top: 1px;
+}
+
+/* NOTE*/
+/* -----------------------------------------*/
+.login-note { 
+  margin: 0 auto;
+  padding: 10px;
+  border: 1px solid #EFEFEF;
+  list-style: outside disc;
+  text-align: left;
+}
+.login-note:last-child{ margin: 0 auto 20px;}
+.login-note dt {
+  margin: 0 0 0.8em;
+  padding: 4px;
+  background: #EFEFEF;
+  color: #000; 
+  font-weight: bold;
+  font-size: 1.4rem;
+}
+.login-note dt:before {
+  content: "※";
+  margin: 0 5px 0 0;
+  padding: 2px;
+  background: #9b0020;
+  color: #FFF;
+}
+.login-note dd ul li {
+  margin: 0 1em .5em 2em;
+  line-height: 1.4;  
+  list-style: outside disc;
+}
+
+/* TABLE*/
+/* -----------------------------------------*/
+.table-login {
+  border: 1px solid #CCC;
+  margin: 0 auto 20px;
+  border-collapse: collapse;
+  /* style.cssにあるwidth指定を打ち消すため */
+  width: auto;
+}
+.table-login th, .table-login td {
+  border: 1px solid #CCC;
+  padding: 10px;
+}
+/* style.cssにあるborder指定を打ち消すため */
+.table-login tbody tr td:last-child {
+  border-right: 1px solid #CCC;
+  border-left: 1px solid transparent;
+}
+.table-login tr {
+  border-bottom: 1px solid transparent;
+  border-left: 1px solid transparent;
+}
+.table-login th {
+  background: #EFEFEF;
+  font-weight: bold;
+}
+.table-login td input {
+  width: 90%;
+  padding: 3px;
+}
+
+/* ERROR */
+/* -----------------------------------------*/
+.error .errorText {
+  color: #C00;
+  font-weight: bold;
+  font-size: 2.4rem;
+}
+
+/* For tablet*/
+/* -----------------------------------------*/
+@media only screen and (max-width: 787px) {
+  .main,  .login-box-1, .login-box-2 { width: 100%; }
+  .login-area { margin: 0}
+  .login-box-2 { float: none; }
+  .login-box dl {
+    -webkit-border-radius: 0;
+    -moz-border-radius: 0;
+    -ms-border-radius: 0;
+    border-radius: 0;
+    border: none;
+  }
+  .login-note { 
+    margin: 20px 0;
+    padding: 0;
+    border: none;
+  }
+  .table-login {
+    width: 80%;
+    border: none;
+    margin: 0 auto;
+  }
+   .table-login th, .table-login td {
+    width: 100%;
+    display: block;
+  }
+  .table-login tbody tr td:last-child {
+    border-right: 1px solid transparent;
+  }
+  .table-login th {
+    border-bottom: none;
+  }
+  .table-login td {
+    border: none;
+    padding: 0 0 20px;
+  }
+  .table-login td input {
+    width: 100%;
+    padding: 10px;
+  }
+ .btn-login-id, .btn-login-buy {
+    width: 80%;
+    margin: 0 auto;
+    padding: 1em;
+  }
+  .error .errorText {
+      font-size: 1.6rem;
+      text-align: center;
+  }
+  #member-login-box dd {
+    margin-top: 0px;
+  }
+}
+
+/* For SP*/
+/* -----------------------------------------*/
+@media only screen and (max-width: 499px) {
+  .login-box dt { font-size: 1.6rem; }
+  .btn-login {
+      padding: 1.4em .5em;
+      font-size: 1.6rem;
+  }
+  .btn-regist {
+      width: 80%;
+      font-size: 1.4rem;
+  }
+  .btn-login-id, .btn-login-buy {
+      padding: 1.4em .5em;
+      font-size: 1.6rem;
+  }
+}
