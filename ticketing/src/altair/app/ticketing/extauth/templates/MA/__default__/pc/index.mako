@@ -42,7 +42,7 @@
         <dt>お問い合わせ</dt>
         <dd>
         <ul>
-            <li>お手数ですが、<a href="mailto:satv@tstar.jp">こちら</a>までお問い合わせください。</li>
+            <li>お手数ですが、<a href="mailto:t.a.m.ba@triton.ocn.ne.jp">こちら</a>までお問い合わせください。</li>
         </ul>
         </dd>
     </dl>
