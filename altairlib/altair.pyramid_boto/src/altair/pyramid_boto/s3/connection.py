@@ -43,7 +43,6 @@ class DefaultS3ConnectionFactory(object):
         if 'host' in options:
             host_port = options['host'].split(':')
             if len(host_port) == 2:
-                print "use ordinary calling format %s" % host_port
                 self.options['calling_format'] = OrdinaryCallingFormat()
                 self.options['is_secure'] = False
                 self.options['host'] = host_port[0]
