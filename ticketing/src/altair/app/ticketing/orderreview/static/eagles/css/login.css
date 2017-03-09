@@ -1127,3 +1127,21 @@ opacity: .7;
 }
 
 
+  /*--------------------------------------------
+    MAIL MAGAZINE
+  ---------------------------------------------*/
+.m-maga .orderreview-list-wrap .orderreview-list{ border-top: none;}
+.m-maga .orderreview-list-wrap .orderreview-list li{
+  padding: 20px 0 0;
+  border-bottom: none;
+}
+.m-maga .sub-ttl{ margin-bottom: 0;}
+.m-maga .orderreview-list-wrap .orderreview-list li .orderreview-tbl .confirm-box .payment-confirm-btn{
+  width: 200px !important;
+  margin: 20px auto 0 !important;
+}
+@media screen and (max-width: 767px) {
+.m-maga .orderreview-list-wrap .orderreview-list li .orderreview-tbl .confirm-box .payment-confirm-btn{
+  width: 100% !important;
+}
+}
