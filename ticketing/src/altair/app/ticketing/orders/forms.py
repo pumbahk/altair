@@ -871,6 +871,7 @@ class OrderReserveForm(OurForm):
     )
 
     def validate_payment_delivery_method_pair_id(form, field):
+        pdmp = DBSession.query(PaymentDeliveryMethodPair).filter_by(id=field.data).one()
         if field.data and any(True for payment_delivery_method_pair in form.context.convenience_payment_delivery_method_pairs if field.data == payment_delivery_method_pair.id):
             for field_name in ['last_name', 'first_name', 'last_name_kana', 'first_name_kana', 'tel_1']:
                 f = getattr(form, field_name)
@@ -879,10 +880,13 @@ class OrderReserveForm(OurForm):
                     raise ValidationError(err_msg)
 
             # 決済せずにコンビニ受取できるのはadministratorのみ (不正行為対策)
-            pdmp = DBSession.query(PaymentDeliveryMethodPair).filter_by(id=field.data).one()
             if (not pdmp.payment_method.pay_at_store() and pdmp.delivery_method.deliver_at_store()) \
                 and not form.context._is_event_editor:
                     raise ValidationError(u'この決済引取方法を選択する権限がありません')
+
+        # 楽天ペイで予約タブから予約を取れないようにする
+        if pdmp.payment_method.payment_plugin_id == plugins.CHECKOUT_PAYMENT_PLUGIN_ID:
+            raise ValidationError(u'予約タブで楽天ペイは使えません')
 
 
 class OrderRefundForm(OurForm):
