@@ -227,6 +227,10 @@ def submit_to_downstream_sync(request, session, tenant, event):
                 else:
                     origin_sales_segmet = SalesSegment.get(sales_segment_pair.seat_selectable_sales_segment_id)
 
+                # 販売区分削除時に、連携データ消すの処理が入る前に対応
+                if not origin_sales_segmet:
+                    sales_segment_pair.deleted_at = now
+
                 if origin_sales_segmet and not has_famiport_pdmp(origin_sales_segmet):
                     sales_segment_pair.deleted_at = now
 
