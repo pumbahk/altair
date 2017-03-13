@@ -111,7 +111,7 @@ class Announce(BaseView):
         else:
             if 'template' in self.request.GET:
                 template = AnnouncementTemplate.query\
-                .filter_by(organization_id=self.context.user.organization_id, name=self.request.GET['template']).first()
+                .filter_by(organization_id=self.context.user.organization_id, id=self.request.GET['template']).first()
                 if template is not None:
                     # TODO: makoを使った方が日付フォーマットとかが楽だが、DB内のtemplateに対して適用するのは、セキュリティ上、抵抗がある
                     engine = MacroEngine()
