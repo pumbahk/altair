@@ -58,7 +58,7 @@ class NotEqualTo(object):
             raise ValidationError(self.message % d)
 
 class CSRFSecureForm(SessionSecureForm):
-    SECRET_KEY = get_csrf_token()
+    SECRET_KEY = 'OgnweuiF8fqWyGMbPHLNCk4D9x6ovjTm'
 
 class LoginForm(OurForm):
     user_name = OurTextField(
