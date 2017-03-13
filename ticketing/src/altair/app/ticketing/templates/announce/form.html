@@ -106,6 +106,8 @@
 
       ${ch.form_item(form.parameters)}
 
+      ${ch.form_item(form.url, class_="span6")}
+
       ${ch.form_item(form.is_draft)}
       ${ch.form_item(form.send_after)}
       <div class="control-group">
@@ -126,11 +128,6 @@
       ${ch.form_item(form.note)}
     </fieldset>
 
-   <script>
-     (function(e) {
-       e.replaceWith($('<input />').prop({ name: e.prop('name') }).val(e.val()));
-     })($('*[name="'+$('input[type="hidden"][value="URL"]').prop('name').replace(/-key/, '-value')+'"]'));
-   </script>
   % if id is not None:
     % if announce.started_at is None:
      <input type="submit" class="btn" value="更新"/>
@@ -204,8 +201,7 @@
 
                   if($('#word_ids_autofill').val() == 'YES') {
                     if(0 < r.pages.length) {
-                      var name = $('input[type="hidden"][value="URL"]');
-                      $('*[name="'+name.prop('name').replace(/-key/, '-value')+'"]').val(url);
+                      $('input[name="url"]').val(url);
                     }
                   }
                 }
@@ -252,6 +248,8 @@ $('#preview').click(function() {
     data[f["parameters-"+i+"-key"].value] = f["parameters-"+i+"-value"].value;
     i++;
   }
+
+  data['URL'] = $('input[name="url"]').val();
 
   $.ajax({
     url: "${request.route_path('announce.macro')}",

@@ -66,6 +66,7 @@ class AnnouncementForm(Form):
         announce.parameters = dict()
         for kv in self.parameters.data:
             announce.parameters[kv["key"]] = text_type(kv["value"])
+        announce.parameters["URL"] = self.url.data
         announce.send_after = self.send_after.data
         announce.is_draft = self.is_draft.data
         # TODO: check length of words
@@ -100,6 +101,10 @@ class AnnouncementForm(Form):
         FormField(ParameterForm, widget=KeyValueWidget()),
         label=u'パラメータ',
         widget=SimpleListWidget(style="background-color: transparent;"),
+    )
+
+    url = TextField(
+        label=u'詳細はこちらURL',
     )
 
     is_draft = OurBooleanField(

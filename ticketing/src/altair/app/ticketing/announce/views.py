@@ -149,6 +149,8 @@ class Announce(BaseView):
                     # テンプレートからプレースホルダーを抽出する
                     for v in engine.fields((template.subject + template.message).encode('utf-8')):
                         v = v.decode('utf-8')
+                        if v in ["URL"]:
+                            continue
                         f.parameters.append_entry(Parameter(engine.label(v), engine._macro(v, data)))
 
             if 'send_after' in self.request.GET and 0 < len(self.request.GET['send_after']):
@@ -195,8 +197,13 @@ class Announce(BaseView):
         engine = MacroEngine()
         for v in engine.fields(announce.message.encode('utf-8')):
             v = v.decode('utf-8')
+            if v in ["URL"]:
+                continue
             label = engine.label(v)
             f.parameters.append_entry(Parameter(label, announce.parameters[label] if announce.parameters is not None and label in announce.parameters else ''))
+
+        if "URL" in announce.parameters:
+            f.url.process(None, announce.parameters["URL"])
 
         return dict(
             id=announce_id,
