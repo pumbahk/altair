@@ -152,6 +152,10 @@ class FamiPortChangePassWord(object):
         form = ChangePassWordForm(csrf_context=self.request.session)
         # 認証した情報からユーザIDを取得
         user_id = self.request.authenticated_userid
+        if not user_id:
+            reminder_token = self.request.GET.get('reminder_token', None)
+            if reminder_token:
+                user_id = AESEncryptor.get_id_from_token(reminder_token)
 
         # 以上二つ方法しかで取得したユーザIDを認めない。
         if not user_id:
@@ -173,6 +177,10 @@ class FamiPortChangePassWord(object):
         action_url = self.request.current_route_path()
         form = ChangePassWordForm(formdata=self.request.POST, csrf_context=self.request.session)
         user_id = self.request.authenticated_userid
+        if not user_id:
+            reminder_token = self.request.GET.get('reminder_token', None)
+            if reminder_token:
+                user_id = AESEncryptor.get_id_from_token(reminder_token)
 
         if form.validate():
             session = get_db_session(self.request, 'famiport')
