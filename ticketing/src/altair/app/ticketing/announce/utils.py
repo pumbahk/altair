@@ -186,6 +186,15 @@ class MacroEngine:
                 # 非配列に対して.join()指定された
                 return process_next(None)
 
+        # .element(i) -> cont
+        m = re.match(r"element\((\d+)\)", name)
+        if m:
+            index = int(m.group(1))
+            if isinstance(data, list) and index < len(data):
+                return process_next(data[index])
+            else:
+                return process_next(None)
+
         # .unique() -> cont
         # ソートされていなくても良い
         if name == "unique()":
