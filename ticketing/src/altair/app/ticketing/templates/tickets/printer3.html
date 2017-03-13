@@ -143,7 +143,7 @@ table#queue-entries .summary { width: 27%; }
 </script>
 <script type="text/javascript">
 function init(tags, progressHandlers, uiUpdater) {
-  var api = 'http://127.0.0.1:11231';
+  var api = null;
   var $screen = tags['screen'];
   var $page = tags['page'];
   var $printService = tags['printService'];
@@ -526,9 +526,40 @@ function init(tags, progressHandlers, uiUpdater) {
     $screen.hide();
   };
 
-  enableUI();
-  $screen.show();
-  initMain();
+  function discoverApi(cont) {
+    var candidates = [
+      'http://127.0.0.1:11231',
+      'https://localhost.altair-printer.tk:11231',
+      'https://127.0.0.1:11231'
+    ];
+    
+    (function(_candidates) {
+      var f = arguments.callee;
+      var start = new Date();
+      $.ajax({ url: _candidates[0]+"/printers", timeout: 1000 })
+      .then(function(r) {
+        // found api
+        api = _candidates[0];
+        cont();
+      }, function(e, s) {
+        var lap = ((new Date()).getTime() - start.getTime());
+        _candidates.shift();
+        if(0 < _candidates.length) {
+          f(_candidates);
+        } else {
+          // no more candidates
+          alert("印刷サーバがみつかりません.");
+        }
+      });
+    })(candidates);
+  }
+
+  disableUI();
+  discoverApi(function() {
+    enableUI();
+    $screen.show();
+    initMain();
+  });
 }
 </script>
 <%block name="breadcrumbs">

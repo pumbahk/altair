@@ -13,6 +13,8 @@ import java.awt.geom.AffineTransform;
 import java.awt.print.PrinterException;
 import java.awt.print.PrinterJob;
 import java.io.ByteArrayInputStream;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -29,6 +31,10 @@ import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.charset.Charset;
 import java.security.AccessController;
+import java.security.GeneralSecurityException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Date;
@@ -54,6 +60,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.imageio.ImageIO;
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManagerFactory;
 import javax.print.PrintService;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
@@ -102,6 +111,9 @@ import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
+import com.sun.net.httpserver.HttpsServer;
+import com.sun.net.httpserver.HttpsConfigurator;
+
 
 @SuppressWarnings("restriction")
 class LogWindow extends JFrame {
@@ -339,6 +351,7 @@ public class Server {
     private AppWindowService service;
 
     private InetSocketAddress address;
+    private HttpsConfigurator httpsConfiguration;
 
     private List<URI> originHosts = new ArrayList<URI>();
     
@@ -356,6 +369,8 @@ public class Server {
 
     private Thread gcThread;
     private AtomicBoolean gcThreadIsRunning = new AtomicBoolean(false);
+    
+    private SSLContext sslContext;
 
     private TrayIcon icon;
     private MenuItem statusLabel;
@@ -703,12 +718,13 @@ public class Server {
         }
     }
 
-    public Server(InetSocketAddress address, List<URI> originHosts, ProxyFactory proxyFactory, long gcInterval, String authString) {
+    private Server(InetSocketAddress address, HttpsConfigurator https, List<URI> originHosts, ProxyFactory proxyFactory, long gcInterval, String authString) {
         if (originHosts.size() == 0) {
             throw new IllegalArgumentException("no origin hosts given");
         }
         this.logWindow = new LogWindow();
         this.address = address;
+        this.httpsConfiguration = https;
         this.originHosts.addAll(originHosts);
         this.proxyFactory = proxyFactory;
         this.nextId = 0;
@@ -744,13 +760,39 @@ public class Server {
         }
         return _originHosts;
     }
+    
+    private static HttpsConfigurator getHttpsConfigurator(String keystore) {
+    	if (keystore == null || keystore.length() == 0) {
+    		return null;
+    	}
+    	
+    	final String passphrase = "secret";
+    	
+    	try {
+            KeyStore ks = KeyStore.getInstance("PKCS12");
+            ks.load(new FileInputStream(keystore), passphrase.toCharArray());
 
-    public Server(String listen, List<String> originHosts, ProxyFactory proxyFactory, long gcInterval, String authString) {
-        this(parseAddress(listen), parseOriginHosts(originHosts), proxyFactory, gcInterval, authString);
+            KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+            kmf.init(ks, passphrase.toCharArray());
+
+            TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+            tmf.init(ks);
+
+    		SSLContext sslContext = SSLContext.getInstance("TLS");
+            sslContext.init(kmf.getKeyManagers(), tmf.getTrustManagers(), null);
+            return new HttpsConfigurator(sslContext);
+    	} catch (Exception e) {
+    		e.printStackTrace();
+    		return null;
+    	}
+    }
+
+    private Server(String listen, String keystore, List<String> originHosts, ProxyFactory proxyFactory, long gcInterval, String authString) {
+        this(parseAddress(listen), getHttpsConfigurator(keystore), parseOriginHosts(originHosts), proxyFactory, gcInterval, authString);
     }
 
     public Server(Configuration config) {
-        this(config.getListen(), config.getOriginHosts(), config.getProxyFactory(), config.getGCInterval(), config.getAuthString());
+        this(config.getListen(), config.getKeystore(), config.getOriginHosts(), config.getProxyFactory(), config.getGCInterval(), config.getAuthString());
     }
 
     public void setService(AppWindowService service) {
@@ -784,7 +826,13 @@ public class Server {
     }
 
     private void startHttpServer() throws IOException {
-        httpServer = HttpServer.create(address, 0);
+        if (this.httpsConfiguration != null) {
+            HttpsServer httpsServer = HttpsServer.create(address, 0);
+        	httpsServer.setHttpsConfigurator(this.httpsConfiguration);
+        	httpServer = httpsServer;
+        } else {
+            httpServer = HttpServer.create(address, 0);
+        }
         httpServer.createContext("/", new Handler());
         log.info("Starting HTTP server on " + address   );
         httpServer.start();

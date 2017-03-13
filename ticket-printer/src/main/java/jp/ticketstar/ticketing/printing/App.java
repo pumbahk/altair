@@ -22,6 +22,9 @@ public class App {
 
         @Option(name="--listen")
         String listen = "127.0.0.1:8081";
+        
+        @Option(name="--keystore")
+        String keystore = "";
 
         @Option(name="--origin")
         List<String> originHosts = new ArrayList<String>();
@@ -44,6 +47,11 @@ public class App {
         @Override
         public String getListen() {
             return listen;
+        }
+
+        @Override
+        public String getKeystore() {
+            return keystore;
         }
 
         @Override

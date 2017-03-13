@@ -6,6 +6,7 @@ import jp.ticketstar.ticketing.printing.util.ProxyFactory;
 
 public interface Configuration {
     public String getListen();
+    public String getKeystore();
     public List<String> getOriginHosts();
     public long getGCInterval();
     public boolean getIgnoreWrongCert();
