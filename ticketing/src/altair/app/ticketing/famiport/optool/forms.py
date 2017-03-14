@@ -25,7 +25,6 @@ from wtforms.ext.csrf.session import SessionSecureForm
 from wtforms.validators import Required, Length, Optional, EqualTo, Email
 from wtforms.compat import iteritems
 from wtforms import HiddenField, ValidationError
-from .utils import get_csrf_token
 
 class NotEqualTo(object):
     """
