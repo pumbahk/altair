@@ -43,6 +43,11 @@ altair.newsletters.admin =
     http://newsletters.stg.altr.jp(/.*)?
     http://%(_proxy_target)s:8040\1
 
+[rewrite:swagger_editor]
+swagger_editor =
+    http://swagger.stg.altr.jp(/.*)?
+    http://%(_proxy_target)s:8087\1
+
 [rewrite:fc-admin]
 fc-admin =
     http://fc-admin.stg.altr.jp(/.*)
@@ -95,3 +100,4 @@ altair.ticketing.whattime =
 altair.cms.usersite =
     http://[^/.]+.stg.altr.jp(/.*)?
     http://%(_proxy_target)s:${altair:cms.usersite.port}\1
+
