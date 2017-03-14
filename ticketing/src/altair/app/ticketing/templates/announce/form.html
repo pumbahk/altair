@@ -171,8 +171,12 @@
                 }
 
                 var disabled = $('input[type="submit"]', $('#word_ids').eq(0).form).size() == 0;
-                var url = r.base_url.replace(/\/$/, '') + '/' + r.pages[0].path.replace(/^\//, '');
-                cms_target.html(url + ' (公開開始日時: ' + r.pages[0].publish_begin + ')');
+                if(0 < r.pages.length) {
+                  var url = r.base_url.replace(/\/$/, '') + '/' + r.pages[0].path.replace(/^\//, '');
+                  cms_target.html(url + ' (公開開始日時: ' + r.pages[0].publish_begin + ')');
+                } else {
+                  cms_target.html('公開中のページがありません.');
+                }
 
                 var word_ids = $('#word_ids').val().split(/,/);
                 var checkboxes = $('#word_selection');
