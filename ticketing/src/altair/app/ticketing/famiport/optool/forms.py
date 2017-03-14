@@ -25,7 +25,6 @@ from wtforms.ext.csrf.session import SessionSecureForm
 from wtforms.validators import Required, Length, Optional, EqualTo, Email
 from wtforms.compat import iteritems
 from wtforms import HiddenField, ValidationError
-from .utils import get_csrf_token
 
 class NotEqualTo(object):
     """
@@ -58,7 +57,7 @@ class NotEqualTo(object):
             raise ValidationError(self.message % d)
 
 class CSRFSecureForm(SessionSecureForm):
-    SECRET_KEY = get_csrf_token()
+    SECRET_KEY = 'OgnweuiF8fqWyGMbPHLNCk4D9x6ovjTm'
 
 class LoginForm(OurForm):
     user_name = OurTextField(
