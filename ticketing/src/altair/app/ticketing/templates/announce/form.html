@@ -250,6 +250,14 @@ $('#preview').click(function() {
   }
 
   data['URL'] = $('input[name="url"]').val();
+  data['EVENT_CODE'] = '${event.code}';
+  var pad = function(s, n) {
+    while(s.length < n) {
+      s = '0' + s;
+    }
+    return s;
+  };
+  data['SEND_DATE'] = pad(f["send_after.year"].value, 4)+pad(f["send_after.month"].value, 2)+pad(f["send_after.day"].value, 2);
 
   $.ajax({
     url: "${request.route_path('announce.macro')}",

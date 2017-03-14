@@ -103,6 +103,8 @@ class Announce(BaseView):
                 announce.event_id = event.id
 
                 f.update_obj(announce)
+                announce.parameters["EVENT_CODE"] = event.code
+                announce.parameters["SEND_DATE"] = announce.send_after.strftime('%Y%m%d')
 
                 announce.save()
 
@@ -149,7 +151,7 @@ class Announce(BaseView):
                     # テンプレートからプレースホルダーを抽出する
                     for v in engine.fields((template.subject + template.message).encode('utf-8')):
                         v = v.decode('utf-8')
-                        if v in ["URL"]:
+                        if v in ["URL", "EVENT_CODE", "SEND_DATE"]:
                             continue
                         f.parameters.append_entry(Parameter(engine.label(v), engine._macro(v, data)))
 
@@ -185,7 +187,14 @@ class Announce(BaseView):
                 return HTTPFound(location=route_path('announce.list', self.request, event_id=announce.event.id))
 
             if f.validate():
-                f.update_obj(announce)
+                if "EVENT_CODE" in announce.parameters:
+                    event_code = announce.parameters["EVENT_CODE"]
+                    f.update_obj(announce)
+                    announce.parameters["EVENT_CODE"] = event_code
+                else:
+                    f.update_obj(announce)
+                announce.parameters["SEND_DATE"] = announce.send_after.strftime('%Y%m%d')
+
                 announce.save()
 
                 self.request.session.flash(u'告知メールを更新しました')
@@ -197,7 +206,7 @@ class Announce(BaseView):
         engine = MacroEngine()
         for v in engine.fields(announce.message.encode('utf-8')):
             v = v.decode('utf-8')
-            if v in ["URL"]:
+            if v in ["URL", "EVENT_CODE", "SEND_DATE"]:
                 continue
             label = engine.label(v)
             f.parameters.append_entry(Parameter(label, announce.parameters[label] if announce.parameters is not None and label in announce.parameters else ''))
