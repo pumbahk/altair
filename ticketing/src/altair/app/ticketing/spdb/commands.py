@@ -81,6 +81,8 @@ class SQLCreater(object):
     def sql(self):
         if self._args.org:
             sql = "{0} WHERE `Order`.organization_id = {1}".format(self._sql, self._args.org)
+        else:
+            return ""
 
         """
         期間指定
