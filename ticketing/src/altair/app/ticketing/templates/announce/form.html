@@ -203,7 +203,7 @@
                   // not work when disabled
                   $('input[type="checkbox"]', checkboxes).eq(0).trigger('change');
 
-                  if($('#word_ids_autofill').val() == 'YES') {
+                  if($('#word_ids_autofill').val() == 'YES' && $('input[name="url"]').val() == '') {
                     if(0 < r.pages.length) {
                       $('input[name="url"]').val(url);
                     }
