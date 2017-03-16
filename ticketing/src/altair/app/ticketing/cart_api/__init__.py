@@ -16,6 +16,12 @@ def setup_tweens(config):
     config.add_tween('.tweens.PaymentPluginErrorConverterTween', under=EXCVIEW)
     config.add_tween('.tweens.CacheControlTween')
 
+def add_metadata(request, value):
+    return dict(
+        data=value,
+        environment=request.registry.settings.get('altair.findable_label.label'),
+        organization_short_name=request.organization.short_name
+    )
 
 def main(global_config, **local_config):
     settings = dict(global_config)
@@ -29,7 +35,7 @@ def main(global_config, **local_config):
         root_factory='altair.app.ticketing.cart.resources.PerformanceOrientedTicketingCartResource'
         )
 
-    config.add_renderer('json', JSON())
+    config.add_renderer('json', JSON(metadata_handler=add_metadata))
     config.include('pyramid_tm')
     config.include('pyramid_dogpile_cache')
     config.include('altair.browserid')
