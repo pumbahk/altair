@@ -8,6 +8,7 @@ from collections import Iterable
 from altair.app.ticketing.helpers.base import date_time_helper
 
 import cgi
+import urlparse
 
 import logging
 logger = logging.getLogger(__name__)
@@ -65,6 +66,17 @@ class MacroEngine:
                 s = make_anchor(s, escape=cgi.escape).replace("\n", "<br />\n")
             elif f == 'html':
                 s = cgi.escape(s).replace("\n", "<br />\n")
+            else:
+                # param[x=y&z=] -> str
+                m = re.match(r"param\[([^\"]+)\]", f)
+                if m:
+                    replace = urlparse.parse_qs(m.group(1), keep_blank_values=True).keys()
+                    parsed = urlparse.urlsplit(s, allow_fragments=False)
+                    params = [p for p in urlparse.parse_qsl(parsed.query, keep_blank_values=True) if
+                              p[0] not in replace]
+                    query = "&".join(["=".join(p) for p in params] + [m.group(1)])
+                    s = urlparse.urlunsplit((parsed.scheme, parsed.netloc, parsed.path, query, parsed.fragment))
+
         return s
 
     @staticmethod
