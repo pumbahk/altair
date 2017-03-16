@@ -848,11 +848,12 @@ public class Server {
             HttpsServer httpsServer = HttpsServer.create(address, 0);
         	httpsServer.setHttpsConfigurator(this.httpsConfiguration);
         	httpServer = httpsServer;
+        	log.info("Starting HTTPS server on " + address);
         } else {
             httpServer = HttpServer.create(address, 0);
+        	log.info("Starting HTTP server on " + address);
         }
         httpServer.createContext("/", new Handler());
-        log.info("Starting HTTP server on " + address   );
         httpServer.start();
     }
 
