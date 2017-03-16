@@ -1,0 +1,276 @@
+<%inherit file="/layout_2cols.html"/>
+<%namespace file="/common/helpers.html" name="ch" />
+
+<%block name="breadcrumbs">
+  ${ch.breadcrumbs(
+      names=[u'イベント', event.title, u'告知メール', vh.datetime(announce.send_after) if announce is not None else u'新規'],
+      urls=[request.route_path('events.index'), request.route_path('events.show', event_id=event.id), request.route_path('announce.list', event_id=event.id)]
+  )}
+</%block>
+<div class="page-header">
+  <h1>告知メール</h1>
+</div>
+
+<h3>イベント情報</h3>
+
+<table class="table table-bordered fullwidth">
+  <tbody>
+    <tr>
+      <th class="span3">イベント名</th>
+      <td>${event.title}</td>
+    </tr>
+    <tr>
+      <th>イベントコード</th>
+      <td>${event.code}</td>
+    </tr>
+    <tr>
+      <th>
+        販売開始日時
+        <span class="help-inline">
+          <a rel="popover" data-original-title="販売開始日時" data-content="登録済みの商品のうち最初の販売開始日時">
+            <i class="icon-question-sign"></i>
+          </a>
+        </span>
+      </th>
+      <td>${vh.datetime(event.sales_start_on, with_weekday=True)}</td>
+    </tr>
+    <tr>
+      <th>
+        販売終了日時
+        <span class="help-inline">
+          <a rel="popover" data-original-title="販売終了日時" data-content="登録済みの商品のうち最後の販売終了日時">
+            <i class="icon-question-sign"></i>
+          </a>
+        </span>
+      </th>
+      <td>${vh.datetime(event.sales_end_on, with_weekday=True)}</td>
+    </tr>
+    <tr>
+      <th>初回公演日時</th>
+      <td>
+        ${vh.datetime(event.first_start_on, with_weekday=True)}
+        % if event.first_performance:
+        (<a href="${request.route_path('performances.show', event_id=event.id, performance_id=event.first_performance.id)}">
+         ${event.first_performance.venue.name} 公演 </a>)
+        % endif
+      </td>
+    </tr>
+    <tr>
+      <th>最終公演日時</th>
+      <td>
+        ${vh.datetime(event.final_start_on, with_weekday=True)}
+        % if event.final_performance:
+        (<a href="${request.route_path('performances.show', event_id=event.id, performance_id=event.final_performance.id)}">
+         ${event.final_performance.venue.name} 公演 </a>)
+        % endif
+      </td>
+    </tr>
+    <tr>
+      <th>
+        CMS情報
+      </th>
+      <td>
+        <span id="cms-info">
+          Loading...
+        </span>
+      </td>
+    </tr>
+    <tr>
+      <th>
+        お気に入りワード
+      </th>
+      <td>
+        <span id="word-info">
+          Loading...
+        </span>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>告知メール ${ u'編集' if id is not None else u'登録' }</h3>
+
+<div class="well">
+  <style>
+    #form-announce table th { text-align: right; }
+    #form-announce table td textarea,
+    #form-announce table td input { width: 480px; }
+  </style>
+  <form class="form-horizontal" method="POST" id="form-announce">
+    <fieldset>
+      ${ch.form_item(form.subject, class_="span12")}
+
+      <div style="display: none;">
+      ${ch.form_item(form.message, class_="span12", style="height: 30px;", readonly="readonly")}
+      </div>
+
+      ${ch.form_item(form.parameters)}
+
+      ${ch.form_item(form.url, class_="span6")}
+
+      ${ch.form_item(form.is_draft)}
+      ${ch.form_item(form.send_after)}
+      <div class="control-group">
+        <label class="required control-label">ワード選択</label>
+        <div class="controls">
+          <input type="hidden" id="word_ids_autofill" value="${'YES' if id is None else ''}" />
+          <input type="hidden" id="word_ids" name="${form.words.name}" value="${form.words.data}" />
+          <div id="word_selection">
+          </div>
+        </div>
+      </div>
+      <div class="control-group">
+        <label class="control-label">送信者数 (${u'予定' if (announce is None or announce.completed_at is None) else u'確定'})</label>
+        <div class="controls" style="margin-top: 6px;" id="subscriber_count">
+          ${announce.subscriber_count if announce and (announce.completed_at or announce.started_at) else ''}
+        </div>
+      </div>
+      ${ch.form_item(form.note)}
+    </fieldset>
+
+  % if id is not None:
+    % if announce.started_at is None:
+     <input type="submit" class="btn" value="更新"/>
+     <input type="submit" class="btn btn-danger" style="float: right;" name="delete" value="削除"/>
+    % else:
+     <script>
+       $('form input, form textarea').prop('disabled', true);
+     </script>
+     <br />
+     <span class="text-error">
+     送信処理開始後は、編集できません
+     </span>
+    % endif
+  % else:
+   <input type="submit" class="btn" value="登録"/>
+  % endif
+
+   <input type="button" class="btn" value="プレビュー" id="preview" />
+
+  </form>
+</div>
+
+<script>
+          $(function() {
+            var cms_target = $('#cms-info');
+            var word_target = $('#word-info');
+            $.ajax({
+              url: "${request.route_path('events.info_from_cms', event_id=event.id)}"
+            }).done(function(r) {
+              if(r.event) {
+                cms_target.html('');
+                word_target.html('');
+                $('<span>&nbsp;</span>').appendTo(word_target);
+                var favorite = $('<span></span>');
+                if(r.words && 0 < r.words.length) {
+                  for(var i=0 ; i<r.words.length ; i++) {
+                    $('<span></span>').addClass('label').text(r.words[i].label).appendTo(favorite);
+                    $('<span>&nbsp;</span>').appendTo(favorite);
+                  }
+                  favorite.appendTo(word_target);
+                }
+
+                var disabled = $('input[type="submit"]', $('#word_ids').eq(0).form).size() == 0;
+                if(0 < r.pages.length) {
+                  var url = r.base_url.replace(/\/$/, '') + '/' + r.pages[0].path.replace(/^\//, '');
+                  cms_target.html(url + ' (公開開始日時: ' + r.pages[0].publish_begin + ')');
+                } else {
+                  cms_target.html('公開中のページがありません.');
+                }
+
+                var word_ids = $('#word_ids').val().split(/,/);
+                var checkboxes = $('#word_selection');
+                checkboxes.html('');
+                if(r.words && 0 < r.words.length) {
+                  for(var i=0 ; i<r.words.length ; i++) {
+                    $('<label></label>').attr('for', 'words-'+r.words[i].id)
+                    .append(
+                      $('<input type="checkbox" />').attr('value', r.words[i].id).attr('id', 'words-'+r.words[i].id).prop('disabled', disabled)
+                    )
+                    .append('&nbsp;')
+                    .append(r.words[i].label)
+                    .appendTo(checkboxes);
+                  }
+
+                  if($('#word_ids_autofill').val() == 'YES') {
+                    $('input[type="checkbox"]', checkboxes).prop('checked', true);
+                  } else {
+                    $(word_ids).each(function(idx, id) {
+                      $('#words-'+id).prop('checked', true);
+                    });
+                  }
+
+                  // not work when disabled
+                  $('input[type="checkbox"]', checkboxes).eq(0).trigger('change');
+
+                  if($('#word_ids_autofill').val() == 'YES' && $('input[name="url"]').val() == '') {
+                    if(0 < r.pages.length) {
+                      $('input[name="url"]').val(url);
+                    }
+                  }
+                }
+                // TODO: ここではじめてformをactiveにしたい
+              } else {
+                word_target.html('CMS未連携');
+              }
+            }).fail(function() {
+              word_target.html('エラー');
+            });
+          });
+
+(function() {
+var xhr;
+$('#word_selection').on('change', 'input', function() {
+  var word_ids = $('#word_selection input:checked').map(function() { return $(this).val(); }).get();
+
+  // update hidden field
+  $('#word_ids').val(word_ids.join(','));
+
+  // re-calculate user count
+  if(xhr) {
+    xhr.abort();
+  }
+  xhr = $.ajax({
+    url: "${request.route_path('announce.count')}",
+    type: "POST",
+    data: { word_ids: word_ids },
+  }).done(function(r) {
+    $('#subscriber_count').text(r.count);
+  }).fail(function() {
+    $('#subscriber_count').text('');
+  });
+});
+})();
+
+$('#preview').click(function() {
+  var f = $('#form-announce').get(0);
+  var html = $('*[name="message"]', f).val();
+
+  var data = { };
+  var i = 0;
+  while(f["parameters-"+i+"-key"]) {
+    data[f["parameters-"+i+"-key"].value] = f["parameters-"+i+"-value"].value;
+    i++;
+  }
+
+  data['URL'] = $('input[name="url"]').val();
+  data['EVENT_CODE'] = '${event.code}';
+  var pad = function(s, n) {
+    while(s.length < n) {
+      s = '0' + s;
+    }
+    return s;
+  };
+  data['SEND_DATE'] = pad(f["send_after.year"].value, 4)+pad(f["send_after.month"].value, 2)+pad(f["send_after.day"].value, 2);
+
+  $.ajax({
+    url: "${request.route_path('announce.macro')}",
+    type: "POST",
+    contentType: "application/json; charset=utf-8",
+    data: JSON.stringify({ template: html, data: data })
+  }).done(function(r) {
+    var w = window.open();
+    w.document.write(r.result);
+  });
+});
+</script>

@@ -222,35 +222,38 @@ $(function(){
   % endif
 </div>
 
-<div class="btn-group" style="float: left;">
-  <a class="btn" href="${request.route_path('reports.index', event_id=event.id)}" style="margin-left: 10px;">
+<div class="btn-group">
+  <a class="btn" href="${request.route_path('reports.index', event_id=event.id)}" style="margin-left: 5px;">
     帳票
   </a>
 </div>
 
-<div class="btn-group" style="float: left;">
-  <a class="btn" href="${request.route_path('events.tickets.index', event_id=event.id)}" style="margin-left: 10px;">
+<div class="btn-group">
+  <a class="btn" href="${request.route_path('events.tickets.index', event_id=event.id)}" style="margin-left: 5px;">
 	券面
   </a>
 </div>
 
-<div class="btn-group" style="float: left;">
-  <a class="btn" href="${request.route_path('events.mailinfo.index', event_id=event.id)}" style="margin-left: 10px;">
+<div class="btn-group">
+  <a class="btn" href="${request.route_path('events.mailinfo.index', event_id=event.id)}" style="margin-left: 5px;">
 	メール
   </a>
 </div>
-<div class="btn-group" style="float: left;">
-  <a class="btn" href="${request.route_path('orders.index', _query=dict(event_id=event.id))}" style="margin-left: 10px;">
+
+<div class="btn-group">
+  <a class="btn" href="${request.route_path('orders.index', _query=dict(event_id=event.id))}" style="margin-left: 5px;">
 	購入情報
   </a>
 </div>
-<div class="btn-group" style="float: left;">
-  <a class="btn" href="${request.route_path('lots.index', event_id=event.id)}" style="margin-left: 10px;">
+
+<div class="btn-group">
+  <a class="btn" href="${request.route_path('lots.index', event_id=event.id)}" style="margin-left: 5px;">
 	抽選
   </a>
 </div>
-<div class="btn-group" style="float: left;">
-  <a class="btn" href="${request.route_path('sales_reports.event', event_id=event.id)}" style="margin-left: 10px;">
+
+<div class="btn-group">
+  <a class="btn" href="${request.route_path('sales_reports.event', event_id=event.id)}" style="margin-left: 5px;">
 	売上レポート
   </a>
 </div>
@@ -276,7 +279,17 @@ $(function(){
 </div>
 %endif
 
-<%include file="./_famiport_reflect_button.html" args="event=event, btn_status=famiport_reflect_button_status" />
+<div class="btn-group">
+  <%include file="./_famiport_reflect_button.html" args="event=event, btn_status=famiport_reflect_button_status" />
+</div>
+
+%if organization_setting.enable_word:
+  <div class="btn-group">
+  <a class="btn" href="${request.route_path('announce.list', event_id=event.id)}" style="margin-left: 5px;">
+    告知メール
+  </a>
+  </div>
+%endif
 
 <%include file="./_send_event_mixin.html" />
 

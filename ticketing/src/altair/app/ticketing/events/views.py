@@ -16,7 +16,7 @@ from sqlalchemy import sql
 from sqlalchemy.sql import func, and_
 from sqlalchemy.orm.util import class_mapper
 from pyramid.view import view_config, view_defaults
-from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPCreated, HTTPOk
+from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPCreated, HTTPServiceUnavailable
 from pyramid.threadlocal import get_current_registry
 from pyramid.url import route_path
 from pyramid.response import Response
@@ -486,14 +486,16 @@ class Events(BaseView):
             with contextlib.closing(urllib2.urlopen(req)) as res:
                 data = res.read()
                 data = json.loads(data);
-
-                # ひとまずこの機能はお蔵入り
-                # data['url'] = communication_api.get_url("/")
-
-                return data;
         except Exception, e:
             logger.error("cms info error: %s" % (e.message))
-        return dict()
+            return HTTPServiceUnavailable()
+
+        # ひとまずこの機能はお蔵入り
+        # data['url'] = communication_api.get_url("/")
+
+        data['base_url'] = core_api.get_base_url(organization_id=self.context.organization.id, mobile=False, use_one=False)
+
+        return data;
 
     @view_config(route_name='events.open', request_method='GET',renderer='altair.app.ticketing:templates/events/_form_open.html')
     def open_get(self):

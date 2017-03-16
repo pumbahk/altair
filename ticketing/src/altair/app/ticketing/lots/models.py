@@ -521,6 +521,11 @@ class Lot(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             for setting in self.lot_entry_report_settings:
                 setting.deleted_at = self.deleted_at
 
+    @property
+    def announce_time_label(self):
+        from altair.app.ticketing.lots.helpers import announce_time_label
+        return announce_time_label(self)
+
 
 def sort_fn(x, y):
     return cmp([x.display_order, x.performance.start_on], [y.display_order, y.performance.start_on])
