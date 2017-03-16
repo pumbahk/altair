@@ -8,6 +8,7 @@ from collections import Iterable
 from altair.app.ticketing.helpers.base import date_time_helper
 
 import cgi
+import urlparse
 
 import logging
 logger = logging.getLogger(__name__)
@@ -65,6 +66,17 @@ class MacroEngine:
                 s = make_anchor(s, escape=cgi.escape).replace("\n", "<br />\n")
             elif f == 'html':
                 s = cgi.escape(s).replace("\n", "<br />\n")
+            else:
+                # param[x=y&z=] -> str
+                m = re.match(r"param\[([^\"]+)\]", f)
+                if m:
+                    replace = urlparse.parse_qs(m.group(1), keep_blank_values=True).keys()
+                    parsed = urlparse.urlsplit(s, allow_fragments=False)
+                    params = [p for p in urlparse.parse_qsl(parsed.query, keep_blank_values=True) if
+                              p[0] not in replace]
+                    query = "&".join(["=".join(p) for p in params] + [m.group(1)])
+                    s = urlparse.urlunsplit((parsed.scheme, parsed.netloc, parsed.path, query, parsed.fragment))
+
         return s
 
     @staticmethod
@@ -99,7 +111,7 @@ class MacroEngine:
     def label(self, macro):
         """
             label('a.func().as(LABEL)') -> 'LABEL'
-            label('a') -> a
+            label('a.func()') -> 'a'
         """
         return self._macro(macro, None, get_attr='as')
 
@@ -160,17 +172,23 @@ class MacroEngine:
         # .default("v") -> str
         m = re.match(r"default\(\"([^\"]+)\"\)", name, re.DOTALL)
         if m:
+            if get_attr == 'as':
+                return process_next(data)
             return process_next(m.group(1) if data is None else data)
 
         # .format("f") -> str
         m = re.match(r"format\(\"([^\"]+)\"\)", name)
         if m:
+            if get_attr == 'as':
+                return process_next(data)
             format = m.group(1)
             return process_next(format.format(self._stringify(data)))
 
         # .join("sep") -> str
         m = re.match(r"join\(\"([^\"]+)\"\)", name)
         if m:
+            if get_attr == 'as':
+                return process_next(data)
             if isinstance(data, list):
                 result = [ ]
                 for e in data:
@@ -189,6 +207,8 @@ class MacroEngine:
         # .element(i) -> cont
         m = re.match(r"element\((\d+)\)", name)
         if m:
+            if get_attr == 'as':
+                return process_next(data)
             index = int(m.group(1))
             if isinstance(data, list) and index < len(data):
                 return process_next(data[index])
@@ -198,6 +218,8 @@ class MacroEngine:
         # .unique() -> cont
         # ソートされていなくても良い
         if name == "unique()":
+            if get_attr == 'as':
+                return process_next(data)
             if isinstance(data, list):
                 result = [ ]
                 for e in data:
@@ -211,6 +233,8 @@ class MacroEngine:
         # .map(.name) -> cont
         m = re.match(r"map\(\.([0-9a-z_]+)\)", name, re.IGNORECASE)
         if m:
+            if get_attr == 'as':
+                return process_next(data)
             subname = m.group(1)
             if isinstance(data, list):
                 result = []
@@ -223,7 +247,8 @@ class MacroEngine:
 
         try:
             if get_attr == 'as':
-                return process_next(name)
+                processed = process_next(None)
+                return processed if processed is not None else name
             elif hasattr(data, name):
                 return process_next(getattr(data, name))
             elif isinstance(data, Iterable) and name in data:

@@ -35,8 +35,7 @@ class Announce(BaseView):
             mode = self.request.GET['mode']
 
         query = Announcement.query\
-            .filter_by(organization_id=self.context.user.organization_id)\
-            .order_by(Announcement.send_after)
+            .filter_by(organization_id=self.context.user.organization_id)
 
         # FIXME: 失敗したものがtodo側に残り続けるという問題がある...
         # 手動で、失敗したものもcompletedに変えたい?
@@ -68,7 +67,8 @@ class Announce(BaseView):
 
         event = Event.get(event_id, organization_id=self.context.user.organization_id)
 
-        announcements = Announcement.query.filter_by(event_id=event.id)\
+        announcements = Announcement.query\
+            .filter_by(event_id=event.id)\
             .order_by(Announcement.send_after)\
             .all()
 

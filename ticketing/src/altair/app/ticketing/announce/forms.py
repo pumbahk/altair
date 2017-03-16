@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from wtforms import TextField, TextAreaField, HiddenField, SelectField, FieldList, FormField, Form
-from wtforms.validators import Length, Optional, ValidationError
+from wtforms.validators import Length, Optional, ValidationError, Regexp
 from wtforms.widgets.core import HTMLString
 from wtforms.widgets import ListWidget, html_params
 from wtforms.compat import text_type
@@ -105,6 +105,10 @@ class AnnouncementForm(Form):
 
     url = TextField(
         label=u'詳細はこちらURL',
+        validators=[
+            Required(),
+            Regexp(r"https?://.+"),
+        ]
     )
 
     is_draft = OurBooleanField(
