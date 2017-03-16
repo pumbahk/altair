@@ -30,6 +30,7 @@ class CartAPIView(object):
     @view_config(route_name='cart.api.performances')
     def performances(self):
         event = self.context.event
+        sales_segments = self.context.available_sales_segments
         return dict(
             performances=[dict(
                 performance_id=p.id,
@@ -42,7 +43,7 @@ class CartAPIView(object):
                 sales_segments=[dict(
                     sales_segment_id=ss.id,
                     sales_segment_name=ss.sales_segment_group.name
-                ) for ss in p.sales_segments]
+                ) for ss in sales_segments]
             ) for p in event.performances]
         )
 
