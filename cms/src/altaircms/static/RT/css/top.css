@@ -336,6 +336,9 @@ body {
 	padding: 0 10px 10px 10px;
 }
 
+ul.tsSideBanner {
+     margin: 15px 0 0;
+}
 
 #tsSideArea ul.tsSideBanner li {
 	text-align: center;

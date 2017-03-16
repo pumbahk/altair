@@ -29,6 +29,30 @@ def get_host_base_url(request):
     except NoResultFound as e:
         raise Exception("Host that named %s is not Found" % host_name)
 
+def get_base_url(organization_id, mobile=False, use_one=True):
+    """
+
+    :param organization_id:
+    :param mobile:
+    :param use_one: Trueの場合、0件あるいは2件以上見つかったら例外発生, Falseの場合はよしなに
+    :return:
+    """
+
+    from .models import Host
+    q = Host.query.filter_by(organization_id=organization_id)
+
+    if mobile:
+        q = q.filter(Host.mobile_base_url.isnot(None))
+    else:
+        q = q.filter(Host.base_url.isnot(None))
+
+    if use_one:
+        h = q.one()
+    else:
+        h = q.order_by(Host.id).first()
+
+    return getattr(h, 'base_url' if not mobile else 'mobile_base_url') if h is not None else None
+
 def get_next_order_no(request, organization, name="order_no"):
     from .models import OrderNoSequence
     base_id = OrderNoSequence.get_next_value(name)
