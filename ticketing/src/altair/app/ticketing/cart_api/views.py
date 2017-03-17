@@ -52,13 +52,12 @@ class CartAPIView(object):
         performance = self.context.performance
         if performance is None:
             return HTTPNotFound()
-        # available_sales_segments = performance.sales_segments  # TODO: fix to available ss only
+        available_sales_segments = []
         try:
             available_sales_segments = self.context.available_sales_segments
-        except OutTermSalesException as e:
+        except (OutTermSalesException, HTTPNotFound):
             # FIXME: handle error when no sales segment is available
-            logger.error("no sales segment available now: {}".format(self.context.now))
-            raise HTTPNotFound()
+            logger.warning("no sales segment available now: {}".format(self.context.now))
         return dict(
             performance=dict(
                 performance_id=performance.id,
