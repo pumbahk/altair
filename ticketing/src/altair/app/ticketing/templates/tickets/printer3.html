@@ -536,7 +536,7 @@ function init(tags, progressHandlers, uiUpdater) {
     (function(_candidates) {
       var f = arguments.callee;
       var start = new Date();
-      $.ajax({ url: _candidates[0]+"/printers", timeout: 1000 })
+      $.ajax({ url: _candidates[0]+"/printers", timeout: 2500 })
       .then(function(r) {
         // found api
         api = _candidates[0];

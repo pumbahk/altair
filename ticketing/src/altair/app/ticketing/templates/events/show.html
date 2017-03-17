@@ -257,23 +257,25 @@ $(function(){
 	売上レポート
   </a>
 </div>
+
 % if event.organization.setting.auto_cms:
-<div class="btn-group" style="float: left;">
-  <a class="btn" href="${request.route_path('auto_cms.image.index', event_id=event.id)}" style="margin-left: 10px;">
+<div class="btn-group">
+  <a class="btn" href="${request.route_path('auto_cms.image.index', event_id=event.id)}" style="margin-left: 5px;">
   画像登録
   </a>
 </div>
 % endif
-<div class="btn-group" style="float: left;">
-  <% style_print_progress = "margin-left: 10px;" if event.organization_id == 15 else "margin:0 10px;" %>
-  <a class="btn" href="${request.route_path('events.print_progress.show', event_id=event.id)}" style="${style_print_progress}">
+
+<div class="btn-group">
+  <a class="btn" href="${request.route_path('events.print_progress.show', event_id=event.id)}" style="margin-left: 5px;">
 	発券進捗状況確認
   </a>
 </div>
+
 %if event.organization_id == 15:
 <!-- 楽天チケットのみ -->
-<div class="btn-group" style="float: left;">
-  <a class="btn" href="${request.route_path('augus.events.show', event_id=event.id)}" style="margin:0 10px;">
+<div class="btn-group">
+  <a class="btn" href="${request.route_path('augus.events.show', event_id=event.id)}" style="margin-left: 5px;">
     オーガス連携
   </a>
 </div>

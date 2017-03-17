@@ -428,14 +428,43 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
     });
   }
 
+  function discoverApi(cont) {
+    var candidates = [
+      'http://127.0.0.1:11231',
+      'https://localhost.altair-printer.tk:11231',
+      'https://127.0.0.1:11231'
+    ];
+
+    (function(_candidates) {
+      var f = arguments.callee;
+      var start = new Date();
+      $.ajax({ url: _candidates[0]+"/printers", timeout: 2500 })
+      .then(function(r) {
+        // found api
+        var api = _candidates[0];
+        cont(api);
+      }, function(e, s) {
+        var lap = ((new Date()).getTime() - start.getTime());
+        _candidates.shift();
+        if(0 < _candidates.length) {
+          f(_candidates);
+        } else {
+          // no more candidates
+          alert("印刷サーバがみつかりません.");
+        }
+      });
+    })(candidates);
+  }
+
   function switchToSalesCounterMode() {
     if (uiMode == 'salesCounter')
       return;
     uiMode = 'salesCounter';
 
-    var api = 'http://localhost:11231';
-    if (location.hash == '#local' || (navigator.appVersion.match(/Chrome\/(\d+)\./) && 45 <= parseInt(RegExp.$1))) {
-      connectToPrintServer(api);
+    if (location.hash != '#applet') {
+      discoverApi(function(api) {
+        connectToPrintServer(api);
+      });
     } else {
       loadApplet();
     }

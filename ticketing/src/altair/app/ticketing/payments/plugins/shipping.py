@@ -78,7 +78,6 @@ class ShippingDeliveryPlugin(object):
             u'delivered': order.delivered_at is not None
             }
 
-
 @lbr_view_config(context=ICompleteMailResource, name="delivery-%d" % PLUGIN_ID, renderer=_overridable("shipping_delivery_mail_complete.html", fallback_ua_type='mail'))
 @lbr_view_config(context=ILotsElectedMailResource, name="delivery-%d" % PLUGIN_ID, renderer=_overridable("shipping_delivery_mail_complete.html", fallback_ua_type='mail'))
 def completion_delivery_mail_viewlet(context, request):
@@ -94,4 +93,4 @@ def completion_delivery_mail_viewlet(context, request):
 @lbr_view_config(context=ILotsRejectedMailResource, name="delivery-%d" % PLUGIN_ID)
 @lbr_view_config(context=ILotsAcceptedMailResource, name="delivery-%d" % PLUGIN_ID)
 def notice_mail_viewlet(context, request):
-    return Response(text=u"＜配送にてお引取りの方＞\n{0}".format(context.mail_data("D", "notice")))
+    return Response(text=u"{0}".format(context.mail_data("D", "notice")))
