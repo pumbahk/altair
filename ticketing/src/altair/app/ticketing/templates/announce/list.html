@@ -165,7 +165,7 @@
   $('#announce-create-form').submit(function() {
     var f = this;
     var template = $(f.template).val();
-    var type = $('option[name="template"][value="'+template+'"]').data('type');
+    var type = $('select[name="template"]').find('option[value="'+template+'"]').data('type');
     var ssg = $(f.salessegmentgroup_id).find('option:selected');
 
     var datefromstr = function(s) {
