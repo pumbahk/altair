@@ -125,7 +125,7 @@
     % for a in announcements:
     <tr class="${'error' if a.mu_result in ('2', 'refused') else ''}">
         <td style="white-space: nowrap;">${vh.datetime(a.send_after, with_weekday=True)}</td>
-        <td style="white-space: nowrap;">${u'下書き' if a.is_draft else (u'処理済' if a.completed_at else (u'処理中' if a.started_at else u''))}</td>
+        <td style="white-space: nowrap;">${announce.status(a)}</td>
         <td><a href="${request.route_path('announce.edit', announce_id=a.id)}">${a.subject}</a></td>
         <td class="numeric">${len(a.words.split(",")) if 0 < len(a.words) else ''}</td>
         <td class="numeric">${a.get_subscriber_count()}</td>
