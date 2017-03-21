@@ -770,7 +770,25 @@ public class Server {
     	
     	try {
             KeyStore ks = KeyStore.getInstance("PKCS12");
-            ks.load(new FileInputStream(keystore), passphrase.toCharArray());
+            InputStream is = null;
+            try {
+            	is = new FileInputStream(keystore);
+            	ks.load(is, passphrase.toCharArray());
+            } catch(FileNotFoundException e1) {
+                try {
+                	if(is != null) {
+                		is.close();
+                	}
+                	is = Server.class.getResourceAsStream(keystore);
+                	ks.load(is, passphrase.toCharArray());
+                } catch(RuntimeException e2) {
+                	throw e1;
+                }
+            } finally {
+            	if(is != null) {
+            		is.close();
+            	}
+            }
 
             KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
             kmf.init(ks, passphrase.toCharArray());
@@ -830,11 +848,12 @@ public class Server {
             HttpsServer httpsServer = HttpsServer.create(address, 0);
         	httpsServer.setHttpsConfigurator(this.httpsConfiguration);
         	httpServer = httpsServer;
+        	log.info("Starting HTTPS server on " + address);
         } else {
             httpServer = HttpServer.create(address, 0);
+        	log.info("Starting HTTP server on " + address);
         }
         httpServer.createContext("/", new Handler());
-        log.info("Starting HTTP server on " + address   );
         httpServer.start();
     }
 
