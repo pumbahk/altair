@@ -169,6 +169,7 @@ class Announce(BaseView):
             event=event,
             announce=None,
             form=f,
+            auto=(self.request.method != 'POST'),
         )
 
     @view_config(route_name='announce.edit', renderer='altair.app.ticketing:templates/announce/form.html')
@@ -225,6 +226,7 @@ class Announce(BaseView):
             event=announce.event,
             announce=announce,
             form=f,
+            auto=False,
         )
 
     @view_config(route_name='announce.count', request_method='POST', renderer='json')
