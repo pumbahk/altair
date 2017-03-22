@@ -18,17 +18,17 @@ now = datetime.now()
         % for ticket in tickets:
             <div style="border: 1px solid gray; padding: 8px; margin-bottom: 4px;">
                 %if ticket.product:
-                商品名 ${ticket.product.name} (${ticket.product.id}) <br />
+                商品名 ${ticket.product.name}<br />
                 %endif
                 %if ticket.seat:
-                席番号 ${ticket.seat.name} (${ticket.seat.l0_id}) <br />
+                席番号 ${ticket.seat.name}<br />
                 %endif
                 <br />
                   <form method="post" target="_blank" action="${request.route_path('order_review.qr_print')}">
                       <input type="hidden" name="order_no" value="${order.order_no}" />
                       <input type="hidden" name="tel" value="${tel}" />
                       <input type="hidden" name="token" value="${ticket.token.id if ticket.token else ""}" />
-                      <input type="submit" value="QRコードを表示する" style="width:150px;height:40px" />
+                      <input type="submit" value="QRチケットを表示する" style="width:150px;height:40px" />
                   </form>
                   <br/>
                   <form method="post" target="_blank" action="${request.route_path('order_review.qr_send')}">
