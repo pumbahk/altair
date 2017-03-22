@@ -4,9 +4,6 @@ from unittest import TestCase
 from nose.tools import ok_, eq_
 from .commands import chop_none, SQLCreater
 from pyramid.testing import DummyModel
-import logging
-
-logger = logging.getLogger(__name__)
 
 
 class SQLCreaterTestCase(TestCase):
