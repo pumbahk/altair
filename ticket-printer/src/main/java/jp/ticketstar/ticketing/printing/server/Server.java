@@ -31,17 +31,16 @@ import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.charset.Charset;
 import java.security.AccessController;
-import java.security.GeneralSecurityException;
 import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
@@ -62,6 +61,7 @@ import java.util.regex.Pattern;
 import javax.imageio.ImageIO;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLParameters;
 import javax.net.ssl.TrustManagerFactory;
 import javax.print.PrintService;
 import javax.swing.JFrame;
@@ -113,6 +113,7 @@ import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 import com.sun.net.httpserver.HttpsServer;
 import com.sun.net.httpserver.HttpsConfigurator;
+import com.sun.net.httpserver.HttpsParameters;
 
 
 @SuppressWarnings("restriction")
@@ -718,21 +719,21 @@ public class Server {
         }
     }
 
-    private Server(InetSocketAddress address, HttpsConfigurator https, List<URI> originHosts, ProxyFactory proxyFactory, long gcInterval, String authString) {
-        if (originHosts.size() == 0) {
+    public Server(Configuration config) {
+        this.logWindow = new LogWindow();
+        this.address = parseAddress(config.getListen());
+        this.httpsConfiguration = getHttpsConfigurator(config.getKeystore(), config.getCipherSuites());
+        this.originHosts.addAll(parseOriginHosts(config.getOriginHosts()));
+        if (this.originHosts.size() == 0) {
             throw new IllegalArgumentException("no origin hosts given");
         }
-        this.logWindow = new LogWindow();
-        this.address = address;
-        this.httpsConfiguration = https;
-        this.originHosts.addAll(originHosts);
-        this.proxyFactory = proxyFactory;
+        this.proxyFactory = config.getProxyFactory();
         this.nextId = 0;
-        this.gcInterval = gcInterval;
-        this.authString = authString;
+        this.gcInterval = config.getGCInterval();
+        this.authString = config.getAuthString();
         this.queue = new LinkedBlockingQueue<Job>();
         this.printThread = createPrintThread();
-        if (gcInterval > 0)
+        if (this.gcInterval > 0)
             this.gcThread = createGCThread();
     }
 
@@ -761,12 +762,19 @@ public class Server {
         return _originHosts;
     }
     
-    private static HttpsConfigurator getHttpsConfigurator(String keystore) {
+    private static HttpsConfigurator getHttpsConfigurator(String keystore, String cipherSuites) {
     	if (keystore == null || keystore.length() == 0) {
     		return null;
     	}
     	
     	final String passphrase = "secret";
+    	
+        final Set<String> disabledCipherSuites = new HashSet<String>();
+        for(String command : cipherSuites.split(",")) {
+        	if(1 < command.length() && command.charAt(0) ==  '-') {
+        		disabledCipherSuites.add(command.substring(1));
+        	}
+        }
     	
     	try {
             KeyStore ks = KeyStore.getInstance("PKCS12");
@@ -798,19 +806,32 @@ public class Server {
 
     		SSLContext sslContext = SSLContext.getInstance("TLS");
             sslContext.init(kmf.getKeyManagers(), tmf.getTrustManagers(), null);
-            return new HttpsConfigurator(sslContext);
+            
+            return new HttpsConfigurator(sslContext) {
+            	@Override
+            	public void configure(HttpsParameters httpsParams) {
+            		SSLParameters sslParams = getSSLContext().getDefaultSSLParameters();
+            		
+            		// httpsParams.getCipherSuites() may be null
+            		
+            		String defaultCipherSuites[] = sslParams.getCipherSuites();
+            		if(defaultCipherSuites != null) {
+                		List<String> configured = new ArrayList<String>();
+                		for(String cipher : defaultCipherSuites) {
+                			if(!disabledCipherSuites.contains(cipher)) {
+                				configured.add(cipher);
+                			}
+                		}
+                		sslParams.setCipherSuites(configured.toArray(new String[0]));
+            		}
+            		
+            		httpsParams.setSSLParameters(sslParams);
+            	}
+            };
     	} catch (Exception e) {
     		e.printStackTrace();
     		return null;
     	}
-    }
-
-    private Server(String listen, String keystore, List<String> originHosts, ProxyFactory proxyFactory, long gcInterval, String authString) {
-        this(parseAddress(listen), getHttpsConfigurator(keystore), parseOriginHosts(originHosts), proxyFactory, gcInterval, authString);
-    }
-
-    public Server(Configuration config) {
-        this(config.getListen(), config.getKeystore(), config.getOriginHosts(), config.getProxyFactory(), config.getGCInterval(), config.getAuthString());
     }
 
     public void setService(AppWindowService service) {
