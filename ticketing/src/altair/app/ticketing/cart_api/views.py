@@ -6,6 +6,7 @@ from pyramid.httpexceptions import HTTPNotFound
 from sqlalchemy.orm.exc import NoResultFound
 
 from altair.sqlahelper import get_db_session
+from altair.pyramid_dynamic_renderer import lbr_view_config
 
 from altair.app.ticketing.core.models import StockType
 from altair.app.ticketing.cart.exceptions import OutTermSalesException
@@ -29,8 +30,13 @@ class CartAPIView(object):
 
     @view_config(route_name='cart.api.performances')
     def performances(self):
-        event = self.context.event
-        sales_segments = self.context.available_sales_segments
+        available_sales_segments = self.context.available_sales_segments
+        available_ss_per_perfromance = {}
+        for ss in available_sales_segments:
+            if ss.performance not in available_ss_per_perfromance.keys():
+                available_ss_per_perfromance[ss.performance] = [ss]
+            else:
+                available_ss_per_perfromance[ss.performance].append(ss)
         return dict(
             performances=[dict(
                 performance_id=p.id,
@@ -43,8 +49,8 @@ class CartAPIView(object):
                 sales_segments=[dict(
                     sales_segment_id=ss.id,
                     sales_segment_name=ss.sales_segment_group.name
-                ) for ss in sales_segments]
-            ) for p in event.performances]
+                ) for ss in available_ss_per_perfromance[p]]
+            ) for p in available_ss_per_perfromance.keys()]
         )
 
     @view_config(route_name='cart.api.performance')
@@ -249,3 +255,26 @@ class CartAPIView(object):
             }
         }
 
+
+@view_config(context=OutTermSalesException, renderer='json')
+def out_term_exec(context, request):
+    request.response.status = 404
+    return dict(
+            error=dict(
+                code="404",
+                message="{}: no resource was found".format(context.__class__.__name__),
+                details=[]
+            )
+        )
+
+
+@view_config(context=HTTPNotFound, renderer='json')
+def no_resource(context, request):
+    request.response.status = 404
+    return dict(
+        error=dict(
+            code="404",
+            message="{}: no resource was found".format(context.__class__.__name__),
+            details=[]
+        )
+    )

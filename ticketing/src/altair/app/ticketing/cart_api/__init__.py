@@ -42,6 +42,7 @@ def main(global_config, **local_config):
     config.include('altair.exclog')
     config.include('altair.httpsession.pyramid')
     config.include('altair.sqlahelper')
+    config.include('altair.pyramid_dynamic_renderer')
     config.include('altair.app.ticketing.cart.request')
     config.add_route('cart.api.health_check', '/')
     config.add_route('cart.api.index', '/api/v1/', request_method='GET')
