@@ -74,6 +74,7 @@ class QRUtilsTest(unittest.TestCase, CoreTestMixin):
 
         self.config = testing.setUp()
         self.config.include('altair.app.ticketing.qr')
+        self.request = testing.DummyRequest()
         CoreTestMixin.setUp(self)
         self.performance.start_on=datetime(2017, 2, 1, 15, 0, 0)
         self.performance.open_on=datetime.strptime(self.origin_data['valid_date_from'] + self.origin_data['enterable_from'], '%Y%m%d%H%M')
@@ -92,7 +93,7 @@ class QRUtilsTest(unittest.TestCase, CoreTestMixin):
             id=1,
             seat_id=None,
             item_token_id=item_token.id,
-            ordered_product_item_id=999,
+            ordered_product_item_id=None,
             order_id=self.order.id
         )
         self.session.add(self.history)
@@ -101,6 +102,12 @@ class QRUtilsTest(unittest.TestCase, CoreTestMixin):
     def tearDown(self):
         _teardown_db()
 
+    def _extract_qr_data_for_test(self, ticket):
+        builder = get_qrdata_aes_builder(self.request)
+        qr = ticket.qr
+        data = builder.extract(qr, HT_QR_DATA_HEADER, ht_item_list)
+        return data
+
     def test_make_data_for_qr(self):
         data, _ = make_data_for_qr(self.history)
         self.assertEquals(len(data['content']), 76)
@@ -108,13 +115,17 @@ class QRUtilsTest(unittest.TestCase, CoreTestMixin):
         self.assertEquals(data['content'], self.content)
 
     def test_build_ht_qr_by_history(self):
-        request = testing.DummyRequest()
-        ticket = build_ht_qr_by_ticket_id(request, 1)
-        builder = get_qrdata_aes_builder(request)
-        qr = ticket.qr
-        data = builder.extract(qr, HT_QR_DATA_HEADER, ht_item_list)
-
+        ticket = build_ht_qr_by_history(self.request, self.history)
+        data = self._extract_qr_data_for_test(ticket)
         self.assertDictEqual(data, self.origin_data)
 
-'HTB00000011123456A1234560000000001201702131120170101202012310001000201705140'
-'HTB00000011123456A1234560000000001201702131120170101202012310001000201705100'
+    def test_build_ht_qr_by_ticket_id(self):
+        ticket = build_ht_qr_by_ticket_id(self.request, 1)
+        data = self._extract_qr_data_for_test(ticket)
+        self.assertDictEqual(data, self.origin_data)
+
+    def test_build_ht_qr_by_token(self):
+        item_token = self.order.items[0].elements[0].tokens[0]
+        ticket = build_ht_qr_by_token(self.request, self.order.order_no, item_token)
+        data = self._extract_qr_data_for_test(ticket)
+        self.assertDictEqual(data, self.origin_data)
