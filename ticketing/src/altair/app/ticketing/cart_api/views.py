@@ -57,13 +57,9 @@ class CartAPIView(object):
     def performance(self):
         performance = self.context.performance
         if performance is None:
-            return HTTPNotFound()
-        available_sales_segments = []
-        try:
-            available_sales_segments = self.context.available_sales_segments
-        except (OutTermSalesException, HTTPNotFound):
-            # FIXME: handle error when no sales segment is available
-            logger.warning("no sales segment available now: {}".format(self.context.now))
+            raise HTTPNotFound('performance_id={} not found'.format(self.request.matchdict.get('performance_id')))
+
+        available_sales_segments = self.context.available_sales_segments
         return dict(
             performance=dict(
                 performance_id=performance.id,
@@ -259,10 +255,11 @@ class CartAPIView(object):
 @view_config(context=OutTermSalesException, renderer='json')
 def out_term_exec(context, request):
     request.response.status = 404
+    message = context.message or 'no resource was found'
     return dict(
             error=dict(
                 code="404",
-                message="{}: no resource was found".format(context.__class__.__name__),
+                message="{}: {}".format(context.__class__.__name__, message),
                 details=[]
             )
         )
@@ -271,10 +268,11 @@ def out_term_exec(context, request):
 @view_config(context=HTTPNotFound, renderer='json')
 def no_resource(context, request):
     request.response.status = 404
+    message = context.message or 'no resource was found'
     return dict(
         error=dict(
             code="404",
-            message="{}: no resource was found".format(context.__class__.__name__),
+            message="{}: {}".format(context.__class__.__name__, message),
             details=[]
         )
     )
