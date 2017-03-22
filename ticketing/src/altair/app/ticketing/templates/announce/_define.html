@@ -19,3 +19,19 @@
     エラー ${v}
   % endif
 </%def>
+
+<%def name="status(a)">
+  % if a.completed_at:
+    処理済
+  % elif a.mu_status == '51':
+    取消
+  % elif a.mu_result and a.mu_result != '1':
+    エラー
+  % elif a.started_at:
+    処理中
+  % elif a.is_draft:
+    下書き
+  % else:
+
+  % endif
+</%def>
