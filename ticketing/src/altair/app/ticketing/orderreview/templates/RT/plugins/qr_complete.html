@@ -1,0 +1,59 @@
+<div>
+    <h4>QRチケット</h4>
+
+    <p>下記リンクよりQRチケットを発行いただけます。<br>
+    発行されたQRチケットをPCでご印刷いただくか、スマートフォン/携帯電話でQRチケット画面をご準備の上、当日ご来場ください。</p>
+
+    <p>なお、お客様によるQRチケットの転送間違い、お渡し間違い等に起因するトラブル等にはご対応いたしかねますのでご注意ください。</p>
+
+    <p class="red">スマートフォン/携帯電話へQRチケットへのリンクを送信される場合は、@tstar.jp からのメールが受信できるよう、《事前に》お客様ご自身でドメイン指定の設定を必ずお願いいたします。</p>
+<%
+from datetime import datetime
+now = datetime.now()
+%>
+
+<br/>
+%if (paid or free):
+    % if order.issuing_start_at <= now:
+        % for ticket in tickets:
+            <div style="border: 1px solid gray; padding: 8px; margin-bottom: 4px;">
+                %if ticket.product:
+                商品名 ${ticket.product.name} (${ticket.product.id}) <br />
+                %endif
+                %if ticket.seat:
+                席番号 ${ticket.seat.name} (${ticket.seat.l0_id}) <br />
+                %endif
+                <br />
+                  <form method="post" target="_blank" action="${request.route_path('order_review.qr_print')}">
+                      <input type="hidden" name="order_no" value="${order.order_no}" />
+                      <input type="hidden" name="tel" value="${tel}" />
+                      <input type="hidden" name="token" value="${ticket.token.id if ticket.token else ""}" />
+                      <input type="submit" value="QRコードを表示する" style="width:150px;height:40px" />
+                  </form>
+                  <br/>
+                  <form method="post" target="_blank" action="${request.route_path('order_review.qr_send')}">
+                      <input type="hidden" name="order_no" value="${order.order_no}" />
+                      <input type="hidden" name="tel" value="${tel}" />
+                      <input type="hidden" name="token" value="${ticket.token.id if ticket.token else ""}" />
+                      メールアドレス: <input type="text" name="mail" size="40" />
+                      <input type="submit" name="send" value="メールで送る" />
+                  </form>
+            </div>
+        % endfor
+    % else:
+        <p>
+            こちらのQRチケットはまだ発行開始日前のため、QRチケットを発行できません。<br/>
+            恐れ入りますが、発行開始まで今しばらくお待ちください。
+        </p>
+        <br/>
+        発行開始予定日：　${order.issuing_start_at.strftime("%Y-%m-%d %H:%M")}
+    % endif
+% else:
+
+こちらのQRチケットはまだご入金前のため、QRチケットを発行できません。<br/>
+
+お支払い完了後、こちらのページにQRチケット画面へのリンクが表示されます。
+
+% endif
+
+</div>
