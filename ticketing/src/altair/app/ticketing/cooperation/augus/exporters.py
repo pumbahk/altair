@@ -309,7 +309,7 @@ class AugusAchievementExporter(object):
             if not opitem:
                 continue
             # すでにある予約をインポートで更新した後、正しく一番新しいordered product itemを取得できるようにする
-            elif not opitem.ordered_product.current_order or opitem.ordered_product.current_order.deleted_at:
+            elif not opitem.ordered_product.order:
                 continue
             elif opitem.ordered_product.current_order and  opitem.ordered_product.current_order.status == 'canceled':
                 continue
