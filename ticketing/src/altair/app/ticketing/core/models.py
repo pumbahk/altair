@@ -1390,6 +1390,10 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             for sales_segment_group_id in convert_map['sales_segment_group'].values():
                 sales_segment_group = SalesSegmentGroup.query.filter_by(id=sales_segment_group_id).one()
                 sales_segment_group.sync_member_group_to_children()
+
+                # 配券先がイベントコピー時に、元のものを使ってしまう。refs #tkt3179
+                if sales_segment_group.stock_holder_id in convert_map['stock_holder']:
+                    sales_segment_group.stock_holder_id = convert_map['stock_holder'][sales_segment_group.stock_holder_id]
         else:
             """
             Eventの作成時は以下のモデルを自動生成する

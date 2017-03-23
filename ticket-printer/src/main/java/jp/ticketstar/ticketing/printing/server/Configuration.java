@@ -10,6 +10,7 @@ public interface Configuration {
     public List<String> getOriginHosts();
     public long getGCInterval();
     public boolean getIgnoreWrongCert();
+    public String getCipherSuites();
     public String getAuthString();
     public ProxyFactory getProxyFactory();
 }
