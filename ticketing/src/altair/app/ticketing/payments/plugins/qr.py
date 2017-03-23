@@ -108,9 +108,12 @@ def deliver_completion_mail_viewlet(context, request):
                 description=description,
                 )
 
+@lbr_view_config(context=ILotsAcceptedMailResource, name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer=_overridable("qr_mail_complete.html", fallback_ua_type='mail'))
+def delivery_mail_viewlet(context, request):
+    return dict(notice=context.mail_data("D", "notice"))
+
 @lbr_view_config(context=IOrderCancelMailResource, name="delivery-%d" % DELIVERY_PLUGIN_ID)
 @lbr_view_config(context=ILotsRejectedMailResource, name="delivery-%d" % DELIVERY_PLUGIN_ID)
-@lbr_view_config(context=ILotsAcceptedMailResource, name="delivery-%d" % DELIVERY_PLUGIN_ID)
 @lbr_view_config(context=ILotsElectedMailResource, name="delivery-%d" % DELIVERY_PLUGIN_ID)
 def delivery_notice_viewlet(context, request):
     return Response(text=u"＜QRでのお受取りの方＞\n{0}".format(context.mail_data("D", "notice")))

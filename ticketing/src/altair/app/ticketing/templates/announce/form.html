@@ -113,7 +113,7 @@
       <div class="control-group">
         <label class="required control-label">ワード選択</label>
         <div class="controls">
-          <input type="hidden" id="word_ids_autofill" value="${'YES' if id is None else ''}" />
+          <input type="hidden" id="word_ids_autofill" value="${'YES' if auto else ''}" />
           <input type="hidden" id="word_ids" name="${form.words.name}" value="${form.words.data}" />
           <div id="word_selection">
           </div>
@@ -203,7 +203,7 @@
                   // not work when disabled
                   $('input[type="checkbox"]', checkboxes).eq(0).trigger('change');
 
-                  if($('#word_ids_autofill').val() == 'YES' && $('input[name="url"]').val() == '') {
+                  if($('#word_ids_autofill').val() == 'YES') {
                     if(0 < r.pages.length) {
                       $('input[name="url"]').val(url);
                     }
@@ -211,6 +211,7 @@
                 }
                 // TODO: ここではじめてformをactiveにしたい
               } else {
+                cms_target.html('CMS未連携');
                 word_target.html('CMS未連携');
               }
             }).fail(function() {

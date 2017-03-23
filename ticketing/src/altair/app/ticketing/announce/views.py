@@ -7,7 +7,7 @@ from collections import namedtuple, Iterable
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.url import route_path
-from sqlalchemy import func, distinct
+from sqlalchemy import func, distinct, or_, and_, not_
 
 from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.fanstatic import with_bootstrap
@@ -40,11 +40,17 @@ class Announce(BaseView):
         # FIXME: 失敗したものがtodo側に残り続けるという問題がある...
         # 手動で、失敗したものもcompletedに変えたい?
         if mode == 'todo':
-            query = query.filter_by(completed_at=None)\
-                .order_by(Announcement.send_after)
-        else:
-            query = query.filter(Announcement.completed_at.isnot(None))\
+            query = query \
+                .filter(and_(Announcement.completed_at == None,
+                             or_(Announcement.mu_status == None, Announcement.mu_status != '51'),
+                             Announcement.mu_result == None)) \
                 .order_by(Announcement.send_after.desc())
+        else:
+            query = query\
+                .filter(or_(Announcement.completed_at != None,
+                            Announcement.mu_status == '51',
+                            Announcement.mu_result != None))\
+                .order_by(Announcement.send_after)
 
         announcements = paginate.Page(
             query,
@@ -163,6 +169,7 @@ class Announce(BaseView):
             event=event,
             announce=None,
             form=f,
+            auto=(self.request.method != 'POST'),
         )
 
     @view_config(route_name='announce.edit', renderer='altair.app.ticketing:templates/announce/form.html')
@@ -219,6 +226,7 @@ class Announce(BaseView):
             event=announce.event,
             announce=announce,
             form=f,
+            auto=False,
         )
 
     @view_config(route_name='announce.count', request_method='POST', renderer='json')

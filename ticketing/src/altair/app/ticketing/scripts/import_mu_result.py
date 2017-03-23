@@ -190,7 +190,13 @@ def main():
                 if 3*3600 < age:
                     logger.warn('latest status json from postman is too old: %s' % status)
 
-                for trans in obj['Lambda']['TransStatus']['ID']:
+                trans_list = [ ]
+                try:
+                    trans_list = obj['Lambda']['TransStatus']['ID']
+                except Exception as e:
+                    pass
+
+                for trans in trans_list:
                     # message("found trans_id=%s in status json" % trans['TransId'])
 
                     # FIXME: maybe slow

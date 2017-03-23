@@ -34,6 +34,9 @@ public class App {
 
         @Option(name="--ignore-wrong-cert")
         boolean ignoreWrongCert = false;
+        
+        @Option(name="--cipher-suites")
+        String cipherSuites = null;
 
         @Option(name="--auth")
         String authString = null;
@@ -67,6 +70,11 @@ public class App {
         @Override
         public boolean getIgnoreWrongCert() {
             return ignoreWrongCert;
+        }
+
+        @Override
+        public String getCipherSuites() {
+            return cipherSuites;
         }
 
         @Override
