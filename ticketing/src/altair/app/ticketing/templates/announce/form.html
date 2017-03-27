@@ -145,7 +145,12 @@
    <input type="submit" class="btn" value="登録"/>
   % endif
 
-   <input type="button" class="btn" value="プレビュー" id="preview" />
+   <input type="button" class="btn" value="プレビュー(※データは登録・更新されません)" id="preview" />
+
+   <div style="margin-top: 12px;">
+     <input type="text" name="test_to" value="" placeholder="メールアドレス(,区切りで複数指定可能)" class="span4" />
+     宛に <input type="button" class="btn" value="テスト送信(※データは登録・更新されません)" id="test" />
+   </div>
 
   </form>
 </div>
@@ -272,6 +277,51 @@ $('#preview').click(function() {
   }).done(function(r) {
     var w = window.open();
     w.document.write(r.result);
+  });
+});
+
+$('#test').click(function() {
+  var f = $('#form-announce').get(0);
+  var subject = $('*[name="subject"]', f).val();
+  var html = $('*[name="message"]', f).val();
+  var test_to = $('*[name="test_to"]', f).val();
+
+  var data = { };
+  var i = 0;
+  while(f["parameters-"+i+"-key"]) {
+    data[f["parameters-"+i+"-key"].value] = f["parameters-"+i+"-value"].value;
+    i++;
+  }
+
+  data['URL'] = $('input[name="url"]').val();
+  data['EVENT_CODE'] = '${event.code}';
+  var pad = function(s, n) {
+    while(s.length < n) {
+      s = '0' + s;
+    }
+    return s;
+  };
+  data['SEND_DATE'] = pad(f["send_after.year"].value, 4)+pad(f["send_after.month"].value, 2)+pad(f["send_after.day"].value, 2);
+
+  $.ajax({
+    url: "${request.route_path('announce.macro')}",
+    type: "POST",
+    contentType: "application/json; charset=utf-8",
+    data: JSON.stringify({ template: html, data: data })
+  })
+  .done(function(r) {
+    $.ajax({
+      url: "${request.route_path('announce.test')}",
+      type: "POST",
+      contentType: "application/json; charset=utf-8",
+      data: JSON.stringify({ subject: subject, html: r.result, to: test_to })
+    }).done(function(r) {
+      if(r.success) {
+        alert("テストメールを送信しました.");
+      } else {
+        alert("テストメールの送信に失敗しました.");
+      }
+    });
   });
 });
 </script>
