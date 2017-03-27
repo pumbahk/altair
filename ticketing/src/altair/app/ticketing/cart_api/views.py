@@ -112,7 +112,7 @@ class CartAPIView(object):
             logger.warning("{} for stock_type_id={}".format(e.message, stock_type_id))
             raise HTTPNotFound()
         products = [p for p in stock_type.product if p.performance_id == performance.id]  # XXX: productだけどlistが返ってくる
-        # TODO: blocksが何者か確認して修正する
+        blocks = stock_type.blocks(performance_id=performance.id)
         return dict(
             stock_type=dict(
                 stock_type_id=stock_type.id,
@@ -131,40 +131,10 @@ class CartAPIView(object):
                     max_product_quantity=product.max_product_quantity,
                     is_must_be_chosen=product.must_be_chosen
                 ) for product in products],
-                blocks=["dummy"]
+                blocks=blocks
             )
         )
-        # return {
-        #     "stock_type": {
-        #         "stock_type_id": 12345,
-        #         "stock_type_name": "バックネット裏指定席S",
-        #         "is_quantity_only": False,
-        #         "description": "注意事項など",
-        #         "min_quantity": 1,
-        #         "max_quantity": 20,
-        #         "min_product_quantity": 1,
-        #         "max_product_quantity": 20,
-        #         "products": [
-        #             {
-        #                 "product_id": 10001,
-        #                 "product_name": "大人",
-        #                 "price": 5000,
-        #                 "min_product_quantity": 1,
-        #                 "max_product_quantity ": 20,
-        #                 "is_must_be_chosen": True
-        #             },
-        #             {
-        #                 "product_id": 10002,
-        #                 "product_name": "子供",
-        #                 "price": 2500,
-        #                 "min_product_quantity": 1,
-        #                 "max_product_quantity ": 20,
-        #                 "is_must_be_chosen": False
-        #             }
-        #         ],
-        #         "blocks": ["b1", "b2", "b3"]
-        #     }
-        # }
+
 
     @view_config(route_name='cart.api.seats')
     def seats(self):

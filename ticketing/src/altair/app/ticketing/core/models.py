@@ -2469,6 +2469,24 @@ class StockType(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def is_seat(self):
         return self.type == StockTypeEnum.Seat.v
 
+    def blocks(self, performance_id=None):
+        """席種に紐づく在庫がどのブロックにあるか返す"""
+        if self.is_seat:
+            # XXX: relationを辿っていくより、sqlでやる方が早いと思った
+            query = DBSession.query(Seat.group_l0_id)\
+                            .join(Stock, Seat.stock_id == Stock.id)\
+                            .join(StockType, Stock.stock_type_id == StockType.id)\
+                            .filter(StockType.id == self.id)
+            if performance_id:
+                query = query.filter(Stock.performance_id == performance_id)
+            _blocks = query.distinct(Seat.group_l0_id).all()
+        else:
+            # TODO: データモデルが固まったら数受け席種の場合のブロックを返す処理の追加が必要
+            _blocks = []
+
+        # tupleのリストをstringに変換したい
+        return [b[0] for b in _blocks]
+
     def add(self):
         super(StockType, self).add()
 
