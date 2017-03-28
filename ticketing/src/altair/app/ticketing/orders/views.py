@@ -2375,6 +2375,9 @@ class OrdersReserveView(OrderBaseView):
                 if not quantity.isdigit():
                     self.context.raise_error(u'個数が不正です')
                 product_quantity = int(quantity)
+                # 個数が0の場合はorderre_itemsに入れない。
+                if product_quantity == 0:
+                    continue
                 product = DBSession.query(Product).filter_by(id=product_id).one()
                 total_quantity += product_quantity * product.get_quantity_power(product.seat_stock_type, self.context.performance.id)
                 order_items.append((product, product_quantity))
