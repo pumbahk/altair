@@ -4,7 +4,7 @@
 
   <groupId>jp.ticketstar.ticketing</groupId>
   <artifactId>printing</artifactId>
-  <version>0.0.6</version>
+  <version>0.0.7</version>
   <packaging>jar</packaging>
 
   <name>printing</name>
@@ -161,7 +161,7 @@
                     <headerType>gui</headerType>
                     <outfile>target/altair-printing.exe</outfile>
                     <jar>target/printing-${project.version}-jar-with-dependencies.jar</jar>
-                    <cmdLine>--server --listen 127.0.0.1:11231 --origin https://service.ticketstar.jp</cmdLine>
+                    <cmdLine>--server --listen 127.0.0.1:11231 --origin https://service.ticketstar.jp --origin https://altair-admin.ticketstar.jp --cipher-suites -TLS_DHE_RSA_WITH_AES_128_CBC_SHA,-TLS_DHE_RSA_WITH_AES_256_CBC_SHA --keystore /localhost.p12</cmdLine>
                     <errTitle></errTitle>
                     <jre>
                       <path>jre1.6.0_45</path>
