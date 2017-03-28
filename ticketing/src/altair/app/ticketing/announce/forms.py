@@ -13,10 +13,6 @@ from altair.app.ticketing.users.models import Announcement
 from datetime import date, datetime, timedelta
 from altair.formhelpers.validators import DateTimeInRange
 
-now = datetime.now()
-limit = now + timedelta(hours=2) - timedelta(minutes=now.minute, seconds=now.second)
-send_after_range = DateTimeInRange(from_=limit)
-
 class ParameterForm(Form):
 
     key = HiddenField()
@@ -50,6 +46,14 @@ class KeyValueWidget(object):
                 html.append('<td>%s</td>' % text_type(subfield))
         html.append('</tr>')
         return HTMLString(''.join(html))
+
+
+class SendAfterRange(DateTimeInRange):
+    def __call__(self, form, field):
+        now = datetime.now()
+        limit = now + timedelta(hours=2) - timedelta(minutes=now.minute, seconds=now.second)
+        inner = DateTimeInRange(from_=limit)
+        return inner(form, field)
 
 
 class AnnouncementForm(Form):
@@ -119,7 +123,7 @@ class AnnouncementForm(Form):
 
     send_after = DateTimeField(
         label=u'送信日時',
-        validators=[Required(), send_after_range],
+        validators=[Required(), SendAfterRange()],
         widget=OurDateTimeWidget(omit_second=True)
         )
 
