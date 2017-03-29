@@ -89,14 +89,14 @@ class SQLCreater(object):
         期間指定
         何も指定されなかったら、昨日1日分を取得する。
         fromだけ指定されたら、その日1日分を取得する。
-        toが指定されたら、toで指定された日、1日分も取得する。
         ex) -f 2016/12/1 -t 2016/12/5の場合、2016/12/1 00:00:00 - 2016/12/6 00:00:00
-        toだけ指定されたら、fromは昨日の00:00:00〜とする。
         """
         term_to = datetime.strptime(datetime.now().date().strftime('%Y/%m/%d'), '%Y/%m/%d')
         term_from = term_to - timedelta(days=1)
         if self._args.term_from:
             term_from = datetime.strptime(self._args.term_from, '%Y/%m/%d')
+            if not self._args.term_to:
+                term_to = datetime.strptime(self._args.term_from, '%Y/%m/%d') + timedelta(days=1)
 
         if self._args.term_to:
             term_to = datetime.strptime(self._args.term_to, '%Y/%m/%d') + timedelta(days=1)
