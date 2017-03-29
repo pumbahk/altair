@@ -2470,8 +2470,9 @@ class StockType(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return self.type == StockTypeEnum.Seat.v
 
     def blocks(self, performance_id=None):
-        """席種に紐づく在庫がどのブロックにあるか返す"""
-        if self.is_seat:
+        """席種に紐づく在庫がどのブロック(group_l0_id)にあるか返す"""
+
+        if not self.quantity_only:
             # XXX: relationを辿っていくより、sqlでやる方が早いと思った
             query = DBSession.query(Seat.group_l0_id)\
                             .join(Stock, Seat.stock_id == Stock.id)\
@@ -2481,11 +2482,16 @@ class StockType(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 query = query.filter(Stock.performance_id == performance_id)
             _blocks = query.distinct(Seat.group_l0_id).all()
         else:
-            # TODO: データモデルが固まったら数受け席種の場合のブロックを返す処理の追加が必要
-            _blocks = []
+            query = DBSession.query(Stock_group_l0_id.group_l0_id)\
+                .join(Stock, Stock.id == Stock_group_l0_id.stock_id)\
+                .join(StockType, StockType.id == Stock.stock_type_id)\
+                .filter(StockType.id == self.id)
+            if performance_id:
+                query = query.filter(Stock.performance_id == performance_id)
+            _blocks = query.all()
 
         # tupleのリストをstringに変換したい
-        return [b[0] for b in _blocks]
+        return sorted([b[0] for b in _blocks])
 
     def add(self):
         super(StockType, self).add()
@@ -4931,3 +4937,9 @@ class OrderreviewIndexEnum(StandardEnum):
     Index     = (0, u'index.htmlに従う')
     OrderNo   = (1, u'予約番号ログイン画面')
     FcAuth    = (2, u'fc会員認証ログイン画面')
+
+
+class Stock_group_l0_id(Base):
+    __tablename__   = "Stock_group_l0_id"
+    stock_id = Column(Identifier, ForeignKey('Stock.id', ondelete='CASCADE'), primary_key=True, nullable=False)
+    group_l0_id = Column(Unicode(48), primary_key=True, nullable=False)
