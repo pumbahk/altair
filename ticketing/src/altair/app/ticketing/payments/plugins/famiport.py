@@ -771,8 +771,6 @@ class FamiPortDeliveryPlugin(object):
     def validate_order(self, request, order_like, update=False):
         """予約の検証"""
         validate_order_like(request, order_like, self, update)
-        # ファミポートの券面が登録されるのを検証し、登録されない場合は決済・引取方法の選択画面に表示しない。
-        validate_ticket_setting(request, order_like)
 
     def validate_order_cancellation(self, request, order, now):
         """ キャンセルバリデーション """
@@ -818,8 +816,6 @@ class FamiPortPaymentDeliveryPlugin(object):
     def validate_order(self, request, order_like, update=False):
         """予約の検証"""
         validate_order_like(request, order_like, self, update)
-        # ファミポートの券面が登録されるのを検証し、登録されない場合は決済・引取方法の選択画面に表示しない。
-        validate_ticket_setting(request, order_like)
 
     def validate_order_cancellation(self, request, order, now):
         """ キャンセルバリデーション """
@@ -926,11 +922,3 @@ def validate_order_like(request, order_like, plugin, update=False):
                 raise OrderLikeValidationFailure(
                     u'total_amount exceeds the maximum allowed amount: {}'.format(order_like.total_amount),
                     'order.total_amount')
-
-def validate_ticket_setting(request, order_like):
-    products = order_like.sales_segment.products
-    for product in products:
-        for product_item in product.items:
-            producer = ApplicableTicketsProducer.from_bundle(product_item.ticket_bundle)
-            if not producer.any_exist(producer.famiport_only_tickets()):
-                raise OrderLikeValidationFailure(u'famiport ticket has not been set', '')
