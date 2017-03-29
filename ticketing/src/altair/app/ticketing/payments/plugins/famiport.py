@@ -928,7 +928,7 @@ def validate_order_like(request, order_like, plugin, update=False):
                     'order.total_amount')
 
 def validate_ticket_setting(request, order_like):
-    products = [cart_product.product for cart_product in order_like.products]
+    products = order_like.sales_segment.products
     for product in products:
         for product_item in product.items:
             producer = ApplicableTicketsProducer.from_bundle(product_item.ticket_bundle)
