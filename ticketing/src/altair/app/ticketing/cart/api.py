@@ -669,11 +669,10 @@ def is_fc_cart(cart_setting):
 class _DummyCart(c_models.CartMixin):
     order_no = u'ZZ0000000000'
 
-    def __init__(self, organization_id, created_at, items, products, sales_segment, payment_delivery_pair):
+    def __init__(self, organization_id, created_at, items, sales_segment, payment_delivery_pair):
         self.organization_id = organization_id
         self.created_at = created_at
         self.items = items
-        self.products = products
         self.sales_segment = sales_segment
         self.payment_delivery_pair = payment_delivery_pair
 
@@ -719,7 +718,6 @@ def check_if_payment_delivery_method_pair_is_applicable(request, cart, payment_d
         organization_id=request.organization.id,
         created_at=cart.created_at,
         items=cart.items,
-        products=cart.products,
         sales_segment=cart.sales_segment,
         payment_delivery_pair=payment_delivery_pair
         )
