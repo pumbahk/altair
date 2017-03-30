@@ -41,7 +41,7 @@
 }
 
 .attention1 {
-	color: #bf191f;
+	color: #1e368f;
 }
 
 
@@ -911,7 +911,7 @@
 }
 
 #sideCountDown span {
-	color: #bf191f;
+	color: #1e368f;
 	font-size: 642.9%;
 }
 
@@ -1431,7 +1431,7 @@
 /* チケット購入
 ----------------------------------------------------------- */
 #main h1 {
-	background: #bf191f none repeat scroll 0 0;
+	background: #1e368f none repeat scroll 0 0;
 	margin: 0 0 20px;
 	padding: 8px;
 	color: #fff;
@@ -2185,7 +2185,7 @@
 
 .settlementPayBox dt {
 	padding: 15px 10px 10px;
-	color: #bf191f;
+	color: #1e368f;
 	font-size: 116.7%;
 	font-weight: bold;
 }
@@ -2197,7 +2197,7 @@
 
 .settlementPayBox dd .deliveryFee,
 .settlementPayBox dd .paymentFee {
-	color: #bf191f;
+	color: #1e368f;
 	font-weight: bold;
 	font-size: 116.7%;
 }
@@ -2248,7 +2248,7 @@
 }
 
 .settlementPayBox dd dl dd .paymentFee {
-	color: #bf191f;
+	color: #1e368f;
 	font-weight: bold;
 	font-size: 100%;
 }
@@ -2299,7 +2299,7 @@
 .settlementDeliveryInput th {
 	vertical-align: top;
 	padding: 10px 20px 10px 10px;
-	color: #bf191f;
+	color: #1e368f;
 	font-size: 116.7%;
 	font-weight: bold;
 	white-space: nowrap;
