@@ -15,8 +15,8 @@
 	left: -1px;
 	margin: 0 0 10px;
 	padding: 0 0 3px 10px;
-	border-bottom: 2px solid #bf0000;
-	color: #c01920;
+	border-bottom: 2px solid #1e368f;
+	color: #1e368f;
 	font-size: 18px;
 	font-weight: bold;
 }
@@ -1789,7 +1789,7 @@
 }
 
 #selectSeatType .selectProduct .btn-buy:hover {
-	background: #c00;
+	background: #1e368f;
 	opacity: 0.8;
 	cursor: pointer;
 }
@@ -2027,7 +2027,7 @@
 	width: 85px;
 	height: 27px;
 	padding: 5px 0 0;
-	background: #c00 none repeat scroll 0 0;
+	background: #1e368f none repeat scroll 0 0;
 	color: #fff;
 	font-size: 14px;
 	font-weight: bold;
@@ -2051,7 +2051,7 @@
 	width: 85px;
 	height: 27px;
 	padding: 5px 0 0;
-	background: #c00 none repeat scroll 0 0;
+	background: #1e368f none repeat scroll 0 0;
 	color: #fff;
 	font-size: 14px;
 	font-weight: bold;
@@ -2081,7 +2081,7 @@
 	overflow: hidden;
 	margin: 0 0 8px;
 	padding: 10px 15px;
-	background: #c00 none repeat scroll 0 0;
+	background: #1e368f none repeat scroll 0 0;
 	color: #fff;
 	font-size: 14px;
 	text-align: center;
@@ -2404,8 +2404,8 @@
 	left: -1px;
 	margin: 0 0 10px;
 	padding: 0 0 3px 10px;
-	border-bottom: 2px solid #bf0000;
-	color: #c01920;
+	border-bottom: 2px solid #1e368f;
+	color: #1e368f;
 	font-size: 18px;
 	font-weight: bold;
 }
@@ -2603,7 +2603,7 @@
 	padding: 5px 10px;
 	color: #ffffff;
 	font-size: 116.7%;
-	background-color: #c01920;
+	background-color: #1e368f;
 }
 
 .settlementInterest ul {
