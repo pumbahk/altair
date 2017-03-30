@@ -4,11 +4,22 @@ import logging
 from pyramid.view import view_defaults, view_config
 from pyramid.httpexceptions import HTTPNotFound
 from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy import distinct
 
 from altair.sqlahelper import get_db_session
 from altair.pyramid_dynamic_renderer import lbr_view_config
 
-from altair.app.ticketing.core.models import StockType
+from altair.app.ticketing.core.models import (
+    StockType,
+    Seat,
+    Stock,
+    SeatStatus,
+    SeatStatusEnum,
+    Product,
+    ProductItem,
+    SalesSegment,
+    StockStatus
+)
 from altair.app.ticketing.cart.exceptions import OutTermSalesException
 
 logger = logging.getLogger(__name__)
@@ -135,64 +146,50 @@ class CartAPIView(object):
             )
         )
 
-
     @view_config(route_name='cart.api.seats')
     def seats(self):
-        return {
-            "stock_types": [
-                {
-                    "stock_type_id": 12345,
-                    "available_counts": 3
-                },
-                {
-                    "stock_type_id": 12346,
-                    "available_counts": 2
-                }
-            ],
-            "blocks": [
-                {
-                    "block_id": "A",
-                    "available_counts": 3
-                    },
-                {
-                    "block_id": "B",
-                    "available_counts": 2
-                    },
-                {
-                    "block_id": "C",
-                    "available_counts": 0
-                }
-            ],
-            "seats": [
-                {
-                    "seat_id": "A-01",
-                    "is_available": False,
-                    "stock_type_id": 12345
-                },
-                {
-                    "seat_id": "A-02",
-                    "is_available": False,
-                    "stock_type_id": 12345
-                },
-                {
-                    "seat_id": "A-03",
-                    "is_available": False,
-                    "stock_type_id": 12345
-                },
-                {
-                    "seat_id": "A-04",
-                    "is_available": False,
-                    "stock_type_id": 12345
-                },
-                {
-                    "seat_id": "A-05",
-                    "is_available": True,
-                    "stock_type_id": 12345
-                }
-            ]
-        }
+        from collections import namedtuple
+        SeatDict = namedtuple("SeatDict", "seat_id stock_type_id seat_status stock_quantity")
+        StockTypeQuantityPair = namedtuple("StockTypeQuantityPair", "stock_type_id stock_quantity")
 
+        # available_sales_segmentsは優先順位順にならんでるはず
+        sales_segment = [ss for ss in self.context.available_sales_segments][0]
+        session = get_db_session(self.request, 'slave')
+        seat_dicts = session.query(distinct(Seat.id), Stock.stock_type_id, SeatStatus.status, StockStatus.quantity)\
+                            .join(Seat.status_)\
+                            .join(Seat.stock)\
+                            .join(Stock.product_items)\
+                            .join(Stock.stock_status)\
+                            .join(ProductItem.product)\
+                            .join(Product.sales_segment)\
+                            .filter(SalesSegment.id == sales_segment.id)\
+                            .all()
 
+        seat_dicts = [SeatDict(d[0], d[1], d[2], d[3]) for d in seat_dicts]
+        stock_type_quantity_pairs = [StockTypeQuantityPair(type_id, quantity)
+                                     for type_id, quantity in set([(d.stock_type_id, d.stock_quantity) for d in seat_dicts])]
+        stock_type_ids = [pairs.stock_type_id for pairs in stock_type_quantity_pairs]
+        stock_types = session.query(StockType).filter(StockType.id.in_(stock_type_ids)).all()
+
+        blocks = []
+        performance_id = sales_segment.performance.id
+        for stock_type in stock_types:
+            blocks.extend(stock_type.blocks(performance_id=performance_id))
+
+        return dict(
+            seats=[dict(
+                seat_id=d.seat_id,
+                stock_type_id=d.stock_type_id,
+                is_available=(d.seat_status == SeatStatusEnum.Vacant.v),
+            ) for d in seat_dicts],
+            stock_types=[dict(
+                stock_type_id=pairs.stock_type_id,
+                available_counts=pairs.stock_quantity
+            ) for pairs in stock_type_quantity_pairs],
+            blocks=[dict(
+                block_id=block
+            ) for block in set(blocks)]
+        )
 
     @view_config(route_name='cart.api.seat_reserve')
     def seat_reserve(self):
