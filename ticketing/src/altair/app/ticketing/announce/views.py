@@ -12,12 +12,15 @@ from sqlalchemy import func, distinct, or_, and_, not_
 from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.core.models import Event, Product, SalesSegmentGroup, SalesSegment
+from altair.app.ticketing.core.models import Mailer
 from altair.app.ticketing.users.models import Announcement, AnnouncementTemplate, WordSubscription
 from .forms import AnnouncementForm, ParameterForm
 
 from altair.sqlahelper import get_db_session
 from altair.app.ticketing.core.utils import PageURL_WebOb_Ex
 from datetime import datetime
+
+from email.header import Header
 
 from .utils import MacroEngine, html_filter
 
@@ -157,7 +160,8 @@ class Announce(BaseView):
                     # テンプレートからプレースホルダーを抽出する
                     for v in engine.fields((template.subject + template.message).encode('utf-8')):
                         v = v.decode('utf-8')
-                        if v in ["URL", "EVENT_CODE", "SEND_DATE"]:
+                        label = engine.label(v)
+                        if label in ["URL", "EVENT_CODE", "SEND_DATE"]:
                             continue
                         f.parameters.append_entry(Parameter(engine.label(v), engine._macro(v, data)))
 
@@ -213,9 +217,9 @@ class Announce(BaseView):
         engine = MacroEngine()
         for v in engine.fields(announce.message.encode('utf-8')):
             v = v.decode('utf-8')
-            if v in ["URL", "EVENT_CODE", "SEND_DATE"]:
-                continue
             label = engine.label(v)
+            if label in ["URL", "EVENT_CODE", "SEND_DATE"]:
+                continue
             f.parameters.append_entry(Parameter(label, announce.parameters[label] if announce.parameters is not None and label in announce.parameters else ''))
 
         if "URL" in announce.parameters:
@@ -260,3 +264,32 @@ class Announce(BaseView):
 
         except Exception as e:
             return dict(error=e.message)
+
+
+    @view_config(route_name='announce.test', request_method='POST', renderer='json')
+    def send_test_mail(self):
+        req = self.request.json_body
+
+        from altair.muhelpers import IMuMailerFactory
+        mu_factory = self.request.registry.getUtility(IMuMailerFactory)
+        mu = mu_factory()
+
+        try:
+            sender = "%s <%s>" % (Header(mu.from_name, 'utf-8').encode(), mu.from_address)
+
+            mailer = Mailer(self.request.registry.settings)
+            mailer.create_message(
+                sender=sender,
+                recipient=req["to"],
+                subject=req["subject"],
+                body='',
+                html=req["html"],
+                encoding='utf-8'
+            )
+            mailer.send(mu.from_address, req["to"].split(','))
+
+            return dict(success=True)
+
+        except Exception as e:
+            logger.warn(e)
+            return dict(success=False, error=e.message)

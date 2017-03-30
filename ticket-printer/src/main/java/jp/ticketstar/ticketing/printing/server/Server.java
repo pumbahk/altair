@@ -770,10 +770,12 @@ public class Server {
     	final String passphrase = "secret";
     	
         final Set<String> disabledCipherSuites = new HashSet<String>();
-        for(String command : cipherSuites.split(",")) {
-        	if(1 < command.length() && command.charAt(0) ==  '-') {
-        		disabledCipherSuites.add(command.substring(1));
-        	}
+        if(cipherSuites != null) {
+	        for(String command : cipherSuites.split(",")) {
+	        	if(1 < command.length() && command.charAt(0) ==  '-') {
+	        		disabledCipherSuites.add(command.substring(1));
+	        	}
+	        }
         }
     	
     	try {

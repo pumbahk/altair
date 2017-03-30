@@ -34,8 +34,6 @@ from .models import LotEntryReportSetting
 
 logger = logging.getLogger(__name__)
 
-UPPER_LIMIT_OF_MAX_QUANTITY_LOTS = 20  # SEJの場合21個以上だとエラーになってしまうので20で縛る
-
 
 class LotForm(Form):
     name = TextField(
@@ -172,7 +170,7 @@ class LotForm(Form):
         label=u'購入上限枚数',
         validators=[
             Required(),
-            NumberRange(min=0, max=UPPER_LIMIT_OF_MAX_QUANTITY_LOTS, message=u'範囲外です'),
+            NumberRange(min=0, message=u'範囲外です'),
         ],
     )
     auth3d_notice = TextAreaField(
