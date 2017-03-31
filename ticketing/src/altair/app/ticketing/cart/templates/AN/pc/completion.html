@@ -133,7 +133,6 @@
 <!-- ===== BTN ===== -->
 <div style="width: 800px; text-align: center; margin-left: auto; margin-right: auto;">
   <div class="next-action">
-  <p style="display:inline-block;" class="mgr10"><a class="btn btn-primary" href="${request.context.host_base_url}">${__(u'トップにもどる')}</a></p>
   <a href="${request.route_url('cart.index', event_id=order.performance.event.id, _query={'performance': order.performance_id})}" class="btn btn-primary">
   ${__(u'他のチケットを購入する')}
   </a>
