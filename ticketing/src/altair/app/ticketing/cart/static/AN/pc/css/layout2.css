@@ -189,7 +189,7 @@ dl#subSectionNav {
 	position: relative;
 	width: 100%;
 	padding: 5px 0 7px;
-	background-color: #bf0000; /* ←メニューの背景色を指定する */
+	background-color: #1e368f; /* ←メニューの背景色を指定する */
 }
 /* Start clearfix ------------------------------ */
 dl#subSectionNav:after {
@@ -586,7 +586,7 @@ div#grpRakutenLinkArea div#groupServiceFooter dl.title dd.allService span a {
 	vertical-align: baseline;
 }
 div#grpRakutenLinkArea div#groupServiceFooter dl.title dd.allService span a:hover {
-	color: #bf0000;
+	color: #1e368f;
 }
 
 div#grpRakutenLinkArea div#groupServiceFooter dl.title dd.csr {
