@@ -42,7 +42,6 @@ from altair.app.ticketing.venues.api import get_venue_site_adapter
 from altair.mobile.interfaces import IMobileRequest
 from altair.sqlahelper import get_db_session
 from altair.app.ticketing.temp_store import TemporaryStoreError
-from pyramid.renderers import render_to_response
 
 from . import api
 from . import helpers as h
@@ -106,15 +105,6 @@ def back_to_product_list_for_mobile(request):
             performance_id=cart.performance_id,
             sales_segment_id=cart.sales_segment_id,
             seat_type_id=cart.items[0].product.items[0].stock.stock_type_id))
-
-
-def check_auth_for_spa(fn):
-    def _check(context, request):
-        if "spa" in request.GET:
-            if context.authenticated_user():
-                return render_to_response("ng-cart/index.html", {}, request=request)
-        return fn(context, request)
-    return _check
 
 @provider(IPageFlowPredicate)
 def flow_predicate_extra_form(pe, flow_context, context, request):
