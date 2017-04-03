@@ -234,7 +234,7 @@
                 }
             }
         },
-        "/performances/{performance_id}/seats/reserve": {
+        "/performances/{performance_id}/sales_segments/{sales_segment_id}/seats/reserve": {
             "post": {
                 "summary": "reserve Seats",
                 "description": "reserve a specific seats\n",
@@ -243,6 +243,15 @@
                         "name": "performance_id",
                         "in": "path",
                         "description": "performance id",
+                        "required": true,
+                        "type": "integer",
+                        "format": "int32",
+                        "x-example": 28677
+                    },
+                    {
+                        "name": "sales_segment_id",
+                        "in": "path",
+                        "description": "sales_segment id",
                         "required": true,
                         "type": "integer",
                         "format": "int32",
