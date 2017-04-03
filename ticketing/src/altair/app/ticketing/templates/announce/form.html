@@ -110,13 +110,14 @@
 
       ${ch.form_item(form.is_draft)}
       ${ch.form_item(form.send_after)}
-      <div class="control-group">
+      <div class="control-group ${'error' if form.words.errors else ''}">
         <label class="required control-label">ワード選択</label>
         <div class="controls">
           <input type="hidden" id="word_ids_autofill" value="${'YES' if auto else ''}" />
-          <input type="hidden" id="word_ids" name="${form.words.name}" value="${form.words.data}" />
+          <input type="hidden" id="word_ids" name="${form.words.name}" value="${form.words.data if form.words.data is not None else ''}" />
           <div id="word_selection">
           </div>
+          <div style="margin-top: 4px;">${ch.validate_errors(form.words)}</div>
         </div>
       </div>
       <div class="control-group">
