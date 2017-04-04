@@ -163,7 +163,8 @@ class Announce(BaseView):
                         label = engine.label(v)
                         if label in ["URL", "EVENT_CODE", "SEND_DATE"]:
                             continue
-                        f.parameters.append_entry(Parameter(engine.label(v), engine._macro(v, data)))
+                        if label is not f.parameters:
+                            f.parameters.append_entry(Parameter(label, engine._macro(v, data)))
 
             if 'send_after' in self.request.GET and 0 < len(self.request.GET['send_after']):
                 f.send_after.process_data(datetime.strptime(self.request.GET['send_after'], '%Y-%m-%d %H:%M:%S'))
@@ -220,7 +221,11 @@ class Announce(BaseView):
             label = engine.label(v)
             if label in ["URL", "EVENT_CODE", "SEND_DATE"]:
                 continue
-            f.parameters.append_entry(Parameter(label, announce.parameters[label] if announce.parameters is not None and label in announce.parameters else ''))
+            if label is not f.parameters:
+                if announce.parameters is not None and label in announce.parameters:
+                    f.parameters.append_entry(Parameter(label, announce.parameters[label]))
+                else:
+                    f.parameters.append_entry(Parameter(label, ''))
 
         if "URL" in announce.parameters:
             f.url.process(None, announce.parameters["URL"])
