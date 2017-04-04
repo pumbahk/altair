@@ -25,7 +25,7 @@ from altair.app.ticketing.cart.models import (
     CartedProduct,
     CartedProductItem
 )
-from altair.app.ticketing.cart.exceptions import OutTermSalesException
+from altair.app.ticketing.cart.exceptions import OutTermSalesException, NoPerformanceError
 from altair.app.ticketing.cart import api
 from altair.app.ticketing.models import DBSession
 
@@ -444,6 +444,19 @@ class CartAPIView(object):
 
 
 @view_config(context=OutTermSalesException, renderer='json')
+def out_term_exec(context, request):
+    request.response.status = 404
+    message = context.message or 'no resource was found'
+    return dict(
+            error=dict(
+                code="404",
+                message="{}: {}".format(context.__class__.__name__, message),
+                details=[]
+            )
+        )
+
+
+@view_config(context=NoPerformanceError, renderer='json')
 def out_term_exec(context, request):
     request.response.status = 404
     message = context.message or 'no resource was found'
