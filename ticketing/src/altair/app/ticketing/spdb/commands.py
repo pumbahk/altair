@@ -43,6 +43,7 @@ spdb_sql = """
         ProductItem.quantity as product_item_quantity,
         `Order`.system_fee + `Order`.special_fee + `Order`.delivery_fee + `Order`.transaction_fee AS fee,
         `Order`.total_amount,
+        UserCredential.auth_identifier,
         UserCredential.authz_identifier,
         Membership.name as membership_name,
         MemberGroup.name as membergroup_name,
@@ -88,14 +89,14 @@ class SQLCreater(object):
         期間指定
         何も指定されなかったら、昨日1日分を取得する。
         fromだけ指定されたら、その日1日分を取得する。
-        toが指定されたら、toで指定された日、1日分も取得する。
         ex) -f 2016/12/1 -t 2016/12/5の場合、2016/12/1 00:00:00 - 2016/12/6 00:00:00
-        toだけ指定されたら、fromは昨日の00:00:00〜とする。
         """
         term_to = datetime.strptime(datetime.now().date().strftime('%Y/%m/%d'), '%Y/%m/%d')
         term_from = term_to - timedelta(days=1)
         if self._args.term_from:
             term_from = datetime.strptime(self._args.term_from, '%Y/%m/%d')
+            if not self._args.term_to:
+                term_to = datetime.strptime(self._args.term_from, '%Y/%m/%d') + timedelta(days=1)
 
         if self._args.term_to:
             term_to = datetime.strptime(self._args.term_to, '%Y/%m/%d') + timedelta(days=1)
@@ -268,10 +269,10 @@ def main():
         cur = con.cursor()
         cur.execute(sql_creater.sql)
         orders = cur.fetchall()
-        file_operator.write_tmp_file(u"\"PrimaryKey\",\"予約番号\",\"ステータス\",\"支払いステータス\",\"予約時間\",\"ユーザID\",\"イベントID\",\"イベントタイトル\",\"パフォーマンスID\",\"パフォーマンス名\",\"開演時間\",\"商品明細名\",\"席名\",\"商品明細金額\",\"商品明細個数\",\"手数料\",\"合計金額\",\"authz_identifier\",\"会員種別名\",\"会員区分名\",\"ポイント\",\"支払い方法\",\"引取方法\",\"デバイス\"\n".encode('utf-8'))
+        file_operator.write_tmp_file(u"\"PrimaryKey\",\"予約番号\",\"ステータス\",\"支払いステータス\",\"予約時間\",\"ユーザID\",\"イベントID\",\"イベントタイトル\",\"パフォーマンスID\",\"パフォーマンス名\",\"開演時間\",\"商品明細名\",\"席名\",\"商品明細金額\",\"商品明細個数\",\"手数料\",\"合計金額\",\"auth_identifier\",\"authz_identifier\",\"会員種別名\",\"会員区分名\",\"ポイント\",\"支払い方法\",\"引取方法\",\"デバイス\"\n".encode('utf-8'))
         for row in orders:
             row = chop_none(row)
-            file_operator.write_tmp_file(u"\"{0[PrimaryKey]}\",\"{0[order_no]}\",\"{0[order_status]}\",\"{0[payment_status]}\",\"{0[created_at]}\",\"{0[user_id]}\",\"{0[event_id]}\",\"{0[event_title]}\",\"{0[performance_id]}\",\"{0[performance_name]}\",\"{0[performance_start_on]}\",\"{0[product_item_name]}\",\"{0[seat_name]}\",\"{0[product_item_price]}\",\"{0[product_item_quantity]}\",\"{0[fee]}\",\"{0[total_amount]}\",\"{0[authz_identifier]}\",\"{0[membership_name]}\",\"{0[membergroup_name]}\",\"{0[point]}\",\"{0[payment_method]}\",\"{0[delivery_method]}\",\"{0[user_agent]}\"\n".format(row).encode('utf-8'))
+            file_operator.write_tmp_file(u"\"{0[PrimaryKey]}\",\"{0[order_no]}\",\"{0[order_status]}\",\"{0[payment_status]}\",\"{0[created_at]}\",\"{0[user_id]}\",\"{0[event_id]}\",\"{0[event_title]}\",\"{0[performance_id]}\",\"{0[performance_name]}\",\"{0[performance_start_on]}\",\"{0[product_item_name]}\",\"{0[seat_name]}\",\"{0[product_item_price]}\",\"{0[product_item_quantity]}\",\"{0[fee]}\",\"{0[total_amount]}\",\"{0[auth_identifier]}\",\"{0[authz_identifier]}\",\"{0[membership_name]}\",\"{0[membergroup_name]}\",\"{0[point]}\",\"{0[payment_method]}\",\"{0[delivery_method]}\",\"{0[user_agent]}\"\n".format(row).encode('utf-8'))
 
         file_operator.close_tmp_file()
         file_operator.upload()
