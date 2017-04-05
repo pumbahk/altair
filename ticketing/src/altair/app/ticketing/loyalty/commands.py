@@ -7,7 +7,7 @@ import argparse
 import logging
 from datetime import datetime, timedelta
 from decimal import Decimal
-from sqlalchemy import or_, and_
+from sqlalchemy import or_, and_, in_
 import transaction
 
 from dateutil.parser import parse as parsedatetime
@@ -19,6 +19,9 @@ from pyramid.paster import bootstrap, setup_logging
 from altair.app.ticketing.utils import todatetime
 
 logger = logging.getLogger(__name__)
+
+# 楽天一緒にポイント付与したいオルグのオルグコード
+within_rakuten = ['VK']
 
 class RecordError(Exception):
     pass
@@ -485,21 +488,38 @@ def do_make_point_grant_data(registry, organization, start_date, end_date, submi
         organizations = DBSession.query(Organization).all()
 
     for organization in organizations:
+        if organization.code in within_rakuten:
+            logger.info("The point grant data of this organization(id=%ld, name=%s) are collected within Rakuten Ticket. Skipping" % (organization.id, organization.name))
+
         if organization.setting.point_type is None:
             logger.info("Organization(id=%ld, name=%s) doesn't have point granting feature enabled. Skipping" % (organization.id, organization.name))
             continue
 
         logger.info("start processing orders for Organization(id=%ld)" % organization.id)
 
-        query = DBSession.query(Order) \
-            .join(Order.performance) \
-            .join(Performance.event) \
-            .filter(Event.organization_id == organization.id) \
-            .filter(Order.canceled_at == None) \
-            .filter(Order.refunded_at == None) \
-            .filter(Order.refund_id == None) \
-            .filter(Order.paid_at != None) \
-            .filter(Order.manual_point_grant == False) # Only select auto grant mode
+        query = DBSession.query(Order)\
+                         .join(Order.performance)\
+                         .join(Performance.event)
+
+
+        if organization.code == "RT":
+            target_org = within_rakuten + ["RT"]
+            # get organization id with checking its point_type
+            orgs = DBSession.query(Organization)\
+                            .join(Organization.setting)\
+                            .filter(Organization.code.in_(target_org))\
+                            .filter(OrganizationSetting.point_type != None)\
+                            .all()
+
+            query = query.filter(Event.organization_id.in_(orgs)) # 一緒に付与するOrgを抽出する
+        else:
+            query = query.filter(Event.organization_id == organization.id)
+
+        query = query.filter(Order.canceled_at == None) \
+                     .filter(Order.refunded_at == None) \
+                     .filter(Order.refund_id == None) \
+                     .filter(Order.paid_at != None) \
+                     .filter(Order.manual_point_grant == False) # Only select auto grant mode
         # 非期間内有効券の場合はstart_date <= Performance.start_on < end_dateのものを抽出
         # 期間内有効券の場合はstart_date <= Performance.end_on < end_dateのものを抽出
         if start_date:
