@@ -7,7 +7,7 @@ import argparse
 import logging
 from datetime import datetime, timedelta
 from decimal import Decimal
-from sqlalchemy import or_, and_, in_
+from sqlalchemy import or_, and_
 import transaction
 
 from dateutil.parser import parse as parsedatetime
@@ -21,7 +21,7 @@ from altair.app.ticketing.utils import todatetime
 logger = logging.getLogger(__name__)
 
 # 楽天一緒にポイント付与したいオルグのオルグコード
-within_rakuten = ['VK']
+from . import orgs_within_rakuten
 
 class RecordError(Exception):
     pass
@@ -44,7 +44,7 @@ def decode_point_grant_history_entry_id(s):
     except ValueError:
         raise PointGrantHistoryEntryIdDecodeError(s)
 
-def lookup_point_grant_history_entry(type, organization_id=None, order_no=None, account_number=None):
+def lookup_point_grant_history_entry(type, org_ids=None, order_no=None, account_number=None):
     from .models import PointGrantHistoryEntry
     from altair.app.ticketing.orders.models import Order, order_user_point_account_table
     from altair.app.ticketing.users.models import User
@@ -52,8 +52,8 @@ def lookup_point_grant_history_entry(type, organization_id=None, order_no=None, 
     def add_conditions(q):
         if order_no is not None: 
             q = q.filter(Order.order_no == order_no)
-        if organization_id is not None:
-            q = q.filter(Order.organization_id == organization_id)
+        if org_ids is not None:
+            q = q.filter(Order.organization_id.in_(org_ids))
         if type is not None:
             q = q.filter(UserPointAccount.type == type)
         if account_number is not None:
@@ -117,90 +117,146 @@ def lookup_user_point_accounts(order, type=None, account_number=None):
             return retval
     return []
 
+def lookup_for_point_granted_order(order_no, organization):
+    from altair.app.ticketing.orders.models import Order
+
+    org_ids = build_org_id_as_list(organization)
+    try:
+        order = Order.query \
+                     .filter(Order.order_no == order_no) \
+                     .filter(Order.organization_id.in_(org_ids)) \
+                     .one()
+        return order
+    except NoResultFound:
+        raise RecordError("Order(order_no=%s) does not exist" % order_no)
+
+
+def build_export_data_query(organization, submitted_on):
+    from altair.app.ticketing.models import DBSession
+    from altair.app.ticketing.users.models import UserPointAccount
+    from altair.app.ticketing.orders.models import Order
+    from .models import PointGrantHistoryEntry
+
+    org_ids = build_org_id_as_list(organization)
+
+    query = DBSession.query(PointGrantHistoryEntry) \
+        .filter(PointGrantHistoryEntry.submitted_on == submitted_on) \
+        .join(PointGrantHistoryEntry.order) \
+        .join(PointGrantHistoryEntry.user_point_account) \
+        .filter(UserPointAccount.type == type) \
+        .filter(Order.organization_id.in_(org_ids)) \
+        .filter(Order.deleted_at == None)
+
+    return query
+
+def build_org_id_as_list(organization, extra_orgs=None):
+    from altair.app.ticketing.core.models import Organization, OrganizationSetting
+    # orgs_within_rakutenはこのmoduleの__init__.pyにて定義されてる
+    within_rakuten = extra_orgs or orgs_within_rakuten
+    org_ids = []
+    if organization.code == "RT":
+        # 一緒に付与するOrgを抽出する
+        # point_typeがないやつは対象外にする
+        target_orgs = within_rakuten + ["RT"]
+        orgs = Organization.query \
+            .join(OrganizationSetting) \
+            .filter(Organization.code.in_(target_orgs)) \
+            .filter(OrganizationSetting.point_type != None) \
+            .all()
+        org_ids = [org.id for org in orgs]
+    else:
+        org_ids = [organization.id]
+
+    return org_ids
+
 def do_import_point_grant_results(registry, organization, file, now, type, force, encoding):
     from .models import PointGrantHistoryEntry
     from altair.app.ticketing.models import DBSession
-    from altair.app.ticketing.orders.models import Order
     from altair.app.ticketing.users.models import User, UserPointAccount, UserPointAccountTypeEnum
 
-    logger.info("start importing point granting results for Organization(id=%ld) from %s" % (organization.id, file))
-    for line_no, line in enumerate(open(file)):
-        try:
-            line = line.rstrip('\r\n').decode(encoding)
-            cols = line.split('\t')
-            if len(cols) < 7 or len(cols) > 9:
-                raise ColumnNumberMismatchError(len(cols))
+    # 楽天チケットと一緒にポイント付与の場合は何もしない。
+    if organization.code in within_rakuten:
+        logger.info(
+            "Importing point grant results of this organization(id=%ld, name=%s) is executed within Rakuten Ticket. Skipping" % (
+            organization.id, organization.name))
 
-            if len(cols) == 7:
-                grant_status = u''
-            else:
-                grant_status = cols[7]
-
-            account_number = cols[1]
-            order_no = cols[3]
-
+    else:
+        logger.info("start importing point granting results for Organization(id=%ld) from %s" % (organization.id, file))
+        for line_no, line in enumerate(open(file)):
             try:
-                points_granted = Decimal(cols[5])
-            except ValueError:
-                raise RecordError(u'Invalid point amount', cols[5])
+                line = line.rstrip('\r\n').decode(encoding)
+                cols = line.split('\t')
+                if len(cols) < 7 or len(cols) > 9:
+                    raise ColumnNumberMismatchError(len(cols))
 
-            try:
-                order = Order.query \
-                    .filter_by(order_no=order_no, organization_id=organization.id) \
-                    .one()
-            except NoResultFound:
-                raise RecordError("Order(order_no=%s) does not exist" % order_no)
+                if len(cols) == 7:
+                    grant_status = u''
+                else:
+                    grant_status = cols[7]
 
-            point_grant_history_entry = None
-            point_grant_history_entry_id = None
+                account_number = cols[1]
+                order_no = cols[3]
 
-            try: 
-                point_grant_history_entry_id = decode_point_grant_history_entry_id(cols[4])
                 try:
-                    point_grant_history_entry = PointGrantHistoryEntry.query.filter_by(id=point_grant_history_entry_id).one()
-                except NoResultFound:
-                    raise RecordError(u'No corresponding point grant history record found for %ld' % point_grant_history_entry_id)
-            except:
-                if not force:
-                    raise
-                if not type:
-                    raise RecordError(u'If you want to use force option, you have to specify point type via -t')
+                    points_granted = Decimal(cols[5])
+                except ValueError:
+                    raise RecordError(u'Invalid point amount', cols[5])
+
+                # 紐づく予約情報を取れないと、RecordErrorのエラーを出す。
+                # ここはポイント付与される予約の存在をチェックするのみ。
+                order = lookup_for_point_granted_order(order_no=order_no, organization=organization)
+
+                point_grant_history_entry = None
+                point_grant_history_entry_id = None
+
                 try:
-                    point_grant_history_entry = lookup_point_grant_history_entry(
-                        organization_id=organization.id,
-                        order_no=order_no,
-                        type=type,
-                        account_number=account_number
-                        )
-                    point_grant_history_entry_id = point_grant_history_entry.id
+                    point_grant_history_entry_id = decode_point_grant_history_entry_id(cols[4])
+                    try:
+                        point_grant_history_entry = PointGrantHistoryEntry.query.filter_by(id=point_grant_history_entry_id).one()
+                    except NoResultFound:
+                        raise RecordError(u'No corresponding point grant history record found for %ld' % point_grant_history_entry_id)
                 except:
-                    pass
+                    if not force:
+                        raise
+                    if not type:
+                        raise RecordError(u'If you want to use force option, you have to specify point type via -t')
+                    try:
+                        org_ids = build_org_id_as_list(organization)
+                        point_grant_history_entry = lookup_point_grant_history_entry(
+                            organization_id=org_ids,
+                            order_no=order_no,
+                            type=type,
+                            account_number=account_number
+                            )
+                        point_grant_history_entry_id = point_grant_history_entry.id
+                    except:
+                        pass
 
-            if point_grant_history_entry is None:
-                raise RecordError(u'Could not determine point grant history record')
+                if point_grant_history_entry is None:
+                    raise RecordError(u'Could not determine point grant history record')
 
-            if point_grant_history_entry.user_point_account.type != UserPointAccountTypeEnum.Rakuten.v:
-                raise RecordError(u'UserPointAccount(id=%ld).account_type is not Rakuten' % (point_grant_history_entry.user_point_account.id))
+                if point_grant_history_entry.user_point_account.type != UserPointAccountTypeEnum.Rakuten.v:
+                    raise RecordError(u'UserPointAccount(id=%ld).account_type is not Rakuten' % (point_grant_history_entry.user_point_account.id))
 
-            if point_grant_history_entry.user_point_account.account_number != account_number:
-                raise RecordError(u'UserPointAccount(id=%ld).account_number != %s' % (point_grant_history_entry.user_point_account.id, account_number))
-            if point_grant_history_entry.granted_at is not None:
-                raise RecordError(u'PointGrantHistoryEntry(id=%ld) seems to have been processed already' % point_grant_history_entry_id)
+                if point_grant_history_entry.user_point_account.account_number != account_number:
+                    raise RecordError(u'UserPointAccount(id=%ld).account_number != %s' % (point_grant_history_entry.user_point_account.id, account_number))
+                if point_grant_history_entry.granted_at is not None:
+                    raise RecordError(u'PointGrantHistoryEntry(id=%ld) seems to have been processed already' % point_grant_history_entry_id)
 
-            point_grant_history_entry.granted_amount = points_granted
-            point_grant_history_entry.grant_status = grant_status
-            point_grant_history_entry.granted_at = now
+                point_grant_history_entry.granted_amount = points_granted
+                point_grant_history_entry.grant_status = grant_status
+                point_grant_history_entry.granted_at = now
 
-            if not grant_status:
-                logger.info('%d point(s) marked granted for PointGrantHistoryEntry(id=%ld)' % (points_granted, point_grant_history_entry_id))
-            else:
-                notify_point_granting_failed(request, point_grant_history_entry)
-                logger.info('Point not granted for PointGrantHistoryEntry(id=%ld) (status: %s)' % (point_grant_history_entry_id, grant_status))
-            DBSession.add(point_grant_history_entry)
+                if not grant_status:
+                    logger.info('%d point(s) marked granted for PointGrantHistoryEntry(id=%ld)' % (points_granted, point_grant_history_entry_id))
+                else:
+                    notify_point_granting_failed(request, point_grant_history_entry)
+                    logger.info('Point not granted for PointGrantHistoryEntry(id=%ld) (status: %s)' % (point_grant_history_entry_id, grant_status))
+                DBSession.add(point_grant_history_entry)
 
-        except RecordError as e:
-            logger.warning("invalid record at line %d skipped (reason: %r)\n" % (line_no + 1, e))
-    logger.info("end importing point granting results for Organization(id=%ld) from %s" % (organization.id, file))
+            except RecordError as e:
+                logger.warning("invalid record at line %d skipped (reason: %r)\n" % (line_no + 1, e))
+        logger.info("end importing point granting results for Organization(id=%ld) from %s" % (organization.id, file))
 
 def import_point_grant_results():
     import locale
@@ -274,113 +330,117 @@ def do_import_point_grant_data(registry, organization, type, submitted_on, file,
     from .models import PointGrantHistoryEntry
     from altair.app.ticketing.models import DBSession
     from altair.app.ticketing.users.models import UserPointAccount, UserPointAccountTypeEnum
-    from altair.app.ticketing.orders.models import Order
 
     logger.info("start processing %s" % file)
-    errors = 0
-    for line_no, line in enumerate(open(file)):
-        try:
-            line = line.rstrip('\r\n').decode(encoding)
-            cols = line.split('\t')
-            if len(cols) < 7 or len(cols) > 9:
-                raise ColumnNumberMismatchError(len(cols))
 
-            if len(cols) == 7:
-                status = u''
-            else:
-                status = cols[7]
+    # 楽天チケットと一緒にポイント付与の場合は何もしない。
+    if organization.code in within_rakuten:
+        logger.info(
+            "Importing point grant results of this organization(id=%ld, name=%s) is executed within Rakuten Ticket. Skipping" % (
+                organization.id, organization.name))
 
-            account_number = cols[1]
-            order_no = cols[3]
+    else:
+        errors = 0
+        for line_no, line in enumerate(open(file)):
             try:
-                points_granted = Decimal(cols[5])
-            except ValueError:
-                raise RecordError(u'Invalid point amount', cols[5])
+                line = line.rstrip('\r\n').decode(encoding)
+                cols = line.split('\t')
+                if len(cols) < 7 or len(cols) > 9:
+                    raise ColumnNumberMismatchError(len(cols))
 
-            try:
-                order = Order.query \
-                    .filter_by(order_no=order_no, organization_id=organization.id) \
-                    .one()
-            except NoResultFound:
-                raise RecordError("Order(order_no=%s) does not exist" % order_no)
+                if len(cols) == 7:
+                    status = u''
+                else:
+                    status = cols[7]
 
-            if not account_number:
-                if deduce_account:
+                account_number = cols[1]
+                order_no = cols[3]
+                try:
+                    points_granted = Decimal(cols[5])
+                except ValueError:
+                    raise RecordError(u'Invalid point amount', cols[5])
+
+                # 紐づく予約情報を取れないと、RecordErrorのエラーを出す。
+                # ここはポイント付与される予約の存在をチェックするのみ。
+                order = lookup_for_point_granted_order(order_no=order_no, organization=organization)
+
+                if not account_number:
+                    if deduce_account:
+                        try:
+                            user_point_account = lookup_user_point_account(order=order, type=type)
+                        except NoResultFound:
+                            raise RecordError("UserPointAccount(type=%d, account_number=%s) does not exist" % (type, account_number))
+                        except MultipleResultsFound:
+                            raise RecordError("multiple UserPointAccount found for the criteria (type=%d, user_id=%d <= order_no=%s) " % (type, order.user_id, order_no))
+                    else:
+                        raise RecordError("no account number is given for order (order_no=%s). Use --deduce-account option to enable automatic deduction of point account number" % (order_no,))
+                else:
                     try:
-                        user_point_account = lookup_user_point_account(order=order, type=type)
+                        user_point_account = lookup_user_point_account(order=order, type=type, account_number=account_number)
                     except NoResultFound:
                         raise RecordError("UserPointAccount(type=%d, account_number=%s) does not exist" % (type, account_number))
                     except MultipleResultsFound:
-                        raise RecordError("multiple UserPointAccount found for the criteria (type=%d, user_id=%d <= order_no=%s) " % (type, order.user_id, order_no))
-                else:
-                    raise RecordError("no account number is given for order (order_no=%s). Use --deduce-account option to enable automatic deduction of point account number" % (order_no,))
-            else:
-                try:
-                    user_point_account = lookup_user_point_account(order=order, type=type, account_number=account_number)
-                except NoResultFound:
-                    raise RecordError("UserPointAccount(type=%d, account_number=%s) does not exist" % (type, account_number))
-                except MultipleResultsFound:
-                    raise RecordError("multiple UserPointAccount record found (type=%d, account_number=%s)" % (type, account_number))
+                        raise RecordError("multiple UserPointAccount record found (type=%d, account_number=%s)" % (type, account_number))
 
-            if recovery:
-                point_grant_history_entry_id = decode_point_grant_history_entry_id(cols[4])
-                point_grant_history_entry = PointGrantHistoryEntry.query.filter_by(id=point_grant_history_entry_id).first()
-                if point_grant_history_entry is not None:
-                    raise RecordError("PointAcountHistoryEntry(id=%ld) already exists for Order(id=%ld, order_No=%s)." % (point_grant_history_entry.id, point_grant_history_entry.order.id, point_grant_history_entry.order.order_no))
-
-                point_grant_history_entry = PointGrantHistoryEntry(
-                    id=point_grant_history_entry_id,
-                    user_point_account=user_point_account,
-                    order=order,
-                    amount=points_granted,
-                    submitted_on=submitted_on
-                    )
-            else:
-                if not force:
-                    point_grant_history_entry = PointGrantHistoryEntry.query \
-                        .filter(PointGrantHistoryEntry.order_id == order.id) \
-                        .filter(PointGrantHistoryEntry.user_point_account_id == user_point_account.id) \
-                        .first()
-
+                if recovery:
+                    point_grant_history_entry_id = decode_point_grant_history_entry_id(cols[4])
+                    point_grant_history_entry = PointGrantHistoryEntry.query.filter_by(id=point_grant_history_entry_id).first()
                     if point_grant_history_entry is not None:
-                        raise RecordError("PointAcountHistoryEntry(id=%ld) already exists for Order(id=%ld, order_No=%s). Use -f option to forcefully create a new entry" % (point_grant_history_entry.id, order.id, order_no))
+                        raise RecordError("PointAcountHistoryEntry(id=%ld) already exists for Order(id=%ld, order_No=%s)." % (point_grant_history_entry.id, point_grant_history_entry.order.id, point_grant_history_entry.order.order_no))
 
-                point_grant_history_entry = PointGrantHistoryEntry(
-                    user_point_account=user_point_account,
-                    order=order,
-                    amount=points_granted,
-                    submitted_on=submitted_on
-                    )
-            DBSession.add(point_grant_history_entry)
-            DBSession.flush()
+                    point_grant_history_entry = PointGrantHistoryEntry(
+                        id=point_grant_history_entry_id,
+                        user_point_account=user_point_account,
+                        order=order,
+                        amount=points_granted,
+                        submitted_on=submitted_on
+                        )
+                else:
+                    if not force:
+                        point_grant_history_entry = PointGrantHistoryEntry.query \
+                            .filter(PointGrantHistoryEntry.order_id == order.id) \
+                            .filter(PointGrantHistoryEntry.user_point_account_id == user_point_account.id) \
+                            .first()
 
-            logger.info(u'PointAcountHistoryEntry(user_point_account=UserPointAccount(id=%ld, type=%d, account_number=%s), order=Order(id=%ld, order_no=%s), amount=%s, submitted_on=%s) created' % (
-                user_point_account.id,
-                user_point_account.type,
-                user_point_account.account_number,
-                order.id,
-                order.order_no,
-                points_granted,
-                submitted_on))
+                        if point_grant_history_entry is not None:
+                            raise RecordError("PointAcountHistoryEntry(id=%ld) already exists for Order(id=%ld, order_No=%s). Use -f option to forcefully create a new entry" % (point_grant_history_entry.id, order.id, order_no))
 
-            if reason_code and shop_name:
-                cols = [
-                    point_grant_history_entry.order.created_at.strftime("%Y-%m-%d %H:%M:%S"),
-                    point_grant_history_entry.user_point_account.account_number,
-                    reason_code,
-                    point_grant_history_entry.order.order_no,
-                    encode_point_grant_history_entry_id(point_grant_history_entry.id),
-                    unicode(point_grant_history_entry.amount.to_integral()),
-                    shop_name,
-                    ''
-                    ]
-                sys.stdout.write(u'\t'.join(cols).encode(encoding))
-                sys.stdout.write("\n")
-        except RecordError as e:
-            logger.warning("invalid record skipped at line %d (%r)\n" % (line_no + 1, e))
-            errors += 1
-    logger.info('end processing %s' % file)
-    return errors
+                    point_grant_history_entry = PointGrantHistoryEntry(
+                        user_point_account=user_point_account,
+                        order=order,
+                        amount=points_granted,
+                        submitted_on=submitted_on
+                        )
+                DBSession.add(point_grant_history_entry)
+                DBSession.flush()
+
+                logger.info(u'PointAcountHistoryEntry(user_point_account=UserPointAccount(id=%ld, type=%d, account_number=%s), order=Order(id=%ld, order_no=%s), amount=%s, submitted_on=%s) created' % (
+                    user_point_account.id,
+                    user_point_account.type,
+                    user_point_account.account_number,
+                    order.id,
+                    order.order_no,
+                    points_granted,
+                    submitted_on))
+
+                if reason_code and shop_name:
+                    cols = [
+                        point_grant_history_entry.order.created_at.strftime("%Y-%m-%d %H:%M:%S"),
+                        point_grant_history_entry.user_point_account.account_number,
+                        reason_code,
+                        point_grant_history_entry.order.order_no,
+                        encode_point_grant_history_entry_id(point_grant_history_entry.id),
+                        unicode(point_grant_history_entry.amount.to_integral()),
+                        shop_name,
+                        ''
+                        ]
+                    sys.stdout.write(u'\t'.join(cols).encode(encoding))
+                    sys.stdout.write("\n")
+            except RecordError as e:
+                logger.warning("invalid record skipped at line %d (%r)\n" % (line_no + 1, e))
+                errors += 1
+        logger.info('end processing %s' % file)
+        return errors
 
 def import_point_grant_data():
     import locale
@@ -476,7 +536,6 @@ def do_make_point_grant_data(registry, organization, start_date, end_date, submi
     from altair.app.ticketing.models import DBSession
     from altair.app.ticketing.core.models import Performance, Event, Organization, OrganizationSetting
     from altair.app.ticketing.orders.models import Order
-    from altair.app.ticketing.users.models import UserPointAccount
     from .models import PointGrantHistoryEntry
     from .api import calculate_point_for_order
 
@@ -488,9 +547,6 @@ def do_make_point_grant_data(registry, organization, start_date, end_date, submi
         organizations = DBSession.query(Organization).all()
 
     for organization in organizations:
-        if organization.code in within_rakuten:
-            logger.info("The point grant data of this organization(id=%ld, name=%s) are collected within Rakuten Ticket. Skipping" % (organization.id, organization.name))
-
         if organization.setting.point_type is None:
             logger.info("Organization(id=%ld, name=%s) doesn't have point granting feature enabled. Skipping" % (organization.id, organization.name))
             continue
@@ -498,28 +554,14 @@ def do_make_point_grant_data(registry, organization, start_date, end_date, submi
         logger.info("start processing orders for Organization(id=%ld)" % organization.id)
 
         query = DBSession.query(Order)\
-                         .join(Order.performance)\
-                         .join(Performance.event)
-
-
-        if organization.code == "RT":
-            target_org = within_rakuten + ["RT"]
-            # get organization id with checking its point_type
-            orgs = DBSession.query(Organization)\
-                            .join(Organization.setting)\
-                            .filter(Organization.code.in_(target_org))\
-                            .filter(OrganizationSetting.point_type != None)\
-                            .all()
-
-            query = query.filter(Event.organization_id.in_(orgs)) # 一緒に付与するOrgを抽出する
-        else:
-            query = query.filter(Event.organization_id == organization.id)
-
-        query = query.filter(Order.canceled_at == None) \
-                     .filter(Order.refunded_at == None) \
-                     .filter(Order.refund_id == None) \
-                     .filter(Order.paid_at != None) \
-                     .filter(Order.manual_point_grant == False) # Only select auto grant mode
+                         .join(Order.performance) \
+                         .join(Performance.event) \
+                         .filter(Event.organization_id == organization.id) \
+                         .filter(Order.canceled_at == None) \
+                         .filter(Order.refunded_at == None) \
+                         .filter(Order.refund_id == None) \
+                         .filter(Order.paid_at != None) \
+                         .filter(Order.manual_point_grant == False) # Only select auto grant mode
         # 非期間内有効券の場合はstart_date <= Performance.start_on < end_dateのものを抽出
         # 期間内有効券の場合はstart_date <= Performance.end_on < end_dateのものを抽出
         if start_date:
@@ -667,40 +709,37 @@ def make_point_grant_data():
         raise
 
 def do_export_point_grant_data(registry, organization, type, reason_code, shop_name, submitted_on, include_granted_data, encoding):
-    from altair.app.ticketing.models import DBSession
-    from altair.app.ticketing.users.models import UserPointAccount
-    from altair.app.ticketing.core.models import Organization
-    from altair.app.ticketing.orders.models import Order
     from .models import PointGrantHistoryEntry
 
-    logger.info("start exporting point granting data scheduled for submission on %s, for Organization(id=%ld)" % (submitted_on, organization.id))
+    # 楽天チケットと一緒にポイント付与の場合は何もしない。
+    if organization.code in within_rakuten:
+        logger.info(
+            "Exporting point grant data of this organization(id=%ld, name=%s) is executed within Rakuten Ticket. Skipping" % (
+            organization.id, organization.name))
 
-    query = DBSession.query(PointGrantHistoryEntry) \
-        .filter(PointGrantHistoryEntry.submitted_on == submitted_on) \
-        .join(PointGrantHistoryEntry.order) \
-        .join(PointGrantHistoryEntry.user_point_account) \
-        .filter(UserPointAccount.type == type) \
-        .filter(Order.organization_id == organization.id) \
-        .filter(Order.deleted_at == None)
+    else:
+        logger.info("start exporting point granting data scheduled for submission on %s, for Organization(id=%ld)" % (submitted_on, organization.id))
 
-    if not include_granted_data:
-        query = query.filter(PointGrantHistoryEntry.granted_at == None)
+        query = build_export_data_query(organization=organization, submitted_on=submitted_on)
 
-    for point_grant_history_entry in query:
-        cols = [
-            point_grant_history_entry.order.created_at.strftime("%Y-%m-%d %H:%M:%S"),
-            point_grant_history_entry.user_point_account.account_number,
-            reason_code,
-            point_grant_history_entry.order.order_no,
-            encode_point_grant_history_entry_id(point_grant_history_entry.id),
-            unicode(point_grant_history_entry.amount.to_integral()),
-            shop_name,
-            ''
-            ]
-        sys.stdout.write(u'\t'.join(cols).encode(encoding))
-        sys.stdout.write("\n")
+        if not include_granted_data:
+            query = query.filter(PointGrantHistoryEntry.granted_at == None)
 
-    logger.info("end exporting point granting data scheduled for submission on %s, for Organization(id=%ld)" % (submitted_on, organization.id))
+        for point_grant_history_entry in query:
+            cols = [
+                point_grant_history_entry.order.created_at.strftime("%Y-%m-%d %H:%M:%S"),
+                point_grant_history_entry.user_point_account.account_number,
+                reason_code,
+                point_grant_history_entry.order.order_no,
+                encode_point_grant_history_entry_id(point_grant_history_entry.id),
+                unicode(point_grant_history_entry.amount.to_integral()),
+                shop_name,
+                ''
+                ]
+            sys.stdout.write(u'\t'.join(cols).encode(encoding))
+            sys.stdout.write("\n")
+
+        logger.info("end exporting point granting data scheduled for submission on %s, for Organization(id=%ld)" % (submitted_on, organization.id))
 
 def export_point_grant_data():
     import locale
