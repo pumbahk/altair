@@ -830,7 +830,7 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
         # delete ProductItem
         for product_item in self.product_items:
-            product_item.delete()
+            product_item.delete_product_item()
 
         # delete Stock
         for stock in self.stocks:
@@ -2340,6 +2340,13 @@ class ProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
         super(ProductItem, self).delete()
 
+    def delete_product_item(self):
+        # 既に予約されている場合は削除できない
+        if self.ordered_product_items:
+            raise Exception(u'予約がある為、削除できません')
+
+        super(ProductItem, self).delete()
+
     @staticmethod
     def create_default(product):
         '''
@@ -2912,7 +2919,7 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
         # delete ProductItem
         for product_item in self.items:
-            product_item.delete()
+            product_item.delete_product_item()
 
         super(Product, self).delete()
 
