@@ -830,7 +830,7 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
         # delete ProductItem
         for product_item in self.product_items:
-            product_item.delete_product_item()
+            product_item.delete()
 
         # delete Stock
         for stock in self.stocks:
@@ -2334,9 +2334,6 @@ class ProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         # 既に予約されている場合は削除できない
         if self.ordered_product_items:
             raise Exception(u'予約がある為、削除できません')
-        # 商品明細が１件の場合は削除できない
-        if DBSession.query(ProductItem).filter(ProductItem.product_id == self.product_id).count() == 1:
-            raise Exception(u'商品明細が１件の為、削除できません')
 
         super(ProductItem, self).delete()
 
@@ -2344,6 +2341,9 @@ class ProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         # 既に予約されている場合は削除できない
         if self.ordered_product_items:
             raise Exception(u'予約がある為、削除できません')
+        # 商品明細が１件の場合は削除できない
+        if DBSession.query(ProductItem).filter(ProductItem.product_id == self.product_id).count() == 1:
+            raise Exception(u'商品明細が１件の為、削除できません')
 
         super(ProductItem, self).delete()
 
@@ -2919,7 +2919,7 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
         # delete ProductItem
         for product_item in self.items:
-            product_item.delete_product_item()
+            product_item.delete()
 
         super(Product, self).delete()
 
