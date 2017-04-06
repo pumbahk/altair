@@ -5,6 +5,7 @@ from pyramid.view import view_defaults, view_config
 from pyramid.httpexceptions import HTTPNotFound
 from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 from sqlalchemy import distinct, func
+from datetime import date, datetime, time
 
 from altair.sqlahelper import get_db_session
 from altair.pyramid_dynamic_renderer import lbr_view_config
@@ -26,8 +27,16 @@ from altair.app.ticketing.cart.models import (
     CartedProductItem
 )
 from altair.app.ticketing.cart.exceptions import OutTermSalesException, NoPerformanceError
+from altair.app.ticketing.cart.exceptions import (
+    PerProductProductQuantityOutOfBoundsError,
+    QuantityOutOfBoundsError,
+    ProductQuantityOutOfBoundsError,
+    PerStockTypeQuantityOutOfBoundsError,
+    PerStockTypeProductQuantityOutOfBoundsError
+)
 from altair.app.ticketing.cart import api
 from altair.app.ticketing.models import DBSession
+from altair.app.ticketing.cart import view_support
 
 logger = logging.getLogger(__name__)
 
@@ -442,6 +451,156 @@ class CartAPIView(object):
             }
         }
 
+    @view_config(route_name='cart.api.select_product') 
+    def select_product(self):
+        #セッション情報から取得
+        cart = api.get_cart(self.request, False)
+        logger.debug("cart_id %s", cart.id)
+
+        if cart is None or cart.finished_at is not None:
+            return {
+                "results": {
+                    "status": "NG",
+                    "reason": "cart does not exist"
+                }
+            }
+
+        # リクエストボディのJSONからパラメータ取得
+        try:
+            json_data = self.request.json_body;
+            logger.debug("json_data %s", json_data)
+        except ValueError as e:
+            logger.warning("no json_data")
+            return {
+                "results": {
+                    "status": "NG",
+                    "reason": "no json_data"
+                }
+            }
+        
+        is_quantity_only = json_data.get("is_quantity_only")
+        selected_products = json_data.get("selected_products")
+
+        reason = ""
+
+        # パラメータチェック
+        if is_quantity_only is None:
+            reason = "invalid parameter is_quantity_only"
+
+        if selected_products is None:
+            reason = "invalid parameter selected_products"
+
+        for sp in selected_products:
+            if 'product_id' not in sp:
+                reason = "no key selected_products in product_id"
+            elif sp['product_id'] is None:
+                reason = "invalid parameter selected_products in product_id"
+
+            if 'quantity' not in sp:
+                reason = "no key selected_products in quantity"
+            elif sp['quantity'] is None:
+                reason = "invalid parameter selected_products in quantity"
+                
+            if not is_quantity_only and 'seat_id' not in sp:
+                reason = "no key selected_products in seat_id"
+            elif not is_quantity_only and sp['seat_id'] is None:
+                reason = "invalid parameter selected_products in seat_id"
+
+        if reason:
+            return {
+                "results": {
+                    "status": "NG",
+                    "reason": reason
+                }
+            }
+
+        # SalesSegment取得
+        sales_segment = DBSession.query(SalesSegment).filter_by(id=cart.sales_segment_id).first()
+        if sales_segment is None:
+            return {
+                "results": {
+                    "status": "NG",
+                    "reason": "No matching sales_segment"
+                }
+            }
+        
+        # 購入枚数チェック
+        for sp in selected_products:
+            logger.debug("selected_products %s", sp)
+            product = DBSession.query(Product).filter_by(id=sp['product_id']).first()
+            ordered_items = [(product, sp['quantity'])]
+            logger.debug("ordered_items %s", ordered_items)
+            
+            try:
+                view_support.assert_quantity_within_bounds(sales_segment, ordered_items)
+            except (PerProductProductQuantityOutOfBoundsError,
+                    QuantityOutOfBoundsError,
+                    ProductQuantityOutOfBoundsError,
+                    PerStockTypeQuantityOutOfBoundsError,
+                    PerStockTypeProductQuantityOutOfBoundsError) as e:
+                logger.debug("PerProductProductQuantityOutOfBoundsError error %s",e.message)
+                return {
+                "results": {
+                       "status": "NG",
+                        "reason": "assert_quantity_within_bounds error"
+                    }
+                }
+
+        #保存処理
+        #Cart取得
+        exec_cart = DBSession.query(Cart).filter_by(id=cart.id).first()
+
+        #古いcart_product、cart_product_itemを論理削除
+        cart_product = DBSession.query(CartedProduct).filter_by(cart_id=exec_cart.id).all()
+        for cp in cart_product:
+            cp.deleted_at = datetime.now()
+
+            cart_product_item = DBSession.query(CartedProductItem).filter_by(carted_product_id=cp.id).first()
+            cart_product_item.deleted_at = datetime.now()
+
+        for sp in selected_products:
+            logger.debug("selected_products %s", sp)
+            product = DBSession.query(Product).filter_by(id=sp['product_id']).first()
+            ordered_items = [(product, sp['quantity'])]
+            logger.debug("ordered_items %s", ordered_items)
+            
+            try:
+                view_support.assert_quantity_within_bounds(sales_segment, ordered_items)
+            except PerProductProductQuantityOutOfBoundsError as e:
+                logger.debug("PerProductProductQuantityOutOfBoundsError error %s",e.message)
+                return {
+                "results": {
+                       "status": "NG",
+                        "reason": "assert_quantity_within_bounds error"
+                    }
+                }
+
+            #データ設定
+            cart_product = CartedProduct(cart=exec_cart, product=product, quantity=sp['quantity'], organization_id=exec_cart.organization_id)
+            product_item = DBSession.query(ProductItem).filter_by(performance_id=exec_cart.performance_id, product_id=sp['product_id']).first()
+
+            cart_product_item = CartedProductItem(
+                carted_product = cart_product,
+                organization_id = cart_product.organization_id,
+                quantity = sp['quantity'],
+                product_item = product_item)            
+
+            # 席受け時
+            if not is_quantity_only:
+                seat = DBSession.query(Seat).filter_by(l0_id=sp['seat_id']).first()
+                cart_product_item.seats = [seat]
+
+            DBSession.add(cart_product)
+            DBSession.add(cart_product_item)
+                
+        DBSession.flush()
+
+        return {
+            "results": {
+                "status": "OK",
+                "reason": ""
+            }
+        }
 
 @view_config(context=OutTermSalesException, renderer='json')
 def out_term_exec(context, request):

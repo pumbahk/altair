@@ -66,6 +66,7 @@ def main(global_config, **local_config):
     config.add_route('cart.api.seats', '/api/v1/performances/{performance_id}/seats', request_method='GET')
     config.add_route('cart.api.seat_reserve', '/api/v1/performances/{performance_id}/sales_segments/{sales_segment_id}/seats/reserve', request_method='POST', factory="altair.app.ticketing.cart.resources.SalesSegmentOrientedTicketingCartResource")
     config.add_route('cart.api.seat_release', '/api/v1/performances/{performance_id}/seats/release', request_method='POST')
+    config.add_route('cart.api.select_product', '/api/v1/performances/{performance_id}/seat/select_product', request_method='POST')
 
     config.scan('.views')
 
