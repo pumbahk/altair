@@ -147,7 +147,7 @@
   <input type="hidden" name="send_after" value="" />
 販売区分グループ: <select name="salessegmentgroup_id" style="width: 400px;">
   % for ssg in event.sales_segment_groups:
-    <option value="${ssg.id}" data-start="${ssg.start_at}" data-end="${ssg.end_at}">${ssg.name} (${ssg.start_at} - ${ssg.end_at}) ${'' if ssg.public else u'非公開'}</option>
+    <option value="${ssg.id}" data-start="${ssg.start_for_performance(event.first_performance)}" data-end="${ssg.end_for_performance(event.first_performance)}">${ssg.name} (${ssg.start_for_performance(event.first_performance)} - ${ssg.end_for_performance(event.first_performance)}) ${'' if ssg.public else u'非公開'}</option>
   % endfor
 </select>
 <br />

@@ -298,8 +298,11 @@ class Announcement(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     mu_accepted_count = Column(Integer)
     mu_sent_count = Column(Integer)
 
-    # userの存在とかはチェックしない, どうせメールが届くか等はわからないので
     def get_subscriber_count(self):
+        if self.subscriber_count is not None:
+            return self.subscriber_count
+
+        # userの存在とかはチェックしない, どうせメールが届くか等はわからないので
         try:
             word_ids = [int(s) for s in self.words.split(",")]
         except:

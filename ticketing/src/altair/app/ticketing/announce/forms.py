@@ -130,8 +130,8 @@ class AnnouncementForm(Form):
     words = HiddenField(
         label=u'お気に入りワードID',
         validators=[
-            Required(),
-            Length(max=1000, message=u'1000文字以内で入力してください'),
+            Required(message=u'1つ以上選択してください'),
+            Length(max=1000, message=u'選択されたワードが多すぎます'),
             # /^¥d+(,¥d+)*$/
         ]
     )

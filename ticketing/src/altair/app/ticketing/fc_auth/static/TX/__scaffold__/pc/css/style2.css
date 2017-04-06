@@ -119,10 +119,17 @@ h1{
 }
 
 h2 {
-background: #E83220; /* Old browsers */
+background: #205A86; /* Old browsers */
+background: -moz-linear-gradient(top, #205A86 0%, #154A6B 50%, #686859 51%, #686859 100%); /* FF3.6+ */
+background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#2222aa), color-stop(50%,#111199), color-stop(51%,#686859), color-stop(100%,#686859)); /* Chrome,Safari4+ */
+background: -webkit-linear-gradient(top, #205A86 0%,#154A6B 50%,#686859 51%,#686859 100%); /* Chrome10+,Safari5.1+ */
+background: -o-linear-gradient(top, #205A86 0%,#154A6B 50%,#686859 51%,#0686859 100%); /* Opera 11.10+ */
+background: -ms-linear-gradient(top, #205A86 0%,#154A6B 50%,#686859 51%,#686859 100%); /* IE10+ */
+background: linear-gradient(to bottom, #205A86 0%,#154A6B 50%,#686859 51%,#686859 100%); /* W3C */
+filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#205A86', endColorstr='#686859',GradientType=0 ); /* IE6-9 */
 margin: 0 0 20px 0;
 padding: 10px 10px;
-color: #FFF;
+color: #fff;
 font-size: 24px;
 line-height: 24px;
 
@@ -135,9 +142,9 @@ font-size:15px;
 color:#FFF;
 line-height:1;
 border-left:5px solid #F0F0E1;
-border-top:1px solid #686859;
-border-bottom:1px solid #686859;
-border-right:1px solid #686859;
+border-top:1px dotted #686859;
+border-bottom:1px dotted #686859;
+border-right:1px dotted #686859;
 background:#686859;
 padding:4px 0 4px 10px;
 }
@@ -273,7 +280,7 @@ text-decoration:none;
 }
 
 .gnavi ul li.current{
-background: url(images/gnavicurrent.png) 50% 27px no-repeat;
+background: url(../images/gnavicurrent.png) 50% 27px no-repeat;
 z-index: 100;
 }
 
@@ -291,7 +298,7 @@ margin: 20px 0 0 0;
 
 .kadomaru {
 width:886px;
-background:none repeat scroll 0 0 #FFF;
+background:none repeat scroll 0 0 #fff;
 border-radius:10px 10px 10px 10px;
 margin:20px auto;
 padding:30px;
@@ -469,11 +476,11 @@ cursor: default;
 
 table tr{
 border-bottom: 1px solid #686859;
-border-left: 1px solid #686859;
 }
 
 table th {
 font-weight:700;
+border-left:1px solid #686859;
 line-height:120%;
 text-align:center;
 padding:8px 15px;
@@ -481,17 +488,16 @@ cursor: default;
 }
 
 table tbody th {
-  color: #686859;
-  background-color:#F0F0E1;
+  background-color:#eeeeff;
 }
 
 table thead th {
-  color:#686859;
-  background-color:#F0F0E1;
+  background-color:#686859;
+  color:#fff;
 }
 
 table thead th:first-child {
-border-bottom:none;
+border-bottom:1px solid #686859;
 }
 
 table thead th {
@@ -500,7 +506,6 @@ border-bottom:1px solid #686859;
 
 table th:last-child {
 border-right:1px solid #686859;
-border-left:1px solid #686859;
 }
 
 table tr td {
@@ -512,7 +517,9 @@ cursor: default;
 
 table tr td:last-child {
 border-right:1px solid #686859;
-border-left:1px solid #686859;
+}
+
+table tr td{
 }
 
 table tr td:hover {
@@ -536,7 +543,6 @@ cursor: default;
 table.pricelist tr:hover{
 
 }
-
 table.pricelist th{
 padding: 5px;
 font-weight: bold;
@@ -563,7 +569,7 @@ padding:5px;
 text-align: center;
 }
 
-table.default td a:hover {
+table.default td a:hover{
 color: #686859;
 position:relative;
 top:1px;
@@ -748,53 +754,51 @@ background: #f3a9c9;
 }
 
 
-.guestbox {
-border: 1px #555 solid;
-width: 420px;
-height: 215px;
-padding: 5px;
-}
 
-.guestbox thead th {
-background: #686859;
-font-size: 20px;
-height: 30px;
-}
-
-.guestbox td {
-background: #fffecb;
-}
-
-.guestbox th {
-background: #fffecb;
-}
-
-.loginbox {
+.loginbox{
 border: 1px #555 solid;
 width: 420px;
 height: 240px;
 }
-
-.loginbox thead th {
-background-color: #686859;
-color: #fff;
+.loginbox thead th{
+background: #686859;
 font-size: 20px;
 height: 30px;
+color: #fff;
 }
 
-.loginbox td {
+.loginbox td{
 background: #F0F0E1;
 }
 
-.loginbox th {
-background: #F0F0E1;
+.loginbox th{
+background: #686859;
+color: #fff;
 }
 
-.member th {
-color: #686859;
+table.member{
+border-collapse: collapse;
+border-top: 1px solid #686859 !important;
+border-left: 1px solid #686859 !important;
+}
+table.member th{
+color: #fff
 text-align: right;
+border-bottom: 1px solid #686859 !important;
+border-right: 1px solid #686859 !important;
 }
-
+table.member td{
+background: #FFF;
+border-bottom: 1px solid #686859 !important;
+border-right: 1px solid #686859 !important;
+}
+table.member td input{
+border: 1px solid #000;
+height: 20px;
+}
+table.member #btn_login{
+background: none;
+}
 
 .clubnames {
 border: none;
@@ -839,21 +843,13 @@ div.section-inner h4 {
     margin-left: -1em;
 }
 
-.section table.form ul {
-    list-style-type: none;
-}
-
-.section table.form ul {
-    list-style-type: none;
-}
-
 /* added */
 
 .red {
 color: #f00;
 }
 
-.formWrapper table.form {
+table.form {
 border-collapse: collapse;
 margin: 0px auto 20px auto;
 padding: 10px;
@@ -861,17 +857,17 @@ width: 100%;
 border: 5px solid #686859;
 }
 
-.formWrapper table.form tbody th{
-background-color: #F0F0E1;
+table.form tbody th{
+background-color: #205A86;
 border-collapse: collapse;
 padding: 10px;
 border-bottom: 1px solid #686859;
 text-align: right;
-color: #686859`;
+color: #FFF;
 }
 
 
-.formWrapper table.form thead th{
+table.form thead th{
 background-color: #efefef;
 border-collapse: collapse;
 padding: 10px;
@@ -881,7 +877,7 @@ color: #000;
 }
 
 
-.formWrapper table.form td{
+table.form td{
 background-color: #fff;
 padding: 20px 10px;
 border-bottom: 1px solid #686859;
@@ -889,7 +885,7 @@ text-align: left;
 
 }
 
-.formWrapper table.form tfoot td{
+table.form tfoot td{
 background-color: #fff;
 padding: 10px;
 border-top: 2px solid #686859;
@@ -897,176 +893,27 @@ font-size: 16px;
 text-align: left;
 }
 
-.formWrapper table.form input{
+table.form input{
 border: 1px solid #686859;
 font-size: 20px;
 line-height: 120%;
 height: 30px;
 }
 
-.formWrapper table.form input.submit,
+table.form input.submit,
 .btnLogin {
 text-align: center;
 color: #FFF;
+padding: 5px;
 border:1px solid #000000;
 margin: 10px auto;
 font-size: 20px;
 font-weight: bold;
 display: inline-block;
-background-color:#E83220;
+background-color:#FB6F56;
 }
 
-.formWrapper table.form input.submit:hover,
+table.form input.submit:hover,
 .btnLogin:hover {
-background-color:#EE6F62;
-}
-
-
-/* マイページ
------------------------------------------------------------ */
-#mypageHistory {
-margin-bottom: 30px;
-}
-
-#mypageHistory form {
-height: 70px;
-padding: 5px 15px 0;
-background: url(images/mypage/bg_search.gif) no-repeat 0 0;
-}
-
-#mypageHistory form input {
-vertical-align: middle;
-}
-
-#mypageHistory div.box {
-clear: both;
-overflow: hidden;
-padding: 10px 0 5px;
-border-bottom: 1px dashed #cccccc;
-}
-
-* html #mypageHistory div {
-height: 1%;
-}
-
-#mypageHistory p {
-float: left;
-margin: 0;
-padding-left: 5px;
-}
-
-#mypageHistory dl {
-float: left;
-width: 650px;
-padding-left: 20px;
-}
-
-#mypageHistory dt {
-font-size: 14px;
-font-weight: bold;
-}
-
-#mypageHistory dd {
-padding-bottom: 5px;
-font-size: 14px;
-}
-
-.mypagePaging {
-clear: both;
-font-weight: bold;
-text-align: right;
-}
-
-.mypageBox1 {
-height: 1%;
-margin-bottom: 30px;
-padding: 8px;
-border: 2px solid #cccccc;
-}
-
-.mypageBox1 div {
-position: relative;
-float: right;
-width: 640px;
-margin-bottom: 15px;
-}
-
-.mypageBox1 h3 {
-font-size: 116.7%;
-}
-
-.mypageBox1 div dt {
-margin-bottom: 5px;
-}
-
-.mypageBox1 div dd {
-font-size: 91.7%;
-}
-
-.mypageBox1 div dd a {
-padding: 2px 0 2px 15px;
-background: url(images/mypage/icon_map.gif) no-repeat 0 0;
-}
-
-.mypageBox1 div ul {
-position: absolute;
-right: 0;
-bottom: 0;
-}
-
-.mypageBox1 div li {
-float: right;
-margin-left: 5px;
-}
-
-.mypageBox1 div li .twitter-share-button {
-display: block;
-width: 70px !important;
-}
-
-.mypageBox1 table {
-width: 100%;
-margin-bottom: 10px;
-background-color: #fcfcf7;
-}
-
-.mypageBox1 th {
-width: 20%;
-padding: 10px;
-border: 1px solid #e6e6da;
-font-size: 91.7%;
-font-weight: normal;
-}
-
-.mypageBox1 td {
-padding: 10px;
-border: 1px solid #e6e6da;
-font-weight: bold;
-}
-
-.mypageBox1 td.align1 {
-border-left: none;
-font-weight: normal;
-}
-
-.mypageBox1 td span {
-font-size: 91.7%;
-font-weight: normal;
-}
-
-.mypageBox1 th.waitingPayment,
-.mypageBox1 td.waitingPayment {
-background-color: #fccac6;
-}
-
-.mypageBox1 p {
-margin: 0;
-}
-
-.mypageBuy {
-border-right: none !important;
-}
-
-table td.display_value ul li {
-  margin-left: 1em;
+background-color:#FB6F56;
 }
