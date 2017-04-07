@@ -1,49 +1,45 @@
 <%inherit file="base.mako" />
-<div class="main">
+<% member_set = _context.member_sets[0] %>
+<div id="content" class="subpage">
+<!-- subpage start -->
+    <article>
+        <h2>ご選択ください</h2>
+        <section>
+            <!-- ファンクラブ Box-->
+            <div class="login-box">
+                <h3>会員の方はこちら</h3>
+                <p class="txtC">
+                    <a href="${_context.route_path('extauth.fanclub.entry')}" class="btn">ログイン</a>
+                </p>
+                <p class="txtC">
+                    <a href="//${request.host}/fc/members/select-membership">※無料会員登録はこちら</a>
+                </p>
+            </div>
+            <!-- ファンクラブ Box-->
 
-    <div class="login-area clearfix">
-        <div class="login-box login-box-1">
-            <dl>
-                <dt class="login-name">会員の方はこちら</dt>
-                <dd><a href="${_context.route_path('extauth.fanclub.entry')}" class="btn-login-buy">会員IDでログインする</a></dd>
-                <dd>
-                <ul>
-                    <li><span style="color:red;font-size:90%;">「会員の方はこちら」から各会員への新規登録が可能です</span></li>
-                </ul>
-                </dd>
-            </dl>
-        </div><!-- /login-box for guest-->
-    </div><!-- /login-area-->
-    <div class="login-area clearfix">
-        <div class="login-box login-box-1">
-            <dl>
-                <dt>一般の方はこちら</dt>
-                <dd>
-                    <form action="${_context.route_path('extauth.login',_query=request.GET)}" method="POST">
-                        <input type="submit" name="doGuestLoginAsGuest" class="btn-login-buy" value="購入する">
-                        <input type="hidden" name="member_set" value="TX">
-                        <input type="hidden" name="_" value="${request.session.get_csrf_token()}" />
-                    </form>
-                </dd>
-            </dl>
-        </div><!-- /login-box for guest-->
-    </div><!-- /login-area-->
+            <!-- Gest Box-->
+            <div class="login-box">
+                <h3>ゲスト申込の方はこちら(会員登録なし)</h3>
 
-    <dl class="login-note">
-        <dt>注意事項</dt>
-        <dd>
-        <ul>
-            <li>※ 会員ID・パスワードは半角でご入力ください。</li>
-        </ul>
-        </dd>
-    </dl>
-    <dl class="login-note">
-        <dt>お問い合わせ</dt>
-        <dd>
-        <ul>
-            <li>お手数ですが、<a href="mailto:tokairadio@tstar.jp">こちら</a>までお問い合わせください。</li>
-        </ul>
-        </dd>
-    </dl>
+                <form action="${_context.route_path('extauth.login',_query=request.GET)}" method="POST">
+                    <p class="txtC">
+                        <button type="submit" name="doGuestLoginAsGuest" class="btn">申込</button>
+                    </p>
+                    <input type="hidden" name="member_set" value=${member_set.name}>
+                    <input type="hidden" name="_" value="${request.session.get_csrf_token()}" />
+                </form>
+            </div>
+            <!-- Gest Box-->
 
-</div><!--main-->
+            <!-- Extauth Box-->
+            <div class="login-box">
+                <h3>各種IDをお持ちの方はこちら</h3>
+                <p class="txtC">
+                    <a href="${_context.route_path('extauth.login', _query=dict(member_set=member_set.name))}" class="btn">ログイン</a>
+                </p>
+            </div>
+            <!-- Extauth Box-->
+        </section>
+    </article>
+<!-- subpage end -->
+</div>
