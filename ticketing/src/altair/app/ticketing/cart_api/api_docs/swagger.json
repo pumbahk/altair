@@ -412,6 +412,90 @@
                     }
                 }
             }
+        },
+        "/performances/{performance_id}/seat/select_product": {
+            "post": {
+                "summary": "selected Products",
+                "description": "selected Products\n",
+                "parameters": [
+                    {
+                        "name": "performance_id",
+                        "in": "path",
+                        "description": "performance id",
+                        "required": true,
+                        "type": "integer",
+                        "format": "int32",
+                        "x-example": 28677
+                    },
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "description": "selected products info",
+                        "schema": {
+                            "required": [
+                                "is_quantity_only"
+                            ],
+                            "properties": {
+                                "is_quantity_only": {
+                                    "type": "boolean"
+                                },
+                                "selected_products": {
+                                    "description": "selected products detail info",
+                                    "required": [
+                                      "product_id",
+                                      "quantity"
+                                    ],
+                                    "type": "object",
+                                    "properties": {
+                                        "seat_id": {
+                                            "type": "string"
+                                        },
+                                        "product_id": {
+                                            "type": "integer"
+                                        },
+                                        "quantity": {
+                                            "type": "integer"
+                                        }                               
+                                    }
+                                }
+                            }
+                        }
+                    }
+                ],
+                "tags": [
+                    "Performances"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "selected products results",
+                        "schema": {
+                            "properties": {
+                                "results": {
+                                    "type": "object",
+                                    "description": "selected products",
+                                    "required": [
+                                        "status"
+                                    ],
+                                    "properties": {
+                                        "status": {
+                                            "type": "string"
+                                        },
+                                        "reason": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "default": {
+                        "description": "Unexpected error",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
