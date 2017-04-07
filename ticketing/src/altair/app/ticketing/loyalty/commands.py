@@ -3,20 +3,21 @@
 import os
 import sys
 import re
+import transaction
 import argparse
 import logging
+
 from datetime import datetime, timedelta
-from decimal import Decimal
-from sqlalchemy import or_, and_
-import transaction
-
 from dateutil.parser import parse as parsedatetime
+from decimal import Decimal
 
-from sqlalchemy.orm import joinedload
+from sqlalchemy import or_, and_
 from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 
 from pyramid.paster import bootstrap, setup_logging
+
 from altair.app.ticketing.utils import todatetime
+from altair.app.ticketing.payments.plugins import CHECKOUT_PAYMENT_PLUGIN_ID
 
 logger = logging.getLogger(__name__)
 
@@ -572,6 +573,10 @@ def do_make_point_grant_data(registry, organization, start_date, end_date, submi
         orders = query.all()
         logger.info('number of orders to process: %d' % len(orders))
         for order in orders:
+            # 楽天ペイの予約は対象外
+            if order.payment_plugin_id == CHECKOUT_PAYMENT_PLUGIN_ID:
+                continue
+
             point_grant_history_entries_by_type = {}
             for point_grant_history_entry in order.point_grant_history_entries:
                 if point_grant_history_entry.edited_by is None: # Skip manual grant mode
