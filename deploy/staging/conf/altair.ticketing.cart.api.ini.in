@@ -36,6 +36,9 @@ altair.rakuten_auth.session.data_dir = %(here)s/../tmp/beaker/altair.rakuten_aut
 altair.rakuten_auth.session.lock_dir = %(here)s/../tmp/beaker/altair.rakuten_auth/lock
 altair.rakuten_auth.oauth.consumer_key = ${altair:rakuten_auth.oauth.consumer_key}
 altair.rakuten_auth.oauth.secret = ${altair:rakuten_auth.oauth.secret}
+altair.rakuten_auth.endpoint = ${altair:rakuten_auth.endpoint}
+altair.rakuten_auth.oauth.endpoint.access_token = ${altair:rakuten_auth.oauth.endpoint.access_token}
+altair.rakuten_auth.oauth.endpoint = ${altair:rakuten_auth.oauth.endpoint}
 
 ; altair.nogizaka46_auth
 altair.nogizaka46_auth.key = nogizaka_test
