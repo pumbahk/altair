@@ -21,7 +21,7 @@ from altair.app.ticketing.payments.plugins import CHECKOUT_PAYMENT_PLUGIN_ID
 
 logger = logging.getLogger(__name__)
 
-# 楽天一緒にポイント付与したいオルグのオルグコード
+# 楽チケと一緒にポイント付与したいOrgのコード
 from . import orgs_within_rakuten
 
 class RecordError(Exception):
