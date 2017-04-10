@@ -2469,6 +2469,7 @@ class StockType(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def is_seat(self):
         return self.type == StockTypeEnum.Seat.v
 
+    # TODO: Stock_drawings_l0_idで在庫と描画エリアを紐付けるように設計変更したのでこれは廃止
     def blocks(self, performance_id=None):
         """席種に紐づく在庫がどのブロック(group_l0_id)にあるか返す"""
 
@@ -2710,6 +2711,10 @@ class Stock(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     locked_at = Column(DateTime, nullable=True, default=None)
 
     stock_status = relationship("StockStatus", uselist=False, backref='stock')
+
+    @property
+    def drwaing_l0_ids(self):
+        return [r.drawing_l0_id for r in self.stock_drawing_l0_ids]
 
     def count_vacant_quantity(self):
         if self.stock_type and self.stock_type.quantity_only:
@@ -4943,3 +4948,11 @@ class Stock_group_l0_id(Base):
     __tablename__   = "Stock_group_l0_id"
     stock_id = Column(Identifier, ForeignKey('Stock.id', ondelete='CASCADE'), primary_key=True, nullable=False)
     group_l0_id = Column(Unicode(48), primary_key=True, nullable=False)
+
+
+class Stock_drwaing_l0_id(Base):
+    """在庫と会場図内の描画エリアを紐付けるテーブル"""
+    __tablename__   = "Stock_drawing_l0_id"
+    stock_id = Column(Identifier, ForeignKey('Stock.id', ondelete='CASCADE'), primary_key=True, nullable=False)
+    drawing_l0_id = Column(Unicode(48), primary_key=True, nullable=False)
+    stock = relationship("Stock", backref="stock_drawing_l0_ids")

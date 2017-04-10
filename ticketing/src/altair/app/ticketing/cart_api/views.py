@@ -139,6 +139,8 @@ class CartAPIView(object):
             logger.warning("{} for stock_type_id={}".format(e.message, stock_type_id))
             raise HTTPNotFound()
         products = [p for p in stock_type.product if p.performance_id == performance.id]  # XXX: productだけどlistが返ってくる
+        # TODO: sales_segmentも指定してくれないと返せないかも
+        # blocks =
         blocks = stock_type.blocks(performance_id=performance.id)
         return dict(
             stock_type=dict(
@@ -188,9 +190,11 @@ class CartAPIView(object):
         stock_types = session.query(StockType).filter(StockType.id.in_(stock_type_ids)).all()
 
         blocks = []
-        performance_id = sales_segment.performance.id
-        for stock_type in stock_types:
-            blocks.extend(stock_type.blocks(performance_id=performance_id))
+        for stock in sales_segment.stocks:
+            blocks.extend(stock.drwaing_l0_ids)
+        # performance_id = sales_segment.performance.id
+        # for stock_type in stock_types:
+        #     blocks.extend(stock_type.blocks(performance_id=performance_id))
 
         return dict(
             seats=[dict(
