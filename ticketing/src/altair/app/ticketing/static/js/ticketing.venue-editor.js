@@ -1173,10 +1173,10 @@ var Seat = exports.Seat = Backbone.Model.extend({
           s = shape.size();
       var text = new Fashion.Text({
           position: {
-			      x: p.x + (s.x * (0.05 + (styleText.length==1 ? 0.2 : 0.0))),
-            y: p.y + (s.y * 0.75)
+			      x: p.x + (s.x * (0.05 + (styleText.length==1 ? 0.1: 0.0))),
+            y: p.y + (s.y * 0.85)
           },
-          fontSize: style.text ? s.y * 0.5 : (s.x*1.2/Math.max(2, styleText.length)),
+          fontSize: style.text ? s.y * 0.95 : (s.x*1.2/Math.max(2, styleText.length)),
           text: styleText,
           style: { fill: new Fashion.FloodFill(new Fashion.Color(style.text_color)), cursor: 'default' }
       });
