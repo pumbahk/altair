@@ -3,3 +3,18 @@
 %for augus_performance in augus_performances:
  - ${augus_performance.augus_event_name}/${augus_performance.augus_performance_name}(会場: ${augus_performance.augus_venue_name}/開演: ${augus_performance.start_on})
 %endfor{
+
+%if skipped:
+スッキプ
+===============
+
+以下の公演を取り込むとしようが失敗しました。
+これらは次回取り込み時に再度取り込み処理をおこないますので、
+それまでに各種連携設定をお願いします。
+
+%for augus_performances in skipped:
+%for augus_performance in augus_performances:
+ - ${augus_performance.event_name}/${augus_performance.performance_name} (会場: ${augus_performance.venue_name} 会場バージョン: ${augus_performance.venue_version}/開演: ${augus_performance.start_on})
+%endfor
+%endfor
+%endif
