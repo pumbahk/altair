@@ -246,17 +246,19 @@ class CartAPIView(object):
         reserve_type = json_data.get("reserve_type")
         selected_seats = json_data.get("selected_seats")
         auto_select_conditions = json_data.get("auto_select_conditions")
-        stock_type_id = auto_select_conditions.get("stock_type_id")
-        quantity = auto_select_conditions.get("quantity")
         
         # パラメータチェック
         request_quantity = 0
         reason = ""
+        stock_type_id = ""
 
         if reserve_type != "auto" and reserve_type != "seat_choise":
             reason = "invalid parameter reserve_type"
 
         if reserve_type == "auto":
+            stock_type_id = auto_select_conditions.get("stock_type_id")
+            quantity = auto_select_conditions.get("quantity")
+
             if stock_type_id is None:
                 reason = "invalid parameter stock_type_id"
 
@@ -280,12 +282,65 @@ class CartAPIView(object):
                 }
             }
         
-        # TODO:座席確保の前に枚数制限チェックをする必要あり（ただし席種単位のしかできない）
-
         stocker = api.get_stocker(self.request)
         reserving = api.get_reserving(self.request)
         cart_factory = api.get_cart_factory(self.request)
+        
+        #カート生成前に購入枚数制限 or 席種混在チェック
+        if reserve_type == "auto":
+            #席種に紐づく商品を全てチェック
+            products = DBSession.query(Product) \
+                    .filter(Product.performance_id == performance_id) \
+                    .filter(Product.sales_segment_id == sales_segment_id) \
+                    .filter(Product.seat_stock_type_id == stock_type_id) \
+                    .order_by(Product.id) \
+                    .all()
+            
+            check_assert_quantity = []
+            for ps in products:
+                ordered_items = [(ps, request_quantity)]
+                logger.debug("ordered_items %s", ordered_items)
 
+                try:
+                    view_support.assert_quantity_within_bounds(sales_segment, ordered_items)
+                    check_assert_quantity.append("OK")
+                except (PerProductProductQuantityOutOfBoundsError,
+                        QuantityOutOfBoundsError,
+                        ProductQuantityOutOfBoundsError,
+                        PerStockTypeQuantityOutOfBoundsError,
+                        PerStockTypeProductQuantityOutOfBoundsError) as e:
+                    check_assert_quantity.append("NG")
+
+                #OKとなる商品が1つもない場合、制限エラーとしてNG
+                if "OK" not in check_assert_quantity:
+                    return {
+                        "results": {
+                            "status": "NG",
+                            "reason": "assert_quantity_within_bounds error"
+                        }
+                    }
+
+        elif reserve_type == "seat_choise":
+            # 席種の混在をチェック
+            try:
+                stock_type_ids = DBSession.query(StockType.id) \
+                            .join(Stock, Seat) \
+                            .filter(Seat.l0_id.in_(selected_seats)) \
+                            .group_by(StockType.id) \
+                            .one()
+            except MultipleResultsFound as e:
+                logger.warning("stock types are mixed %s", stock_type_ids)
+                transaction.abort()
+                return {
+                    "results": {
+                        "status": "NG",
+                        "reason": "stock types are mixed"
+                    }
+                }
+            
+            stock_type_id = stock_type_ids
+
+        #Cart生成
         try:
             product = DBSession.query(Product) \
                         .filter(Product.performance_id == performance_id) \
@@ -293,6 +348,7 @@ class CartAPIView(object):
                         .filter(Product.seat_stock_type_id == stock_type_id) \
                         .order_by(Product.id) \
                         .first()
+
         except NoResultFound as e:
             logger.warning("no product stock_type_id=%d", stock_type_id)
             return {
@@ -302,11 +358,11 @@ class CartAPIView(object):
                 }
             }
 
+
         product_requires = [(product, request_quantity)]
         logger.debug("product_requires %s", product_requires)
         stockstatuses = stocker.take_stock(performance_id, product_requires)
 
-        # TODO:autoの場合はseparate_seatsをどこからか取得して設定する必要あり
         separate_seats = False
         quantity_only = True
         seats = []
@@ -315,6 +371,13 @@ class CartAPIView(object):
                 if stockstatus.stock.stock_type.quantity_only:
                     logger.debug('stock %d quantity only', stockstatus.stock.id)
                     continue
+                
+                #separate_seats取得
+                org = api.get_organization(self.request)
+                setting = org.setting
+                separate_seats = setting.entrust_separate_seats
+                logger.debug('separate_seats %d  ', separate_seats)
+
                 seats += reserving.reserve_seats(stockstatus.stock_id, quantity, separate_seats=separate_seats)
                 quantity_only = False
         elif reserve_type == "seat_choise":
