@@ -198,7 +198,7 @@ class CartAPIView(object):
 
         return dict(
             seats=[dict(
-                seat_id=d.seat_l0_id,
+                seat_l0_id=d.seat_l0_id,
                 stock_type_id=d.stock_type_id,
                 is_available=(d.seat_status == SeatStatusEnum.Vacant.v),
             ) for d in seat_dicts],
