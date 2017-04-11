@@ -323,13 +323,13 @@ class CartAPIView(object):
         elif reserve_type == "seat_choise":
             # 席種の混在をチェック
             try:
-                stock_type_ids = DBSession.query(StockType.id) \
+                stock_type = DBSession.query(StockType.id) \
                             .join(Stock, Seat) \
                             .filter(Seat.l0_id.in_(selected_seats)) \
                             .group_by(StockType.id) \
                             .one()
             except MultipleResultsFound as e:
-                logger.warning("stock types are mixed %s", stock_type_ids)
+                logger.warning("stock types are mixed %s", stock_type)
                 transaction.abort()
                 return {
                     "results": {
@@ -338,7 +338,7 @@ class CartAPIView(object):
                     }
                 }
             
-            stock_type_id = stock_type_ids
+            stock_type_id = stock_type.id
 
         #Cart生成
         try:
