@@ -167,13 +167,13 @@ class CartAPIView(object):
     @view_config(route_name='cart.api.seats')
     def seats(self):
         from collections import namedtuple
-        SeatDict = namedtuple("SeatDict", "seat_id stock_type_id seat_status stock_quantity")
+        SeatDict = namedtuple("SeatDict", "seat_l0_id stock_type_id seat_status stock_quantity")
         StockTypeQuantityPair = namedtuple("StockTypeQuantityPair", "stock_type_id stock_quantity")
 
         # available_sales_segmentsは優先順位順にならんでるはず
         sales_segment = [ss for ss in self.context.available_sales_segments][0]
         session = get_db_session(self.request, 'slave')
-        seat_dicts = session.query(distinct(Seat.id), Stock.stock_type_id, SeatStatus.status, StockStatus.quantity)\
+        seat_dicts = session.query(distinct(Seat.l0_id), Stock.stock_type_id, SeatStatus.status, StockStatus.quantity)\
                             .join(Seat.status_)\
                             .join(Seat.stock)\
                             .join(Stock.product_items)\
@@ -191,14 +191,14 @@ class CartAPIView(object):
 
         blocks = []
         for stock in sales_segment.stocks:
-            blocks.extend(stock.drwaing_l0_ids)
+            blocks.extend(stock.drawing_l0_ids)
         # performance_id = sales_segment.performance.id
         # for stock_type in stock_types:
         #     blocks.extend(stock_type.blocks(performance_id=performance_id))
 
         return dict(
             seats=[dict(
-                seat_id=d.seat_id,
+                seat_id=d.seat_l0_id,
                 stock_type_id=d.stock_type_id,
                 is_available=(d.seat_status == SeatStatusEnum.Vacant.v),
             ) for d in seat_dicts],

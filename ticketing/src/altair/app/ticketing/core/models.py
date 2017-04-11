@@ -2713,7 +2713,7 @@ class Stock(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     stock_status = relationship("StockStatus", uselist=False, backref='stock')
 
     @property
-    def drwaing_l0_ids(self):
+    def drawing_l0_ids(self):
         return [r.drawing_l0_id for r in self.stock_drawing_l0_ids]
 
     def count_vacant_quantity(self):
