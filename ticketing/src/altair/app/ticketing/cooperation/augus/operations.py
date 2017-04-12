@@ -173,7 +173,6 @@ class AugusWorker(object):
         target = PerformanceSyncRequest
         importer = AugusPerformanceImpoter()
 
-        paths = []
         ids = []
         skipped = []
 
@@ -183,18 +182,16 @@ class AugusWorker(object):
 
             try:
                 entries = importer.import_(request, self.augus_account)
-                # インポートできたら、記録に入れます。
-                paths.append(path)
                 ids.extend(entry.id for entry in entries)
                 transaction.commit()  # commit
+                # インポートできたら、ファイルをpendingフォルダに移動する。
+                shutil.move(path, pending)
             except AugusDataImportError:
                 # AugusDataImportErrorのエラーになったら、スキップして、次のターンで再試行
                 transaction.abort()
                 skipped.append(request)
                 continue
 
-        for path in paths:
-            shutil.move(path, pending)
         return ids, skipped
 
     def ticketing(self):
@@ -203,7 +200,6 @@ class AugusWorker(object):
         target = TicketSyncRequest
         importer = AugusTicketImpoter()
 
-        paths = []
         ids = []
         skipped = []
 
@@ -213,18 +209,16 @@ class AugusWorker(object):
 
             try:
                 entries = importer.import_(request, self.augus_account)
-                # インポートできたら、記録に入れます。
-                paths.append(path)
                 ids.extend(entry.id for entry in entries)
                 transaction.commit()  # commit
+                # インポートできたら、ファイルをpendingフォルダに移動する。
+                shutil.move(path, pending)
             except AugusPerformanceNotFound:
                 # AugusPerformanceNotFoundのエラーになったら、スキップして、次のターンで再試行
                 transaction.abort()
                 skipped.append(request)
                 continue
 
-        for path in paths:
-            shutil.move(path, pending)
         return ids, skipped
 
     def distribute(self, sleep=1.5):
