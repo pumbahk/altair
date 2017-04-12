@@ -141,7 +141,7 @@
                 }
             }
         },
-        "/performances/{performance_id}/stock_types/{stock_type_id}": {
+        "/performances/{performance_id}/sales_segments/{sales_segment_id}/stock_types/{stock_type_id}": {
             "get": {
                 "summary": "Stock type",
                 "description": "return a specific stock type\n",
@@ -150,6 +150,15 @@
                         "name": "performance_id",
                         "in": "path",
                         "description": "performance id",
+                        "required": true,
+                        "type": "integer",
+                        "format": "int32",
+                        "x-example": 28677
+                    },
+                    {
+                        "name": "sales_segments",
+                        "in": "path",
+                        "description": "salse segment id",
                         "required": true,
                         "type": "integer",
                         "format": "int32",
@@ -325,7 +334,7 @@
                                         "is_separeted": {
                                             "type": "boolean"
                                         },
-                                        "seats": {
+                                        "seat_l0_id": {
                                             "type": "array",
                                             "items": {
                                                 "type": "string"
@@ -540,7 +549,7 @@
                         {
                             "type": "object",
                             "properties": {
-                                "blocks": {
+                                "regions": {
                                     "type": "array",
                                     "items": {
                                         "type": "string"
@@ -577,11 +586,11 @@
                         }
                     }
                 },
-                "blocks": {
+                "regions": {
                     "type": "array",
                     "items": {
                         "properties": {
-                            "block_id": {
+                            "region_id": {
                                 "type": "integer"
                             },
                             "available_count": {
@@ -710,7 +719,7 @@
         "Seat": {
             "type": "object",
             "properties": {
-                "seat_id": {
+                "seat_l0_id": {
                     "type": "integer"
                 },
                 "is_available": {
