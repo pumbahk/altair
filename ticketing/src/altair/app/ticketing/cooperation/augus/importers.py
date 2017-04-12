@@ -2,6 +2,7 @@
 import time
 import datetime
 import itertools
+import logging
 from sqlalchemy.orm.exc import (
     MultipleResultsFound,
     NoResultFound,
@@ -30,6 +31,8 @@ from .errors import (
     IllegalImportDataError,
     AugusPerformanceNotFound,
     )
+
+logger = logging.getLogger(__name__)
 
 def get_or_create_augus_stock_info(seat):
     try:
@@ -66,10 +69,12 @@ class AugusPerformanceImpoter(object):
                       .filter(AugusVenue.augus_account_id == augus_account.id)\
                       .one()
         except (NoResultFound, MultipleResultsFound) as err:
-            raise AugusDataImportError('Cannot import augus performance: '
-                                       'no such AugusVenue: '
-                                       'code={} version={}: {}'.format(record.venue_code, record.venue_version, repr(err))
-                                       )
+            logger.error(
+                'Cannot import augus performance: '
+                'no such AugusVenue: '
+                'code={} version={}: {}'.format(record.venue_code, record.venue_version, repr(err))
+            )
+            raise AugusDataImportError()
 
         try:
             ag_performance = AugusPerformance\
@@ -120,8 +125,9 @@ class AugusTicketImpoter(object):
                                                   augus_performance_code=record.performance_code,
                                                   )
             if not ag_performance:
-                raise AugusPerformanceNotFound('AugusPerformance not found: event_code={} performance_code={}'.format(
+                logger.error('AugusPerformance not found: event_code={} performance_code={}'.format(
                     record.event_code, record.performance_code))
+                raise AugusPerformanceNotFound()
         else:
             ag_performance = ag_ticket.augus_performance
         ag_ticket.augus_venue_code = record.venue_code
