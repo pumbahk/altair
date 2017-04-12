@@ -465,7 +465,7 @@ class AugusOperationManager(object):
                 transaction.abort()
                 raise
 
-            if mailer and len(ids):
+            if mailer and (len(ids) or len(skipped)):
                 augus_performances = AugusPerformance\
                   .query\
                   .filter(AugusPerformance.id.in_(ids))\
@@ -491,7 +491,7 @@ class AugusOperationManager(object):
                 transaction.abort()
                 raise
 
-            if mailer and len(ids):
+            if mailer and (len(ids) or len(skipped)):
                 augus_performances = AugusPerformance\
                   .query\
                   .join(AugusTicket)\
