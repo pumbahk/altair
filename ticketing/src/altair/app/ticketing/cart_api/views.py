@@ -180,7 +180,7 @@ class CartAPIView(object):
         # available_sales_segmentsは優先順位順にならんでるはず
         sales_segment = [ss for ss in self.context.available_sales_segments][0]
         session = get_db_session(self.request, 'slave')
-        seat_dicts = session.query(distinct(Seat.l0_id), Stock.stock_type_id, SeatStatus.status, StockStatus.quantity, Stock.id.label('stock_id'))\
+        seat_dicts = session.query(distinct(Seat.l0_id), Stock.stock_type_id, SeatStatus.status, StockStatus.quantity)\
                             .join(Seat.status_)\
                             .join(Seat.stock)\
                             .join(Stock.product_items)\
@@ -189,7 +189,7 @@ class CartAPIView(object):
                             .join(Product.sales_segment)\
                             .filter(SalesSegment.id == sales_segment.id)\
                             .all()
-        import ipdb;ipdb.set_trace()
+        
         # distinctで指定したカラムだけkey指定できないのでnamedtupleに代入
         seat_dicts = [SeatDict(d[0], d[1], d[2], d[3]) for d in seat_dicts]
         stock_type_quantity_pairs = [StockTypeQuantityPair(type_id, quantity)
