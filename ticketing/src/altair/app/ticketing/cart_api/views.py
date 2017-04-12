@@ -132,16 +132,23 @@ class CartAPIView(object):
     def stock_type(self):
         performance = self.context.performance
         stock_type_id = self.request.matchdict.get('stock_type_id')
+        sales_segment_id = self.request.matchdict.get('sales_segment_id')
         session = get_db_session(self.request, 'slave')
         try:
             stock_type = session.query(StockType).filter(StockType.id == stock_type_id).one()
         except NoResultFound as e:
             logger.warning("{} for stock_type_id={}".format(e.message, stock_type_id))
             raise HTTPNotFound()
+        try:
+            sales_segment = session.query(SalesSegment).filter(SalesSegment.id == sales_segment_id).one()
+        except NoResultFound as e:
+            logger.warning("{} for sales_segment_id={}".format(e.message, sales_segment_id))
+            raise HTTPNotFound()
         products = [p for p in stock_type.product if p.performance_id == performance.id]  # XXX: productだけどlistが返ってくる
-        # TODO: sales_segmentも指定してくれないと返せないかも
-        # blocks =
-        blocks = stock_type.blocks(performance_id=performance.id)
+        # svg側では描画エリアをregionと定義しているのでそれに合わせる
+        region_ids = []
+        for stock in sales_segment.stocks:
+            region_ids.extend(stock.drawing_l0_ids)
         return dict(
             stock_type=dict(
                 stock_type_id=stock_type.id,
@@ -160,7 +167,7 @@ class CartAPIView(object):
                     max_product_quantity=product.max_product_quantity,
                     is_must_be_chosen=product.must_be_chosen
                 ) for product in products],
-                blocks=blocks
+                regions=region_ids
             )
         )
 
@@ -173,7 +180,7 @@ class CartAPIView(object):
         # available_sales_segmentsは優先順位順にならんでるはず
         sales_segment = [ss for ss in self.context.available_sales_segments][0]
         session = get_db_session(self.request, 'slave')
-        seat_dicts = session.query(distinct(Seat.l0_id), Stock.stock_type_id, SeatStatus.status, StockStatus.quantity)\
+        seat_dicts = session.query(distinct(Seat.l0_id), Stock.stock_type_id, SeatStatus.status, StockStatus.quantity, Stock.id.label('stock_id'))\
                             .join(Seat.status_)\
                             .join(Seat.stock)\
                             .join(Stock.product_items)\
@@ -182,19 +189,16 @@ class CartAPIView(object):
                             .join(Product.sales_segment)\
                             .filter(SalesSegment.id == sales_segment.id)\
                             .all()
-
+        import ipdb;ipdb.set_trace()
+        # distinctで指定したカラムだけkey指定できないのでnamedtupleに代入
         seat_dicts = [SeatDict(d[0], d[1], d[2], d[3]) for d in seat_dicts]
         stock_type_quantity_pairs = [StockTypeQuantityPair(type_id, quantity)
                                      for type_id, quantity in set([(d.stock_type_id, d.stock_quantity) for d in seat_dicts])]
-        stock_type_ids = [pairs.stock_type_id for pairs in stock_type_quantity_pairs]
-        stock_types = session.query(StockType).filter(StockType.id.in_(stock_type_ids)).all()
 
-        blocks = []
+        # svg側では描画エリアをregionと定義しているのでそれに合わせる
+        region_ids = []
         for stock in sales_segment.stocks:
-            blocks.extend(stock.drawing_l0_ids)
-        # performance_id = sales_segment.performance.id
-        # for stock_type in stock_types:
-        #     blocks.extend(stock_type.blocks(performance_id=performance_id))
+            region_ids.extend(stock.drawing_l0_ids)
 
         return dict(
             seats=[dict(
@@ -206,9 +210,9 @@ class CartAPIView(object):
                 stock_type_id=pairs.stock_type_id,
                 available_counts=pairs.stock_quantity
             ) for pairs in stock_type_quantity_pairs],
-            blocks=[dict(
-                block_id=block
-            ) for block in set(blocks)]
+            regions=[dict(
+                region_id=region_id
+            ) for region_id in set(region_ids)]
         )
 
     @view_config(route_name='cart.api.seat_reserve')
