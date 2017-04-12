@@ -465,11 +465,12 @@ class AugusOperationManager(object):
                 transaction.abort()
                 raise
 
-            if mailer and (len(ids) or len(skipped)):
+            if mailer and len(ids):
                 augus_performances = AugusPerformance\
                   .query\
                   .filter(AugusPerformance.id.in_(ids))\
                   .all()
+
                 params = {
                     'augus_performances': augus_performances,
                     'skipped': skipped,
@@ -491,12 +492,13 @@ class AugusOperationManager(object):
                 transaction.abort()
                 raise
 
-            if mailer and (len(ids) or len(skipped)):
+            if mailer and len(ids):
                 augus_performances = AugusPerformance\
                   .query\
                   .join(AugusTicket)\
                   .filter(AugusTicket.id.in_(ids))\
                   .all()
+
                 params = {
                     'augus_performances': augus_performances,
                     'count': len(ids),
