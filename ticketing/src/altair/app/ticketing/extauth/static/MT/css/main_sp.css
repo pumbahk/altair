@@ -24,7 +24,7 @@ a:hover {
 
 header .head {
   height: 60px;
-  background: #FF6207;
+  background: #FFFFFF;
 }
 header h1 {
   padding-left: 10px;
@@ -55,7 +55,7 @@ main {
   background: #ffffff;
 }
 main #keyvisual {
-  background: #FF6207;
+  background: #FFFFFF;
   margin-bottom: 3%;
 }
 main #keyvisual img {
