@@ -3,3 +3,18 @@
 %for augus_performance in augus_performances:
  - ${augus_performance.augus_event_name}/${augus_performance.augus_performance_name}(会場: ${augus_performance.augus_venue_name}/開演: ${augus_performance.start_on})
 %endfor{
+
+%if skipped:
+スッキプ
+===============
+
+以下の公演のチケットを取り込むとしようが対象公演が見つからないであったため失敗しました。
+これらは次回取り込み時に再度取り込み処理をおこないますので、
+それまでに各種連携設定をお願いします。
+
+%for augus_tickets in skipped:
+%for augus_ticket in augus_tickets:
+ - 席種名称: ${seat_type_name} / 単価名称: ${unit_value_name} / 席種区分: ${"指定" if seat_type_classif == 1 else "自由席"} / 売価: ${augus_ticket.value}
+%endfor
+%endfor
+%endif

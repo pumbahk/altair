@@ -51,6 +51,7 @@ from .exporters import (
     )
 from .errors import (
     AugusDataImportError,
+    AugusPerformanceNotFound,
     IllegalImportDataError,
     )
 
@@ -174,19 +175,27 @@ class AugusWorker(object):
 
         paths = []
         ids = []
+        skipped = []
 
         for name in filter(target.match_name, os.listdir(staging)):
             path = os.path.join(staging, name)
-            paths.append(path)
-
             request = AugusParser.parse(path)
-            entries = importer.import_(request, self.augus_account)
-            ids.extend(entry.id for entry in entries)
 
-        transaction.commit() # commit
+            try:
+                entries = importer.import_(request, self.augus_account)
+                # インポートできたら、記録に入れます。
+                paths.append(path)
+                ids.extend(entry.id for entry in entries)
+                transaction.commit()  # commit
+            except AugusDataImportError:
+                # AugusDataImportErrorのエラーになったら、スキップして、次のターンで再試行
+                transaction.abort()
+                skipped.append(request)
+                continue
+
         for path in paths:
             shutil.move(path, pending)
-        return ids
+        return ids, skipped
 
     def ticketing(self):
         staging = self.path.recv_dir_staging
@@ -196,19 +205,27 @@ class AugusWorker(object):
 
         paths = []
         ids = []
+        skipped = []
 
         for name in filter(target.match_name, os.listdir(staging)):
             path = os.path.join(staging, name)
-            paths.append(path)
-
             request = AugusParser.parse(path)
-            entries = importer.import_(request, self.augus_account)
-            ids.extend(entry.id for entry in entries)
 
-        transaction.commit() # commit
+            try:
+                entries = importer.import_(request, self.augus_account)
+                # インポートできたら、記録に入れます。
+                paths.append(path)
+                ids.extend(entry.id for entry in entries)
+                transaction.commit()  # commit
+            except AugusPerformanceNotFound:
+                # AugusPerformanceNotFoundのエラーになったら、スキップして、次のターンで再試行
+                transaction.abort()
+                skipped.append(request)
+                continue
+
         for path in paths:
             shutil.move(path, pending)
-        return ids
+        return ids, skipped
 
     def distribute(self, sleep=1.5):
         logger.info('start augus distribition: augus_account_id={}'.format(self.augus_account.id))
@@ -443,18 +460,19 @@ class AugusOperationManager(object):
         for worker in self.augus_workers():
             augus_account = worker.augus_account
             try:
-                ids = worker.performancing()
+                ids, skipped = worker.performancing()
             except:
                 transaction.abort()
                 raise
 
-            if mailer and len(ids):
+            if mailer and (len(ids) or len(skipped)):
                 augus_performances = AugusPerformance\
                   .query\
                   .filter(AugusPerformance.id.in_(ids))\
                   .all()
                 params = {
                     'augus_performances': augus_performances,
+                    'skipped': skipped,
                     }
                 self.send_mail(
                     mailer, augus_account,
@@ -468,11 +486,12 @@ class AugusOperationManager(object):
         for worker in self.augus_workers():
             augus_account = worker.augus_account
             try:
-                ids = worker.ticketing()
+                ids, skipped = worker.ticketing()
             except:
                 transaction.abort()
                 raise
-            if mailer and len(ids):
+
+            if mailer and (len(ids) or len(skipped)):
                 augus_performances = AugusPerformance\
                   .query\
                   .join(AugusTicket)\
@@ -481,6 +500,7 @@ class AugusOperationManager(object):
                 params = {
                     'augus_performances': augus_performances,
                     'count': len(ids),
+                    'skipped': skipped,
                     }
                 self.send_mail(
                     mailer, augus_account,
