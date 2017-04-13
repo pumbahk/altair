@@ -1,23 +1,14 @@
-<div class="ts-wrapper">
-
-<!-- ******************** header [start] ******************** -->
-<header class="ts-header">
-% if hasattr(_context, 'subtype') and request.authenticated_userid:
-ログイン中 (<a href="${request.route_path('extauth.logout', subtype=_context.subtype)}">ログアウトする</a>)
-% endif
-<div class="ts-header-inner">
-
-<!-- ===== ts-header-wrap [start] ===== -->
-<div class="ts-header-wrap">
-
-<div class="ts-header-logobox clearfix">
-<img src="${view_context.static_url('images/pc_logo.png')}" alt="logo" width="950" height="64"  />
-</div>
-
-</div><!-- ===== ts-header-wrap [end] ===== -->
-
-</div></header><!-- ******************** header [end] ******************** -->
-
-<!-- ******************** contents [start] ******************** -->
-<div class="ts-contents">
-<div class="ts-contents-inner">
+<!-- header start -->
+<header>
+    <div class="head">
+        <h1>
+            <a href="https://www.tokairadio.co.jp/event/">
+            <img src="${view_context.static_url('images/logo.png')}" alt="logo">
+            </a>
+        </h1>
+    </div>
+    % if hasattr(_context, 'subtype') and request.authenticated_userid:
+        ログイン中 (<a href="${request.route_path('extauth.logout', subtype=_context.subtype)}">ログアウトする</a>)
+    % endif
+</header>
+<!-- header end -->

@@ -1,0 +1,9 @@
+.two-column-input {
+  display: inline-block;
+  vertical-align: top;
+  width: 45%;
+}
+
+main #content.subpage .formall .two-column-input .req_box span {
+    min-width: 100% !important;
+}

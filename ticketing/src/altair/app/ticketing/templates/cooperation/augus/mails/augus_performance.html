@@ -1,5 +1,23 @@
 オーガス連携により以下の公演が取り込まれました。
 
+%if augus_performances:
 %for augus_performance in augus_performances:
  - ${augus_performance.augus_event_name}/${augus_performance.augus_performance_name}(会場: ${augus_performance.augus_venue_name}/開演: ${augus_performance.start_on})
 %endfor{
+%else:
+
+    取り込んだ公演がありません。
+
+%endif
+
+
+%if skipped:
+以下の公演を取り込もうとしましたが失敗しました。
+これらは次回の取り込み時に再度取り込み処理を行います。
+
+%for skipped_performances in skipped:
+%for augus_performance in skipped_performances:
+ - ${augus_performance.event_name}/${augus_performance.performance_name} (会場: ${augus_performance.venue_name} 会場バージョン: ${augus_performance.venue_version}/開演: ${augus_performance.start_on})
+%endfor
+%endfor
+%endif

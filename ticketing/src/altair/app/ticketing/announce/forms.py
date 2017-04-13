@@ -51,7 +51,8 @@ class KeyValueWidget(object):
 class SendAfterRange(DateTimeInRange):
     def __call__(self, form, field):
         now = datetime.now()
-        limit = now + timedelta(hours=2) - timedelta(minutes=now.minute, seconds=now.second)
+        limit_with_ms = now + timedelta(hours=2)
+        limit = datetime(*limit_with_ms.timetuple()[:4])
         inner = DateTimeInRange(from_=limit)
         return inner(form, field)
 

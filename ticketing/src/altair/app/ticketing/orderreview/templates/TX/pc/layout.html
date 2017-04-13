@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=1100, user-scalable=yes">
+<meta content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" name="viewport">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="cache-control" content="no-cache">
+<meta http-equiv="expires" content="0">
+<title>東海ラジオ放送事業部</title>
+
+<!-- Cascading Style Sheets -->
+<link rel="shortcut icon" href="${view_context.static_url('pc/images/favicon.ico')}" />
+<link rel="stylesheet" href="${view_context.static_url('pc/css/sanitize.css')}" type="text/css" media="all">
+<link rel="stylesheet" href="${view_context.static_url('pc/css/import.css')}" type="text/css" media="all">
+<link rel="stylesheet" href="${view_context.static_url('pc/css/custom.css')}" type="text/css" media="all">
+<link rel="stylesheet" type="text/css" href="${view_context.static_url('pc/css/style2.css')}" media="all" />
+
+</head>
+<body>
+<!-- header start -->
+<header>
+    <div class="head">
+        <h1>
+            <a href="https://www.tokairadio.co.jp/event/">
+            <img src="${view_context.static_url('pc/images/pc_logo.png')}" alt="logo">
+            </a>
+        </h1>
+    </div>
+</header>
+<!-- header end -->
+<main>
+${self.body()}
+</main>
+<!-- footer start-->
+<footer>
+    <ul>
+        <li><a href="https://www.tokairadio.co.jp/company/index.html" target="_blank">運営会社</a></li>
+        <li><a href="http://tokairadio.tstar.jp/inquiry" target="_blank">お問い合わせ</a></li>
+        <li><a href="https://www.tokairadio.co.jp/privacy/index.html" target="_blank">個人情報保護方針</a></li>
+        <li><a href="http://tokairadio.tstar.jp/legal" target="_blank">特定商取引法に基づく表示</a></li>
+    </ul>
+    <p class="copyright">&copy; TicketStar, Inc.</p>
+</footer>
+<!-- footer end-->
+</body>
+</html>

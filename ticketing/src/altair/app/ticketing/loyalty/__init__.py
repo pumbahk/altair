@@ -1,4 +1,8 @@
+# -*- coding: utf-8 -*-
 from altair.app.ticketing import newRootFactory
+
+# 楽天一緒にポイント付与したいオルグのオルグコード
+orgs_with_rakuten = ['VK']
 
 def includeme(config):
     from .resources import PointGrantSettingAdminResource, PointGrantHistoryEntryAdminResource, PointGrantHistoryEntryImportAdminResource

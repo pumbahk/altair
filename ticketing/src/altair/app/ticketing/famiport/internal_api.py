@@ -198,19 +198,19 @@ def validate_order_info(type_, payment_start_at, payment_due_at, ticketing_start
         if payment_due_at is None:
             raise FamiPortError('payment_due_at is None while type=CashOnDelivery|Payment|PaymentOnly')
         if payment_start_at > payment_due_at:
-            raise FamiPortError('payment_due_at is later than payment_start_at')
+            raise FamiPortError('payment_start_at is later than payment_due_at')
     if type_ in (FamiPortOrderType.CashOnDelivery.value, FamiPortOrderType.Payment.value, FamiPortOrderType.Ticketing.value):
         if ticketing_start_at is None:
             raise FamiPortError('ticketing_start_at is None while type=Payment|Ticketing')
         if ticketing_end_at is None:
             raise FamiPortError('payment_start_at is None while type=Payment|Ticketing')
         if ticketing_start_at > ticketing_end_at:
-            raise FamiPortError('ticketing_end_at is later than ticketing_start_at')
+            raise FamiPortError('ticketing_start_at is later than ticketing_end_at')
     if ticket_payment + ticketing_fee + system_fee != total_amount:
         raise FamiPortError('ticketing_payment + ticketing_fee + system_fee != total_amount')
 
 def create_famiport_order(
-        session, 
+        session,
         client_code,
         type_,
         famiport_performance,
