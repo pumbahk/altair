@@ -1182,18 +1182,16 @@ class MypageWordView(object):
     def subscribe(self):
         word_id = self.request.params.get('word')
         words = self._get_word(id=word_id)
-        if len(words) != 1:
+        if words is not None and len(words) != 1:
             return { }
+
         word_id = words[0]['id']
+        if WordSubscription.query.filter(WordSubscription.user_id==self.user.id, WordSubscription.word_id==word_id).first() != None:
+            # already registered
+            return { }
 
-        if words is not None and len(words) == 1:
-            if WordSubscription.query.filter(WordSubscription.user_id==self.user.id, WordSubscription.word_id==word_id).first() != None:
-                # already registered
-                return { }
-
-            WordSubscription.add(WordSubscription(user_id=self.user.id, word_id=word_id))
-            return { "result": "OK", "data": words }
-        return { }
+        WordSubscription.add(WordSubscription(user_id=self.user.id, word_id=word_id))
+        return { "result": "OK", "data": words }
 
     @lbr_view_config(route_name='mypage.word.unsubscribe',
         request_method="POST",
