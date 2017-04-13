@@ -39,9 +39,9 @@ from .commands import (
     lookup_for_point_granted_order
 )
 
-test_org_code = ["RT", "VK", "RE", "XX"]
-test_org_sn = ["RT", "VK", "eagles", "XX"]
-test_point_type = [1, 0, 1, None]
+test_org_code = ["RT", "VK", "RE", "XX", "BB"]
+test_org_sn = ["RT", "VK", "eagles", "XX", "BB"]
+test_point_type = [1, 1, 1, 0, None]
 
 order_nos = ['0000000001', '0000000002', '0000000003']
 
@@ -242,6 +242,7 @@ class CommandTest(unittest.TestCase):
         self.assertEquals(2 in org_ids, True)
         self.assertEquals(3 in org_ids, False)
         self.assertEquals(4 in org_ids, False)
+        self.assertEquals(5 in org_ids, False)
 
     def test_lookup_for_point_granted_order(self):
         order_no = 'RT0000000001'
