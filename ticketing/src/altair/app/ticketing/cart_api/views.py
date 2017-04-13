@@ -101,8 +101,6 @@ class CartAPIView(object):
             event=dict(
                 event_id=performance.event.id,
                 order_limit=performance.event.setting.order_limit,
-                middle_stock_threshold=performance.event.setting.middle_stock_threshold,
-                middle_stock_threshold_percent=performance.event.setting.middle_stock_threshold_percent,
             ),
             sales_segments=[dict(
                 sales_segment_id=ss.id,

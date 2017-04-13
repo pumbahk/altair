@@ -615,12 +615,6 @@
                 },
                 "event_limit": {
                     "type": "integer"
-                },
-                "middle_stock_threshold": {
-                    "type": "integer"
-                },
-                "middle_stock_threshold_percent": {
-                    "type": "integer"
                 }
             }
         },
