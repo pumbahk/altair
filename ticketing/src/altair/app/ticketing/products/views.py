@@ -535,7 +535,7 @@ class ProductItems(BaseView):
             # 抽選の商品明細の削除
             delete_lot_product_item(product_item)
 
-            product_item.delete()
+            product_item.delete_product_item()
 
             self.request.session.flash(u'商品明細を削除しました')
         except Exception, e:
