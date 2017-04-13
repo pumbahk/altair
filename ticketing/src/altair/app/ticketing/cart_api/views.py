@@ -2,7 +2,7 @@
 import logging
 
 from pyramid.view import view_defaults, view_config
-from pyramid.httpexceptions import HTTPNotFound
+from pyramid.httpexceptions import HTTPNotFound, HTTPBadRequest
 from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 from sqlalchemy import distinct, func
 from datetime import date, datetime, time
@@ -130,21 +130,16 @@ class CartAPIView(object):
 
     @view_config(route_name='cart.api.stock_type')
     def stock_type(self):
-        performance = self.context.performance
+        sales_segment = self.context.sales_segment
         stock_type_id = self.request.matchdict.get('stock_type_id')
-        sales_segment_id = self.request.matchdict.get('sales_segment_id')
         session = get_db_session(self.request, 'slave')
         try:
+            if int(stock_type_id) not in [s.stock_type_id for s in sales_segment.stocks]:
+                raise HTTPBadRequest('no stock_type_id({}) has relation with sales_segment({})'.format(stock_type_id, sales_segment.id))
             stock_type = session.query(StockType).filter(StockType.id == stock_type_id).one()
         except NoResultFound as e:
             logger.warning("{} for stock_type_id={}".format(e.message, stock_type_id))
             raise HTTPNotFound()
-        try:
-            sales_segment = session.query(SalesSegment).filter(SalesSegment.id == sales_segment_id).one()
-        except NoResultFound as e:
-            logger.warning("{} for sales_segment_id={}".format(e.message, sales_segment_id))
-            raise HTTPNotFound()
-        products = [p for p in stock_type.product if p.performance_id == performance.id]  # XXX: productだけどlistが返ってくる
         # svg側では描画エリアをregionと定義しているのでそれに合わせる
         region_ids = []
         for stock in sales_segment.stocks:
@@ -166,7 +161,7 @@ class CartAPIView(object):
                     min_product_quantity=product.min_product_quantity,
                     max_product_quantity=product.max_product_quantity,
                     is_must_be_chosen=product.must_be_chosen
-                ) for product in products],
+                ) for product in sales_segment.products],
                 regions=region_ids
             )
         )
@@ -189,7 +184,7 @@ class CartAPIView(object):
                             .join(Product.sales_segment)\
                             .filter(SalesSegment.id == sales_segment.id)\
                             .all()
-        
+
         # distinctで指定したカラムだけkey指定できないのでnamedtupleに代入
         seat_dicts = [SeatDict(d[0], d[1], d[2], d[3]) for d in seat_dicts]
         stock_type_quantity_pairs = [StockTypeQuantityPair(type_id, quantity)
@@ -706,6 +701,18 @@ def no_resource(context, request):
     return dict(
         error=dict(
             code="404",
+            message="{}: {}".format(context.__class__.__name__, message),
+            details=[]
+        )
+    )
+
+@view_config(context=HTTPBadRequest, renderer='json')
+def no_resource(context, request):
+    request.response.status = 400
+    message = context.message or 'bad request'
+    return dict(
+        error=dict(
+            code="400",
             message="{}: {}".format(context.__class__.__name__, message),
             details=[]
         )
