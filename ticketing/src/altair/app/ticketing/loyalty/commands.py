@@ -132,7 +132,7 @@ def lookup_for_point_granted_order(order_no, organization):
         raise RecordError("Order(order_no=%s) does not exist" % order_no)
 
 
-def build_export_data_query(organization, submitted_on):
+def build_export_data_query(organization, submitted_on, type):
     from altair.app.ticketing.models import DBSession
     from altair.app.ticketing.users.models import UserPointAccount
     from altair.app.ticketing.orders.models import Order
@@ -725,7 +725,7 @@ def do_export_point_grant_data(registry, organization, type, reason_code, shop_n
     else:
         logger.info("start exporting point granting data scheduled for submission on %s, for Organization(id=%ld)" % (submitted_on, organization.id))
 
-        query = build_export_data_query(organization=organization, submitted_on=submitted_on)
+        query = build_export_data_query(organization=organization, submitted_on=submitted_on, type=type)
 
         if not include_granted_data:
             query = query.filter(PointGrantHistoryEntry.granted_at == None)
