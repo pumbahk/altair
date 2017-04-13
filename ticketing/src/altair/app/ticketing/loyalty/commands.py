@@ -22,7 +22,7 @@ from altair.app.ticketing.payments.plugins import CHECKOUT_PAYMENT_PLUGIN_ID
 logger = logging.getLogger(__name__)
 
 # 楽チケと一緒にポイント付与したいOrgのコード
-from . import orgs_within_rakuten
+from . import orgs_with_rakuten
 
 class RecordError(Exception):
     pass
@@ -152,13 +152,13 @@ def build_export_data_query(organization, submitted_on):
 
 def build_org_id_as_list(organization, extra_orgs=None):
     from altair.app.ticketing.core.models import Organization, OrganizationSetting
-    # orgs_within_rakutenはこのmoduleの__init__.pyにて定義されてる
-    within_rakuten = extra_orgs or orgs_within_rakuten
+    # orgs_with_rakutenはこのmoduleの__init__.pyにて定義されてる
+    with_rakuten = extra_orgs or orgs_with_rakuten
     org_ids = []
     if organization.code == "RT":
         # 一緒に付与するOrgを抽出する
         # point_typeがないやつは対象外にする
-        target_orgs = within_rakuten + ["RT"]
+        target_orgs = with_rakuten + ["RT"]
         orgs = Organization.query \
             .join(OrganizationSetting) \
             .filter(Organization.code.in_(target_orgs)) \
@@ -176,7 +176,7 @@ def do_import_point_grant_results(registry, organization, file, now, type, force
     from altair.app.ticketing.users.models import User, UserPointAccount, UserPointAccountTypeEnum
 
     # 楽天チケットと一緒にポイント付与の場合は何もしない。
-    if organization.code in within_rakuten:
+    if organization.code in orgs_with_rakuten:
         logger.info(
             "Importing point grant results of this organization(id=%ld, name=%s) is executed within Rakuten Ticket. Skipping" % (
             organization.id, organization.name))
@@ -335,7 +335,7 @@ def do_import_point_grant_data(registry, organization, type, submitted_on, file,
     logger.info("start processing %s" % file)
 
     # 楽天チケットと一緒にポイント付与の場合は何もしない。
-    if organization.code in within_rakuten:
+    if organization.code in orgs_with_rakuten:
         logger.info(
             "Importing point grant results of this organization(id=%ld, name=%s) is executed within Rakuten Ticket. Skipping" % (
                 organization.id, organization.name))
@@ -717,7 +717,7 @@ def do_export_point_grant_data(registry, organization, type, reason_code, shop_n
     from .models import PointGrantHistoryEntry
 
     # 楽天チケットと一緒にポイント付与の場合は何もしない。
-    if organization.code in within_rakuten:
+    if organization.code in orgs_with_rakuten:
         logger.info(
             "Exporting point grant data of this organization(id=%ld, name=%s) is executed within Rakuten Ticket. Skipping" % (
             organization.id, organization.name))
