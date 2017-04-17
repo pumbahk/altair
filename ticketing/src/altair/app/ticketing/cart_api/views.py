@@ -14,6 +14,7 @@ from altair.app.ticketing.core.models import (
     StockType,
     Seat,
     Stock,
+    StockType,
     SeatStatus,
     SeatStatusEnum,
     Product,
@@ -168,28 +169,41 @@ class CartAPIView(object):
 
     @view_config(route_name='cart.api.seats')
     def seats(self):
-        from collections import namedtuple
-        SeatDict = namedtuple("SeatDict", "seat_l0_id stock_type_id seat_status stock_quantity")
-        StockTypeQuantityPair = namedtuple("StockTypeQuantityPair", "stock_type_id stock_quantity")
-
         # available_sales_segmentsは優先順位順にならんでるはず
         sales_segment = [ss for ss in self.context.available_sales_segments][0]
         session = get_db_session(self.request, 'slave')
-        seat_dicts = session.query(distinct(Seat.l0_id), Stock.stock_type_id, SeatStatus.status, StockStatus.quantity)\
-                            .join(Seat.status_)\
-                            .join(Seat.stock)\
-                            .join(Stock.product_items)\
-                            .join(Stock.stock_status)\
-                            .join(ProductItem.product)\
-                            .join(Product.sales_segment)\
-                            .filter(SalesSegment.id == sales_segment.id)\
-                            .all()
+
+        def build_seat_query(request):
+            params = request.GET
+            q = session.query(distinct(Seat.l0_id), Stock.stock_type_id, SeatStatus.status, StockStatus.quantity, Product)\
+                    .join(Seat.status_)\
+                    .join(Seat.stock)\
+                    .join(Stock.product_items)\
+                    .join(Stock.stock_status)\
+                    .join(Stock.stock_type)\
+                    .join(ProductItem.product)\
+                    .join(Product.sales_segment)\
+                    .filter(SalesSegment.id == sales_segment.id)
+            if params.get('min_price'):
+                q = q.filter(Product.price >= params.get('min_price'))
+            if params.get('max_price'):
+                q = q.filter(Product.price <= params.get('max_price'))
+            if params.get('stock_type_name'):
+                q = q.filter(StockType.name.like(u'%{}%'.format(params.get('stock_type_name'))))
+            if params.get('quantity'):
+                q = q.filter(StockStatus.quantity >= params.get('quantity'))
+            return q
+
+        seat_tuples = build_seat_query(self.request)
 
         # distinctで指定したカラムだけkey指定できないのでnamedtupleに代入
-        seat_dicts = [SeatDict(d[0], d[1], d[2], d[3]) for d in seat_dicts]
+        from collections import namedtuple
+        SeatDict = namedtuple("SeatDict", "seat_l0_id stock_type_id seat_status stock_quantity")
+        StockTypeQuantityPair = namedtuple("StockTypeQuantityPair", "stock_type_id stock_quantity")
+        seat_dicts = [SeatDict(d[0], d[1], d[2], d[3]) for d in seat_tuples]
         stock_type_quantity_pairs = [StockTypeQuantityPair(type_id, quantity)
                                      for type_id, quantity in set([(d.stock_type_id, d.stock_quantity) for d in seat_dicts])]
-
+        products = set([d[4] for d in seat_tuples])
         # svg側では描画エリアをregionと定義しているのでそれに合わせる
         region_ids = []
         for stock in sales_segment.stocks:
@@ -201,6 +215,13 @@ class CartAPIView(object):
                 stock_type_id=d.stock_type_id,
                 is_available=(d.seat_status == SeatStatusEnum.Vacant.v),
             ) for d in seat_dicts],
+            products=[dict(
+                product_id=product.id,
+                product_name=product.name,
+                product_price=product.price,
+                stock_type_id=product.items[0].stock_type_id,
+                stock_type_name=product.items[0].stock_type.name
+            ) for product in products],
             stock_types=[dict(
                 stock_type_id=pairs.stock_type_id,
                 available_counts=pairs.stock_quantity
