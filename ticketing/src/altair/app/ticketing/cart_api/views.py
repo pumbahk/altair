@@ -167,6 +167,30 @@ class CartAPIView(object):
             )
         )
 
+    # XXX: 以下のバリューオブジェクトに依存
+    # SeatDict = namedtuple("SeatDict", "seat_l0_id stock_type_id seat_status stock_quantity")
+    # StockTypeQuantityPair = namedtuple("StockTypeQuantityPair", "stock_type_id stock_quantity")
+    def build_seats_api_response(self, fields, seat_dicts, stock_type_quantity_pairs, region_ids):
+        """fields指定なしなら全fieldを返す
+        指定があれば指定されているものだけ返す"""
+        res = dict()
+        if 'seats' in fields or not fields:
+            res['seats'] = [dict(
+                    seat_l0_id=d.seat_l0_id,
+                    stock_type_id=d.stock_type_id,
+                    is_available=(d.seat_status == SeatStatusEnum.Vacant.v),
+                ) for d in seat_dicts]
+        if 'regions' in fields or not fields:
+            res['regions'] = [dict(
+                    region_id=region_id
+                ) for region_id in set(region_ids)]
+        if 'stock_types' in fields or not fields:
+            res['stock_types'] = [dict(
+                    stock_type_id=pairs.stock_type_id,
+                    available_counts=pairs.stock_quantity
+                ) for pairs in stock_type_quantity_pairs]
+        return res
+
     @view_config(route_name='cart.api.seats')
     def seats(self):
         # available_sales_segmentsは優先順位順にならんでるはず
@@ -175,7 +199,7 @@ class CartAPIView(object):
 
         def build_seat_query(request):
             params = request.GET
-            q = session.query(distinct(Seat.l0_id), Stock.stock_type_id, SeatStatus.status, StockStatus.quantity, Product)\
+            q = session.query(distinct(Seat.l0_id), Stock.stock_type_id, SeatStatus.status, StockStatus.quantity)\
                     .join(Seat.status_)\
                     .join(Seat.stock)\
                     .join(Stock.product_items)\
@@ -194,6 +218,15 @@ class CartAPIView(object):
                 q = q.filter(StockStatus.quantity >= params.get('quantity'))
             return q
 
+        def fields_parmas(request):
+            """return params list"""
+            fields = request.GET.get('fields')
+            if fields:
+                fields = fields.replace(' ', '').split(',')
+            else:
+                fields = []
+            return fields
+
         seat_tuples = build_seat_query(self.request)
 
         # distinctで指定したカラムだけkey指定できないのでnamedtupleに代入
@@ -203,33 +236,13 @@ class CartAPIView(object):
         seat_dicts = [SeatDict(d[0], d[1], d[2], d[3]) for d in seat_tuples]
         stock_type_quantity_pairs = [StockTypeQuantityPair(type_id, quantity)
                                      for type_id, quantity in set([(d.stock_type_id, d.stock_quantity) for d in seat_dicts])]
-        products = set([d[4] for d in seat_tuples])
+
         # svg側では描画エリアをregionと定義しているのでそれに合わせる
         region_ids = []
         for stock in sales_segment.stocks:
             region_ids.extend(stock.drawing_l0_ids)
 
-        return dict(
-            seats=[dict(
-                seat_l0_id=d.seat_l0_id,
-                stock_type_id=d.stock_type_id,
-                is_available=(d.seat_status == SeatStatusEnum.Vacant.v),
-            ) for d in seat_dicts],
-            products=[dict(
-                product_id=product.id,
-                product_name=product.name,
-                product_price=product.price,
-                stock_type_id=product.items[0].stock_type_id,
-                stock_type_name=product.items[0].stock_type.name
-            ) for product in products],
-            stock_types=[dict(
-                stock_type_id=pairs.stock_type_id,
-                available_counts=pairs.stock_quantity
-            ) for pairs in stock_type_quantity_pairs],
-            regions=[dict(
-                region_id=region_id
-            ) for region_id in set(region_ids)]
-        )
+        return self.build_seats_api_response(fields_parmas(self.request), seat_dicts, stock_type_quantity_pairs, region_ids)
 
     @view_config(route_name='cart.api.seat_reserve')
     def seat_reserve(self):
