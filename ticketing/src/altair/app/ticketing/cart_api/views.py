@@ -185,9 +185,16 @@ class CartAPIView(object):
                     region_id=region_id
                 ) for region_id in set(region_ids)]
         if 'stock_types' in fields or not fields:
+            from altair.app.ticketing.cart.helpers import get_availability_text
             res['stock_types'] = [dict(
                     stock_type_id=pairs.stock_type_id,
-                    available_counts=pairs.stock_quantity
+                    available_counts=pairs.rest_quantity,
+                    stock_status=get_availability_text(
+                        pairs.rest_quantity,
+                        pairs.all_quantity,
+                        pairs.event.setting.middle_stock_threshold,
+                        pairs.event.setting.middle_stock_threshold_percent
+                    )
                 ) for pairs in stock_type_quantity_pairs]
         return res
 
@@ -199,7 +206,7 @@ class CartAPIView(object):
 
         def build_seat_query(request):
             params = request.GET
-            q = session.query(distinct(Seat.l0_id), Stock.stock_type_id, SeatStatus.status, StockStatus.quantity)\
+            q = session.query(distinct(Seat.l0_id), Stock, SeatStatus.status, StockStatus.quantity)\
                     .join(Seat.status_)\
                     .join(Seat.stock)\
                     .join(Stock.product_items)\
@@ -231,11 +238,11 @@ class CartAPIView(object):
 
         # distinctで指定したカラムだけkey指定できないのでnamedtupleに代入
         from collections import namedtuple
-        SeatDict = namedtuple("SeatDict", "seat_l0_id stock_type_id seat_status stock_quantity")
-        StockTypeQuantityPair = namedtuple("StockTypeQuantityPair", "stock_type_id stock_quantity")
+        SeatDict = namedtuple("SeatDict", "seat_l0_id stock seat_status rest_quantity")
+        StockTypeQuantityPair = namedtuple("StockTypeQuantityPair", "stock_type_id rest_quantity all_quantity event")
         seat_dicts = [SeatDict(d[0], d[1], d[2], d[3]) for d in seat_tuples]
-        stock_type_quantity_pairs = [StockTypeQuantityPair(type_id, quantity)
-                                     for type_id, quantity in set([(d.stock_type_id, d.stock_quantity) for d in seat_dicts])]
+        stock_type_quantity_pairs = [StockTypeQuantityPair(type_id, rest_quantity, all_quantity, event)
+                                     for type_id, rest_quantity, all_quantity, event in set([(d.stock.stock_type_id, d.rest_quantity, d.stock.quantity, d.stock.stock_type.event) for d in seat_dicts])]
 
         # svg側では描画エリアをregionと定義しているのでそれに合わせる
         region_ids = []
