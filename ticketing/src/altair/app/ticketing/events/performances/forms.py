@@ -12,7 +12,8 @@ from altair.formhelpers.form import OurForm
 from altair.formhelpers.filters import zero_as_none
 from altair.formhelpers.fields import OurIntegerField, DateTimeField, OurGroupedSelectField, OurSelectField, OurBooleanField
 from altair.formhelpers import replace_ambiguous
-from altair.app.ticketing.core.models import Account, Site, Venue, Performance, PerformanceSetting, Stock, SalesSegment
+from altair.app.ticketing.models import DBSession
+from altair.app.ticketing.core.models import Account, Site, Venue, Performance, PerformanceSetting, Stock, SalesSegment, Operator
 from altair.app.ticketing.payments.plugins.sej import DELIVERY_PLUGIN_ID as SEJ_DELIVERY_PLUGIN_ID
 from altair.app.ticketing.core.utils import ApplicableTicketsProducer
 from altair.app.ticketing.helpers import label_text_for
@@ -192,7 +193,24 @@ class PerformanceForm(OurForm):
         default=1,
         hide_on_new=True,
     )
-
+    performance_operator_id = OurSelectField(
+        label=label_text_for(PerformanceSetting.performance_operator_id),
+        default=lambda field: field.context.user_id,
+        choices=lambda field: [(str(0), u'')] + [(str(operator.id), (operator.name)) for operator in
+                                                 DBSession.query(Operator).filter_by(
+                                                     organization_id=field._form.context.organization.id)],
+        coerce=int,
+        validators=[Optional()]
+    )
+    sales_person_id = OurSelectField(
+        label=label_text_for(PerformanceSetting.sales_person_id),
+        default=lambda field: field.context.user_id,
+        choices=lambda field: [(str(0), u'')] + [(str(operator.id), (operator.name)) for operator in
+                                                 DBSession.query(Operator).filter_by(
+                                                     organization_id=field._form.context.organization.id)],
+        coerce=int,
+        validators=[Optional()]
+    )
     visible = OurBooleanField(
         label=u'パフォーマンスの表示/非表示',
         default=True,

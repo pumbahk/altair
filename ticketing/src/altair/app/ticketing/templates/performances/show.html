@@ -57,7 +57,7 @@ ${performance.code} | ${performance.name}
   <div class="tab-content" id="tabbable-tab-content">
     % if tab == 'summary':
     <div class="tab-pane" id="summary">
-      <%include file="./_summary.html" args="sales_segments=sales_segments" />
+      <%include file="./_summary.html" args="sales_segments=sales_segments, show_op_and_sales=performance.event.organization.setting.show_event_op_and_sales" />
     </div>
     % elif tab == 'product' and HH.has_permission('event_editor'):
     <div class="tab-pane" id="product">
