@@ -50,7 +50,10 @@ spdb_sql = """
         PointGrantHistoryEntry.amount as point,
         CASE PaymentMethod.payment_plugin_id WHEN 1 THEN 'マルチ決済' WHEN 2 THEN '楽天ペイ' WHEN 3 THEN 'セブン' WHEN 4 THEN '窓口' WHEN 5 THEN '無料' WHEN 6 THEN 'ファミマ' ELSE '不明' END AS payment_method,
         CASE DeliveryMethod.delivery_plugin_id WHEN 1 THEN '配送' WHEN 2 THEN 'セブン' WHEN 3 THEN '窓口' WHEN 4 THEN 'QR認証' WHEN 5 THEN 'イベントゲート' WHEN 6 THEN' ファミマ' ELSE '不明' END AS delivery_method,
-        Cart.user_agent
+        PaymentMethod.name AS payment_method_name,
+        DeliveryMethod.name AS delivery_method_name,
+        Cart.user_agent,
+        `Order`.channel
 
     FROM
         `Order`
@@ -105,7 +108,7 @@ class SQLCreater(object):
             sql = "{0} AND `Order`.updated_at BETWEEN '{1}' and '{2}'".format(sql, term_from, term_to)
 
         if self._args.delete:
-            sql = "{0} AND `Order`.canceled_at IS NOT NULL".format(sql)
+            sql = "{0} AND (`Order`.canceled_at IS NOT NULL OR `Order`.deleted_at IS NOT NULL)".format(sql)
         else:
             sql = "{0} AND `Order`.canceled_at IS NULL".format(sql)
         return sql
@@ -260,8 +263,8 @@ def main():
     sql_creater = SQLCreater(args, spdb_sql)
     file_operator = FileOperator(args, SpdbInfo(args))
 
-    con = connect(host='dbmain.standby.altr', user='ticketing_ro', passwd='ticketing', db='ticketing', port=3308, charset='utf8', cursorclass=cursors.DictCursor)
     #con = connect(host='localhost', user='ticketing', passwd='ticketing', db='ticketing', port=3306, charset='utf8', cursorclass=cursors.DictCursor)
+    con = connect(host='dbmain.standby.altr', user='ticketing_ro', passwd='ticketing', db='ticketing', port=3308, charset='utf8', cursorclass=cursors.DictCursor)
     file_operator.open_tmp_file()
     logger.info(u"SPDB start {0}".format(file_operator.file_name))
 
@@ -269,10 +272,10 @@ def main():
         cur = con.cursor()
         cur.execute(sql_creater.sql)
         orders = cur.fetchall()
-        file_operator.write_tmp_file(u"\"PrimaryKey\",\"予約番号\",\"ステータス\",\"支払いステータス\",\"予約時間\",\"ユーザID\",\"イベントID\",\"イベントタイトル\",\"パフォーマンスID\",\"パフォーマンス名\",\"開演時間\",\"商品明細名\",\"席名\",\"商品明細金額\",\"商品明細個数\",\"手数料\",\"合計金額\",\"auth_identifier\",\"authz_identifier\",\"会員種別名\",\"会員区分名\",\"ポイント\",\"支払い方法\",\"引取方法\",\"デバイス\"\n".encode('utf-8'))
+        file_operator.write_tmp_file(u"\"PrimaryKey\",\"予約番号\",\"ステータス\",\"支払いステータス\",\"予約時間\",\"ユーザID\",\"イベントID\",\"イベントタイトル\",\"パフォーマンスID\",\"パフォーマンス名\",\"開演時間\",\"商品明細名\",\"席名\",\"商品明細金額\",\"商品明細個数\",\"手数料\",\"合計金額\",\"auth_identifier\",\"authz_identifier\",\"会員種別名\",\"会員区分名\",\"ポイント\",\"支払い方法\",\"引取方法\",\"デバイス\",\"チャネル\",\"支払い方法名\",\"引取方法名\"\n".encode('utf-8'))
         for row in orders:
             row = chop_none(row)
-            file_operator.write_tmp_file(u"\"{0[PrimaryKey]}\",\"{0[order_no]}\",\"{0[order_status]}\",\"{0[payment_status]}\",\"{0[created_at]}\",\"{0[user_id]}\",\"{0[event_id]}\",\"{0[event_title]}\",\"{0[performance_id]}\",\"{0[performance_name]}\",\"{0[performance_start_on]}\",\"{0[product_item_name]}\",\"{0[seat_name]}\",\"{0[product_item_price]}\",\"{0[product_item_quantity]}\",\"{0[fee]}\",\"{0[total_amount]}\",\"{0[auth_identifier]}\",\"{0[authz_identifier]}\",\"{0[membership_name]}\",\"{0[membergroup_name]}\",\"{0[point]}\",\"{0[payment_method]}\",\"{0[delivery_method]}\",\"{0[user_agent]}\"\n".format(row).encode('utf-8'))
+            file_operator.write_tmp_file(u"\"{0[PrimaryKey]}\",\"{0[order_no]}\",\"{0[order_status]}\",\"{0[payment_status]}\",\"{0[created_at]}\",\"{0[user_id]}\",\"{0[event_id]}\",\"{0[event_title]}\",\"{0[performance_id]}\",\"{0[performance_name]}\",\"{0[performance_start_on]}\",\"{0[product_item_name]}\",\"{0[seat_name]}\",\"{0[product_item_price]}\",\"{0[product_item_quantity]}\",\"{0[fee]}\",\"{0[total_amount]}\",\"{0[auth_identifier]}\",\"{0[authz_identifier]}\",\"{0[membership_name]}\",\"{0[membergroup_name]}\",\"{0[point]}\",\"{0[payment_method]}\",\"{0[delivery_method]}\",\"{0[user_agent]}\",\"{1}\",\"{0[payment_method_name]}\",\"{0[delivery_method_name]}\"\n".format(row, get_channel_str(row['channel'])).encode('utf-8'))
 
         file_operator.close_tmp_file()
         file_operator.upload()
@@ -285,6 +288,19 @@ def main():
         file_operator.close_tmp_file()
 
     logger.info(u"SPDB end {0}".format(file_operator.file_name))
+
+
+def get_channel_str(channel_num):
+    if channel_num == 1:
+        return "PC"
+    elif channel_num == 2:
+        return "Mobile"
+    elif channel_num == 3:
+        return "INNER"
+    elif channel_num == 4:
+        return "IMPORT"
+    else:
+        return "PC or Mobile"
 
 
 def chop_none(row):
