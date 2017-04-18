@@ -1,14 +1,14 @@
 # -*- coding:utf-8 -*-
 import logging
+from collections import namedtuple
 
 from pyramid.view import view_defaults, view_config
 from pyramid.httpexceptions import HTTPNotFound, HTTPBadRequest
 from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
-from sqlalchemy import distinct, func
+
 from datetime import date, datetime, time
 
 from altair.sqlahelper import get_db_session
-from altair.pyramid_dynamic_renderer import lbr_view_config
 
 from altair.app.ticketing.core.models import (
     StockType,
@@ -38,6 +38,8 @@ from altair.app.ticketing.cart.exceptions import (
 from altair.app.ticketing.cart import api
 from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.cart import view_support
+
+from .view_support import build_seat_query, parse_fields_parmas
 
 logger = logging.getLogger(__name__)
 
@@ -170,86 +172,61 @@ class CartAPIView(object):
     # XXX: 以下のバリューオブジェクトに依存
     # SeatDict = namedtuple("SeatDict", "seat_l0_id stock_type_id seat_status stock_quantity")
     # StockTypeQuantityPair = namedtuple("StockTypeQuantityPair", "stock_type_id stock_quantity")
-    def build_seats_api_response(self, fields, seat_dicts, stock_type_quantity_pairs, region_ids):
+    def build_seats_api_response(self, fields, seat_dicts, stock_type_tuples, region_ids):
         """fields指定なしなら全fieldを返す
         指定があれば指定されているものだけ返す"""
         res = dict()
         if 'seats' in fields or not fields:
             res['seats'] = [dict(
                     seat_l0_id=d.seat_l0_id,
-                    stock_type_id=d.stock_type_id,
+                    stock_type_id=d.stock.stock_type_id,
                     is_available=(d.seat_status == SeatStatusEnum.Vacant.v),
                 ) for d in seat_dicts]
         if 'regions' in fields or not fields:
+            # TODO: regions毎の残席を◎✕△で返すようにする
             res['regions'] = [dict(
-                    region_id=region_id
+                    region_id=region_id,
+                    stock_status=""
                 ) for region_id in set(region_ids)]
         if 'stock_types' in fields or not fields:
             from altair.app.ticketing.cart.helpers import get_availability_text
             res['stock_types'] = [dict(
-                    stock_type_id=pairs.stock_type_id,
-                    available_counts=pairs.rest_quantity,
+                    stock_type_id=stock_type.stock_type_id,
+                    available_counts=stock_type.rest_quantity,
                     stock_status=get_availability_text(
-                        pairs.rest_quantity,
-                        pairs.all_quantity,
-                        pairs.event.setting.middle_stock_threshold,
-                        pairs.event.setting.middle_stock_threshold_percent
+                        stock_type.rest_quantity,
+                        stock_type.all_quantity,
+                        stock_type.event.setting.middle_stock_threshold,
+                        stock_type.event.setting.middle_stock_threshold_percent
                     )
-                ) for pairs in stock_type_quantity_pairs]
+                ) for stock_type in stock_type_tuples]
         return res
 
     @view_config(route_name='cart.api.seats')
     def seats(self):
+        SeatDict = namedtuple("SeatDict", "seat_l0_id stock stock_type_id seat_status rest_quantity")
+        StockTypeTuple = namedtuple("StockTypeTuple", "stock_type_id rest_quantity all_quantity event")
+
         # available_sales_segmentsは優先順位順にならんでるはず
         sales_segment = [ss for ss in self.context.available_sales_segments][0]
         session = get_db_session(self.request, 'slave')
 
-        def build_seat_query(request):
-            params = request.GET
-            q = session.query(distinct(Seat.l0_id), Stock, SeatStatus.status, StockStatus.quantity)\
-                    .join(Seat.status_)\
-                    .join(Seat.stock)\
-                    .join(Stock.product_items)\
-                    .join(Stock.stock_status)\
-                    .join(Stock.stock_type)\
-                    .join(ProductItem.product)\
-                    .join(Product.sales_segment)\
-                    .filter(SalesSegment.id == sales_segment.id)
-            if params.get('min_price'):
-                q = q.filter(Product.price >= params.get('min_price'))
-            if params.get('max_price'):
-                q = q.filter(Product.price <= params.get('max_price'))
-            if params.get('stock_type_name'):
-                q = q.filter(StockType.name.like(u'%{}%'.format(params.get('stock_type_name'))))
-            if params.get('quantity'):
-                q = q.filter(StockStatus.quantity >= params.get('quantity'))
-            return q
-
-        def fields_parmas(request):
-            """return params list"""
-            fields = request.GET.get('fields')
-            if fields:
-                fields = fields.replace(' ', '').split(',')
-            else:
-                fields = []
-            return fields
-
-        seat_tuples = build_seat_query(self.request)
+        seat_tuples = build_seat_query(self.request, sales_segment.id, session)
 
         # distinctで指定したカラムだけkey指定できないのでnamedtupleに代入
-        from collections import namedtuple
-        SeatDict = namedtuple("SeatDict", "seat_l0_id stock seat_status rest_quantity")
-        StockTypeQuantityPair = namedtuple("StockTypeQuantityPair", "stock_type_id rest_quantity all_quantity event")
-        seat_dicts = [SeatDict(d[0], d[1], d[2], d[3]) for d in seat_tuples]
-        stock_type_quantity_pairs = [StockTypeQuantityPair(type_id, rest_quantity, all_quantity, event)
-                                     for type_id, rest_quantity, all_quantity, event in set([(d.stock.stock_type_id, d.rest_quantity, d.stock.quantity, d.stock.stock_type.event) for d in seat_dicts])]
+        seat_dicts = [SeatDict(d[0], d[1], d[2], d[3], d[4]) for d in seat_tuples]
+
+        stock_type_tuples = set([(d.stock_type_id, d.rest_quantity, d.stock.quantity, d.stock.stock_type.event) for d in seat_dicts])
+        # namedtupleでlabeling
+        stock_type_tuples = [StockTypeTuple(type_id, rest_quantity, all_quantity, event)
+                                     for type_id, rest_quantity, all_quantity, event in stock_type_tuples]
 
         # svg側では描画エリアをregionと定義しているのでそれに合わせる
         region_ids = []
         for stock in sales_segment.stocks:
             region_ids.extend(stock.drawing_l0_ids)
 
-        return self.build_seats_api_response(fields_parmas(self.request), seat_dicts, stock_type_quantity_pairs, region_ids)
+        return self.build_seats_api_response(parse_fields_parmas(self.request), seat_dicts, stock_type_tuples, region_ids)
 
     @view_config(route_name='cart.api.seat_reserve')
     def seat_reserve(self):
