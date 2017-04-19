@@ -110,8 +110,15 @@ def back_to_product_list_for_mobile(request):
             seat_type_id=cart.items[0].product.items[0].stock.stock_type_id))
 
 
-@view_defaults(decorator=(with_jquery + with_jquery_tools).not_when(mobile_request), xhr=False, permission="buy")
-class NgCartIndexView(IndexViewMixin):
+def check_auth_for_spa(fn):
+    def _check(context, request):
+        user = context.authenticated_user()
+        return fn(context, request)
+    return _check
+
+
+@view_defaults(decorator=((with_jquery + with_jquery_tools).not_when(mobile_request), check_auth_for_spa), xhr=False, permission="buy")
+class SpaCartIndexView(IndexViewMixin):
     """ Angular2カート """
     def __init__(self, context, request):
         IndexViewMixin.__init__(self)
@@ -119,9 +126,9 @@ class NgCartIndexView(IndexViewMixin):
         self.request = request
         self.prepare()
 
-    @lbr_view_config(route_name='cart.spa.index', renderer="ng_cart/index.html")
+    @lbr_view_config(route_name='cart.spa.index', renderer="spa_cart/index.html")
     @lbr_view_config(route_name='cart.spa.index',
-                     request_type="altair.mobile.interfaces.ISmartphoneRequest", renderer="ng_cart/index.html")
+                     request_type="altair.mobile.interfaces.ISmartphoneRequest", renderer="spa_cart/index.html")
     def spa_performance_based_landing_page(self):
         if not self.context.authenticated_user():
             return HTTPNotFound()
