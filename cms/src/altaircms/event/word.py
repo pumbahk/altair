@@ -159,7 +159,7 @@ def words_by_keyword(request, q):
     return request.allowable(Word, query) \
         .filter(Word.deleted_at == None) \
         .filter(Word.merge_to_word_id == None) \
-        .outerjoin(WordSearch, WordSearch.deleted_at == None) \
+        .outerjoin(WordSearch, and_(WordSearch.word_id == Word.id, WordSearch.deleted_at == None)) \
         .filter(or_(Word.label.contains(q), Word.label_kana.contains(q), WordSearch.data.contains(q))) \
         .outerjoin(merge_word, and_(merge_word.merge_to_word_id == Word.id, merge_word.deleted_at == None)) \
         .distinct()
