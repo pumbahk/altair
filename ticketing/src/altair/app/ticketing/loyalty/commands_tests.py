@@ -39,9 +39,10 @@ from .commands import (
     lookup_for_point_granted_order
 )
 
-test_org_code = ["RT", "VK", "RE", "XX"]
-test_org_sn = ["RT", "VK", "eagles", "XX"]
-test_point_type = [1, 0, 1, None]
+test_org_code = ["RT", "VK", "RE", "XX", "BB"]
+test_org_sn = ["RT", "VK", "eagles", "XX", "BB"]
+# point_typeが1の場合は楽天ポイント付与を使う。0とNoneの場合は使わない。
+test_point_type = [1, 1, 1, 0, None]
 
 order_nos = ['0000000001', '0000000002', '0000000003']
 
@@ -234,7 +235,10 @@ class CommandTest(unittest.TestCase):
 
         return order
 
-    def test_build_org_id_as_list(self):
+    # 楽天チケットと一緒にポイント付与するorgのidは楽天チケットと一緒に抽出するテスト
+    # 今回の対象はVKで、テスト用のidが２
+    # 楽天チケットと一緒にしないorgについて、楽天ポイント付与使っても一緒に抽出されないことを確認
+    def test_build_org_id_as_list_rakuten(self):
         organization = Organization.get(1)
         org_ids = build_org_id_as_list(organization)
         self.assertEquals(len(org_ids), 2)
@@ -242,6 +246,18 @@ class CommandTest(unittest.TestCase):
         self.assertEquals(2 in org_ids, True)
         self.assertEquals(3 in org_ids, False)
         self.assertEquals(4 in org_ids, False)
+        self.assertEquals(5 in org_ids, False)
+
+    # 楽天以外の対象orgの場合は、該当orgのidのみ抽出されないことをテスト
+    def test_build_org_id_as_list_other_org(self):
+        organization = Organization.get(3)
+        org_ids = build_org_id_as_list(organization)
+        self.assertEquals(len(org_ids), 1)
+        self.assertEquals(1 in org_ids, False)
+        self.assertEquals(2 in org_ids, False)
+        self.assertEquals(3 in org_ids, True)
+        self.assertEquals(4 in org_ids, False)
+        self.assertEquals(5 in org_ids, False)
 
     def test_lookup_for_point_granted_order(self):
         order_no = 'RT0000000001'
