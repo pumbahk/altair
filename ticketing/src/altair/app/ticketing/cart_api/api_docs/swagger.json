@@ -156,7 +156,7 @@
                         "x-example": 28677
                     },
                     {
-                        "name": "sales_segments",
+                        "name": "sales_segment_id",
                         "in": "path",
                         "description": "salse segment id",
                         "required": true,
