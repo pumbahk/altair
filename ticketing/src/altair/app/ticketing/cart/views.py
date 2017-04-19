@@ -110,15 +110,6 @@ def back_to_product_list_for_mobile(request):
             seat_type_id=cart.items[0].product.items[0].stock.stock_type_id))
 
 
-def check_auth_for_spa(fn):
-    def _check(context, request):
-        if "spa" in request.GET:
-            if context.authenticated_user():
-                return HTTPFound(request.route_path("cart.spa.index", performance_id=context.performance.id))
-        return fn(context, request)
-    return _check
-
-
 @view_defaults(decorator=(with_jquery + with_jquery_tools).not_when(mobile_request), xhr=False, permission="buy")
 class NgCartIndexView(IndexViewMixin):
     """ Angular2カート """
@@ -132,6 +123,8 @@ class NgCartIndexView(IndexViewMixin):
     @lbr_view_config(route_name='cart.spa.index',
                      request_type="altair.mobile.interfaces.ISmartphoneRequest", renderer="ng_cart/index.html")
     def spa_performance_based_landing_page(self):
+        if not self.context.authenticated_user():
+            return HTTPNotFound()
         return {}
 
 
@@ -484,7 +477,7 @@ class RecaptchaView(IndexViewMixin):
             return HTTPFound(self.request.route_url('cart.index2', performance_id=self.context.performance.id, _query=param))
         return dict(sitekey=self.context.recaptcha_sitekey)
 
-@view_defaults(decorator=((with_jquery + with_jquery_tools).not_when(mobile_request), check_auth_for_spa), xhr=False, permission="buy")
+@view_defaults(decorator=(with_jquery + with_jquery_tools).not_when(mobile_request), xhr=False, permission="buy")
 class IndexView(IndexViewMixin):
     """ 座席選択画面 """
     def __init__(self, context, request):
