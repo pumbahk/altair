@@ -148,11 +148,15 @@
         })
         .done(function(r) {
             if(add) {
+                if(!r.data || r.data.length == 0) {
+                    alert('登録に失敗しました.');
+                    return false;
+                }
                 tr.remove();
 
                 var template = $('#subscribed_word_template_container').html();
                 build(template, conv(r.data[0]))
-                .attr('id', 'word-' + r.data[0].od)
+                .attr('id', 'word-' + r.data[0].id)
                 .appendTo($('.favorite-list.subscription'));
 
                 $('#msg_nothing_subscribe').hide();

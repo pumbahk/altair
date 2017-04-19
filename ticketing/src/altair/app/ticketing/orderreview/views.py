@@ -1103,6 +1103,28 @@ class MypageWordView(object):
             return [ ]
         return get_word(self.request, id, q)
 
+    def auto_update(self, req, res):
+        if req != res:
+            if len(res) == 0:
+                # api errorかもしれない場合に全部消えたら嫌なので...
+                return
+
+            to_delete = [ x for x in list(set(req) - set(res)) ]
+            to_register = [ x for x in list(set(res) - set(req)) ]
+
+            logger.info("auto_update: delete(%s), register(%s)" % (to_delete, to_register))
+
+            for word_id in to_register:
+                DBSession.add(WordSubscription(user_id=self.user.id, word_id=word_id))
+            if 0 < len(to_delete):
+                to_delete_query = DBSession.query(WordSubscription)\
+                    .filter(WordSubscription.user_id==self.user.id)\
+                    .filter(WordSubscription.word_id.in_(to_delete))
+                for ws in to_delete_query.all():
+                    ws.delete()
+
+            DBSession.flush()
+
     @lbr_view_config(route_name='mypage.word.show',
         request_method="GET",
         custom_predicates=(override_auth_type,),
@@ -1114,6 +1136,9 @@ class MypageWordView(object):
 
         subscriptions = WordSubscription.query.filter(WordSubscription.user_id==self.user.id).all()
         words = self._get_word(id=' '.join([ str(s.word_id) for s in subscriptions ]))
+
+        self.auto_update(sorted([s.word_id for s in subscriptions]), [w["id"] for w in words])
+
         return { "enabled": True, "words": words }
 
     @lbr_view_config(route_name='mypage.word.search',
@@ -1157,18 +1182,16 @@ class MypageWordView(object):
     def subscribe(self):
         word_id = self.request.params.get('word')
         words = self._get_word(id=word_id)
-        if len(words) != 1:
+        if words is not None and len(words) != 1:
             return { }
+
         word_id = words[0]['id']
+        if WordSubscription.query.filter(WordSubscription.user_id==self.user.id, WordSubscription.word_id==word_id).first() != None:
+            # already registered
+            return { }
 
-        if words is not None and len(words) == 1:
-            if WordSubscription.query.filter(WordSubscription.user_id==self.user.id, WordSubscription.word_id==word_id).first() != None:
-                # already registered
-                return { }
-
-            WordSubscription.add(WordSubscription(user_id=self.user.id, word_id=word_id))
-            return { "result": "OK", "data": words }
-        return { }
+        WordSubscription.add(WordSubscription(user_id=self.user.id, word_id=word_id))
+        return { "result": "OK", "data": words }
 
     @lbr_view_config(route_name='mypage.word.unsubscribe',
         request_method="POST",
