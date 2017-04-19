@@ -232,7 +232,9 @@ $('#word_selection').on('change', 'input', function() {
   var extended_word_ids = [ ];
   $('#word_selection input:checked').each(function() {
     extended_word_ids.push($(this).val());
-    Array.prototype.push.apply(extended_word_ids, $(this).data('merge').split(","));
+    if($(this).data('merge') != '') {
+      Array.prototype.push.apply(extended_word_ids, $(this).data('merge').split(","));
+    }
   });
 
   // update hidden field
