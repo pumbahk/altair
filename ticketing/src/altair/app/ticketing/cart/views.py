@@ -42,6 +42,8 @@ from altair.app.ticketing.venues.api import get_venue_site_adapter
 from altair.mobile.interfaces import IMobileRequest
 from altair.sqlahelper import get_db_session
 from altair.app.ticketing.temp_store import TemporaryStoreError
+from pyramid.renderers import render_to_response
+from pyramid.response import Response
 
 from . import api
 from . import helpers as h
@@ -95,6 +97,7 @@ logger = logging.getLogger(__name__)
 
 limiter = LimiterDecorators('altair.cart.limit_per_unit_time', TooManyCartsCreated)
 
+
 def back_to_product_list_for_mobile(request):
     cart = api.get_cart_safe(request)
     api.remove_cart(request)
@@ -105,6 +108,32 @@ def back_to_product_list_for_mobile(request):
             performance_id=cart.performance_id,
             sales_segment_id=cart.sales_segment_id,
             seat_type_id=cart.items[0].product.items[0].stock.stock_type_id))
+
+
+def check_auth_for_spa(fn):
+    def _check(context, request):
+        if "spa" in request.GET:
+            if context.authenticated_user():
+                return HTTPFound(request.route_path("cart.spa.index", performance_id=context.performance.id))
+        return fn(context, request)
+    return _check
+
+
+@view_defaults(decorator=(with_jquery + with_jquery_tools).not_when(mobile_request), xhr=False, permission="buy")
+class NgCartIndexView(IndexViewMixin):
+    """ Angular2カート """
+    def __init__(self, context, request):
+        IndexViewMixin.__init__(self)
+        self.context = context
+        self.request = request
+        self.prepare()
+
+    @lbr_view_config(route_name='cart.spa.index', renderer="ng_cart/index.html")
+    @lbr_view_config(route_name='cart.spa.index',
+                     request_type="altair.mobile.interfaces.ISmartphoneRequest", renderer="ng_cart/index.html")
+    def spa_performance_based_landing_page(self):
+        return {}
+
 
 @provider(IPageFlowPredicate)
 def flow_predicate_extra_form(pe, flow_context, context, request):
@@ -454,7 +483,6 @@ class RecaptchaView(IndexViewMixin):
             param = {'g-recaptcha-response': recaptcha}
             return HTTPFound(self.request.route_url('cart.index2', performance_id=self.context.performance.id, _query=param))
         return dict(sitekey=self.context.recaptcha_sitekey)
-
 
 @view_defaults(decorator=((with_jquery + with_jquery_tools).not_when(mobile_request), check_auth_for_spa), xhr=False, permission="buy")
 class IndexView(IndexViewMixin):
