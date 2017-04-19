@@ -41,6 +41,7 @@ from .commands import (
 
 test_org_code = ["RT", "VK", "RE", "XX", "BB"]
 test_org_sn = ["RT", "VK", "eagles", "XX", "BB"]
+# point_typeが1の場合は楽天ポイント付与を使う。0とNoneの場合は使わない。
 test_point_type = [1, 1, 1, 0, None]
 
 order_nos = ['0000000001', '0000000002', '0000000003']
@@ -233,7 +234,9 @@ class CommandTest(unittest.TestCase):
         )
 
         return order
-
+    # 楽天チケットと一緒にポイント付与するorgのidは楽天チケットと一緒に抽出するテスト
+    # 今回の対象はVKで、テスト用のidが２
+    # 楽天チケットと一緒にしないorgについて、楽天ポイント付与使っても一緒に抽出されないことを確認
     def test_build_org_id_as_list(self):
         organization = Organization.get(1)
         org_ids = build_org_id_as_list(organization)
