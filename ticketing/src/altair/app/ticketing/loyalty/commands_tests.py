@@ -234,16 +234,28 @@ class CommandTest(unittest.TestCase):
         )
 
         return order
+
     # 楽天チケットと一緒にポイント付与するorgのidは楽天チケットと一緒に抽出するテスト
     # 今回の対象はVKで、テスト用のidが２
     # 楽天チケットと一緒にしないorgについて、楽天ポイント付与使っても一緒に抽出されないことを確認
-    def test_build_org_id_as_list(self):
+    def test_build_org_id_as_list_rakuten(self):
         organization = Organization.get(1)
         org_ids = build_org_id_as_list(organization)
         self.assertEquals(len(org_ids), 2)
         self.assertEquals(1 in org_ids, True)
         self.assertEquals(2 in org_ids, True)
         self.assertEquals(3 in org_ids, False)
+        self.assertEquals(4 in org_ids, False)
+        self.assertEquals(5 in org_ids, False)
+
+    # 楽天以外の対象orgの場合は、該当orgのidのみ抽出されないことをテスト
+    def test_build_org_id_as_list_other_org(self):
+        organization = Organization.get(3)
+        org_ids = build_org_id_as_list(organization)
+        self.assertEquals(len(org_ids), 1)
+        self.assertEquals(1 in org_ids, False)
+        self.assertEquals(2 in org_ids, False)
+        self.assertEquals(3 in org_ids, True)
         self.assertEquals(4 in org_ids, False)
         self.assertEquals(5 in org_ids, False)
 
