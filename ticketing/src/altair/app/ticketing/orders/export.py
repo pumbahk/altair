@@ -9,6 +9,8 @@ from datetime import date, datetime
 from collections import OrderedDict
 
 from paste.util.multidict import MultiDict
+from altair.sqlahelper import get_db_session
+from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 from sqlalchemy.sql.expression import and_, or_
 
 from altair.app.ticketing.models import DBSession
@@ -113,9 +115,13 @@ japanese_columns = {
     u'payment_method.name': u'決済方法',
     u'delivery_method.name': u'引取方法',
     u'event.title': u'イベント',
+    u'event_setting.event_operator': u'イベント登録担当者',
+    u'event_setting.sales_person': u'イベント営業担当者',
     u'performance.name': u'公演',
     u'performance.code': u'公演コード',
     u'performance.start_on': u'公演日',
+    u'performance_setting.performance_operator': u'公演登録担当者',
+    u'performance_setting.sales_person': u'公演営業担当者',
     u'venue.name': u'会場',
     u'ordered_product.price': u'商品単価',
     u'ordered_product.quantity': u'商品個数',
@@ -163,10 +169,14 @@ ordered_ja_col = OrderedDict([
     (u'order.card_ahead_com_code', u'仕向け先企業コード'),
     (u'order.card_ahead_com_name', u'仕向け先企業名'),
     (u'event.title', u'イベント'),
+    (u'event_setting.event_operator', u'イベント登録担当者'),
+    (u'event_setting.sales_person', u'イベント営業担当者'),
     (u'order.created_from_lot_entry.lot.name', u'抽選'),
     (u'performance.name', u'公演'),
     (u'performance.code', u'公演コード'),
     (u'performance.start_on', u'公演日'),
+    (u'performance_setting.performance_operator', u'公演登録担当者'),
+    (u'performance_setting.sales_person', u'公演営業担当者'),
     (u'venue.name', u'会場'),
     (u'ordered_product.product.sales_segment.sales_segment_group.name', u'販売区分'),
     (u'account.name', u'配券元'),
@@ -768,9 +778,13 @@ class OrderDeltaCSV(OrderCSV):
         u'payment_method.name': PlainTextRenderer(u'payment_method.name'),
         u'delivery_method.name': PlainTextRenderer(u'delivery_method.name'),
         u'event.title': PlainTextRenderer(u'event.title'),
+        u'event_setting.event_operator': PlainTextRenderer(u'event_setting.event_operator'),
+        u'event_setting.sales_person': PlainTextRenderer(u'event_setting.sales_person'),
         u'performance.name': PlainTextRenderer(u'performance.name'),
         u'performance.code': PlainTextRenderer(u'performance.code'),
         u'performance.start_on': PlainTextRenderer(u'performance.start_on'),
+        u'performance_setting.performance_operator': PlainTextRenderer(u'performance_setting.performance_operator'),
+        u'performance_setting.sales_person': PlainTextRenderer(u'performance_setting.sales_person'),
         u'venue.name': PlainTextRenderer(u'venue.name'),
         u'mail_magazine.mail_permission': MailMagazineSubscriptionStateRenderer(
         u'shipping_address.emails', u'mail_magazine.mail_permission'),
@@ -885,7 +899,6 @@ class OrderDeltaCSV(OrderCSV):
     def lookup_user_point_account(self, order):
         from altair.app.ticketing.orders.models import order_user_point_account_table
         from altair.app.ticketing.users.models import UserPointAccount
-        from sqlalchemy.orm.exc import NoResultFound
 
         query = UserPointAccount.query.join(order_user_point_account_table,
                                             UserPointAccount.id == order_user_point_account_table.c.user_point_account_id)\
@@ -899,9 +912,7 @@ class OrderDeltaCSV(OrderCSV):
     # 決済方法か取引方法がファミポートの場合のみ情報を取得する。それ以外の場合はNoneを返す
     def lookup_famiport_order(self, order):
         from altair.app.ticketing.payments.plugins import famiport
-        from altair.sqlahelper import get_db_session
         from altair.app.ticketing.famiport.models import FamiPortOrder
-        from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 
         tenant = famiport.lookup_famiport_tenant(self.request, order)
         if tenant is not None:
@@ -932,6 +943,28 @@ class OrderDeltaCSV(OrderCSV):
 
         return None
 
+    def lookup_event_setting(self, e_id):
+        from altair.app.ticketing.core.models import EventSetting
+        try:
+            es = EventSetting.query.filter_by(event_id=e_id).one()
+            return es
+        except NoResultFound:
+            logger.exception(u'no event setting is found when download the order info.')
+        except MultipleResultsFound:
+            logger.exception(u'multiple event settings are found when download the order info.')
+        return None
+
+    def lookup_performance_setting(self, p_id):
+        from altair.app.ticketing.core.models import PerformanceSetting
+        try:
+            ps = PerformanceSetting.query.filter_by(performance_id=p_id).one()
+            return ps
+        except NoResultFound:
+            logger.exception(u'no performance setting is found when download the order info.')
+        except MultipleResultsFound:
+            logger.exception(u'multiple performance settings are found when download the order info.')
+        return None
+
 
     def iter_records_for_order(self, order):
         user_credential = order.user.user_credential if order.user else None
@@ -940,6 +973,8 @@ class OrderDeltaCSV(OrderCSV):
         user_point_account = self.lookup_user_point_account(order)
         famiport_receipt_payment = self.lookup_famiport_receipt(order, payment_flag=True)
         famiport_receipt_ticketing = self.lookup_famiport_receipt(order, ticketing_flag=True)
+        event_setting = self.lookup_event_setting(order.performance.event.id)
+        performance_setting = self.lookup_performance_setting(order.performance.id)
 
         common_record = {
             u'order': order,
@@ -959,7 +994,9 @@ class OrderDeltaCSV(OrderCSV):
             u'stock_type': order.ordered_products[0].product.seat_stock_type if order.ordered_products[0] else None,
             u'account': order.performance.account,
             u'famiport_receipt_payment': famiport_receipt_payment,
-            u'famiport_receipt_ticketing': famiport_receipt_ticketing
+            u'famiport_receipt_ticketing': famiport_receipt_ticketing,
+            u'event_setting': event_setting,
+            u'performance_setting': performance_setting,
             }
         if self.export_type == self.EXPORT_TYPE_ORDER:
             record = dict(common_record)

@@ -1,4 +1,4 @@
-<%page args="expanded=True" />
+<%page args="expanded=True, show_op_and_sales=False" />
 <table class="table table-bordered table-condensed ">
   <tbody>
     <tr>
@@ -77,6 +77,16 @@
           <td colspan="7">${v or u'-'}</td>
         </tr>
       %endfor
+      % if show_op_and_sales:
+        <tr>
+          <th>登録担当者</th>
+          <td colspan="7">${performance.setting.performance_operator}</td>
+        </tr>
+        <tr>
+          <th>営業担当者</th>
+          <td colspan="7">${performance.setting.sales_person}</td>
+        </tr>
+      % endif
     %endif
 % endif
   </tbody>

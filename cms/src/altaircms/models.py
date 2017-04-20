@@ -440,6 +440,9 @@ class Word(Base, WithOrganizationMixin):
     description = sa.Column(sa.String(length=255))
     #link = sa.Column(sa.String(length=255))
 
+    merge_to_word_id = sa.Column(sa.Integer, sa.ForeignKey('word.id'))
+    merge_to_word = relationship("Word", remote_side=[id])
+
     created_at = sa.Column(sa.DateTime, default=datetime.now)
     updated_at = sa.Column(sa.DateTime, default=datetime.now, onupdate=datetime.now)
     deleted_at = sa.Column(sa.DateTime)

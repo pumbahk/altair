@@ -6,6 +6,8 @@ from pyramid.httpexceptions import HTTPFound
 from sqlalchemy import func, distinct
 import sqlalchemy.orm as orm
 from sqlalchemy import or_
+from sqlalchemy.orm import aliased
+
 import altaircms.helpers as h
 from datetime import datetime
 
@@ -53,9 +55,14 @@ class WordManageView(object):
         renderer="altaircms:templates/word/list.html",)
     def index(self):
         search = self.request.params.get('q')
+        parent_word = aliased(Word)
+        child_word = aliased(Word)
         query = DBSession.query(Word.id, Word.label, Word.label_kana,
                             func.count(distinct(WordSearch.id)).label("num_searches"),
                             func.count(distinct(Event.id)).label("num_events"),
+                            parent_word.id.label("parent_word_id"),
+                            parent_word.label.label("parent_word_label"),
+                            func.count(distinct(child_word.id)).label("num_children"),
                             Word.created_at, Word.updated_at,
                             )
         qs = self.request.allowable(Word, query)\
@@ -63,6 +70,8 @@ class WordManageView(object):
             .outerjoin(WordSearch)\
             .filter(WordSearch.deleted_at==None)\
             .outerjoin(Event_Word, Event)\
+            .outerjoin(parent_word, parent_word.id==Word.merge_to_word_id)\
+            .outerjoin(child_word, child_word.merge_to_word_id==Word.id)\
             .group_by(Word.id)
         if search is not None and 0 < len(search):
             qs = qs.filter(or_(Word.label.contains(search), WordSearch.data.contains(search)))
