@@ -38,7 +38,19 @@ ${xs.pager()}
     </thead>
     <tbody>
     % for word in xs.paginated():
-    <tr><td class="word-index">${word.label_kana[0] if word.label_kana is not None else ""}</td><td class="word-label"><a href="${request.route_path('word_update', action='input', id=word.id)}">${word.label}</a></td><td>${word.num_searches}</td><td><a href="${request.route_path('event_list', _query={ 'word': word.id})}">${word.num_events}</a></td><td>${word.created_at}</td><td><a href="${request.route_path('word_delete', action='confirm', id=word.id)}">削除</a></td></tr>
+    <tr><td class="word-index">${word.label_kana[0] if word.label_kana is not None else ""}</td><td class="word-label">
+        % if word.parent_word_id:
+          <a href="${request.route_path('word_update', action='input', id=word.id)}" style="text-decoration: line-through;">${word.label}</a>
+          →<a href="${request.route_path('word_update', action='input', id=word.parent_word_id)}">${word.parent_word_label}</a>
+        % else:
+          <a href="${request.route_path('word_update', action='input', id=word.id)}">${word.label}</a>
+        % endif
+    </td><td>${word.num_searches}</td><td><a href="${request.route_path('event_list', _query={ 'word': word.id})}">${word.num_events}</a></td><td>${word.created_at}</td>
+        <td>
+            % if word.num_children == 0:
+              <a href="${request.route_path('word_delete', action='confirm', id=word.id)}">削除</a>
+            % endif
+        </td></tr>
     % endfor
     </tbody>
 </table>

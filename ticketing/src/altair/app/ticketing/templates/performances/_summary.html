@@ -1,8 +1,8 @@
-<%page args="sales_segments=None" />
+<%page args="sales_segments=None, show_op_and_sales=False" />
 
 <div class="row-fluid">
   <div class="span12">
-    <%include file="./_detail_table.html" args="expanded=True" />
+    <%include file="./_detail_table.html" args="expanded=True, show_op_and_sales=show_op_and_sales" />
     <input type="hidden" id="performance_id" value="${performance.id}"></input>
     <div>
       <h3 class="pull-left" style="margin-right: 10px">販売区分</h3>

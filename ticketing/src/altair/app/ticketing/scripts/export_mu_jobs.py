@@ -86,45 +86,56 @@ def upload(uri, data, resolver, dry_run):
 def create_recipients(request, session, announcement):
     api = get_communication_api(request, CMSCommunicationApi)
 
+    # 1. 特定イベントに紐づくWord情報をAPIで一括取得(mergeも展開)
     words = dict()
     req = api.create_connection("/api/word/?backend_event_id=%d" % announcement.event_id)
     try:
         with contextlib.closing(urllib2.urlopen(req)) as res:
             cms_info = json.loads(res.read())
             for w in cms_info['words']:
-                words[w['id']] = w['label']
+                words[w['id']] = w
+                if w['merge']:
+                    for mw in w['merge']:
+                        words[mw] = w
     except Exception, e:
         logger.error("cms info error: %s" % (e.message))
         raise
-    #message("found words in cms: %s" % ", ".join([str(w) for w in words.keys()]))
+    message("found words in cms event: %s" % ", ".join([str(w) for w in words.keys()]))
 
-    #message("found words in job: %s" % ", ".join([str(w) for w in words.keys()]))
-
+    # 2. 今回の配送ジョブで指定されているWord IDをsplitする
     announce_words = [ int(w) for w in announcement.words.split(",") ]
+    message("found words in ticketing job: %s" % announce_words)
 
-    # words is subset of cms word_ids
-    # ignore id unless contained in cms word_ids
-    word_ids = [ w for w in announce_words if w in words.keys() ]
+    # 3. 上記2つのデータを組み合わせて、今回の配送ジョブで扱うWord情報を準備する
+    word_ids = reduce(lambda x, y: x+y, [ [wid]+words[wid]['merge'] for wid in announce_words if wid in words.keys() ])
+    word_ids = list(set(word_ids))
 
-    #message("search subscriptions for word_id: %s" % ", ".join([str(w) for w in word_ids]))
+    # TODO: ジョブに含まれているのにAPIが返さなかったWord IDがある場合は、警告したい
 
     if len(word_ids) == 0:
         logger.warn("no words found for event_id=%d, announcement_id=%d" % (announcement.event_id, announcement.id))
         return [ ]
 
+    # 5. Word IDから、ユーザ毎の購読ワードリストを構築する
     subscriptions = session.query(UserCredential.auth_identifier, WordSubscription.word_id) \
         .filter(WordSubscription.word_id.in_(word_ids)) \
         .filter(WordSubscription.user_id == UserCredential.user_id) \
         .all()
 
+    for (open_id, word_id) in subscriptions:
+        message("user=%s word_id=%d" % (open_id, word_id))
+
     by_user = dict()
-    for s in subscriptions:
-        open_id = s[0]
+    for (open_id, word_id) in subscriptions:
+        label = words[word_id]['label']
         if open_id not in by_user:
             by_user[open_id] = dict(words=[])
-        word = words[s[1]]
-        by_user[open_id]['words'].append(word)
+        if label not in by_user[open_id]['words']:
+            by_user[open_id]['words'].append(label)
         # ここのソート順は気にしなくて良いか?
+
+    for (open_id, attr) in by_user.items():
+        message("user=%s words=%s" % (open_id, ", ".join(attr['words'])))
 
     return [Recipient(open_id, dict(keyword=", ".join(attr['words']))) for open_id, attr in by_user.items()]
 

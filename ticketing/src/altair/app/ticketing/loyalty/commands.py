@@ -157,12 +157,12 @@ def build_org_id_as_list(organization, extra_orgs=None):
     org_ids = []
     if organization.code == "RT":
         # 一緒に付与するOrgを抽出する
-        # point_typeがないやつは対象外にする
+        # point_typeが1（楽天ポイント）ではないやつを対象外にする
         target_orgs = with_rakuten + ["RT"]
         orgs = Organization.query \
             .join(OrganizationSetting) \
             .filter(Organization.code.in_(target_orgs)) \
-            .filter(OrganizationSetting.point_type != None) \
+            .filter(OrganizationSetting.point_type == 1) \
             .all()
         org_ids = [org.id for org in orgs]
     else:
@@ -548,7 +548,7 @@ def do_make_point_grant_data(registry, organization, start_date, end_date, submi
         organizations = DBSession.query(Organization).all()
 
     for organization in organizations:
-        if organization.setting.point_type is None:
+        if not organization.setting.point_type:
             logger.info("Organization(id=%ld, name=%s) doesn't have point granting feature enabled. Skipping" % (organization.id, organization.name))
             continue
 

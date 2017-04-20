@@ -4444,6 +4444,8 @@ class PerformanceSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     order_limit = AnnotatedColumn(Integer, default=None, _a_label=_(u'購入回数制限'), _a_visible_column=True)
     entry_limit = AnnotatedColumn(Integer, default=None, _a_label=_(u'申込回数制限'), _a_visible_column=True)
     max_quantity_per_user = AnnotatedColumn(Integer, default=None, _a_label=(u'購入上限枚数 (購入者毎)'), _a_visible_column=True)
+    performance_operator_id = AnnotatedColumn(Identifier, nullable=True, _a_label=_(u'登録担当者'))
+    sales_person_id = AnnotatedColumn(Identifier, nullable=True, _a_label=_(u'営業担当者'))
     visible = AnnotatedColumn(Boolean, default=True, _a_label=_(u'パフォーマンスの表示/非表示'))
 
     @property
@@ -4462,6 +4464,16 @@ class PerformanceSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         setting = cls.clone(template)
         setting.save() # XXX
         return setting
+
+    @property
+    def performance_operator(self):
+        operator = Operator.query.filter_by(id=self.performance_operator_id).first()
+        return operator.name if operator else u'-'
+
+    @property
+    def sales_person(self):
+        operator = Operator.query.filter_by(id=self.sales_person_id).first()
+        return operator.name if operator else u'-'
 
 
 @implementer(ISejTenant)

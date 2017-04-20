@@ -56,6 +56,10 @@ ${ch.breadcrumbs(
       ${ch.form_item(form.middle_stock_threshold_percent, help=ch.help(form.middle_stock_threshold_percent))}
       ${ch.form_item(form.display_order)}
       ${ch.form_item(form.cart_setting_id)}
+      % if request.context.organization.setting.show_event_op_and_sales:
+        ${ch.form_item(form.event_operator_id)}
+        ${ch.form_item(form.sales_person_id)}
+      % endif
     </fieldset>
     <div class="form-actions">
       <input class="btn btn-primary" type="submit" name="submit" value="${route_name}">

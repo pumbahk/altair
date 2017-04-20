@@ -192,6 +192,7 @@
                     $('<label></label>').attr('for', 'words-'+r.words[i].id)
                     .append(
                       $('<input type="checkbox" />').attr('value', r.words[i].id).attr('id', 'words-'+r.words[i].id).prop('disabled', disabled)
+                      .data('merge', (r.words[i].merge || [ ]).join(','))
                     )
                     .append('&nbsp;')
                     .append(r.words[i].label)
@@ -228,10 +229,16 @@
 (function() {
 var xhr;
 $('#word_selection').on('change', 'input', function() {
-  var word_ids = $('#word_selection input:checked').map(function() { return $(this).val(); }).get();
+  var extended_word_ids = [ ];
+  $('#word_selection input:checked').each(function() {
+    extended_word_ids.push($(this).val());
+    if($(this).data('merge') != '') {
+      Array.prototype.push.apply(extended_word_ids, $(this).data('merge').split(","));
+    }
+  });
 
   // update hidden field
-  $('#word_ids').val(word_ids.join(','));
+  $('#word_ids').val(extended_word_ids.join(','));
 
   // re-calculate user count
   if(xhr) {
@@ -240,7 +247,7 @@ $('#word_selection').on('change', 'input', function() {
   xhr = $.ajax({
     url: "${request.route_path('announce.count')}",
     type: "POST",
-    data: { word_ids: word_ids },
+    data: { word_ids: extended_word_ids },
   }).done(function(r) {
     $('#subscriber_count').text(r.count);
   }).fail(function() {

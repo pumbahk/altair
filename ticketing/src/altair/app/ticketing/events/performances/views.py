@@ -475,6 +475,13 @@ class Performances(BaseView):
             MultiDict(code=self.context.event.code, visible=True),
             organization_id=self.context.user.organization_id,
             context=self.context)
+
+        if self.context.organization.setting.show_event_op_and_sales:
+            # 紐づくイベントのevent_operator_idを継承する。event_operator_idがない場合はパフォーマンスを追加するオペーレターのidを入れる
+            f.performance_operator_id.data = self.context.event.setting.event_operator_id or self.context.user.id
+            # 紐づくイベントのsales_person_idを継承する。ales_person_idがない場合はブランクのままで
+            f.sales_person_id.data = self.context.event.setting.sales_person_id
+
         f.account_id.data = self.context.event.account_id
         return {
             'form': f,
@@ -498,6 +505,8 @@ class Performances(BaseView):
                         order_limit=f.order_limit.data,
                         entry_limit=f.entry_limit.data,
                         max_quantity_per_user=f.max_quantity_per_user.data,
+                        performance_operator_id=f.performance_operator_id.data,
+                        sales_person_id=f.sales_person_id.data,
                         visible=True,
                     ),
                     event_id=self.context.event.id
@@ -543,6 +552,8 @@ class Performances(BaseView):
         f.order_limit.data = performance.setting and performance.setting.order_limit
         f.entry_limit.data = performance.setting and performance.setting.entry_limit
         f.max_quantity_per_user.data = performance.setting and performance.setting.max_quantity_per_user
+        f.performance_operator_id.data = performance.setting and performance.setting.performance_operator_id
+        f.sales_person_id.data = performance.setting and performance.setting.sales_person_id
         f.visible.data = performance.setting and performance.setting.visible
         if is_copy:
             f.original_id.data = f.id.data
@@ -584,6 +595,8 @@ class Performances(BaseView):
                 performance.setting.order_limit = f.order_limit.data
                 performance.setting.entry_limit = f.entry_limit.data
                 performance.setting.max_quantity_per_user = f.max_quantity_per_user.data
+                performance.setting.performance_operator_id = f.performance_operator_id.data
+                performance.setting.sales_person_id = f.sales_person_id.data
                 performance.setting.visible = f.visible.data
 
                 original = Performance.query.filter_by(
@@ -621,6 +634,8 @@ class Performances(BaseView):
                 performance.setting.order_limit = f.order_limit.data
                 performance.setting.entry_limit = f.entry_limit.data
                 performance.setting.max_quantity_per_user = f.max_quantity_per_user.data
+                performance.setting.performance_operator_id = f.performance_operator_id.data
+                performance.setting.sales_person_id = f.sales_person_id.data
                 performance.setting.visible = f.visible.data
                 performance.save()
 

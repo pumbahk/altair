@@ -80,6 +80,10 @@
       ${ch.form_item(form.entry_limit, help=ch.help(form.entry_limit))}
       ${ch.form_item(form.max_quantity_per_user)}
       ${ch.form_item(form.note)}
+      % if request.context.organization.setting.show_event_op_and_sales:
+          ${ch.form_item(form.performance_operator_id)}
+          ${ch.form_item(form.sales_person_id)}
+      % endif
       % if request.matched_route.name == 'performances.edit':
           ${ch.form_item(form.visible)}
       % endif
