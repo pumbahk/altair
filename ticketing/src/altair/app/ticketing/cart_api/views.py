@@ -164,6 +164,7 @@ class CartAPIView(object):
                     price=product.price,
                     min_product_quantity=product.min_product_quantity,
                     max_product_quantity=product.max_product_quantity,
+                    sales_unit_quantity=sum([item.quantity for item in product.items]),
                     is_must_be_chosen=product.must_be_chosen
                 ) for product in products],
                 regions=region_ids
