@@ -206,16 +206,18 @@ class CartAPIView(object):
 
         # 数受け
         if 'stock_types' in fields or not fields:
-            res['stock_types'].append([dict(
-                    stock_type_id=stock_type.stock_type_id,
-                    available_counts=stock_type.rest_quantity,
-                    stock_status=get_availability_text(
-                        stock_type.rest_quantity,
-                        stock_type.all_quantity,
-                        stock_type.event.setting.middle_stock_threshold,
-                        stock_type.event.setting.middle_stock_threshold_percent
+            for stock_type in quantity_only_stock_type_tuples:
+                res['stock_types'].append(dict(
+                        stock_type_id=stock_type.stock_type_id,
+                        available_counts=stock_type.rest_quantity,
+                        stock_status=get_availability_text(
+                            stock_type.rest_quantity,
+                            stock_type.all_quantity,
+                            stock_type.event.setting.middle_stock_threshold,
+                            stock_type.event.setting.middle_stock_threshold_percent
+                        )
                     )
-                ) for stock_type in quantity_only_stock_type_tuples])
+                )
 
         return res
 
