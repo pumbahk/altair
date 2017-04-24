@@ -40,7 +40,7 @@ from altair.app.ticketing.cart import api
 from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.cart import view_support
 
-from .view_support import build_seat_query, parse_fields_parmas
+from .view_support import build_seat_query, build_non_seat_query, parse_fields_parmas
 
 logger = logging.getLogger(__name__)
 
@@ -175,7 +175,7 @@ class CartAPIView(object):
     # XXX: 以下のバリューオブジェクトに依存
     # SeatDict = namedtuple("SeatDict", "seat_l0_id stock_type_id seat_status stock_quantity")
     # StockTypeQuantityPair = namedtuple("StockTypeQuantityPair", "stock_type_id stock_quantity")
-    def build_seats_api_response(self, fields, seat_dicts, stock_type_tuples, region_ids):
+    def build_seats_api_response(self, fields, seat_dicts, stock_type_tuples, quantity_only_stock_type_tuples, region_ids):
         """fields指定なしなら全fieldを返す
         指定があれば指定されているものだけ返す"""
         res = dict()
@@ -203,6 +203,20 @@ class CartAPIView(object):
                         stock_type.event.setting.middle_stock_threshold_percent
                     )
                 ) for stock_type in stock_type_tuples]
+
+        # 数受け
+        if 'stock_types' in fields or not fields:
+            res['stock_types'].append([dict(
+                    stock_type_id=stock_type.stock_type_id,
+                    available_counts=stock_type.rest_quantity,
+                    stock_status=get_availability_text(
+                        stock_type.rest_quantity,
+                        stock_type.all_quantity,
+                        stock_type.event.setting.middle_stock_threshold,
+                        stock_type.event.setting.middle_stock_threshold_percent
+                    )
+                ) for stock_type in quantity_only_stock_type_tuples])
+
         return res
 
     @view_config(route_name='cart.api.seats')
@@ -220,16 +234,23 @@ class CartAPIView(object):
         seat_dicts = [SeatDict(d[0], d[1], d[2], d[3], d[4]) for d in seat_tuples]
 
         stock_type_tuples = set([(d.stock_type_id, d.rest_quantity, d.stock.quantity, d.stock.stock_type.event) for d in seat_dicts])
+
         # namedtupleでlabeling
         stock_type_tuples = [StockTypeTuple(type_id, rest_quantity, all_quantity, event)
                                      for type_id, rest_quantity, all_quantity, event in stock_type_tuples]
+
+        quantity_only_tuples = build_non_seat_query(self.request, sales_segment.id, session)
+        quantity_only_dicts = [SeatDict("", d[0], d[1], "", d[2]) for d in quantity_only_tuples]
+        quantity_only_stock_type_tuples = set([(d.stock_type_id, d.rest_quantity, d.stock.quantity, d.stock.stock_type.event) for d in quantity_only_dicts])
+        quantity_only_stock_type_tuples = [StockTypeTuple(type_id, rest_quantity, all_quantity, event)
+                                     for type_id, rest_quantity, all_quantity, event in quantity_only_stock_type_tuples]
 
         # svg側では描画エリアをregionと定義しているのでそれに合わせる
         region_ids = []
         for stock in sales_segment.stocks:
             region_ids.extend(stock.drawing_l0_ids)
 
-        return self.build_seats_api_response(parse_fields_parmas(self.request), seat_dicts, stock_type_tuples, region_ids)
+        return self.build_seats_api_response(parse_fields_parmas(self.request), seat_dicts, stock_type_tuples, quantity_only_stock_type_tuples, region_ids)
 
     @view_config(route_name='cart.api.seat_reserve')
     def seat_reserve(self):
