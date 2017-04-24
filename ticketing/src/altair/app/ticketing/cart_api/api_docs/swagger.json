@@ -422,7 +422,7 @@
                 }
             }
         },
-        "/performances/{performance_id}/seat/select_product": {
+        "/performances/{performance_id}/select_products": {
             "post": {
                 "summary": "selected Products",
                 "description": "selected Products\n",

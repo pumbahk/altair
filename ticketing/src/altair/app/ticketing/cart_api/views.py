@@ -537,8 +537,8 @@ class CartAPIView(object):
             }
         }
 
-    @view_config(route_name='cart.api.select_product') 
-    def select_product(self):
+    @view_config(route_name='cart.api.select_products') 
+    def select_products(self):
         #セッション情報から取得
         cart = api.get_cart(self.request, False)
         logger.debug("cart_id %s", cart.id)
@@ -641,8 +641,9 @@ class CartAPIView(object):
         for cp in cart_product:
             cp.deleted_at = datetime.now()
 
-            cart_product_item = DBSession.query(CartedProductItem).filter_by(carted_product_id=cp.id).first()
-            cart_product_item.deleted_at = datetime.now()
+            cart_product_items = DBSession.query(CartedProductItem).filter_by(carted_product_id=cp.id).all()
+            for cpi in cart_product_items:
+                cpi.deleted_at = datetime.now()
 
         for sp in selected_products:
             logger.debug("selected_products %s", sp)
@@ -663,21 +664,33 @@ class CartAPIView(object):
 
             #データ設定
             cart_product = CartedProduct(cart=exec_cart, product=product, quantity=sp['quantity'], organization_id=exec_cart.organization_id)
-            product_item = DBSession.query(ProductItem).filter_by(performance_id=exec_cart.performance_id, product_id=sp['product_id']).first()
-
-            cart_product_item = CartedProductItem(
-                carted_product = cart_product,
-                organization_id = cart_product.organization_id,
-                quantity = sp['quantity'],
-                product_item = product_item)            
-
-            # 席受け時
-            if not is_quantity_only:
-                seat = DBSession.query(Seat).filter_by(l0_id=sp['seat_id']).first()
-                cart_product_item.seats = [seat]
+            product_item = DBSession.query(ProductItem).filter_by(performance_id=exec_cart.performance_id, product_id=sp['product_id']).all()
 
             DBSession.add(cart_product)
-            DBSession.add(cart_product_item)
+
+            cart_factory = api.get_cart_factory(self.request)
+            seats = []
+
+            #席受け時の座席を取得
+            if not is_quantity_only:
+                for seat_id in sp['seat_id']:
+                    seat = DBSession.query(Seat).filter_by(l0_id=seat_id).first()
+                    seats.append(seat)
+
+            for cpi in product_item:
+                subtotal_quantity = cpi.quantity * sp['quantity']
+                cart_product_item = CartedProductItem(
+                    carted_product = cart_product,
+                    organization_id = cart_product.organization_id,
+                    quantity = subtotal_quantity,
+                    product_item = cpi)            
+
+                # 席受け時の座席割り当て
+                if not is_quantity_only:
+                    item_seats = cart_factory.pop_seats(cpi, subtotal_quantity, seats)
+                    cart_product_item.seats = item_seats
+            
+                DBSession.add(cart_product_item)
                 
         DBSession.flush()
 
