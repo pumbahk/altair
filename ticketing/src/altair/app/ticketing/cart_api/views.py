@@ -20,7 +20,8 @@ from altair.app.ticketing.core.models import (
     Product,
     ProductItem,
     SalesSegment,
-    StockStatus
+    StockStatus,
+    Performance
 )
 from altair.app.ticketing.cart.models import (
     Cart,
@@ -671,11 +672,14 @@ class CartAPIView(object):
             cart_factory = api.get_cart_factory(self.request)
             seats = []
 
+            #performance取得
+            performance = DBSession.query(Performance).filter_by(id=exec_cart.performance_id).first()
+            
             #席受け時の座席を取得
             if not is_quantity_only:
                 for seat_id in sp['seat_id']:
-                    seat = DBSession.query(Seat).filter_by(l0_id=seat_id).first()
-                    seats.append(seat)
+                    seat = DBSession.query(Seat).filter_by(l0_id=seat_id,venue_id=performance.venue.id).first()
+                    seats.append(seat)   
 
             for cpi in product_item:
                 subtotal_quantity = cpi.quantity * sp['quantity']
@@ -687,6 +691,7 @@ class CartAPIView(object):
 
                 # 席受け時の座席割り当て
                 if not is_quantity_only:
+                    logger.debug("seats %s", seats)
                     item_seats = cart_factory.pop_seats(cpi, subtotal_quantity, seats)
                     cart_product_item.seats = item_seats
             
