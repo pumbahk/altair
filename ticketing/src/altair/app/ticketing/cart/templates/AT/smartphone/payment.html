@@ -90,8 +90,18 @@ form {
           %endif
           <%t:header>${m.delivery_method.name}</%t:header>
           <div class="dispBox devlieryFee_${h.format_number(m.delivery_fee)}">
-            <span class="deliveryFee">${h.format_currency(m.delivery_fee)}</span>
-            <span class="deliveryFeeType">(${h.fee_type(m.delivery_method.fee_type)})</span>
+                        % if m.delivery_fee_type == 0:
+                <span class="deliveryFee">${h.format_currency(m.delivery_fee)}</span>
+                <span class="deliveryFeeType">(${h.fee_type(m.delivery_fee_type)})</span>
+            % else:
+                <span class="deliveryFeeLabel">本券</span>
+                <span class="deliveryFee">${h.format_currency(m.delivery_fee)}</span>
+                <span class="deliveryFeeType">(${h.fee_type(m.delivery_fee_type)})</span>
+                <br/>
+                <span class="deliveryFeeLabel">副券</span>
+                <span class="deliveryFee">${h.format_currency(m.delivery_fee_per_sub_ticket)}</span>
+                <span class="deliveryFeeType">(${h.fee_type(m.delivery_fee_type)})</span>
+            % endif
             <div class="description">${m.delivery_method.description or '' | n}</div>
           </div>
         </div>
