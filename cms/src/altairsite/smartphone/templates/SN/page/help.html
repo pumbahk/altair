@@ -1,0 +1,39 @@
+<%inherit file="../common/_base.html" />
+<%namespace file="../common/tags_smartphone.html" name="m" />
+<%block name="title">ヘルプ</%block>
+<%block name="fnavi">
+    <hr/>
+    <a href="${request.route_path('smartphone.main')}"><button class="btn-secondary btn-large">トップへ</button></a>
+</%block>
+
+<h2 class="glitter red">ヘルプ</h2>
+
+% if helps:
+    <div class="sectionbox">
+        <div class="sectionbox-inner">
+            % for help in helps:
+                <a href="#${help.id}">
+                    ${helper.nl2br(help.title)|n}
+                </a><br/><br/>
+            % endfor
+        </div>
+    </div>
+
+    <a href="#top">▲上へ</a>
+
+    % for count, help in enumerate(helps):
+        <hr/>
+        <div class="sectionbox">
+            <div class="sectionbox-inner">
+                <a name="${help.id}" id="${help.id}">
+                    ${helper.nl2br(help.title)|n}<br/><br/>
+                </a>
+            </div>
+        </div>
+        ${helper.nl2br(help.text)|n}<br/>
+        % if (count + 1) % 5 == 0 or len(helps.all()) == count + 1:
+            <hr/>
+            <a href="#top">▲上へ</a><br/>
+        % endif
+    % endfor
+% endif
