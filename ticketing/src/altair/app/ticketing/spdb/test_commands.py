@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 from unittest import TestCase
 from nose.tools import ok_, eq_
-from .commands import chop_none, SQLCreater, SpdbInfo, FileOperator
+from .commands import clean_data, SQLCreater, SpdbInfo, FileOperator
 from pyramid.testing import DummyModel
 import argparse
 from datetime import datetime, timedelta
@@ -22,7 +22,7 @@ class SQLCreaterTestCase(TestCase):
         creater = SQLCreater(args, sql)
         term_from = datetime.strptime(datetime.now().date().strftime('%Y/%m/%d'), '%Y/%m/%d') - timedelta(days=1)
         term_to = datetime.strptime(datetime.now().date().strftime('%Y/%m/%d'), '%Y/%m/%d')
-        eq_(creater.sql, "select * from test WHERE `Order`.organization_id = 15 AND `Order`.updated_at BETWEEN '{0}' and '{1}' AND `Order`.canceled_at IS NULL".format(term_from, term_to))
+        eq_(creater.sql, "select * from test WHERE `Order`.organization_id = 15 AND `Order`.updated_at BETWEEN '{0}' and '{1}' AND (`Order`.canceled_at IS NULL OR `Order`.deleted_at IS NULL)".format(term_from, term_to))
 
     # fromだけ指定されたら、その日1日分を取得する。
     @staticmethod
@@ -32,21 +32,21 @@ class SQLCreaterTestCase(TestCase):
         creater = SQLCreater(args, sql)
         term_from = datetime.strptime(datetime.now().date().strftime('%Y/%m/%d'), '%Y/%m/%d') - timedelta(days=1)
         term_to = datetime.strptime(datetime.now().date().strftime('%Y/%m/%d'), '%Y/%m/%d')
-        eq_(creater.sql, "select * from test WHERE `Order`.organization_id = 15 AND `Order`.updated_at BETWEEN '2017-03-29 00:00:00' and '2017-03-30 00:00:00' AND `Order`.canceled_at IS NULL".format(term_from, term_to))
+        eq_(creater.sql, "select * from test WHERE `Order`.organization_id = 15 AND `Order`.updated_at BETWEEN '2017-03-29 00:00:00' and '2017-03-30 00:00:00' AND (`Order`.canceled_at IS NULL OR `Order`.deleted_at IS NULL)".format(term_from, term_to))
 
     @staticmethod
     def test_sql3():
         args = DummyModel(org=15, term_from="2016/01/01", term_to="2020/01/01", all=False, delete=False)
         sql = "select * from test"
         creater = SQLCreater(args, sql)
-        eq_(creater.sql, "select * from test WHERE `Order`.organization_id = 15 AND `Order`.updated_at BETWEEN '2016-01-01 00:00:00' and '2020-01-02 00:00:00' AND `Order`.canceled_at IS NULL")
+        eq_(creater.sql, "select * from test WHERE `Order`.organization_id = 15 AND `Order`.updated_at BETWEEN '2016-01-01 00:00:00' and '2020-01-02 00:00:00' AND (`Order`.canceled_at IS NULL OR `Order`.deleted_at IS NULL)")
 
     @staticmethod
     def test_sql4():
         args = DummyModel(org="15", term_from="", term_to="", all=True, delete=True)
         sql = "select * from test"
         creater = SQLCreater(args, sql)
-        eq_(creater.sql, "select * from test WHERE `Order`.organization_id = 15 AND `Order`.canceled_at IS NOT NULL")
+        eq_(creater.sql, "select * from test WHERE `Order`.organization_id = 15 AND (`Order`.canceled_at IS NOT NULL OR `Order`.deleted_at IS NOT NULL)")
 
     @staticmethod
     def test_sql5():
@@ -58,9 +58,26 @@ class SQLCreaterTestCase(TestCase):
 
 class AnotherTestCase(TestCase):
     @staticmethod
-    def test_chop_none():
-        row = {'aaa': None, 'bbb': '222', 'ccc': '333'}
-        ret = chop_none(row)
+    def test_clean_data():
+        row = {'aaa': None, 'bbb': '222', 'ccc': '333', 'channel': 1}
+        ret = clean_data(row)
         eq_(ret['aaa'], "")
         eq_(ret['bbb'], "222")
         eq_(ret['ccc'], "333")
+        eq_(ret['channel'], "PC")
+
+        row = {'channel': 2}
+        ret = clean_data(row)
+        eq_(ret['channel'], "Mobile")
+
+        row = {'channel': 3}
+        ret = clean_data(row)
+        eq_(ret['channel'], "INNER")
+
+        row = {'channel': 4}
+        ret = clean_data(row)
+        eq_(ret['channel'], "IMPORT")
+
+        row = {'channel': 5}
+        ret = clean_data(row)
+        eq_(ret['channel'], "PC or Mobile")
