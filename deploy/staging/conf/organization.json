@@ -66,6 +66,11 @@
             "backend_id": 66,
             "short_name": "HT"
         },
+        "SN": {
+            "auth_source": "oauth",
+            "backend_id": 92,
+            "short_name": "SN"
+        },
         "sound-creator": {
             "auth_source": "oauth",
             "short_name":  "sound-c"
