@@ -1138,6 +1138,8 @@ class PaymentView(object):
             except OrderLikeValidationFailure as e:
                 if e.path == 'order.total_amount':
                     raise self.ValidationFailed(self._message(u'合計金額が選択された決済方法では取り扱えない金額となっています。他の決済方法を選択してください'))
+                elif e.path == 'shipping_address.email_1':
+                    raise self.ValidationFailed(self._message(u'メールアドレスは64文字以下のものをご使用ください'))
                 else:
                     raise self.ValidationFailed(self._message(u'現在の予約内容では選択された決済 / 引取方法で購入を進めることができません。他の決済・引取方法を選択してください。'))
         except self.ValidationFailed as e:
