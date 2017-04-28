@@ -15,7 +15,8 @@ import sqlahelper
 
 DBSession = sqlahelper.get_session()
 
-class ReservationReportOperator():
+
+class ReservationReportOperator:
     def __init__(self, request, order, user):
         self.__request = request
         self.__var_dir = request.registry.settings.get('reservation.var_dir', False)
@@ -100,7 +101,7 @@ class ReservationReportOperator():
         return response
 
 
-class ReservationReportWriter():
+class ReservationReportWriter:
     def __init__(self, work_file, order, user):
         self.__work_file = work_file
         self.__order = order
@@ -115,7 +116,8 @@ class ReservationReportWriter():
     def get_user(self):
         return self.__user
 
-    def get_date_style(self):
+    @classmethod
+    def get_date_style(cls):
         font_title = Font()
         font_title.name = u"ＭＳ Ｐゴシック"
         font_title.height = 12 * 30
@@ -128,7 +130,8 @@ class ReservationReportWriter():
         c_style.font = font_title
         return c_style
 
-    def get_performance_style(self):
+    @classmethod
+    def get_performance_style(cls):
         font_title = Font()
         font_title.name = u"ＭＳ Ｐゴシック"
         font_title.height = 12 * 25
@@ -142,7 +145,24 @@ class ReservationReportWriter():
         c_style.font = font_title
         return c_style
 
-    def get_goods_style(self):
+    @classmethod
+    def get_goods_style(cls):
+        font_title = Font()
+        font_title.name = u"ＭＳ Ｐゴシック"
+        font_title.height = 7 * 25
+
+        c_border = xlwt.Borders()
+        c_border.bottom = xlwt.Borders.THIN
+        c_border.left = xlwt.Borders.THIN
+        c_border.top = xlwt.Borders.THIN
+
+        c_style = xlwt.XFStyle()
+        c_style.borders = c_border
+        c_style.font = font_title
+        return c_style
+
+    @classmethod
+    def get_goods_num_style(cls):
         font_title = Font()
         font_title.name = u"ＭＳ Ｐゴシック"
         font_title.height = 12 * 25
@@ -157,7 +177,8 @@ class ReservationReportWriter():
         c_style.font = font_title
         return c_style
 
-    def get_sum_quantity_style(self):
+    @classmethod
+    def get_sum_quantity_style(cls):
         font_title = Font()
         font_title.name = u"ＭＳ Ｐゴシック"
         font_title.height = 12 * 25
@@ -173,7 +194,8 @@ class ReservationReportWriter():
         c_style.font = font_title
         return c_style
 
-    def get_footer_style(self):
+    @classmethod
+    def get_footer_style(cls):
         font_title = Font()
         font_title.name = u"ＭＳ Ｐゴシック"
         font_title.height = 12 * 30
@@ -195,7 +217,7 @@ class ReservationReportWriter():
             # 席種・商品名
             sheet.write(row + num, 2, u"{0}・{1}".format(item.product.seat_stock_type.name, item.product.name), self.get_goods_style())
             # 枚数
-            sheet.write(row + num, 8, item.quantity, self.get_goods_style())
+            sheet.write(row + num, 8, item.quantity, self.get_goods_num_style())
 
     def write_sum_quantity(self, sheet, products):
         num = 0
