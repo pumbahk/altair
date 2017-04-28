@@ -5,6 +5,9 @@ from pyramid.config import Configurator
 from pyramid.tweens import INGRESS, MAIN, EXCVIEW
 from sqlalchemy import engine_from_config
 from sqlalchemy.pool import NullPool
+from ..cart.interfaces import ICartResource
+from ..cart.exceptions import CartException
+from pyramid.authorization import ACLAuthorizationPolicy
 
 from altair.pyramid_extra_renderers.json import JSON
 
@@ -34,6 +37,58 @@ def add_metadata(request, value):
         organization_short_name=request.organization.short_name
     )
 
+
+class RakutenAuthContext(object):
+    def __init__(self, request):
+        self.request = request
+
+
+def setup_nogizaka_auth(config):
+    config.include('altair.app.ticketing.project_specific.nogizaka46.auth')
+    config.add_nogizaka_entrypoint('cart.index')
+    config.add_nogizaka_entrypoint('cart.index2')
+    config.add_nogizaka_entrypoint('cart.index.sales')
+    config.add_nogizaka_entrypoint('cart.agreement')
+    config.add_nogizaka_entrypoint('cart.agreement2')
+    config.add_nogizaka_entrypoint('cart.agreement.compat')
+    config.add_nogizaka_entrypoint('cart.agreement2.compat')
+
+
+def decide_auth_types(request, classification):
+    if hasattr(request, 'context'):
+        context = request.context
+        if ICartResource.providedBy(context):
+            try:
+                return context.cart_setting.auth_types
+            except CartException:
+                pass
+        elif isinstance(context, RakutenAuthContext):
+            from altair.rakuten_auth import AUTH_PLUGIN_NAME
+            return [AUTH_PLUGIN_NAME]
+    return []
+
+
+def setup_auth(config):
+    config.include('altair.auth')
+    config.include('altair.rakuten_auth')
+    config.include('altair.app.ticketing.fc_auth')
+    config.include('altair.app.ticketing.extauth.userside_impl')
+
+    config.set_who_api_decider(decide_auth_types)
+    from altair.auth import set_auth_policy
+    from altair.app.ticketing.security import AuthModelCallback
+    set_auth_policy(config, AuthModelCallback(config))
+    config.set_authorization_policy(ACLAuthorizationPolicy())
+
+    # 楽天認証URL
+    config.add_route('rakuten_auth.verify', '/verify', factory=RakutenAuthContext)
+    config.add_route('rakuten_auth.verify2', '/verify2', factory=RakutenAuthContext)
+    config.add_route('rakuten_auth.error', '/error', factory=RakutenAuthContext)
+    config.add_route('cart.logout', '/logout')
+
+    #config.include(setup_nogizaka_auth)
+
+
 def main(global_config, **local_config):
     settings = dict(global_config)
     settings.update(local_config)
@@ -56,6 +111,8 @@ def main(global_config, **local_config):
     config.include('altair.pyramid_dynamic_renderer')
     config.include('altair.app.ticketing.cart.request')
     config.include(setup_components)
+    config.include(setup_auth)
+    config.include('altair.app.ticketing.setup_beaker_cache')
 
     config.add_route('cart.api.health_check', '/')
     config.add_route('cart.api.index', '/api/v1/', request_method='GET')

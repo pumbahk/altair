@@ -3,7 +3,7 @@ import logging
 from collections import namedtuple
 
 from pyramid.view import view_defaults, view_config
-from pyramid.httpexceptions import HTTPNotFound, HTTPBadRequest
+from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPBadRequest
 from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 
 from datetime import date, datetime, time
@@ -32,6 +32,7 @@ from altair.app.ticketing.cart.exceptions import OutTermSalesException, NoPerfor
 from altair.app.ticketing.cart.exceptions import (
     PerProductProductQuantityOutOfBoundsError,
     QuantityOutOfBoundsError,
+    AuthenticationError,
     ProductQuantityOutOfBoundsError,
     PerStockTypeQuantityOutOfBoundsError,
     PerStockTypeProductQuantityOutOfBoundsError
@@ -45,7 +46,16 @@ from .view_support import build_seat_query, build_non_seat_query, parse_fields_p
 logger = logging.getLogger(__name__)
 
 
-@view_defaults(renderer='json')
+def check_auth(fn):
+    def _check(context, request):
+        user_info = context.authenticated_user()
+        if "user_id" not in user_info:
+            raise AuthenticationError
+        return fn(context, request)
+    return _check
+
+
+@view_defaults(decorator=check_auth, renderer='json')
 class CartAPIView(object):
     def __init__(self, context, request):
         self.context = context
@@ -767,6 +777,7 @@ def no_resource(context, request):
         )
     )
 
+
 @view_config(context=HTTPBadRequest, renderer='json')
 def no_resource(context, request):
     request.response.status = 400
@@ -774,6 +785,19 @@ def no_resource(context, request):
     return dict(
         error=dict(
             code="400",
+            message="{}: {}".format(context.__class__.__name__, message),
+            details=[]
+        )
+    )
+
+
+@view_config(context=AuthenticationError, renderer='json')
+def authentication_error(context, request):
+    request.response.status = 200
+    message = "Authentication Failed"
+    return dict(
+        error=dict(
+            code='401',
             message="{}: {}".format(context.__class__.__name__, message),
             details=[]
         )

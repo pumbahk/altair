@@ -18,6 +18,9 @@ class NoEventError(CartException):
 class NoPerformanceError(CartException):
     pass
 
+class AuthenticationError(CartException):
+    pass
+
 class DeletedProductError(CartException):
     pass
 
