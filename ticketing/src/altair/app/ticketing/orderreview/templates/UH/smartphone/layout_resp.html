@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<!--[if lt IE 9]>
+<script type="text/javascript" src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+<![endif]-->
+<meta charset="UTF-8">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="cache-control" content="no-cache">
+<meta http-equiv="expires" content="0">
+<title>${view_context.team_name} 購入確認ページ</title>
+
+<meta name="viewport" content="width=device-width,user-scalable=no">
+
+<!-- Cascading Style Sheets -->
+<link rel="stylesheet" href="${view_context.static_url('pc/common/css/mypage.css')}" type="text/css" media="all">
+
+<!-- Javascript -->
+<script type="text/javascript" src="${request.static_url('altair.app.ticketing.orderreview:static/js/jquery.js')}"></script>
+</head>
+
+<body class="confirm">
+<div class="ts-wrapper">
+
+<!-- ******************** header [start] ******************** -->
+<header class="ts-header">
+<div class="ts-header-inner">
+
+<!-- ===== ts-header-wrap [start] ===== -->
+<div class="ts-header-wrap">
+
+<div class="ts-header-logobox clearfix">
+<a href="/">
+<img src="${view_context.static_url('pc/images/pc_logo.png')}" alt="${view_context.team_name}" width="950" height="64"  />
+</a>
+</div>
+
+</div><!-- ===== ts-header-wrap [end] ===== -->
+
+</div></header><!-- ******************** header [end] ******************** -->
+
+<!-- ******************** contents [start] ******************** -->
+<div class="ts-contents">
+<div class="ts-contents-inner">
+
+${next.body()}
+
+</div></div>
+<!-- ******************** contents [end] ******************** -->
+
+</div>
+
+</body>
+</html>
