@@ -302,7 +302,6 @@ def import_point_grant_results():
             organization = DBSession.query(Organization) \
                 .filter(
                     (Organization.name == args.organization) \
-                    | (Organization.short_name == args.organization) \
                     | (Organization.id == args.organization)
                     ) \
                 .one()
