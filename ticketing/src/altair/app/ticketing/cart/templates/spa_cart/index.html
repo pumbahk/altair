@@ -1,21 +1,29 @@
 <!doctype html>
-<html>
+<html lang="ja" class="no-js">
 <head>
   <meta charset="utf-8">
   <title>MyApp</title>
   <base href="/cart/spa/">
-
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-  <link rel="icon" type="image/x-icon" href="favicon.ico">
-
+  <meta charset="utf-8">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <script type="text/javascript">
+    if ((navigator.userAgent.indexOf('iPhone') > 0) || navigator.userAgent.indexOf('iPod') > 0 || navigator.userAgent.indexOf('Android') > 0) {
+    document.write('<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">');
+    }else{
+    document.write('<meta name="viewport" content="width=1040, user-scalable=yes">');
+    }
+  </script>
+  <script src="https://eagles.tstar.jp/extauth/static/eagles/js/libs/modernizr-custom.js"></script>
 </head>
 <body>
-  <app-root></app-root>
+  <div id="fb-root"></div>
+  <div class="page">
+    <app-root></app-root>
+  </div>
+
   <script type="text/javascript" src="${request.static_url('altair.app.ticketing.cart:static/spa_cart/inline.bundle.js')}"></script>
-  <script type="text/javascript" src="${request.static_url('altair.app.ticketing.cart:static/spa_cart/polyfills.bundle.js')}">
-  </script><script type="text/javascript" src="${request.static_url('altair.app.ticketing.cart:static/spa_cart/styles.bundle.js')}"></script>
+  <script type="text/javascript" src="${request.static_url('altair.app.ticketing.cart:static/spa_cart/polyfills.bundle.js')}"></script>
+  <script type="text/javascript" src="${request.static_url('altair.app.ticketing.cart:static/spa_cart/styles.bundle.js')}"></script>
   <script type="text/javascript" src="${request.static_url('altair.app.ticketing.cart:static/spa_cart/vendor.bundle.js')}"></script>
   <script type="text/javascript" src="${request.static_url('altair.app.ticketing.cart:static/spa_cart/main.bundle.js')}"></script>
 </body>
