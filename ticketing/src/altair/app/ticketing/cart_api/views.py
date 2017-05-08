@@ -48,9 +48,10 @@ logger = logging.getLogger(__name__)
 
 def check_auth(fn):
     def _check(context, request):
-        user_info = context.authenticated_user()
-        if "user_id" not in user_info:
-            raise AuthenticationError
+        if context.cart_setting.auth_type:
+            user_info = context.authenticated_user()
+            if "user_id" not in user_info:
+                raise AuthenticationError
         return fn(context, request)
     return _check
 
