@@ -117,7 +117,7 @@ def check_auth_for_spa(fn):
     return _check
 
 
-@view_defaults(decorator=((with_jquery + with_jquery_tools).not_when(mobile_request), check_auth_for_spa), xhr=False, permission="buy")
+@view_defaults(decorator=check_auth_for_spa, xhr=False, permission="buy")
 class SpaCartIndexView(IndexViewMixin):
     """ Angular2カート """
     def __init__(self, context, request):
