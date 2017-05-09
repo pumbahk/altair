@@ -1,5 +1,6 @@
 # -*- coding:utf-8 -*-
 import logging
+import transaction
 from collections import namedtuple
 
 from pyramid.view import view_defaults, view_config
@@ -389,6 +390,7 @@ class CartAPIView(object):
 
         elif reserve_type == "seat_choise":
             # 席種の混在をチェック
+            stock_type = ''
             try:
                 stock_type = DBSession.query(StockType.id) \
                             .join(Stock, Seat) \
@@ -484,6 +486,7 @@ class CartAPIView(object):
             )
         else:
             # 席種の混在をチェック
+            stock_type_ids = ''
             try:
                 stock_type_ids = DBSession.query(StockType.id) \
                             .join(Stock, Seat) \
