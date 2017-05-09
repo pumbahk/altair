@@ -41,7 +41,7 @@ from altair.app.ticketing.cart import api
 from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.cart import view_support
 
-from .view_support import build_seat_query, build_non_seat_query, parse_fields_parmas
+from .view_support import build_seat_query, build_non_seat_query, parse_fields_parmas, get_spa_svg_urls
 
 logger = logging.getLogger(__name__)
 
@@ -102,6 +102,15 @@ class CartAPIView(object):
             raise HTTPNotFound('performance_id={} not found'.format(self.request.matchdict.get('performance_id')))
 
         available_sales_segments = self.context.available_sales_segments
+
+        #SPA用のsvg(s3)を取得して返却
+        drawings = get_spa_svg_urls(self.request, performance.id)
+       
+        root_map_url = drawings['root']
+        mini_map_url = drawings['mini']
+        logger.debug("root_url=%s", root_map_url)
+        logger.debug("mini_url=%s", mini_map_url)
+
         return dict(
             performance=dict(
                 performance_id=performance.id,
@@ -111,7 +120,9 @@ class CartAPIView(object):
                 end_on=performance.end_on,
                 order_limit=performance.setting.order_limit,
                 venue_id=performance.venue.id,
-                venue_name=performance.venue.name
+                venue_name=performance.venue.name,
+                venue_map_url=root_map_url, 
+                mini_venue_map_url=mini_map_url,
             ),
             event=dict(
                 event_id=performance.event.id,

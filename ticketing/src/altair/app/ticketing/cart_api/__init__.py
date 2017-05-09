@@ -8,9 +8,14 @@ from sqlalchemy.pool import NullPool
 from ..cart.interfaces import ICartResource
 from ..cart.exceptions import CartException
 from pyramid.authorization import ACLAuthorizationPolicy
+#from ..cart import setup_static_views as cart_setup_static_views
+from ..venues import setup_components as venues_setup_components
 
 from altair.pyramid_extra_renderers.json import JSON
 
+def setup_beaker_cache(config):
+    from pyramid_beaker import set_cache_regions_from_settings
+    set_cache_regions_from_settings(config.registry.settings)
 
 def setup_components(config):
     from pyramid.interfaces import IRequest
@@ -102,16 +107,21 @@ def main(global_config, **local_config):
         )
 
     config.add_renderer('json', JSON(metadata_handler=add_metadata))
+    setup_beaker_cache(config)
     config.include('pyramid_tm')
     config.include('pyramid_dogpile_cache')
     config.include('altair.browserid')
     config.include('altair.exclog')
     config.include('altair.httpsession.pyramid')
     config.include('altair.sqlahelper')
+    config.include('altair.pyramid_assets')
     config.include('altair.pyramid_dynamic_renderer')
     config.include('altair.app.ticketing.cart.request')
+    config.include('altair.pyramid_boto')
+    config.include('altair.pyramid_boto.s3.assets')
     config.include(setup_components)
     config.include(setup_auth)
+    config.include(venues_setup_components)
     config.include('altair.app.ticketing.setup_beaker_cache')
 
     config.add_route('cart.api.health_check', '/')
