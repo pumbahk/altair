@@ -350,7 +350,7 @@ def setup_routes(config):
     config.add_route('cart.index', 'events/{event_id}', factory='.resources.compat_ticketing_cart_resource_factory')
     config.add_route('cart.index.sales', 'events/{event_id}/sales/{sales_segment_group_id}', factory='.resources.compat_ticketing_cart_resource_factory')
     config.add_route('cart.index2', 'performances/{performance_id}', factory='.resources.PerformanceOrientedTicketingCartResource')
-    config.add_route('cart.spa.index', 'spa/performances/{performance_id}', factory='.resources.PerformanceOrientedTicketingCartResource')
+    config.add_route('cart.spa.index', 'spa/performances/{performance_id}*anything', factory='.resources.PerformanceOrientedTicketingCartResource')
     config.add_route('cart.index.sales2', 'performances/{performance_id}/sales/{sales_segment_group_id}')
 
     config.add_route('cart.index.recaptcha', 'events/{event_id}/recaptcha', factory='.resources.compat_ticketing_cart_resource_factory')
