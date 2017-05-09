@@ -54,9 +54,6 @@ body {
 
 }
 .ts-header-logo a:hover {
-	display: block;
-	width: 100px;
-	height: 50px;
 	opacity: 0.8;
 }
 
