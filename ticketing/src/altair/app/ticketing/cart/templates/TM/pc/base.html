@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<!--[if lt IE 9]>
+<script type="text/javascript" src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+<![endif]-->
+<meta charset="UTF-8">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="cache-control" content="no-cache">
+<meta http-equiv="expires" content="0">
+<title>${view_context.team_name}</title>
+
+<!-- Cascading Style Sheets -->
+<link rel="shortcut icon" href="${view_context.static_url('pc/images/favicon.ico')}">
+<link rel="stylesheet" href="${view_context.static_url('pc/css/import2.css')}" type="text/css" media="all" />
+<link rel="stylesheet" href="${view_context.static_url('pc/css/custom2.css')}" type="text/css" media="all" />
+</head>
+
+<body id="settlement">
+  <p id="naviSkip"><a href="#main" tabindex="1" title="本文へジャンプ"><img src="${view_context.static_url('pc/images/skip.gif')}" alt="本文へジャンプ" width="1" height="1" /></a></p>
+  <!-- ========== header ========== -->
+  <img src="${view_context.static_url('pc/images/pc_logo.png')}" alt="${view_context.team_name}" width="950" height="64"  />
+  <!-- ========== /header ========== -->
+  <div id="container">
+    <%doc>ログイン/ログアウト</%doc>
+    % if view_context.get_include_template_path('login_status.html') is not None:
+      <%include file="${view_context.get_include_template_path('login_status.html')}" args="device=view_context.ua_type" />
+    % endif
+    
+    <hr />
+
+    <!-- ========== main ========== -->
+    <div id="main">
+      <h1>${_(u'チケット購入')}</h1>
+      ${self.body()}
+    </div>
+    <!-- ========== /main ========== -->
+  </div>
+  <!-- /container -->
+</body>
+
+</html>
