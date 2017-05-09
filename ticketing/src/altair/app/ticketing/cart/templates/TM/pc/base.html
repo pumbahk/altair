@@ -22,14 +22,17 @@
   <img src="${view_context.static_url('pc/images/pc_logo.png')}" alt="${view_context.team_name}" width="950" height="64"  />
   <!-- ========== /header ========== -->
   <div id="container">
-    <%doc>ログイン/ログアウト</%doc>
+    <%doc>ログイン/ログアウト
     % if view_context.get_include_template_path('login_status.html') is not None:
       <%include file="${view_context.get_include_template_path('login_status.html')}" args="device=view_context.ua_type" />
     % endif
-    
+    </%doc>
     <hr />
 
     <!-- ========== main ========== -->
+    <div class="selectwrapper">
+      ${h.create_url(request) |n}
+    </div>
     <div id="main">
       <h1>${_(u'チケット購入')}</h1>
       ${self.body()}
