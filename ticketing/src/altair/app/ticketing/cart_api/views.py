@@ -159,7 +159,9 @@ class CartAPIView(object):
         # svg側では描画エリアをregionと定義しているのでそれに合わせる
         region_ids = []
         for stock in sales_segment.stocks:
-            region_ids.extend(stock.drawing_l0_ids)
+            if stock.stock_type_id == int(stock_type_id):
+                # XXX: should be unique?
+                region_ids.extend(stock.drawing_l0_ids)
         return dict(
             stock_type=dict(
                 stock_type_id=stock_type.id,
