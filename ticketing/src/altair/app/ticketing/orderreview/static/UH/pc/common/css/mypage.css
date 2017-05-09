@@ -268,7 +268,7 @@ body {
 .btn:hover { opacity: 0.6; }
 .btn-primary {
 	border: none !important;
-	background: #FE5200 !important;
+	background: #bf0000 !important;
 	color: #FFF !important;
 }
 .btn-primary-border {
@@ -285,7 +285,7 @@ body {
 
 /* heading ============================== */
 .heading-primary {
-	background: #0C1B6F;
+	background: #bf0000;
 	font-size: 2.0rem;
 	color: #FFF;
 	font-weight: bold;
