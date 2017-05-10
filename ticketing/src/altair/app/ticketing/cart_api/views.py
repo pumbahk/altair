@@ -391,10 +391,12 @@ class CartAPIView(object):
         elif reserve_type == "seat_choise":
             # 席種の混在をチェック
             stock_type = ''
+            performance = DBSession.query(Performance).filter_by(id=performance_id).first()            
             try:
                 stock_type = DBSession.query(StockType.id) \
                             .join(Stock, Seat) \
                             .filter(Seat.l0_id.in_(selected_seats)) \
+                            .filter(Seat.venue_id == performance.venue.id) \
                             .group_by(StockType.id) \
                             .one()
             except MultipleResultsFound as e:
