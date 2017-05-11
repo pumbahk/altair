@@ -30,6 +30,19 @@ class Secure3DReqEnrolRequest(Base):
     TotalAmount = sa.Column(sa.Integer, doc="決済金額の総額")
     Currency = sa.Column(sa.Unicode(3), doc="392 を設定 通貨？")
 
+def _mask_sensitive_information_srer(mapper, conn, target):
+    card_number = target.CardNumber
+    if isinstance(card_number, basestring) and len(card_number) >= 8:
+        card_number = card_number[0:4] + u'*' * (len(card_number) - 8) + card_number[-4:]
+        target.CardNumber = card_number
+    card_expmonth = target.ExpMonth
+    if isinstance(card_expmonth, basestring) and len(card_expmonth) == 2:
+        card_expmonth = u'**'
+        target.ExpMonth = card_expmonth
+
+sa.event.listen(Secure3DReqEnrolRequest, 'before_insert', _mask_sensitive_information_srer)
+sa.event.listen(Secure3DReqEnrolRequest, 'before_update', _mask_sensitive_information_srer)
+
 class Secure3DReqEnrolResponse(Base):
     """ 3D認証可否確認依頼処理（レスポンス）
     """

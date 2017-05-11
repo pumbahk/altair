@@ -299,6 +299,7 @@ if label is None or label is True:
             </tr>
             <tr>
               <th><label>住所</label><span class="notice-label"> ※必須</span></th>
+              <input type="hidden" id="country" name="country" value="日本">
               <td>
                 <% path = request.static_url('altair.app.ticketing.cart:static/js/zipdata') %>
                 <div class="form-field">
