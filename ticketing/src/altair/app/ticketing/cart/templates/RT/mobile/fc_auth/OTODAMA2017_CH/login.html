@@ -1,0 +1,89 @@
+<html lang="ja">
+<head>
+  <title><%block name="title">楽天チケット　ログインページ</%block></title>
+</head>
+<body>
+<div align="center">
+  <img src="${request.static_url('altair.app.ticketing.fc_auth:static/RT/mobile/images/logo-small.gif')}" width="160" height="26" alt="楽天チケット" />
+  <hr size="2" noshade="noshade" color="#000000" />
+</div>
+<div>
+<%namespace file="../tags_mobile.html" name="mobile" />
+<%mobile:header>クリス・ハート　ファンクラブ先行</%mobile:header>
+
+
+<p style="text-align:center;">
+<div id="login_form">
+<div><font color="#FEBF00">■</font>【会員ID入力】</font>
+</div>
+ファンクラブの会員IDを入力してください。<br/>
+お間違えのないようにお願い致します。<br/>
+<br/>
+</div>
+<form action="${request.current_route_path()}" method="post">
+<div>
+  パスワード<br/>
+  <input type="text" name="username" value="" istyle="4"><br/>
+  %if message:
+  <br/><span style="color: red">入力に誤りがあります。ご確認の上、もう一度入力してください。</span>
+  %endif
+
+  <input type="hidden" name="password" value="rakuten">
+</div>
+<input type="submit" value="申込に進む" />
+</form>
+<br/>
+</div>
+
+</p>
+<%mobile:rakuten_header>【登録メールアドレスに関して】</%mobile:rakuten_header>
+<div class="serialatt">
+<span style="color:red">携帯電話等の受信設定でドメイン指定受信を設定している方は、
+「@ticket.rakuten.co.jp」からのメールを受信できるように設定してください。</span>
+</div>
+
+<%mobile:rakuten_header>【対象公演】</%mobile:rakuten_header>
+<div class="serialatt">
+音霊 OTODAMA SEA STUDIO 2017<br/>
+会場：音霊 OTODAMA SEA STUDIO（神奈川県三浦市・三浦海岸）<br/><br/>
+＜公演日＞8月6日（日）<br/>
+海の風を聴いて2017<br/>
+出演：クリス・ハート/Skoop On Somebody/村上佳佑<br/>
+　　　OPENING ACT:Beverly<br/><br/>
+
+＜開場/開演＞開場14:30/開演15:30<br/>
+＜チケット料金＞全自由5,500円（税込）<br/>
+※整理番号付き／別途ドリンク代必要<br/>
+※4歳以上チケット必要。<br/><br/>
+
+【先行受付期間】5月15日(月)12:00～5月28日(日)23:59<br/>
+</div>
+<br/>
+
+<%mobile:rakuten_header>【注意事項】</%mobile:rakuten_header>
+<div class="serialatt">
+※「クリス・ハート」ファンクラブ会員で発行されている会員IDをご入力ください。<br/>
+※携帯電話等の受信設定でドメイン指定受信を設定している方は、<br/>
+　必ず「support@ticket.rakuten.co.jp」からのメールを事前に受信できるように設定してください。<br/>
+　お申し込み完了後すぐに、自動で「抽選申込受付完了」メールが送信されます。<br/>
+　受信されない場合は受信設定を今一度ご確認お願いいたします。<br/>
+　メールが届かない事により、当選が確認できない場合等でも一切責任は負いかねます。<br/>
+　なりすましメールのフィルター等の設定によって届かない事もございますので、<br/>
+　あわせてご確認をお願いいたします。<br/>
+※当先行では楽天スーパーポイントの付与はございません。
+</div>
+<br/>
+
+◆本公演の受付につきましては、興行主催者の依頼を受けて楽天チケットが行っております。<br/>
+
+［履歴確認］<a href="https://rt.tstar.jp/orderreview/form" target="_blank">https://rt.tstar.jp/orderreview/form</a>
+
+<hr size="1" color="#888888" noshade="noshade" />
+<div align="center" style="font-size:x-small">
+  <div>
+    <a href="http://www.ticketstar.jp">運営会社</a> | <a href="http://privacy.rakuten.co.jp/">個人情報保護方針</a> | <a href="http://www.ticketstar.jp/legal">特定商取引法に基づく表示</a>
+  </div>
+<div><font color="#888888"> &copy; TicketStar, Inc.</font></div>
+</div>
+</body>
+</html>
