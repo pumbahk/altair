@@ -74,6 +74,7 @@ ${lot.name}
 </div>
 
 <%mobile:form_header>住所</%mobile:form_header>
+<input type="hidden" id="country" name="country" value="日本">
 <div>
   ${form['zip'].label}${h.mobile_required_mark()}(例:1410022)<br/>
   ${form['zip'](istyle="4")}

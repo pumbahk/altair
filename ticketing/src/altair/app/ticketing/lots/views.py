@@ -363,9 +363,14 @@ class EntryLotView(object):
             self.request.session.flash(self._message(u"お支払お引き取り方法を選択してください"))
             validated = False
 
+        email_1 = cform['email_1'].data
         birthday = cform['birthday'].data
 
         # 購入者情報
+        # tkt3443: lotsでメールアドレスの入力を64文字以下で制限するバリデーションを入れる
+        if email_1 and len(email_1) > 64:
+            self.request.session.flash(self._message(u"メールアドレスは64文字以下のものをご使用ください"))
+            validated = False
         if not cform.validate() or not birthday:
             self.request.session.flash(self._message(u"購入者情報に入力不備があります"))
             if not birthday:
