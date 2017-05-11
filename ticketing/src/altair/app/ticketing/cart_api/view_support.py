@@ -14,7 +14,7 @@ from altair.app.ticketing.core.models import (
     StockStatus
 )
 from sqlalchemy import distinct, func
-
+from ..cart.helpers import get_availability_text
 from altair.app.ticketing.models import DBSession
 
 from altair.app.ticketing.venues.api import get_venue_site_adapter
@@ -49,6 +49,54 @@ def build_seat_query(request, sales_segment_id, session=None):
         q = q.filter(StockStatus.quantity >= params.get('quantity'))
     return q
 
+
+def build_region_dict(sales_segment):
+    # svg側では描画エリアをregionと定義しているのでそれに合わせる
+    """
+    リージョン毎の在庫状況を取得
+    条件
+    ・配席されている
+    ・商品が公開中
+    ・販売区分で公開中
+    返り値
+    ・{region_id:region_status(◎☓△)}
+    """
+    # region毎の在庫を集計
+    region_dict = dict()
+    for stock in sales_segment.performance.stocks:
+        if stock.quantity == 0:
+            continue
+
+        if not stock.product_items:
+            continue
+
+        if not stock.product_items[0].product.public:
+            continue
+
+        if not stock.performance.sales_segments[0].public:
+            if not stock.performance.sales_segments[0].use_default_stock_holder_id:
+                continue
+
+            if not stock.performance.sales_segments[0].sales_segment_group.stock_holder_id:
+                continue
+
+        for drawing_l0_id in stock.drawing_l0_ids:
+            quantity = stock.quantity
+            rest_quantity = stock.stock_status.quantity
+            if drawing_l0_id in region_dict:
+                quantity = quantity + region_dict[drawing_l0_id]['quantity']
+                rest_quantity = rest_quantity + region_dict[drawing_l0_id]['rest_quantity']
+            region_dict.update({drawing_l0_id: dict(quantity=quantity, rest_quantity=rest_quantity)})
+
+    # region毎のステータスを入れる
+    for key in region_dict:
+        values = region_dict[key]
+        setting = sales_segment.event.setting
+        status = get_availability_text(values['quantity'], values['rest_quantity']
+                              , setting.middle_stock_threshold, setting.middle_stock_threshold_percent)
+        region_dict.update({key: status})
+
+    return region_dict
 
 def build_non_seat_query(request, sales_segment_id, session=None):
     if not session:

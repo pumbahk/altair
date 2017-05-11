@@ -42,7 +42,7 @@ from altair.app.ticketing.cart import api
 from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.cart import view_support
 
-from .view_support import build_seat_query, build_non_seat_query, parse_fields_parmas, get_spa_svg_urls
+from .view_support import build_seat_query, build_region_dict, build_non_seat_query, parse_fields_parmas, get_spa_svg_urls
 
 logger = logging.getLogger(__name__)
 
@@ -200,7 +200,7 @@ class CartAPIView(object):
     # XXX: 以下のバリューオブジェクトに依存
     # SeatDict = namedtuple("SeatDict", "seat_l0_id stock_type_id seat_status stock_quantity")
     # StockTypeQuantityPair = namedtuple("StockTypeQuantityPair", "stock_type_id stock_quantity")
-    def build_seats_api_response(self, fields, seat_dicts, stock_type_tuples, quantity_only_stock_type_tuples, region_ids):
+    def build_seats_api_response(self, fields, seat_dicts, stock_type_tuples, quantity_only_stock_type_tuples, region_dict):
         """fields指定なしなら全fieldを返す
         指定があれば指定されているものだけ返す"""
         res = dict()
@@ -212,10 +212,14 @@ class CartAPIView(object):
                 ) for d in seat_dicts]
         if 'regions' in fields or not fields:
             # TODO: regions毎の残席を◎✕△で返すようにする
-            res['regions'] = [dict(
-                    region_id=region_id,
-                    stock_status=""
-                ) for region_id in set(region_ids)]
+            res['regions'] = dict()
+            for key in region_dict:
+                res['regions'].update(
+                    dict(
+                        region_id=key,
+                        stock_status=region_dict[key]
+                    )
+                )
         if 'stock_types' in fields or not fields:
             from altair.app.ticketing.cart.helpers import get_availability_text
             res['stock_types'] = [dict(
@@ -272,12 +276,8 @@ class CartAPIView(object):
         quantity_only_stock_type_tuples = [StockTypeTuple(type_id, rest_quantity, all_quantity, event)
                                      for type_id, rest_quantity, all_quantity, event in quantity_only_stock_type_tuples]
 
-        # svg側では描画エリアをregionと定義しているのでそれに合わせる
-        region_ids = []
-        for stock in sales_segment.stocks:
-            region_ids.extend(stock.drawing_l0_ids)
-
-        return self.build_seats_api_response(parse_fields_parmas(self.request), seat_dicts, stock_type_tuples, quantity_only_stock_type_tuples, region_ids)
+        region_dict = build_region_dict(sales_segment)
+        return self.build_seats_api_response(parse_fields_parmas(self.request), seat_dicts, stock_type_tuples, quantity_only_stock_type_tuples, region_dict)
 
     @view_config(route_name='cart.api.seat_reserve')
     def seat_reserve(self):
