@@ -195,6 +195,7 @@ ${self.error(form, 'email_1_confirm')}
 
 <dt class="creditHl">住所</dt>
 <dd>
+<input type="hidden" id="country" name="country" value="日本">
 <p>
 <% path = request.static_url('altair.app.ticketing.cart:static/js/zipdata') %>
 ${h.render_label(form['zip'])}<br/>
