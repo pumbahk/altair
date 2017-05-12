@@ -211,7 +211,6 @@ class CartAPIView(object):
                     is_available=(d.seat_status == SeatStatusEnum.Vacant.v),
                 ) for d in seat_dicts]
         if 'regions' in fields or not fields:
-            # TODO: regions毎の残席を◎✕△で返すようにする
             region_list = []
             for key in region_dict:
                 region_list.append(
