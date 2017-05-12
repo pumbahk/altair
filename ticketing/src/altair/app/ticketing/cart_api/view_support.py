@@ -98,6 +98,7 @@ def build_region_dict(sales_segment):
 
     return region_dict
 
+
 def build_non_seat_query(request, sales_segment_id, session=None):
     if not session:
         session = get_db_session(request, 'slave')

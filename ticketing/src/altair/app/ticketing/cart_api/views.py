@@ -212,14 +212,15 @@ class CartAPIView(object):
                 ) for d in seat_dicts]
         if 'regions' in fields or not fields:
             # TODO: regions毎の残席を◎✕△で返すようにする
-            res['regions'] = dict()
+            region_list = []
             for key in region_dict:
-                res['regions'].update(
+                region_list.append(
                     dict(
                         region_id=key,
                         stock_status=region_dict[key]
                     )
                 )
+            res['regions'] = region_list
         if 'stock_types' in fields or not fields:
             from altair.app.ticketing.cart.helpers import get_availability_text
             res['stock_types'] = [dict(
