@@ -1,0 +1,147 @@
+<div class="section">
+  <h3>購入情報</h3>
+  <table class="purchasedContents">
+    <tbody>
+      <tr>
+        <thead>
+          <th colspan="4">${order.performance.event.title} <br />${order.performance.name}<br />${h.japanese_date(order.performance.start_on)} ${h.japanese_time(order.performance.start_on)} ${order.performance.venue.name}</th>
+        </thead>
+      </tr>
+      <tr>
+        <td colspan="3">受付番号</td>
+        <td class="textR">${order.order_no}</td>
+      </tr>
+      %for product in order.items:
+      <tr>
+        <th scope="row"><img src="${view_context.static_url('pc/images/icon_dummy.gif')}" alt="" width="22" height="21" /> ${product.product.name}</th>
+      % if product.product.sales_segment.setting.display_seat_no and product.seats:
+        <td><strong>${product.seat_quantity}</strong>枚</td>
+        <td>
+        % for seat in product.seats:
+          ${seat['name']}<br/>
+        % endfor
+        </td>
+      % else:
+      % if product.seats:
+      <td colspan="2"><strong>${product.seat_quantity}</strong>枚</td>
+      % else:
+      <td colspan="2"><strong>${product.quantity}</strong>枚</td>
+      % endif
+      % endif
+        <td class="textR">￥${h.format_number(product.price * product.quantity)}</td>
+      </tr>
+      %endfor
+      <tr>
+        <td colspan="3">ステータス</td>
+        <td class="textR">${h.get_order_status(order)}</td>
+      </tr>
+      <tr>
+        <td colspan="3">支払状況</td>
+        <td class="textR">${h.get_payment_status(order)}</td>
+      </tr>
+      <tr>
+        <td colspan="3">発券状況</td>
+        <td class="textR">${h.get_print_status(order)}</td>
+      </tr>
+      <tr>
+        <td colspan="3">決済手数料</td>
+        <td class="textR">￥${h.format_number(order.transaction_fee)}</td>
+      </tr>
+      <tr>
+        <td colspan="3">発券/引取手数料</td>
+        <td class="textR">￥${h.format_number(order.delivery_fee)}</td>
+      </tr>
+      <tr>
+        <td colspan="3">システム利用料</td>
+        <td class="textR">￥${h.format_number(order.system_fee)}</td>
+      </tr>
+      %if order.special_fee > 0:
+      <tr>
+        <td colspan="3">${order.special_fee_name}</td>
+        <td class="textR">￥${h.format_number(order.special_fee)}</td>
+      </tr>
+      %endif
+      <tr>
+        <td colspan="3">合計金額</td>
+        <td class="textR">￥${h.format_number(order.total_amount)}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<% extra_form_data = order.get_order_attribute_pair_pairs(request, mode='orderreview') %>
+% if extra_form_data:
+<div class="section">
+  <h3>追加情報</h3>
+  <table summary="追加情報">
+    %for _, (display_name, display_value) in extra_form_data:
+    <tr>
+      <th scope="row" class="display_name">
+        ${display_name}
+      </th>
+      <td class="display_value">${h.sensible_coerce(request, display_value)}</td>
+    </tr>
+    %endfor
+  </table>
+  % if len(order.get_order_attribute_pair_pairs(request, mode='editable')) > 0 and order.status != 'canceled' and order.payment_status != 'refunded':
+  <form method="post" action="${request.route_path('order_review.edit_order_attributes.form')}">
+    <input type="hidden" name="action" value="edit_order_attributes.form" />
+    <input type="hidden" name="order_no" value="${order.order_no}" />
+    <input type="hidden" name="tel" value="${order.shipping_address.tels[0]}" />
+    <input type="submit" class="historySearchBtn" value="入力情報の編集" />
+  </form>
+  % endif
+</div>
+% endif
+
+<% shipping_address = order.shipping_address %>
+% if order.status == 'canceled':
+<div class="section">
+  <h3><span class="red">この購入/予約はキャンセルされました</span></h3>
+  <p>キャンセル処理は、下記のような理由によりおこなっております。</p>
+  <ul class="cancel-list-style">
+    <li>お客様からキャンセルのご連絡があったため</li>
+    <li>期限内のご入金がなくキャンセル扱いとしたため</li>
+    <li>二重注文により、ひとつをキャンセル処理したため</li>
+  </ul>
+</div>
+% elif order.status != 'canceled' and order.payment_status == 'refunded':
+% else:
+<div class="_2columns">
+  <div class="column section">
+    <h3>お支払</h3>
+    <div class="section-inner">
+    ${h.render_payment_finished_viewlet(request, order)}
+    </div>
+  </div>
+  <div class="column section">
+    <h3>お引取</h3>
+    <div class="section-inner">
+    ${h.render_delivery_finished_viewlet(request, order)}
+    </div>
+  </div>
+</div>
+% endif
+<div class="section">
+  <h3>購入者情報</h3>
+  <table class="purchasedContents" summary="配送先情報">
+    <tbody>
+      <tr>
+        <th scope="row">氏名（漢字）</th>
+        <td>${shipping_address.last_name} ${shipping_address.first_name}</td>
+      </tr>
+      <tr>
+        <th scope="row">氏名（カナ）</th>
+        <td>${shipping_address.last_name_kana} ${shipping_address.first_name_kana}</td>
+      </tr>
+      <tr>
+        <th scope="row">電話番号</th>
+        <td>${shipping_address.tel_1}</td>
+      </tr>
+      <tr>
+        <th scope="row">住所</th>
+        <td>${shipping_address.zip} ${shipping_address.prefecture}${shipping_address.city}${shipping_address.address_1}${shipping_address.address_2}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
