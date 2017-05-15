@@ -22,6 +22,7 @@ def main():
     # CSVを出力したあとに、置換してあげると優しい
     parser = argparse.ArgumentParser(description=u'申し込まれた抽選のエントリを、CSVで出力する')
     parser.add_argument('-n', "--lot", required=True, help=u'')
+    parser.add_argument('-s', "--site", required=True, help=u'')
     print "LotsEntry Download!!"
     args = parser.parse_args()
 
@@ -31,19 +32,19 @@ def main():
 def save_entries(args):
 
     # develop
+    """
     host = 'localhost'
     db = 'ticketing'
     user = 'ticketing'
     password = 'ticketing'
     port = 3306
-
     """
+
     host = 'dbmain.standby.altr'
     db = 'ticketing'
     user = 'ticketing_ro'
     password = 'ticketing'
     port = 3308
-    """
 
     client = pymysql.connect(host=host, db=db, user=user, passwd=password, port=port)
     cur = client.cursor()
@@ -52,7 +53,7 @@ def save_entries(args):
     wf = open(str(args.lot) + '.csv', 'w+b')
     writer = csv.writer(wf, dialect='fins')
 
-    sql = get_sql().format(args.lot, args.lot)
+    sql = get_sql().format(args.lot, args.lot, args.site)
 
     cur.execute(sql)
     datas = cur.fetchall()
@@ -140,6 +141,8 @@ FROM LotEntryWish
      ON LotEntryWish.performance_id = Performance.id AND Performance.deleted_at IS NULL
      JOIN Venue
      ON Performance.id = Venue.performance_id AND Venue.deleted_at IS NULL
+     JOIN Site
+     ON Venue.site_id = Site.id
      JOIN Lot
      ON LotEntry.lot_id = Lot.id AND Lot.deleted_at IS NULL
      JOIN PaymentDeliveryMethodPair as PDMP
@@ -193,6 +196,7 @@ FROM LotEntryWish
      ON LotEntryAttribute.lot_entry_id = LotEntry.id
 WHERE Lot.id = {}
      AND LotEntryWish.deleted_at IS NULL
+     AND Site.id = {}
 ORDER BY entry_no, wish_order
 
 """
