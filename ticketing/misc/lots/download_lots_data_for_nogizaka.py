@@ -50,7 +50,7 @@ def save_entries(args):
     cur = client.cursor()
     cur.execute('SET NAMES sjis')
 
-    wf = open(str(args.lot) + '.csv', 'w+b')
+    wf = open(str(args.lot) + "_" + str(args.site) + '.csv', 'w+b')
     writer = csv.writer(wf, dialect='fins')
 
     sql = get_sql().format(args.lot, args.lot, args.site)
