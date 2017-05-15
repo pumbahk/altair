@@ -99,7 +99,7 @@
                 }
             }
         },
-        "/performances/{performance_id}/stock_types": {
+        "/performances/{performance_id}/sales_segments/{sales_segment_id}/stock_types": {
             "get": {
                 "summary": "Stock types",
                 "description": "return all stock types related to the specific performance\n",
@@ -108,6 +108,15 @@
                         "name": "performance_id",
                         "in": "path",
                         "description": "performance id",
+                        "required": true,
+                        "type": "integer",
+                        "format": "int32",
+                        "x-example": 28677
+                    },
+                    {
+                        "name": "sales_segment_id",
+                        "in": "path",
+                        "description": "salse segment id",
                         "required": true,
                         "type": "integer",
                         "format": "int32",
