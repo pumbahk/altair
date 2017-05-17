@@ -268,7 +268,7 @@ body {
 .btn:hover { opacity: 0.6; }
 .btn-primary {
 	border: none !important;
-	background: #FE5200 !important;
+	background: #0081CC !important;
 	color: #FFF !important;
 }
 .btn-primary-border {
@@ -285,7 +285,7 @@ body {
 
 /* heading ============================== */
 .heading-primary {
-	background: #0C1B6F;
+	background: #00A040;
 	font-size: 2.0rem;
 	color: #FFF;
 	font-weight: bold;
@@ -295,7 +295,7 @@ body {
 
 .heading_simple_line {
 	font-size: 1.8rem;
-	color: #FE5200;
+	color: #0081cc;
 	font-weight: bold;
 	border-bottom: 2px solid #1E368E;
 	padding: 10px;
