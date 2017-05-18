@@ -41,6 +41,7 @@ from altair.app.ticketing.cart.exceptions import (
 from altair.app.ticketing.cart import api
 from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.cart import view_support
+from altair.app.ticketing.cart.reserving import NotEnoughAdjacencyException
 
 from .view_support import build_seat_query, build_region_dict, build_non_seat_query, parse_fields_parmas, get_spa_svg_urls
 
@@ -468,7 +469,17 @@ class CartAPIView(object):
                 separate_seats = setting.entrust_separate_seats
                 logger.debug('separate_seats %d  ', separate_seats)
 
-                seats += reserving.reserve_seats(stockstatus.stock_id, quantity, separate_seats=separate_seats)
+                try:
+                    seats += reserving.reserve_seats(stockstatus.stock_id, quantity, separate_seats=separate_seats)
+                except NotEnoughAdjacencyException:
+                    transaction.abort()
+                    return {
+                        "results": {
+                            "status": "NG",
+                            "reason": "no enough adjacency exception"
+                        }
+                    }
+
                 quantity_only = False
         elif reserve_type == "seat_choise":
             seats += reserving.reserve_selected_seats(stockstatuses, performance_id, selected_seats)
