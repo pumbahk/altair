@@ -50,7 +50,7 @@ def build_seat_query(request, sales_segment_id, session=None):
     return q
 
 
-def build_region_dict(sales_segment, min_price, max_price, need_quantity):
+def build_region_dict(sales_segment, min_price, max_price, need_quantity, stock_type_name):
     # svg側では描画エリアをregionと定義しているのでそれに合わせる
     """
     リージョン毎の在庫状況を取得
@@ -104,6 +104,9 @@ def build_region_dict(sales_segment, min_price, max_price, need_quantity):
                 continue
 
             if max_price and price > max_price:
+                continue
+
+            if stock_type_name and stock.stock_type.name.count(stock_type_name) == 0:
                 continue
 
             region_dict.update({drawing_l0_id: dict(quantity=quantity, rest_quantity=rest_quantity)})
