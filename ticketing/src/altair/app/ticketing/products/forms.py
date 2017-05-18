@@ -188,7 +188,7 @@ class ProductItemFormMixin(object):
         )
     ticket_bundle_id = OurSelectField(
         label=u'券面構成',
-        validators=[Optional()],
+        validators=[Required()],
         coerce=lambda v: None if not v else int(v)
         )
 
