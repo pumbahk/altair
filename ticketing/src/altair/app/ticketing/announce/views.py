@@ -151,7 +151,8 @@ class Announce(BaseView):
                         sales_segment=dict(
                             name=ssg.name if ssg else None,
                             start_at=ssg.start_at if ssg else None,
-                            end_at=ssg.end_at if ssg else None)
+                            end_at=ssg.end_at if ssg else None,
+                            lots=ssg.get_lots() if ssg else [ ])
                     )
                     f.subject.process_data(engine.build(template.subject, data))
                     #f.message.process_data(engine.build(template.message, data))
