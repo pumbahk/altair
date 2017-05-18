@@ -134,11 +134,11 @@ font-weight:700;
 font-size:15px;
 color:#FFF;
 line-height:1;
-border-left:5px solid #0c1b6f;
-border-top:1px solid #0c1b6f;
-border-bottom:1px solid #0c1b6f;
-border-right:1px solid #0c1b6f;
-background:#FE5200;
+border-left:5px solid #00a040;
+border-top:1px solid #00a040;
+border-bottom:1px solid #00a040;
+border-right:1px solid #00a040;
+background:#0081cc;
 padding:4px 0 4px 10px;
 }
 
@@ -776,7 +776,7 @@ height: 240px;
 }
 
 .loginbox thead th {
-background-color: #0c1b6f;
+background-color: #00a040;
 color: #fff;
 font-size: 20px;
 height: 30px;
@@ -787,7 +787,7 @@ background: #F0F0E1;
 }
 
 .loginbox th {
-background: #0c1b6f;
+background: #00a040;
 }
 
 .member th {
@@ -913,7 +913,7 @@ margin: 10px auto;
 font-size: 20px;
 font-weight: bold;
 display: inline-block;
-background-color:#FE5200;
+background-color:#0081cc;
 }
 
 .formWrapper table.form input.submit:hover,

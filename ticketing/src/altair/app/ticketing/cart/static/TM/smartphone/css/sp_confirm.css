@@ -239,7 +239,7 @@ body {
 .btn:hover { opacity: 0.6; }
 .btn-primary {
 	border: none !important;
-	background: #FE5200 !important;
+	background: #0081cc !important;
 	color: #FFF !important;
 }
 .btn-primary-border {
@@ -262,7 +262,7 @@ body {
 
 /* heading ============================== */
 .heading-primary {
-	background: #0c1b6f;
+	background: #00a040;
 	font-size: 2.0rem;
 	color: #FFF;
 	font-weight: bold;
@@ -280,9 +280,9 @@ body {
 
 .heading_simple_line {
 	font-size: 1.8rem;
-	color: #0c1b6f;
+	color: #00a040;
 	font-weight: bold;
-	border-bottom: 2px solid #0c1b6f;
+	border-bottom: 2px solid #00a040;
 	padding: 10px;
 	margin: 0 0 20px 0;
 }
@@ -513,7 +513,7 @@ li.btn-seat-plus:after {
 
 .btn-seat-active {
     cursor: pointer;
-    background: #FE5200;
+    background: #0081cc;
 }
 
 
