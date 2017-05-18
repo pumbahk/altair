@@ -275,6 +275,10 @@ class CartAPIView(object):
         SeatDict = namedtuple("SeatDict", "seat_l0_id stock stock_type_id seat_status rest_quantity")
         StockTypeTuple = namedtuple("StockTypeTuple", "stock_type_id rest_quantity all_quantity event")
 
+        min_price = self.request.GET.get("min_price", None)
+        max_price = self.request.GET.get("max_price", None)
+        quantity = self.request.GET.get("quantity", None)
+
         # available_sales_segmentsは優先順位順にならんでるはず
         sales_segment = [ss for ss in self.context.available_sales_segments][0]
         session = get_db_session(self.request, 'slave')
@@ -296,7 +300,7 @@ class CartAPIView(object):
         quantity_only_stock_type_tuples = [StockTypeTuple(type_id, rest_quantity, all_quantity, event)
                                      for type_id, rest_quantity, all_quantity, event in quantity_only_stock_type_tuples]
 
-        region_dict = build_region_dict(sales_segment)
+        region_dict = build_region_dict(sales_segment, min_price, max_price, quantity)
         return self.build_seats_api_response(parse_fields_parmas(self.request), seat_dicts, stock_type_tuples, quantity_only_stock_type_tuples, region_dict)
 
     @view_config(route_name='cart.api.seat_reserve')

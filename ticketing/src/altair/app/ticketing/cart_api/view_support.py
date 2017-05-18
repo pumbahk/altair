@@ -50,7 +50,7 @@ def build_seat_query(request, sales_segment_id, session=None):
     return q
 
 
-def build_region_dict(sales_segment):
+def build_region_dict(sales_segment, min_price, max_price, need_quantity):
     # svg側では描画エリアをregionと定義しているのでそれに合わせる
     """
     リージョン毎の在庫状況を取得
@@ -62,6 +62,11 @@ def build_region_dict(sales_segment):
     ・{region_id:region_status(◎☓△)}
     """
     # region毎の在庫を集計
+    from decimal import Decimal
+    min_price = Decimal(min_price) if min_price else None
+    max_price = Decimal(max_price) if max_price else None
+    need_quantity = Decimal(need_quantity) if need_quantity else None
+
     region_dict = dict()
     for stock in sales_segment.performance.stocks:
         if stock.quantity == 0:
@@ -80,12 +85,27 @@ def build_region_dict(sales_segment):
             if not stock.performance.sales_segments[0].sales_segment_group.stock_holder_id:
                 continue
 
+        price = 0
+        for item in stock.product_items:
+            price = price + item.price
+
         for drawing_l0_id in stock.drawing_l0_ids:
             quantity = stock.quantity
             rest_quantity = stock.stock_status.quantity
+
             if drawing_l0_id in region_dict:
                 quantity = quantity + region_dict[drawing_l0_id]['quantity']
                 rest_quantity = rest_quantity + region_dict[drawing_l0_id]['rest_quantity']
+
+            if need_quantity and rest_quantity < need_quantity:
+                continue
+
+            if min_price and price < min_price:
+                continue
+
+            if max_price and price > max_price:
+                continue
+
             region_dict.update({drawing_l0_id: dict(quantity=quantity, rest_quantity=rest_quantity)})
 
     # region毎のステータスを入れる
