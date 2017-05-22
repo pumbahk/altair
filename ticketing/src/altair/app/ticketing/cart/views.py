@@ -1059,8 +1059,8 @@ class PaymentView(object):
         """フォームから ShippingAddress などの値を取りたいときはこれで"""
         form = self.form
         if self.request.organization.setting.i18n:
-            first_name_kana=form.data['first_name_kana'] if custom_locale_negotiator(self.request)==u'ja' else u'　'
-            last_name_kana=form.data['last_name_kana'] if custom_locale_negotiator(self.request)==u'ja' else u'　'
+            first_name_kana=form.data['first_name_kana'] if custom_locale_negotiator(self.request)==u'ja' else u'カナ'
+            last_name_kana=form.data['last_name_kana'] if custom_locale_negotiator(self.request)==u'ja' else u'カナ'
             country=form.data['country']
         else:
             first_name_kana=form.data['first_name_kana']
