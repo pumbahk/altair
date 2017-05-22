@@ -8,12 +8,12 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="cache-control" content="no-cache">
 <meta http-equiv="expires" content="0">
-<title>${view_context.team_name} 購入確認ページ</title>
+<title>うつのみや花火チケット <%block name="title" /></title>
 
 <meta name="viewport" content="width=device-width,user-scalable=no">
 
 <!-- Cascading Style Sheets -->
-<link rel="stylesheet" href="${view_context.static_url('pc/common/css/mypage.css')}" type="text/css" media="all">
+<link rel="stylesheet" href="${request.static_url('altair.app.ticketing.orderreview:static/XX/common/css/mypage.css')}" type="text/css" media="all">
 
 <!-- Javascript -->
 <script type="text/javascript" src="${request.static_url('altair.app.ticketing.orderreview:static/js/jquery.js')}"></script>
@@ -30,9 +30,7 @@
 <div class="ts-header-wrap">
 
 <div class="ts-header-logobox clearfix">
-<a href="/">
-<img src="${view_context.static_url('pc/images/pc_logo.png')}" alt="${view_context.team_name}" width="950" height="64"  />
-</a>
+<h1 class="ts-header-logo"><span class="offleft">うつのみや花火チケット</span></h1>
 </div>
 
 </div><!-- ===== ts-header-wrap [end] ===== -->

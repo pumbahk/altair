@@ -11,8 +11,11 @@
 ----------------------------------------------------------- */
 #container {
 	width: 950px;
-	margin: 0 auto;
+	margin: 0 auto 20px;
+	padding: 20px 20px;
+	background: #fff none repeat scroll 0 0;
 	text-align: left;
+	box-sizing: border-box;
 }
 
 
@@ -35,7 +38,6 @@
 
 /* ヘッダ全体枠 */
 div#grpheader {
-	padding-top: 10px;
 	font-size: 120%;
 	text-align: left; /* for Quirks Mode */
 }
@@ -49,7 +51,6 @@ p#tagLine {
 
 /* サイトID */
 #siteID {
-	float: left;
 	width: 250px; /* ←サイトID幅＋サービスタイトル幅＋マージンの合計値を入れる */
 	height: 52px;
 	margin: 0;
@@ -372,6 +373,7 @@ dl#topicPath dd {
 	position: static;
 	float: none;
 	width: auto;
+	margin: 10px 0 30px;
 }
 
 
@@ -689,4 +691,22 @@ div#grpRakutenLinkArea div#serviceList dl {
 	display: block;
 	overflow: hidden;
 	zoom: 1;
+}
+
+.selectpicker {
+    float: right;
+    margin: 5px;
+    border: 1px solid #111;
+    width: 120px;
+    padding: 5px 35px 5px 5px;
+    font-size: 14px;
+    height: 30px;
+}
+
+.selectwrapper {
+     height: 30px;
+}
+
+.selectdiv {
+    clear: both;
 }
