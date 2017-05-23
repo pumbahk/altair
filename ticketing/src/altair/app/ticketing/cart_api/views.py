@@ -113,6 +113,18 @@ class CartAPIView(object):
         logger.debug("root_url=%s", root_map_url)
         logger.debug("mini_url=%s", mini_map_url)
 
+        reason = ""
+        if not root_map_url or not mini_map_url:
+            reason = "svg map_url is none"
+
+        if reason:
+            return {
+                "results": {
+                    "status": "NG",
+                    "reason": reason
+                }
+            }
+
         return dict(
             performance=dict(
                 performance_id=performance.id,
