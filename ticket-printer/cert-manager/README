@@ -1,0 +1,14 @@
+* HOWTO
+
+./setup.sh
+./dehydrated/dehydrated --register --accept-terms
+
+./renew.sh
+
+set up dns record of localhost.altair-printer.tk in renew process.
+
+You get keystore file and place to s3.
+
+* TODO
+
+This script does not work when chain.pem contains 2+ certificates.

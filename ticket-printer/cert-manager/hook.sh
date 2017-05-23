@@ -28,3 +28,10 @@ if [ "X$COMMAND" = "Xdeploy_challenge" ] ; then
   read X
   check
 fi
+
+if [ "X$COMMAND" = "Xdeploy_cert" ] ; then
+  [ -f keystore ] && rm keystore
+  keytool -importcert -keystore keystore -storepass secret -storetype JKS -noprompt -alias 0 -file certs/localhost.altair-printer.tk/cert.pem
+  keytool -importcert -keystore keystore -storepass secret -storetype JKS -noprompt -alias 1 -file certs/localhost.altair-printer.tk/chain.pem
+  echo "keystore is generated."
+fi

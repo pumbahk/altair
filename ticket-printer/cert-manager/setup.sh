@@ -23,3 +23,7 @@ fi
 if [ X`which dig` = X ] ; then
   echo "ERROR: dig command is not available."
 fi
+
+if [ X`which keytool` = X ] ; then
+  echo "ERROR: keytool command is not available."
+fi
