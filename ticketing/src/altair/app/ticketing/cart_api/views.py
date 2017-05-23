@@ -140,24 +140,6 @@ class CartAPIView(object):
             ) for ss in available_sales_segments]
         )
 
-    # XXX: compat method, to be removed.
-    @view_config(route_name='cart.api.stock_types.compat')
-    def stock_types_compat(self):
-        sales_segment = self.context.available_sales_segments[0] # use first sales_segment
-        seat_type_dicts = view_support.get_seat_type_dicts(self.request, sales_segment)
-        return dict(
-            stock_types=[dict(
-                stock_type_id=st['id'],
-                stock_type_name=st['name'],
-                is_quantity_only=st['quantity_only'],
-                description=st['description'],
-                min_quantity=st['min_quantity'],
-                max_quantity=st['max_quantity'],
-                min_product_quantity=st['min_product_quantity'],
-                max_product_quantity=st['max_product_quantity']
-            ) for st in seat_type_dicts]
-        )
-
     @view_config(route_name='cart.api.stock_types')
     def stock_types(self):
         sales_segment = self.context.sales_segment
