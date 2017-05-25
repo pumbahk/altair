@@ -4,13 +4,13 @@
 ul.error-list li {
   color: #D8000C;
   background-color: #FFBABA;
-  margin-left: 10px;
-  font-size: 125%;
+  padding: 0 8px;
+  font-size: 110%;
 }
 
 .error {
   color: #D8000C;
   background-color: #FFBABA;
-  margin-left: 10px;
-  font-size: 125%;
+  padding: 0 8px;
+  font-size: 110%;
 }

@@ -75,6 +75,11 @@ def main(argv=sys.argv):
                 event = report_setting.event
                 performance_printed_num = {}
 
+                if not event:
+                    # 紐付いているイベントが削除されている
+                    logger.info('printed_report_setting_id: {0}, Event has been deleted.'.format(report_setting.id))
+                    continue
+
                 performance_printed_query = session.query(OrderedProductItem, func.count(OrderedProductItemToken.printed_at)) \
                     .join(OrderedProductItemToken, OrderedProductItemToken.ordered_product_item_id == OrderedProductItem.id) \
                     .join(OrderedProduct, OrderedProductItem.ordered_product_id == OrderedProduct.id)\
