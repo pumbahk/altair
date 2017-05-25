@@ -16,7 +16,7 @@ body {
 
 .header .grpheader {
   float: left;
-  height: 80px;
+  height: 50px;
 }
 
 .header .side-action-buttons {
@@ -892,10 +892,10 @@ h2.glitter.red {
   overflow: hidden;
   vertical-align: middle;
   padding: 0px 0px 0px 20px;
-  background-image: linear-gradient(top, #cd4b4f 0%, #c63035 48%, #c01920 50%, #c52d33);
-  background-image: -webkit-gradient(linear, left top, left bottom, from(#cd4b4f), color-stop(0.48, #c63035), color-stop(0.5, #c01920), to(#c52d33));
-  background-image: -webkit-linear-gradient(top, #cd4b4f 0%, #c63035 48%, #c01920 50%, #c52d33);
-  background-image: -moz-linear-gradient(top, #cd4b4f 0%, #c63035 48%, #c01920 50%, #c52d33);
+  background-image: linear-gradient(top, #cd4b4f 0%, #c63035 48%, #bf0000 50%, #c52d33);
+  background-image: -webkit-gradient(linear, left top, left bottom, from(#cd4b4f), color-stop(0.48, #c63035), color-stop(0.5, #bf0000), to(#c52d33));
+  background-image: -webkit-linear-gradient(top, #cd4b4f 0%, #c63035 48%, #bf0000 50%, #c52d33);
+  background-image: -moz-linear-gradient(top, #cd4b4f 0%, #c63035 48%, #bf0000 50%, #c52d33);
   box-shadow: 2px 2px 2px -1px rgba(0, 0, 0, .3), 0px 0px 0px 2px rgba(255, 255, 255, .3) inset;
   text-shadow: 1px 1px 1px rgba(0, 0, 0, .4);
   user-select: none;
