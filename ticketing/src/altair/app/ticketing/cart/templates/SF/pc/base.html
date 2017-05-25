@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<!--[if lt IE 9]>
+<script type="text/javascript" src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+<![endif]-->
+<meta charset="UTF-8">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="cache-control" content="no-cache">
+<meta http-equiv="expires" content="0">
+<title>${_(u'チケット情報・販売・購入・予約')}</title>
+<meta name="description" content="チケット情報・販売・購入・予約は「おやまサマーフェスティバル」で！">
+<meta name="keywords" content="おやまサマーフェスティバル, チケット,チケット予約, チケット購入, イベント">
+
+<!-- Cascading Style Sheets -->
+<link rel="stylesheet" href="${request.static_url('altair.app.ticketing.cart:static/HS/pc/css/import2.css')}" type="text/css" media="all">
+<link rel="stylesheet" href="${request.static_url('altair.app.ticketing.cart:static/HS/pc/css/custom2.css')}" type="text/css" media="all">
+</head>
+
+<body id="settlement">
+  <p id="naviSkip"><a href="#main" tabindex="1" title="本文へジャンプ"><img src="${request.static_url('altair.app.ticketing.cart:static/HS/pc/images/skip.gif')}" alt="本文へジャンプ" width="1" height="1" /></a></p>
+  <div id="container">
+    <!-- ========== header ========== -->
+    <div id="grpheader">
+      <p id="siteID">
+	  <img src="${request.static_url('altair.app.ticketing.cart:static/HS/pc/images/header_logo_01.gif')}" alt="炎の祭典チケットセンター" class="serviceLogo" width="97" height="35" />
+      </p>
+    </div>
+    <!-- ========== /header ========== -->
+    
+    <hr />
+
+    <!-- ========== main ========== -->
+    <div class="selectwrapper">
+      ${h.create_url(request) |n}
+    </div>
+    <div id="main">
+      <h1>${_(u'チケット購入')}</h1>
+      ${self.body()}
+    </div>
+    <!-- ========== /main ========== -->
+  </div>
+  <!-- /container -->
+  <%block name="extras" />
+  % if request.organization.setting.sitecatalyst_use:
+    <%include file="altair.app.ticketing.cart:templates/HS/common/sitecatalyst.html"/>
+  % endif
+</body>
+
+</html>

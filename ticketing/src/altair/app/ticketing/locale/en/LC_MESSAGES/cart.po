@@ -607,6 +607,9 @@ msgstr "If even after a while not receiving the confirmation e-mail, you may hav
 msgid "<a href=\"/inquiry\">お問い合わせフォーム</a>よりお問い合わせください。"
 msgstr "contact us from the <a href=\"/inquiry\">inquiry form</a>"
 
+msgid "以下のお問い合わせ先から、ご連絡ください"
+msgstr "Please contact us with the following email address"
+
 msgid "（お問い合わせの際は、お申し込み時のお名前と電話番号を記載お願いします）"
 msgstr "(When contacting us, please describe your name and phone number at the time of your application)"
 

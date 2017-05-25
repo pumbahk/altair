@@ -1,0 +1,57 @@
+<%inherit file="../layout.html" />
+<%include file="../../../__commons__/header.html" />
+
+<h1 class="heading heading-primary">${_(u'購入履歴の確認')}</h1>
+
+
+<!-- ===== 購入履歴照会 ===== -->
+<div class="box clearfix">
+
+
+<!-- member LOGIN BOX -->
+<div class="col2_1 tile2 login-box">
+<dl>
+  <dt class="login-name" id="rakulogintitle">${_(u'一般の方のチケット確認はこちらから')}</dt>
+<dd class="login-inbox" id="rakulogin">
+<form id="form1" name="form1" action="${request.route_path('order_review.form')}" method="get">
+<p class="tac mgt20 mgb10">
+<input type="submit" value="${_(u'次に進む')}" class="btn btn-primary">
+</p>
+</form>
+</dd>
+<dt class="login-name" id="rakulogintitle">${_(u'抽選の方のチケット確認はこちらから')}</dt>
+<dd class="login-inbox" id="rakulogin">
+<form id="form2" name="form2" action="/lots/review" method="get">
+<p class="tac mgt20 mgb10">
+<input type="submit" value="${_(u'次に進む')}" class="btn btn-primary">
+</p>
+</form>
+</dd>
+</dl>
+</div>
+
+
+<!-- guest LOGIN BOX -->
+<div class="col2_2 tile2 login-box">
+<dl>
+<dt class="login-name" id="guestlogintitle">${_(u'会員の方はこちらから')}</dt>
+<dd class="login-inbox" id="rakulogin">
+<form action="${request.route_path('mypage.show')}" method="get">
+<p class="tac mgt20 mgb10">
+<input type="submit" value="${_(u'ログイン')}" class="btn btn-primary">
+</p>
+</form>
+</dd>
+</dl>
+</div>
+
+</div><!-- ===== / 購入履歴照会 ===== -->
+<!-- ===== 注意事項 ===== -->
+<div class="confirm-wrap">
+  <h2 class="heading heading_simple_line">${_(u'注意事項')}</h2>
+<ul class="list-disc">
+  <li>${_(u'発売開始直後は回線が大変込み合う場合がございますので、予めご了承ください。')}</li>
+</ul>
+</div><!-- ===== / 注意事項 ===== -->
+
+<%include file="../footer.html" />
