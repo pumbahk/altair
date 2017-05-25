@@ -1,1 +1,10 @@
 ${description}
+
+<%
+from datetime import datetime
+now = datetime.now()
+%>
+
+% if order.issuing_start_at:
+発行開始予定日：　${order.issuing_start_at.strftime("%Y-%m-%d %H:%M")}
+% endif
