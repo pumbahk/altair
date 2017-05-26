@@ -212,7 +212,7 @@ msgstr "Please choose payment method and ticket receiving method from the option
 msgid "選択すると、お支払・お引取方法についての注意事項が表示されます。"
 msgstr "After selecting a payment / delivery method, notes will appear below."
 
-msgid "このページに記載されている料金はすべて消費税込です。"
+msgid "※このページに記載されている料金はすべて消費税込です。"
 msgstr "All fees in this page includes consumption tax."
 
 msgid "手数料"
