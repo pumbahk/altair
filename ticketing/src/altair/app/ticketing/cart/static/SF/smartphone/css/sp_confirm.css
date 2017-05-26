@@ -49,9 +49,9 @@ body {
 	position: relative;
 	top: 0;
 	left: 5px;
-	width: 100px;
-	height: 32px;
-	background: url(../images/logo.gif) no-repeat 0 0;
+	width: 240px;
+	height: 96px;
+	background: url(../images/logo.png) no-repeat 0 0;
     background-size: 100%;
 }
 .ts-header-logo a:hover {
