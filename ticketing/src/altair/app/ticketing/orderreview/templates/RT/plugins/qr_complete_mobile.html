@@ -35,7 +35,7 @@ now = datetime.now()
 <!-- mobile -->
 試合当日会場専用窓口でのお受け取りです。<br/>
 
-%if paid:
+%if (paid or free):
 % if order.issuing_start_at <= now:
 表示されたQRチケットを印刷、あるいは、PC/携帯へメール送信の上、試合当日、チケット窓口にてQRコード（印刷したもの、あるいは携帯画面）をお見せください。
 <br/>
