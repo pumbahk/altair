@@ -32,7 +32,7 @@ now = datetime.now()
 
 ${description}
 
-% if paid:
+% if (paid or free):
     % if order.issuing_start_at <= now:
         % for ticket in tickets:
             <div style="border: 1px solid gray; padding: 8px; margin-bottom: 4px;">

@@ -35,7 +35,7 @@ now = datetime.now()
 <!-- mobile -->
 ${description}
 
-% if paid:
+% if (paid or free):
     % if order.issuing_start_at <= now:
     表示されたQRコードを印刷、あるいは、PC/携帯へメール送信の上、公演当日、指定の場所にてQRコード（印刷したもの、あるいは携帯画面）をご提示ください。
     <br/>
