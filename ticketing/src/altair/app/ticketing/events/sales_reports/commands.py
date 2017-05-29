@@ -74,6 +74,10 @@ def main(argv=sys.argv):
             limited_from = from_date.strftime('%Y-%m-%d 00:00')
 
         event = report_setting.event
+        if not event:
+            # イベント削除されているもの
+            continue
+
         performance = report_setting.performance
         params = dict(
             event_id=report_setting.event_id,
