@@ -36,11 +36,35 @@ def setup_tweens(config):
     config.add_tween('.tweens.CacheControlTween')
 
 def add_metadata(request, value):
-    return dict(
-        data=value,
-        environment=request.registry.settings.get('altair.findable_label.label'),
-        organization_short_name=request.organization.short_name
-    )
+    if isinstance(value, Exception):
+        environment = request.registry.settings.get('altair.findable_label.label')
+        error = dict(
+            exception=value.__class__.__name__,
+            message=value.message,
+        )
+
+        import traceback
+        trace = traceback.format_exc()
+
+        import logging
+        logging.getLogger(__name__).warn(trace)
+
+        # XXX: should switch in config
+        if environment in ['local', 'docker']:
+            error['trace'] = trace
+
+        request.response.status_code = 500
+        return dict(
+            error=error,
+            environment=environment,
+            organization_short_name=request.organization.short_name
+        )
+    else:
+        return dict(
+            data=value,
+            environment=request.registry.settings.get('altair.findable_label.label'),
+            organization_short_name=request.organization.short_name
+        )
 
 
 class RakutenAuthContext(object):

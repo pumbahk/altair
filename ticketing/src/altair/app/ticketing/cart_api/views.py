@@ -850,3 +850,8 @@ def authentication_error(context, request):
             details=[]
         )
     )
+
+
+@view_config(context=Exception, renderer='json')
+def exception_handler(context, request):
+    return context
