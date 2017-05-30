@@ -131,7 +131,15 @@ class SpaCartIndexView(IndexViewMixin):
                      request_type="altair.mobile.interfaces.ISmartphoneRequest", renderer="spa_cart/index.html")
     def spa_performance_based_landing_page(self):
         if not self.context.authenticated_user():
+            logger.warn("no authenticated user")
             return HTTPNotFound()
+
+        try:
+            sales_segments = self.context.available_sales_segments
+        except NoCartError:
+            logger.warn("no available sales segment for authenticated user")
+            return HTTPNotFound()
+
         return {}
 
 
