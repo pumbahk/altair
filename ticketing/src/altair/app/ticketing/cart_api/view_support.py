@@ -85,9 +85,9 @@ def build_region_dict(sales_segment, min_price, max_price, need_quantity, stock_
             if not stock.performance.sales_segments[0].sales_segment_group.stock_holder_id:
                 continue
 
-        price = 0
-        for item in stock.product_items:
-            price = price + item.price
+        product_items = [i for i in stock.product_items]
+        lowest_price_item = min(product_items, key=lambda i: i.price)
+        highest_price_item = max(product_items, key=lambda i: i.price)
 
         for drawing_l0_id in stock.drawing_l0_ids:
             quantity = stock.quantity
@@ -100,10 +100,11 @@ def build_region_dict(sales_segment, min_price, max_price, need_quantity, stock_
             if need_quantity and rest_quantity < need_quantity:
                 continue
 
-            if min_price and price < min_price:
+            if min_price and highest_price_item.price < min_price:
                 continue
 
-            if max_price and price > max_price:
+            # XXX: 希望上限額と子供料金を比較しても、あんまりうれしくない気もするが、子供料金とも限らないので、とりあえず
+            if max_price and max_price < lowest_price_item.price:
                 continue
 
             if stock_type_name and stock.stock_type.name.count(stock_type_name) == 0:
