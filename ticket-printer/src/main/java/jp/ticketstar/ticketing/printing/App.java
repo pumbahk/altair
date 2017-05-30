@@ -26,6 +26,9 @@ public class App {
         @Option(name="--keystore")
         String keystore = "";
 
+        @Option(name="--certlocation")
+        String certLocation = "";
+
         @Option(name="--origin")
         List<String> originHosts = new ArrayList<String>();
 
@@ -55,6 +58,11 @@ public class App {
         @Override
         public String getKeystore() {
             return keystore;
+        }
+
+        @Override
+        public String getCertLocation() {
+            return certLocation;
         }
 
         @Override
