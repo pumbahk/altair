@@ -208,6 +208,12 @@ msgstr "Please choose payment method and ticket receiving method from the option
 msgid "うつのみや花火大会でご利用いただけるチケットの受取方法と支払方法の中からひとつを選択してください。"
 msgstr "Please choose payment method and ticket receiving method from the options available in Utsunomiya Fireworks Festival Ticket Center."
 
+msgid "ANAでご利用いただけるチケットの受取方法と支払方法の中からひとつを選択してください。"
+msgstr "Please choose payment method and ticket receiving method from the options available in ANA."
+
+msgid "AC長野パルセイロオンラインチケットでご利用いただけるチケットの受取方法と支払方法の中からひとつを選択してください。"
+msgstr "Please choose payment method and ticket receiving method from the options available in AC Nagano Parceiro Online Ticket."
+
 
 msgid "選択すると、お支払・お引取方法についての注意事項が表示されます。"
 msgstr "After selecting a payment / delivery method, notes will appear below."

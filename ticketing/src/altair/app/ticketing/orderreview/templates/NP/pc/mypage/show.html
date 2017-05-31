@@ -38,7 +38,7 @@
   % if mailmagazines_to_subscribe:
 
 <form id="form1" class="confirmForm" action="${request.route_path('mypage.mailmag.confirm')}" method="post">
-<p class="bold">楽天チケットからのメールマガジンの購読を選択できます。</p>
+<p class="bold">AC長野パルセイロオンラインチケットからのメールマガジンの購読を選択できます。</p>
     % for mailmagazine, subscribed in mailmagazines_to_subscribe:
 <p class="mgtb10">
 <input type="checkbox" ${"checked" if subscribed else ""} name="mailmagazine" id="mailmagazine-${mailmagazine.id}" value="${mailmagazine.id}" />
