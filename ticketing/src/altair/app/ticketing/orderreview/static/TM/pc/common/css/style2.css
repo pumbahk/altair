@@ -1070,3 +1070,18 @@ border-right: none !important;
 table td.display_value ul li {
   margin-left: 1em;
 }
+
+
+#sp_logo {
+    display: none;
+}
+
+@media screen and (max-width:480px) {
+    #pc_logo {
+        display: none;
+    }
+    #sp_logo {
+        display: inline-block;
+    }
+}
+
