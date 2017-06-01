@@ -49,7 +49,8 @@ from . import api
 from . import helpers as h
 from . import schemas
 from . import forms_i18n
-from .api import set_rendered_event, is_smartphone, is_point_input_required, is_fc_auth_organization, set_spa_access, delete_spa_access
+from .api import set_rendered_event, is_smartphone, is_point_input_required, is_fc_auth_organization, set_spa_access\
+    , delete_spa_access, is_spa_mode
 from altair.mobile.api import set_we_need_pc_access, set_we_invalidate_pc_access
 from .reserving import InvalidSeatSelectionException, NotEnoughAdjacencyException
 from .stocker import InvalidProductSelectionException, NotEnoughStockException
@@ -125,9 +126,10 @@ class SpaCartIndexView(IndexViewMixin):
         self.request = request
         self.prepare()
 
-    @lbr_view_config(route_name='cart.spa.index', renderer="spa_cart/index.html")
+    @lbr_view_config(route_name='cart.spa.index', renderer=selectable_renderer("index.html"))
     @lbr_view_config(route_name='cart.spa.index',
-                     request_type="altair.mobile.interfaces.ISmartphoneRequest", renderer="spa_cart/index.html")
+                     request_type="altair.mobile.interfaces.ISmartphoneRequest",
+                     renderer=selectable_renderer("index.html"))
     def spa_performance_based_landing_page(self):
         if not self.context.authenticated_user():
             logger.warn("no authenticated user")
@@ -138,7 +140,9 @@ class SpaCartIndexView(IndexViewMixin):
             logger.warn("no available sales segment for authenticated user")
             return HTTPNotFound()
 
-        set_spa_access(self.request.response)
+        if not is_spa_mode(self.request):
+            response = set_spa_access(self.request.response)
+            return HTTPFound(headers=response.headers, location=self.request.route_url('cart.spa.index', performance_id=self.context.performance.id))
         return {}
 
 
