@@ -35,6 +35,7 @@ FC_AUTH_URL_PREFIX = '/static.fc_auth/'
 FC_AUTH_CDN_URL_PREFIX = '/fc_auth/static/'
 FC_AUTH_STATIC_ASSET_SPEC = "altair.app.ticketing.fc_auth:static/"
 
+SPA_COOKIE_MONSTER = "_spaaccess"
 
 class RakutenAuthContext(object):
     def __init__(self, request):

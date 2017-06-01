@@ -49,7 +49,7 @@ from . import api
 from . import helpers as h
 from . import schemas
 from . import forms_i18n
-from .api import set_rendered_event, is_smartphone, is_point_input_required, is_fc_auth_organization
+from .api import set_rendered_event, is_smartphone, is_point_input_required, is_fc_auth_organization, set_spa_access, delete_spa_access
 from altair.mobile.api import set_we_need_pc_access, set_we_invalidate_pc_access
 from .reserving import InvalidSeatSelectionException, NotEnoughAdjacencyException
 from .stocker import InvalidProductSelectionException, NotEnoughStockException
@@ -109,7 +109,6 @@ def back_to_product_list_for_mobile(request):
             sales_segment_id=cart.sales_segment_id,
             seat_type_id=cart.items[0].product.items[0].stock.stock_type_id))
 
-
 def check_auth_for_spa(fn):
     def _check(context, request):
         user = context.authenticated_user()
@@ -133,13 +132,13 @@ class SpaCartIndexView(IndexViewMixin):
         if not self.context.authenticated_user():
             logger.warn("no authenticated user")
             return HTTPNotFound()
-
         try:
             sales_segments = self.context.available_sales_segments
         except NoCartError:
             logger.warn("no available sales segment for authenticated user")
             return HTTPNotFound()
 
+        set_spa_access(self.request.response)
         return {}
 
 
@@ -508,6 +507,7 @@ class IndexView(IndexViewMixin):
                  renderer=selectable_renderer("index.html"))
     def event_based_landing_page(self):
         jump_maintenance_page_for_trouble(self.request.organization)
+        delete_spa_access(self.request.response)
 
         # 会場
         try:
@@ -585,6 +585,7 @@ class IndexView(IndexViewMixin):
                  renderer=selectable_renderer("index.html"))
     def performance_based_landing_page(self):
         jump_maintenance_page_for_trouble(self.request.organization)
+        delete_spa_access(self.request.response)
 
         sales_segments = self.context.available_sales_segments
         selector_name = self.context.event.performance_selector
