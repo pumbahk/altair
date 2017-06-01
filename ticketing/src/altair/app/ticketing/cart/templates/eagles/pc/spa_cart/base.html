@@ -1,0 +1,56 @@
+<%namespace name="widget" file="./_widgets.html" inheritable="True" />
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ja" lang="ja">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+  <title>イーグルスチケット</title>
+  <meta name="description" content="座席指定、24時間購入可能、QRコードでの発券なら手数料が無料、とチケット購入がより便利になったチケットです！チームがチケットを直接販売するシステムです。" />
+  <meta name="keywords" content="イーグルスチケット" />
+  <meta http-equiv="content-style-type" content="text/css" />
+  <meta http-equiv="content-script-type" content="text/javascript" />
+  <meta name="viewport" content="width=950" />
+  <link rel="shortcut icon" href="http://tstar.s3.amazonaws.com/cart/static/img/common/eagles.ico" />
+  <link rel="stylesheet" href="${request.static_url('altair.app.ticketing.cart:static/eagles/pc/css/import2.css')}" type="text/css" media="all" />
+  <link rel="stylesheet" href="${request.static_url('altair.app.ticketing.cart:static/eagles/pc/css/custom2.css')}" type="text/css" media="all" />
+  <%block name="javascript"></%block>
+  <%block name="css"></%block>
+</head>
+<body id="settlement">
+  <p id="naviSkip"><a href="#main" tabindex="1" title="本文へジャンプ"><img src="${request.static_url('altair.app.ticketing.cart:static/eagles/pc/images/skip.gif')}" alt="本文へジャンプ" width="1" height="1" /></a></p>
+<!-- ========== header ========== -->
+    <header>
+      <div class="inner">
+        <h1><a href="//eagles.tstar.jp/"><img src="${request.static_url('altair.app.ticketing.cart:static/eagles/pc/images/logo.png')}" alt="イーグルスチケット"></a></h1>
+
+      <nav>
+        <form action="${request.route_path('cart.logout')}" method="POST">
+          <ul>
+            % if (not getattr(request, 'context', None)) or request.context.authenticated_user()['is_guest']:
+              <li><input type="submit" value="会員でログイン"/></li>
+            % else:
+              <li>${request.context.authenticated_user()['membergroup']}でログイン中</li>
+              <li><input value="ログアウト" type="submit"></li>
+            % endif
+            <li><a href="/cart/top">トップへ</a></li>
+          </ul>
+        </form>
+      </nav>
+      </div>
+    </header>
+<!-- ========== /header ========== -->
+
+<!-- ========== main ========== -->
+<div id="container" style="position: relative;">
+    <!-- ========== main ========== -->
+    <div id="main">
+      ${self.body()}
+    </div>
+    <!-- ========== /main ========== -->
+  </div>
+  <!-- /container -->
+
+<footer>
+  <div class="copyright">&copy; TicketStar, Inc.</div>
+</footer>
+</body>
+</html>
