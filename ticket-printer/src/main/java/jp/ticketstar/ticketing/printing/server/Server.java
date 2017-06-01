@@ -24,6 +24,7 @@ import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.InetSocketAddress;
+import java.net.MalformedURLException;
 import java.net.Proxy;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -31,10 +32,14 @@ import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.charset.Charset;
 import java.security.AccessController;
+import java.security.Key;
 import java.security.KeyStore;
 import java.security.PrivilegedAction;
+import java.security.cert.Certificate;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -722,7 +727,7 @@ public class Server {
     public Server(Configuration config) {
         this.logWindow = new LogWindow();
         this.address = parseAddress(config.getListen());
-        this.httpsConfiguration = getHttpsConfigurator(config.getKeystore(), config.getCipherSuites());
+        this.httpsConfiguration = getHttpsConfigurator(config.getKeystore(), config.getCertLocation(), config.getCipherSuites());
         this.originHosts.addAll(parseOriginHosts(config.getOriginHosts()));
         if (this.originHosts.size() == 0) {
             throw new IllegalArgumentException("no origin hosts given");
@@ -762,7 +767,7 @@ public class Server {
         return _originHosts;
     }
     
-    private static HttpsConfigurator getHttpsConfigurator(String keystore, String cipherSuites) {
+    private static HttpsConfigurator getHttpsConfigurator(String keystore, String certLocation, String cipherSuites) {
     	if (keystore == null || keystore.length() == 0) {
     		return null;
     	}
@@ -794,17 +799,73 @@ public class Server {
                 } catch(RuntimeException e2) {
                 	throw e1;
                 }
+            } catch(RuntimeException ex) {
+            	ex.printStackTrace();
             } finally {
             	if(is != null) {
             		is.close();
             	}
             }
-
+            
+            KeyStore cs = KeyStore.getInstance("JKS");
+            List<Certificate> certs = new ArrayList<Certificate>();
+            if(certLocation != null && 0 < certLocation.length()) {
+                InputStream cis = null;
+                HttpURLConnection conn = null;
+	            try {
+	            	URL url = new URL(certLocation);
+	            	conn = (HttpURLConnection)url.openConnection();
+	            	conn.setRequestMethod("GET");
+	            	conn.connect();
+	            	cis = conn.getInputStream();
+		            cs.load(cis, passphrase.toCharArray());
+	                List<String> csAliases = new ArrayList<String>();
+	                for(Enumeration<String> aliasEnum = cs.aliases() ; aliasEnum.hasMoreElements() ; ) {
+	                	csAliases.add(aliasEnum.nextElement());
+	                }
+	                Collections.sort(csAliases);
+	                for(String alias : csAliases) {	
+	                	Certificate c = cs.getCertificate(alias);
+	            		certs.add(c);
+	                }
+	            } catch(MalformedURLException e1) {
+	            	e1.printStackTrace();
+	            } catch(FileNotFoundException e2) {
+	            	e2.printStackTrace();
+	            } catch(RuntimeException ex) {
+	            	ex.printStackTrace();
+	            } finally {
+	            	if(cis != null) {
+			            cis.close();
+		            }
+	            	if(conn != null) {
+	            		conn.disconnect();
+	            	}
+	            }
+            }
+            
+            Key key = null;
+            for(Enumeration<String> ksAliases = ks.aliases() ; ksAliases.hasMoreElements() ; ) {
+            	String alias = ksAliases.nextElement();
+            	if(ks.isKeyEntry(alias)) {
+        			key = ks.getKey(alias, passphrase.toCharArray());
+        			break;
+            	}
+            }
+            
             KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-            kmf.init(ks, passphrase.toCharArray());
-
             TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-            tmf.init(ks);
+            
+            if(key != null && 0 < certs.size()) {
+	            KeyStore ks_alt = KeyStore.getInstance("JKS");
+	            ks_alt.load(null, passphrase.toCharArray());
+	            ks_alt.setKeyEntry("key", key, passphrase.toCharArray(), certs.toArray(new Certificate[]{}));
+	            kmf.init(ks_alt, passphrase.toCharArray());
+	            tmf.init(cs);
+            } else {
+	            kmf.init(ks, passphrase.toCharArray());
+	            tmf.init(ks);
+            }
 
     		SSLContext sslContext = SSLContext.getInstance("TLS");
             sslContext.init(kmf.getKeyManagers(), tmf.getTrustManagers(), null);
