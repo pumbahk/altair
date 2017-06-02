@@ -2,7 +2,7 @@
 <header>
     <div class="head">
         <h1>
-            <a href="https://www.tokairadio.co.jp/event/">
+            <a href="http://awaodori-kaikan.tstar.jp/">
             <img src="${view_context.static_url('images/logo.png')}" alt="logo">
             </a>
         </h1>

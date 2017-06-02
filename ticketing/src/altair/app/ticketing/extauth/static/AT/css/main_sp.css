@@ -29,11 +29,13 @@ header .head {
 header h1 {
   padding-left: 10px;
   line-height: 60px;
+  background: #f4cec4;
 }
 header h1 img {
   border-radius: 5px;
-  background: #ffffff;
+  background: #f4cec4;
   padding: 5px;
+  height: 50px;
 }
 header .user_name {
   background: #ffffff;
@@ -154,7 +156,7 @@ main #content.subpage {
 main #content.subpage h2 {
   text-align: center;
   letter-spacing: 2px;
-  background: #5A5A5A;
+  background: #1C2953;
   color: #ffffff;
   font-size: 15px;
   padding: 1% 2%;
@@ -193,7 +195,7 @@ main #content.subpage .req_bpx {
 main #content.subpage .btn {
   letter-spacing: 0px;
   margin: 2% 0;
-  background: #5A5A5A;
+  background: #FB6F56;
   color: #ffffff;
   text-decoration: none;
   padding: 2% 13%;
@@ -205,7 +207,7 @@ main #content.subpage .btn {
   cursor: pointer;
 }
 main #content.subpage .btn:hover {
-  background: #767676;
+  opacity: 0.8;
 }
 main #content.subpage .btn.typ2 {
   background: #848484;
