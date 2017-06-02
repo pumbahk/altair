@@ -8,7 +8,7 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="cache-control" content="no-cache">
 <meta http-equiv="expires" content="0">
-<title>プレミアムマネジメント</title>
+<title>プレミアムコンサート</title>
 
 <!-- Cascading Style Sheets -->
 <link rel="shortcut icon" href="${view_context.static_url('images/favicon.ico')}" />
