@@ -32,6 +32,7 @@ from altair.app.ticketing.core.models import (
     OrganizationSetting,
     )
 from altair.app.ticketing.orders.forms import ClientOptionalForm
+from altair.app.ticketing.orders.api import OrderAttributeIO
 from altair.app.ticketing.lots.models import (
     Lot,
     LotEntry,
@@ -1287,8 +1288,9 @@ class LotEntries(BaseView):
         self.check_organization(self.context.event)
         slave_session = get_db_session(self.request, name="slave")
         entry_no = self.context.entry_no
-        lot = slave_session.query(Lot).join(LotEntry.lot).filter(LotEntry.entry_no==entry_no).one()
-        lot_entry = lot.get_lot_entry(entry_no)
+        lot = self.context.lot
+        lot_entry = self.context.entry
+        dependents = self.context.get_dependents_models()
         shipping_address = lot_entry.shipping_address
         mail_form = SendingMailForm(recipient=shipping_address.email_1,
                                     bcc="")
@@ -1298,11 +1300,14 @@ class LotEntries(BaseView):
         for w, ww in wishes:
             assert w.wish_order == ww.wish_order
 
+        lot_entry_attributes = dependents.get_lot_entry_attributes()
+
         return {"lot": lot,
                 "wishes": wishes,
                 "lot_entry": lot_entry,
                 "shipping_address": shipping_address,
-                "mail_form": mail_form}
+                "mail_form": mail_form,
+                "lot_entry_attributes": lot_entry_attributes}
 
     @view_config(route_name='lots.entries.shipping_address.edit', request_method='GET', renderer='altair.app.ticketing:templates/orders/_form_shipping_address.html')
     def edit_shipping_address_get(self):
@@ -1332,6 +1337,16 @@ class LotEntries(BaseView):
             self.request.session.flash(u'配送情報を保存しました')
             return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
         return dict(form=f, action=self.request.current_route_path())
+
+    @view_config(route_name='lots.entries.attributes.edit', request_method='POST')
+    def edit_lot_entry_attributes(self):
+        lot_entry = self.context.entry
+        params = {k.decode("utf-8"): v for k, v in self.request.POST.items() if not k.startswith("_")}
+        OrderAttributeIO(include_undefined_items=True, mode='entry', for_='lots').unmarshal(self.request, lot_entry, params)
+        lot_entry.save()
+        self.request.session.flash(u'購入情報属性を保存しました')
+        return HTTPFound(self.request.route_path(route_name="lots.entries.show", lot_id=lot_entry.lot.id, entry_no=lot_entry.entry_no))
+
 
 
 @view_defaults(decorator=with_bootstrap, permission="event_editor")
