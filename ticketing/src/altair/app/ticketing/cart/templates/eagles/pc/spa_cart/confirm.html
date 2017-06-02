@@ -9,219 +9,272 @@
 </%block>
 <%block name="css">
 <style>
-  #btn-back {
-    border: 0;
-    width: 226px;
-    height: 46px;
-    vertical-align: top;
-    padding: 1px;
-    margin-right: 20px;
-    background: url("${request.static_url('altair.app.ticketing.cart:static/eagles/pc/images/btn_back_to_selection.gif')}") left top no-repeat;
-  }
-  #btn-complete {
-    border: 0;
-    width: 226px;
-    height: 46px;
-    background: url("${request.static_url('altair.app.ticketing.cart:static/eagles/pc/images/btn_buy.gif')}") left top no-repeat;
-  }
 </style>
 </%block>
 ${self.widget.flow_widget(3)}
-<p style="font-size:150%; color: red; margin-bottom: 0;">まだお申し込みは完了していません</p>
-<p>ご注文内容をご確認いただき「購入する」ボタンで購入してください。</p>
-<form id="form1" action="${delegator['url'] if delegator else request.route_url('payment.confirm')}" method="post">
-  ${form.csrf_token()}
-  <input type="hidden" name="performance_id" value="${cart.performance.id}"/>
 
-  <div class="confirmBox">
-	<div class="confirmBoxInner">
-	  <h2><img src="${request.static_url('altair.app.ticketing.cart:static/eagles/pc/images/title_shopping.gif')}" alt="お買い物内容" width="114" height="30" /></h2>
-      <h3 id="name">${cart.performance.event.title} ${cart.performance.name} ${h.performance_datetime(cart.performance)} ${cart.performance.venue.name}</h3>
-	  <table id="contentsOfShopping" summary="席種、金額などのお買い物内容">
-    % for product in cart.items:
-		<tr>
-		  % if len(product.items) == 1:
-            <th scope="row"><img src="${request.static_url('altair.app.ticketing.cart:static/eagles/pc/images/icon_dummy.gif')}" alt="" width="21" height="21" /> ${product.product.name}</th>
-		      <td><strong>${product.seat_quantity}</strong>枚</td>
-          % else:
-		    <th scope="row"><img src="${request.static_url('altair.app.ticketing.cart:static/eagles/pc/images/icon_dummy.gif')}" alt="" width="21" height="21" /> ${product.product.name}</th>
-			  <td>×<strong>${product.quantity}</strong></td>
-		  % endif
-		  <td>
-        % if product.product.sales_segment.setting.display_seat_no:
-          % for seat in product.seats:
-            ${seat['name']}<br/>
-          % endfor
-        % endif
-		  </td>
-		  <td class="align1">￥${h.format_number(product.product.price * product.quantity)}</td>
-		</tr>
-    % endfor
-		<tr id="commission">
-		  <th scope="row">決済手数料</th>
-		  <td>&nbsp;</td>
-		  <td>&nbsp;</td>
-		  <td class="align1">￥${h.format_number(cart.transaction_fee)}</td>
-		</tr>
-		<tr id="commission">
-		  <th scope="row">発券/引取手数料</th>
-		  <td>&nbsp;</td>
-		  <td>&nbsp;</td>
-		  <td class="align1">￥${h.format_number(cart.delivery_fee)}</td>
-		</tr>
-		<tr id="commission">
-		  <th scope="row">システム利用料</th>
-		  <td>&nbsp;</td>
-		  <td>&nbsp;</td>
-		  <td class="align1">￥${h.format_number(cart.system_fee)}</td>
-		</tr>
-        %if cart.special_fee > 0:
-		<tr id="commission">
-		  <th scope="row">${cart.special_fee_name}</th>
-		  <td>&nbsp;</td>
-		  <td>&nbsp;</td>
-		  <td class="align1">￥${h.format_number(cart.special_fee)}</td>
-		</tr>
-        %endif
-		<tr id="total">
-          <th scope="row"><img src="${request.static_url('altair.app.ticketing.cart:static/eagles/pc/images/total.gif')}" alt="合計金額" width="67" height="16" /></th>
-		  <td>&nbsp;</td>
-		  <td>&nbsp;</td>
-		  <td class="align1">￥${h.format_number(cart.total_amount)}</td>
-		</tr>
-	  </table>
-	</div>
-  </div>
 
-  % if extra_form_data:
-  <div class="confirmBox">
-	<div class="confirmBoxInner">
-    <h2>追加情報</h2>
-	  <table id="contentsOfShopping">
-    % for _, (display_name, display_value) in extra_form_data:
-      <tr>
-        <th scope="row">${display_name}</th>
-        <td>${h.sensible_coerce(request, display_value)}</td>
-      </tr>
-    % endfor
-    </table>
-  </div>
-  </div>
-  % endif
 
-  <%
-	 shipping = cart.shipping_address
-	 %>
 
-  <div class="confirmBox">
-	<div class="confirmBoxInner">
-      <h2><img src="${request.static_url('altair.app.ticketing.cart:static/eagles/pc/images/title_payment.gif')}" alt="お支払い" width="78" height="30" /></h2>
-      ${h.render_payment_confirm_viewlet(request, cart)}
-    </div>
-  </div>
 
-  <div class="confirmBox">
-	<div class="confirmBoxInner">
-	  <h2><img src="${request.static_url('altair.app.ticketing.cart:static/eagles/pc/images/title_reception.gif')}" alt="配送情報" width="103" height="30" /></h2>
-      ${h.render_delivery_confirm_viewlet(request, cart)}
-    </div>
-  </div>
 
-  <div class="confirmBox">
-	<div class="confirmBoxInner">
-	  <h2><img src="${request.static_url('altair.app.ticketing.cart:static/eagles/pc/images/title_customer_info.gif')}" alt="購入者情報" width="103" height="30" /></h2>
-	  <table id="confirmDelivery" summary="配送先情報">
-		<tr>
-		  <th scope="row">氏名（漢字）</th>
-          <td>${shipping.last_name} ${shipping.first_name}</td>
-		</tr>
-		<tr>
-		  <th scope="row">氏名（カナ）</th>
-          <td>${shipping.last_name_kana} ${shipping.first_name_kana}</td>
-		</tr>
-		<tr>
-		  <th scope="row">電話番号</th>
-          <td>${shipping.tel_1}</td>
-		</tr>
-        % if membershipinfo is not None and membershipinfo.enable_point_input:
-		<tr>
-            <th scope="row">楽天ポイント口座</th>
-          <td>
-            % if accountno:
-              ${accountno}
-            % else:
-              <span style="color: red">※楽天スーパーポイント口座が入力されていないため、ポイント付与されません。</span>
-            % endif
-          </td>
-		</tr>
-        % endif
-		<tr>
-		  <th scope="row">配送先住所 <br />※配送を選択した場合</th>
-          <td>${shipping.zip} ${shipping.prefecture}${shipping.city}${shipping.address_1}${shipping.address_2}
-		  </td>
-		</tr>
-	  </table>
-	</div>
-  </div>
-
-	% if mailmagazines_to_subscribe:
-	<div class="settlementBox">
-    <div class="settlementBoxInner">
-			<h2><img src="${request.static_url('altair.app.ticketing.cart:static/eagles/pc/images/title_magazine.gif')}" alt="メールマガジンの配信" width="177" height="30" /></h2>
-      <div id="mailMagazineBox">
-				<div id="mailMagazineBoxInner">
-					<dl>
-						<dt>
-							ご利用いただいた方には、楽天イーグルスからのメールマガジンをお送りします。不要な方はチェックをはずしてください。
-						</dt>
-						<dd>
-							<ul>
-								% for mailmagazine, subscribed in mailmagazines_to_subscribe:
-								<li${subscribed and u' class="subscribed"' or u''|n}>
-									<div>
-										<input type="checkbox" checked="checked" name="mailmagazine" id="mailmagazine-${mailmagazine.id}" value="${mailmagazine.id}"${subscribed and u' disabled="disabled"' or u''|n} />
-										<label for="mailmagazine-${mailmagazine.id}">${mailmagazine.name}</label>
-									</div>
-									<div>
-										${mailmagazine.description|n}
-									</div>
+		<div class="login-page">
+			<div class="contents">
+				<!--****************************************************************-->
+				<section class="headArea">
+					<div class="inner">
+						<p>
+							<span>${performance.name}</span>
+							<span>${performance.venue.name}</span>
+							<span>${performance.start_on}～</span>
+						</p>
+					</div>
+				</section>
+				<div class="inner purchaseInner">
+					<!-- ******************** contents [start] ******************** -->
+					<div id="main">
+						<h1 class="purchaseTtl">チケット購入</h1>
+						<nav class="nav-stepbar clearfix mgb30 pc">
+							<ol>
+								<li>
+									<dl>
+										<dt>STEP1</dt>
+										<dd>公演日時・会場選択</dd>
+									</dl>
 								</li>
+								<li>
+									<dl>
+										<dt>STEP2</dt>
+										<dd>支払・引取方法選択</dd>
+									</dl>
+								</li>
+								<li class="current">
+									<dl>
+										<dt>STEP3</dt>
+										<dd>購入情報確認</dd>
+									</dl>
+								</li>
+							</ol>
+						</nav>
+						<div style="margin-left:10px; margin-bottom: 10px;">
+							<p class="clr_red bold fs18 tac">まだお申し込みは完了していません</p>
+							<p class="tac mgb30">ご注文内容をご確認いただき「購入する」ボタンより、購入を完了させてください。</p>
+						</div>
+						<form id="form1" action="${delegator['url'] if delegator else request.route_url('payment.confirm')}" method="post">
+							${form.csrf_token()}
+							<input type="hidden" name="performance_id" value="${cart.performance.id}"/>
+							<!-- ===== お買い物内容 ===== -->
+							<div class="confirmBox">
+								<h2 class="heading heading_simple_line">お買い物内容</h2>
+								<p class="purchase-title">${cart.performance.event.title} ${cart.performance.name} ${h.performance_datetime(cart.performance)} ${cart.performance.venue.name}</p>
+								<div class="confirmBoxInner">
+									<!-- ===== purchase-wrap ===== -->
+									<div class="purchase-wrap">
+										<table id="contentsOfShopping" summary="席種、金額などのお買い物内容" class="purchase-table">
+											<tr>
+												% for product in cart.items:
+													% if len(product.items) == 1:
+													<tr>
+														<th scope="row">
+															<img src="https://tstar.s3.amazonaws.com/cart/static/NP/pc/images/icon_dummy.gif" alt="" width="21" height="21" />
+															${product.product.name}
+														</th>
+														<td>
+															<strong>${product.seat_quantity}</strong>枚
+														</td>
+													% else:
+													<td>
+														<th scope="row">
+															<img src="https://tstar.s3.amazonaws.com/cart/static/NP/pc/images/icon_dummy.gif" alt="" width="21" height="21" />
+															${product.product.name}
+														</th>
+														<td>
+															×<strong>${product.quantity}</strong>枚
+														</td>
+													% endif
+													<td>
+													% if product.product.sales_segment.setting.display_seat_no:
+													  % for seat in product.seats:
+														${seat['name']}<br/>
+													  % endfor
+													% endif
+													</td>
+													<td class="align1">￥${h.format_number(product.product.price * product.quantity)}</td>
+												</tr>
+												% endfor
+
+												<tr>
+													<th scope="row">決済手数料</th>
+													<td>&nbsp;</td>
+													<td>&nbsp;</td>
+													<td class="align1">￥${h.format_number(cart.transaction_fee)}</td>
+												</tr>
+												<tr>
+													<th scope="row">発券/引取手数料</th>
+													<td>&nbsp;</td>
+													<td>&nbsp;</td>
+													<td class="align1">￥${h.format_number(cart.delivery_fee)}</td>
+												</tr>
+												<tr>
+													<th scope="row">システム利用料</th>
+													<td>&nbsp;</td>
+													<td>&nbsp;</td>
+													<td class="align1">￥${h.format_number(cart.system_fee)}</td>
+												</tr>
+												%if cart.special_fee > 0:
+												<tr>
+													<th scope="row">${cart.special_fee_name}</th>
+													<td>&nbsp;</td>
+													<td>&nbsp;</td>
+													<td class="align1">￥${h.format_number(cart.special_fee)}</td>
+												</tr>
+												%endif
+												<tr class="purchase-table-total">
+													<th scope="row" class="fs14">合計金額</th>
+													<td>&nbsp;</td>
+													<td>&nbsp;</td>
+													<td class="align1">￥${h.format_number(cart.total_amount)}</td>
+												</tr>
+											</tbody>
+										</table>
+									</div>
+								</div>
+							</div>
+
+							  % if extra_form_data:
+							  <div class="confirmBox">
+								<div class="confirmBoxInner">
+								<h2>追加情報</h2>
+								  <table id="contentsOfShopping">
+								% for _, (display_name, display_value) in extra_form_data:
+								  <tr>
+									<th scope="row">${display_name}</th>
+									<td>${h.sensible_coerce(request, display_value)}</td>
+								  </tr>
 								% endfor
-							</ul>
-						</dd>
-					</dl>
+								</table>
+							  </div>
+							  </div>
+							  % endif
+
+							<%
+							shipping = cart.shipping_address
+							%>
+							<!-- ===== / お買い物内容 ===== -->
+							<!-- ===== お支払い ===== -->
+							<div class="confirmBox">
+								<h2 class="heading heading_simple_line">お支払い</h2>
+								<div class="confirmBoxInner">
+									<p>${h.render_payment_confirm_viewlet(request, cart)}</p>
+								</div>
+							</div>
+							<!-- ===== / お支払い ===== -->
+							<!-- ===== お引き取り ===== -->
+							<div class="confirmBox">
+								<h2 class="heading heading_simple_line">お引き取り</h2>
+								<div class="confirmBoxInner">
+									<p>${h.render_delivery_confirm_viewlet(request, cart)}</p>
+								</div>
+							</div>
+							<!-- ===== / お引き取り ===== -->
+							<!-- ===== 購入者情報 ===== -->
+							<div class="confirmBox">
+								<h2 class="heading heading_simple_line">購入者情報</h2>
+								<!-- ===== customerBox ===== -->
+								<table class="customer-table2">
+									<tbody>
+										<tr>
+											<th scope="row">購入者氏名</th>
+											<td>${shipping.last_name} ${shipping.first_name}</td>
+										</tr>
+										<tr>
+											<th scope="row">購入者氏名（カナ）</th>
+											<td>${shipping.last_name_kana} ${shipping.first_name_kana}</td>
+										</tr>
+										<tr>
+											<th scope="row">電話番号</th>
+											<td>${shipping.tel_1}</td>
+										</tr>
+										% if membershipinfo is not None and membershipinfo.enable_point_input:
+										<tr>
+											<th scope="row">楽天ポイント口座</th>
+										  	<td>
+											% if accountno:
+											  ${accountno}
+											% else:
+											  <span style="color: red">※楽天スーパーポイント口座が入力されていないため、ポイント付与されません。</span>
+											% endif
+										  	</td>
+										</tr>
+										% endif
+										<tr>
+											<th scope="row">配送先住所<br>※配送受取を選択した場合</th>
+											<td>〒${shipping.zip} ${shipping.prefecture}${shipping.city}${shipping.address_1}${shipping.address_2}</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+
+							<br/>
+
+							% if mailmagazines_to_subscribe:
+							<div class="settlementBox">
+							<div class="settlementBoxInner">
+									<h2><img src="${request.static_url('altair.app.ticketing.cart:static/eagles/pc/images/title_magazine.gif')}" alt="メールマガジンの配信" width="177" height="30" /></h2>
+							  <div id="mailMagazineBox">
+										<div id="mailMagazineBoxInner">
+											<dl>
+												<dt>
+													ご利用いただいた方には、楽天イーグルスからのメールマガジンをお送りします。不要な方はチェックをはずしてください。
+												</dt>
+												<dd>
+													<ul>
+														% for mailmagazine, subscribed in mailmagazines_to_subscribe:
+														<li${subscribed and u' class="subscribed"' or u''|n}>
+															<div>
+																<input type="checkbox" checked="checked" name="mailmagazine" id="mailmagazine-${mailmagazine.id}" value="${mailmagazine.id}"${subscribed and u' disabled="disabled"' or u''|n} />
+																<label for="mailmagazine-${mailmagazine.id}">${mailmagazine.name}</label>
+															</div>
+															<div>
+																${mailmagazine.description|n}
+															</div>
+														</li>
+														% endfor
+													</ul>
+												</dd>
+											</dl>
+										</div>
+							  </div>
+							</div>
+							</div>
+							% endif
+
+							<!-- ===== / 購入者情報 ===== -->
+							<!-- ===== BTN ===== -->
+							<table style="margin-left: auto; margin-right: auto;">
+								<tr>
+									<td class="button_box">
+										<input class="btn btn-secondly" id="btn-back" name="back" type="submit" value="座席選択にもどる">
+										<p>※ここまでのお申し込みがキャンセルになります。</p>
+									</td>
+									<td class="button_box">
+										  % if delegator:
+											${delegator['submit']}
+										  % else:
+											<input id="btn-complete" type="submit" class="btn btn-primary" value="購入する" />
+										  % endif
+										<br />
+										<p style="color:#c01920;">※お申込み確定後は、理由の如何を問わず、取替・変更・キャンセルをお受けできません。</p>
+									</td>
+								</tr>
+							</table>
+						</form>
+					</div>
+					<!-- ******************** contents [end] ******************** -->
 				</div>
-      </div>
-    </div>
-	</div>
-	% endif
-
-  <div class="personalInformationProtection">
-	<p>
-	  <div>試合観戦時は、<a href="http://www.rakuteneagles.jp/stadium/rule2.php">「試合観戦契約約款」</a>並びに試合観戦契約約款に基づいて作成された<a href="http://www.rakuteneagles.jp/stadium/rule.php">「Koboパーク宮城スタジアムルール」</a>が適用されます。</div>
-	  上記内容及び、<a href="//eagles.tstar.jp/agreement" target="_new">サービス利用規約</a>、<a href="http://privacy.rakuten.co.jp/" target="_new">個人情報保護方針</a>に同意をし、購入を申込みます。
-	</p>
-  </div>
-
-  <table style="margin-left: auto; margin-right: auto;">
-    <tr>
-      <td style="width: 320px; text-align: center;">
-        <input id="btn-back" type="submit" name="back" value="" />
-        <br />
-        ※ここまでのお申し込みがキャンセルになります。 &nbsp;&nbsp;&nbsp;&nbsp;
-      </td>
-      <td style="width: 320px; text-align: center;">
-      % if delegator:
-        ${delegator['submit']}
-      % else:
-        <input id="btn-complete" type="submit" value="" />
-        <br />
-        &nbsp;
-      % endif
-      </td>
-    </tr>
-  </table>
-</form>
+				<!--****************************************************************-->
+			</div>
+		</div>
 
 % if request.organization.setting.sitecatalyst_use:
 <!--SiteCatalyst-->
