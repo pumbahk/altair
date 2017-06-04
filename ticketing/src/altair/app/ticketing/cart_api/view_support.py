@@ -112,15 +112,14 @@ def build_region_dict(sales_segment, min_price, max_price, need_quantity, stock_
 
             region_dict.update({drawing_l0_id: dict(quantity=quantity, rest_quantity=rest_quantity)})
 
-    # region毎のステータスを入れる
-    for key in region_dict:
-        values = region_dict[key]
-        setting = sales_segment.event.setting
-        status = get_availability_text(values['quantity'], values['rest_quantity']
-                              , setting.middle_stock_threshold, setting.middle_stock_threshold_percent)
-        region_dict.update({key: status})
+    # region毎のステータス
+    setting = sales_segment.event.setting
 
-    return region_dict
+    def status(quantity, rest_quantity):
+        return get_availability_text(quantity, rest_quantity,
+                                     setting.middle_stock_threshold, setting.middle_stock_threshold_percent)
+
+    return dict([ (key, status(values['quantity'], values['rest_quantity'])) for key, values in region_dict.iteritems() ])
 
 
 def build_non_seat_query(request, sales_segment_id, session=None):
