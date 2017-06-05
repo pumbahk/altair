@@ -4950,7 +4950,7 @@ class Stock_group_l0_id(Base):
     group_l0_id = Column(Unicode(48), primary_key=True, nullable=False)
 
 
-class Stock_drwaing_l0_id(Base):
+class Stock_drawing_l0_id(Base):
     """在庫と会場図内の描画エリアを紐付けるテーブル"""
     __tablename__   = "Stock_drawing_l0_id"
     stock_id = Column(Identifier, ForeignKey('Stock.id', ondelete='CASCADE'), primary_key=True, nullable=False)

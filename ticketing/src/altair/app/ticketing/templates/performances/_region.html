@@ -1,0 +1,83 @@
+<%namespace file="/common/helpers.html" name="ch" />
+
+<style>
+  #region_setting_form input[type="text"] {
+    width: 120px;
+  }
+</style>
+
+<div>
+  <h4>会場図領域設定</h4>
+</div>
+
+
+<form id="region_setting_form" method="post" action="${request.route_path('performances.region.update', performance_id=performance.id)}">
+<table class="table" style="width: auto;">
+  <thead><tr>
+    <th></th>
+    % for stock_holder in stock_holders:
+      <th>${stock_holder.name}</th>
+    % endfor
+  </tr></thead>
+  <tbody>
+    % for stock_type in stock_types:
+      <tr>
+        <td rowspan="2">${stock_type.name}</td>
+        % for stock_holder in stock_holders:
+          <td>
+
+            ## for each cell
+            % for stock in stock_type.stocks:
+              % if stock.performance.id == performance.id and stock.stock_holder and stock.stock_holder.id == stock_holder.id:
+                <!-- Stock=${stock.id} -->
+
+                <div>Products:
+                  % for product in products:
+                     % if product.sales_segment.performance and product.sales_segment.performance.id == performance.id:
+                      % if stock in product.stocks:
+                        <div>&nbsp; ${product.name} [${product.sales_segment.sales_segment_group.name}]</div>
+                      % endif
+                    % endif
+                  % endfor
+                </div>
+              % endif
+            % endfor
+          </td>
+        % endfor
+
+          </tr><tr>
+
+        % for stock_holder in stock_holders:
+          <td>
+            % for stock in stock_type.stocks:
+              % if stock.performance.id == performance.id and stock.stock_holder and stock.stock_holder.id == stock_holder.id:
+                <div>
+                  % for dlid in stock.drawing_l0_ids:
+                    <div><input type="text" name="${stock.id}[]" value="${dlid}"></div>
+                  % endfor
+                  <input type="button" value="+" onclick="add_input(this, '${stock.id}[]')" /> <br />
+                </div>
+              % endif
+            % endfor
+
+          </td>
+        % endfor
+      </tr>
+    % endfor
+  </tbody>
+</table>
+
+  <input type="hidden" name="hoge" value="piyo" />
+  <input type="submit" name="" value="保存" />
+</form>
+
+<script>
+  function add_input(target, name) {
+    var container = $('<div></div>');
+    var input = $('<input type="text">');
+    input.attr({ name: name });
+    container.append(input);
+    $(target).before(container);
+    return false;
+  }
+</script>
