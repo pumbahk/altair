@@ -107,20 +107,6 @@ class CartAPIView(object):
 
         #SPA用のsvg(s3)を取得して返却
         drawings = get_spa_svg_urls(self.request, performance.id)
-
-        reason = ""
-        if 'root' not in drawings:
-            reason = "root svg is none "
-
-        if 'mini' not in drawings:
-            reason += " mini svg is none "            
-
-        if reason:
-            return {
-                "results": {
-                    "status": "NG",
-                    "reason": reason
-                }        
        
         root_map_url = drawings['root']
         mini_map_url = drawings['mini']
