@@ -335,7 +335,7 @@ class PerPerformanceAgreementView(object):
         selected_sales_segment = sales_segments[0]
         if not selected_sales_segment.setting.disp_agreement:
             return HTTPFound(self.request.route_url('cart.index2', performance_id=self.context.performance.id, _query=self.request.GET))
-        return dict(agreement_body=Markup(selected_sales_segment.setting.agreement_body))
+        return dict(performance=self.context.performance, agreement_body=Markup(selected_sales_segment.setting.agreement_body))
 
     @lbr_view_config(request_method="POST")
     def post(self):
@@ -1161,6 +1161,7 @@ class PaymentView(object):
             form['prefecture'].data = default_prefecture
         return dict(
             form=form,
+            performance=self.context.performance,
             payment_delivery_methods=payment_delivery_methods,
             custom_locale_negotiator=custom_locale_negotiator(self.request) if self.request.organization.setting.i18n else ""
             )
@@ -1264,6 +1265,7 @@ class PaymentView(object):
                 raise PaymentMethodEmptyError.from_resource(self.context, self.request)
             return dict(
                 form=self.form,
+                performance=self.context.performance,
                 payment_delivery_methods=payment_delivery_methods,
                 custom_locale_negotiator=custom_locale_negotiator(self.request) if self.request.organization.setting.i18n else ""
                 )
@@ -1339,7 +1341,7 @@ class ExtraFormView(object):
                 mode='entry'
                 )
             )
-        return dict(form=form, form_fields=form_fields)
+        return dict(cart=self.context.cart, form=form, form_fields=form_fields)
 
     @lbr_view_config(request_method="POST")
     def post(self):
@@ -1420,7 +1422,8 @@ class PointAccountEnteringView(object):
 
         return dict(
             form=form,
-            asid=asid
+            asid=asid,
+            performance=self.context.performance
         )
 
     @back(back_to_top, back_to_product_list_for_mobile)
@@ -1524,6 +1527,7 @@ class ConfirmView(object):
             membershipinfo = self.context.membershipinfo,
             extra_form_data=extra_form_data,
             accountno=acc.account_number if acc else "",
+            performance=self.context.performance,
             custom_locale_negotiator=custom_locale_negotiator(self.request) if self.request.organization.setting.i18n else "",
             i18n=self.request.organization.setting.i18n,
         )
