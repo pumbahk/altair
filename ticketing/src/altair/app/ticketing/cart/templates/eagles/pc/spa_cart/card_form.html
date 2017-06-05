@@ -31,73 +31,144 @@
   %endfor
 %endif
 
-${self.widget.flow_widget(2)}
 
-<form id="form1" name="form1" method="post" action="${request.url}">
-  ${form.csrf_token()}
-  <div class="settlementBox">
-    <div class="settlementBoxInner">
-      <!-- カード情報 -->
-      <dl>
-        <dt class="cartPayment">クレジットカードでお支払い</dt>
-        <dd>
-          <div class="settlementPayInput">
-            <div class="settlementPayInputInner">
-              <dl>
-                <dt>カード番号(半角数字)</dt>
-                <dd>
-                  <input name="card_number" type="text" id="textfield" length="16" placeholder=" （例）1234123412341234"/>
-                  16桁
-                  ${h.error_list(request, form, 'card_number')}
-                </dd>
-                <dt>有効期限</dt>
-                <dd>
-                  ${form.exp_month(id="select")}
-                  月　
-                  ${form.exp_year(id="select2")}
-                  年
-                  ${h.error_list(request, form, 'exp_month')}
-                  ${h.error_list(request, form, 'exp_year')}
-                </dd>
-                <dt>名義人(半角ローマ字)</dt>
-                <dd>
-                  <input name="card_holder_name" type="text" id="textfield5" size="50" placeholder="（例）TARO YAMADA"/>
-                  ${h.error_list(request, form, 'card_holder_name')}
-                </dd>
-                <dt>セキュリティコード(半角)</dt>
-                <dd>
-                  <input name="secure_code" type="password" id="textfield6" size="5"/>
-                  ${h.error_list(request, form, 'secure_code')}
-                </dd>
-              </dl>
-            </div>
-          </div>
 
-          <p>セキュリティコードは、カード裏面の署名欄に印刷されている下3桁の数字です。</p>
 
-          <p>
-            <span style="font-size: large">
-            ブラウザの「戻る」ボタンを使用するとエラーになります。<br/>
-            ページによってはブラウザの「更新」ボタンを使用するとエラーになる場合があります。
-            </span>
-          </p>
 
-          <p>
-            注文受付完了と同時に決済され、即時注文確定となります。
-            支払回数は≪1回払い≫のみのお取扱いとなります。
-            以下のクレジットカードがご利用できます。
-          </p>
-          <p>
-            <img src="${request.static_url('altair.app.ticketing.cart:static/eagles/pc/images/cards.gif')}" alt="cards"><br />
-          </p>
-        </dd>
-      </dl>
-    </div>
-  </div>
-  <p class="align2">
-    <input id="btn-next" type="submit" value="" />
-  </p>
-</form>
+
+		<div class="login-page">
+			<div class="contents">
+				<!--****************************************************************-->
+				<section class="headArea">
+					<div class="inner">
+						<p>
+							<span>${cart.performance.name}</span>
+							<span>${cart.performance.venue.name}</span>
+							<span>${cart.performance.start_on}</span>
+						</p>
+					</div>
+				</section>
+				<div class="inner purchaseInner">
+					<!-- ******************** contents [start] ******************** -->
+					<div id="main">
+						<h1 class="purchaseTtl">チケット購入</h1>
+						<div class="ts-contents">
+							<div class="ts-contents-inner">
+								<nav class="nav-stepbar clearfix mgb30 pc">
+									<ol>
+										<li>
+											<dl>
+												<dt>STEP1</dt>
+												<dd>公演日時・会場選択</dd>
+											</dl>
+										</li>
+										<li class="current">
+											<dl>
+												<dt>STEP2</dt>
+												<dd>支払・引取方法選択</dd>
+											</dl>
+										</li>
+										<li>
+											<dl>
+												<dt>STEP3</dt>
+												<dd>購入情報確認</dd>
+											</dl>
+										</li>
+									</ol>
+								</nav>
+								<div class="ts-wrapper">
+									<!-- ===== クレジットカードでお支払い ===== -->
+									<div class="confirmBox">
+										<h2 class="heading heading_simple_line">クレジットカードでお支払い</h2>
+										<!-- ===== customerBox ===== -->
+										<form id="form1" name="form1" class="confirmForm" method="post" action="${request.url}">
+										  	${form.csrf_token()}
+											<div class="customerBox">
+												<table class="customer-table3 cf">
+													<tbody>
+														<tr>
+															<th scope="row">カード番号
+																<br>
+																<span>半角数字(16桁)</span>
+															</th>
+															<td>
+																<input name="card_number" type="text" id="textfield" length="16" placeholder="1234123412341234"/>
+																${h.error_list(request, form, 'card_number')}
+															</td>
+														</tr>
+														<tr>
+															<th scope="row">有効期限
+																<br>
+																<span>半角数字</span>
+															</th>
+															<td>
+															  ${form.exp_month(id="select")}月
+															  ${form.exp_year(id="select2")}年
+															  ${h.error_list(request, form, 'exp_month')}
+															  ${h.error_list(request, form, 'exp_year')}
+															</td>
+														</tr>
+														<tr>
+															<th scope="row">名義人
+																<br>
+																<span>半角ローマ字</span>
+															</th>
+															<td>
+																<input name="card_holder_name" type="text" id="textfield5" size="50" placeholder="YAMADA TARO"/>
+												                ${h.error_list(request, form, 'card_holder_name')}
+															</td>
+														</tr>
+														<tr>
+															<th scope="row">セキュリティコード
+																<br>
+																<span>半角</span>
+															</th>
+															<td>
+																<input name="secure_code" type="text" id="textfield6" size="5"/>
+											                    ${h.error_list(request, form, 'secure_code')}
+															</td>
+														</tr>
+													</tbody>
+												</table>
+											</div>
+											<div class="confirm-textbox">
+												<div class="confirmBoxInner">
+													<ul>
+														<li class="list">セキュリティコードは、カード裏面の署名欄に印刷されている下3桁の数字です。</li>
+														<li>ブラウザの「戻る」ボタンを使用するとエラーになります。
+															<br>ページによってはブラウザの「更新」ボタンを使用するとエラーになる場合があります。
+														</li>
+														<li>購入完了と同時に決済され、即時予約確定となります(抽選受付の場合は、当選と同時に決済されます)。
+															<br/>支払回数は≪1回払い≫のみのお取扱いとなります。 以下のクレジットカードがご利用できます。
+															<br/>以下のクレジットカードがご利用できます。
+														</li>
+														<p class="cards">
+															<img src="https://tstar.s3.amazonaws.com/cart/static/eagles/pc/images/cards.gif" alt="cards">
+														</p>
+														<li>
+															<p class="att-text-a" style="color:#c00;">カード情報入力時に、ご利用カードの有効性の確認（オーソリ確認）を実施しております。
+																<br>お客様のカードによっては、チケットの予約・購入が完了していない場合でも、上記の有効性確認に伴い、カード利用案内メール等が配信される場合があります。
+															</p>
+														</li>
+														<li>ご購入されたチケットは、理由の如何を問わず、取替・変更・キャンセルはお受けできません。</li>
+													</ul>
+												</div>
+											</div>
+											<p class="confirm-btnBox tac">
+												<input class="btn btn-primary" type="submit" value="次へ">
+											</p>
+										</form>
+									</div>
+									<!-- ===== / クレジットカードでお支払い ===== -->
+								</div>
+							</div>
+						</div>
+					</div>
+					<!-- ******************** contents [end] ******************** -->
+				</div>
+				<!--****************************************************************-->
+			</div>
+		</div>
 
 % if request.organization.setting.sitecatalyst_use:
 <!--SiteCatalyst-->
