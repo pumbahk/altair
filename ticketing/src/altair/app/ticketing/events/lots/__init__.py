@@ -35,6 +35,8 @@ def includeme(config):
                      factory=lot_entry_resource_factory)
     config.add_route('lots.entries.shipping_address.edit', 'entries/search/{lot_id}/entry/{entry_no}/shipping_address/edit',
                      factory=lot_entry_resource_factory)
+    config.add_route('lots.entries.memo.update', 'entries/search/{lot_id}/entry/{entry_no}/memo/update',
+                     factory=lot_entry_resource_factory)
     config.add_route('lots.entries.delete', 'entries/delete/{lot_id}/entry/{entry_no}',
                      factory=lot_entry_resource_factory)
     config.add_route('lots.entries.export.html', 'entries/export/{lot_id}.html',

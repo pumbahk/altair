@@ -588,7 +588,7 @@ class LotEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     attributes = association_proxy('_attributes', 'value', creator=lambda k, v: LotEntryAttribute(name=k, value=v))
     gender = sa.Column(sa.Integer, default=int(SexEnum.NoAnswer))
     birthday = sa.Column(sa.Date)
-    memo = sa.Column(sa.UnicodeText)
+    memo = sa.Column(sa.UnicodeText, default=u'')
 
     canceled_at = sa.Column(sa.DateTime())
     withdrawn_at = sa.Column(sa.DateTime())

@@ -235,6 +235,22 @@ Altair Backend -- ${lot.event.title}[${lot.name}]
         </form>
       </div>
     </div>
+    <div class="row-fluid">
+      <div class="span6">
+        <div class="page-header">
+          <h3>メモ欄</h3>
+        </div>
+        <div id="memo-form" class="well clearfix">
+          <form style="margin: 0;">
+            <textarea id="memo" name="memo" rows="3" style="box-sizing: border-box; width:100%; ">${lot_entry.memo.replace('&lt;', '<').replace('&gt;', '>') or ''}</textarea>
+          </form>
+          <div class="memo-message pull-left"></div>
+          <div class="pull-right">
+            <button type="button" class="btn" id="save-memo"><i class="icon-pencil"></i>メモを保存</button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 <div id="modal-shipping-address" class="modal hide big">
@@ -269,5 +285,32 @@ $(".delete-lot-entry").on("click", function (){
     modal.modal("toggle");
 });
 
+  function save_memo() {
+    var param = {};
+    var form = $("#memo-form");
+    form.find(".memo-message").empty();
+    $(form.find("form").serializeArray()).each(function(i, v) {
+      param[v.name] = v.value;
+    });
+    $.ajax({
+      type: "post",
+      url: "${request.route_path('lots.entries.memo.update', lot_id=lot_entry.lot_id, entry_no=lot_entry.entry_no)}",
+      contentType: "application/json; charset=utf-8",
+      dataType: "json",
+      data: JSON.stringify(param),
+      success: function(result) {
+        form.find(".memo-message").append("メモを保存しました。<i class='icon-remove rm-memo-msg'></i>");
+      },
+      error: function(xhr) {
+        var responseText = JSON.parse(xhr.responseText);
+        var emsgs = responseText['emsgs'] || xhr.statusText;
+        form.find(".message").append(emsgs);
+      }
+    });
+  }
+  $("#save-memo").on("click", function(){
+    save_memo();
+  });
+  $(".memo-message").on('click', '.rm-memo-msg', function () {$(".memo-message").empty()});
 </script>
 ${m.confirm_modal()}

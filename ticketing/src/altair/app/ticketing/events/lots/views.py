@@ -1,13 +1,15 @@
 # -*- coding: utf-8 -*-
 
 import csv
+import json
 import logging
 from datetime import datetime
+from paste.util.multidict import MultiDict
 from sqlalchemy import sql
 from sqlalchemy import orm
 from pyramid.decorator import reify
 from pyramid.view import view_config, view_defaults
-from pyramid.httpexceptions import HTTPFound, HTTPNotFound
+from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPBadRequest
 from pyramid.renderers import render, render_to_response
 from pyramid_mailer import get_mailer
 from . import helpers as h
@@ -1347,6 +1349,22 @@ class LotEntries(BaseView):
         self.request.session.flash(u'購入情報属性を保存しました')
         return HTTPFound(self.request.route_path(route_name="lots.entries.show", lot_id=lot_entry.lot.id, entry_no=lot_entry.entry_no))
 
+    @view_config(route_name='lots.entries.memo.update', request_method='POST', renderer='json', permission='sales_counter')
+    def save_memo(self):
+        lot_entry = self.context.entry
+        # prevent javascript injections
+        memo = self.request.json_body['memo']
+        lot_entry.memo = memo.replace('<', '&lt;').replace('>', '&gt;')
+        emsgs = []
+        try:
+            lot_entry.save()
+        except Exception, e:
+            emsgs.append(str(e))
+
+        if emsgs:
+            raise HTTPBadRequest(body=json.dumps({'emsgs': emsgs}))
+        else:
+            return {}
 
 
 @view_defaults(decorator=with_bootstrap, permission="event_editor")
