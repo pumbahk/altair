@@ -2,6 +2,8 @@
 <% _.each(products, function(product, j) { %>
 <%
     var quantityField = "product-quantity-" + wishOrder + "-" + j + "";
+    var lowerLimit = product.min_product_quantity || 1;
+    upperLimit = Math.min(upperLimit, product.max_product_quantity);
 %>
 <tr class="product-select-tr<%= j + 1 == products.length ? ' settlementSelectEnd': '' %>">
 	<th>
@@ -18,8 +20,8 @@
       <span class="product-price"><%= product.formatted_price %></span>×
       <select name="<%= quantityField %>" >
         <option></option>
-        <% for (var k=0; k < upperLimit; k++) { %>
-        <option value="<%= k + 1 %>"><%= k + 1 %></option>
+        <% for (var k = lowerLimit; k <= upperLimit; k++) { %>
+        <option value="<%= k %>"><%= k %></option>
         <% } %> 
       </select>枚
     </div>
