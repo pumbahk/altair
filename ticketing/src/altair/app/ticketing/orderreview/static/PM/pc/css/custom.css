@@ -1,0 +1,12 @@
+header .head {
+    background-color: #ff6385 !important;
+}
+
+header h1 img {
+    vertical-align: middle !important;
+}
+
+header a:hover img {
+opacity:1.0 !important;
+background: #ffffff !important;
+}
