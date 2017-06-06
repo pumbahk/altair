@@ -107,7 +107,7 @@ class CartAPIView(object):
 
         #SPA用のsvg(s3)を取得して返却
         drawings = get_spa_svg_urls(self.request, performance.id)
-       
+               
         root_map_url = drawings['root']
         mini_map_url = drawings['mini']
         logger.debug("root_url=%s", root_map_url)
@@ -486,6 +486,7 @@ class CartAPIView(object):
         
         seat_ids = [seat.id for seat in seats]
         seat_l0_ids = [seat.l0_id for seat in seats]
+        seat_names = [seat.name for seat in seats]
         logger.debug("seat_l0_ids %s", seat_l0_ids)
 
         cart = cart_factory.create_cart(sales_segment, seats, product_requires)
@@ -534,6 +535,11 @@ class CartAPIView(object):
                     }
                 }
 
+            ret_seats = []
+            for index, l0_id in enumerate(seat_l0_ids):
+                ret_seat = {"seat_id":l0_id,"seat_name":seat_names[index]}
+                ret_seats.append(ret_seat)
+
             return dict(
                 results = dict(
                     status = "OK",
@@ -542,7 +548,7 @@ class CartAPIView(object):
                     quantity = len(seat_l0_ids),
                     is_quantity_only = quantity_only,
                     is_separated = False,
-                    seats = seat_l0_ids
+                    seats = ret_seats
                 )
             )
 
