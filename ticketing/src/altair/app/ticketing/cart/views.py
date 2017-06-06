@@ -142,7 +142,7 @@ class SpaCartIndexView(IndexViewMixin):
 
         if not is_spa_mode(self.request):
             response = set_spa_access(self.request.response)
-            return HTTPFound(headers=response.headers, location=self.request.route_url('cart.spa.index', performance_id=self.context.performance.id))
+            return HTTPFound(headers=response.headers, location=self.request.route_url('cart.spa.index', performance_id=self.context.performance.id, anything=""))
         return {}
 
 
