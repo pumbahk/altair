@@ -213,6 +213,8 @@ class EntryLotView(object):
             products.append(dict(
                 id=product.id,
                 name=product.name,
+                min_product_quantity=product.min_product_quantity,
+                max_product_quantity=product.max_product_quantity,
                 display_order=product.display_order,
                 stock_type_id=product.seat_stock_type_id,
                 price=float(product.price),

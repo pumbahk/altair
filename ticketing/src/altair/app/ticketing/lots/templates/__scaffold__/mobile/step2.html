@@ -6,7 +6,6 @@ ${lot.name}
 </div>
 <%mobile:header>第${option_index}希望</%mobile:header>
 席種・券種と希望枚数をお選びください。<br />
-合計で${sales_segment.max_quantity}枚まで入力できます。<br />
 <%mobile:messages messages="${messages}" />
 <br />
 <form action="${request.route_path('lots.entry.step3', event_id=event.id, lot_id=lot.id, option_index=option_index)}" method="post">
@@ -22,7 +21,8 @@ ${products_per_stock_type[0].seat_stock_type.description|n}
 %endif
 <div>
 %for product in products_per_stock_type:
-・${product.name}<br />
+・${product.name}<br/>
+（${product.min_product_quantity or 1}枚から、${min(product.max_product_quantity, sales_segment.max_quantity) if product.max_product_quantity else sales_segment.max_quantity}枚まで入力できます。）<br/>
 <div align="right" style="text-align:right">
 ${h.format_currency(product.price)}×
 <input type="text" name="product-${product.id}" size="2" value="" istyle="4" />枚

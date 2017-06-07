@@ -59,7 +59,7 @@ def sync_lot_product(original_product):
         lot_product.description = original_product.description
         lot_product.seat_stock_type_id = original_product.seat_stock_type_id
         lot_product.min_product_quantity = original_product.min_product_quantity
-        lot_product.min_product_quantity = original_product.max_product_quantity
+        lot_product.max_product_quantity = original_product.max_product_quantity
 
 
 def sync_lot_product_item(original_product_item):
