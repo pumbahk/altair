@@ -30,7 +30,6 @@ var spinnerPictureUrl = ${h.json_encode(request.static_url('altair.app.ticketing
 $(function() {cart.init(salesSegmentsSelection, selected, cartReleaseUrl, true, spinnerPictureUrl);});
 </script>
 
-<%include file="../common/ga.html"/>
 </%block>
 <%block name="extras">  
   <div class="modal" id="venue-detail" style="display:none; background-image: url(${request.static_url('altair.app.ticketing.cart:static/LG/pc/images/site-data/xebio-arena.png')}); width: 833px; height: 637px;">
@@ -230,3 +229,4 @@ $(function() {cart.init(salesSegmentsSelection, selected, cartReleaseUrl, true, 
         </div>
       </div>
     </div>
+<%include file="../common/ga.html"/>
