@@ -80,6 +80,7 @@ $(document).ready(function(){
 
 /*-------------------------------------*/
 
+/*
 $(function(){
 	var timer = false;
 	$(window).resize(function() {
@@ -91,6 +92,7 @@ $(function(){
 	}, 200);
 	});
 });
+*/
 
 /*-------------------------------------*/
 
