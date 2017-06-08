@@ -118,30 +118,6 @@ h1{
   padding: 0;
 }
 
-h2 {
-background: #ff6385;
-margin: 0 0 20px 0;
-padding: 10px 10px;
-color: #FFF;
-font-size: 24px;
-line-height: 24px;
-
-}
-
-h3 {
-margin:20px 0;
-font-weight:700;
-font-size:15px;
-color:#FFF;
-line-height:1;
-border-left:5px solid #F0F0E1;
-border-top:1px solid #ff6385;
-border-bottom:1px solid #ff6385;
-border-right:1px solid #ff6385;
-background:#ff6385;
-padding:4px 0 4px 10px;
-}
-
 h4 {
 margin:10px 0;
 font-size:13px;
