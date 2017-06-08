@@ -196,7 +196,7 @@ class CartAPIView(object):
         except NoResultFound as e:
             logger.warning("{} for stock_type_id={}".format(e.message, stock_type_id))
             raise HTTPNotFound()
-        products = [p for p in sales_segment.products if p.seat_stock_type_id == int(stock_type_id)]
+        products = [p for p in sales_segment.products if p.seat_stock_type_id == int(stock_type_id) and p.public]
         # svg側では描画エリアをregionと定義しているのでそれに合わせる
         region_ids = []
         for stock in sales_segment.stocks:
