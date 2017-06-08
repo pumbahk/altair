@@ -15,6 +15,19 @@ from altair.app.ticketing.carturl.api import (
 from altair.app.ticketing.events.lots.models import LotEntryReportSetting
 from altair.app.ticketing.resources import TicketingAdminResource
 
+from altair.app.ticketing.orders.api import OrderAttributeIO
+
+class LotEntryDependentsProvider(object):
+    def __init__(self, request, entry):
+        self.request = request
+        self.entry = entry
+        self._dependents_provider = None
+
+    def get_lot_entry_attributes(self):
+        for_ = 'lots'
+        return [(entry, False) for entry in OrderAttributeIO(include_undefined_items=True, mode='entry', for_=for_).marshal(self.request, self.entry)]
+
+
 class LotResourceBase(TicketingAdminResource):
     @property
     def event(self):
@@ -88,6 +101,9 @@ class LotEntryResource(AbstractLotResource):
             self.entry_no = self.request.matchdict.get('entry_no')
         except (TypeError, ValueError):
             raise HTTPNotFound
+
+    def get_dependents_models(self):
+        return LotEntryDependentsProvider(self.request, self.entry)
 
     @reify
     def entry(self):

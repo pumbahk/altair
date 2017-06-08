@@ -4,6 +4,9 @@
     <article>
         <h2>ログイン</h2>
         <section>
+            % if message:
+                <div class="message error">${message}</div>
+            % endif
             <form method="post" accept-charset="utf-8" action="${_context.route_path('extauth.login',_query=request.GET)}">
                 <input type="hidden" name="member_set" value="${selected_member_set.name}" />
                 <input type="hidden" name="_" value="${request.session.get_csrf_token()}" />

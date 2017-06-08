@@ -484,7 +484,10 @@ body {
 @media screen and (max-width: 480px){
 .br { display: block; }
 .ts-header-inner,.ts-footer-inner,.ts-contents { width: 100%; }
-.ts-header-logobox { left: 3%; }
+.ts-header-logobox img {
+    display: block;
+    margin: auto;
+}
 .ts-footer-inner { padding: 0; }
 .ts-footer-nav li a {
 	display: block;
@@ -530,4 +533,12 @@ body {
 	padding: 10px;
 	box-sizing: border-box;
 }
+}
+
+@media screen and (max-width: 400px) {
+    .ts-header-logobox img {
+        display: block;
+        margin: auto;
+        width: 100%;
+    }
 }

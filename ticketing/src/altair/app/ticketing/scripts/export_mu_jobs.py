@@ -216,7 +216,7 @@ def main():
                 base_dict = dict()
                 for f in engine.fields("".join([ a.subject, a.message ])):
                     label = engine.label(f)
-                    base_dict[f] = a.parameters[label]
+                    base_dict[f] = a.parameters[label] if a.parameters.has_key(label) else ""
                 body = engine.build(a.message, base_dict, cache_mode=True, filters=[html_filter])
                 subject = engine.build(a.subject, base_dict, cache_mode=True)
 

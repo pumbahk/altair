@@ -1,5 +1,5 @@
 <%inherit file="../layout.html" />
-
+<div id="content" class="subpage">
 <h2>マイページ</h2>
 
 <h3>購入履歴照会</h3>
@@ -24,7 +24,7 @@
 ${render_mailmagazine(request)}
 
 <br/><br/>
-
+</div>
 <%def name="render_shipping_address(shipping_address)">
   <table class="purchasedContents" summary="配送先情報">
     <tbody>

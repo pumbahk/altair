@@ -391,3 +391,23 @@ msgstr "Delivered"
 
 msgid "未配送"
 msgstr "Waiting"
+
+# errors
+
+msgid "指定されたページが見つかりません"
+msgstr "Sorry, this page isn't available."
+
+msgid "システムエラーが発生しました"
+msgstr "Sorry, system error happened"
+
+msgid "なおリンクをクリックされていた場合、ページが削除された、またはURL（ページアドレス）が変更された可能性があります。"
+msgstr "The link you followed may be broken, or the page may have been removed."
+
+msgid "ブラウザの再読み込みを行う"
+msgstr " "
+
+msgid "入力したURL（ページアドレス）にタイプミスがないか確認する"
+msgstr " "
+
+msgid "ブラウザの「戻る」ボタンを押して前画面からやり直す"
+msgstr " "
