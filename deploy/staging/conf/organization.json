@@ -71,6 +71,11 @@
             "backend_id": 92,
             "short_name": "SN"
         },
+        "MM": {
+            "auth_source": "oauth",
+            "backend_id": 62,
+            "short_name": "MM"
+        },
         "sound-creator": {
             "auth_source": "oauth",
             "short_name":  "sound-c"
