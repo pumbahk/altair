@@ -1,0 +1,59 @@
+<html lang="ja">
+<head>
+  <title>${view_context.team_name}</title>
+</head>
+<body style="background-color:#FFFFFF" bgcolor="#FFFFFF">
+<div align="center">
+  <img src="${view_context.static_url('mobile/images/mb_logo.gif', 'fc_auth')}" width="240" height="96" alt="${view_context.team_name}" />
+</div>
+<div>
+<div style="background-color:#0A50AA" bgcolor="#1D2B62"><font color="white">お申込み</font></div>
+
+<p style="text-align:center;">
+<div id="login_form">
+<div><font color="#FEBF00">■</font>ログインパスワードをお持ちの方はこちらから</font>
+</div>
+
+</div>
+<form action="${request.path}" method="post">
+<input type="hidden" name="membership" value="${view_context.organization_short_name}" />
+<div>
+  ログインパスワード<br/>(半角英数字)<br/>
+  <input type="text" name="username" size="22" value="" istyle="4">
+  %if message:
+  <br/><span style="color: red">ログインパスワードが一致しません</span>
+  %endif
+  <br/>
+  パスワード<br/>
+  <input type="password" name="password" size="22" value="" istyle="4">
+  <input type="hidden" name="password" value="popcircus">
+</div>
+<input type="submit" value="ログイン" />
+</form>
+</div>
+
+<div>
+<div><font color="#FEBF00">■</font>一般の方はこちらから</font>
+</div>
+
+</div>
+<form action="${request.route_url('fc_auth.guest', membership=request.matchdict['membership'])}" method="post">
+<div style="text-align:center;">
+<br/>
+<input type="submit" value="&gt;&gt;チケット購入&lt;&lt;"/><br />
+<div>
+
+</div>
+</div>
+</div>
+</form>
+</p>
+<hr size="1" color="#888888" noshade="noshade" />
+<div align="center" style="font-size:x-small">
+  <div>
+    <a href="http://www.ticketstar.jp/corporate">運営会社</a> | <a href="http://www.ticketstar.jp/privacy/">個人情報保護方針</a> | <a href="http://www.ticketstar.jp/legal">特定商取引法に基づく表示</a>
+  </div>
+<div><font color="#888888"> &copy; TicketStar, Inc.</font></div>
+</div>
+</body>
+</html>
