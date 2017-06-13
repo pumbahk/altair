@@ -1,0 +1,400 @@
+@charset "utf-8";
+
+/*
+	File Name   : default.css
+	Author      : Kensuke Takahashi
+	Description : デフォルトのスタイルのリセット及び基本設定
+*/
+
+
+/* Universal reset
+----------------------------------------------------------- */
+* {
+	margin: 0;
+	padding: 0;
+	font-style: normal;
+}
+
+html {
+	overflow-y: scroll;
+}
+.purchase-title {
+	padding: 10px;
+	border-left: 5px double #999;
+	background: #efefef none repeat scroll 0 0;
+	font-size: 14px;
+	font-weight: bold;
+}
+.nav-stepbar {
+	overflow: hidden;
+	position: relative;
+	margin: 0 0 30px;
+}
+.nav-stepbar ol {
+	float: left;
+	position: relative;
+	left: 50%;
+}
+.nav-stepbar ol li {
+	float: left;
+	position: relative;
+	left: -50%;
+	width: 150px;
+	border-right: 12px solid #fff;
+	background: #c5d6dc none repeat scroll 0 0;
+	color: #004763;
+	height: 50px;
+	text-align: center;
+}
+.nav-stepbar ol li::after {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0;
+	right: -10px;
+	width: 0;
+	border-top: 25px solid transparent;
+	border-bottom: 25px solid transparent;
+	border-left: 10px solid #c5d6dc;
+}
+.nav-stepbar ol li.current {
+	background: #739baa none repeat scroll 0 0;
+	color: #fff;
+	font-weight: bold;
+}
+.nav-stepbar ol li.current::after {
+	border-left: 10px solid #739baa;
+}
+.nav-stepbar ol dl {
+	padding-top: 3px;
+}
+
+table {
+	width: 100%;
+	margin: 0;
+	border-collapse: collapse;
+}
+.purchase-table tr.purchase-table-total th, .purchase-table tr.purchase-table-total td {
+	content: "";
+	border-top: 2px solid #ccc;
+}
+table th {
+	padding: 10px;
+	border-top: 1px solid #efefef;
+	font-size: 14px;
+	font-weight: bold;
+}
+table td {
+	padding: 10px;
+	border-top: 1px solid #efefef;
+	font-size: 14px;
+}
+table tr:first-child th, table tr:first-child td {
+	border-top: none;
+}
+
+table.purchase-table td:last-child {
+	text-align: right;
+}
+.details {
+	margin: 0;
+	border-top: none;
+}
+.details th {
+	border-top: none;
+	background: #fff none repeat scroll 0 0;
+}
+.details td {
+	border-top: none;
+}
+
+caption, th {
+	text-align: left;
+}
+
+object, embed {
+	vertical-align: top;
+}
+
+hr, legend {
+	display: none;
+}
+
+h1, h2, h3, h4, h5, h6 {
+	font-size: 100%;
+}
+
+img {
+	border: none;
+	vertical-align: bottom;
+}
+
+li {
+	list-style: none;
+}
+
+input {
+	padding: 1px;
+}
+
+textarea {
+	padding: 2px;
+	overflow: auto;
+	font-size: 100%;
+}
+
+option {
+	padding-right: 10px;
+}
+
+*+html option {
+	padding-right: 0; /* for IE7&Opera */
+}
+
+* html option {
+	padding-right: 0; /* for IE6 */
+}
+
+acronym, abbr {
+	cursor: help;
+}
+
+.customer-table {
+	border: 3px solid #ccc;
+}
+.customer-table th {
+	width: 33%;
+	padding: 15px 20px 15px 10px;
+	border: 1px solid #ccc;
+	background: #fbfbfb none repeat scroll 0 0;
+}
+.customer-table td {
+	padding: 15px;
+	border: 1px solid #ccc;
+}
+
+/* Body setting
+----------------------------------------------------------- */
+body {
+	color: #000;
+	font-family: Meiryo,"Hiragino Kaku Gothic ProN",MS-PGothic,sans-serif;
+	font-size: 62.5%;
+	text-align: center;
+	background: #f4f3f1 none repeat scroll 0 0;
+}
+
+#mypage {
+	background: url(../images/mypage/bg_body.gif) no-repeat 50% 130px;
+}
+
+#search {
+	background: url(../images/search/bg_body.gif) no-repeat 50% 130px;
+}
+
+#music {
+	background: url(../images/bg_body.gif) no-repeat 50% 130px;
+}
+
+#theater {
+	background: url(../images/theater/bg_body.gif) no-repeat 50% 130px;
+}
+
+#sports {
+	background: url(../images/sports/bg_body.gif) no-repeat 50% 130px;
+}
+
+#event {
+	background: url(../images/event/bg_body.gif) no-repeat 50% 130px;
+}
+
+#change,
+#first,
+#help,
+#sitemap {
+	background: url(../images/first/bg_body.gif) no-repeat 50% 130px;
+}
+.bold {
+	font-weight: bold;
+}
+
+.cancel-button.btn-redo {
+	display: inline-block;
+	width: 26%;
+	height: auto;
+	padding: 8px 10px 6px;
+	background: #999 none repeat scroll 0 0;
+	color: #fff;
+	font-size: 14px;
+	font-weight: bold;
+	cursor: pointer;
+}
+.cancel-button.btn-redo:hover {
+	opacity: 0.8;
+}
+.ok-button.btn-buy {
+	display: inline-block;
+	width: 26%;
+	height: auto;
+	padding: 8px 10px 6px;
+    background: #ed4a27 none repeat scroll 0 0;
+	color: #fff;
+	font-size: 14px;
+	font-weight: bold;
+	cursor: pointer;
+}
+.ok-button.btn-buy:hover {
+	opacity: 0.8;
+}
+
+/* Link setting
+----------------------------------------------------------- */
+a:link {
+	color: #5353f2;
+	text-decoration: underline;
+}
+
+a:visited {
+	color: #800080;
+	text-decoration: underline;
+}
+
+a:hover {
+	text-decoration: none;
+}
+
+a:focus {
+}
+
+a:active {
+}
+
+#naviSkip {
+	position: absolute;
+	top: 0;
+	left: 0;
+	margin: 0;
+}
+
+.btn-primary {
+	width: 230px;
+	height: 53px;
+	border: none;
+	background: #ed4a27 none repeat scroll 0 0;
+	color: #fff;
+	font-size: 16px;
+	font-weight: bold;
+	cursor: pointer;
+
+}
+.btn-primary:hover {
+	opacity: 0.8;
+}
+/*.totopPage {
+	display: inline-block;
+	width: 230px;
+	height: 40px;
+	padding: 17px 20px 0;
+	border: none;
+	background: #bf0000 none repeat scroll 0 0;
+	color: #fff !important;
+	font-size: 16px !important;
+	font-weight: bold;
+	text-decoration: none !important;
+	cursor: pointer;
+
+}
+.totopPage:hover {
+	opacity: 0.8;
+}*/
+
+/* helper
+--------------------------------------------------- */
+.fs6 { font-size: 0.6rem; }
+.fs7 { font-size: 0.7rem; }
+.fs8 { font-size: 0.8rem; }
+.fs9 { font-size: 0.9rem; }
+.fs10 { font-size: 1.0rem; }
+.fs12 { font-size: 1.2rem; }
+.fs14 { font-size: 1.4rem; }
+.fs16 { font-size: 1.6rem; }
+.fs18 { font-size: 1.8rem; }
+.fs20 { font-size: 2.0rem; }
+.fs22 { font-size: 2.2rem; }
+.fs24 { font-size: 2.4rem; }
+
+.mg5 { margin: 5px; }
+.mg10 { margin: 10px; }
+.mg20 { margin: 20px; }
+.mg30 { margin: 30px; }
+.mg40 { margin: 40px; }
+.mg50 { margin: 50px; }
+.mgtb5 { margin: 5px; }
+.mgtb10 { margin: 10px 0; }
+.mgtb20 { margin: 20px 0; }
+.mgtb30 { margin: 30px 0; }
+.mgtb40 { margin: 40px 0; }
+.mgtb50 { margin: 50px 0; }
+.mgt5 { margin-top: 5px; }
+.mgt10 { margin-top: 10px; }
+.mgt20 { margin-top: 20px; }
+.mgt30 { margin-top: 30px; }
+.mgt40 { margin-top: 40px; }
+.mgt50 { margin-top: 50px; }
+.mgb5 { margin-bottom: 5px; }
+.mgb10 { margin-bottom: 10px; }
+.mgb20 { margin-bottom: 20px; }
+.mgb30 { margin-bottom: 30px; }
+.mgb40 { margin-bottom: 40px; }
+.mgb50 { margin-bottom: 50px; }
+.mgl5 { margin-left: 5px; }
+.mgl10 { margin-left: 10px; }
+.mgl20 { margin-left: 20px; }
+.mgl30 { margin-left: 30px; }
+.mgl40 { margin-left: 40px; }
+.mgl50 { margin-left: 50px; }
+.mgr5 { margin-right: 5px; }
+.mgr10 { margin-right: 10px; }
+.mgr20 { margin-right: 20px; }
+.mgr30 { margin-right: 30px; }
+.mgr40 { margin-right: 40px; }
+.mgr50 { margin-right: 50px; }
+
+.tac { text-align: center; }
+.tal { text-align: left; }
+.tar { text-align: right; }
+.bold { font-weight: bold; }
+
+.clear { clear: both; }
+
+.list-disc li { list-style: outside disc; margin: 0 0 3px 0; }
+.list-rice li { list-style: outside none; margin: 0 0 3px 0; }
+.list-rice li:before { content: "※"; }
+
+.creditCard {
+	line-height: 1.3;
+}
+.creditCard li {
+	margin: 0 0 1rem 20px;
+}
+.creditCard .cards {
+	margin: 0 0 1rem 20px;
+}
+.btn-primary {
+	display: inline-block;
+	height: auto;
+	margin: 0 auto;
+	padding: 15px;
+	background: #ed4a27 none repeat scroll 0 0;
+	border: none;
+	color: #fff !important;
+	font-size: 16px;
+	font-weight: bold;
+	text-align: center;
+	cursor: pointer;
+}
+.btn-primary:link {
+	text-decoration: none;
+}
+.btn-primary:hover {
+	opacity: 0.8;
+}
