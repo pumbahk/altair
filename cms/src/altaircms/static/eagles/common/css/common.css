@@ -3312,7 +3312,8 @@ a {
     font-weight: bold;
   }
   .calender-tbl td.team .place {
-    display: none;
+    font-size: 10px;
+    font-weight: normal;
   }
   .calender-tbl td.event-logo {
     font-size: 10px;
