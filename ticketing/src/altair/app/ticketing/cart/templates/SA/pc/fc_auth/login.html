@@ -22,12 +22,28 @@
             <table class="nobdr">
             <tr>
                 <td>
+                    <table class="loginbox">
+                        <thead>
+                            <tr>
+                                <th>一般の方<small> はこちらから</small></th>
+                            </tr>
+                        </thead>
+                        <tr>
+                            <td style="text-align:center">
+                              <form action="${request.route_url('fc_auth.guest', membership=request.matchdict['membership'])}" method="post">
+                                <input type="submit" class="btnLogin" value="チケット購入" />
+                              </form>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+                <td>
                   <form action="${request.path}" method="post">
                     <input type="hidden" name="password" value="satv"/>
                     <table class="loginbox">
                         <thead>
                             <tr>
-                                <th>優待コードをお持ちの方<small> はこちらから</small></th>
+                                <th>ログインパスワードをお持ちの方<small> はこちらから</small></th>
                             </tr>
                         </thead>
                         <tr>
@@ -35,12 +51,12 @@
                                 <table width="323" cellpadding="0" cellspacing="0" class="member nobdr">
                                   <tbody>
                                     <tr>
-                                      <th style="text-align:right">優待コード</th>
+                                      <th style="text-align:right">ログインパスワード</th>
                                       <td style="text-align:left">
                                         <div class="tal">
                                             <input type="text" class="text" name="username">
                                             %if message:
-                                            <br/><span class="small red">優待コードが一致しません</span>
+                                            <br/><span class="small red">ログインパスワードが一致しません</span>
                                             %endif
                                         </div>
                                       </td>
@@ -62,7 +78,7 @@
     <li>携帯電話､スマートフォンの各キャリアの受信拒否設定から、購入確認メールが受け取れない場合がございますので、
 <span style="color:#f00;">satv@tstar.jpのドメイン指定受信許可設定を行ってください</span>。</li>
     <li>受付開始直後は回線が大変込み合う場合がございますので、予めご了承ください。</li>
-    <li>優待コードは半角でご入力ください。</li>
+    <li>ログインパスワードは半角でご入力ください。</li>
 </ul>
 <h3>その他</h3>
 <ul class="notes">
