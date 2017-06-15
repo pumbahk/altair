@@ -220,7 +220,6 @@ function showTopPageSliderFunc(){
       prevText: '前の月',
       adaptiveHeight: true,
       touchEnabled: true,
-      swipeThreshold: 60,
        buildPager: function(slideIndex){
         switch(slideIndex){
           case 0: return pagerTxtArry[0];
