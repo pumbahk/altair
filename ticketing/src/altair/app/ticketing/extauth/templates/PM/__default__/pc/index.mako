@@ -31,14 +31,6 @@
             </div>
             <!-- Gest Box-->
 
-            <!-- Extauth Box-->
-            <div class="login-box">
-                <h3>各種IDをお持ちの方はこちら</h3>
-                <p class="txtC">
-                    <a href="${_context.route_path('extauth.login', _query=dict(member_set=member_set.name))}" class="btn">ログイン</a>
-                </p>
-            </div>
-            <!-- Extauth Box-->
         </section>
     </article>
 <!-- subpage end -->
