@@ -148,7 +148,7 @@ body {
 	-moz-border-radius: 3px;
 	border-radius: 3px;
 	border: 1px solid #CCC;
-	background: #FEE0E6;
+	background: #e0e0e0;
 	padding: 5px;
 	margin: 3px;
 }
@@ -268,7 +268,7 @@ body {
 .btn:hover { opacity: 0.6; }
 .btn-primary {
 	border: none !important;
-	background: #BF0000 !important;
+	background: #232323 !important;
 	color: #FFF !important;
 }
 .btn-primary-border {
@@ -285,7 +285,7 @@ body {
 
 /* heading ============================== */
 .heading-primary {
-	background: #BF0000;
+	background: #232323;
 	font-size: 2.0rem;
 	color: #FFF;
 	font-weight: bold;
