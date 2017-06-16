@@ -40,7 +40,7 @@
   % if mailmagazines_to_subscribe:
 
 <form id="form1" class="confirmForm" action="https://rt.tstar.jp/cart/confirm" method="post">
-<p class="bold">うつのみや花火チケットからのメールマガジンの購読を選択できます。</p>
+<p class="bold">${view_context.team_name}からのメールマガジンの購読を選択できます。</p>
     % for mailmagazine, subscribed in mailmagazines_to_subscribe:
 <p class="mgtb10">
 <input type="checkbox" ${"checked" if subscribed else ""} name="mailmagazine" id="mailmagazine-${mailmagazine.id}" value="${mailmagazine.id}" />

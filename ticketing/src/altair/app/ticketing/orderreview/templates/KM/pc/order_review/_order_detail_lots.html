@@ -150,7 +150,7 @@
       </tr>
       %endif
       <tr id="total">
-        <th scope="row"><img src="${request.static_url("altair.app.ticketing.orderreview:static/UH/pc/images/total.gif")}" alt="合計金額" width="67" height="16" /></th>
+        <th scope="row"><img src="${view_context.static_url('pc/images/total.gif')}" alt="合計金額" width="67" height="16" /></th>
         <td>&nbsp;</td>
         <td>&nbsp;</td>
         <td class="align1">￥${h.format_number(order.total_amount)}</td>
