@@ -1,0 +1,214 @@
+<%inherit file="../layout_resp.html" />
+
+<h1 class="heading heading-primary">チケット購入</h1>
+
+    <%
+	shipping =order.shipping_address
+	%>
+
+	<!-- ===== 受付番号 ===== -->
+	<div class="confirm-wrap">
+		<h2 class="heading heading_simple_line">受付番号</h2>
+		<table class="customer-table" summary="受付番号">
+			<tbody>
+				<tr>
+					<th scope="row">受付番号</th>
+					<td>${order.order_no}</td>
+				</tr>
+				<tr>
+					<th scope="row">受付日</th>
+					<td>${h.japanese_date(order.created_at)}</td>
+				</tr>
+				<tr>
+					<th scope="row">ステータス</th>
+					<td>${h.order_status(order, sent=True)}</td>
+				</tr>
+				% if order.status == 'delivered':
+				<tr>
+					<th scope="row">発送日</th>
+					<td>${h.japanese_date(order.delivered_at)}</td>
+				</tr>
+				% endif
+				%  if order.is_issued() and order.deliver_at_store():
+				<tr>
+					<th scope="row">発券日時</th>
+					<td>${h.japanese_datetime(order.issued_at)}</td>
+				</tr>
+				% endif
+			</tbody>
+		</table>
+	</div><!-- ===== / 受付番号 ===== -->
+
+
+
+
+	<!-- ===== 購入者情報 ===== -->
+	<div class="confirm-wrap">
+		<h2 class="heading heading_simple_line">購入者情報</h2>
+		<table class="customer-table" summary="購入者情報">
+			<tbody>
+				<tr>
+					<th scope="row">購入者氏名<br><span>漢字</span></th>
+                    <td>${shipping.last_name} ${shipping.first_name}</td>
+				</tr>
+				<tr>
+					<th scope="row">購入者氏名<br><span>カナ</span></th>
+                    <td>${shipping.last_name_kana} ${shipping.first_name_kana}</td>
+				</tr>
+				<tr>
+					<th scope="row">電話番号</th>
+                    <td>${shipping.tel_1}</td>
+				</tr>
+				<tr>
+					<th scope="row">メールアドレス</th>
+                    <td>${shipping.email_1}</td>
+				</tr>
+				<tr>
+					<th scope="row">住所</th>
+					<td></td>
+				</tr>
+			</tbody>
+		</table>
+		<p class="mgt10">※ご購入時に入力された情報が表示されております。
+		</p>
+	</div><!-- ===== / 購入者情報 ===== -->
+
+
+
+	<!-- ===== 購入したイベントの情報 ===== -->
+	<div class="confirm-wrap">
+		<h2 class="heading heading_simple_line">購入したイベントの情報</h2>
+		<table class="customer-table" summary="注購入したイベントの情報">
+			<tbody>
+				<tr>
+					<th scope="row">イベント名</th>
+                    <td>${order.performance.event.title}</td>
+				</tr>
+				<tr>
+					<th scope="row">公演・試合名</th>
+                    <td>${order.performance.name}</td>
+				</tr>
+				<tr>
+					<th scope="row">公演日</th>
+					<td>
+          % if order.performance.end_on:
+<%
+    o = order.performance.start_on
+    c = order.performance.end_on
+    period = h.japanese_date(o) + u'〜' + h.japanese_date(c)
+    if o.year==c.year and o.month==c.month and o.day==c.day:
+        period = h.japanese_date(o)
+%>
+            <span class="date">${period}</span>
+          % else:
+            <span class="date">${h.japanese_date(order.performance.start_on)}</span>
+            <span class="time">${h.japanese_time(order.performance.start_on)}</span>
+          % endif
+                    </td>
+				</tr>
+				<tr>
+					<th scope="row">会場</th>
+                    <td>${order.performance.venue.name}</td>
+				</tr>
+			</tbody>
+		</table>
+	</div><!-- ===== / 購入したイベントの情報 ===== -->
+
+
+
+
+	<!-- ===== 注文内容 ===== -->
+	<div class="confirm-wrap">
+		<h2 class="heading heading_simple_line">注文内容</h2>
+		<table class="purchase-table" summary="注文内容">
+			<tbody>
+				<tr>
+					<td colspan="3">
+						<p class="tac bold">${order.performance.event.title}</p>
+						<p class="tac bold">${order.performance.name}</p>
+						<p class="tac bold">
+						<span class="br">${h.japanese_date(order.performance.start_on)} ${h.japanese_time(order.performance.start_on)}</span>
+						<span>${order.performance.venue.name}</span>
+						</p>
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<span style="background-color:#ff0000; width:13px; height:13px; display:inline-block; margin-right: 0.5em; position:relative; top:1px;"></span>
+						${product.product.name}</td>
+				  % if product.seats:
+					% if product.product.sales_segment.setting.display_seat_no:
+					  <td><strong>${product.seat_quantity}</strong>枚</td>
+					  <td>
+					  % for seat in product.seats:
+						${seat['name']}<br/>
+					  % endfor
+					  </td>
+					% else:
+					  <td colspan="2"><strong>${product.seat_quantity}</strong>枚</td>
+					% endif
+				  % else:
+					<td colspan="2"><strong>${product.quantity}</strong>枚</td>
+				  % endif
+			        <td class="tar">￥${h.format_number(product.price * product.quantity)}</td>
+				</tr>
+                <tr>
+					<th scope="row">決済手数料</th>
+					<td colspan="2" class="tar">￥${h.format_number(order.transaction_fee)}</td>
+				</tr>
+				<tr>
+					<th scope="row">発券/引取手数料</th>
+					<td colspan="2" class="tar">￥${h.format_number(order.delivery_fee)}</td>
+				</tr>
+				<tr>
+					<th scope="row">システム利用料</th>
+					<td colspan="2" class="tar">￥${h.format_number(order.system_fee)}</td>
+				</tr>
+				%if order.special_fee > 0:
+				<tr>
+				  <th scope="row">${order.special_fee_name}</th>
+				  <td class="tar">￥${h.format_number(order.special_fee)}</td>
+				</tr>
+				%endif
+				<tr class="purchase-table-total">
+					<th scope="row">合計金額</th>
+					<td colspan="2" class="tar">￥${h.format_number(order.special_fee)}</td>
+				</tr>
+			</tbody></table>
+	</div><!-- ===== / 注文内容 ===== -->
+
+
+
+
+	<!-- ===== お支払い ===== -->
+	<div class="confirm-wrap">
+		<h2 class="heading heading_simple_line">お支払い</h2>
+        ${h.render_payment_finished_viewlet(request, order)}
+	</div><!-- ===== / お支払い ===== -->
+
+
+
+
+	<!-- ===== お引き取り ===== -->
+	<div class="confirm-wrap">
+		<h2 class="heading heading_simple_line">お引き取り</h2>
+			% if order.payment_delivery_pair.delivery_method.id == 71:
+			 <div>
+			   <h4>コンビニ（セブン-イレブン）店頭でのお受取です。</h4>
+			   公演日約1週間前までに、セブン-イレブン店頭レジでチケット引取をする際に必要な
+			   引換票番号をメールにてお送りいたします(当選メールとは別のメールになります)。
+			   詳細は、そちらをご確認ください。
+			 </div>
+			% else:
+			  ${h.render_delivery_finished_viewlet(request, order)}
+			% endif
+	</div><!-- ===== / お引き取り ===== -->
+
+
+
+
+	<!-- ===== 注意事項 ===== -->
+	<div class="confirm-wrap">
+		<h2 class="heading heading_simple_line">注意事項</h2>
+		<p>入力された個人情報は「個人情報保護方針」に基づき適切に取扱われます。 </p>
+	</div><!-- ===== / 注意事項 ===== -->
