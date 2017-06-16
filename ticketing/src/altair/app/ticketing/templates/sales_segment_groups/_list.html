@@ -1,7 +1,7 @@
 <%page args="sales_segment_groups, limit=None" />
 <%namespace file="/common/helpers.html" name="ch" />
 <% paging = False if limit else True %>
-<% from altair.app.ticketing.core.models import SalesSegmentGroup, SalesSegmentGroupSetting %>
+<% from altair.app.ticketing.core.models import SalesSegmentGroup, SalesSegmentGroupSetting, SalesSegmentKindEnum %>
 % if sales_segment_groups:
 <style>
   .pdmp {
@@ -44,7 +44,10 @@
         <tr>
           <% count = len(sales_segment_group.payment_delivery_method_pairs) %>
           <% rowspan = '' %>
-          <td ${rowspan}><a href="${request.route_path('sales_segment_groups.show', sales_segment_group_id=sales_segment_group.id)}">${sales_segment_group.name}</a></td>
+          <td ${rowspan}>
+            <a href="${request.route_path('sales_segment_groups.show', sales_segment_group_id=sales_segment_group.id)}">${sales_segment_group.name}</a><br>
+            <p>（${ch.sortable(SalesSegmentGroup.kind, paging)}: ${u''.join(e.v for e in SalesSegmentKindEnum._values if sales_segment_group.kind == e.k)}）</p>
+          </td>
           <td ${rowspan}>${vh.datetime(sales_segment_group.start_at, with_weekday=True)}</td>
           <td ${rowspan}>${vh.datetime(sales_segment_group.end_at, with_weekday=True)}</td>
           <td ${rowspan}>${sales_segment_group.account.name}</td>
