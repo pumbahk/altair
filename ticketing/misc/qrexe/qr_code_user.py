@@ -6,7 +6,6 @@ import argparse
 import pymysql
 import logging
 import sqlahelper
-import commands
 
 from altair.app.ticketing.core.models import TicketPrintHistory
 from altair.app.ticketing.qr.utils import make_data_for_qr
@@ -30,20 +29,11 @@ select_qr_sql = """
                        from `Order` ODR 
                            INNER JOIN TicketPrintHistory TPH 
                            ON TPH.order_id = ODR.id 
-                           AND ODR.organization_id = '13'
+                           AND ODR.organization_id = '107'
                         INNER JOIN ShippingAddress SAS 
                            ON ODR.shipping_address_id = SAS.id;
                        """
 
-select_order_id_sql = """
-                        select id as order_id from `Order` 
-                        where 
-                            organization_id = '13'
-                        AND NOT EXISTS (
-                            select order_id as id from TicketPrintHistory
-                            where TicketPrintHistory.order_id = `Order`.id
-                        )
-                      """
 
 def main(request):
     print "楽天トラベルQR CODE URLリスト作成"
@@ -67,27 +57,27 @@ def save_entries(request):
     cur = client.cursor()
     wf = open(str('resQrCode') + '.csv', 'w+b')
     writer = csv.writer(wf, lineterminator='\n')
-    cur.execute(select_order_id_sql)
-    order_data = cur.fetchall()
-    ticket_history_insert(order_data)
+    # cur.execute(select_order_id_sql)
+    # order_data = cur.fetchall()
+    # ticket_history_insert(order_data)
     cur.execute(select_qr_sql)
     datas = cur.fetchall()
     qr_url_arr = creat_qr_url(request, datas)
     write_result(writer, datas, qr_url_arr)
 
-def ticket_history_insert(order_data):
-    if order_data is None:
-        return 0
-    for od in order_data:
-        history = TicketPrintHistory(
-            seat_id=None,
-            item_token_id=None,
-            ordered_product_item_id=None,
-            order_id=od[0]
-        )
-        DBSession.add(history)
-        DBSession.flush()
-    return 0
+# def ticket_history_insert(order_data):
+#     if order_data is None:
+#         return 0
+#     for od in order_data:
+#         history = TicketPrintHistory(
+#             seat_id=None,
+#             item_token_id=None,
+#             ordered_product_item_id=None,
+#             order_id=od[0]
+#         )
+#         DBSession.add(history)
+#         DBSession.flush()
+#     return 0
 
 def build_qr_by_history(request, history):
     params, ticket = make_data_for_qr(history)
