@@ -39,7 +39,8 @@
 /* ヘッダ全体枠 */
 div#grpheader {
 	font-size: 120%;
-	text-align: left; /* for Quirks Mode */
+	text-align: left;
+	overflow-x: hidden;
 }
 /* Main
 ----------------------------------------------------------- */
