@@ -28,8 +28,6 @@ select_qr_sql = """
                            INNER JOIN TicketPrintHistory TPH 
                            ON TPH.order_id = ODR.id 
                            AND ODR.organization_id = '107'
-                           AND TPH.seat_id IS NOT NULL
-                           AND TPH.item_token_id IS NOT NULL
                            AND TPH.ordered_product_item_id IS NOT NULL
                            AND TPH.order_id IS NOT NULL
                         INNER JOIN ShippingAddress SAS
@@ -74,13 +72,9 @@ def creat_qr_url(request,datas):
     qr_url = []
     for dt in datas:
         print dt[3]
-        history = TicketPrintHistory(
-            seat_id=dt[0],
-            item_token_id=dt[1],
-            ordered_product_item_id=dt[2],
-            order_id=dt[3]
-        )
-        DBSession.add(history)
+        history = TicketPrintHistory.filter(TicketPrintHistory.order_id == dt[3]).first()
+        if not history:
+            continue
         ticket = build_qr_by_history(request, history)
         qr_url.append('https://tq.tstar.jp/orderreview/qr/'+str(ticket.id)+'/'+ticket.sign+'/')
     return qr_url

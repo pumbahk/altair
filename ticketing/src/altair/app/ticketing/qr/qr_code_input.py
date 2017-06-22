@@ -33,8 +33,8 @@ select_code_sql = """
         AND ODR.organization_id = '107'
         AND ODR.id = %s
     INNER JOIN OrderedProductItem OPI
-        ON OPT.product_id = OPI.ordered_product_id
-    INNER JOIN OrderedProductItemToken OPIT
+        ON OPT.id = OPI.ordered_product_id
+    LEFT JOIN OrderedProductItemToken OPIT
         ON OPIT.ordered_product_item_id = OPI.id
 """
 
