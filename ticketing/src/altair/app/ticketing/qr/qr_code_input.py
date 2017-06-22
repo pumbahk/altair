@@ -1,7 +1,6 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import argparse
 import pymysql
 import logging
 import sqlahelper
@@ -37,7 +36,6 @@ select_code_sql = """
         ON OPT.product_id = OPI.ordered_product_id
     INNER JOIN OrderedProductItemToken OPIT
         ON OPIT.ordered_product_item_id = OPI.id
-
 """
 
 
@@ -48,31 +46,30 @@ def main(request):
 
 def save_entries(request):
     # develop
-    host = '127.0.0.1'
-    db = 'ticketing'
-    user = 'ticketing'
-    password = 'ticketing'
-    port = 3306
-
-    # host = 'dbmain.standby.altr'
+    # host = '127.0.0.1'
     # db = 'ticketing'
-    # user = 'ticketing_ro'
+    # user = 'ticketing'
     # password = 'ticketing'
-    # port = 3308
+    # port = 3306
+
+    host = 'dbmain.standby.altr'
+    db = 'ticketing'
+    user = 'ticketing_ro'
+    password = 'ticketing'
+    port = 3308
 
     client = pymysql.connect(host=host, db=db, user=user, passwd=password, port=port, charset='utf8')
     cur = client.cursor()
     cur.execute(select_order_id_sql)
     order_data = cur.fetchall()
-    # ticket_history_com(cur, order_data)
-    if ticket_history_com(cur, order_data) is 1:
+    if ticket_history_com(cur, order_data):
         print "commit()実行してからqr_code_userを実行してください。"
     else:
         print "qr_code_userを実行してください。"
 
 def ticket_history_com(cur, order_data):
     if order_data is None:
-        return 0
+        return False
     for od in order_data:
         cur.execute(select_code_sql, od[0])
         code_data = cur.fetchall()
@@ -85,7 +82,7 @@ def ticket_history_com(cur, order_data):
             )
             DBSession.add(history)
             DBSession.flush()
-    return 1
+    return True
 
 if __name__ == '__main__':
     main()

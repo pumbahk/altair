@@ -2,19 +2,16 @@
 # -*- coding: utf-8 -*-
 
 import csv
-import argparse
 import pymysql
 import logging
 import sqlahelper
 
 from altair.app.ticketing.core.models import TicketPrintHistory
 from altair.app.ticketing.qr.utils import make_data_for_qr
-from altair.app.ticketing.qr.builder import qr
 from altair.app.ticketing.qr import get_qrdata_builder
 
 logger = logging.getLogger(__name__)
 DBSession = sqlahelper.get_session()
-
 
 select_qr_sql = """
                        SELECT
@@ -25,15 +22,19 @@ select_qr_sql = """
                            ODR.order_no AS `order_no`,
                            TPH.id AS `ticketPrintHistory_id`, 
                            SAS.id AS `shipAdd_id`, 
-                           CONCAT(SAS.last_name, ' ', SAS.first_name, ' (',SAS.last_name_kana, ' ',SAS.first_name_kana,')') AS `UserName`
-                       from `Order` ODR 
+                           CONCAT(SAS.last_name, ' ', SAS.first_name, ' (',SAS.last_name_kana, ' ',
+                           SAS.first_name_kana,')') AS `UserName`
+                       from `Order` ODR
                            INNER JOIN TicketPrintHistory TPH 
                            ON TPH.order_id = ODR.id 
                            AND ODR.organization_id = '107'
-                        INNER JOIN ShippingAddress SAS 
-                           ON ODR.shipping_address_id = SAS.id;
+                           AND TPH.seat_id IS NOT NULL
+                           AND TPH.item_token_id IS NOT NULL
+                           AND TPH.ordered_product_item_id IS NOT NULL
+                           AND TPH.order_id IS NOT NULL
+                        INNER JOIN ShippingAddress SAS
+                           ON ODR.shipping_address_id = SAS.id
                        """
-
 
 def main(request):
     print "楽天トラベルQR CODE URLリスト作成"
@@ -41,43 +42,26 @@ def main(request):
 
 def save_entries(request):
     # develop
-    host = '127.0.0.1'
-    db = 'ticketing'
-    user = 'ticketing'
-    password = 'ticketing'
-    port = 3306
-
-    # host = 'dbmain.standby.altr'
+    # host = '127.0.0.1'
     # db = 'ticketing'
-    # user = 'ticketing_ro'
+    # user = 'ticketing'
     # password = 'ticketing'
-    # port = 3308
+    # port = 3306
+
+    host = 'dbmain.standby.altr'
+    db = 'ticketing'
+    user = 'ticketing_ro'
+    password = 'ticketing'
+    port = 3308
 
     client = pymysql.connect(host=host, db=db, user=user, passwd=password, port=port, charset='utf8')
     cur = client.cursor()
     wf = open(str('resQrCode') + '.csv', 'w+b')
     writer = csv.writer(wf, lineterminator='\n')
-    # cur.execute(select_order_id_sql)
-    # order_data = cur.fetchall()
-    # ticket_history_insert(order_data)
     cur.execute(select_qr_sql)
     datas = cur.fetchall()
     qr_url_arr = creat_qr_url(request, datas)
     write_result(writer, datas, qr_url_arr)
-
-# def ticket_history_insert(order_data):
-#     if order_data is None:
-#         return 0
-#     for od in order_data:
-#         history = TicketPrintHistory(
-#             seat_id=None,
-#             item_token_id=None,
-#             ordered_product_item_id=None,
-#             order_id=od[0]
-#         )
-#         DBSession.add(history)
-#         DBSession.flush()
-#     return 0
 
 def build_qr_by_history(request, history):
     params, ticket = make_data_for_qr(history)
@@ -89,6 +73,7 @@ def build_qr_by_history(request, history):
 def creat_qr_url(request,datas):
     qr_url = []
     for dt in datas:
+        print dt[3]
         history = TicketPrintHistory(
             seat_id=dt[0],
             item_token_id=dt[1],
