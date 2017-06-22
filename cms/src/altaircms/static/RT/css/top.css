@@ -13,7 +13,8 @@ body {
 #tsWrapper { width: 100%; }
 
 #tsContents {
-	width: 950px;
+	/*width: 950px;*/
+	width: 100%;
 	text-align: left;
 	margin: 10px auto;
 	font-size: 1.2em;
@@ -21,11 +22,16 @@ body {
 }
 #tsContents #tsMainArea {
 	float: left;
-	width: 630px;
+	width: 100%;
+	margin-left:-320px;
+}
+#tsContents #tsMainArea #tsMainAreaInner {
+	margin-left:330px;
 }
 #tsContents #tsSideArea {
-	margin-left: 650px;
+	float: left;
 	width: 300px;
+	margin:0 10px;
 }
 
 #grpHeader {
@@ -35,14 +41,16 @@ body {
 	margin: 0 auto;
 }
 #tsHeader {
-	width: 950px;
+	/*width: 950px;*/
+	width: 100%;
 	position: relative;
 	text-align: left;
 	font-size: 12px;
 	margin: 0 auto;
 }
 #grpFooter {
-	width: 950px;
+	/*width: 950px;*/
+	width: 100%;
 	clear: both;
 	position: relative;
 	text-align: left;
@@ -74,7 +82,7 @@ body {
 #tsMainArea #tsTopics h3 {
 /*	background: url(../../_images/ttl_h3_default.jpg) no-repeat 0 0;
 	height: 37px;*/
-	background: #c42d32;
+	background: #C00;
 	font-weight: bold;
 	color: #EBEBEB;
 	font-size: 1.3em;
@@ -146,11 +154,10 @@ body {
 	margin-bottom: 5px;
 }
 #tsMainArea #tsSearchList dl dd {
-	width: 475px;
+	width: 100%;
 	min-height: 40px;
 	background: #FFF;
 	text-indent: 10px;
-	margin-left: 125px;
 	margin-bottom: 5px;
 }
 #tsMainArea #tsSearchList ul li {
@@ -171,9 +178,9 @@ body {
 #tsMainArea .tsGenreTopics ul li {
 	position: relative;
 	float: left;
-	width: 150px;
+	width: 15.5%;
 	background: #F5F5F5;
-	margin-left: 10px;
+	margin-left: 1%;
 	margin-bottom: 20px;
 	color: #555;
 }
@@ -188,7 +195,7 @@ body {
 	height: 100%;
 	text-indent: -9999px;
 }
-#tsMainArea .tsGenreTopics ul li dl dt img { border: 1px solid #ecede7; width: 148px; height: 148px; }
+#tsMainArea .tsGenreTopics ul li dl dt img { border: 1px solid #ecede7; width:100%; box-sizing:border-box; height:auto; /*width: 148px; height: 148px;*/ }
 #tsMainArea .tsGenreTopics ul li dl dd {  padding: 5px; }
 #tsMainArea .tsGenreTopics ul li dl dd p.tileTitle { margin-bottom: 5px; color: #3171bd; }
 
@@ -240,7 +247,7 @@ body {
 	padding: 10px;
 }
 #tsSaleTicketInfo h3 {
-	background: #c42d32;	
+	background: #C00;	
 	font-weight: bold;
 	color: #EBEBEB;
 	font-size: 1.3em;

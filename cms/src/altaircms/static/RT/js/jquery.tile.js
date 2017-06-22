@@ -21,10 +21,10 @@
 
 
 $(function() {
-  $(".tileImg").tile(4);
-  $(".tileTitle").tile(4);
-  $(".tileText").tile(4);
+  $(".tileImg").tile(6);
+  $(".tileTitle").tile(6);
+  $(".tileText").tile(6);
   $('.tileTopContent').each(function(i){
-    $(this).find('li').tile(4);
+    $(this).find('li').tile(6);
   });
 });

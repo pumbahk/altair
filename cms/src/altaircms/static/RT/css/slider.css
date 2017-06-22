@@ -1,0 +1,79 @@
+﻿@charset "utf-8";
+
+
+/*横幅いっぱいスライダー---------------------------------*/
+#full-slider {
+	overflow: hidden;
+	position:relative;
+}
+#full-inner {
+	border-top:solid 5px #c00;
+	border-bottom:solid 5px #c00;
+}
+#full-wrapper {
+	background: #fff;
+	width: 100%;
+	height: 350px;
+	overflow: hidden;
+}
+#full-carousel li {
+	float: left;
+}
+#full-prev, #full-next {
+	background-color: #fff;
+	opacity:0.7;
+	filter: alpha(opacity=70);/* ie 6 7 */
+	-ms-filter: "alpha(opacity=70)";/* ie 8 */
+	zoom:1;
+	display: block;
+	height: 350px;
+	width: 50%;
+	top: 5px;
+	position: absolute;
+}
+#full-prev:hover, #full-next:hover {
+	background:#fff;
+	opacity:0.4;
+	filter: alpha(opacity=40);/* ie 6 7 */
+	-ms-filter: "alpha(opacity=40)";/* ie 8 */
+	zoom:1;
+}
+#full-prev {
+	left: -300px;/* スライドする画像の横半分の値 */
+}
+#full-next {
+	right: -300px;/* スライドする画像の横半分の値 */
+}
+#full-prev img {
+	right:20px;
+	top:145px;
+	position:absolute;
+}
+#full-next img {
+	left:20px;
+	top:145px;
+	position:absolute;
+}
+#full-pager {
+	text-align:center;
+	padding:10px;
+}
+#full-pager a {
+	border: 2px solid #ccc;
+	border-radius:5px;
+	-webkit-border-radius:5px;
+	-moz-border-radius:5px;
+	display: inline-block;
+	width: 5px;
+	height: 5px;
+	margin: 0 5px 0 0;
+}
+#full-pager a:hover {
+	background:#eee ;
+}
+#full-pager a span {
+	display: none;
+}
+#full-pager a.selected {
+	background-color: #ccc;
+}

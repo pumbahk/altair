@@ -53,7 +53,7 @@ class RealPromotionManager(object):
 
     @classmethod
     def show_image(cls, i, image_path, href):
-        return '<a href="%s"><img id="promotion%s" src="%s"/></a>' % (href, i, image_path)
+        return '<a href="%s"><img id="promotion%s" src="%s" height="350px"/></a>' % (href, i, image_path)
 
 
 ## mock
