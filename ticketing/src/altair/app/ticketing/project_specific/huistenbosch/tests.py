@@ -10,7 +10,8 @@ from altair.app.ticketing.core.models import TicketPrintHistory
 from altair.app.ticketing.core.testing import CoreTestMixin
 from altair.app.ticketing.qr.utils import QRTicketObject
 from altair.app.ticketing.qr import get_qrdata_aes_builder
-from . import (HT_QR_DATA_HEADER,
+from . import (HT_QR_DATA_FREE,
+               HT_QR_DATA_HEADER,
                HT_TYPE_CODE,
                HT_ID_CODE,
                HT_COUNT_FLAG,
@@ -65,7 +66,7 @@ class QRUtilsTest(unittest.TestCase, CoreTestMixin):
             'special_flag': HT_SPECIAL_FLAG
         }
         self.content = 'HTB00000011123456A1234560000000001{issued_at}1120170101202012310001000{usable_date_to}0'.format(issued_at=issued_at, usable_date_to=usable_date_to)
-        self.header = 'http://www.shop-huistenbosch.jp/1'
+        self.header = HT_QR_DATA_FREE + HT_QR_DATA_HEADER
 
         self.session = _setup_db([
             'altair.app.ticketing.core.models',
@@ -105,13 +106,13 @@ class QRUtilsTest(unittest.TestCase, CoreTestMixin):
     def _extract_qr_data_for_test(self, ticket):
         builder = get_qrdata_aes_builder(self.request)
         qr = ticket.qr
-        data = builder.extract(qr, HT_QR_DATA_HEADER, ht_item_list)
+        data = builder.extract(qr, self.header, ht_item_list)
         return data
 
     def test_make_data_for_qr(self):
         data, _ = make_data_for_qr(self.history)
         self.assertEquals(len(data['content']), 76)
-        self.assertEquals(data['header'], HT_QR_DATA_HEADER)
+        self.assertEquals(data['header'], HT_QR_DATA_FREE + HT_QR_DATA_HEADER)
         self.assertEquals(data['content'], self.content)
 
     def test_build_ht_qr_by_history(self):

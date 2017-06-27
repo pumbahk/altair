@@ -3,14 +3,16 @@
 from collections import OrderedDict
 
 # 固定値の設定（現時点2017-01-12,仮数値として設定する。）
+HT_QR_DATA_HEADER = '1'
 HT_TYPE_CODE = '1'
 HT_ID_CODE = 'HTB0000001'
 HT_COUNT_FLAG = '1'
 HT_SEASON_FLAG = '1'
 HT_SPECIAL_FLAG = '0'
 
-# ヘッダー
-HT_QR_DATA_HEADER = 'http://www.shop-huistenbosch.jp/' + HT_TYPE_CODE
+# 自由エリア
+HT_QR_DATA_FREE = 'http://huistenbosch.tstar.jp/'.ljust(40)
+
 
 ja_map = {
     'id_code': u'識別コード',

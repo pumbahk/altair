@@ -140,10 +140,10 @@ class QrAESTest(unittest.TestCase):
 
     CONTENT='HTB00000013401213A0003665574684001201203271120120301201205310001200201205270'
 
-    HEADER = 'http://www.shop-huistenbosch.jp/3'
+    HEADER = 'https://huistenbosch.tstar.jp'.ljust(40) + '3'
 
     # QR_DATAの暗号化された文字列はsetUPのcustom_keyで暗号化されたもの
-    QR_DATA = 'http://www.shop-huistenbosch.jp/3obfWHL4rkQB009ZU3OTaGi2-aZHNY8FfmsVPtRgjGLdARQDRW31pZDiuAXVXaIGv1vjUZxo81n8OK6QEfyVuOwYRq0RTLtXpJkQ2ciRVoLXW9OS28VmlD1TFXv91EL9v'
+    QR_DATA = HEADER + 'obfWHL4rkQB009ZU3OTaGi2-aZHNY8FfmsVPtRgjGLdARQDRW31pZDiuAXVXaIGv1vjUZxo81n8OK6QEfyVuOwYRq0RTLtXpJkQ2ciRVoLXW9OS28VmlD1TFXv91EL9v'
 
     def setUp(self):
         self.custom_key = "!THIS_KEY_IS_FOR_THE_UNIT_TESTS!"
