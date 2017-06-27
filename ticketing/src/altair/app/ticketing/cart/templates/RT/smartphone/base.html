@@ -17,25 +17,19 @@
 <body id="settlement">
   <div id="container" class="page">
     <!-- ========== header ========== -->
-    <div class="header">
-      <div class="grpheader">
-        <div class="siteID">
-          <a href="/">
-            <img src="${request.static_url('altair.app.ticketing.cart:static/RT/smartphone/images/logo.gif')}" alt="楽天チケット" class="serviceLogo" />
-          </a>
+     <div class="header">
+        <div class="ticket-logo-area ticket-logo-cart">
+            <div class="ticket-logo-sp"><a href="//ticket.rakuten.co.jp/"><span class="offleft">楽天チケット</span></a></div>
         </div>
-      </div>
-      % if getattr(request, 'context', None) and hasattr(request.context, 'switch_pc_url'):
-          <div class="side-action-buttons">
-            <a href="${request.context.switch_pc_url}" class="btn btn-supplementary"><span class="btn-inner">PCサイトで購入する</span></a>
-          </div>
-      % endif
+        % if getattr(request, 'context', None) and hasattr(request.context, 'switch_pc_url'):
+            <div class="side-action-buttons">
+              <a href="${request.context.switch_pc_url}" class="btn btn-supplementary"><span class="btn-inner">PCサイトで購入する</span></a>
+            </div>
+        % endif
       <div class="band">
         <h1>チケット購入</h1>
       </div>
     </div>
-    <!-- ========== /header ========== -->
-
     <!-- ========== main ========== -->
     <div id="main">
       ${self.body()}
