@@ -5,6 +5,8 @@
     <article>
         <h2>ご選択ください</h2>
         <section>
+            新システム移行に伴い、大変申し訳ありませんが<br>
+            プレミアムメンバーズの方も再度会員登録をお願い致します。
             <!-- ファンクラブ Box-->
             <div class="login-box">
                 <h3>会員の方はこちら</h3>
@@ -12,7 +14,7 @@
                     <a href="${_context.route_path('extauth.fanclub.entry')}" class="btn">ログイン</a>
                 </p>
                 <p class="txtC">
-                    <a href="//${request.host}/fc/members/select-membership">※無料会員登録はこちら</a>
+                    <a href="//${request.host}/fc/members/select-membership">※新規会員登録はこちら</a>
                 </p>
             </div>
             <!-- ファンクラブ Box-->
