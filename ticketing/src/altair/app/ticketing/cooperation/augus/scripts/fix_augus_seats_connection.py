@@ -11,7 +11,7 @@ from altair.app.ticketing.core.models import (
 logger = logging.getLogger(__name__)
 
 def get_seat(venue_id):
-    return Seat.query.filte_by(venue_id=venue_id)
+    return Seat.query.filter_by(venue_id=venue_id)
 
 def main(augus_performance_id, correct_venue_id, incorrect_venue_id):
     correct_seats = get_seat(correct_venue_id)
