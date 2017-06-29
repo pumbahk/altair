@@ -36,8 +36,18 @@ def setup_tweens(config):
     config.add_tween('.tweens.CacheControlTween')
 
 def add_metadata(request, value):
+    retval = dict()
+
+    environment = request.registry.settings.get('altair.findable_label.label')
+
+    # XXX: should switch in config
+    if environment in ['local', 'docker']:
+        if 'with_query_dump' in request.GET:
+            retval['queries'] = [s for ss in request.environ['altair.queryprofile.statements'].values() for s in ss]
+        else:
+            retval['num_queries'] = len([s for ss in request.environ['altair.queryprofile.statements'].values() for s in ss])
+
     if isinstance(value, Exception):
-        environment = request.registry.settings.get('altair.findable_label.label')
         error = dict(
             exception=value.__class__.__name__,
             message=value.message,
@@ -54,17 +64,18 @@ def add_metadata(request, value):
             error['trace'] = trace
 
         request.response.status_code = 500
-        return dict(
+        retval.update(
             error=error,
             environment=environment,
             organization_short_name=request.organization.short_name
         )
     else:
-        return dict(
+        retval.update(
             data=value,
-            environment=request.registry.settings.get('altair.findable_label.label'),
-            organization_short_name=request.organization.short_name
+            environment=environment,
+            organization_short_name=request.organization.short_name,
         )
+    return retval
 
 
 class RakutenAuthContext(object):

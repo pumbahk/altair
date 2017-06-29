@@ -11,7 +11,8 @@ from altair.app.ticketing.core.models import (
     Product,
     ProductItem,
     SalesSegment,
-    StockStatus
+    StockStatus,
+    Stock_drawing_l0_id
 )
 from sqlalchemy import distinct, func
 from ..cart.helpers import get_availability_text
@@ -26,126 +27,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def build_seat_query(request, sales_segment_id, session=None):
-    if not session:
-        session = get_db_session(request, 'slave')
-    params = request.GET
-    q = session.query(distinct(Seat.l0_id), Stock, Stock.stock_type_id, SeatStatus.status, StockStatus.quantity)\
-            .join(Seat.status_)\
-            .join(Seat.stock)\
-            .join(Stock.product_items)\
-            .join(Stock.stock_status)\
-            .join(Stock.stock_type)\
-            .join(ProductItem.product)\
-            .join(Product.sales_segment)\
-            .filter(SalesSegment.id == sales_segment_id)
-    if params.get('min_price'):
-        q = q.filter(Product.price >= params.get('min_price'))
-    if params.get('max_price'):
-        q = q.filter(Product.price <= params.get('max_price'))
-    if params.get('stock_type_name'):
-        q = q.filter(StockType.name.like(u'%{}%'.format(params.get('stock_type_name'))))
-    if params.get('quantity'):
-        q = q.filter(StockStatus.quantity >= params.get('quantity'))
-    return q
-
-
-def build_region_dict(sales_segment, min_price, max_price, need_quantity, stock_type_name):
-    # svg側では描画エリアをregionと定義しているのでそれに合わせる
-    """
-    リージョン毎の在庫状況を取得
-    条件
-    ・配席されている
-    ・商品が公開中
-    ・販売区分で公開中
-    返り値
-    ・{region_id:region_status(◎☓△)}
-    """
-    # region毎の在庫を集計
-    from decimal import Decimal
-    min_price = Decimal(min_price) if min_price else None
-    max_price = Decimal(max_price) if max_price else None
-    need_quantity = Decimal(need_quantity) if need_quantity else None
-
-    region_dict = dict()
-    for stock in sales_segment.performance.stocks:
-        if stock.quantity == 0:
-            continue
-
-        if not stock.product_items:
-            continue
-
-        if not stock.product_items[0].product.public:
-            continue
-
-        if not stock.performance.sales_segments[0].public:
-            if not stock.performance.sales_segments[0].use_default_stock_holder_id:
-                continue
-
-            if not stock.performance.sales_segments[0].sales_segment_group.stock_holder_id:
-                continue
-
-        product_items = [i for i in stock.product_items]
-        lowest_price_item = min(product_items, key=lambda i: i.price)
-        highest_price_item = max(product_items, key=lambda i: i.price)
-
-        for drawing_l0_id in stock.drawing_l0_ids:
-            quantity = stock.quantity
-            rest_quantity = stock.stock_status.quantity
-
-            if drawing_l0_id in region_dict:
-                quantity = quantity + region_dict[drawing_l0_id]['quantity']
-                rest_quantity = rest_quantity + region_dict[drawing_l0_id]['rest_quantity']
-
-            if need_quantity and rest_quantity < need_quantity:
-                continue
-
-            if min_price and highest_price_item.price < min_price:
-                continue
-
-            # XXX: 希望上限額と子供料金を比較しても、あんまりうれしくない気もするが、子供料金とも限らないので、とりあえず
-            if max_price and max_price < lowest_price_item.price:
-                continue
-
-            if stock_type_name and stock.stock_type.name.count(stock_type_name) == 0:
-                continue
-
-            region_dict.update({drawing_l0_id: dict(quantity=quantity, rest_quantity=rest_quantity)})
-
-    # region毎のステータス
-    setting = sales_segment.event.setting
-
-    def status(quantity, rest_quantity):
-        return get_availability_text(quantity, rest_quantity,
-                                     setting.middle_stock_threshold, setting.middle_stock_threshold_percent)
-
-    return dict([ (key, status(values['quantity'], values['rest_quantity'])) for key, values in region_dict.iteritems() ])
-
-
-def build_non_seat_query(request, sales_segment_id, session=None):
-    if not session:
-        session = get_db_session(request, 'slave')
-    params = request.GET
-    q = session.query(Stock, Stock.stock_type_id, StockStatus.quantity)\
-            .join(Stock.product_items)\
-            .join(Stock.stock_status)\
-            .join(Stock.stock_type)\
-            .join(ProductItem.product)\
-            .join(Product.sales_segment)\
-            .filter(SalesSegment.id == sales_segment_id)\
-            .filter(StockType.quantity_only == True)
-    if params.get('min_price'):
-        q = q.filter(Product.price >= params.get('min_price'))
-    if params.get('max_price'):
-        q = q.filter(Product.price <= params.get('max_price'))
-    if params.get('stock_type_name'):
-        q = q.filter(StockType.name.like(u'%{}%'.format(params.get('stock_type_name'))))
-    if params.get('quantity'):
-        q = q.filter(StockStatus.quantity >= params.get('quantity'))
-    return q
-
-
-def parse_fields_parmas(request):
+def parse_fields_params(request):
     """return params list"""
     fields = request.GET.get('fields')
     if fields:
@@ -153,6 +35,131 @@ def parse_fields_parmas(request):
     else:
         fields = []
     return fields
+
+
+def get_filtered_stock_types(request, sales_segment, session=None):
+    if not session:
+        session = get_db_session(request, 'slave')
+    params = request.GET
+    min_price = params.get("min_price", None)
+    max_price = params.get("max_price", None)
+    need_quantity = params.get("quantity", "1")
+    stock_type_name = params.get("stock_type_name", None)
+
+    from decimal import Decimal
+    min_price = Decimal(min_price) if min_price else None
+    max_price = Decimal(max_price) if max_price else None
+    need_quantity = Decimal(need_quantity)
+
+    # 在庫設定があって公開されているものだけ
+    stock_list = session.query(Stock, StockStatus, StockType, Product.price)\
+        .join(StockType)\
+        .join(StockStatus)\
+        .join(Product)\
+        .join(ProductItem)\
+        .filter(Product.sales_segment_id==sales_segment.id)\
+        .filter(Stock.performance_id==sales_segment.performance_id)\
+        .filter(0 < Stock.quantity)\
+        .filter(StockType.display == 1)\
+        .filter(Product.public == 1)\
+        .order_by(StockType.id, Product.display_order)
+
+    stock_type_dict = dict()
+    rest_quantity_by_stock = dict()
+    for stock, stock_status, stock_type, price in stock_list:
+        # 名称が含まれているか？
+        if stock_type_name and stock_type.name.count(stock_type_name) == 0:
+            continue
+
+        if stock_type.id not in stock_type_dict:
+            # logger.debug("count stock %d-%d(%d/%d)" % (stock_type.id, stock.id, stock_status.quantity, stock.quantity))
+            rest_quantity_by_stock[stock.id] = stock_status.quantity
+            stock_type_dict[stock_type.id] = dict(
+                stock_type_id=stock_type.id,
+                stock_type_name=stock_type_name,
+                first_product_price=price,
+
+                stocks=[stock],
+                quantity=stock.quantity,
+                rest_quantity=stock_status.quantity
+            )
+        else:
+            if stock.id not in rest_quantity_by_stock:
+                logger.debug("count stock %d-%d(%d/%d)" % (stock_type.id, stock.id, stock_status.quantity, stock.quantity))
+                rest_quantity_by_stock[stock.id] = stock_status.quantity
+                stock_type_dict[stock_type.id]['stocks'].append(stock)
+                stock_type_dict[stock_type.id]['quantity'] += stock.quantity
+                stock_type_dict[stock_type.id]['rest_quantity'] += stock_status.quantity
+
+    filtered_stock_type = []
+    for stock_type_id, d in stock_type_dict.iteritems():
+        # 価格は、先頭の商品で判定する
+        if min_price and d['first_product_price'] < min_price:
+            continue
+
+        if max_price and max_price < d['first_product_price']:
+            continue
+
+        # 残席数が足りていなければ除外
+        if need_quantity and d['rest_quantity'] < need_quantity:
+            continue
+
+        filtered_stock_type.append(d)
+
+    stock_dict = dict()
+    for d in filtered_stock_type:
+        for s in d['stocks']:
+            if s.id not in stock_dict:
+                stock_dict[s.id] = s
+
+    stock_ids = stock_dict.keys()
+
+    region_dict = dict()
+    drawing_list = session.query(Stock_drawing_l0_id.stock_id, Stock_drawing_l0_id.drawing_l0_id)\
+        .filter(Stock_drawing_l0_id.stock_id.in_(stock_ids))
+    for stock_id, drawing_l0_id in drawing_list:
+        rest_quantity = rest_quantity_by_stock[stock_id]
+
+        # 1つのregionに複数のstockが設定されていると、重複して加算されるが、やむ無し
+        if drawing_l0_id not in region_dict:
+            region_dict[drawing_l0_id] = dict(
+                quantity=0,
+                rest_quantity=0,
+                by_stock_type=dict()
+            )
+        region_dict[drawing_l0_id]['quantity'] += stock.quantity
+        region_dict[drawing_l0_id]['rest_quantity'] += rest_quantity
+
+        #if stock_type_id not in region_dict[drawing_l0_id]['by_stock_type']:
+        #    region_dict[drawing_l0_id]['by_stock_type'][stock_type_id] = dict(
+        #        quantity=0,
+        #        rest_quantity=0,
+        #    )
+        #region_dict[drawing_l0_id]['by_stock_type'][stock_type_id]['quantity'] += stock.quantity
+        #region_dict[drawing_l0_id]['by_stock_type'][stock_type_id]['rest_quantity'] += rest_quantity
+
+    return dict(
+        stock_types=[dict(
+            stock_type_id=v['stock_type_id'],
+            quantity=v['quantity'],
+            rest_quantity=v['rest_quantity'],
+            stocks=v['stocks']
+        ) for v in filtered_stock_type],
+        regions=[dict(
+            region_id=id,
+            quantity=v['quantity'],
+            rest_quantity=v['rest_quantity']
+        ) for id, v in region_dict.iteritems()],
+    )
+
+
+def search_seat(request, stock_ids, session=None):
+    if not session:
+        session = get_db_session(request, 'slave')
+    q = session.query(Seat.l0_id, Seat.stock_id, SeatStatus.status)\
+            .join(Seat.status_)\
+            .filter(Seat.stock_id.in_(stock_ids))
+    return q
 
 
 def get_spa_svg_urls(request, performance_id):
