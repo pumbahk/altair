@@ -7,7 +7,7 @@
         <section>
             <!-- ファンクラブ Box-->
             <div class="login-box">
-                <h3>会員の方はこちら</h3>
+                <h3>会員ログイン</h3>
                 <p class="txtC">
                     <a href="${_context.route_path('extauth.fanclub.entry')}" class="btn">ログイン</a>
                 </p>

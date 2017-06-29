@@ -285,6 +285,7 @@ def import_tree(registry, update, organization, xmldoc, file, bundle_base_url=No
                     seat['gate'] = gate
                 if floor is not None:
                     seat['floor'] = floor
+                seat['block'] = block.name
                 if indexes is not None:
                     for index_obj in indexes:
                         seat_index_type = seat_index_type_map[index_obj['properties']['index_type']['id']]
