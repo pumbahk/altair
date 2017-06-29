@@ -926,3 +926,20 @@ h2.glitter.red:after {
     margin-right: auto;
     text-align: center;
 }
+
+
+/* top-new -------------------- */
+.offleft {
+	position: absolute;
+	text-indent: -9999px;
+}
+.ticket-logo-area .ticket-logo-sp a{
+	display: block;
+	width: 94px;
+	height: 35px;
+	background: url(../img/ticket_logo_sp.png) no-repeat 0 0;
+    background-size: 94px 35px;
+}
+.ticket-logo-top .ticket-logo-sp a{
+  	margin: 6px 0 6px 6px;
+}
