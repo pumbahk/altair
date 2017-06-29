@@ -54,23 +54,37 @@
 #first,
 #help,
 #sitemap {
-    background: url(../img/first/bg_body.gif) no-repeat 50% 130px;
+    background: url(../img/first/bg_body.gif) no-repeat 0 150px;
 }
 
 #music {
-    background: url(../img/music/bg_body.gif) no-repeat 0 130px;
+    background: url(../img/music/bg_body.gif) no-repeat 0 150px;
 }
 
 #stage {
-    background: url(../img/stage/bg_body.gif) no-repeat 50% 130px;
+    background: url(../img/stage/bg_body.gif) no-repeat 0 150px;
 }
 
 #sports {
-    background: url(../img/sports/bg_body.gif) no-repeat 50% 130px;
+    background: url(../img/sports/bg_body.gif) no-repeat 0 150px;
 }
 
 #event {
-    background: url(../img/event/bg_body.gif) no-repeat 50% 130px;
+    background: url(../img/event/bg_body.gif) no-repeat 0 150px;
+}
+
+#search h1,
+#change h1,
+#first h1,
+#help h1,
+#sitemap h1,
+#music h1,
+#stage h1,
+#sports h1,
+#event h1 {
+	display:block;
+	padding-left:10px;
+	text-align:left;
 }
 
 
@@ -100,33 +114,31 @@
 }
 
 #index #mainLeft {
-    width: 50%;
+    width: 49.5%;
     float: left;
-    margin-right: 8px;
     overflow: visible;
 }
 
 #index #mainRight {
-    width: 342px;
+    width: 49.5%;
     float: left;
-    margin-left: 8px;
     overflow: visible;
 }
 
 #sports #mainLeft {
-    width: 50%;
+    width: 49.5%;
     float: left;
     overflow: visible;
 }
 
 #sports #mainRight {
-    width: 50%;
+    width: 49.5%;
     float: right;
     overflow: visible;
 }
 
 #stage #mainLeft {
-    width: 50%;
+    width: 49.5%;
     float: left;
     overflow: visible;
 }
@@ -144,24 +156,25 @@
 }
 
 #music #mainRight {
-    width: 50%;
+    width: 49.5%;
     float: right;
     overflow: visible;
 }
 
 #event #mainLeft {
-    width: 50%;
+    width: 49.5%;
     float: left;
     overflow: visible;
 }
 
 #event #mainRight {
-    width: 50%;
+    width: 49.5%;
     float: right;
     overflow: visible;
 }
 
 #music #main {
+    margin-top:-50px;
 }
 
 #sports #main {
@@ -178,6 +191,9 @@
 /* }}} */
 
 /* #slideShow {{{ */
+#full-carousel li {
+	list-style:none;
+}
 #slideShow img {
     margin: 0;
     padding: 0;
@@ -321,7 +337,7 @@
 
 /* ヘッダ全体枠 */
 #grpheader {
-    padding-top: 10px;
+    padding: 10px 10px 0;
     font-size: 120%;
     text-align: left; /* for Quirks Mode */
     overflow: hidden;
@@ -748,8 +764,8 @@ ul#globalNav1 li.right{
 }
     
 #headerSearch dl {
-  float: right;
-  width: 455px;
+  float: left;
+  width: 663px;
   height: 47px;
   overflow: hidden;
 }
@@ -764,7 +780,7 @@ ul#globalNav1 li.right{
 #headerSearch dd {
   line-height: 1.5;
   padding-top: 5px;
-  width: 392px;
+  width: 600px;
   height: 47px;
   float: left;
 }
@@ -2786,19 +2802,53 @@ h2.heading {
 }
 
 .index.heading {
-    background-image:url(../img/index/bg_heading.gif);
+    /*background-image:url(../img/music/bg_heading.gif);*/
+		background: -webkit-gradient(linear, left top, left bottom, color-stop(0.48, #777d71), color-stop(0.44, #9aa094));
+		background: -webkit-linear-gradient(top, #9aa094 44%, #777d71 48%);
+		background: -moz-linear-gradient(top, #9aa094 44%, #777d71 48%);
+		background: -o-linear-gradient(top, #9aa094 44%, #777d71 48%);
+		background: -ms-linear-gradient(top, #9aa094 44%, #777d71 48%);
+		background: linear-gradient(to bottom, #9aa094 44%, #777d71 48%);
+		border:solid 2px #c5c6be;
+		border-radius:2px;
 }
 
+
 h2.index {
-    *background-image:url(../img/index/bg_heading.gif);
+    /**background-image:url(../img/index/bg_heading.gif);*/
+		background: -webkit-gradient(linear, left top, left bottom, color-stop(0.48, #777d71), color-stop(0.44, #9aa094));
+		background: -webkit-linear-gradient(top, #9aa094 44%, #777d71 48%);
+		background: -moz-linear-gradient(top, #9aa094 44%, #777d71 48%);
+		background: -o-linear-gradient(top, #9aa094 44%, #777d71 48%);
+		background: -ms-linear-gradient(top, #9aa094 44%, #777d71 48%);
+		background: linear-gradient(to bottom, #9aa094 44%, #777d71 48%);
+		border:solid 2px #c5c6be;
+		border-radius:2px;
 }
 
 .sports.heading {
-    background-image:url(../img/sports/bg_heading.gif);
+    /*background-image:url(../img/music/bg_heading.gif);*/
+		background: -webkit-gradient(linear, left top, left bottom, color-stop(0.48, #777d71), color-stop(0.44, #9aa094));
+		background: -webkit-linear-gradient(top, #9aa094 44%, #777d71 48%);
+		background: -moz-linear-gradient(top, #9aa094 44%, #777d71 48%);
+		background: -o-linear-gradient(top, #9aa094 44%, #777d71 48%);
+		background: -ms-linear-gradient(top, #9aa094 44%, #777d71 48%);
+		background: linear-gradient(to bottom, #9aa094 44%, #777d71 48%);
+		border:solid 2px #c5c6be;
+		border-radius:2px;
 }
 
+
 h2.sports {
-    *background-image:url(../img/sports/bg_heading.gif);
+    /**background-image:url(../img/sports/bg_heading.gif);*/
+		background: -webkit-gradient(linear, left top, left bottom, color-stop(0.48, #777d71), color-stop(0.44, #9aa094));
+		background: -webkit-linear-gradient(top, #9aa094 44%, #777d71 48%);
+		background: -moz-linear-gradient(top, #9aa094 44%, #777d71 48%);
+		background: -o-linear-gradient(top, #9aa094 44%, #777d71 48%);
+		background: -ms-linear-gradient(top, #9aa094 44%, #777d71 48%);
+		background: linear-gradient(to bottom, #9aa094 44%, #777d71 48%);
+		border:solid 2px #c5c6be;
+		border-radius:2px;
 }
 
 .music.heading {
@@ -2814,32 +2864,91 @@ h2.sports {
 }
 
 h2.music {
-    *background-image:url(../img/music/bg_heading.gif);
+    /**background-image:url(../img/music/bg_heading.gif);*/
+		background: -webkit-gradient(linear, left top, left bottom, color-stop(0.48, #777d71), color-stop(0.44, #9aa094));
+		background: -webkit-linear-gradient(top, #9aa094 44%, #777d71 48%);
+		background: -moz-linear-gradient(top, #9aa094 44%, #777d71 48%);
+		background: -o-linear-gradient(top, #9aa094 44%, #777d71 48%);
+		background: -ms-linear-gradient(top, #9aa094 44%, #777d71 48%);
+		background: linear-gradient(to bottom, #9aa094 44%, #777d71 48%);
+		border:solid 2px #c5c6be;
+		border-radius:2px;
 }
 
 .other.heading {
-    background-image:url(../img/event/bg_heading.gif);
+    /*background-image:url(../img/music/bg_heading.gif);*/
+		background: -webkit-gradient(linear, left top, left bottom, color-stop(0.48, #777d71), color-stop(0.44, #9aa094));
+		background: -webkit-linear-gradient(top, #9aa094 44%, #777d71 48%);
+		background: -moz-linear-gradient(top, #9aa094 44%, #777d71 48%);
+		background: -o-linear-gradient(top, #9aa094 44%, #777d71 48%);
+		background: -ms-linear-gradient(top, #9aa094 44%, #777d71 48%);
+		background: linear-gradient(to bottom, #9aa094 44%, #777d71 48%);
+		border:solid 2px #c5c6be;
+		border-radius:2px;
 }
 
+
 h2.other {
-    *background-image:url(../img/event/bg_heading.gif);
+    /**background-image:url(../img/event/bg_heading.gif);*/
+		background: -webkit-gradient(linear, left top, left bottom, color-stop(0.48, #777d71), color-stop(0.44, #9aa094));
+		background: -webkit-linear-gradient(top, #9aa094 44%, #777d71 48%);
+		background: -moz-linear-gradient(top, #9aa094 44%, #777d71 48%);
+		background: -o-linear-gradient(top, #9aa094 44%, #777d71 48%);
+		background: -ms-linear-gradient(top, #9aa094 44%, #777d71 48%);
+		background: linear-gradient(to bottom, #9aa094 44%, #777d71 48%);
+		border:solid 2px #c5c6be;
+		border-radius:2px;
 }
 
 .stage.heading {
-    background-image:url(../img/stage/bg_heading.gif);
+    /*background-image:url(../img/music/bg_heading.gif);*/
+		background: -webkit-gradient(linear, left top, left bottom, color-stop(0.48, #777d71), color-stop(0.44, #9aa094));
+		background: -webkit-linear-gradient(top, #9aa094 44%, #777d71 48%);
+		background: -moz-linear-gradient(top, #9aa094 44%, #777d71 48%);
+		background: -o-linear-gradient(top, #9aa094 44%, #777d71 48%);
+		background: -ms-linear-gradient(top, #9aa094 44%, #777d71 48%);
+		background: linear-gradient(to bottom, #9aa094 44%, #777d71 48%);
+		border:solid 2px #c5c6be;
+		border-radius:2px;
 }
 
 h2.stage {
-    *background-image:url(../img/stage/bg_heading.gif);
+    /**background-image:url(../img/stage/bg_heading.gif);*/
+		background: -webkit-gradient(linear, left top, left bottom, color-stop(0.48, #777d71), color-stop(0.44, #9aa094));
+		background: -webkit-linear-gradient(top, #9aa094 44%, #777d71 48%);
+		background: -moz-linear-gradient(top, #9aa094 44%, #777d71 48%);
+		background: -o-linear-gradient(top, #9aa094 44%, #777d71 48%);
+		background: -ms-linear-gradient(top, #9aa094 44%, #777d71 48%);
+		background: linear-gradient(to bottom, #9aa094 44%, #777d71 48%);
+		border:solid 2px #c5c6be;
+		border-radius:2px;
 }
 
 .help.heading {
-    background-image:url(../img/help/bg_heading.gif);
+    /*background-image:url(../img/music/bg_heading.gif);*/
+		background: -webkit-gradient(linear, left top, left bottom, color-stop(0.48, #777d71), color-stop(0.44, #9aa094));
+		background: -webkit-linear-gradient(top, #9aa094 44%, #777d71 48%);
+		background: -moz-linear-gradient(top, #9aa094 44%, #777d71 48%);
+		background: -o-linear-gradient(top, #9aa094 44%, #777d71 48%);
+		background: -ms-linear-gradient(top, #9aa094 44%, #777d71 48%);
+		background: linear-gradient(to bottom, #9aa094 44%, #777d71 48%);
+		border:solid 2px #c5c6be;
+		border-radius:2px;
 }
 
+
 .change.heading {
-    background-image:url(../img/change/bg_heading.gif);
+    /*background-image:url(../img/music/bg_heading.gif);*/
+		background: -webkit-gradient(linear, left top, left bottom, color-stop(0.48, #777d71), color-stop(0.44, #9aa094));
+		background: -webkit-linear-gradient(top, #9aa094 44%, #777d71 48%);
+		background: -moz-linear-gradient(top, #9aa094 44%, #777d71 48%);
+		background: -o-linear-gradient(top, #9aa094 44%, #777d71 48%);
+		background: -ms-linear-gradient(top, #9aa094 44%, #777d71 48%);
+		background: linear-gradient(to bottom, #9aa094 44%, #777d71 48%);
+		border:solid 2px #c5c6be;
+		border-radius:2px;
 }
+
 /* }}} */
 
 #mainLeft #thisWeek,

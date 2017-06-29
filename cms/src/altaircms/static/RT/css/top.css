@@ -17,7 +17,7 @@ body {
 	width: 100%;
 	text-align: left;
 	margin: 10px auto;
-	font-size: 1.2em;
+	font-size: 1.6em;
 	line-height: 1.5em;
 }
 #tsContents #tsMainArea {
@@ -195,7 +195,32 @@ body {
 	height: 100%;
 	text-indent: -9999px;
 }
-#tsMainArea .tsGenreTopics ul li dl dt img { border: 1px solid #ecede7; width:100%; box-sizing:border-box; height:auto; /*width: 148px; height: 148px;*/ }
+
+
+#tsMainArea .tsGenreTopics ul li dl dt.tileImg {
+	display:table-cell;
+	vertical-align:middle;
+	background:#FFF;
+	border:solid 1px #CCC;
+	box-sizing:border-box;
+	min-height:150px;
+	width:100%;
+}
+#tsMainArea .tsGenreTopics ul li dl dt img {
+  width: 100%;
+  height: auto;
+	border:none !important;
+}
+
+#tsMainArea .tsGenreTopics ul li dl dt img.vertically_long {
+	margin:0 10%;
+	width:80%;
+}
+
+#tsMainArea .tsGenreTopics ul li dl dt img.horizontally_long,
+#tsMainArea .tsGenreTopics ul li dl dt img.square {
+}
+
 #tsMainArea .tsGenreTopics ul li dl dd {  padding: 5px; }
 #tsMainArea .tsGenreTopics ul li dl dd p.tileTitle { margin-bottom: 5px; color: #3171bd; }
 
@@ -216,19 +241,33 @@ body {
 #tsMainArea .tsStageList h3,
 #tsMainArea .tsSportsList h3,
 #tsMainArea .tsEventList h3 {
-	width: 630px;
-	height: 40px;
 	color: #555;
 	font-size: 1.3em;
 	font-weight: bold;	
 	margin-bottom: 10px;
-	padding: 10px 0 0 50px;
+	display:block;
+	padding:10px;
 }
-#tsMainArea .tsMusicList h3 { background: url(../img/common/ttl_genre_music.gif) no-repeat 0 0; }
-#tsMainArea .tsStageList h3 { background: url(../img/common/ttl_genre_stage.gif) no-repeat 0 0; }
-#tsMainArea .tsSportsList h3 { background: url(../img/common/ttl_genre_sports.gif) no-repeat 0 0; }
-#tsMainArea .tsEventList h3 { background: url(../img/common/ttl_genre_event.gif) no-repeat 0 0; }
-
+#tsMainArea .tsMusicList h3 {
+	border-top:1px solid #5246A8;
+	border-left:5px solid #5246A8;
+	background:#F4F3F9;
+}
+#tsMainArea .tsStageList h3 {
+	border-top:1px solid #EC498A;
+	border-left:5px solid #EC498A;
+	background:#FDF1F3;
+}
+#tsMainArea .tsSportsList h3 {
+	border-top:1px solid #E0A638;
+	border-left:5px solid #E0A638;
+	background:#FCF8ED;
+}
+#tsMainArea .tsEventList h3 {
+	border-top:1px solid #69BF52;
+	border-left:5px solid #69BF52;
+	background:#F0FBED;
+}
 
 /* tsSaleTicketInfo ============================== */
 
