@@ -1,4 +1,11 @@
 <!-- header start -->
+<style type="text/css">
+@media screen and (max-width: 410px) {
+    header .head h1 img {
+        width: 100%;
+    }
+}
+</style>
 <header>
     <div class="head">
         <h1>

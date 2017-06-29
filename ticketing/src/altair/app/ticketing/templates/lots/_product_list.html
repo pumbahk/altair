@@ -24,6 +24,8 @@ table tr.not_quantity_only td{
           <th>席種</th>
           <th>金額</th>
           <th>商品表示順</th>
+          <th>購入上限枚数</th>
+          <th>購入下限枚数</th>
           <th>&nbsp;</th>
         </tr>
       </thead>
@@ -42,6 +44,10 @@ table tr.not_quantity_only td{
           <td>${product.seat_stock_type.name |h}${"" if quantity_only else u"(座席指定)"}</td>
           <td style="text-align: right;">${format_currency(product.price)}</td>
           <td>${product.display_order}</td>
+          <!--商品の購入上限が設定されない場合は、抽選の購入上限を表示する-->
+          <!--商品の購入上限が設定された場合は、抽選の購入上限と比べて、小さい方を表示する-->
+          <td>${min(product.max_product_quantity, lot.sales_segment.max_quantity) if product.max_product_quantity else lot.sales_segment.max_quantity}</td>
+          <td>${product.min_product_quantity or '-'}</td>
           <td><a class="btn btn-small" href="${request.route_url('lots.product_edit', product_id=product.id)}"><i class="icon-edit"></i>編集</a>
         </tr>
         %endfor
