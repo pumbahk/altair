@@ -10,9 +10,9 @@
 
 /* common ============================== */
 #grpHeader .grpH-inner{
-	width:950px;
+	width:100%;
 	margin:0 auto;
-	padding:0 10px;
+	padding:0;
 }
 
 
@@ -87,7 +87,8 @@
 
 
 /* grpH-section -------------------- */
-.grpH-section{ background: none; margin-top: 20px; }
+/*.grpH-section{ background: none; margin-top: 20px; }*/
+.grpH-section{ background: none; margin-top: 10px; }
 
 .grpH-section .grpH-section-nav{ position:relative; }
 .grpH-section .grpH-section-nav li{
@@ -256,3 +257,23 @@ div#grpRakutenLinkArea .s-site-summary a:active,div#grpRakutenLinkArea .s-site-s
 /* Footer
 --------------------------------------------------- */
 #grpF-description { padding: 0 0 10px 0; }
+
+
+
+
+
+/* NEW LOGO-------------------- */
+.offleft {
+    position: absolute;
+    text-indent: -9999px;
+  }
+  .ticket-logo-area .ticket-logo-pc a{
+    display: block;
+    width: 204px;
+    height: 23px;
+    background: url(../img/common/ticket_logo_pc.png) no-repeat 0 0;
+    background-size: 204px 23px;
+  }
+    .ticket-logo-top .ticket-logo-pc a{
+    margin: 7px 0 0;
+  }

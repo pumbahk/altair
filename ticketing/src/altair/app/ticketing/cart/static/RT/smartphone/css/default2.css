@@ -1,3 +1,5 @@
+@charset "utf-8";
+
 body {
   margin: 0 0;
   font-family: Helvetica;
@@ -30,7 +32,7 @@ body {
 
 .header .band {
   clear: both;
-  background-color: #bf0000;
+  background-color: #7D00BE;
   color: #fff;
 }
 
@@ -1093,3 +1095,37 @@ input[type="submit"] {
 .settlementNotice p {
 	margin: 0 0;
 }
+
+/* NEW LOGO-------------------- */
+.offleft {
+	position: absolute;
+	text-indent: -9999px;
+  }
+.ticket-logo-cart{
+  	float:left;
+  }
+.ticket-logo-area .ticket-logo-sp a{
+	display: block;
+	width: 94px;
+	height: 35px;
+	background: url(../images/ticket_logo_sp.png) no-repeat 0 0;
+    background-size: 94px 35px;
+  }
+.ticket-logo-top .ticket-logo-sp a{
+  	margin: 6px 0 6px 6px;
+  }
+.ticket-logo-cart .ticket-logo-sp a{
+  	margin: 6px;
+  }
+.ticket-logo-cartfc .ticket-logo-sp a{
+  	margin: 0 6px 6px 0;
+  }
+.ticket-logo-orderreview .ticket-logo-sp a{
+  	margin: 6px;
+  }
+.ticket-logo-lots .ticket-logo-sp a{
+  	margin: 6px 0;
+  }
+.ticket-logo-cart{
+  	float:left;
+  }

@@ -16,6 +16,20 @@ body {
 ----------------------------------------------------------- */
 
 /* ヘッダ全体枠 */
+/*div#header {
+	padding-top: 10px;
+	margin-bottom: 20px;
+	font-size: 120%;
+	text-align: left;
+}*/
+/* サイトID */
+/* #header h1 {
+}
+*/
+/* Header
+----------------------------------------------------------- */
+
+/* ヘッダ全体枠 */
 div#header {
 	padding-top: 10px;
 	margin-bottom: 20px;
@@ -27,8 +41,6 @@ div#header {
 #header h1 {
 
 }
-
-
 /* footer
 ----------------------------------------------------------- */
 .footer{
@@ -72,13 +84,21 @@ div#header {
 /* Common
 ----------------------------------------------------------- */
 
-h2 {
+/*h2 {
 	background: #c01920;
 	font-weight: bold;
 	color: #FFF;
 	padding: 10px;
 	margin-bottom: 20px;
+}*/
+h2 {
+	background: #7D00BE;
+	font-weight: bold;
+	color: #FFF;
+	padding: 10px;
+	margin: 0 0 20px;
 }
+
 h3 {
 	border-left: 3px solid #CCC;
 	padding: 8px;
@@ -406,3 +426,37 @@ h3 {
 .memberLogin table tr th {
 	background: #F9F9F2;
 }
+
+/* NEW LOGO-------------------- */
+.offleft {
+	position: absolute;
+	text-indent: -9999px;
+  }
+.ticket-logo-cart{
+  	float:left;
+  }
+.ticket-logo-area .ticket-logo-sp a{
+	display: block;
+	width: 94px;
+	height: 35px;
+	background: url(../images/ticket_logo_sp.png) no-repeat 0 0;
+    background-size: 94px 35px;
+  }
+.ticket-logo-top .ticket-logo-sp a{
+  	margin: 6px 0 6px 6px;
+  }
+.ticket-logo-cart .ticket-logo-sp a{
+  	margin: 6px;
+  }
+.ticket-logo-cartfc .ticket-logo-sp a{
+  	margin: 0 6px 6px 0;
+  }
+.ticket-logo-orderreview .ticket-logo-sp a{
+  	margin: 6px;
+  }
+.ticket-logo-lots .ticket-logo-sp a{
+  	margin: 6px 0;
+  }
+.ticket-logo-cart{
+  	float:left;
+  }

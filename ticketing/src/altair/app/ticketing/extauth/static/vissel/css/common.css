@@ -336,7 +336,7 @@ html {
 }
 
 body {
-  background: #9b0020 url(../images/bg_contents.gif) repeat 0 0;
+  background: #9b0020;
   -webkit-text-size-adjust: 100%;
   font-size: 1.4rem;
   line-height: 1.5;
@@ -397,34 +397,25 @@ h2 {
 .header {
   width: 100%;
   position: relative;
-  background: #9b0020 url(../images/bg_heading.gif) repeat 0 0;
+  background: #9b0020;
 }
+
 .header-logo img {
   height: 70px;
 }
-.header .wrap {
-  position: relative;
-}
-.logout-btnbox {
- position: absolute;
- top: 12px;
- right: 0;
-}
+
 .nav-global {
   display: none;
 }
 
 @media only screen and (max-width: 787px) {
-.header {
+  .header {
     position: fixed;
     height: 50px;
     width: 100%;
     z-index: 999;
   }
-.logout-btnbox {
- top: 2px;
- right: 4px;
-}
+
   .header-logo img {
     width: auto;
     height: 45px;
@@ -437,7 +428,7 @@ h2 {
 }
 /* footer ==================== */
 .footer {
-  background: #9b0020 url(../images/bg_heading.gif) repeat 0 0;
+  background: #9b0020;
   padding: 10px 0;
 }
 .footer .copyright {
@@ -481,6 +472,7 @@ h2 {
     text-align: center;
     padding: 10px;
   }
+
   .for-sp-img img {
     width: 70%;
   }
@@ -495,27 +487,6 @@ h2 {
   }
 }
 /* contents ==================== */
-.none-pc {
-  display: none;
-}
-
-.none-sp {
-  display: block;
-}
-
-@media only screen and (max-width: 787px) {
-  .none-pc {
-    display: block;
-  }
-
-  .none-sp {
-    display: none;
-  }
-
-  br.none-pc {
-    display: inline;
-  }
-}
 .main {
   background: #cfcfcf;
   overflow: hidden;
@@ -700,7 +671,7 @@ h2 {
   }
 }
 /* NOTE ==================== */
-.not-head {
+.noteHead {
   font-weight: bold;
   font-size: 1.4rem;
   color: #000;
@@ -709,7 +680,7 @@ h2 {
   background: #EFEFEF;
 }
 
-.note-head:before {
+.noteHead:before {
   content: "※";
   background: #9b0020;
   color: #FFF;
@@ -717,10 +688,10 @@ h2 {
   margin-right: 5px;
 }
 
-.note-list {
+.noteList {
   margin-bottom: 20px;
 }
-.note-list li {
+.noteList li {
   list-style: outside disc;
   margin: 0 0 5px 20px;
   line-height: 1.4;
@@ -820,6 +791,7 @@ h2 {
 
 /* login button ==================== */
 .login-fc-btn {
+  width: 40px;
   background: url(../images/logo_rakuten.png) no-repeat left center;
   padding-left: 70px;
   background-size: contain;
@@ -870,48 +842,6 @@ h2 {
   top: 1px;
 }
 
-/* logout button ==================== */
-.logoutBtn {
-    background: -ms-linear-gradient(center top, #DEDEDE  0%, #CCC 100%);
-    background:-moz-linear-gradient( center top, #DEDEDE  0%, #CCC 100% );
-    background:-webkit-gradient( linear, left top, left bottom, color-stop(0, #DEDEDE ), color-stop(1, #CCC) );
-    background-color:#CCC;
-    border-radius: 6px;
-    text-indent: 0;
-    display: inline-block;
-    color: #333;
-    font-size: 1.6rem;
-	font-weight: bold;
-    height: 50px;
-	line-height: 3;
-    width: 210px;
-    text-decoration: none;
-    text-align: center;
-}
-.logoutBtn:hover {
-    background: -ms-linear-gradient(center top, #CCC 0%, #DEDEDE  100%);
-    background: -moz-linear-gradient(top,#CCC 0%,#DEDEDE  50%);
-    background: -webkit-gradient( linear, left top, left bottom, color-stop(0, #CCC), color-stop(1, #DEDEDE ));
-    background-color: #DEDEDE ;
-	color: #999;	
-}
-@media only screen and (max-width: 787px) {
- .logoutBtn {
-    width: auto;
-    height: 45px;
-	padding: .1em 1em;	
-	font-size: 1.4rem;
-	}
-.logoutBtn:hover {
-    background: -ms-linear-gradient(center top, #CCC 0%, #DEDEDE  100%);
-    background: -moz-linear-gradient(top,#CCC 0%,#DEDEDE  50%);
-    background: -webkit-gradient( linear, left top, left bottom, color-stop(0, #CCC), color-stop(1, #DEDEDE ));
-    background-color: #DEDEDE ;
-}
-}
-@media only screen and (max-width: 320px) {
-.logoutBtn { font-size: 1.2rem; padding: .4em .5em;	 }
-}
 /* login sub button ==================== */
 .btnID {
   background: #EFEFEF;
@@ -928,6 +858,7 @@ h2 {
   padding: 10px 20px;
   cursor: pointer;
 }
+
 .btnID img {
   width: 50px;
 }
@@ -1031,12 +962,6 @@ h2 {
     line-height: 1.2;
   }
 }
-/* MAINTENACE */
-/* -----------------------------------------*/
-.maintenance p, .maintenance ul {
-  margin: 0 0 20px 0;
-}
-
 /* 479px */
 /* ---------------------------------------------- */
 @media only screen and (max-width: 499px) {
@@ -1054,5 +979,99 @@ h2 {
 
   #guestlogin {
     display: none;
+  }
+}
+
+
+/* NEW LOGO-------------------- */
+.offleft {
+	position: absolute;
+	text-indent: -9999px;
+}
+.ticket-logo-area {
+    display:inline-block;
+}
+.ticket-logo-cart {
+    margin: 10px 0 13px;
+}
+.ticket-logo-area .ticket-logo-sp{
+    display: none;
+}
+.ticket-logo-area .ticket-logo-pc {
+	display: block;
+    background: #FFF;
+    margin: 9px 0 0;
+    padding: 7px;
+}
+.ticket-logo-area .ticket-logo-pc a{
+    display: block;
+    width: 204px;
+    height: 23px;
+    background: url(../images/ticket_logo_pc.png) no-repeat 0 0;
+    background-size: 204px 23px;
+}
+  .ticket-title-area {
+    width:100%;
+    background: #CFCFCF;
+    text-align: center;
+  }
+ .ticket-title {
+   display: block;
+    width: 980px;
+    margin: 0 auto;
+    padding: 0 0 0 20px;
+    color: #9b0020;
+    font-size: 1.4rem;
+    text-align: left;
+  }
+.header { height:76px;}
+
+@media only screen and (max-width: 787px) {
+    .header { height:50px;}
+    .ticket-title-area {
+      position: relative;
+      height: 75px;
+      text-align: left;
+    }
+    .ticket-title {
+      position: absolute;
+      top:50px;
+      width: auto;
+  }
+
+  .ticket-logo-area .ticket-logo-pc {
+    margin: 0;
+    } 
+    }
+@media only screen and (max-width: 499px) {
+  .header { height:60px;}
+  .ticket-logo-cart {
+    margin: 7px 0 3px 6px;
+    }
+.ticket-logo-area .ticket-logo-pc{
+	display: none;
+    } 
+.ticket-logo-area .ticket-logo-sp {
+	display: block;
+    background: #FFF;
+    margin: 0 6px 4px 0;
+    padding: 6px;
+}
+.ticket-logo-area .ticket-logo-sp a{
+	display: block;
+	width: 94px;
+	height: 35px;
+	background: url(../images/ticket_logo_sp.png) no-repeat 0 0;
+    background-size: 94px 35px;
+  }
+    .ticket-title-area {
+      height: 75px;
+      text-align: left;
+    }
+    .ticket-title {
+      padding:0;
+      top:60px;
+      left: 5px;
+      font-size: 1.0rem;
   }
 }
