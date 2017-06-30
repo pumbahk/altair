@@ -814,14 +814,15 @@ ul#globalNav1 li.right{
 #stage #main,
 #music #main,
 #event #main {
-	float: left;
-	width: 100%;
-	line-height: 1.5;
-	margin:0 0 20px -220px;
-	padding-top: 3px;
-	padding-right:10px;
-	font-size: 120%;
-	box-sizing:border-box;
+    float: left;
+    width: 100%;
+    line-height: 1.5;
+    margin-bottom:20px;
+    margin-left:-220px;
+    padding-top: 3px;
+    padding-right:10px;
+    font-size: 120%;
+    box-sizing:border-box;
 }
 
 #main #mainInner{
