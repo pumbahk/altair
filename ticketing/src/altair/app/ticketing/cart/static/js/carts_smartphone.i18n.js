@@ -1031,9 +1031,11 @@ cart.OrderFormView = Backbone.View.extend({
         orderForm.appendTo(aux);
         this.selected_stock_type_el = selected_stock_type_el;
         this.collection = products;
-        var height = orderForm.height();
         aux.addClass('activated');
         aux.find('.selectProduct').css("overflow", "");
+        var aux_padding_top = parseInt(aux.css('padding-top'));
+        var aux_padding_bottom = parseInt(aux.css('padding-bottom'));
+        var height = orderForm.height() + aux_padding_top + aux_padding_bottom;
         aux.animate(
             { 'height': height },
             {
