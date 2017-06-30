@@ -983,27 +983,79 @@ h2 {
 }
 
 /* NEW LOGO-------------------- */
-.ticket-logo-area {
-    color: #FFF;
-    display:inline-block;
-    font-size: 1.0rem;
-}
-.ticket-logo-area li{
-    display:inline-block;
-    vertical-align: middle;
-}
 .offleft {
 	position: absolute;
 	text-indent: -9999px;
-  }
-.ticket-logo-sp {
+}
+.ticket-logo-area {
+    display:inline-block;
+}
+.ticket-logo-cart {
+    margin: 10px 0 13px;
+}
+.ticket-logo-area .ticket-logo-sp{
+    display: none;
+}
+.ticket-logo-area .ticket-logo-pc {
+	display: block;
     background: #FFF;
-    margin: 0 6px 0 0;
-    padding: 6px;
+    margin: 9px 0 0;
+    padding: 7px;
 }
 .ticket-logo-area .ticket-logo-pc a{
-	display: none;
+    display: block;
+    width: 204px;
+    height: 23px;
+    background: url(../images/ticket_logo_pc.png) no-repeat 0 0;
+    background-size: 204px 23px;
+}
+  .ticket-title-area {
+    width:100%;
+    background: #CFCFCF;
+    text-align: center;
   }
+ .ticket-title {
+   display: block;
+    width: 980px;
+    margin: 0 auto;
+    padding: 0 0 0 20px;
+    color: #9b0020;
+    font-size: 1.4rem;
+    text-align: left;
+  }
+.header { height:76px;}
+
+@media only screen and (max-width: 787px) {
+    .header { height:50px;}
+    .ticket-title-area {
+      position: relative;
+      height: 75px;
+      text-align: left;
+    }
+    .ticket-title {
+      position: absolute;
+      top:50px;
+      width: auto;
+  }
+
+  .ticket-logo-area .ticket-logo-pc {
+    margin: 0;
+    } 
+    }
+@media only screen and (max-width: 499px) {
+  .header { height:60px;}
+  .ticket-logo-cart {
+    margin: 7px 0 3px 6px;
+    }
+.ticket-logo-area .ticket-logo-pc{
+	display: none;
+    } 
+.ticket-logo-area .ticket-logo-sp {
+	display: block;
+    background: #FFF;
+    margin: 0 6px 4px 0;
+    padding: 6px;
+}
 .ticket-logo-area .ticket-logo-sp a{
 	display: block;
 	width: 94px;
@@ -1011,27 +1063,14 @@ h2 {
 	background: url(../images/ticket_logo_sp.png) no-repeat 0 0;
     background-size: 94px 35px;
   }
-@media screen and (min-width: 480px) {
-    .ticket-logo-area li{
-        display:block;
-        font-size: 1.4rem;
-        text-align: center;
+    .ticket-title-area {
+      height: 75px;
+      text-align: left;
     }
-    .ticket-logo-sp {
-        display: none;
-    }
-    .ticket-logo-pc {
-        background: #FFF;
-        padding: 7px;
-    }
-  .ticket-logo-area .ticket-logo-pc a{
-	display: block;
-	width: 204px;
-	height: 23px;
-	background: url(../images/ticket_logo_pc.png) no-repeat 0 0;
-    background-size: 204px 23px;
-  }
-    .ticket-logo-area .ticket-logo-sp a{
-	display: none;
+    .ticket-title {
+      padding:0;
+      top:60px;
+      left: 5px;
+      font-size: 1.0rem;
   }
 }

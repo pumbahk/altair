@@ -809,6 +809,7 @@ ul#globalNav1 li.right{
 	box-sizing:border-box;
 }
 
+#search #main,
 #index #main,
 #sports #main,
 #stage #main,
@@ -817,7 +818,8 @@ ul#globalNav1 li.right{
 	float: left;
 	width: 100%;
 	line-height: 1.5;
-	margin:0 0 20px -220px;
+	margin-bottom:20px;
+	margin-left:-220px;
 	padding-top: 3px;
 	padding-right:10px;
 	font-size: 120%;
@@ -1180,7 +1182,7 @@ ul#globalNav1 li.right{
 
 .searchResult dd {
     float: right;
-    width: 628px;
+    width: 100%;
     margin-bottom: 7px;
     padding: 10px;
     background-color: #f7f7ea;
