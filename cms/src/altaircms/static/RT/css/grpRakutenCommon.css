@@ -277,3 +277,18 @@ div#grpRakutenLinkArea .s-site-summary a:active,div#grpRakutenLinkArea .s-site-s
     .ticket-logo-top .ticket-logo-pc a{
   	margin: 7px 7px 7px 0;
   }
+    .ticket-logo-cart .ticket-logo-pc a{
+  	margin: 12px 7px;
+  }
+    .ticket-logo-cartfc .ticket-logo-pc a{
+  	margin: 12px 7px;
+  }
+    .ticket-logo-orderreview .ticket-logo-pc a{
+  	margin: 12px 7px;
+  }
+    .ticket-logo-lots .ticket-logo-pc a{
+  	margin: 12px 0;
+  }
+.ticket-logo-cart{
+  	float:none;
+  }
