@@ -264,31 +264,16 @@ div#grpRakutenLinkArea .s-site-summary a:active,div#grpRakutenLinkArea .s-site-s
 
 /* NEW LOGO-------------------- */
 .offleft {
-	position: absolute;
-	text-indent: -9999px;
+    position: absolute;
+    text-indent: -9999px;
   }
   .ticket-logo-area .ticket-logo-pc a{
-	display: block;
-	width: 204px;
-	height: 23px;
-	background: url(../img/common/ticket_logo_pc.png) no-repeat 0 0;
+    display: block;
+    width: 204px;
+    height: 23px;
+    background: url(../img/common/ticket_logo_pc.png) no-repeat 0 0;
     background-size: 204px 23px;
   }
     .ticket-logo-top .ticket-logo-pc a{
-  	margin: 7px 7px 7px 0;
-  }
-    .ticket-logo-cart .ticket-logo-pc a{
-  	margin: 12px 7px;
-  }
-    .ticket-logo-cartfc .ticket-logo-pc a{
-  	margin: 12px 7px;
-  }
-    .ticket-logo-orderreview .ticket-logo-pc a{
-  	margin: 12px 7px;
-  }
-    .ticket-logo-lots .ticket-logo-pc a{
-  	margin: 12px 0;
-  }
-.ticket-logo-cart{
-  	float:none;
+    margin: 7px 0 0;
   }

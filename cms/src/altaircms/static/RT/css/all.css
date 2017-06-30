@@ -614,9 +614,14 @@ dl#topicPath dt {
 /* }}} */
 
 /* #globalNav1 {{{ */
-#globalNav1 {
+/*#globalNav1 {
     width: 950px;
     margin: 20px 0 0 0;
+    clear: both;
+}*/
+#globalNav1 {
+    width: 950px;
+    margin: 0 0 0 0;
     clear: both;
 }
 
@@ -786,23 +791,37 @@ ul#globalNav1 li.right{
 }
 
 #headerSearch dd li {
-    list-style: none;
-    float:left;
-    margin-right: 15px;
-    white-space: nowrap;
+	list-style: none;
+	float:left;
+	margin-right: 15px;
+	white-space: nowrap;
 }
 /* }}} */
 
 /* #main {{{ */
 #main {
-    float: left;
-    width: 100%;
-    line-height: 1.5;
-    margin:0 0 20px -220px;
-    padding-top: 3px;
-		padding-right:10px;
-    font-size: 120%;
-		box-sizing:border-box;
+	float: left;
+	width: 100%;
+	line-height: 1.5;
+	margin:0 0 20px 0;
+	padding:0 10px;
+	font-size: 120%;
+	box-sizing:border-box;
+}
+
+#index #main,
+#sports #main,
+#stage #main,
+#music #main,
+#event #main {
+	float: left;
+	width: 100%;
+	line-height: 1.5;
+	margin:0 0 20px -220px;
+	padding-top: 3px;
+	padding-right:10px;
+	font-size: 120%;
+	box-sizing:border-box;
 }
 
 #main #mainInner{
@@ -3264,3 +3283,24 @@ a.goto-link:visit, a.goto-link:link {
 .red {
     color:red;
 }
+
+/* NEW LOGO-------------------- */
+.offleft {
+	position: absolute;
+	text-indent: -9999px;
+  }
+  .ticket-logo-area .ticket-logo-pc a{
+	display: block;
+	width: 204px;
+	height: 23px;
+	background: url(../img/common/ticket_logo_pc.png) no-repeat 0 0;
+    background-size: 204px 23px;
+  }
+    .ticket-logo-top .ticket-logo-pc a{
+  	margin: 7px 0 0;
+  }
+
+
+
+
+
