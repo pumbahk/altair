@@ -550,7 +550,7 @@ body {
 	display: block;
 	width: 94px;
 	height: 35px;
-	background: url(ticket_logo_sp.png) no-repeat 0 0;
+	background: url(../images/ticket_logo_sp.png) no-repeat 0 0;
     background-size: 94px 35px;
   }
 .ticket-logo-top .ticket-logo-sp a{
@@ -576,7 +576,7 @@ body {
 	display: block;
 	width: 204px;
 	height: 23px;
-	background: url(ticket_logo_pc.png) no-repeat 0 0;
+	background: url(../images/ticket_logo_pc.png) no-repeat 0 0;
     background-size: 204px 23px;
   }
     .ticket-logo-area .ticket-logo-sp a{
