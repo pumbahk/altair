@@ -1185,7 +1185,8 @@ ul#globalNav1 li.right{
     width: 100%;
     margin-bottom: 7px;
     padding: 10px;
-    background-color: #f7f7ea;
+    box-sizing:border-box;
+    background-color: #f7f7ea ;
 }
 
 .searchResult dd p {
