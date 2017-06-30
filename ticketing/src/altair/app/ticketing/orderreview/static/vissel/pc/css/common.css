@@ -981,3 +981,57 @@ h2 {
     display: none;
   }
 }
+
+/* NEW LOGO-------------------- */
+.ticket-logo-area {
+    color: #FFF;
+    display:inline-block;
+    font-size: 1.0rem;
+}
+.ticket-logo-area li{
+    display:inline-block;
+    vertical-align: middle;
+}
+.offleft {
+	position: absolute;
+	text-indent: -9999px;
+  }
+.ticket-logo-sp {
+    background: #FFF;
+    margin: 0 6px 0 0;
+    padding: 6px;
+}
+.ticket-logo-area .ticket-logo-pc a{
+	display: none;
+  }
+.ticket-logo-area .ticket-logo-sp a{
+	display: block;
+	width: 94px;
+	height: 35px;
+	background: url(../images/ticket_logo_sp.png) no-repeat 0 0;
+    background-size: 94px 35px;
+  }
+@media screen and (min-width: 480px) {
+    .ticket-logo-area li{
+        display:block;
+        font-size: 1.4rem;
+        text-align: center;
+    }
+    .ticket-logo-sp {
+        display: none;
+    }
+    .ticket-logo-pc {
+        background: #FFF;
+        padding: 7px;
+    }
+  .ticket-logo-area .ticket-logo-pc a{
+	display: block;
+	width: 204px;
+	height: 23px;
+	background: url(../images/ticket_logo_pc.png) no-repeat 0 0;
+    background-size: 204px 23px;
+  }
+    .ticket-logo-area .ticket-logo-sp a{
+	display: none;
+  }
+}
