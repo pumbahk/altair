@@ -3,6 +3,7 @@
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
 <meta name="apple-mobile-web-app-title" content="楽天チケット" />
+<link rel="shortcut icon" href="${request.static_url('altaircms:static/RT/img/common/favicon.ico')}">
 <link rel="apple-touch-icon-precomposed" href="apple-touch-icon-precomposed.png">
 <script src=${request.static_url('altaircms:static/RT/smartphone/js/jquery-1.9.1.min.js')}></script>
 <script src=${request.static_url('altaircms:static/RT/smartphone/js/jquery-ui-1.9.2.custom.min.js')}></script>
@@ -21,8 +22,10 @@
 <body>
 
 <div class="header-navigation">
-  <a class="goto-link btn-primary" style="float: right" href="${request.route_path('smartphone.goto_pc_page')}">PC版へ</a>
-  <a href="/"><img alt="楽天チケット" width="82" height="45" src="${request.static_url('altaircms:static/RT/smartphone/img/logo.png')}"/></a>
+<div class="ticket-logo-area ticket-logo-top">
+    <div class="ticket-logo-sp"><h1><a href="/"><span class="offleft">楽天チケット</span></a></h1></div>
+	</div>
+	<a class="goto-link btn-primary" style="float: right" href="${request.route_path('smartphone.goto_pc_page')}">PC版へ</a>
 </div>
 <div id="fb-root"></div>
 
