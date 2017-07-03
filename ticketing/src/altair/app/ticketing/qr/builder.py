@@ -215,8 +215,9 @@ class qr_aes:
         self.aes.update_key(key)
 
     def make(self, data):
-        header = data['header'] if 'header' in data else ''
-        content = self.aes.encrypt(data['content']) if 'content' in data else ''
+        header = data.get('header', '')
+        to_encrypt_data = data.get('content', '')
+        content = self.aes.encrypt(to_encrypt_data) if to_encrypt_data else ''
         return header + content
 
     def __validate(self, item_list, decrypted_data):
