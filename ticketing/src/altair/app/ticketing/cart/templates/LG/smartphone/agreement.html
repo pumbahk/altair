@@ -2,27 +2,7 @@
 
 <%block name="javascript">
     <script type="text/javascript" src="${request.static_url('altair.app.ticketing.cart:static/js/ajaxzip3-https.js')}"></script>
-    <!-- Google Code for チケット購入ページ Conversion Page -->
-    <script type="text/javascript">
-    /* <![CDATA[ */
-    var google_conversion_id = 927394035;
-    var google_conversion_language = "en";
-    var google_conversion_format = "3";
-    var google_conversion_color = "ffffff";
-    var google_conversion_label = "DMxACJe_hmQQ89GbugM";
-    var google_remarketing_only = false;
-    /* ]]> */
-    </script>
-    <script type="text/javascript"
-    src="//www.googleadservices.com/pagead/conversion.js">
-    </script>
 </%block>
-    <noscript>
-    <div style="display:inline;">
-    <img height="1" width="1" style="border-style:none;" alt=""
-    src="//www.googleadservices.com/pagead/conversion/927394035/?label=DMxACJe_hmQQ89GbugM&amp;guid=ON&amp;script=0"/>
-    </div>
-    </noscript>
 
 
 %if request.session.peek_flash():
@@ -37,3 +17,5 @@
   <label for="agree">上記の注意事項を確認、同意し、申し込みます。</label><br>
   <p class="align2"><image onclick="$('#form1').submit()" src="${request.static_url('altair.app.ticketing.cart:static/RT/smartphone/images/btn_next.gif')}" alt="次へ" width="226" height="46" /></p>
 </form>
+
+<%include file="../common/agreement_ga.html" />
