@@ -59,6 +59,7 @@ def get_filtered_stock_types(request, sales_segment, session=None):
         .join(ProductItem)\
         .filter(Product.sales_segment_id==sales_segment.id)\
         .filter(Stock.performance_id==sales_segment.performance_id)\
+        .filter(ProductItem.stock_id==Stock.id)\
         .filter(0 < Stock.quantity)\
         .filter(StockType.display == 1)\
         .filter(Product.public == 1)\
