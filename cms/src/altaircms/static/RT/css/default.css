@@ -96,3 +96,18 @@ a:focus {
 
 a:active {
 }
+
+.fcb_logo-area {
+    position: relative;
+    right: auto;
+    bottom: auto;
+    margin: 10px auto 0;
+}
+.fcb_logo-area .fcb_logo-pc a{
+    display: none;
+  }
+.fcb_logo-area .fcb_logo-sp a{
+    display: block;
+    width: 270px;
+    height: 57px;
+}

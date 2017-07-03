@@ -2,7 +2,7 @@
 @import "default.css";
 
 #container {
-    width: 950px;
+    width: 100%;
     margin: 0 auto;
     text-align: left;
     position: relative;
@@ -54,23 +54,37 @@
 #first,
 #help,
 #sitemap {
-    background: url(../img/first/bg_body.gif) no-repeat 50% 130px;
+    background: url(../img/first/bg_body.gif) no-repeat 0 150px;
 }
 
 #music {
-    background: url(../img/music/bg_body.gif) no-repeat 50% 130px;
+    background: url(../img/music/bg_body.gif) no-repeat 0 150px;
 }
 
 #stage {
-    background: url(../img/stage/bg_body.gif) no-repeat 50% 130px;
+    background: url(../img/stage/bg_body.gif) no-repeat 0 150px;
 }
 
 #sports {
-    background: url(../img/sports/bg_body.gif) no-repeat 50% 130px;
+    background: url(../img/sports/bg_body.gif) no-repeat 0 150px;
 }
 
 #event {
-    background: url(../img/event/bg_body.gif) no-repeat 50% 130px;
+    background: url(../img/event/bg_body.gif) no-repeat 0 150px;
+}
+
+#search h1,
+#change h1,
+#first h1,
+#help h1,
+#sitemap h1,
+#music h1,
+#stage h1,
+#sports h1,
+#event h1 {
+	display:block;
+	padding-left:10px;
+	text-align:left;
 }
 
 
@@ -100,63 +114,61 @@
 }
 
 #index #mainLeft {
-    width: 342px;
+    width: 49.5%;
     float: left;
-    margin-right: 8px;
     overflow: visible;
 }
 
 #index #mainRight {
-    width: 342px;
+    width: 49.5%;
     float: left;
-    margin-left: 8px;
     overflow: visible;
 }
 
 #sports #mainLeft {
-    width: 362px;
+    width: 49.5%;
     float: left;
     overflow: visible;
 }
 
 #sports #mainRight {
-    width: 362px;
+    width: 49.5%;
     float: right;
     overflow: visible;
 }
 
 #stage #mainLeft {
-    width: 362px;
+    width: 49.5%;
     float: left;
     overflow: visible;
 }
 
 #stage #mainRight {
-    width: 362px;
+    width: 49.5%;
     float: right;
     overflow: visible;
 }
 
 #music #mainLeft {
-    width: 362px;
+    width: 49.5%;
     float: left;
     overflow: visible;
 }
 
 #music #mainRight {
-    width: 362px;
+    width: 49.5%;
     float: right;
     overflow: visible;
 }
 
 #event #mainLeft {
-    width: 362px;
+    width: 49.5%;
     float: left;
     overflow: visible;
 }
 
 #event #mainRight {
-    width: 362px;
+    width: 49.5%;
     float: right;
     overflow: visible;
 }
@@ -179,6 +191,9 @@
 /* }}} */
 
 /* #slideShow {{{ */
+#full-carousel li {
+	list-style:none;
+}
 #slideShow img {
     margin: 0;
     padding: 0;
@@ -322,7 +337,7 @@
 
 /* ヘッダ全体枠 */
 #grpheader {
-    padding-top: 10px;
+    padding: 10px 10px 0;
     font-size: 120%;
     text-align: left; /* for Quirks Mode */
     overflow: hidden;
@@ -599,9 +614,14 @@ dl#topicPath dt {
 /* }}} */
 
 /* #globalNav1 {{{ */
-#globalNav1 {
+/*#globalNav1 {
     width: 950px;
     margin: 20px 0 0 0;
+    clear: both;
+}*/
+#globalNav1 {
+    width: 950px;
+    margin: 0 0 0 0;
     clear: both;
 }
 
@@ -672,7 +692,7 @@ ul#globalNav1 li.right{
     height: 48px;
     font-size: 120%;
     background: #c01920;
-    width:950px;
+    width:100%;
     height: 47px;
     padding: 0 0;
     margin: 0 auto 10px auto;
@@ -749,8 +769,8 @@ ul#globalNav1 li.right{
 }
     
 #headerSearch dl {
-  float: right;
-  width: 455px;
+  float: left;
+  width: 663px;
   height: 47px;
   overflow: hidden;
 }
@@ -765,29 +785,49 @@ ul#globalNav1 li.right{
 #headerSearch dd {
   line-height: 1.5;
   padding-top: 5px;
-  width: 392px;
+  width: 600px;
   height: 47px;
   float: left;
 }
 
 #headerSearch dd li {
-    list-style: none;
-    float:left;
-    margin-right: 15px;
-    white-space: nowrap;
+	list-style: none;
+	float:left;
+	margin-right: 15px;
+	white-space: nowrap;
 }
 /* }}} */
 
 /* #main {{{ */
 #main {
-    position: relative;
-    left: 1px;
-    float: right;
-    width: 742px;
-    line-height: 1.5;
-    margin-bottom: 20px;
-    padding-top: 3px;
-    font-size: 120%;
+	float: left;
+	width: 100%;
+	line-height: 1.5;
+	margin:0 0 20px 0;
+	padding:0 10px;
+	font-size: 120%;
+	box-sizing:border-box;
+}
+
+#search #main,
+#index #main,
+#sports #main,
+#stage #main,
+#music #main,
+#event #main {
+	float: left;
+	width: 100%;
+	line-height: 1.5;
+	margin-bottom:20px;
+	margin-left:-220px;
+	padding-top: 3px;
+	padding-right:10px;
+	font-size: 120%;
+	box-sizing:border-box;
+}
+
+#main #mainInner{
+	margin-left:225px;
 }
 
 * html #main {
@@ -820,12 +860,10 @@ ul#globalNav1 li.right{
 
 /* #side {{{ */
 #side {
-    position: relative;
-    left: -2px;
     float: left;
     width: 208px;
     line-height: 1.5;
-    margin-bottom: 20px;
+    margin:0 0 20px 10px;
     font-size: 120%;
 }
 
@@ -1144,10 +1182,11 @@ ul#globalNav1 li.right{
 
 .searchResult dd {
     float: right;
-    width: 628px;
+    width: 100%;
     margin-bottom: 7px;
     padding: 10px;
-    background-color: #f7f7ea;
+    box-sizing:border-box;
+    background-color: #f7f7ea ;
 }
 
 .searchResult dd p {
@@ -1401,10 +1440,11 @@ ul#globalNav1 li.right{
 
 /* .event {{{ */
 .event {
-    width: 350px;
+    width: 48%;
     overflow: hidden;
-    padding: 0 10px;
+    padding: 0 1%;
     border-bottom: 1px dotted #cccccc;
+		box-sizing:border-box;
 }
 
 div.event {
@@ -1486,13 +1526,13 @@ td.event img {
 #thisWeek {
     clear: both;
     float: left;
-    width: 362px;
+    width: 100%;
     margin: 20px 0;
 }
 
 #nearTheEnd {
     float: right;
-    width: 362px;
+    width: 100%;
     margin: 20px 0;
 }
 
@@ -1506,7 +1546,12 @@ td.event img {
 #nearTheEnd p {
     margin: 0;
     padding: 10px 15px;
-    background: url(../img/music/bg_thisweek.gif) no-repeat left bottom;
+    background:#f9faf4;
+		border-left:solid 1px #C6C6C6;
+		border-right:solid 1px #C6C6C6;
+		border-bottom:solid 1px #C6C6C6;
+		display:block;
+		box-sizing:border-box;
 }
 
 #thisWeek,
@@ -2779,52 +2824,153 @@ h2.heading {
 }
 
 .index.heading {
-    background-image:url(../img/index/bg_heading.gif);
+    /*background-image:url(../img/music/bg_heading.gif);*/
+		background: -webkit-gradient(linear, left top, left bottom, color-stop(0.48, #777d71), color-stop(0.44, #9aa094));
+		background: -webkit-linear-gradient(top, #9aa094 44%, #777d71 48%);
+		background: -moz-linear-gradient(top, #9aa094 44%, #777d71 48%);
+		background: -o-linear-gradient(top, #9aa094 44%, #777d71 48%);
+		background: -ms-linear-gradient(top, #9aa094 44%, #777d71 48%);
+		background: linear-gradient(to bottom, #9aa094 44%, #777d71 48%);
+		border:solid 2px #c5c6be;
+		border-radius:2px;
 }
 
+
 h2.index {
-    *background-image:url(../img/index/bg_heading.gif);
+    /**background-image:url(../img/index/bg_heading.gif);*/
+		background: -webkit-gradient(linear, left top, left bottom, color-stop(0.48, #777d71), color-stop(0.44, #9aa094));
+		background: -webkit-linear-gradient(top, #9aa094 44%, #777d71 48%);
+		background: -moz-linear-gradient(top, #9aa094 44%, #777d71 48%);
+		background: -o-linear-gradient(top, #9aa094 44%, #777d71 48%);
+		background: -ms-linear-gradient(top, #9aa094 44%, #777d71 48%);
+		background: linear-gradient(to bottom, #9aa094 44%, #777d71 48%);
+		border:solid 2px #c5c6be;
+		border-radius:2px;
 }
 
 .sports.heading {
-    background-image:url(../img/sports/bg_heading.gif);
+    /*background-image:url(../img/music/bg_heading.gif);*/
+		background: -webkit-gradient(linear, left top, left bottom, color-stop(0.48, #777d71), color-stop(0.44, #9aa094));
+		background: -webkit-linear-gradient(top, #9aa094 44%, #777d71 48%);
+		background: -moz-linear-gradient(top, #9aa094 44%, #777d71 48%);
+		background: -o-linear-gradient(top, #9aa094 44%, #777d71 48%);
+		background: -ms-linear-gradient(top, #9aa094 44%, #777d71 48%);
+		background: linear-gradient(to bottom, #9aa094 44%, #777d71 48%);
+		border:solid 2px #c5c6be;
+		border-radius:2px;
 }
 
+
 h2.sports {
-    *background-image:url(../img/sports/bg_heading.gif);
+    /**background-image:url(../img/sports/bg_heading.gif);*/
+		background: -webkit-gradient(linear, left top, left bottom, color-stop(0.48, #777d71), color-stop(0.44, #9aa094));
+		background: -webkit-linear-gradient(top, #9aa094 44%, #777d71 48%);
+		background: -moz-linear-gradient(top, #9aa094 44%, #777d71 48%);
+		background: -o-linear-gradient(top, #9aa094 44%, #777d71 48%);
+		background: -ms-linear-gradient(top, #9aa094 44%, #777d71 48%);
+		background: linear-gradient(to bottom, #9aa094 44%, #777d71 48%);
+		border:solid 2px #c5c6be;
+		border-radius:2px;
 }
 
 .music.heading {
-    background-image:url(../img/music/bg_heading.gif);
+    /*background-image:url(../img/music/bg_heading.gif);*/
+		background: -webkit-gradient(linear, left top, left bottom, color-stop(0.48, #777d71), color-stop(0.44, #9aa094));
+		background: -webkit-linear-gradient(top, #9aa094 44%, #777d71 48%);
+		background: -moz-linear-gradient(top, #9aa094 44%, #777d71 48%);
+		background: -o-linear-gradient(top, #9aa094 44%, #777d71 48%);
+		background: -ms-linear-gradient(top, #9aa094 44%, #777d71 48%);
+		background: linear-gradient(to bottom, #9aa094 44%, #777d71 48%);
+		border:solid 2px #c5c6be;
+		border-radius:2px;
 }
 
 h2.music {
-    *background-image:url(../img/music/bg_heading.gif);
+    /**background-image:url(../img/music/bg_heading.gif);*/
+		background: -webkit-gradient(linear, left top, left bottom, color-stop(0.48, #777d71), color-stop(0.44, #9aa094));
+		background: -webkit-linear-gradient(top, #9aa094 44%, #777d71 48%);
+		background: -moz-linear-gradient(top, #9aa094 44%, #777d71 48%);
+		background: -o-linear-gradient(top, #9aa094 44%, #777d71 48%);
+		background: -ms-linear-gradient(top, #9aa094 44%, #777d71 48%);
+		background: linear-gradient(to bottom, #9aa094 44%, #777d71 48%);
+		border:solid 2px #c5c6be;
+		border-radius:2px;
 }
 
 .other.heading {
-    background-image:url(../img/event/bg_heading.gif);
+    /*background-image:url(../img/music/bg_heading.gif);*/
+		background: -webkit-gradient(linear, left top, left bottom, color-stop(0.48, #777d71), color-stop(0.44, #9aa094));
+		background: -webkit-linear-gradient(top, #9aa094 44%, #777d71 48%);
+		background: -moz-linear-gradient(top, #9aa094 44%, #777d71 48%);
+		background: -o-linear-gradient(top, #9aa094 44%, #777d71 48%);
+		background: -ms-linear-gradient(top, #9aa094 44%, #777d71 48%);
+		background: linear-gradient(to bottom, #9aa094 44%, #777d71 48%);
+		border:solid 2px #c5c6be;
+		border-radius:2px;
 }
 
+
 h2.other {
-    *background-image:url(../img/event/bg_heading.gif);
+    /**background-image:url(../img/event/bg_heading.gif);*/
+		background: -webkit-gradient(linear, left top, left bottom, color-stop(0.48, #777d71), color-stop(0.44, #9aa094));
+		background: -webkit-linear-gradient(top, #9aa094 44%, #777d71 48%);
+		background: -moz-linear-gradient(top, #9aa094 44%, #777d71 48%);
+		background: -o-linear-gradient(top, #9aa094 44%, #777d71 48%);
+		background: -ms-linear-gradient(top, #9aa094 44%, #777d71 48%);
+		background: linear-gradient(to bottom, #9aa094 44%, #777d71 48%);
+		border:solid 2px #c5c6be;
+		border-radius:2px;
 }
 
 .stage.heading {
-    background-image:url(../img/stage/bg_heading.gif);
+    /*background-image:url(../img/music/bg_heading.gif);*/
+		background: -webkit-gradient(linear, left top, left bottom, color-stop(0.48, #777d71), color-stop(0.44, #9aa094));
+		background: -webkit-linear-gradient(top, #9aa094 44%, #777d71 48%);
+		background: -moz-linear-gradient(top, #9aa094 44%, #777d71 48%);
+		background: -o-linear-gradient(top, #9aa094 44%, #777d71 48%);
+		background: -ms-linear-gradient(top, #9aa094 44%, #777d71 48%);
+		background: linear-gradient(to bottom, #9aa094 44%, #777d71 48%);
+		border:solid 2px #c5c6be;
+		border-radius:2px;
 }
 
 h2.stage {
-    *background-image:url(../img/stage/bg_heading.gif);
+    /**background-image:url(../img/stage/bg_heading.gif);*/
+		background: -webkit-gradient(linear, left top, left bottom, color-stop(0.48, #777d71), color-stop(0.44, #9aa094));
+		background: -webkit-linear-gradient(top, #9aa094 44%, #777d71 48%);
+		background: -moz-linear-gradient(top, #9aa094 44%, #777d71 48%);
+		background: -o-linear-gradient(top, #9aa094 44%, #777d71 48%);
+		background: -ms-linear-gradient(top, #9aa094 44%, #777d71 48%);
+		background: linear-gradient(to bottom, #9aa094 44%, #777d71 48%);
+		border:solid 2px #c5c6be;
+		border-radius:2px;
 }
 
 .help.heading {
-    background-image:url(../img/help/bg_heading.gif);
+    /*background-image:url(../img/music/bg_heading.gif);*/
+		background: -webkit-gradient(linear, left top, left bottom, color-stop(0.48, #777d71), color-stop(0.44, #9aa094));
+		background: -webkit-linear-gradient(top, #9aa094 44%, #777d71 48%);
+		background: -moz-linear-gradient(top, #9aa094 44%, #777d71 48%);
+		background: -o-linear-gradient(top, #9aa094 44%, #777d71 48%);
+		background: -ms-linear-gradient(top, #9aa094 44%, #777d71 48%);
+		background: linear-gradient(to bottom, #9aa094 44%, #777d71 48%);
+		border:solid 2px #c5c6be;
+		border-radius:2px;
 }
 
+
 .change.heading {
-    background-image:url(../img/change/bg_heading.gif);
+    /*background-image:url(../img/music/bg_heading.gif);*/
+		background: -webkit-gradient(linear, left top, left bottom, color-stop(0.48, #777d71), color-stop(0.44, #9aa094));
+		background: -webkit-linear-gradient(top, #9aa094 44%, #777d71 48%);
+		background: -moz-linear-gradient(top, #9aa094 44%, #777d71 48%);
+		background: -o-linear-gradient(top, #9aa094 44%, #777d71 48%);
+		background: -ms-linear-gradient(top, #9aa094 44%, #777d71 48%);
+		background: linear-gradient(to bottom, #9aa094 44%, #777d71 48%);
+		border:solid 2px #c5c6be;
+		border-radius:2px;
 }
+
 /* }}} */
 
 #mainLeft #thisWeek,
@@ -2972,6 +3118,9 @@ h2.stage {
 /* #notableEvents {{{ */
 #notableEvents {
     margin-bottom: 20px;
+}
+#notableEvents table {
+	width:100%;
 }
 /* }}} */
 
@@ -3137,3 +3286,24 @@ a.goto-link:visit, a.goto-link:link {
 .red {
     color:red;
 }
+
+/* NEW LOGO-------------------- */
+.offleft {
+	position: absolute;
+	text-indent: -9999px;
+  }
+  .ticket-logo-area .ticket-logo-pc a{
+	display: block;
+	width: 204px;
+	height: 23px;
+	background: url(../img/common/ticket_logo_pc.png) no-repeat 0 0;
+    background-size: 204px 23px;
+  }
+    .ticket-logo-top .ticket-logo-pc a{
+  	margin: 7px 0 0;
+  }
+
+
+
+
+

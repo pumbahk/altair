@@ -99,6 +99,7 @@ $(function() {
                 if (readCount == items) {
                     // 全ての画像を読み込んだらフリック可能
                     flipsnap.disableTouch = false;
+                    startTimer(readCount);
                 }
             }
             imgPreloader[index].src = orgSrc;
@@ -141,6 +142,25 @@ $(function() {
         target.prop('height', true_height);
         target.prop('width', true_width);
     }
+
+    //タイマー用の関数を作る
+    var time=2000;
+    var count=14;
+    function startTimer(readCount){
+        var limit = 0;
+        flipTimer=setInterval(function(){
+            if (limit) {
+                limit = 0;
+                flipsnap.moveToPoint(0);
+            } else {
+                flipsnap.toNext();
+                if (flipsnap.currentPoint==readCount-1) {
+                    limit = 1;
+                };
+            }
+        } , time);
+    }
+
 })();
 
 </script>

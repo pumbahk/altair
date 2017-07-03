@@ -44,7 +44,21 @@ $(function(){
 <!-- headder -->
 <header class="header">
 <div class="wrap">
-<h1 class="header-logo"><a href="/"><img src="${view_context.static_url('images/logo.gif')}" alt="ヴィッセルチケット"></a></h1>
+<div class="ticket-logo-area ticket-logo-cart">
+            <div class="ticket-logo-sp"><h1><a href="//vissel.tstar.jp"><span class="offleft">楽天チケット(ヴィッセル神戸公式チケットサイト)</span></a></h1></div>
+            <div class="ticket-logo-pc"><h1><a href="//vissel.tstar.jp"><span class="offleft">楽天チケット(ヴィッセル神戸公式チケットサイト)</span></a></h1></div>
+</div>
+<!-- menu -->
+<nav class="nav-global">
+<div id="toggle"><a href="https://vissel.tstar.jp/orderreview/#">&nbsp;</a></div>
+<ul class="clearfix">
+<li><a href="https://vissel.tstar.jp/">TOP</a></li>
+</ul>
+</nav>
+<!-- /menu -->
+</div><!-- /wrap -->
+</header><!-- /headder -->
+<div class="ticket-title-area"><p class="ticket-title">Vissel KOBE Official Ticket Site</p></div>
 % if request.authenticated_userid and hasattr(_context, 'route_path'):
 <p class="logout-btnbox"><a href="${_context.route_path('extauth.logout')}" class="logoutBtn">ログアウト</a></p>
 % endif

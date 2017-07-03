@@ -1,4 +1,4 @@
-﻿@charset "utf-8";
+@charset "utf-8";
 @import url("common.css"); /* Reset CSS */
 @import url("helper.css"); /* helper CSS */
 
@@ -285,7 +285,8 @@ body {
 
 /* heading ============================== */
 .heading-primary {
-	background: #bf0000;
+	/*background: #bf0000;*/
+    background: #7D00BE;
 	font-size: 2.0rem;
 	color: #FFF;
 	font-weight: bold;
@@ -295,9 +296,11 @@ body {
 
 .heading_simple_line {
 	font-size: 1.8rem;
-	color: #c01920;
+	/*color: #c01920;*/
+	color: #7D00BE;
 	font-weight: bold;
-	border-bottom: 2px solid #bf0000;
+	/*border-bottom: 2px solid #bf0000;*/
+	border-bottom: 2px solid #7D00BE;
 	padding: 10px;
 	margin: 0 0 20px 0;
 }
@@ -530,4 +533,71 @@ body {
 	padding: 10px;
 	box-sizing: border-box;
 }
+}
+
+/* NEW LOGO-------------------- */
+.offleft {
+	position: absolute;
+	text-indent: -9999px;
+  }
+.ticket-logo-cart{
+  	float:left;
+  }
+.ticket-logo-area .ticket-logo-pc a{
+	display: none;
+  }
+.ticket-logo-area .ticket-logo-sp a{
+	display: block;
+	width: 94px;
+	height: 35px;
+	background: url(../images/ticket_logo_sp.png) no-repeat 0 0;
+    background-size: 94px 35px;
+  }
+.ticket-logo-top .ticket-logo-sp a{
+  	margin: 6px 0 6px 6px;
+  }
+.ticket-logo-cart .ticket-logo-sp a{
+  	margin: 6px;
+  }
+.ticket-logo-cartfc .ticket-logo-sp a{
+  	margin: 0 6px 6px 0;
+  }
+.ticket-logo-orderreview .ticket-logo-sp a{
+  	margin: 6px;
+  }
+.ticket-logo-lots .ticket-logo-sp a{
+  	margin: 6px 0;
+  }
+.ticket-logo-cart{
+  	float:left;
+  }
+@media screen and (min-width: 480px) {
+  .ticket-logo-area .ticket-logo-pc a{
+	display: block;
+	width: 204px;
+	height: 23px;
+	background: url(../images/ticket_logo_pc.png) no-repeat 0 0;
+    background-size: 204px 23px;
+  }
+    .ticket-logo-area .ticket-logo-sp a{
+	display: none;
+  }
+    .ticket-logo-top .ticket-logo-pc a{
+  	margin: 7px 7px 7px 0;
+  }
+    .ticket-logo-cart .ticket-logo-pc a{
+  	margin: 12px 7px;
+  }
+    .ticket-logo-cartfc .ticket-logo-pc a{
+  	margin: 12px 7px;
+  }
+    .ticket-logo-orderreview .ticket-logo-pc a{
+  	margin: 12px 7px;
+  }
+    .ticket-logo-lots .ticket-logo-pc a{
+  	margin: 12px 0;
+  }
+.ticket-logo-cart{
+  	float:none;
+  }
 }
