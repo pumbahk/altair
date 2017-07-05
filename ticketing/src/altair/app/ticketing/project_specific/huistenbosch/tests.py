@@ -65,7 +65,7 @@ class QRUtilsTest(unittest.TestCase, CoreTestMixin):
             'usable_date_to': usable_date_to,
             'special_flag': HT_SPECIAL_FLAG
         }
-        self.content = 'HTB00000011123456A1234560000000001{issued_at}1120170101202012310001000{usable_date_to}0'.format(issued_at=issued_at, usable_date_to=usable_date_to)
+        self.content = HT_ID_CODE + HT_TYPE_CODE + '123456A1234560000000001{issued_at}1120170101202012310001000{usable_date_to}0'.format(issued_at=issued_at, usable_date_to=usable_date_to)
         self.header = HT_QR_DATA_FREE + HT_QR_DATA_HEADER
 
         self.session = _setup_db([

@@ -3,8 +3,8 @@
 from collections import OrderedDict
 
 # 固定値の設定（現時点2017-01-12,仮数値として設定する。）
-HT_QR_DATA_HEADER = '1'
-HT_TYPE_CODE = '1'
+HT_QR_DATA_HEADER = '6'
+HT_TYPE_CODE = '6'
 HT_ID_CODE = 'HTB0000001'
 HT_COUNT_FLAG = '1'
 HT_SEASON_FLAG = '1'
@@ -16,7 +16,7 @@ HT_QR_DATA_FREE = 'http://huistenbosch.tstar.jp/'.ljust(40)
 
 ja_map = {
     'id_code': u'識別コード',
-    'type_code': u'種別コード',
+    'type_code': u'種類コード',
     'ticket_code': u'券種コード',
     'serial_no': u'通し番号',
     'issued_at': u'発行日',

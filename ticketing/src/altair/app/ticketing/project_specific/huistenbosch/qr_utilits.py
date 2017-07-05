@@ -80,7 +80,7 @@ def _get_db_session(history):
 def make_data_for_qr(history):
     """
     'id_code': u'識別コード',
-    'type_code': u'種別コード',
+    'type_code': u'種類コード',
     'ticket_code': u'券種コード',
     'serial_no': u'通し番号',
     'issued_at': u'発行日',
