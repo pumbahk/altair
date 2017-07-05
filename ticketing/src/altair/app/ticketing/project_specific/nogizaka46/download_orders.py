@@ -136,7 +136,7 @@ left join
 left join
 	UserCredential uc on o.user_id = uc.user_id
 left join 
-	ShippingAddress sa on o.user_id = sa.user_id
+	ShippingAddress sa on o.shipping_address_id = sa.id
 left join
 	OrderedProduct op on o.id = op.order_id
 left join
@@ -150,15 +150,19 @@ left join
 left join
 	StockHolder sh on st.stock_holder_id = sh.id
 left join 
-	TicketPrintHistory tph on opi.id = tph.ordered_product_item_id
+	TicketPrintHistory tph on o.id = tph.order_id and opi.id = tph.ordered_product_item_id
 left join 
 	Operator opr on tph.operator_id = opr.id 
 left join
 	OrderedProductItemToken opit on opit.ordered_product_item_id = opi.id
 left join
 	Seat s on opit.seat_id = s.id	
-where p.id = {performance_id}
-and o.deleted_at is NULL and o.canceled_at is NULL
+where 1
+and p.id = {performance_id}
+and o.deleted_at is NULL 
+and o.canceled_at is NULL
+and uc.deleted_at is NULL
+and sa.deleted_at is NULL
 """
 
 # helper
