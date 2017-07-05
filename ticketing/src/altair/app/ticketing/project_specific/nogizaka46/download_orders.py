@@ -170,7 +170,7 @@ def encode_to_cp932(data):
     if not hasattr(data, "encode"):
         return str(data)
     try:
-        return data.encode('cp932')
+        return data.replace('\r\n', '').encode('cp932')
     except UnicodeEncodeError:
         print 'cannot encode character %s to cp932' % data
         if data is not None and len(data) > 1:
