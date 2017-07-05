@@ -119,6 +119,7 @@ def get_filtered_stock_types(request, sales_segment, session=None):
     drawing_list = session.query(Stock_drawing_l0_id.stock_id, Stock_drawing_l0_id.drawing_l0_id)\
         .filter(Stock_drawing_l0_id.stock_id.in_(stock_ids))
     for stock_id, drawing_l0_id in drawing_list:
+        stock = stock_dict[stock_id]
         rest_quantity = rest_quantity_by_stock[stock_id]
 
         # 1つのregionに複数のstockが設定されていると、重複して加算されるが、やむ無し
@@ -126,7 +127,7 @@ def get_filtered_stock_types(request, sales_segment, session=None):
             region_dict[drawing_l0_id] = dict(
                 quantity=0,
                 rest_quantity=0,
-                by_stock_type=dict()
+                #by_stock_type=dict()
             )
         region_dict[drawing_l0_id]['quantity'] += stock.quantity
         region_dict[drawing_l0_id]['rest_quantity'] += rest_quantity
