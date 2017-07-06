@@ -1,3 +1,6 @@
+.navbar-fixed-top {
+    position: fixed !important;
+}
 .navbar-fixed-top ul.nav {
   margin-top: 2px;
 }

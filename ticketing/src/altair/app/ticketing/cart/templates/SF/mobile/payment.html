@@ -67,6 +67,9 @@
 <div>
 <%mobile:form_header>住所</%mobile:form_header>
 </div>
+% if request.organization.setting.i18n:
+  <input type="hidden" id="country" name="country" value="日本">
+% endif
 <div>
   ${form['zip'].label}(例:1410022)<br/>
   ${form['zip']}
