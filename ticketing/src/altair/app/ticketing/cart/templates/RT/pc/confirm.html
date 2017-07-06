@@ -214,12 +214,17 @@
 				<div id="mailKeywordBoxInner">
 					<dl>
 						<dt>
-							お気に入りワードに登録しておくと、発売開始等のタイミングでお知らせメールが届きます。<br />
-							お知らせメールのサービスはリリース次第お知らせいたします。
+							お気に入りワードに登録しておくと、発売開始等のタイミングでお知らせメールが届きます。
 						</dt>
 
 						<dd>
 							<ul class="list-favorite">
+                % if 4 < len(keywords_to_subscribe):
+                 <div style="margin-top: 8px;">
+                   <a href="#" onclick="$(this).parents('dl').find('input').prop('checked', true);return false;">全て選択</a>
+                   <a href="#" onclick="$(this).parents('dl').find('input').prop('checked', false);return false;">全て解除</a>
+                 </div>
+                % endif
 								% for keyword, subscribed in keywords_to_subscribe:
 								<li ${subscribed and u'class="subscribed"' or u''|n}>
 									<div>
