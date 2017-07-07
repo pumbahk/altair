@@ -35,6 +35,12 @@ def setup_tweens(config):
     config.add_tween('.tweens.PaymentPluginErrorConverterTween', under=EXCVIEW)
     config.add_tween('.tweens.CacheControlTween')
 
+
+def setup_mq(config):
+    config.add_publisher_consumer('cart', 'altair.ticketing.cart.mq')
+    config.scan('altair.app.ticketing.cart.workers')
+
+
 def add_metadata(request, value):
     retval = dict()
 
@@ -148,6 +154,7 @@ def main(global_config, **local_config):
     config.include('altair.browserid')
     config.include('altair.exclog')
     config.include('altair.httpsession.pyramid')
+    config.include('altair.mq')
     config.include('altair.sqlahelper')
     config.include('altair.pyramid_assets')
     config.include('altair.pyramid_dynamic_renderer')
@@ -156,6 +163,7 @@ def main(global_config, **local_config):
     config.include('altair.pyramid_boto.s3.assets')
     config.include(setup_components)
     config.include(setup_auth)
+    config.include(setup_mq)
     config.include(venues_setup_components)
     config.include('altair.app.ticketing.setup_beaker_cache')
 
