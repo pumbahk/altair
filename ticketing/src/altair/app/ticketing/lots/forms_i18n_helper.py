@@ -25,7 +25,7 @@ def get_client_form_fields(request):
     locale_name = custom_locale_negotiator(request)
     _ = request.translate
     if locale_name == 'ja':
-        client_form_fields.update(client_form_fields_jp)
+        client_form_fields.update(client_form_fileds_jp)
     return {key:_(client_form_fields.get(key)) for key in client_form_fields}
 
 
