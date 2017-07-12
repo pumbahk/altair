@@ -39,6 +39,10 @@
     % endif
   </div>
   <!-- ========== /header ========== -->
+  <%doc>申込方法・よくある質問・申込確認</%doc>
+  % if view_context.get_include_template_path('links.html', 'lots') is not None:
+      <%include file="${view_context.get_include_template_path('links.html', 'lots')}" args="device=view_context.ua_type" />
+  % endif
   <hr />
   <h1>抽選申込ページ</h1>
   <!-- ========== main ========== -->
