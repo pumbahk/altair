@@ -1,0 +1,134 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+<html lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+  <title>楽天チケット ログインページ</title>
+  <link rel="shortcut icon" href="//tstar.s3.amazonaws.com/usersite/static/RT/img/common/favicon.ico" />
+  <link rel="stylesheet" type="text/css" href="${request.static_url('altair.app.ticketing.fc_auth:static/RT/pc/css/import2.css')}" media="all" />
+  
+  <style type="text/css">
+  <!-- 
+    @charset "utf-8";
+    #fc h3 { margin: 30px 0 0; }
+    #fc p { font-size:14px; margin: 10px 0; }
+    #fc div { font-size:14px;  margin: 10px 0 20px; }
+    #fc .fcBox { background: #f9f9f2; text-align: center; padding: 50px 0; margin: 20px 0; }
+    #fc .fcno { font-size: 24px; font-weight: bold; height: 40px; margin-bottom: 20px; }
+    #fc .fcbtn { width: 120px; height: 40px; }
+    #fc .fcatt_outer li { font-size:14px; line-height:1.5; list-style-type:none ; margin: 5px 0 5px 10px; }
+    #fc .fcatt_inner li { font-size:14px; line-height:1.5; list-style-type:disc ; margin: 5px 0 5px 20px; }
+    #fc .serialbtn {
+      width:200px;
+      font-size:18px;
+      font-weight:bold;
+      text-decoration:none;
+      display:block;
+      text-align:center;
+      padding:8px 0 10px;
+      margin: 15px auto 0 auto;
+      color:#555;
+      border: 1px solid #999;
+      background-color: #fff;
+      border-radius:5px;
+    }
+    
+    #fc .centertable {
+     margin-left: auto;
+     margin-right: auto;
+    }
+  -->
+  </style>
+</head>
+
+<body>
+<div id="wrapper">
+  
+  <!-- ***** header [start] ***** -->
+  <div id="header">
+    <div class="ticket-logo-area ticket-logo-cartfc">
+        <div class="ticket-logo-pc"><h1><a href="//ticket.rakuten.co.jp/"><span class="offleft">楽天チケット</span></a></h1></div>
+    </div>
+  </div>
+  <!-- ***** header [end] ***** -->
+  
+  <h2>【特別優待受付】東京フィルハーモニー交響楽団　2017-18シーズン【定期会員券（年間シート）】 Bunkamuraオーチャードホール</h2>
+  <div id="fc">
+
+    <h3>ログインパスワード</h3>
+    <p>事前に東京フィルよりお知らせしたログインパスワードをご入力ください。</p>
+    <div class="fcBox">
+      <form action="${request.current_route_path()}" method="post">
+      <input type="hidden" name="password" value="rakuten"/>
+      <label for="serialno">ログインパスワード：</label>
+      <input type="text" name="username" size="30" class="serialno" id="serialno"><br>
+      <input type="submit" value="申込に進む"  class="serialbtn">
+      %if message:
+      <br/><br/><span class="red">パスワードに誤りがあります。ご確認の上、もう一度入力してください。</span>
+      %endif
+      </form>
+    </div>
+    
+    <h3>【登録メールアドレスに関して】</h3>
+    <br>
+    <div class="serialatt"><span style="color: red;">
+    携帯電話等の受信設定でドメイン指定受信を設定されている方は<br>
+    「@ticket.rakuten.co.jp」からのメールを受信できるように設定してください。<br>
+    </span>
+    </div>
+
+    <h3>【対象公演】</h3>
+    <div class="serialatt" style="line-height: 1.5;">
+      公演名：東京フィルハーモニー交響楽団　2017-18シーズン【定期会員券（年間シート）】<br>
+      公演日：2017年5月21日（日）～2018年3月11日（日）<br>
+      会場：Bunkamuraオーチャードホール<br>
+      割引料金：＜全8公演セット＞S席￥50,400　A席￥42,840　B席￥35,280　C席￥27,720　※税込み<br>
+      （公演詳細）<a href="http://www.tpo.or.jp/concert/2017-18season01.php" target="_blank">http://www.tpo.or.jp/concert/2017-18season01.php</a><br><br>
+
+      ◆販売期間：2016年12月10日（土）12:00～2017年3月31日（金）10:00
+    </div>
+    
+    <h3><span style="color: red;">【申し込み時の注意事項】</span></h3>
+    <div class="serialatt">
+      <ul style="list-style-type: disc; line-height: 1.5;">
+        <li>・システム利用料、チケット送料は<span style="color: red;">無料</span>です。</li>
+        <li>・楽天会員にご入会いただく必要はございません。楽天スーパーポイントは付与されません。</li>
+        <li>・不正なお申し込み等をされた場合、お申し込みを取り消す事がございます。</li>
+        <li>・お申し込み後に発行された受付番号(RT00000〜)は申込履歴確認の際などにも必要となります。必ず控えください。</li>
+        <li>・当販売では楽天スーパーポイントの付与はございません。</li>
+        <li>・購入後、チケットの枚数の変更、キャンセル、払戻し等は一切受付できませんので、予めご了承ください。</li>
+        <li>・その他お申し込み時に表示されます注意事項を必ずご確認の上、お申込をお願いいたします。</li>
+      </ul>
+      <div class="serialatt">
+        ※チケットについては、興行主催者が委託する配送業者より1月中旬以降を目処に随時、配送いたします。<br>
+        当該配送を行うため、弊社はお客様の個人情報（氏名及び住所・電話番号・購入商品情報）を<br>
+        興行主催者にお渡ししますので、ご了承いただきますようお願いします。<br>
+        なお、チケットに関する配送状況等はこちらにお問合せください。<br>
+        東京フィルチケットサービス　Tel：03-5353-9522(平日10:00～18:00)。
+      </div>
+      [履歴確認]<a href="https://rt.tstar.jp/orderreview/form">https://rt.tstar.jp/orderreview/form</a>
+    </div>
+
+    <h3>【個人情報について】</h3>
+    <div class="serialatt">
+      ご入力頂いたお客様の個人情報は、すべて主催者、楽天チケット(運営：株式会社チケットスター)に所属いたします。<br>
+      利用に関しましては、チケット販売または、チケットの発送、お客様の会場ご入場の際にかかわる事務作業の円滑化のために利用させていただき、<br>
+      上記の業務以外で特別の事情がない限りお客様の承認なく第三者にその情報を開示、提供することはございません。
+    </div>
+
+  </div>
+  <!-- ***** footer [start] ***** -->
+  <div class="footer">
+    <ul class="footernav">
+      <li class="first"><a href="http://www.ticketstar.jp/">運営会社</a></li>
+      <li><a href="https://ticket.rakuten.co.jp/inquiry">お問い合わせ</a></li>
+      <li><a href="http://privacy.rakuten.co.jp/">個人情報保護方針</a></li>
+      <li><a href="http://www.ticketstar.jp/legal">特定商取引法に基づく表示</a></li>
+      <li class="last"><a href="http://ticket.rakuten.co.jp/terms">サービス利用規約</a></li>
+    </ul>
+    <div class="copyright"> &copy; TicketStar, Inc. </div>
+  </div>
+  <!-- ***** footer [end] ***** -->
+</div>
+</body>
+</html>
