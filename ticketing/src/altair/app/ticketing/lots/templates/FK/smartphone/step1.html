@@ -20,7 +20,7 @@
 %for i in range(lot.limit_wishes):
 
 <dl class="kibouList">
-  <dt><span>${__(u'第')}${i + 1}${__(u'希望')}</span></dt>
+  <dt><span>${__(u'第{0}希望').format(i+1)}</span></dt>
 %if len(performance_map) == 1:
 <input type="hidden" name="performanceName-${i}" value="${performance_map[0][1]}" />
 %else:
@@ -59,11 +59,12 @@
 % endif
 %endfor
 </select>
+%if len(performance_map) > 1:
 <br/><br/>
 ${__(u'【選択した公演】')}
 <div class="all_performance_name-${i}"></div>
 </dd>
-
+%endif
 
 <dt>${__(u'席種')}</dt>
 <dd>
@@ -88,11 +89,7 @@ ${__(u'【選択した公演】')}
 
 </div>
 
-<%def name="product_select_tmpl()">
-<%include file="_product_selection.html_" />
-</%def>
 <script type="text/javascript">
-var product_select_tmpl = _.template(decodeURIComponent('${capture(product_select_tmpl)|u,n}'.replace(/\+/g, ' ')));
 var stockTypes = ${h.tojson(stock_types)|n};
 var performanceProductMap = ${h.tojson(performance_product_map)|n};
 var postedValues = ${h.tojson(posted_values)|n};
@@ -106,6 +103,41 @@ var selected_performance_id = 0;
 (function($wishForm) {
     function cellTableId(n) {
         return 'wish-cell-table-' + n
+    }
+
+    function build_product_selection(parent, data) {
+        var wishOrder = data['wishOrder'];
+        var products = data['products'];
+        var ticket_label = data['ticket_label'];
+        var ticket_unit = data['ticket_unit'];
+
+        $.each(products, function(i, product) {
+            var quantityField = "product-quantity-" + wishOrder + "-" + i + "";
+            var div = $("<div></div>").addClass("product-select-div", (i + 1 == products.length ? "settlementSelectEnd":""));
+
+            $("<dt></dt>").text(ticket_label).appendTo(div);
+
+            var dd = $("<dd></dd>").appendTo(div);
+            dd.append($("<input>").attr("type", "hidden")
+                                  .attr("name", "product-id-" + wishOrder + "-" + i)
+                                  .val(product.id));
+
+            dd.append($("<span></span>").addClass("product-name").text(product.name)).append("<br/>");
+            dd.append($("<span></span>").addClass("product-price").text(product.formatted_price + "× "));
+            var select = $("<select></select>").attr("name", quantityField).appendTo(dd);
+            select.append("<option></option>");
+            for (var k = 0; k < upperLimit; k++) {
+                var option = $("<option></option>");
+                option.val(k + 1).text(k + 1).appendTo(select);
+            }
+            dd.append(" " + ticket_unit);
+
+            if (product.description) {
+                $("<span></span>").addClass("tyuui").text(product.description).appendTo(td);
+            }
+
+            parent.append(div);
+        });
     }
 
     function refreshProducts(dateSelect, stockTypeSelect) {
@@ -123,8 +155,8 @@ var selected_performance_id = 0;
         if (!products) {
             return;
         }
-        var html = product_select_tmpl({wishOrder: wishOrder, products: products});
-        $("#" + wishCellTableId).append(html);
+        build_product_selection($("#" + wishCellTableId), {wishOrder: wishOrder, products: products, ticket_label: "${__(u'券種')}", ticket_unit: "${__(u'枚')}" });
+
         for (var i = 0; i < stockTypes.length; i++) {
             var stockType = stockTypes[i];
             if (stockType.id == stockTypeId) {
