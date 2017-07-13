@@ -14,11 +14,7 @@
       <td>${lot_status.total_entries}</td>
       <td>${lot_status.elected_count}</td>
       <td>${lot_status.ordered_count}</td>
-      %if between_lot_start_and_payment_due:
       <td>${lot_status.reserved_count}</td>
-      %else:
-      <td>0</td>
-      %endif
       <td>${lot_status.canceled_count}</td>
     </tr>
   </table>
