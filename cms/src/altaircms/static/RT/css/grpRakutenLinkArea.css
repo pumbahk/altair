@@ -271,3 +271,36 @@ div#grpRakutenLinkArea div#serviceList dl {
     .fcb_logo-area .fcb_logo-sp a{
     display: none;
   }
+
+/* FCB LOGO-------------------- */
+.fcb_logo-area {
+    position: absolute;
+    right: 0;
+    bottom: 20px;
+    z-index: 99;
+}
+  .fcb_logo-area .fcb_logo-pc a{
+	display: block;
+	width: 158px;
+	height: 75px;
+  }
+    .fcb_logo-area .fcb_logo-sp a{
+	display: none;
+  }
+
+@media screen and (max-width: 480px) {
+.fcb_logo-area {
+    position: relative;
+    right: auto;
+    bottom: auto;
+    margin: 10px auto 0;
+}
+.fcb_logo-area .fcb_logo-pc a{
+	display: none;
+  }
+.fcb_logo-area .fcb_logo-sp a{
+	display: block;
+	width: 270px;
+	height: 57px;
+  }
+}
