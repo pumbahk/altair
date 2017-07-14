@@ -3313,7 +3313,7 @@ a.goto-link:visit, a.goto-link:link {
   	display: none;
   }
 
-@media screen and (max-width: 480px) {
+@media screen and (max-width: 767px) {
   .ticket-logo-res .ticket-logo-sp a{
       display: block;
       width: 94px;
@@ -3325,5 +3325,3 @@ a.goto-link:visit, a.goto-link:link {
   	display: none;
   }
 }
-}
-

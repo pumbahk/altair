@@ -270,12 +270,13 @@ div#grpRakutenLinkArea div#serviceList dl {
 	display: none;
   }
 
-@media screen and (max-width: 480px) {
+@media screen and (max-width: 767px) {
 .fcb_logo-area {
     position: relative;
     right: auto;
     bottom: auto;
     margin: 10px auto 0;
+    text-align: center;
 }
 .fcb_logo-area .fcb_logo-pc a{
 	display: none;
@@ -284,5 +285,6 @@ div#grpRakutenLinkArea div#serviceList dl {
 	display: block;
 	width: 270px;
 	height: 57px;
+    margin: 0 auto;
   }
 }
