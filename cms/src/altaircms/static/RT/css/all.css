@@ -3306,28 +3306,24 @@ a.goto-link:visit, a.goto-link:link {
   	margin: 7px 0 0;
   }
 
-.ticket-logo-res .ticket-logo-sp a{
-	display: block;
-	width: 94px;
-	height: 35px;
-	background: url(ticket_logo_sp.png) no-repeat 0 0;
-    background-size: 94px 35px;
-  }
-.ticket-logo-res .ticket-logo-sp a{
-  	margin: 6px 0 -10px 6px;
-  }
-@media screen and (min-width: 480px) {
-  .ticket-logo-res .ticket-logo-pc a{
-	display: block;
-	width: 204px;
-	height: 23px;
-	background: url(ticket_logo_pc.png) no-repeat 0 0;
-    background-size: 204px 23px;
-  }
     .ticket-logo-res .ticket-logo-pc a{
   	margin: 7px 7px 7px 0;
   }
+    .ticket-logo-res .ticket-logo-sp a{
+  	display: none;
+  }
+
+@media screen and (max-width: 480px) {
+  .ticket-logo-res .ticket-logo-sp a{
+      display: block;
+      width: 94px;
+      height: 35px;
+      background: url(../img/common/ticket_logo_sp.png) no-repeat 0 0;
+      background-size: 94px 35px;
+    }
+    .ticket-logo-res .ticket-logo-pc{
+  	display: none;
+  }
 }
-
-
+}
 
