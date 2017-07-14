@@ -25,10 +25,10 @@ def encode_to_cp932(data):
 def build_ticket(order, url, printed_time=None):
     ticket = [order.order_no,
               u'{last_name}　{first_name}（{last_name_kana}　{first_name_kana}）'.format(
-                  last_name=order.shipping_address.last_name,
-                  first_name=order.shipping_address.first_name,
-                  last_name_kana=order.shipping_address.last_name_kana,
-                  first_name_kana=order.shipping_address.first_name_kana
+                  last_name=order.shipping_address.last_name if order.shipping_address else "",
+                  first_name=order.shipping_address.first_name if order.shipping_address else "",
+                  last_name_kana=order.shipping_address.last_name_kana if order.shipping_address else "",
+                  first_name_kana=order.shipping_address.first_name_kana if order.shipping_address else ""
               ),
               url]
     if printed_time:
@@ -40,11 +40,10 @@ def build_ticket(order, url, printed_time=None):
 def main(request, org_code=None, performance_id=None, from_date=None, prt_flg=None):
     organization = Organization.query.filter_by(code=org_code).one()
     request.context.organization = organization
-    orders = Order.query.filter(Order.shipping_address_id.isnot(None))
     if performance_id:
-        orders = orders.filter(Order.performance_id == performance_id)
+        orders = Order.query.filter(Order.performance_id == performance_id)
     if from_date:
-        orders = orders.filter(Order.created_at >= from_date)
+        orders = Order.query.filter(Order.created_at >= from_date)
     orders = orders.all()
     tickets = []
     url_builder = get_orderreview_qr_url_builder(request)
