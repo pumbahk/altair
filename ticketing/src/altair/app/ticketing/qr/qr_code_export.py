@@ -6,8 +6,6 @@ from altair.app.ticketing.qr.utils import build_qr_by_order, build_qr_by_token
 from altair.app.ticketing.carturl.api import get_orderreview_qr_url_builder
 from altair.app.ticketing.core.models import Organization
 from altair.app.ticketing.orders.models import Order
-from altair.app.ticketing.orders.models import OrderedProductItem
-from altair.app.ticketing.orders.models import OrderedProduct
 from altair.app.ticketing.payments import plugins as payments_plugins
 
 
@@ -23,54 +21,56 @@ def encode_to_cp932(data):
         else:
             return '?'
 
-def build_ticket(order, url, prt_dt=None):
-    return [order.order_no,
-            u'{last_name}　{first_name}（{last_name_kana}　{first_name_kana}）'.format(
-                last_name=order.shipping_address.last_name ,
-                first_name=order.shipping_address.first_name,
-                last_name_kana = order.shipping_address.last_name_kana,
-                first_name_kana = order.shipping_address.first_name_kana
-            ),
-            url, prt_dt]
+
+def build_ticket(order, url, printed_time=None):
+    ticket = [order.order_no,
+              u'{last_name}　{first_name}（{last_name_kana}　{first_name_kana}）'.format(
+                  last_name=order.shipping_address.last_name,
+                  first_name=order.shipping_address.first_name,
+                  last_name_kana=order.shipping_address.last_name_kana,
+                  first_name_kana=order.shipping_address.first_name_kana
+              ),
+              url]
+    if printed_time:
+        ticket += [printed_time]
+
+    return ticket
+
 
 def main(request, org_code=None, performance_id=None, from_date=None, prt_flg=None):
     organization = Organization.query.filter_by(code=org_code).one()
     request.context.organization = organization
     orders = Order.query.filter(Order.shipping_address_id.isnot(None))
     if performance_id:
-        orders = orders.filter(Order.performance_id==performance_id)
+        orders = orders.filter(Order.performance_id == performance_id)
     if from_date:
-        orders = orders.filter(Order.created_at>=from_date)
+        orders = orders.filter(Order.created_at >= from_date)
     orders = orders.all()
     tickets = []
     url_builder = get_orderreview_qr_url_builder(request)
 
     for order in orders:
-        qr_preferences = order.payment_delivery_pair.delivery_method.preferences.get(unicode(payments_plugins.QR_DELIVERY_PLUGIN_ID), {})
-        if prt_flg:
-            ordered_product = OrderedProduct.query.filter_by(order_id=order.id).one()
-            order_pro_item = OrderedProductItem.query.filter_by(ordered_product_id=ordered_product.id).one()
+        qr_preferences = order.payment_delivery_pair.delivery_method.preferences.get(
+            unicode(payments_plugins.QR_DELIVERY_PLUGIN_ID), {})
         single_qr_mode = qr_preferences.get('single_qr_mode', False)
 
         if single_qr_mode:
             qr = build_qr_by_order(request, order)
-            if prt_flg:
-                ticket = build_ticket(order, url_builder.build(request, qr.id, qr.sign), order_pro_item.printed_at)
-            else:
-                ticket = build_ticket(order, url_builder.build(request, qr.id, qr.sign))
+            printed_time = order.items[0].elements[0].printed_at if prt_flg else None
+            ticket = build_ticket(order, url_builder.build(request, qr.id, qr.sign), printed_time)
             tickets.append(ticket)
         else:
-            tokens = [token for item in order.items for element in item.elements for token in element.tokens]
+            opts = [element for item in order.items for element in item.elements]
 
-            for token in tokens:
-                qr = build_qr_by_token(request, order.order_no, token)
-                if prt_flg:
-                    ticket = build_ticket(order, url_builder.build(request, qr.id, qr.sign), order_pro_item.printed_at)
-                else:
-                    ticket = build_ticket(order, url_builder.build(request, qr.id, qr.sign))
-                tickets.append(ticket)
+            for opt in opts:
+                for token in opt.tokens:
+                    qr = build_qr_by_token(request, order.order_no, token)
+                    printed_time = opt.printed_at if prt_flg else None
+                    ticket = build_ticket(order, url_builder.build(request, qr.id, qr.sign), printed_time)
+                    tickets.append(ticket)
 
-    filename = u'qrcode_list_{org}_{time}.csv'.format(org=request.context.organization.code, time=datetime.now().strftime('%Y%m%d%H%M%S'))
+    filename = u'qrcode_list_{org}_{time}.csv'.format(org=request.context.organization.code,
+                                                      time=datetime.now().strftime('%Y%m%d%H%M%S'))
 
     if prt_flg:
         header = [u'予約番号', u"氏名", u"QRコード", u"印刷日付"]
