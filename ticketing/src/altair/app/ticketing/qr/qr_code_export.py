@@ -40,10 +40,11 @@ def build_ticket(order, url, printed_time=None):
 def main(request, org_code=None, performance_id=None, from_date=None, prt_flg=None):
     organization = Organization.query.filter_by(code=org_code).one()
     request.context.organization = organization
+    orders = Order.query.filter(Order.organization_id == organization.id)
     if performance_id:
-        orders = Order.query.filter(Order.performance_id == performance_id)
+        orders = orders.filter(Order.performance_id == performance_id)
     if from_date:
-        orders = Order.query.filter(Order.created_at >= from_date)
+        orders = orders.filter(Order.created_at >= from_date)
     orders = orders.all()
     tickets = []
     url_builder = get_orderreview_qr_url_builder(request)
