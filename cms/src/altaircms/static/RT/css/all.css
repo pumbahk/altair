@@ -807,6 +807,7 @@ ul#globalNav1 li.right{
 	padding:0 10px;
 	font-size: 120%;
 	box-sizing:border-box;
+
 }
 
 #search #main,
@@ -865,6 +866,8 @@ ul#globalNav1 li.right{
     line-height: 1.5;
     margin:0 0 20px 10px;
     font-size: 120%;
+    position: relative;
+    z-index: 99;
 }
 
 * html #side {
@@ -3303,7 +3306,22 @@ a.goto-link:visit, a.goto-link:link {
   	margin: 7px 0 0;
   }
 
+    .ticket-logo-res .ticket-logo-pc a{
+  	margin: 7px 7px 7px 0;
+  }
+    .ticket-logo-res .ticket-logo-sp a{
+  	display: none;
+  }
 
-
-
-
+@media screen and (max-width: 767px) {
+  .ticket-logo-res .ticket-logo-sp a{
+      display: block;
+      width: 94px;
+      height: 35px;
+      background: url(../img/common/ticket_logo_sp.png) no-repeat 0 0;
+      background-size: 94px 35px;
+    }
+    .ticket-logo-res .ticket-logo-pc{
+  	display: none;
+  }
+}
