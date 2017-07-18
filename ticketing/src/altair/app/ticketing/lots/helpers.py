@@ -34,6 +34,7 @@ from altair.app.ticketing.cart.helpers import (
     delivery_method_get_info,
     payment_method_get_info,
     create_url,
+    create_url_link,
     _message,
 )
 from altair.app.ticketing.helpers.base import is_required

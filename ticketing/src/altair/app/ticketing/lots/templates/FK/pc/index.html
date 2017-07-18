@@ -255,7 +255,7 @@ if label is None or label is True:
                 </div>
               </td>
             </tr>
-            % if custom_locale_negotiator=='ja':
+            % if custom_locale_negotiator=='ja' or not request.organization.setting.i18n:
             <tr>
               <th><label>購入者氏名（カナ）</label></th>
               <td>
@@ -303,14 +303,20 @@ if label is None or label is True:
               <th><label>${__(u'住所')}</label></th>
               <td>
                 <div class="form-field">
-                  ${form['country'].label}
-                  ${form['country']}
-                  ${self.error(form, 'country')}
+                  % if request.organization.setting.i18n:
+                    ${form['country'].label}
+                    ${form['country']}
+                    ${h.error_list(request, form, 'country')}
+                  % endif
                 </div>
-                <% path = request.static_url('altair.app.ticketing.cart:static/js/zipdata') %>
                 <div class="form-field">
                   ${form['zip'].label}
-                  ${form['zip'](onKeyUp="AjaxZip3.zip2addr('" + path + "', 'zip','','prefecture','city','', 'address_1');")}
+                  % if custom_locale_negotiator=='ja' or not request.organization.setting.i18n:
+                    <% path = request.static_url('altair.app.ticketing.cart:static/js/zipdata') %>
+                    ${form['zip'](onKeyUp="AjaxZip3.zip2addr('" + path + "', 'zip','','prefecture','city','', 'address_1');")}
+                  % else:
+                    ${form['zip']}
+                  % endif
                   (${__(u'例: 1030001')})
                   ${self.error(form, 'zip')}
                 </div>
@@ -358,18 +364,18 @@ if label is None or label is True:
                 ${self.error(form, 'sex')}
               </td>
             </tr>
-            <tr class="settlementSelectEnd">
-              <th>
-                ${form['memo'].label}
+            % for field in form['extra']._contained_form:
+            % if not field.short_name in {'member_type'}:
+            <tr>
+              <th scope="row">
+                <label for="${field.id}">${field.label}</label>
               </th>
               <td>
-                ${form['memo'](cols=50, rows=5)} ${self.error(form, 'error')}
-                <div style="font-size: 90%;">
-                  ※${__(u'ご質問を入力されても返信はいたしかねます。')}<br>
-                  ${__(u'ご質問がある場合はお問合せフォームよりお願いいたします。')}
-                </div>
+                ${render_field(field)}
               </td>
             </tr>
+            % endif
+            % endfor
           </table>
         </div>
       </div>
@@ -377,11 +383,7 @@ if label is None or label is True:
   </div>
   <p class="align2"><input type="image" src="${view_context.static_url('pc/img/settlement/btn_next.gif', 'lots')}" alt="次へ" width="226" height="46" /></p>
 </form>
-<%def name="product_select_tmpl()">
-<%include file="_product_selection_i18n.html_" />
-</%def>
 <script type="text/javascript">
-var product_select_tmpl = _.template(decodeURIComponent('${capture(product_select_tmpl)|u,n}'.replace(/\+/g, ' ')));
 var stockTypes = ${h.tojson(stock_types)|n};
 var performanceProductMap = ${h.tojson(performance_product_map)|n};
 var postedValues = ${h.tojson(posted_values)|n};
@@ -395,6 +397,42 @@ var selected_performance_id = 0;
 (function($wishForm) {
     function cellTableId(n) {
         return 'wish-cell-table-' + n
+    }
+
+    function build_product_selection(parent, data) {
+        var wishOrder = data['wishOrder'];
+        var products = data['products'];
+        var ticket_label = data['ticket_label'];
+        var ticket_unit = data['ticket_unit'];
+
+        $.each(products, function(i, product) {
+            var quantityField = "product-quantity-" + wishOrder + "-" + i + "";
+            var tr = $("<tr></tr>").addClass("product-select-tr", (i + 1 == products.length ? "settlementSelectEnd":""));
+
+            $("<th></th>").append(i == 0 ? $("<label></label>").text(ticket_label) : "&nbsp").appendTo(tr);
+
+            var td = $("<td></td>").appendTo(tr);
+            td.append($("<input>").attr("type", "hidden")
+                                  .attr("name", "product-id-" + wishOrder + "-" + i)
+                                  .val(product.id));
+
+            var product_selection = $("<div></div>").addClass("product-name-price-quantity").appendTo(td);
+            product_selection.append($("<span></span>").addClass("product-name").text(product.name));
+            product_selection.append($("<span></span>").addClass("product-price").text(product.formatted_price + "× "));
+            var select = $("<select></select>").attr("name", quantityField).appendTo(product_selection);
+            select.append("<option></option>");
+            for (var k = 0; k < upperLimit; k++) {
+                var option = $("<option></option>");
+                option.val(k + 1).text(k + 1).appendTo(select);
+            }
+            product_selection.append(" " + ticket_unit);
+
+            if (product.description) {
+                $("<span></span>").addClass("product-description").text(product.description).appendTo(td);
+            }
+
+            parent.append(tr);
+        });
     }
 
     function refreshProducts(dateSelect, stockTypeSelect) {
@@ -412,8 +450,7 @@ var selected_performance_id = 0;
         if (!products) {
             return;
         }
-        var html = product_select_tmpl({wishOrder: wishOrder, products: products});
-        $("#" + wishCellTableId + " tbody").append(html);
+        build_product_selection($("#" + wishCellTableId + " tbody"), {wishOrder: wishOrder, products: products, ticket_label: "${__(u'券種')}", ticket_unit: "${__(u'枚')}" });
         for (var i = 0; i < stockTypes.length; i++) {
             var stockType = stockTypes[i];
             if (stockType.id == stockTypeId) {
