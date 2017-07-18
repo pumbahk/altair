@@ -6,6 +6,7 @@ from collections import namedtuple
 from pyramid.view import view_defaults, view_config
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPBadRequest
 from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
+from sqlalchemy.sql import not_, or_, func, distinct
 
 from datetime import date, datetime, time
 
@@ -22,7 +23,10 @@ from altair.app.ticketing.core.models import (
     ProductItem,
     SalesSegment,
     StockStatus,
-    Performance
+    Performance,
+    SeatAdjacency,
+    SeatAdjacencySet,
+    Seat_SeatAdjacency    
 )
 from altair.app.ticketing.cart.models import (
     Cart,
@@ -523,6 +527,29 @@ class CartAPIView(object):
                 ret_seat = {"seat_id":l0_id,"seat_name":seat_names[index]}
                 ret_seats.append(ret_seat)
 
+            is_separated = False    
+
+            #おまかせで席受けの場合、連席or飛び席判定
+            #確保した座席が連席データに入っていれば連席とみなす。
+            if reserve_type == "auto":
+                performance = DBSession.query(Performance).filter_by(id=performance_id).first()
+
+                seat_separate = DBSession.query(func.count(Seat_SeatAdjacency.seat_adjacency_id)) \
+                    .join(SeatAdjacency, Seat_SeatAdjacency.seat_adjacency_id == SeatAdjacency.id) \
+                    .join(SeatAdjacencySet, SeatAdjacency.adjacency_set_id == SeatAdjacencySet.id) \
+                    .join(Seat, Seat_SeatAdjacency.l0_id == Seat.l0_id) \
+                    .filter(Seat.venue_id == performance.venue.id) \
+                    .filter(SeatAdjacencySet.seat_count == quantity) \
+                    .filter(SeatAdjacencySet.site_id == performance.venue.site_id) \
+                    .filter(Seat_SeatAdjacency.l0_id == (seat_l0_ids)) \
+                    .group_by(Seat_SeatAdjacency.seat_adjacency_id) \
+                    .having(func.count(Seat_SeatAdjacency.seat_adjacency_id) == quantity) \
+                    .first()
+                    
+                #取得できない場合は、飛び席とする。
+                if not seat_separate:
+                    is_separated = True
+
             return dict(
                 results = dict(
                     status = "OK",
@@ -530,10 +557,10 @@ class CartAPIView(object):
                     stock_type_id = stock_type_ids[0],
                     quantity = len(seat_l0_ids),
                     is_quantity_only = quantity_only,
-                    is_separated = False,
+                    is_separated = is_separated,
                     seats = ret_seats
                 )
-            )
+            )                
 
 
     @view_config(route_name='cart.api.seat_release')
