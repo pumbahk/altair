@@ -26,7 +26,11 @@ $(function() {
         <h1><img src="${view_context.static_url('smartphone/images/sp_logo.png')}" alt="${view_context.team_name}"></h1>
         <h2>${_(u'チケット申込')}</h2>
       </div>
-
+      % if request.organization.setting.i18n:
+        <div class="selectwrapper">
+          ${h.create_url_link(request) |n}
+        </div>
+      % endif
       <!-- ========== main ========== -->
       ${next.body()}
       <!-- ========== /main ========== -->
@@ -57,7 +61,7 @@ $(function() {
       %endif
       </%def>
 
-      ${h.create_url(request) |n}
+
     </div>
   </body>
 </html>

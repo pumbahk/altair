@@ -148,11 +148,17 @@ msgstr "No {0} hope"
 msgid "希望する公演と券種の選択"
 msgstr "Selection of performances and ticket species hope"
 
+msgid "【選択した公演】"
+msgstr "【Selected Performance】"
+
 msgid "公演日・会場"
 msgstr "Performance date/Venue"
 
 msgid "席種"
 msgstr "Seat type"
+
+msgid "券種"
+msgstr "Ticket type"
 
 msgid "お支払・お引取り方法選択"
 msgstr "Select payment/delivery method"

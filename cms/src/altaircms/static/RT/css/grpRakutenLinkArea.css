@@ -20,6 +20,7 @@ div#grpRakutenLinkArea {
 	margin: auto auto 1em auto;
 	color: #333333;
 	font-size: 82%;
+    position: relative;
 }
 
 /* about ul#grpSpelinlk */
@@ -243,9 +244,6 @@ div#grpRakutenLinkArea div#companyFooter p#copyright {
 	margin: 0 0 0px 5px;
 }
 
-
-
-
 /* clearfix */
 div#grpRakutenLinkArea div#groupServiceFooter dl.title,
 div#grpRakutenLinkArea div#companyFooter ul,
@@ -256,18 +254,37 @@ div#grpRakutenLinkArea div#serviceList dl {
 	overflow: hidden;
 	zoom: 1;
 }
-
+/* FCB LOGO-------------------- */
 .fcb_logo-area {
     position: absolute;
     right: 0;
-    bottom: 20px;
+    bottom: -20px;
     z-index: 99;
 }
   .fcb_logo-area .fcb_logo-pc a{
-    display: block;
-    width: 158px;
-    height: 75px;
+	display: block;
+	width: 158px;
+	height: 75px;
   }
     .fcb_logo-area .fcb_logo-sp a{
-    display: none;
+	display: none;
   }
+
+@media screen and (max-width: 767px) {
+.fcb_logo-area {
+    position: relative;
+    right: auto;
+    bottom: auto;
+    margin: 10px auto 0;
+    text-align: center;
+}
+.fcb_logo-area .fcb_logo-pc a{
+	display: none;
+  }
+.fcb_logo-area .fcb_logo-sp a{
+	display: block;
+	width: 270px;
+	height: 57px;
+    margin: 0 auto;
+  }
+}

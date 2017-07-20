@@ -60,12 +60,12 @@ class QRUtilsTest(unittest.TestCase, CoreTestMixin):
             'season_flag': HT_SEASON_FLAG,
             'valid_date_from': u'20170101',
             'valid_date_to': u'20201231',
-            'enterable_from': u'1000',
+            'enterable_from': u'1500',
             'enterable_days': u'000',
             'usable_date_to': usable_date_to,
             'special_flag': HT_SPECIAL_FLAG
         }
-        self.content = HT_ID_CODE + HT_TYPE_CODE + '123456A1234560000000001{issued_at}1120170101202012310001000{usable_date_to}0'.format(issued_at=issued_at, usable_date_to=usable_date_to)
+        self.content = HT_ID_CODE + HT_TYPE_CODE + '123456A1234560000000001{issued_at}1020170101202012310001500{usable_date_to}0'.format(issued_at=issued_at, usable_date_to=usable_date_to)
         self.header = HT_QR_DATA_FREE + HT_QR_DATA_HEADER
 
         self.session = _setup_db([
@@ -78,7 +78,7 @@ class QRUtilsTest(unittest.TestCase, CoreTestMixin):
         self.request = testing.DummyRequest()
         CoreTestMixin.setUp(self)
         self.performance.start_on=datetime(2017, 2, 1, 15, 0, 0)
-        self.performance.open_on=datetime.strptime(self.origin_data['valid_date_from'] + self.origin_data['enterable_from'], '%Y%m%d%H%M')
+        self.performance.open_on=datetime.strptime(self.origin_data['valid_date_from'] + '0000', '%Y%m%d%H%M')
         self.performance.end_on = datetime.strptime(self.origin_data['valid_date_to'] + '2359', '%Y%m%d%H%M')
         self.stock_types = self._create_stock_types(1)
         self.stocks = self._create_stocks(self.stock_types)

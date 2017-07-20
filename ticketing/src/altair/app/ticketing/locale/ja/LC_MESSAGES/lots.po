@@ -145,11 +145,17 @@ msgstr "第{0}希望"
 msgid "希望する公演と券種の選択"
 msgstr "希望する公演と券種の選択"
 
+msgid "【選択した公演】"
+msgstr "【選択した公演】"
+
 msgid "公演日・会場"
 msgstr "公演日・会場"
 
 msgid "席種"
 msgstr "席種"
+
+msgid "券種"
+msgstr "券種"
 
 msgid "お支払・お引取り方法選択"
 msgstr "お支払・お引取り方法選択"
