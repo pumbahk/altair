@@ -25,6 +25,9 @@ $(function() {
         <img src="${view_context.static_url('pc/images/pc_logo.png')}" alt="${view_context.team_name}" class="serviceLogo" width="950" height="64" /></p>
       </div>
       <hr />
+      <div class="selectwrapper">
+        ${h.create_url(request) |n}
+      </div>
       <h1>${_(u'チケット申込')}</h1>
 
       <div id="main">

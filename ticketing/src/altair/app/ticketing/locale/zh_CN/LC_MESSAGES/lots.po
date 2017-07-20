@@ -145,11 +145,17 @@ msgstr "第{0}抽签目标"
 msgid "希望する公演と券種の選択"
 msgstr "选择演出和票种"
 
+msgid "【選択した公演】"
+msgstr "【您所选择的表演】"
+
 msgid "公演日・会場"
 msgstr "演出日期／会场"
 
 msgid "席種"
 msgstr "座位种类"
+
+msgid "券種"
+msgstr "票券种类"
 
 msgid "お支払・お引取り方法選択"
 msgstr "选择支付・领取方法"

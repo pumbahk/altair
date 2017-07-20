@@ -148,8 +148,14 @@ msgstr "選擇所期望的志願的表演和票券種類"
 msgid "公演日・会場"
 msgstr "演出日期／會場"
 
+msgid "【選択した公演】"
+msgstr "【您所選擇的表演】"
+
 msgid "席種"
 msgstr "座席種類"
+
+msgid "券種"
+msgstr "票券種類"
 
 msgid "お支払・お引取り方法選択"
 msgstr "選擇付款／取票方式"

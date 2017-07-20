@@ -65,10 +65,10 @@ class CooperationView(BaseView):
             fail = {}
             import csv
             seats = dict([(seat.l0_id, seat.l0_id) for seat in parent_venue.seats])
-            reader = csv.reader(self.request.POST['csvfile'].file)
             try:
+                reader = csv.reader(self.request.POST['csvfile'].file)
                 reader.next() # headerを捨てる
-            except (csv.Error, StopIteration) as err:
+            except (csv.Error, StopIteration, AttributeError) as err:
                 raise HTTPBadRequest(body=json.dumps({
                     'message': u'ファイルが空です',
                 }))
