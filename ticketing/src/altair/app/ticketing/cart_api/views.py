@@ -26,7 +26,7 @@ from altair.app.ticketing.core.models import (
     Performance,
     SeatAdjacency,
     SeatAdjacencySet,
-    Seat_SeatAdjacency    
+    Seat_SeatAdjacency
 )
 from altair.app.ticketing.cart.models import (
     Cart,
@@ -118,16 +118,16 @@ class CartAPIView(object):
             reason = "root svg is none "
 
         if 'mini' not in drawings:
-            reason += " mini svg is none "            
+            reason += " mini svg is none "
 
         if reason:
             return {
                 "results": {
                     "status": "NG",
                     "reason": reason
-                }        
-            }        
-               
+                }
+            }
+
         root_map_url = drawings['root']
         mini_map_url = drawings['mini']
         logger.debug("root_url=%s", root_map_url)
@@ -155,7 +155,7 @@ class CartAPIView(object):
                 order_limit=performance.setting.order_limit,
                 venue_id=performance.venue.id,
                 venue_name=performance.venue.name,
-                venue_map_url=root_map_url, 
+                venue_map_url=root_map_url,
                 mini_venue_map_url=mini_map_url,
             ),
             event=dict(
@@ -300,7 +300,7 @@ class CartAPIView(object):
         performance_id = int(self.request.matchdict.get('performance_id'))
         sales_segment_id = int(self.request.matchdict.get('sales_segment_id'))
         logger.debug("performance_id=%d, sales_segment_id=%d", performance_id, sales_segment_id)
-        
+
         # 同一セッションでのカート生成を複数回させないため
         api.remove_cart(self.request)
 
@@ -316,11 +316,11 @@ class CartAPIView(object):
                     "reason": "no json_data"
                 }
             }
-        
+
         reserve_type = json_data.get("reserve_type")
         selected_seats = json_data.get("selected_seats")
         auto_select_conditions = json_data.get("auto_select_conditions")
-        
+
         # パラメータチェック
         request_quantity = 0
         reason = ""
@@ -355,11 +355,11 @@ class CartAPIView(object):
                     "reason": reason
                 }
             }
-        
+
         stocker = api.get_stocker(self.request)
         reserving = api.get_reserving(self.request)
         cart_factory = api.get_cart_factory(self.request)
-        
+
         #カート生成前に購入枚数制限 or 席種混在チェック
         if reserve_type == "auto":
             #席種に紐づく商品を全てチェック
@@ -369,7 +369,7 @@ class CartAPIView(object):
                     .filter(Product.seat_stock_type_id == stock_type_id) \
                     .order_by(Product.id) \
                     .all()
-            
+
             check_assert_quantity = []
             for ps in products:
                 ordered_items = [(ps, request_quantity)]
@@ -397,7 +397,7 @@ class CartAPIView(object):
         elif reserve_type == "seat_choise":
             # 席種の混在をチェック
             stock_type = ''
-            performance = DBSession.query(Performance).filter_by(id=performance_id).first()            
+            performance = DBSession.query(Performance).filter_by(id=performance_id).first()
             try:
                 stock_type = DBSession.query(StockType.id) \
                             .join(Stock, Seat) \
@@ -414,7 +414,7 @@ class CartAPIView(object):
                         "reason": "stock types are mixed"
                     }
                 }
-            
+
             stock_type_id = stock_type.id
 
         #Cart生成
@@ -448,7 +448,7 @@ class CartAPIView(object):
                 if stockstatus.stock.stock_type.quantity_only:
                     logger.debug('stock %d quantity only', stockstatus.stock.id)
                     continue
-                
+
                 #separate_seats取得
                 org = api.get_organization(self.request)
                 setting = org.setting
@@ -470,7 +470,7 @@ class CartAPIView(object):
         elif reserve_type == "seat_choise":
             seats += reserving.reserve_selected_seats(stockstatuses, performance_id, selected_seats)
             quantity_only = False
-        
+
         seat_ids = [seat.id for seat in seats]
         seat_l0_ids = [seat.l0_id for seat in seats]
         seat_names = [seat.name for seat in seats]
@@ -527,11 +527,11 @@ class CartAPIView(object):
                 ret_seat = {"seat_id":l0_id,"seat_name":seat_names[index]}
                 ret_seats.append(ret_seat)
 
-            is_separated = False    
+            is_separated = False
 
-            #おまかせで席受けの場合、連席or飛び席判定
+            #おまかせで席受け(2枚以上)の場合、連席or飛び席判定
             #確保した座席が連席データに入っていれば連席とみなす。
-            if reserve_type == "auto":
+            if reserve_type == "auto" and quantity >= 2:
                 performance = DBSession.query(Performance).filter_by(id=performance_id).first()
 
                 seat_separate = DBSession.query(func.count(Seat_SeatAdjacency.seat_adjacency_id)) \
@@ -541,11 +541,11 @@ class CartAPIView(object):
                     .filter(Seat.venue_id == performance.venue.id) \
                     .filter(SeatAdjacencySet.seat_count == quantity) \
                     .filter(SeatAdjacencySet.site_id == performance.venue.site_id) \
-                    .filter(Seat_SeatAdjacency.l0_id == (seat_l0_ids)) \
+                    .filter(Seat_SeatAdjacency.l0_id.in_(seat_l0_ids)) \
                     .group_by(Seat_SeatAdjacency.seat_adjacency_id) \
                     .having(func.count(Seat_SeatAdjacency.seat_adjacency_id) == quantity) \
                     .first()
-                    
+
                 #取得できない場合は、飛び席とする。
                 if not seat_separate:
                     is_separated = True
@@ -560,7 +560,7 @@ class CartAPIView(object):
                     is_separated = is_separated,
                     seats = ret_seats
                 )
-            )                
+            )
 
 
     @view_config(route_name='cart.api.seat_release')
@@ -635,7 +635,7 @@ class CartAPIView(object):
             }
         }
 
-    @view_config(route_name='cart.api.select_products') 
+    @view_config(route_name='cart.api.select_products')
     def select_products(self):
         #セッション情報から取得
         cart = api.get_cart(self.request, False)
@@ -661,7 +661,7 @@ class CartAPIView(object):
                     "reason": "no json_data"
                 }
             }
-        
+
         is_quantity_only = json_data.get("is_quantity_only")
         selected_products = json_data.get("selected_products")
 
@@ -684,7 +684,7 @@ class CartAPIView(object):
                 reason = "no key selected_products in quantity"
             elif sp['quantity'] is None:
                 reason = "invalid parameter selected_products in quantity"
-                
+
             if not is_quantity_only and 'seat_id' not in sp:
                 reason = "no key selected_products in seat_id"
             elif not is_quantity_only and sp['seat_id'] is None:
@@ -707,14 +707,14 @@ class CartAPIView(object):
                     "reason": "No matching sales_segment"
                 }
             }
-        
+
         # 購入枚数チェック
         for sp in selected_products:
             logger.debug("selected_products %s", sp)
             product = DBSession.query(Product).filter_by(id=sp['product_id']).first()
             ordered_items = [(product, sp['quantity'])]
             logger.debug("ordered_items %s", ordered_items)
-            
+
             try:
                 view_support.assert_quantity_within_bounds(sales_segment, ordered_items)
             except (PerProductProductQuantityOutOfBoundsError,
@@ -748,7 +748,7 @@ class CartAPIView(object):
             product = DBSession.query(Product).filter_by(id=sp['product_id']).first()
             ordered_items = [(product, sp['quantity'])]
             logger.debug("ordered_items %s", ordered_items)
-            
+
             try:
                 view_support.assert_quantity_within_bounds(sales_segment, ordered_items)
             except PerProductProductQuantityOutOfBoundsError as e:
@@ -771,12 +771,12 @@ class CartAPIView(object):
 
             #performance取得
             performance = DBSession.query(Performance).filter_by(id=exec_cart.performance_id).first()
-            
+
             #席受け時の座席を取得
             if not is_quantity_only:
                 for seat_id in sp['seat_id']:
                     seat = DBSession.query(Seat).filter_by(l0_id=seat_id,venue_id=performance.venue.id).first()
-                    seats.append(seat)   
+                    seats.append(seat)
 
             for cpi in product_item:
                 subtotal_quantity = cpi.quantity * sp['quantity']
@@ -784,16 +784,16 @@ class CartAPIView(object):
                     carted_product = cart_product,
                     organization_id = cart_product.organization_id,
                     quantity = subtotal_quantity,
-                    product_item = cpi)            
+                    product_item = cpi)
 
                 # 席受け時の座席割り当て
                 if not is_quantity_only:
                     logger.debug("seats %s", seats)
                     item_seats = cart_factory.pop_seats(cpi, subtotal_quantity, seats)
                     cart_product_item.seats = item_seats
-            
+
                 DBSession.add(cart_product_item)
-                
+
         DBSession.flush()
 
         return {
