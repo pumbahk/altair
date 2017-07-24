@@ -11,6 +11,7 @@ from altair.formhelpers.widgets.list import OurListWidget
 from wtforms.validators import Required
 from .models import LotEntryStatusEnum
 from altair.app.ticketing.users.helpers import format_sex
+from altair.mobile.interfaces import IMobileRequest, ISmartphoneRequest
 from cgi import escape
 from api import get_lotting_announce_timezone
 from altair.app.ticketing.core.models import (
@@ -23,6 +24,9 @@ from altair.app.ticketing.cart.helpers import (
     japanese_date,
     japanese_time,
     japanese_datetime,
+    i18n_date,
+    i18n_time,
+    i18n_datetime,
     fee_type,
     format_number,
     format_currency,
@@ -36,6 +40,9 @@ from altair.app.ticketing.cart.helpers import (
     create_url,
     create_url_link,
     _message,
+    render_errors,
+    render_payment_finished_viewlet,
+    render_delivery_finished_viewlet
 )
 from altair.app.ticketing.helpers.base import is_required
 from pyramid.threadlocal import get_current_request
@@ -380,10 +387,22 @@ def announce_time_label(lot):
     announce_datetime = announce_datetime[0:announce_datetime.find(')', 0) + 1]
     return  announce_datetime + ' ' + timezone_label(lot)
 
+def announce_time_label_i18n(lot):
+    if not timezone_label(lot):
+        return i18n_datetime(lot.lotting_announce_datetime)
+    announce_datetime = i18n_datetime(lot.lotting_announce_datetime)
+    announce_datetime = announce_datetime[0:announce_datetime.find(')', 0) + 1]
+    return  announce_datetime + ' ' + timezone_label(lot)
+
 def withdraw_time_label(entry):
     if not entry or not entry.lot:
         return ""
     return japanese_datetime(entry.withdrawn_at)
+
+def withdraw_time_label_i18n(entry):
+    if not entry or not entry.lot:
+        return ""
+    return i18n_datetime(entry.withdrawn_at)
 
 def render_label(field):
     required = is_required(field)
