@@ -1,11 +1,11 @@
 <%inherit file="review_base.html" />
 <%include file="../../__commons__/header.html" />
 
-<h2 class="heading heading-primary">${_(u'受付履歴確認 検索結果')}</h2>
+<h2 class="heading heading-primary">${_(u'抽選申込確認')}</h2>
 
 <div class="settlementBox2 OrderBox">
   <div class="settlementBoxInner2">
-    <h3 class="bold mgb5 fs16">${_(u'申込番号')}</h3>
+    <h3 class="bold mgb5 fs16">${_(u'抽選申し込み番号')}</h3>
     <table class="customer-table">
       <tr>
         <th scope="row"><h3 class="bold fs16 clr_red">${entry.entry_no}</h3></th>
@@ -22,7 +22,7 @@
       <tbody>
         <tr>
           <td colspan="2">
-            ${_(u'お申込みいただいておりました以下の抽選受付を{0}に取消いたしました。').format(h.withdraw_time_label(entry))}
+            ${_(u'お申込みいただいておりました以下の抽選受付を{0}に取消いたしました。').format(h.withdraw_time_label_i18n(entry))}
             </td>
           </tr>
         </tbody>
@@ -45,7 +45,7 @@
               % elif h.lot_entry_display_status(entry, now) == u'落選表示':
                 ${_(u'抽選の結果、お客様は残念ながら落選となりました。')}
               % elif h.lot_entry_display_status(entry, now) == u'抽選待ち表示':
-                ${_(u'抽選結果発表は、{0}を予定しております。抽選結果発表後、抽選結果確認ページにて当選・落選をご確認下さい。').format(h.announce_time_label(entry.lot))}
+                ${_(u'抽選結果発表は、{0}を予定しております。抽選結果発表後、抽選結果確認ページにて当選・落選をご確認下さい。').format(h.announce_time_label_i18n(entry.lot))}
               % endif
             </td>
           </tr>
@@ -56,11 +56,10 @@
 %endif
 <div class="settlementBox2 OrderBox">
   <div class="settlementBoxInner2">
-    <h3 class="bold mgt20 mgb5 fs16">${_(u'お支払')}</h3>
-    <table class="customer-table" summary="${_(u'お支払')}">
+    <h3 class="bold mgt20 mgb5 fs16">${_(u'決済方法')}</h3>
+    <table class="customer-table" summary="${_(u'決済方法')}">
       <tr>
-        <th scope="row">${_(u'決済方法')}</th>
-        <td>${h.payment_method_get_info(custom_locale_negotiator, entry.payment_delivery_method_pair, 'name')}</td>
+        <th scope="row" colspan="2">${h.payment_method_get_info(custom_locale_negotiator, entry.payment_delivery_method_pair, 'name')}</th>
       </tr>
       <% payment_method_description = h.payment_method_get_info(custom_locale_negotiator, entry.payment_delivery_method_pair, 'description') %>
       % if payment_method_description:
@@ -74,11 +73,10 @@
 
 <div class="settlementBox2 OrderBox">
   <div class="settlementBoxInner2">
-    <h3 class="bold mgt20 fs16">${_(u'お引取')}</h3>
-    <table class="customer-table" summary="${_(u'お引取')}">
+    <h3 class="bold mgt20 fs16">${_(u'引取方法')}</h3>
+    <table class="customer-table" summary="${_(u'引取方法')}">
       <tr>
-        <th scope="row">${_(u'決済方法')}</th>
-        <td>${h.delivery_method_get_info(custom_locale_negotiator, entry.payment_delivery_method_pair, 'name')}</td>
+        <th scope="row" colspan="2">${h.delivery_method_get_info(custom_locale_negotiator, entry.payment_delivery_method_pair, 'name')}</th>
       </tr>
       <% delivery_method_description = h.delivery_method_get_info(custom_locale_negotiator, entry.payment_delivery_method_pair, 'description') %>
       % if delivery_method_description:
@@ -91,9 +89,8 @@
 </div>
 <div class="settlementBox2 OrderBox">
   <div class="settlementBoxInner2">
-    <h3 class="bold mgt20 mgb5 fs16">${_(u'お申込内容')}</h3>
     % for wish in wishes:
-    <h3 class="bold mgt5 mgb5 fs16">${_(u'第{0}希望').format(wish.wish_order+1)}：${wish.performance.name}</h3>
+    <h3 class="bold mgt20 mgb5 fs16">${_(u'第{0}希望').format(wish.wish_order+1)}：${wish.performance.name}</h3>
     <table class="customer-table" summary="${_(u'第{0}希望').format(wish.wish_order+1)}">
       <tr>
         <th scope="row">${_(u'抽選結果')}</th>
@@ -208,7 +205,7 @@
       %for i, (display_name, display_value) in extra_form_data:
       <tr>
         <th scope="row" class="display_name">${display_name}</th>
-        <td class="display_value">${h.sensible_coerce(request, display_value) if display_value else "-"}</td>
+        <td class="display_value">${h.sensible_coerce(request, display_value)}</td>
       </tr>
       %endfor
     </table>

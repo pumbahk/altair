@@ -876,5 +876,6 @@ class LotReviewWithdrawView(object):
             can_withdraw=self.can_withdraw,
             error_msg=self.error_msg,
             now = now,
+            custom_locale_negotiator=custom_locale_negotiator(self.request) if self.request.organization.setting.i18n else ""
         )
 
