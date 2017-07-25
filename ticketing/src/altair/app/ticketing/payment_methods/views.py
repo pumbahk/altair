@@ -71,6 +71,8 @@ class PaymentMethods(BaseView):
                 payment_method.preferences.setdefault(u'zh_CN', {})['description'] = f.description_zh_cn.data
                 payment_method.preferences.setdefault(u'zh_TW', {})['name'] = f.name_zh_tw.data
                 payment_method.preferences.setdefault(u'zh_TW', {})['description'] = f.description_zh_tw.data
+                payment_method.preferences.setdefault(u'ko', {})['name'] = f.name_ko.data
+                payment_method.preferences.setdefault(u'ko', {})['description'] = f.description_ko.data
             payment_method.save()
 
             self.request.session.flash(u'決済方法を保存しました')
@@ -95,6 +97,8 @@ class PaymentMethods(BaseView):
             form.description_zh_cn.data = obj.preferences.get(u'zh_CN', {}).get('description', u'')
             form.name_zh_tw.data = obj.preferences.get(u'zh_TW', {}).get('name', u'')
             form.description_zh_tw.data = obj.preferences.get(u'zh_TW', {}).get('description', u'')
+            form.name_ko.data = obj.preferences.get(u'ko', {}).get('name', u'')
+            form.description_ko.data = obj.preferences.get(u'ko', {}).get('description', u'')
         return {
             'form': form,
             'i18n_org': u"True" if organization_setting.i18n else "False"
@@ -123,6 +127,8 @@ class PaymentMethods(BaseView):
                 payment_method.preferences.setdefault(u'zh_CN', {})['description'] = f.description_zh_cn.data
                 payment_method.preferences.setdefault(u'zh_TW', {})['name'] = f.name_zh_tw.data
                 payment_method.preferences.setdefault(u'zh_TW', {})['description'] = f.description_zh_tw.data
+                payment_method.preferences.setdefault(u'ko', {})['name'] = f.name_ko.data
+                payment_method.preferences.setdefault(u'ko', {})['description'] = f.description_ko.data
             payment_method.save()
 
             self.request.session.flash(u'決済方法を保存しました')

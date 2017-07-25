@@ -904,6 +904,8 @@ def validate_order_like(request, order_like, plugin, update=False):
             validate_length_dict('gbk', famiport_order_dict, {'customer_name':42, 'customer_address_1':200, 'customer_address_2':200})
         if order_like.organization.setting.i18n and (request.localizer and request.localizer.locale_name == 'en'):
             validate_length_dict('utf-8', famiport_order_dict, {'customer_name':42, 'customer_address_1':200, 'customer_address_2':200})
+        if order_like.organization.setting.i18n and (request.localizer and request.localizer.locale_name == 'ko'):
+            validate_length_dict('utf-8', famiport_order_dict, {'customer_name':42, 'customer_address_1':200, 'customer_address_2':200})
 
     # チケット枚数
     if famiport_order_type != FamiPortOrderType.PaymentOnly.value:

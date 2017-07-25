@@ -17,7 +17,7 @@ def add_renderer_globals(event):
 
 tsf = TranslationStringFactory('messages')
 
-LOCALES = ('en', 'ja', 'zh_CN', 'zh_TW')
+LOCALES = ('en', 'ja', 'zh_CN', 'zh_TW', 'ko')
 
 def add_localizer(event):
     request = event.request

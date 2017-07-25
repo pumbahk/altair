@@ -114,6 +114,16 @@ class DeliveryMethodForm(OurForm):
         label=u"説明文(HTML)(繁体中国語)",
         widget=OurTextArea()
         )
+    name_ko = OurTextField(
+        label=u'引取方法名(韓国語)',
+        validators=[
+            Length(max=255, message=u'255文字以内で入力してください'),
+            ]
+        )
+    description_ko = OurTextField(
+        label=u"説明文(HTML)(韓国語)",
+        widget=OurTextArea()
+        )
     hide_voucher = OurBooleanField(
         label=u'引換票を表示しない',
         validators=[

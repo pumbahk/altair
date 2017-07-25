@@ -97,6 +97,16 @@ class PaymentMethodForm(OurForm):
         label=u"説明文(HTML)(繁体中国語)",
         widget=OurTextArea()
         )
+    name_ko = OurTextField(
+        label=u'決済方法名(韓国語)',
+        validators=[
+            Length(max=255, message=u'255文字以内で入力してください'),
+            ]
+        )
+    description_ko = OurTextField(
+        label=u"説明文(HTML)(韓国語)",
+        widget=OurTextArea()
+        )
     public = OurBooleanField(
         label=u'公開する'
         )
