@@ -26,6 +26,9 @@ msgstr "サービス利用規約"
 
 # review form
 
+msgid "抽選申込確認"
+msgstr "抽選申込確認"
+
 msgid "抽選申し込み番号"
 msgstr "抽選申し込み番号"
 
@@ -62,6 +65,9 @@ msgstr "確認する"
 msgid "抽選結果"
 msgstr "抽選結果"
 
+msgid "抽選申込取消"
+msgstr "抽選申込取消"
+
 msgid "お申込みいただいておりました以下の抽選受付を{0}に取消いたしました。"
 msgstr "お申込みいただいておりました以下の抽選受付を{0}に取消いたしました。"
 
@@ -91,6 +97,48 @@ msgstr "決済方法"
 
 msgid "引取方法"
 msgstr "引取方法"
+
+msgid "合計金額"
+msgstr "合計金額"
+
+msgid "追加情報"
+msgstr "追加情報"
+
+msgid "ご用意できました"
+msgstr "ご用意できました"
+
+msgid "ご用意できませんでした"
+msgstr "ご用意できませんでした"
+
+msgid "抽選処理前です"
+msgstr "抽選処理前です"
+
+msgid "この申込を取り消す"
+msgstr "この申込を取り消す"
+
+msgid "男性"
+msgstr "男性"
+
+msgid "女性"
+msgstr "女性"
+
+msgid "はい"
+msgstr "はい"
+
+msgid "いいえ"
+msgstr "いいえ"
+
+msgid "この抽選申込を取消しますか?"
+msgstr "この抽選申込を取消しますか?"
+
+msgid "取消した抽選申込を有効な抽選申込に戻す事はできません"
+msgstr "取消した抽選申込を有効な抽選申込に戻す事はできません"
+
+msgid "以下の抽選申込を取消いたしました"
+msgstr "以下の抽選申込を取消いたしました"
+
+msgid "ログイン画面に戻る"
+msgstr "ログイン画面に戻る"
 
 # index
 

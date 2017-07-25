@@ -26,6 +26,9 @@ msgstr "Terms of service"
 
 # review form
 
+msgid "抽選申込確認"
+msgstr "Lottery Application Confirmation"
+
 msgid "抽選申し込み番号"
 msgstr "Lottery application number"
 
@@ -33,7 +36,7 @@ msgid "必須"
 msgstr "Required"
 
 msgid "半角英数"
-msgstr " "
+msgstr "half-width alphanumeric"
 
 msgid "電話番号"
 msgstr "Telephone number"
@@ -60,10 +63,13 @@ msgid "確認する"
 msgstr "Confirm"
 
 msgid "抽選結果"
-msgstr "Lots result"
+msgstr "Lottery Result"
+
+msgid "抽選申込取消"
+msgstr "Lottery Cancellation"
 
 msgid "お申込みいただいておりました以下の抽選受付を{0}に取消いたしました。"
-msgstr "The lots you applied on {0} has been canceled."
+msgstr "The lottery you applied on {0} has been canceled."
 
 msgid "抽選の結果、お客様はご当選されました。"
 msgstr "The lots result, you are elected."
@@ -87,10 +93,55 @@ msgid "お申込内容"
 msgstr "The application content"
 
 msgid "決済方法"
-msgstr "Payment method"
+msgstr "Payment Method"
 
 msgid "引取方法"
-msgstr "Delivery method"
+msgstr "Delivery Method"
+
+msgid "発券/引取手数料"
+msgstr "Issue/Delivery Fee"
+
+msgid "合計金額"
+msgstr "Total Amount"
+
+msgid "追加情報"
+msgstr "Additional Information"
+
+msgid "ご用意できました"
+msgstr "Prepared"
+
+msgid "ご用意できませんでした"
+msgstr "Can not be prepared"
+
+msgid "抽選処理前です"
+msgstr "Before Lots Process"
+
+msgid "この申込を取り消す"
+msgstr "Cancel this application"
+
+msgid "男性"
+msgstr "Male"
+
+msgid "女性"
+msgstr "Female"
+
+msgid "はい"
+msgstr "Yes"
+
+msgid "いいえ"
+msgstr "No"
+
+msgid "この抽選申込を取消しますか?"
+msgstr "Are you sure to cancel the application?"
+
+msgid "取消した抽選申込を有効な抽選申込に戻す事はできません"
+msgstr "The application can not be recovered once it is cancelled"
+
+msgid "以下の抽選申込を取消いたしました"
+msgstr "The lottery application shown below was cancelled"
+
+msgid "ログイン画面に戻る"
+msgstr "Back to login page"
 
 # index
 
@@ -176,10 +227,10 @@ msgid "上記の利用料・手数料がかかります。"
 msgstr "The above usage fee and commission is cost."
 
 msgid "購入者情報"
-msgstr "Purchaser information"
+msgstr "Purchaser Information"
 
 msgid "購入者氏名（全角）"
-msgstr "Purchaser Name"
+msgstr "Name"
 
 msgid "姓"
 msgstr "Last name"
@@ -209,7 +260,7 @@ msgid "アルファベット、数字、-(ハイフン)、.(点)、,(コンマ)�
 msgstr "please input alphabet, number, -, .(dot), comma or blank"
 
 msgid "パスポートと一致しているものを入力してください"
-msgstr " "
+msgstr "please input the contents consistent with your passport"
 
 msgid "メールアドレス"
 msgstr "Email"
@@ -224,7 +275,7 @@ msgid "メールアドレス (確認)"
 msgstr "Email(Confirmation)"
 
 msgid "電話番号 (携帯)"
-msgstr "Telephone number(Mobile)"
+msgstr "Mobile"
 
 msgid "住所"
 msgstr "Address"
@@ -239,13 +290,13 @@ msgid "郵便番号"
 msgstr "Zipcode"
 
 msgid "(半角英数7ケタ)"
-msgstr "Alphanumeric 7-digit"
+msgstr "7 alphanumeric character"
 
 msgid "半角英数7ケタ"
-msgstr "Alphanumeric 7-digit"
+msgstr "7 alphanumeric character"
 
 msgid "-(ハイフン)を抜いた半角数字のみを入力してください"
-msgstr "Please input alphabet only without hyphen."
+msgstr "Please input number only"
 
 msgid "都道府県"
 msgstr "Prefecture"
