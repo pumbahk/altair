@@ -1,37 +1,44 @@
 #!/bin/sh
 
 COMMAND=$1
-DOMAIN=$2
-TOKEN=$4
+# DOMAIN_=$2
+
+source ./config
 
 check () {
   while true
   do
     LINE=`dig txt _acme-challenge.$DOMAIN +trace +short | grep ^TXT`
+    echo "$LINE"
     TXT=`echo $LINE | sed 's/^.*"\(.*\)".*\$/\1/'`
     if [ "X$TXT" = "X$TOKEN" ] ; then
       echo "confirmed."
       return
     fi
 
-    echo "$LINE"
-    echo "cannot confirm, hit enter key after set up"
-    read X
+    sleep 3
   done
 }
 
 if [ "X$COMMAND" = "Xdeploy_challenge" ] ; then
-  echo "create dns record:"
-  echo "  _acme-challenge.$DOMAIN TXT $TOKEN"
-  echo ""
-  echo "hit enter key after set up"
-  read X
+  TOKEN=$4
+  echo "Updating TXT records for Zone: $R53ZONE..."
+  cat update-txt.template.json | \
+    sed "s/{{DOMAIN}}/$DOMAIN/" |  \
+    sed "s/{{TOKEN}}/$TOKEN/" > update-txt.json
+  aws route53 change-resource-record-sets --hosted-zone-id "$R53ZONE" --change-batch file://update-txt.json
+  rm update-txt.json
+
   check
 fi
 
 if [ "X$COMMAND" = "Xdeploy_cert" ] ; then
-  [ -f keystore ] && rm keystore
-  keytool -importcert -keystore keystore -storepass secret -storetype JKS -noprompt -alias 0 -file certs/localhost.altair-printer.tk/cert.pem
-  keytool -importcert -keystore keystore -storepass secret -storetype JKS -noprompt -alias 1 -file certs/localhost.altair-printer.tk/chain.pem
+  CERT=$4
+  FULL=$5
+  CHAIN=$6
+  echo "new certificates are generated."
+  [ -f $DEST ] && rm $DEST
+  keytool -importcert -keystore $DEST -storepass $KEYSTORE_PASSWORD -storetype JKS -noprompt -alias 0 -file $CERT
+  keytool -importcert -keystore $DEST -storepass $KEYSTORE_PASSWORD -storetype JKS -noprompt -alias 1 -file $CHAIN
   echo "keystore is generated."
 fi

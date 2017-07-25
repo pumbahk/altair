@@ -1,1 +1,5 @@
-PRIVATE_KEY_RENEW="no"
+DOMAIN=local.printer.ticketstar.jp
+R53ZONE=ZTWOER64UW1BW
+
+DEST=keystore
+KEYSTORE_PASSWORD=secret
