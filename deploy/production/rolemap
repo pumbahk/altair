@@ -80,6 +80,25 @@ apmv30.1c.vpc.altr	userapp-usersite
 apmv31.1a.vpc.altr	userapp-usersite
 apmv31.1c.vpc.altr	userapp-usersite
 
+apus1.1a.vpc.altr	userapp-usersite
+apus1.1c.vpc.altr	userapp-usersite
+apus2.1a.vpc.altr	userapp-usersite
+apus2.1c.vpc.altr	userapp-usersite
+apus3.1a.vpc.altr	userapp-usersite
+apus3.1c.vpc.altr	userapp-usersite
+apus4.1a.vpc.altr	userapp-usersite
+apus4.1c.vpc.altr	userapp-usersite
+apus5.1a.vpc.altr	userapp-usersite
+apus5.1c.vpc.altr	userapp-usersite
+apus6.1a.vpc.altr	userapp-usersite
+apus6.1c.vpc.altr	userapp-usersite
+apus7.1a.vpc.altr	userapp-usersite
+apus7.1c.vpc.altr	userapp-usersite
+apus8.1a.vpc.altr	userapp-usersite
+apus8.1c.vpc.altr	userapp-usersite
+apus9.1a.vpc.altr	userapp-usersite
+apus9.1c.vpc.altr	userapp-usersite
+
 apcv1.1c.vpc.altr	sej
 apcv1.1a.vpc.altr	sej
 apze2.1c.vpc.altr	fcadmin
