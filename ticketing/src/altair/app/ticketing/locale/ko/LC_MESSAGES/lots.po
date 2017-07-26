@@ -312,12 +312,6 @@ msgstr "생년월일"
 msgid "性別"
 msgstr "성별"
 
-msgid "男性"
-msgstr "남성"
-
-msgid "女性"
-msgstr "여성"
-
 msgid "メモ欄"
 msgstr "메모"
 
@@ -520,6 +514,56 @@ msgstr "신청 내용은「<a href=\"/lots/review\"> 신청 확인 페이지 </a
 
 msgid "決済中にエラーが発生しました。しばらく時間を置いてから<a href=\"{0}\">再度お試しください。</a>"
 msgstr "결제 중 오류가 발생했습니다. 잠시 후에 <a href=\"{0}\"> 다시 시도하여 주십시오. </a>"
+
+# 追加
+
+msgid "抽選申込取消"
+msgstr "추첨 신청 취소"
+
+msgid "合計金額"
+msgstr "총액"
+
+msgid "追加情報"
+msgstr "추가 정보"
+
+msgid "ご用意できました"
+msgstr "준비되었습니다."
+
+msgid "ご用意できませんでした"
+msgstr "준비 할 수 없습니다."
+
+msgid "抽選処理前です"
+msgstr "추첨 처리 전입니다."
+
+msgid "この申込を取り消す"
+msgstr "이 신청을 취소합니다."
+
+msgid "男性"
+msgstr "남성"
+
+msgid "女性"
+msgstr "여성"
+
+msgid "はい"
+msgstr "예"
+
+msgid "いいえ"
+msgstr "아니오"
+
+msgid "この抽選申込を取消しますか?"
+msgstr "이 추첨 신청을 취소 하시겠습니까?"
+
+msgid "取消した抽選申込を有効な抽選申込に戻す事はできません"
+msgstr "취소 된 추첨 신청을 유효한 추첨 신청으로 되돌릴 수 없습니다."
+
+msgid "以下の抽選申込を取消いたしました"
+msgstr "다음 추첨 신청을 취소했습니다."
+
+msgid "ログイン画面に戻る"
+msgstr "로그인 화면으로 돌아갑니다."
+
+msgid "税込"
+msgstr "세금 포함"
 
 #  国名
 
