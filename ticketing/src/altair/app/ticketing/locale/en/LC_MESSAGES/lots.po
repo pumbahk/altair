@@ -143,6 +143,9 @@ msgstr "The lottery application shown below was cancelled"
 msgid "ログイン画面に戻る"
 msgstr "Back to login page"
 
+msgid "税込"
+msgstr "tax included"
+
 # index
 
 msgid "イベント詳細"

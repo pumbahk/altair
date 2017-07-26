@@ -143,6 +143,9 @@ msgstr "下方顯示的抽選申請已被取消"
 msgid "ログイン画面に戻る"
 msgstr "回到登入畫面"
 
+msgid "税込"
+msgstr "含稅"
+
 # index
 
 msgid "イベント詳細"
