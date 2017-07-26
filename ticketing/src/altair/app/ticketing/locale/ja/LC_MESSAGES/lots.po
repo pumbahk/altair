@@ -140,6 +140,9 @@ msgstr "以下の抽選申込を取消いたしました"
 msgid "ログイン画面に戻る"
 msgstr "ログイン画面に戻る"
 
+msgid "税込"
+msgstr "税込"
+
 # index
 
 msgid "イベント詳細"
