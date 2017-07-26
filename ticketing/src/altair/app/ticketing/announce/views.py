@@ -185,16 +185,23 @@ class Announce(BaseView):
         except ValueError as e:
             return HTTPNotFound('announce id not found')
 
-        announce = Announcement.get(announce_id, organization_id=self.context.user.organization_id)
+        # lock for update
+        announce = Announcement.query\
+            .filter(Announcement.id==announce_id)\
+            .filter(Announcement.organization_id==self.context.user.organization_id)\
+            .with_lockmode('update').first()
         if announce is None:
             return HTTPNotFound('announce is not found')
 
         f = AnnouncementForm(self.request.POST, obj=announce)
 
         if self.request.method == 'POST':
-            # TODO: validation before delete
+            if announce.started_at:
+                # FIXME: 赤色とかでflashできないか？
+                self.request.session.flash(u'既に処理を開始しているため、削除・修正はできません')
+                return HTTPFound(location=route_path('announce.list', self.request, event_id=announce.event.id))
+
             if "delete" in self.request.POST and 0 < len(self.request.POST["delete"]):
-                # TODO: need lock before delete
                 announce.delete()
                 self.request.session.flash(u'告知メールを削除しました')
                 return HTTPFound(location=route_path('announce.list', self.request, event_id=announce.event.id))
