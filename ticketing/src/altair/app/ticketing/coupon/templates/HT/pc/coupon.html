@@ -40,7 +40,7 @@
     <tbody>
       <tr>
         <thead>
-          <th colspan="4">${order.performance.event.title} <br />${order.performance.name}</th>
+          <th colspan="4">${order.performance.event.title} <br />【${order.performance.name}】${u'{s.month}月{s.day}日 {s.hour:02}:{s.minute:02}'.format(s=order.performance.start_on)}</th>
         </thead>
       </tr>
     </tbody>
