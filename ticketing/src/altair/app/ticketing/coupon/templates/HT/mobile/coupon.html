@@ -11,7 +11,7 @@
 </div>
 
 <div>${order.performance.event.title}</div>
-<div>${order.performance.name}</div>
+<div>【${order.performance.name}】${u'{s.month}月{s.day}日 {s.hour:02}:{s.minute:02}'.format(s=order.performance.start_on)}</div>
 <br/>
 
 <%mobile:form_header>受付番号</%mobile:form_header>
