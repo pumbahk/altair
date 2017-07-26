@@ -400,7 +400,7 @@ def get_cart_user_identifiers(request):
 def is_point_input_organization(context, request):
     organization = get_organization(request)
     code = organization.code
-    return code == 'RE' or code == 'KT' or code == 'VK' or code == 'RL'
+    return code == 'RE' or code == 'KT' or code == 'VK' or code == 'RL' or code == 'RT'
 
 def is_point_input_required(context, request):
     if not is_point_input_organization(context, request):
