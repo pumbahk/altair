@@ -103,7 +103,7 @@ def make_data_for_qr(history):
     params['season_flag'] = HT_SEASON_FLAG
     params['special_flag'] = HT_SPECIAL_FLAG
 
-    _, ticket_code, enterable_days = qr_ticket_obj.ordered_product_item.product_item.name.split('_')
+    _, ticket_code, enterable_days, usable_days = qr_ticket_obj.ordered_product_item.product_item.name.split('_')
 
     params['ticket_code'] = ticket_code
     params['enterable_days'] = enterable_days.strip()[:3].rjust(3, '0')
@@ -113,10 +113,10 @@ def make_data_for_qr(history):
 
     params['valid_date_from'] = performance.open_on.strftime('%Y%m%d') if performance.open_on else '0' * 8
     params['valid_date_to'] = performance.end_on.strftime('%Y%m%d') if performance.end_on else '0' * 8
+    params['issued_at'] = performance.start_on.strftime('%Y%m%d') if performance.start_on else '0' * 8
     params['enterable_from'] = performance.start_on.strftime('%H%M') if performance.start_on else '0' * 4
-    usable_date_to = qr_ticket_obj.order.paid_at + timedelta(days=90) if qr_ticket_obj.order.paid_at else qr_ticket_obj.order.created_at + timedelta(days=90)
+    usable_date_to = qr_ticket_obj.order.created_at + timedelta(days=int(usable_days))
     params['usable_date_to'] = usable_date_to.strftime('%Y%m%d')
-    params['issued_at'] = datetime.now().strftime('%Y%m%d')
 
     suffix = str(qr_ticket_obj.id)[:10]
     params['serial_no'] = 'A' + params['ticket_code'] + suffix.rjust(10, '0')
