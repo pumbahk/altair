@@ -118,7 +118,7 @@ def make_data_for_qr(history):
     usable_date_to = qr_ticket_obj.order.created_at + timedelta(days=int(usable_days))
     params['usable_date_to'] = usable_date_to.strftime('%Y%m%d')
 
-    suffix = str(qr_ticket_obj.order.id)[:10]
+    suffix = str(qr_ticket_obj.id)[:10]
     params['serial_no'] = 'A' + params['ticket_code'] + suffix.rjust(10, '0')
 
     data = dict(header=HT_QR_DATA_FREE + HT_QR_DATA_HEADER, content='')
