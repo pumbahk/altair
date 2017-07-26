@@ -48,8 +48,11 @@ class QRUtilsTest(unittest.TestCase, CoreTestMixin):
             ('special_flag', 1)
         ])
         '''
-        issued_at = datetime.now().strftime('%Y%m%d')
-        usable_date_to = (datetime.now() + timedelta(days=90)).strftime('%Y%m%d')
+        p_start_on = datetime(2017, 2, 1, 15, 0, 0)
+        now = datetime.now()
+
+        issued_at = p_start_on.strftime('%Y%m%d')
+        usable_date_to = (now + timedelta(days=30)).strftime('%Y%m%d')
         self.origin_data = {
             'id_code': HT_ID_CODE,
             'type_code': HT_TYPE_CODE,
@@ -77,16 +80,16 @@ class QRUtilsTest(unittest.TestCase, CoreTestMixin):
         self.config.include('altair.app.ticketing.qr')
         self.request = testing.DummyRequest()
         CoreTestMixin.setUp(self)
-        self.performance.start_on=datetime(2017, 2, 1, 15, 0, 0)
+        self.performance.start_on=p_start_on
         self.performance.open_on=datetime.strptime(self.origin_data['valid_date_from'] + '0000', '%Y%m%d%H%M')
         self.performance.end_on = datetime.strptime(self.origin_data['valid_date_to'] + '2359', '%Y%m%d%H%M')
         self.stock_types = self._create_stock_types(1)
         self.stocks = self._create_stocks(self.stock_types)
         self.product = self._create_products(self.stocks)
-        self.product[0].items[0].name = "XXX_{0}_{1}".format(self.origin_data['ticket_code'], self.origin_data['enterable_days'])
+        self.product[0].items[0].name = "XXX_{0}_{1}_{2}".format(self.origin_data['ticket_code'], self.origin_data['enterable_days'], str(30))
 
         self.order = self._create_order([(self.product[0], 1)], order_no='HT0000000000')
-
+        self.order.created_at = now
         self.session.add(self.order)
         self.session.flush()
         item_token = self.order.items[0].elements[0].tokens[0]
