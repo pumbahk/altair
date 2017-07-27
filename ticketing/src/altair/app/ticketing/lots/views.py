@@ -718,7 +718,8 @@ class LotReviewView(object):
             timestamp=timestamp,
             can_withdraw=lot_entry_user_withdraw and lot_entry.lot.lot_entry_user_withdraw,
             can_withdraw_show=self.context.check_withdraw_show(self.request),
-            now=get_now(self.request))
+            now=get_now(self.request),
+            custom_locale_negotiator=custom_locale_negotiator(self.request) if self.request.organization.setting.i18n else "")
 
 
 @lbr_view_config(
@@ -875,5 +876,6 @@ class LotReviewWithdrawView(object):
             can_withdraw=self.can_withdraw,
             error_msg=self.error_msg,
             now = now,
+            custom_locale_negotiator=custom_locale_negotiator(self.request) if self.request.organization.setting.i18n else ""
         )
 

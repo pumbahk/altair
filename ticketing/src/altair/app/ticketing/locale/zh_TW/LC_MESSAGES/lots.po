@@ -26,6 +26,9 @@ msgstr "服務條款"
 
 # review form
 
+msgid "抽選申込確認"
+msgstr "抽選申請確認"
+
 msgid "抽選申し込み番号"
 msgstr "抽選申請號碼"
 
@@ -62,6 +65,9 @@ msgstr "確認"
 msgid "抽選結果"
 msgstr "抽選结果"
 
+msgid "抽選申込取消"
+msgstr "抽選申請已取消"
+
 msgid "お申込みいただいておりました以下の抽選受付を{0}に取消いたしました。"
 msgstr "您申請抽選{0}已被取消。"
 
@@ -91,6 +97,54 @@ msgstr "付款方式"
 
 msgid "引取方法"
 msgstr "取票方式"
+
+msgid "発券/引取手数料"
+msgstr "發票/取票手續費"
+
+msgid "合計金額"
+msgstr "合計金額"
+
+msgid "追加情報"
+msgstr "追加情報"
+
+msgid "ご用意できました"
+msgstr "已準備"
+
+msgid "ご用意できませんでした"
+msgstr "無法準備"
+
+msgid "抽選処理前です"
+msgstr "抽選處理前"
+
+msgid "この申込を取り消す"
+msgstr "取消抽選申請"
+
+msgid "男性"
+msgstr "男性"
+
+msgid "女性"
+msgstr "女性"
+
+msgid "はい"
+msgstr "是"
+
+msgid "いいえ"
+msgstr "否"
+
+msgid "この抽選申込を取消しますか?"
+msgstr "您確定要取消抽選申請嗎?"
+
+msgid "取消した抽選申込を有効な抽選申込に戻す事はできません"
+msgstr "已取消的抽選申請將無法回復"
+
+msgid "以下の抽選申込を取消いたしました"
+msgstr "下方顯示的抽選申請已被取消"
+
+msgid "ログイン画面に戻る"
+msgstr "回到登入畫面"
+
+msgid "税込"
+msgstr "含稅"
 
 # index
 
