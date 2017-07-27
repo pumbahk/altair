@@ -199,9 +199,27 @@ def main():
             for a in announces:
                 session.expunge(a)
 
-            for a in announces:
+            for _a in announces:
+                if now + timedelta(seconds=opts.ahead) < _a.send_after:
+                    message("announce(timer=%s, id=%d) -> skipped" % (_a.send_after, _a.id), True)
+                    continue
+
+                transaction.begin()
+
+                a = session.query(Announcement).with_lockmode('update')\
+                    .filter(Announcement.id == _a.id)\
+                    .filter(Announcement.is_draft == 0) \
+                    .filter(Announcement.started_at == None) \
+                    .first()
+
+                if a is None:
+                    message("record was just updated and out of condition -> skipped")
+                    transaction.rollback()
+                    continue
+
                 if now + timedelta(seconds=opts.ahead) < a.send_after:
                     message("announce(timer=%s, id=%d) -> skipped" % (a.send_after, a.id), True)
+                    transaction.rollback()
                     continue
 
                 message("announce(timer=%s, id=%d)" % (a.send_after, a.id))
@@ -211,21 +229,21 @@ def main():
                 message("found %d recipients" % len(recipients))
 
                 # build message
-                engine = MacroEngine()
-
                 base_dict = dict()
+                engine = MacroEngine()
                 for f in engine.fields("".join([ a.subject, a.message ])):
                     label = engine.label(f)
                     base_dict[f] = a.parameters[label] if a.parameters.has_key(label) else ""
                 body = engine.build(a.message, base_dict, cache_mode=True, filters=[html_filter])
                 subject = engine.build(a.subject, base_dict, cache_mode=True)
 
+                # make zip for postman (frontend of mu)
                 mu.set_attributes(["keyword"])
                 header = "X-TSA-Announce: %d" % a.id
                 job_zip = mu.pack_as_zip(a.send_after, subject, body, recipients, header)
 
+                # upload to s3
                 dst = "%s/%s_%d.zip" % (opts.target.strip("/"), a.send_after.strftime("%Y%m%d_%H%M"), a.id)
-
                 upload(dst, job_zip, resolver, opts.dry_run)
 
                 if not opts.dry_run:
@@ -235,6 +253,8 @@ def main():
                     a.save()
                     transaction.commit()
                     message("set started")
+                else:
+                    transaction.rollback()
 
     except:
         set_quiet(False)

@@ -841,11 +841,11 @@ class LotEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             LotRejectWork.lot_entry_no==self.entry_no
         ).count()
 
-    def get_lot_entry_attribute_pair_pairs(self, request):
+    def get_lot_entry_attribute_pair_pairs(self, request, mode=None):
         from .adapters import LotEntryCart
         from altair.app.ticketing.orders.api import get_order_attribute_pair_pairs
         order_like = LotEntryCart(self)
-        return get_order_attribute_pair_pairs(request, order_like, for_='lots')
+        return get_order_attribute_pair_pairs(request, order_like, for_='lots', mode=mode)
 
     @property
     def cart_setting(self):
