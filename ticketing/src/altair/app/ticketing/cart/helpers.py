@@ -75,9 +75,9 @@ def create_time_label(start, end, disp_time=True, i18n=False):
         start_time = ""
     if i18n:
         WEEK =[u"Mon.", u"Tue.", u"Wed.", u"Thu.", u"Fri.", u"Sat.", u"Sun."]
-        only_start_format = u"{start.year}/{start.month}/{start.day}({start_week})" + start_time
-        range_format = u"{start.year}/{start.month}/{start.day}({start_week}) ~ {end.year}/{end.month}/{end.day}({end_week})"
-        same_year_format = u"{start.year}/{start.month}/{start.day}({start_week}) ~ {end.month}/{end.day}({end_week})"
+        only_start_format = u"{start.year}-{start.month}-{start.day}({start_week})" + start_time
+        range_format = u"{start.year}-{start.month}-{start.day}({start_week}) ~ {end.year}-{end.month}-{end.day}({end_week})"
+        same_year_format = u"{start.year}-{start.month}-{start.day}({start_week}) ~ {end.month}-{end.day}({end_week})"
     else:
         WEEK =[u"月", u"火", u"水", u"木", u"金", u"土", u"日"]
         only_start_format = u"{start.year}年{start.month}月{start.day}日({start_week})" + start_time
@@ -179,6 +179,13 @@ def fee_type(type_enum):
         return u"1申込当り"
     if type_enum == int(FeeTypeEnum.PerUnit.v[0]):
         return u"1枚ごと"
+
+# lotsの送信メールため作った。
+def fee_type_i18n(type_enum):
+    if type_enum == int(FeeTypeEnum.Once.v[0]):
+        return u"per order/application"
+    if type_enum == int(FeeTypeEnum.PerUnit.v[0]):
+        return u"per sheet of tickets"
 
 def format_number(num, thousands=","):
     return _format_number(int(num), thousands)

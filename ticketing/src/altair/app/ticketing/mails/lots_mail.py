@@ -6,7 +6,7 @@ from zope.interface import implementer
 from pyramid.renderers import render
 from altair.app.ticketing.core import models as c_models
 from altair.app.ticketing.payments import plugins
-from altair.app.ticketing.lots.helpers import announce_time_label
+from altair.app.ticketing.lots.helpers import announce_time_label, announce_time_label_i18n
 from altair.app.ticketing.cart import helpers as ch
 from .api import create_or_update_mailinfo, get_mail_setting_default, get_appropriate_message_part, create_mail_request
 from .forms import SubjectInfoWithValue, SubjectInfo, SubjectInfoDefault
@@ -31,9 +31,13 @@ def get_subject_info_default():
 
 class LotsInfoDefault(SubjectInfoDefault):
     def get_announce_date(request, lot_entry):
+        i18n = False
+        if hasattr(request, 'organization') and request.organization and request.organization.setting.i18n:
+            i18n = request.organization.setting.i18n
         d = lot_entry.lot.lotting_announce_datetime
         if d:
-            return announce_time_label(lot_entry.lot)
+            announce_date = announce_time_label_i18n(lot_entry.lot) if i18n else announce_time_label(lot_entry.lot)
+            return announce_date
         return u"-"
 
     first_sentence_default = u"""この度は、お申込みいただき、誠にありがとうございました。
@@ -115,7 +119,9 @@ class LotsMail(object):
         shipping_address = lot_entry.shipping_address
         pair = lot_entry.payment_delivery_method_pair
         info_renderder = SubjectInfoRenderer(request, lot_entry, traverser.data, default_impl=get_subject_info_default())
+        i18n = request.organization.setting.i18n
         value = dict(h=ch,
+                     i18n=i18n,
                      fee_type=ch.fee_type,
                      plugins=plugins,
                      lot_entry=lot_entry,

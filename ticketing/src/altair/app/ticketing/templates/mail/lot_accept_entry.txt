@@ -3,12 +3,27 @@ ${name}　様
 
 %if get("first_sentence").status:
 ${get("first_sentence").body}
+
+%if i18n:
+Your Application is completed.
+Thank you very much for the application.
+
+Please check your application detail and results on lottery application confirmation page after the results are announced.
+
+English information follows Japanese
+%endif
 %endif
 
 -----
-%if get("name_kana").status:
+
+%if get("name_kana").status or get("name").status:
+%if i18n:
+■${get("name").label}
+${get("name").body}
+%else:
 ■${get("name_kana").label}
 ${get("name_kana").body}
+%endif
 %endif
 %if get("tel").status:
 ■${get("tel").label}
@@ -20,6 +35,7 @@ ${get("mail").body}
 %endif
 
 -----
+
 %if get("entry_no").status:
 ■${get("entry_no").label}
 ${get("entry_no").body}
@@ -31,6 +47,7 @@ ${get("order_datetime").body}
 %endif
 
 -----
+
 %if get("event_name").status:
 ■${get("event_name").label}: ${get("event_name").body}
 %endif
@@ -46,7 +63,7 @@ ${get("order_datetime").body}
 %for wish in lot_entry.wishes:
 
 【第${wish.wish_order+1}希望】
-公演日：${h.performance_datetime(wish.performance)}
+公演日：${h.performance_datetime(wish.performance, i18n)}
 会場：${wish.performance.venue.name}
 申込内容
 %for product in wish.products:
@@ -56,10 +73,10 @@ ${product.product.name} ${h.format_currency(product.product.price)} x ${product.
 ${get("total_amount").label}：${h.format_currency(wish.tickets_amount)}
 %endif
 %if get("system_fee").status:
-${get("system_fee").label}：${h.format_currency(wish.system_fee)}（税込）
+${get("system_fee").label}：${h.format_currency(wish.system_fee)}（tax included）
 %endif
 %if get("special_fee").status and wish.special_fee > 0:
-${wish.special_fee_name}：${h.format_currency(wish.special_fee)}（税込）
+${wish.special_fee_name}：${h.format_currency(wish.special_fee)}（tax included）
 %endif
 %if get("transaction_fee").status:
 ${get("transaction_fee").label}：${h.format_currency(wish.transaction_fee)}
@@ -78,6 +95,87 @@ ${h.render_payment_lots_accepted_mail_viewlet(request, lot_entry)}
 お受取方法： ${delivery_method_name}
 ※引取手数料：${h.format_currency(lot_entry.payment_delivery_method_pair.delivery_fee)}/${h.fee_type(lot_entry.payment_delivery_method_pair.delivery_method.fee_type)}をチケット代金とは別に頂戴いたします。
 ${h.render_delivery_lots_accepted_mail_viewlet(request, lot_entry)}
+
+%if i18n:
+-----
+
+%if get("name").status:
+■ Name
+${get("name").body}
+%endif
+%if get("tel").status:
+■ Tel
+${get("tel").body}
+%endif
+%if get("mail").status:
+■ Email
+${get("mail").body}
+%endif
+
+-----
+
+%if get("entry_no").status:
+■ Lottery Application Number
+${get("entry_no").body}
+This number is required for checking the application detail and result.
+Please keep it carefully.
+%endif
+%if get("order_datetime").status:
+■ Applying Date
+${get("order_datetime").body}
+%endif
+
+-----
+
+%if get("event_name").status:
+■ Event: ${get("event_name").body}
+%endif
+%if get("lot_name").status:
+■ Lottery Name: ${get("lot_name").body}
+%endif
+%if get("announce_date").status:
+■ Announce Date: ${get("announce_date").body}
+%endif
+%if get("review_url").status:
+■ Result Confirmation Page: ${get("review_url").body}
+%endif
+%for wish in lot_entry.wishes:
+【Wish No ${wish.wish_order+1}】
+Perforamnce Date：${h.performance_datetime(wish.performance, i18n)}
+Place：${wish.performance.venue.name}
+
+Application Contents:
+%for product in wish.products:
+${product.product.name} ${h.format_currency(product.product.price)} x ${product.quantity} sheet(s)
+%endfor
+%if get("total_ammount").status:
+Total Amount：${h.format_currency(wish.tickets_amount)}
+%endif
+%if get("system_fee").status:
+System Usage Fee：${h.format_currency(wish.system_fee)}（tax included）
+%endif
+%if get("special_fee").status and wish.special_fee > 0:
+Special Fee：${h.format_currency(wish.special_fee)}（tax included）
+%endif
+%if get("transaction_fee").status:
+Transaction Fee：${h.format_currency(wish.transaction_fee)}
+%endif
+%if get("delivery_fee").status:
+Delivery Fee：${h.format_currency(wish.delivery_fee)}
+%endif
+%endfor
+
+■ Payment
+Payment Method： ${payment_method_name}
+※Payment Fee：${h.format_currency(lot_entry.payment_delivery_method_pair.transaction_fee)} ${h.fee_type_i18n(lot_entry.payment_delivery_method_pair.payment_method.fee_type)}
+${h.render_payment_lots_accepted_mail_viewlet(request, lot_entry)}
+-----
+■ Delivery
+Delivery Method： ${delivery_method_name}
+※Delivery Fee：${h.format_currency(lot_entry.payment_delivery_method_pair.delivery_fee)} ${h.fee_type_i18n(lot_entry.payment_delivery_method_pair.delivery_method.fee_type)}
+${h.render_delivery_lots_accepted_mail_viewlet(request, lot_entry)}
+
+%endif
 
 ${notice}
 
