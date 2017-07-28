@@ -40,6 +40,8 @@ def name_validators(request):
         return base + [length_limit_for_sej_alphabet, Regexp(r'^[A-z]+$', message=_(u'アルファベットのみを入力してください'))]
     if locale_name == 'zh_TW':
         return base + [length_limit_for_sej_alphabet, Regexp(r'^[A-z]+$', message=_(u'アルファベットのみを入力してください'))]
+    if locale_name == 'ko':
+        return base + [length_limit_for_sej_alphabet, Regexp(r'^[A-z]+$', message=_(u'アルファベットのみを入力してください'))]
 
 def last_name_validators(request):
     return name_validators(request)
