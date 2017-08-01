@@ -122,7 +122,7 @@ def japanese_date(date):
     return u"%d年%d月%d日(%s)" % (date.year, date.month, date.day, u"月火水木金土日"[date.weekday()])
 
 def i18n_date(date):
-    return u"%d-%d-%d(%s)" % (date.year, date.month, date.day, ('Mon.','Tue.','Wed.','Thu.','Fri.','Sat.','Sun.')[date.weekday()])
+    return u"%d/%d/%d(%s)" % (date.year, date.month, date.day, ('Mon.','Tue.','Wed.','Thu.','Fri.','Sat.','Sun.')[date.weekday()])
 
 def japanese_time(time):
     return u"%d時%02d分" % (time.hour, time.minute)
@@ -154,7 +154,7 @@ def mail_date(date):
     return u'{d.year}年 {d.month}月 {d.day}日 {d.hour:02}時 {d.minute:02}分'.format(d=date)
 
 def i18n_mail_date(date):
-    return u'{d.year}-{d.month}-{d.day} {d.hour:02}:{d.minute:02}'.format(d=date)
+    return u'{d.year}/{d.month}/{d.day} {d.hour:02}:{d.minute:02}'.format(d=date)
 
 # TODO: requestをパラメータから排除
 def error_list(request, form_or_field, name=None):
@@ -179,6 +179,13 @@ def fee_type(type_enum):
         return u"1申込当り"
     if type_enum == int(FeeTypeEnum.PerUnit.v[0]):
         return u"1枚ごと"
+
+# lotsの送信メールため作った。
+def fee_type_i18n(type_enum):
+    if type_enum == int(FeeTypeEnum.Once.v[0]):
+        return u"per order/application"
+    if type_enum == int(FeeTypeEnum.PerUnit.v[0]):
+        return u"per sheet of tickets"
 
 def format_number(num, thousands=","):
     return _format_number(int(num), thousands)

@@ -3,12 +3,24 @@ ${name}　様
 
 %if get("first_sentence").status:
 ${get("first_sentence").body}
+
+%if i18n:
+Thank you very much for the application.
+
+Please check your application detail and results on lottery application confirmation page after the results are announced.
+English information follows Japanese
+%endif
 %endif
 
 -----
-%if get("name_kana").status:
+%if get("name_kana").status or get("name").status:
+%if i18n:
+■${get("name").label}
+${get("name").body}
+%else:
 ■${get("name_kana").label}
 ${get("name_kana").body}
+%endif
 %endif
 %if get("tel").status:
 ■${get("tel").label}
@@ -41,7 +53,7 @@ ${get("order_datetime").body}
 
 <第${elected_wish.wish_order + 1}希望>
 公演名：${elected_wish.performance.name}
-公演日：${h.performance_datetime(elected_wish.performance)}
+公演日：${h.performance_datetime(elected_wish.performance, i18n)}
 会場：${elected_wish.performance.venue.name}
 申込内容
 %for product in elected_wish.products:
@@ -69,6 +81,71 @@ ${h.render_delivery_lots_elected_mail_viewlet(request, lot_entry.order)}
 </%doc>
 ${h.render_delivery_lots_elected_mail_viewlet(request, lot_entry)}
 
+%if i18n:
+-----
+%if get("name_kana").status or get("name").status:
+
+■ Name
+${get("name").body}
+%endif
+%if get("tel").status:
+■ Tel
+${get("tel").body}
+%endif
+%if get("mail").status:
+■ Email
+${get("mail").body}
+%endif
+
+-----
+%if get("entry_no").status:
+■ Lottery Application Number
+${get("entry_no").body}
+%endif
+
+%if get("order_datetime").status:
+■ Applying Date
+${get("order_datetime").body}
+%endif
+
+---------------
+%if get("event_name").status:
+■ Event: ${get("event_name").body}
+%endif
+%if get("lot_name").status:
+■ Lottery Name: ${get("lot_name").body}
+%endif
+
+<Wish No ${elected_wish.wish_order + 1}>
+Performance Name：${elected_wish.performance.name}
+Performance Date：${h.performance_datetime(elected_wish.performance, i18n)}
+Place：${elected_wish.performance.venue.name}
+Contents
+%for product in elected_wish.products:
+${product.product.name} ${h.format_currency(product.product.price)} x ${product.quantity} sheet(s)
+%endfor
+Tickets Price：${h.format_currency(elected_wish.tickets_amount)}
+System Usage Fee：${h.format_currency(elected_wish.system_fee)}（tax included）
+%if elected_wish.special_fee > 0:
+${elected_wish.special_fee_name}：${h.format_currency(elected_wish.special_fee)}()
+%endif
+
+
+■ Payment
+Payment Method： ${lot_entry.payment_delivery_method_pair.payment_method.name}
+※ Payment Fee：${h.format_currency(lot_entry.payment_delivery_method_pair.transaction_fee)} ${h.fee_type_i18n(lot_entry.payment_delivery_method_pair.payment_method.fee_type)}
+<%doc>
+${h.render_payment_lots_elected_mail_viewlet(request, lot_entry.order)}
+</%doc>
+${h.render_payment_lots_elected_mail_viewlet(request, lot_entry)}
+■ Delivery
+Delivery Method： ${lot_entry.payment_delivery_method_pair.delivery_method.name}
+※ Delivery Fee：${h.format_currency(lot_entry.payment_delivery_method_pair.delivery_fee)} ${h.fee_type_i18n(lot_entry.payment_delivery_method_pair.delivery_method.fee_type)}
+<%doc>
+${h.render_delivery_lots_elected_mail_viewlet(request, lot_entry.order)}
+</%doc>
+${h.render_delivery_lots_elected_mail_viewlet(request, lot_entry)}
+%endif
 
 ${notice}
 

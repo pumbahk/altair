@@ -3,12 +3,24 @@ ${name}　様
 
 %if get("first_sentence").status:
 ${get("first_sentence").body}
+
+%if i18n:
+Thank you very much for the application.
+
+Please check your application detail and results on lottery application confirmation page after the results are announced.
+English information follows Japanese
+%endif
 %endif
 
 -----
-%if get("name_kana").status:
+%if get("name_kana").status or get("name").status:
+%if i18n:
+■${get("name").label}
+${get("name").body}
+%else:
 ■${get("name_kana").label}
 ${get("name_kana").body}
+%endif
 %endif
 %if get("tel").status:
 ■${get("tel").label}
@@ -43,13 +55,62 @@ ${get("order_datetime").body}
 %for wish in lot_entry.wishes:
 
 【第${wish.wish_order+1}希望】
-公演日：${h.performance_datetime(wish.performance)}
+公演日：${h.performance_datetime(wish.performance, i18n)}
 会場：${wish.performance.venue.name}
 申込内容
   %for product in wish.products:
 ${product.product.name} ${h.format_currency(product.product.price)} x ${product.quantity}枚
   %endfor
 %endfor
+
+%if i18n:
+-----
+%if get("name").status:
+■ Name
+${get("name_kana").body}
+%endif
+%if get("tel").status:
+■ Tel
+${get("tel").body}
+%endif
+%if get("mail").status:
+■ Email
+${get("mail").body}
+%endif
+
+-----
+%if get("entry_no").status:
+■ Lottery Application Number
+${get("entry_no").body}
+%endif
+
+%if get("order_datetime").status:
+■ Applying Date
+${get("order_datetime").body}
+%endif
+
+-----
+%if get("event_name").status:
+■ Event: ${get("event_name").body}
+%endif
+%if get("lot_name").status:
+■ Lottery Name: ${get("lot_name").body}
+%endif
+%if get("announce_date").status:
+■ Announce Date: ${get("announce_date").body}
+%endif
+%for wish in lot_entry.wishes:
+
+【Wish No ${wish.wish_order+1}】
+Performance Date：${h.performance_datetime(wish.performance, i18n)}
+Place：${wish.performance.venue.name}
+Contents
+  %for product in wish.products:
+${product.product.name} ${h.format_currency(product.product.price)} x ${product.quantity} sheet(s)
+  %endfor
+%endfor
+%endif
+
 ${notice}
 
 ${footer}
