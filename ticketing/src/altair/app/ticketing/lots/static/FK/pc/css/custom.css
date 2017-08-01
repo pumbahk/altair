@@ -1,19 +1,69 @@
 :root {
-    --custom-btn-color: #02a0dd;    /* buttons ボタン */
-    --custom-color: #02a0dd;        /* fonts 文字 */
-    --custom-border-color: #02a0dd;     /* border 罫線（divなど） */
-    --custom-background-color: #02a0dd;     /* background 背景（divなど） */
+    --custom-btn-color: #bf0000;    /* buttons ボタン */
+    --custom-color: #bf0000;        /* fonts 文字 */
+    --custom-border-color: #bf0000;     /* border 罫線（divなど） */
+    --custom-background-color: #bf0000;     /* background 背景（divなど） */
 }
 
 /* buttons color ボタン
 -------------------------------------------- */
-.btn-primary,
-.qr-btn {
+.btn-buy {
     background-color: var(--custom-btn-color) !important;
 }
-
+.btn-close {
+    background-color: var(--custom-btn-color) !important;
+}
+.align2 {
+    background-color: var(--custom-btn-color) !important;
+}
+.btn-primary {
+    background-color: var(--custom-btn-color) !important;
+}
+#selectSeat.focused .btn-select-seat {
+    background-color: var(--custom-btn-color) !important;
+}
+#selectSeat.focused .btn-cancel {
+    background-color: var(--custom-btn-color) !important;
+}
+#selectSeatType ul.buttonSet li a {
+    background-color: var(--custom-btn-color) !important;
+}
 /* heading color 見出し
 -------------------------------------------- */
-.heading-primary {
+#main h1 {
+    background-color: var(--custom-background-color) !important;
+}
+#main h2 {
+    color: var(--custom-color) !important;
+    border-color: var(--custom-border-color) !important;
+}
+
+.confirmBox h2 {
+    color: var(--custom-color) !important;
+    border-color: var(--custom-border-color) !important;
+}
+
+.attention1 {
+	color: var(--custom-color) !important;
+}
+
+.settlementPayBox dt {
+    color: var(--custom-color) !important;
+}
+
+.settlementPayBox dd .deliveryFee,
+.settlementPayBox dd .paymentFee {
+    color: var(--custom-color) !important;
+}
+
+.settlementPayBox dd dl dd .paymentFee {
+    color: var(--custom-color) !important;
+}
+
+.settlementDeliveryInput th {
+    color: var(--custom-color) !important;
+}
+
+.settlementInterest h2 {
     background-color: var(--custom-background-color) !important;
 }

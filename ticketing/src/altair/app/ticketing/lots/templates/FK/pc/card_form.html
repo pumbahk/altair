@@ -34,10 +34,10 @@
 <form id="form1" name="form1" method="post" action="${request.url}">
   ${form.csrf_token()}
   <div class="settlementBox">
+    <h2>${_(u'クレジットカードでお支払い')}</h2>
     <div class="settlementBoxInner">
       <!-- カード情報 -->
       <dl>
-        <dt class="cartPayment">${_(u'クレジットカードでお支払い')}</dt>
         <dd>
           <div class="settlementPayInput">
             <div class="settlementPayInputInner">
@@ -89,10 +89,10 @@ notice = request.session.get('altair.app.ticketing.payments.auth3d_notice')
           </p>
 %endif
           <p>
-            <img src="${request.static_url('altair.app.ticketing.cart:static/AN/pc/images/kc_logo_rakuten.gif')}" height="30px" />
-            <img src="${request.static_url('altair.app.ticketing.cart:static/AN/pc/images/visa.gif')}" height="30px" />
-            <img src="${request.static_url('altair.app.ticketing.cart:static/AN/pc/images/master.gif')}" height="30px" />
-            <img src="${request.static_url('altair.app.ticketing.cart:static/AN/pc/images/jcb.gif')}" height="30px" />
+            <img src="${view_context.static_url('pc/images/kc_logo_rakuten.gif', 'lots')}" height="30px" />
+            <img src="${view_context.static_url('pc/images/visa.gif', 'lots')}" height="30px" />
+            <img src="${view_context.static_url('pc/images/master.gif', 'lots')}" height="30px" />
+            <img src="${view_context.static_url('pc/images/jcb.gif', 'lots')}" height="30px" />
           </p>
           <p>
           <font color="#FF0000">※${_(u'カード情報入力時に、ご利用カードの有効性の確認（オーソリ確認）を実施しております。')}<br/>
@@ -103,5 +103,7 @@ notice = request.session.get('altair.app.ticketing.payments.auth3d_notice')
       </dl>
     </div>
   </div>
-  <p class="align2"><input type="image" src="${view_context.static_url('pc/img/settlement/btn_next.gif', 'lots')}" alt="次へ" width="226" height="46" /></p>
+  <div class="mgt50">
+    <p class="align2" onclick="$('#form1').submit()">${__(u'次へ')}</p>
+  </div>
 </form>
