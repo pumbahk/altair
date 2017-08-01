@@ -64,12 +64,14 @@ def main(argv=sys.argv[1:]):
                                 .filter(Order.sales_segment_id == sid) \
                                 .filter(Order.canceled_at == None) \
                                 .filter(Order.deleted_at == None) \
+                                .filter(Order.refunded_at == None) \
                                 .all()
             else:
                 orders = session.query(Order) \
                                 .filter(Order.performance_id == pid) \
                                 .filter(Order.canceled_at == None) \
                                 .filter(Order.deleted_at == None) \
+                                .filter(Order.refunded_at == None) \
                                 .all()
 
             # orderからcsv出力するためのdictへ変換
