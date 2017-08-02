@@ -248,6 +248,7 @@ class OrganizationSettings(BaseView):
         organization_setting.sales_report_type = f.sales_report_type.data
         organization_setting.sitecatalyst_use = f.sitecatalyst_use.data
         organization_setting.enable_mypage = f.enable_mypage.data
+        organization_setting.recaptcha = f.recaptcha.data
         organization_setting.enable_word = f.enable_word.data
         organization_setting.augus_use = f.augus_use.data
         organization_setting.mail_refund_to_user = f.mail_refund_to_user.data
@@ -369,6 +370,7 @@ class OrganizationSettingSimples(BaseView):
                     organization_setting.notify_remind_mail = f.notify_remind_mail.data
                     organization_setting.notify_print_remind_mail = f.notify_print_remind_mail.data
                     organization_setting.auto_cms = f.auto_cms.data
+                    organization_setting.recaptcha = f.recaptcha.data
                     self.request.session.flash(u'その他の設定を保存しました')
                     return HTTPFound(location=route_path(
                         'organizations.settings.edit.simple',

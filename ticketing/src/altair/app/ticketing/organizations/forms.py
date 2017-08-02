@@ -367,6 +367,9 @@ class OrganizationSettingSimpleForm(OurForm):
     auto_cms = OurBooleanField(
         label=get_annotations_for(c_models.OrganizationSetting.auto_cms)['label']
     )
+    recaptcha = OurBooleanField(
+        label=get_annotations_for(c_models.OrganizationSetting.recaptcha)['label']
+    )
 
     def __init__(self, *args, **kwargs):
         context = kwargs.pop('context')
@@ -424,6 +427,9 @@ class OrganizationSettingForm(OrganizationSettingSimpleForm):
         )
     enable_mypage = OurBooleanField(
         label=get_annotations_for(c_models.OrganizationSetting.enable_mypage)['label']
+    )
+    recaptcha = OurBooleanField(
+        label=get_annotations_for(c_models.OrganizationSetting.recaptcha)['label']
     )
     enable_word = OurBooleanField(
         label=get_annotations_for(c_models.OrganizationSetting.enable_word)['label']
