@@ -1,0 +1,18 @@
+{
+  "Comment" : "",
+  "Changes" : [
+    {
+      "Action" : "UPSERT",
+      "ResourceRecordSet" : {
+        "Name" : "_acme-challenge.{{DOMAIN}}.",
+        "Type" : "TXT",
+        "TTL" : 300,
+        "ResourceRecords" : [
+          {
+            "Value": "\"{{TOKEN}}\""
+          }
+        ]
+      }
+    }
+  ]
+}

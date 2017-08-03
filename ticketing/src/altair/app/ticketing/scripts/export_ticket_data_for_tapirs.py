@@ -47,6 +47,7 @@ def main(argv=sys.argv[1:]):
     parser = argparse.ArgumentParser()
     parser.add_argument('--config', metavar='config', type=str, required=True)
     parser.add_argument('-pid', '--performance_id', metavar='performance_id', type=str, required=True)
+    parser.add_argument('-sid', '--sales_segment_id', metavar='sales_segment_id', type=str, required=True)
 
     args = parser.parse_args()
     env = bootstrap(args.config)
@@ -57,11 +58,22 @@ def main(argv=sys.argv[1:]):
     try:
         if args.performance_id:
             pid = args.performance_id
-            orders = session.query(Order) \
-                            .filter(Order.performance_id == pid) \
-                            .filter(Order.canceled_at == None) \
-                            .filter(Order.deleted_at == None) \
-                            .all()
+            sid = args.sales_segment_id
+            if sid:
+                orders = session.query(Order) \
+                                .filter(Order.sales_segment_id == sid) \
+                                .filter(Order.canceled_at == None) \
+                                .filter(Order.deleted_at == None) \
+                                .filter(Order.refunded_at == None) \
+                                .all()
+            else:
+                orders = session.query(Order) \
+                                .filter(Order.performance_id == pid) \
+                                .filter(Order.canceled_at == None) \
+                                .filter(Order.deleted_at == None) \
+                                .filter(Order.refunded_at == None) \
+                                .all()
+
             # orderからcsv出力するためのdictへ変換
             export_data = []
             for order in orders:

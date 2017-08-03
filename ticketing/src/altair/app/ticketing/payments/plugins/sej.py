@@ -533,6 +533,8 @@ def validate_order_like(request, current_date, order_like, update=False, ticketi
             validate_length_dict('UTF-8', {'user_name':user_name}, {'user_name':40})
         if organization.setting.i18n and (request.localizer and request.localizer.locale_name == 'en'):
             validate_length_dict('UTF-8', {'user_name':user_name}, {'user_name':40})
+        if organization.setting.i18n and (request.localizer and request.localizer.locale_name == 'ko'):
+            validate_length_dict('UTF-8', {'user_name': user_name}, {'user_name': 40})
         user_name_kana = build_user_name_kana(order_like.shipping_address)
         validate_length_dict('CP932', {'user_name_kana':user_name_kana}, {'user_name_kana':40})
 
