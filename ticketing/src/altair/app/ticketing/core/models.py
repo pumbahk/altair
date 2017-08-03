@@ -4225,6 +4225,7 @@ class OrganizationSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     event_label = AnnotatedColumn(Boolean, nullable=False, default=True, doc=u"イベント販売区分ラベル", _a_label=u"イベント販売区分ラベル")
     show_event_op_and_sales = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"登録、営業担当者を表示", _a_label=u"登録、営業担当者を表示")
     default_oauth_setting = Column(MutationDict.as_mutable(JSONEncodedDict(16384)), nullable=False, default={}, server_default='{}')
+    recaptcha = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"recaptchaの使用", _a_label=u"recaptchaの使用")
 
     def _render_cart_setting_id(self):
         return link_to_cart_setting(self.cart_setting)

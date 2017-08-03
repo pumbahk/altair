@@ -398,6 +398,41 @@ def create_event_dict(view, performance_id, sales_segments, i18n=False):
         product=view.context.event.products
         )
 
+
+@view_defaults(decorator=(with_jquery + with_jquery_tools).not_when(mobile_request), xhr=False, permission="buy")
+class RecaptchaView(IndexViewMixin):
+    """ Recaptcha画面 """
+    def __init__(self, context, request):
+        IndexViewMixin.__init__(self)
+        self.context = context
+        self.request = request
+        self.prepare()
+
+    @lbr_view_config(route_name='cart.index.recaptcha',
+                     renderer=selectable_renderer("recaptcha.html"),
+                     request_method="GET")
+    @lbr_view_config(route_name='cart.index.recaptcha',
+                     request_type="altair.mobile.interfaces.ISmartphoneRequest",
+                     renderer=selectable_renderer("recaptcha.html"),
+                     request_method="GET")
+    def cart_index(self):
+        return dict(sitekey=self.context.recaptcha_sitekey)
+
+    @lbr_view_config(route_name='cart.index.recaptcha',
+                     renderer=selectable_renderer("recaptcha.html"),
+                     request_method="POST")
+    @lbr_view_config(route_name='cart.index.recaptcha',
+                     request_type="altair.mobile.interfaces.ISmartphoneRequest",
+                     renderer=selectable_renderer("recaptcha.html"),
+                     request_method="POST")
+    def cart_index_post(self):
+        recaptcha = self.request.POST.get('g-recaptcha-response', None)
+        if recaptcha:
+            param = {'g-recaptcha-response': recaptcha}
+            return HTTPFound(self.request.route_url('cart.index', event_id=self.context.event.id, _query=param))
+        return {}
+
+
 @view_defaults(decorator=(with_jquery + with_jquery_tools).not_when(mobile_request), xhr=False, permission="buy")
 class IndexView(IndexViewMixin):
     """ 座席選択画面 """
@@ -460,6 +495,11 @@ class IndexView(IndexViewMixin):
                         preferred_performance = None
 
         set_rendered_event(self.request, self.context.event)
+
+        if self.request.organization.setting.recaptcha:
+            recaptcha = self.request.GET.get('g-recaptcha-response')
+            if not self.context.check_recaptch(recaptcha):
+                return HTTPFound(self.request.route_url('cart.index.recaptcha', event_id=self.context.event.id) or '/')
 
         return dict(
             event=create_event_dict(self, performance_id, sales_segments, self.request.organization.setting.i18n),

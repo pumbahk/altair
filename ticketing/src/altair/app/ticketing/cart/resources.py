@@ -1,7 +1,8 @@
 # -*- coding:utf-8 -*-
 
 import logging
-
+import json
+import requests
 from datetime import datetime, date
 import itertools
 from sqlalchemy import sql
@@ -192,6 +193,12 @@ class TicketingCartResourceBase(object):
         """現在認証中のユーザ"""
         return self.request.altair_auth_info
 
+    def check_recaptch(self, recaptcha):
+        url = "https://www.google.com/recaptcha/api/siteverify"
+        param = dict(secret=self.recaptcha_secret, response=recaptcha)
+        response = requests.post(url, param)
+        return json.loads(response.content)['success']
+
     @reify
     def available_sales_segments(self):
         """現在認証済みのユーザが今買える全販売区分"""
@@ -291,6 +298,14 @@ class TicketingCartResourceBase(object):
 
         membership = user['membership']
         return membership
+
+    @reify
+    def recaptcha_sitekey(self):
+        return "6LdanyoUAAAAAOh3LNep4EtZaKV19dCE92gMCAcl"
+
+    @reify
+    def recaptcha_secret(self):
+        return "6LdanyoUAAAAAACXpFL08qMlCUyMkaMFF5xwUPlZ"
 
     @reify
     def user_object(self):
