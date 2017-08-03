@@ -9,24 +9,22 @@
 </div>
 <div>
 <%namespace file="../tags_mobile.html" name="mobile" />
-<%mobile:header>May'n 28th Birthday Special LIVE“PEACE of SMILE”　モバイル会員先行受付</%mobile:header>
+<%mobile:header>May'n 28th Birthday Special LIVE“PEACE of SMILE”　CD先行抽選予約申込</%mobile:header>
 
 
 <p style="text-align:center;">
 <div id="login_form">
-<div><font color="#FEBF00">■</font>【会員番号/パスワード】</font>
+<div><font color="#FEBF00">■</font>【シリアルナンバー入力】</font>
 </div>
 
-May'n mobile会員番号○○桁を入力してください。<br/>
+Wake Up, May’n！「One In A Billion」に封入されている11桁のシリアルナンバーを入力してください。<br/>
 <br/>
 </div>
 <form action="${request.current_route_path()}" method="post">
+<input type="hidden" name="password" value="mayn">
 <div>
-  会員番号(数字8桁)<br/>
+  シリアルナンバー<br/>
   <input type="text" name="username" value="" istyle="4"><br/>
-  パスワード（数字8桁）
-  <br/>
-  <input type="text" name="password" value="" istyle="4"><br/>
   %if message:
   <br/><span style="color: red">入力に誤りがあります。ご確認の上、もう一度入力してください。</span>
   %endif
@@ -61,8 +59,11 @@ May'n mobile会員番号○○桁を入力してください。<br/>
 ※女性のみご購入及びそのスペースへの入場が可能です。<br/>
 ※会場の構造上後方になる場合があります。<br/><br/>
 
-◆受付期間：7月20日（木）12：00～7月26日（水）23:59<br/>
-［履歴確認］<a href="https://rt.tstar.jp/orderreview/form" target="_blank">https://rt.tstar.jp/orderreview/form</a><br/>
+◆受付期間：8月9日（水）12：00～8月18日（金）23：59<br/>
+［当落発表について］<br/>
+下記日時にて抽選結果をメールにてお知らせします。メール未着の場合は‘抽選履歴確認ページ’よりご確認ください。<br/>
+当落発表日：8月22日（火）13：00頃メールにてお知らせ<br/>
+抽選結果確認ページ　<a href="https://rt.tstar.jp/orderreview/form" target="_blank">https://rt.tstar.jp/orderreview/form</a><br/>
 </div>
 <br/>
 
@@ -80,6 +81,7 @@ May'n mobile会員番号○○桁を入力してください。<br/>
 
 <%mobile:rakuten_header>【お申込み時の注意事項】</%mobile:rakuten_header>
 <div class="serialatt">
+<span style="color: red">※シリアルナンバー1つ（CD1枚に1つ）につき、1公演4枚までお申込みが可能です。</span><br />
 ※ご購入されたチケットは、理由の如何を問わず、取替・変更・キャンセルはお受けできません。<br/>
 ※購入時、チケット代の他にシステム利用料等、各種手数料が必要となります。<br/>
 　・システム利用料216円/枚（税込）<br/>
