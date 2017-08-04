@@ -82,4 +82,9 @@ $(document).ready(function() {
       <input class="btn btn-danger" type="submit" name="submit" value="コピーを実行する">
     </div>
   </form>
+
+  <a href="${request.route_path('performances.termcopy', performance_id=origin_performance.id)}">
+    <input id="term" class="btn btn-primary" type="button" value="期間指定">
+  </a>
+
 </div>
