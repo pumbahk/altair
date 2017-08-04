@@ -71,6 +71,9 @@ class PlainTextRenderer(SimpleRenderer):
 
     def __call__(self, record, context):
         value = dereference(record, self.key, self.empty_if_dereference_fails)
+        if self.key == 'order.note':
+            value = value.replace('\r\n', ' ')
+
         return [
             ((u'', self.name, u''), (u'="%s"' % unicode(value) if self.fancy and context.enable_fancy else unicode(value)) if value is not None else u'')
             ]
