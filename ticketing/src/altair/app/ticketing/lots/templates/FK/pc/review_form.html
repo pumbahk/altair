@@ -1,11 +1,10 @@
 <%inherit file="review_base.html" />
-<%include file="../../__commons__/header.html" />
 
 <div class="selectwrapper">
   ${h.create_url(request) |n}
 </div>
 
-<h2 class="heading heading-primary">${_(u'チケット申込')}</h2>
+<h2 class="heading heading-primary">${_(u'抽選申込確認')}</h2>
 
 <!-- ===== 申込状況確認 ===== -->
 <div class="box clearfix">
@@ -17,14 +16,20 @@
             <table class="customer-table">
                 <tbody>
                     <tr>
-                      <th>${_(u'抽選申し込み番号')}<span class="icon-required">${_(u'必須')}</span><br><span>${_(u'半角英数')}</span></th>
+                        <th>
+                          ${_(u'抽選申込番号')}<br>
+                          <span>${_(u'半角英数')}</span>
+                        </th>
                         <td>
                             <input id="entry_no" name="entry_no" type="text" value="" placeholder="" required>
                             <span class="red">${h.render_errors(request, form.entry_no.errors)}</span>
                         </td>
                     </tr>
                     <tr>
-                      <th>${_(u'電話番号')}<span class="icon-required">${_(u'必須')}</span><br><span>${_(u'半角英数')}</span></th>
+                        <th>
+                            ${_(u'電話番号')}<br>
+                            <span>${_(u'半角英数')}</span>
+                        </th>
                         <td>
                             <input id="tel_no" name="tel_no" type="text" value="" placeholder="" required>
                             <span class="red">${h.render_errors(request, form.tel_no.errors)}</span>
@@ -37,7 +42,4 @@
             <p class="confirm-btnBox"><input class="btn btn-primary" type="submit" value="${_(u'確認する')}"></p>
         </form>
     </div>
-
 </div><!-- ===== / 申込状況確認 ===== -->
-
-<%include file="../../__commons__/footer.html" />
