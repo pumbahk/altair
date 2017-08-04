@@ -590,9 +590,6 @@ li.btn-seat-plus.btn-seat-active:after {
 	padding: 5px;
 	border: 1px solid #ccc;
 }
-.selectdate-box {
-	margin: 20px;
-}
 .selectdate-box dl {
 	-moz-border-radius: 6px;
 	-webkit-border-radius: 6px;
@@ -602,11 +599,6 @@ li.btn-seat-plus.btn-seat-active:after {
 }
 .selectdate-box dl dt,.selectdate-box dl dd {
 	padding: 5px;
-}
-.selectdate-box dl dt {
-	float: left;
-	width: 10%;
-	font-weight: bold;
 }
 
 /* .customer-table ============================== */
