@@ -469,7 +469,7 @@ var selected_performance_id = 0;
 
         $.each(products, function(i, product) {
             var quantityField = "product-quantity-" + wishOrder + "-" + i + "";
-            var tr = $("<tr></tr>").addClass("product-select-tr", (i + 1 == products.length ? "settlementSelectEnd":""));
+            var tr = $("<tr></tr>").addClass("product-select-tr" + (i + 1 == products.length ? " settlementSelectEnd":""));
 
             $("<th></th>").append(i == 0 ? $("<label></label>").text(ticket_label) : "&nbsp").appendTo(tr);
 

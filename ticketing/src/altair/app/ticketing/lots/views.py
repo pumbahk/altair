@@ -478,7 +478,9 @@ class ConfirmLotEntryView(object):
                 for_='lots',
                 mode='entry'
                 )
-        return dict(event=event,
+        i18n = self.request.organization.setting.i18n
+        return dict(i18n=i18n,
+                    event=event,
                     lot=lot,
                     shipping_address=entry['shipping_address'],
                     payment_delivery_method_pair_id=entry['payment_delivery_method_pair_id'],

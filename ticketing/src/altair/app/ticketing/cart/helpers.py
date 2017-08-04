@@ -310,7 +310,7 @@ def sensible_widget(request, widget):
     return widget
 
 def sensible_coerce(request, value):
-    if value is None:
+    if not value:
         return u'(未回答)'
     elif isinstance(value, list):
         if len(value) == 0:
