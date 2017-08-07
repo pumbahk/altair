@@ -837,14 +837,16 @@ class Performances(BaseView):
         form = PerformanceTermForm(self.request.POST)
         origin_performance = self.context.performance
 
-        target_total = (form.end_day.data - form.start_day.data).days
+        target_total = 0
+        if form.start_day.data and form.end_day.data:
+            target_total = (form.end_day.data - form.start_day.data).days
 
         if target_total <= 0:
             return {
                 'event': origin_performance.event,
                 'origin_performance': origin_performance,
-                'origin_performance_form': self.create_origin_performance_form(origin_performance),
-                'forms': form,
+                'form': form,
+                'message': u'期間指定が不正です',
                 'cart_helper': cart_helper,
                 'route_path': self.request.path,
             }

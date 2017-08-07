@@ -20,10 +20,13 @@
   <form class="form-horizontal" action="${route_path}" method="POST">
     <div class="form-actions">
       <form>
-        ${form.start_day}
+        ${form.start_day}　〜　
         ${form.end_day}
       </form>
       <input class="btn btn-danger" type="submit" name="submit" value="コピーを実行する">
     </div>
   </form>
+  % if message:
+  <div style="width:150px;background-color: #ffff66;color: #ff3333;border-bottom: 2px solid #ff3333;font-size: 16px;">${message}</div>
+  % endif
 </div>
