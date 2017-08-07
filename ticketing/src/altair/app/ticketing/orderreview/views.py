@@ -538,6 +538,23 @@ def information_view(context, request):
         infomation_tel=infomation_tel,
         )
 
+@lbr_view_config(
+    route_name="order_review.receipt",
+    renderer=selectable_renderer("order_review/receipt.html")
+    )
+def receipt_view(context, request):
+    now = datetime.now()
+    order = context.order
+    receipt_address = request.params.get('receipt_address', '')
+    receipt_provision = request.params.get('receipt_provision', '')
+
+    return dict(
+        request=request,
+        now=now,
+        order=order,
+        receipt_address=receipt_address,
+        receipt_provision=receipt_provision
+        )
 
 class QRView(object):
     def __init__(self, context, request):

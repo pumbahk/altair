@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="ja" class="no-js">
+<head>
+  <title>領収書 | イーグルスチケット（Eチケ）</title>
+  <meta charset="utf-8">
+<meta http-equiv="x-ua-compatible" content="ie=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="shortcut icon" type="image/vnd.microsoft.icon" href="${view_context.static_url('images/eagles.ico')}">
+<link rel="apple-touch-icon" sizes="180x180" href="${view_context.static_url('images/touch.png')}">
+<link rel="apple-touch-icon-precomposed" href="${view_context.static_url('images/touch.png')}">
+<link rel="shortcut icon" href="${view_context.static_url('images/touch.png')}">
+<link rel="icon" sizes="192x192" href="${view_context.static_url('images/touch.png')}">
+<link rel="stylesheet" href="${view_context.static_url('css/common.css')}">
+<style>
+    section.contents {
+        padding: 3rem 0;
+    }
+    .flex {
+        display:flex;
+        direction: row;
+    }
+    h3 {
+        text-align: center;
+        color: #860010;
+        font-size: 24px;
+    }
+    hr {
+        border-top: 3px solid #CCC;
+    }
+    table {
+        width: 100%;
+    }
+    th, td {
+        font-weight: normal;
+        text-align: left;
+    }
+    .receipt-head th {
+        width: 250px;
+    }
+    .receipt-content th {
+        width: 15%;
+        min-width: 115px;
+    }
+    td.colon {
+        width: 10px;
+    }
+    .wrap {
+        width: 60%;
+        margin-left: 20%;
+    }
+    .company {
+        display: block;
+        width: 50%;
+    }
+    @media only screen
+    and (max-width : 414px) {
+        .wrap {
+            width: 90%;
+            margin-left: 5%;
+        }
+    }
+    @media print {
+        .wrap {
+            width: 90%;
+            margin-left: 5%;
+        }
+    }
+</style>
+</head>
+<body>
+    <div class="page">
+        <section class="contents">
+            <div class="wrap">
+                <h3>領収書</h3>
+                <br/>
+                <table class="receipt-head">
+                    <thead>
+                        <tr>
+                            <th>${receipt_address}</th>
+                            <td>様</td>
+                        </tr>
+                    </thead>
+                </table>
+                <hr/>
+                <table class="receipt-content">
+                    <tbody>
+                        <tr>
+                            <th>お名前</th>
+                            <td class="colon">：</td>
+                            <td>${order.shipping_address.last_name}　${order.shipping_address.first_name}</td>
+                        </tr>
+                        <tr>
+                            <th>予約番号</th>
+                            <td class="colon">：</td>
+                            <td>${order.order_no}</td>
+                        </tr>
+                        <tr>
+                            <th>請求金額</th>
+                            <td class="colon">：</td>
+                            <td>${h.format_currency(order.total_amount)}</td>
+                        </tr>
+                        <tr>
+                            <th>公演日・試合日</th>
+                            <td class="colon">：</td>
+                            <td>${h.japanese_date(order.performance.start_on)}</td>
+                        </tr>
+                        <tr>
+                            <th>但し</th>
+                            <td class="colon">：</td>
+                            <td>${receipt_provision}</td>
+                        </tr>
+                        <tr>
+                            <th>決済方法</th>
+                            <td class="colon">：</td>
+                            <td>${order.payment_delivery_pair.payment_method.name}</td>
+                        </tr>
+                        <tr>
+                            <th>発効日</th>
+                            <td class="colon">：</td>
+                            <td>${h.japanese_date(now)}</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <hr/>
+                <div class="footer flex">
+                    <div class="company">
+                        <p>ご利用ありがとうございました。</p>
+                    </div>
+                    <div class="company">
+                        <p>株式会社楽天野球団</p>
+                        <p>宮城県仙台市宮城野区宮城野2-11-6</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+  <!-- /.page -->
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+</body>
+</html>
