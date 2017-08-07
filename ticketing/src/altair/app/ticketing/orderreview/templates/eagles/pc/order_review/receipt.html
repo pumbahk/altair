@@ -77,6 +77,17 @@
         height: 50%;
         display: block;
     }
+    .buttons {
+        margin-top: 50px;
+    }
+    .btn {
+        width: 40%;
+        margin: auto;
+        max-width: 200px;
+    }
+    .btn-secondary {
+        border: 3px solid #860010 !important;
+    }
     @media only screen
     and (max-width : 414px) {
         .wrap {
@@ -84,10 +95,31 @@
             margin-left: 5%;
         }
     }
+    @page {
+        size: A4;
+        margin: 0;
+    }
     @media print {
+        html, body {
+            width: 210mm;
+            height: 297mm;
+        }
+        .page {
+            margin: 0;
+            border: initial;
+            border-radius: initial;
+            width: initial;
+            min-height: initial;
+            box-shadow: initial;
+            background: initial;
+            page-break-after: always;
+        }
         .wrap {
             width: 90%;
             margin-left: 5%;
+        }
+        .buttons {
+            display:none;
         }
     }
 </style>
@@ -157,6 +189,10 @@
                     <div class="thank-cmt flex flex-center">
                         <p>ご利用ありがとうございました。</p>
                     </div>
+                </div>
+                <div class="buttons flex flex-center">
+                    <button class="btn btn-primary" onclick="window.print();">印刷</button>
+                    <button class="btn btn-secondary" onclick="window.close();">閉じる</button>
                 </div>
             </div>
         </section>
