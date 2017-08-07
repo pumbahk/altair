@@ -68,7 +68,7 @@ class ClientFormFactory(object):
         return h.get_countries(self.request)
 
     def get_client_form_fields(self):
-        h.get_client_form_fields(self.request)
+        return h.get_client_form_fields(self.request)
 
     def make_form(self):
         _ = self._
