@@ -17,7 +17,19 @@
     }
     .flex {
         display:flex;
-        direction: row;
+    }
+    .flex-right {
+        justify-content: flex-end;
+    }
+    .flex-center {
+        justify-content: center;
+    }
+    .trademark-wrap {
+        width: 200px;
+        margin-bottom: 50px;
+    }
+    .trademark-wrap img {
+        width: 100%;
     }
     h3 {
         text-align: center;
@@ -52,6 +64,19 @@
         display: block;
         width: 50%;
     }
+    .thank-cmt {
+        margin: 20px 0;
+        font-size: 1.5rem;
+        font-weight: bold;
+    }
+    .signature-wrap {
+        width: 100%;
+    }
+    .signature-wrap img {
+        width: 50%;
+        height: 50%;
+        display: block;
+    }
     @media only screen
     and (max-width : 414px) {
         .wrap {
@@ -71,6 +96,9 @@
     <div class="page">
         <section class="contents">
             <div class="wrap">
+                <div class="trademark-wrap">
+                    <img src="${view_context.static_url('images/receipt/trademark.png')}" />
+                </div>
                 <h3>領収書</h3>
                 <br/>
                 <table class="receipt-head">
@@ -122,13 +150,12 @@
                     </tbody>
                 </table>
                 <hr/>
-                <div class="footer flex">
-                    <div class="company">
-                        <p>ご利用ありがとうございました。</p>
+                <div class="footer">
+                    <div class="signature-wrap flex flex-right">
+                        <img src="${view_context.static_url('images/receipt/signature.png')}" />
                     </div>
-                    <div class="company">
-                        <p>株式会社楽天野球団</p>
-                        <p>宮城県仙台市宮城野区宮城野2-11-6</p>
+                    <div class="thank-cmt flex flex-center">
+                        <p>ご利用ありがとうございました。</p>
                     </div>
                 </div>
             </div>
