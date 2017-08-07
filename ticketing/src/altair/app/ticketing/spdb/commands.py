@@ -304,10 +304,13 @@ def get_channel_str(channel_num):
         return "PC or Mobile"
 
 
-def chop_none(row):
+def clean_data(row):
     for val in row:
         if row[val] is None:
             row[val] = u''
+        if val == 'channel':
+            row[val] = get_channel_str(row[val])
+
     return row
 
 
