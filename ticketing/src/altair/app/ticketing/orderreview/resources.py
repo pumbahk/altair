@@ -241,3 +241,13 @@ class EventGateViewResource(OrderReviewResourceBase):
 
 class ContactViewResource(OrderReviewResourceBase):
     pass
+
+class ReceiptViewResource(OrderReviewResourceBase):
+    def __init__(self, request):
+        super(ReceiptViewResource, self).__init__(request)
+        order_no = request.params.get('order_no', None)
+        order = self.session.query(Order).join(SalesSegment, Order.sales_segment_id == SalesSegment.id). \
+            join(SalesSegmentSetting, SalesSegment.id == SalesSegmentSetting.sales_segment_id). \
+            filter(Order.organization_id == self.organization.id). \
+            filter(Order.order_no == order_no).first()
+        self.order = order

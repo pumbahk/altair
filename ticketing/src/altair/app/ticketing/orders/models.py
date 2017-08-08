@@ -812,6 +812,17 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         from .api import get_order_attribute_pair_pairs
         return get_order_attribute_pair_pairs(request, self, include_undefined_items=include_undefined_items, for_=for_, mode=mode)
 
+    @property
+    def get_receipt(self):
+        receipts = OrderReceipt.filter_by(order_id = self.id)
+        try:
+            return receipts.one()
+        except NoResultFound:
+            return None
+        except MultipleResultsFound:
+            receipts = receipts.all()
+            logger.info('order (%s) has multiple receipts (%s)' % (self.id, ', '.join([r.id for r in receipts])))
+            raise Exception(u'一つの予約は一つの領収書しか作れません')
 
 class OrderNotification(Base, BaseModel):
     __tablename__ = 'OrderNotification'
@@ -1039,6 +1050,19 @@ class OrderedProductItemToken(Base,BaseModel, LogicallyDeleted):
     def is_printed(self):
         return self.printed_at and (self.refreshed_at is None or self.printed_at > self.refreshed_at)
 
+
+class OrderReceipt(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+    __tablename__ = 'OrderReceipt'
+
+    id = sa.Column(Identifier, primary_key=True, nullable=False, autoincrement=True)
+    order_id = sa.Column(Identifier, sa.ForeignKey("Order.id"))
+    order = orm.relationship('Order', backref='receipts')
+    issued_at = sa.Column(sa.DateTime, nullable=True, default=None, doc=u"領収書の表示ボタンを押すタイミング更新")
+
+    @property
+    def is_issuable(self):
+        # 2回目発行したら、issued_atはcreated_atと異なる
+        return (not self.issued_at) or (self.issued_at == self.created_at)
 
 class ImportStatusEnum(StandardEnum):
     ConfirmNeeded = 0
