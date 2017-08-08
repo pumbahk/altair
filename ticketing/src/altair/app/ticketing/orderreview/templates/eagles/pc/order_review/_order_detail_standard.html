@@ -1,3 +1,4 @@
+<% receipt = order.get_receipt %>
 <section class="bg-contents">
     <div class="inner">
         <h2 class="page-ttl">購入履歴</h2>
@@ -164,10 +165,15 @@
                     </table>
                 </li>
             </ul>
-
+            <!--クレジットカードでお支払いのみ、購入履歴で領収書を発行できる-->
+            % if order.payment_plugin_id == 1:
             <p class="buy-info-txt">
-                <button class="btn btn-primary" id="receipt-button">領収書</button>
+                <button class="btn btn-primary" id="receipt-button">領収書発行</button>
             </p>
+            <p class="tac cm">
+                ※ 領収書は2回まで発行できます。
+            </p>
+            % endif
         </div>
     </div>
 </section>
@@ -239,6 +245,15 @@
     .receipt-btn {
         width: 25%;
     }
+    .receipt-btn:disabled {
+        background: #C3C3C3;
+        cursor: not-allowed;
+    }
+    .receipt-btn:disabled:hover {
+        background: #C3C3C3;
+        opacity: 1;
+        cursor: not-allowed;
+    }
     @media only screen
     and (max-width : 414px) {
         #receipt-modal {
@@ -259,7 +274,7 @@
             <h1>領収書情報記入</h1>
         </div>
         <div class="modal-body">
-            <form id="receipt-form" method="post" action="${request.route_path('order_review.receipt')}" target="_black">
+            <form id="receipt-form" method="post" action="${request.route_path('order_review.receipt')}" target="_blank">
                 <input type="hidden" name="order_no" id="order_no" value="${order.order_no}">
                 <label for="receipt_address">宛名</label>
                 <input class="form-control" type="text" name="receipt_address" id="receipt_address">
@@ -274,8 +289,19 @@
          </div>
         <div class="footer">
             <p class="buy-info-txt">
-                <button id="receipt-show-button" class="btn btn-primary receipt-btn">表示</button>
+                <%
+                    if not receipt:
+                        btn_text = u'発行'
+                    elif receipt and receipt.is_issuable:
+                        btn_text = u'再発行'
+                    else:
+                        btn_text = u'発行済'
+                %>
+                <button id="receipt-show-button" class="btn btn-primary receipt-btn" ${'disabled' if btn_text == u'発行済' else ''} >${btn_text}</button>
                 <button id="receipt-close-button" class="btn btn-primary receipt-btn">キャンセル</button>
+            </p>
+            <p class="tac cm">
+                ※ 領収書は2回まで発行できます。
             </p>
         </div>
     </div>

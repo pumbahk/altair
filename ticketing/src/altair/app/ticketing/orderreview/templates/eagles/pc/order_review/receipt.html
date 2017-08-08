@@ -131,6 +131,7 @@
                 <div class="trademark-wrap">
                     <img src="${view_context.static_url('images/receipt/trademark.png')}" />
                 </div>
+                % if issuable:
                 <h3>領収書</h3>
                 <br/>
                 <table class="receipt-head">
@@ -175,7 +176,7 @@
                             <td>${order.payment_delivery_pair.payment_method.name}</td>
                         </tr>
                         <tr>
-                            <th>発効日</th>
+                            <th>発行日</th>
                             <td class="colon">：</td>
                             <td>${h.japanese_date(now)}</td>
                         </tr>
@@ -194,6 +195,17 @@
                     <button class="btn btn-primary" onclick="window.print();">印刷</button>
                     <button class="btn btn-secondary" onclick="window.close();">閉じる</button>
                 </div>
+                % else:
+                    <h3>領収書は既に発行済でした。</h3>
+                    <div class="footer">
+                        <div class="thank-cmt flex flex-center">
+                            <p>ご利用ありがとうございました。</p>
+                        </div>
+                    </div>
+                    <div class="buttons flex flex-center">
+                        <button class="btn btn-secondary" onclick="window.close();">閉じる</button>
+                    </div>
+                % endif
             </div>
         </section>
     </div>

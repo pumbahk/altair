@@ -31,6 +31,12 @@
     });
     $("#receipt-show-button").click(function() {
         $("#receipt-form").submit();
+        if ($(this).text() === '発行') {
+          $(this).text('再発行');
+        } else if ($(this).text() === '再発行') {
+          $(this).text('発行済');
+          $(this).prop('disabled', true);
+        }
         $("#receipt-modal").hide();
         $(".screen-cover").hide();
     });

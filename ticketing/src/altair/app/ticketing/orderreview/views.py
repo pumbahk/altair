@@ -34,7 +34,7 @@ from altair.app.ticketing.api.impl import CMSCommunicationApi
 from altair.app.ticketing.qr.image import qrdata_as_image_response
 from altair.app.ticketing.qr.utils import build_qr_by_history_id, build_qr_by_token_id, build_qr_by_orion, get_matched_token_from_token_id, build_qr_by_order
 from altair.app.ticketing.fc_auth.api import do_authenticate
-from altair.app.ticketing.orders.models import Order, OrderedProduct, OrderedProductItem, OrderedProductItemToken
+from altair.app.ticketing.orders.models import Order, OrderedProduct, OrderedProductItem, OrderedProductItemToken, OrderReceipt
 from altair.app.ticketing.orders.api import OrderAttributeIO, get_extra_form_fields_for_order, get_order_by_order_no
 from altair.app.ticketing.lots.models import LotEntry
 from altair.app.ticketing.users.models import User, WordSubscription, UserProfile
@@ -547,9 +547,23 @@ def receipt_view(context, request):
     order = context.order
     receipt_address = request.params.get('receipt_address', '')
     receipt_provision = request.params.get('receipt_provision', '')
+    receipt = order.get_receipt
 
+    if not receipt:
+        receipt = OrderReceipt()
+        receipt.order_id=order.id
+        receipt.updated_at=now
+        receipt.created_at = now
+        DBSession.add(receipt)
+
+    issuable = receipt.is_issuable
+
+    if issuable:
+        receipt.issued_at=now
+
+    DBSession.flush()
     return dict(
-        request=request,
+        issuable=issuable,
         now=now,
         order=order,
         receipt_address=receipt_address,
