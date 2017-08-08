@@ -31,5 +31,6 @@ def upgrade():
                     )
     op.create_index('OrderReceipt_ibfk_2', 'OrderReceipt', ['order_id'])
 def downgrade():
+    op.drop_constraint('OrderReceipt_ibfk_1', 'OrderReceipt', 'foreignkey')
     op.drop_index('OrderReceipt_ibfk_2', 'OrderReceipt')
     op.drop_table('OrderReceipt')
