@@ -166,6 +166,7 @@
                 </li>
             </ul>
             <!--クレジットカードでお支払いのみ、購入履歴で領収書を発行できる-->
+            % if 0:
             % if order.payment_plugin_id == 1:
             <p class="buy-info-txt">
                 <button class="btn btn-primary" id="receipt-button">領収書発行</button>
@@ -173,6 +174,7 @@
             <p class="tac cm">
                 ※ 領収書は2回まで発行できます。
             </p>
+            % endif
             % endif
         </div>
     </div>
