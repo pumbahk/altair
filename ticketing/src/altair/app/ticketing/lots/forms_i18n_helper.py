@@ -11,7 +11,7 @@ client_form_fields = {
     'email_1_confirm': u"メールアドレス（確認）",
     'email_2': u"メールアドレス",
     'city': u"市区町村",
-    'prefecture': u"都道府県を",
+    'prefecture': u"都道府県",
     'address_1': u"住所",
     'birthday': u"生年月日",
     }

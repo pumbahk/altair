@@ -87,6 +87,7 @@ def includeme(config):
     ## misc
     config.add_route('contact', '/contact', factory='.resources.ContactViewResource')
     config.add_route('order_review.information', '/information')  # refs 10883
+    config.add_route('order_review.receipt', '/receipt', factory='.resources.ReceiptViewResource')
 
 def setup_auth(config):
     config.include('altair.auth')

@@ -1,5 +1,5 @@
-<%inherit file="${context['main_template'].uri}" />
-<div id="main">
+<%inherit file="./base.html" />
+
 
 %if request.session.peek_flash():
 <div style="border: 3px solid red; background: #FFEEEE; padding: 10px; margin: 10px;">
@@ -11,64 +11,114 @@
 </div>
 %endif
 
-<form name="form1" method="get" action="${request.route_path('lots.entry.sp_step1', event_id=event.id, lot_id=lot.id)}">
-<div class="subbox">
-<dl>
-  <dt><p>${_(u'イベント詳細')}</p></dt>
-<dd>
-<dl class="infoList">
-  <dt>${_(u'イベント名')}</dt>
-<dd>${event.title}</dd>
-<dt>${_(u'申込受付期間')}</dt>
-<dd>${h.japanese_datetime(sales_segment.start_at)}～${h.japanese_datetime(sales_segment.end_at)}</dd>
-<dt>${_(u'抽選結果発表予定日')}</dt>
-<dd>${h.announce_time_label(lot)}</dd>
-% if sales_segment.max_quantity:
-<dt>${_(u'制限枚数')}</dt>
-<dd>${_(u'1希望の申込で{0}枚まで').format(sales_segment.max_quantity)}</dd>
-% endif
-% if lot.entry_limit:
-<dt>${_(u'申込回数制限')}</dt>
-<dd>${_(u"{0} 回").format(lot.entry_limit)}</dd>
-% endif
-<dt>${_(u'受付希望数')}</dt>
-<dd>${_(u'一度の申込で第{0}希望まで').format(lot.limit_wishes)}</dd>
-% if lot.description:
-<dt>${_(u'注意事項')}</dt>
-<dd>${view.cr2br(lot.description)|n}</dd>
-% endif
-</dl>
-</dd>
-</dl>
-</div>
+<div class="confirm-wrap">
+  <form name="form1" method="get" action="${request.route_path('lots.entry.sp_step1', event_id=event.id, lot_id=lot.id)}">
+    <!-- ===== イベント詳細 ===== -->
+    <div class="confirm-wrap">
+      <h2 class="heading heading_simple_line">${_(u'イベント詳細')}</h2>
+      <div class="customerBox">
+        <table class="customer-table">
+          <tbody>
+            <tr>
+              <th>${_(u'イベント名')}</th>
+            </tr>
+            <tr>
+              <td>${event.title}</td>
+            </tr>
+            <tr>
+              <th>${_(u'申込受付期間')}</th>
+            </tr>
+            <tr>
+              <td>
+                % if i18n:
+                  ${h.i18n_datetime(sales_segment.start_at)}～${h.i18n_datetime(sales_segment.end_at)}
+                % else:
+                  ${h.japanese_datetime(sales_segment.start_at)}～${h.japanese_datetime(sales_segment.end_at)}
+                % endif
+              </td>
+            </tr>
+            <tr>
+              <th>${_(u'抽選結果発表予定日')}</th>
+            </tr>
+            <tr>
+              <td>
+                % if i18n:
+                ${h.announce_time_label_i18n(lot)}
+                % else:
+                ${h.announce_time_label(lot)}
+                % endif
+              </td>
+            </tr>
+            % if sales_segment.max_quantity:
+            <tr>
+              <th>${_(u'制限枚数')}</th>
+            </tr>
+            <tr>
+              <td>${_(u'1希望の申込で{0}枚まで').format(sales_segment.max_quantity)}</td>
+            </tr>
+            % endif
+            % if lot.entry_limit:
+            <tr>
+              <th>${_(u'申込回数制限')}</th>
+            </tr>
+            <tr>
+              <td>${_(u"{0} 回").format(lot.entry_limit)}</td>
+            </tr>
+            % endif
+            <tr>
+              <th>${_(u'受付希望数')}</th>
+            </tr>
+            <tr>
+              <td>${_(u'一度の申込で第{0}希望まで').format(lot.limit_wishes)}</td>
+            </tr>
+            % if lot.description:
+            <tr>
+              <th>${_(u'注意事項')}</th>
+            </tr>
+            <tr>
+              <td>${view.cr2br(lot.description)|n}</td>
+            </tr>
+            % endif
 
-<div class="subbox">
-<dl>
-  <dt><p>${_(u'公演一覧')}</p></dt>
-<dd>
-<dl class="infoList">
-% for performance in performances:
-<dt><span>${performance.name}</span></dt>
-<dt>${_(u'公演日')}</dt>
-<dd>${h.performance_datetime(performance)}</dd>
-<dt>${_(u'会場')}</dt>
-<dd>${performance.venue.name}</dd>
-% endfor
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <!-- ===== / イベント詳細 ===== -->
 
-</dl>
-</dd>
-</dl>
-</div>
+    <!-- ===== 公演一覧 ===== -->
+    <div class="confirm-wrap">
+      <h2 class="heading heading_simple_line">${_(u'公演一覧')}</h2>
 
-% if performance_id:
-  <input type="hidden" name="performance" value="${performance_id}"/>
-% endif
+      % for performance in performances:
+      <h3 class="heading-secondly">${performance.name}</h3>
+      <div class="selectdate-box">
+        <dl class="clearfix">
+          <dt>${_(u'公演日')}</dt>
+          <dd>
+            ${h.performance_datetime(performance)}
+          </dd>
+          <dt>${_(u'会場')}</dt>
+          <dd>
+            ${performance.venue.name}
+          </dd>
+        </dl>
+      </div>
+      <hr />
+      % endfor
 
-<p class="nextBtn">
-  <a href="javaScript:document.form1.submit();">
-    <input type="submit" value="${_(u'次へ')}">
-  </a>
-</p>
+    </div>
 
-</form>
+
+    <!-- ===== / 公演一覧 ===== -->
+
+  % if performance_id:
+    <input type="hidden" name="performance" value="${performance_id}"/>
+  % endif
+
+  <p class="confirm-btnBox">
+    <a href="javaScript:document.form1.submit();"><input class="btn btn-primary" type="submit" value="${_(u'次へ')}"></a>
+  </p>
+
+  </form>
 </div>

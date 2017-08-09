@@ -363,6 +363,9 @@ def tojson(obj):
 def performance_date_label(performance):
     return u'%s %s' % (performance_datetime(performance), performance.venue.name)
 
+def performance_date_label_i18n(performance):
+    return u'{date} {venue}'.format(date=performance_datetime(performance, True), venue=performance.venue.name)
+
 def mobile_required_mark():
     return Markup('<sup><font color="#f00">*</font></sup>')
 
