@@ -71,7 +71,7 @@ class PlainTextRenderer(SimpleRenderer):
 
     def __call__(self, record, context):
         value = dereference(record, self.key, self.empty_if_dereference_fails)
-        if self.key == 'order.note':
+        if self.key == 'order.note' and value:
             value = value.replace('\r\n', ' ')
 
         return [
