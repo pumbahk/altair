@@ -1,23 +1,61 @@
 <!DOCTYPE html>
 <html lang="ja">
-<head>
-<!--[if lt IE 9]>
-<script type="text/javascript" src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
-<![endif]-->
-<meta charset="UTF-8">
-<meta http-equiv="Pragma" content="no-cache">
-<meta http-equiv="cache-control" content="no-cache">
-<meta http-equiv="expires" content="0">
-<title>${view_context.team_name}</title>
-<meta name="viewport" content="width=device-width,initial-scale=1">
+    <head>
+        <!--[if lt IE 9]>
+        <script type="text/javascript" src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+        <![endif]-->
+        <meta charset="UTF-8">
+        <meta http-equiv="Pragma" content="no-cache">
+        <meta http-equiv="cache-control" content="no-cache">
+        <meta http-equiv="expires" content="0">
+        <title>${view_context.team_name}</title>
+        <meta name="viewport" content="width=device-width,initial-scale=1">
 
-<!-- Cascading Style Sheets -->
-<link rel="shortcut icon" href="${view_context.static_url('pc/images/favicon.ico', 'lots')}">
-<link rel="stylesheet" href="${view_context.static_url('pc/css/review.css', 'lots')}" type="text/css" media="all">
+        <!-- Cascading Style Sheets -->
+        <link rel="shortcut icon" href="${view_context.static_url('smartphone/images/favicon.ico', 'lots')}">
+        <link rel="stylesheet" href="${view_context.static_url('smartphone/css/review.css', 'lots')}" type="text/css" media="all">
+    </head>
 
-</head>
-
-<body class="confirm">
-${next.body()}
-</body>
+    <body class="confirm">
+        <div class="ts-wrapper">
+            <!-- header -->
+            <header class="ts-header">
+                <div class="ts-header-inner">
+                    <div class="ts-header-wrap">
+                        <div class="ts-header-logobox clearfix">
+                            <img src="${view_context.static_url('pc/images/logo.png', 'lots')}" alt="${view_context.team_name}" />
+                        </div>
+                    </div>
+                </div>
+            </header><!-- /header -->
+            <!-- contents -->
+            % if request.organization.setting.i18n:
+                <div class="selectwrapper">
+                    ${h.create_url_link(request) |n}
+                </div>
+            % endif
+            <div class="ts-contents">
+                <div class="ts-contents-inner">
+                    ${next.body()}
+                </div>
+            </div><!-- /contents -->
+            <!-- footer -->
+            <footer class="ts-footer">
+                <div class="ts-footer-inner">
+                    <div class="ts-footer-wrap">
+                        <nav>
+                            <ul class="ts-footer-nav">
+                              <li><a href="http://www.ticketstar.jp/corporate/">${_(u'運営会社')}</a></li>
+                              <li><a href="https://ticket.rakuten.co.jp/inquiry">${_(u'お問い合わせ')}</a></li>
+                              <li><a href="http://privacy.rakuten.co.jp/">${_(u'個人情報保護方針')}</a></li>
+                              <li><a href="http://www.ticketstar.jp/legal/">${_(u'特定商取引法に基づく表示')}</a></li>
+                              <li><a href="http://ticket.rakuten.co.jp/terms">${_(u'サービス利用規約')}</a></li>
+                            </ul>
+                            <p class="copyright">&copy; TicketStar, Inc.</p>
+                        </nav>
+                    </div>
+                </div>
+            </footer>
+        </div>
+    </body>
 </html>
