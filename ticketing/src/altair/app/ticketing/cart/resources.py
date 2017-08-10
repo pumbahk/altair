@@ -359,9 +359,9 @@ class TicketingCartResourceBase(object):
                         .outerjoin(order_models.OrderedProduct, order_models.Order.items) \
                         .outerjoin(order_models.OrderedProductItem, order_models.OrderedProduct.elements)
                     if user:
-                        query = container.query_orders_by_user(user, filter_canceled=True, query=query)
+                        query = container.query_orders_by_user(user, filter_canceled=True, filter_refunded=True, query=query)
                     elif mail_addresses:
-                        query = container.query_orders_by_mailaddresses(mail_addresses, filter_canceled=True, query=query)
+                        query = container.query_orders_by_mailaddresses(mail_addresses, filter_canceled=True, filter_refunded=True, query=query)
                     order_count, total_quantity = query.one()
                     if order_count is None:
                         order_count = 0
