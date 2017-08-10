@@ -894,7 +894,7 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         q = build_sales_segment_query(performance_id=self.id, user=user, now=now, type=type)
         return q
 
-    def query_orders_by_user(self, user, filter_canceled=False, query=None):
+    def query_orders_by_user(self, user, filter_canceled=False, filter_refunded=False, query=None):
         """ 該当ユーザーがこの販売区分での注文内容を問い合わせ """
         from altair.app.ticketing.orders.models import Order
         if query is None:
@@ -905,9 +905,11 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             .filter(SalesSegment.performance_id == self.id)
         if filter_canceled:
             qs = qs.filter(Order.canceled_at==None)
+        if filter_refunded:
+            qs = qs.filter(Order.refunded_at==None)
         return qs
 
-    def query_orders_by_mailaddresses(self, mailaddresses, filter_canceled=False, query=None):
+    def query_orders_by_mailaddresses(self, mailaddresses, filter_canceled=False, filter_refunded=False, query=None):
         """ 該当メールアドレスによるこの販売区分での注文内容を問い合わせ """
         from altair.app.ticketing.orders.models import Order
         if query is None:
@@ -922,6 +924,8 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             .filter(SalesSegment.performance_id == self.id)
         if filter_canceled:
             qs = qs.filter(Order.canceled_at==None)
+        if filter_refunded:
+            qs = qs.filter(Order.refunded_at==None)
         return qs
 
 
@@ -1442,7 +1446,7 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         q = build_sales_segment_query(event_id=self.id, user=user, now=now, type=type)
         return q
 
-    def query_orders_by_user(self, user, filter_canceled=False, query=None):
+    def query_orders_by_user(self, user, filter_canceled=False, filter_refunded=False, query=None):
         """ 該当ユーザーがこの販売区分での注文内容を問い合わせ """
         from altair.app.ticketing.orders.models import Order
         if query is None:
@@ -1453,9 +1457,11 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             .filter(SalesSegment.event_id == self.id)
         if filter_canceled:
             qs = qs.filter(Order.canceled_at==None)
+        if filter_refunded:
+            qs = qs.filter(Order.refunded_at==None)
         return qs
 
-    def query_orders_by_mailaddresses(self, mailaddresses, filter_canceled=False, query=None):
+    def query_orders_by_mailaddresses(self, mailaddresses, filter_canceled=False, filter_refunded=False, query=None):
         """ 該当メールアドレスによるこの販売区分での注文内容を問い合わせ """
         from altair.app.ticketing.orders.models import Order
         if query is None:
@@ -1470,6 +1476,8 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             .filter(SalesSegment.event_id == self.id)
         if filter_canceled:
             qs = qs.filter(Order.canceled_at==None)
+        if filter_refunded:
+            qs = qs.filter(Order.refunded_at==None)
         return qs
 
     @staticmethod
@@ -3904,7 +3912,7 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
                 return True
         return False
 
-    def query_orders_by_user(self, user, filter_canceled=False, query=None):
+    def query_orders_by_user(self, user, filter_canceled=False, filter_refunded=False, query=None):
         """ 該当ユーザーがこの販売区分での注文内容を問い合わせ """
         from altair.app.ticketing.orders.models import Order
         if query is None:
@@ -3916,9 +3924,11 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
         )
         if filter_canceled:
             qs = qs.filter(Order.canceled_at==None)
+        if filter_refunded:
+            qs = qs.filter(Order.refunded_at==None)
         return qs
 
-    def query_orders_by_mailaddresses(self, mailaddresses, filter_canceled=False, query=None):
+    def query_orders_by_mailaddresses(self, mailaddresses, filter_canceled=False, filter_refunded=False, query=None):
         """ 該当メールアドレスによるこの販売区分での注文内容を問い合わせ """
         from altair.app.ticketing.orders.models import Order
         if query is None:
@@ -3934,6 +3944,8 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
 
         if filter_canceled:
             qs = qs.filter(Order.canceled_at==None)
+        if filter_refunded:
+            qs = qs.filter(Order.refunded_at==None)
         return qs
 
     @hybrid_property

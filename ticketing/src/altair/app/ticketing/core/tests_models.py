@@ -248,10 +248,10 @@ class SalesSegmentTests(unittest.TestCase):
         result = target.query_orders_by_mailaddresses([mail_addr_other]).all()
         self.assertEqual(result, others)
 
-        result = target.query_orders_by_mailaddresses([mail_addr], filter_canceled=True).all()
+        result = target.query_orders_by_mailaddresses([mail_addr], filter_canceled=True, filter_refunded=True).all()
         self.assertEqual(result, orders)
 
-        result = target.query_orders_by_mailaddresses([mail_addr_other], filter_canceled=True).all()
+        result = target.query_orders_by_mailaddresses([mail_addr_other], filter_canceled=True, filter_refunded=True).all()
         self.assertEqual(result, others)
 
 
@@ -635,10 +635,10 @@ class EventTests(unittest.TestCase):
         result = target.query_orders_by_mailaddresses([mail_addr_other]).all()
         self.assertEqual(result, others)
 
-        result = target.query_orders_by_mailaddresses([mail_addr], filter_canceled=True).all()
+        result = target.query_orders_by_mailaddresses([mail_addr], filter_canceled=True, filter_refunded=True).all()
         self.assertEqual(result, orders)
 
-        result = target.query_orders_by_mailaddresses([mail_addr_other], filter_canceled=True).all()
+        result = target.query_orders_by_mailaddresses([mail_addr_other], filter_canceled=True, filter_refunded=True).all()
         self.assertEqual(result, others)
 
     def test_event_copy_duplicate_settings_11288(self):

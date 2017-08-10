@@ -73,10 +73,10 @@ class IAllAppliedSetting(Interface):
     max_quantity_per_user = Attribute(u"")
 
 class IOrderQueryable(Interface):
-    def query_orders_by_user(user, filter_canceled, query=None):
+    def query_orders_by_user(user, filter_canceled, filter_refunded, query=None):
         pass
 
-    def query_orders_by_mailaddresses(mail_addresses, filter_canceled, query=None):
+    def query_orders_by_mailaddresses(mail_addresses, filter_canceled, filter_refunded, query=None):
         pass
 
 class ISettingRenderer(Interface):
