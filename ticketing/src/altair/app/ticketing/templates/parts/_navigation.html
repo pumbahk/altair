@@ -56,7 +56,7 @@
     <li class="dropdown">
       <a class="dropdown-toggle" data-toggle="dropdown">予約</a>
       <ul class="dropdown-menu">
-        % if HH.has_permission('sales_counter'):
+        % if HH.has_permission('order_viewer'):
         <li><a href="${request.route_path('orders.index')}">予約検索</a></li>
         <li><a href="${request.route_path('cart.search')}">カート追跡</a></li>
         <!--<li><a href="${request.route_path('orders.beta')}">予約検索(ベータ版)</a></li>-->

@@ -2827,7 +2827,7 @@ class MailInfoView(OrderBaseView):
         self.request.session.flash(u'メール再送信しました')
         return HTTPFound(self.request.current_route_url(order_id=order_id, action="show"))
 
-@view_defaults(decorator=with_bootstrap, permission='sales_editor')
+@view_defaults(decorator=with_bootstrap, permission='order_viewer')
 class CartView(BaseView):
     def __init__(self, context, request):
         self.context = context
