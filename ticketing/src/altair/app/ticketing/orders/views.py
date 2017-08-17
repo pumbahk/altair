@@ -820,7 +820,7 @@ class OrderDeltaBaseView(BaseView):
             'enqueue_orders': self.request.route_path('orders.checked.queue'),
         }
 
-@view_defaults(decorator=with_bootstrap, renderer='altair.app.ticketing:templates/orders/delta.html', permission='sales_counter')
+@view_defaults(decorator=with_bootstrap, renderer='altair.app.ticketing:templates/orders/delta.html', permission='order_viewer')
 class OrderDeltaIndexView(OrderDeltaBaseView):
     @view_config(route_name='orders.delta', request_method="GET")
     def get(self):
@@ -961,7 +961,7 @@ class OrderDeltaDownloadView(OrderDeltaBaseView):
         response.app_iter = order_csv(_orders(orders), writer_factory)
         return response
 
-@view_defaults(decorator=with_bootstrap, renderer='altair.app.ticketing:templates/orders/delta_pattern.html', permission='sales_editor')
+@view_defaults(decorator=with_bootstrap, renderer='altair.app.ticketing:templates/orders/delta_pattern.html', permission='order_viewer')
 class OrderDeltaPatternView(OrderDeltaBaseView):
     @view_config(route_name='orders.delta.pattern', request_method="GET")
     def index(self):
