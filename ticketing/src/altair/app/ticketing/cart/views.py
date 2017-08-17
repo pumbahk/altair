@@ -1039,6 +1039,7 @@ class PaymentView(object):
         sales_segment = self.context.sales_segment
         cart = self.context.read_only_cart
         self.context.check_deleted_product(cart)
+        self.context.check_order_limit()
 
         payment_delivery_methods = self.get_payment_delivery_method_pairs(sales_segment)
         payment_delivery_methods = [
