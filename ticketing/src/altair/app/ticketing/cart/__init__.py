@@ -353,6 +353,7 @@ def setup_routes(config):
     config.add_route('cart.index.sales2', 'performances/{performance_id}/sales/{sales_segment_group_id}')
 
     config.add_route('cart.index.recaptcha', 'events/{event_id}/recaptcha', factory='.resources.compat_ticketing_cart_resource_factory')
+    config.add_route('cart.index2.recaptcha', 'performances/{performance_id}/recaptcha', factory='.resources.PerformanceOrientedTicketingCartResource')
 
     config.add_route('cart.seat_types', 'events/{event_id}/sales_segment/{sales_segment_id}/seat_types', factory='.resources.EventOrientedTicketingCartResource')
     config.add_route('cart.seat_types2', 'performances/{performance_id}/sales_segment/{sales_segment_id}/seat_types')
