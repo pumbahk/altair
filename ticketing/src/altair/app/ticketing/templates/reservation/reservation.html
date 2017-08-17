@@ -5,9 +5,8 @@
 
 <%block name="breadcrumbs">
   ${ch.breadcrumbs(
-      names=[u'イベント', performance.event.title, performance.name],
+      names=[performance.event.title, performance.name],
       urls=[
-        request.route_path('events.reservation.index'),
         request.route_path('events.reservation.show', event_id=performance.event.id)
         ])}
 </%block>
