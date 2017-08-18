@@ -292,6 +292,14 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     payment_delivery_pair = orm.relationship("PaymentDeliveryMethodPair", backref='orders')
 
     @property
+    def total_quantity(self):
+        total_quantity = 0
+        for op in self.ordered_products:
+            total_quantity += op.quantity
+
+        return total_quantity
+
+    @property
     def payment_delivery_method_pair(self):
         return self.payment_delivery_pair
 
