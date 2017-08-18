@@ -21,7 +21,7 @@
               <td class="login-box login-fun js-sp-accotdion-btn">
                 <h3 class="sub-ttl">ファンクラブ会員の方</h3>
                 <div class="img-box"><img src="${view_context.static_url('images/culb-rank.png')}" alt="クラブ"></div>
-                <div class="btn-box">※キッズクラブの方は＜一般の方＞からログインください</div>
+                <div class="btn-box" style="font-size:10px;">※キッズクラブの方は＜一般の方＞からログインください</div>
                 <div class="btn-box">
                   <a href="${_context.route_path('extauth.rakuten.entry')}" class="btn btn-eagles">
                     <img src="${view_context.static_url('images/logo_rakuten.jpg')}" class="logo" width="70px" alt="楽天">
