@@ -190,8 +190,8 @@ class OrderReviewQRURLBuilder(object):
     def build_path(self, ticket_id, sign):
         return u"{0}/qr/{1}/{2}/".format(self.path_prefix, ticket_id, sign)
 
-    def build_path_aes(self, ticket_id):
-        return u"{0}/qr_aes/{1}".format(self.path_prefix, ticket_id)
+    def build_path_aes(self, sign):
+        return u"{0}/qr_aes/{1}/".format(self.path_prefix, sign)
 
     def build_hostname(self, request, organization):
         return guess_host_name_from_request(request, organization=organization)
@@ -203,9 +203,9 @@ class OrderReviewQRURLBuilder(object):
         path = self.build_path(ticket_id, sign)
         return _url_builder(scheme, host_name, path, {})
 
-    def build_aes_url(self, request, ticket_id, organization=None):
+    def build_aes_url(self, request, sign, organization=None):
         organization = organization or request.context.organization
         scheme = _get_scheme_from_request(request)
         host_name = self.build_hostname(request, organization)
-        path = self.build_path_aes(ticket_id)
+        path = self.build_path_aes(sign)
         return _url_builder(scheme, host_name, path, {})
