@@ -216,11 +216,11 @@ class qr_aes:
 
     def make(self, data):
         header = data.get('header', '')
-        to_encrypt_data = data.get('content', '')
-        content = self.aes.encrypt(to_encrypt_data) if to_encrypt_data else ''
-        return header + content
+        content = data.get('content', '')
+        encrypted_content = self.aes.encrypt(content) if content else ''
+        return header + encrypted_content
 
-    def __validate(self, item_list, decrypted_data):
+    def _validate(self, item_list, decrypted_data):
         from collections import OrderedDict
         if not item_list:
             return False
@@ -230,24 +230,12 @@ class qr_aes:
 
         return True
 
-
-    def extract(self, qr_data, header, item_list):
-
+    def extract(self, data, header=None):
+        # 渡されたdataがブランクやNoneの場合はそのまま返す。
+        if not data:
+            return data
         # 暗号化されないヘッダーを除く
-        qr_data = qr_data[len(header):] if header else qr_data
+        content = data[len(header):] if header else data
         # 暗号化された内容を復号化
-        decrypted_data = self.aes.decrypt(qr_data)
-
-        if self.__validate(item_list, decrypted_data):
-            # dictでデータ内容を保存する
-            sub_start = 0
-            origin_data = dict()
-
-            for key, val in item_list.items():
-                sub_end = sub_start + val
-                origin_data[key] = decrypted_data[sub_start:sub_end]
-                sub_start = sub_end
-
-            return origin_data
-        else:
-            raise InvalidItemList("The item list for data extraction from AES QR data is not consistent with QR data.")
+        decrypted_content = self.aes.decrypt(str(content))
+        return {'header': header, 'content': decrypted_content}
