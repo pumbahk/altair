@@ -7,6 +7,12 @@ var zip_file_path = ${h.json_encode(request.static_url('altair.app.ticketing.car
 </script>
 </%block>
 <%block name="title">${view_context.title}</%block>
+% if request.session.peek_flash():
+  % for message in request.session.pop_flash():
+    <h4 style="color:red;">${message}</h4>
+  % endfor
+% endif
+
 % if view_context.orderreview_page_url != 'about:blank':
 <div class="title-right-description">
   申込受付履歴は<a href="${view_context.orderreview_page_url}">こちら</a>で確認できます
@@ -48,6 +54,18 @@ if label is None or label is True:
         <th>${view_context.fc_kind_title if view_context.fc_kind_title else u'会員種別'} <span class="red">*</span></th>
         <td>
           ${render_field(form['extra']['member_type'])}
+        </td>
+      </tr>
+      <tr>
+        <th>
+          枚数
+        </th>
+        <td>
+          <select id="quqntity" name="quantity">
+            % for num in range(1, 10):
+              <option value="${num}">${num}枚</option>
+            % endfor
+          </select>
         </td>
       </tr>
       <tr>

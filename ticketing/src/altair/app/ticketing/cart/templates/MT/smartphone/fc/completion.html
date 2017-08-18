@@ -17,7 +17,7 @@
       <tr>
         <td>${order.ordered_products[0].product.name}</td>
         <td>　</td>
-        <td class="textR">￥${h.format_number(order.ordered_products[0].product.price)}</td>
+        <td class="textR">￥${h.format_number(order.ordered_products[0].product.price)} × ${h.format_number(order.ordered_products[0].quantity)}枚</td>
       </tr>
       <tr>
         <td>決済手数料</td>
