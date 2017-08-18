@@ -54,7 +54,7 @@ ${field(_widget=h.sensible_widget(request, field.widget), **kwargs)}${_suffix}</
 ${render_field(form['extra']['member_type'])}
 枚数
 <select id="quantity" name="quantity">
-  % for num in range(1, 10):
+  % for num in range(1, 11):
     <option value="${num}">${num}枚</option>
   % endfor
 </select>
