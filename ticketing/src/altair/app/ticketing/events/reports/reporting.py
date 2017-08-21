@@ -191,6 +191,7 @@ def export_for_sales(event):
         query = Performance.query.filter(Performance.event_id==event.id)
         query = query.join(Venue).filter(Venue.deleted_at==None)
         query = query.join(Site).filter(Site.id==site.id)
+        query = query.order_by('start_on')
         for p in query:
             # Price
             sales_segments = SalesSegment.query.filter(and_(SalesSegment.performance_id==p.id, SalesSegment.public==True)).all()
