@@ -215,7 +215,7 @@
           <div id="mailMagazineBoxInner">
             <div class="dispBox">
               <%m:header>メールマガジン・ダイレクトメールの配信</%m:header>
-              ご利用いただいた方には、${view_context.team_name}の最新トピックスやお得な情報をメールなどお届けする場合がございます。不要な方はチェックをはずしてください。<br/><br/>
+              ご利用いただいた方には、${view_context.team_name}の最新トピックスやお得な情報をメールなどお届けする場合がございます。<br/>不要な方はチェックをはずしてください。<br/><br/>
                 % for mailmagazine, subscribed in mailmagazines_to_subscribe:
                 <div${subscribed and u' class="subscribed"' or u''|n}>
                   <div>
