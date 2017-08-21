@@ -5,13 +5,6 @@
 <div style="text-align:center" align="center"><font size="-1">申込受付履歴の確認は<a href="${view_context.orderreview_page_url}">こちら</a>から</font></div>
 % endif
 <%self.mobile:header>申込者情報の入力</%self.mobile:header>
-% if request.session.peek_flash():
-<div>
-% for message in request.session.pop_flash():
-<font color="red">${message}</font><br />
-% endfor
-</div>
-% endif
 <form method="post" action="${request.current_route_path()}">
 <%def name="render_field(field, label=True, _description=None, _note=None, _suffix=u'', **kwargs)">
 <%
@@ -59,14 +52,12 @@ ${field(_widget=h.sensible_widget(request, field.widget), **kwargs)}${_suffix}</
 </%def>
 
 ${render_field(form['extra']['member_type'])}
-
-枚数
+数量
 <select id="quantity" name="quantity">
-    % for num in range(1, 11):
-        <option value="${num}">${num}枚</option>
-    % endfor
+  % for num in range(1, 11):
+    <option value="${num}">${num}</option>
+  % endfor
 </select>
-
 <%
 name_label = u'氏名'
 if view_context.fc_name:
