@@ -16,7 +16,7 @@
   <div> <font size="5">${performance.start_on.strftime("%Y年%m月%d日").decode('utf-8')} (${u'月火水木金土日'[performance.start_on.weekday()]}) ${performance.start_on.strftime(u"%H:%M").decode('utf-8')}−</font> </div>
   <hr size="1" color="#ECAC00" />
      <font size="5">受付番号 ${order.order_no} </font> <br />
-  <img class="qr" src="${request.route_path(('order_review.qr_aes_draw'), ticket_id=ticket.id)}" /><br/>
+  <img class="qr" src="${request.route_path(('order_review.qr_aes_draw'), sign=ticket.sign)}" /><br/>
   <br />
   %if product:
   <font size="5">商品名 ${product.name} (${product.id})</font><br />

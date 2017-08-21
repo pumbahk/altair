@@ -37,21 +37,28 @@ def build_ht_qr_by_order_no(request, order_no, none_exception=HTTPNotFound):
         raise none_exception
     return build_ht_qr_by_order(request, order)
 
-
 def build_ht_qr_by_token_id(request, order_no, token_id, none_exception=HTTPNotFound):
     token = get_matched_token_from_token_id(order_no, token_id, none_exception=none_exception)
     return build_ht_qr_by_token(request, order_no, token)
-
 
 def build_ht_qr_by_order(request, order):
     history = get_or_create_matched_history_from_order(order)
     return build_ht_qr_by_history(request, history)
 
-
 def build_ht_qr_by_token(request, order_no, token):
     history = get_or_create_matched_history_from_token(order_no, token)
     return build_ht_qr_by_history(request, history)
 
+def build_ht_qr_by_sign(request, sign):
+    if not sign:
+        return None
+    builder = get_qrdata_aes_builder(request)
+    try:
+        decrypted_ticket_id = int(builder.extract(sign)['content'])
+    except ValueError:
+        return None
+
+    return build_ht_qr_by_ticket_id(request, decrypted_ticket_id)
 
 def build_ht_qr_by_ticket_id(request, ticket_id):
     try:
@@ -62,13 +69,12 @@ def build_ht_qr_by_ticket_id(request, ticket_id):
     except NoResultFound:
         return None
 
-
 def build_ht_qr_by_history(request, history):
     data, ticket = make_data_for_qr(history)
     builder = get_qrdata_aes_builder(request)
     ticket.qr = builder.make(data)
+    ticket.sign = builder.make({'content':str(ticket.id)})
     return ticket
-
 
 def _get_db_session(history):
     try:

@@ -52,7 +52,7 @@ import contextlib
 import re
 from functools import partial
 
-from altair.app.ticketing.project_specific.huistenbosch.qr_utilits import build_ht_qr_by_ticket_id, build_ht_qr_by_token_id, build_ht_qr_by_order
+from altair.app.ticketing.project_specific.huistenbosch.qr_utilits import build_ht_qr_by_ticket_id, build_ht_qr_by_token_id, build_ht_qr_by_order, build_ht_qr_by_sign
 
 def jump_maintenance_page_om_for_trouble(organization):
     """https://redmine.ticketstar.jp/issues/10878
@@ -908,8 +908,8 @@ class QRAESView(object):
         route_name='order_review.qr_aes_confirm',
         renderer=selectable_renderer("order_review/qr_aes_confirm.html"))
     def qr_aes_confirm(self):
-        ticket_id = int(self.request.matchdict.get('ticket_id', 0))
-        ticket = build_ht_qr_by_ticket_id(self.request, ticket_id)
+        sign = self.request.matchdict.get('sign', '')
+        ticket = build_ht_qr_by_sign(self.request, sign)
 
         if ticket == None:
             raise HTTPNotFound()
@@ -926,9 +926,8 @@ class QRAESView(object):
         route_name='order_review.qr_aes',
         renderer=selectable_renderer("order_review/qr_aes.html"))
     def qr_aes_html(self):
-        ticket_id = int(self.request.matchdict.get('ticket_id', 0))
-
-        ticket = build_ht_qr_by_ticket_id(self.request, ticket_id)
+        sign = self.request.matchdict.get('sign', '')
+        ticket = build_ht_qr_by_sign(self.request, sign)
 
         if ticket is None:
             raise HTTPNotFound()
@@ -940,7 +939,7 @@ class QRAESView(object):
 
         return dict(
             token = ticket.item_token and ticket.item_token.id, # dummy
-            serial = ticket_id,           # dummy
+            serial = ticket.id,           # dummy
             order = ticket.order,
             ticket = ticket,
             performance = ticket.performance,
@@ -954,9 +953,8 @@ class QRAESView(object):
         xhr=False
         )
     def qr_aes_image(self):
-        ticket_id = int(self.request.matchdict.get('ticket_id', 0))
-
-        ticket = build_ht_qr_by_ticket_id(self.request, ticket_id)
+        sign = self.request.matchdict.get('sign', '')
+        ticket = build_ht_qr_by_sign(self.request, sign)
         if ticket is None:
             raise HTTPNotFound()
 
@@ -1114,7 +1112,7 @@ def render_qr_aes_mail_viewlet(context, request):
         product=ticket.product,
         seat=ticket.seat,
         mail=request.params['mail'],
-        url=request.route_url('order_review.qr_aes_confirm', ticket_id=ticket.id),
+        url=request.route_url('order_review.qr_aes_confirm', sign=ticket.sign),
         )
 
 @view_defaults(custom_predicates=(is_mypage_organization, ),
