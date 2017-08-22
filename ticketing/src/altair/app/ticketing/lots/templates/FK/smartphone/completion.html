@@ -1,18 +1,18 @@
 <%inherit file="./base.html"/>
 
 <div class="mgt20">
-  <p class="tac bold fs24">${__(u'申込を完了しました')}</p>
+  <p class="tac bold fs24">${__(u'申込を完了しました。')}</p>
   <p class="tac">${__(u'下記の受付番号はとても大切な番号です。すぐにメモして保管してください。')}</p>
 </div>
 
 <div class="confirm-wrap">
-  <h2 class="heading heading_simple_line">${__(u'申込番号')}</h2>
+  <h2 class="heading heading_simple_line">${__(u'受付番号')}</h2>
   <p class="bold disp-order_no">${entry.entry_no}</p>
 </div><!-- ===== / 受付番号 ===== -->
 
 <form id="form1" class="confirmForm" action="${request.route_path('lots.entry.index', event_id=event.id, lot_id=lot.id)}" method="post">
   <div class="confirm-wrap">
-    <h2 class="heading heading_simple_line">${__(u'申込内容')}</h2>
+    <h2 class="heading heading_simple_line">${__(u'お申込内容')}</h2>
     % for wish in wishes:
     <div class="purchase-wrap">
       <div class="purchase-title">
@@ -31,7 +31,7 @@
           % for i, lot_product in enumerate(wish.products):
           <tr>
             <th scope="row">${lot_product.product.name}</th>
-            <td nowrap><strong>${lot_product.quantity}</strong>枚</td>
+            <td nowrap><strong>${lot_product.quantity}</strong>${__(u'枚')}</td>
             <td>￥${h.format_number(lot_product.product.price * lot_product.quantity)}</td>
           </tr>
           % endfor
@@ -86,7 +86,7 @@
               ${shipping_address.last_name} ${shipping_address.first_name}
             </td>
           </tr>
-          % if not i18n or custom_locale_negotiator=='ja':
+          % if custom_locale_negotiator=='ja' or not request.organization.setting.i18n:
             <tr>
               <th>購入者氏名<br><span>カナ</span></th>
             </tr>

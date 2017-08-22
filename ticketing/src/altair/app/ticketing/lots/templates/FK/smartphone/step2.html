@@ -240,7 +240,7 @@ if label is None or label is True:
         </dl>
       </div>
     % endfor
-    <p>${view_context.mail_filter_domain_notice |n}</p>
+    <p>${_(u'申込受付完了、確認メール等をメールでご案内します。「tstar.jp」からのメールを受信できるよう、お申し込み前にドメイン指定の設定を必ずお願いいたします。')}</p>
 
     <!-- ===== 購入者情報入力 ===== -->
     <h2 class="heading heading_simple_line">${_(u'購入者情報')}</h2>
@@ -312,7 +312,7 @@ if label is None or label is True:
                   <!--<label for="email_1_confirm"><span class="fs12">${_(u'確認用')}</span></label>-->
                 </li>
               </ul>
-              <p class="annot">${view_context.mail_filter_domain_notice |n}</p>
+              <p class="annot">${_(u'申込受付完了、確認メール等をメールでご案内します。「tstar.jp」からのメールを受信できるよう、お申し込み前にドメイン指定の設定を必ずお願いいたします。')}</p>
             </td>
           </tr>
           <tr>
