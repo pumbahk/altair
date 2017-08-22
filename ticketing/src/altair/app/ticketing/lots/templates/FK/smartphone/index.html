@@ -12,7 +12,7 @@
 %endif
 
 <div class="confirm-wrap">
-  <form name="form1" method="get" action="${request.route_path('lots.entry.sp_step1', event_id=event.id, lot_id=lot.id)}">
+  <form name="form1" method="get" class="confirmForm" action="${request.route_path('lots.entry.sp_step1', event_id=event.id, lot_id=lot.id)}">
     <!-- ===== イベント詳細 ===== -->
     <div class="confirm-wrap">
       <h2 class="heading heading_simple_line">${_(u'イベント詳細')}</h2>

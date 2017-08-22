@@ -10,7 +10,7 @@
     %endfor
 %endif
 
-<form id="form1" name="form1" method="post" action="${request.current_route_path()}">
+<form id="form1" name="form1" class="confirmForm" method="post" action="${request.current_route_path()}">
   <input type="hidden" name="return_to" value=${return_to} />
   <div class="mgt50 pdl20 pdr20">
     ${agreement_body}
