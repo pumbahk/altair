@@ -12,12 +12,14 @@
 
 <form id="form1" name="form1" method="post" action="${request.current_route_path()}">
   <input type="hidden" name="return_to" value=${return_to} />
-
-  ${agreement_body}
-
-  <br/><br/>
-  <input type="checkbox" name="agree" value="agree" id="agree" />
-  <label for="agree">${_(u'内容を同意の上、チェックを入れてください。')}</label><br>
-
-  <p class="confirm-btnBox"><input class="btn btn-primary" type="button" value="${_(u'次へ')}" onclick="$('#form1').submit()"></p>
+  <div class="mgt50 pdl20 pdr20">
+    ${agreement_body}
+  </div>
+  <div class="mgt50 pdl20 pdr20">
+    <input type="checkbox" name="agree" value="agree" id="agree" />
+    <label for="agree">${_(u'内容を同意の上、チェックを入れてください。')}</label><br>
+  </div>
+  <div class="mgt50 pdl20 pdr20">
+    <p class="confirm-btnBox"><input class="btn btn-primary" type="button" value="${_(u'次へ')}" onclick="$('#form1').submit()"></p>
+  </div>
 </form>
