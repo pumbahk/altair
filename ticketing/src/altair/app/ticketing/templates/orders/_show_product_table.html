@@ -36,7 +36,8 @@
       <th colspan="2" class="span6">商品</th>
       <th class="span2">発券ステータス</th>
       <th class="span1">単価</th>
-      <th class="span1">個数</th>
+      <th class="span1">商品個数</th>
+      <th class="span1">明細個数</th>
       <th class="span2">小計</th>
     </tr>
 %endif
@@ -50,6 +51,7 @@
     <td></td>
     <td style="text-align: right;">${vh.price(ordered_product.price)}</td>
     <td >${ordered_product.quantity}</td>
+    <td ></td>
     <td style="text-align: right;">
       ${vh.price(ordered_product.price * ordered_product.quantity)}
     </td>
@@ -103,6 +105,7 @@
       %endif
     </td>
     <td style="text-align: right;">${vh.price(ordered_product_item.price)}</td>
+    <td></td>
     <td>${ordered_product_item.quantity}</td>
     <td></td>
   </tr>
@@ -113,6 +116,7 @@
       <td></td>
       <td></td>
       <td></td>
+      <td></td>
       <td style="text-align: right;">${vh.price(order.transaction_fee)}</td>
     </tr>
     <tr>
@@ -120,10 +124,12 @@
       <td></td>
       <td></td>
       <td></td>
+      <td></td>
       <td style="text-align: right;">${vh.price(order.delivery_fee)}</td>
     </tr>
     <tr>
       <td colspan="2">システム利用料</td>
+      <td></td>
       <td></td>
       <td></td>
       <td></td>
@@ -135,6 +141,7 @@
       <td></td>
       <td></td>
       <td></td>
+      <td></td>
       <td style="text-align: right;">${vh.price(order.special_fee)}</td>
     </tr>
     %endif
@@ -142,7 +149,8 @@
       <td colspan="2" class="span2"><strong>合計</strong></td>
       <td></td>
       <td></td>
-      <td style="text-align: left;">${order.total_quantity}</td>
+      <td style="text-align: left;">${order.total_product_quantity}</td>
+      <td style="text-align: left;">${order.total_item_quantity}</td>
       <td style="text-align: right;"><strong>${vh.price(order.total_amount)}</strong></td>
     </tr>
   </table>
