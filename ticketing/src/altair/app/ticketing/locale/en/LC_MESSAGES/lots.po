@@ -39,7 +39,7 @@ msgid "半角英数"
 msgstr "half-width alphanumeric"
 
 msgid "電話番号"
-msgstr "Telephone number"
+msgstr "Home Phone Number"
 
 msgid "FAX番号"
 msgstr "FAX"
@@ -151,6 +151,9 @@ msgstr "Back"
 
 # index
 
+msgid "※このページに記載されている料金はすべて消費税込です。"
+msgstr "All fees on this page include consumption tax."
+
 msgid "イベント詳細"
 msgstr "Event Detail"
 
@@ -232,16 +235,19 @@ msgstr "Fees"
 msgid "システム利用料"
 msgstr "System fee"
 
-msgid "注文受付完了、確認メール等をメールでご案内します。「tstar.jp」からのメールを受信できるよう、お申し込み前にドメイン指定の設定を必ずお願いいたします。"
-msgstr "Order acceptance completion, it will guide you through the confirmation e-mail, etc. by e-mail. So that you can receive mail from the 'tstar.jp', please be sure the settings for the domain specified before you sign up."
+msgid "申込受付完了、確認メール等をメールでご案内します。「tstar.jp」からのメールを受信できるよう、お申し込み前にドメイン指定の設定を必ずお願いいたします。"
+msgstr "The confirmation email will be sent after the application is completed. Please ensure your devices can receive the email from 'tstar.jp'."
 
 msgid "上記の利用料・手数料がかかります。"
-msgstr "The above usage fee and commission is cost."
+msgstr "The above fees are subject to the items."
+
+msgid "上記以外の利用料・手数料"
+msgstr "Other fees"
 
 msgid "購入者情報"
 msgstr "Purchaser Information"
 
-msgid "購入者氏名（全角）"
+msgid "購入者氏名"
 msgstr "Name"
 
 msgid "姓"
@@ -287,7 +293,7 @@ msgid "メールアドレス (確認)"
 msgstr "Email(Confirmation)"
 
 msgid "電話番号 (携帯)"
-msgstr "Mobile"
+msgstr "Mobile Phone Number"
 
 msgid "住所"
 msgstr "Address"
@@ -484,6 +490,9 @@ msgstr "Sheet"
 msgid "(税込)"
 msgstr "(tax included)"
 
+msgid "手数料"
+msgstr "Fee"
+
 msgid "決済手数料"
 msgstr "Settlement fee"
 
@@ -560,6 +569,9 @@ msgstr "You can check your application on「<a href=\"/lots/review\">Application
 
 msgid "決済中にエラーが発生しました。しばらく時間を置いてから<a href=\"{0}\">再度お試しください。</a>"
 msgstr "An error occurred during the settlement. Please try <a href=\"{0}\"> again at some time. </a>"
+
+msgid "配送受取を選択した場合"
+msgstr "If delivery is needed"
 
 # 国名
 
