@@ -48,7 +48,7 @@ from altair.app.ticketing.cart import view_support
 from altair.app.ticketing.cart.reserving import NotEnoughAdjacencyException
 from altair.app.ticketing.cart.helpers import get_availability_text
 
-from .view_support import get_filtered_stock_types, search_seat, parse_fields_params, get_spa_svg_urls
+from .view_support import get_filtered_stock_types, search_seat, parse_fields_params, get_spa_svg_urls, search_seatGroup
 
 logger = logging.getLogger(__name__)
 
@@ -227,8 +227,13 @@ class CartAPIView(object):
                     price=product.price,
                     min_product_quantity=product.min_product_quantity,
                     max_product_quantity=product.max_product_quantity,
-                    sales_unit_quantity=sum([item.quantity for item in product.items]),
-                    is_must_be_chosen=product.must_be_chosen
+                    is_must_be_chosen=product.must_be_chosen,
+                    product_items=[dict(
+                        product_item_id=item.id,
+                        product_item_name=item.name,
+                        price=item.price,
+                        sales_unit_quantity=item.quantity
+                    ) for item in product.items],
                 ) for product in products],
                 regions=list(region_ids)
             )
@@ -282,6 +287,16 @@ class CartAPIView(object):
                 stock_type_id=stock_type_by_stock_id[stock_id]['stock_type_id'],
                 is_available=(seat_status == SeatStatusEnum.Vacant.v),
             ) for seat_l0_id, stock_id, seat_status in seats]
+
+        performance_id = int(self.request.matchdict.get('performance_id'))
+        performance = DBSession.query(Performance).filter_by(id=performance_id).first()
+        seat_groups = search_seatGroup(self.request, performance.venue.site_id, performance.venue.id, session)
+
+        res['seat_groups'] = [dict(
+            seat_group_id=sg.l0_id,
+            seat_group_name=sg.name,
+            seat_l0_ids=[seat.l0_id for seat in sg.seats],
+        ) for sg in seat_groups]
 
         return res
 
@@ -419,12 +434,12 @@ class CartAPIView(object):
 
         #Cart生成
         try:
-            product = DBSession.query(Product) \
+            products = DBSession.query(Product) \
                         .filter(Product.performance_id == performance_id) \
                         .filter(Product.sales_segment_id == sales_segment_id) \
                         .filter(Product.seat_stock_type_id == stock_type_id) \
                         .order_by(Product.id) \
-                        .first()
+                        .all()
 
         except NoResultFound as e:
             logger.warning("no product stock_type_id=%d", stock_type_id)
@@ -435,6 +450,52 @@ class CartAPIView(object):
                 }
             }
 
+        product = ""
+        min_quantity = ""
+        mix_sales_unit = False
+        for p in products:
+            #公開商品以外はスキップ
+            if not p.public:
+                continue
+            #商品明細の販売単位をSUM
+            sales_unit_quantity = sum([item.quantity for item in p.items])
+
+            #販売単位が1の場合は当商品情報で座席確保
+            if sales_unit_quantity == 1:
+                product = p
+                min_quantity = sales_unit_quantity
+                break
+            else:
+                if not min_quantity:
+                    product = p
+                    min_quantity = sales_unit_quantity
+                    continue
+                #販売単位が同じならそのまま。
+                if min_quantity == sales_unit_quantity:
+                    continue
+                else:
+                    mix_sales_unit = True
+                    #現在の販売単位より小さい販売単位がきた場合は、入れ替え
+                    if sales_unit_quantity < min_quantity:
+                        min_quantity = sales_unit_quantity
+                        product = p
+                        continue
+
+        #販売単位が2以上の場合、販売単位チェック
+        #1の場合は、リクエストされた枚数をそのまま使用する。
+        if min_quantity != 1:
+            #販売単位の最小が1ではなく、2以上が混在している場合エラー
+            if mix_sales_unit:
+                return {
+                    "results": {
+                        "status": "NG",
+                        "reason": "mix salse unit quantity not 1"
+                    }
+                }
+            else:
+                #販売単位の最小が1ではなく、2以上が混在していない場合
+                #要求席数/販売単位
+                request_quantity /= min_quantity
 
         product_requires = [(product, request_quantity)]
         logger.debug("product_requires %s", product_requires)
@@ -675,10 +736,10 @@ class CartAPIView(object):
             reason = "invalid parameter selected_products"
 
         for sp in selected_products:
-            if 'product_id' not in sp:
-                reason = "no key selected_products in product_id"
-            elif sp['product_id'] is None:
-                reason = "invalid parameter selected_products in product_id"
+            if 'product_item_id' not in sp:
+                reason = "no key selected_products in product_item_id"
+            elif sp['product_item_id'] is None:
+                reason = "invalid parameter selected_products in product_item_id"
 
             if 'quantity' not in sp:
                 reason = "no key selected_products in quantity"
@@ -708,11 +769,46 @@ class CartAPIView(object):
                 }
             }
 
-        # 購入枚数チェック
+        #リクエスト内容（商品明細）を商品単位にまとめる。
+        request_items = {}
         for sp in selected_products:
-            logger.debug("selected_products %s", sp)
-            product = DBSession.query(Product).filter_by(id=sp['product_id']).first()
-            ordered_items = [(product, sp['quantity'])]
+            #同一商品明細単位でまとめる。
+            if sp['product_item_id'] not in request_items.keys():
+                item = {'quantity':sp['quantity']}
+                if not is_quantity_only:
+                    item['seat'] = [sp['seat_id']]
+                request_items[sp['product_item_id']] = item
+            else:
+                item_quantity = request_items[sp['product_item_id']]['quantity']
+                item_quantity += sp['quantity']
+                request_items[sp['product_item_id']]['quantity'] = item_quantity
+                if not is_quantity_only:
+                    request_items[sp['product_item_id']]['seat'].append(sp['seat_id'])
+
+        #まとめた商品明細を同一商品単位でまとめる。
+        request_products = {}
+        for key,value in request_items.iteritems():
+            product_item = DBSession.query(ProductItem).filter_by(id=key).first()
+            product = DBSession.query(Product).filter_by(id=product_item.product_id).first()
+            #商品明細の商品IDが同じであれば、追加し商品単位にまとめる。
+            if product not in request_products.keys():
+                items = []
+                items.append(dict({key:value}))
+                request_products[product] = items
+            else:
+                items = request_products[product]
+                items.append(dict({key:value}))
+                request_products[product] = items
+
+        #購入枚数チェック
+        for product,request_items in request_products.iteritems():
+            #商品明細の販売単位、枚数から商品の枚数を特定する。
+            sum_sales_unit_quantity = sum([item.quantity for item in product.items])
+            sum_item_quantity = 0
+            for req in request_items:
+                for reqItem in req.values():
+                    sum_item_quantity += reqItem['quantity']
+            ordered_items = [(product, sum_item_quantity / sum_sales_unit_quantity)]
             logger.debug("ordered_items %s", ordered_items)
 
             try:
@@ -743,56 +839,46 @@ class CartAPIView(object):
             for cpi in cart_product_items:
                 cpi.deleted_at = datetime.now()
 
-        for sp in selected_products:
-            logger.debug("selected_products %s", sp)
-            product = DBSession.query(Product).filter_by(id=sp['product_id']).first()
-            ordered_items = [(product, sp['quantity'])]
-            logger.debug("ordered_items %s", ordered_items)
+        for product,request_items in request_products.iteritems():
+            #商品明細の販売単位、枚数から商品の枚数を特定する。
+            sum_sales_unit_quantity = sum([item.quantity for item in product.items])
+            sum_item_quantity = 0
+            for req in request_items:
+                for reqItem in req.values():
+                    sum_item_quantity += reqItem['quantity']
 
-            try:
-                view_support.assert_quantity_within_bounds(sales_segment, ordered_items)
-            except PerProductProductQuantityOutOfBoundsError as e:
-                logger.debug("PerProductProductQuantityOutOfBoundsError error %s",e.message)
-                return {
-                "results": {
-                       "status": "NG",
-                        "reason": "assert_quantity_within_bounds error"
-                    }
-                }
+            product_quantity = sum_item_quantity / sum_sales_unit_quantity
 
-            #データ設定
-            cart_product = CartedProduct(cart=exec_cart, product=product, quantity=sp['quantity'], organization_id=exec_cart.organization_id)
-            product_item = DBSession.query(ProductItem).filter_by(performance_id=exec_cart.performance_id, product_id=sp['product_id']).all()
-
+            #カート商品登録
+            cart_product = CartedProduct(cart=exec_cart, product=product, quantity=product_quantity, organization_id=exec_cart.organization_id)
             DBSession.add(cart_product)
 
             cart_factory = api.get_cart_factory(self.request)
-            seats = []
 
-            #performance取得
-            performance = DBSession.query(Performance).filter_by(id=exec_cart.performance_id).first()
+            #カート商品明細登録
+            for req in request_items:
+                for key, reqItem in req.iteritems():
+                    seats = []
+                    product_item = DBSession.query(ProductItem).filter_by(id=key).first()           
+                    cart_product_item = CartedProductItem(
+                        carted_product = cart_product,
+                        organization_id = cart_product.organization_id,
+                        quantity = reqItem['quantity'],
+                        product_item = product_item)
 
-            #席受け時の座席を取得
-            if not is_quantity_only:
-                for seat_id in sp['seat_id']:
-                    seat = DBSession.query(Seat).filter_by(l0_id=seat_id,venue_id=performance.venue.id).first()
-                    seats.append(seat)
+                    # 席受け時の座席割り当て
+                    if not is_quantity_only:
+                        #performance取得
+                        performance = DBSession.query(Performance).filter_by(id=exec_cart.performance_id).first()                    
+                        #座席情報取得
+                        for seat_l0_id in reqItem['seat']:
+                            seat = DBSession.query(Seat).filter_by(l0_id=seat_l0_id,venue_id=performance.venue.id).first()
+                            seats.append(seat)
+                        logger.debug("seats %s", seats)
+                        item_seats = cart_factory.pop_seats(product_item, reqItem['quantity'], seats)                    
+                        cart_product_item.seats = item_seats
 
-            for cpi in product_item:
-                subtotal_quantity = cpi.quantity * sp['quantity']
-                cart_product_item = CartedProductItem(
-                    carted_product = cart_product,
-                    organization_id = cart_product.organization_id,
-                    quantity = subtotal_quantity,
-                    product_item = cpi)
-
-                # 席受け時の座席割り当て
-                if not is_quantity_only:
-                    logger.debug("seats %s", seats)
-                    item_seats = cart_factory.pop_seats(cpi, subtotal_quantity, seats)
-                    cart_product_item.seats = item_seats
-
-                DBSession.add(cart_product_item)
+                    DBSession.add(cart_product_item)
 
         DBSession.flush()
 

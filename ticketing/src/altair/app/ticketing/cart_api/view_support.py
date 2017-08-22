@@ -4,6 +4,7 @@ from altair.app.ticketing.core.models import (
     Performance,
     StockType,
     Seat,
+    SeatGroup,
     Stock,
     StockType,
     SeatStatus,
@@ -162,6 +163,32 @@ def search_seat(request, stock_ids, session=None):
             .join(Seat.status_)\
             .filter(Seat.stock_id.in_(stock_ids))
     return q
+
+def search_seatGroup(request, site_id, venue_id, session=None):
+    if not session:
+        session = get_db_session(request, 'slave')
+
+    seatGroup = session.query(SeatGroup)\
+                .filter(SeatGroup.site_id == site_id)\
+                .all()
+
+    for sg in seatGroup:
+        sg_seats = session.query(Seat.l0_id) \
+                        .join(SeatGroup, Seat.row_l0_id == SeatGroup.l0_id) \
+                        .filter(SeatGroup.site_id == site_id) \
+                        .filter(SeatGroup.id == sg.id) \
+                        .filter(Seat.venue_id == venue_id) \
+                        .union_all(
+                            session.query(Seat.l0_id) \
+                            .join(SeatGroup, Seat.group_l0_id == SeatGroup.l0_id) \
+                            .filter(SeatGroup.site_id == site_id) \
+                            .filter(SeatGroup.id == sg.id) \
+                            .filter(Seat.venue_id == venue_id) \
+                            ) \
+                        .distinct()               
+
+        sg.seats = sg_seats
+    return seatGroup
 
 
 def get_spa_svg_urls(request, performance_id):
