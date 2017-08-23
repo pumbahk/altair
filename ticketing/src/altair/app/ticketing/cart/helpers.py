@@ -80,9 +80,9 @@ def create_time_label(start, end, disp_time=True, i18n=False, performance_open=N
         same_year_format = u"{start.year}/{start.month}/{start.day}({start_week}) ~ {end.month}/{end.day}({end_week})"
     else:
         WEEK =[u"月", u"火", u"水", u"木", u"金", u"土", u"日"]
+        only_start_format = u"{start.year}年{start.month}月{start.day}日({start_week})" + start_time
         range_format = u"{start.year}年{start.month}月{start.day}日({start_week}) - {end.year}年{end.month}月{end.day}日({end_week})"
         same_year_format = u"{start.year}年{start.month}月{start.day}日({start_week}) - {end.month}月{end.day}日({end_week})"
-        only_start_format = u"{start.year}年{start.month}月{start.day}日({start_week})" + start_time
         if performance_open:
             performance_open_time = "{performance_open:%H:%M}"
             only_start_format = u"{start.year}年{start.month}月{start.day}日({start_week})" + u"  開場" + performance_open_time + u"  開演" + start_time
