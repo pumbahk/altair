@@ -131,7 +131,10 @@
 .grpH-section .grpH-nav-sport{ width:120px; }
 .grpH-section .grpH-nav-event{ width:120px; }
 
-
+#tsWrapper { width: 100%; min-width:1200px; }
+.grpH-section .grpH-section-nav .grpH-nav-leisure { float:right; width:220px; margin-right:0px; }
+.grpH-section .grpH-section-nav .grpH-nav-leisure a { background: #FFF; border-radius: 2px 2px 0 0; border:solid 2px #FC0; border-bottom:none; box-sizing:border-box; padding:3px  0 5px; }
+.grpH-section .grpH-section-nav .grpH-nav-leisure a img { width:70%; }
 
 
 /* grpH-site-menu -------------------- */
