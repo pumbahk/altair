@@ -296,7 +296,14 @@ if label is None or label is True:
         <div class="settlementSelectBoxInner02">
           <table id="confirmDelivery" class="customer-table" summary="${__(u'購入者情報')}">
             <tr>
-              <th><label>${__(u'購入者氏名（全角）')}</label></th>
+              <th>
+                <label>
+                  ${__(u'購入者氏名')}
+                  % if custom_locale_negotiator=='ja' or not request.organization.setting.i18n:
+                  ${__(u'(全角)')}
+                  % endif
+                </label>
+              </th>
               <td>
                 <ul>
                   <li>
@@ -311,7 +318,7 @@ if label is None or label is True:
             </tr>
             % if custom_locale_negotiator=='ja' or not request.organization.setting.i18n:
             <tr>
-              <th><label>購入者氏名（カナ）</label></th>
+              <th><label>購入者氏名 (カナ)</label></th>
               <td>
                 <ul>
                   <li>
