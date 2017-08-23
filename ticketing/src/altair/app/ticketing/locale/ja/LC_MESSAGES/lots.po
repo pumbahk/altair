@@ -149,7 +149,7 @@ msgstr "戻る"
 # index
 
 msgid "※このページに記載されている料金はすべて消費税込です。"
-msgstr "All fees in this page includes consumption tax."
+msgstr "※このページに記載されている料金はすべて消費税込です。"
 
 msgid "イベント詳細"
 msgstr "イベント詳細"
