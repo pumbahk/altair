@@ -11,7 +11,7 @@
   %endif
 
 <div class="confirm-wrap">
-  <form method="post" id="wishForm" action="${request.route_path('lots.entry.sp_step2', event_id=event.id, lot_id=lot.id)}">
+  <form method="post" id="wishForm" class="confirmForm" action="${request.route_path('lots.entry.sp_step2', event_id=event.id, lot_id=lot.id)}">
     <div class="confirm-wrap">
       <h2 class="heading heading_simple_line">${__(u'希望選択')}</h2>
       <div class="settlementBoxInner">

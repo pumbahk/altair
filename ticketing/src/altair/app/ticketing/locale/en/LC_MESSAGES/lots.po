@@ -29,8 +29,8 @@ msgstr "Terms of service"
 msgid "抽選申込確認"
 msgstr "Lottery Application Confirmation"
 
-msgid "抽選申し込み番号"
-msgstr "Lottery application number"
+msgid "受付番号"
+msgstr "Receipt number"
 
 msgid "必須"
 msgstr "Required"
@@ -39,7 +39,7 @@ msgid "半角英数"
 msgstr "half-width alphanumeric"
 
 msgid "電話番号"
-msgstr "Telephone number"
+msgstr "Home Phone Number"
 
 msgid "FAX番号"
 msgstr "FAX"
@@ -48,13 +48,13 @@ msgid "確認してください"
 msgstr "Please check your input."
 
 msgid "電話番号はご登録時の電話番号をご入力ください。"
-msgstr "Telephone number, please enter the telephone number at the time of your registration."
+msgstr "Telephone number, please input the telephone number used for the application."
 
 msgid "電話番号は自宅か携帯かどちらかを入力してください"
 msgstr "Input your home phone number or you mobile phone number."
 
 msgid "（携帯・自宅をどちらもご登録した場合どちらの番号でも構いません。）"
-msgstr "(It does not matter either the number If you both register your mobile phone and home.)"
+msgstr "(either home or mobile number is acceptable.)"
 
 msgid "{0}または{1}が違います"
 msgstr "{0} or {1} is different"
@@ -72,7 +72,7 @@ msgid "お申込みいただいておりました以下の抽選受付を{0}に�
 msgstr "The lottery you applied on {0} has been canceled."
 
 msgid "抽選の結果、お客様はご当選されました。"
-msgstr "The lots result, you are elected."
+msgstr "You win the lottery!"
 
 msgid "払込票番号や引換票番号は、下記の購入履歴よりご確認いただけます。"
 msgstr "Payment slip number and exchange form number, you can confirm from the purchase history of the following."
@@ -80,8 +80,8 @@ msgstr "Payment slip number and exchange form number, you can confirm from the p
 msgid "<a href=\"/orderreview/guest\" target=\"_blank\">■購入履歴確認ページ</a>をご確認ください。"
 msgstr "Purchase history confirm page"
 
-msgid "予約番号は{0}です"
-msgstr "Application number is {0}"
+msgid "受付番号は{0}です"
+msgstr "Receipt number is {0}"
 
 msgid "抽選の結果、お客様は残念ながら落選となりました。"
 msgstr "The lots result, you are rejected."
@@ -146,7 +146,13 @@ msgstr "Back to login page"
 msgid "税込"
 msgstr "tax included"
 
+msgid "戻る"
+msgstr "Back"
+
 # index
+
+msgid "※このページに記載されている料金はすべて消費税込です。"
+msgstr "All fees on this page include consumption tax."
 
 msgid "イベント詳細"
 msgstr "Event Detail"
@@ -197,7 +203,7 @@ msgid "希望選択"
 msgstr "Hope selection"
 
 msgid "第{0}希望"
-msgstr "No {0} hope"
+msgstr "Hope No {0}"
 
 msgid "希望する公演と券種の選択"
 msgstr "Selection of performances and ticket species hope"
@@ -217,22 +223,31 @@ msgstr "Ticket type"
 msgid "お支払・お引取り方法選択"
 msgstr "Select payment/delivery method"
 
+msgid "1申込当り"
+msgstr "per application"
+
+msgid "1枚ごと"
+msgstr "per sheet"
+
 msgid "利用料・手数料"
-msgstr "Use fee and commission"
+msgstr "Fees"
 
 msgid "システム利用料"
 msgstr "System fee"
 
-msgid "注文受付完了、確認メール等をメールでご案内します。「tstar.jp」からのメールを受信できるよう、お申し込み前にドメイン指定の設定を必ずお願いいたします。"
-msgstr "Order acceptance completion, it will guide you through the confirmation e-mail, etc. by e-mail. So that you can receive mail from the 'tstar.jp', please be sure the settings for the domain specified before you sign up."
+msgid "申込受付完了、確認メール等をメールでご案内します。「tstar.jp」からのメールを受信できるよう、お申し込み前にドメイン指定の設定を必ずお願いいたします。"
+msgstr "The confirmation email will be sent after the application is completed. Please ensure your devices can receive the email from 'tstar.jp'."
 
 msgid "上記の利用料・手数料がかかります。"
-msgstr "The above usage fee and commission is cost."
+msgstr "The above fees are subject to the items."
+
+msgid "上記以外の利用料・手数料"
+msgstr "Other fees"
 
 msgid "購入者情報"
 msgstr "Purchaser Information"
 
-msgid "購入者氏名（全角）"
+msgid "購入者氏名"
 msgstr "Name"
 
 msgid "姓"
@@ -278,7 +293,7 @@ msgid "メールアドレス (確認)"
 msgstr "Email(Confirmation)"
 
 msgid "電話番号 (携帯)"
-msgstr "Mobile"
+msgstr "Mobile Phone Number"
 
 msgid "住所"
 msgstr "Address"
@@ -394,7 +409,7 @@ msgstr "There was a problem in the session."
 # agreement
 
 msgid "内容を同意の上、チェックを入れてください。"
-msgstr "Please check here to indicate that you have confirmed the contents above."
+msgstr "Please check here to acknowledge that you have confirmed and agree to the terms above."
 
 # payment 3d
 
@@ -467,7 +482,7 @@ msgid "チケット購入の絞り込み"
 msgstr "Narrowing of the ticket purchase"
 
 msgid "希望内容と手数料"
-msgstr "Hope content and fees"
+msgstr "Application content and fees"
 
 msgid "枚"
 msgstr "Sheet"
@@ -475,11 +490,14 @@ msgstr "Sheet"
 msgid "(税込)"
 msgstr "(tax included)"
 
+msgid "手数料"
+msgstr "Fee"
+
 msgid "決済手数料"
-msgstr "Settlement commission"
+msgstr "Settlement fee"
 
 msgid "引取手数料"
-msgstr "Take-off fee"
+msgstr "Issuing fee"
 
 msgid "合計"
 msgstr "Total amount"
@@ -494,7 +512,7 @@ msgid "申込内容確認"
 msgstr "Application Content Confirmation"
 
 msgid "まだ申し込みは完了していません"
-msgstr "Not yet application is complete"
+msgstr "The application is not yet completed!"
 
 msgid "ご注文内容をご確認いただき「確定する」ボタンで購入してください"
 msgstr "Please purchase your order at your confirmation received 'confirm' button"
@@ -528,14 +546,14 @@ msgstr "If you press the Back to beginning button, your application content up t
 msgid "申込完了"
 msgstr "Application completed"
 
-msgid "申込を完了しました"
-msgstr "Application was completed"
+msgid "申込を完了しました。"
+msgstr "Your Application has been completed"
 
 msgid "下記の受付番号はとても大切な番号です。すぐにメモして保管してください。"
-msgstr "Acceptance number of the following is a very important number. Please keep a note immediately."
+msgstr "The receipt number is very important. Please take a note of it immediately and keep it safe."
 
-msgid "申込番号"
-msgstr "Application number"
+msgid "受付番号"
+msgstr "Receipt number"
 
 msgid "お申込み時に、ご登録いただいたメールアドレス宛に、受付完了メールが送られます。しばらくたっても確認のメールが届かない場合は、入力されたメールアドレスが誤りがあるか、メールの受信設定により受信できていない可能性があります。"
 msgstr "At the time of your application, to the email address you registered, accepted completion mail will be sent. If even after a while do not receive a confirmation e-mail, or input e-mail address is there is an error, you might not be able to receive by e-mail reception setting."
@@ -547,10 +565,13 @@ msgid "お問合せの際は、お申し込み時のお名前、電話番号、�
 msgstr "When contacting us, your name at the time of your application, phone number, performance name, thank you describe the acceptance number."
 
 msgid "お申込内容は、「<a href=\"/lots/review\">申込確認ページ</a>」からもご確認いただけます。受付番号とご登録時のお電話番号をお手元にご用意の上、ご利用ください。"
-msgstr "Your application content, 「<a href=\"/lots/review\">Application confirmation page</a>」"
+msgstr "You can check your application on「<a href=\"/lots/review\">Application confirmation page</a>」"
 
 msgid "決済中にエラーが発生しました。しばらく時間を置いてから<a href=\"{0}\">再度お試しください。</a>"
 msgstr "An error occurred during the settlement. Please try <a href=\"{0}\"> again at some time. </a>"
+
+msgid "配送受取を選択した場合"
+msgstr "If delivery is needed"
 
 # 国名
 
