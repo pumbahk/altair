@@ -84,8 +84,7 @@ def create_time_label(start, end, disp_time=True, i18n=False, performance_open=N
         range_format = u"{start.year}年{start.month}月{start.day}日({start_week}) - {end.year}年{end.month}月{end.day}日({end_week})"
         same_year_format = u"{start.year}年{start.month}月{start.day}日({start_week}) - {end.month}月{end.day}日({end_week})"
         if performance_open:
-            performance_open_time = " {performance_open:%H:%M}"
-            only_start_format = u"{start.year}年{start.month}月{start.day}日({start_week})" + u" 開場" + performance_open_time.format(performance_open=performance_open) + u" 開演" + start_time
+            only_start_format = u"{start.year}年{start.month}月{start.day}日({start_week}) 開場 {performance_open:%H:%M} 開演 {start:%H:%M}"
 
     date_format = only_start_format
 
@@ -98,7 +97,7 @@ def create_time_label(start, end, disp_time=True, i18n=False, performance_open=N
             date_format = range_format
             if start.year == end.year:
                 date_format = same_year_format
-    return date_format.format(start=start, end=end, start_week=start_week, end_week=end_week)
+    return date_format.format(start=start, end=end, start_week=start_week, end_week=end_week, performance_open=performance_open)
 
 def create_time_only_label(start, end):
     time_format = u"{start:%H:%M}"
