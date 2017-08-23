@@ -68,7 +68,7 @@ def create_date_label(start, end, i18n=False):
     return date_format.format(start=start, end=end)
 
 WEEK =[u"月", u"火", u"水", u"木", u"金", u"土", u"日"]
-def create_time_label(start, end, disp_time=True, i18n=False, open=None):
+def create_time_label(start, end, disp_time=True, i18n=False, performance_open=None):
     if disp_time:
         start_time = "{start:%H:%M}"
     else:
@@ -82,11 +82,10 @@ def create_time_label(start, end, disp_time=True, i18n=False, open=None):
         WEEK =[u"月", u"火", u"水", u"木", u"金", u"土", u"日"]
         range_format = u"{start.year}年{start.month}月{start.day}日({start_week}) - {end.year}年{end.month}月{end.day}日({end_week})"
         same_year_format = u"{start.year}年{start.month}月{start.day}日({start_week}) - {end.month}月{end.day}日({end_week})"
-        if open:
-            open_time = "{open:%H:%M}"
-            only_start_format = u"{start.year}年{start.month}月{start.day}日({start_week})" + u"  開場" + open_time + u"  開演" + start_time
-        else:
-            only_start_format = u"{start.year}年{start.month}月{start.day}日({start_week})" + start_time
+        only_start_format = u"{start.year}年{start.month}月{start.day}日({start_week})" + start_time
+        if performance_open:
+            performance_open_time = "{performance_open:%H:%M}"
+            only_start_format = u"{start.year}年{start.month}月{start.day}日({start_week})" + u"  開場" + performance_open_time + u"  開演" + start_time
 
     date_format = only_start_format
 
@@ -99,7 +98,7 @@ def create_time_label(start, end, disp_time=True, i18n=False, open=None):
             date_format = range_format
             if start.year == end.year:
                 date_format = same_year_format
-    return date_format.format(start=start, end=end, start_week=start_week, end_week=end_week, open=open)
+    return date_format.format(start=start, end=end, start_week=start_week, end_week=end_week, performance_open=performance_open)
 
 def create_time_only_label(start, end):
     time_format = u"{start:%H:%M}"
@@ -116,10 +115,10 @@ def performance_date(performance, i18n=False):
 def performance_datetime(performance, i18n=False, disp_open_time=False):
     """Return date and time of the performance.
     """
-    open = ""
+    performance_open = ""
     if disp_open_time:
-        open = performance.open_on
-    return create_time_label(performance.start_on, performance.end_on, i18n=i18n, open=open)
+        performance_open = performance.open_on
+    return create_time_label(performance.start_on, performance.end_on, i18n=i18n, performance_open=performance_open)
 
 def performance_end_date(performance):
     s = performance.start_on
