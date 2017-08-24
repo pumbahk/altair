@@ -1,28 +1,10 @@
-</div></div>
-
-<!-- ******************** contents [end] ******************** -->
-<!-- ******************** footer [start] ******************** -->
-
-<footer class="ts-footer">
-<div class="ts-footer-inner">
-
-<!-- ===== ts-footer-wrap [start] ===== -->
-<div class="ts-footer-wrap">
-
-<nav>
-<ul class="ts-footer-nav">
-  <li><a href="//www.ticketstar.jp/corporate/">運営会社</a></li>
-  <li><a href="mailto:satv@tstar.jp">お問い合わせ</a></li>
-  <li><a href="//www.ticketstar.jp/privacy/">個人情報保護方針</a></li>
-  <li><a href="//www.ticketstar.jp/legal/">特定商取引法に基づく表示</a></li>
-</ul>
-<nav>
-
-<p class="copyright">&copy; TicketStar, Inc.</p>
-
-</div><!-- ===== ts-footer-wrap [end] ===== -->
-
-</div>
-</footer><!-- ******************** footer [end] ******************** -->
-
-</div>
+<!-- footer start -->
+<footer>
+    <ul>
+        <li><a href="http://www.satv.co.jp/0800company/0010about/" target="_blank">運営会社</a></li>
+        <li><a href="https://secure.satv.co.jp/cgi-bin/inquiry/form.cgi" target="_blank">お問い合わせ</a></li>
+        <li><a href="http://www.satv.co.jp/1800privacypolicy/" target="_blank">個人情報保護方針</a></li>
+        <li><a href="http://www.satv.co.jp/0550ticket/law.html" target="_blank">特定商取引法に基づく表示</a></li>
+    </ul>
+</footer>
+<!-- footer end -->
