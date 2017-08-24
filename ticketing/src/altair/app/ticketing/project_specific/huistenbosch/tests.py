@@ -109,8 +109,15 @@ class QRUtilsTest(unittest.TestCase, CoreTestMixin):
     def _extract_qr_data_for_test(self, ticket):
         builder = get_qrdata_aes_builder(self.request)
         qr = ticket.qr
-        data = builder.extract(qr, self.header, ht_item_list)
-        return data
+        data = builder.extract(qr, self.header)
+        content = data['content']
+        sub_start = 0
+        content_dict = {}
+        for key, val in ht_item_list.items():
+            sub_end = sub_start + val
+            content_dict[key] = content[sub_start:sub_end]
+            sub_start = sub_end
+        return content_dict
 
     def test_make_data_for_qr(self):
         data, _ = make_data_for_qr(self.history)
