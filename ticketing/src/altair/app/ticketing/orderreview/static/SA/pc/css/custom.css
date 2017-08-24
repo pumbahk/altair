@@ -1,8 +1,8 @@
 :root {
-    --custom-btn-color: #E8240C;    /* buttons ボタン */
-    --custom-color: #E8240C;        /* fonts 文字 */
-    --custom-border-color: #E8240C;     /* border 罫線（divなど） */
-    --custom-background-color: #E8240C;     /* background 背景（divなど） */
+    --custom-btn-color: #D52D39;    /* buttons ボタン */
+    --custom-color: #D52D39;        /* fonts 文字 */
+    --custom-border-color: #D52D39;     /* border 罫線（divなど） */
+    --custom-background-color: #D52D39;     /* background 背景（divなど） */
 }
 
 /* buttons color ボタン
@@ -16,4 +16,24 @@
 -------------------------------------------- */
 .heading-primary {
     background-color: var(--custom-background-color) !important;
+}
+
+header .head {
+    height: 60px;
+    margin: 0;
+    padding: 0;
+    background-color: var(--custom-background-color) !important;
+}
+
+header h1 {
+    text-align: left;
+    padding-left: 10px;
+    line-height: 60px;
+}
+
+header h1 img {
+    border-radius: 5px;
+    background: #ffffff;
+    padding: 5px;
+    vertical-align: middle !important;
 }

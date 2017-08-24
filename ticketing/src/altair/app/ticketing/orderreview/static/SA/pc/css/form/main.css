@@ -13,7 +13,6 @@ a {
 a:hover {
   color: #00A2B4;
 }
-
 .sp {
   display: none;
 }
@@ -390,6 +389,12 @@ main #content.subpage.info .subbox {
 main #content.subpage.info .subbox ul {
   width: 50%;
   float: left;
+}
+main #content.subpage.msg ul {
+  overflow: hidden;
+  list-style: none;
+  padding-left: 0px;
+  padding-bottom: 20px;
 }
 main #content.subpage .formall {
   overflow: hidden;

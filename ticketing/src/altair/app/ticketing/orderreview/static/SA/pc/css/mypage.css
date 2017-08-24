@@ -33,7 +33,7 @@ body {
 	line-height: 1.5;
     font-family:Meiryo,"Hiragino Kaku Gothic ProN",MS-PGothic,sans-serif;
 	text-align: center;
-	background: #f4f3f1;
+	background: #FFF;
 }
 
 .ts-wrapper { width: 100%; }
@@ -76,8 +76,7 @@ body {
 	clear: both;
 	position: relative;
 	width: 100%;
-	background: #FFF;
-	border-top: 2px solid #dbdbdb;
+	background: #DCDCDC;
 	text-align: left;
 	margin: 0 auto;
 }
@@ -98,7 +97,8 @@ body {
 	width: 950px;
 	text-align: left;
 	background: #FFF;
-	margin: 0 auto;
+	margin: 30px auto;
+	border: 8px solid #dfdfdf;
 }
 .ts-contents-inner {
 	padding: 20px;
@@ -336,6 +336,35 @@ body {
 }
 
 
+/* .confirmBoxText-dl ============================== */
+
+.confirmBoxText dl {
+    width: 100%;
+    border-collapse: collapse;
+    border: 3px solid #CCC;
+    box-sizing: border-box;
+}
+
+.confirmBoxText dt {
+    font-weight: bold;
+    border: 1px solid #CCC;
+    background: #FBFBFB;
+    float: left;
+    width: 25%;
+    text-align: left;
+    padding: 10px;
+    clear: left;
+    box-sizing: border-box;
+}
+.confirmBoxText dd {
+    border: 1px solid #CCC;
+    float: left;
+    width: 75%;
+    padding: 10px;
+    box-sizing: border-box;
+}
+.confirmBoxText dl:after {content:"";display:table;clear:both;}
+
 /* .purchase-wrap ============================== */
 
 .purchase-table {
@@ -484,6 +513,7 @@ body {
 @media screen and (max-width: 480px){
 .br { display: block; }
 .ts-header-inner,.ts-footer-inner,.ts-contents { width: 100%; }
+.ts-contents {margin: 0 auto; border: none}
 .ts-header-logobox img {
     display: block;
     margin: auto;
@@ -529,6 +559,13 @@ body {
 .customer-table th,
 .customer-table td {
 	width: 100%;
+	display: block;
+	padding: 10px;
+	box-sizing: border-box;
+}
+.confirmBoxText dt,
+.confirmBoxText dd {
+    width: 100%;
 	display: block;
 	padding: 10px;
 	box-sizing: border-box;
