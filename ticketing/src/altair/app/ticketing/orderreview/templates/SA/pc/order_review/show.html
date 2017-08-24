@@ -1,0 +1,15 @@
+<%inherit file="../layout.html" />
+<div class="ts-wrapper">
+  <div class="ts-contents">
+    <div class="ts-contents-inner">
+      %if request.organization.setting.i18n:
+        <div class="selectwrapper">
+          ${h.create_url(request) |n}
+        </div>
+      % endif
+      <h2 class="heading heading-primary">${__(u'受付履歴確認 検索結果')}</h2>
+      ${_context.order_detail_panel(order)}
+    </div>
+  </div>
+</div>
+

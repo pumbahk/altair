@@ -1,0 +1,47 @@
+<%inherit file="../layout.html" />
+
+<%block name="css">
+<link rel="stylesheet" href="${view_context.static_url('pc/css/form/sanitize.css')}" type="text/css" media="all">
+<link rel="stylesheet" href="${view_context.static_url('pc/css/form/import.css')}" type="text/css" media="all">
+<link rel="stylesheet" href="${view_context.static_url('pc/css/form/custom.css')}" type="text/css" media="all">
+</%block>
+
+<main>
+    <div id="content" class="subpage">
+        <article>
+            <h2>申込確認</h2>
+            <section>
+                <form method="post" accept-charset="utf-8" action="${request.route_path('order_review.show')}">
+                    <dl class="form1 formall">
+                        <dt>受付番号 (半角英数)</dt>
+                        <dd>
+                            <input type="text" name="order_no" id="order_no" placeholder="例:SA000000AB"/>
+                            <span class="red">${h.render_errors(request, form.order_no.errors)}</span>
+                        </dd>
+                        <dt>電話番号 (半角数字)</dt>
+                        <dd>
+                            <input type="text" name="tel" autocomplete="off" id="tel" value="" placeholder="例:080xxxxyyyy"/><br/>
+                            ※お申込時に登録したお電話番号
+                            <span class="red">${h.render_errors(request, form.tel.errors)}</span>
+                        </dd>
+                    </dl>
+                    <p class="txtC">
+                        <button class="btn" type="submit">次へ</button>
+                    </p>
+                </form>
+            </section>
+        </article>
+    </div>
+</main>
+<%block name="footer">
+<!-- footer start-->
+<footer>
+    <ul>
+        <li><a href="http://www.satv.co.jp/0800company/0010about/" target="_blank">運営会社</a></li>
+        <li><a href="https://secure.satv.co.jp/cgi-bin/inquiry/form.cgi" target="_blank">お問い合わせ</a></li>
+        <li><a href="http://www.satv.co.jp/1800privacypolicy/" target="_blank">個人情報保護方針</a></li>
+        <li><a href="http://www.satv.co.jp/0550ticket/law.html" target="_blank">特定商取引法に基づく表示</a></li>
+    </ul>
+</footer>
+<!-- footer end-->
+</%block>
