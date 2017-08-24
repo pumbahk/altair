@@ -73,77 +73,14 @@ class QrTest(unittest.TestCase):
         
 
 class QrAESTest(unittest.TestCase):
-    from collections import OrderedDict
-
-    item_list_1 = OrderedDict([
-        ('id_code', 10),
-        ('type_code', 1),
-        ('ticket_code', 6),
-        ('serial_no', 17),
-        ('issued_at', 8),
-        ('count_flag', 1),
-        ('season_flag', 1),
-        ('valid_date_from', 8),
-        ('valid_date_to', 8),
-        ('enterable_days', 3),
-        ('enterable_from', 4),
-        ('usable_date_to', 8),
-        ('special_flag', 1)
-    ])
-
-    item_list_2 = OrderedDict([
-        ('id_code', 10),
-        ('type_code', 1),
-        ('ticket_code', 6),
-        ('serial_no', 17),
-        ('issued_at', 8),
-        ('count_flag', 1),
-        ('season_flag', 1),
-        ('valid_date_to', 8),
-        ('enterable_days', 3),
-        ('enterable_from', 4),
-        ('usable_date_to', 8),
-        ('special_flag', 1)
-    ])
-
-    item_list_3 = {
-        'id_code': 10,
-        'type_code': 1,
-        'ticket_code': 6,
-        'serial_no': 17,
-        'issued_at': 8,
-        'count_flag': 1,
-        'season_flag': 1,
-        'valid_date_from': 8,
-        'valid_date_to': 8,
-        'enterable_days': 3,
-        'enterable_from': 4,
-        'usable_date_to': 8,
-        'special_flag': 1
-    }
-
-    valid_data = {
-        'id_code': 'HTB0000001',
-        'type_code': '3',
-        'ticket_code': '401213',
-        'serial_no': 'A0003665574684001',
-        'issued_at': '20120327',
-        'count_flag': '1',
-        'season_flag': '1',
-        'valid_date_from': '20120301',
-        'valid_date_to': '20120531',
-        'enterable_days': '000',
-        'enterable_from': '1200',
-        'usable_date_to': '20120527',
-        'special_flag': '0'
-    }
-
     CONTENT='HTB00000013401213A0003665574684001201203271120120301201205310001200201205270'
 
     HEADER = 'https://huistenbosch.tstar.jp'.ljust(40) + '3'
 
     # QR_DATAの暗号化された文字列はsetUPのcustom_keyで暗号化されたもの
     QR_DATA = HEADER + 'obfWHL4rkQB009ZU3OTaGi2-aZHNY8FfmsVPtRgjGLdARQDRW31pZDiuAXVXaIGv1vjUZxo81n8OK6QEfyVuOwYRq0RTLtXpJkQ2ciRVoLXW9OS28VmlD1TFXv91EL9v'
+    # QR_DATAの暗号化された文字列はsetUPのcustom_keyで暗号化されて、勝手に変更することで適切ではない文字列を作る
+    INVALID_QR_DATA = HEADER + 'obfWHL4rkQB009ZU3OTaGi2-aZHNY8FfmsVPtRgjGLdARQDRW31pZDiuAXVXaIGv1vjUZxo81n8OK6QEfyVuOwYRq0RTLtXpJkQ2ciRVoLXW9OS28VmlD1TFXv91EL9z'
 
     def setUp(self):
         self.custom_key = "!THIS_KEY_IS_FOR_THE_UNIT_TESTS!"
@@ -155,25 +92,21 @@ class QrAESTest(unittest.TestCase):
         data = {'header': self.HEADER, 'content': self.CONTENT}
         qr_data = self.builder.make(data)
         qr_data = qr_data[len(self.HEADER):]
-
         self.assertEqual(aes.decrypt(qr_data), self.CONTENT)
 
     def test_extract_function_success(self):
-        test_data = self.builder.extract(self.QR_DATA, self.HEADER, self.item_list_1)
-        self.assertDictEqual(test_data, self.valid_data)
+        test_data = self.builder.extract(self.QR_DATA, self.HEADER)
+        header = test_data['header']
+        content = test_data['content']
+        self.assertEqual(header, self.HEADER)
+        self.assertEqual(content, self.CONTENT)
 
-
-    def test_extract_function_fail_caused_by_no_data_input(self):
-        with self.assertRaises(InvalidItemList):
-            self.builder.extract(self.QR_DATA, self.HEADER, None)
-
-    def test_extract_function_fail_caused_by_wrong_item_list(self):
-        with self.assertRaises(InvalidItemList):
-            self.builder.extract(self.QR_DATA, self.HEADER, self.item_list_2)
-
-    def test_extract_function_fail_caused_by_non_order_item_list(self):
-        with self.assertRaises(InvalidItemList):
-            self.builder.extract(self.QR_DATA, self.HEADER, self.item_list_3)
+    def test_extract_function_fail(self):
+        test_data = self.builder.extract(self.INVALID_QR_DATA, self.HEADER)
+        header = test_data['header']
+        content = test_data['content']
+        self.assertEqual(header, self.HEADER)
+        self.assertNotEqual(content, self.CONTENT)
 
 if __name__ == '__main__':
     unittest.main()

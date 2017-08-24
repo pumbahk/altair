@@ -430,7 +430,31 @@ class RecaptchaView(IndexViewMixin):
         if recaptcha:
             param = {'g-recaptcha-response': recaptcha}
             return HTTPFound(self.request.route_url('cart.index', event_id=self.context.event.id, _query=param))
-        return {}
+        return dict(sitekey=self.context.recaptcha_sitekey)
+
+    @lbr_view_config(route_name='cart.index2.recaptcha',
+                     renderer=selectable_renderer("recaptcha.html"),
+                     request_method="GET")
+    @lbr_view_config(route_name='cart.index2.recaptcha',
+                     request_type="altair.mobile.interfaces.ISmartphoneRequest",
+                     renderer=selectable_renderer("recaptcha.html"),
+                     request_method="GET")
+    def cart_index2(self):
+        return dict(sitekey=self.context.recaptcha_sitekey)
+
+    @lbr_view_config(route_name='cart.index2.recaptcha',
+                     renderer=selectable_renderer("recaptcha.html"),
+                     request_method="POST")
+    @lbr_view_config(route_name='cart.index2.recaptcha',
+                     request_type="altair.mobile.interfaces.ISmartphoneRequest",
+                     renderer=selectable_renderer("recaptcha.html"),
+                     request_method="POST")
+    def cart_index2_post(self):
+        recaptcha = self.request.POST.get('g-recaptcha-response', None)
+        if recaptcha:
+            param = {'g-recaptcha-response': recaptcha}
+            return HTTPFound(self.request.route_url('cart.index2', performance_id=self.context.performance.id, _query=param))
+        return dict(sitekey=self.context.recaptcha_sitekey)
 
 
 @view_defaults(decorator=(with_jquery + with_jquery_tools).not_when(mobile_request), xhr=False, permission="buy")
@@ -537,6 +561,11 @@ class IndexView(IndexViewMixin):
         set_rendered_event(self.request, self.context.event)
 
         selected_sales_segment = sales_segments[0]
+
+        if self.request.organization.setting.recaptcha:
+            recaptcha = self.request.GET.get('g-recaptcha-response')
+            if not self.context.check_recaptch(recaptcha):
+                return HTTPFound(self.request.route_url('cart.index2.recaptcha', performance_id=self.context.performance.id) or '/')
 
         return dict(
             event=create_event_dict(self, self.request.matchdict['performance_id'], sales_segments, self.request.organization.setting.i18n),
@@ -1039,6 +1068,7 @@ class PaymentView(object):
         sales_segment = self.context.sales_segment
         cart = self.context.read_only_cart
         self.context.check_deleted_product(cart)
+        self.context.check_order_limit()
 
         payment_delivery_methods = self.get_payment_delivery_method_pairs(sales_segment)
         payment_delivery_methods = [

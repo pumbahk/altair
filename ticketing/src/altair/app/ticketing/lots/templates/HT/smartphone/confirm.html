@@ -110,9 +110,9 @@ ${shipping_address['address_2']}
 % endif
 
 % if mailmagazines_to_subscribe:
-<dt class="creditHl">メールマガジンの配信</dt>
+<dt class="creditHl">メールマガジン・ダイレクトメールの配信</dt>
 <dd>
-<p>ご利用いただいた方には、${view_context.team_name}からのメールマガジンをお送りします。不要な方はチェックをはずしてください。</p>
+<p>ご利用いただいた方には、${view_context.team_name}の最新トピックスやお得な情報をメールなどお届けする場合がございます。<br/>不要な方はチェックをはずしてください。</p>
   % for mailmagazine, subscribed in mailmagazines_to_subscribe:
     <p>
       <input type="checkbox" checked="checked" name="mailmagazine" id="mailmagazine-${mailmagazine.id}" value="${mailmagazine.id}"${subscribed and u' disabled="disabled"' or u''|n} />

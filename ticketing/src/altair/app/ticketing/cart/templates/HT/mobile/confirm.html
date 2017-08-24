@@ -91,8 +91,8 @@ ${shipping.zip} ${shipping.prefecture}${shipping.city}${shipping.address_1}${shi
 % endif
 
 % if mailmagazines_to_subscribe:
-<%mobile:header>メールマガジンの配信</%mobile:header>
-ご利用いただいた方には、${view_context.team_name}からのメールマガジンをお送りします。不要な方はチェックをはずしてください。<br />
+<%mobile:header>メールマガジン・ダイレクトメールの配信</%mobile:header>
+ご利用いただいた方には、${view_context.team_name}の最新トピックスやお得な情報をメールなどお届けする場合がございます。<br/>不要な方はチェックをはずしてください。<br />
 % for mailmagazine, subscribed in mailmagazines_to_subscribe:
 % if subscribed:
 <font color="red">(購読済)</font>
