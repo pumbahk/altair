@@ -1318,6 +1318,7 @@ class PaymentViewTests(unittest.TestCase):
             get_payment_delivery_method_pair = lambda: payment_delivery_method_pair,
             sales_segment = testing.DummyModel(),
             check_deleted_product=lambda x: True,
+            check_order_limit=lambda: True,
             )
         target = self._makeOne(context, request)
         result = target.get()

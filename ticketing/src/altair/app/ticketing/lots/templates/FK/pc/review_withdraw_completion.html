@@ -1,11 +1,15 @@
 <%inherit file="review_base.html" />
 
 <div class="withdrawErrorInfoBox">
-%if not error_msg:
-<div>${_(u'以下の抽選申込を取消いたしました')}</div>
-%else:
-<div>${error_msg}</div>
-%endif
+
+<table cellpadding="0" cellspacing="0" class="form89ers">
+  % if not error_msg:
+    <tr><td colspan="2" style="text-align:left;"><div class="error">${_(u'以下の抽選申込を取消いたしました')}</div></td></tr>
+  % else:
+    <tr><td colspan="2" style="text-align:left;"><div class="error">${error_msg}</div></td></tr>
+  % endif
+</table>
+
 </div>
 <br/>
 <div align="center">
@@ -14,7 +18,7 @@
 <br/>
 <div class="settlementBox2 OrderBox">
   <div class="settlementBoxInner2">
-    <h3 class="bold mgb5 fs16">${_(u'申込番号')}</h3>
+    <h3 class="bold mgb5 fs16">${_(u'受付番号')}</h3>
     <table class="customer-table">
       <tr>
         <th scope="row"><h3 class="bold fs16 clr_red">${entry.entry_no}</h3></th>
