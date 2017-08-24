@@ -79,7 +79,7 @@ class QrAESTest(unittest.TestCase):
 
     # QR_DATAの暗号化された文字列はsetUPのcustom_keyで暗号化されたもの
     QR_DATA = HEADER + 'obfWHL4rkQB009ZU3OTaGi2-aZHNY8FfmsVPtRgjGLdARQDRW31pZDiuAXVXaIGv1vjUZxo81n8OK6QEfyVuOwYRq0RTLtXpJkQ2ciRVoLXW9OS28VmlD1TFXv91EL9v'
-    # QR_DATAの暗号化された文字列はsetUPのcustom_keyで暗号化されて、勝手に修正したもの
+    # QR_DATAの暗号化された文字列はsetUPのcustom_keyで暗号化されて、勝手に変更することで適切ではない文字列を作る
     INVALID_QR_DATA = HEADER + 'obfWHL4rkQB009ZU3OTaGi2-aZHNY8FfmsVPtRgjGLdARQDRW31pZDiuAXVXaIGv1vjUZxo81n8OK6QEfyVuOwYRq0RTLtXpJkQ2ciRVoLXW9OS28VmlD1TFXv91EL9z'
 
     def setUp(self):
