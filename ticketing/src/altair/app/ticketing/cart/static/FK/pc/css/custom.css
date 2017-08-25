@@ -1,8 +1,11 @@
 :root {
-    --custom-btn-color: #bf0000;    /* buttons ボタン */
-    --custom-color: #bf0000;        /* fonts 文字 */
-    --custom-border-color: #bf0000;     /* border 罫線（divなど） */
-    --custom-background-color: #bf0000;     /* background 背景（divなど） */
+    --custom-btn-color: #d55382;    /* buttons ボタン */
+    --custom-color: #000000;        /* fonts 文字 */
+    --custom-border-color: #d55382;     /* border 罫線（divなど） */
+    --custom-background-color: #d55382;     /* background 背景（divなど） */
+    --custom-default-color: #d55382;
+    --custom-light-color: #eebacd;
+    --custom-dark-color: #552134;
 }
 
 /* buttons color ボタン
@@ -66,4 +69,23 @@
 
 .settlementInterest h2 {
     background-color: var(--custom-background-color) !important;
+}
+
+/* navi step bar
+-------------------------------------------- */
+.nav-stepbar ol li {
+    background: var(--custom-light-color);
+    color: var(--custom-dark-color);
+}
+
+.nav-stepbar ol li:after {
+    border-left: 10px solid var(--custom-light-color);
+}
+
+.nav-stepbar ol li.current {
+    background: var(--custom-default-color);
+}
+
+.nav-stepbar ol li.current:after {
+    border-left: 10px solid var(--custom-default-color);
 }
