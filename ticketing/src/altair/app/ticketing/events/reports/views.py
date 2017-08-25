@@ -26,10 +26,15 @@ class Reports(BaseView):
 
     @view_config(route_name='reports.index', renderer='altair.app.ticketing:templates/events/report.html')
     def download_index(self):
-        event_id = int(self.request.matchdict.get('event_id', 0))
-        event = Event.get(event_id)
+        try:
+            event_id = int(self.request.matchdict.get('event_id', 0))
+        except ValueError as e:
+            return HTTPNotFound('event id not found')
+
+        event = Event.get(event_id, organization_id=self.context.user.organization_id)
         if event is None:
             return HTTPNotFound('event id %d is not found' % event_id)
+
         return {
             'form_stock':ReportStockForm(),
             'form_stock_holder':ReportByStockHolderForm(event_id=event_id),
@@ -61,10 +66,15 @@ class Reports(BaseView):
     def download_sales(self):
         """販売日程管理表ダウンロード
         """
-        event_id = int(self.request.matchdict.get('event_id', 0))
-        event = Event.get(event_id)
+        try:
+            event_id = int(self.request.matchdict.get('event_id', 0))
+        except ValueError as e:
+            return HTTPNotFound('event id not found')
+
+        event = Event.get(event_id, organization_id=self.context.user.organization_id)
         if event is None:
             return HTTPNotFound('event id %d is not found' % event_id)
+
         if not event.performances:
             return HTTPNotFound('performances is not found')
 
@@ -85,10 +95,14 @@ class Reports(BaseView):
         """仕入明細/残席明細/販売済座席明細ダウンロード
         """
         # Event
-        event_id = int(self.request.matchdict.get('event_id', 0))
-        event = Event.get(event_id)
+        try:
+            event_id = int(self.request.matchdict.get('event_id', 0))
+        except ValueError as e:
+            return HTTPNotFound('event id not found')
+
+        event = Event.get(event_id, organization_id=self.context.user.organization_id)
         if event is None:
-            raise HTTPNotFound('event id %d is not found' % event_id)
+            return HTTPNotFound('event id %d is not found' % event_id)
 
         # StockHolder
         stock_holders = StockHolder.get_own_stock_holders(event=event)
@@ -131,10 +145,14 @@ class Reports(BaseView):
         """配券明細ダウンロード
         """
         # Event
-        event_id = int(self.request.matchdict.get('event_id', 0))
-        event = Event.get(event_id)
+        try:
+            event_id = int(self.request.matchdict.get('event_id', 0))
+        except ValueError as e:
+            return HTTPNotFound('event id not found')
+
+        event = Event.get(event_id, organization_id=self.context.user.organization_id)
         if event is None:
-            raise HTTPNotFound('event id %d is not found' % event_id)
+            return HTTPNotFound('event id %d is not found' % event_id)
 
         # StockHolder
         stock_holder_id = int(self.request.params.get('stock_holder_id', 0))
