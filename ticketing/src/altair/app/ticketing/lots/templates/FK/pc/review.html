@@ -104,6 +104,8 @@
             ${_(u'ご用意できませんでした')}
           %elif h.lot_entry_display_status(entry, now) == u'抽選待ち表示':
             ${_(u'抽選処理前です')}
+          %elif h.lot_entry_display_status(entry, now) == u'抽選申込取消':
+            ${_(u'抽選申込取消')}
           %endif
         </td>
       </tr>

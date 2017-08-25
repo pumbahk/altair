@@ -1,11 +1,17 @@
 <%inherit file="review_base.html" />
 
 <div class="withdrawErrorInfoBox">
-%if not error_msg:
-<div>${_(u'以下の抽選申込を取消いたしました')}</div>
-%else:
-<div>${error_msg}</div>
-%endif
+% if error_msg:
+<div style="border: 3px solid red; background: #FFEEEE; padding: 10px; margin: 10px;">
+  <ul>
+    <li>${error_msg}</li>
+  </ul>
+</div>
+% else:
+  <div class="mgt30">
+    <p class="tac bold fs24 cls_red">${_(u'以下の抽選申込を取消いたしました')}</p>
+  </div>
+% endif
 </div>
 <br/>
 <div align="center">
@@ -114,6 +120,10 @@
             ${_(u'ご用意できませんでした')}
           %elif h.lot_entry_display_status(entry, now) == u'抽選待ち表示':
             ${_(u'抽選処理前です')}
+          %elif h.lot_entry_display_status(entry, now) == u'抽選申込取消':
+            ${_(u'抽選申込取消')}
+          % else:
+           -
           %endif
         </td>
       </tr>

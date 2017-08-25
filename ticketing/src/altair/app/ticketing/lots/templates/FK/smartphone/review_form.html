@@ -11,7 +11,7 @@
             <table class="customer-table">
                 <tbody>
                     <tr>
-                      <th>${_(u'抽選申し込み番号')}<span class="icon-required">${_(u'必須')}</span><br><span>${_(u'半角英数')}</span></th>
+                      <th>${_(u'受付番号')}<span class="icon-required">${_(u'必須')}</span><br><span>${_(u'半角英数')}</span></th>
                         <td>
                             <input id="entry_no" name="entry_no" type="text" value="" placeholder="" required>
                             <span class="red">${h.render_errors(request, form.entry_no.errors)}</span>
