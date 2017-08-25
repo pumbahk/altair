@@ -729,7 +729,7 @@ class LotReviewView(object):
     renderer=selectable_renderer("out_term_exception.html")
     )
 def out_term_exception(context, request):
-    return dict(lot=context.lot)
+    return dict(lot=context.lot, custom_locale_negotiator=custom_locale_negotiator(request) if request.organization.setting.i18n else "")
 
 
 @lbr_view_config(
