@@ -8,6 +8,7 @@
 <body>
 <div align="center" style="text-align:center">
   <hr size="10" color="#872434" />
+  <br/><br/>
   <img class="qr" src="${request.route_path((_overwrite_generate_qrimage_route_name or 'order_review.qrdraw'), ticket_id=ticket.id, sign=sign, token=token, serial=serial)}" /><br/>
   <br />
   <h3>${event.title}</h3>
