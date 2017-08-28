@@ -218,7 +218,7 @@ if label is None or label is True:
       </tr>
       % endif
       % endfor
-      % else:field.label.text
+      % else:
       % for field in form['extra']._contained_form:
       % if not field.short_name in {'member_type'}:
       <tr>
