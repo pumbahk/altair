@@ -160,7 +160,7 @@
     <h3 class="bold mgt20 mgb5 fs16">${_(u'購入者情報')}</h3>
     <table class="customer-table" summary="${__(u'配送先情報')}">
       <tr>
-        <th scope="row">${_(u'購入者氏名（全角）')}</th>
+        <th scope="row">${_(u'購入者氏名')} ${_(u'(全角)')}</th>
         <td>${shipping_address.last_name} ${shipping_address.first_name}</td>
       </tr>
       % if request.cookies.get('_LOCALE_')=='ja':

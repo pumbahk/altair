@@ -18,6 +18,9 @@ msgstr "Payment/Delivery"
 msgid "購入情報確認"
 msgstr "Confirm"
 
+msgid "お問い合わせはこちら"
+msgstr "Contact Us"
+
 # index
 
 msgid "合計金額"
@@ -214,6 +217,8 @@ msgstr "Please choose payment method and ticket receiving method from the option
 msgid "AC長野パルセイロオンラインチケットでご利用いただけるチケットの受取方法と支払方法の中からひとつを選択してください。"
 msgstr "Please choose payment method and ticket receiving method from the options available in AC Nagano Parceiro Online Ticket."
 
+msgid "{0}でご利用いただけるチケットの受取方法と支払方法の中からひとつを選択してください。"
+msgstr "Please choose the payment and delivery methods available for {0}."
 
 msgid "選択すると、お支払・お引取方法についての注意事項が表示されます。"
 msgstr "After selecting a payment / delivery method, notes will appear below."

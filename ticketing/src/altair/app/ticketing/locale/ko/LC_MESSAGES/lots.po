@@ -43,6 +43,9 @@ msgstr "{0} {1}의 신청 기간은 {2} ~ {3} 입니다."
 
 # review form
 
+msgid "抽選申込確認"
+msgstr "추첨 신청 확인"
+
 msgid "抽選申し込み番号"
 msgstr "추첨신청번호"
 

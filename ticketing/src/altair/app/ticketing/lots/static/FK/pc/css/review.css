@@ -3,6 +3,14 @@
 
 /* common
 --------------------------------------------------- */
+* {
+	margin: 0;
+	padding: 0;
+	font-style: normal;
+}
+li {
+	list-style: none;
+}
 a {
     color: #3171bd;
     outline: none;
@@ -514,6 +522,7 @@ body {
 
 .selectwrapper {
      height: 30px;
+     margin: 10px 0;
 }
 
 .selectdiv {

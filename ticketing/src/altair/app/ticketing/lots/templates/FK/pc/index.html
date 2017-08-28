@@ -298,10 +298,7 @@ if label is None or label is True:
             <tr>
               <th>
                 <label>
-                  ${__(u'購入者氏名')}
-                  % if custom_locale_negotiator=='ja' or not request.organization.setting.i18n:
-                  ${__(u'(全角)')}
-                  % endif
+                  ${__(u'購入者氏名')} ${__(u'(全角)')}
                 </label>
               </th>
               <td>
