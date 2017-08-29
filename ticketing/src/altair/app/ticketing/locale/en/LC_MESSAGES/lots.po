@@ -24,6 +24,9 @@ msgstr "Display based on specific trade law"
 msgid "サービス利用規約"
 msgstr "Terms of service"
 
+msgid "{0} {1} の申込期間は {2} ～ {3} となっております。"
+msgstr "The Application period for {0} {1} is from {2} to {3}."
+
 # review form
 
 msgid "抽選申込確認"
