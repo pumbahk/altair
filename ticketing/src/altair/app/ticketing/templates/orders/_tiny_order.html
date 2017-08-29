@@ -50,7 +50,7 @@ ${ch.flash_messages(request)}
             <th>発券済みフラグ</th>
             <td>
               % if order.issued:
-                発券済み
+              <span style="color: red; font-weight: bold;">発券済み</span>
               % else:
                 未発券
               % endif
@@ -200,3 +200,11 @@ ${ch.flash_messages(request)}
     </div>
   </div>
 </div>
+
+%if order.issued and order.is_inner_channel:
+<script>
+$(".btn-edit-order").on("click", function (){
+  alert("発券済みですが変更可能な販売チャネルの予約です。\n変更の際はご注意ください。");
+});
+</script>
+%endif
