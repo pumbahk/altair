@@ -1,5 +1,4 @@
 <%inherit file="../layout.html" />
-<%include file="../../../__commons__/header.html" />
 %if request.organization.setting.i18n:
   <div class="selectwrapper">
     ${h.create_url(request) |n}
@@ -7,5 +6,3 @@
 % endif
 <h2 class="heading heading-primary">${__(u'受付履歴確認 検索結果')}</h2>
 ${_context.order_detail_panel(order)}
-
-<%include file="../footer.html" />

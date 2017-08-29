@@ -15,22 +15,11 @@
 
   <script type="text/javascript" src="${request.static_url('altair.app.ticketing.lots:static/common/js/jquery.js')}"></script>
 </head>
-  <body id="settlement">
+   <body id="settlement">
     <div id="container" class="ts-wrapper">
       <!-- ========== header ========== -->
-      <header class="ts-header">
-        <div class="ts-header-inner">
-          <!-- ===== ts-header-wrap [start] ===== -->
-          <div class="ts-header-wrap">
-            <div class="ts-header-logobox clearfix">
-              <h1 class="ts-header-logo">
-                <a href="/"><span class="offleft">${view_context.team_name}</span></a>
-              </h1>
-              </div>
-          </div>
-        </div>
-      </header>
-      <!-- ========== /header ========== -->
+        <%include file="../includes/header.html" />
+        <!-- ========== /header ========== -->
 
       <!-- ========== main ========== -->
       % if request.organization.setting.i18n:

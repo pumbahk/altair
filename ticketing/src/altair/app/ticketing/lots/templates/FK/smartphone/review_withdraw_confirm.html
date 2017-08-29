@@ -146,6 +146,10 @@
             ${_(u'ご用意できませんでした')}
           %elif h.lot_entry_display_status(entry, now) == u'抽選待ち表示':
             ${_(u'抽選処理前です')}
+          %elif h.lot_entry_display_status(entry, now) == u'抽選申込取消':
+            ${_(u'抽選申込取消')}
+          % else:
+           -
           %endif
         </td>
       </tr>
@@ -200,7 +204,7 @@
     <h3 class="bold mgt20 mgb5 fs16">${_(u'購入者情報')}</h3>
     <table class="customer-table" summary="${__(u'配送先情報')}">
       <tr>
-        <th scope="row">${_(u'購入者氏名（全角）')}</th>
+        <th scope="row">${_(u'購入者氏名')} ${_(u'(全角)')}</th>
         <td>${shipping_address.last_name} ${shipping_address.first_name}</td>
       </tr>
       % if request.cookies.get('_LOCALE_')=='ja':
