@@ -851,21 +851,22 @@ class Performances(BaseView):
                 'route_path': self.request.path,
             }
 
+        open_date = form.start_day.data + datetime.timedelta(hours=origin_performance.open_on.hour)
         start_date = form.start_day.data + datetime.timedelta(hours=origin_performance.start_on.hour)
+        end_date = form.start_day.data + datetime.timedelta(hours=origin_performance.end_on.hour)
+
         code_generator = PerformanceCodeGenerator(self.request)
         for cnt in range(0, target_total + 1):
             new_performance = Performance()
-            target_date = start_date + datetime.timedelta(days=cnt)
 
-            # POST data
-            new_performance.start_on = target_date
-            new_performance.end_on = origin_performance.end_on
+            new_performance.open_on = open_date + datetime.timedelta(days=cnt)
+            new_performance.start_on = start_date + datetime.timedelta(days=cnt)
+            new_performance.end_on = end_date + datetime.timedelta(days=cnt)
 
             # Copy data
             new_performance.event_id = origin_performance.event_id
             new_performance.name = origin_performance.name
             new_performance.name = new_performance.name.replace("&quote;", "\'")
-            new_performance.open_on = origin_performance.open_on
             new_performance.display_order = origin_performance.display_order
             new_performance.code = code_generator.generate(origin_performance.code)
             new_performance.venue_id = origin_performance.venue.id
