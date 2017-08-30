@@ -1,17 +1,75 @@
+html, body {
+  padding: 0;
+  margin: 0;
+  font-size: 14pt;
+}
+.page {
+  position: relative;
+  margin: 0 auto;
+  width: 210mm;
+  height: 297mm;
+}
+.bg {
+  z-index: -1;
+}
+img {
+  display: block;
+  margin: 0 auto;
+  height: 100%;
+}
 .qr {
+  position: absolute;
   display: none;
+  top: 50px;
+  right: 80px;
   width: 100px;
   height: 100px;
+  z-index: 1000;
 }
-
-.product-list {
-  list-style: none;
+.ticket-info {
+  position: absolute;
+  top: 52%;
+  left: 110px;
+  font-size: 1.2rem;
+  line-height: 1.5;
+}
+.ticket-info ul {
+  list-style:none;
   padding: 0;
   margin: 0;
 }
-
+.ticket-info li:before {
+  content:"■";
+  text-align: right;
+  hieght: 1.2rem;
+  padding-right: 3px;
+}
 @media print {
-    .qr {
-        display: inline-block;
+  * {
+      -webkit-filter: none;
+      -moz-filter: none;
+      -ms-filter: none;
+      -o-filter: none;
+      filter: none;
+  }
+  @page {
+      size: A4;
+      margin: 0;
+  }
+  html, body {
+    width: 210mm;
+  }
+  .page {
+      margin: 0;
+      border: initial;
+      border-radius: initial;
+      width: initial;
+      min-height: initial;
+      box-shadow: initial;
+      background: initial;
+      page-break-after: always;
+  }
+  .qr {
+        display: block;
     }
 }
