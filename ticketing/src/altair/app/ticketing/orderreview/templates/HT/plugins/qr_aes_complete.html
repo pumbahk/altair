@@ -3,7 +3,6 @@
 ${description}
 
 % if paid:
-
     % for ticket in tickets:
         <div style="border: 1px solid gray; padding: 8px; margin-bottom: 4px;">
             % if ticket.product:
@@ -30,7 +29,5 @@ ${description}
             </form>
         </div>
     % endfor
-% else:
-お支払い完了後、このページにQRコードを表示するためのボタンが表示されます。表示されたQRコードを印刷、あるいは、PC/携帯へメール送信の上、試合当日、指定の入場ゲートにてQRコード（印刷したもの、あるいは携帯画面）をお見せください。
 % endif
 </div>
