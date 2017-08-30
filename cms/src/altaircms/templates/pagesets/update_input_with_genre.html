@@ -5,7 +5,6 @@
 <div class="row">
     <h3>${master_env.title}更新</h3>
     <p>ジャンルの設定とurlは連動しています</p>
-    ${master_env.obj.event_id}
     <form action="${h.current_route_path_override(request, action='confirm',id=request.matchdict['id'])}" method="POST">
         % if request.featuresettingmanager.get_boolean_value("altair.cms.admin.page.useshorturl") and "short_url_keyword" not in display_fields:
             <% display_fields.insert(3, "short_url_keyword") %>
