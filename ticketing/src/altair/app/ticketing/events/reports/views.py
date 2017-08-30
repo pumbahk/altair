@@ -26,23 +26,113 @@ class Reports(BaseView):
 
     @view_config(route_name='reports.index', renderer='altair.app.ticketing:templates/events/report.html')
     def download_index(self):
-        try:
-            event_id = int(self.request.matchdict.get('event_id', 0))
-        except ValueError as e:
-            return HTTPNotFound('event id not found')
-
-        event = Event.get(event_id, organization_id=self.context.user.organization_id)
-        if event is None:
-            return HTTPNotFound('event id %d is not found' % event_id)
-
         return {
-            'form_stock':ReportStockForm(),
-            'form_stock_holder':ReportByStockHolderForm(event_id=event_id),
-            'event':event,
-            'performances': event.sorted_performances(),
+            'form_stock': ReportStockForm(),
+            'form_stock_holder': ReportByStockHolderForm(event_id=self.context.event_id),
+            'event': self.context.event,
+            'performances': self.context.event.sorted_performances(),
         }
 
-    def create_filename(self, report_kind, event):
+    @view_config(route_name='reports.sales', request_method='POST')
+    def download_sales(self):
+        """販売日程管理表ダウンロード"""
+        if not self.context.event.performances:
+            return HTTPNotFound('performances is not found')
+
+        # CSVファイル生成
+        exporter = reporting.export_for_sales(self.context.event)
+
+        # 出力ファイル名
+        filename = self.create_filename(report_kind=u"販売日程管理表")
+
+        headers = [
+            ('Content-Type', 'application/octet-stream; charset=utf-8'),
+            ('Content-Disposition', "attachment; filename*=utf-8''%s" % urllib.quote(filename.encode("utf-8")))
+        ]
+        return Response(exporter.as_string(), headers=headers)
+
+    @view_config(route_name='reports.stocks', request_method='POST', renderer='altair.app.ticketing:templates/events/report.html')
+    def download_stocks(self):
+        """仕入明細/残席明細/販売済座席明細ダウンロード"""
+        # StockHolder
+        stock_holders = StockHolder.get_own_stock_holders(event=self.context.event)
+        if stock_holders is None:
+            raise HTTPNotFound("StockHolder is not found event_id=%s" % self.context.event_id)
+
+        f = ReportStockForm(self.request.params, event_id=self.context.event_id)
+        if not f.validate():
+            return {
+                'form_stock':f,
+                'form_stock_holder':ReportByStockHolderForm(event_id=self.context.event_id),
+                'event':self.context.event,
+                'performances': self.context.event.sorted_performances(),
+            }
+
+
+        # CSVファイル生成
+        try:
+            performanceids = map(int, self.request.POST.getall('performance_id'))
+        except (ValueError, TypeError) as err:
+            raise HTTPNotFound('Performace id is illegal: {0}'.format(err.message))
+        exporter = reporting.exporter_factory(self.context.event, stock_holders[0], f.report_type.data, performanceids=performanceids)
+
+        # 出力ファイル名
+        report_name = dict(
+            stock=u"仕入明細",
+            unsold=u"残席明細",
+            sold=u"販売済座席明細"
+        )
+        filename = self.create_filename(report_kind=report_name[f.report_type.data])
+
+        headers = [
+            ('Content-Type', 'application/octet-stream; charset=utf-8'),
+            ('Content-Disposition', "attachment; filename*=utf-8''%s" % urllib.quote(filename.encode("utf-8")))
+        ]
+        return Response(exporter.as_string(), headers=headers)
+
+    @view_config(route_name='reports.stocks_by_stockholder', request_method='POST', renderer='altair.app.ticketing:templates/events/report.html')
+    def download_stocks_by_stockholder(self):
+        """配券明細ダウンロード"""
+        # StockHolder
+        stock_holder_id = int(self.request.params.get('stock_holder_id', 0))
+        stock_holder = StockHolder.get(stock_holder_id)
+        if stock_holder is None:
+            raise HTTPNotFound("StockHolder is not found id=%s" % stock_holder_id)
+
+        f = ReportByStockHolderForm(self.request.params, event_id=self.context.event_id)
+        if not f.validate():
+            return {
+                'form_stock':ReportStockForm(),
+                'form_stock_holder':f,
+                'event':self.context.event,
+                'performances': self.context.event.sorted_performances(),
+            }
+
+        # CSVファイル生成
+        try:
+            performanceids = map(int, self.request.POST.getall('performance_id'))
+        except (ValueError, TypeError) as err:
+            raise HTTPNotFound('Performace id is illegal: {0}'.format(err.message))
+        exporter = reporting.export_for_stock_holder(self.context.event, stock_holder, f.report_type.data, performanceids=performanceids)
+
+        # 出力ファイル名
+        report_name = {
+            "assign":u"配券明細",
+            "add":u"追券明細",
+            "return":u"返券明細",
+            "final_return":u"最終返券明細"
+        }
+        filename = self.create_filename(report_kind=report_name[f.report_type.data])
+
+        headers = [
+            ('Content-Type', 'application/octet-stream; charset=utf-8'),
+            ('Content-Disposition', "attachment; filename*=utf-8''%s" % urllib.quote(filename.encode("utf-8")))
+        ]
+        return Response(exporter.as_string(), headers=headers)
+
+    def create_filename(self, report_kind):
+        """ファイル名の生成"""
+        event = self.context.event
         organization = event.organization
 
         event_title = event.title.replace(u'”', '')
@@ -61,132 +151,3 @@ class Reports(BaseView):
             datetime=strftime('%Y%m%d')
         )
         return filename
-
-    @view_config(route_name='reports.sales', request_method='POST')
-    def download_sales(self):
-        """販売日程管理表ダウンロード
-        """
-        try:
-            event_id = int(self.request.matchdict.get('event_id', 0))
-        except ValueError as e:
-            return HTTPNotFound('event id not found')
-
-        event = Event.get(event_id, organization_id=self.context.user.organization_id)
-        if event is None:
-            return HTTPNotFound('event id %d is not found' % event_id)
-
-        if not event.performances:
-            return HTTPNotFound('performances is not found')
-
-        # CSVファイル生成
-        exporter = reporting.export_for_sales(event)
-
-        # 出力ファイル名
-        filename = self.create_filename(report_kind=u"販売日程管理表", event=event)
-
-        headers = [
-            ('Content-Type', 'application/octet-stream; charset=utf-8'),
-            ('Content-Disposition', "attachment; filename*=utf-8''%s" % urllib.quote(filename.encode("utf-8")))
-        ]
-        return Response(exporter.as_string(), headers=headers)
-
-    @view_config(route_name='reports.stocks', request_method='POST', renderer='altair.app.ticketing:templates/events/report.html')
-    def download_stocks(self):
-        """仕入明細/残席明細/販売済座席明細ダウンロード
-        """
-        # Event
-        try:
-            event_id = int(self.request.matchdict.get('event_id', 0))
-        except ValueError as e:
-            return HTTPNotFound('event id not found')
-
-        event = Event.get(event_id, organization_id=self.context.user.organization_id)
-        if event is None:
-            return HTTPNotFound('event id %d is not found' % event_id)
-
-        # StockHolder
-        stock_holders = StockHolder.get_own_stock_holders(event=event)
-        if stock_holders is None:
-            raise HTTPNotFound("StockHolder is not found event_id=%s" % event_id)
-
-        f = ReportStockForm(self.request.params, event_id=event_id)
-        if not f.validate():
-            return {
-                'form_stock':f,
-                'form_stock_holder':ReportByStockHolderForm(event_id=event_id),
-                'event':event,
-                'performances': event.sorted_performances(),
-            }
-
-
-        # CSVファイル生成
-        try:
-            performanceids = map(int, self.request.POST.getall('performance_id'))
-        except (ValueError, TypeError) as err:
-            raise HTTPNotFound('Performace id is illegal: {0}'.format(err.message))
-        exporter = reporting.exporter_factory(event, stock_holders[0], f.report_type.data, performanceids=performanceids)
-
-        # 出力ファイル名
-        report_name = dict(
-            stock=u"仕入明細",
-            unsold=u"残席明細",
-            sold=u"販売済座席明細"
-        )
-        filename = self.create_filename(report_kind=report_name[f.report_type.data], event=event)
-
-        headers = [
-            ('Content-Type', 'application/octet-stream; charset=utf-8'),
-            ('Content-Disposition', "attachment; filename*=utf-8''%s" % urllib.quote(filename.encode("utf-8")))
-        ]
-        return Response(exporter.as_string(), headers=headers)
-
-    @view_config(route_name='reports.stocks_by_stockholder', request_method='POST', renderer='altair.app.ticketing:templates/events/report.html')
-    def download_stocks_by_stockholder(self):
-        """配券明細ダウンロード
-        """
-        # Event
-        try:
-            event_id = int(self.request.matchdict.get('event_id', 0))
-        except ValueError as e:
-            return HTTPNotFound('event id not found')
-
-        event = Event.get(event_id, organization_id=self.context.user.organization_id)
-        if event is None:
-            return HTTPNotFound('event id %d is not found' % event_id)
-
-        # StockHolder
-        stock_holder_id = int(self.request.params.get('stock_holder_id', 0))
-        stock_holder = StockHolder.get(stock_holder_id)
-        if stock_holder is None:
-            raise HTTPNotFound("StockHolder is not found id=%s" % stock_holder_id)
-
-        f = ReportByStockHolderForm(self.request.params, event_id=event_id)
-        if not f.validate():
-            return {
-                'form_stock':ReportStockForm(),
-                'form_stock_holder':f,
-                'event':event,
-                'performances': event.sorted_performances(),
-            }
-
-        # CSVファイル生成
-        try:
-            performanceids = map(int, self.request.POST.getall('performance_id'))
-        except (ValueError, TypeError) as err:
-            raise HTTPNotFound('Performace id is illegal: {0}'.format(err.message))
-        exporter = reporting.export_for_stock_holder(event, stock_holder, f.report_type.data, performanceids=performanceids)
-
-        # 出力ファイル名
-        report_name = {
-            "assign":u"配券明細",
-            "add":u"追券明細",
-            "return":u"返券明細",
-            "final_return":u"最終返券明細"
-        }
-        filename = self.create_filename(report_kind=report_name[f.report_type.data], event=event)
-
-        headers = [
-            ('Content-Type', 'application/octet-stream; charset=utf-8'),
-            ('Content-Disposition', "attachment; filename*=utf-8''%s" % urllib.quote(filename.encode("utf-8")))
-        ]
-        return Response(exporter.as_string(), headers=headers)
