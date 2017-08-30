@@ -534,6 +534,8 @@ class PageSetForm(Form):
         )
     url = fields.TextField(label=u"URL", validators=[])
     short_url_keyword = fields.TextField(label=u"短縮URL", validators=[])
+    canonical_url = fields.TextField(label=u"カノニカルURL", validators=[])
+    canonical_redirect = fields.BooleanField(label=u"カノニカルURLへリダイレクト")
 
     def object_validate(self, obj=None):
         data = self.data
@@ -546,4 +548,4 @@ class PageSetForm(Form):
     
     def configure(self, request):
         self.request = request
-    __display_fields__ = ["name", "genre_id", "url", "tags_string", "private_tags_string", "mobile_tags_string"]
+    __display_fields__ = ["name", "genre_id", "url", "canonical_url", "canonical_redirect", "tags_string", "private_tags_string", "mobile_tags_string"]
