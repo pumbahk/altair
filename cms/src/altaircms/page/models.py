@@ -19,7 +19,8 @@ from sqlalchemy import (Column,
                         String, 
                         Text, 
                         ForeignKey, 
-                        DateTime)
+                        DateTime,
+                        Boolean)
 
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declared_attr
@@ -81,6 +82,9 @@ class PageSet(Base,
 
     genre_id = Column(sa.Integer, ForeignKey("genre.id"))
     genre = orm.relationship("Genre",  backref="pageset",  uselist=False, primaryjoin="PageSet.genre_id==Genre.id")
+
+    canonical_url = Column(String(255), nullable=True)
+    canonical_redirect = Column(Boolean)
 
     def delete(self):
         ##全部消す

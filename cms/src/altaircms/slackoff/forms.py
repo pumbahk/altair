@@ -534,6 +534,8 @@ class PageSetForm(Form):
         )
     url = fields.TextField(label=u"URL", validators=[])
     short_url_keyword = fields.TextField(label=u"短縮URL", validators=[])
+    canonical_url = fields.TextField(label=u"カノニカルURL", validators=[])
+    canonical_redirect = fields.BooleanField(label=u"カノニカルURLへリダイレクト")
 
     def object_validate(self, obj=None):
         data = self.data
