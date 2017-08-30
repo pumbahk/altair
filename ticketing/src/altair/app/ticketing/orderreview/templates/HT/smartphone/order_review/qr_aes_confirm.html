@@ -26,7 +26,7 @@
   </ul>
 </div>
 %endif
-<%mobile:form_get action="${request.route_path('order_review.qr_aes', ticket_id=ticket.id)}" target="_blank">
+<%mobile:form_get action="${request.route_path('order_review.qr_aes', sign=ticket.sign)}" target="_blank">
 <div align="center" border="2px" bordercolor="#b59557" style="background-color:#ffe0d0; border:2px solid #ECAC00">
 <br />
 以下の注意事項に同意しQRチケットを取得<br />
