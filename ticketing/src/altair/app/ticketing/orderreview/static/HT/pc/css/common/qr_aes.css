@@ -17,6 +17,50 @@ img {
   margin: 0 auto;
   height: 100%;
 }
+.cover {
+    width: 100%;
+    height: 100%;
+    z-index: 1001;
+    background: rgba(255, 255, 255, 0.75);
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+.msg {
+    position: relative;
+    margin-top: 45%;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+    background: #FFF;
+    padding: 10px 0;
+    border: 3px solid #FF0000;
+    border-radius: 50px;
+}
+.msg p {
+    border-radius: 5px;
+    color: #FF0000;
+    font-weight: bold;
+    font-size: 1.5rem;
+    padding: 0;
+    margin: 10px;
+
+}
+img.print_btn {
+    width: auto;
+    height: auto;
+    cursor: pointer;
+    z-index: 1001;
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    -webkit-transform: translate(-50%,0);
+    -moz-transform: translate(-50%,0);
+    -ms-transform: translate(-50%,0);
+    -o-transform: translate(-50%,0);
+    transform: translate(-50%,0);
+    z-index: 1002;
+}
 .qr {
   position: absolute;
   display: none;
@@ -70,6 +114,12 @@ img {
       page-break-after: always;
   }
   .qr {
-        display: block;
-    }
+    display: block;
+  }
+  .cover {
+    display: none;
+  }
+  .print_btn {
+    display: none;
+  }
 }
