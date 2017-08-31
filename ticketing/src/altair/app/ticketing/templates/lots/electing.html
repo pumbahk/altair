@@ -164,12 +164,12 @@ ${tabs.tabs(request)}
         </button>
       </p>
       <p>
-        <button id="btn-send-election-mail"  class="btn btn-large btn-primary"
+        <button id="btn-send-election-mail" ${"disabled" if not lot.is_over_announcement_datetime() else ""} class="btn btn-large btn-primary"
                 data-toggle="popover" data-placement="right" data-content="" data-original-title="">
           当選結果通知
         </button>
-        <button id="btn-send-rejection-mail" class="btn btn-large btn-info"
-                data-toggle="popover" data-placement="right" data-content="" data-original-title="">
+        <button id="btn-send-rejection-mail" ${"disabled" if not lot.is_over_announcement_datetime() else ""} class="btn btn-large btn-info"
+                data-toggle="popover" data-placement="right" data-content="抽選結果発表予定日: ${vh.datetime(lot.lotting_announce_datetime, with_weekday=True)}を過ぎていません" data-original-title="">
           落選結果通知
         </button>
       </p>
@@ -177,6 +177,14 @@ ${tabs.tabs(request)}
       <script>
       $(function() {
         $('#btn-entries-close').popover('show');
+      })
+      </script>
+      %endif
+      %if not lot.is_over_announcement_datetime():
+      <script>
+      $(function() {
+        $('#btn-send-election-mail').popover('show');
+        $('#btn-send-rejection-mail').popover('show');
       })
       </script>
       %endif

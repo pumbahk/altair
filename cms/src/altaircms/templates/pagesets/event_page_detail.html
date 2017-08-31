@@ -57,6 +57,21 @@
     <th>更新日時</th><td>${h.base.jdatetime(pageset.updated_at)}</td>
   </tr>
   <tr>
+    <th>
+      カノニカルURL
+      % if pageset.canonical_redirect:
+      <span class="label">redirect</span>
+      % endif
+    </th>
+    <td colspan="3">
+      % if pageset.canonical_url:
+        <a href="${pageset.canonical_url}" target="_blank">${pageset.canonical_url}</a>
+      % else:
+        未設定
+      % endif
+    </td>
+  </tr>
+  <tr>
     <th>公開タグ</th><td colspan="3">${u", ".join(t.label for t in pageset.public_tags if t.organization_id)}</td>
   </tr>
   <tr>
