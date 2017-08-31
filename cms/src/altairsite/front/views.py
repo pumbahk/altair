@@ -60,7 +60,7 @@ def rendering_page(context, request):
 
     page = control.fetch_page_from_params(url, dt)
 
-    if page.pageset.canonical_redirect and page.pageset.canonical_url:
+    if page and page.pageset.canonical_redirect and page.pageset.canonical_url:
         return HTTPMovedPermanently(location=page.pageset.canonical_url)
 
     if not control.can_access():
