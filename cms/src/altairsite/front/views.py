@@ -2,7 +2,7 @@
 import logging
 import os.path
 
-from pyramid.httpexceptions import HTTPNotFound, HTTPFound
+from pyramid.httpexceptions import HTTPNotFound, HTTPFound, HTTPMovedPermanently
 from ..separation import enable_smartphone, enable_mobile
 from altaircms.page.staticupload.api import as_static_page_response, StaticPageNotFound
 from altairsite.config import usersite_view_config
@@ -59,6 +59,9 @@ def rendering_page(context, request):
         raise HTTPNotFound()
 
     page = control.fetch_page_from_params(url, dt)
+
+    if page.pageset.canonical_redirect and page.pageset.canonical_url:
+        return HTTPMovedPermanently(location=page.pageset.canonical_url)
 
     if not control.can_access():
         logger.info(control.error_message)

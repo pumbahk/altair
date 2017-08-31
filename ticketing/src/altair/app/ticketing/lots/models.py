@@ -244,6 +244,12 @@ class Lot(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def is_finished(self):
         return self.status == int(LotStatusEnum.Elected)
 
+    def is_over_announcement_datetime(self):
+        now = datetime.now()
+        if now > self.lotting_announce_datetime:
+            return True
+        return False
+
     def elect_wishes(self, entry_wishes):
         """ 当選予定申込希望 """
         affected = 0

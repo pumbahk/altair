@@ -866,8 +866,11 @@ class LotEntries(BaseView):
         lot = Lot.query.filter(Lot.id == lot_id).first()
         if lot is None:
             raise HTTPNotFound()
-        total_count = lots_api.send_election_mails(self.request, lot.id)
-        msg = u'当選メールの送信を開始しました: {}件'.format(total_count) if total_count else u'当選メールの送信対象がありません'
+        elif not lot.is_over_announcement_datetime():
+            msg = u'抽選結果発表予定日を過ぎていないため結果通知できません'
+        else:
+            total_count = lots_api.send_election_mails(self.request, lot.id)
+            msg = u'当選メールの送信を開始しました: {}件'.format(total_count) if total_count else u'当選メールの送信対象がありません'
         self.request.session.flash(msg)
         return HTTPFound(location=self.request.route_url('lots.entries.elect', lot_id=lot.id))
 
@@ -879,8 +882,11 @@ class LotEntries(BaseView):
         lot = Lot.query.filter(Lot.id == lot_id).first()
         if lot is None:
             raise HTTPNotFound()
-        total_count = lots_api.send_rejection_mails(self.request, lot.id)
-        msg = u'落選メールの送信を開始しました: {}件'.format(total_count) if total_count else u'落選メールの送信対象がありません'
+        elif not lot.is_over_announcement_datetime():
+            msg = u'抽選結果発表予定日を過ぎていないため結果通知できません'
+        else:
+            total_count = lots_api.send_rejection_mails(self.request, lot.id)
+            msg = u'落選メールの送信を開始しました: {}件'.format(total_count) if total_count else u'落選メールの送信対象がありません'
         self.request.session.flash(msg)
         return HTTPFound(location=self.request.route_url('lots.entries.elect', lot_id=lot.id))
 
