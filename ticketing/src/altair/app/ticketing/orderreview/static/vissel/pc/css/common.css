@@ -336,7 +336,7 @@ html {
 }
 
 body {
-  background: #9b0020 url(https://tstar.s3.amazonaws.com/usersite/uploaded/vissel/8e14f701313c42839fa90bc2a1c3f1fb/1040/images/bg_heading.gif) repeat 0 0;
+  background: #9b0020 url(../images/bg_heading.gif) repeat 0 0;
   -webkit-text-size-adjust: 100%;
   font-size: 1.4rem;
   line-height: 1.5;
@@ -397,7 +397,7 @@ h2 {
 .header {
   width: 100%;
   position: relative;
-  background: #9b0020 url(https://tstar.s3.amazonaws.com/usersite/uploaded/vissel/8e14f701313c42839fa90bc2a1c3f1fb/1040/images/bg_heading.gif) repeat 0 0;
+  background: #9b0020 url(../images/bg_heading.gif) repeat 0 0;
 }
 .header .wrap {
   padding: 10px 3% 8px 10px;
@@ -430,7 +430,7 @@ h2 {
 }
 /* footer ==================== */
 .footer {
-  background: #9b0020 url(https://tstar.s3.amazonaws.com/usersite/uploaded/vissel/8e14f701313c42839fa90bc2a1c3f1fb/1040/images/bg_heading.gif) repeat 0 0;
+  background: #9b0020 url(../images/bg_heading.gif) repeat 0 0;
   padding: 10px 0;
 }
 .footer .copyright {
