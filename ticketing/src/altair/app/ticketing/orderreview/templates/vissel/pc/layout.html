@@ -1,51 +1,76 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<html>
-<head>
-  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
-  <title>ヴィッセル神戸公式チケットサイト 購入確認ページ</title>
-  <link rel="stylesheet" type="text/css" href="${request.static_url('altair.app.ticketing.orderreview:static/vissel/pc/css/style2.css')}" media="all" />
-  <script language="JavaScript" src="${request.static_url('altair.app.ticketing.orderreview:static/js/jquery.js')}"></script>
-  <style type="text/css">
-    .error {
-      margin: 0;
-      color: red;
-      font-weight: bold;
-      font-size: 12px;
+<!DOCTYPE html>
+<html><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>ヴィッセル神戸公式チケットサイト 購入履歴の確認</title>
+<link rel="shortcut icon" href="${view_context.static_url('pc/images/favicon.ico')}">
+<link rel="stylesheet" type="text/css" href="${view_context.static_url('pc/css/common.css')}" media="all" />
+<link rel="stylesheet" type="text/css" href="${view_context.static_url('pc/css/toggle.css')}" media="all" />
+<script type="text/javascript" src="${view_context.static_url('pc/js/jquery-1.7.2.min.js')}"></script>
+<script type="text/javascript" src="${view_context.static_url('pc/js/scroll.js')}"></script>
+<script>
+$(function(){
+  $("#toggle").click(function(){
+    $(".nav-global ul").slideToggle();
+    return false;
+  });
+  $(window).resize(function(){
+    var win = $(window).width();
+    var p = 480;
+    if(win > p){
+      $(".nav-global ul").show();
+    } else {
+      $(".nav-global ul").hide();
     }
-  </style>
+  });
+});
+</script>
+<!--[if lt IE 9]>
+<script src="//html5shiv.googlecode.com/svn/trunk/html5.js" type="text/javascript"></script>
+<![endif]-->
+<!--[if lt IE 9]>
+<script src="//css3-mediaqueries-js.googlecode.com/svn/trunk/css3-mediaqueries.js"></script>
+<![endif]-->
 </head>
 <body>
-	<div class="header">
-		<div class="header-inner">
-      <a href="/">
-        <img src="${request.static_url('altair.app.ticketing.orderreview:static/vissel/pc/images/logo.gif')}" alt="ヴィッセル神戸公式チケットサイト" />
-      </a>
-      <h1 class="title">ヴィッセル神戸公式チケットサイト</h1>
-		</div>
-	</div>
 
-  ${self.body()}
+<!-- headder -->
+<header class="header">
+<div class="wrap">
+<h1 class="header-logo"><a href="//vissel.tstar.jp/"><img src="//tstar.s3.amazonaws.com/usersite/uploaded/vissel/8e14f701313c42839fa90bc2a1c3f1fb/1040/images/ticket_logo.png" alt="ヴィッセルチケット"></a></h1>
+<!-- menu -->
+<nav class="nav-global">
+<div id="toggle"><a href="https://vissel.tstar.jp/orderreview/#">&nbsp;</a></div>
+<ul class="clearfix">
+<li><a href="https://vissel.tstar.jp/">TOP</a></li>
+</ul>
+</nav>
+<!-- /menu -->
+</div><!-- /wrap -->
+</header><!-- /headder -->
 
-  <div class="footer">
-    <div class="wrap clearfix">
-      <div class="box">
-      <p class="for-sp-img">
-      <img src="//tstar.s3.amazonaws.com/asset/vissel/2014-03-06/c887e7171e7342d2916ffb7b08f4501e.png" alt="" />
-      </p>
-      </div>
-      <div class="box">
-      <!-- /menu -->
-        <nav class="nav-footer">
-        <ul class="clearfix">
-          <li class="first"><a href="//www.ticketstar.jp/corporate/">運営会社</a></li>
-          <li><a href="${h.safe_get_contact_url(request)}">お問い合わせ</a></li>
-          <li><a href="//www.ticketstar.jp/privacy/">個人情報保護方針</a></li>
-          <li class="last"><a href="//www.ticketstar.jp/legal/">特定商取引法に基づく表示</a></li>
-        </ul>
-        </nav><!-- /menu-->
-        <p class="copyright">&copy; TicketStar, Inc.</p>
-      </div>
-     </div><!-- /wrap -->
-  </div><!-- /footer -->
-</body>
-</html>
+${self.body()}
+
+<!-- footer -->
+<footer class="footer">
+<div class="wrap clearfix">
+<div class="box">
+<p class="for-sp-img">
+<img src="//tstar.s3.amazonaws.com/asset/vissel/2014-03-06/c887e7171e7342d2916ffb7b08f4501e.png" alt="ヴィッセル"/></p>
+</div>
+<div class="box">
+<!-- menu -->
+<nav class="nav-footer">
+<ul class="clearfix">
+<li><a href="//www.ticketstar.jp/corporate/" target="_blank">運営会社</a></li>
+<li><a href="//vissel.tstar.jp/agreement" target="_blank">利用規約</a></li>
+<li><a href="${h.safe_get_contact_url(request)}" target="_blank">お問い合わせ</a></li>
+<li><a href="//www.ticketstar.jp/privacy/" target="_blank">個人情報保護方針</a></li>
+<li><a href="//vissel.tstar.jp/cancel" target="_blank">キャンセルポリシー</a></li>
+<li><a href="//vissel.tstar.jp/legal" target="_blank">特定商取引法に基づく表示</a></li>
+</ul>
+</nav><!-- /menu -->
+<p class="copyright">&copy; TicketStar Inc. All Rights Reserved.</p>
+</div>
+</div><!-- /wrap -->
+</footer><!-- /footer -->
+</body></html>
