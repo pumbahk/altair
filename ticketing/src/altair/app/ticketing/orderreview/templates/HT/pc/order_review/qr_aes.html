@@ -20,9 +20,9 @@
   </div>
   <div class="wrap ticket-info">
     <ul>
-      <li>席種・券種：${product.name}</li>
+      <li>席種・券種：${product.seat_stock_type.name}・${product.name}</li>
       <li>購入者氏名：${order.shipping_address.last_name}　${order.shipping_address.first_name}</li>
-      <li>利用日・有効期限：${performance.start_on.strftime("%Y年%m月%d日").decode('utf-8')} (${u'月火水木金土日'[performance.start_on.weekday()]}) ${performance.start_on.strftime(u"%H:%M").decode('utf-8')}</li>
+      <li>利用日：${performance.start_on.strftime("%Y年%m月%d日").decode('utf-8')} (${u'月火水木金土日'[performance.start_on.weekday()]}) ${performance.start_on.strftime(u"%H:%M").decode('utf-8')}</li>
       <li>受付番号：${order.order_no}</li>
     </ul>
   </div>
