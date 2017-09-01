@@ -7,15 +7,22 @@
 </head>
 <body>
 <div class="page">
+  <img class="print_btn" src="${view_context.static_url('pc/images/qr_aes/print_button.png')}" onclick="window.print(); return false"/>
+  <div class="cover">
+    <div class="msg">
+      <p>携帯電話、タブレットでの利用は不可となっております。</p>
+      <p>必ず、パソコンにて開いていただき、プリントアウトしていただくようお願いします。</p>
+    </div>
+  </div>
   <img class="bg" src="${view_context.static_url('pc/images/qr_aes/default.png')}" />
   <div class="qr-wrap">
     <img class="qr" src="${request.route_path(('order_review.qr_aes_draw'), sign=ticket.sign)}" />
   </div>
   <div class="wrap ticket-info">
     <ul>
-      <li>席種・券種：${product.name}</li>
+      <li>席種・券種：${product.seat_stock_type.name}・${product.name}</li>
       <li>購入者氏名：${order.shipping_address.last_name}　${order.shipping_address.first_name}</li>
-      <li>利用日・有効期限：${performance.start_on.strftime("%Y年%m月%d日").decode('utf-8')} (${u'月火水木金土日'[performance.start_on.weekday()]}) ${performance.start_on.strftime(u"%H:%M").decode('utf-8')}</li>
+      <li>利用日：${performance.start_on.strftime("%Y年%m月%d日").decode('utf-8')} (${u'月火水木金土日'[performance.start_on.weekday()]}) ${performance.start_on.strftime(u"%H:%M").decode('utf-8')}</li>
       <li>受付番号：${order.order_no}</li>
     </ul>
   </div>
