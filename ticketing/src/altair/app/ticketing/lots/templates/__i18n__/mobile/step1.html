@@ -1,0 +1,25 @@
+<%inherit file="./base.html" />
+<%namespace file="./tags_mobile.html" name="mobile" />
+<div align="center" style="text-align:center">
+${event.title}<br />
+${lot.name}
+</div>
+<%mobile:header>第${option_index}希望</%mobile:header>
+%if performances:
+公演をお選びください
+<div>
+%for performance in performances:
+<a href="${request.route_path('lots.entry.step2', event_id=event.id, lot_id=lot.id, option_index=option_index, _query=dict(performance_id=performance.id))}">${performance.name}</a><br />
+開演 ${h.performance_datetime(performance)}(予定)<br />
+会場 ${performance.venue.name}<br />
+%endfor
+</div>
+%else:
+選択できる公演はありません
+%endif
+<hr />
+${request.open_form_tag_for_get(action=request.route_path('lots.entry.index', event_id=event.id, lot_id=lot.id))}
+<div align="center" style="text-align:center">
+<input type="submit" value="戻る" />
+</div>
+</form>

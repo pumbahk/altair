@@ -1,0 +1,66 @@
+<%inherit file="./base.html" />
+<%namespace file="./tags_mobile.html" name="mobile" />
+<div align="center" style="text-align:center">
+${lot.event.title}<br />
+${lot.name}
+</div>
+<%mobile:header>申込内容最終確認</%mobile:header>
+<div>
+${performance.name}<br />
+${h.japanese_date(performance.start_on)}<br />
+会場 ${performance.venue.name}<br />
+開演 ${h.japanese_time(performance.start_on)} (予定)<br />
+</div>
+<%mobile:form_header>希望券種と枚数</%mobile:form_header>
+<div>
+% for wp in lot_entry.wishes[0].products:
+・${wp.product.name}<br />
+<div align="right" style="text-align:right">
+　${h.format_currency(wp.product.price)} × ${wp.quantity} = ${h.format_currency(wp.product.price * wp.quantity)}
+</div>
+% endfor
+</div>
+<%mobile:form_header>決済手数料</%mobile:form_header>
+<div align="right" style="text-align:right">(${payment_delivery_method_pair.payment_method.name}) ${h.format_currency(payment_delivery_method_pair.transaction_fee)}</div>
+<%mobile:form_header>発券/配達手数料</%mobile:form_header>
+<div align="right" style="text-align:right">(${payment_delivery_method_pair.delivery_method.name}) ${h.format_currency(payment_delivery_method_pair.delivery_fee)}</div>
+<%mobile:form_header>システム利用料</%mobile:form_header>
+<div align="right" style="text-align:right">${h.format_currency(payment_delivery_method_pair.system_fee)}</div>
+%if payment_delivery_method_pair.special_fee > 0:
+<%mobile:form_header>${payment_delivery_method_pair.special_fee_name}</%mobile:form_header>
+<div align="right" style="text-align:right">${h.format_currency(payment_delivery_method_pair.special_fee)}</div>
+%endif
+<%mobile:form_header>合計金額</%mobile:form_header>
+<%mobile:band bgcolor="#ffd0d0" align="right"><font size="+1">${h.format_currency(total_amount)}</font></%mobile:band>
+
+<%mobile:header>購入者情報</%mobile:header>
+<%mobile:form_header>氏名(漢字)</%mobile:form_header>
+<div>
+${shipping_address.last_name} ${shipping_address.first_name}
+</div>
+<%mobile:form_header>氏名(カナ)</%mobile:form_header>
+<div>
+${shipping_address.last_name_kana} ${shipping_address.first_name_kana}
+</div>
+<%mobile:form_header>性別</%mobile:form_header>
+<div>
+${h.format_gender(request, lot_entry.gender)}
+</div>
+<%mobile:form_header>生年月日</%mobile:form_header>
+<div>
+${h.japanese_date(lot_entry.birthday)}
+</div>
+<%mobile:form_header>電話番号</%mobile:form_header>
+<div>
+${shipping_address.tel_1}
+</div>
+<%mobile:form_header>住所</%mobile:form_header>
+<div>
+${shipping_address.zip} ${shipping_address.prefecture}${shipping_address.city}${shipping_address.address_1}${shipping_address.address_2}
+</div>
+<form method="post" action="${request.path}">
+<div align="center" style="text-align:center">
+<input type="submit" name="back" value="戻る" />
+<input type="submit" value="確定する" />
+</div>
+</form>
