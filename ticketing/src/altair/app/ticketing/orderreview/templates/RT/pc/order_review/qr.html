@@ -14,9 +14,9 @@
   % endif
   <hr size="1" color="#B59557" />
   % if performance.start_on and performance.end_on:
-  <div><font size="5">${performance.start_on.strftime("%Y年%m月%d日").decode('utf-8')} (${u'月火水木金土日'[performance.start_on.weekday()]}) ${performance.start_on.strftime(u"%H:%M").decode('utf-8')}−<br />${performance.end_on.strftime("%Y年%m月%d日").decode('utf-8')} (${u'月火水木金土日'[performance.end_on.weekday()]}) ${performance.end_on.strftime(u"%H:%M").decode('utf-8')}</font> </div>
+  <div><font size="5">${performance.start_on.strftime("%Y年%m月%d日").decode('utf-8')} (${u'月火水木金土日'[performance.start_on.weekday()]}) ${performance.start_on.strftime(u"%H:%M").decode('utf-8')}−<br />${performance.end_on.strftime("%Y年%m月%d日").decode('utf-8')} (${u'月火水木金土日'[performance.end_on.weekday()]}) ${performance.end_on.strftime(u"%H:%M").decode('utf-8')}</font></div>
   % else:
-  <div><font size="5">${performance.start_on.strftime("%Y年%m月%d日").decode('utf-8')} (${u'月火水木金土日'[performance.start_on.weekday()]}) ${performance.start_on.strftime(u"%H:%M").decode('utf-8')}−</font> </div>
+  <div><font size="5">${performance.start_on.strftime("%Y年%m月%d日").decode('utf-8')} (${u'月火水木金土日'[performance.start_on.weekday()]}) ${performance.start_on.strftime(u"%H:%M").decode('utf-8')}−</font></div>
   % endif
   <hr size="1" color="#B59557" />
   <font size="5">受付番号 ${order.order_no} </font> <br />
