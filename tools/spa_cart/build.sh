@@ -27,15 +27,11 @@ do
 done
 cd ..
 
-if [ -d ../../ticketing/src/altair/app/ticketing/cart/static/spa_cart ] ; then
-    git rm ../../ticketing/src/altair/app/ticketing/cart/static/spa_cart/*
-fi
-
-cp -r $TMPDIR/dist ../../ticketing/src/altair/app/ticketing/cart/static/spa_cart
-rm ../../ticketing/src/altair/app/ticketing/cart/static/spa_cart/index.html
+mkdir -p ../../ticketing/src/altair/app/ticketing/cart/static/spa_cart
+find ../../ticketing/src/altair/app/ticketing/cart/static/spa_cart/ -type f -delete
+cp $(ls $TMPDIR/dist/* | grep -v /index.html) ../../ticketing/src/altair/app/ticketing/cart/static/spa_cart/
 cp $TMPDIR/dist/index.html ../../ticketing/src/altair/app/ticketing/cart/templates/eagles/pc/spa_cart/
 
-git add ../../ticketing/src/altair/app/ticketing/cart/static/spa_cart -f
+git add ../../ticketing/src/altair/app/ticketing/cart/static/spa_cart -f -A
 git add ../../ticketing/src/altair/app/ticketing/cart/templates/eagles/pc/spa_cart/index.html
-
 git commit -m "merge new-cart $REV by script"
