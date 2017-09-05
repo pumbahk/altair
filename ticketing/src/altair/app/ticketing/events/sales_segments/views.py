@@ -317,6 +317,7 @@ class SalesSegments(BaseView, SalesSegmentViewHelperMixin):
             return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
         return self._render_params(form)
 
+
 @view_defaults(decorator=with_bootstrap, permission='event_editor')
 class SalesSegmentPointGrantSettings(BaseView):
     @view_config(route_name='sales_segments.point_grant_settings.add', request_method='GET', renderer='altair.app.ticketing:templates/sales_segments/_form_modal_point_grant_setting.html', xhr=True)

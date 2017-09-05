@@ -21,6 +21,10 @@ Identifier = sa.BigInteger
 def upgrade():
     op.add_column('EventSetting',
                   sa.Column('tapirs', sa.Boolean(), nullable=True, default=False, server_default=text('0')))
+    op.add_column('OrganizationSetting',
+                  sa.Column('tapirs', sa.Boolean(), nullable=True, default=False, server_default=text('0')))
+
 
 def downgrade():
     op.drop_column('EventSetting', 'tapirs')
+    op.drop_column('OrganizationSetting', 'tapirs')

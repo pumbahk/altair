@@ -284,7 +284,8 @@ class Events(BaseView):
                         cart_setting_id=f.cart_setting_id.data,
                         event_operator_id=f.event_operator_id.data,
                         sales_person_id=f.sales_person_id.data,
-                        visible=f.visible.data
+                        visible=f.visible.data,
+                        tapirs=f.tapirs.data
                         # performance_selector=f.get_performance_selector(),
                         # performance_selector_label1_override=f.performance_selector_label1_override.data,
                         # performance_selector_label2_override=f.performance_selector_label2_override.data,
@@ -324,6 +325,7 @@ class Events(BaseView):
         f.event_operator_id.data = event.setting and event.setting.event_operator_id
         f.sales_person_id.data = event.setting and event.setting.sales_person_id
         f.visible.data = event.setting and event.setting.visible
+        f.tapirs.data = event.setting and event.setting.tapirs
         if self.request.matched_route.name == 'events.edit':
             route_name = u'編集'
         else:
@@ -372,7 +374,8 @@ class Events(BaseView):
                             cart_setting_id=f.cart_setting_id.data,
                             event_operator_id=f.event_operator_id.data,
                             sales_person_id=f.sales_person_id.data,
-                            visible=True
+                            visible=True,
+                            tapirs=f.tapirs.data
                             # performance_selector=f.get_performance_selector(),
                             # performance_selector_label1_override=f.performance_selector_label1_override.data,
                             # performance_selector_label2_override=f.performance_selector_label2_override.data,
@@ -402,6 +405,7 @@ class Events(BaseView):
                     event.setting.cart_setting_id = f.cart_setting_id.data
                 event.setting.event_operator_id = f.event_operator_id.data
                 event.setting.sales_person_id = f.sales_person_id.data
+                event.setting.tapirs = f.tapirs.data
             try:
                 event.save()
                 self.request.session.flash(u'イベントを保存しました')
