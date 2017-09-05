@@ -28,3 +28,11 @@ class Operator(Base, WithTimestamp):
 
     organization = orm.relationship('Organization', backref='operators')
     role = orm.relationship('Role', backref='operators')
+
+    @property
+    def is_administrator(self):
+        return self.role_id == 1
+
+    @property
+    def is_superoperator(self):
+        return self.role_id == 2

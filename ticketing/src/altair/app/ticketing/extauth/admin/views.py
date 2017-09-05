@@ -111,13 +111,12 @@ class OrganizationsView(object):
         )
     def index(self):
         organizations = self.context.db_session.query(Organization)
-        if self.request.has_permission('administration', self.context):
+        if self.request.operator.is_administrator:
             organizations = organizations.all()
+        elif self.request.operator.is_superoperator:
+            organizations = organizations.filter_by(id=self.request.operator.organization_id).all()
         else:
-            try:
-                organizations = [organizations.filter_by(id=self.request.operator.organization_id).one()]
-            except NoResultFound:
-                raise HTTPForbidden()
+            raise HTTPForbidden()
         return dict(
             organizations=organizations
             )
