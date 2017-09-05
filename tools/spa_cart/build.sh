@@ -1,6 +1,6 @@
 #!/bin/sh
 
-BRANCH=develop
+BRANCH=${1:-develop}
 TMPDIR=altair-new-cart-$(date "+%Y%m%d%H%M%S")
 NGOPT="--aot=false --output-hashing=all --sourcemap=false --extract-css=true --environment=prod"
 
@@ -26,5 +26,6 @@ rm ../../ticketing/src/altair/app/ticketing/cart/static/spa_cart/index.html
 cp $TMPDIR/dist/index.html ../../ticketing/src/altair/app/ticketing/cart/templates/eagles/pc/spa_cart/
 
 git add ../../ticketing/src/altair/app/ticketing/cart/static/spa_cart -f
+git add ../../ticketing/src/altair/app/ticketing/cart/templates/eagles/pc/spa_cart/index.html
 
 git commit -m "merge new-cart $REV by script"
