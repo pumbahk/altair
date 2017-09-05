@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 def auth_callback(operator_id, request):
     from .api import lookup_operator_by_id
     user = lookup_operator_by_id(request, operator_id)
-    return user and [user.role]
+    return user and [user.role.name]
 
 def register_template_globals(event):
     from altair.viewhelpers import Namespace
@@ -44,7 +44,7 @@ def main(global_config, **local_config):
 
     config = Configurator(
         settings=settings,
-        root_factory='.resources.BaseResource'
+        root_factory='.resources.ExtauthAdminResource'
         )
     config.set_authentication_policy(SessionAuthenticationPolicy(callback=auth_callback))
     config.set_authorization_policy(ACLAuthorizationPolicy())
