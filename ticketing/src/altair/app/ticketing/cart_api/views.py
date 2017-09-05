@@ -336,7 +336,7 @@ class CartAPIView(object):
             ) for seat_l0_id, stock_id, seat_status in seats]
 
         performance_id = int(self.request.matchdict.get('performance_id'))
-        performance = DBSession.query(Performance).filter_by(id=performance_id).first()
+        performance = session.query(Performance).filter_by(id=performance_id).first()
         seat_groups = search_seatGroup(self.request, performance.venue.site_id, performance.venue.id, session)
 
         res['seat_groups'] = [dict(
@@ -497,24 +497,24 @@ class CartAPIView(object):
                 }
             }
 
-        product = ""
+        merge_product = ""
         min_quantity = ""
         mix_sales_unit = False
-        for p in products:
+        for product in products:
             #公開商品以外はスキップ
-            if not p.public:
+            if not product.public:
                 continue
             #商品明細の販売単位をSUM
-            sales_unit_quantity = sum([item.quantity for item in p.items])
+            sales_unit_quantity = sum([item.quantity for item in product.items])
 
             #販売単位が1の場合は当商品情報で座席確保
             if sales_unit_quantity == 1:
-                product = p
+                merge_product = product
                 min_quantity = sales_unit_quantity
                 break
             else:
                 if not min_quantity:
-                    product = p
+                    merge_product = product
                     min_quantity = sales_unit_quantity
                     continue
                 #販売単位が同じならそのまま。
@@ -525,7 +525,7 @@ class CartAPIView(object):
                     #現在の販売単位より小さい販売単位がきた場合は、入れ替え
                     if sales_unit_quantity < min_quantity:
                         min_quantity = sales_unit_quantity
-                        product = p
+                        merge_product = product
                         continue
 
         #販売単位が2以上の場合、販売単位チェック
@@ -544,7 +544,7 @@ class CartAPIView(object):
                 #要求席数/販売単位
                 request_quantity /= min_quantity
 
-        product_requires = [(product, request_quantity)]
+        product_requires = [(merge_product, request_quantity)]
         logger.debug("product_requires %s", product_requires)
         stockstatuses = stocker.take_stock(performance_id, product_requires)
 
