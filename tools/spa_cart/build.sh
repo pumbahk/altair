@@ -4,16 +4,26 @@ BRANCH=${1:-develop}
 TMPDIR=altair-new-cart-$(date "+%Y%m%d%H%M%S")
 NGOPT="--aot=false --output-hashing=all --sourcemap=false --extract-css=true --environment=prod"
 
+/bin/echo -n "Checking node... "
+node -v || exit 1
+
+/bin/echo -n "Checking npm... "
+npm -v || exit 1
+
 git clone -b $BRANCH --depth 1 git@github.com:ticketstar/altair-new-cart.git $TMPDIR
+if [ ! -d $TMPDIR ] ; then
+		echo "git failed."
+		exit 1
+fi
+
 REV=`(cd $TMPDIR ; git rev-parse HEAD)`
 
 cd $TMPDIR
 npm update
-ng build --base-href=/cart/spa/ --deploy-url=/cart/static/spa_cart/ $NGOPT
-sed -i "" '/\/\/# sourceMappingURL=/d' dist/*.js
+./node_modules/.bin/ng build --base-href=/cart/spa/ --deploy-url=/cart/static/spa_cart/ $NGOPT
 for x in dist/*.js
 do
-		gzip -c $x > $x.gz
+		cat $x | sed '/\/\/# sourceMappingURL=/d' - | gzip > $x.gz
 done
 cd ..
 
