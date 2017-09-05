@@ -14,5 +14,5 @@
   </ul>
   <%include file="_form.mako" />
   <button class="btn">編集</button>
-  <a href="${request.route_path('top')}">戻る</a>
+  <a class='btn' href="${request.route_path('top')}">戻る</a>
 </form>

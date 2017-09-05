@@ -7,10 +7,14 @@
 </div>
 % endfor
 
-<a style="margin:10px 0;" class="btn" href="${request.route_path('organizations.new')}"><i class="icon-plus"></i>新規Organizationを作成する</a>
+% if request.has_permission('administration'):
+    <a style="margin:10px 0;" class="btn" href="${request.route_path('organizations.new')}"><i class="icon-plus"></i>新規Organizationを作成する</a>
+% endif
 
-<ul class="nav nav-tabs nav-stacked">
-  % for org in organizations:
-  <li><a href="${request.route_path('organizations.edit', id=org.id)}">${org.short_name}</a></li>
-  % endfor
-</ul>
+<div class="table-wrap">
+    <ul class="nav nav-tabs nav-stacked">
+      % for org in organizations:
+      <li><a href="${request.route_path('organizations.edit', id=org.id)}">${org.short_name}</a></li>
+      % endfor
+    </ul>
+</div>

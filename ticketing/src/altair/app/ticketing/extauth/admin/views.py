@@ -5,7 +5,7 @@ import functools
 from datetime import timedelta
 from pyramid.view import view_config, view_defaults, forbidden_view_config
 from pyramid.response import Response
-from pyramid.httpexceptions import HTTPFound
+from pyramid.httpexceptions import HTTPFound, HTTPForbidden
 from pyramid.security import remember, forget
 from pyramid_layout.panel import panel_config
 from webhelpers import paginate
@@ -106,12 +106,18 @@ class OrganizationsView(object):
     @view_config(
         route_name='organizations.index',
         renderer='organizations/index.mako',
-        permission='manage_my_organization',
+        permission='manage_organization',
         request_method='GET'
         )
     def index(self):
-        session = get_db_session(self.request, 'extauth')
-        organizations = session.query(Organization).all()
+        organizations = self.context.db_session.query(Organization)
+        if self.request.has_permission('administration', self.context):
+            organizations = organizations.all()
+        else:
+            try:
+                organizations = [organizations.filter_by(id=self.request.operator.organization_id).one()]
+            except NoResultFound:
+                raise HTTPForbidden()
         return dict(
             organizations=organizations
             )
@@ -119,7 +125,7 @@ class OrganizationsView(object):
     @view_config(
         route_name='organizations.new',
         renderer='organizations/edit.mako',
-        permission='manage_my_organization',
+        permission='administration',
         request_method='GET'
         )
     def new(self):
@@ -131,7 +137,7 @@ class OrganizationsView(object):
     @view_config(
         route_name='organizations.new',
         renderer='organizations/edit.mako',
-        permission='manage_my_organization',
+        permission='administration',
         request_method='POST'
         )
     def new_post(self):
@@ -160,11 +166,10 @@ class OrganizationsView(object):
     @view_config(
         route_name='organizations.edit',
         renderer='organizations/edit.mako',
-        permission='manage_my_organization',
+        permission='manage_organization',
         request_method='GET'
         )
     def edit(self):
-        session = get_db_session(self.request, 'extauth')
         form = OrganizationForm(obj=self.context.organization, request=self.request)
         return dict(
             form=form
@@ -173,7 +178,7 @@ class OrganizationsView(object):
     @view_config(
         route_name='organizations.edit',
         renderer='organizations/edit.mako',
-        permission='manage_my_organization',
+        permission='manage_organization',
         request_method='POST'
         )
     def edit_post(self):
@@ -201,7 +206,7 @@ class HostsView(object):
     @view_config(
         route_name='hosts.new',
         renderer='hosts/edit.mako',
-        permission='manage_my_organization',
+        permission='manage_organization',
         request_method='GET'
         )
     def new(self):
@@ -213,7 +218,7 @@ class HostsView(object):
     @view_config(
         route_name='hosts.new',
         renderer='hosts/edit.mako',
-        permission='manage_my_organization',
+        permission='manage_organization',
         request_method='POST'
         )
     def new_post(self):
