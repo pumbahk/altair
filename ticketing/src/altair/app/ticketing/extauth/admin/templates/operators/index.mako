@@ -7,7 +7,9 @@
 </div>
 % endfor
 <h2>Operator 一覧</h2>
+% if request.has_permission('manage_operators'):
 <a class="btn" href="${request.route_path('operators.new')}"><i class="icon-plus"></i>新規オペレーター</a>
+% endif
 ${h.render_bootstrap_pager(operators)}
 <form action="${request.route_path('operators.delete')}" method="POST">
 
@@ -23,10 +25,14 @@ ${h.render_bootstrap_pager(operators)}
   <tbody>
 % for operator in operators:
     <tr>
+      % if request.operator.id == operator.id:
+      <td><input type="checkbox" name="id" value="${operator.id}" disabled></td>
+      % else:
       <td><input type="checkbox" name="id" value="${operator.id}"></td>
+      % endif
       <td>${operator.organization.short_name}</td>
       <td><a href="${request.route_path('operators.edit', id=operator.id)}">${operator.auth_identifier}</a></td>
-      <td>${operator.role}</td>
+      <td>${operator.role.name}</td>
     </tr>
 % endfor
   </tbody>

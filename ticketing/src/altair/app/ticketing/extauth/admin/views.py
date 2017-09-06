@@ -247,11 +247,18 @@ class OperatorsView(object):
 
     @view_config(
         route_name='operators.index',
-        renderer='operators/index.mako'
+        renderer='operators/index.mako',
+        permission='manage_operators'
         )
     def index(self):
-        session = get_db_session(self.request, 'extauth')
-        query = session.query(Operator).all()
+        query = self.context.db_session.query(Operator)
+        if self.request.operator.is_administrator:
+            query = query.all()
+        elif self.request.operator.is_superoperator:
+            query = query.filter(Operator.organization_id==self.request.operator.organization_id, Operator.role_id != 1).all()
+        else:
+            raise HTTPForbidden()
+
         operators = paginate.Page(
             query,
             page=int(self.request.params.get('page', 0)),
@@ -265,14 +272,12 @@ class OperatorsView(object):
     @view_config(
         route_name='operators.edit',
         renderer='operators/edit.mako',
-        request_method='GET'
+        request_method='GET',
+        permission='manage_operators'
         )
     def edit(self):
-        session = get_db_session(self.request, 'extauth')
-        operator = session.query(Operator).filter_by(id=self.request.matchdict['id']).one()
-        organization = lookup_organization_by_id(self.request, operator.organization_id)
-        operator.organization_name = organization.short_name
-        form = OperatorForm(obj=operator, auth_secret=u'', request=self.request)
+        operator = self.context.db_session.query(Operator).filter_by(id=self.request.matchdict['id']).one()
+        form = OperatorForm(obj=operator, auth_secret=u'', organization_id=str(operator.organization_id),request=self.request)
         return dict(
             form=form,
             operator=operator
@@ -281,20 +286,19 @@ class OperatorsView(object):
     @view_config(
         route_name='operators.edit',
         renderer='operators/edit.mako',
-        request_method='POST'
+        request_method='POST',
+        permission='manage_operators'
         )
     def edit_post(self):
         session = get_db_session(self.request, 'extauth')
         operator = session.query(Operator).filter_by(id=self.request.matchdict['id']).one()
-        organization = lookup_organization_by_id(self.request, operator.organization_id)
-        operator.organization_name = organization.short_name
         form = OperatorForm(formdata=self.request.POST, obj=operator, request=self.request)
         if not form.validate():
             return dict(
                 form=form,
                 operator=operator
                 )
-        operator.role = form.role.data
+        operator.role_id = int(form.role_id.data)
         operator.auth_identifier = form.auth_identifier.data
         if form.auth_secret.data:
             operator.auth_secret = digest_secret(form.auth_secret.data, generate_salt())
@@ -306,10 +310,11 @@ class OperatorsView(object):
     @view_config(
         route_name='operators.new',
         renderer='operators/new.mako',
-        request_method='GET'
+        request_method='GET',
+        permission='manage_operators'
         )
     def new(self):
-        form = OperatorForm(request=self.request)
+        form = OperatorForm(organization_id=str(self.request.operator.organization_id), request=self.request)
         return dict(
             form=form
             )
@@ -317,7 +322,8 @@ class OperatorsView(object):
     @view_config(
         route_name='operators.new',
         renderer='operators/new.mako',
-        request_method='POST'
+        request_method='POST',
+        permission='manage_operators'
         )
     def new_post(self):
         session = get_db_session(self.request, 'extauth')
@@ -326,18 +332,18 @@ class OperatorsView(object):
             return dict(
                 form=form
                 )
-        operator = create_operator(
-            self.request,
-            organization_name=form.organization_name.data,
+        operator = Operator(
+            organization_id = form.organization_id.data,
             auth_identifier=form.auth_identifier.data,
-            auth_secret=form.auth_secret.data,
-            role=form.role.data
-            )
+            auth_secret=digest_secret(form.auth_secret.data, generate_salt()),
+            role_id=form.role_id.data
+        )
+        session.add(operator)
         session.commit()
         self.request.session.flash(u'Operator %s を作成しました' % operator.auth_identifier)
         return HTTPFound(location=self.request.route_path('operators.index'))
 
-    @view_config(route_name='operators.delete')
+    @view_config(route_name='operators.delete', permission='manage_operators')
     def delete(self):
         session = get_db_session(self.request, 'extauth')
         id_list = [long(id) for id in self.request.params.getall('id')]
@@ -883,7 +889,7 @@ class OAuthClientsView(object):
         if not form.validate():
             self.request.response.status = 400
             return dict(form=form)
-        organization = lookup_organization_by_name(self.request, form.organization_name.data)
+        organization = lookup_organization_by_name(self.request, form.organization_id.data)
         oauth_client = OAuthClient(
             organization=organization,
             name=form.name.data,
