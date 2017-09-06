@@ -197,6 +197,15 @@ $(function(){
 
     % endif
 
+    % if organization_setting.tapirs:
+    <tr>
+      <th>テイパーズ</th>
+      <td>
+        ${u"有効" if event.setting.tapirs else u"無効"}
+      </td>
+    </tr>
+    % endif
+
   </tbody>
 </table>
 

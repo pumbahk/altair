@@ -64,6 +64,13 @@
               % else:
               ${HH.action_button(b.actions(product, item), order=['edit_item', 'new_item', 'delete_item', 'divider', 'preview'], options='btn-small', align='right')}
               % endif
+              % if product.sales_segment.event.setting.tapirs:
+              <div class="btn-group">
+                <a class="btn" href="${request.route_path('tapirs.products.download', product_id=product.id)}">
+                  テイパーズ
+                </a>
+              </div>
+              % endif
             </td>
           </tr>
             % endfor
