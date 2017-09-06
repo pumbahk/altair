@@ -33,6 +33,14 @@ from . import import_export
 
 logger = logging.getLogger(__name__)
 
+def get_object_queryset(request, klass, db_session=None):
+    if not db_session:
+        db_session=get_db_session(request, 'extauth_slave')
+    query = db_session.query(klass)
+    if not request.operator.is_administrator:
+        query = query.filter_by(organization_id=request.operator.organization_id)
+    return query
+
 @forbidden_view_config()
 def forbbidden(context, request):
     if not request.authenticated_userid:
@@ -110,11 +118,9 @@ class OrganizationsView(object):
         request_method='GET'
         )
     def index(self):
-        organizations = self.context.db_session.query(Organization)
-        if self.request.operator.is_administrator:
+        organizations = get_object_queryset(request=self.request, klass=Organization)
+        if self.request.operator.is_administrator or self.request.operator.is_superoperator:
             organizations = organizations.all()
-        elif self.request.operator.is_superoperator:
-            organizations = organizations.filter_by(id=self.request.operator.organization_id).all()
         else:
             raise HTTPForbidden()
         return dict(
@@ -251,11 +257,11 @@ class OperatorsView(object):
         permission='manage_operators'
         )
     def index(self):
-        query = self.context.db_session.query(Operator)
+        query = get_object_queryset(request=self.request, klass=Operator)
         if self.request.operator.is_administrator:
             query = query.all()
         elif self.request.operator.is_superoperator:
-            query = query.filter(Operator.organization_id==self.request.operator.organization_id, Operator.role_id != 1).all()
+            query = query.filter(Operator.role_id != 1).all()
         else:
             raise HTTPForbidden()
 
@@ -926,11 +932,15 @@ class OAuthServiceProvidersView(object):
     @view_config(
         route_name='service_providers.index',
         renderer='service_providers/index.mako',
-        request_method='GET'
+        request_method='GET',
+        permission='manage_service_providers'
         )
     def index(self):
-        session = get_db_session(self.request, 'extauth')
-        service_providers = session.query(OAuthServiceProvider).all()
+        service_providers = get_object_queryset(request=self.request, klass=OAuthServiceProvider)
+        if self.request.operator.is_administrator or self.request.operator.is_superoperator:
+            service_providers = service_providers.all()
+        else:
+            raise HTTPForbidden()
         return dict(
             service_providers=service_providers
             )
@@ -938,10 +948,11 @@ class OAuthServiceProvidersView(object):
     @view_config(
         route_name='service_providers.new',
         renderer='service_providers/edit.mako',
-        request_method='GET'
+        request_method='GET',
+        permission='manage_service_providers'
         )
     def new(self):
-        form = OAuthServiceProviderForm(request=self.request)
+        form = OAuthServiceProviderForm(request=self.request, organization_id=self.request.operator.organization_id)
         return dict(
             form=form
             )
@@ -949,7 +960,8 @@ class OAuthServiceProvidersView(object):
     @view_config(
         route_name='service_providers.new',
         renderer='service_providers/edit.mako',
-        request_method='POST'
+        request_method='POST',
+        permission='manage_service_providers'
         )
     def new_post(self):
         session = get_db_session(self.request, 'extauth')
@@ -958,7 +970,7 @@ class OAuthServiceProvidersView(object):
             return dict(
                 form=form
                 )
-        service_providers = OAuthServiceProvider(
+        service_provider = OAuthServiceProvider(
             name=form.name.data,
             display_name=form.display_name.data,
             auth_type=form.auth_type.data,
@@ -969,11 +981,10 @@ class OAuthServiceProvidersView(object):
             organization_id=form.organization_id.data,
             visible=form.visible.data
         )
-        session.add(service_providers)
-        session.flush()
+        session.add(service_provider)
         session.commit()
-        self.request.session.flash(u'OAuthServiceProvider %s を新規作成しました' % service_providers.display_name)
-        return HTTPFound(location=self.request.route_path('service_providers.edit', id=service_providers.id))
+        self.request.session.flash(u'OAuthServiceProvider %s を新規作成しました' % service_provider.display_name)
+        return HTTPFound(location=self.request.route_path('service_providers.edit', id=service_provider.id))
 
     @view_config(
         route_name='service_providers.edit',
@@ -981,11 +992,12 @@ class OAuthServiceProvidersView(object):
         request_method='GET'
         )
     def edit(self):
-        session = get_db_session(self.request, 'extauth')
+        service_provider = get_object_queryset(request=self.request, klass=OAuthServiceProvider)
         try:
-            service_provider = session.query(OAuthServiceProvider).filter_by(id=self.request.matchdict['id']).one()
-        except NoResultFound as e:
-            raise e
+            service_provider = service_provider.filter_by(id=self.request.matchdict['id']).one()
+        except NoResultFound:
+            raise HTTPForbidden()
+
         form = OAuthServiceProviderForm(obj=service_provider, request=self.request)
         return dict(
             form=form
@@ -998,10 +1010,11 @@ class OAuthServiceProvidersView(object):
         )
     def edit_post(self):
         session = get_db_session(self.request, 'extauth')
+        service_provider = get_object_queryset(request=self.request, klass=OAuthServiceProvider, db_session=session)
         try:
-            service_provider = session.query(OAuthServiceProvider).filter_by(id=self.request.matchdict['id']).one()
-        except NoResultFound as e:
-            raise e
+            service_provider = service_provider.filter_by(id=self.request.matchdict['id']).one()
+        except NoResultFound:
+            raise HTTPForbidden()
         form = OAuthServiceProviderForm(formdata=self.request.POST, obj=service_provider, request=self.request)
         if not form.validate():
             return dict(
