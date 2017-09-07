@@ -370,6 +370,9 @@ class OrganizationSettingSimpleForm(OurForm):
     recaptcha = OurBooleanField(
         label=get_annotations_for(c_models.OrganizationSetting.recaptcha)['label']
     )
+    tapirs = OurBooleanField(
+        label=get_annotations_for(c_models.OrganizationSetting.tapirs)['label']
+    )
 
     def __init__(self, *args, **kwargs):
         context = kwargs.pop('context')
@@ -430,6 +433,9 @@ class OrganizationSettingForm(OrganizationSettingSimpleForm):
     )
     recaptcha = OurBooleanField(
         label=get_annotations_for(c_models.OrganizationSetting.recaptcha)['label']
+    )
+    tapirs = OurBooleanField(
+        label=get_annotations_for(c_models.OrganizationSetting.tapirs)['label']
     )
     enable_word = OurBooleanField(
         label=get_annotations_for(c_models.OrganizationSetting.enable_word)['label']

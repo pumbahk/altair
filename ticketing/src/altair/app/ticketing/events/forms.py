@@ -218,6 +218,10 @@ class EventForm(OurForm):
         label=u'イベントの表示／非表示',
         default=True,
         )
+    tapirs = OurBooleanField(
+        label=u'テイパーズ機能',
+        default=True,
+        )
 
     def validate_title(form, field):
         if field:
