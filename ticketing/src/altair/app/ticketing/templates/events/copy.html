@@ -60,6 +60,9 @@ ${ch.breadcrumbs(
         ${ch.form_item(form.event_operator_id)}
         ${ch.form_item(form.sales_person_id)}
       % endif
+      % if request.context.organization.setting.tapirs:
+        ${ch.form_item(form.tapirs)}
+      % endif
     </fieldset>
     <div class="form-actions">
       <input class="btn btn-primary" type="submit" name="submit" value="${route_name}">

@@ -111,6 +111,7 @@ class OrderDependentsProvider(object):
             qs = qs.outerjoin(Seat, OrderedProductItemToken.seat_id==Seat.id)
             qs = qs.with_entities(OrderedProduct, OrderedProductItem, ProductItem, TicketBundle, Seat, OrderedProductItemToken)
             qs = qs.options(joinedload(ProductItem.product, Product.sales_segment))
+            qs = qs.order_by(Seat.l0_id)
             objs = qs.all()
             self._dependents_provider = JoinedObjectsForProductItemDependentsProvider(objs, ticket_format_id)
         return self._dependents_provider

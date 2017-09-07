@@ -11,6 +11,7 @@ from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPBadRequest
 from pyramid.renderers import render_to_response
 from pyramid.url import route_path
+from sqlalchemy.orm.exc import NoResultFound
 from paste.util.multidict import MultiDict
 from altair.sqlahelper import get_db_session
 from altair.app.ticketing.fanstatic import with_bootstrap
@@ -24,6 +25,26 @@ from .forms import PreviewImageDownloadForm
 from .api import add_lot_product_all, sync_lot_product, sync_lot_product_item, sync_lot_product_add_lot_product_item, delete_lot_product, delete_lot_product_item
 from decimal import Decimal
 logger = logging.getLogger(__name__)
+
+
+@view_defaults(decorator=with_bootstrap, permission='event_editor')
+class TapirsProduct(BaseView):
+
+    @view_config(route_name='tapirs.products.download', request_method='GET', renderer='csv')
+    def tapirs_download(self):
+        product = self.context.product
+        sales_segment = self.context.product.sales_segment
+        performance = self.context.product.sales_segment.performance
+
+        rows = self.context.get_tapirs(sales_segment.id, product.id)
+
+        filename = "{0}_{1}_{2}.csv".format(performance.name.encode('utf_8')
+                                       , sales_segment.sales_segment_group.name.encode('utf_8')
+                                       , product.name.encode('utf_8'))
+        self.request.response.content_disposition = 'attachment;filename=' + filename
+        return dict(data=list(rows),
+                    encoding='utf-8',
+                    filename=filename)
 
 
 @view_defaults(decorator=with_bootstrap, permission='event_editor')

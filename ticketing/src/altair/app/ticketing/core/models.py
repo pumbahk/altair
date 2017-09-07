@@ -4238,6 +4238,7 @@ class OrganizationSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     show_event_op_and_sales = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"登録、営業担当者を表示", _a_label=u"登録、営業担当者を表示")
     default_oauth_setting = Column(MutationDict.as_mutable(JSONEncodedDict(16384)), nullable=False, default={}, server_default='{}')
     recaptcha = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"recaptchaの使用", _a_label=u"recaptchaの使用")
+    tapirs = AnnotatedColumn(Boolean, nullable=True, default=False, doc=u"テイパーズ機能", _a_label=u"テイパーズ機能")
 
     def _render_cart_setting_id(self):
         return link_to_cart_setting(self.cart_setting)
@@ -4355,6 +4356,7 @@ class EventSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     event_operator_id = AnnotatedColumn(Identifier, nullable=True, _a_label=_(u'登録担当者'))
     sales_person_id = AnnotatedColumn(Identifier, nullable=True, _a_label=_(u'営業担当者'))
     visible = AnnotatedColumn(Boolean, default=True, _a_label=_(u'イベントの表示／非表示'))
+    tapirs = AnnotatedColumn(Boolean, nullable=True, default=False, doc=u"テイパーズ機能", _a_label=u"テイパーズ機能")
 
     @property
     def super(self):
