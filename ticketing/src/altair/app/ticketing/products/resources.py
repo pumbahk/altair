@@ -202,6 +202,7 @@ class TapirsProductResource(ProductResource):
 
     def get_tapirs_from_seven(self, order, session):
         sej_order = order.sej_order
+        export_data_seven = list()
         for i, ticket in enumerate(sej_order.tickets):
             # Todo:barcode_noの重複チェック
             try:
@@ -237,11 +238,13 @@ class TapirsProductResource(ProductResource):
             logger.info('barcode_num={}, order_no={}, seat_no={}'.format(retval.get('barcode_no'),
                                                                          retval.get('order_no'),
                                                                          retval.get('seat_no')))
-            return retval
+            export_data_seven.append(retval)
+        return export_data_seven
 
     def get_tapirs_from_famiport(self, order, session):
         fm_order = order.famiport_order
         ticket_likes = fm_order.get('famiport_tickets')
+        export_data_famiport = list()
         for i, ticket_like in enumerate(ticket_likes):
             try:
                 if not ticket_like.get('userside_token_id'):
@@ -278,7 +281,8 @@ class TapirsProductResource(ProductResource):
             logger.info('barcode_num={}, order_no={}, seat_no={}'.format(retval.get('barcode_no'),
                                                                          retval.get('order_no'),
                                                                          retval.get('seat_no')))
-            return retval
+            export_data_famiport.append(retval)
+        return export_data_famiport
 
     @staticmethod
     def create_tapirs_dict(export_data):
@@ -320,11 +324,15 @@ class TapirsProductResource(ProductResource):
             # sejの場合
             if order.delivery_plugin_id == SEJ_DELIVERY_PLUGIN_ID:
                 retval = self.get_tapirs_from_seven(order, session)
-                export_data.append(retval)
+                for ret in retval:
+                    if ret:
+                        export_data.append(ret)
             # famiportの場合
             elif order.delivery_plugin_id == FAMIPORT_DELIVERY_PLUGIN_ID:
                 retval = self.get_tapirs_from_famiport(order, session)
-                export_data.append(retval)
+                for ret in retval:
+                    if ret:
+                        export_data.append(ret)
 
         csv_data = self.create_tapirs_dict(export_data)
         return csv_data
