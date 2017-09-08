@@ -30,6 +30,7 @@ def main(argv=sys.argv[1:]):
                 .filter(StockHolder.event_id == args.event_id).first()
 
             stock = Stock.query.join(StockType, Stock.stock_type_id == StockType.id)\
+                .join(StockHolder, StockHolder.id == Stock.stock_holder_id)\
                 .filter(StockHolder.id == sh.id)\
                 .filter(Stock.performance_id == args.performance_id)\
                 .filter(StockType.name == row[0]).first()
@@ -49,7 +50,7 @@ def main(argv=sys.argv[1:]):
             sd.stock_id = stock.id
             sd.drawing_l0_id = row[1]
             DBSession.add(sd)
-            transaction.commit()
+        transaction.commit()
     finally:
         transaction.abort()
 
