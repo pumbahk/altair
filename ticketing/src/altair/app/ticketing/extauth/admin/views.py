@@ -2,14 +2,17 @@
 
 import logging
 import functools
+import json
+import datetime
 from datetime import timedelta
 from pyramid.view import view_config, view_defaults, forbidden_view_config
 from pyramid.response import Response
-from pyramid.httpexceptions import HTTPFound, HTTPForbidden
+from pyramid.httpexceptions import HTTPFound, HTTPForbidden, HTTPBadRequest
 from pyramid.security import remember, forget
 from pyramid_layout.panel import panel_config
 from webhelpers import paginate
 from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy.orm import class_mapper
 from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.sqlahelper import get_db_session
 from .api import create_operator, lookup_operator_by_credentials, lookup_organization_by_name, lookup_organization_by_id
@@ -852,8 +855,9 @@ class MembersView(object):
         return HTTPFound(location=self.request.route_path('members.index'))
 
 @view_defaults(
-    permission='manage_oauth_clients',
-    decorator=(with_bootstrap,)
+    renderer='oauth_clients/index.mako',
+    decorator=(with_bootstrap),
+    permission='manage_clients'
     )
 class OAuthClientsView(object):
     def __init__(self, context, request):
@@ -862,52 +866,65 @@ class OAuthClientsView(object):
 
     @view_config(
         route_name='oauth_clients.index',
-        renderer='oauth_clients/index.mako'
+        request_method='GET',
         )
     def index(self):
-        session = get_db_session(self.request, 'extauth')
-        query = session.query(OAuthClient).order_by(OAuthClient.organization_id)
+        oauth_clients = get_object_queryset(request=self.request, klass=OAuthClient)
+        form = OAuthClientForm(request=self.request, organization_id=self.request.operator.organization_id)
+        if self.request.operator.is_administrator or self.request.operator.is_superoperator:
+            oauth_clients = oauth_clients.all()
+        else:
+            raise HTTPForbidden()
         return dict(
-            oauth_clients=query
+            oauth_clients=oauth_clients,
+            form=form
             )
 
-    @view_config(
-        route_name='oauth_clients.new',
-        renderer='oauth_clients/_new.mako',
-        request_method='GET'
-        )
-    @panel_config(
-        'oauth_clients.new',
-        renderer='oauth_clients/_new.mako'
-        )
-    def new(self):
-        form = OAuthClientForm(request=self.request)
-        return dict(form=form)
+    def serialize(self, obj):
+        columns = [c.key for c in class_mapper(obj.__class__).columns]
+        serialized = dict()
+        for c in columns:
+            c_obj = getattr(obj, c)
+            if isinstance(c_obj, (datetime.datetime, datetime.date)):
+                serialized[c]=c_obj.isoformat()
+            else:
+                serialized[c] = c_obj
+        return serialized
 
-    @view_config(
-        route_name='oauth_clients.new',
-        renderer='oauth_clients/_new.mako',
-        request_method='POST'
-        )
-    def new_post(self):
+    @view_config(route_name='oauth_clients.create_or_update', request_method='POST', renderer="json")
+    def create_or_update(self):
+        oauth_client_id = self.request.POST.get('oauth_client_id', None)
+        oauth_client_form = OAuthClientForm(self.request.POST, request=self.request)
         session = get_db_session(self.request, 'extauth')
-        form = OAuthClientForm(formdata=self.request.POST, request=self.request)
-        if not form.validate():
-            self.request.response.status = 400
-            return dict(form=form)
-        organization = lookup_organization_by_name(self.request, form.organization_id.data)
-        oauth_client = OAuthClient(
-            organization=organization,
-            name=form.name.data,
-            client_id=generate_random_alnum_string(32),
-            client_secret=generate_random_alnum_string(32),
-            redirect_uri=form.redirect_uri.data,
-            authorized_scope=organization.maximum_oauth_scope
-            )
-        session.add(oauth_client)
-        session.commit()
-        self.request.session.flash(u'OAuthClient を作成しました')
-        return HTTPFound(location=self.request.route_path('oauth_clients.index'))
+        if oauth_client_id:
+            try:
+                oauth_client = session.query(OAuthClient).filter_by(id=oauth_client_id).one()
+            except NoResultFound:
+                raise HTTPBadRequest(body=json.dumps({'emsgs': {"unknown-emsg":u"該当OAuth Clientは見つからない。"}}))
+        else:
+            organization = lookup_organization_by_id(self.request, oauth_client_form.organization_id.data)
+            oauth_client = OAuthClient()
+            oauth_client.organization = organization
+            oauth_client.client_id = generate_random_alnum_string(32)
+            oauth_client.client_secret = generate_random_alnum_string(32)
+            oauth_client.authorized_scope = organization.maximum_oauth_scope
+
+        if not oauth_client_form.validate():
+            emsgs = {}
+            for field, errors in oauth_client_form.errors.items():
+                for error in errors:
+                    emsgs[field] = error
+            raise HTTPBadRequest(body=json.dumps({'emsgs': emsgs}))
+
+        oauth_client_form.populate_obj(oauth_client)
+        try:
+            session.add(oauth_client)
+            session.commit()
+        except Exception, e:
+            raise HTTPBadRequest(body=json.dumps({'emsgs': {"unknown-emsg":str(e)}}))
+
+        serialized_obj = self.serialize(oauth_client)
+        return serialized_obj
 
     @view_config(route_name='oauth_clients.delete')
     def delete(self):

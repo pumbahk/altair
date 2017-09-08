@@ -696,15 +696,16 @@ class OAuthClientForm(OurForm):
             ]
         )
 
-    organization_name = OurSelectField(
+    organization_id = OurSelectField(
         label=u'組織名 (Organization)',
         choices=lambda field: \
-            get_db_session(field._form.request, 'extauth') \
-                .query(Organization.short_name, Organization.short_name) \
+            get_db_session(field._form.request, 'extauth_slave') \
+                .query(Organization.id, Organization.short_name) \
                 .all(),
         validators=[
             Required(),
-            ]
+            ],
+        coerce=int
         )
 
     def validate_redirect_uri(form, field):
@@ -732,7 +733,7 @@ class OAuthServiceProviderForm(OurForm):
     organization_id = OurSelectField(
         label=u'Organization',
         choices=lambda field: \
-            get_db_session(field._form.request, 'extauth') \
+            get_db_session(field._form.request, 'extauth_slave') \
                 .query(Organization.id, Organization.short_name) \
                 .all(),
         coerce=int,
