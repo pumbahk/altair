@@ -194,7 +194,7 @@ class OrganizationsView(object):
         )
     def edit_post(self):
         session = get_db_session(self.request, 'extauth')
-        organization = self.context.organization
+        organization = session.query(Organization).filter_by(id=self.request.matchdict['id']).one()
         form = OrganizationForm(formdata=self.request.POST, obj=organization, request=self.request)
         if not form.validate():
             return dict(
