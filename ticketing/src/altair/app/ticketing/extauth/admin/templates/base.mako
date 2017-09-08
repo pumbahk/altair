@@ -30,7 +30,7 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </a>
-        <a class="brand" href="${request.route_path('top')}">ExtAuth admin</a>
+        <a class="brand" href="${request.route_path('top')}">ExtAuth管理</a>
         <div class="nav-collapse">
           <ul class="nav pull-right">
             % if request.operator is not None:

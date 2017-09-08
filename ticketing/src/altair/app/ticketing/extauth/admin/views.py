@@ -41,7 +41,10 @@ def get_object_queryset(request, klass, db_session=None):
         db_session=get_db_session(request, 'extauth_slave')
     query = db_session.query(klass)
     if not request.operator.is_administrator:
-        query = query.filter_by(organization_id=request.operator.organization_id)
+        if klass == Organization:
+            query = query.filter_by(id=request.operator.organization_id)
+        else:
+            query = query.filter_by(organization_id=request.operator.organization_id)
     return query
 
 @forbidden_view_config()

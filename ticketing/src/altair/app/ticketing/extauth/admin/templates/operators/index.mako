@@ -6,7 +6,7 @@
   <strong>${message}</strong>
 </div>
 % endfor
-<h2>Operator 一覧</h2>
+<h2>オペレーター一覧</h2>
 % if request.has_permission('manage_operators'):
 <a class="btn" href="${request.route_path('operators.new')}"><i class="icon-plus"></i>新規オペレーター</a>
 % endif

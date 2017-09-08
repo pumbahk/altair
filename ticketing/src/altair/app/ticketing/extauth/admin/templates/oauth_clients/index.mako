@@ -52,7 +52,7 @@
   <strong>${message}</strong>
 </div>
 % endfor
-<h2>OAuthClient 一覧</h2>
+<h2>OAuthクライアント一覧</h2>
 % if request.has_permission('manage_clients'):
   <button type="button" class="btn" onclick="create()" style="margin:10px 0;"><i class="icon-plus"></i>新規OAuthClient</button>
 % endif

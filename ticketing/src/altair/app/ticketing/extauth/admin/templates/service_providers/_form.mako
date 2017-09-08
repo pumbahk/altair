@@ -76,9 +76,10 @@
   </div>
 </div>
 <div class="control-group">
-  <label class="control-label" for="oauth_service_provider-form--visible">${form.visible.label.text}</label>
-  <div class="controls">
-    ${form.visible(id="oauth_service_provider-form--visible")}
+  <div class="checkbox">
+    <label>
+      ${form.visible(id="oauth_service_provider-form--visible")} ${form.visible.label.text}
+    </label>
     %if form.visible.errors:
     <span class="help-inline">${u' / '.join(form.visible.errors)}</span>
     % endif
