@@ -6,7 +6,8 @@ from altair.models import Identifier, WithTimestamp
 class Role(Base, WithTimestamp):
     __tablename__ = 'Role'
     id = sa.Column(Identifier, autoincrement=True, primary_key=True, nullable=False)
-    name = sa.Column(sa.Unicode(128), unique=True, nullable=False)
+    name = sa.Column(sa.Unicode(32), unique=True, nullable=False)
+    verbose_name = sa.Column(sa.Unicode(128), nullable=False)
     active = sa.Column(sa.Boolean)
 
 class Permission(Base):

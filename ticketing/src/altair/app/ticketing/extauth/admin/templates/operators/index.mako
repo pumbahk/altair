@@ -32,7 +32,7 @@ ${h.render_bootstrap_pager(operators)}
       % endif
       <td>${operator.organization.short_name}</td>
       <td><a href="${request.route_path('operators.edit', id=operator.id)}">${operator.auth_identifier}</a></td>
-      <td>${operator.role.name}</td>
+      <td>${operator.role.verbose_name}</td>
     </tr>
 % endfor
   </tbody>

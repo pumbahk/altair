@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """add permission and roles
 
 Revision ID: 14247fb69ba6
@@ -21,7 +23,8 @@ Identifier = sa.BigInteger
 def upgrade():
     op.create_table('Role',
                     sa.Column('id', Identifier(), nullable=False),
-                    sa.Column('name', sa.String(length=255), nullable=False),
+                    sa.Column('name', sa.Unicode(length=32), nullable=False),
+                    sa.Column('verbose_name', sa.Unicode(length=128), nullable=False),
                     sa.Column('active', sa.Boolean, server_default=('1')),
                     sa.Column('created_at', sa.TIMESTAMP(), server_default=sqlf.current_timestamp(), nullable=False),
                     sa.Column('updated_at', sa.TIMESTAMP(), server_default=text('0'), nullable=False),
@@ -31,15 +34,15 @@ def upgrade():
     op.create_table('Permission',
                     sa.Column('id', Identifier(), nullable=False),
                     sa.Column('role_id', Identifier(), nullable=True),
-                    sa.Column('category_name', sa.String(length=255), nullable=True),
+                    sa.Column('category_name', sa.Unicode(length=128), nullable=True),
                     sa.Column('permit', sa.Integer(), nullable=True),
                     sa.ForeignKeyConstraint(['role_id'], ['Role.id'], 'Permission_ibfk_1'),
                     sa.PrimaryKeyConstraint('id')
                     )
 
-    op.execute("INSERT INTO Role (id, name, active, created_at, updated_at) VALUES (1, 'administrator', 1, now(), now())")
-    op.execute("INSERT INTO Role (id, name, active, created_at, updated_at) VALUES (2, 'superoperator', 1, now(), now())")
-    op.execute("INSERT INTO Role (id, name, active, created_at, updated_at) VALUES (3, 'operator', 1, now(), now())")
+    op.execute(u"INSERT INTO Role (id, name, verbose_name, active, created_at, updated_at) VALUES (1, 'administrator', '管理者',1, now(), now())")
+    op.execute(u"INSERT INTO Role (id, name, verbose_name, active, created_at, updated_at) VALUES (2, 'superoperator', 'スーパーオペレーター',1, now(), now())")
+    op.execute(u"INSERT INTO Role (id, name, verbose_name, active, created_at, updated_at) VALUES (3, 'operator', 'オペレーター',1, now(), now())")
 
     op.execute("INSERT INTO Permission (id, role_id, category_name) VALUES (1, 1, 'administration')")
     op.execute("INSERT INTO Permission (id, role_id, category_name) VALUES (2, 1, 'manage_organization')")

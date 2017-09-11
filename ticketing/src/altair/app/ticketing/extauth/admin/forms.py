@@ -203,7 +203,7 @@ class OperatorForm(OurForm):
         label=u'役割',
         choices=[
             (1, u'管理者'),
-            (2, u'スパーオペレーター'),
+            (2, u'スーパーオペレーター'),
             (3, u'オペレーター'),
             ],
         validators=[

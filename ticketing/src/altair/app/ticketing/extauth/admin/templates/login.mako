@@ -39,7 +39,7 @@
 % endif
 <div class="container" style="width: 600px;">
     <div class="page-header">
-    <h1>ログ  イン</h1>
+    <h1>ログイン</h1>
     </div>
 
     <div class="well">

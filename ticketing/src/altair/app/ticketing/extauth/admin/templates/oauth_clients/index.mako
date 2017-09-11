@@ -54,7 +54,7 @@
 % endfor
 <h2>OAuthクライアント一覧</h2>
 % if request.has_permission('manage_clients'):
-  <button type="button" class="btn" onclick="create()" style="margin:10px 0;"><i class="icon-plus"></i>新規OAuthClient</button>
+  <button type="button" class="btn" onclick="create()" style="margin:10px 0;"><i class="icon-plus"></i>新規OAuthクライアント</button>
 % endif
 <form id="delete-form" action="${request.route_path('oauth_clients.delete')}" method="POST">
 
@@ -64,8 +64,8 @@
       <th>✔</th>
       <th>組織名</th>
       <th>アプリケーション名</th>
-      <th>Client ID</th>
-      <th>Client Secret</th>
+      <th>クライアントID</th>
+      <th>クライアントSecret</th>
       <th>リダイレクトURI</th>
       <th>スコープ</th>
       <th>編集</th>
@@ -88,12 +88,12 @@
 % endfor
   </tbody>
 </table>
-<input type="submit" name="doDelete" class="btn btn-danger" value="削除する" data-submit-confirmation-prompt="選択されたOAuthClientを削除します。よろしいですか?" />
+<input type="submit" name="doDelete" class="btn btn-danger" value="削除する" data-submit-confirmation-prompt="選択されたOAuthクライアントを削除します。よろしいですか?" />
 </form>
 <div id="modal-oauth-client" class="modal hide" role="dialog" aria-hidden="true">
   <div class="modal-header">
     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-    <h3>OAuthClient</h3>
+    <h3>OAuthクライアント</h3>
   </div>
   <div class="modal-body">
     <form id="create-update-form" action="${request.route_path('oauth_clients.create_or_update')}" method="POST">
@@ -120,7 +120,7 @@
   </div>
   <div class="modal-footer">
     <button type="button" class="btn" data-dismiss="modal" aria-hidden="true">キャンセル</button>
-    <button type="button" class="btn btn-primary" onclick="submit_form()">Client ID / Secretの生成</button>
+    <button type="button" class="btn btn-primary submit-btn" onclick="submit_form()"></button>
   </div>
 </div>
 <script type="text/javascript">
@@ -131,6 +131,7 @@ function reset() {
   form.find("input[name=name]").val("");
   form.find("input[name=redirect_uri]").val("");
   form.find("input[name=oauth_client_id]").val("");
+  $("button.submit-btn").html("OAuthクライアントID/Secretの生成");
 }
 function create() {
   reset();
@@ -143,6 +144,7 @@ function update(oauth_client_id) {
   form.find("input[name=name]").val($("#client-name-" + oauth_client_id).text());
   form.find("input[name=redirect_uri]").val($("#client-redirect-uri-" + oauth_client_id).text());
   form.find("input[name=oauth_client_id]").val(oauth_client_id);
+  $("button.submit-btn").html("保存");
   $('#modal-oauth-client').modal('show');
   return false;
 }
