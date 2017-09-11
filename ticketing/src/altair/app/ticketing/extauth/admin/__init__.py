@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 def auth_callback(operator_id, request):
     from .api import lookup_operator_by_id
     user = lookup_operator_by_id(request, operator_id)
-    return user and [user.role]
+    return user and [user.role.name]
 
 def register_template_globals(event):
     from altair.viewhelpers import Namespace
@@ -44,7 +44,7 @@ def main(global_config, **local_config):
 
     config = Configurator(
         settings=settings,
-        root_factory='.resources.BaseResource'
+        root_factory='.resources.ExtauthAdminResource'
         )
     config.set_authentication_policy(SessionAuthenticationPolicy(callback=auth_callback))
     config.set_authorization_policy(ACLAuthorizationPolicy())
@@ -82,8 +82,8 @@ def main(global_config, **local_config):
     config.add_route('operators.delete', '/operators', request_method='POST', request_param='doDelete')
     config.add_route('operators.new', '/operators/new')
     config.add_route('operators.edit', '/operators/{id}')
-    config.add_route('oauth_clients.index', '/oauth_clients', request_method='GET')
-    config.add_route('oauth_clients.new', '/oauth_clients/+')
+    config.add_route('oauth_clients.index', '/oauth_clients/', request_method='GET')
+    config.add_route('oauth_clients.create_or_update', '/oauth_clients/create_or_update/')
     config.add_route('oauth_clients.delete', '/oauth_clients', request_method='POST', request_param='doDelete')
     config.add_route('organizations.index', '/organizations/', request_method='GET')
     config.add_route('organizations.new', '/organizations/new')
