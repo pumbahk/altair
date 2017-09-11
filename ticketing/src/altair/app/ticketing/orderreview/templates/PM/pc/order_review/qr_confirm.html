@@ -9,7 +9,11 @@
 <div><font color="#993b4f">■</font>パフォーマンス</div>
 <div>${performance.name}</div>
 <div><font color="#993b4f">■</font>開催日時</div>
+% if performance.start_on and performance.end_on:
+<div>${performance.start_on.strftime("%Y年%m月%d日").decode('utf-8')} (${u'月火水木金土日'[performance.start_on.weekday()]}) ${performance.start_on.strftime(u"%H:%M").decode('utf-8')}−${performance.end_on.strftime("%Y年%m月%d日").decode('utf-8')} (${u'月火水木金土日'[performance.end_on.weekday()]}) ${performance.end_on.strftime(u"%H:%M").decode('utf-8')}</div>
+% else:
 <div>${performance.start_on.strftime("%Y年%m月%d日").decode('utf-8')} (${u'月火水木金土日'[performance.start_on.weekday()]}) ${performance.start_on.strftime(u"%H:%M").decode('utf-8')}−</div>
+% endif
 <div><font color="#993b4f">■</font>会場名</div>
 <div>${performance.venue.name}</div>
 <div><font color="#993b4f">■</font>券種名</div>

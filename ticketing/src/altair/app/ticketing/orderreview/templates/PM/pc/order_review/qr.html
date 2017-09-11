@@ -13,7 +13,11 @@
   <h3>${performance.name}</h3>
   % endif
   <hr size="1" color="#ff6385" />
-  <div> <font size="5">${performance.start_on.strftime("%Y年%m月%d日").decode('utf-8')} (${u'月火水木金土日'[performance.start_on.weekday()]}) ${performance.start_on.strftime(u"%H:%M").decode('utf-8')}−</font> </div>
+  % if performance.start_on and performance.end_on:
+  <div><font size="5">${performance.start_on.strftime("%Y年%m月%d日").decode('utf-8')} (${u'月火水木金土日'[performance.start_on.weekday()]}) ${performance.start_on.strftime(u"%H:%M").decode('utf-8')}−<br />${performance.end_on.strftime("%Y年%m月%d日").decode('utf-8')} (${u'月火水木金土日'[performance.end_on.weekday()]}) ${performance.end_on.strftime(u"%H:%M").decode('utf-8')}</font></div>
+  % else:
+  <div><font size="5">${performance.start_on.strftime("%Y年%m月%d日").decode('utf-8')} (${u'月火水木金土日'[performance.start_on.weekday()]}) ${performance.start_on.strftime(u"%H:%M").decode('utf-8')}−</font></div>
+  % endif
   <hr size="1" color="#ff6385" />
      <font size="5">受付番号 ${order.order_no} </font> <br />
   <img class="qr" src="${request.route_path((_overwrite_generate_qrimage_route_name or 'order_review.qrdraw'), ticket_id=ticket.id, sign=sign, token=token, serial=serial)}" /><br/>
