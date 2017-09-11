@@ -5,8 +5,8 @@
     <div class="login-area clearfix">
         <div class="login-box login-box-1">
             <dl>
-                <dt class="login-name">会員の方はこちら</dt>
-                <dd><a href="${_context.route_path('extauth.fanclub.entry')}" class="btn-login-buy">会員IDでログインする</a></dd>
+                <dt class="login-name">メルマガ会員の方はこちら</dt>
+                <dd><a href="${_context.route_path('extauth.fanclub.entry')}" class="btn-login-buy">ログインする</a></dd>
             </dl>
         </div><!-- /login-box for guest-->
     </div><!-- /login-area-->
@@ -34,7 +34,7 @@
         <dt>注意事項</dt>
         <dd>
         <ul>
-            <li>※ 会員ID・パスワードは半角でご入力ください。</li>
+            <li>※ メールアドレス・パスワードは半角でご入力ください。</li>
         </ul>
         </dd>
     </dl>
