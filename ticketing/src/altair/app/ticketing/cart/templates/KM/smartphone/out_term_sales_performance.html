@@ -12,8 +12,8 @@ ${h.i18n_datetime(start_at)}
 〜 ${h.i18n_datetime(end_at)} 
 % endif
 </p>
-<p>${_(u'となっております。')}</p>
-<p>${_(u'販売期間内にアクセスしていただきますようお願いいたします。')}</p>
+<p>${_(u'となり終了しているか、規定枚数に達している為ご購入いただけません。')}</p>
+<p>${_(u'他の公演のチケットは<a href=\"request.context.host_base_url\">こちら</a>からお買い求めくださいますようお願いいたします。').format(request.context.host_base_url) |n}</p>
 % else:
 %   if sales_segment is not None:
 <p>${_(u'performance.name (sales_segment.name) の販売は').format(performance.name, sales_segment.name)}</p>
