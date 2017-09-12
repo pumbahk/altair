@@ -511,7 +511,9 @@ class IndexView(IndexViewMixin):
                  renderer=selectable_renderer("index.html"))
     def event_based_landing_page(self):
         jump_maintenance_page_for_trouble(self.request.organization)
-        delete_spa_access(self.request.response)
+        if is_spa_mode(self.request):
+            delete_spa_access(self.request.response)
+            return HTTPFound()
 
         # 会場
         try:
@@ -589,7 +591,9 @@ class IndexView(IndexViewMixin):
                  renderer=selectable_renderer("index.html"))
     def performance_based_landing_page(self):
         jump_maintenance_page_for_trouble(self.request.organization)
-        delete_spa_access(self.request.response)
+        if is_spa_mode(self.request):
+            delete_spa_access(self.request.response)
+            return HTTPFound()
 
         sales_segments = self.context.available_sales_segments
         selector_name = self.context.event.performance_selector
