@@ -173,6 +173,7 @@ def main(global_config, **local_config):
     config.add_route('cart.api.performance', '/api/v1/performances/{performance_id}', request_method='GET')
     config.add_route('cart.api.stock_types', '/api/v1/performances/{performance_id}/sales_segments/{sales_segment_id}/stock_types', request_method='GET')
     config.add_route('cart.api.stock_type', '/api/v1/performances/{performance_id}/sales_segments/{sales_segment_id}/stock_types/{stock_type_id:\d+}', request_method='GET', factory="altair.app.ticketing.cart.resources.SalesSegmentOrientedTicketingCartResource")
+    config.add_route('cart.api.stock_type.all', '/api/v1/performances/{performance_id}/sales_segments/{sales_segment_id}/stock_types/all', request_method='GET', factory="altair.app.ticketing.cart.resources.SalesSegmentOrientedTicketingCartResource")
     config.add_route('cart.api.seats', '/api/v1/performances/{performance_id}/seats', request_method='GET')
     config.add_route('cart.api.seat_reserve', '/api/v1/performances/{performance_id}/sales_segments/{sales_segment_id}/seats/reserve', request_method='POST', factory="altair.app.ticketing.cart.resources.SalesSegmentOrientedTicketingCartResource")
     config.add_route('cart.api.seat_release', '/api/v1/performances/{performance_id}/seats/release', request_method='POST')
