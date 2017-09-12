@@ -16,6 +16,14 @@
 .align2 {
     background-color: var(--custom-btn-color) !important;
 }
+a.align2:link {
+	color: #FFF;
+	text-decoration: none;
+}
+a.align2:visited {
+	color: #FFF;
+	text-decoration: none;
+}
 .btn-primary {
     background-color: var(--custom-btn-color) !important;
 }
