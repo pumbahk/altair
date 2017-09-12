@@ -229,7 +229,7 @@
 												<ul>
 													<li>
                                                       ${form['email_1'].label(style=u'width:11em')}
-													  <input id="email" type="email" value="${form['email_1'].data}" placeholder="（例）mail@example.ne.jp" style='width:20em'/>
+                                                      ${form.email_1(placeholder=u"（例）mail@example.ne.jp", style=u'width:20em')}
                                                       ${h.error_list(request, form, 'email_1')}
 													</li>
 													<li>
