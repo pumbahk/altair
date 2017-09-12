@@ -212,7 +212,7 @@ class CartAPIView(object):
                     region_ids.add(region_id)
 
         return dict(
-            stock_types=[dict(
+            stock_type=dict(
                 stock_type_id=stock_type.id,
                 stock_type_name=stock_type.name,
                 is_quantity_only=stock_type.quantity_only,
@@ -236,55 +236,8 @@ class CartAPIView(object):
                     ) for item in product.items],
                 ) for product in products],
                 regions=list(region_ids)
-            )]
+            )
         )
-
-    @view_config(route_name='cart.api.stock_type.all')
-    def stock_type_all(self):
-        sales_segment = self.context.sales_segment
-        session = get_db_session(self.request, 'slave')
-        stock_types = session.query(StockType).filter(StockType.event_id == sales_segment.event_id).all()
-
-        ret_stock_types = {}        
-        for stock_type in stock_types:            
-            products = [p for p in sales_segment.products if p.seat_stock_type_id == int(stock_type.id) and p.public]
-            # svg側では描画エリアをregionと定義しているのでそれに合わせる
-            int_stock_type_id = int(stock_type.id)
-            region_ids = set()
-            for s in sales_segment.stocks:
-                if s.stock_type_id == int_stock_type_id:
-                    for region_id in s.drawing_l0_ids:
-                        region_ids.add(region_id)
-            stock_type_detail = {'products':products,'regions':region_ids}
-            ret_stock_types[stock_type] = stock_type_detail              
-
-        return dict(
-            stock_types=[dict(
-                stock_type_id=stock_type.id,
-                stock_type_name=stock_type.name,
-                is_quantity_only=stock_type.quantity_only,
-                description=stock_type.description,
-                min_quantity=stock_type.min_quantity,
-                max_quantity=stock_type.max_quantity,
-                min_product_quantity=stock_type.min_product_quantity,
-                max_product_quantity=stock_type.max_product_quantity,
-                products=[dict(
-                    product_id=product.id,
-                    product_name=product.name,
-                    price=product.price,
-                    min_product_quantity=product.min_product_quantity,
-                    max_product_quantity=product.max_product_quantity,
-                    is_must_be_chosen=product.must_be_chosen,
-                    product_items=[dict(
-                        product_item_id=item.id,
-                        product_item_name=item.name,
-                        price=item.price,
-                        sales_unit_quantity=item.quantity
-                    ) for item in product.items],
-                ) for product in detail['products']],
-                regions=list(detail['regions'])
-            ) for stock_type,detail in ret_stock_types.iteritems()]
-        )      
 
     @view_config(route_name='cart.api.seats')
     def seats(self):
