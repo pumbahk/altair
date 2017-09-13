@@ -142,7 +142,7 @@ ${shipping_address.address_2}
 
 </div>
 % if request.organization.setting.sitecatalyst_use:
-  <%include file="altair.app.ticketing.lots:templates/RT/common/sc_completion.html"/>
+  <%include file="altair.app.ticketing.lots:templates/vissel/common/sc_completion.html"/>
 % endif
 ${(view_context.embedded_html_complete_page_smartphone or u'')|n}
 
