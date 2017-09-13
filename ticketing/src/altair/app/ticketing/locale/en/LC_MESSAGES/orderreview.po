@@ -371,8 +371,8 @@ msgstr "Due date for payment"
 
 # post
 
-msgid "以下の住所に郵送します"
-msgstr "Post to the following address."
+msgid "以下の住所に配送します"
+msgstr "Deliver to the following address."
 
 msgid "郵便番号"
 msgstr "Zip"
