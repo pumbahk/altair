@@ -90,7 +90,7 @@ msgstr "Input the ordered telephone number, please."
 # show
 
 msgid "受付番号または電話番号が違います。"
-msgstr "Whether application number or telephone number is wrong."
+msgstr "Either or both Receipt number and telephone number are wrong."
 
 msgid "受付日"
 msgstr "Receipt date"
