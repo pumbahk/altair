@@ -449,14 +449,14 @@ class CartAPIView(object):
                         PerStockTypeProductQuantityOutOfBoundsError) as e:
                     check_assert_quantity.append("NG")
 
-                #OKとなる商品が1つもない場合、制限エラーとしてNG
-                if "OK" not in check_assert_quantity:
-                    return {
-                        "results": {
-                            "status": "NG",
-                            "reason": "assert_quantity_within_bounds error"
-                        }
+            #OKとなる商品が1つもない場合、制限エラーとしてNG
+            if "OK" not in check_assert_quantity:
+                return {
+                    "results": {
+                        "status": "NG",
+                        "reason": "assert_quantity_within_bounds error"
                     }
+                }
 
         elif reserve_type == "seat_choise":
             # 席種の混在をチェック
