@@ -15,7 +15,7 @@
   <input type="hidden" name="token" value="${token}" />
   <div class="settlementBox">
     <div class="settlementBoxInner">
-      <h2><img src="${request.static_url('altair.app.ticketing.lots:static/RT/pc/img/order/title_hope.gif')}" alt="お申込内容" width="97" height="30" /></h2>
+      <h2><img src="${view_context.static_url('pc/img/order/title_hope.gif', 'lots')}" alt="お申込内容" width="97" height="30" /></h2>
       %for wish in wishes:
       <div class="settlementSelectBox">
         <div class="settlementSelectBoxInner02">
@@ -56,7 +56,7 @@
   </div> 
   <div class="settlementBox">
     <div class="settlementBoxInner">
-      <h2><img src="${request.static_url('altair.app.ticketing.lots:static/RT/pc/img/order/title_buyer.gif')}" alt="購入者情報" width="97" height="30" /></h2>
+      <h2><img src="${view_context.static_url('pc/img/order/title_buyer.gif', 'lots')}" alt="購入者情報" width="97" height="30" /></h2>
       <div class="settlementSelectBox">
         <div class="settlementSelectBoxInner02">
           <table summary="購入者情報">
@@ -117,7 +117,7 @@
   % if mailmagazines_to_subscribe:
   <div class="settlementBox">
     <div class="settlementBoxInner">
-      <h2><img src="${request.static_url('altair.app.ticketing.lots:static/RT/pc/img/settlement/title_magazine.gif')}" alt="メールマガジンの配信" width="177" height="30" /></h2>
+      <h2><img src="${view_context.static_url('pc/img/settlement/title_magazine.gif', 'lots')}" alt="メールマガジンの配信" width="177" height="30" /></h2>
       <div id="mailMagazineBox">
         <div id="mailMagazineBoxInner">
           <dl>
@@ -149,7 +149,7 @@
   % if keywords_to_subscribe:
   <div class="settlementBox">
 		<div class="settlementBoxInner">
-			<h2><img src="${request.static_url('altair.app.ticketing.lots:static/RT/pc/img/settlement/title_favorite.gif')}" alt="お気に入りワード登録" width="267" height="30" /></h2>
+			<h2><img src="${view_context.static_url('pc/img/settlement/title_favorite.gif', 'lots')}" alt="お気に入りワード登録" width="267" height="30" /></h2>
 			<div id="mailKeywordBox">
 				<div id="mailKeywordBoxInner">
 					<dl>
@@ -181,5 +181,8 @@
     <a href="http://ticket.rakuten.co.jp/terms" target="_new">サービス利用規約</a>及び、<a href="http://privacy.rakuten.co.jp/" target="_new">個人情報保護方針</a>に同意をし、申込みます。
   </div>
 
-  <p class="align2"><input type="image" name="back" src="${request.static_url('altair.app.ticketing.lots:static/RT/pc/img/order/btn_back.gif')}" alt="戻る" width="236" height="46" /><input type="image"  src="${request.static_url('altair.app.ticketing.lots:static/RT/pc/img/order/btn_confirm.gif')}" alt="確定する" width="236" height="46" /></a></p>
+  <p class="align2">
+    <input type="image" name="back" src="${view_context.static_url('pc/img/order/btn_back.gif', 'lots')}" alt="戻る" width="236" height="46" />
+    <input type="image"  src="${view_context.static_url('pc/img/order/btn_confirm.gif', 'lots')}" alt="確定する" width="236" height="46" />
+  </p>
 </form>

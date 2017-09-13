@@ -39,7 +39,7 @@ if label is None or label is True:
 %endif
 <div class="settlementBox2" id="settlementEventDetail">
   <div class="settlementBoxInner2">
-    <h2><img src="${request.static_url('altair.app.ticketing.lots:static/RT/pc/img/settlement/title_event.gif')}" alt="イベント詳細" width="106" height="29" /></h2>
+    <h2><img src="${view_context.static_url('pc/img/settlement/title_event.gif', 'lots')}" alt="イベント詳細" width="106" height="29" /></h2>
     <table summary="イベント詳細情報">
       <tr>
         <th scope="row">イベント名</th>
@@ -80,7 +80,7 @@ if label is None or label is True:
 </div>
 <div class="settlementBox2">
   <div class="settlementBoxInner2">
-    <h2><img src="${request.static_url('altair.app.ticketing.lots:static/RT/pc/img/order/title_public.gif')}" alt="公演一覧" width="106" height="29" /></h2>
+    <h2><img src="${view_context.static_url('pc/img/order/title_public.gif', 'lots')}" alt="公演一覧" width="106" height="29" /></h2>
     %for performance in performances:
     <table class="border" summary="イベント詳細情報">
       <tr>
@@ -102,7 +102,7 @@ if label is None or label is True:
 <form method="post" id="wishForm" action="${request.url}">
   <div class="settlementBox">
     <div class="settlementBoxInner">
-      <h2 class="title"><img src="${request.static_url('altair.app.ticketing.lots:static/RT/pc/img/order/title_hope.gif')}" alt="お申込内容" width="97" height="30" /></h2>
+      <h2 class="title"><img src="${view_context.static_url('pc/img/order/title_hope.gif', 'lots')}" alt="お申込内容" width="97" height="30" /></h2>
       %for i in range(lot.limit_wishes):
       <div class="settlementSelectBox">
         <div class="settlementSelectBoxInner02">
@@ -169,7 +169,7 @@ if label is None or label is True:
 
   <div class="settlementBox">
     <div class="settlementBoxInner">
-      <h2><img src="${request.static_url('altair.app.ticketing.cart:static/RT/pc/images/title_methods.gif')}" alt="お支払い、引き取り方法の指定" width="267" height="30" /></h2>
+      <h2><img src="${view_context.static_url('pc/images/title_methods.gif', 'lots')}" alt="お支払い、引き取り方法の指定" width="267" height="30" /></h2>
       %if len(payment_delivery_pairs) > 1:
             <p style="margin-left:20px;">どれかひとつをお選びください</p>
       %endif
@@ -246,7 +246,7 @@ if label is None or label is True:
 
   <div class="settlementBox">
     <div class="settlementBoxInner">
-      <h2><img src="${request.static_url('altair.app.ticketing.lots:static/RT/pc/img/order/title_buyer.gif')}" alt="購入者情報" width="97" height="30" /></h2>
+      <h2><img src="${view_context.static_url('pc/img/order/title_buyer.gif', 'lots')}" alt="購入者情報" width="97" height="30" /></h2>
       <div class="settlementSelectBox">
         <div class="settlementSelectBoxInner02">
           <table summary="購入者情報入力">
@@ -375,7 +375,7 @@ if label is None or label is True:
       </div>
     </div>
   </div>
-  <p class="align2"><input type="image" src="${request.static_url('altair.app.ticketing.lots:static/RT/pc/img/settlement/btn_next.gif')}" alt="次へ" width="226" height="46" /></p>
+  <p class="align2"><input type="image" src="${view_context.static_url('pc/img/settlement/btn_next.gif', 'lots')}" alt="次へ" width="226" height="46" /></p>
 </form>
 <%def name="product_select_tmpl()">
 <%include file="_product_selection.html_" />

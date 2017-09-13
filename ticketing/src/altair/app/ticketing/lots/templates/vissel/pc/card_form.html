@@ -18,7 +18,7 @@
     border: 0;
     width: 226px;
     height: 46px;
-    background: url("${request.static_url('altair.app.ticketing.cart:static/RT/pc/images/btn_next.gif')}") left top no-repeat;
+    background: url("${view_context.static_url('pc/img/settlement/btn_next.gif')}") left top no-repeat;
   }
 </style>
 </%block>
@@ -90,10 +90,7 @@ notice = request.session.get('altair.app.ticketing.payments.auth3d_notice')
           </p>
 %endif
           <p>
-            <img src="${request.static_url('altair.app.ticketing.cart:static/RT/pc/images/kc_logo_rakuten.gif')}" height="30px" />
-            <img src="${request.static_url('altair.app.ticketing.cart:static/RT/pc/images/visa.gif')}" height="30px" />
-            <img src="${request.static_url('altair.app.ticketing.cart:static/RT/pc/images/master.gif')}" height="30px" />
-            <img src="${request.static_url('altair.app.ticketing.cart:static/RT/pc/images/jcb.gif')}" height="30px" />
+            <img src="${view_context.static_url('pc/img/settlement/card.gif', 'lots')}" height="30px" />
           </p>
           <p>
             <font color="#FF0000">※カード情報入力時に、ご利用カードの有効性の確認（オーソリ確認）を実施しております。<br/>
