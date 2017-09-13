@@ -21,6 +21,9 @@ REV=`(cd $TMPDIR ; git rev-parse HEAD)`
 cd $TMPDIR
 npm update
 ./node_modules/.bin/ng build --base-href=/cart/spa/ --deploy-url=/cart/static/spa_cart/ $NGOPT
+
+(echo "" ; cat ../rollbar.js) >> $(ls dist/main.*.bundle.js)
+
 for x in dist/*.js
 do
 		cat $x | sed '/\/\/# sourceMappingURL=/d' | gzip > $x.gz
