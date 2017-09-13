@@ -434,7 +434,9 @@ class CartAPIView(object):
 
             check_assert_quantity = []
             for ps in products:
-                ordered_items = [(ps, request_quantity)]
+                #購入枚数条件チェック
+                sales_unit_quantity = sum([item.quantity for item in ps.items])
+                ordered_items = [(ps, request_quantity / sales_unit_quantity)]
                 logger.debug("ordered_items %s", ordered_items)
 
                 try:
