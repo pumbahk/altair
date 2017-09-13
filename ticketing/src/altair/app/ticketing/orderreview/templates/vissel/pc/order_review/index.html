@@ -1,1 +1,28 @@
-form.html
+<%inherit file="../layout_login.html" />
+<style type="text/css">
+  .box {
+    text-align: center;
+  }
+  .box:first-child {
+    margin-bottom: 50px !important;
+  }
+</style>
+<section class="main">
+  <div class="wrap">
+    <div class="box">
+      <a class="btnA" href="${request.route_path('order_review.form')}">購入履歴の確認</a>
+    </div>
+    <div class="box">
+      <a class="btnA" href="${request.host_url}/lots/review">申込履歴の確認</a>
+    </div>
+  </div>
+</section>
+
+% if request.organization.setting.sitecatalyst_use:
+<!--SiteCatalyst-->
+<%
+    sc = {"pagename": "form"}
+%>
+<%include file="../../common/sc_basic.html" args="sc=sc" />
+<!--/SiteCatalyst-->
+% endif
