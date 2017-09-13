@@ -404,7 +404,7 @@ msgid "お支払／引取方法をお選びください"
 msgstr "Please select a payment / delivery method."
 
 msgid "購入者情報の入力内容を確認してください"
-msgstr "Please check inputs on the "Purchaser Information" form."
+msgstr "Please check inputs on the Purchaser Information form."
 
 msgid "合計金額が選択された決済方法では取り扱えない金額となっています。他の決済方法を選択してください"
 msgstr "The total amount exceeded the upper limit of the chosen payment method. Please try another payment method"
@@ -540,7 +540,7 @@ msgid "まだお申し込みは完了していません"
 msgstr "The purchase is not completed yet."
 
 msgid "ご注文内容をご確認いただき「購入する」ボタンより、購入を完了させてください。"
-msgstr "Confirm your order and click on 'Purchase' button, to complete."
+msgstr "Confirm your order and click on 'Purchase' button to complete."
 
 msgid "お買い物内容"
 msgstr "Shopping content"
@@ -588,7 +588,7 @@ msgid "ここまでのお申し込みがキャンセルになります。"
 msgstr "NOTE: The tentative reservation will be canceled."
 
 msgid "以下の住所に配送します"
-msgstr "will be sent to the following address"
+msgstr "Deliver to the following address"
 
 msgid "宛名"
 msgstr "Addressee"
@@ -608,10 +608,10 @@ msgid "購入を完了いたしました。"
 msgstr "Purchase was completed."
 
 msgid "下記の受付番号はとても大切な番号です。すぐにメモするか印刷して保管してください。"
-msgstr "The following "Order number" is very important. Please keep it safe."
+msgstr "Receipt number is very important. Please keep it safe."
 
 msgid "受付番号"
-msgstr "Order number"
+msgstr "Receipt number"
 
 msgid "予定"
 msgstr "Plans"
@@ -635,7 +635,7 @@ msgid "（お問い合わせの際は、お申し込み時のお名前と電話�
 msgstr "(When contacting us, please describe your name and phone number at the time of your application)"
 
 msgid "お申し込み内容は、「<a href=\"/orderreview\">履歴確認</a>」からもご確認いただけます。受付番号とご登録時のお電話番号をお手元にご用意の上、ご利用ください。"
-msgstr "You could confirm your reservasion from「<a href=\"/orderreview\">Order confirmation</a>」. You will need your 'Order number' and 'phone number' to confirm orders."
+msgstr "You could confirm your reservasion from「<a href=\"/orderreview\">Order confirmation</a>」. You will need your 'Receipt number' and 'phone number' to confirm orders."
 
 msgid "他のチケットを購入する"
 msgstr "Purchase other tickets"

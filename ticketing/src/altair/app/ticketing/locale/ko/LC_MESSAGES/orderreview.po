@@ -371,8 +371,8 @@ msgstr "지불기한"
 
 # post
 
-msgid "以下の住所に郵送します"
-msgstr "아래의 주소로 송부합니다."
+msgid "以下の住所に配送します"
+msgstr "아래의 주소로 배송합니다."
 
 msgid "郵便番号"
 msgstr "우편번호"
