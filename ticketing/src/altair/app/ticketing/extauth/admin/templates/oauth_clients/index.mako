@@ -83,7 +83,7 @@
       </td>
       <td><span id="client-redirect-uri-${oauth_client.id}">${oauth_client.redirect_uri}</span></td>
       <td>${u' / '.join(oauth_client.authorized_scope)}</td>
-      <td><button type=button class="btn btn-small update-btn" onclick="update(${oauth_client.id})"><i class="icon-edit"></i></button></td>
+      <td><button type=button class="btn btn-small update-btn" onclick="update(${oauth_client.id}, ${oauth_client.organization.id})"><i class="icon-edit"></i></button></td>
     </tr>
 % endfor
   </tbody>
@@ -126,6 +126,10 @@
 <script type="text/javascript">
 function reset() {
   var form = $('form#create-update-form');
+  % if request.operator.is_administrator:
+    form.find("select[name=organization_id]").val(organization_id).attr("disabled", false);
+    form.find("input[name=organization_id]").remove();
+  % endif
   form.find("label").each(function() {$(this).removeClass("text-danger")});
   form.find("span").remove();
   form.find("input[name=name]").val("");
@@ -138,9 +142,13 @@ function create() {
   $('#modal-oauth-client').modal('show');
   return false;
 }
-function update(oauth_client_id) {
+function update(oauth_client_id, organization_id) {
   reset();
   var form = $('form#create-update-form');
+  % if request.operator.is_administrator:
+    form.find("select[name=organization_id]").val(organization_id).attr("disabled", true);
+    form.append($('<input type="hidden" name="organization_id" value="" />').val(organization_id));
+  % endif
   form.find("input[name=name]").val($("#client-name-" + oauth_client_id).text());
   form.find("input[name=redirect_uri]").val($("#client-redirect-uri-" + oauth_client_id).text());
   form.find("input[name=oauth_client_id]").val(oauth_client_id);
