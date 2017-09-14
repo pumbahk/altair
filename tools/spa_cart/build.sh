@@ -32,7 +32,7 @@ cd ..
 
 mkdir -p ../../ticketing/src/altair/app/ticketing/cart/static/spa_cart
 find ../../ticketing/src/altair/app/ticketing/cart/static/spa_cart/ -type f -delete
-cp -r $(ls $TMPDIR/dist | grep -v index.html) ../../ticketing/src/altair/app/ticketing/cart/static/spa_cart/
+(cd $TMPDIR/dist ; tar cf - --exclude index.html .) | (cd ../../ticketing/src/altair/app/ticketing/cart/static/spa_cart ; tar xf -)
 cp $TMPDIR/dist/index.html ../../ticketing/src/altair/app/ticketing/cart/templates/eagles/pc/spa_cart/
 
 git add ../../ticketing/src/altair/app/ticketing/cart/static/spa_cart -f -A
