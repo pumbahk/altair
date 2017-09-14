@@ -2074,3 +2074,23 @@
 }
 @media (min-width: 768px) and (max-width: 1100px) {}
 @media (min-width: 768px) and (max-width: 1070px) {}
+
+/* 各ベンダープレフィックスが取れた標準版！！(http://caniuse.com/#search=placeholder-shown) */
+.customerBox :placeholder-shown {
+    color: #bfbfbf; }
+
+/* Google Chrome, Safari, Opera 15+, Android, iOS */
+.customerBox ::-webkit-input-placeholder {
+    color: #bfbfbf; }
+
+/* Firefox 18- */
+.customerBox :-moz-placeholder {
+    color: #bfbfbf; opacity: 1; }
+
+/* Firefox 19+ */
+.customerBox ::-moz-placeholder {
+    color: #bfbfbf; opacity: 1; }
+
+/* IE 10+ */
+.customerBox :-ms-input-placeholder {
+    color: #bfbfbf; }
