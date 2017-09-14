@@ -90,7 +90,7 @@ msgstr "Input the ordered telephone number, please."
 # show
 
 msgid "受付番号または電話番号が違います。"
-msgstr "Whether application number or telephone number is wrong."
+msgstr "Either or both Receipt number and telephone number are wrong."
 
 msgid "受付日"
 msgstr "Receipt date"
@@ -371,8 +371,8 @@ msgstr "Due date for payment"
 
 # post
 
-msgid "以下の住所に郵送します"
-msgstr "Post to the following address."
+msgid "以下の住所に配送します"
+msgstr "Deliver to the following address."
 
 msgid "郵便番号"
 msgstr "Zip"

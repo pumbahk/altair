@@ -1,5 +1,5 @@
 <%inherit file="/base.mako" />
-<h2>Organization 一覧</h2>
+<h2>組織一覧</h2>
 % for message in request.session.pop_flash():
 <div class="alert">
   <button type="button" class="close" data-dismiss="alert">&times;</button>
@@ -7,10 +7,14 @@
 </div>
 % endfor
 
-<a style="margin:10px 0;" class="btn" href="${request.route_path('organizations.new')}"><i class="icon-plus"></i>新規Organizationを作成する</a>
+% if request.has_permission('administration'):
+    <a style="margin:10px 0;" class="btn" href="${request.route_path('organizations.new')}"><i class="icon-plus"></i>新規Organizationを作成する</a>
+% endif
 
-<ul class="nav nav-tabs nav-stacked">
-  % for org in organizations:
-  <li><a href="${request.route_path('organizations.edit', id=org.id)}">${org.short_name}</a></li>
-  % endfor
-</ul>
+<div class="table-wrap">
+    <ul class="nav nav-tabs nav-stacked">
+      % for org in organizations:
+      <li><a href="${request.route_path('organizations.edit', id=org.id)}">${org.short_name}</a></li>
+      % endfor
+    </ul>
+</div>

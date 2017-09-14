@@ -38,6 +38,7 @@ from wtforms.validators import Required, Length, Optional
 from wtforms import ValidationError
 from altair.sqlahelper import get_db_session
 from ..models import MemberSet, MemberKind, Member, Host, Organization, OAuthServiceProvider
+from .models import Role
 from ..utils import period_overlaps
 from ..interfaces import ICommunicator
 from .api import lookup_operator_by_auth_identifier
@@ -198,26 +199,29 @@ class OperatorForm(OurForm):
         validators=[]
         )
 
-    role = OurSelectField(
+    role_id = OurSelectField(
         label=u'役割',
         choices=[
-            (u'administrator', u'管理者'),
-            (u'operator', u'オペレーター'),
+            (1, u'管理者'),
+            (2, u'スーパーオペレーター'),
+            (3, u'オペレーター'),
             ],
         validators=[
             Required(),
-            ]
+            ],
+        coerce=int
         )
 
-    organization_name = OurSelectField(
+    organization_id = OurSelectField(
         label=u'所属組織',
         choices=lambda field: \
-            get_db_session(field._form.request, 'extauth') \
-                .query(Organization.short_name, Organization.short_name) \
+            get_db_session(field._form.request, 'extauth_slave') \
+                .query(Organization.id, Organization.short_name) \
                 .all(),
         validators=[
             Required(),
-            ]
+            ],
+        coerce=int
         )
 
     def validate_auth_secret_confirm(form, field):
@@ -238,6 +242,9 @@ class OperatorForm(OurForm):
         self.request = kwargs.pop('request', None)
         self._obj = kwargs.get('obj')
         super(OperatorForm, self).__init__(*args, **kwargs)
+        if not self.request.operator.is_administrator:
+            self.role_id.choices = [choice for choice in self.role_id.choices[1:]]
+
 
 
 class MemberSetForm(OurForm):
@@ -689,15 +696,16 @@ class OAuthClientForm(OurForm):
             ]
         )
 
-    organization_name = OurSelectField(
+    organization_id = OurSelectField(
         label=u'組織名 (Organization)',
         choices=lambda field: \
-            get_db_session(field._form.request, 'extauth') \
-                .query(Organization.short_name, Organization.short_name) \
+            get_db_session(field._form.request, 'extauth_slave') \
+                .query(Organization.id, Organization.short_name) \
                 .all(),
         validators=[
             Required(),
-            ]
+            ],
+        coerce=int
         )
 
     def validate_redirect_uri(form, field):
@@ -725,7 +733,7 @@ class OAuthServiceProviderForm(OurForm):
     organization_id = OurSelectField(
         label=u'Organization',
         choices=lambda field: \
-            get_db_session(field._form.request, 'extauth') \
+            get_db_session(field._form.request, 'extauth_slave') \
                 .query(Organization.id, Organization.short_name) \
                 .all(),
         coerce=int,

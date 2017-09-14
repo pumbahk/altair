@@ -2,14 +2,17 @@
 
 import logging
 import functools
+import json
+import datetime
 from datetime import timedelta
 from pyramid.view import view_config, view_defaults, forbidden_view_config
 from pyramid.response import Response
-from pyramid.httpexceptions import HTTPFound
+from pyramid.httpexceptions import HTTPFound, HTTPForbidden, HTTPBadRequest
 from pyramid.security import remember, forget
 from pyramid_layout.panel import panel_config
 from webhelpers import paginate
 from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy.orm import class_mapper
 from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.sqlahelper import get_db_session
 from .api import create_operator, lookup_operator_by_credentials, lookup_organization_by_name, lookup_organization_by_id
@@ -32,6 +35,17 @@ from ..models import Organization, Host, OAuthServiceProvider
 from . import import_export
 
 logger = logging.getLogger(__name__)
+
+def get_object_queryset(request, klass, db_session=None):
+    if not db_session:
+        db_session=get_db_session(request, 'extauth_slave')
+    query = db_session.query(klass)
+    if not request.operator.is_administrator:
+        if klass == Organization:
+            query = query.filter_by(id=request.operator.organization_id)
+        else:
+            query = query.filter_by(organization_id=request.operator.organization_id)
+    return query
 
 @forbidden_view_config()
 def forbbidden(context, request):
@@ -106,12 +120,15 @@ class OrganizationsView(object):
     @view_config(
         route_name='organizations.index',
         renderer='organizations/index.mako',
-        permission='manage_my_organization',
+        permission='manage_organization',
         request_method='GET'
         )
     def index(self):
-        session = get_db_session(self.request, 'extauth')
-        organizations = session.query(Organization).all()
+        organizations = get_object_queryset(request=self.request, klass=Organization)
+        if self.request.operator.is_administrator or self.request.operator.is_superoperator:
+            organizations = organizations.all()
+        else:
+            raise HTTPForbidden()
         return dict(
             organizations=organizations
             )
@@ -119,7 +136,7 @@ class OrganizationsView(object):
     @view_config(
         route_name='organizations.new',
         renderer='organizations/edit.mako',
-        permission='manage_my_organization',
+        permission='administration',
         request_method='GET'
         )
     def new(self):
@@ -131,7 +148,7 @@ class OrganizationsView(object):
     @view_config(
         route_name='organizations.new',
         renderer='organizations/edit.mako',
-        permission='manage_my_organization',
+        permission='administration',
         request_method='POST'
         )
     def new_post(self):
@@ -160,11 +177,10 @@ class OrganizationsView(object):
     @view_config(
         route_name='organizations.edit',
         renderer='organizations/edit.mako',
-        permission='manage_my_organization',
+        permission='manage_organization',
         request_method='GET'
         )
     def edit(self):
-        session = get_db_session(self.request, 'extauth')
         form = OrganizationForm(obj=self.context.organization, request=self.request)
         return dict(
             form=form
@@ -173,12 +189,12 @@ class OrganizationsView(object):
     @view_config(
         route_name='organizations.edit',
         renderer='organizations/edit.mako',
-        permission='manage_my_organization',
+        permission='manage_organization',
         request_method='POST'
         )
     def edit_post(self):
         session = get_db_session(self.request, 'extauth')
-        organization = self.context.organization
+        organization = session.query(Organization).filter_by(id=self.request.matchdict['id']).one()
         form = OrganizationForm(formdata=self.request.POST, obj=organization, request=self.request)
         if not form.validate():
             return dict(
@@ -201,7 +217,7 @@ class HostsView(object):
     @view_config(
         route_name='hosts.new',
         renderer='hosts/edit.mako',
-        permission='manage_my_organization',
+        permission='manage_organization',
         request_method='GET'
         )
     def new(self):
@@ -213,7 +229,7 @@ class HostsView(object):
     @view_config(
         route_name='hosts.new',
         renderer='hosts/edit.mako',
-        permission='manage_my_organization',
+        permission='manage_organization',
         request_method='POST'
         )
     def new_post(self):
@@ -243,11 +259,18 @@ class OperatorsView(object):
 
     @view_config(
         route_name='operators.index',
-        renderer='operators/index.mako'
+        renderer='operators/index.mako',
+        permission='manage_operators'
         )
     def index(self):
-        session = get_db_session(self.request, 'extauth')
-        query = session.query(Operator).all()
+        query = get_object_queryset(request=self.request, klass=Operator)
+        if self.request.operator.is_administrator:
+            query = query.all()
+        elif self.request.operator.is_superoperator:
+            query = query.filter(Operator.role_id != 1).all()
+        else:
+            raise HTTPForbidden()
+
         operators = paginate.Page(
             query,
             page=int(self.request.params.get('page', 0)),
@@ -261,14 +284,12 @@ class OperatorsView(object):
     @view_config(
         route_name='operators.edit',
         renderer='operators/edit.mako',
-        request_method='GET'
+        request_method='GET',
+        permission='manage_operators'
         )
     def edit(self):
-        session = get_db_session(self.request, 'extauth')
-        operator = session.query(Operator).filter_by(id=self.request.matchdict['id']).one()
-        organization = lookup_organization_by_id(self.request, operator.organization_id)
-        operator.organization_name = organization.short_name
-        form = OperatorForm(obj=operator, auth_secret=u'', request=self.request)
+        operator = self.context.db_session.query(Operator).filter_by(id=self.request.matchdict['id']).one()
+        form = OperatorForm(obj=operator, auth_secret=u'', organization_id=str(operator.organization_id),request=self.request)
         return dict(
             form=form,
             operator=operator
@@ -277,20 +298,19 @@ class OperatorsView(object):
     @view_config(
         route_name='operators.edit',
         renderer='operators/edit.mako',
-        request_method='POST'
+        request_method='POST',
+        permission='manage_operators'
         )
     def edit_post(self):
         session = get_db_session(self.request, 'extauth')
         operator = session.query(Operator).filter_by(id=self.request.matchdict['id']).one()
-        organization = lookup_organization_by_id(self.request, operator.organization_id)
-        operator.organization_name = organization.short_name
         form = OperatorForm(formdata=self.request.POST, obj=operator, request=self.request)
         if not form.validate():
             return dict(
                 form=form,
                 operator=operator
                 )
-        operator.role = form.role.data
+        operator.role_id = int(form.role_id.data)
         operator.auth_identifier = form.auth_identifier.data
         if form.auth_secret.data:
             operator.auth_secret = digest_secret(form.auth_secret.data, generate_salt())
@@ -302,10 +322,11 @@ class OperatorsView(object):
     @view_config(
         route_name='operators.new',
         renderer='operators/new.mako',
-        request_method='GET'
+        request_method='GET',
+        permission='manage_operators'
         )
     def new(self):
-        form = OperatorForm(request=self.request)
+        form = OperatorForm(organization_id=str(self.request.operator.organization_id), request=self.request)
         return dict(
             form=form
             )
@@ -313,7 +334,8 @@ class OperatorsView(object):
     @view_config(
         route_name='operators.new',
         renderer='operators/new.mako',
-        request_method='POST'
+        request_method='POST',
+        permission='manage_operators'
         )
     def new_post(self):
         session = get_db_session(self.request, 'extauth')
@@ -322,18 +344,18 @@ class OperatorsView(object):
             return dict(
                 form=form
                 )
-        operator = create_operator(
-            self.request,
-            organization_name=form.organization_name.data,
+        operator = Operator(
+            organization_id = form.organization_id.data,
             auth_identifier=form.auth_identifier.data,
-            auth_secret=form.auth_secret.data,
-            role=form.role.data
-            )
+            auth_secret=digest_secret(form.auth_secret.data, generate_salt()),
+            role_id=form.role_id.data
+        )
+        session.add(operator)
         session.commit()
         self.request.session.flash(u'Operator %s を作成しました' % operator.auth_identifier)
         return HTTPFound(location=self.request.route_path('operators.index'))
 
-    @view_config(route_name='operators.delete')
+    @view_config(route_name='operators.delete', permission='manage_operators')
     def delete(self):
         session = get_db_session(self.request, 'extauth')
         id_list = [long(id) for id in self.request.params.getall('id')]
@@ -836,8 +858,9 @@ class MembersView(object):
         return HTTPFound(location=self.request.route_path('members.index'))
 
 @view_defaults(
-    permission='manage_oauth_clients',
-    decorator=(with_bootstrap,)
+    renderer='oauth_clients/index.mako',
+    decorator=(with_bootstrap),
+    permission='manage_clients'
     )
 class OAuthClientsView(object):
     def __init__(self, context, request):
@@ -846,52 +869,65 @@ class OAuthClientsView(object):
 
     @view_config(
         route_name='oauth_clients.index',
-        renderer='oauth_clients/index.mako'
+        request_method='GET',
         )
     def index(self):
-        session = get_db_session(self.request, 'extauth')
-        query = session.query(OAuthClient).order_by(OAuthClient.organization_id)
+        oauth_clients = get_object_queryset(request=self.request, klass=OAuthClient)
+        form = OAuthClientForm(request=self.request, organization_id=self.request.operator.organization_id)
+        if self.request.operator.is_administrator or self.request.operator.is_superoperator:
+            oauth_clients = oauth_clients.all()
+        else:
+            raise HTTPForbidden()
         return dict(
-            oauth_clients=query
+            oauth_clients=oauth_clients,
+            form=form
             )
 
-    @view_config(
-        route_name='oauth_clients.new',
-        renderer='oauth_clients/_new.mako',
-        request_method='GET'
-        )
-    @panel_config(
-        'oauth_clients.new',
-        renderer='oauth_clients/_new.mako'
-        )
-    def new(self):
-        form = OAuthClientForm(request=self.request)
-        return dict(form=form)
+    def serialize(self, obj):
+        columns = [c.key for c in class_mapper(obj.__class__).columns]
+        serialized = dict()
+        for c in columns:
+            c_obj = getattr(obj, c)
+            if isinstance(c_obj, (datetime.datetime, datetime.date)):
+                serialized[c]=c_obj.isoformat()
+            else:
+                serialized[c] = c_obj
+        return serialized
 
-    @view_config(
-        route_name='oauth_clients.new',
-        renderer='oauth_clients/_new.mako',
-        request_method='POST'
-        )
-    def new_post(self):
+    @view_config(route_name='oauth_clients.create_or_update', request_method='POST', renderer="json")
+    def create_or_update(self):
+        oauth_client_id = self.request.POST.get('oauth_client_id', None)
+        oauth_client_form = OAuthClientForm(self.request.POST, request=self.request)
         session = get_db_session(self.request, 'extauth')
-        form = OAuthClientForm(formdata=self.request.POST, request=self.request)
-        if not form.validate():
-            self.request.response.status = 400
-            return dict(form=form)
-        organization = lookup_organization_by_name(self.request, form.organization_name.data)
-        oauth_client = OAuthClient(
-            organization=organization,
-            name=form.name.data,
-            client_id=generate_random_alnum_string(32),
-            client_secret=generate_random_alnum_string(32),
-            redirect_uri=form.redirect_uri.data,
-            authorized_scope=organization.maximum_oauth_scope
-            )
-        session.add(oauth_client)
-        session.commit()
-        self.request.session.flash(u'OAuthClient を作成しました')
-        return HTTPFound(location=self.request.route_path('oauth_clients.index'))
+        if oauth_client_id:
+            try:
+                oauth_client = session.query(OAuthClient).filter_by(id=oauth_client_id).one()
+            except NoResultFound:
+                raise HTTPBadRequest(body=json.dumps({'emsgs': {"unknown-emsg":u"該当OAuth Clientは見つからない。"}}))
+        else:
+            organization = lookup_organization_by_id(self.request, oauth_client_form.organization_id.data)
+            oauth_client = OAuthClient()
+            oauth_client.organization = organization
+            oauth_client.client_id = generate_random_alnum_string(32)
+            oauth_client.client_secret = generate_random_alnum_string(32)
+            oauth_client.authorized_scope = organization.maximum_oauth_scope
+
+        if not oauth_client_form.validate():
+            emsgs = {}
+            for field, errors in oauth_client_form.errors.items():
+                for error in errors:
+                    emsgs[field] = error
+            raise HTTPBadRequest(body=json.dumps({'emsgs': emsgs}))
+
+        oauth_client_form.populate_obj(oauth_client)
+        try:
+            session.add(oauth_client)
+            session.commit()
+        except Exception, e:
+            raise HTTPBadRequest(body=json.dumps({'emsgs': {"unknown-emsg":str(e)}}))
+
+        serialized_obj = self.serialize(oauth_client)
+        return serialized_obj
 
     @view_config(route_name='oauth_clients.delete')
     def delete(self):
@@ -916,11 +952,15 @@ class OAuthServiceProvidersView(object):
     @view_config(
         route_name='service_providers.index',
         renderer='service_providers/index.mako',
-        request_method='GET'
+        request_method='GET',
+        permission='manage_service_providers'
         )
     def index(self):
-        session = get_db_session(self.request, 'extauth')
-        service_providers = session.query(OAuthServiceProvider).all()
+        service_providers = get_object_queryset(request=self.request, klass=OAuthServiceProvider)
+        if self.request.operator.is_administrator or self.request.operator.is_superoperator:
+            service_providers = service_providers.all()
+        else:
+            raise HTTPForbidden()
         return dict(
             service_providers=service_providers
             )
@@ -928,10 +968,11 @@ class OAuthServiceProvidersView(object):
     @view_config(
         route_name='service_providers.new',
         renderer='service_providers/edit.mako',
-        request_method='GET'
+        request_method='GET',
+        permission='manage_service_providers'
         )
     def new(self):
-        form = OAuthServiceProviderForm(request=self.request)
+        form = OAuthServiceProviderForm(request=self.request, organization_id=self.request.operator.organization_id)
         return dict(
             form=form
             )
@@ -939,7 +980,8 @@ class OAuthServiceProvidersView(object):
     @view_config(
         route_name='service_providers.new',
         renderer='service_providers/edit.mako',
-        request_method='POST'
+        request_method='POST',
+        permission='manage_service_providers'
         )
     def new_post(self):
         session = get_db_session(self.request, 'extauth')
@@ -948,7 +990,7 @@ class OAuthServiceProvidersView(object):
             return dict(
                 form=form
                 )
-        service_providers = OAuthServiceProvider(
+        service_provider = OAuthServiceProvider(
             name=form.name.data,
             display_name=form.display_name.data,
             auth_type=form.auth_type.data,
@@ -959,11 +1001,10 @@ class OAuthServiceProvidersView(object):
             organization_id=form.organization_id.data,
             visible=form.visible.data
         )
-        session.add(service_providers)
-        session.flush()
+        session.add(service_provider)
         session.commit()
-        self.request.session.flash(u'OAuthServiceProvider %s を新規作成しました' % service_providers.display_name)
-        return HTTPFound(location=self.request.route_path('service_providers.edit', id=service_providers.id))
+        self.request.session.flash(u'OAuthServiceProvider %s を新規作成しました' % service_provider.display_name)
+        return HTTPFound(location=self.request.route_path('service_providers.edit', id=service_provider.id))
 
     @view_config(
         route_name='service_providers.edit',
@@ -971,11 +1012,12 @@ class OAuthServiceProvidersView(object):
         request_method='GET'
         )
     def edit(self):
-        session = get_db_session(self.request, 'extauth')
+        service_provider = get_object_queryset(request=self.request, klass=OAuthServiceProvider)
         try:
-            service_provider = session.query(OAuthServiceProvider).filter_by(id=self.request.matchdict['id']).one()
-        except NoResultFound as e:
-            raise e
+            service_provider = service_provider.filter_by(id=self.request.matchdict['id']).one()
+        except NoResultFound:
+            raise HTTPForbidden()
+
         form = OAuthServiceProviderForm(obj=service_provider, request=self.request)
         return dict(
             form=form
@@ -988,10 +1030,11 @@ class OAuthServiceProvidersView(object):
         )
     def edit_post(self):
         session = get_db_session(self.request, 'extauth')
+        service_provider = get_object_queryset(request=self.request, klass=OAuthServiceProvider, db_session=session)
         try:
-            service_provider = session.query(OAuthServiceProvider).filter_by(id=self.request.matchdict['id']).one()
-        except NoResultFound as e:
-            raise e
+            service_provider = service_provider.filter_by(id=self.request.matchdict['id']).one()
+        except NoResultFound:
+            raise HTTPForbidden()
         form = OAuthServiceProviderForm(formdata=self.request.POST, obj=service_provider, request=self.request)
         if not form.validate():
             return dict(

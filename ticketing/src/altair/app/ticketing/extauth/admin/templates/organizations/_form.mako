@@ -38,24 +38,27 @@
   </div>
 </div>
 <div class="control-group">
-  <label class="control-label" for="organization-form--invalidate_client_http_session_on_access_token_revocation">${form.invalidate_client_http_session_on_access_token_revocation.label.text}</label>
-  <div class="controls">
-    ${form.invalidate_client_http_session_on_access_token_revocation(id="organization-form--invalidate_client_http_session_on_access_token_revocation")}
+  <div class="checkbox">
+    <label>
+      ${form.invalidate_client_http_session_on_access_token_revocation(id="organization-form--invalidate_client_http_session_on_access_token_revocation")} ${form.invalidate_client_http_session_on_access_token_revocation.label.text}
+    </label>
     %if form.invalidate_client_http_session_on_access_token_revocation.errors:
     <span class="help-inline">${u' / '.join(form.invalidate_client_http_session_on_access_token_revocation.errors)}</span>
     % endif
   </div>
 </div>
 <div class="control-group">
-  <label class="control-label" for="organization-form--fanclub_api_available">${form.fanclub_api_available.label.text}</label>
-  <div class="controls">
-    ${form.fanclub_api_available(id="organization-form--fanclub_api_available")}
+  <div class="checkbox">
+    <label>
+      ${form.fanclub_api_available(id="organization-form--fanclub_api_available")} ${form.fanclub_api_available.label.text}
+    </label>
     %if form.fanclub_api_available.errors:
     <span class="help-inline">${u' / '.join(form.fanclub_api_available.errors)}</span>
     % endif
   </div>
 </div>
 % if form.fanclub_api_available:
+<br/>
 <div class="control-group">
   <label class="control-label" for="organization-form--fanclub_api_type">${form.fanclub_api_type.label.text}</label>
   <div class="controls">

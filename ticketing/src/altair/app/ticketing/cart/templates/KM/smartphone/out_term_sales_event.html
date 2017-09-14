@@ -1,0 +1,17 @@
+<%inherit file="./base.html"/>
+<p>${_(u'誠に申し訳ございませんが')}</p>
+% if which == 'next':
+<p>${_(u'event.title(performance.name) の販売期間は').format(event.title, performance.name)}</p>
+<p>
+${h.i18n_datetime(start_at)}
+%   if end_at:
+〜 ${h.i18n_datetime(end_at)} 
+%   endif
+</p>
+<p>${_(u'となり終了しているか、規定枚数に達している為ご購入いただけません。')}</p>
+<p>${_(u'他の公演のチケットは<a href=\"request.context.host_base_url\">こちら</a>からお買い求めくださいますようお願いいたします。').format(request.context.host_base_url) |n}</p>
+% else:
+<p>${_(u'event.title (performance.name) の販売は').format(event.title, performance.name)}</p>
+<p>${_(u'end_at まで').format(h.i18n_datetime(end_at))}${_(u'となり終了しているか、規定枚数に達している為ご購入いただけません。')}</p>
+<p>${_(u'他の公演のチケットは<a href=\"request.context.host_base_url\">こちら</a>からお買い求めくださいますようお願いいたします。').format(request.context.host_base_url) |n}</p>
+% endif
