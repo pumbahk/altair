@@ -371,8 +371,8 @@ msgstr "付款截止期限"
 
 # post
 
-msgid "以下の住所に郵送します"
-msgstr "郵寄到以下地址"
+msgid "以下の住所に配送します"
+msgstr "配送到以下地址"
 
 msgid "郵便番号"
 msgstr "郵政編碼"

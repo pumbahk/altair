@@ -371,8 +371,8 @@ msgstr "支払期限"
 
 # post
 
-msgid "以下の住所に郵送します"
-msgstr "以下の住所に郵送します"
+msgid "以下の住所に配送します"
+msgstr "以下の住所に配送します"
 
 msgid "郵便番号"
 msgstr "郵便番号"
