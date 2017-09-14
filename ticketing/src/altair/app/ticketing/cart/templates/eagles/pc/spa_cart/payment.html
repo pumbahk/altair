@@ -64,15 +64,19 @@
 						</p>
 						<!-- ===== settlement ===== -->
                         <form id="form1" name="form1" method="post" action="${request.url}">
-                          <% checked_id = request.params.get('payment_delivery_method_pair_id') %>
+                          <%
+							checked_id = request.params.get('payment_delivery_method_pair_id')
+							radio_id = 0
+						  %>
                           % for m in payment_delivery_methods:
+							<% radio_id += 1%>
 							<div class="settlement-wrap">
 								<dl class="settlement-accordion">
 									<dt class="settlement-list">
                                       <% checked = 'checked' if str(m.id) == checked_id else '' %>
-                                        <input type="radio" name="payment_delivery_method_pair_id" id="radio2" value="${m.id}" autocomplete="off" ${checked} />
+                                        <input type="radio" name="payment_delivery_method_pair_id" id="radio${radio_id}" value="${m.id}" autocomplete="off" ${checked} />
 
-										<label for=radio1>
+										<label for=radio${radio_id}>
 											<p class="settlement-list-typeA">
 												<span>${m.payment_method.name}</span>
 											</p>
