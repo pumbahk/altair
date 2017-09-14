@@ -495,12 +495,6 @@ h4 span.order{
 }
 
 
-.purchased{
-	display: block;
-    background: #cfcfcf;
-}
-
-
 .orderreview h3{
 	border-left: 2px #c9c9c9 solid; 
 	padding: 2px 10px;
