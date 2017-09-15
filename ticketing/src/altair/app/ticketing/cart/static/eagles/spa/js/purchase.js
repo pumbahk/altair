@@ -37,18 +37,17 @@ if (windowWidth <= windowSm) {
 /*-------------------------------------*/
 
 $(document).ready(function(){
-  $(".methodExplanation").hide();
   // show the info that is already clicked
   var clicked_item = $("input[id^='radio']").filter(':checked');
   $(clicked_item).parent().next().show();
 
   $("dt.settlement-list").on('click', function(e) {
+    e.preventDefault();
     var clicked_radio = $(this).find("input[id^='radio']");
     var index = $("input[id^='radio']").index(clicked_radio);
     var vis_item = $(".methodExplanation:visible");
     // uncheck the radio and close the info block when it is clicked again
     if ($(clicked_radio).is(':checked') & $(this).next().is(':visible')) {
-      e.preventDefault();
       $(clicked_radio).prop('checked', false);
       $(this).next().slideUp();
     } else {

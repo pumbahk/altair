@@ -99,14 +99,14 @@
 		top: 23px;
 		left: 40px;
 	}
-	.confirm-wrap {
+	.confirmForm {
 		padding: 0;
 	}
-	.confirm-wrap .confirm-wrap-inner {
+	.confirmForm .confirm-wrap-inner {
 		border: 1px solid #E3E0DB;
 		padding: 20px;
 	}
-	.confirm-wrap p.infoTxt {
+	.confirmForm p.infoTxt {
 		margin-bottom: 20px;
 	}
 	/* form-style ============================== */
@@ -2071,6 +2071,10 @@
 		-ms-transform: rotate(-45deg);
 		transform: rotate(-45deg);
 	}
+    /* payment.htmlの決済引取方法の説明枠を最初に閉じる */
+    .methodExplanation {
+        display: none;
+    }
 }
 @media (min-width: 768px) and (max-width: 1100px) {}
 @media (min-width: 768px) and (max-width: 1070px) {}
