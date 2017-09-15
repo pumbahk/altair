@@ -14,6 +14,7 @@ from altair.formhelpers.validators import (
     )
 from altair.formhelpers.fields.core import (
     OurTextField,
+    OurEmailField,
     OurRadioField,
     OurBooleanField,
     OurSelectField,
@@ -148,14 +149,14 @@ class ClientFormFactory(object):
                 filters=[strip_spaces],
                 validators=h.address_2_validators(request)
                 )
-            email_1 = OurTextField(
+            email_1 = OurEmailField(
                 label=_(u"メールアドレス"),
                 note=_(u"半角英数"),
                 filters=[strip_spaces, NFKC],
                 description=lambda field: field._form.context.request.view_context.mail_filter_domain_notice if hasattr(field._form.context.request, 'view_context') else u'',
                 validators=h.required_mail_validators(request)
                 )
-            email_1_confirm = OurTextField(
+            email_1_confirm = OurEmailField(
                 label=_(u"確認用"),
                 filters=[strip_spaces, NFKC],
                 validators=h.required_mail_validators(request)
@@ -163,7 +164,7 @@ class ClientFormFactory(object):
             # XXX: 黒魔術的。email_2 に値が入っていて email_1 に値が入っていなかったら、email_1 に値を移すという動作をする
             email_2 = Liaison(
                 email_1,
-                OurTextField(
+                OurEmailField(
                     label=_(u"メールアドレス"),
                     filters=[strip_spaces, NFKC],
                     validators=h.mail_validators(request)
@@ -172,7 +173,7 @@ class ClientFormFactory(object):
             # XXX: 黒魔術的。email_2_confirm に値が入っていて email_1_confirm に値が入っていなかったら、email_1 に値を移すという動作をする
             email_2_confirm = Liaison(
                 email_1_confirm,
-                OurTextField(
+                OurEmailField(
                     label=_(u"確認用"),
                     filters=[strip_spaces, NFKC],
                     validators=h.mail_validators(request)
