@@ -40,13 +40,13 @@ from altair.app.ticketing.cart.exceptions import (
     AuthenticationError,
     ProductQuantityOutOfBoundsError,
     PerStockTypeQuantityOutOfBoundsError,
-    PerStockTypeProductQuantityOutOfBoundsError,
-    NotEnoughStockException
+    PerStockTypeProductQuantityOutOfBoundsError
 )
 from altair.app.ticketing.cart import api
 from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.cart import view_support
 from altair.app.ticketing.cart.reserving import NotEnoughAdjacencyException
+from altair.app.ticketing.cart.stocker import NotEnoughStockException
 from altair.app.ticketing.cart.helpers import get_availability_text
 
 from .view_support import get_filtered_stock_types, search_seat, parse_fields_params, get_spa_svg_urls, search_seatGroup
