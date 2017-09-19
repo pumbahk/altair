@@ -45,7 +45,7 @@ from altair.app.ticketing.cart.exceptions import (
 from altair.app.ticketing.cart import api
 from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.cart import view_support
-from altair.app.ticketing.cart.reserving import NotEnoughAdjacencyException
+from altair.app.ticketing.cart.reserving import NotEnoughAdjacencyException, InvalidSeatSelectionException
 from altair.app.ticketing.cart.stocker import NotEnoughStockException
 from altair.app.ticketing.cart.helpers import get_availability_text
 
@@ -588,7 +588,16 @@ class CartAPIView(object):
 
                 quantity_only = False
         elif reserve_type == "seat_choise":
-            seats += reserving.reserve_selected_seats(stockstatuses, performance_id, selected_seats)
+            try:
+                seats += reserving.reserve_selected_seats(stockstatuses, performance_id, selected_seats)
+            except InvalidSeatSelectionException:
+                transaction.abort()
+                return {
+                    "results": {
+                        "status": "NG",
+                        "reason": "in valid seat selection exception"
+                    }
+                }               
             quantity_only = False
 
         seat_ids = [seat.id for seat in seats]
