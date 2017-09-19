@@ -40,7 +40,8 @@ from altair.app.ticketing.cart.exceptions import (
     AuthenticationError,
     ProductQuantityOutOfBoundsError,
     PerStockTypeQuantityOutOfBoundsError,
-    PerStockTypeProductQuantityOutOfBoundsError
+    PerStockTypeProductQuantityOutOfBoundsError,
+    NotEnoughStockException
 )
 from altair.app.ticketing.cart import api
 from altair.app.ticketing.models import DBSession
@@ -548,7 +549,16 @@ class CartAPIView(object):
 
         product_requires = [(merge_product, request_quantity)]
         logger.debug("product_requires %s", product_requires)
-        stockstatuses = stocker.take_stock(performance_id, product_requires)
+        try:
+            stockstatuses = stocker.take_stock(performance_id, product_requires)
+        except NotEnoughStockException:
+            transaction.abort()
+            return {
+                "results": {
+                    "status": "NG",
+                    "reason": "not enough stock exception"
+                    }
+            }
 
         separate_seats = False
         quantity_only = True
