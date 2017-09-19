@@ -1,14 +1,14 @@
 """add Stock_group_l0_id table
 
 Revision ID: 17c73ceae5b7
-Revises: 1f9dae4d0c08
+Revises: 79706bc2912
 Create Date: 2017-03-29 10:27:18.459498
 
 """
 
 # revision identifiers, used by Alembic.
 revision = '17c73ceae5b7'
-down_revision = '1f9dae4d0c08'
+down_revision = '79706bc2912'
 
 from alembic import op
 import sqlalchemy as sa
