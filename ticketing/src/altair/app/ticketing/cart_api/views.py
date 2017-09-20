@@ -595,7 +595,7 @@ class CartAPIView(object):
                 return {
                     "results": {
                         "status": "NG",
-                        "reason": "in valid seat selection exception"
+                        "reason": "invalid seat selection exception"
                     }
                 }               
             quantity_only = False
