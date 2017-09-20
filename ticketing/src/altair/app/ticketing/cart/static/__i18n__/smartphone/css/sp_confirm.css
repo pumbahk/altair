@@ -44,21 +44,8 @@ body {
 	width: 100%;
 	margin: 0 auto;
 }
-/* ts-header-logobox */
-.ts-header-logo {
-	position: relative;
-	top: 0;
-	left: 5px;
-	width: 240px;
-	height: 96px;
-	background: url(../images/logo.png) no-repeat 0 0;
-    background-size: 100%;
-}
-.ts-header-logo a:hover {
-	display: block;
-	width: 100px;
-	height: 32px;
-	opacity: 0.8;
+.ts-header-wrap img {
+    width: 100%;
 }
 
 /* ts-footer ============================== */
