@@ -3,8 +3,14 @@
     <!-- ===== ts-header-wrap [start] ===== -->
     <div class="ts-header-wrap">
       <div class="ts-header-logobox clearfix">
-        <img src="${view_context.static_url('pc/images/logo.png')}" alt="${view_context.team_name}" />
+        <img id="logo" src="${view_context.static_url('pc/images/pc_logo.png')}" alt="${view_context.team_name}" />
       </div>
     </div><!-- ===== ts-header-wrap [end] ===== -->
   </div>
+  <script type="text/javascript">
+    var img = document.getElementById("logo");
+    if (window.innerWidth <= 400) {
+        img.src = img.src.replace("pc_logo", "sp_logo");
+    }
+  </script>
 </header>
