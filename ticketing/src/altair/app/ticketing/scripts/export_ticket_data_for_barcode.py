@@ -71,6 +71,17 @@ def get_ordered_product_item_by_id(session, ordered_product_item_id):
         .filter(OrderedProductItem.deleted_at == None) \
         .one()
 
+def getDuplicatedBarcodeNo(export_data):
+    barcodes = []
+    for data in export_data:
+        barcodes.append(data['barcode_no'])
+
+    duplicates = []
+    for b in barcodes:
+        if barcodes.count(b) > 1 and b not in duplicates:
+            duplicates.append(b)
+
+    return duplicates
 
 def main(argv=sys.argv[1:]):
     parser = argparse.ArgumentParser()
@@ -120,7 +131,6 @@ def main(argv=sys.argv[1:]):
                 if order.delivery_plugin_id == SEJ_DELIVERY_PLUGIN_ID:
                     sej_order = order.sej_order
                     for i, ticket in enumerate(sej_order.tickets):
-                        # Todo:barcode_noの重複チェック
                         try:
                             if not ticket.ordered_product_item_token:
                                 logger.warn('SejTicket.barcode_number={} has no relation with token.'.format(
@@ -140,8 +150,8 @@ def main(argv=sys.argv[1:]):
                             seat_no = '管理番号なし'
                             seat_name = '席名なし'
                             if ticket.ordered_product_item_token.seat and ticket.ordered_product_item_token.seat.seat_no:
-                                seat_no = ticket.ordered_product_item_token.seat.seat_no
-                                seat_name = ticket.ordered_product_item_token.seat.name
+                                seat_no = ticket.ordered_product_item_token.seat.seat_no.encode('utf-8')
+                                seat_name = ticket.ordered_product_item_token.seat.name.encode('utf-8')
 
                         except NoResultFound:
                             logger.warn(
@@ -158,7 +168,7 @@ def main(argv=sys.argv[1:]):
                             performance_date=order.performance.start_on,
                             stock_type=stock_type.name.encode('utf-8'),
                             seat_no=seat_no,
-                            seat_name=seat_name.encode('utf-8'),
+                            seat_name=seat_name,
                             last_name=order.shipping_address.last_name.encode('utf-8'),
                             first_name=order.shipping_address.first_name.encode('utf-8'),
                             last_name_kana=order.shipping_address.last_name_kana.encode('utf-8'),
@@ -206,8 +216,8 @@ def main(argv=sys.argv[1:]):
                             seat_no = '管理番号なし'
                             seat_name = '席名なし'
                             if token.seat and token.seat.seat_no:
-                                seat_no = token.seat.seat_no
-                                seat_name = token.seat.name
+                                seat_no = token.seat.seat_no.encode('utf-8')
+                                seat_name = token.seat.name.encode('utf-8')
 
                         except NoResultFound:
                             logger.warn(
@@ -225,7 +235,7 @@ def main(argv=sys.argv[1:]):
                             performance_date=order.performance.start_on,
                             stock_type=stock_type.name.encode('utf-8'),
                             seat_no=seat_no,
-                            seat_name=seat_name.encode('utf-8'),
+                            seat_name=seat_name,
                             last_name=order.shipping_address.last_name.encode('utf-8'),
                             first_name=order.shipping_address.first_name.encode('utf-8'),
                             last_name_kana=order.shipping_address.last_name_kana.encode('utf-8'),
@@ -250,9 +260,15 @@ def main(argv=sys.argv[1:]):
 
             logger.info(u'{} orders was found.'.format(len(orders)))
             logger.info(u'start exporting csv...')
+
+            # barcode_noの重複チェック
+            duplicates = getDuplicatedBarcodeNo(export_data)
+            if duplicates:
+                raise Exception('Found duplicated barcode numbers as follows. {}'.format(', '.join(duplicates)))
+
             try:
                 # export_dataをcsvとして書き出す
-                filename = 'hip_csv_{0:%Y%m%d-%H%M%S}.csv'.format(datetime.now())
+                filename = 'barcode_csv_{0:%Y%m%d-%H%M%S}.csv'.format(datetime.now())
                 f = open(filename, 'w')
                 csvWriter = csv.writer(f)
                 # csv_header書き出し
