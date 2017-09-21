@@ -1,5 +1,5 @@
 #! /usr/bin/env python
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 import sys
 import argparse
@@ -18,54 +18,60 @@ from altair.app.ticketing.payments.plugins import SEJ_DELIVERY_PLUGIN_ID, FAMIPO
 logger = logging.getLogger(__name__)
 
 csv_header = [
-    ('no'                   , u'NO'),
-    ('selling_agency'       , u'販売元'),
-    ('barcode_no'       , u'バーコード番号'),
-    ('order_no'         , u'整理番号'),
-    ('branch_no'        , u'チケット枝番'),
-    ('last_name'        , u'氏名姓'),
-    ('first_name'       , u'氏名名'),
+    ('no', u'NO'),
+    ('selling_agency', u'販売元'),
+    ('barcode_no', u'バーコード番号'),
+    ('order_no', u'整理番号'),
+    ('branch_no', u'チケット枝番'),
+    ('last_name', u'氏名姓'),
+    ('first_name', u'氏名名'),
     ('last_name_kana', u'姓（カナ）'),
     ('first_name_kana', u'名（カナ'),
-    ('birthday'             , u'生年月日'),
-    ('zip'                  , u'郵便番号'),
+    ('birthday', u'生年月日'),
+    ('zip', u'郵便番号'),
     ('address_1', u'住所1'),
     ('address_2', u'住所2（建物名）'),
-    ('tel_2'                , u'電話番号1'),  # 電話番号(携帯)
-    ('tel_1'                , u'電話番号2'),  # 電話番号
-    ('performance_date' , u'公演日'),
-    ('stock_type'       , u'席種'),
-    ('seat_no'          , u'管理番号'),
-    ('ticket_count'     , u'チケット枚数'),
+    ('tel_2', u'電話番号1'),  # 電話番号(携帯)
+    ('tel_1', u'電話番号2'),  # 電話番号
+    ('performance_date', u'公演日'),
+    ('stock_type', u'席種'),
+    ('seat_no', u'管理番号'),
+    ('seat_name', u'席名'),
+    ('ticket_count', u'チケット枚数'),
     ('delivery_method_name', u'チケット受取方法'),
     ('ticketing_store_name', u'発券コンビニ名'),
     ('exchange_number', u'コンビニ発券引換票番号'),
     ('issued', u'コンビニ発券状況')
 ]
 
+
 def get_stock_type_by_id(session, stock_type_id):
     return session.query(StockType) \
-                  .filter(StockType.id == stock_type_id) \
-                  .filter(StockType.deleted_at == None) \
-                  .one()
+        .filter(StockType.id == stock_type_id) \
+        .filter(StockType.deleted_at == None) \
+        .one()
+
 
 def get_token_by_id(session, token_id):
     return session.query(OrderedProductItemToken) \
-                  .filter(OrderedProductItemToken.id == token_id) \
-                  .filter(OrderedProductItemToken.deleted_at == None) \
-                  .one()
+        .filter(OrderedProductItemToken.id == token_id) \
+        .filter(OrderedProductItemToken.deleted_at == None) \
+        .one()
+
 
 def get_product_item_by_id(session, product_item_id):
     return session.query(ProductItem) \
-                  .filter_by(id=product_item_id) \
-                  .filter(ProductItem.deleted_at == None) \
-                  .one()
+        .filter_by(id=product_item_id) \
+        .filter(ProductItem.deleted_at == None) \
+        .one()
+
 
 def get_ordered_product_item_by_id(session, ordered_product_item_id):
     return session.query(OrderedProductItem) \
-                  .filter_by(id=ordered_product_item_id) \
-                  .filter(OrderedProductItem.deleted_at == None) \
-                  .one()
+        .filter_by(id=ordered_product_item_id) \
+        .filter(OrderedProductItem.deleted_at == None) \
+        .one()
+
 
 def main(argv=sys.argv[1:]):
     parser = argparse.ArgumentParser()
@@ -85,18 +91,18 @@ def main(argv=sys.argv[1:]):
             sid = args.sales_segment_id
             if sid:
                 orders = session.query(Order) \
-                                .filter(Order.sales_segment_id == sid) \
-                                .filter(Order.canceled_at == None) \
-                                .filter(Order.deleted_at == None) \
-                                .filter(Order.refunded_at == None) \
-                                .all()
+                    .filter(Order.sales_segment_id == sid) \
+                    .filter(Order.canceled_at == None) \
+                    .filter(Order.deleted_at == None) \
+                    .filter(Order.refunded_at == None) \
+                    .all()
             else:
                 orders = session.query(Order) \
-                                .filter(Order.performance_id == pid) \
-                                .filter(Order.canceled_at == None) \
-                                .filter(Order.deleted_at == None) \
-                                .filter(Order.refunded_at == None) \
-                                .all()
+                    .filter(Order.performance_id == pid) \
+                    .filter(Order.canceled_at == None) \
+                    .filter(Order.deleted_at == None) \
+                    .filter(Order.refunded_at == None) \
+                    .all()
 
             # orderからcsv出力するためのdictへ変換
             export_data = []
@@ -120,7 +126,8 @@ def main(argv=sys.argv[1:]):
                         # Todo:barcode_noの重複チェック
                         try:
                             if not ticket.ordered_product_item_token:
-                                logger.warn('SejTicket.barcode_number={} has no relation with token.'.format(ticket.barcode_number))
+                                logger.warn('SejTicket.barcode_number={} has no relation with token.'.format(
+                                    ticket.barcode_number))
                                 continue
 
                             stock_type = None
@@ -134,11 +141,15 @@ def main(argv=sys.argv[1:]):
                                 stock_type = get_stock_type_by_id(session, stock_type_id)
 
                             seat_no = '管理番号なし'
+                            seat_name = '席名なし'
                             if ticket.ordered_product_item_token.seat and ticket.ordered_product_item_token.seat.seat_no:
                                 seat_no = ticket.ordered_product_item_token.seat.seat_no
+                                seat_name = ticket.ordered_product_item_token.seat.name
 
                         except NoResultFound:
-                            logger.warn('no result was found for StockType.id={}.(Order.order_no={}, SejTicket.id={})'.format(stock_type_id, order.order_no, sej_order.id))
+                            logger.warn(
+                                'no result was found for StockType.id={}.(Order.order_no={}, SejTicket.id={})'.format(
+                                    stock_type_id, order.order_no, sej_order.id))
                             continue
 
                         retval = dict(
@@ -150,6 +161,7 @@ def main(argv=sys.argv[1:]):
                             performance_date=order.performance.start_on,
                             stock_type=stock_type.name.encode('utf-8'),
                             seat_no=seat_no,
+                            seat_name=seat_name.encode('utf-8'),
                             last_name=order.shipping_address.last_name.encode('utf-8'),
                             first_name=order.shipping_address.first_name.encode('utf-8'),
                             last_name_kana=order.shipping_address.last_name_kana.encode('utf-8'),
@@ -160,14 +172,16 @@ def main(argv=sys.argv[1:]):
                             address_2=order.shipping_address.address_2.encode('utf-8'),
                             tel_2=order.shipping_address.tel_2,
                             tel_1=order.shipping_address.tel_1,
-                            delivery_method_name=order.payment_delivery_method_pair.delivery_method.name.encode('utf-8'),
+                            delivery_method_name=order.payment_delivery_method_pair.delivery_method.name.encode(
+                                'utf-8'),
                             ticketing_store_name='セブンイレブン',
                             exchange_number=sej_order.exchange_number or sej_order.billing_number,
                             issued='発券済み' if order.issued else '未発券',
                             ticket_count=len(sej_order.tickets),
                         )
                         j += 1
-                        logger.info('barcode_num={}, order_no={}'.format(retval.get('barcode_no'), retval.get('order_no')))
+                        logger.info(
+                            'barcode_num={}, order_no={}'.format(retval.get('barcode_no'), retval.get('order_no')))
                         export_data.append(retval)
                 # famiportの場合
                 elif order.delivery_plugin_id == FAMIPORT_DELIVERY_PLUGIN_ID:
@@ -176,7 +190,8 @@ def main(argv=sys.argv[1:]):
                     for i, ticket_like in enumerate(ticket_likes):
                         try:
                             if not ticket_like.get('userside_token_id'):
-                                logger.warn('FamiPortTicket.barcode_number={} has no relation with token.'.format(ticket_like.get('barcode_number')))
+                                logger.warn('FamiPortTicket.barcode_number={} has no relation with token.'.format(
+                                    ticket_like.get('barcode_number')))
                                 continue
                             token = get_token_by_id(session, ticket_like.get('userside_token_id'))
 
@@ -191,15 +206,18 @@ def main(argv=sys.argv[1:]):
                                 stock_type = get_stock_type_by_id(session, stock_type_id)
 
                             seat_no = '管理番号なし'
+                            seat_name = '席名なし'
                             if token.seat and token.seat.seat_no:
                                 seat_no = token.seat.seat_no
+                                seat_name = token.seat.name
 
                         except NoResultFound:
-                            logger.warn('no result was found for StockType.id={}.(Order.order_no={}, FamiPortTicket.id={})'.format(stock_type_id, order.order_no, ticket_like.get('id')))
+                            logger.warn(
+                                'no result was found for StockType.id={}.(Order.order_no={}, FamiPortTicket.id={})'.format(
+                                    stock_type_id, order.order_no, ticket_like.get('id')))
                             continue
 
                         # famiportのバーコード番号には固定値で1が付与される。バーコード印字のタイミングでFM側で付与するものなのでチケスタDB内では付与されていない。
-
                         retval = dict(
                             no=j,
                             selling_agency='楽天チケット',
@@ -209,6 +227,7 @@ def main(argv=sys.argv[1:]):
                             performance_date=order.performance.start_on,
                             stock_type=stock_type.name.encode('utf-8'),
                             seat_no=seat_no,
+                            seat_name=seat_name.encode('utf-8'),
                             last_name=order.shipping_address.last_name.encode('utf-8'),
                             first_name=order.shipping_address.first_name.encode('utf-8'),
                             last_name_kana=order.shipping_address.last_name_kana.encode('utf-8'),
@@ -219,14 +238,16 @@ def main(argv=sys.argv[1:]):
                             address_2=order.shipping_address.address_2.encode('utf-8'),
                             tel_2=order.shipping_address.tel_2,
                             tel_1=order.shipping_address.tel_1,
-                            delivery_method_name=order.payment_delivery_method_pair.delivery_method.name.encode('utf-8'),
+                            delivery_method_name=order.payment_delivery_method_pair.delivery_method.name.encode(
+                                'utf-8'),
                             ticketing_store_name='ファミリーマート',
                             exchange_number=fm_order['payment_reserve_number'].encode('utf-8'),
                             issued='発券済み' if order.issued else '未発券',
                             ticket_count=len(fm_order['famiport_tickets'])
                         )
                         j += 1
-                        logger.info('barcode_num={}, order_no={}'.format(retval.get('barcode_no'), retval.get('order_no')))
+                        logger.info(
+                            'barcode_num={}, order_no={}'.format(retval.get('barcode_no'), retval.get('order_no')))
                         export_data.append(retval)
 
             logger.info(u'{} orders was found.'.format(len(orders)))
