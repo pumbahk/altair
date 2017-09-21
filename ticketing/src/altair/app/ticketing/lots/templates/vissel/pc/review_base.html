@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no">
+    <title>ヴィッセル神戸公式チケットサイト 申込履歴の確認</title>
+    <link rel="shortcut icon" href="${view_context.static_url('pc/img/favicon.ico', 'lots')}">
+    <link rel="stylesheet" type="text/css" href="${view_context.static_url('pc/css/review/style2.css', 'lots')}" media="all" />
+    <link rel="stylesheet" type="text/css" href="${view_context.static_url('pc/css/review/common.css', 'lots')}" media="all" />
+    <link rel="stylesheet" type="text/css" href="${view_context.static_url('pc/css/review/toggle.css', 'lots')}" media="all" />
+    <script type="text/javascript" src="${request.static_url('altair.app.ticketing.lots:static/common/js/jquery.js')}"></script>
+    <script>
+      $(function(){
+        $("#toggle").click(function(){
+          $(".nav-global ul").slideToggle();
+          return false;
+        });
+        $(window).resize(function(){
+          var win = $(window).width();
+          var p = 480;
+          if(win > p){
+            $(".nav-global ul").show();
+          } else {
+            $(".nav-global ul").hide();
+          }
+        });
+      });
+    </script>
+  </head>
+  <body>
+  <!-- headder -->
+    <header class="header">
+      <div class="wrap">
+        <h1 class="header-logo"><a href="//vissel.tstar.jp/"><img src="${view_context.static_url('pc/img/pc_logo.jpg', 'lots')}" alt="ヴィッセルチケット"></a></h1>
+        <!-- menu -->
+        <nav class="nav-global">
+          <div id="toggle"><a href="https://vissel.tstar.jp/orderreview/#">&nbsp;</a></div>
+            <ul class="clearfix">
+              <li><a href="https://vissel.tstar.jp/">TOP</a></li>
+            </ul>
+        </nav>
+      <!-- /menu -->
+      </div><!-- /wrap -->
+    </header><!-- /headder -->
+
+    ${self.body()}
+
+    <!-- footer -->
+    <footer class="footer">
+      <div class="wrap clearfix">
+        <div class="box">
+          <p class="for-sp-img">
+            <img src="//tstar.s3.amazonaws.com/asset/vissel/2014-03-06/c887e7171e7342d2916ffb7b08f4501e.png" alt="ヴィッセル"/>
+          </p>
+        </div>
+        <div class="box">
+        <!-- menu -->
+          <nav class="nav-footer">
+            <ul class="clearfix">
+              <li><a href="//www.ticketstar.jp/corporate/" target="_blank">運営会社</a></li>
+              <li><a href="//vissel.tstar.jp/agreement" target="_blank">利用規約</a></li>
+              <li><a href="${h.safe_get_contact_url(request)}" target="_blank">お問い合わせ</a></li>
+              <li><a href="//www.ticketstar.jp/privacy/" target="_blank">個人情報保護方針</a></li>
+              <li><a href="//vissel.tstar.jp/cancel" target="_blank">キャンセルポリシー</a></li>
+              <li><a href="//vissel.tstar.jp/legal" target="_blank">特定商取引法に基づく表示</a></li>
+            </ul>
+          </nav><!-- /menu -->
+          <p class="copyright">&copy; TicketStar Inc. All Rights Reserved.</p>
+        </div>
+      </div><!-- /wrap -->
+    </footer><!-- /footer -->
+    % if request.organization.setting.sitecatalyst_use:
+      <%include file="altair.app.ticketing.lots:templates/vissel/common/sitecatalyst.html"/>
+    % endif
+  </body>
+</html>
