@@ -4,13 +4,12 @@
 import sys
 import argparse
 import logging
-import json
 import csv
-from sqlalchemy import sql, orm
 from sqlalchemy.orm.exc import NoResultFound
-from datetime import date, datetime
+from sqlahelper import get_session
+from datetime import datetime
 
-from pyramid.paster import setup_logging, bootstrap
+from pyramid.paster import bootstrap
 from altair.app.ticketing.core.models import StockType, ProductItem
 from altair.app.ticketing.orders.models import Order, OrderedProductItemToken, OrderedProductItem
 from altair.app.ticketing.payments.plugins import SEJ_DELIVERY_PLUGIN_ID, FAMIPORT_DELIVERY_PLUGIN_ID
@@ -80,9 +79,7 @@ def main(argv=sys.argv[1:]):
     parser.add_argument('-sid', '--sales_segment_id', metavar='sales_segment_id', type=str, required=True)
 
     args = parser.parse_args()
-    env = bootstrap(args.config)
-    request = env['request']
-    from sqlahelper import get_session
+    bootstrap(args.config)
     session = get_session()
 
     try:
@@ -183,6 +180,7 @@ def main(argv=sys.argv[1:]):
                         logger.info(
                             'barcode_num={}, order_no={}'.format(retval.get('barcode_no'), retval.get('order_no')))
                         export_data.append(retval)
+
                 # famiportの場合
                 elif order.delivery_plugin_id == FAMIPORT_DELIVERY_PLUGIN_ID:
                     fm_order = order.famiport_order
