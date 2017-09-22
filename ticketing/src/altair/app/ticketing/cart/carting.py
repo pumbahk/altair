@@ -13,13 +13,14 @@ class CartFactory(object):
     def __init__(self, request):
         self.request = request
 
-    def create_cart(self, sales_segment, seats, ordered_products, cart_setting=None, membership=None, membergroup=None):
+    def create_cart(self, sales_segment, seats, ordered_products, cart_setting=None, membership=None
+                    , membergroup=None, channel=None):
         logger.debug('create cart for ordered products %s' % ordered_products)
         assert membership is None or membergroup is None or membership.id == membergroup.membership_id
         request = self.request
         # Cart
         # ここでシステム利用料を確定させるのはおかしいので、後の処理で上書きする
-        channel = get_channel(request=request)
+        channel = get_channel(channel=channel, request=request)
         if cart_setting is None:
             cart_setting = getattr(getattr(self.request, 'context'), 'cart_setting', None)
 

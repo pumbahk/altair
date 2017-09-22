@@ -13,6 +13,7 @@ from datetime import date, datetime, time
 from altair.sqlahelper import get_db_session
 
 from altair.app.ticketing.core.models import (
+    ChannelEnum,
     StockType,
     Seat,
     Stock,
@@ -605,7 +606,7 @@ class CartAPIView(object):
         seat_names = [seat.name for seat in seats]
         logger.debug("seat_l0_ids %s", seat_l0_ids)
 
-        cart = cart_factory.create_cart(sales_segment, seats, product_requires)
+        cart = cart_factory.create_cart(sales_segment, seats, product_requires, channel=ChannelEnum.SPA.v)
         if cart is None:
             transaction.abort()
             return {
