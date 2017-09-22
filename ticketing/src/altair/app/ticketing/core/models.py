@@ -3759,6 +3759,8 @@ class ChannelEnum(StandardEnum):
     INNER = 3
     IMPORT = 4
     SPA = 5
+    PC_SPA = 6
+    Mobile_SPA = 7
 
 class RefundStatusEnum(StandardEnum):
     Waiting = 0
