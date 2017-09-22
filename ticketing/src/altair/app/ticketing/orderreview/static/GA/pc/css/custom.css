@@ -7,13 +7,47 @@
 
 /* buttons color ボタン
 -------------------------------------------- */
+main .wrap-form .btn,
 .btn-primary,
 .qr-btn {
     background-color: var(--custom-btn-color) !important;
+}
+
+
+/* input color 見出し
+-------------------------------------------- */
+input[type=checkbox]:checked + label::after {
+  border-left-color: var(--custom-color) !important;
+	border-bottom-color: var(--custom-color) !important;
 }
 
 /* heading color 見出し
 -------------------------------------------- */
 .heading-primary {
     background-color: var(--custom-background-color) !important;
+}
+
+main .wrap-form h2 {
+    background-color: var(--custom-background-color) !important;
+}
+
+header .head {
+    height: 60px;
+    margin: 0;
+    padding: 0;
+    background-color: var(--custom-background-color) !important;
+}
+
+header h1 {
+    text-align: left;
+    padding-left: 10px;
+    line-height: 60px;
+}
+
+header h1 img {
+    border-radius: 5px;
+    background: #ffffff;
+    padding: 5px;
+    vertical-align: middle !important;
+    height: 100%;
 }
