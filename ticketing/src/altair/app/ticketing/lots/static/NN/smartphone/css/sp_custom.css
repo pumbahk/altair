@@ -59,3 +59,6 @@ li.btn-seat-plus.btn-seat-active:after {
     color: var(--custom-color) !important;
     border-color: var(--custom-border-color) !important;
 }
+.ts-header-logobox img {
+    width: 100%;
+}

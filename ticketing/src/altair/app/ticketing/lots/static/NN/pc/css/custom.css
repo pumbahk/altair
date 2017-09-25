@@ -72,3 +72,7 @@ h2.heading-primary {
 .settlementInterest h2 {
     background-color: var(--custom-background-color) !important;
 }
+
+.ts-header-logobox img {
+    width: 100%;
+}
