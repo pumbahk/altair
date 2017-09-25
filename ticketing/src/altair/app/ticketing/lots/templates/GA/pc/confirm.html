@@ -4,7 +4,9 @@
     <div class="mgt30 txtC">
         <p class="fWB f240">${__(u'申込内容をご確認ください。')}</p>
     </div>
-
+    % if view_context.get_include_template_path('links.html', 'lots') is not None:
+      <%include file="${view_context.get_include_template_path('links.html', 'lots')}" args="device=view_context.ua_type" />
+    % endif
     <form id="form1" name="form1" method="post" action="">
       <input type="hidden" name="token" value="${token}" />
       <div class="confirm-wrap mgt20">

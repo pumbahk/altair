@@ -31,6 +31,9 @@
     <div id="main" class="ts-contents">
       <div class="ts-contents-inner">
         <h1 class="heading-primary">${__(u'チケット申込')}</h1>
+        % if view_context.get_include_template_path('links.html', 'lots') is not None:
+          <%include file="${view_context.get_include_template_path('links.html', 'lots')}" args="device=view_context.ua_type" />
+        % endif
         ${self.body()}
       </div>
     </div>

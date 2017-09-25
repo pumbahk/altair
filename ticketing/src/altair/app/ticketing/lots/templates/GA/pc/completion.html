@@ -5,7 +5,9 @@
         <p class="fWB f240">${__(u'申込を完了しました。')}</p>
         <p class="tac">${__(u'下記の受付番号はとても大切な番号です。すぐにメモして保管してください。')}</p>
     </div>
-
+    % if view_context.get_include_template_path('links.html', 'lots') is not None:
+      <%include file="${view_context.get_include_template_path('links.html', 'lots')}" args="device=view_context.ua_type" />
+    % endif
     <div class="confirm-wrap mgt20">
       <h3>${__(u'受付番号')}</h3>
       <div class="settlementBox">

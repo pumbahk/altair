@@ -31,6 +31,9 @@ if label is None or label is True:
 
 <div id="content">
   <div class="wrap-content">
+    % if view_context.get_include_template_path('links.html', 'lots') is not None:
+      <%include file="${view_context.get_include_template_path('links.html', 'lots')}" args="device=view_context.ua_type" />
+    % endif
     %if request.session.peek_flash():
     <div style="border: 3px solid red; background: #FFEEEE; padding: 10px; margin: 10px;">
       <ul>
