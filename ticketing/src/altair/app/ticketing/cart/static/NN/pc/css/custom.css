@@ -67,3 +67,8 @@
 .settlementInterest h2 {
     background-color: var(--custom-background-color) !important;
 }
+
+
+img.serviceLogo {
+    width: 100%;
+}
