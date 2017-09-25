@@ -30,6 +30,9 @@
     </div>
     <div id="main">
       <h1>${_(u'チケット購入')}</h1>
+      % if view_context.get_include_template_path('links.html') is not None:
+        <%include file="${view_context.get_include_template_path('links.html')}" args="device=view_context.ua_type" />
+      % endif
       ${self.body()}
     </div>
     <!-- ========== /main ========== -->
