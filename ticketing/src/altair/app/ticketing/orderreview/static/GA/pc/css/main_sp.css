@@ -312,6 +312,9 @@ form.form-box p img {
   display: inline-block;
   cursor: pointer;
 }
+.wrap-btn .btn.short {
+  width: 20%;
+}
 .wrap-btn .btn:hover {
   opacity: 0.75;
 }

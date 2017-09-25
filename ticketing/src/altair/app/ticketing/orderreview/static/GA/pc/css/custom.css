@@ -7,7 +7,7 @@
 
 /* buttons color ボタン
 -------------------------------------------- */
-main .wrap-form .btn,
+main .wrap-content .btn,
 .btn-primary,
 .qr-btn {
     background-color: var(--custom-btn-color) !important;

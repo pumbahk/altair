@@ -19,6 +19,125 @@ a:hover {
   display: none;
 }
 
+/* inputs
+-------------------------------------------- */
+/* form-reset */
+main input,
+main button,
+main textarea {
+/*	margin: 0;
+	padding: 0;
+	background: none;*/
+	border: none;
+	border-radius: 0;
+	outline: none;
+	vertical-align: middle;
+	font-size: inherit;
+	color: inherit;
+	box-sizing: content-box;
+	-webkit-appearance: none;
+	-moz-appearance: none;
+	appearance: none;
+}
+main input[type="button"],main input[type="submit"] { cursor: pointer; }
+main input[type="button"]:hover,input[type="submit"]:hover { opacity: 0.6; }
+
+
+/* form-style */
+main input[type="text"] {
+	-webkit-border-radius: 3px;
+	-moz-border-radius: 3px;
+	border-radius: 3px;
+	border: 1px solid #CCC;
+	background: #f4f3f1;
+	padding: 5px;
+	margin: 3px;
+}
+main input[type="text"]:focus { background: #FFF; }
+main input::-webkit-input-placeholder { color: #666; }
+main input:-ms-input-placeholder { color: #666; }
+main input::-moz-placeholder { color: #666; }
+main input:focus::-webkit-input-placeholder { color:transparent; }
+main input:focus:-ms-input-placeholder { color:transparent; }
+main input:focus::-moz-placeholder { color:transparent; }
+main select {
+	border: 1px solid #CCC;
+	padding: 5px;
+}
+
+main input[type=radio],
+main input[type=checkbox] {
+    display: inline-block;
+    margin-right: 6px;
+}
+main input[type=radio] + label,
+main input[type=checkbox] + label {
+    position: relative;
+    display: inline-block;
+    margin-right: 12px;
+    line-height: 30px;
+    cursor: pointer;
+}
+main input[type=radio],
+main input[type=checkbox] {
+	display: none;
+	margin: 0;
+	background: #000;
+}
+main input[type=radio] + label,
+main input[type=checkbox] + label {
+	padding: 0 0 0 30px;
+}
+main input[type=radio] + label::before,
+main input[type=checkbox] + label::before {
+	content: "";
+	position: absolute;
+	top: 50%;
+	left: 0;
+	-moz-box-sizing: border-box;
+	box-sizing: border-box;
+	display: block;
+	width: 18px;
+	height: 18px;
+	margin-top: -9px;
+	background: #FFF;
+}
+main input[type=radio] + label::before {
+	border: 2px solid #ccc;
+	border-radius: 30px;
+}
+main input[type=checkbox] + label::before {
+	border: 2px solid #ccc;
+}
+main input[type=radio]:checked + label::after,
+main input[type=checkbox]:checked + label::after {
+	content: "";
+	position: absolute;
+	top: 50%;
+	-moz-box-sizing: border-box;
+	box-sizing: border-box;
+	display: block;
+}
+main input[type=radio]:checked + label::after {
+	left: 5px;
+	width: 8px;
+	height: 8px;
+	margin-top: -4px;
+	background: #E71063;
+	border-radius: 8px;
+}
+main input[type=checkbox]:checked + label::after {
+	left: 3px;
+	width: 16px;
+	height: 8px;
+	margin-top: -8px;
+	border-left: 3px solid #E71063;
+	border-bottom: 3px solid #E71063;
+	-webkit-transform: rotate(-45deg);
+	-ms-transform: rotate(-45deg);
+	transform: rotate(-45deg);
+}
+
 /* header
 -------------------------------------------- */
 header .head {
@@ -105,7 +224,7 @@ main .wrap-form .btn {
   background: #5A5A5A;
   color: #ffffff;
   text-decoration: none;
-  padding: 5px 30px;
+  padding: 10px;
   width: 480px;
   font-weight: bold;
   font-size: 20px;
@@ -179,9 +298,86 @@ main .wrap-form .formall.form2 dt {
   width: 12em;
 }
 
+/* lots page
+-------------------------------------------- */
+table {
+    width: 100%;
+    margin: 0;
+    border-collapse: collapse;
+}
+table th {
+    padding: 10px;
+    border-top: 1px solid #efefef;
+    font-size: 14px;
+    font-weight: bold;
+}
+table td {
+    padding: 10px;
+    border-top: 1px solid #efefef;
+    font-size: 14px;
+}
+table tr:first-child th, table tr:first-child td {
+    border-top: none;
+}
+main .confirm-wrap h3 {
+  clear: both;
+  position: relative;
+  left: -1px;
+  border-bottom: 2px solid #bf0000;
+  color: #bf0000;
+  font-size: 18px;
+  font-weight: bold;
+  margin: 0 0 10px;
+  padding: 0 0 3px 10px;
+}
+.settlementPayBox {
+  width: 100%;
+  margin: 0 0 5px 0;
+}
+.settlementSelectBoxInner {
+    padding: 2px;
+    border: 2px solid #ccc;
+    -moz-border-radius: 6px;
+    -webkit-border-radius: 6px;
+    border-radius: 6px;
+}
+.settlementSelectBox table {
+    width: 100%;
+}
+.settlementSelectBox th {
+    width: 25%;
+    padding: 5px 10px;
+}
+.settlementSelectBox td {
+    padding: 12px;
+    background: #fff;
+}
+.settlementSelectBox select {
+    padding: 5px;
+    border: 1px solid #ccc;
+}
+.settlementPayBox table {
+    display: table-caption;
+    width: 100%;
+    border: 3px solid #eee;
+}
+.settlementPayBox td dl {
+    width: 400px;
+    margin-left: 10px;
+}
+.settlementPayBox dt {
+    padding: 15px 10px 10px;
+    color: #bf0000;
+    font-size: 116.7%;
+    font-weight: bold;
+}
+.settlementPayBox dd {
+    overflow: hidden;
+    padding: 10px 10px 15px;
+}
 /* confirm page
 -------------------------------------------- */
-main #confirm {
+main #content {
     position: relative;
     width: 950px;
     text-align: left;
@@ -258,63 +454,18 @@ form.form-box p img {
 .wrap-checkbox + .wrap-checkbox {
   margin-top: 20px;
 }
-.wrap-checkbox input[type=checkbox] {
-    display: inline-block;
-    margin-right: 6px;
-}
-.wrap-checkbox input[type=checkbox] + label {
-    position: relative;
-    display: inline-block;
-    margin-right: 12px;
-    line-height: 30px;
-    cursor: pointer;
-}
-.wrap-checkbox input[type=checkbox] {
-	display: none;
-	margin: 0;
-	background: #000;
-}
-.wrap-checkbox input[type=checkbox] + label {
-	padding: 0 0 0 30px;
-}
-.wrap-checkbox input[type=checkbox] + label::before {
-	content: "";
-	position: absolute;
-	top: 50%;
-	left: 0;
-	-moz-box-sizing: border-box;
-	box-sizing: border-box;
-	display: block;
-	width: 18px;
-	height: 18px;
-	margin-top: -9px;
-	background: #FFF;
-}
-.wrap-checkbox input[type=checkbox] + label::before {
-	border: 2px solid #ccc;
-}
-.wrap-checkbox input[type=checkbox]:checked + label::after {
-	content: "";
-	position: absolute;
-	top: 50%;
-	-moz-box-sizing: border-box;
-	box-sizing: border-box;
-	display: block;
-}
-.wrap-checkbox input[type=checkbox]:checked + label::after {
-	left: 3px;
-	width: 16px;
-	height: 8px;
-	margin-top: -8px;
-	border-left: 3px solid #E71063;
-	border-bottom: 3px solid #E71063;
-	-webkit-transform: rotate(-45deg);
-	-ms-transform: rotate(-45deg);
-	transform: rotate(-45deg);
-}
 .wrap-checkbox .wrap-mailmagzine-description {
   background: #dfdfdf;
   padding: 10px;
+}
+/* ETC
+ -------------------------------------------- */
+.notice h4 {
+  background: #D3D3D3;
+  padding: 3px 5px;
+}
+.wrap-notice p {
+  margin: 0 0 10px 20px;
 }
 .wrap-btn {
   text-align: center;
@@ -325,7 +476,7 @@ form.form-box p img {
   background: #5A5A5A;
   color: #ffffff;
   text-decoration: none;
-  padding: 5px 30px;
+  padding: 10px 0;
   width: 40%;
   font-weight: bold;
   font-size: 20px;
@@ -338,10 +489,4 @@ form.form-box p img {
 }
 .wrap-btn .btn:hover {
   opacity: 0.75;
-}
-/* ETC
- -------------------------------------------- */
-.notice h4 {
-  background: #D3D3D3;
-  padding: 3px 5px;
 }

@@ -32,23 +32,18 @@ body {
 
 
 /* ts-header ============================== */
-.ts-header {
-	position: relative;
-	width: 100%;
-	background: #FFF;	
-	text-align: left;
-	padding: 10px 0;
-	margin: 0 auto;
+header .head {
+  height: 60px;
 }
-.ts-header-inner {
-	width: 100%;
-	margin: 0 auto;
+header h1 {
+  padding-left: 10px;
+  line-height: 60px;
 }
-/* ts-header-logobox */
-.ts-header-logobox img {
-    display: block;
-    margin: auto;
-    width: 100%;
+header h1 img {
+  text-align: left;
+  border-radius: 5px;
+  background: #ffffff;
+  padding: 5px;
 }
 
 /* ts-footer ============================== */

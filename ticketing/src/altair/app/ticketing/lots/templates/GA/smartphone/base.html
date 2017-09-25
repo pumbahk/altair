@@ -15,27 +15,28 @@
 
   <script type="text/javascript" src="${request.static_url('altair.app.ticketing.lots:static/common/js/jquery.js')}"></script>
 </head>
-   <body id="settlement">
-    <div id="container" class="ts-wrapper">
-      <!-- ========== header ========== -->
-        <%include file="../includes/header.html" />
-        <!-- ========== /header ========== -->
+<body id="settlement">
+  <!-- ========== header ========== -->
+  <%include file="../includes/header.html" />
+  <!-- ========== /header ========== -->
+  <div id="container" class="ts-wrapper">
+  <!-- ========== main ========== -->
 
-      <!-- ========== main ========== -->
+    <div class="selectwrapper">
       % if request.organization.setting.i18n:
-      <div class="selectwrapper">
-        ${h.create_url_link(request) |n}
-      </div>
+      ${h.create_url_link(request) |n}
       % endif
-      <div id="main" class="ts-contents">
-        <div class="ts-contents-inner">
-          <h1 class="heading-primary">${__(u'チケット申込')}</h1>
-          ${self.body()}
-        </div>
-      </div>
-      <!-- ========== /main ========== -->
     </div>
-    <!-- /container -->
-    <%block name="javascript"></%block>
-  </body>
+
+    <div id="main" class="ts-contents">
+      <div class="ts-contents-inner">
+        <h1 class="heading-primary">${__(u'チケット申込')}</h1>
+        ${self.body()}
+      </div>
+    </div>
+  <!-- ========== /main ========== -->
+  </div>
+  <!-- /container -->
+  <%block name="javascript"></%block>
+</body>
 </html>

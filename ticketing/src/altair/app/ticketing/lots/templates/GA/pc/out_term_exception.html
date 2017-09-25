@@ -19,7 +19,11 @@
   endif
 %>
 
-<p>
-${__(u"{0} {1} の申込期間は {2} ～ {3} となっております。").format(lot.event.title, lot.name, start_at, end_at)}
-</p>
+<div id="content">
+  <div class="wrap-content">
+    <p>
+      ${__(u"{0} {1} の申込期間は {2} ～ {3} となっております。").format(lot.event.title, lot.name, start_at, end_at)}
+    </p>
+  </div>
+</div>
 
