@@ -53,7 +53,7 @@ def relativate(a, b):
     else:
         return abs_b[len(pfx) + 1:]
 
-def import_tree(registry, update, organization, xmldoc, file, bundle_base_url=None, venue_id=None, max_adjacency=None, prefecture=u'全国'):
+def import_tree(update, organization, xmldoc, bundle_base_url=None, venue_id=None, max_adjacency=None, prefecture=u'全国'):
     # 論理削除をインストールする都合でコードの先頭でセッションが初期化
     # されてほしくないので、ここで import する
     from altair.app.ticketing.models import DBSession
@@ -343,6 +343,10 @@ def import_tree(registry, update, organization, xmldoc, file, bundle_base_url=No
     DBSession.merge(site)
     DBSession.merge(venue)
 
+
+def upload_svg(registry, file, bundle_base_url):
+    backend_metadata_url = myurljoin(bundle_base_url, 'metadata.json')
+
     resolver = get_resolver(registry)
     metadata = resolver.resolve(backend_metadata_url)
     drawing = resolver.resolve(myurljoin(bundle_base_url, 'root.svg'))
@@ -351,6 +355,7 @@ def import_tree(registry, update, organization, xmldoc, file, bundle_base_url=No
         metadata.write(json.dumps(dict(pages={'root.svg':{}}), encoding='utf-8'))
     else:
         print 'WARNING: Drawing was not uploaded automatically'
+
 
 def import_or_update_svg(env, update, organization_name, file, bundle_base_url, venue_id, max_adjacency, dry_run, prefecture):
     from altair.app.ticketing.models import DBSession
@@ -364,15 +369,17 @@ def import_or_update_svg(env, update, organization_name, file, bundle_base_url, 
     title = root.find('{%s}title' % SVG_NAMESPACE)
     print '  Title: %s' % title.text.encode(io_encoding)
     try:
-        import_tree(env['registry'], update, organization, xmldoc, file, bundle_base_url, venue_id, max_adjacency, prefecture)
+        import_tree(update, organization, xmldoc, bundle_base_url, venue_id, max_adjacency, prefecture)
         if dry_run:
             transaction.abort()
         else:
+            upload_svg(env['registry'], file, bundle_base_url)
             transaction.commit()
     except:
         transaction.abort()
         raise
- 
+
+
 def main():
     parser = argparse.ArgumentParser(description='import venue data')
     parser.add_argument('config_uri', metavar='config', type=str,
@@ -407,8 +414,9 @@ def main():
     bundle_base_url = myurljoin(site_base_url, parsed_args.base_url)
     if bundle_base_url[-1] != '/':
         bundle_base_url += '/'
-    hex_prefecture = parsed_args.prefecture
-    prefecture = hex_prefecture.decode('hex')
+    prefecture = parsed_args.prefecture
+    if re.match(r"[0-9A-Z]+", prefecture, re.IGNORECASE):
+        prefecture = prefecture.decode('hex')
     for svg_file in parsed_args.svg_files:
         import_or_update_svg(
             env,

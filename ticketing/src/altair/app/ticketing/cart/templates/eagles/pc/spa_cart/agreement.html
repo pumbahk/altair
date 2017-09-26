@@ -1,0 +1,66 @@
+<%inherit file="./base.html"/>
+
+<%block name="javascript">
+    <script type="text/javascript" src="${request.static_url('altair.app.ticketing.cart:static/js/ajaxzip3-https.js')}"></script>
+</%block>
+
+%if request.session.peek_flash():
+    %for message in request.session.pop_flash():
+    <div class="error">${message}</div>
+    %endfor
+%endif
+
+
+
+		<div class="login-page">
+			<div class="contents">
+				<!--****************************************************************-->
+				<section class="headArea">
+					<div class="inner">
+						<p>
+							<span>${performance.name}</span>
+							<span>${performance.venue.name}</span>
+							<span>${h.performance_datetime(performance)}～</span>
+						</p>
+					</div>
+				</section>
+				<div class="inner purchaseInner">
+					<!-- ******************** contents [start] ******************** -->
+					<div id="main">
+						<h1 class="purchaseTtl">利用規約</h1>
+						<div id="ruleBox">
+							<div class="ruleBoxInner">
+								<!--//////////////////////////-->
+								<div class="pagesBody01">
+                                    ${agreement_body}
+                                </div>
+							</div>
+						</div>
+						<div class="ruleCheckBox">
+                        <form id="form1" name="form1" method="post" action="${request.current_route_path(_query=request.GET)}">
+                            <input type="checkbox" name="agree" value="規約に同意する" id="ruleCheck">
+								<label class="checkbox" for="ruleCheck">利用規約に同意します。</label>
+								<input class="" type="submit" id="submit" value="次へ">
+							</form>
+						</div>
+					</div>
+					<!-- ******************** contents [end] ******************** -->
+				</div>
+				<!--****************************************************************-->
+			</div>
+		</div>
+
+
+
+
+
+
+
+% if request.organization.setting.sitecatalyst_use:
+<!--SiteCatalyst-->
+<%
+    sc = {"pagename": "agreement"}
+%>
+<%include file="../../common/sc_basic.html" args="sc=sc" />
+<!--/SiteCatalyst-->
+% endif

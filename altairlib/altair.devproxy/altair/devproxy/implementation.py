@@ -122,6 +122,9 @@ class MyProxyRequest(proxy.ProxyRequest):
         if 'host' not in self.target_headers:
             self.target_headers['host'] = self.parsed.netloc
 
+        if '.stg.altr.jp' in self.target_headers['host'] and not ('swagger' in self.target_headers['host']):
+            self.setHeader('Access-Control-Allow-Origin', '*')
+
         self.content.seek(0, 0)
         s = self.content.read()
         if self.target_port is None:

@@ -32,6 +32,7 @@ from altair.app.ticketing.payments import api as payments_api
 from altair.app.ticketing.payments.exceptions import PaymentDeliveryMethodPairNotFound, OrderLikeValidationFailure
 from altair.mq import get_publisher
 from altair.sqlahelper import get_db_session
+from . import SPA_COOKIE
 
 from .interfaces import (
     IPaymentMethodManager,
@@ -765,3 +766,19 @@ def make_order_from_cart(request, cart):
     notify_order_completed(request, order)
     clear_extra_form_data(request)
     return order
+
+
+def is_spa_mode(request):
+    if request.cookies.get(SPA_COOKIE):
+        return True
+    return False
+
+
+def set_spa_access(response):
+    response.set_cookie(SPA_COOKIE, str(datetime.now()))
+    return response
+
+
+def delete_spa_access(response):
+    response.delete_cookie(SPA_COOKIE)
+    return response

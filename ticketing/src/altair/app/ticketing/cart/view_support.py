@@ -917,7 +917,10 @@ def back_to_top(request):
 
     api.remove_cart(request)
 
-    return HTTPFound(event_id and request.route_url('cart.index', event_id=event_id, **extra) or request.context.host_base_url or "/", headers=request.response.headers)
+    if api.is_spa_mode(request):
+        return HTTPFound(performance_id and request.route_url('cart.spa.index', performance_id=performance_id, anything='') or request.context.host_base_url or "/", headers=request.response.headers)
+    else:
+        return HTTPFound(event_id and request.route_url('cart.index', event_id=event_id, **extra) or request.context.host_base_url or "/", headers=request.response.headers)
 
 def back(pc=back_to_top, mobile=None):
     if mobile is None:

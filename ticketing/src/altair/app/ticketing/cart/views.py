@@ -42,12 +42,15 @@ from altair.app.ticketing.venues.api import get_venue_site_adapter
 from altair.mobile.interfaces import IMobileRequest
 from altair.sqlahelper import get_db_session
 from altair.app.ticketing.temp_store import TemporaryStoreError
+from pyramid.renderers import render_to_response
+from pyramid.response import Response
 
 from . import api
 from . import helpers as h
 from . import schemas
 from . import forms_i18n
-from .api import set_rendered_event, is_smartphone, is_point_input_required, is_fc_auth_organization
+from .api import set_rendered_event, is_smartphone, is_point_input_required, is_fc_auth_organization, set_spa_access\
+    , delete_spa_access, is_spa_mode
 from altair.mobile.api import set_we_need_pc_access, set_we_invalidate_pc_access
 from .reserving import InvalidSeatSelectionException, NotEnoughAdjacencyException
 from .stocker import InvalidProductSelectionException, NotEnoughStockException
@@ -95,6 +98,7 @@ logger = logging.getLogger(__name__)
 
 limiter = LimiterDecorators('altair.cart.limit_per_unit_time', TooManyCartsCreated)
 
+
 def back_to_product_list_for_mobile(request):
     cart = api.get_cart_safe(request)
     api.remove_cart(request)
@@ -105,6 +109,42 @@ def back_to_product_list_for_mobile(request):
             performance_id=cart.performance_id,
             sales_segment_id=cart.sales_segment_id,
             seat_type_id=cart.items[0].product.items[0].stock.stock_type_id))
+
+def check_auth_for_spa(fn):
+    def _check(context, request):
+        user = context.authenticated_user()
+        return fn(context, request)
+    return _check
+
+
+@view_defaults(decorator=check_auth_for_spa, xhr=False, permission="buy")
+class SpaCartIndexView(IndexViewMixin):
+    """ Angular2カート """
+    def __init__(self, context, request):
+        IndexViewMixin.__init__(self)
+        self.context = context
+        self.request = request
+        self.prepare()
+
+    @lbr_view_config(route_name='cart.spa.index', renderer=selectable_renderer("index.html"))
+    @lbr_view_config(route_name='cart.spa.index',
+                     request_type="altair.mobile.interfaces.ISmartphoneRequest",
+                     renderer=selectable_renderer("index.html"))
+    def spa_performance_based_landing_page(self):
+        if not self.context.authenticated_user():
+            logger.warn("no authenticated user")
+            return HTTPNotFound()
+        try:
+            sales_segments = self.context.available_sales_segments
+        except NoCartError:
+            logger.warn("no available sales segment for authenticated user")
+            return HTTPNotFound()
+
+        if not is_spa_mode(self.request):
+            response = set_spa_access(self.request.response)
+            return HTTPFound(headers=response.headers, location=self.request.route_url('cart.spa.index', performance_id=self.context.performance.id, anything=""))
+        return {}
+
 
 @provider(IPageFlowPredicate)
 def flow_predicate_extra_form(pe, flow_context, context, request):
@@ -295,7 +335,7 @@ class PerPerformanceAgreementView(object):
         selected_sales_segment = sales_segments[0]
         if not selected_sales_segment.setting.disp_agreement:
             return HTTPFound(self.request.route_url('cart.index2', performance_id=self.context.performance.id, _query=self.request.GET))
-        return dict(agreement_body=Markup(selected_sales_segment.setting.agreement_body))
+        return dict(performance=self.context.performance, agreement_body=Markup(selected_sales_segment.setting.agreement_body))
 
     @lbr_view_config(request_method="POST")
     def post(self):
@@ -398,7 +438,6 @@ def create_event_dict(view, performance_id, sales_segments, i18n=False):
         product=view.context.event.products
         )
 
-
 @view_defaults(decorator=(with_jquery + with_jquery_tools).not_when(mobile_request), xhr=False, permission="buy")
 class RecaptchaView(IndexViewMixin):
     """ Recaptcha画面 """
@@ -456,7 +495,6 @@ class RecaptchaView(IndexViewMixin):
             return HTTPFound(self.request.route_url('cart.index2', performance_id=self.context.performance.id, _query=param))
         return dict(sitekey=self.context.recaptcha_sitekey)
 
-
 @view_defaults(decorator=(with_jquery + with_jquery_tools).not_when(mobile_request), xhr=False, permission="buy")
 class IndexView(IndexViewMixin):
     """ 座席選択画面 """
@@ -473,6 +511,8 @@ class IndexView(IndexViewMixin):
                  renderer=selectable_renderer("index.html"))
     def event_based_landing_page(self):
         jump_maintenance_page_for_trouble(self.request.organization)
+        if is_spa_mode(self.request):
+            return delete_spa_access(HTTPFound())
 
         # 会場
         try:
@@ -550,6 +590,8 @@ class IndexView(IndexViewMixin):
                  renderer=selectable_renderer("index.html"))
     def performance_based_landing_page(self):
         jump_maintenance_page_for_trouble(self.request.organization)
+        if is_spa_mode(self.request):
+            return delete_spa_access(HTTPFound())
 
         sales_segments = self.context.available_sales_segments
         selector_name = self.context.event.performance_selector
@@ -1121,6 +1163,7 @@ class PaymentView(object):
             form['prefecture'].data = default_prefecture
         return dict(
             form=form,
+            performance=self.context.performance,
             payment_delivery_methods=payment_delivery_methods,
             custom_locale_negotiator=custom_locale_negotiator(self.request) if self.request.organization.setting.i18n else ""
             )
@@ -1224,6 +1267,7 @@ class PaymentView(object):
                 raise PaymentMethodEmptyError.from_resource(self.context, self.request)
             return dict(
                 form=self.form,
+                performance=self.context.performance,
                 payment_delivery_methods=payment_delivery_methods,
                 custom_locale_negotiator=custom_locale_negotiator(self.request) if self.request.organization.setting.i18n else ""
                 )
@@ -1299,7 +1343,7 @@ class ExtraFormView(object):
                 mode='entry'
                 )
             )
-        return dict(form=form, form_fields=form_fields)
+        return dict(cart=self.context.cart, form=form, form_fields=form_fields)
 
     @lbr_view_config(request_method="POST")
     def post(self):
@@ -1380,7 +1424,8 @@ class PointAccountEnteringView(object):
 
         return dict(
             form=form,
-            asid=asid
+            asid=asid,
+            performance=self.context.performance
         )
 
     @back(back_to_top, back_to_product_list_for_mobile)
@@ -1484,6 +1529,7 @@ class ConfirmView(object):
             membershipinfo = self.context.membershipinfo,
             extra_form_data=extra_form_data,
             accountno=acc.account_number if acc else "",
+            performance=self.context.performance,
             custom_locale_negotiator=custom_locale_negotiator(self.request) if self.request.organization.setting.i18n else "",
             i18n=self.request.organization.setting.i18n,
         )

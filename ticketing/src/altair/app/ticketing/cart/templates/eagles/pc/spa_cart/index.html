@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ja" class="no-js">
+<head>
+  <title>イーグルスチケット（Eチケ）</title>
+  <base href="/cart/spa/">
+  <meta charset="utf-8">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <script type="text/javascript">
+  (function() {
+    var u = navigator.userAgent;
+    if ((u.indexOf('iPhone') >= 0) || u.indexOf('iPod') >= 0 || u.indexOf('Android') >= 0) {
+        document.write('<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">');
+    } else {
+        document.write('<meta name="viewport" content="width=1040, user-scalable=yes">');
+    }
+  })();
+  (function() {
+    var u = navigator.userAgent;
+    if (u.indexOf('Trident') >= 0) {
+        if (u.indexOf('MSIE') == -1) {
+            return; // IE11
+        } else if (u.indexOf('MSIE 10') >= 0) {
+            return; // IE10
+        }
+    } else if(u.indexOf('Edge') >= 0) {
+        return; // Edge
+    } else if(u.match(/(iPhone|iPad|iPod) OS (\d+)_/)) {
+        if(9 <= parseInt(u.match(/(iPhone|iPad|iPod) OS (\d+)_/)[2])) {
+            return; // iPhone 9+ (include Chrome)
+        }
+    } else if(u.match(/Android \d+/)) {
+        if(4.4 <= parseFloat(u.match(/(Android) (\d+\.\d+)/)[2])) {
+            return; // Android 4.4+
+        }
+    } else if(u.indexOf('Chrome') >= 0 || u.indexOf('Safari') >= 0 || u.indexOf('Firefox') >= 0) {
+        return;
+    }
+    alert('お使いのブラウザはサポートされておりません.');
+    if(location.pathname.indexOf('/cart/spa/') == 0) {
+        location.href = location.href.replace(/\/cart\/spa\//, '/cart/');
+    } else {
+        location.href = '/';
+    }
+  })();
+  </script>
+  <meta name="description" content="プロ野球 東北楽天ゴールデンイーグルスのオフィシャルチケットサイト。チケット購入は『イーグルスチケット（Eチケ）』で！">
+  <meta name="keywords" content="Eチケ,イーチケ,イーグルスチケット,EAGLES TICKET,eagles ticket,楽天イーグルス,RAKUTEN EAGLES,rakuten eagles,イーグルス,EAGLES,rakuten,楽天イーグルス チケット,RAKUTEN EAGLES TICKET,rakuten eagles ticket">
+<link href="/cart/static/spa_cart/styles.2077e59b55950ae0a83d.bundle.css" rel="stylesheet"/></head>
+<body>
+  <div id="fb-root"></div>
+  <div class="page">
+    <app-root></app-root>
+  </div>
+  <!-- /.page -->
+<script type="text/javascript" src="/cart/static/spa_cart/inline.42f7cdc28c8b2fe1d244.bundle.js"></script><script type="text/javascript" src="/cart/static/spa_cart/polyfills.9a6944d1d5a3ab2ec7db.bundle.js"></script><script type="text/javascript" src="/cart/static/spa_cart/vendor.f788efd125972878cc63.bundle.js"></script><script type="text/javascript" src="/cart/static/spa_cart/main.2938682c7f6fa7afb79b.bundle.js"></script></body>
+</html>

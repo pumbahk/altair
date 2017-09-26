@@ -35,6 +35,7 @@ FC_AUTH_URL_PREFIX = '/static.fc_auth/'
 FC_AUTH_CDN_URL_PREFIX = '/fc_auth/static/'
 FC_AUTH_STATIC_ASSET_SPEC = "altair.app.ticketing.fc_auth:static/"
 
+SPA_COOKIE = "_spaaccess"
 
 class RakutenAuthContext(object):
     def __init__(self, request):
@@ -350,6 +351,7 @@ def setup_routes(config):
     config.add_route('cart.index', 'events/{event_id}', factory='.resources.compat_ticketing_cart_resource_factory')
     config.add_route('cart.index.sales', 'events/{event_id}/sales/{sales_segment_group_id}', factory='.resources.compat_ticketing_cart_resource_factory')
     config.add_route('cart.index2', 'performances/{performance_id}', factory='.resources.PerformanceOrientedTicketingCartResource')
+    config.add_route('cart.spa.index', 'spa/performances/{performance_id}*anything', factory='.resources.PerformanceOrientedTicketingCartResource')
     config.add_route('cart.index.sales2', 'performances/{performance_id}/sales/{sales_segment_group_id}')
 
     config.add_route('cart.index.recaptcha', 'events/{event_id}/recaptcha', factory='.resources.compat_ticketing_cart_resource_factory')

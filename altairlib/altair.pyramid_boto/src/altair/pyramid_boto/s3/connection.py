@@ -1,5 +1,5 @@
 from zope.interface import implementer
-from boto.s3.connection import S3Connection
+from boto.s3.connection import S3Connection, OrdinaryCallingFormat
 from ..interfaces import IS3ConnectionFactory
 from ..interfaces import IS3ContentsUploader
 from boto.exception import S3ResponseError
@@ -10,6 +10,7 @@ logger = logging.getLogger(__name__)
 
 CONFIG_PREFIXES = ('s3_asset_resolver', 's3')
 
+
 def newDefaultS3ConnectionFactory(config):
     """
     use:
@@ -18,25 +19,39 @@ def newDefaultS3ConnectionFactory(config):
     s3.access_key
     s3.secret_key
     """
-    options = {}
     for prefix in CONFIG_PREFIXES:
-        for key in ('access_key', 'secret_key'):
-            value = config.registry.settings.get('%s.%s' % (prefix, key))
-            if value is not None and key not in options:
-                options[key] = value
-    try:
-        return DefaultS3ConnectionFactory(**options)
-    except:
-        return None
+        access_key = config.registry.settings.get('%s.access_key' % prefix)
+        if access_key is not None:
+            options = {'access_key': access_key}
+            for key in ('secret_key', 'host', 'path'):
+                value = config.registry.settings.get('%s.%s' % (prefix, key))
+                if value is not None:
+                    options[key] = value
+            try:
+                return DefaultS3ConnectionFactory(**options)
+            except:
+                pass
+    return None
 
 @implementer(IS3ConnectionFactory)
 class DefaultS3ConnectionFactory(object):
     def __init__(self, access_key, secret_key, **options):
         self.access_key = access_key
         self.secret_key = secret_key
+        self.options = dict()
+
+        if 'host' in options:
+            host_port = options['host'].split(':')
+            if len(host_port) == 2:
+                self.options['calling_format'] = OrdinaryCallingFormat()
+                self.options['is_secure'] = False
+                self.options['host'] = host_port[0]
+                self.options['port'] = int(host_port[1])
+        if 'path' in options:
+            self.options['path'] = options['path']
 
     def __call__(self):
-        return S3Connection(self.access_key, self.secret_key) 
+        return S3Connection(self.access_key, self.secret_key, **self.options)
 
 class InvalidOption(Exception):
     pass
