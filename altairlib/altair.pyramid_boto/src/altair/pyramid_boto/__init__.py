@@ -4,17 +4,29 @@ from .s3.connection import DefaultS3ConnectionFactory
 
 CONFIG_PREFIXES = ('altair.s3', 's3',)
 
+
 def newDefaultS3ConnectionFactory(config):
-    options = {}
+    """
+    use:
+    altair.s3.access_key
+    altair.s3.secret_key
+    s3.access_key
+    s3.secret_key
+    """
     for prefix in CONFIG_PREFIXES:
-        for key in ('access_key', 'secret_key'):
-            value = config.registry.settings.get('%s.%s' % (prefix, key))
-            if value is not None and key not in options:
-                options[key] = value
-    try:
-        return DefaultS3ConnectionFactory(**options)
-    except:
-        return None
+        access_key = config.registry.settings.get('%s.access_key' % prefix)
+        if access_key is not None:
+            options = {'access_key': access_key}
+            for key in ('secret_key', 'host', 'path'):
+                value = config.registry.settings.get('%s.%s' % (prefix, key))
+                if value is not None:
+                    options[key] = value
+            try:
+                return DefaultS3ConnectionFactory(**options)
+            except:
+                pass
+    return None
+
 
 def includeme(config):
     factory = newDefaultS3ConnectionFactory(config)

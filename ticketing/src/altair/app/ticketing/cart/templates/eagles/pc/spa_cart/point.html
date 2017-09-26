@@ -1,0 +1,111 @@
+<%inherit file="./base.html"/>
+
+<%block name="javascript">
+    <script type="text/javascript" src="${request.static_url('altair.app.ticketing.cart:static/js/ajaxzip3-https.js')}"></script>
+    <script type="text/javascript">
+    <!--
+        (function() {
+            var g = /^\?.*account=([^&=]*)/.exec(location.search);
+            if (g) {
+                window.opener.document.forms["form1"].accountno.value = g[1];
+                window.close();
+            }
+        })();
+    // -->
+    </script>
+</%block>
+
+%if request.session.peek_flash():
+    %for message in request.session.pop_flash():
+    <div class="error">${message}</div>
+    %endfor
+%endif
+
+
+
+		<div class="login-page">
+			<div class="contents">
+				<!--****************************************************************-->
+				<section class="headArea">
+					<div class="inner">
+						<p>
+							<span>${performance.name}</span>
+							<span>${performance.venue.name}</span>
+							<span>${h.performance_datetime(performance)}～</span>
+						</p>
+					</div>
+				</section>
+				<div class="inner purchaseInner">
+					<!-- ******************** contents [start] ******************** -->
+					<div id="main">
+						<div class="fullbox height70" >
+							<h1 class="purchaseTtl">チケット購入</h1>
+						</div>
+						<nav class="nav-stepbar clearfix mgb30 pc">
+							<ol>
+								<li>
+									<dl>
+										<dt>STEP1</dt>
+										<dd>公演日時・会場選択</dd>
+									</dl>
+								</li>
+								<li class="current">
+									<dl>
+										<dt>STEP2</dt>
+										<dd>支払・引取方法選択</dd>
+									</dl>
+								</li>
+								<li>
+									<dl>
+										<dt>STEP3</dt>
+										<dd>購入情報確認</dd>
+									</dl>
+								</li>
+							</ol>
+						</nav>
+						<form id="form1" name="form1" method="post" action="${request.url}">
+							<div class="confirm-wrap">
+								<div class="confirmBoxInner">
+									<h2 class="heading heading_simple_line">購入者情報</h2>
+									<table border="0" cellpadding="0" cellspacing="0" id="confirmDelivery" class="customer-table4">
+										<tr>
+											<th scope="row">楽天スーパーポイント口座(半角数字)</th>
+											<td>
+												<ul>
+													<li>
+                                                        ${form['accountno'].label}
+                                                        ${form['accountno']}
+                                                        (例: 1111-2222-3333-4444)
+                                                        ${h.error_list(request, form, 'accountno')}
+                                                    </li>
+													<li>お持ちの方は、楽天スーパーポイント口座情報を入力して下さい。<br/>楽天ポイント口座を確認するには、<a href="javascript:void(window.open('https://point.rakuten.co.jp/PointAccount/PointAccountLogin/', '_blank', 'width=700,height=500,scrollbars=yes'))" class="pc">こちら</a><a href="javascript:void(window.open('https://point.rakuten.co.jp/PointAccount/PointAccountLogin/', '_blank'))" class="sp">こちら</a></li>
+												</ul>
+											</td>
+										</tr>
+									</table>
+								</div>
+							</div>
+							<p class="confirm-btnBox">
+								<input class="btn btn-primary" type="submit" form="form1" value="次へ">
+							</p>
+						</form>
+					</div>
+					<!-- ******************** contents [end] ******************** -->
+				</div>
+				<!--****************************************************************-->
+			</div>
+		</div>
+<!-- .contents -->
+<!--SiteCatalyst-->
+</div>
+<!-- /.page -->
+
+
+% if request.organization.setting.sitecatalyst_use:
+<!--SiteCatalyst-->
+<%
+    sc = {"pagename": "point"}
+%>
+<%include file="../../common/sc_basic.html" args="sc=sc" />
+<!--/SiteCatalyst-->
+% endif

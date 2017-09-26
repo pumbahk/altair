@@ -106,7 +106,8 @@ class RequestSwitchingRendererHelperFactory(object):
             )
 
     def __call__(self, name, package, registry, request=None, system_values=None, **kwargs):
-        # try to retrieve request from the system vars when not directly provided 
+        # try to retrieve request from the system vars when not directly provided
+        from altair.app.ticketing.cart.api import is_spa_mode
         if request is None:
             if system_values is not None:
                 request = system_values.get('request')
@@ -117,6 +118,8 @@ class RequestSwitchingRendererHelperFactory(object):
             view_context = self.view_context_factory(name, package, registry, request=request, system_values=system_values, **kwargs)
         if system_values is not None:
             system_values['view_context'] = view_context
+        if is_spa_mode(request):
+            name = "spa_cart/{0}".format(name)
         name = self.name_builder(name, view_context, request)
         return self.renderer_helper_factory(
             name=name,

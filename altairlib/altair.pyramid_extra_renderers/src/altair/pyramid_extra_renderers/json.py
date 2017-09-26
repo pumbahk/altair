@@ -13,10 +13,10 @@ class MyJSONEncoder(json.JSONEncoder):
         else:
             return super(MyJSONEncoder, self).default(o)
 
-
 class JSON(object):
-    def __init__(self, status_handler=None, ensure_ascii=False):
+    def __init__(self, status_handler=None, ensure_ascii=False, metadata_handler=None):
         self.status_handler = status_handler
+        self.metadata_handler = metadata_handler
         self.encoder = MyJSONEncoder(ensure_ascii=ensure_ascii)
 
     def __call__(self, info):
@@ -31,5 +31,7 @@ class JSON(object):
                 ct = response.content_type
                 if ct == response.default_content_type:
                     response.content_type = 'application/json'
+            if self.metadata_handler:
+                value = self.metadata_handler(request, value)
             return self.encoder.encode(value)
         return _render
