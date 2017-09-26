@@ -21,7 +21,7 @@ from altair.app.ticketing.models import merge_session_with_post, record_to_multi
 from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.events.performances.forms import PerformanceForm, PerformanceManycopyForm, PerformanceTermForm, PerformancePublicForm, OrionPerformanceForm
-from altair.app.ticketing.core.models import Event, Performance, PerformanceSetting, OrionPerformance
+from altair.app.ticketing.core.models import Event, Performance, PerformanceSetting, OrionPerformance, Stock_drawing_l0_id
 from altair.app.ticketing.famiport.userside_models import AltairFamiPortPerformance
 from altair.app.ticketing.orders.forms import OrderForm, OrderSearchForm, OrderImportForm
 from altair.app.ticketing.venues.api import get_venue_site_adapter
@@ -345,6 +345,46 @@ class PerformanceShowView(BaseView):
             task.delete()
             self.request.session.flash(u'予約インポートを削除しました')
         return HTTPFound(self.request.route_url('performances.import_orders.index', performance_id=self.performance.id))
+
+    @view_config(route_name="performances.region.index", request_method='GET')
+    def region_index_view(self):
+        data = {
+            'tab': 'region',
+            'action': '',
+            'performance': self.performance,
+            'stock_types': self.performance.stock_types,
+            'stock_holders': self.performance.event.stock_holders,
+            'products': self.performance.products,
+        }
+        return data
+
+    @view_config(route_name="performances.region.update", request_method='POST')
+    def region_update(self):
+        # convert to set
+        update = set()
+        for k, v in self.request.params.items():
+            m = re.match('(\d+)\[\]', k)
+            if m and v != '':
+                update.add((int(m.group(1)), v))
+
+        for stock_type in self.performance.stock_types:
+            for stock in stock_type.stocks:
+                if stock.performance.id == self.performance.id and stock.stock_holder:
+                    for stock_drawing_l0_id in stock.stock_drawing_l0_ids:
+                        drawing_l0_id = stock_drawing_l0_id.drawing_l0_id
+                        if (stock.id, drawing_l0_id) in update:
+                            update.remove((stock.id, drawing_l0_id))
+                        else:
+                            # Should remove from db
+                            DBSession.delete(stock_drawing_l0_id)
+
+        for (stock_id, drawing_l0_id) in update:
+            # Should add to db
+            DBSession.add(Stock_drawing_l0_id(stock_id=stock_id, drawing_l0_id=drawing_l0_id))
+
+        DBSession.flush()
+        self.request.session.flash(u'領域設定を更新しました')
+        return HTTPFound(self.request.route_url('performances.region.index', performance_id=self.performance.id))
 
     @view_config(route_name="performances.orion.index", request_method='GET')
     def orion_index_view(self):

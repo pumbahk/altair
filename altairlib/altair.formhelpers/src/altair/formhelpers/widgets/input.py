@@ -61,6 +61,9 @@ class OurTextInput(OurInput):
 class OurPasswordInput(OurInput):
     input_type = 'password'
 
+class OurEmailInput(OurInput):
+    input_type = 'email'
+
 class OurHiddenInput(OurInput):
     input_type = 'hidden'
 

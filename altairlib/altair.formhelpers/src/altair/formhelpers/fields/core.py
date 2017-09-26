@@ -7,7 +7,7 @@ from wtforms.fields.core import _unset_value
 from wtforms.compat import iteritems
 from wtforms.widgets import html_params, HTMLString
 from wtforms.validators import StopValidation
-from ..widgets import OurInput, OurTextInput, OurPasswordInput, OurTextArea, OurCheckboxInput, OurRadioInput, OurFileInput, OurListWidget, OurTableWidget
+from ..widgets import OurInput, OurTextInput, OurEmailInput, OurPasswordInput, OurTextArea, OurCheckboxInput, OurRadioInput, OurFileInput, OurListWidget, OurTableWidget
 from ..widgets.select import SelectRendrant
 from zope.deprecation import deprecation
 from .select import (
@@ -32,6 +32,7 @@ __all__ = [
     'OurRadioField',
     'OurTextField',
     'OurTextAreaField',
+    'OurEmailField',
     'OurSelectField',
     'OurSelectMultipleField',
     'OurSelectMultipleDictField',
@@ -232,6 +233,10 @@ class OurRadioField(fields.RadioField, RendererMixin, OurFieldMixin):
 class OurTextField(fields.TextField, RendererMixin, OurFieldMixin):
     __metaclass__ = field_class_factory
     widget = OurTextInput()
+
+class OurEmailField(fields.TextField, RendererMixin, OurFieldMixin):
+    __metaclass__ = field_class_factory
+    widget = OurEmailInput()
 
 class OurTextAreaField(fields.TextAreaField, RendererMixin, OurFieldMixin):
     __metaclass__ = field_class_factory

@@ -77,6 +77,7 @@ selectable_renderer_helper_factory = RequestSwitchingRendererHelperFactory(
     view_context_factory=lambda name, package, registry, request, **kwargs: request.view_context
     )
 
+
 def selectable_renderer(name):
     return RendererHelperProxy(
         selectable_renderer_helper_factory,

@@ -58,16 +58,27 @@ def get_next_order_no(request, organization, name="order_no"):
     base_id = OrderNoSequence.get_next_value(name)
     return organization.code + sensible_alnum_encode(base_id).zfill(10)
 
+
 def get_channel(channel=None, request=None):
     from .models import ChannelEnum
     for c in ChannelEnum:
         if c.v == channel:
+            if ChannelEnum.SPA.v == channel:
+                return get_spa_channel()
             return c
 
     if request and is_mobile_request(request):
         return ChannelEnum.Mobile
     else:
         return ChannelEnum.PC
+
+
+def get_spa_channel(request=None):
+    from .models import ChannelEnum
+    if request and is_mobile_request(request):
+        return ChannelEnum.Mobile_SPA
+    else:
+        return ChannelEnum.PC_SPA
 
 def delete_event(event):
     # 既に販売されている場合は削除できない

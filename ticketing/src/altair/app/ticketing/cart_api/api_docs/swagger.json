@@ -1,0 +1,772 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "title": "Altair Cart API",
+        "description": "Altair Cart API for frontend App",
+        "version": "1.0.0"
+    },
+    "host": "eagles.stg.altr.jp",
+    "schemes": [
+        "http",
+        "https"
+    ],
+    "basePath": "/cart_api/api/v1",
+    "produces": [
+        "application/json"
+    ],
+    "paths": {
+        "/events/{event_id}/performances": {
+            "get": {
+                "summary": "Performances",
+                "description": "return all performances related to the specific event\n",
+                "parameters": [
+                    {
+                        "name": "event_id",
+                        "in": "path",
+                        "description": "event id",
+                        "required": true,
+                        "type": "integer",
+                        "format": "int32",
+                        "x-example": 6614
+                    }
+                ],
+                "tags": [
+                    "Performances"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "performances",
+                        "schema": {
+                            "properties": {
+                                "data": {
+                                    "$ref": "#/definitions/PerformancesResource"
+                                },
+                                "environment": {
+                                    "description": "server name",
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "default": {
+                        "description": "Unexpected error",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/performances/{performance_id}": {
+            "get": {
+                "summary": "Performance info",
+                "description": "return a specific performance info\n",
+                "parameters": [
+                    {
+                        "name": "performance_id",
+                        "in": "path",
+                        "description": "id of performance",
+                        "required": true,
+                        "type": "integer",
+                        "format": "int32",
+                        "x-example": 28677
+                    }
+                ],
+                "tags": [
+                    "Performances"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "performance",
+                        "schema": {
+                            "properties": {
+                                "data": {
+                                    "$ref": "#/definitions/PerformanceResource"
+                                },
+                                "environment": {
+                                    "description": "server name",
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "default": {
+                        "description": "Unexpected error",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/performances/{performance_id}/sales_segments/{sales_segment_id}/stock_types": {
+            "get": {
+                "summary": "Stock types",
+                "description": "return all stock types related to the specific performance\n",
+                "parameters": [
+                    {
+                        "name": "performance_id",
+                        "in": "path",
+                        "description": "performance id",
+                        "required": true,
+                        "type": "integer",
+                        "format": "int32",
+                        "x-example": 28677
+                    },
+                    {
+                        "name": "sales_segment_id",
+                        "in": "path",
+                        "description": "salse segment id",
+                        "required": true,
+                        "type": "integer",
+                        "format": "int32",
+                        "x-example": 28677
+                    }
+                ],
+                "tags": [
+                    "Performances"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "stock types",
+                        "schema": {
+                            "properties": {
+                                "data": {
+                                    "$ref": "#/definitions/StockTypesResource"
+                                },
+                                "environment": {
+                                    "description": "server name",
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "default": {
+                        "description": "Unexpected error",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/performances/{performance_id}/sales_segments/{sales_segment_id}/stock_types/{stock_type_id}": {
+            "get": {
+                "summary": "Stock type",
+                "description": "return a specific stock type\n",
+                "parameters": [
+                    {
+                        "name": "performance_id",
+                        "in": "path",
+                        "description": "performance id",
+                        "required": true,
+                        "type": "integer",
+                        "format": "int32",
+                        "x-example": 28677
+                    },
+                    {
+                        "name": "sales_segment_id",
+                        "in": "path",
+                        "description": "salse segment id",
+                        "required": true,
+                        "type": "integer",
+                        "format": "int32",
+                        "x-example": 28677
+                    },
+                    {
+                        "name": "stock_type_id",
+                        "in": "path",
+                        "description": "stock type id",
+                        "required": true,
+                        "type": "integer",
+                        "format": "int32",
+                        "x-example": 28677
+                    }
+                ],
+                "tags": [
+                    "Performances"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "stock type",
+                        "schema": {
+                            "properties": {
+                                "data": {
+                                    "$ref": "#/definitions/StockTypeResource"
+                                },
+                                "environment": {
+                                    "description": "server name",
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "default": {
+                        "description": "Unexpected error",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/performances/{performance_id}/seats": {
+            "get": {
+                "summary": "Seats",
+                "description": "return all seats related to a specific performance\n",
+                "parameters": [
+                    {
+                        "name": "performance_id",
+                        "in": "path",
+                        "description": "performance id",
+                        "required": true,
+                        "type": "integer",
+                        "format": "int32",
+                        "x-example": 28677
+                    }
+                ],
+                "tags": [
+                    "Performances"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "seats",
+                        "schema": {
+                            "properties": {
+                                "data": {
+                                    "$ref": "#/definitions/SeatsResource"
+                                },
+                                "environment": {
+                                    "description": "server name",
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "default": {
+                        "description": "Unexpected error",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/performances/{performance_id}/sales_segments/{sales_segment_id}/seats/reserve": {
+            "post": {
+                "summary": "reserve Seats",
+                "description": "reserve a specific seats\n",
+                "parameters": [
+                    {
+                        "name": "performance_id",
+                        "in": "path",
+                        "description": "performance id",
+                        "required": true,
+                        "type": "integer",
+                        "format": "int32",
+                        "x-example": 28677
+                    },
+                    {
+                        "name": "sales_segment_id",
+                        "in": "path",
+                        "description": "sales_segment id",
+                        "required": true,
+                        "type": "integer",
+                        "format": "int32",
+                        "x-example": 28677
+                    },
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "description": "reserve type",
+                        "schema": {
+                            "required": [
+                                "reserve_type"
+                            ],
+                            "properties": {
+                                "reserve_type": {
+                                    "type": "string"
+                                },
+                                "selected_seats": {
+                                    "description": "only required when reserve_type is 'seat_choice'",
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                },
+                                "auto_select_conditions": {
+                                    "description": "only required when reserve_type is 'auto'",
+                                    "type": "object",
+                                    "properties": {
+                                        "stock_type_id": {
+                                            "type": "integer"
+                                        },
+                                        "quantity": {
+                                            "type": "integer"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                ],
+                "tags": [
+                    "Performances"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "reserve seats",
+                        "schema": {
+                            "properties": {
+                                "results": {
+                                    "type": "object",
+                                    "description": "status以外はOK,NG及びreserve_typeによってレスポンスの形が違う",
+                                    "required": [
+                                        "status"
+                                    ],
+                                    "properties": {
+                                        "status": {
+                                            "type": "string"
+                                        },
+                                        "reserve_type": {
+                                            "type": "string"
+                                        },
+                                        "stock_type_id": {
+                                            "type": "integer"
+                                        },
+                                        "quantity": {
+                                            "type": "integer"
+                                        },
+                                        "is_quantity_only": {
+                                            "type": "boolean"
+                                        },
+                                        "is_separeted": {
+                                            "type": "boolean"
+                                        },
+                                        "seat_l0_id": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "reason": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "default": {
+                        "description": "Unexpected error",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/performances/{performance_id}/seats/release": {
+            "post": {
+                "summary": "release Seats",
+                "description": "release seat reservation from session\n",
+                "parameters": [
+                    {
+                        "name": "performance_id",
+                        "in": "path",
+                        "description": "performance id",
+                        "required": true,
+                        "type": "integer",
+                        "format": "int32",
+                        "x-example": 28677
+                    }
+                ],
+                "tags": [
+                    "Performances"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "release seats",
+                        "schema": {
+                            "properties": {
+                                "results": {
+                                    "type": "object",
+                                    "description": "status以外はOK,NG及びreserve_typeによってレスポンスの形が違う",
+                                    "required": [
+                                        "status"
+                                    ],
+                                    "properties": {
+                                        "status": {
+                                            "type": "string"
+                                        },
+                                        "stock_type_id": {
+                                            "type": "integer"
+                                        },
+                                        "quantity": {
+                                            "type": "integer"
+                                        },
+                                        "is_quantity_only": {
+                                            "type": "boolean"
+                                        },
+                                        "seats": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "reason": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "default": {
+                        "description": "Unexpected error",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/performances/{performance_id}/select_products": {
+            "post": {
+                "summary": "selected Products",
+                "description": "selected Products\n",
+                "parameters": [
+                    {
+                        "name": "performance_id",
+                        "in": "path",
+                        "description": "performance id",
+                        "required": true,
+                        "type": "integer",
+                        "format": "int32",
+                        "x-example": 28677
+                    },
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "description": "selected products info",
+                        "schema": {
+                            "required": [
+                                "is_quantity_only"
+                            ],
+                            "properties": {
+                                "is_quantity_only": {
+                                    "type": "boolean"
+                                },
+                                "selected_products": {
+                                    "description": "selected products detail info",
+                                    "required": [
+                                      "product_id",
+                                      "quantity"
+                                    ],
+                                    "type": "object",
+                                    "properties": {
+                                        "seat_id": {
+                                            "type": "string"
+                                        },
+                                        "product_id": {
+                                            "type": "integer"
+                                        },
+                                        "quantity": {
+                                            "type": "integer"
+                                        }                               
+                                    }
+                                }
+                            }
+                        }
+                    }
+                ],
+                "tags": [
+                    "Performances"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "selected products results",
+                        "schema": {
+                            "properties": {
+                                "results": {
+                                    "type": "object",
+                                    "description": "selected products",
+                                    "required": [
+                                        "status"
+                                    ],
+                                    "properties": {
+                                        "status": {
+                                            "type": "string"
+                                        },
+                                        "reason": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "default": {
+                        "description": "Unexpected error",
+                        "schema": {
+                            "$ref": "#/definitions/Error"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "PerformanceResource": {
+            "properties": {
+                "performance": {
+                    "$ref": "#/definitions/Performance"
+                },
+                "event": {
+                    "$ref": "#/definitions/Event"
+                }
+            }
+        },
+        "PerformancesResource": {
+            "properties": {
+                "performances": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Performance"
+                    }
+                }
+            }
+        },
+        "StockTypeResource": {
+            "properties": {
+                "stock_type": {
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/StockType"
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "products": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/definitions/Product"
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "regions": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        },
+        "StockTypesResource": {
+            "properties": {
+                "stock_types": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/StockType"
+                    }
+                }
+            }
+        },
+        "SeatsResource": {
+            "properties": {
+                "stock_types": {
+                    "type": "array",
+                    "items": {
+                        "properties": {
+                            "stock_type_id": {
+                                "type": "integer"
+                            },
+                            "available_count": {
+                                "type": "integer"
+                            }
+                        }
+                    }
+                },
+                "regions": {
+                    "type": "array",
+                    "items": {
+                        "properties": {
+                            "region_id": {
+                                "type": "integer"
+                            },
+                            "available_count": {
+                                "type": "integer"
+                            }
+                        }
+                    }
+                },
+                "seats": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Seat"
+                    }
+                }
+            }
+        },
+        "Event": {
+            "type": "object",
+            "properties": {
+                "event_id": {
+                    "type": "integer"
+                },
+                "event_limit": {
+                    "type": "integer"
+                }
+            }
+        },
+        "Performance": {
+            "type": "object",
+            "properties": {
+                "performance_id": {
+                    "type": "integer"
+                },
+                "performance_name": {
+                    "type": "string"
+                },
+                "open_on": {
+                    "type": "string",
+                    "format": "dateTime"
+                },
+                "start_on": {
+                    "type": "string",
+                    "format": "dateTime"
+                },
+                "end_on": {
+                    "type": "string",
+                    "format": "dateTime"
+                },
+                "venue_id": {
+                    "type": "integer"
+                },
+                "venue_name": {
+                    "type": "string"
+                },
+                "sales_segments": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/SalesSegment"
+                    }
+                }
+            }
+        },
+        "SalesSegment": {
+            "type": "object",
+            "properties": {
+                "sales_segment_id": {
+                    "type": "integer"
+                },
+                "sales_segment_name": {
+                    "type": "string"
+                }
+            }
+        },
+        "StockType": {
+            "type": "object",
+            "properties": {
+                "stock_type_id": {
+                    "type": "integer"
+                },
+                "stock_type_name": {
+                    "type": "string"
+                },
+                "is_quantity_only": {
+                    "type": "boolean"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "min_quantity": {
+                    "type": "integer"
+                },
+                "max_quantity": {
+                    "type": "integer"
+                },
+                "min_product_quantity": {
+                    "type": "integer"
+                },
+                "max_product_quantity": {
+                    "type": "integer"
+                }
+            }
+        },
+        "Product": {
+            "type": "object",
+            "properties": {
+                "product_id": {
+                    "type": "integer"
+                },
+                "product_name": {
+                    "type": "string"
+                },
+                "price": {
+                    "type": "integer"
+                },
+                "min_product_quantity": {
+                    "type": "integer"
+                },
+                "max_product_quantity": {
+                    "type": "integer"
+                },
+                "is_must_be_chosen": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "Seat": {
+            "type": "object",
+            "properties": {
+                "seat_l0_id": {
+                    "type": "integer"
+                },
+                "is_available": {
+                    "type": "boolean"
+                },
+                "stock_type_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "Error": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer",
+                    "format": "int32"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "details": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "code": {
+                                "type": "string"
+                            },
+                            "field": {
+                                "type": "string"
+                            },
+                            "message": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

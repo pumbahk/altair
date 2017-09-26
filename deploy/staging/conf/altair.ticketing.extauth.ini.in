@@ -79,6 +79,9 @@ altair.rakuten_auth.session = ${altair:httpsession_persistence_backend_type}
 altair.rakuten_auth.session.type = ${altair:beaker_backend_type}
 altair.rakuten_auth.session.data_dir = %(here)s/../tmp/beaker/altair.rakuten_auth/data
 altair.rakuten_auth.session.lock_dir = %(here)s/../tmp/beaker/altair.rakuten_auth/lock
+altair.rakuten_auth.endpoint = ${altair:rakuten_auth.endpoint}
+altair.rakuten_auth.oauth.endpoint.access_token = ${altair:rakuten_auth.oauth.endpoint.access_token}
+altair.rakuten_auth.oauth.endpoint = ${altair:rakuten_auth.oauth.endpoint}
 
 ; altair.fanclub_auth
 altair.fanclub_auth.challenge_success_callback = altair.app.ticketing.extauth.views.rakuten_auth_challenge_succeeded

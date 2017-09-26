@@ -22,6 +22,7 @@ from altair.formhelpers.fields.datetime import (
     )
 from altair.formhelpers.fields.core import (
     OurTextField,
+    OurEmailField,
     OurRadioField,
     OurBooleanField,
     OurSelectField,
@@ -192,7 +193,7 @@ class ClientForm(OurDynamicForm):
             CP932,
             ]
         )
-    email_1 = OurTextField(
+    email_1 = OurEmailField(
         label=u"メールアドレス",
         note=u"(半角英数)",
         filters=[strip_spaces, NFKC],
@@ -202,7 +203,7 @@ class ClientForm(OurDynamicForm):
             SejCompliantEmail(),
             ]
         )
-    email_1_confirm = OurTextField(
+    email_1_confirm = OurEmailField(
         label=u"メールアドレス (確認)",
         filters=[strip_spaces, NFKC],
         validators=[
@@ -213,7 +214,7 @@ class ClientForm(OurDynamicForm):
     # XXX: 黒魔術的。email_2 に値が入っていて email_1 に値が入っていなかったら、email_1 に値を移すという動作をする
     email_2 = Liaison(
         email_1,
-        OurTextField(
+        OurEmailField(
             label=u"メールアドレス",
             filters=[strip_spaces, NFKC],
             validators=[
@@ -224,7 +225,7 @@ class ClientForm(OurDynamicForm):
     # XXX: 黒魔術的。email_2_confirm に値が入っていて email_1_confirm に値が入っていなかったら、email_1 に値を移すという動作をする
     email_2_confirm = Liaison(
         email_1_confirm,
-        OurTextField(
+        OurEmailField(
             label=u"メールアドレス (確認)",
             filters=[strip_spaces, NFKC],
             validators=[
