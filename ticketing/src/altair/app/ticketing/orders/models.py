@@ -955,7 +955,7 @@ class OrderedProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     product_item = orm.relationship('ProductItem', backref='ordered_product_items')
     issued_at = sa.Column(sa.DateTime, nullable=True, default=None)
     printed_at = sa.Column(sa.DateTime, nullable=True, default=None)
-    seats = orm.relationship("Seat", secondary=orders_seat_table, backref='ordered_product_items')
+    seats = orm.relationship("Seat", secondary=orders_seat_table, backref='ordered_product_items', order_by=sa.asc("l0_id"))
     price = sa.Column(sa.Numeric(precision=16, scale=2), nullable=False)
     refund_price = sa.Column(sa.Numeric(precision=16, scale=2), nullable=False, default=0)
 
