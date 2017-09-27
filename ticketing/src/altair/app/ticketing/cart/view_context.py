@@ -156,6 +156,9 @@ def get_cart_view_context_factory(default_package):
             else:
                 package = package_or_path
                 path = _path
+            from altair.app.ticketing.cart.api import is_spa_mode
+            if is_spa_mode(self.request):
+                path = "spa_cart/{0}".format(path)
             return '%(package)s:templates/%(organization_short_name)s/%(ua_type)s/%(path)s' % dict(
                 package=package,
                 organization_short_name=organization_short_name,
