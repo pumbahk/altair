@@ -154,6 +154,19 @@ def is_disabled_order(entry):
         return True
     return False
 
+def get_entry_status_style(request, entry):
+    now = get_now(request)
+    if entry.canceled_at:
+        return u"cancel"
+    elif entry.is_ordered and entry.lot.lotting_announce_datetime <= now:
+        return u"entry-elect"
+    elif entry.is_rejected and entry.lot.lotting_announce_datetime <= now:
+        return u"entry-reject"
+    elif entry.withdrawn_at:
+        return u"withdraw"
+    else:
+        return u"waiting"
+
 def get_entry_status(request, entry):
     now = get_now(request)
     if entry.canceled_at:

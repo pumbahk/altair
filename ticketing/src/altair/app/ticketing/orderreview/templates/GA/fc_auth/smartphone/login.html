@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <!--[if lt IE 9]>
+    <script type="text/javascript" src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <meta charset="UTF-8">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="cache-control" content="no-cache">
+    <meta http-equiv="expires" content="0">
+    <title>${view_context.team_name} ログインページ</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+
+    <!-- Cascading Style Sheets -->
+    <link rel="shortcut icon" href="${view_context.static_url('pc/images/favicon.ico')}">
+    <link rel="stylesheet" href="${view_context.static_url('pc/css/sanitize.css')}" type="text/css" media="all">
+    <link rel="stylesheet" href="${view_context.static_url('pc/css/import.css')}" type="text/css" media="all">
+    <link rel="stylesheet" href="${view_context.static_url('pc/css/custom.css')}" type="text/css" media="all">
+
+  </head>
+
+  <body class="confirm">
+    <%include file="../../includes/header.html" />
+
+    <main>
+      <div class="wrap-form">
+        <article>
+          <h2>ご選択ください</h2>
+          <section>
+            <div class="login-box">
+              <h3>${_(u'会員の方はこちら')}</h3>
+            </div>
+            <form id="member-login-form" method="post" accept-charset="utf-8" action="${request.route_path('fc_auth.login', membership=u'-', _query=dict(return_to=request.route_path('mypage.show')))}">
+              <dl class="formall form1">
+                <dt>${_(u'会員番号')}</dt>
+                <dd>
+                  <input type="text" name="username" id="username" />
+                  %if message:
+                    <br/><span class="small red">${_(u'会員番号またはパスワードが一致しません')}</span>
+                  %endif
+                </dd>
+                <dt>${_(u'パスワード')}</dt>
+                <dd>
+                  <input type="password" name="password" id="password" />
+                </dd>
+              </dl>
+              <p class="txtC">
+                <button class="btn" type="submit">${_(u'ログイン')}</button>
+              </p>
+            </form>
+            <div class="login-box">
+              <h3>${_(u'一般の方はこちらから')}</h3>
+              <p class="txtC">
+                <a href="${request.route_path('order_review.form')}" class="btn">${_(u'次に進む')}</a>
+              </p>
+            </div>
+
+            <div class="notice mgt30">
+              <h4 class="fWB f110 mgb5">注意事項</h4>
+              <ul class="notes">
+                <li>携帯電話､スマートフォンの各キャリアの受信拒否設定から、購入確認メールが受け取れない場合がございますので、
+              <span style="color:#f00;">@tstar.jpのドメイン指定受信許可設定を行ってください</span>。</li>
+                <li>受付開始直後は回線が大変込み合う場合がございますので、予めご了承ください。</li>
+                <li>会員番号・パスワードは半角でご入力ください。</li>
+              </ul>
+              <hr />
+              <h4 class="fWB f110 mgt10 mgb5">注意事項</h4>
+              <ul class="notes">
+                <li>購入履歴の確認は<a href="/orderreview" target="_blank">こちら</a>から行ってください。</li>
+                <li>パスワードをお忘れの場合<a href="${view_context.contact_url}" target="_blank">こちら</a>からお問合せください。</li>
+              </ul>
+            </div>
+          </section>
+        </article>
+      </div>
+    </main>
+
+    <%include file="../../includes/footer.html" />
+  </body>
+</html>
