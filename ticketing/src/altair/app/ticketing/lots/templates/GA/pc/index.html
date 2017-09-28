@@ -1,0 +1,672 @@
+<%inherit file="./base.html"/>
+
+<%namespace name="fh" module="altair.formhelpers.utils.mako" />
+<%
+   import altair.app.ticketing.cart.helpers as ch
+   import altair.app.ticketing.lots.helpers as h
+%>
+<%def name="render_field(field, label=False, _description=None, _note=None, _suffix=u'', **kwargs)">
+<%
+_description = _description or field.description
+_note = _note or field._note
+if label is None or label is True:
+  label = field.label
+%>
+<div class="field">
+  % if _description:
+  <div class="field-description">${_description}</div>
+  % endif
+  <div class="control-segment">
+    % if label:
+      ${label}
+    % endif
+    ${fh.render(field, **kwargs)}${_suffix}
+    % if _note:
+    <div class="field-note">${_note}</div>
+    % endif
+    ${ch.error(field.name)}
+  </div>
+</div>
+</%def>
+
+<div id="content">
+  <div class="wrap-content">
+    % if view_context.get_include_template_path('links.html', 'lots') is not None:
+      <%include file="${view_context.get_include_template_path('links.html', 'lots')}" args="device=view_context.ua_type" />
+    % endif
+    %if request.session.peek_flash():
+    <div style="border: 3px solid red; background: #FFEEEE; padding: 10px; margin: 10px;">
+      <ul>
+        %for message in request.session.pop_flash():
+        <li>${message}</li>
+        %endfor
+      </ul>
+    </div>
+    %endif
+    <h2 class="heading heading-primary">${__(u'抽選申込')}</h2>
+    <div class="confirm-wrap" id="settlementEventDetail">
+      <h3>${__(u'イベント詳細')}</h3>
+      <div class="settlementBoxInner2 mgt20">
+        <div class="customerBox">
+          <table class="customer-table" summary="${__(u'イベント詳細情報')}">
+            <tr>
+              <th scope="row">${__(u'イベント名')}</th>
+              <td>${event.title}</td>
+            </tr>
+            <tr>
+              <th scope="row">${__(u'申込受付期間')}</th>
+              <td>${h.japanese_datetime(sales_segment.start_at)}～${h.japanese_datetime(sales_segment.end_at)}</td>
+            </tr>
+            <tr>
+              <th scope="row">${__(u'抽選結果発表予定日')}</th>
+              <td>${h.announce_time_label(lot)}</td>
+            </tr>
+            %if sales_segment.max_quantity:
+            <tr>
+              <th scope="row">${__(u'制限枚数')}</th>
+              <td>${__(u'1希望の申込で{0}枚まで').format(sales_segment.max_quantity)}</td>
+            </tr>
+            %endif
+            %if lot.entry_limit:
+            <tr>
+              <th scope="row">${__(u'申込回数制限')}</th>
+              <td>${__(u"{0} 回").format(lot.entry_limit)}</td>
+            </tr>
+            %endif
+            <tr>
+              <th scope="row">${__(u'受付希望数')}</th>
+              <td>${__(u'一度の申込で第{0}希望まで').format(lot.limit_wishes)}</td>
+            </tr>
+            %if lot.description:
+            <tr>
+              <th scope="row">${__(u'注意事項')}</th>
+              <td>${view.cr2br(lot.description)|n}</td>
+            </tr>
+            %endif
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="confirm-wrap mgt20">
+      <h3>${__(u'公演一覧')}</h3>
+      <div class="settlementBoxInner">
+        <div class="customerBox">
+          %for performance in performances:
+          <table class="customer-table mgt10" summary="${__(u'イベント詳細情報')}">
+            <tbody>
+              <tr>
+                <th colspan="2" class="title" scope="row">${performance.name}</th>
+              </tr>
+              <tr class="none">
+                <th scope="row">${__(u'公演日')}</th>
+                <td>${h.performance_datetime(performance, disp_open_time='true')}</td>
+              </tr>
+              <tr>
+                <th scope="row">${__(u'会場')}</th>
+                <td>${performance.venue.name}</td>
+              </tr>
+            </tbody>
+          </table>
+          %endfor
+        </div>
+      </div>
+    </div>
+
+    <form method="post" id="wishForm" action="${request.url}">
+      <div class="confirm-wrap mgt20">
+        <h3>${__(u'希望選択')}</h3>
+        <div class="settlementBoxInner">
+          %for i in range(lot.limit_wishes):
+          <div class="settlementSelectBox mgt10">
+            <div class="settlementSelectBoxInner">
+              <table class="chooser" summary="${__(u'希望する公演と券種の選択')}" id="wish-cell-table-${i}">
+                <tbody>
+                  <tr>
+                    <th>${__(u'第{0}希望').format(i+1)}</th>
+                    <td>
+                      %if len(performance_map) == 1:
+                      ${performance_map[0][0]}
+                      <input type="hidden" name="performanceName-${i}" value="${performance_map[0][1]}" />
+                      %else:
+                      <select name="performanceName-${i}" data-wishOrder="${i}" class="performance-name-select">
+                      %for performance_name, _ in performance_map:
+                        % if selected_performance:
+                          % if (_[0]['name'] == selected_performance.name) and (i == 0):
+                          <option value="${performance_name}" selected>${performance_name}</option>
+                          % else:
+                          <option value="${performance_name}">${performance_name}</option>
+                          % endif
+                        % else:
+                        <option value="${performance_name}">${performance_name}</option>
+                        % endif
+                      %endfor
+                      </select>
+                      %endif
+                    </td>
+                  </tr>
+                  <tr>
+                    <th>
+                      <label>${__(u'公演日・会場')}</label>
+                    </th>
+                    <td>
+                      <select name="performanceDate-${i}" data-wishOrder="${i}" class="performance-date-select">
+                      %for performance in performances:
+                        % if selected_performance:
+                          % if (performance.id == selected_performance.id) and (i == 0):
+                          <option value="${performance.id}" selected>${h.performance_date_label(performance)}</option>
+                          % else:
+                          <option value="${performance.id}">${h.performance_date_label(performance)}</option>
+                          % endif
+                        % else:
+                        <option value="${performance.id}">${h.performance_date_label(performance)}</option>
+                        % endif
+                      %endfor
+                      </select>
+                    </td>
+                  </tr>
+                  <tr>
+                    <th>
+                      <label>${__(u'席種')}</label>
+                    </th>
+                    <td>
+                      <select name="stockType-${i}" data-wishOrder="${i}" class="stock-type-select">
+                      %for rec in stock_types:
+                      <option value="${rec['id']}">${rec['name']}</option>
+                      %endfor
+                      </select>
+                      <div class="stock-type-description"></div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          %endfor
+        </div>
+      </div>
+
+      <div class="confirm-wrap mgt20">
+        <div class="settlementBoxInner">
+          <h3>${__(u'お支払・お引取り方法選択')}</h3>
+          <%
+            radio_cnt = 0
+          %>
+          %for m in payment_delivery_pairs:
+          <% radio_cnt += 1 %>
+          <div class="settlementPayBox">
+            <div class="settlementPayBoxInner">
+              <table>
+                <tbody>
+                  <tr>
+                    <% checked = 'checked' if str(m.id) == payment_delivery_method_pair_id else '' %>
+                    <td class="settlementPayRadio" ${'rowspan="3"' if m.system_fee > 0 or m.special_fee > 0 else u' rowspan="2" '|n}>
+                      <input class="fold" type="radio" name="payment_delivery_method_pair_id" id="${'radio{}'.format(radio_cnt)}" value="${m.id}" autocomplete="off" ${checked} />
+                      <label for=${"radio{}".format(radio_cnt)}></label>
+                    </td>
+                    <td class='fold' onclick="$(this).parents('table').find('input').attr('checked', 'checked');">
+                      <dl>
+                        <dt>
+                        ${h.payment_method_get_info(custom_locale_negotiator, m, 'name')}
+                        </dt>
+                      </dl>
+                    </td>
+                    <td class='fold' onclick="$(this).parents('table').find('input').attr('checked', 'checked');">
+                      <dl>
+                        <dt>
+                        ${h.delivery_method_get_info(custom_locale_negotiator, m, 'name')}
+                        </dt>
+                      </dl>
+                    </td>
+                  </tr>
+                  <tr class="content" style="display: none;" onclick="$(this).parents('table').find('input').attr('checked', 'checked');">
+                    <td>
+                      <dl>
+                        <dd class="paymentFee_${h.format_number(m.transaction_fee)}">
+                        <span class="paymentFeeLabel">${__(u'手数料')}</span>
+                        <span class="paymentFee">${h.format_currency(m.transaction_fee)}</span>
+                        <span class="paymentFeeType">(${__(h.fee_type(m.payment_method.fee_type))})</span>
+                        <div class="description">
+                        ${h.payment_method_get_info(custom_locale_negotiator, m, 'description') | n}
+                        </div>
+                        </dd>
+                      </dl>
+                    </td>
+                    <td>
+                      <dl>
+                        <dd class="devlieryFee_${h.format_number(m.delivery_fee)}">
+                        <span class="deliveryFeeLabel">${__(u'手数料')}</span>
+                        <span class="deliveryFee">${h.format_currency(m.delivery_fee)}</span>
+                        <span class="deliveryFeeType">(${__(h.fee_type(m.delivery_method.fee_type))})</span>
+                        <div class="description">
+                        ${h.delivery_method_get_info(custom_locale_negotiator, m, 'description') | n}
+                        </div>
+                        </dd>
+                      </dl>
+                    </td>
+                  </tr>
+                  % if m.system_fee > 0 or m.special_fee > 0:
+                  <tr class="content" style="display: none;" onclick="$(this).parents('table').find('input').attr('checked', 'checked');">
+                    <td colspan="2">
+                      <dl class="fullwidth">
+                        <dt>${__(u'利用料・手数料')}</dt>
+                        <dd>
+                          <dl>
+                            %if m.system_fee > 0:
+                            <dt>${__(u'システム利用料')}</dt>
+                            <dd class="paymentFee_${h.format_number(m.transaction_fee)}">
+                              <span class="paymentFee">${h.format_currency(m.system_fee)}</span>
+                              <span class="paymentFeeType">(${__(h.fee_type(m.system_fee_type))})</span>
+                            </dd>
+                            %endif
+                            %if m.special_fee > 0:
+                            <dt>${m.special_fee_name}</dt>
+                            <dd class="paymentFee_${h.format_number(m.transaction_fee)}">
+                              <span class="paymentFee">${h.format_currency(m.special_fee)}</span>
+                              <span class="paymentFeeType">(${__(h.fee_type(m.special_fee_type))})</span>
+                            </dd>
+                            %endif
+                          </dl>
+                          <div class="description">
+                              ${__(u'上記の利用料・手数料がかかります。')}
+                          </div>
+                        </dd>
+                      </dl>
+                    </td>
+                  </tr>
+                  % endif
+                </tbody>
+              </table>
+            </div>
+          </div>
+          %endfor
+          <p>${__(u'注文受付完了、確認メール等をメールでご案内します。「tstar.jp」からのメールを受信できるよう、お申し込み前にドメイン指定の設定を必ずお願いいたします。') |n}</p>
+        </div>
+      </div>
+
+      <div class="confirm-wrap mgt20">
+        <div class="customerBox">
+          <h3>${__(u'購入者情報')}</h3>
+          <div class="settlementSelectBox">
+            <div class="settlementSelectBoxInner02">
+              <table id="confirmDelivery" class="customer-table" summary="${__(u'購入者情報')}">
+                <tr>
+                  <th>
+                    <label>
+                      ${__(u'購入者氏名')} ${__(u'(全角)')}
+                    </label>
+                  </th>
+                  <td>
+                    <ul>
+                      <li>
+                        ${form['last_name'].label}
+                        ${form['last_name'](placeholder=__(u'例: 山田'))}
+                        ${form['first_name'].label}
+                        ${form['first_name'](placeholder=__(u'例: 太郎'))}
+                      </li>
+                      <li>${h.error_list(request, form, 'last_name')} ${h.error_list(request, form, 'first_name')}</li>
+                    </ul>
+                  </td>
+                </tr>
+                % if custom_locale_negotiator=='ja' or not request.organization.setting.i18n:
+                <tr>
+                  <th><label>購入者氏名 (カナ)</label></th>
+                  <td>
+                    <ul>
+                      <li>
+                        ${form['last_name_kana'].label}
+                        ${form['last_name_kana'](placeholder=__(u'例: ヤマダ'))}
+                        ${form['first_name_kana'].label}
+                        ${form['first_name_kana'](placeholder=__(u'例: タロウ'))}
+                      </li>
+                      <li>${h.error_list(request, form, 'last_name_kana')} ${h.error_list(request, form, 'first_name_kana')}</li>
+                    </ul>
+                  </td>
+                </tr>
+                % endif
+                <tr>
+                  <th>
+                    ${__(u'メールアドレス')}
+                    % if custom_locale_negotiator=='ja':
+                      <br><span>半角英数</span>
+                    % endif
+                  </th>
+                  <td>
+                    <ul>
+                      <li>
+                        ${form['email_1'].label(style=u'width:11em')}
+                        ${form['email_1'](style=u'width:20em', placeholder=__(u'例）mail@example.ne.jp'))}
+                        ${h.error_list(request, form, 'email_1')}
+                      </li>
+                      <li>
+                        ${form['email_1_confirm'].label(style=u'width:11em')}
+                        ${form['email_1_confirm'](style=u'width:20em', placeholder=__(u'例）mail@example.ne.jp'))}
+                        ${h.error_list(request, form, 'email_1_confirm')}
+                      </li>
+                    </ul>
+                    <p>${__(u'注文受付完了、確認メール等をメールでご案内します。「tstar.jp」からのメールを受信できるよう、お申し込み前にドメイン指定の設定を必ずお願いいたします。') |n}</p>
+                  </td>
+                </tr>
+                <tr>
+                  <th>
+                    ${__(u'電話番号')}
+                    % if custom_locale_negotiator=='ja':
+                      <br><span>半角数字</span>
+                    % endif
+                  </th>
+                  <td>
+                    <ul>
+                      <li>${form['tel_1'].label}
+                        ${form['tel_1'](placeholder=__(u'例: 080xxxxyyyy'))}
+                        ${h.error_list(request, form, 'tel_1')}
+                      </li>
+                    </ul>
+                  </td>
+                </tr>
+                <tr>
+                  <th><label>${__(u'住所')}</label></th>
+                  <td>
+                    <ul>
+                      <li>
+                        % if request.organization.setting.i18n:
+                          ${form['country'].label}
+                          ${form['country']}
+                          ${h.error_list(request, form, 'country')}
+                        % endif
+                      </li>
+
+                      <li>${form['zip'].label}
+                        % if custom_locale_negotiator=='ja' or not request.organization.setting.i18n:
+                          <% path = request.static_url('altair.app.ticketing.cart:static/js/zipdata') %>
+                          ${form['zip'](onKeyUp="AjaxZip3.zip2addr('" + path + "', 'zip','','prefecture','city','', 'address_1');", placeholder=__(u'例: 1030001'))}
+                        % else:
+                          ${form['zip'](placeholder=__(u'例: 1030001'))}
+                        % endif
+                        ${h.error_list(request, form, 'zip')}
+                      </li>
+                      <li>${form['prefecture'].label}
+                        ${form['prefecture'](placeholder=__(u'例: 東京都'))}
+                        ${h.error_list(request, form, 'prefecture')}
+                      </li>
+                      <li>${form['city'].label}
+                        ${form['city'](placeholder=__(u'例: 中央区'))}
+                        ${h.error_list(request, form, 'city')}
+                      </li>
+                      <li>
+                        ${form['address_1'].label}
+                        ${form['address_1'](style=u'width:20em', placeholder=__(u'例: 日本橋x-xx-xx'))}
+                        ${h.error_list(request, form, 'address_1')}
+                      </li>
+                      <li>
+                        ${form['address_2'].label}
+                        ${form['address_2'](style=u'width:20em', placeholder=__(u'例: yyビルz階'))}
+                        ${h.error_list(request, form, 'address_2')}
+                      </li>
+                    </ul>
+                  </td>
+                </tr>
+                <tr>
+                  <th>
+                    ${form['birthday'].label}
+                  </th>
+                  <td>
+                    ${form['birthday']}
+                    ${h.error_list(request, form, 'birthday')}
+                  </td>
+                </tr>
+                <tr>
+                  <th>
+                    ${form['sex'].label}
+                  </th>
+                  <td>
+                    ${form['sex']}
+                    ${h.error_list(request, form, 'sex')}
+                  </td>
+                </tr>
+                % for field in form['extra']._contained_form:
+                % if not field.short_name in {'member_type'}:
+                <tr>
+                  <th scope="row">
+                    <label for="${field.id}">${field.label}</label>
+                  </th>
+                  <td>
+                    ${render_field(field)}
+                  </td>
+                </tr>
+                % endif
+                % endfor
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="wrap-btn">
+        <p class="btn" onclick="$('#wishForm').submit()">${__(u'次へ')}</p>
+      </div>
+    </form>
+  </div>
+</div>
+<script type="text/javascript" src="${request.static_url('altair.app.ticketing.cart:static/js/ajaxzip3-https.js')}"></script>
+<script type="text/javascript">
+$(function(){
+  $(".fold").on("click", function(){
+    var el = $(this).parents('table').find('.content');
+    if (el.is(":hidden")){
+      $(this).parents('.settlementBoxInner').find('.content').hide();
+      el.fadeIn();
+    } else {
+      el.fadeOut();
+    }
+  });
+});
+</script>
+<script type="text/javascript">
+var stockTypes = ${h.tojson(stock_types)|n};
+var performanceProductMap = ${h.tojson(performance_product_map)|n};
+var postedValues = ${h.tojson(posted_values)|n};
+var upperLimit = ${sales_segment.max_quantity};
+var performanceMap = ${h.tojson(performance_map)|n};
+var selected_performance_id = 0;
+% if selected_performance:
+    selected_performance_id = ${selected_performance.id};
+% endif
+
+(function($wishForm) {
+    function cellTableId(n) {
+        return 'wish-cell-table-' + n
+    }
+
+    function build_product_selection(parent, data) {
+        var wishOrder = data['wishOrder'];
+        var products = data['products'];
+        var ticket_label = data['ticket_label'];
+        var ticket_unit = data['ticket_unit'];
+
+        $.each(products, function(i, product) {
+            var quantityField = "product-quantity-" + wishOrder + "-" + i + "";
+            var tr = $("<tr></tr>").addClass("product-select-tr" + (i + 1 == products.length ? " settlementSelectEnd":""));
+
+            $("<th></th>").append(i == 0 ? $("<label></label>").text(ticket_label) : "&nbsp").appendTo(tr);
+
+            var td = $("<td></td>").appendTo(tr);
+            td.append($("<input>").attr("type", "hidden")
+                                  .attr("name", "product-id-" + wishOrder + "-" + i)
+                                  .val(product.id));
+
+            var product_selection = $("<div></div>").addClass("product-name-price-quantity").appendTo(td);
+            product_selection.append($("<span></span>").addClass("product-name").text(product.name));
+            product_selection.append($("<span></span>").addClass("product-price").text(product.formatted_price + "× "));
+            var select = $("<select></select>").attr("name", quantityField).appendTo(product_selection);
+            select.append("<option></option>");
+            for (var k = 0; k < upperLimit; k++) {
+                var option = $("<option></option>");
+                option.val(k + 1).text(k + 1).appendTo(select);
+            }
+            product_selection.append(" " + ticket_unit);
+
+            if (product.description) {
+                $("<span></span>").addClass("product-description").text(product.description).appendTo(td);
+            }
+
+            parent.append(tr);
+        });
+    }
+
+    function refreshProducts(dateSelect, stockTypeSelect) {
+        var products = [];
+        var performanceId = $(dateSelect).val();
+        var stockTypeId = stockTypeSelect.val();
+        $.each(performanceProductMap[performanceId], function (_, product) {
+            if (product.stock_type_id == stockTypeId)
+                products.push(product);
+        });
+        var wishOrder = $(dateSelect).data('wishorder');
+        var wishCellTableId = cellTableId(wishOrder);
+        var rows = $("#" + wishCellTableId + " tbody tr.product-select-tr");
+        rows.remove();
+        if (!products) {
+            return;
+        }
+        build_product_selection($("#" + wishCellTableId + " tbody"), {wishOrder: wishOrder, products: products, ticket_label: "${__(u'券種')}", ticket_unit: "${__(u'枚')}" });
+        for (var i = 0; i < stockTypes.length; i++) {
+            var stockType = stockTypes[i];
+            if (stockType.id == stockTypeId) {
+                $(stockTypeSelect.parent().find('.stock-type-description')).html(stockType.description);
+            }
+        }
+    }
+
+    function refreshStockTypeSelection(dateSelect, stockTypeSelect) {
+        var performanceId = dateSelect.val();
+        var filteredStockTypeIds = {};
+        var products = performanceProductMap[performanceId];
+        for (var i = 0; i < products.length; i++)
+            filteredStockTypeIds[products[i].stock_type_id] = true;
+        stockTypeSelect.empty();
+        for (var i = 0; i < stockTypes.length; i++) {
+            var stockType = stockTypes[i];
+            if (stockType.id in filteredStockTypeIds)
+                stockTypeSelect.append($('<option></option>').attr('value', stockType.id).text(stockType.name));
+        }
+    }
+
+    function refreshDateSelection(performanceNameSelect, dateSelect, selected_id) {
+        var selectedPerformanceName = performanceNameSelect.val();
+        for (var i = 0; i < performanceMap.length; i++) {
+            if (performanceMap[i][0] == selectedPerformanceName) {
+                choices = performanceMap[i][1];
+            }
+        }
+        dateSelect.empty();
+        for (var i = 0; i < choices.length; i++) {
+            var choice = choices[i];
+            if (selected_id == choice.id) {
+                dateSelect.append($('<option></option>').attr('value', choice.id).attr({ selected: "selected" }).text(choice.label));
+            } else {
+                dateSelect.append($('<option></option>').attr('value', choice.id).text(choice.label));
+            }
+        }
+    }
+
+    function getPerformanceIdAndStockTypeIdFromProductId(productId) {
+        for (var performanceId in performanceProductMap) {
+            var datum = performanceProductMap[performanceId];
+            for (var i = 0; i < datum.length; i++) {
+                if (datum[i].id == productId)
+                    return [performanceId, datum[i].stock_type_id];
+            }
+        }
+    }
+
+    var PRODUCT_ID_RE = /^product-id-(\d+)-(\d+)$/;
+    function updateSelection(values) {
+        for (var key in values) {
+            matches = PRODUCT_ID_RE.exec(key)
+            if (matches) {
+                var wishOrder = matches[1], wishedProductOrder = matches[2];
+                var productId = values[key];
+                var pair = getPerformanceIdAndStockTypeIdFromProductId(productId);
+                var performanceId = pair[0], stockTypeId = pair[1];
+                var performanceNameSelect = $wishForm.find('select.performance-name-select[data-wishOrder="' + wishOrder + '"]');
+                var dateSelect = $wishForm.find('select.performance-date-select[data-wishOrder="' + wishOrder + '"]');
+                var stockTypeSelect = $wishForm.find('select.stock-type-select[data-wishOrder="' + wishOrder + '"]');
+                if (!dateSelect.find('option[value="' + performanceId + '"]').length) {
+                    var performanceName = null;
+                    for (var i = 0; i < performanceMap.length; i++) {
+                        var performances = performanceMap[i][1];
+                        for (var j = 0; j < performances.length; j++) {
+                            if (performances[j].id == performanceId) {
+                                performanceName = performanceMap[i][0];
+                                break;
+                            }
+                        }
+                    }
+                    if (performanceName) {
+                        performanceNameSelect.val(performanceName);
+                        refreshDateSelection(performanceNameSelect, dateSelect, 0);
+                        stockTypeSelect.empty();
+                    }
+                }
+                if (dateSelect.val() != performanceId) {
+                    dateSelect.val(performanceId);
+                    stockTypeSelect.empty();
+                }
+
+                var stockTypeSelectUpdated = false;
+                if (!stockTypeSelect.find('option[value="' + stockTypeId + '"]').length) {
+                    refreshStockTypeSelection(dateSelect, stockTypeSelect);
+                    stockTypeSelectUpdated = true;
+                }
+
+                if (stockTypeSelect.val() != stockTypeId || stockTypeSelectUpdated) {
+                    stockTypeSelect.val(stockTypeId);
+                    refreshProducts(dateSelect, stockTypeSelect);
+                }
+
+                var quantityFieldName = 'product-quantity-' + wishOrder + '-' + wishedProductOrder;
+                var quantity = values[quantityFieldName];
+                $wishForm.find('select[name="' + quantityFieldName + '"]').val(quantity);
+            }
+        }
+    }
+
+    $(".performance-name-select").change(function() {
+        var performanceNameSelect = $(this);
+        var wishOrder = performanceNameSelect.data('wishorder');
+        var dateSelect = $wishForm.find('select.performance-date-select[data-wishOrder="' + wishOrder + '"]');
+        var stockTypeSelect = $wishForm.find('select.stock-type-select[data-wishOrder="' + wishOrder + '"]');
+        refreshDateSelection(performanceNameSelect, dateSelect, 0);
+        refreshStockTypeSelection(dateSelect, stockTypeSelect);
+        refreshProducts(dateSelect, stockTypeSelect);
+    });
+    $wishForm.find(".performance-date-select").change(function() {
+        var dateSelect = $(this);
+        var wishOrder = dateSelect.data('wishorder');
+        var stockTypeSelect = $wishForm.find('select.stock-type-select[data-wishOrder="' + wishOrder + '"]');
+        refreshStockTypeSelection(dateSelect, stockTypeSelect);
+        refreshProducts(dateSelect, stockTypeSelect);
+    });
+    $wishForm.find(".stock-type-select").change(function() {
+        var stockTypeSelect = $(this);
+        var wishOrder = stockTypeSelect.data('wishorder');
+        var dateSelect = $wishForm.find('select.performance-date-select[data-wishOrder="' + wishOrder + '"]');
+        refreshProducts(dateSelect, stockTypeSelect);
+    });
+
+    $(function() {
+        $wishForm.find("select.performance-name-select").each(function(_, n) {
+            var performanceNameSelect = $(n);
+            var wishOrder = performanceNameSelect.data('wishorder');
+            var dateSelect = $wishForm.find('select.performance-date-select[data-wishOrder="' + wishOrder + '"]');
+            refreshDateSelection(performanceNameSelect, dateSelect, selected_performance_id);
+        });
+        $wishForm.find("select.performance-date-select").each(function(_, n) {
+            var dateSelect = $(n);
+            var wishOrder = dateSelect.data('wishorder');
+            var stockTypeSelect = $wishForm.find('select.stock-type-select[data-wishOrder="' + wishOrder + '"]');
+            refreshStockTypeSelection(dateSelect, stockTypeSelect);
+            refreshProducts(dateSelect, stockTypeSelect);
+        });
+        updateSelection(postedValues);
+    });
+})($('#wishForm'));
+</script>

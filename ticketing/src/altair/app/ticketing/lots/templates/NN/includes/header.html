@@ -1,0 +1,17 @@
+<!-- ******************** header [start] ******************** -->
+<header class="ts-header">
+    <div class="ts-header-inner">
+        <!-- ===== ts-header-wrap [start] ===== -->
+        <div class="ts-header-wrap">
+            <div class="ts-header-logobox clearfix">
+                <img id="logo" src="${view_context.static_url('pc/images/logo.png', 'lots')}" alt="${view_context.team_name}" />
+            </div>
+        </div><!-- ===== ts-header-wrap [end] ===== -->
+    </div>
+    <script type="text/javascript">
+      if (window.innerWidth <= 400) {
+        var img = document.getElementById("logo");
+        img.src = img.src.replace("pc", "smartphone");
+      }
+    </script>
+</header><!-- ******************** header [end] ******************** -->
