@@ -1,4 +1,9 @@
 <%inherit file="./base.html"/>
+<%
+locale = custom_locale_negotiator
+if not locale:
+    locale = 'ja'
+%>
 <p>${_(u'誠に申し訳ございませんが')}</p>
 % if which == 'next':
 %   if sales_segment is not None:
@@ -7,9 +12,9 @@
 <p>${_(u'event.title (performance.name) の販売は').format(event.title, performance.name)}</p>
 %   endif
 <p>
-${h.i18n_datetime(start_at)}
+${h.i18n_datetime(start_at, locale)}
 % if end_at:
-〜 ${h.i18n_datetime(end_at)} 
+〜 ${h.i18n_datetime(end_at, locale)}
 % endif
 </p>
 <p>${_(u'となっております。')}</p>
@@ -20,7 +25,7 @@ ${h.i18n_datetime(start_at)}
 %   else:
 <p>${_(u'event.title (performance.name) の販売は').format(event.title, performance.name)}</p>
 %   endif
-<p>${h.i18n_datetime(end_at)} まで</p>
+<p>${h.i18n_datetime(end_at, locale)} まで</p>
 <p>${_(u'とさせていただいております。')}</p>
 % endif
 % if available_sales_segments:
