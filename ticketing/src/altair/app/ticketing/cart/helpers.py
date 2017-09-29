@@ -126,13 +126,17 @@ def performance_end_date(performance):
 def japanese_date(date):
     return u"%d年%d月%d日(%s)" % (date.year, date.month, date.day, u"月火水木金土日"[date.weekday()])
 
-def i18n_date(date):
+def i18n_date(date, locale=None):
+    if locale and locale == 'ja':
+        return japanese_date(date)
     return u"%d/%d/%d(%s)" % (date.year, date.month, date.day, ('Mon.','Tue.','Wed.','Thu.','Fri.','Sat.','Sun.')[date.weekday()])
 
 def japanese_time(time):
     return u"%d時%02d分" % (time.hour, time.minute)
 
-def i18n_time(time):
+def i18n_time(time, locale=None):
+    if locale and locale == 'ja':
+        return japanese_time(time)
     return u" %d:%02d" % (time.hour, time.minute)
 
 def japanese_datetime(dt):
@@ -148,7 +152,9 @@ def datetime(dt):
         return dt.strftime('%Y-%m-%d %H:%M')
     return None
 
-def i18n_datetime(dt):
+def i18n_datetime(dt, locale=None):
+    if locale and locale == 'ja':
+        return japanese_datetime(dt)
     try:
         return i18n_date(dt)+i18n_time(dt)
     except:

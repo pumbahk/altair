@@ -1,4 +1,9 @@
 <% shipping_address = order.shipping_address %>
+<%
+locale = custom_locale_negotiator
+if not locale:
+    locale = 'ja'
+%>
 
 <div class="confirm-item">
   <h3 class="fWB mgb5 f120">${__(u'受付番号')}</h3>
@@ -9,7 +14,7 @@
     </tr>
     <tr>
       <th scope="row">${__(u'受付日')}</th>
-      <td>${h.i18n_date(order.created_at)}</td>
+      <td>${h.i18n_date(order.created_at, locale)}</td>
     </tr>
     <tr>
       <th scope="row">${__(u'ステータス')}</th>
@@ -18,13 +23,13 @@
     % if order.status == 'delivered':
     <tr>
       <th scope="row">${__(u'発送日')}</th>
-      <td>${h.i18n_date(order.delivered_at)}</td>
+      <td>${h.i18n_date(order.delivered_at, locale)}</td>
     </tr>
     % endif
     %  if order.is_issued() and order.deliver_at_store():
     <tr>
       <th scope="row">${__(u'発券日時')}</th>
-      <td>${h.i18n_datetime(order.issued_at)}</td>
+      <td>${h.i18n_datetime(order.issued_at, locale)}</td>
     </tr>
     % endif
   </table>
@@ -88,14 +93,14 @@
 <%
   o = order.performance.start_on
   c = order.performance.end_on
-  period = h.i18n_date(o) + u'〜' + h.i18n_date(c)
+  period = h.i18n_date(o, locale) + u'〜' + h.i18n_date(c, locale)
   if o.year==c.year and o.month==c.month and o.day==c.day:
-      period = h.i18n_date(o)
+      period = h.i18n_date(o, locale)
 %>
           <span class="date">${period}</span>
         % else:
-          <span class="date">${h.i18n_date(order.performance.start_on)}</span>
-          <span class="time">${h.i18n_time(order.performance.start_on)}</span>
+          <span class="date">${h.i18n_date(order.performance.start_on, locale)}</span>
+          <span class="time">${h.i18n_time(order.performance.start_on, locale)}</span>
         % endif
       </td>
     </tr>
@@ -113,7 +118,7 @@
     <tr>
       <th scope="row"><span style="background-color:#ff0000; width:13px; height:13px; display:inline-block; margin-right: 0.5em; position:relative; top:1px;"></span>${product.product.name}
       </th>
-      <td><strong>${product.seat_quantity}</strong>${__(u'枚')}</td>
+      <td><strong>${product.seat_quantity}</strong></td>
       <td>
         % if product.product.sales_segment.setting.display_seat_no and product.seats:
         % for seat in product.seats:
