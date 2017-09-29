@@ -1,6 +1,12 @@
 <%inherit file="../layout.html" />
 
 <% shipping_address = order.shipping_address %>
+<%
+locale = custom_locale_negotiator
+if not locale:
+    locale = 'ja'
+%>
+
 
 <main>
   <div id="confirm">
@@ -20,7 +26,7 @@
           </tr>
           <tr>
             <th scope="row">${__(u'受付日')}</th>
-            <td>${h.i18n_date(order.created_at, request.cookies.get('_LOCALE_'))}</td>
+            <td>${h.i18n_date(order.created_at, locale)}</td>
           </tr>
           <tr>
             <th scope="row">${__(u'ステータス')}</th>
@@ -29,13 +35,13 @@
           % if order.status == 'delivered':
           <tr>
             <th scope="row">${__(u'発送日')}</th>
-            <td>${h.i18n_date(order.delivered_at, request.cookies.get('_LOCALE_'))}</td>
+            <td>${h.i18n_date(order.delivered_at, locale)}</td>
           </tr>
           % endif
           %  if order.is_issued() and order.deliver_at_store():
           <tr>
             <th scope="row">${__(u'発券日時')}</th>
-            <td>${h.i18n_datetime(order.issued_at, request.cookies.get('_LOCALE_'))}</td>
+            <td>${h.i18n_datetime(order.issued_at, locale)}</td>
           </tr>
           % endif
         </table>
@@ -99,14 +105,14 @@
       <%
         o = order.performance.start_on
         c = order.performance.end_on
-        period = h.i18n_date(o, request.cookies.get('_LOCALE_')) + u'〜' + h.i18n_date(c, request.cookies.get('_LOCALE_'))
+        period = h.i18n_date(o, locale) + u'〜' + h.i18n_date(c, locale)
         if o.year==c.year and o.month==c.month and o.day==c.day:
-            period = h.i18n_date(o, request.cookies.get('_LOCALE_'))
+            period = h.i18n_date(o, locale)
       %>
                 <span class="date">${period}</span>
               % else:
-                <span class="date">${h.i18n_date(order.performance.start_on, request.cookies.get('_LOCALE_'))}</span>
-                <span class="time">${h.i18n_time(order.performance.start_on, request.cookies.get('_LOCALE_'))}</span>
+                <span class="date">${h.i18n_date(order.performance.start_on, locale)}</span>
+                <span class="time">${h.i18n_time(order.performance.start_on, locale)}</span>
               % endif
             </td>
           </tr>

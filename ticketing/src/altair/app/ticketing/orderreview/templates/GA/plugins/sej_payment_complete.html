@@ -3,6 +3,12 @@ ${_(u'当選の場合、お支払期日までにお支払頂きます。')}<br>
 ${_(u'お支払が確認できた時点で当選申込が確定となります。')}<br><br>${_(u'各種手数料の他、公演によりシステム利用料がかかります。')}
 %else:
 <%include file="sej_exchange_sheet.html" args="label=_(u'払込票を表示')" />
+<%
+locale = custom_locale_negotiator
+if not locale:
+    locale = 'ja'
+%>
+
 <table class="customer-table">
   <tbody>
     <tr>
@@ -17,7 +23,7 @@ ${_(u'お支払が確認できた時点で当選申込が確定となります�
     <tbody>
       <tr>
         <th scope="row">${_(u'支払期日')}</th>
-        <td>${h.i18n_datetime(sej_order.payment_due_at)}</td>
+        <td>${h.i18n_datetime(sej_order.payment_due_at, locale)}</td>
       </tr>
     </tbody>
   </table>
