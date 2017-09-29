@@ -118,7 +118,7 @@ if not locale:
     <tr>
       <th scope="row"><span style="background-color:#ff0000; width:13px; height:13px; display:inline-block; margin-right: 0.5em; position:relative; top:1px;"></span>${product.product.name}
       </th>
-      <td><strong>${product.seat_quantity}</strong>${__(u'枚')}</td>
+      <td><strong>${product.seat_quantity}</strong></td>
       <td>
         % if product.product.sales_segment.setting.display_seat_no and product.seats:
         % for seat in product.seats:
