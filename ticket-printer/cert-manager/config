@@ -1,7 +1,10 @@
-DOMAIN=local.printer.ticketstar.jp
 R53ZONE=ZTWOER64UW1BW
 
-DEST=keystore
+DOMAIN=local.printer.ticketstar.jp
+
 KEYSTORE_PASSWORD=secret
 
-KEYSTORE_LOCATION=s3://tstar/ticket-printer/keystore
+KEYSTORE_LOCATION=s3://${ALTAIR_S3_BUCKET:-tstar-dev}/ticket-printer/keystore
+
+# followings are not to be changed
+DEST=keystore
