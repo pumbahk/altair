@@ -18,28 +18,32 @@ if [ X`which openssl` = X ] ; then
   exit
 fi
 
-if [ ! -r certs/$DOMAIN/privkey.pem ] ; then
-  echo "Extracting private key from Java App source..."
-  mkdir -p certs/$DOMAIN
-  openssl pkcs12 -in ../src/main/resources/localhost.p12 -nocerts -nodes -password pass:secret -out certs/$DOMAIN/privkey.pem 2> /dev/null
-fi
-
 if [ X`which aws` = X ] ; then
   echo "ERROR: aws command is not available."
   exit
 fi
 
-if [ X$DOMAIN = x ] ; then
-  echo "ERROR: DOMAIN environment is not configured"
-  exit
-fi
-
-echo "Testing aws route53 command..."
+/bin/echo -n "Testing aws route53 command... "
 aws route53 list-resource-record-sets --hosted-zone-id $R53ZONE | grep "\"Name\": \"$DOMAIN.\"" > /dev/null
 
 if [ $? != 0 ] ; then
+  echo ""
   echo "ERROR: aws cli is too old or profile is not configure correctly."
+else
+  echo "ok."
 fi
+
+
+/bin/echo -n "Testing aws s3 command..."
+aws s3 ls s3://tstar/ticket-printer/keystore > /dev/null
+
+if [ $? != 0 ] ; then
+  echo ""
+  echo "ERROR: aws cli is too old or profile is not configure correctly."
+else
+  echo "ok."
+fi
+
 
 if [ X`which dig` = X ] ; then
   echo "ERROR: dig command is not available."
@@ -48,3 +52,5 @@ fi
 if [ X`which keytool` = X ] ; then
   echo "ERROR: keytool command is not available."
 fi
+
+echo "complete."

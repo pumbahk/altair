@@ -3,3 +3,5 @@ R53ZONE=ZTWOER64UW1BW
 
 DEST=keystore
 KEYSTORE_PASSWORD=secret
+
+KEYSTORE_LOCATION=s3://tstar/ticket-printer/keystore
