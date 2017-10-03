@@ -43,6 +43,7 @@ def setup_routes(config):
     # 申し込みフェーズ
     config.add_route('lots.entry.agreement', 'events/{event_id}/entry/{lot_id}/agreement')
     config.add_route('lots.entry.agreement.compat', 'events/agreement/{event_id}/entry/{lot_id}')
+    config.add_route('lots.index.recaptcha', 'events/{event_id}/entry/{lot_id}/recaptcha')
     config.add_route('lots.entry.index', 'events/{event_id}/entry/{lot_id}')
     config.add_route('lots.entry.step1', 'events/{event_id}/entry/{lot_id}/options/{option_index}/step1', factory='.resources.LotOptionSelectionResource')
     config.add_route('lots.entry.step2', 'events/{event_id}/entry/{lot_id}/options/{option_index}/step2', factory='.resources.LotOptionSelectionResource')
