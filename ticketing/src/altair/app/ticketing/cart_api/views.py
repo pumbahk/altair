@@ -696,7 +696,6 @@ class CartAPIView(object):
     @view_config(route_name='cart.api.seat_release')
     def seat_release(self):
         cart = api.get_cart(self.request, False)
-        logger.debug("cart_id %s", cart.id)
 
         if cart is None or cart.finished_at is not None:
             return {
@@ -705,6 +704,8 @@ class CartAPIView(object):
                     "reason": "cart does not exist"
                 }
             }
+        
+        logger.debug("cart_id %s", cart.id)            
 
         try:
             carted_products = DBSession.query(CartedProduct) \
