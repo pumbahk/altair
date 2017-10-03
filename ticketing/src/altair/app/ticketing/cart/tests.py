@@ -1319,6 +1319,7 @@ class PaymentViewTests(unittest.TestCase):
             sales_segment = testing.DummyModel(),
             check_deleted_product=lambda x: True,
             check_order_limit=lambda: True,
+            performance=True,
             )
         target = self._makeOne(context, request)
         result = target.get()
