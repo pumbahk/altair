@@ -8,7 +8,7 @@ source ./config
 check () {
   while true
   do
-    LINE=`dig txt _acme-challenge.$DOMAIN +trace +short | grep ^TXT`
+    LINE=`dig txt _acme-challenge.$DOMAIN | grep "IN TXT "`
     echo "$LINE"
     TXT=`echo $LINE | sed 's/^.*"\(.*\)".*\$/\1/'`
     if [ "X$TXT" = "X$TOKEN" ] ; then

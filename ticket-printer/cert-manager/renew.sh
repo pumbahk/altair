@@ -34,15 +34,15 @@ fi
 
 if [ ! -f $BASEDIR/$DEST ] ; then
   echo "Failure"
+else
+	echo "Success"
+  keytool -list -keystore $BASEDIR/$DEST -storepass $KEYSTORE_PASSWORD -v -J-Duser.language=en | egrep -e "Alias|Valid|CN=|\*" | uniq
+
+  /bin/echo -n "Uploading keystore to S3... "
+  aws s3 cp $BASEDIR/$DEST $KEYSTORE_LOCATION
+  rm $BASEDIR/$DEST
 fi
 
-echo "Success"
-keytool -list -keystore $BASEDIR/$DEST -storepass $KEYSTORE_PASSWORD -v -J-Duser.language=en | egrep -e "Alias|Valid|CN=|\*" | uniq
-
-/bin/echo -n "Uploading keystore to S3... "
-aws s3 cp $BASEDIR/$DEST $KEYSTORE_LOCATION
-
-rm $BASEDIR/$DEST
 rm -r $BASEDIR/certs
 
 echo "complete."
