@@ -10,7 +10,7 @@
 # SETUP
 
 ```sh
-deploy/dev/bin/altairpy ticket-printer/cert-manager/aws_wrapper.py --config deploy/dev/conf/altair.ticketing.batch.ini ticket-printer/cert-manager/setup.py
+deploy/dev/bin/altairpy ticket-printer/cert-manager/aws_wrapper.py --config deploy/dev/conf/altair.ticketing.batch.ini ticket-printer/cert-manager/setup.sh
 ( cd ticket-printer/cert-manager ; ./dehydrated/dehydrated --register --accept-terms )
 ```
 
