@@ -1,3 +1,5 @@
-#!/bin/sh
+#!/bin/bash
 
-rm -rf accounts certs dehydrated
+BASEDIR=$(cd $(dirname $0) && pwd)
+
+(cd $BASEDIR ; rm -rf accounts certs dehydrated)
