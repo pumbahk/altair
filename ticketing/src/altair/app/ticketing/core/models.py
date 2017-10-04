@@ -647,6 +647,11 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             # create Stock - ProductItem
             for template_stock in template_performance.stocks:
                 Stock.create_from_template(template=template_stock, performance_id=self.id)
+
+            # create ExtraMailInfo
+            template_mailinfo = template_performance.extra_mailinfo
+            if template_mailinfo:
+                ExtraMailInfo.create_from_template(template=template_mailinfo, performance_id=self.id)
         else:
             """
             Venueの作成時は以下のモデルを自動生成する
@@ -3709,8 +3714,11 @@ class ExtraMailInfo(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         mailinfo = ExtraMailInfo.clone(template)
         if 'event_id' in kwargs:
             mailinfo.event_id = kwargs['event_id']
+        if 'performance_id' in kwargs:
+            mailinfo.performance_id = kwargs['performance_id']
         mailinfo.save()
         return {template.id: mailinfo.id}
+
 
 class MailTypeEnum(StandardEnum):
     PurchaseCompleteMail = 1
