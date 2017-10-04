@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
+import json
+import requests
 from datetime import datetime
 from zope.interface import implementer
 from pyramid.httpexceptions import HTTPNotFound, HTTPFound
@@ -142,6 +144,20 @@ class LotResourceBase(object):
         except OAuthRequiredSettingError as e:
             raise e
         return params
+
+    @reify
+    def recaptcha_sitekey(self):
+        return "6LdanyoUAAAAAOh3LNep4EtZaKV19dCE92gMCAcl"
+
+    @reify
+    def recaptcha_secret(self):
+        return "6LdanyoUAAAAAACXpFL08qMlCUyMkaMFF5xwUPlZ"
+
+    def check_recaptch(self, recaptcha):
+        url = "https://www.google.com/recaptcha/api/siteverify"
+        param = dict(secret=self.recaptcha_secret, response=recaptcha)
+        response = requests.post(url, param)
+        return json.loads(response.content)['success']
 
 
 @implementer(ILotResource)

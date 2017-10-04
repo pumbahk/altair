@@ -67,6 +67,32 @@ def make_performance_map(request, performances):
     return retval
 
 
+@view_defaults(permission="lots")
+class RecaptchaView(object):
+    """ Recaptcha画面 """
+    def __init__(self, context, request):
+        self.request = request
+        self.context = context
+
+    @lbr_view_config(request_type='altair.mobile.interfaces.ISmartphoneRequest',
+                     route_name='lots.index.recaptcha',
+                     renderer=selectable_renderer("recaptcha.html"),
+                     request_method="GET")
+    def lots_recaptcha(self):
+        return dict(sitekey=self.context.recaptcha_sitekey)
+
+    @lbr_view_config(request_type='altair.mobile.interfaces.ISmartphoneRequest',
+                     route_name='lots.index.recaptcha',
+                     renderer=selectable_renderer("recaptcha.html"),
+                     request_method="POST")
+    def lots_recaptcha_post(self):
+        recaptcha = self.request.POST.get('g-recaptcha-response', None)
+        if recaptcha:
+            param = {'g-recaptcha-response': recaptcha}
+            return HTTPFound(self.request.route_url('lots.entry.index', event_id=self.context.event.id, lot_id=self.context.lot.id, _query=param))
+        return dict(sitekey=self.context.recaptcha_sitekey)
+
+
 @view_defaults(request_type='altair.mobile.interfaces.ISmartphoneRequest',
                permission="lots")
 class EntryLotView(object):
@@ -130,6 +156,11 @@ class EntryLotView(object):
             raise HTTPNotFound()
 
         performance_id = self.request.params.get('performance')
+
+        if self.request.organization.setting.recaptcha:
+            recaptcha = self.request.GET.get('g-recaptcha-response')
+            if not self.context.check_recaptch(recaptcha):
+                return HTTPFound(self.request.route_url('lots.index.recaptcha', event_id=self.context.event.id, lot_id=lot.id) or '/')
 
         return dict(
             event=event,
