@@ -1259,6 +1259,7 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 - (この階層以下はPerformance.add()を参照)
               - EventSetting
               - Lot
+              - ExtraMailInfo
             """
             template_event = Event.get(self.original_id)
 
@@ -1274,6 +1275,7 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 'ticket_bundle': dict(),
                 'sales_segment': dict(),
                 'lot': dict(),
+                'mailinfo': dict(),
             }
 
             # create StockType
@@ -1311,6 +1313,13 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 lot.original_lot_id = lot_src.id
                 convert_map['lot'][lot_src.id] = lot.id
                 logger.info('[COPY] Lot id={}'.format(lot.id))
+
+            # create ExtraMailInfo
+            template_mailinfo = template_event.extra_mailinfo
+            if template_mailinfo:
+                convert_map['mailinfo'].update(
+                    ExtraMailInfo.create_from_template(template=template_mailinfo, event_id=self.id)
+                )
 
             # create Ticket
             for template_ticket in template_event.tickets:
@@ -3694,6 +3703,14 @@ class ExtraMailInfo(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         except Exception, e:
             self._errors = e
             return False
+
+    @staticmethod
+    def create_from_template(template, **kwargs):
+        mailinfo = ExtraMailInfo.clone(template)
+        if 'event_id' in kwargs:
+            mailinfo.event_id = kwargs['event_id']
+        mailinfo.save()
+        return {template.id: mailinfo.id}
 
 class MailTypeEnum(StandardEnum):
     PurchaseCompleteMail = 1
