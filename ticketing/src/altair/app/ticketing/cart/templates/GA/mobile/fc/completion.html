@@ -8,7 +8,7 @@
 <%mobile:form_header>会員種別</%mobile:form_header>
 <div>${order.ordered_products[0].product.name}</div>
 <%mobile:form_header>金額</%mobile:form_header>
-<div>￥${h.format_number(order.ordered_products[0].product.price)}</div>
+<div>￥${h.format_number(order.ordered_products[0].product.price)} × ${h.format_number(order.ordered_products[0].quantity)}枚</div>
 <%mobile:form_header>決済手数料</%mobile:form_header>
 <div>￥${h.format_number(order.transaction_fee)}</div>
 % if order.delivery_fee > 0:

@@ -52,6 +52,13 @@ ${field(_widget=h.sensible_widget(request, field.widget), **kwargs)}${_suffix}</
 </%def>
 
 ${render_field(form['extra']['member_type'])}
+購入数
+<select id="quantity" name="quantity">
+  % for num in range(1, 11):
+    <option value="${num}">${num}</option>
+  % endfor
+</select>
+
 <%
 name_label = u'氏名'
 if view_context.fc_name:
