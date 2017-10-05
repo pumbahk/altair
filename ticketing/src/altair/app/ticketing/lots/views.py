@@ -188,6 +188,31 @@ class CompatAgreementLotView(object):
         return AgreementLotView(self.context, self.request).post()
 
 
+@view_defaults(permission="lots")
+class RecaptchaView(object):
+    """ Recaptcha画面 """
+    def __init__(self, context, request):
+        self.request = request
+        self.context = context
+        self._message = partial(h._message, request=self.request)
+
+    @lbr_view_config(route_name='lots.index.recaptcha',
+                     renderer=selectable_renderer("recaptcha.html"),
+                     request_method="GET")
+    def lots_recaptcha(self):
+        return dict(sitekey=self.context.recaptcha_sitekey)
+
+    @lbr_view_config(route_name='lots.index.recaptcha',
+                     renderer=selectable_renderer("recaptcha.html"),
+                     request_method="POST")
+    def lots_recaptcha_post(self):
+        recaptcha = self.request.POST.get('g-recaptcha-response', None)
+        if recaptcha:
+            param = {'g-recaptcha-response': recaptcha}
+            return HTTPFound(self.request.route_url('lots.entry.index', event_id=self.context.event.id, lot_id=self.context.lot.id, _query=param))
+        return dict(sitekey=self.context.recaptcha_sitekey)
+
+
 @view_defaults(route_name='lots.entry.index', renderer=selectable_renderer("index.html"), permission="lots")
 class EntryLotView(object):
     """
@@ -290,6 +315,11 @@ class EntryLotView(object):
         payment_delivery_pairs = [pdmp for pdmp in sales_segment.payment_delivery_method_pairs if pdmp.public]
         performance_product_map = self._create_performance_product_map(sales_segment.products)
         stock_types = self._stock_type_from_products(sales_segment.products)
+
+        if self.request.organization.setting.recaptcha:
+            recaptcha = self.request.GET.get('g-recaptcha-response')
+            if not self.context.check_recaptch(recaptcha):
+                return HTTPFound(self.request.route_url('lots.index.recaptcha', event_id=self.context.event.id, lot_id=lot.id) or '/')
 
         return dict(
             form=form,
