@@ -1,0 +1,53 @@
+<header>
+  <div class="inner">
+    <h1 class="title"><a href="/"><img src="https://tstar.s3.amazonaws.com/extauth/static/eagles/images/logo.png" alt="イーグルスチケット"></a></h1>
+    <form id="logout" ngNoForm action="/cart/logout" target="_self" method="POST">
+      <button id="logout" type="submit">ログアウト</button>
+    </form>
+  </div>
+</header>
+
+
+<div class="login-page">
+  <div class="contents">
+  
+  
+<!--****************************************************************-->
+  
+
+    <!--  event-info   -->
+      <app-event-info></app-event-info>
+    <!--  /event-info   -->
+
+    <!--  filter   -->
+      <app-filter #filter></app-filter>
+    <!--  /filter   -->
+      
+      <section class="mapArea">
+        <!--  venue-map   -->
+          <app-venue-map #venuemap [filterComponent]="filter" [mapAreaLeftH]="mapAreaLeftH"></app-venue-map>
+        <!--  /venue-map   -->
+      </section>
+
+
+<!--****************************************************************-->
+
+
+    </div>
+</div>
+<!-- .contents -->
+
+<!--SiteCatalyst-->
+
+
+<!--<footer>
+  <div class="page-top-box">
+    <a href="#" class="sp page-top" id="pageTop">
+      <span class="arrow top"></span>
+    </a>
+  </div>
+
+  <p class="copyright">
+    <small>&copy; TicketStar, Inc.</small>
+  </p>
+</footer>-->
