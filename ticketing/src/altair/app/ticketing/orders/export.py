@@ -19,7 +19,7 @@ from altair.app.ticketing.cart.helpers import format_number as _format_number
 from altair.app.ticketing.mailmags.models import MailSubscription, MailMagazine, MailSubscriptionStatus
 from altair.app.ticketing.utils import dereference
 from altair.app.ticketing.csvutils import CSVRenderer, PlainTextRenderer, CollectionRenderer, AttributeRenderer, SimpleRenderer
-from altair.app.ticketing.core.models import StockType, Stock, Product, ProductItem, Organization
+from altair.app.ticketing.core.models import StockType, Stock, Product, ProductItem, Organization, ChannelEnum
 from altair.app.ticketing.sej.models import SejRefundTicket, SejTicket
 from altair.app.ticketing.orders.models import Order
 from .api import get_order_attribute_pair_pairs
@@ -142,7 +142,8 @@ japanese_columns = {
     u'stock_type.name': u'席種',
     u'famiport_receipt_payment.reserve_number': u'FM払込票番号',
     u'famiport_receipt_ticketing.reserve_number': u'FM引換票番号',
-    }
+    u'order.channel': u'チャネル'
+}
 
 ordered_ja_col = OrderedDict([
     (u'order.order_no', u'予約番号'),
@@ -236,7 +237,8 @@ ordered_ja_col = OrderedDict([
     (u'order.approval_no', u'マルチ決済受領番号'),
     (u'order.cart_setting_id', u'カート設定'),
     (u'order.type', u'予約タイプ'),
-    (u'stock_holder.name', u'枠名')
+    (u'stock_holder.name', u'枠名'),
+    (u'order.channel', u'チャネル')
 ])
 
 def get_japanese_columns(request):
@@ -319,6 +321,16 @@ class CurrencyRenderer(SimpleRenderer):
         return [
             ((u'', self.name, u''), unicode(format_number(dereference(record, self.key))))
             ]
+
+
+class ChannelRenderer(SimpleRenderer):
+    def __call__(self, record, context):
+        for channel in ChannelEnum:
+            if channel.v == dereference(record, self.key):
+                return [
+                    ((u'', self.name, u''), channel.k)
+                ]
+
 
 class ZipRenderer(SimpleRenderer):
     def __call__(self, record, context):
@@ -792,6 +804,7 @@ class OrderDeltaCSV(OrderCSV):
         u'stock_type.name': PlainTextRenderer(u'stock_type.name'),
         u'famiport_receipt_payment.reserve_number': PlainTextRenderer(u'famiport_receipt_payment.reserve_number'),
         u'famiport_receipt_ticketing.reserve_number': PlainTextRenderer(u'famiport_receipt_ticketing.reserve_number'),
+        u'order.channel': ChannelRenderer(u'order.channel'),
     }
 
     export_type_related_columns_dict = {
