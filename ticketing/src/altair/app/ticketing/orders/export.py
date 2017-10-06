@@ -142,7 +142,8 @@ japanese_columns = {
     u'stock_type.name': u'席種',
     u'famiport_receipt_payment.reserve_number': u'FM払込票番号',
     u'famiport_receipt_ticketing.reserve_number': u'FM引換票番号',
-    }
+    u'order.channel': u'チャネル'
+}
 
 ordered_ja_col = OrderedDict([
     (u'order.order_no', u'予約番号'),
@@ -236,7 +237,8 @@ ordered_ja_col = OrderedDict([
     (u'order.approval_no', u'マルチ決済受領番号'),
     (u'order.cart_setting_id', u'カート設定'),
     (u'order.type', u'予約タイプ'),
-    (u'stock_holder.name', u'枠名')
+    (u'stock_holder.name', u'枠名'),
+    (u'order.channel', u'チャネル')
 ])
 
 def get_japanese_columns(request):
@@ -792,6 +794,7 @@ class OrderDeltaCSV(OrderCSV):
         u'stock_type.name': PlainTextRenderer(u'stock_type.name'),
         u'famiport_receipt_payment.reserve_number': PlainTextRenderer(u'famiport_receipt_payment.reserve_number'),
         u'famiport_receipt_ticketing.reserve_number': PlainTextRenderer(u'famiport_receipt_ticketing.reserve_number'),
+        u'order.channel': PlainTextRenderer(u'order.channel'),
     }
 
     export_type_related_columns_dict = {

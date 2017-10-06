@@ -1295,6 +1295,7 @@ class OrderSummary(Base):
             Order.__table__.c.cart_setting_id,
             Order.__table__.c.created_at,
             Order.__table__.c.deleted_at,
+            Order.__table__.c.channel,
             UserProfile.__table__.c.last_name.label('user_profile_last_name'),
             UserProfile.__table__.c.first_name.label('user_profile_first_name'),
             UserProfile.__table__.c.last_name_kana.label('user_profile_last_name_kana'),

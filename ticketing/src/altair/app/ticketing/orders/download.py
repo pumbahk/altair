@@ -258,6 +258,7 @@ summary_columns = [
     ).label('delivery_status_label'),
     t_order.c.order_no, #-- 予約番号
     t_order.c.created_at, #-- 予約日時
+    t_order.c.channel,
     t_lot.c.name.label('created_from_lot_entry_lot_name'),
     t_order.c.total_amount, #-- 合計
     (t_shipping_address.c.last_name
