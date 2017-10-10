@@ -64,7 +64,8 @@ class Secure3DReqEnrolResponse(Base):
         return self.ErrorCd == '000000' and self.RetCd == '-1'
 
     def is_enable_auth_api(self):
-        return self.ErrorCd == '000000' and self.RetCd in ('0', '1', '2')
+        return self.ErrorCd == '000000' and self.RetCd == '0'
+
 
 class Secure3DAuthRequest(Base):
     """ 3D認証結果確認依頼処理（リクエスト）
