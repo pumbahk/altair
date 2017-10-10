@@ -137,7 +137,7 @@ class EntryLotViewTests(unittest.TestCase):
                 extra_form_fields=[],
                 flavors=None,
                 ),
-            check_recaptch=lambda a: False
+            check_recaptch=lambda a: True
         )
 
         target = self._makeOne(context, request)
