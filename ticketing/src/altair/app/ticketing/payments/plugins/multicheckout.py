@@ -624,7 +624,7 @@ class MultiCheckoutView(object):
             return self.request.response
         elif enrol.is_enable_secure3d_chargeback_risk():
             # チャージバックリスクがあるため実施せずエラー
-            logger.error("multicheckout chargeback risk enroll RetCd = %s" % (enrol.RetCd))
+            logger.error("multicheckout chargeback risk enroll RetCd = %s, ErrorCd = %s" % (enrol.RetCd, enrol.ErrorCd))
             raise MultiCheckoutSettlementFailure(
                 message='chargeback_risk exception',
                 order_no=order['order_no'],
