@@ -58,7 +58,12 @@ class Secure3DReqEnrolResponse(Base):
     PaReq = sa.Column(sa.UnicodeText, doc="ACS に送信する電文内容")
 
     def is_enable_secure3d(self):
-        return self.ErrorCd == '000000' and self.RetCd in ('0', '1', '2')
+        return self.ErrorCd == '000000' and self.RetCd in ('0', '1')
+
+    def is_enable_secure3d_chargeback_risk(self):
+        # リターンコード2が返却されるケースは、インターネット上のネットワークトラブルなどにより、３D認証が正常に行えない場合に発生します。
+        # この場合、カードホルダーによる３D認証が行われていませんので、店舗様へのチャージバックリスクが発生します。
+        return self.ErrorCd == '000000' and self.RetCd == '2'
 
     def is_secure3d_continuable(self):
         return self.ErrorCd == '000000' and self.RetCd == '-1'

@@ -620,6 +620,13 @@ class MultiCheckoutView(object):
             form = m_h.secure3d_acs_form(self.request, complete_url(self.request), enrol)
             self.request.response.text = form
             return self.request.response
+        elif enrol.is_enable_secure3d_chargeback_risk():
+            # チャージバックリスクがあるため実施せずエラー
+            logger.info("3d secure is failed ErrorCd = %s RetCd = %s" % (enrol.ErrorCd, enrol.RetCd))
+            raise MultiCheckoutSettlementFailure(
+                message='uncaught exception',
+                order_no=order['order_no'],
+                back_url=back_url(self.request))
         else:
             # セキュア3D認証エラー
             logger.info(u'secure3d not availble: order_no=%s, error_code=%s, return_code=%s' % (order['order_no'], enrol.ErrorCd, enrol.RetCd))
