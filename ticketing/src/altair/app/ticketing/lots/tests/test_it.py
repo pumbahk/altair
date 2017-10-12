@@ -124,7 +124,7 @@ class EntryLotViewTests(unittest.TestCase):
                 best_match=lambda a,b:'ja'
             ),
             organization=testing.DummyModel(
-                 setting=testing.DummyModel(i18n=False),
+                 setting=testing.DummyModel(i18n=False, recaptcha=True),
             ),
         )
 
@@ -137,7 +137,9 @@ class EntryLotViewTests(unittest.TestCase):
                 extra_form_fields=[],
                 flavors=None,
                 ),
-            )
+            check_recaptch=lambda a: True
+        )
+
         target = self._makeOne(context, request)
         result = target.get()
 
