@@ -41,7 +41,7 @@ sql = """
     FROM Cart
     INNER JOIN Performance ON Performance.id = Cart.performance_id
     INNER JOIN Event ON Event.id = Performance.event_id
-    INNER JOIN `Order` ON `Order`.id = Cart.order_id AND `Order`.deleted_at IS NULL AND `Order`.canceled_at IS NULL
+    INNER JOIN `Order` ON `Order`.id = Cart.order_id AND `Order`.deleted_at IS NULL AND `Order`.canceled_at IS NULL AND `Order`.refunded_at IS NULL
     INNER JOIN MemberGroup ON MemberGroup.id = `Order`.membergroup_id 
     INNER JOIN OrderedProduct ON OrderedProduct.order_id = `Order`.id
     INNER JOIN OrderedProductItem ON OrderedProductItem.ordered_product_id = OrderedProduct.id
