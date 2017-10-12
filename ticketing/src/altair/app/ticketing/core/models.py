@@ -1201,11 +1201,23 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     @property
     def final_performance(self):
-        if not self._final_performance:
-            self._final_performance = Performance.filter(Performance.event_id==self.id)\
-                                        .filter(Performance.start_on!=None)\
-                                        .order_by('Performance.start_on desc').first()
-        return self._final_performance
+        final_start_perf = Performance.filter(Performance.event_id == self.id)\
+                            .filter(Performance.end_on != None) \
+                            .order_by('Performance.start_on desc').first()
+
+        final_end_perf = Performance.filter(Performance.event_id == self.id)\
+                            .filter(Performance.end_on != None) \
+                            .order_by('Performance.end_on desc').first()
+
+        # 終演が設定されていない場合
+        if not final_end_perf:
+            return final_start_perf
+
+        if final_start_perf.start_on < final_end_perf.end_on:
+            return  final_end_perf
+
+        # パフォーマンスAが始まったあとにパフォーマンスBが始まり、パフォーマンスBの終了時刻がパフォーマンスAより早い場合
+        return final_start_perf
 
     @staticmethod
     def get_owner_event(account):
