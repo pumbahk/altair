@@ -497,7 +497,7 @@ table thead th {
 }
 
 table thead th:first-child {
-border-bottom:1px solid #686859;
+border-bottom:1px solid #000;
 }
 
 table thead th {
@@ -761,7 +761,7 @@ width: 420px;
 height: 240px;
 }
 .loginbox thead th{
-background: #686859;
+background: #000;
 font-size: 20px;
 height: 30px;
 color: #fff;
@@ -772,14 +772,14 @@ background: #F0F0E1;
 }
 
 .loginbox th{
-background: #686859;
+background: #000;
 color: #fff;
 }
 
 table.member{
 border-collapse: collapse;
-border-top: 1px solid #686859 !important;
-border-left: 1px solid #686859 !important;
+border-top: 1px solid #000 !important;
+border-left: 1px solid #000 !important;
 }
 table.member th{
 color: #fff
