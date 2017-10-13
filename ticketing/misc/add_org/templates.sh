@@ -9,6 +9,7 @@ choose_base() {
     elif [ -e __scaffold__ ]; then
         echo "__scaffold__"
     else
+        echo "ベースとなるディレクトリがありません。"
         exit 1
     fi
 }
@@ -43,16 +44,15 @@ cat << EOS
 #---------------------------
 EOS
 
-### ここの値は申請部分が変更があった場合手動で修正が必要です
+### 以下の値は追加するORGの申請内容に合わせて変更してください。
 CODE="KZ"
 ORG_NAME="オペラシアターこんにゃく座チケットサービス"
-CONTACT=""
 CONTACT="mailto:ticket@konnyakuza.com" # 【mailto:メールアドレス】 OR 【問い合わせURL】
 ALTAIR_PATH=~/altair ### 各自localのPATHをいれてください
 REQUIRED_COUPON=false # ※ クーポン機能必要であればtrueにしてください
 
 ### ロゴ画像のアサイン
-PATH_TO_FAVICON="/Users/ts-motoi.a.komatsu/Downloads/favicon.ico"
+PATH_TO_FAVICON="/Users/ts-motoi.a.komatsu/Downloads/favicon.ico" # ※注意※ faviconは必ずfavicon.icoという画像名で配置してください
 PATH_TO_PC_LOGO="/Users/ts-motoi.a.komatsu/Downloads/PC_header+.png"
 PATH_TO_SP_LOGO="/Users/ts-motoi.a.komatsu/Downloads/SP_header+.png"
 PATH_TO_MB_LOGO="/Users/ts-motoi.a.komatsu/Downloads/MB_header-.gif"
@@ -99,8 +99,7 @@ echo "`pwd`/${CODE}は${base}で作成します。"
 test -d ${CODE} && rm -rf ${CODE}
 cp -r ${base} ${CODE}
 
-# ロゴ画像の配置（テンプレートにあわせて配置後のpathは固定して下さい）
-# ※注意※ faviconは必ずfavicon.icoという画像名で配置してください
+# ロゴ画像の配置
 cp ${PATH_TO_PC_LOGO} ${CODE}/pc/images/logo.png
 cp ${PATH_TO_FAVICON} ${CODE}/pc/images/favicon.ico
 cp ${PATH_TO_SP_LOGO} ${CODE}/smartphone/images/logo.png
@@ -134,12 +133,10 @@ echo "`pwd`/${CODE}は${base}で作成します。"
 
 cp -r ${base} ${CODE}
 
-# ロゴ画像の配置（テンプレートにあわせて配置後のpathは固定して下さい）
-# ※注意※ faviconは必ずfavicon.icoという画像名で配置してください
-
 # ディレクトリがない場合作る
 test ! -d ${CODE}/mobile/images && mkdir -p ${CODE}/mobile/images
 
+# ロゴ画像の配置
 cp ${PATH_TO_PC_LOGO} ${CODE}/pc/images/logo.png
 cp ${PATH_TO_FAVICON} ${CODE}/pc/images/favicon.ico
 cp ${PATH_TO_MB_LOGO} ${CODE}/mobile/images/mb_logo.gif
@@ -158,14 +155,12 @@ echo "`pwd`/${CODE}は${base}で作成します。"
 test -d ${CODE} && rm -rf ${CODE}
 cp -r ${base} ${CODE}
 
-# ロゴ画像の配置（テンプレートにあわせて配置後のpathは固定して下さい）
-# ※注意※ faviconは必ずfavicon.icoという画像名で配置してください
-
-# ロゴ画像をあとで配備したりする場合ディレクトリがないのでつくる
+# ディレクトリがない場合作る
 test ! -d ${CODE}/pc/images && mkdir -p ${CODE}/pc/images
 test ! -d ${CODE}/smartphone/images && mkdir -p ${CODE}/smartphone/images
 test ! -d ${CODE}/mobile/images && mkdir -p ${CODE}/mobile/images
 
+# ロゴ画像の配置
 cp ${PATH_TO_PC_LOGO} ${CODE}/pc/images/logo.png
 cp ${PATH_TO_FAVICON} ${CODE}/pc/images/favicon.ico
 cp ${PATH_TO_SP_LOGO} ${CODE}/smartphone/images/logo.png
@@ -199,8 +194,7 @@ echo "`pwd`/${CODE}は${base}で作成します。"
 test -d ${CODE} && rm -rf ${CODE}
 cp -r ${base} ${CODE}
 
-# ロゴ画像の配置（テンプレートにあわせて配置後のpathは固定して下さい）
-# ※注意※ faviconは必ずfavicon.icoという画像名で配置してください
+# ロゴ画像の配置
 cp ${PATH_TO_PC_LOGO} ${CODE}/pc/images/logo.png
 cp ${PATH_TO_FAVICON} ${CODE}/pc/images/favicon.ico
 cp ${PATH_TO_SP_LOGO} ${CODE}/smartphone/images/logo.png
@@ -232,8 +226,7 @@ if ${REQUIRED_COUPON}; then
     test -d ${CODE} && rm -rf ${CODE}
     cp -r ${base} ${CODE}
 
-    # ロゴ画像の配置（テンプレートにあわせて配置後のpathは固定して下さい）
-    # ※注意※ faviconは必ずfavicon.icoという画像名で配置してください
+    # ロゴ画像の配置
     cp ${PATH_TO_PC_LOGO} ${CODE}/pc/images/logo.png
     cp ${PATH_TO_FAVICON} ${CODE}/pc/images/favicon.ico
     cp ${PATH_TO_MB_LOGO} ${CODE}/mobile/images/logo_mobile.gif
@@ -299,8 +292,7 @@ echo "`pwd`/${CODE}は${base}で作成します。"
 test -d ${CODE} && rm -rf ${CODE}
 cp -r ${base} ${CODE}
 
-# ロゴ画像の配置（テンプレートにあわせて配置後のpathは固定して下さい）
-# ※注意※ faviconは必ずfavicon.icoという画像名で配置してください
+# ロゴ画像の配置
 cp ${PATH_TO_PC_LOGO} ${CODE}/img/logo.png
 cp ${PATH_TO_FAVICON} ${CODE}/img/favicon.ico
 
