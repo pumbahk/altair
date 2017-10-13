@@ -1,8 +1,8 @@
 :root {
-    --custom-btn-color: #bf0000;    /* buttons ボタン */
-    --custom-color: #bf0000;        /* fonts 文字 */
-    --custom-border-color: #bf0000;     /* border 罫線（divなど） */
-    --custom-background-color: #bf0000;     /* background 背景（divなど） */
+    --custom-btn-color: #519FC5;
+    --custom-color: #519FC5;
+    --custom-border-color: #519FC5;
+    --custom-background-color: #D2E4FB;
 }
 
 /* buttons color ボタン
