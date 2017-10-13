@@ -32,7 +32,8 @@ cat << EOS
 EOS
 
 # 設定の読み込み
-[ -f config.sh ] && . config.sh
+CWD=$(cd $(dirname $0) && pwd)
+[ -f ${CWD}/config.sh ] && . ${CWD}/config.sh
 
 ### 設定内容の出力
 echo ALTAIR_PATH: ${ALTAIR_PATH}
@@ -45,7 +46,7 @@ echo PATH_TO_PC_LOGO: ${PATH_TO_PC_LOGO}
 echo PATH_TO_SP_LOGO: ${PATH_TO_SP_LOGO}
 echo PATH_TO_MB_LOGO: ${PATH_TO_MB_LOGO}
 
-read -p  "テンプレート作成を開始します。続けるにはエンターキーを、中止するには「CTRL＋C」を押してください"
+read -p "テンプレート作成を開始します。続けるにはエンターキーを、中止するには「CTRL＋C」を押してください"
 
 cat << EOS
 #---------------------------

@@ -15,7 +15,8 @@ cat << EOS
 EOS
 
 # 設定の読み込み
-[ -f config.sh ] && . config.sh
+CWD=$(cd $(dirname $0) && pwd)
+[ -f ${CWD}/config.sh ] && . ${CWD}/config.sh
 
 ### 設定内容の出力
 echo REQUIRED_COUPON: ${REQUIRED_COUPON}
@@ -27,7 +28,7 @@ echo PATH_TO_STATIC_LOTS: ${PATH_TO_STATIC_LOTS}
 echo PATH_TO_STATIC_COUPON: ${PATH_TO_STATIC_COUPON}
 echo PATH_TO_STATIC_ALTAIRCMS: ${PATH_TO_STATIC_ALTAIRCMS}
 
-read -p  "上記の静的コンテンツディレクトリをS3へアップロードします。続けるにはエンターキーを、中止するには「CTRL＋C」を押してください"
+read -p "上記の静的コンテンツディレクトリをS3へアップロードします。続けるにはエンターキーを、中止するには「CTRL＋C」を押してください"
 
 cat << EOS
 #---------------------------
