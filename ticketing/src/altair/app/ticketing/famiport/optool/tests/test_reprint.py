@@ -23,7 +23,7 @@ from altair.app.ticketing.famiport.models import (
             FamiPortTicketType,
             FamiPortTicket,
             )
-from ..utils import ValidateUtils
+from ..utils import validate_reprint_cond
 from datetime import datetime, timedelta
 
 class ReprintTest(TestCase):
@@ -227,9 +227,9 @@ class ReprintTest(TestCase):
 
         self.session.commit()
 
-        canceled_payment_receipt_errors = ValidateUtils.validate_reprint_cond(canceled_payment_receipt, datetime.now())
-        canceled_ticketing_receipt_errors = ValidateUtils.validate_reprint_cond(canceled_ticketing_receipt, datetime.now())
-        canceled_cash_on_delivery_receipt_errors = ValidateUtils.validate_reprint_cond(canceled_cash_on_delivery_receipt, datetime.now())
+        canceled_payment_receipt_errors = validate_reprint_cond(canceled_payment_receipt, datetime.now())
+        canceled_ticketing_receipt_errors = validate_reprint_cond(canceled_ticketing_receipt, datetime.now())
+        canceled_cash_on_delivery_receipt_errors = validate_reprint_cond(canceled_cash_on_delivery_receipt, datetime.now())
 
         self.assertTrue(canceled_payment_receipt_errors, msg='Canceled payment receipt should not be reprintable.')
         self.assertTrue(canceled_ticketing_receipt_errors, msg='Canceled ticketing receipt should not be reprintable.')
@@ -423,9 +423,9 @@ class ReprintTest(TestCase):
 
         self.session.commit()
 
-        canceled_payment_receipt_errors = ValidateUtils.validate_reprint_cond(canceled_payment_receipt, datetime.now())
-        canceled_ticketing_receipt_errors = ValidateUtils.validate_reprint_cond(canceled_ticketing_receipt, datetime.now())
-        canceled_cash_on_delivery_receipt_errors = ValidateUtils.validate_reprint_cond(canceled_cash_on_delivery_receipt, datetime.now())
+        canceled_payment_receipt_errors = validate_reprint_cond(canceled_payment_receipt, datetime.now())
+        canceled_ticketing_receipt_errors = validate_reprint_cond(canceled_ticketing_receipt, datetime.now())
+        canceled_cash_on_delivery_receipt_errors = validate_reprint_cond(canceled_cash_on_delivery_receipt, datetime.now())
 
         self.assertTrue(canceled_payment_receipt_errors, msg='Canceled payment receipt should not be reprintable.')
         self.assertTrue(canceled_ticketing_receipt_errors, msg='Canceled ticketing receipt should not be reprintable.')
@@ -609,9 +609,9 @@ class ReprintTest(TestCase):
         self.session.add(famiport_order_cash_on_delivery)
         self.session.commit()
 
-        unpaid_payment_receipt_errors = ValidateUtils.validate_reprint_cond(unpaid_payment_receipt, datetime.now())
-        unissued_ticketing_receipt_errors = ValidateUtils.validate_reprint_cond(unissued_ticketing_receipt, datetime.now())
-        unpaid_cash_on_delivery_receipt_errors = ValidateUtils.validate_reprint_cond(unpaid_cash_on_delivery_receipt, datetime.now())
+        unpaid_payment_receipt_errors = validate_reprint_cond(unpaid_payment_receipt, datetime.now())
+        unissued_ticketing_receipt_errors = validate_reprint_cond(unissued_ticketing_receipt, datetime.now())
+        unpaid_cash_on_delivery_receipt_errors = validate_reprint_cond(unpaid_cash_on_delivery_receipt, datetime.now())
 
         self.assertTrue(unpaid_payment_receipt_errors, msg='Unpaid payment receipt should not be reprintable.')
         self.assertTrue(unissued_ticketing_receipt_errors, msg='Unissued ticketing receipt should not be reprintable.')
@@ -798,9 +798,9 @@ class ReprintTest(TestCase):
         self.session.add(famiport_order_cash_on_delivery)
         self.session.commit()
 
-        incomplete_payment_receipt_errors = ValidateUtils.validate_reprint_cond(incomplete_payment_receipt, datetime.now())
-        incomplete_ticketing_receipt_errors = ValidateUtils.validate_reprint_cond(incomplete_ticketing_receipt, datetime.now())
-        incomplete_cash_on_delivery_receipt_errors = ValidateUtils.validate_reprint_cond(incomplete_cash_on_delivery_receipt, datetime.now())
+        incomplete_payment_receipt_errors = validate_reprint_cond(incomplete_payment_receipt, datetime.now())
+        incomplete_ticketing_receipt_errors = validate_reprint_cond(incomplete_ticketing_receipt, datetime.now())
+        incomplete_cash_on_delivery_receipt_errors = validate_reprint_cond(incomplete_cash_on_delivery_receipt, datetime.now())
 
         self.assertTrue(incomplete_payment_receipt_errors, msg='Incomplete payment receipt should not be reprintable.')
         self.assertFalse(incomplete_ticketing_receipt_errors, msg='Incomplete ticketing receipt should be reprintable.')
@@ -987,9 +987,9 @@ class ReprintTest(TestCase):
         self.session.add(famiport_order_cash_on_delivery)
         self.session.commit()
 
-        complete_payment_receipt_errors = ValidateUtils.validate_reprint_cond(complete_payment_receipt, datetime.now())
-        complete_ticketing_receipt_errors = ValidateUtils.validate_reprint_cond(complete_ticketing_receipt, datetime.now())
-        complete_cash_on_delivery_receipt_errors = ValidateUtils.validate_reprint_cond(complete_cash_on_delivery_receipt, datetime.now())
+        complete_payment_receipt_errors = validate_reprint_cond(complete_payment_receipt, datetime.now())
+        complete_ticketing_receipt_errors = validate_reprint_cond(complete_ticketing_receipt, datetime.now())
+        complete_cash_on_delivery_receipt_errors = validate_reprint_cond(complete_cash_on_delivery_receipt, datetime.now())
 
         self.assertTrue(complete_payment_receipt_errors, msg='Complete payment receipt should be reprintable.')
         self.assertFalse(complete_ticketing_receipt_errors, msg='Complete ticketing receipt should be reprintable.')
