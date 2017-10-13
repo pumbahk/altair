@@ -14,18 +14,6 @@ choose_base() {
     fi
 }
 
-#---------------------------
-# 各種静的コンテンツのパス
-#---------------------------
-
-PATH_TO_STATIC_CART="ticketing/src/altair/app/ticketing/cart/static"
-PATH_TO_STATIC_ORDERREVIEW="ticketing/src/altair/app/ticketing/orderreview/static"
-PATH_TO_STATIC_FCAUTH="ticketing/src/altair/app/ticketing/fc_auth/static"
-PATH_TO_STATIC_LOTS="ticketing/src/altair/app/ticketing/lots/static"
-PATH_TO_STATIC_COUPON="ticketing/src/altair/app/ticketing/coupon/static"
-PATH_TO_STATIC_ALTAIRCMS="cms/src/altaircms/static"
-
-
 cat << EOS
 #---------------------------
 # 処理の概要
@@ -37,27 +25,16 @@ ORG追加のテンプレート作成処理。
 
 EOS
 
-
 cat << EOS
 #---------------------------
 # 設定値
 #---------------------------
 EOS
 
-### 以下の値は追加するORGの申請内容に合わせて変更してください。
-CODE="KZ"
-ORG_NAME="オペラシアターこんにゃく座チケットサービス"
-CONTACT="mailto:ticket@konnyakuza.com" # 【mailto:メールアドレス】 OR 【問い合わせURL】
-ALTAIR_PATH=~/altair ### 各自localのPATHをいれてください
-REQUIRED_COUPON=false # ※ クーポン機能必要であればtrueにしてください
+# 設定の読み込み
+[ -f config.sh ] && . config.sh
 
-### ロゴ画像のアサイン
-PATH_TO_FAVICON="/Users/ts-motoi.a.komatsu/Downloads/favicon.ico" # ※注意※ faviconは必ずfavicon.icoという画像名で配置してください
-PATH_TO_PC_LOGO="/Users/ts-motoi.a.komatsu/Downloads/PC_header+.png"
-PATH_TO_SP_LOGO="/Users/ts-motoi.a.komatsu/Downloads/SP_header+.png"
-PATH_TO_MB_LOGO="/Users/ts-motoi.a.komatsu/Downloads/MB_header-.gif"
-
-### 設定したPATHの変数と存在確認
+### 設定内容の出力
 echo ALTAIR_PATH: ${ALTAIR_PATH}
 echo CODE: ${CODE}
 echo ORG_NAME: ${ORG_NAME}
@@ -297,46 +274,11 @@ cp ${PATH_TO_PC_LOGO} ${CODE}/img/logo.png
 cp ${PATH_TO_FAVICON} ${CODE}/img/favicon.ico
 
 cat << EOS
-#---------------------------
-# 静的コンテンツのアップロード
-#---------------------------
-EOS
-
-echo 'S3にアップロードします。よろしいですか？(y)'
-read answer
-case "$answer" in
-y)
-    ### local, STG
-    cd ${ALTAIR_PATH}/${PATH_TO_STATIC_CART}; pwd
-    s3cmd put --exclude '.DS_Store' -P -r ${CODE} s3://tstar-dev/cart/static/ --no-preserve
-
-    cd ${ALTAIR_PATH}/${PATH_TO_STATIC_ORDERREVIEW}; pwd
-    s3cmd put --exclude '.DS_Store' -P -r ${CODE} s3://tstar-dev/orderreview/static/ --no-preserve
-
-    cd ${ALTAIR_PATH}/${PATH_TO_STATIC_FCAUTH}; pwd
-    s3cmd put --exclude '.DS_Store' -P -r ${CODE} s3://tstar-dev/fc_auth/static/ --no-preserve
-
-    cd ${ALTAIR_PATH}/${PATH_TO_STATIC_LOTS}; pwd
-    s3cmd put --exclude '.DS_Store' -P -r ${CODE} s3://tstar-dev/lots/static/ --no-preserve
-
-    if ${REQUIRED_COUPON}; then
-        cd ${ALTAIR_PATH}/${PATH_TO_STATIC_COUPON}; pwd
-        s3cmd put --exclude '.DS_Store' -P -r ${CODE} s3://tstar-dev/coupon/static/ --no-preserve
-    fi
-
-    cd ${ALTAIR_PATH}/${PATH_TO_STATIC_ALTAIRCMS}; pwd
-    s3cmd put --exclude '.DS_Store' -P -r ${CODE} s3://tstar-dev/usersite/static/ --no-preserve
-    ;;
-*)
-    echo 'アップロード処理をスキップします。'
-    ;;
-esac
-
-cat << EOS
 ---------------------------
 処理が完了しました。
-動作確認して、問題なければ
-テンプレートと画像をコミットしてください
+
+色味の変更など調整を行った後、
+s3_upload.shを実行してください。
 ---------------------------
 EOS
 
