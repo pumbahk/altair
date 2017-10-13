@@ -108,6 +108,20 @@
       <th>引取方法</th>
       <td>${cart.payment_delivery_pair.delivery_method.name}</td>
     </tr>
+    <tr>
+      <th>販売チャネル</th>
+      <td>
+        <% from altair.app.ticketing.core.api import get_channel %>
+        ${get_channel(cart.channel).k}
+      </td>
+    </tr>
+    <tr>
+      <th>ユーザエージェント</th>
+      <td>
+        ${cart.user_agent}
+      </td>
+    </tr>
+
     % endif
   </table>
   % if cart.shipping_address:
