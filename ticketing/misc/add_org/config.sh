@@ -7,14 +7,27 @@
 CODE="KZ"
 ORG_NAME="オペラシアターこんにゃく座チケットサービス"
 CONTACT="mailto:ticket@konnyakuza.com" # 【mailto:メールアドレス】 OR 【問い合わせURL】
-ALTAIR_PATH=~/altair ### 各自localのPATHをいれてください
-REQUIRED_COUPON=false # ※ クーポン機能必要であればtrueにしてください
+ALTAIR_PATH=~/altair # 各自localのPATHをいれてください
+REQUIRED_COUPON=false # クーポン機能必要であればtrueにしてください
 
 ### ロゴ画像のアサイン
-PATH_TO_FAVICON="/Users/ts-motoi.a.komatsu/Downloads/favicon.ico" # ※注意※ faviconは必ずfavicon.icoという画像名で配置してください
+PATH_TO_FAVICON="/Users/ts-motoi.a.komatsu/Downloads/favicon.ico" # faviconは必ずfavicon.icoという画像名で配置してください
 PATH_TO_PC_LOGO="/Users/ts-motoi.a.komatsu/Downloads/PC_header+.png"
 PATH_TO_SP_LOGO="/Users/ts-motoi.a.komatsu/Downloads/SP_header+.png"
 PATH_TO_MB_LOGO="/Users/ts-motoi.a.komatsu/Downloads/MB_header-.gif"
+
+#---------------------------
+# S3の設定
+#---------------------------
+
+BUCKET="tstar-dev" # 【tstar】 OR 【tstar-dev】
+
+PATH_TO_S3_CART="s3://${BUCKET}/cart/static/${CODE}/"
+PATH_TO_S3_ORDERREVIEW="s3://${BUCKET}/orderreview/static/${CODE}/"
+PATH_TO_S3_FCAUTH="s3://${BUCKET}/fc_auth/static/${CODE}/"
+PATH_TO_S3_LOTS="s3://${BUCKET}/lots/static/${CODE}/"
+PATH_TO_S3_COUPON="s3://${BUCKET}/coupon/static/${CODE}/"
+PATH_TO_S3_USERSITE="s3://${BUCKET}/usersite/static/${CODE}/"
 
 #---------------------------
 # 各種静的コンテンツのパス
