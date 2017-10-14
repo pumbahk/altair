@@ -14,19 +14,31 @@ cat << EOS
 #---------------------------
 EOS
 
-# 設定の読み込み
+# 設定・関数の読み込み
 CWD=$(cd $(dirname $0) && pwd)
 [ -f ${CWD}/config.sh ] && . ${CWD}/config.sh
+[ -f ${CWD}/function.sh ] && . ${CWD}/function.sh
 
 ### 設定内容の出力
-echo REQUIRED_COUPON: ${REQUIRED_COUPON}
-echo ALTAIR_PATH: ${ALTAIR_PATH}
-echo PATH_TO_STATIC_CART: ${PATH_TO_STATIC_CART}
-echo PATH_TO_STATIC_ORDERREVIEW: ${PATH_TO_STATIC_ORDERREVIEW}
-echo PATH_TO_STATIC_FCAUTH: ${PATH_TO_STATIC_FCAUTH}
-echo PATH_TO_STATIC_LOTS: ${PATH_TO_STATIC_LOTS}
-echo PATH_TO_STATIC_COUPON: ${PATH_TO_STATIC_COUPON}
-echo PATH_TO_STATIC_ALTAIRCMS: ${PATH_TO_STATIC_ALTAIRCMS}
+cat << EOS
+ALTAIR_PATH: ${ALTAIR_PATH}
+PATH_TO_STATIC_CART: ${PATH_TO_STATIC_CART}
+PATH_TO_STATIC_ORDERREVIEW: ${PATH_TO_STATIC_ORDERREVIEW}
+PATH_TO_STATIC_FCAUTH: ${PATH_TO_STATIC_FCAUTH}
+PATH_TO_STATIC_LOTS: ${PATH_TO_STATIC_LOTS}
+PATH_TO_STATIC_COUPON: ${PATH_TO_STATIC_COUPON}
+PATH_TO_STATIC_ALTAIRCMS: ${PATH_TO_STATIC_ALTAIRCMS}
+
+BUCKET: ${BUCKET}
+PATH_TO_S3_CART: ${PATH_TO_S3_CART}
+PATH_TO_S3_ORDERREVIEW: ${PATH_TO_S3_ORDERREVIEW}
+PATH_TO_S3_FCAUTH: ${PATH_TO_S3_FCAUTH}
+PATH_TO_S3_LOTS: ${PATH_TO_S3_LOTS}
+PATH_TO_S3_COUPON: ${PATH_TO_S3_COUPON}
+PATH_TO_S3_USERSITE: ${PATH_TO_S3_USERSITE}
+
+REQUIRED_COUPON: ${REQUIRED_COUPON}
+EOS
 
 read -p "上記の静的コンテンツディレクトリをS3へアップロードします。続けるにはエンターキーを、中止するには「CTRL＋C」を押してください"
 
@@ -37,25 +49,15 @@ cat << EOS
 EOS
 
 ### local, STG
-cd ${ALTAIR_PATH}/${PATH_TO_STATIC_CART}; pwd
-s3cmd put --exclude '.DS_Store' -P -r ${CODE} s3://tstar-dev/cart/static/ --no-preserve
-
-cd ${ALTAIR_PATH}/${PATH_TO_STATIC_ORDERREVIEW}; pwd
-s3cmd put --exclude '.DS_Store' -P -r ${CODE} s3://tstar-dev/orderreview/static/ --no-preserve
-
-cd ${ALTAIR_PATH}/${PATH_TO_STATIC_FCAUTH}; pwd
-s3cmd put --exclude '.DS_Store' -P -r ${CODE} s3://tstar-dev/fc_auth/static/ --no-preserve
-
-cd ${ALTAIR_PATH}/${PATH_TO_STATIC_LOTS}; pwd
-s3cmd put --exclude '.DS_Store' -P -r ${CODE} s3://tstar-dev/lots/static/ --no-preserve
+s3_upload ${PATH_TO_S3_CART} ${ALTAIR_PATH}/${PATH_TO_STATIC_CART}
+s3_upload ${PATH_TO_S3_ORDERREVIEW} ${ALTAIR_PATH}/${PATH_TO_STATIC_ORDERREVIEW}
+s3_upload ${PATH_TO_S3_FCAUTH} ${ALTAIR_PATH}/${PATH_TO_STATIC_FCAUTH}
+s3_upload ${PATH_TO_S3_LOTS} ${ALTAIR_PATH}/${PATH_TO_STATIC_LOTS}
+s3_upload ${PATH_TO_S3_USERSITE} ${ALTAIR_PATH}/${PATH_TO_STATIC_ALTAIRCMS}
 
 if ${REQUIRED_COUPON}; then
-    cd ${ALTAIR_PATH}/${PATH_TO_STATIC_COUPON}; pwd
-    s3cmd put --exclude '.DS_Store' -P -r ${CODE} s3://tstar-dev/coupon/static/ --no-preserve
+    s3_upload ${PATH_TO_S3_COUPON} ${ALTAIR_PATH}/${PATH_TO_STATIC_COUPON}
 fi
-
-cd ${ALTAIR_PATH}/${PATH_TO_STATIC_ALTAIRCMS}; pwd
-s3cmd put --exclude '.DS_Store' -P -r ${CODE} s3://tstar-dev/usersite/static/ --no-preserve
 
 cat << EOS
 ---------------------------
