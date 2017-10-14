@@ -22,12 +22,12 @@ PATH_TO_MB_LOGO="/Users/ts-motoi.a.komatsu/Downloads/MB_header-.gif"
 
 BUCKET="tstar-dev" # 【tstar】 OR 【tstar-dev】
 
-PATH_TO_S3_CART="s3://${BUCKET}/cart/static/${CODE}/"
-PATH_TO_S3_ORDERREVIEW="s3://${BUCKET}/orderreview/static/${CODE}/"
-PATH_TO_S3_FCAUTH="s3://${BUCKET}/fc_auth/static/${CODE}/"
-PATH_TO_S3_LOTS="s3://${BUCKET}/lots/static/${CODE}/"
-PATH_TO_S3_COUPON="s3://${BUCKET}/coupon/static/${CODE}/"
-PATH_TO_S3_USERSITE="s3://${BUCKET}/usersite/static/${CODE}/"
+PATH_TO_S3_CART="s3://${BUCKET}/cart/static"
+PATH_TO_S3_ORDERREVIEW="s3://${BUCKET}/orderreview/static"
+PATH_TO_S3_FCAUTH="s3://${BUCKET}/fc_auth/static"
+PATH_TO_S3_LOTS="s3://${BUCKET}/lots/static"
+PATH_TO_S3_COUPON="s3://${BUCKET}/coupon/static"
+PATH_TO_S3_USERSITE="s3://${BUCKET}/usersite/static"
 
 #---------------------------
 # 各種静的コンテンツのパス

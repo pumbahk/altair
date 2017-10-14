@@ -24,14 +24,14 @@ s3_upload() {
     local local_path="${2}"
 
     # S3に既存のディレクトリがあるか確認
-    is_exist=`s3cmd ls ${s3_path}`
+    is_exist=`s3cmd ls "${s3_path}/${CODE}"`
     if [ -n "${is_exist}" ]; then
-        echo "アップロード先: ${s3_path}がすでに存在しています。"
+        echo "アップロード先: ${s3_path}/${CODE}がすでに存在しています。"
         echo '削除してから処理を続行しますか？(y)'
         read answer
         case "${answer}" in
         y)
-            s3cmd del -r ${s3_path}
+            s3cmd del -r "${s3_path}/${CODE}"
             echo "削除しました。"
             ;;
         *)
@@ -41,5 +41,5 @@ s3_upload() {
     fi
 
     cd ${local_path}; pwd
-    s3cmd put --exclude '.DS_Store' -P -r ${CODE} ${s3_path} --no-preserve
+    s3cmd put --exclude '.DS_Store' -P -r ${CODE} "${s3_path}/" --no-preserve
 }
