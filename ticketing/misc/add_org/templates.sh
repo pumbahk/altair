@@ -1,19 +1,5 @@
 #!/bin/bash
 
-#---------------------------
-# 関数の定義
-#---------------------------
-choose_base() {
-    if [ -e __i18n__ ]; then
-        echo "__i18n__"
-    elif [ -e __scaffold__ ]; then
-        echo "__scaffold__"
-    else
-        echo "ベースとなるディレクトリがありません。"
-        exit 1
-    fi
-}
-
 cat << EOS
 #---------------------------
 # 処理の概要
@@ -31,20 +17,23 @@ cat << EOS
 #---------------------------
 EOS
 
-# 設定の読み込み
+# 設定・関数の読み込み
 CWD=$(cd $(dirname $0) && pwd)
 [ -f ${CWD}/config.sh ] && . ${CWD}/config.sh
+[ -f ${CWD}/function.sh ] && . ${CWD}/function.sh
 
 ### 設定内容の出力
-echo ALTAIR_PATH: ${ALTAIR_PATH}
-echo CODE: ${CODE}
-echo ORG_NAME: ${ORG_NAME}
-echo CONTACT: ${CONTACT}
-echo REQUIRED_COUPON: ${REQUIRED_COUPON}
-echo PATH_TO_FAVICON: ${PATH_TO_FAVICON}
-echo PATH_TO_PC_LOGO: ${PATH_TO_PC_LOGO}
-echo PATH_TO_SP_LOGO: ${PATH_TO_SP_LOGO}
-echo PATH_TO_MB_LOGO: ${PATH_TO_MB_LOGO}
+cat << EOS
+ALTAIR_PATH: ${ALTAIR_PATH}
+CODE: ${CODE}
+ORG_NAME: ${ORG_NAME}
+CONTACT: ${CONTACT}
+REQUIRED_COUPON: ${REQUIRED_COUPON}
+PATH_TO_FAVICON: ${PATH_TO_FAVICON}
+PATH_TO_PC_LOGO: ${PATH_TO_PC_LOGO}
+PATH_TO_SP_LOGO: ${PATH_TO_SP_LOGO}
+PATH_TO_MB_LOGO: ${PATH_TO_MB_LOGO}
+EOS
 
 read -p "テンプレート作成を開始します。続けるにはエンターキーを、中止するには「CTRL＋C」を押してください"
 
@@ -102,6 +91,7 @@ test ! -L smartphone && ln -s pc smartphone                      # 特殊仕様�
 test ! -L mobile     && ln -s ../${base}/mobile .           # 特殊仕様がなければシムリンク
 test ! -L plugins    && ln -s ../${base}/plugins .           # 特殊仕様がなければシムリンク
 test ! -d fc_auth    && cp -r ../${base}/fc_auth .          # カスタマイズ可能
+test ! -d includes    && cp -r ../${base}/includes .          # カスタマイズ可能
 
 # 静的コンテンツの配置
 cd ${ALTAIR_PATH}/${PATH_TO_STATIC_ORDERREVIEW}
