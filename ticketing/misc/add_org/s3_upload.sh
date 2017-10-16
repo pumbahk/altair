@@ -51,6 +51,15 @@ cat << EOS
 #---------------------------
 EOS
 
+if [ "${BUCKET}" == "tstar" ]; then
+    echo "本番環境のバケットが選択されています。本当にアップロードしてよいですか？(y)"
+    read answer
+    if [ "${answer}" != "y" ]; then
+        echo "「y」以外が選択されました。処理を中断します。"
+        exit 0
+    fi
+fi
+
 ### local, STG
 s3_upload ${PATH_TO_S3_CART} ${ALTAIR_PATH}/${PATH_TO_STATIC_CART}
 s3_upload ${PATH_TO_S3_ORDERREVIEW} ${ALTAIR_PATH}/${PATH_TO_STATIC_ORDERREVIEW}
