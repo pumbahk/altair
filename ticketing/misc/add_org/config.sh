@@ -4,11 +4,18 @@
 # 以下の値は追加するORGの申請内容に合わせて変更してください。
 #---------------------------
 
-CODE="KZ"
-ORG_NAME="オペラシアターこんにゃく座チケットサービス"
-CONTACT="mailto:ticket@konnyakuza.com" # 【mailto:メールアドレス】 OR 【問い合わせURL】
 ALTAIR_PATH=~/altair # 各自localのPATHをいれてください
+CHEF_REPO_PATH=~/chef-repo/ # 各自localのPATHをいれてください
+
+CODE="KZ"
+ORG_NAME="オペラシアターこんにゃく座"
+CONTACT="mailto:ticket@konnyakuza.com" # 【mailto:メールアドレス】 OR 【問い合わせURL】
 REQUIRED_COUPON=false # クーポン機能必要であればtrueにしてください
+
+### chef-repo設定
+SUB_DOMAIN="kz"
+FQDN="${SUB_DOMAIN}.tstar.jp"
+CHEF_REPO_BRANCH="fix/komatsu/tkt-3997"
 
 ### ロゴ画像のアサイン
 PATH_TO_FAVICON="/Users/ts-motoi.a.komatsu/Downloads/favicon.ico" # faviconは必ずfavicon.icoという画像名で配置してください
