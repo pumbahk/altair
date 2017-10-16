@@ -27,8 +27,7 @@ s3_upload() {
     is_exist=`s3cmd ls "${s3_path}/${CODE}"`
     if [ -n "${is_exist}" ]; then
         echo "アップロード先: ${s3_path}/${CODE}がすでに存在しています。"
-        echo '削除してから処理を続行しますか？'
-        echo '(y:削除してからアップロード o:上書きしてアップロード その他のキー:アップロードをスキップ)'
+        echo "[ y:削除してからアップロード o:上書きしてアップロード その他のキー:スキップ ]"
         read answer
         case "${answer}" in
         y)
@@ -46,6 +45,6 @@ s3_upload() {
     fi
 
     cd ${local_path}; pwd
-    s3cmd put --exclude '.DS_Store' -P -r ${CODE} "${s3_path}/" --no-preserve
+    s3cmd put --exclude ".DS_Store" -P -r ${CODE} "${s3_path}/" --no-preserve
     return 0
 }
