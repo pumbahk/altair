@@ -85,6 +85,19 @@
        <li>
          <input type="checkbox" name="candidate_id" value="${build_candidate_id(token, seat, ordered_product_item, ticket)}" />
          ${ticket.name}
+         %if token is None:
+           %if ordered_product_item.is_printed():
+            <span class="label label-important">発券済み</span>
+           %else:
+            <span class="label label-inverse">未発券</span>
+           %endif
+         %else:
+           %if token.is_printed():
+            <span class="label label-important">発券済み</span>
+           %else:
+            <span class="label label-inverse">未発券</span>
+           %endif
+         %endif
        </li>
        %endfor
        </ul>
