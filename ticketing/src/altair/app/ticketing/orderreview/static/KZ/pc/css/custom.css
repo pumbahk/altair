@@ -1,0 +1,19 @@
+:root {
+    --custom-btn-color: #519FC5;
+    --custom-color: #519FC5;
+    --custom-border-color: #519FC5;
+    --custom-background-color: #38579A;
+}
+
+/* buttons color ボタン
+-------------------------------------------- */
+.btn-primary,
+.qr-btn {
+    background-color: var(--custom-btn-color) !important;
+}
+
+/* heading color 見出し
+-------------------------------------------- */
+.heading-primary {
+    background-color: var(--custom-background-color) !important;
+}
