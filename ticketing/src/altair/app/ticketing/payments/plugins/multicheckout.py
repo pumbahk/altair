@@ -602,6 +602,7 @@ class MultiCheckoutView(object):
         multicheckout_api = get_multicheckout_3d_api(self.request)
         cart = get_cart(self.request)
         order = self.request.session['order']
+
         try:
             enrol = multicheckout_api.secure3d_enrol(cart.order_no, card_number, exp_year, exp_month, cart.total_amount)
         except Exception:
@@ -611,13 +612,23 @@ class MultiCheckoutView(object):
                 message='uncaught exception',
                 order_no=order['order_no'],
                 back_url=back_url(self.request))
+
         if enrol.is_enable_auth_api():
             form=m_h.secure3d_acs_form(self.request, complete_url(self.request), enrol)
             self.request.response.text = form
             return self.request.response
-        # elif enrol.is_enable_secure3d():
-        #     # セキュア3D認証エラーだが決済APIを利用可能
-        #     logger.debug("3d secure is failed ErrorCd = %s RetCd = %s" %(enrol.ErrorCd, enrol.RetCd))
+        elif enrol.is_enable_secure3d():
+            # セキュア3D認証エラーだが決済APIを利用可能
+            form = m_h.secure3d_acs_form(self.request, complete_url(self.request), enrol)
+            self.request.response.text = form
+            return self.request.response
+        elif enrol.is_enable_secure3d_chargeback_risk():
+            # チャージバックリスクがあるため実施せずエラー
+            logger.error("multicheckout chargeback risk enroll RetCd = %s, ErrorCd = %s" % (enrol.RetCd, enrol.ErrorCd))
+            raise MultiCheckoutSettlementFailure(
+                message='chargeback_risk exception',
+                order_no=order['order_no'],
+                back_url=back_url(self.request))
         else:
             # セキュア3D認証エラー
             logger.info(u'secure3d not availble: order_no=%s, error_code=%s, return_code=%s' % (order['order_no'], enrol.ErrorCd, enrol.RetCd))
