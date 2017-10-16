@@ -593,11 +593,9 @@ class DynamicFormBuilder(object):
 
     def unbound_fields(self, extra_form_fields):
         unbound_fields = []
-        i = 1
-        for field_desc in extra_form_fields:
-            if field_desc['name'] is None or field_desc['name'] == u'':
-                field_desc['name'] = u"option"+str(i)
-                i += 1
+        for i, field_desc in enumerate(extra_form_fields):
+            if not field_desc['name']:
+                field_desc['name'] = u"_blank_{}".format(i)
             if field_desc['kind'] != 'description_only':
                 unbound_fields.append(
                     (
