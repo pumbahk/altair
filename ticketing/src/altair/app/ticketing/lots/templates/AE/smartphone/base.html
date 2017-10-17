@@ -16,24 +16,19 @@
   <script type="text/javascript" src="${request.static_url('altair.app.ticketing.lots:static/common/js/jquery.js')}"></script>
 </head>
 <body id="settlement">
-  <!-- ========== header ========== -->
   <%include file="../includes/header.html" />
-  <!-- ========== /header ========== -->
-  <div id="container" class="ts-wrapper">
-  <!-- ========== main ========== -->
-
+  % if request.organization.setting.i18n:
     <div class="selectwrapper">
-      % if request.organization.setting.i18n:
       ${h.create_url_link(request) |n}
-      % endif
     </div>
-
+    % endif
+  % if view_context.get_include_template_path('links.html', 'lots') is not None:
+          <%include file="${view_context.get_include_template_path('links.html', 'lots')}" args="device=view_context.ua_type" />
+        % endif
+  <div id="container" class="ts-wrapper">
     <div id="main" class="ts-contents">
       <div class="ts-contents-inner">
         <h1 class="heading-primary">${__(u'チケット申込')}</h1>
-        % if view_context.get_include_template_path('links.html', 'lots') is not None:
-          <%include file="${view_context.get_include_template_path('links.html', 'lots')}" args="device=view_context.ua_type" />
-        % endif
         ${self.body()}
       </div>
     </div>
