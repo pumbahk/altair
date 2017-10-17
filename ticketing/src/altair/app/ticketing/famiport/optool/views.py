@@ -47,7 +47,12 @@ from .forms import (
     ReminderChangePassWordForm,
     PasswordReminderForm
 )
-from .utils import ValidateUtils, AESEncryptor, sendmail
+from .utils import (
+    validate_rebook_cond,
+    validate_reprint_cond,
+    AESEncryptor,
+    sendmail
+)
 from .helpers import (
     ViewHelpers,
     get_paginator,
@@ -466,7 +471,8 @@ class FamiPortRebookOrderView(object):
             cancel_code = self.request.POST.get('cancel_reason_code')
             cancel_text = self.request.POST.get('cancel_reason_text')
 
-            if not ValidateUtils.validate_rebook_cond(receipt, datetime.now()):
+            errors = validate_rebook_cond(receipt, datetime.now())
+            if not error:
                 make_suborder_by_order_no(request=self.request,
                                           session=session,
                                           client_code=client_code,
@@ -476,14 +482,22 @@ class FamiPortRebookOrderView(object):
 
                 if receipt.type == FamiPortReceiptType.Payment.value:
                     new_receipt = filter(lambda x: x.canceled_at is None and x.type == FamiPortReceiptType.Payment.value, order.famiport_receipts).pop()
+                    if order.paid_at:
+                        order.paid_at = None
                 elif receipt.type == FamiPortReceiptType.Ticketing.value:
                     new_receipt = filter(lambda x: x.canceled_at is None and x.type == FamiPortReceiptType.Ticketing.value, order.famiport_receipts).pop()
+                    if order.issued_at:
+                        order.issued_at = None
                 else:
                     new_receipt = filter(lambda x: x.canceled_at is None and x.type == FamiPortReceiptType.CashOnDelivery.value, order.famiport_receipts).pop()
+                    if order.paid_at:
+                        order.paid_at = None
+                    if order.issued_at:
+                        order.issued_at = None
 
                 new_management_number = new_receipt.reserve_number
             else:
-                error = u'<br>・'.join(ValidateUtils.validate_rebook_cond(receipt, datetime.now()))
+                error = u'<br>・'.join(errors)
 
         else:
             error = u'<br>・'.join(sum(form.errors.values(), []))
@@ -517,7 +531,9 @@ class FamiPortRebookOrderView(object):
             cancel_code = self.request.POST.get('cancel_reason_code')
             cancel_text = self.request.POST.get('cancel_reason_text')
 
-            if not ValidateUtils.validate_reprint_cond(receipt, datetime.now()):
+            errors = validate_reprint_cond(receipt, datetime.now())
+
+            if not errors:
                 mark_order_reissueable_by_order_no(request=self.request,
                                                    session=session,
                                                    client_code=client_code,
@@ -526,7 +542,7 @@ class FamiPortRebookOrderView(object):
                                                    cancel_reason_text=cancel_text)
 
             else:
-                error = u'・'.join(ValidateUtils.validate_reprint_cond(receipt, datetime.now()))
+                error = u'・'.join(errors)
         else:
             error = u'・'.join(sum(form.errors.values(), []))
 
