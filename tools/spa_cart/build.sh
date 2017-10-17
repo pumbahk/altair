@@ -23,8 +23,10 @@ npm -v || exit 1
 WORKDIR=$(cd ../../ticketing/src/altair/app/ticketing/spa_cart && pwd)
 
 echo "Calculating digest of source files..."
-DIGEST=$(cd $WORKDIR && (ls package.json ; find src -type f | egrep -e "\.(ts|css|html|json|svg|ico|otf)$") | sort | xargs $MD5 | $MD5)
-echo " -> $DIGEST"
+TARGET_EXTS="ts|css|html|json|svg|ico|otf"
+COUNT=$(cd $WORKDIR && find package.json src -type f | egrep -e "\.($TARGET_EXTS)$" | wc -l | tr -d ' ')
+DIGEST=$(cd $WORKDIR && find package.json src -type f | egrep -e "\.($TARGET_EXTS)$" | sort | xargs $MD5 | $MD5 | cut -d " " -f 1)
+echo " -> $COUNT files, digest: $DIGEST"
 
 if [ -e ../../ticketing/src/altair/app/ticketing/cart/static/spa_cart/version ] ; then
   BUILT_DIGEST=$(cat ../../ticketing/src/altair/app/ticketing/cart/static/spa_cart/version)
