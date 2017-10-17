@@ -53,7 +53,7 @@ DISTDIR=$SRCDIR/dist-$$
 mkdir -p $DISTDIR
 
 echo "Running angular build process..."
-(cd $SRCDIR && npm install && ./node_modules/.bin/ng build --stats-json --output-path=$DISTDIR $NGBASEOPT $NGOPT)
+(cd $SRCDIR && npm install && ./node_modules/.bin/ng build --output-path=$DISTDIR $NGBASEOPT $NGOPT)
 echo "Completed"
 
 echo "Injecting rollbar..."
@@ -79,8 +79,8 @@ cp $DISTDIR/index.html $BASEDIR/ticketing/src/altair/app/ticketing/cart/template
 echo $DIGEST > $BASEDIR/ticketing/src/altair/app/ticketing/cart/static/spa_cart/version
 
 # remove workdir
-#echo "Removing working directory..."
-#rm -rf $DISTDIR
+echo "Removing working directory..."
+rm -rf $DISTDIR
 
 # commit
 if [ X$BRANCH == Xdevelop ] ; then
