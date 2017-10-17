@@ -5,7 +5,7 @@ set -e
 NGBASEOPT="--base-href=/cart/spa/ --deploy-url=/cart/static/spa_cart/"
 NGOPT="--aot=false --output-hashing=all --sourcemap=false --extract-css=true --environment=prod"
 
-BRANCH=$(git symbolic-ref --short HEAD)
+BRANCH=$(git name-rev --name-only HEAD)
 
 # for Mac
 MD5="md5 -r"
