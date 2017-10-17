@@ -5,6 +5,15 @@ set -e
 NGBASEOPT="--base-href=/cart/spa/ --deploy-url=/cart/static/spa_cart/"
 NGOPT="--aot=false --output-hashing=all --sourcemap=false --extract-css=true --environment=prod"
 
+BRANCH=$(git symbolic-ref --short HEAD)
+
+# for Mac
+MD5="md5 -r"
+
+if [ -x /usr/bin/md5sum ] ; then
+  MD5=/usr/bin/md5sum
+fi
+
 /bin/echo -n "Checking node... "
 node -v || exit 1
 
@@ -12,12 +21,6 @@ node -v || exit 1
 npm -v || exit 1
 
 WORKDIR=$(cd ../../ticketing/src/altair/app/ticketing/spa_cart && pwd)
-
-MD5="md5 -r"
-
-if [ -x /usr/bin/md5sum ] ; then
-  MD5=/usr/bin/md5sum
-fi
 
 echo "Calculating digest of source files..."
 DIGEST=$(cd $WORKDIR && (ls package.json ; find src -type f | egrep -e "\.(ts|css|html|json|svg|ico|otf)$") | sort | xargs $MD5 | $MD5)
@@ -34,8 +37,15 @@ if [ X$DIGEST == X$BUILT_DIGEST ] ; then
   exit
 fi
 
-DISTDIR=$WORKDIR/dist-$$
+if [ -d $WORKDIR/node_modules ] ; then
+  echo "Found node_modules directory."
+  if [ X$BRANCH == Xdevelop ] ; then
+    echo "Removing node_modules..."
+    rm -rf $WORKDIR/node_modules
+  fi
+fi
 
+DISTDIR=$WORKDIR/dist-$$
 [ -e $DISTDIR ] && rm -rf $DISTDIR
 mkdir -p $DISTDIR
 
@@ -66,12 +76,13 @@ cp $DISTDIR/index.html ../../ticketing/src/altair/app/ticketing/cart/templates/e
 echo $DIGEST > ../../ticketing/src/altair/app/ticketing/cart/static/spa_cart/version
 
 # remove workdir
+echo "Removing working directory..."
 rm -rf $DISTDIR
 
 # commit
-BRANCH=$(git symbolic-ref --short HEAD)
 if [ X$BRANCH == Xdevelop ] ; then
     git add ../../ticketing/src/altair/app/ticketing/cart/static/spa_cart -f -A
     git add ../../ticketing/src/altair/app/ticketing/cart/templates/eagles/pc/spa_cart/index.html
+    git add ../../ticketing/src/altair/app/ticketing/cart/static/spa_cart/version
     git commit -m "rebuild spa_cart by script"
 fi
