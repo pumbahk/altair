@@ -109,8 +109,8 @@ cat << EOS
 
 extauth、ファンクラブ（fc）を利用しない場合は以下のコマンドで該当箇所を削除してください。
 
-vi cookbooks/loadbalancer/templates/default/sites-available/${SUB_DOMAIN}}.tstar.jp.erb
-vi data_bags/altair/${SUB_DOMAIN}}.tstar.jp.json
+vi cookbooks/loadbalancer/templates/default/sites-available/${SUB_DOMAIN}.tstar.jp.erb
+vi data_bags/altair/${SUB_DOMAIN}.tstar.jp.json
 
 ---------------------------
 EOS
