@@ -1,7 +1,8 @@
-#!/bin/sh
+#!/bin/bash
 
-BRANCH=${1:-develop}
-TMPDIR=altair-new-cart-$(date "+%Y%m%d%H%M%S")
+set -e
+
+NGBASEOPT="--base-href=/cart/spa/ --deploy-url=/cart/static/spa_cart/"
 NGOPT="--aot=false --output-hashing=all --sourcemap=false --extract-css=true --environment=prod"
 
 /bin/echo -n "Checking node... "
@@ -10,31 +11,67 @@ node -v || exit 1
 /bin/echo -n "Checking npm... "
 npm -v || exit 1
 
-git clone -b $BRANCH --depth 1 git@github.com:ticketstar/altair-new-cart.git $TMPDIR
-if [ ! -d $TMPDIR ] ; then
-		echo "git failed."
-		exit 1
+WORKDIR=$(cd ../../ticketing/src/altair/app/ticketing/spa_cart && pwd)
+
+MD5="md5 -r"
+
+if [ -x /usr/bin/md5sum ] ; then
+  MD5=/usr/bin/md5sum
 fi
 
-REV=`(cd $TMPDIR ; git rev-parse HEAD)`
+echo "Calculating digest of source files..."
+DIGEST=$(cd $WORKDIR && (ls package.json ; find src -type f | egrep -e "\.(ts|css|html|json|svg|ico|otf)$") | sort | xargs $MD5 | $MD5)
+echo " -> $DIGEST"
 
-cd $TMPDIR
-npm update
-./node_modules/.bin/ng build --base-href=/cart/spa/ --deploy-url=/cart/static/spa_cart/ $NGOPT
+if [ -e ../../ticketing/src/altair/app/ticketing/cart/static/spa_cart/version ] ; then
+  BUILT_DIGEST=$(cat ../../ticketing/src/altair/app/ticketing/cart/static/spa_cart/version)
+fi
 
-(echo "" ; cat ../rollbar.js) >> $(ls dist/main.*.bundle.js)
+if [ X$DIGEST == X$BUILT_DIGEST ] ; then
+  echo ""
+  echo "Source files are not changed after previous build process."
+  echo "Remove ticketing/src/altair/app/ticketing/cart/static/spa_cart/version if force build needed."
+  exit
+fi
 
-for x in dist/*.js
+DISTDIR=$WORKDIR/dist-$$
+
+[ -e $DISTDIR ] && rm -rf $DISTDIR
+mkdir -p $DISTDIR
+
+echo "Running angular build process..."
+(cd $WORKDIR && npm install && ./node_modules/.bin/ng build --output-path=$DISTDIR $NGBASEOPT $NGOPT)
+echo "Completed"
+
+echo "Injecting rollbar..."
+for x in $DISTDIR/main.*.bundle.js
 do
-		cat $x | sed '/\/\/# sourceMappingURL=/d' | gzip > $x.gz
+    (echo "" ; cat rollbar.js) >> $x
 done
-cd ..
 
+echo "Making gzip version scripts..."
+for x in $DISTDIR/*.js
+do
+    cat $x | sed '/\/\/# sourceMappingURL=/d' | gzip > $x.gz
+done
+
+# install
+echo "Installing files to ticketing/src/altair/app/ticketing/cart/..."
 mkdir -p ../../ticketing/src/altair/app/ticketing/cart/static/spa_cart
 find ../../ticketing/src/altair/app/ticketing/cart/static/spa_cart/ -type f -delete
-(cd $TMPDIR/dist ; tar cf - --exclude index.html .) | (cd ../../ticketing/src/altair/app/ticketing/cart/static/spa_cart ; tar xf -)
-cp $TMPDIR/dist/index.html ../../ticketing/src/altair/app/ticketing/cart/templates/eagles/pc/spa_cart/
+(cd $DISTDIR ; tar cf - --exclude index.html .) | (cd ../../ticketing/src/altair/app/ticketing/cart/static/spa_cart ; tar xf -)
+mkdir -p ../../ticketing/src/altair/app/ticketing/cart/templates/eagles/pc/spa_cart
+cp $DISTDIR/index.html ../../ticketing/src/altair/app/ticketing/cart/templates/eagles/pc/spa_cart/
 
-git add ../../ticketing/src/altair/app/ticketing/cart/static/spa_cart -f -A
-git add ../../ticketing/src/altair/app/ticketing/cart/templates/eagles/pc/spa_cart/index.html
-git commit -m "merge new-cart $REV by script"
+echo $DIGEST > ../../ticketing/src/altair/app/ticketing/cart/static/spa_cart/version
+
+# remove workdir
+rm -rf $DISTDIR
+
+# commit
+BRANCH=$(git symbolic-ref --short HEAD)
+if [ X$BRANCH == Xdevelop ] ; then
+    git add ../../ticketing/src/altair/app/ticketing/cart/static/spa_cart -f -A
+    git add ../../ticketing/src/altair/app/ticketing/cart/templates/eagles/pc/spa_cart/index.html
+    git commit -m "rebuild spa_cart by script"
+fi
