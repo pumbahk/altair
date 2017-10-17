@@ -1,5 +1,12 @@
 <%page args="order,form,objects_for_describe_product_item"/>
 <%namespace file="/common/helpers.html" name="ch" />
+<%def name="ticketing_flg(is_printed)">
+ %if is_printed:
+  <span class="label label-important">発券済み</span>
+ %else:
+  <span class="label label-inverse">未発券</span>
+ %endif
+</%def>
 <div id="product-table">
 %for ordered_product, item_list in objects_for_describe_product_item:
 %if loop.first:
@@ -86,17 +93,9 @@
          <input type="checkbox" name="candidate_id" value="${build_candidate_id(token, seat, ordered_product_item, ticket)}" />
          ${ticket.name}
          %if token is None:
-           %if ordered_product_item.is_printed():
-            <span class="label label-important">発券済み</span>
-           %else:
-            <span class="label label-inverse">未発券</span>
-           %endif
+          ${ticketing_flg(ordered_product_item.is_printed())}
          %else:
-           %if token.is_printed():
-            <span class="label label-important">発券済み</span>
-           %else:
-            <span class="label label-inverse">未発券</span>
-           %endif
+          ${ticketing_flg(token.is_printed())}
          %endif
        </li>
        %endfor
