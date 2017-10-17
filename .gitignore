@@ -15,7 +15,6 @@ cms/src/dist/*
 cms/src/data/*
 cms/src/altair-cms.db
 cms/src/altair_cms.egg-info/*
-ticketing/src/altair/app/ticketing/cart/static/spa_cart
 alshain.egg-info/*
 mockui/shelve.dat
 *~$
