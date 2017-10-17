@@ -1213,8 +1213,12 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         if not final_end_perf:
             return final_start_perf
 
+        # 0000-00-00 00:00:00がend_onに入っている場合
+        if not final_end_perf.end_on:
+            return final_start_perf
+
         if final_start_perf.start_on < final_end_perf.end_on:
-            return  final_end_perf
+            return final_end_perf
 
         # パフォーマンスAが始まったあとにパフォーマンスBが始まり、パフォーマンスBの終了時刻がパフォーマンスAより早い場合
         return final_start_perf
