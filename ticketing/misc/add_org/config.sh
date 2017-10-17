@@ -13,7 +13,7 @@ CONTACT="mailto:ticket@konnyakuza.com" # 【mailto:メールアドレス】 OR �
 REQUIRED_COUPON=false # クーポン機能必要であればtrueにしてください
 
 ### chef-repo設定
-SUB_DOMAIN="kz"
+SUB_DOMAIN="konnyakuza"
 FQDN="${SUB_DOMAIN}.tstar.jp"
 CHEF_REPO_BRANCH="fix/komatsu/tkt-3997"
 

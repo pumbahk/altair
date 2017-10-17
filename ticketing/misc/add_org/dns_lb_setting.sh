@@ -4,7 +4,7 @@ cat << EOS
 # 処理の概要
 #---------------------------
 
-chef-repoのコードにDNS、LBの設定を行います。
+chef-repoのコードにDNS,LBの設定を行います。
 
 EOS
 
@@ -89,6 +89,11 @@ EOS
 # 400番台、500番台のエラーコンテンツを配置。
 cp -r cookbooks/loadbalancer/files/default/www/{nbs,${SUB_DOMAIN}}.tstar.jp
 ls -l cookbooks/loadbalancer/files/default/www/${FQDN}
+
+# .gitkeep削除
+if [ -e cookbooks/loadbalancer/files/default/www/${SUB_DOMAIN}.tstar.jp/.gitkeep ]; then
+    rm cookbooks/loadbalancer/files/default/www/${SUB_DOMAIN}.tstar.jp/.gitkeep
+fi
 
 cat << EOS
 #---------------------------
