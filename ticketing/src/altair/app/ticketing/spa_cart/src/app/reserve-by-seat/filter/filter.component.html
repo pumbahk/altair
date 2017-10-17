@@ -1,0 +1,33 @@
+<section class="choiceArea">
+  <div class="inner">
+  <div class="choiceAreaMenuBtn acdBt sp cf"><span></span>絞り込み検索</div>
+    <div class="choiceAreaAcdBox">
+      <div id="ticketPrice" class="ticketPrice">
+        <label class="priceTtl">価格</label>
+        <div class="ticketPriceInner">
+          <div class="ticketPriceBerBox">
+            <div class="ticketPriceBer">
+              <nouislider id="slider" [connect]="true" [min]="min" [max]="max" [tooltips]="[ true, true ]" [step]="stepValue" [ngModel]="seatPrices" (change)="onChangeSlider(seatPrices)" [disabled]="sliderBool"></nouislider>
+            </div>
+          </div>
+          <button *ngIf="setPriceInitFlag" class="minPrice" type="button">&yen;&nbsp;<span>{{seatPrices[0]}}</span></button>
+          <button *ngIf="setPriceInitFlag" class="maxPrice" type="button">&yen;&nbsp;<span>{{seatPrices[1]}}</span></button>
+        </div>
+      </div>
+
+      <div id="seatSearch" class="seatSearch cf">
+        <div class="seatSearchFormBox">
+          <form id="seatSearchForm" name="seatSearchForm" ngNoForm>
+            <label class="searchbox">席種</label><input id="input" type="text" maxlength='50' size="14" class="form-control" placeholder="席種名で検索" [(ngModel)]="seatName" pInputText />
+            <input type="checkbox" value="指定席" id="ssCheck01" (ngModelChange)="onChangeReserved(reserved)" [(ngModel)]="reserved" checked><label class="checkbox" for="ssCheck01">指定<span class="pc">席</span></label>
+            <input type="checkbox" value="自由席" id="ssCheck02" (ngModelChange)="onChangeUnreserved(unreserved)" [(ngModel)]="unreserved" checked><label class="checkbox" for="ssCheck02">自由<span class="pc">席</span></label>
+          </form>
+        </div>
+        <div class="seatSearchButtonbox">
+          <button pButton type="button" id="search-btn" form="seatSearchForm" (click)="searchClick()" label="検索"></button>
+          <button pButton type="button" id="clear-btn" form="seatSearchForm" (click)="clearClick()" label="検索条件をクリア"></button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

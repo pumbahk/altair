@@ -1,0 +1,13 @@
+<div id="choiceSeatArea" class="choiceSeatArea" *ngIf="seatListDisply">
+    <p class="choiceSeatTtl">席種を選択</p>
+    <dl class="acd">
+        <div *ngIf="searchResultFlag">条件に一致するチケットがありませんでした。</div>
+        <div *ngFor="let stockType of makeStockTypes">
+            <dt><span class="{{stockStatus(stockType.stock_status)}}"><span></span></span><div class="listText">{{stockType.stock_type_name}}</div></dt>
+                <dd style="display:none">
+                    <div *ngIf="stockType.is_quantity_only" class="buy"><button class="" type="button" (click)="onAutoClick(stockType.stock_type_id)">この席種を購入</button></div>
+                    <div *ngIf="!stockType.is_quantity_only"><button class="" type="button" (click)="onSelectClick(stockType.stock_type_name)">座席を選んで購入</button><button class="" type="button" (click)="onAutoClick(stockType.stock_type_id)">おまかせで購入</button></div>
+                </dd>
+        </div>
+    </dl>
+</div>

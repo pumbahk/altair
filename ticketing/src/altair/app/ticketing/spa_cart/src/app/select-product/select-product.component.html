@@ -1,0 +1,132 @@
+<header>
+  <div class="inner">
+    <h1 class="title"><a href="/"><img src="https://tstar.s3.amazonaws.com/extauth/static/eagles/images/logo.png" alt="イーグルスチケット"></a></h1>
+    <form id="logout" ngNoForm action="/cart/logout" target="_self" method="POST">
+      <button id="logout" type="submit">ログアウト</button>
+    </form>
+  </div>
+</header>
+
+<div class="login-page">
+  <div class="contents">
+
+    <section class="headArea">
+      <div class="inner">
+        <p *ngIf="performance"><span>{{performance.performance_name}}</span><span>{{performance.venue_name}}</span>
+        <span>{{year}}年{{month}}月{{day}}日 {{startOnTime}}～</span>
+        </p>
+        <button type="button" class="haBtn02 pc" (click)= "onClick()"><span class="iconSearch"></span><span>他の試合へ</span></button>
+      </div>
+    </section>
+
+			<section class="mapArea">
+        <!--席受け-->
+        <div id="buySeatArea" *ngIf="!response?.data.results.is_quantity_only">
+          <p class="buySeatTtl"><span>購入確認</span></p>
+          <div id="textArea">
+            <p class="buySeatText"><span>未割り当ての座席を＋－ボタンを操作して商品に割り当ててください。</span></p>
+            <p class="buySeatText"><span>※黄色の座席が選択中の座席です</span></p>
+            <p class="buySeatQuantity"><span class="assignedQuantity">{{assignedQuantity}}</span>席選択済み、残り<span class="unassignedQuantity">{{unAssignedQuantity}}</span>席。</p>
+          </div>
+          <div id="allocationArea">
+            <p class="buySeatText"><span>◆未割り当ての座席</span></p>
+            <p class="nextSeatText"><span>　次の座席</span></p>
+            <p class="nextSeat"*ngIf="nextSeat" >{{nextSeat}}</p>
+            <p class="remnantSeatText"><span>　残りの座席</span></p>
+            <div class="allocationSeats" *ngFor="let value of seatResult?.seat_name | slice:1 ; let key = index">
+              <p class="allocationSeat">{{value}}</p>
+            </div>
+          </div>
+          <div id="productArea">
+            <p class="buySeatText"><span>◆商品</span></p>
+            <div class="productBox" *ngFor="let value of products ; let key = index">
+              <div class="cf">
+                <div class="productNameGroup">
+                  <p class="productName"><span>{{value.product_name}}</span></p>
+                  <p class="productPrice"><span>(￥{{separate(value.price)}})</span></p>
+                </div>
+                <div class="IconGroup">
+                  <div class="IconIn">
+                    <button class="iconMinus" id="minus-btn{{key}}" (click)="minusClick(key)"><span></span></button>
+                      <p *ngIf="!selectedSeatResults[key] && !salesUnitQuantitysV[key]" id="ticketSheet01">0</p>
+                      <p *ngIf="selectedSeatResults[key] && !salesUnitQuantitysV[key]" id="ticketSheet01">{{selectedSeatResults[key].length}}</p>
+                      <p *ngIf="!selectedSeatResults[key] && salesUnitQuantitysV[key]" id="ticketSheet01">0(0席)</p>
+                      <p *ngIf="selectedSeatResults[key] && salesUnitQuantitysV[key]" id="ticketSheet01">{{selectedSeatResults[key].length / salesUnitQuantitysV[key]}}({{selectedSeatResults[key].length}}席)</p>
+                    <button class="iconPlus" id="plus-btn{{key}}" (click)="plusClick(key)"><span></span></button>
+                  </div>
+                </div>
+                <div class="allocationSeatGroup">
+                  <div class="allocationSeats" *ngFor="let value of selectedSeatResults[key] ; let skey = index">
+                    <p class="allocationSeat"><span>{{value}}</span></p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div id="priceArea">
+            <p class="buySeatText"><span class="priceText">合計金額：￥{{fee}}</span><span class="variousText">+ 各種手数料</span></p>
+          </div>
+          <div id="productSelectBtn">
+              <button type="reset" id="reset" name="" value="キャンセル" form="buySeatForm" (click)="cancel()">キャンセル</button>
+              <button type="submit" id="submit" name="" value="次へ" form="buySeatForm" (click)="purchase()">次へ</button>
+          </div>
+        </div>
+        <!--/席受け-->
+
+        <!--数受け-->
+        <div id="buySeatArea" *ngIf="response?.data.results.is_quantity_only">
+          <p class="buySeatTtl"><span>購入確認</span></p>
+          <div id="textArea">
+            <p class="buySeatQuantity"><span class="assignedQuantity">{{assignedQuantity}}</span>席選択済み、残り<span class="unassignedQuantity">{{unAssignedQuantity}}</span>席。</p>
+          </div>
+          <div id="productArea">
+            <p class="buySeatText"><span>◆商品</span></p>
+            <div class="productBox" *ngFor="let value of products ; let key = index">
+              <div class="cf">
+                <div class="productNameGroup">
+                  <p class="productName"><span>{{value.product_name}}</span></p>
+                  <p class="productPrice"><span>(￥{{separate(value.price)}})</span></p>
+                </div>
+                <div class="IconGroup">
+                  <div class="IconIn">
+                    <button class="iconMinus" id="minus-btn{{key}}" (click)="minusClick(key)"><span></span></button>
+                      <p *ngIf="!selectedQuantitys[key] && !salesUnitQuantitysV[key]" id="ticketSheet01">0</p>
+                      <p *ngIf="selectedQuantitys[key] && !salesUnitQuantitysV[key]" id="ticketSheet01">{{selectedQuantitys[key]}}</p>
+                      <p *ngIf="!selectedQuantitys[key] && salesUnitQuantitysV[key]" id="ticketSheet01">0(0席)</p>
+                      <p *ngIf="selectedQuantitys[key] && salesUnitQuantitysV[key]" id="ticketSheet01">{{selectedQuantitys[key] / salesUnitQuantitysV[key]}}({{selectedQuantitys[key]}}席)</p>
+                    <button class="iconPlus" id="plus-btn{{key}}" (click)="plusClick(key)"><span></span></button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div id="priceArea">
+             <p class="buySeatText"><span class="priceText">合計金額：￥{{fee}}</span><span class="variousText">+ 各種手数料</span></p>
+          </div>
+          <div id="productSelectBtn">
+              <button type="reset" name="" value="キャンセル" form="buySeatForm" (click)="cancel()">キャンセル</button>
+              <button type="submit" name="" value="次へ" form="buySeatForm" (click)="purchase()">次へ</button>
+          </div>
+        </div>
+        <!--/数受け-->
+
+        <!--エラーモーダル-->
+        <div *ngIf="modalVisible" id="modalWindowAlertBox" class="modalWindowAlertBox">
+            <div id="modalWindowAlertBoxInner" class="modalWindowAlertBoxInner">
+                <div id="modalWindowAlert" class="modalWindowAlert">
+                    <div class="modalInner">
+                        <div class="modalAlert">
+                            <p class="modalAlertTtl"><span></span>{{modalTitle}}</p>
+                            <p [innerHTML]="modalMessage"></p>
+                            <button *ngIf="!timeoutFlag" class="" type="button" (click)="modalVisible=false;">OK</button>
+                            <button *ngIf="timeoutFlag" routerLink="/performances/{{performanceId}}" class="" type="button" (click)="modalVisible=false;">OK</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--/エラーモーダル-->
+      </section>
+
+  </div>
+</div>
