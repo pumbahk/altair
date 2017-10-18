@@ -102,22 +102,26 @@
               </td>
             </tr>
           % endif
+          % if shipping_address['tel_1']:
           <tr>
-            <th>${_(u'電話番号')} (${_(u'自宅')})</th>
+            <th>${_(u'電話番号')}</th>
           </tr>
           <tr>
             <td>
               ${shipping_address['tel_1']}
             </td>
           </tr>
+          % endif
+          % if shipping_address['tel_2']:
           <tr>
             <th>${_(u'電話番号')} (${_(u'携帯')})</th>
           </tr>
           <tr>
             <td>
-              ${shipping_address['tel_2'] if shipping_address['tel_2'] else '-'}
+              ${shipping_address['tel_2']}
             </td>
           </tr>
+          % endif
           <tr>
             <th>${__(u'住所')}<br><span>※${__(u'配達受取を選択した場合')}</span></th>
           </tr>

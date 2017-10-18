@@ -171,14 +171,18 @@
         <th scope="row">${_(u'メールアドレス')}</th>
         <td>${shipping_address.email_1}</td>
       </tr>
-      <tr>
-        <th scope="row">${_(u'電話番号')} (${_(u'自宅')})</th>
-        <td>${shipping_address.tel_1}</td>
-      </tr>
+      % if shipping_address.tel_1:
+        <tr>
+          <th scope="row">${_(u'電話番号')}</th>
+          <td>${shipping_address.tel_1}</td>
+        </tr>
+      % endif
+      % if shipping_address.tel_2:
       <tr>
         <th scope="row">${_(u'電話番号')} (${_(u'携帯')})</th>
         <td>${shipping_address.tel_2}</td>
       </tr>
+      % endif
       <tr>
         <th scope="row">${_(u'住所')}</th>
         <td>${shipping_address.zip} ${shipping_address.prefecture}${shipping_address.city}${shipping_address.address_1}<br />
