@@ -365,6 +365,12 @@ if label is None or label is True:
                     ${form['tel_1'](placeholder=__(u'例: 080xxxxyyyy'))}
                     ${h.error_list(request, form, 'tel_1')}
                   </li>
+                  % if form.mobile_and_landline_phone_number:
+                  <li>${form['tel_2'].label}
+                    ${form['tel_2'](placeholder=__(u'例: 080xxxxyyyy'))}
+                    ${h.error_list(request, form, 'tel_1')}
+                  </li>
+                  % endif
                 </ul>
               </td>
             </tr>

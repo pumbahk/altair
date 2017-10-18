@@ -86,6 +86,8 @@ class ClientFormFactory(object):
                 super(ClientForm, self).__init__(formdata, obj, prefix, **kwargs)
                 if flavors.get('japanese_prefectures', False):
                     self.prefecture.widget = japanese_prefecture_select_input
+                self.mobile_and_landline_phone_number = flavors.get('mobile_and_landline_phone_number', False)
+                self.pc_and_mobile_email_address = flavors.get('pc_and_mobile_email_address', False)
 
             last_name = OurTextField(
                 label=_(u"姓"),
