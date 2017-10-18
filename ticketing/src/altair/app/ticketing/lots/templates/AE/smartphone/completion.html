@@ -1,13 +1,13 @@
 <%inherit file="./base.html"/>
 
 <div class="mgt20">
-  <p class="tac bold fs24">${__(u'申込を完了しました。')}</p>
-  <p class="tac">${__(u'下記の受付番号はとても大切な番号です。すぐにメモして保管してください。')}</p>
+  <p class="txtC fWB f170">${__(u'申込を完了しました。')}</p>
+  <p class="txtC">${__(u'下記の受付番号はとても大切な番号です。すぐにメモして保管してください。')}</p>
 </div>
 
 <div class="confirm-wrap">
   <h2 class="heading heading_simple_line">${__(u'受付番号')}</h2>
-  <p class="bold disp-order_no">${entry.entry_no}</p>
+  <p class="fWB red f120">${entry.entry_no}</p>
 </div><!-- ===== / 受付番号 ===== -->
 
 <form id="form1" class="confirmForm" action="${request.route_path('lots.entry.index', event_id=event.id, lot_id=lot.id)}" method="post">
@@ -157,7 +157,7 @@
     <p>${_(u'お申込内容は、「<a href=\"/lots/review\">申込確認ページ</a>」からもご確認いただけます。受付番号とご登録時のお電話番号をお手元にご用意の上、ご利用ください。') |n}</p>
   </div>
 
-  <div class="pdt20 pdb20 tac">
+  <div class="pdt20 pdb20 txtC">
     <a href="${request.context.host_base_url}"><input type="button" class="btn btn-primary" value="${_(u'TOP')}"></a>
   </div>
 
