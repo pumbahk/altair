@@ -327,6 +327,7 @@ if label is None or label is True:
               ${h.error_list(request, form, 'tel_1')}
             </td>
           </tr>
+          % if form.mobile_and_landline_phone_number:
           <tr>
             <th>
               ${form['tel_2'].label}
@@ -339,6 +340,7 @@ if label is None or label is True:
               ${h.error_list(request, form, 'tel_2')}
             </td>
           </tr>
+          % endif
           <tr>
             <th>${_(u'住所')}</th>
           </tr>
