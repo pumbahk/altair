@@ -139,6 +139,7 @@ cp ${PATH_TO_PC_LOGO} ${CODE}/pc/images/logo.png
 cp ${PATH_TO_PC_LOGO} ${CODE}/pc/images/pc_logo.png
 cp ${PATH_TO_FAVICON} ${CODE}/pc/images/favicon.ico
 cp ${PATH_TO_SP_LOGO} ${CODE}/smartphone/images/logo.png
+cp ${PATH_TO_PC_LOGO} ${CODE}/smartphone/images/pc_logo.png
 cp ${PATH_TO_SP_LOGO} ${CODE}/smartphone/images/sp_logo.png
 cp ${PATH_TO_FAVICON} ${CODE}/smartphone/images/favicon.ico
 cp ${PATH_TO_MB_LOGO} ${CODE}/mobile/images/mb_logo.gif
