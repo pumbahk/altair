@@ -27,10 +27,10 @@ s3_upload() {
     is_exist=`s3cmd ls "${s3_path}/${CODE}"`
     if [ -n "${is_exist}" ]; then
         echo "アップロード先: ${s3_path}/${CODE}がすでに存在しています。"
-        echo "[ y:削除してからアップロード o:上書きしてアップロード その他のキー:スキップ ]"
+        echo "[ d:削除してからアップロード o:上書きしてアップロード その他のキー:スキップ ]"
         read answer
         case "${answer}" in
-        y)
+        d)
             echo "削除してからアップロードします。"
             s3cmd del -r "${s3_path}/${CODE}"
             ;;

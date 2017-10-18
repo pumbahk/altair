@@ -70,8 +70,10 @@ cp -r ${base} ${CODE}
 
 # ロゴ画像の配置
 cp ${PATH_TO_PC_LOGO} ${CODE}/pc/images/logo.png
+cp ${PATH_TO_PC_LOGO} ${CODE}/pc/images/pc_logo.png
 cp ${PATH_TO_FAVICON} ${CODE}/pc/images/favicon.ico
 cp ${PATH_TO_SP_LOGO} ${CODE}/smartphone/images/logo.png
+cp ${PATH_TO_SP_LOGO} ${CODE}/smartphone/images/sp_logo.png
 cp ${PATH_TO_FAVICON} ${CODE}/smartphone/images/favicon.ico
 cp ${PATH_TO_MB_LOGO} ${CODE}/mobile/images/mb_logo.gif
 
@@ -108,6 +110,7 @@ test ! -d ${CODE}/mobile/images && mkdir -p ${CODE}/mobile/images
 
 # ロゴ画像の配置
 cp ${PATH_TO_PC_LOGO} ${CODE}/pc/images/logo.png
+cp ${PATH_TO_PC_LOGO} ${CODE}/pc/images/pc_logo.png
 cp ${PATH_TO_FAVICON} ${CODE}/pc/images/favicon.ico
 cp ${PATH_TO_MB_LOGO} ${CODE}/mobile/images/mb_logo.gif
 
@@ -118,7 +121,8 @@ cat << EOS
 EOS
 
 cd ${ALTAIR_PATH}/${PATH_TO_STATIC_FCAUTH}
-base=`choose_base`
+#base=`choose_base`
+base="GA" ### 2017年10月現在、fc_authはGAが最新版なため
 
 echo "`pwd`/${CODE}は${base}で作成します。"
 
@@ -132,8 +136,11 @@ test ! -d ${CODE}/mobile/images && mkdir -p ${CODE}/mobile/images
 
 # ロゴ画像の配置
 cp ${PATH_TO_PC_LOGO} ${CODE}/pc/images/logo.png
+cp ${PATH_TO_PC_LOGO} ${CODE}/pc/images/pc_logo.png
 cp ${PATH_TO_FAVICON} ${CODE}/pc/images/favicon.ico
 cp ${PATH_TO_SP_LOGO} ${CODE}/smartphone/images/logo.png
+cp ${PATH_TO_PC_LOGO} ${CODE}/smartphone/images/pc_logo.png
+cp ${PATH_TO_SP_LOGO} ${CODE}/smartphone/images/sp_logo.png
 cp ${PATH_TO_FAVICON} ${CODE}/smartphone/images/favicon.ico
 cp ${PATH_TO_MB_LOGO} ${CODE}/mobile/images/mb_logo.gif
 
@@ -166,8 +173,10 @@ cp -r ${base} ${CODE}
 
 # ロゴ画像の配置
 cp ${PATH_TO_PC_LOGO} ${CODE}/pc/images/logo.png
+cp ${PATH_TO_PC_LOGO} ${CODE}/pc/images/pc_logo.png
 cp ${PATH_TO_FAVICON} ${CODE}/pc/images/favicon.ico
 cp ${PATH_TO_SP_LOGO} ${CODE}/smartphone/images/logo.png
+cp ${PATH_TO_SP_LOGO} ${CODE}/smartphone/images/sp_logo.png
 cp ${PATH_TO_FAVICON} ${CODE}/smartphone/images/favicon.ico
 cp ${PATH_TO_MB_LOGO} ${CODE}/mobile/img/mb_logo.gif
 
@@ -198,6 +207,7 @@ if ${REQUIRED_COUPON}; then
 
     # ロゴ画像の配置
     cp ${PATH_TO_PC_LOGO} ${CODE}/pc/images/logo.png
+    cp ${PATH_TO_PC_LOGO} ${CODE}/pc/images/pc_logo.png
     cp ${PATH_TO_FAVICON} ${CODE}/pc/images/favicon.ico
     cp ${PATH_TO_MB_LOGO} ${CODE}/mobile/images/logo_mobile.gif
 
@@ -264,6 +274,7 @@ cp -r ${base} ${CODE}
 
 # ロゴ画像の配置
 cp ${PATH_TO_PC_LOGO} ${CODE}/img/logo.png
+cp ${PATH_TO_PC_LOGO} ${CODE}/img/pc_logo.png
 cp ${PATH_TO_FAVICON} ${CODE}/img/favicon.ico
 
 cat << EOS
