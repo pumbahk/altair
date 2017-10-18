@@ -121,7 +121,8 @@ cat << EOS
 EOS
 
 cd ${ALTAIR_PATH}/${PATH_TO_STATIC_FCAUTH}
-base=`choose_base`
+#base=`choose_base`
+base="GA" ### 2017年10月現在、fc_authはGAが最新版なため
 
 echo "`pwd`/${CODE}は${base}で作成します。"
 
