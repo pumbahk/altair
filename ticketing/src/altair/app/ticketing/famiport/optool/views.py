@@ -472,7 +472,7 @@ class FamiPortRebookOrderView(object):
             cancel_text = self.request.POST.get('cancel_reason_text')
 
             errors = validate_rebook_cond(receipt, datetime.now())
-            if not error:
+            if not errors:
                 make_suborder_by_order_no(request=self.request,
                                           session=session,
                                           client_code=client_code,
