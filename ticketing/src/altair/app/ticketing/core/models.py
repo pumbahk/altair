@@ -4256,16 +4256,16 @@ class OrganizationSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     bcc_recipient = AnnotatedColumn(Unicode(255), nullable=True, _a_label=u"BCC受信者")
     default_mail_sender = AnnotatedColumn(Unicode(255), _a_label=u"デフォルトの送信元メールアドレス")
-    entrust_separate_seats = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"バラ席のおまかせが有効", _a_label=u"おまかせ座席選択でバラ席を許可する")
+    entrust_separate_seats = AnnotatedColumn(Boolean, nullable=False, default=True, doc=u"バラ席のおまかせが有効", _a_label=u"おまかせ座席選択でバラ席を許可する")
     notify_point_granting_failure = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"ポイント付与失敗時のメール通知on/off", _a_label=u"ポイント付与失敗時のメール通知を有効にする")
-    notify_remind_mail = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"コンビニ入金期限リマインドのメール通知on/off", _a_label=u"コンビニ入金期限リマインドのメール通知を有効にする")
-    notify_print_remind_mail = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"コンビニ未発券リマインドのメール通知on/off", _a_label=u"コンビニ未発券リマインドのメール通知を有効にする")
+    notify_remind_mail = AnnotatedColumn(Boolean, nullable=False, default=True, doc=u"コンビニ入金期限リマインドのメール通知on/off", _a_label=u"コンビニ入金期限リマインドのメール通知を有効にする")
+    notify_print_remind_mail = AnnotatedColumn(Boolean, nullable=False, default=True, doc=u"コンビニ未発券リマインドのメール通知on/off", _a_label=u"コンビニ未発券リマインドのメール通知を有効にする")
     sales_report_type = AnnotatedColumn(Integer, nullable=False, default=1, server_default='1', _a_label=u"売上レポートタイプ")
 
     # augus
     augus_use = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"オーガス連携", _a_label=u"オーガス連携")
 
-    enable_smartphone_cart = AnnotatedColumn(Boolean, nullable=False, default=False, _a_label=u'スマートフォン用のカートを有効にする')
+    enable_smartphone_cart = AnnotatedColumn(Boolean, nullable=False, default=True, _a_label=u'スマートフォン用のカートを有効にする')
     enable_mypage = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"マイページの使用", _a_label=u"マイページの使用")
     enable_word = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"お気に入りワードの使用", _a_label=u"お気に入りワードの使用")
     cart_setting_id = AnnotatedColumn(Identifier, ForeignKey('CartSetting.id'), default=None, _a_label=_(u'カートの種類'), _a_visible_column=True)
@@ -4278,7 +4278,7 @@ class OrganizationSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     lot_asid_mobile = AnnotatedColumn(Unicode(255), doc=u"lot_asid_mobile", _a_label=u"lot_asid_mobile")
     sitecatalyst_use = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"SiteCatalystの使用", _a_label=u"SiteCatalystの使用")
     mail_refund_to_user = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"払戻通知メールをユーザーに送信", _a_label=u"払戻通知メールをユーザーに送信")
-    lot_entry_user_withdraw = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"抽選申込ユーザ取消", _a_label=u"抽選申込ユーザ取消")
+    lot_entry_user_withdraw = AnnotatedColumn(Boolean, nullable=False, default=True, doc=u"抽選申込ユーザ取消", _a_label=u"抽選申込ユーザ取消")
 
     auth_type = AnnotatedColumn(Unicode(255), _a_label=u"認証方式")
 
