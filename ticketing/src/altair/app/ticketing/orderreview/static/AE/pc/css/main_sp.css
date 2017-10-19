@@ -1,0 +1,328 @@
+@charset "UTF-8";
+body {
+	color: #333;
+	font-size: 12px;
+    font-family: Meiryo, sans-serif;
+	background: #DCDCDC !important;
+}
+a {
+  text-decoration: underline;
+  color: #1e73a4;
+}
+a:hover {
+  color: #00A2B4;
+}
+.pc {
+    display: none;
+}
+.hidden {
+  display: none;
+}
+
+/* header
+-------------------------------------------- */
+header .head {
+  height: 60px;
+}
+header h1 {
+  padding-left: 10px;
+  line-height: 60px;
+}
+header h1 img {
+  border-radius: 5px;
+  background: #ffffff;
+  padding: 5px;
+}
+
+/* footer
+-------------------------------------------- */
+footer {
+  text-align: center;
+  padding-top: 8%;
+}
+footer ul {
+  overflow: hidden;
+  list-style: none;
+  padding-bottom: 20px;
+}
+footer ul li {
+  font-size: 11px;
+  line-height: 200%;
+  display: inline-block;
+  padding: 0 0 0 5px;
+}
+footer ul li:after {
+  content: "|";
+  padding-left: 5px;
+}
+footer ul li:last-child:after {
+  content: none;
+}
+
+/* main
+-------------------------------------------- */
+main {
+  padding-bottom: 5%;
+  background: #ffffff;
+}
+
+/* login form
+-------------------------------------------- */
+main .wrap-form {
+  margin: 0 auto 5% auto;
+  padding: 6px 6px 6px 6px;
+}
+main .wrap-form h2 {
+  text-align: center;
+  letter-spacing: 2px;
+  background: #5A5A5A;
+  color: #ffffff;
+  font-size: 15px;
+  padding: 2%;
+  margin-bottom: 0%;
+}
+main .wrap-form h3 {
+  border-bottom: 7px solid #DEDEDE;
+  border-left: 10px solid #DEDEDE;
+  padding: 3px 0 3px 5px;
+  font-weight: bold;
+  font-size: 14px;
+  margin-bottom: 5%;
+}
+main .wrap-form p {
+  margin-bottom: 3%;
+}
+main .wrap-form section {
+  padding: 3%;
+}
+main .wrap-form .btn {
+  letter-spacing: 0px;
+  margin: 2% 0;
+  background: #5A5A5A;
+  color: #ffffff;
+  text-decoration: none;
+  padding: 2% 13%;
+  width: auto;
+  font-weight: bold;
+  font-size: 17px;
+  border-radius: 50px;
+  display: inline-block;
+  cursor: pointer;
+}
+main .wrap-form .btn:hover {
+  background: #767676;
+}
+main .wrap-form .formall p {
+  margin-bottom: 0px;
+}
+main .wrap-form .formall dt {
+  padding-bottom: 2%;
+  font-weight: bold;
+}
+main .wrap-form .formall dd {
+  padding-bottom: 5%;
+}
+main .wrap-form .formall small {
+  font-weight: normal;
+}
+main .wrap-form .formall input {
+  width: 100%;
+  border: 1px solid #c0c0c0;
+  vertical-align: middle;
+  padding: 5px;
+}
+main .wrap-form .formall input.red {
+  border: 1px solid #b80000;
+  background-color: #FFCFCF;
+}
+main .wrap-form .formall :disabled {
+  background-color: #E4E4E4;
+}
+main .wrap-form .formall .form_btn {
+  background: #5A5A5A;
+  color: #ffffff;
+  text-decoration: none;
+  padding: 10px 15px;
+  border-radius: 10px;
+  display: inline-block;
+}
+main .wrap-form .formall .form_btn:hover {
+  background: #767676;
+}
+main .wrap-form .formall.form1 dt:before {
+  content: "●";
+  color: #dfdfdf;
+}
+
+/* confirm page
+-------------------------------------------- */
+main #confirm {
+    position: relative;
+    width: 100%;
+    text-align: left;
+    background: #FFF;
+    margin: 0 auto 30px auto;
+}
+
+main .wrap-content {
+    padding: 20px 3%;
+    margin: 20px 0;
+}
+
+.wrap-content .heading-primary {
+    background: #5A5A5A;
+    font-size: 18px;
+    letter-spacing: 3px;
+    color: #FFF;
+    font-weight: bold;
+    padding: 10px;
+    margin-bottom: 20px;
+}
+
+.customer-table {
+    width: 100%;
+    table-layout: fixed;
+    word-break: break-all;
+    word-wrap: break-word;
+    border-collapse: collapse;
+    border: 3px solid #CCC;
+}
+
+.customer-table th {
+    background: #FBFBFB;
+    font-weight: bold;
+}
+
+.customer-table th, .customer-table td {
+    width: 100%;
+    display: block;
+    border: 1px solid #CCC;
+    padding: 10px;
+}
+
+/* mypage
+ -------------------------------------------- */
+form.form-box {
+  padding: 5px 0;
+}
+
+form.form-box p img {
+  display: inline-block;
+}
+.label {
+  display: inline-block;
+  font-size: 13px;
+  font-weight: bold;
+  line-height: 15px;
+  color: #FFFFFF;
+  background: #888888;
+  padding: 3px 5px;
+  border-radius: 5px;
+  white-space: nowrap;
+  vertical-align: baseline;
+}
+.done-receipt, .waiting {
+  background: #f89406;
+}
+.done-delivery, .done-payment, .entry-elect {
+  background: #468847;
+}
+.cancel {
+  background: #b94a48;
+}
+.not-payment, .withdraw {
+  background: #000000;
+}
+.wrap-checkbox + .wrap-checkbox {
+  margin-top: 20px;
+}
+.wrap-checkbox input[type=checkbox] {
+    display: inline-block;
+    margin-right: 6px;
+}
+.wrap-checkbox input[type=checkbox] + label {
+    position: relative;
+    display: inline-block;
+    margin-right: 12px;
+    line-height: 30px;
+    cursor: pointer;
+}
+.wrap-checkbox input[type=checkbox] {
+	display: none;
+	margin: 0;
+	background: #000;
+}
+.wrap-checkbox input[type=checkbox] + label {
+	padding: 0 0 0 30px;
+}
+.wrap-checkbox input[type=checkbox] + label::before {
+	content: "";
+	position: absolute;
+	top: 50%;
+	left: 0;
+	-moz-box-sizing: border-box;
+	box-sizing: border-box;
+	display: block;
+	width: 18px;
+	height: 18px;
+	margin-top: -9px;
+	background: #FFF;
+}
+.wrap-checkbox input[type=checkbox] + label::before {
+	border: 2px solid #ccc;
+}
+.wrap-checkbox input[type=checkbox]:checked + label::after {
+	content: "";
+	position: absolute;
+	top: 50%;
+	-moz-box-sizing: border-box;
+	box-sizing: border-box;
+	display: block;
+}
+.wrap-checkbox input[type=checkbox]:checked + label::after {
+	left: 3px;
+	width: 16px;
+	height: 8px;
+	margin-top: -8px;
+	border-left: 3px solid #E71063;
+	border-bottom: 3px solid #E71063;
+	-webkit-transform: rotate(-45deg);
+	-ms-transform: rotate(-45deg);
+	transform: rotate(-45deg);
+}
+.wrap-checkbox .wrap-mailmagzine-description {
+  background: #dfdfdf;
+  padding: 10px;
+}
+.wrap-btn {
+  text-align: center;
+}
+.wrap-btn .btn {
+  letter-spacing: 3px;
+  margin: 10px 0;
+  background: #5A5A5A;
+  color: #ffffff;
+  text-decoration: none;
+  padding: 5px 30px;
+  width: 40%;
+  min-width: 200px;
+  font-weight: bold;
+  font-size: 20px;
+  border-radius: 50px;
+  display: inline-block;
+  cursor: pointer;
+}
+.wrap-btn .btn.short {
+  width: 20%;
+}
+.wrap-btn .btn:hover {
+  opacity: 0.75;
+}
+/* ETC
+ -------------------------------------------- */
+.notice hr {
+  margin-top: 5px;
+  margin-bottom: 5px;
+  border: 0;
+  border-top: 1px solid #eee;
+}

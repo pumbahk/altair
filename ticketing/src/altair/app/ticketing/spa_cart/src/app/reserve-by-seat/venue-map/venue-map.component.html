@@ -1,0 +1,100 @@
+<div id="mapAreaLeft">
+    <!--  venue-map   -->
+    <div id="mapImgBox" [inlineSVG]="venueURL" alt=""></div>
+    <div class="mapBtnBox">
+        <button id="mapBtnHome" class="mapBtnHome" type="button"><span></span></button>
+        <div class="mapZoomBtnBox">
+            <button id="mapBtnPlus" class="mapBtnPlus" type="button"><span></span></button>
+            <button id="mapBtnMinus" class="mapBtnMinus" type="button"><span></span></button>
+        </div>
+    </div>
+
+    <div class="mapNaviBox" *ngIf="wholemapFlag">
+        <div id="mapImgBoxS" [inlineSVG]="wholemapURL" alt="" style="height:auto;"></div>
+    </div>
+    <!--  /venue-map   -->
+</div>
+    <div id="colorNavi" [inlineSVG]="colorNavi" alt=""></div>
+<!--エラーモーダル-->
+<div id="modalWindowAlertBox" class="modalWindowAlertBox" *ngIf="confirmStockType">
+    <div id="modalWindowAlertBoxInner" class="modalWindowAlertBoxInner">
+        <div id="modalWindowAlert" class="modalWindowAlert">
+            <div class="modalInner">
+                <div class="modalAlert">
+                    <p class="modalAlertTtl"><span></span>確認</p>
+                    <p>{{confirmationMassage}}</p>
+                        <button id="cancelbtn" type="button" (click)="removeConfirmation()">いいえ</button>
+                        <button id="okbtn" type="button" (click)="removeSeatList()">はい</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!--/エラーモーダル-->
+
+<!--横画面エラーモーダル-->
+<div id="modalWindowErrorBox" class="modalWindowAlertBox noScroll" *ngIf="sideProhibition">
+    <div id="modalWindowAlertBoxInner" class="modalWindowAlertBoxInner">
+        <div id="modalWindowAlert" class="modalWindowAlert">
+            <div class="modalInner">
+              <div class="modalAlert">
+                    <p class="modalAlertTtl"><span></span>お願い</p>
+                    <p class="modalAlertText">縦向きでご使用ください</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!--/横画面エラーモーダル-->
+
+<!--席種詳細モーダル-->
+<div id="modalWindowStockTypeAlertBox" class="modalWindowAlertBox" *ngIf="displayDetail">
+    <div id="modalWindowAlertBoxInner" class="modalWindowAlertBoxInner">
+        <div id="modalWindow" class="modalWindow">
+            <div class="modalInner">
+                <div class="closeBtnBox" (click)="removeModalWindow()"><span class="closeBtn"></span></div>
+                <p class="seatName">{{selectedStockTypeName}}</p>
+                <div [innerHTML]="selectedDescription"></div>
+                <div class="seatPriceBox" *ngFor="let value of selectedProducts">
+                    <p class="seatPrice"><span>{{value.product_name}}</span><span>￥{{value.price}}</span></p>
+                </div>
+                <div class="modalBtnBox">
+                    <button class="" type="button" (click)="removeDialog()">キャンセル</button><button class="" type="button" (click)="addSeatList()">OK</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!--/席種詳細モーダル-->
+
+<!--枚数選択モーダル-->
+    <app-reserve-by-quantity #quantity [filterComponent]="filterComponent" [display]="display" (output)="display = $event" (confirmStockType)="confirmStockType = $event"></app-reserve-by-quantity>
+<!--/枚数選択モーダル-->
+<div id="mapAreaRight">
+
+    <!--  seat-list   -->
+    <app-seat-list [reserveByQuantityComponent]="quantity" [filterComponent]="filterComponent" [countSelect]="countSelect" (confirmStockType)="confirmStockType = $event" (mapHome)="mapHome()" (stockTypeIdFromList)="stockTypeIdFromList = $event"></app-seat-list>
+    <!--  /seat-list   -->
+
+    <!--購入確認-->
+    <div id="buyChoiceSeatArea" *ngIf="ticketDetail">
+        <p class="buyChoiceSeatTtl pc"><span>購入確認</span></p>
+        <div class="buyChoiceSeatBox">
+            <div class="seatNumberBox">
+            <div class="seatNumber" *ngFor="let value of selectedSeatNameList" (click)="showDialog(value)">
+                <div class="closeBtnBox"><span class="closeBtn" (click)="removeSeatListFromBtn(value, $event)"></span></div>
+                <p>{{value}}</p>
+            </div>
+            </div>
+            <div class="selectBoxBtn cf">
+            <div class="closeBtnBox {{active}}"><span class="closeBtn"></span></div>
+            <p><span>{{stockTypeName}}</span>&nbsp;<span>{{countSelect}}枚</span></p>
+            </div>
+        </div>
+        <div class="buttonBox">
+            <button class="clear" type="button" name="" value="選択中の座席をクリア" form="buySeatForm" (click)="seatClearClick()">選択中の座席をクリア</button>
+            <button class="reserve" type="button" name="" value="次へ" form="buySeatForm" (click)="seatReserveClick()">次へ</button>
+        </div>
+    </div>
+    <!--/購入確認-->
+</div>

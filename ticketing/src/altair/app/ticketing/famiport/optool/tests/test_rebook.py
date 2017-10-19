@@ -10,7 +10,7 @@ from altair.app.ticketing.famiport.models import (
     FamiPortOrder,
     FamiPortOrderType
 )
-from ..utils import ValidateUtils
+from ..utils import validate_rebook_cond
 from datetime import datetime, timedelta
 
 class RebookTest(TestCase):
@@ -74,9 +74,9 @@ class RebookTest(TestCase):
                     )
                 )
 
-        canceled_payment_receipt_errors = ValidateUtils.validate_rebook_cond(canceled_payment_receipt, datetime.now())
-        canceled_ticketing_receipt_errors = ValidateUtils.validate_rebook_cond(canceled_ticketing_receipt, datetime.now())
-        canceled_cash_on_delivery_receipt_errors = ValidateUtils.validate_rebook_cond(canceled_cash_on_delivery_receipt, datetime.now())
+        canceled_payment_receipt_errors = validate_rebook_cond(canceled_payment_receipt, datetime.now())
+        canceled_ticketing_receipt_errors = validate_rebook_cond(canceled_ticketing_receipt, datetime.now())
+        canceled_cash_on_delivery_receipt_errors = validate_rebook_cond(canceled_cash_on_delivery_receipt, datetime.now())
 
         self.assertTrue(canceled_payment_receipt_errors, msg='Canceled payment receipt should not be rebookable.')
         self.assertTrue(canceled_ticketing_receipt_errors, msg='Canceled ticketing receipt should not be rebookable.')
@@ -123,9 +123,9 @@ class RebookTest(TestCase):
                     )
                 )
 
-        due_passed_payment_receipt_errors = ValidateUtils.validate_rebook_cond(due_passed_payment_receipt, datetime.now())
-        due_passed_ticketing_receipt_errors = ValidateUtils.validate_rebook_cond(due_passed_ticketing_receipt, datetime.now())
-        due_passed_cash_on_delivery_receipt_errors = ValidateUtils.validate_rebook_cond(due_passed_cash_on_delivery_receipt, datetime.now())
+        due_passed_payment_receipt_errors = validate_rebook_cond(due_passed_payment_receipt, datetime.now())
+        due_passed_ticketing_receipt_errors = validate_rebook_cond(due_passed_ticketing_receipt, datetime.now())
+        due_passed_cash_on_delivery_receipt_errors = validate_rebook_cond(due_passed_cash_on_delivery_receipt, datetime.now())
 
         self.assertTrue(due_passed_payment_receipt_errors, msg='Payment due passed payment_receipt should not be rebookable.')
         self.assertTrue(due_passed_cash_on_delivery_receipt_errors, msg='Payment due passed cache on delivery receipt should not be rebookable.')
@@ -171,9 +171,9 @@ class RebookTest(TestCase):
                     )
                 )
 
-        unpaid_payment_receipt_errors = ValidateUtils.validate_rebook_cond(unpaid_payment_receipt, datetime.now())
-        unissued_ticketing_receipt_errors = ValidateUtils.validate_rebook_cond(unissued_ticketing_receipt, datetime.now())
-        unpaid_cash_on_delivery_receipt_errors = ValidateUtils.validate_rebook_cond(unpaid_cash_on_delivery_receipt, datetime.now())
+        unpaid_payment_receipt_errors = validate_rebook_cond(unpaid_payment_receipt, datetime.now())
+        unissued_ticketing_receipt_errors = validate_rebook_cond(unissued_ticketing_receipt, datetime.now())
+        unpaid_cash_on_delivery_receipt_errors = validate_rebook_cond(unpaid_cash_on_delivery_receipt, datetime.now())
 
         self.assertTrue(unpaid_payment_receipt_errors, msg='Unpaid payment receipt should not be rebookable.')
         self.assertTrue(unissued_ticketing_receipt_errors, msg='Unissued ticketing receipt should not be rebookable.')
@@ -220,9 +220,9 @@ class RebookTest(TestCase):
                     )
                 )
 
-        incomplete_payment_receipt_errors = ValidateUtils.validate_rebook_cond(incomplete_payment_receipt, datetime.now())
-        incomplete_ticketing_receipt_errors = ValidateUtils.validate_rebook_cond(incomplete_ticketing_receipt, datetime.now())
-        incomplete_cash_on_delivery_receipt_errors = ValidateUtils.validate_rebook_cond(incomplete_cash_on_delivery_receipt, datetime.now())
+        incomplete_payment_receipt_errors = validate_rebook_cond(incomplete_payment_receipt, datetime.now())
+        incomplete_ticketing_receipt_errors = validate_rebook_cond(incomplete_ticketing_receipt, datetime.now())
+        incomplete_cash_on_delivery_receipt_errors = validate_rebook_cond(incomplete_cash_on_delivery_receipt, datetime.now())
 
         self.assertFalse(incomplete_payment_receipt_errors, msg='Incomplete payment receipt should be rebookable.')
         self.assertFalse(incomplete_ticketing_receipt_errors, msg='Incomplete ticketing receipt should be rebookable.')
@@ -272,9 +272,9 @@ class RebookTest(TestCase):
                     )
                 )
 
-        complete_payment_receipt_errors = ValidateUtils.validate_rebook_cond(complete_payment_receipt, datetime.now())
-        complete_ticketing_receipt_errors = ValidateUtils.validate_rebook_cond(complete_ticketing_receipt, datetime.now())
-        complete_cash_on_delivery_receipt_errors = ValidateUtils.validate_rebook_cond(complete_cash_on_delivery_receipt, datetime.now())
+        complete_payment_receipt_errors = validate_rebook_cond(complete_payment_receipt, datetime.now())
+        complete_ticketing_receipt_errors = validate_rebook_cond(complete_ticketing_receipt, datetime.now())
+        complete_cash_on_delivery_receipt_errors = validate_rebook_cond(complete_cash_on_delivery_receipt, datetime.now())
         self.assertTrue(complete_payment_receipt_errors, msg='Complete payment receipt should not be rebookable.')
         self.assertTrue(complete_ticketing_receipt_errors, msg='Complete ticketing receipt should not be rebookable.')
         self.assertTrue(complete_cash_on_delivery_receipt_errors, msg='Complete cash on delivery receipt should not be rebookable.')

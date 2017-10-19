@@ -2369,7 +2369,7 @@ class OrdersReserveView(OrderBaseView):
             total_quantity = 0
             for product_id, product_name in self.context.form.products.choices:
                 quantity = post_data.get('product_quantity-%d' % product_id)
-                if not quantity:
+                if not quantity or quantity == u'0':
                     continue
                 quantity = quantity.encode('utf-8')
                 if not quantity.isdigit():

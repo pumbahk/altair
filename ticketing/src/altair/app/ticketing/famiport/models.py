@@ -48,6 +48,24 @@ class FamiPortVoidReason(Enum):
     Reissuing          = 99 # 再発券
 
 
+class FamiPortIssueStatus(Enum):
+    NotCover        = 1 # 対象外
+    Issued90        = 2 # 発券済み(90分確定)
+    Issued          = 3 # 発券済み
+    WaitingConfirm  = 4 # 発券確定待ち
+    Waiting         = 5 # 発券待ち
+    Unknown         = 6 # 状態不正
+
+
+class FamiPortPaymentStatus(Enum):
+    NotCover        = 1  # 対象外
+    Paid90          = 2  # 発券済み(90分確定)
+    Paid            = 3  # 発券済み
+    WaitingConfirm  = 4  # 発券確定待ち
+    Waiting         = 5  # 発券待ち
+    Unknown         = 6  # 状態不正
+
+
 class HardcodedModel(object):
     class __metaclass__(type):
         def __new__(mcs, name, bases, d):
@@ -1037,14 +1055,13 @@ class FamiPortReceipt(Base, WithTimestamp):
         if self.type == FamiPortReceiptType.Payment.value:
             return u'-'
         else:
-            if self.completed_at is not None and self.rescued_at is not None:
+            if self.completed_at and self.rescued_at:
                 return u'発券済み(90分確定)'
-            elif self.payment_request_received_at is not None and self.famiport_order.issued_at is not None \
-                    and self.rescued_at is None:
+            elif self.payment_request_received_at and self.completed_at and not self.rescued_at:
                 return u'発券済み'
-            elif self.payment_request_received_at is not None and self.famiport_order.issued_at is None:
+            elif self.payment_request_received_at and not self.completed_at:
                 return u'発券確定待ち'
-            elif self.payment_request_received_at is None or self.inquired_at is None:
+            elif not self.payment_request_received_at or not self.inquired_at:
                 return u'発券待ち'
             else:
                 return u'状態不正'
@@ -1055,17 +1072,17 @@ class FamiPortReceipt(Base, WithTimestamp):
         if self.type == FamiPortReceiptType.Ticketing.value:
             return u'-'
         else:
-            if self.completed_at is not None and self.rescued_at is not None:
+            if self.completed_at and self.rescued_at:
                 return u'入金済み(90分確定)'
-            elif self.payment_request_received_at is not None and self.famiport_order.paid_at is not None \
-                    and self.rescued_at is None:
+            elif self.payment_request_received_at and self.completed_at and not self.rescued_at:
                 return u'入金済み'
-            elif self.payment_request_received_at is not None and self.famiport_order.paid_at is None:
+            elif self.payment_request_received_at and not self.completed_at:
                 return u'入金確定待ち'
-            elif self.payment_request_received_at is None or self.inquired_at is None:
+            elif not self.payment_request_received_at or not self.inquired_at:
                 return u'入金待ち'
             else:
                 return u'状態不正'
+
 
     def get_shop_name(self, request):
         if self.payment_request_received_at:

@@ -1,0 +1,810 @@
+/* You can add global styles to this file, and also import other style files */
+/*global*/
+@import url(eagles/css/common.css);
+@import url(eagles/css/login.css);
+@import url(eagles/css/cart.css);
+
+
+
+/*api-common-error*/
+app-api-common-error .modalWindowAlertBoxInner{
+	height:100%;
+}
+
+/* select-product */
+app-select-product .modalWindowAlertBoxInner{
+    height:100%;
+}
+
+app-select-product .modalWindowAlertBox {
+    top:0px;
+}
+
+#productArea .productBox .cf .IconGroup .IconIn .disabled {
+    background-color: #a4404c !important;
+    cursor: not-allowed;
+}
+#textArea{/*SP*/
+	display: block;
+	margin: 25px 0 0 0;
+	padding: 10px 0;
+	box-sizing: border-box;
+}
+#textArea .buySeatText{
+	display: block;
+    padding: 0 5%;
+    box-sizing: border-box;
+}
+#allocationArea{
+	display: block;
+	margin: 0 0 3% 0;
+	padding: 0 0 0 0;
+   	box-sizing: border-box;
+}
+
+#allocationArea .buySeatText,
+#allocationArea .nextSeatText,
+#allocationArea .remnantSeatText,
+#productArea .buySeatText{
+	display: block;
+   	margin: 0 auto;
+   	padding: 2% 5%;
+	box-sizing: border-box;
+}
+#textArea .buySeatQuantity{
+	text-align: center;
+   	margin: 10px 0;
+}
+#textArea .assignedQuantity,
+#textArea .unassignedQuantity{
+	font-size: 30px;
+	margin: 0 20px;
+}
+#allocationArea p .allocationSeats{
+	display: block;
+	padding: 20px 0;
+   	box-sizing: border-box;
+}
+#allocationArea .allocationSeats .allocationSeat, #allocationArea .nextSeat{
+   	display: block;
+   	height: auto;
+   	border: 2px solid lightgrey;
+    background: white;
+   	text-align: center;
+   	margin: 0 15% 0 20%;
+   	font-size: 15px;
+   	border-radius: 5px;
+}
+#allocationArea .nextSeat{
+	background: yellow;
+}
+#productArea{
+	width:100%;
+}
+#productArea .productText{
+	display: block;
+   	margin: 0 auto;
+   	box-sizing: border-box;
+}
+#productArea .productBox{
+	margin: 0 5% 5% 5%;
+	border-bottom: solid 2px #000080;
+}
+#productArea .productBox .cf{
+	text-align: center;
+	width: 100%;
+}
+#productArea .productBox .cf .productNameGroup{
+	margin: 0 0 2% 0;
+}
+#productArea .productBox .cf .productNameGroup .productName{
+
+}
+#productArea .productBox .cf .productNameGroup .productPrice{
+
+}
+#productArea .productBox .cf .IconGroup{
+	margin: 1% 0 1% 0;
+}
+#productArea .productBox .cf .IconGroup .IconIn{
+	display: inline-block;
+	text-align: left;
+}
+#productArea .productBox .cf .IconGroup .IconIn .iconPlus,
+#productArea .productBox .cf .IconGroup .IconIn .iconMinus {
+	box-sizing: border-box;
+	border-radius: 50%;
+	position: relative;
+	float: left;
+	width: 30px;
+	height: 30px;
+	background-color: #64000c;
+}
+#productArea .productBox .cf .IconGroup .IconIn .iconPlus:hover,
+#productArea .productBox .cf .IconGroup .IconIn .iconMinus:hover {
+	background-color: #000;
+}
+#productArea .productBox .cf .IconGroup .IconIn .iconPlus span:after,
+#productArea .productBox .cf .IconGroup .IconIn .iconPlus span:before {
+	display: block;
+	content: '';
+	background-color: #FFF;
+	position: absolute;
+}
+#productArea .productBox .cf .IconGroup .IconIn .iconPlus span:before {
+	width: 20px;
+	height: 4px;
+	top: 13px;
+	left: 5px;
+}
+#productArea .productBox .cf .IconGroup .IconIn .iconPlus span:after {
+	width: 4px;
+	height: 20px;
+	top: 5px;
+	left: 13px;
+}
+#productArea .productBox .cf .IconGroup .IconIn .iconMinus span:before {
+	display: block;
+	content: '';
+	background-color: #FFF;
+	position: absolute;
+	width: 20px;
+	height: 4px;
+	top: 13px;
+	left: 5px;
+}
+#productArea .productBox .cf .IconGroup .IconIn p#ticketSheet01{
+	float: left;
+	display: block;
+	height: 30px;
+	width: 150px;
+	line-height: 30px;
+    border: 2px solid lightgrey;
+   	background: white;
+	padding: 0 10px;
+	text-align: center;
+	margin: 0 10px;
+	font-size: 15px;
+	border-radius: 5px;
+}
+#productArea .productBox .cf .allocationSeatGroup{
+
+}
+#productArea .productBox .cf .allocationSeatGroup .allocationSeat{
+	display: block;
+	border: 2px solid lightgrey;
+   	background: white;
+   	text-align: center;
+   	font-size: 15px;
+	border-radius: 5px;
+	margin: 0 10% 0 15%;
+}
+#productSelectBtn {
+	padding-top: 20px;
+	border-top: 1px solid #ddd;
+	margin: 20px auto 0px auto;
+	width:80%;
+}
+#productSelectBtn button {
+	height: 40px;
+	width: 46%;
+	margin: 0 1%;
+	color: #FFF;
+	text-align: center;
+	padding: 0 5px;
+	border-radius: 5px;
+	background: #64000c;
+}
+#productSelectBtn button:hover {
+	color: #64000c;
+	background: #FFF;
+	border: solid 1px #64000c;
+	box-sizing: border-box;
+	}
+#priceArea{
+	display: block;
+	padding: 10px 0;
+	box-sizing: border-box;
+}
+#priceArea .buySeatText{
+	text-align: right;
+	margin: 0 14% 0 0;
+}
+#priceArea .priceText{
+	margin: 0 5px 0 0;
+	font-size:15px;
+}
+#priceArea .variousText{
+	font-size:12px;
+}
+@media screen and (min-width: 768px) {/*PC*/
+	#textArea{
+		display: block;
+		margin: 25px 0 0 0;
+		padding: 10px 0;
+		box-sizing: border-box;
+	}
+	#textArea .buySeatText{
+		display: block;
+    	padding: 0 10%;
+    	box-sizing: border-box;
+	}
+	#textArea .buySeatQuantity{
+		text-align: center;
+    	margin: 10px 0;
+	}
+	#textArea .assignedQuantity,
+	#textArea .unassignedQuantity{
+		font-size: 30px;
+		margin: 0 20px;
+	}
+	#allocationArea{
+		display: block;
+		padding: 0 0 0 0;
+	}
+	#allocationArea .buySeatText,
+	#allocationArea .nextSeatText,
+	#allocationArea .remnantSeatText,
+	#productArea .buySeatText{
+		display: block;
+    	margin: 0 auto;
+    	padding: 0% 0% 1% 14%;
+		font-size:20px;
+	}
+	#allocationArea p .allocationSeats{
+		display: block;
+		padding: 20px 0;
+	}
+	#allocationArea .allocationSeats .allocationSeat, #allocationArea .nextSeat{
+    	display: block;
+    	height: auto;
+		border: 2px solid lightgrey;
+    	background: white;
+    	text-align: center;
+    	margin: 0 15% 0 20%;
+    	font-size: 15px;
+    	border-radius: 5px;
+	}
+	#allocationArea .nextSeat{
+		background: yellow;
+	}
+	#productArea{
+		width:100%;
+	}
+	#productArea .productText{
+		display: block;
+    	margin: 0 auto;
+    	box-sizing: border-box;
+	}
+	#productArea .productBox{
+		margin: 0 15% 2% 15%;
+		border-bottom: solid 2px #000080;
+	}
+	#productArea .productBox .cf{
+		display: table;
+  		table-layout: fixed;
+  		text-align: center;
+  		width: 100%;
+	}
+	#productArea .productBox .cf .productNameGroup{
+		display: table-cell;
+		vertical-align: middle;
+		width: 30%;
+	}
+	#productArea .productBox .cf .productNameGroup .productName{
+
+	}
+	#productArea .productBox .cf .productNameGroup .productPrice{
+
+	}
+	#productArea .productBox .cf .IconGroup{
+		display: table-cell;
+		vertical-align: middle;
+		width: 45%;
+	}
+	#productArea .productBox .cf .IconGroup .IconIn{
+		display: inline-block;
+  		text-align: left;
+	}
+	#productArea .productBox .cf .IconGroup .IconIn .iconPlus,
+	#productArea .productBox .cf .IconGroup .IconIn .iconMinus {
+		box-sizing: border-box;
+		border-radius: 50%;
+		position: relative;
+		float: left;
+		width: 30px;
+		height: 30px;
+		background-color: #64000c;
+	}
+	#productArea .productBox .cf .IconGroup .IconIn .iconPlus:hover,
+	#productArea .productBox .cf .IconGroup .IconIn .iconMinus:hover {
+		background-color: #000;
+	}
+	#productArea .productBox .cf .IconGroup .IconIn .iconPlus span:after,
+	#productArea .productBox .cf .IconGroup .IconIn .iconPlus span:before {
+		display: block;
+		content: '';
+		background-color: #FFF;
+		position: absolute;
+	}
+	#productArea .productBox .cf .IconGroup .IconIn .iconPlus span:before {
+		width: 20px;
+		height: 4px;
+		top: 13px;
+		left: 5px;
+	}
+	#productArea .productBox .cf .IconGroup .IconIn .iconPlus span:after {
+		width: 4px;
+		height: 20px;
+		top: 5px;
+		left: 13px;
+	}
+	#productArea .productBox .cf .IconGroup .IconIn .iconMinus span:before {
+		display: block;
+		content: '';
+		background-color: #FFF;
+		position: absolute;
+		width: 20px;
+		height: 4px;
+		top: 13px;
+		left: 5px;
+	}
+	#productArea .productBox .cf .IconGroup .IconIn p#ticketSheet01{
+		float: left;
+		display: block;
+		height: 30px;
+		width: 150px;
+		line-height: 30px;
+	    border: 2px solid lightgrey;
+    	background: white;
+		padding: 0 10px;
+		text-align: center;
+		margin: 0 10px;
+		font-size: 15px;
+		border-radius: 5px;
+	}
+	#productArea .productBox .cf .allocationSeatGroup{
+		display: table-cell;
+		vertical-align: middle;
+		width: 25%;
+		padding-bottom: 10px;
+	}
+	#productArea .productBox .cf .allocationSeatGroup .allocationSeat{
+		display: block;
+		border: 2px solid lightgrey;
+    	background: white;
+    	text-align: center;
+    	font-size: 15px;
+    	border-radius: 5px;
+	}
+	#productSelectBtn {
+		padding-top: 20px;
+		padding-bottom: 20px;
+    	margin: 0 15% 0 10%;
+	}
+	#productSelectBtn button {
+		height: 40px;
+		width: 46%;
+		margin: 0 1% 0 2%;
+		color: #FFF;
+		text-align: center;
+		border-radius: 5px;
+		background: #64000c;
+	}
+	#productSelectBtn button:hover {
+		color: #64000c;
+		background: #FFF;
+		border: solid 1px #64000c;
+		box-sizing: border-box;
+	}
+	#priceArea{
+		display: block;
+		padding: 10px 0;
+		box-sizing: border-box;
+	}
+	#priceArea .buySeatText{
+		text-align: right;
+		margin: 0 14% 0 0;
+	}
+	#priceArea .priceText{
+		font-size: 20px;
+    	margin: 0 20px 0 0;
+	}
+}
+
+
+@media screen and (min-width: 768px) {
+    #buySeatArea {
+        overflow-y: scroll;
+        overflow-x: hidden;
+    }
+}
+
+/* venue-map */
+
+@media screen and (min-width: 768px) {
+    #buyChoiceSeatArea .buyChoiceSeatBox .seatNumber p {
+        font-size: 16px;
+    }
+
+    #buyChoiceSeatArea .buyChoiceSeatBox .selectBoxBtn span.closeBtn:after {
+        transform: rotate(90deg);
+        -webkit-transform: rotate(90deg);
+        -moz-transform: rotate(90deg);
+        -o-transform: rotate(90deg);
+        -ms-transform: rotate(90deg);
+        -webkit-transition: all .4s;
+        transition: all .4s;
+    }
+
+    #buyChoiceSeatArea .buyChoiceSeatBox .selectBoxBtn .active span.closeBtn:after {
+        content: '';
+        height: 0px;
+        width: 0px;
+        display: block;
+        background: #FFF;
+        position: absolute;
+        top: 11px;
+        left: 6px;
+        -webkit-transition: all .4s;
+        transition: all .4s;
+    }
+
+    #buyChoiceSeatArea .buyChoiceSeatBox .selectBoxBtn span.closeBtn:before, #buyChoiceSeatArea .buyChoiceSeatBox .selectBoxBtn span.closeBtn:after {
+        content: '';
+        height: 2px;
+        width: 12px;
+        display: block;
+        background: #CCC;
+        position: absolute;
+        top: 11px;
+        left: 6px;
+    }
+
+}
+
+#buyChoiceSeatArea .buyChoiceSeatBox .seatNumber {
+    height:auto;
+}
+/*filter*/
+.seatSearchButtonbox{
+	text-align: center;
+}
+/*slider*/
+@import "~nouislider/distribute/nouislider.min.css";
+.noUi-horizontal .noUi-handle {
+    width: 25px;
+    height: 25px;
+    left: -17px;
+}
+.noUi-horizontal {
+    height: 10px;
+}
+.noUi-handle{
+    box-sizing: border-box;
+    display: block;
+    content: '';
+    border: 1px solid #ddd;
+    border-radius: 50%;
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    cursor: pointer;
+    background-color: #FFF;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+}
+.noUi-handle:after, .noUi-handle:before {
+    display: none;
+}
+.noUi-base {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    z-index: 1;
+    box-sizing: border-box;
+    display: block;
+    border-radius: 5px;
+    background: #fff;
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.25) inset;
+}
+.noUi-connect {
+    background: #64000c;
+    box-shadow: inset 0 0 3px rgba(51,51,51,.45);
+    transition: background 450ms;
+}
+.noUi-tooltip {
+    display: none;
+}
+.noScroll{
+	height: 100vh;
+}
+.scrollHidden {
+	overflow-y:hidden !important;
+    width: 100%;
+    height: 100%;
+}
+
+/* reserve-by-quentity */
+.modalWindow .modalInner .modalTicketQty .disabled {
+    background-color: #a4404c;
+    cursor: not-allowed;
+}
+.buy{
+    text-align: center;
+}
+.foremost{
+	height:110%;
+	z-index: 101;
+}
+
+#roadBackground{
+	z-index: 100;
+	display: block;
+	position: absolute;
+	background: black;
+	width: 125px;
+	height: 150px;
+	top: 50%;
+  	left: 50%;
+  	-webkit-transform: translateY(-50%) translateX(-50%);
+  	transform: translateY(-50%) translateX(-50%);
+}
+#roadfloatingCircles{
+	display: block;
+	position: absolute;
+	width: 125px;
+	height: 125px;
+	transform: scale(0.6);
+	-o-transform: scale(0.6);
+	-ms-transform: scale(0.6);
+	-webkit-transform: scale(0.6);
+	-moz-transform: scale(0.6);
+}
+#loadingText {
+	color: white;
+	margin-top: 150px;
+	margin-left: auto;
+	margin-right: auto;
+	font-size: 25px;
+}
+.f_circleG{
+	position:absolute;
+	background-color:rgb(255,255,255);
+	height:22px;
+	width:22px;
+	border-radius:12px;
+		-o-border-radius:12px;
+		-ms-border-radius:12px;
+		-webkit-border-radius:12px;
+		-moz-border-radius:12px;
+	animation-name:f_fadeG;
+		-o-animation-name:f_fadeG;
+		-ms-animation-name:f_fadeG;
+		-webkit-animation-name:f_fadeG;
+		-moz-animation-name:f_fadeG;
+	animation-duration:0.882s;
+		-o-animation-duration:0.882s;
+		-ms-animation-duration:0.882s;
+		-webkit-animation-duration:0.882s;
+		-moz-animation-duration:0.882s;
+	animation-iteration-count:infinite;
+		-o-animation-iteration-count:infinite;
+		-ms-animation-iteration-count:infinite;
+		-webkit-animation-iteration-count:infinite;
+		-moz-animation-iteration-count:infinite;
+	animation-direction:normal;
+		-o-animation-direction:normal;
+		-ms-animation-direction:normal;
+		-webkit-animation-direction:normal;
+		-moz-animation-direction:normal;
+}
+
+#frotateG_01{
+	left:0;
+	top:51px;
+	animation-delay:0.3295s;
+		-o-animation-delay:0.3295s;
+		-ms-animation-delay:0.3295s;
+		-webkit-animation-delay:0.3295s;
+		-moz-animation-delay:0.3295s;
+}
+
+#frotateG_02{
+	left:15px;
+	top:15px;
+	animation-delay:0.446s;
+		-o-animation-delay:0.446s;
+		-ms-animation-delay:0.446s;
+		-webkit-animation-delay:0.446s;
+		-moz-animation-delay:0.446s;
+}
+
+#frotateG_03{
+	left:51px;
+	top:0;
+	animation-delay:0.5525s;
+		-o-animation-delay:0.5525s;
+		-ms-animation-delay:0.5525s;
+		-webkit-animation-delay:0.5525s;
+		-moz-animation-delay:0.5525s;
+}
+
+#frotateG_04{
+	right:15px;
+	top:15px;
+	animation-delay:0.659s;
+		-o-animation-delay:0.659s;
+		-ms-animation-delay:0.659s;
+		-webkit-animation-delay:0.659s;
+		-moz-animation-delay:0.659s;
+}
+
+#frotateG_05{
+	right:0;
+	top:51px;
+	animation-delay:0.7755s;
+		-o-animation-delay:0.7755s;
+		-ms-animation-delay:0.7755s;
+		-webkit-animation-delay:0.7755s;
+		-moz-animation-delay:0.7755s;
+}
+
+#frotateG_06{
+	right:15px;
+	bottom:15px;
+	animation-delay:0.882s;
+		-o-animation-delay:0.882s;
+		-ms-animation-delay:0.882s;
+		-webkit-animation-delay:0.882s;
+		-moz-animation-delay:0.882s;
+}
+
+#frotateG_07{
+	left:51px;
+	bottom:0;
+	animation-delay:0.9985s;
+		-o-animation-delay:0.9985s;
+		-ms-animation-delay:0.9985s;
+		-webkit-animation-delay:0.9985s;
+		-moz-animation-delay:0.9985s;
+}
+
+#frotateG_08{
+	left:15px;
+	bottom:15px;
+	animation-delay:1.105s;
+		-o-animation-delay:1.105s;
+		-ms-animation-delay:1.105s;
+		-webkit-animation-delay:1.105s;
+		-moz-animation-delay:1.105s;
+}
+
+
+
+@keyframes f_fadeG{
+	0%{
+		background-color:rgb(15,168,214);
+	}
+
+	100%{
+		background-color:rgb(255,255,255);
+	}
+}
+
+@-o-keyframes f_fadeG{
+	0%{
+		background-color:rgb(15,168,214);
+	}
+
+	100%{
+		background-color:rgb(255,255,255);
+	}
+}
+
+@-ms-keyframes f_fadeG{
+	0%{
+		background-color:rgb(15,168,214);
+	}
+
+	100%{
+		background-color:rgb(255,255,255);
+	}
+}
+
+@-webkit-keyframes f_fadeG{
+	0%{
+		background-color:rgb(15,168,214);
+	}
+
+	100%{
+		background-color:rgb(255,255,255);
+	}
+}
+
+@-moz-keyframes f_fadeG{
+	0%{
+		background-color:rgb(15,168,214);
+	}
+
+	100%{
+		background-color:rgb(255,255,255);
+	}
+}
+
+.seat {
+    display: none;
+}
+
+#mapImgBox{
+	height:100%;
+	width:100%;
+}
+#buySeatQtyArea .selectBox .selectBoxOne .ticketQtyTtl {
+	display:block;
+	padding:5px 20px 0 0;
+	width:100%;
+}
+
+
+/*IE*/
+
+@media screen and (min-width: 768px) {
+	.ie .headArea .inner .haBtn02 {
+		line-height: normal;
+	}
+	.ie app-reserve-by-quantity .modalWindow, .ie .modalInner, .ie .modalMap {
+		height: 85%;
+	}
+	.ie app-reserve-by-quantity .modalWindow {
+		overflow: hidden;
+	}
+	.ie app-reserve-by-quantity .modalInner {
+		overflow-y: auto;
+		overflow-x: hidden;
+	}
+	.ie app-reserve-by-quantity .modalMap {
+		overflow: hidden;
+	}
+	.ie app-reserve-by-quantity .modalBtnBox {
+		margin-bottom: 10px;
+	}
+
+	#buySeatQtyArea .selectBox .selectBoxOne .ticketQtyTtl {
+		display:block;
+		padding:5px 10px 0 0;
+		width:100%;
+	}
+}
+
+/*reserve-by-seat.component*/
+div.inner form#logout{
+	margin-top: 10px;
+	position: relative;
+	float: right;
+	font-weight: normal;
+}
+
+div.inner form button#logout{
+	background-color: #64000c;
+	color: white;
+	padding: 5px;
+	border: thin solid white;
+	vertical-align: middle;
+}
+/*reserve-by-quantity.component*/
+#selectAgainBtn{
+	width:45%;
+	margin:10px 10px 0px 10px;
+}
+#nextBtn{
+	width:45%;
+	margin:10px 10px 0px 10px;
+}
+#selectAgainBtn{
+	width:55%;
+	margin:3px 3px 0px 0px;
+}
+#nextBtn{
+	width:40%;
+	margin:3px 3px 0px 0px;
+}
