@@ -1201,11 +1201,9 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     @property
     def final_performance(self):
-        if not self._final_performance:
-            self._final_performance = Performance.filter(Performance.event_id==self.id)\
-                                        .filter(Performance.start_on!=None)\
-                                        .order_by('Performance.start_on desc').first()
-        return self._final_performance
+        return Performance.filter(Performance.event_id == self.id) \
+            .order_by(Performance.end_on.desc(), Performance.start_on.desc()) \
+            .first()
 
     @staticmethod
     def get_owner_event(account):
@@ -3784,8 +3782,6 @@ class ChannelEnum(StandardEnum):
     INNER = 3
     IMPORT = 4
     SPA = 5
-    PC_SPA = 6
-    Mobile_SPA = 7
 
 class RefundStatusEnum(StandardEnum):
     Waiting = 0

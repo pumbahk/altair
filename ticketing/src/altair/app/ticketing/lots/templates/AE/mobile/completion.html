@@ -1,0 +1,84 @@
+<%inherit file="./base.html" />
+<%namespace file="./tags_mobile.html" name="mobile" />
+<div align="center" style="text-align:center">
+${event.title}<br />
+${lot.name}
+</div>
+<%mobile:header>申込を完了しました</%mobile:header>
+受付番号: ${entry.entry_no}
+%for wish in wishes:
+<%mobile:header2>第${wish.wish_order + 1}希望</%mobile:header2>
+<div>
+${wish.performance.name}<br />
+${h.japanese_date(wish.performance.start_on)}<br />
+会場 ${wish.performance.venue.name}<br />
+開演 ${h.japanese_time(wish.performance.start_on)} (予定)<br />
+<%mobile:form_header>希望券種と枚数</%mobile:form_header>
+<div><font size="-1">
+% for lot_product in wish.products:
+・${lot_product.product.name}<br />
+<div align="right" style="text-align:right">${h.format_currency(lot_product.product.price)}×${lot_product.quantity}枚=${h.format_currency(lot_product.subtotal)} (税込)</div>
+% endfor
+</div>
+・決済手数料 (${wish.lot_entry.payment_delivery_method_pair.payment_method.name})<br />
+<div align="right" style="text-align:right">
+${h.format_currency(wish.transaction_fee)}
+</div>
+・配送手数料 (${wish.lot_entry.payment_delivery_method_pair.delivery_method.name})<br />
+<div align="right" style="text-align:right">
+${h.format_currency(wish.delivery_fee)}
+</div>
+・システム利用料<br />
+<div align="right" style="text-align:right">
+${h.format_currency(wish.system_fee)}
+</div>
+%if wish.special_fee > 0:
+・${wish.special_fee_name}<br />
+<div align="right" style="text-align:right">
+${h.format_currency(wish.special_fee)}
+</div>
+%endif
+<div align="right" style="text-align:right">
+合計 ${h.format_currency(wish.total_amount)} (税込)
+</font></div>
+%endfor
+<%mobile:header>購入者情報</%mobile:header>
+<%mobile:form_header>氏名(漢字)</%mobile:form_header>
+<div>
+${shipping_address.last_name} ${shipping_address.first_name}
+</div>
+<%mobile:form_header>氏名(カナ)</%mobile:form_header>
+<div>
+${shipping_address.last_name_kana} ${shipping_address.first_name_kana}
+</div>
+<%mobile:form_header>性別</%mobile:form_header>
+<div>
+${h.format_gender(request, gender)}
+</div>
+<%mobile:form_header>生年月日</%mobile:form_header>
+<div>
+${h.japanese_date(birthday)}
+</div>
+<%mobile:form_header>メールアドレス</%mobile:form_header>
+<div>
+${shipping_address.email_1}
+</div>
+<%mobile:form_header>電話番号</%mobile:form_header>
+<div>
+${shipping_address.tel_1}
+</div>
+<%mobile:form_header>住所</%mobile:form_header>
+<div>
+${shipping_address.zip} ${shipping_address.prefecture}${shipping_address.city}${shipping_address.address_1}${shipping_address.address_2}
+</div>
+<%mobile:form_header>メモ</%mobile:form_header>
+<div>
+${memo|h.nl2br}
+</div>
+<%mobile:header>注意事項</%mobile:header>
+<div>・お申込み時に、ご登録いただいたメールアドレス宛に、受付完了メールが送られます。しばらくたっても確認のメールが届かない場合は、入力されたメールアドレスが誤りがあるか、メールの受信設定により受信できていない可能性があります。</div>
+<div>・登録内容、受信設定を確認のうえ、 <a href="${h.safe_get_contact_url(request)}">こちら</a>よりお問合せください。</div>
+<div>・お問合せの際は、お申し込み時のお名前、電話番号、公演名、受付番号を記載お願いいたします。</div>
+<div>・お申込内容は、「<a href="/lots/review">申込確認ページ</a>」からもご確認いただけます。受付番号とご登録時のお電話番号をお手元にご用意の上、ご利用ください。</div>
+<hr />
+<a href="${request.context.host_base_url}" accesskey="0">トップに戻る</a>

@@ -35,7 +35,7 @@ fi
 if [ ! -f $BASEDIR/$DEST ] ; then
   echo "Failure"
 else
-	echo "Success"
+  echo "Success"
   keytool -list -keystore $BASEDIR/$DEST -storepass $KEYSTORE_PASSWORD -v -J-Duser.language=en | egrep -e "Alias|Valid|CN=|\*" | uniq
 
   /bin/echo -n "Uploading keystore to S3... "

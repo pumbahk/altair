@@ -1,0 +1,243 @@
+<%inherit file="base.html" />
+
+<div id="content">
+  <div class="wrap-content">
+    %if can_withdraw:
+    <div class="txtC">
+    <h2 class="fWB mgb5 f240">${_(u'この抽選申込を取消しますか?')}</h2>
+    </div>
+    <form method="POST" id="withdrawForm" name="withdrawForm" action="${request.route_path('lots.review.withdraw.withdraw')}">
+        <input type="hidden" name="csrf_token" value=${request.session.get_csrf_token()}>
+        <input type="hidden" name="entry_no" value=${entry_no}>
+        <input type="hidden" name="tel_no" value=${tel_no}>
+    </form>
+    <form method="POST" id="withdrawBackForm" name="withdrawBackForm" action="${request.route_path('lots.review.index')}">
+        <input type="hidden" name="csrf_token" value=${request.session.get_csrf_token()}>
+        <input type="hidden" name="entry_no" value=${entry_no}>
+        <input type="hidden" name="tel_no" value=${tel_no}>
+    </form>
+    <div class="wrap-btn">
+      <button type="button" class="btn short" onclick="document.getElementById('withdrawForm').submit()">${_(u'はい')}</button>
+      <button type="button" class="btn short" onclick="document.getElementById('withdrawBackForm').submit()">${_(u'いいえ')}</button>
+    </div>
+
+    <div align="center">
+    <span class="red">(${_(u'取消した抽選申込を有効な抽選申込に戻す事はできません')})</span>
+    </div>
+    %endif
+
+  </div>
+
+  <div class="wrap-content">
+    <h2 class="heading heading-primary">${_(u'抽選申込確認')}</h2>
+
+    <div class="confirm-item">
+      <h3 class="fWB mgb5 f120">${_(u'受付番号')}</h3>
+      <table class="customer-table">
+        <tr>
+          <th scope="row"><p class="fWB red f110">${entry.entry_no}</p></th>
+        </tr>
+      </table>
+    </div>
+
+    %if h.lot_entry_display_status(entry, now) == u'抽選申込取消':
+    <div class="confirm-item">
+      <h3 class="fWB mgt20 mgb5 f120">${_(u'抽選申込取消')}</h3>
+      <table class="customer-table">
+        <tbody>
+          <tr>
+            <td colspan="2">
+              ${_(u'お申込みいただいておりました以下の抽選受付を{0}に取消いたしました。').format(h.withdraw_time_label_i18n(entry))}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+    </div>
+    %else:
+    <div class="confirm-item">
+      <h3 class="fWB mgt20 mgb5 f120">${_(u'抽選結果')}</h3>
+        <table class="customer-table">
+          <tbody>
+            <tr>
+              <td colspan="2">
+                % if h.lot_entry_display_status(entry, now) == u'当選表示':
+                  ${_(u'抽選の結果、お客様はご当選されました。')}
+                  ${_(u'払込票番号や引換票番号は、下記の購入履歴よりご確認いただけます。')}<br/>
+                  ${_(u'<a href=\"/orderreview/guest\" target=\"_blank\">■購入履歴確認ページ</a>をご確認ください。') |n}<br/>
+                  ${_(u'予約番号は{0}です').format(entry.entry_no)}
+                % elif h.lot_entry_display_status(entry, now) == u'落選表示':
+                  ${_(u'抽選の結果、お客様は残念ながら落選となりました。')}
+                % elif h.lot_entry_display_status(entry, now) == u'抽選待ち表示':
+                  ${_(u'抽選結果発表は、{0}を予定しております。抽選結果発表後、抽選結果確認ページにて当選・落選をご確認下さい。').format(h.announce_time_label_i18n(entry.lot))}
+                % endif
+              </td>
+            </tr>
+          </tbody>
+        </table>
+    </div>
+    %endif
+    <div class="confirm-item">
+      <h3 class="fWB mgt20 mgb5 f120">${_(u'決済方法')}</h3>
+      <table class="customer-table" summary="${_(u'決済方法')}">
+        <tr>
+          <th scope="row" colspan="2">${h.payment_method_get_info(custom_locale_negotiator, entry.payment_delivery_method_pair, 'name')}</th>
+        </tr>
+        <% payment_method_description = h.payment_method_get_info(custom_locale_negotiator, entry.payment_delivery_method_pair, 'description') %>
+        % if payment_method_description:
+        <tr>
+          <td colspan="2">${payment_method_description | n}</td>
+        </tr>
+        % endif
+      </table>
+    </div>
+
+    <div class="confirm-item">
+      <h3 class="fWB mgt20 mgb5 f120">${_(u'引取方法')}</h3>
+      <table class="customer-table" summary="${_(u'引取方法')}">
+        <tr>
+          <th scope="row" colspan="2">${h.delivery_method_get_info(custom_locale_negotiator, entry.payment_delivery_method_pair, 'name')}</th>
+        </tr>
+        <% delivery_method_description = h.delivery_method_get_info(custom_locale_negotiator, entry.payment_delivery_method_pair, 'description') %>
+        % if delivery_method_description:
+        <tr>
+          <td colspan="2">${delivery_method_description | n}</td>
+        </tr>
+        % endif
+      </table>
+    </div>
+    <div class="confirm-item">
+      % for wish in wishes:
+      <h3 class="fWB mgt20 mgb5 f120">${_(u'第{0}希望').format(wish.wish_order+1)}：${wish.performance.name}</h3>
+      <table class="customer-table" summary="${_(u'第{0}希望').format(wish.wish_order+1)}">
+        <tr>
+          <th scope="row">${_(u'抽選結果')}</th>
+          <td colspan="2">
+            %if h.lot_entry_display_status(entry, now) == u'当選表示':
+              %if wish.elected_at:
+                ${_(u'ご用意できました')}
+              %else:
+                ${_(u'ご用意できませんでした')}
+              %endif
+            %elif h.lot_entry_display_status(entry, now) == u'落選表示':
+              ${_(u'ご用意できませんでした')}
+            %elif h.lot_entry_display_status(entry, now) == u'抽選待ち表示':
+              ${_(u'抽選処理前です')}
+            %elif h.lot_entry_display_status(entry, now) == u'抽選申込取消':
+              ${_(u'抽選申込取消')}
+            %endif
+          </td>
+        </tr>
+        <tr>
+          <th scope="row">${_(u'公演日・会場')}</th>
+          <td colspan="2">${h.i18n_datetime(wish.performance.start_on)}　${wish.performance.venue.name}</td>
+        </tr>
+        <tr>
+          <th scope="row" colspan="3">${_(u'希望内容と手数料')}</th>
+        </tr>
+        %for lot_product in wish.products:
+        <tr class="commission">
+          <th class="product-name">${lot_product.product.name}</th>
+          <td>${lot_product.quantity} ${_(u'枚')}</td>
+          <td class="product-price-and-quantity">${h.format_currency(lot_product.subtotal)} (${_(u'税込')})</td>
+        </tr>
+        %endfor
+        <tr class="commission">
+          <th scope="row">${__(u'決済手数料')}</th>
+          <td>-</td>
+          <td class="align1">￥${h.format_number(wish.transaction_fee)}</td>
+        </tr>
+        <tr class="commission">
+          <th scope="row">${__(u'発券/引取手数料')}</th>
+          <td>-</td>
+          <td class="align1">￥${h.format_number(wish.delivery_fee)}</td>
+        </tr>
+        <tr class="commission">
+          <th scope="row">${__(u'システム利用料')}</th>
+          <td>-</td>
+          <td class="align1">￥${h.format_number(wish.system_fee)}</td>
+        </tr>
+        %if wish.special_fee > 0:
+        <tr class="commission">
+          <th scope="row">${wish.special_fee_name}</th>
+          <td>-</td>
+          <td class="align1">￥${h.format_number(wish.special_fee)}</td>
+        </tr>
+        %endif
+        <tr id="total">
+          <th scope="row">${_(u'合計金額')}</th>
+          <td>-</td>
+          <td class="align1">￥${h.format_number(wish.total_amount)} (${_(u'税込')})</td>
+        </tr>
+      </table>
+      % endfor
+    </div>
+
+    <div class="confirm-item">
+      <h3 class="fWB mgt20 mgb5 f120">${_(u'購入者情報')}</h3>
+      <table class="customer-table" summary="${__(u'配送先情報')}">
+        <tr>
+          <th scope="row">${_(u'購入者氏名')} ${_(u'(全角)')}</th>
+          <td>${shipping_address.last_name} ${shipping_address.first_name}</td>
+        </tr>
+        % if request.cookies.get('_LOCALE_')=='ja':
+        <tr>
+          <th scope="row">氏名（カナ）</th>
+          <td>${shipping_address.last_name_kana} ${shipping_address.first_name_kana}</td>
+        </tr>
+        % endif
+        <tr>
+          <th scope="row">${_(u'メールアドレス')}</th>
+          <td>${shipping_address.email_1}</td>
+        </tr>
+        % if shipping_address.tel_1:
+        <tr>
+          <th scope="row">${_(u'電話番号')}</th>
+          <td>${shipping_address.tel_1}</td>
+        </tr>
+        % endif
+        % if shipping_address.tel_2:
+        <tr>
+          <th scope="row">${_(u'電話番号')} (${_(u'携帯')})</th>
+          <td>${shipping_address.tel_2}</td>
+        </tr>
+        % endif
+        <tr>
+          <th scope="row">${_(u'住所')}</th>
+          <td>${shipping_address.zip} ${shipping_address.prefecture}${shipping_address.city}${shipping_address.address_1}<br />
+              ${shipping_address.address_2}</td>
+        </tr>
+        <tr>
+          <th scope="row">${_(u'生年月日')}</th>
+          <td>${u"{0.year}/{0.month}/{0.day}".format(birthday)}</td>
+        </tr>
+        <tr>
+          <th scope="row">${_(u'性別')}</th>
+          <td>${h.format_gender(request, gender)}</td>
+        </tr>
+      </table>
+    </div>
+
+    <% extra_form_data = entry.get_lot_entry_attribute_pair_pairs(request) %>
+    % if extra_form_data:
+      <div class="confirm-item">
+        <h3 class="fWB mgt20 mgb5 f120">${_(u'追加情報')}</h3>
+        <table class="customer-table" summary="${__(u'追加情報')}">
+          %for i, (display_name, display_value) in extra_form_data:
+          <tr>
+            <th scope="row" class="display_name">${display_name}</th>
+            <td class="display_value">${h.sensible_coerce(request, display_value)}</td>
+          </tr>
+          %endfor
+        </table>
+      </div>
+      % if len(entry.get_lot_entry_attribute_pair_pairs(request, mode='editable')) > 0:
+      <form method="post" action="${request.route_path('order_review.edit_order_attributes.form')}">
+        <input type="hidden" name="action" value="edit_order_attributes.form" />
+        <input type="hidden" name="order_no" value="${order.order_no}" />
+        <input type="hidden" name="tel" value="${order.shipping_address.tels[0]}" />
+        <input type="submit" class="btn btn-primary" value="${_(u'入力情報の編集')}" />
+      </form>
+      % endif
+    % endif
+  </div>
+</div>

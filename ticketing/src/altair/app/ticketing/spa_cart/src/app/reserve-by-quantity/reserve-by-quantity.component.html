@@ -1,0 +1,49 @@
+<div id="modalWindowAlertBox" class="modalWindowAlertBox" *ngIf="display">
+    <div id="modalWindowAlertBoxInner" class="modalWindowAlertBoxInner">
+        <div id="modalWindow" class="modalWindow">
+            <div class="modalInner">
+                <div class="closeBtnBox"><span class="closeBtn" (click)="closeClick()"></span></div>
+                <div class="modalMap venueimg" aria-label="vanueimg" id="venue-quentity" [inlineSVG]="mapURL"></div>
+                <div class="modalImg"><div [innerHTML]="description"></div></div>
+                <p class="seatName2">{{stockTypeName}}</p>
+                <div class="seatPriceBox">
+                    <tr *ngFor="let value of selectedProducts ; let key = index">
+                        <p class="seatPrice">
+                            <span>{{value.product_name}}</span>
+                            <span>{{value.price}}円</span>
+                            <span *ngIf="selectedSalesUnitQuantitys[key]">({{selectedSalesUnitQuantitys[key]}}枚単位)</span>
+                        </p>
+                    </tr>
+                </div>
+                <div class="modalTicketQty cf">
+                    <div class="ticketQty">
+                        <p class="ticketQtyTtl">枚数</p>
+                        <button id="minus-btn" class="iconMinus disabled" (click)="minusClick()"><span></span></button>
+                        <p id="ticketSheet">{{quantity}}</p>
+                        <button id="plus-btn"  class="iconPlus" (click)="plusClick()"><span></span></button>
+                    </div>
+                </div>
+                <div class="modalBtnBox" *ngIf="nextButtonFlag">
+                    <button id="reservebutton" class="" type="button" (click)="seatReserveClick()">次へ</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!--飛び席確認モーダル-->
+<div id="modalWindowAlertBox" class="modalWindowAlertBox" *ngIf="separatDetailDisplay">
+    <div id="modalWindowAlertBoxInner" class="modalWindowAlertBoxInner">
+        <div id="modalWindowAlert" class="modalWindowAlert">
+            <div class="modalInner">
+                <div class="modalAlert">
+                    <p class="modalAlertTtl"><span></span>連席で座席を確保できません</p>
+                    <p>連席でお席をご用意することが出来ません。</p>
+                    <p>改めて席を選び直す場合は「座席・枚数を選び直す」をお選びください。</p>
+                    <button id="selectAgainBtn" type="button" (click)="separatedSelectAgain()">座席・枚数を選び直す</button>
+                    <button id="nextBtn" type="button" (click)="separatedNext()">次へ</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!--/飛び席確認モーダル-->
