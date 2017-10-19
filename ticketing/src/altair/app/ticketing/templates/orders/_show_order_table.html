@@ -95,9 +95,9 @@
               </td>
             </tr>
             <tr>
-              <th>ユーザエージェント</th>
+              <th>UserAgent</th>
               <td>
-                ${order.cart.user_agent}
+                ${order.cart.user_agent if order.cart else u''}
               </td>
             </tr>
             <tr>
