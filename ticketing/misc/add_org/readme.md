@@ -12,6 +12,11 @@ templates.shでテンプレートの作成を自動化、s3_upload.shでアッ�
 ## Setting
 
 config.shに追加したいORGの設定内容を書き換えてください。
+"PATH_TO_MB_LOGO"で指定する画像は.gifに変換済みであることを確認してください。
+変換には以下のようなサービスもあります。
+
+オンラインコンバータ
+https://convertio.co/ja/gif-png/
 
 ## Usage
 
