@@ -8,7 +8,7 @@ ALTAIR_PATH=~/altair # 各自localのPATHをいれてください
 CHEF_REPO_PATH=~/chef-repo/ # 各自localのPATHをいれてください
 
 CODE="KZ"
-ORG_NAME="オペラシアターこんにゃく座"
+ORG_NAME="オペラシアターこんにゃく座" # 25文字以内で設定してください
 CONTACT="mailto:ticket@konnyakuza.com" # 【mailto:メールアドレス】 OR 【問い合わせURL】
 REQUIRED_COUPON=false # クーポン機能必要であればtrueにしてください
 
@@ -22,6 +22,14 @@ PATH_TO_FAVICON="/Users/ts-motoi.a.komatsu/Downloads/favicon.ico" # faviconは�
 PATH_TO_PC_LOGO="/Users/ts-motoi.a.komatsu/Downloads/PC_header+.png"
 PATH_TO_SP_LOGO="/Users/ts-motoi.a.komatsu/Downloads/SP_header+.png"
 PATH_TO_MB_LOGO="/Users/ts-motoi.a.komatsu/Downloads/MB_header-.gif"
+
+### Famiport設定
+FP_TENANT_CODE="00055"
+FP_STG_HOST="apmv1-stg.1a.vpc.altr"
+FP_PROD_HOST="btmv1.1c.vpc.altr"
+SLAVE_DB_HOST="dbmain.standby.altr"
+MASTER_DB_HOST="dbmain.master.altr"
+WHO_AM_I="komatsumo02"
 
 #---------------------------
 # S3の設定
@@ -46,3 +54,25 @@ PATH_TO_STATIC_FCAUTH="ticketing/src/altair/app/ticketing/fc_auth/static"
 PATH_TO_STATIC_LOTS="ticketing/src/altair/app/ticketing/lots/static"
 PATH_TO_STATIC_COUPON="ticketing/src/altair/app/ticketing/coupon/static"
 PATH_TO_STATIC_ALTAIRCMS="cms/src/altaircms/static"
+
+#---------------------------
+# テキスト装飾
+#---------------------------
+
+if [ "${TERM:-dumb}" != "dumb" ]; then
+    txtunderline=$(tput sgr 0 1)     # Underline
+    txtbold=$(tput bold)             # Bold
+    txtred=$(tput setaf 1)           # red
+    txtgreen=$(tput setaf 2)         # green
+    txtyellow=$(tput setaf 3)        # yellow
+    txtblue=$(tput setaf 4)          # blue
+    txtreset=$(tput sgr0)            # Reset
+else
+    txtunderline=""
+    txtbold=""
+    txtred=""
+    txtgreen=""
+    txtyellow=""
+    txtblue=$""
+    txtreset=""
+fi
