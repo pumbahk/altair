@@ -60,7 +60,7 @@
               <h3>${_(u'一般の方はこちらから')}</h3>
               <form action="${request.route_url('fc_auth.guest', membership=request.matchdict['membership'])}" method="post">
                 <p class="txtC">
-                  <input type="submit" class="btn" value="${_(u'次に進む')}" />
+                  <button class="btn" type="submit">${_(u'次に進む')}</button>
                 </p>
               </form>
             </div>
