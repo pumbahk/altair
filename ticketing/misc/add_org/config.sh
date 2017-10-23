@@ -7,29 +7,41 @@
 ALTAIR_PATH=~/altair # 各自localのPATHをいれてください
 CHEF_REPO_PATH=~/chef-repo/ # 各自localのPATHをいれてください
 
-CODE="KZ"
-ORG_NAME="オペラシアターこんにゃく座" # 25文字以内で設定してください
-CONTACT="mailto:ticket@konnyakuza.com" # 【mailto:メールアドレス】 OR 【問い合わせURL】
+CODE="WW"
+ORG_NAME="株式会社WW" # 25文字以内で設定してください
+CONTACT="http://www.h5-official.com/pages/1236135/contact" # 【mailto:メールアドレス】 OR 【問い合わせURL】
 REQUIRED_COUPON=false # クーポン機能必要であればtrueにしてください
 
 ### chef-repo設定
-SUB_DOMAIN="konnyakuza"
+SUB_DOMAIN="ww"
 FQDN="${SUB_DOMAIN}.tstar.jp"
-CHEF_REPO_BRANCH="fix/komatsu/tkt-3997"
+CHEF_REPO_BRANCH="fix/komatsu/tkt4131"
 
 ### ロゴ画像のアサイン
-PATH_TO_FAVICON="/Users/ts-motoi.a.komatsu/Downloads/favicon.ico" # faviconは必ずfavicon.icoという画像名で配置してください
-PATH_TO_PC_LOGO="/Users/ts-motoi.a.komatsu/Downloads/PC_header+.png"
-PATH_TO_SP_LOGO="/Users/ts-motoi.a.komatsu/Downloads/SP_header+.png"
-PATH_TO_MB_LOGO="/Users/ts-motoi.a.komatsu/Downloads/MB_header-.gif"
+PATH_TO_FAVICON="/Users/ts-motoi.a.komatsu/Downloads/WW/favicon.ico" # faviconは必ずfavicon.icoという画像名で配置してください
+PATH_TO_PC_LOGO="/Users/ts-motoi.a.komatsu/Downloads/WW/ww_PC.png"
+PATH_TO_SP_LOGO="/Users/ts-motoi.a.komatsu/Downloads/WW/ww_SP.png"
+PATH_TO_MB_LOGO="/Users/ts-motoi.a.komatsu/Downloads/WW/ww_MB.gif"
 
-### Famiport設定
-FP_TENANT_CODE="00055"
-FP_STG_HOST="apmv1-stg.1a.vpc.altr"
-FP_PROD_HOST="btmv1.1c.vpc.altr"
-SLAVE_DB_HOST="dbmain.standby.altr"
-MASTER_DB_HOST="dbmain.master.altr"
-WHO_AM_I="komatsumo02"
+WHO_AM_I="komatsumo02" # ユーザー名
+FP_TENANT_CODE="00057" # Famiportテナントコード
+FP_IMG_DIR_PATH="/Users/ts-motoi.a.komatsu/Downloads/WW_IMG" # Famiport連携用画像ディレクトリ
+
+#---------------------------
+# DBホスト
+#---------------------------
+
+SLAVE_DB="dbmain.standby.altr"
+MASTER_DB="dbmain.master.altr"
+SLAVE_DB_FMP="dbfmp.standby.altr"
+MASTER_DB_FMP="dbfmp.master.altr"
+
+#---------------------------
+# DBポート
+#---------------------------
+
+SLAVE_PORT="3308"
+MASTER_PORT="3306"
 
 #---------------------------
 # S3の設定
@@ -54,6 +66,52 @@ PATH_TO_STATIC_FCAUTH="ticketing/src/altair/app/ticketing/fc_auth/static"
 PATH_TO_STATIC_LOTS="ticketing/src/altair/app/ticketing/lots/static"
 PATH_TO_STATIC_COUPON="ticketing/src/altair/app/ticketing/coupon/static"
 PATH_TO_STATIC_ALTAIRCMS="cms/src/altaircms/static"
+
+#---------------------------
+# CSSの追記
+#---------------------------
+
+NAV_STEP_CSS=$(cat << EOS
+
+
+/* navi step bar
+-------------------------------------------- */
+.nav-stepbar ol li {
+    background: var(--custom-light-color);
+    color: var(--custom-dark-color);
+}
+
+.nav-stepbar ol li:after {
+    border-left: 10px solid var(--custom-light-color);
+}
+
+.nav-stepbar ol li.current {
+    background: var(--custom-default-color);
+}
+
+.nav-stepbar ol li.current:after {
+    border-left: 10px solid var(--custom-default-color);
+}
+EOS
+)
+
+
+#---------------------------
+# Famiport設定
+#---------------------------
+
+FP_STG_HOST="apmv1-stg.1a.vpc.altr"
+FP_PROD_HOST="btmv1.1c.vpc.altr"
+FP_IMG_STG_SERVER="btfm2-fmz.1a"
+FP_IMG_PROD_SERVER="btfm2.1a"
+declare -a CURL_STG_OPTIONS=(
+    '--user tstarftpsy:9n2ik7fybx ftps://10.132.73.51:990/'
+    '--user tstarftpsz:fainwa75it ftps://10.132.73.51:990/'
+)
+declare -a CURL_PROD_OPTIONS=(
+    '--user tstarftps1:rukvh66bw2 ftps://10.132.73.31:990/'
+    '--user tstarftps2:bjmvr3hdn9 ftps://10.132.73.41:990/'
+)
 
 #---------------------------
 # テキスト装飾

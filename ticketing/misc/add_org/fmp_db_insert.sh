@@ -26,8 +26,10 @@ cat << EOS
 CODE: ${CODE}
 ORG_NAME: ${ORG_NAME}
 WHO_AM_I: ${WHO_AM_I}
-SLAVE_DB_HOST: ${SLAVE_DB_HOST}
-MASTER_DB_HOST: ${MASTER_DB_HOST}
+SLAVE_DB: ${SLAVE_DB}
+MASTER_DB: ${MASTER_DB}
+SLAVE_PORT: ${SLAVE_PORT}
+MASTER_PORT: ${MASTER_PORT}
 FP_PROD_HOST: ${FP_PROD_HOST}
 FP_STG_HOST: ${FP_STG_HOST}
 FP_TENANT_CODE: ${FP_TENANT_CODE}
@@ -77,18 +79,15 @@ cat << EOS
 #---------------------------
 EOS
 
-connect="mysql -u ticketing_ro -pticketing -h ${SLAVE_DB_HOST} -P 3308 -D ticketing"
+connect="mysql -u ticketing_ro -pticketing -h ${SLAVE_DB} -P ${SLAVE_PORT} -D ticketing"
 sql=$(cat << EOS
 SELECT * FROM Organization WHERE code = "${CODE}"\G
 EOS
 )
-
 echo "${connect} -e '${sql}'" | remote_execution ${WHO_AM_I} ${TARGET_HOST}
-
 echo "${txtyellow}注意：この段階で複数の組織レコードの表示や、組織レコード自体が表示されない場合はORG追加手順の「管理画面ADMIN権限ユーザで実施」を見直してください。${txtreset}"
+
 ORG_ID=$(ask "「id: xxx」を入力してください。")
-
-
 echo "組織ID：${ORG_ID}の設定を行います。"
 
 cat << EOS
@@ -102,26 +101,38 @@ cat << EOS
 #---------------------------
 EOS
 
-connect="mysql -u ticketing_ro -pticketing -h ${SLAVE_DB_HOST} -P 3308 -D ticketing"
+connect="mysql -u ticketing_ro -pticketing -h ${SLAVE_DB} -P ${SLAVE_PORT} -D ticketing"
 sql=$(cat << EOS
-SELECT * FROM FamiPortTenant WHERE organization_id = ${ORG_ID}; ;\G
+SELECT * FROM FamiPortTenant WHERE organization_id = ${ORG_ID}\G
 SELECT * FROM FamiPortTicketTemplate WHERE organization_id = ${ORG_ID}\G
 EOS
 )
+cat << EOS
+---------------------------
+${SLAVE_DB}で以下のSQLを実行します。
 
+${sql}
+
+---------------------------
+EOS
 echo "${connect} -e '${sql}'" | remote_execution ${WHO_AM_I} ${TARGET_HOST}
+confirm "DB:ticketingにデータが未作成であることが確認できましたか？レコードが表示されなければ未作成です。(y)"
 
-confirm "DB:ticketingにデータが未作成であることが確認できましたか？(y)"
-
-connect="mysql -u famiport_ro -pfamiport -h ${SLAVE_DB_HOST} -P 3308 -D famiport"
+connect="mysql -u famiport_ro -pfamiport -h ${SLAVE_DB_FMP} -P ${SLAVE_PORT} -D famiport"
 sql=$(cat << EOS
-SELECT * FROM FamiPortClient WHERE code= ${FP_TENANT_CODE};
+SELECT * FROM FamiPortClient WHERE code = "${FP_TENANT_CODE}";
 EOS
 )
+cat << EOS
+---------------------------
+${SLAVE_DB_FMP}で以下のSQLを実行します。
 
+${sql}
+
+---------------------------
+EOS
 echo "${connect} -e '${sql}'" | remote_execution ${WHO_AM_I} ${TARGET_HOST}
-
-confirm "DB:famiportにデータが未作成であることが確認できましたか？(y)"
+confirm "DB:famiportにデータが未作成であることが確認できましたか？レコードが表示されなければ未作成です。(y)"
 
 cat << EOS
 #---------------------------
@@ -131,38 +142,76 @@ cat << EOS
 #---------------------------
 EOS
 
-connect="mysql -u ticketing -pticketing -h ${MASTER_DB_HOST} -P 3308 -D ticketing"
+connect="mysql -u ticketing -pticketing -h ${MASTER_DB} -P ${MASTER_PORT} -D ticketing"
 sql=$(cat << EOS
 BEGIN;
+
 INSERT INTO FamiPortTicketTemplate (template_code,logically_subticket,mappings,organization_id,name)
-SELECT template_code, logically_subticket, mappings, ${ORG_ID}, REPLACE(name, 'BC', ${CODE}) FROM FamiPortTicketTemplate WHERE organization_id=56;
+SELECT template_code, logically_subticket, mappings, ${ORG_ID}, REPLACE(name, "BC", "${CODE}") FROM FamiPortTicketTemplate WHERE organization_id = 56;
 
 INSERT INTO FamiPortTenant (organization_id, name, code, created_at, updated_at)
-SELECT id, name, ${FP_TENANT_CODE}, now(), now()  FROM Organization WHERE id = ${ORG_ID};
+SELECT id, name, "${FP_TENANT_CODE}", now(), now()  FROM Organization WHERE id = ${ORG_ID};
+
 COMMIT;
 EOS
 )
+cat << EOS
+---------------------------
+${MASTER_DB}のDB:ticketingに次のSQLを実行します。
 
-echo "${MASTER_DB_HOST}のDB:ticketingに次のSQLを実行します。"
-echo ${sql}
+${sql}
 
-confirm "${txtyellow}よろしいですか(y)${txtreset}"
+---------------------------
+EOS
 
+select=$(ask "${txtyellow}よろしいですか？${txtreset}[ y（実行）, s（スキップ） ]> ")
+case "${select}" in
+y)
+    echo "実行します。"
+    echo "${connect} -e '${sql}'" | remote_execution ${WHO_AM_I} ${TARGET_HOST}
+    ;;
+s)
+    echo "スキップします。"
+    ;;
+*)
+    echo "選択が不適切です。"
+    return 1
+    ;;
+esac
 
-connect="mysql -u ticketing -pticketing -h ${MASTER_DB_HOST} -P 3308 -D ticketing"
+connect="mysql -u famiport -pfamiport -h ${MASTER_DB_FMP} -P ${MASTER_PORT} -D famiport"
 sql=$(cat << EOS
 BEGIN;
+
 INSERT INTO FamiPortClient (famiport_playguide_id, code, name, prefix, auth_number_required, created_at, updated_at)
-VALUES (1, ${FP_TENANT_CODE}, ${ORG_NAME}, RIGHT(${FP_TENANT_CODE}, 3), 0, now(), now());
+VALUES (1, "${FP_TENANT_CODE}", "${ORG_NAME}", RIGHT("${FP_TENANT_CODE}", 3), 0, now(), now());
+
 COMMIT;
 EOS
 )
+cat << EOS
+---------------------------
+${MASTER_DB_FMP}のDB:famiportに次のSQLを実行します。
 
-echo "${MASTER_DB_HOST}のDB:famiportに次のSQLを実行します。"
-echo ${sql}
+${sql}
 
-confirm "${txtyellow}よろしいですか(y)${txtreset}"
+---------------------------
+EOS
 
+select=$(ask "${txtyellow}よろしいですか？${txtreset}[ y（実行）, s（スキップ） ]> ")
+case "${select}" in
+y)
+    echo "実行します。"
+    echo "${connect} -e '${sql}'" | remote_execution ${WHO_AM_I} ${TARGET_HOST}
+    ;;
+s)
+    echo "スキップします。"
+    ;;
+*)
+    echo "選択が不適切です。"
+    return 1
+    ;;
+esac
 
 cat << EOS
 #---------------------------
@@ -175,23 +224,19 @@ cat << EOS
 #---------------------------
 EOS
 
-connect="mysql -u ticketing_ro -pticketing -h ${SLAVE_DB_HOST} -P 3308 -D ticketing"
+connect="mysql -u ticketing_ro -pticketing -h ${SLAVE_DB} -P ${SLAVE_PORT} -D ticketing"
 sql=$(cat << EOS
 SELECT * FROM FamiPortTenant WHERE organization_id = ${ORG_ID}; ;\G
 SELECT * FROM FamiPortTicketTemplate WHERE organization_id = ${ORG_ID}\G
 EOS
 )
-
 echo "${connect} -e '${sql}'" | remote_execution ${WHO_AM_I} ${TARGET_HOST}
-
-connect="mysql -u famiport_ro -pfamiport -h ${SLAVE_DB_HOST} -P 3308 -D famiport"
+connect="mysql -u famiport_ro -pfamiport -h ${SLAVE_DB_FMP} -P ${SLAVE_PORT} -D famiport"
 sql=$(cat << EOS
-SELECT * FROM FamiPortClient WHERE code= ${FP_TENANT_CODE};
+SELECT * FROM FamiPortClient WHERE code = "${FP_TENANT_CODE}";
 EOS
 )
-
 echo "${connect} -e '${sql}'" | remote_execution ${WHO_AM_I} ${TARGET_HOST}
-
 confirm "登録内容に問題がないことを確認してください(y)"
 
 cat << EOS

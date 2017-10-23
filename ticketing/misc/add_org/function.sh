@@ -66,7 +66,7 @@ confirm() {
 
 # 指定の対象にコマンドをリモート実行
 remote_execution() {
-    ssh -A ${1}@gk1c.vpc.altr.jp ssh -A deploy2.1a.vpc.altr ssh -A ${2} "sh"
+    ssh -A ${1}@gk1c.vpc.altr.jp ssh -A ${2} "sh"
 }
 
 # コンソールにユーザー入力用のプロンプトを出す
