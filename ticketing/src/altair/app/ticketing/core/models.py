@@ -3594,14 +3594,12 @@ class TicketBundle(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     product_items = relationship('ProductItem', backref='ticket_bundle')
 
     def replace_tickets(self, news):
-        for ticket in self.tickets:
-            self.tickets.remove(ticket)
+        self.tickets = list()
         for ticket in news:
             self.tickets.append(ticket)
 
     def replace_product_items(self, news):
-        for product_item in self.product_items:
-            self.product_items.remove(product_item)
+        self.product_items = list()
         for product_item in news:
             self.product_items.append(product_item)
 
