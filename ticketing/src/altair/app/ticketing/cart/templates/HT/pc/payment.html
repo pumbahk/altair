@@ -44,9 +44,24 @@ ${self.widget.flow_widget(2)}
                 <dl>
                   <dt>${m.delivery_method.name}</dt>
                   <dd class="devlieryFee_${h.format_number(m.delivery_fee)}">
+                  % if m.delivery_fee_type == 0:
                     <span class="deliveryFeeLabel">手数料</span>
                     <span class="deliveryFee">${h.format_currency(m.delivery_fee)}</span>
-                    <span class="deliveryFeeType">(${h.fee_type(m.delivery_method.fee_type)})</span>
+                    <span class="deliveryFeeType">(${h.fee_type(m.delivery_fee_type)})</span>
+                  % else:
+                    <dl class="deliveryMainSubBox">
+                      <dt style="width:auto; font-weight: normal;">手数料</dt>
+                      <dd>
+                        <span class="deliveryFeeLabel">本券</span>
+                        <span class="deliveryFee">${h.format_currency(m.delivery_fee)}</span>
+                        <span class="deliveryFeeType">(${h.fee_type(m.delivery_fee_type)})</span>
+                        <br/>
+                        <span class="deliveryFeeLabel">副券</span>
+                        <span class="deliveryFee">${h.format_currency(m.delivery_fee_per_sub_ticket)}</span>
+                        <span class="deliveryFeeType">(${h.fee_type(m.delivery_fee_type)})</span>
+                      </dd>
+                    </dl>
+                  % endif
                     <div class="description">${m.delivery_method.description or '' | n}</div>
                   </dd>
                 </dl>
