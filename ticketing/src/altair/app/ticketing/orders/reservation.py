@@ -231,7 +231,7 @@ class ReservationReportWriter:
 
     def write_customer_name(self, sheet, order):
         shipping_address = order.shipping_address
-        sheet.write(45, 2, u"{0} {1}".format(shipping_address.last_name, shipping_address.first_name), self.get_footer_style())
+        sheet.write(45, 2, u"{0} {1}　様".format(shipping_address.last_name, shipping_address.first_name), self.get_footer_style())
 
     def write_operator_name(self, sheet):
         sheet.write(46, 2, self.get_user().name, self.get_footer_style())
