@@ -19,7 +19,7 @@ from altair.sqla import new_comparator
 from altair.app.ticketing.models import merge_session_with_post, record_to_multidict
 from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.fanstatic import with_bootstrap
-from altair.app.ticketing.core.models import Event, SalesSegment, SalesSegmentGroup, SalesSegmentGroupSetting, Product, DBSession
+from altair.app.ticketing.core.models import Event, SalesSegment, SalesSegmentGroup, SalesSegmentGroupSetting, Product, Performance, DBSession
 from altair.app.ticketing.events.payment_delivery_method_pairs.forms import PaymentDeliveryMethodPairForm
 from altair.app.ticketing.events.sales_segments.forms import SalesSegmentForm
 from altair.app.ticketing.events.sales_segments.views import SalesSegmentViewHelperMixin
@@ -71,9 +71,28 @@ class SalesSegmentGroups(BaseView, SalesSegmentViewHelperMixin):
 
     @view_config(route_name='sales_segment_groups.show', renderer='altair.app.ticketing:templates/sales_segment_groups/show.html')
     def show(self):
+        if self.request.GET.get('sort') and self.request.GET.get('direction'):
+            query = SalesSegment.query.filter_by(sales_segment_group_id=self.context.sales_segment_group.id)
+            sort_column = self.request.GET.get('sort')
+            if sort_column == 'start_on':
+                query = query.join(Performance)
+                md_class = Performance
+            else:
+                md_class = SalesSegment
+            try:
+                mapper = class_mapper(md_class)
+                prop = mapper.get_property(sort_column)
+                sort = new_comparator(prop, mapper)
+            except:
+                sort = None
+            direction = {'asc': sql.asc, 'desc': sql.desc}.get(
+                self.request.GET.get('direction'),
+                sql.asc
+            )
+            self.context.sales_segment_group.sales_segments = query.order_by(direction(sort)).all()
         return {
             'form_s': SalesSegmentForm(context=self.context),
-            'member_groups': self.context.sales_segment_group.membergroups, 
+            'member_groups': self.context.sales_segment_group.membergroups,
             'sales_segment_group':self.context.sales_segment_group,
             # 表示される決済引取方法の内容は編集・削除できる
             'pdmp_editable': True
