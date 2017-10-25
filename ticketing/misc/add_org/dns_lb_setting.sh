@@ -1,4 +1,6 @@
 #!/bin/bash
+set -eu
+
 cat << EOS
 #---------------------------
 # 処理の概要
@@ -34,11 +36,13 @@ read -p "DNS、LBの設定を開始します。続けるにはエンターキー
 
 cat << EOS
 #---------------------------
-# masterから作業ブランチを作成
+# masterブランチを最新化し、作業ブランチ（${CHEF_REPO_BRANCH}）を切り出す
 #---------------------------
 EOS
 
 cd ${CHEF_REPO_PATH}
+git checkout master
+git fetch
 git pull origin master
 git checkout -b ${CHEF_REPO_BRANCH}
 

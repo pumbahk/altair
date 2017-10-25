@@ -1,4 +1,6 @@
 #!/bin/bash
+set -eu
+
 cat << EOS
 #---------------------------
 # 処理の概要
@@ -52,7 +54,7 @@ cat << EOS
 EOS
 
 if [ "${BUCKET}" == "tstar" ]; then
-    echo "本番環境のバケットが選択されています。本当にアップロードしてよいですか？(y)"
+    echo "${txtred}本番環境のバケットが選択されています。本当にアップロードしてよいですか？(y)${txtreset}"
     read answer
     if [ "${answer}" != "y" ]; then
         echo "「y」以外が選択されました。処理を中断します。"
