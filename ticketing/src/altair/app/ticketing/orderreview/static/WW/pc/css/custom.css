@@ -1,0 +1,42 @@
+:root {
+    --custom-btn-color: #5a5a5a;    /* buttons  */
+    --custom-color: #333333;        /* fonts  */
+    --custom-border-color: #5a5a5a;     /* border  */
+    --custom-background-color: #333333;     /* background  */
+    --custom-default-color: #333333;
+    --custom-light-color: #ccc;
+    --custom-dark-color: #fff;
+}
+
+/* buttons color ボタン
+-------------------------------------------- */
+.btn-primary,
+.qr-btn {
+    background-color: var(--custom-btn-color) !important;
+}
+
+/* heading color 見出し
+-------------------------------------------- */
+.heading-primary {
+    background-color: var(--custom-background-color) !important;
+}
+
+
+/* navi step bar
+-------------------------------------------- */
+.nav-stepbar ol li {
+    background: var(--custom-light-color);
+    color: var(--custom-dark-color);
+}
+
+.nav-stepbar ol li:after {
+    border-left: 10px solid var(--custom-light-color);
+}
+
+.nav-stepbar ol li.current {
+    background: var(--custom-default-color);
+}
+
+.nav-stepbar ol li.current:after {
+    border-left: 10px solid var(--custom-default-color);
+}
