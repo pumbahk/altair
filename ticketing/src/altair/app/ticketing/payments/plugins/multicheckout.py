@@ -615,9 +615,62 @@ class MultiCheckoutView(object):
             form=m_h.secure3d_acs_form(self.request, complete_url(self.request), enrol)
             self.request.response.text = form
             return self.request.response
-        # elif enrol.is_enable_secure3d():
-        #     # セキュア3D認証エラーだが決済APIを利用可能
-        #     logger.debug("3d secure is failed ErrorCd = %s RetCd = %s" %(enrol.ErrorCd, enrol.RetCd))
+        elif enrol.is_enable_secure3d():
+            # セキュア3D認証エラーだが決済APIを利用可能
+            multicheckout_api = get_multicheckout_3d_api(self.request)
+            cart = get_cart(self.request)
+
+            order = self.request.session['order']
+            order['order_no'] = cart.order_no
+
+            try:
+                item_name = api.get_item_name(self.request, cart.name)
+                logger.debug('call forced checkout auth')
+
+                # 強制3Dオーソリ
+                checkout_auth_result = multicheckout_api.forced_checkout_auth_secure3d(
+                    cart.order_no,
+                    item_name, cart.total_amount, 0, order['client_name'], order['email_1'],
+                    order['card_number'], order['exp_year'] + order['exp_month'], order['card_holder_name'],
+                )
+
+                logger.debug('called forced checkout auth')
+                # TODO: エラーチェック CmnErrorCd CardErrorCd
+                if checkout_auth_result.CmnErrorCd != '000000':
+                    raise MultiCheckoutSettlementFailure(
+                        message='card_info_secure3d_callback: generic failure',
+                        ignorable=True,
+                        order_no=order['order_no'],
+                        back_url=back_url(self.request),
+                        error_code=checkout_auth_result.CmnErrorCd,
+                        card_error_code=checkout_auth_result.CardErrorCd
+                    )
+            except MultiCheckoutSettlementFailure as e:
+                import sys
+                logger.info(u'card_info_secure3d_callback', exc_info=sys.exc_info())
+                self.request.session.flash(get_error_message(self.request, e.error_code))
+                raise
+            except Exception:
+                # MultiCheckoutSettlementFailure 以外の例外 (通信エラーなど)
+                import sys
+                logger.info(u'card_info_secure3d_callback', exc_info=sys.exc_info())
+                raise MultiCheckoutSettlementFailure(
+                    message='uncaught exception',
+                    order_no=order['order_no'],
+                    back_url=back_url(self.request))
+
+            tran = multicheckout_api.get_forced_auth_secure3d_param()
+            order['tran'] = tran
+            self.request.session['order'] = order
+
+            return HTTPFound(location=get_confirm_url(self.request))
+        elif enrol.is_enable_secure3d_chargeback_risk():
+            # チャージバックリスクがあるため実施せずエラー
+            logger.error("multicheckout chargeback risk enroll RetCd = %s, ErrorCd = %s" % (enrol.RetCd, enrol.ErrorCd))
+            raise MultiCheckoutSettlementFailure(
+                message='chargeback_risk exception',
+                order_no=order['order_no'],
+                back_url=back_url(self.request))
         else:
             # セキュア3D認証エラー
             logger.info(u'secure3d not availble: order_no=%s, error_code=%s, return_code=%s' % (order['order_no'], enrol.ErrorCd, enrol.RetCd))
