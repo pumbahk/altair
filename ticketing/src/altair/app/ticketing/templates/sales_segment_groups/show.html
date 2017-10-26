@@ -61,7 +61,7 @@ ${ch.breadcrumbs(
             <td>${vh.datetime(lot.start_at, with_weekday=True)} - ${vh.datetime(lot.end_at, with_weekday=True)}</td>
             <td>${lot.limit_wishes}</td>
             <td>${lot.entry_limit}</td>
-            <td>${lot.auth_type or u'なし'}</td>
+            <td>${HH.auth_type_label(lot.auth_type)}</td>
             <td>${vh.datetime(lot.lotting_announce_datetime, with_weekday=True)}</td>
             <td>
               <div class="btn-group">
