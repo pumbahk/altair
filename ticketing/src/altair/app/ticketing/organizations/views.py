@@ -89,7 +89,7 @@ class Organizations(BaseView):
             organization.settings = [
                 OrganizationSetting(
                     name='default',
-                    performance_selector='matchup',
+                    performance_selector='date',
                     default_mail_sender=f.default_mail_sender.data,
                     cart_setting=CartSetting(
                         organization=organization,
