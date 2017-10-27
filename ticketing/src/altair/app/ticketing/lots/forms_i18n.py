@@ -236,8 +236,8 @@ class ClientFormFactory(object):
                     return dict(
                         first_name=self.data['first_name'],
                         last_name=self.data['last_name'],
-                        first_name_kana=self.data.get('first_name_kana', u'　'),
-                        last_name_kana=self.data.get('last_name_kana', u'　'),
+                        first_name_kana=self.data.get('first_name_kana', u'カナ'),
+                        last_name_kana=self.data.get('last_name_kana', u'カナ'),
                         zip=self.data['zip'],
                         prefecture=self.data['prefecture'],
                         city=self.data['city'],
