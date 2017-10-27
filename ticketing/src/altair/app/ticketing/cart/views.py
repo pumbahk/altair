@@ -1134,9 +1134,9 @@ class PaymentView(object):
 
         shipping_address_info = dict(
             first_name=metadata.get('first_name'),
-            first_name_kana=metadata.get('first_name_kana', u'　'),
+            first_name_kana=metadata.get('first_name_kana', u''),
             last_name=metadata.get('last_name'),
-            last_name_kana=metadata.get('last_name_kana', u'　'),
+            last_name_kana=metadata.get('last_name_kana', u''),
             tel_1=metadata.get('tel_1'),
             fax=metadata.get('fax'),
             zip=metadata.get('zip'),
