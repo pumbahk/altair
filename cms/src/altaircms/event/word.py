@@ -91,11 +91,26 @@ def api_word_get(request):
         words = words_by_ids(request, id_list).all()
         return dict(words=build_word_merge(words))
 
+    max_results = 30
     q = request.params.get('q')
     if q is not None and 0 < len(q):
         # 廃止ワードのlabelやそのsaerchは見ない（統合ワードだけを対象とする）
-        words = words_by_keyword(request, q).all()
-        return dict(words=build_word_merge(words))
+        words = words_by_keyword(request, q)\
+            .order_by(Word.label)\
+            .all()
+        if len(words) <= max_results:
+            return dict(words=build_word_merge(words))
+
+        # 多すぎた場合、exact matchで試す
+        words = words_by_keyword(request, q, exact=True)\
+            .order_by(Word.label)\
+            .all()
+        
+        if 0 < len(words):
+            return dict(words=build_word_merge(words))
+        else:
+            # exactにして0件になる場合は、too many resultにする
+            raise HTTPBadRequest()
 
     raise HTTPBadRequest()
 
@@ -107,15 +122,18 @@ def build_word_merge(tuples):
     :param tuples:
     :return:
     """
-    words = dict()
+    word_idx_map = dict() 
+    words = [ ] # want keep order
     for word in tuples:
-        if word.id not in words:
-            words[word.id] = dict([ (k, v) for (k, v) in word.__dict__.items() if k[0]!='_' ])
-            words[word.id]["merge"] = [ ]
-        if word._merge_word_id is not None and word._merge_word_id not in words[word.id]["merge"]:
-            words[word.id]["merge"].append(word._merge_word_id)
+        if word.id not in word_idx_map:
+            word_idx_map[word.id] = len(words)
+            words.append(
+                dict(dict([ (k, v) for (k, v) in word.__dict__.items() if k[0]!='_' ]), merge=[ ])
+            )
+        if word._merge_word_id is not None and word._merge_word_id not in words[word_idx_map[word.id]]["merge"]:
+            words[word_idx_map[word.id]]["merge"].append(word._merge_word_id)
 
-    return words.values()
+    return words
 
 
 def words_by_ids(request, ids):
@@ -146,7 +164,7 @@ def words_by_ids(request, ids):
         .distinct()
 
 
-def words_by_keyword(request, q):
+def words_by_keyword(request, q, exact=False):
     """
     親のlabel、label_kana、親のWordSearchのみが検索対象（子は検索対象ではない）
 
@@ -156,10 +174,13 @@ def words_by_keyword(request, q):
     """
     merge_word = aliased(Word)
     query = DBSession.query(Word.id, Word.label, Word.type, Word.label_kana, Word.description, merge_word.id.label('_merge_word_id'))
+    f = or_(Word.label.contains(q), Word.label_kana.contains(q), WordSearch.data.contains(q))
+    if exact:
+        f = or_(Word.label == q, Word.label_kana == q, WordSearch.data == q)
     return request.allowable(Word, query) \
         .filter(Word.deleted_at == None) \
         .filter(Word.merge_to_word_id == None) \
         .outerjoin(WordSearch, and_(WordSearch.word_id == Word.id, WordSearch.deleted_at == None)) \
-        .filter(or_(Word.label.contains(q), Word.label_kana.contains(q), WordSearch.data.contains(q))) \
+        .filter(f) \
         .outerjoin(merge_word, and_(merge_word.merge_to_word_id == Word.id, merge_word.deleted_at == None)) \
         .distinct()
