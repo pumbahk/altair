@@ -42,7 +42,7 @@ def get_word(request, id=None, q=None):
     if id is not None and 0 < len(id):
         path = "/api/word/?id=%(id)s" % {"id": urllib.quote_plus(id)}
     elif q is not None and 0 < len(q):
-        path = "/api/word/?q=%(q)s" % {"q": urllib.quote_plus(q)}
+        path = "/api/word/?q=%(q)s&backend_organization_id=%(org_id)d" % {"q": urllib.quote_plus(q), "org_id": request.context.organization.id}
     else:
         raise Exception("invalid param")
 
