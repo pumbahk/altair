@@ -10,6 +10,7 @@ from sqlalchemy import or_, and_
 from sqlalchemy.orm import joinedload, aliased
 from ..event.models import Event
 from ..models import Performance, Word, WordSearch, Performance_Word, Event_Word
+from altaircms.auth.models import Organization
 
 from altair.viewhelpers.datetime_ import dt2str
 logger = logging.getLogger(__file__)
@@ -19,6 +20,7 @@ logger = logging.getLogger(__file__)
 def api_word_get(request):
     cart_performance = request.params.get('backend_performance_id')
     if cart_performance:
+        # performanceが決まっていれば、organizationで絞り込む必要はない
         # performanceに紐づくものとeventに紐づくものの両方をマージして返す
         performance = request.allowable(Performance)\
             .options(joinedload(Performance.event))\
@@ -43,6 +45,7 @@ def api_word_get(request):
 
     cart_event = request.params.get('backend_event_id')
     if cart_event:
+        # eventが決まっていれば、orgnaztionで絞り込む必要はない
         # eventのに紐づくものだけを返す, performanceに紐づくwordは無視
         event = request.allowable(Event)\
             .filter_by(backend_id=cart_event)\
@@ -91,11 +94,31 @@ def api_word_get(request):
         words = words_by_ids(request, id_list).all()
         return dict(words=build_word_merge(words))
 
+    max_results = 30
+    cart_organization = request.params.get('backend_organization_id')
     q = request.params.get('q')
-    if q is not None and 0 < len(q):
+    if cart_organization is not None and q is not None and 0 < len(q):
+        organization = Organization.query.filter(Organization.backend_id == cart_organization).first()
+        if not organization:
+            raise HTTPBadRequest()
+
         # 廃止ワードのlabelやそのsaerchは見ない（統合ワードだけを対象とする）
-        words = words_by_keyword(request, q).all()
-        return dict(words=build_word_merge(words))
+        words = words_by_keyword(request, organization.id, q)\
+            .order_by(Word.label)\
+            .all()
+        if len(words) <= max_results:
+            return dict(words=build_word_merge(words))
+
+        # 多すぎた場合、exact matchで試す
+        words = words_by_keyword(request, organization.id, q, exact=True)\
+            .order_by(Word.label)\
+            .all()
+        
+        if 0 < len(words):
+            return dict(words=build_word_merge(words))
+        else:
+            # exactにして0件になる場合は、too many resultにする
+            raise HTTPBadRequest()
 
     raise HTTPBadRequest()
 
@@ -107,20 +130,24 @@ def build_word_merge(tuples):
     :param tuples:
     :return:
     """
-    words = dict()
+    word_idx_map = dict() 
+    words = [ ] # want keep order
     for word in tuples:
-        if word.id not in words:
-            words[word.id] = dict([ (k, v) for (k, v) in word.__dict__.items() if k[0]!='_' ])
-            words[word.id]["merge"] = [ ]
-        if word._merge_word_id is not None and word._merge_word_id not in words[word.id]["merge"]:
-            words[word.id]["merge"].append(word._merge_word_id)
+        if word.id not in word_idx_map:
+            word_idx_map[word.id] = len(words)
+            words.append(
+                dict(dict([ (k, v) for (k, v) in word.__dict__.items() if k[0]!='_' ]), merge=[ ])
+            )
+        if word._merge_word_id is not None and word._merge_word_id not in words[word_idx_map[word.id]]["merge"]:
+            words[word_idx_map[word.id]]["merge"].append(word._merge_word_id)
 
-    return words.values()
+    return words
 
 
 def words_by_ids(request, ids):
     """
     親子関係があるとして、親idまたは子idにいずれかで検索した場合に、同一の結果が帰ってくる
+    organization idで絞り込む方が良いが、ひとまずは省略
 
     Word(id=1, merge_to_word_id=NULL)
     Word(id=2, merge_to_word_id=1)
@@ -146,20 +173,26 @@ def words_by_ids(request, ids):
         .distinct()
 
 
-def words_by_keyword(request, q):
+def words_by_keyword(request, organization_id, q, exact=False):
     """
     親のlabel、label_kana、親のWordSearchのみが検索対象（子は検索対象ではない）
 
     :param request:
+    :param organization_id:
     :param q:
     :return:
     """
     merge_word = aliased(Word)
     query = DBSession.query(Word.id, Word.label, Word.type, Word.label_kana, Word.description, merge_word.id.label('_merge_word_id'))
+    if exact:
+        f = or_(Word.label == q, Word.label_kana == q, WordSearch.data == q)
+    else:
+        f = or_(Word.label.contains(q), Word.label_kana.contains(q), WordSearch.data.contains(q))
     return request.allowable(Word, query) \
         .filter(Word.deleted_at == None) \
+        .filter(Word.organization_id == organization_id) \
         .filter(Word.merge_to_word_id == None) \
         .outerjoin(WordSearch, and_(WordSearch.word_id == Word.id, WordSearch.deleted_at == None)) \
-        .filter(or_(Word.label.contains(q), Word.label_kana.contains(q), WordSearch.data.contains(q))) \
+        .filter(f) \
         .outerjoin(merge_word, and_(merge_word.merge_to_word_id == Word.id, merge_word.deleted_at == None)) \
         .distinct()
