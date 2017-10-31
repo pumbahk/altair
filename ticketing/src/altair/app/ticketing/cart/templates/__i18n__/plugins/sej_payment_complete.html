@@ -2,11 +2,10 @@
 ${_(u'当選の場合、お支払期日までにお支払頂きます。')}<br>
 ${_(u'お支払が確認できた時点で当選申込が確定となります。')}<br><br>${_(u'各種手数料の他、公演によりシステム利用料がかかります。')}
 %else:
-<p>${_(u'払込票番号')}: <strong>${sej_order.billing_number}</strong></p>
-<form action="${sej_order.exchange_sheet_url}" method="POST" target="_blank">
-  <input type="hidden" name="iraihyo_id_00" value="${sej_order.exchange_sheet_number}">
-  <button type="submit" name="submit" class="btn">${_(u'払込票を表示')}</button>
-</form>
+<p>
+  ${_(u'払込票番号')}: <strong>${sej_order.billing_number}</strong>
+  <%include file="sej_exchange_sheet.html" args="label=_(u'払込票を表示')" />
+</p>
 <p>${_(u'支払期日')}: <strong>${h.i18n_datetime(sej_order.payment_due_at)}</strong></p>
 <p>${_(u'上記支払期日までに、払込票番号をお持ちの上、セブン-イレブン店舗レジにてお支払いください。（払込票を表示、印刷した上で店頭にお持ちいただくとスムーズです）')}</p>
 <p style="font-weight:bold; color: #f00;">${_(u'支払期日までに入金されない場合は予約が無効となりますので、ご注意ください。')}</p>
