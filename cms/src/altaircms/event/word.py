@@ -20,7 +20,7 @@ logger = logging.getLogger(__file__)
 def api_word_get(request):
     cart_performance = request.params.get('backend_performance_id')
     if cart_performance:
-        # performanceが決まっていれば、orgnaztionで絞り込む必要はない
+        # performanceが決まっていれば、organizationで絞り込む必要はない
         # performanceに紐づくものとeventに紐づくものの両方をマージして返す
         performance = request.allowable(Performance)\
             .options(joinedload(Performance.event))\
@@ -98,7 +98,9 @@ def api_word_get(request):
     cart_organization = request.params.get('backend_organization_id')
     q = request.params.get('q')
     if cart_organization is not None and q is not None and 0 < len(q):
-        organization = Organization.query.filter(Organization.backend_id == cart_organization).one()
+        organization = Organization.query.filter(Organization.backend_id == cart_organization).first()
+        if not organization:
+            raise HTTPBadRequest()
 
         # 廃止ワードのlabelやそのsaerchは見ない（統合ワードだけを対象とする）
         words = words_by_keyword(request, organization.id, q)\
