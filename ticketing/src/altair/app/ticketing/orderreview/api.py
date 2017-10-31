@@ -56,11 +56,14 @@ def send_to_orion(request, context, recipient, data):
     segment = order.sales_segment
     seat = data.seat
     orion = performance.orion
-    
+    shipping_address = order.shipping_address
+    user_phone = shipping_address.tel_1 or shipping_address.tel_2
+    orion_ticket_phones = ','.join([user_phone, order.orion_ticket_phone.phones]).rstrip(',')
     obj = dict()
     obj['token'] = data.id
     obj['recipient'] = dict(mail = recipient)
     obj['order'] = dict(number = order.order_no,
+                        orion_ticket_phone_verify=orion_ticket_phones,
                         sequence = data.serial,
                         created_at = str(order.paid_at))
     obj['performance'] = dict(code = performance.code, name = performance.name,
