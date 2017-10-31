@@ -338,8 +338,13 @@ class Cart(Base, c_models.CartMixin):
     @property
     def user_id(self):
         """いずれは、Cartにもuser_idをカラムとして持たせたい"""
-        return self.shipping_address and self.shipping_address.user_id 
+        return self.shipping_address and self.shipping_address.user_id
 
+    @property
+    def get_orion_ticket_phone_list(self):
+        from altair.app.ticketing.models import DBSession as session
+        orion_ticket_phone = session.query(c_models.OrionTicketPhone).filter(c_models.OrionTicketPhone.order_no == self.order_no).first()
+        return orion_ticket_phone.phones.split(',') if orion_ticket_phone else []
 
 @implementer(IOrderedProductLike)
 class CartedProduct(Base):
