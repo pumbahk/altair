@@ -36,6 +36,7 @@ from altair.app.ticketing.views import mobile_request
 from altair.app.ticketing.fanstatic import with_jquery, with_jquery_tools
 from altair.app.ticketing.payments.api import set_confirm_url, lookup_plugin
 from altair.app.ticketing.payments.payment import Payment
+from altair.app.ticketing.payments.plugins import ORION_DELIVERY_PLUGIN_ID
 from altair.app.ticketing.payments.exceptions import OrderLikeValidationFailure
 from altair.app.ticketing.users.models import UserPointAccountTypeEnum
 from altair.app.ticketing.venues.api import get_venue_site_adapter
@@ -1165,7 +1166,9 @@ class PaymentView(object):
             form=form,
             performance=self.context.performance,
             payment_delivery_methods=payment_delivery_methods,
-            custom_locale_negotiator=custom_locale_negotiator(self.request) if self.request.organization.setting.i18n else ""
+            custom_locale_negotiator=custom_locale_negotiator(self.request) if self.request.organization.setting.i18n else "",
+            orion_ticket_phone=[''],
+            orion_phone_errors = ['']
             )
 
     def get_validated_address_data(self):
@@ -1201,6 +1204,26 @@ class PaymentView(object):
         else:
             return None
 
+    def verify_orion_ticket_phone(self, data):
+        phones = []
+        errors = []
+        for phone in data:
+            phone = phone.strip()
+            error = u''
+            phones.append(phone)
+            if phone:
+                if len(phone) != 11:
+                    error = u'電話番号の桁数が11桁ではありません'
+                if not phone.isdigit():
+                    error = ','.join([error, u'数字以外の文字は入力できません']) if error else u'数字以外の文字は入力できません'
+            errors.append(error)
+
+        if not phones:
+            phones = ['']
+            errors = ['']
+
+        return phones, errors
+
     def _validate_extras(self, cart, payment_delivery_pair, shipping_address_params):
         if not payment_delivery_pair or shipping_address_params is None:
             if not payment_delivery_pair:
@@ -1233,15 +1256,22 @@ class PaymentView(object):
             self.form = schemas.ClientForm(formdata=self.request.params, context=self.context)
 
         shipping_address_params = self.get_validated_address_data()
+        orion_ticket_phone, orion_phone_errors = self.verify_orion_ticket_phone(self.request.POST.getall('orion-ticket-phone'))
 
         try:
+            if payment_delivery_pair.delivery_method.delivery_plugin_id == ORION_DELIVERY_PLUGIN_ID and any(orion_phone_errors):
+                logger.debug("invalid : %s" % orion_phone_errors)
+                raise self.ValidationFailed(self._message(u'イベントゲット情報の入力内容を確認してください'))
             self._validate_extras(cart, payment_delivery_pair, shipping_address_params)
             sales_segment = cart.sales_segment
             cart.payment_delivery_pair = payment_delivery_pair
             cart.shipping_address = self.create_shipping_address(user, shipping_address_params)
+            create_orion_ticket_phone = self.create_or_update_orion_ticket_phone(user, cart.order_no, orion_ticket_phone)
             self.context.check_order_limit()
 
             DBSession.add(cart)
+            if payment_delivery_pair.delivery_method.delivery_plugin_id == ORION_DELIVERY_PLUGIN_ID:
+                DBSession.add(create_orion_ticket_phone)
 
             try:
                 plugins = lookup_plugin(self.request, cart.payment_delivery_pair)
@@ -1269,7 +1299,9 @@ class PaymentView(object):
                 form=self.form,
                 performance=self.context.performance,
                 payment_delivery_methods=payment_delivery_methods,
-                custom_locale_negotiator=custom_locale_negotiator(self.request) if self.request.organization.setting.i18n else ""
+                custom_locale_negotiator=custom_locale_negotiator(self.request) if self.request.organization.setting.i18n else "",
+                orion_ticket_phone=orion_ticket_phone,
+                orion_phone_errors=orion_phone_errors
                 )
 
 
@@ -1322,6 +1354,16 @@ class PaymentView(object):
             user=user
         )
 
+    def create_or_update_orion_ticket_phone(self, user, order_no, data):
+        logger.debug('orion_ticket_phone_info=%r', data)
+        orion_ticket_phone = c_models.OrionTicketPhone.filter_by(order_no=order_no).first()
+        if not orion_ticket_phone:
+            orion_ticket_phone = c_models.OrionTicketPhone()
+        phones = u','.join(data)
+        orion_ticket_phone.order_no = order_no
+        orion_ticket_phone.phones = phones
+        orion_ticket_phone.user = user
+        return orion_ticket_phone
 
 @view_defaults(route_name='cart.extra_form', renderer=selectable_renderer("extra_form.html"), decorator=with_jquery.not_when(mobile_request), permission="buy")
 class ExtraFormView(object):
