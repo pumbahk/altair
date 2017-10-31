@@ -212,7 +212,7 @@ def prepare2_for_payment(request, entry_dict):
             )
         multicheckout_api.keep_authorization(cart.order_no, u"lots")
 
-def entry_lot(request, entry_no, lot, shipping_address, wishes, payment_delivery_method_pair, user, gender, birthday, memo, extra=[], user_point_accounts=[]):
+def entry_lot(request, entry_no, lot, shipping_address, wishes, payment_delivery_method_pair, user, gender, birthday, memo, extra=[], user_point_accounts=[], orion_ticket_phone=None):
     """
     wishes
     {product_id, quantity} の希望順リスト
@@ -244,6 +244,8 @@ def entry_lot(request, entry_no, lot, shipping_address, wishes, payment_delivery
 
     entry.entry_no = entry_no
     DBSession.add(entry)
+    if orion_ticket_phone:
+        DBSession.add(orion_ticket_phone)
     DBSession.flush()
 
     for wish in entry.wishes:
@@ -480,7 +482,7 @@ def get_entry_user(request):
     return cart_api.get_auth_info(request)
 
 
-def new_lot_entry(request, entry_no, wishes, payment_delivery_method_pair_id, shipping_address_dict, gender, birthday, memo, extra):
+def new_lot_entry(request, entry_no, wishes, payment_delivery_method_pair_id, shipping_address_dict, gender, birthday, memo, extra, orion_ticket_phone):
     request.session[LOT_ENTRY_DICT_KEY] = dict(
         lot_id=request.context.lot.id,
         entry_no=entry_no,
@@ -491,7 +493,8 @@ def new_lot_entry(request, entry_no, wishes, payment_delivery_method_pair_id, sh
         gender=gender,
         birthday=birthday,
         memo=memo,
-        extra=extra
+        extra=extra,
+        orion_ticket_phone=orion_ticket_phone
         )
     return cart_api.new_order_session(
         request,

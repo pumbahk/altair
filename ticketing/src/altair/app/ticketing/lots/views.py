@@ -16,6 +16,7 @@ from altair.pyramid_dynamic_renderer.config import lbr_notfound_view_config
 from altair.request.adapters import UnicodeMultiDictAdapter
 from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.core.models import PaymentDeliveryMethodPair
+from altair.app.ticketing.payments.plugins import ORION_DELIVERY_PLUGIN_ID
 from altair.app.ticketing.cart import api as cart_api
 from altair.app.ticketing.utils import toutc
 from altair.app.ticketing.cart.exceptions import NoCartError
@@ -297,6 +298,9 @@ class EntryLotView(object):
         jump_maintenance_page_for_trouble(self.request.organization)
         if form is None:
             form = self._create_form()
+
+        orion_ticket_phone, orion_phone_errors = h.verify_orion_ticket_phone(form.orion_ticket_phone.data.split(','))
+
         event = self.context.event
         lot = self.context.lot
         performances = lot.performances
@@ -334,7 +338,9 @@ class EntryLotView(object):
             lot=lot,
             performances=performances,
             performance_map=performance_map,
-            custom_locale_negotiator=custom_locale_negotiator(self.request) if self.request.organization.setting.i18n else ""
+            custom_locale_negotiator=custom_locale_negotiator(self.request) if self.request.organization.setting.i18n else "",
+            orion_ticket_phone=orion_ticket_phone,
+            orion_phone_errors=orion_phone_errors
         )
 
     @lbr_view_config(request_method="POST")
@@ -409,6 +415,12 @@ class EntryLotView(object):
                 cform['birthday'].errors = [self.request.translate(u'日付が正しくありません')] if self.request.organization.setting.i18n else [u'日付が正しくありません']
             validated = False
 
+        orion_ticket_phone, orion_phone_errors = h.verify_orion_ticket_phone(self.request.POST.getall('orion-ticket-phone'))
+        cform.orion_ticket_phone.data = ','.join(orion_ticket_phone)
+        if any(orion_phone_errors):
+            self.request.session.flash(self._message(u'イベントゲット情報の入力内容を確認してください'))
+            validated = False
+
         if not validated:
             return self.get(form=cform)
 
@@ -424,7 +436,8 @@ class EntryLotView(object):
             gender=cform['sex'].data,
             birthday=birthday,
             memo=cform['memo'].data,
-            extra=(cform['extra'].data if 'extra' in cform else None)
+            extra=(cform['extra'].data if 'extra' in cform else None),
+            orion_ticket_phone=cform['orion_ticket_phone'].data
             )
 
         entry = api.get_lot_entry_dict(self.request)
@@ -508,6 +521,8 @@ class ConfirmLotEntryView(object):
                 for_='lots',
                 mode='entry'
                 )
+        orion_ticket_phone = entry.get('orion_ticket_phone', None)
+        orion_ticket_phone = orion_ticket_phone.split(',') if orion_ticket_phone else []
         i18n = self.request.organization.setting.i18n
         return dict(i18n=i18n,
                     event=event,
@@ -525,7 +540,8 @@ class ConfirmLotEntryView(object):
                     keywords_to_subscribe=ks.values(),
                     accountno=acc.account_number if acc else "",
                     membershipinfo = self.context.membershipinfo,
-                    custom_locale_negotiator=custom_locale_negotiator(self.request) if self.request.organization.setting.i18n else ""
+                    custom_locale_negotiator=custom_locale_negotiator(self.request) if self.request.organization.setting.i18n else "",
+                    orion_ticket_phone=orion_ticket_phone
                     )
 
     def back_to_form(self):
@@ -559,12 +575,12 @@ class ConfirmLotEntryView(object):
         shipping_address = entry['shipping_address']
         shipping_address = h.convert_shipping_address(shipping_address)
         user = cart_api.get_or_create_user(self.context.authenticated_user())
+        orion_ticket_phone = h.create_or_update_orion_ticket_phone(user, entry_no, entry['orion_ticket_phone']) if entry['orion_ticket_phone'] else None
         shipping_address.user = user
         wishes = entry['wishes']
         logger.debug('wishes={0}'.format(wishes))
 
         lot = self.context.lot
-
 
         try:
             self.request.session['lots.magazine_ids'] = [long(v) for v in self.request.params.getall('mailmagazine')]
@@ -598,7 +614,8 @@ class ConfirmLotEntryView(object):
             birthday=entry['birthday'],
             memo=entry['memo'],
             extra=entry.get('extra', []),
-            user_point_accounts=accs
+            user_point_accounts=accs,
+            orion_ticket_phone=orion_ticket_phone
             )
         self.request.session['lots.entry_no'] = entry.entry_no
         api.clear_lot_entry(self.request)
