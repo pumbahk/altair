@@ -22,7 +22,7 @@
   <p class="bold disp-order_no">${order.order_no}</p>
 </div><!-- ===== / 受付番号 ===== -->
 
-<form id="form1" class="confirmForm" action="${request.route_url("cart.index", event_id=order.performance.event.id, _query={'performance':order.performance_id})}" method="post">
+<div class="confirmForm" >
   <!-- ===== お買い物内容 ===== -->
   <div class="confirm-wrap">
     <h2 class="heading heading_simple_line">${__(u'お買い物内容')}</h2>
@@ -127,6 +127,6 @@
       ${__(u'他のチケットを購入する')}
     </a>
   </div>
-</form>
+</div>
 
 <%include file="../../__commons__/footer.html" />
