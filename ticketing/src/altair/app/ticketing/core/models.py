@@ -1153,7 +1153,7 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     stock_types = relationship('StockType', backref='event', order_by='StockType.display_order')
     stock_holders = relationship('StockHolder', backref='event')
 
-    sales_segment_groups = relationship('SalesSegmentGroup', order_by='SalesSegmentGroup.display_order')
+    sales_segment_groups = relationship('SalesSegmentGroup', order_by='SalesSegmentGroup.display_order,SalesSegmentGroup.id')
     cms_send_at = Column(DateTime, nullable=True, default=None)
 
     display_order = AnnotatedColumn(Integer, nullable=False, default=1, _a_label=_(u'表示順'))
