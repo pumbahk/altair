@@ -1153,7 +1153,7 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     stock_types = relationship('StockType', backref='event', order_by='StockType.display_order')
     stock_holders = relationship('StockHolder', backref='event')
 
-    sales_segment_groups = relationship('SalesSegmentGroup', order_by='SalesSegmentGroup.display_order,SalesSegmentGroup.id')
+    sales_segment_groups = relationship('SalesSegmentGroup')
     cms_send_at = Column(DateTime, nullable=True, default=None)
 
     display_order = AnnotatedColumn(Integer, nullable=False, default=1, _a_label=_(u'表示順'))
@@ -1647,8 +1647,6 @@ class SalesSegmentGroup(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     start_time = Column(Time)
     end_day_prior_to_performance = Column(Integer)
     end_time = Column(Time)
-
-    display_order = AnnotatedColumn(Integer, nullable=False, default=1, _a_label=_(u'表示順'))
 
     setting = relationship('SalesSegmentGroupSetting', uselist=False, backref='sales_segment_group', cascade='all', lazy='joined')
 
@@ -4008,10 +4006,6 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     @hybrid_property
     def kind(self):
         return self.sales_segment_group.kind
-
-    @hybrid_property
-    def display_order(self):
-        return self.sales_segment_group.display_order
 
     @hybrid_property
     def order(self):

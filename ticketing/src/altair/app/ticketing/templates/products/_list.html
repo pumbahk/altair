@@ -6,7 +6,7 @@
 <%
 ## sales_segments
 if performance is not None:
-    sales_segments = sorted(performance.sales_segments, key=lambda x:(x.display_order, x.name))
+    sales_segments = sorted(performance.sales_segments, key=lambda x:(x.name))
 elif sales_segment:
     sales_segments = [sales_segment]
     performance = sales_segment.performance
