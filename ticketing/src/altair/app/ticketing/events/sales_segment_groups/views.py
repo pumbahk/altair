@@ -41,7 +41,7 @@ class SalesSegmentGroups(BaseView, SalesSegmentViewHelperMixin):
             'event_id': self.context.event.id
         }
         query = SalesSegmentGroup.filter_by(**conditions)
-        query = query.order_by(sql.asc(SalesSegmentGroup.display_order))
+        query = query.order_by(SalesSegmentGroup.display_order.asc(), SalesSegmentGroup.id.asc())
 
         sales_segment_groups = paginate.Page(
             query,
