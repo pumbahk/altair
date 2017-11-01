@@ -119,7 +119,7 @@ ${ch.breadcrumbs(
             <th>パフォーマンス</th>
             <th>${ch.sortable(Performance.start_on, custom_label=u'公演日')}</th>
             <th>${ch.sortable(SalesSegment.start_at, custom_label=u'販売開始日時')}</th>
-            <th>販売終了日時</th>
+            <th>${ch.sortable(SalesSegment.end_at, custom_label=u'販売終了日時')}</th>
             <th>配券元</th>
             <th>上限枚数</th>
             <th>購入回数制限</th>

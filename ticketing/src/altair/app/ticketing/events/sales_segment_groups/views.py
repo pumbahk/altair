@@ -72,24 +72,7 @@ class SalesSegmentGroups(BaseView, SalesSegmentViewHelperMixin):
     @view_config(route_name='sales_segment_groups.show', renderer='altair.app.ticketing:templates/sales_segment_groups/show.html')
     def show(self):
         if self.request.GET.get('sort') and self.request.GET.get('direction'):
-            query = SalesSegment.query.filter_by(sales_segment_group_id=self.context.sales_segment_group.id)
-            sort_column = self.request.GET.get('sort')
-            if sort_column == 'start_on':
-                query = query.join(Performance)
-                md_class = Performance
-            else:
-                md_class = SalesSegment
-            try:
-                mapper = class_mapper(md_class)
-                prop = mapper.get_property(sort_column)
-                sort = new_comparator(prop, mapper)
-            except:
-                sort = None
-            direction = {'asc': sql.asc, 'desc': sql.desc}.get(
-                self.request.GET.get('direction'),
-                sql.asc
-            )
-            self.context.sales_segment_group.sales_segments = query.order_by(direction(sort)).all()
+            self.context.sort_sales_segment()
         return {
             'form_s': SalesSegmentForm(context=self.context),
             'member_groups': self.context.sales_segment_group.membergroups,
