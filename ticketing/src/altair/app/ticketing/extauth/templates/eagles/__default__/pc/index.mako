@@ -39,7 +39,7 @@ thisyear = datetime.now().strftime('%Y')
                 </div>
                 <a href="https://member.id.rakuten.co.jp/rms/nid/upkfwd" target="_blank" class="login-link">会員ID・パスワードを忘れてしまった方はこちら</a>
                 <div class="btn-box">
-                  <a href="${_context.route_path('extauth.login', _query=dict(member_set=member_set.name))}" class="btn btn-has-ohter-id">B+特別先行・SOC・その他会員IDをお持ちの方はこちら</a>
+                  <a href="${_context.route_path('extauth.login', _query=dict(member_set=member_set.name))}" class="btn btn-has-ohter-id">B+特別先行・SOC・その他会員IDを<br>お持ちの方はこちら</a>
                 </div>
                 <div class="page-top-box js-show-box">
                   <a href="#" class="sp page-top">
