@@ -41,11 +41,3 @@ https://convertio.co/ja/gif-png/
 各スクリプトで「set -eu」を指定しているため、未定義の変数や、コマンドのリターンコードが失敗（1）になった場合は、処理が終了します。
 
 デバッグ時は「bash -x」で起動してください。
-
-## Credits
-
-Motoi Komatsu
-
-## License
-
-株式会社楽天チケットスター Rakuten Ticketstar.Inc
