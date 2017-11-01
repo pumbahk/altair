@@ -37,11 +37,24 @@ logger = logging.getLogger(__name__)
 class SalesSegmentGroups(BaseView, SalesSegmentViewHelperMixin):
     @view_config(route_name='sales_segment_groups.index', renderer='altair.app.ticketing:templates/sales_segment_groups/index.html')
     def index(self):
+        sort_column = self.request.GET.get('sort', 'id')
+        try:
+            mapper = class_mapper(SalesSegmentGroup)
+            prop = mapper.get_property(sort_column)
+            sort = new_comparator(prop,  mapper)
+        except:
+            sort = None
+        direction = { 'asc': sql.asc, 'desc': sql.desc }.get(
+            self.request.GET.get('direction'),
+            sql.asc
+            )
+
         conditions = {
             'event_id': self.context.event.id
         }
         query = SalesSegmentGroup.filter_by(**conditions)
-        query = query.order_by(sql.asc(SalesSegmentGroup.display_order))
+        if sort is not None:
+            query = query.order_by(direction(sort))
 
         sales_segment_groups = paginate.Page(
             query,
