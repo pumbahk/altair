@@ -238,22 +238,13 @@ class Checkout3D(object):
         # セキュア3D
         if card_auth.SecureKind == '3':
             secure_3d = etree.SubElement(auth, 'Secure3D')
-            if forced_3d_auth:
-                self._add_param(secure_3d, 'Mvn', card_auth.Mvn, optional=True)
-                self._add_param(secure_3d, 'Xid', card_auth.Xid, optional=True)
-                self._add_param(secure_3d, 'Ts', card_auth.Ts, optional=True)
-                self._add_param(secure_3d, 'ECI', card_auth.ECI, optional=True)
-                self._add_param(secure_3d, 'CAVV', card_auth.CAVV, optional=True)
-                self._add_param(secure_3d, 'CavvAlgorithm', card_auth.CavvAlgorithm, optional=True)
-                self._add_param(secure_3d, 'CardNo', card_auth.CardNo, optional=True)
-            else:
-                self._add_param(secure_3d, 'Mvn', card_auth.Mvn, optional=card_auth.SecureKind != '3')
-                self._add_param(secure_3d, 'Xid', card_auth.Xid, optional=card_auth.SecureKind != '3')
-                self._add_param(secure_3d, 'Ts', card_auth.Ts, optional=card_auth.SecureKind != '3')
-                self._add_param(secure_3d, 'ECI', card_auth.ECI, optional=card_auth.SecureKind != '3')
-                self._add_param(secure_3d, 'CAVV', card_auth.CAVV, optional=card_auth.SecureKind != '3')
-                self._add_param(secure_3d, 'CavvAlgorithm', card_auth.CavvAlgorithm, optional=card_auth.SecureKind != '3')
-                self._add_param(secure_3d, 'CardNo', card_auth.CardNo, optional=card_auth.SecureKind != '3')
+            self._add_param(secure_3d, 'Mvn', card_auth.Mvn, optional=forced_3d_auth)
+            self._add_param(secure_3d, 'Xid', card_auth.Xid, optional=forced_3d_auth)
+            self._add_param(secure_3d, 'Ts', card_auth.Ts, optional=forced_3d_auth)
+            self._add_param(secure_3d, 'ECI', card_auth.ECI, optional=forced_3d_auth)
+            self._add_param(secure_3d, 'CAVV', card_auth.CAVV, optional=forced_3d_auth)
+            self._add_param(secure_3d, 'CavvAlgorithm', card_auth.CavvAlgorithm, optional=forced_3d_auth)
+            self._add_param(secure_3d, 'CardNo', card_auth.CardNo, optional=forced_3d_auth)
         return message
 
     def _create_request_card_sales_part_cancel_xml(self, params):
