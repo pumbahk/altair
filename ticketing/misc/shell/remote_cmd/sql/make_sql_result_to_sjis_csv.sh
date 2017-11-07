@@ -14,8 +14,8 @@ EOS
 
 # シェル共通設定・関数の読み込み
 CWD=$(cd $(dirname $0) && pwd)
-[ -f ${CWD}/common/config.sh ] && . ${CWD}/common/config.sh
-[ -f ${CWD}/common/function.sh ] && . ${CWD}/common/function.sh
+[ -f ${CWD}/../../common/config.sh ] && . ${CWD}/../../common/config.sh
+[ -f ${CWD}/../../common/function.sh ] && . ${CWD}/../../common/function.sh
 
 file=${1}
 file_name=${file%.*}

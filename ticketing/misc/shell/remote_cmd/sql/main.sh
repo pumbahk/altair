@@ -150,7 +150,7 @@ EOS
 select=$(ask "文字コードをShift-JISに変換したファイルの作成も行いますか？(y)")
 case "${select}" in
 y)
-    bash "${CWD}/../../make_sql_result_to_sjis_csv.sh" "${sql_file}_res.txt"
+    bash "${CWD}/make_sql_result_to_sjis_csv.sh" "${sql_file}_res.txt"
     ;;
 *)
     echo "終了します。"
