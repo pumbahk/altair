@@ -199,10 +199,10 @@
   <li>${names[-1]}</li>
 </ul>
 </%def>
-<%def name="sortable(column, paging=True)">
+<%def name="sortable(column, paging=True, custom_label=None)">
 <%
 column_name = HH.column_name_for(column)
-column_label = HH.label_text_for(column)
+column_label = custom_label or HH.label_text_for(column)
 %>
 % if paging:
 <%
