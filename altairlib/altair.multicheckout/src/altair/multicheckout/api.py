@@ -217,6 +217,61 @@ class Multicheckout3DAPI(object):
         self.save_api_response(res, params)
         return res
 
+    @staticmethod
+    def get_forced_auth_secure3d_param():
+        space = " "
+        forced_auth_secure3d_param = dict(
+            mvn=space*10,
+            xid=space*28,
+            ts=space,
+            eci='06',
+            cavv=space*28,
+            cavv_algorithm=space,
+        )
+        return forced_auth_secure3d_param
+
+    def forced_checkout_auth_secure3d(self, order_no, item_name, amount, tax, client_name, mail_address, card_no, card_limit, card_holder_name, free_data=None, item_cd=None):
+        """ 強制セキュア3D認証オーソリ """
+        if item_cd is None:
+            item_cd = self.default_item_cd
+        order_no = maybe_unicode(order_no)
+        order_no = self._decorate_order_no(order_no)
+        order_ymd = self.now.strftime('%Y%m%d').decode('ascii')
+        forced_auth_secure3d_param = self.get_forced_auth_secure3d_param()
+        params = m.MultiCheckoutRequestCard(
+            ItemCd=item_cd,
+            ItemName=item_name,
+            OrderYMD=order_ymd,
+            SalesAmount=int(amount),
+            TaxCarriage=tax,
+            FreeData=free_data,
+            ClientName=client_name,
+            MailAddress=mail_address,
+            MailSend=u'0',
+            CardNo=card_no,
+            CardLimit=card_limit,
+            CardHolderName=card_holder_name,
+            PayKindCd=u'10',
+            PayCount=None,
+            SecureKind=u'3',
+            Mvn=forced_auth_secure3d_param['mvn'],
+            Xid=forced_auth_secure3d_param['xid'],
+            Ts=forced_auth_secure3d_param['ts'],
+            ECI=forced_auth_secure3d_param['eci'],
+            CAVV=forced_auth_secure3d_param['cavv'],
+            CavvAlgorithm=forced_auth_secure3d_param['cavv_algorithm'],
+            card_brand=detect_card_brand(self.request, card_no)
+            )
+        self.session.add(params)
+        try:
+            res = self.impl.request_card_auth(self, order_no, params)
+        finally:
+            self.session.commit()
+        res.request = params
+        events.CheckoutAuthSecure3DEvent.notify(self.request, order_no, res)
+        self.save_api_response(res, params)
+        return res
+
 
     def checkout_sales(self, order_no):
         """ 売上確定 """
