@@ -16,10 +16,14 @@ cat << EOS
 #---------------------------
 EOS
 
-# 設定・関数の読み込み
+# シェル共通設定・関数の読み込み
 CWD=$(cd $(dirname $0) && pwd)
-[ -f ${CWD}/config.sh ] && . ${CWD}/config.sh
-[ -f ${CWD}/function.sh ] && . ${CWD}/function.sh
+[ -f ${CWD}/../common/config.sh ] && . ${CWD}/../common/config.sh
+[ -f ${CWD}/../common/function.sh ] && . ${CWD}/../common/function.sh
+
+# ORG追加独自設定・関数の読み込み
+relative_source config.sh
+relative_source function.sh
 
 ### 設定内容の出力
 cat << EOS
