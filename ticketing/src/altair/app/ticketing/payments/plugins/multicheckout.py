@@ -611,6 +611,7 @@ class MultiCheckoutView(object):
                 message='uncaught exception',
                 order_no=order['order_no'],
                 back_url=back_url(self.request))
+
         if enrol.is_enable_auth_api():
             form=m_h.secure3d_acs_form(self.request, complete_url(self.request), enrol)
             self.request.response.text = form
@@ -666,6 +667,7 @@ class MultiCheckoutView(object):
             return HTTPFound(location=get_confirm_url(self.request))
         elif enrol.is_enable_secure3d_chargeback_risk():
             # チャージバックリスクがあるため実施せずエラー
+            self.request.session.flash(u"通信エラーが発生しました。再度お試しください。")
             logger.error("multicheckout chargeback risk enroll RetCd = %s, ErrorCd = %s" % (enrol.RetCd, enrol.ErrorCd))
             raise MultiCheckoutSettlementFailure(
                 message='chargeback_risk exception',
