@@ -190,6 +190,9 @@ class PerformanceShowView(BaseView):
             if tab not in ['order', 'reservation']:
                 tab = 'reservation'
 
+        if self.request.GET.get('sort') and self.request.GET.get('direction'):
+            self.context.sort_sales_segments()
+
         data = {
             'performance': self.performance,
             'tab': tab
