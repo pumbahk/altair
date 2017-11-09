@@ -5,10 +5,13 @@ from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.decorator import reify
 from pyramid.security import ACLAllowed
 from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy.orm.util import class_mapper
+from sqlalchemy import sql
 
+from altair.sqla import new_comparator
 from altair.sqlahelper import get_db_session
 from altair.app.ticketing.resources import TicketingAdminResource
-from altair.app.ticketing.core.models import Organization, Event, Performance
+from altair.app.ticketing.core.models import Organization, Event, Performance, SalesSegment, SalesSegmentSetting
 
 class SalesCounterResourceMixin(object):
     @reify
@@ -32,7 +35,28 @@ class SalesCounterResourceMixin(object):
             sales_segments = self.performance.sales_segments 
         return sorted(sales_segments, key=sales_segment_sort_key_func, reverse=True)
 
+    def sort_sales_segments(self):
+        sort_column = self.request.GET.get('sort')
+        query = SalesSegment.query.filter(SalesSegment.performance_id == self.request.matchdict.get('performance_id'))
 
+        if sort_column == 'start_on':
+            query = query.join(SalesSegmentSetting)
+            md_class = SalesSegmentSetting
+        else:
+            md_class = SalesSegment
+        try:
+            mapper = class_mapper(md_class)
+            prop = mapper.get_property(sort_column)
+            sort = new_comparator(prop, mapper)
+
+        except:
+            sort = None
+        direction = {'asc': sql.asc, 'desc': sql.desc}.get(
+            self.request.GET.get('direction'),
+            sql.asc
+        )
+        self.performance.sales_segments = query.order_by(direction(sort)).all()
+        return None
 
 class PerformanceAdminResource(TicketingAdminResource, SalesCounterResourceMixin):
     def __init__(self, request):
