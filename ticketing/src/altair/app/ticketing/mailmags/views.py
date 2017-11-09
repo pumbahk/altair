@@ -38,7 +38,8 @@ class MailMagazinesView(BaseView):
             mailmag=mailmag,
             mailmag_form=MailMagazineForm(
                 name=mailmag.name,
-                description=mailmag.description
+                description=mailmag.description,
+                status=mailmag.status
                 )
             )
 

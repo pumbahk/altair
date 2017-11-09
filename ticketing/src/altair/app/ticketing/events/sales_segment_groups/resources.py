@@ -1,5 +1,9 @@
 from pyramid.httpexceptions import HTTPNotFound
 from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy.orm.util import class_mapper
+from sqlalchemy import sql
+
+from altair.sqla import new_comparator
 
 from altair.app.ticketing.resources import TicketingAdminResource
 from altair.app.ticketing.core.models import SalesSegment, SalesSegmentGroup, Performance, Event, Organization, PaymentDeliveryMethodPair
@@ -62,3 +66,25 @@ class SalesSegmentGroupAdminResource(TicketingAdminResource):
     def lot(self):
         lot_id = self.request.matchdict.get('lot_id')
         return Lot.query.filter(Lot.id == lot_id).first()
+
+    def sort_sales_segment(self):
+        sort_column = self.request.GET.get('sort')
+        query = SalesSegment.query.filter(SalesSegment.sales_segment_group_id == self.request.matchdict.get('sales_segment_group_id'))
+
+        if sort_column == 'start_on':
+            query = query.join(Performance)
+            md_class = Performance
+        else:
+            md_class = SalesSegment
+        try:
+            mapper = class_mapper(md_class)
+            prop = mapper.get_property(sort_column)
+            sort = new_comparator(prop, mapper)
+        except:
+            sort = None
+        direction = {'asc': sql.asc, 'desc': sql.desc}.get(
+            self.request.GET.get('direction'),
+            sql.asc
+        )
+        self.sales_segment_group.sales_segments = query.order_by(direction(sort)).all()
+        return None

@@ -16,10 +16,14 @@ cat << EOS
 #---------------------------
 EOS
 
-# 設定・関数の読み込み
+# シェル共通設定・関数の読み込み
 CWD=$(cd $(dirname $0) && pwd)
-[ -f ${CWD}/config.sh ] && . ${CWD}/config.sh
-[ -f ${CWD}/function.sh ] && . ${CWD}/function.sh
+[ -f ${CWD}/../common/config.sh ] && . ${CWD}/../common/config.sh
+[ -f ${CWD}/../common/function.sh ] && . ${CWD}/../common/function.sh
+
+# ORG追加独自設定・関数の読み込み
+relative_source config.sh
+relative_source function.sh
 
 ### 設定内容の出力
 cat << EOS
@@ -29,8 +33,8 @@ FP_TENANT_CODE: ${FP_TENANT_CODE}
 FP_IMG_DIR_PATH: ${FP_IMG_DIR_PATH}
 SLAVE_DB: ${SLAVE_DB}
 MASTER_DB: ${MASTER_DB}
-FP_PROD_HOST: ${FP_PROD_HOST}
-FP_STG_HOST: ${FP_STG_HOST}
+PROD_SERVER: ${PROD_SERVER}
+STG_SERVER: ${STG_SERVER}
 FP_IMG_PROD_SERVER: ${FP_IMG_PROD_SERVER}
 FP_IMG_STG_SERVER: ${FP_IMG_STG_SERVER}
 EOS
@@ -47,7 +51,7 @@ TARGET_ENV=$(ask "データ登録対象の環境を選択してください 。[
 case "${TARGET_ENV}" in
 prod)
     echo "${txtred}本番環境を対象に処理を進めます。${txtreset}"
-    TARGET_HOST=${FP_PROD_HOST}
+    TARGET_SERVER=${PROD_SERVER}
     FP_IMG_SERVER=${FP_IMG_PROD_SERVER}
 
     declare -a CURL_OPTIONS=()
@@ -60,7 +64,7 @@ prod)
     ;;
 stg)
     echo "ステージング環境を対象に処理を進めます。"
-    TARGET_HOST=${FP_STG_HOST}
+    TARGET_SERVER=${STG_SERVER}
     FP_IMG_SERVER=${FP_IMG_STG_SERVER}
 
     declare -a CURL_OPTIONS=()
@@ -73,7 +77,7 @@ stg)
     ;;
 *)
     echo "選択が不適切です。"
-    return 1
+    exit 1
     ;;
 esac
 
@@ -108,13 +112,13 @@ esac
 
 cat << EOS
 #---------------------------
-# リモートホスト(${TARGET_HOST})との接続確認
+# リモートホスト(${TARGET_SERVER})との接続確認
 #---------------------------
 EOS
 
-connected=$(echo "hostname" | remote_execution ${WHO_AM_I} ${TARGET_HOST})
+connected=$(echo "hostname" | remote_execution ${WHO_AM_I} ${TARGET_SERVER})
 if [ $? -ne 0 ]; then
-    echo "${txtred}リモートホスト「${TARGET_HOST}」の接続に失敗しました。config.shを見直してください。${txtreset}"
+    echo "${txtred}リモートホスト「${TARGET_SERVER}」の接続に失敗しました。config.shを見直してください。${txtreset}"
     exit 1
 fi
 echo "${txtblue}正常に${connected}に接続しました。${txtreset}"
@@ -132,7 +136,7 @@ SELECT * FROM Organization WHERE code = "${CODE}"\G
 EOS
 )
 
-echo "${connect} -e '${sql}'" | remote_execution ${WHO_AM_I} ${TARGET_HOST}
+echo "${connect} -e '${sql}'" | remote_execution ${WHO_AM_I} ${TARGET_SERVER}
 echo "${txtyellow}注意：この段階で複数の組織レコードの表示や、組織レコード自体が表示されない場合はORG追加手順の「管理画面ADMIN権限ユーザで実施」を見直してください。${txtreset}"
 
 ORG_ID=$(ask "「id: xxx」を入力してください。")
@@ -143,7 +147,7 @@ sql=$(cat << EOS
 SELECT id, organization_id, name, code FROM FamiPortTenant WHERE organization_id = ${ORG_ID};
 EOS
 )
-echo "${connect} -e '${sql}'" | remote_execution ${WHO_AM_I} ${TARGET_HOST}
+echo "${connect} -e '${sql}'" | remote_execution ${WHO_AM_I} ${TARGET_SERVER}
 
 confirm "「code」は${FP_TENANT_CODE}と一致していますか？(y)"
 

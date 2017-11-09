@@ -16,10 +16,14 @@ cat << EOS
 #---------------------------
 EOS
 
-# 設定・関数の読み込み
+# シェル共通設定・関数の読み込み
 CWD=$(cd $(dirname $0) && pwd)
-[ -f ${CWD}/config.sh ] && . ${CWD}/config.sh
-[ -f ${CWD}/function.sh ] && . ${CWD}/function.sh
+[ -f ${CWD}/../common/config.sh ] && . ${CWD}/../common/config.sh
+[ -f ${CWD}/../common/function.sh ] && . ${CWD}/../common/function.sh
+
+# ORG追加独自設定・関数の読み込み
+relative_source config.sh
+relative_source function.sh
 
 ### 設定内容の出力
 cat << EOS
@@ -30,8 +34,8 @@ SLAVE_DB: ${SLAVE_DB}
 MASTER_DB: ${MASTER_DB}
 SLAVE_PORT: ${SLAVE_PORT}
 MASTER_PORT: ${MASTER_PORT}
-FP_PROD_HOST: ${FP_PROD_HOST}
-FP_STG_HOST: ${FP_STG_HOST}
+PROD_SERVER: ${PROD_SERVER}
+STG_SERVER: ${STG_SERVER}
 FP_TENANT_CODE: ${FP_TENANT_CODE}
 EOS
 
@@ -47,15 +51,15 @@ TARGET_ENV=$(ask "データ登録対象の環境を選択してください 。[
 case "${TARGET_ENV}" in
 prod)
     echo "${txtred}本番DBにデータを登録します。${txtreset}"
-    TARGET_HOST=${FP_PROD_HOST}
+    TARGET_SERVER=${PROD_SERVER}
     ;;
 stg)
     echo "ステージングDBにデータを登録します"
-    TARGET_HOST=${FP_STG_HOST}
+    TARGET_SERVER=${STG_SERVER}
     ;;
 *)
     echo "選択が不適切です。"
-    return 1
+    exit 1
     ;;
 esac
 
@@ -65,9 +69,9 @@ cat << EOS
 #---------------------------
 EOS
 
-connected=$(echo "hostname" | remote_execution ${WHO_AM_I} ${TARGET_HOST})
+connected=$(echo "hostname" | remote_execution ${WHO_AM_I} ${TARGET_SERVER})
 if [ $? -ne 0 ]; then
-    echo "${txtred}リモートホスト「${TARGET_HOST}」の接続に失敗しました。config.shを見直してください。${txtreset}"
+    echo "${txtred}リモートホスト「${TARGET_SERVER}」の接続に失敗しました。config.shを見直してください。${txtreset}"
     exit 1
 fi
 echo "${txtblue}正常に${connected}に接続しました。${txtreset}"
@@ -84,7 +88,7 @@ sql=$(cat << EOS
 SELECT * FROM Organization WHERE code = "${CODE}"\G
 EOS
 )
-echo "${connect} -e '${sql}'" | remote_execution ${WHO_AM_I} ${TARGET_HOST}
+echo "${connect} -e '${sql}'" | remote_execution ${WHO_AM_I} ${TARGET_SERVER}
 echo "${txtyellow}注意：この段階で複数の組織レコードの表示や、組織レコード自体が表示されない場合はORG追加手順の「管理画面ADMIN権限ユーザで実施」を見直してください。${txtreset}"
 
 ORG_ID=$(ask "「id: xxx」を入力してください。")
@@ -115,7 +119,7 @@ ${sql}
 
 ---------------------------
 EOS
-echo "${connect} -e '${sql}'" | remote_execution ${WHO_AM_I} ${TARGET_HOST}
+echo "${connect} -e '${sql}'" | remote_execution ${WHO_AM_I} ${TARGET_SERVER}
 confirm "DB:ticketingにデータが未作成であることが確認できましたか？レコードが表示されなければ未作成です。(y)"
 
 connect="mysql -u famiport_ro -pfamiport -h ${SLAVE_DB_FMP} -P ${SLAVE_PORT} -D famiport"
@@ -131,7 +135,7 @@ ${sql}
 
 ---------------------------
 EOS
-echo "${connect} -e '${sql}'" | remote_execution ${WHO_AM_I} ${TARGET_HOST}
+echo "${connect} -e '${sql}'" | remote_execution ${WHO_AM_I} ${TARGET_SERVER}
 confirm "DB:famiportにデータが未作成であることが確認できましたか？レコードが表示されなければ未作成です。(y)"
 
 cat << EOS
@@ -168,14 +172,14 @@ select=$(ask "${txtyellow}よろしいですか？${txtreset}[ y（実行）, s�
 case "${select}" in
 y)
     echo "実行します。"
-    echo "${connect} -e '${sql}'" | remote_execution ${WHO_AM_I} ${TARGET_HOST}
+    echo "${connect} -e '${sql}'" | remote_execution ${WHO_AM_I} ${TARGET_SERVER}
     ;;
 s)
     echo "スキップします。"
     ;;
 *)
     echo "選択が不適切です。"
-    return 1
+    exit 1
     ;;
 esac
 
@@ -202,14 +206,14 @@ select=$(ask "${txtyellow}よろしいですか？${txtreset}[ y（実行）, s�
 case "${select}" in
 y)
     echo "実行します。"
-    echo "${connect} -e '${sql}'" | remote_execution ${WHO_AM_I} ${TARGET_HOST}
+    echo "${connect} -e '${sql}'" | remote_execution ${WHO_AM_I} ${TARGET_SERVER}
     ;;
 s)
     echo "スキップします。"
     ;;
 *)
     echo "選択が不適切です。"
-    return 1
+    exit 1
     ;;
 esac
 
@@ -230,13 +234,13 @@ SELECT * FROM FamiPortTenant WHERE organization_id = ${ORG_ID}; ;\G
 SELECT * FROM FamiPortTicketTemplate WHERE organization_id = ${ORG_ID}\G
 EOS
 )
-echo "${connect} -e '${sql}'" | remote_execution ${WHO_AM_I} ${TARGET_HOST}
+echo "${connect} -e '${sql}'" | remote_execution ${WHO_AM_I} ${TARGET_SERVER}
 connect="mysql -u famiport_ro -pfamiport -h ${SLAVE_DB_FMP} -P ${SLAVE_PORT} -D famiport"
 sql=$(cat << EOS
 SELECT * FROM FamiPortClient WHERE code = "${FP_TENANT_CODE}";
 EOS
 )
-echo "${connect} -e '${sql}'" | remote_execution ${WHO_AM_I} ${TARGET_HOST}
+echo "${connect} -e '${sql}'" | remote_execution ${WHO_AM_I} ${TARGET_SERVER}
 confirm "登録内容に問題がないことを確認してください(y)"
 
 cat << EOS

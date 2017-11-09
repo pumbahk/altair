@@ -1,4 +1,5 @@
 <%inherit file="/layout_2cols.html"/>
+<% from altair.app.ticketing.core.models import SalesSegment, Performance%>
 <%namespace file="/common/helpers.html" name="ch"/>
 <script type="text/javascript">
 function get_selected_sales_segment_group_id() {
@@ -114,11 +115,11 @@ ${ch.breadcrumbs(
       <table class="table table-striped table-bordered table-condensed" style="margin-bottom: 10px;">
         <thead>
           <tr>
-            <th class="minwidth">id</th>
+            <th class="minwidth">${ch.sortable(SalesSegment.id)}</th>
             <th>パフォーマンス</th>
-            <th>公演日</th>
-            <th>販売開始日時</th>
-            <th>販売終了日時</th>
+            <th>${ch.sortable(Performance.start_on, custom_label=u'公演日')}</th>
+            <th>${ch.sortable(SalesSegment.start_at, custom_label=u'販売開始日時')}</th>
+            <th>${ch.sortable(SalesSegment.end_at, custom_label=u'販売終了日時')}</th>
             <th>配券元</th>
             <th>上限枚数</th>
             <th>購入回数制限</th>
