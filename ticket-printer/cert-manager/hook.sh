@@ -39,8 +39,8 @@ if [ "X$COMMAND" = "Xdeploy_cert" ] ; then
   echo "new certificates are generated."
   [ -f $DEST ] && rm $DEST
   keytool -importcert -keystore $DEST -storepass $KEYSTORE_PASSWORD -storetype JKS -noprompt -alias 0 \
-    -file $(<perl -ne 'print $_, <STDIN> if(/^-/)' $CERT)
+    -file <(perl -ne 'print $_, <STDIN> if(/^-/)' $CERT)
   keytool -importcert -keystore $DEST -storepass $KEYSTORE_PASSWORD -storetype JKS -noprompt -alias 1 \
-    -file $(<perl -ne 'print $_, <STDIN> if(/^-/)' $CHAIN)
+    -file <(perl -ne 'print $_, <STDIN> if(/^-/)' $CHAIN)
   echo "keystore is generated."
 fi

@@ -3875,7 +3875,7 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     __tablename__ = 'SalesSegment'
     query = DBSession.query_property()
 
-    id = Column(Identifier, primary_key=True)
+    id = AnnotatedColumn(Identifier, primary_key=True, _a_label=_(u'id'))
     start_at = AnnotatedColumn(DateTime, _a_label=_(u'販売開始'))
     end_at = AnnotatedColumn(DateTime, _a_label=_(u'販売終了'))
     max_quantity = AnnotatedColumn('upper_limit', Integer, _a_label=_(u'購入上限枚数'))

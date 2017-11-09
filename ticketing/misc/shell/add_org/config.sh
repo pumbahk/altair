@@ -4,9 +4,6 @@
 # 以下の値は追加するORGの申請内容に合わせて変更してください。
 #---------------------------
 
-ALTAIR_PATH=~/altair # 各自localのPATHをいれてください
-CHEF_REPO_PATH=~/chef-repo/ # 各自localのPATHをいれてください
-
 CODE="WW"
 ORG_NAME="株式会社WW" # 25文字以内で設定してください
 CONTACT="http://www.h5-official.com/pages/1236135/contact" # 【mailto:メールアドレス】 OR 【問い合わせURL】
@@ -23,25 +20,8 @@ PATH_TO_PC_LOGO="/Users/ts-motoi.a.komatsu/Downloads/WW/ww_PC.png"
 PATH_TO_SP_LOGO="/Users/ts-motoi.a.komatsu/Downloads/WW/ww_SP.png"
 PATH_TO_MB_LOGO="/Users/ts-motoi.a.komatsu/Downloads/WW/ww_MB.gif"
 
-WHO_AM_I="komatsumo02" # ユーザー名
 FP_TENANT_CODE="00057" # Famiportテナントコード
 FP_IMG_DIR_PATH="/Users/ts-motoi.a.komatsu/Downloads/WW_IMG" # Famiport連携用画像ディレクトリ
-
-#---------------------------
-# DBホスト
-#---------------------------
-
-SLAVE_DB="dbmain.standby.altr"
-MASTER_DB="dbmain.master.altr"
-SLAVE_DB_FMP="dbfmp.standby.altr"
-MASTER_DB_FMP="dbfmp.master.altr"
-
-#---------------------------
-# DBポート
-#---------------------------
-
-SLAVE_PORT="3308"
-MASTER_PORT="3306"
 
 #---------------------------
 # S3の設定
@@ -100,8 +80,6 @@ EOS
 # Famiport設定
 #---------------------------
 
-FP_STG_HOST="apmv1-stg.1a.vpc.altr"
-FP_PROD_HOST="btmv1.1c.vpc.altr"
 FP_IMG_STG_SERVER="btfm2-fmz.1a"
 FP_IMG_PROD_SERVER="btfm2.1a"
 declare -a CURL_STG_OPTIONS=(
@@ -112,25 +90,3 @@ declare -a CURL_PROD_OPTIONS=(
     '--user tstarftps1:rukvh66bw2 ftps://10.132.73.31:990/'
     '--user tstarftps2:bjmvr3hdn9 ftps://10.132.73.41:990/'
 )
-
-#---------------------------
-# テキスト装飾
-#---------------------------
-
-if [ "${TERM:-dumb}" != "dumb" ]; then
-    txtunderline=$(tput sgr 0 1)     # Underline
-    txtbold=$(tput bold)             # Bold
-    txtred=$(tput setaf 1)           # red
-    txtgreen=$(tput setaf 2)         # green
-    txtyellow=$(tput setaf 3)        # yellow
-    txtblue=$(tput setaf 4)          # blue
-    txtreset=$(tput sgr0)            # Reset
-else
-    txtunderline=""
-    txtbold=""
-    txtred=""
-    txtgreen=""
-    txtyellow=""
-    txtblue=$""
-    txtreset=""
-fi
