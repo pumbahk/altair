@@ -4,7 +4,6 @@ import { BrowserModule }  from '@angular/platform-browser';
 //componet
 import { FilterComponent } from '../../reserve-by-seat/filter/filter.component';
 import { ReserveByQuantityComponent } from '../../reserve-by-quantity/reserve-by-quantity.component';
-import { VenuemapComponent } from '../../reserve-by-seat/venue-map/venue-map.component';
 //service
 import { StockTypeDataService } from '../../shared/services/stock-type-data.service';
 import { Subscription } from 'rxjs/Subscription';
@@ -22,7 +21,7 @@ import {
 import { ActivatedRoute,Router } from '@angular/router';
 import * as $ from 'jquery';
 @Component({
-  providers: [FilterComponent,ReserveByQuantityComponent,VenuemapComponent],
+  providers: [FilterComponent,ReserveByQuantityComponent],
   selector: 'app-seat-list',
   templateUrl: './seat-list.component.html',
   styleUrls: ['./seat-list.component.css']
@@ -30,11 +29,12 @@ import * as $ from 'jquery';
 export class SeatlistComponent implements OnInit {
 
   //input属性
-  @Input() private filterComponent: FilterComponent;
-  @Input() private countSelect: number;
-  @Input() private reserveByQuantityComponent: ReserveByQuantityComponent;
-
+  @Input() filterComponent: FilterComponent;
+  @Input() countSelect: number;
+  @Input() reserveByQuantityComponent: ReserveByQuantityComponent;
+  @Input('isInitialEnd') isInitialEnd: boolean;
   @Output() mapHome = new EventEmitter();
+
   @Output() confirmStockType = new EventEmitter<boolean>();
   @Output() stockTypeIdFromList = new EventEmitter<number>();
 
@@ -59,8 +59,7 @@ export class SeatlistComponent implements OnInit {
 
   constructor(private route: ActivatedRoute,
               private reserveByQuantity: ReserveByQuantityComponent,
-              private stockTypeDataService: StockTypeDataService,
-              private Venuemap: VenuemapComponent) {
+              private stockTypeDataService: StockTypeDataService) {
   }
 　
 　//公演情報・席種情報取得
@@ -152,7 +151,9 @@ export class SeatlistComponent implements OnInit {
   }
   //座席を選んで購入を選択
   onSelectClick(stockTypeName){
-    this.filterComponent.selectSeatSearch(stockTypeName);
-    this.mapHome.emit();
+    if (this.isInitialEnd) {
+      this.filterComponent.selectSeatSearch(stockTypeName);
+      this.mapHome.emit();
+    }
   }
 };
