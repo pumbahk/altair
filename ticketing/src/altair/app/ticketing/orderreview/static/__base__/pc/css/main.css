@@ -231,7 +231,7 @@ main {
 
 /* content
 -------------------------------------------- */
-#confirm {
+#content {
     position: relative;
     width: 950px;
     text-align: left;
@@ -241,7 +241,7 @@ main {
 }
 
 @media only screen and (max-width: 750px) {
-  #confirm {
+  #content {
     width: 100%;
     border: none;
   }
