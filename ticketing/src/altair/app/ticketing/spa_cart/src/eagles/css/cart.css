@@ -1132,7 +1132,7 @@
 		/*top: -15px;*/
 		right: 5px;
 	}
-	.modalWindow .modalInner span.closeBtn , .modalWindow-quantity .modalInner span.closeBtn {
+	.modalWindow .modalInner span.closeBtn {
 		border-radius: 50px;
 		-webkit-border-radius: 50px;
 		-moz-border-radius: 50px;
@@ -1143,6 +1143,18 @@
 		background: #fff;
 		box-shadow: 0px 0px 2px 2px rgba(0, 0, 0, 0.1);
 	}
+	.modalWindow-quantity .modalInner span.closeBtn {
+        border-radius: 50px;
+        -webkit-border-radius: 50px;
+        -moz-border-radius: 50px;
+        width: 26px;
+        height: 26px;
+        position: relative;
+        display: block;
+        background: #fff;
+        left: 92%;
+        box-shadow: 0px 0px 2px 2px rgba(0, 0, 0, 0.1);
+    }
 	.modalWindow .modalInner span.closeBtn:before, .modalWindow .modalInner span.closeBtn:after ,
 	.modalWindow-quantity .modalInner span.closeBtn:before, .modalWindow-quantity .modalInner span.closeBtn:after{
 		content: '';
@@ -1423,7 +1435,22 @@
 		line-height: 50px;
 		text-indent: -4px;
 	}
-
+	.modalWindowAlert .modalInner .modalAlert button {
+        height: 40px;
+        width: 100%;
+        color: #FFF;
+        text-align: center;
+        padding: 0 5px;
+        margin:10px 0 0;
+        border-radius: 5px;
+        background: #64000c;
+    }
+    .modalWindowAlert .modalInner .modalAlert button:hover {
+        color: #64000c;
+        background: #FFF;
+        border: solid 1px #64000c;
+        box-sizing: border-box;
+    }
 
 	/*PC END QUERY*************************/
 }
