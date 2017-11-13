@@ -1,0 +1,25 @@
+<%inherit file="./base.html"/>
+
+<main>
+  <div id="content">
+    <div class="wrap-content">
+      %if request.organization.setting.i18n:
+        <div class="selectwrapper">
+          ${h.create_url(request) |n}
+        </div>
+      % endif
+      <h2 class="heading-primary">
+        ${_(display_msg)}
+      </h2>
+      <ul class="errors_ul">
+        % if session_clear_url:
+          <a href="${session_clear_url}">前回の申込情報をクリアして、新しい申し込みページを開く</a>
+        % else:
+        <li>${_(u'ブラウザの再読み込みを行う')}</li>
+        <li>${_(u'入力したURL（ページアドレス）にタイプミスがないか確認する')}</li>
+        <li>${_(u'ブラウザの「戻る」ボタンを押して前画面からやり直す')}</li>
+        % endif
+      </ul>
+    </div>
+  </div>
+</main>
