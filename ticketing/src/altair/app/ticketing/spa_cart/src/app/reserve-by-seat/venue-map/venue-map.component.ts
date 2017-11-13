@@ -106,9 +106,9 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
   constructor(
     private el: ElementRef,
     private route: ActivatedRoute,
-    private performances: PerformancesService,
+    private performancesService: PerformancesService,
     private seatStatus: SeatStatusService,
-    private stockTypes: StockTypesService,
+    private stockTypesService: StockTypesService,
     private QuentityChecks: QuentityCheckService,
     private router: Router,
     private reserveByQuantity: ReserveByQuantityComponent,
@@ -189,6 +189,8 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
   selectedRegionId: string = null;
   // 席種情報
   stockTypeRes: IStockType[];
+  // 数受けの席種Id
+  quantityStockTypeIds: number[] = [];
   // 席種Id+regionIds
   stockTypeRegionIds: { [key: number]: string[]; } = {};
   // 公演
@@ -267,44 +269,55 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
     let drawingSeatTimer;
     let regionIds = Array();
     this.animationEnableService.sendToRoadFlag(true);
-    // 公演情報
-    let performanceRes: IPerformanceInfoResponse = this.route.snapshot.data['performance'];
-    this.event = performanceRes.data.event;
-    this.performance = performanceRes.data.performance;
-    this.performanceId = this.performance.performance_id;
-    this.venueURL = this.performance.venue_map_url;
-    this.colorNavi = "https://s3-ap-northeast-1.amazonaws.com/tstar/cart_api/color_sample.svg";
-    this.wholemapURL = this.performance.mini_venue_map_url;
-    this.salesSegments = this.performance.sales_segments;
-    let selesSegmentId: number = this.salesSegments[0].sales_segment_id;
-    // 席種情報検索
-    let response: IStockTypesResponse = this.route.snapshot.data['stockTypes'];
-    this._logger.debug(`get stock types success`, response);
-    this.stockType = response.data.stock_types;
-    this.stockTypeRes = response.data.stock_types;
 
-    this.stockTypes.getStockTypesAll(this.performanceId, selesSegmentId)
-      .subscribe((response: IStockTypesAllResponse) => {
-        this._logger.debug(`get StockTypesAll(#${this.performanceId}) success`, response);
-        let stockTypes: IStockType[] = response.data.stock_types;
-        for (let i = 0, len = stockTypes.length; i < len; i++) {
-          if (stockTypes[i].is_quantity_only) {
-            let regions: string[] = stockTypes[i].regions;
-            let stockTypeId: number = stockTypes[i].stock_type_id;
-            if (regions.length > 0) {
-              that.stockTypeRegionIds[stockTypeId] = regions;
-              Array.prototype.push.apply(this.regionIds, regions);
-            }
-          }
-        }
-        this.isRegionObtained = true;
-        (error) => {
-          this._logger.error('[VenueMapComponent]getStockType error', error);
-          if (error != `${ApiConst.TIMEOUT}` && error != `${ApiConst.SERVERDNSERROR}` && error != `${ApiConst.SERVERDOWNERROR}`) {
-            this.errorModalDataService.sendToErrorModal('エラー', '席種情報を取得できません。');
-          }
-        }
-      });
+    this.route.params.subscribe((params) => {
+      if (params && params['performance_id']) {
+        //パラメーター切り出し
+        this.performanceId = +params['performance_id'];
+        this.performancesService.getPerformance(this.performanceId).subscribe((response: IPerformanceInfoResponse) => {
+          this._logger.debug(`get Performance(#${this.performanceId}) success`, response);
+          let performanceRes = response;
+          this.event = performanceRes.data.event;
+          this.performance = performanceRes.data.performance;
+          this.performanceId = this.performance.performance_id;
+          this.venueURL = this.performance.venue_map_url;
+          this.colorNavi = "https://s3-ap-northeast-1.amazonaws.com/tstar/cart_api/color_sample.svg";
+          this.wholemapURL = this.performance.mini_venue_map_url;
+          this.salesSegments = this.performance.sales_segments;
+          let selesSegmentId: number = this.salesSegments[0].sales_segment_id;
+          this.stockTypesService.getStockTypesAll(this.performanceId, selesSegmentId)
+            .subscribe((response: IStockTypesAllResponse) => {
+              this._logger.debug(`get StockTypesAll(#${this.performanceId}) success`, response);
+              let stockTypes: IStockType[] = response.data.stock_types;
+              for (let i = 0, len = stockTypes.length; i < len; i++) {
+                if (stockTypes[i].is_quantity_only) {
+                  let regions: string[] = stockTypes[i].regions;
+                  let stockTypeId: number = stockTypes[i].stock_type_id;
+                  if (regions.length > 0) {
+                    that.stockTypeRegionIds[stockTypeId] = regions;
+                    Array.prototype.push.apply(this.regionIds, regions);
+                  }
+                }
+              }
+              this.isRegionObtained = true;
+              this.stockTypesService.findStockTypesByPerformanceId(this.performanceId).subscribe((response: IStockTypesResponse) => {
+                this._logger.debug(`findStockTypesByPerformanceId(#${this.performanceId}) success`, response);
+                this.stockType = response.data.stock_types;
+              },
+                (error) => {
+                  this._logger.error('findStockTypesByPerformanceId(#${this.performanceId}) error', error);
+                });
+              (error) => {
+                this._logger.error('[VenueMapComponent]getStockType error', error);
+              }
+            });
+        },
+          (error) => {
+            this._logger.error('get Performance(#${this.performanceId}) error', error);
+            return;
+          });
+      }
+    });
 
     this.filterComponent.searched$.subscribe((response: ISeatsResponse) => {
       that.seatGroups = response.data.seat_groups;
@@ -1520,7 +1533,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
   // 席種情報取得
   getStockTypeInforamtion() {
     if (this.performanceId && this.salesSegments[0].sales_segment_id && this.stockTypeId) {
-      this.stockTypes.getStockType(this.performanceId, this.salesSegments[0].sales_segment_id, this.stockTypeId)
+      this.stockTypesService.getStockType(this.performanceId, this.salesSegments[0].sales_segment_id, this.stockTypeId)
         .subscribe((response: IStockTypeResponse) => {
           this._logger.debug(`get stockType(#${this.performanceId}) success`, response);
           let stockType: IStockType = response.data.stock_types[0];
@@ -1533,9 +1546,6 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
         (error) => {
           this.removeDialog();
           this._logger.error('stockType error', error);
-          if (error != `${ApiConst.TIMEOUT}` && error != `${ApiConst.SERVERDNSERROR}` && error != `${ApiConst.SERVERDOWNERROR}`) {
-            this.errorModalDataService.sendToErrorModal('エラー', '席種情報を取得できません。');
-          }
         });
     } else {
       this.removeDialog();
@@ -1598,9 +1608,6 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
             this.animationEnableService.sendToRoadFlag(false);
             $('.reserve').prop("disabled", false);
             this._logger.error('seatReserve error', error);
-            if (error != `${ApiConst.TIMEOUT}` && error != `${ApiConst.SERVERDNSERROR}` && error != `${ApiConst.SERVERDOWNERROR}`) {
-              this.errorModalDataService.sendToErrorModal('エラー', '座席の確保に失敗しました。');
-            }
             this.seatUpdate();//座席情報最新化
           });
       } else {
