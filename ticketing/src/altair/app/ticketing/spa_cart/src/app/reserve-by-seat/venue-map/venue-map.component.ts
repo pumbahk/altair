@@ -5,6 +5,7 @@ import {
   AfterContentInit,
   AfterViewInit,
   OnInit,
+  OnDestroy,
   NgModule,
   ViewChild
 } from '@angular/core';
@@ -682,6 +683,11 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
         }
       }, 100);
     });
+  }
+
+  ngOnDestroy() {
+    //リサイズのイベントハンドラを削除
+    $(window).off('resize');
   }
 
   sideError() {
