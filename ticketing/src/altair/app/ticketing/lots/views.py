@@ -473,7 +473,7 @@ class ConfirmLotEntryView(object):
         organization = self.context.organization
         if organization.setting.enable_word == 1:
             user = cart_api.get_user(self.context.authenticated_user()) # これも読み直し
-            if user is not None and user.support_word_subscription():
+            if user is not None and user.supports_word_subscription():
                 try:
                     for p in lot.performances:
                         res = cart_api.get_keywords_from_cms(self.request, p.id)
