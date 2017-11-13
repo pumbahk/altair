@@ -1,0 +1,97 @@
+<html lang="ja">
+<head>
+  <title><%block name="title">楽天チケット　ログインページ</%block></title>
+</head>
+<body>
+<div align="center">
+  <img src="${request.static_url('altair.app.ticketing.fc_auth:static/RT/mobile/images/logo-small.gif')}" width="160" height="26" alt="楽天チケット" />
+  <hr size="2" noshade="noshade" color="#000000" />
+</div>
+<div>
+<%namespace file="../tags_mobile.html" name="mobile" />
+<%mobile:header>TVアニメ「カイトアンサ」スペシャルイベント「リアル立川を解放せよ！?」2018年もナゾトキ・ヒラメキ・スタンバイ！！?</%mobile:header>
+
+
+<p style="text-align:center;">
+<div id="login_form">
+<div><font color="#FEBF00">■</font>【シリアルコード入力】</font>
+</div>
+
+お間違えのないようにお願い致します。<br/>
+<br/>
+</div>
+<form action="${request.current_route_path()}" method="post">
+<div>
+  シリアルコード<br/>
+  <input type="text" name="username" value="" istyle="4"><br/>
+  %if message:
+  <br/><span style="color: red">入力に誤りがあります。<br/>ご確認の上、もう一度入力してください。</span>
+  %endif
+
+  <input type="hidden" name="password" value="rakuten">
+</div>
+<input type="submit" value="申込に進む" />
+</form>
+<br/>
+</div>
+
+</p>
+<%mobile:rakuten_header>公演日</%mobile:rakuten_header>
+<div class="serialatt">
+<span>2018年5月4日（金・祝）<br/>
+※開場・開演時間は未定となっております。決まり次第公式ホームページ等にてお知らせいたします。予めご了承の上、お申込をお願い致します。</span>
+</div>
+
+<%mobile:rakuten_header>会場</%mobile:rakuten_header>
+<div class="serialatt">
+たましんRISURUホール<br/>
+チケット料金 全席指定 ￥6,000<br/><br/>
+
+<%mobile:rakuten_header>受付期間</%mobile:rakuten_header>
+<div class="serialatt">
+11月16日（木）0：00～12月6日（水）23：59<br/><br/>
+
+<%mobile:rakuten_header>当落発表について</%mobile:rakuten_header>
+<div class="serialatt">
+下記日時にて抽選結果をメールにてお知らせします。メール未着の場合は‘抽選履歴確認ページ’よりご確認ください。
+当落発表日：12月11日（月）夕方以降メールにてお知らせ<br/>
+抽選結果確認ページ　<a href="https://rt.tstar.jp/orderreview/form" target="_blank">https://rt.tstar.jp/orderreview/form</a><br/><br/>
+
+<%mobile:rakuten_header>公演注意事項</%mobile:rakuten_header>
+<div class="serialatt">
+※お一人様2枚まで申し込み可<br/>
+※未就学児童入場不可<br/>
+※当日は身分証明書の提示をお願いする可能性がありますので必ずご持参下さい。<br/>
+※ご購入されたチケットは、理由の如何を問わず、取替・変更・キャンセルはお受けできません。<br/>
+※購入時、チケット代の他にシステム利用料等、各種手数料が必要となります。<br/>
+※中止等の場合、手数料は返金いたしませんので、予めご了承ください。<br/><br/>
+
+<%mobile:rakuten_header>お申込み時の注意事項</%mobile:rakuten_header>
+<div class="serialatt">
+※お申込みにはDVDに封入されていたシリアルナンバーが必要となります。<br/>
+※DVD内に封入されておりました８桁のシリアルナンバーを入力して下さい。<br/>
+※今回の受付は楽天チケットのシステムを利用しております。申し込みが多数の場合は抽選となります。申し込み順（先着）ではございません。<br/>
+※お一人様2枚までのお申込みが可能となります。<br/>
+※チケット代金の他に各種手数料が加算されます。各種手数料はお支払い方法やお受取方法によって異なりますので、詳しくは申し込みページをご確認ください。<br/>
+※その他、申し込みページの注意事項を必ずご確認ください。<br/><br/>
+
+<%mobile:rakuten_header>個人情報について</%mobile:rakuten_header>
+<div class="serialatt">
+ご入力頂いたお客様の個人情報は、すべて主催者、楽天チケット(運営：株式会社チケットスター)に所属いたします。<br/>
+利用に関しましては、チケット販売または、チケットの発送、お客様の会場ご入場の際にかかわる事務作業の円滑化のために利用させていただき、上述の業務以外で特別の事情が無い限りお客様の承認なく第三者にその情報を開示、提供することはございません。<br/><br/>
+
+<%mobile:rakuten_header>本先行に関するお問い合わせ</%mobile:rakuten_header>
+<div class="serialatt">
+楽天チケットカスタマーサポート<br/>
+TEL：050-5817-9070(平日10:00～17:00)<br/>
+<a href="https://ticket.rakuten.co.jp/inquiry">https://ticket.rakuten.co.jp/inquiry</a><br/><br/>
+
+<hr size="1" color="#888888" noshade="noshade" />
+<div align="center" style="font-size:x-small">
+  <div>
+    <a href="http://www.ticketstar.jp">運営会社</a> | <a href="http://privacy.rakuten.co.jp/">個人情報保護方針</a> | <a href="http://www.ticketstar.jp/legal">特定商取引法に基づく表示</a>
+  </div>
+<div><font color="#888888"> &copy; TicketStar, Inc.</font></div>
+</div>
+</body>
+</html>
