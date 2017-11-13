@@ -423,16 +423,17 @@ export class ReserveBySeatComponent implements OnInit {
       //	});
 
       //seat-listのボタンのtoggle
-      $(function(){
-        $(".acd dd").css("display","none");
-        $("#mapAreaRight").on("click",".acd dt",function(){
-          $(this).next("dd").slideToggle();
-          $(this).next("dd").parent().siblings().find("dd").slideUp();
-          $(this).toggleClass("open");
-          $(this).parent().siblings().find("dt").removeClass("open");
+      $(function () {
+        $(".acd dd").css("display", "none");
+        $("#mapAreaRight").on("click", ".acd dt", function () {
+          if ($(this).children().attr('class') != "close") {
+            $(this).next("dd").slideToggle();
+            $(this).next("dd").parent().siblings().find("dd").slideUp();
+            $(this).toggleClass("open");
+            $(this).parent().siblings().find("dt").removeClass("open");
+          }
+          });
         });
-      });
-
       //リサイズでリロード
       // $(function(){
       //   var timer;

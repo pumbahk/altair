@@ -335,6 +335,7 @@ export class FilterComponent implements OnInit {
     }
   }
   searchClick() {
+    $(".acd dd").css("display", "none");
     if (!this.searching) {
       this.getIsSearchFlag();
       if (!this.searching && !this.isSearch) {
@@ -345,6 +346,7 @@ export class FilterComponent implements OnInit {
 
   //各項目を初期化
   clearClick() {
+    $(".acd dd").css("display", "none");
     this.getIsSearchFlag();
     if (!this.searching && !this.isSearch) {
       this.seatPrices = [this.min, this.max];
