@@ -4,7 +4,6 @@ import { BrowserModule }  from '@angular/platform-browser';
 //componet
 import { FilterComponent } from '../../reserve-by-seat/filter/filter.component';
 import { ReserveByQuantityComponent } from '../../reserve-by-quantity/reserve-by-quantity.component';
-import { VenuemapComponent } from '../../reserve-by-seat/venue-map/venue-map.component';
 //service
 import { StockTypesService } from '../../shared/services/stock-types.service';
 import { StockTypeDataService } from '../../shared/services/stock-type-data.service';
@@ -30,7 +29,7 @@ import { Logger } from "angular2-logger/core";
 import { ApiConst } from '../../app.constants';
 
 @Component({
-  providers: [FilterComponent, ReserveByQuantityComponent, VenuemapComponent],
+  providers: [FilterComponent,ReserveByQuantityComponent],
   selector: 'app-seat-list',
   templateUrl: './seat-list.component.html',
   styleUrls: ['./seat-list.component.css']
@@ -38,11 +37,12 @@ import { ApiConst } from '../../app.constants';
 export class SeatlistComponent implements OnInit {
 
   //input属性
-  @Input() private filterComponent: FilterComponent;
-  @Input() private countSelect: number;
-  @Input() private reserveByQuantityComponent: ReserveByQuantityComponent;
-
+  @Input() filterComponent: FilterComponent;
+  @Input() countSelect: number;
+  @Input() reserveByQuantityComponent: ReserveByQuantityComponent;
+  @Input('isInitialEnd') isInitialEnd: boolean;
   @Output() mapHome = new EventEmitter();
+
   @Output() confirmStockType = new EventEmitter<boolean>();
   @Output() stockTypeIdFromList = new EventEmitter<number>();
 
@@ -211,12 +211,15 @@ export class SeatlistComponent implements OnInit {
       this.stockTypeIdFromList.emit(stockTypeId);
     }
   }
-  /**
+ /**
 * 座席を選んで購入を押下時の処理
 * @param  {string} stockTypeName - 席種名
 */
-  onSelectClick(stockTypeName) {
-    this.filterComponent.selectSeatSearch(stockTypeName);
-    this.mapHome.emit();
+  onSelectClick(stockTypeName){
+    if (this.isInitialEnd) {
+      this.filterComponent.selectSeatSearch(stockTypeName);
+      this.mapHome.emit();
+    }
+
   }
 }
