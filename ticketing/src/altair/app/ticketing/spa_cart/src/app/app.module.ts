@@ -30,9 +30,6 @@ import { AnimationEnableService } from './shared/services/animation-enable.servi
 import { ErrorModalDataService } from './shared/services/error-modal-data.service';
 import { CountSelectService } from './shared/services/count-select.service';
 import { SmartPhoneCheckService } from './shared/services/smartPhone-check.service';
-//Resolver
-import { PerformanceResolver } from './shared/services/performance-resolver.service';
-import { StockTypesResolver } from './shared/services/stock-types-resolver.service';
 //Ng-inline-svg
 import { InlineSVGModule } from 'ng-inline-svg';
 //Primeng
@@ -46,14 +43,7 @@ import { Logger } from 'angular2-logger/core';
 import { environment }    from '../environments/environment';
 
 const routes: Routes = [
-  {
-    path: 'performances/:performance_id',
-    component: ReserveBySeatComponent,
-    resolve: {
-      performance: PerformanceResolver,
-      stockTypes: StockTypesResolver
-    }
-  },
+  { path: 'performances/:performance_id',component: ReserveBySeatComponent },
   { path: 'performances/:performance_id/reserve-by-quantity/:stock_type_id', component: ReserveByQuantityComponent },
   { path: 'performances/:performance_id/select-product', component: SelectProductComponent },
   { path: 'payment/', component: PaymentComponent },
@@ -94,8 +84,6 @@ const routes: Routes = [
     StockTypesService,
     PerformancesService,
     SeatsService,
-    PerformanceResolver,
-    StockTypesResolver,
     SelectProductService,
     QuentityCheckService,
     StockTypeDataService,

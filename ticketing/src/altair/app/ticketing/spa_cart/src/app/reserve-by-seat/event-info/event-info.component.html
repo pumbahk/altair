@@ -1,7 +1,9 @@
 <section class="headArea">
   <div class="inner">
-    <p><span>{{performance.performance_name}}</span><span class="place">{{performance.venue_name}}</span>
-    <span>{{year}}年{{month}}月{{day}}日 {{startOnTime}}～</span>
+    <p><span>{{performanceName}}</span><span class="place">{{venueName}}</span>
+    <span *ngIf="isDateObtained">
+      {{year}}年{{month}}月{{day}}日 {{startOnTime}}～
+    </span>
     </p>
     <button type="button" class="haBtn02 pc" (click)= "onClick()"><span class="iconSearch"></span><span>他の試合へ</span></button>
   </div>

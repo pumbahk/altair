@@ -1547,6 +1547,15 @@
 		text-align: center;
 	}
 
+	/* ツールチップ */
+	#tooltip {
+		position: absolute;
+		background-color: #FFF;
+		color: #000;
+		padding: 5px;
+		text-align: center;
+		border: solid 1px #ddd;
+	}
 
 
 
@@ -3038,7 +3047,7 @@
 	}
 	#modalWindowErrorBox {
         background: rgba(0,0,0, 0.8);
-        position:absolute;
+        position:fixed;
         top:-120px;
         left:0;
         width:100%;

@@ -1,0 +1,92 @@
+<%inherit file="./base.html"/>
+
+%if request.session.peek_flash():
+<div style="border: 3px solid red; background: #FFEEEE; padding: 10px; margin: 10px;">
+  <ul>
+    %for message in request.session.pop_flash():
+    <li>${message}</li>
+    %endfor
+  </ul>
+</div>
+%endif
+
+<div class="confirm-wrap">
+    <h2 class="heading heading_simple_line">クレジットカードでお支払い</h2>
+    <form id="form1" class="confirmForm" name="form1" method="post" action="${request.url}">
+        ${form.csrf_token()}
+        <div class="customerBox">
+            <table class="customer-table">
+                <tbody>
+                    <tr>
+                        <th>${_(u'カード番号')}<br><span>半角数字(16桁)</span></th>
+                    </tr>
+                    <tr>
+                        <td>
+                            <input name="card_number" type="text" id="textfield" length="16" placeholder="1234123412341234"/>
+                            ${h.error_list(request, form, 'card_number')}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>${_(u'有効期限')}<br><span>半角数字</span></th>
+                    </tr>
+                    <tr>
+                        <td>
+                            ${form.exp_month(id="select")}
+                            ${_(u'月')}　
+                            ${form.exp_year(id="select2")}
+                            ${_(u'年')}
+                            ${h.error_list(request, form, 'exp_month')}
+                            ${h.error_list(request, form, 'exp_year')}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>${_(u'名義人')}<br><span>半角ローマ字</span></th>
+                    </tr>
+                    <tr>
+                        <td>
+                            <input name="card_holder_name" type="text" id="textfield5" placeholder="${_(u'YAMADA TARO')}">
+                            ${h.error_list(request, form, 'card_holder_name')}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>${_(u'セキュリティコード')}<br><span>半角</span></th>
+                    </tr>
+                    <tr>
+                        <td>
+                            <input name="secure_code" type="text" id="textfield6" size="5">
+                            ${h.error_list(request, form, 'secure_code')}
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="confirm-textbox mgt30">
+            <ul class="list-disc fs12">
+                <li>
+                    ${_(u'セキュリティコードは、カード裏面の署名欄に印刷されている下3桁の数字です。')}
+                </li>
+                <li>
+                    ${_(u'ブラウザの「戻る」ボタンを使用するとエラーになります。')}<br>${_(u'ページによってはブラウザの「更新」ボタンを使用するとエラーになる場合があります。')}
+                </li>
+                <%
+                    notice = request.session.get('altair.app.ticketing.payments.auth3d_notice')
+                %>
+                %if notice:
+                <li>
+                    ${notice | n}
+                </li>
+                %else:
+                <li>
+                    ${_(u'支払回数は≪1回払い≫のみのお取扱いとなります。 以下のクレジットカードがご利用できます。')}
+                    <img src="${view_context.static_url('smartphone/images/cards.gif')}" height="30px" />
+                </li>
+                %endif
+            </ul>
+        </div>
+
+        <div class="pdt20 pdb20 tac">
+            <input type="submit" class="btn btn-primary" value="${__(u'次へ')}" />
+        </div>
+    </form>
+</div>

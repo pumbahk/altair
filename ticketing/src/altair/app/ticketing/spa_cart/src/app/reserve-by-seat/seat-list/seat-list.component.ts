@@ -7,11 +7,10 @@ import { ReserveByQuantityComponent } from '../../reserve-by-quantity/reserve-by
 import { VenuemapComponent } from '../../reserve-by-seat/venue-map/venue-map.component';
 //service
 import { StockTypesService } from '../../shared/services/stock-types.service';
-import { ErrorModalDataService } from '../../shared/services/error-modal-data.service';
 import { StockTypeDataService } from '../../shared/services/stock-type-data.service';
+import { PerformancesService } from '../../shared/services/performances.service';
+import { ErrorModalDataService } from '../../shared/services/error-modal-data.service';
 import { Subscription } from 'rxjs/Subscription';
-//const
-import { ApiConst } from '../../app.constants';
 //interface
 import {
   IPerformance,
@@ -20,13 +19,16 @@ import {
   ISeatsResponse,
   IStockType,
   IStockTypeResponse,
-  IStockTypesResponse
+  IStockTypesResponse,
 } from '../../shared/services/interfaces';
 //router
 import { ActivatedRoute,Router } from '@angular/router';
 import * as $ from 'jquery';
 //logger
 import { Logger } from "angular2-logger/core";
+// constants
+import { ApiConst } from '../../app.constants';
+
 @Component({
   providers: [FilterComponent, ReserveByQuantityComponent, VenuemapComponent],
   selector: 'app-seat-list',
@@ -69,9 +71,10 @@ export class SeatlistComponent implements OnInit {
     private reserveByQuantity: ReserveByQuantityComponent,
     private stockTypeDataService: StockTypeDataService,
     private Venuemap: VenuemapComponent,
-    private StockTypesService: StockTypesService,
-    private ErrorModalDataService: ErrorModalDataService,
-    private _logger: Logger) {
+    private performancesService: PerformancesService,
+    private _logger: Logger,
+    private errorModalDataService: ErrorModalDataService,
+    private stockTypesService: StockTypesService) {
   }
 　
   //公演情報・席種情報取得
@@ -84,12 +87,27 @@ export class SeatlistComponent implements OnInit {
     );
 
     const that = this;
-    let stockTypesRes: IStockTypesResponse;
-    let performanceRes: IPerformanceInfoResponse = this.route.snapshot.data['performance'];
-    stockTypesRes = this.route.snapshot.data['stockTypes'];
-    this.stockTypes = stockTypesRes.data.stock_types
+    this.route.params.subscribe((params) => {
+      if (params && params['performance_id']) {
+        //パラメーター切り出し
+        this.performanceId = +params['performance_id'];
+        this.performancesService.getPerformance(this.performanceId).subscribe((response: IPerformanceInfoResponse) => {
+          this._logger.debug(`get Performance(#${this.performanceId}) success`, response);
+          this.performance = response.data.performance;
+          this.stockTypesService.findStockTypesByPerformanceId(this.performanceId).subscribe((response: IStockTypesResponse) => {
+            this._logger.debug(`findStockTypesByPerformanceId(#${this.performanceId}) success`, response);
+            this.stockTypes = response.data.stock_types
+          },
+            (error) => {
+              this._logger.error('findStockTypesByPerformanceId(#${this.performanceId}) error', error);
+            });
+        },
+          (error) => {
+            this._logger.error('get Performance(#${this.performanceId}) error', error);
+          });
+      }
+    });
 
-    this.performance = performanceRes.data.performance;
     this.filterComponent.searched$.subscribe((response: ISeatsResponse) => {
       that.searchResultFlag = false;
       this.seatStockType = response.data.stock_types;
@@ -97,7 +115,7 @@ export class SeatlistComponent implements OnInit {
       this.makeStockTypes = this.divideList(this.stockTypes);
 
       //検索結果フラグ
-      if (this.makeStockTypes.length == 0) {
+      if (this.makeStockTypes.length == 0 || this.makeStockTypes[0].stock_type_name == null) {
         that.searchResultFlag = true;
       }
     });

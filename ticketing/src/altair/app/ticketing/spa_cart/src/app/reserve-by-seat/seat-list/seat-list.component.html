@@ -2,12 +2,14 @@
     <p class="choiceSeatTtl">席種を選択</p>
     <dl class="acd">
         <div *ngIf="searchResultFlag">条件に一致するチケットがありませんでした。</div>
-        <div *ngFor="let stockType of makeStockTypes">
-            <dt><span class="{{stockStatus(stockTypesArr[stockType.stock_type_id][1])}}"><span></span></span><div class="listText">{{stockTypesArr[stockType.stock_type_id][0]}}</div></dt>
+        <div *ngIf="!searchResultFlag">
+            <div *ngFor="let stockType of makeStockTypes">
+                <dt><span class="{{stockStatus(stockTypesArr[stockType.stock_type_id][1])}}"><span></span></span><div class="listText">{{stockTypesArr[stockType.stock_type_id][0]}}</div></dt>
                 <dd style="display:none">
                     <div *ngIf="stockType.is_quantity_only" class="buy"><button class="" type="button" (click)="onAutoClick(stockType.stock_type_id)">この席種を購入</button></div>
                     <div *ngIf="!stockType.is_quantity_only"><button class="" type="button" (click)="onSelectClick(stockTypesArr[stockType.stock_type_id][0])">座席を選んで購入</button><button class="" type="button" (click)="onAutoClick(stockType.stock_type_id)">おまかせで購入</button></div>
                 </dd>
+            </div>
         </div>
     </dl>
 </div>
