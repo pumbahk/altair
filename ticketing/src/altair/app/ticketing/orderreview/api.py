@@ -21,14 +21,13 @@ from altair.app.ticketing.orders.models import (
 
 logger = logging.getLogger(__name__)
 
-def send_qr_mail(request, context, recipient, sender):
+def send_qr_mail(request, context, recipient, sender, subject):
     mail_body = get_mailbody_from_viewlet(request, context, "render.mail")
-    return _send_mail_simple(request, recipient, sender, mail_body, 
-                             subject=u"QRチケットに関しまして", )
+    return _send_mail_simple(request, recipient, sender, mail_body, subject=subject)
 
 def send_qr_aes_mail(request, context, recipient, sender):
     mail_body = get_mailbody_from_viewlet(request, context, "render.mail_aes")
-    return _send_mail_simple(request, recipient, sender, mail_body, subject=u"QRチケットに関しまして",)
+    return _send_mail_simple(request, recipient, sender, mail_body, subject=u"QRチケットに関しまして")
 
 def get_mailbody_from_viewlet(request, context, viewname):
     response = render_view_to_response(context, request, name=viewname)
@@ -38,7 +37,7 @@ def get_mailbody_from_viewlet(request, context, viewname):
 
 def _send_mail_simple(request, recipient, sender, mail_body, subject=u"QRチケットに関しまして"):
     message = Message(
-            subject=subject, 
+            subject=subject,
             recipients=[recipient], 
             #bcc=bcc,
             body=get_appropriate_message_part(request, recipient, mail_body),

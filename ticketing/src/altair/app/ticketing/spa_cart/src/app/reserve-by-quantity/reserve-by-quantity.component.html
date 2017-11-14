@@ -1,6 +1,6 @@
 <div id="modalWindowAlertBox" class="modalWindowAlertBox" *ngIf="display">
-    <div id="modalWindowAlertBoxInner" class="modalWindowAlertBoxInner">
-        <div id="modalWindow" class="modalWindow">
+    <div id="modalWindowAlertBoxInner" class="modalWindowAlertBoxInner-quantity">
+        <div id="modalWindow-quantity" class="modalWindow-quantity">
             <div class="modalInner">
                 <div class="closeBtnBox"><span class="closeBtn" (click)="closeClick()"></span></div>
                 <div class="modalMap venueimg" aria-label="vanueimg" id="venue-quentity" [inlineSVG]="mapURL"></div>
@@ -15,21 +15,24 @@
                         </p>
                     </tr>
                 </div>
-                <div class="modalTicketQty cf">
-                    <div class="ticketQty">
-                        <p class="ticketQtyTtl">枚数</p>
-                        <button id="minus-btn" class="iconMinus disabled" (click)="minusClick()"><span></span></button>
-                        <p id="ticketSheet">{{quantity}}</p>
-                        <button id="plus-btn"  class="iconPlus" (click)="plusClick()"><span></span></button>
-                    </div>
+            </div>
+        </div>
+        <div class="fixed">
+            <div class="modalTicketQty cf">
+                <div class="ticketQty">
+                    <p class="ticketQtyTtl">枚数</p>
+                    <button id="minus-btn" class="iconMinus disabled" (click)="minusClick()"><span></span></button>
+                    <p id="ticketSheet">{{quantity}}</p>
+                    <button id="plus-btn"  class="iconPlus" (click)="plusClick()"><span></span></button>
                 </div>
-                <div class="modalBtnBox" *ngIf="nextButtonFlag">
-                    <button id="reservebutton" class="" type="button" (click)="seatReserveClick()">次へ</button>
-                </div>
+            </div>
+            <div class="modalBtnBox" *ngIf="nextButtonFlag">
+                <button id="reservebutton" class="" type="button" (click)="seatReserveClick()">次へ</button>
             </div>
         </div>
     </div>
 </div>
+
 <!--飛び席確認モーダル-->
 <div id="modalWindowAlertBox" class="modalWindowAlertBox" *ngIf="separatDetailDisplay">
     <div id="modalWindowAlertBoxInner" class="modalWindowAlertBoxInner">

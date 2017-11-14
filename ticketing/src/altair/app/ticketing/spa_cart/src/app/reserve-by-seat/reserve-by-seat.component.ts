@@ -65,7 +65,7 @@ export class ReserveBySeatComponent implements OnInit {
             $(this).next().slideToggle(300);
           }).next().hide();
         });
- 
+
         $(function(){
           function heightSetting(){
             let minus = 0;
@@ -76,7 +76,7 @@ export class ReserveBySeatComponent implements OnInit {
             } else {
               minus = 149;
             }
-            
+
             let mainID = 'mapAreaLeft'
             let windowH = $(window).height();
             let mainH = windowH - minus;
@@ -90,7 +90,7 @@ export class ReserveBySeatComponent implements OnInit {
           $(document).ready(function(){
             heightSetting();
           });
-          
+
           //リサイズ時の縦幅調整
           $(window).resize(function(){
             heightSetting();
@@ -217,15 +217,17 @@ export class ReserveBySeatComponent implements OnInit {
       });
 
       //seat-listのボタンのtoggle
-      $(function(){
-        $(".acd dd").css("display","none");
-        $("#mapAreaRight").on("click",".acd dt",function(){
-          $(this).next("dd").slideToggle();
-          $(this).next("dd").parent().siblings().find("dd").slideUp();
-          $(this).toggleClass("open");
-          $(this).parent().siblings().find("dt").removeClass("open");
+      $(function () {
+        $(".acd dd").css("display", "none");
+        $("#mapAreaRight").on("click", ".acd dt", function () {
+          if ($(this).children().attr('class') != "close") {
+            $(this).next("dd").slideToggle();
+            $(this).next("dd").parent().siblings().find("dd").slideUp();
+            $(this).toggleClass("open");
+            $(this).parent().siblings().find("dt").removeClass("open");
+          }
+          });
         });
-      });
 
       $(document).ready(function(){
         $(".methodExplanation").hide();
