@@ -168,7 +168,7 @@ export class SeatlistComponent implements OnInit {
     });
     $('body').css({
       'height': "",
-      'overflow-y': "auto"
+      'overflow-y': "hidden"
     });
     $('body').scrollTop(0);
     if (this.countSelect == 0) {

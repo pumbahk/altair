@@ -1050,183 +1050,67 @@
 	.listText{
 		width:75%
 	}
-	/*#buyChoiceSeatArea {
-		background: #f6f7f9;
-	}
-	#buyChoiceSeatArea .buyChoiceSeatTtl span {
-		display:block;
-		min-width:1000px;
-		max-width:1300px;
-		margin:0 auto;
-		padding:0 20px;
-		box-sizing:border-box;
-	}
-	#buyChoiceSeatArea .buyChoiceSeatBox {
-		padding: 20px 0;
-		width:80%;
-		margin:0 auto;
-		font-size: 15px;
-		position:relative;
-	}
-	#buyChoiceSeatArea .buyChoiceSeatBox .seatNumber {
-		border: solid 1px #CCC;
-		box-sizing: border-box;
-		width: 100%;
-		height: 50px;
-		line-height: 50px;
-		border-radius: 5px;
-		background: #FFF;
-		position: relative;
-		margin-bottom: 10px;
-	}
-	#buyChoiceSeatArea .buyChoiceSeatBox .seatNumber p {
-		display: block;
-		padding: 0 20px;
-		font-size: 18px;
-		color: #333;
-		letter-spacing: 10px;
-	}
-	#buyChoiceSeatArea .buyChoiceSeatBox .seatNumber .closeBtnBox {
+	#modalWindowAlertBox .modalWindowAlertBoxInner-quantity{
+		height: 100%;
 		position: absolute;
-		top: -15px;
-		right: -15px;
+		left: 25%;
+		top:5%;
 	}
-	#buyChoiceSeatArea .buyChoiceSeatBox .seatNumber span.closeBtn {
-		border-radius: 50px;
-		-webkit-border-radius: 50px;
-		-moz-border-radius: 50px;
-		width: 26px;
-		height: 26px;
-		position: relative;
-		display: block;
-		background: #fff;
-		border: solid 1px #CCC;
-	}
-	#buyChoiceSeatArea .buyChoiceSeatBox .seatNumber span.closeBtn:before, #buyChoiceSeatArea .buyChoiceSeatBox .seatNumber span.closeBtn:after {
-		content: '';
-		height: 2px;
-		width: 19px;
-		display: block;
-		background: #CCC;
-		position: absolute;
-		top: 12.5px;
-		left: 3px;
-		transform: rotate(-45deg);
-		-webkit-transform: rotate(-45deg);
-		-moz-transform: rotate(-45deg);
-		-o-transform: rotate(-45deg);
-		-ms-transform: rotate(-45deg);
-	}
-	#buyChoiceSeatArea .buyChoiceSeatBox .seatNumber span.closeBtn:after {
-		transform: rotate(45deg);
-		-webkit-transform: rotate(45deg);
-		-moz-transform: rotate(45deg);
-		-o-transform: rotate(45deg);
-		-ms-transform: rotate(45deg);
-	}
-	#buyChoiceSeatArea .buyChoiceSeatBox .selectBoxBtn {
-		padding-top: 20px;
-		border-top: 1px solid #ddd;
-		margin-top: 20px;
-	}
-	#buyChoiceSeatArea .buyChoiceSeatBox .selectBoxBtn p {
-		float: left;
-		display: block;
-		height: 40px;
-		line-height: 40px;
-	}
-	#buyChoiceSeatArea .buyChoiceSeatBox button {
-		height: 40px;
-		width: 28%;
-		margin: 0 0 0 2%;
-		color: #FFF;
-		text-align: center;
-		padding: 0 5px;
-		border-radius: 5px;
-		background: #64000c;
-		display: block;
-		float: right;
-		position: absolute;
-		bottom: 20px;
-		right: 20px;
-	}
-	#buyChoiceSeatArea .buyChoiceSeatBox button:hover {
-		color: #64000c;
-		background: #FFF;
-		border: solid 1px #64000c;
-		box-sizing: border-box;
-	}
-	#buyChoiceSeatArea .buyChoiceSeatBox .selectBoxBtn .closeBtnBox {
-		height: 31px;
-		width: 31px;
-		display: block;
-		position: relative;
-		float: left;
-		top: 8px;
-	}
-	#buyChoiceSeatArea .buyChoiceSeatBox .selectBoxBtn span.closeBtn {
-		border-radius: 50px;
-		-webkit-border-radius: 50px;
-		-moz-border-radius: 50px;
-		width: 26px;
-		height: 26px;
-		position: relative;
-		display: block;
-		background: #fff;
-		border: solid 1px #CCC;
-	}
-	#buyChoiceSeatArea .buyChoiceSeatBox .selectBoxBtn span.closeBtn:before {
-		content: '';
-		height: 2px;
-		width: 15px;
-		display: block;
-		background: #CCC;
-		position: absolute;
-		top: 12.5px;
-		left: 5px;
-	}*/
 	.modalWindow {
 		width: 400px;
 		margin-left: -200px;
 		position: absolute;
-		top: 50%;
+		top: 40%;
 		left: 50%;
 		-webkit-transform: translate(-50%, -50%);
 		overflow-y: auto;
-		max-height: 100%;
+		max-height: 80%;
 		/* Safari用 */
 		transform: translate(-50%, -50%);
 	}
-	.modalWindow .modalInner {
+	.fixed{
+		display: block;
+		background: #f6f7f9;
+		width: 380px;
+		z-index: 10;
+		border-radius: 0px 0px 5px 5px;
+		box-shadow: 0px 0px 2px 2px rgba(0, 0, 0, 0.1);
+	}
+	.modalWindow-quantity {
+		width: 400px;
+		overflow-y: auto;
+		max-height: 75%;
+	}
+	.modalWindow .modalInner , .modalWindow-quantity .modalInner {
 		background: #fff;
 		width: 380px;
 		padding: 10px;
 		position: relative;
-		border-radius: 5px;
+		border-radius: 5px 5px 0px 0px;
 		box-shadow: 0px 0px 2px 2px rgba(0, 0, 0, 0.1);
 	}
-	.modalWindow .modalInner .modalImg {
+	.modalWindow .modalInner .modalImg , .modalWindow-quantity .modalInner .modalImg {
 		margin-bottom: 10px;
 	}
-	.modalWindow .modalInner .modalImg img {
+	.modalWindow .modalInner .modalImg img , .modalWindow-quantity .modalInner .modalImg img {
 		width: 100%;
 		height: auto;
 	}
-	.modalWindow .modalInner .modalMap {
-		margin-bottom: 10px;
-		text-align: center;
+	.modalWindow .modalInner .modalMap , .modalWindow-quantity .modalInner .modalMap {
+		margin: 0px auto 10px;
+		width: 80%;
 	}
-	.modalWindow .modalInner .modalMap img {
+	.modalWindow .modalInner .modalMap img , .modalWindow-quantity .modalInner .modalMap img {
 		width: 40%;
 		height: auto;
 	}
-	.modalWindow .modalInner .modalBtnBox {
+	.modalWindow .modalInner .modalBtnBox , .modalWindow-quantity .modalInner .modalBtnBox {
 		padding-top: 10px;
 		margin-top: 10px;
 		border-top: solid 1px #ddd;
 		text-align: right;
 	}
-	.modalWindow .modalInner .modalBtnBox button {
+	.modalWindow .modalInner .modalBtnBox button , .modalWindow-quantity .modalInner .modalBtnBox button {
 		height: 40px;
 		width: 48%;
 		margin: 0 1%;
@@ -1236,13 +1120,14 @@
 		border-radius: 5px;
 		background: #64000c;
 	}
-	.modalWindow .modalInner .modalBtnBox button:hover {
+	.modalWindow .modalInner .modalBtnBox button:hover ,
+	.modalWindow-quantity .modalInner .modalBtnBox button:hover {
 		color: #64000c;
 		background: #FFF;
 		border: solid 1px #64000c;
 		box-sizing: border-box;
 	}
-	.modalWindow .modalInner .closeBtnBox {
+	.modalWindow .modalInner .closeBtnBox , .modalWindow-quantity .modalWindow .modalInner .closeBtnBox {
 		position: absolute;
 		/*top: -15px;*/
 		right: 5px;
@@ -1258,7 +1143,20 @@
 		background: #fff;
 		box-shadow: 0px 0px 2px 2px rgba(0, 0, 0, 0.1);
 	}
-	.modalWindow .modalInner span.closeBtn:before, .modalWindow .modalInner span.closeBtn:after {
+	.modalWindow-quantity .modalInner span.closeBtn {
+        border-radius: 50px;
+        -webkit-border-radius: 50px;
+        -moz-border-radius: 50px;
+        width: 26px;
+        height: 26px;
+        position: relative;
+        display: block;
+        background: #fff;
+        left: 92%;
+        box-shadow: 0px 0px 2px 2px rgba(0, 0, 0, 0.1);
+    }
+	.modalWindow .modalInner span.closeBtn:before, .modalWindow .modalInner span.closeBtn:after ,
+	.modalWindow-quantity .modalInner span.closeBtn:before, .modalWindow-quantity .modalInner span.closeBtn:after{
 		content: '';
 		height: 2px;
 		width: 20px;
@@ -1273,51 +1171,51 @@
 		-o-transform: rotate(-45deg);
 		-ms-transform: rotate(-45deg);
 	}
-	.modalWindow .modalInner span.closeBtn:after {
+	.modalWindow .modalInner span.closeBtn:after , .modalWindow-quantity .modalInner span.closeBtn:after{
 		transform: rotate(45deg);
 		-webkit-transform: rotate(45deg);
 		-moz-transform: rotate(45deg);
 		-o-transform: rotate(45deg);
 		-ms-transform: rotate(45deg);
 	}
-	.modalWindow .modalInner .seatPriceBox {
+	.modalWindow .modalInner .seatPriceBox , .modalWindow-quantity .modalInner .seatPriceBox {
 		padding-top: 10px;
 		text-align: right;
 	}
-	.modalWindow .modalInner .seatPriceBox p {
+	.modalWindow .modalInner .seatPriceBox p , .modalWindow-quantity .modalInner .seatPriceBox {
 		display: block;
 		color: #333;
 		font-size: 18px;
 		line-height: 1;
 	}
-	.modalWindow .modalInner .seatPriceBox p span {
+	.modalWindow .modalInner .seatPriceBox p span , .modalWindow-quantity .modalInner .seatPriceBox p span {
 		margin: 0 5px;
 	}
-	.modalWindow .modalInner .seatName {
+	.modalWindow .modalInner .seatName , .modalWindow-quantity .modalInner .seatName {
 		display: block;
 		color: #333;
 		font-size: 18px;
 		line-height: 1;
 		margin-bottom: 10px;
 	}
-	.modalWindow .modalInner .seatName2 {
+	.modalWindow .modalInner .seatName2 , .modalWindow-quantity .modalInner .seatName2 {
 		display: block;
 		color: #333;
 		font-size: 18px;
 		line-height: 1;
 	}
-	.modalWindow .modalInner .modalTicketQty .ticketQty {
+	.fixed .modalTicketQty .ticketQty {
 		width: 180px;
 		margin: 10px auto 0;
 	}
-	.modalWindow .modalInner .modalTicketQty p.ticketQtyTtl {
+	.fixed .modalTicketQty p.ticketQtyTtl {
 		float: left;
 		display: block;
 		height: 30px;
 		line-height: 30px;
 		margin-right: 10px;
 	}
-	.modalWindow .modalInner .modalTicketQty p#ticketSheet {
+	.fixed .modalTicketQty p#ticketSheet {
 		float: left;
 		display: block;
 		height: 30px;
@@ -1329,7 +1227,7 @@
 		font-size: 15px;
 		border-radius: 5px;
 	}
-	.modalWindow .modalInner .modalTicketQty .iconPlus, .modalWindow .modalInner .modalTicketQty .iconMinus {
+	.fixed .modalTicketQty .iconPlus, .fixed .modalTicketQty .iconMinus {
 		box-sizing: border-box;
 		border-radius: 50%;
 		position: relative;
@@ -1338,28 +1236,28 @@
 		height: 30px;
 		background-color: #64000c;
 	}
-	.modalWindow .modalInner .modalTicketQty .iconPlus:hover, .modalWindow .modalInner .modalTicketQty .iconMinus:hover {
+	.fixed .modalTicketQty .iconPlus:hover, .fixed .modalTicketQty .iconMinus:hover {
 		background-color: #000;
 	}
-	.modalWindow .modalInner .modalTicketQty .iconPlus span:after, .modalWindow .modalInner .modalTicketQty .iconPlus span:before {
+	.fixed .modalTicketQty .iconPlus span:after, .fixed .modalTicketQty .iconPlus span:before {
 		display: block;
 		content: '';
 		background-color: #FFF;
 		position: absolute;
 	}
-	.modalWindow .modalInner .modalTicketQty .iconPlus span:before {
+	.fixed .modalTicketQty .iconPlus span:before {
 		width: 20px;
 		height: 4px;
 		top: 13px;
 		left: 5px;
 	}
-	.modalWindow .modalInner .modalTicketQty .iconPlus span:after {
+	.fixed .modalTicketQty .iconPlus span:after {
 		width: 4px;
 		height: 20px;
 		top: 5px;
 		left: 13px;
 	}
-	.modalWindow .modalInner .modalTicketQty .iconMinus span:before {
+	.fixed .modalTicketQty .iconMinus span:before {
 		display: block;
 		content: '';
 		background-color: #FFF;
@@ -1369,7 +1267,28 @@
 		top: 13px;
 		left: 5px;
 	}
-
+	.fixed .modalBtnBox {
+		text-align: right;
+	}
+	.fixed .modalBtnBox button {
+		height: 40px;
+		width: 50%;
+		color: #FFF;
+		text-align: center;
+		padding: 0 5px;
+		margin:10px 5px 5px;
+		border-radius: 5px;
+		background: #64000c;
+	}
+	.fixed .modalBtnBox button:hover {
+		color: #64000c;
+		background: #FFF;
+		border: solid 1px #64000c;
+		box-sizing: border-box;
+	}
+	.fixed .modalBtnBox .modalAlertText {
+		text-align: center;
+	}
 
 	.modalWindow .modalInner .eventBox{
 		max-height:500px;
@@ -1545,8 +1464,6 @@
 		text-align: center;
 		border: solid 1px #ddd;
 	}
-
-
 
 	/*PC END QUERY*************************/
 }
@@ -2761,6 +2678,193 @@
 		-webkit-transition: all .4s;
 		transition: all .4s;
 	}*/
+	.fixed{
+		display: block;
+		background: #f6f7f9;
+		position: fixed;
+		bottom: 0;
+		width: 100%;
+		z-index: 10
+	}
+	.modalWindow-quantity {
+		width: 100%;
+		position: absolute;
+		z-index: 10;
+		background: #fff;
+		height: 100%;
+	}
+	.modalWindow-quantity .modalInner {
+		width: 100%;
+		height: 100%;
+		padding: 10px 3% 0;
+		overflow-y: auto;
+	}
+	.modalWindow-quantity .modalInner .modalImg {
+		margin-bottom: 10px;
+	}
+	.modalWindow-quantity .modalInner .modalImg img {
+		width: 100%;
+		height: auto;
+	}
+	.modalWindow-quantity .modalInner .modalMap {
+    	margin: 0px auto 5px;
+		width: 80%;
+	}
+	.modalWindow-quantity .modalInner .modalMap img {
+		width: 40%;
+		height: auto;
+	}
+	.modalWindow-quantity .modalInner .modalBtnBox {
+		padding-top: 10px;
+		margin: 10px 0;
+		border-top: solid 1px #ddd;
+		text-align: right;
+	}
+	.modalWindow-quantity .modalInner .closeBtnBox {
+		position: absolute;
+		top: 5px;
+		right: 3%;
+	}
+	.modalWindow-quantity .modalInner span.closeBtn {
+		border-radius: 50px;
+		-webkit-border-radius: 50px;
+		-moz-border-radius: 50px;
+		width: 26px;
+		height: 26px;
+		position: relative;
+		display: block;
+		background: #fff;
+		/*box-shadow: 0px 0px 2px 2px rgba(0, 0, 0, 0.1);*/
+	}
+	.modalWindow-quantity .modalInner span.closeBtn:before, .modalWindow-quantity .modalInner span.closeBtn:after {
+		content: '';
+		height: 2px;
+		width: 20px;
+		display: block;
+		background: #ccc;
+		position: absolute;
+		top: 12.5px;
+		left: 3px;
+		transform: rotate(-45deg);
+		-webkit-transform: rotate(-45deg);
+		-moz-transform: rotate(-45deg);
+		-o-transform: rotate(-45deg);
+		-ms-transform: rotate(-45deg);
+	}
+	.modalWindow-quantity .modalInner span.closeBtn:after {
+		transform: rotate(45deg);
+		-webkit-transform: rotate(45deg);
+		-moz-transform: rotate(45deg);
+		-o-transform: rotate(45deg);
+		-ms-transform: rotate(45deg);
+	}
+	.modalWindow-quantity .modalInner .seatPriceBox {
+		padding: 10px 10px 20px 10px;
+		text-align: right;
+	}
+	.modalWindow-quantity .modalInner .seatPriceBox p {
+		display: block;
+		color: #333;
+		line-height: 1;
+	}
+	.modalWindow-quantity .modalInner .seatPriceBox p span {
+		margin: 0 5px;
+	}
+	.modalWindow-quantity .modalInner .seatName {
+		display: block;
+		color: #333;
+		line-height: 1;
+		margin-bottom: 10px;
+	}
+	.modalWindow-quantity .modalInner .seatName2 {
+		display: block;
+		color: #333;
+		line-height: 1;
+	}
+	.fixed .modalTicketQty .ticketQty {
+		width: 180px;
+		margin: 10px auto 0;
+	}
+	.fixed .modalTicketQty p.ticketQtyTtl {
+		float: left;
+		display: block;
+		height: 30px;
+		line-height: 30px;
+		margin-right: 10px;
+	}
+	.fixed .modalTicketQty p#ticketSheet {
+		float: left;
+		display: block;
+		height: 30px;
+		line-height: 30px;
+		border: 1px solid #ddd;
+		padding: 0 10px;
+		text-align: center;
+		margin: 0 10px 5px;
+		font-size: 15px;
+		border-radius: 5px;
+	}
+	.fixed .modalTicketQty .iconPlus, .fixed .modalTicketQty .iconMinus {
+		box-sizing: border-box;
+		border-radius: 50%;
+		position: relative;
+		float: left;
+		width: 30px;
+		height: 30px;
+		background-color: #64000c;
+	}
+	.fixed .modalTicketQty .iconPlus:hover, .fixed .modalTicketQty .iconMinus:hover {
+		background-color: #000;
+	}
+	.fixed .modalTicketQty .iconPlus span:after, .fixed .modalTicketQty .iconPlus span:before {
+		display: block;
+		content: '';
+		background-color: #FFF;
+		position: absolute;
+	}
+	.fixed .modalTicketQty .iconPlus span:before {
+		width: 20px;
+		height: 4px;
+		top: 13px;
+		left: 5px;
+	}
+	.fixed .modalTicketQty .iconPlus span:after {
+		width: 4px;
+		height: 20px;
+		top: 5px;
+		left: 13px;
+	}
+	.fixed .modalTicketQty .iconMinus span:before {
+		display: block;
+		content: '';
+		background-color: #FFF;
+		position: absolute;
+		width: 20px;
+		height: 4px;
+		top: 13px;
+		left: 5px;
+	}
+	.fixed .modalBtnBox {
+		padding: 5px 0 5px 0;
+		border-top: solid 1px #ddd;
+		text-align: right;
+	}
+	.fixed .modalBtnBox button {
+		height: 40px;
+		width: 48%;
+		margin: 0 1%;
+		color: #FFF;
+		text-align: center;
+		padding: 0 5px;
+		border-radius: 5px;
+		background: #64000c;
+	}
+	.fixed .modalBtnBox button:hover {
+		color: #64000c;
+		background: #FFF;
+		border: solid 1px #64000c;
+		box-sizing: border-box;
+	}
 	.modalWindow {
 		width: 100%;
 		position: absolute;
@@ -2823,7 +2927,6 @@
 		position: relative;
 		display: block;
 		background: #fff;
-		/*box-shadow: 0px 0px 2px 2px rgba(0, 0, 0, 0.1);*/
 	}
 	.modalWindow .modalInner span.closeBtn:before, .modalWindow .modalInner span.closeBtn:after {
 		content: '';
@@ -2870,73 +2973,8 @@
 		color: #333;
 		line-height: 1;
 	}
-	.modalWindow .modalInner .modalTicketQty .ticketQty {
-		width: 180px;
-		margin: 10px auto 0;
-	}
-	.modalWindow .modalInner .modalTicketQty p.ticketQtyTtl {
-
-		float: left;
-		display: block;
-		height: 30px;
-		line-height: 30px;
-		margin-right: 10px;
-	}
-	.modalWindow .modalInner .modalTicketQty p#ticketSheet {
-		float: left;
-		display: block;
-		height: 30px;
-		line-height: 30px;
-		border: 1px solid #ddd;
-		padding: 0 10px;
-		text-align: center;
-		margin: 0 10px;
-		font-size: 15px;
-		border-radius: 5px;
-	}
-	.modalWindow .modalInner .modalTicketQty .iconPlus, .modalWindow .modalInner .modalTicketQty .iconMinus {
-		box-sizing: border-box;
-		border-radius: 50%;
-		position: relative;
-		float: left;
-		width: 30px;
-		height: 30px;
-		background-color: #64000c;
-	}
-	.modalWindow .modalInner .modalTicketQty .iconPlus:hover, .modalWindow .modalInner .modalTicketQty .iconMinus:hover {
-		background-color: #000;
-	}
-	.modalWindow .modalInner .modalTicketQty .iconPlus span:after, .modalWindow .modalInner .modalTicketQty .iconPlus span:before {
-		display: block;
-		content: '';
-		background-color: #FFF;
-		position: absolute;
-	}
-	.modalWindow .modalInner .modalTicketQty .iconPlus span:before {
-		width: 20px;
-		height: 4px;
-		top: 13px;
-		left: 5px;
-	}
-	.modalWindow .modalInner .modalTicketQty .iconPlus span:after {
-		width: 4px;
-		height: 20px;
-		top: 5px;
-		left: 13px;
-	}
-	.modalWindow .modalInner .modalTicketQty .iconMinus span:before {
-		display: block;
-		content: '';
-		background-color: #FFF;
-		position: absolute;
-		width: 20px;
-		height: 4px;
-		top: 13px;
-		left: 5px;
-	}
-
-
-	.modalWindowEvent{
+/*******************************************************************************************************/
+	/* .modalWindowEvent{
 		height:105% !important;
 	}
 	.modalWindow .modalInner .eventBox .eventMainTtl {
@@ -3002,7 +3040,7 @@
 		padding:10px;
 		margin:10px 0;
 		display:block;
-	}
+	} */
 
 
 	.modalWindowAlertBox {

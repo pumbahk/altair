@@ -525,7 +525,7 @@ app-select-product .modalWindowAlertBox {
 }
 
 /* reserve-by-quentity */
-.modalWindow .modalInner .modalTicketQty .disabled {
+.modalWindowAlertBox .modalWindowAlertBoxInner .fixed .modalTicketQty .disabled {
     background-color: #a4404c;
     cursor: not-allowed;
 }
@@ -752,10 +752,10 @@ app-select-product .modalWindowAlertBox {
 	.ie .headArea .inner .haBtn02 {
 		line-height: normal;
 	}
-	.ie app-reserve-by-quantity .modalWindow, .ie .modalInner, .ie .modalMap {
-		height: 85%;
+	.ie app-reserve-by-quantity .modalWindow-quantity, .ie .modalInner {
+		height: 100%;
 	}
-	.ie app-reserve-by-quantity .modalWindow {
+	.ie app-reserve-by-quantity .modalWindow-quantity {
 		overflow: hidden;
 	}
 	.ie app-reserve-by-quantity .modalInner {
@@ -764,6 +764,7 @@ app-select-product .modalWindowAlertBox {
 	}
 	.ie app-reserve-by-quantity .modalMap {
 		overflow: hidden;
+		height: 80%;
 	}
 	.ie app-reserve-by-quantity .modalBtnBox {
 		margin-bottom: 10px;
