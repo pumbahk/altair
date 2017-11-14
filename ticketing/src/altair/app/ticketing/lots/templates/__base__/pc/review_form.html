@@ -1,0 +1,28 @@
+<%inherit file="base.html" />
+
+<div class="wrap-form">
+  <article>
+    <h2>${_(u'抽選申込確認')}</h2>
+
+    <section>
+      <form method="post" accept-charset="utf-8" action="${request.url}" autocomplete="off" novalidate>
+        <dl class="formall form1">
+          <dt>${_(u'受付番号')} (${_(u'半角英数')})</dt>
+          <dd>
+            <input id="entry_no" name="entry_no" type="text" value="" placeholder="例: ${request.organization.short_name}000000AB" required>
+            <span class="red">${h.render_errors(request, form.entry_no.errors)}</span>
+          </dd>
+          <dt>${_(u'電話番号')} (${_(u'半角英数')})</dt>
+          <dd>
+            <input id="tel_no" name="tel_no" type="text" value="" placeholder="例: 080xxxxyyyy" required><br>
+            <small class="annot">${_(u'電話番号はご登録時の電話番号をご入力ください。')}</small>
+            <span class="red">${h.render_errors(request, form.tel_no.errors)}</span>
+          </dd>
+        </dl>
+        <p class="txtC">
+          <button class="btn" type="submit">${_(u'次に進む')}</button>
+        </p>
+      </form>
+    </section>
+  </article>
+</div>

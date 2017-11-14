@@ -233,6 +233,7 @@ export class ReserveByQuantityComponent implements OnInit {
                   this._logger.error('stockType error:' + error);
                   //レスポンスがエラーの場合は非表示
                   this.display = false;
+                  this.scrollAddCss();
                   if (error != `${ApiConst.TIMEOUT}` && error != `${ApiConst.SERVERDNSERROR}` && error != `${ApiConst.SERVERDOWNERROR}`) {
                     this.errorModalDataService.sendToErrorModal('エラー', '席種情報を取得できません。');
                   }
@@ -240,15 +241,11 @@ export class ReserveByQuantityComponent implements OnInit {
             } else {
               this.display = false;
               this._logger.error("パラメータに異常が発生しました。");
-              this.errorModalDataService.sendToErrorModal('エラー', '席種情報を取得できません。');
             }
           },
           (error) => {
             this.display = false;
             this._logger.error('performances error:' + error);
-            if (error != `${ApiConst.TIMEOUT}` && error != `${ApiConst.SERVERDNSERROR}` && error != `${ApiConst.SERVERDOWNERROR}`) {
-              this.errorModalDataService.sendToErrorModal('エラー', '公演情報を取得できません。');
-            }
           });
       }
       else {
@@ -350,9 +347,6 @@ export class ReserveByQuantityComponent implements OnInit {
                 this.animationEnableService.sendToRoadFlag(false);
                 $('#reservebutton').prop("disabled", false);
                 this._logger.error('seatReserve error:' + error);
-                if (error != `${ApiConst.TIMEOUT}` && error != `${ApiConst.SERVERDNSERROR}` && error != `${ApiConst.SERVERDOWNERROR}`) {
-                  this.errorModalDataService.sendToErrorModal('エラー', '座席の確保に失敗しました。');
-                }
                 this.seatUpdate();//座席情報最新化
               });
           }
@@ -406,9 +400,6 @@ export class ReserveByQuantityComponent implements OnInit {
       },
       (error) => {
         this._logger.debug(`seat release error`, error);
-        if (error != `${ApiConst.TIMEOUT}` && error != `${ApiConst.SERVERDNSERROR}` && error != `${ApiConst.SERVERDOWNERROR}`) {
-          this.errorModalDataService.sendToErrorModal('エラー', '座席を解放できません。');
-        }
       });
     //モーダル非表示
     this.separatDetailDisplay = false;

@@ -6,6 +6,7 @@ import { Observable } from 'rxjs/Rx';
 //prime
 import { InputTextModule } from 'primeng/primeng';
 //service
+import { PerformancesService } from '../../shared/services/performances.service';
 import { SeatsService } from '../../shared/services/seats.service';
 import { StockTypesService } from '../../shared/services/stock-types.service';
 import { StockTypeDataService } from '../../shared/services/stock-type-data.service';
@@ -96,9 +97,11 @@ export class FilterComponent implements OnInit {
    */
   public searched$: EventEmitter<ISeatsResponse>;
 
-  constructor(private seats: SeatsService,
+  constructor(
+    private performancesService: PerformancesService,
+    private seats: SeatsService,
     private route: ActivatedRoute,
-    private stockTypeService: StockTypesService,
+    private stockTypesService: StockTypesService,
     private errorModalDataService: ErrorModalDataService,
     private animationEnableService: AnimationEnableService,
     private stockTypeDataService: StockTypeDataService,
@@ -109,15 +112,33 @@ export class FilterComponent implements OnInit {
 
   ngOnInit() {
     //公演情報
-    let performanceRes: IPerformanceInfoResponse = this.route.snapshot.data['performance'];
-    this.performance = performanceRes.data.performance;
-    this.performanceId = this.performance.performance_id;
-    this.salesSegmentId = this.performance.sales_segments[0].sales_segment_id;
-    //席種情報検索
-    let stockTypesRes: IStockTypesResponse = this.route.snapshot.data['stockTypes'];
-    this.stockTypes = stockTypesRes.data.stock_types;
-    //初期金額セット＋検索処理
-    this.setPriceInit();
+    this.route.params.subscribe((params) => {
+      if (params && params['performance_id']) {
+        //パラメーター切り出し
+        this.performanceId = +params['performance_id'];
+        this.performancesService.getPerformance(this.performanceId).subscribe((response: IPerformanceInfoResponse) => {
+          this._logger.debug(`get Performance(#${this.performanceId}) success`, response);
+
+          this.performance = response.data.performance;
+          this.performanceId = this.performance.performance_id;
+          this.salesSegmentId = this.performance.sales_segments[0].sales_segment_id;
+          //席種情報検索
+          this.stockTypesService.findStockTypesByPerformanceId(this.performanceId).subscribe((response: IStockTypesResponse) => {
+            this._logger.debug(`findStockTypesByPerformanceId(#${this.performanceId}) success`, response);
+            this.stockTypes = response.data.stock_types;
+            //初期金額セット＋検索処理
+            this.setPriceInit();
+          },
+            (error) => {
+              this._logger.error('findStockTypesByPerformanceId(#${this.performanceId}) error', error);
+            });
+        },
+          (error) => {
+            this._logger.error('get Performance(#${this.performanceId}) error', error);
+            return;
+          });
+      }
+    });
 
     this.stockTypeDataService.toIsSearchFlag$.subscribe(
       flag => {
@@ -148,7 +169,7 @@ export class FilterComponent implements OnInit {
     let minPrice: number = 0;
     let maxPrice: number = 0;
 
-    this.stockTypeService.getStockTypesAll(this.performanceId, selesSegmentId)
+    this.stockTypesService.getStockTypesAll(this.performanceId, selesSegmentId)
       .subscribe((response: IStockTypesAllResponse) => {
         this._logger.debug(`get StockTypesAll(#${this.performanceId}) success`, response);
         let stockTypes: IStockType[] = response.data.stock_types;
@@ -200,9 +221,6 @@ export class FilterComponent implements OnInit {
       },
       (error) => {
         this._logger.error('[FilterComponent]getStockType error', error);
-        if (error != `${ApiConst.TIMEOUT}` && error != `${ApiConst.SERVERDNSERROR}` && error != `${ApiConst.SERVERDOWNERROR}`) {
-          this.errorModalDataService.sendToErrorModal('エラー', '席種情報を取得できません。');
-        }
       });
 
     //初期表示処理
@@ -419,19 +437,22 @@ export class FilterComponent implements OnInit {
   //検索処理
   public search(): Observable<ISeatsResponse> {
     this._logger.debug("seat search start");
+    let find = null;
     this.searching = true;
     $('.reserve').prop("disabled", true);
     this.animationEnableService.sendToRoadFlag(true);
-    let find = this.seats.findSeatsByPerformanceId(this.performance.performance_id, this.getSearchParams())
-      .map((response: ISeatsResponse) => {
-        for (var i = 0; i < response.data.stock_types.length; i++) {
-          response.data.stock_types[i] = Object.assign(
-            response.data.stock_types[i],
-            this.stockTypes.find(obj => obj.stock_type_id == response.data.stock_types[i].stock_type_id)
-          );
-        }
-        return response;
-      });
+    if (this.performanceId) {
+      find = this.seats.findSeatsByPerformanceId(this.performanceId, this.getSearchParams())
+        .map((response: ISeatsResponse) => {
+          for (var i = 0; i < response.data.stock_types.length; i++) {
+            response.data.stock_types[i] = Object.assign(
+              response.data.stock_types[i],
+              this.stockTypes.find(obj => obj.stock_type_id == response.data.stock_types[i].stock_type_id)
+            );
+          }
+          return response;
+        });
+    }
     find.subscribe((response: ISeatsResponse) => {
       this._logger.debug("seat search completed", response);
       $('.reserve').prop("disabled", false);
@@ -445,9 +466,6 @@ export class FilterComponent implements OnInit {
         $('.reserve').prop("disabled", false);
         this.animationEnableService.sendToRoadFlag(false);
         this._logger.error("seat search error", error);
-        if (error != `${ApiConst.TIMEOUT}` && error != `${ApiConst.SERVERDNSERROR}` && error != `${ApiConst.SERVERDOWNERROR}`) {
-          this.errorModalDataService.sendToErrorModal('エラー', '座席情報検索を取得できません。');
-        }
       });
     return find;
   }

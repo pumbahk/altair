@@ -1436,21 +1436,34 @@
 		text-indent: -4px;
 	}
 	.modalWindowAlert .modalInner .modalAlert button {
-        height: 40px;
-        width: 100%;
-        color: #FFF;
-        text-align: center;
-        padding: 0 5px;
-        margin:10px 0 0;
-        border-radius: 5px;
-        background: #64000c;
-    }
-    .modalWindowAlert .modalInner .modalAlert button:hover {
-        color: #64000c;
-        background: #FFF;
-        border: solid 1px #64000c;
-        box-sizing: border-box;
-    }
+		height: 40px;
+		width: 100%;
+		color: #FFF;
+		text-align: center;
+		padding: 0 5px;
+		margin:10px 0 0;
+		border-radius: 5px;
+		background: #64000c;
+	}
+	.modalWindowAlert .modalInner .modalAlert button:hover {
+		color: #64000c;
+		background: #FFF;
+		border: solid 1px #64000c;
+		box-sizing: border-box;
+	}
+	.modalWindowAlert .modalInner .modalAlert .modalAlertText {
+		text-align: center;
+	}
+
+	/* ツールチップ */
+	#tooltip {
+		position: absolute;
+		background-color: #FFF;
+		color: #000;
+		padding: 5px;
+		text-align: center;
+		border: solid 1px #ddd;
+	}
 
 	/*PC END QUERY*************************/
 }
@@ -3050,7 +3063,7 @@
 	}
 	#modalWindowErrorBox {
         background: rgba(0,0,0, 0.8);
-        position:absolute;
+        position:fixed;
         top:-120px;
         left:0;
         width:100%;
