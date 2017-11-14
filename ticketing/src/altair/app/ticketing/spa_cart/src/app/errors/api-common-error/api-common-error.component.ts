@@ -1,6 +1,8 @@
 import { Component, OnInit , Input, EventEmitter} from '@angular/core';
 //service
 import { ErrorModalDataService } from '../../shared/services/error-modal-data.service';
+import { AnimationEnableService } from '../../shared/services/animation-enable.service';
+
 
 @Component({
   selector: 'app-api-common-error',
@@ -9,7 +11,8 @@ import { ErrorModalDataService } from '../../shared/services/error-modal-data.se
 })
 export class ApiCommonErrorComponent {
 
-  constructor(private errorModalDataService: ErrorModalDataService) {
+  constructor(private errorModalDataService: ErrorModalDataService,
+              private animationEnableService: AnimationEnableService) {
   }
 
   errorDisplay: boolean;
@@ -21,12 +24,15 @@ export class ApiCommonErrorComponent {
       errorTitle => {
         this.errorTitle = errorTitle;
         this.errorDisplay = true;
-      }); 
+      });
     this.errorModalDataService.errorDetail$.subscribe(
       errorDetail => {
         this.errorDetail = errorDetail;
         this.errorDisplay = true;
-      }); 
+      });
   }
-
+  display() {
+    this.errorDisplay = false;
+    this.animationEnableService.sendToRoadFlag(false);
+  }
 }
