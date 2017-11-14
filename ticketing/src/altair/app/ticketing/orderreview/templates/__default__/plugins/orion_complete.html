@@ -1,5 +1,13 @@
 <div>
     <h4>${order.payment_delivery_pair.delivery_method.name}</h4>
+  <br/>
+  <h4>チケット購入もしくは申し込み時ご登録いただいた譲渡先</h4>
+  <ul>
+    % for i, phone in enumerate(order.get_orion_ticket_phone_list):
+    <li>電話番号${i+1}: ${phone}</li>
+    % endfor
+  </ul>
+  <br/>
 
 %if not paid:
 

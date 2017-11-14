@@ -231,6 +231,11 @@ class ClientFormFactory(object):
                 )
             memo = fields.TextAreaField(_(u"メモ"))
 
+            orion_ticket_phone = OurTextField(
+                default=u'',
+                validators=[Optional()]
+            )
+
             def get_validated_address_data(self):
                 if self.validate():
                     return dict(

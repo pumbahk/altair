@@ -136,10 +136,7 @@ class EntryLotView(object):
     def _create_form(self, **kwds):
         """希望入力と配送先情報と追加情報入力用のフォームを返す
         """
-        if self.request.organization.setting.i18n:
-            return utils_i18n.create_form(self.request, self.context, **kwds)
-        else:
-            return utils.create_form(self.request, self.context, **kwds)
+        return utils_i18n.create_form(self.request, self.context, **kwds)
 
     @lbr_view_config(route_name='lots.entry.index', request_method="GET", renderer=selectable_renderer("index.html"))
     def index(self):
@@ -239,6 +236,8 @@ class EntryLotView(object):
         if form is None:
             form = self._create_form()
 
+        orion_ticket_phone, orion_phone_errors = h.verify_orion_ticket_phone(form.orion_ticket_phone.data.split(','))
+
         event = self.context.event
         lot = self.context.lot
 
@@ -281,7 +280,9 @@ class EntryLotView(object):
         return dict(form=form, event=event, lot=lot,
             payment_delivery_pairs=payment_delivery_pairs, wishes=wishes,
             payment_delivery_method_pair_id=self.request.params.get('payment_delivery_method_pair_id'),
-            custom_locale_negotiator=custom_locale_negotiator(self.request) if self.request.organization.setting.i18n else ""
+            custom_locale_negotiator=custom_locale_negotiator(self.request) if self.request.organization.setting.i18n else "",
+            orion_ticket_phone=orion_ticket_phone,
+            orion_phone_errors=orion_phone_errors
                     )
 
     @lbr_view_config(route_name='lots.entry.sp_step3', renderer=selectable_renderer("step3.html"), custom_predicates=())
@@ -323,6 +324,13 @@ class EntryLotView(object):
         # 決済・引取方法選択
         if payment_delivery_method_pair_id not in [str(m.id) for m in payment_delivery_pairs]:
             self.request.session.flash(_(u"お支払お引き取り方法を選択してください"))
+            validated = False
+
+        # イベントゲット情報(Orion Ticket Phone)
+        orion_ticket_phone, orion_phone_errors = h.verify_orion_ticket_phone(self.request.POST.getall('orion-ticket-phone'))
+        cform.orion_ticket_phone.data = ','.join(orion_ticket_phone)
+        if any(orion_phone_errors):
+            self.request.session.flash(self._message(u'イベントゲット情報の入力内容を確認してください'))
             validated = False
 
         birthday = cform['birthday'].data
@@ -374,6 +382,7 @@ class EntryLotView(object):
             birthday=birthday,
             memo=cform['memo'].data,
             extra=cform['extra'].data,
+            orion_ticket_phone=cform['orion_ticket_phone'].data
             )
 
         entry = api.get_lot_entry_dict(self.request)

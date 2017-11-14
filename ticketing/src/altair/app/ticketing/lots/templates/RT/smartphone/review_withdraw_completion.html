@@ -131,6 +131,28 @@
   </div>
 </div>
 
+% if entry.get_orion_ticket_phone_list:
+<div class="subbox">
+  <dl>
+    <dt><p class="lineRed">イベントゲット情報</p></dt>
+    <dd>
+      <div class="subInner2">
+        <dl class="creditList">
+          <dt class="creditHl">譲渡先</dt>
+          <dd>
+            <ul>
+              % for i, phone in enumerate(entry.get_orion_ticket_phone_list):
+              <li>電話番号${i+1}: ${phone}</li>
+              % endfor
+            </ul>
+          </dd>
+        </dl>
+      </div>
+    </dd>
+  </dl>
+</div>
+% endif
+
 <div class="settlementBox">
   <div class="settlementBoxInner">
     <h2><img src="${request.static_url('altair.app.ticketing.lots:static/RT/pc/img/order/title_buyer.gif')}" alt="購入者情報" width="97" height="30" /></h2>

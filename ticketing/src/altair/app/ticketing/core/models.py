@@ -4978,3 +4978,17 @@ class Stock_drawing_l0_id(Base):
     stock_id = Column(Identifier, ForeignKey('Stock.id', ondelete='CASCADE'), primary_key=True, nullable=False)
     drawing_l0_id = Column(Unicode(48), primary_key=True, nullable=False)
     stock = relationship("Stock", backref="stock_drawing_l0_ids")
+
+class OrionTicketPhone(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+    __tablename__ = 'OrionTicketPhone'
+    __table_args__ = (
+        UniqueConstraint('order_no', 'entry_no'),
+    )
+    __clone_excluded__ = ['user', 'cart', 'lot_entries']
+
+    id = Column(Identifier, primary_key=True)
+    user_id = Column(Identifier, ForeignKey("User.id"))
+    user = relationship('User', backref='phones')
+    order_no = Column(String(12), nullable=False, default='')
+    entry_no = Column(String(12), nullable=False, default='')
+    phones = Column(String(255), nullable=False, default='')

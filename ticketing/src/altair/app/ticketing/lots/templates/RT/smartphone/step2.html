@@ -1,9 +1,11 @@
 <%inherit file="${context['main_template'].uri}" />
 <%namespace name="fh" module="altair.formhelpers.utils.mako" />
 <%
-   import altair.app.ticketing.cart.helpers as ch
-   import altair.app.ticketing.lots.helpers as h
-   %>
+  from altair.app.ticketing.payments.plugins import ORION_DELIVERY_PLUGIN_ID
+  orion_checked = False
+  import altair.app.ticketing.cart.helpers as ch
+  import altair.app.ticketing.lots.helpers as h
+%>
 <%def name="render_field(field, label=False, _description=None, _note=None, _suffix=u'', **kwargs)">
 <%
 _description = _description or field.description
@@ -31,17 +33,55 @@ if label is None or label is True:
 
 
 <%block name="javascript">
-    <script type="text/javascript">
-    $(document).ready(function(){
-        $(".methodExplanation").hide();
-        $("input:radio").click(function() {
-            $(".methodExplanation").hide();
-            var index = $("input:radio[name='payment_delivery_method_pair_id']").index(this);
-            console.log(index);
-            $(".methodExplanation:eq(" + index + ")").show();
-        });
+<script type="text/javascript">
+$(document).ready(function(){
+  $(".methodExplanation").hide();
+  $("input:radio").click(function() {
+    $(".methodExplanation").hide();
+    var index = $("input:radio[name='payment_delivery_method_pair_id']").index(this);
+    $(".methodExplanation:eq(" + index + ")").show();
+  });
+});
+
+// orion関係のjavascript
+function pdmp(is_orion) {
+  if (is_orion) {
+    $("#orion-ticket-phone-info").show();
+  } else {
+    var ul = $("#orion-ticket-phone-list"),
+        li = ul.children("li").eq(1).detach();
+    ul.find("li").not("#orion-ticket-phone-template").remove();
+    li.show().appendTo(ul);
+    $("#orion-ticket-phone-info").hide();
+  }
+}
+function add_orion_ticket_phone(button) {
+    var index = $(button).parents("ul").find("li").length,
+        li = $("#orion-ticket-phone-template").clone().removeAttr("id").removeAttr("style");
+    render_num(index, li);
+    li.show().appendTo($(button).parents("ul"));
+
+    if (index > 4) {
+        $(button).prop("disabled", true);
+    }
+}
+function delete_orion_ticket_phone(button) {
+    $("#btn-add-orion-ticket-phone").prop("disabled", false);
+    $(button).parent().remove();
+    $("#orion-ticket-phone-list").find("li").each(function(index, li) {
+        if (index !== 0) {
+            render_num(index, $(li));
+        }
     });
-    </script>
+}
+function render_num(index, li) {
+    var label = "orion-ticket-phone-" + index;
+    li.find("label").text("電話番号" + index)
+                  .attr("for", label);
+    li.find("input").attr("id", label)
+                  .attr("name", "orion-ticket-phone");
+}
+</script>
 </%block>
 <div id="main">
 
@@ -83,10 +123,12 @@ if label is None or label is True:
 <dt>
 % for m in payment_delivery_pairs:
 <%
-    checked = 'checked' if str(m.id) == payment_delivery_method_pair_id else ''
+  checked = 'checked' if str(m.id) == payment_delivery_method_pair_id else ''
+  is_orion = 'true' if m.delivery_method.delivery_plugin_id == ORION_DELIVERY_PLUGIN_ID else 'false'
+  orion_checked = checked and is_orion if not orion_checked else orion_checked
 %>
 <p>
-  <input id="radio${m.id}" type="radio" name="payment_delivery_method_pair_id" value="${m.id}" ${checked} />
+  <input id="radio${m.id}" type="radio" name="payment_delivery_method_pair_id" value="${m.id}" ${checked} onclick="pdmp(${is_orion})"/>
   <label for="radio${m.id}">${m.payment_method.name} / ${m.delivery_method.name}</label>
 </p>
 % endfor
@@ -133,6 +175,44 @@ ${m.delivery_method.description or '' | n}
 
 <p class="tyuui2">${form['email_1'].description}</p>
 
+
+<div id="orion-ticket-phone-info" class="subbox" ${'' if orion_checked else 'style="display:none;"'|n}>
+  <dl>
+    <dt>
+      <p class="lineRed">イベントゲット情報</p>
+    </dt>
+    <dd>
+      <div class="subInner2">
+        <dl class="creditList">
+          <dt class="creditHl">譲渡先</dt>
+          <dd>
+            <ul id="orion-ticket-phone-list">
+              <li id="orion-ticket-phone-template" style="display: none;">
+                <label for="tmp-orion-ticket-phone">電話番号</label>
+                <input type="text" id="tmp-orion-ticket-phone">　<button type="button" onclick="delete_orion_ticket_phone(this);">削除</button>
+              </li>
+              % for i, (phone, error) in enumerate(zip(orion_ticket_phone, orion_phone_errors)):
+                <li>
+                  <label for="orion-ticket-phone-${i+1}">電話番号${i+1}</label>
+                  <input type="text" id="orion-ticket-phone-${i+1}" name="orion-ticket-phone" value="${phone}">　
+                  % if i == 0:
+                  <% is_disabled = 'disabled' if len(orion_ticket_phone) > 4 else '' %>
+                  <button id="btn-add-orion-ticket-phone" type="button" onclick="add_orion_ticket_phone(this);" ${is_disabled|n}>追加</button>
+                  % else:
+                  <button type="button" onclick="delete_orion_ticket_phone(this);">削除</button>
+                  % endif
+                  % if error:
+                  <span class="error">${error}</span>
+                  % endif
+                </li>
+              % endfor
+            </ul>
+          </dd>
+        </dl>
+      </div>
+    </dd>
+  </dl>
+</div>
 
 <div class="subbox">
 <dl>
