@@ -779,34 +779,64 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
         clearTimeout(resizeTimer);
       }
       resizeTimer = setTimeout(() => {
-        this.seatAreaHeight = $("#mapImgBox").height();
         this.sideError();
         if (that.originalViewBox && that.mapAreaLeftH != 0) {
-          this.mapHome();
+          if (this.countSelect == 0) {
+            if (!this.smartPhoneCheckService.isSmartPhone()) {
+              //席種リストの表示
+              this.stockTypeDataService.sendToSeatListFlag(true);
+            }
+          } else {
+            //席を選択していた場合
+            if ($('.seatNumberBox').css('display') == 'none') {
+              $('#mapAreaRight .closeBtnBox').removeClass('active');
+            } else {
+              $('#mapAreaRight .closeBtnBox').addClass('active');
+            }
+          }
+
+          //viewboxの調整
+          let resizeViewBox = this.getPresentViewBox(); //調整後のviewbox
+          //viewboxがとれたら処理を行う
+          if (resizeViewBox) {
+            let beforeWidth = this.D_Width; //リサイズ前の表示領域のwidth
+            let beforeHeight = this.D_Height; //リサイズ前の表示領域のheight
+            this.D_Width = $(this.svgMap).innerWidth(); // 現在の表示領域のwidth
+            this.D_Height = $(this.svgMap).innerHeight(); // 現在の表示領域のheight
+            this.DA = this.D_Width / this.D_Height; //現在の表示領域のアスペクト比
+
+            //倍率が変わらないようviewboxを現在の表示領域に合わせる
+            resizeViewBox[3] = String(parseFloat(resizeViewBox[3]) * this.D_Height / beforeHeight);
+            resizeViewBox[2] = String(parseFloat(resizeViewBox[2]) * this.D_Width / beforeWidth);
+            $('#mapImgBox').children().attr('viewBox', resizeViewBox.join(' '));
+
+            //アスペクト比の調整と個席表示/非表示の切り替え
+            this.setAspectRatio();
+
+            //描画領域が初期領域をはみ出た場合初期表示に戻す
+            if (parseFloat(this.displayViewBox[0]) > parseFloat(resizeViewBox[0])) {
+              this.mapHome();
+            } else if (parseFloat(this.displayViewBox[1]) > parseFloat(resizeViewBox[1])) {
+              this.mapHome();
+            } else if (parseFloat(this.displayViewBox[0]) + parseFloat(this.displayViewBox[2]) < parseFloat(resizeViewBox[0]) + parseFloat(resizeViewBox[2])) {
+              this.mapHome();
+            } else if (parseFloat(this.displayViewBox[1]) + parseFloat(this.displayViewBox[3]) < parseFloat(resizeViewBox[1]) + parseFloat(resizeViewBox[3])) {
+              this.mapHome();
+            }
+          }
         }
-      }, 100);
+      }, 200);
     });
   }
 
+  //画面が横向きだった場合エラーモーダルを出す
   sideError() {
     let orientation = window.orientation;
-    if (this.seatAreaHeight < SIDE_HEIGHT && orientation == 90 || orientation == -90) {//座席図領域<定数
+    if ($("#mapImgBox").height() < SIDE_HEIGHT && (orientation == 90 || orientation == -90)) {//座席図領域<定数
       this.sideProhibition = true;
       this.resizeCssTrue();
-      if (this.isInitialEnd()) {
-        setTimeout(function () {
-          $('#modalWindowErrorBox').css({
-            'height': "110%",
-          });
-        }, 100);
-      } else {
-        setTimeout(function () {
-          $('#modalWindowErrorBox').css({
-            'height': "300%",
-          });
-        }, 100);
-      }
     } else {
+      this.sideProhibition = false;
       this.resizeCssFalse();
     }
   }
@@ -828,7 +858,6 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
   }
 
   resizeCssFalse() {
-    this.sideProhibition = false;
     //スクロール解除
     $('html').css({
       'height': "100%",

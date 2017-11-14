@@ -65,121 +65,42 @@ export class ReserveBySeatComponent implements OnInit {
             $(this).next().slideToggle(300);
           }).next().hide();
         });
-
+ 
         $(function(){
-          if($('#choiceSeatArea').length){
-              //seat-listが存在した場合
-              $(function(){
-                //var minus = 230
-                var minus = 280
-                var mainID = 'mapAreaLeft'
-                function heightSetting(){
-                  windowH = $(window).height();
-                  mainH = windowH - minus;
-                  that.mapAreaLeftH = mainH;
-                  $('#'+mainID).height(mainH+'px');
-                }
-                heightSetting();
-                $(window).resize(function() {
-                  heightSetting();
-                });
-              });
-              /////////////////////
+          function heightSetting(){
+            let minus = 0;
+            if($('#modalWindow').length){
+              minus = 149;
+            } else if($('#choiceSeatArea').length){
+              minus = 280;
+            } else {
+              minus = 149;
+            }
+            
+            let mainID = 'mapAreaLeft'
+            let windowH = $(window).height();
+            let mainH = windowH - minus;
+            if (mainH <= 0) {
+              mainH = 190;
+            }
+            that.mapAreaLeftH = mainH;
+            $('#'+mainID).height(mainH+'px');
           }
+
+          $(document).ready(function(){
+            heightSetting();
+          });
+          
+          //リサイズ時の縦幅調整
+          $(window).resize(function(){
+            heightSetting();
+          });
         });
-
-        // $(function(){
-        //   if($('#buySeatArea').length){
-        //       //select-productが存在した場合
-        //       $(function(){
-        //         var minus = 149
-        //         var mainID = 'mapAreaLeft'
-        //         function heightSetting(){
-        //           windowH = $(window).height();
-        //           mainH = windowH - minus;
-
-        //           $('#'+mainID).height(mainH+'px');
-        //         }
-        //         heightSetting();
-        //         $(window).resize(function() {
-        //           heightSetting();
-        //         });
-        //       });
-        //       $(function(){
-        //         var minus = 114
-        //         var mainID = 'buySeatArea'
-        //         function heightSetting(){
-        //           windowH = $(window).height();
-        //           mainH = windowH - minus;
-
-        //           $('#'+mainID).height(mainH+'px');
-        //         }
-        //         heightSetting();
-        //         $(window).resize(function() {
-        //           heightSetting();
-        //         });
-        //       });
-
-        //       /////////////////////
-        //   }
-        // });
-
-
-
-        $(function(){
-          if($('#buyChoiceSeatArea').length){
-              //venue-mapの選択した座席のリストが存在した場合
-              $(function(){
-                var minus = 209
-                var mainID = 'mapAreaLeft'
-                function heightSetting(){
-                  windowH = $(window).height();
-                  mainH = windowH - minus;
-                  that.mapAreaLeftH = mainH;
-                  $('#'+mainID).height(mainH+'px');
-                }
-                heightSetting();
-                $(window).resize(function() {
-                  heightSetting();
-                });
-              });
-              /////////////////////
-          }
-        });
-
-        //	$(function(){
-        //		var minus = 112
-        //		var mainID = 'buyChoiceSeatArea'
-        //		function heightSetting(){
-        //			windowH = $(window).height();
-        //			mainH = windowH - minus;
-        //
-        //			$('#'+mainID).height(mainH+'px');
-        //		}
-        //		heightSetting();
-        //		$(window).resize(function() {
-        //			heightSetting();
-        //		});
-        //	});
 
         $(function(){
           if($('#modalWindow').length){
               //venue-mapの席種詳細モーダルが存在した場合
               //reserve-by-quantityが存在した場合
-              $(function(){
-                var minus = 149
-                var mainID = 'mapAreaLeft'
-                function heightSetting(){
-                  windowH = $(window).height();
-                  mainH = windowH - minus;
-                  that.mapAreaLeftH = mainH;
-                  $('#'+mainID).height(mainH+'px');
-                }
-                heightSetting();
-                $(window).resize(function() {
-                  heightSetting();
-                });
-              });
               $(function(){
                 var minus = 114
                 var mainID = 'modalWindow'
@@ -214,75 +135,6 @@ export class ReserveBySeatComponent implements OnInit {
 					});
 				});
 
-      	$(function(){
-         if(!($('#choiceSeatArea, #buySeatArea, #buyChoiceSeatArea').length)){
-             //ここに「＃sample」が存在しなかった場合の処理を記述
-      				$(function(){
-      					var minus = 149
-      					var mainID = 'mapAreaLeft'
-      					function heightSetting(){
-      						windowH = $(window).height();
-      						mainH = windowH - minus;
-      						that.mapAreaLeftH = mainH;
-      						$('#'+mainID).height(mainH+'px');
-      					}
-      					heightSetting();
-      					$(window).resize(function() {
-      						heightSetting();
-      					});
-      				});
-      				/////////////////////
-         }
-      	});
-
-        //PC・SP両方に移動
-        // $(function(){
-        //   //venue-mapの選択した座席リスト、select-productのtoggle
-        //   $("#mapAreaRight").on("click", ".selectBoxBtn", function() {
-        //     $(this).prev().slideToggle(300);
-        //     // activeが存在する場合
-        //     if ($(this).children(".closeBtnBox").hasClass('active')) {
-        //       // activeを削除
-        //       $(this).children(".closeBtnBox").removeClass('active');
-        //     }
-        //     else {
-        //       // activeを追加
-        //       $(this).children(".closeBtnBox").addClass('active');
-        //     }
-        //   });
-        // });
-
-      //	$(function(){
-      //		$(".accordionbox dt").on("click", function() {
-      //			$(this).next().slideToggle();
-      //			// activeが存在する場合
-      //			if ($(this).children(".accordion_icon").hasClass('active')) {
-      //				// activeを削除
-      //				$(this).children(".accordion_icon").removeClass('active');
-      //			}
-      //			else {
-      //				// activeを追加
-      //				$(this).children(".accordion_icon").addClass('active');
-      //			}
-      //		});
-      //	});
-
-      //	$(function(){
-      //    if($('#buySeatArea').length){
-      //			//ここに「＃sample」が存在した場合の処理を記述
-      //			$('#mapAreaLeft, .choiceArea').addClass('dNone');
-      //			/////////////////////
-      //    }
-      //	});
-      //
-      //	$(function(){
-      //    if($('#modalWindow').length){
-      //			//ここに「＃sample」が存在した場合の処理を記述
-      //			$('#mapImgBox, .mapBtnBox, .mapNaviBox, .choiceArea').addClass('dNone');
-      //			/////////////////////
-      //    }
-      //	});
-
       } else {
         //横幅768px超のとき（タブレット、PC）に行う処理を書く
 
@@ -308,7 +160,7 @@ export class ReserveBySeatComponent implements OnInit {
             windowH = $(window).height();
             mainH = windowH - minus;
             that.mapAreaLeftH = mainH;
-            $('#'+mainID).height(mainH+'px');
+            $('#'+mainID + ',#mapImgBox svg').height(mainH+'px');
           }
           heightSetting();
           $(window).resize(function() {
@@ -343,20 +195,6 @@ export class ReserveBySeatComponent implements OnInit {
             heightSetting();
           });
         });
-        // $(function(){
-        //   var minus = 169
-        //   var mainID = 'buyChoiceSeatArea'
-        //   function heightSetting(){
-        //     windowH = $(window).height();
-        //     mainH = windowH - minus;
-
-        //     $('#'+mainID).height(mainH+'px');
-        //   }
-        //   heightSetting();
-        //   $(window).resize(function() {
-        //     heightSetting();
-        //   });
-        // });
       }
       });
 
@@ -378,46 +216,6 @@ export class ReserveBySeatComponent implements OnInit {
         });
       });
 
-      //【新】
-      // var price = 0;
-      // $('#ticketQtyForm .iconPlus').click(function(){
-      //   $({count: price}).animate({count: price+1}, {
-      //     duration: 0,
-      //     progress: function() {
-      //         $('#ticketQtyForm #ticketSheet').text(Math.ceil(this.count));
-      //     }
-      //   });
-      //   price+=1;
-      // });
-      // $('#ticketQtyForm .iconMinus').click(function(){
-      //   $({count: price}).animate({count: price-1}, {
-      //     duration: 0,
-      //     progress: function() {
-      //         $('#ticketQtyForm #ticketSheet').text(Math.ceil(this.count));
-      //     }
-      //   });
-      //   price-=1;
-      // });
-
-
-      //【旧】
-      //	$(function(){
-      //		var cnt = 1;
-      //		function countUp(){
-      //			cnt++;
-      //			document.getElementById("ticketSheet").innerHTML=cnt;
-      //		}
-      //		function countDown(){
-      //			cnt--;
-      //			document.getElementById("ticketSheet").innerHTML=cnt;
-      //		}
-      //		window.onload = function(){
-      //			document.getElementById("ticketSheet").innerHTML=cnt;
-      //			document.ticketQtyForm.p_btn.onclick=countUp;
-      //			document.ticketQtyForm.m_btn.onclick=countDown;
-      //		};
-      //	});
-
       //seat-listのボタンのtoggle
       $(function(){
         $(".acd dd").css("display","none");
@@ -428,19 +226,6 @@ export class ReserveBySeatComponent implements OnInit {
           $(this).parent().siblings().find("dt").removeClass("open");
         });
       });
-
-      //リサイズでリロード
-      // $(function(){
-      //   var timer;
-      //   $(window).resize(function() {
-      //   if (timer !== false) {
-      //   clearTimeout(timer);
-      //   }
-      //   timer = setTimeout(function() {
-      //   location.reload();
-      //   }, 200);
-      //   });
-      // });
 
       $(document).ready(function(){
         $(".methodExplanation").hide();

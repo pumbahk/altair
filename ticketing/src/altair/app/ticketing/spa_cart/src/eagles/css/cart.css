@@ -3025,7 +3025,7 @@
 	}
 	#modalWindowErrorBox {
         background: rgba(0,0,0, 0.8);
-        position:absolute;
+        position:fixed;
         top:-120px;
         left:0;
         width:100%;
