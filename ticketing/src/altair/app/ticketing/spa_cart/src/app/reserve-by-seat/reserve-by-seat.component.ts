@@ -27,24 +27,20 @@ export class ReserveBySeatComponent implements OnInit {
   //ページタイトル
   pageTitle: string;
 
-  //公演情報
-  performance: IPerformance;
+  //公演id
+  performanceId: number;
 
   // マップの高さ
   mapAreaLeftH: number = 0;
 
-  constructor(private route: ActivatedRoute, private loadingService: LoadingAnimateService) {
-
+  constructor(
+    private route: ActivatedRoute,
+    private loadingService: LoadingAnimateService) {
   }
 
   ngOnInit() {
     //ローディング表示
     this.loadingService.setValue(true);
-
-    let response: IPerformanceInfoResponse = this.route.snapshot.data['performance'];
-    this.performance = response.data.performance;
-    this.pageTitle = this.performance.performance_name;
-
     const that = this;
 
     //ここからmainHeight.js
