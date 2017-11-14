@@ -263,6 +263,9 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
   //region取得完了フラグ
   isRegionObtained: boolean = false;
 
+  //ツールチップ用席種
+  tooltipStockType: {name: string; min: number; max: number; region: string[]}[] = [];
+
   ngOnInit() {
     const that = this;
     let drawingRegionTimer;
@@ -290,6 +293,32 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
               this._logger.debug(`get StockTypesAll(#${this.performanceId}) success`, response);
               let stockTypes: IStockType[] = response.data.stock_types;
               for (let i = 0, len = stockTypes.length; i < len; i++) {
+                if (!this.smartPhoneCheckService.isSmartPhone()) {
+                  //紐づく商品の最小価格、最大価格を求める
+                  let minPrice: number;
+                  let maxPrice: number;
+                  for (let j = 0, len = stockTypes[i].products.length; j < len; j++) {
+                    let price = +stockTypes[i].products[j].price;
+                    if (j == 0 || minPrice > price) {
+                      minPrice = price;
+                    }
+                    if (j == 0 || maxPrice < price) {
+                      maxPrice = price;
+                    }
+                  }
+
+                  //tooltip用のデータを作成する
+                  this.tooltipStockType[stockTypes[i].stock_type_id] = {
+                    name: stockTypes[i].stock_type_name,
+                    min: minPrice,
+                    max: maxPrice,
+                    region: []
+                  };
+                  for (let j = 0,len = stockTypes[i].regions.length; j < len; j++) {
+                    this.tooltipStockType[stockTypes[i].stock_type_id].region.push(stockTypes[i].regions[j]);
+                  }
+                }
+
                 if (stockTypes[i].is_quantity_only) {
                   let regions: string[] = stockTypes[i].regions;
                   let stockTypeId: number = stockTypes[i].stock_type_id;
@@ -375,6 +404,21 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
                 $(that.svgMap).find('#' + regions[i].region_id).find('.coloring_region').css({ 'fill': REGION_COLOR_MANY_SEATS });
               }
             }
+            
+            if (!that.smartPhoneCheckService.isSmartPhone()) {
+              //ツールチップ用属性の設定
+              that.tooltipStockType.forEach(function (value) {
+                if (value.region) {
+                  for (let j = 0,len = value.region.length; j < len; j++) {
+                    $('#' + value.region[j]).attr({
+                      stockType: value.name,
+                      min: value.min,
+                      max: value.max
+                    });
+                  }
+                }
+              });
+            }
             that.animationEnableService.sendToRoadFlag(false);
           }
         }, 100);
@@ -404,6 +448,51 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
         that.mapHome();
       }
     }, 200);
+
+    //ツールチップの表示
+    $('#mapAreaLeft').on('mouseenter', 'rect, .region', function(e){
+      let tooltip = '';
+      if ($(this).attr('stockType')) {
+        tooltip += $(this).attr('stockType');
+        tooltip += '<br />' + $(this).attr('min') + '円～' + $(this).attr('max') + '円';
+      }
+      if ($(this).attr('title')) {
+        if (tooltip) tooltip += '<br />' 
+        tooltip += $(this).attr('title'); 
+      }
+      if (tooltip) {
+        $('body').append('<div id="tooltip">' + tooltip + '</div>');
+        if (e.pageY + 10 + $('#tooltip').height() > $('body').height()) {
+          $('#tooltip').css({
+            'top':e.pageY - $('#tooltip').height(),
+            'left':e.pageX + 10
+          });
+        } else {
+          $('#tooltip').css({
+            'top':e.pageY + 10,
+            'left':e.pageX + 10
+          });
+        }
+      }
+    });
+    //ツールチップの移動　ブロック
+    $('#mapAreaLeft').on('mousemove', '.region', function(e){
+      if (e.pageY + 10 + $('#tooltip').height() > $('body').height()) {
+          $('#tooltip').css({
+            'top':e.pageY - $('#tooltip').height(),
+            'left':e.pageX + 10
+          });
+        } else {
+          $('#tooltip').css({
+            'top':e.pageY + 10,
+            'left':e.pageX + 10
+          });
+        }
+    });
+    //ツールチップの削除
+    $('#mapAreaLeft').on('mouseleave', 'rect, .region', function(){
+      $('[id=tooltip]').remove();
+    });
   }
 
   //初期ロード完了判定メソッド
@@ -640,6 +729,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
             }
             this.wholemapFlag = true;
             this.onoffRegion(this.regionIds);
+            $('[id=tooltip]').remove();
           }
         } else {
           scale = 1.2;
@@ -657,6 +747,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
               this.seatSelectDisplay(true);
             }
             this.wholemapFlag = false;
+            $('#tooltip').remove();
           }
         }
         e.stopPropagation();
@@ -791,6 +882,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
         }
         this.wholemapFlag = true;
         this.onoffRegion(this.regionIds);
+        $('[id=tooltip]').remove();
       }
     }
     function stockStatusCheck(selectedRegionId: string, regions: IRegion[]) {
@@ -873,7 +965,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
     if (this.changeRgb($(e.target).css('fill')) == SEAT_COLOR_AVAILABLE) {
       if (this.QuentityChecks.maxLimitCheck(this.selectedStockTypeMaxQuantity, this.performance.order_limit, this.event.order_limit, this.selectedSeatList.length + 1)) {
         $(e.target).css({ 'fill': SEAT_COLOR_SELECTED });
-        this.selectedSeatName = $(e.target).children('title').text();
+        this.selectedSeatName = this.smartPhoneCheckService.isSmartPhone() ? $(e.target).children('title').text() : $(e.target).attr('title');
         this.selectTimes();
       } else {
         this.errorModalDataService.sendToErrorModal('エラー', this.selectedStockTypeMaxQuantity + '席以下でご選択ください。');
@@ -908,7 +1000,12 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
         if (this.QuentityChecks.maxLimitCheck(this.selectedStockTypeMaxQuantity, this.performance.order_limit, this.event.order_limit, this.selectedSeatList.length + this.selectedGroupIds.length)) {
           for (let i = 0, len = this.selectedGroupIds.length; i < len; i++) {
             $(this.svgMap).find('#' + this.selectedGroupIds[i]).css({ 'fill': SEAT_COLOR_SELECTED });
-            this.selectedSeatGroupNames.push($(this.svgMap).find('#' + this.selectedGroupIds[i]).children('title').text());
+            if (this.smartPhoneCheckService.isSmartPhone()) {
+              this.selectedSeatGroupNames.push($(this.svgMap).find('#' + this.selectedGroupIds[i]).children('title').text());
+            } else {
+              this.selectedSeatGroupNames.push($(this.svgMap).find('#' + this.selectedGroupIds[i]).attr('title'));
+            }
+            
           }
           this.selectTimes();
         } else {
@@ -917,7 +1014,11 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
       } else {
         for (let i = 0, len = this.selectedGroupIds.length; i < len; i++) {
           $(this.svgMap).find('#' + this.selectedGroupIds[i]).css({ 'fill': SEAT_COLOR_SELECTED });
-          this.selectedSeatGroupNames.push($(this.svgMap).find('#' + this.selectedGroupIds[i]).children('title').text());
+          if (this.smartPhoneCheckService.isSmartPhone()) {
+            this.selectedSeatGroupNames.push($(this.svgMap).find('#' + this.selectedGroupIds[i]).children('title').text());
+          } else {
+            this.selectedSeatGroupNames.push($(this.svgMap).find('#' + this.selectedGroupIds[i]).attr('title'));
+          }
         }
         this.selectTimes();
       }
@@ -1216,7 +1317,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
   // SVGの座席データを[連席ID, Element]として保持してDOMツリーから削除
   saveSeatData() {
     let els = document.querySelectorAll('.seat');
-
+    
     for (let i = 0; i < els.length; i++) {
       let grid_class = (<SVGAnimatedString>(<SVGElement>els[i]).className).baseVal;
       grid_class = grid_class.substr(grid_class.indexOf('grid'), 13);
@@ -1227,10 +1328,18 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
       }
 
       (<HTMLElement>els[i]).style.display = 'inline';
+
+      if (!this.smartPhoneCheckService.isSmartPhone()) {
+        //tooltipの席番
+        els[i].setAttribute('title', els[i].textContent.trim());
+        els[i].textContent = null;
+      }
+
       (this.seat_elements[grid_class]).push([parent_id, els[i]]);
     }
 
     $('.seat').remove();
+    if (!this.smartPhoneCheckService.isSmartPhone()) $('svg').find('title').remove();
   }
 
   // 現在の描画サイズに合わせて表示するグリッドを決定し、座席データを動的に追加・削除
@@ -1305,6 +1414,17 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
       for (let i = 0, len = this.seats.length; i < len; i++) {
         if (this.seats[i].is_available) {
           $('#' + this.seats[i].seat_l0_id).css({ 'fill': SEAT_COLOR_AVAILABLE });
+        }
+
+        if (!this.smartPhoneCheckService.isSmartPhone()) {
+          let stockType = this.seats[i].stock_type_id ? this.tooltipStockType[this.seats[i].stock_type_id]: null;
+          if (stockType) {
+            $('#' + this.seats[i].seat_l0_id).attr({
+              stockType: stockType.name,
+              min: stockType.min,
+              max: stockType.max
+            });
+          }
         }
       }
     }
