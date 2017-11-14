@@ -1,0 +1,31 @@
+<%inherit file="../base.html"/>
+<style type="text/css">
+  .errors_ul {
+    padding: 0 10px;
+  }
+  .errors_ul li {
+    font-weight: bold;
+    margin: 5px 0;
+  }
+</style>
+
+<main>
+  <div id="confirm">
+    <div class="wrap-content">
+      %if request.organization.setting.i18n:
+        <div class="selectwrapper">
+          ${h.create_url(request) |n}
+        </div>
+      % endif
+      <h2 class="heading heading-primary">
+        ${_(u'システムエラーが発生しました')}<br/>
+        ${_(u'なおリンクをクリックされていた場合、ページが削除された、またはURL（ページアドレス）が変更された可能性があります。')}
+      </h2>
+      <ul class="errors_ul">
+        <li>${_(u'ブラウザの再読み込みを行う')}</li>
+        <li>${_(u'入力したURL（ページアドレス）にタイプミスがないか確認する')}</li>
+        <li>${_(u'ブラウザの「戻る」ボタンを押して前画面からやり直す')}</li>
+      </ul>
+    </div>
+  </div>
+</main>

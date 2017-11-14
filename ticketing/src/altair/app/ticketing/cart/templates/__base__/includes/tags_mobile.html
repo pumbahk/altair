@@ -1,0 +1,37 @@
+<%def name="header(bgcolor=None)">
+<%
+if bgcolor is None:
+    bgcolor = view_context.mobile_header_background_color
+%>
+<div style="background-color:${bgcolor}" bgcolor="${bgcolor}"><font size="+1" color="white">${caller.body()}</font></div>
+</%def>
+<%def name="form_header(markercolor=None, requiredmarkcolor=None, required=False)">
+<%
+if markercolor is None:
+    markercolor = view_context.mobile_marker_color
+if requiredmarkcolor is None:
+    requiredmarkcolor = view_context.mobile_required_marker_color
+%>
+<%def name="header2()">
+<div style="background-image:url(${view_context.static_url('mobile/images/bg_bar.gif')});background-color:#d7000f" bgcolor="#d7000f" background="${view_context.static_url('mobile/images/bg_bar.gif')}"><font color="#ffffff" size="3"><font color="#09355f">■</font>${caller.body()}</font></div>
+</%def>
+<div><font color="${markercolor}">■</font>${caller.body()}
+%if required:
+<font color="${requiredmarkcolor}">*</font>
+%endif
+</div>
+</%def>
+<%def name="form_get(**kwargs)">
+%if hasattr(request, 'open_form_tag_for_get'):
+${request.open_form_tag_for_get(**kwargs)}
+%else:
+<form method="get" \
+%for k, v in kwargs.items():
+${k}="${v}" \
+%endfor
+>
+%endif
+${caller.body()}
+</form>
+</%def>
+

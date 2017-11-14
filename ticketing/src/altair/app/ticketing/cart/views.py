@@ -1510,7 +1510,7 @@ class ConfirmView(object):
         organization = api.get_organization(self.request)
         if organization.setting.enable_word == 1:
             user = api.get_user(self.context.authenticated_user()) # これも読み直し
-            if user is not None:
+            if user is not None and user.supports_word_subscription():
                 try:
                     res = api.get_keywords_from_cms(self.request, cart.performance_id)
                     if "words" in res:
