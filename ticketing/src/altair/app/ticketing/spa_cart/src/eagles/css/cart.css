@@ -656,12 +656,23 @@
 		z-index: 1;
 	}
 
+	.mapArea #mapAreaRight dl .close {
+		height: 100%;
+		width: 21%;
+		display: block;
+		position: absolute;
+		top: 0px;
+		right: 0px;
+		background: #808080;
+		z-index: 0;
+	}
+
 	.mapArea #mapAreaRight dl .close:before, .close:after {
 		content: '';
 		height: 2px;
 		width: 40px;
 		display: block;
-		background: #999;
+		background: white;
 		position: absolute;
 		top: 30px;
 		right: 20px;
@@ -2079,12 +2090,23 @@
 		border-width: 0px 20px 35px 20px;
 		z-index: 1;
 	}
+	.mapArea #mapAreaRight dl .close {
+		height: 100%;
+		width: 85px;
+		display: block;
+		position: absolute;
+		top: 0px;
+		right: 0px;
+		background: #808080;
+		z-index: 0;
+	}
+
 	.mapArea #mapAreaRight dl .close:before, .close:after {
 		content: '';
 		height: 2px;
 		width: 40px;
 		display: block;
-		background: #ccc;
+		background: white;
 		position: absolute;
 		top: 25px;
 		right: 20px;

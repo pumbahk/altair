@@ -6,8 +6,8 @@ import { FilterComponent } from '../../reserve-by-seat/filter/filter.component';
 import { ReserveByQuantityComponent } from '../../reserve-by-quantity/reserve-by-quantity.component';
 import { VenuemapComponent } from '../../reserve-by-seat/venue-map/venue-map.component';
 //service
-import { StockTypeDataService } from '../../shared/services/stock-type-data.service';
 import { StockTypesService } from '../../shared/services/stock-types.service';
+import { StockTypeDataService } from '../../shared/services/stock-type-data.service';
 import { PerformancesService } from '../../shared/services/performances.service';
 import { ErrorModalDataService } from '../../shared/services/error-modal-data.service';
 import { Subscription } from 'rxjs/Subscription';
@@ -28,7 +28,6 @@ import * as $ from 'jquery';
 import { Logger } from "angular2-logger/core";
 // constants
 import { ApiConst } from '../../app.constants';
-
 
 @Component({
   providers: [FilterComponent, ReserveByQuantityComponent, VenuemapComponent],
@@ -53,18 +52,20 @@ export class SeatlistComponent implements OnInit {
   performanceId: number;
   //席種情報
   stockTypes: IStockType[];
-  //席種情報
+  //座席情報
+  seatStockType: IStockType[]
+  //処理後席種情報
   makeStockTypes: IStockType[];
   //席種情報Id
   stockTypeId: number;
-  //席種情報検索
-  stockTypesRes: IStockTypesResponse;
   //seatList表示・非表示フラグ
   seatListDisply: boolean = true;
   //検索結果フラグ
   searchResultFlag: boolean = false;
   //Subscription
   private subscription: Subscription;
+  //席種name,status配列
+  stockTypesArr: { [key: number]: string[]; } = {};
 
   constructor(private route: ActivatedRoute,
     private reserveByQuantity: ReserveByQuantityComponent,
@@ -76,7 +77,7 @@ export class SeatlistComponent implements OnInit {
     private stockTypesService: StockTypesService) {
   }
 　
-  　//公演情報・席種情報取得
+  //公演情報・席種情報取得
   ngOnInit() {
 
     this.stockTypeDataService.toSeatListFlag$.subscribe(
@@ -109,20 +110,58 @@ export class SeatlistComponent implements OnInit {
 
     this.filterComponent.searched$.subscribe((response: ISeatsResponse) => {
       that.searchResultFlag = false;
-      let divideStockTypes = this.divideList(response.data.stock_types);
-      this.makeStockTypes = this.sortList(divideStockTypes, that.stockTypes);
+      this.seatStockType = response.data.stock_types;
+      this.stockTypesArr = this.makeStockTypeArr(this.stockTypes, this.seatStockType);
+      this.makeStockTypes = this.divideList(this.stockTypes);
+
       //検索結果フラグ
       if (this.makeStockTypes.length == 0 || this.makeStockTypes[0].stock_type_name == null) {
         that.searchResultFlag = true;
       }
     });
-
   }
-  //自由席と指定席を内部構造でより分ける
-  divideList(response: IStockType[]) {
+  /**
+   * 席種idに紐づく席種名と席種状態を持つ配列を作る
+   * @param  {IStockType[]} stockTypes - 席種情報検索
+   * @param  {IStockType[]} seatStockTypes - 座席情報検索
+   * @return {[key: number]: string[];}
+   */
+  makeStockTypeArr(stockTypes: IStockType[], seatStockTypes: IStockType[]) {
+    let array: { [key: number]: string[]; } = {};
+
+    //席種情報検索ベースに名前とステータスを配列に詰める
+    for (let x in this.stockTypes) {
+      array[stockTypes[x].stock_type_id] = [];
+      array[stockTypes[x].stock_type_id].push(stockTypes[x].stock_type_name);
+      for (let y in seatStockTypes) {
+        if (stockTypes[x].stock_type_id == seatStockTypes[y].stock_type_id) {
+          array[stockTypes[x].stock_type_id].push(seatStockTypes[y].stock_status);
+        }
+      }
+      //デフォルトでステータスが無い物は"✕"を詰める
+      if (!array[stockTypes[x].stock_type_id][1]) {
+        array[stockTypes[x].stock_type_id].push("×");
+      }
+      //リストが非表示の時はステータス状態を"blank"にする
+      if (!this.seatListDisply){
+        for (let x in array) {
+          array[x][1] = "blank";
+        }
+      }
+    }
+
+    return array;
+  }
+
+  /**
+   * 指定席と自由席を内部構造でより分ける
+   * @param  {IStockType[]} stockTypes - 席種情報検索
+   * @return {IStockType[]}
+   */
+  divideList(stockTypes: IStockType[]) {
     let divideStockTypes: IStockType[];
     divideStockTypes = [];
-    response.forEach((value, key) => {
+    stockTypes.forEach((value, key) => {
       if (value.is_quantity_only) {
         if (this.filterComponent.unreserved) {
           divideStockTypes.push(value);
@@ -136,31 +175,24 @@ export class SeatlistComponent implements OnInit {
 
     return divideStockTypes;
   }
-
-  //席種情報検索のレスポンスと同じ順番に変更
-  sortList(divideStockTypes: IStockType[], stockTypes: IStockType[]) {
-    let sortStockTypes: IStockType[];
-    sortStockTypes = [];
-    for (var i = 0, len = stockTypes.length; i < len; i++) {
-      for (var l = 0, dlen = divideStockTypes.length; l < dlen; l++)
-        if (stockTypes[i].stock_type_id == divideStockTypes[l].stock_type_id) {
-          sortStockTypes.push(divideStockTypes[l]);
-        }
-    }
-    return sortStockTypes;
-  }
-　
-  　//statusに合わせたクラス名を返す
+  /**
+* 席種のステータスからclass名を返す
+* @param  {string} status - ステータス
+*/
   private stockStatus(status) {
     switch (status) {
       case '◎': return 'circleW';
       case '△': return 'triangle';
       case '×': return 'close';
-      default: return 'unknown';
+      case 'blank': return 'blank';
+      default: return 'close';
     }
   }
 
-  //おまかせで購入を選択
+  /**
+* おまかせを押下時の処理
+* @param  {number} stockTypeId - 席種ID
+*/
   onAutoClick(stockTypeId) {
     $('html').css({
       'height': "",
@@ -179,7 +211,10 @@ export class SeatlistComponent implements OnInit {
       this.stockTypeIdFromList.emit(stockTypeId);
     }
   }
-  //座席を選んで購入を選択
+  /**
+* 座席を選んで購入を押下時の処理
+* @param  {string} stockTypeName - 席種名
+*/
   onSelectClick(stockTypeName) {
     this.filterComponent.selectSeatSearch(stockTypeName);
     this.mapHome.emit();
