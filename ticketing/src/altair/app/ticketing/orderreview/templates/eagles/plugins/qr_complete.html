@@ -42,6 +42,7 @@
                        <input type="hidden" name="order_no" value="${order.order_no}" />
                        <input type="hidden" name="tel" value="${tel}" />
                        <input type="hidden" name="token" value="${ticket.token.id if ticket.token else ""}" />
+                       <input type="hidden" name="subject" value="【イーグルスチケット】発券用QRコードのご送付" />
                        <input type="text" name="mail" class="input-mail" placeholder="メールアドレスを入力してください。">
                        <input type="submit" name="send" value="送信する" class="btn btn-buy" />
                        </form>
