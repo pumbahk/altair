@@ -183,12 +183,19 @@ s)
     ;;
 esac
 
+org_name_modify=$(ask "${txtred}FamiPortClient.nameは全角25文字以下で登録される必要があります（現在値：${ORG_NAME}）。${txtreset}[ 文字入力（修正実施）, エンターキー（スキップ） ]> ")
+if [ -n "${org_name_modify}" ]; then
+    org_name_zen=${org_name_modify}
+else
+    org_name_zen=${ORG_NAME}
+fi
+
 connect="mysql -u famiport -pfamiport -h ${MASTER_DB_FMP} -P ${MASTER_PORT} -D famiport"
 sql=$(cat << EOS
 BEGIN;
 
 INSERT INTO FamiPortClient (famiport_playguide_id, code, name, prefix, auth_number_required, created_at, updated_at)
-VALUES (1, "${FP_TENANT_CODE}", "${ORG_NAME}", RIGHT("${FP_TENANT_CODE}", 3), 0, now(), now());
+VALUES (1, "${FP_TENANT_CODE}", "${org_name_zen}", RIGHT("${FP_TENANT_CODE}", 3), 0, now(), now());
 
 COMMIT;
 EOS
