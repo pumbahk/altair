@@ -1,6 +1,7 @@
 <%inherit file="./base.html"/>
 <%
 from altair.app.ticketing.payments.plugins import ORION_DELIVERY_PLUGIN_ID
+has_orion = False
 orion_checked = False
 %>
 
@@ -29,7 +30,12 @@ orion_checked = False
             <tr>
               <% checked = 'checked' if str(m.id) == checked_id else '' %>
               <% is_orion = 'true' if m.delivery_method.delivery_plugin_id == ORION_DELIVERY_PLUGIN_ID else 'false' %>
-              <% orion_checked = checked and is_orion if not orion_checked else orion_checked %>
+              <%
+              if not orion_checked:
+                orion_checked = checked and is_orion == 'true'
+              if not has_orion:
+                has_orion = is_orion == 'true'
+              %>
               <td class="settlementPayRadio"${' rowspan="2"' if m.system_fee > 0 or m.special_fee > 0 else u''|n} onclick="pdmp(this, ${is_orion})">
                 <input type="radio" name="payment_delivery_method_pair_id" id="radio2" value="${m.id}" autocomplete="off" ${checked} />
               </td>
@@ -235,7 +241,7 @@ orion_checked = False
     </div>
   </div>
 
-  % if performance.orion:
+  % if has_orion:
   <div id="orion-ticket-phone-info" class="confirmBox" ${'' if orion_checked else 'style="display:none;"'|n}>
     <div class="confirmBoxInner">
       <h2>イベントゲット情報</h2>
@@ -269,9 +275,11 @@ orion_checked = False
       </table>
     </div>
   </div>
+  % endif
   <script type="text/javascript">
-    function pdmp (td, is_orion) {
+    function pdmp(td, is_orion) {
       $(td).parents("tr").find("input").prop("checked", true);
+      % if has_orion:
       if (is_orion) {
           $("#orion-ticket-phone-info").show();
       } else {
@@ -282,7 +290,9 @@ orion_checked = False
           li.show().appendTo(ul);
           $("#orion-ticket-phone-info").hide();
       }
+      % endif
     }
+    % if has_orion:
     function add_orion_ticket_phone(button) {
         var index = $(button).parents("ul").find("li").length,
             li = $("#orion-ticket-phone-template").clone().removeAttr("id").removeAttr("style");
@@ -310,8 +320,8 @@ orion_checked = False
         li.find("input").attr("id", label)
                       .attr("name", "orion-ticket-phone");
     }
+    % endif
   </script>
-  % endif
 <p class="align2"><image onclick="$('#form1').submit()" src="${request.static_url('altair.app.ticketing.cart:static/RT/pc/images/btn_next.gif')}" alt="次へ" width="226" height="46" /></p>
 </form>
 
