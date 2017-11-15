@@ -1259,19 +1259,22 @@ class PaymentView(object):
         orion_ticket_phone, orion_phone_errors = self.verify_orion_ticket_phone(self.request.POST.getall('orion-ticket-phone'))
 
         try:
-            if payment_delivery_pair.delivery_method.delivery_plugin_id == ORION_DELIVERY_PLUGIN_ID and any(orion_phone_errors):
-                logger.debug("invalid : %s" % orion_phone_errors)
-                raise self.ValidationFailed(self._message(u'イベントゲット情報の入力内容を確認してください'))
+            if payment_delivery_pair.delivery_method.delivery_plugin_id == ORION_DELIVERY_PLUGIN_ID:
+                if any(orion_phone_errors):
+                    logger.debug("invalid : %s" % orion_phone_errors)
+                    raise self.ValidationFailed(self._message(u'イベントゲット情報の入力内容を確認してください'))
+
+                create_orion_ticket_phone = self.create_or_update_orion_ticket_phone(user, cart.order_no, orion_ticket_phone)
+                DBSession.add(create_orion_ticket_phone)
+
+
             self._validate_extras(cart, payment_delivery_pair, shipping_address_params)
             sales_segment = cart.sales_segment
             cart.payment_delivery_pair = payment_delivery_pair
             cart.shipping_address = self.create_shipping_address(user, shipping_address_params)
-            create_orion_ticket_phone = self.create_or_update_orion_ticket_phone(user, cart.order_no, orion_ticket_phone)
             self.context.check_order_limit()
 
             DBSession.add(cart)
-            if payment_delivery_pair.delivery_method.delivery_plugin_id == ORION_DELIVERY_PLUGIN_ID:
-                DBSession.add(create_orion_ticket_phone)
 
             try:
                 plugins = lookup_plugin(self.request, cart.payment_delivery_pair)
