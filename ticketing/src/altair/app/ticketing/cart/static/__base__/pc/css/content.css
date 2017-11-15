@@ -21,6 +21,10 @@
 	font-weight: bold;
 }
 
+button {
+  border: none;
+}
+
 .align1 {
 	text-align: right;
 }
