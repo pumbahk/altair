@@ -234,9 +234,7 @@ export class ReserveByQuantityComponent implements OnInit {
                   //レスポンスがエラーの場合は非表示
                   this.display = false;
                   this.scrollAddCss();
-                  if (error != `${ApiConst.TIMEOUT}` && error != `${ApiConst.SERVERDNSERROR}` && error != `${ApiConst.SERVERDOWNERROR}`) {
-                    this.errorModalDataService.sendToErrorModal('エラー', '席種情報を取得できません。');
-                  }
+                  this.errorModalDataService.sendToErrorModal('エラー', '席種情報を取得できません。');
                 });
             } else {
               this.display = false;

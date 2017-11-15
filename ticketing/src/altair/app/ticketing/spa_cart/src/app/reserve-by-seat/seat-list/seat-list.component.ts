@@ -70,7 +70,6 @@ export class SeatlistComponent implements OnInit {
   constructor(private route: ActivatedRoute,
     private reserveByQuantity: ReserveByQuantityComponent,
     private stockTypeDataService: StockTypeDataService,
-    private Venuemap: VenuemapComponent,
     private performancesService: PerformancesService,
     private _logger: Logger,
     private errorModalDataService: ErrorModalDataService,
