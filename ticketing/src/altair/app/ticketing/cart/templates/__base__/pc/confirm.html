@@ -168,7 +168,7 @@ $(function() {
     <div class="confirmBox">
       <h2 class="heading heading_simple_line">${__(u'お支払い')}</h2>
       <div class="confirmBoxInner">
-        <p>${h.render_payment_confirm_viewlet(request, cart)}</p>
+        ${h.render_payment_confirm_viewlet(request, cart)}
       </div>
     </div><!-- ===== / お支払い ===== -->
 
@@ -176,7 +176,7 @@ $(function() {
     <div class="confirmBox">
       <h2 class="heading heading_simple_line">${__(u'お引き取り')}</h2>
       <div class="confirmBoxInner">
-        <p>${h.render_delivery_confirm_viewlet(request, cart)}</p>
+        ${h.render_delivery_confirm_viewlet(request, cart)}
       </div>
     </div><!-- ===== / お引き取り ===== -->
 
