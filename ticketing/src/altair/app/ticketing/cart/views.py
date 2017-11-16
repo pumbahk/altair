@@ -1270,7 +1270,7 @@ class PaymentView(object):
             if payment_delivery_pair.delivery_method.delivery_plugin_id == ORION_DELIVERY_PLUGIN_ID:
                 if any(orion_phone_errors):
                     logger.debug("invalid : %s" % orion_phone_errors)
-                    raise self.ValidationFailed(self._message(u'イベントゲット情報の入力内容を確認してください'))
+                    raise self.ValidationFailed(self._message(u'イベントゲート情報の入力内容を確認してください'))
 
                 create_orion_ticket_phone = self.create_or_update_orion_ticket_phone(user, cart.order_no, orion_ticket_phone)
                 DBSession.add(create_orion_ticket_phone)
