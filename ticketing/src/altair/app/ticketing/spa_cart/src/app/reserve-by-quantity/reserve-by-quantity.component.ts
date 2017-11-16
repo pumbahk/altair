@@ -36,14 +36,6 @@ import { Logger } from "angular2-logger/core";
   templateUrl: './reserve-by-quantity.component.html',
   styleUrls: ['./reserve-by-quantity.component.css']
 })
-@NgModule({
-  imports: [
-  ],
-  declarations: [
-    Component
-  ],
-  bootstrap: [Component]
-})
 export class ReserveByQuantityComponent implements OnInit {
   //Subscription
   private subscription: Subscription;
@@ -54,8 +46,8 @@ export class ReserveByQuantityComponent implements OnInit {
 
   //表示・非表示(venuemap,reserve-by-quentityで双方向データバインド)
   //(seat-listから呼び出されてtrue,false)
-  @Input() private filterComponent: FilterComponent;
-  @Input() display: boolean = false;
+  @Input() filterComponent: FilterComponent;
+  @Input() display:boolean = false;
   @Output() output = new EventEmitter<boolean>();
   @Output() confirmStockType = new EventEmitter<boolean>();
 

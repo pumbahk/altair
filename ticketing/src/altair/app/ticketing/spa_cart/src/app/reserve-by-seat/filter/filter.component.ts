@@ -3,8 +3,6 @@ import { Component,Input,OnInit,Injectable,Output,EventEmitter,NgModule } from "
 import { ActivatedRoute,Router } from '@angular/router';
 //observable
 import { Observable } from 'rxjs/Rx';
-//prime
-import { InputTextModule } from 'primeng/primeng';
 //service
 import { PerformancesService } from '../../shared/services/performances.service';
 import { SeatsService } from '../../shared/services/seats.service';
@@ -29,8 +27,6 @@ import {
 import * as $ from 'jquery';
 //const
 import { ApiConst } from '../../app.constants';
-//slider
-import { NouisliderModule } from 'ng2-nouislider';
 //logger
 import { Logger } from "angular2-logger/core";
 @Component({
@@ -38,16 +34,6 @@ import { Logger } from "angular2-logger/core";
   templateUrl: './filter.component.html',
   styleUrls: ['./filter.component.css'],
   providers: [],
-})
-@NgModule({
-  imports: [
-    InputTextModule,
-    NouisliderModule
-  ],
-  declarations: [
-    Component
-  ],
-  bootstrap: [Component]
 })
 
 @Injectable()
