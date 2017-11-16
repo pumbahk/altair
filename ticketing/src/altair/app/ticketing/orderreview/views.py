@@ -824,6 +824,7 @@ class QRView(object):
             mail = self.request.params['mail']
             # send mail using template
             form = schemas.SendMailSchema(self.request.POST)
+            subject = self.request.params.get('subject', u"QRチケットに関しまして")
 
             if not form.validate():
                 return dict(mail=mail,
@@ -831,7 +832,7 @@ class QRView(object):
 
             try:
                 sender = self.context.organization.setting.default_mail_sender
-                api.send_qr_mail(self.request, self.context, mail, sender)
+                api.send_qr_mail(self.request, self.context, mail, sender, subject)
             except Exception, e:
                 logger.error(e.message, exc_info=1)
                 ## この例外は違う...

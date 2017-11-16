@@ -1,5 +1,10 @@
 <%inherit file="./base.html"/>
 <%namespace file="tags_smartphone.html" name="t" />
+<%
+from altair.app.ticketing.payments.plugins import ORION_DELIVERY_PLUGIN_ID
+has_orion = False
+orion_checked = False
+%>
 <style type="text/css">
 form {
   padding: 0 0;
@@ -8,18 +13,6 @@ form {
 </style>
 <%block name="javascript">
     <script type="text/javascript" src="${request.static_url('altair.app.ticketing.cart:static/js/ajaxzip3-https.js')}"></script>
-    <script type="text/javascript">
-    $(document).ready(function(){
-
-        $(".methodExplanation").hide();
-
-        $("input:radio").click(function() {
-            $(".methodExplanation").hide();
-            var index = $("input:radio[name='payment_delivery_method_pair_id']").index(this);
-            $(".methodExplanation:eq(" + index + ")").show();
-        });
-    });
-    </script>
 </%block>
 
 <%block name="css">
@@ -54,7 +47,14 @@ form {
       <div class="settlementPayBox selectMethod">
         <div class="settlementPayBoxInner">
           <% checked = 'checked' if str(m.id) == checked_id else '' %>
-          <input type="radio" name="payment_delivery_method_pair_id" id="radio2" value="${m.id}" ${checked} />
+          <% is_orion = 'true' if m.delivery_method.delivery_plugin_id == ORION_DELIVERY_PLUGIN_ID else 'false' %>
+          <%
+          if not orion_checked:
+            orion_checked = checked and is_orion == 'true'
+          if not has_orion:
+            has_orion = is_orion == 'true'
+          %>
+          <input type="radio" name="payment_delivery_method_pair_id" id="radio2" value="${m.id}" ${checked} onclick="pdmp(this, ${is_orion})" />
           ${m.payment_method.name} & ${m.delivery_method.name}
         </div>
       </div>
@@ -64,7 +64,7 @@ form {
 
     <div class="dispBox">
       %for m in payment_delivery_methods:
-      <div class="methodArea settlementPayBox methodExplanation">
+      <div class="methodArea settlementPayBox methodExplanation" style="display: none">
         <div class="settlementPayBoxInner">
           <%t:header>${m.payment_method.name}</%t:header>
           <div class="dispBox paymentFee_${h.format_number(m.transaction_fee)}">
@@ -197,6 +197,81 @@ form {
       </div>
     </div>
 
+    % if has_orion:
+    <div class="dispBox" id="orion-ticket-phone-info" ${'' if orion_checked else 'style="display:none;"'|n}>
+      <%t:header>イベントゲット情報</%t:header>
+      <div class="dispBoxInner">
+        <ul id="orion-ticket-phone-list">
+          <li id="orion-ticket-phone-template" style="display: none;">
+            <label for="tmp-orion-ticket-phone">電話番号</label>
+            <input type="text" id="tmp-orion-ticket-phone">　<button type="button" onclick="delete_orion_ticket_phone(this);">削除</button>
+          </li>
+          % for i, (phone, error) in enumerate(zip(orion_ticket_phone, orion_phone_errors)):
+          <li>
+            <label for="orion-ticket-phone-${i+1}">電話番号${i+1}</label>
+            <input type="text" id="orion-ticket-phone-${i+1}" name="orion-ticket-phone" value="${phone}">　
+            % if i == 0:
+            <% is_disabled = 'disabled' if len(orion_ticket_phone) > 4 else '' %>
+            <button id="btn-add-orion-ticket-phone" type="button" onclick="add_orion_ticket_phone(this);" ${is_disabled|n}>追加</button>
+            % else:
+            <button type="button" onclick="delete_orion_ticket_phone(this);">削除</button>
+            % endif
+            % if error:
+            <span class="error">${error}</span>
+            % endif
+          </li>
+          % endfor
+        </ul>
+      </div>
+    </div>
+    % endif
+    <script type="text/javascript">
+      function pdmp(input_ele, is_orion) {
+          $(".methodExplanation").hide();
+          var index = $("input:radio[name='payment_delivery_method_pair_id']").index($(input_ele));
+          $(".methodExplanation:eq(" + index + ")").show();
+
+          % if has_orion:
+          if (is_orion) {
+              $("#orion-ticket-phone-info").show();
+          } else {
+              var ul = $("#orion-ticket-phone-list"),
+                  li = ul.children("li").eq(1).detach();
+              ul.find("li").not("#orion-ticket-phone-template").remove();
+              li.appendTo(ul);
+              $("#orion-ticket-phone-info").hide();
+          }
+          % endif
+      }
+      % if has_orion:
+      function add_orion_ticket_phone(button) {
+          var index = $(button).parents("ul").find("li").length,
+              li = $("#orion-ticket-phone-template").clone().removeAttr("id").removeAttr("style");
+          render_num(index, li);
+          li.show().appendTo($(button).parents("ul"));
+
+          if (index > 4) {
+              $(button).prop("disabled", true);
+          }
+      }
+      function delete_orion_ticket_phone(button) {
+        $("#btn-add-orion-ticket-phone").prop("disabled", false);
+        $(button).parent().remove();
+        $("#orion-ticket-phone-list").find("li").not("#orion-ticket-phone-template").each(function(index, li) {
+            if (index !== 0) {
+                render_num(index+1, $(li));
+            }
+        });
+      }
+      function render_num(index, li) {
+        var label = "orion-ticket-phone-" + index;
+        li.find("label").text("電話番号" + index)
+                      .attr("for", label);
+        li.find("input").attr("id", label)
+                      .attr("name", "orion-ticket-phone");
+      }
+      % endif
+    </script>
 <!--
   </div>
   </div>

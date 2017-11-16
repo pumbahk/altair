@@ -119,59 +119,7 @@ $(function () {
     % endif
 </%def>
 
-<%m:header>販売期間</%m:header>
-% if info['salessegment']:
-    <div class="sectionbox">
-        <div class="sectionbox-inner">
-            <table>
-                % for segment in info['salessegment']:
-                    <tr>
-                        <td>
-                            ${render_sale(segment[0])}
-                        </td>
-                        <td>
-                            ${helper.nl2br(segment[1])|n}
-                        </td>
-                    </tr>
-                % endfor
-            </table>
-        </div>
-    </div>
-% else:
-    % if event.salessegment_groups:
-        <div class="sectionbox">
-            <div class="sectionbox-inner">
-                <table>
-                    % for sales_info in helper.get_summary_salessegment_group(event):
-                        <tr>
-                            <td>
-                                ${render_sale(sales_info['group_name'])}
-                            </td>
-                            <td>
-                                <%
-                                    end = ""
-                                    if sales_info['end']:
-                                        end = helper.disp_date(sales_info['end'])
-                                    endif
-                                %>
-                                ${helper.disp_date(sales_info['start'])}〜${end}
-                                <br/>
-                            </td>
-                        </tr>
-                    % endfor
-                </table>
-            </div>
-        </div>
-    % else:
-        <div class="sectionbox">
-            <div class="sectionbox-inner">
-                ${helper.disp_date(event.deal_open)}〜${helper.disp_date(event.deal_close)}
-            </div>
-        </div>
-        <hr/>
-    % endif
-% endif
-
+<br />
 % if len(perfs):
 <div align="center">
   &gt;&gt;<a href="#list">購入はこちらから</a>&lt;&lt;<br />

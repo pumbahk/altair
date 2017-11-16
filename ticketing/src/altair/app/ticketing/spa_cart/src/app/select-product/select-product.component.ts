@@ -170,9 +170,6 @@ export class SelectProductComponent implements OnInit {
           },
           (error) => {
             this._logger.error('performances error', error);
-            if (error != `${ApiConst.TIMEOUT}` && error != `${ApiConst.SERVERDNSERROR}` && error != `${ApiConst.SERVERDOWNERROR}`) {
-              this.errorModalDataService.sendToErrorModal('エラー', '公演情報を取得できません。');
-            }
           });
       }
       else {
@@ -192,13 +189,10 @@ export class SelectProductComponent implements OnInit {
         },
         (error) => {
           this._logger.error('stockType error', error);
-          if (error != `${ApiConst.TIMEOUT}` && error != `${ApiConst.SERVERDNSERROR}` && error != `${ApiConst.SERVERDOWNERROR}`) {
-            this.errorModalDataService.sendToErrorModal('エラー', '席種情報を取得できません。');
-          }
         });
     } else {
       this._logger.error("パラメータに異常が発生しました。");
-      this.errorModalDataService.sendToErrorModal('エラー', '席種情報を取得できません。');
+      this.errorModalDataService.sendToErrorModal('席種情報を取得できません。', 'インターネットに未接続または通信が不安定な可能性があります。通信環境の良いところでページを再読込してください。');
     }
   }
 
@@ -434,15 +428,13 @@ export class SelectProductComponent implements OnInit {
         if (this.releaseResponse.status == "NG") {
           this._logger.error('seat release error', this.releaseResponse);
           this.errorModalDataService.sendToErrorModal('エラー', '座席を解放できません。');
+        } else {
+          this.router.navigate(["performances/" + this.performanceId]);
         }
       },
       (error) => {
         this._logger.error('seat release error', error);
-        if (error != `${ApiConst.TIMEOUT}` && error != `${ApiConst.SERVERDNSERROR}` && error != `${ApiConst.SERVERDOWNERROR}`) {
-          this.errorModalDataService.sendToErrorModal('エラー', '座席を解放できません。');
-        }
       });
-    this.router.navigate(["performances/" + this.performanceId]);
   }
 
   //購入ボタン押下（商品選択API）
@@ -569,9 +561,6 @@ export class SelectProductComponent implements OnInit {
           this.animationEnableService.sendToRoadFlag(false);
           $('#submit').prop("disabled", false);
           this._logger.error('select product error', error);
-          if (error != `${ApiConst.TIMEOUT}` && error != `${ApiConst.SERVERDNSERROR}` && error != `${ApiConst.SERVERDOWNERROR}`) {
-            this.errorModalDataService.sendToErrorModal('エラー', '商品を選択できません。');
-          }
         });
     }
   }

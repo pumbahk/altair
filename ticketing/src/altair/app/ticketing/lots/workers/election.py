@@ -14,6 +14,7 @@ from altair.app.ticketing.models import DBSession
 
 from altair.app.ticketing.orders import models as order_models
 from altair.app.ticketing.cart import models as cart_models
+from altair.app.ticketing.core import models as core_models
 from altair.app.ticketing.cart import api as cart_api
 
 from .. import models as lot_models
@@ -122,6 +123,11 @@ def elect_lot_wish(request, wish, order=None):
 
     return order
 
+def get_updated_orion_ticket_phone(entry_no):
+    orion_ticket_phone = core_models.OrionTicketPhone.filter_by(entry_no=entry_no).first()
+    if orion_ticket_phone:
+        orion_ticket_phone.order_no = entry_no
+    return orion_ticket_phone
 
 @task_config(root_factory=ElectionWorkerResource,
              name="lots.election",
@@ -154,6 +160,9 @@ def elect_lots_task(context, request):
             order = elect_lot_wish(request, wish, order)
             if order:
                 logger.info("ordered: order_no = {0.order_no}".format(order))
+                orion_ticket_phone = get_updated_orion_ticket_phone(context.entry_no)
+                if orion_ticket_phone:
+                    DBSession.add(orion_ticket_phone)
                 DBSession.delete(context.work)
                 wish.lot_entry.elect(wish)
                 wish.order_id = order.id

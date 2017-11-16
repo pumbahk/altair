@@ -258,7 +258,10 @@ class CartAPIView(object):
                     for region_id in s.drawing_l0_ids:
                         region_ids.add(region_id)
             stock_type_detail = {'products':products,'regions':region_ids}
-            ret_stock_types[stock_type] = stock_type_detail              
+            ret_stock_types[stock_type] = stock_type_detail
+            #公開されている商品がある席種のみ返す
+            if len(products) > 0:
+                ret_stock_types[stock_type] = stock_type_detail                         
 
         return dict(
             stock_types=[dict(
