@@ -44,6 +44,7 @@ from altair.app.ticketing.core.models import (
     ProductItem,
     SalesSegment,
     OrganizationSetting,
+    OrionTicketPhone,
     )
 
 from altair.app.ticketing.users.models import (
@@ -856,6 +857,12 @@ class LotEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     @property
     def cart_setting(self):
         return self.lot.event.setting.cart_setting or self.lot.event.organization.setting.cart_setting
+
+    @property
+    def get_orion_ticket_phone_list(self):
+        from altair.app.ticketing.models import DBSession as session
+        orion_ticket_phone = session.query(OrionTicketPhone).filter(OrionTicketPhone.entry_no == self.entry_no).first()
+        return orion_ticket_phone.phones.split(',') if orion_ticket_phone else []
 
 
 class LotEntryProductSupport(object):

@@ -186,6 +186,9 @@ export class ReserveByQuantityComponent implements OnInit {
                     'width': '100%',
                     'height': '100%',
                   });
+                  if (this.smartPhoneCheckService.isSmartPhone()) {
+                    this.modalSizeObtained();
+                  }
                   this.stockType = response.data.stock_types[0];
                   //席種名と商品情報取得
                   this.stockTypeName = this.stockType.stock_type_name;
@@ -231,45 +234,24 @@ export class ReserveByQuantityComponent implements OnInit {
                   //レスポンスがエラーの場合は非表示
                   this.display = false;
                   this.scrollAddCss();
-                  if (error != `${ApiConst.TIMEOUT}` && error != `${ApiConst.SERVERDNSERROR}` && error != `${ApiConst.SERVERDOWNERROR}`) {
-                    this.errorModalDataService.sendToErrorModal('エラー', '席種情報を取得できません。');
-                  }
+                  this.errorModalDataService.sendToErrorModal('エラー', '席種情報を取得できません。');
                 });
             } else {
               this.display = false;
-              this.scrollAddCss();
               this._logger.error("パラメータに異常が発生しました。");
-              this.errorModalDataService.sendToErrorModal('エラー', '席種情報を取得できません。');
             }
           },
           (error) => {
             this.display = false;
-            this.scrollAddCss();
             this._logger.error('performances error:' + error);
-            if (error != `${ApiConst.TIMEOUT}` && error != `${ApiConst.SERVERDNSERROR}` && error != `${ApiConst.SERVERDOWNERROR}`) {
-              this.errorModalDataService.sendToErrorModal('エラー', '公演情報を取得できません。');
-            }
           });
       }
       else {
         this.display = false;
-        this.scrollAddCss();
         this._logger.error('エラー', '公演IDを取得できません。');
         this.errorModalDataService.sendToErrorModal('エラー', '公演IDを取得できません。');
       }
 
-    });
-  }
-
-  scrollAddCss() {
-    //スクロール解除
-    $('html').css({
-      'height': "100%",
-      'overflow-y': "hidden"
-    });
-    $('body').css({
-      'height': "100%",
-      'overflow-y': "auto"
     });
   }
 
@@ -279,6 +261,7 @@ export class ReserveByQuantityComponent implements OnInit {
     this.output.emit(false);
     this.nextButtonFlag = false;
     this.quantity = 1;
+    this.scrollAddCss();
   }
 
   //チケット枚数減少
@@ -343,11 +326,13 @@ export class ReserveByQuantityComponent implements OnInit {
                     return;
                   } else {
                     this.animationEnableService.sendToRoadFlag(false);
+                    this.scrollAddCss();
                     this.router.navigate(["performances/" + this.performanceId + '/select-product/']);
                   }
                 }
                 //OKの場合、商品選択へ画面遷移
                 this.animationEnableService.sendToRoadFlag(false);
+                this.scrollAddCss();
                 this.router.navigate(["performances/" + this.performanceId + '/select-product/']);
               } else {
                 this.animationEnableService.sendToRoadFlag(false);
@@ -360,9 +345,6 @@ export class ReserveByQuantityComponent implements OnInit {
                 this.animationEnableService.sendToRoadFlag(false);
                 $('#reservebutton').prop("disabled", false);
                 this._logger.error('seatReserve error:' + error);
-                if (error != `${ApiConst.TIMEOUT}` && error != `${ApiConst.SERVERDNSERROR}` && error != `${ApiConst.SERVERDOWNERROR}`) {
-                  this.errorModalDataService.sendToErrorModal('エラー', '座席の確保に失敗しました。');
-                }
                 this.seatUpdate();//座席情報最新化
               });
           }
@@ -416,9 +398,6 @@ export class ReserveByQuantityComponent implements OnInit {
       },
       (error) => {
         this._logger.debug(`seat release error`, error);
-        if (error != `${ApiConst.TIMEOUT}` && error != `${ApiConst.SERVERDNSERROR}` && error != `${ApiConst.SERVERDOWNERROR}`) {
-          this.errorModalDataService.sendToErrorModal('エラー', '座席を解放できません。');
-        }
       });
     //モーダル非表示
     this.separatDetailDisplay = false;
@@ -447,5 +426,43 @@ export class ReserveByQuantityComponent implements OnInit {
         }, 100);
       }
     }
+  }
+
+  modalSizeObtained() {
+    let windowHeight: number = $(window).height();
+    let headHeight: number = $('header').height() + $('.headArea').height();
+    let footerHeight: number = 96;
+    //スクロール領域のサイズ
+    let scrollSize: number = 0;
+    //マップ領域のサイズ
+    let mapSize: number = 0;
+    //スクロール領域+10px取得
+    scrollSize = windowHeight - (headHeight + footerHeight);
+    scrollSize += 10;
+    //スクロール領域の80%をマップのサイズとして取得
+    mapSize = scrollSize * 0.8;
+    setTimeout(function() {
+      $('.modalWindow-quantity').css({
+        'height': scrollSize
+      });
+      $('#venue-quentity').css({
+        'height': mapSize,
+      });
+      $('#venue-quentity').children("svg").css({
+        'height': mapSize,
+      });
+     }, 0);
+  }
+
+  scrollAddCss() {
+    //スクロール解除
+    $('html').css({
+      'height': "100%",
+      'overflow-y': "hidden"
+    });
+    $('body').css({
+      'height': "100%",
+      'overflow-y': "auto"
+    });
   }
 }

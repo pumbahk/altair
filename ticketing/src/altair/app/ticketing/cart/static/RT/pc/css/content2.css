@@ -2389,14 +2389,16 @@
 
 /* お支払い、引取方法 */
 #confirmCard,
-#confirmDelivery {
+#confirmDelivery,
+#confirmEventGate {
 	width: 910px;
 	margin: 0 10px;
 	border: 1px solid #f2f2e5;
 }
 
 #confirmCard th,
-#confirmDelivery th {
+#confirmDelivery th,
+#confirmEventGate th {
 	padding: 10px 20px 10px 10px;
 	border-bottom: 1px solid #f2f2e5;
 	font-weight: normal;
@@ -2404,13 +2406,15 @@
 }
 
 #confirmCard td,
-#confirmDelivery td {
+#confirmDelivery td,
+#confirmEventGate td {
 	width: 100%;
 	padding: 10px;
 	border-bottom: 1px solid #f2f2e5;
 }
 
-#confirmDelivery td label {
+#confirmDelivery td label,
+#confirmEventGate td label {
 	font-weight: bold;
 	display: inline-block;
 }

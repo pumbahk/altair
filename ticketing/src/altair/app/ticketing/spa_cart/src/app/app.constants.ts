@@ -48,9 +48,10 @@ export class ApiConst {
   //通信断時のエラー
   public static TIMEOUT = 'Timeout has occurred';
   //DNSエラー
-  public static SERVERDNSERROR = 'server dns error';
-  //ダウンエラー
-  public static SERVERDOWNERROR = 'server down error';
+  public static SERVER_DNS_ERROR = 'server dns error';
+  //500系エラー
+  public static INTERNAL_SERVER_ERROR = 'Internal Server Error';
+  public static SERVICE_UNAVAILABLE = 'Service Unavailable';
 }
 @Injectable()
 export class AppConstService{

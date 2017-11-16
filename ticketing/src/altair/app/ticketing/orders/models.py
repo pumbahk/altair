@@ -22,6 +22,7 @@ from zope.deprecation import deprecation
 from dateutil.parser import parse as parsedate
 
 from altair.sqla import session_partaken_by, HybridRelation
+from altair.sqlahelper import get_db_session
 from altair.models import WithTimestamp, LogicallyDeleted, MutationDict, JSONEncodedDict, Identifier
 
 from altair.app.ticketing.payments import plugins
@@ -52,6 +53,7 @@ from altair.app.ticketing.core.models import (
     SalesSegment,
     FamiPortTenant,
     Account,
+    OrionTicketPhone
 )
 from altair.app.ticketing.users.models import (
     User,
@@ -839,6 +841,12 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             receipts = receipts.all()
             logger.info('order (%s) has multiple receipts (%s)' % (self.id, ', '.join([r.id for r in receipts])))
             raise Exception(u'一つの予約は一つの領収書しか作れません')
+
+    @reify
+    def get_orion_ticket_phone_list(self):
+        from altair.app.ticketing.models import DBSession as session
+        orion_ticket_phone = session.query(OrionTicketPhone).filter(OrionTicketPhone.order_no == self.order_no).first()
+        return orion_ticket_phone.phones.split(',') if orion_ticket_phone else []
 
 class OrderNotification(Base, BaseModel):
     __tablename__ = 'OrderNotification'

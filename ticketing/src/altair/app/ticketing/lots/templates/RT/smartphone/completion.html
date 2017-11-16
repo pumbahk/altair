@@ -75,6 +75,19 @@
 
 %endfor
 
+% if entry.get_orion_ticket_phone_list:
+  <dt class="creditHl">イベントゲット情報</dt>
+  <dd>
+    <div class="detailBox">
+      <ul>
+        % for i, phone in enumerate(entry.get_orion_ticket_phone_list):
+        <li>電話番号${i+1}: ${phone}</li>
+        % endfor
+      </ul>
+    </div>
+  </dd>
+% endif
+
 <dt class="creditHl">購入者情報</dt>
 <dd>
 

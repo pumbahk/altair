@@ -87,26 +87,44 @@ export class ApiBase extends Http{
   private handleError(error: Response | any) {
     let errMsg: string;
     if (error instanceof Response) {
-      const body = error.json() || '';
-      const err = body.error || JSON.stringify(body);
       const status = error.status;
-      errMsg = `${error.status} - ${error.statusText || ''} ${err}`;
-      if (status == 0) {//サーバー接続エラー
-        errMsg = `${ApiConst.SERVERDNSERROR}`;
-      } else if (status == 503) {//サーバーダウン
-        errMsg = `${ApiConst.SERVERDOWNERROR}`;
+      if (status == 0) {
+        errMsg = `${ApiConst.SERVER_DNS_ERROR}`;
+      } else if (status == 500) {
+        errMsg = `${ApiConst.INTERNAL_SERVER_ERROR}`;
+      } else if (status == 503) {
+        errMsg = `${ApiConst.SERVICE_UNAVAILABLE}`;
+      } else {
+        errMsg = `${error.status} - ${error.statusText}`;
       }
-    } else {//タイムアウト
+    } else {
       errMsg = error.message ? error.message : error.toString();
     }
-      this._logger.error(errMsg);
-      this.callErrorModal(errMsg);
-      return Observable.throw(errMsg);
+    this._logger.error(errMsg);
+    this.callErrorModal(errMsg);
+    return Observable.throw(errMsg);
   }
-
   private callErrorModal(errMsg:string) {
-    if (errMsg == `${ApiConst.TIMEOUT}` || errMsg == `${ApiConst.SERVERDNSERROR}` || errMsg == `${ApiConst.SERVERDOWNERROR}`) {
-      this.errorModalDataService.sendToErrorModal();
+    if (errMsg == `${ApiConst.TIMEOUT}` || errMsg == `${ApiConst.SERVER_DNS_ERROR}`) {
+      this.errorModalDataService.sendToErrorModal(
+        '通信エラー発生',
+        'インターネットに未接続または通信が不安定な可能性があります。通信環境の良いところで操作をやり直すかページを再読込してください。'
+      );
+    } else if (errMsg == `${ApiConst.INTERNAL_SERVER_ERROR}`) {
+      this.errorModalDataService.sendToErrorModal(
+        'サーバーエラー発生',
+        '予期しないエラーが発生しました。操作をやり直すかページを再読込してください。'
+      );
+    } else if (errMsg == `${ApiConst.SERVICE_UNAVAILABLE}`) {
+      this.errorModalDataService.sendToErrorModal(
+        'メンテナンス中',
+        'ただいまメンテナンス中のため、一時的にサービスをご利用いただけません。'
+      );
+    } else {
+      this.errorModalDataService.sendToErrorModal(
+        'その他エラー発生',
+        '予期しないエラーが発生しました。操作をやり直すかページを再読込してください。'
+      );
     }
   }
 

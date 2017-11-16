@@ -38,6 +38,13 @@ class User(Base, BaseModel, LogicallyDeleted, WithTimestamp):
         ## 実態としては、user: user_credentialは1:1だけれど、すでに[0]で取得しているコードなどが存在するので
         return self.user_credential[0] if self.user_credential else None
 
+    def supports_word_subscription(self):
+        if self.user_credential:
+            if self.user_credential[0].membership.name == u'rakuten':
+                return True
+        return False
+
+
 class Member(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     __tablename__ = 'Member'
     query = session.query_property()

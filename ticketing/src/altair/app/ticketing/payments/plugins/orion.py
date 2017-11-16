@@ -14,14 +14,12 @@ from altair.app.ticketing.mails.interfaces import (
 tag_re = re.compile(r"<[^>]*?>")
 
 from . import models as m
-from altair.app.ticketing.core import models as core_models
 from . import logger
 import qrcode
 import StringIO
 from markupsafe import Markup
 from pyramid.response import Response
 from altair.pyramid_dynamic_renderer import lbr_view_config
-from altair.app.ticketing.qr import qr
 from altair.app.ticketing.cart import helpers as cart_helper
 from altair.app.ticketing.core import models as c_models
 from collections import namedtuple
@@ -115,11 +113,7 @@ class OrionTicketDeliveryPlugin(object):
 
     def finished(self, request, order):
         """ tokenが存在すること """
-        result = True
-        for op in order.ordered_products:
-            for opi in op.ordered_product_items:
-                result = result and opi.tokens
-        return result
+        pass
 
     def refresh(self, request, order):
         # XXX: 座席番号などが変わっている可能性があるので、何かすべきような...

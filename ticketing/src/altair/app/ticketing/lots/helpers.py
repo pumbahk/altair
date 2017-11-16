@@ -18,6 +18,7 @@ from altair.app.ticketing.core.models import (
     ShippingAddress,
     Product,
     Performance,
+    OrionTicketPhone,
 )
 
 from altair.app.ticketing.cart.helpers import (
@@ -245,6 +246,36 @@ def convert_shipping_address(params):
         if attr in params:
             setattr(shipping_address, attr, params[attr])
     return shipping_address
+
+def create_or_update_orion_ticket_phone(user, entry_no, data):
+    logger.debug('orion_ticket_phone_info=%r', data)
+    orion_ticket_phone = OrionTicketPhone.filter_by(entry_no=entry_no).first()
+    if not orion_ticket_phone:
+        orion_ticket_phone = OrionTicketPhone()
+    orion_ticket_phone.entry_no = entry_no
+    orion_ticket_phone.phones = data
+    orion_ticket_phone.user = user
+    return orion_ticket_phone
+
+def verify_orion_ticket_phone(data):
+    phones = []
+    errors = []
+    for phone in data:
+        phone = phone.strip()
+        error = u''
+        phones.append(phone)
+        if phone:
+            if len(phone) != 11:
+                error = u'電話番号の桁数が11桁ではありません'
+            if not phone.isdigit():
+                error = ','.join([error, u'数字以外の文字は入力できません']) if error else u'数字以外の文字は入力できません'
+        errors.append(error)
+
+    if not phones:
+        phones = ['']
+        errors = ['']
+
+    return phones, errors
 
 def shipping_address_form_data(shipping_address, gender=None):
     s = shipping_address

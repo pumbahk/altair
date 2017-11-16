@@ -73,7 +73,7 @@
 <div id="mapAreaRight">
 
     <!--  seat-list   -->
-    <app-seat-list [reserveByQuantityComponent]="quantity" [filterComponent]="filterComponent" [countSelect]="countSelect" (confirmStockType)="confirmStockType = $event" (mapHome)="mapHome()" (stockTypeIdFromList)="stockTypeIdFromList = $event"></app-seat-list>
+    <app-seat-list [reserveByQuantityComponent]="quantity" [filterComponent]="filterComponent" [countSelect]="countSelect" (confirmStockType)="confirmStockType = $event" (mapHome)="mapHome()" [isInitialEnd]="isInitialEnd()" (stockTypeIdFromList)="stockTypeIdFromList = $event"></app-seat-list>
     <!--  /seat-list   -->
 
     <!--購入確認-->

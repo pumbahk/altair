@@ -127,6 +127,28 @@ dl.cost-detail > dd {
     </div>
   </div> 
 
+  % if entry.get_orion_ticket_phone_list:
+  <div class="subbox">
+    <dl>
+      <dt><p class="lineRed">イベントゲット情報</p></dt>
+      <dd>
+        <div class="subInner2">
+          <dl class="creditList">
+            <dt class="creditHl">譲渡先</dt>
+            <dd>
+              <ul>
+                % for i, phone in enumerate(entry.get_orion_ticket_phone_list):
+                <li>電話番号${i+1}: ${phone}</li>
+                % endfor
+              </ul>
+            </dd>
+          </dl>
+        </div>
+      </dd>
+    </dl>
+  </div>
+  % endif
+
   <div class="subbox">
     <dl>
       <dt><p class="lineRed">購入者情報</p></dt>
