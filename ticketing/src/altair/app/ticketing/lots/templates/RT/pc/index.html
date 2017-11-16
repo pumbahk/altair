@@ -184,7 +184,7 @@ if label is None or label is True:
             <tr>
               <% checked = 'checked' if str(m.id) == checked_id else '' %>
               <% is_orion = 'true' if m.delivery_method.delivery_plugin_id == ORION_DELIVERY_PLUGIN_ID else 'false' %>
-              <% orion_checked = checked and is_orion if not orion_checked else orion_checked %>
+              <% orion_checked = checked and is_orion == 'true' if not orion_checked else orion_checked %>
               <td class="settlementPayRadio"${' rowspan="2"' if m.system_fee > 0 or m.special_fee > 0 else u''|n} onclick="pdmp(this, ${is_orion})">
                 <input type="radio" name="payment_delivery_method_pair_id" id="radio2" value="${m.id}" autocomplete="off" ${checked} />
               </td>
