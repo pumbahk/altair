@@ -224,7 +224,8 @@ class elect_lots_taskTests(unittest.TestCase, CoreTestMixin):
         context = testing.DummyResource(
             lot_id='testing',
             lot=self.lot,
-            work=self.work
+            work=self.work,
+            entry_no=self.lot_entry.entry_no
         )
         dummy_request = DummyRequest()
         self._callFUT(context, dummy_request)
