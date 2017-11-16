@@ -575,7 +575,7 @@ class ConfirmLotEntryView(object):
         shipping_address = entry['shipping_address']
         shipping_address = h.convert_shipping_address(shipping_address)
         user = cart_api.get_or_create_user(self.context.authenticated_user())
-        orion_ticket_phone = h.create_or_update_orion_ticket_phone(user, entry_no, entry['orion_ticket_phone']) if entry['orion_ticket_phone'] else None
+        orion_ticket_phone = h.create_or_update_orion_ticket_phone(user, entry_no, entry['orion_ticket_phone']) if 'orion_ticket_phone' in entry and entry['orion_ticket_phone'] else None
         shipping_address.user = user
         wishes = entry['wishes']
         logger.debug('wishes={0}'.format(wishes))
