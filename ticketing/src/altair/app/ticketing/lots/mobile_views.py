@@ -356,6 +356,7 @@ class EntryLotView(object):
             birthday=cform['birthday'].data,
             memo=cform['memo'].data,
             extra=cform['extra'].data,
+            orion_ticket_phone=None
             )
         entry = api.get_lot_entry_dict(self.request)
         self.request.session['lots.entry.time'] = get_now(self.request)
