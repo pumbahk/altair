@@ -330,7 +330,7 @@ class EntryLotView(object):
         orion_ticket_phone, orion_phone_errors = h.verify_orion_ticket_phone(self.request.POST.getall('orion-ticket-phone'))
         cform.orion_ticket_phone.data = ','.join(orion_ticket_phone)
         if any(orion_phone_errors):
-            self.request.session.flash(self._message(u'イベントゲット情報の入力内容を確認してください'))
+            self.request.session.flash(_(u'イベントゲット情報の入力内容を確認してください'))
             validated = False
 
         birthday = cform['birthday'].data
