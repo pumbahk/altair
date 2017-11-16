@@ -125,7 +125,7 @@ function render_num(index, li) {
 <%
   checked = 'checked' if str(m.id) == payment_delivery_method_pair_id else ''
   is_orion = 'true' if m.delivery_method.delivery_plugin_id == ORION_DELIVERY_PLUGIN_ID else 'false'
-  orion_checked = checked and is_orion if not orion_checked else orion_checked
+  orion_checked = checked and is_orion == 'true' if not orion_checked else orion_checked
 %>
 <p>
   <input id="radio${m.id}" type="radio" name="payment_delivery_method_pair_id" value="${m.id}" ${checked} onclick="pdmp(${is_orion})"/>
