@@ -32,6 +32,7 @@ import { CountSelectService } from './shared/services/count-select.service';
 import { SmartPhoneCheckService } from './shared/services/smartPhone-check.service';
 import { SelectProductBrowserBackService } from './shared/services/select-product-browser-back.service';
 import { ReserveBySeatBrowserBackService } from './shared/services/reserve-by-seat-browser-back.service';
+import { SeatDataService } from './shared/services/seatData.service';
 //Ng-inline-svg
 import { InlineSVGModule } from 'ng-inline-svg';
 //Primeng
@@ -98,7 +99,8 @@ const routes: Routes = [
     CountSelectService,
     SmartPhoneCheckService,
     SelectProductBrowserBackService,
-    ReserveBySeatBrowserBackService
+    ReserveBySeatBrowserBackService,
+    SeatDataService
   ],
   bootstrap: [
     AppComponent

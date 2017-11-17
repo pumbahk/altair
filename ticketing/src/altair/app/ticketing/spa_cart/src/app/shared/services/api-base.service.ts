@@ -63,6 +63,32 @@ export class ApiBase extends Http{
     this.cachedGetObservables[url] = get;
     return get;
   }
+    /**
+   * seatGETリクエストを実行します
+   *
+   * @param string url - API-URL
+   * @param boolean useCache - Returns cached response if true
+   * @return Observable<T> - Observable関数
+   * @return null - 通信エラー
+   */
+  protected httpGetSeat<T>(url: string, useCache: boolean = false): Observable<T> {
+    if(useCache && this.cachedGetObservables[url] != undefined){
+      this._logger.debug('API GET:', url + ' [CACHED]');
+      return this.cachedGetObservables[url];
+    }
+    this._logger.debug('API GET:', url);
+    var get = this.get(url, this.options)
+      .timeout(60000)
+      .map((response) => {
+        const body = response.json();
+        this.cachedGetObservables[url] = Observable.of(body);
+        return body;
+      })
+      .catch(error => this.handleError(error))
+      .share();
+    this.cachedGetObservables[url] = get;
+    return get;
+  }
 
   /**
    * POSTリクエストを実行します

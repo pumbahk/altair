@@ -57,6 +57,7 @@ import { AnimationEnableService } from '../../shared/services/animation-enable.s
 import { CountSelectService } from '../../shared/services/count-select.service';
 import { SmartPhoneCheckService } from '../../shared/services/smartPhone-check.service';
 import { ReserveBySeatBrowserBackService } from '../../shared/services/reserve-by-seat-browser-back.service';
+import { SeatDataService } from '../../shared/services/seatData.service';
 
 // jquery
 import * as $ from 'jquery';
@@ -120,6 +121,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
     private countSelectService: CountSelectService,
     private smartPhoneCheckService: SmartPhoneCheckService,
     private reserveBySeatBrowserBackService: ReserveBySeatBrowserBackService,
+    private seatDataService: SeatDataService,
     private _logger: Logger) {
     this.element = this.el.nativeElement;
   }
@@ -242,7 +244,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
   displayViewBox: any[] = null;
 
   // 座席Element情報
-  seat_elements: { [key: string]: any[][]; } = {};
+  seat_elements: any = {};
 
   // 表示中のグリッド
   active_grid: string[] = [];
@@ -276,11 +278,19 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
   returnUnconfirmFlag = false;
 
   ngOnInit() {
+    performance.mark('setActiveGrid-start');
     const that = this;
     let drawingRegionTimer;
     let drawingSeatTimer;
     let regionIds = Array();
     this.animationEnableService.sendToRoadFlag(true);
+
+    this.seatDataService.getSeatData().subscribe((response: any) => {
+      this.seat_elements = response;
+    },
+      (error) => {
+        console.log("最終ポイントエラー");
+    });
 
     this.route.params.subscribe((params) => {
       if (params && params['performance_id']) {
@@ -292,7 +302,8 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
           this.event = performanceRes.data.event;
           this.performance = performanceRes.data.performance;
           this.performanceId = this.performance.performance_id;
-          this.venueURL = this.performance.venue_map_url;
+          //this.venueURL = this.performance.venue_map_url;
+          this.venueURL = "../assets/kobo-park-miyagi-2017-spa-no-seats.svg";
           this.colorNavi = "https://s3-ap-northeast-1.amazonaws.com/tstar/cart_api/color_sample.svg";
           this.wholemapURL = this.performance.mini_venue_map_url;
           this.salesSegments = this.performance.sales_segments;
@@ -413,7 +424,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
                 $(that.svgMap).find('#' + regions[i].region_id).find('.coloring_region').css({ 'fill': REGION_COLOR_MANY_SEATS });
               }
             }
-            
+
             if (!that.smartPhoneCheckService.isSmartPhone()) {
               //ツールチップ用属性の設定
               that.tooltipStockType.forEach(function (value) {
@@ -453,8 +464,8 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
         clearInterval(svgLoadCompleteTimer);
         that.seatAreaHeight = $("#mapImgBox").height();
         that.svgMap = document.getElementById('mapImgBox').firstElementChild;
-        that.saveSeatData();
         that.mapHome();
+        that.measurement('setActiveGrid');
       }
     }, 200);
 
@@ -466,8 +477,8 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
         tooltip += '<br />' + $(this).attr('min') + '円～' + $(this).attr('max') + '円';
       }
       if ($(this).attr('title')) {
-        if (tooltip) tooltip += '<br />' 
-        tooltip += $(this).attr('title'); 
+        if (tooltip) tooltip += '<br />'
+        tooltip += $(this).attr('title');
       }
       if (tooltip) {
         $('body').append('<div id="tooltip">' + tooltip + '</div>');
@@ -1119,7 +1130,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
             } else {
               this.selectedSeatGroupNames.push($(this.svgMap).find('#' + this.selectedGroupIds[i]).attr('title'));
             }
-            
+
           }
           this.selectTimes();
         } else {
@@ -1428,34 +1439,6 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
     this.setActiveGrid();
   }
 
-  // SVGの座席データを[連席ID, Element]として保持してDOMツリーから削除
-  saveSeatData() {
-    let els = document.querySelectorAll('.seat');
-    
-    for (let i = 0; i < els.length; i++) {
-      let grid_class = (<SVGAnimatedString>(<SVGElement>els[i]).className).baseVal;
-      grid_class = grid_class.substr(grid_class.indexOf('grid'), 13);
-      let parent_id = $(els[i].parentNode).attr('id');
-
-      if (!(grid_class in this.seat_elements)) {
-        this.seat_elements[grid_class] = [];
-      }
-
-      (<HTMLElement>els[i]).style.display = 'inline';
-
-      if (!this.smartPhoneCheckService.isSmartPhone()) {
-        //tooltipの席番
-        els[i].setAttribute('title', els[i].textContent.trim());
-        els[i].textContent = null;
-      }
-
-      (this.seat_elements[grid_class]).push([parent_id, els[i]]);
-    }
-
-    $('.seat').remove();
-    if (!this.smartPhoneCheckService.isSmartPhone()) $('svg').find('title').remove();
-  }
-
   // 現在の描画サイズに合わせて表示するグリッドを決定し、座席データを動的に追加・削除
   setActiveGrid() {
     if (this.scaleTotal >= SCALE_SEAT) {
@@ -1475,33 +1458,37 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
           grid_class += ('000' + x).slice(-3);
           grid_class += (y >= 0) ? 'p' : 'm';
           grid_class += ('000' + y).slice(-3);
-
           if (this.seat_elements[grid_class]) {
             next_active_grid.push(grid_class);
           }
         }
       }
-
+      //svg初期化
+      for (let i = 0; i < this.active_grid.length; i++) {
+        let els = this.seat_elements[this.active_grid[i]];
+        for (let key in els) {
+          document.getElementById(key).textContent = null;
+        }
+      }
       // 表示から非表示
       for (let i = 0; i < this.active_grid.length; i++) {
         if (!(next_active_grid.indexOf(this.active_grid[i]) >= 0)) {
           let els = this.seat_elements[this.active_grid[i]];
-          for (let idx = 0; idx < els.length; idx++) {
-            document.getElementById(els[idx][0]).textContent = null;
+          for (let key in els) {
+            document.getElementById(key).textContent = null;
           }
           this.active_grid.splice(i, 1);
         }
       }
-
-      // 非表示から表示へ
+      // 非表示から表示
       for (let i in next_active_grid) {
         if (!(next_active_grid[i] in this.active_grid)) {
           let els = this.seat_elements[next_active_grid[i]];
-          for (let idx = 0; idx < els.length; idx++) {
-            document.getElementById(els[idx][0]).appendChild(els[idx][1]);
-            this.active_grid.push(next_active_grid[i]);
+          for (let key in els) {
+            document.getElementById(key).innerHTML += els[key];
             isRedrawSeats = true;
           }
+          this.active_grid.push(next_active_grid[i]);
         }
       }
 
@@ -1509,8 +1496,8 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
     } else {
       for (let i = 0; i < this.active_grid.length; i++) {
         let els = this.seat_elements[this.active_grid[i]];
-        for (let idx = 0; idx < els.length; idx++) {
-          document.getElementById(els[idx][0]).textContent = null;
+        for (let key in els) {
+          document.getElementById(key).textContent = null;
         }
       }
       this.active_grid = [];
@@ -1973,7 +1960,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
       //進む判定用に履歴数を保持
       sessionStorage.setItem('maxHistory', history.length.toString());
     }
-    
+
     //滞在フラグを削除
     sessionStorage.removeItem('stay');
 
