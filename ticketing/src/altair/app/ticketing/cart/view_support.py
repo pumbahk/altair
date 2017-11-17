@@ -48,7 +48,7 @@ from .interfaces import ICartResource
 
 logger = logging.getLogger(__name__)
 
-build_date_input_select = DateFieldBuilder(DateSelectFormElementBuilder(placeholders=True))
+build_date_input_select = DateFieldBuilder(DateSelectFormElementBuilder(year_upper_bound=datetime.now().year + 1, placeholders=True))
 
 class IndexViewMixin(object):
     def __init__(self):
