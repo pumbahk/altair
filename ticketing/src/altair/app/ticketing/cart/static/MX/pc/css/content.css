@@ -1,0 +1,1295 @@
+@charset "utf-8";
+
+/*
+	File Name   : content.css
+	Author      : Kensuke Takahashi
+	Description : コンテンツエリア関係 他
+*/
+
+
+/* 共通
+----------------------------------------------------------- */
+#main h2 {
+	clear: both;
+	position: relative;
+	left: -1px;
+	margin: 0 0 10px;
+	padding: 0 0 3px 10px;
+	border-bottom: 2px solid #bf0000;
+	color: #bf0000;
+	font-size: 18px;
+	font-weight: bold;
+}
+
+button {
+  border: none;
+}
+
+.align1 {
+	text-align: right;
+}
+
+.align2 {
+	width: 20%;
+	margin: 0 auto;
+	padding: 15px;
+	background: #ed4a27 none repeat scroll 0 0;
+	text-align: center;
+	color: #fff !important;
+	font-size: 16px;
+	font-weight: bold;
+	cursor: pointer;
+}
+.align2:hover {
+	opacity: 0.8;
+}
+
+.align2:link {
+	text-decoration: none;
+}
+
+.attention1 {
+	color: #bf0000;
+}
+
+/* チケット購入
+----------------------------------------------------------- */
+#main h1 {
+	background: #bf0000 none repeat scroll 0 0;
+	margin: 0 0 20px;
+	padding: 8px;
+	color: #fff;
+	font-size: 20px;
+}
+
+#ticketName {
+	margin: 0 10px;
+	padding: 10px;
+	border-left: 5px double #999;
+	background: #efefef none repeat scroll 0 0;
+	font-size: 18px;
+	line-height: 1;
+}
+
+#settlementSelectBox {
+	width: auto;
+	margin: 0 10px 20px;
+	background: url(../images/bg_select_top.gif) no-repeat 0 0;
+}
+#settlementSelectBoxInner {
+	padding: 2px;
+	border: 2px solid #ccc;
+	-moz-border-radius: 6px;
+	-webkit-border-radius: 6px;
+	border-radius: 6px;
+}
+#settlementSelectBox table {
+	width: 100%;
+}
+#settlementSelectBox th {
+	width: 25%;
+	padding: 5px 10px;
+	font-size: 116.7%;
+}
+#settlementSelectBox tr:nth-child(1) th {
+	content: "";
+	padding: 8px 0 10px 10px;
+}
+#settlementSelectBox tr:nth-child(2) th {
+	content: "";
+	padding: 0 10px 15px;
+}
+#settlementSelectBox td {
+	padding: 12px;
+	background: #fff;
+}
+#settlementSelectBox tr:nth-child(1) td {
+	content: "";
+	padding: 13px 10px 5px;
+}
+#settlementSelectBox tr:nth-child(2) td {
+	content: "";
+	padding: 5px 10px 13px;
+}
+#settlementSelectBox select {
+	padding: 5px;
+	border: 1px solid #ccc;
+}
+.selectdate-box {
+	margin: 20px;
+}
+.selectdate-box dl {
+	-moz-border-radius: 6px;
+	-webkit-border-radius: 6px;
+	border-radius: 6px;
+	border: 2px solid #CCC;
+	padding: 10px;
+}
+.selectdate-box dl dt,.selectdate-box dl dd {
+	padding: 5px;
+}
+.selectdate-box dl dt {
+	float: left;
+	width: 10%;
+	font-weight: bold;
+}
+
+/* clearfix
+--------------------------------------------------- */
+
+.clearfix:after {
+    content: ".";
+    display: block;
+    height: 0;
+    clear: both;
+    visibility: hidden;
+}
+ 
+.clearfix {
+    display: inline-table;
+    min-height: 1%;
+}
+ 
+/* Hides from IE-mac */
+* html .clearfix {
+    height: 1%;
+}
+.clearfix {
+    display: block;
+}
+/* End hide from IE-mac */
+
+
+/*#settlementSelectEnd td {
+	background: none;
+}*/
+
+.settlementBox {
+	margin-bottom: 20px;
+}
+
+.settlementBoxInner {
+	overflow: hidden;
+	padding-bottom: 10px;
+}
+
+.settlementBoxInner dl {
+	margin-left:10px;
+}
+
+.settlementBoxInner dl dt.cartPayment {
+	font-size:140%;
+	font-weight:bold;
+	border-left:2px #ccc solid;
+	padding:3px 0 0 10px;
+	height:30px;
+	margin:8px 0 10px 0;
+}
+
+.settlementBoxInner p{
+	margin:0 0 10px 20px;
+}
+
+.settlementBox2 {
+	margin: 0 10px 20px;
+	border: 2px solid #ccc;
+	background: #fff none repeat scroll 0 0;
+}
+
+.settlementBoxInner2 {
+	height: 1%;
+	overflow: hidden;
+	padding: 10px 8px 10px 12px;
+}
+
+.settlementBox h2 {
+	position: static !important;
+	padding: 8px 0 10px 12px;
+	margin-bottom: 5px;
+}
+
+.settlementBox2 h2 {
+	position: static !important;
+	padding: 8px 0 10px;
+	margin-bottom: 5px;
+}
+
+.settlementBox2 h2#hallName {
+	padding: 10px;
+	border-left: 5px double #999;
+	background: #efefef none repeat scroll 0 0;
+	font-size: 18px;
+	line-height: 1;
+}
+
+#settlementOperation .settlementBoxInner2 h3 {
+	font-size: 16px;
+	font-weight: normal;
+}
+
+#settlementOperation .settlementOperationPaneInner {
+	height: 500px;
+	overflow: hidden;
+}
+
+#settlementOperation .settlementOperationPaneInner .settlementOperationPaneInnerContent {
+	position: relative;
+}
+
+#selectSeatType {
+	position: absolute;
+	left: 0px;
+	top: 0px;
+	width: 395px;
+	z-index: 100;
+	overflow: hidden;
+}
+
+#selectSeatType.blur h3 {
+	padding: 32px 0 0 0;
+	background: url(../images/title_select.blur.gif) no-repeat;
+	height: 0px;
+	overflow: hidden;
+}
+
+#selectSeatType.focused h3 {
+	font-size: 14px;
+	font-weight: bold;
+}
+
+#selectSeatType .arrow {
+  position: absolute;
+	width: 15px;
+	height: 26px;
+	background: url(../images/bg_seat_select.png) no-repeat right top;
+	background-position: 0 390;
+	z-index: 200;
+}
+
+#selectSeatType .seatListContainer {
+	width: 395px;
+  height: 462px;
+	overflow: auto;
+	position: relative;
+}
+
+#selectSeatType.blur .seatListContainer {
+	overflow: hidden;
+}
+
+#selectSeatType .seatListContainer ul {
+	padding: 0 0 5px 4px;
+}
+
+#selectSeatType .seatListContainer li {
+	line-height: 16px;
+	font-weight: bold;
+}
+
+#selectSeatType.blur .seatListContainer li {
+	filter: alpha(opacity=50);
+	-moz-opacity: 0.5;
+	opacity: 0.5;
+}
+
+#selectSeatType .seatListContainer li .seatListItemInner {
+	position: relative;
+	width: 369px;
+	height: auto;
+	margin: 10px 0 4px;
+	border: 1px solid #ccc;
+	cursor: pointer;
+}
+#selectSeatType .seatListContainer li .seatListItemInner .seatColor {
+	position: absolute;
+	width: 14px;
+	height: 14px;
+	line-height: 14px;
+	font-size: 10px;
+	left: 9px;
+	top: 5px;
+}
+
+#selectSeatType .seatListContainer li .seatListItemInner .seatName {
+	display: inline-block;
+	position: relative;
+	height: auto;
+	padding: 5px;
+	width: 300px;
+	left: 32px;
+	top: 0px;
+	overflow: hidden;
+	word-break: break-all;
+	vertical-align: middle;
+}
+
+#selectSeatType .seatListContainer li .seatListItemInner .seatState {
+	float: right;
+	position: relative;
+	right: 7px;
+	top: 5px;
+	width: auto;
+	font-size: 15px;
+}
+#selectSeatType .seatListContainer li .seatListItemInner .seatState:after {
+	content: "";
+	display: block;
+	clear: both;
+}
+/*#selectSeatType .seatListContainer li.seatEven .seatListItemInner,
+#selectSeatType .seatListContainer li.seatOdd .seatListItemInner {
+	background: url(../images/bg_seat_even.gif) no-repeat 0 0;
+}*/
+
+/*#selectSeatType .seatListContainer li.seatEven .seatListItemInner:hover,
+#selectSeatType .seatListContainer li.seatOdd .seatListItemInner:hover {
+	background: url(../images/bg_seat_odd.gif) no-repeat 0 0;
+}*/
+
+#selectSeatType .seatListContainer li.selected .seatListItemInner,
+#selectSeatType .seatListContainer li.selected .seatListItemInner:hover {
+	filter: alpha(opacity=100);
+	-moz-opacity: 1.0;
+	opacity: 1.0;
+	width: 369px;
+	border: 1px solid #ccc;
+}
+
+#selectSeatType .seatListContainer li.selected .seatListItemAux {
+	height: 60px;
+}
+
+/*
+#selectSeatType .selectProduct .btn-select-buy {
+	display: inline-block;
+	width: 140px;
+	height: 0px;
+	line-height: -1px;
+	overflow: hidden;
+	font-size: 0px;
+	padding: 33px 0 0 0;
+	margin: 0 0;
+	background: url(../images/btn_select_buy.small.gif) no-repeat 0 0;
+	border: none;
+	cursor: pointer;
+}
+
+#selectSeatType .selectProduct .btn-select-buy:hover {
+	background-image: url(../images/btn_select_buy.small.hl.gif);
+}
+
+#selectSeatType.blur .selectProduct .btn-select-buy {
+	background-image: url(../images/btn_select_buy.small.d.gif);
+}
+
+#selectSeatType .selectProduct .btn-entrust-buy {
+	display: inline-block;
+	width: 140px;
+	height: 0px;
+	line-height: -1px;
+	overflow: hidden;
+	font-size: 0px;
+	padding: 33px 0 0 0;
+	margin: 0 0;
+	background: url(../images/btn_entrust_buy.small.gif) no-repeat 0 0;
+	border: none;
+	cursor: pointer;
+}
+
+#selectSeatType .selectProduct .btn-entrust-buy:hover {
+	background-image: url(../images/btn_entrust_buy.small.hl.gif);
+}
+
+#selectSeatType.blur .selectProduct .btn-entrust-buy {
+	background-image: url(../images/btn_entrust_buy.small.d.gif);
+}
+*/
+
+#selectSeatType .selectProduct .btn-buy {
+	position: relative;
+	top: 7px;
+	margin: 0 0;
+	font-size: 14px;
+}
+
+#selectSeatType .selectProduct .btn-buy:hover {
+	opacity: 0.8;
+	cursor: pointer;
+}
+
+#selectSeatType.blur .selectProduct .btn-buy {
+	background-image: url(../images/btn_buy.small.d.gif);
+}
+
+#selectSeatType .selectProduct .productListContainer {
+	width: 369px;
+	margin: 0 2px;
+	padding: 0;
+	box-sizing: border-box;
+}
+
+#selectSeatType .selectProduct .selectProduct-description {
+	padding: 8px 7px;
+	margin-left: 2px;
+	margin-right: 20px;
+	background: url(../images/bg_seat.gif) repeat-y 0 0;
+}
+
+#selectSeatType .selectProduct ul.productList {
+    margin: 0 0;
+	padding: 0 0;
+}
+#selectSeatType .selectProduct ul.productList li.productListItem {
+	padding: 2px 0;
+	clear: both;
+}
+#selectSeatType .selectProduct ul.productList li.productListItem .productName {
+	padding: 2px 0 0;
+}
+#selectSeatType .selectProduct ul.productList li.productListItem .productPrice {
+	float: right;
+	padding: 2px 6px 0;
+}
+
+#selectSeatType .selectProduct ul.productList li.productListItem .productQuantity {
+	float: right;
+}
+
+#selectSeatType .selectProduct ul.productList li.productListItem .productListItem-description {
+	margin-left: 1em;
+}
+
+#selectBuy {
+	position: absolute;
+	top: 0px;
+	right: 0px;
+	width: 510px;
+	margin-bottom: 10px;
+	border: 2px solid #cccccc;
+	background-color: #ffffff;
+	z-index: 10;
+}
+
+#selectBuy.blur h3 {
+	padding: 32px 0 0 0;
+	background: url(../images/select.blur.gif) no-repeat;
+	height: 0px;
+	overflow: hidden;
+}
+
+#selectBuy.focused h3 {
+	padding: 32px 0 0 0;
+	background: url(../images/select.focused.gif) no-repeat;
+	height: 0px;
+	overflow: hidden;
+}
+
+#selectBuy dl {
+	width: 492px;
+	margin: 0 0 10px 9px;
+	background: url(../images/bg_select_buy_top.gif) no-repeat 0 0;
+}
+
+#selectBuy dt {
+	padding: 15px 15px 10px;
+	font-weight: bold;
+}
+
+#selectBuy dd {
+	padding: 0 10px 10px;
+	background: url(../images/bg_select_buy_bottom.gif) no-repeat left bottom;
+}
+
+#selectBuy table {
+	width: 465px;
+	border-top: 1px solid #cccccc;
+}
+
+#selectBuy th {
+	padding: 5px;
+	border-top: 1px dotted #cccccc;
+}
+
+#selectBuy td {
+	padding: 5px;
+	border-top: 1px dotted #cccccc;
+	font-weight: bold;
+	text-align: right;
+}
+
+#selectBuy ul {
+	float: right;
+	padding: 0 13px 10px 0;
+}
+
+#selectBuy li {
+	margin-bottom: 5px;
+}
+
+#selectSeat {
+	position: absolute;
+	top: 0px;
+	left: 392px;
+	width: 513px;
+	height: 490px;
+	margin-bottom: 10px;
+	background-color: #ffffff;
+	z-index: 10;
+}
+
+.selectSeatLeftPane {
+	float: left;
+	width: 432px;
+	height: 478px;
+  padding: 11px 0 11px 11px;
+}
+
+.selectSeatRightPane {
+	float: right;
+	width: 406px;
+	height: 468px;
+	padding: 0 11px 11px 0;
+}
+
+#selectSeat .venueViewer,
+#selectSeat .venueViewerWrapper,
+#selectSeat .guidanceBackground {
+  width: 480px;
+  height: 430px;
+  border: 1px solid #efefef;
+}
+
+#selectSeat .venueViewerWrapper {
+	position: relative;
+    margin-bottom: 10px;
+}
+
+#selectSeat .guidance {
+	position: absolute;
+	display: none;
+	left: 0;
+	top: 0;
+	width: 450px;
+	height: 390px;
+	margin: 0 0;
+	padding: 20px 20px;
+	z-index: 10001;
+	-moz-user-select: none;
+	-webkit-user-select: none;
+	user-select: none;
+}
+
+#selectSeat .guidance .guidanceInner {
+	position: relative;
+	margin-top: 50px;
+	height: 240px;
+	font-weight: bold;
+	font-size: 14px;
+}
+
+#selectSeat .guidance .guidanceInner h3 {
+	border-left: 6px solid #fa4;
+	padding-left: 4px;
+	font-size: 18px;
+	margin-bottom: 14px;
+}
+
+
+#selectSeat .guidanceBackground {
+	position: absolute;
+	left: 0;
+	top: 0;
+	z-index: 10000;
+	display: none;
+}
+
+#selectSeat.blur .guidanceBackground {
+	display: block;
+	-moz-opacity: 0.75;
+	-opera-opacity: 0.75;
+	-webkit-opacity: 0.75;
+	opacity: 0.75;
+	filter: alpha(opacity=75);
+	background-color: #fff;
+}
+
+#selectSeat.blur .guidance {
+	display: block;
+	background: #efefef none repeat scroll 0 0;
+	color: #000;
+	overflow: scroll;
+}
+
+#selectSeat.blur #selectProduct h3 {
+	padding: 32px 0 0 0;
+	background: url(../images/select.blur.gif) no-repeat;
+	height: 0px;
+	overflow: hidden;
+}
+
+#selectSeat.focused #selectProduct h3 {
+	padding: 32px 0 0 0;
+	background: url(../images/select.focused.gif) no-repeat;
+	height: 0px;
+	overflow: hidden;
+}
+
+#selectSeat .btn-select-seat {
+	display: inline-block;
+	width: 85px;
+	height: 27px;
+	padding: 5px 0 0;
+	background: #999 none repeat scroll 0 0;
+	color: #fff;
+	font-size: 14px;
+	font-weight: bold;
+	text-align: center;
+}
+#selectSeat.focused .btn-select-seat {
+	display: inline-block;
+	width: 85px;
+	height: 27px;
+	padding: 5px 0 0;
+	background: #bf0000 none repeat scroll 0 0;
+	color: #fff;
+	font-size: 14px;
+	font-weight: bold;
+	text-align: center;
+	cursor: pointer;
+}
+
+#selectSeat .btn-cancel {
+	display: inline-block;
+	width: 85px;
+	height: 27px;
+	padding: 5px 0 0;
+	background: #999 none repeat scroll 0 0;
+	color: #fff;
+	font-size: 14px;
+	font-weight: bold;
+	text-align: center;
+}
+#selectSeat.focused .btn-cancel {
+	display: inline-block;
+	width: 85px;
+	height: 27px;
+	padding: 5px 0 0;
+	background: #bf0000 none repeat scroll 0 0;
+	color: #fff;
+	font-size: 14px;
+	font-weight: bold;
+	text-align: center;
+	cursor: pointer;
+}
+#selectSeat.focused .btn-select-seat:hover {
+	opacity: 0.8;
+}
+#cancelSeat.focused .btn-cancel:hover {
+	opacity: 0.8;
+}
+#selectSeatType ul.buttonSet {
+	clear:right;
+	overflow: hidden;
+	margin: 5px 0 0;
+	padding: 0;
+	text-align: right;
+}
+#selectSeatType ul.buttonSet li {
+	float: right;
+	width: 40%;
+}
+
+#selectSeatType ul.buttonSet li a {
+	display: inline-block;
+	overflow: hidden;
+	margin: 0 0 8px;
+	padding: 10px 15px;
+	background: #bf0000 none repeat scroll 0 0;
+	color: #fff;
+	font-size: 14px;
+	text-align: center;
+	cursor: pointer;
+}
+
+#selectSeatType .selectProduct {
+}
+
+#seatImage {
+	float: right;
+	width: 280px;
+	margin-bottom: 1em;
+}
+
+#reserveSeatBox {
+	float: left;
+	width: 610px;
+	margin-bottom: 20px;
+	background: url(../images/bg_seat_top.png) no-repeat 0 0;
+}
+
+#reserveSeatBoxInner {
+	padding: 5px;
+	background: url(../images/bg_seat_bottom.gif) no-repeat left bottom;
+}
+
+#reserveSeatBox table {
+	width: 100%;
+}
+
+#reserveSeatBox th {
+	padding: 5px 10px;
+	border-bottom: 1px dotted #cccccc;
+	white-space: nowrap;
+}
+
+#reserveSeatBox td {
+	width: 100%;
+	padding: 5px 10px;
+	border-bottom: 1px dotted #cccccc;
+}
+
+#reserveSeatBox tr:last-child th,
+#reserveSeatBox tr:last-child td {
+	border: none;
+}
+
+#reserveSeatBox td a {
+	float: right;
+}
+
+#reserveSeatBox table img {
+	vertical-align: middle;
+}
+
+#reserveSeatBox2 {
+	float: right;
+	width: 286px;
+	background: url(../images/bg_seat_top2.png) no-repeat 0 0;
+}
+
+#reserveSeatBoxInner2 {
+	padding: 15px;
+	background: url(../images/bg_seat_bottom2.gif) no-repeat left bottom;
+}
+
+#reserveSeatBoxInner2 p {
+	margin: 0;
+}
+
+#seatBtn {
+	clear: both;
+	overflow: hidden;
+	padding: 20px 0 10px;
+	background: url(../images/side_nav_line.gif) repeat-x 0 0;
+}
+
+#seatBtn li {
+	float: left;
+}
+
+#seatBtn #seatProcedure {
+	float: right;
+}
+
+.settlementPayBox {
+	width: 100%;
+	margin: 0 0 5px 7px;
+}
+
+.settlementPayBox table {
+	display: table-caption;
+	width: auto;
+	border: 3px solid #eee;
+}
+
+.settlementPayBox dl {
+	width: 884px;
+}
+
+.settlementPayBox dt {
+	padding: 15px 10px 10px;
+	color: #bf0000;
+	font-size: 116.7%;
+	font-weight: bold;
+}
+
+.settlementPayBox dd {
+	overflow: hidden;
+	padding: 10px 10px 15px;
+}
+
+.settlementPayBox dd .deliveryFee,
+.settlementPayBox dd .paymentFee {
+	color: #bf0000;
+	font-weight: bold;
+	font-size: 116.7%;
+}
+
+.settlementPayBox dd .description {
+	margin-top: 4px;
+}
+
+.settlementPayBox td {
+	vertical-align: top;
+}
+
+.settlementPayBox td.settlementPayRadio {
+	vertical-align: middle;
+}
+
+.settlementPayBox td dl {
+	width: 400px;
+}
+
+.settlementPayBox td dl.fullwidth {
+	width: 869px;
+}
+
+.settlementPayBox dd dl {
+	margin: 0 0;
+	padding: 0 0;
+	width: auto;
+	overflow: hidden;
+}
+
+.settlementPayBox dd dl dt {
+	margin: 0 16px 0 0;
+	width: 12em;
+	padding: 0 0;
+	float: left;
+	clear: left;
+	border: none;
+	color: #000;
+	font-size: 100%;
+}
+
+.settlementPayBox dd dl dd {
+	margin: 0 0;
+	padding: 0 0;
+	float: left;
+	border: none;
+}
+
+.settlementPayBox dd dl dd .paymentFee {
+	color: #bf0000;
+	font-weight: bold;
+	font-size: 100%;
+}
+
+.settlementPayRadio {
+	width: 45px;
+	text-align: center;
+}
+
+.convenience {
+	float: right;
+	margin: 0 0 0 10px;
+}
+
+.settlementPayInput,
+.settlementDeliveryInput {
+	width: 854px;
+	margin: 0 0 10px 5px;
+	background: url(../images/bg_input_top.gif) no-repeat 0 0;
+}
+
+.settlementPayInputInner,
+.settlementDeliveryInputInner {
+	height: 1%;
+	padding: 5px;
+	background: url(../images/bg_input_bottom.gif) no-repeat left bottom;
+}
+
+.settlementPayInput dl {
+	width: auto;
+}
+
+.settlementPayInput dt {
+	padding: 10px;
+	border: none;
+}
+
+.settlementPayInput dd {
+	margin: -2.6em 0 0 0;
+	padding: 0 0 10px 10em;
+	border-bottom: 1px dotted #e5e5e5;
+}
+
+.settlementPayInput dd:last-child {
+	border: none;
+}
+
+.settlementDeliveryInput th {
+	vertical-align: top;
+	padding: 10px 20px 10px 10px;
+	color: #bf0000;
+	font-size: 116.7%;
+	font-weight: bold;
+	white-space: nowrap;
+}
+
+.settlementDeliveryInput td {
+	padding: 10px 0;
+	border-left: 1px solid #e5e5e5;
+}
+
+.registered th,
+.registered td {
+	border-bottom: 1px solid #e5e5e5;
+	border-left: none;
+}
+
+.registered td {
+	padding-left: 20px;
+}
+
+.settlementDeliveryInput td dl {
+	width: auto;
+}
+
+.settlementDeliveryInput td dt {
+	padding: 0 0 10px 20px;
+	border: none;
+	color: #000000;
+}
+
+.settlementDeliveryInput td dd {
+	margin: -2.6em 0 10px 0;
+	padding: 0 0 10px 16em;
+	border-bottom: 1px dotted #e5e5e5;
+}
+
+.newAddressEnd {
+	margin-bottom: 0 !important;
+	padding-bottom: 0 !important;
+	border: none !important;
+}
+
+/* イベント詳細 */
+#settlementEventDetail .settlementBoxInner2 {
+	padding: 0 0 10px;
+}
+
+#settlementEventDetail h2 {
+	margin: 0 3px 5px 2px;
+	padding: 8px 0 10px 10px;
+	background: url(../images/bg_line.gif) repeat-x left bottom;
+}
+
+#settlementEventDetail table,
+.settlementEventDetail table {
+	width: 100%;
+	margin: 0 auto;
+	border: 3px solid #ccc;
+}
+
+#settlementEventDetail th,
+.settlementEventDetail th {
+	padding: 15px 20px 15px 10px;
+	background: #fbfbfb none repeat scroll 0 0;
+	vertical-align: top;
+	border: 1px solid #ccc;
+	white-space: nowrap;
+}
+
+#settlementEventDetail td,
+.settlementEventDetail td {
+	width: 100%;
+	padding: 15px;
+	border: 1px solid #ccc;
+}
+
+/*#settlementEventDetail tr:last-child th,
+#settlementEventDetail tr:last-child td,
+.settlementEventDetail tr:last-child th,
+.settlementEventDetail tr:last-child td {
+	border: none;
+}*/
+
+/* 確認画面ボックス */
+.confirmBox {
+	margin: 0 0 20px;
+	padding: 3px;
+}
+
+.confirmBoxInner {
+	padding: 20px;
+	border: 1px solid #e3e0db;
+}
+
+.confirmBoxContent {
+  margin: 0 10px;
+}
+
+.confirmBox h2 {
+	clear: both;
+	position: relative;
+	left: -1px;
+	margin: 0 0 10px;
+	padding: 0 0 3px 10px;
+	border-bottom: 2px solid #bf0000;
+	color: #bf0000;
+	font-size: 18px;
+	font-weight: bold;
+}
+
+.confirmBox h3 {
+	margin: 0 10px 15px;
+	font-size: 116.7%;
+}
+
+#name {
+	margin-bottom: 0;
+	padding: 10px 10px 10px 15px;
+	border: 1px solid #f2f2e5;
+	border-bottom: 1px solid #cacac9;
+	background: #fdfdfb url(../images/bg_confirm_line.gif) no-repeat 7px 50%;
+}
+
+/* お買い物内容 */
+#contentsOfShopping {
+	width: 100%;
+	margin: 20px 0 0;
+	border-collapse: collapse;
+	border-top: 2px solid #ccc;
+}
+#contentsOfShopping tr:last-child th, #contentsOfShopping tr:last-child td {
+	content: "";
+	border-top: 2px solid #ccc;
+}
+#contentsOfShopping th {
+	padding: 10px;
+	border-top: 1px solid #efefef;
+	font-weight: bold;
+}
+
+#contentsOfShopping th img {
+	vertical-align: middle;
+}
+
+#contentsOfShopping td {
+	padding: 10px;
+	border-top: 1px solid #efefef;
+	font-size: 14px;
+}
+
+#carriage th,
+#carriage td,
+#commission th,
+#commission td {
+	border-top: 1px solid #e5e5e5;
+}
+
+#total th,
+#total td {
+	padding: 15px 10px;
+	border-top: 1px solid #989897;
+}
+
+#contentsOfShopping td.align1 {
+	font-size: 116.7%;
+	font-weight: bold;
+}
+
+/* お支払い、引取方法 */
+#confirmCard,
+#confirmDelivery {
+	width: 100%;
+	border: 3px solid #ccc;
+}
+
+#confirmCard th,
+#confirmDelivery th {
+	padding: 15px 20px 15px 10px;
+	border: 1px solid #ccc;
+	background: #fbfbfb none repeat scroll 0 0;
+	font-weight: bold;
+	white-space: nowrap;
+}
+
+#confirmCard td,
+#confirmDelivery td {
+	width: 100%;
+	padding: 15px;
+	border: 1px solid #ccc;
+	text-align: left;
+}
+
+#confirmDelivery td label {
+	display: inline-block;
+	width: 16%;
+}
+
+#confirmDelivery input[type="text"],
+#confirmDelivery input[type="email"] {
+    -webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
+    border-radius: 3px;
+    border: 1px solid #CCC;
+    background: #f4f3f1;
+    padding: 5px;
+    margin: 3px;
+}
+
+/* メールマガジンの配信 */
+#mailMagazineBox,
+#mailKeywordBox {
+	width: 934px;
+	margin: 0 0 5px 7px;
+	background: url(../images/bg_payment_top.png) no-repeat 0 0;
+}
+
+#mailMagazineBoxInner,
+#mailKeywordBoxInner {
+	padding: 5px;
+	background: url(../images/bg_payment_bottom.gif) no-repeat left bottom;
+}
+
+#mailMagazineBoxInner ul,
+#mailKeywordBoxInner ul {
+	height: 1%;
+	background-color: #fff7e5;
+}
+
+#mailMagazineBoxInner li,
+#mailKeywordBoxInner li {
+	padding: 10px;
+	border-bottom: 1px solid #ebe4cc;
+}
+
+#mailMagazineBoxInner li:last-child,
+#mailKeywordBoxInner li:last-child {
+	border: none
+}
+
+#mailMagazineBoxInner dl,
+#mailKeywordBoxInner dl {
+	margin: 0 0;
+	padding: 0 0;
+}
+
+#mailMagazineBoxInner dt,
+#mailKeywordBoxInner dt {
+	font-weight: bold;
+	padding: 10px 10px;
+	border-bottom: 1px solid #ccc;
+}
+
+#mailMagazineBoxInner dd,
+#mailKeywordBoxInner dd {
+	padding: 0px 10px 10px 10px;
+}
+
+#mailMagazineBoxInner dd ul,
+#mailKeywordBoxInner dd ul {
+	overflow: hidden;
+}
+
+#mailMagazineBoxInner dd ul li,
+#mailKeywordBoxInner dd ul li {
+	float: left;
+	padding: 10px 0 0;
+	border: none;
+}
+
+#mailMagazineBoxInner dd ul li.subscribed,
+#mailKeywordBoxInner dd ul li.subscribed {
+	color: #7f7b72;
+}
+
+#mailMagazineBoxInner dd ul li.subscribed label:after,
+#mailKeywordBoxInner dd ul li.subscribed label:after {
+  display: inline-block;
+	border-radius: 2px;
+	-webkit-border-radius: 2px;
+	-moz-border-radius: 2px;
+	color: #fff;
+	background-color: #f88;
+	vertical-align: middle;
+	margin: 0 0 0 4px;
+	padding: 2px 3px;
+	font-size: 10px;
+	height: 10px;
+	line-height: 10px;
+	font-weight: bold;
+	content: "購読中";
+}
+
+/* こんな商品にも興味をもっています */
+.settlementInterest {
+	margin-bottom: 30px;
+	border: 1px solid #ff0101;
+}
+
+.settlementInterest h2 {
+	position: static !important;
+	margin: 0 !important;
+	padding: 5px 10px;
+	color: #ffffff;
+	font-size: 116.7%;
+	background-color: #bf0000;
+}
+
+.settlementInterest ul {
+	overflow: hidden;
+	height: 1%;
+	padding: 15px;
+}
+
+.settlementInterest li {
+	float: left;
+	width: 128px;
+	margin-right: 20px;
+	font-weight: bold;
+}
+
+.settlementInterest li img {
+	margin-bottom: 5px;
+}
+
+/* エラー */
+#errorTitle {
+	position: relative;
+	margin-bottom: 20px;
+}
+
+#errorTitle dd {
+	position: absolute;
+	top: 150px;
+	left: 0;
+	width: 624px;
+	font-size: 120%;
+	font-weight: bold;
+	text-align: center;
+}
+
+#errorBtn {
+	padding-left: 50px;
+	font-size: 120%;
+}
+
+#errorBtn li {
+	float: left;
+	margin-right: 10px;
+}
+
+#errorBtnTop {
+	padding-top: 20px;
+}
+
+.settlementNotice {
+	margin: 8px 8px;
+	padding: 8px 8px;
+	background-color: #ffeeee;
+	color: #f00;
+	font-weight: bold;
+}
+
+.settlementNotice p {
+	margin: 0 0;
+}
+
+/*
+ * vim: sts=2 sw=2 ts=2 noet
+ */
+
