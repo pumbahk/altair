@@ -1,4 +1,4 @@
-<%inherit file="${context['main_template'].uri}" />
+<%inherit file="layout.html" />
 <%block name="title">申込内容確認</%block>
 <form id="form1" action="${request.route_path('payment.confirm')}" method="post">
   ${form.csrf_token()}
@@ -72,7 +72,7 @@
     </tbody>
   </table>
 
-  <div class="frame frame-inner textC">
+  <div>
     <input type="submit" name="back" value="戻る" class="submit half" />
     <input type="submit" value="申し込む" class="submit half" />
   </div>

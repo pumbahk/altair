@@ -5,7 +5,6 @@
     --custom-background-color: #bf0000;     /* background 背景（divなど） */
 }
 
-
 /* btn */
 .btn-selectseat {
     background-color: var(--custom-btn-color) !important;
@@ -32,6 +31,10 @@ li.btn-seat-plus.btn-seat-active:after {
 
 .btn-primary {
     background-color: var(--custom-btn-color) !important;
+}
+
+.plugins-wrap button {
+  background-color: var(--custom-btn-color) !important;
 }
 
 /* Box contents */

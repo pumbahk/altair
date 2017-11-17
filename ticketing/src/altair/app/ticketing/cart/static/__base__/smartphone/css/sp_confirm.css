@@ -725,3 +725,72 @@ li.btn-seat-plus.btn-seat-active:after {
   font-size: 20px;
   color: #cc0000;
 }
+
+/* extra-wrap ============================== */
+.extra-wrap {
+	width: 100%;
+  border: 3px solid #CCC;
+	border-collapse: collapse;
+	margin-top: 20px;
+}
+.extra-wrap button {
+  border: none !important;
+  color: #FFF !important;
+  background: #ED4A27;
+  cursor: pointer;
+  display: inline-block;
+  width: 205px;
+  font-size: 1.6rem;
+  font-weight: bold;
+  text-align: center;
+  text-decoration: none !important;
+  padding: 10px;
+  margin: 10px;
+}
+.extra-wrap th,
+.extra-wrap td {
+  width:100%;
+  display: block;
+	padding: 10px;
+	border-top: 1px solid #CCC;
+}
+.extra-wrap th {
+  font-weight: bold;
+  background: #EFEFEF;
+}
+
+/* plugins-wrap ============================== */
+.plugins-wrap table {
+	width: 100%;
+  border: 3px solid #CCC;
+	border-collapse: collapse;
+	margin-top: 20px;
+}
+.plugins-wrap button {
+  border: none !important;
+  color: #FFF !important;
+  background: #ED4A27;
+  cursor: pointer;
+  display: inline-block;
+  width: 205px;
+  font-size: 1.6rem;
+  font-weight: bold;
+  text-align: center;
+  text-decoration: none !important;
+  padding: 10px;
+  margin: 10px;
+}
+.plugins-wrap table {
+  width: 100%
+}
+.plugins-wrap th,
+.plugins-wrap td {
+  width:100%;
+  display: block;
+	padding: 10px;
+	border-top: 1px solid #CCC;
+}
+.plugins-wrap th {
+  background: #EFEFEF;
+  font-weight: bold;
+}
