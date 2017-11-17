@@ -36,7 +36,7 @@ class SalesCounterResourceMixin(object):
         return sorted(sales_segments, key=sales_segment_sort_key_func, reverse=True)
 
     def sort_sales_segments(self):
-        sort_column = self.request.GET.get('sort')
+        sort_column = self.request.GET.get('sort', 'start_at')
         query = SalesSegment.query.filter(SalesSegment.performance_id == self.request.matchdict.get('performance_id'))
 
         if sort_column == 'start_on':
