@@ -31,7 +31,7 @@ CODE: ${CODE}
 WHO_AM_I: ${WHO_AM_I}
 FP_TENANT_CODE: ${FP_TENANT_CODE}
 FP_IMG_DIR_PATH: ${FP_IMG_DIR_PATH}
-SLAVE_DB: ${SLAVE_DB}
+STANDBY_DB: ${STANDBY_DB}
 MASTER_DB: ${MASTER_DB}
 PROD_SERVER: ${PROD_SERVER}
 STG_SERVER: ${STG_SERVER}
@@ -130,7 +130,7 @@ cat << EOS
 #---------------------------
 EOS
 
-connect="mysql -u ticketing_ro -pticketing -h ${SLAVE_DB} -P ${SLAVE_PORT} -D ticketing"
+connect="mysql -u ticketing_ro -pticketing -h ${STANDBY_DB} -P ${STANDBY_PORT} -D ticketing"
 sql=$(cat << EOS
 SELECT * FROM Organization WHERE code = "${CODE}"\G
 EOS
@@ -142,7 +142,7 @@ echo "${txtyellow}注意：この段階で複数の組織レコードの表示�
 ORG_ID=$(ask "「id: xxx」を入力してください。")
 echo "組織ID：${ORG_ID}がticketing.FamiPortTenantに登録されていることを確認します。"
 
-connect="mysql -u ticketing_ro -pticketing -h ${SLAVE_DB} -P ${SLAVE_PORT} -D ticketing"
+connect="mysql -u ticketing_ro -pticketing -h ${STANDBY_DB} -P ${STANDBY_PORT} -D ticketing"
 sql=$(cat << EOS
 SELECT id, organization_id, name, code FROM FamiPortTenant WHERE organization_id = ${ORG_ID};
 EOS

@@ -30,9 +30,10 @@ cat << EOS
 CODE: ${CODE}
 ORG_NAME: ${ORG_NAME}
 WHO_AM_I: ${WHO_AM_I}
-SLAVE_DB: ${SLAVE_DB}
+STANDBY_DB: ${STANDBY_DB}
+STANDBY_DB_FMP: ${STANDBY_DB_FMP}
 MASTER_DB: ${MASTER_DB}
-SLAVE_PORT: ${SLAVE_PORT}
+STANDBY_PORT: ${STANDBY_PORT}
 MASTER_PORT: ${MASTER_PORT}
 PROD_SERVER: ${PROD_SERVER}
 STG_SERVER: ${STG_SERVER}
@@ -83,7 +84,7 @@ cat << EOS
 #---------------------------
 EOS
 
-connect="mysql -u ticketing_ro -pticketing -h ${SLAVE_DB} -P ${SLAVE_PORT} -D ticketing"
+connect="mysql -u ticketing_ro -pticketing -h ${STANDBY_DB} -P ${STANDBY_PORT} -D ticketing"
 sql=$(cat << EOS
 SELECT * FROM Organization WHERE code = "${CODE}"\G
 EOS
@@ -105,7 +106,7 @@ cat << EOS
 #---------------------------
 EOS
 
-connect="mysql -u ticketing_ro -pticketing -h ${SLAVE_DB} -P ${SLAVE_PORT} -D ticketing"
+connect="mysql -u ticketing_ro -pticketing -h ${STANDBY_DB} -P ${STANDBY_PORT} -D ticketing"
 sql=$(cat << EOS
 SELECT * FROM FamiPortTenant WHERE organization_id = ${ORG_ID}\G
 SELECT * FROM FamiPortTicketTemplate WHERE organization_id = ${ORG_ID}\G
@@ -113,7 +114,7 @@ EOS
 )
 cat << EOS
 ---------------------------
-${SLAVE_DB}で以下のSQLを実行します。
+${STANDBY_DB}で以下のSQLを実行します。
 
 ${sql}
 
@@ -122,14 +123,14 @@ EOS
 echo "${connect} -e '${sql}'" | remote_execution ${WHO_AM_I} ${TARGET_SERVER}
 confirm "DB:ticketingにデータが未作成であることが確認できましたか？レコードが表示されなければ未作成です。(y)"
 
-connect="mysql -u famiport_ro -pfamiport -h ${SLAVE_DB_FMP} -P ${SLAVE_PORT} -D famiport"
+connect="mysql -u famiport_ro -pfamiport -h ${STANDBY_DB_FMP} -P ${STANDBY_PORT} -D famiport"
 sql=$(cat << EOS
 SELECT * FROM FamiPortClient WHERE code = "${FP_TENANT_CODE}";
 EOS
 )
 cat << EOS
 ---------------------------
-${SLAVE_DB_FMP}で以下のSQLを実行します。
+${STANDBY_DB_FMP}で以下のSQLを実行します。
 
 ${sql}
 
@@ -235,14 +236,14 @@ cat << EOS
 #---------------------------
 EOS
 
-connect="mysql -u ticketing_ro -pticketing -h ${SLAVE_DB} -P ${SLAVE_PORT} -D ticketing"
+connect="mysql -u ticketing_ro -pticketing -h ${STANDBY_DB} -P ${STANDBY_PORT} -D ticketing"
 sql=$(cat << EOS
 SELECT * FROM FamiPortTenant WHERE organization_id = ${ORG_ID}; ;\G
 SELECT * FROM FamiPortTicketTemplate WHERE organization_id = ${ORG_ID}\G
 EOS
 )
 echo "${connect} -e '${sql}'" | remote_execution ${WHO_AM_I} ${TARGET_SERVER}
-connect="mysql -u famiport_ro -pfamiport -h ${SLAVE_DB_FMP} -P ${SLAVE_PORT} -D famiport"
+connect="mysql -u famiport_ro -pfamiport -h ${STANDBY_DB_FMP} -P ${STANDBY_PORT} -D famiport"
 sql=$(cat << EOS
 SELECT * FROM FamiPortClient WHERE code = "${FP_TENANT_CODE}";
 EOS

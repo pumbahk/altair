@@ -7,7 +7,9 @@ cat << EOS
 #---------------------------
 
 ローカル環境からリモート環境にSQLを実施。
-結果はローカル環境のカレントディレクトリに取得する。
+結果はローカル環境のカレントディレクトリに取得します。
+
+※ STANDBY_DBにしか接続しないため、SELECT文のSQLのみ実行してください。
 
 実行例:
 bash <親ディレクトリまでのパス>/main.sh
@@ -36,9 +38,9 @@ cat << EOS
 WHO_AM_I: ${WHO_AM_I}
 STG_SERVER: ${STG_SERVER}
 PROD_SERVER: ${PROD_SERVER}
-SLAVE_DB: ${SLAVE_DB}
+STANDBY_DB: ${STANDBY_DB}
 MASTER_DB: ${MASTER_DB}
-SLAVE_PORT: ${SLAVE_PORT}
+STANDBY_PORT: ${STANDBY_PORT}
 MASTER_PORT: ${MASTER_PORT}
 EOS
 
@@ -82,14 +84,6 @@ esac
 database=$(ask "データベースを選択してください。[ ticketing, famiport, altaircms, extauth ]>")
 echo "データベース: ${database}が選択されました。"
 
-account=$(ask "masterとslaveのどちらで実行しますか？ SELECT文のSQLではslaveを選択してください。[ master, slave ]>")
-echo "アカウント: ${account}が選択されました。"
-if [ ${account} == "slave" ]; then
-    account="${database}_ro"
-else
-    account=${database}
-fi
-
 cat << EOS
 #---------------------------
 # リモートホストとの接続確認
@@ -109,7 +103,7 @@ cat << EOS
 #---------------------------
 EOS
 
-connect="mysql -u ${account} -p${database} -h ${SLAVE_DB} -P ${SLAVE_PORT} -D ${database}"
+connect="mysql -u ${database}_ro -p${database} -h ${STANDBY_DB} -P ${STANDBY_PORT} -D ${database}"
 sql=$(cat ${target_sql_path})
 cat << EOS
 
