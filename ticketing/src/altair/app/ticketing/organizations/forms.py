@@ -437,6 +437,9 @@ class OrganizationSettingForm(OrganizationSettingSimpleForm):
     tapirs = OurBooleanField(
         label=get_annotations_for(c_models.OrganizationSetting.tapirs)['label']
     )
+    enable_discount_code = OurBooleanField(
+        label=get_annotations_for(c_models.OrganizationSetting.enable_discount_code)['label']
+    )
     enable_word = OurBooleanField(
         label=get_annotations_for(c_models.OrganizationSetting.enable_word)['label']
     )

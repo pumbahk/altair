@@ -4296,6 +4296,7 @@ class OrganizationSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     default_oauth_setting = Column(MutationDict.as_mutable(JSONEncodedDict(16384)), nullable=False, default={}, server_default='{}')
     recaptcha = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"recaptchaの使用", _a_label=u"recaptchaの使用")
     tapirs = AnnotatedColumn(Boolean, nullable=True, default=False, doc=u"テイパーズ機能", _a_label=u"テイパーズ機能")
+    enable_discount_code = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"クーポン・割引コード設定を利用", _a_label=u"クーポン・割引コード設定を利用")
 
     def _render_cart_setting_id(self):
         return link_to_cart_setting(self.cart_setting)
