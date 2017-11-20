@@ -6,8 +6,8 @@
 
 # テンプレート・静的コンテンツのベースを決定
 choose_base() {
-    if [ -e __i18n__ ]; then
-        echo "__i18n__"
+    if [ -e __base__ ]; then
+        echo "__base__"
     elif [ -e __scaffold__ ]; then
         echo "__scaffold__"
     else

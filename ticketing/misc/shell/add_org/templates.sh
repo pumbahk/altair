@@ -8,7 +8,7 @@ cat << EOS
 
 ORG追加のテンプレート作成処理。
 ベースとなるディレクトリからファイルのコピー、シムリンクを生成します。
-※ ベースの優先度は「__i18n__　> __scaffold__」です。
+※ ベースの優先度は「__base__ > __scaffold__」です。
 
 EOS
 
@@ -74,13 +74,11 @@ test -d ${CODE} && rm -rf ${CODE}
 cp -r ${base} ${CODE}
 
 # ロゴ画像の配置
-cp ${PATH_TO_PC_LOGO} ${CODE}/pc/images/logo.png
-cp ${PATH_TO_PC_LOGO} ${CODE}/pc/images/pc_logo.png
-cp ${PATH_TO_FAVICON} ${CODE}/pc/images/favicon.ico
-cp ${PATH_TO_SP_LOGO} ${CODE}/smartphone/images/logo.png
-cp ${PATH_TO_SP_LOGO} ${CODE}/smartphone/images/sp_logo.png
-cp ${PATH_TO_FAVICON} ${CODE}/smartphone/images/favicon.ico
-cp ${PATH_TO_MB_LOGO} ${CODE}/mobile/images/mb_logo.gif
+test -f ${PATH_TO_PC_LOGO} && cp ${PATH_TO_PC_LOGO} ${CODE}/pc/images/logo.png
+test -f ${PATH_TO_FAVICON} && cp ${PATH_TO_FAVICON} ${CODE}/pc/images/favicon.ico
+test -f ${PATH_TO_SP_LOGO} && cp ${PATH_TO_SP_LOGO} ${CODE}/smartphone/images/logo.png
+test -f ${PATH_TO_FAVICON} && cp ${PATH_TO_FAVICON} ${CODE}/smartphone/images/favicon.ico
+test -f ${PATH_TO_MB_LOGO} && cp ${PATH_TO_MB_LOGO} ${CODE}/mobile/images/mb_logo.gif
 
 cat << EOS
 #---------------------------
@@ -114,10 +112,9 @@ cp -r ${base} ${CODE}
 test ! -d ${CODE}/mobile/images && mkdir -p ${CODE}/mobile/images
 
 # ロゴ画像の配置
-cp ${PATH_TO_PC_LOGO} ${CODE}/pc/images/logo.png
-cp ${PATH_TO_PC_LOGO} ${CODE}/pc/images/pc_logo.png
-cp ${PATH_TO_FAVICON} ${CODE}/pc/images/favicon.ico
-cp ${PATH_TO_MB_LOGO} ${CODE}/mobile/images/mb_logo.gif
+test -f ${PATH_TO_PC_LOGO} && cp ${PATH_TO_PC_LOGO} ${CODE}/pc/images/logo.png
+test -f ${PATH_TO_FAVICON} && cp ${PATH_TO_FAVICON} ${CODE}/pc/images/favicon.ico
+test -f ${PATH_TO_MB_LOGO} && cp ${PATH_TO_MB_LOGO} ${CODE}/mobile/images/mb_logo.gif
 
 cat << EOS
 #---------------------------
@@ -139,14 +136,11 @@ test ! -d ${CODE}/smartphone/images && mkdir -p ${CODE}/smartphone/images
 test ! -d ${CODE}/mobile/images && mkdir -p ${CODE}/mobile/images
 
 # ロゴ画像の配置
-cp ${PATH_TO_PC_LOGO} ${CODE}/pc/images/logo.png
-cp ${PATH_TO_PC_LOGO} ${CODE}/pc/images/pc_logo.png
-cp ${PATH_TO_FAVICON} ${CODE}/pc/images/favicon.ico
-cp ${PATH_TO_SP_LOGO} ${CODE}/smartphone/images/logo.png
-cp ${PATH_TO_PC_LOGO} ${CODE}/smartphone/images/pc_logo.png
-cp ${PATH_TO_SP_LOGO} ${CODE}/smartphone/images/sp_logo.png
-cp ${PATH_TO_FAVICON} ${CODE}/smartphone/images/favicon.ico
-cp ${PATH_TO_MB_LOGO} ${CODE}/mobile/images/mb_logo.gif
+test -f ${PATH_TO_PC_LOGO} && cp ${PATH_TO_PC_LOGO} ${CODE}/pc/images/logo.png
+test -f ${PATH_TO_FAVICON} && cp ${PATH_TO_FAVICON} ${CODE}/pc/images/favicon.ico
+test -f ${PATH_TO_SP_LOGO} && cp ${PATH_TO_SP_LOGO} ${CODE}/smartphone/images/logo.png
+test -f ${PATH_TO_FAVICON} && cp ${PATH_TO_FAVICON} ${CODE}/smartphone/images/favicon.ico
+test -f ${PATH_TO_MB_LOGO} && cp ${PATH_TO_MB_LOGO} ${CODE}/mobile/images/mb_logo.gif
 
 cat << EOS
 #---------------------------
@@ -176,13 +170,11 @@ test -d ${CODE} && rm -rf ${CODE}
 cp -r ${base} ${CODE}
 
 # ロゴ画像の配置
-cp ${PATH_TO_PC_LOGO} ${CODE}/pc/images/logo.png
-cp ${PATH_TO_PC_LOGO} ${CODE}/pc/images/pc_logo.png
-cp ${PATH_TO_FAVICON} ${CODE}/pc/images/favicon.ico
-cp ${PATH_TO_SP_LOGO} ${CODE}/smartphone/images/logo.png
-cp ${PATH_TO_SP_LOGO} ${CODE}/smartphone/images/sp_logo.png
-cp ${PATH_TO_FAVICON} ${CODE}/smartphone/images/favicon.ico
-cp ${PATH_TO_MB_LOGO} ${CODE}/mobile/img/mb_logo.gif
+test -f ${PATH_TO_PC_LOGO} && cp ${PATH_TO_PC_LOGO} ${CODE}/pc/images/logo.png
+test -f ${PATH_TO_FAVICON} && cp ${PATH_TO_FAVICON} ${CODE}/pc/images/favicon.ico
+test -f ${PATH_TO_SP_LOGO} && cp ${PATH_TO_SP_LOGO} ${CODE}/smartphone/images/logo.png
+test -f ${PATH_TO_FAVICON} && cp ${PATH_TO_FAVICON} ${CODE}/smartphone/images/favicon.ico
+test -f ${PATH_TO_MB_LOGO} && cp ${PATH_TO_MB_LOGO} ${CODE}/mobile/images/mb_logo.gif
 
 cat << EOS
 #---------------------------
@@ -210,10 +202,9 @@ if ${REQUIRED_COUPON}; then
     cp -r ${base} ${CODE}
 
     # ロゴ画像の配置
-    cp ${PATH_TO_PC_LOGO} ${CODE}/pc/images/logo.png
-    cp ${PATH_TO_PC_LOGO} ${CODE}/pc/images/pc_logo.png
-    cp ${PATH_TO_FAVICON} ${CODE}/pc/images/favicon.ico
-    cp ${PATH_TO_MB_LOGO} ${CODE}/mobile/images/logo_mobile.gif
+    test -f ${PATH_TO_PC_LOGO} && cp ${PATH_TO_PC_LOGO} ${CODE}/pc/images/logo.png
+    test -f ${PATH_TO_FAVICON} && cp ${PATH_TO_FAVICON} ${CODE}/pc/images/favicon.ico
+    test -f ${PATH_TO_MB_LOGO} && cp ${PATH_TO_MB_LOGO} ${CODE}/mobile/images/logo_mobile.gif
 
     # cart/orderreview の template 下の下記ファイルを追加
     cat << 'EOT' > ../cart/templates/RM/plugins/reserved_number_completion.html
@@ -277,9 +268,8 @@ test -d ${CODE} && rm -rf ${CODE}
 cp -r ${base} ${CODE}
 
 # ロゴ画像の配置
-cp ${PATH_TO_PC_LOGO} ${CODE}/img/logo.png
-cp ${PATH_TO_PC_LOGO} ${CODE}/img/pc_logo.png
-cp ${PATH_TO_FAVICON} ${CODE}/img/favicon.ico
+test -f ${PATH_TO_PC_LOGO} && cp ${PATH_TO_PC_LOGO} ${CODE}/img/logo.png
+test -f ${PATH_TO_FAVICON} && cp ${PATH_TO_FAVICON} ${CODE}/img/favicon.ico
 
 
 cat << EOS
