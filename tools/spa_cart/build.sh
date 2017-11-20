@@ -3,7 +3,7 @@
 set -e
 
 NGBASEOPT="--base-href=/cart/spa/ --deploy-url=/cart/static/spa_cart/"
-NGOPT="--aot=false --output-hashing=all --sourcemap=false --extract-css=true --environment=prod"
+NGOPT="--aot=true --output-hashing=all --sourcemap=false --extract-css=true --environment=prod"
 
 BRANCH=$(git name-rev --name-only HEAD)
 
