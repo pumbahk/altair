@@ -18,6 +18,7 @@
     ${ch.form_item(form.kind, help=ch.help(form.kind))}
   % endif
   ${ch.form_item(form.name, maxlength=255)}
+  ${ch.form_item(form.display_order)}
   <div class="lot_area">
   ${ch.form_item(form.lot_name, maxlength=255)}
   ${ch.form_item(form.limit_wishes)}
