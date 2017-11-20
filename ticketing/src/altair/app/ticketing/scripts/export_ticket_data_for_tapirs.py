@@ -26,9 +26,10 @@ csv_header = [
     ('tel'              , u'電話番号'),
     ('performance_date' , u'公演日'),
     ('stock_type'       , u'席種'),
-    ('seat_no'          , u'管理番号'),
+    ('seat_name'        , u'管理番号'),
     ('ticket_count'     , u'チケット枚数'),
-    ('gate_name'        , u'ゲート名')
+    ('gate_name'        , u'ゲート名'),
+    ('group_name'       , u'販売区分名')
 ]
 
 def get_stock_type_by_id(session, stock_type_id):
@@ -95,19 +96,20 @@ def main(argv=sys.argv[1:]):
                         except NoResultFound:
                             logger.warn('no result was found for StockType.id={}.(Order.order_no={}, SejTicket.id={})'.format(stock_type_id, order.order_no, sej_order.id))
                             continue
-
+                        tel = order.shipping_address.tel_1 or order.shipping_address.tel_2
                         retval = dict(
                             barcode_no=ticket.barcode_number,
                             order_no=order.order_no,
                             branch_no=i+1,
-                            last_name=order.shipping_address.last_name.encode('utf-8'),
-                            first_name=order.shipping_address.first_name.encode('utf-8'),
-                            tel=order.shipping_address.tel_1 or order.shipping_address.tel_2,
+                            last_name=order.shipping_address.last_name.encode('shift-jis'),
+                            first_name=order.shipping_address.first_name.encode('shift-jis'),
+                            tel=u'="' + tel + '"',
                             performance_date=order.performance.start_on,
-                            stock_type=stock_type.name.encode('utf-8'),
-                            seat_no=ticket.ordered_product_item_token.seat.seat_no,
+                            stock_type=stock_type.name.encode('shift-jis'),
+                            seat_name=ticket.ordered_product_item_token.seat.name.encode('shift-jis'),
                             ticket_count=len(sej_order.tickets),
-                            gate_name=None
+                            gate_name=None,
+                            group_name=order.sales_segment.name.encode('shift-jis')
                         )
                         logger.info('barcode_num={}, order_no={}, seat_no={}'.format(retval.get('barcode_no'), retval.get('order_no'), retval.get('seat_no')))
                         export_data.append(retval)
@@ -131,18 +133,20 @@ def main(argv=sys.argv[1:]):
                             continue
 
                         # famiportのバーコード番号には固定値で1が付与される。バーコード印字のタイミングでFM側で付与するものなのでチケスタDB内では付与されていない。
+                        tel = order.shipping_address.tel_1 or order.shipping_address.tel_2
                         retval = dict(
                             barcode_no='{0}{1}'.format('1', ticket_like.get('barcode_number')),
                             order_no=order.order_no,
                             branch_no=i+1,
-                            last_name=order.shipping_address.last_name.encode('utf-8'),
-                            first_name=order.shipping_address.first_name.encode('utf-8'),
-                            tel=order.shipping_address.tel_1 or order.shipping_address.tel_2,
+                            last_name=order.shipping_address.last_name.encode('shift-jis'),
+                            first_name=order.shipping_address.first_name.encode('shift-jis'),
+                            tel=u'="' + tel + '"',
                             performance_date=order.performance.start_on,
-                            stock_type=stock_type.name.encode('utf-8'),
-                            seat_no=token.seat.seat_no,
+                            stock_type=stock_type.name.encode('shift-jis'),
+                            seat_name=token.seat.name.encode('shift-jis'),
                             ticket_count=len(ticket_likes),
-                            gate_name=None
+                            gate_name=None,
+                            group_name=order.sales_segment.name.encode('shift-jis')
                         )
                         logger.info('barcode_num={}, order_no={}, seat_no={}'.format(retval.get('barcode_no'), retval.get('order_no'), retval.get('seat_no')))
                         export_data.append(retval)
@@ -156,7 +160,7 @@ def main(argv=sys.argv[1:]):
                 csvWriter = csv.writer(f)
                 # csv_header書き出し
                 keys = [k for k, v in csv_header]
-                columns = [v.encode('utf-8') for k, v in csv_header]
+                columns = [v.encode('shift-jis') for k, v in csv_header]
                 csvWriter.writerow(columns)
                 # body書き出し(headerと合うように順番を気にする)
                 for d in export_data:
