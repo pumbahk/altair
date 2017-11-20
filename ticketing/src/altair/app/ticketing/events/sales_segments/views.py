@@ -65,7 +65,7 @@ class SalesSegments(BaseView, SalesSegmentViewHelperMixin):
         else:
             performance = None
 
-        sort_column = self.request.GET.get('sort', 'start_at')
+        sort_column = self.request.GET.get('sort', 'id')
         try:
             mapper = class_mapper(SalesSegment)
             prop = mapper.get_property(sort_column)

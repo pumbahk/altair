@@ -292,6 +292,12 @@ class SalesSegmentGroupForm(OurForm):
         choices=[],
         coerce=int
         )
+    display_order = OurIntegerField(
+        label=u'表示順',
+        default=1,
+        validators=[Required()],
+        hide_on_new=False
+    )
 
     def _validate_start(self, *args, **kwargs):
         msg1 = u"{0},{1}どちらかを指定してください".format(

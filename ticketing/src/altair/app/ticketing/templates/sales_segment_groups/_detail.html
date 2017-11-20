@@ -39,6 +39,10 @@
     <td>${sales_segment_group.stock_holder.name if sales_segment_group.stock_holder else ""}</td>
   </tr>
   <tr>
+    <th>${HH.label_text_for(SalesSegmentGroup.display_order)}</th>
+    <td>${sales_segment_group.display_order}%</td>
+  </tr>
+  <tr>
     <th>${HH.label_text_for(SalesSegmentGroup.margin_ratio)}</th>
     <td id="margin_ratio">${sales_segment_group.margin_ratio}%</td>
   </tr>
