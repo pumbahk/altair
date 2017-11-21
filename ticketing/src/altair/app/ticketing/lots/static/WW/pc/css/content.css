@@ -2479,6 +2479,11 @@
 	width: 16%;
 }
 
+#confirmDelivery td label[field_id] {
+	display: inline-block;
+	width: 30%;
+}
+
 #confirmDelivery input[type="text"] {
     -webkit-border-radius: 3px;
     -moz-border-radius: 3px;
