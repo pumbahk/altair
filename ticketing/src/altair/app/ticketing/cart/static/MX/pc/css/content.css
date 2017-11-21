@@ -1131,6 +1131,58 @@ button {
     margin: 3px;
 }
 
+/* 追加情報 */
+#confirmExtra {
+	width: 100%;
+	border: 3px solid #ccc;
+}
+
+#confirmExtra th {
+	padding: 15px 20px 15px 10px;
+	border: 1px solid #ccc;
+	background: #fbfbfb none repeat scroll 0 0;
+	font-weight: bold;
+	white-space: nowrap;
+}
+
+#confirmExtra td {
+	width: 100%;
+	padding: 15px;
+	border: 1px solid #ccc;
+	text-align: left;
+}
+
+#confirmExtra td label {
+	display: inline-block;
+	width: 30%;
+}
+
+#confirmExtra input[type="text"],
+#confirmExtra input[type="email"] {
+    -webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
+    border-radius: 3px;
+    border: 1px solid #CCC;
+    background: #f4f3f1;
+    padding: 5px;
+    margin: 3px;
+}
+
+#confirmExtra select[multiple] {
+  -webkit-border-radius: 3px;
+  -moz-border-radius: 3px;
+  border-radius: 3px;
+  border: 1px solid #CCC;
+  background: #f4f3f1;
+  padding: 5px;
+  margin: 3px;
+  font-size: 100%;
+}
+
+#confirmExtra .checkbox-set label {
+  width:100%;
+}
+
 /* メールマガジンの配信 */
 #mailMagazineBox,
 #mailKeywordBox {
