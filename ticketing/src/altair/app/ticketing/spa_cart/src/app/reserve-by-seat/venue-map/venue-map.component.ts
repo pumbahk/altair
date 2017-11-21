@@ -278,7 +278,6 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
   returnUnconfirmFlag = false;
 
   ngOnInit() {
-    performance.mark('setActiveGrid-start');
     const that = this;
     let drawingRegionTimer;
     let drawingSeatTimer;
@@ -465,7 +464,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
         that.seatAreaHeight = $("#mapImgBox").height();
         that.svgMap = document.getElementById('mapImgBox').firstElementChild;
         that.mapHome();
-        that.measurement('setActiveGrid');
+
       }
     }, 200);
 
@@ -1441,6 +1440,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
 
   // 現在の描画サイズに合わせて表示するグリッドを決定し、座席データを動的に追加・削除
   setActiveGrid() {
+    performance.mark('setActiveGrid-start');
     if (this.scaleTotal >= SCALE_SEAT) {
       let viewBox = this.getPresentViewBox();
       let grid_x_from = Math.floor(viewBox[0] / this.venueGridSize) - 1;
@@ -1450,7 +1450,6 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
       let $svg = $(this.svgMap);
       let next_active_grid: string[] = [];
       let isRedrawSeats: boolean = false;
-
       for (let x = grid_x_from; x <= grid_x_to; x++) {
         for (let y = grid_y_from; y <= grid_y_to; y++) {
           let grid_class: string = 'grid_';
@@ -1463,35 +1462,39 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
           }
         }
       }
-      //svg初期化
+
+      // 座席データ初期化
       for (let i = 0; i < this.active_grid.length; i++) {
         let els = this.seat_elements[this.active_grid[i]];
         for (let key in els) {
           document.getElementById(key).textContent = null;
         }
       }
+      this.active_grid = [];
       // 表示から非表示
+      /*
       for (let i = 0; i < this.active_grid.length; i++) {
         if (!(next_active_grid.indexOf(this.active_grid[i]) >= 0)) {
           let els = this.seat_elements[this.active_grid[i]];
           for (let key in els) {
-            document.getElementById(key).textContent = null;
+            document.getElementById(key).textContent.replace(els[key], "");
           }
-          this.active_grid.splice(i, 1);
+          let delete_idx = this.active_grid.indexOf(this.active_grid[i]);
+          this.active_grid.splice(delete_idx, 1);
         }
       }
+      */
       // 非表示から表示
       for (let i in next_active_grid) {
-        if (!(next_active_grid[i] in this.active_grid)) {
+//        if (this.active_grid.indexOf(next_active_grid[i]) < 0) {
           let els = this.seat_elements[next_active_grid[i]];
           for (let key in els) {
             document.getElementById(key).innerHTML += els[key];
             isRedrawSeats = true;
           }
           this.active_grid.push(next_active_grid[i]);
-        }
+//        }
       }
-
       if (isRedrawSeats) this.drawingSeats();
     } else {
       for (let i = 0; i < this.active_grid.length; i++) {
@@ -1502,12 +1505,14 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
       }
       this.active_grid = [];
     }
+    this.measurement('setActiveGrid');
   }
 
   // 座席要素の色付け
   drawingSeats() {
     if (!(this.seats)) return;
     $(this.svgMap).find('.seat').css({ 'fill': SEAT_COLOR_NA });
+
 
     // フィルタで指定席がONの場合のみ空席の色付け
     if (this.reservedFlag) {
