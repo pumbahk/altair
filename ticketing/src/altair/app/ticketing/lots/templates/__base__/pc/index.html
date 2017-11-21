@@ -675,4 +675,38 @@ var selected_performance_id = 0;
         updateSelection(postedValues);
     });
 })($('#wishForm'));
+function extra_radio() {
+  var extra_radios = $("input[name^='extra'][type='radio']");
+
+  $.each(extra_radios, function() {
+    var parent = $(this).parents("td");
+    var radio_item = parent.find("input[type='radio']");
+    var label = $(this).parent().find("label");
+    label.on("click", function(e) {
+      e.preventDefault();
+      var this_radio_item = $(this).parent().find("input[type='radio']");
+      if (!this_radio_item.is(":checked")) {
+        radio_item.prop("checked", false);
+        this_radio_item.prop("checked", true);
+      }
+    });
+  });
+}
+
+function extra_checkbox() {
+  var extra_checkboxes = $("input[name^='extra'][type='checkbox']");
+
+  $.each(extra_checkboxes, function() {
+    var li = $(this).parents("li");
+    $(this).detach().prependTo(li);
+  });
+}
+
+function extra_field_event() {
+  extra_radio();
+  extra_checkbox();
+}
+$(function() {
+    extra_field_event();
+})
 </script>
