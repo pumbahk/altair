@@ -429,6 +429,11 @@ main {
   margin: 1.5px 0;
 }
 
+.lots-item .checkbox-set label,
+.lots-item label[field_id]{
+  width:100%;
+}
+
 @media only screen and (max-width: 750px) {
   .lots-item table th {
     background: #FBFBFB;
