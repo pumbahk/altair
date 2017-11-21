@@ -18,14 +18,6 @@ import { ApiConst } from '../../app.constants';
   templateUrl: './event-info.component.html',
   styleUrls: ['./event-info.component.css']
 })
-@NgModule({
-  imports: [
-  ],
-  declarations: [
-    Component
-  ],
-  bootstrap: [Component]
-})
 
 
 export class EventinfoComponent implements OnInit {
