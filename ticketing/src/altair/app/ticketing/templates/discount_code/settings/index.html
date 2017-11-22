@@ -1,0 +1,19 @@
+<%inherit file="/layout_2cols.html"/>
+<%namespace file="/common/helpers.html" name="ch"/>
+
+<script src="${request.static_url('altair.app.ticketing:static/js/jquery.chosen.js')}"></script>
+<link rel="stylesheet" type="text/css" href="${request.static_url('altair.app.ticketing:static/css/chosen.css')}" />
+
+<%block name="breadcrumbs">
+${ch.breadcrumbs(
+names=[u'トップ', u'クーポン・割引コード設定'],
+urls=[request.route_path('index')]
+)}
+</%block>
+
+<div class="page-header">
+    <h1>クーポン・割引コード設定</h1>
+</div>
+
+<%include file="./_list.html" args="form=form, settings=settings"/>
+<%include file="./_modal.html" args="modal_id='modal_setting'"/>

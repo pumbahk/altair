@@ -53,7 +53,6 @@ def upgrade():
         sa.Column('updated_at', sa.TIMESTAMP(), server_default=text('0'), nullable=False),
         sa.Column('deleted_at', sa.TIMESTAMP(), nullable=True),
         sa.ForeignKeyConstraint(['organization_id'], ['Organization.id'], name="DiscountCodeSetting_ibfk_1"),
-        sa.UniqueConstraint('organization_id', 'first_digit', 'following_2to4_digits', name='first_4_digits'),
     )
 
     op.create_table(

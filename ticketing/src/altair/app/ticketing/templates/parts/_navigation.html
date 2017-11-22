@@ -109,6 +109,9 @@
         % if request.context.organization.point_feature_enabled:
         <li><a href="${request.route_path('point_grant_settings.index')}">ポイント付与</a></li>
         % endif
+        % if request.context.organization.setting.enable_discount_code:
+        <li><a href="${request.route_path('discount_code_settings.index')}">クーポン・割引コード</a></li>
+        % endif
       </ul>
     </li>
   % endif

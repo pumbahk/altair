@@ -1,0 +1,39 @@
+<%page args="setting=None, order=None, small=False, split=False" />
+<%namespace file="/common/helpers.html" name="ch" />
+<%namespace file="/common/modal.html" import="delete_modal" />
+<script type="text/javascript">
+</script>
+<%
+  setting_id = setting.id if setting else ''
+  actions = {
+    'edit':dict(
+      label=u'編集',
+      url='javascript:edit_setting({});'.format(setting_id),
+      icon='icon-pencil',
+    ),
+    'target':dict(
+      label=u'適用対象',
+      url='javascript:target_setting();',
+      icon='icon-pencil',
+    ),
+    'delete':dict(
+      label=u'削除',
+      url='javascript:delete_setting({});'.format(setting_id),
+      attrs={'class':'btn-danger'},
+      icon='icon-minus',
+    ),
+  }
+  order = iter(order or ['edit', 'target', 'delete'])
+%>
+% if split:
+  <div style="float: left; margin-right: 10px;">
+  % for item in order:
+      ${HH.action_button(actions, iter([item]), vertical=False, extra_classes=[u'btn-small'] if small else [])}
+  % endfor
+  </div>
+% else:
+    <div style="float: left;">
+      ${HH.action_button(actions, order, vertical=False, extra_classes=[u'btn-small'] if small else [])}
+    </div>
+% endif
+${delete_modal()}

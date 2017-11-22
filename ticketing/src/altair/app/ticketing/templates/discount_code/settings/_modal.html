@@ -1,0 +1,68 @@
+<%page args="modal_id" />
+<script type="text/javascript">
+    var new_setting, edit_setting, delete_setting;
+    function pop_over() {
+        $('[rel=popover]').popover({html: true});
+    }
+
+    $(function () {
+        pop_over();
+        var endpoints = {
+            'new': '${request.route_path('discount_code_settings.new')|n}',
+            'edit': '${request.route_path('discount_code_settings.edit', setting_id='__id__')|n}',
+            'target': '${request.route_path('discount_code_settings.target', setting_id='__id__')|n}',
+            'delete': '${request.route_path('discount_code_settings.delete', setting_id='__id__')|n}',
+        };
+        (function (modal_setting) {
+            new_setting = function new_setting() {
+                load_modal_form(modal_setting, endpoints['new'], null, null);
+                modal_setting.modal('toggle');
+            };
+
+            edit_setting = function edit_setting(id) {
+                console.log(id);
+                if (!id) return;
+                load_modal_form(modal_setting, endpoints['edit'].replace('__id__', id), null, null);
+                modal_setting.modal('toggle');
+            };
+
+            delete_setting = function delete_setting(id) {
+                if (!id) return;
+                var modal = $('#modal-delete');
+                modal.find('#delete').attr('href', endpoints['delete'].replace('__id__', id));
+                modal.find('#message').text('選択したクーポン・割引コード設定を削除します。よろしいですか？');
+                modal.modal('toggle');
+            };
+        })($('#${modal_id}'));
+    });
+
+    $(document).ajaxComplete(function() {
+        pop_over();
+        if ($("select#issued_by").val() !== "own") {
+            $("#first_4_digits").hide();
+        };
+        $("select#issued_by").change(function() {
+            if ($(this).val() !== "own") {
+                $("#first_4_digits").fadeOut();
+            } else {
+                $("#first_4_digits").fadeIn();
+            };
+        });
+    });
+
+</script>
+<%namespace file="/common/helpers.html" name="ch" />
+<div id="${modal_id}" class="modal hide">
+    <div class="modal-header">
+        <a class="close" data-dismiss="modal">×</a>
+        <h3>クーポン・割引コード</h3>
+    </div>
+
+    <div class="modal-body"></div>
+
+    <div class="modal-footer">
+        <a href="#" class="btn" data-dismiss="modal">閉じる</a>
+        <a href="javascript:void(0);" onclick="$('#${modal_id}').find('form').submit();"
+           class="btn">保存</a>
+    </div>
+</div>
