@@ -1468,23 +1468,41 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
         }
       }
 
-      // 座席データ初期化・表示から非表示
+      // 表示から非表示
       for (let i = 0; i < this.active_grid.length; i++) {
-        let els = this.seat_elements[this.active_grid[i]];
-        for (let key in els) {
-          document.getElementById(key).textContent = null;
+        if (next_active_grid.indexOf(this.active_grid[i]) == -1) {
+          let row_data = this.seat_elements[this.active_grid[i]];
+          for (let row_id in row_data) {
+            let seat_data = row_data[row_id];
+            let content = "";
+            for (let seat_idx = 0; seat_idx < seat_data.length; seat_idx++) {
+              for (let seat_id in seat_data[seat_idx]) {
+                let delete_el = document.getElementById(seat_id);
+                delete_el.parentNode.removeChild(delete_el);
+              }
+            }
+          }
         }
       }
-      this.active_grid = [];
+
       // 非表示から表示
       for (let i in next_active_grid) {
-        let els = this.seat_elements[next_active_grid[i]];
-        for (let key in els) {
-          document.getElementById(key).innerHTML += els[key];
-          isRedrawSeats = true;
+        if (this.active_grid.indexOf(next_active_grid[i]) == -1) {
+          let row_data = this.seat_elements[next_active_grid[i]];
+          for (let row_id in row_data) {
+            let seat_data = row_data[row_id];
+            let content = "";
+            for (let seat_idx = 0; seat_idx < seat_data.length; seat_idx++) {
+              for (let seat_id in seat_data[seat_idx]) {
+                content += seat_data[seat_idx][seat_id];
+              }
+            }
+            document.getElementById(row_id).innerHTML += content;
+            isRedrawSeats = true;
+          }
         }
-        this.active_grid.push(next_active_grid[i]);
       }
+      this.active_grid = next_active_grid;
       if (isRedrawSeats) this.drawingSeats();
     } else {
       for (let i = 0; i < this.active_grid.length; i++) {
