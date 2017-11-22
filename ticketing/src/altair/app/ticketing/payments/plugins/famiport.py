@@ -69,6 +69,8 @@ from . import FAMIPORT_PAYMENT_PLUGIN_ID as PAYMENT_PLUGIN_ID
 from . import FAMIPORT_DELIVERY_PLUGIN_ID as DELIVERY_PLUGIN_ID
 from altair.app.ticketing.mails.fake import FakeObject
 
+from .helpers import delivery_method_get_description, payment_method_get_description
+
 logger = logging.getLogger(__name__)
 
 
@@ -564,9 +566,11 @@ def reserved_number_payment_viewlet(context, request):
                  renderer=_overridable_payment("famiport_payment_confirm.html"))
 def reserved_number_payment_confirm_viewlet(context, request):
     """決済方法の確認画面用のhtmlを生成"""
+    default_description = request.translate(u'Famiポート決済') if hasattr(request, 'translate') else u'Famiポート決済'
     cart = context.cart
     payment_method = cart.payment_delivery_pair.payment_method
-    return dict(payment_name=payment_method.name, description=Markup(payment_method.description), h=cart_helper)
+    description = payment_method_get_description(request, payment_method) or default_description
+    return dict(description=Markup(description))
 
 
 @lbr_view_config(context=ICompleteMailResource, name="payment-%d" % PAYMENT_PLUGIN_ID,
@@ -684,9 +688,11 @@ class FamiPortPaymentPlugin(object):
                  renderer=_overridable_delivery('famiport_delivery_confirm.html'))
 def deliver_confirm_viewlet(context, request):
     """引取方法の確認画面のhtmlを生成"""
+    default_description = request.translate(u'Famiポート引取') if hasattr(request, 'translate') else u'Famiポート引取'
     cart = context.cart
     delivery_method = cart.payment_delivery_pair.delivery_method
-    return dict(delivery_name=delivery_method.name, description=Markup(delivery_method.description), h=cart_helper)
+    description = delivery_method_get_description(request, delivery_method) or default_description
+    return dict(description=Markup(description))
 
 
 @lbr_view_config(context=IOrderDelivery, name='delivery-%d' % DELIVERY_PLUGIN_ID,
