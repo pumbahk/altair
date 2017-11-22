@@ -1,7 +1,7 @@
 """Add Enable Discount Code To Organization Setting
 
 Revision ID: 4cef5d7f0122
-Revises: 7d530c296b4
+Revises: 23db677af8c6
 Create Date: 2017-11-16 17:00:44.911030
 
 """
