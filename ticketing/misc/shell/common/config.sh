@@ -14,13 +14,13 @@ STG_SERVER="apmv1-stg.1a.vpc.altr"
 PROD_SERVER="btmv1.1c.vpc.altr"
 
 ### DBホスト
-SLAVE_DB="dbmain.standby.altr"
+STANDBY_DB="dbmain.standby.altr"
 MASTER_DB="dbmain.master.altr"
-SLAVE_DB_FMP="dbfmp.standby.altr"
+STANDBY_DB_FMP="dbfmp.standby.altr"
 MASTER_DB_FMP="dbfmp.master.altr"
 
 ### DBポート
-SLAVE_PORT="3308"
+STANDBY_PORT="3308"
 MASTER_PORT="3306"
 
 ### テキスト装飾

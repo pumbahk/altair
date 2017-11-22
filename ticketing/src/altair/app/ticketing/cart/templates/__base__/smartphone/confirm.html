@@ -27,7 +27,7 @@
   <!-- ===== お買い物内容 ===== -->
   <input type="hidden" name="event_id" value="${cart.performance.event.id}"/>
   <div class="confirm-wrap">
-    <h2 class="heading heading_simple_line">${__(u'お買い物内容')}</h2>
+    <h2 class="heading_simple_line">${__(u'お買い物内容')}</h2>
 
 
   <!-- ===== purchase-wrap ===== -->
@@ -87,21 +87,25 @@
 
   <!-- ===== お支払い ===== -->
   <div class="confirm-wrap">
-    <h2 class="heading heading_simple_line">${__(u'お支払い')}</h2>
-    <p>${h.render_payment_confirm_viewlet(request, cart)}</p>
+    <h2 class="heading_simple_line">${__(u'お支払い')}</h2>
+    <div class="plugins-wrap">
+      ${h.render_payment_confirm_viewlet(request, cart)}
+    </div>
   </div>
   <!-- ===== / お支払い ===== -->
 
   <!-- ===== お引き取り ===== -->
   <div class="confirm-wrap">
-    <h2 class="heading heading_simple_line">${__(u'お引き取り')}</h2>
-    <p>${h.render_delivery_confirm_viewlet(request, cart)}</p>
+    <h2 class="heading_simple_line">${__(u'お引き取り')}</h2>
+    <div class="plugins-wrap">
+      ${h.render_delivery_confirm_viewlet(request, cart)}
+    </div>
   </div>
   <!-- ===== / お引き取り ===== -->
 
   <!-- ===== 購入者情報 ===== -->
   <div class="confirm-wrap">
-    <h2 class="heading heading_simple_line">${__(u'購入者情報')}</h2>
+    <h2 class="heading_simple_line">${__(u'購入者情報')}</h2>
 
     <!-- ===== customerBox ===== -->
     <div class="customerBox">
@@ -154,40 +158,48 @@
 
   % if extra_form_data:
   <div class="confirm-wrap">
-      ${__(u'追加情報')}
-      <div class="customerBox">
-        <table summary="${__(u'配送先情報')}" class="methodArea">
-        % for _, (display_name, display_value) in extra_form_data:
-          <tr>
-            <th scope="row">${display_name}</th>
-            <td>${h.sensible_coerce(request, display_value)}</td>
-          </tr>
-        % endfor
-        </table>
-      </div>
-    </div>
-  </div>
+    <h2 class="heading heading_simple_line">${__(u'追加情報')}</h2>
+      <table class="extra-wrap" summary="${__(u'追加情報')}">
+      % for _, (display_name, display_value) in extra_form_data:
+        <tr>
+          <th>${display_name}</th>
+          <td>${h.sensible_coerce(request, display_value)}</td>
+        </tr>
+      % endfor
+      </table>
   </div>
   % endif
 
   <!-- ===== メールマガジンの配信 ===== -->
   % if mailmagazines_to_subscribe:
     <div class="confirm-wrap">
-      <div class="confirm-magBox">
-        <h2 class="heading heading_simple_line">${__(u'メールマガジンの配信')}</h2>
+      <h2 class="heading_simple_line">${__(u'メールマガジンの配信')}</h2>
 
-        <p class="bold">${__(u'ご利用いただいた方には、メールマガジンをお送りします。不要な方はチェックをはずしてください。')}</p>
-        % for mailmagazine, subscribed in mailmagazines_to_subscribe:
-          <p class="mgtb10">
-            <input type="checkbox" checked="checked" name="mailmagazine" id="mailmagazine-${mailmagazine.id}" value="${mailmagazine.id}"${subscribed and u' disabled="disabled"' or u''|n} />
-            <label for="mailmagazine-${mailmagazine.id}">${mailmagazine.name}</label>
-            %if subscribed:
-              <sapn class="icon_onmag">購読中</sapn>
-            %endif
-          </p>
-          <p class="fs12">${mailmagazine.description|n}</p>
-        % endfor
-      </div>
+      <table class="extra-wrap" summary="メールマガジン">
+        <tbody>
+          <tr>
+            <th>
+              <p class="bold">${__(u'ご利用いただいた方には、メールマガジンをお送りします。不要な方はチェックをはずしてください。')}</p>
+            </th>
+          </tr>
+          % for mailmagazine, subscribed in mailmagazines_to_subscribe:
+          <tr>
+            <td>
+              <input type="checkbox" checked="checked" name="mailmagazine" id="mailmagazine-${mailmagazine.id}" value="${mailmagazine.id}"${subscribed and u' disabled="disabled"' or u''|n} />
+              <label for="mailmagazine-${mailmagazine.id}">${mailmagazine.name}</label>
+              %if subscribed:
+                <sapn class="icon_onmag">購読中</sapn>
+              %endif
+            </td>
+          </tr>
+          % endfor
+          <tr>
+            <td>
+              ${mailmagazine.description|n}
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   % endif
 

@@ -32,15 +32,6 @@ import { Logger } from "angular2-logger/core";
   templateUrl: './select-product.component.html',
   styleUrls: ['./select-product.component.css']
 })
-@NgModule({
-  imports: [
-    DropdownModule,
-  ],
-  declarations: [
-    Component
-  ],
-  bootstrap: [Component]
-})
 export class SelectProductComponent implements OnInit {
   //ページタイトル（公演名）
   pageTitle: string;
@@ -565,7 +556,7 @@ export class SelectProductComponent implements OnInit {
     }
   }
   //トップへ遷移
-  private onClick() {
+  onClick() {
     location.href = `${AppConstService.PAGE_URL.TOP}`;
   }
   /**

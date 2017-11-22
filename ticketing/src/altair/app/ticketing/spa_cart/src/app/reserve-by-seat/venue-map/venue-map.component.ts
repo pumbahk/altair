@@ -96,10 +96,10 @@ const MAX_QUANTITY_DEFAULT = 10; // デフォルトの選択可能枚数
 
 export class VenuemapComponent implements OnInit, AfterViewInit {
 
-  @Input() private filterComponent: FilterComponent;
-  @Input() private mapAreaLeftH: number; // reserve-by-seat.component.tsからのマップ領域の高さ設定値
+  @Input() filterComponent: FilterComponent;
+  @Input() mapAreaLeftH: number; // reserve-by-seat.component.tsからのマップ領域の高さ設定値
   @ViewChild(ReserveByQuantityComponent)
-  private quantity: ReserveByQuantityComponent;
+  quantity: ReserveByQuantityComponent;
 
   stockTypeIdFromList: number;
   private element: HTMLElement;

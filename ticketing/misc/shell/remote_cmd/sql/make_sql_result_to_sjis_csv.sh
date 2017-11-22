@@ -1,5 +1,7 @@
 #!/bin/bash
 set -eu
+export LC_CTYPE=C
+export LANG=C
 
 cat << EOS
 #---------------------------
@@ -22,7 +24,7 @@ file_name=${file%.*}
 
 echo "変換後のファイル名は${txtyellow}sjis_${file_name}.csv${txtreset}になります。"
 
-cat ${file} | sed -e 's/^/"/g' | sed -e 's/$/"/g' | tr '\t' ',' > ./.tmp.txt
+cat ${file} | tr '\t' ',' > ./.tmp.txt
 nkf -sLw ./.tmp.txt > ./sjis_${file_name}.csv
 rm ./.tmp.txt
 
