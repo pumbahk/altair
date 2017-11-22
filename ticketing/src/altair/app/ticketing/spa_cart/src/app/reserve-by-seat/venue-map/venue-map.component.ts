@@ -269,7 +269,11 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
   isRegionObtained: boolean = false;
 
   //ツールチップ用席種
-  tooltipStockType: {name: string; min: number; max: number; region: string[]}[] = [];
+  tooltipStockType: { name: string; min: number; max: number; region: string[] }[] = [];
+
+  //初期表示測定
+  startTime: any;
+  endTime: any;
 
   //ブラウザバックフラグ
   returnFlag = false;
@@ -278,6 +282,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
   returnUnconfirmFlag = false;
 
   ngOnInit() {
+    this.startTime = new Date();
     const that = this;
     let drawingRegionTimer;
     let drawingSeatTimer;
@@ -289,7 +294,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
     },
       (error) => {
         console.log("最終ポイントエラー");
-    });
+      });
 
     this.route.params.subscribe((params) => {
       if (params && params['performance_id']) {
@@ -333,7 +338,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
                     max: maxPrice,
                     region: []
                   };
-                  for (let j = 0,len = stockTypes[i].regions.length; j < len; j++) {
+                  for (let j = 0, len = stockTypes[i].regions.length; j < len; j++) {
                     this.tooltipStockType[stockTypes[i].stock_type_id].region.push(stockTypes[i].regions[j]);
                   }
                 }
@@ -428,7 +433,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
               //ツールチップ用属性の設定
               that.tooltipStockType.forEach(function (value) {
                 if (value.region) {
-                  for (let j = 0,len = value.region.length; j < len; j++) {
+                  for (let j = 0, len = value.region.length; j < len; j++) {
                     $('#' + value.region[j]).attr({
                       stockType: value.name,
                       min: value.min,
@@ -459,17 +464,18 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
     let svgLoadCompleteTimer = setInterval(function () {
       that.originalViewBox = that.getPresentViewBox();
       // 元のviewBoxが取得でき，かつreserve-by-seat.componentの高さ設定値が取得できたら
-      if ((that.originalViewBox) && (that.mapAreaLeftH != 0)) {
+      if ((that.originalViewBox) && (that.mapAreaLeftH != 0) && (Object.keys(that.seat_elements).length > 0)) {
         clearInterval(svgLoadCompleteTimer);
         that.seatAreaHeight = $("#mapImgBox").height();
         that.svgMap = document.getElementById('mapImgBox').firstElementChild;
         that.mapHome();
-
+        that.endTime = new Date();
+        that._logger.info(that.endTime - that.startTime + "ms");
       }
     }, 200);
 
     //ツールチップの表示
-    $('#mapAreaLeft').on('mouseenter', 'rect, .region', function(e){
+    $('#mapAreaLeft').on('mouseenter', 'rect, .region', function (e) {
       let tooltip = '';
       if ($(this).attr('stockType')) {
         tooltip += $(this).attr('stockType');
@@ -483,33 +489,33 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
         $('body').append('<div id="tooltip">' + tooltip + '</div>');
         if (e.pageY + 10 + $('#tooltip').height() > $('body').height()) {
           $('#tooltip').css({
-            'top':e.pageY - $('#tooltip').height(),
-            'left':e.pageX + 10
+            'top': e.pageY - $('#tooltip').height(),
+            'left': e.pageX + 10
           });
         } else {
           $('#tooltip').css({
-            'top':e.pageY + 10,
-            'left':e.pageX + 10
+            'top': e.pageY + 10,
+            'left': e.pageX + 10
           });
         }
       }
     });
     //ツールチップの移動　ブロック
-    $('#mapAreaLeft').on('mousemove', '.region', function(e){
+    $('#mapAreaLeft').on('mousemove', '.region', function (e) {
       if (e.pageY + 10 + $('#tooltip').height() > $('body').height()) {
-          $('#tooltip').css({
-            'top':e.pageY - $('#tooltip').height(),
-            'left':e.pageX + 10
-          });
-        } else {
-          $('#tooltip').css({
-            'top':e.pageY + 10,
-            'left':e.pageX + 10
-          });
-        }
+        $('#tooltip').css({
+          'top': e.pageY - $('#tooltip').height(),
+          'left': e.pageX + 10
+        });
+      } else {
+        $('#tooltip').css({
+          'top': e.pageY + 10,
+          'left': e.pageX + 10
+        });
+      }
     });
     //ツールチップの削除
-    $('#mapAreaLeft').on('mouseleave', 'rect, .region', function(){
+    $('#mapAreaLeft').on('mouseleave', 'rect, .region', function () {
       $('[id=tooltip]').remove();
     });
   }
@@ -1440,7 +1446,6 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
 
   // 現在の描画サイズに合わせて表示するグリッドを決定し、座席データを動的に追加・削除
   setActiveGrid() {
-    performance.mark('setActiveGrid-start');
     if (this.scaleTotal >= SCALE_SEAT) {
       let viewBox = this.getPresentViewBox();
       let grid_x_from = Math.floor(viewBox[0] / this.venueGridSize) - 1;
@@ -1463,7 +1468,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
         }
       }
 
-      // 座席データ初期化
+      // 座席データ初期化・表示から非表示
       for (let i = 0; i < this.active_grid.length; i++) {
         let els = this.seat_elements[this.active_grid[i]];
         for (let key in els) {
@@ -1471,29 +1476,14 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
         }
       }
       this.active_grid = [];
-      // 表示から非表示
-      /*
-      for (let i = 0; i < this.active_grid.length; i++) {
-        if (!(next_active_grid.indexOf(this.active_grid[i]) >= 0)) {
-          let els = this.seat_elements[this.active_grid[i]];
-          for (let key in els) {
-            document.getElementById(key).textContent.replace(els[key], "");
-          }
-          let delete_idx = this.active_grid.indexOf(this.active_grid[i]);
-          this.active_grid.splice(delete_idx, 1);
-        }
-      }
-      */
       // 非表示から表示
       for (let i in next_active_grid) {
-//        if (this.active_grid.indexOf(next_active_grid[i]) < 0) {
-          let els = this.seat_elements[next_active_grid[i]];
-          for (let key in els) {
-            document.getElementById(key).innerHTML += els[key];
-            isRedrawSeats = true;
-          }
-          this.active_grid.push(next_active_grid[i]);
-//        }
+        let els = this.seat_elements[next_active_grid[i]];
+        for (let key in els) {
+          document.getElementById(key).innerHTML += els[key];
+          isRedrawSeats = true;
+        }
+        this.active_grid.push(next_active_grid[i]);
       }
       if (isRedrawSeats) this.drawingSeats();
     } else {
@@ -1505,7 +1495,6 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
       }
       this.active_grid = [];
     }
-    this.measurement('setActiveGrid');
   }
 
   // 座席要素の色付け
@@ -1523,7 +1512,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
         }
 
         if (!this.smartPhoneCheckService.isSmartPhone()) {
-          let stockType = this.seats[i].stock_type_id ? this.tooltipStockType[this.seats[i].stock_type_id]: null;
+          let stockType = this.seats[i].stock_type_id ? this.tooltipStockType[this.seats[i].stock_type_id] : null;
           if (stockType) {
             $('#' + this.seats[i].seat_l0_id).attr({
               stockType: stockType.name,
