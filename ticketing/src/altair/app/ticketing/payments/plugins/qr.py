@@ -1,6 +1,8 @@
 # -*- coding:utf-8 -*-
 
 from markupsafe import Markup
+import re
+
 from altair.pyramid_dynamic_renderer import lbr_view_config
 from altair.app.ticketing.payments.interfaces import IOrderDelivery
 from altair.app.ticketing.cart.interfaces import ICartDelivery
@@ -12,10 +14,9 @@ from altair.app.ticketing.mails.interfaces import (
     ILotsRejectedMailResource,
     )
 
-from . import models as m
-from altair.app.ticketing.core import models as core_models
+
 from . import logger
-import StringIO
+
 from pyramid.response import Response
 from altair.app.ticketing.qr import utils as qr_utils
 from altair.app.ticketing.cart import helpers as cart_helper
@@ -24,7 +25,8 @@ from altair.app.ticketing.core.interfaces import IOrderLike
 from collections import namedtuple
 
 from . import QR_DELIVERY_PLUGIN_ID as DELIVERY_PLUGIN_ID
-import re
+from .helpers import delivery_method_get_description
+
 tag_re = re.compile(r"<[^>]*?>")
 
 
@@ -41,7 +43,8 @@ def deliver_confirm_viewlet(context, request):
     logger.debug(u"QR引取")
     cart = context.cart
     delivery_method = cart.payment_delivery_pair.delivery_method
-    return dict(delivery_name=delivery_method.name, description=Markup(delivery_method.description))
+    description = delivery_method_get_description(request, delivery_method)
+    return dict(delivery_name=delivery_method.name, description=Markup(description))
 
 QRTicket = namedtuple("QRTicket", "order performance product seat token printed_at")
 
@@ -51,7 +54,7 @@ def deliver_completion_viewlet(context, request):
     order = context.order
     logger.debug(u"order_no = %s" % order.order_no)
     delivery_method = order.payment_delivery_pair.delivery_method
-
+    description = delivery_method_get_description(request, delivery_method)
     preferences = delivery_method.preferences
     qr_preferences = preferences.get(unicode(DELIVERY_PLUGIN_ID), {})
     single_qr_mode = qr_preferences.get('single_qr_mode', False)
@@ -91,7 +94,7 @@ def deliver_completion_viewlet(context, request):
         tel = order.shipping_address.tel_1,
         tickets = tickets,
         delivery_name=delivery_method.name,
-        description=Markup(delivery_method.description),
+        description=Markup(description),
         )
 
 @lbr_view_config(context=ICompleteMailResource, name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer=_overridable("qr_mail_complete.html", fallback_ua_type='mail'))
