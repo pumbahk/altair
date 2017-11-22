@@ -8,14 +8,14 @@
 
 <!-- ===== 受付番号 ===== -->
 <div class="confirm-wrap">
-  <h2 class="heading heading_simple_line">${__(u'受付番号')}</h2>
+  <h2 class="heading_simple_line">${__(u'受付番号')}</h2>
   <p class="bold disp-order_no">${order.order_no}</p>
 </div><!-- ===== / 受付番号 ===== -->
 
 <div class="confirmForm">
   <!-- ===== お買い物内容 ===== -->
   <div class="confirm-wrap">
-    <h2 class="heading heading_simple_line">${__(u'お買い物内容')}</h2>
+    <h2 class="heading_simple_line">${__(u'お買い物内容')}</h2>
 
     <!-- ===== purchase-wrap ===== -->
     <div class="purchase-wrap">
@@ -72,35 +72,37 @@
   <% extra_form_data = order.get_order_attribute_pair_pairs(request, for_='cart', mode='entry') %>
   % if extra_form_data:
   <div class="confirm-wrap">
-    <h2 class="heading heading_simple_line">${__(u'追加情報')}</h2>
-    <div class="customerBox">
-      <table summary="${__(u'配送先情報')}">
-      % for _, (display_name, display_value) in extra_form_data:
-        <tr>
-          <th scope="row">${display_name}</th>
-          <td>${h.sensible_coerce(request, display_value)}</td>
-        </tr>
-      % endfor
-      </table>
-    </div>
+    <h2 class="heading_simple_line">${__(u'追加情報')}</h2>
+    <table class="extra-wrap" summary="${__(u'配送先情報')}">
+    % for _, (display_name, display_value) in extra_form_data:
+      <tr>
+        <th scope="row">${display_name}</th>
+        <td>${h.sensible_coerce(request, display_value)}</td>
+      </tr>
+    % endfor
+    </table>
   </div>
   % endif
 
   <!-- ===== お支払い ===== -->
   <div class="confirm-wrap">
-    <h2 class="heading heading_simple_line">${__(u'お支払い')}</h2>
-    <p>${h.render_payment_finished_viewlet(request, order)}</p>
+    <h2 class="heading_simple_line">${__(u'お支払い')}</h2>
+    <div class="plugins-wrap">
+      ${h.render_payment_finished_viewlet(request, order)}
+    </div>
   </div><!-- ===== / お支払い ===== -->
 
   <!-- ===== お引き取り ===== -->
   <div class="confirm-wrap">
-    <h2 class="heading heading_simple_line">${__(u'お引き取り')}</h2>
-    <p>${h.render_delivery_finished_viewlet(request, order)}</p>
+    <h2 class="heading_simple_line">${__(u'お引き取り')}</h2>
+    <div class="plugins-wrap">
+      ${h.render_delivery_finished_viewlet(request, order)}
+    </div>
   </div><!-- ===== / お引き取り ===== -->
 
   <!-- ===== 注意事項 ===== -->
   <div class="confirm-wrap">
-    <h2 class="heading heading_simple_line">${__(u'注意事項')}</h2>
+    <h2 class="heading_simple_line">${__(u'注意事項')}</h2>
     <p>
       ${__(u'お申し込み時に、ご登録いただいたメールアドレス宛に、受付完了メールが送られます。')}<br>
       ${__(u'しばらくたっても確認のメールが届かない場合は、入力されたメールアドレスが誤っている可能性があります。')}<br>

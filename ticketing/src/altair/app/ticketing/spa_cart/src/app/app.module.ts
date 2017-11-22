@@ -39,7 +39,7 @@ import { LoadingAnimateModule, LoadingAnimateService } from 'ng2-loading-animate
 //Slider
 import { NouisliderModule } from 'ng2-nouislider';
 //Logger
-import { Logger } from 'angular2-logger/core';
+import { Logger, Options } from 'angular2-logger/core';
 import { environment }    from '../environments/environment';
 
 const routes: Routes = [
@@ -74,10 +74,14 @@ const routes: Routes = [
     BrowserModule,FormsModule,HttpModule,InputTextModule,ButtonModule,DialogModule,DropdownModule,
     LoadingAnimateModule.forRoot(),
     RouterModule.forRoot(routes),
-    NouisliderModule
+    NouisliderModule,
+    InputTextModule,
+    NouisliderModule,
+    DropdownModule,
   ],
   providers: [
     Logger,
+    Options,
     LoadingAnimateService,
     ApiBase,
     SeatStatusService,

@@ -2471,15 +2471,17 @@
 	font-weight: bold;
 }
 
-/* お支払い、引取方法 */
+/* お支払い、引取方法、追加情報 */
 #confirmCard,
-#confirmDelivery {
+#confirmDelivery,
+#confirmDeliveryAdd {
 	width: 100%;
 	border: 3px solid #ccc;
 }
 
 #confirmCard th,
-#confirmDelivery th {
+#confirmDelivery th,
+#confirmDeliveryAdd th {
 	padding: 15px 20px 15px 10px;
 	border: 1px solid #ccc;
 	background: #fbfbfb none repeat scroll 0 0;
@@ -2488,7 +2490,8 @@
 }
 
 #confirmCard td,
-#confirmDelivery td {
+#confirmDelivery td,
+#confirmDeliveryAdd td {
 	width: 100%;
 	padding: 15px;
 	border: 1px solid #ccc;
@@ -2500,7 +2503,13 @@
 	width: 16%;
 }
 
-#confirmDelivery input[type="text"] {
+#confirmDeliveryAdd td label {
+	display: inline-block;
+	width: 30%;
+}
+
+#confirmDelivery input[type="text"],
+#confirmDeliveryAdd input[type="text"] {
     -webkit-border-radius: 3px;
     -moz-border-radius: 3px;
     border-radius: 3px;

@@ -1,4 +1,4 @@
-<%inherit file="${context['main_template'].uri}" />
+<%inherit file="layout.html" />
 <%block name="title">お申し込み完了</%block>
 <div class="frame frame-inner">
   <h3>受付番号</h3>
@@ -69,7 +69,7 @@
     <li>入力された個人情報は「個人情報保護方針」に基づき適切に取扱われます。</li>
    	<li>入会後の会員プランの変更及び会費の返却には応じかねますのでご注意ください。</li>
 % if view_context.orderreview_page_url != 'about:blank':
-    <li>お申込内容は、「<a href="${view_context.orderreview_page_url}">履歴確認</a>」からもご確認いただけます。受付番号とご登録時のお電話番号をお手元にご用意の上、ご利用ください。</li>
+    <li>お申込内容は、「<a href="${view_context.orderreview_page_url}" target="_blank">履歴確認</a>」からもご確認いただけます。受付番号とご登録時のお電話番号をお手元にご用意の上、ご利用ください。</li>
 % endif
   </ul>
 </div>
