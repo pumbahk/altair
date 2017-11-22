@@ -1,25 +1,25 @@
 # -*- coding:utf-8 -*-
+
 import re
 import logging
 from datetime import datetime, timedelta
 from zope.interface import implementer
 from lxml import etree
 from decimal import Decimal
-import numpy
 import pystache
+from markupsafe import Markup
+
 from pyramid.response import Response
-from sqlalchemy.sql.expression import desc
+
 from altair.pyramid_dynamic_renderer import lbr_view_config
 from altair.app.ticketing.cart.interfaces import ICartPayment, ICartDelivery
 from altair.app.ticketing.mails.interfaces import (
     ICompleteMailResource,
     IOrderCancelMailResource,
     ILotsAcceptedMailResource,
-    ILotsElectedMailResource,
     ILotsRejectedMailResource,
     )
 from altair.app.ticketing.utils import clear_exc
-from altair.app.ticketing.core import models as c_models
 from altair.app.ticketing.core.models import Organization
 from altair.app.ticketing.orders import models as order_models
 from altair.app.ticketing.orders.api import bind_attributes
@@ -28,7 +28,6 @@ from altair.app.ticketing.sej.exceptions import SejErrorBase, SejError
 from altair.app.ticketing.sej.models import SejOrder, SejPaymentType, SejTicketType, SejOrderUpdateReason
 from altair.app.ticketing.sej import api as sej_api
 from altair.app.ticketing.sej.utils import han2zen
-
 from altair.app.ticketing.tickets.convert import convert_svg
 from altair.app.ticketing.tickets.utils import (
     NumberIssuer,
@@ -41,11 +40,11 @@ from altair.app.ticketing.cart import helpers as cart_helper
 
 from ..interfaces import IPaymentPlugin, IOrderPayment, IDeliveryPlugin, IPaymentDeliveryPlugin, IOrderDelivery, ISejDeliveryPlugin
 from ..exceptions import PaymentPluginException, OrderLikeValidationFailure
+from ..api import validate_length_dict
+
 from . import SEJ_PAYMENT_PLUGIN_ID as PAYMENT_PLUGIN_ID
 from . import SEJ_DELIVERY_PLUGIN_ID as DELIVERY_PLUGIN_ID
-from altair.app.ticketing.cart import api as cart_api
-from ..helpers import _message
-from ..api import validate_length_dict
+from .helpers import delivery_method_get_description, payment_method_get_description
 
 logger = logging.getLogger(__name__)
 
@@ -904,7 +903,11 @@ def can_receive_from_next_day(now, sej_order):
 @lbr_view_config(context=ICartDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID,
              renderer=_overridable_delivery('sej_delivery_confirm.html'))
 def sej_delivery_confirm_viewlet(context, request):
-    return Response(text=_message(u'セブン-イレブン受け取り', request))
+    default_description = request.translate(u'セブン-イレブン受け取り') if hasattr(request, 'description') else u'セブン-イレブン受け取り'
+    cart = context.cart
+    delivery_method = cart.payment_delivery_pair.delivery_method
+    description = delivery_method_get_description(request, delivery_method) or default_description
+    return dict(description=Markup(description))
 
 @lbr_view_config(context=IOrderPayment, name="payment-%d" % PAYMENT_PLUGIN_ID,
              renderer=_overridable_delivery('sej_payment_complete.html'))
@@ -929,7 +932,11 @@ def sej_payment_viewlet(context, request):
 
 @lbr_view_config(context=ICartPayment, name="payment-%d" % PAYMENT_PLUGIN_ID, renderer=_overridable_payment('sej_payment_confirm.html'))
 def sej_payment_confirm_viewlet(context, request):
-    return Response(text=_message(u'セブン-イレブン支払い', request))
+    default_description = request.translate(u'セブン-イレブン支払い') if hasattr(request, 'description') else u'セブン-イレブン支払い'
+    cart = context.cart
+    payment_method = cart.payment_delivery_pair.payment_method
+    description = payment_method_get_description(request, payment_method) or default_description
+    return dict(description=Markup(description))
 
 
 @lbr_view_config(context=ICompleteMailResource, name="payment-%d" % PAYMENT_PLUGIN_ID, renderer=_overridable_payment('sej_payment_mail_complete.html', fallback_ua_type='mail'))
