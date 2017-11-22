@@ -29,6 +29,8 @@ from . import logger
 from . import RESERVE_NUMBER_DELIVERY_PLUGIN_ID as PLUGIN_ID
 from . import RESERVE_NUMBER_PAYMENT_PLUGIN_ID as PAYMENT_PLUGIN_ID
 
+from .helpers import delivery_method_get_description, payment_method_get_description
+
 tag_re = re.compile(r"<[^>]*?>")
 
 def includeme(config):
@@ -51,14 +53,16 @@ def reserved_number_viewlet(context, request):
     logger.debug(u"order_no = %s" % order.order_no)
     reserved_number = m.ReservedNumber.query.filter_by(order_no=order.order_no).one()
     delivery_method = order.payment_delivery_pair.delivery_method
-    return dict(reserved_number=reserved_number, delivery_name=delivery_method.name, description=Markup(delivery_method.description))
+    description = delivery_method_get_description(request, delivery_method)
+    return dict(reserved_number=reserved_number, delivery_name=delivery_method.name, description=Markup(description))
 
 @lbr_view_config(context=ICartDelivery, name="delivery-%d" % PLUGIN_ID, renderer=_overridable_delivery("reserved_number_confirm.html"))
 def reserved_number_confirm_viewlet(context, request):
     logger.debug(u"窓口")
     cart = context.cart
     delivery_method = cart.payment_delivery_pair.delivery_method
-    return dict(delivery_name=delivery_method.name, description=Markup(delivery_method.description))
+    description = delivery_method_get_description(request, delivery_method)
+    return dict(delivery_name=delivery_method.name, description=Markup(description))
 
 @lbr_view_config(context=IOrderPayment, name="payment-%d" % PAYMENT_PLUGIN_ID, renderer=_overridable_payment("reserved_number_payment_completion.html"))
 def reserved_number_payment_viewlet(context, request):
@@ -67,14 +71,16 @@ def reserved_number_payment_viewlet(context, request):
     logger.debug(u"order_no = %s" % order.order_no)
     reserved_number = m.PaymentReservedNumber.query.filter_by(order_no=order.order_no).first()
     payment_method = order.payment_delivery_pair.payment_method
-    return dict(reserved_number=reserved_number, payment_name=payment_method.name, description=Markup(payment_method.description))
+    description = payment_method_get_description(request, payment_method)
+    return dict(reserved_number=reserved_number, payment_name=payment_method.name, description=Markup(description))
 
 @lbr_view_config(context=ICartPayment, name="payment-%d" % PAYMENT_PLUGIN_ID, renderer=_overridable_payment("reserved_number_payment_confirm.html"))
 def reserved_number_payment_confirm_viewlet(context, request):
     logger.debug(u"窓口")
     cart = context.cart
     payment_method = cart.payment_delivery_pair.payment_method
-    return dict(payment_name=payment_method.name, description=Markup(payment_method.description))
+    description = payment_method_get_description(request, payment_method)
+    return dict(payment_name=payment_method.name, description=Markup(description))
 
 
 @implementer(IDeliveryPlugin)

@@ -1,13 +1,11 @@
 # -*- coding:utf-8 -*-
-import hashlib
-import random
-import string
+
 from markupsafe import Markup
-from pyramid.view import view_config, view_defaults
-from pyramid.response import Response
 from zope.interface import implementer
+
+from pyramid.response import Response
+
 from altair.pyramid_dynamic_renderer import lbr_view_config
-from altair.app.ticketing.core import models as c_models
 from altair.app.ticketing.orders import models as order_models
 from altair.app.ticketing.orders.api import bind_attributes
 from altair.app.ticketing.payments.interfaces import IPaymentPlugin, IOrderPayment
@@ -19,11 +17,11 @@ from altair.app.ticketing.mails.interfaces import (
     ILotsElectedMailResource,
     ILotsRejectedMailResource,
     )
+
 from ..exceptions import OrderLikeValidationFailure
 
-from . import logger
-
 from . import FREE_PAYMENT_PLUGIN_ID as PAYMENT_PLUGIN_ID
+from .helpers import payment_method_get_description
 
 def includeme(config):
     config.add_payment_plugin(FreePaymentPlugin(), PAYMENT_PLUGIN_ID)
@@ -37,13 +35,15 @@ def _overridable_payment(path, fallback_ua_type=None):
 def reserved_number_payment_viewlet(context, request):
     order = context.order
     payment_method = order.payment_delivery_pair.payment_method
-    return dict(payment_name=payment_method.name, description=Markup(payment_method.description))
+    description = payment_method_get_description(request, payment_method)
+    return dict(payment_name=payment_method.name, description=Markup(description))
 
 @lbr_view_config(context=ICartPayment, name="payment-%d" % PAYMENT_PLUGIN_ID, renderer=_overridable_payment("free_payment_confirm.html"))
 def reserved_number_payment_confirm_viewlet(context, request):
     cart = context.cart
     payment_method = cart.payment_delivery_pair.payment_method
-    return dict(payment_name=payment_method.name, description=Markup(payment_method.description))
+    description = payment_method_get_description(request, payment_method)
+    return dict(payment_name=payment_method.name, description=Markup(description))
 
 @lbr_view_config(context=ICompleteMailResource, name="payment-%d" % PAYMENT_PLUGIN_ID, renderer=_overridable_payment("free_mail_complete.html", fallback_ua_type='mail'))
 def complete_mail(context, request):
