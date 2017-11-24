@@ -1,0 +1,27 @@
+<%inherit file="./base.html"/>
+<%namespace file="altair.app.ticketing.cart:templates/__commons__/tags_mobile.html" name="mobile" />
+<% from altair.app.ticketing.cart.resources import PerformanceOrientedTicketingCartResource %>
+<%mobile:header>チケット購入</%mobile:header>
+<div align="center" style="text-align:center">${event.title}</div><hr size="1" noshade="noshade" />
+<%mobile:form_header>席種をお選びください</%mobile:form_header>
+  % for seat_type in seat_types:
+  % if seat_type["availability"]:
+    <a href="${request.current_route_path(_query={'stid': seat_type['id']})}">${seat_type['name']}</a>
+  % else:
+    ${seat_type['name']}
+  % endif
+  ${seat_type["availability_text"]}<br />
+  % endfor
+% if not isinstance(request.context, PerformanceOrientedTicketingCartResource):
+<%mobile:form_get action="${request.route_path('cart.index', event_id=event.id)}">
+  <div style="text-align:center;">
+  <input type="hidden" name="key" value="${return_value}" />
+  <input type="submit" value="戻る">
+  </div>
+</%mobile:form_get>
+% endif
+<%mobile:header>選択内容</%mobile:header>
+<%mobile:form_header>会場</%mobile:form_header>
+<div>${venue.name}</div>
+<%mobile:form_header>日程</%mobile:form_header>
+<div>${h.performance_date(performance)}</div>
