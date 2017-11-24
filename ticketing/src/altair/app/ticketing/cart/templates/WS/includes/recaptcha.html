@@ -1,0 +1,71 @@
+ <!--reCaptcha //-->
+  <style type="text/css">
+    .recaptcha-area {
+        width: 360px;
+        margin: 0 auto;
+    }
+    .recaptcha-box {
+        margin: 16px 0;
+        padding: 80px 30px 60px;
+        background: #FFF;
+        border: 1px solid #C1C1C1;
+        border-radius: 4px;
+        box-shadow: 4px 4px 4px rgba(0,0,0,0.1);
+        -webkit-box-sizing: border-box;
+        -moz-box-sizing: border-box;
+        box-sizing: border-box;
+    }
+    .recaptcha-txt {
+        margin: 10px 8px 0;
+        color: #666;
+        text-align: left;
+    }
+    .recaptcha-area input[type="submit"] {
+        width: 100px;
+        padding: 10px;
+        background: #4A90E2;
+        border-style: none;
+        border-radius: 2px;
+        -webkit-box-sizing: border-box;
+        -moz-box-sizing: border-box;
+        box-sizing: border-box;
+        color: #FFF;
+        cursor: pointer;
+        float: right;
+        font-weight: 600;
+        position: relative;
+        -moz-user-select: -moz-none;
+        -ms-user-select: none;
+        -webkit-user-select: none;
+        user-select: none;
+      }
+      .recaptcha-area input[type="submit"]:hover{
+        background: #2263D6
+      }
+@media screen and (max-width: 479px) {
+            .recaptcha-box {
+                padding: 40px 0 0;
+                border: none;
+                box-shadow: none;
+            }
+            .recaptcha-area input[type="submit"] {
+                width: 300px;
+                padding: 20px 10px;
+                float:left;
+            }
+        }
+
+</style>
+ <!--reCaptcha End//-->
+
+<%page args="sitekey" />
+<div class="recaptcha-area">
+  <div class="recaptcha-box">
+    <form id="form1" method="POST">
+      <div class="g-recaptcha" data-sitekey="${sitekey}"></div>
+      <div class="recaptcha-txt">不正な申込みを防ぐため、認証を行います。チェックを入れて、次へボタンを押してください。</div>
+      <input type="submit" value="次へ"/>
+    </form>
+  </div>
+</div>
+
