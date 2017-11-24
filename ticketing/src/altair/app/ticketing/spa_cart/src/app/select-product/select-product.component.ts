@@ -88,6 +88,11 @@ export class SelectProductComponent implements OnInit {
   month: any;
   day: any;
 
+  //モーダルのボタン制御用フラグ
+  returnFlag: boolean = false;
+  //candeactivate用　戻るか戻らないか
+  deactivate: boolean = false;
+
   constructor(private seatStatus: SeatStatusService,
     private route: ActivatedRoute,
     private router: Router,
@@ -111,6 +116,7 @@ export class SelectProductComponent implements OnInit {
     if (!this.response) {
       this.route.params.subscribe((params) => {
         if (params && params['performance_id']) {
+          this.deactivate = true;
           this.performanceId = +params['performance_id'];
           this.router.navigate(["performances/" + this.performanceId]);
         } else {
@@ -410,8 +416,17 @@ export class SelectProductComponent implements OnInit {
     }
   }
 
-  //キャンセルボタン押下（座席開放API）
+  //ブラウザバック、キャンセルボタン押下
+  public confirmReturn(push) {
+    this.modalTitle = push + 'が押されました';
+    this.modalMessage = '選択した座席がキャンセルされますが宜しいですか？';
+    this.returnFlag = true;
+    this.modalVisible = true;
+  }
+
+  //確認モーダルで「はい」押下（座席開放API）
   private cancel() {
+    this.deactivate = true;
     this.seatStatus.seatRelease(this.performanceId)
       .subscribe((response: ISeatsReleaseResponse) => {
         this._logger.debug(`seat release(#${this.performanceId}) success`, response);
@@ -419,7 +434,7 @@ export class SelectProductComponent implements OnInit {
         if (this.releaseResponse.status == "NG") {
           this._logger.error('seat release error', this.releaseResponse);
           this.errorModalDataService.sendToErrorModal('エラー', '座席を解放できません。');
-        } else {
+        } else if (!this.timeoutFlag) {
           this.router.navigate(["performances/" + this.performanceId]);
         }
       },
@@ -566,6 +581,7 @@ export class SelectProductComponent implements OnInit {
   unassignedSeatCheck(num: number) {
     if (num > 0) {
       this.modalVisible = true;
+      this.modalTitle = '選択エラー';
       this.modalMessage = '<p>未割当の座席があります。</p>';
       this.animationEnableService.sendToRoadFlag(false);
       $('#submit').prop("disabled", false);

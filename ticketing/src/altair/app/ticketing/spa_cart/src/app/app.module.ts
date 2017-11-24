@@ -30,6 +30,7 @@ import { AnimationEnableService } from './shared/services/animation-enable.servi
 import { ErrorModalDataService } from './shared/services/error-modal-data.service';
 import { CountSelectService } from './shared/services/count-select.service';
 import { SmartPhoneCheckService } from './shared/services/smartPhone-check.service';
+import { SelectProductBrouserBackService } from './shared/services/select-product-browser-back.service';
 //Ng-inline-svg
 import { InlineSVGModule } from 'ng-inline-svg';
 //Primeng
@@ -45,7 +46,7 @@ import { environment }    from '../environments/environment';
 const routes: Routes = [
   { path: 'performances/:performance_id',component: ReserveBySeatComponent },
   { path: 'performances/:performance_id/reserve-by-quantity/:stock_type_id', component: ReserveByQuantityComponent },
-  { path: 'performances/:performance_id/select-product', component: SelectProductComponent },
+  { path: 'performances/:performance_id/select-product', component: SelectProductComponent, canDeactivate:[SelectProductBrouserBackService] },
   { path: 'payment/', component: PaymentComponent },
   { path: '**', component: PageNotFoundComponent }
 ];
@@ -94,7 +95,8 @@ const routes: Routes = [
     ErrorModalDataService,
     AnimationEnableService,
     CountSelectService,
-    SmartPhoneCheckService
+    SmartPhoneCheckService,
+    SelectProductBrouserBackService
   ],
   bootstrap: [
     AppComponent
