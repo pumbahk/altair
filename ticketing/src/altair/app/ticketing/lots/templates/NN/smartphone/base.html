@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>${view_context.team_name}</title>
+  <meta name = "format-detection" content="telephone=no">
+  <!-- Cascading Style Sheets -->
+  <link rel="shortcut icon" href="${view_context.static_url('smartphone/images/favicon.ico')}">
+  <link rel="stylesheet" href="${view_context.static_url('smartphone/css/sp_common.css', 'lots')}" type="text/css" media="all">
+  <link rel="stylesheet" href="${view_context.static_url('smartphone/css/sp_helper.css', 'lots')}" type="text/css" media="all">
+  <link rel="stylesheet" href="${view_context.static_url('smartphone/css/sp_confirm.css', 'lots')}" type="text/css" media="all">
+  <link rel="stylesheet" href="${view_context.static_url('smartphone/css/sp_custom.css', 'lots')}" type="text/css" media="all">
+  <%block name="css"></%block>
+
+  <script type="text/javascript" src="${request.static_url('altair.app.ticketing.lots:static/common/js/jquery.js')}"></script>
+</head>
+   <body id="settlement">
+    <div id="container" class="ts-wrapper">
+      <!-- ========== header ========== -->
+        <%include file="../includes/header.html" />
+        <!-- ========== /header ========== -->
+
+      <!-- ========== main ========== -->
+      % if request.organization.setting.i18n:
+      <div class="selectwrapper">
+        ${h.create_url_link(request) |n}
+      </div>
+      % endif
+      <div id="main" class="ts-contents">
+        <div class="ts-contents-inner">
+          <h1 class="heading-primary">${__(u'チケット申込')}</h1>
+          ${self.body()}
+        </div>
+      </div>
+      <!-- ========== /main ========== -->
+    </div>
+    <!-- /container -->
+    <%block name="javascript"></%block>
+  </body>
+</html>
