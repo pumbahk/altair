@@ -1,0 +1,68 @@
+<%inherit file="../layout_resp.html" />
+
+<h1 class="heading heading-primary">マイページ</h1>
+
+
+<!-- ===== 購入履歴照会 ===== -->
+<div class="confirm-wrap">
+<h2 class="heading heading_simple_line">購入履歴照会</h2>
+
+% if orders:
+  ${render_orders(orders)}
+% else:
+  <p>購入履歴がありません。</p>
+% endif
+
+</div><!-- ===== / 購入履歴照会 ===== -->
+
+
+
+<!-- ===== 抽選申込み照会 ===== -->
+<div class="confirm-wrap">
+<h2 class="heading heading_simple_line">抽選申込み照会</h2>
+% if lot_entries:
+  ${render_lot_entries(lot_entries)}
+% else:
+  <p>抽選申込みがありません。</p>
+% endif
+<p>特定期間の予約申込については安全が確認されているものであっても万全を期すために非表示としているものがあります。</p>
+<p>&raquo; <a href="https://rt.tstar.jp/orderreview/information">予約申込が見当たらない場合はこちら</a></p>
+</div><!-- ===== / 抽選申込み照会 ===== -->
+
+
+
+<!-- ===== メールマガジンの配信 ===== -->
+<div class="confirm-wrap">
+<div class="confirm-wrap-inner confirm-magBox">
+<h2 class="heading heading_simple_line">メールマガジンの配信</h2>
+
+<%def name="render_mailmagazine(request)">
+  % if mailmagazines_to_subscribe:
+
+<form id="form1" class="confirmForm" action="https://rt.tstar.jp/cart/confirm" method="post">
+<p class="bold">${view_context.team_name}からのメールマガジンの購読を選択できます。</p>
+    % for mailmagazine, subscribed in mailmagazines_to_subscribe:
+<p class="mgtb10">
+<input type="checkbox" ${"checked" if subscribed else ""} name="mailmagazine" id="mailmagazine-${mailmagazine.id}" value="${mailmagazine.id}" />
+<label for="mailmagazine-${mailmagazine.id}">${mailmagazine.name}</label>
+% if subscribed:
+<span class="icon_onmag">購読中</span>
+% endif
+</p>
+<p class="fs12">${mailmagazine.description|n}</p>
+    % endfor
+</div></div><!-- ===== 　/メールマガジンの配信 ===== -->
+
+<!-- ===== BTN ===== -->
+<div class="confirm-btnBox">
+<input class="btn btn-primary" type="submit" value="変更する"></p>
+</div>
+</form>
+
+
+
+<!-- ===== 楽天ポイントのご確認 ===== -->
+<div class="confirm-wrap">
+<h2 class="heading heading_simple_line">楽天ポイントのご確認</h2>
+<p>&raquo; <a href="https://point.rakuten.co.jp/">楽天ポイントのご確認はこちら</a></p>
+</div><!-- ===== / 楽天ポイントのご確認 ===== -->
