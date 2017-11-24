@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <!--[if lt IE 9]>
+    <script type="text/javascript" src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <meta charset="UTF-8">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="cache-control" content="no-cache">
+    <meta http-equiv="expires" content="0">
+    <title>${view_context.team_name}</title>
+
+    <!-- Cascading Style Sheets -->
+    <link rel="shortcut icon" href="${view_context.static_url('pc/images/favicon.ico', 'lots')}">
+    <link rel="stylesheet" href="${view_context.static_url('pc/css/import.css', 'lots')}" type="text/css" media="all">
+    <link rel="stylesheet" href="${view_context.static_url('pc/css/custom.css', 'lots')}" type="text/css" media="all">
+
+    <script type="text/javascript" src="${request.static_url('altair.app.ticketing.lots:static/common/js/jquery.js')}"></script>
+    <script type="text/javascript" src="${request.static_url('altair.app.ticketing.cart:static/js/disable_on_submit.js')}"></script>
+
+    <%block name="css"></%block>
+  </head>
+
+  <body id="settlement">
+    <div id="container">
+      <div class="ts-wrapper">
+        <!-- ========== header ========== -->
+        <%include file="../includes/header.html" />
+        <!-- ========== /header ========== -->
+
+        <!-- ========== main ========== -->
+        <div class="ts-contents">
+          <div class="ts-contents-inner">
+            <div class="selectwrapper">
+              ${h.create_url(request) |n}
+            </div>
+            <div id="main">
+              <h1>${_(u'チケット申込')}</h1>
+              ${next.body()}
+            </div>
+          </div>
+        </div>
+        <!-- ========== main ========== -->
+      </div>
+    </div>
+  </body>
+  <script type="text/javascript">
+    $(function() {
+      $('form').disableOnSubmit('input[type=image][name!="back"]');
+    });
+  </script>
+  <%block name="javascript"></%block>
+</html>
