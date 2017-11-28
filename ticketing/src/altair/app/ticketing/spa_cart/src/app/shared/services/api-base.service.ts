@@ -72,7 +72,7 @@ export class ApiBase extends Http{
    * @return null - 通信エラー
    */
   protected httpGetSeat<T>(url: string, useCache: boolean = false): Observable<T> {
-    if(useCache && this.cachedGetObservables[url] != undefined){
+    if (useCache && this.cachedGetObservables[url] != undefined) {
       this._logger.debug('API GET:', url + ' [CACHED]');
       return this.cachedGetObservables[url];
     }
@@ -80,6 +80,11 @@ export class ApiBase extends Http{
     var get = this.get(url, this.options)
       .timeout(60000)
       .map((response) => {
+        //console.log(response);
+        //解凍処理
+        //最終的にここで解凍処理（今はvenueMapに仮実装）
+        //解凍処理
+        //console.log(response.json());
         const body = response.json();
         this.cachedGetObservables[url] = Observable.of(body);
         return body;

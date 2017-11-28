@@ -283,6 +283,26 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
 
   ngOnInit() {
     this.startTime = new Date();
+    var Zlib = require('zlibjs/bin/gunzip.min').Zlib
+    var url= '../assets/newSeatElements.zip'
+    var xhr= new XMLHttpRequest
+    xhr.open('GET',url,true)
+    xhr.responseType= 'arraybuffer'
+    xhr.send()
+
+    xhr.addEventListener('load',function(){
+      console.log(xhr.response);
+      var uint8array = new Uint8Array(xhr.response);
+      if (uint8array instanceof Uint8Array) {
+        console.log("type ok");
+      }
+      // compressed = Array.<number> or Uint8Array
+      var gunzip = new Zlib.Gunzip(uint8array);
+      console.log(gunzip);
+      //以下.decompress();で、エラー
+      var plain = gunzip.decompress();
+      console.log(plain);
+    })
     const that = this;
     let drawingRegionTimer;
     let drawingSeatTimer;
