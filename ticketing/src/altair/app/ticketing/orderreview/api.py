@@ -57,7 +57,7 @@ def send_to_orion(request, context, recipient, data):
     orion = performance.orion
     shipping_address = order.shipping_address
     user_phone = shipping_address.tel_1 or shipping_address.tel_2
-    orion_ticket_phones = ','.join([user_phone, order.orion_ticket_phone.phones]).rstrip(',')
+    orion_ticket_phones = ','.join([user_phone] + order.get_orion_ticket_phone_list).rstrip(',')
     obj = dict()
     obj['token'] = data.id
     obj['recipient'] = dict(mail = recipient)
