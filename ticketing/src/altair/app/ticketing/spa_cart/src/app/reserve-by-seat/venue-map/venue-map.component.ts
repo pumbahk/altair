@@ -302,20 +302,18 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
           this.performance = performanceRes.data.performance;
           this.performanceId = this.performance.performance_id;
           //this.venueURL = this.performance.venue_map_url;
-          this.venueURL = "../assets/kobo-park-miyagi-2017-spa-no-seats.svg";
           //this.seatDataURL = this.performance.seat_data;
           //ダミーURL
+          this.venueURL = "../assets/kobo-park-miyagi-2017-spa-no-seats.svg";
           this.seatDataURL = "../assets/newSeatElements.gz";
           //ダミーURL
 
           // 個席データ取得
-          this.seatDataService.getSeatData(this.seatDataURL).subscribe((response: any) => {
-            this.seat_elements = response;
-            console.log(this.seat_elements);
-          },
-            (error) => {
-              console.log("最終ポイントエラー");
+          if (this.isSeatDataGet(this.seatDataURL)) {
+            this.seatDataService.getSeatData(this.seatDataURL).subscribe((response: any) => {
+              this.seat_elements = response;
             });
+          }
 
           this.colorNavi = "https://s3-ap-northeast-1.amazonaws.com/tstar/cart_api/color_sample.svg";
           this.wholemapURL = this.performance.mini_venue_map_url;
@@ -469,17 +467,30 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
         }, 100);
       }
     });
-    // SVGのロード完了チェック+各領域のheight取得
+    // SVGのロード完了チェック
     let svgLoadCompleteTimer = setInterval(function () {
       that.originalViewBox = that.getPresentViewBox();
-      // 元のviewBoxが取得でき，かつreserve-by-seat.componentの高さ設定値が取得できたら
-      if ((that.originalViewBox) && (that.mapAreaLeftH != 0) && (Object.keys(that.seat_elements).length > 0)) {
-        clearInterval(svgLoadCompleteTimer);
-        that.seatAreaHeight = $("#mapImgBox").height();
-        that.svgMap = document.getElementById('mapImgBox').firstElementChild;
-        that.mapHome();
-        that.endTime = new Date();
-        that._logger.info(that.endTime - that.startTime + "ms");
+      if (that.isSeatDataGet(that.seatDataURL)) {
+        // viewBox取得　且つ　reserve-by-seatの高さが取得　且つ　seat_elements取得
+        if ((that.originalViewBox) && (that.mapAreaLeftH != 0) && (Object.keys(that.seat_elements).length > 0)) {
+          clearInterval(svgLoadCompleteTimer);
+          that.seatAreaHeight = $("#mapImgBox").height();
+          that.svgMap = document.getElementById('mapImgBox').firstElementChild;
+          that.mapHome();
+          that.endTime = new Date();
+          that._logger.info(that.endTime - that.startTime + "ms");
+        }
+      } else {
+        // viewBox取得　且つ　reserve-by-seatの高さが取得
+        if ((that.originalViewBox) && (that.mapAreaLeftH != 0)) {
+          clearInterval(svgLoadCompleteTimer);
+          that.seatAreaHeight = $("#mapImgBox").height();
+          that.svgMap = document.getElementById('mapImgBox').firstElementChild;
+          that.saveSeatData();
+          that.mapHome();
+          that.endTime = new Date();
+          that._logger.info(that.endTime - that.startTime + "ms");
+        }
       }
     }, 200);
     if (!this.smartPhoneCheckService.isSmartPhone()) {
@@ -1488,19 +1499,31 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
   saveSeatData() {
     let els = document.querySelectorAll('.seat');
 
+    let seat_data = {};
     for (let i = 0; i < els.length; i++) {
       let grid_class = (<SVGAnimatedString>(<SVGElement>els[i]).className).baseVal;
       grid_class = grid_class.substr(grid_class.indexOf('grid'), 13);
-      let parent_id = $(els[i].parentNode).attr('id');
+      let row_id = $(els[i].parentNode).attr('id');
 
-      if (!(grid_class in this.seat_elements)) {
-        this.seat_elements[grid_class] = [];
+      if (!(grid_class in seat_data)) {
+        seat_data[grid_class] = {};
+      }
+      if (!(row_id in seat_data[grid_class])) {
+        seat_data[grid_class][row_id] = [];
       }
 
       (<HTMLElement>els[i]).style.display = 'inline';
-      (this.seat_elements[grid_class]).push([parent_id, els[i]]);
+      let seat_id = $(els[i]).attr('id');
+      let title = $(els[i]).find('title').text();
+      $(els[i]).find('title').text(encodeURIComponent(title));
+      let seat_el_str = new XMLSerializer().serializeToString(els[i]);
+      seat_el_str = seat_el_str.replace('xmlns="http://www.w3.org/2000/svg" ', '');
+      seat_el_str = seat_el_str.replace(/\r?\n/g, '').replace(/ +/g,' ');
+      let seat_el = {};
+      seat_el[seat_id] = seat_el_str;
+      seat_data[grid_class][row_id].push(seat_el);
+      this.seat_elements = seat_data;
     }
-
     $('.seat').remove();
     if (!this.smartPhoneCheckService.isSmartPhone()) $('svg').find('title').remove();
   }
