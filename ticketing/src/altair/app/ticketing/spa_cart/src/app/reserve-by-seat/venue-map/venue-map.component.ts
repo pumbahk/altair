@@ -225,6 +225,8 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
   regionIds: string[] = [];
   // viewBoxの初期値を格納
   originalViewBox: any[] = null;
+  //svgの座席要素の有無
+  getSeatFlag = false;
   // 表示領域のwidthとheightを求めるため
   svgMap: any;
   D_Width: number;    // 表示領域のwidth
@@ -309,7 +311,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
           //ダミーURL
 
           // 個席データ取得
-          if (this.isSeatDataGet(this.seatDataURL)) {
+          if (this.seatDataURL) {
             this.seatDataService.getSeatData(this.seatDataURL).subscribe((response: any) => {
               this.seat_elements = response;
             });
@@ -470,7 +472,10 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
     // SVGのロード完了チェック
     let svgLoadCompleteTimer = setInterval(function () {
       that.originalViewBox = that.getPresentViewBox();
-      if (that.isSeatDataGet(that.seatDataURL)) {
+      if (document.querySelector('.seat')) {
+        that.getSeatFlag = true;
+      }
+      if (that.isSeatDataGet(that.getSeatFlag, that.seatDataURL) == 2) {
         // viewBox取得　且つ　reserve-by-seatの高さが取得　且つ　seat_elements取得
         if ((that.originalViewBox) && (that.mapAreaLeftH != 0) && (Object.keys(that.seat_elements).length > 0)) {
           clearInterval(svgLoadCompleteTimer);
@@ -1507,8 +1512,13 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
 
   // SVGの座席データを[連席ID, Element]として保持してDOMツリーから削除
   saveSeatData() {
-    let els = document.querySelectorAll('.seat');
+    if (this.isSeatDataGet(this.getSeatFlag, this.seatDataURL) == 3) {
+      $('.seat').remove();
+      if (!this.smartPhoneCheckService.isSmartPhone()) $('svg').find('title').remove();
+      return;
+    }
 
+    let els = document.querySelectorAll('.seat');
     let seat_data = {};
     for (let i = 0; i < els.length; i++) {
       let grid_class = (<SVGAnimatedString>(<SVGElement>els[i]).className).baseVal;
@@ -1528,7 +1538,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
       $(els[i]).find('title').text(encodeURIComponent(title));
       let seat_el_str = new XMLSerializer().serializeToString(els[i]);
       seat_el_str = seat_el_str.replace('xmlns="http://www.w3.org/2000/svg" ', '');
-      seat_el_str = seat_el_str.replace(/\r?\n/g, '').replace(/ +/g,' ');
+      seat_el_str = seat_el_str.replace(/\r?\n/g, '').replace(/ +/g, ' ');
       let seat_el = {};
       seat_el[seat_id] = seat_el_str;
       seat_data[grid_class][row_id].push(seat_el);
