@@ -1180,6 +1180,11 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
       if (this.selectedStockTypeId == this.prevStockType) {
         if (this.QuentityChecks.maxLimitCheck(this.selectedStockTypeMaxQuantity, this.performance.order_limit, this.event.order_limit, this.selectedSeatList.length + this.selectedGroupIds.length)) {
           for (let i = 0, len = this.selectedGroupIds.length; i < len; i++) {
+            let text = $("#" + this.selectedGroupIds[i]).text().trim();
+            if (text) {
+              $("#" + this.selectedGroupIds[i]).attr('title', $("#" + this.selectedGroupIds[i]).text().trim());
+              $("#" + this.selectedGroupIds[i]).children().remove();
+            }
             $(this.svgMap).find('#' + this.selectedGroupIds[i]).css({ 'fill': SEAT_COLOR_SELECTED });
             if (this.smartPhoneCheckService.isSmartPhone()) {
               this.selectedSeatGroupNames.push(decodeURIComponent($(this.svgMap).find('#' + this.selectedGroupIds[i]).children('title').text()));
@@ -1194,6 +1199,11 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
         }
       } else {
         for (let i = 0, len = this.selectedGroupIds.length; i < len; i++) {
+          let text = $("#" + this.selectedGroupIds[i]).text().trim();
+          if (text) {
+            $("#" + this.selectedGroupIds[i]).attr('title', $("#" + this.selectedGroupIds[i]).text().trim());
+            $("#" + this.selectedGroupIds[i]).children().remove();
+          }
           $(this.svgMap).find('#' + this.selectedGroupIds[i]).css({ 'fill': SEAT_COLOR_SELECTED });
           if (this.smartPhoneCheckService.isSmartPhone()) {
             this.selectedSeatGroupNames.push(decodeURIComponent($(this.svgMap).find('#' + this.selectedGroupIds[i]).children('title').text()));
