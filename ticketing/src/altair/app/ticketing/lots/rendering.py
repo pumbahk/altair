@@ -113,8 +113,7 @@ def includeme(config):
             view_context_factory=lambda name, package, registry, request, **kwargs: request.view_context,
             path_patterns=[
                 'templates/%(organization_short_name)s/%(ua_type)s/%(path)s',
-                'templates/__default__/__default__/%(ua_type)s/%(path)s',
-                'templates/__scaffold__/%(ua_type)s/%(path)s'
+                'templates/__default__/__default__/%(ua_type)s/%(path)s'
                 ]
             )
         )

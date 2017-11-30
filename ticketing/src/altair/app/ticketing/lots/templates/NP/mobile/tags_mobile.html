@@ -1,0 +1,38 @@
+<%def name="band(bgcolor, align=None)">
+<div style="background-color:${bgcolor}" bgcolor="${bgcolor}"${u' align="%(align)s" style="text-align:%(align)s"' % dict(align=align) if align is not None else u''|n}>${caller.body()}</div>
+</%def>
+<%def name="header(bgcolor='#0A50AA', align=None)">
+<%self:band bgcolor="${bgcolor}" align="${align}"><font color="white">${caller.body()}</font></%self:band>
+</%def>
+<%def name="header2(bgcolor='#b2bdff', align=None)">
+<%self:band bgcolor="${bgcolor}" align="${align}">${caller.body()}</%self:band>
+</%def>
+<%def name="form_header(markercolor='#E60048', requiredmarkcolor='#ff0000', required=False)">
+<div><font color="${markercolor}">■</font >${caller.body()}</font>
+%if required:
+<font color="${requiredmarkcolor}">*</font>
+%endif
+</div>
+</%def>
+<%def name="messages(messages)">
+%if messages:
+<%self:band bgcolor="#09355f">
+%for message in messages:
+<font color="red">・${message}</font><br />
+%endfor
+</%self:band>
+%endif
+</%def>
+<%def name="form_get(**kwargs)">
+%if hasattr(request, 'open_form_tag_for_get'):
+${request.open_form_tag_for_get(**kwargs)}
+%else:
+<form method="get" \
+%for k, v in kwargs.items():
+${k}="${v}" \
+%endfor
+>
+%endif
+${caller.body()}
+</form>
+</%def>

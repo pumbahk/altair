@@ -1,0 +1,12 @@
+%if payment_method.hide_voucher or (payment_type == 'CashOnDelivery' and delivery_method.hide_voucher):
+当選の場合、お支払期日までにお支払頂きます。<br>
+お支払が確認できた時点で当選申込が確定となります。<br><br>各種手数料の他、公演によりシステム利用料がかかります。
+%else:
+<p>払込票番号: <strong>${sej_order.billing_number}</strong>
+<%include file="sej_exchange_sheet.html" args="label=u'払込票を表示'" />
+</p>
+<p>支払期日: <strong>${h.japanese_datetime(sej_order.payment_due_at)}</strong></p>
+<p>上記支払期日までに、払込票番号をお持ちの上、セブン-イレブン店舗レジにてお支払いください。（払込票を表示、印刷した上で店頭にお持ちいただくとスムーズです）</p>
+<p style="font-weight:bold; color: #f00;">支払期日までに入金されない場合は予約が無効となりますので、ご注意ください。</p>
+<p style="font-weight:bold; color: #f00;">お申込後の、公演日・席種・枚数等の変更はできませんのでご容赦ください。</p>
+%endif
