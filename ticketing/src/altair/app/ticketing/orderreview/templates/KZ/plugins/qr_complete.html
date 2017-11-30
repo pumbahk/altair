@@ -1,0 +1,78 @@
+<style type="text/css">
+    .qr-btn {
+        background: #02a0dd;
+        width:150px;
+        height:40px;
+        color: #FFFFFF;
+        text-decoration: none;
+        padding: 5px;
+        font-weight: bold;
+        display: inline-block;
+        cursor: pointer;
+        border: none;
+    }
+    .qr-textinput {
+        border: 1px solid #c0c0c0;
+        vertical-align: middle;
+        padding: 5px;
+    }
+    .qr-font {
+        display: inline-block;
+        font-weight: bold;
+        margin-right: 5px;
+    }
+</style>
+
+<%
+from datetime import datetime
+now = datetime.now()
+%>
+
+<div>
+
+${description}
+
+% if (paid or free):
+    % if order.issuing_start_at <= now:
+        % for ticket in tickets:
+            <div style="border: 1px solid gray; padding: 8px; margin-bottom: 4px;">
+                % if ticket.product:
+                商品名 ${ticket.product.name} (${ticket.product.id}) <br />
+                % endif
+                %if ticket.seat:
+                席番号 ${ticket.seat.name} (${ticket.seat.l0_id}) <br />
+                %endif
+                <br />
+
+                <form method="post" target="_blank" action="${request.route_path('order_review.qr_print')}">
+                    <input type="hidden" name="order_no" value="${order.order_no}" />
+                    <input type="hidden" name="tel" value="${tel}" />
+                    <input type="hidden" name="token" value="${ticket.token.id if ticket.token else ""}" />
+                    <input type="submit" class="qr-btn" value="QRコードを表示する" />
+                </form>
+                <br/>
+                <form method="post" target="_blank" action="${request.route_path('order_review.qr_send')}">
+                    <input type="hidden" name="order_no" value="${order.order_no}" />
+                    <input type="hidden" name="tel" value="${tel}" />
+                    <input type="hidden" name="token" value="${ticket.token.id if ticket.token else ""}" />
+
+
+                    <font class="qr-font">メールアドレス: </font><input type="text" class="qr-textinput" name="mail" size="40" />
+                    <input type="submit" class="qr-btn" name="send" value="メールで送る" />
+                </form>
+            </div>
+        % endfor
+    % else:
+        <p>
+            こちらのQRコードはまだ発行開始日前のため、QRコードを発行できません。<br/>
+            恐れ入りますが、発行開始まで今しばらくお待ちください。
+        </p>
+        <br/>
+        % if order.issuing_start_at:
+        発行開始予定日：　${order.issuing_start_at.strftime("%Y-%m-%d %H:%M")}
+        % endif
+    % endif
+% else:
+お支払い完了後、このページにQRコードを表示するためのボタンが表示されます。表示されたQRコードを印刷、あるいは、PC/携帯へメール送信の上、公演当日、指定の場所にてQRコード（印刷したもの、あるいは携帯画面）をご提示ください。
+% endif
+</div>

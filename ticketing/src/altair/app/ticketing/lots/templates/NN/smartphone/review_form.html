@@ -1,0 +1,35 @@
+<%inherit file="review_base.html" />
+<h2 class="heading heading-primary">${_(u'チケット申込')}</h2>
+
+<!-- ===== 申込状況確認 ===== -->
+<div class="box clearfix">
+
+    <!-- LOGIN BOX -->
+    <div class="confirm-wrap">
+
+        <form action="${request.url}" class="confirmForm" method="post">
+            <table class="customer-table">
+                <tbody>
+                    <tr>
+                      <th>${_(u'受付番号')}<span class="icon-required">${_(u'必須')}</span><br><span>${_(u'半角英数')}</span></th>
+                        <td>
+                            <input id="entry_no" name="entry_no" type="text" value="" placeholder="" required>
+                            <span class="red">${h.render_errors(request, form.entry_no.errors)}</span>
+                        </td>
+                    </tr>
+                    <tr>
+                      <th>${_(u'電話番号')}<span class="icon-required">${_(u'必須')}</span><br><span>${_(u'半角英数')}</span></th>
+                        <td>
+                            <input id="tel_no" name="tel_no" type="text" value="" placeholder="" required>
+                            <span class="red">${h.render_errors(request, form.tel_no.errors)}</span>
+                            <p class="annot">${_(u'電話番号はご登録時の電話番号をご入力ください。')}<br>
+                            ${_(u'（携帯・自宅をどちらもご登録した場合どちらの番号でも構いません。）')}</p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <p class="confirm-btnBox"><input class="btn btn-primary" type="submit" value="${_(u'確認する')}"></p>
+        </form>
+    </div>
+
+</div><!-- ===== / 申込状況確認 ===== -->

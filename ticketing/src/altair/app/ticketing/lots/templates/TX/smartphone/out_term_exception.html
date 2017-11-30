@@ -1,0 +1,15 @@
+<%inherit file="./base.html" />
+<div id="main">
+  %if request.session.peek_flash():
+  <div style="border: 3px solid red; background: #FFEEEE; padding: 10px; margin: 10px;">
+    <ul>
+      %for message in request.session.pop_flash():
+      <li>${message}</li>
+      %endfor
+    </ul>
+  </div>
+  %endif
+  <p>
+  ${lot.event.title} ${lot.name} の申込期間は ${h.japanese_datetime(lot.start_at)} ～ ${h.japanese_datetime(lot.end_at)} となっております。
+  </p>
+</div>
