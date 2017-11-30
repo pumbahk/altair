@@ -1,5 +1,5 @@
 import { Injectable }  from '@angular/core';
-import { Http, XHRBackend, RequestOptions, Request, RequestOptionsArgs, Response, Headers } from '@angular/http';
+import { Http, XHRBackend, RequestOptions, Request, RequestOptionsArgs, ResponseContentType, Response, Headers } from '@angular/http';
 import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/operator/map';
 import { ISuccessResponse, IErrorResponse } from './interfaces';
@@ -72,20 +72,25 @@ export class ApiBase extends Http{
    * @return null - 通信エラー
    */
   protected httpGetSeat<T>(url: string, useCache: boolean = false): Observable<T> {
+    var Zlib = require('zlibjs/bin/gunzip.min').Zlib
     if (useCache && this.cachedGetObservables[url] != undefined) {
       this._logger.debug('API GET:', url + ' [CACHED]');
       return this.cachedGetObservables[url];
     }
     this._logger.debug('API GET:', url);
-    var get = this.get(url, this.options)
+    let seat_options: RequestOptionsArgs = {};
+    seat_options.responseType = ResponseContentType.ArrayBuffer;
+    var get = this.get(url, seat_options)
       .timeout(60000)
       .map((response) => {
-        //console.log(response);
-        //解凍処理
-        //最終的にここで解凍処理（今はvenueMapに仮実装）
-        //解凍処理
-        //console.log(response.json());
-        const body = response.json();
+        var uint8array = new Uint8Array(response.arrayBuffer());
+        var gunzip = new Zlib.Gunzip(uint8array);
+        var plain = gunzip.decompress();
+        var asciistring = "";
+        for (var i = 0; i < plain.length; i++) {
+          asciistring += String.fromCharCode(plain[i]);
+        }
+        const body = JSON.parse(asciistring);
         this.cachedGetObservables[url] = Observable.of(body);
         return body;
       })

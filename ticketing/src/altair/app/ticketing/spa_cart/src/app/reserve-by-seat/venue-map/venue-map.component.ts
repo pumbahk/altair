@@ -144,6 +144,8 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
   selectedProducts: IProducts[];
   // 会場図URL
   venueURL: string;
+  // 個席データURL
+  seatDataURL: string;
   //色ナビurl
   colorNavi: string;
   // 会場図ミニマップURL
@@ -283,35 +285,11 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
 
   ngOnInit() {
     this.startTime = new Date();
-    var Zlib = require('zlibjs/bin/gunzip.min').Zlib
-    var url = '../assets/newSeatElements.gz'
-    var xhr = new XMLHttpRequest
-    xhr.open('GET', url, true)
-    xhr.responseType = 'arraybuffer'
-    xhr.send()
-
-    xhr.addEventListener('load', function () {
-      var uint8array = new Uint8Array(xhr.response);
-      var gunzip = new Zlib.Gunzip(uint8array);
-      var plain = gunzip.decompress();
-      var asciistring = "";
-      for (var i = 0; i < plain.length; i++) {
-        asciistring += String.fromCharCode(plain[i]);
-      }
-      that.seat_elements = JSON.parse(asciistring);
-    })
     const that = this;
     let drawingRegionTimer;
     let drawingSeatTimer;
     let regionIds = Array();
     this.animationEnableService.sendToRoadFlag(true);
-
-    // this.seatDataService.getSeatData().subscribe((response: any) => {
-    //   this.seat_elements = response;
-    // },
-    //   (error) => {
-    //     console.log("最終ポイントエラー");
-    //   });
 
     this.route.params.subscribe((params) => {
       if (params && params['performance_id']) {
@@ -325,6 +303,20 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
           this.performanceId = this.performance.performance_id;
           //this.venueURL = this.performance.venue_map_url;
           this.venueURL = "../assets/kobo-park-miyagi-2017-spa-no-seats.svg";
+          //this.seatDataURL = this.performance.seat_data;
+          //ダミーURL
+          this.seatDataURL = "../assets/newSeatElements.gz";
+          //ダミーURL
+
+          // 個席データ取得
+          this.seatDataService.getSeatData(this.seatDataURL).subscribe((response: any) => {
+            this.seat_elements = response;
+            console.log(this.seat_elements);
+          },
+            (error) => {
+              console.log("最終ポイントエラー");
+            });
+
           this.colorNavi = "https://s3-ap-northeast-1.amazonaws.com/tstar/cart_api/color_sample.svg";
           this.wholemapURL = this.performance.mini_venue_map_url;
           this.salesSegments = this.performance.sales_segments;

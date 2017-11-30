@@ -23,8 +23,8 @@ export class SeatDataService extends ApiBase{
    * 個席データ取得
    * @return {Observable} see http.get()
    */
-  getSeatData(): Observable<any | IErrorResponse> {
-    const url = "../../assets/newSeatElements.json";
+  getSeatData(url:string): Observable<any | IErrorResponse> {
+    //const url = "../../assets/newSeatElements.json";
     //const url = "../../assets/newSeatElements.zip";
     return this.httpGetSeat(url, false);
   }
