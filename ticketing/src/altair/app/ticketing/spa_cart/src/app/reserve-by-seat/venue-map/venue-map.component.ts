@@ -89,6 +89,11 @@ const WINDOW_SM = 768; // スマホか否かの判定に用いる
 const SIDE_HEIGHT = 200; //横画面時エラーを出す最大値
 const MAX_QUANTITY_DEFAULT = 10; // デフォルトの選択可能枚数
 
+const SEAT_EXIST_DATA_NOTHING = 1;//席あり、データなし
+const SEAT_NOTHING_DATA_EXIST = 2;//席なし、データあり
+const SEAT_EXIST_DATA_EXIST = 3;//席なし、データあり
+const SEAT_NOTHING_DATA_NOTHING = 4;//席なし、データなし
+
 @Component({
   providers: [FilterComponent, ReserveByQuantityComponent],
   selector: 'app-venue-map',
@@ -227,6 +232,8 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
   originalViewBox: any[] = null;
   //svgの座席要素の有無
   getSeatFlag = false;
+  //seatDataの有無
+  getSeatDataFlag = false;
   // 表示領域のwidthとheightを求めるため
   svgMap: any;
   D_Width: number;    // 表示領域のwidth
@@ -306,12 +313,15 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
           //this.venueURL = this.performance.venue_map_url;
           //this.seatDataURL = this.performance.seat_data;
           //ダミーURL
-          this.venueURL = "../assets/kobo-park-miyagi-2017-spa-no-seats.svg";
+          this.venueURL = this.performance.venue_map_url;
           this.seatDataURL = "../assets/newSeatElements.gz";
           //ダミーURL
 
+          if ((this.seatDataURL) && this.seatDataURL != "") {
+            this.getSeatDataFlag = true;
+          }
           // 個席データ取得
-          if (this.seatDataURL) {
+          if (this.getSeatDataFlag) {
             this.seatDataService.getSeatData(this.seatDataURL).subscribe((response: any) => {
               this.seat_elements = response;
             });
@@ -475,7 +485,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
       if (document.querySelector('.seat')) {
         that.getSeatFlag = true;
       }
-      if (that.isSeatDataGet(that.getSeatFlag, that.seatDataURL) == 2) {
+      if (that.isSeatDataGet(that.getSeatFlag, that.getSeatDataFlag) == SEAT_NOTHING_DATA_EXIST) {
         // viewBox取得　且つ　reserve-by-seatの高さが取得　且つ　seat_elements取得
         if ((that.originalViewBox) && (that.mapAreaLeftH != 0) && (Object.keys(that.seat_elements).length > 0)) {
           clearInterval(svgLoadCompleteTimer);
@@ -1512,7 +1522,8 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
 
   // SVGの座席データを[連席ID, Element]として保持してDOMツリーから削除
   saveSeatData() {
-    if (this.isSeatDataGet(this.getSeatFlag, this.seatDataURL) == 3) {
+
+    if (this.isSeatDataGet(this.getSeatFlag, this.getSeatDataFlag) == SEAT_EXIST_DATA_EXIST) {
       $('.seat').remove();
       if (!this.smartPhoneCheckService.isSmartPhone()) $('svg').find('title').remove();
       return;
