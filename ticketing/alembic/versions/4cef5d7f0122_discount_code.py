@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 """Add Enable Discount Code To Organization Setting
 
 Revision ID: 4cef5d7f0122
@@ -22,6 +24,14 @@ def upgrade():
     op.add_column('OrganizationSetting',
                   sa.Column('enable_discount_code', sa.Boolean, server_default=text('0'), nullable=False))
 
+    # イーグルスのみクーポン・割引コード設定をデフォルトでONにしておく
+    sql = """\
+        UPDATE OrganizationSetting 
+        SET enable_discount_code = 1 
+        WHERE organization_id = 24
+    """
+    op.execute(sql)
+
     op.create_table(
         'DiscountCodeSetting',
         sa.Column('id', Identifier, primary_key=True),
@@ -38,6 +48,7 @@ def upgrade():
         sa.Column('benefit_unit', sa.Unicode(1), nullable=False),
         sa.Column('start_at', sa.TIMESTAMP(), nullable=True),
         sa.Column('end_at', sa.TIMESTAMP(), nullable=True),
+        sa.Column('explanation', sa.UnicodeText, nullable=True),
         sa.Column('created_at', sa.TIMESTAMP(), server_default=sqlf.current_timestamp(), nullable=False),
         sa.Column('updated_at', sa.TIMESTAMP(), server_default=text('0'), nullable=False),
         sa.Column('deleted_at', sa.TIMESTAMP(), nullable=True),
