@@ -313,7 +313,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
           //this.venueURL = this.performance.venue_map_url;
           //this.seatDataURL = this.performance.seat_data;
           //ダミーURL
-          this.venueURL = this.performance.venue_map_url;
+          this.venueURL = "../assets/kobo-park-miyagi-2017-spa-no-seats.svg";
           this.seatDataURL = "../assets/newSeatElements.gz";
           //ダミーURL
 
@@ -1202,7 +1202,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
             }
             $(this.svgMap).find('#' + this.selectedGroupIds[i]).css({ 'fill': SEAT_COLOR_SELECTED });
             if (this.smartPhoneCheckService.isSmartPhone()) {
-              this.selectedSeatGroupNames.push(decodeURIComponent($(this.svgMap).find('#' + this.selectedGroupIds[i]).children('title').text()));
+              this.selectedSeatGroupNames.push(decodeURIComponent($(this.svgMap).find('#' + this.selectedGroupIds[i])[0].attributes[9].value));
             } else {
               this.selectedSeatGroupNames.push(decodeURIComponent($(this.svgMap).find('#' + this.selectedGroupIds[i]).attr('title')));
             }
@@ -1221,7 +1221,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
           }
           $(this.svgMap).find('#' + this.selectedGroupIds[i]).css({ 'fill': SEAT_COLOR_SELECTED });
           if (this.smartPhoneCheckService.isSmartPhone()) {
-            this.selectedSeatGroupNames.push(decodeURIComponent($(this.svgMap).find('#' + this.selectedGroupIds[i]).children('title').text()));
+            this.selectedSeatGroupNames.push(decodeURIComponent($(this.svgMap).find('#' + this.selectedGroupIds[i])[0].attributes[9].value));
           } else {
             this.selectedSeatGroupNames.push(decodeURIComponent($(this.svgMap).find('#' + this.selectedGroupIds[i]).attr('title')));
           }
@@ -1522,7 +1522,6 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
 
   // SVGの座席データを[連席ID, Element]として保持してDOMツリーから削除
   saveSeatData() {
-
     if (this.isSeatDataGet(this.getSeatFlag, this.getSeatDataFlag) == SEAT_EXIST_DATA_EXIST) {
       $('.seat').remove();
       if (!this.smartPhoneCheckService.isSmartPhone()) $('svg').find('title').remove();
