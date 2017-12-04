@@ -39,7 +39,7 @@ main .wrap-form h2 {
     background-color: var(--custom-background-color) !important;
 }
 
-main .confirm-wrap h3 {
+.lots-item h3 {
   color: var(--custom-color) !important;
   border-bottom-color: var(--custom-border-color) !important;
 }
