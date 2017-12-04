@@ -80,15 +80,28 @@ a:focus { outline: none; }
 a:hover,a.selected{ text-decoration: underline; }
 
 .selectpicker {
-    float: right;
-    margin: 5px;
-    border: 1px solid #111;
-    width: 120px;
-    padding: 5px 35px 5px 5px;
-    font-size: 14px;
-    height: 30px;
+  float: right;
+  margin: 5px;
+  border: 1px solid #111;
+  width: 120px;
+  padding: 5px 35px 5px 5px;
+  font-size: 14px;
+  height: 30px;
+
+  background-image: url(../images/arrow-down.png);
+  background-position: calc(100% - 10px) 11px;
+  background-size: 10px 10px;
+  background-repeat: no-repeat;
 }
 
 .selectwrapper {
-     height: 50px;
+  width: 950px;
+  height: 40px;
+  margin: auto;
+}
+@media only screen and (max-width: 750px) {
+  .selectwrapper {
+    width: 100%;
+    border: none;
+  }
 }

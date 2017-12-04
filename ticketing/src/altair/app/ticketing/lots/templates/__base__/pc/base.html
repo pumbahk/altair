@@ -20,6 +20,11 @@
   <body>
     <%include file="../includes/header.html" />
     <main>
+      %if request.organization.setting.i18n:
+        <div class="selectwrapper">
+          ${h.create_url(request) |n}
+        </div>
+      % endif
       ${next.body()}
     </main>
   </body>
