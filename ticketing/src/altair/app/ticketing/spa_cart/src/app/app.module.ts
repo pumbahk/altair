@@ -31,6 +31,7 @@ import { ErrorModalDataService } from './shared/services/error-modal-data.servic
 import { CountSelectService } from './shared/services/count-select.service';
 import { SmartPhoneCheckService } from './shared/services/smartPhone-check.service';
 import { SelectProductBrouserBackService } from './shared/services/select-product-browser-back.service';
+import { ReserveBySeatBrouserBackService } from './shared/services/reserve-by-seat-browser-back.service';
 //Ng-inline-svg
 import { InlineSVGModule } from 'ng-inline-svg';
 //Primeng
@@ -44,7 +45,7 @@ import { Logger, Options } from 'angular2-logger/core';
 import { environment }    from '../environments/environment';
 
 const routes: Routes = [
-  { path: 'performances/:performance_id',component: ReserveBySeatComponent },
+  { path: 'performances/:performance_id',component: ReserveBySeatComponent, canDeactivate:[ReserveBySeatBrouserBackService] },
   { path: 'performances/:performance_id/reserve-by-quantity/:stock_type_id', component: ReserveByQuantityComponent },
   { path: 'performances/:performance_id/select-product', component: SelectProductComponent, canDeactivate:[SelectProductBrouserBackService] },
   { path: 'payment/', component: PaymentComponent },
@@ -96,7 +97,8 @@ const routes: Routes = [
     AnimationEnableService,
     CountSelectService,
     SmartPhoneCheckService,
-    SelectProductBrouserBackService
+    SelectProductBrouserBackService,
+    ReserveBySeatBrouserBackService
   ],
   bootstrap: [
     AppComponent

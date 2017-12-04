@@ -56,6 +56,7 @@ import { ErrorModalDataService } from '../../shared/services/error-modal-data.se
 import { AnimationEnableService } from '../../shared/services/animation-enable.service';
 import { CountSelectService } from '../../shared/services/count-select.service';
 import { SmartPhoneCheckService } from '../../shared/services/smartPhone-check.service';
+import { ReserveBySeatBrouserBackService } from '../../shared/services/reserve-by-seat-browser-back.service';
 
 // jquery
 import * as $ from 'jquery';
@@ -118,6 +119,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
     private animationEnableService: AnimationEnableService,
     private countSelectService: CountSelectService,
     private smartPhoneCheckService: SmartPhoneCheckService,
+    private reserveBySeatBrouserBackService: ReserveBySeatBrouserBackService,
     private _logger: Logger) {
     this.element = this.el.nativeElement;
   }
@@ -266,6 +268,9 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
 
   //ツールチップ用席種
   tooltipStockType: {name: string; min: number; max: number; region: string[]}[] = [];
+
+  //ブラウザバックフラグ
+  returnFlag = false;
 
   ngOnInit() {
     const that = this;
@@ -828,6 +833,28 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
         }
       }, 200);
     });
+
+    //セッションストレージに履歴数を保持
+    if (!sessionStorage.getItem('historyCount')) {
+      sessionStorage.setItem('historyCount', history.length.toString());
+    }
+
+    //商品選択へのブラウザバック
+    this.reserveBySeatBrouserBackService.modal.subscribe((value)=>{
+      that.confirmReturn();
+    });
+
+    //他画面へのブラウザバック
+    history.pushState(null,null,null);
+    window.addEventListener('popstate', function (e) {
+      that.confirmReturn();
+      if (navigator.userAgent.match(/crios/i)) {
+        // TODO ios+chrome対応
+        history.forward();
+      } else {
+        history.pushState(null, null, null);
+      }
+    }, false);
   }
 
   ngOnDestroy() {
@@ -1756,6 +1783,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
             this.seatUpdate();  // 座席情報最新化
           } else {
             this.animationEnableService.sendToRoadFlag(false);
+            this.reserveBySeatBrouserBackService.deactivate = true;
             this.router.navigate(['performances/' + this.performanceId + '/select-product/']);
           }
         },
@@ -1876,6 +1904,31 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
           });
         }, 100);
       }
+    }
+  }
+
+  //ブラウザバック確認モーダルを出す
+  public confirmReturn() {
+    this.confirmStockType = true;
+    this.returnFlag = true;
+  }
+
+  //直前のサイトへ戻る
+  returnPrevious() {
+    window.removeEventListener('popstate');
+    let backCount = -(history.length - Number(sessionStorage.getItem('historyCount')) + 1);
+    sessionStorage.removeItem('historyCount');
+
+    var userAgent = window.navigator.userAgent.toLowerCase();
+    if(userAgent.indexOf('msie') != -1 || userAgent.indexOf('trident') != -1) {
+      window.addEventListener('popstate', function(){
+        history.go(backCount);
+      });
+      history.go(-(this.reserveBySeatBrouserBackService.selectProductCount + 1));
+    } else if(userAgent.indexOf('crios') != -1) {
+      history.go(backCount + this.reserveBySeatBrouserBackService.selectProductCount + 1);
+    } else {
+      history.go(backCount);
     }
   }
 }

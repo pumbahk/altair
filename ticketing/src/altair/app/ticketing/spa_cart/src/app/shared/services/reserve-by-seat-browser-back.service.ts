@@ -1,23 +1,29 @@
 import { Injectable } from '@angular/core';
 import { CanDeactivate, ActivatedRouteSnapshot, RouterStateSnapshot, Router } from '@angular/router';
-import { Observable } from 'rxjs/Observable';
-import { SelectProductComponent } from '../../select-product/select-product.component';
+import { Observable,Subject } from 'rxjs';
+import { ReserveBySeatComponent } from '../../reserve-by-seat/reserve-by-seat.component';
 
 @Injectable()
-export class SelectProductBrouserBackService implements CanDeactivate<SelectProductComponent> {
+export class ReserveBySeatBrouserBackService implements CanDeactivate<ReserveBySeatComponent> {
   constructor(
-    private router: Router,
+    private router: Router
     ) {
   }
+
+  public deactivate: boolean = true;
+  public modal = new Subject<any>();
+  //IE、iOS+chrome用商品選択遷移回数
+  public selectProductCount: number = 0;
+
   canDeactivate(
-    component: SelectProductComponent,
+    component: ReserveBySeatComponent,
     route: ActivatedRouteSnapshot,
     state: RouterStateSnapshot
   ): Observable<boolean>|Promise<boolean>|boolean {
-    if (component.deactivate) {
+    if (this.deactivate) {
       return true;
     } else {
-      component.confirmReturn();
+      this.modal.next();
       //iOS+chromeの場合進む、それ以外の場合履歴を追加
       if (navigator.userAgent.match(/crios/i)) {
         history.forward();

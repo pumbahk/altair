@@ -14,6 +14,7 @@ import { SeatsService } from '../shared/services/seats.service';
 import { CountSelectService } from '../shared/services/count-select.service';
 import { AnimationEnableService } from '../shared/services/animation-enable.service';
 import { SmartPhoneCheckService } from '../shared/services/smartPhone-check.service';
+import { ReserveBySeatBrouserBackService } from '../shared/services/reserve-by-seat-browser-back.service';
 //interface
 import { IPerformance, IPerformanceInfoResponse,
          IStockTypeResponse, IStockTypesResponse, IStockType,
@@ -130,6 +131,7 @@ export class ReserveByQuantityComponent implements OnInit {
     private countSelectService: CountSelectService,
     private animationEnableService: AnimationEnableService,
     private smartPhoneCheckService: SmartPhoneCheckService,
+    private reserveBySeatBrouserBackService: ReserveBySeatBrouserBackService,
     private _logger: Logger
   ) {
   }
@@ -319,12 +321,14 @@ export class ReserveByQuantityComponent implements OnInit {
                   } else {
                     this.animationEnableService.sendToRoadFlag(false);
                     this.scrollAddCss();
+                    this.reserveBySeatBrouserBackService.deactivate = true;
                     this.router.navigate(["performances/" + this.performanceId + '/select-product/']);
                   }
                 }
                 //OKの場合、商品選択へ画面遷移
                 this.animationEnableService.sendToRoadFlag(false);
                 this.scrollAddCss();
+                this.reserveBySeatBrouserBackService.deactivate = true;
                 this.router.navigate(["performances/" + this.performanceId + '/select-product/']);
               } else {
                 this.animationEnableService.sendToRoadFlag(false);
@@ -398,6 +402,7 @@ export class ReserveByQuantityComponent implements OnInit {
   separatedNext() {
     this.animationEnableService.sendToRoadFlag(false);
     $('#reservebutton').prop("disabled", false);
+    this.reserveBySeatBrouserBackService.deactivate = true;
     this.router.navigate(['performances/' + this.performanceId + '/select-product/']);
   }
 

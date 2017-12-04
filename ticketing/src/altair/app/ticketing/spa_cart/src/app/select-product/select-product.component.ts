@@ -11,6 +11,7 @@ import { ErrorModalDataService } from '../shared/services/error-modal-data.servi
 import { SelectProductService } from '../shared/services/select-product.service';
 import { SmartPhoneCheckService } from '../shared/services/smartPhone-check.service';
 import { AnimationEnableService } from '../shared/services/animation-enable.service';
+import { ReserveBySeatBrouserBackService } from '../shared/services/reserve-by-seat-browser-back.service';
 //interface
 import {
         ISeatsReserveResponse,ISeatsReleaseResponse,IResult,
@@ -102,6 +103,7 @@ export class SelectProductComponent implements OnInit {
     private errorModalDataService: ErrorModalDataService,
     private smartPhoneCheckService: SmartPhoneCheckService,
     private animationEnableService: AnimationEnableService,
+    private reserveBySeatBrouserBackService: ReserveBySeatBrouserBackService,
     private _logger: Logger) {
     this.response = this.seatStatus.seatReserveResponse;
   }
@@ -113,6 +115,7 @@ export class SelectProductComponent implements OnInit {
       that.cancel();
       that.timeout();
     });
+    this.reserveBySeatBrouserBackService.selectProductCount++;
     if (!this.response) {
       this.route.params.subscribe((params) => {
         if (params && params['performance_id']) {
@@ -417,8 +420,8 @@ export class SelectProductComponent implements OnInit {
   }
 
   //ブラウザバック、キャンセルボタン押下
-  public confirmReturn(push) {
-    this.modalTitle = push + 'が押されました';
+  public confirmReturn() {
+    this.modalTitle = 'キャンセル';
     this.modalMessage = '選択した座席がキャンセルされますが宜しいですか？';
     this.returnFlag = true;
     this.modalVisible = true;
@@ -427,6 +430,7 @@ export class SelectProductComponent implements OnInit {
   //確認モーダルで「はい」押下（座席開放API）
   private cancel() {
     this.deactivate = true;
+    this.reserveBySeatBrouserBackService.deactivate = false;
     this.seatStatus.seatRelease(this.performanceId)
       .subscribe((response: ISeatsReleaseResponse) => {
         this._logger.debug(`seat release(#${this.performanceId}) success`, response);

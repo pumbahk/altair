@@ -67,7 +67,7 @@
             <p class="buySeatText"><span class="priceText">合計金額：￥{{fee}}</span><span class="variousText">+ 各種手数料</span></p>
           </div>
           <div id="productSelectBtn">
-              <button type="reset" id="reset" name="" value="キャンセル" form="buySeatForm" (click)="confirmReturn('キャンセル')">キャンセル</button>
+              <button type="reset" id="reset" name="" value="キャンセル" form="buySeatForm" (click)="confirmReturn()">キャンセル</button>
               <button type="submit" id="submit" name="" value="次へ" form="buySeatForm" (click)="purchase()">次へ</button>
           </div>
         </div>
@@ -104,7 +104,7 @@
              <p class="buySeatText"><span class="priceText">合計金額：￥{{fee}}</span><span class="variousText">+ 各種手数料</span></p>
           </div>
           <div id="productSelectBtn">
-              <button type="reset" name="" value="キャンセル" form="buySeatForm" (click)="confirmReturn('キャンセル')">キャンセル</button>
+              <button type="reset" name="" value="キャンセル" form="buySeatForm" (click)="confirmReturn()">キャンセル</button>
               <button type="submit" name="" value="次へ" form="buySeatForm" (click)="purchase()">次へ</button>
           </div>
         </div>
