@@ -76,7 +76,7 @@ thisyear = datetime.now().strftime('%Y')
           <ul class="info-list-box">
             <li class="info-list">
               <h3 class="sub-ttl">注意事項</h3>
-              <p class="info-txt">■会員の方も、受付番号（REから始まる12ケタ）から確認することができます。<br>■会員ID・パスワードは半角でご入力ください。</p>
+              <p class="info-txt">■会員ID・パスワードは半角でご入力ください。</p>
             </li>
             <li class="info-list">
               <h3 class="sub-ttl">お問い合わせ</h3>
