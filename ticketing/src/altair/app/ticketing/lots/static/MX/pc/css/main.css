@@ -32,6 +32,7 @@ header .head {
   height: 60px;
   margin: 0;
   padding: 0;
+  background: #000;
 }
 header h1 {
   text-align: left;
@@ -41,7 +42,6 @@ header h1 {
 header h1 img {
   border-radius: 5px;
   background: #ffffff;
-  padding: 5px;
   vertical-align: middle !important;
   height: 100%;
 }
