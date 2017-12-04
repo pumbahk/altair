@@ -29,5 +29,21 @@
     <th class="span3">${form.enable_point_input.label.text}</th>
     <td>${u'有効' if membership.enable_point_input else u'無効'}</td>
   </tr>
+  <tr>
+    <th class="span3">${form.login_body_disp_agreement.label.text}</th>
+    <td>${u'有効' if membership.login_body_disp_agreement else u'無効'}</td>
+  </tr>
+  <tr>
+    <th class="span3">${form.login_body_pc.label.text}</th>
+     <td>${membership.login_body_pc}</td>
+  </tr>
+  <tr>
+    <th class="span3">${form.login_body_smartphone.label.text}</th>
+     <td>${membership.login_body_smartphone}</td>
+  </tr>
+  <tr>
+    <th class="span3">${form.login_body_mobile.label.text}</th>
+     <td>${membership.login_body_mobile}</td>
+  </tr>
   </tbody>
 </table>

@@ -23,6 +23,7 @@ class OverridableTemplateRendererHelperFactory(object):
             their_package=their_package,
             organization_short_name=(view_context.organization_short_name or "__default__"),
             membership=(view_context.membership or "__default__"),
+            login_body=("__fc_auth__" if view_context.membership_login_body else u''),
             ua_type=view_context.ua_type,
             path=path
             )

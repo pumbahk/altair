@@ -55,7 +55,12 @@ class MembershipView(BaseView):
                                         organization_id=form.data["organization_id"],
                                         enable_auto_input_form=form.data['enable_auto_input_form'],
                                         enable_point_input=form.data['enable_point_input'],
-                                        memo=form.data['memo'])
+                                        memo=form.data['memo'],
+                                        login_body_disp_agreement=form.data['login_body_disp_agreement'],
+                                        login_body_pc=form.data['login_body_pc'],
+                                        login_body_smartphone=form.data['login_body_smartphone'],
+                                        login_body_mobile=form.data['login_body_mobile']
+                                        )
         DBSession.add(membership)
         self.request.session.flash(u"membershipを保存しました")
         return HTTPFound(self.request.route_url("memberships", action="index", membership_id="*"))
@@ -83,6 +88,10 @@ class MembershipView(BaseView):
         membership.memo=form.data['memo']
         membership.enable_auto_input_form=form.data["enable_auto_input_form"]
         membership.enable_point_input=form.data["enable_point_input"]
+        membership.login_body_disp_agreement = form.data["login_body_disp_agreement"]
+        membership.login_body_pc = form.data["login_body_pc"]
+        membership.login_body_smartphone = form.data["login_body_smartphone"]
+        membership.login_body_mobile = form.data["login_body_mobile"]
 
         DBSession.add(membership)
         self.request.session.flash(u"membershipを編集しました")

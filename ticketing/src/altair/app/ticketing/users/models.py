@@ -219,6 +219,10 @@ class Membership(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     display_name = AnnotatedColumn(String(255), _a_label=_(u'表示名'))
     enable_auto_input_form = AnnotatedColumn(Boolean, default=True, server_default='1', nullable=False, _a_label=_(u'自動フォーム入力'))
     enable_point_input = AnnotatedColumn(Boolean, default=True, server_default='1', nullable=False, _a_label=_(u'楽天ポイント手入力'))
+    login_body_disp_agreement = AnnotatedColumn(Boolean, default=True, _a_label=_(u'ログイン画面の表示/非表示'))
+    login_body_pc = Column(MutationDict.as_mutable(JSONEncodedDict(65536)))
+    login_body_smartphone = Column(MutationDict.as_mutable(JSONEncodedDict(65536)))
+    login_body_mobile = Column(MutationDict.as_mutable(JSONEncodedDict(65536)))
     #sales_segments = lambda:relationship('SalesSegment', secondary=Membership_SalesSegment.__table__, backref='memberships')
     status = Column(Integer)
 
