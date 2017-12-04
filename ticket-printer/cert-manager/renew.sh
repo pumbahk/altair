@@ -39,7 +39,7 @@ else
   keytool -list -keystore $BASEDIR/$DEST -storepass $KEYSTORE_PASSWORD -v -J-Duser.language=en | egrep -e "Alias|Valid|CN=|\*" | uniq
 
   /bin/echo -n "Uploading keystore to S3... "
-  aws s3 cp $BASEDIR/$DEST $KEYSTORE_LOCATION
+  aws s3 cp $BASEDIR/$DEST $KEYSTORE_LOCATION --acl public-read
   rm $BASEDIR/$DEST
 fi
 
