@@ -22,7 +22,7 @@ class DiscountCodeSettingForm(Form):
             self.following_2to4_digits.validators = [Optional()]
 
     @staticmethod
-    def _get_translations(self):
+    def _get_translations(s):
         return Translations()
 
     def _check_prefix(self):

@@ -30,4 +30,3 @@ class DiscountCodeSettingResource(TicketingAdminResource):
             if self.request.POST['issued_by'] != 'own':
                 self.request.POST['first_digit'] = u''
                 self.request.POST['following_2to4_digits'] = u''
-
