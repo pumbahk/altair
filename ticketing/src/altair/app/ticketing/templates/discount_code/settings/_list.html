@@ -1,6 +1,6 @@
 <%page args="form, settings" />
 <%namespace file="/common/helpers.html" name="ch" />
-<%! from altair.app.ticketing.discount_code.models import CodeOrganaizerEnum %>
+<%! from altair.app.ticketing.discount_code.models import CodeOrganizerEnum %>
 
 <p>※ 状態が「無効」になっている場合は、アイコンにカーソルを乗せると理由が表示されます。</p>
 <div style="margin-right: 10px;">
@@ -47,7 +47,7 @@
                 <td style="text-align: center;">
                     <div>
                         <button class="btn btn-info btn-mini" type="button"
-                                onclick="javascript:confirm_open_performance(48594);">有　効
+                                onclick="confirm_open_performance(48594);">有　効
                         </button>
                     </div>
                 </td>
@@ -64,7 +64,7 @@
                     ${vh.datetime(setting.end_at, with_weekday=True)}
                     %endif
                 </td>
-                <td>${''.join([enum.v[1] for enum in CodeOrganaizerEnum if enum.v[0] == setting.issued_by])}</td>
+                <td>${''.join([enum.v[1] for enum in CodeOrganizerEnum if enum.v[0] == setting.issued_by])}</td>
                 <td style="width: 1%; white-space: nowrap;">
                   <%include file="/discount_code/settings/_action_button.html" args="setting=setting, order=['edit', 'target', 'delete'], small=True, split=True"/>
                 </td>

@@ -21,8 +21,7 @@ class DiscountCodeSettingForm(Form):
             self.first_digit.validators = [Optional()]
             self.following_2to4_digits.validators = [Optional()]
 
-    @staticmethod
-    def _get_translations(s):
+    def _get_translations(self):
         return Translations()
 
     def _check_prefix(self):
