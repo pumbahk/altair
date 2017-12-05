@@ -10,13 +10,19 @@
 
     <!-- Cascading Style Sheets -->
     <link rel="shortcut icon" href="${view_context.static_url('smartphone/images/favicon.ico', 'lots')}">
-    <link rel="stylesheet" href="${view_context.static_url('smartphone/css/review/sanitize.css', 'lots')}" type="text/css" media="all">
-    <link rel="stylesheet" href="${view_context.static_url('smartphone/css/review/import.css', 'lots')}" type="text/css" media="all">
+    <link rel="stylesheet" href="${request.static_url('altair.app.ticketing.lots:static/__base__/smartphone/css/review/import.css')}" type="text/css" media="all">
     <link rel="stylesheet" href="${view_context.static_url('smartphone/css/review/custom.css', 'lots')}" type="text/css" media="all">
+
+
   </head>
 
   <body>
     <%include file="../includes/header.html" />
+    <div class="selectwrapper">
+      % if request.organization.setting.i18n:
+      ${h.create_url_link(request) |n}
+      % endif
+    </div>
     <main>
       ${next.body()}
     </main>

@@ -32,6 +32,7 @@ header .head {
   height: 60px;
   margin: 0;
   padding: 0;
+  background: #000;
 }
 header h1 {
   text-align: left;
@@ -41,7 +42,6 @@ header h1 {
 header h1 img {
   border-radius: 5px;
   background: #ffffff;
-  padding: 5px;
   vertical-align: middle !important;
   height: 100%;
 }
@@ -149,15 +149,15 @@ a.btn:hover {
 -------------------------------------------- */
 input[type="text"],
 input[type="password"],
-input[type="email"],
-select {
-	-webkit-border-radius: 3px;
+input[type="email"] {
+  -webkit-border-radius: 3px;
 	-moz-border-radius: 3px;
 	border-radius: 3px;
 	border: 1px solid #CCC;
 	background: #f4f3f1;
-	padding: 5px;
+  padding: 5px;
 }
+
 input[type="text"]:focus { background: #FFF; }
 input[type="password"]:focus { background: #FFF; }
 input[type="email"]:focus { background: #FFF; }
@@ -239,6 +239,20 @@ input[type=checkbox]:checked + label::after {
 	-webkit-transform: rotate(-45deg);
 	-ms-transform: rotate(-45deg);
 	transform: rotate(-45deg);
+}
+
+select {
+	-webkit-border-radius: 3px;
+	-moz-border-radius: 3px;
+	border-radius: 3px;
+	border: 1px solid #CCC;
+	background: #f4f3f1;
+  padding: 5px 30px 5px 5px;
+
+  background-image: url(../images/arrow-down.png);
+  background-position: calc(100% - 10px) 11px;
+  background-size: 10px 10px;
+  background-repeat: no-repeat;
 }
 
 /* table
@@ -347,7 +361,6 @@ main {
     background: #fff;
 }
 .settlementSelectBox select {
-    padding: 5px;
     border: 1px solid #CCC;
 }
 .settlementPayBox {
@@ -419,14 +432,10 @@ main {
 }
 .lots-item label {
   display: inline-block;
-  width: 16%;
 }
 .lots-item input[type="text"],
 .lots-item input[type="email"] {
   margin: 3px;
-}
-.lots-item select {
-  margin: 1.5px 0;
 }
 
 .lots-item .checkbox-set label,

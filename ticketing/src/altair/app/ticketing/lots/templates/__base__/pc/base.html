@@ -10,8 +10,7 @@
 
     <!-- Cascading Style Sheets -->
     <link rel="shortcut icon" href="${view_context.static_url('pc/images/favicon.ico', 'lots')}">
-    <link rel="stylesheet" href="${view_context.static_url('pc/css/sanitize.css', 'lots')}" type="text/css" media="all">
-    <link rel="stylesheet" href="${view_context.static_url('pc/css/import.css', 'lots')}" type="text/css" media="all">
+    <link rel="stylesheet" href="${request.static_url('altair.app.ticketing.lots:static/__base__/pc/css/import.css')}" type="text/css" media="all">
     <link rel="stylesheet" href="${view_context.static_url('pc/css/custom.css', 'lots')}" type="text/css" media="all">
 
     <script type="text/javascript" src="${request.static_url('altair.app.ticketing.lots:static/common/js/jquery.js')}"></script>
@@ -21,6 +20,11 @@
   <body>
     <%include file="../includes/header.html" />
     <main>
+      %if request.organization.setting.i18n:
+        <div class="selectwrapper">
+          ${h.create_url(request) |n}
+        </div>
+      % endif
       ${next.body()}
     </main>
   </body>

@@ -1,6 +1,11 @@
 <%inherit file="../base.html" />
 
 <main>
+  %if request.organization.setting.i18n:
+    <div class="selectwrapper">
+      ${h.create_url(request) |n}
+    </div>
+  % endif
   <div id="content" class="wrap-form">
     <article>
       <h2>申込確認</h2>
