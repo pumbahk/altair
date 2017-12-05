@@ -5,7 +5,7 @@ from sqlalchemy.orm.exc import NoResultFound
 
 
 def is_enabled_discount_code_checked(context, request):
-    '''クーポン・割引コードの使用設定がONになっているか確認'''
+    """クーポン・割引コードの使用設定がONになっているか確認"""
     organization_id = context.user.organization.id
     try:
         context.session.query(OrganizationSetting) \

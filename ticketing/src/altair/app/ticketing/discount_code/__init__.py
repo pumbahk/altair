@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from altair.app.ticketing import newRootFactory
 
+
 def includeme(config):
     from .resources import DiscountCodeSettingResource
     dcs_factory = newRootFactory(DiscountCodeSettingResource)

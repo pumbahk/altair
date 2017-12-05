@@ -21,14 +21,15 @@ logger = logging.getLogger(__name__)
                permission='event_editor',
                custom_predicates=(is_enabled_discount_code_checked,))
 class DiscountCodeSettings(BaseView):
-    @view_config(route_name='discount_code_settings.index', renderer='altair.app.ticketing:templates/discount_code/settings/index.html', permission='event_viewer')
+    @view_config(route_name='discount_code_settings.index',
+                 renderer='altair.app.ticketing:templates/discount_code/settings/index.html', permission='event_viewer')
     def index(self):
         sort = self.request.GET.get('sort', 'DiscountCodeSetting.end_at')
         direction = self.request.GET.get('direction', 'desc')
 
         query = DiscountCodeSetting.query.filter_by(organization_id=self.context.user.organization_id)
         query = query.order_by(sort + ' ' + direction) \
-                     .order_by('DiscountCodeSetting.id desc')
+            .order_by('DiscountCodeSetting.id desc')
 
         settings = paginate.Page(
             query,
@@ -42,7 +43,8 @@ class DiscountCodeSettings(BaseView):
             'settings': settings,
         }
 
-    @view_config(route_name='discount_code_settings.new', request_method='GET', renderer='altair.app.ticketing:templates/discount_code/settings/_form.html', xhr=True)
+    @view_config(route_name='discount_code_settings.new', request_method='GET',
+                 renderer='altair.app.ticketing:templates/discount_code/settings/_form.html', xhr=True)
     def new(self):
         f = DiscountCodeSettingForm()
         return {
@@ -50,7 +52,8 @@ class DiscountCodeSettings(BaseView):
             'action': self.request.path,
         }
 
-    @view_config(route_name='discount_code_settings.new', request_method='POST', renderer='altair.app.ticketing:templates/discount_code/settings/_form.html', xhr=True)
+    @view_config(route_name='discount_code_settings.new', request_method='POST',
+                 renderer='altair.app.ticketing:templates/discount_code/settings/_form.html', xhr=True)
     def new_post(self):
         f = DiscountCodeSettingForm(self.request.POST, organization_id=self.context.user.organization.id)
 
@@ -70,18 +73,19 @@ class DiscountCodeSettings(BaseView):
                 start_at=f.data['start_at'],
                 end_at=f.data['end_at'],
                 explanation=f.data['explanation'],
-                )
+            )
             setting.save()
 
             self.request.session.flash(u'クーポン・割引コード設定を保存しました')
             return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
         else:
             return {
-                'form':f,
+                'form': f,
                 'action': self.request.path,
             }
 
-    @view_config(route_name='discount_code_settings.edit', request_method='GET', renderer='altair.app.ticketing:templates/discount_code/settings/_form.html', xhr=True)
+    @view_config(route_name='discount_code_settings.edit', request_method='GET',
+                 renderer='altair.app.ticketing:templates/discount_code/settings/_form.html', xhr=True)
     def edit(self):
         setting_id = int(self.request.matchdict.get('setting_id', 0))
         setting = DiscountCodeSetting.query.filter_by(id=setting_id).filter_by(
@@ -95,8 +99,8 @@ class DiscountCodeSettings(BaseView):
             'action': self.request.path,
         }
 
-
-    @view_config(route_name='discount_code_settings.edit', request_method='POST', renderer='altair.app.ticketing:templates/discount_code/settings/_form.html', xhr=True)
+    @view_config(route_name='discount_code_settings.edit', request_method='POST',
+                 renderer='altair.app.ticketing:templates/discount_code/settings/_form.html', xhr=True)
     def edit_post(self):
         setting_id = int(self.request.matchdict.get('setting_id', 0))
         setting = DiscountCodeSetting.query.filter_by(id=setting_id).filter_by(
@@ -114,10 +118,9 @@ class DiscountCodeSettings(BaseView):
             return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
         else:
             return {
-                'form':f,
+                'form': f,
                 'action': self.request.path,
             }
-
 
     @view_config(route_name='discount_code_settings.delete')
     def delete(self):

@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
 
+from altair.formhelpers import Translations, DateTimeFormat
+from altair.formhelpers.fields import OurDateTimeField, OurSelectField
+from altair.formhelpers.validators import Required, SwitchOptional
+from altair.saannotation import get_annotations_for
 from wtforms import Form
 from wtforms import TextField, HiddenField, SelectField, BooleanField, TextAreaField
 from wtforms.validators import Length, Optional, ValidationError
-from altair.formhelpers.validators import Required, SwitchOptional
-from altair.formhelpers import Translations, DateTimeFormat
-from altair.formhelpers.fields import OurDateTimeField, OurSelectField
-from altair.saannotation import get_annotations_for
-from .models import CodeOrganaizerEnum, DiscountCodeSetting
+from .models import CodeOrganizerEnum, DiscountCodeSetting
+
 
 class DiscountCodeSettingForm(Form):
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
@@ -20,6 +21,7 @@ class DiscountCodeSettingForm(Form):
             self.first_digit.validators = [Optional()]
             self.following_2to4_digits.validators = [Optional()]
 
+    @staticmethod
     def _get_translations(self):
         return Translations()
 
@@ -45,10 +47,10 @@ class DiscountCodeSettingForm(Form):
         if cnt > limit:
             raise ValidationError(u'すでに使用されている組み合わせです')
 
-    def validate_first_digit(self, field):
+    def validate_first_digit(self):
         self._check_prefix()
 
-    def validate_following_2to4_digits(self, field):
+    def validate_following_2to4_digits(self):
         self._check_prefix()
 
     id = HiddenField(
@@ -69,9 +71,9 @@ class DiscountCodeSettingForm(Form):
     )
     issued_by = OurSelectField(
         label=get_annotations_for(DiscountCodeSetting.issued_by)['label'],
-        default=CodeOrganaizerEnum.own.v[1],
+        default=CodeOrganizerEnum.own.v[1],
         validators=[Required()],
-        choices=[code_organaizer.v for code_organaizer in CodeOrganaizerEnum],
+        choices=[code_organizer.v for code_organizer in CodeOrganizerEnum],
         coerce=str
     )
     first_digit = SelectField(
@@ -150,4 +152,3 @@ class DiscountCodeSettingForm(Form):
     valid_term = HiddenField(
         label=u'有効期間',
     )
-

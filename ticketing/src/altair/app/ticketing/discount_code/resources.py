@@ -20,12 +20,12 @@ class DiscountCodeSettingResource(TicketingAdminResource):
         self._upper_following_2to4_digits()
 
     def _upper_following_2to4_digits(self):
-        '''POSTされたパラメータを大文字に変更'''
+        """POSTされたパラメータを大文字に変更"""
         if 'following_2to4_digits' in self.request.POST:
             self.request.POST['following_2to4_digits'] = self.request.POST['following_2to4_digits'].upper()
 
     def _make_empty_first_4_digits_if_needed(self):
-        '''コード管理元が自社でなければ頭4文字は空にする'''
+        """コード管理元が自社でなければ頭4文字は空にする"""
         if 'issued_by' in self.request.POST:
             if self.request.POST['issued_by'] != 'own':
                 self.request.POST['first_digit'] = u''
