@@ -1,0 +1,20 @@
+header .head {
+    background-color: #2B6A99 !important;
+}
+
+main #content.subpage h2 {
+  background: #0B3458 !important;
+}
+
+main #content.subpage h3 {
+  color: #0B3458 !important;
+}
+
+main #content.subpage .btn {
+  background: #2B6A99 !important;
+}
+
+main #content.subpage .btn:hover {
+  background: #2B6A99 !important;
+  opacity: 0.7 !important;
+}
