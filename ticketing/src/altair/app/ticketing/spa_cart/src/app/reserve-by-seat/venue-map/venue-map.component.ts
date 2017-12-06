@@ -845,11 +845,18 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
     });
 
     //他画面へのブラウザバック
-    history.pushState(null,null,null);
+    if (navigator.userAgent.match(/crios/i)) {
+      $(document).on('click', function(){
+        history.pushState(null,null,null);
+        $(document).off('click');
+      });
+    } else {
+      history.pushState(null,null,null);
+    }
+
     window.addEventListener('popstate', function (e) {
       that.confirmReturn();
       if (navigator.userAgent.match(/crios/i)) {
-        // TODO ios+chrome対応
         history.forward();
       } else {
         history.pushState(null, null, null);
@@ -1925,8 +1932,6 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
         history.go(backCount);
       });
       history.go(-(this.reserveBySeatBrouserBackService.selectProductCount + 1));
-    } else if(userAgent.indexOf('crios') != -1) {
-      history.go(backCount + this.reserveBySeatBrouserBackService.selectProductCount + 1);
     } else {
       history.go(backCount);
     }
