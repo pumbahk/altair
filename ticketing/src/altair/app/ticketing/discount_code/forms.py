@@ -25,6 +25,12 @@ class DiscountCodeSettingForm(Form):
         return Translations()
 
     def _check_prefix(self):
+        """
+        入力された4桁の接頭辞の妥当性を確認。
+        コード管理元が自社でない場合は、接頭辞は空文字であること。
+        自社の場合は、新たに登録しようとしている組み合わせが存在しないことを確認する。
+        :return: エラーメッセージ
+        """
         if self.issued_by.data != 'own':
             len_first_digit = len(self.first_digit.data)
             len_following = len(self.following_2to4_digits.data)
@@ -33,6 +39,21 @@ class DiscountCodeSettingForm(Form):
             else:
                 raise ValidationError(u'コード管理元が自社でない場合、接頭辞は指定できません')
 
+        # 既存の設定の編集時（Hiddenで渡されるIDの有無で判断）
+        if len(self.id.data) != 0:
+            query = DiscountCodeSetting.filter_by(
+                id=self.id.data,
+                organization_id=self.organization_id,
+                first_digit=self.first_digit.data,
+                following_2to4_digits=self.following_2to4_digits.data
+            )
+            cnt = int(query.count())
+            limit = 1
+            if cnt == limit:
+                # 既存の設定の接頭辞を編集しなかった場合、ここでリターン
+                return True
+
+        # 新規に設定を登録する場合、あるいは編集時に別の接頭辞に変更する場合
         query = DiscountCodeSetting.filter_by(
             organization_id=self.organization_id,
             first_digit=self.first_digit.data,
@@ -40,16 +61,15 @@ class DiscountCodeSettingForm(Form):
         )
         cnt = int(query.count())
         limit = 0
-        if len(self.id.data) != 0:
-            limit = 1
-
         if cnt > limit:
             raise ValidationError(u'すでに使用されている組み合わせです')
 
-    def validate_first_digit(self):
+        return True
+
+    def validate_first_digit(self, request):
         self._check_prefix()
 
-    def validate_following_2to4_digits(self):
+    def validate_following_2to4_digits(self, request):
         self._check_prefix()
 
     id = HiddenField(

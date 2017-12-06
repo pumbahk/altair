@@ -28,7 +28,7 @@ class DiscountCodeSettings(BaseView):
         direction = self.request.GET.get('direction', 'desc')
 
         query = DiscountCodeSetting.query.filter_by(organization_id=self.context.user.organization_id)
-        query = query.order_by(sort + ' ' + direction) \
+        query = query.order_by('{0} {1}'.format(sort, direction)) \
             .order_by('DiscountCodeSetting.id desc')
 
         settings = paginate.Page(
