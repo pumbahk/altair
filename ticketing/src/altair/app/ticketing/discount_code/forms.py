@@ -7,7 +7,7 @@ from altair.saannotation import get_annotations_for
 from wtforms import Form
 from wtforms import TextField, HiddenField, SelectField, BooleanField, TextAreaField
 from wtforms.validators import Length, Optional, ValidationError
-from .models import CodeOrganizerEnum, DiscountCodeSetting
+from .models import CodeOrganizerEnum, DiscountCodeSetting, DiscountCodeCode
 
 
 class DiscountCodeSettingForm(Form):
@@ -165,9 +165,48 @@ class DiscountCodeSettingForm(Form):
     status = HiddenField(
         label=u'状態',
     )
-    first_4_digits = HiddenField(
-        label=u'頭4文字',
+
+
+class DiscountCodeCodesForm(Form):
+    def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
+        Form.__init__(self, formdata, obj, prefix, **kwargs)
+        if 'organization_id' in kwargs:
+            self.organization_id = kwargs['organization_id']
+
+    id = HiddenField(
+        label=u'ID',
+        validators=[Optional()],
     )
-    valid_term = HiddenField(
-        label=u'有効期間',
+    discount_code_setting_id = HiddenField(
+        label=get_annotations_for(DiscountCodeCode.discount_code_setting_id)['label'],
+        validators=[Optional()],
+    )
+    organization_id = HiddenField(
+        label=get_annotations_for(DiscountCodeCode.organization_id)['label'],
+        validators=[Optional()],
+    )
+    operator_id = HiddenField(
+        label=get_annotations_for(DiscountCodeCode.operator_id)['label'],
+        validators=[Optional()],
+    )
+    code = TextField(
+        label=get_annotations_for(DiscountCodeCode.code)['label'],
+        validators=[
+            Required(),
+            Length(min=12, max=12, message=u'12桁で入力してください'),
+        ]
+    )
+    order_no = TextField(
+        label=get_annotations_for(DiscountCodeCode.order_no)['label'],
+        validators=[Optional()],
+    )
+    used_at = OurDateTimeField(
+        label=get_annotations_for(DiscountCodeCode.used_at)['label'],
+        validators=[Optional(),
+                    DateTimeFormat()],
+        format='%Y-%m-%d %H:%M',
+    )
+    generate_num = TextField(
+        label=u'コード生成数',
+        validators=[Required()],
     )

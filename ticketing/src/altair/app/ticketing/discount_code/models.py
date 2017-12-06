@@ -3,8 +3,7 @@
 from altair.app.ticketing.models import Base, BaseModel, WithTimestamp, LogicallyDeleted, Identifier
 from altair.saannotation import AnnotatedColumn
 from pyramid.i18n import TranslationString as _
-from sqlalchemy.orm import column_property
-from sqlalchemy.orm import relationship, configure_mappers
+from sqlalchemy.orm import column_property, relationship, configure_mappers
 from sqlalchemy.schema import ForeignKey
 from sqlalchemy.types import Boolean, Integer, DateTime, Unicode, UnicodeText, String
 from standardenum import StandardEnum
@@ -28,15 +27,17 @@ class DiscountCodeSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     condition_price_more_or_less = AnnotatedColumn(Unicode(255), nullable=True, _a_label=_(u'条件単位（チケット価格）'))
     benefit_amount = AnnotatedColumn(Integer(8), nullable=False, _a_label=_(u'割引内容：数値'))
     benefit_unit = AnnotatedColumn(Unicode(1), nullable=False, _a_label=_(u'割引内容：単位'))
-    organization_id = AnnotatedColumn(Identifier, ForeignKey('Organization.id'), nullable=False)
+    organization_id = AnnotatedColumn(Identifier, ForeignKey('Organization.id'), nullable=False, _a_label=_(u'組織ID'))
     organization = relationship('Organization',
-                                backref='discount_code_settings',
+                                backref='DiscountCodeSetting',
                                 cascade='all'
                                 )
     is_valid = AnnotatedColumn(Boolean, nullable=False, _a_label=_(u'有効・無効フラグ'))
     start_at = AnnotatedColumn(DateTime, nullable=True, _a_label=_(u'適用開始日時'))
     end_at = AnnotatedColumn(DateTime, nullable=True, _a_label=_(u'適用終了日時'))
     explanation = AnnotatedColumn(UnicodeText, nullable=True, _a_label=_(u'割引概要説明文 '))
+
+    code = relationship('DiscountCodeCode', backref='DiscountCodeSetting')
 
 
 class UsedDiscountCode(Base, BaseModel, WithTimestamp, LogicallyDeleted):
@@ -48,11 +49,31 @@ class UsedDiscountCode(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     ordered_product_item_id = AnnotatedColumn(Identifier, ForeignKey('OrderedProductItem.id'), nullable=True)
 
 
-class DiscountCode(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+class DiscountCodeCode(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'DiscountCode'
     id = AnnotatedColumn(Identifier, primary_key=True, _a_label=_(u'ID'))
+    discount_code_setting_id = AnnotatedColumn(Identifier, ForeignKey('DiscountCodeSetting.id'), nullable=False,
+                                               _a_label=_(u'割引コード設定ID'))
+    discount_code_setting = relationship('DiscountCodeSetting',
+                                         backref='DiscountCode',
+                                         cascade='all'
+                                         )
+    organization_id = AnnotatedColumn(Identifier, ForeignKey('Organization.id'), nullable=False, _a_label=_(u'組織ID'))
+    organization = relationship('Organization',
+                                backref='DiscountCode',
+                                cascade='all'
+                                )
+    operator_id = AnnotatedColumn(Identifier, ForeignKey('Operator.id'), nullable=False, _a_label=_(u'オペレーターID'))
+    operator = relationship('Operator',
+                            backref='Operator',
+                            cascade='all'
+                            )
+    code = AnnotatedColumn(Unicode(12), nullable=True, _a_label=_(u'クーポン・割引コード'))
+    order_no = AnnotatedColumn(Unicode(255), nullable=True, _a_label=_(u'予約番号'))
+    used_at = AnnotatedColumn(DateTime, nullable=True, _a_label=_(u'利用日時'))
 
-
+# run configure_mappers after defining all of the models to ensure
+# all relationships can be setup
 configure_mappers()
 
 

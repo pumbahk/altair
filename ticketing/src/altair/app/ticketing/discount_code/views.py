@@ -10,9 +10,9 @@ from altair.app.ticketing.views import BaseView
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.renderers import render_to_response
 from pyramid.view import view_config, view_defaults
-from .api import is_enabled_discount_code_checked
-from .forms import DiscountCodeSettingForm
-from .models import DiscountCodeSetting, delete_discount_code_setting
+from .api import is_enabled_discount_code_checked, get_discount_setting
+from .forms import DiscountCodeSettingForm, DiscountCodeCodesForm
+from .models import DiscountCodeSetting, DiscountCodeCode, delete_discount_code_setting
 
 logger = logging.getLogger(__name__)
 
@@ -20,10 +20,10 @@ logger = logging.getLogger(__name__)
 @view_defaults(decorator=with_bootstrap,
                permission='event_editor',
                custom_predicates=(is_enabled_discount_code_checked,))
-class DiscountCodeSettings(BaseView):
-    @view_config(route_name='discount_code_settings.index',
+class DiscountCode(BaseView):
+    @view_config(route_name='discount_code.settings_index',
                  renderer='altair.app.ticketing:templates/discount_code/settings/index.html', permission='event_viewer')
-    def index(self):
+    def settings_index(self):
         sort = self.request.GET.get('sort', 'DiscountCodeSetting.end_at')
         direction = self.request.GET.get('direction', 'desc')
 
@@ -44,18 +44,18 @@ class DiscountCodeSettings(BaseView):
             'settings': settings,
         }
 
-    @view_config(route_name='discount_code_settings.new', request_method='GET',
+    @view_config(route_name='discount_code.settings_new', request_method='GET',
                  renderer='altair.app.ticketing:templates/discount_code/settings/_form.html', xhr=True)
-    def new(self):
+    def settings_new(self):
         f = DiscountCodeSettingForm()
         return {
             'form': f,
             'action': self.request.path,
         }
 
-    @view_config(route_name='discount_code_settings.new', request_method='POST',
+    @view_config(route_name='discount_code.settings_new', request_method='POST',
                  renderer='altair.app.ticketing:templates/discount_code/settings/_form.html', xhr=True)
-    def new_post(self):
+    def settings_new_post(self):
         f = DiscountCodeSettingForm(self.request.POST, organization_id=self.context.user.organization.id)
 
         if f.validate():
@@ -85,9 +85,9 @@ class DiscountCodeSettings(BaseView):
                 'action': self.request.path,
             }
 
-    @view_config(route_name='discount_code_settings.edit', request_method='GET',
+    @view_config(route_name='discount_code.settings_edit', request_method='GET',
                  renderer='altair.app.ticketing:templates/discount_code/settings/_form.html', xhr=True)
-    def edit(self):
+    def settings_edit(self):
         setting_id = int(self.request.matchdict.get('setting_id', 0))
         setting = self.context.session.query(DiscountCodeSetting).filter_by(id=setting_id).filter_by(
             organization_id=self.context.user.organization_id).first()
@@ -100,9 +100,9 @@ class DiscountCodeSettings(BaseView):
             'action': self.request.path,
         }
 
-    @view_config(route_name='discount_code_settings.edit', request_method='POST',
+    @view_config(route_name='discount_code.settings_edit', request_method='POST',
                  renderer='altair.app.ticketing:templates/discount_code/settings/_form.html', xhr=True)
-    def edit_post(self):
+    def settings_edit_post(self):
         setting_id = int(self.request.matchdict.get('setting_id', 0))
         setting = DiscountCodeSetting.query.filter_by(id=setting_id).filter_by(
             organization_id=self.context.user.organization_id).first()
@@ -123,9 +123,9 @@ class DiscountCodeSettings(BaseView):
                 'action': self.request.path,
             }
 
-    @view_config(route_name='discount_code_settings.delete')
-    def delete(self):
-        location = self.request.route_path('discount_code_settings.index')
+    @view_config(route_name='discount_code.settings_delete')
+    def settings_delete(self):
+        location = self.request.route_path('discount_code.settings_index')
         setting_id = int(self.request.matchdict.get('setting_id', 0))
         setting = DiscountCodeSetting.get(setting_id, organization_id=self.context.user.organization_id)
         if setting is None:
@@ -139,3 +139,62 @@ class DiscountCodeSettings(BaseView):
             raise HTTPFound(location=location)
 
         return HTTPFound(location=location)
+
+    @view_config(route_name='discount_code.codes_index',
+                 renderer='altair.app.ticketing:templates/discount_code/codes/index.html', permission='event_viewer',
+                 custom_predicates=(is_enabled_discount_code_checked, get_discount_setting,))
+    def codes_index(self):
+        return {
+            'form': DiscountCodeCodesForm(),
+            'setting': self.context.setting,
+            'codes': self.context.setting.code
+        }
+
+    @view_config(route_name='discount_code.codes_add', request_method='GET',
+                 renderer='altair.app.ticketing:templates/discount_code/codes/_form.html', xhr=True,
+                 custom_predicates=(is_enabled_discount_code_checked, get_discount_setting,))
+    def codes_add(self):
+        f = DiscountCodeCodesForm()
+        return {
+            'form': f,
+            'setting': self.context.setting,
+            'codes': self.context.setting.code,
+            'action': self.request.path,
+        }
+
+    @view_config(route_name='discount_code.codes_add', request_method='POST',
+                 renderer='altair.app.ticketing:templates/discount_code/codes/_form.html', xhr=True,
+                 custom_predicates=(is_enabled_discount_code_checked, get_discount_setting,))
+    def codes_add_post(self):
+        self.request.POST['code'] = 'TIK78329SEGE'
+        f = DiscountCodeCodesForm(self.request.POST, organization_id=self.context.user.organization.id)
+        if f.validate():
+            code = DiscountCodeCode(
+                discount_code_setting_id=self.context.setting.id,
+                organization_id=self.context.user.organization.id,
+                operator_id=self.request.context.user.id,
+                code=f.data['code'],
+            )
+            code.save()
+
+            self.request.session.flash(u'クーポン・割引コードを1件追加しました')
+            return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
+        else:
+            return {
+                'form': f,
+                'setting': self.context.setting,
+                'codes': self.context.setting.code,
+                'action': self.request.path,
+            }
+
+    @view_config(route_name='discount_code.codes_delete_all', request_method='GET',
+                 renderer='altair.app.ticketing:templates/discount_code/codes/_form.html', xhr=True,
+                 custom_predicates=(is_enabled_discount_code_checked, get_discount_setting,))
+    def codes_delete_all(self):
+        pass
+
+    @view_config(route_name='discount_code.codes_csv_export', request_method='GET',
+                 renderer='altair.app.ticketing:templates/discount_code/codes/_form.html',
+                 custom_predicates=(is_enabled_discount_code_checked, get_discount_setting,))
+    def codes_csv_export(self):
+        pass

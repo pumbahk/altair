@@ -2,25 +2,25 @@
 <% from wtforms.widgets import HiddenInput %>
 <%namespace file="/common/helpers.html" name="ch" />
 <form action="${action}" method="POST">
-            ${ch.form_item(form.id)}
-            ${ch.form_item(form.is_valid, help=ch.help(form.is_valid, u"チェックを入れない限り適用できません。"))}
-            ${ch.form_item(form.name, placeholder=u"255文字以内")}
-            ${ch.form_item(form.issued_by)}
-            <div id="first_4_digits">
-            ${ch.form_item(form.first_digit, label=u'接頭辞（prefix）4桁指定', class_='span2',\
-                help=ch.help(form.is_valid, u"コード管理元が「自社」の場合のみ設定可能な項目です。<br/>\
+    ${ch.form_item(form.id)}
+    ${ch.form_item(form.is_valid, help=ch.help(form.is_valid, u"チェックを入れない限り適用できません。"))}
+    ${ch.form_item(form.name, placeholder=u"255文字以内")}
+    ${ch.form_item(form.issued_by)}
+    <div id="first_4_digits">
+        ${ch.form_item(form.first_digit, label=u'接頭辞（prefix）4桁指定', class_='span2', \
+        help=ch.help(form.is_valid, u"コード管理元が「自社」の場合のみ設定可能な項目です。<br/>\
                     1桁目はALTAIRで使用可能なアルファベットのみ選択可能です。<br/>\
                     接頭辞4桁の組み合わせは他コードと重複できません。<br/>\
                     すでに使用されたコードが有効な予約情報に紐付いている場合、変更はできません。<br/>"))}
             ${ch.form_item(form.following_2to4_digits, label=False, class_='span2', maxlength=3, placeholder=u"3文字以内")}
-            </div>
-            ${ch.form_item(form.criterion, class_='span6', readonly="", help=ch.help(form.criterion, u"2017年11月現在の仕様では特定金額以下のみが基準です。"))}
-            ${ch.form_item(form.condition_price_amount, label=u'適用条件', class_='span6', maxlength=8, placeholder=u"8桁以内")}円
-            ${ch.form_item(form.condition_price_more_or_less, label=False, class_='span6', readonly="")}
-            ${ch.form_item(form.benefit_amount, label=u'割引内容', maxlength=8, placeholder=u"8桁以内", help=ch.help(form.benefit_amount, u"2017年11月現在の仕様では100%OFFのみです。"), value=100, readonly="")}
-            ${ch.form_item(form.benefit_unit, label=False, readonly="")}OFF
-            <p>有効期間設定${ch.help(form.start_at, u"開始日時と終了日時を両方を空白で設定はできません。")|n}</p>
-            ${ch.form_item(form.start_at)}
-            ${ch.form_item(form.end_at)}
-            ${ch.form_item(form.explanation, style="width:80%; height:10em", help=ch.help(form.explanation, u"購入内容確認・完了画面で表示する利用されたコードに関する説明です。"))}
+    </div>
+    ${ch.form_item(form.criterion, class_='span6', readonly="", help=ch.help(form.criterion, u"2017年11月現在の仕様では特定金額以下のみが基準です。"))}
+    ${ch.form_item(form.condition_price_amount, label=u'適用条件', class_='span6', maxlength=8, placeholder=u"8桁以内")}円
+    ${ch.form_item(form.condition_price_more_or_less, label=False, class_='span6', readonly="")}
+    ${ch.form_item(form.benefit_amount, label=u'割引内容', maxlength=8, placeholder=u"8桁以内", help=ch.help(form.benefit_amount, u"2017年11月現在の仕様では100%OFFのみです。"), value=100, readonly="")}
+    ${ch.form_item(form.benefit_unit, label=False, readonly="")}OFF
+    <p>有効期間設定${ch.help(form.start_at, u"開始日時と終了日時を両方を空白で設定はできません。")|n}</p>
+    ${ch.form_item(form.start_at)}
+    ${ch.form_item(form.end_at)}
+    ${ch.form_item(form.explanation, style="width:80%; height:10em", help=ch.help(form.explanation, u"購入内容確認・完了画面で表示する利用されたコードに関する説明です。"))}
 </form>

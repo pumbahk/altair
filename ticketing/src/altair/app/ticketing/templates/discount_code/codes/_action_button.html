@@ -1,0 +1,47 @@
+<%page args="setting=None, code=None, order=None, small=False, split=False" />
+<%namespace file="/common/helpers.html" name="ch" />
+<%namespace file="/common/modal.html" import="delete_modal" />
+<script type="text/javascript">
+</script>
+<%
+    s_id = setting.id if setting else ''
+    c_id = code.id if code else ''
+    actions = {
+        'edit':dict(
+            label=u'コード追加',
+            url='javascript:add_codes({});'.format(s_id),
+            icon='icon-pencil',
+        ),
+        'target':dict(
+            label=u'CSV出力',
+            url=request.route_path('discount_code.codes_csv_export', setting_id=s_id),
+            icon='icon-pencil',
+        ),
+        'delete_all':dict(
+            label=u'コード全削除',
+            url='javascript:delete_all_codes({});.'.format(s_id),
+            attrs={'class':'btn-danger'},
+            icon='icon-minus',
+        ),
+        'use_code':dict(
+            label=u'使用済にする',
+            url='javascript:use_code({});'.format(c_id),
+            attrs={'class':'btn-danger'},
+            icon='icon-minus',
+        ),
+    }
+
+    order = iter(order or ['edit', 'target', 'delete_all'])
+%>
+% if split:
+    <div style="margin-right: 10px;">
+        % for item in order:
+      ${HH.action_button(actions, iter([item]), vertical=False, extra_classes=[u'btn-small'] if small else [])}
+        % endfor
+    </div>
+% else:
+    <div>
+        ${HH.action_button(actions, order, vertical=False, extra_classes=[u'btn-small'] if small else [])}
+    </div>
+% endif
+${delete_modal()}

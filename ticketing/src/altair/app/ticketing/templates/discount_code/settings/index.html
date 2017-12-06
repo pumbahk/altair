@@ -5,10 +5,15 @@
 <link rel="stylesheet" type="text/css" href="${request.static_url('altair.app.ticketing:static/css/chosen.css')}" />
 
 <%block name="breadcrumbs">
-${ch.breadcrumbs(
-names=[u'トップ', u'クーポン・割引コード設定'],
-urls=[request.route_path('index')]
-)}
+    ${ch.breadcrumbs(
+    names=[
+    HH.route_label('index'),
+    HH.route_label(request.matched_route.name)
+    ],
+    urls=[
+    request.route_path('index')
+    ]
+    )}
 </%block>
 
 <div class="page-header">

@@ -1,0 +1,47 @@
+<%page args="modal_id" />
+<script type="text/javascript">
+    var add_codes, delete_all_codes;
+
+    function pop_over() {
+        $('[rel=popover]').popover({html: true});
+    }
+
+    $(function () {
+        pop_over();
+        var endpoints = {
+            'add': '${request.route_path('discount_code.codes_add', setting_id='__id__')|n}',
+            'delete_all': '${request.route_path('discount_code.codes_delete_all', setting_id='__id__')|n}'
+        };
+        (function (modal_code) {
+            add_codes = function add_codes(id) {
+                if (!id) return;
+                load_modal_form(modal_code, endpoints['add'].replace('__id__', id), null, null);
+                modal_code.modal('toggle');
+            };
+
+            delete_all_codes = function delete_all_codes(id) {
+                if (!id) return;
+                var modal = $('#modal-delete');
+                modal.find('#delete_all').attr('href', endpoints['delete_all'].replace('__id__', id));
+                modal.find('#message').text('全コードを削除します。よろしいですか？');
+                modal.modal('toggle');
+            };
+        })($('#${modal_id}'));
+    });
+
+</script>
+<%namespace file="/common/helpers.html" name="ch" />
+<div id="${modal_id}" class="modal hide">
+    <div class="modal-header">
+        <a class="close" data-dismiss="modal">×</a>
+        <h3>コード</h3>
+    </div>
+
+    <div class="modal-body"></div>
+
+    <div class="modal-footer">
+        <a href="#" class="btn" data-dismiss="modal">閉じる</a>
+        <a href="javascript:void(0);" onclick="$('#${modal_id}').find('form').submit();"
+           class="btn">保存</a>
+    </div>
+</div>

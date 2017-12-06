@@ -12,10 +12,10 @@ Create Date: 2017-11-16 17:00:44.911030
 revision = '4cef5d7f0122'
 down_revision = '23db677af8c6'
 
-from alembic import op
 import sqlalchemy as sa
-from sqlalchemy.sql.expression import text
+from alembic import op
 from sqlalchemy.sql import functions as sqlf
+from sqlalchemy.sql.expression import text
 
 Identifier = sa.BigInteger
 
@@ -63,11 +63,12 @@ def upgrade():
         sa.Column('operator_id', Identifier, nullable=False),
         sa.Column('code', sa.Unicode(12), nullable=False, index=True),
         sa.Column('order_no', sa.Unicode(255), nullable=True, index=True),
-        sa.Column('used_at', sa.TIMESTAMP(), server_default=text('0'), nullable=True),
+        sa.Column('used_at', sa.TIMESTAMP(), nullable=True),
         sa.Column('created_at', sa.TIMESTAMP(), server_default=sqlf.current_timestamp(), nullable=False),
         sa.Column('updated_at', sa.TIMESTAMP(), server_default=text('0'), nullable=False),
         sa.Column('deleted_at', sa.TIMESTAMP(), nullable=True),
-        sa.ForeignKeyConstraint(['discount_code_setting_id'], ['DiscountCodeSetting.id'], ondelete="CASCADE", name="DiscountCode_ibfk_1"),
+        sa.ForeignKeyConstraint(['discount_code_setting_id'], ['DiscountCodeSetting.id'], ondelete="CASCADE",
+                                name="DiscountCode_ibfk_1"),
         sa.ForeignKeyConstraint(['organization_id'], ['Organization.id'], name="DiscountCode_ibfk_2"),
         sa.ForeignKeyConstraint(['operator_id'], ['Operator.id'], name="DiscountCode_ibfk_3"),
         sa.UniqueConstraint('organization_id', 'code', name='organization_code'),
@@ -83,7 +84,8 @@ def upgrade():
         sa.Column('created_at', sa.TIMESTAMP(), server_default=sqlf.current_timestamp(), nullable=False),
         sa.Column('updated_at', sa.TIMESTAMP(), server_default=text('0'), nullable=False),
         sa.Column('deleted_at', sa.TIMESTAMP(), nullable=True),
-        sa.ForeignKeyConstraint(['discount_code_setting_id'], ['DiscountCodeSetting.id'], name="DiscountCodeEvent_ibfk_1"),
+        sa.ForeignKeyConstraint(['discount_code_setting_id'], ['DiscountCodeSetting.id'],
+                                name="DiscountCodeEvent_ibfk_1"),
         sa.ForeignKeyConstraint(['organization_id'], ['Organization.id'], name="DiscountCodeEvent_ibfk_2"),
         sa.ForeignKeyConstraint(['event_id'], ['Event.id'], name="DiscountCodeEvent_ibfk_3")
     )
@@ -99,11 +101,13 @@ def upgrade():
         sa.Column('created_at', sa.TIMESTAMP(), server_default=sqlf.current_timestamp(), nullable=False),
         sa.Column('updated_at', sa.TIMESTAMP(), server_default=text('0'), nullable=False),
         sa.Column('deleted_at', sa.TIMESTAMP(), nullable=True),
-        sa.ForeignKeyConstraint(['discount_code_setting_id'], ['DiscountCodeSetting.id'], name="DiscountCodePerformance_ibfk_1"),
+        sa.ForeignKeyConstraint(['discount_code_setting_id'], ['DiscountCodeSetting.id'],
+                                name="DiscountCodePerformance_ibfk_1"),
         sa.ForeignKeyConstraint(['organization_id'], ['Organization.id'], name="DiscountCodePerformance_ibfk_2"),
         sa.ForeignKeyConstraint(['event_id'], ['Event.id'], name="DiscountCodePerformance_ibfk_3"),
         sa.ForeignKeyConstraint(['performance_id'], ['Performance.id'], name="DiscountCodePerformance_ibfk_4")
     )
+
 
 def downgrade():
     op.drop_table('DiscountCode')

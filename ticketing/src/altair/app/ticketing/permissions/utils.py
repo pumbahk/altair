@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
-from zope.interface import Interface, implements
 from pyramid.interfaces import IView, IRoutesMapper, IRouteRequest, IViewClassifier, IMultiView
+from zope.interface import Interface
 
 
 class PermissionCategory(object):
@@ -112,11 +112,15 @@ class RouteConfig(object):
         'delivery_methods.edit'     : u'引取方法 編集',
         'delivery_methods.index'    : u'引取方法 一覧',
         'delivery_methods.new'      : u'引取方法 作成',
-        'discount_code_settings.index': u'クーポン・割引コード設定 一覧',
-        'discount_code_settings.new': u'クーポン・割引コード設定 作成',
-        'discount_code_settings.edit': u'クーポン・割引コード設定 編集',
-        'discount_code_settings.target': u'クーポン・割引コード設定 適用対象',
-        'discount_code_settings.delete': u'クーポン・割引コード設定 削除',
+        'discount_code.settings_index': u'クーポン・割引コード設定 一覧',
+        'discount_code.settings_new': u'クーポン・割引コード設定 作成',
+        'discount_code.settings_edit': u'クーポン・割引コード設定 編集',
+        'discount_code.settings_delete': u'クーポン・割引コード設定 削除',
+        'discount_code.codes_index': u'クーポン・割引コード コード一覧',
+        'discount_code.codes_add': u'クーポン・割引コード コード追加',
+        'discount_code.codes_csv_export': u'クーポン・割引コード CSV出力',
+        'discount_code.codes_delete_all': u'クーポン・割引コード 全コード削除',
+        'discount_code.target_index': u'クーポン・割引コード 適用対象',
         'events.copy'               : u'イベント コピー',
         'events.delete'             : u'イベント 削除',
         'events.edit'               : u'イベント 編集',

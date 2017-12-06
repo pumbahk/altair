@@ -8,10 +8,10 @@
     $(function () {
         pop_over();
         var endpoints = {
-            'new': '${request.route_path('discount_code_settings.new')|n}',
-            'edit': '${request.route_path('discount_code_settings.edit', setting_id='__id__')|n}',
-            'target': '${request.route_path('discount_code_settings.target', setting_id='__id__')|n}',
-            'delete': '${request.route_path('discount_code_settings.delete', setting_id='__id__')|n}',
+            'new': '${request.route_path('discount_code.settings_new')|n}',
+            'edit': '${request.route_path('discount_code.settings_edit', setting_id='__id__')|n}',
+            'target': '${request.route_path('discount_code.settings_target', setting_id='__id__')|n}',
+            'delete': '${request.route_path('discount_code.settings_delete', setting_id='__id__')|n}',
         };
         (function (modal_setting) {
             new_setting = function new_setting() {
@@ -38,15 +38,16 @@
 
     $(document).ajaxComplete(function() {
         pop_over();
-        if ($("select#issued_by").val() !== "own") {
+        var issued_by = $("select#issued_by");
+        if (issued_by.val() !== "own") {
             $("#first_4_digits").hide();
-        };
-        $("select#issued_by").change(function() {
+        }
+        issued_by.change(function () {
             if ($(this).val() !== "own") {
                 $("#first_4_digits").fadeOut();
             } else {
                 $("#first_4_digits").fadeIn();
-            };
+            }
         });
     });
 

@@ -1,0 +1,26 @@
+<%inherit file="/layout_2cols.html"/>
+<%namespace file="/common/helpers.html" name="ch"/>
+
+<script src="${request.static_url('altair.app.ticketing:static/js/jquery.chosen.js')}"></script>
+<link rel="stylesheet" type="text/css" href="${request.static_url('altair.app.ticketing:static/css/chosen.css')}"/>
+
+<%block name="breadcrumbs">
+    ${ch.breadcrumbs(
+    names=[
+    HH.route_label('index'),
+    HH.route_label('discount_code.settings_index'),
+    HH.route_label(request.matched_route.name)
+    ],
+    urls=[
+    request.route_path('index'),
+    request.route_path('discount_code.settings_index')
+    ]
+    )}
+</%block>
+
+<div class="page-header">
+    <h1>${setting.first_4_digits} ${setting.name} コード一覧</h1>
+</div>
+
+<%include file="./_list.html" args="form=form, setting=setting, codes=codes"/>
+<%include file="./_modal.html" args="modal_id='modal_code'"/>

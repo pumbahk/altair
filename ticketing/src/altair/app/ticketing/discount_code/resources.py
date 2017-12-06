@@ -30,3 +30,11 @@ class DiscountCodeSettingResource(TicketingAdminResource):
             if self.request.POST['issued_by'] != 'own':
                 self.request.POST['first_digit'] = u''
                 self.request.POST['following_2to4_digits'] = u''
+
+
+class DiscountCodeCodesResource(TicketingAdminResource):
+    def __init__(self, request):
+        super(DiscountCodeCodesResource, self).__init__(request)
+
+        self.request = request
+        self.session = get_db_session(request, name="slave")
