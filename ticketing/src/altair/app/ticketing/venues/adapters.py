@@ -84,15 +84,17 @@ class VenueSiteDrawingProviderAdapter(object):
         if spa_metas is not None:
             resolver = get_resolver(self.request.registry)
             for name in spa_metas:
-                map_tag = spa_metas.get(name)                
+                map_tag = spa_metas.get(name)
                 if 'root' in map_tag :
                     map_prefix = 'root'
-                else:
+                elif 'mini' in map_tag :
                     map_prefix = 'mini'
+                else:
+                    map_prefix = 'seats'
                 retval[map_prefix] = resolver.resolve(myurljoin(self._absolute_frontend_metadata_url, name))
             return dict(retval)
         else:
-            return None            
+            return None
 
     def get_backend_pages(self):
         return self.backend_metadata and self.backend_metadata.get('pages') or dict(root=dict())
