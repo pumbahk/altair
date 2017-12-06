@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+import re
+
 from wtforms import TextField, PasswordField, HiddenField
 from wtforms.validators import Regexp, Length, EqualTo, Optional, ValidationError
 from wtforms import Form
@@ -55,8 +57,16 @@ class OperatorForm(Form):
     login_id  = TextField(u'ログインID', validators=[Required()])
     name      = TextField(u'名前', validators=[Required()])
     email     = TextField(u'メールアドレス', validators=[Required(), Email()])
-    password  = PasswordField(u'パスワード', validators=[Optional(), Regexp("^[a-zA-Z0-9@!#$%&'()*+,\-./_]+$", 0, message=u'英数記号を入力してください。'), Length(4, 32, message=u'4文字以上32文字以内で入力してください')])
-    password2 = PasswordField(u'パスワード確認', validators=[Optional(), EqualTo('password', message=u'パスワードと確認用パスワードが一致しません')])
+    password  = PasswordField(
+        u'パスワード',
+        validators=[
+            Optional(),
+            Regexp(r'^(?=.*[a-zA-Z])(?=.*[0-9])([A-Za-z0-9' + re.escape('~!@#$%^&*()_+-=[]{}|;:<>?,./') + ']+)$', 0,
+                   message=u'半角英数字混在でご入力下さい。'),
+            Length(7, 32, message=u'7文字以上32文字以内で入力してください。')
+        ]
+    )
+    password2 = PasswordField(u'パスワード確認', validators=[Optional(), EqualTo('password', message=u'パスワードと確認用パスワードが一致しません。')])
     expire_at = HiddenField(u'パスワード有効期限', validators=[Optional()])
     
     def validate_login_id(self, field):
