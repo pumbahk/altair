@@ -6,7 +6,7 @@ from pyramid.i18n import TranslationString as _
 from sqlalchemy.orm import column_property
 from sqlalchemy.orm import relationship, configure_mappers
 from sqlalchemy.schema import ForeignKey
-from sqlalchemy.types import Boolean, Integer, DateTime, Unicode, UnicodeText
+from sqlalchemy.types import Boolean, Integer, DateTime, Unicode, UnicodeText, String
 from standardenum import StandardEnum
 
 
@@ -37,6 +37,20 @@ class DiscountCodeSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     start_at = AnnotatedColumn(DateTime, nullable=True, _a_label=_(u'適用開始日時'))
     end_at = AnnotatedColumn(DateTime, nullable=True, _a_label=_(u'適用終了日時'))
     explanation = AnnotatedColumn(UnicodeText, nullable=True, _a_label=_(u'割引概要説明文 '))
+
+
+class UsedDiscountCode(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+    __tablename__ = 'UsedDiscountCode'
+    id = AnnotatedColumn(Identifier, primary_key=True, _a_label=_(u'ID'))
+    discount_code_id = AnnotatedColumn(Identifier, ForeignKey('DiscountCode.id'), nullable=True)
+    code = AnnotatedColumn(String(12), _a_label=_(u'ディスカウントコード'), nullable=True)
+    carted_product_item_id = AnnotatedColumn(Identifier, ForeignKey('CartedProductItem.id'), nullable=True)
+    ordered_product_item_id = AnnotatedColumn(Identifier, ForeignKey('OrderedProductItem.id'), nullable=True)
+
+
+class DiscountCode(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+    __tablename__ = 'DiscountCode'
+    id = AnnotatedColumn(Identifier, primary_key=True, _a_label=_(u'ID'))
 
 
 configure_mappers()

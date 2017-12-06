@@ -62,7 +62,7 @@ def lot_payment_notice_viewlet(context, request):
 
 @implementer(IPaymentPlugin)
 class FreePaymentPlugin(object):
-    """ 窓口支払い番号プラグイン"""
+    """ 無料支払いプラグイン"""
 
     def validate_order(self, request, order_like, update=False):
         if order_like.total_amount != 0:

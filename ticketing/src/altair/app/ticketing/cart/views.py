@@ -1053,8 +1053,15 @@ class ReserveView(object):
         DBSession.add(cart)
         DBSession.flush()
         api.set_cart(self.request, cart)
+
+        discount_code_flag = True
+        payment_url = self.request.route_url("cart.payment", sales_segment_id=sales_segment.id)
+        if discount_code_flag:
+            # TODO okada 判定（フラグを判定、かつ、選ばれた商品がディスカウントコードを欲している）
+            payment_url = self.request.route_url("cart.discount_code", sales_segment_id=sales_segment.id)
+
         return dict(result='OK',
-                    payment_url=self.request.route_url("cart.payment", sales_segment_id=sales_segment.id),
+                    payment_url=payment_url,
                     cart=dict(products=[dict(name=p.product.name,
                                              quantity=p.quantity,
                                              price=int(p.product.price),
@@ -1411,6 +1418,47 @@ class ExtraFormView(object):
             return dict(form=form, form_fields=form_fields)
         api.store_extra_form_data(self.request, form.data)
         return HTTPFound(location=flow_graph(self.context, self.request)(url_wanted=False))
+
+
+@view_defaults(route_name='cart.discount_code', renderer=selectable_renderer("discount_code.html"), decorator=with_jquery.not_when(mobile_request), permission="buy")
+class DiscountCodeEnteringView(object):
+    def __init__(self, context, request):
+        self.context = context
+        self.request = request
+
+    @back(back_to_top, back_to_product_list_for_mobile)
+    @lbr_view_config(request_method="GET")
+    def discount_code_get(self):
+
+        cart = self.context.read_only_cart
+        self.context.check_deleted_product(cart)
+        sales_segment_id = self.request.matchdict["sales_segment_id"]
+        forms = self.context.create_discount_code_forms()
+        sorted_cart_product_items = self.context.sorted_carted_product_items()
+        self.context.delete_temporarily_save_discount_code()
+
+        return dict(
+            forms=forms,
+            cart_product_items=sorted_cart_product_items,
+            sales_segment_id=sales_segment_id,
+            performance=self.context.performance,
+            carted_product_item_count=self.context.carted_product_item_count
+        )
+
+    @back(back_to_top, back_to_product_list_for_mobile)
+    @lbr_view_config(request_method="POST")
+    def discount_code_post(self):
+
+        cart = self.context.read_only_cart
+        self.context.check_deleted_product(cart)
+        salese_segment_id = self.request.matchdict["sales_segment_id"]
+        codies = self.context.create_codies_from_request()
+
+        # TODO OKADA validation
+
+        self.context.temporarily_save_discount_code(codies)
+
+        return HTTPFound(self.request.route_path('cart.payment', sales_segment_id=salese_segment_id))
 
 
 @view_defaults(route_name='cart.point', renderer=selectable_renderer("point.html"), decorator=with_jquery.not_when(mobile_request), permission="buy")

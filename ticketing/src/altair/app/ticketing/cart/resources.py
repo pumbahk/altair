@@ -23,6 +23,7 @@ from altair.app.ticketing.orders import models as order_models
 from altair.app.ticketing.core.interfaces import IOrderQueryable
 from altair.app.ticketing.users import models as u_models
 from altair.app.ticketing.utils import memoize
+from ..discount_code.models import UsedDiscountCode
 from . import models as m
 from . import api as cart_api
 from .exceptions import NoCartError, DeletedProductError
@@ -674,6 +675,99 @@ class SalesSegmentOrientedTicketingCartResource(TicketingCartResourceBase):
     def sales_segments(self):
         """現在認証済みのユーザとパフォーマンスに関連する全販売区分"""
         return [self.sales_segment] if self.sales_segment.applicable(user=self.authenticated_user(), type='all') else []
+
+
+class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResource):
+    def __init__(self, request, sales_segment_id=None):
+        super(DiscountCodeTicketingCartResources, self).__init__(request, sales_segment_id)
+
+    @property
+    def enable_discount_code(self):
+        # TODO OKADA 判定
+        return True
+
+    def sorted_carted_product_items(self):
+        cart = self.read_only_cart
+        sorted_cart_product_items = list()
+        for carted_product in cart.items:
+            for carted_product_item in carted_product.elements:
+                sorted_cart_product_items.append(carted_product_item)
+        sorted_cart_product_items = [obj for obj in reversed(sorted(sorted_cart_product_items, key=lambda x:x.price))]
+        return sorted_cart_product_items
+
+    def create_discount_code_forms(self):
+        from . import schemas
+        cart = self.read_only_cart
+
+        forms = [schemas.DiscountCodeForm()]
+        if cart.carted_product_item_count > 1:
+            forms.append(schemas.DiscountCodeForm())
+        return forms
+
+    def check_discount_code(self, code):
+        # TODO OKADA 判定
+        return True
+
+    def create_codies_from_request(self):
+        from . import schemas
+        params = self.request.POST.items()
+        sorted_cart_product_items = self.sorted_carted_product_items()
+
+        # 入力されたコードのリスト化
+        codies = list()
+        for param in params:
+            code_dict = dict()
+            code_dict['code'] = param[1]
+            codies.append(code_dict)
+
+        # 入力されたコードを商品明細の金額の降順とFormと対応させる
+        count = 0
+        max = len(codies)
+        for carted_product_item in sorted_cart_product_items:
+            for index in range(carted_product_item.quantity):
+                code_dict = codies[count]
+                code_dict['carted_product_item'] = carted_product_item
+                code_dict['form'] = schemas.DiscountCodeForm()
+                count = count + 1
+                if max == count:
+                    return codies
+
+    def temporarily_save_discount_code(self, codies):
+        # carted_product_itemのIDと、使用したコードを保存する
+        for code_dict in codies:
+            if code_dict['code']:
+                use_discount_code = UsedDiscountCode()
+                use_discount_code.code = code_dict['code']
+                use_discount_code.carted_product_item_id = code_dict['carted_product_item'].id
+                use_discount_code.add()
+        return True
+
+    def get_carted_product_item_ids(self):
+        cart = self.read_only_cart
+        carted_product_item_ids = list()
+        for carted_product in cart.items:
+            for carted_product_item in carted_product.elements:
+                carted_product_item_ids.append(carted_product_item.id)
+        return carted_product_item_ids
+
+    @property
+    def carted_product_item_count(self):
+        # カートに入っている商品明細の総数
+        cart = self.read_only_cart
+        count = 0
+        for carted_product in cart.items:
+            for carted_product_item in carted_product.elements:
+                for item in range(carted_product_item.quantity):
+                    count = count + 1
+        return count
+
+    def delete_temporarily_save_discount_code(self):
+        carted_product_item_ids = self.get_carted_product_item_ids()
+        codies = UsedDiscountCode.query.filter(UsedDiscountCode.carted_product_item_id.in_(carted_product_item_ids)).all()
+        for code in codies:
+            code.deleted_at = datetime.now()
+        return True
+
 
 class CartBoundTicketingCartResource(TicketingCartResourceBase):
     def __init__(self, request):

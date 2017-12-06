@@ -65,6 +65,17 @@ def normalize_point_account_number(value):
         return '%s-%s-%s-%s' % (value[0:4], value[4:8], value[8:12], value[12:16])
     return value
 
+
+class DiscountCodeForm(OurForm):
+    code = OurTextField(
+        label=u'割引コード',
+        validators=[
+            Optional(),
+            Length(max=20, message=u'20文字以内で入力してください'),
+        ],
+    )
+
+
 class PointForm(OurForm):
     accountno = OurTextField(
         label=u"楽天スーパーポイント口座",
@@ -74,6 +85,7 @@ class PointForm(OurForm):
             Regexp(r'^(?:\d{4}-\d{4}-\d{4}-\d{4}|\d{16})$', message=u'16桁の数字を入れて下さい。'),
         ]
     )
+
 
 class ClientForm(OurDynamicForm):
     def _get_translations(self):

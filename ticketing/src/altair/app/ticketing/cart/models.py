@@ -346,6 +346,15 @@ class Cart(Base, c_models.CartMixin):
         orion_ticket_phone = session.query(c_models.OrionTicketPhone).filter(c_models.OrionTicketPhone.order_no == self.order_no).first()
         return orion_ticket_phone.phones.split(',') if orion_ticket_phone else []
 
+    @property
+    def carted_product_item_count(self):
+        count = 0
+        for item in self.items:
+            for element in item.elements:
+                count = count + element.quantity
+        return count
+
+
 @implementer(IOrderedProductLike)
 class CartedProduct(Base):
     __tablename__ = 'CartedProduct'
