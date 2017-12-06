@@ -2,19 +2,23 @@
 
 from datetime import datetime, timedelta
 
-from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.security import remember, forget
 from pyramid.security import authenticated_userid
+from pyramid.view import view_config, view_defaults
 
-from altair.app.ticketing.models import merge_and_flush, record_to_multidict, merge_session_with_post
-from altair.app.ticketing.views import BaseView
-from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.core.models import *
+from altair.app.ticketing.fanstatic import with_bootstrap
+from altair.app.ticketing.models import merge_and_flush, record_to_multidict, merge_session_with_post
 from altair.app.ticketing.operators.models import Operator
-from .forms import SSLClientCertLoginForm, LoginForm, OperatorForm, ResetForm
 from altair.app.ticketing.operators import api as o_api
-from .utils import get_auth_identifier_from_client_certified_request
+from altair.app.ticketing.views import BaseView
+
+from .forms import SSLClientCertLoginForm, LoginForm, OperatorForm, ResetForm
+from .utils import (
+    get_auth_identifier_from_client_certified_request,
+    AESEncryptor
+)
 
 @view_defaults(decorator=with_bootstrap, route_name='login.default', renderer='altair.app.ticketing:templates/login/default.html')
 class DefaultLoginView(BaseView):
@@ -35,13 +39,23 @@ class DefaultLoginView(BaseView):
         if form.validate():
             operator = Operator.login(form.data.get('login_id'), form.data.get('password'))
             if operator is None:
-                form.login_id.errors.append(u'ユーザー名またはパスワードが違います。')
+                self.request.session.flash(u'ユーザー名またはパスワードが違います。')
                 return {
                     'form':form
                 }
+
+            next_url = self.request.GET.get('next')
+
+            if operator.is_first:
+                aes = AESEncryptor()
+                op_token = aes.get_token(operator.id)
+                self.request.session.flash(u'初めてのログインのため、パスワードの変更をお願いいたします。')
+                return HTTPFound(
+                    location=self.request.route_path('login.info.edit', _query=dict(op_token=op_token, next=next_url)))
+
+
             merge_and_flush(operator)
             headers = remember(self.request, form.data.get('login_id'))
-            next_url = self.request.GET.get('next')
             return HTTPFound(location=next_url if next_url else self.request.route_path("index"), headers=headers)
         else:
             return {
@@ -112,9 +126,19 @@ class LoginPasswordResetView(BaseView):
         return {}
 
 
-@view_defaults(decorator=with_bootstrap, permission='authenticated')
+def _get_operator(context, request):
+    operator = context.user or None
+    if not operator:
+        op_token = request.GET.get('op_token', None)
+        if op_token:
+            operator_id = AESEncryptor.get_id_from_token(op_token)
+            operator = Operator.filter_by(id=operator_id).first()
+    return operator
+
+
+@view_defaults(decorator=with_bootstrap)
 class LoginUser(BaseView):
-    @view_config(route_name='login.info', renderer='altair.app.ticketing:templates/login/info.html')
+    @view_config(route_name='login.info', renderer='altair.app.ticketing:templates/login/info.html', permission='authenticated')
     def info(self):
         login_id = authenticated_userid(self.request)
         return {
@@ -124,24 +148,36 @@ class LoginUser(BaseView):
 
     @view_config(route_name='login.info.edit', request_method="GET", renderer='altair.app.ticketing:templates/login/edit.html')
     def info_edit_get(self):
-        operator = self.context.user
-        if operator is None:
+        action_url = self.request.current_route_path()
+        operator = _get_operator(self.context, self.request)
+        if not operator:
             return HTTPNotFound("Operator id %s is not found")
 
         f = OperatorForm()
         f.process(record_to_multidict(operator))
         f.login_id.data = operator.auth.login_id
         return {
-            'form':f
+            'form':f,
+            'action_url': action_url
         }
 
     @view_config(route_name='login.info.edit', request_method="POST", renderer='altair.app.ticketing:templates/login/edit.html')
     def info_edit_post(self):
-        operator = self.context.user
+        action_url = self.request.current_route_path()
+        next_url = self.request.GET.get('next')
+        operator = _get_operator(self.context, self.request)
         if operator is None:
             return HTTPNotFound("Operator id %s is not found")
 
         f = OperatorForm(self.request.POST, request=self.request)
+
+        if operator.is_first and not f.data['password']:
+            self.request.session.flash(u'初回ログインのため、パスワードを更新ください。')
+            return {
+                'form': f,
+                'action_url': action_url
+            }
+
         if f.validate():
             if not f.data['password']:
                 password = operator.auth.password
@@ -152,14 +188,18 @@ class LoginUser(BaseView):
             operator.expire_at = datetime.today() + timedelta(days=180)
             operator.auth.login_id = f.data['login_id']
             operator.auth.password = password
+            if operator.is_first:
+                operator.status = 1
+
             operator.save()
 
-            self.request.session.flash(u'ログイン情報を更新しました')
+            self.request.session.flash(u'ログイン情報を更新しました。')
             headers = remember(self.request, operator.auth.login_id)
-            return HTTPFound(location=self.request.route_path('login.info'), headers=headers)
+            return HTTPFound(location=next_url if next_url else self.request.route_path('login.info'), headers=headers)
         else:
             return {
-                'form':f
+                'form':f,
+                'action_url':action_url
             }
 
     @view_config(route_name='login.logout')

@@ -71,6 +71,6 @@ class OperatorForm(Form):
     
     def validate_login_id(self, field):
         operator_auth = OperatorAuth.get_by_login_id(field.data)
-        if operator_auth is not None:
+        if operator_auth and self.request.context.user:
             if operator_auth.operator_id != self.request.context.user.id:
                 raise ValidationError(u'ログインIDが重複しています。')
