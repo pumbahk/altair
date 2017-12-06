@@ -27,7 +27,8 @@ class DiscountCodeSettings(BaseView):
         sort = self.request.GET.get('sort', 'DiscountCodeSetting.end_at')
         direction = self.request.GET.get('direction', 'desc')
 
-        query = DiscountCodeSetting.query.filter_by(organization_id=self.context.user.organization_id)
+        query = self.context.session.query(DiscountCodeSetting).filter_by(
+            organization_id=self.context.user.organization_id)
         query = query.order_by('{0} {1}'.format(sort, direction)) \
             .order_by('DiscountCodeSetting.id desc')
 
@@ -88,7 +89,7 @@ class DiscountCodeSettings(BaseView):
                  renderer='altair.app.ticketing:templates/discount_code/settings/_form.html', xhr=True)
     def edit(self):
         setting_id = int(self.request.matchdict.get('setting_id', 0))
-        setting = DiscountCodeSetting.query.filter_by(id=setting_id).filter_by(
+        setting = self.context.session.query(DiscountCodeSetting).filter_by(id=setting_id).filter_by(
             organization_id=self.context.user.organization_id).first()
         if setting is None:
             return HTTPNotFound('setting id %d is not found' % setting_id)
