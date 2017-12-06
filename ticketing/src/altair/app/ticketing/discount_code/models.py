@@ -82,6 +82,15 @@ class DiscountCodeCode(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     used_at = AnnotatedColumn(DateTime, nullable=True, _a_label=_(u'利用日時'))
 
 
+class UsedDiscountCode(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+    __tablename__ = 'UsedDiscountCode'
+    id = AnnotatedColumn(Identifier, primary_key=True, _a_label=_(u'ID'))
+    discount_code_id = AnnotatedColumn(Identifier, ForeignKey('DiscountCode.id'), nullable=True)
+    code = AnnotatedColumn(String(12), _a_label=_(u'ディスカウントコード'), nullable=True)
+    carted_product_item_id = AnnotatedColumn(Identifier, ForeignKey('CartedProductItem.id'), nullable=True)
+    ordered_product_item_id = AnnotatedColumn(Identifier, ForeignKey('OrderedProductItem.id'), nullable=True)
+
+
 def delete_discount_code_setting(setting):
     # TODO 削除を禁止する各条件を後々で用意する
 
