@@ -67,16 +67,11 @@ export class ApiBase extends Http{
    * seatGETリクエストを実行します
    *
    * @param string url - API-URL
-   * @param boolean useCache - Returns cached response if true
    * @return Observable<T> - Observable関数
    * @return null - 通信エラー
    */
-  protected httpGetSeat<T>(url: string, useCache: boolean = false): Observable<T> {
-    var Zlib = require('zlibjs/bin/gunzip.min').Zlib
-    if (useCache && this.cachedGetObservables[url] != undefined) {
-      this._logger.debug('API GET:', url + ' [CACHED]');
-      return this.cachedGetObservables[url];
-    }
+  protected httpGetCompressedJson<T>(url: string): Observable<T> {
+    var Zlib = require('zlibjs/bin/gunzip.min').Zlib;
     this._logger.debug('API GET:', url);
     let seat_options: RequestOptionsArgs = {};
     seat_options.responseType = ResponseContentType.ArrayBuffer;
@@ -91,12 +86,10 @@ export class ApiBase extends Http{
           asciistring += String.fromCharCode(plain[i]);
         }
         const body = JSON.parse(asciistring);
-        this.cachedGetObservables[url] = Observable.of(body);
         return body;
       })
       .catch(error => this.handleError(error))
       .share();
-    this.cachedGetObservables[url] = get;
     return get;
   }
 

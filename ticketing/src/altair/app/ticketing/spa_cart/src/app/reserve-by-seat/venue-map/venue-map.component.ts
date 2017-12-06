@@ -55,9 +55,9 @@ import { StockTypeDataService } from '../../shared/services/stock-type-data.serv
 import { ErrorModalDataService } from '../../shared/services/error-modal-data.service';
 import { AnimationEnableService } from '../../shared/services/animation-enable.service';
 import { CountSelectService } from '../../shared/services/count-select.service';
-import { SmartPhoneCheckService } from '../../shared/services/smartPhone-check.service';
+import { SmartPhoneCheckService } from '../../shared/services/smartPhone-check.service'
 import { ReserveBySeatBrowserBackService } from '../../shared/services/reserve-by-seat-browser-back.service';
-import { SeatDataService } from '../../shared/services/seatData.service';
+import { SeatDataService } from '../../shared/services/seat-data.service';
 
 // jquery
 import * as $ from 'jquery';
@@ -88,11 +88,6 @@ const SCALE_MAX = 5.0;  // 表示倍率の最大値
 const WINDOW_SM = 768; // スマホか否かの判定に用いる
 const SIDE_HEIGHT = 200; //横画面時エラーを出す最大値
 const MAX_QUANTITY_DEFAULT = 10; // デフォルトの選択可能枚数
-
-const SEAT_EXIST_DATA_NOTHING = 1;//席あり、データなし
-const SEAT_NOTHING_DATA_EXIST = 2;//席なし、データあり
-const SEAT_EXIST_DATA_EXIST = 3;//席なし、データあり
-const SEAT_NOTHING_DATA_NOTHING = 4;//席なし、データなし
 
 @Component({
   providers: [FilterComponent, ReserveByQuantityComponent],
@@ -230,10 +225,8 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
   regionIds: string[] = [];
   // viewBoxの初期値を格納
   originalViewBox: any[] = null;
-  //svgの座席要素の有無
-  getSeatFlag = false;
-  //seatDataの有無
-  getSeatDataFlag = false;
+  // 座席データ（JSON）の有無
+  isExistsSeatData = false;
   // 表示領域のwidthとheightを求めるため
   svgMap: any;
   D_Width: number;    // 表示領域のwidth
@@ -317,14 +310,22 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
           this.seatDataURL = "../assets/newSeatElements.gz";
           //ダミーURL
 
-          if ((this.seatDataURL) && this.seatDataURL != "") {
-            this.getSeatDataFlag = true;
-          }
           // 個席データ取得
-          if (this.getSeatDataFlag) {
+          if ((this.seatDataURL) && this.seatDataURL != "") {
+            this.isExistsSeatData = true;
             this.seatDataService.getSeatData(this.seatDataURL).subscribe((response: any) => {
               this.seat_elements = response;
-            });
+            },
+              (error) => {
+                let errorMassage: string;
+                let file_name: string;
+                let url_str: string = this.seatDataURL;
+                let cut_idx: number = url_str.lastIndexOf("/");
+                file_name = url_str.slice(cut_idx + 1);
+                errorMassage = file_name + " not found"
+                this._logger.error(errorMassage);
+                return;
+              });
           }
 
           this.colorNavi = "https://s3-ap-northeast-1.amazonaws.com/tstar/cart_api/color_sample.svg";
@@ -479,35 +480,27 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
         }, 100);
       }
     });
+
     // SVGのロード完了チェック
     let svgLoadCompleteTimer = setInterval(function () {
+      if (that.isExistsSeatData && !(Object.keys(that.seat_elements).length > 0)) {
+        return;
+      }
+
       that.originalViewBox = that.getPresentViewBox();
-      if (document.querySelector('.seat')) {
-        that.getSeatFlag = true;
+
+      // viewBox取得　且つ　reserve-by-seatの高さが取得
+      if ((that.originalViewBox) && (that.mapAreaLeftH != 0)) {
+        clearInterval(svgLoadCompleteTimer);
+        that.seatAreaHeight = $("#mapImgBox").height();
+        that.svgMap = document.getElementById('mapImgBox').firstElementChild;
+        that.saveSeatData();
+        that.mapHome();
+        that.endTime = new Date();
+        that._logger.info(that.endTime - that.startTime + "ms");
       }
-      if (that.isSeatDataGet(that.getSeatFlag, that.getSeatDataFlag) == SEAT_NOTHING_DATA_EXIST) {
-        // viewBox取得　且つ　reserve-by-seatの高さが取得　且つ　seat_elements取得
-        if ((that.originalViewBox) && (that.mapAreaLeftH != 0) && (Object.keys(that.seat_elements).length > 0)) {
-          clearInterval(svgLoadCompleteTimer);
-          that.seatAreaHeight = $("#mapImgBox").height();
-          that.svgMap = document.getElementById('mapImgBox').firstElementChild;
-          that.mapHome();
-          that.endTime = new Date();
-          that._logger.info(that.endTime - that.startTime + "ms");
-        }
-      } else {
-        // viewBox取得　且つ　reserve-by-seatの高さが取得
-        if ((that.originalViewBox) && (that.mapAreaLeftH != 0)) {
-          clearInterval(svgLoadCompleteTimer);
-          that.seatAreaHeight = $("#mapImgBox").height();
-          that.svgMap = document.getElementById('mapImgBox').firstElementChild;
-          that.saveSeatData();
-          that.mapHome();
-          that.endTime = new Date();
-          that._logger.info(that.endTime - that.startTime + "ms");
-        }
-      }
-    }, 200);
+    }, 100);
+
     if (!this.smartPhoneCheckService.isSmartPhone()) {
       //ツールチップの表示
       $('#mapAreaLeft').on('mouseenter', '.region', function (e) {
@@ -1522,36 +1515,32 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
 
   // SVGの座席データを[連席ID, Element]として保持してDOMツリーから削除
   saveSeatData() {
-    if (this.isSeatDataGet(this.getSeatFlag, this.getSeatDataFlag) == SEAT_EXIST_DATA_EXIST) {
-      $('.seat').remove();
-      if (!this.smartPhoneCheckService.isSmartPhone()) $('svg').find('title').remove();
-      return;
-    }
+    if (!this.isExistsSeatData) {
+      let els = document.querySelectorAll('.seat');
+      let seat_data = {};
+      for (let i = 0; i < els.length; i++) {
+        let grid_class = (<SVGAnimatedString>(<SVGElement>els[i]).className).baseVal;
+        grid_class = grid_class.substr(grid_class.indexOf('grid'), 13);
+        let row_id = $(els[i].parentNode).attr('id');
 
-    let els = document.querySelectorAll('.seat');
-    let seat_data = {};
-    for (let i = 0; i < els.length; i++) {
-      let grid_class = (<SVGAnimatedString>(<SVGElement>els[i]).className).baseVal;
-      grid_class = grid_class.substr(grid_class.indexOf('grid'), 13);
-      let row_id = $(els[i].parentNode).attr('id');
+        if (!(grid_class in seat_data)) {
+          seat_data[grid_class] = {};
+        }
+        if (!(row_id in seat_data[grid_class])) {
+          seat_data[grid_class][row_id] = [];
+        }
 
-      if (!(grid_class in seat_data)) {
-        seat_data[grid_class] = {};
+        (<HTMLElement>els[i]).style.display = 'inline';
+        let seat_id = $(els[i]).attr('id');
+        let title = $(els[i]).find('title').text();
+        $(els[i]).find('title').text(encodeURIComponent(title));
+        let seat_el_str = new XMLSerializer().serializeToString(els[i]);
+        seat_el_str = seat_el_str.replace('xmlns="http://www.w3.org/2000/svg" ', '');
+        seat_el_str = seat_el_str.replace(/\r?\n/g, '').replace(/ +/g, ' ');
+        let seat_el = {};
+        seat_el[seat_id] = seat_el_str;
+        seat_data[grid_class][row_id].push(seat_el);
       }
-      if (!(row_id in seat_data[grid_class])) {
-        seat_data[grid_class][row_id] = [];
-      }
-
-      (<HTMLElement>els[i]).style.display = 'inline';
-      let seat_id = $(els[i]).attr('id');
-      let title = $(els[i]).find('title').text();
-      $(els[i]).find('title').text(encodeURIComponent(title));
-      let seat_el_str = new XMLSerializer().serializeToString(els[i]);
-      seat_el_str = seat_el_str.replace('xmlns="http://www.w3.org/2000/svg" ', '');
-      seat_el_str = seat_el_str.replace(/\r?\n/g, '').replace(/ +/g, ' ');
-      let seat_el = {};
-      seat_el[seat_id] = seat_el_str;
-      seat_data[grid_class][row_id].push(seat_el);
       this.seat_elements = seat_data;
     }
     $('.seat').remove();
