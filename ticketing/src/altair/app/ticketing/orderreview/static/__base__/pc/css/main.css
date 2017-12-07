@@ -41,7 +41,6 @@ header h1 {
 header h1 img {
   border-radius: 5px;
   background: #ffffff;
-  padding: 5px;
   vertical-align: middle !important;
   height: 100%;
 }
@@ -429,6 +428,7 @@ main {
 
   .wrap-content {
     padding: 20px 3%;
+    margin: 0;
   }
 
   .customer-table {

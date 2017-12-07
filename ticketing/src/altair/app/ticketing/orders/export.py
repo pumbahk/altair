@@ -205,6 +205,7 @@ ordered_ja_col = OrderedDict([
     (u'order.system_fee', u'システム利用料'),
     (u'order.special_fee_name', u'特別手数料名'),
     (u'order.special_fee', u'特別手数料'),
+    (u'order.margin', u'内手数料金額'),
     (u'membership.name', u'会員種別名'),
     (u'membergroup.name', u'会員グループ名'),
     (u'user_credential.authz_identifier', u'会員種別ID'),

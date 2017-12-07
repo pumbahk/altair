@@ -30,8 +30,8 @@ CWD=$(cd $(dirname $0) && pwd)
 [ -f ${CWD}/../../common/function.sh ] && . ${CWD}/../../common/function.sh
 
 # 独自設定・関数の読み込み
-relative_source config.sh
-relative_source function.sh
+. "${CWD}/config.sh"
+. "${CWD}/function.sh"
 
 ### 設定内容の出力
 cat << EOS
