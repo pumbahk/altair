@@ -192,7 +192,7 @@ class OperatorForm(OurForm):
         validators=[
             RequiredOnNew(),
             Regexp(r'^(?=.*[a-zA-Z])(?=.*[0-9])([A-Za-z0-9' + re.escape('~!@#$%^&*()_+-=[]{}|;:<>?,./') + ']+)$', 0,
-                   message=u'半角英数字混在でご入力下さい。'),
+                   message=u'半角の英文字と数字を組み合わせてご入力ください。大文字も使用できます。'),
             Length(min=7, message=u'7文字以上で入力してください'),
             ]
         )
