@@ -810,3 +810,33 @@ class OAuthServiceProviderForm(OurForm):
             if sp:
                 raise ValidationError(u'「%s」は同org内で既に使用されております' % field.data)
 
+class CSRFSecureForm(SessionSecureForm):
+    SECRET_KEY = 'Cgnweu8F8fqWyhMbPHLNCk4D9x6ovjTq'
+
+class ChangePassWordForm(OurForm, CSRFSecureForm):
+    old_password = OurTextField(
+        label=u'旧パスワード',
+        widget=OurPasswordInput(),
+        validators=[
+            Required(message=u'必須項目です。')
+        ]
+    )
+    password = OurTextField(
+        label=u'パスワード',
+        widget=OurPasswordInput(),
+        validators=[
+            Required(message=u'必須項目です。'),
+            Length(min=7, message=u'7文字以上で入力してください。'),
+            Regexp(r'^(?=.*[a-zA-Z])(?=.*[0-9])([A-Za-z0-9' + re.escape('~!@#$%^&*()_+-=[]{}|;:<>?,./') + ']+)$', 0,
+                   message=u'半角英数字混在でご入力下さい。')
+            ]
+        )
+
+    password_confirm = OurTextField(
+        label=u'パスワード確認',
+        widget=OurPasswordInput(),
+        validators=[
+            Required(message=u'必須項目です。'),
+            EqualTo('password', message=u'パスワードとパスワード確認が一致しません。')
+            ]
+        )

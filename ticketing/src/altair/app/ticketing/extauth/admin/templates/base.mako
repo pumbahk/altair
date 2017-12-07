@@ -19,6 +19,21 @@
         font-weight: bold;
         color: #777;
     }
+    .error-msg-wrap {
+        display: block;
+        margin: 20px auto;
+        width: 100%;
+    }
+    .error-msg-wrap ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    .error-msg-wrap ul li {
+        font-size: 16px;
+        font-weight: bold;
+        color: #CF0000;
+    }
   </style>
 </head>
 <body>
@@ -37,6 +52,7 @@
             <li class="dropdown">
                 <a class="dropdown-toggle" data-toggle="dropdown">${request.operator.auth_identifier}<b class="caret"></b></a>
                 <ul class="dropdown-menu">
+                    <li><a href="${request.route_path('change_password', _query=dict(return_url=request.path))}"><i class="icon-edit"></i> パスワード変更</a></li>
                     <li><a href="${request.route_path('logout')}"><i class="icon-off"></i> ログアウト</a></li>
                 </ul>
             </li>
@@ -47,6 +63,15 @@
     </div>
   </div>
   <div class="container">
+    % if request.session.peek_flash():
+      <div class="error-msg-wrap">
+        <ul>
+          % for msg in request.session.pop_flash():
+          <li>${msg}</li>
+          % endfor
+        </ul>
+      </div>
+    % endif
     ${next.body()}
   </div>
 </body>
