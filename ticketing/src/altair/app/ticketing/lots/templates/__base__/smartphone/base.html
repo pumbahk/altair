@@ -7,9 +7,7 @@
   <meta name = "format-detection" content="telephone=no">
   <!-- Cascading Style Sheets -->
   <link rel="shortcut icon" href="${view_context.static_url('smartphone/images/favicon.ico')}">
-  <link rel="stylesheet" href="${view_context.static_url('smartphone/css/common.css', 'lots')}" type="text/css" media="all">
-  <link rel="stylesheet" href="${view_context.static_url('smartphone/css/helper.css', 'lots')}" type="text/css" media="all">
-  <link rel="stylesheet" href="${view_context.static_url('smartphone/css/main.css', 'lots')}" type="text/css" media="all">
+  <link rel="stylesheet" href="${request.static_url('altair.app.ticketing.lots:static/__base__/smartphone/css/import.css')}" type="text/css" media="all">
   <link rel="stylesheet" href="${view_context.static_url('smartphone/css/custom.css', 'lots')}" type="text/css" media="all">
   <%block name="css"></%block>
 

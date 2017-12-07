@@ -34,8 +34,11 @@ body {
 /* ts-header ============================== */
 header .head {
   height: 60px;
+  margin: 0;
+  padding: 0;
 }
 header h1 {
+  text-align: left;
   padding-left: 10px;
   line-height: 60px;
 }
@@ -43,7 +46,7 @@ header h1 img {
   text-align: left;
   border-radius: 5px;
   background: #ffffff;
-  padding: 5px;
+  vertical-align: middle !important;
 }
 
 /* ts-footer ============================== */
@@ -85,7 +88,8 @@ header h1 img {
 /* form-reset */
 .confirmForm input,
 .confirmForm button,
-.confirmForm textarea {
+.confirmForm textarea,
+.confirmForm select {
 /*	margin: 0;
 	padding: 0;
 	background: none;*/
@@ -125,9 +129,19 @@ header h1 img {
 .confirmForm input:focus::-webkit-input-placeholder { color:transparent; }
 .confirmForm input:focus:-ms-input-placeholder { color:transparent; }
 .confirmForm input:focus::-moz-placeholder { color:transparent; }
+
 .confirmForm select {
+  -webkit-border-radius: 3px;
+	-moz-border-radius: 3px;
+	border-radius: 3px;
 	border: 1px solid #CCC;
-	padding: 5px;
+	background: #f4f3f1;
+  padding: 5px 30px 5px 5px;
+
+  background-image: url(../images/arrow-down.png);
+  background-position: calc(100% - 10px) 10px;
+  background-size: 10px 10px;
+  background-repeat: no-repeat;
 }
 
 .confirmForm input[type=radio],
@@ -553,10 +567,6 @@ li.btn-seat-plus.btn-seat-active:after {
 	padding: 12px;
 	background: #fff;
 	border-top: 1px solid #efefef;
-}
-.settlementSelectBox select {
-	padding: 5px;
-	border: 1px solid #ccc;
 }
 .selectdate-box dl {
 	-moz-border-radius: 6px;
