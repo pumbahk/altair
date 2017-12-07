@@ -63,7 +63,7 @@ class OperatorForm(Form):
             Optional(),
             Regexp(r'^(?=.*[a-zA-Z])(?=.*[0-9])([A-Za-z0-9' + re.escape('~!@#$%^&*()_+-=[]{}|;:<>?,./') + ']+)$', 0,
                    message=u'半角の英文字と数字を組み合わせてご入力ください。大文字も使用できます。'),
-            Length(7, 32, message=u'7文字以上32文字以内で入力してください。')
+            Length(min=7, max=32, message=u'7文字以上32文字以内で入力してください。')
         ]
     )
     password2 = PasswordField(u'パスワード確認', validators=[Optional(), EqualTo('password', message=u'パスワードと確認用パスワードが一致しません。')])
