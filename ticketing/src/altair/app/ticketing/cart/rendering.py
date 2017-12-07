@@ -58,7 +58,7 @@ class OverridableTemplateRendererHelperFactory(object):
         if system_values is not None:
             system_values['view_context'] = view_context
         paths = self.get_template_paths(view_context, package.__name__, name)
-        for path in paths:
+        for i, path in enumerate(paths):
             asset = self.resolve_template(path)
             resolved_uri = asset.absspec()
             if resolved_uri in self.bad_templates:
@@ -68,7 +68,11 @@ class OverridableTemplateRendererHelperFactory(object):
                     logger.debug('template %s does not exist' % resolved_uri)
                     self.bad_templates.add(resolved_uri)
                     continue
+                elif not view_context.membership_login_body and i == 0:
+                    self.bad_templates.add(resolved_uri)
+                    continue
             return RendererHelper(name=resolved_uri, package=package, registry=registry)
+        self.bad_templates.clear()
         return None
 
 

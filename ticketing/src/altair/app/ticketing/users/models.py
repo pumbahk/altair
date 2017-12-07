@@ -1,5 +1,5 @@
 # -*- coding:utf-8 -*-
-from sqlalchemy import Table, Column, Boolean, BigInteger, Integer, Float, String, Unicode, Date, DateTime, ForeignKey, DECIMAL, Index, UniqueConstraint, Text
+from sqlalchemy import Table, Column, Boolean, BigInteger, Integer, Float, String, Unicode, Date, DateTime, ForeignKey, DECIMAL, Index, UniqueConstraint, Text, UnicodeText
 from sqlalchemy.sql.expression import case, null
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import join, backref, column_property
@@ -220,9 +220,9 @@ class Membership(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     enable_auto_input_form = AnnotatedColumn(Boolean, default=True, server_default='1', nullable=False, _a_label=_(u'自動フォーム入力'))
     enable_point_input = AnnotatedColumn(Boolean, default=True, server_default='1', nullable=False, _a_label=_(u'楽天ポイント手入力'))
     login_body_disp_agreement = AnnotatedColumn(Boolean, default=True, _a_label=_(u'ログイン画面の表示/非表示'))
-    login_body_pc = Column(MutationDict.as_mutable(JSONEncodedDict(65536)))
-    login_body_smartphone = Column(MutationDict.as_mutable(JSONEncodedDict(65536)))
-    login_body_mobile = Column(MutationDict.as_mutable(JSONEncodedDict(65536)))
+    login_body_pc = Column(UnicodeText)
+    login_body_smartphone = Column(UnicodeText)
+    login_body_mobile = Column(UnicodeText)
     #sales_segments = lambda:relationship('SalesSegment', secondary=Membership_SalesSegment.__table__, backref='memberships')
     status = Column(Integer)
 
