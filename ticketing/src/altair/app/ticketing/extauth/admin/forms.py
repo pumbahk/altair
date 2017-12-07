@@ -1,6 +1,7 @@
 # encoding: utf-8
 
 import itertools
+import re
 from datetime import timedelta
 from urlparse import urlparse
 from sqlalchemy.orm.exc import NoResultFound
@@ -34,7 +35,7 @@ from altair.formhelpers.validators import (
     )
 from altair.formhelpers.validators.optional import SwitchOptionalBase
 from altair.formhelpers import Max, after1900
-from wtforms.validators import Required, Length, Optional
+from wtforms.validators import Required, Length, Optional, Regexp, EqualTo
 from wtforms import ValidationError
 from altair.sqlahelper import get_db_session
 from ..models import MemberSet, MemberKind, Member, Host, Organization, OAuthServiceProvider
@@ -189,14 +190,19 @@ class OperatorForm(OurForm):
         label=u'パスワード',
         widget=OurPasswordInput(),
         validators=[
-            RequiredOnNew()
+            RequiredOnNew(),
+            Length(min=7, max=32, message=u'7文字以上32文字以内で入力してください。'),
+            Regexp(r'^(?=.*[a-zA-Z])(?=.*[0-9])([A-Za-z0-9' + re.escape('~!@#$%^&*()_+-=[]{}|;:<>?,./') + ']+)$', 0,
+                   message=u'半角の英文字と数字を組み合わせてご入力ください。大文字も使用できます。')
             ]
         )
 
     auth_secret_confirm = OurTextField(
         label=u'パスワード (確認)',
         widget=OurPasswordInput(),
-        validators=[]
+        validators=[
+            EqualTo('auth_secret', message=u'パスワードと確認用パスワードが一致しません')
+            ]
         )
 
     role_id = OurSelectField(
@@ -223,10 +229,6 @@ class OperatorForm(OurForm):
             ],
         coerce=int
         )
-
-    def validate_auth_secret_confirm(form, field):
-        if form.auth_secret.data != '' and field.data != form.auth_secret.data:
-            raise ValidationError(u'パスワードが一致しません')
 
     def validate_auth_identifier(form, field):
         operator = lookup_operator_by_auth_identifier(form.request, field.data) 
