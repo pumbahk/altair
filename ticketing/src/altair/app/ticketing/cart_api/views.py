@@ -123,7 +123,7 @@ class CartAPIView(object):
             reason += " mini svg is none "
 
         if 'seat' not in drawings:
-            reason += " seats data is none "
+            reason += " seat data is none "
 
         if reason:
             return {
