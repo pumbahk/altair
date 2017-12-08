@@ -305,10 +305,10 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
           this.performanceId = this.performance.performance_id;
           console.log(response,"レスポンス");
           this.venueURL = this.performance.venue_map_url;
-          this.seatDataURL = this.performance.seat_data;
+          this.seatDataURL = this.performance.seat_data_url;
           //ダミーURL
           //this.venueURL = "../assets/kobo-park-miyagi-2017-spa-no-seats.svg";
-          //this.seatDataURL = "../assets/newSeatElements.gz";
+          //this.seatDataURL = "../assets/kobo-park-miyagi-2017-spa-seats.json.gz";
           //ダミーURL
 
           // 個席データ取得

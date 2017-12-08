@@ -160,7 +160,7 @@ export interface IPerformance {
   /** @type string - ミニ会場図URL */
   mini_venue_map_url: string;
   /** @type string - 個席データ */
-  seat_data: string;
+  seat_data_url: string;
 }
 
 /** @interface 販売情報インタフェース */
