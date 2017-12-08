@@ -1,1 +1,14 @@
-404
+<%inherit file="./base.html"/>
+
+<div id="content">
+  <div class="wrap-content">
+    <h2 class="heading-primary">
+      ページが見つかりません
+    </h2>
+    <ul class="errors_ul">
+      <li>${_(u'ブラウザの再読み込みを行う')}</li>
+      <li>${_(u'入力したURL（ページアドレス）にタイプミスがないか確認する')}</li>
+      <li>${_(u'ブラウザの「戻る」ボタンを押して前画面からやり直す')}</li>
+    </ul>
+  </div>
+</div>
