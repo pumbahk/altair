@@ -24,6 +24,6 @@ export class SeatDataService extends ApiBase{
    * @return {Observable} see http.get()
    */
   getSeatData(url:string): Observable<any | IErrorResponse> {
-    return this.httpGetCompressedJson(url);
+    return this.httpGetJsonData(url);
   }
 }

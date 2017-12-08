@@ -70,17 +70,14 @@ export class ApiBase extends Http{
    * @return Observable<T> - Observable関数
    * @return null - 通信エラー
    */
-  protected httpGetCompressedJson<T>(url: string): Observable<T> {
-    var Zlib = require('zlibjs/bin/gunzip.min').Zlib;
+  protected httpGetJsonData<T>(url: string): Observable<T> {
     this._logger.debug('API GET:', url);
     let seat_options: RequestOptionsArgs = {};
     seat_options.responseType = ResponseContentType.ArrayBuffer;
     var get = this.get(url, seat_options)
       .timeout(60000)
       .map((response) => {
-        var uint8array = new Uint8Array(response.arrayBuffer());
-        var gunzip = new Zlib.Gunzip(uint8array);
-        var plain = gunzip.decompress();
+        var plain = new Uint8Array(response.arrayBuffer());
         var asciistring = "";
         for (var i = 0; i < plain.length; i++) {
           asciistring += String.fromCharCode(plain[i]);
