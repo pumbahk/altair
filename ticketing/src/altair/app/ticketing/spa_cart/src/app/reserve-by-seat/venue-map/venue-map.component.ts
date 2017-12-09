@@ -315,7 +315,6 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
             this.isExistsSeatData = true;
             this.seatDataService.getSeatData(this.seatDataURL).subscribe((response: any) => {
               this.seat_elements = response;
-              console.log("data",this.seat_elements);
             },
               (error) => {
                 let errorMassage: string;
@@ -1516,9 +1515,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
 
   // SVGの座席データを[連席ID, Element]として保持してDOMツリーから削除
   saveSeatData() {
-    console.log(!this.isExistsSeatData);
     if (!this.isExistsSeatData) {
-      console.log("c");
       let els = document.querySelectorAll('.seat');
       let seat_data = {};
       for (let i = 0; i < els.length; i++) {
@@ -1552,7 +1549,6 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
 
   // 現在の描画サイズに合わせて表示するグリッドを決定し、座席データを動的に追加・削除
   setActiveGrid() {
-    console.log("setActive", this.seat_elements);
     if (this.scaleTotal >= SCALE_SEAT) {
       let viewBox = this.getPresentViewBox();
       let grid_x_from = Math.floor(viewBox[0] / this.venueGridSize) - 1;
@@ -1604,7 +1600,11 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
                 content += seat_data[seat_idx][seat_id];
               }
             }
-            document.getElementById(row_id).innerHTML += content;
+            //document.getElementById(row_id).innerHTML += content;
+            document.getElementById(row_id).appendChild(createElementFromHTML(content));
+            //ここでは追加されるようだが
+            console.log(document.getElementById(row_id));
+            //svgには追加されない
             isRedrawSeats = true;
           }
         }
@@ -1619,6 +1619,16 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
         }
       }
       this.active_grid = [];
+    }
+    /**
+    * HTML文字列をElementへ変換する。
+    * @param html HTML文字列
+    * @returns {Element}
+    */
+    function createElementFromHTML(html) {
+      const tempEl = document.createElementNS("http://www.w3.org/1999/xhtml", "div");
+      tempEl.innerHTML = html;
+      return tempEl.firstElementChild;
     }
   }
 

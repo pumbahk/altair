@@ -79,19 +79,16 @@ export class ApiBase extends Http{
     var get = this.get(url, seat_options)
       .timeout(60000)
       .map((response) => {
-        console.log(response);
         var plain;
         var asciistring = "";
 
         if (u.indexOf('Trident') != -1 || u.indexOf('MSIE') != -1) {
           //IEだったら解凍処理
-          console.log("a");
           var uint8array = new Uint8Array(response.arrayBuffer());
           var gunzip = new Zlib.Gunzip(uint8array);
           plain = gunzip.decompress();
         } else {
           //IE以外はパース
-          console.log("b");
           plain = new Uint8Array(response.arrayBuffer());
         }
 
