@@ -44,7 +44,7 @@ from ..api import validate_length_dict
 
 from . import SEJ_PAYMENT_PLUGIN_ID as PAYMENT_PLUGIN_ID
 from . import SEJ_DELIVERY_PLUGIN_ID as DELIVERY_PLUGIN_ID
-from .helpers import delivery_method_get_description, payment_method_get_description
+from .helpers import get_delivery_method_info, get_payment_method_info
 
 logger = logging.getLogger(__name__)
 
@@ -903,11 +903,11 @@ def can_receive_from_next_day(now, sej_order):
 @lbr_view_config(context=ICartDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID,
              renderer=_overridable_delivery('sej_delivery_confirm.html'))
 def sej_delivery_confirm_viewlet(context, request):
-    default_description = request.translate(u'セブン-イレブン受け取り') if hasattr(request, 'description') else u'セブン-イレブン受け取り'
     cart = context.cart
     delivery_method = cart.payment_delivery_pair.delivery_method
-    description = delivery_method_get_description(request, delivery_method) or default_description
-    return dict(description=Markup(description))
+    delivery_name = request.translate(u'セブン-イレブン受け取り') if hasattr(request, 'description') else u'セブン-イレブン受け取り'
+    description = get_delivery_method_info(request, delivery_method, 'description')
+    return dict(delivery_name=delivery_name, description=Markup(description))
 
 @lbr_view_config(context=IOrderPayment, name="payment-%d" % PAYMENT_PLUGIN_ID,
              renderer=_overridable_delivery('sej_payment_complete.html'))
@@ -932,11 +932,12 @@ def sej_payment_viewlet(context, request):
 
 @lbr_view_config(context=ICartPayment, name="payment-%d" % PAYMENT_PLUGIN_ID, renderer=_overridable_payment('sej_payment_confirm.html'))
 def sej_payment_confirm_viewlet(context, request):
-    default_description = request.translate(u'セブン-イレブン支払い') if hasattr(request, 'description') else u'セブン-イレブン支払い'
+
     cart = context.cart
     payment_method = cart.payment_delivery_pair.payment_method
-    description = payment_method_get_description(request, payment_method) or default_description
-    return dict(description=Markup(description))
+    payment_name = request.translate(u'セブン-イレブン支払い') if hasattr(request, 'description') else u'セブン-イレブン支払い'
+    description = get_payment_method_info(request, payment_method, 'description')
+    return dict(payment_name=payment_name, description=Markup(description))
 
 
 @lbr_view_config(context=ICompleteMailResource, name="payment-%d" % PAYMENT_PLUGIN_ID, renderer=_overridable_payment('sej_payment_mail_complete.html', fallback_ua_type='mail'))
