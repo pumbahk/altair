@@ -884,14 +884,9 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
           sessionStorage.setItem('historyCount', beforeHistory.toString());
         } else {
           //進まれた場合再読み込み
-          if (ua.indexOf('firefox') !== -1 && ua.indexOf('win') !== -1) {
-            setTimeout(function(){
-              location.href = location.href;
-            },1000);
-          } else {
+          if (!(ua.indexOf('firefox') !== -1 && ua.indexOf('win') !== -1)) {
             location.href = location.href;
           }
-          
         }
       }
     }
