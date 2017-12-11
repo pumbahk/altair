@@ -884,7 +884,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
           sessionStorage.setItem('historyCount', beforeHistory.toString());
         } else {
           //進まれた場合再読み込み
-          if (!(ua.indexOf('firefox') !== -1 && ua.indexOf('win') !== -1)) {
+          if (ua.indexOf('firefox') == -1 || ua.indexOf('android') !== -1 || /iP(hone|(o|a)d)/.test(navigator.userAgent)) {
             location.href = location.href;
           }
         }
