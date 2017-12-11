@@ -1,0 +1,15 @@
+{
+  "name": "venue-admin",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "busboy": "^0.2.14",
+    "sax": "^1.2.4"
+  }
+}

@@ -1,0 +1,60 @@
+<html lang="ja">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+</head>
+<body>
+<script src="js/jquery-1.7.2.js"></script>
+<script src="https://service.ticketstar.jp/static/js/jquery.chosen.js"></script>
+<link rel="stylesheet" type="text/css" href="https://service.ticketstar.jp/static/css/chosen.css" />
+
+<h1>venue uploader</h1>
+
+<form method="post" enctype="multipart/form-data">
+backend(.xml): <input type="file" name="back" />
+<input type="submit" value="アップロード" />
+</form>
+
+<form onsubmit="location.href = 'checker.html#'+this.s.options[this.s.selectedIndex].value; return false;" id="backend_form">
+<select name="s" onchange="this.form.onsubmit();">
+<option value=""></option>
+</select>
+<input type="submit" value="Go" />
+</form>
+
+<hr />
+<form method="post" enctype="multipart/form-data">
+frontend(.svg files and .json): <input type="file" name="front[]" multiple="multiple" />
+<input type="submit" value="アップロード" />
+<br />
+(原則.jsonを1つ含めてアップロードしてください. ファイル名のベース部はmetadataじゃなくてもいいです. ただし.svgが1つの時は.svgだけでも大丈夫です. サーバ側で自動生成します.)
+</form>
+
+<form onsubmit="location.href = 'viewer.html#'+this.s.options[this.s.selectedIndex].value; return false;" id="frontend_form">
+<select name="s" onchange="this.form.onsubmit();">
+<option value=""></option>
+<!-- todo -->
+</select>
+<input type="submit" value="Go" />
+</form>
+
+<hr />
+
+<script>
+$.ajax({ url: '../api/backend', json: true }).then(function(res) {
+    var select = $('#backend_form').find('select[name="s"]');
+    res.forEach(function(r) {
+        $('<option></option>').text(r.mtime.substr(0, 16)+' '+r.content.name+' ('+r.content.seat_count+'席, '+Math.floor(r.size/1024)+'KB) by '+r.content.uploaded_by).attr('value', '/venue-admin/upload/backend/'+r.filename).appendTo(select);
+    });
+    select.chosen();
+});
+$.ajax({ url: '../api/frontend', json: true }).then(function(res) {
+    var select = $('#frontend_form').find('select[name="s"]');
+    res.forEach(function(r) {
+        console.log(r);
+        $('<option></option>').text(r.mtime.substr(0, 16)+' '+r.content.name+' by '+r.content.uploaded_by).attr('value', '/venue-admin/upload/frontend/'+r.filename).appendTo(select);
+    });
+    select.chosen();
+});
+</script>
+</body>
+</html>
