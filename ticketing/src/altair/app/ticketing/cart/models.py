@@ -217,9 +217,27 @@ class Cart(Base, c_models.CartMixin):
         return cls._order_no
 
     @property
+    def discount_amount(self):
+        from altair.app.ticketing.discount_code.models import UsedDiscountCode
+        discount_amount = 0
+        for item in self.items:
+            for element in item.elements:
+                for index in range(element.quantity):
+                    # TODO OKADA スレーブから取る
+                    used_code = UsedDiscountCode.query.filter(UsedDiscountCode.carted_product_item_id==element.id).first()
+                    if used_code:
+                        discount_amount = discount_amount + element.product_item.price
+        return discount_amount
+
+    @property
+    def total_amount(self):
+        total_amount = c_api.calculate_total_amount(self)
+        return total_amount - self.discount_amount
+
+    @property
     def total_amount(self):
         try:
-            return c_api.calculate_total_amount(self)
+            return c_api.calculate_total_amount(self) - self.discount_amount
         except Exception as e:
             raise InvalidCartStatusError(self.id)
 
