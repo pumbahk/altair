@@ -82,6 +82,27 @@ class DiscountCodeCode(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     used_at = AnnotatedColumn(DateTime, nullable=True, _a_label=_(u'利用日時'))
 
 
+class DiscountCodeTarget(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+    __tablename__ = 'DiscountCodeTarget'
+    id = AnnotatedColumn(Identifier, primary_key=True, _a_label=_(u'ID'))
+    discount_code_setting_id = AnnotatedColumn(Identifier, ForeignKey('DiscountCodeSetting.id'), nullable=False,
+                                               _a_label=_(u'割引コード設定ID'))
+    discount_code_setting = relationship('DiscountCodeSetting',
+                                         backref='DiscountCodeTarget',
+                                         cascade='all'
+                                         )
+    event_id = AnnotatedColumn(Identifier, ForeignKey('Event.id'), nullable=False, _a_label=_(u'イベントID'))
+    event = relationship('Event',
+                         backref='DiscountCodeTarget',
+                         cascade='all'
+                         )
+    performance_id = AnnotatedColumn(Identifier, ForeignKey('Performance.id'), nullable=False, _a_label=_(u'パフォーマンスID'))
+    performance = relationship('Performance',
+                               backref='DiscountCodeTarget',
+                               cascade='all'
+                               )
+
+
 class UsedDiscountCode(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'UsedDiscountCode'
     id = AnnotatedColumn(Identifier, primary_key=True, _a_label=_(u'ID'))

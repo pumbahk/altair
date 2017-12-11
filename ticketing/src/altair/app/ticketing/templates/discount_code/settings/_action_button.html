@@ -13,7 +13,7 @@
         ),
         'target':dict(
             label=u'適用対象',
-            url='javascript:target_setting({});'.format(s_id),
+            url=request.route_path('discount_code.target_index', setting_id=s_id),
             icon='icon-pencil',
         ),
         'code':dict(
@@ -38,14 +38,14 @@
     order = iter(order_list)
 %>
 % if split:
-  <div style="float: left; margin-right: 10px;">
-  % for item in order:
+    <div style="float: left; margin-right: 10px;">
+        % for item in order:
       ${HH.action_button(actions, iter([item]), vertical=False, extra_classes=[u'btn-small'] if small else [])}
-  % endfor
-  </div>
+        % endfor
+    </div>
 % else:
     <div style="float: left;">
-      ${HH.action_button(actions, order, vertical=False, extra_classes=[u'btn-small'] if small else [])}
+        ${HH.action_button(actions, order, vertical=False, extra_classes=[u'btn-small'] if small else [])}
     </div>
 % endif
 ${delete_modal()}

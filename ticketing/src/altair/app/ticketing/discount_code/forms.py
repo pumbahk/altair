@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
 
+from altair.app.ticketing.core.models import Event
 from altair.formhelpers import Translations, DateTimeFormat
 from altair.formhelpers.fields import OurDateTimeField, OurSelectField
 from altair.formhelpers.validators import Required, SwitchOptional
 from altair.saannotation import get_annotations_for
 from wtforms import Form
-from wtforms import TextField, HiddenField, SelectField, BooleanField, TextAreaField
+from wtforms import TextField, HiddenField, SelectField, BooleanField, TextAreaField, IntegerField
 from wtforms.validators import Length, Optional, ValidationError
-from .models import CodeOrganizerEnum, DiscountCodeSetting, DiscountCodeCode
+from .models import CodeOrganizerEnum, DiscountCodeSetting, DiscountCodeCode, DiscountCodeTarget
 
 
 class DiscountCodeSettingForm(Form):
@@ -209,4 +210,32 @@ class DiscountCodeCodesForm(Form):
     generate_num = TextField(
         label=u'コード生成数',
         validators=[Required()],
+    )
+
+
+class DiscountCodeTargetForm(Form):
+    id = HiddenField(
+        label=u'ID',
+        validators=[Optional()],
+    )
+    discount_code_setting_id = HiddenField(
+        label=get_annotations_for(DiscountCodeTarget.discount_code_setting_id)['label'],
+        validators=[Optional()],
+    )
+    event_id = IntegerField(
+        label=get_annotations_for(DiscountCodeTarget.event_id)['label'],
+        default=False,
+        validators=[Optional()],
+    )
+    performance_id = IntegerField(
+        label=get_annotations_for(DiscountCodeTarget.performance_id)['label'],
+        default=False,
+        validators=[Optional()],
+    )
+
+
+class SearchTargetForm(Form):
+    event_title = TextField(
+        label=get_annotations_for(Event.title)['label'],
+        validators=[Optional()],
     )

@@ -12,8 +12,8 @@ def is_enabled_discount_code_checked(context, request):
     return context.user.organization.setting.enable_discount_code
 
 
-def get_discount_setting(context, request):
-    """DiscountCodeSettingとそれに紐づくDiscountCodeのレコードの取得"""
+def get_discount_setting_related_data(context, request):
+    """DiscountCodeSettingとそれに紐づく関連テーブルのレコードを取得"""
     setting_id = request.matchdict['setting_id']
 
     query = context.session.query(DiscountCodeSetting).filter_by(

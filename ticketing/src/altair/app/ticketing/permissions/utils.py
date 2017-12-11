@@ -121,6 +121,8 @@ class RouteConfig(object):
         'discount_code.codes_csv_export': u'クーポン・割引コード CSV出力',
         'discount_code.codes_delete_all': u'クーポン・割引コード 全コード削除',
         'discount_code.target_index': u'クーポン・割引コード 適用対象',
+        'discount_code.target_confirm': u'クーポン・割引コード 適用対象 変更内容確認',
+        'discount_code.target_register': u'クーポン・割引コード 適用対象 変更内容登録',
         'events.copy'               : u'イベント コピー',
         'events.delete'             : u'イベント 削除',
         'events.edit'               : u'イベント 編集',

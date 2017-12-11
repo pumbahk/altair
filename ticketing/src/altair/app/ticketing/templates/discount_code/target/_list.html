@@ -1,0 +1,94 @@
+<%page args="setting, events" />
+<%namespace file="/common/helpers.html" name="ch" />
+<%! from altair.app.ticketing.core.models import Event %>
+<%! from altair.app.ticketing.events.performances.forms import PerformanceForm %>
+
+<form action="${request.url}" method="POST">
+    <div class="row-fluid" style="margin-top: 30px;">
+        <div class="span10">
+            <div class="form-actions">
+                <a href="${request.route_path("discount_code.target_confirm",setting_id=setting.id, _query=request.GET)}"
+                   id="target_confirm"
+                   class="ajax-modal btn btn-primary" data-toggle="modal" data-target="#TargetEditModal">変更内容を保存</a>
+                <p style="margin-top: 10px;">イベント数（非表示を含む）: ${events.item_count}件</p>
+                <table class="table table-bordered" style="margin-top:16px;">
+                    <thead>
+                    <tr>
+                        <th class="span4">
+                            ${HH.label_text_for(Event.title)}
+                        </th>
+                        <th class="span6" style="vertical-align:top;">
+                            ${HH.label_text_for(PerformanceForm.name)}
+                        </th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                        % for event in events.items:
+                            <tr>
+                                <td>
+                                    <div class="control-group ">
+                                        <a href="${request.route_path("events.show",event_id=event.id)}">${event.title}</a>
+                                    </div>
+                                </td>
+                                <td>
+                                    <dl>
+                                        <dt>公演数: ${len(event.performances)}件</dt>
+                                        <dt>選択数:
+                                            <span id="selected_num_${event.id}">${len(event.DiscountCodeTarget)}</span>件
+                                        </dt>
+                                    </dl>
+                                    <div class="controls">
+                                        <input id="select_all_performance_${event.id}" class="select_all_performance"
+                                               type="checkbox" name="select_all_performance"
+                                               data-event_id="${event.id}"/>
+                                        <span class="help-inline">
+                                            <a rel="popover" data-original-title="全選択"
+                                               data-content="ON: 全公演を選択します。<br />OFF: 全公演の選択を外します。">
+                                                <i class="icon-question-sign"></i>
+                                            </a>
+                                        </span>
+                                        <label class="inline" for="select_all_performance_${event.id}">
+                                            全選択
+                                        </label>
+                                    </div>
+                                    <%
+                                        p_count = 0
+                                        hidden_div_flg = False
+                                    %>
+                                    % for performance in event.performances:
+                                        <div class="${"hidden_performance_{}".format(event.id) if hidden_div_flg else ''} control-group">
+                                            <input id="performance_id_${performance.id}"
+                                                   name="performance_id"
+                                                   class="belongs_to_event_${event.id}"
+                                                   value="${performance.id}"
+                                                   style="float:left;"
+                                                   data-event_id="${event.id}"
+                                                ${'checked="checked"' if performance.DiscountCodeTarget else ''}
+                                                   type="checkbox">
+                                            <label class="control-label"
+                                                   for="performance_id_${performance.id}">${vh.datetime(performance.start_on, with_weekday=True)} ${performance.name}
+                                            </label>
+                                        </div>
+                                    <%
+                                        p_count += 1
+                                        if p_count >= 5:
+                                            hidden_div_flg = True
+                                    %>
+                                    % endfor
+                                    % if hidden_div_flg:
+                                        <a class="disp_all" data-event_id="${event.id}"
+                                           href="javascript:void(0)">すべて表示</a>
+                                    % endif
+                                </td>
+                            </tr>
+                        % endfor
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</form>
+
+${ch.pager(events)}
+
+

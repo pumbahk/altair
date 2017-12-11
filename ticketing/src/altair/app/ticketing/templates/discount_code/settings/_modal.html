@@ -10,7 +10,6 @@
         var endpoints = {
             'new': '${request.route_path('discount_code.settings_new')|n}',
             'edit': '${request.route_path('discount_code.settings_edit', setting_id='__id__')|n}',
-            'target': '${request.route_path('discount_code.settings_target', setting_id='__id__')|n}',
             'delete': '${request.route_path('discount_code.settings_delete', setting_id='__id__')|n}',
         };
         (function (modal_setting) {
@@ -56,7 +55,7 @@
 <div id="${modal_id}" class="modal hide">
     <div class="modal-header">
         <a class="close" data-dismiss="modal">×</a>
-        <h3>クーポン・割引コード</h3>
+        <h3>クーポン・割引コード設定</h3>
     </div>
 
     <div class="modal-body"></div>

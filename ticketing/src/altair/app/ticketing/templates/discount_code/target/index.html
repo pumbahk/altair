@@ -1,0 +1,174 @@
+<%inherit file="/layout_2cols.html"/>
+<%namespace file="/common/helpers.html" name="ch"/>
+<%! from altair.app.ticketing.discount_code.models import DiscountCodeSetting %>
+
+<script src="${request.static_url('altair.app.ticketing:static/js/jquery.chosen.js')}"></script>
+<link rel="stylesheet" type="text/css" href="${request.static_url('altair.app.ticketing:static/css/chosen.css')}"/>
+
+<%block name="breadcrumbs">
+    ${ch.breadcrumbs(
+    names=[
+    HH.route_label('index'),
+    HH.route_label('discount_code.settings_index'),
+    HH.route_label(request.matched_route.name)
+    ],
+    urls=[
+    request.route_path('index'),
+    request.route_path('discount_code.settings_index'),
+    ]
+    )}
+</%block>
+
+<div class="page-header">
+    <h1>${HH.route_label(request.matched_route.name)} ${setting.name}</h1>
+</div>
+
+<div class="navbar span3" style="margin-left: 0">
+    <div class="navbar-inner">
+        <div class="container">
+            <form method="get" class="navbar-search pull-left form-inline">
+                <span class="navbar-text">
+                    ${ch.help(search_form.event_title, u"部分一致で検索できます。アルファベットの大文字小文字は区別しません。")|n}
+                    ${search_form.event_title.label}
+                </span>
+                ${search_form.event_title(id="event_title", class_="search-query input-medium")}
+                <button type="submit">検索</button>
+            </form>
+
+        </div>
+    </div>
+</div>
+
+<%include file="./_list.html" args="setting=setting, events=events"/>
+
+<div class="modal hide" id="TargetEditModal">
+</div>
+
+<script type="text/javascript">
+    /**
+     * フォームの入力欄が更新されたかどうかを表すフラグ
+     *
+     * @type {boolean}
+     */
+    var isChanged = false;
+
+    /**
+     * 「？」マーククリックによるヘルプ表示
+     */
+    function pop_over() {
+        $('[rel=popover]').popover({html: true});
+    }
+
+    /**
+     * 公演の全表示と５件表示の切り替え
+     */
+    function click_disp_all() {
+        $(".disp_all").click(function () {
+            var event_id = $(this).data("event_id");
+            var hidden_class = ".hidden_performance_" + event_id;
+            $(hidden_class).toggle();
+            var text = $(this).text();
+            $(this).text(text === "すべて表示" ? "5件のみ表示" : "すべて表示");
+        });
+    }
+
+    /**
+     * 公演の全選択・全チェック外し
+     */
+    function click_select_all_performace() {
+        $(".select_all_performance").change(function () {
+            var prop = $(this).prop('checked');
+            var event_id = $(this).data("event_id");
+            var belongs_to = ".belongs_to_event_" + event_id;
+            if (prop) {
+                $(belongs_to).prop('checked', true);
+            } else {
+                $(belongs_to).prop('checked', false);
+            }
+        });
+    }
+
+    /**
+     * モーダルウィンドウ表示
+     */
+    function ajax_modal() {
+        $("a.ajax-modal[data-toggle=modal]").click(function () {
+            var wrap = $($(this).attr("data-target"));
+            wrap.empty();
+            if ($(this).data("preload")) {
+                $(this).data("preload")($(wrap).load.bind($(wrap), $(this).attr("href")));
+            } else {
+                $(wrap).load($(this).attr("href"));
+            }
+        });
+    }
+
+    /**
+     * チェックをいれたパフォーマンスをJSON形式にまとめてPOST
+     */
+    function collect_checked_performances() {
+        $("#target_confirm").data("preload", function (cont) {
+            var checkeds = $('input[type="checkbox"]:checked');
+            var performance_id_list = $.makeArray(checkeds.map(function (i, e) {
+                return $(e).val();
+            }));
+            return cont({performance_id_list: JSON.stringify(performance_id_list)});
+        });
+    }
+
+    /**
+     * チェックボックスの変化がトリガー
+     * 対象の所属する<td>タグ内の選択数をカウント（全選択の分は除く）
+     * id指定で「選択数: XX件」を書き換え
+     */
+    function count_selected_numbers() {
+        $("input[type=checkbox][data-event_id]").on("change", function () {
+            var event_id = $(this).data("event_id");
+            var checked = $(this).closest("td").find("input[type=checkbox]:checked");
+            var num = checked.length;
+
+            if ($("#select_all_performance_" + event_id).prop('checked')) {
+                num--;
+            }
+
+            $("#selected_num_" + event_id).text(num);
+        });
+    }
+
+    $(function () {
+        pop_over();
+
+        // パフォーマンスの初期表示数は５件まで
+        $("div[class^=hidden_performance_]").hide();
+        click_disp_all();
+
+        click_select_all_performace();
+
+        count_selected_numbers();
+
+        $(window).bind("beforeunload", function () {
+            console.log(isChanged);
+            if (isChanged) {
+                // isChangedフラグがtrueの場合、つまり入力内容が変更されていた
+                // 場合のみ文字列を返すようにします。
+                return "このページを離れようとしています。";
+            }
+        });
+
+        $("form input[type=checkbox]").change(function () {
+            // 入力内容が更新されている場合は、isChangedフラグをtrueにします。
+            isChanged = true;
+        });
+
+        ajax_modal();
+
+        collect_checked_performances();
+    });
+
+    $(document).ajaxComplete(function () {
+        $("input[type=submit]").on("click", function () {
+            // サブミット時は判定を外す。
+            isChanged = false;
+        });
+    });
+</script>

@@ -19,7 +19,7 @@
 </%block>
 
 <div class="page-header">
-    <h1>${setting.first_4_digits} ${setting.name} コード一覧</h1>
+    <h1>${setting.first_4_digits} ${setting.name} ${HH.route_label(request.matched_route.name)}</h1>
 </div>
 
 <%include file="./_list.html" args="form=form, setting=setting, codes=codes"/>

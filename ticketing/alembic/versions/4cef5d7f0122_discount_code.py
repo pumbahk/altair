@@ -75,43 +75,24 @@ def upgrade():
     )
 
     op.create_table(
-        'DiscountCodeEvent',
+        'DiscountCodeTarget',
         sa.Column('id', Identifier, primary_key=True),
         sa.Column('discount_code_setting_id', Identifier, nullable=False),
-        sa.Column('organization_id', Identifier, nullable=False),
-        sa.Column('event_id', Identifier, nullable=True),
-        sa.Column('select_all', sa.Boolean, nullable=True),
-        sa.Column('created_at', sa.TIMESTAMP(), server_default=sqlf.current_timestamp(), nullable=False),
-        sa.Column('updated_at', sa.TIMESTAMP(), server_default=text('0'), nullable=False),
-        sa.Column('deleted_at', sa.TIMESTAMP(), nullable=True),
-        sa.ForeignKeyConstraint(['discount_code_setting_id'], ['DiscountCodeSetting.id'],
-                                name="DiscountCodeEvent_ibfk_1"),
-        sa.ForeignKeyConstraint(['organization_id'], ['Organization.id'], name="DiscountCodeEvent_ibfk_2"),
-        sa.ForeignKeyConstraint(['event_id'], ['Event.id'], name="DiscountCodeEvent_ibfk_3")
-    )
-
-    op.create_table(
-        'DiscountCodePerformance',
-        sa.Column('id', Identifier, primary_key=True),
-        sa.Column('discount_code_setting_id', Identifier, nullable=False),
-        sa.Column('organization_id', Identifier, nullable=False),
         sa.Column('event_id', Identifier, nullable=True),
         sa.Column('performance_id', Identifier, nullable=True),
-        sa.Column('select_all', sa.Boolean, nullable=True),
         sa.Column('created_at', sa.TIMESTAMP(), server_default=sqlf.current_timestamp(), nullable=False),
         sa.Column('updated_at', sa.TIMESTAMP(), server_default=text('0'), nullable=False),
         sa.Column('deleted_at', sa.TIMESTAMP(), nullable=True),
         sa.ForeignKeyConstraint(['discount_code_setting_id'], ['DiscountCodeSetting.id'],
-                                name="DiscountCodePerformance_ibfk_1"),
-        sa.ForeignKeyConstraint(['organization_id'], ['Organization.id'], name="DiscountCodePerformance_ibfk_2"),
-        sa.ForeignKeyConstraint(['event_id'], ['Event.id'], name="DiscountCodePerformance_ibfk_3"),
-        sa.ForeignKeyConstraint(['performance_id'], ['Performance.id'], name="DiscountCodePerformance_ibfk_4")
+                                name="DiscountCodeTarget_ibfk_1"),
+        sa.ForeignKeyConstraint(['event_id'], ['Event.id'], name="DiscountCodeTarget_ibfk_2"),
+        sa.ForeignKeyConstraint(['performance_id'], ['Performance.id'], name="DiscountCodeTarget_ibfk_3"),
+        sa.UniqueConstraint('discount_code_setting_id', 'event_id', 'performance_id', name='unique_target'),
     )
 
 
 def downgrade():
     op.drop_table('DiscountCode')
-    op.drop_table('DiscountCodePerformance')
-    op.drop_table('DiscountCodeEvent')
+    op.drop_table('DiscountCodeTarget')
     op.drop_table('DiscountCodeSetting')
     op.drop_column('OrganizationSetting', u'enable_discount_code')

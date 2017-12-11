@@ -1,18 +1,20 @@
 # encoding: utf-8
 
+import json
 import logging
 
 import webhelpers.paginate as paginate
+from altair.app.ticketing.core.models import Event, Performance
 from altair.app.ticketing.core.utils import PageURL_WebOb_Ex
 from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.models import merge_session_with_post
 from altair.app.ticketing.views import BaseView
-from pyramid.httpexceptions import HTTPFound, HTTPNotFound
+from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPInternalServerError
 from pyramid.renderers import render_to_response
 from pyramid.view import view_config, view_defaults
-from .api import is_enabled_discount_code_checked, get_discount_setting
-from .forms import DiscountCodeSettingForm, DiscountCodeCodesForm
-from .models import DiscountCodeSetting, DiscountCodeCode, delete_discount_code_setting
+from .api import is_enabled_discount_code_checked, get_discount_setting_related_data
+from .forms import DiscountCodeSettingForm, DiscountCodeCodesForm, SearchTargetForm
+from .models import DiscountCodeSetting, DiscountCodeCode, DiscountCodeTarget, delete_discount_code_setting
 
 logger = logging.getLogger(__name__)
 
@@ -142,7 +144,7 @@ class DiscountCode(BaseView):
 
     @view_config(route_name='discount_code.codes_index',
                  renderer='altair.app.ticketing:templates/discount_code/codes/index.html', permission='event_viewer',
-                 custom_predicates=(is_enabled_discount_code_checked, get_discount_setting,))
+                 custom_predicates=(is_enabled_discount_code_checked, get_discount_setting_related_data,))
     def codes_index(self):
         return {
             'form': DiscountCodeCodesForm(),
@@ -152,7 +154,7 @@ class DiscountCode(BaseView):
 
     @view_config(route_name='discount_code.codes_add', request_method='GET',
                  renderer='altair.app.ticketing:templates/discount_code/codes/_form.html', xhr=True,
-                 custom_predicates=(is_enabled_discount_code_checked, get_discount_setting,))
+                 custom_predicates=(is_enabled_discount_code_checked, get_discount_setting_related_data,))
     def codes_add(self):
         f = DiscountCodeCodesForm()
         return {
@@ -164,7 +166,7 @@ class DiscountCode(BaseView):
 
     @view_config(route_name='discount_code.codes_add', request_method='POST',
                  renderer='altair.app.ticketing:templates/discount_code/codes/_form.html', xhr=True,
-                 custom_predicates=(is_enabled_discount_code_checked, get_discount_setting,))
+                 custom_predicates=(is_enabled_discount_code_checked, get_discount_setting_related_data,))
     def codes_add_post(self):
         self.request.POST['code'] = 'TIK78329SEGE'
         f = DiscountCodeCodesForm(self.request.POST, organization_id=self.context.user.organization.id)
@@ -189,12 +191,152 @@ class DiscountCode(BaseView):
 
     @view_config(route_name='discount_code.codes_delete_all', request_method='GET',
                  renderer='altair.app.ticketing:templates/discount_code/codes/_form.html', xhr=True,
-                 custom_predicates=(is_enabled_discount_code_checked, get_discount_setting,))
+                 custom_predicates=(is_enabled_discount_code_checked, get_discount_setting_related_data,))
     def codes_delete_all(self):
         pass
 
     @view_config(route_name='discount_code.codes_csv_export', request_method='GET',
                  renderer='altair.app.ticketing:templates/discount_code/codes/_form.html',
-                 custom_predicates=(is_enabled_discount_code_checked, get_discount_setting,))
+                 custom_predicates=(is_enabled_discount_code_checked, get_discount_setting_related_data,))
     def codes_csv_export(self):
         pass
+
+    def _target_pagination(self, organization_id):
+        """
+        ページネーションによるイベントの取得とフォームの設定を返す
+        """
+        query = Event.query.filter(
+            Event.organization_id == organization_id
+        ).order_by(
+            Event.display_order,
+            Event.id.desc(),
+        )
+
+        f = SearchTargetForm(self.request.GET, organization_id=organization_id)
+        if f.validate():
+            event_title = f.data['event_title']
+            if event_title:
+                query = query.filter(Event.title.like(u"%%%s%%" % event_title))
+
+        events = paginate.Page(
+            query,
+            page=int(self.request.params.get('page', 0)),
+            items_per_page=50,
+            url=PageURL_WebOb_Ex(self.request)
+        )
+
+        return f, events
+
+    @view_config(route_name='discount_code.target_index',
+                 renderer='altair.app.ticketing:templates/discount_code/target/index.html', permission='event_viewer',
+                 custom_predicates=(is_enabled_discount_code_checked, get_discount_setting_related_data,))
+    def target_index(self):
+        f, events = self._target_pagination(organization_id=self.context.user.organization_id)
+
+        return {
+            'setting': self.context.setting,
+            'events': events,
+            'search_form': f
+        }
+
+    @view_config(route_name='discount_code.target_confirm',
+                 renderer='altair.app.ticketing:templates/discount_code/target/_modal.html', permission='event_viewer',
+                 xhr=True,
+                 custom_predicates=(is_enabled_discount_code_checked, get_discount_setting_related_data,))
+    def target_confirm(self):
+        """すでに登録されている適用対象と、今回の登録内容を比較し、どのパフォーマンスが追加・削除されたか表示する"""
+        f, events = self._target_pagination(organization_id=self.context.user.organization_id)
+
+        rt_id_list = []
+        for event in events:
+            for registered in event.DiscountCodeTarget:
+                if hasattr(registered, 'performance_id'):
+                    rt_id_list.append(unicode(registered.performance_id))
+
+        performance_id_list = self.request.params['performance_id_list']
+        selected_list = json.loads(performance_id_list)
+
+        added_id_list = list(set(selected_list) - set(rt_id_list))
+        deleted_id_list = list(set(rt_id_list) - set(selected_list))
+
+        query = self.context.session.query(Performance).join(Event, Event.id == Performance.event_id).order_by(
+            Event.display_order,
+            Event.id.desc(),
+            Performance.display_order,
+            Performance.start_on,
+        )
+
+        added = []
+        if added_id_list:
+            added = query.filter(
+                Performance.id.in_(added_id_list)
+            ).all()
+
+        deleted = []
+        if deleted_id_list:
+            deleted = query.filter(
+                Performance.id.in_(deleted_id_list)
+            ).all()
+
+        return {
+            'setting': self.context.setting,
+            'added': added,
+            'deleted': deleted,
+            'performance_id_list': performance_id_list,
+            'added_id_list': json.dumps(added_id_list),
+            'deleted_id_list': json.dumps(deleted_id_list),
+        }
+
+    @view_config(route_name='discount_code.target_register', request_method='POST',
+                 renderer='altair.app.ticketing:templates/discount_code/target/_modal.html', permission='event_viewer',
+                 custom_predicates=(is_enabled_discount_code_checked, get_discount_setting_related_data,))
+    def target_register(self):
+        added_id_list = self.request.params['added_id_list']
+        deleted_id_list = self.request.params['deleted_id_list']
+
+        logger.info('Update discount code target performance(s). '
+                    'operator_id: {}, '
+                    'added_id_list: {}, '
+                    'deleted_id_list: {}'.format(self.context.user.id, added_id_list, deleted_id_list)
+                    )
+
+        added = []
+        if added_id_list:
+            added = self.context.session.query(Performance).filter(
+                Performance.id.in_(json.loads(added_id_list))
+            ).order_by(
+                Performance.event_id.desc(),
+                Performance.end_on.desc(),
+                Performance.start_on.desc()
+            ).all()
+
+        deleted = []
+        if deleted_id_list:
+            deleted = DiscountCodeTarget.query.filter(
+                DiscountCodeTarget.performance_id.in_(json.loads(deleted_id_list))
+            ).all()
+
+        try:
+            for add in added:
+                target = DiscountCodeTarget(
+                    discount_code_setting_id=self.context.setting.id,
+                    event_id=add.event.id,
+                    performance_id=add.id
+                )
+                target.save()
+
+            for delete in deleted:
+                delete.delete()
+
+        except Exception as e:
+            logger.error(
+                'Failed to update discount code target performance(s). '
+                'error_message: {}'.format(
+                    e.message
+                )
+            )
+            return HTTPInternalServerError()
+
+        self.request.session.flash(u'変更内容を保存しました')
+        return HTTPFound(self.request.route_path("discount_code.target_index", setting_id=self.context.setting.id,
+                                                 _query=self.request.GET))

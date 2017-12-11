@@ -38,3 +38,11 @@ class DiscountCodeCodesResource(TicketingAdminResource):
 
         self.request = request
         self.session = get_db_session(request, name="slave")
+
+
+class DiscountCodeTargetResource(TicketingAdminResource):
+    def __init__(self, request):
+        super(DiscountCodeTargetResource, self).__init__(request)
+
+        self.request = request
+        self.session = get_db_session(request, name="slave")
