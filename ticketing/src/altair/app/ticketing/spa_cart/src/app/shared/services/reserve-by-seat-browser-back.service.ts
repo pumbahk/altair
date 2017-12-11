@@ -4,7 +4,7 @@ import { Observable,Subject } from 'rxjs';
 import { ReserveBySeatComponent } from '../../reserve-by-seat/reserve-by-seat.component';
 
 @Injectable()
-export class ReserveBySeatBrouserBackService implements CanDeactivate<ReserveBySeatComponent> {
+export class ReserveBySeatBrowserBackService implements CanDeactivate<ReserveBySeatComponent> {
   constructor(
     private router: Router
     ) {

@@ -4,7 +4,7 @@ import { Observable } from 'rxjs/Observable';
 import { SelectProductComponent } from '../../select-product/select-product.component';
 
 @Injectable()
-export class SelectProductBrouserBackService implements CanDeactivate<SelectProductComponent> {
+export class SelectProductBrowserBackService implements CanDeactivate<SelectProductComponent> {
   constructor(
     private router: Router,
     ) {
