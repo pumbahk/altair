@@ -887,7 +887,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
           if (ua.indexOf('firefox') !== -1 && ua.indexOf('win') !== -1) {
             setTimeout(function(){
               location.href = location.href;
-            },700);
+            },1000);
           } else {
             location.href = location.href;
           }
