@@ -1301,10 +1301,16 @@ class PaymentView(object):
             self.request.session.flash(e.message)
             start_on = cart.performance.start_on
             sales_segment = self.context.sales_segment
-            payment_delivery_methods = [pdmp
-                                        for pdmp in self.context.available_payment_delivery_method_pairs(sales_segment)
-                                        if pdmp.payment_method.public]
-
+            payment_delivery_methods = self.get_payment_delivery_method_pairs(sales_segment)
+            payment_delivery_methods = [
+                payment_delivery_pair
+                for payment_delivery_pair in payment_delivery_methods
+                if api.check_if_payment_delivery_method_pair_is_applicable(
+                    self.request,
+                    cart,
+                    payment_delivery_pair
+                )
+            ]
             if 0 == len(payment_delivery_methods):
                 raise PaymentMethodEmptyError.from_resource(self.context, self.request)
             return dict(
