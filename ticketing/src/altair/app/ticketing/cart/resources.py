@@ -24,6 +24,7 @@ from altair.app.ticketing.core.interfaces import IOrderQueryable
 from altair.app.ticketing.users import models as u_models
 from altair.app.ticketing.utils import memoize
 from ..discount_code.models import UsedDiscountCode
+from ..discount_code import api as discount_api
 from . import models as m
 from . import api as cart_api
 from .exceptions import NoCartError, DeletedProductError
@@ -854,3 +855,13 @@ class OrderPayment(object):
 class CartPayment(object):
     def __init__(self, cart):
         self.cart = cart
+
+
+def enable_discount_code(context, request):
+    """
+    クーポン・割引コードの使用設定がONになっているか
+    イベントパフォーマンスに紐付いているか
+    """
+    # TODO OKADA イベントパフォーマンスとクーポンが紐付いているか
+    organization = cart_api.get_organization(request)
+    return discount_api.enable_discount_code(organization)

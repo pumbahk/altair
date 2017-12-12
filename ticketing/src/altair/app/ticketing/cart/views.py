@@ -44,6 +44,7 @@ from altair.mobile.interfaces import IMobileRequest
 from altair.sqlahelper import get_db_session
 from altair.app.ticketing.temp_store import TemporaryStoreError
 from pyramid.renderers import render_to_response
+from ..discount_code.api import is_enabled_discount_code_checked
 from pyramid.response import Response
 
 from . import api
@@ -89,7 +90,8 @@ from .exceptions import (
     PerProductProductQuantityOutOfBoundsError,
     CompletionPageNotRenderered,
 )
-from .resources import EventOrientedTicketingCartResource, PerformanceOrientedTicketingCartResource, CompleteViewTicketingCartResource
+from .resources import EventOrientedTicketingCartResource, PerformanceOrientedTicketingCartResource,\
+    CompleteViewTicketingCartResource, enable_discount_code
 from .limiting import LimiterDecorators
 from . import flow
 from .interfaces import IPageFlowPredicate, IPageFlowAction
@@ -1420,7 +1422,9 @@ class ExtraFormView(object):
         return HTTPFound(location=flow_graph(self.context, self.request)(url_wanted=False))
 
 
-@view_defaults(route_name='cart.discount_code', renderer=selectable_renderer("discount_code.html"), decorator=with_jquery.not_when(mobile_request), permission="buy")
+@view_defaults(route_name='cart.discount_code', renderer=selectable_renderer("discount_code.html"),
+               custom_predicates=(enable_discount_code,),
+               decorator=with_jquery.not_when(mobile_request), permission="buy")
 class DiscountCodeEnteringView(object):
     def __init__(self, context, request):
         self.context = context

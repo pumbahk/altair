@@ -37,3 +37,7 @@ def calc_discount_amount(order_like):
                 if used_code:
                     discount_amount = discount_amount + element.product_item.price
     return discount_amount
+
+
+def enable_discount_code(organization):
+    return organization.setting.enable_discount_code
