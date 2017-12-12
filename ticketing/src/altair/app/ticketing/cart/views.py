@@ -44,7 +44,6 @@ from altair.mobile.interfaces import IMobileRequest
 from altair.sqlahelper import get_db_session
 from altair.app.ticketing.temp_store import TemporaryStoreError
 from pyramid.renderers import render_to_response
-from ..discount_code.api import is_enabled_discount_code_checked
 from pyramid.response import Response
 
 from . import api
