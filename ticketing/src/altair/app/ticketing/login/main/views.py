@@ -49,7 +49,7 @@ class DefaultLoginView(BaseView):
             if operator.is_first:
                 aes = AESEncryptor()
                 op_token = aes.get_token(operator.id)
-                self.request.session.flash(u'初めてのログインのため、パスワードの変更をお願いいたします。')
+                self.request.session.flash(u'初回ログインのため、パスワードを更新してください。')
                 return HTTPFound(
                     location=self.request.route_path('login.info.edit', _query=dict(op_token=op_token, next=next_url)))
 
@@ -172,7 +172,7 @@ class LoginUser(BaseView):
         f = OperatorForm(self.request.POST, request=self.request)
 
         if operator.is_first and not f.data['password']:
-            self.request.session.flash(u'初回ログインのため、パスワードを更新ください。')
+            self.request.session.flash(u'初回ログインのため、パスワードを更新してください。')
             return {
                 'form': f,
                 'action_url': action_url

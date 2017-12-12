@@ -104,7 +104,7 @@ class LoginView(object):
         if operator.is_first:
             aes = AESEncryptor()
             op_token = aes.get_token(operator.id)
-            self.request.session.flash(u'初回ログインのため、パスワードを更新ください。')
+            self.request.session.flash(u'初回ログインのため、パスワードを更新してください。')
             return HTTPFound(self.request.route_path('change_password',
                                                      _query=dict(return_url=self.request.path, op_token=op_token)))
 
@@ -1114,7 +1114,7 @@ class ChangePassWordView(object):
                 return HTTPFound(self.request.route_path('login'))
 
             if not self._is_password_matched(operator, form.old_password.data):
-                self.request.session.flash(u'旧パスワードは間違います。')
+                self.request.session.flash(u'旧パスワードが間違います。')
                 return dict(form=form)
             else:
                 operator.auth_secret = digest_secret(form.password.data, generate_salt())
