@@ -72,7 +72,7 @@ export class ApiBase extends Http{
    */
   protected httpGetJsonData<T>(url: string): Observable<T> {
     var Zlib = require('zlibjs/bin/gunzip.min').Zlib;
-    var u = navigator.userAgent;
+    var u = navigator.userAgent.toLowerCase();
     this._logger.debug('API GET:', url);
     let seat_options: RequestOptionsArgs = {};
     seat_options.responseType = ResponseContentType.ArrayBuffer;
@@ -82,13 +82,26 @@ export class ApiBase extends Http{
         var plain;
         var asciistring = "";
 
-        if (u.indexOf('Trident') != -1 || u.indexOf('MSIE') != -1) {
-          //IEだったら解凍処理
+        if (u.indexOf('iphone') != -1 && u.indexOf('firefox') != -1) {
+          Uint8ArrayMake();
+        } else if (
+          u.indexOf('trident') != -1 || u.indexOf('msie') != -1 ||
+          u.indexOf('firefox') != -1 ||
+          (u.indexOf('mac') != -1 && u.indexOf('safari') != -1)) {
+          decompress();
+        } else {
+          Uint8ArrayMake();
+        }
+
+        function decompress() {
+          //解凍能力のないブラウザだったら変換後解凍処理
           var uint8array = new Uint8Array(response.arrayBuffer());
           var gunzip = new Zlib.Gunzip(uint8array);
           plain = gunzip.decompress();
-        } else {
-          //IE以外はパース
+        }
+
+        function Uint8ArrayMake() {
+          //解凍能力のあるブラウザだったら変換のみ
           plain = new Uint8Array(response.arrayBuffer());
         }
 

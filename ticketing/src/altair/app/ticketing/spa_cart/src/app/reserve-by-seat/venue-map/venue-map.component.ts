@@ -72,6 +72,7 @@ import { Logger } from "angular2-logger/core";
 import { ApiConst } from '../../app.constants';
 
 import { Observable } from 'rxjs/Observable';
+import { isIdentifier } from '@angular/compiler';
 
 const SEAT_COLOR_AVAILABLE = 'rgb(0, 128, 255)';
 const SEAT_COLOR_SELECTED = 'rgb(236, 13, 80)';
@@ -146,7 +147,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
   venueURL: string;
   // 個席データURL
   seatDataURL: string;
-  //色ナビurl
+  // 色ナビurl
   colorNavi: string;
   // 会場図ミニマップURL
   wholemapURL: string;
@@ -246,38 +247,30 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
   pinchScale = 1;
   // 表示領域のaspect比に対応するviewBox
   displayViewBox: any[] = null;
-
   // 座席Element情報
   seat_elements: any = {};
-
   // 表示中のグリッド
   active_grid: string[] = [];
-
-  //横画面表示エラーモーダルフラグ
+  // 横画面表示エラーモーダルフラグ
   sideProhibition: boolean = false;
-
-  //座席図表示エリア高さ
+  // 座席図表示エリア高さ
   seatAreaHeight: number;
-
-  //選択単位フラグ 1席ずつ:true/2席以上ずつ:false
+  // 選択単位フラグ 1席ずつ:true/2席以上ずつ:false
   isGroupedSeats: boolean = true;
-
-  //座席グループ情報
+  // 座席グループ情報
   seatGroups: ISeatGroup[];
-
-  //最終座席情報検索呼び出しチェック状態
+  // 最終座席情報検索呼び出しチェック状態
   reservedFlag: boolean = true;
   unreservedFlag: boolean = true;
-
-  //region取得完了フラグ
+  // region取得完了フラグ
   isRegionObtained: boolean = false;
-
-  //ツールチップ用席種
+  // ツールチップ用席種
   tooltipStockType: { name: string; min: number; max: number; region: string[] }[] = [];
-
-  //初期表示測定
+  // 初期表示測定
   startTime: any;
   endTime: any;
+  // SVGに対するinnerHTMLの利用可否
+  isInnerHtmlAvailable: boolean = true;
 
   //ブラウザバックフラグ
   returnFlag = false;
@@ -292,6 +285,11 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
     let drawingSeatTimer;
     let regionIds = Array();
     this.animationEnableService.sendToRoadFlag(true);
+
+    var svg_test = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    if (typeof(svg_test.innerHTML) === 'undefined') {
+      this.isInnerHtmlAvailable = false;
+    }
 
     this.route.params.subscribe((params) => {
       if (params && params['performance_id']) {
@@ -1543,6 +1541,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
       }
       this.seat_elements = seat_data;
     }
+
     $('.seat').remove();
     if (!this.smartPhoneCheckService.isSmartPhone()) $('svg').find('title').remove();
   }
@@ -1594,17 +1593,32 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
           let row_data = this.seat_elements[next_active_grid[i]];
           for (let row_id in row_data) {
             let seat_data = row_data[row_id];
+            let fragment = document.createDocumentFragment();
             let content = "";
-            for (let seat_idx = 0; seat_idx < seat_data.length; seat_idx++) {
-              for (let seat_id in seat_data[seat_idx]) {
-                content += seat_data[seat_idx][seat_id];
+            if (this.isInnerHtmlAvailable) {
+              for (let seat_idx = 0; seat_idx < seat_data.length; seat_idx++) {
+                for (let seat_id in seat_data[seat_idx]) {
+                  content += seat_data[seat_idx][seat_id];
+                }
               }
+              document.getElementById(row_id).innerHTML += content;
+            } else {
+              for (let seat_idx = 0; seat_idx < seat_data.length; seat_idx++) {
+                for (let seat_id in seat_data[seat_idx]) {
+                  content += seat_data[seat_idx][seat_id];
+                }
+              }
+              let parser = new DOMParser();
+              let svg_string = '<svg xmlns=\'http://www.w3.org/2000/svg\'>' + content + '</svg>';
+              let add_element = parser.parseFromString(svg_string, 'text/xml').documentElement;
+              let child_node = add_element.firstChild;
+              let target_element = document.getElementById(row_id);
+              while(child_node) {
+                fragment.appendChild(fragment.ownerDocument.importNode(child_node, true));
+                child_node = child_node.nextSibling;
+              }
+              target_element.appendChild(fragment);
             }
-            //document.getElementById(row_id).innerHTML += content;
-            document.getElementById(row_id).appendChild(createElementFromHTML(content));
-            //ここでは追加されるようだが
-            console.log(document.getElementById(row_id));
-            //svgには追加されない
             isRedrawSeats = true;
           }
         }
