@@ -1,0 +1,68 @@
+<%inherit file="./base.html"/>
+<%namespace file="tags_smartphone.html" name="t" />
+<style type="text/css">
+form {
+  padding: 0 0;
+  margin: 0 0;
+}
+</style>
+<%block name="javascript">
+</%block>
+
+<%block name="css">
+    <style>
+        .error {
+            color: #ff0000;
+        }
+    </style>
+</%block>
+
+%if request.session.peek_flash():
+    %for message in request.session.pop_flash():
+    <div class="error">${message}</div>
+    %endfor
+%endif
+
+<div id="container" style="position: relative;">
+  <!-- ========== main ========== -->
+  <form id="form1" name="form1" method="post" action="${request.url}">
+    <div class="confirmBox">
+      <div class="confirmBoxInner">
+        <h2>クーポン・割引コードのご利用</h2>
+          <p>クーポン・割引コードをお持ちの方はご入力のうえ、「次へ」ボタンをクリックしてください。<br>
+            お持ちでない場合は何も入力せず、そのまま「次へ」をクリックしてください。
+          </p>
+          <table id="confirmDelivery" style="width: 60%;float: left;">
+            % for carted_product_item in cart_product_items:
+              % for i in range(0, carted_product_item.quantity):
+              <tr>
+                <td>${carted_product_item.product_item.name} ${carted_product_item.price}円 ${carted_product_item.seats[0] if carted_product_item.seats else ""}</td>
+              </tr>
+              % endfor
+            % endfor
+          </table>
+          <table id="confirmDelivery">
+            % for carted_product_item in cart_product_items:
+              % for i in range(0, carted_product_item.quantity):
+              <tr>
+                <td>
+                  <input id="code" name="code" placeholder="クーポン・割引コードをご入力ください" style="width:20em">
+                </td>
+              </tr>
+              % endfor
+            % endfor
+          </table>
+        <br/>
+      <p class="align2"><image onclick="document.getElementById('form1').submit();" src="${request.static_url('altair.app.ticketing.cart:static/eagles/pc/images/btn_next.gif')}" alt="次へ" width="226" height="46" /></p>
+    </div>
+  </form>
+</div>
+
+% if request.organization.setting.sitecatalyst_use:
+<!--SiteCatalyst-->
+<%
+    sc = {"pagename": "discount_code"}
+%>
+<%include file="../common/sc_basic.html" args="sc=sc" />
+<!--/SiteCatalyst-->
+% endif
