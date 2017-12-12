@@ -36,7 +36,7 @@ form {
             % for carted_product_item in cart_product_items:
               % for i in range(0, carted_product_item.quantity):
               <tr>
-                <td>${carted_product_item.product_item.name} ${carted_product_item.price}円 ${carted_product_item.seats[0] if carted_product_item.seats else ""}</td>
+                <td>${carted_product_item.product_item.name} ￥${h.format_number(carted_product_item.price)} ${carted_product_item.seats[0] if carted_product_item.seats else ""}</td>
               </tr>
               % endfor
             % endfor
