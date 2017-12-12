@@ -1,6 +1,6 @@
 # encoding: utf-8
 from sqlalchemy.orm.exc import NoResultFound
-from .models import DiscountCodeSetting
+from .models import DiscountCodeSetting, UsedDiscountCode
 
 
 def is_enabled_discount_code_checked(context, request):
@@ -26,3 +26,14 @@ def get_discount_setting(context, request):
     except NoResultFound:
         return False
 
+
+def calc_discount_amount(order_like):
+    # order_likeには、cartと、_DummyCartが入る想定
+    discount_amount = 0
+    for item in order_like.items:
+        for element in item.elements:
+            for index in range(element.quantity):
+                used_code = UsedDiscountCode.query.filter(UsedDiscountCode.carted_product_item_id == element.id).first()
+                if used_code:
+                    discount_amount = discount_amount + element.product_item.price
+    return discount_amount

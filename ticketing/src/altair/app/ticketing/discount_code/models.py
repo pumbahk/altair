@@ -72,10 +72,6 @@ class DiscountCodeCode(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     order_no = AnnotatedColumn(Unicode(255), nullable=True, _a_label=_(u'予約番号'))
     used_at = AnnotatedColumn(DateTime, nullable=True, _a_label=_(u'利用日時'))
 
-# run configure_mappers after defining all of the models to ensure
-# all relationships can be setup
-configure_mappers()
-
 
 def delete_discount_code_setting(setting):
     # TODO 削除を禁止する各条件を後々で用意する

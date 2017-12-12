@@ -48,6 +48,8 @@ from altair.app.ticketing.payments.interfaces import IPaymentCart
 from . import logger
 from .exceptions import NoCartError, CartCreationException, InvalidCartStatusError
 from .interfaces import ICartSetting
+from altair.app.ticketing.discount_code import api as discount_api
+
 
 class PaymentMethodManager(object):
     def __init__(self):
@@ -218,16 +220,7 @@ class Cart(Base, c_models.CartMixin):
 
     @property
     def discount_amount(self):
-        from altair.app.ticketing.discount_code.models import UsedDiscountCode
-        discount_amount = 0
-        for item in self.items:
-            for element in item.elements:
-                for index in range(element.quantity):
-                    # TODO OKADA スレーブから取る
-                    used_code = UsedDiscountCode.query.filter(UsedDiscountCode.carted_product_item_id==element.id).first()
-                    if used_code:
-                        discount_amount = discount_amount + element.product_item.price
-        return discount_amount
+        return discount_api.calc_discount_amount(self)
 
     @property
     def total_amount(self):

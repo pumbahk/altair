@@ -27,7 +27,7 @@ from altair.app.ticketing.core import models as c_models
 from altair.app.ticketing.core import api as c_api
 from altair.app.ticketing.users import models as u_models
 from altair.app.ticketing.orders import models as order_models
-from altair.app.ticketing.discount_code.models import UsedDiscountCode
+from altair.app.ticketing.discount_code import api as discount_api
 from altair.app.ticketing.interfaces import ITemporaryStore
 from altair.app.ticketing.payments import api as payments_api
 from altair.app.ticketing.payments.exceptions import PaymentDeliveryMethodPairNotFound, OrderLikeValidationFailure
@@ -689,15 +689,7 @@ class _DummyCart(c_models.CartMixin):
 
     @property
     def discount_amount(self):
-        discount_amount = 0
-        for item in self.items:
-            for element in item.elements:
-                for index in range(element.quantity):
-                    # TODO OKADA スレーブから取る
-                    used_code = UsedDiscountCode.query.filter(UsedDiscountCode.carted_product_item_id==element.id).first()
-                    if used_code:
-                        discount_amount = discount_amount + element.product_item.price
-        return discount_amount
+        return discount_api.calc_discount_amount(self)
 
     @property
     def total_amount(self):
