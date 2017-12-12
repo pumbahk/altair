@@ -789,6 +789,12 @@ class FamiPortPaymentViewletTest(FamiPortViewletTest):
             mail_data=mock.Mock(return_value=self.notice),
             )
         self.request = DummyRequest()
+        organization = DummyModel(
+            setting=DummyModel(
+                i18n=False
+            )
+        )
+        self.request.organization = organization
 
     def _target(self):
         from .famiport import payment_completion_viewlet as func
@@ -803,11 +809,7 @@ class FamiPortPaymentConfirmViewletTest(FamiPortPaymentViewletTest):
     @mock.patch('altair.app.ticketing.payments.plugins.famiport.cart_helper')
     def test_it(self, cart_helper):
         res = self._callFUT(self.context, self.request)
-        self.assertEqual(res, {
-            'payment_name': self.name,
-            'description': self.description,
-            'h': cart_helper,
-            })
+        self.assertEqual(res, {'description': self.description})
 
 
 class FamiPortPaymentCompletionViewletTest(FamiPortPaymentViewletTest):
@@ -890,6 +892,12 @@ class FamiPortDeliveryViewletTest(FamiPortViewletTest):
             mail_data=mock.Mock(return_value=self.notice),
             )
         self.request = DummyRequest()
+        organization = DummyModel(
+            setting = DummyModel(
+                i18n=False
+            )
+        )
+        self.request.organization = organization
 
     def _target(self):
         from .famiport import deliver_completion_viewlet as func
@@ -904,11 +912,7 @@ class FamiPortDeliveryConfirmViewletTest(FamiPortDeliveryViewletTest):
     @mock.patch('altair.app.ticketing.payments.plugins.famiport.cart_helper')
     def test_it(self, cart_helper):
         res = self._callFUT(self.context, self.request)
-        self.assertEqual(res, {
-            'delivery_name': self.name,
-            'description': self.description,
-            'h': cart_helper,
-            })
+        self.assertEqual(res, {'description': self.description})
 
 
 class FamiPortDeliveryCompletionViewletTest(FamiPortDeliveryViewletTest):
