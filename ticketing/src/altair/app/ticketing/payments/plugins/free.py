@@ -21,7 +21,7 @@ from altair.app.ticketing.mails.interfaces import (
 from ..exceptions import OrderLikeValidationFailure
 
 from . import FREE_PAYMENT_PLUGIN_ID as PAYMENT_PLUGIN_ID
-from .helpers import payment_method_get_description
+from .helpers import get_payment_method_info
 
 def includeme(config):
     config.add_payment_plugin(FreePaymentPlugin(), PAYMENT_PLUGIN_ID)
@@ -35,14 +35,14 @@ def _overridable_payment(path, fallback_ua_type=None):
 def reserved_number_payment_viewlet(context, request):
     order = context.order
     payment_method = order.payment_delivery_pair.payment_method
-    description = payment_method_get_description(request, payment_method)
+    description = get_payment_method_info(request, payment_method, 'description')
     return dict(payment_name=payment_method.name, description=Markup(description))
 
 @lbr_view_config(context=ICartPayment, name="payment-%d" % PAYMENT_PLUGIN_ID, renderer=_overridable_payment("free_payment_confirm.html"))
 def reserved_number_payment_confirm_viewlet(context, request):
     cart = context.cart
     payment_method = cart.payment_delivery_pair.payment_method
-    description = payment_method_get_description(request, payment_method)
+    description = get_payment_method_info(request, payment_method, 'description')
     return dict(payment_name=payment_method.name, description=Markup(description))
 
 @lbr_view_config(context=ICompleteMailResource, name="payment-%d" % PAYMENT_PLUGIN_ID, renderer=_overridable_payment("free_mail_complete.html", fallback_ua_type='mail'))
