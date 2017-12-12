@@ -48,7 +48,7 @@ def deliver_completion_viewlet(context, request):
     order = context.order
     logger.debug(u"order_no = %s" % order.order_no)
     delivery_method = order.payment_delivery_pair.delivery_method
-    description = delivery_method_get_description(request, delivery_method)
+    description = get_delivery_method_info(request, delivery_method, 'description')
 
     tickets = [ ]
 

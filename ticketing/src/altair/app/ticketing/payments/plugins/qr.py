@@ -43,7 +43,7 @@ def deliver_confirm_viewlet(context, request):
     logger.debug(u"QR引取")
     cart = context.cart
     delivery_method = cart.payment_delivery_pair.delivery_method
-    description = delivery_method_get_description(request, delivery_method)
+    description = get_delivery_method_info(request, delivery_method, 'description')
     return dict(delivery_name=delivery_method.name, description=Markup(description))
 
 QRTicket = namedtuple("QRTicket", "order performance product seat token printed_at")
