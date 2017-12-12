@@ -41,3 +41,12 @@ def calc_discount_amount(order_like):
 
 def enable_discount_code(organization):
     return organization.setting.enable_discount_code
+
+
+def save_discount_code(carted_product_item, ordered_product_item):
+    # TODO OKADA　クーポンを使用してるかの判定
+    if True:
+        used_discount_code = UsedDiscountCode.query.filter(UsedDiscountCode.carted_product_item_id==carted_product_item.id).first()
+        if used_discount_code:
+            used_discount_code.ordered_product_item_id = ordered_product_item.id
+    return True

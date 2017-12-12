@@ -74,6 +74,7 @@ from altair.app.ticketing.models import (
 from altair.app.ticketing.core import api as core_api
 from altair.app.ticketing.sej import api as sej_api
 from altair.app.ticketing.famiport import api as famiport_api
+from ..discount_code.api import save_discount_code
 
 logger = logging.getLogger(__name__)
 
@@ -786,6 +787,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                     quantity=element.product_item.quantity * product.quantity,
                     seats=element.seats
                     )
+                save_discount_code(element, ordered_product_item)
                 for i, seat in core_api.iterate_serial_and_seat(ordered_product_item):
                     token = OrderedProductItemToken(
                         serial = i,

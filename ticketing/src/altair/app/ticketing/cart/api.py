@@ -766,6 +766,7 @@ def make_order_from_cart(request, cart):
     payment = Payment(cart, request)
     order = payment.call_payment()
 
+
     extra_form_data = load_extra_form_data(request)
     if extra_form_data is not None:
         order.attributes = coerce_extra_form_data(request, extra_form_data)

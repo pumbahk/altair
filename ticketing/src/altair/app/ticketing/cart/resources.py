@@ -735,6 +735,7 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
 
     def temporarily_save_discount_code(self, codies):
         # carted_product_itemのIDと、使用したコードを保存する
+        # TODO OKADA これは、APIかも
         for code_dict in codies:
             if code_dict['code']:
                 use_discount_code = UsedDiscountCode()
