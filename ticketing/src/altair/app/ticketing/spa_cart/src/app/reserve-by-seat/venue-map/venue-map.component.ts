@@ -56,6 +56,7 @@ import { ErrorModalDataService } from '../../shared/services/error-modal-data.se
 import { AnimationEnableService } from '../../shared/services/animation-enable.service';
 import { CountSelectService } from '../../shared/services/count-select.service';
 import { SmartPhoneCheckService } from '../../shared/services/smartPhone-check.service';
+import { ReserveBySeatBrowserBackService } from '../../shared/services/reserve-by-seat-browser-back.service';
 
 // jquery
 import * as $ from 'jquery';
@@ -118,6 +119,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
     private animationEnableService: AnimationEnableService,
     private countSelectService: CountSelectService,
     private smartPhoneCheckService: SmartPhoneCheckService,
+    private reserveBySeatBrowserBackService: ReserveBySeatBrowserBackService,
     private _logger: Logger) {
     this.element = this.el.nativeElement;
   }
@@ -266,6 +268,12 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
 
   //ツールチップ用席種
   tooltipStockType: {name: string; min: number; max: number; region: string[]}[] = [];
+
+  //ブラウザバックフラグ
+  returnFlag = false;
+
+  //ブラウザバック確認モーダルを出さないフラグ
+  returnUnconfirmFlag = false;
 
   ngOnInit() {
     const that = this;
@@ -828,6 +836,77 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
         }
       }, 200);
     });
+
+    //ブラウザ判別用にユーザーエージェント取得
+    let ua = navigator.userAgent.toLowerCase();
+
+    //セッションストレージに履歴数を保持
+    if (!sessionStorage.getItem('historyCount')) {
+      sessionStorage.setItem('historyCount', history.length.toString());
+    } else if (ua.match(/crios/i) && !sessionStorage.getItem('stay') && sessionStorage.getItem('maxHistory')) {
+      //iOS+chrome
+      if (sessionStorage.getItem('maxHistory') == history.length.toString()) {
+        //進むで来た可能性があるためモーダルを表示しない
+        that.returnUnconfirmFlag = true;
+        //進むで来ていない場合の対策
+        let historyCountTemp = history.length.toString();
+        setTimeout(function(){
+          //まだtrueの場合は開きなおしたため履歴数を更新
+          if (that.returnUnconfirmFlag) {
+            that.returnUnconfirmFlag = false;
+            sessionStorage.setItem('historyCount', historyCountTemp);
+          }
+        },1000);
+      } else {
+        //開きなおした場合履歴数を更新する
+        sessionStorage.setItem('historyCount', history.length.toString());
+      }
+    }
+
+    //商品選択へのブラウザバック
+    this.reserveBySeatBrowserBackService.modal.subscribe((value)=>{
+      that.confirmReturn();
+    });
+
+    //他画面へのブラウザバック
+    if (ua.match(/crios/i)) {
+      $(document).on('click', function(){
+        history.pushState(null, null, null);
+        $(document).off('click');
+      });
+    } else {
+      let beforeHistory = history.length;
+      history.pushState(null, null, null);
+      let afterHistory = history.length;
+      //pushState前後でhistory.lengthが増えていれば履歴数を更新
+      if (!sessionStorage.getItem('stay')) {
+        if (beforeHistory < afterHistory) {
+          sessionStorage.setItem('historyCount', beforeHistory.toString());
+        } else {
+          //進まれた場合再読み込み
+          if (ua.indexOf('firefox') == -1 || ua.indexOf('android') !== -1 || /iP(hone|(o|a)d)/.test(navigator.userAgent)) {
+            location.href = location.href;
+          }
+        }
+      }
+    }
+
+    //セッションストレージに滞在フラグを登録
+    sessionStorage.setItem('stay', 'true');
+
+    //ブラウザの戻る・進むで発火
+    window.addEventListener('popstate', function (e) {
+      if (that.returnUnconfirmFlag) {
+        that.returnUnconfirmFlag = false;
+      } else {
+        that.confirmReturn();
+        if (ua.match(/crios/i)) {
+          history.forward();
+        } else {
+          history.pushState(null, null, null);
+        }
+      }
+    }, false);
   }
 
   ngOnDestroy() {
@@ -1756,6 +1835,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
             this.seatUpdate();  // 座席情報最新化
           } else {
             this.animationEnableService.sendToRoadFlag(false);
+            this.reserveBySeatBrowserBackService.deactivate = true;
             this.router.navigate(['performances/' + this.performanceId + '/select-product/']);
           }
         },
@@ -1876,6 +1956,35 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
           });
         }, 100);
       }
+    }
+  }
+
+  //ブラウザバック確認モーダルを出す
+  public confirmReturn() {
+    this.confirmStockType = true;
+    this.returnFlag = true;
+  }
+
+  //直前のサイトへ戻る
+  returnPrevious() {
+    window.removeEventListener('popstate');
+    var ua = window.navigator.userAgent.toLowerCase();
+    if (ua.match(/crios/i)) {
+      //進む判定用に履歴数を保持
+      sessionStorage.setItem('maxHistory', history.length.toString());
+    }
+    
+    //滞在フラグを削除
+    sessionStorage.removeItem('stay');
+
+    let backCount = -(history.length - Number(sessionStorage.getItem('historyCount')) + 1);
+    if(ua.indexOf('msie') != -1 || ua.indexOf('trident') != -1) {
+      window.addEventListener('popstate', function(){
+        history.go(backCount);
+      });
+      history.go(-(this.reserveBySeatBrowserBackService.selectProductCount + 1));
+    } else {
+      history.go(backCount);
     }
   }
 }
