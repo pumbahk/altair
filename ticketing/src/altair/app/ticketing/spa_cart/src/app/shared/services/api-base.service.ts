@@ -82,13 +82,16 @@ export class ApiBase extends Http{
         var plain;
         var asciistring = "";
 
-        if (u.indexOf('iphone') != -1 && u.indexOf('firefox') != -1) {
-          Uint8ArrayMake();
-        } else if (
-          u.indexOf('trident') != -1 || u.indexOf('msie') != -1 ||
-          u.indexOf('firefox') != -1 ||
-          (u.indexOf('mac') != -1 && u.indexOf('safari') != -1)) {
-          decompress();
+        if (u.indexOf('windows') != -1 && u.indexOf('firefox') != -1 ||
+          u.indexOf('windows') != -1 && (u.indexOf('trident') != -1 || u.indexOf('msie') != -1) ||
+          u.indexOf('android') != -1 && u.indexOf('firefox') != -1 ||
+          u.indexOf('mac') != -1 && u.indexOf('firefox') != -1 ||
+          u.indexOf('mac') != -1 && u.indexOf('safari') != -1 && u.indexOf('chrome') == -1) {
+          if (u.indexOf('iphone') != -1 && u.indexOf('safari') != -1) {
+            Uint8ArrayMake();
+          } else {
+            decompress();
+          }
         } else {
           Uint8ArrayMake();
         }

@@ -304,7 +304,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
           //this.venueURL = this.performance.venue_map_url;
           this.seatDataURL = this.performance.seat_data_url;
           //ダミーURL
-          this.venueURL = "../assets/kobo-park-miyagi-2017-spa_textedit.svg";
+          this.venueURL = "../assets/kobo-park-miyagi.svg";
           //this.seatDataURL = "../assets/kobo-park-miyagi-2017-spa-seats.json.gz";
           //ダミーURL
 
