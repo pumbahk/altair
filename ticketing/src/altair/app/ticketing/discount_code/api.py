@@ -27,6 +27,44 @@ def get_discount_setting(context, request):
         return False
 
 
+def get_used_discount_codes(order_like):
+    # order_likeには、cartと、_DummyCart、Orderが入る想定
+    codes_list = list()
+
+    def get_code_type(order_like):
+        item_code_type = UsedDiscountCode.carted_product_item_id
+        if type(order_like) == "Order":
+            item_code_type = UsedDiscountCode.ordered_product_item_id
+        return item_code_type
+
+    code_type = get_code_type(order_like)
+    for item in order_like.items:
+        for element in item.elements:
+            used_codes = UsedDiscountCode.query.filter(code_type == element.id).all()
+            for used_code in used_codes:
+                codes_list.append(used_code)
+    return codes_list
+
+
+def calc_discount_quantity(order_like):
+    # order_likeには、cartと、_DummyCart、Orderが入る想定
+    quantity = 0
+
+    def get_code_type(order_like):
+        item_code_type = UsedDiscountCode.carted_product_item_id
+        if type(order_like) == "Order":
+            item_code_type = UsedDiscountCode.ordered_product_item_id
+        return item_code_type
+
+    code_type = get_code_type(order_like)
+    for item in order_like.items:
+        for element in item.elements:
+            used_codes = UsedDiscountCode.query.filter(code_type == element.id).all()
+            if used_codes:
+                quantity = quantity + len(used_codes)
+    return quantity
+
+
 def calc_discount_amount(order_like):
     # order_likeには、cartと、_DummyCart、Orderが入る想定
     discount_amount = 0

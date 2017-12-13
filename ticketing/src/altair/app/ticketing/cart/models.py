@@ -219,6 +219,14 @@ class Cart(Base, c_models.CartMixin):
         return cls._order_no
 
     @property
+    def used_discount_codes(self):
+        return discount_api.get_used_discount_codes(self)
+
+    @property
+    def discount_quantity(self):
+        return discount_api.calc_discount_quantity(self)
+
+    @property
     def discount_amount(self):
         return discount_api.calc_discount_amount(self)
 

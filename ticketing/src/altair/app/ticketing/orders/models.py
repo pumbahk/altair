@@ -74,7 +74,7 @@ from altair.app.ticketing.models import (
 from altair.app.ticketing.core import api as core_api
 from altair.app.ticketing.sej import api as sej_api
 from altair.app.ticketing.famiport import api as famiport_api
-from ..discount_code.api import save_discount_code
+from altair.app.ticketing.discount_code import api as discount_api
 
 logger = logging.getLogger(__name__)
 
@@ -787,7 +787,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                     quantity=element.product_item.quantity * product.quantity,
                     seats=element.seats
                     )
-                save_discount_code(element, ordered_product_item)
+                discount_api.save_discount_code(element, ordered_product_item)
                 for i, seat in core_api.iterate_serial_and_seat(ordered_product_item):
                     token = OrderedProductItemToken(
                         serial = i,
@@ -849,6 +849,19 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         from altair.app.ticketing.models import DBSession as session
         orion_ticket_phone = session.query(OrionTicketPhone).filter(OrionTicketPhone.order_no == self.order_no).first()
         return orion_ticket_phone.phones.split(',') if orion_ticket_phone else []
+
+    @property
+    def used_discount_codes(self):
+        return discount_api.get_used_discount_codes(self)
+
+    @property
+    def discount_quantity(self):
+        return discount_api.calc_discount_quantity(self)
+
+    @property
+    def discount_amount(self):
+        return discount_api.calc_discount_amount(self)
+
 
 class OrderNotification(Base, BaseModel):
     __tablename__ = 'OrderNotification'
