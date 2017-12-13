@@ -7049,6 +7049,14 @@ opacity: .7;
 		text-align: center;
 	}
 
+	.modalWindowAlert .modalInner .modalAlert .modalBtnBox {
+		text-align: center;
+	}
+
+	.modalWindowAlert .modalInner .modalAlert .modalBtnBox button {
+		width: 48%;
+	}
+
 	/* ツールチップ */
 	#tooltip {
 		position: absolute;
@@ -8680,6 +8688,11 @@ opacity: .7;
 		height:75%;
 	}
 
+	.selectProductModal {
+		height: 100%;
+		position: fixed;
+	}
+
 	.modalWindowAlert {
 		width: 94%;
 		position:fixed;
@@ -8748,6 +8761,14 @@ opacity: .7;
 	}
 	.modalWindowAlert .modalInner .modalAlert .modalAlertText {
 		text-align: center;
+	}
+
+	.modalWindowAlert .modalInner .modalAlert .modalBtnBox {
+		text-align: center;
+	}
+
+	.modalWindowAlert .modalInner .modalAlert .modalBtnBox button {
+		width: 48%;
 	}
 
 	/*SP END QUERY*************************/
