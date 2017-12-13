@@ -301,10 +301,10 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
           this.event = performanceRes.data.event;
           this.performance = performanceRes.data.performance;
           this.performanceId = this.performance.performance_id;
-          this.venueURL = this.performance.venue_map_url;
+          //this.venueURL = this.performance.venue_map_url;
           this.seatDataURL = this.performance.seat_data_url;
           //ダミーURL
-          //this.venueURL = "../assets/kobo-park-miyagi-2017-spa-no-seats.svg";
+          this.venueURL = "../assets/kobo-park-miyagi-2017-spa_textedit.svg";
           //this.seatDataURL = "../assets/kobo-park-miyagi-2017-spa-seats.json.gz";
           //ダミーURL
 
@@ -495,7 +495,8 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
         that.saveSeatData();
         that.mapHome();
         that.endTime = new Date();
-        that._logger.info(that.endTime - that.startTime + "ms");
+        //that._logger.info(that.endTime - that.startTime + "ms");
+        alert(that.endTime - that.startTime + "ms");
       }
     }, 100);
 
