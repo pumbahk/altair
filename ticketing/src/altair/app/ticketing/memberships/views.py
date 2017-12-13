@@ -59,7 +59,8 @@ class MembershipView(BaseView):
                                         login_body_disp_agreement=form.data['login_body_disp_agreement'],
                                         login_body_pc=form.data['login_body_pc'],
                                         login_body_smartphone=form.data['login_body_smartphone'],
-                                        login_body_mobile=form.data['login_body_mobile']
+                                        login_body_mobile=form.data['login_body_mobile'],
+                                        login_body_error_message=form.data['login_body_error_message']
                                         )
         DBSession.add(membership)
         self.request.session.flash(u"membershipを保存しました")
@@ -92,6 +93,7 @@ class MembershipView(BaseView):
         membership.login_body_pc = form.data["login_body_pc"]
         membership.login_body_smartphone = form.data["login_body_smartphone"]
         membership.login_body_mobile = form.data["login_body_mobile"]
+        membership.login_body_error_message = form.data["login_body_error_message"]
 
         DBSession.add(membership)
         self.request.session.flash(u"membershipを編集しました")

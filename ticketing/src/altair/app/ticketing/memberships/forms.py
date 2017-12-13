@@ -62,7 +62,7 @@ class MembershipForm(Form):
         )
     login_body_disp_agreement = BooleanField(
         label=u"ログイン画面の表示/非表示",
-        default=True
+        default=False
         )
     login_body_pc = TextField(
         label=u"ログイン画面HTML文言(PC)",
@@ -74,6 +74,10 @@ class MembershipForm(Form):
         )
     login_body_mobile = TextField(
         label=u"ログイン画面HTML文言(モバイル)",
+        widget=TextArea()
+        )
+    login_body_error_message = TextField(
+        label=u"ログイン画面エラー文言",
         widget=TextArea()
         )
 

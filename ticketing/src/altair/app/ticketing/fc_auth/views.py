@@ -1,4 +1,5 @@
 # -*- coding:utf-8 -*-
+import re
 import logging
 from pyramid.httpexceptions import HTTPFound
 from pyramid.view import view_defaults
@@ -58,6 +59,23 @@ class FCAuthLoginViewMixin(object):
             identities, auth_factors, metadata = self.auth_api.login(self.request, self.request.response, credentials, auth_factor_provider_name=self.plugin.name)
 
         if identities is None:
+            if self.request.context.membership.login_body_disp_agreement:
+                if self.request.view_context.ua_type is "smartphone":
+                    self.request.context.membership.login_body_smartphone = \
+                        re.sub(u'<input type="hidden">',
+                               u'<span class="red">' + self.request.context.membership.login_body_error_message + u'</span>',
+                               self.request.context.membership.login_body_smartphone)
+                elif self.request.view_context.ua_type is "mobile":
+                    self.request.context.membership.login_body_mobile = \
+                        re.sub(u'<input type="hidden">',
+                               u'<span style="color: red">' + self.request.context.membership.login_body_error_message + u'</span>',
+                               self.request.context.membership.login_body_mobile)
+                else:
+                    self.request.context.membership.login_body_pc = \
+                        re.sub(u'<input type="hidden">',
+                               u'<span class="red">' + self.request.context.membership.login_body_error_message + u'</span>',
+                               self.request.context.membership.login_body_pc)
+
             return {'username': username,
                     'message': u'IDかパスワードが一致しません'}
         return HTTPFound(location=return_to_url(self.request), headers=self.request.response.headers)

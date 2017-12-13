@@ -223,6 +223,7 @@ class Membership(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     login_body_pc = Column(UnicodeText)
     login_body_smartphone = Column(UnicodeText)
     login_body_mobile = Column(UnicodeText)
+    login_body_error_message = Column(UnicodeText)
     #sales_segments = lambda:relationship('SalesSegment', secondary=Membership_SalesSegment.__table__, backref='memberships')
     status = Column(Integer)
 
