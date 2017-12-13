@@ -768,7 +768,7 @@ class FamiPortViewletTest(TestCase):
 
 class FamiPortPaymentViewletTest(FamiPortViewletTest):
     def setUp(self):
-        self.name = u'Famiポート'
+        self.name = u'Famiポート決済'
         self.description = u'説明説明説明説明説明'
         self.notice = u'日本語日本語日本語日本語'
         self.payment_method = DummyModel(
@@ -809,7 +809,10 @@ class FamiPortPaymentConfirmViewletTest(FamiPortPaymentViewletTest):
     @mock.patch('altair.app.ticketing.payments.plugins.famiport.cart_helper')
     def test_it(self, cart_helper):
         res = self._callFUT(self.context, self.request)
-        self.assertEqual(res, {'description': self.description})
+        self.assertEqual(res, {
+            'payment_name': self.name,
+            'description': self.description
+        })
 
 
 class FamiPortPaymentCompletionViewletTest(FamiPortPaymentViewletTest):
@@ -871,7 +874,7 @@ class FamiPortPaymentNoticeViewletTest(FamiPortPaymentViewletTest):
 
 class FamiPortDeliveryViewletTest(FamiPortViewletTest):
     def setUp(self):
-        self.name = u'Famiポート'
+        self.name = u'Famiポート引取'
         self.description = u'説明説明説明説明説明'
         self.notice = u'日本語日本語日本語日本語'
         self.delivery_method = DummyModel(
@@ -912,7 +915,10 @@ class FamiPortDeliveryConfirmViewletTest(FamiPortDeliveryViewletTest):
     @mock.patch('altair.app.ticketing.payments.plugins.famiport.cart_helper')
     def test_it(self, cart_helper):
         res = self._callFUT(self.context, self.request)
-        self.assertEqual(res, {'description': self.description})
+        self.assertEqual(res, {
+            'delivery_name': self.name,
+            'description': self.description
+        })
 
 
 class FamiPortDeliveryCompletionViewletTest(FamiPortDeliveryViewletTest):
