@@ -2,11 +2,14 @@
 
 import itertools
 import re
+
 from datetime import timedelta
-from urlparse import urlparse
 from sqlalchemy.orm.exc import NoResultFound
-from altair.formhelpers.form import OurForm
-from altair.formhelpers.filters import blank_as_none
+from urlparse import urlparse
+from wtforms import ValidationError
+from wtforms.ext.csrf.session import SessionSecureForm
+from wtforms.validators import EqualTo, Length, Optional, Regexp, Required
+
 from altair.formhelpers.fields import (
     OurTextField,
     OurSelectField,
@@ -21,27 +24,27 @@ from altair.formhelpers.fields import (
 from altair.formhelpers.fields.datetime import (
     OurDateTimeField,
     OurDateField,
-    )
+)
+from altair.formhelpers.fields.select import SimpleChoices
+from altair.formhelpers.filters import blank_as_none
+from altair.formhelpers.form import OurForm
+from altair.formhelpers.validators import (
+    RequiredOnNew,
+    Zenkaku,
+    Katakana
+)
+from altair.formhelpers.validators.optional import SwitchOptionalBase
 from altair.formhelpers.widgets import (
     OurPasswordInput,
     OurTextInput,
     OurDateWidget,
 )
-from altair.formhelpers.fields.select import SimpleChoices
-from altair.formhelpers.validators import (
-    RequiredOnNew,
-    Zenkaku,
-    Katakana,
-    )
-from altair.formhelpers.validators.optional import SwitchOptionalBase
-from altair.formhelpers import Max, after1900
-from wtforms.validators import Required, Length, Optional, Regexp, EqualTo
-from wtforms import ValidationError
 from altair.sqlahelper import get_db_session
-from ..models import MemberSet, MemberKind, Member, Host, Organization, OAuthServiceProvider
-from .models import Role
-from ..utils import period_overlaps
+
 from ..interfaces import ICommunicator
+from ..models import MemberSet, MemberKind, Member, Host, Organization, OAuthServiceProvider
+from ..utils import period_overlaps
+
 from .api import lookup_operator_by_auth_identifier
 
 ONE_SECOND = timedelta(seconds=1)
@@ -810,3 +813,33 @@ class OAuthServiceProviderForm(OurForm):
             if sp:
                 raise ValidationError(u'「%s」は同org内で既に使用されております' % field.data)
 
+class CSRFSecureForm(SessionSecureForm):
+    SECRET_KEY = 'Cgnweu8F8fqWyhMbPHLNCk4D9x6ovjTq'
+
+class ChangePassWordForm(OurForm, CSRFSecureForm):
+    old_password = OurTextField(
+        label=u'旧パスワード',
+        widget=OurPasswordInput(),
+        validators=[
+            Required(message=u'必須項目です。')
+        ]
+    )
+    password = OurTextField(
+        label=u'パスワード',
+        widget=OurPasswordInput(),
+        validators=[
+            Required(message=u'必須項目です。'),
+            Length(min=7, message=u'7文字以上で入力してください。'),
+            Regexp(r'^(?=.*[a-zA-Z])(?=.*[0-9])([A-Za-z0-9' + re.escape('~!@#$%^&*()_+-=[]{}|;:<>?,./') + ']+)$', 0,
+                   message=u'半角英数字混在でご入力下さい。')
+            ]
+        )
+
+    password_confirm = OurTextField(
+        label=u'パスワード確認',
+        widget=OurPasswordInput(),
+        validators=[
+            Required(message=u'必須項目です。'),
+            EqualTo('password', message=u'パスワードとパスワード確認が一致しません。')
+            ]
+        )

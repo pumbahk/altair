@@ -3,19 +3,10 @@
 from Crypto.Cipher import AES
 from Crypto import Random
 
-from altair.app.ticketing.ssl_utils import get_certificate_info
-
-from . import AES_SECRET_KEY
-
-def get_auth_identifier_from_client_certified_request(request):
-    subject_dn, serial = get_certificate_info(request)
-    if subject_dn is not None:
-        return '%s:%s' % (subject_dn, serial)
-    return None
+AES_SECRET_KEY="THIS_IS_SECRET_KEY_FOR_EXTAUTH!!"
 
 class AESEncryptor(object):
 
-    @classmethod
     def _is_token_expried(cls, created_at_str):
         from datetime import datetime, timedelta
         created_at = datetime.strptime(created_at_str, "%Y%m%d%H%M")
@@ -27,15 +18,13 @@ class AESEncryptor(object):
         # AESの暗号化が16 byteの文字列しか暗号化できないため、長さが16の文字列にする。
         return ''.join(['0'] * (16 - len(text))) + text
 
-    @classmethod
-    def get_cipher(cls, iv=None):
+    def get_cipher(self, iv=None):
         if not iv:
             iv = Random.new().read(AES.block_size)
         cipher = AES.new(AES_SECRET_KEY, AES.MODE_CFB, iv)
         return cipher, iv
 
-    @classmethod
-    def get_id_from_token(cls, token):
+    def get_id_from_token(self, token):
     # tokenを復号して、ユーザID情報を返す。
         try:
             token = token.decode('hex')
@@ -47,11 +36,11 @@ class AESEncryptor(object):
             encrypted_created_at = token[32:]
 
             # 復号化
-            cipher, _ = cls.get_cipher(iv)
+            cipher, _ = self.get_cipher(iv)
             user_id_str = cipher.decrypt(encrypted_user_id)
             created_at_str = cipher.decrypt(encrypted_created_at)[4:]
 
-            if not cls._is_token_expried(created_at_str):
+            if not self._is_token_expried(created_at_str):
                 return int(user_id_str)
             else:
                 return None
