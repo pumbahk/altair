@@ -269,6 +269,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
   // 初期表示測定
   startTime: any;
   endTime: any;
+  viewTime: any;
   // SVGに対するinnerHTMLの利用可否
   isInnerHtmlAvailable: boolean = true;
 
@@ -301,12 +302,8 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
           this.event = performanceRes.data.event;
           this.performance = performanceRes.data.performance;
           this.performanceId = this.performance.performance_id;
-          //this.venueURL = this.performance.venue_map_url;
+          this.venueURL = this.performance.venue_map_url;
           this.seatDataURL = this.performance.seat_data_url;
-          //ダミーURL
-          this.venueURL = "../assets/kobo-park-miyagi.svg";
-          //this.seatDataURL = "../assets/kobo-park-miyagi-2017-spa-seats.json.gz";
-          //ダミーURL
 
           // 個席データ取得
           if ((this.seatDataURL) && this.seatDataURL != "") {
@@ -495,8 +492,8 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
         that.saveSeatData();
         that.mapHome();
         that.endTime = new Date();
-        //that._logger.info(that.endTime - that.startTime + "ms");
-        alert(that.endTime - that.startTime + "ms");
+        that._logger.info(that.endTime - that.startTime + "ms");
+        that.viewTime = that.endTime - that.startTime + "ms";
       }
     }, 100);
 
@@ -1512,7 +1509,6 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
     this.setActiveGrid();
   }
 
-  // SVGの座席データを[連席ID, Element]として保持してDOMツリーから削除
   saveSeatData() {
     if (!this.isExistsSeatData) {
       let els = document.querySelectorAll('.seat');
