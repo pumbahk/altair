@@ -53,6 +53,18 @@ ${(view_context.embedded_html_complete_page or u'')|n}
         <td class="align1">￥${h.format_number(product.product.price * product.quantity)}</td>
       </tr>
       %endfor
+		% if order.cart.discount_amount:
+		<tr id="commission">
+		  <th scope="row">クーポン・割引コードご使用金額</th>
+		  <td>
+			% for used_code in order.cart.used_discount_codes:
+			  ${used_code.code}<br/>
+			% endfor
+		  </td>
+		  <td>${order.cart.discount_quantity}枚</td>
+		  <td class="align1" style="color: red;">-￥${h.format_number(order.cart.discount_amount)}</td>
+		</tr>
+		% endif
       <tr id="commission">
         <th scope="row">決済手数料</th>
         <td>&nbsp;</td>
