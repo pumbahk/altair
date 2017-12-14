@@ -98,20 +98,32 @@ export class ApiBase extends Http{
 
         function decompress() {
           //解凍能力のないブラウザだったら変換後解凍処理
+          var startTimeK:any = new Date();
+          var endTimeK: any;
           var uint8array = new Uint8Array(response.arrayBuffer());
           var gunzip = new Zlib.Gunzip(uint8array);
           plain = gunzip.decompress();
+          endTimeK = new Date();
+          console.log(endTimeK - startTimeK,"かいとう");
         }
 
         function Uint8ArrayMake() {
           //解凍能力のあるブラウザだったら変換のみ
+          var startTimeH:any = new Date();
+          var endTimeH: any;
           plain = new Uint8Array(response.arrayBuffer());
+          endTimeH = new Date();
+          console.log(endTimeH - startTimeH,"変換");
         }
+        var startTime2:any = new Date();
+        var endTime2: any;
 
         for (var i = 0; i < plain.length; i++) {
           asciistring += String.fromCharCode(plain[i]);
         }
         const body = JSON.parse(asciistring);
+        endTime2 = new Date();
+        console.log(endTime2 - startTime2,"for+パース");
         return body;
       })
       .catch(error => this.handleError(error))

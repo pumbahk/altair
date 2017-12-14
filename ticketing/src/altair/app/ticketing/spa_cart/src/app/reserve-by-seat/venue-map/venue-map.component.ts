@@ -288,7 +288,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
     this.animationEnableService.sendToRoadFlag(true);
 
     var svg_test = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-    if (typeof(svg_test.innerHTML) === 'undefined') {
+    if (typeof (svg_test.innerHTML) === 'undefined') {
       this.isInnerHtmlAvailable = false;
     }
 
@@ -302,9 +302,9 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
           this.event = performanceRes.data.event;
           this.performance = performanceRes.data.performance;
           this.performanceId = this.performance.performance_id;
-          this.venueURL = this.performance.venue_map_url;
+          //this.venueURL = this.performance.venue_map_url;
           this.seatDataURL = this.performance.seat_data_url;
-
+          this.venueURL = "../assets/kobo-park-miyagi.svg"
           // 個席データ取得
           if ((this.seatDataURL) && this.seatDataURL != "") {
             this.isExistsSeatData = true;
@@ -1610,7 +1610,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
               let add_element = parser.parseFromString(svg_string, 'text/xml').documentElement;
               let child_node = add_element.firstChild;
               let target_element = document.getElementById(row_id);
-              while(child_node) {
+              while (child_node) {
                 fragment.appendChild(fragment.ownerDocument.importNode(child_node, true));
                 child_node = child_node.nextSibling;
               }
@@ -1631,23 +1631,12 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
       }
       this.active_grid = [];
     }
-    /**
-    * HTML文字列をElementへ変換する。
-    * @param html HTML文字列
-    * @returns {Element}
-    */
-    function createElementFromHTML(html) {
-      const tempEl = document.createElementNS("http://www.w3.org/1999/xhtml", "div");
-      tempEl.innerHTML = html;
-      return tempEl.firstElementChild;
-    }
   }
 
   // 座席要素の色付け
   drawingSeats() {
     if (!(this.seats)) return;
     $(this.svgMap).find('.seat').css({ 'fill': SEAT_COLOR_NA });
-
 
     // フィルタで指定席がONの場合のみ空席の色付け
     if (this.reservedFlag) {
