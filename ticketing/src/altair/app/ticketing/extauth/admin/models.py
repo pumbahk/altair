@@ -1,7 +1,8 @@
 import sqlalchemy as sa
-from sqlalchemy import orm
-from ..models import Base
+
 from altair.models import Identifier, WithTimestamp
+
+from ..models import Base
 
 class Role(Base, WithTimestamp):
     __tablename__ = 'Role'
@@ -17,7 +18,7 @@ class Permission(Base):
     category_name = sa.Column(sa.Unicode(128), nullable=False)
     permit = sa.Column(sa.Integer)
 
-    role = orm.relationship('Role', backref='permissions')
+    role = sa.orm.relationship('Role', backref='permissions')
 
 class Operator(Base, WithTimestamp):
     __tablename__ = 'Operator'
@@ -26,9 +27,10 @@ class Operator(Base, WithTimestamp):
     auth_identifier = sa.Column(sa.Unicode(128), unique=True, nullable=False)
     auth_secret = sa.Column(sa.Unicode(128), nullable=True)
     role_id = sa.Column(Identifier, sa.ForeignKey('Role.id'), nullable=False)
+    status = sa.Column(sa.Integer, default=0)
 
-    organization = orm.relationship('Organization', backref='operators')
-    role = orm.relationship('Role', backref='operators')
+    organization = sa.orm.relationship('Organization', backref='operators')
+    role = sa.orm.relationship('Role', backref='operators')
 
     @property
     def is_administrator(self):
@@ -37,3 +39,7 @@ class Operator(Base, WithTimestamp):
     @property
     def is_superoperator(self):
         return self.role_id == 2
+
+    @property
+    def is_first(self):
+        return self.status == 0

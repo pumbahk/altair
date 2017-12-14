@@ -50,7 +50,6 @@ img.print_btn {
     width: auto;
     height: auto;
     cursor: pointer;
-    z-index: 1001;
     position: absolute;
     top: 20px;
     left: 50%;
@@ -64,10 +63,10 @@ img.print_btn {
 .qr {
   position: absolute;
   display: none;
-  top: 50px;
-  right: 80px;
-  width: 100px;
-  height: 100px;
+  top: 20px;
+  right: 30px;
+  width: 150px;
+  height: 150px;
   z-index: 1000;
 }
 .ticket-info {
@@ -85,7 +84,7 @@ img.print_btn {
 .ticket-info li:before {
   content:"■";
   text-align: right;
-  hieght: 1.2rem;
+  height: 1.2rem;
   padding-right: 3px;
 }
 @media print {

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="cache-control" content="no-cache">
+    <meta http-equiv="expires" content="0">
+    <title>Ticket Sales Service</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+
+    <!-- Cascading Style Sheets -->
+    <link rel="shortcut icon" href="${request.static_url('altaircms:static/WP/images/favicon.ico')}" />
+    <link rel="stylesheet" type="text/css" href="${request.static_url('altaircms:static/WP/css/import.css')}" media="all" />
+    <link rel="stylesheet" type="text/css" href="${request.static_url('altaircms:static/WP/css/custom.css')}" media="all" />
+  </head>
+
+  <body>
+    <header>
+      <div class="head">
+        <h1>
+          <a href="">
+            <img src="${request.static_url('altaircms:static/WP/images/logo.png')}" alt="Ticket Sales Service" />
+          </a>
+        </h1>
+      </div>
+    </header>
+    <main>
+      ${next.body()}
+    </main>
+    <footer>
+      <div>
+        <ul>
+          <li><a class="first" href="//www.ticketstar.jp/corporate">運営会社</a></li>
+          <li><a href="mailto:wp@tstar.jp">お問い合わせ</a></li>
+          <li><a href="//www.ticketstar.jp/privacy">個人情報保護方針</a></li>
+          <li><a class="last" href="//www.ticketstar.jp/legal">特定商取引法に基づく表示</a></li>
+        </ul>
+      </div>
+      <div class="copyright">&copy; TicketStar, Inc. </div>
+    </footer>
+  </body>
+</html>

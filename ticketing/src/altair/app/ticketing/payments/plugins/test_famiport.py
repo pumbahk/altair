@@ -768,7 +768,7 @@ class FamiPortViewletTest(TestCase):
 
 class FamiPortPaymentViewletTest(FamiPortViewletTest):
     def setUp(self):
-        self.name = u'Famiポート'
+        self.name = u'Famiポート決済'
         self.description = u'説明説明説明説明説明'
         self.notice = u'日本語日本語日本語日本語'
         self.payment_method = DummyModel(
@@ -789,6 +789,12 @@ class FamiPortPaymentViewletTest(FamiPortViewletTest):
             mail_data=mock.Mock(return_value=self.notice),
             )
         self.request = DummyRequest()
+        organization = DummyModel(
+            setting=DummyModel(
+                i18n=False
+            )
+        )
+        self.request.organization = organization
 
     def _target(self):
         from .famiport import payment_completion_viewlet as func
@@ -805,9 +811,8 @@ class FamiPortPaymentConfirmViewletTest(FamiPortPaymentViewletTest):
         res = self._callFUT(self.context, self.request)
         self.assertEqual(res, {
             'payment_name': self.name,
-            'description': self.description,
-            'h': cart_helper,
-            })
+            'description': self.description
+        })
 
 
 class FamiPortPaymentCompletionViewletTest(FamiPortPaymentViewletTest):
@@ -869,7 +874,7 @@ class FamiPortPaymentNoticeViewletTest(FamiPortPaymentViewletTest):
 
 class FamiPortDeliveryViewletTest(FamiPortViewletTest):
     def setUp(self):
-        self.name = u'Famiポート'
+        self.name = u'Famiポート引取'
         self.description = u'説明説明説明説明説明'
         self.notice = u'日本語日本語日本語日本語'
         self.delivery_method = DummyModel(
@@ -890,6 +895,12 @@ class FamiPortDeliveryViewletTest(FamiPortViewletTest):
             mail_data=mock.Mock(return_value=self.notice),
             )
         self.request = DummyRequest()
+        organization = DummyModel(
+            setting = DummyModel(
+                i18n=False
+            )
+        )
+        self.request.organization = organization
 
     def _target(self):
         from .famiport import deliver_completion_viewlet as func
@@ -906,9 +917,8 @@ class FamiPortDeliveryConfirmViewletTest(FamiPortDeliveryViewletTest):
         res = self._callFUT(self.context, self.request)
         self.assertEqual(res, {
             'delivery_name': self.name,
-            'description': self.description,
-            'h': cart_helper,
-            })
+            'description': self.description
+        })
 
 
 class FamiPortDeliveryCompletionViewletTest(FamiPortDeliveryViewletTest):
