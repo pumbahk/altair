@@ -63,7 +63,7 @@ export class ApiBase extends Http{
     this.cachedGetObservables[url] = get;
     return get;
   }
-    /**
+  /**
    * seatGETリクエストを実行します
    *
    * @param string url - API-URL
@@ -80,50 +80,25 @@ export class ApiBase extends Http{
       .timeout(60000)
       .map((response) => {
         var plain;
-        var asciistring = "";
-
-        if (u.indexOf('windows') != -1 && u.indexOf('firefox') != -1 ||
-          u.indexOf('windows') != -1 && (u.indexOf('trident') != -1 || u.indexOf('msie') != -1) ||
-          u.indexOf('android') != -1 && u.indexOf('firefox') != -1 ||
-          u.indexOf('mac') != -1 && u.indexOf('firefox') != -1 ||
-          u.indexOf('mac') != -1 && u.indexOf('safari') != -1 && u.indexOf('chrome') == -1) {
-          if (u.indexOf('iphone') != -1 && u.indexOf('safari') != -1) {
-            Uint8ArrayMake();
-          } else {
-            decompress();
+        var asciistring = '';
+        var uint8array = new Uint8Array(response.arrayBuffer());
+        var gunzip = new Zlib.Gunzip(uint8array);
+        try {
+          plain = gunzip.decompress();
+        } catch (e) {
+          plain = new Uint8Array(response.arrayBuffer());
+        }
+        if (typeof(plain.slice) !== 'function') {
+          for (let i = 0; i < plain.length; i++) {
+            asciistring += String.fromCharCode(plain[i]);
           }
         } else {
-          Uint8ArrayMake();
-        }
-
-        function decompress() {
-          //解凍能力のないブラウザだったら変換後解凍処理
-          var startTimeK:any = new Date();
-          var endTimeK: any;
-          var uint8array = new Uint8Array(response.arrayBuffer());
-          var gunzip = new Zlib.Gunzip(uint8array);
-          plain = gunzip.decompress();
-          endTimeK = new Date();
-          console.log(endTimeK - startTimeK,"かいとう");
-        }
-
-        function Uint8ArrayMake() {
-          //解凍能力のあるブラウザだったら変換のみ
-          var startTimeH:any = new Date();
-          var endTimeH: any;
-          plain = new Uint8Array(response.arrayBuffer());
-          endTimeH = new Date();
-          console.log(endTimeH - startTimeH,"変換");
-        }
-        var startTime2:any = new Date();
-        var endTime2: any;
-
-        for (var i = 0; i < plain.length; i++) {
-          asciistring += String.fromCharCode(plain[i]);
+          const block_size = 1024;
+          for (let i = 0; i < plain.length; i += block_size) {
+            asciistring += String.fromCharCode.apply(String, plain.slice(i, i + block_size));
+          }
         }
         const body = JSON.parse(asciistring);
-        endTime2 = new Date();
-        console.log(endTime2 - startTime2,"for+パース");
         return body;
       })
       .catch(error => this.handleError(error))

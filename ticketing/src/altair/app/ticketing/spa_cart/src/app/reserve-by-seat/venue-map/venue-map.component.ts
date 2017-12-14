@@ -302,9 +302,9 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
           this.event = performanceRes.data.event;
           this.performance = performanceRes.data.performance;
           this.performanceId = this.performance.performance_id;
-          //this.venueURL = this.performance.venue_map_url;
+          this.venueURL = this.performance.venue_map_url;
           this.seatDataURL = this.performance.seat_data_url;
-          this.venueURL = "../assets/kobo-park-miyagi.svg"
+
           // 個席データ取得
           if ((this.seatDataURL) && this.seatDataURL != "") {
             this.isExistsSeatData = true;
