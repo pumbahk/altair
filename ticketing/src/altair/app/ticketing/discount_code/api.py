@@ -27,16 +27,16 @@ def get_discount_setting(context, request):
         return False
 
 
+def get_code_type(order_like):
+    item_code_type = UsedDiscountCode.carted_product_item_id
+    if type(order_like) == "Order":
+        item_code_type = UsedDiscountCode.ordered_product_item_id
+    return item_code_type
+
+
+# order_likeには、cartと、_DummyCart、Orderが入る想定
 def get_used_discount_codes(order_like):
-    # order_likeには、cartと、_DummyCart、Orderが入る想定
     codes_list = list()
-
-    def get_code_type(order_like):
-        item_code_type = UsedDiscountCode.carted_product_item_id
-        if type(order_like) == "Order":
-            item_code_type = UsedDiscountCode.ordered_product_item_id
-        return item_code_type
-
     code_type = get_code_type(order_like)
     for item in order_like.items:
         for element in item.elements:
@@ -46,16 +46,8 @@ def get_used_discount_codes(order_like):
     return codes_list
 
 
-def calc_discount_quantity(order_like):
-    # order_likeには、cartと、_DummyCart、Orderが入る想定
+def get_used_discount_quantity(order_like):
     quantity = 0
-
-    def get_code_type(order_like):
-        item_code_type = UsedDiscountCode.carted_product_item_id
-        if type(order_like) == "Order":
-            item_code_type = UsedDiscountCode.ordered_product_item_id
-        return item_code_type
-
     code_type = get_code_type(order_like)
     for item in order_like.items:
         for element in item.elements:
@@ -65,16 +57,8 @@ def calc_discount_quantity(order_like):
     return quantity
 
 
-def calc_discount_amount(order_like):
-    # order_likeには、cartと、_DummyCart、Orderが入る想定
+def get_discount_amount(order_like):
     discount_amount = 0
-
-    def get_code_type(order_like):
-        item_code_type = UsedDiscountCode.carted_product_item_id
-        if type(order_like) == "Order":
-            item_code_type = UsedDiscountCode.ordered_product_item_id
-        return item_code_type
-
     code_type = get_code_type(order_like)
     for item in order_like.items:
         for element in item.elements:
@@ -91,7 +75,8 @@ def enable_discount_code(organization):
 def save_discount_code(carted_product_item, ordered_product_item):
     # TODO OKADA　クーポンを使用してるかの判定
     if True:
-        used_discount_code = UsedDiscountCode.query.filter(UsedDiscountCode.carted_product_item_id==carted_product_item.id).first()
+        used_discount_code = UsedDiscountCode.query.\
+            filter(UsedDiscountCode.carted_product_item_id == carted_product_item.id).first()
         if used_discount_code:
             used_discount_code.ordered_product_item_id = ordered_product_item.id
     return True

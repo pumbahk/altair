@@ -223,12 +223,12 @@ class Cart(Base, c_models.CartMixin):
         return discount_api.get_used_discount_codes(self)
 
     @property
-    def discount_quantity(self):
-        return discount_api.calc_discount_quantity(self)
+    def used_discount_quantity(self):
+        return discount_api.get_used_discount_quantity(self)
 
     @property
     def discount_amount(self):
-        return discount_api.calc_discount_amount(self)
+        return discount_api.get_discount_amount(self)
 
     @property
     def total_amount(self):

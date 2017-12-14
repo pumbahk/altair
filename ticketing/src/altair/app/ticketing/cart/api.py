@@ -686,10 +686,9 @@ class _DummyCart(c_models.CartMixin):
     def shipping_address(self):
         return None
 
-
     @property
     def discount_amount(self):
-        return discount_api.calc_discount_amount(self)
+        return discount_api.get_discount_amount(self)
 
     @property
     def total_amount(self):
