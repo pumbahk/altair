@@ -432,8 +432,8 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
         drawingRegionTimer = setInterval(function () {
           if (that.svgMap) {
             clearInterval(drawingRegionTimer);
-            $(that.svgMap).find('.region').css({ 'fill': REGION_COLOR_NA });
-            $(that.svgMap).find('.coloring_region').css({ 'fill': REGION_COLOR_NA });
+              $(that.svgMap).find('.region').css({ 'fill': REGION_COLOR_NA });
+              $(that.svgMap).find('.coloring_region').css({ 'fill': REGION_COLOR_NA });
             for (let i = 0, len = regions.length; i < len; i++) {
               if (regions[i].stock_status == '△') {
                 $(that.svgMap).find('#' + regions[i].region_id).css({ 'fill': REGION_COLOR_FEW_SEATS });
@@ -1508,7 +1508,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
     }
     this.setActiveGrid();
   }
-
+  //個席データが無ければsvgから席データを取得し席を削除
   saveSeatData() {
     if (!this.isExistsSeatData) {
       let els = document.querySelectorAll('.seat');

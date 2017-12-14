@@ -64,7 +64,7 @@ export class ApiBase extends Http{
     return get;
   }
   /**
-   * seatGETリクエストを実行します
+   * JsonDataGETリクエストを実行します
    *
    * @param string url - API-URL
    * @return Observable<T> - Observable関数
@@ -72,7 +72,6 @@ export class ApiBase extends Http{
    */
   protected httpGetJsonData<T>(url: string): Observable<T> {
     var Zlib = require('zlibjs/bin/gunzip.min').Zlib;
-    var u = navigator.userAgent.toLowerCase();
     this._logger.debug('API GET:', url);
     let seat_options: RequestOptionsArgs = {};
     seat_options.responseType = ResponseContentType.ArrayBuffer;
