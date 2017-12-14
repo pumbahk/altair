@@ -1,7 +1,7 @@
-<%page args="form, action='#'" />
+<%page args="form, action='${action}'" />
 <% from wtforms.widgets import HiddenInput %>
 <%namespace file="/common/helpers.html" name="ch" />
-<form action="${action}" method="POST">
+<form action="${request.url}" method="POST">
     ${ch.form_item(form.id)}
     ${ch.form_item(form.is_valid, help=ch.help(form.is_valid, u"チェックを入れない限り適用できません。"))}
     ${ch.form_item(form.name, placeholder=u"255文字以内")}
