@@ -20,7 +20,14 @@
     <div id="modalWindowAlertBoxInner" class="modalWindowAlertBoxInner">
         <div id="modalWindowAlert" class="modalWindowAlert">
             <div class="modalInner">
-                <div class="modalAlert">
+                <div class="modalAlert" *ngIf="returnFlag">
+                    <p class="modalAlertTtl"><span></span>直前のサイトに遷移します。宜しいですか？</p>
+                        <div class="modalBtnBox">
+                            <button id="cancelbtn" type="button" (click)="confirmStockType=false;returnFlag=false;">いいえ</button>
+                            <button id="okbtn" type="button" (click)="returnPrevious()">はい</button>
+                        </div>
+                </div>
+                <div class="modalAlert" *ngIf="!returnFlag">
                     <p class="modalAlertTtl"><span></span>確認</p>
                     <p>{{confirmationMassage}}</p>
                         <button id="cancelbtn" type="button" (click)="removeConfirmation()">いいえ</button>

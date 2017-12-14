@@ -1,38 +1,53 @@
 # encoding: utf-8
 
-import logging
-import functools
-import json
 import datetime
-from datetime import timedelta
-from pyramid.view import view_config, view_defaults, forbidden_view_config
-from pyramid.response import Response
-from pyramid.httpexceptions import HTTPFound, HTTPForbidden, HTTPBadRequest
-from pyramid.security import remember, forget
-from pyramid_layout.panel import panel_config
-from webhelpers import paginate
+import json
+import logging
+
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.orm import class_mapper
+from webhelpers import paginate
+
+from pyramid.httpexceptions import HTTPFound, HTTPForbidden, HTTPBadRequest
+from pyramid.response import Response
+from pyramid.security import remember, forget
+from pyramid.view import view_config, view_defaults, forbidden_view_config
+
 from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.sqlahelper import get_db_session
-from .api import create_operator, lookup_operator_by_credentials, lookup_organization_by_name, lookup_organization_by_id
-from ..models import MemberSet, MemberKind, Member, Membership, OAuthClient
+
 from ..api import create_member
+from ..models import (
+    Host,
+    Member,
+    Membership,
+    MemberKind,
+    MemberSet,
+    Organization,
+    OAuthClient,
+    OAuthServiceProvider
+)
 from ..utils import digest_secret, generate_salt, generate_random_alnum_string
+
+from . import import_export
+from .api import lookup_operator_by_credentials, lookup_organization_by_id
 from .forms import (
+    ChangePassWordForm,
+    HostForm,
     LoginForm,
-    OrganizationForm,
-    OperatorForm,
     MemberSetForm,
     MemberKindForm,
     MemberForm,
+    OperatorForm,
+    OrganizationForm,
     OAuthClientForm,
-    HostForm,
     OAuthServiceProviderForm
 )
 from .models import Operator
-from ..models import Organization, Host, OAuthServiceProvider
-from . import import_export
+from .utils import AESEncryptor
+
+
+
 
 logger = logging.getLogger(__name__)
 
@@ -83,8 +98,15 @@ class LoginView(object):
             form.password.data
             )
         if operator is None:
-            self.request.session.flash(u'ユーザ名とパスワードの組み合わせが誤っています')
+            self.request.session.flash(u'ユーザ名とパスワードの組み合わせが誤っています。')
             return dict(form=form, return_url=return_url)
+
+        if operator.is_first:
+            aes = AESEncryptor()
+            op_token = aes.get_token(operator.id)
+            self.request.session.flash(u'初回ログインのため、パスワードを更新してください。')
+            return HTTPFound(self.request.route_path('change_password',
+                                                     _query=dict(return_url=self.request.path, op_token=op_token)))
 
         remember(self.request, operator.id)
         return HTTPFound(return_url)
@@ -1044,3 +1066,65 @@ class OAuthServiceProvidersView(object):
         session.commit()
         self.request.session.flash(u'OAuthServiceProvider %s を変更しました' % service_provider.display_name)
         return HTTPFound(location=self.request.route_path('service_providers.edit', id=service_provider.id))
+
+
+@view_defaults(renderer='change_password.mako', decorator=(with_bootstrap,))
+class ChangePassWordView(object):
+    def __init__(self, context, request):
+        self.request = request
+        self.context = context
+        self.aes = AESEncryptor()
+
+
+    def _get_operator_id(self,):
+        op_id = self.request.authenticated_userid
+        if not op_id:
+            op_token = self.request.GET.get('op_token', None)
+            if op_token:
+                op_id = self.aes.get_id_from_token(op_token)
+
+        return op_id
+
+    def _is_password_matched(self, operator, check_passwd):
+        digest = digest_secret(check_passwd, operator.auth_secret[0:32])
+        return operator.auth_secret == digest
+
+    @view_config(route_name='change_password', request_method='GET')
+    def get(self):
+        form = ChangePassWordForm(csrf_context=self.request.session)
+        return dict(form=form)
+
+    @view_config(route_name='change_password', request_method='POST')
+    def post(self):
+        return_url = self.request.GET.get('return_url', self.request.route_path('top'))
+        form = ChangePassWordForm(formdata=self.request.POST, csrf_context=self.request.session)
+
+        if form.validate():
+            session = get_db_session(self.request, 'extauth')
+            operator_id = self._get_operator_id()
+            try:
+                operator = session.query(Operator).filter_by(id=operator_id).one()
+            except NoResultFound:
+                # パスワード変更のpostについて、userを取れない場合はないのため、userが取られない場合は「予期せぬエラー」を出す。
+                self.request.session.flash(u'予期せぬエラーが発生しました。システム管理者へご連絡下さい。')
+                logger.error(u'not correct format of the token or accessing without login. user_id:{0}, authenticated_id:{1}, GET:{2}' \
+                             .format(operator_id,
+                                     self.request.authenticated_userid,
+                                     self.request.GET))
+                return HTTPFound(self.request.route_path('login'))
+
+            if not self._is_password_matched(operator, form.old_password.data):
+                self.request.session.flash(u'旧パスワードが間違います。')
+                return dict(form=form)
+            else:
+                operator.auth_secret = digest_secret(form.password.data, generate_salt())
+                if operator.is_first:
+                    operator.status = 1
+
+                session.commit()
+                self.request.session.flash(u'パスワードを変更しました。')
+                remember(self.request, operator.id)
+                return HTTPFound(return_url)
+
+        else:
+            return dict(form=form)

@@ -19,7 +19,7 @@ from altair.pyramid_dynamic_renderer import lbr_view_config
 from altair.app.ticketing.cart import helpers as cart_helper
 
 from . import ORION_DELIVERY_PLUGIN_ID as DELIVERY_PLUGIN_ID
-from .helpers import delivery_method_get_description
+from .helpers import get_delivery_method_info
 
 tag_re = re.compile(r"<[^>]*?>")
 
@@ -45,7 +45,7 @@ def deliver_completion_viewlet(context, request):
     tickets = [ ]
     order = context.order
     delivery_method = order.payment_delivery_pair.delivery_method
-    description = delivery_method_get_description(request, delivery_method)
+    description = get_delivery_method_info(request, delivery_method, 'description')
 
     for op in order.ordered_products:
         for opi in op.ordered_product_items:

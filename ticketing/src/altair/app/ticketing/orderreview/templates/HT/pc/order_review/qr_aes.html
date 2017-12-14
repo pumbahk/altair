@@ -15,9 +15,11 @@
     </div>
   </div>
   <img class="bg" src="${view_context.static_url('pc/images/qr_aes/default.png')}" />
+  % if not order.issued:
   <div class="qr-wrap">
     <img class="qr" src="${request.route_path(('order_review.qr_aes_draw'), sign=ticket.sign)}" />
   </div>
+  % endif
   <div class="wrap ticket-info">
     <ul>
       <li>席種・券種：${product.seat_stock_type.name}・${product.name}</li>

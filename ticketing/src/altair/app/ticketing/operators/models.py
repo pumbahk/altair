@@ -117,7 +117,7 @@ class Operator(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     email = Column(String(255))
     organization_id = Column(Identifier, ForeignKey('Organization.id'))
     expire_at = Column(DateTime, nullable=True)
-    status = Column(Integer, default=1)
+    status = Column(Integer, default=0)
 
     organization = relationship('Organization', uselist=False, backref='operators')
     roles = relationship('OperatorRole', secondary=OperatorRole_Operator.__table__)
@@ -189,5 +189,9 @@ class Operator(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             logger.warn("operator(id={id}). is not organization({short_name})'s operator.".format(id=self.id, short_name=has_organization.organization.short_name))
             return False
         return True
+
+    @property
+    def is_first(self):
+        return self.status == 0
 
 from ..core.models import TicketPrintQueueEntry

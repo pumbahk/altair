@@ -67,7 +67,7 @@
             <p class="buySeatText"><span class="priceText">合計金額：￥{{fee}}</span><span class="variousText">+ 各種手数料</span></p>
           </div>
           <div id="productSelectBtn">
-              <button type="reset" id="reset" name="" value="キャンセル" form="buySeatForm" (click)="cancel()">キャンセル</button>
+              <button type="reset" id="reset" name="" value="キャンセル" form="buySeatForm" (click)="confirmReturn()">キャンセル</button>
               <button type="submit" id="submit" name="" value="次へ" form="buySeatForm" (click)="purchase()">次へ</button>
           </div>
         </div>
@@ -104,22 +104,26 @@
              <p class="buySeatText"><span class="priceText">合計金額：￥{{fee}}</span><span class="variousText">+ 各種手数料</span></p>
           </div>
           <div id="productSelectBtn">
-              <button type="reset" name="" value="キャンセル" form="buySeatForm" (click)="cancel()">キャンセル</button>
+              <button type="reset" name="" value="キャンセル" form="buySeatForm" (click)="confirmReturn()">キャンセル</button>
               <button type="submit" name="" value="次へ" form="buySeatForm" (click)="purchase()">次へ</button>
           </div>
         </div>
         <!--/数受け-->
 
         <!--エラーモーダル-->
-        <div *ngIf="modalVisible" id="modalWindowAlertBox" class="modalWindowAlertBox">
+        <div *ngIf="modalVisible" id="modalWindowAlertBox" class="modalWindowAlertBox selectProductModal">
             <div id="modalWindowAlertBoxInner" class="modalWindowAlertBoxInner">
                 <div id="modalWindowAlert" class="modalWindowAlert">
                     <div class="modalInner">
                         <div class="modalAlert">
                             <p class="modalAlertTtl"><span></span>{{modalTitle}}</p>
                             <p [innerHTML]="modalMessage"></p>
-                            <button *ngIf="!timeoutFlag" class="" type="button" (click)="modalVisible=false;">OK</button>
+                            <button *ngIf="!timeoutFlag && !returnFlag" class="" type="button" (click)="modalVisible=false;">OK</button>
                             <button *ngIf="timeoutFlag" routerLink="/performances/{{performanceId}}" class="" type="button" (click)="modalVisible=false;">OK</button>
+                            <div *ngIf="returnFlag && !timeoutFlag" class="modalBtnBox">
+                              <button type="button" (click)="modalVisible=false;returnFlag=false;">いいえ</button>
+                              <button type="button" (click)="modalVisible=false;cancel();">はい</button>
+                            </div>
                         </div>
                     </div>
                 </div>

@@ -21,7 +21,7 @@ from altair.app.ticketing.core.interfaces import IOrderLike
 
 from . import logger
 from . import QR_AES_DELIVERY_PLUGIN_ID as DELIVERY_PLUGIN_ID
-from .helpers import delivery_method_get_description
+from .helpers import get_delivery_method_info
 
 tag_re = re.compile(r"<[^>]*?>")
 
@@ -38,7 +38,7 @@ def _overridable(path, fallback_ua_type=None):
 def deliver_confirm_viewlet(context, request):
     cart = context.cart
     delivery_method = cart.payment_delivery_pair.delivery_method
-    description = delivery_method_get_description(request, delivery_method)
+    description = get_delivery_method_info(request, delivery_method, 'description')
     return dict(delivery_name=delivery_method.name, description=Markup(description))
 
 QRTicket = namedtuple("QRTicket", "order performance product seat token printed_at")
@@ -48,7 +48,7 @@ def deliver_completion_viewlet(context, request):
     order = context.order
     logger.debug(u"order_no = %s" % order.order_no)
     delivery_method = order.payment_delivery_pair.delivery_method
-    description = delivery_method_get_description(request, delivery_method)
+    description = get_delivery_method_info(request, delivery_method, 'description')
 
     tickets = [ ]
 

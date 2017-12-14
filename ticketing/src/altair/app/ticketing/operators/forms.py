@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+import re
+
 from wtforms import Form, ValidationError
 from wtforms import TextField, HiddenField, DateField, PasswordField, SelectMultipleField
 from wtforms.validators import Length, Optional, Regexp
@@ -137,8 +139,9 @@ class OperatorForm(Form):
     password = PasswordField(
         label=u'パスワード',
         validators=[
-            Length(4, 32, message=u'4文字以上32文字以内で入力してください'),
-            Regexp("^[a-zA-Z0-9@!#$%&'()*+,\-./_]+$", 0, message=u'英数記号を入力してください。'),
+            Length(min=7, max=32, message=u'7文字以上32文字以内で入力してください。'),
+            Regexp(r'^(?=.*[a-zA-Z])(?=.*[0-9])([A-Za-z0-9' + re.escape('~!@#$%^&*()_+-=[]{}|;:<>?,./') + ']+)$', 0,
+                   message=u'半角の英文字と数字を組み合わせてご入力ください。大文字も使用できます。'),
         ]
     )
     role_ids = PHPCompatibleSelectMultipleField(
