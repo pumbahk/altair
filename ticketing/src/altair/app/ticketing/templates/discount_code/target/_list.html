@@ -1,4 +1,4 @@
-<%page args="setting, events, registered, p_cnt, total_p_cnt" />
+<%page args="setting, events, registered, p_cnt" />
 <%namespace file="/common/helpers.html" name="ch" />
 <%! from altair.app.ticketing.core.models import Event %>
 <%! from altair.app.ticketing.events.performances.forms import PerformanceForm %>
@@ -10,9 +10,7 @@
                 <a href="${request.route_path("discount_code.target_confirm",setting_id=setting.id, _query=request.GET)}"
                    id="target_confirm"
                    class="ajax-modal btn btn-primary" data-toggle="modal" data-target="#TargetEditModal">変更内容を保存</a>
-                <p style="margin-top: 10px;">イベント数（非表示を含む）: ${events.item_count}件<br/>
-                    合計登録公演数: ${total_p_cnt}件
-                </p>
+                <p style="margin-top: 10px;">イベント数（非表示を含む）: ${events.item_count}件</p>
                 <table class="table table-bordered" style="margin-top:16px;">
                     <thead>
                     <tr>

@@ -238,14 +238,13 @@ class DiscountCode(BaseView):
 
         event_id_list = self._get_event_id_list(events)
         registered = self._get_registered_id_list(event_id_list)
-        p_cnt, total_p_cnt = self._registered_performance_num_of_each_events(event_id_list)
+        p_cnt = self._registered_performance_num_of_each_events(event_id_list)
 
         return {
             'setting': self.context.setting,
             'events': events,
             'registered': registered,
             'p_cnt': p_cnt,
-            'total_p_cnt': total_p_cnt,
             'search_form': f
         }
 
@@ -369,13 +368,11 @@ class DiscountCode(BaseView):
             DiscountCodeTarget.event_id
         ).all()
 
-        total_p_cnt = 0
         p_cnt = {}
         for r in result:
-            total_p_cnt = total_p_cnt + int(r.count)
             p_cnt[r.event_id] = r.count
 
-        return p_cnt, total_p_cnt
+        return p_cnt
 
     def _get_added_deleted_performance(self, added_id_list, deleted_id_list):
         """追加・削除対象のパフォーマンス情報の取得"""
