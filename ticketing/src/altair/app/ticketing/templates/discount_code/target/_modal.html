@@ -3,6 +3,27 @@
 <%! from altair.app.ticketing.core.models import Event %>
 <%! from altair.app.ticketing.events.performances.forms import PerformanceForm %>
 
+<%def name="diff_target_table(diffs)">
+    <table class="table">
+        <thead>
+        <tr>
+            <th>${HH.label_text_for(Event.title)}</th>
+            <th>${HH.label_text_for(PerformanceForm.start_on)}</th>
+            <th>${HH.label_text_for(PerformanceForm.name)}</th>
+        </tr>
+        </thead>
+        <tbody>
+            %for dif in diffs:
+                <tr>
+                    <td>${dif.event.title}</td>
+                    <td>${vh.datetime(dif.start_on, with_weekday=True)}</td>
+                    <td>${dif.name}</td>
+                </tr>
+            %endfor
+        </tbody>
+    </table>
+</%def>
+
 <div class="modal-header">
     <button type="button" class="close" data-dismiss="modal">×</button>
     <h3><% HH.route_label('discount_code.target_confirm') %></h3>
@@ -19,45 +40,11 @@
         % else:
             %if added:
                 追加する公演 ${len(added)}件
-                <table class="table">
-                    <thead>
-                    <tr>
-                        <th>${HH.label_text_for(Event.title)}</th>
-                        <th>${HH.label_text_for(PerformanceForm.name)}</th>
-                        <th>${HH.label_text_for(PerformanceForm.start_on)}</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                        %for add in added:
-                            <tr>
-                                <td>${add.event.title}</td>
-                                <td>${add.name}</td>
-                                <td>${vh.datetime(add.start_on, with_weekday=True)}</td>
-                            </tr>
-                        %endfor
-                    </tbody>
-                </table>
+            ${diff_target_table(added)}
             %endif
             %if deleted:
                 削除する公演 ${len(deleted)}件
-                <table class="table">
-                    <thead>
-                    <tr>
-                        <th>${HH.label_text_for(Event.title)}</th>
-                        <th>${HH.label_text_for(PerformanceForm.name)}</th>
-                        <th>${HH.label_text_for(PerformanceForm.start_on)}</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                        %for delete in deleted:
-                            <tr>
-                                <td>${delete.event.title}</td>
-                                <td>${delete.name}</td>
-                                <td>${vh.datetime(delete.start_on, with_weekday=True)}</td>
-                            </tr>
-                        %endfor
-                    </tbody>
-                </table>
+            ${diff_target_table(deleted)}
             %endif
         %endif
     </div>
