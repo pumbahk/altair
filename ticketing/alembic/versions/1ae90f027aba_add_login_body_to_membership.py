@@ -1,14 +1,14 @@
 """add login body to Membership
 
 Revision ID: 1ae90f027aba
-Revises: 4c5235a1dea8
+Revises: 23db677af8c6
 Create Date: 2017-11-29 19:37:01.164012
 
 """
 
 # revision identifiers, used by Alembic.
 revision = '1ae90f027aba'
-down_revision = '4c5235a1dea8'
+down_revision = '23db677af8c6'
 
 from alembic import op
 import sqlalchemy as sa
