@@ -92,8 +92,13 @@ export class ApiBase extends Http{
             asciistring += String.fromCharCode(plain[i]);
           }
         } else {
-          for (let i = 0; i < plain.length; i++) {
-            asciistring += String.fromCharCode(plain[i]);
+          const block_size = 1024;
+          for (let i = 0; i < plain.length; i += block_size) {
+            if (i + block_size >= plain.length) {
+              asciistring += String.fromCharCode.apply(String, plain.slice(i));
+            } else {
+              asciistring += String.fromCharCode.apply(String, plain.slice(i, i + block_size));
+            }
           }
         }
         const body = JSON.parse(asciistring);

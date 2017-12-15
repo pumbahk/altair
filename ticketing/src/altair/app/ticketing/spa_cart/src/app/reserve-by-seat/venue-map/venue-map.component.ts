@@ -284,7 +284,6 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
     const that = this;
     let drawingRegionTimer;
     let drawingSeatTimer;
-    let regionIds = Array();
     this.animationEnableService.sendToRoadFlag(true);
 
     var svg_test = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
@@ -490,7 +489,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
         that.seatAreaHeight = $("#mapImgBox").height();
         that.svgMap = document.getElementById('mapImgBox').firstElementChild;
         that.saveSeatData();
-        that.mapHome();
+        that.mapHome(true);
         that.endTime = new Date();
         that._logger.info(that.endTime - that.startTime + "ms");
         that.viewTime = that.endTime - that.startTime + "ms";
@@ -1335,8 +1334,8 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
   }
 
   // 初期状態
-  mapHome() {
-    if (this.countSelect == 0) {
+  mapHome(isInitialCalled: boolean = false) {
+    if (!isInitialCalled && this.countSelect == 0) {
       this.stockTypeDataService.sendToSeatListFlag(true);
       this.seatSelectDisplay(true);
     }
@@ -1359,7 +1358,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
         this.displayViewBox[1] = String(parseFloat(this.displayViewBox[1]) - (parseFloat(this.displayViewBox[3]) - parseFloat(this.originalViewBox[3])) / 2);
       }
       $('#mapImgBox').children().attr('viewBox', this.displayViewBox.join(' ')); // viewBoxを初期値に設定
-      this.onoffRegion(this.regionIds);
+      if (!isInitialCalled) this.onoffRegion(this.regionIds);
     }, 0);
   }
 
