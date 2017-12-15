@@ -238,13 +238,14 @@ class DiscountCode(BaseView):
 
         event_id_list = self._get_event_id_list(events)
         registered = self._get_registered_id_list(event_id_list)
-        p_cnt = self._registered_performance_num_of_each_events(event_id_list)
+        p_cnt, total_p_cnt = self._registered_performance_num_of_each_events(event_id_list)
 
         return {
             'setting': self.context.setting,
             'events': events,
             'registered': registered,
             'p_cnt': p_cnt,
+            'total_p_cnt': total_p_cnt,
             'search_form': f
         }
 
@@ -334,6 +335,7 @@ class DiscountCode(BaseView):
 
     @staticmethod
     def _get_event_id_list(events):
+        """ページネーションの範囲内のイベントID取得"""
         event_id_list = []
         for event in events:
             event_id_list.append(event.id)
@@ -341,6 +343,7 @@ class DiscountCode(BaseView):
         return event_id_list
 
     def _get_registered_id_list(self, event_id_list):
+        """ページネーションの範囲内の登録済パフォーマンスIDを取得"""
         result = self.context.session.query(DiscountCodeTarget).filter(
             DiscountCodeTarget.event_id.in_(event_id_list),
             DiscountCodeTarget.discount_code_setting_id == self.context.setting.id
@@ -355,6 +358,7 @@ class DiscountCode(BaseView):
         return registered
 
     def _registered_performance_num_of_each_events(self, event_id_list):
+        """ページネーションの範囲内のイベントの設定済パフォーマンス数取得"""
         result = self.context.session.query(DiscountCodeTarget).add_columns(
             DiscountCodeTarget.event_id,
             func.count(DiscountCodeTarget.performance_id).label("count"),
@@ -365,13 +369,16 @@ class DiscountCode(BaseView):
             DiscountCodeTarget.event_id
         ).all()
 
+        total_p_cnt = 0
         p_cnt = {}
         for r in result:
+            total_p_cnt = total_p_cnt + int(r.count)
             p_cnt[r.event_id] = r.count
 
-        return p_cnt
+        return p_cnt, total_p_cnt
 
     def _get_added_deleted_performance(self, added_id_list, deleted_id_list):
+        """追加・削除対象のパフォーマンス情報の取得"""
         query = self.context.session.query(Performance).join(
             Event, Event.id == Performance.event_id
         ).order_by(
