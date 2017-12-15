@@ -7,7 +7,7 @@ from altair.formhelpers.validators import Required, SwitchOptional
 from altair.saannotation import get_annotations_for
 from wtforms import Form
 from wtforms import TextField, HiddenField, SelectField, BooleanField, TextAreaField, IntegerField
-from wtforms.validators import Length, Optional, ValidationError
+from wtforms.validators import Length, Optional, ValidationError, NumberRange
 from .models import CodeOrganizerEnum, DiscountCodeSetting, DiscountCodeCode, DiscountCodeTarget
 
 
@@ -17,28 +17,15 @@ class DiscountCodeSettingForm(Form):
         if 'organization_id' in kwargs:
             self.organization_id = kwargs['organization_id']
 
-        # コード管理元が自社以外であれば、接頭辞は必須ではなくなる
-        if self.issued_by.data != 'own':
-            self.first_digit.validators = [Optional()]
-            self.following_2to4_digits.validators = [Optional()]
-
     def _get_translations(self):
         return Translations()
 
     def _check_prefix(self):
         """
         入力された4桁の接頭辞の妥当性を確認。
-        コード管理元が自社でない場合は、接頭辞は空文字であること。
-        自社の場合は、新たに登録しようとしている組み合わせが存在しないことを確認する。
+        新たに登録しようとしている組み合わせが存在しないことを確認する。
         :return: エラーメッセージ
         """
-        if self.issued_by.data != 'own':
-            len_first_digit = len(self.first_digit.data)
-            len_following = len(self.following_2to4_digits.data)
-            if len_first_digit == 0 and len_following == 0:
-                return True
-            else:
-                raise ValidationError(u'コード管理元が自社でない場合、接頭辞は指定できません')
 
         # 既存の設定の編集時（Hiddenで渡されるIDの有無で判断）
         if len(self.id.data) != 0:
@@ -107,8 +94,7 @@ class DiscountCodeSettingForm(Form):
     following_2to4_digits = TextField(
         label=get_annotations_for(DiscountCodeSetting.following_2to4_digits)['label'],
         validators=[
-            Required(),
-            Length(max=255, message=u'255文字以内で入力してください'),
+            Length(min=3, max=3, message=u'半角英数3文字で入力してください'),
         ]
     )
     criterion = SelectField(
@@ -119,13 +105,14 @@ class DiscountCodeSettingForm(Form):
         ],
         coerce=str
     )
-    condition_price_amount = TextField(
+    condition_price_amount = IntegerField(
+        label=get_annotations_for(DiscountCodeSetting.condition_price_amount)['label'],
         validators=[
-            Required(),
-            Length(max=8, message=u'8桁以内で入力してください'),
+            NumberRange(min=0, max=99999999, message=u'8桁以内の半角数字で入力してください')
         ]
     )
     condition_price_more_or_less = SelectField(
+        label=get_annotations_for(DiscountCodeSetting.condition_price_more_or_less)['label'],
         validators=[Required()],
         choices=[
             ('less', u'以下')
@@ -133,12 +120,14 @@ class DiscountCodeSettingForm(Form):
         coerce=str
     )
     benefit_amount = TextField(
+        label=get_annotations_for(DiscountCodeSetting.benefit_amount)['label'],
         validators=[
             Required(),
             Length(max=8, message=u'8桁以内で入力してください'),
         ]
     )
     benefit_unit = SelectField(
+        label=get_annotations_for(DiscountCodeSetting.benefit_unit)['label'],
         validators=[Required()],
         choices=[
             ('%', u'%')
@@ -162,6 +151,11 @@ class DiscountCodeSettingForm(Form):
     explanation = TextAreaField(
         label=get_annotations_for(DiscountCodeSetting.explanation)['label'],
         validators=[Optional()],
+        default=u'''
+概要:
+適用条件：
+割引内容：
+        '''
     )
     status = HiddenField(
         label=u'状態',

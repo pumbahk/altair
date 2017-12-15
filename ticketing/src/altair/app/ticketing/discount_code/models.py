@@ -3,7 +3,7 @@
 from altair.app.ticketing.models import Base, BaseModel, WithTimestamp, LogicallyDeleted, Identifier
 from altair.saannotation import AnnotatedColumn
 from pyramid.i18n import TranslationString as _
-from sqlalchemy.orm import column_property, relationship, configure_mappers
+from sqlalchemy.orm import column_property, relationship
 from sqlalchemy.schema import ForeignKey
 from sqlalchemy.types import Boolean, Integer, DateTime, Unicode, UnicodeText, String
 from standardenum import StandardEnum
@@ -24,7 +24,7 @@ class DiscountCodeSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     issued_by = AnnotatedColumn(Unicode(255), nullable=False, _a_label=_(u'コード管理元'))
     criterion = AnnotatedColumn(Unicode(255), nullable=False, _a_label=_(u'適用基準'))
     condition_price_amount = AnnotatedColumn(Unicode(255), nullable=True, _a_label=_(u'条件数値（チケット価格）'))
-    condition_price_more_or_less = AnnotatedColumn(Unicode(255), nullable=True, _a_label=_(u'条件単位（チケット価格）'))
+    condition_price_more_or_less = AnnotatedColumn(Unicode(255), nullable=True, _a_label=_(u'判定方法'))
     benefit_amount = AnnotatedColumn(Integer(8), nullable=False, _a_label=_(u'割引内容：数値'))
     benefit_unit = AnnotatedColumn(Unicode(1), nullable=False, _a_label=_(u'割引内容：単位'))
     organization_id = AnnotatedColumn(Identifier, ForeignKey('Organization.id'), nullable=False, _a_label=_(u'組織ID'))

@@ -35,21 +35,6 @@
         })($('#${modal_id}'));
     });
 
-    $(document).ajaxComplete(function() {
-        pop_over();
-        var issued_by = $("select#issued_by");
-        if (issued_by.val() !== "own") {
-            $("#first_4_digits").hide();
-        }
-        issued_by.change(function () {
-            if ($(this).val() !== "own") {
-                $("#first_4_digits").fadeOut();
-            } else {
-                $("#first_4_digits").fadeIn();
-            }
-        });
-    });
-
 </script>
 <%namespace file="/common/helpers.html" name="ch" />
 <div id="${modal_id}" class="modal hide">
