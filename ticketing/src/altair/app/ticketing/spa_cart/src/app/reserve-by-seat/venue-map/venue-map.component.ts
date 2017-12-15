@@ -269,7 +269,6 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
   // 初期表示測定
   startTime: any;
   endTime: any;
-  viewTime: any;
   // SVGに対するinnerHTMLの利用可否
   isInnerHtmlAvailable: boolean = true;
 
@@ -492,7 +491,6 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
         that.mapHome(true);
         that.endTime = new Date();
         that._logger.info(that.endTime - that.startTime + "ms");
-        that.viewTime = that.endTime - that.startTime + "ms";
       }
     }, 100);
 
