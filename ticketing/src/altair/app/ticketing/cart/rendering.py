@@ -69,6 +69,7 @@ class OverridableTemplateRendererHelperFactory(object):
                     self.bad_templates.add(resolved_uri)
                     continue
                 elif not view_context.membership_login_body and i == 0:
+                    # ログイン画面未使用,テンプレートファイルのパースパッターンが0番目
                     self.bad_templates.add(resolved_uri)
                     continue
             return RendererHelper(name=resolved_uri, package=package, registry=registry)

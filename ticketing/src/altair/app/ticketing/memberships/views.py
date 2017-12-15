@@ -56,7 +56,7 @@ class MembershipView(BaseView):
                                         enable_auto_input_form=form.data['enable_auto_input_form'],
                                         enable_point_input=form.data['enable_point_input'],
                                         memo=form.data['memo'],
-                                        login_body_disp_agreement=form.data['login_body_disp_agreement'],
+                                        enable_login_body=form.data['enable_login_body'],
                                         login_body_pc=form.data['login_body_pc'],
                                         login_body_smartphone=form.data['login_body_smartphone'],
                                         login_body_mobile=form.data['login_body_mobile'],
@@ -89,7 +89,7 @@ class MembershipView(BaseView):
         membership.memo=form.data['memo']
         membership.enable_auto_input_form=form.data["enable_auto_input_form"]
         membership.enable_point_input=form.data["enable_point_input"]
-        membership.login_body_disp_agreement = form.data["login_body_disp_agreement"]
+        membership.enable_login_body = form.data["enable_login_body"]
         membership.login_body_pc = form.data["login_body_pc"]
         membership.login_body_smartphone = form.data["login_body_smartphone"]
         membership.login_body_mobile = form.data["login_body_mobile"]

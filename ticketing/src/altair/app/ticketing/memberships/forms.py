@@ -60,8 +60,8 @@ class MembershipForm(Form):
         label=u"楽天ポイント手入力",
         default=True
         )
-    login_body_disp_agreement = BooleanField(
-        label=u"ログイン画面の表示/非表示",
+    enable_login_body = BooleanField(
+        label=u"ログイン画面の使用",
         default=False
         )
     login_body_pc = TextField(

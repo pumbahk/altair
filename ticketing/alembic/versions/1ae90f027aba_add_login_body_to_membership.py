@@ -20,14 +20,14 @@ Identifier = sa.BigInteger
 
 
 def upgrade():
-    op.add_column(u'Membership', sa.Column(u'login_body_disp_agreement', sa.Boolean, default=False, server_default='0'))
+    op.add_column(u'Membership', sa.Column(u'enable_login_body', sa.Boolean, default=False, server_default='0'))
     op.add_column(u'Membership', sa.Column(u'login_body_pc', MEDIUMTEXT(charset='utf8'), nullable=True))
     op.add_column(u'Membership', sa.Column(u'login_body_smartphone', MEDIUMTEXT(charset='utf8'), nullable=True))
     op.add_column(u'Membership', sa.Column(u'login_body_mobile', MEDIUMTEXT(charset='utf8'), nullable=True))
     op.add_column(u'Membership', sa.Column(u'login_body_error_message', sa.UnicodeText, nullable=True))
 
 def downgrade():
-    op.drop_column('Membership', 'login_body_disp_agreement')
+    op.drop_column('Membership', 'enable_login_body')
     op.drop_column('Membership', 'login_body_pc')
     op.drop_column('Membership', 'login_body_smartphone')
     op.drop_column('Membership', 'login_body_mobile')

@@ -9,6 +9,7 @@ from altair.auth.api import get_auth_api, get_plugin_registry
 from altair.sqlahelper import get_db_session
 from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 from altair.mobile.api import is_mobile_request
+from altair.mobile.interfaces import IMobileRequest, ISmartphoneRequest
 from altair.pyramid_dynamic_renderer import lbr_view_config
 from altair.app.ticketing.cart import api as cart_api
 from altair.app.ticketing.core import api as core_api
@@ -59,22 +60,20 @@ class FCAuthLoginViewMixin(object):
             identities, auth_factors, metadata = self.auth_api.login(self.request, self.request.response, credentials, auth_factor_provider_name=self.plugin.name)
 
         if identities is None:
-            if self.request.context.membership.login_body_disp_agreement:
-                if self.request.view_context.ua_type is "smartphone":
+            if self.request.context.membership.enable_login_body:
+                membership_info = self.request.context.membership
+                change_message = u'<input type="hidden">'
+                pc_smartphone_error_message = u'<span class="red">' + membership_info.login_body_error_message + u'</span>'
+                mobile_error_message = u'<span style="color: red">' + membership_info.login_body_error_message + u'</span>'
+                if ISmartphoneRequest.providedBy(self.request):
                     self.request.context.membership.login_body_smartphone = \
-                        re.sub(u'<input type="hidden">',
-                               u'<span class="red">' + self.request.context.membership.login_body_error_message + u'</span>',
-                               self.request.context.membership.login_body_smartphone)
-                elif self.request.view_context.ua_type is "mobile":
+                        re.sub(change_message, pc_smartphone_error_message, membership_info.login_body_smartphone)
+                elif IMobileRequest.providedBy(self.request):
                     self.request.context.membership.login_body_mobile = \
-                        re.sub(u'<input type="hidden">',
-                               u'<span style="color: red">' + self.request.context.membership.login_body_error_message + u'</span>',
-                               self.request.context.membership.login_body_mobile)
+                        re.sub(change_message, mobile_error_message, membership_info.login_body_mobile)
                 else:
                     self.request.context.membership.login_body_pc = \
-                        re.sub(u'<input type="hidden">',
-                               u'<span class="red">' + self.request.context.membership.login_body_error_message + u'</span>',
-                               self.request.context.membership.login_body_pc)
+                        re.sub(change_message, pc_smartphone_error_message, membership_info.login_body_pc)
 
             return {'username': username,
                     'message': u'IDかパスワードが一致しません'}

@@ -61,7 +61,7 @@ def get_cart_view_context_factory(default_package):
             except:
                 logger.exception('WTF?')
 
-        @reify
+        @property
         def membership_login_body(self):
             if self.context.membership:
                 membership = self.context.membership
@@ -69,7 +69,7 @@ def get_cart_view_context_factory(default_package):
                     logger.warning('membership is None for context %r' % self.context)
                     return None
                 else:
-                    return membership.login_body_disp_agreement
+                    return membership.enable_login_body
 
         @reify
         def organization_short_name(self):
