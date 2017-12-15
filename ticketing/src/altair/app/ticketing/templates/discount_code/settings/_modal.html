@@ -35,6 +35,21 @@
         })($('#${modal_id}'));
     });
 
+    $(document).ajaxComplete(function () {
+        pop_over();
+        var issued_by = $("select#issued_by");
+        if (issued_by.val() !== "own") {
+            $("#valid_term").hide();
+        }
+        issued_by.change(function () {
+            if ($(this).val() !== "own") {
+                $("#valid_term").fadeOut();
+            } else {
+                $("#valid_term").fadeIn();
+            }
+        });
+    });
+
 </script>
 <%namespace file="/common/helpers.html" name="ch" />
 <div id="${modal_id}" class="modal hide">

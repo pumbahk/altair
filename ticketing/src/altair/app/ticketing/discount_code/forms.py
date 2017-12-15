@@ -17,6 +17,11 @@ class DiscountCodeSettingForm(Form):
         if 'organization_id' in kwargs:
             self.organization_id = kwargs['organization_id']
 
+        # コード管理元が自社の場合は、有効期間は必須
+        if self.issued_by.data != 'own':
+            self.start_at.validators = [Optional()]
+            self.end_at.validators = [Optional()]
+
     def _get_translations(self):
         return Translations()
 

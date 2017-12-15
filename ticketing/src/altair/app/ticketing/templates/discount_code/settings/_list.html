@@ -57,12 +57,16 @@
                 </td>
                 <td>${setting.name}</td>
                 <td>
+                    %if setting.start_at or setting.end_at:
                     %if setting.start_at:
-                    ${vh.datetime(setting.start_at, with_weekday=True)}
+                        ${vh.datetime(setting.start_at, with_weekday=True)}
                     %endif
-                    〜
+                        〜
                     %if setting.end_at:
-                    ${vh.datetime(setting.end_at, with_weekday=True)}
+                        ${vh.datetime(setting.end_at, with_weekday=True)}
+                    %endif
+                    %else:
+                        指定なし
                     %endif
                 </td>
                 <td>${''.join([enum.v[1] for enum in CodeOrganizerEnum if enum.v[0] == setting.issued_by])}</td>

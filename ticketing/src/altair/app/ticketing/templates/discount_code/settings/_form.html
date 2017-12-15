@@ -17,8 +17,10 @@
     ${ch.form_item(form.condition_price_more_or_less, label=False, class_='span6', readonly="")}
     ${ch.form_item(form.benefit_amount, label=u'割引内容', maxlength=8, placeholder=u"8桁以内", help=ch.help(form.benefit_amount, u"2017年11月現在の仕様では100%OFFのみです。"), value=100, readonly="")}
     ${ch.form_item(form.benefit_unit, label=False, readonly="")}OFF
-    <p>有効期間設定${ch.help(form.start_at, u"開始日時と終了日時を両方を空白で設定はできません。")|n}</p>
-    ${ch.form_item(form.start_at)}
-    ${ch.form_item(form.end_at)}
+    <div id="valid_term">
+        <p>有効期間設定${ch.help(form.start_at, u"開始日時と終了日時を両方を空白で設定はできません。")|n}</p>
+        ${ch.form_item(form.start_at)}
+        ${ch.form_item(form.end_at)}
+    </div>
     ${ch.form_item(form.explanation, style="width:80%; height:10em", help=ch.help(form.explanation, u"購入内容確認・完了画面で表示する利用されたコードに関する説明です。"))}
 </form>
