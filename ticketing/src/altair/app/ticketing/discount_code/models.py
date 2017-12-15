@@ -40,13 +40,20 @@ class DiscountCodeSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     code = relationship('DiscountCodeCode', backref='DiscountCodeSetting')
 
 
-class UsedDiscountCode(Base, BaseModel, WithTimestamp, LogicallyDeleted):
-    __tablename__ = 'UsedDiscountCode'
+class UsedDiscountCodeCart(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+    __tablename__ = 'UsedDiscountCodeCart'
     id = AnnotatedColumn(Identifier, primary_key=True, _a_label=_(u'ID'))
     discount_code_id = AnnotatedColumn(Identifier, ForeignKey('DiscountCode.id'), nullable=True)
     code = AnnotatedColumn(String(12), _a_label=_(u'ディスカウントコード'), nullable=True)
-    carted_product_item_id = AnnotatedColumn(Identifier, ForeignKey('CartedProductItem.id'), nullable=True)
-    ordered_product_item_id = AnnotatedColumn(Identifier, ForeignKey('OrderedProductItem.id'), nullable=True)
+    carted_product_item_id = AnnotatedColumn(Identifier, ForeignKey('CartedProductItem.id'))
+
+
+class UsedDiscountCodeOrder(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+    __tablename__ = 'UsedDiscountCodeOrder'
+    id = AnnotatedColumn(Identifier, primary_key=True, _a_label=_(u'ID'))
+    discount_code_id = AnnotatedColumn(Identifier, ForeignKey('DiscountCode.id'), nullable=True)
+    code = AnnotatedColumn(String(12), _a_label=_(u'ディスカウントコード'), nullable=True)
+    ordered_product_item_id = AnnotatedColumn(Identifier, ForeignKey('OrderedProductItem.id'))
 
 
 class DiscountCodeCode(Base, BaseModel, WithTimestamp, LogicallyDeleted):

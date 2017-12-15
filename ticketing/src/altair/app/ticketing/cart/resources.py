@@ -23,7 +23,7 @@ from altair.app.ticketing.orders import models as order_models
 from altair.app.ticketing.core.interfaces import IOrderQueryable
 from altair.app.ticketing.users import models as u_models
 from altair.app.ticketing.utils import memoize
-from ..discount_code.models import UsedDiscountCode
+from ..discount_code.models import UsedDiscountCodeCart
 from ..discount_code import api as discount_api
 from . import models as m
 from . import api as cart_api
@@ -734,15 +734,7 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
                     return codies
 
     def temporarily_save_discount_code(self, codies):
-        # carted_product_itemのIDと、使用したコードを保存する
-        # TODO OKADA これは、APIかも
-        for code_dict in codies:
-            if code_dict['code']:
-                use_discount_code = UsedDiscountCode()
-                use_discount_code.code = code_dict['code']
-                use_discount_code.carted_product_item_id = code_dict['carted_product_item'].id
-                use_discount_code.add()
-        return True
+        discount_api.temporarily_save_discount_code(codies)
 
     def get_carted_product_item_ids(self):
         cart = self.read_only_cart
@@ -765,7 +757,7 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
 
     def delete_temporarily_save_discount_code(self):
         carted_product_item_ids = self.get_carted_product_item_ids()
-        codies = UsedDiscountCode.query.filter(UsedDiscountCode.carted_product_item_id.in_(carted_product_item_ids)).all()
+        codies = UsedDiscountCodeCart.query.filter(UsedDiscountCodeCart.carted_product_item_id.in_(carted_product_item_ids)).all()
         for code in codies:
             code.deleted_at = datetime.now()
         return True
