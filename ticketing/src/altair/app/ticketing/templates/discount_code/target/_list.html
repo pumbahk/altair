@@ -1,4 +1,4 @@
-<%page args="setting, events, registered, p_cnt" />
+<%page args="setting, events, registered, performance_count" />
 <%namespace file="/common/helpers.html" name="ch" />
 <%! from altair.app.ticketing.core.models import Event %>
 <%! from altair.app.ticketing.events.performances.forms import PerformanceForm %>
@@ -34,7 +34,7 @@
                                     <dl>
                                         <dt>公演数: ${len(event.performances)}件</dt>
                                         <dt>選択数:
-                                            <span id="selected_num_${event.id}">${int(p_cnt[event.id]) if event.id in p_cnt else 0}</span>件
+                                            <span id="selected_num_${event.id}">${int(performance_count[event.id]) if event.id in performance_count else 0}</span>件
                                         </dt>
                                     </dl>
                                     <div class="controls">
@@ -51,11 +51,8 @@
                                             全選択
                                         </label>
                                     </div>
-                                    <%
-                                        p_count = 0
-                                        hidden_div_flg = False
-                                    %>
-                                    % for performance in event.performances:
+                                    <% hidden_div_flg = False %>
+                                    % for i, performance in enumerate(event.performances):
                                         <div class="${"hidden_performance_{}".format(event.id) if hidden_div_flg else ''} control-group">
                                             <input id="performance_id_${performance.id}"
                                                    name="performance_id"
@@ -69,11 +66,7 @@
                                                    for="performance_id_${performance.id}">${vh.datetime(performance.start_on, with_weekday=True)} ${performance.name}
                                             </label>
                                         </div>
-                                    <%
-                                        p_count += 1
-                                        if p_count >= 5:
-                                            hidden_div_flg = True
-                                    %>
+                                    <% if i == 5: hidden_div_flg = True %>
                                     % endfor
                                     % if hidden_div_flg:
                                         <a class="disp_all" data-event_id="${event.id}"

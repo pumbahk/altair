@@ -104,11 +104,11 @@ class DiscountCodeTargetResource(TicketingAdminResource):
             DiscountCodeTarget.event_id
         ).all()
 
-        p_cnt = {}
+        performance_count = {}
         for r in result:
-            p_cnt[r.event_id] = r.count
+            performance_count[r.event_id] = r.count
 
-        return p_cnt
+        return performance_count
 
     def get_added_deleted_performance(self, added_id_list, deleted_id_list):
         """追加・削除対象のパフォーマンス情報の取得"""
@@ -117,7 +117,6 @@ class DiscountCodeTargetResource(TicketingAdminResource):
         ).order_by(
             Event.display_order,
             Event.id.desc(),
-            Performance.display_order,
             Performance.start_on,
         )
 

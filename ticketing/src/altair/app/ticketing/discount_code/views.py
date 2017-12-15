@@ -221,13 +221,13 @@ class DiscountCode(BaseView):
 
         event_id_list = self.context.get_event_id_list(events)
         registered = self.context.get_registered_id_list(event_id_list)
-        p_cnt = self.context.registered_performance_num_of_each_events(event_id_list)
+        performance_count = self.context.registered_performance_num_of_each_events(event_id_list)
 
         return {
             'setting': self.context.setting,
             'events': events,
             'registered': registered,
-            'p_cnt': p_cnt,
+            'performance_count': performance_count,
             'search_form': f
         }
 
@@ -269,8 +269,8 @@ class DiscountCode(BaseView):
                  renderer='altair.app.ticketing:templates/discount_code/target/_modal.html', permission='event_viewer',
                  custom_predicates=(is_enabled_discount_code_checked, get_discount_setting_related_data,))
     def target_register(self):
-        added_id_list = self.request.params['added_id_list']
-        deleted_id_list = self.request.params['deleted_id_list']
+        added_id_list = json.loads(self.request.params['added_id_list'])
+        deleted_id_list = json.loads(self.request.params['deleted_id_list'])
 
         logger.info('Update discount code target performance(s). '
                     'operator_id: {}, '
@@ -279,9 +279,9 @@ class DiscountCode(BaseView):
                     )
 
         added = []
-        if added_id_list:
+        if len(added_id_list) != 0:
             added = self.context.session.query(Performance).filter(
-                Performance.id.in_(json.loads(added_id_list))
+                Performance.id.in_(added_id_list)
             ).order_by(
                 Performance.event_id.desc(),
                 Performance.end_on.desc(),
@@ -289,9 +289,10 @@ class DiscountCode(BaseView):
             ).all()
 
         deleted = []
-        if deleted_id_list:
+        if len(deleted_id_list) != 0:
             deleted = DiscountCodeTarget.query.filter(
-                DiscountCodeTarget.performance_id.in_(json.loads(deleted_id_list))
+                DiscountCodeTarget.performance_id.in_(deleted_id_list),
+                DiscountCodeTarget.discount_code_setting_id == self.context.setting.id
             ).all()
 
         try:
