@@ -62,7 +62,7 @@ class FCAuthLoginViewMixin(object):
         if identities is None:
             if self.request.context.membership.enable_login_body:
                 membership_info = self.request.context.membership
-                change_message = u'<input type="hidden">'
+                change_message = u'error_message'
                 pc_smartphone_error_message = u'<span class="red">' + membership_info.login_body_error_message + u'</span>'
                 mobile_error_message = u'<span style="color: red">' + membership_info.login_body_error_message + u'</span>'
                 if ISmartphoneRequest.providedBy(self.request):
@@ -102,6 +102,15 @@ class FixedMembershipLoginView(FCAuthLoginViewMixin):
 
     @lbr_view_config(route_name='fc_auth.login', request_method="GET", http_cache=60)
     def login_form(self):
+        if self.request.context.membership.enable_login_body:
+            membership_info = self.request.context.membership
+            change_message = u'error_message'
+            self.request.context.membership.login_body_smartphone = \
+                re.sub(change_message, u'', membership_info.login_body_smartphone)
+            self.request.context.membership.login_body_mobile = \
+                re.sub(change_message, u'', membership_info.login_body_mobile)
+            self.request.context.membership.login_body_pc = \
+                re.sub(change_message, u'', membership_info.login_body_pc)
         return dict(username='')
 
     @lbr_view_config(route_name='fc_auth.login', request_method="POST")
