@@ -218,7 +218,7 @@ class DiscountCode(BaseView):
         if f.validate():
             event_title = f.data['event_title']
             if event_title:
-                query = query.filter(Event.title.like(u"%%%s%%" % event_title))
+                query = query.filter(Event.title.like(u"%{}%".format(event_title)))
 
         events = paginate.Page(
             query,
