@@ -4,7 +4,7 @@ import json
 import logging
 
 import webhelpers.paginate as paginate
-from altair.app.ticketing.core.models import Event, Performance
+from altair.app.ticketing.core.models import Performance
 from altair.app.ticketing.core.utils import PageURL_WebOb_Ex
 from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.models import merge_session_with_post
@@ -12,7 +12,6 @@ from altair.app.ticketing.views import BaseView
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPInternalServerError
 from pyramid.renderers import render_to_response
 from pyramid.view import view_config, view_defaults
-from sqlalchemy.sql import func
 from .api import is_enabled_discount_code_checked, get_discount_setting_related_data
 from .forms import DiscountCodeSettingForm, DiscountCodeCodesForm, SearchTargetForm
 from .models import DiscountCodeSetting, DiscountCodeCode, DiscountCodeTarget, delete_discount_code_setting
@@ -202,24 +201,17 @@ class DiscountCode(BaseView):
     def codes_csv_export(self):
         pass
 
-    def _event_pagination(self, setting_id, organization_id):
-        """
-        ページネーションによるイベントの取得とフォームの設定を返す
-        LIKE検索がslaveでは実行できなかったので、masterを参照。
-        """
-        query = Event.query.filter(
-            Event.organization_id == organization_id
-        ).order_by(
-            Event.display_order,
-            Event.id.desc(),
-        )
+    @view_config(route_name='discount_code.target_index',
+                 renderer='altair.app.ticketing:templates/discount_code/target/index.html', permission='event_viewer',
+                 custom_predicates=(is_enabled_discount_code_checked, get_discount_setting_related_data,))
+    def target_index(self):
+        f = SearchTargetForm(self.request.GET, organization_id=self.context.organization.id)
 
-        f = SearchTargetForm(self.request.GET, organization_id=organization_id)
+        event_title = None
         if f.validate():
             event_title = f.data['event_title']
-            if event_title:
-                query = query.filter(Event.title.like(u"%{}%".format(event_title)))
 
+        query = self.context.event_pagination(event_title)
         events = paginate.Page(
             query,
             page=int(self.request.params.get('page', 0)),
@@ -227,18 +219,9 @@ class DiscountCode(BaseView):
             url=PageURL_WebOb_Ex(self.request)
         )
 
-        return f, events
-
-    @view_config(route_name='discount_code.target_index',
-                 renderer='altair.app.ticketing:templates/discount_code/target/index.html', permission='event_viewer',
-                 custom_predicates=(is_enabled_discount_code_checked, get_discount_setting_related_data,))
-    def target_index(self):
-        f, events = self._event_pagination(setting_id=self.context.setting.id,
-                                           organization_id=self.context.user.organization_id)
-
-        event_id_list = self._get_event_id_list(events)
-        registered = self._get_registered_id_list(event_id_list)
-        p_cnt = self._registered_performance_num_of_each_events(event_id_list)
+        event_id_list = self.context.get_event_id_list(events)
+        registered = self.context.get_registered_id_list(event_id_list)
+        p_cnt = self.context.registered_performance_num_of_each_events(event_id_list)
 
         return {
             'setting': self.context.setting,
@@ -254,11 +237,15 @@ class DiscountCode(BaseView):
                  custom_predicates=(is_enabled_discount_code_checked, get_discount_setting_related_data,))
     def target_confirm(self):
         """すでに登録されている適用対象と、今回の登録内容を比較し、どのパフォーマンスが追加・削除されたか表示する"""
-        f, events = self._event_pagination(setting_id=self.context.setting.id,
-                                           organization_id=self.context.user.organization_id)
+        f = SearchTargetForm(self.request.GET, organization_id=self.context.organization.id)
+        event_title = None
+        if f.validate():
+            event_title = f.data['event_title']
 
-        event_id_list = self._get_event_id_list(events)
-        registered = self._get_registered_id_list(event_id_list)
+        events = self.context.event_pagination(event_title)
+
+        event_id_list = self.context.get_event_id_list(events)
+        registered = self.context.get_registered_id_list(event_id_list)
 
         performance_id_list = self.request.params['performance_id_list']
         selected_list = json.loads(performance_id_list)
@@ -266,7 +253,7 @@ class DiscountCode(BaseView):
         added_id_list = list(set(selected_list) - set(registered))
         deleted_id_list = list(set(registered) - set(selected_list))
 
-        added, deleted = self._get_added_deleted_performance(added_id_list, deleted_id_list)
+        added, deleted = self.context.get_added_deleted_performance(added_id_list, deleted_id_list)
 
         return {
             'setting': self.context.setting,
@@ -331,70 +318,3 @@ class DiscountCode(BaseView):
         self.request.session.flash(u'変更内容を保存しました')
         return HTTPFound(self.request.route_path("discount_code.target_index", setting_id=self.context.setting.id,
                                                  _query=self.request.GET))
-
-    @staticmethod
-    def _get_event_id_list(events):
-        """ページネーションの範囲内のイベントID取得"""
-        event_id_list = []
-        for event in events:
-            event_id_list.append(event.id)
-
-        return event_id_list
-
-    def _get_registered_id_list(self, event_id_list):
-        """ページネーションの範囲内の登録済パフォーマンスIDを取得"""
-        result = self.context.session.query(DiscountCodeTarget).filter(
-            DiscountCodeTarget.event_id.in_(event_id_list),
-            DiscountCodeTarget.discount_code_setting_id == self.context.setting.id
-        ).order_by(
-            DiscountCodeTarget.performance_id
-        ).all()
-
-        registered = []
-        for r in result:
-            registered.append(unicode(r.performance_id))
-
-        return registered
-
-    def _registered_performance_num_of_each_events(self, event_id_list):
-        """ページネーションの範囲内のイベントの設定済パフォーマンス数取得"""
-        result = self.context.session.query(DiscountCodeTarget).add_columns(
-            DiscountCodeTarget.event_id,
-            func.count(DiscountCodeTarget.performance_id).label("count"),
-        ).filter(
-            DiscountCodeTarget.event_id.in_(event_id_list),
-            DiscountCodeTarget.discount_code_setting_id == self.context.setting.id
-        ).group_by(
-            DiscountCodeTarget.event_id
-        ).all()
-
-        p_cnt = {}
-        for r in result:
-            p_cnt[r.event_id] = r.count
-
-        return p_cnt
-
-    def _get_added_deleted_performance(self, added_id_list, deleted_id_list):
-        """追加・削除対象のパフォーマンス情報の取得"""
-        query = self.context.session.query(Performance).join(
-            Event, Event.id == Performance.event_id
-        ).order_by(
-            Event.display_order,
-            Event.id.desc(),
-            Performance.display_order,
-            Performance.start_on,
-        )
-
-        added = []
-        if added_id_list:
-            added = query.filter(
-                Performance.id.in_(added_id_list)
-            ).all()
-
-        deleted = []
-        if deleted_id_list:
-            deleted = query.filter(
-                Performance.id.in_(deleted_id_list)
-            ).all()
-
-        return added, deleted
