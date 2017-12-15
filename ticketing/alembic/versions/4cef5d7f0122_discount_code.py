@@ -87,7 +87,8 @@ def upgrade():
                                 name="DiscountCodeTarget_ibfk_1"),
         sa.ForeignKeyConstraint(['event_id'], ['Event.id'], name="DiscountCodeTarget_ibfk_2"),
         sa.ForeignKeyConstraint(['performance_id'], ['Performance.id'], name="DiscountCodeTarget_ibfk_3"),
-        sa.UniqueConstraint('discount_code_setting_id', 'event_id', 'performance_id', name='unique_target'),
+        sa.UniqueConstraint('discount_code_setting_id', 'event_id', 'performance_id', 'created_at',
+                            name='unique_target'),
     )
 
 

@@ -1,4 +1,4 @@
-<%page args="setting, events" />
+<%page args="setting, events, registered" />
 <%namespace file="/common/helpers.html" name="ch" />
 <%! from altair.app.ticketing.core.models import Event %>
 <%! from altair.app.ticketing.events.performances.forms import PerformanceForm %>
@@ -34,7 +34,7 @@
                                     <dl>
                                         <dt>公演数: ${len(event.performances)}件</dt>
                                         <dt>選択数:
-                                            <span id="selected_num_${event.id}">${len(event.DiscountCodeTarget)}</span>件
+                                            <span id="selected_num_${event.id}">${int(p_cnt[event.id]) if event.id in p_cnt else 0}</span>件
                                         </dt>
                                     </dl>
                                     <div class="controls">
@@ -63,7 +63,7 @@
                                                    value="${performance.id}"
                                                    style="float:left;"
                                                    data-event_id="${event.id}"
-                                                ${'checked="checked"' if performance.DiscountCodeTarget else ''}
+                                                ${'checked="checked"' if unicode(performance.id) in registered else ''}
                                                    type="checkbox">
                                             <label class="control-label"
                                                    for="performance_id_${performance.id}">${vh.datetime(performance.start_on, with_weekday=True)} ${performance.name}
