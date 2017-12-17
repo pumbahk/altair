@@ -2,7 +2,9 @@
 
 import logging
 
+import webhelpers.paginate as paginate
 from altair.app.ticketing.core.models import Event, Performance
+from altair.app.ticketing.core.utils import PageURL_WebOb_Ex
 from altair.app.ticketing.discount_code.models import DiscountCodeTarget
 from altair.app.ticketing.resources import TicketingAdminResource
 from altair.sqlahelper import get_db_session
@@ -51,9 +53,9 @@ class DiscountCodeTargetResource(TicketingAdminResource):
         self.session = get_db_session(request, name="slave")
         self.setting_id = request.matchdict['setting_id']
 
-    def event_pagination(self, event_title):
+    def event_pagination(self, f):
         """
-        ページネーションによるイベントの取得とフォームの設定を返す
+        ページネーションの範囲内のイベント情報の取得。
         LIKE検索がslaveでは実行できなかったので、masterを参照。
         """
         query = Event.query.filter(
@@ -63,10 +65,18 @@ class DiscountCodeTargetResource(TicketingAdminResource):
             Event.id.desc(),
         )
 
+        event_title = f.data['event_title']
         if event_title:
             query = query.filter(Event.title.like(u"%{}%".format(event_title)))
 
-        return query
+        events = paginate.Page(
+            query,
+            page=int(self.request.params.get('page', 0)),
+            items_per_page=50,
+            url=PageURL_WebOb_Ex(self.request)
+        )
+
+        return events
 
     @staticmethod
     def get_event_id_list(events):

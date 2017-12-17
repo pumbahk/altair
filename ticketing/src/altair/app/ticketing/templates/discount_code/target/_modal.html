@@ -1,4 +1,4 @@
-<%page args="setting, added, deleted, performance_id_list, added_id_list, deleted_id_list" />
+<%page args="setting, added, deleted, added_id_list, deleted_id_list" />
 <%namespace file="/common/helpers.html" import="form_item"/>
 <%! from altair.app.ticketing.core.models import Event %>
 <%! from altair.app.ticketing.events.performances.forms import PerformanceForm %>
@@ -32,7 +32,6 @@
 <form method="POST"
       action="${request.route_path("discount_code.target_register", setting_id=setting.id, _query=request.GET)}">
     <div class="modal-body">
-        <input type="hidden" name="performance_id_list" value='${performance_id_list|n}'>
         <input type="hidden" name="added_id_list" value='${added_id_list|n}'>
         <input type="hidden" name="deleted_id_list" value='${deleted_id_list|n}'>
         % if not added and not deleted:

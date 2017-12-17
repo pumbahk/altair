@@ -206,30 +206,25 @@ class DiscountCode(BaseView):
                  custom_predicates=(is_enabled_discount_code_checked, get_discount_setting_related_data,))
     def target_index(self):
         f = SearchTargetForm(self.request.GET, organization_id=self.context.organization.id)
-
-        event_title = None
         if f.validate():
-            event_title = f.data['event_title']
+            events = self.context.event_pagination(f)
+            event_id_list = self.context.get_event_id_list(events)
+            registered = self.context.get_registered_id_list(event_id_list)
 
-        query = self.context.event_pagination(event_title)
-        events = paginate.Page(
-            query,
-            page=int(self.request.params.get('page', 0)),
-            items_per_page=50,
-            url=PageURL_WebOb_Ex(self.request)
-        )
+            performance_count = self.context.registered_performance_num_of_each_events(event_id_list)
 
-        event_id_list = self.context.get_event_id_list(events)
-        registered = self.context.get_registered_id_list(event_id_list)
-        performance_count = self.context.registered_performance_num_of_each_events(event_id_list)
+            return {
+                'setting': self.context.setting,
+                'events': events,
+                'registered': registered,
+                'performance_count': performance_count,
+                'search_form': f
+            }
 
-        return {
-            'setting': self.context.setting,
-            'events': events,
-            'registered': registered,
-            'performance_count': performance_count,
-            'search_form': f
-        }
+        else:
+            self.request.session.flash(u'検索条件に不備があります')
+            return HTTPFound(self.request.route_path("discount_code.target_index", setting_id=self.context.setting.id,
+                                                     _query=self.request.GET))
 
     @view_config(route_name='discount_code.target_confirm',
                  renderer='altair.app.ticketing:templates/discount_code/target/_modal.html', permission='event_viewer',
@@ -238,32 +233,31 @@ class DiscountCode(BaseView):
     def target_confirm(self):
         """すでに登録されている適用対象と、今回の登録内容を比較し、どのパフォーマンスが追加・削除されたか表示する"""
         f = SearchTargetForm(self.request.GET, organization_id=self.context.organization.id)
-        event_title = None
         if f.validate():
-            event_title = f.data['event_title']
+            events = self.context.event_pagination(f)
+            event_id_list = self.context.get_event_id_list(events)
+            registered = self.context.get_registered_id_list(event_id_list)
 
-        events = self.context.event_pagination(event_title)
+            selected_list = json.loads(self.request.params['performance_id_list'])
+            selected_list = filter(lambda a: a != 'on', selected_list)  # 全選択にチェックが入ると'on'が含まれる
 
-        event_id_list = self.context.get_event_id_list(events)
-        registered = self.context.get_registered_id_list(event_id_list)
+            added_id_list = list(set(selected_list) - set(registered))
+            deleted_id_list = list(set(registered) - set(selected_list))
+            added, deleted = self.context.get_added_deleted_performance(added_id_list, deleted_id_list)
 
-        performance_id_list = self.request.params['performance_id_list']
-        selected_list = json.loads(performance_id_list)
+            return {
+                'setting': self.context.setting,
+                'registered': registered,
+                'added': added,
+                'deleted': deleted,
+                'added_id_list': json.dumps(added_id_list),
+                'deleted_id_list': json.dumps(deleted_id_list),
+            }
 
-        added_id_list = list(set(selected_list) - set(registered))
-        deleted_id_list = list(set(registered) - set(selected_list))
-
-        added, deleted = self.context.get_added_deleted_performance(added_id_list, deleted_id_list)
-
-        return {
-            'setting': self.context.setting,
-            'registered': registered,
-            'added': added,
-            'deleted': deleted,
-            'performance_id_list': performance_id_list,
-            'added_id_list': json.dumps(added_id_list),
-            'deleted_id_list': json.dumps(deleted_id_list),
-        }
+        else:
+            self.request.session.flash(u'検索条件に不備があります')
+            return HTTPFound(self.request.route_path("discount_code.target_index", setting_id=self.context.setting.id,
+                                                     _query=self.request.GET))
 
     @view_config(route_name='discount_code.target_register', request_method='POST',
                  renderer='altair.app.ticketing:templates/discount_code/target/_modal.html', permission='event_viewer',
