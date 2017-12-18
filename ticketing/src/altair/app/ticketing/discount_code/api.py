@@ -81,6 +81,6 @@ def save_discount_code(carted_product_item, ordered_product_item):
         for used_discount_code_cart in used_discount_code_carts:
             use_discount_code_order = UsedDiscountCodeOrder()
             use_discount_code_order.code = used_discount_code_cart.code
-            use_discount_code_order.ordered_product_item_id = ordered_product_item.id
+            use_discount_code_order.ordered_product_item = ordered_product_item
             use_discount_code_order.add()
     return True
