@@ -33,9 +33,7 @@ def get_used_discount_codes(order_like):
     codes_list = list()
     for item in order_like.items:
         for element in item.elements:
-            used_codes = element.used_discount_codes
-            for used_code in used_codes:
-                codes_list.append(used_code)
+            codes_list.extend(element.used_discount_codes)
     return codes_list
 
 
