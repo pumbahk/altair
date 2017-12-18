@@ -1,4 +1,6 @@
-# encoding: utf-8
+# -*- coding: utf-8 -*-
+
+from datetime import datetime
 
 from altair.app.ticketing.models import Base, BaseModel, WithTimestamp, LogicallyDeleted, Identifier
 from altair.saannotation import AnnotatedColumn
@@ -38,6 +40,35 @@ class DiscountCodeSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     explanation = AnnotatedColumn(UnicodeText, nullable=True, _a_label=_(u'割引概要説明文 '))
 
     code = relationship('DiscountCodeCode', backref='DiscountCodeSetting')
+
+    @property
+    def target(self):
+        return self.DiscountCodeTarget
+
+    @property
+    def target_count(self):
+        return len(self.DiscountCodeTarget)
+
+    @property
+    def available_status(self):
+        """割引コード設定の適用可能状態を判定、無効時には理由をリストで返す"""
+        reasons = []
+        if not self.is_valid:
+            reasons.append(u'「有効・無効フラグ」にチェックがありません。')
+
+        if self.target_count == 0:
+            reasons.append(u'適用対象が設定されていません。')
+
+        if self.issued_by == 'own':
+            now = datetime.now()
+            if (self.start_at is not None and self.start_at > now) \
+                    or (self.end_at is not None and self.end_at < now):
+                reasons.append(u'有効期間外です。')
+
+            if len(self.code) == 0:
+                reasons.append(u'コードが自社によって生成されていません。')
+
+        return True if not reasons else reasons
 
 
 class UsedDiscountCodeCart(Base, BaseModel, WithTimestamp, LogicallyDeleted):

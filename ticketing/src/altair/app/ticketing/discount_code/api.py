@@ -1,4 +1,4 @@
-# encoding: utf-8
+# -*- coding: utf-8 -*-
 
 from sqlalchemy.orm.exc import NoResultFound
 from .models import DiscountCodeSetting, UsedDiscountCodeCart, UsedDiscountCodeOrder
