@@ -4,7 +4,6 @@ import json
 import logging
 
 import webhelpers.paginate as paginate
-from altair.app.ticketing.core.models import Performance
 from altair.app.ticketing.core.utils import PageURL_WebOb_Ex
 from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.models import merge_session_with_post
@@ -12,6 +11,7 @@ from altair.app.ticketing.views import BaseView
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPInternalServerError
 from pyramid.renderers import render_to_response
 from pyramid.view import view_config, view_defaults
+from sqlalchemy.exc import SQLAlchemyError
 from .api import is_enabled_discount_code_checked, get_discount_setting_related_data
 from .forms import DiscountCodeSettingForm, DiscountCodeCodesForm, SearchTargetForm
 from .models import DiscountCodeSetting, DiscountCodeCode, DiscountCodeTarget, delete_discount_code_setting
@@ -136,7 +136,7 @@ class DiscountCode(BaseView):
         try:
             delete_discount_code_setting(setting)
             self.request.session.flash(u'クーポン・割引コード設定を削除しました')
-        except Exception, e:
+        except SQLAlchemyError as e:
             self.request.session.flash(e.message)
             raise HTTPFound(location=location)
 
@@ -239,11 +239,13 @@ class DiscountCode(BaseView):
             registered = self.context.get_registered_id_list(event_id_list)
 
             selected_list = json.loads(self.request.params['performance_id_list'])
-            selected_list = filter(lambda a: a != 'on', selected_list)  # 全選択にチェックが入ると'on'が含まれる
+            selected_list = filter(lambda a: a != 'on', selected_list)  # 全選択にチェックが入ると'on'が含まれるので除去
 
             added_id_list = list(set(selected_list) - set(registered))
             deleted_id_list = list(set(registered) - set(selected_list))
-            added, deleted = self.context.get_added_deleted_performance(added_id_list, deleted_id_list)
+
+            added = self.context.get_performance_from_id_list(added_id_list)
+            deleted = self.context.get_performance_from_id_list(deleted_id_list)
 
             return {
                 'setting': self.context.setting,
@@ -263,31 +265,19 @@ class DiscountCode(BaseView):
                  renderer='altair.app.ticketing:templates/discount_code/target/_modal.html', permission='event_viewer',
                  custom_predicates=(is_enabled_discount_code_checked, get_discount_setting_related_data,))
     def target_register(self):
+        logger.info(
+            'Update discount code target performance(s).operator_id: {}, added_id_list: {}, deleted_id_list: {}'.format(
+                self.context.user.id,
+                self.request.params['added_id_list'],
+                self.request.params['deleted_id_list']
+            )
+        )
+
         added_id_list = json.loads(self.request.params['added_id_list'])
         deleted_id_list = json.loads(self.request.params['deleted_id_list'])
 
-        logger.info('Update discount code target performance(s). '
-                    'operator_id: {}, '
-                    'added_id_list: {}, '
-                    'deleted_id_list: {}'.format(self.context.user.id, added_id_list, deleted_id_list)
-                    )
-
-        added = []
-        if len(added_id_list) != 0:
-            added = self.context.session.query(Performance).filter(
-                Performance.id.in_(added_id_list)
-            ).order_by(
-                Performance.event_id.desc(),
-                Performance.end_on.desc(),
-                Performance.start_on.desc()
-            ).all()
-
-        deleted = []
-        if len(deleted_id_list) != 0:
-            deleted = DiscountCodeTarget.query.filter(
-                DiscountCodeTarget.performance_id.in_(deleted_id_list),
-                DiscountCodeTarget.discount_code_setting_id == self.context.setting.id
-            ).all()
+        added = self.context.get_performance_from_id_list(added_id_list)
+        deleted = self.context.get_discount_target_from_id_list(deleted_id_list)
 
         try:
             for add in added:
@@ -301,7 +291,7 @@ class DiscountCode(BaseView):
             for delete in deleted:
                 delete.delete()
 
-        except Exception as e:
+        except SQLAlchemyError as e:
             logger.error(
                 'Failed to update discount code target performance(s). '
                 'error_message: {}'.format(

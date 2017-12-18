@@ -120,8 +120,8 @@ class DiscountCodeTargetResource(TicketingAdminResource):
 
         return performance_count
 
-    def get_added_deleted_performance(self, added_id_list, deleted_id_list):
-        """追加・削除対象のパフォーマンス情報の取得"""
+    def get_performance_from_id_list(self, id_list):
+        """IDからパフォーマンス情報の取得"""
         query = self.session.query(Performance).join(
             Event, Event.id == Performance.event_id
         ).order_by(
@@ -130,16 +130,21 @@ class DiscountCodeTargetResource(TicketingAdminResource):
             Performance.start_on,
         )
 
-        added = []
-        if added_id_list:
-            added = query.filter(
-                Performance.id.in_(added_id_list)
+        performances = []
+        if len(id_list) != 0:
+            performances = query.filter(
+                Performance.id.in_(id_list)
             ).all()
 
-        deleted = []
-        if deleted_id_list:
-            deleted = query.filter(
-                Performance.id.in_(deleted_id_list)
+        return performances
+
+    def get_discount_target_from_id_list(self, id_list):
+        """IDから割引コード適用対象の取得"""
+        targets = []
+        if len(id_list) != 0:
+            targets = DiscountCodeTarget.query.filter(
+                DiscountCodeTarget.performance_id.in_(id_list),
+                DiscountCodeTarget.discount_code_setting_id == self.setting_id
             ).all()
 
-        return added, deleted
+        return targets
