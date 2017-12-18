@@ -72,7 +72,6 @@ import { Logger } from "angular2-logger/core";
 import { ApiConst } from '../../app.constants';
 
 import { Observable } from 'rxjs/Observable';
-import { isIdentifier } from '@angular/compiler';
 
 const SEAT_COLOR_AVAILABLE = 'rgb(0, 128, 255)';
 const SEAT_COLOR_SELECTED = 'rgb(236, 13, 80)';
@@ -430,8 +429,8 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
         drawingRegionTimer = setInterval(function () {
           if (that.svgMap) {
             clearInterval(drawingRegionTimer);
-              $(that.svgMap).find('.region').css({ 'fill': REGION_COLOR_NA });
-              $(that.svgMap).find('.coloring_region').css({ 'fill': REGION_COLOR_NA });
+            $(that.svgMap).find('.region').css({ 'fill': REGION_COLOR_NA });
+            $(that.svgMap).find('.coloring_region').css({ 'fill': REGION_COLOR_NA });
             for (let i = 0, len = regions.length; i < len; i++) {
               if (regions[i].stock_status == '△') {
                 $(that.svgMap).find('#' + regions[i].region_id).css({ 'fill': REGION_COLOR_FEW_SEATS });
