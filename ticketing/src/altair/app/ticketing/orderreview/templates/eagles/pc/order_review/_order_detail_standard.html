@@ -68,6 +68,17 @@
                             <th class="buy-info-ttl bg-dark">金額</th>
                             <td class="buy-info-txt bg-light">¥${h.format_number(product.price * product.quantity)}</td>
                         </tr>
+                        % if order.discount_amount:
+                        <tr>
+                            <th class="buy-info-txt bg-dark">クーポン・割引コードご使用金額</th>
+                            <td class="buy-info-txt bg-light">
+                                % for used_code in order.used_discount_codes:
+                                ${used_code.code}<br/>
+                                % endfor
+                                ${order.used_discount_quantity}枚
+                                <span style="color: red;">-￥${h.format_number(order.discount_amount)}</span>
+                        </tr>
+                        % endif
                         <tr>
                             <th class="buy-info-ttl bg-dark">決済手数料</th>
                             <td class="buy-info-txt bg-light">¥${h.format_number(order.transaction_fee)}</td>
