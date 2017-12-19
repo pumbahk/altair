@@ -2,7 +2,7 @@
 <head>
     <title><%block name="title">楽天チケット　ログインページ</%block></title>
 </head>
-<body>
+<p>
 <div align="center">
     <img src="${request.static_url('altair.app.ticketing.fc_auth:static/RT/mobile/images/logo-small.gif')}" width="160"
          height="26" alt="楽天チケット"/>
@@ -12,55 +12,50 @@
     <%namespace file="../tags_mobile.html" name="mobile" />
     <%mobile:header>May’n Hall Tour 2018「and You」　会員先行受付</%mobile:header>
 
+    <p style="text-align:center;">
+        <div id="login_form">
+            <div><font color="#FEBF00">■</font>【会員番号/電話番号】</font>
+            </div>
 
-<p style="text-align:center;">
-<div id="login_form">
-    <div><font color="#FEBF00">■</font>【会員番号/電話番号】</font>
-    </div>
+            会員番号8桁を入力してください。<br/>
+            May’nオフィシャルファンクラブ「ふぁんくラ部」にて登録の電話番号下4桁を入力してください。<br/>
+            <br/>
+        </div>
+        <form action="${request.current_route_path()}" method="post">
+            <div>
+                会員番号(数字8桁)<br/>
+                <input type="text" name="username" value="" istyle="4"><br/>
+                電話番号（数字4桁）
+                <br/>
 
-    会員番号8桁を入力してください。<br/>
-    May’nオフィシャルファンクラブ「ふぁんくラ部」にて登録の電話番号下4桁を入力してください。<br/>
-    <br/>
+                <input type="text" name="password" value="" istyle="4"><br/>
+                %if message:
+                <br/><span style="color: red">入力に誤りがあります。ご確認の上、もう一度入力してください。</span>
+                %endif
+            </div>
+            <input type="submit" value="申込に進む"/>
+        </form>
+<br>
+<%mobile:rakuten_header>【お申込資格】</%mobile:rakuten_header>
+<div class="serialatt">
+    ※2017年12月13日(水)時点でご入会頂いている方は受付開始時より申込み可能<br/>
+    ※2017年12月19日(火)までにご入会の方は12月22日(金)12:00より申込み可能<br/>
 </div>
-<form action="${request.current_route_path()}" method="post">
-    <div>
-        会員番号(数字8桁)<br/>
-        <input type="text" name="username" value="" istyle="4"><br/>
-        電話番号（数字4桁）
-        <br/>
-        <table class="centertable">
-            <tr>
-                <td>【お申込資格】</td>
-            </tr>
-            <tr>
-                <td>※2017年12月13日(水)時点でご入会頂いている方は受付開始時より申込み可能</td>
-            </tr>
-            <tr>
-                <td>※2017年12月19日(火)までにご入会の方は12月22日(金)12:00より申込み可能</td>
-            </tr>
-                                <table class="centertable">
-                        <tr>
-                            <td>【お申込資格】</td>
-                        </tr>
-                        <tr>
-                            <td>※2017年12月13日(水)時点でご入会頂いている方は受付開始時より申込み可能</td>
-                        </tr>
-                        <tr>
-                            <td>※2017年12月19日(火)までにご入会の方は12月22日(金)12:00より申込み可能</td>
-                        </tr>
-            <input type="text" name="password" value="" istyle="4"><br/>
-            %if message:
-            <br/><span style="color: red">入力に誤りがあります。ご確認の上、もう一度入力してください。</span>
-            %endif
-    </div>
-    <input type="submit" value="申込に進む"/>
-</form>
 <br/>
+
+<%mobile:rakuten_header>【ローソンのロッピーより入会・継続手続きをされた場合】</%mobile:rakuten_header>
+<div class="serialatt">
+    手続き完了に1週間～10日間の期間が必要となります関係で、12/11(月)～12/17(日)までに、ご入会もしくは<br/>
+    ご継続手続きを頂いた方のチケット予約受付は、12月22日(金)12時よりお申込み可能となります。<br/><br/>
+    12/18(月)～12/19(火)に入会もしくは継続手続きをされた方は12/20(水)までに<br/>
+    ファンクラブまで手続きされた旨を必ずメールにてご連絡ください。<br/>
+    ご連絡頂けない場合はチケット予約受付が不能となってしまいますのでご注意下さい。<br/><br/>
+
+    ☆May'n Official FAnclub「ふぁんくラ部」：<a href="mayn@horipro.co.jp">mayn@horipro.co.jp</a><br/><br/>
 </div>
 
-</p>
-<%mobile:rakuten_header>【登録メールアドレスについて】
-</%mobile:rakuten_header>
+<%mobile:rakuten_header>【登録メールアドレスについて】</%mobile:rakuten_header>
+
 <div class="serialatt">
 <span style="color:red">
   携帯電話等の受信設定でドメイン指定受信をされている方は、「support@ticket.rakuten.co.jp」からの
@@ -69,8 +64,7 @@
 </span>
 </div>
 
-<%mobile:rakuten_header>【対象公演】
-</%mobile:rakuten_header>
+<%mobile:rakuten_header>【対象公演】</%mobile:rakuten_header>
 <div class="serialatt">
     ◆公演名　May’n Hall Tour 2018「and You」<br/>
     ◆公演日・会場　<br/>
