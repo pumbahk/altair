@@ -10,7 +10,7 @@
         var endpoints = {
             'new': '${request.route_path('discount_code.settings_new')|n}',
             'edit': '${request.route_path('discount_code.settings_edit', setting_id='__id__')|n}',
-            'delete': '${request.route_path('discount_code.settings_delete', setting_id='__id__')|n}',
+            'delete': '${request.route_path('discount_code.settings_delete', setting_id='__id__')|n}'
         };
         (function (modal_setting) {
             new_setting = function new_setting() {

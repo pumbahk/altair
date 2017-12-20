@@ -1,7 +1,7 @@
-<%page args="form, setting, action=${request.url}" />
+<%page args="form, setting" />
 <% from wtforms.widgets import HiddenInput %>
 <%namespace file="/common/helpers.html" name="ch" />
 <p>接頭辞（prefix）4桁は「${setting.first_4_digits}」に設定されています。</p>
-<form action="${action}" method="POST">
+<form action="${request.url}" method="POST">
     ${ch.form_item(form.generate_num)}
 </form>

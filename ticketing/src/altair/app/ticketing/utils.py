@@ -11,6 +11,8 @@ import urllib
 import re
 import sys
 import functools
+import random
+
 
 __all__ = [
     'DigitCodec',
@@ -449,3 +451,7 @@ def parse_content_type(header_value):
     m = Message()
     m['Content-Type'] = header_value
     return m.get_content_type(), m.get_charsets()[0]
+
+
+def rand_string(seed, length):
+    return "".join([random.choice(seed) for i in range(length)])

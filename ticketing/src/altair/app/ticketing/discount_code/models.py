@@ -2,13 +2,21 @@
 
 from datetime import datetime
 
+import logging
+
 from altair.app.ticketing.models import Base, BaseModel, WithTimestamp, LogicallyDeleted, Identifier
+from altair.app.ticketing.models import DBSession
+from altair.app.ticketing.utils import rand_string
 from altair.saannotation import AnnotatedColumn
 from pyramid.i18n import TranslationString as _
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import column_property, relationship
 from sqlalchemy.schema import ForeignKey
+from sqlalchemy.sql import text
 from sqlalchemy.types import Boolean, Integer, DateTime, Unicode, UnicodeText, String
 from standardenum import StandardEnum
+
+logger = logging.getLogger(__name__)
 
 
 class CodeOrganizerEnum(StandardEnum):
@@ -110,7 +118,10 @@ class DiscountCodeCode(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                             )
     code = AnnotatedColumn(Unicode(12), nullable=True, _a_label=_(u'クーポン・割引コード'))
     order_no = AnnotatedColumn(Unicode(255), nullable=True, _a_label=_(u'予約番号'))
-    used_at = AnnotatedColumn(DateTime, nullable=True, _a_label=_(u'利用日時'))
+    used_at = AnnotatedColumn(DateTime, nullable=True, _a_label=_(u'使用日時'))
+
+    # コードの生成時に使用できる文字種
+    available_letters = 'ACEFGHKLMNPQRTWXY34679'
 
 
 class DiscountCodeTarget(Base, BaseModel, WithTimestamp, LogicallyDeleted):
@@ -134,7 +145,155 @@ class DiscountCodeTarget(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                                )
 
 
+class UsedDiscountCode(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+    __tablename__ = 'UsedDiscountCode'
+    id = AnnotatedColumn(Identifier, primary_key=True, _a_label=_(u'ID'))
+    discount_code_id = AnnotatedColumn(Identifier, ForeignKey('DiscountCode.id'), nullable=True)
+    code = AnnotatedColumn(String(12), _a_label=_(u'ディスカウントコード'), nullable=True)
+    carted_product_item_id = AnnotatedColumn(Identifier, ForeignKey('CartedProductItem.id'), nullable=True)
+    ordered_product_item_id = AnnotatedColumn(Identifier, ForeignKey('OrderedProductItem.id'), nullable=True)
+
+
+def insert_code_by_prepared_statement(num, first_4_digits, data):
+    """
+    ユニークなコードを生成し、既存のレコードと重複がないことを確かめてインサート
+    最速で動作。ただしrawのSQLを使うため、updated_atカラムは自分で登録しないといけない
+    """
+    with DBSession.connection() as conn:
+        try:
+            conn.execute('BEGIN;')
+
+            for i in xrange(num):
+                code_str = first_4_digits + rand_string(DiscountCodeCode.available_letters, 8)
+                data.update({'code': code_str})
+
+                count = DBSession.query(DiscountCodeCode).filter(
+                    DiscountCodeCode.organization_id == data['organization_id'],
+                    DiscountCodeCode.code == data['code'],
+                ).count()
+                if count > 0:
+                    raise SQLAlchemyError('code: {} already exists for organization_id: {}.'.format(data['code'], data[
+                        'organization_id']))
+
+                statement = text(
+                    '''INSERT INTO DiscountCode (discount_code_setting_id, organization_id, operator_id, code) 
+                        VALUES (:discount_code_setting_id, :organization_id, :operator_id, :code)'''
+                )
+                conn.execute(statement, data)
+
+            conn.execute('COMMIT;')
+
+        except SQLAlchemyError as e:
+            conn.execute('ROLLBACK;')
+            logger.error(
+                'Failed to create discount codes. '
+                'base_data: {} '
+                'error_message: {}'.format(
+                    str(data),
+                    str(e.message)
+                )
+            )
+            return False
+
+    return True
+
+
+def insert_code_by_alchemy_orm(num, first_4_digits, data):
+    """
+    ユニークなコードを生成し、既存のレコードと重複がないことを確かめてインサート
+    """
+    try:
+        for _ in xrange(num):
+            data = _add_code_str(first_4_digits, data)
+            code = DiscountCodeCode(
+                discount_code_setting_id=data['discount_code_setting_id'],
+                organization_id=data['organization_id'],
+                operator_id=data['operator_id'],
+                code=data['code'],
+            )
+            code.add()
+    except SQLAlchemyError as e:
+        logger.error(
+            'Failed to create discount codes. '
+            'base_data: {} '
+            'error_message: {}'.format(
+                str(data),
+                str(e.message)
+            )
+        )
+        return False
+
+    return True
+
+
+def insert_code_by_sqlalchemy_core(num, first_4_digits, data):
+    """
+    ユニークなコードを生成し、既存のレコードと重複がないことを確かめてインサート
+    TODO うまくコミットされない。それほど早くはない
+    """
+    import transaction
+    with DBSession.connection() as conn:
+        try:
+            conn.execute(
+                DiscountCodeCode.__table__.insert(),
+                [_add_code_str(first_4_digits, data) for _ in xrange(num)]
+            )
+            DBSession.commit()
+
+        except SQLAlchemyError as e:
+            transaction.abort()
+            # # リトライ
+            # conn.execute(
+            #     DiscountCodeCode.__table__.insert(),
+            #     [_add_code_str(first_4_digits, data)]
+            # )
+
+            logger.error(
+                'Failed to create discount codes. '
+                'base_data: {} '
+                'error_message: {}'.format(
+                    str(data),
+                    str(e.message)
+                )
+            )
+            return False
+
+    return True
+
+
+def _add_code_str(first_4_digits, data):
+    code_str = first_4_digits + rand_string(DiscountCodeCode.available_letters, 8)
+    data.update({'code': code_str})
+
+    if _if_generating_code_exists(data):
+        return data
+    else:
+        raise SQLAlchemyError('code: {} already exists for organization_id: {}.'.format(data['code'], data[
+            'organization_id']))
+
+
+def _if_generating_code_exists(data):
+    count = DiscountCodeCode.query.filter(
+        DiscountCodeCode.organization_id == data['organization_id'],
+        DiscountCodeCode.code == data['code'],
+    ).count()
+    return True if count == 0 else False
+
+
 def delete_discount_code_setting(setting):
     # TODO 削除を禁止する各条件を後々で用意する
 
     setting.delete()
+
+
+def delete_all_discount_code(setting_id):
+    """既存のコードを全削除する"""
+    # TODO 削除を禁止する各条件を後々で用意する
+    query = DiscountCodeCode.query.filter_by(discount_code_setting_id=setting_id)
+    count = query.count()
+    if count > 0:
+        codes = query.all()
+        for code in codes:
+            code.delete()
+
+    return count

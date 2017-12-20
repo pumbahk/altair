@@ -4,59 +4,57 @@
 <%! from altair.app.ticketing.operators.forms import OperatorForm %>
 <%include file="/discount_code/codes/_action_button.html" args="setting=setting, small=True, split=True"/>
 
-<div class="row-fluid" style="margin-top: 30px;">
-    <div class="span6" style="width:1500px;">
-
-        <table class="table table-striped table-bordered">
-            <thead>
-            <tr>
-                <th class="span1">
-                    ${HH.label_text_for(DiscountCodeCode.id)}
-                </th>
-                <th class="span1">
-                    ${HH.label_text_for(DiscountCodeCode.code)}
-                </th>
-                <th class="span1" style="text-align:center;">
-                    ${HH.label_text_for(DiscountCodeCode.order_no)}
-                </th>
-                <th class="span1" style="text-align: center">
-                    ${HH.label_text_for(DiscountCodeCode.used_at)}
-                </th>
-                <th class="span1">
-                    ${HH.label_text_for(OperatorForm.name)}
-                </th>
-                <th class="span1">
-                    作成日時
-                </th>
-                <th class="span1"></th>
-            </tr>
-            </thead>
-            % if codes:
-                <tbody>
-                    % for code in codes:
-                        <tr id="code-${code.id}">
-                            <td>${code.id}</td>
-                            <td>${code.code}</td>
-                            <td>
-                                %if code.order_no:
+<div class="row-fluid" style="margin-top: 10px;">
+    <table class="table table-striped table-bordered">
+        <thead>
+        <tr>
+            <th class="span1">
+                ${HH.label_text_for(DiscountCodeCode.id)}
+            </th>
+            <th class="span1">
+                ${HH.label_text_for(DiscountCodeCode.code)}
+            </th>
+            <th class="span1" style="text-align:center;">
+                ${HH.label_text_for(DiscountCodeCode.order_no)}
+            </th>
+            <th class="span1" style="text-align: center">
+                ${HH.label_text_for(DiscountCodeCode.used_at)}
+            </th>
+            <th class="span1">
+                ${HH.label_text_for(OperatorForm.name)}
+            </th>
+            <th class="span1">
+                作成日時
+            </th>
+            <th class="span1"></th>
+        </tr>
+        </thead>
+        % if codes:
+            <tbody>
+                % for code in codes:
+                    <tr id="code-${code.id}">
+                        <td>${code.id}</td>
+                        <td>${code.code}</td>
+                        <td>
+                            %if code.order_no:
                                     ${code.order_no}
-                                %endif
-                            </td>
-                            <td>
-                                %if code.used_at:
+                            %endif
+                        </td>
+                        <td>
+                            %if code.used_at:
                                     ${vh.datetime(code.used_at, with_weekday=True)}
-                                %endif
-                            </td>
-                            <td>${code.operator.name}</td>
-                            <td>${vh.datetime(code.created_at, with_weekday=True)}</td>
-                            <td style="width: 1%; white-space: nowrap;">
-                                    <%include file="/discount_code/codes/_action_button.html" args="order=['use_code'], code=code, small=True, split=True"/>
-                            </td>
-                        </tr>
-                    % endfor
-                </tbody>
-            % endif
-        </table>
-    </div>
+                            %endif
+                        </td>
+                        <td>${code.operator.name}</td>
+                        <td>${vh.datetime(code.created_at, with_weekday=True)}</td>
+                        <td style="width: 1%; white-space: nowrap;">
+                                <%include file="/discount_code/codes/_action_button.html" args="order=['used_at'], code=code, small=True, split=True"/>
+                        </td>
+                    </tr>
+                % endfor
+            </tbody>
+        % endif
+    </table>
+    ${ch.pager(codes)}
 </div>
 

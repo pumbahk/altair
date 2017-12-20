@@ -1,0 +1,32 @@
+<%page args="codes" />
+
+<%
+    import cStringIO
+    from altair.app.ticketing.csvutils import UnicodeWriter
+
+    queue = cStringIO.StringIO()
+    writer = UnicodeWriter(queue)
+
+    writer.writerow([
+        u"コードID",
+        u"クーポン・割引コード",
+        u"予約番号",
+        u"使用日時",
+        u"オペレーター名",
+        u"作成日時",
+    ])
+
+    for code in codes:
+        c_list = [
+            code.id,
+            code.code,
+            code.order_no,
+            code.used_at,
+            code.order_no,
+            code.created_at
+        ]
+        str_list = [str('' if elm is None else elm) for elm in c_list]
+        writer.writerow(str_list)
+%>
+
+${queue.getvalue().decode("utf-8") | n}

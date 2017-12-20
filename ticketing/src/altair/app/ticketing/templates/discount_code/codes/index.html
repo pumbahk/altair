@@ -22,5 +22,21 @@
     <h1>${setting.first_4_digits} ${setting.name} ${HH.route_label(request.matched_route.name)}</h1>
 </div>
 
-<%include file="./_list.html" args="form=form, setting=setting, codes=codes"/>
+<div class="navbar span10" style="margin-left: 0">
+    <div class="navbar-inner">
+        <div class="container">
+            <form method="get" class="navbar-search pull-left form-inline">
+                <span class="navbar-text">
+                    ${ch.help(search_form.code, u"完全一致で検索します。アルファベットの大文字小文字は区別しません。")|n}
+                    ${search_form.code.label}
+                </span>
+                ${search_form.code(id="code", class_="search-query input-medium")}
+                <button type="submit">検索</button>
+            </form>
+
+        </div>
+    </div>
+    <br />
+    <%include file="./_list.html" args="form=form, setting=setting, codes=codes"/>
+</div>
 <%include file="./_modal.html" args="modal_id='modal_code'"/>

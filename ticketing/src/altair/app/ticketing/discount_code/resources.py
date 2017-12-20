@@ -5,7 +5,7 @@ import logging
 import webhelpers.paginate as paginate
 from altair.app.ticketing.core.models import Event, Performance
 from altair.app.ticketing.core.utils import PageURL_WebOb_Ex
-from altair.app.ticketing.discount_code.models import DiscountCodeTarget
+from altair.app.ticketing.discount_code.models import DiscountCodeTarget, DiscountCodeCode
 from altair.app.ticketing.resources import TicketingAdminResource
 from altair.sqlahelper import get_db_session
 from sqlalchemy.sql import func
@@ -46,6 +46,33 @@ class DiscountCodeCodesResource(TicketingAdminResource):
 
         self.request = request
         self.session = get_db_session(request, name="slave")
+        self.setting_id = request.matchdict['setting_id']
+
+    def code_pagination(self, f):
+        """ページネーションの範囲内のクーポン・割引コード情報の取得"""
+        query = self.code_index_search_query(f)
+
+        codes = paginate.Page(
+            query,
+            page=int(self.request.params.get('page', 0)),
+            items_per_page=50,
+            url=PageURL_WebOb_Ex(self.request)
+        )
+
+        return codes
+
+    def code_index_search_query(self, f):
+        """コード一覧の検索条件を含むデータ抽出クエリ"""
+        query = self.session.query(DiscountCodeCode).filter(
+            DiscountCodeCode.organization_id == self.user.organization.id
+        ).order_by(
+            DiscountCodeCode.id
+        )
+
+        if f.data['code']:
+            query = query.filter(DiscountCodeCode.code == f.data['code'].strip())
+
+        return query
 
 
 class DiscountCodeTargetResource(TicketingAdminResource):
@@ -68,9 +95,8 @@ class DiscountCodeTargetResource(TicketingAdminResource):
             Event.id.desc(),
         )
 
-        event_title = f.data['event_title']
-        if event_title:
-            query = query.filter(Event.title.like(u"%{}%".format(event_title)))
+        if f.data['event_title']:
+            query = query.filter(Event.title.like(u"%{}%".format(f.data['event_title'].strip())))
 
         events = paginate.Page(
             query,

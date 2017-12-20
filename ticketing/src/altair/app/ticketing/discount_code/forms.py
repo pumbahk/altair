@@ -195,7 +195,7 @@ class DiscountCodeCodesForm(Form):
     code = TextField(
         label=get_annotations_for(DiscountCodeCode.code)['label'],
         validators=[
-            Required(),
+            Optional(),
             Length(min=12, max=12, message=u'12桁で入力してください'),
         ]
     )
@@ -209,9 +209,11 @@ class DiscountCodeCodesForm(Form):
                     DateTimeFormat()],
         format='%Y-%m-%d %H:%M',
     )
-    generate_num = TextField(
+    generate_num = IntegerField(
         label=u'コード生成数',
-        validators=[Required()],
+        validators=[
+            NumberRange(min=0, max=54875873536, message=u'同一のクーポン・割引コード設定で生成できるコードの上限数は54,875,873,536です')
+        ]
     )
 
 
@@ -239,5 +241,12 @@ class DiscountCodeTargetForm(Form):
 class SearchTargetForm(Form):
     event_title = TextField(
         label=get_annotations_for(Event.title)['label'],
+        validators=[Optional()],
+    )
+
+
+class SearchCodeForm(Form):
+    code = TextField(
+        label=get_annotations_for(DiscountCodeCode.code)['label'],
         validators=[Optional()],
     )
