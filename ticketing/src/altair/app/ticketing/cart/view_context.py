@@ -61,6 +61,16 @@ def get_cart_view_context_factory(default_package):
             except:
                 logger.exception('WTF?')
 
+        @property
+        def membership_login_body(self):
+            if self.context.membership:
+                membership = self.context.membership
+                if membership is None:
+                    logger.warning('membership is None for context %r' % self.context)
+                    return None
+                else:
+                    return membership.enable_login_body
+
         @reify
         def organization_short_name(self):
             organization_short_name = None
