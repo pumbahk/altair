@@ -3,14 +3,14 @@
 """Add Enable Discount Code To Organization Setting
 
 Revision ID: 4cef5d7f0122
-Revises: 23db677af8c6
+Revises: 1ae90f027aba
 Create Date: 2017-11-16 17:00:44.911030
 
 """
 
 # revision identifiers, used by Alembic.
 revision = '4cef5d7f0122'
-down_revision = '23db677af8c6'
+down_revision = '1ae90f027aba'
 
 import sqlalchemy as sa
 from alembic import op
