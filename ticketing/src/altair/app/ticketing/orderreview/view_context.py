@@ -88,6 +88,10 @@ def get_orderreview_view_context_factory(default_package):
         def extra_footer_links_mobile(self):
             return self.cart_setting.extra_footer_links_mobile or []
 
+        @property
+        def membership_login_body(self):
+            return None
+
         def get_template_path(self, path):
             organization_short_name = self.organization_short_name or "__default__"
             package_or_path, colon, _path = path.partition(':')
