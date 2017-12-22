@@ -5,14 +5,12 @@ from datetime import datetime
 import logging
 
 from altair.app.ticketing.models import Base, BaseModel, WithTimestamp, LogicallyDeleted, Identifier
-from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.utils import rand_string
 from altair.saannotation import AnnotatedColumn
 from pyramid.i18n import TranslationString as _
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import column_property, relationship
 from sqlalchemy.schema import ForeignKey
-from sqlalchemy.sql import text
 from sqlalchemy.types import Boolean, Integer, DateTime, Unicode, UnicodeText, String
 from standardenum import StandardEnum
 
@@ -154,56 +152,12 @@ class UsedDiscountCode(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     ordered_product_item_id = AnnotatedColumn(Identifier, ForeignKey('OrderedProductItem.id'), nullable=True)
 
 
-def insert_code_by_prepared_statement(num, first_4_digits, data):
-    """
-    ユニークなコードを生成し、既存のレコードと重複がないことを確かめてインサート
-    最速で動作。ただしrawのSQLを使うため、updated_atカラムは自分で登録しないといけない
-    """
-    with DBSession.connection() as conn:
-        try:
-            conn.execute('BEGIN;')
-
-            for i in xrange(num):
-                code_str = first_4_digits + rand_string(DiscountCodeCode.available_letters, 8)
-                data.update({'code': code_str})
-
-                count = DBSession.query(DiscountCodeCode).filter(
-                    DiscountCodeCode.organization_id == data['organization_id'],
-                    DiscountCodeCode.code == data['code'],
-                ).count()
-                if count > 0:
-                    raise SQLAlchemyError('code: {} already exists for organization_id: {}.'.format(data['code'], data[
-                        'organization_id']))
-
-                statement = text(
-                    '''INSERT INTO DiscountCode (discount_code_setting_id, organization_id, operator_id, code) 
-                        VALUES (:discount_code_setting_id, :organization_id, :operator_id, :code)'''
-                )
-                conn.execute(statement, data)
-
-            conn.execute('COMMIT;')
-
-        except SQLAlchemyError as e:
-            conn.execute('ROLLBACK;')
-            logger.error(
-                'Failed to create discount codes. '
-                'base_data: {} '
-                'error_message: {}'.format(
-                    str(data),
-                    str(e.message)
-                )
-            )
-            return False
-
-    return True
-
-
-def insert_code_by_alchemy_orm(num, first_4_digits, data):
+def insert_specific_number_code(num, first_4_digits, data):
     """
     ユニークなコードを生成し、既存のレコードと重複がないことを確かめてインサート
     """
     try:
-        for _ in xrange(num):
+        for _ in range(num):
             data = _add_code_str(first_4_digits, data)
             code = DiscountCodeCode(
                 discount_code_setting_id=data['discount_code_setting_id'],
@@ -226,56 +180,28 @@ def insert_code_by_alchemy_orm(num, first_4_digits, data):
     return True
 
 
-def insert_code_by_sqlalchemy_core(num, first_4_digits, data):
-    """
-    ユニークなコードを生成し、既存のレコードと重複がないことを確かめてインサート
-    TODO うまくコミットされない。それほど早くはない
-    """
-    import transaction
-    with DBSession.connection() as conn:
-        try:
-            conn.execute(
-                DiscountCodeCode.__table__.insert(),
-                [_add_code_str(first_4_digits, data) for _ in xrange(num)]
-            )
-            DBSession.commit()
-
-        except SQLAlchemyError as e:
-            transaction.abort()
-            # # リトライ
-            # conn.execute(
-            #     DiscountCodeCode.__table__.insert(),
-            #     [_add_code_str(first_4_digits, data)]
-            # )
-
-            logger.error(
-                'Failed to create discount codes. '
-                'base_data: {} '
-                'error_message: {}'.format(
-                    str(data),
-                    str(e.message)
-                )
-            )
-            return False
-
-    return True
-
-
 def _add_code_str(first_4_digits, data):
+    """コードの生成を行う, 既存コードと重複あれば生成をループ"""
     code_str = first_4_digits + rand_string(DiscountCodeCode.available_letters, 8)
     data.update({'code': code_str})
 
-    if _if_generating_code_exists(data):
+    if _if_generating_code_exists(data['code'], data['organization_id']):
         return data
     else:
-        raise SQLAlchemyError('code: {} already exists for organization_id: {}.'.format(data['code'], data[
-            'organization_id']))
+        logger.info('code: {} already exists for organization_id: {}.'.format(data['code'], data['organization_id']))
+        _add_code_str(first_4_digits, data)
 
 
-def _if_generating_code_exists(data):
+def _if_generating_code_exists(code, organization_id):
+    """すでに作成済のコードではないか確認する
+
+    :param str code:
+    :param int, dict organization_id:
+    :return: boolean Trueなら未作成のコード、Falseなら作成済み
+    """
     count = DiscountCodeCode.query.filter(
-        DiscountCodeCode.organization_id == data['organization_id'],
-        DiscountCodeCode.code == data['code'],
+        DiscountCodeCode.organization_id == organization_id,
+        DiscountCodeCode.code == code,
     ).count()
     return True if count == 0 else False
 

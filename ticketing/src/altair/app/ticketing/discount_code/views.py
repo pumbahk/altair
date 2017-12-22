@@ -7,20 +7,20 @@ import urllib
 from datetime import datetime
 
 import webhelpers.paginate as paginate
-from altair.app.ticketing.utils import get_safe_filename
 from altair.app.ticketing.core.utils import PageURL_WebOb_Ex
 from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.models import merge_session_with_post
+from altair.app.ticketing.utils import get_safe_filename
 from altair.app.ticketing.views import BaseView
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPInternalServerError
 from pyramid.renderers import render_to_response
-from pyramid.view import view_config, view_defaults
 from pyramid.response import Response
+from pyramid.view import view_config, view_defaults
 from sqlalchemy.exc import SQLAlchemyError
 from .api import is_enabled_discount_code_checked, get_discount_setting_related_data
 from .forms import DiscountCodeSettingForm, DiscountCodeCodesForm, SearchTargetForm, SearchCodeForm
 from .models import DiscountCodeSetting, DiscountCodeCode, DiscountCodeTarget, delete_discount_code_setting, \
-    delete_all_discount_code, insert_code_by_alchemy_orm
+    delete_all_discount_code, insert_specific_number_code
 
 logger = logging.getLogger(__name__)
 
@@ -150,11 +150,13 @@ class DiscountCode(BaseView):
                  renderer='altair.app.ticketing:templates/discount_code/codes/index.html', permission='event_viewer',
                  custom_predicates=(is_enabled_discount_code_checked, get_discount_setting_related_data,))
     def codes_index(self):
-        f = SearchCodeForm(self.request.GET, organization_id=self.context.organization.id)
-        if f.validate():
-            codes = self.context.code_pagination(f)
+        f = DiscountCodeCodesForm()
+        sf = SearchCodeForm(self.request.GET, organization_id=self.context.organization.id)
+        if sf.validate():
+            codes = self.context.code_pagination(sf)
             return {
-                'search_form': f,
+                'form': f,
+                'search_form': sf,
                 'setting': self.context.setting,
                 'codes': codes
             }
@@ -168,9 +170,11 @@ class DiscountCode(BaseView):
     def codes_csv_export(self):
         f = SearchCodeForm(self.request.GET, organization_id=self.context.organization.id)
         if f.validate():
+            t0 = time.time()
             codes = self.context.code_index_search_query(f).all()
 
             render_param = dict(codes=codes)
+            # TODO オペレーター名を出力しようとすると、UnicodeEncodeError: 'ascii' codec can't encode characters in position 0-2: ordinal not in range(128)が出る
             r = render_to_response('altair.app.ticketing:templates/discount_code/codes/export.txt', render_param,
                                    request=self.request)
             now = datetime.now().strftime('%Y%m%d_%H%M%S')
@@ -179,6 +183,7 @@ class DiscountCode(BaseView):
                 ('Content-Type', 'application/octet-stream; charset=utf-8'),
                 ('Content-Disposition', "attachment; filename*=utf-8''%s" % urllib.quote(filename.encode("utf-8")))
             ]
+            logger.info("number of codes: {}, execution time {} sec".format(len(codes), str(time.time() - t0)))
             return Response(r.text.encode('cp932'), headers=headers)
 
         else:
@@ -219,12 +224,12 @@ class DiscountCode(BaseView):
             }
 
             t0 = time.time()
-            if insert_code_by_alchemy_orm(num, first_4_digits, data):
+            if insert_specific_number_code(num, first_4_digits, data):
                 self.request.session.flash(u'クーポン・割引コードを{}件追加しました'.format(num))
             else:
                 self.request.session.flash(u'コード生成中にエラーが発生しました')
 
-            logger.info(u"execution time {} sec".format(str(time.time() - t0)))
+            logger.info("execution time {} sec".format(str(time.time() - t0)))
             return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
 
         else:
@@ -246,6 +251,10 @@ class DiscountCode(BaseView):
         try:
             deleted_num = delete_all_discount_code(setting.id)
             if deleted_num != 0:
+                logger.info('All codes belongs to DiscountCodeSetting.id: {} was deleted by Operator.id {}'.format(
+                    setting.id,
+                    self.context.user.id
+                ))
                 self.request.session.flash(u'コードを全削除しました（{}件）'.format(deleted_num))
             else:
                 self.request.session.flash(u'削除対象が存在しません')
@@ -253,7 +262,7 @@ class DiscountCode(BaseView):
         except SQLAlchemyError:
             self.request.session.flash(u'コードの全削除に失敗しました')
 
-        logger.info(u"execution time {} sec".format(str(time.time() - t0)))
+        logger.info("execution time {} sec".format(str(time.time() - t0)))
         return HTTPFound(location=location)
 
     @view_config(route_name='discount_code.codes_used_at')
@@ -276,6 +285,8 @@ class DiscountCode(BaseView):
                 code.used_at = datetime.now()
                 code.operator_id = self.request.context.user.id
                 code.save()
+                logger.info(
+                    'Code ID: {} was made its status "used" by Operator.id: {}'.format(code.id, self.context.user.id))
                 self.request.session.flash(u'コードID: {}を使用済みにしました'.format(code.id))
 
         except SQLAlchemyError:

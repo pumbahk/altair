@@ -14,7 +14,6 @@ logger = logging.getLogger(__name__)
 
 
 class DiscountCodeSettingResource(TicketingAdminResource):
-
     def __init__(self, request):
         super(DiscountCodeSettingResource, self).__init__(request)
 
@@ -48,9 +47,14 @@ class DiscountCodeCodesResource(TicketingAdminResource):
         self.session = get_db_session(request, name="slave")
         self.setting_id = request.matchdict['setting_id']
 
-    def code_pagination(self, f):
+    def code_pagination(self, sf):
         """ページネーションの範囲内のクーポン・割引コード情報の取得"""
-        query = self.code_index_search_query(f)
+        query = self.code_index_search_query(sf)
+        sort = self.request.GET.get('sort', 'id')
+        direction = self.request.GET.get('direction', 'asc')
+        query = query.order_by('{0} {1}'.format(sort, direction))
+        if sort != 'id':
+            query = query.order_by('id asc')
 
         codes = paginate.Page(
             query,
@@ -65,8 +69,6 @@ class DiscountCodeCodesResource(TicketingAdminResource):
         """コード一覧の検索条件を含むデータ抽出クエリ"""
         query = self.session.query(DiscountCodeCode).filter(
             DiscountCodeCode.organization_id == self.user.organization.id
-        ).order_by(
-            DiscountCodeCode.id
         )
 
         if f.data['code']:

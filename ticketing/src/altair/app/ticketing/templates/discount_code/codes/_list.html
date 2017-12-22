@@ -1,4 +1,4 @@
-<%page args="form, setting, codes" />
+<%page args="form, search_form, setting, codes" />
 <%namespace file="/common/helpers.html" name="ch" />
 <%! from altair.app.ticketing.discount_code.models import DiscountCodeCode %>
 <%! from altair.app.ticketing.operators.forms import OperatorForm %>
@@ -12,19 +12,19 @@
                 ${HH.label_text_for(DiscountCodeCode.id)}
             </th>
             <th class="span1">
-                ${HH.label_text_for(DiscountCodeCode.code)}
+                ${ch.sortable(form.code)}
             </th>
             <th class="span1" style="text-align:center;">
                 ${HH.label_text_for(DiscountCodeCode.order_no)}
             </th>
             <th class="span1" style="text-align: center">
-                ${HH.label_text_for(DiscountCodeCode.used_at)}
+                ${ch.sortable(form.used_at)}
             </th>
             <th class="span1">
                 ${HH.label_text_for(OperatorForm.name)}
             </th>
             <th class="span1">
-                作成日時
+                ${ch.sortable(form.created_at)}
             </th>
             <th class="span1"></th>
         </tr>

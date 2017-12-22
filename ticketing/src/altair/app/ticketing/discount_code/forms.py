@@ -209,6 +209,9 @@ class DiscountCodeCodesForm(Form):
                     DateTimeFormat()],
         format='%Y-%m-%d %H:%M',
     )
+    created_at = HiddenField(
+        label=U'作成日時'
+    )
     generate_num = IntegerField(
         label=u'コード生成数',
         validators=[
@@ -246,7 +249,4 @@ class SearchTargetForm(Form):
 
 
 class SearchCodeForm(Form):
-    code = TextField(
-        label=get_annotations_for(DiscountCodeCode.code)['label'],
-        validators=[Optional()],
-    )
+    code = DiscountCodeCodesForm.code
