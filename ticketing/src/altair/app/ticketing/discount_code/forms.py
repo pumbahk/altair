@@ -200,8 +200,7 @@ class DiscountCodeCodesForm(Form):
         ]
     )
     order_no = TextField(
-        label=get_annotations_for(DiscountCodeCode.order_no)['label'],
-        validators=[Optional()],
+        label='予約番号',
     )
     used_at = OurDateTimeField(
         label=get_annotations_for(DiscountCodeCode.used_at)['label'],

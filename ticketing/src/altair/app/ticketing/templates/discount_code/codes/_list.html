@@ -15,18 +15,18 @@
                 ${ch.sortable(form.code)}
             </th>
             <th class="span1" style="text-align:center;">
-                ${HH.label_text_for(DiscountCodeCode.order_no)}
+                予約番号
             </th>
-            <th class="span1" style="text-align: center">
+            <th class="span2" style="text-align: center">
                 ${ch.sortable(form.used_at)}
             </th>
             <th class="span1">
                 ${HH.label_text_for(OperatorForm.name)}
             </th>
-            <th class="span1">
+            <th class="span2">
                 ${ch.sortable(form.created_at)}
             </th>
-            <th class="span1"></th>
+            <th class="span2"></th>
         </tr>
         </thead>
         % if codes:
@@ -36,8 +36,8 @@
                         <td>${code.id}</td>
                         <td>${code.code}</td>
                         <td>
-                            %if code.order_no:
-                                    ${code.order_no}
+                            %if code.order and code.order.order_no:
+                                <a href="${request.route_path("orders.show_by_order_no",order_no=code.order.order_no)}">${code.order.order_no}</a>
                             %endif
                         </td>
                         <td>

@@ -22,10 +22,11 @@ writer.writerow([
 ])
 
 for code in codes:
+    order_no = code.order.order_no if code.order else None
     c_list = [
         code.id,
         code.code,
-        code.order_no,
+        order_no,
         code.used_at,
         code.operator_id,
         code.created_at

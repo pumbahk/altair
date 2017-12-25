@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 
-from datetime import datetime
-
 import logging
+from datetime import datetime
 
 from altair.app.ticketing.models import Base, BaseModel, WithTimestamp, LogicallyDeleted, Identifier
 from altair.app.ticketing.utils import rand_string
@@ -90,6 +89,10 @@ class UsedDiscountCodeOrder(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'UsedDiscountCodeOrder'
     id = AnnotatedColumn(Identifier, primary_key=True, _a_label=_(u'ID'))
     discount_code_id = AnnotatedColumn(Identifier, ForeignKey('DiscountCode.id'), nullable=True)
+    discount_code = relationship('DiscountCodeCode',
+                                 backref='UsedDiscountCodeOrder',
+                                 cascade='all'
+                                 )
     code = AnnotatedColumn(String(12), _a_label=_(u'ディスカウントコード'), nullable=True)
     ordered_product_item_id = AnnotatedColumn(Identifier, ForeignKey('OrderedProductItem.id'))
     ordered_product_item = relationship("OrderedProductItem", backref="used_discount_codes")
@@ -115,11 +118,17 @@ class DiscountCodeCode(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                             cascade='all'
                             )
     code = AnnotatedColumn(Unicode(12), nullable=True, _a_label=_(u'クーポン・割引コード'))
-    order_no = AnnotatedColumn(Unicode(255), nullable=True, _a_label=_(u'予約番号'))
     used_at = AnnotatedColumn(DateTime, nullable=True, _a_label=_(u'使用日時'))
 
     # コードの生成時に使用できる文字種
     available_letters = 'ACEFGHKLMNPQRTWXY34679'
+
+    @property
+    def order(self):
+        if len(self.UsedDiscountCodeOrder) == 0:
+            return None
+
+        return self.UsedDiscountCodeOrder[0].ordered_product_item.ordered_product.order
 
 
 class DiscountCodeTarget(Base, BaseModel, WithTimestamp, LogicallyDeleted):
