@@ -1457,7 +1457,7 @@ class DiscountCodeEnteringView(object):
     @back(back_to_top, back_to_product_list_for_mobile)
     @lbr_view_config(request_method="POST")
     def discount_code_post(self):
-
+        self.context.upper_code()  # 入力されたコードの大文字化
         cart = self.context.read_only_cart
         self.context.check_deleted_product(cart)
         salese_segment_id = self.request.matchdict["sales_segment_id"]

@@ -709,6 +709,18 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
         # TODO OKADA 判定
         return True
 
+    def upper_code(self):
+        """POSTされたパラメータを大文字に変更"""
+        if 'code' in self.request.POST:
+            upper_list = []
+
+            for item in self.request.POST.items():
+                each_code_tuple = item[0], item[1].upper()
+                upper_list.append(each_code_tuple)
+
+            self.request.POST.clear()
+            self.request.POST.extend(upper_list)
+
     def create_codies_from_request(self):
         from . import schemas
         params = self.request.POST.items()

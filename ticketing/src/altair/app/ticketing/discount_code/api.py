@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 
+from datetime import datetime
+
 from sqlalchemy.orm.exc import NoResultFound
-from .models import DiscountCodeSetting, UsedDiscountCodeCart, UsedDiscountCodeOrder
+from .models import DiscountCodeSetting, DiscountCodeCode, UsedDiscountCodeCart, UsedDiscountCodeOrder
 
 
 def is_enabled_discount_code_checked(context, request):
@@ -53,7 +55,7 @@ def get_discount_amount(order_like):
         for element in item.elements:
             used_codes = element.used_discount_codes
             if used_codes:
-                discount_amount = discount_amount + element.product_item.price*len(used_codes)
+                discount_amount = discount_amount + element.product_item.price * len(used_codes)
     return discount_amount
 
 
@@ -65,7 +67,13 @@ def temporarily_save_discount_code(codies):
     # carted_product_itemのIDと、使用したコードを保存する
     for code_dict in codies:
         if code_dict['code']:
+            available_code = DiscountCodeCode.query.filter(
+                DiscountCodeCode.code == code_dict['code'],
+                DiscountCodeCode.used_at.is_(None)
+            ).one()
+
             use_discount_code = UsedDiscountCodeCart()
+            use_discount_code.discount_code_id = available_code.id
             use_discount_code.code = code_dict['code']
             use_discount_code.carted_product_item_id = code_dict['carted_product_item'].id
             use_discount_code.add()
@@ -80,7 +88,13 @@ def save_discount_code(carted_product_item, ordered_product_item):
 
         for used_discount_code_cart in used_discount_code_carts:
             use_discount_code_order = UsedDiscountCodeOrder()
+            use_discount_code_order.discount_code_id = used_discount_code_carts[0].discount_code_id
             use_discount_code_order.code = used_discount_code_cart.code
             use_discount_code_order.ordered_product_item = ordered_product_item
             use_discount_code_order.add()
+
+            # クーポン・割引コードテーブルに使用日時を記載
+            available_code = DiscountCodeCode.query.filter_by(id=used_discount_code_cart.discount_code_id).one()
+            available_code.used_at = datetime.now()
+            available_code.save()
     return True
