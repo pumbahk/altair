@@ -1428,7 +1428,6 @@ class ExtraFormView(object):
 
 
 @view_defaults(route_name='cart.discount_code', renderer=selectable_renderer("discount_code.html"),
-               custom_predicates=(enable_discount_code,),
                decorator=with_jquery.not_when(mobile_request), permission="buy")
 class DiscountCodeEnteringView(object):
     def __init__(self, context, request):
@@ -1446,6 +1445,10 @@ class DiscountCodeEnteringView(object):
         sorted_cart_product_items = self.context.sorted_carted_product_items()
         self.context.delete_temporarily_save_discount_code()
 
+        # ディスカウントコードを使わない場合は通常ルートへ
+        if not cart.enable_discount_code:
+            return HTTPFound(self.request.route_path('cart.payment', sales_segment_id=sales_segment_id))
+
         return dict(
             forms=forms,
             cart_product_items=sorted_cart_product_items,
@@ -1460,14 +1463,14 @@ class DiscountCodeEnteringView(object):
         self.context.upper_code()  # 入力されたコードの大文字化
         cart = self.context.read_only_cart
         self.context.check_deleted_product(cart)
-        salese_segment_id = self.request.matchdict["sales_segment_id"]
+        sales_segment_id = self.request.matchdict["sales_segment_id"]
         codies = self.context.create_codies_from_request()
 
         # TODO OKADA validation
 
         self.context.temporarily_save_discount_code(codies)
 
-        return HTTPFound(self.request.route_path('cart.payment', sales_segment_id=salese_segment_id))
+        return HTTPFound(self.request.route_path('cart.payment', sales_segment_id=sales_segment_id))
 
 
 @view_defaults(route_name='cart.point', renderer=selectable_renderer("point.html"), decorator=with_jquery.not_when(mobile_request), permission="buy")

@@ -373,6 +373,24 @@ class Cart(Base, c_models.CartMixin):
                 count = count + element.quantity
         return count
 
+    @property
+    def enable_discount_code(self):
+        if not self.organization.enable_discount_code:
+            return False
+
+        valid_target = [x for x in self.performance.DiscountCodeTarget if x.discount_code_setting.is_valid]
+        if not valid_target:
+            return False
+
+        # 紐づく引換券設定の最小金額が、選択されたチケットの金額を全て上回っていること
+        min_price_target = min(valid_target, key=lambda y: y.discount_code_setting.condition_price_amount)
+        min_price = int(min_price_target.discount_code_setting.condition_price_amount)
+        for item in self.items:
+            for element in item.elements:
+                if element.price > min_price:
+                    return False
+        return True
+
 
 @implementer(IOrderedProductLike)
 class CartedProduct(Base):

@@ -3202,6 +3202,10 @@ class Organization(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def point_feature_enabled(self):
         return self.setting.point_type is not None
 
+    @property
+    def enable_discount_code(self):
+        return self.setting.enable_discount_code
+
     def get_cms_data(self):
         return {"organization_id": self.id, "organization_source": "oauth"}
 
