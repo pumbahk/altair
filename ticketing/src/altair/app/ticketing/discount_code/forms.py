@@ -92,7 +92,7 @@ class DiscountCodeSettingForm(Form):
         label=get_annotations_for(DiscountCodeSetting.first_digit)['label'],
         validators=[Required()],
         choices=[
-            ('T', u'T')
+            ('T', u'T'), ('E', u'E')
         ],
         coerce=str
     )
