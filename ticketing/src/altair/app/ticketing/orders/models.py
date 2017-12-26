@@ -787,7 +787,6 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                     quantity=element.product_item.quantity * product.quantity,
                     seats=element.seats
                     )
-                discount_api.save_discount_code(element, ordered_product_item)
                 for i, seat in core_api.iterate_serial_and_seat(ordered_product_item):
                     token = OrderedProductItemToken(
                         serial = i,
@@ -795,6 +794,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                         valid=True #valid=Falseの時は何時だろう？
                         )
                     ordered_product_item.tokens.append(token)
+                discount_api.save_discount_code(element, ordered_product_item)
 
         DBSession.flush() # これとっちゃだめ
         return order

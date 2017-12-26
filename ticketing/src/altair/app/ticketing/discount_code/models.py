@@ -97,6 +97,8 @@ class UsedDiscountCodeOrder(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     code = AnnotatedColumn(String(12), _a_label=_(u'ディスカウントコード'), nullable=True)
     ordered_product_item_id = AnnotatedColumn(Identifier, ForeignKey('OrderedProductItem.id'))
     ordered_product_item = relationship("OrderedProductItem", backref="used_discount_codes")
+    ordered_product_item_token_id = AnnotatedColumn(Identifier, ForeignKey('OrderedProductItemToken.id'))
+    ordered_product_item_token = relationship("OrderedProductItemToken", backref="used_discount_codes")
 
 
 class DiscountCodeCode(Base, BaseModel, WithTimestamp, LogicallyDeleted):
