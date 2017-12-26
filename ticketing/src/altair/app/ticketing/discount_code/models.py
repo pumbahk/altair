@@ -9,6 +9,7 @@ from altair.saannotation import AnnotatedColumn
 from pyramid.i18n import TranslationString as _
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import column_property, relationship
+from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.schema import ForeignKey
 from sqlalchemy.types import Boolean, Integer, DateTime, Unicode, UnicodeText, String
 from standardenum import StandardEnum
@@ -192,9 +193,8 @@ def insert_specific_number_code(num, first_4_digits, data):
 def _add_code_str(first_4_digits, data):
     """コードの生成を行う, 既存コードと重複あれば生成をループ"""
     code_str = first_4_digits + rand_string(DiscountCodeCode.available_letters, 8)
-    data.update({'code': code_str})
-
-    if _if_generating_code_exists(data['code'], data['organization_id']):
+    if _if_generating_code_exists(code_str, data['organization_id']):
+        data.update({'code': code_str})
         return data
     else:
         logger.info('code: {} already exists for organization_id: {}.'.format(data['code'], data['organization_id']))
@@ -208,11 +208,14 @@ def _if_generating_code_exists(code, organization_id):
     :param int, dict organization_id:
     :return: boolean Trueなら未作成のコード、Falseなら作成済み
     """
-    count = DiscountCodeCode.query.filter(
-        DiscountCodeCode.organization_id == organization_id,
-        DiscountCodeCode.code == code,
-    ).count()
-    return True if count == 0 else False
+    try:
+        DiscountCodeCode.query.filter(
+            DiscountCodeCode.organization_id == organization_id,
+            DiscountCodeCode.code == code,
+        ).one()
+        return False
+    except NoResultFound:
+        return True
 
 
 def delete_discount_code_setting(setting):

@@ -53,8 +53,6 @@ class DiscountCodeCodesResource(TicketingAdminResource):
         sort = self.request.GET.get('sort', 'id')
         direction = self.request.GET.get('direction', 'asc')
         query = query.order_by('{0} {1}'.format(sort, direction))
-        if sort != 'id':
-            query = query.order_by('id asc')
 
         codes = paginate.Page(
             query,
