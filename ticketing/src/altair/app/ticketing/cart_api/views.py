@@ -122,6 +122,9 @@ class CartAPIView(object):
         if 'mini' not in drawings:
             reason += " mini svg is none "
 
+        if 'seat' not in drawings:
+            reason += " seat data is none "
+
         if reason:
             return {
                 "results": {
@@ -132,12 +135,14 @@ class CartAPIView(object):
 
         root_map_url = drawings['root']
         mini_map_url = drawings['mini']
+        seat_data_url = drawings['seat']
         logger.debug("root_url=%s", root_map_url)
         logger.debug("mini_url=%s", mini_map_url)
+        logger.debug("seat_url=%s", seat_data_url)
 
         reason = ""
-        if not root_map_url or not mini_map_url:
-            reason = "svg map_url is none"
+        if not root_map_url or not mini_map_url or not seat_data_url:
+            reason = "svg map_url & seats_data is none"
 
         if reason:
             return {
@@ -159,6 +164,7 @@ class CartAPIView(object):
                 venue_name=performance.venue.name,
                 venue_map_url=root_map_url,
                 mini_venue_map_url=mini_map_url,
+                seat_data_url=seat_data_url,
             ),
             event=dict(
                 event_id=performance.event.id,
@@ -247,8 +253,8 @@ class CartAPIView(object):
         session = get_db_session(self.request, 'slave')
         stock_types = session.query(StockType).filter(StockType.event_id == sales_segment.event_id).all()
 
-        ret_stock_types = {}        
-        for stock_type in stock_types:            
+        ret_stock_types = {}
+        for stock_type in stock_types:
             products = [p for p in sales_segment.products if p.seat_stock_type_id == int(stock_type.id) and p.public]
             # svg側では描画エリアをregionと定義しているのでそれに合わせる
             int_stock_type_id = int(stock_type.id)
@@ -261,7 +267,7 @@ class CartAPIView(object):
             ret_stock_types[stock_type] = stock_type_detail
             #公開されている商品がある席種のみ返す
             if len(products) > 0:
-                ret_stock_types[stock_type] = stock_type_detail                         
+                ret_stock_types[stock_type] = stock_type_detail
 
         return dict(
             stock_types=[dict(
@@ -289,7 +295,7 @@ class CartAPIView(object):
                 ) for product in detail['products']],
                 regions=list(detail['regions'])
             ) for stock_type,detail in ret_stock_types.iteritems()]
-        )      
+        )
 
     @view_config(route_name='cart.api.seats')
     def seats(self):
@@ -601,7 +607,7 @@ class CartAPIView(object):
                         "status": "NG",
                         "reason": "invalid seat selection exception"
                     }
-                }               
+                }
             quantity_only = False
 
         seat_ids = [seat.id for seat in seats]
@@ -707,8 +713,8 @@ class CartAPIView(object):
                     "reason": "cart does not exist"
                 }
             }
-        
-        logger.debug("cart_id %s", cart.id)            
+
+        logger.debug("cart_id %s", cart.id)
 
         try:
             carted_products = DBSession.query(CartedProduct) \
@@ -932,7 +938,7 @@ class CartAPIView(object):
             for req in request_items:
                 for key, reqItem in req.iteritems():
                     seats = []
-                    product_item = DBSession.query(ProductItem).filter_by(id=key).first()           
+                    product_item = DBSession.query(ProductItem).filter_by(id=key).first()
                     cart_product_item = CartedProductItem(
                         carted_product = cart_product,
                         organization_id = cart_product.organization_id,
@@ -942,13 +948,13 @@ class CartAPIView(object):
                     # 席受け時の座席割り当て
                     if not is_quantity_only:
                         #performance取得
-                        performance = DBSession.query(Performance).filter_by(id=exec_cart.performance_id).first()                    
+                        performance = DBSession.query(Performance).filter_by(id=exec_cart.performance_id).first()
                         #座席情報取得
                         for seat_l0_id in reqItem['seat']:
                             seat = DBSession.query(Seat).filter_by(l0_id=seat_l0_id,venue_id=performance.venue.id).first()
                             seats.append(seat)
                         logger.debug("seats %s", seats)
-                        item_seats = cart_factory.pop_seats(product_item, reqItem['quantity'], seats)                    
+                        item_seats = cart_factory.pop_seats(product_item, reqItem['quantity'], seats)
                         cart_product_item.seats = item_seats
 
                     DBSession.add(cart_product_item)
