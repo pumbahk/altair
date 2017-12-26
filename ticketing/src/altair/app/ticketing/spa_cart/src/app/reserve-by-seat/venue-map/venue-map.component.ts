@@ -413,7 +413,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
                 $(that.svgMap).find('#' + regions[i].region_id).find('.coloring_region').css({ 'fill': REGION_COLOR_MANY_SEATS });
               }
             }
-            
+
             if (!that.smartPhoneCheckService.isSmartPhone()) {
               //ツールチップ用属性の設定
               that.tooltipStockType.forEach(function (value) {
@@ -466,8 +466,8 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
         tooltip += '<br />' + $(this).attr('min') + '円～' + $(this).attr('max') + '円';
       }
       if ($(this).attr('title')) {
-        if (tooltip) tooltip += '<br />' 
-        tooltip += $(this).attr('title'); 
+        if (tooltip) tooltip += '<br />'
+        tooltip += $(this).attr('title');
       }
       if (tooltip) {
         $('body').append('<div id="tooltip">' + tooltip + '</div>');
@@ -1119,7 +1119,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
             } else {
               this.selectedSeatGroupNames.push($(this.svgMap).find('#' + this.selectedGroupIds[i]).attr('title'));
             }
-            
+
           }
           this.selectTimes();
         } else {
@@ -1431,7 +1431,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
   // SVGの座席データを[連席ID, Element]として保持してDOMツリーから削除
   saveSeatData() {
     let els = document.querySelectorAll('.seat');
-    
+
     for (let i = 0; i < els.length; i++) {
       let grid_class = (<SVGAnimatedString>(<SVGElement>els[i]).className).baseVal;
       grid_class = grid_class.substr(grid_class.indexOf('grid'), 13);
@@ -1895,39 +1895,69 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
     this.displayDetail = false;
   }
 
-  // ミニマップ用四角
+  // ミニマップ用ポインター
   ngAfterViewChecked() {
     if (this.wholemapFlag) {
       let svg = document.getElementById('mapImgBoxS').firstElementChild;
       if (svg) {
-        let viewRect = document.getElementById('minimap-rect');
-        if (viewRect) {
-          this.moveRect(viewRect);
+        let viewPlaceholder = document.getElementById('minimap-placeholder');
+        if (viewPlaceholder) {
+          this.movePlaceholder(viewPlaceholder);
         } else {
-          this.makeRect(svg);
+          this.makePlaceholder(svg);
         }
       }
     }
   }
 
-  private makeRect(svg) {
+  private makePlaceholder(svg) {
     let viewBox = this.getPresentViewBox();
-    let rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-    rect.setAttribute('x', viewBox[0]);
-    rect.setAttribute('y', viewBox[1]);
-    rect.setAttribute('width', viewBox[2]);
-    rect.setAttribute('height', viewBox[3]);
-    rect.setAttribute('style', 'fill:##c63f44;opacity:0.8;');
-    rect.setAttribute('id', 'minimap-rect');
-    svg.appendChild(rect);
+    let width: any;
+    let height: any;
+    if (this.smartPhoneCheckService.isSmartPhone()) {
+      width = 2000;
+      height = 1250;
+    } else {
+      width = 1500;
+      height = 1000;
+    }
+    if (viewBox) {
+      let Mx: any = (+viewBox[0] + (+viewBox[2] / 2));
+      let My: any = (+viewBox[1] + (+viewBox[3] / 2));
+      let x: any = (+Mx - (+width / 2));
+      let y: any = +My - +height;
+
+      let placeholder = document.createElementNS('http://www.w3.org/2000/svg', 'image');
+      placeholder.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', 'https://s3-ap-northeast-1.amazonaws.com/tstar/cart_api/placeholder.svg');
+      placeholder.setAttribute('x', x);
+      placeholder.setAttribute('y', y);
+      placeholder.setAttribute('width', width);
+      placeholder.setAttribute('height', height);
+      placeholder.setAttribute('id', 'minimap-placeholder');
+      svg.appendChild(placeholder);
+    }
   }
 
-  private moveRect(viewRect) {
+  private movePlaceholder(viewPlaceholder) {
     let viewBox = this.getPresentViewBox();
-    viewRect.setAttribute('x', viewBox[0]);
-    viewRect.setAttribute('y', viewBox[1]);
-    viewRect.setAttribute('width', viewBox[2]);
-    viewRect.setAttribute('height', viewBox[3]);
+    let width: any;
+    let height: any;
+    if (this.smartPhoneCheckService.isSmartPhone()) {
+      width = 2000;
+      height = 1250;
+    } else {
+      width = 1500;
+      height = 1000;
+    }
+    if (viewBox) {
+      let Mx: any = (+viewBox[0] + (+viewBox[2] / 2));
+      let My: any = (+viewBox[1] + (+viewBox[3] / 2));
+      let x: any = (+Mx - (+width / 2));
+      let y: any = +My - +height;
+
+      viewPlaceholder.setAttribute('x', x);
+      viewPlaceholder.setAttribute('y', y);
+    }
   }
   //cssが16進数か判定する
   changeRgb(value: any) {
@@ -1973,7 +2003,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
       //進む判定用に履歴数を保持
       sessionStorage.setItem('maxHistory', history.length.toString());
     }
-    
+
     //滞在フラグを削除
     sessionStorage.removeItem('stay');
 
