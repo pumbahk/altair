@@ -91,6 +91,16 @@
                   <td>${order.cart.used_discount_quantity}枚</td>
                   <td class="align1" style="color: red;">-￥${h.format_number(order.cart.discount_amount)}</td>
               </tr>
+              % for setting in order.cart.used_discount_code_settings:
+              <tr id="commission">
+                <th scope="row">${setting.name}</th>
+                <td>
+                  ${setting.explanation|n}
+                </td>
+                <td></td>
+                <td class="align1" style="color: red;"></td>
+              </tr>
+              % endfor
               % endif
           <tr id="commission">
             <th scope="row">決済手数料</th>

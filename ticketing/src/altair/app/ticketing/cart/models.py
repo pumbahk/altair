@@ -391,6 +391,16 @@ class Cart(Base, c_models.CartMixin):
                     return False
         return True
 
+    @property
+    def used_discount_code_settings(self):
+        settings = []
+        for item in self.items:
+            for element in item.elements:
+                used_discount_code_carts = element.used_discount_codes
+                for used_discount_code_cart in used_discount_code_carts:
+                    settings.extend(discount_api.get_discount_code_setting(used_discount_code_cart))
+        return settings
+
 
 @implementer(IOrderedProductLike)
 class CartedProduct(Base):

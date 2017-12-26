@@ -99,3 +99,10 @@ def save_discount_code(carted_product_item, ordered_product_item):
         #available_code.used_at = datetime.now()
         #available_code.save()
     return True
+
+
+def get_discount_code_setting(used_discount_code_cart):
+    settings = DiscountCodeSetting.\
+        filter(DiscountCodeSetting.first_4_digits == used_discount_code_cart.code[:4]).\
+        filter(DiscountCodeSetting.is_valid==True).all()
+    return settings
