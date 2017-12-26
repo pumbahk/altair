@@ -2,6 +2,7 @@
 
 from wtforms import Form
 from wtforms import TextField, HiddenField, DateField, PasswordField, SelectField, BooleanField, SelectMultipleField
+from wtforms.widgets import TextArea
 from wtforms.validators import Length, Optional
 from altair.formhelpers import DateTimeField, Translations, Required
 from altair.app.ticketing.core import models as cmodels
@@ -58,6 +59,26 @@ class MembershipForm(Form):
     enable_point_input = BooleanField(
         label=u"楽天ポイント手入力",
         default=True
+        )
+    enable_login_body = BooleanField(
+        label=u"ログイン画面の使用",
+        default=False
+        )
+    login_body_pc = TextField(
+        label=u"ログイン画面HTML文言(PC)",
+        widget=TextArea()
+        )
+    login_body_smartphone = TextField(
+        label=u"ログイン画面HTML文言(スマートフォン)",
+        widget=TextArea()
+        )
+    login_body_mobile = TextField(
+        label=u"ログイン画面HTML文言(モバイル)",
+        widget=TextArea()
+        )
+    login_body_error_message = TextField(
+        label=u"ログイン画面エラー文言",
+        widget=TextArea()
         )
 
 class MemberGroupDeleteForm(Form):

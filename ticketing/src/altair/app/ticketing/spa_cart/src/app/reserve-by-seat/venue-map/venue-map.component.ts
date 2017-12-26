@@ -2007,39 +2007,69 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
     this.displayDetail = false;
   }
 
-  // ミニマップ用四角
+  // ミニマップ用ポインター
   ngAfterViewChecked() {
     if (this.wholemapFlag) {
       let svg = document.getElementById('mapImgBoxS').firstElementChild;
       if (svg) {
-        let viewRect = document.getElementById('minimap-rect');
-        if (viewRect) {
-          this.moveRect(viewRect);
+        let viewPlaceholder = document.getElementById('minimap-placeholder');
+        if (viewPlaceholder) {
+          this.movePlaceholder(viewPlaceholder);
         } else {
-          this.makeRect(svg);
+          this.makePlaceholder(svg);
         }
       }
     }
   }
 
-  private makeRect(svg) {
+  private makePlaceholder(svg) {
     let viewBox = this.getPresentViewBox();
-    let rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-    rect.setAttribute('x', viewBox[0]);
-    rect.setAttribute('y', viewBox[1]);
-    rect.setAttribute('width', viewBox[2]);
-    rect.setAttribute('height', viewBox[3]);
-    rect.setAttribute('style', 'fill:##c63f44;opacity:0.8;');
-    rect.setAttribute('id', 'minimap-rect');
-    svg.appendChild(rect);
+    let width: any;
+    let height: any;
+    if (this.smartPhoneCheckService.isSmartPhone()) {
+      width = 2000;
+      height = 1250;
+    } else {
+      width = 1500;
+      height = 1000;
+    }
+    if (viewBox) {
+      let Mx: any = (+viewBox[0] + (+viewBox[2] / 2));
+      let My: any = (+viewBox[1] + (+viewBox[3] / 2));
+      let x: any = (+Mx - (+width / 2));
+      let y: any = +My - +height;
+
+      let placeholder = document.createElementNS('http://www.w3.org/2000/svg', 'image');
+      placeholder.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', 'https://s3-ap-northeast-1.amazonaws.com/tstar/cart_api/placeholder.svg');
+      placeholder.setAttribute('x', x);
+      placeholder.setAttribute('y', y);
+      placeholder.setAttribute('width', width);
+      placeholder.setAttribute('height', height);
+      placeholder.setAttribute('id', 'minimap-placeholder');
+      svg.appendChild(placeholder);
+    }
   }
 
-  private moveRect(viewRect) {
+  private movePlaceholder(viewPlaceholder) {
     let viewBox = this.getPresentViewBox();
-    viewRect.setAttribute('x', viewBox[0]);
-    viewRect.setAttribute('y', viewBox[1]);
-    viewRect.setAttribute('width', viewBox[2]);
-    viewRect.setAttribute('height', viewBox[3]);
+    let width: any;
+    let height: any;
+    if (this.smartPhoneCheckService.isSmartPhone()) {
+      width = 2000;
+      height = 1250;
+    } else {
+      width = 1500;
+      height = 1000;
+    }
+    if (viewBox) {
+      let Mx: any = (+viewBox[0] + (+viewBox[2] / 2));
+      let My: any = (+viewBox[1] + (+viewBox[3] / 2));
+      let x: any = (+Mx - (+width / 2));
+      let y: any = +My - +height;
+
+      viewPlaceholder.setAttribute('x', x);
+      viewPlaceholder.setAttribute('y', y);
+    }
   }
   //cssが16進数か判定する
   changeRgb(value: any) {
