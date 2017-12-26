@@ -1921,19 +1921,21 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
       width = 1500;
       height = 1000;
     }
-    let Mx: any = (+viewBox[0] + (+viewBox[2] / 2));
-    let My: any = (+viewBox[1] + (+viewBox[3] / 2));
-    let x: any = (+Mx - (+width / 2));
-    let y: any = +My - +height;
+    if (viewBox) {
+      let Mx: any = (+viewBox[0] + (+viewBox[2] / 2));
+      let My: any = (+viewBox[1] + (+viewBox[3] / 2));
+      let x: any = (+Mx - (+width / 2));
+      let y: any = +My - +height;
 
-    let placeholder = document.createElementNS('http://www.w3.org/2000/svg', 'image');
-    placeholder.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', 'https://s3-ap-northeast-1.amazonaws.com/tstar/cart_api/placeholder.svg');
-    placeholder.setAttribute('x', x);
-    placeholder.setAttribute('y', y);
-    placeholder.setAttribute('width', width);
-    placeholder.setAttribute('height', height);
-    placeholder.setAttribute('id', 'minimap-placeholder');
-    svg.appendChild(placeholder);
+      let placeholder = document.createElementNS('http://www.w3.org/2000/svg', 'image');
+      placeholder.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', 'https://s3-ap-northeast-1.amazonaws.com/tstar/cart_api/placeholder.svg');
+      placeholder.setAttribute('x', x);
+      placeholder.setAttribute('y', y);
+      placeholder.setAttribute('width', width);
+      placeholder.setAttribute('height', height);
+      placeholder.setAttribute('id', 'minimap-placeholder');
+      svg.appendChild(placeholder);
+    }
   }
 
   private movePlaceholder(viewPlaceholder) {
@@ -1947,13 +1949,15 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
       width = 1500;
       height = 1000;
     }
-    let Mx: any = (+viewBox[0] + (+viewBox[2] / 2));
-    let My: any = (+viewBox[1] + (+viewBox[3] / 2));
-    let x: any = (+Mx - (+width / 2));
-    let y: any = +My - +height;
+    if (viewBox) {
+      let Mx: any = (+viewBox[0] + (+viewBox[2] / 2));
+      let My: any = (+viewBox[1] + (+viewBox[3] / 2));
+      let x: any = (+Mx - (+width / 2));
+      let y: any = +My - +height;
 
-    viewPlaceholder.setAttribute('x', x);
-    viewPlaceholder.setAttribute('y', y);
+      viewPlaceholder.setAttribute('x', x);
+      viewPlaceholder.setAttribute('y', y);
+    }
   }
   //cssが16進数か判定する
   changeRgb(value: any) {
