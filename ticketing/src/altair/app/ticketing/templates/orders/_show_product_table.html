@@ -98,8 +98,7 @@
           ${ticketing_flg(token.is_printed())}
           % for code in token.used_discount_codes:
            <br/>
-           <div>使用したクーポン・割引コード</div>
-           <div>${code.code}</div>
+           <div>使用したクーポン・割引コード: ${code.code}</div>
           % endfor
          %endif
        </li>
@@ -126,7 +125,7 @@
     <td>
       ${ordered_product_item.quantity}
       % if ordered_product_item.used_discount_codes:
-        - ${len(ordered_product_item.used_discount_codes)}
+        <br/>クーポン${len(ordered_product_item.used_discount_codes)}枚
       % endif
     </td>
     <td style="color: red;text-align:right;">
