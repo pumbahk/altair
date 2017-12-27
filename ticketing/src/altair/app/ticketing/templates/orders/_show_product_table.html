@@ -122,14 +122,30 @@
     <td></td>
   </tr>
   %endfor
-%if loop.last:
-    <tr>
-      <td colspan="2">決済手数料</td>
+    %if loop.last:
+      % if order.cart.discount_amount:
+      <tr>
+          <td>クーポン・割引コードご使用金額</td>
+          <td>
+              使用コード<br/>
+              % for used_code in order.cart.used_discount_codes:
+              ${used_code.code}<br/>
+              % endfor
+          </td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td style="color: red;">${order.cart.used_discount_quantity}</td>
+          <td style="text-align: right;color: red;">-${vh.price(order.cart.discount_amount)}</td>
+      </tr>
+      % endif
+      <tr>
+          <td colspan="2">決済手数料</td>
+          <td></td>
       <td></td>
       <td></td>
       <td></td>
-      <td></td>
-      <td style="text-align: right;">${vh.price(order.transaction_fee)}</td>
+      <td style="text-align: right;">-${vh.price(order.transaction_fee)}</td>
     </tr>
     <tr>
       <td colspan="2">引取手数料</td>
