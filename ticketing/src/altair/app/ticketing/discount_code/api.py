@@ -83,21 +83,19 @@ def temporarily_save_discount_code(codies):
 
 def save_discount_code(carted_product_item, ordered_product_item):
     # 対象のCartedProductItemにクーポンが使用されていたら、UsedDiscountCodeOrderにデータを記録する
-    # TODO OKADA　クーポンを使用してるかの判定
-    if True:
-        used_discount_code_carts = carted_product_item.used_discount_codes
+    used_discount_code_carts = carted_product_item.used_discount_codes
 
-        for index, used_discount_code_cart in enumerate(used_discount_code_carts):
-            use_discount_code_order = UsedDiscountCodeOrder()
-            #use_discount_code_order.discount_code_id = used_discount_code_carts[0].discount_code_id
-            use_discount_code_order.code = used_discount_code_cart.code
-            use_discount_code_order.ordered_product_item = ordered_product_item
-            use_discount_code_order.ordered_product_item_token = ordered_product_item.tokens[index]
-            use_discount_code_order.add()
+    for index, used_discount_code_cart in enumerate(used_discount_code_carts):
+        use_discount_code_order = UsedDiscountCodeOrder()
+        #use_discount_code_order.discount_code_id = used_discount_code_carts[0].discount_code_id
+        use_discount_code_order.code = used_discount_code_cart.code
+        use_discount_code_order.ordered_product_item = ordered_product_item
+        use_discount_code_order.ordered_product_item_token = ordered_product_item.tokens[index]
+        use_discount_code_order.add()
 
-            # クーポン・割引コードテーブルに使用日時を記載
-            # TODO イーグルス発行のコードの場合は使えない
-            #available_code = DiscountCodeCode.query.filter_by(id=used_discount_code_cart.discount_code_id).one()
-            #available_code.used_at = datetime.now()
-            #available_code.save()
+        # クーポン・割引コードテーブルに使用日時を記載
+        # TODO イーグルス発行のコードの場合は使えない
+        #available_code = DiscountCodeCode.query.filter_by(id=used_discount_code_cart.discount_code_id).one()
+        #available_code.used_at = datetime.now()
+        #available_code.save()
     return True

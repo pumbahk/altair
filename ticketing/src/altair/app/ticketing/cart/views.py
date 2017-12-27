@@ -90,7 +90,7 @@ from .exceptions import (
     CompletionPageNotRenderered,
 )
 from .resources import EventOrientedTicketingCartResource, PerformanceOrientedTicketingCartResource,\
-    CompleteViewTicketingCartResource, enable_discount_code
+    CompleteViewTicketingCartResource
 from .limiting import LimiterDecorators
 from . import flow
 from .interfaces import IPageFlowPredicate, IPageFlowAction
@@ -1466,7 +1466,7 @@ class DiscountCodeEnteringView(object):
         sales_segment_id = self.request.matchdict["sales_segment_id"]
         codies = self.context.create_codies_from_request()
 
-        # TODO OKADA validation
+        # TODO validation
 
         self.context.temporarily_save_discount_code(codies)
 

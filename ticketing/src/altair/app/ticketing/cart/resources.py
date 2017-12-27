@@ -682,11 +682,6 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
     def __init__(self, request, sales_segment_id=None):
         super(DiscountCodeTicketingCartResources, self).__init__(request, sales_segment_id)
 
-    @property
-    def enable_discount_code(self):
-        # TODO OKADA 判定
-        return True
-
     def sorted_carted_product_items(self):
         cart = self.read_only_cart
         sorted_cart_product_items = list()
@@ -704,10 +699,6 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
         if cart.carted_product_item_count > 1:
             forms.append(schemas.DiscountCodeForm())
         return forms
-
-    def check_discount_code(self, code):
-        # TODO OKADA 判定
-        return True
 
     def upper_code(self):
         """POSTされたパラメータを大文字に変更"""
@@ -860,13 +851,3 @@ class OrderPayment(object):
 class CartPayment(object):
     def __init__(self, cart):
         self.cart = cart
-
-
-def enable_discount_code(context, request):
-    """
-    クーポン・割引コードの使用設定がONになっているか
-    イベントパフォーマンスに紐付いているか
-    """
-    # TODO OKADA イベントパフォーマンスとクーポンが紐付いているか
-    organization = cart_api.get_organization(request)
-    return discount_api.enable_discount_code(organization)
