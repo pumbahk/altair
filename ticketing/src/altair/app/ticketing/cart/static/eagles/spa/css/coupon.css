@@ -1,0 +1,147 @@
+@charset "utf-8";
+
+.couponPosionRe {
+	position: relative;
+}
+table.couponSeats {
+	width: 90%;
+	border:  dotted 1px #DDD;
+	padding: 10px;
+	margin:0 auto 20px;
+	box-sizing: border-box;
+	display: block;
+}
+table.couponSeats thead tr {
+	display: block;
+	width: 100%;
+	text-align: center;
+	margin: 0 0.5%;
+}
+table.couponSeats thead td {
+	font-weight: bold;
+	display: block;
+	box-sizing: border-box;
+	font-weight: bold;
+	background: #DDD;
+	padding: 10px;
+	margin-bottom: 10px;
+}
+table.couponSeats tbody tr {
+	display: block;
+	width: 49%;
+	float: left;
+	margin: 5px 0.5%;
+}
+table.couponSeats tbody td {
+	font-weight: bold;
+	padding: 10px;
+	display: block;
+	box-sizing: border-box;
+	border: solid 1px #DDD;
+}
+.couponSeatsText {
+	padding: 0 20px;
+	box-sizing: border-box;
+}
+table.couponCodeBox {
+	width: 100%;
+	margin-bottom: 30px;
+}
+table.couponCodeBox td {
+	border: none;
+	padding: 20px 0px 0;
+	box-sizing: border-box; 
+}
+table.couponCodeBox td span {
+	border: none;
+	background: #860010;
+	box-sizing: border-box; 
+	display: block;
+	width: 20%;
+	height: 40px;
+	font-weight: bold;
+	float: left;
+	clear: both;
+	line-height: 40px;
+	color: #FFF;
+	padding: 0 20px;
+	box-sizing: border-box;
+	
+	border-top-left-radius: 20px;
+	border-bottom-left-radius: 20px;
+	-webkit-border-top-left-radius: 20px;
+	-webkit-border-bottom-left-radius: 20px;
+	-moz-border-radius-topleft: 20px;
+	-moz-border-radius-bottomleft: 20px;
+}
+table.couponCodeBox input {
+	width: 80%;
+	height: 40px;
+	float: left;
+}
+.couponBtnNext {
+	text-align: center;
+	clear: both;
+	padding: 30px 0;
+}
+
+
+
+
+
+
+
+@media screen and (max-width: 767px) {
+
+table.couponCodeBox td span {
+	width: 100%;
+	height: auto;
+	float: none;
+	line-height: normal;
+	padding: 0 10px;
+	
+	border-top-left-radius: 5px;
+	border-top-right-radius: 5px;
+	border-bottom-left-radius: 0px;
+	-webkit-border-top-left-radius: 5px;
+	-webkit-border-top-right-radius: 5px;
+	-webkit-border-bottom-left-radius: 0px;
+	-moz-border-radius-topleft: 5px;
+	-moz-border-radius-topright: 5px;
+	-moz-border-radius-bottomleft: 0px;
+}
+table.couponCodeBox input {
+	width: 100%;
+	height: auto;
+	float: none;
+}
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
