@@ -102,7 +102,37 @@ def save_discount_code(carted_product_item, ordered_product_item):
 
 
 def get_discount_code_setting(used_discount_code_cart):
-    settings = DiscountCodeSetting.\
+    setting = DiscountCodeSetting.\
         filter(DiscountCodeSetting.first_4_digits == used_discount_code_cart.code[:4]).\
         filter(DiscountCodeSetting.is_valid==True).all()
+    return setting
+
+
+def get_discount_code_settings(used_discount_code_carts):
+    code_first_4_digits = list(set([code.code[:4] for code in used_discount_code_carts]))
+    settings = DiscountCodeSetting.\
+        filter(DiscountCodeSetting.first_4_digits.in_(code_first_4_digits)).\
+        filter(DiscountCodeSetting.is_valid==True).all()
     return settings
+
+
+def used_discount_code_groups(cart):
+    codes = get_used_discount_codes(cart)
+    settings = get_discount_code_settings(codes)
+
+    code_groups = {}
+    for code in codes:
+        if code.code[:4] in code_groups:
+            code_list = code_groups[code.code[:4]]
+            code_list.append(code)
+        else:
+            code_groups[code.code[:4]] = [code]
+
+    groups = []
+    for setting in settings:
+        group_dict = dict()
+        group_dict['discount_code_setting'] = setting
+        group_dict['code'] = code_groups[setting.first_4_digits]
+        group_dict['discount_price'] = sum([code.carted_product_item.price for code in code_groups[setting.first_4_digits]])
+        groups.append(group_dict)
+    return groups

@@ -44,7 +44,6 @@ class DiscountCodeSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     start_at = AnnotatedColumn(DateTime, nullable=True, _a_label=_(u'適用開始日時'))
     end_at = AnnotatedColumn(DateTime, nullable=True, _a_label=_(u'適用終了日時'))
     explanation = AnnotatedColumn(UnicodeText, nullable=True, _a_label=_(u'割引概要説明文 '))
-
     code = relationship('DiscountCodeCode', backref='DiscountCodeSetting')
 
     @property

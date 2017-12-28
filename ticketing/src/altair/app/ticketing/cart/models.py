@@ -417,7 +417,6 @@ class Cart(Base, c_models.CartMixin):
                 available_target.append(target.discount_code_setting)
         return available_target
 
-
     @property
     def used_discount_code_settings(self):
         settings = []
@@ -427,6 +426,10 @@ class Cart(Base, c_models.CartMixin):
                 for used_discount_code_cart in used_discount_code_carts:
                     settings.extend(discount_api.get_discount_code_setting(used_discount_code_cart))
         return settings
+
+    @property
+    def used_discount_code_groups(self):
+        return discount_api.used_discount_code_groups(self)
 
 
 @implementer(IOrderedProductLike)

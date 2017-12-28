@@ -12,6 +12,8 @@
     margin-top: 20px;
   }
 </style>
+<link rel="stylesheet" href="${request.static_url('altair.app.ticketing.cart:static/eagles/spa/css/purchase_completion.css')}" type="text/css" media="all" />
+
 </%block>
 		<div class="login-page">
 			<div class="contents">
@@ -67,28 +69,35 @@
 											<td class="align1">￥${h.format_number(product.product.price * product.quantity)}</td>
 										</tr>
                                         % endfor
-										% if order.cart.discount_amount:
-										<tr>
-										  <th scope="row">クーポン・割引コードご使用金額</th>
-										  <td>
-											% for used_code in order.cart.used_discount_codes:
-											  ${used_code.code}<br/>
-											% endfor
-										  </td>
-										  <td>${order.cart.used_discount_quantity}枚</td>
-										  <td class="align1" style="color: red;">-￥${h.format_number(order.cart.discount_amount)}</td>
-										</tr>
-										  % for setting in order.cart.used_discount_code_settings:
-										  <tr>
-											  <th scope="row">${setting.name}</th>
-											  <td>
-												  ${setting.explanation|n}
-											  </td>
-											  <td></td>
-											  <td class="align1" style="color: red;"></td>
-										  </tr>
-										  % endfor
-										% endif
+											% if order.cart.discount_amount:
+											<tr>
+												<td colspan="5">
+													<table class="couponTable">
+														<tr class="purchaseCouponTtl">
+															<td colspan="4">クーポン・割引コードご使用金額</td>
+														</tr>
+														% for index, group in enumerate(order.cart.used_discount_code_groups):
+														<tr class="purchaseCoupon${index}">
+															<td class="purchaseCouponTxt">
+																<p>
+																	${group['discount_code_setting'].explanation |n}
+																</p>
+															</td>
+															<td>
+																% for code in group['code']:
+																${code.code}
+																% endfor
+															</td>
+															<td>${len(group['code'])}枚</td>
+															<td class="align1 couponPrice">
+																-￥${h.format_number(group['discount_price'])}
+															</td>
+														</tr>
+														% endfor
+													</table>
+												</td>
+											</tr>
+											% endif
 										<tr>
 											<th scope="row">決済手数料</th>
 											<td>&nbsp;</td>
