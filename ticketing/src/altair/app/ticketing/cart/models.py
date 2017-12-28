@@ -382,14 +382,17 @@ class Cart(Base, c_models.CartMixin):
         if not valid_target:
             return False
 
-        # 紐づく引換券設定の最小金額が、選択されたチケットの金額を全て上回っていること
-        min_price_target = min(valid_target, key=lambda y: y.discount_code_setting.condition_price_amount)
-        min_price = int(min_price_target.discount_code_setting.condition_price_amount)
-        for item in self.items:
-            for element in item.elements:
-                if element.price > min_price:
-                    return False
-        return True
+        # 割引設定が１つでも、選択されたチケットの金額を上回っていること
+        for target in valid_target:
+            status = True
+            for item in self.items:
+                for element in item.elements:
+                    if element.price > Decimal(target.discount_code_setting.condition_price_amount):
+                        status = False
+            if status:
+                return True
+
+        return False
 
     @property
     def available_discount_code_settings(self):
