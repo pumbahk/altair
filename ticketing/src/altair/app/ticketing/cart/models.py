@@ -386,9 +386,12 @@ class Cart(Base, c_models.CartMixin):
         for target in valid_target:
             status = True
             for item in self.items:
+                if not status:
+                    break
                 for element in item.elements:
                     if element.price > Decimal(target.discount_code_setting.condition_price_amount):
                         status = False
+                        break
             if status:
                 return True
 
