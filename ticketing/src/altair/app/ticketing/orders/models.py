@@ -1089,6 +1089,9 @@ class OrderedProductItemToken(Base,BaseModel, LogicallyDeleted):
     def is_printed(self):
         return self.printed_at and (self.refreshed_at is None or self.printed_at > self.refreshed_at)
 
+    @property
+    def is_applied_discount_code(self):
+        return len(self.used_discount_codes) > 0
 
 class OrderReceipt(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'OrderReceipt'
