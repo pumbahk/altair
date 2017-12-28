@@ -1464,12 +1464,19 @@ class DiscountCodeEnteringView(object):
         cart = self.context.read_only_cart
         self.context.check_deleted_product(cart)
         sales_segment_id = self.request.matchdict["sales_segment_id"]
-        codies = self.context.create_codies_from_request()
+        codes = self.context.create_codes_from_request(cart)
+        sorted_cart_product_items = self.context.sorted_carted_product_items()
 
-        # TODO validation
-
-        self.context.temporarily_save_discount_code(codies)
-
+        self.context.validate_discount_codes(codes)
+        if self.context.exist_validate_error(codes):
+            return dict(
+                forms=self.context.create_validated_forms(codes),
+                cart_product_items=sorted_cart_product_items,
+                sales_segment_id=sales_segment_id,
+                performance=self.context.performance,
+                carted_product_item_count=self.context.carted_product_item_count
+            )
+        self.context.temporarily_save_discount_code(codes)
         return HTTPFound(self.request.route_path('cart.payment', sales_segment_id=sales_segment_id))
 
 

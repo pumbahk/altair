@@ -392,6 +392,24 @@ class Cart(Base, c_models.CartMixin):
         return True
 
     @property
+    def available_discount_code_settings(self):
+        valid_target = [x for x in self.performance.DiscountCodeTarget if x.discount_code_setting.is_valid]
+        if not valid_target:
+            return False
+
+        available_target = []
+        for target in valid_target:
+            status = True
+            for item in self.items:
+                for element in item.elements:
+                    if element.price > target.discount_code_setting.condition_price_amount:
+                        status = False
+            if status:
+                available_target.append(target.discount_code_setting)
+        return available_target
+
+
+    @property
     def used_discount_code_settings(self):
         settings = []
         for item in self.items:

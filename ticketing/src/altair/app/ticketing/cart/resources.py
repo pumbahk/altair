@@ -694,10 +694,10 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
     def create_discount_code_forms(self):
         from . import schemas
         cart = self.read_only_cart
-
-        forms = [schemas.DiscountCodeForm()]
-        if cart.carted_product_item_count > 1:
-            forms.append(schemas.DiscountCodeForm())
+        settings = cart.available_discount_code_settings
+        forms = []
+        for index in range(cart.carted_product_item_count):
+            forms.append(schemas.DiscountCodeForm(discount_code_settings=settings))
         return forms
 
     def upper_code(self):
@@ -712,32 +712,35 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
             self.request.POST.clear()
             self.request.POST.extend(upper_list)
 
-    def create_codies_from_request(self):
+    def create_codes_from_request(self, cart):
         from . import schemas
         params = self.request.POST.items()
         sorted_cart_product_items = self.sorted_carted_product_items()
+        settings = cart.available_discount_code_settings
 
         # 入力されたコードのリスト化
-        codies = list()
+        codes = list()
         for param in params:
             code_dict = dict()
             code_dict['code'] = param[1]
-            codies.append(code_dict)
+            codes.append(code_dict)
 
         # 入力されたコードを商品明細の金額の降順とFormと対応させる
         count = 0
-        max = len(codies)
+        max_count = len(codes)
         for carted_product_item in sorted_cart_product_items:
             for index in range(carted_product_item.quantity):
-                code_dict = codies[count]
+                form = schemas.DiscountCodeForm(discount_code_settings=settings)
+                code_dict = codes[count]
                 code_dict['carted_product_item'] = carted_product_item
-                code_dict['form'] = schemas.DiscountCodeForm()
+                form.code.data = code_dict['code']
+                code_dict['form'] = form
                 count = count + 1
-                if max == count:
-                    return codies
+                if max_count == count:
+                    return codes
 
-    def temporarily_save_discount_code(self, codies):
-        discount_api.temporarily_save_discount_code(codies)
+    def temporarily_save_discount_code(self, codes):
+        discount_api.temporarily_save_discount_code(codes)
 
     def get_carted_product_item_ids(self):
         cart = self.read_only_cart
@@ -760,10 +763,28 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
 
     def delete_temporarily_save_discount_code(self):
         carted_product_item_ids = self.get_carted_product_item_ids()
-        codies = UsedDiscountCodeCart.query.filter(UsedDiscountCodeCart.carted_product_item_id.in_(carted_product_item_ids)).all()
-        for code in codies:
+        codes = UsedDiscountCodeCart.query.filter(UsedDiscountCodeCart.carted_product_item_id.in_(carted_product_item_ids)).all()
+        for code in codes:
             code.deleted_at = datetime.now()
         return True
+
+    def validate_discount_codes(self, codes):
+        for code_dict in codes:
+            form = code_dict['form']
+            form.validate()
+
+    def exist_validate_error(self, codes):
+        for code_dict in codes:
+            form = code_dict['form']
+            if form.errors:
+                return True
+        return False
+
+    def create_validated_forms(self, codes):
+        forms = []
+        for code_dict in codes:
+            forms.append(code_dict['form'])
+        return forms
 
 
 class CartBoundTicketingCartResource(TicketingCartResourceBase):

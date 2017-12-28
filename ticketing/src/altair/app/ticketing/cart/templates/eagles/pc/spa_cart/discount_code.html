@@ -31,13 +31,20 @@
                         <h2 class="heading heading_simple_line">クーポン・割引コードの入力（半角英数字）</h2>
                         <table id="confirmDelivery" class="couponCodeBox">
                             <tbody>
-                            % for carted_product_item in cart_product_items:
-                            % for i in range(0, carted_product_item.quantity):
+                            % for form in forms:
                             <tr>
-                                <td><span>クーポン・割引コード</span><input id="code" name="code"
-                                                                  placeholder="クーポン・割引コードをご入力ください"></td>
+                                <td>
+                                    <span>クーポン・割引コード</span>
+                                    ${form.code(placeholder=u'クーポン・割引コードをご入力ください')}
+                                </td>
                             </tr>
-                            % endfor
+                            % if form.errors:
+                            <tr>
+                                <td class="couponAttention">
+                                    ${form.errors['code'][0]}
+                                </td>
+                            </tr>
+                            % endif
                             % endfor
                             </tbody>
                         </table>

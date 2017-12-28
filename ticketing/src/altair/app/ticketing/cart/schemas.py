@@ -71,9 +71,40 @@ class DiscountCodeForm(OurForm):
         label=u'割引コード',
         validators=[
             Optional(),
-            Length(max=20, message=u'20文字以内で入力してください'),
         ],
     )
+
+    def __init__(self, formdata=None, obj=None, prefix='', discount_code_settings=None, **kwargs):
+        super(DiscountCodeForm, self).__init__(formdata, obj, prefix, **kwargs)
+        if discount_code_settings:
+            self.discount_code_settings = discount_code_settings
+
+    def _validate_code(self, *args, **kwargs):
+        status = True
+        code = self.data['code']
+
+        if len(code) != 0 and len(code) != 12:
+            getattr(self, "code").errors.append(u"ご選択された席には適用できないクーポンです")
+            status = False
+
+        if not status:
+            return False
+
+        available_settings = []
+        for setting in self.discount_code_settings:
+            if self.data['code'][:4] == setting.first_4_digits:
+                available_settings.append(setting)
+
+        if not available_settings:
+            getattr(self, "code").errors.append(u"ご選択された席には適用できないクーポンです")
+            status = False
+
+        return status
+
+    def validate(self):
+        status = super(DiscountCodeForm, self).validate()
+        status = self._validate_code() and status
+        return status
 
 
 class PointForm(OurForm):

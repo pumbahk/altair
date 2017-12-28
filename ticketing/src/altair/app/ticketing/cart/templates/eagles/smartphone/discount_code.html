@@ -46,14 +46,13 @@ form {
             % endfor
           </table>
           <table id="confirmDelivery">
-            % for carted_product_item in cart_product_items:
-              % for i in range(0, carted_product_item.quantity):
-              <tr>
-                <td>
-                  <input id="code" name="code" placeholder="クーポン・割引コードをご入力ください" style="width:20em">
-                </td>
-              </tr>
-              % endfor
+            % for form in forms:
+            <tr>
+              <td style="border-bottom: none">
+                ${form.code(placeholder=u'クーポン・割引コードをご入力ください', style='width:20em')}
+                ${h.error_list(request, form, 'code')}
+              </td>
+            </tr>
             % endfor
           </table>
         <br/>

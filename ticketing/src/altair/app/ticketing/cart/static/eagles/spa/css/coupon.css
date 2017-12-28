@@ -13,7 +13,7 @@ table.couponSeats {
 }
 table.couponSeats thead tr {
 	display: block;
-	width: 100%;
+	width: 99%;
 	text-align: center;
 	margin: 0 0.5%;
 }
@@ -74,6 +74,18 @@ table.couponCodeBox td span {
 	-moz-border-radius-topleft: 20px;
 	-moz-border-radius-bottomleft: 20px;
 }
+table.couponCodeBox td.couponAttention  {
+	border: none;
+	padding: 2px 10px;
+	font-weight: bold;
+	color: #C00;
+	margin-left: 20%;
+	display: block;
+	width: 80%;
+	background: #FEE;
+	box-sizing: border-box;
+	font-size: 13px;
+}
 table.couponCodeBox input {
 	width: 80%;
 	height: 40px;
@@ -109,6 +121,10 @@ table.couponCodeBox td span {
 	-moz-border-radius-topleft: 5px;
 	-moz-border-radius-topright: 5px;
 	-moz-border-radius-bottomleft: 0px;
+}
+table.couponCodeBox td.couponAttention  {
+	margin-left: 0%;
+	width: 100%;
 }
 table.couponCodeBox input {
 	width: 100%;
