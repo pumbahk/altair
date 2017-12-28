@@ -62,13 +62,8 @@ http://eagles.fanclub.rakuten.co.jp/api/members-check?start_year=2018&open_id=ht
         'is_eternal': config['is_eternal']
     }
 
-    urlparams = urllib.urlencode(params)
-    target_url = "{0}?{1}".format(url, urlparams)
-
     proxies = c.select_proxies(environment)
-
-    print(target_url)
-    response = requests.post(target_url, proxies=proxies, verify=False, headers=config['headers'])
+    response = requests.post(url=url, data=params, proxies=proxies, verify=False, headers=config['headers'])
 
     print(response.status_code)
     print(response.text)
