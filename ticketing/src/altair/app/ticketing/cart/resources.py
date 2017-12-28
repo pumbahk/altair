@@ -714,30 +714,48 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
 
     def create_codes_from_request(self, cart):
         from . import schemas
-        params = self.request.POST.items()
+        codes = [code for code in self.request.POST.getall('code') if code]
+        if not codes:
+            return []
+
         sorted_cart_product_items = self.sorted_carted_product_items()
         settings = cart.available_discount_code_settings
 
-        # 入力されたコードのリスト化
-        codes = list()
-        for param in params:
-            code_dict = dict()
-            code_dict['code'] = param[1]
-            codes.append(code_dict)
-
-        # 入力されたコードを商品明細の金額の降順とFormと対応させる
-        count = 0
-        max_count = len(codes)
+        code_forms = []
+        input_cnt = len(codes)
+        cnt = 0
         for carted_product_item in sorted_cart_product_items:
-            for index in range(carted_product_item.quantity):
+            for _ in range(carted_product_item.quantity):
                 form = schemas.DiscountCodeForm(discount_code_settings=settings)
-                code_dict = codes[count]
-                code_dict['carted_product_item'] = carted_product_item
-                form.code.data = code_dict['code']
-                code_dict['form'] = form
-                count = count + 1
-                if max_count == count:
-                    return codes
+                form.code.data = codes[cnt]
+                code_forms.append({
+                    'code': codes[cnt],
+                    'carted_product_item': carted_product_item,
+                    'form': form
+                })
+                cnt += 1
+                if input_cnt == cnt:
+                    return code_forms
+        # # 入力されたコードのリスト化
+        # codes = list()
+        # for param in params:
+        #     code_dict = dict()
+        #     code_dict['code'] = param[1]
+        #     codes.append(code_dict)
+        #
+        # # 入力されたコードを商品明細の金額の降順とFormと対応させる
+        # count = 0
+        # max_count = len(codes)
+        # for carted_product_item in sorted_cart_product_items:
+        #     for index in range(carted_product_item.quantity):
+        #         form = schemas.DiscountCodeForm(discount_code_settings=settings)
+        #         code_dict = codes[count]
+        #         code_dict['carted_product_item'] = carted_product_item
+        #         form.code.data = code_dict['code']
+        #         code_dict['form'] = form
+        #         count = count + 1
+        #         if max_count == count:
+        #             return codes
 
     def temporarily_save_discount_code(self, codes):
         discount_api.temporarily_save_discount_code(codes)

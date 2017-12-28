@@ -80,26 +80,19 @@ class DiscountCodeForm(OurForm):
             self.discount_code_settings = discount_code_settings
 
     def _validate_code(self, *args, **kwargs):
-        status = True
         code = self.data['code']
+        if code is None:
+            return True
 
         if len(code) != 0 and len(code) != 12:
             getattr(self, "code").errors.append(u"ご選択された席には適用できないクーポンです")
-            status = False
-
-        if not status:
             return False
 
-        available_settings = []
-        for setting in self.discount_code_settings:
-            if self.data['code'][:4] == setting.first_4_digits:
-                available_settings.append(setting)
-
-        if not available_settings:
+        if not any([setting for setting in self.discount_code_settings if code[:4] == setting.first_4_digits]):
             getattr(self, "code").errors.append(u"ご選択された席には適用できないクーポンです")
-            status = False
+            return False
 
-        return status
+        return True
 
     def validate(self):
         status = super(DiscountCodeForm, self).validate()
