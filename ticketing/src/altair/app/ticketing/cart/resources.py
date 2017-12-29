@@ -714,7 +714,7 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
 
     def create_codes_from_request(self, cart):
         from . import schemas
-        codes = [code for code in self.request.POST.getall('code') if code]
+        codes = [code.strip() for code in self.request.POST.getall('code') if code]
         if not codes:
             return []
 
