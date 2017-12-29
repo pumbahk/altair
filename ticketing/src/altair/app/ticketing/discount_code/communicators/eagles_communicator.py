@@ -103,7 +103,7 @@ class EaglesCommunicator(object):
             'coupons': [{'coupon_cd': 'EQWM7RFA7AGT'},{'coupon_cd': 'EEQT7CY7WP74'},{'coupon_cd': 'EEQTW3X3Q9LN'}]
         }
         """
-        resp_data = self._common_coupon_method(url_suffix="/coupon/confirm/status", data=data)
+        resp_data = self._coupon_common_method(url_suffix="/coupon/confirm/status", data=data)
         return resp_data
 
     def use_coupon(self, data):
@@ -114,7 +114,7 @@ class EaglesCommunicator(object):
             'coupons': [{'coupon_cd': 'EQWM7RFA7AGT'},{'coupon_cd': 'EEQT7CY7WP74'},{'coupon_cd': 'EEQTW3X3Q9LN'}]
         }
         """
-        resp_data = self._common_coupon_method(url_suffix="/coupon/coupon/use", data=data)
+        resp_data = self._coupon_common_method(url_suffix="/coupon/coupon/use", data=data)
         return resp_data
 
     def cancel_used_coupon(self, data):
@@ -124,5 +124,5 @@ class EaglesCommunicator(object):
             'coupons': [{'coupon_cd': 'EQWM7RFA7AGT'},{'coupon_cd': 'EEQT7CY7WP74'},{'coupon_cd': 'EEQTW3X3Q9LN'}]
         }
         """
-        resp_data = self._common_coupon_method(url_suffix="/coupon/cancel/used", data=data)
+        resp_data = self._coupon_common_method(url_suffix="/coupon/cancel/used", data=data)
         return resp_data
