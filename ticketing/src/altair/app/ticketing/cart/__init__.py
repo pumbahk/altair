@@ -431,6 +431,7 @@ def main(global_config, **local_config):
     config.include(setup_routes)
 
     config.include('.')
+    config.include('..discount_code.communicators')
     config.include('.view_context')
     config.include('.errors')
     config.include('.preview')
