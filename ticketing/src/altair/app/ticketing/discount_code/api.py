@@ -39,6 +39,13 @@ def get_used_discount_codes(order_like):
     return codes_list
 
 
+def check_used_discount_code(code):
+    return UsedDiscountCodeOrder.query.\
+        filter(UsedDiscountCodeOrder.code==code).\
+        filter(UsedDiscountCodeOrder.deleted_at==None).\
+        first()
+
+
 def get_used_discount_quantity(order_like):
     quantity = 0
     for item in order_like.items:

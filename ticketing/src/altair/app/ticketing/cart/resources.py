@@ -791,12 +791,17 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
         for code_dict in codes:
             form = code_dict['form']
             form.validate()
+
             # 重複コードバリデーション
             code = form.code.data
             if code in input_codes:
                 form.add_duplicate_code_error()
             else:
                 input_codes.append(code)
+
+            # 使用済みコードバリデーション
+            if discount_api.check_used_discount_code(code):
+                form.add_used_discount_code_error()
 
     def exist_validate_error(self, codes):
         for code_dict in codes:
