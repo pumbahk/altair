@@ -84,9 +84,10 @@
 																</p>
 															</td>
 															<td>
-																% for code in group['code']:
-																${code.code}<br/>
-																% endfor
+																<%
+																codes = [code.code for code in group['code']]
+																%>
+																${"<br/>".join(codes) |n}
 															</td>
 															<td>${len(group['code'])}枚</td>
 															<td class="align1 couponPrice">
