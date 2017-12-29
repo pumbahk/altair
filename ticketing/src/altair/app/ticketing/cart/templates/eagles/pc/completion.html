@@ -54,27 +54,36 @@ ${(view_context.embedded_html_complete_page or u'')|n}
       </tr>
       %endfor
       % if order.cart.discount_amount:
-      <tr id="commission">
-        <th scope="row">クーポン・割引コードご使用金額</th>
-        <td>
-          % for used_code in order.cart.used_discount_codes:
-          ${used_code.code}<br/>
-          % endfor
+      <tr>
+        <td colspan="">
+          <table class="couponTable">
+            <tr class="purchaseCouponTtl">
+              <td colspan="4">クーポン・割引コードご使用金額</td>
+            </tr>
+            % for index, group in enumerate(order.cart.used_discount_code_groups):
+            <tr class="purchaseCoupon${index}">
+              <td class="purchaseCouponTxt">
+                <p>
+                  ${group['discount_code_setting'].explanation |n}
+                </p>
+              </td>
+              <td>
+                <%
+                codes = [code.code for code in group['code']]
+                %>
+                ${"<br/>".join(codes) |n}
+              </td>
+              <td>${len(group['code'])}枚</td>
+              <td class="align1 couponPrice">
+                -￥${h.format_number(group['discount_price'])}
+              </td>
+            </tr>
+            % endfor
+          </table>
         </td>
-        <td>${order.cart.used_discount_quantity}枚</td>
-        <td class="align1" style="color: red;">-￥${h.format_number(order.cart.discount_amount)}</td>
       </tr>
-      % for setting in order.cart.used_discount_code_settings:
-      <tr id="commission">
-        <th scope="row">${setting.name}</th>
-        <td>
-          ${setting.explanation|n}
-        </td>
-        <td></td>
-        <td class="align1" style="color: red;"></td>
-      </tr>
-      % endfor
       % endif
+
 
       <tr id="commission">
         <th scope="row">決済手数料</th>
