@@ -787,9 +787,16 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
         return True
 
     def validate_discount_codes(self, codes):
+        input_codes = []
         for code_dict in codes:
             form = code_dict['form']
             form.validate()
+            # 重複コードバリデーション
+            code = form.code.data
+            if code in input_codes:
+                form.add_duplicate_code_error()
+            else:
+                input_codes.append(code)
 
     def exist_validate_error(self, codes):
         for code_dict in codes:

@@ -94,6 +94,10 @@ class DiscountCodeForm(OurForm):
 
         return True
 
+    def add_duplicate_code_error(self):
+        getattr(self, "code").errors.append(u"重複して入力されたクーポンです")
+        return False
+
     def validate(self):
         status = super(DiscountCodeForm, self).validate()
         status = self._validate_code() and status
