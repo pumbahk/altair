@@ -27,4 +27,6 @@ def includeme(config):
     config.add_route('discount_code.target_confirm', '/target/{setting_id}/confirm', factory=dct_factory)
     config.add_route('discount_code.target_register', '/target/{setting_id}/register', factory=dct_factory)
 
+    config.include('.communicators')
+
     config.scan('.')

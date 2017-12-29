@@ -68,6 +68,10 @@ altair.ticketing.cooperation.augus.tort = cooperation/ftp/augus/upload/test
 
 altair.mu.auth_key = ${altair:mu.auth_key}
 
+; altair.discount_code.eagles_communicator
+altair.discount_code.eagles_communicator.http_proxy = http://rdcproxy1-stg.1a.vpc.altr
+altair.discount_code.eagles_communicator.https_proxy = https://rdcproxy1-stg.1a.vpc.altr
+
 [app:ticketing_default]
 use = ticketing
 altair.ticketing.admin.authentication.challenge_view = altair.app.ticketing.views.default_challenge_view
