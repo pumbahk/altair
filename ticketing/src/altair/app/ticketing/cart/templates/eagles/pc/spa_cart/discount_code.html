@@ -74,10 +74,8 @@
                             <p>※一度使用したクーポン・割引コードは「使用済み」となり使えませんので、ご注意ください。<br/>
                                 ※購入希望席種の金額が高い順にクーポン・割引コードが適用されます。</p>
                         </div>
-                        <p class="align2 couponBtnNext">
-                            <image onclick="document.getElementById('form1').submit();"
-                                   src="${request.static_url('altair.app.ticketing.cart:static/eagles/pc/images/btn_next.gif')}"
-                                   alt="次へ" width="226" height="46"/>
+                        <p class="confirm-btnBox">
+                            <input class="btn btn-primary" type="button" value="次へ" onclick="$('#form1').submit()">
                         </p>
                     </div>
                 </div>
