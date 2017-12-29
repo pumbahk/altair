@@ -102,6 +102,27 @@ class CartURLPerformanceBuilder(object):
         path = self.build_path(performance)
         return _url_builder(scheme, host_name, path, {})
 
+
+@implementer(IURLBuilder)
+class SpaCartURLPerformanceBuilder(object):
+    def __init__(self, path_prefix):
+        self.path_prefix = path_prefix.rstrip("/")
+
+    def build_path(self, performance):
+        suffix = unicode(performance.id)
+        return u"{0}/{1}".format(self.path_prefix, suffix.lstrip("/"))
+
+    def build_hostname(self, request, organization):
+        return guess_host_name_from_request(request, organization=organization)
+
+    def build(self, request, performance, organization=None):
+        organization = organization or request.context.organization
+        scheme = _get_scheme_from_request(request)
+        host_name = self.build_hostname(request, organization)
+        path = self.build_path(performance)
+        return _url_builder(scheme, host_name, path, {})
+
+
 @implementer(IURLBuilder)
 class LotsCartURLBuilder(object):
     def __init__(self, path_prefix):
