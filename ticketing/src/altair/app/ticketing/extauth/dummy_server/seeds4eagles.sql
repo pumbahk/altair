@@ -51,7 +51,7 @@ INSERT INTO "EaglesMemberKind" (id, name) VALUES (10015, 'チーム福島');
 INSERT INTO "EaglesMemberKind" (id, name) VALUES (10016, 'スクールFC');
 INSERT INTO "EaglesMemberKind" (id, name) VALUES (10017, 'スタメン');
 INSERT INTO "EaglesUser" (id, name, openid_claimed_id, member_no) VALUES(0,'user00','https://myid.rakuten.co.jp/openid/user/75Gm1XuC3F3VWwRs1pN0IQ==', '0000-0000-0000-0000');
-INSERT INTO "EaglesUser" (id, name, openid_claimed_id, member_no) VALUES(1,'user01','https://myid.rakuten.co.jp/openid/user/7KtaSulpTdTCm6crf7iL20OzA==', '0000-0000-0000-0001');
+INSERT INTO "EaglesUser" (id, name, openid_claimed_id, member_no) VALUES(1,'user01','https://myid.rakuten.co.jp/openid/user/7KtaSulpTdTCm6crf7iL20OzA==', '0000-0000-0000-0001'); -- ログインID:　tickettestusers+1 パスワード: rakuten
 INSERT INTO "EaglesUser" (id, name, openid_claimed_id, member_no) VALUES(2,'user02','https://myid.rakuten.co.jp/openid/user/Hpv5eXl5JI8CrYM3P5yjcQ==', '0000-0000-0000-0002');
 INSERT INTO "EaglesUser" (id, name, openid_claimed_id, member_no) VALUES(3,'user03','https://myid.rakuten.co.jp/openid/user/bIMWmxINsJTVWwRs1pN0IQ==', '0000-0000-0000-0003');
 INSERT INTO "EaglesUser" (id, name, openid_claimed_id, member_no) VALUES(4,'user04','https://myid.rakuten.co.jp/openid/user/bIMWmxINsJRMhZac1O32cQ==', '0000-0000-0000-0004');
