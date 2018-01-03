@@ -1469,9 +1469,10 @@ class DiscountCodeEnteringView(object):
 
         from ..discount_code.communicators.utils import get_communicator
         comm = get_communicator(self.request, 'eagles')
+        fc_member_id = self.request.altair_auth_info['auth_identifier']
         data = {
             'usage_type': '1010',
-            'fc_member_id': '1222984',
+            'fc_member_id': fc_member_id,
             'coupons': [{'coupon_cd': 'EEQT00000001'}, {'coupon_cd': 'EEQT00000002'}, {'coupon_cd': 'EEQT00000003'}]
         }
         result = comm.confirm_coupon_status(data)
