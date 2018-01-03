@@ -3,6 +3,7 @@ BEGIN TRANSACTION;
 
 DROP TABLE IF EXISTS EaglesMemberKind;
 DROP TABLE IF EXISTS EaglesMemberShip;
+DROP TABLE IF EXISTS EaglesCoupon;
 DROP TABLE IF EXISTS EaglesUser;
 
 CREATE TABLE "EaglesMemberKind" (
@@ -21,6 +22,16 @@ created_at DATETIME,
 PRIMARY KEY (id),
 FOREIGN KEY(user_id) REFERENCES "EaglesUser" (id) ON DELETE CASCADE,
 FOREIGN KEY(kind_id) REFERENCES "EaglesMemberKind" (id) ON DELETE CASCADE
+);
+CREATE TABLE "EaglesCoupon" (
+id INTEGER NOT NULL,
+user_id INTEGER NOT NULL,
+code VARCHAR(12) NOT NULL,
+name VARCHAR(255) NOT NULL,
+available_flg NUMERIC(1) NOT NULL,
+PRIMARY KEY (id),
+FOREIGN KEY(user_id) REFERENCES "EaglesUser" (id) ON DELETE CASCADE,
+UNIQUE (code)
 );
 CREATE TABLE "EaglesUser" (
 id INTEGER NOT NULL,
@@ -110,5 +121,11 @@ INSERT INTO "EaglesMembership" (membership_id, user_id, kind_id, valid_since, ex
 INSERT INTO "EaglesMembership" (membership_id, user_id, kind_id, valid_since, expire_at) VALUES('0000037',19,10001,'2015-01-01 00:00:00.000000','2017-01-01 00:00:00.000000');
 INSERT INTO "EaglesMembership" (membership_id, user_id, kind_id, valid_since, expire_at) VALUES('0000038',20,10002,'2015-01-01 00:00:00.000000','2017-01-01 00:00:00.000000');
 INSERT INTO "EaglesMembership" (membership_id, user_id, kind_id, valid_since, expire_at) VALUES('0000039',20,10003,'2015-01-01 00:00:00.000000','2017-01-01 00:00:00.000000');
+INSERT INTO "EaglesCoupon" (user_id, code, name, available_flg) VALUES(1, 'EEQT00000001', 'ダミークーポン01', 1);
+INSERT INTO "EaglesCoupon" (user_id, code, name, available_flg) VALUES(1, 'EEQT00000002', 'ダミークーポン01', 1);
+INSERT INTO "EaglesCoupon" (user_id, code, name, available_flg) VALUES(1, 'EEQT00000003', 'ダミークーポン01', 0);
+INSERT INTO "EaglesCoupon" (user_id, code, name, available_flg) VALUES(2, 'EEQT00000004', 'ダミークーポン01', 1);
+INSERT INTO "EaglesCoupon" (user_id, code, name, available_flg) VALUES(2, 'EEQT00000005', 'ダミークーポン01', 1);
+INSERT INTO "EaglesCoupon" (user_id, code, name, available_flg) VALUES(2, 'EEQT00000006', 'ダミークーポン01', 0);
 UPDATE EaglesMembership set expire_at = '2030-01-01 00:00:00.000000';
 COMMIT;

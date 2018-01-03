@@ -46,6 +46,16 @@ class EaglesMembership(Base):
     user = orm.relationship('EaglesUser', backref='memberships')
     kind = orm.relationship('EaglesMemberKind', backref='memberships')
 
+
+class EaglesCoupon(Base):
+    __tablename__ = 'EaglesCoupon'
+    id = sa.Column(sa.Integer, autoincrement=True, primary_key=True, nullable=False)
+    user_id = sa.Column(sa.Integer(), sa.ForeignKey('EaglesCoupon.id', ondelete='CASCADE'), nullable=False)
+    code = sa.Column(sa.Unicode(255), unique=True, nullable=False)
+    name = sa.Column(sa.Unicode(255), unique=True, nullable=False)
+    available_flg = sa.Column(sa.BOOLEAN(), default=1, nullable=False)
+
+
 class VisselUser(Base):
     __tablename__ = 'VisselUser'
     id = sa.Column(sa.Integer(), primary_key=True, autoincrement=True)

@@ -1,12 +1,15 @@
 # encoding: UTF-8
 
+import json
+
 import logging
 from datetime import datetime
 from pyramid.view import view_defaults, view_config
 from pyramid.decorator import reify
 from sqlalchemy import orm
 import sqlalchemy as sa
-from .models import EaglesUser, EaglesMembership, VisselUser, VisselMembership
+from pyramid.response import Response
+from .models import EaglesUser, EaglesMembership, VisselUser, VisselMembership, EaglesCoupon
 from .interfaces import IRequestHandler
 from .exceptions import BadRequestError
 
@@ -115,3 +118,47 @@ class ExtauthCheckMembershipAPI(object):
             return self.eagles_user_profile()
         elif self.request.params['client_name'] == 'visselticket':
             return self.vissel_user_profile()
+
+
+@view_defaults(renderer='json')
+class EaglesDiscountCodeAPI(object):
+    def __init__(self, context, request):
+        self.context = context
+        self.request = request
+
+    @view_config(route_name='extauth_dummy.confirm_coupon_status')
+    def eagles_confirm_coupon_status(self):
+        # 開発リソース不足のため、ハッシュのチェックは作成できていません。
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%s")
+        client_name = self.request.POST['client_name']
+        token = self.request.POST['token']
+        confirmation_condition = json.loads(self.request.POST['confirmation_condition'])
+
+        resp_data = {
+            'status': 'OK',
+            'timestamp': timestamp,
+            'usage_type': 1010,
+            'fc_member_id': confirmation_condition['fc_member_id'],
+            'coupons': []
+        }
+
+        for req_coupon in confirmation_condition['coupons']:
+            coupon = self.request.sa_session.query(EaglesCoupon) \
+                .filter(EaglesCoupon.code == req_coupon['coupon_cd']) \
+                .one()
+
+            add_list = {
+                'coupon_cd': coupon.code,
+                'coupon_type': 1010,
+                'name': coupon.name,
+                'available_flg': coupon.available_flg,
+                'reason_cd': 1010 if coupon.available_flg else 1030
+            }
+
+            resp_data['coupons'].append(add_list)
+
+        return Response(
+            content_type='application/json',
+            charset='utf-8',
+            text=json.dumps(resp_data, ensure_ascii=False)
+        )
