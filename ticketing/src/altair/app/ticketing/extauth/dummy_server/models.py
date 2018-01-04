@@ -53,7 +53,7 @@ class EaglesCoupon(Base):
     user_id = sa.Column(sa.Integer(), sa.ForeignKey('EaglesCoupon.id', ondelete='CASCADE'), nullable=False)
     code = sa.Column(sa.Unicode(255), unique=True, nullable=False)
     name = sa.Column(sa.Unicode(255), unique=True, nullable=False)
-    available_flg = sa.Column(sa.BOOLEAN(), default=1, nullable=False)
+    available_flg = sa.Column(sa.Integer(), default=1, nullable=False)
 
 
 class VisselUser(Base):

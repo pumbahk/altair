@@ -7,6 +7,7 @@ from datetime import datetime
 from pyramid.view import view_defaults, view_config
 from pyramid.decorator import reify
 from sqlalchemy import orm
+from sqlalchemy.orm.exc import NoResultFound
 import sqlalchemy as sa
 from pyramid.response import Response
 from .models import EaglesUser, EaglesMembership, VisselUser, VisselMembership, EaglesCoupon
@@ -122,13 +123,15 @@ class ExtauthCheckMembershipAPI(object):
 
 @view_defaults(renderer='json')
 class EaglesDiscountCodeAPI(object):
+    # TODO ハッシュのチェック。
+
     def __init__(self, context, request):
         self.context = context
         self.request = request
 
     @view_config(route_name='extauth_dummy.confirm_coupon_status')
     def eagles_confirm_coupon_status(self):
-        # 開発リソース不足のため、ハッシュのチェックは作成できていません。
+        # TODO fc_member_idのチェック。
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%s")
         client_name = self.request.POST['client_name']
         token = self.request.POST['token']
@@ -137,25 +140,35 @@ class EaglesDiscountCodeAPI(object):
         resp_data = {
             'status': 'OK',
             'timestamp': timestamp,
-            'usage_type': 1010,
+            'usage_type': '1010',
             'fc_member_id': confirmation_condition['fc_member_id'],
             'coupons': []
         }
 
         for req_coupon in confirmation_condition['coupons']:
-            coupon = self.request.sa_session.query(EaglesCoupon) \
-                .filter(EaglesCoupon.code == req_coupon['coupon_cd']) \
-                .one()
+            try:
+                coupon = self.request.sa_session.query(EaglesCoupon) \
+                    .filter(EaglesCoupon.code == req_coupon['coupon_cd']) \
+                    .one()
 
-            add_list = {
-                'coupon_cd': coupon.code,
-                'coupon_type': 1010,
-                'name': coupon.name,
-                'available_flg': coupon.available_flg,
-                'reason_cd': 1010 if coupon.available_flg else 1030
-            }
+                add_dict = {
+                    'coupon_cd': coupon.code,
+                    'coupon_type': '1010',
+                    'name': coupon.name,
+                    'available_flg': coupon.available_flg,
+                    'reason_cd': '1010' if coupon.available_flg else '1030'
+                }
 
-            resp_data['coupons'].append(add_list)
+            except NoResultFound:
+                add_dict = {
+                    'coupon_cd': req_coupon['coupon_cd'],
+                    'coupon_type': '',
+                    'name': '',
+                    'available_flg': '0',
+                    'reason_cd': '2010'
+                }
+
+            resp_data['coupons'].append(add_dict)
 
         return Response(
             content_type='application/json',
