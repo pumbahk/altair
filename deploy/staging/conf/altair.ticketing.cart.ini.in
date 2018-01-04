@@ -80,6 +80,7 @@ dogpile_cache.altair_oauth_auth_plugin_metadata.arguments.db = 6
 ;sej.api_key = 1001
 
 ; altair.discount_code.eagles_communicator
+; （ローカル環境の場合は.iniファイル側をlocalhost:58080に書き直してください）
 altair.discount_code.eagles_communicator.http_proxy = http://rdcproxy1-stg.1a.vpc.altr
 altair.discount_code.eagles_communicator.https_proxy = https://rdcproxy1-stg.1a.vpc.altr
 
