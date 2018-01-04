@@ -82,12 +82,21 @@ class EaglesCommunicator(object):
         first_token = data['coupons'][0]['coupon_cd']
         token = self._create_token(first_token)
 
-        confirmation_condition = json.dumps(data)
+        json_data = json.dumps(data)
+
+        if url_suffix == "/coupon/confirm/status":
+            data_key = 'confirmation_condition'
+        elif url_suffix == "/coupon/use":
+            data_key = 'usage_coupons'
+        elif url_suffix == "/coupon/cancel/used":
+            data_key = 'used_coupons'
+        else:
+            raise ValueError('url_suffix is not set correctly.')
 
         post_data = {
             "client_name": self.client_name,
             "token": token,
-            "confirmation_condition": confirmation_condition
+            data_key: json_data
         }
 
         url = self.endpoint_base + url_suffix
@@ -114,7 +123,7 @@ class EaglesCommunicator(object):
             'coupons': [{'coupon_cd': 'EQWM7RFA7AGT'},{'coupon_cd': 'EEQT7CY7WP74'},{'coupon_cd': 'EEQTW3X3Q9LN'}]
         }
         """
-        resp_data = self._coupon_common_method(url_suffix="/coupon/coupon/use", data=data)
+        resp_data = self._coupon_common_method(url_suffix="/coupon/use", data=data)
         return resp_data
 
     def cancel_used_coupon(self, data):

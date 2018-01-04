@@ -50,19 +50,19 @@ from . import api
 from . import helpers as h
 from . import schemas
 from . import forms_i18n
-from .api import set_rendered_event, is_smartphone, is_point_input_required, is_fc_auth_organization, set_spa_access\
+from .api import set_rendered_event, is_smartphone, is_point_input_required, is_fc_auth_organization, set_spa_access \
     , delete_spa_access, is_spa_mode
 from altair.mobile.api import set_we_need_pc_access, set_we_invalidate_pc_access
 from .reserving import InvalidSeatSelectionException, NotEnoughAdjacencyException
 from .stocker import InvalidProductSelectionException, NotEnoughStockException
 from .rendering import selectable_renderer
 from .view_support import (
-IndexViewMixin,
-get_amount_without_pdmp,
-get_seat_type_dicts,
-assert_quantity_within_bounds,
-build_dynamic_form,
-filter_extra_form_schema,
+    IndexViewMixin,
+    get_amount_without_pdmp,
+    get_seat_type_dicts,
+    assert_quantity_within_bounds,
+    build_dynamic_form,
+    filter_extra_form_schema,
     get_extra_form_data_pair_pairs,
     back,
     back_to_top,
@@ -70,7 +70,7 @@ filter_extra_form_schema,
     is_booster_or_fc_cart_pred,
     is_fc_cart_pred,
     render_view_to_response_with_derived_request,
-    )
+)
 from .exceptions import (
     NoSalesSegment,
     NoCartError,
@@ -89,13 +89,14 @@ from .exceptions import (
     PerProductProductQuantityOutOfBoundsError,
     CompletionPageNotRenderered,
 )
-from .resources import EventOrientedTicketingCartResource, PerformanceOrientedTicketingCartResource,\
+from .resources import EventOrientedTicketingCartResource, PerformanceOrientedTicketingCartResource, \
     CompleteViewTicketingCartResource
 from .limiting import LimiterDecorators
 from . import flow
 from .interfaces import IPageFlowPredicate, IPageFlowAction
 from altair.app.ticketing.i18n import custom_locale_negotiator
 from functools import partial
+
 logger = logging.getLogger(__name__)
 
 limiter = LimiterDecorators('altair.cart.limit_per_unit_time', TooManyCartsCreated)
@@ -112,16 +113,19 @@ def back_to_product_list_for_mobile(request):
             sales_segment_id=cart.sales_segment_id,
             seat_type_id=cart.items[0].product.items[0].stock.stock_type_id))
 
+
 def check_auth_for_spa(fn):
     def _check(context, request):
         user = context.authenticated_user()
         return fn(context, request)
+
     return _check
 
 
 @view_defaults(decorator=check_auth_for_spa, xhr=False, permission="buy")
 class SpaCartIndexView(IndexViewMixin):
     """ Angular2カート """
+
     def __init__(self, context, request):
         IndexViewMixin.__init__(self)
         self.context = context
@@ -144,7 +148,9 @@ class SpaCartIndexView(IndexViewMixin):
 
         if not is_spa_mode(self.request):
             response = set_spa_access(self.request.response)
-            return HTTPFound(headers=response.headers, location=self.request.route_url('cart.spa.index', performance_id=self.context.performance.id, anything=""))
+            return HTTPFound(headers=response.headers, location=self.request.route_url('cart.spa.index',
+                                                                                       performance_id=self.context.performance.id,
+                                                                                       anything=""))
         return {}
 
 
@@ -155,24 +161,29 @@ def flow_predicate_extra_form(pe, flow_context, context, request):
         filter_extra_form_schema(
             context.sales_segment.setting.extra_form_fields,
             mode='entry'
-            )
         )
+    )
+
 
 @provider(IPageFlowPredicate)
 def flow_predicate_point_input_required(pe, flow_context, context, request):
     return is_point_input_required(context, request)
 
+
 @provider(IPageFlowPredicate)
 def flow_predicate_prepared(pe, flow_context, context, request):
     return flow_context['prepared']
+
 
 @provider(IPageFlowPredicate)
 def flow_predicate_non_booster_cart(pe, flow_context, context, request):
     return not is_booster_or_fc_cart_pred(context, request)
 
+
 @provider(IPageFlowPredicate)
 def flow_predicate_fc_cart(pe, flow_context, context, request):
     return is_fc_cart_pred(context, request)
+
 
 @implementer(flow.IPageFlowAction)
 class PaymentAction(flow.PageFlowActionBase):
@@ -188,7 +199,7 @@ class PaymentAction(flow.PageFlowActionBase):
 
 # 画面フローの定義
 flow_graph = flow.PageFlowGraph(
-    flow_context_factory=lambda context, request: { 'prepared': False },
+    flow_context_factory=lambda context, request: {'prepared': False},
     actions=[
         # 購入者情報 => ポイント入力
         flow.SimpleTransitionAction(
@@ -197,18 +208,18 @@ flow_graph = flow.PageFlowGraph(
                 flow.RouteIs('cart.payment'),
                 flow.Not(flow_predicate_extra_form),
                 flow_predicate_point_input_required,
-                ],
+            ],
             route_name='cart.point'
-            ),
+        ),
         # 追加情報入力 => ポイント入力
         flow.SimpleTransitionAction(
             # 遷移条件
             predicates=[
                 flow.RouteIs('cart.extra_form'),
                 flow_predicate_point_input_required,
-                ],
+            ],
             route_name='cart.point'
-            ),
+        ),
         # 購入者情報 => 追加情報入力
         flow.SimpleTransitionAction(
             # 遷移条件
@@ -216,9 +227,9 @@ flow_graph = flow.PageFlowGraph(
                 flow.RouteIs('cart.payment'),
                 flow_predicate_extra_form,
                 flow_predicate_non_booster_cart,
-                ],
+            ],
             route_name='cart.extra_form'
-            ),
+        ),
         # 購入者情報 => 決済情報入力
         PaymentAction(
             # 遷移条件
@@ -228,8 +239,8 @@ flow_graph = flow.PageFlowGraph(
                 flow.Not(flow_predicate_point_input_required),
                 flow.Not(flow_predicate_extra_form),
                 flow.Not(flow_predicate_fc_cart),
-                ]
-            ),
+            ]
+        ),
         # 入会カートでの購入者情報 => 決済情報入力
         PaymentAction(
             # 遷移条件
@@ -238,8 +249,8 @@ flow_graph = flow.PageFlowGraph(
                 flow.Not(flow_predicate_prepared),
                 flow.Not(flow_predicate_point_input_required),
                 flow_predicate_fc_cart
-                ]
-            ),
+            ]
+        ),
         # ポイント入力 => 決済情報入力
         PaymentAction(
             # 遷移条件
@@ -247,8 +258,8 @@ flow_graph = flow.PageFlowGraph(
                 flow.RouteIs('cart.point'),
                 flow.Not(flow_predicate_prepared),
                 flow_predicate_point_input_required,
-                ]
-            ),
+            ]
+        ),
         # 追加情報入力 => 決済情報入力
         PaymentAction(
             # 遷移条件
@@ -256,18 +267,19 @@ flow_graph = flow.PageFlowGraph(
                 flow.RouteIs('cart.extra_form'),
                 flow.Not(flow_predicate_prepared),
                 flow.Not(flow_predicate_point_input_required),
-                ]
-            ),
+            ]
+        ),
         # 決済情報入力 => 確認画面
         flow.SimpleTransitionAction(
             # 遷移条件
             predicates=[
                 flow_predicate_prepared,
-                ],
+            ],
             route_name='payment.confirm'
-            ),
-        ]
-    )
+        ),
+    ]
+)
+
 
 @view_defaults(
     route_name='cart.agreement',
@@ -276,6 +288,7 @@ flow_graph = flow.PageFlowGraph(
     xhr=False, permission="buy")
 class PerEventAgreementView(IndexViewMixin):
     """ 規約表示画面 """
+
     def __init__(self, context, request):
         self.context = context
         self.request = request
@@ -306,7 +319,8 @@ class PerEventAgreementView(IndexViewMixin):
                 selected_sales_segment = sales_segments[0]
 
         if not selected_sales_segment.setting.disp_agreement:
-            return HTTPFound(self.request.route_url('cart.index', event_id=self.context.event.id, _query=self.request.GET))
+            return HTTPFound(
+                self.request.route_url('cart.index', event_id=self.context.event.id, _query=self.request.GET))
         return dict(agreement_body=Markup(selected_sales_segment.setting.agreement_body))
 
     @lbr_view_config(request_method="POST")
@@ -316,7 +330,8 @@ class PerEventAgreementView(IndexViewMixin):
             self.request.session.flash(self._message(u"内容を同意の上、チェックを入れてください。"))
             return HTTPFound(self.request.current_route_path(_query=self.request.GET))
         else:
-            return HTTPFound(self.request.route_url('cart.index', event_id=self.context.event.id, _query=self.request.GET))
+            return HTTPFound(
+                self.request.route_url('cart.index', event_id=self.context.event.id, _query=self.request.GET))
 
 
 @view_defaults(
@@ -326,6 +341,7 @@ class PerEventAgreementView(IndexViewMixin):
     xhr=False, permission="buy")
 class PerPerformanceAgreementView(object):
     """ 規約表示画面 """
+
     def __init__(self, context, request):
         self.context = context
         self.request = request
@@ -336,8 +352,10 @@ class PerPerformanceAgreementView(object):
         sales_segments = self.context.available_sales_segments
         selected_sales_segment = sales_segments[0]
         if not selected_sales_segment.setting.disp_agreement:
-            return HTTPFound(self.request.route_url('cart.index2', performance_id=self.context.performance.id, _query=self.request.GET))
-        return dict(performance=self.context.performance, agreement_body=Markup(selected_sales_segment.setting.agreement_body))
+            return HTTPFound(self.request.route_url('cart.index2', performance_id=self.context.performance.id,
+                                                    _query=self.request.GET))
+        return dict(performance=self.context.performance,
+                    agreement_body=Markup(selected_sales_segment.setting.agreement_body))
 
     @lbr_view_config(request_method="POST")
     def post(self):
@@ -346,19 +364,22 @@ class PerPerformanceAgreementView(object):
             self.request.session.flash(self._message(u"内容を同意の上、チェックを入れてください。"))
             return HTTPFound(self.request.current_route_path(_query=self.request.GET))
         else:
-            return HTTPFound(self.request.route_url('cart.index2', performance_id=self.context.performance.id, _query=self.request.GET))
+            return HTTPFound(self.request.route_url('cart.index2', performance_id=self.context.performance.id,
+                                                    _query=self.request.GET))
 
 
 @view_defaults(xhr=False, permission="buy")
 class CompatAgreementView(object):
     """ 規約表示画面 """
+
     def __init__(self, context, request):
         self.context = context
         self.request = request
 
     @lbr_view_config(request_method="GET", route_name='cart.agreement.compat')
     def get_agreement(self):
-        return HTTPMovedPermanently(self.request.route_path('cart.agreement', _query=self.request.GET, **self.request.matchdict))
+        return HTTPMovedPermanently(
+            self.request.route_path('cart.agreement', _query=self.request.GET, **self.request.matchdict))
 
     @lbr_view_config(request_method="POST", route_name='cart.agreement.compat')
     def post_agreement(self):
@@ -366,7 +387,8 @@ class CompatAgreementView(object):
 
     @lbr_view_config(request_method="GET", route_name='cart.agreement2.compat')
     def get_agreement2(self):
-        return HTTPMovedPermanently(self.request.route_path('cart.agreement2', _query=self.request.GET, **self.request.matchdict))
+        return HTTPMovedPermanently(
+            self.request.route_path('cart.agreement2', _query=self.request.GET, **self.request.matchdict))
 
     @lbr_view_config(request_method="POST", route_name='cart.agreement2.compat')
     def post_agreement2(self):
@@ -379,8 +401,9 @@ def jump_maintenance_page_for_trouble(organization):
     有効にしたら、指定したORGだけ公開し、それ以外をメンテナンス画面に飛ばす
     """
     return
-    #if organization is None or organization.code not in ['RT', 'ZZ', 'KE', 'KT', 'JC', 'PC', 'TH', 'YT', 'OG', 'TC', 'SC', '89', 'IB', 'NH', 'BT', 'VV', 'TS', 'KH', 'TG', 'CR', 'VS', 'LS', 'FC', 'BA', 'RE', 'VK', 'RK']:
+    # if organization is None or organization.code not in ['RT', 'ZZ', 'KE', 'KT', 'JC', 'PC', 'TH', 'YT', 'OG', 'TC', 'SC', '89', 'IB', 'NH', 'BT', 'VV', 'TS', 'KH', 'TG', 'CR', 'VS', 'LS', 'FC', 'BA', 'RE', 'VK', 'RK']:
     #    raise HTTPFound('/maintenance.html')
+
 
 def create_event_dict(view, performance_id, sales_segments, i18n=False):
     try:
@@ -420,14 +443,14 @@ def create_event_dict(view, performance_id, sales_segments, i18n=False):
             sales_end_on=sales_end_on,
             venues=set([performance.venue.name]),
             product=view.context.event.products
-            )
+        )
 
     if i18n:
-        sales_start_on=unicode(view.context.event.sales_start_on.strftime("%Y/%m/%d %H:%M").decode("utf-8"))
-        sales_end_on=unicode(view.context.event.sales_end_on.strftime("%Y/%m/%d %H:%M").decode("utf-8"))
+        sales_start_on = unicode(view.context.event.sales_start_on.strftime("%Y/%m/%d %H:%M").decode("utf-8"))
+        sales_end_on = unicode(view.context.event.sales_end_on.strftime("%Y/%m/%d %H:%M").decode("utf-8"))
     else:
-        sales_start_on=unicode(view.context.event.sales_start_on.strftime("%Y年%m月%d日 %H:%M").decode("utf-8"))
-        sales_end_on=unicode(view.context.event.sales_end_on.strftime("%Y年%m月%d日 %H:%M").decode("utf-8"))
+        sales_start_on = unicode(view.context.event.sales_start_on.strftime("%Y年%m月%d日 %H:%M").decode("utf-8"))
+        sales_end_on = unicode(view.context.event.sales_end_on.strftime("%Y年%m月%d日 %H:%M").decode("utf-8"))
 
     return dict(
         id=view.context.event.id,
@@ -436,13 +459,15 @@ def create_event_dict(view, performance_id, sales_segments, i18n=False):
         abbreviated_title=view.context.event.abbreviated_title,
         sales_start_on=sales_start_on,
         sales_end_on=sales_end_on,
-        venues=set(p.venue.name for p in view.context.event.performances if p.public==True),
+        venues=set(p.venue.name for p in view.context.event.performances if p.public == True),
         product=view.context.event.products
-        )
+    )
+
 
 @view_defaults(decorator=(with_jquery + with_jquery_tools).not_when(mobile_request), xhr=False, permission="buy")
 class RecaptchaView(IndexViewMixin):
     """ Recaptcha画面 """
+
     def __init__(self, context, request):
         IndexViewMixin.__init__(self)
         self.context = context
@@ -494,12 +519,15 @@ class RecaptchaView(IndexViewMixin):
         recaptcha = self.request.POST.get('g-recaptcha-response', None)
         if recaptcha:
             param = {'g-recaptcha-response': recaptcha}
-            return HTTPFound(self.request.route_url('cart.index2', performance_id=self.context.performance.id, _query=param))
+            return HTTPFound(
+                self.request.route_url('cart.index2', performance_id=self.context.performance.id, _query=param))
         return dict(sitekey=self.context.recaptcha_sitekey)
+
 
 @view_defaults(decorator=(with_jquery + with_jquery_tools).not_when(mobile_request), xhr=False, permission="buy")
 class IndexView(IndexViewMixin):
     """ 座席選択画面 """
+
     def __init__(self, context, request):
         IndexViewMixin.__init__(self)
         self.context = context
@@ -507,10 +535,10 @@ class IndexView(IndexViewMixin):
         self.prepare()
 
     @lbr_view_config(route_name='cart.index',
-                 renderer=selectable_renderer("index.html"))
+                     renderer=selectable_renderer("index.html"))
     @lbr_view_config(route_name='cart.index',
-                 request_type="altair.mobile.interfaces.ISmartphoneRequest",
-                 renderer=selectable_renderer("index.html"))
+                     request_type="altair.mobile.interfaces.ISmartphoneRequest",
+                     renderer=selectable_renderer("index.html"))
     def event_based_landing_page(self):
         jump_maintenance_page_for_trouble(self.request.organization)
         if is_spa_mode(self.request):
@@ -527,7 +555,7 @@ class IndexView(IndexViewMixin):
 
         performance_selector = api.get_performance_selector(self.request, selector_name)
         sales_segments_selection = performance_selector()
-        #logger.debug("sales_segments: %s" % sales_segments_selection)
+        # logger.debug("sales_segments: %s" % sales_segments_selection)
 
         selected_sales_segment = None
         preferred_performance = None
@@ -538,7 +566,7 @@ class IndexView(IndexViewMixin):
                 return sales_segments_selection[0][1][0]
 
             first_ss_id = get_first_selection_obj(sales_segments_selection).get('id')
-            ss_filtered_by_id = filter(lambda ss:ss.id==first_ss_id, sales_segments)
+            ss_filtered_by_id = filter(lambda ss: ss.id == first_ss_id, sales_segments)
             selected_sales_segment = ss_filtered_by_id[0] if ss_filtered_by_id else sales_segments[0]
         else:
             # パフォーマンスIDから販売区分の解決を試みる
@@ -582,14 +610,14 @@ class IndexView(IndexViewMixin):
             second_selection_label=performance_selector.second_label,
             preferred_performance=preferred_performance,
             performance=performance_id
-            )
+        )
 
     # パフォーマンスベースのランディング画面
     @lbr_view_config(route_name='cart.index2',
-                 renderer=selectable_renderer("index.html"))
+                     renderer=selectable_renderer("index.html"))
     @lbr_view_config(route_name='cart.index2',
-                 request_type="altair.mobile.interfaces.ISmartphoneRequest",
-                 renderer=selectable_renderer("index.html"))
+                     request_type="altair.mobile.interfaces.ISmartphoneRequest",
+                     renderer=selectable_renderer("index.html"))
     def performance_based_landing_page(self):
         jump_maintenance_page_for_trouble(self.request.organization)
         if is_spa_mode(self.request):
@@ -600,7 +628,7 @@ class IndexView(IndexViewMixin):
 
         performance_selector = api.get_performance_selector(self.request, selector_name)
         sales_segments_selection = performance_selector()
-        #logger.debug("sales_segments: %s" % sales_segments_selection)
+        # logger.debug("sales_segments: %s" % sales_segments_selection)
 
         set_rendered_event(self.request, self.context.event)
 
@@ -609,10 +637,12 @@ class IndexView(IndexViewMixin):
         if self.request.organization.setting.recaptcha:
             recaptcha = self.request.GET.get('g-recaptcha-response')
             if not self.context.check_recaptch(recaptcha):
-                return HTTPFound(self.request.route_url('cart.index2.recaptcha', performance_id=self.context.performance.id) or '/')
+                return HTTPFound(
+                    self.request.route_url('cart.index2.recaptcha', performance_id=self.context.performance.id) or '/')
 
         return dict(
-            event=create_event_dict(self, self.request.matchdict['performance_id'], sales_segments, self.request.organization.setting.i18n),
+            event=create_event_dict(self, self.request.matchdict['performance_id'], sales_segments,
+                                    self.request.organization.setting.i18n),
             dates=sorted(list(set([p.start_on.strftime("%Y-%m-%d %H:%M") for p in self.context.event.performances]))),
             cart_release_url=self.request.route_url('cart.release'),
             cart_i18n_url=self.request.route_url('cart.i18n'),
@@ -625,7 +655,7 @@ class IndexView(IndexViewMixin):
             selection_label=performance_selector.label,
             second_selection_label=performance_selector.second_label,
             preferred_performance=None
-            )
+        )
 
 
 @view_defaults(xhr=True, permission="buy", renderer="json")
@@ -648,7 +678,8 @@ class IndexAjaxView(object):
                         headers['response-content-encoding'] = 'gzip'
                     cache_minutes = 30
                     expire_date = datetime.now() + timedelta(minutes=cache_minutes)
-                    expire_date = expire_date.replace(minute=(expire_date.minute/cache_minutes*cache_minutes), second=0)
+                    expire_date = expire_date.replace(minute=(expire_date.minute / cache_minutes * cache_minutes),
+                                                      second=0)
                     expire_epoch = time.mktime(expire_date.timetuple())
                     url = key.generate_url(expires_in=expire_epoch, expires_in_absolute=True, response_headers=headers)
                 else:
@@ -663,13 +694,14 @@ class IndexAjaxView(object):
 
     @lbr_view_config(route_name='cart.seat_types2')
     def get_seat_types(self):
-        sales_segment = self.context.sales_segment # XXX: matchdict から取得していることを期待
+        sales_segment = self.context.sales_segment  # XXX: matchdict から取得していることを期待
 
         order_separate_seats_url = u''
         organization = api.get_organization(self.request)
         if organization.setting.entrust_separate_seats:
             qs = {'separate_seats': 'true'}
-            order_separate_seats_url = self.request.route_url('cart.order', sales_segment_id=sales_segment.id, _query=qs)
+            order_separate_seats_url = self.request.route_url('cart.order', sales_segment_id=sales_segment.id,
+                                                              _query=qs)
 
         seat_type_dicts = get_seat_type_dicts(self.request, sales_segment)
 
@@ -687,17 +719,17 @@ class IndexAjaxView(object):
                         performance_id=sales_segment.performance_id,
                         sales_segment_id=sales_segment.id,
                         _query=dict(seat_type_id=_dict['id'])
-                        ),
+                    ),
                     seats_url2=self.request.route_url(
                         'cart.seats',
                         performance_id=sales_segment.performance_id,
                         sales_segment_id=sales_segment.id,
                         _query=dict(stock_id='__stock_id__')
-                        ),
+                    ),
                     **_dict
-                    )
+                )
                 for _dict in seat_type_dicts
-                ],
+            ],
             event_name=sales_segment.performance.event.title,
             performance_name=sales_segment.performance.name,
             performance_start=h.performance_date(sales_segment.performance, self.request.organization.setting.i18n),
@@ -720,18 +752,18 @@ class IndexAjaxView(object):
                     'cart.info',
                     performance_id=sales_segment.performance_id,
                     sales_segment_id=sales_segment.id,
-                    ),
+                ),
                 seats=self.request.route_url(
                     'cart.seats',
                     performance_id=sales_segment.performance_id,
                     sales_segment_id=sales_segment.id,
-                    ),
+                ),
                 seat_adjacencies=self.request.application_url \
-                    + api.get_route_pattern(
-                      self.request.registry,
-                      'cart.seat_adjacencies')
-                )
+                                 + api.get_route_pattern(
+                    self.request.registry,
+                    'cart.seat_adjacencies')
             )
+        )
         return data
 
     @lbr_view_config(route_name='cart.products')
@@ -754,21 +786,21 @@ class IndexAjaxView(object):
 
         return dict(
             areas=dict(
-                (area.id, { 'id': area.id, 'name': area.name })\
+                (area.id, {'id': area.id, 'name': area.name}) \
                 for area in slave_session.query(c_models.VenueArea) \
-                            .join(c_models.VenueArea_group_l0_id) \
-                            .filter(c_models.VenueArea_group_l0_id.venue_id==venue.id)
-                ),
+                    .join(c_models.VenueArea_group_l0_id) \
+                    .filter(c_models.VenueArea_group_l0_id.venue_id == venue.id)
+            ),
             info=dict(
                 available_adjacencies=[
                     adjacency_set.seat_count
-                    for adjacency_set in\
-                        slave_session.query(c_models.SeatAdjacencySet) \
+                    for adjacency_set in \
+                    slave_session.query(c_models.SeatAdjacencySet) \
                         .filter_by(site_id=venue.site_id)
-                    ]
-                ),
+                ]
+            ),
             pages=get_venue_site_adapter(self.request, venue.site).get_frontend_pages()
-            )
+        )
 
     @lbr_view_config(route_name='cart.seats')
     def get_seats(self):
@@ -781,47 +813,50 @@ class IndexAjaxView(object):
             raise HTTPBadRequest()
 
         slave_session = get_db_session(self.request, name="slave")
-        sales_segment = slave_session.query(c_models.SalesSegment).filter(c_models.SalesSegment.id==self.context.sales_segment.id).one()
+        sales_segment = slave_session.query(c_models.SalesSegment).filter(
+            c_models.SalesSegment.id == self.context.sales_segment.id).one()
         sales_stocks = sales_segment.stocks
         seats_query = None
         if sales_segment.seat_choice:
-            seats_query = c_models.Seat.query_sales_seats(sales_segment, slave_session)\
-                .options(joinedload('areas'), joinedload('status_'))\
-                .join(c_models.SeatStatus)\
-                .join(c_models.Stock)\
-                .filter(c_models.Seat.venue_id==venue.id)\
-                .filter(c_models.SeatStatus.status==int(c_models.SeatStatusEnum.Vacant))
+            seats_query = c_models.Seat.query_sales_seats(sales_segment, slave_session) \
+                .options(joinedload('areas'), joinedload('status_')) \
+                .join(c_models.SeatStatus) \
+                .join(c_models.Stock) \
+                .filter(c_models.Seat.venue_id == venue.id) \
+                .filter(c_models.SeatStatus.status == int(c_models.SeatStatusEnum.Vacant))
             seat_groups_queries = [
-                slave_session.query(c_models.SeatGroup.l0_id, c_models.SeatGroup.name, c_models.Seat.l0_id, include_deleted=True) \
+                slave_session.query(c_models.SeatGroup.l0_id, c_models.SeatGroup.name, c_models.Seat.l0_id,
+                                    include_deleted=True) \
                     .join(c_models.Seat, c_models.SeatGroup.l0_id == l0_id_column) \
                     .join(c_models.Stock, c_models.Seat.stock_id == c_models.Stock.id) \
                     .filter(c_models.SeatGroup.site_id == venue.site_id) \
                     .filter(c_models.Seat.venue_id == venue.id) \
                     .filter(c_models.Stock.deleted_at == None) \
-                    for l0_id_column in [c_models.Seat.row_l0_id, c_models.Seat.group_l0_id]
-                    ]
+                for l0_id_column in [c_models.Seat.row_l0_id, c_models.Seat.group_l0_id]
+            ]
             if stock_id is not None:
                 stock_id_list = stock_id.split(',')
                 seats_query = seats_query.filter(c_models.Stock.id.in_(stock_id_list))
                 seat_groups_queries = [
                     seat_groups_query.filter(c_models.Stock.id.in_(stock_id_list))
                     for seat_groups_query in seat_groups_queries
-                    ]
+                ]
             elif stock_type_id is not None:
                 seats_query = seats_query.filter(c_models.Stock.stock_type_id == stock_type_id)
                 seat_groups_queries = [
                     seat_groups_query.filter(c_models.Stock.stock_type_id == stock_type_id)
                     for seat_groups_query in seat_groups_queries
-                    ]
+                ]
             seats = seats_query.all()
             seat_groups = {}
-            for seat_group_l0_id, seat_group_name, seat_l0_id in seat_groups_queries[0].union_all(*seat_groups_queries[1:]):
+            for seat_group_l0_id, seat_group_name, seat_l0_id in seat_groups_queries[0].union_all(
+                    *seat_groups_queries[1:]):
                 seat_group = seat_groups.get(seat_group_l0_id)
                 if seat_group is None:
                     seat_group = seat_groups[seat_group_l0_id] = {
                         'name': seat_group_name,
                         'seats': [],
-                        }
+                    }
                 seat_group['seats'].append(seat_l0_id)
         else:
             seats = []
@@ -830,7 +865,6 @@ class IndexAjaxView(object):
         stock_map = dict([(s.id, s) for s in sales_stocks])
 
         self.request.add_response_callback(gzip_preferred)
-
 
         return dict(
             seats=dict(
@@ -843,11 +877,11 @@ class IndexAjaxView(object):
                         status=seat.status,
                         areas=[area.id for area in seat.areas],
                         is_hold=seat.stock_id in stock_map,
-                        )
                     )
+                )
                 for seat in seats),
             seat_groups=seat_groups
-            )
+        )
 
     @lbr_view_config(route_name='cart.seat_adjacencies')
     def get_seat_adjacencies(self):
@@ -867,12 +901,12 @@ class IndexAjaxView(object):
                 length_or_range: [
                     [seat.l0_id for seat in seat_adjacency.seats_filter_by_venue(venue_id)]
                     for seat_adjacency_set in \
-                        DBSession.query(c_models.SeatAdjacencySet)\
-                            .filter_by(site_id=venue.site_id, seat_count=length_or_range)
+                    DBSession.query(c_models.SeatAdjacencySet) \
+                        .filter_by(site_id=venue.site_id, seat_count=length_or_range)
                     for seat_adjacency in seat_adjacency_set.adjacencies
-                    ]
-                }
-            )
+                ]
+            }
+        )
 
     @lbr_view_config(route_name="cart.venue_drawing", request_method="GET")
     def get_venue_drawing(self):
@@ -889,7 +923,8 @@ class IndexAjaxView(object):
         content_encoding = None
         if re.match('^.+\.(svgz|gz)$', drawing.path):
             content_encoding = 'gzip'
-        resp = Response(body=drawing.stream().read(), content_type='text/xml; charset=utf-8', content_encoding=content_encoding)
+        resp = Response(body=drawing.stream().read(), content_type='text/xml; charset=utf-8',
+                        content_encoding=content_encoding)
         if resp.content_encoding is None:
             resp.encode_content()
         return resp
@@ -913,7 +948,7 @@ class ReserveView(object):
                 continue
             quantity = int(value)
             logger.debug("key = %s, value = %s" % (key, value))
-            #if quantity == 0:
+            # if quantity == 0:
             #    continue
             yield m.groupdict()['product_id'], quantity
 
@@ -931,13 +966,12 @@ class ReserveView(object):
         products = dict(
             (p.id, p)
             for p in DBSession.query(c_models.Product) \
-                    .options(joinedload(c_models.Product.seat_stock_type)) \
-                    .filter(c_models.Product.id.in_([c[0] for c in controls]))
-            )
+                .options(joinedload(c_models.Product.seat_stock_type)) \
+                .filter(c_models.Product.id.in_([c[0] for c in controls]))
+        )
         logger.debug('order %s' % products)
 
         return [(products.get(int(c[0])), c[1]) for c in controls]
-
 
     @limiter.acquire
     @lbr_view_config(route_name='cart.order', request_method="POST")
@@ -959,7 +993,7 @@ class ReserveView(object):
 
         try:
             assert_quantity_within_bounds(sales_segment, ordered_items)
-            ordered_items = filter(lambda c:c[1] > 0, ordered_items)
+            ordered_items = filter(lambda c: c[1] > 0, ordered_items)
             cart = api.order_products(
                 self.request,
                 sales_segment,
@@ -978,13 +1012,13 @@ class ReserveView(object):
                     result='NG',
                     reason="ticket_count_below_lower_bound",
                     message=self._message(u"枚数は合計{.min_quantity}以上で選択してください").format(e)
-                    )
+                )
             else:
                 return dict(
                     result='NG',
                     reason="ticket_count_over_upper_bound",
                     message=self._message(u"枚数は合計{.max_quantity}以内で選択してください").format(e)
-                    )
+                )
         except ProductQuantityOutOfBoundsError as e:
             transaction.abort()
             logger.debug("product limit")
@@ -993,13 +1027,13 @@ class ReserveView(object):
                     result='NG',
                     reason="product_count_below_lower_bound",
                     message=self._message(u"商品個数は合計{.min_quantity}以上で選択してください").format(e)
-                    )
+                )
             else:
                 return dict(
                     result='NG',
                     reason="product_count_over_upper_bound",
                     message=self._message(u"商品個数は合計{.max_quantity}以内で選択してください").format(e)
-                    )
+                )
         except PerStockTypeQuantityOutOfBoundsError as e:
             transaction.abort()
             logger.debug("per-stock-type quantity limit")
@@ -1008,13 +1042,13 @@ class ReserveView(object):
                     result='NG',
                     reason="ticket_count_below_lower_bound",
                     message=self._message(u"商品個数は合計{.min_quantity}以上で選択してください").format(e)
-                    )
+                )
             else:
                 return dict(
                     result='NG',
                     reason="ticket_count_over_upper_bound",
                     message=self._message(u"商品個数は合計{.max_quantity}以内で選択してください").format(e)
-                    )
+                )
         except (PerStockTypeProductQuantityOutOfBoundsError, PerProductProductQuantityOutOfBoundsError) as e:
             transaction.abort()
             logger.debug("per-stock-type product limit")
@@ -1023,13 +1057,13 @@ class ReserveView(object):
                     result='NG',
                     reason="product_count_below_lower_bound",
                     message=self._message(u"商品個数は合計{.min_quantity}以上で選択してください").format(e)
-                    )
+                )
             else:
                 return dict(
                     result='NG',
                     reason="product_count_over_upper_bound",
                     message=self._message(u"商品個数は合計{.max_quantity}以内で選択してください").format(e)
-                    )
+                )
         except NotEnoughAdjacencyException:
             transaction.abort()
             logger.debug("not enough adjacency")
@@ -1069,14 +1103,14 @@ class ReserveView(object):
                                              seats=p.seats if sales_segment.setting.display_seat_no else [],
                                              unit_template=h.build_unit_template(p.product.items),
                                              product_item_count=len(p.items),
-                                             first_product_item_quantity=p.items[0].product_item.quantity if len(p.items) == 1 else 0,
-                                        )
+                                             first_product_item_quantity=p.items[0].product_item.quantity if len(
+                                                 p.items) == 1 else 0,
+                                             )
                                         for p in cart.items],
                               total_amount=h.format_number(get_amount_without_pdmp(cart)),
                               separate_seats=separate_seats
-                             )
+                              )
                     )
-
 
 
 @view_defaults(decorator=with_jquery.not_when(mobile_request), permission="buy")
@@ -1091,7 +1125,8 @@ class ReleaseCartView(object):
         return dict()
 
 
-@view_defaults(route_name='cart.payment', decorator=with_jquery.not_when(mobile_request), renderer=selectable_renderer("payment.html"), permission="buy")
+@view_defaults(route_name='cart.payment', decorator=with_jquery.not_when(mobile_request),
+               renderer=selectable_renderer("payment.html"), permission="buy")
 class PaymentView(object):
     """ 支払い方法、引き取り方法選択 """
 
@@ -1129,8 +1164,8 @@ class PaymentView(object):
                 self.request,
                 cart,
                 payment_delivery_pair
-                )
-            ]
+            )
+        ]
         if 0 == len(payment_delivery_methods):
             raise PaymentMethodEmptyError.from_resource(self.context, self.request)
 
@@ -1163,9 +1198,9 @@ class PaymentView(object):
             context=self.context,
             flavors=(self.context.cart_setting.flavors or {}),
             _data=shipping_address_info
-            )
+        )
         if self.request.organization.setting.i18n:
-            shipping_address_info['country']=metadata.get('country')
+            shipping_address_info['country'] = metadata.get('country')
             form.country.choices = [(c, c) for c in forms_i18n.ClientFormFactory(self.request).get_countries()]
         default_prefecture = self.context.cart_setting.default_prefecture
         if default_prefecture is not None:
@@ -1174,22 +1209,23 @@ class PaymentView(object):
             form=form,
             performance=self.context.performance,
             payment_delivery_methods=payment_delivery_methods,
-            custom_locale_negotiator=custom_locale_negotiator(self.request) if self.request.organization.setting.i18n else "",
+            custom_locale_negotiator=custom_locale_negotiator(
+                self.request) if self.request.organization.setting.i18n else "",
             orion_ticket_phone=[''],
-            orion_phone_errors = ['']
-            )
+            orion_phone_errors=['']
+        )
 
     def get_validated_address_data(self):
         """フォームから ShippingAddress などの値を取りたいときはこれで"""
         form = self.form
         if self.request.organization.setting.i18n:
-            first_name_kana=form.data['first_name_kana'] if custom_locale_negotiator(self.request)==u'ja' else u'カナ'
-            last_name_kana=form.data['last_name_kana'] if custom_locale_negotiator(self.request)==u'ja' else u'カナ'
-            country=form.data['country']
+            first_name_kana = form.data['first_name_kana'] if custom_locale_negotiator(self.request) == u'ja' else u'カナ'
+            last_name_kana = form.data['last_name_kana'] if custom_locale_negotiator(self.request) == u'ja' else u'カナ'
+            country = form.data['country']
         else:
-            first_name_kana=form.data['first_name_kana']
-            last_name_kana=form.data['last_name_kana']
-            country='日本'
+            first_name_kana = form.data['first_name_kana']
+            last_name_kana = form.data['last_name_kana']
+            country = '日本'
 
         if form.validate():
             return dict(
@@ -1208,7 +1244,7 @@ class PaymentView(object):
                 tel_1=form.data['tel_1'],
                 tel_2=None,
                 fax=form.data['fax'],
-                )
+            )
         else:
             return None
 
@@ -1254,7 +1290,8 @@ class PaymentView(object):
             cart.user_point_accounts = user.user_point_accounts.values()
 
         payment_delivery_method_pair_id = self.request.params.get('payment_delivery_method_pair_id', 0)
-        payment_delivery_pair = c_models.PaymentDeliveryMethodPair.query.filter_by(id=payment_delivery_method_pair_id).first()
+        payment_delivery_pair = c_models.PaymentDeliveryMethodPair.query.filter_by(
+            id=payment_delivery_method_pair_id).first()
 
         if self.request.organization.setting.i18n:
             client_form = forms_i18n.ClientFormFactory(self.request).make_form()
@@ -1264,10 +1301,10 @@ class PaymentView(object):
             self.form = schemas.ClientForm(formdata=self.request.params, context=self.context)
 
         shipping_address_params = self.get_validated_address_data()
-        orion_ticket_phone, orion_phone_errors = self.verify_orion_ticket_phone(self.request.POST.getall('orion-ticket-phone'))
+        orion_ticket_phone, orion_phone_errors = self.verify_orion_ticket_phone(
+            self.request.POST.getall('orion-ticket-phone'))
 
         try:
-
 
             self._validate_extras(cart, payment_delivery_pair, shipping_address_params)
             sales_segment = cart.sales_segment
@@ -1280,7 +1317,8 @@ class PaymentView(object):
                     logger.debug("invalid : %s" % orion_phone_errors)
                     raise self.ValidationFailed(self._message(u'イベントゲート情報の入力内容を確認してください'))
 
-                create_orion_ticket_phone = self.create_or_update_orion_ticket_phone(user, cart.order_no, orion_ticket_phone)
+                create_orion_ticket_phone = self.create_or_update_orion_ticket_phone(user, cart.order_no,
+                                                                                     orion_ticket_phone)
                 DBSession.add(create_orion_ticket_phone)
 
             DBSession.add(cart)
@@ -1296,7 +1334,8 @@ class PaymentView(object):
                 elif e.path == 'shipping_address.email_1':
                     raise self.ValidationFailed(self._message(u'メールアドレスは64文字以下のものをご使用ください'))
                 else:
-                    raise self.ValidationFailed(self._message(u'現在の予約内容では選択された決済 / 引取方法で購入を進めることができません。他の決済・引取方法を選択してください。'))
+                    raise self.ValidationFailed(
+                        self._message(u'現在の予約内容では選択された決済 / 引取方法で購入を進めることができません。他の決済・引取方法を選択してください。'))
         except self.ValidationFailed as e:
             self.request.session.flash(e.message)
             start_on = cart.performance.start_on
@@ -1317,11 +1356,11 @@ class PaymentView(object):
                 form=self.form,
                 performance=self.context.performance,
                 payment_delivery_methods=payment_delivery_methods,
-                custom_locale_negotiator=custom_locale_negotiator(self.request) if self.request.organization.setting.i18n else "",
+                custom_locale_negotiator=custom_locale_negotiator(
+                    self.request) if self.request.organization.setting.i18n else "",
                 orion_ticket_phone=orion_ticket_phone,
                 orion_phone_errors=orion_phone_errors
-                )
-
+            )
 
         order = api.new_order_session(
             self.request,
@@ -1383,7 +1422,9 @@ class PaymentView(object):
         orion_ticket_phone.user = user
         return orion_ticket_phone
 
-@view_defaults(route_name='cart.extra_form', renderer=selectable_renderer("extra_form.html"), decorator=with_jquery.not_when(mobile_request), permission="buy")
+
+@view_defaults(route_name='cart.extra_form', renderer=selectable_renderer("extra_form.html"),
+               decorator=with_jquery.not_when(mobile_request), permission="buy")
 class ExtraFormView(object):
     def __init__(self, context, request):
         self.context = context
@@ -1401,8 +1442,8 @@ class ExtraFormView(object):
             filter_extra_form_schema(
                 extra_form_field_descs,
                 mode='entry'
-                )
             )
+        )
         return dict(cart=self.context.cart, form=form, form_fields=form_fields)
 
     @lbr_view_config(request_method="POST")
@@ -1418,9 +1459,9 @@ class ExtraFormView(object):
             filter_extra_form_schema(
                 extra_form_field_descs,
                 mode='entry'
-                ),
+            ),
             UnicodeMultiDictAdapter(self.request.params, 'utf-8', 'replace')
-            )
+        )
         if not form.validate():
             return dict(form=form, form_fields=form_fields)
         api.store_extra_form_data(self.request, form.data)
@@ -1473,9 +1514,16 @@ class DiscountCodeEnteringView(object):
         data = {
             'usage_type': '1010',
             'fc_member_id': fc_member_id,
-            'coupons': [{'coupon_cd': 'EEQT00000001'}, {'coupon_cd': 'EEQT00000002'}, {'coupon_cd': 'EEQT00000003'}]
+            'coupons': [{'coupon_cd': code['code']} for code in codes]
         }
         result = comm.confirm_coupon_status(data)
+
+        data = {
+            'usage_type': '1010',
+            'fc_member_id': fc_member_id,
+            'coupons': [{'coupon_cd': code['code']} for code in codes]
+        }
+        result2 = comm.use_coupon(data)
 
         self.context.validate_discount_codes(codes)
         if self.context.exist_validate_error(codes):
@@ -1490,7 +1538,8 @@ class DiscountCodeEnteringView(object):
         return HTTPFound(self.request.route_path('cart.payment', sales_segment_id=sales_segment_id))
 
 
-@view_defaults(route_name='cart.point', renderer=selectable_renderer("point.html"), decorator=with_jquery.not_when(mobile_request), permission="buy")
+@view_defaults(route_name='cart.point', renderer=selectable_renderer("point.html"),
+               decorator=with_jquery.not_when(mobile_request), permission="buy")
 class PointAccountEnteringView(object):
     def __init__(self, context, request):
         self.context = context
@@ -1500,11 +1549,13 @@ class PointAccountEnteringView(object):
         form = self.form
         return dict(
             accountno=form.data['accountno'],
-            )
+        )
 
     @reify
     def existing_user_point_account(self):
-        user_point_accounts = [user_point_account for user_point_account in self.context.read_only_cart.user_point_accounts if user_point_account.type == UserPointAccountTypeEnum.Rakuten.v]
+        user_point_accounts = [user_point_account for user_point_account in
+                               self.context.read_only_cart.user_point_accounts if
+                               user_point_account.type == UserPointAccountTypeEnum.Rakuten.v]
         if len(user_point_accounts) > 0:
             return user_point_accounts[0]
         else:
@@ -1579,10 +1630,11 @@ class PointAccountEnteringView(object):
         account_number = point_params.pop("accountno", None)
         if account_number:
             user_point_account = api.create_user_point_account_from_point_no(
-                user.id if user is not None and (self.existing_user_point_account is None or self.existing_user_point_account.account_number == account_number) else None,
+                user.id if user is not None and (
+                self.existing_user_point_account is None or self.existing_user_point_account.account_number == account_number) else None,
                 type=UserPointAccountTypeEnum.Rakuten.v,
                 account_number=account_number
-                )
+            )
             # append だと二度押しではまるかも
             cart.user_point_accounts = [user_point_account]
         else:
@@ -1598,6 +1650,7 @@ class PointAccountEnteringView(object):
     permission="buy")
 class ConfirmView(object):
     """ 決済確認画面 """
+
     def __init__(self, context, request):
         self.context = context
         self.request = request
@@ -1610,9 +1663,10 @@ class ConfirmView(object):
         if cart.shipping_address is None:
             raise InvalidCartStatusError(cart.id)
 
-        acc = cart.user_point_accounts[0] if len(cart.user_point_accounts) > 0 else None # XXX
+        acc = cart.user_point_accounts[0] if len(cart.user_point_accounts) > 0 else None  # XXX
 
-        magazines_to_subscribe = get_magazines_to_subscribe(cart.performance.event.organization, cart.shipping_address.emails)
+        magazines_to_subscribe = get_magazines_to_subscribe(cart.performance.event.organization,
+                                                            cart.shipping_address.emails)
 
         payment = Payment(cart, self.request)
         payment.call_validate()
@@ -1627,19 +1681,19 @@ class ConfirmView(object):
                 self.context.sales_segment,
                 raw_extra_form_data,
                 mode='entry'
-                )
+            )
 
-        ks = [ ]
+        ks = []
         organization = api.get_organization(self.request)
         if organization.setting.enable_word == 1:
-            user = api.get_user(self.context.authenticated_user()) # これも読み直し
+            user = api.get_user(self.context.authenticated_user())  # これも読み直し
             if user is not None and user.supports_word_subscription():
                 try:
                     res = api.get_keywords_from_cms(self.request, cart.performance_id)
                     if "words" in res:
                         for w in res["words"]:
                             # TODO: subscribe状況をセットしてあげても良いが
-                            ks.append([ type('', (), { 'id': w["id"], 'label': w["label"] }), False ])
+                            ks.append([type('', (), {'id': w["id"], 'label': w["label"]}), False])
                 except Exception as e:
                     logger.warn("Failed to get words info from cms", e)
 
@@ -1649,19 +1703,21 @@ class ConfirmView(object):
             keywords_to_subscribe=ks,
             form=form,
             delegator=delegator,
-            membershipinfo = self.context.membershipinfo,
+            membershipinfo=self.context.membershipinfo,
             extra_form_data=extra_form_data,
             accountno=acc.account_number if acc else "",
             performance=self.context.performance,
-            custom_locale_negotiator=custom_locale_negotiator(self.request) if self.request.organization.setting.i18n else "",
+            custom_locale_negotiator=custom_locale_negotiator(
+                self.request) if self.request.organization.setting.i18n else "",
             i18n=self.request.organization.setting.i18n,
         )
+
 
 # 完了画面の処理の『継続』 (http://ja.wikipedia.org/wiki/%E7%B6%99%E7%B6%9A)
 def cont_complete_view(context, request, order_no, magazine_ids, word_ids):
     cart = api.get_cart_by_order_no(request, order_no)
 
-    user = api.get_user(context.authenticated_user()) # これも読み直し
+    user = api.get_user(context.authenticated_user())  # これも読み直し
 
     # メール購読
     emails = cart.shipping_address.emails
@@ -1684,15 +1740,18 @@ def cont_complete_view(context, request, order_no, magazine_ids, word_ids):
             context_factory=CompleteViewTicketingCartResource,
             request=request,
             route=('payment.finish', {})
-            )
+        )
     else:
         # PC/スマートフォンでは、HTTPリダイレクト時にクッキーをセット
         return HTTPFound(request.route_path('payment.finish'), headers=request.response.headers)
 
-@view_defaults(route_name='payment.finish', decorator=with_jquery.not_when(mobile_request), renderer=selectable_renderer("completion.html"))
+
+@view_defaults(route_name='payment.finish', decorator=with_jquery.not_when(mobile_request),
+               renderer=selectable_renderer("completion.html"))
 class CompleteView(object):
     """ 決済完了画面"""
     """permisson="buy" 不要"""
+
     def __init__(self, context, request):
         self.context = context
         self.request = request
@@ -1730,10 +1789,11 @@ class CompleteView(object):
                         return render_view_to_response_with_derived_request(
                             context_factory=CompleteViewTicketingCartResource,
                             request=self.request,
-                            route=('payment.finish',{})
-                            )
+                            route=('payment.finish', {})
+                        )
                 except:
                     return None
+
             retval = _()
             if retval is not None:
                 return retval
@@ -1741,17 +1801,17 @@ class CompleteView(object):
                 raise
 
         self.context.check_deleted_product(cart)
-        self.context.check_order_limit() # 最終チェック
+        self.context.check_order_limit()  # 最終チェック
         order = api.make_order_from_cart(self.request, cart)
         order_no = order.order_no
-        transaction.commit() # cont_complete_viewでエラーが出てロールバックされても困るので
+        transaction.commit()  # cont_complete_viewでエラーが出てロールバックされても困るので
         logger.debug("keyword=%s" % ' '.join(self.request.params.getall('keyword')))
         return cont_complete_view(
             self.context, self.request,
             order_no,
             magazine_ids=self.request.params.getall('mailmagazine'),
             word_ids=self.request.params.getall('keyword')
-            )
+        )
 
     @lbr_view_config(context=CompleteViewTicketingCartResource)
     def get(self):
@@ -1766,7 +1826,7 @@ class CompleteView(object):
         order = api.get_order_for_read_by_order_no(self.request, order_no)
         if order is None:
             raise CompletionPageNotRenderered()
-        self.request.response.expires = datetime.utcnow() + timedelta(seconds=3600) # XXX
+        self.request.response.expires = datetime.utcnow() + timedelta(seconds=3600)  # XXX
         self.request.response.cache_control = 'max-age=3600'
         return dict(order=order, i18n=self.request.organization.setting.i18n)
 
@@ -1775,6 +1835,7 @@ def is_kt_organization(out_term_exception, request):
     from .api import get_organization
     organization = get_organization(request)
     return organization.code == 'KT'
+
 
 @view_defaults(
     decorator=with_jquery.not_when(mobile_request),
@@ -1785,7 +1846,7 @@ class OutTermSalesView(object):
         self.request = request
 
     @lbr_view_config(
-        custom_predicates=(lambda context, _: issubclass(context.type_, EventOrientedTicketingCartResource), ),
+        custom_predicates=(lambda context, _: issubclass(context.type_, EventOrientedTicketingCartResource),),
         renderer=selectable_renderer('out_term_sales_event.html'))
     def for_event(self):
         api.logout(self.request)
@@ -1803,9 +1864,9 @@ class OutTermSalesView(object):
             **datum)
 
     @lbr_view_config(
-        custom_predicates=(lambda context, _: issubclass(context.type_, PerformanceOrientedTicketingCartResource), ),
+        custom_predicates=(lambda context, _: issubclass(context.type_, PerformanceOrientedTicketingCartResource),),
         renderer=selectable_renderer('out_term_sales_performance.html'),
-        )
+    )
     def for_performance(self):
         if self.context.next is None:
             datum = self.context.last
@@ -1828,21 +1889,26 @@ class OutTermSalesView(object):
             custom_locale_negotiator=negotiator,
             **datum)
 
+
 @lbr_view_config(decorator=with_jquery.not_when(mobile_request), request_method="POST", route_name='cart.logout')
 @limiter.release
 def logout(request):
     api.logout(request)
     return back_to_top(request)
 
+
 def _create_response(request, params=None):
     event_id = request.matchdict.get('event_id')
     response = HTTPFound(event_id and request.route_url('cart.index', event_id=event_id, _query=params) or '/')
     return response
 
+
 def _create_response_perf(request, params=None):
     performance_id = request.matchdict.get('performance_id')
-    response = HTTPFound(performance_id and request.route_url('cart.index2', performance_id=performance_id, _query=params) or '/')
+    response = HTTPFound(
+        performance_id and request.route_url('cart.index2', performance_id=performance_id, _query=params) or '/')
     return response
+
 
 @view_config(route_name='cart.switchpc')
 def switch_pc(context, request):
@@ -1851,11 +1917,13 @@ def switch_pc(context, request):
     set_we_need_pc_access(response)
     return response
 
+
 @view_config(route_name='cart.i18n', renderer='string')
 def cart_i18n(request):
     message = request.params.getall('message[]')
     _ = request.translate
     return ''.join(_(msg) for msg in message)
+
 
 @view_config(route_name='cart.switchpc.perf')
 def switch_pc_perf(context, request):
@@ -1864,6 +1932,7 @@ def switch_pc_perf(context, request):
     set_we_need_pc_access(response)
     return response
 
+
 @view_config(route_name='cart.switchsp')
 def switch_sp(context, request):
     api.remove_cart(request)
@@ -1871,12 +1940,14 @@ def switch_sp(context, request):
     set_we_invalidate_pc_access(response)
     return response
 
+
 @view_config(route_name='cart.switchsp.perf')
 def switch_sp_perf(context, request):
     api.remove_cart(request)
     response = _create_response_perf(request=request, params=request.GET)
     set_we_invalidate_pc_access(response)
     return response
+
 
 @lbr_view_config(decorator=with_jquery.not_when(mobile_request), request_method="GET", route_name='cart.exit')
 def exit(context, request):

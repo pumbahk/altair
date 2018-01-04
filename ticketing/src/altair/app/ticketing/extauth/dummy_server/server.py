@@ -8,6 +8,8 @@ logger = logging.getLogger(__name__)
 def setup_routes(config):
     config.add_route('extauth_dummy.check_memberships', '/api/members-check')
     config.add_route('extauth_dummy.confirm_coupon_status', '/api/coupon/confirm/status')
+    config.add_route('extauth_dummy.use_coupon', '/api/coupon/use')
+    config.add_route('extauth_dummy.cancel_used_coupon', '/api/coupon/cancel/used')
 
 def setup_renderers(config):
     config.include('pyramid_mako')
