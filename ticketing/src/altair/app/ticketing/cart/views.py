@@ -1508,22 +1508,33 @@ class DiscountCodeEnteringView(object):
         codes = self.context.create_codes_from_request(cart)
         sorted_cart_product_items = self.context.sorted_carted_product_items()
 
-        from ..discount_code.communicators.utils import get_communicator
-        comm = get_communicator(self.request, 'eagles')
-        fc_member_id = self.request.altair_auth_info['auth_identifier']
-        data = {
-            'usage_type': '1010',
-            'fc_member_id': fc_member_id,
-            'coupons': [{'coupon_cd': code['code']} for code in codes]
-        }
-        result = comm.confirm_coupon_status(data)
-
-        data = {
-            'usage_type': '1010',
-            'fc_member_id': fc_member_id,
-            'coupons': [{'coupon_cd': code['code']} for code in codes]
-        }
-        result2 = comm.use_coupon(data)
+        # # APIのテスト使用
+        # from ..discount_code.communicators.utils import get_communicator
+        # comm = get_communicator(self.request, 'eagles')
+        # fc_member_id = self.request.altair_auth_info['auth_identifier']
+        #
+        # # イーグルスクーポンの状態確認
+        # data = {
+        #     'usage_type': '1010',
+        #     'fc_member_id': fc_member_id,
+        #     'coupons': [{'coupon_cd': code['code']} for code in codes]
+        # }
+        # result = comm.confirm_coupon_status(data)
+        #
+        # # イーグルスクーポンの使用
+        # data = {
+        #     'usage_type': '1010',
+        #     'fc_member_id': fc_member_id,
+        #     'coupons': [{'coupon_cd': code['code']} for code in codes]
+        # }
+        # result2 = comm.use_coupon(data)
+        #
+        # # イーグルスクーポンを未使用に戻す（キャンセル）
+        # data = {
+        #     'usage_type': '1010',
+        #     'coupons': [{'coupon_cd': code['code']} for code in codes]
+        # }
+        # result3 = comm.cancel_used_coupon(data)
 
         self.context.validate_discount_codes(codes)
         if self.context.exist_validate_error(codes):

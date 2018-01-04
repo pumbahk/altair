@@ -227,3 +227,53 @@ class EaglesDiscountCodeAPI(object):
             charset='utf-8',
             text=json.dumps(resp_data, ensure_ascii=False)
         )
+
+    @view_config(route_name='extauth_dummy.cancel_used_coupon')
+    def eagles_cancel_used_coupon(self):
+        # TODO fc_member_idのチェック。
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%s")
+        client_name = self.request.POST['client_name']
+        token = self.request.POST['token']
+        used_coupons = json.loads(self.request.POST['used_coupons'])
+
+        resp_data = {
+            'status': 'OK',
+            'timestamp': timestamp,
+            'usage_type': '1010',
+            'coupons': []
+        }
+
+        for req_coupon in used_coupons['coupons']:
+            try:
+                coupon = self.request.sa_session.query(EaglesCoupon).filter(
+                    EaglesCoupon.code == req_coupon['coupon_cd']).one()
+
+                if coupon.available_flg == 0:
+                    coupon.available_flg = 1
+                    self.request.sa_session.commit()
+                    cancel_flg = '1'  # キャンセルに成功
+                else:
+                    cancel_flg = '0'  # キャンセルに失敗
+
+                add_dict = {
+                    'coupon_cd': coupon.code,
+                    'coupon_type': '1010',
+                    'cancel_flg': cancel_flg,
+                    'reason_cd': '1010' if cancel_flg else '1020'
+                }
+
+            except NoResultFound:
+                add_dict = {
+                    'coupon_cd': req_coupon['coupon_cd'],
+                    'coupon_type': '',
+                    'available_flg': '0',
+                    'reason_cd': '2010'
+                }
+
+            resp_data['coupons'].append(add_dict)
+
+        return Response(
+            content_type='application/json',
+            charset='utf-8',
+            text=json.dumps(resp_data, ensure_ascii=False)
+        )
