@@ -4,6 +4,7 @@ from datetime import datetime
 
 from sqlalchemy.orm.exc import NoResultFound
 from .models import DiscountCodeSetting, DiscountCodeCode, UsedDiscountCodeCart, UsedDiscountCodeOrder
+from communicators.utils import get_communicator
 
 
 def is_enabled_discount_code_checked(context, request):
@@ -143,3 +144,62 @@ def used_discount_code_groups(cart):
         group_dict['discount_price'] = sum([code.carted_product_item.price for code in code_groups[setting.first_4_digits]])
         groups.append(group_dict)
     return groups
+
+
+def confirm_coupon_status(request, codes, available_fanclub_discount_code_settings):
+    if not available_fanclub_discount_code_settings:
+        return None
+
+    # イーグルスクーポンの状態確認
+    comm = get_communicator(request, 'eagles')
+    fc_member_id = request.altair_auth_info['auth_identifier']
+
+    # ファンクラブのもので先頭4桁が合致するものだけ実施
+    coupons = []
+    for code in codes:
+        for setting in available_fanclub_discount_code_settings:
+            if code['code'][:4] == setting.first_4_digits:
+                coupons.append({'coupon_cd': code['code']})
+
+    if not coupons:
+        return None
+
+    data = {
+        'usage_type': '1010',
+        'fc_member_id': fc_member_id,
+        'coupons': coupons
+    }
+    result = comm.confirm_coupon_status(data)
+
+    if not result['status'] == u'OK' and result['usage_type'] == u'1010':
+        return False
+
+    return result
+
+# # APIのテスト使用
+# from ..discount_code.communicators.utils import get_communicator
+# comm = get_communicator(self.request, 'eagles')
+# fc_member_id = self.request.altair_auth_info['auth_identifier']
+#
+# # イーグルスクーポンの状態確認
+# data = {
+#     'usage_type': '1010',
+#     'fc_member_id': fc_member_id,
+#     'coupons': [{'coupon_cd': code['code']} for code in codes]
+# }
+# result = comm.confirm_coupon_status(data)
+#
+# # イーグルスクーポンの使用
+# data = {
+#     'usage_type': '1010',
+#     'fc_member_id': fc_member_id,
+#     'coupons': [{'coupon_cd': code['code']} for code in codes]
+# }
+# result2 = comm.use_coupon(data)
+#
+# # イーグルスクーポンを未使用に戻す（キャンセル）
+# data = {
+#     'usage_type': '1010',
+#     'coupons': [{'coupon_cd': code['code']} for code in codes]
+# }
+# result3 = comm.cancel_used_coupon(data)

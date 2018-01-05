@@ -803,12 +803,81 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
             if discount_api.check_used_discount_code(code):
                 form.add_used_discount_code_error()
 
+        # # API通信し、エラーをつめる
+        # target_codes = self.confirm_coupon_codes(codes)
+        # if not target_codes:
+        #     # 対象がない（他のバリデーションにかかっている）
+        #     return True
+        #
+        # result = discount_api.confirm_coupon_status(self.request, target_codes,
+        #                                             self.cart.available_fanclub_discount_code_settings)
+        # if result is None:
+        #     # 使用可能なDiscountCodeSettingがない
+        #     return True
+        #
+        # if not result:
+        #     # 通信エラーなど
+        #     # TODO エラー処理
+        #     pass
+        #
+        # coupons = result['coupons']
+        # error_list = {}
+        # for coupon in coupons:
+        #     if coupon['reason_cd'] == u'1010':
+        #         error_list[coupon['coupon_cd']] = coupon['reason_cd']
+        #
+        # error_keys = error_list.keys()
+        # for code_dict in codes:
+        #     if code_dict['form'].code.data in error_keys:
+        #         form = code_dict['form']
+        #         form.validate()
+        #         form.add_coupon_response_error()
+        return True
+
     def exist_validate_error(self, codes):
         for code_dict in codes:
             form = code_dict['form']
             if form.errors:
                 return True
         return False
+
+    def confirm_coupon_codes(self, codes):
+        target_codes = []
+        for code_dict in codes:
+            if not code_dict['form'].errors:
+                target_codes.append(code_dict)
+        return target_codes
+
+    def confirm_coupon_status(self, codes):
+        target_codes = self.confirm_coupon_codes(codes)
+        if not target_codes:
+            # 対象がない（他のバリデーションにかかっている）
+            return True
+
+        result = discount_api.confirm_coupon_status(self.request, target_codes,
+                                                    self.cart.available_fanclub_discount_code_settings)
+        if result is None:
+            # 使用可能なDiscountCodeSettingがない
+            return True
+
+        if not result:
+            # 通信エラーなど。1つ目のformにデータを埋め込み表示
+            codes[0].code_dict['form'].validate()
+            codes[0].code_dict['form'].add_coupon_response_error()
+            return True
+
+        coupons = result['coupons']
+        error_list = {}
+        for coupon in coupons:
+            if coupon['reason_cd'] != u'1010':
+                error_list[coupon['coupon_cd']] = coupon['reason_cd']
+
+        error_keys = error_list.keys()
+        for code_dict in codes:
+            if code_dict['form'].code.data in error_keys:
+                code_dict['form'].validate()
+                code_dict['form'].add_coupon_response_error()
+        return True
 
     def create_validated_forms(self, codes):
         forms = []

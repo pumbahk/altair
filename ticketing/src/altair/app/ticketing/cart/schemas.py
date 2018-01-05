@@ -102,6 +102,14 @@ class DiscountCodeForm(OurForm):
         getattr(self, "code").errors.append(u"使用されたクーポンです")
         return False
 
+    def add_coupon_response_error(self):
+        getattr(self, "code").errors.append(u"ご選択された席には適用できないクーポンです")
+        return False
+
+    def add_internal_error(self):
+        getattr(self, "code").errors.append(u"通信エラーが発生しました。時間をあけてお試しください")
+        return False
+
     def validate(self):
         status = super(DiscountCodeForm, self).validate()
         status = self._validate_code() and status
