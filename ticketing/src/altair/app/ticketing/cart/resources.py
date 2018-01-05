@@ -860,6 +860,8 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
             # 使用可能なDiscountCodeSettingがない
             return True
 
+        logger.info("It is {0} response. {1}".format(self.cart.order_no, result))
+
         if not result:
             # 通信エラーなど。1つ目のformにデータを埋め込み表示
             codes[0].code_dict['form'].validate()
