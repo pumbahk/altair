@@ -38,7 +38,7 @@ from .exceptions import (
     NoSalesSegment,
     NoPerformanceError,
     OverOrderLimitException,
-    CouponConfirmError,
+    DiscountCodeConfirmError,
     OverQuantityLimitException,
     InvalidCartStatusError,
     OAuthRequiredSettingError
@@ -739,15 +739,13 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
                 if input_cnt == cnt:
                     return code_forms
 
-    def check_confirm_coupon(self):
+    def check_available_discont_code(self):
         code_list = [code.code for code in discount_api.get_used_discount_codes(self.cart)]
-        import ipdb;ipdb.set_trace()
         codes = self.create_codes(self.cart, code_list)
         if codes:
-            self.confirm_coupon_status(codes)
-            #if self.exist_validate_error(codes):
-                #raise CouponConfirmError()
-            raise CouponConfirmError()
+            self.confirm_discount_code_status(codes)
+            if self.exist_validate_error(codes):
+                raise DiscountCodeConfirmError()
 
 
     def temporarily_save_discount_code(self, codes):
@@ -796,35 +794,6 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
             if discount_api.check_used_discount_code(code):
                 form.add_used_discount_code_error()
 
-        # # API通信し、エラーをつめる
-        # target_codes = self.confirm_coupon_codes(codes)
-        # if not target_codes:
-        #     # 対象がない（他のバリデーションにかかっている）
-        #     return True
-        #
-        # result = discount_api.confirm_coupon_status(self.request, target_codes,
-        #                                             self.cart.available_fanclub_discount_code_settings)
-        # if result is None:
-        #     # 使用可能なDiscountCodeSettingがない
-        #     return True
-        #
-        # if not result:
-        #     # 通信エラーなど
-        #     # TODO エラー処理
-        #     pass
-        #
-        # coupons = result['coupons']
-        # error_list = {}
-        # for coupon in coupons:
-        #     if coupon['reason_cd'] == u'1010':
-        #         error_list[coupon['coupon_cd']] = coupon['reason_cd']
-        #
-        # error_keys = error_list.keys()
-        # for code_dict in codes:
-        #     if code_dict['form'].code.data in error_keys:
-        #         form = code_dict['form']
-        #         form.validate()
-        #         form.add_coupon_response_error()
         return True
 
     def exist_validate_error(self, codes):
@@ -834,20 +803,20 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
                 return True
         return False
 
-    def confirm_coupon_codes(self, codes):
+    def confirm_discount_codes(self, codes):
         target_codes = []
         for code_dict in codes:
             if not code_dict['form'].errors:
                 target_codes.append(code_dict)
         return target_codes
 
-    def confirm_coupon_status(self, codes):
-        target_codes = self.confirm_coupon_codes(codes)
+    def confirm_discount_code_status(self, codes):
+        target_codes = self.confirm_discount_codes(codes)
         if not target_codes:
             # 対象がない（他のバリデーションにかかっている）
             return True
 
-        result = discount_api.confirm_coupon_status(self.request, target_codes,
+        result = discount_api.confirm_discount_code_status(self.request, target_codes,
                                                     self.cart.available_fanclub_discount_code_settings)
         if result is None:
             # 使用可能なDiscountCodeSettingがない

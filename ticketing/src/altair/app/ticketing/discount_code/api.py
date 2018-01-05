@@ -146,7 +146,7 @@ def used_discount_code_groups(cart):
     return groups
 
 
-def confirm_coupon_status(request, codes, available_fanclub_discount_code_settings):
+def confirm_discount_code_status(request, codes, available_fanclub_discount_code_settings):
     if not available_fanclub_discount_code_settings:
         return None
 
@@ -169,7 +169,7 @@ def confirm_coupon_status(request, codes, available_fanclub_discount_code_settin
         'fc_member_id': fc_member_id,
         'coupons': coupons
     }
-    result = comm.confirm_coupon_status(data)
+    result = comm.confirm_discount_code_status(data)
 
     if not result['status'] == u'OK' and result['usage_type'] == u'1010':
         return False

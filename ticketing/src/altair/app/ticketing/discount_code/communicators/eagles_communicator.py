@@ -78,7 +78,7 @@ class EaglesCommunicator(object):
 
         return resp_data
 
-    def _coupon_common_method(self, url_suffix, data):
+    def _discount_code_common_method(self, url_suffix, data):
         first_token = data['coupons'][0]['coupon_cd']
         token = self._create_token(first_token)
 
@@ -104,7 +104,7 @@ class EaglesCommunicator(object):
 
         return resp_data
 
-    def confirm_coupon_status(self, data):
+    def confirm_discount_code_status(self, data):
         """
         data = {
             'usage_type': '1010',
@@ -112,10 +112,10 @@ class EaglesCommunicator(object):
             'coupons': [{'coupon_cd': 'EQWM7RFA7AGT'},{'coupon_cd': 'EEQT7CY7WP74'},{'coupon_cd': 'EEQTW3X3Q9LN'}]
         }
         """
-        resp_data = self._coupon_common_method(url_suffix="/coupon/confirm/status", data=data)
+        resp_data = self._discount_code_common_method(url_suffix="/coupon/confirm/status", data=data)
         return resp_data
 
-    def use_coupon(self, data):
+    def use_discount_code(self, data):
         """
         data = {
             'usage_type': '1010',
@@ -123,15 +123,15 @@ class EaglesCommunicator(object):
             'coupons': [{'coupon_cd': 'EQWM7RFA7AGT'},{'coupon_cd': 'EEQT7CY7WP74'},{'coupon_cd': 'EEQTW3X3Q9LN'}]
         }
         """
-        resp_data = self._coupon_common_method(url_suffix="/coupon/use", data=data)
+        resp_data = self._discount_code_common_method(url_suffix="/coupon/use", data=data)
         return resp_data
 
-    def cancel_used_coupon(self, data):
+    def cancel_used_discount_code(self, data):
         """
         data = {
             'usage_type': '1010',
             'coupons': [{'coupon_cd': 'EQWM7RFA7AGT'},{'coupon_cd': 'EEQT7CY7WP74'},{'coupon_cd': 'EEQTW3X3Q9LN'}]
         }
         """
-        resp_data = self._coupon_common_method(url_suffix="/coupon/cancel/used", data=data)
+        resp_data = self._discount_code_common_method(url_suffix="/coupon/cancel/used", data=data)
         return resp_data

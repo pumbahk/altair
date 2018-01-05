@@ -1468,7 +1468,7 @@ class DiscountCodeEnteringView(object):
         sorted_cart_product_items = self.context.sorted_carted_product_items()
 
         self.context.validate_discount_codes(codes)
-        self.context.confirm_coupon_status(codes)
+        self.context.confirm_discount_code_status(codes)
 
         if self.context.exist_validate_error(codes):
             return dict(
@@ -1734,7 +1734,7 @@ class CompleteView(object):
 
         self.context.check_deleted_product(cart)
         # クーポンのチェック
-        self.context.check_confirm_coupon()
+        self.context.check_available_discont_code()
         self.context.check_order_limit() # 最終チェック
         order = api.make_order_from_cart(self.request, cart)
         order_no = order.order_no

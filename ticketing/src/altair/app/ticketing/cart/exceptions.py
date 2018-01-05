@@ -25,7 +25,7 @@ class DeletedProductError(CartException):
     pass
 
 
-class CouponConfirmError(CartException):
+class DiscountCodeConfirmError(CartException):
     pass
 
 
