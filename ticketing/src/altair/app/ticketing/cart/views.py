@@ -1464,7 +1464,7 @@ class DiscountCodeEnteringView(object):
         cart = self.context.read_only_cart
         self.context.check_deleted_product(cart)
         sales_segment_id = self.request.matchdict["sales_segment_id"]
-        codes = self.context.create_codes_from_request(cart)
+        codes = self.context.create_codes(cart)
         sorted_cart_product_items = self.context.sorted_carted_product_items()
 
         self.context.validate_discount_codes(codes)
@@ -1733,6 +1733,8 @@ class CompleteView(object):
                 raise
 
         self.context.check_deleted_product(cart)
+        # クーポンのチェック
+        self.context.check_confirm_coupon()
         self.context.check_order_limit() # 最終チェック
         order = api.make_order_from_cart(self.request, cart)
         order_no = order.order_no

@@ -31,6 +31,7 @@ from ..exceptions import (
     PaymentError,
     CompletionPageNotRenderered,
     DeletedProductError,
+    CouponConfirmError
 )
 from ..reserving import InvalidSeatSelectionException, NotEnoughAdjacencyException
 from ..stocker import InvalidProductSelectionException, NotEnoughStockException
@@ -122,6 +123,11 @@ class CommonErrorView(object):
     @lbr_view_config(context=TooManyCartsCreated)
     def too_many_cart_exception(self):
         return dict(title=u'', message=u'誠に申し訳ございませんが、現在ご購入ができない状態になっております。しばらく経ってからお試しください')
+
+    @lbr_view_config(context=CouponConfirmError)
+    def coupon_confirm_error(self):
+        # クーポンが確定前に、使用不能となった
+        return dict(title=u'', message=u'お手持ちのクーポン・割引コードは使用できません。')
 
     @lbr_view_config(context=OverOrderLimitException)
     def over_order_limit_exception(self):

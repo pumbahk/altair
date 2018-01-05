@@ -38,6 +38,7 @@ from .exceptions import (
     NoSalesSegment,
     NoPerformanceError,
     OverOrderLimitException,
+    CouponConfirmError,
     OverQuantityLimitException,
     InvalidCartStatusError,
     OAuthRequiredSettingError
@@ -712,9 +713,10 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
             self.request.POST.clear()
             self.request.POST.extend(upper_list)
 
-    def create_codes_from_request(self, cart):
+    def create_codes(self, cart, codes=None):
         from . import schemas
-        codes = [code.strip() for code in self.request.POST.getall('code') if code]
+        if not codes:
+            codes = [code.strip() for code in self.request.POST.getall('code') if code]
         if not codes:
             return []
 
@@ -736,26 +738,17 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
                 cnt += 1
                 if input_cnt == cnt:
                     return code_forms
-        # # 入力されたコードのリスト化
-        # codes = list()
-        # for param in params:
-        #     code_dict = dict()
-        #     code_dict['code'] = param[1]
-        #     codes.append(code_dict)
-        #
-        # # 入力されたコードを商品明細の金額の降順とFormと対応させる
-        # count = 0
-        # max_count = len(codes)
-        # for carted_product_item in sorted_cart_product_items:
-        #     for index in range(carted_product_item.quantity):
-        #         form = schemas.DiscountCodeForm(discount_code_settings=settings)
-        #         code_dict = codes[count]
-        #         code_dict['carted_product_item'] = carted_product_item
-        #         form.code.data = code_dict['code']
-        #         code_dict['form'] = form
-        #         count = count + 1
-        #         if max_count == count:
-        #             return codes
+
+    def check_confirm_coupon(self):
+        code_list = [code.code for code in discount_api.get_used_discount_codes(self.cart)]
+        import ipdb;ipdb.set_trace()
+        codes = self.create_codes(self.cart, code_list)
+        if codes:
+            self.confirm_coupon_status(codes)
+            #if self.exist_validate_error(codes):
+                #raise CouponConfirmError()
+            raise CouponConfirmError()
+
 
     def temporarily_save_discount_code(self, codes):
         discount_api.temporarily_save_discount_code(codes)
@@ -888,7 +881,7 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
         return forms
 
 
-class CartBoundTicketingCartResource(TicketingCartResourceBase):
+class CartBoundTicketingCartResource(DiscountCodeTicketingCartResources):
     def __init__(self, request):
         super(CartBoundTicketingCartResource, self).__init__(request)
 
