@@ -41,6 +41,7 @@ from .exceptions import (
     DiscountCodeConfirmError,
     OverQuantityLimitException,
     InvalidCartStatusError,
+    DiscountCodeConfirmError,
     OAuthRequiredSettingError
 )
 from zope.deprecation import deprecate
@@ -683,8 +684,9 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
     def __init__(self, request, sales_segment_id=None):
         super(DiscountCodeTicketingCartResources, self).__init__(request, sales_segment_id)
 
-    def sorted_carted_product_items(self):
-        cart = self.read_only_cart
+    def sorted_carted_product_items(self, cart=None):
+        if not cart:
+            cart = self.read_only_cart
         sorted_cart_product_items = list()
         for carted_product in cart.items:
             for carted_product_item in carted_product.elements:
@@ -720,7 +722,7 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
         if not codes:
             return []
 
-        sorted_cart_product_items = self.sorted_carted_product_items()
+        sorted_cart_product_items = self.sorted_carted_product_items(cart)
         settings = cart.available_discount_code_settings
 
         code_forms = []
@@ -746,7 +748,6 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
             self.confirm_discount_code_status(codes)
             if self.exist_validate_error(codes):
                 raise DiscountCodeConfirmError()
-
 
     def temporarily_save_discount_code(self, codes):
         discount_api.temporarily_save_discount_code(codes)
@@ -809,6 +810,51 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
             if not code_dict['form'].errors:
                 target_codes.append(code_dict)
         return target_codes
+
+    def confirm_discount_code_status(self, codes):
+        target_codes = self.confirm_discount_codes(codes)
+        if not target_codes:
+            # 対象がない（他のバリデーションにかかっている）
+            return True
+
+        result = discount_api.confirm_discount_code_status(self.request, target_codes,
+                                                    self.cart.available_fanclub_discount_code_settings)
+        if result is None:
+            # 使用可能なDiscountCodeSettingがない
+            return True
+
+        logger.info("It is {0} confirm discount code response. {1}".format(self.cart.order_no, result))
+
+        if not result:
+            # 通信エラーなど。1つ目のformにデータを埋め込み表示
+            codes[0].code_dict['form'].validate()
+            codes[0].code_dict['form'].add_coupon_response_error()
+            return True
+
+        coupons = result['coupons']
+        error_list = {}
+        for coupon in coupons:
+            if coupon['reason_cd'] != u'1010':
+                error_list[coupon['coupon_cd']] = coupon['reason_cd']
+
+        error_keys = error_list.keys()
+        for code_dict in codes:
+            if code_dict['form'].code.data in error_keys:
+                code_dict['form'].validate()
+                code_dict['form'].add_coupon_response_error()
+        return True
+
+    def use_discount_coupon(self, order):
+        code_list = [code.code for code in discount_api.get_used_discount_codes(order.cart)]
+        codes = self.create_codes(order.cart, code_list)
+        if codes:
+            result = discount_api.use_discount_codes(self.request, codes,
+                                                     order.cart.available_fanclub_discount_code_settings)
+            if not result['status'] == u'OK' and result['usage_type'] == u'1010':
+                # 使用時にエラー
+                raise DiscountCodeConfirmError()
+            logger.info("It is {0} use discount code response. {1}".format(order.order_no, result))
+            return True
 
     def confirm_discount_code_status(self, codes):
         target_codes = self.confirm_discount_codes(codes)

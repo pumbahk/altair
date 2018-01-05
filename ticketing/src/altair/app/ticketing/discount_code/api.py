@@ -176,6 +176,37 @@ def confirm_discount_code_status(request, codes, available_fanclub_discount_code
 
     return result
 
+
+def use_discount_codes(request, codes, available_fanclub_discount_code_settings):
+    if not available_fanclub_discount_code_settings:
+        return None
+
+    # イーグルスクーポンの使用
+    comm = get_communicator(request, 'eagles')
+    fc_member_id = request.altair_auth_info['auth_identifier']
+
+    # ファンクラブのもので先頭4桁が合致するものだけ実施
+    coupons = []
+    for code in codes:
+        for setting in available_fanclub_discount_code_settings:
+            if code['code'][:4] == setting.first_4_digits:
+                coupons.append({'coupon_cd': code['code']})
+
+    if not coupons:
+        return None
+
+    data = {
+        'usage_type': '1010',
+        'fc_member_id': fc_member_id,
+        'coupons': coupons
+    }
+    result = comm.use_discount_code(data)
+
+    if not result['status'] == u'OK' and result['usage_type'] == u'1010':
+        return False
+
+    return result
+
 # # APIのテスト使用
 # from ..discount_code.communicators.utils import get_communicator
 # comm = get_communicator(self.request, 'eagles')
