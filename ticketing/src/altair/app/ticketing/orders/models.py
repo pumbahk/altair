@@ -572,6 +572,11 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 refund_order(request, self, payment_method=payment_method, now=now)
             else:
                 cancel_order(request, self, now=now)
+
+            # 割引コードがチケット購入時に使用されている場合
+            if hasattr(self, 'used_discount_codes'):
+                discount_api.cancel_used_discount_codes(request, self, now=now)
+
         except Exception as e:
             logger.exception(u'キャンセルに失敗しました')
             return False

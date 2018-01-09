@@ -4,7 +4,9 @@ from datetime import datetime
 
 from sqlalchemy.orm.exc import NoResultFound
 from .models import DiscountCodeSetting, DiscountCodeCode, UsedDiscountCodeCart, UsedDiscountCodeOrder
+from altair.app.ticketing.orders.exceptions import OrderCancellationError
 from communicators.utils import get_communicator
+from pyramid.i18n import TranslationString as _
 
 
 def is_enabled_discount_code_checked(context, request):
@@ -206,6 +208,66 @@ def use_discount_codes(request, codes, available_fanclub_discount_code_settings)
         return False
 
     return result
+
+
+def cancel_used_discount_codes(request, order, now=None):
+    """
+    使用された割引コードを未使用に戻す。（自社コード、スポーツサービス開発コード）
+    :param request: リクエスト
+    :param order: キャンセル対象
+    :param now: キャンセル時刻
+    """
+    now = now or datetime.now()
+    own_settings = order.cart.available_own_discount_code_settings
+    fanclub_settings = order.cart.available_fanclub_discount_code_settings
+    api_request_coupons = []
+
+    try:
+        for code in order.used_discount_codes:
+            # UsedDiscountCodeOrderの更新
+            if order.payment_status == 'refunding':
+                code.refunded_at = now
+            else:
+                code.canceled_at = now
+            code.save()
+
+            first_4_degits = code.code[:4]
+
+            # 自社発行の割引コード
+            # DiscountCodeテーブルのused_atをNullに更新する
+            for o_setting in own_settings:
+                if first_4_degits == o_setting.first_4_digits:
+                    code.discount_code.used_at = None
+                    code.discount_code.save()
+
+            # スポーツサービス開発発行の割引コード
+            for f_setting in fanclub_settings:
+                if first_4_degits == f_setting.first_4_digits:
+                    api_request_coupons.append({'coupon_cd': code.code})
+
+        # スポーツサービス開発に割引コードを未使用に戻すAPIリクエストを送る
+        if not api_request_coupons:
+            return None
+
+        comm = get_communicator(request, 'eagles')
+        data = {
+            'usage_type': '1010',
+            'coupons': api_request_coupons
+        }
+
+        result = comm.cancel_used_discount_code(data)
+        for coupon in result['coupons']:
+            if coupon['reason_cd'][:2] != '10':
+                raise SystemError('inappropriate response returned.')
+
+    except:
+        import sys
+        exc_info = sys.exc_info()
+        raise OrderCancellationError(
+            order.order_no,
+            _(u'used discount code can not be canceled.').interpolate(),
+            nested_exc_info=exc_info
+        )
 
 # # APIのテスト使用
 # from ..discount_code.communicators.utils import get_communicator
