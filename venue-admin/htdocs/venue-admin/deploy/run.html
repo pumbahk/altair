@@ -1,0 +1,65 @@
+<html lang="ja">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+</head>
+<body>
+<script src="js/jquery.js"></script>
+
+<div style="position: absolute; right: 10px; width: 300px; height: 200px;">
+<iframe src="../ps" style="width: 300px; height: 200px;"></iframe>
+<br />(auto updated at 5 seconds interval)
+</div>
+
+
+<form method="post" target="output">
+backend: <input type="text" name="backend" value="" style="width: 500px;" placeholder="http://hostname/chk.html#/upload/backend/ffffffffffff.gotanda-hall.xml" />
+<br />
+frontend: <input type="text" name="frontend" value="" style="width: 500px;" placeholder="http://hostname/vwr.html#/upload/frontend/ffffffffffff/metadata.json" /> (optional)
+<br /> 
+organization: <select name="organization">
+<option name=""></option>
+</select>
+<br />
+sub_name: <input type="text" name="sub_name" />
+<br />
+prefecture: <input type="text" name="prefecture" />
+<br />
+backend-dirname: <input type="text" name="backend_dirname" /> (通常は空欄で構いません)
+<br />
+frontend-dirname: <input type="text" name="frontend_dirname" /> (通常は空欄で構いません)
+<br />
+<input type="submit" name="register" value="backend(+frontend)を新規登録する" />
+<br />
+<input type="submit" name="check" value="整合性チェックする" />
+</form>
+
+<script>
+function replace(form) {
+    location.href = '/venue-admin/deploy/run?site='+(form.site_id.value * 1);
+    return false;
+}
+</script>
+<form onsubmit="return replace(this);">
+<input type="text" name="site_id" placeholder="site_id"> <input type="submit" value="frontendの追加/差し替え..." />
+</form>
+<br />
+<br />
+
+
+<div style="height: 100px;"></div>
+
+<iframe name="output" style="width: 100%;" src="blank.html"></iframe>
+
+<script>
+$.ajax({ url: '../api/organization', json: true }).then(function(res) {
+    var select = $('select[name="organization"]');
+    res.forEach(function(r) {
+        $('<option></option>').text('['+r.code+'] '+r.name).attr('value', r.name).appendTo(select);
+    });
+}, function(xhr, err) {
+    console.log(err);
+});
+</script>
+
+</body>
+</html>

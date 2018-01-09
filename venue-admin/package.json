@@ -9,7 +9,11 @@
   "author": "",
   "license": "UNLICENSED",
   "dependencies": {
+    "argv": "0.0.2",
+    "aws-sdk": "^2.185.0",
     "busboy": "^0.2.14",
+    "ejs": "^2.5.7",
+    "mysql": "^2.15.0",
     "sax": "^1.2.4"
   }
 }

@@ -1,0 +1,43 @@
+<html lang="ja">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<style>
+td { font-size: 12px; }
+small { font-size: 9px; }
+table { border-collapse: collapse; }
+table td, table th { border: 1px solid gray; }
+.sub_name { font-size: 70%; }
+</style>
+</head>
+<body>
+<script src="js/jquery.js"></script>
+<script src="js/jquery.tablesorter.js"></script>
+
+<table>
+<thead>
+<tr><th>org</th><th>site</th><th>venue</th><th>会場名</th><th>frontend</th><th>登録日時</th></tr>
+</thead>
+<tbody id="venue">
+</tbody>
+</table>
+
+<script>
+$.ajax({ url: '../api/venue', json: true }).then(function(res) {
+    var target = $('#venue');
+    res.forEach(function(r) {
+        var tr = $('<tr></tr>');
+        $('<td></td>').text(r.organization).appendTo(tr);
+        $('<td></td>').text(r.id).appendTo(tr);
+        $('<td></td>').append($('<a></a>').text(r.venue).attr('href', 'https://service.ticketstar.jp/venues/show/'+r.venue).attr('target', '_blank')).appendTo(tr);
+        $('<td></td>').append($('<a></a>').text(r.name).attr('href', 'site?id='+r.id)).append($('<div></div>').addClass('sub_name').text(r.sub_name || '')).appendTo(tr);
+        $('<td></td>').text(r.metadata_url || '').appendTo(tr);
+        $('<td></td>').text(r.created_at).appendTo(tr);
+        tr.appendTo(target);
+    });
+}, function(xhr, err) {
+    console.log(err);
+});
+</script>
+
+</body>
+</html>
