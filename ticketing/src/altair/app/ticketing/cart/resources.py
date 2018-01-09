@@ -845,7 +845,9 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
         return True
 
     def use_discount_coupon(self, order):
-        code_list = [code.code for code in discount_api.get_used_discount_codes(order.cart)]
+        # ファンクラブコード
+        code_list = [code.code for code in discount_api.get_used_discount_codes(order.cart) if
+                     not code.discount_code_id]
         codes = self.create_codes(order.cart, code_list)
         if codes:
             result = discount_api.use_discount_codes(self.request, codes,
@@ -854,7 +856,18 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
                 # 使用時にエラー
                 raise DiscountCodeConfirmError()
             logger.info("It is {0} use discount code response. {1}".format(order.order_no, result))
-            return True
+
+            coupons = result['coupons']
+            error = None
+            for coupon in coupons:
+                if coupon['reason_cd'] != u'1010' or coupon['available_flg'] != u'1':
+                    # さすがに使う時に落ちるのはまずいので確認APIを直前でも叩いている。ここには入らない想定
+                    logger.info("It is {0} use discount code Error. {1}".format(order.order_no, result))
+                    error = True
+
+            if error:
+                raise DiscountCodeConfirmError()
+            return result
 
     def confirm_discount_code_status(self, codes):
         target_codes = self.confirm_discount_codes(codes)
