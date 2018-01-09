@@ -834,7 +834,7 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
         coupons = result['coupons']
         error_list = {}
         for coupon in coupons:
-            if coupon['reason_cd'] != u'1010' or coupon['available_flg'] != 1:
+            if coupon['reason_cd'] != u'1010' or coupon['available_flg'] != u'1':
                 error_list[coupon['coupon_cd']] = coupon['reason_cd']
 
         error_keys = error_list.keys()
@@ -879,7 +879,7 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
         coupons = result['coupons']
         error_list = {}
         for coupon in coupons:
-            if coupon['reason_cd'] != u'1010' or coupon['available_flg'] != 1:
+            if coupon['reason_cd'] != u'1010' or coupon['available_flg'] != u'1':
                 error_list[coupon['coupon_cd']] = coupon['reason_cd']
 
         error_keys = error_list.keys()
