@@ -417,15 +417,19 @@ class Cart(Base, c_models.CartMixin):
                 available_target.append(target.discount_code_setting)
         return available_target
 
-    @property
-    def available_fanclub_discount_code_settings(self):
+    def _find_available_target_settings(self, issued_by):
+        """
+        引数で指定されたコード発行元における割引設定で、利用可能な状態のものを抽出
+        :param issued_by: コードの発行元
+        :return: 割引コード設定のリスト
+        """
         valid_target = [x for x in self.performance.DiscountCodeTarget if x.discount_code_setting.is_valid]
         if not valid_target:
             return False
 
         available_target = []
         for target in valid_target:
-            if not target.discount_code_setting.issued_by == u'sports_service':
+            if not target.discount_code_setting.issued_by == issued_by:
                 continue
 
             status = True
@@ -439,29 +443,14 @@ class Cart(Base, c_models.CartMixin):
             if status:
                 available_target.append(target.discount_code_setting)
         return available_target
+
+    @property
+    def available_fanclub_discount_code_settings(self):
+        return self._find_available_target_settings(u'sports_service')
 
     @property
     def available_own_discount_code_settings(self):
-        valid_target = [x for x in self.performance.DiscountCodeTarget if x.discount_code_setting.is_valid]
-        if not valid_target:
-            return False
-
-        available_target = []
-        for target in valid_target:
-            if not target.discount_code_setting.issued_by == u'own':
-                continue
-
-            status = True
-            for item in self.items:
-                if not status:
-                    break
-                for element in item.elements:
-                    if element.price > target.discount_code_setting.condition_price_amount:
-                        status = False
-                        break
-            if status:
-                available_target.append(target.discount_code_setting)
-        return available_target
+        return self._find_available_target_settings(u'own')
 
     @property
     def used_discount_code_settings(self):

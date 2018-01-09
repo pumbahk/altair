@@ -225,10 +225,12 @@ def cancel_used_discount_codes(request, order, now=None):
     try:
         for code in order.used_discount_codes:
             # UsedDiscountCodeOrderの更新
-            if order.payment_status == 'refunding':
+            if order.status == 'refunded':
                 code.refunded_at = now
-            else:
+            elif order.status == 'canceled':
                 code.canceled_at = now
+            else:
+                raise SystemError('order status must be refunded or canceled.')
             code.save()
 
             first_4_degits = code.code[:4]
