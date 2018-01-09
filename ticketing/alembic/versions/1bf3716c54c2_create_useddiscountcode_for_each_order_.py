@@ -41,6 +41,7 @@ def upgrade():
         sa.Column('created_at', sa.TIMESTAMP(), server_default=sqlf.current_timestamp(), nullable=False),
         sa.Column('updated_at', sa.TIMESTAMP(), server_default=text('0'), nullable=False),
         sa.Column('deleted_at', sa.TIMESTAMP(), nullable=True),
+        sa.Column('canceled_at', sa.TIMESTAMP(), nullable=True),
         sa.ForeignKeyConstraint(['discount_code_id'], ['DiscountCode.id'], name="UsedDiscountCodeOrder_ibfk_1"),
         sa.ForeignKeyConstraint(['ordered_product_item_id'], ['OrderedProductItem.id'], name="UsedDiscountCodeOrder_ibfk_2")
     )

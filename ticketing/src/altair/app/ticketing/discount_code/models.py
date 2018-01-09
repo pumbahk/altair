@@ -80,7 +80,7 @@ class UsedDiscountCodeCart(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'UsedDiscountCodeCart'
     id = AnnotatedColumn(Identifier, primary_key=True, _a_label=_(u'ID'))
     discount_code_id = AnnotatedColumn(Identifier, ForeignKey('DiscountCode.id'), nullable=True)
-    code = AnnotatedColumn(String(12), _a_label=_(u'ディスカウントコード'), nullable=True)
+    code = AnnotatedColumn(String(12), _a_label=_(u'割引コード'), nullable=True)
     carted_product_item_id = AnnotatedColumn(Identifier, ForeignKey('CartedProductItem.id'))
     carted_product_item = relationship("CartedProductItem", backref="used_discount_codes")
 
@@ -93,7 +93,8 @@ class UsedDiscountCodeOrder(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                                  backref='UsedDiscountCodeOrder',
                                  cascade='all'
                                  )
-    code = AnnotatedColumn(String(12), _a_label=_(u'ディスカウントコード'), nullable=True)
+    code = AnnotatedColumn(String(12), _a_label=_(u'割引コード'), nullable=True)
+    canceled_at = AnnotatedColumn(DateTime, nullable=True, _a_label=_(u'キャンセル日時'))
     ordered_product_item_id = AnnotatedColumn(Identifier, ForeignKey('OrderedProductItem.id'))
     ordered_product_item = relationship("OrderedProductItem", backref="used_discount_codes")
     ordered_product_item_token_id = AnnotatedColumn(Identifier, ForeignKey('OrderedProductItemToken.id'))
@@ -158,7 +159,7 @@ class UsedDiscountCode(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'UsedDiscountCode'
     id = AnnotatedColumn(Identifier, primary_key=True, _a_label=_(u'ID'))
     discount_code_id = AnnotatedColumn(Identifier, ForeignKey('DiscountCode.id'), nullable=True)
-    code = AnnotatedColumn(String(12), _a_label=_(u'ディスカウントコード'), nullable=True)
+    code = AnnotatedColumn(String(12), _a_label=_(u'割引コード'), nullable=True)
     carted_product_item_id = AnnotatedColumn(Identifier, ForeignKey('CartedProductItem.id'), nullable=True)
     ordered_product_item_id = AnnotatedColumn(Identifier, ForeignKey('OrderedProductItem.id'), nullable=True)
 
