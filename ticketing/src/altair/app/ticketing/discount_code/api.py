@@ -73,7 +73,7 @@ def enable_discount_code(organization):
     return organization.setting.enable_discount_code
 
 
-def temporarily_save_discount_code(codes):
+def temporarily_save_discount_code(codes, organization):
     # carted_product_itemのIDと、使用したコードを保存する
     for code_dict in codes:
         code = code_dict['form'].code.data
@@ -82,8 +82,9 @@ def temporarily_save_discount_code(codes):
             use_discount_code.code = code
             use_discount_code.carted_product_item_id = code_dict['carted_product_item'].id
             own_code = DiscountCodeCode.query.filter(
-               DiscountCodeCode.code == code_dict['code'],
-               DiscountCodeCode.used_at.is_(None)
+                DiscountCodeCode.code == code_dict['code'],
+                DiscountCodeCode.organization_id == organization.id,
+                DiscountCodeCode.used_at.is_(None)
             ).first()
             if own_code:
                 # 自社コードの場合のみ存在

@@ -208,7 +208,7 @@ class EaglesDiscountCodeAPI(object):
                 add_dict = {
                     'coupon_cd': coupon.code,
                     'coupon_type': '1010',
-                    'available_flg': coupon.available_flg,
+                    'available_flg': str(coupon.available_flg),
                     'reason_cd': reason_cd
                 }
 

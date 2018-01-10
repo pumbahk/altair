@@ -750,7 +750,8 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
                 raise DiscountCodeConfirmError()
 
     def temporarily_save_discount_code(self, codes):
-        discount_api.temporarily_save_discount_code(codes)
+        organization = cart_api.get_organization(self.request)
+        discount_api.temporarily_save_discount_code(codes, organization)
 
     def get_carted_product_item_ids(self):
         cart = self.read_only_cart
@@ -860,7 +861,7 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
             coupons = result['coupons']
             error = None
             for coupon in coupons:
-                if coupon['reason_cd'] != u'1010' or coupon['available_flg'] != u'1':
+                if coupon['reason_cd'] != u'1010' or coupon['available_flg'] != u'0':
                     # さすがに使う時に落ちるのはまずいので確認APIを直前でも叩いている。ここには入らない想定
                     logger.info("It is {0} use discount code Error. {1}".format(order.order_no, result))
                     error = True
