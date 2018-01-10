@@ -156,15 +156,6 @@ class DiscountCodeTarget(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                                )
 
 
-class UsedDiscountCode(Base, BaseModel, WithTimestamp, LogicallyDeleted):
-    __tablename__ = 'UsedDiscountCode'
-    id = AnnotatedColumn(Identifier, primary_key=True, _a_label=_(u'ID'))
-    discount_code_id = AnnotatedColumn(Identifier, ForeignKey('DiscountCode.id'), nullable=True)
-    code = AnnotatedColumn(String(12), _a_label=_(u'割引コード'), nullable=True)
-    carted_product_item_id = AnnotatedColumn(Identifier, ForeignKey('CartedProductItem.id'), nullable=True)
-    ordered_product_item_id = AnnotatedColumn(Identifier, ForeignKey('OrderedProductItem.id'), nullable=True)
-
-
 def insert_specific_number_code(num, first_4_digits, data):
     """
     ユニークなコードを生成し、既存のレコードと重複がないことを確かめてインサート
