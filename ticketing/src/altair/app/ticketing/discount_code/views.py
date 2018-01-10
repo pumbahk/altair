@@ -144,7 +144,7 @@ class DiscountCode(BaseView):
         except SQLAlchemyError as e:
             self.request.session.flash(u'クーポン・割引コード設定の削除に失敗しました')
 
-        return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
+        return HTTPFound(self.request.route_path("discount_code.settings_index"))
 
     @view_config(route_name='discount_code.codes_index',
                  renderer='altair.app.ticketing:templates/discount_code/codes/index.html', permission='event_viewer',
