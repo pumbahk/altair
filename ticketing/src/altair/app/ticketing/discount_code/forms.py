@@ -156,11 +156,6 @@ class DiscountCodeSettingForm(Form):
     explanation = TextAreaField(
         label=get_annotations_for(DiscountCodeSetting.explanation)['label'],
         validators=[Optional()],
-        default=u'''
-概要:
-適用条件：
-割引内容：
-        '''
     )
     status = HiddenField(
         label=u'状態',

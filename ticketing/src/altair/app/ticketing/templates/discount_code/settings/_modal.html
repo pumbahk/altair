@@ -5,12 +5,18 @@
         $('[rel=popover]').popover({html: true});
     }
 
+    function reflect_cke_content() {
+        if (CKEDITOR.instances["explanation"]) {
+            CKEDITOR.instances["explanation"].updateElement();
+        }
+    }
+
     $(function () {
         pop_over();
         var endpoints = {
             'new': '${request.route_path('discount_code.settings_new')|n}',
             'edit': '${request.route_path('discount_code.settings_edit', setting_id='__id__')|n}',
-            'delete': '${request.route_path('discount_code.settings_delete', setting_id='__id__')|n}'
+            'delete': '${request.route_path('discount_code.settings_delete', setting_id='__id__', _query=request.GET)|n}'
         };
         (function (modal_setting) {
             new_setting = function new_setting() {
@@ -48,6 +54,7 @@
                 $("#valid_term").fadeIn();
             }
         });
+        CKEDITOR.replace('explanation');
     });
 
 </script>
@@ -62,7 +69,7 @@
 
     <div class="modal-footer">
         <a href="#" class="btn" data-dismiss="modal">閉じる</a>
-        <a href="javascript:void(0);" onclick="$('#${modal_id}').find('form').submit();"
+        <a href="javascript:void(0);" onclick="reflect_cke_content(); $('#${modal_id}').find('form').submit();"
            class="btn">保存</a>
     </div>
 </div>
