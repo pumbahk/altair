@@ -28,9 +28,9 @@ for code in codes:
         code.code,
         order_no,
         code.used_at,
-        code.operator_id,
+        code.operator.name,
         code.created_at
     ]
-    str_list = [str('' if elm is None else elm) for elm in c_list]
+    str_list = [unicode('' if elm is None else elm) for elm in c_list]
     writer.writerow(str_list)
 %>${queue.getvalue().decode("utf-8") | n}

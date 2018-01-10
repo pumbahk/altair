@@ -174,7 +174,6 @@ class DiscountCode(BaseView):
             codes = self.context.code_index_search_query(f).all()
 
             render_param = dict(codes=codes)
-            # TODO オペレーター名を出力しようとすると、UnicodeEncodeError: 'ascii' codec can't encode characters in position 0-2: ordinal not in range(128)が出る
             r = render_to_response('altair.app.ticketing:templates/discount_code/codes/export.txt', render_param,
                                    request=self.request)
             now = datetime.now().strftime('%Y%m%d_%H%M%S')
