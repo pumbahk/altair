@@ -58,6 +58,21 @@ ${get("for_seat").body}
 ${get("for_product").body}
 %endif
 
+%if order.cart.discount_amount:
+%if i18n:
+■クーポン・割引コードご使用金額/Coupon・Discount code application amount
+%else:
+■クーポン・割引コードご使用金額
+%endif
+%for index, group in enumerate(order.cart.used_discount_code_groups):
+${group['discount_code_setting'].explanation}
+<% codes = [code.code for code in group['code']] %>
+${"\n".join(codes)}
+${len(group['code'])}枚
+-￥${h.format_number(group['discount_price'])}
+%endfor
+%endif
+
 %if get("system_fee").status:
 ${get("system_fee").label} ${get("system_fee").body}
 %endif
