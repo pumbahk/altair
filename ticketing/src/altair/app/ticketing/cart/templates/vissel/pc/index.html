@@ -1,4 +1,5 @@
 <%inherit file="./base.html" />
+
 <%block name="css">
   <link rel="stylesheet" href="${request.static_url('altair.app.ticketing.cart:static/js/css/jquery.smihica_vertical_slider/smihica_vertical_slider2.css')}" type="text/css" media="all" />
   <style type="text/css">
@@ -26,12 +27,23 @@
 var selected = ${selected};
 var salesSegmentsSelection = ${sales_segments_selection};
 var cartReleaseUrl = ${h.json_encode(cart_release_url)|n};
-var spinnerPictureUrl = ${h.json_encode(request.static_url('altair.app.ticketing.cart:static/vissel/pc/images/loading.gif'))|n};
-$(function() {cart.init(salesSegmentsSelection, selected, cartReleaseUrl, true, spinnerPictureUrl);});
+var carti18nUrl = ${h.json_encode(cart_i18n_url)|n};
+var spinnerPictureUrl = ${h.json_encode(view_context.static_url('pc/images/loading.gif'))|n};
+$(function() {cart.init(salesSegmentsSelection, selected, cartReleaseUrl, true, spinnerPictureUrl, carti18nUrl);});
 </script>
 </%block>
-<%block name="extras">  
-  <div class="modal" id="venue-detail" style="display:none; background-image: url(${request.static_url('altair.app.ticketing.cart:static/vissel/pc/images/site-data/xebio-arena.png')}); width: 833px; height: 637px;">
+
+<nav class="nav-stepbar clearfix mgb30">
+  <ol>
+    <li class="current"><dl><dt>STEP1</dt><dd>${_(u'公演日時・会場選択')}</dd></dl></li>
+    <li><dl><dt>STEP2</dt><dd>${_(u'支払・引取方法選択')}</dd></dl></li>
+    <li><dl><dt>STEP3</dt><dd>${_(u'購入情報確認')}</dd></dl></li>
+  </ol>
+</nav>
+
+
+<%block name="extras">
+  <div class="modal" id="venue-detail" style="display:none; background-image: url(${view_context.static_url('pc/images/site-data/xebio-arena.png')}); width: 833px; height: 637px;">
   </div>
 
   <div class="modal payment" id="order-error-template" style="display:none">
@@ -41,12 +53,20 @@ $(function() {cart.init(salesSegmentsSelection, selected, cartReleaseUrl, true, 
       <div class="modal-footer"></div>
     </div>
   </div>
-  
+
   <div class="modal payment" id="order-reserved" style="display:none">
     <div class="modal-header"></div>
     <div class="modal-inner">
+      <div>
+        <p class="tac fs12 mgt10 mgb5" style="line-height: 1.3; background: #ffe8e8; padding: 10px">${_(u'上記座席を確保しました。{0}分以内に購入を完了してください').format(h.cart_timeout(request))}<br>${_(u'（完了しない場合は、確保解除となります）')}</p>
+      </div>
       <div class="modal-body">
-        <h3>合計金額</h3>
+        <h3 class="mgl5">${_(u'内訳')}</h3>
+        <table>
+          <tbody class="contentsOfShopping">
+          </tbody>
+        </table>
+        <h3 class="mgl5">${_(u'合計金額')}</h3>
         <table>
           <tbody>
             <tr class="last-child">
@@ -54,60 +74,66 @@ $(function() {cart.init(salesSegmentsSelection, selected, cartReleaseUrl, true, 
             </tr>
           </tbody>
         </table>
-        <h3>内訳</h3>
-        <table>
-          <tbody class="contentsOfShopping">
-          </tbody>
-        </table>
       </div>
       <div class="modal-footer">
-        <a class="cancel-button btn-redo">座席・枚数を選びなおす</a>
-        <a class="ok-button btn-buy">購入する</a>
-      </div>
-      <div>
-          <p>上記座席を確保しました。${h.cart_timeout(request)} 分以内に購入を完了してください<br>（完了しない場合は、確保解除となります）</p>
+        <a class="cancel-button btn-redo">${_(u'座席・枚数を選びなおす')}</a>
+        <a class="ok-button btn-buy">${_(u'購入する')}</a>
       </div>
     </div>
   </div>
 </%block>
-    ${self.widget.flow_widget(1)}
-    <h2 id="ticketName">${event['title']} (<span class="performanceNameSpace"></span>)</h2>
+    <%
+        from altair.mobile import PC_ACCESS_COOKIE_NAME
+        link = request.context.switch_sp_url
+        if performance:
+            link = request.context.switch_sp_url
+    %>
+    % if request.cookies.get(PC_ACCESS_COOKIE_NAME):
+        <a href="${link}">
+          <button class="switch_pc">${_(u'スマホサイトで購入する')}</button>
+        </a>
+    % endif
+
+    <div id="ticketName">${event['title']}</div>
     % if preferred_performance:
     <div class="settlementNotice">
-      <p>誠に申し訳ございませんが、選択された公演「${h.format_name(request, performance=preferred_performance)}」は<u>現在販売しておりません</u>。</p>
-      <p>他の日時／会場を下記よりお選びいただけます。</p>
+      <p>${_(u'誠に申し訳ございませんが、選択された公演「{0}」<u>現在販売しておりません</u>').format(h.format_name(request, performance=preferred_performance))}</p>
+      <p>${_(u'他の日時／会場を下記よりお選びいただけます。')}</p>
     </div>
     % endif
+    <div class="selectdate-box">
     <form id="form1" name="form1" method="post" action="">
       <div id="settlementSelectBox">
         <div id="settlementSelectBoxInner">
-          <table summary="チケット購入の絞り込み">
+          <table summary="チケット購入の絞り込み" class="details">
             <tr>
-              <th>${selection_label}</th>
+              <th>${_(selection_label)}</th>
               <td>
-                <select name="select" id="date-select"></select>
+                <select name="select" id="date-select">
+                </select>
               </td>
             </tr>
             <tr id="settlementSelectEnd">
-              <th>${second_selection_label}</th>
-              <td>  
-                <select name="select2" id="venue-select"></select>
-              </td>
+              <th>${_(second_selection_label)}</th>
+              <td><select name="select2" id="venue-select">
+              </select></td>
             </tr>
           </table>
         </div>
       </div>
     </form>
-    <div id="settlementOperation" class="settlementBox2">
+    </div>
+
+    <div id="settlementOperation">
       <div class="settlementBoxInner2">
-        <h2 id="hallName">
+        <h2 id="hallName" class="heading heading_simple_line">
           <span id="performanceDate">-</span>
           <span id="performanceVenue">-</span>
         </h2>
         <div class="settlementOperationPaneInner">
           <div class="settlementOperationPaneInnerContent">
             <div id="selectSeatType" class="focused">
-              <h3 class="lead">席種をお選びください</h3>
+              <h3 class="lead">${_(u'席種をお選びください')}</h3>
               <form name="form2" method="post" action="" class="main" onsubmit="return false;">
                 <input type="hidden" name="performance_id" id="current-performance-id"/>
                 <div class="seatListContainer main">
@@ -175,9 +201,9 @@ $(function() {cart.init(salesSegmentsSelection, selected, cartReleaseUrl, true, 
                       <fieldset style="display:none;" class="selected-seats">
                       </fieldset>
                       <ul class="buttonSet">
-                        <li><a class="btn-select-buy">座席を選んで購入</a></li>
-                        <li><a class="btn-entrust-buy">おまかせで購入</a></li>
-                        <li><a class="btn-buy">購入</a></li>
+                        <li><a class="btn-select-buy">${_(u'座席を選んで購入')}</a></li>
+                        <li><a class="btn-entrust-buy">${_(u'おまかせで購入')}</a></li>
+                        <li><a class="btn-buy">${_(u'購入')}</a></li>
                       </ul>
                     </div>
                   </div>
@@ -189,6 +215,29 @@ $(function() {cart.init(salesSegmentsSelection, selected, cartReleaseUrl, true, 
                 <div class="venueViewerWrapper">
                   <div class="slider"></div>
                   <div class="venueViewer"></div>
+                  <div class="guidanceBackground"></div>
+                  <div class="guidance" style="display: none;">
+                    <div class="guidanceInner" style="margin-top: 0; font-size: 12px;">
+                      <h3>${_(u'チケット購入方法')}</h3>
+                      <p>${_(u'1. 左側の席種一覧から希望の席種をクリックしてください。')}</p>
+                      <p>${_(u'2. 希望の券種と購入枚数を選択してください。')}</p>
+                      <p>${_(u'3. 購入方法を選び、座席を確保してください。')}</p>
+                      <ul>
+                        <li style="list-style-type: disc; margin-left: 24px; list-style-position: outside;">${_(u'「おまかせで購入」ボタンをクリックすると、選択された席種の中から前方より座席を自動配席します。暫くお待ち頂くと、確保できた座席番号が表示されますので、ご確認の上、購入ステップにお進みください。')}</li>
+                        <li style="list-style-type: disc; margin-left: 24px; list-style-position: outside;">${_(u'「座席を選んで購入」の場合、右側（この欄）に座席図が表示されます。座席図上で、選択いただいた購入枚数分の座席をクリックし、下部の「選択」ボタンを押してください。')}</li>
+                        <ul>
+                          <li style="list-style-type: circle; margin-left: 12px; list-style-position: outside;">${_(u'色のついた座席が選択可能な席です。')}</li>
+                          <li style="list-style-type: circle; margin-left: 12px; list-style-position: outside;">${_(u'座席をクリックすることで座席の色が変わり、選択された状態になります。')}</li>
+                          <li style="list-style-type: circle; margin-left: 12px; list-style-position: outside;">${_(u'座席図の下にある「選択」ボタンをクリックすると座席選択は完了です。')}</li>
+                          <li style="list-style-type: circle; margin-left: 12px; list-style-position: outside;">${_(u'座席が小さくてみづらい場合には、左側のズーム機能を使って座席を拡大してください。')}</li>
+                          <li style="list-style-type: circle; margin-left: 12px; list-style-position: outside;">${_(u'座席を選び直す場合は、一度選択した座席をクリックし、選択カーソルを解除することで選び直すことができます。')}</li>
+                        </ul>
+                        </li>
+                      </ul>
+                      <br />
+                      <p>${_(u'4. 席種を選び直したい場合は「キャンセル」ボタンをクリックしてください。')}</p>
+                    </div>
+                  </div>
                   <div class="guidance without-venue" style="display: none;">
                     % if view_context.hidden_venue_html:
                       <div class="guidanceInner" style="text-align: center;">
@@ -196,15 +245,15 @@ $(function() {cart.init(salesSegmentsSelection, selected, cartReleaseUrl, true, 
                       </div>
                     % else:
                       <div class="guidanceInner" style="margin-top: 150px; font-size: 18px; text-align: center; color: #999999;">
-                        座席指定はできません <br /><br />
-                        席種・券種・枚数を選択の上、ご購入ください <br />
+                        ${_(u'座席指定はできません')} <br /><br />
+                        ${_(u'席種・券種・枚数を選択の上、ご購入ください')} <br />
                       </div>
                     % endif
                   </div>
                 </div>
                 <div>
-                  <a class="btn-select-seat">購入</a>
-                  <a class="btn-cancel">キャンセル</a>
+                  <a class="btn-select-seat">${_(u'選択')}</a>
+                  <a class="btn-cancel">${_(u'キャンセル')}</a>
                 </div>
               </div>
             </div>
@@ -212,30 +261,45 @@ $(function() {cart.init(salesSegmentsSelection, selected, cartReleaseUrl, true, 
         </div>
       </div>
     </div>
-    <div class="settlementBox2" id="settlementEventDetail" style="clear:both">
-      <div class="settlementBoxInner2">
-        <h2><img src="${request.static_url('altair.app.ticketing.cart:static/vissel/pc/images/title_event.gif')}" alt="イベント詳細" width="106" height="29" /></h2>
-        <table summary="イベント詳細情報">
-          <tbody>
-            <tr>
-              <th scope="row">イベント名</th>
-              <td>${event["title"]} (<span class="performanceNameSpace"></span>)</td>
-            </tr>
-            %for v in event_extra_info:
-            <tr>
-              <th scope="row">${v['label']}</th>
-              <td>${v['content']|n}</td>
-            </tr>
-            %endfor
-          </tbody>
-        </table>
-      </div>
-    </div>
+
+<!-- ===== イベント詳細 ===== -->
+<div class="confirm-wrap mgt20" id="settlementEventDetail" style="clear:both">
+  <h2 class="heading heading_simple_line">${_(u'イベント詳細')}</h2>
+  <div class="settlementBoxInner2 mgt20">
+    <!-- ===== customerBox ===== -->
+    <div class="customerBox">
+    <table class="customer-table">
+      <tbody>
+        <tr>
+          <th scope="row">${_(u'イベント名')}</th>
+          <td>
+            ${event["title"]} (<span class="performanceNameSpace"></span>)
+          </td>
+        </tr>
+        <tr>
+          <th scope="row">${_(u'開催日時')}</th>
+        <td id="descPerformanceDate"></td>
+        </tr>
+        <tr>
+          <th scope="row">${_(u'会場')}</th>
+          <td>
+          ${", ".join(set(event['venues']))}
+          </td>
+        </tr>
+        <tr>
+          <th scope="row">${_(u'販売期間')}</th>
+          <td>
+          ${event['sales_start_on']} 〜 ${event['sales_end_on']}
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div><!-- ===== / 購入者情報 ===== -->
+
 % if request.organization.setting.sitecatalyst_use:
-<!--SiteCatalyst-->
 <%
     sc = {"pagename": "index", "events": "prodView", "products": str(event['id']) }
 %>
-<%include file="../common/sc_basic.html" args="sc=sc" />
+<%include file="../includes/sc_basic.html" args="sc=sc" />
 % endif
-<!--/SiteCatalyst-->
