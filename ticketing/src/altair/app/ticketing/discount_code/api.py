@@ -114,7 +114,6 @@ def save_discount_code(carted_product_item, ordered_product_item):
 
         # UsedDiscountCodeCartテーブルにカート処理日時を記載
         used_discount_code_cart.finished_at = now
-        used_discount_code_cart.save()
     return True
 
 
