@@ -66,6 +66,7 @@ class DiscountCodeCodesResource(TicketingAdminResource):
     def code_index_search_query(self, f):
         """コード一覧の検索条件を含むデータ抽出クエリ"""
         query = self.session.query(DiscountCodeCode).filter(
+            DiscountCodeCode.discount_code_setting_id == self.setting_id,
             DiscountCodeCode.organization_id == self.user.organization.id
         )
 
