@@ -1,5 +1,5 @@
 import { Injectable }  from '@angular/core';
-import { Http, XHRBackend, RequestOptions, Request, RequestOptionsArgs, Response, Headers } from '@angular/http';
+import { Http, XHRBackend, RequestOptions, Request, RequestOptionsArgs, ResponseContentType, Response, Headers } from '@angular/http';
 import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/operator/map';
 import { ISuccessResponse, IErrorResponse } from './interfaces';
@@ -61,6 +61,51 @@ export class ApiBase extends Http{
       .catch(error => this.handleError(error))
       .share();
     this.cachedGetObservables[url] = get;
+    return get;
+  }
+  /**
+   * JsonDataGETリクエストを実行します
+   *
+   * @param string url - API-URL
+   * @return Observable<T> - Observable関数
+   * @return null - 通信エラー
+   */
+  protected httpGetJsonData<T>(url: string): Observable<T> {
+    var Zlib = require('zlibjs/bin/gunzip.min').Zlib;
+    this._logger.debug('API GET:', url);
+    let seat_options: RequestOptionsArgs = {};
+    seat_options.responseType = ResponseContentType.ArrayBuffer;
+    var get = this.get(url, seat_options)
+      .timeout(60000)
+      .map((response) => {
+        var plain;
+        var asciistring = '';
+        var uint8array = new Uint8Array(response.arrayBuffer());
+        var gunzip = new Zlib.Gunzip(uint8array);
+        try {
+          plain = gunzip.decompress();
+        } catch (e) {
+          plain = new Uint8Array(response.arrayBuffer());
+        }
+        if (typeof(plain.slice) !== 'function') {
+          for (let i = 0; i < plain.length; i++) {
+            asciistring += String.fromCharCode(plain[i]);
+          }
+        } else {
+          const block_size = 1024;
+          for (let i = 0; i < plain.length; i += block_size) {
+            if (i + block_size >= plain.length) {
+              asciistring += String.fromCharCode.apply(String, plain.slice(i));
+            } else {
+              asciistring += String.fromCharCode.apply(String, plain.slice(i, i + block_size));
+            }
+          }
+        }
+        const body = JSON.parse(asciistring);
+        return body;
+      })
+      .catch(error => this.handleError(error))
+      .share();
     return get;
   }
 
