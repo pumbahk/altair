@@ -155,7 +155,7 @@ class EaglesDiscountCodeAPI(object):
                     'coupon_cd': coupon.code,
                     'coupon_type': '1010',
                     'name': coupon.name,
-                    'available_flg': coupon.available_flg,
+                    'available_flg': str(coupon.available_flg),
                     'reason_cd': '1010' if coupon.available_flg else '1030'
                 }
 
