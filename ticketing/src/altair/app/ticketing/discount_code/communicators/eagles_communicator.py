@@ -33,6 +33,7 @@ class EaglesCommunicator(object):
         return six.text_type(h.hexdigest())
 
     def _request(self, method, url, data):
+        logger.info(data)
         with requests.Session() as s:
             resp = s.request(
                 method=method,
@@ -46,6 +47,8 @@ class EaglesCommunicator(object):
                 proxies=self.proxies,
                 timeout=self.timeout
             )
+
+        logger.info(resp)
         # 現時点はレスポンスのデータタイプがJSONのみを予想してる
         # TODO レスポンスのデータタイプをチェックする
         # TODO 連結失敗などの例外処理を追加する
