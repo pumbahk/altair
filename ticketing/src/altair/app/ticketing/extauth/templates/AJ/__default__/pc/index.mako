@@ -9,10 +9,21 @@
             <div class="login-box">
                 <h3>会員の方はこちら</h3>
                 <p class="txtC">
+                % if oauth_service_providers:
+                    % for provider in oauth_service_providers:
+                        <a style="min-height: 40px;" href="${_context.route_path('extauth.fanclub.entry', _query=dict(service_provider_name=provider.name))}" class="btn">
+                        <%
+                        if len(provider.display_name) > 15:
+                          pct = 68
+                        else:
+                          pct = 100
+                        %>
+                        <span style="font-size:${pct}%">${provider.display_name}</span>
+                        </a>
+                    % endfor
+                % else:
                     <a href="${_context.route_path('extauth.fanclub.entry')}" class="btn">ログイン</a>
-                </p>
-                <p class="txtC">
-                    <a href="//${request.host}/fc/members/select-membership">※無料会員登録はこちら</a>
+                % endif
                 </p>
             </div>
             <!-- ファンクラブ Box-->
