@@ -96,6 +96,7 @@ def temporarily_save_discount_code(codes, organization):
 def save_discount_code(carted_product_item, ordered_product_item):
     # 対象のCartedProductItemにクーポンが使用されていたら、UsedDiscountCodeOrderにデータを記録する
     used_discount_code_carts = carted_product_item.used_discount_codes
+    now = datetime.now()
 
     for index, used_discount_code_cart in enumerate(used_discount_code_carts):
         use_discount_code_order = UsedDiscountCodeOrder()
@@ -107,9 +108,13 @@ def save_discount_code(carted_product_item, ordered_product_item):
         if used_discount_code_cart.discount_code_id:
             use_discount_code_order.discount_code_id = used_discount_code_cart.discount_code_id
             available_code = DiscountCodeCode.query.filter_by(id=used_discount_code_cart.discount_code_id).first()
-            available_code.used_at = datetime.now()
+            available_code.used_at = now
             available_code.save()
         use_discount_code_order.add()
+
+        # UsedDiscountCodeCartテーブルにカート処理日時を記載
+        used_discount_code_cart.finished_at = now
+        used_discount_code_cart.save()
     return True
 
 

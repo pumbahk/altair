@@ -83,6 +83,7 @@ class UsedDiscountCodeCart(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     code = AnnotatedColumn(String(12), _a_label=_(u'割引コード'), nullable=True)
     carted_product_item_id = AnnotatedColumn(Identifier, ForeignKey('CartedProductItem.id'))
     carted_product_item = relationship("CartedProductItem", backref="used_discount_codes")
+    finished_at = AnnotatedColumn(DateTime, nullable=True, _a_label=_(u'カート処理日時'))
 
 
 class UsedDiscountCodeOrder(Base, BaseModel, WithTimestamp, LogicallyDeleted):
