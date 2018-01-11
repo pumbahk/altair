@@ -46,6 +46,8 @@ def check_used_discount_code(code):
     return UsedDiscountCodeOrder.query.\
         filter(UsedDiscountCodeOrder.code==code).\
         filter(UsedDiscountCodeOrder.deleted_at==None).\
+        filter(UsedDiscountCodeOrder.canceled_at==None).\
+        filter(UsedDiscountCodeOrder.refunded_at==None).\
         first()
 
 

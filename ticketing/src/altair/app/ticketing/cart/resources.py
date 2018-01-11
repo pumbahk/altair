@@ -819,7 +819,7 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
             return True
 
         result = discount_api.confirm_discount_code_status(self.request, target_codes,
-                                                    self.cart.available_fanclub_discount_code_settings)
+                                                           self.cart.available_fanclub_discount_code_settings)
         if result is None:
             # 使用可能なDiscountCodeSettingがない
             return True
