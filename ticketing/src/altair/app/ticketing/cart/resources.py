@@ -904,9 +904,18 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
         return True
 
     def create_validated_forms(self, codes):
+        from . import schemas
         forms = []
         for code_dict in codes:
             forms.append(code_dict['form'])
+
+        cart = self.read_only_cart
+        settings = cart.available_discount_code_settings
+
+        remaining_count = len(range(cart.carted_product_item_count)) - len(forms)
+        if remaining_count > 0:
+            for index in range(remaining_count):
+                forms.append(schemas.DiscountCodeForm(discount_code_settings=settings))
         return forms
 
 
