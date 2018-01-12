@@ -143,14 +143,16 @@ class OrderInfoDefaultMixin(object):
             )
 
     def get_discount_amount(request, order):
-        discount_amount_str = ""
+        discount_amount_str = u""
         for index, group in enumerate(order.cart.used_discount_code_groups):
-            discount_amount_str = "{0}{1}".format(discount_amount_str, )
             codes = [code.code for code in group['code']]
-            discount_amount_str = "{0}使用したクーポン・割引コード:{1}\n{2}{3}枚\n{4}".format(discount_amount_str,
-                                                                group['discount_code_setting'].explanation,
-                                                                "\n".join(codes), len(group['code']),
-                                                                ch.format_number(group['discount_price']))
+            discount_amount_str = u"{0}使用したクーポン・割引コード:{1}\n{2}{3}枚\n{4}".format(discount_amount_str,
+                                                                                unicode(group[
+                                                                                            'discount_code_setting'].explanation),
+                                                                                u"\n".join(codes),
+                                                                                unicode(len(group['code'])),
+                                                                                unicode(ch.format_number(
+                                                                                    group['discount_price'])))
         return discount_amount_str
 
     order_no = SubjectInfo(name="order_no", label=u"受付番号", getval=lambda request, subject : subject.order_no)
