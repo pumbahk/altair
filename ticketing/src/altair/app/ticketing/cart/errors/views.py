@@ -32,7 +32,8 @@ from ..exceptions import (
     CompletionPageNotRenderered,
     DeletedProductError,
     DiscountCodeConfirmError,
-    OwnDiscountCodeDuplicateError
+    OwnDiscountCodeDuplicateError,
+    DiscountCodeInternalError
 )
 from ..reserving import InvalidSeatSelectionException, NotEnoughAdjacencyException
 from ..stocker import InvalidProductSelectionException, NotEnoughStockException
@@ -135,6 +136,13 @@ class CommonErrorView(object):
         # 自社クーポンが重複して作成された。不正データ
         logger.error("Own Discount code duplicate. Check DiscountCode table!! ")
         return dict(title=u'', message=u'システムエラーが発生しました。再度時間をおいてお試しいただき、同様のエラーが発生する場合はお手数ですが弊社までご連絡ください')
+
+    @lbr_view_config(context=DiscountCodeInternalError)
+    def discount_code_internal_error(self):
+        # ファンクラブAPIの予期せぬエラー（通信断など）
+        logger.error("Fanclub discount api internal error!!")
+        return dict(title=u'', message=u'システムエラーが発生しました。再度時間をおいてお試しいただき、同様のエラーが発生する場合はお手数ですが弊社までご連絡ください')
+
 
     @lbr_view_config(context=OverOrderLimitException)
     def over_order_limit_exception(self):

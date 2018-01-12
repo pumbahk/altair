@@ -29,6 +29,10 @@ class DiscountCodeConfirmError(CartException):
     pass
 
 
+class DiscountCodeInternalError(CartException):
+    pass
+
+
 class OwnDiscountCodeDuplicateError(CartException):
     pass
 

@@ -8,6 +8,7 @@ import six
 from datetime import datetime
 from zope.interface import implementer
 from .interfaces import ICommunicator
+from altair.app.ticketing.cart.exceptions import DiscountCodeInternalError
 
 logger = logging.getLogger(__name__)
 
@@ -53,9 +54,8 @@ class EaglesCommunicator(object):
             logger.info('[ eagles_api_response ] {}'.format(resp_json))
             return resp_json
         except:
-            # TODO 例外処理を追加し、カート画面上に適切なエラー画面を表示できるようにする。返り値は暫定でFalse。
             logger.error('[ eagles_api_response ] Failed! The response may not be in a format of json')
-            return False
+            raise DiscountCodeInternalError()
 
     def _parse_content_type(self, resp):
         content_type = resp.header.get('content-type', None)
