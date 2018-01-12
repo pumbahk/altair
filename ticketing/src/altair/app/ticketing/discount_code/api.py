@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
 from datetime import datetime
-
-from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 from .models import DiscountCodeSetting, DiscountCodeCode, UsedDiscountCodeCart, UsedDiscountCodeOrder
 from altair.app.ticketing.orders.exceptions import OrderCancellationError
+from altair.app.ticketing.cart.exceptions import OwnDiscountCodeDuplicateError
 from communicators.utils import get_communicator
 from pyramid.i18n import TranslationString as _
 
@@ -42,22 +42,29 @@ def get_used_discount_codes(order_like):
     return codes_list
 
 
-def check_used_discount_code(code):
-    used_code = UsedDiscountCodeOrder.query.\
-        filter(UsedDiscountCodeOrder.code==code).\
-        filter(UsedDiscountCodeOrder.deleted_at==None).\
-        filter(UsedDiscountCodeOrder.canceled_at==None).\
-        filter(UsedDiscountCodeOrder.refunded_at==None).\
-        first()
+def check_used_discount_code(code, organizatoin):
+    used_code = None
+    try:
+        used_code = UsedDiscountCodeOrder.query.\
+            filter(UsedDiscountCodeOrder.code==code).\
+            filter(UsedDiscountCodeOrder.deleted_at==None).\
+            filter(UsedDiscountCodeOrder.canceled_at==None).\
+            filter(UsedDiscountCodeOrder.refunded_at==None).\
+            one()
+    except MultipleResultsFound, e:
+        raise OwnDiscountCodeDuplicateError()
+    except NoResultFound, e:
+        pass
+
     if used_code:
         return used_code
     # バックエンドで使用済みにされた場合を考慮
     own_used_code = DiscountCodeCode.query.\
         filter(DiscountCodeCode.code==code).\
         filter(DiscountCodeCode.used_at!=None).\
+        filter(DiscountCodeCode.organization_id==organizatoin.id).\
         first()
     return own_used_code
-
 
 
 def get_used_discount_quantity(order_like):

@@ -793,7 +793,8 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
                 input_codes.append(code)
 
             # 使用済みコードバリデーション
-            if discount_api.check_used_discount_code(code):
+            organization = cart_api.get_organization(self.request)
+            if discount_api.check_used_discount_code(code, organization):
                 form.add_used_discount_code_error()
 
         return True

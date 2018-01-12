@@ -31,7 +31,8 @@ from ..exceptions import (
     PaymentError,
     CompletionPageNotRenderered,
     DeletedProductError,
-    DiscountCodeConfirmError
+    DiscountCodeConfirmError,
+    OwnDiscountCodeDuplicateError
 )
 from ..reserving import InvalidSeatSelectionException, NotEnoughAdjacencyException
 from ..stocker import InvalidProductSelectionException, NotEnoughStockException
@@ -128,6 +129,12 @@ class CommonErrorView(object):
     def discount_code_confirm_error(self):
         # クーポンが確定前に、使用不能となった
         return dict(title=u'', message=u'お手持ちのクーポン・割引コードは使用できません。')
+
+    @lbr_view_config(context=OwnDiscountCodeDuplicateError)
+    def own_discount_code_duplicate_error(self):
+        # 自社クーポンが重複して作成された。不正データ
+        logger.error("Own Discount code duplicate. Check DiscountCode table!! ")
+        return dict(title=u'', message=u'システムエラーが発生しました。再度時間をおいてお試しいただき、同様のエラーが発生する場合はお手数ですが弊社までご連絡ください')
 
     @lbr_view_config(context=OverOrderLimitException)
     def over_order_limit_exception(self):
