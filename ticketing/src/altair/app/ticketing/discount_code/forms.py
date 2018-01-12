@@ -59,8 +59,17 @@ class DiscountCodeSettingForm(Form):
 
         return True
 
+    def _check_pair_issued_by_first_digit(self):
+        first_digit = self.first_digit.data
+        issued_by = self.issued_by.data
+        if (first_digit == 'T' and issued_by == 'own') or (first_digit == 'E' and issued_by == 'sports_service'):
+            return True
+        else:
+            raise ValidationError(u'コード管理元と接頭辞が正しくありません。自社(T), スポーツサービス開発(E)')
+
     def validate_first_digit(self, request):
         self._check_prefix()
+        self._check_pair_issued_by_first_digit()
 
     def validate_following_2to4_digits(self, request):
         self._check_prefix()
