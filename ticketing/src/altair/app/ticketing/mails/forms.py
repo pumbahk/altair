@@ -3,6 +3,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 import itertools
+from HTMLParser import HTMLParser
 from altair.formhelpers.form import OurForm
 from altair.formhelpers import fields
 from altair.formhelpers import widgets
@@ -77,6 +78,22 @@ class SubjectInfoDefaultMixin(object):
     bcc = SubjectInfoWithValue(name="bcc", label=None, form_label=u"bcc", getval=lambda request, order: None, value=None)
 
 
+class MLStripper(HTMLParser):
+
+    def __init__(self):
+        self.reset()
+        # stripしたテキストを保存するバッファー
+        self.fed = []
+
+    def handle_data(self, d):
+        # 任意のタグの中身のみを追加していく
+        self.fed.append(d)
+
+    def get_data(self):
+        # バッファーを連結して返す
+        return ''.join(self.fed)
+
+
 def sensible_text_coerce(v):
     if v is None:
         return u'(回答なし)'
@@ -146,14 +163,17 @@ class OrderInfoDefaultMixin(object):
         discount_amount_str = u""
         for index, group in enumerate(order.cart.used_discount_code_groups):
             codes = [code.code for code in group['code']]
-            discount_amount_str = u"{0}使用したクーポン・割引コード:{1}\n{2}{3}枚\n{4}".format(discount_amount_str,
-                                                                                unicode(group[
-                                                                                            'discount_code_setting'].explanation),
-                                                                                u"\n".join(codes),
-                                                                                unicode(len(group['code'])),
-                                                                                unicode(ch.format_number(
-                                                                                    group['discount_price'])))
-        return discount_amount_str
+            discount_amount_str = u"{0}{1}\n使用したクーポン・割引コード:{2}\n{3}枚\n-￥{4}".format(discount_amount_str,
+                                                                                    unicode(group[
+                                                                                                'discount_code_setting'].explanation),
+                                                                                    u"\n".join(codes),
+                                                                                    unicode(len(group['code'])),
+                                                                                    unicode(ch.format_number(
+                                                                                        group['discount_price'])))
+        stripper = MLStripper()
+        stripper.feed(discount_amount_str)
+        stripper.get_data()
+        return stripper
 
     order_no = SubjectInfo(name="order_no", label=u"受付番号", getval=lambda request, subject : subject.order_no)
     event_name = SubjectInfo(name=u"event_name", label=u"公演タイトル", getval=get_event_title)
