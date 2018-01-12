@@ -199,7 +199,6 @@ class EaglesDiscountCodeAPI(object):
                     EaglesCoupon.code == req_coupon['coupon_cd']).one()
 
                 if coupon.available_flg == 1:
-                    coupon.available_flg = 0
                     self.request.sa_session.commit()
                     reason_cd = '1010'  # 使用した
                 else:
@@ -211,6 +210,8 @@ class EaglesDiscountCodeAPI(object):
                     'available_flg': str(coupon.available_flg),
                     'reason_cd': reason_cd
                 }
+                if coupon.available_flg == 1:
+                    coupon.available_flg = 0
 
             except NoResultFound:
                 add_dict = {
