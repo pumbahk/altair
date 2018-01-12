@@ -375,63 +375,32 @@ class Cart(Base, c_models.CartMixin):
 
     @property
     def enable_discount_code(self):
-        if not self.organization.enable_discount_code:
+        if (not self.organization.enable_discount_code) or (not self._find_available_target_settings()):
             return False
-
-        valid_target = [x for x in self.performance.DiscountCodeTarget if x.discount_code_setting.is_valid]
-        if not valid_target:
-            return False
-
-        # 割引設定が１つでも、選択されたチケットの金額を上回っていること
-        for target in valid_target:
-            status = True
-            for item in self.items:
-                if not status:
-                    break
-                for element in item.elements:
-                    if element.price > Decimal(target.discount_code_setting.condition_price_amount):
-                        status = False
-                        break
-            if status:
-                return True
-
-        return False
+        else:
+            return True
 
     @property
     def available_discount_code_settings(self):
-        valid_target = [x for x in self.performance.DiscountCodeTarget if x.discount_code_setting.is_valid]
-        if not valid_target:
-            return False
+        return self._find_available_target_settings()
 
-        available_settings = []
-        for target in valid_target:
-            status = True
-            for item in self.items:
-                if not status:
-                    break
-                for element in item.elements:
-                    if element.price > target.discount_code_setting.condition_price_amount:
-                        status = False
-                        break
-            if status:
-                available_settings.append(target.discount_code_setting)
-        return available_settings
-
-    def _find_available_target_settings(self, issued_by):
+    def _find_available_target_settings(self, issued_by=None):
         """
         引数で指定されたコード発行元における割引設定で、利用可能な状態のものを抽出
         :param issued_by: コードの発行元
         :return: 割引コード設定のリスト
         """
-        valid_target = [x for x in self.performance.DiscountCodeTarget if x.discount_code_setting.is_valid]
+        valid_target = [x for x in self.performance.DiscountCodeTarget if
+                        x.discount_code_setting.available_status is True]
         if not valid_target:
             return False
 
         available_settings = []
         for target in valid_target:
-            if not target.discount_code_setting.issued_by == issued_by:
+            if issued_by is not None and target.discount_code_setting.issued_by != issued_by:
                 continue
 
+            # 割引設定が１つでも、選択されたチケットの金額を上回っていること
             status = True
             for item in self.items:
                 if not status:
