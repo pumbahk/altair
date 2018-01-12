@@ -142,6 +142,17 @@ class OrderInfoDefaultMixin(object):
             for pair in order.get_order_attribute_pair_pairs(request, mode='entry')
             )
 
+    def get_discount_amount(request, order):
+        discount_amount_str = ""
+        for index, group in enumerate(order.cart.used_discount_code_groups):
+            discount_amount_str = "{0}{1}".format(discount_amount_str, )
+            codes = [code.code for code in group['code']]
+            discount_amount_str = "{0}使用したクーポン・割引コード:{1}\n{2}{3}枚\n{4}".format(discount_amount_str,
+                                                                group['discount_code_setting'].explanation,
+                                                                "\n".join(codes), len(group['code']),
+                                                                ch.format_number(group['discount_price']))
+        return discount_amount_str
+
     order_no = SubjectInfo(name="order_no", label=u"受付番号", getval=lambda request, subject : subject.order_no)
     event_name = SubjectInfo(name=u"event_name", label=u"公演タイトル", getval=get_event_title)
     pdate = SubjectInfo(name=u"pdate", label=u"公演日時", getval=get_performance_date)
@@ -155,6 +166,7 @@ class OrderInfoDefaultMixin(object):
     delivery_fee = SubjectInfo(name=u"delivery_fee", label=u"発券／引取手数料", getval=lambda request, order: ch.format_currency(order.delivery_fee))
     total_amount = SubjectInfo(name=u"total_amount", label=u"合計金額", getval=lambda request, order: ch.format_currency(order.total_amount))
     extra_form_data = SubjectInfo(name=u"extra_form_data", label=u"追加情報", getval=get_extra_form_data)
+    discount_amount = SubjectInfo(name=u"discount_amount", label=u"クーポン・割引コードご使用金額", getval=get_discount_amount)
 
 class SubjectInfoDefault(SubjectInfoDefaultBase, SubjectInfoDefaultMixin):
     pass
