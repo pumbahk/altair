@@ -1,4 +1,15 @@
-<%inherit file="../layout.html" />
-<section class="main orderreview">
-  ${_context.order_detail_panel(order)}
-</section>
+<%inherit file="../base.html" />
+<main>
+  %if request.organization.setting.i18n:
+    <div class="selectwrapper">
+      ${h.create_url(request) |n}
+    </div>
+  % endif
+  <div class="wrap">
+    <div class="wrap-content">
+      <h2>${__(u'受付履歴確認 検索結果')}</h2>
+      ${_context.order_detail_panel(order)}
+    </div>
+  </div>
+</main>
+
