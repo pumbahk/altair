@@ -333,6 +333,7 @@ class Cart(Base, c_models.CartMixin):
         for item in carted_products:
             if not item.release():
                 return False
+        discount_api.release_cart(self)
         return True
 
     def is_valid(self):
