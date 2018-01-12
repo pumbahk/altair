@@ -830,7 +830,7 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
         if not result:
             # 通信エラーなど。1つ目のformにデータを埋め込み表示
             codes[0].code_dict['form'].validate()
-            codes[0].code_dict['form'].add_coupon_response_error()
+            codes[0].code_dict['form'].add_internal_error()
             return True
 
         coupons = result['coupons']
@@ -843,7 +843,7 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
         for code_dict in codes:
             if code_dict['form'].code.data in error_keys:
                 code_dict['form'].validate()
-                code_dict['form'].add_coupon_response_error()
+                code_dict['form'].add_coupon_response_error(error_list[code_dict['form'].code.data])
         return True
 
     def use_discount_coupon(self, order):
@@ -892,7 +892,7 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
         if not result:
             # 通信エラーなど。1つ目のformにデータを埋め込み表示
             codes[0].code_dict['form'].validate()
-            codes[0].code_dict['form'].add_coupon_response_error()
+            codes[0].code_dict['form'].add_internal_error()
             return True
 
         coupons = result['coupons']
@@ -905,7 +905,7 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
         for code_dict in codes:
             if code_dict['form'].code.data in error_keys:
                 code_dict['form'].validate()
-                code_dict['form'].add_coupon_response_error()
+                code_dict['form'].add_coupon_response_error(error_list[code_dict['form'].code.data])
         return True
 
     def create_validated_forms(self, codes):
