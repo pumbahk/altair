@@ -43,12 +43,21 @@ def get_used_discount_codes(order_like):
 
 
 def check_used_discount_code(code):
-    return UsedDiscountCodeOrder.query.\
+    used_code = UsedDiscountCodeOrder.query.\
         filter(UsedDiscountCodeOrder.code==code).\
         filter(UsedDiscountCodeOrder.deleted_at==None).\
         filter(UsedDiscountCodeOrder.canceled_at==None).\
         filter(UsedDiscountCodeOrder.refunded_at==None).\
         first()
+    if used_code:
+        return used_code
+    # バックエンドで使用済みにされた場合を考慮
+    own_used_code = DiscountCodeCode.query.\
+        filter(DiscountCodeCode.code==code).\
+        filter(DiscountCodeCode.used_at!=None).\
+        first()
+    return own_used_code
+
 
 
 def get_used_discount_quantity(order_like):
