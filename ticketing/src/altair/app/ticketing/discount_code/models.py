@@ -216,6 +216,12 @@ def _if_generating_code_exists(code, organization_id):
 def delete_discount_code_setting(setting):
     # TODO 削除を禁止する各条件を後々で用意する
 
+    for code in setting.DiscountCode:
+        code.delete()
+
+    for target in setting.DiscountCodeTarget:
+        target.delete()
+
     setting.delete()
 
 
