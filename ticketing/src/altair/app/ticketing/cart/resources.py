@@ -857,14 +857,18 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
             if not result['status'] == u'OK' and result['usage_type'] == u'1010':
                 # 使用時にエラー
                 raise DiscountCodeConfirmError()
+            # TODO ログの文言修正
+            # "[ The response for order_no: {}, code: {}] {}".format(order.order_no, code(?), result)
             logger.info("It is {0} use discount code response. {1}".format(order.order_no, result))
 
             coupons = result['coupons']
             error = None
             for coupon in coupons:
-                if coupon['reason_cd'] != u'1010' or coupon['available_flg'] != u'0':
+                if coupon['reason_cd'] != u'1010' or coupon['available_flg'] != u'1':
                     # さすがに使う時に落ちるのはまずいので確認APIを直前でも叩いている。ここには入らない想定
-                    logger.info("It is {0} use discount code Error. {1}".format(order.order_no, result))
+                    # TODO ログの文言修正
+                    # "[ The response for order_no: {}, code: {}] the discount code is not available.".format(order.order_no, code(?)
+                    logger.error("It is {0} use discount code Error. {1}".format(order.order_no, result))
                     error = True
 
             if error:
