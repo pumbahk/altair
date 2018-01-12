@@ -403,7 +403,7 @@ class Cart(Base, c_models.CartMixin):
         if not valid_target:
             return False
 
-        available_target = []
+        available_settings = []
         for target in valid_target:
             status = True
             for item in self.items:
@@ -414,8 +414,8 @@ class Cart(Base, c_models.CartMixin):
                         status = False
                         break
             if status:
-                available_target.append(target.discount_code_setting)
-        return available_target
+                available_settings.append(target.discount_code_setting)
+        return available_settings
 
     def _find_available_target_settings(self, issued_by):
         """
@@ -427,7 +427,7 @@ class Cart(Base, c_models.CartMixin):
         if not valid_target:
             return False
 
-        available_target = []
+        available_settings = []
         for target in valid_target:
             if not target.discount_code_setting.issued_by == issued_by:
                 continue
@@ -441,8 +441,8 @@ class Cart(Base, c_models.CartMixin):
                         status = False
                         break
             if status:
-                available_target.append(target.discount_code_setting)
-        return available_target
+                available_settings.append(target.discount_code_setting)
+        return available_settings
 
     @property
     def available_fanclub_discount_code_settings(self):
