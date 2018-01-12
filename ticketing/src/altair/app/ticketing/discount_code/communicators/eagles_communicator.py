@@ -33,7 +33,7 @@ class EaglesCommunicator(object):
         return six.text_type(h.hexdigest())
 
     def _request(self, method, url, data):
-        logger.info(data)
+        logger.info('[ eagles_api_request ] METHOD: {}, URL: {}, DATA: {}'.format(method, url, data))
         with requests.Session() as s:
             resp = s.request(
                 method=method,
@@ -48,11 +48,14 @@ class EaglesCommunicator(object):
                 timeout=self.timeout
             )
 
-        logger.info(resp)
-        # 現時点はレスポンスのデータタイプがJSONのみを予想してる
-        # TODO レスポンスのデータタイプをチェックする
-        # TODO 連結失敗などの例外処理を追加する
-        return resp.json()
+        try:
+            resp_json = resp.json()
+            logger.info('[ eagles_api_response ] {}'.format(resp_json))
+            return resp_json
+        except:
+            # TODO 例外処理を追加し、カート画面上に適切なエラー画面を表示できるようにする。返り値は暫定でFalse。
+            logger.error('[ eagles_api_response ] Failed! The response may not be in a format of json')
+            return False
 
     def _parse_content_type(self, resp):
         content_type = resp.header.get('content-type', None)
