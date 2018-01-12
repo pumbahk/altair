@@ -48,11 +48,12 @@ class DiscountCodeCodesResource(TicketingAdminResource):
         self.setting_id = request.matchdict['setting_id']
 
     def code_pagination(self, sf):
-        """ページネーションの範囲内のクーポン・割引コード情報の取得"""
+        """
+        ページネーションの範囲内のクーポン・割引コード情報の取得
+        :param SearchCodeForm sf: オブジェクト
+        :return Page codes: 表示しようとしているページ分のコード情報 （webhelpers.paginate._SQLAlchemyQuery）
+        """
         query = self.code_index_search_query(sf)
-        sort = self.request.GET.get('sort', 'id')
-        direction = self.request.GET.get('direction', 'asc')
-        query = query.order_by('{0} {1}'.format(sort, direction))
 
         codes = paginate.Page(
             query,
@@ -69,6 +70,10 @@ class DiscountCodeCodesResource(TicketingAdminResource):
             DiscountCodeCode.discount_code_setting_id == self.setting_id,
             DiscountCodeCode.organization_id == self.user.organization.id
         )
+
+        sort = self.request.GET.get('sort', 'id')
+        direction = self.request.GET.get('direction', 'asc')
+        query = query.order_by('{0} {1}'.format(sort, direction))
 
         if f.data['code']:
             query = query.filter(DiscountCodeCode.code == f.data['code'].strip())
