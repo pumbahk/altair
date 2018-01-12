@@ -43,27 +43,30 @@ def get_used_discount_codes(order_like):
 
 
 def check_used_discount_code(code, organizatoin):
-    used_code = None
+    used_code = UsedDiscountCodeOrder.query.\
+        filter(UsedDiscountCodeOrder.code==code).\
+        filter(UsedDiscountCodeOrder.deleted_at==None).\
+        filter(UsedDiscountCodeOrder.canceled_at==None).\
+        filter(UsedDiscountCodeOrder.refunded_at==None). \
+        order_by(UsedDiscountCodeOrder.created_at.desc()).\
+        first()
+
+    if used_code:
+        return used_code
+
+    # バックエンドで使用済みにされた場合を考慮
+    own_used_code = None
     try:
-        used_code = UsedDiscountCodeOrder.query.\
-            filter(UsedDiscountCodeOrder.code==code).\
-            filter(UsedDiscountCodeOrder.deleted_at==None).\
-            filter(UsedDiscountCodeOrder.canceled_at==None).\
-            filter(UsedDiscountCodeOrder.refunded_at==None).\
-            one()
+        own_used_code = DiscountCodeCode.query.\
+        filter(DiscountCodeCode.code==code).\
+        filter(DiscountCodeCode.used_at!=None).\
+        filter(DiscountCodeCode.organization_id==organizatoin.id).\
+        one()
     except MultipleResultsFound, e:
         raise OwnDiscountCodeDuplicateError()
     except NoResultFound, e:
         pass
 
-    if used_code:
-        return used_code
-    # バックエンドで使用済みにされた場合を考慮
-    own_used_code = DiscountCodeCode.query.\
-        filter(DiscountCodeCode.code==code).\
-        filter(DiscountCodeCode.used_at!=None).\
-        filter(DiscountCodeCode.organization_id==organizatoin.id).\
-        first()
     return own_used_code
 
 
