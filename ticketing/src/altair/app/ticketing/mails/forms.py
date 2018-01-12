@@ -172,8 +172,7 @@ class OrderInfoDefaultMixin(object):
                                                                                         group['discount_price'])))
         stripper = MLStripper()
         stripper.feed(discount_amount_str)
-        stripper.get_data()
-        return stripper
+        return stripper.get_data()
 
     order_no = SubjectInfo(name="order_no", label=u"受付番号", getval=lambda request, subject : subject.order_no)
     event_name = SubjectInfo(name=u"event_name", label=u"公演タイトル", getval=get_event_title)
