@@ -85,29 +85,29 @@ class DiscountCodeForm(OurForm):
             return True
 
         if len(code) != 0 and len(code) != 12:
-            getattr(self, "code").errors.append(u"ご選択された席には適用できないクーポンです")
+            getattr(self, "code").errors.append(u"ご選択された席には適用できないクーポンです(T0001)")
             return False
 
         if not any([setting for setting in self.discount_code_settings if code[:4] == setting.first_4_digits]):
-            getattr(self, "code").errors.append(u"ご選択された席には適用できないクーポンです")
+            getattr(self, "code").errors.append(u"ご選択された席には適用できないクーポンです(T0002)")
             return False
 
         return True
 
     def add_duplicate_code_error(self):
-        getattr(self, "code").errors.append(u"重複して入力されたクーポンです")
+        getattr(self, "code").errors.append(u"重複して入力されたクーポンです(T0003)")
         return False
 
     def add_used_discount_code_error(self):
-        getattr(self, "code").errors.append(u"使用されたクーポンです")
+        getattr(self, "code").errors.append(u"使用されたクーポンです(T0004)")
         return False
 
-    def add_coupon_response_error(self):
-        getattr(self, "code").errors.append(u"ご選択された席には適用できないクーポンです")
+    def add_coupon_response_error(self, reason_code):
+        getattr(self, "code").errors.append(u"ご選択された席には適用できないクーポンです(E{})".format(reason_code))
         return False
 
     def add_internal_error(self):
-        getattr(self, "code").errors.append(u"通信エラーが発生しました。時間をあけてお試しください")
+        getattr(self, "code").errors.append(u"通信エラーが発生しました。時間をあけてお試しください(E0002)")
         return False
 
     def validate(self):
