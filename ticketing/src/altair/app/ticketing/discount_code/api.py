@@ -42,6 +42,13 @@ def get_used_discount_codes(order_like):
     return codes_list
 
 
+def release_cart(cart):
+    codes = get_used_discount_codes(cart)
+    for code in codes:
+        code.finished_at = datetime.now()
+    return True
+
+
 def check_used_discount_code(code, organizatoin):
     used_code = UsedDiscountCodeOrder.query.\
         filter(UsedDiscountCodeOrder.code==code).\
