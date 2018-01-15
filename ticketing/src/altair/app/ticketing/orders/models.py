@@ -673,7 +673,8 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 for ordered_product_item in ordered_product.ordered_product_items:
                     ordered_product_item.refund_price = ordered_product_item.price
         refund_fee = self.refund_special_fee + self.refund_system_fee + self.refund_transaction_fee + self.refund_delivery_fee
-        self.refund_total_amount = sum(o.refund_price * o.quantity for o in self.items) + refund_fee
+        self.refund_total_amount = sum(
+            o.refund_price * o.quantity for o in self.items) + refund_fee - discount_api.get_discount_amount(self)
 
         try:
             return self.cancel(request, self.refund.payment_method)
