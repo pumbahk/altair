@@ -1,18 +1,4 @@
-@charset "utf-8";
-
-/*
-	File Name   : import.css
-	Description : 各CSSファイルの読み込み
-*/
-
-
-/* Base style
------------------------------------------------------------ */
-@import url("default.css");
-@import url("layout.css");
-@import url("content.css");
-
-
-/* Print style
------------------------------------------------------------ */
-@import url("print.css");
+@charset "UTF-8";
+@import url(common.css);
+@import url(helper.css);
+@import url(main.css);
