@@ -102,6 +102,10 @@ class DiscountCodeForm(OurForm):
         getattr(self, "code").errors.append(u"使用されたクーポンです(T0004)")
         return False
 
+    def add_non_fanclub_member_discount_code_error(self):
+        getattr(self, "code").errors.append(u"ご選択された席には適用できないクーポンです(T0005)")
+        return False
+
     def add_coupon_response_error(self, reason_code):
         getattr(self, "code").errors.append(u"ご選択された席には適用できないクーポンです(E{})".format(reason_code))
         return False
