@@ -17,6 +17,7 @@ from pyramid.i18n import TranslationString as _
 
 from altair.viewhelpers.datetime_ import create_date_time_formatter
 
+from altair.app.ticketing.discount_code import api as discount_api
 from altair.app.ticketing.models import DBSession, asc_or_desc
 from altair.app.ticketing.utils import todatetime
 from altair.app.ticketing.core.models import (
@@ -1950,14 +1951,16 @@ def get_refund_per_ticket_fee(refund, order):
         fee += pdmp.delivery_fee_per_ticket
     return fee
 
+
 def get_refund_ticket_price(refund, order, product_item_id):
     if not refund.include_item:
         return 0
     for op in order.items:
         for opi in op.elements:
             if opi.product_item_id == product_item_id:
-                return opi.refund_price
+                return opi.refund_price - discount_api.get_discount_price(opi)
     return 0
+
 
 def get_anshin_checkout_object(request, order):
     if order.payment_delivery_pair.payment_method.payment_plugin_id == payments_plugins.CHECKOUT_PAYMENT_PLUGIN_ID:
