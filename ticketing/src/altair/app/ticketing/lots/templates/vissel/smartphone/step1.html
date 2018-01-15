@@ -1,8 +1,7 @@
-<%inherit file="${context['main_template'].uri}" />
-<div id="main">
+<%inherit file="./base.html" />
 
   %if request.session.peek_flash():
-  <div style="border: 3px solid red; background: #FFEEEE; padding: 10px; margin: 10px;">
+  <div class="error-msg-box">
     <ul>
       %for message in request.session.pop_flash():
       <li>${message}</li>
@@ -11,88 +10,91 @@
   </div>
   %endif
 
-<form method="post" id="wishForm" action="${request.route_path('lots.entry.sp_step2', event_id=event.id, lot_id=lot.id)}">
+<div class="wrap">
+  <form method="post" name="wishForm" id="wishForm" class="confirmForm" action="${request.route_path('lots.entry.sp_step2', event_id=event.id, lot_id=lot.id)}">
+    <div class="box">
+      <h2>${__(u'希望選択')}</h2>
+      <div class="settlementBoxInner">
+        % for i in range(lot.limit_wishes):
+        <div class="settlementSelectBox mgt10">
+          <div class="settlementSelectBoxInner">
+            <table class="chooser" summary="${__(u'希望する公演と券種の選択')}" id="wish-cell-table-${i}">
+              <tbody>
+                <tr>
+                  <th>${__(u'第{0}希望').format(i+1)}</th>
+                </tr>
+                <tr>
+                  <td>
+                    %if len(performance_map) == 1:
+                    <input type="hidden" name="performanceName-${i}" value="${performance_map[0][1]}" />
+                    %else:
+                    <select name="performanceName-${i}" data-wishOrder="${i}" class="performance-name-select">
+                    %for performance_name, _ in performance_map:
+                      % if selected_performance:
+                        % if (_[0]['name'] == selected_performance.name) and (i == 0):
+                        <option value="${performance_name}" selected>${performance_name}</option>
+                        % else:
+                        <option value="${performance_name}">${performance_name}</option>
+                        % endif
+                      % else:
+                      <option value="${performance_name}">${performance_name}</option>
+                      % endif
+                    %endfor
+                    </select>
+                    %endif
+                  </td>
+                </tr>
+                <tr>
+                  <th>${__(u'公演日・会場').format(i+1)}</th>
+                </tr>
+                <tr>
+                  <td>
+                    <select name="performanceDate-${i}" data-wishOrder="${i}" class="performance-date-select">
+                    %for performance in performances:
+                      % if selected_performance:
+                        % if (performance.id == selected_performance.id) and (i == 0):
+                        <option value="${performance.id}" selected>${h.performance_date_label(performance)}</option>
+                        % else:
+                        <option value="${performance.id}">${h.performance_date_label(performance)}</option>
+                        % endif
+                      % else:
+                      <option value="${performance.id}">${h.performance_date_label(performance)}</option>
+                      % endif
+                    %endfor
+                    </select>
+                  </td>
+                </tr>
+                <tr>
+                  <th>
+                    ${__(u'席種')}
+                  </th>
+                </tr>
+                <tr>
+                  <td>
+                    <select name="stockType-${i}" data-wishOrder="${i}" class="stock-type-select">
+                    %for rec in stock_types:
+                    <option value="${rec['id']}">${rec['name']}</option>
+                    %endfor
+                    </select>
+                    <div class="stock-type-description"></div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        % endfor
+      </div>
+    </div>
+    <hr />
 
-<div class="subbox">
-<dl>
-<dt><p class="lineRed">お申込内容</p></dt>
-<dd>
-%for i in range(lot.limit_wishes):
-
-<dl class="kibouList">
-<dt><span>第${i + 1}希望</span></dt>
-%if len(performance_map) == 1:
-<input type="hidden" name="performanceName-${i}" value="${performance_map[0][1]}" />
-%else:
-<dd>
-<select class="selStyle1 performance-name-select" name="performanceName-${i}" data-wishOrder="${i}" style="width: 100%">
-%for performance_name, _ in performance_map:
-% if selected_performance:
-  % if (_[0]['name'] == selected_performance.name) and (i == 0):
-  <option value="${performance_name}" selected>${performance_name}</option>
-  % else:
-  <option value="${performance_name}">${performance_name}</option>
-  % endif
-% else:
-<option value="${performance_name}">${performance_name}</option>
-% endif
-%endfor
-</select>
-</dd>
-%endif
-
-
-
-<div id="wish-cell-table-${i}">
-<dt>公演日・会場</dt>
-<dd>
-<select class="selStyle1 performance-date-select" name="performanceDate-${i}" data-wishOrder="${i}" style="width: 100%">
-%for performance in performances:
-% if selected_performance:
-  % if (performance.id == selected_performance.id) and (i == 0):
-  <option value="${performance.id}" selected>${h.performance_date_label(performance)}</option>
-  % else:
-  <option value="${performance.id}">${h.performance_date_label(performance)}</option>
-  % endif
-% else:
-<option value="${performance.id}">${h.performance_date_label(performance)}</option>
-% endif
-%endfor
-</select>
-<br/><br/>
-【選択した公演】
-<div class="all_performance_name-${i}"></div>
-</dd>
-
-
-<dt>席種</dt>
-<dd>
-<select name="stockType-${i}" data-wishOrder="${i}" class="stock-type-select" style="width: 100%">
-%for rec in stock_types:
-<option value="${rec['id']}">${rec['name']}</option>
-%endfor
-</select>
-<span class="stock-type-description"></span>
-</dd>
+    <div class="wrap-btn">
+      <a class="btn" href="javaScript:document.wishForm.submit();">${__(u'次へ')}</a>
+    </div>
+  </form>
 </div>
-</dl>
-% endfor
-
-</dd>
-</dl>
-</div>
-
-<p class="nextBtn"><input type="submit" value="次へ"></p>
-
-</form>
-
-</div>
-
-<%def name="product_select_tmpl()">
-<%include file="_product_selection.html_" />
-</%def>
+<%block name="javascript">
 <script type="text/javascript">
-var product_select_tmpl = _.template(decodeURIComponent('${capture(product_select_tmpl)|u,n}'.replace(/\+/g, ' ')));
 var stockTypes = ${h.tojson(stock_types)|n};
 var performanceProductMap = ${h.tojson(performance_product_map)|n};
 var postedValues = ${h.tojson(posted_values)|n};
@@ -108,6 +110,43 @@ var selected_performance_id = 0;
         return 'wish-cell-table-' + n
     }
 
+    function build_product_selection(parent, data) {
+        var wishOrder = data['wishOrder'];
+        var products = data['products'];
+        var ticket_label = data['ticket_label'];
+        var ticket_unit = data['ticket_unit'];
+
+        $.each(products, function(i, product) {
+            var quantityField = "product-quantity-" + wishOrder + "-" + i + "";
+            var tr = $("<tr></tr>").addClass("product-select-tr" + (i + 1 == products.length ? " settlementSelectEnd":""));;
+            $("<th></th>").append(i == 0 ? $("<label></label>").text(ticket_label) : "&nbsp").appendTo(tr);
+            parent.append(tr);
+
+            var tr = $("<tr></tr>").addClass("product-select-tr" + (i + 1 == products.length ? " settlementSelectEnd":""));;
+            var td = $("<td></td>").appendTo(tr);
+            td.append($("<input>").attr("type", "hidden")
+                                  .attr("name", "product-id-" + wishOrder + "-" + i)
+                                  .val(product.id));
+
+            var product_selection = $("<div></div>").addClass("product-name-price-quantity").appendTo(td);
+            product_selection.append($("<span></span>").addClass("product-name").text(product.name + " "));
+            product_selection.append($("<span></span>").addClass("product-price").text(product.formatted_price + " × "));
+            var select = $("<select></select>").attr("name", quantityField).appendTo(product_selection);
+            select.append("<option></option>");
+            for (var k = 0; k < upperLimit; k++) {
+                var option = $("<option></option>");
+                option.val(k + 1).text(k + 1).appendTo(select);
+            }
+            product_selection.append(" " + ticket_unit);
+
+            if (product.description) {
+                $("<span></span>").addClass("product-description").text(product.description).appendTo(td);
+            }
+
+            parent.append(tr);
+        });
+    }
+
     function refreshProducts(dateSelect, stockTypeSelect) {
         var products = [];
         var performanceId = $(dateSelect).val();
@@ -118,13 +157,13 @@ var selected_performance_id = 0;
         });
         var wishOrder = $(dateSelect).data('wishorder');
         var wishCellTableId = cellTableId(wishOrder);
-        var rows = $("#" + wishCellTableId + " div.product-select-div");
+        var rows = $("#" + wishCellTableId + " tbody tr.product-select-tr");
         rows.remove();
         if (!products) {
             return;
         }
-        var html = product_select_tmpl({wishOrder: wishOrder, products: products});
-        $("#" + wishCellTableId).append(html);
+        build_product_selection($("#" + wishCellTableId + " tbody"), {wishOrder: wishOrder, products: products, ticket_label: "${__(u'券種')}", ticket_unit: "${__(u'枚')}" });
+
         for (var i = 0; i < stockTypes.length; i++) {
             var stockType = stockTypes[i];
             if (stockType.id == stockTypeId) {
@@ -279,3 +318,4 @@ var selected_performance_id = 0;
     });
 })($('#wishForm'));
 </script>
+</%block>
