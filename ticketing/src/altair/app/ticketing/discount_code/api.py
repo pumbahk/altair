@@ -97,11 +97,11 @@ def get_discount_amount(order_like):
     return discount_amount
 
 
-def get_discount_price(order_like_item):
+def get_discount_price(ordered_product_item_token):
     price = 0
-    used_codes = order_like_item.used_discount_codes
+    used_codes = ordered_product_item_token.used_discount_codes
     if used_codes:
-        price = order_like_item.product_item.price * len(used_codes)
+        price = ordered_product_item_token.item.price * len(used_codes)
     return price
 
 

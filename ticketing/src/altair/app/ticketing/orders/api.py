@@ -1958,7 +1958,7 @@ def get_refund_ticket_price(refund, order, product_item_id):
     for op in order.items:
         for opi in op.elements:
             if opi.product_item_id == product_item_id:
-                return opi.refund_price - discount_api.get_discount_price(opi)
+                return opi.refund_price - discount_api.get_discount_price(opi.tokens[0])
     return 0
 
 
