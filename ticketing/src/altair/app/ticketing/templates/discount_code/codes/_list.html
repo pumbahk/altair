@@ -15,10 +15,12 @@
                 ${ch.sortable(form.code)}
             </th>
             <th class="span1" style="text-align:center;">
-                予約番号
+                ${HH.label_text_for(form.order_no)}
+                ${ch.help(form.order_no, u'キャンセルなど、予約が無効になっている場合は再利用可能です。')|n}
             </th>
             <th class="span2" style="text-align: center">
                 ${ch.sortable(form.used_at)}
+                ${ch.help(form.used_at, u'使用日時に記載がある場合、コードの再利用はできません。')|n}
             </th>
             <th class="span1">
                 ${HH.label_text_for(OperatorForm.name)}
@@ -38,6 +40,7 @@
                         <td>
                             %if code.order and code.order.order_no:
                                 <a href="${request.route_path("orders.show_by_order_no",order_no=code.order.order_no)}">${code.order.order_no}</a>
+                                ${HH.order_status(code.order)}
                             %endif
                         </td>
                         <td>
