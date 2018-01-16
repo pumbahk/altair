@@ -1446,7 +1446,7 @@ class DiscountCodeEnteringView(object):
         self.context.delete_temporarily_save_discount_code()
 
         # ディスカウントコードを使わない場合は通常ルートへ
-        if not cart.enable_discount_code:
+        if (not cart.enable_discount_code) or (not cart.is_product_item_quantity_one):
             return HTTPFound(self.request.route_path('cart.payment', sales_segment_id=sales_segment_id))
 
         return dict(
