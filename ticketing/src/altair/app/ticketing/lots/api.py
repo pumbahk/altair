@@ -53,7 +53,7 @@ from altair.app.ticketing.core.models import (
     Performance,
     Product,
 )
-
+from altair.app.ticketing.i18n import custom_locale_negotiator
 from altair.app.ticketing.users.models import (
     MemberGroup_SalesSegment,
     MemberGroup,
@@ -498,10 +498,38 @@ def new_lot_entry(request, entry_no, wishes, payment_delivery_method_pair_id, sh
         )
     return cart_api.new_order_session(
         request,
-        client_name=shipping_address_dict["last_name"] + shipping_address_dict["first_name"],
+        client_name=get_client_name(request, shipping_address_dict),
         payment_delivery_method_pair_id=payment_delivery_method_pair_id,
         email_1=shipping_address_dict["email_1"],
         )
+
+def get_client_name(request, shipping_address_dict):
+    client_name = shipping_address_dict["last_name"] + shipping_address_dict["first_name"]
+    if request.organization.setting.i18n and custom_locale_negotiator(request) != u'ja':
+        client_name = convert_hankaku_to_zenkaku(client_name)
+    return client_name
+
+ASCII_HAN_ZEN_MAP = {
+    u'a': u'ａ', u'b': u'ｂ', u'c': u'ｃ', u'd': u'ｄ', u'e': u'ｅ', u'f': u'ｆ', u'g': u'ｇ', u'h': u'ｈ', u'i': u'ｉ',
+    u'j': u'ｊ', u'k': u'ｋ', u'l': u'ｌ', u'm': u'ｍ', u'n': u'ｎ', u'o': u'ｏ', u'p': u'ｐ', u'q': u'ｑ', u'r': u'ｒ',
+    u's': u'ｓ', u't': u'ｔ', u'u': u'ｕ', u'v': u'ｖ', u'w': u'ｗ', u'x': u'ｘ', u'y': u'ｙ', u'z': u'ｚ', u'A': u'Ａ',
+    u'B': u'Ｂ', u'C': u'Ｃ', u'D': u'Ｄ', u'E': u'Ｅ', u'F': u'Ｆ', u'G': u'Ｇ', u'H': u'Ｈ', u'I': u'Ｉ', u'J': u'Ｊ',
+    u'K': u'Ｋ', u'L': u'Ｌ', u'M': u'Ｍ', u'N': u'Ｎ', u'O': u'Ｏ', u'P': u'Ｐ', u'Q': u'Ｑ', u'R': u'Ｒ', u'S': u'Ｓ',
+    u'T': u'Ｔ', u'U': u'Ｕ', u'V': u'Ｖ', u'W': u'Ｗ', u'X': u'Ｘ', u'Y': u'Ｙ', u'Z': u'Ｚ', u'!': u'！', u'"': u'”',
+    u'#': u'＃', u'$': u'＄', u'%': u'％', u'&': u'＆', u'\'': u'’', u'(': u'（', u')': u'）', u'*': u'＊', u'+': u'＋',
+    u',': u'，', u'-': u'−', u'.': u'．', u'/': u'／', u':': u'：', u';': u'；', u'<': u'＜', u'=': u'＝', u'>': u'＞',
+    u'?': u'？', u'@': u'＠', u'[': u'［', u'\\': u'¥', u']': u'］', u'^': u'＾', u'_': u'＿', u'`': u'‘', u'{': u'｛',
+    u'|': u'｜', u'}': u'｝', u'~': u'〜', u' ': u'　'
+}
+
+def convert_hankaku_to_zenkaku(s):
+    han_s = u''
+    for c in s:
+        try:
+            han_s += ASCII_HAN_ZEN_MAP[c]
+        except KeyError:
+            pass
+    return han_s
 
 def clear_lot_entry(request):
     try:
