@@ -24,4 +24,5 @@ APACHE_RUN_GROUP=${GROUP} \
 LANG=ja_JP.UTF-8 \
 LC_ALL=ja_JP.UTF-8 \
 LC_CTYPE=ja_JP.UTF-8 \
+PATH=${SERVER_ROOT}/../../env/bin:${PATH} \
 /usr/sbin/apache2 -f ${SERVER_ROOT}/etc/apache2.conf -d ${SERVER_ROOT} -DFOREGROUND
