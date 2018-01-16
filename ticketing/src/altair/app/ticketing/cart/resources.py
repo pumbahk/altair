@@ -792,6 +792,13 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
             else:
                 input_codes.append(code)
 
+            # 「一般会員の方」のファンクラブクーポンの利用を防ぐバリデーション
+            for setting in self.cart.available_fanclub_discount_code_settings:
+                # fc_member_idは「ファンクラブの方」でログインしてすると文字列の数字、「一般の方」でログインするとOpenIDの文字列
+                fc_member_id = self.request.altair_auth_info['authz_identifier']
+                if (code[:4] == setting.first_4_digits) and (not fc_member_id.isdigit()):
+                    form.add_non_fanclub_member_discount_code_error()
+
             # 使用済みコードバリデーション
             organization = cart_api.get_organization(self.request)
             if discount_api.check_used_discount_code(code, organization):
