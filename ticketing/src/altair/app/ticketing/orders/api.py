@@ -1952,13 +1952,14 @@ def get_refund_per_ticket_fee(refund, order):
     return fee
 
 
-def get_refund_ticket_price(refund, order, product_item_id):
+def get_refund_ticket_price(refund, order, ordered_product_item_token_id):
     if not refund.include_item:
         return 0
     for op in order.items:
         for opi in op.elements:
-            if opi.product_item_id == product_item_id:
-                return opi.refund_price - discount_api.get_discount_price(opi.tokens[0])
+            for opit in opi.tokens:
+                if opit.id == ordered_product_item_token_id:
+                    return opi.refund_price - discount_api.get_discount_price(opit)
     return 0
 
 

@@ -336,7 +336,8 @@ def refund_order(request, tenant, order, refund_record, now=None):
                 refund_end_at=refund.end_at,
                 need_stub=refund.need_stub,
                 ticket_expire_at=refund.end_at + timedelta(days=+7),
-                ticket_price_getter=lambda sej_ticket: refund_record.get_refund_ticket_price(sej_ticket.product_item_id),
+                ticket_price_getter=lambda sej_ticket: refund_record.get_refund_ticket_price(
+                    sej_ticket.ordered_product_item_token_id),
                 refund_total_amount=refund_record.refund_total_amount,
                 now=now
                 )
