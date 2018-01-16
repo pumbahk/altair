@@ -1334,7 +1334,10 @@ class PaymentView(object):
             return HTTPFound(location=t(url_wanted=False))
 
     def get_client_name(self):
-        return self.request.params['last_name'] + self.request.params['first_name']
+        client_name = self.request.params['last_name'] + self.request.params['first_name']
+        if self.request.organization.setting.i18n and custom_locale_negotiator(self.request) != u'ja':
+            client_name = h.convert_hankaku_to_zenkaku(client_name)
+        return client_name
 
     def create_shipping_address(self, user, data):
         logger.debug('shipping_address=%r', data)
