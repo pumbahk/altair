@@ -133,7 +133,8 @@ class DiscountCodeCode(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         if len(self.UsedDiscountCodeOrder) == 0:
             return None
 
-        return self.UsedDiscountCodeOrder[0].ordered_product_item.ordered_product.order
+        desc_ordered = sorted(self.UsedDiscountCodeOrder, key=lambda x: x.created_at, reverse=True)
+        return desc_ordered[0].ordered_product_item.ordered_product.order
 
 
 class DiscountCodeTarget(Base, BaseModel, WithTimestamp, LogicallyDeleted):
