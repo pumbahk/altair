@@ -382,6 +382,19 @@ class Cart(Base, c_models.CartMixin):
             return True
 
     @property
+    def is_product_item_quantity_one(self):
+        """
+        販売単位（ProductItem.quantity）が1より大きい席種が選択されているか
+        :return: Bool
+        """
+        for item in self.items:
+            for element in item.elements:
+                if element.product_item.quantity > 1:
+                    return False
+
+        return True
+
+    @property
     def available_discount_code_settings(self):
         return self._find_available_target_settings()
 
