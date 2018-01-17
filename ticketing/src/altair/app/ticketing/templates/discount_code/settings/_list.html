@@ -3,14 +3,6 @@
 <%! from altair.app.ticketing.discount_code.models import DiscountCodeSetting, CodeOrganizerEnum %>
 <%! from altair.app.ticketing.discount_code.forms import DiscountCodeSettingForm %>
 
-<%def name="show_reason(reasons)">
-    <ul>
-        % for reason in reasons:
-            <li>${reason}</li>
-        % endfor
-    </ul>
-</%def>
-
 <p>※ 状態が「無効」になっている場合は、アイコンをクリックすると理由が表示されます。</p>
 <p>※ クーポン・割引コードは<strong>販売単位が1の商品にのみ適用</strong>できます。ペアシート・ボックス席などには適用できません。</p>
 <div style="margin-right: 10px;">
@@ -63,7 +55,7 @@
                             % else:
                                 <span class="badge badge-warning" rel="popover"
                                       data-original-title="無効になっている理由"
-                                      data-content="${show_reason(setting.available_status)}">無　効</span>
+                                      data-content="${ch.unordered_list_up(setting.available_status)}">無　効</span>
                             % endif
                         </td>
                         <td style="text-align: center;">

@@ -1,6 +1,7 @@
 <%page args="setting, events, registered, performance_count" />
 <%namespace file="/common/helpers.html" name="ch" />
 <%! from altair.app.ticketing.core.models import Event %>
+<%! from altair.app.ticketing.discount_code.models import DiscountCodeTarget %>
 <%! from altair.app.ticketing.events.performances.forms import PerformanceForm %>
 
 <form action="${request.url}" method="POST">
@@ -10,7 +11,7 @@
                 <a href="${request.route_path("discount_code.target_confirm",setting_id=setting.id, _query=request.GET)}"
                    id="target_confirm"
                    class="ajax-modal btn btn-primary" data-toggle="modal" data-target="#TargetEditModal">変更内容を保存</a>
-                <p style="margin-top: 10px;">イベント数（非表示を含む）: ${events.item_count}件</p>
+                <p style="margin-top: 10px;">イベント数（非表示を含む）: <strong>${events.item_count}</strong>件</p>
                 <table class="table table-bordered" style="margin-top:16px;">
                     <thead>
                     <tr>
@@ -62,9 +63,17 @@
                                                    data-event_id="${event.id}"
                                                 ${'checked="checked"' if unicode(performance.id) in registered else ''}
                                                    type="checkbox">
-                                            <label class="control-label"
+                                            <label style="float: left;" class="control-label"
                                                    for="performance_id_${performance.id}">${vh.datetime(performance.start_on, with_weekday=True)} ${performance.name}
                                             </label>
+                                            <% other_names = DiscountCodeTarget.other_discount_code_setting_names(performance, setting.id) %>
+                                            % if other_names:
+                                                <span style="margin-left: 5px;"
+                                                      class="badge badge-info" rel="popover"
+                                                      data-original-title="この公演に設定済みのクーポン・割引コード設定"
+                                                      data-content="${ch.unordered_list_up(other_names)}">その他の設定</span>
+                                            % endif
+                                            <div style="clear:both;"></div>
                                         </div>
                                     <% if i == 5: hidden_div_flg = True %>
                                     % endfor

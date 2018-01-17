@@ -157,6 +157,19 @@ class DiscountCodeTarget(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                                cascade='all'
                                )
 
+    @staticmethod
+    def other_discount_code_setting_names(performance, own_setting_id):
+        targets = performance.DiscountCodeTarget
+        others = []
+        if len(targets) == 0:
+            return others
+
+        for target in targets:
+            if target.discount_code_setting_id != own_setting_id:
+                others.append(target.discount_code_setting.name)
+
+        return others
+
 
 def insert_specific_number_code(num, first_4_digits, data):
     """
