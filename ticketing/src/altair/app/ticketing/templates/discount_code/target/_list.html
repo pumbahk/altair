@@ -66,12 +66,11 @@
                                             <label style="float: left;" class="control-label"
                                                    for="performance_id_${performance.id}">${vh.datetime(performance.start_on, with_weekday=True)} ${performance.name}
                                             </label>
-                                            <% other_names = DiscountCodeTarget.other_discount_code_setting_names(performance, setting.id) %>
-                                            % if other_names:
+                                            % if performance.other_discount_code_setting_names:
                                                 <span style="margin-left: 5px;"
                                                       class="badge badge-info" rel="popover"
                                                       data-original-title="この公演に設定済みのクーポン・割引コード設定"
-                                                      data-content="${ch.unordered_list_up(other_names)}">その他の設定</span>
+                                                      data-content="${ch.unordered_list_up(performance.other_discount_code_setting_names)}">その他の設定</span>
                                             % endif
                                             <div style="clear:both;"></div>
                                         </div>
