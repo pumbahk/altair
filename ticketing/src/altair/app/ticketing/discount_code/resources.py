@@ -111,6 +111,26 @@ class DiscountCodeTargetResource(TicketingAdminResource):
             url=PageURL_WebOb_Ex(self.request)
         )
 
+        events = self._add_other_discount_code_setting_names_for_each_performances(events)
+
+        return events
+
+    def _add_other_discount_code_setting_names_for_each_performances(self, events):
+        """
+        各公演に設定済みのクーポン・割引コード設定名を付加する。
+        画面表示をリクエストされている自身の設定名は除く。
+        :param events: イベント情報
+        :return events: リスト「other_discount_code_setting_names」の付加
+        """
+        own_setting_id = self.request.matchdict['setting_id']
+        for event in events:
+            for performance in event.performances:
+                others = []
+                for target in performance.DiscountCodeTarget:
+                    if unicode(target.discount_code_setting_id) != own_setting_id:
+                        others.append(target.discount_code_setting.name)
+                performance.other_discount_code_setting_names = others
+
         return events
 
     @staticmethod
