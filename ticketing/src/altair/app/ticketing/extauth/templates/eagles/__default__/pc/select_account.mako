@@ -6,26 +6,23 @@
           <div class="inner">
             <ul class="bread-list-box">
               <li class="bread-list"><a href="/" class="bread-link">Eチケトップ</a></li>
-              <li class="bread-list">ファンクラブ会員選択</li>
+              <li class="bread-list">TEAM EAGLESメンバー選択</li>
             </ul>
           </div>
         </div>
 
         <section class="bg-contents">
           <div class="inner">
-            <h2 class="page-ttl">ファンクラブ会員選択</h2>
+            <h2 class="page-ttl">TEAM EAGLESメンバー選択</h2>
 
             <table class="login-tbl">
 %for membership in memberships:
 <%
-    if membership['kind']['name'] == u'ブースタークラブ': class_for_club='login-booster-club'
-    elif membership['kind']['name'] == u'スーパーゴールドクラブ': class_for_club='login-super-gold-club'
-    elif membership['kind']['name'] == u'ゴールドクラブ': class_for_club='login-gold-club'
-    elif membership['kind']['name'] == u'レギュラークラブ': class_for_club='login-regular-club'
-    elif membership['kind']['name'] == u'レディースクラブ': class_for_club='login-ladies-club'
-    elif membership['kind']['name'] == u'学生クラブ': class_for_club='login-school-club'
-    elif membership['kind']['name'] == u'キッズクラブ': class_for_club='login-kids-club'
-    elif membership['kind']['name'] == u'ベーシッククラブ': class_for_club='login-basic-club'
+    if membership['kind']['name'] == u'5-STAR': class_for_club='login-five-star'
+    elif membership['kind']['name'] == u'4-STAR': class_for_club='login-four-star'
+    elif membership['kind']['name'] == u'3-STAR': class_for_club='login-three-star'
+    elif membership['kind']['name'] == u'2-STAR': class_for_club='login-two-star'
+    elif membership['kind']['name'] == u'KIDS': class_for_club='login-kids-star'
     else: class_for_club='login-basic-club'
 %>
               <tr>

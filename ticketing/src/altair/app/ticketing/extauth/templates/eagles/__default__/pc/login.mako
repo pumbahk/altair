@@ -43,7 +43,7 @@
               <div class="btn-box">
                 <button type="submit" class="btn btn-primary">次に進む/Login</button>
 
-                <a href="${_context.route_path('extauth.entry')}" class="btn btn-default">ファンクラブ会員の方<span class="pc">、</span><br class="sp">一般の方はこちらから</a>
+                <a href="${_context.route_path('extauth.entry')}" class="btn btn-default">TEAM EAGLESメンバーの方<span class="pc">、</span><br><br class="sp">一般の方はこちらから</a>
 
               </div>
             </form>
