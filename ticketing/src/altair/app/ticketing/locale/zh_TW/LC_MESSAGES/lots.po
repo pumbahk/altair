@@ -30,6 +30,9 @@ msgstr "{0} {1}的抽選申請期間為{2}～{3}。"
 msgid "例"
 msgstr "例"
 
+msgid "次に進む"
+msgstr "下一步"
+
 # review form
 
 msgid "抽選申込確認"

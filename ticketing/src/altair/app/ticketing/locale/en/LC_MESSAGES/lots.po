@@ -30,6 +30,9 @@ msgstr "The Application period for {0} {1} is from {2} to {3}."
 msgid "例"
 msgstr "ex."
 
+msgid "次に進む"
+msgstr "Go to next"
+
 # review form
 
 msgid "抽選申込確認"

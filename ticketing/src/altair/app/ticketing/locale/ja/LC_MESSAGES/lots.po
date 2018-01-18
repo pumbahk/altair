@@ -30,6 +30,9 @@ msgstr "{0} {1} の申込期間は {2} ～ {3} となっております。"
 msgid "例"
 msgstr "例"
 
+msgid "次に進む"
+msgstr "次に進む"
+
 # review form
 
 msgid "抽選申込確認"
