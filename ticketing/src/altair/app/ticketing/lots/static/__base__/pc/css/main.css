@@ -676,6 +676,12 @@ main {
 
 /* ETC
  -------------------------------------------- */
+ul.error-list li {
+  color: #D8000C;
+  background-color: #FFBABA;
+  padding: 0 8px;
+}
+
 .error-box {
   border: 3px solid red;
   background: #FFEEEE;
