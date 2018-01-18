@@ -163,7 +163,7 @@ class OrderInfoDefaultMixin(object):
         discount_amount_str = u""
         for index, group in enumerate(order.cart.used_discount_code_groups):
             codes = [code.code for code in group['code']]
-            discount_amount_str = u"{0}{1}\n使用したクーポン・割引コード:{2}\n{3}枚\n-￥{4}".format(discount_amount_str,
+            discount_amount_str = u"{0}{1}\n使用したクーポン・割引コード:{2}\n{3}枚\n-￥{4}\n".format(discount_amount_str,
                                                                                     unicode(group[
                                                                                                 'discount_code_setting'].explanation),
                                                                                     u"\n".join(codes),
