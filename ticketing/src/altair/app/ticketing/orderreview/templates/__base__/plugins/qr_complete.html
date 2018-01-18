@@ -34,24 +34,24 @@ ${description}
       % for ticket in tickets:
         <div class="qr-box">
           % if ticket.product:
-            <p class="qr-font">商品名 ${ticket.product.name} (${ticket.product.id})</p><br />
+            <p class="qr-font">${_(u'商品名')} ${ticket.product.name} (${ticket.product.id})</p><br />
           % endif
           %if ticket.seat:
-            <p class="qr-font">席番号 ${ticket.seat.name} (${ticket.seat.l0_id})</p><br />
+            <p class="qr-font">${_(u'席番号')} ${ticket.seat.name} (${ticket.seat.l0_id})</p><br />
           %endif
 
           <form method="post" target="_blank" action="${request.route_path('order_review.qr_print')}">
             <input type="hidden" name="order_no" value="${order.order_no}" />
             <input type="hidden" name="tel" value="${tel}" />
             <input type="hidden" name="token" value="${ticket.token.id if ticket.token else ''}" />
-            <input type="submit" class="btn auto-width" value="QRコードを表示する" />
+            <input type="submit" class="btn auto-width" value="${_(u'QRコードを表示する')}" />
           </form>
           <form method="post" target="_blank" action="${request.route_path('order_review.qr_send')}">
             <input type="hidden" name="order_no" value="${order.order_no}" />
             <input type="hidden" name="tel" value="${tel}" />
             <input type="hidden" name="token" value="${ticket.token.id if ticket.token else ''}" />
-            <p class="qr-font">メールアドレス: </p><input type="text" class="qr-textinput" name="mail" size="40" />
-            <input type="submit" class="btn auto-width" name="send" value="メールで送る" />
+            <p class="qr-font">${_(u'メールアドレス')}: </p><input type="text" class="qr-textinput" name="mail" size="40" />
+            <input type="submit" class="btn auto-width" name="send" value="${_(u'メールで送る')}" />
           </form>
         </div>
       % endfor
@@ -67,8 +67,8 @@ ${description}
         % endif
         <tr>
           <td colspan="2">
-            <p>こちらのQRコードはまだ発行開始日前のため、QRコードを発行できません。</p>
-            <p>恐れ入りますが、発行開始まで今しばらくお待ちください。</p>
+            <p>${_(u'こちらのQRコードはまだ発行開始日前のため、QRコードを発行できません。')}</p>
+            <p>${_(u'恐れ入りますが、発行開始まで今しばらくお待ちください。')}</p>
           </td>
         </tr>
       </tbody>
@@ -79,8 +79,8 @@ ${description}
     <tbody>
       <tr>
         <td>
-          <p>お支払い完了後、このページにQRコードを表示するためのボタンが表示されます。</p>
-          <p>表示されたQRコードを印刷、あるいは、PC/携帯へメール送信の上、公演当日、指定の場所にてQRコード（印刷したもの、あるいは携帯画面）をご提示ください。</p>
+          <p>${_(u'お支払い完了後、このページにQRコードを表示するためのボタンが表示されます。')}</p>
+          <p>${_(u'表示されたQRコードを印刷、あるいは、PC/携帯へメール送信の上、公演当日、指定の場所にてQRコード（印刷したもの、あるいは携帯画面）をご提示ください。')}</p>
         </td>
       </tr>
     </tbody>

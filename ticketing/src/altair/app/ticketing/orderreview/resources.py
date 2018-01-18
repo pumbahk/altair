@@ -196,9 +196,9 @@ class OrderReviewResource(OrderReviewResourceBase):
     def cart_setting(self):
         return self.order.cart_setting
 
-    def order_detail_panel(self, order):
+    def order_detail_panel(self, order, locale=None):
         panel_name = 'order_detail.%s' % self.cart_setting.type
-        return self.request.layout_manager.render_panel(panel_name, self.order, self.user_point_accounts)
+        return self.request.layout_manager.render_panel(panel_name, self.order, self.user_point_accounts, locale)
 
 
 class MyPageOrderReviewResource(OrderReviewResourceBase):
