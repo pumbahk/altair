@@ -1040,6 +1040,9 @@ class OrderRefundForm(OurForm):
                 if not self.end_at.data:
                     self.end_at.errors.append(u'入力してください')
                     status = False
+                if self.start_at.data and self.end_at.data and self.start_at.data > self.end_at.data:
+                    self.end_at.errors.append(u'開始日よりも後に終了日が設定されています')
+                    status = False
             if refund_pm.payment_plugin_id == plugins.SEJ_PAYMENT_PLUGIN_ID:
                 if self.need_stub.data is None:
                     self.need_stub.errors.append(u'コンビニ払戻の場合は半券要否区分を選択してください')

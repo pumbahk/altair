@@ -88,6 +88,36 @@
   .login-member-page .login-team-fukushima .btn-team {
     background: #ec008d;
   }
+  .login-member-page .login-five-star .sub-ttl {
+    color: #231815;
+  }
+  .login-member-page .login-five-star .btn-team {
+    background: #231815;
+  }
+  .login-member-page .login-four-star .sub-ttl {
+    color: #7d001a;
+  }
+  .login-member-page .login-four-star .btn-team {
+    background: #7d001a;
+  }
+  .login-member-page .login-three-star .sub-ttl {
+    color: #b8a25d;
+  }
+  .login-member-page .login-three-star .btn-team {
+    background: #b8a25d;
+  }
+  .login-member-page .login-two-star .sub-ttl {
+    color: #898989;
+  }
+  .login-member-page .login-two-star .btn-team {
+    background: #898989;
+  }
+  .login-member-page .login-kids-star .sub-ttl {
+    color: #f6ac19;
+  }
+  .login-member-page .login-kids-star .btn-team {
+    background: #f6ac19;
+  }
 
 
 @media screen and (min-width: 768px) {

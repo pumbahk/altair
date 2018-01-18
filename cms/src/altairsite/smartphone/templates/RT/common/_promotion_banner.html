@@ -1,0 +1,5 @@
+<%page args="promotion_banners" />
+
+% for promotion_banner in promotion_banners:
+  <div class="promotionbannerBtn"><a href="${promotion_banner.url}"><img src="${promotion_banner.imgsrc}" alt=""></a></div>
+% endfor

@@ -9,7 +9,7 @@ from ..search.search_query import SaleInfo
 
 from sqlalchemy import asc
 from altaircms.datelib import get_now
-from altaircms.models import Genre
+from altaircms.models import Genre, Category
 from altaircms.tag.models import HotWord
 from altaircms.topic.api import get_topic_searcher
 from altaircms.genre.searcher import GenreSearcher
@@ -34,6 +34,7 @@ class CommonResource(object):
             hotwords = self.get_hotword()[0:5]
             genretree = self.get_genre_tree(parent=None)
             areas = self.get_area()
+            promotion_banners = self.get_promotion_banners()
         else:
             promotions = self.getInfo(kind="promotion", system_tag_id=None)
             topcontents = self.getInfo(kind="topcontent", system_tag_id=None)
@@ -41,7 +42,7 @@ class CommonResource(object):
             hotwords = self.get_hotword()
             genretree = self.get_genre_tree(parent=None)
             areas = self.get_area()
-
+            promotion_banners = self.get_promotion_banners()
         return {
              'promotions':promotions
             ,'topcontents':topcontents
@@ -51,6 +52,7 @@ class CommonResource(object):
             ,'areas':areas
             ,'helper':SmartPhoneHelper()
             ,'form':TopSearchForm()
+            ,'promotion_banners':promotion_banners
         }
 
     def get_genre_render_param(self, genre_id):
@@ -211,3 +213,7 @@ class CommonResource(object):
     def get_genre(self, id):
         genre = self.request.allowable(Genre).filter(Genre.id == id).first()
         return genre
+
+    def get_promotion_banners(self):
+        banners = self.request.allowable(Category).filter(Category.hierarchy == 'promotion_banner').all()
+        return banners
