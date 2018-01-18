@@ -251,7 +251,7 @@ msgid "チケット1枚につき"
 msgstr "Per ticket"
 
 msgid "システム利用料"
-msgstr "System usage fee"
+msgstr "System fee"
 
 msgid "注文受付完了、確認メール等をメールでご案内します。「{domain}」からのメールを受信できるよう、お申し込み前にドメイン指定の設定を必ずお願いいたします。"
 msgstr "We will send you a confirmation e-mail after your reservation is completed. Please confirm the e-mail settings, to allow receiving e-mail from 「{domain}」domain."
@@ -552,10 +552,10 @@ msgid "枚"
 msgstr "Sheet"
 
 msgid "決済手数料"
-msgstr "Settlement commission"
+msgstr "Settlement fee"
 
 msgid "発券/引取手数料"
-msgstr "Ticketing / Delivery fee"
+msgstr "Issue/Delivery fee"
 
 msgid "追加情報"
 msgstr "Additional Information"
@@ -819,7 +819,7 @@ msgid "各種手数料の他、公演によりシステム利用料がかかり�
 msgstr "In some cases system fee will be changed."
 
 msgid "払込票番号"
-msgstr "Payment slip number"
+msgstr "7-Eleven payment slip number"
 
 msgid "払込票を表示"
 msgstr "Show payment slip"

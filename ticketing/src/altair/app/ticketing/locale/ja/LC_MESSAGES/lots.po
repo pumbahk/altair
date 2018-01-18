@@ -27,6 +27,9 @@ msgstr "サービス利用規約"
 msgid "{0} {1} の申込期間は {2} ～ {3} となっております。"
 msgstr "{0} {1} の申込期間は {2} ～ {3} となっております。"
 
+msgid "例"
+msgstr "例"
+
 # review form
 
 msgid "抽選申込確認"
@@ -288,6 +291,9 @@ msgstr "(半角英数)"
 
 msgid "メールアドレス (確認)"
 msgstr "メールアドレス (確認)"
+
+msgid "確認用"
+msgstr "確認用"
 
 msgid "電話番号 (携帯)"
 msgstr "電話番号 (携帯)"

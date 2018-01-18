@@ -27,6 +27,9 @@ msgstr "Terms of service"
 msgid "{0} {1} の申込期間は {2} ～ {3} となっております。"
 msgstr "The Application period for {0} {1} is from {2} to {3}."
 
+msgid "例"
+msgstr "ex."
+
 # review form
 
 msgid "抽選申込確認"
@@ -42,7 +45,7 @@ msgid "半角英数"
 msgstr "half-width alphanumeric"
 
 msgid "電話番号"
-msgstr "Home Phone Number"
+msgstr "Phone Number"
 
 msgid "FAX番号"
 msgstr "FAX"
@@ -203,10 +206,10 @@ msgid "会場"
 msgstr "Venue"
 
 msgid "希望選択"
-msgstr "Hope selection"
+msgstr "Wish selection"
 
 msgid "第{0}希望"
-msgstr "Hope No {0}"
+msgstr "Wish {0}"
 
 msgid "希望する公演と券種の選択"
 msgstr "Selection of performances and ticket species hope"
@@ -294,6 +297,9 @@ msgstr " "
 
 msgid "メールアドレス (確認)"
 msgstr "Email(Confirmation)"
+
+msgid "確認用"
+msgstr "Confirmation"
 
 msgid "電話番号 (携帯)"
 msgstr "Mobile Phone Number"
@@ -559,16 +565,16 @@ msgid "受付番号"
 msgstr "Receipt number"
 
 msgid "お申込み時に、ご登録いただいたメールアドレス宛に、受付完了メールが送られます。しばらくたっても確認のメールが届かない場合は、入力されたメールアドレスが誤りがあるか、メールの受信設定により受信できていない可能性があります。"
-msgstr "At the time of your application, to the email address you registered, accepted completion mail will be sent. If even after a while do not receive a confirmation e-mail, or input e-mail address is there is an error, you might not be able to receive by e-mail reception setting."
+msgstr "You will receive confirmation email sent to the email you registered after you complete the application. If you don't receive the confirmation email for a while, it may be caused by the wrong email address or email receiving setting of your devices."
 
 msgid "登録内容、受信設定を確認のうえ、<a href=\"{0}\">こちら</a>よりお問合せください。"
-msgstr "Confirm registration contents, the reception setting, <a href=\"{0}\">here</a>"
+msgstr "If you have any question, please <a href=\"{0}\">contact us</a>. (please make sure your devices can receive the email from tstar.jp beforehand.)"
 
 msgid "お問合せの際は、お申し込み時のお名前、電話番号、公演名、受付番号を記載お願いいたします。"
-msgstr "When contacting us, your name at the time of your application, phone number, performance name, thank you describe the acceptance number."
+msgstr "Please provide the information of name, phone number, performance and receipt number when you contact us."
 
 msgid "お申込内容は、「<a href=\"/lots/review\">申込確認ページ</a>」からもご確認いただけます。受付番号とご登録時のお電話番号をお手元にご用意の上、ご利用ください。"
-msgstr "You can check your application on「<a href=\"/lots/review\">Application confirmation page</a>」"
+msgstr "You can check your application on「<a href=\"/lots/review\">Lottery Application Confirmation</a>」"
 
 msgid "決済中にエラーが発生しました。しばらく時間を置いてから<a href=\"{0}\">再度お試しください。</a>"
 msgstr "An error occurred during the settlement. Please try <a href=\"{0}\"> again at some time. </a>"

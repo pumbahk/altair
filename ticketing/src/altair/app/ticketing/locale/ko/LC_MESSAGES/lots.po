@@ -41,6 +41,9 @@ msgstr "서비스이용약관"
 msgid "{0} {1} の申込期間は {2} ～ {3} となっております。"
 msgstr "{0} {1}의 신청 기간은 {2} ~ {3} 입니다."
 
+msgid "例"
+msgstr "예"
+
 # review form
 
 msgid "抽選申込確認"

@@ -361,7 +361,7 @@ msgid "例: 山田"
 msgstr "예 : HONG"
 
 msgid "例: 太郎"
-msgstr "예 : GIL DONG"
+msgstr "예 : GILDONG"
 
 msgid "YAMADA TARO"
 msgstr "HONG GILDONG"
