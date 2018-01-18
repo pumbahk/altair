@@ -7,21 +7,20 @@
         <div class="inner">
           <ul class="bread-list-box">
             <li class="bread-list"><a href="/" class="bread-link">Eチケトップ</a></li>
-            <li class="bread-list">ファンクラブ会員、一般選択</li>
+            <li class="bread-list">TEAM EAGLESメンバー、一般選択</li>
           </ul>
         </div>
       </div>
 
       <section class="bg-contents">
         <div class="inner">
-          <h2 class="page-ttl">ファンクラブ会員、一般選択</h2>
+          <h2 class="page-ttl">TEAM EAGLESメンバー、一般選択</h2>
 
           <table class="login-tbl ">
             <tr>
               <td class="login-box login-fun js-sp-accotdion-btn">
-                <h3 class="sub-ttl">ファンクラブ会員の方</h3>
+                <h3 class="sub-ttl">TEAM EAGLESメンバーの方</h3>
                 <div class="img-box"><img src="${view_context.static_url('images/culb-rank.png')}" alt="クラブ"></div>
-                <div class="btn-box" style="font-size:10px;">※キッズクラブの方は＜一般の方＞からログインください</div>
                 <div class="btn-box">
                   <a href="${_context.route_path('extauth.rakuten.entry')}" class="btn btn-eagles">
                     <img src="${view_context.static_url('images/logo_rakuten.jpg')}" class="logo" width="70px" alt="楽天">
@@ -34,12 +33,12 @@ from datetime import datetime
 thisyear = datetime.now().strftime('%Y')
 %>
                   <a href="https://eagles.fanclub.rakuten.co.jp/mypage/login/ridLogin" class="btn btn-normal">
-                    <span class="txt">楽天会員ID連携がお済でない方はこちら</span><br><span class="caution">※ファンクラブ会員と連携した楽天会員ID・パスワードが必要です。</span>
+                    <span class="txt">楽天会員ID連携がお済でない方はこちら</span><br><span class="caution">※TEAM EAGLESメンバーと連携した楽天会員ID・パスワードが必要です。</span>
                   </a>
                 </div>
                 <a href="https://member.id.rakuten.co.jp/rms/nid/upkfwd" target="_blank" class="login-link">会員ID・パスワードを忘れてしまった方はこちら</a>
                 <div class="btn-box">
-                  <a href="${_context.route_path('extauth.login', _query=dict(member_set=member_set.name))}" class="btn btn-has-ohter-id">B+特別先行・SOC・その他会員IDを<br/>お持ちの方はこちら</a>
+                  <a href="${_context.route_path('extauth.login', _query=dict(member_set=member_set.name))}" class="btn btn-has-ohter-id">その他会員IDをお持ちの方はこちら<br/>Sign in with other ID</a>
                 </div>
                 <div class="page-top-box js-show-box">
                   <a href="#" class="sp page-top">

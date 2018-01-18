@@ -22,7 +22,7 @@
 </%doc>
 <%def name="validate_errors(f)">
   % for error in f.errors:
-    <span class="help-inline">${error}</span>
+    <span class="help-inline" style="color:red">${error}</span>
   % endfor
 </%def>
 
