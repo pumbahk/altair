@@ -11,6 +11,26 @@
 %endfor
 %endif
 
+<script type="text/javascript"
+        src="${request.static_url('altair.app.ticketing.cart:static/js/disable_on_submit.js')}"></script>
+<script type="text/javascript">
+    $(function () {
+        $('form').disableOnSubmit('input[type=submit]');
+    });
+</script>
+
+
+<style>
+  #btn-complete {
+    border: 0;
+    width: 226px;
+    height: 46px;
+    background: url("${request.static_url('altair.app.ticketing.cart:static/eagles/pc/images/btn_next.gif')}") left top no-repeat;
+  }
+</style>
+
+
+
 <link rel="stylesheet" href="${request.static_url('altair.app.ticketing.cart:static/eagles/spa/css/coupon.css')}" type="text/css" media="all" />
 
 </head>
@@ -75,7 +95,7 @@
                                 ※購入希望席種の金額が高い順にクーポン・割引コードが適用されます。</p>
                         </div>
                         <p class="confirm-btnBox">
-                            <input class="btn btn-primary" type="button" value="次へ" onclick="$('#form1').submit()">
+                            <input class="btn btn-primary" type="submit" value="次へ">
                         </p>
                     </div>
                 </div>
