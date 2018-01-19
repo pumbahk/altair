@@ -130,7 +130,7 @@
     </td>
     <td style="color: red;text-align:right;">
         % if ordered_product_item.used_discount_codes:
-            ${vh.price(len(ordered_product_item.used_discount_codes) * ordered_product_item.price)}
+            -${vh.price(len(ordered_product_item.used_discount_codes) * ordered_product_item.price)}
         % endif
     </td>
   </tr>
@@ -142,7 +142,7 @@
       <td></td>
       <td></td>
       <td></td>
-      <td style="text-align: right;">-${vh.price(order.transaction_fee)}</td>
+      <td style="text-align: right;">${vh.price(order.transaction_fee)}</td>
     </tr>
     <tr>
       <td colspan="2">引取手数料</td>
