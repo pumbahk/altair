@@ -8315,7 +8315,7 @@ var ReserveByQuantityComponent = (function () {
         };
         //svgから取得する座席配列
         this.seatNameList = [];
-        this.defaultMaxQuantity = 10;
+        this.defaultMaxQuantity = 14;
         //ボタン表示・非表示
         this.nextButtonFlag = false;
         //座席確保飛び席モーダルフラグ
