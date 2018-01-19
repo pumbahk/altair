@@ -178,13 +178,13 @@
 		background: #FFF;
 	}
 	.confirmForm input::-webkit-input-placeholder {
-		color: #666;
+		color: #AAA;
 	}
 	.confirmForm input:-ms-input-placeholder {
-		color: #666;
+		color: #AAA;
 	}
 	.confirmForm input::-moz-placeholder {
-		color: #666;
+		color: #AAA;
 	}
 	.confirmForm input:focus::-webkit-input-placeholder {
 		color: transparent;
@@ -1241,13 +1241,13 @@
 		background: #FFF;
 	}
 	.confirmForm input::-webkit-input-placeholder {
-		color: #666;
+		color: #AAA;
 	}
 	.confirmForm input:-ms-input-placeholder {
-		color: #666;
+		color: #AAA;
 	}
 	.confirmForm input::-moz-placeholder {
-		color: #666;
+		color: #AAA;
 	}
 	.confirmForm input:focus::-webkit-input-placeholder {
 		color: transparent;

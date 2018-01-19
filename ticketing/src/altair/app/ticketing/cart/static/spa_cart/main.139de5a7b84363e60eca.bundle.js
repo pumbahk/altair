@@ -12602,7 +12602,7 @@ var PerformancesService = (function (_super) {
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return QuentityCheckService; });
 var QuentityCheckService = (function () {
     function QuentityCheckService() {
-        this.defaultMaxQuantity = 10;
+        this.defaultMaxQuantity = 14;
         this.defaultMinQuantity = 1;
     }
     /**
