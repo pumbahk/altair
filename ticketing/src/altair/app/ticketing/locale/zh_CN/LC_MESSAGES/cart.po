@@ -21,6 +21,15 @@ msgstr "输入情报确认"
 msgid "お問い合わせはこちら"
 msgstr "联络我们"
 
+msgid "申込方法"
+msgstr "购票方法"
+
+msgid "よくある质问"
+msgstr "常见问题"
+
+msgid "申込确认"
+msgstr "确认购票记录"
+
 # index
 
 msgid "合計金額"

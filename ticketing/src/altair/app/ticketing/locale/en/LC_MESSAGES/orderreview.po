@@ -23,6 +23,9 @@ msgstr "Ticket information, sales, purchase and reservation"
 msgid "購入履歴の確認"
 msgstr "Confirm Purchase History"
 
+msgid "申込確認"
+msgstr "Order Confirmation"
+
 msgid "運営会社"
 msgstr "Management company"
 
@@ -73,10 +76,10 @@ msgid "必須"
 msgstr "Required"
 
 msgid "半角英数"
-msgstr "number"
+msgstr "half-width alphanumeric"
 
 msgid "電話番号"
-msgstr "Telephone number"
+msgstr "Phone number"
 
 msgid "電話番号はご登録時の電話番号をご入力ください。"
 msgstr "Telephone number, please enter the telephone number at the time of your registration."
@@ -86,6 +89,9 @@ msgstr "(It does not matter either the number If you both register your mobile p
 
 msgid "ご予約時に登録した電話番号をご入力してください。"
 msgstr "Input the ordered telephone number, please."
+
+msgid "例"
+msgstr "ex."
 
 # show
 
@@ -153,7 +159,7 @@ msgid "イベント名"
 msgstr "Event name"
 
 msgid "公演・試合名"
-msgstr "Performance-game name"
+msgstr "Performance name"
 
 msgid "公演日"
 msgstr "Performance date"
@@ -171,10 +177,10 @@ msgid "枚"
 msgstr "Sheet"
 
 msgid "決済手数料"
-msgstr "Transaction fee"
+msgstr "Settlement fee"
 
 msgid "発券/引取手数料"
-msgstr "Delivery fee"
+msgstr "Issue/Delivery fee"
 
 msgid "システム利用料"
 msgstr "System fee"
@@ -261,6 +267,18 @@ msgstr "After completion of the payment, you will see a button to display a QR c
 msgid "印刷する"
 msgstr "Print"
 
+msgid "携帯電話からご利用の方は、ボタンを押した後で表示される画面を「画面メモ」等にて保存してください。"
+msgstr "Please use function like screenshot to save the screen of QR code."
+
+msgid "QRチケットの取得・管理に関しては、お客様ご自身の責任でお願いいたします。"
+msgstr "Please get and manage the QR code on your own responsibility."
+
+msgid "QRチケットの転送間違い、お渡し間違い等に起因するトラブル等にはご対応いたしかねますのでご注意ください。"
+msgstr "Be careful! We don't respond to the request for dealing the troubles caused by wrong sending or wrong giving."
+
+msgid "閉じる"
+msgstr "Close"
+
 # sej
 
 msgid "セブン-イレブン支払い"
@@ -279,13 +297,13 @@ msgid "各種手数料の他、公演によりシステム利用料がかかり�
 msgstr "In some cases system fee will be changed."
 
 msgid "払込票番号"
-msgstr "Application number"
+msgstr "7-Eleven payment slip number"
 
 msgid "払込票を表示"
-msgstr "Show ticket"
+msgstr "Show payment slip"
 
 msgid "支払期日"
-msgstr "Payment date"
+msgstr "Payment due date"
 
 msgid "上記支払期日までに、払込票番号をお持ちの上、セブン-イレブン店舗レジにてお支払いください。（払込票を表示、印刷した上で店頭にお持ちいただくとスムーズです）"
 msgstr "Before the payment due date, on top of you have a payment slip number, Seven"
@@ -306,13 +324,13 @@ msgid "詳細はそちらをご確認頂き、指定発券日以降にレジに�
 msgstr "For more information please confirm the there, please receive the ticket at the cash register on or after the specified date of issue."
 
 msgid "引換票番号"
-msgstr "Exchange for vote number"
+msgstr "Exchange number"
 
 msgid "引換票を表示"
-msgstr "Display the exchange vote"
+msgstr "Show exchange slip"
 
 msgid "引取受付期間"
-msgstr "Delivery acceptance period"
+msgstr "Exchange period"
 
 msgid "購入いただいた日の翌日{0}から引き取りが可能となります。"
 msgstr "The day following the date you purchased{0}"
@@ -327,7 +345,7 @@ msgid "<a href=\"/orderreview\">予約・購入履歴確認画面</a>にて表�
 msgstr "<a href=\"/orderreview\">here </a>Please refrain from the exchange slip number to be displayed in."
 
 msgid "引取受付期間内に、セブン-イレブン店頭レジにてチケットをお引取り下さい。"
-msgstr "In the take-off acceptance period, please take your pull the ticket at Seven Eleven over-the-counter cash register."
+msgstr "Please take your tickets at Seven Eleven cashing counter during the exchange period."
 
 msgid "クレジットカード情報"
 msgstr "Credit card information"
@@ -367,7 +385,7 @@ msgid "Famiポートでお支払い"
 msgstr "Payment in Famiport"
 
 msgid "支払期限"
-msgstr "Due date for payment"
+msgstr "Payment due date"
 
 # post
 

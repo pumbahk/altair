@@ -421,10 +421,12 @@ def announce_time_label(lot):
     announce_datetime = announce_datetime[0:announce_datetime.find(')', 0) + 1]
     return  announce_datetime + ' ' + timezone_label(lot)
 
-def announce_time_label_i18n(lot):
+def announce_time_label_i18n(lot, locale=None):
+    if not locale or locale == u'ja':
+        return announce_time_label(lot)
     if not timezone_label(lot):
         return i18n_datetime(lot.lotting_announce_datetime)
-    announce_datetime = i18n_datetime(lot.lotting_announce_datetime)
+    announce_datetime = i18n_datetime(lot.lotting_announce_datetime, locale)
     announce_datetime = announce_datetime[0:announce_datetime.find(')', 0) + 1]
     return  announce_datetime + ' ' + timezone_label(lot)
 
@@ -433,10 +435,10 @@ def withdraw_time_label(entry):
         return ""
     return japanese_datetime(entry.withdrawn_at)
 
-def withdraw_time_label_i18n(entry):
+def withdraw_time_label_i18n(entry, locale=None):
     if not entry or not entry.lot:
         return ""
-    return i18n_datetime(entry.withdrawn_at)
+    return i18n_datetime(entry.withdrawn_at, locale)
 
 def render_label(field):
     required = is_required(field)

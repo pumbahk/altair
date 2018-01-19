@@ -510,7 +510,7 @@ main {
 .wrap-form {
   overflow: hidden;
   margin: 0 auto;
-  width: 850px;
+  width: 950px;
   min-height: 400px;
   margin-bottom: 20px;
   border: 8px solid #dfdfdf;
@@ -676,6 +676,12 @@ main {
 
 /* ETC
  -------------------------------------------- */
+ul.error-list li {
+  color: #D8000C;
+  background-color: #FFBABA;
+  padding: 0 8px;
+}
+
 .error-box {
   border: 3px solid red;
   background: #FFEEEE;

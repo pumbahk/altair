@@ -54,6 +54,8 @@ from functools import partial
 
 from altair.app.ticketing.project_specific.huistenbosch.qr_utilits import build_ht_qr_by_ticket_id, build_ht_qr_by_token_id, build_ht_qr_by_order, build_ht_qr_by_sign
 
+from altair.app.ticketing.i18n import custom_locale_negotiator
+
 def jump_maintenance_page_om_for_trouble(organization):
     """https://redmine.ticketstar.jp/issues/10878
     誤表示問題の時に使用していたコード
@@ -374,7 +376,7 @@ class OrderReviewShowView(object):
 
         if order is None or order.shipping_address is None:
             raise InvalidForm(form, [self._message(u'受付番号または電話番号が違います。')])
-        return dict(order=order)
+        return dict(order=order, locale=custom_locale_negotiator(self.request) if self.request.organization.setting.i18n else "")
 
 @view_defaults(renderer=selectable_renderer("order_review/edit_order_attributes.html"), request_method='POST')
 class OrderAttributesEditView(object):
@@ -774,7 +776,8 @@ class QRView(object):
                     performance = token.item.ordered_product.order.performance,
                     event = token.item.ordered_product.order.performance.event,
                     product = token.item.ordered_product.product,
-                    gate = gate
+                    gate = gate,
+                    locale=custom_locale_negotiator(self.request) if self.request.organization.setting.i18n else ""
                 )
             elif token.item.ordered_product.order.payment_delivery_pair.delivery_method.delivery_plugin_id == plugins.QR_DELIVERY_PLUGIN_ID:
                 # altair
@@ -789,7 +792,8 @@ class QRView(object):
                     performance = ticket.performance,
                     event = ticket.event,
                     product = ticket.product,
-                    gate = gate
+                    gate = gate,
+                    locale=custom_locale_negotiator(self.request) if self.request.organization.setting.i18n else ""
                 )
         else:
             order = get_order_by_order_no(self.request, order_no)
