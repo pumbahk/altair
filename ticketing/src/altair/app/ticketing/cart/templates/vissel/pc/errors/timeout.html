@@ -1,15 +1,13 @@
-<%inherit file="./base.html"/>
-
+<%inherit file="../base.html"/>
 %if request.session.peek_flash():
  %for message in request.session.pop_flash():
    <div class="error">${message}</div>
  %endfor
 %endif
-   
 <div class="confirmBox">
   <div class="confirmBoxInner">
-	セッションがタイムアウトされました。
-	再度、最初からご購入をお試しください。<a href="${request.context.host_base_url}">トップに戻る</a>
+    ${_(u'セッションがタイムアウトされました。')}
+    ${_(u'再度、最初からご購入をお試しください。<a href=\"request.context.host_base_url\">トップに戻る</a>').format(request.context.host_base_url) |n}
   </div>
 </div>
 
@@ -18,6 +16,6 @@
 <%
     sc = {"pagename": "error-timeout"}
 %>
-<%include file="../../common/sc_basic.html" args="sc=sc" />
+<%include file="../../includes/sc_basic.html" args="sc=sc" />
 <!--/SiteCatalyst-->
 % endif

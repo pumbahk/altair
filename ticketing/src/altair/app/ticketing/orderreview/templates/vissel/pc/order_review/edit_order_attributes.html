@@ -1,8 +1,8 @@
 <%namespace name="fh" module="altair.formhelpers.utils.mako" />
-<%inherit file="../layout.html" />
-<div class="purchased">
-  <h2>入力情報編集</h2>
-  <div class="kadomaru">
+<%inherit file="../base.html" />
+<h2>入力情報編集</h2>
+<div class="settlementBox2 OrderBox">
+  <div class="settlementBoxInner2">
     <h3>追加情報</h3>
     <form method="POST" action="${request.route_path('order_review.edit_order_attributes.update')}">
     ${form.csrf()}
@@ -64,12 +64,3 @@
     </form>
   </div>
 </div>
-
-% if request.organization.setting.sitecatalyst_use:
-<!--SiteCatalyst-->
-<%
-    sc = {"pagename": "edit_order_attributes"}
-%>
-<%include file="../../common/sc_basic.html" args="sc=sc" />
-<!--/SiteCatalyst-->
-% endif

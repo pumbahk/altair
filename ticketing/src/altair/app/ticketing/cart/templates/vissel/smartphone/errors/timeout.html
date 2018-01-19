@@ -4,14 +4,13 @@
    <div class="error">${message}</div>
  %endfor
 %endif
-セッションがタイムアウトされました。
-再度、最初からご購入をお試しください。<a href="${request.context.host_base_url}">トップに戻る</a>
-
+${_(u'セッションがタイムアウトされました。')}
+${_(u'再度、最初からご購入をお試しください。<a href=\"request.context.host_base_url\">トップに戻る</a>').format(request.context.host_base_url) |n}
 % if request.organization.setting.sitecatalyst_use:
 <!--SiteCatalyst-->
 <%
     sc = {"pagename": "error-timeout"}
 %>
-<%include file="../../common/sc_basic.html" args="sc=sc" />
+<%include file="../../includes/sc_basic.html" args="sc=sc" />
 <!--/SiteCatalyst-->
 % endif

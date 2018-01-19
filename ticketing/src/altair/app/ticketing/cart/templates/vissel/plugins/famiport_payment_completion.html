@@ -1,0 +1,17 @@
+<table>
+  <tbody>
+    <tr>
+      <th>${_(u'Famiポート予約番号')}</th>
+      <td><strong>${famiport_order['payment_reserve_number']}</strong></td>
+    </tr>
+    <tr>
+      <th>${_(u'支払期限')}</th>
+      <td>
+        <span class="bold">${h.japanese_datetime(famiport_order['payment_start_at'])}</span>　〜　
+        %if famiport_order['payment_due_at']:
+        <span class="bold">${h.japanese_datetime(famiport_order['payment_due_at'])}</span>
+        %endif
+      </td>
+    </tr>
+  </tbody>
+</table>
