@@ -4,7 +4,7 @@ import { IProducts, IProductItems } from './interfaces';
 
 @Injectable()
 export class QuentityCheckService{
-    private defaultMaxQuantity:number = 10;
+    private defaultMaxQuantity:number = 14;
     private defaultMinQuantity:number = 1;
 
     /**
