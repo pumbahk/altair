@@ -21,6 +21,15 @@ msgstr "確認購買資訊"
 msgid "お問い合わせはこちら"
 msgstr "聯絡我們"
 
+msgid "申込方法"
+msgstr "購票方法"
+
+msgid "よくある質問"
+msgstr "常見問題"
+
+msgid "申込確認"
+msgstr "確認購票記錄"
+
 # index
 
 msgid "合計金額"

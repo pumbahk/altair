@@ -35,6 +35,15 @@ msgstr "구매 정보 확인"
 msgid "お問い合わせはこちら"
 msgstr "문의는 이곳"
 
+msgid "申込方法"
+msgstr "신청 방법"
+
+msgid "よくある質問"
+msgstr "자주 묻는 질문"
+
+msgid "申込確認"
+msgstr "신청 확인"
+
 # index
 
 msgid "合計金額"
@@ -361,7 +370,7 @@ msgid "例: 山田"
 msgstr "예 : HONG"
 
 msgid "例: 太郎"
-msgstr "예 : GIL DONG"
+msgstr "예 : GILDONG"
 
 msgid "YAMADA TARO"
 msgstr "HONG GILDONG"

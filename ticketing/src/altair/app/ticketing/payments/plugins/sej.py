@@ -905,7 +905,7 @@ def can_receive_from_next_day(now, sej_order):
 def sej_delivery_confirm_viewlet(context, request):
     cart = context.cart
     delivery_method = cart.payment_delivery_pair.delivery_method
-    delivery_name = request.translate(u'セブン-イレブン受け取り') if hasattr(request, 'description') else u'セブン-イレブン受け取り'
+    delivery_name = request.translate(u'セブン-イレブン受け取り') if hasattr(request, 'translate') else u'セブン-イレブン受け取り'
     description = get_delivery_method_info(request, delivery_method, 'description')
     return dict(delivery_name=delivery_name, description=Markup(description))
 
@@ -935,7 +935,7 @@ def sej_payment_confirm_viewlet(context, request):
 
     cart = context.cart
     payment_method = cart.payment_delivery_pair.payment_method
-    payment_name = request.translate(u'セブン-イレブン支払い') if hasattr(request, 'description') else u'セブン-イレブン支払い'
+    payment_name = request.translate(u'セブン-イレブン支払い') if hasattr(request, 'translate') else u'セブン-イレブン支払い'
     description = get_payment_method_info(request, payment_method, 'description')
     return dict(payment_name=payment_name, description=Markup(description))
 

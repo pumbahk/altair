@@ -21,6 +21,15 @@ msgstr "購入情報確認"
 msgid "お問い合わせはこちら"
 msgstr "お問い合わせはこちら"
 
+msgid "申込方法"
+msgstr "申込方法"
+
+msgid "よくある質問"
+msgstr "よくある質問"
+
+msgid "申込確認"
+msgstr "申込確認"
+
 # index
 
 msgid "合計金額"

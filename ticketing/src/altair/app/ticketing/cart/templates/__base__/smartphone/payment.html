@@ -46,6 +46,17 @@ $(document).ready(function(){
   });
 });
 
+function zip_switcher(select) {
+    var zip = $('#zip');
+    if ($(select).val() === 'Japan') {
+        zip.prop('disabled', false);
+        zip.val("");
+    } else {
+        zip.prop('disabled', true);
+        zip.val("0000000");
+    }
+}
+
 </script>
 </%block>
 
@@ -236,7 +247,7 @@ $(document).ready(function(){
                   <p>
                   % if request.organization.setting.i18n:
                     ${form['country'].label(class_=u'fs12')}
-                    ${form['country']}
+                    ${form['country'](onchange='zip_switcher(this)')}
                     ${h.error_list(request, form, 'country')}
                   % endif
                   </p>

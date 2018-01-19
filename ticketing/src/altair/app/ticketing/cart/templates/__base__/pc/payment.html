@@ -25,6 +25,16 @@ function pdmp(tr) {
     el.show();
 }
 
+function zip_switcher(select) {
+    zip = $('#zip');
+    if ($(select).val() === 'Japan') {
+        zip.val("");
+        zip.prop('disabled', false);
+    } else {
+        zip.val("0000000");
+        zip.prop('disabled', true);
+    }
+}
 </script>
 </%block>
 
@@ -210,7 +220,7 @@ function pdmp(tr) {
               <li>
                 % if request.organization.setting.i18n:
                   ${form['country'].label}
-                  ${form['country']}
+                  ${form['country'](onchange="zip_switcher(this)")}
                   ${h.error_list(request, form, 'country')}
                 % endif
               </li>
