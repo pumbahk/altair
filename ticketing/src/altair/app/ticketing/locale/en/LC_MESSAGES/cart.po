@@ -21,6 +21,15 @@ msgstr "Confirm"
 msgid "お問い合わせはこちら"
 msgstr "Contact Us"
 
+msgid "申込方法"
+msgstr "How to use"
+
+msgid "よくある質問"
+msgstr "Q&A"
+
+msgid "申込確認"
+msgstr "Order Confirmation"
+
 # index
 
 msgid "合計金額"

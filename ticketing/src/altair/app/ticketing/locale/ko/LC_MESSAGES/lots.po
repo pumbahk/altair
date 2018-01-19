@@ -23,6 +23,9 @@ msgstr "티켓 정보·판매·구매·예약"
 msgid "チケット申込"
 msgstr "티켓 신청"
 
+msgid "抽選申込"
+msgstr "추첨 신청"
+
 msgid "運営会社"
 msgstr "운영회사"
 
@@ -46,6 +49,15 @@ msgstr "예"
 
 msgid "次に進む"
 msgstr "다음으로"
+
+msgid "申込方法"
+msgstr "신청 방법"
+
+msgid "よくある質問"
+msgstr "자주 묻는 질문"
+
+msgid "申込確認"
+msgstr "신청 확인"
 
 # review form
 

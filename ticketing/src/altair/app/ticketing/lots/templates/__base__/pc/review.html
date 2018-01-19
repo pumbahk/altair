@@ -20,7 +20,7 @@
         <tbody>
           <tr>
             <td colspan="2">
-              ${_(u'お申込みいただいておりました以下の抽選受付を{0}に取消いたしました。').format(h.withdraw_time_label_i18n(entry))}
+              ${_(u'お申込みいただいておりました以下の抽選受付を{0}に取消いたしました。').format(h.withdraw_time_label_i18n(entry, custom_locale_negotiator))}
             </td>
           </tr>
         </tbody>
@@ -39,7 +39,7 @@
               % elif h.lot_entry_display_status(entry, now) == u'落選表示':
                 ${_(u'抽選の結果、お客様は残念ながら落選となりました。')}
               % elif h.lot_entry_display_status(entry, now) == u'抽選待ち表示':
-                ${_(u'抽選結果発表は、{0}を予定しております。抽選結果発表後、抽選結果確認ページにて当選・落選をご確認下さい。').format(h.announce_time_label_i18n(entry.lot))}
+                ${_(u'抽選結果発表は、{0}を予定しております。抽選結果発表後、抽選結果確認ページにて当選・落選をご確認下さい。').format(h.announce_time_label_i18n(entry.lot, custom_locale_negotiator))}
               % endif
             </td>
           </tr>
@@ -181,11 +181,17 @@
         </tr>
         <tr>
           <th scope="row">${_(u'生年月日')}</th>
-          <td>${u"{0.year}/{0.month}/{0.day}".format(birthday)}</td>
+          <td>
+            % if custom_locale_negotiator=='ja' or not request.organization.setting.i18n:
+            ${u"{0.year} 年 {0.month}月 {0.day}日".format(birthday)}
+            % else:
+            ${u"{0.year}/{0.month}/{0.day}".format(birthday)}
+            % endif
+          </td>
         </tr>
         <tr>
           <th scope="row">${_(u'性別')}</th>
-          <td>${h.format_gender(request, gender)}</td>
+          <td>${_(h.format_gender(request, gender))}</td>
         </tr>
       </table>
     </div>

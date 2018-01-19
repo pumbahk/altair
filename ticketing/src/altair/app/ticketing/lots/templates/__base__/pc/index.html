@@ -56,11 +56,11 @@ if label is None or label is True:
           </tr>
           <tr>
             <th scope="row">${__(u'申込受付期間')}</th>
-            <td>${h.japanese_datetime(sales_segment.start_at)}～${h.japanese_datetime(sales_segment.end_at)}</td>
+            <td>${h.i18n_datetime(sales_segment.start_at, custom_locale_negotiator)}～${h.i18n_datetime(sales_segment.end_at, custom_locale_negotiator)}</td>
           </tr>
           <tr>
             <th scope="row">${__(u'抽選結果発表予定日')}</th>
-            <td>${h.announce_time_label(lot)}</td>
+            <td>${h.announce_time_label_i18n(lot, custom_locale_negotiator)}</td>
           </tr>
           %if sales_segment.max_quantity:
           <tr>

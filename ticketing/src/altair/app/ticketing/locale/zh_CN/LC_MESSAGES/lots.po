@@ -9,6 +9,9 @@ msgstr "相关信息・销售・购买・预约"
 msgid "チケット申込"
 msgstr "购票"
 
+msgid "抽選申込"
+msgstr "抽选申请"
+
 msgid "運営会社"
 msgstr "运营公司"
 
@@ -32,6 +35,15 @@ msgstr "例"
 
 msgid "次に進む"
 msgstr "下一步"
+
+msgid "申込方法"
+msgstr "购票方法"
+
+msgid "よくある质问"
+msgstr "常见问题"
+
+msgid "申込确认"
+msgstr "抽选申请确认"
 
 # review form
 

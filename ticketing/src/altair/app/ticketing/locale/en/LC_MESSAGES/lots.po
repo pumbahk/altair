@@ -9,6 +9,9 @@ msgstr "Ticket information, sell, purchase, order"
 msgid "チケット申込"
 msgstr "Ticket application"
 
+msgid "抽選申込"
+msgstr "Lottery Application"
+
 msgid "運営会社"
 msgstr "Management company"
 
@@ -32,6 +35,15 @@ msgstr "ex."
 
 msgid "次に進む"
 msgstr "Go to next"
+
+msgid "申込方法"
+msgstr "How to use"
+
+msgid "よくある質問"
+msgstr "Q&A"
+
+msgid "申込確認"
+msgstr "Lottery Application Confirmation"
 
 # review form
 
