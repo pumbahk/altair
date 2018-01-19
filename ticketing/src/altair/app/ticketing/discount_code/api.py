@@ -312,31 +312,3 @@ def cancel_used_discount_codes(request, order, now=None):
             _(u'used discount code can not be canceled.').interpolate(),
             nested_exc_info=exc_info
         )
-
-# # APIのテスト使用
-# from ..discount_code.communicators.utils import get_communicator
-# comm = get_communicator(self.request, 'eagles')
-# fc_member_id = self.request.altair_auth_info['authz_identifier']
-#
-# # イーグルスクーポンの状態確認
-# data = {
-#     'usage_type': '1010',
-#     'fc_member_id': fc_member_id,
-#     'coupons': [{'coupon_cd': code['code']} for code in codes]
-# }
-# result = comm.confirm_coupon_status(data)
-#
-# # イーグルスクーポンの使用
-# data = {
-#     'usage_type': '1010',
-#     'fc_member_id': fc_member_id,
-#     'coupons': [{'coupon_cd': code['code']} for code in codes]
-# }
-# result2 = comm.use_coupon(data)
-#
-# # イーグルスクーポンを未使用に戻す（キャンセル）
-# data = {
-#     'usage_type': '1010',
-#     'coupons': [{'coupon_cd': code['code']} for code in codes]
-# }
-# result3 = comm.cancel_used_coupon(data)
