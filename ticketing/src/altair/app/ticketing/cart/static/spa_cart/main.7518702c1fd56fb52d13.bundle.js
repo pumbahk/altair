@@ -9631,7 +9631,7 @@ var SCALE_SEAT = 1.0; // 表示倍率2倍個席表示
 var SCALE_MAX = 5.0; // 表示倍率の最大値
 var WINDOW_SM = 768; // スマホか否かの判定に用いる
 var SIDE_HEIGHT = 200; //横画面時エラーを出す最大値
-var MAX_QUANTITY_DEFAULT = 10; // デフォルトの選択可能枚数
+var MAX_QUANTITY_DEFAULT = 14; // デフォルトの選択可能枚数
 var VenuemapComponent = (function () {
     function VenuemapComponent(el, route, performancesService, seatStatus, stockTypesService, QuentityChecks, router, reserveByQuantity, stockTypeDataService, errorModalDataService, animationEnableService, countSelectService, smartPhoneCheckService, reserveBySeatBrowserBackService, seatDataService, _logger) {
         this.el = el;
