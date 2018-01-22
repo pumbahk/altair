@@ -30,6 +30,12 @@ msgstr "常见问题"
 msgid "申込确认"
 msgstr "确认购票记录"
 
+msgid "会员でログイン"
+msgstr "会员登入"
+
+msgid "ログアウト"
+msgstr "登出"
+
 # index
 
 msgid "合計金額"

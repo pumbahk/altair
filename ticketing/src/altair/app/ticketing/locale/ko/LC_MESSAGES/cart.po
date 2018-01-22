@@ -44,6 +44,12 @@ msgstr "자주 묻는 질문"
 msgid "申込確認"
 msgstr "신청 확인"
 
+msgid "会員でログイン"
+msgstr "회원 로그인"
+
+msgid "ログアウト"
+msgstr "로그 아웃"
+
 # index
 
 msgid "合計金額"
