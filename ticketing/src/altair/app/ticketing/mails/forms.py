@@ -159,19 +159,19 @@ class OrderInfoDefaultMixin(object):
             for pair in order.get_order_attribute_pair_pairs(request, mode='entry')
             )
 
-    def get_discount_amount(request, order):
-        discount_amount_str = u""
+    def get_discount_info(request, order):
+        discount_info = u""
         for index, group in enumerate(order.cart.used_discount_code_groups):
             codes = [code.code for code in group['code']]
-            discount_amount_str = u"{0}{1}\n使用したクーポン・割引コード:{2}\n{3}枚\n-￥{4}\n".format(discount_amount_str,
-                                                                                    unicode(group[
-                                                                                                'discount_code_setting'].explanation),
-                                                                                    u"\n".join(codes),
-                                                                                    unicode(len(group['code'])),
-                                                                                    unicode(ch.format_number(
-                                                                                        group['discount_price'])))
+            discount_info = u"{0}{1}\n使用したクーポン・割引コード:{2}\n{3}枚\n-￥{4}\n".format(discount_info,
+                                                                                unicode(group[
+                                                                                            'discount_code_setting'].explanation),
+                                                                                u"\n".join(codes),
+                                                                                unicode(len(group['code'])),
+                                                                                unicode(ch.format_number(
+                                                                                    group['discount_price'])))
         stripper = MLStripper()
-        stripper.feed(discount_amount_str)
+        stripper.feed(discount_info)
         return stripper.get_data()
 
     order_no = SubjectInfo(name="order_no", label=u"受付番号", getval=lambda request, subject : subject.order_no)
@@ -187,7 +187,7 @@ class OrderInfoDefaultMixin(object):
     delivery_fee = SubjectInfo(name=u"delivery_fee", label=u"発券／引取手数料", getval=lambda request, order: ch.format_currency(order.delivery_fee))
     total_amount = SubjectInfo(name=u"total_amount", label=u"合計金額", getval=lambda request, order: ch.format_currency(order.total_amount))
     extra_form_data = SubjectInfo(name=u"extra_form_data", label=u"追加情報", getval=get_extra_form_data)
-    discount_amount = SubjectInfo(name=u"discount_amount", label=u"クーポン・割引コードご使用金額", getval=get_discount_amount)
+    discount_info = SubjectInfo(name=u"discount_amount", label=u"クーポン・割引コードご使用金額", getval=get_discount_info)
 
 class SubjectInfoDefault(SubjectInfoDefaultBase, SubjectInfoDefaultMixin):
     pass
