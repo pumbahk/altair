@@ -1209,7 +1209,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
             $("#" + this.selectedGroupIds[i]).children().remove();
           }
           $(this.svgMap).find('#' + this.selectedGroupIds[i]).css({ 'fill': SEAT_COLOR_SELECTED });
-          if (this.smartPhoneCheckService.isSmartPhone()) {
+          if (this.smartPhoneCheckService.isSmartPhone() || this.smartPhoneCheckService.isIpad()) {
             this.selectedSeatGroupNames.push(decodeURIComponent($(this.svgMap).find('#' + this.selectedGroupIds[i])[0].attributes[9].value));
           } else {
             this.selectedSeatGroupNames.push(decodeURIComponent($(this.svgMap).find('#' + this.selectedGroupIds[i]).attr('title')));
