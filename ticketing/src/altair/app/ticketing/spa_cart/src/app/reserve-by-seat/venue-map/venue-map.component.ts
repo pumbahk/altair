@@ -1146,7 +1146,11 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
     if (this.changeRgb($(e.target).css('fill')) == SEAT_COLOR_AVAILABLE) {
       if (this.QuentityChecks.maxLimitCheck(this.selectedStockTypeMaxQuantity, this.performance.order_limit, this.event.order_limit, this.selectedSeatList.length + 1)) {
         $(e.target).css({ 'fill': SEAT_COLOR_SELECTED });
-        this.selectedSeatName = this.smartPhoneCheckService.isSmartPhone() ? decodeURIComponent($(e.target).children('title').text()) : decodeURIComponent($(e.target).attr('title'));
+        if (this.smartPhoneCheckService.isSmartPhone() || this.smartPhoneCheckService.isIpad()) {
+          this.selectedSeatName = decodeURIComponent($(e.target).children('title').text());
+        } else {
+          this.selectedSeatName = decodeURIComponent($(e.target).attr('title'));
+        }
         this.selectTimes();
       } else {
         this.errorModalDataService.sendToErrorModal('エラー', this.selectedStockTypeMaxQuantity + '席以下でご選択ください。');
@@ -1186,7 +1190,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
               $("#" + this.selectedGroupIds[i]).children().remove();
             }
             $(this.svgMap).find('#' + this.selectedGroupIds[i]).css({ 'fill': SEAT_COLOR_SELECTED });
-            if (this.smartPhoneCheckService.isSmartPhone()) {
+            if (this.smartPhoneCheckService.isSmartPhone() || this.smartPhoneCheckService.isIpad()) {
               this.selectedSeatGroupNames.push(decodeURIComponent($(this.svgMap).find('#' + this.selectedGroupIds[i])[0].attributes[9].value));
             } else {
               this.selectedSeatGroupNames.push(decodeURIComponent($(this.svgMap).find('#' + this.selectedGroupIds[i]).attr('title')));
