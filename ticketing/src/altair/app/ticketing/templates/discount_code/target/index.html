@@ -23,15 +23,20 @@
     <h1>${HH.route_label(request.matched_route.name)} ${setting.name}</h1>
 </div>
 
-<div class="navbar span3" style="margin-left: 0">
+<div class="navbar span6" style="margin-left: 0">
     <div class="navbar-inner">
         <div class="container">
             <form method="get" class="navbar-search pull-left form-inline">
                 <span class="navbar-text">
                     ${ch.help(search_form.event_title, u"部分一致で検索できます。アルファベットの大文字小文字は区別しません。")|n}
                     ${search_form.event_title.label}
+                    ${search_form.event_title(id="event_title", class_="search-query input-medium")}
                 </span>
-                ${search_form.event_title(id="event_title", class_="search-query input-medium")}
+                <span class="navbar-text" style="margin-left:5px;">
+                    ${ch.help(search_form.only_existing_target_event, u"登録されているパフォーマンスが適用対象に1つ以上指定されているイベントのみ表示します")|n}
+                    ${search_form.only_existing_target_event.label}
+                    ${search_form.only_existing_target_event(id="only_existing_target_event", class_="search-query input-medium")}
+                </span>
                 <button type="submit">検索</button>
             </form>
 
@@ -155,7 +160,7 @@
             }
         });
 
-        $("form input[type=checkbox]").change(function () {
+        $("form input[type=checkbox][data-event_id]").change(function () {
             // 入力内容が更新されている場合は、isChangedフラグをtrueにします。
             isChanged = true;
         });
