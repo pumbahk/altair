@@ -329,6 +329,26 @@ a:hover {
   color: #fc0;
 }
 
+.btn-box {
+  text-align: center;
+}
+
+.btn-has-ohter-id:hover {
+  opacity: .7;
+  color: #ffffff !important;
+}
+
+.btn-has-ohter-id{
+  border: 1px solid #5b88b3;
+  background: #5b88b3;
+  padding: 19px;
+  width: 100%;
+  color: #fff;
+  text-align: center;
+  line-height: 7.4em;
+  font-weight: normal;
+}
+
 /* layout
 ---------------------------------------------- */
 html {
@@ -746,7 +766,7 @@ h2 {
 }
 
 .login .login-box {
-  height: 250px;
+  height: 330px;
 }
 
 .none .login-box {
