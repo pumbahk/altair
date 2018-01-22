@@ -58,9 +58,9 @@ ${get("for_seat").body}
 ${get("for_product").body}
 %endif
 
-%if get("discount_amount").status:
-■${get("discount_amount").label}
-${get("discount_amount").body}
+%if get("discount_info").status:
+■${get("discount_info").label}
+${get("discount_info").body}
 %endif
 
 %if get("system_fee").status:
