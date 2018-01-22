@@ -86,6 +86,7 @@ export class SeatlistComponent implements OnInit {
     );
 
     const that = this;
+    let getStockTypesTimer;
     this.route.params.subscribe((params) => {
       if (params && params['performance_id']) {
         //パラメーター切り出し
@@ -95,7 +96,7 @@ export class SeatlistComponent implements OnInit {
           this.performance = response.data.performance;
           this.stockTypesService.findStockTypesByPerformanceId(this.performanceId).subscribe((response: IStockTypesResponse) => {
             this._logger.debug(`findStockTypesByPerformanceId(#${this.performanceId}) success`, response);
-            this.stockTypes = response.data.stock_types
+            this.stockTypes = response.data.stock_types;
           },
             (error) => {
               this._logger.error('findStockTypesByPerformanceId(#${this.performanceId}) error', error);
@@ -110,12 +111,22 @@ export class SeatlistComponent implements OnInit {
     this.filterComponent.searched$.subscribe((response: ISeatsResponse) => {
       that.searchResultFlag = false;
       this.seatStockType = response.data.stock_types;
-      this.stockTypesArr = this.makeStockTypeArr(this.stockTypes, this.seatStockType);
-      this.makeStockTypes = this.divideList(this.stockTypes);
 
-      //検索結果フラグ
-      if (this.makeStockTypes.length == 0 || this.makeStockTypes[0].stock_type_name == null) {
-        that.searchResultFlag = true;
+      // StockTypesを取得するまでtimer
+      startGetStockTypesTimer();
+
+      function startGetStockTypesTimer() {
+        getStockTypesTimer = setInterval(function () {
+          if (that.stockTypes) {
+            clearInterval(getStockTypesTimer);
+            that.stockTypesArr = that.makeStockTypeArr(that.stockTypes, that.seatStockType);
+            that.makeStockTypes = that.divideList(that.stockTypes);
+            //検索結果フラグ
+            if (that.makeStockTypes.length == 0 || that.makeStockTypes[0].stock_type_name == null) {
+              that.searchResultFlag = true;
+            }
+          }
+        }, 100);
       }
     });
   }
