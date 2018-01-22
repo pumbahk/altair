@@ -250,6 +250,12 @@ class SearchTargetForm(Form):
         validators=[Optional()],
     )
 
+    only_existing_target_event = BooleanField(
+        label=u'設定済みのイベントのみ',
+        default=False,
+        validators=[Optional()],
+    )
+
 
 class SearchCodeForm(Form):
     code = DiscountCodeCodesForm.code

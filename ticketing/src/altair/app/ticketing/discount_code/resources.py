@@ -9,6 +9,7 @@ from altair.app.ticketing.discount_code.models import DiscountCodeTarget, Discou
 from altair.app.ticketing.resources import TicketingAdminResource
 from altair.sqlahelper import get_db_session
 from sqlalchemy.sql import func
+from sqlalchemy.sql import and_
 
 logger = logging.getLogger(__name__)
 
@@ -103,6 +104,13 @@ class DiscountCodeTargetResource(TicketingAdminResource):
 
         if f.data['event_title']:
             query = query.filter(Event.title.like(u"%{}%".format(f.data['event_title'].strip())))
+
+        if f.data['only_existing_target_event']:
+            query = query.join(
+                DiscountCodeTarget,
+                and_(Event.id == DiscountCodeTarget.event_id,
+                     DiscountCodeTarget.discount_code_setting_id == self.setting_id)
+            ).group_by(Event.id)
 
         events = paginate.Page(
             query,
