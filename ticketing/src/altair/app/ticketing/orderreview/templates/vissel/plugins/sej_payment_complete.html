@@ -12,11 +12,6 @@
 </div>
 %else:
   <%include file="sej_exchange_sheet.html" args="label=_(u'払込票を表示')" />
-  <%
-  locale = custom_locale_negotiator
-  if not locale:
-      locale = 'ja'
-  %>
 <div class="confirmBoxText">
   <table class="customer-table">
     <tbody>
