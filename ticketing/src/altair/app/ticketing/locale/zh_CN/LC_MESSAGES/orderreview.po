@@ -33,7 +33,7 @@ msgstr "服务条款"
 msgid "キャンセルポリシー"
 msgstr "取消政策"
 
-msgid "購入履歴の確認"
+msgid "申込履歴の確認"
 msgstr "抽选申请确认"
 
 # index
