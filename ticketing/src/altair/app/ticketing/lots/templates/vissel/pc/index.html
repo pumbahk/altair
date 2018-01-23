@@ -275,7 +275,7 @@ if label is None or label is True:
           </div>
         </div>
         %endfor
-        <p>${__(u'注文受付完了、確認メール等をメールでご案内します。「tstar.jp」からのメールを受信できるよう、お申し込み前にドメイン指定の設定を必ずお願いいたします。') |n}</p>
+        <p>${__(u'申込受付完了、確認メール等をメールでご案内します。「tstar.jp」からのメールを受信できるよう、お申し込み前にドメイン指定の設定を必ずお願いいたします。') |n}</p>
       </div>
 
       <div class="lots-item mgt20">
@@ -336,7 +336,7 @@ if label is None or label is True:
                     ${h.error_list(request, form, 'email_1_confirm')}
                   </li>
                 </ul>
-                <p>${__(u'注文受付完了、確認メール等をメールでご案内します。「tstar.jp」からのメールを受信できるよう、お申し込み前にドメイン指定の設定を必ずお願いいたします。') |n}</p>
+                <p>${__(u'申込受付完了、確認メール等をメールでご案内します。「tstar.jp」からのメールを受信できるよう、お申し込み前にドメイン指定の設定を必ずお願いいたします。') |n}</p>
               </td>
             </tr>
             <tr>
@@ -420,11 +420,11 @@ if label is None or label is True:
                 <ul id="sex">
                   <li>
                     <input id="sex-sex-0" name="sex" value="1" type="radio">
-                    <label for="sex-sex-0">男性</label>
+                    <label for="sex-sex-0">${__(u'男性')}</label>
                   </li>
                   <li>
                     <input id="sex-sex-1" name="sex" value="2" type="radio" checked>
-                    <label for="sex-sex-1">女性</label>
+                    <label for="sex-sex-1">${__(u'女性')}</label>
                   </li>
                 </ul>
               </td>

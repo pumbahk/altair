@@ -117,7 +117,7 @@ footer .copyright {
   text-decoration: none;
   font-size: 16px;
   font-weight: bold;
-  padding: 5px 0;
+  padding: 5px;
   cursor: pointer;
 }
 a.btn {
@@ -310,25 +310,34 @@ main .wrap h2 {
 .loginTable {
   border-collapse: collapse;
   border-spacing: 0;
-  border: 1px solid #CCCCCC;
   margin: 0 auto 20px;
 }
 
 .loginTable th, .loginTable td {
-  border-collapse: collapse;
-  border: 1px solid #CCC;
-  padding: 10px;
+  display: block;
+  width: 100%;
 }
 
 .loginTable th {
+  border-collapse: collapse;
+  border: 1px solid #CCC;
+  padding: 10px;
   white-space: nowrap;
   background: #EFEFEF;
   font-weight: bold;
 }
 
+.loginTable td {
+  border: none;
+  padding: 5px 0 20px;
+}
+
 .loginTable td input {
-  width: 90%;
-  padding: 3px;
+  width: 100%;
+  padding: 10px;
+  -webkit-border-radius: 0;
+  border-radius: 0;
+  background-color: #FFFFFF;
 }
 
 .loginTable .caution {
@@ -339,6 +348,13 @@ main .wrap h2 {
   text-align: left;
   line-height: 1.2;
   white-space: normal;
+}
+
+.caution {
+  margin: -30px auto 10px;
+  color: #FF0000;
+  font-size: 75%;
+  text-align: right;
 }
 
 /* review page

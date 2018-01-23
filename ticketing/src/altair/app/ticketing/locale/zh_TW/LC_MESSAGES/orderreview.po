@@ -41,6 +41,12 @@ msgstr "基於特定商取引法表示"
 msgid "サービス利用規約"
 msgstr "服務條款"
 
+msgid "利用規約"
+msgstr "服务条款"
+
+msgid "キャンセルポリシー"
+msgstr "取消政策"
+
 # index
 
 msgid "一般の方のチケット確認はこちらから"
@@ -89,6 +95,9 @@ msgstr "請輸入訂票時登錄的電話號碼。"
 
 msgid "例"
 msgstr "例"
+
+msgid "*は入力必須項目です。"
+msgstr "*為必須輸入的項目。"
 
 # show
 
