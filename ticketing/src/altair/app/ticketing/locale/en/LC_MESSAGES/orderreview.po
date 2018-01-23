@@ -47,6 +47,9 @@ msgstr "Terms of service"
 msgid "キャンセルポリシー"
 msgstr "Cancel policy"
 
+msgid "抽選申込確認"
+msgstr "Lottery Application Confirmation"
+
 # index
 
 msgid "一般の方のチケット確認はこちらから"

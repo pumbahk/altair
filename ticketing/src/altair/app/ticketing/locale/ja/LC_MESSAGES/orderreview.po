@@ -47,6 +47,9 @@ msgstr "利用規約"
 msgid "キャンセルポリシー"
 msgstr "キャンセルポリシー"
 
+msgid "申込履歴の確認"
+msgstr "申込履歴の確認"
+
 # index
 
 msgid "一般の方のチケット確認はこちらから"
