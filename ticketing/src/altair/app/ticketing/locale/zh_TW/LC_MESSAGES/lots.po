@@ -50,7 +50,7 @@ msgstr "抽選申請確認"
 msgid "抽選申込確認"
 msgstr "抽選申請確認"
 
-msgid "購入履歴の確認"
+msgid "申込履歴の確認"
 msgstr "抽選申請確認"
 
 msgid "受付番号"
