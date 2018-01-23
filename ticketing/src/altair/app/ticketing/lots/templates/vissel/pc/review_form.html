@@ -1,7 +1,7 @@
 <%inherit file="base.html" />
 
 <div class="wrap">
-  <h2>申込履歴の確認</h2>
+  <h2>${_(u'申込履歴の確認')}</h2>
   <div class="box">
     <div class="login-inbox">
       <form method="post" accept-charset="utf-8" action="${request.url}" autocomplete="off" novalidate>
@@ -18,14 +18,14 @@
               <th>${_(u'電話番号')} <span class="red">*</span></th>
               <td>
                 <input id="tel_no" name="tel_no" type="text" value="" placeholder="例: 080xxxxyyyy" required><br>
-                <p class="caution">電話番号は、ご登録時の電話番号をご入力ください（携帯・自宅をどちらもご登録した場合、どちらの番号でも構いません)</p>
+                <p class="caution">${_(u'電話番号はご登録時の電話番号をご入力ください。')}</p>
                 <span class="red">${h.render_errors(request, form.tel_no.errors)}</span>
               </td>
             </tr>
           </tbody>
         </table>
-        <p class="caution">*は入力必須項目です。</p>
-        <p><input type="submit" value="次に進む" class="btn"></p>
+        <p class="caution">${_(u'*は入力必須項目です。')}</p>
+        <p><input type="submit" value="${_(u'次に進む')}" class="btn"></p>
       </form>
     </div><!-- /login-box -->
   </div><!-- /box -->
