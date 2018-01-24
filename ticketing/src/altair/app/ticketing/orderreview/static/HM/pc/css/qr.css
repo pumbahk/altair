@@ -7,13 +7,13 @@ html {
 hr.main {
   border: none;
   height: 10px;
-  background: #232323
+  background: #BE8EC0
 }
 hr.sub {
   margin: 10px auto;
   border: none;
   height: 1px;
-  background: #a3a3a3
+  background: #477DAB
 }
 .wrap-qr {
   display: block;
@@ -40,7 +40,7 @@ hr.sub {
   font-size: 24px;
 }
 .notice {
-  background: #a3a3a3;
+  background: #477DAB;
   color: #FFF;
   padding: 5px 0;
 }
