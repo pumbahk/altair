@@ -9453,22 +9453,22 @@ var SeatlistComponent = (function () {
                     _this.stockTypesService.findStockTypesByPerformanceId(_this.performanceId).subscribe(function (response) {
                         _this._logger.debug("findStockTypesByPerformanceId(#" + _this.performanceId + ") success", response);
                         _this.stockTypes = response.data.stock_types;
+                        _this.filterComponent.searched$.subscribe(function (response) {
+                            that.searchResultFlag = false;
+                            _this.seatStockType = response.data.stock_types;
+                            _this.stockTypesArr = _this.makeStockTypeArr(_this.stockTypes, _this.seatStockType);
+                            _this.makeStockTypes = _this.divideList(_this.stockTypes);
+                            //検索結果フラグ
+                            if (_this.makeStockTypes.length == 0 || _this.makeStockTypes[0].stock_type_name == null) {
+                                that.searchResultFlag = true;
+                            }
+                        });
                     }, function (error) {
                         _this._logger.error('findStockTypesByPerformanceId(#${this.performanceId}) error', error);
                     });
                 }, function (error) {
                     _this._logger.error('get Performance(#${this.performanceId}) error', error);
                 });
-            }
-        });
-        this.filterComponent.searched$.subscribe(function (response) {
-            that.searchResultFlag = false;
-            _this.seatStockType = response.data.stock_types;
-            _this.stockTypesArr = _this.makeStockTypeArr(_this.stockTypes, _this.seatStockType);
-            _this.makeStockTypes = _this.divideList(_this.stockTypes);
-            //検索結果フラグ
-            if (_this.makeStockTypes.length == 0 || _this.makeStockTypes[0].stock_type_name == null) {
-                that.searchResultFlag = true;
             }
         });
     };
@@ -9795,7 +9795,7 @@ var VenuemapComponent = (function () {
                         _this._logger.debug("get StockTypesAll(#" + _this.performanceId + ") success", response);
                         var stockTypes = response.data.stock_types;
                         for (var i = 0, len = stockTypes.length; i < len; i++) {
-                            if (!_this.smartPhoneCheckService.isSmartPhone()) {
+                            if (!_this.smartPhoneCheckService.isSmartPhone() && !_this.smartPhoneCheckService.isIpad()) {
                                 //紐づく商品の最小価格、最大価格を求める
                                 var minPrice = void 0;
                                 var maxPrice = void 0;
@@ -9897,7 +9897,7 @@ var VenuemapComponent = (function () {
                                 __WEBPACK_IMPORTED_MODULE_14_jquery__(that.svgMap).find('#' + regions[i].region_id).find('.coloring_region').css({ 'fill': REGION_COLOR_MANY_SEATS });
                             }
                         }
-                        if (!that.smartPhoneCheckService.isSmartPhone()) {
+                        if (!that.smartPhoneCheckService.isSmartPhone() && !that.smartPhoneCheckService.isIpad()) {
                             //ツールチップ用属性の設定
                             that.tooltipStockType.forEach(function (value) {
                                 if (value.region) {
@@ -9943,7 +9943,7 @@ var VenuemapComponent = (function () {
                 that._logger.info(that.endTime - that.startTime + "ms");
             }
         }, 100);
-        if (!this.smartPhoneCheckService.isSmartPhone()) {
+        if (!this.smartPhoneCheckService.isSmartPhone() && !this.smartPhoneCheckService.isIpad()) {
             //ツールチップの表示
             __WEBPACK_IMPORTED_MODULE_14_jquery__('#mapAreaLeft').on('mouseenter', '.region', function (e) {
                 var tooltip = '';
@@ -10589,7 +10589,12 @@ var VenuemapComponent = (function () {
         if (this.changeRgb(__WEBPACK_IMPORTED_MODULE_14_jquery__(e.target).css('fill')) == SEAT_COLOR_AVAILABLE) {
             if (this.QuentityChecks.maxLimitCheck(this.selectedStockTypeMaxQuantity, this.performance.order_limit, this.event.order_limit, this.selectedSeatList.length + 1)) {
                 __WEBPACK_IMPORTED_MODULE_14_jquery__(e.target).css({ 'fill': SEAT_COLOR_SELECTED });
-                this.selectedSeatName = this.smartPhoneCheckService.isSmartPhone() ? decodeURIComponent(__WEBPACK_IMPORTED_MODULE_14_jquery__(e.target).children('title').text()) : decodeURIComponent(__WEBPACK_IMPORTED_MODULE_14_jquery__(e.target).attr('title'));
+                if (!this.smartPhoneCheckService.isSmartPhone() && !this.smartPhoneCheckService.isIpad()) {
+                    this.selectedSeatName = decodeURIComponent(__WEBPACK_IMPORTED_MODULE_14_jquery__(e.target).attr('title'));
+                }
+                else {
+                    this.selectedSeatName = decodeURIComponent(__WEBPACK_IMPORTED_MODULE_14_jquery__(e.target).children('title').text());
+                }
                 this.selectTimes();
             }
             else {
@@ -10631,11 +10636,11 @@ var VenuemapComponent = (function () {
                             __WEBPACK_IMPORTED_MODULE_14_jquery__("#" + this.selectedGroupIds[i]).children().remove();
                         }
                         __WEBPACK_IMPORTED_MODULE_14_jquery__(this.svgMap).find('#' + this.selectedGroupIds[i]).css({ 'fill': SEAT_COLOR_SELECTED });
-                        if (this.smartPhoneCheckService.isSmartPhone()) {
-                            this.selectedSeatGroupNames.push(decodeURIComponent(__WEBPACK_IMPORTED_MODULE_14_jquery__(this.svgMap).find('#' + this.selectedGroupIds[i])[0].attributes[9].value));
+                        if (!this.smartPhoneCheckService.isSmartPhone() && !this.smartPhoneCheckService.isIpad()) {
+                            this.selectedSeatGroupNames.push(decodeURIComponent(__WEBPACK_IMPORTED_MODULE_14_jquery__(this.svgMap).find('#' + this.selectedGroupIds[i]).attr('title')));
                         }
                         else {
-                            this.selectedSeatGroupNames.push(decodeURIComponent(__WEBPACK_IMPORTED_MODULE_14_jquery__(this.svgMap).find('#' + this.selectedGroupIds[i]).attr('title')));
+                            this.selectedSeatGroupNames.push(decodeURIComponent(__WEBPACK_IMPORTED_MODULE_14_jquery__(this.svgMap).find('#' + this.selectedGroupIds[i])[0].attributes[9].value));
                         }
                     }
                     this.selectTimes();
@@ -10652,11 +10657,11 @@ var VenuemapComponent = (function () {
                         __WEBPACK_IMPORTED_MODULE_14_jquery__("#" + this.selectedGroupIds[i]).children().remove();
                     }
                     __WEBPACK_IMPORTED_MODULE_14_jquery__(this.svgMap).find('#' + this.selectedGroupIds[i]).css({ 'fill': SEAT_COLOR_SELECTED });
-                    if (this.smartPhoneCheckService.isSmartPhone()) {
-                        this.selectedSeatGroupNames.push(decodeURIComponent(__WEBPACK_IMPORTED_MODULE_14_jquery__(this.svgMap).find('#' + this.selectedGroupIds[i])[0].attributes[9].value));
+                    if (!this.smartPhoneCheckService.isSmartPhone() && !this.smartPhoneCheckService.isIpad()) {
+                        this.selectedSeatGroupNames.push(decodeURIComponent(__WEBPACK_IMPORTED_MODULE_14_jquery__(this.svgMap).find('#' + this.selectedGroupIds[i]).attr('title')));
                     }
                     else {
-                        this.selectedSeatGroupNames.push(decodeURIComponent(__WEBPACK_IMPORTED_MODULE_14_jquery__(this.svgMap).find('#' + this.selectedGroupIds[i]).attr('title')));
+                        this.selectedSeatGroupNames.push(decodeURIComponent(__WEBPACK_IMPORTED_MODULE_14_jquery__(this.svgMap).find('#' + this.selectedGroupIds[i])[0].attributes[9].value));
                     }
                 }
                 this.selectTimes();
@@ -10986,7 +10991,7 @@ var VenuemapComponent = (function () {
             this.seat_elements = seat_data;
         }
         __WEBPACK_IMPORTED_MODULE_14_jquery__('.seat').remove();
-        if (!this.smartPhoneCheckService.isSmartPhone())
+        if (!this.smartPhoneCheckService.isSmartPhone() && !this.smartPhoneCheckService.isIpad())
             __WEBPACK_IMPORTED_MODULE_14_jquery__('svg').find('title').remove();
     };
     // 現在の描画サイズに合わせて表示するグリッドを決定し、座席データを動的に追加・削除
@@ -11091,7 +11096,7 @@ var VenuemapComponent = (function () {
                 if (this.seats[i].is_available) {
                     __WEBPACK_IMPORTED_MODULE_14_jquery__('#' + this.seats[i].seat_l0_id).css({ 'fill': SEAT_COLOR_AVAILABLE });
                 }
-                if (!this.smartPhoneCheckService.isSmartPhone()) {
+                if (!this.smartPhoneCheckService.isSmartPhone() && !this.smartPhoneCheckService.isIpad()) {
                     var stockType = this.seats[i].stock_type_id ? this.tooltipStockType[this.seats[i].stock_type_id] : null;
                     if (stockType) {
                         __WEBPACK_IMPORTED_MODULE_14_jquery__('#' + this.seats[i].seat_l0_id).attr({
@@ -13013,6 +13018,17 @@ var SmartPhoneCheckService = (function () {
    */
     SmartPhoneCheckService.prototype.isSmartPhone = function () {
         if (navigator.userAgent.indexOf('iPhone') > 0 || navigator.userAgent.indexOf('iPod') > 0 || navigator.userAgent.indexOf('Android') > 0) {
+            return true;
+        }
+        return false;
+    };
+    /**
+* ipadかチェックを行います
+*
+* @return {boolean}
+*/
+    SmartPhoneCheckService.prototype.isIpad = function () {
+        if (navigator.userAgent.indexOf('iPad') > 0) {
             return true;
         }
         return false;
