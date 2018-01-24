@@ -35,6 +35,7 @@ from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.orm import object_session
 from zope.deprecation import deprecate, deprecated
 from zope.interface import implementer
+from pyramid.decorator import reify
 
 from pyramid.i18n import TranslationString as _
 from altair.saannotation import AnnotatedColumn
@@ -374,7 +375,7 @@ class Cart(Base, c_models.CartMixin):
                 count = count + element.quantity
         return count
 
-    @property
+    @reify
     def enable_discount_code(self):
         if (not self.organization.enable_discount_code) or (not self._find_available_target_settings()):
             return False
@@ -394,7 +395,7 @@ class Cart(Base, c_models.CartMixin):
 
         return True
 
-    @property
+    @reify
     def available_discount_code_settings(self):
         return self._find_available_target_settings()
 
@@ -427,11 +428,11 @@ class Cart(Base, c_models.CartMixin):
                 available_settings.append(target.discount_code_setting)
         return available_settings
 
-    @property
+    @reify
     def available_fanclub_discount_code_settings(self):
         return self._find_available_target_settings(u'sports_service')
 
-    @property
+    @reify
     def available_own_discount_code_settings(self):
         return self._find_available_target_settings(u'own')
 
