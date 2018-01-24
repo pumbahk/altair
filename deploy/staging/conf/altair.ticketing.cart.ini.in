@@ -113,6 +113,9 @@ use  = egg:gunicorn#main
 host = 0.0.0.0
 port = %(http_port)s
 workers = 1
+timeout = 60
+graceful_timeout = 60
+max_requests = 256
 
 # Begin logging configuration
 
