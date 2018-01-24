@@ -87,7 +87,7 @@ const SCALE_MAX = 5.0;  // 表示倍率の最大値
 
 const WINDOW_SM = 768; // スマホか否かの判定に用いる
 const SIDE_HEIGHT = 200; //横画面時エラーを出す最大値
-const MAX_QUANTITY_DEFAULT = 10; // デフォルトの選択可能枚数
+const MAX_QUANTITY_DEFAULT = 14; // デフォルトの選択可能枚数
 
 @Component({
   providers: [FilterComponent, ReserveByQuantityComponent],

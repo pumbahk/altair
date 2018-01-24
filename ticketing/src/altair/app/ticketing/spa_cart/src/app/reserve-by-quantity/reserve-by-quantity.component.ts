@@ -109,7 +109,7 @@ export class ReserveByQuantityComponent implements OnInit {
   maxQuantity: number;
   performanceOrderLimit: number;
   eventOrderLimit: number;
-  defaultMaxQuantity: number = 10;
+  defaultMaxQuantity: number = 14;
   //最小購入数
   minQuantity: number;
 
