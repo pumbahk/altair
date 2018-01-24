@@ -95,7 +95,18 @@ export class SeatlistComponent implements OnInit {
           this.performance = response.data.performance;
           this.stockTypesService.findStockTypesByPerformanceId(this.performanceId).subscribe((response: IStockTypesResponse) => {
             this._logger.debug(`findStockTypesByPerformanceId(#${this.performanceId}) success`, response);
-            this.stockTypes = response.data.stock_types
+            this.stockTypes = response.data.stock_types;
+            this.filterComponent.searched$.subscribe((response: ISeatsResponse) => {
+              that.searchResultFlag = false;
+              this.seatStockType = response.data.stock_types;
+              this.stockTypesArr = this.makeStockTypeArr(this.stockTypes, this.seatStockType);
+              this.makeStockTypes = this.divideList(this.stockTypes);
+
+              //検索結果フラグ
+              if (this.makeStockTypes.length == 0 || this.makeStockTypes[0].stock_type_name == null) {
+                that.searchResultFlag = true;
+              }
+            });
           },
             (error) => {
               this._logger.error('findStockTypesByPerformanceId(#${this.performanceId}) error', error);
@@ -104,18 +115,6 @@ export class SeatlistComponent implements OnInit {
           (error) => {
             this._logger.error('get Performance(#${this.performanceId}) error', error);
           });
-      }
-    });
-
-    this.filterComponent.searched$.subscribe((response: ISeatsResponse) => {
-      that.searchResultFlag = false;
-      this.seatStockType = response.data.stock_types;
-      this.stockTypesArr = this.makeStockTypeArr(this.stockTypes, this.seatStockType);
-      this.makeStockTypes = this.divideList(this.stockTypes);
-
-      //検索結果フラグ
-      if (this.makeStockTypes.length == 0 || this.makeStockTypes[0].stock_type_name == null) {
-        that.searchResultFlag = true;
       }
     });
   }
