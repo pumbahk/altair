@@ -2,6 +2,7 @@
 
 import logging
 from datetime import datetime
+from pyramid.decorator import reify
 
 from altair.app.ticketing.models import Base, BaseModel, WithTimestamp, LogicallyDeleted, Identifier
 from altair.app.ticketing.utils import rand_string
@@ -50,7 +51,7 @@ class DiscountCodeSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def target(self):
         return self.DiscountCodeTarget
 
-    @property
+    @reify
     def target_count(self):
         return len(self.DiscountCodeTarget)
 
