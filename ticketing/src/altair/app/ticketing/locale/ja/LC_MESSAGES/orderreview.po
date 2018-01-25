@@ -41,6 +41,15 @@ msgstr "特定商取引法に基づく表示"
 msgid "サービス利用規約"
 msgstr "サービス利用規約"
 
+msgid "利用規約"
+msgstr "利用規約"
+
+msgid "キャンセルポリシー"
+msgstr "キャンセルポリシー"
+
+msgid "申込履歴の確認"
+msgstr "申込履歴の確認"
+
 # index
 
 msgid "一般の方のチケット確認はこちらから"
@@ -89,6 +98,9 @@ msgstr "ご予約時に登録した電話番号をご入力してください。
 
 msgid "例"
 msgstr "例"
+
+msgid "*は入力必須項目です。"
+msgstr "*は入力必須項目です。"
 
 # show
 

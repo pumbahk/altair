@@ -21,7 +21,7 @@ msgid "チケット情報・販売・購入・予約"
 msgstr "Ticket information, sales, purchase and reservation"
 
 msgid "購入履歴の確認"
-msgstr "Confirm Purchase History"
+msgstr "Order Confirmation"
 
 msgid "申込確認"
 msgstr "Order Confirmation"
@@ -40,6 +40,15 @@ msgstr "Display based on specific trade law"
 
 msgid "サービス利用規約"
 msgstr "Terms of service"
+
+msgid "利用規約"
+msgstr "Terms of service"
+
+msgid "キャンセルポリシー"
+msgstr "Cancel policy"
+
+msgid "申込履歴の確認"
+msgstr "Lottery Application Confirmation"
 
 # index
 
@@ -82,7 +91,7 @@ msgid "電話番号"
 msgstr "Phone number"
 
 msgid "電話番号はご登録時の電話番号をご入力ください。"
-msgstr "Telephone number, please enter the telephone number at the time of your registration."
+msgstr "Please enter the phone number you have registered."
 
 msgid "（携帯・自宅をどちらもご登録した場合どちらの番号でも構いません。）"
 msgstr "(It does not matter either the number If you both register your mobile phone and home.)"
@@ -93,10 +102,13 @@ msgstr "Input the ordered telephone number, please."
 msgid "例"
 msgstr "ex."
 
+msgid "*は入力必須項目です。"
+msgstr "* is input required."
+
 # show
 
 msgid "受付番号または電話番号が違います。"
-msgstr "Either or both Receipt number and telephone number are wrong."
+msgstr "Either or both Receipt number and phone number are wrong."
 
 msgid "受付日"
 msgstr "Receipt date"
@@ -147,13 +159,13 @@ msgid "住所"
 msgstr "Address"
 
 msgid "ご購入時に入力された情報が表示されております。"
-msgstr "It is displayed information that was entered at the time of purchase is."
+msgstr "The information you inputted when purchasing is displayed."
 
 msgid "登録情報変更をご希望の場合は、<a href=\"https://ticket.rakuten.co.jp/inquiry\" target=\"_blank\">問合せフォームより</a>ご連絡下さい。"
 msgstr "If you would like the registration information changes, <a href=\"https://ticket.rakuten.co.jp/inquiry\" target=\"_blank\">here</a>"
 
 msgid "購入したイベントの情報"
-msgstr "Information of the purchase event"
+msgstr "Information of the ordered event"
 
 msgid "イベント名"
 msgstr "Event name"
@@ -168,10 +180,10 @@ msgid "会場"
 msgstr "Venue"
 
 msgid "注文内容"
-msgstr "Order content"
+msgstr "Order details"
 
 msgid "席種、金額などのお買い物内容"
-msgstr "Seat species, shopping content, such as amount of money"
+msgstr "Seat types, shopping content, such as amount of money"
 
 msgid "枚"
 msgstr "Sheet"
@@ -192,19 +204,19 @@ msgid "追加情報"
 msgstr "Additional Information"
 
 msgid "入力情報の編集"
-msgstr "Edit the input information"
+msgstr "Edit the information"
 
 msgid "この購入/予約はキャンセルされました"
-msgstr "The purchase / reservation has been canceled"
+msgstr "The order has been canceled"
 
 msgid "キャンセル処理は、下記のような理由によりおこなっております。"
-msgstr "Cancellation process, has been carried out by the following reasons."
+msgstr "Cancellation process has been carried out by the following reasons."
 
 msgid "期限内のご入金がなくキャンセル扱いとしたため"
-msgstr "Since the payment of the due date has been treated as canceled without"
+msgstr "The order will be cancelled if you can not complete the payment before the payment due date."
 
 msgid "弊社判断によるキャンセル処理を行ったため"
-msgstr "For your cancellation request has been processed by our judgment"
+msgstr "You order has been cancelled by our judgment."
 
 msgid "お支払"
 msgstr "Payment"
@@ -213,25 +225,25 @@ msgid "お引取"
 msgstr "Delivery"
 
 msgid "コンビニ（セブン-イレブン）店頭でのお受取です。"
-msgstr "Convenience store (Seven - Eleven) is a pick up in the shop."
+msgstr "Ticketing at Convenience store (7-Eleven)."
 
 msgid "公演日約1週間前までに、セブン-イレブン店頭レジでチケット引取をする際に必要な引換票番号をメールにてお送りいたします(当選メールとは別のメールになります)。詳細は、そちらをご確認ください。"
-msgstr "About one week before performance date, Seven - we will send you a delivery slip number needed to the ticket take-Eleven shop cash register by e-mail (and winning e-mail will be another e-mail). For more information, please check there."
+msgstr "Exchange slip number will be sent to you 1 week before the performance date. This exchange slip number is required when you issue the ticket at the 7-Eleven counter. Please confirm the details there."
 
 msgid "入力された個人情報は「個人情報保護方針」に基づき適切に取扱われます。"
-msgstr "Personal information that has been input is handled appropriately based on the 'personal information protection policy'."
+msgstr "Personal information will be appropriately treated based on Private policy."
 
 msgid "セブン-イレブン決済の際には払込票番号が必要です。下記、「払込票印刷」ボタンをクリックし、払込票を印刷してお持ちになるか、上記の払込票番号をお控えいただき、レジでお伝え下さい。"
-msgstr "Seven - When Eleven settlement requires payment slip number. Below, click on the 'payment slip Print' button, or will you have to print a payment slip, please refrain from the payment slip number of the above, please tell at the cash register."
+msgstr "7-Eleven settlement requires payment slip number. Please bring the payment slip (print it by 'print payment slip' button below) or the payment slip number to 7-Eleven counter."
 
 msgid "予約有効期限までに、払込票または払込票番号をセブン-イレブン店頭レジにてお申し出の上、代金をお支払いください。"
-msgstr "Until the reservation expiration date, payment slip or Seven of the payment slip number - on top of the offer at Eleven over-the-counter cash register, please pay the price."
+msgstr "Please complete the payment by cash with the payment slip or the payment slip number at 7-Eleven counter before the order expiration date."
 
 msgid "支払期日までに入金されない場合は、申込が無効となりますのでご注意ください。"
-msgstr "If you do not be credited until the due date, please note that the application will be invalid."
+msgstr "Be careful! your application will be invalidated if the payment is not completed before the payemnt due date."
 
 msgid "お申込時に受付内容を記載した確認のメールが、ご登録いただいたメールアドレス宛に送られます。しばらくたっても確認のメールが届かない場合は、入力されたメールアドレスが誤っている可能性があります。"
-msgstr "Confirmation of the email with the accepted content at the time of your application will be sent addressed to your registered e-mail address. If even after a while do not receive the confirmation email, you may have incorrectly entered e-mail address."
+msgstr "The confirmation email will be sent to the email address you have registered. If you do NOT receive the confirmation email for a while, it is probably caused by that, you registered the wrong email address."
 
 msgid "こちら"
 msgstr "From here"
@@ -306,25 +318,25 @@ msgid "支払期日"
 msgstr "Payment due date"
 
 msgid "上記支払期日までに、払込票番号をお持ちの上、セブン-イレブン店舗レジにてお支払いください。（払込票を表示、印刷した上で店頭にお持ちいただくとスムーズです）"
-msgstr "Before the payment due date, on top of you have a payment slip number, Seven"
+msgstr "Please bing the 7-Eleven payment slip to the 7-Eleven to complete payment before the payment due date."
 
 msgid "支払期日までに入金されない場合は予約が無効となりますので、ご注意ください。"
-msgstr "Because if you do not be credited until the payment due date will be invalid reservation, please note."
+msgstr "Be careful! Please complete the payment before the payment due date, otherwise your order would be invalidated."
 
 msgid "お申込後の、公演日・席種・枚数等の変更はできませんのでご容赦ください。"
-msgstr "After your application, please forgive that you can not change, such as a performance date, seat species, number of sheets."
+msgstr "After the application has been completed, you can not change the performance date, seat types and number of sheets."
 
 msgid "チケットは代金と引換です。"
-msgstr "Tickets are exchange for a price."
+msgstr "Exchange the tickets with cash."
 
 msgid "引換票番号は後ほどメールにてお送りいたします。"
-msgstr "Exchange vote number will send later by e-mail."
+msgstr "Exchange slip number will be sent later by email."
 
 msgid "詳細はそちらをご確認頂き、指定発券日以降にレジにてチケットをお受取ください。"
-msgstr "For more information please confirm the there, please receive the ticket at the cash register on or after the specified date of issue."
+msgstr "For more information please confirm the there, please receive the ticket at the cash register on or after the specified issue date."
 
 msgid "引換票番号"
-msgstr "Exchange number"
+msgstr "Exchange slip number"
 
 msgid "引換票を表示"
 msgstr "Show exchange slip"
@@ -333,10 +345,10 @@ msgid "引取受付期間"
 msgstr "Exchange period"
 
 msgid "購入いただいた日の翌日{0}から引き取りが可能となります。"
-msgstr "The day following the date you purchased{0}"
+msgstr "You can issue the ticket on {0}, the next day you purchased."
 
 msgid "セブン-イレブン発券の際には引換票番号が必要です。"
-msgstr "During Eleven ticketing is required on delivery slip number."
+msgstr "Exchange slip number is required for issuing the tickets."
 
 msgid "<a href=\"/orderreview\">予約・購入履歴確認画面</a>より、「引換票」を印刷するか、または番号をお控え下さい。"
 msgstr "<a href=\"/orderreview\">here </a>Reservations and purchase history confirmation screen"
@@ -345,16 +357,16 @@ msgid "<a href=\"/orderreview\">予約・購入履歴確認画面</a>にて表�
 msgstr "<a href=\"/orderreview\">here </a>Please refrain from the exchange slip number to be displayed in."
 
 msgid "引取受付期間内に、セブン-イレブン店頭レジにてチケットをお引取り下さい。"
-msgstr "Please take your tickets at Seven Eleven cashing counter during the exchange period."
+msgstr "Please take your tickets at  7-Eleven cashing counter during the exchange period."
 
 msgid "クレジットカード情報"
 msgstr "Credit card information"
 
 msgid "予約成立と同時に、ご登録のクレジットカードにて自動的に決済手続きを行わせて頂きます。"
-msgstr "Reservation is made at the same time, it will automatically carry out the settlement procedure at your registered credit card."
+msgstr "The settlement procedure with the credit card you registered will be executed at the moment the order applicaion is completed."
 
 msgid "お申込の取消、公演日・席種・枚数等の変更は出来ませんのでご注意ください。"
-msgstr "Your application of cancellation, please note that you can not change, such as a performance date, seat species, number of sheets."
+msgstr "Be careful! You can not cancel the order, change performance date, seat types and number of sheets"
 
 # credit card
 
@@ -362,7 +374,7 @@ msgid "クレジットカードによる決済を受け付けました。ご登�
 msgstr "We have received a payment by credit card. We will automatically carry out the settlement procedure at your registered credit card"
 
 msgid "お申込の取消、公演日・席種・枚数等の変更はできませんのでご注意ください。"
-msgstr "Your application of cancellation, please note that you can not change, such as a performance date, seat species, number of sheets."
+msgstr "Your application of cancellation, please note that you can not change, such as a performance date, seat types, number of sheets."
 
 # famiport
 

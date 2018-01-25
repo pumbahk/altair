@@ -13,8 +13,8 @@
 <form id="form1" name="form1" method="post" action="${request.current_route_path(_query=request.GET)}">
   ${agreement_body}
   <input type="checkbox" name="agree" value="agree" id="agree" />
-  <label for="agree">上記の注意事項を確認、同意し、申し込みます。</label><br>
-  <p class="align2"><image onclick="$('#form1').submit()" src="${request.static_url('altair.app.ticketing.cart:static/RT/smartphone/images/btn_next.gif')}" alt="次へ" width="226" height="46" /></p>
+  <label for="agree">${_(u'内容を同意の上、チェックを入れてください。')}</label><br>
+  <p class="confirm-btnBox"><input class="btn btn-primary" type="button" value="${_(u'次へ')}" onclick="$('#form1').submit()"></p>
 </form>
 
 % if request.organization.setting.sitecatalyst_use:
@@ -22,6 +22,6 @@
 <%
     sc = {"pagename": "agreement"}
 %>
-<%include file="../common/sc_basic.html" args="sc=sc" />
+<%include file="../includes/sc_basic.html" args="sc=sc" />
 <!--/SiteCatalyst-->
 % endif

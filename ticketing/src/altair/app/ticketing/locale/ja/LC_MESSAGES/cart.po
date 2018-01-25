@@ -30,6 +30,12 @@ msgstr "よくある質問"
 msgid "申込確認"
 msgstr "申込確認"
 
+msgid "会員でログイン"
+msgstr "会員でログイン"
+
+msgid "ログアウト"
+msgstr "ログアウト"
+
 # index
 
 msgid "合計金額"

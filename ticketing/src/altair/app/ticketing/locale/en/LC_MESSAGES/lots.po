@@ -50,6 +50,9 @@ msgstr "Lottery Application Confirmation"
 msgid "抽選申込確認"
 msgstr "Lottery Application Confirmation"
 
+msgid "申込履歴の確認"
+msgstr "Lottery Application Confirmation"
+
 msgid "受付番号"
 msgstr "Receipt number"
 
@@ -69,13 +72,16 @@ msgid "確認してください"
 msgstr "Please check your input."
 
 msgid "電話番号はご登録時の電話番号をご入力ください。"
-msgstr "Telephone number, please input the telephone number used for the application."
+msgstr "Please enter the phone number you have registered."
 
 msgid "電話番号は自宅か携帯かどちらかを入力してください"
 msgstr "Input your home phone number or you mobile phone number."
 
 msgid "（携帯・自宅をどちらもご登録した場合どちらの番号でも構いません。）"
 msgstr "(either home or mobile number is acceptable.)"
+
+msgid "*は入力必須項目です。"
+msgstr "* is input required."
 
 msgid "{0}または{1}が違います"
 msgstr "{0} or {1} is different"
@@ -383,6 +389,9 @@ msgid "例: 080xxxxyyyy"
 msgstr "Example: 080xxxxyyyy"
 
 msgid "生年月日"
+msgstr "Birthday"
+
+msgid "誕生日"
 msgstr "Birthday"
 
 msgid "性別"

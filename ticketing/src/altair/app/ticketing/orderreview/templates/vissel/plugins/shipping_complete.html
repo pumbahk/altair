@@ -1,0 +1,19 @@
+<div class="confirmBoxText">
+  <p class="fWB">以下の住所に配送します</p>
+  <table class="customer-table">
+    <tbody>
+      <tr>
+        <th>郵便番号</th>
+        <td>${shipping_address.zip}</td>
+      </tr>
+      <tr>
+        <th>住所</th>
+        <td>${shipping_address.prefecture}${shipping_address.city}${shipping_address.address_1}${shipping_address.address_2}</td>
+      </tr>
+      <tr>
+        <th>宛名</th>
+        <td>${shipping_address.last_name} ${shipping_address.first_name} 様</td>
+      </tr>
+    </tbody>
+  </table>
+</div>

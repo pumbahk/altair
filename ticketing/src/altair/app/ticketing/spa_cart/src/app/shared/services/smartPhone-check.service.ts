@@ -14,4 +14,16 @@ export class SmartPhoneCheckService {
         }
         return false;
     }
+
+    /**
+* ipadかチェックを行います
+*
+* @return {boolean}
+*/
+    isIpad() {
+        if (navigator.userAgent.indexOf('iPad') > 0) {
+            return true;
+        }
+        return false;
+    }
 }

@@ -41,8 +41,20 @@ msgstr "특정 상거래 법에 근거한 표시"
 msgid "サービス利用規約"
 msgstr "서비스 이용 약관"
 
+msgid "利用規約"
+msgstr "서비스 이용 약관"
+
+msgid "キャンセルポリシー"
+msgstr "취소 정책"
+
 msgid "例"
 msgstr "예"
+
+msgid "*は入力必須項目です。"
+msgstr "*는 입력 필수 항목입니다."
+
+msgid "申込履歴の確認"
+msgstr "신청 내역 확인"
 
 # index
 

@@ -1,4 +1,19 @@
-<%inherit file="../layout.html" />
-<section class="main orderreview">
-  ${_context.order_detail_panel(order)}
-</section>
+<%inherit file="../base.html" />
+<main>
+  % if request.organization.setting.i18n:
+    <div class="locale-wrap">
+      % if view_context.ua_type == 'pc':
+        ${h.create_url(request) |n}
+      % elif view_context.ua_type == 'smartphone':
+        ${h.create_url_link(request) |n}
+      % endif
+    </div>
+  % endif
+  <div class="wrap">
+    <div class="wrap-content">
+      <h2>${__(u'購入履歴の確認')}</h2>
+      ${_context.order_detail_panel(order, locale)}
+    </div>
+  </div>
+</main>
+

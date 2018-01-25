@@ -4,24 +4,25 @@
     <script type="text/javascript" src="${request.static_url('altair.app.ticketing.cart:static/js/ajaxzip3-https.js')}"></script>
 </%block>
 
-<br/>
-<br/>
-<br/>
-<br/>
-
-%if request.session.peek_flash():
+<div id="content">
+  <div class="wrap-content">
+  %if request.session.peek_flash():
     %for message in request.session.pop_flash():
-    <div class="error">${message}</div>
+    <p class="fWB f120 red">${message}</p>
     %endfor
-%endif
+  %endif
+  <form id="form1" name="form1" method="post" action="${request.current_route_path()}">
+    <input type="hidden" name="return_to" value=${return_to} />
 
-<form id="form1" name="form1" method="post" action="${request.current_route_path()}">
-  <input type="hidden" name="return_to" value=${return_to} />
+    ${agreement_body}
 
-  ${agreement_body}
-
-  <input type="checkbox" name="agree" value="agree" id="agree" />
-  <label for="agree">上記の注意事項を確認、同意し、申し込みます。</label><br>
-
-  <p class="align2"><image onclick="$('#form1').submit()" src="${view_context.static_url('pc/img/settlement/btn_next.gif', 'lots')}" alt="次へ" width="226" height="46" /></p>
-</form>
+    <div class="mgt50">
+      <input type="checkbox" name="agree" value="agree" id="agree" />
+      <label for="agree">${_(u'内容を同意の上、チェックを入れてください。')}</label><br>
+    </div>
+  </form>
+  <div class="wrap-btn mgt50">
+    <p class="btn" onclick="$('#form1').submit()">${__(u'次へ')}</p>
+  </div>
+  </div>
+</div>

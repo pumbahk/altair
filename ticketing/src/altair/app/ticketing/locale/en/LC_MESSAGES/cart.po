@@ -30,6 +30,12 @@ msgstr "Q&A"
 msgid "申込確認"
 msgstr "Order Confirmation"
 
+msgid "会員でログイン"
+msgstr "Login"
+
+msgid "ログアウト"
+msgstr "Logout"
+
 # index
 
 msgid "合計金額"
@@ -48,10 +54,10 @@ msgid "数量"
 msgstr "Quantity"
 
 msgid "上記座席を確保しました。{0}分以内に購入を完了してください"
-msgstr "Tentative reservation is made. Please complete your reservation in '{0} minutes'."
+msgstr "The seats have been preserved. Please complete your purchase in '{0} minutes'."
 
 msgid "（完了しない場合は、確保解除となります）"
-msgstr "(After 15 minutes, the tentative reservation will be released.)"
+msgstr "(After 15 minutes, the preserved seats will be released.)"
 
 msgid "スマホサイトで購入する"
 msgstr "Purchase by smartphone site"
@@ -75,7 +81,7 @@ msgid "日時・会場"
 msgstr "Date/Venue"
 
 msgid "選択中の公演"
-msgstr "Performances in the selection"
+msgstr "Selected Performances"
 
 msgid "席種選択"
 msgstr "Select a seat"
@@ -102,19 +108,19 @@ msgid "チケット購入方法"
 msgstr "Ticket Purchase Method"
 
 msgid "1. 左側の席種一覧から希望の席種をクリックしてください。"
-msgstr "1. Click on the seat type from the list on the left."
+msgstr "1. Click on the seat type from the list on the left side."
 
 msgid "2. 希望の券種と購入枚数を選択してください。"
 msgstr "2. Select a product and quantity."
 
 msgid "3. 購入方法を選び、座席を確保してください。"
-msgstr "3. Click on the 'Purchase' button and make tentative reservation."
+msgstr "3. Click on the 'Purchase' button to preserve the seats."
 
 msgid "「おまかせで購入」ボタンをクリックすると、選択された席種の中から前方より座席を自動配席します。暫くお待ち頂くと、確保できた座席番号が表示されますので、ご確認の上、購入ステップにお進みください。"
-msgstr "'Auto-Select' button will automatically select a seat for you. After the seat is selected, a confirm dialog will appear. Please confirm the detail before going to the next step."
+msgstr "'Auto-Select' button will automatically select a seat for you. After the seats are selected, a confirm dialog will pop-up. Please confirm the details before going to the next step."
 
 msgid "「座席を選んで購入」の場合、右側（この欄）に座席図が表示されます。座席図上で、選択いただいた購入枚数分の座席をクリックし、下部の「選択」ボタンを押してください。"
-msgstr "If 'Self-Select' button is clicked, a seat map will displayed in this box. After selecting seats, please press the 'Select' button at the bottom."
+msgstr "If 'Self-Select' button is clicked, a seat map will be displayed in this box. After selecting seats, please press the 'Select' button at the bottom."
 
 msgid "色のついた座席が選択可能な席です。"
 msgstr "Selectable seats will be filled with color.(not gray)"
@@ -123,13 +129,13 @@ msgid "座席をクリックすることで座席の色が変わり、選択さ�
 msgstr "The selected seat will change to blue with white boarder."
 
 msgid "座席図の下にある「選択」ボタンをクリックすると座席選択は完了です。"
-msgstr "Please click  'Select' button, after your seat selection is finished."
+msgstr "Please click 'Select' button, after you selected the seats."
 
 msgid "座席が小さくてみづらい場合には、左側のズーム機能を使って座席を拡大してください。"
 msgstr "If it's hard to see seats on the map, please expand the map using the zoom function on the left side."
 
 msgid "座席を選び直す場合は、一度選択した座席をクリックし、選択カーソルを解除することで選び直すことができます。"
-msgstr "If you want to cancel the selection, please click on the seat you have selected."
+msgstr "If you want to cancel the selection, please click on the seats you have selected."
 
 msgid "4. 席種を選び直したい場合は「キャンセル」ボタンをクリックしてください。"
 msgstr "4. If you want to reselect a seat type, please click the 'Cancel' button."
@@ -236,7 +242,7 @@ msgid "※このページに記載されている料金はすべて消費税込�
 msgstr "All fees in this page includes consumption tax."
 
 msgid "手数料"
-msgstr "Commission"
+msgstr "Fee"
 
 msgid "1申込当り"
 msgstr "per application"
@@ -245,16 +251,16 @@ msgid "1枚ごと"
 msgstr "per sheet"
 
 msgid "上記以外の利用料・手数料"
-msgstr "Other Fees and Commissions "
+msgstr "Other Fees "
 
 msgid "上記の利用料・手数料がかかります。"
-msgstr "You will be charged fees & commissions noted above."
+msgstr "You will be charged fees noted above."
 
 msgid "上記の{0}がかかります。"
 msgstr "You will be charged a {0}."
 
 msgid "上記のシステム利用料がかかります。"
-msgstr "You will be charged a system usage fee."
+msgstr "You will be charged a system fee."
 
 msgid "チケット1枚につき"
 msgstr "Per ticket"
@@ -263,7 +269,7 @@ msgid "システム利用料"
 msgstr "System fee"
 
 msgid "注文受付完了、確認メール等をメールでご案内します。「{domain}」からのメールを受信できるよう、お申し込み前にドメイン指定の設定を必ずお願いいたします。"
-msgstr "We will send you a confirmation e-mail after your reservation is completed. Please confirm the e-mail settings, to allow receiving e-mail from 「{domain}」domain."
+msgstr "We will send you a confirmation email after your purchase is completed. Please confirm the email settings, to allow receiving email from 「{domain}」domain."
 
 msgid "購入者情報入力"
 msgstr "Purchaser Information"
@@ -272,7 +278,7 @@ msgid "{0}文字以内で入力してください"
 msgstr "Please enter within {0} characters"
 
 msgid "購入者氏名"
-msgstr "Purchaser name"
+msgstr "Name"
 
 msgid "姓"
 msgstr "Last name"
@@ -299,19 +305,19 @@ msgid "アルファベットのみを入力してください"
 msgstr "Please input alphabet only"
 
 msgid "アルファベット、数字、-(ハイフン)、.(点)、,(コンマ)、空白を入力してください"
-msgstr "please input alphabet, number, -, .(dot), comma or blank"
+msgstr "please input alphabet, number, -, .(dot), ,(comma) or blank"
 
 msgid "パスポートと一致しているものを入力してください"
 msgstr "Please provide your name as it appears on your passport"
 
 msgid "メールアドレス"
-msgstr "E-mail"
+msgstr "Email"
 
 msgid "例）mail@example.ne.jp"
 msgstr "Example: mail@example.ne.jp"
 
 msgid "メールアドレスと確認メールアドレスが一致していません。"
-msgstr "e-mail and confirm e-mail are different."
+msgstr "email and confirm email are different."
 
 msgid "(半角英数)"
 msgstr " "
@@ -320,7 +326,7 @@ msgid "半角英数"
 msgstr " "
 
 msgid "確認用"
-msgstr "Confirm E-mail"
+msgstr "Confirm Email"
 
 msgid "住所"
 msgstr "Address"
@@ -335,7 +341,7 @@ msgid "郵便番号"
 msgstr "Zip"
 
 msgid "-(ハイフン)を抜いた半角数字のみを入力してください"
-msgstr "Please input number only without hyphen."
+msgstr "Please input number without hyphen."
 
 msgid "都道府県"
 msgstr "Prefecture"
@@ -422,7 +428,7 @@ msgid "現在の予約内容では選択された決済 / 引取方法で購入�
 msgstr "We can not proceed with the chosen payment / delivery method. Please try another payment / delivery method."
 
 msgid "メールアドレスが正しくありません"
-msgstr "e-mail address is invalid"
+msgstr "Email address is invalid"
 
 msgid "選択してください"
 msgstr "please choose one"
@@ -511,7 +517,7 @@ msgid "セキュリティコード"
 msgstr "Security code"
 
 msgid "半角"
-msgstr "number"
+msgstr "half-width"
 
 msgid "セキュリティコードは、カード裏面の署名欄に印刷されている下3桁の数字です。"
 msgstr "Security code, is a three-digit number printed on the signature panel on the back of your card."
@@ -535,7 +541,7 @@ msgid "カード情報入力時に、ご利用カードの有効性の確認（�
 msgstr "After the card information input, the system will verify the effectiveness of the card (authorization check)."
 
 msgid "お客様のカードによっては、チケットの予約・購入が完了していない場合でも、上記の有効性確認に伴い、カード利用案内メール等が配信される場合があります。"
-msgstr "Depending on the verification result of your card, even if the reservation and purchase of the ticket has not been completed, card usage guide e-mail may be delivered."
+msgstr "Depending on the verification result of your card, even if the reservation and purchase of the ticket has not been completed, card usage guide email may be delivered."
 
 msgid "ご購入されたチケットは、理由の如何を問わず、取替・変更・キャンセルはお受けできません。"
 msgstr "After Ticket purchase is completed, regardless of the reason, replacement, change, and cancellation can not be accepted."
@@ -555,7 +561,7 @@ msgid "お買い物内容"
 msgstr "Shopping content"
 
 msgid "席種、金額などのお買い物内容"
-msgstr "Shopping content, such as seat type and purchase amount."
+msgstr "Shopping content, such as seat type and price."
 
 msgid "枚"
 msgstr "Sheet"
@@ -567,7 +573,7 @@ msgid "発券/引取手数料"
 msgstr "Issue/Delivery fee"
 
 msgid "追加情報"
-msgstr "Additional Information"
+msgstr "Extra Information"
 
 msgid "お支払い"
 msgstr "Payment"
@@ -585,10 +591,10 @@ msgid "配送受取を選択した場合"
 msgstr "If delivery is needed"
 
 msgid "メールマガジンの配信"
-msgstr "Delivery of e-mail magazine"
+msgstr "Delivery of email magazine"
 
 msgid "ご利用いただいた方には、楽天チケットからのメールマガジンをお送りします。不要な方はチェックをはずしてください。"
-msgstr "You can receive an e-mail magazine from the Rakuten ticket. If it is unnecessary, remove the check."
+msgstr "You can receive an email magazine from the Rakuten ticket. Uncheck if it is not needed."
 
 msgid "座席選択にもどる"
 msgstr "Back to seat selection"
@@ -606,7 +612,7 @@ msgid "様"
 msgstr " "
 
 msgid "お申込み確定後は、理由の如何を問わず、"
-msgstr " after your reservation is completed "
+msgstr " after your purchase is completed "
 
 msgid "取替・変更・キャンセルをお受けできません。"
 msgstr "regardless of the reason, replacement, change, cancellation is not available              ."
@@ -629,7 +635,7 @@ msgid "注意事項"
 msgstr "Notes"
 
 msgid "お申し込み時に、ご登録いただいたメールアドレス宛に、受付完了メールが送られます。"
-msgstr "A completion mail will be sent to the e-mail address you registered."
+msgstr "A confirmation mail will be sent to the email address you have registered."
 
 msgid "しばらくたっても確認のメールが届かない場合は、入力されたメールアドレスが誤っている可能性があります。"
 msgstr "If even after a while not receiving the confirmation e-mail, you may have incorrectly entered your e-mail address."
@@ -658,7 +664,7 @@ msgid "誠に申し訳ございませんが"
 msgstr "Sorry, "
 
 msgid "event.title(performance.name) の販売期間は"
-msgstr "You can buy ticket for {0} ({1}) during the following period."
+msgstr "You can purchase the tickets for {0} ({1}) during the following period."
 
 msgid "となっております。"
 msgstr " "
@@ -667,7 +673,7 @@ msgid "販売期間内にアクセスしていただきますようお願いい�
 msgstr "Please access our site during this period."
 
 msgid "event.title (performance.name) の販売は"
-msgstr "You can buy ticket for {0} ({1}) until "
+msgstr "You can purchase ticket for {0} ({1}) until "
 
 msgid "end_at まで"
 msgstr "{0} "
@@ -676,10 +682,10 @@ msgid "とさせていただいております。"
 msgstr " "
 
 msgid "他の公演のチケットは<a href=\"request.context.host_base_url\">こちら</a>からお買い求めくださいますようお願いいたします。"
-msgstr "And you can buy other tickets from <a href=\"{0}\">here</a>"
+msgstr "And you can purchase the other tickets from <a href=\"{0}\">here</a>"
 
 msgid "performance.name (sales_segment.name) の販売は"
-msgstr "You can buy ticket for {0} ({1}) during the following period."
+msgstr "You can purchase ticket for {0} ({1}) during the following period."
 
 msgid "なお、本公演の他の日付、会場のチケットは下記からお買い求めいただけます。"
 msgstr "For other date, venue information please access the following links."
@@ -720,7 +726,7 @@ msgid "混雑時などに、正常な購入処理が行われた際にも、ま�
 msgstr "This page maybe be shown when our site is busy even your purchase finished successfully."
 
 msgid "そのような状況で、メール受信設定などの理由で購入完了メールの確認ができない場合は、<a href=\"default_contact_url\">こちら</a>にお問い合わせください。"
-msgstr "If you can not receive e-mail from us or not sure about the status of your order, please contact us from <a href=\"{0}\">here</a>."
+msgstr "If you can not receive email from us or not sure about the status of your order, please contact us from <a href=\"{0}\">here</a>."
 
 msgid "セッションがタイムアウトされました。"
 msgstr "Oops, timeout happened to load this page."
