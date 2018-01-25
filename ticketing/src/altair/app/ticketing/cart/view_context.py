@@ -134,9 +134,11 @@ def get_cart_view_context_factory(default_package):
 
         @reify
         def mail_filter_domain_notice(self):
-            template = u'※ 注文受付完了、確認メール等をメールでご案内します。「{domain}」からのメールを受信できるよう、お申し込み前にドメイン指定の設定を必ずお願いいたします。'
+            template = u'注文受付完了、確認メール等をメールでご案内します。「{domain}」からのメールを受信できるよう、お申し込み前にドメイン指定の設定を必ずお願いいたします。'
             if self.cart_setting and self.cart_setting.mail_filter_domain_notice_template:
                 template = self.cart_setting.mail_filter_domain_notice_template
+            if hasattr(self.request, 'translate'):
+                template = self.request.translate(template)
             template = self._message(template)
 
             try:

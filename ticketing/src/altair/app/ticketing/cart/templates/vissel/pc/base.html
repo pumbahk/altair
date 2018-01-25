@@ -1,49 +1,49 @@
-<%namespace name="widget" file="./_widgets.html" inheritable="True" />
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ja" lang="ja">
+<!DOCTYPE html>
+<html>
 <head>
-  <meta http-equiv="content-type" content="text/html; charset=utf-8" />
-  <title>ヴィッセル神戸公式チケットサイト</title>
-  <meta name="description" content="座席指定、24時間購入可能、QRコードでの発券なら手数料が無料、とチケット購入がより便利になったチケットです！チームがチケットを直接販売するシステムです。" />
-  <meta name="keywords" content="ヴィッセル,神戸,ヴィッセル神戸" />
-  <meta http-equiv="content-style-type" content="text/css" />
-  <meta http-equiv="content-script-type" content="text/javascript" />
-  <meta name="viewport" content="width=950" />
-  <link rel="stylesheet" href="${request.static_url('altair.app.ticketing.cart:static/vissel/pc/css/import2.css')}" type="text/css" media="all" />
-  <link rel="stylesheet" href="${request.static_url('altair.app.ticketing.cart:static/vissel/pc/css/custom2.css')}" type="text/css" media="all" />
-  <%block name="javascript"></%block>
-  <%block name="css"></%block>
-</head>
-<body id="settlement">
-  <p id="naviSkip"><a href="#main" tabindex="1" title="本文へジャンプ"><img src="${request.static_url('altair.app.ticketing.cart:static/vissel/pc/images/skip.gif')}" alt="本文へジャンプ" width="1" height="1" /></a></p>
-  <div id="container" style="position:relative">
-    <form action="${request.route_path('cart.logout')}" method="POST">
-      <div style="text-align: right">
-        % if (not getattr(request, 'context', None)) or request.context.authenticated_user()['is_guest']:
-          <input type="submit" value="会員でログイン"/>
-        % else:
-          ${request.context.authenticated_user()['membergroup']}でログイン中
-          <input type="submit" value="ログアウト"/>
-        % endif
-      </div>
-    </form>
+<!--[if lt IE 9]>
+<script type="text/javascript" src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+<![endif]-->
+<meta charset="UTF-8">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="cache-control" content="no-cache">
+<meta http-equiv="expires" content="0">
+<title>${_(u'チケット情報・販売・購入・予約')}</title>
 
+<!-- Cascading Style Sheets -->
+<link rel="shortcut icon" href="${view_context.static_url('pc/images/favicon.ico')}">
+<link rel="stylesheet" href="${view_context.static_url('pc/css/import.css')}" type="text/css" media="all">
+
+<%block name="javascript"></%block>
+<%block name="css"></%block>
+</head>
+
+<body id="settlement">
+  <div id="container">
     <!-- ========== header ========== -->
-    <div id="grpheader" style="height:80px">
-      <p id="siteID" style="float:none;position:absolute;z-index:100">
-        <img src="${request.static_url('altair.app.ticketing.cart:static/vissel/pc/images/logo_950x64.jpg')}" alt="ヴィッセル神戸公式チケットサイト" width="950" height="64"  />
-      </p>
-    </div>
+    <%include file="../includes/header.html" />
     <!-- ========== /header ========== -->
 
-    <hr />
-
     <!-- ========== main ========== -->
+    <%include file="../includes/login_status.html" args="device=view_context.ua_type" />
+    <div class="selectwrapper">
+      ${h.create_url(request) |n}
+    </div>
     <div id="main">
+      <h1>${_(u'チケット購入')}</h1>
+      % if view_context.get_include_template_path('links.html') is not None:
+        <%include file="${view_context.get_include_template_path('links.html')}" args="device=view_context.ua_type" />
+      % endif
       ${self.body()}
     </div>
     <!-- ========== /main ========== -->
+
+    <!-- ========== footer ========== -->
+    <%include file="../includes/footer.html" />
+    <!-- ========== /footer ========== -->
   </div>
   <!-- /container -->
+  <%block name="extras"></%block>
 </body>
+
 </html>

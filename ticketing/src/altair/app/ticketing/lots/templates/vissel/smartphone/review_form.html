@@ -1,28 +1,32 @@
-<%inherit file="${context['main_template'].uri}" />
-<div id="main">
-  <form action="${request.url}" class="wishForm" method="post">
-    <div class="subbox">
-      <dl>
-        <dt><p class="lineRed">申込状況確認</p></dt>
-        <dd>
-          <div class="subInner2">
-            <dl class="creditList">
-              <dt class="creditHl">${form['entry_no'].label}</dt>
-              <dd>
-                ${form['entry_no'](class_="text")}（例：VK00000000AB）
-                ${self.error(form, 'entry_no', enclose=True)}
-              </dd>
-              <dt class="creditHl">${form['tel_no'].label}</dt>
-              <dd>
-                ${form['tel_no'](class_="text")}（例：080xxxxvvvv）
-                ${self.error(form, 'tel_no', enclose=True)}
-              </dd>
-            </dl>
-          </div>
-        </dd>
-      </dl>
-    </div>
-    <p class="nextBtn"><input type="submit" value="確認する" />
-  </form>
-</div>
+<%inherit file="review_base.html" />
 
+<div class="wrap">
+  <h2>${_(u'申込履歴の確認')}</h2>
+  <div class="box">
+    <div class="login-inbox">
+      <form method="post" accept-charset="utf-8" action="${request.url}" autocomplete="off" novalidate>
+        <table class="loginTable">
+          <tbody>
+            <tr>
+              <th>${_(u'受付番号')} <span class="red">*</span></th>
+              <td>
+                <input id="entry_no" name="entry_no" type="text" value="" placeholder="例: ${request.organization.code}000000AB" required>
+                <span class="red">${h.render_errors(request, form.entry_no.errors)}</span>
+              </td>
+            </tr>
+            <tr>
+              <th>${_(u'電話番号')} <span class="red">*</span></th>
+              <td>
+                <input id="tel_no" name="tel_no" type="text" value="" placeholder="例: 080xxxxyyyy" required><br>
+                <p class="caution">${_(u'電話番号はご登録時の電話番号をご入力ください。')}</p>
+                <span class="red">${h.render_errors(request, form.tel_no.errors)}</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <p class="caution">${_(u'*は入力必須項目です。')}</p>
+        <p><input type="submit" value="${_(u'次に進む')}" class="btn"></p>
+      </form>
+    </div><!-- /login-box -->
+  </div><!-- /box -->
+</div><!-- /wrap -->

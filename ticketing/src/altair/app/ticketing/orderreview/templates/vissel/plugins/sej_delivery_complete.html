@@ -1,0 +1,58 @@
+% if payment_type == 'CashOnDelivery':
+  <table class="customer-table">
+    <tbody>
+      <tr>
+        <td>${_(u'チケットは代金と引換です。')}</td>
+      </tr>
+    </tbody>
+  </table>
+% else:
+  % if delivery_method.hide_voucher:
+    <table class="customer-table">
+      <tbody>
+        <tr>
+          <td>
+            <p>${_(u'引換票番号は後ほどメールにてお送りいたします。')}</p>
+            <p>${_(u'詳細はそちらをご確認頂き、指定発券日以降にレジにてチケットをお受取ください。')}</p>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  % else:
+    %if payment_type == 'Paid':
+      <%include file="sej_exchange_sheet.html" args="label=u'引換票を表示'" />
+    %endif
+    <table class="customer-table">
+      <tbody>
+        <tr>
+          <th>${_(u'引取受付期間')}</th>
+          <td>
+            ${h.i18n_datetime(sej_order.ticketing_start_at, locale)}　〜　
+            % if sej_order.ticketing_due_at:
+              ${h.i18n_datetime(sej_order.ticketing_due_at, locale)}
+            % endif
+          </td>
+        </tr>
+
+        <tr>
+          <td colspan="2">
+            % if can_receive_from_next_day:
+            <p class="fWB">${_(u'購入いただいた日の翌日{0}から引き取りが可能となります。').format(h.i18n_datetime(sej_order.ticketing_start_at, locale))}</p>
+            % endif
+            <p>${_(u'セブン-イレブン発券の際には引換票番号が必要です。')}</p>
+            <p>
+              %if not delivery_method.hide_voucher:
+                % if payment_type == 'Paid':
+                  ${_(u'<a href=\"/orderreview\">予約・購入履歴確認画面</a>より、「引換票」を印刷するか、または番号をお控え下さい。') |n}
+                % else:
+                  ${_(u'<a href=\"/orderreview\">予約・購入履歴確認画面</a>にて表示される引換票番号をお控え下さい。') |n}
+                % endif
+              %endif
+            </p>
+            <p>${_(u'引取受付期間内に、セブン-イレブン店頭レジにてチケットをお引取り下さい。')}</p>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  % endif
+% endif

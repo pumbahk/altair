@@ -27,6 +27,15 @@ msgstr "相关商务法规"
 msgid "サービス利用規約"
 msgstr "服务条款"
 
+msgid "利用規約"
+msgstr "服务条款"
+
+msgid "キャンセルポリシー"
+msgstr "取消政策"
+
+msgid "申込履歴の確認"
+msgstr "抽选申请确认"
+
 # index
 
 msgid "一般の方のチケット確認はこちらから"
@@ -75,6 +84,9 @@ msgstr "请输入购买操作时使用的电话号码。"
 
 msgid "例"
 msgstr "例"
+
+msgid "*は入力必須項目です。"
+msgstr "*为必须输入的项目。"
 
 # show
 

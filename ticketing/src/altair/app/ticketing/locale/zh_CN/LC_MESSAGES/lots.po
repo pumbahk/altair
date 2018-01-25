@@ -50,6 +50,9 @@ msgstr "抽选申请确认"
 msgid "抽選申込確認"
 msgstr "抽选申请确认"
 
+msgid "申込履歴の確認"
+msgstr "抽选申请确认"
+
 msgid "受付番号"
 msgstr "受理号码"
 
@@ -76,6 +79,9 @@ msgstr "请输入家庭电话或手机号码。"
 
 msgid "（携帯・自宅をどちらもご登録した場合どちらの番号でも構いません。）"
 msgstr "（家庭电话或手机号码均可。）"
+
+msgid "*は入力必須項目です。"
+msgstr "*为必须输入的项目。"
 
 msgid "{0}または{1}が違います"
 msgstr "{0}或者{1}不同"
@@ -381,6 +387,9 @@ msgstr "例: 180xxxxyyyy"
 
 msgid "生年月日"
 msgstr "出生日期"
+
+msgid "誕生日"
+msgstr "生日"
 
 msgid "性別"
 msgstr "性别"
