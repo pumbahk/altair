@@ -291,6 +291,12 @@ msgstr "Be careful! We don't respond to the request for dealing the troubles cau
 msgid "閉じる"
 msgstr "Close"
 
+msgid "以下の注意事項に同意しQRチケットを取得"
+msgstr "Please agree the below term and get the QR code"
+
+msgid "QRチケットを取得"
+msgstr "Get QR code"
+
 # sej
 
 msgid "セブン-イレブン支払い"

@@ -601,7 +601,8 @@ class QRView(object):
             performance = ticket.performance,
             event = ticket.event,
             product = ticket.product,
-            ordered_product_items = ordered_product_items
+            ordered_product_items = ordered_product_items,
+            locale=custom_locale_negotiator(self.request) if self.request.organization.setting.i18n else ""
             )
 
     @lbr_view_config(
@@ -637,7 +638,8 @@ class QRView(object):
             event = ticket.event,
             product = ticket.product,
             ordered_product_items = ordered_product_items,
-            gate = gate
+            gate = gate,
+            locale=custom_locale_negotiator(self.request) if self.request.organization.setting.i18n else ""
         )
 
 

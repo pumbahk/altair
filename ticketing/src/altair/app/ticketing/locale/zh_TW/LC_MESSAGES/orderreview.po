@@ -291,6 +291,12 @@ msgstr "請注意，我們無法提供處理因為送錯信件或是錯誤讓渡
 msgid "閉じる"
 msgstr "關閉"
 
+msgid "以下の注意事項に同意しQRチケットを取得"
+msgstr "請同意下列事項並取得QR碼"
+
+msgid "QRチケットを取得"
+msgstr "取得QR碼"
+
 # sej
 
 msgid "セブン-イレブン支払い"
