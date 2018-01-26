@@ -15,8 +15,6 @@
     </script>
 </%block>
 
-${self.widget.flow_widget(2)}
-
 %if request.session.peek_flash():
     %for message in request.session.pop_flash():
     <div class="error">${message}</div>
@@ -49,7 +47,7 @@ ${self.widget.flow_widget(2)}
     </div>
   </div>
 </div>
-<p class="align2"><image onclick="document.getElementById('form1').submit()" src="${request.static_url('altair.app.ticketing.cart:static/eagles/pc/images/btn_next.gif')}" alt="次へ" width="226" height="46" /></p>
+<p class="align2" onclick="$('#form1').submit()">次へ</p>
 </form>
 
 % if request.organization.setting.sitecatalyst_use:
