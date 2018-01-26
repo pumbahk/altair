@@ -199,7 +199,6 @@ def refund_sej_order(request,
                     rt.refund_other_amount += per_order_fee
 
                 # チケットデータの状態不正などにより払戻データの合計額が予約金額を超える場合はエラーにする
-                import ipdb;ipdb.set_trace()
                 sum_amount += rt.refund_ticket_amount + rt.refund_other_amount
                 if refund_total_amount < sum_amount:
                     logger.error(u'check over amount {0} < {1}'.format(refund_total_amount, sum_amount))
