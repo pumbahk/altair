@@ -218,7 +218,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
   // responseに結果を渡すための変数
   resResult: any;
   // 全体の拡大縮小率
-  scaleTotal = 1.0;
+  scaleTotal = 0.0;
   // ミニマップ用四角
   rectViewBox: number[];
   // regionId（数受けの席のregion Id）
