@@ -801,7 +801,8 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
 
             # 「一般会員の方」のファンクラブクーポンの利用を防ぐバリデーション
             for setting in self.cart.available_fanclub_discount_code_settings:
-                if self.is_fanclub_user:
+                if self.is_authz_user:
+                    # TODO 株主会員の場合数字のため、これだけだと足りなそう
                     # fc_member_idは「ファンクラブの方」でログインしてすると文字列の数字、「一般の方」でログインするとOpenIDの文字列
                     fc_member_id = self.request.altair_auth_info['authz_identifier']
                     if (code[:4] == setting.first_4_digits) and (not fc_member_id.isdigit()):
@@ -826,7 +827,8 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
         return False
 
     @property
-    def is_fanclub_user(self):
+    def is_authz_user(self):
+        # OAuth認証しているユーザ
         return "authz_identifier" in self.request.altair_auth_info
 
     def confirm_discount_codes(self, codes):

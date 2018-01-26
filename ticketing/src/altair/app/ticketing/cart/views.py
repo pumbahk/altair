@@ -1470,8 +1470,9 @@ class DiscountCodeEnteringView(object):
 
         self.context.validate_discount_codes(codes)
 
-        if self.context.is_fanclub_user:
-            # ファンクラブのクーポンの場合
+        if self.context.is_authz_user:
+            # TODO 株主会員の場合数字のため、これだけだと足りなそう
+            # ファンクラブのクーポンの場合(スポーツサービス開発発行のコード)の場合ログインしていないと使えない
             self.context.confirm_discount_code_status(codes)
 
         if self.context.exist_validate_error(codes):
@@ -1740,7 +1741,8 @@ class CompleteView(object):
 
         self.context.check_deleted_product(cart)
         # クーポンのチェック
-        if self.context.is_fanclub_user:
+        if self.context.is_authz_user:
+            # TODO 株主会員の場合数字のため、これだけだと足りなそう
             self.context.check_available_discont_code()
         self.context.check_order_limit() # 最終チェック
         order = api.make_order_from_cart(self.request, cart)
