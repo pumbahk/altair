@@ -30,6 +30,7 @@ from altair.formhelpers.fields.liaison import (
 from altair.formhelpers.widgets import (
     OurDateWidget,
     build_date_input_select_japanese_japan,
+    build_date_input_select_i18n
     )
 from altair.formhelpers.fields import (
     OurDateField
@@ -222,7 +223,7 @@ class ClientFormFactory(object):
                 value_defaults={'year':u'1980'},
                 missing_value_defaults={ 'year': u'', 'month': u'', 'day': u'', },
                 widget=OurDateWidget(
-                    input_builder=build_date_input_select_japanese_japan
+                    input_builder=build_date_input_select_i18n
                     ),
                 validators=[
                     Required(_(u'入力してください')),

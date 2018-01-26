@@ -8,6 +8,11 @@
 <body>
 <div class="content">
   <hr class="main" />
+  %if request.organization.setting.i18n:
+    <div class="selectwrapper">
+      ${h.create_url_link(request) |n}
+    </div>
+  % endif
   <div class="wrap-qr">
     <img class="qr" src="${request.route_path((_overwrite_generate_qrimage_route_name or 'order_review.qrdraw'), ticket_id=ticket.id, sign=sign, token=token, serial=serial)}" />
   </div>
@@ -18,6 +23,7 @@
     % endif
     <hr class="sub" />
     <div>
+
       <%
       p_start_on = u'{date} {time}'.format(date=h.i18n_date(performance.start_on, locale), time=h.i18n_time(performance.start_on, locale))
       if performance.end_on:

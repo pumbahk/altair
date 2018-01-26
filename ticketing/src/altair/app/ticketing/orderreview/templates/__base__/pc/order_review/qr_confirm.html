@@ -1,40 +1,59 @@
-<%namespace file="../../../__commons__/tags_mobile.html" name="mobile" />
 <html>
 <head>
   <title>${event.title} - ${performance.name}</title>
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0"/>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <link rel="stylesheet" type="text/css" href="${view_context.static_url('pc/css/qr.css')}" media="all" />
 </head>
 <body>
-<div><font color="#232323">■</font>イベント名</div>
-<div>${event.title}</div>
-<div><font color="#232323">■</font>パフォーマンス</div>
-<div>${performance.name}</div>
-<div><font color="#232323">■</font>開催日時</div>
-% if performance.start_on and performance.end_on:
-<div>${performance.start_on.strftime("%Y年%m月%d日").decode('utf-8')} (${u'月火水木金土日'[performance.start_on.weekday()]}) ${performance.start_on.strftime(u"%H:%M").decode('utf-8')}−${performance.end_on.strftime("%Y年%m月%d日").decode('utf-8')} (${u'月火水木金土日'[performance.end_on.weekday()]}) ${performance.end_on.strftime(u"%H:%M").decode('utf-8')}</div>
-% else:
-<div>${performance.start_on.strftime("%Y年%m月%d日").decode('utf-8')} (${u'月火水木金土日'[performance.start_on.weekday()]}) ${performance.start_on.strftime(u"%H:%M").decode('utf-8')}−</div>
-% endif
-<div><font color="#232323">■</font>会場名</div>
-<div>${performance.venue.name}</div>
-<div><font color="#232323">■</font>券種名</div>
-%if product:
-<div>${product.name}</div>
-%endif
-<%mobile:form_get action="${request.route_path('order_review.qr', ticket_id=ticket.id, sign=sign)}" target="_blank">
-<div align="center" border="2px" bordercolor="#a3a3a3" style="background-color:#e0e0e0; border:2px solid #a3a3a3">
-<br />
-以下の注意事項に同意しQRチケットを取得<br />
-<input type="submit" value="QRチケットを取得" />
-<br />
-<br />
+<div class="content">
+  <hr class="main" />
+  %if request.organization.setting.i18n:
+    <div class="selectwrapper">
+      ${h.create_url_link(request) |n}
+    </div>
+  % endif
+  <div class="wrap-ticket-info">
+    <h3>${event.title}</h3>
+    % if performance and performance.name:
+      <h3>${performance.name}</h3>
+    % endif
+    <hr class="sub" />
+    <div>
+      <%
+      p_start_on = u'{date} {time}'.format(date=h.i18n_date(performance.start_on, locale), time=h.i18n_time(performance.start_on, locale))
+      if performance.end_on:
+        p_end_on = u'{date} {time}'.format(date=h.i18n_date(performance.end_on, locale), time=h.i18n_time(performance.end_on, locale))
+      else:
+        p_end_on = ''
+      %>
+      % if p_end_on:
+      <p class="p-date">${p_start_on}−<br />${p_end_on}</p>
+      % else:
+      <p class="p-date">${p_start_on}−</p>
+      % endif
+    </div>
+    <hr class="sub" />
+    <p class="order_no">${_(u'受付番号')} ${order.order_no}</p>
+    <br /><br />
+    %if product:
+    <p class="product"> ${product.name} (${product.id})</p>
+    %endif
+    %if ticket.seat:
+    <p class="ticket"> ${ticket.seat.name} (${ticket.seat.l0_id})</p>
+    %endif
+    <form class="button-form" action="${request.route_path('order_review.qr', ticket_id=ticket.id, sign=sign)}" target="_blank">
+      <p>${_(u'以下の注意事項に同意しQRチケットを取得')}</p>
+      <input type="submit" value="${_(u'QRチケットを取得')}" />
+    </form>
+    <ul class="notice-list">
+      <li>※${_(u'携帯電話からご利用の方は、ボタンを押した後で表示される画面を「画面メモ」等にて保存してください。')}</li>
+      <li>※${_(u'QRチケットの取得・管理に関しては、お客様ご自身の責任でお願いいたします。')}</li>
+      <li>※${_(u'QRチケットの転送間違い、お渡し間違い等に起因するトラブル等にはご対応いたしかねますのでご注意ください。')}</li>
+    </ul>
+    <hr class="sub" />
+    <hr class="main" />
+  </div>
 </div>
-</%mobile:form_get>
-<div style="background-color:#a3a3a3;text-align:center" bgcolor="#a3a3a3" align="center">
-<b><font size="4" color="#fff">注意事項</font></b>
-</div>
-※携帯電話からご利用の方は、ボタンを押した後で表示される画面を「画面メモ」等にて保存してください。<br />
-※QRチケットの取得・管理に関しては、お客様ご自身の責任でお願いいたします。<br />
-※QRチケットの転送間違い、お渡し間違い等に起因するトラブル等にはご対応いたしかねますのでご注意ください。<br />
-
 </body>
 </html>

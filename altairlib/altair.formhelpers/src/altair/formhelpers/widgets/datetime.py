@@ -10,6 +10,7 @@ __all__ = (
     'build_date_input_select_japanese_japan',
     'build_time_input_japanese_japan',
     'build_datetime_input_japanese_japan',
+    'build_date_input_select_i18n',
     'OurDateWidget',
     'OurDateTimeWidget',
     )
@@ -158,8 +159,9 @@ class DateSelectFormElementBuilder(object):
 
 
 class DateFieldBuilder(object):
-    def __init__(self, form_element_builder):
-        self.form_element_builder = form_element_builder 
+    def __init__(self, form_element_builder, i18n=False):
+        self.form_element_builder = form_element_builder
+        self.i18n = i18n
 
     def __call__(self, ctx, fields, common_attrs={}, id_prefix=u'', name_prefix=u'', class_prefix=u'', year_attrs={}, month_attrs={}, day_attrs={}, **kwargs):
         ctx.buf.append(u'<span %s>' % html_params(class_=class_prefix + u'year'))
@@ -171,7 +173,10 @@ class DateFieldBuilder(object):
             class_=class_prefix + u'year',
             **merge_dict(common_attrs, year_attrs)
             ))
-        ctx.buf.append(u'<span %s>年</span></span>' % html_params(class_=class_prefix + u'label'))
+        if self.i18n:
+            ctx.buf.append(u'<span %s>year</span></span>' % html_params(class_=class_prefix + u'label'))
+        else:
+            ctx.buf.append(u'<span %s>年</span></span>' % html_params(class_=class_prefix + u'label'))
         ctx.field_ids['year'] = year_field_id
 
         month_field_id = id_prefix + u'month'
@@ -183,7 +188,10 @@ class DateFieldBuilder(object):
             class_=class_prefix + u'month',
             **merge_dict(common_attrs, month_attrs)
             ))
-        ctx.buf.append(u'<span %s>月</span></span>' % html_params(class_=class_prefix + u'label'))
+        if self.i18n:
+            ctx.buf.append(u'<span %s>month</span></span>' % html_params(class_=class_prefix + u'label'))
+        else:
+            ctx.buf.append(u'<span %s>月</span></span>' % html_params(class_=class_prefix + u'label'))
         ctx.field_ids['month'] = month_field_id
 
         day_field_id = id_prefix + u'day'
@@ -195,11 +203,15 @@ class DateFieldBuilder(object):
             class_=class_prefix + u'day',
             **merge_dict(common_attrs, day_attrs)
             ))
-        ctx.buf.append(u'<span %s>日</span></span>' % html_params(class_=class_prefix + u'label'))
+        if self.i18n:
+            ctx.buf.append(u'<span %s>day</span></span>' % html_params(class_=class_prefix + u'label'))
+        else:
+            ctx.buf.append(u'<span %s>日</span></span>' % html_params(class_=class_prefix + u'label'))
         ctx.field_ids['day'] = day_field_id
 
 build_date_input_japanese_japan = DateFieldBuilder(DateInputFormElementBuilder())
 build_date_input_select_japanese_japan = DateFieldBuilder(DateSelectFormElementBuilder())
+build_date_input_select_i18n = DateFieldBuilder(DateSelectFormElementBuilder(), True)
 
 def build_time_input_japanese_japan(ctx, fields, common_attrs={}, id_prefix=u'', name_prefix=u'', class_prefix=u'', omit_second=False, hour_attrs={}, minute_attrs={}, second_attrs={}, **kwargs):
     hour_field_id = id_prefix + u'hour'
