@@ -14,4 +14,4 @@ if [ ! -f "${DEPLOY_ROOT}/conf/altair.ticketing.admin.ini" ] ; then
 fi
 
 exec env HOME=/home/${USER} PATH=/home/${USER}/.nodebrew/current/bin:${PATH} \
-node ${SERVER_ROOT}/index.js -p 33080 -d ${DEPLOY_ROOT} -r ${DEPLOY_ROOT}/var/venue-layout --report-to=venue@ticketstar.jp
+node ${SERVER_ROOT}/index.js -p 33080 -d ${DEPLOY_ROOT} -r ${SERVER_ROOT}/var/venue-layout --report-to=venue@ticketstar.jp

@@ -218,6 +218,9 @@ const createFrontendVenueParser = function(cb) {
 const handleBackendList = (dir) => {
 	const p = new Promise((resolve, reject) => {
 		fs.readdir(dir, (err, files) => {
+			if(err) {
+				return reject(err);
+			}
 			var files = files.filter((name) => { return name.match(/\.xml$/); });
 			Promise.all(files.map(file => {
 				return new Promise((resolve, reject) => {
@@ -263,6 +266,9 @@ const handleBackendList = (dir) => {
 const handleFrontendList = (dir) => {
 	const p = new Promise((resolve, reject) => {
 		fs.readdir(dir, (err, files) => {
+			if(err) {
+				return reject(err);
+			}
 			Promise.all(files.map(subdir => {
 				return new Promise((resolve, reject) => {
 					fs.stat(dir+'/'+subdir, (err, stats) => {
@@ -277,12 +283,16 @@ const handleFrontendList = (dir) => {
 								return;
 							}
 							fs.readFile(dir+'/'+subdir+'/'+meta[0], { encoding: 'utf-8' }, (err, data) => {
-								resolve({
-									filename: subdir+'/'+meta[0].replace(/\.meta$/, ''),
-									size: stats.size,
-									mtime: datetime_formatter.format(stats.mtime),
-									content: JSON.parse(data)
-								});
+								try {
+									resolve({
+										filename: subdir+'/'+meta[0].replace(/\.meta$/, ''),
+										size: stats.size,
+										mtime: datetime_formatter.format(stats.mtime),
+										content: JSON.parse(data)
+									});
+								} catch(ex) {
+									resolve({ });
+								}
 							});
 						});
 					});
@@ -1158,4 +1168,4 @@ const listener = (req, res) => {
 
 console.log('Listening on :'+port);
 require('http').createServer(listener)
-.listen(port);
+.listen(port, '0.0.0.0');
