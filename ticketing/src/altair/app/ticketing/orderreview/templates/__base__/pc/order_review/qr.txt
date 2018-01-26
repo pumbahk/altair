@@ -3,9 +3,16 @@ Dear ${_(mail)}
 Please receive your QR code from following URL.
 下記リンクよりQRチケットを取得してください。
 
+イベント: ${event.title}
 Event: ${event.title}
+
+パフォーマンス: ${performance.name}
 Performance: ${performance.name}
+
+会場: ${performance.venue.name}
 Venue: ${performance.venue.name}
+
+日付: ${h.performance_datetime(performance)}
 Date: ${h.performance_datetime(performance, True)}
 
 ${url}
