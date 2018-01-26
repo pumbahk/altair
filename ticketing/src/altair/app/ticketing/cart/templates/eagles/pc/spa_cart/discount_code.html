@@ -43,6 +43,7 @@
         <div id="container" class="couponPosionRe">
             <!-- ========== main ========== -->
             <form id="form1" name="form1" method="post" action="${request.url}">
+                ${csrf_form.csrf_token()}
                 <div class="confirmBox">
                     <div class="confirmBoxInner inner">
                         <h1 class="purchaseTtl">クーポン・割引コードのご利用</h1>

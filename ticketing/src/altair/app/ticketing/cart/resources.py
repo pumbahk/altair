@@ -27,7 +27,7 @@ from ..discount_code.models import UsedDiscountCodeCart
 from ..discount_code import api as discount_api
 from . import models as m
 from . import api as cart_api
-from .exceptions import NoCartError, DeletedProductError
+from .exceptions import NoCartError, DeletedProductError, InvalidCSRFTokenException
 from .interfaces import (
     ICartResource,
     ICartPayment,
@@ -929,6 +929,24 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
             for index in range(remaining_count):
                 forms.append(schemas.DiscountCodeForm(discount_code_settings=settings))
         return forms
+
+    def check_csrf(self):
+        from . import schemas
+        try:
+            csrf_form = schemas.CSRFSecureForm(formdata=self.request.params, csrf_context=self.request.session)
+            if not csrf_form.validate():
+                logger.info('invalid csrf token: {0}'.format(csrf_form.errors))
+                raise InvalidCSRFTokenException
+
+            # セッションからCSRFトークンを削除して再利用不可にしておく
+            if 'csrf' in self.request.session:
+                del self.request.session['csrf']
+                if hasattr(self.request.session, 'persist'):
+                    self.request.session.persist()
+
+        except (InvalidCSRFTokenException, NoCartError):
+            # 不正な画面遷移
+            raise NoCartError()
 
 
 class CartBoundTicketingCartResource(DiscountCodeTicketingCartResources):

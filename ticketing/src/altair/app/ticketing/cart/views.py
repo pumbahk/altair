@@ -1449,8 +1449,10 @@ class DiscountCodeEnteringView(object):
         if (not cart.enable_discount_code) or (not cart.is_product_item_quantity_one):
             return HTTPFound(self.request.route_path('cart.payment', sales_segment_id=sales_segment_id))
 
+        csrf_form = schemas.CSRFSecureForm(csrf_context=self.request.session)
         return dict(
             forms=forms,
+            csrf_form=csrf_form,
             cart_product_items=sorted_cart_product_items,
             sales_segment_id=sales_segment_id,
             performance=self.context.performance,
@@ -1460,6 +1462,7 @@ class DiscountCodeEnteringView(object):
     @back(back_to_top, back_to_product_list_for_mobile)
     @lbr_view_config(request_method="POST")
     def discount_code_post(self):
+        self.context.check_csrf()
         self.context.upper_code()  # 入力されたコードの大文字化
         cart = self.context.read_only_cart
         self.context.check_deleted_product(cart)
@@ -1471,8 +1474,10 @@ class DiscountCodeEnteringView(object):
         self.context.confirm_discount_code_status(codes)
 
         if self.context.exist_validate_error(codes):
+            csrf_form = schemas.CSRFSecureForm(csrf_context=self.request.session)
             return dict(
                 forms=self.context.create_validated_forms(codes),
+                csrf_form=csrf_form,
                 cart_product_items=sorted_cart_product_items,
                 sales_segment_id=sales_segment_id,
                 performance=self.context.performance,
