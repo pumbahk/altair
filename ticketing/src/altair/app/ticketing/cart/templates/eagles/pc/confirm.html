@@ -8,24 +8,11 @@
 </script>
 </%block>
 <%block name="css">
-<style>
-  #btn-back {
-    border: 0;
-    width: 226px;
-    height: 46px;
-    vertical-align: top;
-    padding: 1px;
-    margin-right: 20px;
-    background: url("${request.static_url('altair.app.ticketing.cart:static/eagles/pc/images/btn_back_to_selection.gif')}") left top no-repeat;
-  }
-  #btn-complete {
-    border: 0;
-    width: 226px;
-    height: 46px;
-    background: url("${request.static_url('altair.app.ticketing.cart:static/eagles/pc/images/btn_buy.gif')}") left top no-repeat;
-  }
-</style>
 </%block>
+<link rel="stylesheet"
+	  href="${request.static_url('altair.app.ticketing.cart:static/eagles/pc/css/cart_order.css')}"
+	  type="text/css" media="all"/>
+
 ${self.widget.flow_widget(3)}
 <p style="font-size:150%; color: red; margin-bottom: 0;">まだお申し込みは完了していません</p>
 <p>ご注文内容をご確認いただき「購入する」ボタンで購入してください。</p>
@@ -59,7 +46,7 @@ ${self.widget.flow_widget(3)}
     % endfor
 		  % if cart.discount_amount:
 		  <tr>
-			  <td colspan="">
+			  <td colspan="5">
 				  <table class="couponTable">
 					  <tr class="purchaseCouponTtl">
 						  <td colspan="4">クーポン・割引コードご使用金額</td>
@@ -232,25 +219,16 @@ ${self.widget.flow_widget(3)}
 	  上記内容及び、<a href="//eagles.tstar.jp/agreement" target="_new">サービス利用規約</a>、<a href="http://privacy.rakuten.co.jp/" target="_new">個人情報保護方針</a>に同意をし、購入を申込みます。
 	</p>
   </div>
+	<input id="btn-back" class="btn btn-primary" name="back" value="座席選択に戻る" type="submit"><input id="btn-complete"
+																								  class="btn btn-primary"
+																								  value="購入する"
+																								  type="submit">
+	<div class="dispBox">
+		<div class="dispBoxInner">
+			※座席選択に戻るボタンを押すと、ここまでのお申し込みがキャンセルになります。
+		</div>
+	</div>
 
-  <table style="margin-left: auto; margin-right: auto;">
-    <tr>
-      <td style="width: 320px; text-align: center;">
-        <input id="btn-back" type="submit" name="back" value="" />
-        <br />
-        ※ここまでのお申し込みがキャンセルになります。 &nbsp;&nbsp;&nbsp;&nbsp;
-      </td>
-      <td style="width: 320px; text-align: center;">
-      % if delegator:
-        ${delegator['submit']}
-      % else:
-        <input id="btn-complete" type="submit" value="" />
-        <br />
-        &nbsp;
-      % endif
-      </td>
-    </tr>
-  </table>
 </form>
 
 % if request.organization.setting.sitecatalyst_use:

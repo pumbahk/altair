@@ -167,8 +167,9 @@ def mail_date(date):
 def i18n_mail_date(date):
     return u'{d.year}/{d.month}/{d.day} {d.hour:02}:{d.minute:02}'.format(d=date)
 
+
 # TODO: requestをパラメータから排除
-def error_list(request, form_or_field, name=None):
+def error_list(request, form_or_field, name, **options):
     if isinstance(form_or_field, Field):
         field = form_or_field
     else:
@@ -180,10 +181,16 @@ def error_list(request, form_or_field, name=None):
     if not errors:
         return ""
 
-    html = '<ul class="error-list">'
-    html += "".join(['<li>%s</li>' % e for e in errors])
-    html += '</ul>'
+    style_class = options.pop('style_class', "")
+    html = ""
+    if style_class:
+        html += "".join(['<tr><td class=%s>%s</td></tr>' % (style_class, e) for e in errors])
+    else:
+        html = '<ul class="error-list">'
+        html += "".join(['<li>%s</li>' % e for e in errors])
+        html += '</ul>'
     return Markup(html)
+
 
 def fee_type(type_enum):
     if type_enum == int(FeeTypeEnum.Once.v[0]):
