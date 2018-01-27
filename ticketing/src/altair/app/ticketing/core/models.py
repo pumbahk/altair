@@ -607,6 +607,43 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def lot_sales_segments(self):
         return [lot.sales_segment for lot in self.event.lots]
 
+    def find_available_target_settings(self, issued_by=None, first_4_digits=None, max_price=None):
+        """
+        引数で指定されたコード発行元における割引設定で、利用可能な状態のものを抽出
+        :param issued_by: コードの発行元
+        :param first_4_digits: クーポン・割引コードの文字列
+        :param max_price: 最も高い席の価格（例：大人席・子供席なら大人席の値段）
+        :return: 割引コード設定のリスト
+        """
+        #TODO slaveで取得できるようにする。resourceからcontextを引数でもらう。contextがなければmasterを使用するよう分岐作成
+        from altair.app.ticketing.discount_code.models import DiscountCodeSetting, DiscountCodeTarget, DiscountCodeCode
+        now = datetime.now()
+        query = DBSession.query(DiscountCodeSetting).join(
+            DiscountCodeTarget
+        ).filter(
+            Performance.id == self.id,
+            DiscountCodeSetting.is_valid == 1,
+            or_(DiscountCodeSetting.start_at.is_(None), DiscountCodeSetting.start_at <= now),
+            or_(DiscountCodeSetting.end_at.is_(None), DiscountCodeSetting.end_at >= now)
+        )
+
+        if max_price:
+            query = query.filter(DiscountCodeSetting.condition_price_amount >= max_price)
+
+        if issued_by is not None:
+            query = query.filter(DiscountCodeSetting.issued_by == issued_by)
+
+        if issued_by == u'own':
+            query = query.filter(DiscountCodeCode.id.isnot(None))
+
+        if first_4_digits is not None:
+            query = query.filter(
+                DiscountCodeSetting.first_digit == first_4_digits[:1],
+                DiscountCodeSetting.following_2to4_digits == first_4_digits[1:4]
+            )
+
+        return query.all()
+
     def get_recent_sales_segment(self, now):
         """公演に紐づく販売区分のうち直近のものを返す。抽選の販売区分も含む"""
         if now is None:

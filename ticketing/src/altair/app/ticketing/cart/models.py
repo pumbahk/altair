@@ -375,12 +375,14 @@ class Cart(Base, c_models.CartMixin):
                 count = count + element.quantity
         return count
 
-    @reify
-    def enable_discount_code(self):
-        if (not self.organization.enable_discount_code) or (not self._find_available_target_settings()):
-            return False
-        else:
-            return True
+    @property
+    def highest_item_price(self):
+        prices = []
+        for item in self.items:
+            for element in item.elements:
+                prices.append(element.price)
+
+        return max(prices)
 
     @property
     def is_product_item_quantity_one(self):
@@ -394,57 +396,6 @@ class Cart(Base, c_models.CartMixin):
                     return False
 
         return True
-
-    @reify
-    def available_discount_code_settings(self):
-        return self._find_available_target_settings()
-
-    def _find_available_target_settings(self, issued_by=None):
-        """
-        引数で指定されたコード発行元における割引設定で、利用可能な状態のものを抽出
-        :param issued_by: コードの発行元
-        :return: 割引コード設定のリスト
-        """
-        valid_target = [x for x in self.performance.DiscountCodeTarget if
-                        x.discount_code_setting.available_status is True]
-        if not valid_target:
-            return False
-
-        available_settings = []
-        for target in valid_target:
-            if issued_by is not None and target.discount_code_setting.issued_by != issued_by:
-                continue
-
-            # 割引設定が１つでも、選択されたチケットの金額を上回っていること
-            status = True
-            for item in self.items:
-                if not status:
-                    break
-                for element in item.elements:
-                    if element.price > target.discount_code_setting.condition_price_amount:
-                        status = False
-                        break
-            if status:
-                available_settings.append(target.discount_code_setting)
-        return available_settings
-
-    @reify
-    def available_fanclub_discount_code_settings(self):
-        return self._find_available_target_settings(u'sports_service')
-
-    @reify
-    def available_own_discount_code_settings(self):
-        return self._find_available_target_settings(u'own')
-
-    @property
-    def used_discount_code_settings(self):
-        settings = []
-        for item in self.items:
-            for element in item.elements:
-                used_discount_code_carts = element.used_discount_codes
-                for used_discount_code_cart in used_discount_code_carts:
-                    settings.extend(discount_api.get_discount_code_setting(used_discount_code_cart))
-        return settings
 
     @property
     def used_discount_code_groups(self):

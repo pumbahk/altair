@@ -185,7 +185,8 @@ def used_discount_code_groups(cart):
         group_dict = dict()
         group_dict['discount_code_setting'] = setting
         group_dict['code'] = code_groups[setting.first_4_digits]
-        group_dict['discount_price'] = sum([code.carted_product_item.price for code in code_groups[setting.first_4_digits]])
+        group_dict['discount_price'] = sum(
+            [code.carted_product_item.price for code in code_groups[setting.first_4_digits]])
         groups.append(group_dict)
     return groups
 
@@ -260,10 +261,7 @@ def cancel_used_discount_codes(request, order, now=None):
     :param now: キャンセル時刻
     """
     now = now or datetime.now()
-    own_settings = order.cart.available_own_discount_code_settings
-    fanclub_settings = order.cart.available_fanclub_discount_code_settings
     api_request_coupons = []
-
     try:
         for code in order.used_discount_codes:
             # UsedDiscountCodeOrderの更新
@@ -273,21 +271,15 @@ def cancel_used_discount_codes(request, order, now=None):
                 code.canceled_at = now
             else:
                 raise SystemError('order status must be refunded or canceled.')
-            code.save()
 
-            first_4_degits = code.code[:4]
-
-            # 自社発行の割引コード
-            # DiscountCodeテーブルのused_atをNullに更新する
-            for o_setting in own_settings:
-                if first_4_degits == o_setting.first_4_digits:
-                    code.discount_code.used_at = None
-                    code.discount_code.save()
-
-            # スポーツサービス開発発行の割引コード
-            for f_setting in fanclub_settings:
-                if first_4_degits == f_setting.first_4_digits:
-                    api_request_coupons.append({'coupon_cd': code.code})
+            first_4_digits = code.code[:4]
+            code_setting = order.cart.performance.find_available_target_settings(first_4_digits=first_4_digits)
+            if code_setting.issued_by == u'own':
+                code.discount_code.used_at = None
+            elif code_setting.issued_by == u'sports_service':
+                api_request_coupons.append({'coupon_cd': code.code})
+            else:
+                raise SystemError('code {} is not issued properly'.format(code.code))
 
         # スポーツサービス開発に割引コードを未使用に戻すAPIリクエストを送る
         if not api_request_coupons:

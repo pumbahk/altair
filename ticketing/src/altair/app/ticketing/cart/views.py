@@ -1446,7 +1446,7 @@ class DiscountCodeEnteringView(object):
         self.context.delete_temporarily_save_discount_code()
 
         # ディスカウントコードを使わない場合は通常ルートへ
-        if (not cart.enable_discount_code) or (not cart.is_product_item_quantity_one):
+        if not self.context.if_discount_code_available_for_seat_selection():
             return HTTPFound(self.request.route_path('cart.payment', sales_segment_id=sales_segment_id))
 
         csrf_form = schemas.CSRFSecureForm(csrf_context=self.request.session)
@@ -1727,7 +1727,7 @@ class CompleteView(object):
                         return render_view_to_response_with_derived_request(
                             context_factory=CompleteViewTicketingCartResource,
                             request=self.request,
-                            route=('payment.finish',{})
+                            route=('payment.finish', {})
                             )
                 except:
                     return None
@@ -1740,11 +1740,11 @@ class CompleteView(object):
         self.context.check_deleted_product(cart)
         # クーポンのチェック
         self.context.check_available_discont_code()
-        self.context.check_order_limit() # 最終チェック
+        self.context.check_order_limit()  # 最終チェック
         order = api.make_order_from_cart(self.request, cart)
         order_no = order.order_no
         self.context.use_discount_coupon(order)
-        transaction.commit() # cont_complete_viewでエラーが出てロールバックされても困るので
+        transaction.commit()  # cont_complete_viewでエラーが出てロールバックされても困るので
         logger.debug("keyword=%s" % ' '.join(self.request.params.getall('keyword')))
         return cont_complete_view(
             self.context, self.request,
