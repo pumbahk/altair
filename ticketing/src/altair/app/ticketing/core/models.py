@@ -623,6 +623,7 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         ).filter(
             Performance.id == self.id,
             DiscountCodeSetting.is_valid == 1,
+            DiscountCodeSetting.organization_id == self.event.organization_id,
             or_(DiscountCodeSetting.start_at.is_(None), DiscountCodeSetting.start_at <= now),
             or_(DiscountCodeSetting.end_at.is_(None), DiscountCodeSetting.end_at >= now)
         )
@@ -641,6 +642,13 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 DiscountCodeSetting.first_digit == first_4_digits[:1],
                 DiscountCodeSetting.following_2to4_digits == first_4_digits[1:4]
             )
+            try:
+                return query.one()
+            except NoResultFound:
+                return []
+            except MultipleResultsFound as err:
+                logger.error(
+                    'found multiple discount code settings started with "{}". {}'.format(first_4_digits, err.message))
 
         return query.all()
 
