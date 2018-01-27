@@ -11,43 +11,8 @@
 </%block>
 
 <%block name="css">
-<style>
-  #btn-back {
-    width: 46%;
-    height: 46px;
-    vertical-align: top;
-    padding: 1px;
-    margin-right: 10px;
-  }
-  #btn-complete {
-    width: 46%;
-    height: 46px;
-    margin-left: 10px;
-  }
-  th {
-      text-align: left;
-  }
-  .dispBox {
-    margin-right: 20px
-  }
-  .methodArea {
-    border: 1px solid #000000;
-    background-color: cornsilk;
-    width: 100%;
-  }
-  .align1 {
-    text-align: right;
-  }
-  .dispBox {
-    margin: 10px;
-  }
-  .dispBoxInner {
-    margin-left: 17px;
-  }
-  .titleSpace {
-    width: 90px;
-  }
-</style>
+<link rel="stylesheet" href="${request.static_url('altair.app.ticketing.cart:static/eagles/pc/css/cart_order.css')}"
+      type="text/css"/>
 </%block>
 
 % if request.session.peek_flash():
@@ -65,14 +30,13 @@
   <div class="confirmBox">
 	<div class="confirmBoxInner">
       <div class="dispBox">
-        <%m:header>お買い物内容</%m:header>
+<h3 class="glitter cart">お買い物内容</h3>
         <div class="dispBoxInner">
           <div id="name">
-            ${cart.performance.event.title}<br/>
-            ${h.performance_datetime(cart.performance)}<br/>
-            ${cart.performance.venue.name}
+            <span>${cart.performance.event.title}</span>
+            <span>${h.performance_datetime(cart.performance)}<span/>
+            <span>${cart.performance.venue.name}</span>
           </div>
-          <br/>
 
           <table id="contentsOfShopping" summary="席種、金額などのお買い物内容" class="methodArea">
             %for product in cart.products:
@@ -99,36 +63,32 @@
                 % endif
             %endfor
             % if cart.discount_amount:
-            <tr>
-              <td colspan="">
-                <table class="couponTable">
-                  <tr class="purchaseCouponTtl">
-                    <td colspan="4">クーポン・割引コードご使用金額</td>
-                  </tr>
+              <tr id="commission">
+                <td colspan="5">
+                  <table class="couponTable">
                   % for index, group in enumerate(cart.used_discount_code_groups):
-                  <tr class="purchaseCoupon${index}">
-                    <td class="purchaseCouponTxt">
-                      <p>
+
+                    <tr class="purchaseCouponTtl">
+                      <td colspan="4">クーポン・割引コードご使用金額</td>
+                    </tr>
+                    <tr class="purchaseCoupon${index}">
+                      <td class="purchaseCouponTxt">
                         ${group['discount_code_setting'].explanation |n}
-                      </p>
-                    </td>
-                    <td>
+                      </td>
+                      <td>
                       <%
                       codes = [code.code for code in group['code']]
                       %>
                       ${"<br/>".join(codes) |n}
-                    </td>
-                    <td>${len(group['code'])}枚</td>
-                    <td class="align1 couponPrice">
-                      -￥${h.format_number(group['discount_price'])}
-                    </td>
-                  </tr>
-                  % endfor
-                </table>
-              </td>
-            </tr>
+                      </td>
+                      <td>${len(group['code'])}枚</td>
+                      <td class="align1 couponPrice">-￥${h.format_number(group['discount_price'])}</td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            % endfor
             % endif
-
             <tr id="commission">
               <th scope="row">決済手数料</th>
               <td>&nbsp;</td>
@@ -290,17 +250,16 @@
     </div>
   </div>
 
-  <input id="btn-back" class="btn btn-primary" type="submit" name="back" value="座席選択に戻る" />
-  % if delegator:
-    ${delegator['submit']}
-  % else:
-    <input id="btn-complete" class="btn btn-primary" type="submit" value="購入する" />
-  % endif
+  <input id="btn-back" class="btn btn-primary" name="back" value="座席選択に戻る" type="submit"><input id="btn-complete"
+                                                                                                class="btn btn-primary"
+                                                                                                value="購入する"
+                                                                                                type="submit">
   <div class="dispBox">
     <div class="dispBoxInner">
       ※座席選択に戻るボタンを押すと、ここまでのお申し込みがキャンセルになります。
     </div>
   </div>
+
 
 </form>
 
