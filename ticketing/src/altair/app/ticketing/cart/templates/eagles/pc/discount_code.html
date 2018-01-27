@@ -1,20 +1,18 @@
 <%inherit file="./base.html"/>
-
-
 ${self.widget.flow_widget(2)}
-
 %if request.session.peek_flash():
-    %for message in request.session.pop_flash():
-    <div class="error">${message}</div>
-    %endfor
+%for message in request.session.pop_flash():
+<div class="error">${message}</div>
+%endfor
 %endif
 
 <%block name="javascript">
-<script type="text/javascript" src="${request.static_url('altair.app.ticketing.cart:static/js/disable_on_submit.js')}"></script>
+<script type="text/javascript"
+        src="${request.static_url('altair.app.ticketing.cart:static/js/disable_on_submit.js')}"></script>
 <script type="text/javascript">
-  $(function() {
-    $('form').disableOnSubmit('input[type=submit]');
-  });
+    $(function () {
+        $('form').disableOnSubmit('input[type=submit]');
+    });
 </script>
 </%block>
 
@@ -28,54 +26,91 @@ ${self.widget.flow_widget(2)}
   }
 </style>
 </%block>
+<link rel="stylesheet" href="${request.static_url('altair.app.ticketing.cart:static/eagles/pc/css/common.css')}"
+      type="text/css" media="all"/>
+<link rel="stylesheet" href="${request.static_url('altair.app.ticketing.cart:static/eagles/pc/css/cart_payment.css')}"
+      type="text/css" media="all"/>
 
 
-<div id="container" style="position: relative;">
+<div class="fullbox height70">
+  <div class="flow-widget"><img class="flow-widget-body"
+                                src="//tstar-dev.s3.amazonaws.com/cart/static/eagles/pc/images/purchase_flow_02.jpg"
+                                alt="お支払い・お引取方法の選択"></div>
+</div>
+<script>
+    $(window).load(function () {
+        var maxCount = 4;
+        var rowCount = 2;
+        if (maxCount <= 2) {
+            $('#addCodeButton').hide();
+        }
+
+        $('#addCodeButton').click(function (e) {
+            alert(rowCount);
+            if (rowCount < maxCount) {
+                $('#confirmDelivery').append('<tr><td><label for="code" >クーポン・割引コード</label><input id="code" name="code" placeholder="クーポン・割引コードをご入力ください" style="width:20em"></td></tr>');
+                rowCount = rowCount + 1;
+            }
+        });
+    });
+</script>
+
+<div>
   <!-- ========== main ========== -->
   <form id="form1" name="form1" method="post" action="${request.url}">
     ${csrf_form.csrf_token()}
     <div class="confirmBox">
       <div class="confirmBoxInner">
-        <h2>クーポン・割引コードのご利用</h2>
-          <p>クーポン・割引コードをお持ちの方はご入力のうえ、「次へ」ボタンをクリックしてください。<br>
-            お持ちでない場合は何も入力せず、そのまま「次へ」をクリックしてください。
-          </p>
-          <table id="confirmDelivery" style="width: 60%;float: left;">
-            % for carted_product_item in cart_product_items:
-              % for i in range(0, carted_product_item.quantity):
-              <tr>
-                <td>${carted_product_item.product_item.name} ￥${h.format_number(carted_product_item.price)}
-                  % if carted_product_item.seats:
-                    ${carted_product_item.seats[i].name}
-                  % endif
-                </td>
-              </tr>
-              % endfor
-            % endfor
-          </table>
-          <table id="confirmDelivery" style="width: 30%;border: none">
-            % for form in forms:
-              <tr>
-                <td style="border-bottom: none">
-                  ${form.code(placeholder=u'クーポン・割引コードをご入力ください', style='width:20em')}
-                  ${h.error_list(request, form, 'code')}
-                </td>
-              </tr>
-            % endfor
-          </table>
-        <br/>
+        <h1 class="purchaseTtl">クーポン・割引コードのご利用</h1>
+        <p>クーポン・割引コードをお持ちの方はご入力のうえ、「次へ」ボタンをクリックしてください。<br>
+          お持ちでない場合は何も入力せず、そのまま「次へ」をクリックしてください。 </p>
+        <h2 class="heading heading_simple_line">クーポン・割引コードの入力（半角英数字）</h2>
+        <table class="couponCodeBox">
+          <tbody>
+          % for form in forms:
+          <tr>
+            <td>
+              <span>クーポン・割引コード</span>
+              ${form.code(placeholder=u'クーポン・割引コードをご入力ください')}
+              ${h.error_list(request, form, 'code', style_class="couponAttention")}
+            </td>
+          </tr>
+          % endfor
 
-        <table>
-          <td style="width: 320px; text-align: center;">
-            <input id="btn-complete" type="submit" value=""/>
-            <br/>
-            &nbsp;
-          </td>
-        </table>
+
+          <table id="confirmDelivery" class="couponSeats">
+            <thead>
+            <tr>
+              <td>クーポン・割引コード適応対象席種</td>
+            </tr>
+            </thead>
+            <tbody>
+
+            % for carted_product_item in cart_product_items:
+            % for i in range(0, carted_product_item.quantity):
+            <tr>
+              <td>${carted_product_item.product_item.name} ￥${h.format_number(carted_product_item.price)}
+                % if carted_product_item.seats:
+                ${carted_product_item.seats[i].name}
+                % endif
+              </td>
+            </tr>
+            % endfor
+            % endfor
+
+            </tbody>
+          </table>
+          <div class="couponSeatsText">
+            <p>※一度使用したクーポン・割引コードは「使用済み」となり使えませんので、ご注意ください。<br/>
+              ※購入希望席種の金額が高い順にクーポン・割引コードが適用されます。</p>
+          </div>
+          <p class="confirm-btnBox">
+            <input class="btn btn-primary" type="submit" value="次へ">
+          </p>
+      </div>
     </div>
   </form>
 </div>
-
 % if request.organization.setting.sitecatalyst_use:
 <!--SiteCatalyst-->
 <%
