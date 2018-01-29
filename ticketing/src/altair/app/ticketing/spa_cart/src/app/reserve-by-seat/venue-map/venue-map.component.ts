@@ -262,7 +262,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
   reservedFlag: boolean = true;
   unreservedFlag: boolean = true;
   // region取得完了フラグ
-  isRegionObtained: boolean = false;
+  isInitialDataObtained: boolean = false;
   // ツールチップ用席種
   tooltipStockType: { name: string; min: number; max: number; region: string[] }[] = [];
   // 初期表示測定
@@ -364,10 +364,11 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
                   }
                 }
               }
-              this.isRegionObtained = true;
+
               this.stockTypesService.findStockTypesByPerformanceId(this.performanceId).subscribe((response: IStockTypesResponse) => {
                 this._logger.debug(`findStockTypesByPerformanceId(#${this.performanceId}) success`, response);
                 this.stockType = response.data.stock_types;
+                this.isInitialDataObtained = true;
               },
                 (error) => {
                   this._logger.error('findStockTypesByPerformanceId(#${this.performanceId}) error', error);
@@ -575,7 +576,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
   isInitialEnd() {
     let result: boolean = false;
     //全ての初期ロード判定
-    if (this.originalViewBox && this.seats && this.isRegionObtained) {
+    if (this.originalViewBox && this.seats && this.isInitialDataObtained) {
       result = true;
     }
 
