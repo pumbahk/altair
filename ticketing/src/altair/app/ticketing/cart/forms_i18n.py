@@ -11,6 +11,7 @@ from altair.formhelpers.validators import (
     CP932,
     SwitchOptional,
     DynSwitchDisabled,
+    after1900,
     )
 from altair.formhelpers.fields.core import (
     OurTextField,
@@ -20,6 +21,9 @@ from altair.formhelpers.fields.core import (
     OurSelectField,
     OurIntegerField,
     OurFormField,
+    )
+from altair.formhelpers.fields import (
+    OurDateField
     )
 from altair.formhelpers.fields.liaison import (
     Liaison,
@@ -31,6 +35,11 @@ from altair.formhelpers.filters import (
     NFKC,
     lstrip,
     )
+from altair.formhelpers.widgets import (
+    OurDateWidget,
+    build_date_input_select_japanese_japan,
+)
+from altair.app.ticketing.users.models import SexEnum
 from .schemas import length_limit_for_sej, japanese_prefecture_select_input
 import forms_i18n_helper as h
 
@@ -179,7 +188,19 @@ class ClientFormFactory(object):
                     validators=h.mail_validators(request)
                     )
                 )
-
+            sex = OurRadioField(_(u'性別'), choices=[(str(SexEnum.Male), _(u'男性')), (str(SexEnum.Female), _(u'女性'))])
+            birthday = OurDateField(
+                label=_(u"誕生日"),
+                value_defaults={'year': u'1980'},
+                missing_value_defaults={'year': u'', 'month': u'', 'day': u'', },
+                widget=OurDateWidget(
+                    input_builder=build_date_input_select_japanese_japan
+                ),
+                validators=[
+                    Required(_(u'入力してください')),
+                    after1900,
+                ]
+            )
             def __init__(self, formdata=None, obj=None, prefix=u'', **kwargs):
                 context = kwargs.pop('context')
                 self.context = context

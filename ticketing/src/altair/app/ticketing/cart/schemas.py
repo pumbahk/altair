@@ -16,6 +16,7 @@ from altair.formhelpers.validators import (
     CP932,
     SwitchOptional,
     DynSwitchDisabled,
+    after1900,
     )
 from altair.formhelpers.fields.datetime import (
     OurDateField,
@@ -46,7 +47,9 @@ from altair.formhelpers.widgets import (
     OurDateWidget,
     OurSelectInput,
     OurCheckboxInput,
+    build_date_input_select_japanese_japan,
     )
+from altair.app.ticketing.users.models import SexEnum
 from altair.app.ticketing.master.models import Prefecture
 from .helpers import SwitchingMarkup
 from .view_support import build_dynamic_form, build_date_input_select, filter_extra_form_schema
@@ -289,6 +292,19 @@ class ClientForm(OurDynamicForm):
                 ]
             )
         )
+    sex = OurRadioField(u'性別', choices=[(str(SexEnum.Male), u'男性'), (str(SexEnum.Female), u'女性')])
+    birthday = OurDateField(
+        label=u"誕生日",
+        value_defaults={'year': u'1980'},
+        missing_value_defaults={'year': u'', 'month': u'', 'day': u'', },
+        widget=OurDateWidget(
+           input_builder=build_date_input_select_japanese_japan
+        ),
+        validators=[
+            Required(u'入力してください'),
+            after1900,
+        ]
+    )
 
     def __init__(self, formdata=None, obj=None, prefix=u'', **kwargs):
         context = kwargs.pop('context')

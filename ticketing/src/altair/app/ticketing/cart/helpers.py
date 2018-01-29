@@ -15,6 +15,7 @@ from wtforms.widgets import ListWidget
 from pyramid.view import render_view_to_response
 from pyramid.compat import escape
 from pyramid.threadlocal import get_current_request
+from altair.app.ticketing.users.helpers import format_sex
 from altair.mobile.interfaces import IMobileRequest, ISmartphoneRequest
 from altair.formhelpers.widgets.checkbox import CheckboxMultipleSelect
 from altair.formhelpers.widgets.list import OurListWidget
@@ -46,6 +47,7 @@ def form_log(request, message):
     logger.info("%s: \n%s" % (message, values))
 
 cart_timeout = api.get_cart_expire_time
+format_sex = format_sex
 
 def create_date_label(start, end, i18n=False):
     if i18n:

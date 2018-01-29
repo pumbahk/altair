@@ -62,6 +62,14 @@
           <td>${shipping_address.zip} ${shipping_address.prefecture}${shipping_address.city}${shipping_address.address_1}${shipping_address.address_2}</td>
         </tr>
         <tr>
+          <th scope="row">生年月日</th>
+          <td>${u"{0.year} 年 {0.month}月 {0.day}日".format(shipping_address.birthday)}</td>
+        </tr>
+        <tr>
+          <th scope="row">性別</th>
+          <td>${h.format_sex(request, shipping_address.sex)}</td>
+        </tr>
+        <tr>
           <td colspan="2">
               ※ご購入時に入力された情報が表示されております。<br/>
 登録情報変更をご希望の場合は、<a href="https://ticket.rakuten.co.jp/inquiry" target="_blank">問合せフォームより</a>ご連絡下さい。

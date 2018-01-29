@@ -3292,6 +3292,7 @@ class ShippingAddress(Base, BaseModel, WithTimestamp, LogicallyDeleted, Shipping
     first_name_kana = Column(String(255))
     last_name_kana = Column(String(255))
     sex = Column(Integer)
+    birthday = Column(Date)
     zip = Column(Unicode(32))
     country = Column(Unicode(64))
     prefecture = Column(Unicode(64), nullable=False, default=u'')

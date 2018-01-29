@@ -117,6 +117,26 @@
   </div>
 </div>
 -->
+<div>
+<%mobile:form_header>生年月日</%mobile:form_header>
+</div>
+<div>
+  ${form['birthday'].label}<br/>
+  ${form['birthday']}
+  <div style="color:#ff0000">
+    ${h.error_list(request, form, 'birthday')}
+  </div>
+</div>
+<div>
+<%mobile:form_header>${form['sex'].label}</%mobile:form_header>
+</div>
+<div>
+  ${form['sex'].label}<br/>
+  ${form['sex']}
+  <div style="color:#ff0000">
+    ${h.error_list(request, form, 'sex')}
+  </div>
+</div>
 
 <hr />
 <div>

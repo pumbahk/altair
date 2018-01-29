@@ -197,6 +197,24 @@ form {
       </div>
     </div>
 
+    <div class="dispBox">
+      <%t:header>生年月日</%t:header>
+      <div class="dispBoxInner">
+        ${form['birthday'].label}
+        ${form['birthday']}
+        ${h.error_list(request, form, 'birthday')}
+      </div>
+    </div>
+
+    <div class="dispBox">
+      <%t:header>${form['sex'].label}</%t:header>
+      <div class="dispBoxInner">
+        ${form['sex'].label}
+        ${form['sex']}
+        ${h.error_list(request, form, 'sex')}
+      </div>
+    </div>
+
     % if has_orion:
     <div class="dispBox" id="orion-ticket-phone-info" ${'' if orion_checked else 'style="display:none;"'|n}>
       <%t:header>イベントゲット情報</%t:header>

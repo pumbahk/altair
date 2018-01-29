@@ -4,7 +4,7 @@ import re
 import json
 import transaction
 import time
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from urlparse import urlparse
 
 import sqlalchemy as sa
@@ -38,7 +38,7 @@ from altair.app.ticketing.payments.api import set_confirm_url, lookup_plugin
 from altair.app.ticketing.payments.payment import Payment
 from altair.app.ticketing.payments.plugins import ORION_DELIVERY_PLUGIN_ID
 from altair.app.ticketing.payments.exceptions import OrderLikeValidationFailure
-from altair.app.ticketing.users.models import UserPointAccountTypeEnum
+from altair.app.ticketing.users.models import UserPointAccountTypeEnum, SexEnum
 from altair.app.ticketing.venues.api import get_venue_site_adapter
 from altair.mobile.interfaces import IMobileRequest
 from altair.sqlahelper import get_db_session
@@ -1150,7 +1150,9 @@ class PaymentView(object):
             address_2=metadata.get('address_2'),
             email_1=metadata.get('email_1'),
             email_2=metadata.get('email_2'),
-            email_1_confirm=metadata.get('email_1')
+            email_1_confirm=metadata.get('email_1'),
+            birthday=metadata.get('birthday') if metadata.get('birthday') is not None else date(1980, 1, 1),
+            sex=metadata.get('sex') if metadata.get('sex') is not None else SexEnum.Female.v
         )
 
         client_form = forms_i18n.ClientFormFactory(self.request).make_form()
@@ -1203,6 +1205,8 @@ class PaymentView(object):
                 tel_1=form.data['tel_1'],
                 tel_2=None,
                 fax=form.data['fax'],
+                birthday=form.data['birthday'],
+                sex=form.data['sex']
                 )
         else:
             return None
@@ -1367,6 +1371,7 @@ class PaymentView(object):
             tel_2=data['tel_2'],
             fax=data['fax'],
             sex=data.get("sex"),
+            birthday=data['birthday'],
             user=user
         )
 
