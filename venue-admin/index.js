@@ -138,7 +138,7 @@ const datetime_formatter = new Intl.DateTimeFormat([], {
 	hour: '2-digit', minute: '2-digit', second: '2-digit'
 });
 */
-const datetime_formatter = (d) => {
+const datetime_formatter = { format: (d) => {
 	const p2 = (n) => {
 		if(n < 10) {
 			return '0' + n;
@@ -147,7 +147,7 @@ const datetime_formatter = (d) => {
 		}
 	};
 	return d.getFullYear()+'-'+p2(1+d.getMonth())+'-'+p2(d.getDate())+' '+[d.getHours(), d.getMinutes(), d.getSeconds()].map(p2).join(':');
-};
+} };
 
 const getUsernameFromHeader = (req) => {
 	if(req.headers['authorization']) {
