@@ -24,13 +24,13 @@ def upgrade():
     op.add_column('OrganizationSetting',
                   sa.Column('enable_discount_code', sa.Boolean, server_default=text('0'), nullable=False))
 
-    # イーグルスのみクーポン・割引コード設定をデフォルトでONにしておく
-    sql = """\
-        UPDATE OrganizationSetting 
-        SET enable_discount_code = 1 
-        WHERE organization_id = 24
-    """
-    op.execute(sql)
+    # イーグルスのみクーポン・割引コード設定をデフォルトでONにしておく（開発目的）
+    # sql = """\
+    #     UPDATE OrganizationSetting
+    #     SET enable_discount_code = 1
+    #     WHERE organization_id = 24
+    # """
+    # op.execute(sql)
 
     op.create_table(
         'DiscountCodeSetting',
