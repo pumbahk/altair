@@ -26,11 +26,11 @@ logger = logging.getLogger(__name__)
 
 
 @view_defaults(decorator=with_bootstrap,
-               permission='event_editor',
+               permission='master_editor',
                custom_predicates=(is_enabled_discount_code_checked,))
 class DiscountCode(BaseView):
     @view_config(route_name='discount_code.settings_index',
-                 renderer='altair.app.ticketing:templates/discount_code/settings/index.html', permission='event_viewer')
+                 renderer='altair.app.ticketing:templates/discount_code/settings/index.html')
     def settings_index(self):
         sort = self.request.GET.get('sort', 'DiscountCodeSetting.end_at')
         direction = self.request.GET.get('direction', 'desc')
@@ -147,7 +147,7 @@ class DiscountCode(BaseView):
         return HTTPFound(self.request.route_path("discount_code.settings_index"))
 
     @view_config(route_name='discount_code.codes_index',
-                 renderer='altair.app.ticketing:templates/discount_code/codes/index.html', permission='event_viewer',
+                 renderer='altair.app.ticketing:templates/discount_code/codes/index.html',
                  custom_predicates=(is_enabled_discount_code_checked, get_discount_setting_related_data,))
     def codes_index(self):
         f = DiscountCodeCodesForm()
@@ -295,7 +295,7 @@ class DiscountCode(BaseView):
                                                  _query=self.request.GET))
 
     @view_config(route_name='discount_code.target_index',
-                 renderer='altair.app.ticketing:templates/discount_code/target/index.html', permission='event_viewer',
+                 renderer='altair.app.ticketing:templates/discount_code/target/index.html',
                  custom_predicates=(is_enabled_discount_code_checked, get_discount_setting_related_data,))
     def target_index(self):
         f = SearchTargetForm(self.request.GET, organization_id=self.context.organization.id)
@@ -320,7 +320,7 @@ class DiscountCode(BaseView):
                                                      _query=self.request.GET))
 
     @view_config(route_name='discount_code.target_confirm',
-                 renderer='altair.app.ticketing:templates/discount_code/target/_modal.html', permission='event_viewer',
+                 renderer='altair.app.ticketing:templates/discount_code/target/_modal.html',
                  xhr=True,
                  custom_predicates=(is_enabled_discount_code_checked, get_discount_setting_related_data,))
     def target_confirm(self):
@@ -355,7 +355,7 @@ class DiscountCode(BaseView):
                                                      _query=self.request.GET))
 
     @view_config(route_name='discount_code.target_register', request_method='POST',
-                 renderer='altair.app.ticketing:templates/discount_code/target/_modal.html', permission='event_viewer',
+                 renderer='altair.app.ticketing:templates/discount_code/target/_modal.html',
                  custom_predicates=(is_enabled_discount_code_checked, get_discount_setting_related_data,))
     def target_register(self):
         logger.info(
