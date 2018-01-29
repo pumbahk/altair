@@ -43,7 +43,7 @@ frontend(.svg files and .json): <input type="file" name="front[]" multiple="mult
 $.ajax({ url: '../api/backend', json: true }).then(function(res) {
     var select = $('#backend_form').find('select[name="s"]');
     var add = function(r) {
-        $('<option></option>').text(r.mtime.substr(0, 16)+' '+r.content.name+' ('+r.content.seat_count+'席, '+Math.floor(r.size/1024)+'KB) by '+r.content.uploaded_by).attr('value', '/venue-admin/upload/backend/'+r.filename).appendTo(select);
+        $('<option></option>').text(r.mtime.substr(0, 16)+' '+(r.content.name || '')+' ('+r.content.seat_count+'席, '+Math.floor(r.size/1024)+'KB) by '+r.content.uploaded_by).attr('value', '/venue-admin/upload/backend/'+r.filename).appendTo(select);
     };
     res.forEach(function(r) {
         add(r);
@@ -72,7 +72,7 @@ $.ajax({ url: '../api/backend', json: true }).then(function(res) {
 $.ajax({ url: '../api/frontend', json: true }).then(function(res) {
     var select = $('#frontend_form').find('select[name="s"]');
     var add = function(r) {
-        $('<option></option>').text(r.mtime.substr(0, 16)+' '+r.content.name+' by '+r.content.uploaded_by).attr('value', '/venue-admin/upload/frontend/'+r.filename).appendTo(select);
+        $('<option></option>').text(r.mtime.substr(0, 16)+' '+(r.content.name || '')+' by '+r.content.uploaded_by).attr('value', '/venue-admin/upload/frontend/'+r.filename).appendTo(select);
     };
     res.forEach(function(r) {
         add(r);
