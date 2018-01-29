@@ -297,23 +297,24 @@ const handleFrontendList = (dir, options) => {
 							resolve();
 							return;
 						}
-						if(0 < defaultFilterDays && stats.mtime) {
-							const age = (now - stats.mtime.getTime())/1000/86400;
-							if(defaultFilterDays < age) {
-								return resolve();
-							}
-						}
 						fs.readdir(dir+'/'+subdir, (err, files) => {
 							var meta = files.filter((name) => { return name.match(/\.meta$/); });
 							if(meta.length == 0) {
 								resolve();
 								return;
 							}
+							const meta_stats = fs.statSync(dir+'/'+subdir+'/'+meta[0]);
+							if(0 < defaultFilterDays && meta_stats.mtime) {
+								const age = (now - meta_stats.mtime.getTime())/1000/86400;
+								if(defaultFilterDays < age) {
+									return resolve();
+								}
+							}
 							fs.readFile(dir+'/'+subdir+'/'+meta[0], { encoding: 'utf-8' }, (err, data) => {
 								try {
 									resolve({
-										filename: subdir+'/'+meta[0].replace(/\.meta$/, ''),
-										mtime: datetime_formatter.format(stats.mtime),
+										filename: subdir+'/'+meta[0].replace(/\.meta$/, ''), // metadata.json
+										mtime: datetime_formatter.format(meta_stats.mtime),
 										content: JSON.parse(data)
 									});
 								} catch(ex) {
