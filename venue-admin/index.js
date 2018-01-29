@@ -694,7 +694,7 @@ const handleRegisterRequest = (param, res) => {
 		if(r.length == 0) {
 			// ok
 			console.log("exec: venue_import " + args.join(' '));
-			const venue_import = spawn(deploy_dir+'/bin/venue_import', args);
+			const venue_import = spawn(deploy_dir+'/bin/venue_import', args, { env: { LC_ALL: 'ja_JP.utf8' } });
 			res.writeHead(200, { Connection: 'close', 'Content-Type': 'text/plain' });
 			res.write("exec: venue_import " + args.join(' ') + "\n");
 			var cleanup = function() { };
@@ -725,8 +725,8 @@ const handleRegisterRequest = (param, res) => {
 			venue_import
 			.on('close', (code) => {
 				if(timer) {
-					clearInterval(timer);
-					res.write('venue_import terminated by '+code+' (maybe too early)');
+					clearTimeout(timer);
+					res.write('venue_import terminated by '+code+' (maybe too early)'+"\n");
 					res.write(buf.join("\n"));
 					res.end();
 				}
