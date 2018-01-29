@@ -723,7 +723,7 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
             return []
 
         sorted_cart_product_items = self.sorted_carted_product_items(cart)
-        settings = cart.performance.find_available_target_settings()
+        settings = cart.performance.find_available_target_settings(max_price=self.cart.highest_item_price)
 
         code_forms = []
         input_cnt = len(codes)
