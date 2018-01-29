@@ -235,7 +235,7 @@ const handleBackendList = (dir, options) => {
 			if(err) {
 				return reject(err);
 			}
-			var files = files.filter((name) => { return name.match(/\.xml$/); });
+			var files = files.filter((name) => { return name.match(/\.meta$/); });
 			Promise.all(files.map(file => {
 				return new Promise((resolve, reject) => {
 					fs.stat(dir+'/'+file, (err, stats) => {
@@ -248,11 +248,10 @@ const handleBackendList = (dir, options) => {
 								return resolve();
 							}
 						}
-						fs.readFile(dir+'/'+file+'.meta', { encoding: 'utf-8' }, (err, data) => {
+						fs.readFile(dir+'/'+file, { encoding: 'utf-8' }, (err, data) => {
 						  try {
 								resolve({
-									filename: file,
-									size: stats.size,
+									filename: file.replace(/\.meta/, ''),
 									mtime: datetime_formatter.format(stats.mtime),
 									content: JSON.parse(data)
 								});
@@ -1062,10 +1061,19 @@ const listener = (req, res) => {
 			fs.createReadStream(local_path).pipe(res);
 			return;
 		} catch(ex) {
-			// 404
-			console.log(ex);
+			const gz_path = local_path+'.gz';
+			try {
+				fs.statSync(gz_path);
+				res.writeHead(200, Object.assign({ 'Content-Encoding': 'gzip' }, header_by_ext(match[2])));
+				fs.createReadStream(gz_path).pipe(res);
+				return;
+			} catch(ex) {
+				// 404
+				console.log(ex);
+			}
     }
-	} else if(match = path.match(/^\/venue-admin\/deploy\/((?:backend|frontend)\/(?:(?:[0-9a-z]+\/)?(?:[0-9a-z]+\.)?[0-9a-zA-Z_-]+\.([a-z]+)(\.meta)?))$/)) {
+	} else if(match = path.match(/^\/venue-admin\/deploy\/((?:backend|frontend)\/(?:(?:[0-9a-z]+\/)?(?:[0-9a-z]+\.)?[0-9a-zA-Z_-]+\.([a-z]+(?:\.gz)?)(\.meta)?))$/)) {
+		// TODO: for what?
 		const local_path = repos_dir + '/' + match[1];
 		try {
 			fs.statSync(local_path);
@@ -1073,8 +1081,16 @@ const listener = (req, res) => {
 			fs.createReadStream(local_path).pipe(res);
 			return;
 		} catch(ex) {
-			// 404
-			console.log(ex);
+			const gz_path = local_path+'.gz';
+			try {
+				fs.statSync(gz_path);
+				res.writeHead(200, Object.assign({ 'Content-Encoding': 'gzip' }, header_by_ext(match[2])));
+				fs.createReadStream(gz_path).pipe(res);
+				return;
+			} catch(ex) {
+				// 404
+				console.log(ex);
+			}
 		}
 	} else if(match = path.match(/^\/venue-admin\/deploy\/run\.php/)) {
 		res.writeHead(200, { 'Content-Type': 'text/html; charset=UTF-8' });
