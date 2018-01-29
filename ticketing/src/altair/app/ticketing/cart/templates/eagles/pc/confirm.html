@@ -8,24 +8,11 @@
 </script>
 </%block>
 <%block name="css">
-<style>
-  #btn-back {
-    border: 0;
-    width: 226px;
-    height: 46px;
-    vertical-align: top;
-    padding: 1px;
-    margin-right: 20px;
-    background: url("${request.static_url('altair.app.ticketing.cart:static/eagles/pc/images/btn_back_to_selection.gif')}") left top no-repeat;
-  }
-  #btn-complete {
-    border: 0;
-    width: 226px;
-    height: 46px;
-    background: url("${request.static_url('altair.app.ticketing.cart:static/eagles/pc/images/btn_buy.gif')}") left top no-repeat;
-  }
-</style>
 </%block>
+<link rel="stylesheet"
+	  href="${request.static_url('altair.app.ticketing.cart:static/eagles/pc/css/cart_order.css')}"
+	  type="text/css" media="all"/>
+
 ${self.widget.flow_widget(3)}
 <p style="font-size:150%; color: red; margin-bottom: 0;">まだお申し込みは完了していません</p>
 <p>ご注文内容をご確認いただき「購入する」ボタンで購入してください。</p>
@@ -57,7 +44,37 @@ ${self.widget.flow_widget(3)}
 		  <td class="align1">￥${h.format_number(product.product.price * product.quantity)}</td>
 		</tr>
     % endfor
-		<tr id="commission">
+		  % if cart.discount_amount:
+		  <tr>
+			  <td colspan="5">
+				  <table class="couponTable">
+					  <tr class="purchaseCouponTtl">
+						  <td colspan="4">クーポン・割引コードご使用金額</td>
+					  </tr>
+					  % for index, group in enumerate(cart.used_discount_code_groups):
+					  <tr class="purchaseCoupon${index}">
+						  <td class="purchaseCouponTxt">
+							  <p>
+								  ${group['discount_code_setting'].explanation |n}
+							  </p>
+						  </td>
+						  <td>
+							  <%
+							  codes = [code.code for code in group['code']]
+							  %>
+							  ${"<br/>".join(codes) |n}
+						  </td>
+						  <td>${len(group['code'])}枚</td>
+						  <td class="align1 couponPrice">
+							  -￥${h.format_number(group['discount_price'])}
+						  </td>
+					  </tr>
+					  % endfor
+				  </table>
+			  </td>
+		  </tr>
+		  % endif
+		  <tr id="commission">
 		  <th scope="row">決済手数料</th>
 		  <td>&nbsp;</td>
 		  <td>&nbsp;</td>
@@ -198,29 +215,20 @@ ${self.widget.flow_widget(3)}
 
   <div class="personalInformationProtection">
 	<p>
-	  <div>試合観戦時は、<a href="http://www.rakuteneagles.jp/stadium/rule2.php">「試合観戦契約約款」</a>並びに試合観戦契約約款に基づいて作成された<a href="http://www.rakuteneagles.jp/stadium/rule.php">「Koboパーク宮城スタジアムルール」</a>が適用されます。</div>
+	  <div>試合観戦時は、<a href="http://www.rakuteneagles.jp/stadium/rule2.php">「試合観戦契約約款」</a>並びに試合観戦契約約款に基づいて作成された<a href="http://www.rakuteneagles.jp/stadium/rule.php">「楽天生命パーク宮城スタジアムルール」</a>が適用されます。</div>
 	  上記内容及び、<a href="//eagles.tstar.jp/agreement" target="_new">サービス利用規約</a>、<a href="http://privacy.rakuten.co.jp/" target="_new">個人情報保護方針</a>に同意をし、購入を申込みます。
 	</p>
   </div>
+	<input id="btn-back" class="btn btn-primary" name="back" value="座席選択に戻る" type="submit"><input id="btn-complete"
+																								  class="btn btn-primary"
+																								  value="購入する"
+																								  type="submit">
+	<div class="dispBox">
+		<div class="dispBoxInner">
+			※座席選択に戻るボタンを押すと、ここまでのお申し込みがキャンセルになります。
+		</div>
+	</div>
 
-  <table style="margin-left: auto; margin-right: auto;">
-    <tr>
-      <td style="width: 320px; text-align: center;">
-        <input id="btn-back" type="submit" name="back" value="" />
-        <br />
-        ※ここまでのお申し込みがキャンセルになります。 &nbsp;&nbsp;&nbsp;&nbsp;
-      </td>
-      <td style="width: 320px; text-align: center;">
-      % if delegator:
-        ${delegator['submit']}
-      % else:
-        <input id="btn-complete" type="submit" value="" />
-        <br />
-        &nbsp;
-      % endif
-      </td>
-    </tr>
-  </table>
 </form>
 
 % if request.organization.setting.sitecatalyst_use:

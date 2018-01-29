@@ -184,6 +184,7 @@ def main(global_config, **local_config):
         config.include('altair.app.ticketing.members', route_prefix='/members')
         config.include('altair.app.ticketing.memberships', route_prefix='/memberships')
         config.include('altair.app.ticketing.loyalty', route_prefix='/loyalty')
+        config.include('altair.app.ticketing.discount_code', route_prefix='/discount_code')
         config.include('altair.app.ticketing.payments')
         config.include('altair.app.ticketing.payments.plugins')
         config.include('altair.app.ticketing.pkginfo')

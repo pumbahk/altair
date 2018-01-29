@@ -233,3 +233,13 @@ column_label = custom_label or HH.label_text_for(column)
   ''' % (field.label.text, text)
 %>
 </%def>
+
+<%def name="unordered_list_up(str_list)">
+% if len(str_list) != 0:
+<ul>
+    % for s in str_list:
+    <li>${s}</li>
+    % endfor
+</ul>
+% endif
+</%def>

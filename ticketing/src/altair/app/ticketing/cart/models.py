@@ -35,6 +35,7 @@ from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.orm import object_session
 from zope.deprecation import deprecate, deprecated
 from zope.interface import implementer
+from pyramid.decorator import reify
 
 from pyramid.i18n import TranslationString as _
 from altair.saannotation import AnnotatedColumn
@@ -48,6 +49,8 @@ from altair.app.ticketing.payments.interfaces import IPaymentCart
 from . import logger
 from .exceptions import NoCartError, CartCreationException, InvalidCartStatusError
 from .interfaces import ICartSetting
+from altair.app.ticketing.discount_code import api as discount_api
+
 
 class PaymentMethodManager(object):
     def __init__(self):
@@ -217,9 +220,26 @@ class Cart(Base, c_models.CartMixin):
         return cls._order_no
 
     @property
+    def used_discount_codes(self):
+        return discount_api.get_used_discount_codes(self)
+
+    @property
+    def used_discount_quantity(self):
+        return discount_api.get_used_discount_quantity(self)
+
+    @property
+    def discount_amount(self):
+        return discount_api.get_discount_amount(self)
+
+    @property
+    def total_amount(self):
+        total_amount = c_api.calculate_total_amount(self)
+        return total_amount - self.discount_amount
+
+    @property
     def total_amount(self):
         try:
-            return c_api.calculate_total_amount(self)
+            return c_api.calculate_total_amount(self) - self.discount_amount
         except Exception as e:
             raise InvalidCartStatusError(self.id)
 
@@ -314,6 +334,7 @@ class Cart(Base, c_models.CartMixin):
         for item in carted_products:
             if not item.release():
                 return False
+        discount_api.release_cart(self)
         return True
 
     def is_valid(self):
@@ -345,6 +366,41 @@ class Cart(Base, c_models.CartMixin):
         from altair.app.ticketing.models import DBSession as session
         orion_ticket_phone = session.query(c_models.OrionTicketPhone).filter(c_models.OrionTicketPhone.order_no == self.order_no).first()
         return orion_ticket_phone.phones.split(',') if orion_ticket_phone else []
+
+    @property
+    def carted_product_item_count(self):
+        count = 0
+        for item in self.items:
+            for element in item.elements:
+                count = count + element.quantity
+        return count
+
+    @reify
+    def highest_item_price(self):
+        prices = []
+        for item in self.items:
+            for element in item.elements:
+                prices.append(element.price)
+
+        return max(prices)
+
+    @property
+    def is_product_item_quantity_one(self):
+        """
+        販売単位（ProductItem.quantity）が1より大きい席種が選択されているか
+        :return: Bool
+        """
+        for item in self.items:
+            for element in item.elements:
+                if element.product_item.quantity > 1:
+                    return False
+
+        return True
+
+    @property
+    def used_discount_code_groups(self):
+        return discount_api.used_discount_code_groups(self)
+
 
 @implementer(IOrderedProductLike)
 class CartedProduct(Base):

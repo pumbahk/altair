@@ -23,9 +23,11 @@ from altair.app.ticketing.orders import models as order_models
 from altair.app.ticketing.core.interfaces import IOrderQueryable
 from altair.app.ticketing.users import models as u_models
 from altair.app.ticketing.utils import memoize
+from ..discount_code.models import UsedDiscountCodeCart
+from ..discount_code import api as discount_api
 from . import models as m
 from . import api as cart_api
-from .exceptions import NoCartError, DeletedProductError
+from .exceptions import NoCartError, DeletedProductError, InvalidCSRFTokenException
 from .interfaces import (
     ICartResource,
     ICartPayment,
@@ -36,8 +38,10 @@ from .exceptions import (
     NoSalesSegment,
     NoPerformanceError,
     OverOrderLimitException,
+    DiscountCodeConfirmError,
     OverQuantityLimitException,
     InvalidCartStatusError,
+    DiscountCodeConfirmError,
     OAuthRequiredSettingError
 )
 from zope.deprecation import deprecate
@@ -675,7 +679,292 @@ class SalesSegmentOrientedTicketingCartResource(TicketingCartResourceBase):
         """現在認証済みのユーザとパフォーマンスに関連する全販売区分"""
         return [self.sales_segment] if self.sales_segment.applicable(user=self.authenticated_user(), type='all') else []
 
-class CartBoundTicketingCartResource(TicketingCartResourceBase):
+
+class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResource):
+    def __init__(self, request, sales_segment_id=None):
+        super(DiscountCodeTicketingCartResources, self).__init__(request, sales_segment_id)
+
+    def sorted_carted_product_items(self, cart=None):
+        if not cart:
+            cart = self.read_only_cart
+        sorted_cart_product_items = list()
+        for carted_product in cart.items:
+            for carted_product_item in carted_product.elements:
+                sorted_cart_product_items.append(carted_product_item)
+        sorted_cart_product_items = [obj for obj in reversed(sorted(sorted_cart_product_items, key=lambda x:x.price))]
+        return sorted_cart_product_items
+
+    def create_discount_code_forms(self):
+        from . import schemas
+        cart = self.read_only_cart
+        settings = cart.performance.find_available_target_settings(max_price=self.cart.highest_item_price)
+        forms = []
+        for index in range(cart.carted_product_item_count):
+            forms.append(schemas.DiscountCodeForm(discount_code_settings=settings))
+        return forms
+
+    def upper_code(self):
+        """POSTされたパラメータを大文字に変更"""
+        if 'code' in self.request.POST:
+            upper_list = []
+
+            for item in self.request.POST.items():
+                each_code_tuple = item[0], item[1].upper()
+                upper_list.append(each_code_tuple)
+
+            self.request.POST.clear()
+            self.request.POST.extend(upper_list)
+
+    def create_codes(self, cart, codes=None):
+        from . import schemas
+        if not codes:
+            codes = [code.strip() for code in self.request.POST.getall('code') if code]
+        if not codes:
+            return []
+
+        sorted_cart_product_items = self.sorted_carted_product_items(cart)
+        settings = cart.performance.find_available_target_settings(max_price=self.cart.highest_item_price)
+
+        code_forms = []
+        input_cnt = len(codes)
+        cnt = 0
+        for carted_product_item in sorted_cart_product_items:
+            for _ in range(carted_product_item.quantity):
+                form = schemas.DiscountCodeForm(discount_code_settings=settings)
+                form.code.data = codes[cnt]
+                code_forms.append({
+                    'code': codes[cnt],
+                    'carted_product_item': carted_product_item,
+                    'form': form
+                })
+                cnt += 1
+                if input_cnt == cnt:
+                    return code_forms
+
+    def check_available_discont_code(self):
+        code_list = [code.code for code in discount_api.get_used_discount_codes(self.cart)]
+        codes = self.create_codes(self.cart, code_list)
+        if codes:
+            self.confirm_discount_code_status(codes)
+            if self.exist_validate_error(codes):
+                raise DiscountCodeConfirmError()
+
+    def temporarily_save_discount_code(self, codes):
+        organization = cart_api.get_organization(self.request)
+        discount_api.temporarily_save_discount_code(codes, organization)
+
+    def get_carted_product_item_ids(self):
+        cart = self.read_only_cart
+        carted_product_item_ids = list()
+        for carted_product in cart.items:
+            for carted_product_item in carted_product.elements:
+                carted_product_item_ids.append(carted_product_item.id)
+        return carted_product_item_ids
+
+    @property
+    def carted_product_item_count(self):
+        # カートに入っている商品明細の総数
+        cart = self.read_only_cart
+        count = 0
+        for carted_product in cart.items:
+            for carted_product_item in carted_product.elements:
+                for item in range(carted_product_item.quantity):
+                    count = count + 1
+        return count
+
+    def delete_temporarily_save_discount_code(self):
+        carted_product_item_ids = self.get_carted_product_item_ids()
+        codes = UsedDiscountCodeCart.query.filter(UsedDiscountCodeCart.carted_product_item_id.in_(carted_product_item_ids)).all()
+        for code in codes:
+            code.deleted_at = datetime.now()
+        return True
+
+    def if_discount_code_available_for_seat_selection(self):
+        return all([
+            self.cart.organization.enable_discount_code,
+            self.performance.find_available_target_settings(max_price=self.cart.highest_item_price),
+            self.cart.is_product_item_quantity_one
+        ])
+
+    def validate_discount_codes(self, codes):
+        input_codes = []
+        for code_dict in codes:
+            form = code_dict['form']
+            form.validate()
+
+            # 重複コードバリデーション
+            code = form.code.data
+            if code in input_codes:
+                form.add_duplicate_code_error()
+            else:
+                input_codes.append(code)
+
+            # 「一般会員の方」のファンクラブクーポンの利用を防ぐバリデーション
+            # fc_member_idは「ファンクラブの方」でログインすると文字列の数字、「一般の方」でログインするとOpenIDの文字列になる
+            fc_member_id = self.request.altair_auth_info['authz_identifier']
+            setting = self.cart.performance.find_available_target_settings(issued_by=u'sports_service',
+                                                                           first_4_digits=code[:4])
+            if setting and (not fc_member_id.isdigit()):
+                form.add_non_fanclub_member_discount_code_error()
+
+            # 使用済みコードバリデーション
+            organization = cart_api.get_organization(self.request)
+            if discount_api.check_used_discount_code(code, organization):
+                form.add_used_discount_code_error()
+
+        return True
+
+    def exist_validate_error(self, codes):
+        for code_dict in codes:
+            form = code_dict['form']
+            if form.errors:
+                return True
+        return False
+
+    def confirm_discount_codes(self, codes):
+        target_codes = []
+        for code_dict in codes:
+            if not code_dict['form'].errors:
+                target_codes.append(code_dict)
+        return target_codes
+
+    def confirm_discount_code_status(self, codes):
+        target_codes = self.confirm_discount_codes(codes)
+        if not target_codes:
+            # 対象がない（他のバリデーションにかかっている）
+            return True
+
+        result = discount_api.confirm_discount_code_status(self.request, target_codes,
+                                                           self.cart.performance.find_available_target_settings(
+                                                               issued_by=u'sports_service',
+                                                               max_price=self.cart.highest_item_price))
+        if result is None:
+            # 使用可能なDiscountCodeSettingがない
+            return True
+
+        logger.info("It is {0} confirm discount code response. {1}".format(self.cart.order_no, result))
+
+        if not result:
+            # 通信エラーなど。1つ目のformにデータを埋め込み表示
+            codes[0].code_dict['form'].validate()
+            codes[0].code_dict['form'].add_internal_error()
+            return True
+
+        coupons = result['coupons']
+        error_list = {}
+        for coupon in coupons:
+            if coupon['reason_cd'] != u'1010' or coupon['available_flg'] != u'1':
+                error_list[coupon['coupon_cd']] = coupon['reason_cd']
+
+        error_keys = error_list.keys()
+        for code_dict in codes:
+            if code_dict['form'].code.data in error_keys:
+                code_dict['form'].validate()
+                code_dict['form'].add_coupon_response_error(error_list[code_dict['form'].code.data])
+        return True
+
+    def use_discount_coupon(self, order):
+        # ファンクラブコード
+        code_list = [code.code for code in discount_api.get_used_discount_codes(order.cart) if
+                     not code.discount_code_id]
+        codes = self.create_codes(order.cart, code_list)
+        if codes:
+            result = discount_api.use_discount_codes(self.request, codes,
+                                                     order.cart.performance.find_available_target_settings(
+                                                         issued_by=u'sports_service',
+                                                         max_price=self.cart.highest_item_price
+                                                     ))
+            if not result['status'] == u'OK' and result['usage_type'] == u'1010':
+                # 使用時にエラー
+                raise DiscountCodeConfirmError()
+            # TODO ログの文言修正
+            # "[ The response for order_no: {}, code: {}] {}".format(order.order_no, code(?), result)
+            logger.info("It is {0} use discount code response. {1}".format(order.order_no, result))
+
+            coupons = result['coupons']
+            error = None
+            for coupon in coupons:
+                if coupon['reason_cd'] != u'1010' or coupon['available_flg'] != u'1':
+                    # さすがに使う時に落ちるのはまずいので確認APIを直前でも叩いている。ここには入らない想定
+                    # TODO ログの文言修正
+                    # "[ The response for order_no: {}, code: {}] the discount code is not available.".format(order.order_no, code(?)
+                    logger.error("It is {0} use discount code Error. {1}".format(order.order_no, result))
+                    error = True
+
+            if error:
+                raise DiscountCodeConfirmError()
+            return result
+
+    def confirm_discount_code_status(self, codes):
+        target_codes = self.confirm_discount_codes(codes)
+        if not target_codes:
+            # 対象がない（他のバリデーションにかかっている）
+            return True
+
+        result = discount_api.confirm_discount_code_status(self.request, target_codes,
+                                                           self.cart.performance.find_available_target_settings(
+                                                               issued_by=u'sports_service',
+                                                               max_price=self.cart.highest_item_price))
+        if result is None:
+            # 使用可能なDiscountCodeSettingがない
+            return True
+
+        logger.info("It is {0} response. {1}".format(self.cart.order_no, result))
+
+        if not result:
+            # 通信エラーなど。1つ目のformにデータを埋め込み表示
+            codes[0].code_dict['form'].validate()
+            codes[0].code_dict['form'].add_internal_error()
+            return True
+
+        coupons = result['coupons']
+        error_list = {}
+        for coupon in coupons:
+            if coupon['reason_cd'] != u'1010' or coupon['available_flg'] != u'1':
+                error_list[coupon['coupon_cd']] = coupon['reason_cd']
+
+        error_keys = error_list.keys()
+        for code_dict in codes:
+            if code_dict['form'].code.data in error_keys:
+                code_dict['form'].validate()
+                code_dict['form'].add_coupon_response_error(error_list[code_dict['form'].code.data])
+        return True
+
+    def create_validated_forms(self, codes):
+        from . import schemas
+        forms = []
+        for code_dict in codes:
+            forms.append(code_dict['form'])
+
+        cart = self.read_only_cart
+        settings = cart.performance.find_available_target_settings(max_price=self.cart.highest_item_price)
+
+        remaining_count = len(range(cart.carted_product_item_count)) - len(forms)
+        if remaining_count > 0:
+            for index in range(remaining_count):
+                forms.append(schemas.DiscountCodeForm(discount_code_settings=settings))
+        return forms
+
+    def check_csrf(self):
+        from . import schemas
+        try:
+            csrf_form = schemas.CSRFSecureForm(formdata=self.request.params, csrf_context=self.request.session)
+            if not csrf_form.validate():
+                logger.info('invalid csrf token: {0}'.format(csrf_form.errors))
+                raise InvalidCSRFTokenException
+
+            # セッションからCSRFトークンを削除して再利用不可にしておく
+            if 'csrf' in self.request.session:
+                del self.request.session['csrf']
+                if hasattr(self.request.session, 'persist'):
+                    self.request.session.persist()
+
+        except (InvalidCSRFTokenException, NoCartError):
+            # 不正な画面遷移
+            raise NoCartError()
+
+
+class CartBoundTicketingCartResource(DiscountCodeTicketingCartResources):
     def __init__(self, request):
         super(CartBoundTicketingCartResource, self).__init__(request)
 

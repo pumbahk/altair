@@ -89,7 +89,8 @@ from .exceptions import (
     PerProductProductQuantityOutOfBoundsError,
     CompletionPageNotRenderered,
 )
-from .resources import EventOrientedTicketingCartResource, PerformanceOrientedTicketingCartResource, CompleteViewTicketingCartResource
+from .resources import EventOrientedTicketingCartResource, PerformanceOrientedTicketingCartResource,\
+    CompleteViewTicketingCartResource
 from .limiting import LimiterDecorators
 from . import flow
 from .interfaces import IPageFlowPredicate, IPageFlowAction
@@ -1053,8 +1054,11 @@ class ReserveView(object):
         DBSession.add(cart)
         DBSession.flush()
         api.set_cart(self.request, cart)
+
+        payment_url = self.request.route_url("cart.discount_code", sales_segment_id=sales_segment.id)
+
         return dict(result='OK',
-                    payment_url=self.request.route_url("cart.payment", sales_segment_id=sales_segment.id),
+                    payment_url=payment_url,
                     cart=dict(products=[dict(name=p.product.name,
                                              quantity=p.quantity,
                                              price=int(p.product.price),
@@ -1068,7 +1072,6 @@ class ReserveView(object):
                               separate_seats=separate_seats
                              )
                     )
-
 
 
 @view_defaults(decorator=with_jquery.not_when(mobile_request), permission="buy")
@@ -1293,10 +1296,16 @@ class PaymentView(object):
             self.request.session.flash(e.message)
             start_on = cart.performance.start_on
             sales_segment = self.context.sales_segment
-            payment_delivery_methods = [pdmp
-                                        for pdmp in self.context.available_payment_delivery_method_pairs(sales_segment)
-                                        if pdmp.payment_method.public]
-
+            payment_delivery_methods = self.get_payment_delivery_method_pairs(sales_segment)
+            payment_delivery_methods = [
+                payment_delivery_pair
+                for payment_delivery_pair in payment_delivery_methods
+                if api.check_if_payment_delivery_method_pair_is_applicable(
+                    self.request,
+                    cart,
+                    payment_delivery_pair
+                )
+            ]
             if 0 == len(payment_delivery_methods):
                 raise PaymentMethodEmptyError.from_resource(self.context, self.request)
             return dict(
@@ -1414,6 +1423,66 @@ class ExtraFormView(object):
             return dict(form=form, form_fields=form_fields)
         api.store_extra_form_data(self.request, form.data)
         return HTTPFound(location=flow_graph(self.context, self.request)(url_wanted=False))
+
+
+@view_defaults(route_name='cart.discount_code', renderer=selectable_renderer("discount_code.html"),
+               decorator=with_jquery.not_when(mobile_request), permission="buy")
+class DiscountCodeEnteringView(object):
+    def __init__(self, context, request):
+        self.context = context
+        self.request = request
+
+    @back(back_to_top, back_to_product_list_for_mobile)
+    @lbr_view_config(request_method="GET")
+    def discount_code_get(self):
+
+        cart = self.context.read_only_cart
+        self.context.check_deleted_product(cart)
+        sales_segment_id = self.request.matchdict["sales_segment_id"]
+        forms = self.context.create_discount_code_forms()
+        sorted_cart_product_items = self.context.sorted_carted_product_items()
+        self.context.delete_temporarily_save_discount_code()
+
+        # ディスカウントコードを使わない場合は通常ルートへ
+        if not self.context.if_discount_code_available_for_seat_selection():
+            return HTTPFound(self.request.route_path('cart.payment', sales_segment_id=sales_segment_id))
+
+        csrf_form = schemas.CSRFSecureForm(csrf_context=self.request.session)
+        return dict(
+            forms=forms,
+            csrf_form=csrf_form,
+            cart_product_items=sorted_cart_product_items,
+            sales_segment_id=sales_segment_id,
+            performance=self.context.performance,
+            carted_product_item_count=self.context.carted_product_item_count
+        )
+
+    @back(back_to_top, back_to_product_list_for_mobile)
+    @lbr_view_config(request_method="POST")
+    def discount_code_post(self):
+        self.context.check_csrf()
+        self.context.upper_code()  # 入力されたコードの大文字化
+        cart = self.context.read_only_cart
+        self.context.check_deleted_product(cart)
+        sales_segment_id = self.request.matchdict["sales_segment_id"]
+        codes = self.context.create_codes(cart)
+        sorted_cart_product_items = self.context.sorted_carted_product_items()
+
+        self.context.validate_discount_codes(codes)
+        self.context.confirm_discount_code_status(codes)
+
+        if self.context.exist_validate_error(codes):
+            csrf_form = schemas.CSRFSecureForm(csrf_context=self.request.session)
+            return dict(
+                forms=self.context.create_validated_forms(codes),
+                csrf_form=csrf_form,
+                cart_product_items=sorted_cart_product_items,
+                sales_segment_id=sales_segment_id,
+                performance=self.context.performance,
+                carted_product_item_count=self.context.carted_product_item_count
+            )
+        self.context.temporarily_save_discount_code(codes)
+        return HTTPFound(self.request.route_path('cart.payment', sales_segment_id=sales_segment_id))
 
 
 @view_defaults(route_name='cart.point', renderer=selectable_renderer("point.html"), decorator=with_jquery.not_when(mobile_request), permission="buy")
@@ -1656,7 +1725,7 @@ class CompleteView(object):
                         return render_view_to_response_with_derived_request(
                             context_factory=CompleteViewTicketingCartResource,
                             request=self.request,
-                            route=('payment.finish',{})
+                            route=('payment.finish', {})
                             )
                 except:
                     return None
@@ -1667,10 +1736,13 @@ class CompleteView(object):
                 raise
 
         self.context.check_deleted_product(cart)
-        self.context.check_order_limit() # 最終チェック
+        # クーポンのチェック
+        self.context.check_available_discont_code()
+        self.context.check_order_limit()  # 最終チェック
         order = api.make_order_from_cart(self.request, cart)
         order_no = order.order_no
-        transaction.commit() # cont_complete_viewでエラーが出てロールバックされても困るので
+        self.context.use_discount_coupon(order)
+        transaction.commit()  # cont_complete_viewでエラーが出てロールバックされても困るので
         logger.debug("keyword=%s" % ' '.join(self.request.params.getall('keyword')))
         return cont_complete_view(
             self.context, self.request,

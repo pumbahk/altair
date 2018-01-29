@@ -7,6 +7,9 @@ def get_event_cart_url_builder(request, name=BUILDERS.cart_events):
 def get_performance_cart_url_builder(request, name=BUILDERS.cart_performances):
     return request.registry.getUtility(IURLBuilder, name=name)
 
+def get_performance_spa_cart_url_builder(request, name=BUILDERS.spa_cart_performances):
+    return request.registry.getUtility(IURLBuilder, name=name)
+
 def get_cart_now_url_builder(request, name=BUILDERS.cart_now):
     return request.registry.getUtility(IURLBuilder, name=name)
 

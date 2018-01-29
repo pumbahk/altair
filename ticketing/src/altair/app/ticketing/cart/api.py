@@ -27,6 +27,7 @@ from altair.app.ticketing.core import models as c_models
 from altair.app.ticketing.core import api as c_api
 from altair.app.ticketing.users import models as u_models
 from altair.app.ticketing.orders import models as order_models
+from altair.app.ticketing.discount_code import api as discount_api
 from altair.app.ticketing.interfaces import ITemporaryStore
 from altair.app.ticketing.payments import api as payments_api
 from altair.app.ticketing.payments.exceptions import PaymentDeliveryMethodPairNotFound, OrderLikeValidationFailure
@@ -686,8 +687,13 @@ class _DummyCart(c_models.CartMixin):
         return None
 
     @property
+    def discount_amount(self):
+        return discount_api.get_discount_amount(self)
+
+    @property
     def total_amount(self):
-        return c_api.calculate_total_amount(self)
+        total_amount = c_api.calculate_total_amount(self)
+        return total_amount - self.discount_amount
 
     @property
     def delivery_fee(self):
@@ -758,6 +764,7 @@ def make_order_from_cart(request, cart):
     from altair.app.ticketing.payments.payment import Payment
     payment = Payment(cart, request)
     order = payment.call_payment()
+
 
     extra_form_data = load_extra_form_data(request)
     if extra_form_data is not None:

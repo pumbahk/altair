@@ -1,0 +1,56 @@
+<%page args="form" />
+<% from wtforms.widgets import HiddenInput %>
+<%namespace file="/common/helpers.html" name="ch" />
+<form class="form-inline" action="${request.url}" method="POST">
+    ${ch.form_item(form.id)}
+    ${ch.form_item(form.is_valid, help=ch.help(form.is_valid, u"チェックを入れない限り適用できません。"))}
+    ${ch.form_item(form.name, placeholder=u"255文字以内")}
+    ${ch.form_item(form.issued_by)}
+    <div class="control-group ">${ch.help(form.first_4_digits, u"接頭辞4桁の組み合わせは他コードと重複できません。<br/>\
+        有効な予約情報に使用されたコードが紐付いている場合、変更できません。<br/>")|n}
+        接頭辞（prefix）4桁指定
+    </div>
+    <div class="span12" style="margin-left: 0;">
+        <div class="form-group span2">
+            ${ch.form_item(form.first_digit, class_="span12", label=False)}
+        </div>
+        <div class="form-group span3">
+            ${ch.form_item(form.following_2to4_digits, class_="span8", label=False, maxlength=3, placeholder=u"3文字")}
+        </div>
+    </div>
+    ${ch.form_item(form.criterion, readonly="", help=ch.help(form.criterion, u"現在の仕様では特定金額以下のみが基準です。"))}
+    <div class="control-group ">
+        適用条件
+    </div>
+    <div class="span12" style="margin-left: 0;">
+        <div class="form-group span5">
+            ${ch.form_item(form.condition_price_amount, class_='span12', label=False, maxlength=8, placeholder=u"8桁以内")}
+        </div>
+        <div class="form-group span1">
+            円
+        </div>
+        <div class="form-group span6" style="margin-left: 0;">
+            ${ch.form_item(form.condition_price_more_or_less, label=False, class_='span3', readonly="")}
+        </div>
+    </div>
+    <div class="control-group ">
+        ${ch.help(form.benefit_amount, u"現在の仕様では100%OFFのみです。")|n}割引内容
+    </div>
+    <div class="span12" style="margin-left: 0;">
+        <div class="form-group span2">
+            ${ch.form_item(form.benefit_amount, class_='span12', label=False, maxlength=8, placeholder=u"8桁以内", help=ch.help(form.benefit_amount, u"2017年11月現在の仕様では100%OFFのみです。"), value=100, readonly="")}
+        </div>
+        <div class="form-group span2">
+            ${ch.form_item(form.benefit_unit, label=False, class_='span12', readonly="")}
+        </div>
+        <div class="form-group span8">
+            OFF
+        </div>
+    </div>
+    <div id="valid_term">
+        <p>${ch.help(form.start_at, u"開始日時、または終了日時のいずれかの入力が必須です。")|n}有効期間設定</p>
+        ${ch.form_item(form.start_at)}
+        ${ch.form_item(form.end_at)}
+    </div>
+    ${ch.form_item(form.explanation, style="width:80%; height:10em", help=ch.help(form.explanation, u"購入内容確認・完了画面で表示する利用されたコードに関する説明です。"))}
+</form>
