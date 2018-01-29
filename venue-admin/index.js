@@ -1012,8 +1012,9 @@ const listener = (req, res) => {
 		const now = new Date().getTime();
 		Object.keys(connections).forEach((c) => {
 			if(c != connection_id) {
-				const d = connections[c];
-				res.write(d[1] + " (" + Math.floor(((now - d[0].getTime()))/1000) + "sec)\n");
+				const name = connections[c];
+				const params = c.split(/ /);
+				res.write(name + " (" + Math.floor(((now - parseInt(params[0])))/1000) + "sec)\n");
 			}
 		});
 		res.end();
