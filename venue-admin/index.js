@@ -227,7 +227,9 @@ const createFrontendVenueParser = function(cb) {
 	return saxStream;
 };
 
-const handleBackendList = (dir) => {
+const handleBackendList = (dir, options) => {
+	const defaultFilterDays = options.days;
+	const now = (new Date()).getTime();
 	const p = new Promise((resolve, reject) => {
 		fs.readdir(dir, (err, files) => {
 			if(err) {
@@ -239,6 +241,12 @@ const handleBackendList = (dir) => {
 					fs.stat(dir+'/'+file, (err, stats) => {
 						if(err) {
 							return resolve();
+						}
+						if(0 < defaultFilterDays && stats.mtime) {
+							const age = (now - stats.mtime.getTime())/1000/86400;
+							if(defaultFilterDays < age) {
+								return resolve();
+							}
 						}
 						fs.readFile(dir+'/'+file+'.meta', { encoding: 'utf-8' }, (err, data) => {
 						  try {
@@ -275,7 +283,9 @@ const handleBackendList = (dir) => {
 	};
 };
 
-const handleFrontendList = (dir) => {
+const handleFrontendList = (dir, options) => {
+	const defaultFilterDays = options.days;
+	const now = (new Date()).getTime();
 	const p = new Promise((resolve, reject) => {
 		fs.readdir(dir, (err, files) => {
 			if(err) {
@@ -288,6 +298,12 @@ const handleFrontendList = (dir) => {
 							resolve();
 							return;
 						}
+						if(0 < defaultFilterDays && stats.mtime) {
+							const age = (now - stats.mtime.getTime())/1000/86400;
+							if(defaultFilterDays < age) {
+								return resolve();
+							}
+						}
 						fs.readdir(dir+'/'+subdir, (err, files) => {
 							var meta = files.filter((name) => { return name.match(/\.meta$/); });
 							if(meta.length == 0) {
@@ -298,7 +314,6 @@ const handleFrontendList = (dir) => {
 								try {
 									resolve({
 										filename: subdir+'/'+meta[0].replace(/\.meta$/, ''),
-										size: stats.size,
 										mtime: datetime_formatter.format(stats.mtime),
 										content: JSON.parse(data)
 									});
@@ -1110,11 +1125,13 @@ const listener = (req, res) => {
 		return;
 	} else if(match = path.match(/^\/venue-admin\/api\/backend$/)) {
 		res.writeHead(200, { 'Content-Type': 'application/json' });
-		handleBackendList(backend_repos_dir).pipe(res);
+		var opts = { days: (param['days']!==undefined && param['days']!=='') ? parseInt(param['days']) : 180 };
+		handleBackendList(backend_repos_dir, opts).pipe(res);
 		return;
 	} else if(match = path.match(/^\/venue-admin\/api\/frontend$/)) {
 		res.writeHead(200, { 'Content-Type': 'application/json' });
-		handleFrontendList(frontend_repos_dir).pipe(res);
+		var opts = { days: (param['days']!==undefined && param['days']!=='') ? parseInt(param['days']) : 180 };
+		handleFrontendList(frontend_repos_dir, opts).pipe(res);
 		return;
 	} else if(match = path.match(/^\/venue-admin\/api\/organization$/)) {
 		query('SELECT ?? FROM Organization', [['id', 'code', 'name']])

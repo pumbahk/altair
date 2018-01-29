@@ -14,8 +14,8 @@ backend(.xml): <input type="file" name="back" />
 <input type="submit" value="アップロード" />
 </form>
 
-<form onsubmit="location.href = 'checker.html#'+this.s.options[this.s.selectedIndex].value; return false;" id="backend_form">
-<select name="s" onchange="this.form.onsubmit();">
+<form id="backend_form">
+<select name="s" onchange="this.form.onsubmit();" style="width: 90%;">
 <option value=""></option>
 </select>
 <input type="submit" value="Go" />
@@ -29,8 +29,8 @@ frontend(.svg files and .json): <input type="file" name="front[]" multiple="mult
 (原則.jsonを1つ含めてアップロードしてください. ファイル名のベース部はmetadataじゃなくてもいいです. ただし.svgが1つの時は.svgだけでも大丈夫です. サーバ側で自動生成します.)
 </form>
 
-<form onsubmit="location.href = 'viewer.html#'+this.s.options[this.s.selectedIndex].value; return false;" id="frontend_form">
-<select name="s" onchange="this.form.onsubmit();">
+<form id="frontend_form">
+<select name="s" onchange="this.form.onsubmit();" style="width: 90%;">
 <option value=""></option>
 <!-- todo -->
 </select>
@@ -42,18 +42,61 @@ frontend(.svg files and .json): <input type="file" name="front[]" multiple="mult
 <script>
 $.ajax({ url: '../api/backend', json: true }).then(function(res) {
     var select = $('#backend_form').find('select[name="s"]');
-    res.forEach(function(r) {
+    var add = function(r) {
         $('<option></option>').text(r.mtime.substr(0, 16)+' '+r.content.name+' ('+r.content.seat_count+'席, '+Math.floor(r.size/1024)+'KB) by '+r.content.uploaded_by).attr('value', '/venue-admin/upload/backend/'+r.filename).appendTo(select);
+    };
+    res.forEach(function(r) {
+        add(r);
     });
+    $('<option></option>').text('more...').attr('value', '*more*').appendTo(select);
     select.chosen();
+    $('#backend_form').get(0).onsubmit = function() {
+        if(this.s.options[this.s.selectedIndex].value == '*more*') {
+            select.get(0).selectedIndex = 0;
+            select.find('option:gt(0)').remove();
+            select.get(0).options[0].text = 'Loading...';
+            select.trigger('liszt:updated');
+            $.ajax({ url: '../api/backend?days=0' }).then(function(res) {
+                res.forEach(function(r) {
+                    add(r);
+                });
+                select.get(0).options[0].text = '';
+                select.trigger('liszt:updated');
+            });
+            return false;
+        }
+        location.href = 'checker.html#'+this.s.options[this.s.selectedIndex].value;
+        return false;
+    };
 });
 $.ajax({ url: '../api/frontend', json: true }).then(function(res) {
     var select = $('#frontend_form').find('select[name="s"]');
-    res.forEach(function(r) {
-        console.log(r);
+    var add = function(r) {
         $('<option></option>').text(r.mtime.substr(0, 16)+' '+r.content.name+' by '+r.content.uploaded_by).attr('value', '/venue-admin/upload/frontend/'+r.filename).appendTo(select);
+    };
+    res.forEach(function(r) {
+        add(r);
     });
+    $('<option></option>').text('more...').attr('value', '*more*').appendTo(select);
     select.chosen();
+    $('#frontend_form').get(0).onsubmit = function() {
+        if(this.s.options[this.s.selectedIndex].value == '*more*') {
+            select.get(0).selectedIndex = 0;
+            select.find('option:gt(0)').remove();
+            select.get(0).options[0].text = 'Loading...';
+            select.trigger('liszt:updated');
+            $.ajax({ url: '../api/frontend?days=0' }).then(function(res) {
+                res.forEach(function(r) {
+                    add(r);
+                });
+                select.get(0).options[0].text = '';
+                select.trigger('liszt:updated');
+            });
+            return false;
+        }
+        location.href = 'viewer.html#'+this.s.options[this.s.selectedIndex].value;
+        return false;
+    };
 });
 </script>
 </body>
