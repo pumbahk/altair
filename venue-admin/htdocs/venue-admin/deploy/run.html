@@ -4,6 +4,8 @@
 </head>
 <body>
 <script src="js/jquery.js"></script>
+<script src="https://service.ticketstar.jp/static/js/jquery.chosen.js"></script>
+<link rel="stylesheet" type="text/css" href="https://service.ticketstar.jp/static/css/chosen.css" />
 
 <div style="position: absolute; right: 10px; width: 300px; height: 200px;">
 <iframe src="../ps" style="width: 400px; height: 200px;"></iframe>
@@ -16,7 +18,7 @@ backend: <input type="text" name="backend" value="" style="width: 500px;" placeh
 <br />
 frontend: <input type="text" name="frontend" value="" style="width: 500px;" placeholder="http://hostname/vwr.html#/upload/frontend/ffffffffffff/metadata.json" /> (optional)
 <br /> 
-organization: <select name="organization">
+organization: <select name="organization" style="width: 400px;">
 <option name=""></option>
 </select>
 <br />
@@ -56,6 +58,7 @@ $.ajax({ url: '../api/organization', json: true }).then(function(res) {
     res.forEach(function(r) {
         $('<option></option>').text('['+r.code+'] '+r.name).attr('value', r.name).appendTo(select);
     });
+    select.chosen();
 }, function(xhr, err) {
     console.log(err);
 });
