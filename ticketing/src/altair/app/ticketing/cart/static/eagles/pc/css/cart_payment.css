@@ -1,0 +1,217 @@
+@charset "utf-8";
+
+.purchaseTtl {
+	padding: 10px;
+	margin: 20px 0;
+	color: #64000c;
+	font-size: 18px;
+	border: solid 2px #64000c;
+}
+.heading_simple_line {
+	color: #64000c;
+	font-size: 18px;
+	font-weight: bold !important;
+	border-bottom: 2px solid #64000c;
+	padding: 10px;
+	margin: 0 0 20px 0;
+}
+.couponPosionRe {
+	position: relative;
+}
+table.couponSeats {
+	width: 90% !important;
+	border:  dotted 1px #DDD !important;
+	padding: 10px;
+	margin:0 auto 20px !important;
+	box-sizing: border-box;
+	display: block;
+}
+table.couponSeats thead tr {
+	display: block;
+	width: 99%;
+	text-align: center;
+	margin: 0 0.5%;
+}
+table.couponSeats thead td {
+	font-weight: bold;
+	display: block;
+	box-sizing: border-box;
+	font-weight: bold;
+	background: #DDD;
+	padding: 10px;
+	margin-bottom: 10px;
+}
+table.couponSeats tbody tr {
+	display: block;
+	width: 49%;
+	float: left;
+	margin: 5px 0.5%;
+}
+table.couponSeats tbody td {
+	font-weight: bold;
+	padding: 10px;
+	display: block;
+	box-sizing: border-box;
+	border: solid 1px #DDD;
+}
+.couponSeatsText {
+	padding: 0 20px;
+	box-sizing: border-box;
+}
+table.couponCodeBox {
+	width: 100%;
+	margin-bottom: 30px !important;
+	padding: 0;
+	border: none !important;
+}
+table.couponCodeBox td {
+	border: none !important;
+	padding: 20px 0px 0px !important;
+	box-sizing: border-box; 
+}
+table.couponCodeBox td span {
+	border: none;
+	background: #860010;
+	box-sizing: border-box; 
+	display: block;
+	width: 19.5%;
+	height: 40px;
+	font-weight: bold;
+	float: left;
+	clear: both;
+	line-height: 40px;
+	color: #FFF;
+	padding: 0 20px;
+	box-sizing: border-box;
+	
+	border-top-left-radius: 20px;
+	border-bottom-left-radius: 20px;
+	-webkit-border-top-left-radius: 20px;
+	-webkit-border-bottom-left-radius: 20px;
+	-moz-border-radius-topleft: 20px;
+	-moz-border-radius-bottomleft: 20px;
+}
+table.couponCodeBox td.couponAttention  {
+	border: none;
+	padding: 2px 10px !important;
+	font-weight: bold;
+	color: #C00;
+	margin-left: 19.5%;
+	display: block;
+	width: 80%;
+	background: #FEE;
+	box-sizing: border-box;
+	font-size: 13px;
+}
+table.couponCodeBox input {
+	width: 80%;
+	height: 40px;
+	float: left;
+	box-sizing: border-box;
+}
+.couponBtnNext {
+	text-align: center;
+	clear: both;
+	padding: 30px 0;
+}
+
+
+
+
+
+
+
+@media screen and (max-width: 767px) {
+	#container {
+		margin: 0 1%;
+		width: 98%;
+	}
+table.couponCodeBox td input {
+	padding: 10px 5px !important;
+}
+table.couponCodeBox td span {
+	width: 100%;
+	height: auto;
+	float: none;
+	line-height: normal;
+	padding: 0 10px;
+	
+	border-top-left-radius: 5px;
+	border-top-right-radius: 5px;
+	border-bottom-left-radius: 0px;
+	-webkit-border-top-left-radius: 5px;
+	-webkit-border-top-right-radius: 5px;
+	-webkit-border-bottom-left-radius: 0px;
+	-moz-border-radius-topleft: 5px;
+	-moz-border-radius-topright: 5px;
+	-moz-border-radius-bottomleft: 0px;
+}
+table.couponCodeBox td.couponAttention  {
+	margin-left: 0%;
+	width: 100%;
+}
+table.couponCodeBox input {
+	width: 100%;
+	height: auto;
+	float: none;
+}
+
+}
+
+.confirm-btnBox {
+	margin: 20px 0 0;
+	text-align: center;
+}
+
+  .btn-box {
+    text-align: center;
+  }
+  .btn {
+    transition: all 200ms linear;
+    padding: 15px 20px;
+    display: inline-block;
+    line-height: 1.2;
+    font-size: 14px;
+  }
+  .btn-sold {
+    background: #d9d9d9;
+    color: #646464;
+    cursor: default;
+  }
+  .btn-buy,
+  .btn-primary {
+    border: 3px solid #860010;
+    background: #860010;
+    color: #fff;
+    width: 100%;
+    position: relative;
+  }
+  .btn-buy:before, .btn-buy:after,
+  .btn-primary:before,
+  .btn-primary:after {
+    content: "";
+    display: block;
+    width: 15px;
+    height: 4px;
+    background: #860010;
+    position: absolute;
+  }
+  .btn-buy:before,
+  .btn-primary:before {
+    right: 10px;
+    top: 17px;
+    -webkit-transform: rotate(-135deg);
+    -ms-transform: rotate(-135deg);
+    transform: rotate(-135deg);
+  }
+  .btn-buy:after,
+  .btn-primary:after {
+    right: 10px;
+    bottom: 16px;
+    -webkit-transform: rotate(135deg);
+    -ms-transform: rotate(135deg);
+    transform: rotate(135deg);
+  }
+
+
+

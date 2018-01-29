@@ -36,7 +36,7 @@ from altair.app.ticketing.orders.models import OrderSummary, OrderImportTask, Im
 from altair.app.ticketing.orders.importer import OrderImporter, ImportCSVReader
 from altair.app.ticketing.orders import helpers as order_helpers
 from altair.app.ticketing.cart import helpers as cart_helper
-from altair.app.ticketing.carturl.api import get_performance_cart_url_builder, get_cart_now_url_builder
+from altair.app.ticketing.carturl.api import get_performance_cart_url_builder, get_performance_spa_cart_url_builder, get_cart_now_url_builder
 from altair.app.ticketing.events.sales_segments.resources import (
     SalesSegmentAccessor,
 )
@@ -165,8 +165,14 @@ class PerformanceShowView(BaseView):
         # cart url
         cart_url = get_performance_cart_url_builder(self.request).build(
             self.request, self.performance)
+        spa_cart_url = None
+        if self.context.organization.code == 'RE':
+            spa_cart_url = get_performance_spa_cart_url_builder(self.request).build(
+                self.request, self.performance)
+
         data.update(dict(
             cart_url=cart_url,
+            spa_cart_url =spa_cart_url,
             cart_now_cart_url=get_cart_now_url_builder(self.request).build(
                 self.request, cart_url, self.performance.event_id)
         ))

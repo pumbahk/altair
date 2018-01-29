@@ -368,7 +368,8 @@ def setup_routes(config):
 
     # order / payment / release
     config.add_route('cart.order', 'order/sales/{sales_segment_id}', factory='.resources.SalesSegmentOrientedTicketingCartResource')
-    config.add_route('cart.payment', 'payment/sales/{sales_segment_id}', factory='.resources.SalesSegmentOrientedTicketingCartResource')
+    config.add_route('cart.discount_code', 'discount/code/{sales_segment_id}', factory='.resources.DiscountCodeTicketingCartResources')
+    config.add_route('cart.payment', 'payment/sales/{sales_segment_id}', factory='.resources.DiscountCodeTicketingCartResources')
     config.add_route('cart.point', 'rsp', factory='.resources.CartBoundTicketingCartResource')
     config.add_route('cart.extra_form', 'extra_form', factory='.resources.CartBoundTicketingCartResource')
     config.add_route('cart.release', 'release')
@@ -430,6 +431,7 @@ def main(global_config, **local_config):
     config.include(setup_routes)
 
     config.include('.')
+    config.include('..discount_code.communicators')
     config.include('.view_context')
     config.include('.errors')
     config.include('.preview')

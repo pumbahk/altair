@@ -74,6 +74,7 @@ from altair.app.ticketing.models import (
 from altair.app.ticketing.core import api as core_api
 from altair.app.ticketing.sej import api as sej_api
 from altair.app.ticketing.famiport import api as famiport_api
+from altair.app.ticketing.discount_code import api as discount_api
 
 logger = logging.getLogger(__name__)
 
@@ -567,10 +568,16 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def cancel(self, request, payment_method=None, now=None):
         from .api import refund_order, cancel_order
         try:
+            # TODO このtryの間の処理は途中で例外エラーが発生した場合にDBのロールバックが一部できていない。要調査
             if self.payment_status == 'refunding':
                 refund_order(request, self, payment_method=payment_method, now=now)
             else:
                 cancel_order(request, self, now=now)
+
+            # 割引コードがチケット購入時に使用されている場合
+            if self.used_discount_codes:
+                discount_api.cancel_used_discount_codes(request, self, now=now)
+
         except Exception as e:
             logger.exception(u'キャンセルに失敗しました')
             return False
@@ -667,7 +674,8 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 for ordered_product_item in ordered_product.ordered_product_items:
                     ordered_product_item.refund_price = ordered_product_item.price
         refund_fee = self.refund_special_fee + self.refund_system_fee + self.refund_transaction_fee + self.refund_delivery_fee
-        self.refund_total_amount = sum(o.refund_price * o.quantity for o in self.items) + refund_fee
+        self.refund_total_amount = sum(
+            o.refund_price * o.quantity for o in self.items) + refund_fee - discount_api.get_discount_amount(self)
 
         try:
             return self.cancel(request, self.refund.payment_method)
@@ -793,6 +801,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                         valid=True #valid=Falseの時は何時だろう？
                         )
                     ordered_product_item.tokens.append(token)
+                discount_api.save_discount_code(element, ordered_product_item)
 
         DBSession.flush() # これとっちゃだめ
         return order
@@ -847,6 +856,19 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         from altair.app.ticketing.models import DBSession as session
         orion_ticket_phone = session.query(OrionTicketPhone).filter(OrionTicketPhone.order_no == self.order_no).first()
         return orion_ticket_phone.phones.split(',') if orion_ticket_phone else []
+
+    @property
+    def used_discount_codes(self):
+        return discount_api.get_used_discount_codes(self)
+
+    @property
+    def discount_amount(self):
+        return discount_api.get_discount_amount(self)
+
+    @property
+    def used_discount_quantity(self):
+        return discount_api.get_used_discount_quantity(self)
+
 
 class OrderNotification(Base, BaseModel):
     __tablename__ = 'OrderNotification'
@@ -1074,6 +1096,9 @@ class OrderedProductItemToken(Base,BaseModel, LogicallyDeleted):
     def is_printed(self):
         return self.printed_at and (self.refreshed_at is None or self.printed_at > self.refreshed_at)
 
+    @property
+    def is_applied_discount_code(self):
+        return len(self.used_discount_codes) > 0
 
 class OrderReceipt(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'OrderReceipt'

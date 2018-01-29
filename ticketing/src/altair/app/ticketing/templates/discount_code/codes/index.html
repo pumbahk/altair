@@ -1,0 +1,42 @@
+<%inherit file="/layout_2cols.html"/>
+<%namespace file="/common/helpers.html" name="ch"/>
+
+<script src="${request.static_url('altair.app.ticketing:static/js/jquery.chosen.js')}"></script>
+<link rel="stylesheet" type="text/css" href="${request.static_url('altair.app.ticketing:static/css/chosen.css')}"/>
+
+<%block name="breadcrumbs">
+    ${ch.breadcrumbs(
+    names=[
+    HH.route_label('index'),
+    HH.route_label('discount_code.settings_index'),
+    HH.route_label(request.matched_route.name)
+    ],
+    urls=[
+    request.route_path('index'),
+    request.route_path('discount_code.settings_index')
+    ]
+    )}
+</%block>
+
+<div class="page-header">
+    <h1>${setting.first_4_digits} ${setting.name} ${HH.route_label(request.matched_route.name)}</h1>
+</div>
+
+<div class="navbar span8" style="margin-left: 0">
+    <div class="navbar-inner">
+        <div class="container">
+            <form method="get" class="navbar-search pull-left form-inline">
+                <span class="navbar-text">
+                    ${ch.help(search_form.code, u"完全一致で検索します。アルファベットの大文字小文字は区別しません。")|n}
+                    ${search_form.code.label}
+                </span>
+                ${search_form.code(id="code", class_="search-query input-medium")}
+                <button type="submit">検索</button>
+            </form>
+
+        </div>
+    </div>
+    <br />
+    <%include file="./_list.html" args="form=form, search_form=search_form, setting=setting, codes=codes"/>
+</div>
+<%include file="./_modal.html" args="modal_id='modal_code'"/>
