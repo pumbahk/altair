@@ -568,13 +568,14 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def cancel(self, request, payment_method=None, now=None):
         from .api import refund_order, cancel_order
         try:
+            # TODO このtryの間の処理は途中で例外エラーが発生した場合にDBのロールバックが一部できていない。要調査
             if self.payment_status == 'refunding':
                 refund_order(request, self, payment_method=payment_method, now=now)
             else:
                 cancel_order(request, self, now=now)
 
             # 割引コードがチケット購入時に使用されている場合
-            if hasattr(self, 'used_discount_codes'):
+            if self.used_discount_codes:
                 discount_api.cancel_used_discount_codes(request, self, now=now)
 
         except Exception as e:

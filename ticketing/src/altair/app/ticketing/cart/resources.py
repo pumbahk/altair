@@ -697,7 +697,7 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
     def create_discount_code_forms(self):
         from . import schemas
         cart = self.read_only_cart
-        settings = cart.available_discount_code_settings
+        settings = cart.performance.find_available_target_settings(max_price=self.cart.highest_item_price)
         forms = []
         for index in range(cart.carted_product_item_count):
             forms.append(schemas.DiscountCodeForm(discount_code_settings=settings))
@@ -723,7 +723,7 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
             return []
 
         sorted_cart_product_items = self.sorted_carted_product_items(cart)
-        settings = cart.available_discount_code_settings
+        settings = cart.performance.find_available_target_settings(max_price=self.cart.highest_item_price)
 
         code_forms = []
         input_cnt = len(codes)
@@ -779,6 +779,13 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
             code.deleted_at = datetime.now()
         return True
 
+    def if_discount_code_available_for_seat_selection(self):
+        return all([
+            self.cart.organization.enable_discount_code,
+            self.performance.find_available_target_settings(max_price=self.cart.highest_item_price),
+            self.cart.is_product_item_quantity_one
+        ])
+
     def validate_discount_codes(self, codes):
         input_codes = []
         for code_dict in codes:
@@ -793,11 +800,12 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
                 input_codes.append(code)
 
             # 「一般会員の方」のファンクラブクーポンの利用を防ぐバリデーション
-            for setting in self.cart.available_fanclub_discount_code_settings:
-                # fc_member_idは「ファンクラブの方」でログインしてすると文字列の数字、「一般の方」でログインするとOpenIDの文字列
-                fc_member_id = self.request.altair_auth_info['authz_identifier']
-                if (code[:4] == setting.first_4_digits) and (not fc_member_id.isdigit()):
-                    form.add_non_fanclub_member_discount_code_error()
+            # fc_member_idは「ファンクラブの方」でログインすると文字列の数字、「一般の方」でログインするとOpenIDの文字列になる
+            fc_member_id = self.request.altair_auth_info['authz_identifier']
+            setting = self.cart.performance.find_available_target_settings(issued_by=u'sports_service',
+                                                                           first_4_digits=code[:4])
+            if setting and (not fc_member_id.isdigit()):
+                form.add_non_fanclub_member_discount_code_error()
 
             # 使用済みコードバリデーション
             organization = cart_api.get_organization(self.request)
@@ -827,7 +835,9 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
             return True
 
         result = discount_api.confirm_discount_code_status(self.request, target_codes,
-                                                           self.cart.available_fanclub_discount_code_settings)
+                                                           self.cart.performance.find_available_target_settings(
+                                                               issued_by=u'sports_service',
+                                                               max_price=self.cart.highest_item_price))
         if result is None:
             # 使用可能なDiscountCodeSettingがない
             return True
@@ -860,7 +870,10 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
         codes = self.create_codes(order.cart, code_list)
         if codes:
             result = discount_api.use_discount_codes(self.request, codes,
-                                                     order.cart.available_fanclub_discount_code_settings)
+                                                     order.cart.performance.find_available_target_settings(
+                                                         issued_by=u'sports_service',
+                                                         max_price=self.cart.highest_item_price
+                                                     ))
             if not result['status'] == u'OK' and result['usage_type'] == u'1010':
                 # 使用時にエラー
                 raise DiscountCodeConfirmError()
@@ -889,7 +902,9 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
             return True
 
         result = discount_api.confirm_discount_code_status(self.request, target_codes,
-                                                    self.cart.available_fanclub_discount_code_settings)
+                                                           self.cart.performance.find_available_target_settings(
+                                                               issued_by=u'sports_service',
+                                                               max_price=self.cart.highest_item_price))
         if result is None:
             # 使用可能なDiscountCodeSettingがない
             return True
@@ -922,7 +937,7 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
             forms.append(code_dict['form'])
 
         cart = self.read_only_cart
-        settings = cart.available_discount_code_settings
+        settings = cart.performance.find_available_target_settings(max_price=self.cart.highest_item_price)
 
         remaining_count = len(range(cart.carted_product_item_count)) - len(forms)
         if remaining_count > 0:
