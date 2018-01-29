@@ -836,7 +836,8 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
 
         result = discount_api.confirm_discount_code_status(self.request, target_codes,
                                                            self.cart.performance.find_available_target_settings(
-                                                               issued_by=u'sports_service'))
+                                                               issued_by=u'sports_service',
+                                                               max_price=self.cart.highest_item_price))
         if result is None:
             # 使用可能なDiscountCodeSettingがない
             return True
@@ -870,7 +871,9 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
         if codes:
             result = discount_api.use_discount_codes(self.request, codes,
                                                      order.cart.performance.find_available_target_settings(
-                                                         issued_by=u'sports_service'))
+                                                         issued_by=u'sports_service',
+                                                         max_price=self.cart.highest_item_price
+                                                     ))
             if not result['status'] == u'OK' and result['usage_type'] == u'1010':
                 # 使用時にエラー
                 raise DiscountCodeConfirmError()
@@ -900,7 +903,8 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
 
         result = discount_api.confirm_discount_code_status(self.request, target_codes,
                                                            self.cart.performance.find_available_target_settings(
-                                                               issued_by=u'sports_service'))
+                                                               issued_by=u'sports_service',
+                                                               max_price=self.cart.highest_item_price))
         if result is None:
             # 使用可能なDiscountCodeSettingがない
             return True
@@ -933,7 +937,7 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
             forms.append(code_dict['form'])
 
         cart = self.read_only_cart
-        settings = cart.performance.find_available_target_settings()
+        settings = cart.performance.find_available_target_settings(max_price=self.cart.highest_item_price)
 
         remaining_count = len(range(cart.carted_product_item_count)) - len(forms)
         if remaining_count > 0:

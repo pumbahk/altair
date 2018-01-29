@@ -375,7 +375,7 @@ class Cart(Base, c_models.CartMixin):
                 count = count + element.quantity
         return count
 
-    @property
+    @reify
     def highest_item_price(self):
         prices = []
         for item in self.items:

@@ -609,21 +609,6 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     def find_available_target_settings(self, issued_by=None, first_4_digits=None, max_price=None):
         """
-        issued_byがNoneの場合は、2回SQLを発行して結果を結合する。
-        """
-        if issued_by is None:
-            own_settings = self._find_available_target_settings(issued_by=u'own', first_4_digits=first_4_digits,
-                                                                max_price=max_price)
-            sports_service_settings = self._find_available_target_settings(issued_by=u'sports_service',
-                                                                           first_4_digits=first_4_digits,
-                                                                           max_price=max_price)
-            return own_settings + sports_service_settings
-        else:
-            return self._find_available_target_settings(issued_by=issued_by, first_4_digits=first_4_digits,
-                                                        max_price=max_price)
-
-    def _find_available_target_settings(self, issued_by=None, first_4_digits=None, max_price=None):
-        """
         引数で指定されたコード発行元における割引設定で、利用可能な状態のものを抽出
         :param issued_by: コードの発行元
         :param first_4_digits: クーポン・割引コードの文字列
@@ -647,9 +632,6 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
         if issued_by is not None:
             query = query.filter(DiscountCodeSetting.issued_by == issued_by)
-
-        if issued_by == u'own':
-            query = query.filter(DiscountCodeCode.id.isnot(None))
 
         if first_4_digits is not None:
             query = query.filter(
