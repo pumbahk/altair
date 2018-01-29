@@ -12130,7 +12130,7 @@ var SelectProductComponent = (function () {
                 if (_this.selectProduct.data.results.status == "OK") {
                     //現行カートの支払いへ遷移
                     _this.animationEnableService.sendToRoadFlag(false);
-                    location.href = '/cart/payment/sales/' + _this.salesSegmentId;
+                    location.href = '/cart/discount/code/' + _this.salesSegmentId;
                 }
                 else {
                     _this.animationEnableService.sendToRoadFlag(false);
