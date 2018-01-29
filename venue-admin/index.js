@@ -703,7 +703,7 @@ const handleRegisterRequest = (param, res) => {
 				res.write('venue_import seems to running in 10 sec, going background.');
 				res._background = true;
 				res.end();
-				connections[res._connection_id] = 'venue_import '+backend_dirname;
+				connections[res._connection_id][1] = 'venue_import['+venue_import.pid+'] '+backend_dirname;
 				cleanup = () => {
 					console.log('Cleaning up for '+res._connection_id);
 					if(res._connection_id !== undefined) {
@@ -954,7 +954,7 @@ const listener = (req, res) => {
 	console.log(prefix + ' ' + req.method + ' ' + req.url + (operator ? ' by '+operator : ''));
 
 	const connection_id = (new Date()).getTime() + " " +counter;
-	connections[connection_id] = [ new Date(), req.url + (operator ? ' by '+operator : '') ];
+	connections[connection_id] = [ new Date(), req.url, operator ];
 
   const path = req.url.replace(/\?.*$/, '');
 	var param = { };
@@ -1012,9 +1012,9 @@ const listener = (req, res) => {
 		const now = new Date().getTime();
 		Object.keys(connections).forEach((c) => {
 			if(c != connection_id) {
-				const name = connections[c];
+				const data = connections[c]; /* [ date, name, operator ] */
 				const params = c.split(/ /);
-				res.write(name + " (" + Math.floor(((now - parseInt(params[0])))/1000) + "sec)\n");
+				res.write(data[1] + " (" + Math.floor(((now - data[0].getTime()))/1000) + " sec, by "+(operator || "?")+")\n");
 			}
 		});
 		res.end();
