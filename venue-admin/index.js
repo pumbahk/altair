@@ -131,11 +131,23 @@ const query = (statement, params) => {
  });
 };
 
+/*
 const datetime_formatter = new Intl.DateTimeFormat([], {
 	timeZone: 'Asia/Tokyo',
 	year: 'numeric', month: '2-digit', day: '2-digit',
 	hour: '2-digit', minute: '2-digit', second: '2-digit'
 });
+*/
+const datetime_formatter = (d) => {
+	const p2 = (n) => {
+		if(n < 10) {
+			return '0' + n;
+		} else {
+			return '' + n;
+		}
+	};
+	return d.getFullYear()+'-'+p2(1+d.getMonth())+'-'+p2(d.getDate())+' '+[d.getHours(), d.getMinutes(), d.getSeconds()].map(p2).join(':');
+};
 
 const getUsernameFromHeader = (req) => {
 	if(req.headers['authorization']) {
