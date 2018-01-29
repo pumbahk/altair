@@ -1055,11 +1055,7 @@ class ReserveView(object):
         DBSession.flush()
         api.set_cart(self.request, cart)
 
-        discount_code_flag = True
-        payment_url = self.request.route_url("cart.payment", sales_segment_id=sales_segment.id)
-        if discount_code_flag:
-            # TODO okada 判定（フラグを判定、かつ、選ばれた商品がディスカウントコードを欲している）
-            payment_url = self.request.route_url("cart.discount_code", sales_segment_id=sales_segment.id)
+        payment_url = self.request.route_url("cart.discount_code", sales_segment_id=sales_segment.id)
 
         return dict(result='OK',
                     payment_url=payment_url,
@@ -1076,7 +1072,6 @@ class ReserveView(object):
                               separate_seats=separate_seats
                              )
                     )
-
 
 
 @view_defaults(decorator=with_jquery.not_when(mobile_request), permission="buy")
