@@ -624,7 +624,7 @@ const handleReplaceRequest = (param, res) => {
 		res.end();
 		return;
 	}
-	const frontend_venue_import = spawn(deploy_dir+'/bin/frontend_venue_import', args);
+	const frontend_venue_import = spawn(deploy_dir+'/bin/frontend_venue_import', args, { env: { LC_ALL: 'ja_JP.utf8' } });
 	
 	res.write("exec: frontend_venue_import " + args.join(' ') + "\n");
 	console.log("exec: frontend_venue_import " + args.join(' ') + "\n");
@@ -805,7 +805,7 @@ const registerFrontend = (param, site_id) => {
 			'-U', frontend_dirname,
 			config, svg ];
 
-		const frontend_venue_import = spawn(deploy_dir+'/bin/frontend_venue_import', args);
+		const frontend_venue_import = spawn(deploy_dir+'/bin/frontend_venue_import', args, { env: { LC_ALL: 'ja_JP.utf8' } });
 		
 		console.log("exec: frontend_venue_import " + args.join(' ') + "\n");
 		frontend_venue_import.stdout
