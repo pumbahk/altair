@@ -246,7 +246,11 @@ class DiscountCode(BaseView):
         if setting is None:
             return HTTPNotFound('discount_code_setting_id %d is not found' % setting_id)
 
-        t0 = time.time()
+        err_reasons = self.context.validate_to_delete_all_codes()
+        if err_reasons:
+            self.request.session.flash(u'削除できません（{}）'.format(u'・'.join(err_reasons)))
+            return HTTPFound(location=location)
+
         try:
             deleted_num = delete_all_discount_code(setting.id)
             if deleted_num != 0:
@@ -261,7 +265,6 @@ class DiscountCode(BaseView):
         except SQLAlchemyError:
             self.request.session.flash(u'コードの全削除に失敗しました')
 
-        logger.info("execution time {} sec".format(str(time.time() - t0)))
         return HTTPFound(location=location)
 
     @view_config(route_name='discount_code.codes_used_at')
