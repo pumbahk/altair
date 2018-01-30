@@ -607,6 +607,47 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def lot_sales_segments(self):
         return [lot.sales_segment for lot in self.event.lots]
 
+    def find_available_target_settings(self, issued_by=None, first_4_digits=None, max_price=None):
+        """
+        引数で指定されたコード発行元における割引設定で、利用可能な状態のものを抽出
+        :param issued_by: コードの発行元
+        :param first_4_digits: クーポン・割引コードの文字列
+        :param max_price: 最も高い席の価格（例：大人席・子供席なら大人席の値段）
+        :return: 割引コード設定のリスト
+        """
+        #TODO slaveで取得できるようにする。resourceからcontextを引数でもらう。contextがなければmasterを使用するよう分岐作成
+        from altair.app.ticketing.discount_code.models import DiscountCodeSetting, DiscountCodeTarget, DiscountCodeCode
+        now = datetime.now()
+        query = DBSession.query(DiscountCodeSetting).join(
+            DiscountCodeTarget
+        ).filter(
+            Performance.id == self.id,
+            DiscountCodeSetting.is_valid == 1,
+            or_(DiscountCodeSetting.start_at.is_(None), DiscountCodeSetting.start_at <= now),
+            or_(DiscountCodeSetting.end_at.is_(None), DiscountCodeSetting.end_at >= now)
+        )
+
+        if max_price:
+            query = query.filter(DiscountCodeSetting.condition_price_amount >= max_price)
+
+        if issued_by is not None:
+            query = query.filter(DiscountCodeSetting.issued_by == issued_by)
+
+        if first_4_digits is not None:
+            query = query.filter(
+                DiscountCodeSetting.first_digit == first_4_digits[:1],
+                DiscountCodeSetting.following_2to4_digits == first_4_digits[1:4]
+            )
+            try:
+                return query.one()
+            except NoResultFound:
+                return []
+            except MultipleResultsFound as err:
+                logger.error(
+                    'found multiple discount code settings started with "{}". {}'.format(first_4_digits, err.message))
+
+        return query.all()
+
     def get_recent_sales_segment(self, now):
         """公演に紐づく販売区分のうち直近のものを返す。抽選の販売区分も含む"""
         if now is None:
@@ -3202,6 +3243,10 @@ class Organization(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def point_feature_enabled(self):
         return self.setting.point_type is not None
 
+    @property
+    def enable_discount_code(self):
+        return self.setting.enable_discount_code
+
     def get_cms_data(self):
         return {"organization_id": self.id, "organization_source": "oauth"}
 
@@ -4296,6 +4341,7 @@ class OrganizationSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     default_oauth_setting = Column(MutationDict.as_mutable(JSONEncodedDict(16384)), nullable=False, default={}, server_default='{}')
     recaptcha = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"recaptchaの使用", _a_label=u"recaptchaの使用")
     tapirs = AnnotatedColumn(Boolean, nullable=True, default=False, doc=u"テイパーズ機能", _a_label=u"テイパーズ機能")
+    enable_discount_code = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"クーポン・割引コード設定を利用", _a_label=u"クーポン・割引コード設定を利用")
 
     def _render_cart_setting_id(self):
         return link_to_cart_setting(self.cart_setting)

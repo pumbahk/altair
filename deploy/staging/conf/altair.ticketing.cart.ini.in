@@ -79,6 +79,10 @@ dogpile_cache.altair_oauth_auth_plugin_metadata.arguments.db = 6
 ;sej.password = 1001
 ;sej.api_key = 1001
 
+; altair.discount_code.eagles_communicator
+; （ローカル環境の場合は.iniファイル側をlocalhost:58080に書き直してください）
+altair.discount_code.eagles_communicator.http_proxy = http://rdcproxy1-stg.1a.vpc.altr
+altair.discount_code.eagles_communicator.https_proxy = https://rdcproxy1-stg.1a.vpc.altr
 
 [app:www-check]
 use = egg:Paste#static
@@ -109,6 +113,9 @@ use  = egg:gunicorn#main
 host = 0.0.0.0
 port = %(http_port)s
 workers = 1
+timeout = 60
+graceful_timeout = 60
+max_requests = 256
 
 # Begin logging configuration
 

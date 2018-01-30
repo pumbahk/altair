@@ -108,6 +108,10 @@
       <td>${u'ON' if organization_setting.enable_mypage else u'OFF'}</td>
     </tr>
     <tr>
+      <th>${HH.label_text_for(c_models.OrganizationSetting.enable_discount_code)}</th>
+      <td>${u'ON' if organization_setting.enable_discount_code else u'OFF'}</td>
+    </tr>
+    <tr>
       <th>${HH.label_text_for(c_models.OrganizationSetting.orderreview_index)}</th>
       <td>${organization_setting.orderreview_index}</td>
     </tr>

@@ -559,7 +559,7 @@ export class SelectProductComponent implements OnInit {
           if (this.selectProduct.data.results.status == "OK") {
             //現行カートの支払いへ遷移
             this.animationEnableService.sendToRoadFlag(false);
-            location.href = '/cart/payment/sales/' + this.salesSegmentId;
+            location.href = '/cart/discount/code/' + this.salesSegmentId;
           } else {
             this.animationEnableService.sendToRoadFlag(false);
             $('#submit').prop("disabled", false);

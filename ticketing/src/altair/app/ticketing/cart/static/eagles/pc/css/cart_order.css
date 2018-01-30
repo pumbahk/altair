@@ -1,0 +1,248 @@
+@charset "utf-8";
+
+.purchaseCoupon0,
+.purchaseCoupon1,
+.purchaseCoupon2,
+.purchaseCoupon3,
+.purchaseCoupon4,
+.purchaseCoupon5,
+.purchaseCoupon6,
+.purchaseCoupon7,
+.purchaseCoupon8,
+.purchaseCoupon9,
+.purchaseCoupon10,
+.purchaseCoupon11,
+.purchaseCoupon12,
+.purchaseCoupon13,
+.purchaseCoupon14,
+.purchaseCoupon15 {
+	background: #FFFFF9;
+	box-sizing: border-box;
+}
+.purchaseCoupon0 { border-left: solid 5px #FF0000; }
+.purchaseCoupon1 { border-left: solid 5px #FFD300; }
+.purchaseCoupon2 { border-left: solid 5px #00CC00; }
+.purchaseCoupon3 { border-left: solid 5px #3914AF; }
+.purchaseCoupon4 { border-left: solid 5px #FF6700; }
+.purchaseCoupon5 { border-left: solid 5px #FFF700; }
+.purchaseCoupon6 { border-left: solid 5px #00A287; }
+.purchaseCoupon7 { border-left: solid 5px #660BAB; }
+.purchaseCoupon8 { border-left: solid 5px #FF9400; }
+.purchaseCoupon9 { border-left: solid 5px #C9F600; }
+.purchaseCoupon10 { border-left: solid 5px #0B5FA5; }
+.purchaseCoupon11 { border-left: solid 5px #AA00A2; }
+.purchaseCoupon12 { border-left: solid 5px #FFB600; }
+.purchaseCoupon13 { border-left: solid 5px #84E900; }
+.purchaseCoupon14 { border-left: solid 5px #162EAE; }
+.purchaseCoupon15 { border-left: solid 5px #D9005B; }
+
+.purchaseCoupon0 td.couponPrice { background-image: linear-gradient(315deg, #FF0000 6px, transparent 0); }
+.purchaseCoupon1 td.couponPrice { background-image: linear-gradient(315deg, #FFD300 6px, transparent 0); }
+.purchaseCoupon2 td.couponPrice { background-image: linear-gradient(315deg, #00CC00 6px, transparent 0); }
+.purchaseCoupon3 td.couponPrice { background-image: linear-gradient(315deg, #3914AF 6px, transparent 0); }
+.purchaseCoupon4 td.couponPrice { background-image: linear-gradient(315deg, #FF6700 6px, transparent 0); }
+.purchaseCoupon5 td.couponPrice { background-image: linear-gradient(315deg, #FFF700 6px, transparent 0); }
+.purchaseCoupon6 td.couponPrice { background-image: linear-gradient(315deg, #00A287 6px, transparent 0); }
+.purchaseCoupon7 td.couponPrice { background-image: linear-gradient(315deg, #660BAB 6px, transparent 0); }
+.purchaseCoupon8 td.couponPrice { background-image: linear-gradient(315deg, #FF9400 6px, transparent 0); }
+.purchaseCoupon9 td.couponPrice { background-image: linear-gradient(315deg, #C9F600 6px, transparent 0); }
+.purchaseCoupon10 td.couponPrice { background-image: linear-gradient(315deg, #0B5FA5 6px, transparent 0); }
+.purchaseCoupon11 td.couponPrice { background-image: linear-gradient(315deg, #AA00A2 6px, transparent 0); }
+.purchaseCoupon12 td.couponPrice { background-image: linear-gradient(315deg, #FFB600 6px, transparent 0); }
+.purchaseCoupon13 td.couponPrice { background-image: linear-gradient(315deg, #84E900 6px, transparent 0); }
+.purchaseCoupon14 td.couponPrice { background-image: linear-gradient(315deg, #162EAE 6px, transparent 0); }
+.purchaseCoupon15 td.couponPrice { background-image: linear-gradient(315deg, #D9005B 6px, transparent 0); }
+
+.confirmBoxInner {
+	padding: 20px;
+}
+h3.glitter {
+	margin-bottom: 15px;
+}
+#name {
+	background: #EFEFEF;
+	display: block;
+	padding: 10px 15px;
+	font-weight: bold;
+	margin: 0 0;
+}
+#name span {
+	padding-right: 10px;
+}
+#contentsOfShopping {
+	background: #FFF;
+	margin: 0;
+	width: 100%;
+	padding:15px 1%;
+	box-sizing: border-box;
+}
+#contentsOfShopping table {
+	border-collapse: collapse;
+  border-spacing: 0;
+}
+#contentsOfShopping th,
+#contentsOfShopping td {
+	margin: 0;
+	padding: 15px;
+	vertical-align: top;
+	border-top: 1px solid #efefef;
+}
+.dispBoxInner {
+	margin:0 17px;
+}
+.methodArea {
+	border: 1px solid #EFEFEF!important;
+}
+.couponPrice {
+	color: #C00;
+	font-weight: bold;
+}
+.purchaseCouponTxt {
+	width: 50%;
+}
+.purchaseCouponTxt p {
+	display: block;
+	line-height: 1.3;
+	margin: 0;
+}
+.couponTable {
+	width: 98%;
+	margin: 10px 1%;
+	text-align: left;
+	border-bottom: 1px solid #efefef;
+}
+.purchaseCouponTtl td {
+	border-top: none !important;
+	background: #860010;
+	border-left: solid 5px #860010; 
+	color: #FFF;
+	font-weight: bold;
+	text-align: left !important;
+}
+#contentsOfShopping th {
+	width: 74.7%;
+}
+.attBox {
+	padding: 15px;
+	margin-bottom: 30px;
+	box-sizing: border-box;
+}
+button.btn {
+	width: 50%;
+	height: 46px;
+	margin: 0 25% 50px;
+}
+#btn-back,
+#btn-complete {
+	width: 48% !important;
+	height: 46px !important;
+	margin: 0 1% !important;
+	font-weight: bold;
+}
+table.buyInfo th,
+table.buyInfo td {
+	padding: 10px;
+	border-bottom: 1px solid #EFEFEF;
+}
+#confirmDelivery {
+	margin: 0;
+	width: 100%;
+}
+
+.btn-primary {
+  display: inline-block;
+  border: 1px solid #fff;
+  border-radius: 4px;
+  color: #fff;
+  user-select: none;
+  -ms-user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+}
+
+.btn-primary {
+  background-image: linear-gradient(top, #FF8C4E 0%, #FF7825 48%, #FF6000 50%, #FF7621);
+  background-image: -webkit-gradient(linear, left top, left bottom, from(#FF8C4E), color-stop(0.48, #FF7825), color-stop(0.5, #FF6000), to(#FF7621));
+  background-image: -webkit-linear-gradient(top, #FF8C4E 0%, #FF7825 48%, #FF6000 50%, #FF7621);
+  background-image: -moz-linear-gradient(top, #FF8C4E 0%, #FF7825 48%, #FF6000 50%, #FF7621);
+  box-shadow: 2px 2px 2px -1px rgba(0, 0, 0, .3), 0px 0px 0px 2px rgba(255, 255, 255, .3) inset;
+}
+
+.btn-primary:hover {
+  background-image: linear-gradient(top, #FF9856 0%, #FF9958 48%, #FF8741 50%, #FF8631);
+  background-image: -webkit-gradient(linear, left top, left bottom, from(#FF9856), color-stop(0.48, #FF9958), color-stop(0.5, #FF8741), to(#FF8631));
+  background-image: -webkit-linear-gradient(top, #FF9856 0%, #FF9958 48%, #FF8741 50%, #FF8631);
+  background-image: -moz-linear-gradient(top, #FF9856 0%, #FF9958 48%, #FF8741 50%, #FF8631);
+  box-shadow: 2px 2px 2px -1px rgba(0, 0, 0, .3), 0px 0px 0px 2px rgba(255, 255, 255, .3) inset;
+}
+
+.btn-primary:active {
+  box-shadow: 1px 1px 2px -1px rgba(0, 0, 0, .3), 0px 0px 0px 2px rgba(255, 255, 255, .3) inset;
+}
+
+
+
+
+
+
+@media screen and (max-width: 767px) {
+.confirmBoxInner {
+	padding: 0px;
+}
+.couponTable {
+	border-bottom: none;
+}
+.couponTable tr {
+	display: block;
+	border-bottom: 1px solid #efefef;
+	margin-bottom: 10px;
+}
+.couponTable th,
+.couponTable td {
+	display: block;
+	box-sizing: border-box;
+	padding: 10px;
+}
+.couponPrice {
+	color: #C00;
+	font-weight: bold;
+}
+.purchaseCouponTxt {
+	width: 100%;
+}
+#contentsOfShopping th {
+	width: 50% ;
+}
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

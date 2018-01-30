@@ -1,32 +1,8 @@
 <%inherit file="./base.html"/>
 <%namespace file="tags_smartphone.html" name="m" />
 <%block name="css">
-<style type="text/css">
-  .confirm-message{
-    margin-left: 7px;
-  }
-  .disp-order_no{
-    font-size: 20px;
-    color: #cc0000;
-  }
-  th {
-      text-align: left;
-  }
-  .dispBox {
-    margin: 10px;
-  }
-  .dispBoxInner {
-    margin-left: 17px;
-  }
-  .methodArea {
-    border: 1px solid #000000;
-    background-color: cornsilk;
-    width: 100%;
-  }
-  .align1 {
-    text-align: right;
-  }
-</style>
+<link rel="stylesheet" href="${request.static_url('altair.app.ticketing.cart:static/eagles/pc/css/cart_order.css')}"
+      type="text/css"/>
 </%block>
 
 購入を完了いたしました。<br/>
@@ -48,38 +24,69 @@
 <div class="confirmBox">
   <div class="confirmBoxInner">
     <div class="dispBox">
-      <%m:header>お買い物内容</%m:header>
-      <div class="dispBoxInner">
-        <div id="name">
-            ${order.performance.event.title}<br/>
-            ${h.performance_datetime(order.performance)}<br/>
-            ${order.performance.venue.name}
-        </div>
+        <h3 class="glitter cart">お買い物内容</h3>
+        <div class="dispBoxInner">
+            <div id="name">
+                <span>${order.cart.performance.event.title}</span>
+                <span>${h.performance_datetime(order.cart.performance)}<span/>
+            <span>${order.cart.performance.venue.name}</span>
+            </div>
 
-        <table id="contentsOfShopping" class="methodArea" summary="席種、金額などのお買い物内容">
-          %for product in order.ordered_products:
-            <tr id="commission">
-              <th scope="row">
-                <img src="${request.static_url('altair.app.ticketing.cart:static/eagles/smartphone/images/icon_dummy.gif')}" alt="" width="21" height="21" />
-                ${product.product.name}
-                  % if len(product.elements) == 1:
-                    <strong> ${product.seat_quantity}</strong>枚<br/>
-                  % else:
-                    ×<strong>${product.quantity}</strong><br/>
-                  % endif
-              </th>
-              <td>&nbsp;</td>
-              <td>&nbsp;</td>
-              <td class="align1">￥${h.format_number(product.product.price * product.quantity)}</td>
-            </tr>
-            % if product.product.sales_segment.setting.display_seat_no:
-              % for seat in product.seats:
+            <table id="contentsOfShopping" summary="席種、金額などのお買い物内容" class="methodArea">
+                %for product in order.cart.products:
                 <tr id="commission">
-                  <th scope="row" colspan="4">　　${seat['name']}</th>
+                    % if len(product.items) == 1:
+                    <th scope="row">
+                        <img src="${request.static_url('altair.app.ticketing.cart:static/eagles/smartphone/images/icon_dummy.gif')}"
+                             alt="" width="21" height="21"/>
+                        ${product.product.name}
+                        <strong> ${product.seat_quantity}</strong>枚<br/>
+                    </th>
+                    % else:
+                    <th scope="row"><img
+                            src="${request.static_url('altair.app.ticketing.cart:static/eagles/smartphone/images/icon_dummy.gif')}"
+                            alt="" width="21" height="21"/>${product.product.name} ×<strong>${product.quantity}</strong><br/>
+                    </th>
+                    % endif
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td class="align1">￥${h.format_number(product.product.price * product.quantity)}</td>
                 </tr>
-              % endfor
-            % endif
-          %endfor
+                % if product.product.sales_segment.setting.display_seat_no:
+                % for seat in product.seats:
+                <tr id="commission">
+                    <th scope="row" colspan="4">　　${seat['name']}</th>
+                </tr>
+                % endfor
+                % endif
+                %endfor
+                % if order.cart.discount_amount:
+                <tr id="commission">
+                    <td colspan="5">
+                        <table class="couponTable">
+                            % for index, group in enumerate(order.cart.used_discount_code_groups):
+
+                            <tr class="purchaseCouponTtl">
+                                <td colspan="4">クーポン・割引コードご使用金額</td>
+                            </tr>
+                            <tr class="purchaseCoupon${index}">
+                                <td class="purchaseCouponTxt">
+                                    ${group['discount_code_setting'].explanation |n}
+                                </td>
+                                <td>
+                                    <%
+                                    codes = [code.code for code in group['code']]
+                                    %>
+                                    ${"<br/>".join(codes) |n}
+                                </td>
+                                <td>${len(group['code'])}枚</td>
+                                <td class="align1 couponPrice">-￥${h.format_number(group['discount_price'])}</td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+                % endfor
+                % endif
           <tr id="commission">
             <th scope="row">決済手数料</th>
             <td>&nbsp;</td>

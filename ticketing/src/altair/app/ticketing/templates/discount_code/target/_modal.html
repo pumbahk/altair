@@ -1,0 +1,59 @@
+<%page args="setting, added, deleted, added_id_list, deleted_id_list" />
+<%namespace file="/common/helpers.html" import="form_item"/>
+<%! from altair.app.ticketing.core.models import Event %>
+<%! from altair.app.ticketing.events.performances.forms import PerformanceForm %>
+
+<%def name="diff_target_table(diffs)">
+    <table class="table">
+        <thead>
+        <tr>
+            <th>${HH.label_text_for(Event.title)}</th>
+            <th>${HH.label_text_for(PerformanceForm.start_on)}</th>
+            <th>${HH.label_text_for(PerformanceForm.name)}</th>
+        </tr>
+        </thead>
+        <tbody>
+            %for dif in diffs:
+                <tr>
+                    <td>${dif.event.title}</td>
+                    <td>${vh.datetime(dif.start_on, with_weekday=True)}</td>
+                    <td>${dif.name}</td>
+                </tr>
+            %endfor
+        </tbody>
+    </table>
+</%def>
+
+<div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal">×</button>
+    <h3><% HH.route_label('discount_code.target_confirm') %></h3>
+</div>
+
+<form method="POST"
+      action="${request.route_path("discount_code.target_register", setting_id=setting.id, _query=request.GET)}">
+    <div class="modal-body">
+        <input type="hidden" name="added_id_list" value='${added_id_list|n}'>
+        <input type="hidden" name="deleted_id_list" value='${deleted_id_list|n}'>
+        % if not added and not deleted:
+            <p style="color:red">変更がありません。</p>
+        % else:
+            %if added:
+                追加する公演 ${len(added)}件
+            ${diff_target_table(added)}
+            %endif
+            %if deleted:
+                削除する公演 ${len(deleted)}件
+            ${diff_target_table(deleted)}
+            %endif
+        %endif
+    </div>
+
+    <div class="modal-footer">
+        % if not added and not deleted:
+            <a href="#" class="btn" data-dismiss="modal">閉じる</a>
+        % else:
+            <a href="#" class="btn" data-dismiss="modal">キャンセル</a>
+            <input class="btn btn-primary" type="submit" name="submit" value="変更内容を登録">
+        % endif
+    </div>
+</form>

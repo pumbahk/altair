@@ -12,6 +12,8 @@
     margin-top: 20px;
   }
 </style>
+<link rel="stylesheet" href="${request.static_url('altair.app.ticketing.cart:static/eagles/spa/css/purchase_completion.css')}" type="text/css" media="all" />
+
 </%block>
 		<div class="login-page">
 			<div class="contents">
@@ -67,6 +69,36 @@
 											<td class="align1">￥${h.format_number(product.product.price * product.quantity)}</td>
 										</tr>
                                         % endfor
+											% if order.cart.discount_amount:
+											<tr>
+												<td colspan="5">
+													<table class="couponTable">
+														<tr class="purchaseCouponTtl">
+															<td colspan="4">クーポン・割引コードご使用金額</td>
+														</tr>
+														% for index, group in enumerate(order.cart.used_discount_code_groups):
+														<tr class="purchaseCoupon${index}">
+															<td class="purchaseCouponTxt">
+																<p>
+																	${group['discount_code_setting'].explanation |n}
+																</p>
+															</td>
+															<td>
+																<%
+																codes = [code.code for code in group['code']]
+																%>
+																${"<br/>".join(codes) |n}
+															</td>
+															<td>${len(group['code'])}枚</td>
+															<td class="align1 couponPrice">
+																-￥${h.format_number(group['discount_price'])}
+															</td>
+														</tr>
+														% endfor
+													</table>
+												</td>
+											</tr>
+											% endif
 										<tr>
 											<th scope="row">決済手数料</th>
 											<td>&nbsp;</td>
@@ -144,10 +176,10 @@
 								<p>お申し込み時に、ご登録いただいたメールアドレス宛に、受付完了メールが送られます。
 									<br>しばらくたっても確認のメールが届かない場合は、入力されたメールアドレスが誤っている可能性があります。
 									<br>
-									<a target="_blank" href="https://f.msgs.jp/webapp/hear/org/showEnquete.do?enqueteid=3&clientid=13074&databaseid=wit">こちら</a>よりお問い合わせください。
+									<a target="_blank" href="https://f.msgs.jp/webapp/hear/org/showEnquete.do?enqueteid=3&clientid=13074&databaseid=wit" class="link">こちら</a>よりお問い合わせください。
 									<br>（お問い合わせの際は、お申し込み時のお名前と電話番号を記載お願いします）
 									<br>お申し込み内容は、「
-									<a href="/orderreview">履歴確認</a>」からもご確認いただけます。受付番号とご登録時のお電話番号をお手元にご用意の上、ご利用ください。
+									<a href="/orderreview" class="link">履歴確認</a>」からもご確認いただけます。受付番号とご登録時のお電話番号をお手元にご用意の上、ご利用ください。
 								</p>
 							</div>
 						</div>
