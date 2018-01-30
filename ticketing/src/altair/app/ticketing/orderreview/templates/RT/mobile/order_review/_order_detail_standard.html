@@ -77,6 +77,10 @@ ${shipping_address.address_2}
 ${shipping_address.tel_1}<br />
 <%mobile:form_header>メールアドレス</%mobile:form_header>
 ${shipping_address.email_1}<br />
+<%mobile:form_header>生年月日</%mobile:form_header>
+${u"{0.year} 年 {0.month}月 {0.day}日".format(shipping_address.birthday)}<br />
+<%mobile:form_header>性別</%mobile:form_header>
+${h.format_sex(request, shipping_address.sex)}<br />
 % if order.status == 'canceled':
 <%mobile:form_header>この購入/予約はキャンセルされました</%mobile:form_header>
 <font size="-2">
