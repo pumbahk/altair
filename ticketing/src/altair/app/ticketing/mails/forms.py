@@ -161,6 +161,11 @@ class OrderInfoDefaultMixin(object):
 
     def get_discount_info(request, order):
         discount_info = u""
+        # 予約インポートなど、Cartと紐付かないorderが存在する
+        # TODO: 予約インポートした割引コード利用の予約に関連するメールにはクーポンの使用情報が表示されない？
+        if (not order.cart) or (not order.cart.used_discount_code_groups):
+            return discount_info
+
         for index, group in enumerate(order.cart.used_discount_code_groups):
             codes = [code.code for code in group['code']]
             discount_info = u"{0}{1}\n使用したクーポン・割引コード:{2}\n{3}枚\n-￥{4}\n".format(discount_info,
