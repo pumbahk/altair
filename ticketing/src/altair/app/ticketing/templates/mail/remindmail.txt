@@ -55,7 +55,7 @@ ${get("for_product").body}
 %endif
 
 %if get("discount_info").status:
-%if ${get("discount_info").body}:
+%if get("discount_info").body:
 ■${get("discount_info").label}
 ${get("discount_info").body}
 %endif
