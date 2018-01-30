@@ -169,7 +169,7 @@ def i18n_mail_date(date):
 
 
 # TODO: requestをパラメータから排除
-def error_list(request, form_or_field, name, **options):
+def error_list(request, form_or_field, name=None, **options):
     if isinstance(form_or_field, Field):
         field = form_or_field
     else:
