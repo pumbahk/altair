@@ -291,6 +291,12 @@ msgstr "이메일 보내기"
 msgid "閉じる"
 msgstr "닫기"
 
+msgid "以下の注意事項に同意しQRチケットを取得"
+msgstr "아래의 주의사항을 동의하시면 QR티켓을 취득"
+
+msgid "QRチケットを取得"
+msgstr "QR티켓을 취득"
+
 # sej
 
 msgid "セブン-イレブン支払い"

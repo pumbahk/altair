@@ -291,6 +291,12 @@ msgstr "QRチケットの転送間違い、お渡し間違い等に起因する�
 msgid "閉じる"
 msgstr "閉じる"
 
+msgid "以下の注意事項に同意しQRチケットを取得"
+msgstr "以下の注意事項に同意しQRチケットを取得"
+
+msgid "QRチケットを取得"
+msgstr "QRチケットを取得"
+
 # sej
 
 msgid "セブン-イレブン支払い"

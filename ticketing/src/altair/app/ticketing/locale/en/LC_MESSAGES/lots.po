@@ -194,19 +194,19 @@ msgid "申込受付期間"
 msgstr "Application acceptance period"
 
 msgid "抽選結果発表予定日"
-msgstr "Lottery result announcement Date"
+msgstr "Lottery result announcement date"
 
 msgid "制限枚数"
-msgstr "Limit the number"
+msgstr "Number of tickets"
 
 msgid "1希望の申込で{0}枚まで"
-msgstr "In application of 1 hope {0}"
+msgstr "{0} ticket(s) per application"
 
 msgid "申込回数制限"
-msgstr "Application limit on the number of times"
+msgstr "Number of applications"
 
 msgid "{0} 回"
-msgstr "{0} times"
+msgstr "{0} application per person"
 
 msgid "受付希望数"
 msgstr "Accepted desired number"

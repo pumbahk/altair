@@ -39,10 +39,10 @@ msgstr "下一步"
 msgid "申込方法"
 msgstr "购票方法"
 
-msgid "よくある质问"
+msgid "よくある質問"
 msgstr "常见问题"
 
-msgid "申込确认"
+msgid "申込確認"
 msgstr "抽选申请确认"
 
 # review form

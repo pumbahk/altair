@@ -28,5 +28,5 @@ def includeme(config):
             timeout=int(config.registry.settings.get('altair.eagles_extauth.timeout', 10))
             ),
         ICommunicator,
-        name='eagles'
+        name='disc_code_eagles'
         )

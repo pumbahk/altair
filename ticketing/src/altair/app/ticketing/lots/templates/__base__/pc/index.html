@@ -99,7 +99,7 @@ if label is None or label is True:
             </tr>
             <tr class="none">
               <th scope="row">${__(u'公演日')}</th>
-              <td>${h.performance_datetime(performance, disp_open_time='true')}</td>
+              <td>${h.performance_datetime(performance, i18n=True, disp_open_time='true')}</td>
             </tr>
             <tr>
               <th scope="row">${__(u'会場')}</th>
@@ -154,10 +154,10 @@ if label is None or label is True:
                           % if (performance.id == selected_performance.id) and (i == 0):
                           <option value="${performance.id}" selected>${h.performance_date_label(performance)}</option>
                           % else:
-                          <option value="${performance.id}">${h.performance_date_label(performance)}</option>
+                          <option value="${performance.id}">${h.performance_date_label_i18n(performance)}</option>
                           % endif
                         % else:
-                        <option value="${performance.id}">${h.performance_date_label(performance)}</option>
+                        <option value="${performance.id}">${h.performance_date_label_i18n(performance)}</option>
                         % endif
                       %endfor
                       </select>

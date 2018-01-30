@@ -30,6 +30,7 @@ from altair.formhelpers.fields.liaison import (
 from altair.formhelpers.widgets import (
     OurDateWidget,
     build_date_input_select_japanese_japan,
+    build_date_input_select_i18n
     )
 from altair.formhelpers.fields import (
     OurDateField
@@ -51,6 +52,7 @@ from altair.formhelpers.fields.core import (
     )
 import forms_i18n_helper as h
 from altair.app.ticketing.cart.schemas import length_limit_for_sej
+from altair.app.ticketing.i18n import custom_locale_negotiator
 
 ymd_widget = Switcher(
     'select',
@@ -222,7 +224,7 @@ class ClientFormFactory(object):
                 value_defaults={'year':u'1980'},
                 missing_value_defaults={ 'year': u'', 'month': u'', 'day': u'', },
                 widget=OurDateWidget(
-                    input_builder=build_date_input_select_japanese_japan
+                    input_builder=build_date_input_select_i18n if request.organization.setting.i18n and custom_locale_negotiator(request) != u'ja' else build_date_input_select_japanese_japan
                     ),
                 validators=[
                     Required(_(u'入力してください')),
