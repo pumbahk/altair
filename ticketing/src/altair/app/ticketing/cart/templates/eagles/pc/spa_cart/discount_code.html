@@ -1,0 +1,116 @@
+<%inherit file="./base.html"/>
+
+<%block name="javascript">
+<script type="text/javascript"
+        src="${request.static_url('altair.app.ticketing.cart:static/js/ajaxzip3-https.js')}"></script>
+</%block>
+
+%if request.session.peek_flash():
+%for message in request.session.pop_flash():
+<div class="error">${message}</div>
+%endfor
+%endif
+
+<script type="text/javascript"
+        src="${request.static_url('altair.app.ticketing.cart:static/js/disable_on_submit.js')}"></script>
+<script type="text/javascript">
+    $(function () {
+        $('form').disableOnSubmit('input[type=submit]');
+    });
+</script>
+
+
+<style>
+  #btn-complete {
+    border: 0;
+    width: 226px;
+    height: 46px;
+    background: url("${request.static_url('altair.app.ticketing.cart:static/eagles/pc/images/btn_next.gif')}") left top no-repeat;
+  }
+</style>
+
+
+
+<link rel="stylesheet" href="${request.static_url('altair.app.ticketing.cart:static/eagles/spa/css/coupon.css')}" type="text/css" media="all" />
+
+</head>
+<body id="settlement" class="desktop loaded">
+<script> (window.jQuery || document.write('<script src="https://eagles.tstar.jp/extauth/static/eagles/js/jquery.js"><\/script>')); </script>
+</div>
+
+<div id="container" class="couponPosionRe">
+    <div id="main">
+        <div id="container" class="couponPosionRe">
+            <!-- ========== main ========== -->
+            <form id="form1" name="form1" method="post" action="${request.url}">
+                ${csrf_form.csrf_token()}
+                <div class="confirmBox">
+                    <div class="confirmBoxInner inner">
+                        <h1 class="purchaseTtl">クーポン・割引コードのご利用</h1>
+                        <p>クーポン・割引コードをお持ちの方はご入力のうえ、「次へ」ボタンをクリックしてください。<br>
+                            お持ちでない場合は何も入力せず、そのまま「次へ」をクリックしてください。 </p>
+                        <h2 class="heading heading_simple_line">クーポン・割引コードの入力（半角英数字）</h2>
+                        <table id="confirmDelivery" class="couponCodeBox">
+                            <tbody>
+                            % for form in forms:
+                            <tr>
+                                <td>
+                                    <span>クーポン・割引コード</span>
+                                    ${form.code(placeholder=u'クーポン・割引コードをご入力ください')}
+                                </td>
+                            </tr>
+                            % if form.errors:
+                            <tr>
+                                <td class="couponAttention">
+                                    ${form.errors['code'][0]}
+                                </td>
+                            </tr>
+                            % endif
+                            % endfor
+                            </tbody>
+                        </table>
+                        <table id="confirmDelivery" class="couponSeats">
+                            <thead>
+                            <tr>
+                                <td>クーポン・割引コード適応対象席種</td>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            % for carted_product_item in cart_product_items:
+                            % for i in range(0, carted_product_item.quantity):
+                            <tr>
+                                <td>
+                                    ${carted_product_item.product_item.name}
+                                    ￥${h.format_number(carted_product_item.price)}
+                                    % if carted_product_item.seats:
+                                    ${carted_product_item.seats[i].name}
+                                    % endif
+                                </td>
+                            </tr>
+                            % endfor
+                            % endfor
+                            </tbody>
+                        </table>
+                        <div class="couponSeatsText">
+                            <p>※一度使用したクーポン・割引コードは「使用済み」となり使えませんので、ご注意ください。<br/>
+                                ※購入希望席種の金額が高い順にクーポン・割引コードが適用されます。</p>
+                        </div>
+                        <p class="confirm-btnBox">
+                            <input class="btn btn-primary" type="submit" value="次へ">
+                        </p>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+
+% if request.organization.setting.sitecatalyst_use:
+<!--SiteCatalyst-->
+<%
+sc = {"pagename": "discount_code"}
+%>
+<%include file="../../common/sc_basic.html" args="sc=sc" />
+<!--/SiteCatalyst-->
+% endif

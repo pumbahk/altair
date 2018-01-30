@@ -12,6 +12,9 @@
     margin-top: 20px;
   }
 </style>
+<link rel="stylesheet"
+	  href="${request.static_url('altair.app.ticketing.cart:static/eagles/pc/css/cart_order.css')}"
+	  type="text/css" media="all"/>
 </%block>
 
 ${self.widget.flow_widget(4)}
@@ -53,6 +56,37 @@ ${(view_context.embedded_html_complete_page or u'')|n}
         <td class="align1">￥${h.format_number(product.product.price * product.quantity)}</td>
       </tr>
       %endfor
+      % if order.cart.discount_amount:
+      <tr>
+        <td colspan="5">
+          <table class="couponTable">
+            <tr class="purchaseCouponTtl">
+              <td colspan="4">クーポン・割引コードご使用金額</td>
+            </tr>
+            % for index, group in enumerate(order.cart.used_discount_code_groups):
+            <tr class="purchaseCoupon${index}">
+              <td class="purchaseCouponTxt">
+                <p>
+                  ${group['discount_code_setting'].explanation |n}
+                </p>
+              </td>
+              <td>
+                <%
+                codes = [code.code for code in group['code']]
+                %>
+                ${"<br/>".join(codes) |n}
+              </td>
+              <td>${len(group['code'])}枚</td>
+              <td class="align1 couponPrice">
+                -￥${h.format_number(group['discount_price'])}
+              </td>
+            </tr>
+            % endfor
+          </table>
+        </td>
+      </tr>
+      % endif
+
       <tr id="commission">
         <th scope="row">決済手数料</th>
         <td>&nbsp;</td>

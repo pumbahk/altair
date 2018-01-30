@@ -1,34 +1,29 @@
 # -*- coding:utf-8 -*-
-import hashlib
 import re
-import random
 import string
-from markupsafe import Markup
-from pyramid.view import view_config, view_defaults
-from pyramid.response import Response
-from zope.interface import implementer
-from sqlalchemy.orm.exc import NoResultFound
-from altair.pyramid_dynamic_renderer import lbr_view_config
-from altair.app.ticketing.core import models as c_models
-from altair.app.ticketing.orders import models as order_models
-from altair.app.ticketing.orders.api import bind_attributes
-from altair.app.ticketing.payments.interfaces import IPaymentPlugin, IOrderPayment, IDeliveryPlugin, IOrderDelivery
+
 from altair.app.ticketing.cart.interfaces import ICartDelivery, ICartPayment
 from altair.app.ticketing.mails.interfaces import (
-    ICompleteMailResource, 
+    ICompleteMailResource,
     IOrderCancelMailResource,
     ILotsAcceptedMailResource,
     ILotsElectedMailResource,
     ILotsRejectedMailResource,
-    )
-from altair.app.ticketing.utils import sensible_alnum_decode
-
-from . import models as m
-from . import logger
-
+)
+from altair.app.ticketing.orders import models as order_models
+from altair.app.ticketing.orders.api import bind_attributes
+from altair.app.ticketing.payments.interfaces import IPaymentPlugin, IOrderPayment, IDeliveryPlugin, IOrderDelivery
+from altair.app.ticketing.utils import rand_string
+from altair.pyramid_dynamic_renderer import lbr_view_config
+from markupsafe import Markup
+from pyramid.response import Response
+from pyramid.view import view_defaults
+from sqlalchemy.orm.exc import NoResultFound
+from zope.interface import implementer
 from . import RESERVE_NUMBER_DELIVERY_PLUGIN_ID as PLUGIN_ID
 from . import RESERVE_NUMBER_PAYMENT_PLUGIN_ID as PAYMENT_PLUGIN_ID
-
+from . import logger
+from . import models as m
 from .helpers import get_payment_method_info, get_delivery_method_info
 
 tag_re = re.compile(r"<[^>]*?>")
@@ -201,8 +196,6 @@ def lot_payment_notice_viewlet(context, request):
 def lot_delivery_notice_viewlet(context, request):
     return Response(context.mail_data("D", "notice"))
 
-def rand_string(seed, length):
-    return "".join([random.choice(seed) for i in range(length)])
 
 @implementer(IPaymentPlugin)
 class ReservedNumberPaymentPlugin(object):

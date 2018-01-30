@@ -1,0 +1,55 @@
+<%page args="setting=None, code=None, order=None, small=False, split=False" />
+<%namespace file="/common/helpers.html" name="ch" />
+<%namespace file="/common/modal.html" import="delete_modal" />
+<script type="text/javascript">
+</script>
+<%
+    s_id = setting.id if setting else ''
+    c_id = code.id if code else ''
+
+    if code and code.used_at:
+        used_at_url = 'javascript:void(0);'
+        used_at_attr = {'class':'btn-danger disabled'}
+    else:
+        used_at_url = 'javascript:used_at({}, {});'.format(s_id, c_id)
+        used_at_attr = {'class':'btn-danger'}
+
+    actions = {
+        'edit':dict(
+            label=u'コード追加',
+            url='javascript:add_codes({});'.format(s_id),
+            icon='icon-pencil',
+        ),
+        'csv_export':dict(
+            label=u'CSV出力',
+            url=request.route_path('discount_code.codes_csv_export', setting_id=s_id, _query=request.GET),
+            icon='icon-pencil',
+        ),
+        'delete':dict(
+            label=u'コード全削除',
+            url='javascript:delete_codes({});'.format(s_id),
+            attrs={'class':'btn-danger'},
+            icon='icon-minus',
+        ),
+        'used_at':dict(
+            label=u'使用済みにする',
+            url=used_at_url,
+            attrs=used_at_attr,
+            icon='icon-minus',
+        ),
+    }
+
+    order = iter(order or ['edit', 'csv_export', 'delete'])
+%>
+% if split:
+    <div style="margin-right: 10px;">
+        % for item in order:
+      ${HH.action_button(actions, iter([item]), vertical=False, extra_classes=[u'btn-small'] if small else [])}
+        % endfor
+    </div>
+% else:
+    <div>
+        ${HH.action_button(actions, order, vertical=False, extra_classes=[u'btn-small'] if small else [])}
+    </div>
+% endif
+${delete_modal(id='modal-delete', label_delete=u'使用済みにする')}

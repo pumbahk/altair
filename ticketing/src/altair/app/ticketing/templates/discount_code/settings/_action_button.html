@@ -1,0 +1,51 @@
+<%page args="setting=None, order=None, small=False, split=False" />
+<%namespace file="/common/helpers.html" name="ch" />
+<%namespace file="/common/modal.html" import="delete_modal" />
+<script type="text/javascript">
+</script>
+<%
+    s_id = setting.id if setting else ''
+    actions = {
+        'edit':dict(
+            label=u'編集',
+            url='javascript:edit_setting({});'.format(s_id),
+            icon='icon-pencil',
+        ),
+        'target':dict(
+            label=u'適用対象',
+            url=request.route_path('discount_code.target_index', setting_id=s_id),
+            icon='icon-pencil',
+        ),
+        'code':dict(
+            label=u'コード一覧',
+            url=request.route_path('discount_code.codes_index', setting_id=s_id),
+            icon='icon-pencil',
+        ),
+        'delete':dict(
+            label=u'削除',
+            url='javascript:delete_setting({});'.format(s_id),
+            attrs={'class':'btn-danger'},
+            icon='icon-minus',
+        ),
+      }
+
+    order_list = ['edit', 'target', 'code', 'delete']
+
+    if setting.issued_by != 'own':
+        actions.pop('code', None)
+        order_list.pop(2)
+
+    order = iter(order_list)
+%>
+% if split:
+    <div style="float: left; margin-right: 10px;">
+        % for item in order:
+      ${HH.action_button(actions, iter([item]), vertical=False, extra_classes=[u'btn-small'] if small else [])}
+        % endfor
+    </div>
+% else:
+    <div style="float: left;">
+        ${HH.action_button(actions, order, vertical=False, extra_classes=[u'btn-small'] if small else [])}
+    </div>
+% endif
+${delete_modal()}

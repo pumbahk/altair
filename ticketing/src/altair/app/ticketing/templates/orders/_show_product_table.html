@@ -96,6 +96,10 @@
           ${ticketing_flg(ordered_product_item.is_printed())}
          %else:
           ${ticketing_flg(token.is_printed())}
+          % for code in token.used_discount_codes:
+           <br/>
+           <div>使用したクーポン・割引コード: ${code.code}</div>
+          % endfor
          %endif
        </li>
        %endfor
@@ -118,14 +122,23 @@
     </td>
     <td style="text-align: right;">${vh.price(ordered_product_item.price)}</td>
     <td></td>
-    <td>${ordered_product_item.quantity}</td>
-    <td></td>
+    <td>
+      ${ordered_product_item.quantity}
+      % if ordered_product_item.used_discount_codes:
+        <br/>クーポン${len(ordered_product_item.used_discount_codes)}枚
+      % endif
+    </td>
+    <td style="color: red;text-align:right;">
+        % if ordered_product_item.used_discount_codes:
+            -${vh.price(len(ordered_product_item.used_discount_codes) * ordered_product_item.price)}
+        % endif
+    </td>
   </tr>
   %endfor
-%if loop.last:
-    <tr>
-      <td colspan="2">決済手数料</td>
-      <td></td>
+    %if loop.last:
+      <tr>
+          <td colspan="2">決済手数料</td>
+          <td></td>
       <td></td>
       <td></td>
       <td></td>

@@ -600,6 +600,13 @@ class TicketDictBuilder(object):
             d = self.build_dict_from_seat(ordered_product_item_token.seat, retval=d, ticket_number_issuer=ticket_number_issuer)
         else:
             d = self.build_dict_from_venue(ordered_product_item.product_item.performance.venue, d)
+
+        # 引換券機能の追加により、引換券に紐づくチケット価格の内容を変更する。
+        if u'チケット価格' in extra and ordered_product_item_token.is_applied_discount_code:
+            extra[u'チケット価格'] = u'0円(C払戻不可)'
+        else:
+            extra[u'チケット価格'] = self.formatter.format_currency(ordered_product_item_token.item.price)
+
         d.update(extra)
         return d
 

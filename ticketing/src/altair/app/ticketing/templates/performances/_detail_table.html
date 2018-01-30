@@ -70,6 +70,21 @@
         <a href="${cart_url}">${cart_url}</a>  (<a href="${cart_now_cart_url}">時間指定してカート購入</a>)
       </td>
     </tr>
+    %if request.context.organization.code == 'RE':
+    <tr>
+      <th>
+        SPAカートURL
+        <span class="help-inline">
+          <a rel="popover" data-original-title="SPAカートURL" data-content="SPA購入カートのURL">
+            <i class="icon-question-sign"></i>
+          </a>
+        </span>
+      </th>
+      <td colspan="7">
+        <a href="${spa_cart_url}">${spa_cart_url}</a>
+      </td>
+    </tr>
+    % endif
     %if performance.setting:
       %for (k, _), (label, v) in HH.describe_iter(performance.setting):
         <tr>

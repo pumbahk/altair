@@ -250,6 +250,7 @@ class OrganizationSettings(BaseView):
         organization_setting.enable_mypage = f.enable_mypage.data
         organization_setting.recaptcha = f.recaptcha.data
         organization_setting.tapirs = f.tapirs.data
+        organization_setting.enable_discount_code = f.enable_discount_code.data
         organization_setting.enable_word = f.enable_word.data
         organization_setting.augus_use = f.augus_use.data
         organization_setting.mail_refund_to_user = f.mail_refund_to_user.data
@@ -373,6 +374,7 @@ class OrganizationSettingSimples(BaseView):
                     organization_setting.auto_cms = f.auto_cms.data
                     organization_setting.recaptcha = f.recaptcha.data
                     organization_setting.tapirs = f.tapirs.data
+                    organization_setting.enable_discount_code = f.enable_discount_code.data
                     self.request.session.flash(u'その他の設定を保存しました')
                     return HTTPFound(location=route_path(
                         'organizations.settings.edit.simple',
