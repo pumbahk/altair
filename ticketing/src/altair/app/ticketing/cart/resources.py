@@ -723,7 +723,7 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
             return []
 
         sorted_cart_product_items = self.sorted_carted_product_items(cart)
-        settings = cart.performance.find_available_target_settings(max_price=self.cart.highest_item_price)
+        settings = cart.performance.find_available_target_settings(max_price=cart.highest_item_price)
 
         code_forms = []
         input_cnt = len(codes)
@@ -863,7 +863,7 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
                 code_dict['form'].add_coupon_response_error(error_list[code_dict['form'].code.data])
         return True
 
-    def use_discount_coupon(self, order):
+    def use_discount_coupon(self, order, cart):
         # ファンクラブコード
         code_list = [code.code for code in discount_api.get_used_discount_codes(order.cart) if
                      not code.discount_code_id]
@@ -872,7 +872,7 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
             result = discount_api.use_discount_codes(self.request, codes,
                                                      order.cart.performance.find_available_target_settings(
                                                          issued_by=u'sports_service',
-                                                         max_price=self.cart.highest_item_price
+                                                         max_price=cart.highest_item_price
                                                      ))
             if not result['status'] == u'OK' and result['usage_type'] == u'1010':
                 # 使用時にエラー
