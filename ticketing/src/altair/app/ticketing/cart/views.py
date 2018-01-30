@@ -1741,7 +1741,7 @@ class CompleteView(object):
         self.context.check_order_limit()  # 最終チェック
         order = api.make_order_from_cart(self.request, cart)
         order_no = order.order_no
-        self.context.use_discount_coupon(order)
+        self.context.use_discount_coupon(order, cart)
         transaction.commit()  # cont_complete_viewでエラーが出てロールバックされても困るので
         logger.debug("keyword=%s" % ' '.join(self.request.params.getall('keyword')))
         return cont_complete_view(
