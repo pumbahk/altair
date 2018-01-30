@@ -196,7 +196,7 @@ def confirm_discount_code_status(request, codes, available_fanclub_discount_code
         return None
 
     # イーグルスクーポンの状態確認
-    comm = get_communicator(request, 'eagles')
+    comm = get_communicator(request, 'disc_code_eagles')
     fc_member_id = request.altair_auth_info['authz_identifier']
 
     # ファンクラブのもので先頭4桁が合致するものだけ実施
@@ -227,7 +227,7 @@ def use_discount_codes(request, codes, available_fanclub_discount_code_settings)
         return None
 
     # イーグルスクーポンの使用
-    comm = get_communicator(request, 'eagles')
+    comm = get_communicator(request, 'disc_code_eagles')
     fc_member_id = request.altair_auth_info['authz_identifier']
 
     # ファンクラブのもので先頭4桁が合致するものだけ実施
@@ -285,7 +285,7 @@ def cancel_used_discount_codes(request, order, now=None):
         if not api_request_coupons:
             return None
 
-        comm = get_communicator(request, 'eagles')
+        comm = get_communicator(request, 'disc_code_eagles')
         data = {
             'usage_type': '1010',
             'coupons': api_request_coupons
