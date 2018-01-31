@@ -21,35 +21,34 @@
     %endfor
 %endif
 
-<form id="form1" name="form1" method="post" action="${request.url}">
-  <div class="confirmBox">
-    <div class="confirmBoxInner">
-      <h2><img src="${request.static_url('altair.app.ticketing.cart:static/eagles/pc/images/title_customer_info.gif')}" alt="購入者情報" width="103" height="30" /></h2>
-      <table id="confirmDelivery">
-        <tr>
-          <th scope="row">${__(u'楽天スーパーポイント口座(半角数字)')}</th>
-          <td>
-            <ul>
-              <li>${form['accountno'].label}
-                ${form['accountno']}
-                (${__(u'例')}: 1111-2222-3333-4444)
-                ${h.error_list(request, form, 'accountno')}
-              </li>
-              <li>
-                  ${__(u'お持ちの方は、楽天スーパーポイント口座情報を入力して下さい。')}<br/>
-                  ${__(u'楽天ポイント口座を確認するには、')}
-                  <a href="javascript:void(window.open('https://point.rakuten.co.jp/PointAccount/PointAccountDisplay/?asid=${asid}', '_blank', 'width=700,height=500,scrollbars=yes'))">${__(u'こちら')}</a>
-              </li>
-            </ul>
-          </td>
-        </tr>
-      </table>
+<div class="confirm-wrap">
+  <h2 class="heading heading_simple_line">${__(u'楽天スーパーポイント口座(半角数字)')}</h2>
+  <form id="form1" name="form1" method="post" action="${request.url}">
+    <div class="confirmBox">
+      <div class="confirmBoxInner">
+        <table id="confirmDelivery">
+          <tr>
+            <th scope="row">${__(form['accountno'].label})</th>
+            <td>
+              ${form['accountno']}
+              (${__(u'例')}: 1111-2222-3333-4444)
+              ${h.error_list(request, form, 'accountno')}
+              <ul>
+                <li>
+                    ${__(u'お持ちの方は、楽天スーパーポイント口座情報を入力して下さい。')}<br/>
+                    ${__(u'楽天ポイント口座を確認するには、')}
+                    <a href="javascript:void(window.open('https://point.rakuten.co.jp/PointAccount/PointAccountDisplay/?asid=${asid}', '_blank', 'width=700,height=500,scrollbars=yes'))">${__(u'こちら')}</a>
+                </li>
+              </ul>
+            </td>
+          </tr>
+        </table>
+      </div>
     </div>
-  </div>
-</div>
-<p class="align2" onclick="$('#form1').submit()">次へ</p>
-</form>
+  <p class="confirm-btnBox"><input class="btn btn-primary" type="button" value="${_(u'次へ')}" onclick="$('#form1').submit()"></p>
+  </form>
 
+</div>
 % if request.organization.setting.sitecatalyst_use:
 <!--SiteCatalyst-->
 <%
