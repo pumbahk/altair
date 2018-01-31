@@ -1469,7 +1469,11 @@ class DiscountCodeEnteringView(object):
         sorted_cart_product_items = self.context.sorted_carted_product_items()
 
         self.context.validate_discount_codes(codes)
-        self.context.confirm_discount_code_status(codes)
+
+        if self.context.is_authz_user:
+            # TODO 株主会員の場合数字のため、これだけだと足りなそう
+            # ファンクラブのクーポンの場合(スポーツサービス開発発行のコード)の場合ログインしていないと使えない
+            self.context.confirm_discount_code_status(codes)
 
         if self.context.exist_validate_error(codes):
             csrf_form = schemas.CSRFSecureForm(csrf_context=self.request.session)
@@ -1737,11 +1741,13 @@ class CompleteView(object):
 
         self.context.check_deleted_product(cart)
         # クーポンのチェック
-        self.context.check_available_discont_code()
-        self.context.check_order_limit()  # 最終チェック
+        if self.context.is_authz_user:
+            # TODO 株主会員の場合数字のため、これだけだと足りなそう
+            self.context.check_available_discont_code()
+        self.context.check_order_limit() # 最終チェック
         order = api.make_order_from_cart(self.request, cart)
         order_no = order.order_no
-        self.context.use_discount_coupon(order)
+        self.context.use_discount_coupon(order, cart)
         transaction.commit()  # cont_complete_viewでエラーが出てロールバックされても困るので
         logger.debug("keyword=%s" % ' '.join(self.request.params.getall('keyword')))
         return cont_complete_view(
