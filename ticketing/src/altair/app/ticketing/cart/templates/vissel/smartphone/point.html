@@ -21,16 +21,23 @@
     %endfor
 %endif
 
+<style type="text/css">
+  input#accountno {
+      width: 50%;
+  }
+</style>
+
 <div class="confirm-wrap">
-  <h2 class="heading heading_simple_line">${__(u'楽天スーパーポイント口座(半角数字)')}</h2>
   <form id="form1" name="form1" method="post" action="${request.url}">
     <div class="confirmBox">
       <div class="confirmBoxInner">
-        <table id="confirmDelivery">
+        <table id="confirmDelivery" class="customer-table">
           <tr>
-            <th scope="row">${__(form['accountno'].label)}</th>
+            <th scope="row">${__(u'楽天スーパーポイント口座(半角数字)')}</th>
+          </tr>
+          <tr>
             <td>
-              ${form['accountno']}
+              ${form['accountno']} <br/>
               (${__(u'例')}: 1111-2222-3333-4444)
               ${h.error_list(request, form, 'accountno')}
               <ul>
