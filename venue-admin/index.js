@@ -875,31 +875,47 @@ const handleCheckRequest = (param, res) => {
 	const backendStream = (param) => {
 		return new Promise((resolve, reject) => {
 			if(param['backend']) {
-				resolve(fs.createReadStream(getBackendPath(param['backend'])));
-			} else {
+				var svg = getBackendPath(param['backend']);
+				try {
+					fs.statSync(svg);
+					resolve(fs.createReadStream(svg));
+				} catch(err) {
+					svg += ".gz";
+					try {
+						fs.statSync(svg);
+						const gunzip = zlib.createGunzip();
+						resolve(fs.createReadStream(svg).pipe(gunzip));
+					} catch(err) {
+						reject('backend svg is not found');
+					}
+				}
+			} else if(param['backend_meta']) {
 			  const match = param['backend_meta'].match(/^s3:\/\/([^\/]+)\/(.+)$/);
 				if(match) {
 					const aws = setupAWS();
 					const s3 = new aws.S3();
 					s3.getObject({ Bucket: match[1], Key: match[2] }, (err, data) => {
 						if(err) {
-							// TODO:
+							reject(err);
 							return;
 						}
 						const parsed = JSON.parse(data.Body.toString('utf-8'));
 						for(var k in parsed.pages) {
+							// FIXME: gz未対応だが、問題ないはず
 							const key = match[2].replace(/\/[^\/]+$/, '/'+k);
 							resolve(s3.getObject({ Bucket: match[1], Key: key }).createReadStream());
 							return;
 						}
 					});
 				} else {
-					// unexpected
-					reject(param['backend_meta']);
+					reject('Unexpected url: '+param['backend_meta']);
 				}
+			} else {
+				reject();
 			}
 		});
 	};
+
 	backendStream(param)
 	.then((streamB) => {
 		streamB.pipe(backendVenueParser);
