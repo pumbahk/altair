@@ -229,8 +229,12 @@
   <div class="confirm-btnBox">
     <ul class="confirm-btnBox-column2 clearfix">
       <li>
+        % if delegator:
+          ${delegator['submit']}
+        % else:
         <input id="btn-complete" class="btn btn-primary" type="submit" value="${__(u'購入する')}" />
         <p class="fs12 clr_red">※${__(u'お申込み確定後は、理由の如何を問わず、')}<br>${__(u'取替・変更・キャンセルをお受けできません。')}</p>
+        % endif
       </li>
       <li>
         <input id="btn-back" class="btn btn-secondly" type="submit" name="back" value="${__(u'座席選択にもどる')}" />

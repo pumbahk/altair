@@ -1,6 +1,6 @@
 <%inherit file="layout.html" />
 <%block name="title">申込内容確認</%block>
-<form id="form1" action="${request.route_path('payment.confirm')}" method="post">
+<form id="form1" action="${delegator['url'] if delegator else request.route_path('payment.confirm')}" method="post">
   ${form.csrf_token()}
   <table class="frame form">
     <colgroup>
@@ -74,6 +74,12 @@
 
   <div>
     <input type="submit" name="back" value="戻る" class="submit half" />
+    % if delegator:
+      <div class="button_box">
+        ${delegator['submit']}
+      </div>
+    % else:
     <input type="submit" value="申し込む" class="submit half" />
+    % endif
   </div>
 </form>
