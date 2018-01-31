@@ -1045,7 +1045,7 @@ const listener = (req, res) => {
 			if(c != connection_id) {
 				const data = connections[c]; /* [ date, name, operator ] */
 				const params = c.split(/ /);
-				res.write(data[1] + " (" + Math.floor(((now - data[0].getTime()))/1000) + " sec, by "+(operator || "?")+")\n");
+				res.write(data[1] + " (" + Math.floor(((now - data[0].getTime()))/1000) + " sec, by "+(data[2] || "?")+")\n");
 			}
 		});
 		res.end();
