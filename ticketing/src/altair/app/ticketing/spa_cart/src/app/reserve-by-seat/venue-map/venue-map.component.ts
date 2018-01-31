@@ -484,6 +484,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
       // viewBox取得　且つ　reserve-by-seatの高さが取得
       if ((that.originalViewBox) && (that.mapAreaLeftH != 0)) {
         clearInterval(svgLoadCompleteTimer);
+        that.displayViewBox = that.originalViewBox.concat();
         that.seatAreaHeight = $("#mapImgBox").height();
         that.svgMap = document.getElementById('mapImgBox').firstElementChild;
         that.saveSeatData();
