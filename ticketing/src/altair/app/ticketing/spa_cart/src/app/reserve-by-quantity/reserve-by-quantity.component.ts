@@ -48,7 +48,7 @@ export class ReserveByQuantityComponent implements OnInit {
   //表示・非表示(venuemap,reserve-by-quentityで双方向データバインド)
   //(seat-listから呼び出されてtrue,false)
   @Input() filterComponent: FilterComponent;
-  @Input() display:boolean = false;
+  @Input() display: boolean = false;
   @Output() output = new EventEmitter<boolean>();
   @Output() confirmStockType = new EventEmitter<boolean>();
 
@@ -107,9 +107,7 @@ export class ReserveByQuantityComponent implements OnInit {
 
   //最大購入数
   maxQuantity: number;
-  performanceOrderLimit: number;
-  eventOrderLimit: number;
-  defaultMaxQuantity: number = 14;
+  upperLimit: number;
   //最小購入数
   minQuantity: number;
 
@@ -125,7 +123,7 @@ export class ReserveByQuantityComponent implements OnInit {
   constructor(private route: ActivatedRoute, private router: Router,
     private performances: PerformancesService, private stockTypes: StockTypesService,
     private seatStatus: SeatStatusService, private seats: SeatsService,
-    private QuentityChecks: QuentityCheckService,
+    private quentityCheckService: QuentityCheckService,
     private stockTypeDataService: StockTypeDataService,
     private errorModalDataService: ErrorModalDataService,
     private countSelectService: CountSelectService,
@@ -164,10 +162,9 @@ export class ReserveByQuantityComponent implements OnInit {
             this._logger.debug(`get performance(#${this.performanceId}) success`, response);
             this.performance = response.data.performance;
             this.mapURL = this.performance.mini_venue_map_url;
-            this.performanceOrderLimit = this.performance.order_limit;
-            this.eventOrderLimit = response.data.event.order_limit;
             this.selesSegments = this.performance.sales_segments;
             this.selesSegmentId = this.selesSegments[0].sales_segment_id;
+            this.upperLimit = this.performance.sales_segments[0].upper_limit;
 
             //席種情報取得
             if (this.performanceId && this.selesSegmentId && this.selectStockTypeId) {
@@ -187,7 +184,7 @@ export class ReserveByQuantityComponent implements OnInit {
                   //席種名と商品情報取得
                   this.stockTypeName = this.stockType.stock_type_name;
                   this.selectedProducts = this.stockType.products;
-                  this.selectedSalesUnitQuantitys = this.QuentityChecks.eraseOne(this.stockType.products);
+                  this.selectedSalesUnitQuantitys = this.quentityCheckService.eraseOne(this.stockType.products);
                   this.description = this.stockType.description ? this.stockType.description : '';
                   this.minQuantity = this.stockType.min_quantity;
                   this.maxQuantity = this.stockType.max_quantity;
@@ -260,10 +257,10 @@ export class ReserveByQuantityComponent implements OnInit {
 
   //チケット枚数減少
   minusClick() {
-    if (this.QuentityChecks.minLimitCheck(this.minQuantity, this.quantity - 1)) {
+    if (this.quentityCheckService.minLimitCheck(this.minQuantity, this.quantity - 1)) {
       this.quantity--;
       $('#plus-btn').removeClass('disabled');
-      if (!this.QuentityChecks.minLimitCheck(this.minQuantity, this.quantity - 1)) {
+      if (!this.quentityCheckService.minLimitCheck(this.minQuantity, this.quantity - 1)) {
         $('#minus-btn').addClass('disabled');
       }
     } else {
@@ -273,10 +270,10 @@ export class ReserveByQuantityComponent implements OnInit {
 
   //チケット枚数増加
   plusClick() {
-    if (this.QuentityChecks.maxLimitCheck(this.maxQuantity, this.performanceOrderLimit, this.eventOrderLimit, this.quantity + 1)) {
+    if (this.quentityCheckService.maxLimitCheck(this.upperLimit, this.maxQuantity, this.quantity + 1)) {
       this.quantity++;
       $("#minus-btn").removeClass('disabled');
-      if (!this.QuentityChecks.maxLimitCheck(this.maxQuantity, this.performanceOrderLimit, this.eventOrderLimit, this.quantity + 1)) {
+      if (!this.quentityCheckService.maxLimitCheck(this.upperLimit, this.maxQuantity, this.quantity + 1)) {
         $("#plus-btn").addClass('disabled');
       }
     } else {
@@ -290,7 +287,7 @@ export class ReserveByQuantityComponent implements OnInit {
     this.animationEnableService.sendToRoadFlag(true);
     $('#reservebutton').prop("disabled", true);
     if (this.countSelectVenuemap == 0) {
-      if (!this.QuentityChecks.salesUnitCheck(this.selectedProducts, this.quantity)) {
+      if (!this.quentityCheckService.salesUnitCheck(this.selectedProducts, this.quantity)) {
         this.dataUpdate();
         this.route.params.subscribe((params) => {
           if (params && params['performance_id']) {
@@ -354,7 +351,7 @@ export class ReserveByQuantityComponent implements OnInit {
       } else {
         this.animationEnableService.sendToRoadFlag(false);
         $('#reservebutton').prop("disabled", false);
-        this.errorModalDataService.sendToErrorModal('エラー', this.QuentityChecks.salesUnitCheck(this.selectedProducts, this.quantity) + '席単位でご選択ください。');
+        this.errorModalDataService.sendToErrorModal('エラー', this.quentityCheckService.salesUnitCheck(this.selectedProducts, this.quantity) + '席単位でご選択ください。');
       }
     } else {
       this.animationEnableService.sendToRoadFlag(false);
@@ -438,7 +435,7 @@ export class ReserveByQuantityComponent implements OnInit {
     scrollSize += 10;
     //スクロール領域の80%をマップのサイズとして取得
     mapSize = scrollSize * 0.8;
-    setTimeout(function() {
+    setTimeout(function () {
       $('.modalWindow-quantity').css({
         'height': scrollSize
       });
@@ -448,7 +445,7 @@ export class ReserveByQuantityComponent implements OnInit {
       $('#venue-quentity').children("svg").css({
         'height': mapSize,
       });
-     }, 0);
+    }, 0);
   }
 
   scrollAddCss() {

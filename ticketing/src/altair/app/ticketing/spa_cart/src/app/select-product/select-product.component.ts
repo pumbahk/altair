@@ -12,6 +12,7 @@ import { SelectProductService } from '../shared/services/select-product.service'
 import { SmartPhoneCheckService } from '../shared/services/smartPhone-check.service';
 import { AnimationEnableService } from '../shared/services/animation-enable.service';
 import { ReserveBySeatBrowserBackService } from '../shared/services/reserve-by-seat-browser-back.service';
+import { QuentityCheckService } from '../shared/services/quentity-check.service';
 //interface
 import {
         ISeatsReserveResponse,ISeatsReleaseResponse,IResult,
@@ -42,10 +43,16 @@ export class SelectProductComponent implements OnInit {
   performance: IPerformance;
   //販売区分ID
   salesSegmentId: number;
+  //販売区分の最大購入数
+  upperLimit: number;
   //席種ID
   stockTypeId: number;
   //席種情報
   stockType: IStockType;
+  //席種毎の最大商品購入数
+  maxProductQuantity: number;
+  //席種毎の最小商品購入数
+  minProductQuantity: number;
 
   //レスポンス
   response: ISeatsReserveResponse;
@@ -104,6 +111,7 @@ export class SelectProductComponent implements OnInit {
     private smartPhoneCheckService: SmartPhoneCheckService,
     private animationEnableService: AnimationEnableService,
     private reserveBySeatBrowserBackService: ReserveBySeatBrowserBackService,
+    private quentityCheckService: QuentityCheckService,
     private _logger: Logger) {
     this.response = this.seatStatus.seatReserveResponse;
   }
@@ -165,6 +173,7 @@ export class SelectProductComponent implements OnInit {
             this.month = startOn.getMonth() + 1;
             this.day = startOn.getDate();
             this.salesSegmentId = response.data.sales_segments[0].sales_segment_id;
+            this.upperLimit = response.data.sales_segments[0].upper_limit;
             this.pageTitle = this.performance.performance_name;
             this.loadStockType();
           },
@@ -185,6 +194,8 @@ export class SelectProductComponent implements OnInit {
         .subscribe((response: IStockTypeResponse) => {
           this._logger.debug(`get stockType(#${this.performanceId}) success`, response);
           this.stockType = response.data.stock_types[0];
+          this.maxProductQuantity = response.data.stock_types[0].max_product_quantity;
+          this.minProductQuantity = response.data.stock_types[0].min_product_quantity;
           this.initialSetting();
         },
         (error) => {
@@ -257,7 +268,7 @@ export class SelectProductComponent implements OnInit {
         }
       }
     }
-    setTimeout(function() {
+    setTimeout(function () {
       that.recalculation();
     }, 0);
   }
@@ -316,13 +327,18 @@ export class SelectProductComponent implements OnInit {
   //残席数・合計金額・選択済み座席数・±ボタン有効無効
   private recalculation() {
     const disabledNumber: number = 1;
+    let selectedQuantity = 0;
     this.assignedQuantity = 0;
     this.fee = 0;
 
     if (this.isQuantityOnly) {//数受け
       //+ボタン有効無効
       for (let x in this.products) {
-        if (this.unAssignedQuantity < this.salesUnitQuantitys[x]) {
+        selectedQuantity = 0;
+        if (this.selectedQuantitys[x]) {
+          selectedQuantity = this.selectedQuantitys[x];
+        }
+        if (this.quentityCheckService.productMaxLimitCheck(this.products[x].max_product_quantity, this.salesUnitQuantitys[x], selectedQuantity, this.unAssignedQuantity)) {
           addClass(x, "plus");
         } else {
           removeClass(x, "plus");
@@ -330,14 +346,14 @@ export class SelectProductComponent implements OnInit {
       }
       //-ボタン有効無効
       for (let x in this.products) {
-        if (this.selectedQuantitys[x] > 0) {
-          if (disabledNumber > this.selectedQuantitys[x]) {
-            addClass(x, "minus");
-          } else {
-            removeClass(x, "minus");
-          }
-        } else {
+        selectedQuantity = 0;
+        if (this.selectedQuantitys[x]) {
+          selectedQuantity = this.selectedQuantitys[x];
+        }
+        if (this.quentityCheckService.selectedQuantityMinLimitCheck(selectedQuantity)) {
           addClass(x, "minus");
+        } else {
+          removeClass(x, "minus");
         }
       }
       //合計金額再計算
@@ -357,7 +373,11 @@ export class SelectProductComponent implements OnInit {
       this.nextSeat = this.seatResult.seat_name[0];
       //+ボタン有効無効
       for (let x in this.products) {
-        if (this.unAssignedQuantity < this.salesUnitQuantitys[x]) {
+        selectedQuantity = 0;
+        if (this.selectedSeatResults[x]) {
+          selectedQuantity = this.selectedSeatResults[x].length;
+        }
+        if (this.quentityCheckService.productMaxLimitCheck(this.products[x].max_product_quantity, this.salesUnitQuantitys[x], selectedQuantity, this.unAssignedQuantity)) {
           addClass(x, "plus");
         } else {
           removeClass(x, "plus");
@@ -365,14 +385,14 @@ export class SelectProductComponent implements OnInit {
       }
       //-ボタン有効無効
       for (let x in this.products) {
+        selectedQuantity = 0;
         if (this.selectedSeatResults[x]) {
-          if (disabledNumber > this.selectedSeatResults[x].length) {
-            addClass(x, "minus");
-          } else {
-            removeClass(x, "minus");
-          }
-        } else {
+          selectedQuantity = this.selectedSeatResults[x].length;
+        }
+        if (this.quentityCheckService.selectedQuantityMinLimitCheck(selectedQuantity)) {
           addClass(x, "minus");
+        } else {
+          removeClass(x, "minus");
         }
       }
       //合計金額再計算
@@ -395,11 +415,11 @@ export class SelectProductComponent implements OnInit {
     */
     function addClass(x: string, str: string) {
       if (str == "plus") {
-          $('#plus-btn' + [x]).prop("disabled", true);
-          $('#plus-btn' + [x]).addClass('disabled');
+        $('#plus-btn' + [x]).prop("disabled", true);
+        $('#plus-btn' + [x]).addClass('disabled');
       } else {
-          $('#minus-btn' + [x]).prop("disabled", true);
-          $('#minus-btn' + [x]).addClass('disabled');
+        $('#minus-btn' + [x]).prop("disabled", true);
+        $('#minus-btn' + [x]).addClass('disabled');
       }
     }
     /**
@@ -409,12 +429,12 @@ export class SelectProductComponent implements OnInit {
     */
     function removeClass(x: string, str: string) {
       if (str == "plus") {
-          $('#plus-btn' + [x]).prop("disabled", false);
-          $('#plus-btn' + [x]).removeClass('disabled');
+        $('#plus-btn' + [x]).prop("disabled", false);
+        $('#plus-btn' + [x]).removeClass('disabled');
 
       } else {
-          $('#minus-btn' + [x]).prop("disabled", false);
-          $('#minus-btn' + [x]).removeClass('disabled');
+        $('#minus-btn' + [x]).prop("disabled", false);
+        $('#minus-btn' + [x]).removeClass('disabled');
       }
     }
   }
@@ -510,7 +530,9 @@ export class SelectProductComponent implements OnInit {
           }
         }
       });
-      this.unassignedSeatCheck(this.unAssignedQuantity);
+      //商品選択チェック処理
+      this.checks();
+
     } else {//席受け商品選択APIリクエストData作成
       const RequestQuantity: number = 1;
       let itemIndex: number = 0;
@@ -548,7 +570,9 @@ export class SelectProductComponent implements OnInit {
           "quantity": RequestQuantity
         });
       });
-      this.unassignedSeatCheck(this.seatResult.seat_name.length);
+      //商品選択チェック処理
+      this.checks();
+
     }
     //商品選択API
     if (!this.modalVisible) {
@@ -574,23 +598,95 @@ export class SelectProductComponent implements OnInit {
         });
     }
   }
+  /**
+  * 商品選択API前の最終チェック
+  */
+  checks() {
+    const that = this;
+    let modal_title: string = '選択エラー';
+    let modal_massage: string;
+    let selectedQuantity: number = 0;
+    let selectedProductQuantity: number = 0;
+
+    //未割当チェック
+    if (this.quentityCheckService.unassignedSeatCheck(this.unAssignedQuantity)) {
+      modal_massage = '<p>未割当の座席があります。</p>';
+      callModal(modal_massage);
+      return;
+    }
+
+    //選択した「商品数」を求める
+    for (let x in this.salesUnitQuantitys) {
+      if (this.isQuantityOnly) {
+        //数受け
+        if (this.selectedQuantitys[x]) {
+          selectedProductQuantity += this.selectedQuantitys[x] / this.salesUnitQuantitys[x];
+        }
+      } else {
+        //席受け
+        if (this.selectedSeatResults[x]) {
+          selectedProductQuantity += this.selectedSeatResults[x].length / this.salesUnitQuantitys[x];
+        }
+      }
+    }
+    //席種単位での商品上限個数チェック
+    if (this.quentityCheckService.stockTypeMaxLimitCheck(this.upperLimit, this.maxProductQuantity, selectedProductQuantity)) {
+      if (this.upperLimit > this.maxProductQuantity) {
+        modal_massage = '<p>商品は合計' + this.maxProductQuantity + '個以内でご選択ください。</p>';
+      } else {
+        modal_massage = '<p>商品は合計' + this.upperLimit + '個以内でご選択ください。</p>';
+      }
+      callModal(modal_massage);
+      return;
+    }
+    //席種単位での商品下限個数チェック
+    if (this.quentityCheckService.stockTypeMinLimitCheck(this.minProductQuantity, selectedProductQuantity)) {
+      modal_massage = '<p>商品は合計' + this.minProductQuantity + '個以上でご選択ください。</p>';
+      callModal(modal_massage);
+      return;
+    }
+
+    //選択した「枚数」を求める
+    for (let x in this.products) {
+      selectedQuantity = 0;
+      if (this.isQuantityOnly) {
+        //数受け
+        if (this.selectedQuantitys[x]) {
+          selectedQuantity = this.selectedQuantitys[x];
+        }
+      } else {
+        //席受け
+        if (this.selectedSeatResults[x]) {
+          selectedQuantity = this.selectedSeatResults[x].length;
+        }
+      }
+      //商品単位での商品下限個数チェック
+      if (this.quentityCheckService.productMinLimitCheck(this.products[x].min_product_quantity, selectedQuantity)) {
+        modal_massage = '<p>' + this.products[x].product_name + 'は' + this.products[x].min_product_quantity + '個以上でご選択ください。</p>';
+        callModal(modal_massage);
+        return;
+      }
+      //必須選択商品チェック
+      if (this.quentityCheckService.mustBeChosenCheck(this.products[x].is_must_be_chosen, selectedQuantity)) {
+        modal_massage = '<p>' + this.products[x].product_name + 'を１個以上ご選択ください。</p>';
+        callModal(modal_massage);
+        return;
+      }
+    }
+    function callModal(massage: string) {
+      that.modalVisible = true;
+      that.modalTitle = modal_title;
+      that.modalMessage = massage;
+      that.animationEnableService.sendToRoadFlag(false);
+      $('#submit').prop("disabled", false);
+    }
+  }
+
   //トップへ遷移
   onClick() {
     location.href = `${AppConstService.PAGE_URL.TOP}`;
   }
-  /**
- * 合計枚数チェック
- * @param  {number}  num 未割当枚数
- */
-  unassignedSeatCheck(num: number) {
-    if (num > 0) {
-      this.modalVisible = true;
-      this.modalTitle = '選択エラー';
-      this.modalMessage = '<p>未割当の座席があります。</p>';
-      this.animationEnableService.sendToRoadFlag(false);
-      $('#submit').prop("disabled", false);
-    }
-  }
+
   /**
   * 整数か返す
   * @param  {number}  x 判定対象
