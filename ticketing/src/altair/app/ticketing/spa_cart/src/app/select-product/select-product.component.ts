@@ -12,7 +12,7 @@ import { SelectProductService } from '../shared/services/select-product.service'
 import { SmartPhoneCheckService } from '../shared/services/smartPhone-check.service';
 import { AnimationEnableService } from '../shared/services/animation-enable.service';
 import { ReserveBySeatBrowserBackService } from '../shared/services/reserve-by-seat-browser-back.service';
-import { QuentityCheckService } from '../shared/services/quentity-check.service';
+import { QuantityCheckService } from '../shared/services/quantity-check.service';
 //interface
 import {
         ISeatsReserveResponse,ISeatsReleaseResponse,IResult,
@@ -111,7 +111,7 @@ export class SelectProductComponent implements OnInit {
     private smartPhoneCheckService: SmartPhoneCheckService,
     private animationEnableService: AnimationEnableService,
     private reserveBySeatBrowserBackService: ReserveBySeatBrowserBackService,
-    private quentityCheckService: QuentityCheckService,
+    private quantityCheckService: QuantityCheckService,
     private _logger: Logger) {
     this.response = this.seatStatus.seatReserveResponse;
   }
@@ -338,7 +338,7 @@ export class SelectProductComponent implements OnInit {
         if (this.selectedQuantitys[x]) {
           selectedQuantity = this.selectedQuantitys[x];
         }
-        if (this.quentityCheckService.productMaxLimitCheck(this.products[x].max_product_quantity, this.salesUnitQuantitys[x], selectedQuantity, this.unAssignedQuantity)) {
+        if (this.quantityCheckService.productMaxLimitCheck(this.products[x].max_product_quantity, this.salesUnitQuantitys[x], selectedQuantity, this.unAssignedQuantity)) {
           addClass(x, "plus");
         } else {
           removeClass(x, "plus");
@@ -350,7 +350,7 @@ export class SelectProductComponent implements OnInit {
         if (this.selectedQuantitys[x]) {
           selectedQuantity = this.selectedQuantitys[x];
         }
-        if (this.quentityCheckService.selectedQuantityMinLimitCheck(selectedQuantity)) {
+        if (this.quantityCheckService.selectedQuantityMinLimitCheck(selectedQuantity)) {
           addClass(x, "minus");
         } else {
           removeClass(x, "minus");
@@ -377,7 +377,7 @@ export class SelectProductComponent implements OnInit {
         if (this.selectedSeatResults[x]) {
           selectedQuantity = this.selectedSeatResults[x].length;
         }
-        if (this.quentityCheckService.productMaxLimitCheck(this.products[x].max_product_quantity, this.salesUnitQuantitys[x], selectedQuantity, this.unAssignedQuantity)) {
+        if (this.quantityCheckService.productMaxLimitCheck(this.products[x].max_product_quantity, this.salesUnitQuantitys[x], selectedQuantity, this.unAssignedQuantity)) {
           addClass(x, "plus");
         } else {
           removeClass(x, "plus");
@@ -389,7 +389,7 @@ export class SelectProductComponent implements OnInit {
         if (this.selectedSeatResults[x]) {
           selectedQuantity = this.selectedSeatResults[x].length;
         }
-        if (this.quentityCheckService.selectedQuantityMinLimitCheck(selectedQuantity)) {
+        if (this.quantityCheckService.selectedQuantityMinLimitCheck(selectedQuantity)) {
           addClass(x, "minus");
         } else {
           removeClass(x, "minus");
@@ -609,7 +609,7 @@ export class SelectProductComponent implements OnInit {
     let selectedProductQuantity: number = 0;
 
     //未割当チェック
-    if (this.quentityCheckService.unassignedSeatCheck(this.unAssignedQuantity)) {
+    if (this.quantityCheckService.unassignedSeatCheck(this.unAssignedQuantity)) {
       modal_massage = '<p>未割当の座席があります。</p>';
       callModal(modal_massage);
       return;
@@ -630,7 +630,7 @@ export class SelectProductComponent implements OnInit {
       }
     }
     //席種単位での商品上限個数チェック
-    if (this.quentityCheckService.stockTypeMaxLimitCheck(this.upperLimit, this.maxProductQuantity, selectedProductQuantity)) {
+    if (this.quantityCheckService.stockTypeMaxLimitCheck(this.upperLimit, this.maxProductQuantity, selectedProductQuantity)) {
       if (this.upperLimit > this.maxProductQuantity) {
         modal_massage = '<p>商品は合計' + this.maxProductQuantity + '個以内でご選択ください。</p>';
       } else {
@@ -640,7 +640,7 @@ export class SelectProductComponent implements OnInit {
       return;
     }
     //席種単位での商品下限個数チェック
-    if (this.quentityCheckService.stockTypeMinLimitCheck(this.minProductQuantity, selectedProductQuantity)) {
+    if (this.quantityCheckService.stockTypeMinLimitCheck(this.minProductQuantity, selectedProductQuantity)) {
       modal_massage = '<p>商品は合計' + this.minProductQuantity + '個以上でご選択ください。</p>';
       callModal(modal_massage);
       return;
@@ -661,13 +661,13 @@ export class SelectProductComponent implements OnInit {
         }
       }
       //商品単位での商品下限個数チェック
-      if (this.quentityCheckService.productMinLimitCheck(this.products[x].min_product_quantity, selectedQuantity)) {
+      if (this.quantityCheckService.productMinLimitCheck(this.products[x].min_product_quantity, selectedQuantity)) {
         modal_massage = '<p>' + this.products[x].product_name + 'は' + this.products[x].min_product_quantity + '個以上でご選択ください。</p>';
         callModal(modal_massage);
         return;
       }
       //必須選択商品チェック
-      if (this.quentityCheckService.mustBeChosenCheck(this.products[x].is_must_be_chosen, selectedQuantity)) {
+      if (this.quantityCheckService.mustBeChosenCheck(this.products[x].is_must_be_chosen, selectedQuantity)) {
         modal_massage = '<p>' + this.products[x].product_name + 'を１個以上ご選択ください。</p>';
         callModal(modal_massage);
         return;

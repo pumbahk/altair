@@ -524,7 +524,7 @@ app-select-product .modalWindowAlertBox {
     height: 100%;
 }
 
-/* reserve-by-quentity */
+/* reserve-by-quantity */
 .ticketQty .disabled {
     background-color: #a4404c!important;
     cursor: not-allowed;

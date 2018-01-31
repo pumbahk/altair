@@ -202,7 +202,7 @@ export class SeatlistComponent implements OnInit {
     });
     $('body').scrollTop(0);
     if (this.countSelect == 0) {
-      this.stockTypeDataService.sendToQuentity(stockTypeId);
+      this.stockTypeDataService.sendToQuantity(stockTypeId);
       this.stockTypeId = stockTypeId;
     } else {
       this.confirmStockType.emit(true);

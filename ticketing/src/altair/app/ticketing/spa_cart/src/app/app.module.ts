@@ -24,7 +24,7 @@ import { SeatStatusService } from './shared/services/seat-status.service';
 import { StockTypesService } from './shared/services/stock-types.service';
 import { SeatsService } from './shared/services/seats.service';
 import { SelectProductService } from './shared/services/select-product.service';
-import { QuentityCheckService } from './shared/services/quentity-check.service';
+import { QuantityCheckService } from './shared/services/quantity-check.service';
 import { StockTypeDataService } from './shared/services/stock-type-data.service';
 import { AnimationEnableService } from './shared/services/animation-enable.service';
 import { ErrorModalDataService } from './shared/services/error-modal-data.service';
@@ -92,7 +92,7 @@ const routes: Routes = [
     PerformancesService,
     SeatsService,
     SelectProductService,
-    QuentityCheckService,
+    QuantityCheckService,
     StockTypeDataService,
     ErrorModalDataService,
     AnimationEnableService,

@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { IProducts, IProductItems } from './interfaces';
 
 @Injectable()
-export class QuentityCheckService {
+export class QuantityCheckService {
   /**
 * 席種単位での購入上限枚数チェック
 *
