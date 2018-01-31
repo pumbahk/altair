@@ -1,0 +1,41 @@
+<html lang="ja">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+</head>
+<body>
+<script src="js/jquery.js"></script>
+
+<form method="post" target="output">
+<input type="hidden" name="site_id" value="<%= site.id %>" />
+site: <%= site.id %> <%= site.name %>
+<br />
+frontend: <input type="text" name="frontend" value="" style="width: 500px;" placeholder="http://hostname/vwr.html#/upload/frontend/ffffffffffff/metadata.json" />
+<br /> 
+frontend-dirname: <input type="text" name="frontend_dirname" value="<%= dirname %>" /> (差し替えの際は変更を推奨)
+<br />
+<input type="submit" name="replace" value="frontendを追加登録/差し替える (ちょっと時間がかかります)" />
+<br />
+<input type="submit" name="check" value="整合性チェックする" />
+</form>
+
+<br />
+<br />
+
+
+<div style="height: 100px;"></div>
+
+<iframe name="output" style="width: 100%;" src="blank.html"></iframe>
+
+<script>
+$.ajax({ url: '../api/organization', json: true }).then(function(res) {
+    var select = $('select[name="organization"]');
+    res.forEach(function(r) {
+        $('<option></option>').text(r.name).attr('value', r.name).appendTo(select);
+    });
+}, function(xhr, err) {
+    console.log(err);
+});
+</script>
+
+</body>
+</html>
