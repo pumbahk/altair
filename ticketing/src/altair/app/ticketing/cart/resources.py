@@ -723,7 +723,7 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
             return []
 
         sorted_cart_product_items = self.sorted_carted_product_items(cart)
-        settings = cart.performance.find_available_target_settings(max_price=self.cart.highest_item_price)
+        settings = cart.performance.find_available_target_settings(max_price=cart.highest_item_price)
 
         code_forms = []
         input_cnt = len(codes)
@@ -799,12 +799,8 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
             else:
                 input_codes.append(code)
 
-            # 「一般会員の方」のファンクラブクーポンの利用を防ぐバリデーション
-            # fc_member_idは「ファンクラブの方」でログインすると文字列の数字、「一般の方」でログインするとOpenIDの文字列になる
-            fc_member_id = self.request.altair_auth_info['authz_identifier']
-            setting = self.cart.performance.find_available_target_settings(issued_by=u'sports_service',
-                                                                           first_4_digits=code[:4])
-            if setting and (not fc_member_id.isdigit()):
+            # ファンクラブ会員専用クーポンの誤利用を防ぐバリデーション
+            if not self._is_sports_service_code_used_by_eligible_user(code[:4]):
                 form.add_non_fanclub_member_discount_code_error()
 
             # 使用済みコードバリデーション
@@ -814,12 +810,44 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
 
         return True
 
+    def _is_sports_service_code_used_by_eligible_user(self, first_4_digits):
+        """
+        ファンクラブ会員専用クーポンの誤利用を防ぐバリデーション
+        :param first_4_digits: 入力されたコードの頭4桁
+        :return: Boolean
+        """
+        setting = self.cart.performance.find_available_target_settings(issued_by=u'sports_service',
+                                                                       first_4_digits=first_4_digits)
+
+        if setting:
+            if not self.is_authz_user:
+                return False
+
+            # TODO 株主会員の場合数字のため、これだけだと足りなそう（オカダさんのコメント継承）
+            fc_member_id = self.request.altair_auth_info['authz_identifier']
+            if not fc_member_id.isdigit():
+                return False
+
+        return True
+
     def exist_validate_error(self, codes):
         for code_dict in codes:
             form = code_dict['form']
             if form.errors:
                 return True
         return False
+
+    @property
+    def is_authz_user(self):
+        """
+        キー'authz_identifier'の値はログイン方法によって変化する
+
+        「ファンクラブの方」でログインすると文字列の数字
+        「一般の方」でログインするとOpenIDの文字列
+
+        :return: Boolean OAuth認証しているユーザ場合はTrue。
+        """
+        return "authz_identifier" in self.request.altair_auth_info
 
     def confirm_discount_codes(self, codes):
         target_codes = []
@@ -863,7 +891,7 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
                 code_dict['form'].add_coupon_response_error(error_list[code_dict['form'].code.data])
         return True
 
-    def use_discount_coupon(self, order):
+    def use_discount_coupon(self, order, cart):
         # ファンクラブコード
         code_list = [code.code for code in discount_api.get_used_discount_codes(order.cart) if
                      not code.discount_code_id]
@@ -872,7 +900,7 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
             result = discount_api.use_discount_codes(self.request, codes,
                                                      order.cart.performance.find_available_target_settings(
                                                          issued_by=u'sports_service',
-                                                         max_price=self.cart.highest_item_price
+                                                         max_price=cart.highest_item_price
                                                      ))
             if not result['status'] == u'OK' and result['usage_type'] == u'1010':
                 # 使用時にエラー

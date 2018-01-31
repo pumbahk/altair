@@ -1381,3 +1381,18 @@ msgstr "Yemen"
 
 msgid "country_153"
 msgstr "Zimbabwe"
+
+msgid "楽天スーパーポイント口座(半角数字)"
+msgstr "Rakuten Super Point Account (Half-width numeric)"
+
+msgid "例"
+msgstr "ex."
+
+msgid "お持ちの方は、楽天スーパーポイント口座情報を入力して下さい。"
+msgstr "Please enter Rakuten Super Point account information if you have one."
+
+msgid "楽天ポイント口座を確認するには、"
+msgstr "To check Rakuten point account,"
+
+msgid "こちら"
+msgstr "Here"
