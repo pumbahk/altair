@@ -2,11 +2,11 @@
 
 import logging
 from datetime import datetime
-from pyramid.decorator import reify
 
-from altair.app.ticketing.models import Base, BaseModel, WithTimestamp, LogicallyDeleted, Identifier
+from altair.app.ticketing.models import Base, BaseModel, WithTimestamp, LogicallyDeleted, Identifier, DBSession
 from altair.app.ticketing.utils import rand_string
 from altair.saannotation import AnnotatedColumn
+from pyramid.decorator import reify
 from pyramid.i18n import TranslationString as _
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import column_property, relationship
@@ -76,6 +76,18 @@ class DiscountCodeSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
         return True if not reasons else reasons
 
+    @staticmethod
+    def is_valid_checked(setting_id, session=None):
+        """
+        設定の有効フラグがONになっているかチェックする
+        :param setting_id: 割引コード設定ID
+        :param session: オプション。slaveの使用を前提
+        :return: Boolean
+        """
+        q = session.query(DiscountCodeSetting) if session else DBSession.query(DiscountCodeSetting)
+        setting = q.filter_by(id=setting_id).one()
+        return setting.is_valid
+
 
 class UsedDiscountCodeCart(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'UsedDiscountCodeCart'
@@ -102,6 +114,32 @@ class UsedDiscountCodeOrder(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     ordered_product_item = relationship("OrderedProductItem", backref="used_discount_codes")
     ordered_product_item_token_id = AnnotatedColumn(Identifier, ForeignKey('OrderedProductItemToken.id'))
     ordered_product_item_token = relationship("OrderedProductItemToken", backref="used_discount_codes")
+
+    @staticmethod
+    def count_exists_valid_order(first_4_digits, session=None):
+        """
+        コードの使用履歴から有効な予約に紐付いているコードの件数を取得する
+        :param first_4_digits: 割引コード設定のコードの頭4桁
+        :param session: オプション。slaveの使用を前提
+        :return: 予約に紐付いているコードの件数
+        """
+        from altair.app.ticketing.orders.models import Order, OrderedProductItem, OrderedProduct
+        q = session.query(UsedDiscountCodeOrder) if session else DBSession.query(UsedDiscountCodeOrder)
+        valid_order_cnt = q.join(
+            OrderedProductItem,
+            OrderedProduct,
+            Order
+        ).filter(
+            UsedDiscountCodeOrder.code.like(first_4_digits + "%"),
+            UsedDiscountCodeOrder.deleted_at.is_(None),
+            UsedDiscountCodeOrder.canceled_at.is_(None),
+            UsedDiscountCodeOrder.refunded_at.is_(None),
+            Order.canceled_at.is_(None),
+            Order.deleted_at.is_(None),
+            Order.refunded_at.is_(None)
+        ).count()
+
+        return valid_order_cnt
 
 
 class DiscountCodeCode(Base, BaseModel, WithTimestamp, LogicallyDeleted):
@@ -215,21 +253,8 @@ def _if_generating_code_exists(code, organization_id):
         return True
 
 
-def delete_discount_code_setting(setting):
-    # TODO 削除を禁止する各条件を後々で用意する
-
-    for code in setting.DiscountCode:
-        code.delete()
-
-    for target in setting.DiscountCodeTarget:
-        target.delete()
-
-    setting.delete()
-
-
 def delete_all_discount_code(setting_id):
     """既存のコードを全削除する"""
-    # TODO 削除を禁止する各条件を後々で用意する
     query = DiscountCodeCode.query.filter_by(discount_code_setting_id=setting_id)
     count = query.count()
     if count > 0:

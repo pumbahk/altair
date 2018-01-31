@@ -304,3 +304,15 @@ def cancel_used_discount_codes(request, order, now=None):
             _(u'used discount code can not be canceled.').interpolate(),
             nested_exc_info=exc_info
         )
+
+
+def validate_to_delete_all_codes(setting, session):
+    err = []
+    if DiscountCodeSetting.is_valid_checked(setting.id, session):
+        err.append(u'設定の有効フラグにチェックが入っている')
+
+    valid_order_cnt = UsedDiscountCodeOrder.count_exists_valid_order(setting.first_4_digits, session)
+    if valid_order_cnt:
+        err.append(u'コードが使用された有効な予約が{}件ある'.format(valid_order_cnt))
+
+    return err
