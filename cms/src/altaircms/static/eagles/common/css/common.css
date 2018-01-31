@@ -2023,6 +2023,9 @@ a {
     transition: all 200ms;
     text-decoration: none;
   }
+  .popup-seat-detail .inner .price-list-wrap .price-table tbody tr .seat-local {
+    background-color: #860010;
+  }
   .popup-seat-detail .stadium-area ul li a:hover, .popup-seat-detail .stadium-area ul li a.now-cursor {
     background: #fff;
     color: #000;
@@ -4180,6 +4183,9 @@ a {
     line-height: 28px;
     transition: all 200ms;
     text-decoration: none;
+  }
+  .popup-seat-detail .inner .price-list-wrap .price-table tbody tr .seat-local {
+    background-color: #860010;
   }
   .popup-seat-detail .inner .stadium-area ul li a:hover, .popup-seat-detail .inner .stadium-area ul li a.now-cursor {
     background: #fff;
