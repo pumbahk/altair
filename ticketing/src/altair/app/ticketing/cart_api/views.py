@@ -176,7 +176,9 @@ class CartAPIView(object):
                 start_at=ss.start_at,
                 end_at=ss.end_at,
                 seat_choice=ss.seat_choice,
-                order_limit=ss.order_limit
+                order_limit=ss.order_limit,
+                upper_limit=ss.max_quantity,
+                product_limit=ss.max_product_quantity
             ) for ss in available_sales_segments]
         )
 
