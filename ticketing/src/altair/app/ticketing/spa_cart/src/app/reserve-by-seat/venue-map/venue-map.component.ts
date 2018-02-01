@@ -1132,7 +1132,13 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
       }
     }
     //◯席以内取得
-    if (this.upperLimit < this.selectedStockTypeMaxQuantity) {
+    if (this.upperLimit && this.selectedStockTypeMaxQuantity) {
+      if (this.upperLimit < this.selectedStockTypeMaxQuantity) {
+        this.viewSelectNum = this.upperLimit;
+      } else {
+        this.viewSelectNum = this.selectedStockTypeMaxQuantity;
+      }
+    } else if (this.upperLimit && !this.selectedStockTypeMaxQuantity) {
       this.viewSelectNum = this.upperLimit;
     } else {
       this.viewSelectNum = this.selectedStockTypeMaxQuantity;

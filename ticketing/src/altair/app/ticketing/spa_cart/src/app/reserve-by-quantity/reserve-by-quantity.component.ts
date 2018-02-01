@@ -109,7 +109,7 @@ export class ReserveByQuantityComponent implements OnInit {
   maxQuantity: number;
   upperLimit: number;
   //最小購入数
-  minQuantity: number;
+  minQuantity: number = 1;
 
   //説明
   description: string;
@@ -187,6 +187,10 @@ export class ReserveByQuantityComponent implements OnInit {
                   this.selectedSalesUnitQuantitys = this.quantityCheckService.eraseOne(this.stockType.products);
                   this.description = this.stockType.description ? this.stockType.description : '';
                   this.minQuantity = this.stockType.min_quantity;
+                  //初期表示時に購入下限枚数を選択状態として設定
+                  if (this.stockType.min_quantity) {
+                    this.quantity = this.stockType.min_quantity;
+                  }
                   this.maxQuantity = this.stockType.max_quantity;
                   that.regions = this.stockType.regions;
                   this.modalTopCss();

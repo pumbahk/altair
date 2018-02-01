@@ -44,7 +44,7 @@ export class SelectProductComponent implements OnInit {
   //販売区分ID
   salesSegmentId: number;
   //販売区分の最大購入数
-  upperLimit: number;
+  productLimit: number;
   //席種ID
   stockTypeId: number;
   //席種情報
@@ -173,7 +173,7 @@ export class SelectProductComponent implements OnInit {
             this.month = startOn.getMonth() + 1;
             this.day = startOn.getDate();
             this.salesSegmentId = response.data.sales_segments[0].sales_segment_id;
-            this.upperLimit = response.data.sales_segments[0].upper_limit;
+            this.productLimit = response.data.sales_segments[0].product_limit;
             this.pageTitle = this.performance.performance_name;
             this.loadStockType();
           },
@@ -630,11 +630,17 @@ export class SelectProductComponent implements OnInit {
       }
     }
     //席種単位での商品上限個数チェック
-    if (this.quantityCheckService.stockTypeMaxLimitCheck(this.upperLimit, this.maxProductQuantity, selectedProductQuantity)) {
-      if (this.upperLimit > this.maxProductQuantity) {
-        modal_massage = '<p>商品は合計' + this.maxProductQuantity + '個以内でご選択ください。</p>';
+    if (this.quantityCheckService.stockTypeMaxLimitCheck(this.productLimit, this.maxProductQuantity, selectedProductQuantity)) {
+      if (this.productLimit && this.maxProductQuantity) {
+        if (this.productLimit > this.maxProductQuantity) {
+          modal_massage = '<p>商品は合計' + this.maxProductQuantity + '個以内でご選択ください。</p>';
+        } else {
+          modal_massage = '<p>商品は合計' + this.productLimit + '個以内でご選択ください。</p>';
+        }
+      } else if (this.productLimit && !this.maxProductQuantity) {
+        modal_massage = '<p>商品は合計' + this.productLimit + '個以内でご選択ください。</p>';
       } else {
-        modal_massage = '<p>商品は合計' + this.upperLimit + '個以内でご選択ください。</p>';
+        modal_massage = '<p>商品は合計' + this.maxProductQuantity + '個以内でご選択ください。</p>';
       }
       callModal(modal_massage);
       return;
@@ -668,7 +674,7 @@ export class SelectProductComponent implements OnInit {
       }
       //必須選択商品チェック
       if (this.quantityCheckService.mustBeChosenCheck(this.products[x].is_must_be_chosen, selectedQuantity)) {
-        modal_massage = '<p>' + this.products[x].product_name + 'を１個以上ご選択ください。</p>';
+        modal_massage = '<p>' + this.products[x].product_name + 'を1個以上ご選択ください。</p>';
         callModal(modal_massage);
         return;
       }
