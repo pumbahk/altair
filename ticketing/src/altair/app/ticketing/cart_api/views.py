@@ -111,8 +111,7 @@ class CartAPIView(object):
             raise HTTPNotFound('performance_id={} not found'.format(self.request.matchdict.get('performance_id')))
 
         available_sales_segments = self.context.available_sales_segments
-        for ss in available_sales_segments:
-            logger.debug("ss=%s", vars(ss))
+
         #SPA用のsvg(s3)を取得して返却
         drawings = get_spa_svg_urls(self.request, performance.id)
 
@@ -178,8 +177,8 @@ class CartAPIView(object):
                 end_at=ss.end_at,
                 seat_choice=ss.seat_choice,
                 order_limit=ss.order_limit,
-                upper_limit=ss.max_quantity
-                #product_limit=ss.max_product_quantity
+                upper_limit=ss.max_quantity,
+                product_limit=ss.max_product_quatity
             ) for ss in available_sales_segments]
         )
 
