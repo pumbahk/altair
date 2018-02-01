@@ -1205,8 +1205,8 @@ class PaymentView(object):
                 tel_1=form.data['tel_1'],
                 tel_2=None,
                 fax=form.data['fax'],
-                birthday=form.data['birthday'],
-                sex=form.data['sex']
+                birthday=form.data['birthday'] if form.data['birthday'] is not None else date(1980, 1, 1),
+                sex=form.data['sex'] if form.data['sex'] is not None else SexEnum.Female.v
                 )
         else:
             return None

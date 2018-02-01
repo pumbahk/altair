@@ -292,7 +292,7 @@ class ClientForm(OurDynamicForm):
                 ]
             )
         )
-    sex = OurRadioField(u'性別', choices=[(str(SexEnum.Male), u'男性'), (str(SexEnum.Female), u'女性')])
+    sex = OurRadioField(u'性別', choices=[(str(SexEnum.Male), u'男性'), (str(SexEnum.Female), u'女性')], default=str(SexEnum.Female))
     birthday = OurDateField(
         label=u"誕生日",
         value_defaults={'year': u'1980'},
@@ -301,7 +301,6 @@ class ClientForm(OurDynamicForm):
            input_builder=build_date_input_select_japanese_japan
         ),
         validators=[
-            Required(u'入力してください'),
             after1900,
         ]
     )
@@ -331,10 +330,28 @@ class ClientForm(OurDynamicForm):
             status = False
         return status
 
+    def _validate_birthday(self, *args, **kwargs):
+        status = True
+        data = self.data
+        if self.context.request.organization.code == 'RT' and data["birthday"] is None:
+            getattr(self, "birthday").errors.append(u"入力してください")
+            status = False
+        return status
+
+    def _validate_sex(self, *args, **kwargs):
+        status = True
+        data = self.data
+        if self.context.request.organization.code == 'RT' and data["sex"] is None:
+            getattr(self, "sex").errors.append(u"選択してください")
+            status = False
+        return status
+
     def validate(self):
         # このように and 演算子を展開しないとすべてが一度に評価されない
         status = super(ClientForm, self).validate()
         status = self._validate_email_addresses() and status
+        status = self._validate_birthday() and status
+        status = self._validate_sex() and status
         return status
 
 def prepend_list(x, xs):

@@ -188,7 +188,7 @@ class ClientFormFactory(object):
                     validators=h.mail_validators(request)
                     )
                 )
-            sex = OurRadioField(_(u'性別'), choices=[(str(SexEnum.Male), _(u'男性')), (str(SexEnum.Female), _(u'女性'))])
+            sex = OurRadioField(_(u'性別'), choices=[(str(SexEnum.Male), _(u'男性')), (str(SexEnum.Female), _(u'女性'))], default=str(SexEnum.Female))
             birthday = OurDateField(
                 label=_(u"誕生日"),
                 value_defaults={'year': u'1980'},
@@ -197,7 +197,6 @@ class ClientFormFactory(object):
                     input_builder=build_date_input_select_japanese_japan
                 ),
                 validators=[
-                    Required(_(u'入力してください')),
                     after1900,
                 ]
             )
@@ -226,10 +225,28 @@ class ClientFormFactory(object):
                     status = False
                 return status
 
+            def _validate_birthday(self, *args, **kwargs):
+                status = True
+                data = self.data
+                if self.context.request.organization.code == 'RT' and data["birthday"] is None:
+                    getattr(self, "birthday").errors.append(u"入力してください")
+                    status = False
+                return status
+
+            def _validate_sex(self, *args, **kwargs):
+                status = True
+                data = self.data
+                if self.context.request.organization.code == 'RT' and data["sex"] is None:
+                    getattr(self, "sex").errors.append(u"選択してください")
+                    status = False
+                return status
+
             def validate(self):
                 # このように and 演算子を展開しないとすべてが一度に評価されない
                 status = super(ClientForm, self).validate()
                 status = self._validate_email_addresses() and status
+                status = self._validate_birthday() and status
+                status = self._validate_sex() and status
                 return status
 
         return ClientForm
