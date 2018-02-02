@@ -250,10 +250,26 @@
     </div>
   </div>
 
-  <input id="btn-back" class="btn btn-primary" name="back" value="座席選択に戻る" type="submit"><input id="btn-complete"
-                                                                                                class="btn btn-primary"
-                                                                                                value="購入する"
-                                                                                                type="submit">
+  % if delegator:
+    <style type="text/css">
+      .wrap-delegator {
+        display: inline-block;
+        width: 46%;
+        vertical-align: middle;
+        text-align: center;
+        font-size: 60%;
+      }
+      .wrap-delegator input[type="image"] {
+        width: 100%;
+      }
+    </style>
+    <input id="btn-back" class="btn btn-primary" name="back" value="座席選択に戻る" type="submit">
+    <div class="wrap-delegator">
+      ${delegator['submit']}
+    </div>
+  % else:
+    <input id="btn-back" class="btn btn-primary" name="back" value="座席選択に戻る" type="submit"><input id="btn-complete" class="btn btn-primary" value="購入する" type="submit">
+  % endif
   <div class="dispBox">
     <div class="dispBoxInner">
       ※座席選択に戻るボタンを押すと、ここまでのお申し込みがキャンセルになります。
