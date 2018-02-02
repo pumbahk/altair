@@ -1153,7 +1153,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
 
   tapOneSeats(e: any) {
     if (this.changeRgb($(e.target).css('fill')) == SEAT_COLOR_AVAILABLE) {
-      if (this.quantityCheckService.stockTypeQuantityMaxLimitCheck(this.upperLimit,this.selectedStockTypeMaxQuantity,this.selectedSeatList.length + 1)) {
+      if (!this.viewSelectNum || this.viewSelectNum > this.selectedSeatList.length + 1) {
         $(e.target).css({ 'fill': SEAT_COLOR_SELECTED });
         if (!this.smartPhoneCheckService.isSmartPhone() && !this.smartPhoneCheckService.isIpad()) {
           this.selectedSeatName = decodeURIComponent($(e.target).attr('title'));
@@ -1191,7 +1191,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
   tapMultipleSeats(e: any) {
     if (this.changeRgb($(e.target).css('fill')) == SEAT_COLOR_AVAILABLE) {
       if (this.selectedStockTypeId == this.prevStockType) {
-        if (this.quantityCheckService.stockTypeQuantityMaxLimitCheck(this.upperLimit,this.selectedStockTypeMaxQuantity, this.selectedSeatList.length + this.selectedGroupIds.length)) {
+        if (!this.viewSelectNum || this.viewSelectNum > this.selectedSeatList.length + this.selectedGroupIds.length) {
           for (let i = 0, len = this.selectedGroupIds.length; i < len; i++) {
             let text = $("#" + this.selectedGroupIds[i]).text().trim();
             if (text) {
@@ -1978,11 +1978,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
     } else {
       this.animationEnableService.sendToRoadFlag(false);
       $('.reserve').prop("disabled", false);
-      if (quantity) {
-        this.errorModalDataService.sendToErrorModal('エラー', this.selectedStockTypeMinQuantity + '席以上でご選択ください。');
-      } else {
-        this.errorModalDataService.sendToErrorModal('エラー', 1 + '席以上でご選択ください。');
-      }
+      this.errorModalDataService.sendToErrorModal('エラー', this.selectedStockTypeMinQuantity + '席以上でご選択ください。');
     }
   }
 

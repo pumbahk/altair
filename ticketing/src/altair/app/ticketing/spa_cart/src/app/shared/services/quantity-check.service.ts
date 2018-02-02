@@ -168,7 +168,6 @@ export class QuantityCheckService {
 * @return {number}
 */
   salesUnitCheck(products: IProducts[], quantity: number) {
-    const FALSE_NUMBER: number = 1;
     let salesUnitNumber: number = null;
     let result: number = null;
     for (let i = 0, len = products.length; i < len; i++) {
