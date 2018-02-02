@@ -1153,7 +1153,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
 
   tapOneSeats(e: any) {
     if (this.changeRgb($(e.target).css('fill')) == SEAT_COLOR_AVAILABLE) {
-      if (this.quantityCheckService.maxLimitCheck(this.upperLimit,this.selectedStockTypeMaxQuantity,this.selectedSeatList.length + 1)) {
+      if (this.quantityCheckService.stockTypeQuantityMaxLimitCheck(this.upperLimit,this.selectedStockTypeMaxQuantity,this.selectedSeatList.length + 1)) {
         $(e.target).css({ 'fill': SEAT_COLOR_SELECTED });
         if (!this.smartPhoneCheckService.isSmartPhone() && !this.smartPhoneCheckService.isIpad()) {
           this.selectedSeatName = decodeURIComponent($(e.target).attr('title'));
@@ -1191,7 +1191,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
   tapMultipleSeats(e: any) {
     if (this.changeRgb($(e.target).css('fill')) == SEAT_COLOR_AVAILABLE) {
       if (this.selectedStockTypeId == this.prevStockType) {
-        if (this.quantityCheckService.maxLimitCheck(this.upperLimit,this.selectedStockTypeMaxQuantity, this.selectedSeatList.length + this.selectedGroupIds.length)) {
+        if (this.quantityCheckService.stockTypeQuantityMaxLimitCheck(this.upperLimit,this.selectedStockTypeMaxQuantity, this.selectedSeatList.length + this.selectedGroupIds.length)) {
           for (let i = 0, len = this.selectedGroupIds.length; i < len; i++) {
             let text = $("#" + this.selectedGroupIds[i]).text().trim();
             if (text) {
@@ -1942,7 +1942,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
         break;
       }
     }
-    if (this.quantityCheckService.minLimitCheck(this.selectedStockTypeMinQuantity, quantity)) {
+    if (this.quantityCheckService.stockTypeQuantityMinLimitCheck(this.selectedStockTypeMinQuantity, quantity)) {
       if (!this.quantityCheckService.salesUnitCheck(this.selectedProducts, quantity)) {
         // 選択した座席を設定
         this.dataUpdate();

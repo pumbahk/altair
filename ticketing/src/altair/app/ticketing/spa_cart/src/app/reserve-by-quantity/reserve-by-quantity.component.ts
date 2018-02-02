@@ -261,10 +261,10 @@ export class ReserveByQuantityComponent implements OnInit {
 
   //チケット枚数減少
   minusClick() {
-    if (this.quantityCheckService.minLimitCheck(this.minQuantity, this.quantity - 1)) {
+    if (this.quantityCheckService.stockTypeQuantityMinLimitCheck(this.minQuantity, this.quantity - 1)) {
       this.quantity--;
       $('#plus-btn').removeClass('disabled');
-      if (!this.quantityCheckService.minLimitCheck(this.minQuantity, this.quantity - 1)) {
+      if (!this.quantityCheckService.stockTypeQuantityMinLimitCheck(this.minQuantity, this.quantity - 1)) {
         $('#minus-btn').addClass('disabled');
       }
     } else {
@@ -274,10 +274,10 @@ export class ReserveByQuantityComponent implements OnInit {
 
   //チケット枚数増加
   plusClick() {
-    if (this.quantityCheckService.maxLimitCheck(this.upperLimit, this.maxQuantity, this.quantity + 1)) {
+    if (this.quantityCheckService.stockTypeQuantityMaxLimitCheck(this.upperLimit, this.maxQuantity, this.quantity + 1)) {
       this.quantity++;
       $("#minus-btn").removeClass('disabled');
-      if (!this.quantityCheckService.maxLimitCheck(this.upperLimit, this.maxQuantity, this.quantity + 1)) {
+      if (!this.quantityCheckService.stockTypeQuantityMaxLimitCheck(this.upperLimit, this.maxQuantity, this.quantity + 1)) {
         $("#plus-btn").addClass('disabled');
       }
     } else {

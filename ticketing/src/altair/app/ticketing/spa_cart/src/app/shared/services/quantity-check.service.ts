@@ -12,7 +12,7 @@ export class QuantityCheckService {
 * @param  {number} quantity - 枚数
 * @return {boolean}
 */
-  maxLimitCheck(upper_limit: number, max_quantity: number, quantity: number) {
+  stockTypeQuantityMaxLimitCheck(upper_limit: number, max_quantity: number, quantity: number) {
     //両方ある場合は設定枚数の少ない方で
     //どちらもない場合はチェックなし
     if (upper_limit && max_quantity) {
@@ -43,7 +43,7 @@ export class QuantityCheckService {
 * @param  {number} quantity - 枚数
 * @return {boolean}
 */
-  minLimitCheck(min_quantity: number, quantity: number) {
+  stockTypeQuantityMinLimitCheck(min_quantity: number, quantity: number) {
     //席種毎の最小購入枚数が無い場合はデフォルト１でチェック
     const DEFAULT_MIN_NUMBER = 1;
     if (min_quantity) {
@@ -65,7 +65,7 @@ export class QuantityCheckService {
 * @param  {number} product_quantity - 選択した商品数
 * @return {boolean}
 */
-  stockTypeMaxLimitCheck(upper_limit: number, max_product_quantity: number, product_quantity: number) {
+  stockTypeProductMaxLimitCheck(upper_limit: number, max_product_quantity: number, product_quantity: number) {
     //両方ある場合は設定枚数の少ない方で
     //どちらもない場合はチェックなし
     if (upper_limit && max_product_quantity) {
@@ -96,7 +96,7 @@ export class QuantityCheckService {
 * @param  {number} product_quantity - 選択した商品数
 * @return {boolean}
 */
-  stockTypeMinLimitCheck(min_product_quantity: number, product_quantity: number) {
+  stockTypeProductMinLimitCheck(min_product_quantity: number, product_quantity: number) {
     //設定がない場合はチェックなし。
     if (min_product_quantity) {
       if (min_product_quantity > product_quantity) {

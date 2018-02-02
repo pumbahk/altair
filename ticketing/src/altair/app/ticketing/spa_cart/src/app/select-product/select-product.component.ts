@@ -630,7 +630,7 @@ export class SelectProductComponent implements OnInit {
       }
     }
     //席種単位での商品上限個数チェック
-    if (this.quantityCheckService.stockTypeMaxLimitCheck(this.productLimit, this.maxProductQuantity, selectedProductQuantity)) {
+    if (this.quantityCheckService.stockTypeProductMaxLimitCheck(this.productLimit, this.maxProductQuantity, selectedProductQuantity)) {
       if (this.productLimit && this.maxProductQuantity) {
         if (this.productLimit > this.maxProductQuantity) {
           modal_massage = '<p>商品は合計' + this.maxProductQuantity + '個以内でご選択ください。</p>';
@@ -646,7 +646,7 @@ export class SelectProductComponent implements OnInit {
       return;
     }
     //席種単位での商品下限個数チェック
-    if (this.quantityCheckService.stockTypeMinLimitCheck(this.minProductQuantity, selectedProductQuantity)) {
+    if (this.quantityCheckService.stockTypeProductMinLimitCheck(this.minProductQuantity, selectedProductQuantity)) {
       modal_massage = '<p>商品は合計' + this.minProductQuantity + '個以上でご選択ください。</p>';
       callModal(modal_massage);
       return;
