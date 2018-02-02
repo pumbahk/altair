@@ -39,9 +39,8 @@ class DiscountCodeSettingResource(TicketingAdminResource):
                     for unit in unit_list:
                         self.request.POST['{}.{}'.format(at, unit)] = u''
 
-    def delete_discount_code_setting(self, setting):
-        # TODO 削除を禁止する各条件を後々で用意する
-
+    @staticmethod
+    def delete_discount_code_setting(setting):
         for code in setting.DiscountCode:
             code.delete()
 
