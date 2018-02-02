@@ -308,8 +308,13 @@ def cancel_used_discount_codes(request, order, now=None):
 
 def validate_to_delete_all_codes(setting, session):
     err = []
-    if DiscountCodeSetting.is_valid_checked(setting.id, session):
-        err.append(u'設定の有効フラグにチェックが入っている')
+    try:
+        if DiscountCodeSetting.is_valid_checked(setting.id, session):
+            err.append(u'設定の有効フラグにチェックが入っている')
+    except NoResultFound:
+        err.append(u'削除対象の割引設定（ID: {} {}）が存在しません。'.format(setting.id, setting.name))
+    except MultipleResultsFound:
+        err.append(u'複数の割引設定（ID: {} {}）が検出されました。開発部に調査を依頼してください。'.format(setting.id, setting.name))
 
     valid_order_cnt = UsedDiscountCodeOrder.count_exists_valid_order(setting.first_4_digits, session)
     if valid_order_cnt:
