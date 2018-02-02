@@ -79,7 +79,7 @@ class EaglesCommunicator(object):
             'ticket_only': 1,
             'is_eternal': 1
         }
-        url = self.endpoint_base + "/members-check"
+        url = self.endpoint_base + "/api/members-check"
         resp_data = self._request('POST', url, post_data)
 
         return resp_data
@@ -90,11 +90,11 @@ class EaglesCommunicator(object):
 
         json_data = json.dumps(data)
 
-        if url_suffix == "/coupon/confirm/status":
+        if url_suffix == "/api/coupon/confirm/status":
             data_key = 'confirmation_condition'
-        elif url_suffix == "/coupon/use":
+        elif url_suffix == "/api/coupon/use":
             data_key = 'usage_coupons'
-        elif url_suffix == "/coupon/cancel/used":
+        elif url_suffix == "/api/coupon/cancel/used":
             data_key = 'used_coupons'
         else:
             raise ValueError('url_suffix is not set correctly.')
@@ -118,7 +118,7 @@ class EaglesCommunicator(object):
             'coupons': [{'coupon_cd': 'EQWM7RFA7AGT'},{'coupon_cd': 'EEQT7CY7WP74'},{'coupon_cd': 'EEQTW3X3Q9LN'}]
         }
         """
-        resp_data = self._discount_code_common_method(url_suffix="/coupon/confirm/status", data=data)
+        resp_data = self._discount_code_common_method(url_suffix="/api/coupon/confirm/status", data=data)
         return resp_data
 
     def use_discount_code(self, data):
@@ -129,7 +129,7 @@ class EaglesCommunicator(object):
             'coupons': [{'coupon_cd': 'EQWM7RFA7AGT'},{'coupon_cd': 'EEQT7CY7WP74'},{'coupon_cd': 'EEQTW3X3Q9LN'}]
         }
         """
-        resp_data = self._discount_code_common_method(url_suffix="/coupon/use", data=data)
+        resp_data = self._discount_code_common_method(url_suffix="/api/coupon/use", data=data)
         return resp_data
 
     def cancel_used_discount_code(self, data):
@@ -139,5 +139,5 @@ class EaglesCommunicator(object):
             'coupons': [{'coupon_cd': 'EQWM7RFA7AGT'},{'coupon_cd': 'EEQT7CY7WP74'},{'coupon_cd': 'EEQTW3X3Q9LN'}]
         }
         """
-        resp_data = self._discount_code_common_method(url_suffix="/coupon/cancel/used", data=data)
+        resp_data = self._discount_code_common_method(url_suffix="/api/coupon/cancel/used", data=data)
         return resp_data
