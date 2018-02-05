@@ -50,7 +50,7 @@ import { PerformancesService } from '../../shared/services/performances.service'
 import { SeatStatusService } from '../../shared/services/seat-status.service';
 import { SeatsService } from '../../shared/services/seats.service';
 import { StockTypesService } from '../../shared/services/stock-types.service';
-import { QuentityCheckService } from '../../shared/services/quentity-check.service';
+import { QuantityCheckService } from '../../shared/services/quantity-check.service';
 import { StockTypeDataService } from '../../shared/services/stock-type-data.service';
 import { ErrorModalDataService } from '../../shared/services/error-modal-data.service';
 import { AnimationEnableService } from '../../shared/services/animation-enable.service';
@@ -87,7 +87,6 @@ const SCALE_MAX = 5.0;  // 表示倍率の最大値
 
 const WINDOW_SM = 768; // スマホか否かの判定に用いる
 const SIDE_HEIGHT = 200; //横画面時エラーを出す最大値
-const MAX_QUANTITY_DEFAULT = 14; // デフォルトの選択可能枚数
 
 @Component({
   providers: [FilterComponent, ReserveByQuantityComponent],
@@ -112,7 +111,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
     private performancesService: PerformancesService,
     private seatStatus: SeatStatusService,
     private stockTypesService: StockTypesService,
-    private QuentityChecks: QuentityCheckService,
+    private quantityCheckService: QuantityCheckService,
     private router: Router,
     private reserveByQuantity: ReserveByQuantityComponent,
     private stockTypeDataService: StockTypeDataService,
@@ -215,6 +214,10 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
   seatPostStatus: string;
   // 販売セグメント
   salesSegments: ISalesSegment[];
+  //販売区分の最大購入数
+  upperLimit: number;
+  //◯席以内で選択の数
+  viewSelectNum: number;
   // responseに結果を渡すための変数
   resResult: any;
   // 全体の拡大縮小率
@@ -323,6 +326,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
           this.colorNavi = "https://s3-ap-northeast-1.amazonaws.com/tstar/cart_api/color_sample.svg";
           this.wholemapURL = this.performance.mini_venue_map_url;
           this.salesSegments = this.performance.sales_segments;
+          this.upperLimit = this.performance.sales_segments[0].upper_limit;
           let selesSegmentId: number = this.salesSegments[0].sales_segment_id;
           this.stockTypesService.getStockTypesAll(this.performanceId, selesSegmentId)
             .subscribe((response: IStockTypesAllResponse) => {
@@ -1047,11 +1051,11 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
                 'height': "",
                 'overflow-y': ""
               });
-              this.stockTypeDataService.sendToQuentity(+x);
+              this.stockTypeDataService.sendToQuantity(+x);
             }
           }
         }
-        this.countSelectService.sendToQuentity(this.countSelect);
+        this.countSelectService.sendToQuantity(this.countSelect);
       } else {
         let scale = this.scaleTotal / SCALE_SEAT; // 1辺の長さの拡大率
         this.scaleTotal = SCALE_SEAT;
@@ -1127,14 +1131,17 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
         break;
       }
     }
-    if (!this.selectedStockTypeMaxQuantity) {
-      this.selectedStockTypeMaxQuantity = this.performance.order_limit;
-      if (!this.selectedStockTypeMaxQuantity) {
-        this.selectedStockTypeMaxQuantity = this.event.order_limit;
-        if (!this.selectedStockTypeMaxQuantity) {
-          this.selectedStockTypeMaxQuantity = MAX_QUANTITY_DEFAULT;
-        }
+    //◯席以内取得
+    if (this.upperLimit && this.selectedStockTypeMaxQuantity) {
+      if (this.upperLimit < this.selectedStockTypeMaxQuantity) {
+        this.viewSelectNum = this.upperLimit;
+      } else {
+        this.viewSelectNum = this.selectedStockTypeMaxQuantity;
       }
+    } else if (this.upperLimit && !this.selectedStockTypeMaxQuantity) {
+      this.viewSelectNum = this.upperLimit;
+    } else {
+      this.viewSelectNum = this.selectedStockTypeMaxQuantity;
     }
     //メイン処理へ
     if (this.isGroupedSeats) {
@@ -1146,7 +1153,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
 
   tapOneSeats(e: any) {
     if (this.changeRgb($(e.target).css('fill')) == SEAT_COLOR_AVAILABLE) {
-      if (this.QuentityChecks.maxLimitCheck(this.selectedStockTypeMaxQuantity, this.performance.order_limit, this.event.order_limit, this.selectedSeatList.length + 1)) {
+      if (!this.viewSelectNum || this.viewSelectNum >= this.selectedSeatList.length + 1) {
         $(e.target).css({ 'fill': SEAT_COLOR_SELECTED });
         if (!this.smartPhoneCheckService.isSmartPhone() && !this.smartPhoneCheckService.isIpad()) {
           this.selectedSeatName = decodeURIComponent($(e.target).attr('title'));
@@ -1155,7 +1162,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
         }
         this.selectTimes();
       } else {
-        this.errorModalDataService.sendToErrorModal('エラー', this.selectedStockTypeMaxQuantity + '席以下でご選択ください。');
+        this.errorModalDataService.sendToErrorModal('エラー', this.viewSelectNum + '席以内でご選択ください。');
       }
     } else if (this.changeRgb($(e.target).css('fill')) == SEAT_COLOR_SELECTED) { // 既に選択した座席を再選択してキャンセル
       let findNum: number = $.inArray(this.selectedSeatId, this.selectedSeatList);
@@ -1184,7 +1191,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
   tapMultipleSeats(e: any) {
     if (this.changeRgb($(e.target).css('fill')) == SEAT_COLOR_AVAILABLE) {
       if (this.selectedStockTypeId == this.prevStockType) {
-        if (this.QuentityChecks.maxLimitCheck(this.selectedStockTypeMaxQuantity, this.performance.order_limit, this.event.order_limit, this.selectedSeatList.length + this.selectedGroupIds.length)) {
+        if (!this.viewSelectNum || this.viewSelectNum >= this.selectedSeatList.length + this.selectedGroupIds.length) {
           for (let i = 0, len = this.selectedGroupIds.length; i < len; i++) {
             let text = $("#" + this.selectedGroupIds[i]).text().trim();
             if (text) {
@@ -1201,7 +1208,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
           }
           this.selectTimes();
         } else {
-          this.errorModalDataService.sendToErrorModal('エラー', this.selectedStockTypeMaxQuantity + '席以下でご選択ください。');
+          this.errorModalDataService.sendToErrorModal('エラー', this.viewSelectNum + '席以内でご選択ください。');
         }
       } else {
         for (let i = 0, len = this.selectedGroupIds.length; i < len; i++) {
@@ -1807,10 +1814,10 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
       this.filterComponent.selectSeatSearch(this.stockTypeName);
     } else { // region選択された場合を数受の処理へ
       if (this.stockTypeIdFromList) { // seat-listのおまかせで購入が押された場合
-        this.stockTypeDataService.sendToQuentity(this.stockTypeIdFromList);
+        this.stockTypeDataService.sendToQuantity(this.stockTypeIdFromList);
       } else {
         this.display = false;
-        this.countSelectService.sendToQuentity(this.countSelect);
+        this.countSelectService.sendToQuantity(this.countSelect);
         this.quantity.seatReserveClick();
       }
       this.confirmStockType = false;
@@ -1935,8 +1942,8 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
         break;
       }
     }
-    if (this.QuentityChecks.minLimitCheck(this.selectedStockTypeMinQuantity, quantity)) {
-      if (!this.QuentityChecks.salesUnitCheck(this.selectedProducts, quantity)) {
+    if (this.quantityCheckService.stockTypeQuantityMinLimitCheck(this.selectedStockTypeMinQuantity, quantity)) {
+      if (!this.quantityCheckService.salesUnitCheck(this.selectedProducts, quantity)) {
         // 選択した座席を設定
         this.dataUpdate();
         this.seatStatus.seatReserve(this.performanceId, this.salesSegments[0].sales_segment_id, this.data).subscribe((response: ISeatsReserveResponse) => {
@@ -1966,16 +1973,12 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
       } else {
         this.animationEnableService.sendToRoadFlag(false);
         $('.reserve').prop("disabled", false);
-        this.errorModalDataService.sendToErrorModal('エラー', this.QuentityChecks.salesUnitCheck(this.selectedProducts, quantity) + '席単位でご選択ください。');
+        this.errorModalDataService.sendToErrorModal('エラー', this.quantityCheckService.salesUnitCheck(this.selectedProducts, quantity) + '席単位でご選択ください。');
       }
     } else {
       this.animationEnableService.sendToRoadFlag(false);
       $('.reserve').prop("disabled", false);
-      if (quantity) {
-        this.errorModalDataService.sendToErrorModal('エラー', this.selectedStockTypeMinQuantity + '席以上でご選択ください。');
-      } else {
-        this.errorModalDataService.sendToErrorModal('エラー', 1 + '席以上でご選択ください。');
-      }
+      this.errorModalDataService.sendToErrorModal('エラー', this.selectedStockTypeMinQuantity + '席以上でご選択ください。');
     }
   }
 
