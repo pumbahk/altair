@@ -310,7 +310,7 @@ var View_AppComponent0 = (function (_super) {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_48__app_shared_services_stock_types_service__ = __webpack_require__("../../../../../src/app/shared/services/stock-types.service.ts");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_49__app_shared_services_seats_service__ = __webpack_require__("../../../../../src/app/shared/services/seats.service.ts");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_50__app_shared_services_select_product_service__ = __webpack_require__("../../../../../src/app/shared/services/select-product.service.ts");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_51__app_shared_services_quentity_check_service__ = __webpack_require__("../../../../../src/app/shared/services/quentity-check.service.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_51__app_shared_services_quantity_check_service__ = __webpack_require__("../../../../../src/app/shared/services/quantity-check.service.ts");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_52__app_shared_services_stock_type_data_service__ = __webpack_require__("../../../../../src/app/shared/services/stock-type-data.service.ts");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_53__app_shared_services_animation_enable_service__ = __webpack_require__("../../../../../src/app/shared/services/animation-enable.service.ts");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_54__app_shared_services_count_select_service__ = __webpack_require__("../../../../../src/app/shared/services/count-select.service.ts");
@@ -1008,12 +1008,12 @@ var AppModuleInjector = (function (_super) {
         enumerable: true,
         configurable: true
     });
-    Object.defineProperty(AppModuleInjector.prototype, "_QuentityCheckService_81", {
+    Object.defineProperty(AppModuleInjector.prototype, "_QuantityCheckService_81", {
         get: function () {
-            if ((this.__QuentityCheckService_81 == null)) {
-                (this.__QuentityCheckService_81 = new __WEBPACK_IMPORTED_MODULE_51__app_shared_services_quentity_check_service__["a" /* QuentityCheckService */]());
+            if ((this.__QuantityCheckService_81 == null)) {
+                (this.__QuantityCheckService_81 = new __WEBPACK_IMPORTED_MODULE_51__app_shared_services_quantity_check_service__["a" /* QuantityCheckService */]());
             }
-            return this.__QuentityCheckService_81;
+            return this.__QuantityCheckService_81;
         },
         enumerable: true,
         configurable: true
@@ -1365,8 +1365,8 @@ var AppModuleInjector = (function (_super) {
         if ((token === __WEBPACK_IMPORTED_MODULE_50__app_shared_services_select_product_service__["a" /* SelectProductService */])) {
             return this._SelectProductService_80;
         }
-        if ((token === __WEBPACK_IMPORTED_MODULE_51__app_shared_services_quentity_check_service__["a" /* QuentityCheckService */])) {
-            return this._QuentityCheckService_81;
+        if ((token === __WEBPACK_IMPORTED_MODULE_51__app_shared_services_quantity_check_service__["a" /* QuantityCheckService */])) {
+            return this._QuantityCheckService_81;
         }
         if ((token === __WEBPACK_IMPORTED_MODULE_52__app_shared_services_stock_type_data_service__["a" /* StockTypeDataService */])) {
             return this._StockTypeDataService_82;
@@ -1982,7 +1982,7 @@ var styles = [''];
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__app_shared_services_stock_types_service__ = __webpack_require__("../../../../../src/app/shared/services/stock-types.service.ts");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_12__app_shared_services_seat_status_service__ = __webpack_require__("../../../../../src/app/shared/services/seat-status.service.ts");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_13__app_shared_services_seats_service__ = __webpack_require__("../../../../../src/app/shared/services/seats.service.ts");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_14__app_shared_services_quentity_check_service__ = __webpack_require__("../../../../../src/app/shared/services/quentity-check.service.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_14__app_shared_services_quantity_check_service__ = __webpack_require__("../../../../../src/app/shared/services/quantity-check.service.ts");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_15__app_shared_services_stock_type_data_service__ = __webpack_require__("../../../../../src/app/shared/services/stock-type-data.service.ts");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_16__app_shared_services_error_modal_data_service__ = __webpack_require__("../../../../../src/app/shared/services/error-modal-data.service.ts");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_17__app_shared_services_count_select_service__ = __webpack_require__("../../../../../src/app/shared/services/count-select.service.ts");
@@ -2119,7 +2119,7 @@ var View_ReserveByQuantityComponent_Host0 = (function (_super) {
     View_ReserveByQuantityComponent_Host0.prototype.createInternal = function (rootSelector) {
         this._el_0 = __WEBPACK_IMPORTED_MODULE_3__angular_core_src_linker_view_utils__["selectOrCreateRenderHostElement"](this.renderer, 'app-reserve-by-quantity', __WEBPACK_IMPORTED_MODULE_3__angular_core_src_linker_view_utils__["EMPTY_INLINE_ARRAY"], rootSelector, null);
         this.compView_0 = new View_ReserveByQuantityComponent0(this.viewUtils, this, 0, this._el_0);
-        this._ReserveByQuantityComponent_0_3 = new Wrapper_ReserveByQuantityComponent(this.injectorGet(__WEBPACK_IMPORTED_MODULE_8__angular_router_src_router_state__["a" /* ActivatedRoute */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_9__angular_router_src_router__["e" /* Router */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_10__app_shared_services_performances_service__["a" /* PerformancesService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_11__app_shared_services_stock_types_service__["a" /* StockTypesService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_12__app_shared_services_seat_status_service__["a" /* SeatStatusService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_13__app_shared_services_seats_service__["a" /* SeatsService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_14__app_shared_services_quentity_check_service__["a" /* QuentityCheckService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_15__app_shared_services_stock_type_data_service__["a" /* StockTypeDataService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_16__app_shared_services_error_modal_data_service__["a" /* ErrorModalDataService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_17__app_shared_services_count_select_service__["a" /* CountSelectService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_18__app_shared_services_animation_enable_service__["a" /* AnimationEnableService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_19__app_shared_services_smartPhone_check_service__["a" /* SmartPhoneCheckService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_20__app_shared_services_reserve_by_seat_browser_back_service__["a" /* ReserveBySeatBrowserBackService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_21_angular2_logger_core__["Logger"], this.parentIndex));
+        this._ReserveByQuantityComponent_0_3 = new Wrapper_ReserveByQuantityComponent(this.injectorGet(__WEBPACK_IMPORTED_MODULE_8__angular_router_src_router_state__["a" /* ActivatedRoute */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_9__angular_router_src_router__["e" /* Router */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_10__app_shared_services_performances_service__["a" /* PerformancesService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_11__app_shared_services_stock_types_service__["a" /* StockTypesService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_12__app_shared_services_seat_status_service__["a" /* SeatStatusService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_13__app_shared_services_seats_service__["a" /* SeatsService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_14__app_shared_services_quantity_check_service__["a" /* QuantityCheckService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_15__app_shared_services_stock_type_data_service__["a" /* StockTypeDataService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_16__app_shared_services_error_modal_data_service__["a" /* ErrorModalDataService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_17__app_shared_services_count_select_service__["a" /* CountSelectService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_18__app_shared_services_animation_enable_service__["a" /* AnimationEnableService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_19__app_shared_services_smartPhone_check_service__["a" /* SmartPhoneCheckService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_20__app_shared_services_reserve_by_seat_browser_back_service__["a" /* ReserveBySeatBrowserBackService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_21_angular2_logger_core__["Logger"], this.parentIndex));
         this.compView_0.create(this._ReserveByQuantityComponent_0_3.context);
         this.init(this._el_0, (this.renderer.directRenderer ? null : [this._el_0]), null);
         return new __WEBPACK_IMPORTED_MODULE_7__angular_core_src_linker_component_factory__["c" /* ComponentRef_ */](0, this, this._el_0, this._ReserveByQuantityComponent_0_3.context);
@@ -2307,7 +2307,7 @@ var View_ReserveByQuantityComponent1 = (function (_super) {
         this._el_8 = __WEBPACK_IMPORTED_MODULE_3__angular_core_src_linker_view_utils__["createRenderElement"](this.renderer, this._el_6, 'div', new __WEBPACK_IMPORTED_MODULE_3__angular_core_src_linker_view_utils__["InlineArray2"](2, 'class', 'closeBtnBox'), null);
         this._el_9 = __WEBPACK_IMPORTED_MODULE_3__angular_core_src_linker_view_utils__["createRenderElement"](this.renderer, this._el_8, 'span', new __WEBPACK_IMPORTED_MODULE_3__angular_core_src_linker_view_utils__["InlineArray2"](2, 'class', 'closeBtn'), null);
         this._text_10 = this.renderer.createText(this._el_6, '\n                ', null);
-        this._el_11 = __WEBPACK_IMPORTED_MODULE_3__angular_core_src_linker_view_utils__["createRenderElement"](this.renderer, this._el_6, 'div', new __WEBPACK_IMPORTED_MODULE_3__angular_core_src_linker_view_utils__["InlineArray8"](6, 'aria-label', 'vanueimg', 'class', 'modalMap venueimg', 'id', 'venue-quentity'), null);
+        this._el_11 = __WEBPACK_IMPORTED_MODULE_3__angular_core_src_linker_view_utils__["createRenderElement"](this.renderer, this._el_6, 'div', new __WEBPACK_IMPORTED_MODULE_3__angular_core_src_linker_view_utils__["InlineArray8"](6, 'aria-label', 'vanueimg', 'class', 'modalMap venueimg', 'id', 'venue-quantity'), null);
         this._SVGCache_11_3 = new __WEBPACK_IMPORTED_MODULE_27_ng_inline_svg_lib_svg_cache_service__["SVGCache"](this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_30__angular_platform_browser_src_dom_dom_tokens__["a" /* DOCUMENT */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_31__angular_http_src_http__["a" /* Http */], this.parentIndex));
         this._InlineSVGDirective_11_4 = new __WEBPACK_IMPORTED_MODULE_28__gendir_node_modules_ng_inline_svg_lib_inline_svg_directive_ngfactory__["a" /* Wrapper_InlineSVGDirective */](this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_30__angular_platform_browser_src_dom_dom_tokens__["a" /* DOCUMENT */], this.parentIndex), new __WEBPACK_IMPORTED_MODULE_32__angular_core_src_linker_element_ref__["a" /* ElementRef */](this._el_11), this._SVGCache_11_3);
         this._text_12 = this.renderer.createText(this._el_6, '\n                ', null);
@@ -3720,7 +3720,7 @@ var styles = [''];
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_24__app_shared_services_animation_enable_service__ = __webpack_require__("../../../../../src/app/shared/services/animation-enable.service.ts");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_25__app_shared_services_stock_type_data_service__ = __webpack_require__("../../../../../src/app/shared/services/stock-type-data.service.ts");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_26__app_shared_services_seat_status_service__ = __webpack_require__("../../../../../src/app/shared/services/seat-status.service.ts");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_27__app_shared_services_quentity_check_service__ = __webpack_require__("../../../../../src/app/shared/services/quentity-check.service.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_27__app_shared_services_quantity_check_service__ = __webpack_require__("../../../../../src/app/shared/services/quantity-check.service.ts");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_28__app_shared_services_count_select_service__ = __webpack_require__("../../../../../src/app/shared/services/count-select.service.ts");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_29__app_shared_services_smartPhone_check_service__ = __webpack_require__("../../../../../src/app/shared/services/smartPhone-check.service.ts");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_30__app_shared_services_reserve_by_seat_browser_back_service__ = __webpack_require__("../../../../../src/app/shared/services/reserve-by-seat-browser-back.service.ts");
@@ -3888,8 +3888,8 @@ var View_ReserveBySeatComponent0 = (function (_super) {
         this._text_31 = this.renderer.createText(this._el_29, '\n          ', null);
         this._el_32 = __WEBPACK_IMPORTED_MODULE_2__angular_core_src_linker_view_utils__["createRenderElement"](this.renderer, this._el_29, 'app-venue-map', __WEBPACK_IMPORTED_MODULE_2__angular_core_src_linker_view_utils__["EMPTY_INLINE_ARRAY"], null);
         this.compView_32 = new __WEBPACK_IMPORTED_MODULE_17__venue_map_venue_map_component_ngfactory__["a" /* View_VenuemapComponent0 */](this.viewUtils, this, 32, this._el_32);
-        this._ReserveByQuantityComponent_32_3 = new __WEBPACK_IMPORTED_MODULE_16__app_reserve_by_quantity_reserve_by_quantity_component__["a" /* ReserveByQuantityComponent */](this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_7__angular_router_src_router_state__["a" /* ActivatedRoute */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_18__angular_router_src_router__["e" /* Router */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_19__app_shared_services_performances_service__["a" /* PerformancesService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_23__app_shared_services_stock_types_service__["a" /* StockTypesService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_26__app_shared_services_seat_status_service__["a" /* SeatStatusService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_22__app_shared_services_seats_service__["a" /* SeatsService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_27__app_shared_services_quentity_check_service__["a" /* QuentityCheckService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_25__app_shared_services_stock_type_data_service__["a" /* StockTypeDataService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_20__app_shared_services_error_modal_data_service__["a" /* ErrorModalDataService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_28__app_shared_services_count_select_service__["a" /* CountSelectService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_24__app_shared_services_animation_enable_service__["a" /* AnimationEnableService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_29__app_shared_services_smartPhone_check_service__["a" /* SmartPhoneCheckService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_30__app_shared_services_reserve_by_seat_browser_back_service__["a" /* ReserveBySeatBrowserBackService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_21_angular2_logger_core__["Logger"], this.parentIndex));
-        this._VenuemapComponent_32_4 = new __WEBPACK_IMPORTED_MODULE_17__venue_map_venue_map_component_ngfactory__["b" /* Wrapper_VenuemapComponent */](new __WEBPACK_IMPORTED_MODULE_31__angular_core_src_linker_element_ref__["a" /* ElementRef */](this._el_32), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_7__angular_router_src_router_state__["a" /* ActivatedRoute */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_19__app_shared_services_performances_service__["a" /* PerformancesService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_26__app_shared_services_seat_status_service__["a" /* SeatStatusService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_23__app_shared_services_stock_types_service__["a" /* StockTypesService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_27__app_shared_services_quentity_check_service__["a" /* QuentityCheckService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_18__angular_router_src_router__["e" /* Router */], this.parentIndex), this._ReserveByQuantityComponent_32_3, this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_25__app_shared_services_stock_type_data_service__["a" /* StockTypeDataService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_20__app_shared_services_error_modal_data_service__["a" /* ErrorModalDataService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_24__app_shared_services_animation_enable_service__["a" /* AnimationEnableService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_28__app_shared_services_count_select_service__["a" /* CountSelectService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_29__app_shared_services_smartPhone_check_service__["a" /* SmartPhoneCheckService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_30__app_shared_services_reserve_by_seat_browser_back_service__["a" /* ReserveBySeatBrowserBackService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_32__app_shared_services_seat_data_service__["a" /* SeatDataService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_21_angular2_logger_core__["Logger"], this.parentIndex));
+        this._ReserveByQuantityComponent_32_3 = new __WEBPACK_IMPORTED_MODULE_16__app_reserve_by_quantity_reserve_by_quantity_component__["a" /* ReserveByQuantityComponent */](this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_7__angular_router_src_router_state__["a" /* ActivatedRoute */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_18__angular_router_src_router__["e" /* Router */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_19__app_shared_services_performances_service__["a" /* PerformancesService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_23__app_shared_services_stock_types_service__["a" /* StockTypesService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_26__app_shared_services_seat_status_service__["a" /* SeatStatusService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_22__app_shared_services_seats_service__["a" /* SeatsService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_27__app_shared_services_quantity_check_service__["a" /* QuantityCheckService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_25__app_shared_services_stock_type_data_service__["a" /* StockTypeDataService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_20__app_shared_services_error_modal_data_service__["a" /* ErrorModalDataService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_28__app_shared_services_count_select_service__["a" /* CountSelectService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_24__app_shared_services_animation_enable_service__["a" /* AnimationEnableService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_29__app_shared_services_smartPhone_check_service__["a" /* SmartPhoneCheckService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_30__app_shared_services_reserve_by_seat_browser_back_service__["a" /* ReserveBySeatBrowserBackService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_21_angular2_logger_core__["Logger"], this.parentIndex));
+        this._VenuemapComponent_32_4 = new __WEBPACK_IMPORTED_MODULE_17__venue_map_venue_map_component_ngfactory__["b" /* Wrapper_VenuemapComponent */](new __WEBPACK_IMPORTED_MODULE_31__angular_core_src_linker_element_ref__["a" /* ElementRef */](this._el_32), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_7__angular_router_src_router_state__["a" /* ActivatedRoute */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_19__app_shared_services_performances_service__["a" /* PerformancesService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_26__app_shared_services_seat_status_service__["a" /* SeatStatusService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_23__app_shared_services_stock_types_service__["a" /* StockTypesService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_27__app_shared_services_quantity_check_service__["a" /* QuantityCheckService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_18__angular_router_src_router__["e" /* Router */], this.parentIndex), this._ReserveByQuantityComponent_32_3, this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_25__app_shared_services_stock_type_data_service__["a" /* StockTypeDataService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_20__app_shared_services_error_modal_data_service__["a" /* ErrorModalDataService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_24__app_shared_services_animation_enable_service__["a" /* AnimationEnableService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_28__app_shared_services_count_select_service__["a" /* CountSelectService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_29__app_shared_services_smartPhone_check_service__["a" /* SmartPhoneCheckService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_30__app_shared_services_reserve_by_seat_browser_back_service__["a" /* ReserveBySeatBrowserBackService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_32__app_shared_services_seat_data_service__["a" /* SeatDataService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_21_angular2_logger_core__["Logger"], this.parentIndex));
         this._FilterComponent_32_5 = new __WEBPACK_IMPORTED_MODULE_13__app_reserve_by_seat_filter_filter_component__["a" /* FilterComponent */](this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_19__app_shared_services_performances_service__["a" /* PerformancesService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_22__app_shared_services_seats_service__["a" /* SeatsService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_7__angular_router_src_router_state__["a" /* ActivatedRoute */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_23__app_shared_services_stock_types_service__["a" /* StockTypesService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_20__app_shared_services_error_modal_data_service__["a" /* ErrorModalDataService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_24__app_shared_services_animation_enable_service__["a" /* AnimationEnableService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_25__app_shared_services_stock_type_data_service__["a" /* StockTypeDataService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_21_angular2_logger_core__["Logger"], this.parentIndex));
         this.compView_32.create(this._VenuemapComponent_32_4.context);
         this._text_33 = this.renderer.createText(this._el_29, '\n        ', null);
@@ -4035,7 +4035,7 @@ var styles = [''];
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_13__app_shared_services_stock_types_service__ = __webpack_require__("../../../../../src/app/shared/services/stock-types.service.ts");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_14__app_shared_services_seat_status_service__ = __webpack_require__("../../../../../src/app/shared/services/seat-status.service.ts");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_15__app_shared_services_seats_service__ = __webpack_require__("../../../../../src/app/shared/services/seats.service.ts");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_16__app_shared_services_quentity_check_service__ = __webpack_require__("../../../../../src/app/shared/services/quentity-check.service.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_16__app_shared_services_quantity_check_service__ = __webpack_require__("../../../../../src/app/shared/services/quantity-check.service.ts");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_17__app_shared_services_stock_type_data_service__ = __webpack_require__("../../../../../src/app/shared/services/stock-type-data.service.ts");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_18__app_shared_services_error_modal_data_service__ = __webpack_require__("../../../../../src/app/shared/services/error-modal-data.service.ts");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_19__app_shared_services_count_select_service__ = __webpack_require__("../../../../../src/app/shared/services/count-select.service.ts");
@@ -4178,7 +4178,7 @@ var View_SeatlistComponent_Host0 = (function (_super) {
     View_SeatlistComponent_Host0.prototype.createInternal = function (rootSelector) {
         this._el_0 = __WEBPACK_IMPORTED_MODULE_3__angular_core_src_linker_view_utils__["selectOrCreateRenderHostElement"](this.renderer, 'app-seat-list', __WEBPACK_IMPORTED_MODULE_3__angular_core_src_linker_view_utils__["EMPTY_INLINE_ARRAY"], rootSelector, null);
         this.compView_0 = new View_SeatlistComponent0(this.viewUtils, this, 0, this._el_0);
-        this._ReserveByQuantityComponent_0_3 = new __WEBPACK_IMPORTED_MODULE_5__app_reserve_by_quantity_reserve_by_quantity_component__["a" /* ReserveByQuantityComponent */](this.injectorGet(__WEBPACK_IMPORTED_MODULE_10__angular_router_src_router_state__["a" /* ActivatedRoute */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_11__angular_router_src_router__["e" /* Router */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_12__app_shared_services_performances_service__["a" /* PerformancesService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_13__app_shared_services_stock_types_service__["a" /* StockTypesService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_14__app_shared_services_seat_status_service__["a" /* SeatStatusService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_15__app_shared_services_seats_service__["a" /* SeatsService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_16__app_shared_services_quentity_check_service__["a" /* QuentityCheckService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_17__app_shared_services_stock_type_data_service__["a" /* StockTypeDataService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_18__app_shared_services_error_modal_data_service__["a" /* ErrorModalDataService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_19__app_shared_services_count_select_service__["a" /* CountSelectService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_20__app_shared_services_animation_enable_service__["a" /* AnimationEnableService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_21__app_shared_services_smartPhone_check_service__["a" /* SmartPhoneCheckService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_22__app_shared_services_reserve_by_seat_browser_back_service__["a" /* ReserveBySeatBrowserBackService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_23_angular2_logger_core__["Logger"], this.parentIndex));
+        this._ReserveByQuantityComponent_0_3 = new __WEBPACK_IMPORTED_MODULE_5__app_reserve_by_quantity_reserve_by_quantity_component__["a" /* ReserveByQuantityComponent */](this.injectorGet(__WEBPACK_IMPORTED_MODULE_10__angular_router_src_router_state__["a" /* ActivatedRoute */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_11__angular_router_src_router__["e" /* Router */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_12__app_shared_services_performances_service__["a" /* PerformancesService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_13__app_shared_services_stock_types_service__["a" /* StockTypesService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_14__app_shared_services_seat_status_service__["a" /* SeatStatusService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_15__app_shared_services_seats_service__["a" /* SeatsService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_16__app_shared_services_quantity_check_service__["a" /* QuantityCheckService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_17__app_shared_services_stock_type_data_service__["a" /* StockTypeDataService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_18__app_shared_services_error_modal_data_service__["a" /* ErrorModalDataService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_19__app_shared_services_count_select_service__["a" /* CountSelectService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_20__app_shared_services_animation_enable_service__["a" /* AnimationEnableService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_21__app_shared_services_smartPhone_check_service__["a" /* SmartPhoneCheckService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_22__app_shared_services_reserve_by_seat_browser_back_service__["a" /* ReserveBySeatBrowserBackService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_23_angular2_logger_core__["Logger"], this.parentIndex));
         this._SeatlistComponent_0_4 = new Wrapper_SeatlistComponent(this.injectorGet(__WEBPACK_IMPORTED_MODULE_10__angular_router_src_router_state__["a" /* ActivatedRoute */], this.parentIndex), this._ReserveByQuantityComponent_0_3, this.injectorGet(__WEBPACK_IMPORTED_MODULE_17__app_shared_services_stock_type_data_service__["a" /* StockTypeDataService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_12__app_shared_services_performances_service__["a" /* PerformancesService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_23_angular2_logger_core__["Logger"], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_18__app_shared_services_error_modal_data_service__["a" /* ErrorModalDataService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_13__app_shared_services_stock_types_service__["a" /* StockTypesService */], this.parentIndex));
         this._FilterComponent_0_5 = new __WEBPACK_IMPORTED_MODULE_6__app_reserve_by_seat_filter_filter_component__["a" /* FilterComponent */](this.injectorGet(__WEBPACK_IMPORTED_MODULE_12__app_shared_services_performances_service__["a" /* PerformancesService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_15__app_shared_services_seats_service__["a" /* SeatsService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_10__angular_router_src_router_state__["a" /* ActivatedRoute */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_13__app_shared_services_stock_types_service__["a" /* StockTypesService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_18__app_shared_services_error_modal_data_service__["a" /* ErrorModalDataService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_20__app_shared_services_animation_enable_service__["a" /* AnimationEnableService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_17__app_shared_services_stock_type_data_service__["a" /* StockTypeDataService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_23_angular2_logger_core__["Logger"], this.parentIndex));
         this.compView_0.create(this._SeatlistComponent_0_4.context);
@@ -4628,7 +4628,7 @@ var styles = [''];
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_13__app_shared_services_stock_types_service__ = __webpack_require__("../../../../../src/app/shared/services/stock-types.service.ts");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_14__app_shared_services_seat_status_service__ = __webpack_require__("../../../../../src/app/shared/services/seat-status.service.ts");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_15__app_shared_services_seats_service__ = __webpack_require__("../../../../../src/app/shared/services/seats.service.ts");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_16__app_shared_services_quentity_check_service__ = __webpack_require__("../../../../../src/app/shared/services/quentity-check.service.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_16__app_shared_services_quantity_check_service__ = __webpack_require__("../../../../../src/app/shared/services/quantity-check.service.ts");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_17__app_shared_services_stock_type_data_service__ = __webpack_require__("../../../../../src/app/shared/services/stock-type-data.service.ts");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_18__app_shared_services_error_modal_data_service__ = __webpack_require__("../../../../../src/app/shared/services/error-modal-data.service.ts");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_19__app_shared_services_count_select_service__ = __webpack_require__("../../../../../src/app/shared/services/count-select.service.ts");
@@ -4770,8 +4770,8 @@ var View_VenuemapComponent_Host0 = (function (_super) {
     View_VenuemapComponent_Host0.prototype.createInternal = function (rootSelector) {
         this._el_0 = __WEBPACK_IMPORTED_MODULE_3__angular_core_src_linker_view_utils__["selectOrCreateRenderHostElement"](this.renderer, 'app-venue-map', __WEBPACK_IMPORTED_MODULE_3__angular_core_src_linker_view_utils__["EMPTY_INLINE_ARRAY"], rootSelector, null);
         this.compView_0 = new View_VenuemapComponent0(this.viewUtils, this, 0, this._el_0);
-        this._ReserveByQuantityComponent_0_3 = new __WEBPACK_IMPORTED_MODULE_5__app_reserve_by_quantity_reserve_by_quantity_component__["a" /* ReserveByQuantityComponent */](this.injectorGet(__WEBPACK_IMPORTED_MODULE_10__angular_router_src_router_state__["a" /* ActivatedRoute */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_11__angular_router_src_router__["e" /* Router */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_12__app_shared_services_performances_service__["a" /* PerformancesService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_13__app_shared_services_stock_types_service__["a" /* StockTypesService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_14__app_shared_services_seat_status_service__["a" /* SeatStatusService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_15__app_shared_services_seats_service__["a" /* SeatsService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_16__app_shared_services_quentity_check_service__["a" /* QuentityCheckService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_17__app_shared_services_stock_type_data_service__["a" /* StockTypeDataService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_18__app_shared_services_error_modal_data_service__["a" /* ErrorModalDataService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_19__app_shared_services_count_select_service__["a" /* CountSelectService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_20__app_shared_services_animation_enable_service__["a" /* AnimationEnableService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_21__app_shared_services_smartPhone_check_service__["a" /* SmartPhoneCheckService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_22__app_shared_services_reserve_by_seat_browser_back_service__["a" /* ReserveBySeatBrowserBackService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_23_angular2_logger_core__["Logger"], this.parentIndex));
-        this._VenuemapComponent_0_4 = new Wrapper_VenuemapComponent(new __WEBPACK_IMPORTED_MODULE_24__angular_core_src_linker_element_ref__["a" /* ElementRef */](this._el_0), this.injectorGet(__WEBPACK_IMPORTED_MODULE_10__angular_router_src_router_state__["a" /* ActivatedRoute */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_12__app_shared_services_performances_service__["a" /* PerformancesService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_14__app_shared_services_seat_status_service__["a" /* SeatStatusService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_13__app_shared_services_stock_types_service__["a" /* StockTypesService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_16__app_shared_services_quentity_check_service__["a" /* QuentityCheckService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_11__angular_router_src_router__["e" /* Router */], this.parentIndex), this._ReserveByQuantityComponent_0_3, this.injectorGet(__WEBPACK_IMPORTED_MODULE_17__app_shared_services_stock_type_data_service__["a" /* StockTypeDataService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_18__app_shared_services_error_modal_data_service__["a" /* ErrorModalDataService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_20__app_shared_services_animation_enable_service__["a" /* AnimationEnableService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_19__app_shared_services_count_select_service__["a" /* CountSelectService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_21__app_shared_services_smartPhone_check_service__["a" /* SmartPhoneCheckService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_22__app_shared_services_reserve_by_seat_browser_back_service__["a" /* ReserveBySeatBrowserBackService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_25__app_shared_services_seat_data_service__["a" /* SeatDataService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_23_angular2_logger_core__["Logger"], this.parentIndex));
+        this._ReserveByQuantityComponent_0_3 = new __WEBPACK_IMPORTED_MODULE_5__app_reserve_by_quantity_reserve_by_quantity_component__["a" /* ReserveByQuantityComponent */](this.injectorGet(__WEBPACK_IMPORTED_MODULE_10__angular_router_src_router_state__["a" /* ActivatedRoute */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_11__angular_router_src_router__["e" /* Router */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_12__app_shared_services_performances_service__["a" /* PerformancesService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_13__app_shared_services_stock_types_service__["a" /* StockTypesService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_14__app_shared_services_seat_status_service__["a" /* SeatStatusService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_15__app_shared_services_seats_service__["a" /* SeatsService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_16__app_shared_services_quantity_check_service__["a" /* QuantityCheckService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_17__app_shared_services_stock_type_data_service__["a" /* StockTypeDataService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_18__app_shared_services_error_modal_data_service__["a" /* ErrorModalDataService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_19__app_shared_services_count_select_service__["a" /* CountSelectService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_20__app_shared_services_animation_enable_service__["a" /* AnimationEnableService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_21__app_shared_services_smartPhone_check_service__["a" /* SmartPhoneCheckService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_22__app_shared_services_reserve_by_seat_browser_back_service__["a" /* ReserveBySeatBrowserBackService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_23_angular2_logger_core__["Logger"], this.parentIndex));
+        this._VenuemapComponent_0_4 = new Wrapper_VenuemapComponent(new __WEBPACK_IMPORTED_MODULE_24__angular_core_src_linker_element_ref__["a" /* ElementRef */](this._el_0), this.injectorGet(__WEBPACK_IMPORTED_MODULE_10__angular_router_src_router_state__["a" /* ActivatedRoute */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_12__app_shared_services_performances_service__["a" /* PerformancesService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_14__app_shared_services_seat_status_service__["a" /* SeatStatusService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_13__app_shared_services_stock_types_service__["a" /* StockTypesService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_16__app_shared_services_quantity_check_service__["a" /* QuantityCheckService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_11__angular_router_src_router__["e" /* Router */], this.parentIndex), this._ReserveByQuantityComponent_0_3, this.injectorGet(__WEBPACK_IMPORTED_MODULE_17__app_shared_services_stock_type_data_service__["a" /* StockTypeDataService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_18__app_shared_services_error_modal_data_service__["a" /* ErrorModalDataService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_20__app_shared_services_animation_enable_service__["a" /* AnimationEnableService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_19__app_shared_services_count_select_service__["a" /* CountSelectService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_21__app_shared_services_smartPhone_check_service__["a" /* SmartPhoneCheckService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_22__app_shared_services_reserve_by_seat_browser_back_service__["a" /* ReserveBySeatBrowserBackService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_25__app_shared_services_seat_data_service__["a" /* SeatDataService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_23_angular2_logger_core__["Logger"], this.parentIndex));
         this._FilterComponent_0_5 = new __WEBPACK_IMPORTED_MODULE_6__app_reserve_by_seat_filter_filter_component__["a" /* FilterComponent */](this.injectorGet(__WEBPACK_IMPORTED_MODULE_12__app_shared_services_performances_service__["a" /* PerformancesService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_15__app_shared_services_seats_service__["a" /* SeatsService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_10__angular_router_src_router_state__["a" /* ActivatedRoute */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_13__app_shared_services_stock_types_service__["a" /* StockTypesService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_18__app_shared_services_error_modal_data_service__["a" /* ErrorModalDataService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_20__app_shared_services_animation_enable_service__["a" /* AnimationEnableService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_17__app_shared_services_stock_type_data_service__["a" /* StockTypeDataService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_23_angular2_logger_core__["Logger"], this.parentIndex));
         this.compView_0.create(this._VenuemapComponent_0_4.context);
         this.init(this._el_0, (this.renderer.directRenderer ? null : [this._el_0]), null);
@@ -5617,7 +5617,7 @@ var View_VenuemapComponent0 = (function (_super) {
         this._text_38 = this.renderer.createText(parentRenderNode, '\n    ', null);
         this._el_39 = __WEBPACK_IMPORTED_MODULE_3__angular_core_src_linker_view_utils__["createRenderElement"](this.renderer, parentRenderNode, 'app-reserve-by-quantity', __WEBPACK_IMPORTED_MODULE_3__angular_core_src_linker_view_utils__["EMPTY_INLINE_ARRAY"], null);
         this.compView_39 = new __WEBPACK_IMPORTED_MODULE_41__reserve_by_quantity_reserve_by_quantity_component_ngfactory__["b" /* View_ReserveByQuantityComponent0 */](this.viewUtils, this, 39, this._el_39);
-        this._ReserveByQuantityComponent_39_3 = new __WEBPACK_IMPORTED_MODULE_41__reserve_by_quantity_reserve_by_quantity_component_ngfactory__["c" /* Wrapper_ReserveByQuantityComponent */](this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_10__angular_router_src_router_state__["a" /* ActivatedRoute */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_11__angular_router_src_router__["e" /* Router */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_12__app_shared_services_performances_service__["a" /* PerformancesService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_13__app_shared_services_stock_types_service__["a" /* StockTypesService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_14__app_shared_services_seat_status_service__["a" /* SeatStatusService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_15__app_shared_services_seats_service__["a" /* SeatsService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_16__app_shared_services_quentity_check_service__["a" /* QuentityCheckService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_17__app_shared_services_stock_type_data_service__["a" /* StockTypeDataService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_18__app_shared_services_error_modal_data_service__["a" /* ErrorModalDataService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_19__app_shared_services_count_select_service__["a" /* CountSelectService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_20__app_shared_services_animation_enable_service__["a" /* AnimationEnableService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_21__app_shared_services_smartPhone_check_service__["a" /* SmartPhoneCheckService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_22__app_shared_services_reserve_by_seat_browser_back_service__["a" /* ReserveBySeatBrowserBackService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_23_angular2_logger_core__["Logger"], this.parentIndex));
+        this._ReserveByQuantityComponent_39_3 = new __WEBPACK_IMPORTED_MODULE_41__reserve_by_quantity_reserve_by_quantity_component_ngfactory__["c" /* Wrapper_ReserveByQuantityComponent */](this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_10__angular_router_src_router_state__["a" /* ActivatedRoute */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_11__angular_router_src_router__["e" /* Router */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_12__app_shared_services_performances_service__["a" /* PerformancesService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_13__app_shared_services_stock_types_service__["a" /* StockTypesService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_14__app_shared_services_seat_status_service__["a" /* SeatStatusService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_15__app_shared_services_seats_service__["a" /* SeatsService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_16__app_shared_services_quantity_check_service__["a" /* QuantityCheckService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_17__app_shared_services_stock_type_data_service__["a" /* StockTypeDataService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_18__app_shared_services_error_modal_data_service__["a" /* ErrorModalDataService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_19__app_shared_services_count_select_service__["a" /* CountSelectService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_20__app_shared_services_animation_enable_service__["a" /* AnimationEnableService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_21__app_shared_services_smartPhone_check_service__["a" /* SmartPhoneCheckService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_22__app_shared_services_reserve_by_seat_browser_back_service__["a" /* ReserveBySeatBrowserBackService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_23_angular2_logger_core__["Logger"], this.parentIndex));
         this.compView_39.create(this._ReserveByQuantityComponent_39_3.context);
         this._text_40 = this.renderer.createText(parentRenderNode, '\n', null);
         this._text_41 = this.renderer.createText(parentRenderNode, '\n', null);
@@ -5626,7 +5626,7 @@ var View_VenuemapComponent0 = (function (_super) {
         this._text_44 = this.renderer.createText(this._el_42, '\n    ', null);
         this._el_45 = __WEBPACK_IMPORTED_MODULE_3__angular_core_src_linker_view_utils__["createRenderElement"](this.renderer, this._el_42, 'app-seat-list', __WEBPACK_IMPORTED_MODULE_3__angular_core_src_linker_view_utils__["EMPTY_INLINE_ARRAY"], null);
         this.compView_45 = new __WEBPACK_IMPORTED_MODULE_43__seat_list_seat_list_component_ngfactory__["a" /* View_SeatlistComponent0 */](this.viewUtils, this, 45, this._el_45);
-        this._ReserveByQuantityComponent_45_3 = new __WEBPACK_IMPORTED_MODULE_5__app_reserve_by_quantity_reserve_by_quantity_component__["a" /* ReserveByQuantityComponent */](this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_10__angular_router_src_router_state__["a" /* ActivatedRoute */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_11__angular_router_src_router__["e" /* Router */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_12__app_shared_services_performances_service__["a" /* PerformancesService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_13__app_shared_services_stock_types_service__["a" /* StockTypesService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_14__app_shared_services_seat_status_service__["a" /* SeatStatusService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_15__app_shared_services_seats_service__["a" /* SeatsService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_16__app_shared_services_quentity_check_service__["a" /* QuentityCheckService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_17__app_shared_services_stock_type_data_service__["a" /* StockTypeDataService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_18__app_shared_services_error_modal_data_service__["a" /* ErrorModalDataService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_19__app_shared_services_count_select_service__["a" /* CountSelectService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_20__app_shared_services_animation_enable_service__["a" /* AnimationEnableService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_21__app_shared_services_smartPhone_check_service__["a" /* SmartPhoneCheckService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_22__app_shared_services_reserve_by_seat_browser_back_service__["a" /* ReserveBySeatBrowserBackService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_23_angular2_logger_core__["Logger"], this.parentIndex));
+        this._ReserveByQuantityComponent_45_3 = new __WEBPACK_IMPORTED_MODULE_5__app_reserve_by_quantity_reserve_by_quantity_component__["a" /* ReserveByQuantityComponent */](this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_10__angular_router_src_router_state__["a" /* ActivatedRoute */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_11__angular_router_src_router__["e" /* Router */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_12__app_shared_services_performances_service__["a" /* PerformancesService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_13__app_shared_services_stock_types_service__["a" /* StockTypesService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_14__app_shared_services_seat_status_service__["a" /* SeatStatusService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_15__app_shared_services_seats_service__["a" /* SeatsService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_16__app_shared_services_quantity_check_service__["a" /* QuantityCheckService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_17__app_shared_services_stock_type_data_service__["a" /* StockTypeDataService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_18__app_shared_services_error_modal_data_service__["a" /* ErrorModalDataService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_19__app_shared_services_count_select_service__["a" /* CountSelectService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_20__app_shared_services_animation_enable_service__["a" /* AnimationEnableService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_21__app_shared_services_smartPhone_check_service__["a" /* SmartPhoneCheckService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_22__app_shared_services_reserve_by_seat_browser_back_service__["a" /* ReserveBySeatBrowserBackService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_23_angular2_logger_core__["Logger"], this.parentIndex));
         this._SeatlistComponent_45_4 = new __WEBPACK_IMPORTED_MODULE_43__seat_list_seat_list_component_ngfactory__["b" /* Wrapper_SeatlistComponent */](this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_10__angular_router_src_router_state__["a" /* ActivatedRoute */], this.parentIndex), this._ReserveByQuantityComponent_45_3, this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_17__app_shared_services_stock_type_data_service__["a" /* StockTypeDataService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_12__app_shared_services_performances_service__["a" /* PerformancesService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_23_angular2_logger_core__["Logger"], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_18__app_shared_services_error_modal_data_service__["a" /* ErrorModalDataService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_13__app_shared_services_stock_types_service__["a" /* StockTypesService */], this.parentIndex));
         this._FilterComponent_45_5 = new __WEBPACK_IMPORTED_MODULE_6__app_reserve_by_seat_filter_filter_component__["a" /* FilterComponent */](this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_12__app_shared_services_performances_service__["a" /* PerformancesService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_15__app_shared_services_seats_service__["a" /* SeatsService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_10__angular_router_src_router_state__["a" /* ActivatedRoute */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_13__app_shared_services_stock_types_service__["a" /* StockTypesService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_18__app_shared_services_error_modal_data_service__["a" /* ErrorModalDataService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_20__app_shared_services_animation_enable_service__["a" /* AnimationEnableService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_17__app_shared_services_stock_type_data_service__["a" /* StockTypeDataService */], this.parentIndex), this.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_23_angular2_logger_core__["Logger"], this.parentIndex));
         this.compView_45.create(this._SeatlistComponent_45_4.context);
@@ -5915,21 +5915,22 @@ var styles = [''];
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_14__app_shared_services_smartPhone_check_service__ = __webpack_require__("../../../../../src/app/shared/services/smartPhone-check.service.ts");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_15__app_shared_services_animation_enable_service__ = __webpack_require__("../../../../../src/app/shared/services/animation-enable.service.ts");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_16__app_shared_services_reserve_by_seat_browser_back_service__ = __webpack_require__("../../../../../src/app/shared/services/reserve-by-seat-browser-back.service.ts");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_17_angular2_logger_core__ = __webpack_require__("../../../../angular2-logger/core.js");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_17_angular2_logger_core___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_17_angular2_logger_core__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_18__select_product_component_css_shim_ngstyle__ = __webpack_require__("../../../../../src/$$_gendir/app/select-product/select-product.component.css.shim.ngstyle.ts");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_19__angular_core_src_linker_view_container__ = __webpack_require__("../../../core/src/linker/view_container.js");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_20__angular_core_src_change_detection_change_detection_util__ = __webpack_require__("../../../core/src/change_detection/change_detection_util.js");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_21__gendir_node_modules_angular_common_src_directives_ng_if_ngfactory__ = __webpack_require__("../../../../../src/$$_gendir/node_modules/@angular/common/src/directives/ng_if.ngfactory.ts");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_22__gendir_node_modules_angular_common_src_directives_ng_for_ngfactory__ = __webpack_require__("../../../../../src/$$_gendir/node_modules/@angular/common/src/directives/ng_for.ngfactory.ts");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_23__angular_core_src_linker_template_ref__ = __webpack_require__("../../../core/src/linker/template_ref.js");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_24__angular_core_src_change_detection_differs_iterable_differs__ = __webpack_require__("../../../core/src/change_detection/differs/iterable_differs.js");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_25__angular_common_src_directives_ng_if__ = __webpack_require__("../../../common/src/directives/ng_if.js");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_26__angular_common_src_directives_ng_for__ = __webpack_require__("../../../common/src/directives/ng_for.js");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_27__angular_common_src_pipes_slice_pipe__ = __webpack_require__("../../../common/src/pipes/slice_pipe.js");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_28__gendir_node_modules_angular_router_src_directives_router_link_ngfactory__ = __webpack_require__("../../../../../src/$$_gendir/node_modules/@angular/router/src/directives/router_link.ngfactory.ts");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_29__angular_router_src_directives_router_link__ = __webpack_require__("../../../router/src/directives/router_link.js");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_30__angular_core_src_security__ = __webpack_require__("../../../core/src/security.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_17__app_shared_services_quantity_check_service__ = __webpack_require__("../../../../../src/app/shared/services/quantity-check.service.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_18_angular2_logger_core__ = __webpack_require__("../../../../angular2-logger/core.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_18_angular2_logger_core___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_18_angular2_logger_core__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_19__select_product_component_css_shim_ngstyle__ = __webpack_require__("../../../../../src/$$_gendir/app/select-product/select-product.component.css.shim.ngstyle.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_20__angular_core_src_linker_view_container__ = __webpack_require__("../../../core/src/linker/view_container.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_21__angular_core_src_change_detection_change_detection_util__ = __webpack_require__("../../../core/src/change_detection/change_detection_util.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_22__gendir_node_modules_angular_common_src_directives_ng_if_ngfactory__ = __webpack_require__("../../../../../src/$$_gendir/node_modules/@angular/common/src/directives/ng_if.ngfactory.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_23__gendir_node_modules_angular_common_src_directives_ng_for_ngfactory__ = __webpack_require__("../../../../../src/$$_gendir/node_modules/@angular/common/src/directives/ng_for.ngfactory.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_24__angular_core_src_linker_template_ref__ = __webpack_require__("../../../core/src/linker/template_ref.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_25__angular_core_src_change_detection_differs_iterable_differs__ = __webpack_require__("../../../core/src/change_detection/differs/iterable_differs.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_26__angular_common_src_directives_ng_if__ = __webpack_require__("../../../common/src/directives/ng_if.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_27__angular_common_src_directives_ng_for__ = __webpack_require__("../../../common/src/directives/ng_for.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_28__angular_common_src_pipes_slice_pipe__ = __webpack_require__("../../../common/src/pipes/slice_pipe.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_29__gendir_node_modules_angular_router_src_directives_router_link_ngfactory__ = __webpack_require__("../../../../../src/$$_gendir/node_modules/@angular/router/src/directives/router_link.ngfactory.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_30__angular_router_src_directives_router_link__ = __webpack_require__("../../../router/src/directives/router_link.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_31__angular_core_src_security__ = __webpack_require__("../../../core/src/security.js");
 /**
  * @fileoverview This file is generated by the Angular 2 template compiler.
  * Do not edit.
@@ -5972,10 +5973,11 @@ var __extends = (this && this.__extends) || function (d, b) {
 
 
 
+
 var Wrapper_SelectProductComponent = (function () {
-    function Wrapper_SelectProductComponent(p0, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10) {
+    function Wrapper_SelectProductComponent(p0, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11) {
         this._changed = false;
-        this.context = new __WEBPACK_IMPORTED_MODULE_0__app_select_product_select_product_component__["a" /* SelectProductComponent */](p0, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10);
+        this.context = new __WEBPACK_IMPORTED_MODULE_0__app_select_product_select_product_component__["a" /* SelectProductComponent */](p0, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11);
     }
     Wrapper_SelectProductComponent.prototype.ngOnDetach = function (view, componentView, el) {
     };
@@ -6012,7 +6014,7 @@ var View_SelectProductComponent_Host0 = (function (_super) {
     View_SelectProductComponent_Host0.prototype.createInternal = function (rootSelector) {
         this._el_0 = __WEBPACK_IMPORTED_MODULE_2__angular_core_src_linker_view_utils__["selectOrCreateRenderHostElement"](this.renderer, 'app-select-product', __WEBPACK_IMPORTED_MODULE_2__angular_core_src_linker_view_utils__["EMPTY_INLINE_ARRAY"], rootSelector, null);
         this.compView_0 = new View_SelectProductComponent0(this.viewUtils, this, 0, this._el_0);
-        this._SelectProductComponent_0_3 = new Wrapper_SelectProductComponent(this.injectorGet(__WEBPACK_IMPORTED_MODULE_7__app_shared_services_seat_status_service__["a" /* SeatStatusService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_8__angular_router_src_router_state__["a" /* ActivatedRoute */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_9__angular_router_src_router__["e" /* Router */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_10__app_shared_services_performances_service__["a" /* PerformancesService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_11__app_shared_services_stock_types_service__["a" /* StockTypesService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_12__app_shared_services_select_product_service__["a" /* SelectProductService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_13__app_shared_services_error_modal_data_service__["a" /* ErrorModalDataService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_14__app_shared_services_smartPhone_check_service__["a" /* SmartPhoneCheckService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_15__app_shared_services_animation_enable_service__["a" /* AnimationEnableService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_16__app_shared_services_reserve_by_seat_browser_back_service__["a" /* ReserveBySeatBrowserBackService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_17_angular2_logger_core__["Logger"], this.parentIndex));
+        this._SelectProductComponent_0_3 = new Wrapper_SelectProductComponent(this.injectorGet(__WEBPACK_IMPORTED_MODULE_7__app_shared_services_seat_status_service__["a" /* SeatStatusService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_8__angular_router_src_router_state__["a" /* ActivatedRoute */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_9__angular_router_src_router__["e" /* Router */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_10__app_shared_services_performances_service__["a" /* PerformancesService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_11__app_shared_services_stock_types_service__["a" /* StockTypesService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_12__app_shared_services_select_product_service__["a" /* SelectProductService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_13__app_shared_services_error_modal_data_service__["a" /* ErrorModalDataService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_14__app_shared_services_smartPhone_check_service__["a" /* SmartPhoneCheckService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_15__app_shared_services_animation_enable_service__["a" /* AnimationEnableService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_16__app_shared_services_reserve_by_seat_browser_back_service__["a" /* ReserveBySeatBrowserBackService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_17__app_shared_services_quantity_check_service__["a" /* QuantityCheckService */], this.parentIndex), this.injectorGet(__WEBPACK_IMPORTED_MODULE_18_angular2_logger_core__["Logger"], this.parentIndex));
         this.compView_0.create(this._SelectProductComponent_0_3.context);
         this.init(this._el_0, (this.renderer.directRenderer ? null : [this._el_0]), null);
         return new __WEBPACK_IMPORTED_MODULE_6__angular_core_src_linker_component_factory__["c" /* ComponentRef_ */](0, this, this._el_0, this._SelectProductComponent_0_3.context);
@@ -6042,14 +6044,14 @@ var View_SelectProductComponent_Host0 = (function (_super) {
     return View_SelectProductComponent_Host0;
 }(__WEBPACK_IMPORTED_MODULE_1__angular_core_src_linker_view__["a" /* AppView */]));
 var SelectProductComponentNgFactory = new __WEBPACK_IMPORTED_MODULE_6__angular_core_src_linker_component_factory__["a" /* ComponentFactory */]('app-select-product', View_SelectProductComponent_Host0, __WEBPACK_IMPORTED_MODULE_0__app_select_product_select_product_component__["a" /* SelectProductComponent */]);
-var styles_SelectProductComponent = [__WEBPACK_IMPORTED_MODULE_18__select_product_component_css_shim_ngstyle__["a" /* styles */]];
+var styles_SelectProductComponent = [__WEBPACK_IMPORTED_MODULE_19__select_product_component_css_shim_ngstyle__["a" /* styles */]];
 var View_SelectProductComponent1 = (function (_super) {
     __extends(View_SelectProductComponent1, _super);
     function View_SelectProductComponent1(viewUtils, parentView, parentIndex, parentElement, declaredViewContainer) {
         _super.call(this, View_SelectProductComponent1, renderType_SelectProductComponent, __WEBPACK_IMPORTED_MODULE_4__angular_core_src_linker_view_type__["a" /* ViewType */].EMBEDDED, viewUtils, parentView, parentIndex, parentElement, __WEBPACK_IMPORTED_MODULE_5__angular_core_src_change_detection_constants__["b" /* ChangeDetectorStatus */].CheckAlways, declaredViewContainer);
-        this._expr_9 = __WEBPACK_IMPORTED_MODULE_20__angular_core_src_change_detection_change_detection_util__["b" /* UNINITIALIZED */];
-        this._expr_10 = __WEBPACK_IMPORTED_MODULE_20__angular_core_src_change_detection_change_detection_util__["b" /* UNINITIALIZED */];
-        this._expr_11 = __WEBPACK_IMPORTED_MODULE_20__angular_core_src_change_detection_change_detection_util__["b" /* UNINITIALIZED */];
+        this._expr_9 = __WEBPACK_IMPORTED_MODULE_21__angular_core_src_change_detection_change_detection_util__["b" /* UNINITIALIZED */];
+        this._expr_10 = __WEBPACK_IMPORTED_MODULE_21__angular_core_src_change_detection_change_detection_util__["b" /* UNINITIALIZED */];
+        this._expr_11 = __WEBPACK_IMPORTED_MODULE_21__angular_core_src_change_detection_change_detection_util__["b" /* UNINITIALIZED */];
     }
     View_SelectProductComponent1.prototype.createInternal = function (rootSelector) {
         this._el_0 = __WEBPACK_IMPORTED_MODULE_2__angular_core_src_linker_view_utils__["createRenderElement"](this.renderer, null, 'p', __WEBPACK_IMPORTED_MODULE_2__angular_core_src_linker_view_utils__["EMPTY_INLINE_ARRAY"], null);
@@ -6100,7 +6102,7 @@ var View_SelectProductComponent3 = (function (_super) {
     __extends(View_SelectProductComponent3, _super);
     function View_SelectProductComponent3(viewUtils, parentView, parentIndex, parentElement, declaredViewContainer) {
         _super.call(this, View_SelectProductComponent3, renderType_SelectProductComponent, __WEBPACK_IMPORTED_MODULE_4__angular_core_src_linker_view_type__["a" /* ViewType */].EMBEDDED, viewUtils, parentView, parentIndex, parentElement, __WEBPACK_IMPORTED_MODULE_5__angular_core_src_change_detection_constants__["b" /* ChangeDetectorStatus */].CheckAlways, declaredViewContainer);
-        this._expr_2 = __WEBPACK_IMPORTED_MODULE_20__angular_core_src_change_detection_change_detection_util__["b" /* UNINITIALIZED */];
+        this._expr_2 = __WEBPACK_IMPORTED_MODULE_21__angular_core_src_change_detection_change_detection_util__["b" /* UNINITIALIZED */];
     }
     View_SelectProductComponent3.prototype.createInternal = function (rootSelector) {
         this._el_0 = __WEBPACK_IMPORTED_MODULE_2__angular_core_src_linker_view_utils__["createRenderElement"](this.renderer, null, 'p', new __WEBPACK_IMPORTED_MODULE_2__angular_core_src_linker_view_utils__["InlineArray2"](2, 'class', 'nextSeat'), null);
@@ -6127,7 +6129,7 @@ var View_SelectProductComponent4 = (function (_super) {
     __extends(View_SelectProductComponent4, _super);
     function View_SelectProductComponent4(viewUtils, parentView, parentIndex, parentElement, declaredViewContainer) {
         _super.call(this, View_SelectProductComponent4, renderType_SelectProductComponent, __WEBPACK_IMPORTED_MODULE_4__angular_core_src_linker_view_type__["a" /* ViewType */].EMBEDDED, viewUtils, parentView, parentIndex, parentElement, __WEBPACK_IMPORTED_MODULE_5__angular_core_src_change_detection_constants__["b" /* ChangeDetectorStatus */].CheckAlways, declaredViewContainer);
-        this._expr_5 = __WEBPACK_IMPORTED_MODULE_20__angular_core_src_change_detection_change_detection_util__["b" /* UNINITIALIZED */];
+        this._expr_5 = __WEBPACK_IMPORTED_MODULE_21__angular_core_src_change_detection_change_detection_util__["b" /* UNINITIALIZED */];
     }
     View_SelectProductComponent4.prototype.createInternal = function (rootSelector) {
         this._el_0 = __WEBPACK_IMPORTED_MODULE_2__angular_core_src_linker_view_utils__["createRenderElement"](this.renderer, null, 'div', new __WEBPACK_IMPORTED_MODULE_2__angular_core_src_linker_view_utils__["InlineArray2"](2, 'class', 'allocationSeats'), null);
@@ -6179,7 +6181,7 @@ var View_SelectProductComponent7 = (function (_super) {
     __extends(View_SelectProductComponent7, _super);
     function View_SelectProductComponent7(viewUtils, parentView, parentIndex, parentElement, declaredViewContainer) {
         _super.call(this, View_SelectProductComponent7, renderType_SelectProductComponent, __WEBPACK_IMPORTED_MODULE_4__angular_core_src_linker_view_type__["a" /* ViewType */].EMBEDDED, viewUtils, parentView, parentIndex, parentElement, __WEBPACK_IMPORTED_MODULE_5__angular_core_src_change_detection_constants__["b" /* ChangeDetectorStatus */].CheckAlways, declaredViewContainer);
-        this._expr_2 = __WEBPACK_IMPORTED_MODULE_20__angular_core_src_change_detection_change_detection_util__["b" /* UNINITIALIZED */];
+        this._expr_2 = __WEBPACK_IMPORTED_MODULE_21__angular_core_src_change_detection_change_detection_util__["b" /* UNINITIALIZED */];
     }
     View_SelectProductComponent7.prototype.createInternal = function (rootSelector) {
         this._el_0 = __WEBPACK_IMPORTED_MODULE_2__angular_core_src_linker_view_utils__["createRenderElement"](this.renderer, null, 'p', new __WEBPACK_IMPORTED_MODULE_2__angular_core_src_linker_view_utils__["InlineArray2"](2, 'id', 'ticketSheet01'), null);
@@ -6225,7 +6227,7 @@ var View_SelectProductComponent9 = (function (_super) {
     __extends(View_SelectProductComponent9, _super);
     function View_SelectProductComponent9(viewUtils, parentView, parentIndex, parentElement, declaredViewContainer) {
         _super.call(this, View_SelectProductComponent9, renderType_SelectProductComponent, __WEBPACK_IMPORTED_MODULE_4__angular_core_src_linker_view_type__["a" /* ViewType */].EMBEDDED, viewUtils, parentView, parentIndex, parentElement, __WEBPACK_IMPORTED_MODULE_5__angular_core_src_change_detection_constants__["b" /* ChangeDetectorStatus */].CheckAlways, declaredViewContainer);
-        this._expr_2 = __WEBPACK_IMPORTED_MODULE_20__angular_core_src_change_detection_change_detection_util__["b" /* UNINITIALIZED */];
+        this._expr_2 = __WEBPACK_IMPORTED_MODULE_21__angular_core_src_change_detection_change_detection_util__["b" /* UNINITIALIZED */];
     }
     View_SelectProductComponent9.prototype.createInternal = function (rootSelector) {
         this._el_0 = __WEBPACK_IMPORTED_MODULE_2__angular_core_src_linker_view_utils__["createRenderElement"](this.renderer, null, 'p', new __WEBPACK_IMPORTED_MODULE_2__angular_core_src_linker_view_utils__["InlineArray2"](2, 'id', 'ticketSheet01'), null);
@@ -6252,7 +6254,7 @@ var View_SelectProductComponent10 = (function (_super) {
     __extends(View_SelectProductComponent10, _super);
     function View_SelectProductComponent10(viewUtils, parentView, parentIndex, parentElement, declaredViewContainer) {
         _super.call(this, View_SelectProductComponent10, renderType_SelectProductComponent, __WEBPACK_IMPORTED_MODULE_4__angular_core_src_linker_view_type__["a" /* ViewType */].EMBEDDED, viewUtils, parentView, parentIndex, parentElement, __WEBPACK_IMPORTED_MODULE_5__angular_core_src_change_detection_constants__["b" /* ChangeDetectorStatus */].CheckAlways, declaredViewContainer);
-        this._expr_6 = __WEBPACK_IMPORTED_MODULE_20__angular_core_src_change_detection_change_detection_util__["b" /* UNINITIALIZED */];
+        this._expr_6 = __WEBPACK_IMPORTED_MODULE_21__angular_core_src_change_detection_change_detection_util__["b" /* UNINITIALIZED */];
     }
     View_SelectProductComponent10.prototype.createInternal = function (rootSelector) {
         this._el_0 = __WEBPACK_IMPORTED_MODULE_2__angular_core_src_linker_view_utils__["createRenderElement"](this.renderer, null, 'div', new __WEBPACK_IMPORTED_MODULE_2__angular_core_src_linker_view_utils__["InlineArray2"](2, 'class', 'allocationSeats'), null);
@@ -6287,10 +6289,10 @@ var View_SelectProductComponent5 = (function (_super) {
     __extends(View_SelectProductComponent5, _super);
     function View_SelectProductComponent5(viewUtils, parentView, parentIndex, parentElement, declaredViewContainer) {
         _super.call(this, View_SelectProductComponent5, renderType_SelectProductComponent, __WEBPACK_IMPORTED_MODULE_4__angular_core_src_linker_view_type__["a" /* ViewType */].EMBEDDED, viewUtils, parentView, parentIndex, parentElement, __WEBPACK_IMPORTED_MODULE_5__angular_core_src_change_detection_constants__["b" /* ChangeDetectorStatus */].CheckAlways, declaredViewContainer);
-        this._expr_56 = __WEBPACK_IMPORTED_MODULE_20__angular_core_src_change_detection_change_detection_util__["b" /* UNINITIALIZED */];
-        this._expr_57 = __WEBPACK_IMPORTED_MODULE_20__angular_core_src_change_detection_change_detection_util__["b" /* UNINITIALIZED */];
-        this._expr_58 = __WEBPACK_IMPORTED_MODULE_20__angular_core_src_change_detection_change_detection_util__["b" /* UNINITIALIZED */];
-        this._expr_59 = __WEBPACK_IMPORTED_MODULE_20__angular_core_src_change_detection_change_detection_util__["b" /* UNINITIALIZED */];
+        this._expr_56 = __WEBPACK_IMPORTED_MODULE_21__angular_core_src_change_detection_change_detection_util__["b" /* UNINITIALIZED */];
+        this._expr_57 = __WEBPACK_IMPORTED_MODULE_21__angular_core_src_change_detection_change_detection_util__["b" /* UNINITIALIZED */];
+        this._expr_58 = __WEBPACK_IMPORTED_MODULE_21__angular_core_src_change_detection_change_detection_util__["b" /* UNINITIALIZED */];
+        this._expr_59 = __WEBPACK_IMPORTED_MODULE_21__angular_core_src_change_detection_change_detection_util__["b" /* UNINITIALIZED */];
     }
     View_SelectProductComponent5.prototype.createInternal = function (rootSelector) {
         this._el_0 = __WEBPACK_IMPORTED_MODULE_2__angular_core_src_linker_view_utils__["createRenderElement"](this.renderer, null, 'div', new __WEBPACK_IMPORTED_MODULE_2__angular_core_src_linker_view_utils__["InlineArray2"](2, 'class', 'productBox'), null);
@@ -6316,24 +6318,24 @@ var View_SelectProductComponent5 = (function (_super) {
         this._el_20 = __WEBPACK_IMPORTED_MODULE_2__angular_core_src_linker_view_utils__["createRenderElement"](this.renderer, this._el_19, 'span', __WEBPACK_IMPORTED_MODULE_2__angular_core_src_linker_view_utils__["EMPTY_INLINE_ARRAY"], null);
         this._text_21 = this.renderer.createText(this._el_17, '\n                      ', null);
         this._anchor_22 = this.renderer.createTemplateAnchor(this._el_17, null);
-        this._vc_22 = new __WEBPACK_IMPORTED_MODULE_19__angular_core_src_linker_view_container__["a" /* ViewContainer */](22, 17, this, this._anchor_22);
-        this._TemplateRef_22_5 = new __WEBPACK_IMPORTED_MODULE_23__angular_core_src_linker_template_ref__["b" /* TemplateRef_ */](this, 22, this._anchor_22);
-        this._NgIf_22_6 = new __WEBPACK_IMPORTED_MODULE_21__gendir_node_modules_angular_common_src_directives_ng_if_ngfactory__["a" /* Wrapper_NgIf */](this._vc_22.vcRef, this._TemplateRef_22_5);
+        this._vc_22 = new __WEBPACK_IMPORTED_MODULE_20__angular_core_src_linker_view_container__["a" /* ViewContainer */](22, 17, this, this._anchor_22);
+        this._TemplateRef_22_5 = new __WEBPACK_IMPORTED_MODULE_24__angular_core_src_linker_template_ref__["b" /* TemplateRef_ */](this, 22, this._anchor_22);
+        this._NgIf_22_6 = new __WEBPACK_IMPORTED_MODULE_22__gendir_node_modules_angular_common_src_directives_ng_if_ngfactory__["a" /* Wrapper_NgIf */](this._vc_22.vcRef, this._TemplateRef_22_5);
         this._text_23 = this.renderer.createText(this._el_17, '\n                      ', null);
         this._anchor_24 = this.renderer.createTemplateAnchor(this._el_17, null);
-        this._vc_24 = new __WEBPACK_IMPORTED_MODULE_19__angular_core_src_linker_view_container__["a" /* ViewContainer */](24, 17, this, this._anchor_24);
-        this._TemplateRef_24_5 = new __WEBPACK_IMPORTED_MODULE_23__angular_core_src_linker_template_ref__["b" /* TemplateRef_ */](this, 24, this._anchor_24);
-        this._NgIf_24_6 = new __WEBPACK_IMPORTED_MODULE_21__gendir_node_modules_angular_common_src_directives_ng_if_ngfactory__["a" /* Wrapper_NgIf */](this._vc_24.vcRef, this._TemplateRef_24_5);
+        this._vc_24 = new __WEBPACK_IMPORTED_MODULE_20__angular_core_src_linker_view_container__["a" /* ViewContainer */](24, 17, this, this._anchor_24);
+        this._TemplateRef_24_5 = new __WEBPACK_IMPORTED_MODULE_24__angular_core_src_linker_template_ref__["b" /* TemplateRef_ */](this, 24, this._anchor_24);
+        this._NgIf_24_6 = new __WEBPACK_IMPORTED_MODULE_22__gendir_node_modules_angular_common_src_directives_ng_if_ngfactory__["a" /* Wrapper_NgIf */](this._vc_24.vcRef, this._TemplateRef_24_5);
         this._text_25 = this.renderer.createText(this._el_17, '\n                      ', null);
         this._anchor_26 = this.renderer.createTemplateAnchor(this._el_17, null);
-        this._vc_26 = new __WEBPACK_IMPORTED_MODULE_19__angular_core_src_linker_view_container__["a" /* ViewContainer */](26, 17, this, this._anchor_26);
-        this._TemplateRef_26_5 = new __WEBPACK_IMPORTED_MODULE_23__angular_core_src_linker_template_ref__["b" /* TemplateRef_ */](this, 26, this._anchor_26);
-        this._NgIf_26_6 = new __WEBPACK_IMPORTED_MODULE_21__gendir_node_modules_angular_common_src_directives_ng_if_ngfactory__["a" /* Wrapper_NgIf */](this._vc_26.vcRef, this._TemplateRef_26_5);
+        this._vc_26 = new __WEBPACK_IMPORTED_MODULE_20__angular_core_src_linker_view_container__["a" /* ViewContainer */](26, 17, this, this._anchor_26);
+        this._TemplateRef_26_5 = new __WEBPACK_IMPORTED_MODULE_24__angular_core_src_linker_template_ref__["b" /* TemplateRef_ */](this, 26, this._anchor_26);
+        this._NgIf_26_6 = new __WEBPACK_IMPORTED_MODULE_22__gendir_node_modules_angular_common_src_directives_ng_if_ngfactory__["a" /* Wrapper_NgIf */](this._vc_26.vcRef, this._TemplateRef_26_5);
         this._text_27 = this.renderer.createText(this._el_17, '\n                      ', null);
         this._anchor_28 = this.renderer.createTemplateAnchor(this._el_17, null);
-        this._vc_28 = new __WEBPACK_IMPORTED_MODULE_19__angular_core_src_linker_view_container__["a" /* ViewContainer */](28, 17, this, this._anchor_28);
-        this._TemplateRef_28_5 = new __WEBPACK_IMPORTED_MODULE_23__angular_core_src_linker_template_ref__["b" /* TemplateRef_ */](this, 28, this._anchor_28);
-        this._NgIf_28_6 = new __WEBPACK_IMPORTED_MODULE_21__gendir_node_modules_angular_common_src_directives_ng_if_ngfactory__["a" /* Wrapper_NgIf */](this._vc_28.vcRef, this._TemplateRef_28_5);
+        this._vc_28 = new __WEBPACK_IMPORTED_MODULE_20__angular_core_src_linker_view_container__["a" /* ViewContainer */](28, 17, this, this._anchor_28);
+        this._TemplateRef_28_5 = new __WEBPACK_IMPORTED_MODULE_24__angular_core_src_linker_template_ref__["b" /* TemplateRef_ */](this, 28, this._anchor_28);
+        this._NgIf_28_6 = new __WEBPACK_IMPORTED_MODULE_22__gendir_node_modules_angular_common_src_directives_ng_if_ngfactory__["a" /* Wrapper_NgIf */](this._vc_28.vcRef, this._TemplateRef_28_5);
         this._text_29 = this.renderer.createText(this._el_17, '\n                    ', null);
         this._el_30 = __WEBPACK_IMPORTED_MODULE_2__angular_core_src_linker_view_utils__["createRenderElement"](this.renderer, this._el_17, 'button', new __WEBPACK_IMPORTED_MODULE_2__angular_core_src_linker_view_utils__["InlineArray2"](2, 'class', 'iconPlus'), null);
         this._el_31 = __WEBPACK_IMPORTED_MODULE_2__angular_core_src_linker_view_utils__["createRenderElement"](this.renderer, this._el_30, 'span', __WEBPACK_IMPORTED_MODULE_2__angular_core_src_linker_view_utils__["EMPTY_INLINE_ARRAY"], null);
@@ -6343,9 +6345,9 @@ var View_SelectProductComponent5 = (function (_super) {
         this._el_35 = __WEBPACK_IMPORTED_MODULE_2__angular_core_src_linker_view_utils__["createRenderElement"](this.renderer, this._el_2, 'div', new __WEBPACK_IMPORTED_MODULE_2__angular_core_src_linker_view_utils__["InlineArray2"](2, 'class', 'allocationSeatGroup'), null);
         this._text_36 = this.renderer.createText(this._el_35, '\n                  ', null);
         this._anchor_37 = this.renderer.createTemplateAnchor(this._el_35, null);
-        this._vc_37 = new __WEBPACK_IMPORTED_MODULE_19__angular_core_src_linker_view_container__["a" /* ViewContainer */](37, 35, this, this._anchor_37);
-        this._TemplateRef_37_5 = new __WEBPACK_IMPORTED_MODULE_23__angular_core_src_linker_template_ref__["b" /* TemplateRef_ */](this, 37, this._anchor_37);
-        this._NgFor_37_6 = new __WEBPACK_IMPORTED_MODULE_22__gendir_node_modules_angular_common_src_directives_ng_for_ngfactory__["a" /* Wrapper_NgFor */](this._vc_37.vcRef, this._TemplateRef_37_5, this.parentView.parentView.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_24__angular_core_src_change_detection_differs_iterable_differs__["a" /* IterableDiffers */], this.parentView.parentView.parentIndex), this.parentView.parentView.ref);
+        this._vc_37 = new __WEBPACK_IMPORTED_MODULE_20__angular_core_src_linker_view_container__["a" /* ViewContainer */](37, 35, this, this._anchor_37);
+        this._TemplateRef_37_5 = new __WEBPACK_IMPORTED_MODULE_24__angular_core_src_linker_template_ref__["b" /* TemplateRef_ */](this, 37, this._anchor_37);
+        this._NgFor_37_6 = new __WEBPACK_IMPORTED_MODULE_23__gendir_node_modules_angular_common_src_directives_ng_for_ngfactory__["a" /* Wrapper_NgFor */](this._vc_37.vcRef, this._TemplateRef_37_5, this.parentView.parentView.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_25__angular_core_src_change_detection_differs_iterable_differs__["a" /* IterableDiffers */], this.parentView.parentView.parentIndex), this.parentView.parentView.ref);
         this._text_38 = this.renderer.createText(this._el_35, '\n                ', null);
         this._text_39 = this.renderer.createText(this._el_2, '\n              ', null);
         this._text_40 = this.renderer.createText(this._el_0, '\n            ', null);
@@ -6400,34 +6402,34 @@ var View_SelectProductComponent5 = (function (_super) {
         return null;
     };
     View_SelectProductComponent5.prototype.injectorGetInternal = function (token, requestNodeIndex, notFoundResult) {
-        if (((token === __WEBPACK_IMPORTED_MODULE_23__angular_core_src_linker_template_ref__["a" /* TemplateRef */]) && (22 === requestNodeIndex))) {
+        if (((token === __WEBPACK_IMPORTED_MODULE_24__angular_core_src_linker_template_ref__["a" /* TemplateRef */]) && (22 === requestNodeIndex))) {
             return this._TemplateRef_22_5;
         }
-        if (((token === __WEBPACK_IMPORTED_MODULE_25__angular_common_src_directives_ng_if__["a" /* NgIf */]) && (22 === requestNodeIndex))) {
+        if (((token === __WEBPACK_IMPORTED_MODULE_26__angular_common_src_directives_ng_if__["a" /* NgIf */]) && (22 === requestNodeIndex))) {
             return this._NgIf_22_6.context;
         }
-        if (((token === __WEBPACK_IMPORTED_MODULE_23__angular_core_src_linker_template_ref__["a" /* TemplateRef */]) && (24 === requestNodeIndex))) {
+        if (((token === __WEBPACK_IMPORTED_MODULE_24__angular_core_src_linker_template_ref__["a" /* TemplateRef */]) && (24 === requestNodeIndex))) {
             return this._TemplateRef_24_5;
         }
-        if (((token === __WEBPACK_IMPORTED_MODULE_25__angular_common_src_directives_ng_if__["a" /* NgIf */]) && (24 === requestNodeIndex))) {
+        if (((token === __WEBPACK_IMPORTED_MODULE_26__angular_common_src_directives_ng_if__["a" /* NgIf */]) && (24 === requestNodeIndex))) {
             return this._NgIf_24_6.context;
         }
-        if (((token === __WEBPACK_IMPORTED_MODULE_23__angular_core_src_linker_template_ref__["a" /* TemplateRef */]) && (26 === requestNodeIndex))) {
+        if (((token === __WEBPACK_IMPORTED_MODULE_24__angular_core_src_linker_template_ref__["a" /* TemplateRef */]) && (26 === requestNodeIndex))) {
             return this._TemplateRef_26_5;
         }
-        if (((token === __WEBPACK_IMPORTED_MODULE_25__angular_common_src_directives_ng_if__["a" /* NgIf */]) && (26 === requestNodeIndex))) {
+        if (((token === __WEBPACK_IMPORTED_MODULE_26__angular_common_src_directives_ng_if__["a" /* NgIf */]) && (26 === requestNodeIndex))) {
             return this._NgIf_26_6.context;
         }
-        if (((token === __WEBPACK_IMPORTED_MODULE_23__angular_core_src_linker_template_ref__["a" /* TemplateRef */]) && (28 === requestNodeIndex))) {
+        if (((token === __WEBPACK_IMPORTED_MODULE_24__angular_core_src_linker_template_ref__["a" /* TemplateRef */]) && (28 === requestNodeIndex))) {
             return this._TemplateRef_28_5;
         }
-        if (((token === __WEBPACK_IMPORTED_MODULE_25__angular_common_src_directives_ng_if__["a" /* NgIf */]) && (28 === requestNodeIndex))) {
+        if (((token === __WEBPACK_IMPORTED_MODULE_26__angular_common_src_directives_ng_if__["a" /* NgIf */]) && (28 === requestNodeIndex))) {
             return this._NgIf_28_6.context;
         }
-        if (((token === __WEBPACK_IMPORTED_MODULE_23__angular_core_src_linker_template_ref__["a" /* TemplateRef */]) && (37 === requestNodeIndex))) {
+        if (((token === __WEBPACK_IMPORTED_MODULE_24__angular_core_src_linker_template_ref__["a" /* TemplateRef */]) && (37 === requestNodeIndex))) {
             return this._TemplateRef_37_5;
         }
-        if (((token === __WEBPACK_IMPORTED_MODULE_26__angular_common_src_directives_ng_for__["a" /* NgFor */]) && (37 === requestNodeIndex))) {
+        if (((token === __WEBPACK_IMPORTED_MODULE_27__angular_common_src_directives_ng_for__["a" /* NgFor */]) && (37 === requestNodeIndex))) {
             return this._NgFor_37_6.context;
         }
         return notFoundResult;
@@ -6526,9 +6528,9 @@ var View_SelectProductComponent2 = (function (_super) {
     __extends(View_SelectProductComponent2, _super);
     function View_SelectProductComponent2(viewUtils, parentView, parentIndex, parentElement, declaredViewContainer) {
         _super.call(this, View_SelectProductComponent2, renderType_SelectProductComponent, __WEBPACK_IMPORTED_MODULE_4__angular_core_src_linker_view_type__["a" /* ViewType */].EMBEDDED, viewUtils, parentView, parentIndex, parentElement, __WEBPACK_IMPORTED_MODULE_5__angular_core_src_change_detection_constants__["b" /* ChangeDetectorStatus */].CheckAlways, declaredViewContainer);
-        this._expr_80 = __WEBPACK_IMPORTED_MODULE_20__angular_core_src_change_detection_change_detection_util__["b" /* UNINITIALIZED */];
-        this._expr_81 = __WEBPACK_IMPORTED_MODULE_20__angular_core_src_change_detection_change_detection_util__["b" /* UNINITIALIZED */];
-        this._expr_83 = __WEBPACK_IMPORTED_MODULE_20__angular_core_src_change_detection_change_detection_util__["b" /* UNINITIALIZED */];
+        this._expr_80 = __WEBPACK_IMPORTED_MODULE_21__angular_core_src_change_detection_change_detection_util__["b" /* UNINITIALIZED */];
+        this._expr_81 = __WEBPACK_IMPORTED_MODULE_21__angular_core_src_change_detection_change_detection_util__["b" /* UNINITIALIZED */];
+        this._expr_83 = __WEBPACK_IMPORTED_MODULE_21__angular_core_src_change_detection_change_detection_util__["b" /* UNINITIALIZED */];
     }
     View_SelectProductComponent2.prototype.createInternal = function (rootSelector) {
         this._el_0 = __WEBPACK_IMPORTED_MODULE_2__angular_core_src_linker_view_utils__["createRenderElement"](this.renderer, null, 'div', new __WEBPACK_IMPORTED_MODULE_2__angular_core_src_linker_view_utils__["InlineArray2"](2, 'id', 'buySeatArea'), null);
@@ -6567,18 +6569,18 @@ var View_SelectProductComponent2 = (function (_super) {
         this._text_33 = this.renderer.createText(this._el_32, '　次の座席', null);
         this._text_34 = this.renderer.createText(this._el_25, '\n            ', null);
         this._anchor_35 = this.renderer.createTemplateAnchor(this._el_25, null);
-        this._vc_35 = new __WEBPACK_IMPORTED_MODULE_19__angular_core_src_linker_view_container__["a" /* ViewContainer */](35, 25, this, this._anchor_35);
-        this._TemplateRef_35_5 = new __WEBPACK_IMPORTED_MODULE_23__angular_core_src_linker_template_ref__["b" /* TemplateRef_ */](this, 35, this._anchor_35);
-        this._NgIf_35_6 = new __WEBPACK_IMPORTED_MODULE_21__gendir_node_modules_angular_common_src_directives_ng_if_ngfactory__["a" /* Wrapper_NgIf */](this._vc_35.vcRef, this._TemplateRef_35_5);
+        this._vc_35 = new __WEBPACK_IMPORTED_MODULE_20__angular_core_src_linker_view_container__["a" /* ViewContainer */](35, 25, this, this._anchor_35);
+        this._TemplateRef_35_5 = new __WEBPACK_IMPORTED_MODULE_24__angular_core_src_linker_template_ref__["b" /* TemplateRef_ */](this, 35, this._anchor_35);
+        this._NgIf_35_6 = new __WEBPACK_IMPORTED_MODULE_22__gendir_node_modules_angular_common_src_directives_ng_if_ngfactory__["a" /* Wrapper_NgIf */](this._vc_35.vcRef, this._TemplateRef_35_5);
         this._text_36 = this.renderer.createText(this._el_25, '\n            ', null);
         this._el_37 = __WEBPACK_IMPORTED_MODULE_2__angular_core_src_linker_view_utils__["createRenderElement"](this.renderer, this._el_25, 'p', new __WEBPACK_IMPORTED_MODULE_2__angular_core_src_linker_view_utils__["InlineArray2"](2, 'class', 'remnantSeatText'), null);
         this._el_38 = __WEBPACK_IMPORTED_MODULE_2__angular_core_src_linker_view_utils__["createRenderElement"](this.renderer, this._el_37, 'span', __WEBPACK_IMPORTED_MODULE_2__angular_core_src_linker_view_utils__["EMPTY_INLINE_ARRAY"], null);
         this._text_39 = this.renderer.createText(this._el_38, '　残りの座席', null);
         this._text_40 = this.renderer.createText(this._el_25, '\n            ', null);
         this._anchor_41 = this.renderer.createTemplateAnchor(this._el_25, null);
-        this._vc_41 = new __WEBPACK_IMPORTED_MODULE_19__angular_core_src_linker_view_container__["a" /* ViewContainer */](41, 25, this, this._anchor_41);
-        this._TemplateRef_41_5 = new __WEBPACK_IMPORTED_MODULE_23__angular_core_src_linker_template_ref__["b" /* TemplateRef_ */](this, 41, this._anchor_41);
-        this._NgFor_41_6 = new __WEBPACK_IMPORTED_MODULE_22__gendir_node_modules_angular_common_src_directives_ng_for_ngfactory__["a" /* Wrapper_NgFor */](this._vc_41.vcRef, this._TemplateRef_41_5, this.parentView.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_24__angular_core_src_change_detection_differs_iterable_differs__["a" /* IterableDiffers */], this.parentView.parentIndex), this.parentView.ref);
+        this._vc_41 = new __WEBPACK_IMPORTED_MODULE_20__angular_core_src_linker_view_container__["a" /* ViewContainer */](41, 25, this, this._anchor_41);
+        this._TemplateRef_41_5 = new __WEBPACK_IMPORTED_MODULE_24__angular_core_src_linker_template_ref__["b" /* TemplateRef_ */](this, 41, this._anchor_41);
+        this._NgFor_41_6 = new __WEBPACK_IMPORTED_MODULE_23__gendir_node_modules_angular_common_src_directives_ng_for_ngfactory__["a" /* Wrapper_NgFor */](this._vc_41.vcRef, this._TemplateRef_41_5, this.parentView.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_25__angular_core_src_change_detection_differs_iterable_differs__["a" /* IterableDiffers */], this.parentView.parentIndex), this.parentView.ref);
         this._text_42 = this.renderer.createText(this._el_25, '\n          ', null);
         this._text_43 = this.renderer.createText(this._el_0, '\n          ', null);
         this._el_44 = __WEBPACK_IMPORTED_MODULE_2__angular_core_src_linker_view_utils__["createRenderElement"](this.renderer, this._el_0, 'div', new __WEBPACK_IMPORTED_MODULE_2__angular_core_src_linker_view_utils__["InlineArray2"](2, 'id', 'productArea'), null);
@@ -6588,9 +6590,9 @@ var View_SelectProductComponent2 = (function (_super) {
         this._text_48 = this.renderer.createText(this._el_47, '◆商品', null);
         this._text_49 = this.renderer.createText(this._el_44, '\n            ', null);
         this._anchor_50 = this.renderer.createTemplateAnchor(this._el_44, null);
-        this._vc_50 = new __WEBPACK_IMPORTED_MODULE_19__angular_core_src_linker_view_container__["a" /* ViewContainer */](50, 44, this, this._anchor_50);
-        this._TemplateRef_50_5 = new __WEBPACK_IMPORTED_MODULE_23__angular_core_src_linker_template_ref__["b" /* TemplateRef_ */](this, 50, this._anchor_50);
-        this._NgFor_50_6 = new __WEBPACK_IMPORTED_MODULE_22__gendir_node_modules_angular_common_src_directives_ng_for_ngfactory__["a" /* Wrapper_NgFor */](this._vc_50.vcRef, this._TemplateRef_50_5, this.parentView.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_24__angular_core_src_change_detection_differs_iterable_differs__["a" /* IterableDiffers */], this.parentView.parentIndex), this.parentView.ref);
+        this._vc_50 = new __WEBPACK_IMPORTED_MODULE_20__angular_core_src_linker_view_container__["a" /* ViewContainer */](50, 44, this, this._anchor_50);
+        this._TemplateRef_50_5 = new __WEBPACK_IMPORTED_MODULE_24__angular_core_src_linker_template_ref__["b" /* TemplateRef_ */](this, 50, this._anchor_50);
+        this._NgFor_50_6 = new __WEBPACK_IMPORTED_MODULE_23__gendir_node_modules_angular_common_src_directives_ng_for_ngfactory__["a" /* Wrapper_NgFor */](this._vc_50.vcRef, this._TemplateRef_50_5, this.parentView.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_25__angular_core_src_change_detection_differs_iterable_differs__["a" /* IterableDiffers */], this.parentView.parentIndex), this.parentView.ref);
         this._text_51 = this.renderer.createText(this._el_44, '\n          ', null);
         this._text_52 = this.renderer.createText(this._el_0, '\n          ', null);
         this._el_53 = __WEBPACK_IMPORTED_MODULE_2__angular_core_src_linker_view_utils__["createRenderElement"](this.renderer, this._el_0, 'div', new __WEBPACK_IMPORTED_MODULE_2__angular_core_src_linker_view_utils__["InlineArray2"](2, 'id', 'priceArea'), null);
@@ -6611,7 +6613,7 @@ var View_SelectProductComponent2 = (function (_super) {
         this._text_68 = this.renderer.createText(this._el_67, '次へ', null);
         this._text_69 = this.renderer.createText(this._el_62, '\n          ', null);
         this._text_70 = this.renderer.createText(this._el_0, '\n        ', null);
-        this._pipe_slice_0 = new __WEBPACK_IMPORTED_MODULE_27__angular_common_src_pipes_slice_pipe__["a" /* SlicePipe */]();
+        this._pipe_slice_0 = new __WEBPACK_IMPORTED_MODULE_28__angular_common_src_pipes_slice_pipe__["a" /* SlicePipe */]();
         var disposable_0 = __WEBPACK_IMPORTED_MODULE_2__angular_core_src_linker_view_utils__["subscribeToRenderElement"](this, this._el_64, new __WEBPACK_IMPORTED_MODULE_2__angular_core_src_linker_view_utils__["InlineArray2"](2, 'click', null), this.eventHandler(this.handleEvent_64));
         var disposable_1 = __WEBPACK_IMPORTED_MODULE_2__angular_core_src_linker_view_utils__["subscribeToRenderElement"](this, this._el_67, new __WEBPACK_IMPORTED_MODULE_2__angular_core_src_linker_view_utils__["InlineArray2"](2, 'click', null), this.eventHandler(this.handleEvent_67));
         this.init(this._el_0, (this.renderer.directRenderer ? null : [
@@ -6693,28 +6695,28 @@ var View_SelectProductComponent2 = (function (_super) {
         return null;
     };
     View_SelectProductComponent2.prototype.injectorGetInternal = function (token, requestNodeIndex, notFoundResult) {
-        if (((token === __WEBPACK_IMPORTED_MODULE_23__angular_core_src_linker_template_ref__["a" /* TemplateRef */]) && (35 === requestNodeIndex))) {
+        if (((token === __WEBPACK_IMPORTED_MODULE_24__angular_core_src_linker_template_ref__["a" /* TemplateRef */]) && (35 === requestNodeIndex))) {
             return this._TemplateRef_35_5;
         }
-        if (((token === __WEBPACK_IMPORTED_MODULE_25__angular_common_src_directives_ng_if__["a" /* NgIf */]) && (35 === requestNodeIndex))) {
+        if (((token === __WEBPACK_IMPORTED_MODULE_26__angular_common_src_directives_ng_if__["a" /* NgIf */]) && (35 === requestNodeIndex))) {
             return this._NgIf_35_6.context;
         }
-        if (((token === __WEBPACK_IMPORTED_MODULE_23__angular_core_src_linker_template_ref__["a" /* TemplateRef */]) && (41 === requestNodeIndex))) {
+        if (((token === __WEBPACK_IMPORTED_MODULE_24__angular_core_src_linker_template_ref__["a" /* TemplateRef */]) && (41 === requestNodeIndex))) {
             return this._TemplateRef_41_5;
         }
-        if (((token === __WEBPACK_IMPORTED_MODULE_26__angular_common_src_directives_ng_for__["a" /* NgFor */]) && (41 === requestNodeIndex))) {
+        if (((token === __WEBPACK_IMPORTED_MODULE_27__angular_common_src_directives_ng_for__["a" /* NgFor */]) && (41 === requestNodeIndex))) {
             return this._NgFor_41_6.context;
         }
-        if (((token === __WEBPACK_IMPORTED_MODULE_23__angular_core_src_linker_template_ref__["a" /* TemplateRef */]) && (50 === requestNodeIndex))) {
+        if (((token === __WEBPACK_IMPORTED_MODULE_24__angular_core_src_linker_template_ref__["a" /* TemplateRef */]) && (50 === requestNodeIndex))) {
             return this._TemplateRef_50_5;
         }
-        if (((token === __WEBPACK_IMPORTED_MODULE_26__angular_common_src_directives_ng_for__["a" /* NgFor */]) && (50 === requestNodeIndex))) {
+        if (((token === __WEBPACK_IMPORTED_MODULE_27__angular_common_src_directives_ng_for__["a" /* NgFor */]) && (50 === requestNodeIndex))) {
             return this._NgFor_50_6.context;
         }
         return notFoundResult;
     };
     View_SelectProductComponent2.prototype.detectChangesInternal = function (throwOnChange) {
-        var valUnwrapper = new __WEBPACK_IMPORTED_MODULE_20__angular_core_src_change_detection_change_detection_util__["c" /* ValueUnwrapper */]();
+        var valUnwrapper = new __WEBPACK_IMPORTED_MODULE_21__angular_core_src_change_detection_change_detection_util__["c" /* ValueUnwrapper */]();
         var currVal_35_0_0 = this.parentView.context.nextSeat;
         this._NgIf_35_6.check_ngIf(currVal_35_0_0, throwOnChange, false);
         this._NgIf_35_6.ngDoCheck(this, this._anchor_35, throwOnChange);
@@ -6807,7 +6809,7 @@ var View_SelectProductComponent14 = (function (_super) {
     __extends(View_SelectProductComponent14, _super);
     function View_SelectProductComponent14(viewUtils, parentView, parentIndex, parentElement, declaredViewContainer) {
         _super.call(this, View_SelectProductComponent14, renderType_SelectProductComponent, __WEBPACK_IMPORTED_MODULE_4__angular_core_src_linker_view_type__["a" /* ViewType */].EMBEDDED, viewUtils, parentView, parentIndex, parentElement, __WEBPACK_IMPORTED_MODULE_5__angular_core_src_change_detection_constants__["b" /* ChangeDetectorStatus */].CheckAlways, declaredViewContainer);
-        this._expr_2 = __WEBPACK_IMPORTED_MODULE_20__angular_core_src_change_detection_change_detection_util__["b" /* UNINITIALIZED */];
+        this._expr_2 = __WEBPACK_IMPORTED_MODULE_21__angular_core_src_change_detection_change_detection_util__["b" /* UNINITIALIZED */];
     }
     View_SelectProductComponent14.prototype.createInternal = function (rootSelector) {
         this._el_0 = __WEBPACK_IMPORTED_MODULE_2__angular_core_src_linker_view_utils__["createRenderElement"](this.renderer, null, 'p', new __WEBPACK_IMPORTED_MODULE_2__angular_core_src_linker_view_utils__["InlineArray2"](2, 'id', 'ticketSheet01'), null);
@@ -6853,7 +6855,7 @@ var View_SelectProductComponent16 = (function (_super) {
     __extends(View_SelectProductComponent16, _super);
     function View_SelectProductComponent16(viewUtils, parentView, parentIndex, parentElement, declaredViewContainer) {
         _super.call(this, View_SelectProductComponent16, renderType_SelectProductComponent, __WEBPACK_IMPORTED_MODULE_4__angular_core_src_linker_view_type__["a" /* ViewType */].EMBEDDED, viewUtils, parentView, parentIndex, parentElement, __WEBPACK_IMPORTED_MODULE_5__angular_core_src_change_detection_constants__["b" /* ChangeDetectorStatus */].CheckAlways, declaredViewContainer);
-        this._expr_2 = __WEBPACK_IMPORTED_MODULE_20__angular_core_src_change_detection_change_detection_util__["b" /* UNINITIALIZED */];
+        this._expr_2 = __WEBPACK_IMPORTED_MODULE_21__angular_core_src_change_detection_change_detection_util__["b" /* UNINITIALIZED */];
     }
     View_SelectProductComponent16.prototype.createInternal = function (rootSelector) {
         this._el_0 = __WEBPACK_IMPORTED_MODULE_2__angular_core_src_linker_view_utils__["createRenderElement"](this.renderer, null, 'p', new __WEBPACK_IMPORTED_MODULE_2__angular_core_src_linker_view_utils__["InlineArray2"](2, 'id', 'ticketSheet01'), null);
@@ -6880,10 +6882,10 @@ var View_SelectProductComponent12 = (function (_super) {
     __extends(View_SelectProductComponent12, _super);
     function View_SelectProductComponent12(viewUtils, parentView, parentIndex, parentElement, declaredViewContainer) {
         _super.call(this, View_SelectProductComponent12, renderType_SelectProductComponent, __WEBPACK_IMPORTED_MODULE_4__angular_core_src_linker_view_type__["a" /* ViewType */].EMBEDDED, viewUtils, parentView, parentIndex, parentElement, __WEBPACK_IMPORTED_MODULE_5__angular_core_src_change_detection_constants__["b" /* ChangeDetectorStatus */].CheckAlways, declaredViewContainer);
-        this._expr_48 = __WEBPACK_IMPORTED_MODULE_20__angular_core_src_change_detection_change_detection_util__["b" /* UNINITIALIZED */];
-        this._expr_49 = __WEBPACK_IMPORTED_MODULE_20__angular_core_src_change_detection_change_detection_util__["b" /* UNINITIALIZED */];
-        this._expr_50 = __WEBPACK_IMPORTED_MODULE_20__angular_core_src_change_detection_change_detection_util__["b" /* UNINITIALIZED */];
-        this._expr_51 = __WEBPACK_IMPORTED_MODULE_20__angular_core_src_change_detection_change_detection_util__["b" /* UNINITIALIZED */];
+        this._expr_48 = __WEBPACK_IMPORTED_MODULE_21__angular_core_src_change_detection_change_detection_util__["b" /* UNINITIALIZED */];
+        this._expr_49 = __WEBPACK_IMPORTED_MODULE_21__angular_core_src_change_detection_change_detection_util__["b" /* UNINITIALIZED */];
+        this._expr_50 = __WEBPACK_IMPORTED_MODULE_21__angular_core_src_change_detection_change_detection_util__["b" /* UNINITIALIZED */];
+        this._expr_51 = __WEBPACK_IMPORTED_MODULE_21__angular_core_src_change_detection_change_detection_util__["b" /* UNINITIALIZED */];
     }
     View_SelectProductComponent12.prototype.createInternal = function (rootSelector) {
         this._el_0 = __WEBPACK_IMPORTED_MODULE_2__angular_core_src_linker_view_utils__["createRenderElement"](this.renderer, null, 'div', new __WEBPACK_IMPORTED_MODULE_2__angular_core_src_linker_view_utils__["InlineArray2"](2, 'class', 'productBox'), null);
@@ -6909,24 +6911,24 @@ var View_SelectProductComponent12 = (function (_super) {
         this._el_20 = __WEBPACK_IMPORTED_MODULE_2__angular_core_src_linker_view_utils__["createRenderElement"](this.renderer, this._el_19, 'span', __WEBPACK_IMPORTED_MODULE_2__angular_core_src_linker_view_utils__["EMPTY_INLINE_ARRAY"], null);
         this._text_21 = this.renderer.createText(this._el_17, '\n                      ', null);
         this._anchor_22 = this.renderer.createTemplateAnchor(this._el_17, null);
-        this._vc_22 = new __WEBPACK_IMPORTED_MODULE_19__angular_core_src_linker_view_container__["a" /* ViewContainer */](22, 17, this, this._anchor_22);
-        this._TemplateRef_22_5 = new __WEBPACK_IMPORTED_MODULE_23__angular_core_src_linker_template_ref__["b" /* TemplateRef_ */](this, 22, this._anchor_22);
-        this._NgIf_22_6 = new __WEBPACK_IMPORTED_MODULE_21__gendir_node_modules_angular_common_src_directives_ng_if_ngfactory__["a" /* Wrapper_NgIf */](this._vc_22.vcRef, this._TemplateRef_22_5);
+        this._vc_22 = new __WEBPACK_IMPORTED_MODULE_20__angular_core_src_linker_view_container__["a" /* ViewContainer */](22, 17, this, this._anchor_22);
+        this._TemplateRef_22_5 = new __WEBPACK_IMPORTED_MODULE_24__angular_core_src_linker_template_ref__["b" /* TemplateRef_ */](this, 22, this._anchor_22);
+        this._NgIf_22_6 = new __WEBPACK_IMPORTED_MODULE_22__gendir_node_modules_angular_common_src_directives_ng_if_ngfactory__["a" /* Wrapper_NgIf */](this._vc_22.vcRef, this._TemplateRef_22_5);
         this._text_23 = this.renderer.createText(this._el_17, '\n                      ', null);
         this._anchor_24 = this.renderer.createTemplateAnchor(this._el_17, null);
-        this._vc_24 = new __WEBPACK_IMPORTED_MODULE_19__angular_core_src_linker_view_container__["a" /* ViewContainer */](24, 17, this, this._anchor_24);
-        this._TemplateRef_24_5 = new __WEBPACK_IMPORTED_MODULE_23__angular_core_src_linker_template_ref__["b" /* TemplateRef_ */](this, 24, this._anchor_24);
-        this._NgIf_24_6 = new __WEBPACK_IMPORTED_MODULE_21__gendir_node_modules_angular_common_src_directives_ng_if_ngfactory__["a" /* Wrapper_NgIf */](this._vc_24.vcRef, this._TemplateRef_24_5);
+        this._vc_24 = new __WEBPACK_IMPORTED_MODULE_20__angular_core_src_linker_view_container__["a" /* ViewContainer */](24, 17, this, this._anchor_24);
+        this._TemplateRef_24_5 = new __WEBPACK_IMPORTED_MODULE_24__angular_core_src_linker_template_ref__["b" /* TemplateRef_ */](this, 24, this._anchor_24);
+        this._NgIf_24_6 = new __WEBPACK_IMPORTED_MODULE_22__gendir_node_modules_angular_common_src_directives_ng_if_ngfactory__["a" /* Wrapper_NgIf */](this._vc_24.vcRef, this._TemplateRef_24_5);
         this._text_25 = this.renderer.createText(this._el_17, '\n                      ', null);
         this._anchor_26 = this.renderer.createTemplateAnchor(this._el_17, null);
-        this._vc_26 = new __WEBPACK_IMPORTED_MODULE_19__angular_core_src_linker_view_container__["a" /* ViewContainer */](26, 17, this, this._anchor_26);
-        this._TemplateRef_26_5 = new __WEBPACK_IMPORTED_MODULE_23__angular_core_src_linker_template_ref__["b" /* TemplateRef_ */](this, 26, this._anchor_26);
-        this._NgIf_26_6 = new __WEBPACK_IMPORTED_MODULE_21__gendir_node_modules_angular_common_src_directives_ng_if_ngfactory__["a" /* Wrapper_NgIf */](this._vc_26.vcRef, this._TemplateRef_26_5);
+        this._vc_26 = new __WEBPACK_IMPORTED_MODULE_20__angular_core_src_linker_view_container__["a" /* ViewContainer */](26, 17, this, this._anchor_26);
+        this._TemplateRef_26_5 = new __WEBPACK_IMPORTED_MODULE_24__angular_core_src_linker_template_ref__["b" /* TemplateRef_ */](this, 26, this._anchor_26);
+        this._NgIf_26_6 = new __WEBPACK_IMPORTED_MODULE_22__gendir_node_modules_angular_common_src_directives_ng_if_ngfactory__["a" /* Wrapper_NgIf */](this._vc_26.vcRef, this._TemplateRef_26_5);
         this._text_27 = this.renderer.createText(this._el_17, '\n                      ', null);
         this._anchor_28 = this.renderer.createTemplateAnchor(this._el_17, null);
-        this._vc_28 = new __WEBPACK_IMPORTED_MODULE_19__angular_core_src_linker_view_container__["a" /* ViewContainer */](28, 17, this, this._anchor_28);
-        this._TemplateRef_28_5 = new __WEBPACK_IMPORTED_MODULE_23__angular_core_src_linker_template_ref__["b" /* TemplateRef_ */](this, 28, this._anchor_28);
-        this._NgIf_28_6 = new __WEBPACK_IMPORTED_MODULE_21__gendir_node_modules_angular_common_src_directives_ng_if_ngfactory__["a" /* Wrapper_NgIf */](this._vc_28.vcRef, this._TemplateRef_28_5);
+        this._vc_28 = new __WEBPACK_IMPORTED_MODULE_20__angular_core_src_linker_view_container__["a" /* ViewContainer */](28, 17, this, this._anchor_28);
+        this._TemplateRef_28_5 = new __WEBPACK_IMPORTED_MODULE_24__angular_core_src_linker_template_ref__["b" /* TemplateRef_ */](this, 28, this._anchor_28);
+        this._NgIf_28_6 = new __WEBPACK_IMPORTED_MODULE_22__gendir_node_modules_angular_common_src_directives_ng_if_ngfactory__["a" /* Wrapper_NgIf */](this._vc_28.vcRef, this._TemplateRef_28_5);
         this._text_29 = this.renderer.createText(this._el_17, '\n                    ', null);
         this._el_30 = __WEBPACK_IMPORTED_MODULE_2__angular_core_src_linker_view_utils__["createRenderElement"](this.renderer, this._el_17, 'button', new __WEBPACK_IMPORTED_MODULE_2__angular_core_src_linker_view_utils__["InlineArray2"](2, 'class', 'iconPlus'), null);
         this._el_31 = __WEBPACK_IMPORTED_MODULE_2__angular_core_src_linker_view_utils__["createRenderElement"](this.renderer, this._el_30, 'span', __WEBPACK_IMPORTED_MODULE_2__angular_core_src_linker_view_utils__["EMPTY_INLINE_ARRAY"], null);
@@ -6980,28 +6982,28 @@ var View_SelectProductComponent12 = (function (_super) {
         return null;
     };
     View_SelectProductComponent12.prototype.injectorGetInternal = function (token, requestNodeIndex, notFoundResult) {
-        if (((token === __WEBPACK_IMPORTED_MODULE_23__angular_core_src_linker_template_ref__["a" /* TemplateRef */]) && (22 === requestNodeIndex))) {
+        if (((token === __WEBPACK_IMPORTED_MODULE_24__angular_core_src_linker_template_ref__["a" /* TemplateRef */]) && (22 === requestNodeIndex))) {
             return this._TemplateRef_22_5;
         }
-        if (((token === __WEBPACK_IMPORTED_MODULE_25__angular_common_src_directives_ng_if__["a" /* NgIf */]) && (22 === requestNodeIndex))) {
+        if (((token === __WEBPACK_IMPORTED_MODULE_26__angular_common_src_directives_ng_if__["a" /* NgIf */]) && (22 === requestNodeIndex))) {
             return this._NgIf_22_6.context;
         }
-        if (((token === __WEBPACK_IMPORTED_MODULE_23__angular_core_src_linker_template_ref__["a" /* TemplateRef */]) && (24 === requestNodeIndex))) {
+        if (((token === __WEBPACK_IMPORTED_MODULE_24__angular_core_src_linker_template_ref__["a" /* TemplateRef */]) && (24 === requestNodeIndex))) {
             return this._TemplateRef_24_5;
         }
-        if (((token === __WEBPACK_IMPORTED_MODULE_25__angular_common_src_directives_ng_if__["a" /* NgIf */]) && (24 === requestNodeIndex))) {
+        if (((token === __WEBPACK_IMPORTED_MODULE_26__angular_common_src_directives_ng_if__["a" /* NgIf */]) && (24 === requestNodeIndex))) {
             return this._NgIf_24_6.context;
         }
-        if (((token === __WEBPACK_IMPORTED_MODULE_23__angular_core_src_linker_template_ref__["a" /* TemplateRef */]) && (26 === requestNodeIndex))) {
+        if (((token === __WEBPACK_IMPORTED_MODULE_24__angular_core_src_linker_template_ref__["a" /* TemplateRef */]) && (26 === requestNodeIndex))) {
             return this._TemplateRef_26_5;
         }
-        if (((token === __WEBPACK_IMPORTED_MODULE_25__angular_common_src_directives_ng_if__["a" /* NgIf */]) && (26 === requestNodeIndex))) {
+        if (((token === __WEBPACK_IMPORTED_MODULE_26__angular_common_src_directives_ng_if__["a" /* NgIf */]) && (26 === requestNodeIndex))) {
             return this._NgIf_26_6.context;
         }
-        if (((token === __WEBPACK_IMPORTED_MODULE_23__angular_core_src_linker_template_ref__["a" /* TemplateRef */]) && (28 === requestNodeIndex))) {
+        if (((token === __WEBPACK_IMPORTED_MODULE_24__angular_core_src_linker_template_ref__["a" /* TemplateRef */]) && (28 === requestNodeIndex))) {
             return this._TemplateRef_28_5;
         }
-        if (((token === __WEBPACK_IMPORTED_MODULE_25__angular_common_src_directives_ng_if__["a" /* NgIf */]) && (28 === requestNodeIndex))) {
+        if (((token === __WEBPACK_IMPORTED_MODULE_26__angular_common_src_directives_ng_if__["a" /* NgIf */]) && (28 === requestNodeIndex))) {
             return this._NgIf_28_6.context;
         }
         return notFoundResult;
@@ -7092,9 +7094,9 @@ var View_SelectProductComponent11 = (function (_super) {
     __extends(View_SelectProductComponent11, _super);
     function View_SelectProductComponent11(viewUtils, parentView, parentIndex, parentElement, declaredViewContainer) {
         _super.call(this, View_SelectProductComponent11, renderType_SelectProductComponent, __WEBPACK_IMPORTED_MODULE_4__angular_core_src_linker_view_type__["a" /* ViewType */].EMBEDDED, viewUtils, parentView, parentIndex, parentElement, __WEBPACK_IMPORTED_MODULE_5__angular_core_src_change_detection_constants__["b" /* ChangeDetectorStatus */].CheckAlways, declaredViewContainer);
-        this._expr_47 = __WEBPACK_IMPORTED_MODULE_20__angular_core_src_change_detection_change_detection_util__["b" /* UNINITIALIZED */];
-        this._expr_48 = __WEBPACK_IMPORTED_MODULE_20__angular_core_src_change_detection_change_detection_util__["b" /* UNINITIALIZED */];
-        this._expr_49 = __WEBPACK_IMPORTED_MODULE_20__angular_core_src_change_detection_change_detection_util__["b" /* UNINITIALIZED */];
+        this._expr_47 = __WEBPACK_IMPORTED_MODULE_21__angular_core_src_change_detection_change_detection_util__["b" /* UNINITIALIZED */];
+        this._expr_48 = __WEBPACK_IMPORTED_MODULE_21__angular_core_src_change_detection_change_detection_util__["b" /* UNINITIALIZED */];
+        this._expr_49 = __WEBPACK_IMPORTED_MODULE_21__angular_core_src_change_detection_change_detection_util__["b" /* UNINITIALIZED */];
     }
     View_SelectProductComponent11.prototype.createInternal = function (rootSelector) {
         this._el_0 = __WEBPACK_IMPORTED_MODULE_2__angular_core_src_linker_view_utils__["createRenderElement"](this.renderer, null, 'div', new __WEBPACK_IMPORTED_MODULE_2__angular_core_src_linker_view_utils__["InlineArray2"](2, 'id', 'buySeatArea'), null);
@@ -7121,9 +7123,9 @@ var View_SelectProductComponent11 = (function (_super) {
         this._text_21 = this.renderer.createText(this._el_20, '◆商品', null);
         this._text_22 = this.renderer.createText(this._el_17, '\n            ', null);
         this._anchor_23 = this.renderer.createTemplateAnchor(this._el_17, null);
-        this._vc_23 = new __WEBPACK_IMPORTED_MODULE_19__angular_core_src_linker_view_container__["a" /* ViewContainer */](23, 17, this, this._anchor_23);
-        this._TemplateRef_23_5 = new __WEBPACK_IMPORTED_MODULE_23__angular_core_src_linker_template_ref__["b" /* TemplateRef_ */](this, 23, this._anchor_23);
-        this._NgFor_23_6 = new __WEBPACK_IMPORTED_MODULE_22__gendir_node_modules_angular_common_src_directives_ng_for_ngfactory__["a" /* Wrapper_NgFor */](this._vc_23.vcRef, this._TemplateRef_23_5, this.parentView.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_24__angular_core_src_change_detection_differs_iterable_differs__["a" /* IterableDiffers */], this.parentView.parentIndex), this.parentView.ref);
+        this._vc_23 = new __WEBPACK_IMPORTED_MODULE_20__angular_core_src_linker_view_container__["a" /* ViewContainer */](23, 17, this, this._anchor_23);
+        this._TemplateRef_23_5 = new __WEBPACK_IMPORTED_MODULE_24__angular_core_src_linker_template_ref__["b" /* TemplateRef_ */](this, 23, this._anchor_23);
+        this._NgFor_23_6 = new __WEBPACK_IMPORTED_MODULE_23__gendir_node_modules_angular_common_src_directives_ng_for_ngfactory__["a" /* Wrapper_NgFor */](this._vc_23.vcRef, this._TemplateRef_23_5, this.parentView.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_25__angular_core_src_change_detection_differs_iterable_differs__["a" /* IterableDiffers */], this.parentView.parentIndex), this.parentView.ref);
         this._text_24 = this.renderer.createText(this._el_17, '\n          ', null);
         this._text_25 = this.renderer.createText(this._el_0, '\n          ', null);
         this._el_26 = __WEBPACK_IMPORTED_MODULE_2__angular_core_src_linker_view_utils__["createRenderElement"](this.renderer, this._el_0, 'div', new __WEBPACK_IMPORTED_MODULE_2__angular_core_src_linker_view_utils__["InlineArray2"](2, 'id', 'priceArea'), null);
@@ -7198,10 +7200,10 @@ var View_SelectProductComponent11 = (function (_super) {
         return null;
     };
     View_SelectProductComponent11.prototype.injectorGetInternal = function (token, requestNodeIndex, notFoundResult) {
-        if (((token === __WEBPACK_IMPORTED_MODULE_23__angular_core_src_linker_template_ref__["a" /* TemplateRef */]) && (23 === requestNodeIndex))) {
+        if (((token === __WEBPACK_IMPORTED_MODULE_24__angular_core_src_linker_template_ref__["a" /* TemplateRef */]) && (23 === requestNodeIndex))) {
             return this._TemplateRef_23_5;
         }
-        if (((token === __WEBPACK_IMPORTED_MODULE_26__angular_common_src_directives_ng_for__["a" /* NgFor */]) && (23 === requestNodeIndex))) {
+        if (((token === __WEBPACK_IMPORTED_MODULE_27__angular_common_src_directives_ng_for__["a" /* NgFor */]) && (23 === requestNodeIndex))) {
             return this._NgFor_23_6.context;
         }
         return notFoundResult;
@@ -7295,7 +7297,7 @@ var View_SelectProductComponent19 = (function (_super) {
     }
     View_SelectProductComponent19.prototype.createInternal = function (rootSelector) {
         this._el_0 = __WEBPACK_IMPORTED_MODULE_2__angular_core_src_linker_view_utils__["createRenderElement"](this.renderer, null, 'button', new __WEBPACK_IMPORTED_MODULE_2__angular_core_src_linker_view_utils__["InlineArray4"](4, 'class', '', 'type', 'button'), null);
-        this._RouterLink_0_3 = new __WEBPACK_IMPORTED_MODULE_28__gendir_node_modules_angular_router_src_directives_router_link_ngfactory__["a" /* Wrapper_RouterLink */](this.parentView.parentView.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_9__angular_router_src_router__["e" /* Router */], this.parentView.parentView.parentIndex), this.parentView.parentView.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_8__angular_router_src_router_state__["a" /* ActivatedRoute */], this.parentView.parentView.parentIndex));
+        this._RouterLink_0_3 = new __WEBPACK_IMPORTED_MODULE_29__gendir_node_modules_angular_router_src_directives_router_link_ngfactory__["a" /* Wrapper_RouterLink */](this.parentView.parentView.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_9__angular_router_src_router__["e" /* Router */], this.parentView.parentView.parentIndex), this.parentView.parentView.parentView.injectorGet(__WEBPACK_IMPORTED_MODULE_8__angular_router_src_router_state__["a" /* ActivatedRoute */], this.parentView.parentView.parentIndex));
         this._text_1 = this.renderer.createText(this._el_0, 'OK', null);
         var disposable_0 = __WEBPACK_IMPORTED_MODULE_2__angular_core_src_linker_view_utils__["subscribeToRenderElement"](this, this._el_0, new __WEBPACK_IMPORTED_MODULE_2__angular_core_src_linker_view_utils__["InlineArray2"](2, 'click', null), this.eventHandler(this.handleEvent_0));
         this.init(this._el_0, (this.renderer.directRenderer ? null : [
@@ -7305,7 +7307,7 @@ var View_SelectProductComponent19 = (function (_super) {
         return null;
     };
     View_SelectProductComponent19.prototype.injectorGetInternal = function (token, requestNodeIndex, notFoundResult) {
-        if (((token === __WEBPACK_IMPORTED_MODULE_29__angular_router_src_directives_router_link__["a" /* RouterLink */]) && ((0 <= requestNodeIndex) && (requestNodeIndex <= 1)))) {
+        if (((token === __WEBPACK_IMPORTED_MODULE_30__angular_router_src_directives_router_link__["a" /* RouterLink */]) && ((0 <= requestNodeIndex) && (requestNodeIndex <= 1)))) {
             return this._RouterLink_0_3.context;
         }
         return notFoundResult;
@@ -7390,8 +7392,8 @@ var View_SelectProductComponent17 = (function (_super) {
     __extends(View_SelectProductComponent17, _super);
     function View_SelectProductComponent17(viewUtils, parentView, parentIndex, parentElement, declaredViewContainer) {
         _super.call(this, View_SelectProductComponent17, renderType_SelectProductComponent, __WEBPACK_IMPORTED_MODULE_4__angular_core_src_linker_view_type__["a" /* ViewType */].EMBEDDED, viewUtils, parentView, parentIndex, parentElement, __WEBPACK_IMPORTED_MODULE_5__angular_core_src_change_detection_constants__["b" /* ChangeDetectorStatus */].CheckAlways, declaredViewContainer);
-        this._expr_35 = __WEBPACK_IMPORTED_MODULE_20__angular_core_src_change_detection_change_detection_util__["b" /* UNINITIALIZED */];
-        this._expr_36 = __WEBPACK_IMPORTED_MODULE_20__angular_core_src_change_detection_change_detection_util__["b" /* UNINITIALIZED */];
+        this._expr_35 = __WEBPACK_IMPORTED_MODULE_21__angular_core_src_change_detection_change_detection_util__["b" /* UNINITIALIZED */];
+        this._expr_36 = __WEBPACK_IMPORTED_MODULE_21__angular_core_src_change_detection_change_detection_util__["b" /* UNINITIALIZED */];
     }
     View_SelectProductComponent17.prototype.createInternal = function (rootSelector) {
         this._el_0 = __WEBPACK_IMPORTED_MODULE_2__angular_core_src_linker_view_utils__["createRenderElement"](this.renderer, null, 'div', new __WEBPACK_IMPORTED_MODULE_2__angular_core_src_linker_view_utils__["InlineArray4"](4, 'class', 'modalWindowAlertBox selectProductModal', 'id', 'modalWindowAlertBox'), null);
@@ -7411,19 +7413,19 @@ var View_SelectProductComponent17 = (function (_super) {
         this._el_14 = __WEBPACK_IMPORTED_MODULE_2__angular_core_src_linker_view_utils__["createRenderElement"](this.renderer, this._el_8, 'p', __WEBPACK_IMPORTED_MODULE_2__angular_core_src_linker_view_utils__["EMPTY_INLINE_ARRAY"], null);
         this._text_15 = this.renderer.createText(this._el_8, '\n                            ', null);
         this._anchor_16 = this.renderer.createTemplateAnchor(this._el_8, null);
-        this._vc_16 = new __WEBPACK_IMPORTED_MODULE_19__angular_core_src_linker_view_container__["a" /* ViewContainer */](16, 8, this, this._anchor_16);
-        this._TemplateRef_16_5 = new __WEBPACK_IMPORTED_MODULE_23__angular_core_src_linker_template_ref__["b" /* TemplateRef_ */](this, 16, this._anchor_16);
-        this._NgIf_16_6 = new __WEBPACK_IMPORTED_MODULE_21__gendir_node_modules_angular_common_src_directives_ng_if_ngfactory__["a" /* Wrapper_NgIf */](this._vc_16.vcRef, this._TemplateRef_16_5);
+        this._vc_16 = new __WEBPACK_IMPORTED_MODULE_20__angular_core_src_linker_view_container__["a" /* ViewContainer */](16, 8, this, this._anchor_16);
+        this._TemplateRef_16_5 = new __WEBPACK_IMPORTED_MODULE_24__angular_core_src_linker_template_ref__["b" /* TemplateRef_ */](this, 16, this._anchor_16);
+        this._NgIf_16_6 = new __WEBPACK_IMPORTED_MODULE_22__gendir_node_modules_angular_common_src_directives_ng_if_ngfactory__["a" /* Wrapper_NgIf */](this._vc_16.vcRef, this._TemplateRef_16_5);
         this._text_17 = this.renderer.createText(this._el_8, '\n                            ', null);
         this._anchor_18 = this.renderer.createTemplateAnchor(this._el_8, null);
-        this._vc_18 = new __WEBPACK_IMPORTED_MODULE_19__angular_core_src_linker_view_container__["a" /* ViewContainer */](18, 8, this, this._anchor_18);
-        this._TemplateRef_18_5 = new __WEBPACK_IMPORTED_MODULE_23__angular_core_src_linker_template_ref__["b" /* TemplateRef_ */](this, 18, this._anchor_18);
-        this._NgIf_18_6 = new __WEBPACK_IMPORTED_MODULE_21__gendir_node_modules_angular_common_src_directives_ng_if_ngfactory__["a" /* Wrapper_NgIf */](this._vc_18.vcRef, this._TemplateRef_18_5);
+        this._vc_18 = new __WEBPACK_IMPORTED_MODULE_20__angular_core_src_linker_view_container__["a" /* ViewContainer */](18, 8, this, this._anchor_18);
+        this._TemplateRef_18_5 = new __WEBPACK_IMPORTED_MODULE_24__angular_core_src_linker_template_ref__["b" /* TemplateRef_ */](this, 18, this._anchor_18);
+        this._NgIf_18_6 = new __WEBPACK_IMPORTED_MODULE_22__gendir_node_modules_angular_common_src_directives_ng_if_ngfactory__["a" /* Wrapper_NgIf */](this._vc_18.vcRef, this._TemplateRef_18_5);
         this._text_19 = this.renderer.createText(this._el_8, '\n                            ', null);
         this._anchor_20 = this.renderer.createTemplateAnchor(this._el_8, null);
-        this._vc_20 = new __WEBPACK_IMPORTED_MODULE_19__angular_core_src_linker_view_container__["a" /* ViewContainer */](20, 8, this, this._anchor_20);
-        this._TemplateRef_20_5 = new __WEBPACK_IMPORTED_MODULE_23__angular_core_src_linker_template_ref__["b" /* TemplateRef_ */](this, 20, this._anchor_20);
-        this._NgIf_20_6 = new __WEBPACK_IMPORTED_MODULE_21__gendir_node_modules_angular_common_src_directives_ng_if_ngfactory__["a" /* Wrapper_NgIf */](this._vc_20.vcRef, this._TemplateRef_20_5);
+        this._vc_20 = new __WEBPACK_IMPORTED_MODULE_20__angular_core_src_linker_view_container__["a" /* ViewContainer */](20, 8, this, this._anchor_20);
+        this._TemplateRef_20_5 = new __WEBPACK_IMPORTED_MODULE_24__angular_core_src_linker_template_ref__["b" /* TemplateRef_ */](this, 20, this._anchor_20);
+        this._NgIf_20_6 = new __WEBPACK_IMPORTED_MODULE_22__gendir_node_modules_angular_common_src_directives_ng_if_ngfactory__["a" /* Wrapper_NgIf */](this._vc_20.vcRef, this._TemplateRef_20_5);
         this._text_21 = this.renderer.createText(this._el_8, '\n                        ', null);
         this._text_22 = this.renderer.createText(this._el_6, '\n                    ', null);
         this._text_23 = this.renderer.createText(this._el_4, '\n                ', null);
@@ -7460,22 +7462,22 @@ var View_SelectProductComponent17 = (function (_super) {
         return null;
     };
     View_SelectProductComponent17.prototype.injectorGetInternal = function (token, requestNodeIndex, notFoundResult) {
-        if (((token === __WEBPACK_IMPORTED_MODULE_23__angular_core_src_linker_template_ref__["a" /* TemplateRef */]) && (16 === requestNodeIndex))) {
+        if (((token === __WEBPACK_IMPORTED_MODULE_24__angular_core_src_linker_template_ref__["a" /* TemplateRef */]) && (16 === requestNodeIndex))) {
             return this._TemplateRef_16_5;
         }
-        if (((token === __WEBPACK_IMPORTED_MODULE_25__angular_common_src_directives_ng_if__["a" /* NgIf */]) && (16 === requestNodeIndex))) {
+        if (((token === __WEBPACK_IMPORTED_MODULE_26__angular_common_src_directives_ng_if__["a" /* NgIf */]) && (16 === requestNodeIndex))) {
             return this._NgIf_16_6.context;
         }
-        if (((token === __WEBPACK_IMPORTED_MODULE_23__angular_core_src_linker_template_ref__["a" /* TemplateRef */]) && (18 === requestNodeIndex))) {
+        if (((token === __WEBPACK_IMPORTED_MODULE_24__angular_core_src_linker_template_ref__["a" /* TemplateRef */]) && (18 === requestNodeIndex))) {
             return this._TemplateRef_18_5;
         }
-        if (((token === __WEBPACK_IMPORTED_MODULE_25__angular_common_src_directives_ng_if__["a" /* NgIf */]) && (18 === requestNodeIndex))) {
+        if (((token === __WEBPACK_IMPORTED_MODULE_26__angular_common_src_directives_ng_if__["a" /* NgIf */]) && (18 === requestNodeIndex))) {
             return this._NgIf_18_6.context;
         }
-        if (((token === __WEBPACK_IMPORTED_MODULE_23__angular_core_src_linker_template_ref__["a" /* TemplateRef */]) && (20 === requestNodeIndex))) {
+        if (((token === __WEBPACK_IMPORTED_MODULE_24__angular_core_src_linker_template_ref__["a" /* TemplateRef */]) && (20 === requestNodeIndex))) {
             return this._TemplateRef_20_5;
         }
-        if (((token === __WEBPACK_IMPORTED_MODULE_25__angular_common_src_directives_ng_if__["a" /* NgIf */]) && (20 === requestNodeIndex))) {
+        if (((token === __WEBPACK_IMPORTED_MODULE_26__angular_common_src_directives_ng_if__["a" /* NgIf */]) && (20 === requestNodeIndex))) {
             return this._NgIf_20_6.context;
         }
         return notFoundResult;
@@ -7500,7 +7502,7 @@ var View_SelectProductComponent17 = (function (_super) {
         }
         var currVal_36 = this.parentView.context.modalMessage;
         if (__WEBPACK_IMPORTED_MODULE_2__angular_core_src_linker_view_utils__["checkBinding"](throwOnChange, this._expr_36, currVal_36)) {
-            this.renderer.setElementProperty(this._el_14, 'innerHTML', this.viewUtils.sanitizer.sanitize(__WEBPACK_IMPORTED_MODULE_30__angular_core_src_security__["b" /* SecurityContext */].HTML, currVal_36));
+            this.renderer.setElementProperty(this._el_14, 'innerHTML', this.viewUtils.sanitizer.sanitize(__WEBPACK_IMPORTED_MODULE_31__angular_core_src_security__["b" /* SecurityContext */].HTML, currVal_36));
             this._expr_36 = currVal_36;
         }
     };
@@ -7559,9 +7561,9 @@ var View_SelectProductComponent0 = (function (_super) {
         this._el_22 = __WEBPACK_IMPORTED_MODULE_2__angular_core_src_linker_view_utils__["createRenderElement"](this.renderer, this._el_20, 'div', new __WEBPACK_IMPORTED_MODULE_2__angular_core_src_linker_view_utils__["InlineArray2"](2, 'class', 'inner'), null);
         this._text_23 = this.renderer.createText(this._el_22, '\n        ', null);
         this._anchor_24 = this.renderer.createTemplateAnchor(this._el_22, null);
-        this._vc_24 = new __WEBPACK_IMPORTED_MODULE_19__angular_core_src_linker_view_container__["a" /* ViewContainer */](24, 22, this, this._anchor_24);
-        this._TemplateRef_24_5 = new __WEBPACK_IMPORTED_MODULE_23__angular_core_src_linker_template_ref__["b" /* TemplateRef_ */](this, 24, this._anchor_24);
-        this._NgIf_24_6 = new __WEBPACK_IMPORTED_MODULE_21__gendir_node_modules_angular_common_src_directives_ng_if_ngfactory__["a" /* Wrapper_NgIf */](this._vc_24.vcRef, this._TemplateRef_24_5);
+        this._vc_24 = new __WEBPACK_IMPORTED_MODULE_20__angular_core_src_linker_view_container__["a" /* ViewContainer */](24, 22, this, this._anchor_24);
+        this._TemplateRef_24_5 = new __WEBPACK_IMPORTED_MODULE_24__angular_core_src_linker_template_ref__["b" /* TemplateRef_ */](this, 24, this._anchor_24);
+        this._NgIf_24_6 = new __WEBPACK_IMPORTED_MODULE_22__gendir_node_modules_angular_common_src_directives_ng_if_ngfactory__["a" /* Wrapper_NgIf */](this._vc_24.vcRef, this._TemplateRef_24_5);
         this._text_25 = this.renderer.createText(this._el_22, '\n        ', null);
         this._el_26 = __WEBPACK_IMPORTED_MODULE_2__angular_core_src_linker_view_utils__["createRenderElement"](this.renderer, this._el_22, 'button', new __WEBPACK_IMPORTED_MODULE_2__angular_core_src_linker_view_utils__["InlineArray4"](4, 'class', 'haBtn02 pc', 'type', 'button'), null);
         this._el_27 = __WEBPACK_IMPORTED_MODULE_2__angular_core_src_linker_view_utils__["createRenderElement"](this.renderer, this._el_26, 'span', new __WEBPACK_IMPORTED_MODULE_2__angular_core_src_linker_view_utils__["InlineArray2"](2, 'class', 'iconSearch'), null);
@@ -7574,23 +7576,23 @@ var View_SelectProductComponent0 = (function (_super) {
         this._text_34 = this.renderer.createText(this._el_33, '\n        ', null);
         this._text_35 = this.renderer.createText(this._el_33, '\n        ', null);
         this._anchor_36 = this.renderer.createTemplateAnchor(this._el_33, null);
-        this._vc_36 = new __WEBPACK_IMPORTED_MODULE_19__angular_core_src_linker_view_container__["a" /* ViewContainer */](36, 33, this, this._anchor_36);
-        this._TemplateRef_36_5 = new __WEBPACK_IMPORTED_MODULE_23__angular_core_src_linker_template_ref__["b" /* TemplateRef_ */](this, 36, this._anchor_36);
-        this._NgIf_36_6 = new __WEBPACK_IMPORTED_MODULE_21__gendir_node_modules_angular_common_src_directives_ng_if_ngfactory__["a" /* Wrapper_NgIf */](this._vc_36.vcRef, this._TemplateRef_36_5);
+        this._vc_36 = new __WEBPACK_IMPORTED_MODULE_20__angular_core_src_linker_view_container__["a" /* ViewContainer */](36, 33, this, this._anchor_36);
+        this._TemplateRef_36_5 = new __WEBPACK_IMPORTED_MODULE_24__angular_core_src_linker_template_ref__["b" /* TemplateRef_ */](this, 36, this._anchor_36);
+        this._NgIf_36_6 = new __WEBPACK_IMPORTED_MODULE_22__gendir_node_modules_angular_common_src_directives_ng_if_ngfactory__["a" /* Wrapper_NgIf */](this._vc_36.vcRef, this._TemplateRef_36_5);
         this._text_37 = this.renderer.createText(this._el_33, '\n        ', null);
         this._text_38 = this.renderer.createText(this._el_33, '\n\n        ', null);
         this._text_39 = this.renderer.createText(this._el_33, '\n        ', null);
         this._anchor_40 = this.renderer.createTemplateAnchor(this._el_33, null);
-        this._vc_40 = new __WEBPACK_IMPORTED_MODULE_19__angular_core_src_linker_view_container__["a" /* ViewContainer */](40, 33, this, this._anchor_40);
-        this._TemplateRef_40_5 = new __WEBPACK_IMPORTED_MODULE_23__angular_core_src_linker_template_ref__["b" /* TemplateRef_ */](this, 40, this._anchor_40);
-        this._NgIf_40_6 = new __WEBPACK_IMPORTED_MODULE_21__gendir_node_modules_angular_common_src_directives_ng_if_ngfactory__["a" /* Wrapper_NgIf */](this._vc_40.vcRef, this._TemplateRef_40_5);
+        this._vc_40 = new __WEBPACK_IMPORTED_MODULE_20__angular_core_src_linker_view_container__["a" /* ViewContainer */](40, 33, this, this._anchor_40);
+        this._TemplateRef_40_5 = new __WEBPACK_IMPORTED_MODULE_24__angular_core_src_linker_template_ref__["b" /* TemplateRef_ */](this, 40, this._anchor_40);
+        this._NgIf_40_6 = new __WEBPACK_IMPORTED_MODULE_22__gendir_node_modules_angular_common_src_directives_ng_if_ngfactory__["a" /* Wrapper_NgIf */](this._vc_40.vcRef, this._TemplateRef_40_5);
         this._text_41 = this.renderer.createText(this._el_33, '\n        ', null);
         this._text_42 = this.renderer.createText(this._el_33, '\n\n        ', null);
         this._text_43 = this.renderer.createText(this._el_33, '\n        ', null);
         this._anchor_44 = this.renderer.createTemplateAnchor(this._el_33, null);
-        this._vc_44 = new __WEBPACK_IMPORTED_MODULE_19__angular_core_src_linker_view_container__["a" /* ViewContainer */](44, 33, this, this._anchor_44);
-        this._TemplateRef_44_5 = new __WEBPACK_IMPORTED_MODULE_23__angular_core_src_linker_template_ref__["b" /* TemplateRef_ */](this, 44, this._anchor_44);
-        this._NgIf_44_6 = new __WEBPACK_IMPORTED_MODULE_21__gendir_node_modules_angular_common_src_directives_ng_if_ngfactory__["a" /* Wrapper_NgIf */](this._vc_44.vcRef, this._TemplateRef_44_5);
+        this._vc_44 = new __WEBPACK_IMPORTED_MODULE_20__angular_core_src_linker_view_container__["a" /* ViewContainer */](44, 33, this, this._anchor_44);
+        this._TemplateRef_44_5 = new __WEBPACK_IMPORTED_MODULE_24__angular_core_src_linker_template_ref__["b" /* TemplateRef_ */](this, 44, this._anchor_44);
+        this._NgIf_44_6 = new __WEBPACK_IMPORTED_MODULE_22__gendir_node_modules_angular_common_src_directives_ng_if_ngfactory__["a" /* Wrapper_NgIf */](this._vc_44.vcRef, this._TemplateRef_44_5);
         this._text_45 = this.renderer.createText(this._el_33, '\n        ', null);
         this._text_46 = this.renderer.createText(this._el_33, '\n      ', null);
         this._text_47 = this.renderer.createText(this._el_18, '\n\n  ', null);
@@ -7652,28 +7654,28 @@ var View_SelectProductComponent0 = (function (_super) {
         return null;
     };
     View_SelectProductComponent0.prototype.injectorGetInternal = function (token, requestNodeIndex, notFoundResult) {
-        if (((token === __WEBPACK_IMPORTED_MODULE_23__angular_core_src_linker_template_ref__["a" /* TemplateRef */]) && (24 === requestNodeIndex))) {
+        if (((token === __WEBPACK_IMPORTED_MODULE_24__angular_core_src_linker_template_ref__["a" /* TemplateRef */]) && (24 === requestNodeIndex))) {
             return this._TemplateRef_24_5;
         }
-        if (((token === __WEBPACK_IMPORTED_MODULE_25__angular_common_src_directives_ng_if__["a" /* NgIf */]) && (24 === requestNodeIndex))) {
+        if (((token === __WEBPACK_IMPORTED_MODULE_26__angular_common_src_directives_ng_if__["a" /* NgIf */]) && (24 === requestNodeIndex))) {
             return this._NgIf_24_6.context;
         }
-        if (((token === __WEBPACK_IMPORTED_MODULE_23__angular_core_src_linker_template_ref__["a" /* TemplateRef */]) && (36 === requestNodeIndex))) {
+        if (((token === __WEBPACK_IMPORTED_MODULE_24__angular_core_src_linker_template_ref__["a" /* TemplateRef */]) && (36 === requestNodeIndex))) {
             return this._TemplateRef_36_5;
         }
-        if (((token === __WEBPACK_IMPORTED_MODULE_25__angular_common_src_directives_ng_if__["a" /* NgIf */]) && (36 === requestNodeIndex))) {
+        if (((token === __WEBPACK_IMPORTED_MODULE_26__angular_common_src_directives_ng_if__["a" /* NgIf */]) && (36 === requestNodeIndex))) {
             return this._NgIf_36_6.context;
         }
-        if (((token === __WEBPACK_IMPORTED_MODULE_23__angular_core_src_linker_template_ref__["a" /* TemplateRef */]) && (40 === requestNodeIndex))) {
+        if (((token === __WEBPACK_IMPORTED_MODULE_24__angular_core_src_linker_template_ref__["a" /* TemplateRef */]) && (40 === requestNodeIndex))) {
             return this._TemplateRef_40_5;
         }
-        if (((token === __WEBPACK_IMPORTED_MODULE_25__angular_common_src_directives_ng_if__["a" /* NgIf */]) && (40 === requestNodeIndex))) {
+        if (((token === __WEBPACK_IMPORTED_MODULE_26__angular_common_src_directives_ng_if__["a" /* NgIf */]) && (40 === requestNodeIndex))) {
             return this._NgIf_40_6.context;
         }
-        if (((token === __WEBPACK_IMPORTED_MODULE_23__angular_core_src_linker_template_ref__["a" /* TemplateRef */]) && (44 === requestNodeIndex))) {
+        if (((token === __WEBPACK_IMPORTED_MODULE_24__angular_core_src_linker_template_ref__["a" /* TemplateRef */]) && (44 === requestNodeIndex))) {
             return this._TemplateRef_44_5;
         }
-        if (((token === __WEBPACK_IMPORTED_MODULE_25__angular_common_src_directives_ng_if__["a" /* NgIf */]) && (44 === requestNodeIndex))) {
+        if (((token === __WEBPACK_IMPORTED_MODULE_26__angular_common_src_directives_ng_if__["a" /* NgIf */]) && (44 === requestNodeIndex))) {
             return this._NgIf_44_6.context;
         }
         return notFoundResult;
@@ -8252,7 +8254,7 @@ var PaymentComponent = (function () {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__shared_services_performances_service__ = __webpack_require__("../../../../../src/app/shared/services/performances.service.ts");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__shared_services_stock_types_service__ = __webpack_require__("../../../../../src/app/shared/services/stock-types.service.ts");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__shared_services_seat_status_service__ = __webpack_require__("../../../../../src/app/shared/services/seat-status.service.ts");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__shared_services_quentity_check_service__ = __webpack_require__("../../../../../src/app/shared/services/quentity-check.service.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__shared_services_quantity_check_service__ = __webpack_require__("../../../../../src/app/shared/services/quantity-check.service.ts");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__shared_services_stock_type_data_service__ = __webpack_require__("../../../../../src/app/shared/services/stock-type-data.service.ts");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__shared_services_error_modal_data_service__ = __webpack_require__("../../../../../src/app/shared/services/error-modal-data.service.ts");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__shared_services_seats_service__ = __webpack_require__("../../../../../src/app/shared/services/seats.service.ts");
@@ -8281,14 +8283,14 @@ var PaymentComponent = (function () {
 
 
 var ReserveByQuantityComponent = (function () {
-    function ReserveByQuantityComponent(route, router, performances, stockTypes, seatStatus, seats, QuentityChecks, stockTypeDataService, errorModalDataService, countSelectService, animationEnableService, smartPhoneCheckService, reserveBySeatBrowserBackService, _logger) {
+    function ReserveByQuantityComponent(route, router, performances, stockTypes, seatStatus, seats, quantityCheckService, stockTypeDataService, errorModalDataService, countSelectService, animationEnableService, smartPhoneCheckService, reserveBySeatBrowserBackService, _logger) {
         this.route = route;
         this.router = router;
         this.performances = performances;
         this.stockTypes = stockTypes;
         this.seatStatus = seatStatus;
         this.seats = seats;
-        this.QuentityChecks = QuentityChecks;
+        this.quantityCheckService = quantityCheckService;
         this.stockTypeDataService = stockTypeDataService;
         this.errorModalDataService = errorModalDataService;
         this.countSelectService = countSelectService;
@@ -8315,7 +8317,8 @@ var ReserveByQuantityComponent = (function () {
         };
         //svgから取得する座席配列
         this.seatNameList = [];
-        this.defaultMaxQuantity = 14;
+        //最小購入数
+        this.minQuantity = 1;
         //ボタン表示・非表示
         this.nextButtonFlag = false;
         //座席確保飛び席モーダルフラグ
@@ -8324,11 +8327,11 @@ var ReserveByQuantityComponent = (function () {
     ReserveByQuantityComponent.prototype.ngOnInit = function () {
         var _this = this;
         this.nextButtonFlag = false;
-        this.stockTypeDataService.toQuentityData$.subscribe(function (stockTypeId) {
+        this.stockTypeDataService.toQuantityData$.subscribe(function (stockTypeId) {
             _this.selectStockTypeId = stockTypeId;
             _this.loadPerformance();
         });
-        this.countSelectService.toQuentityData$.subscribe(function (countSelect) {
+        this.countSelectService.toQuantityData$.subscribe(function (countSelect) {
             _this.countSelectVenuemap = countSelect;
         });
     };
@@ -8348,10 +8351,9 @@ var ReserveByQuantityComponent = (function () {
                     _this._logger.debug("get performance(#" + _this.performanceId + ") success", response);
                     _this.performance = response.data.performance;
                     _this.mapURL = _this.performance.mini_venue_map_url;
-                    _this.performanceOrderLimit = _this.performance.order_limit;
-                    _this.eventOrderLimit = response.data.event.order_limit;
                     _this.selesSegments = _this.performance.sales_segments;
                     _this.selesSegmentId = _this.selesSegments[0].sales_segment_id;
+                    _this.upperLimit = _this.performance.sales_segments[0].upper_limit;
                     //席種情報取得
                     if (_this.performanceId && _this.selesSegmentId && _this.selectStockTypeId) {
                         _this.stockTypes.getStockType(_this.performanceId, _this.selesSegmentId, _this.selectStockTypeId)
@@ -8370,9 +8372,13 @@ var ReserveByQuantityComponent = (function () {
                             //席種名と商品情報取得
                             _this.stockTypeName = _this.stockType.stock_type_name;
                             _this.selectedProducts = _this.stockType.products;
-                            _this.selectedSalesUnitQuantitys = _this.QuentityChecks.eraseOne(_this.stockType.products);
+                            _this.selectedSalesUnitQuantitys = _this.quantityCheckService.eraseOne(_this.stockType.products);
                             _this.description = _this.stockType.description ? _this.stockType.description : '';
                             _this.minQuantity = _this.stockType.min_quantity;
+                            //初期表示時に購入下限枚数を選択状態として設定
+                            if (_this.stockType.min_quantity) {
+                                _this.quantity = _this.stockType.min_quantity;
+                            }
                             _this.maxQuantity = _this.stockType.max_quantity;
                             that.regions = _this.stockType.regions;
                             _this.modalTopCss();
@@ -8385,17 +8391,17 @@ var ReserveByQuantityComponent = (function () {
                             function startTimer() {
                                 var getMap;
                                 timer = setInterval(function () {
-                                    getMap = document.getElementById("venue-quentity");
+                                    getMap = document.getElementById("venue-quantity");
                                     if (getMap && getMap.firstElementChild) {
                                         //二重色付け制限
-                                        if (__WEBPACK_IMPORTED_MODULE_13_jquery__('#venue-quentity').find('.region').css({ 'fill': 'red' })) {
-                                            __WEBPACK_IMPORTED_MODULE_13_jquery__('#venue-quentity').find('.region').css({
+                                        if (__WEBPACK_IMPORTED_MODULE_13_jquery__('#venue-quantity').find('.region').css({ 'fill': 'red' })) {
+                                            __WEBPACK_IMPORTED_MODULE_13_jquery__('#venue-quantity').find('.region').css({
                                                 'fill': 'white'
                                             });
                                         }
                                         //色付け
                                         for (var i = 0; i < that.regions.length; i++) {
-                                            __WEBPACK_IMPORTED_MODULE_13_jquery__('#venue-quentity').find('#' + that.regions[i]).css({
+                                            __WEBPACK_IMPORTED_MODULE_13_jquery__('#venue-quantity').find('#' + that.regions[i]).css({
                                                 'fill': 'red'
                                             });
                                         }
@@ -8438,10 +8444,10 @@ var ReserveByQuantityComponent = (function () {
     };
     //チケット枚数減少
     ReserveByQuantityComponent.prototype.minusClick = function () {
-        if (this.QuentityChecks.minLimitCheck(this.minQuantity, this.quantity - 1)) {
+        if (this.quantityCheckService.stockTypeQuantityMinLimitCheck(this.minQuantity, this.quantity - 1)) {
             this.quantity--;
             __WEBPACK_IMPORTED_MODULE_13_jquery__('#plus-btn').removeClass('disabled');
-            if (!this.QuentityChecks.minLimitCheck(this.minQuantity, this.quantity - 1)) {
+            if (!this.quantityCheckService.stockTypeQuantityMinLimitCheck(this.minQuantity, this.quantity - 1)) {
                 __WEBPACK_IMPORTED_MODULE_13_jquery__('#minus-btn').addClass('disabled');
             }
         }
@@ -8451,10 +8457,10 @@ var ReserveByQuantityComponent = (function () {
     };
     //チケット枚数増加
     ReserveByQuantityComponent.prototype.plusClick = function () {
-        if (this.QuentityChecks.maxLimitCheck(this.maxQuantity, this.performanceOrderLimit, this.eventOrderLimit, this.quantity + 1)) {
+        if (this.quantityCheckService.stockTypeQuantityMaxLimitCheck(this.upperLimit, this.maxQuantity, this.quantity + 1)) {
             this.quantity++;
             __WEBPACK_IMPORTED_MODULE_13_jquery__("#minus-btn").removeClass('disabled');
-            if (!this.QuentityChecks.maxLimitCheck(this.maxQuantity, this.performanceOrderLimit, this.eventOrderLimit, this.quantity + 1)) {
+            if (!this.quantityCheckService.stockTypeQuantityMaxLimitCheck(this.upperLimit, this.maxQuantity, this.quantity + 1)) {
                 __WEBPACK_IMPORTED_MODULE_13_jquery__("#plus-btn").addClass('disabled');
             }
         }
@@ -8469,7 +8475,7 @@ var ReserveByQuantityComponent = (function () {
         this.animationEnableService.sendToRoadFlag(true);
         __WEBPACK_IMPORTED_MODULE_13_jquery__('#reservebutton').prop("disabled", true);
         if (this.countSelectVenuemap == 0) {
-            if (!this.QuentityChecks.salesUnitCheck(this.selectedProducts, this.quantity)) {
+            if (!this.quantityCheckService.salesUnitCheck(this.selectedProducts, this.quantity)) {
                 this.dataUpdate();
                 this.route.params.subscribe(function (params) {
                     if (params && params['performance_id']) {
@@ -8535,7 +8541,7 @@ var ReserveByQuantityComponent = (function () {
             else {
                 this.animationEnableService.sendToRoadFlag(false);
                 __WEBPACK_IMPORTED_MODULE_13_jquery__('#reservebutton').prop("disabled", false);
-                this.errorModalDataService.sendToErrorModal('エラー', this.QuentityChecks.salesUnitCheck(this.selectedProducts, this.quantity) + '席単位でご選択ください。');
+                this.errorModalDataService.sendToErrorModal('エラー', this.quantityCheckService.salesUnitCheck(this.selectedProducts, this.quantity) + '席単位でご選択ください。');
             }
         }
         else {
@@ -8620,10 +8626,10 @@ var ReserveByQuantityComponent = (function () {
             __WEBPACK_IMPORTED_MODULE_13_jquery__('.modalWindow-quantity').css({
                 'height': scrollSize
             });
-            __WEBPACK_IMPORTED_MODULE_13_jquery__('#venue-quentity').css({
+            __WEBPACK_IMPORTED_MODULE_13_jquery__('#venue-quantity').css({
                 'height': mapSize,
             });
-            __WEBPACK_IMPORTED_MODULE_13_jquery__('#venue-quentity').children("svg").css({
+            __WEBPACK_IMPORTED_MODULE_13_jquery__('#venue-quantity').children("svg").css({
                 'height': mapSize,
             });
         }, 0);
@@ -8639,7 +8645,7 @@ var ReserveByQuantityComponent = (function () {
             'overflow-y': "auto"
         });
     };
-    ReserveByQuantityComponent.ctorParameters = function () { return [{ type: __WEBPACK_IMPORTED_MODULE_12__angular_router__["a" /* ActivatedRoute */] }, { type: __WEBPACK_IMPORTED_MODULE_12__angular_router__["f" /* Router */] }, { type: __WEBPACK_IMPORTED_MODULE_1__shared_services_performances_service__["a" /* PerformancesService */] }, { type: __WEBPACK_IMPORTED_MODULE_2__shared_services_stock_types_service__["a" /* StockTypesService */] }, { type: __WEBPACK_IMPORTED_MODULE_3__shared_services_seat_status_service__["a" /* SeatStatusService */] }, { type: __WEBPACK_IMPORTED_MODULE_7__shared_services_seats_service__["a" /* SeatsService */] }, { type: __WEBPACK_IMPORTED_MODULE_4__shared_services_quentity_check_service__["a" /* QuentityCheckService */] }, { type: __WEBPACK_IMPORTED_MODULE_5__shared_services_stock_type_data_service__["a" /* StockTypeDataService */] }, { type: __WEBPACK_IMPORTED_MODULE_6__shared_services_error_modal_data_service__["a" /* ErrorModalDataService */] }, { type: __WEBPACK_IMPORTED_MODULE_8__shared_services_count_select_service__["a" /* CountSelectService */] }, { type: __WEBPACK_IMPORTED_MODULE_9__shared_services_animation_enable_service__["a" /* AnimationEnableService */] }, { type: __WEBPACK_IMPORTED_MODULE_10__shared_services_smartPhone_check_service__["a" /* SmartPhoneCheckService */] }, { type: __WEBPACK_IMPORTED_MODULE_11__shared_services_reserve_by_seat_browser_back_service__["a" /* ReserveBySeatBrowserBackService */] }, { type: __WEBPACK_IMPORTED_MODULE_14_angular2_logger_core__["Logger"] }]; };
+    ReserveByQuantityComponent.ctorParameters = function () { return [{ type: __WEBPACK_IMPORTED_MODULE_12__angular_router__["a" /* ActivatedRoute */] }, { type: __WEBPACK_IMPORTED_MODULE_12__angular_router__["f" /* Router */] }, { type: __WEBPACK_IMPORTED_MODULE_1__shared_services_performances_service__["a" /* PerformancesService */] }, { type: __WEBPACK_IMPORTED_MODULE_2__shared_services_stock_types_service__["a" /* StockTypesService */] }, { type: __WEBPACK_IMPORTED_MODULE_3__shared_services_seat_status_service__["a" /* SeatStatusService */] }, { type: __WEBPACK_IMPORTED_MODULE_7__shared_services_seats_service__["a" /* SeatsService */] }, { type: __WEBPACK_IMPORTED_MODULE_4__shared_services_quantity_check_service__["a" /* QuantityCheckService */] }, { type: __WEBPACK_IMPORTED_MODULE_5__shared_services_stock_type_data_service__["a" /* StockTypeDataService */] }, { type: __WEBPACK_IMPORTED_MODULE_6__shared_services_error_modal_data_service__["a" /* ErrorModalDataService */] }, { type: __WEBPACK_IMPORTED_MODULE_8__shared_services_count_select_service__["a" /* CountSelectService */] }, { type: __WEBPACK_IMPORTED_MODULE_9__shared_services_animation_enable_service__["a" /* AnimationEnableService */] }, { type: __WEBPACK_IMPORTED_MODULE_10__shared_services_smartPhone_check_service__["a" /* SmartPhoneCheckService */] }, { type: __WEBPACK_IMPORTED_MODULE_11__shared_services_reserve_by_seat_browser_back_service__["a" /* ReserveBySeatBrowserBackService */] }, { type: __WEBPACK_IMPORTED_MODULE_14_angular2_logger_core__["Logger"] }]; };
     return ReserveByQuantityComponent;
 }());
 //# sourceMappingURL=/srv/altair/master/ticketing/src/altair/app/ticketing/spa_cart/src/reserve-by-quantity.component.js.map
@@ -9553,7 +9559,7 @@ var SeatlistComponent = (function () {
         });
         __WEBPACK_IMPORTED_MODULE_7_jquery__('body').scrollTop(0);
         if (this.countSelect == 0) {
-            this.stockTypeDataService.sendToQuentity(stockTypeId);
+            this.stockTypeDataService.sendToQuantity(stockTypeId);
             this.stockTypeId = stockTypeId;
         }
         else {
@@ -9589,7 +9595,7 @@ var SeatlistComponent = (function () {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__shared_services_performances_service__ = __webpack_require__("../../../../../src/app/shared/services/performances.service.ts");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__shared_services_seat_status_service__ = __webpack_require__("../../../../../src/app/shared/services/seat-status.service.ts");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__shared_services_stock_types_service__ = __webpack_require__("../../../../../src/app/shared/services/stock-types.service.ts");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__shared_services_quentity_check_service__ = __webpack_require__("../../../../../src/app/shared/services/quentity-check.service.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__shared_services_quantity_check_service__ = __webpack_require__("../../../../../src/app/shared/services/quantity-check.service.ts");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__shared_services_stock_type_data_service__ = __webpack_require__("../../../../../src/app/shared/services/stock-type-data.service.ts");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__shared_services_error_modal_data_service__ = __webpack_require__("../../../../../src/app/shared/services/error-modal-data.service.ts");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__shared_services_animation_enable_service__ = __webpack_require__("../../../../../src/app/shared/services/animation-enable.service.ts");
@@ -9631,15 +9637,14 @@ var SCALE_SEAT = 1.0; // 表示倍率2倍個席表示
 var SCALE_MAX = 5.0; // 表示倍率の最大値
 var WINDOW_SM = 768; // スマホか否かの判定に用いる
 var SIDE_HEIGHT = 200; //横画面時エラーを出す最大値
-var MAX_QUANTITY_DEFAULT = 14; // デフォルトの選択可能枚数
 var VenuemapComponent = (function () {
-    function VenuemapComponent(el, route, performancesService, seatStatus, stockTypesService, QuentityChecks, router, reserveByQuantity, stockTypeDataService, errorModalDataService, animationEnableService, countSelectService, smartPhoneCheckService, reserveBySeatBrowserBackService, seatDataService, _logger) {
+    function VenuemapComponent(el, route, performancesService, seatStatus, stockTypesService, quantityCheckService, router, reserveByQuantity, stockTypeDataService, errorModalDataService, animationEnableService, countSelectService, smartPhoneCheckService, reserveBySeatBrowserBackService, seatDataService, _logger) {
         this.el = el;
         this.route = route;
         this.performancesService = performancesService;
         this.seatStatus = seatStatus;
         this.stockTypesService = stockTypesService;
-        this.QuentityChecks = QuentityChecks;
+        this.quantityCheckService = quantityCheckService;
         this.router = router;
         this.reserveByQuantity = reserveByQuantity;
         this.stockTypeDataService = stockTypeDataService;
@@ -9707,7 +9712,7 @@ var VenuemapComponent = (function () {
             'selected_seats': []
         };
         // 全体の拡大縮小率
-        this.scaleTotal = 1.0;
+        this.scaleTotal = 0.0;
         // regionId（数受けの席のregion Id）
         this.regionIds = [];
         // viewBoxの初期値を格納
@@ -9736,7 +9741,7 @@ var VenuemapComponent = (function () {
         this.reservedFlag = true;
         this.unreservedFlag = true;
         // region取得完了フラグ
-        this.isRegionObtained = false;
+        this.isInitialDataObtained = false;
         // ツールチップ用席種
         this.tooltipStockType = [];
         // SVGに対するinnerHTMLの利用可否
@@ -9789,6 +9794,7 @@ var VenuemapComponent = (function () {
                     _this.colorNavi = "https://s3-ap-northeast-1.amazonaws.com/tstar/cart_api/color_sample.svg";
                     _this.wholemapURL = _this.performance.mini_venue_map_url;
                     _this.salesSegments = _this.performance.sales_segments;
+                    _this.upperLimit = _this.performance.sales_segments[0].upper_limit;
                     var selesSegmentId = _this.salesSegments[0].sales_segment_id;
                     _this.stockTypesService.getStockTypesAll(_this.performanceId, selesSegmentId)
                         .subscribe(function (response) {
@@ -9828,10 +9834,10 @@ var VenuemapComponent = (function () {
                                 }
                             }
                         }
-                        _this.isRegionObtained = true;
                         _this.stockTypesService.findStockTypesByPerformanceId(_this.performanceId).subscribe(function (response) {
                             _this._logger.debug("findStockTypesByPerformanceId(#" + _this.performanceId + ") success", response);
                             _this.stockType = response.data.stock_types;
+                            _this.isInitialDataObtained = true;
                         }, function (error) {
                             _this._logger.error('findStockTypesByPerformanceId(#${this.performanceId}) error', error);
                         });
@@ -9935,6 +9941,7 @@ var VenuemapComponent = (function () {
             // viewBox取得　且つ　reserve-by-seatの高さが取得
             if ((that.originalViewBox) && (that.mapAreaLeftH != 0)) {
                 clearInterval(svgLoadCompleteTimer);
+                that.displayViewBox = that.originalViewBox.concat();
                 that.seatAreaHeight = __WEBPACK_IMPORTED_MODULE_14_jquery__("#mapImgBox").height();
                 that.svgMap = document.getElementById('mapImgBox').firstElementChild;
                 that.saveSeatData();
@@ -10025,7 +10032,7 @@ var VenuemapComponent = (function () {
     VenuemapComponent.prototype.isInitialEnd = function () {
         var result = false;
         //全ての初期ロード判定
-        if (this.originalViewBox && this.seats && this.isRegionObtained) {
+        if (this.originalViewBox && this.seats && this.isInitialDataObtained) {
             result = true;
         }
         return result;
@@ -10486,11 +10493,11 @@ var VenuemapComponent = (function () {
                                 'height': "",
                                 'overflow-y': ""
                             });
-                            this.stockTypeDataService.sendToQuentity(+x);
+                            this.stockTypeDataService.sendToQuantity(+x);
                         }
                     }
                 }
-                this.countSelectService.sendToQuentity(this.countSelect);
+                this.countSelectService.sendToQuantity(this.countSelect);
             }
             else {
                 var scale = this.scaleTotal / SCALE_SEAT; // 1辺の長さの拡大率
@@ -10568,14 +10575,20 @@ var VenuemapComponent = (function () {
                 break;
             }
         }
-        if (!this.selectedStockTypeMaxQuantity) {
-            this.selectedStockTypeMaxQuantity = this.performance.order_limit;
-            if (!this.selectedStockTypeMaxQuantity) {
-                this.selectedStockTypeMaxQuantity = this.event.order_limit;
-                if (!this.selectedStockTypeMaxQuantity) {
-                    this.selectedStockTypeMaxQuantity = MAX_QUANTITY_DEFAULT;
-                }
+        //◯席以内取得
+        if (this.upperLimit && this.selectedStockTypeMaxQuantity) {
+            if (this.upperLimit < this.selectedStockTypeMaxQuantity) {
+                this.viewSelectNum = this.upperLimit;
             }
+            else {
+                this.viewSelectNum = this.selectedStockTypeMaxQuantity;
+            }
+        }
+        else if (this.upperLimit && !this.selectedStockTypeMaxQuantity) {
+            this.viewSelectNum = this.upperLimit;
+        }
+        else {
+            this.viewSelectNum = this.selectedStockTypeMaxQuantity;
         }
         //メイン処理へ
         if (this.isGroupedSeats) {
@@ -10587,7 +10600,7 @@ var VenuemapComponent = (function () {
     };
     VenuemapComponent.prototype.tapOneSeats = function (e) {
         if (this.changeRgb(__WEBPACK_IMPORTED_MODULE_14_jquery__(e.target).css('fill')) == SEAT_COLOR_AVAILABLE) {
-            if (this.QuentityChecks.maxLimitCheck(this.selectedStockTypeMaxQuantity, this.performance.order_limit, this.event.order_limit, this.selectedSeatList.length + 1)) {
+            if (!this.viewSelectNum || this.viewSelectNum >= this.selectedSeatList.length + 1) {
                 __WEBPACK_IMPORTED_MODULE_14_jquery__(e.target).css({ 'fill': SEAT_COLOR_SELECTED });
                 if (!this.smartPhoneCheckService.isSmartPhone() && !this.smartPhoneCheckService.isIpad()) {
                     this.selectedSeatName = decodeURIComponent(__WEBPACK_IMPORTED_MODULE_14_jquery__(e.target).attr('title'));
@@ -10598,7 +10611,7 @@ var VenuemapComponent = (function () {
                 this.selectTimes();
             }
             else {
-                this.errorModalDataService.sendToErrorModal('エラー', this.selectedStockTypeMaxQuantity + '席以下でご選択ください。');
+                this.errorModalDataService.sendToErrorModal('エラー', this.viewSelectNum + '席以内でご選択ください。');
             }
         }
         else if (this.changeRgb(__WEBPACK_IMPORTED_MODULE_14_jquery__(e.target).css('fill')) == SEAT_COLOR_SELECTED) {
@@ -10628,7 +10641,7 @@ var VenuemapComponent = (function () {
     VenuemapComponent.prototype.tapMultipleSeats = function (e) {
         if (this.changeRgb(__WEBPACK_IMPORTED_MODULE_14_jquery__(e.target).css('fill')) == SEAT_COLOR_AVAILABLE) {
             if (this.selectedStockTypeId == this.prevStockType) {
-                if (this.QuentityChecks.maxLimitCheck(this.selectedStockTypeMaxQuantity, this.performance.order_limit, this.event.order_limit, this.selectedSeatList.length + this.selectedGroupIds.length)) {
+                if (!this.viewSelectNum || this.viewSelectNum >= this.selectedSeatList.length + this.selectedGroupIds.length) {
                     for (var i = 0, len = this.selectedGroupIds.length; i < len; i++) {
                         var text = __WEBPACK_IMPORTED_MODULE_14_jquery__("#" + this.selectedGroupIds[i]).text().trim();
                         if (text) {
@@ -10646,7 +10659,7 @@ var VenuemapComponent = (function () {
                     this.selectTimes();
                 }
                 else {
-                    this.errorModalDataService.sendToErrorModal('エラー', this.selectedStockTypeMaxQuantity + '席以下でご選択ください。');
+                    this.errorModalDataService.sendToErrorModal('エラー', this.viewSelectNum + '席以内でご選択ください。');
                 }
             }
             else {
@@ -11255,11 +11268,11 @@ var VenuemapComponent = (function () {
         }
         else {
             if (this.stockTypeIdFromList) {
-                this.stockTypeDataService.sendToQuentity(this.stockTypeIdFromList);
+                this.stockTypeDataService.sendToQuantity(this.stockTypeIdFromList);
             }
             else {
                 this.display = false;
-                this.countSelectService.sendToQuentity(this.countSelect);
+                this.countSelectService.sendToQuantity(this.countSelect);
                 this.quantity.seatReserveClick();
             }
             this.confirmStockType = false;
@@ -11381,8 +11394,8 @@ var VenuemapComponent = (function () {
                 break;
             }
         }
-        if (this.QuentityChecks.minLimitCheck(this.selectedStockTypeMinQuantity, quantity)) {
-            if (!this.QuentityChecks.salesUnitCheck(this.selectedProducts, quantity)) {
+        if (this.quantityCheckService.stockTypeQuantityMinLimitCheck(this.selectedStockTypeMinQuantity, quantity)) {
+            if (!this.quantityCheckService.salesUnitCheck(this.selectedProducts, quantity)) {
                 // 選択した座席を設定
                 this.dataUpdate();
                 this.seatStatus.seatReserve(this.performanceId, this.salesSegments[0].sales_segment_id, this.data).subscribe(function (response) {
@@ -11413,18 +11426,13 @@ var VenuemapComponent = (function () {
             else {
                 this.animationEnableService.sendToRoadFlag(false);
                 __WEBPACK_IMPORTED_MODULE_14_jquery__('.reserve').prop("disabled", false);
-                this.errorModalDataService.sendToErrorModal('エラー', this.QuentityChecks.salesUnitCheck(this.selectedProducts, quantity) + '席単位でご選択ください。');
+                this.errorModalDataService.sendToErrorModal('エラー', this.quantityCheckService.salesUnitCheck(this.selectedProducts, quantity) + '席単位でご選択ください。');
             }
         }
         else {
             this.animationEnableService.sendToRoadFlag(false);
             __WEBPACK_IMPORTED_MODULE_14_jquery__('.reserve').prop("disabled", false);
-            if (quantity) {
-                this.errorModalDataService.sendToErrorModal('エラー', this.selectedStockTypeMinQuantity + '席以上でご選択ください。');
-            }
-            else {
-                this.errorModalDataService.sendToErrorModal('エラー', 1 + '席以上でご選択ください。');
-            }
+            this.errorModalDataService.sendToErrorModal('エラー', this.selectedStockTypeMinQuantity + '席以上でご選択ください。');
         }
     };
     // 選択した座席をポストするためのデータに格納
@@ -11578,7 +11586,7 @@ var VenuemapComponent = (function () {
             history.go(backCount);
         }
     };
-    VenuemapComponent.ctorParameters = function () { return [{ type: __WEBPACK_IMPORTED_MODULE_0__angular_core__["ElementRef"] }, { type: __WEBPACK_IMPORTED_MODULE_1__angular_router__["a" /* ActivatedRoute */] }, { type: __WEBPACK_IMPORTED_MODULE_3__shared_services_performances_service__["a" /* PerformancesService */] }, { type: __WEBPACK_IMPORTED_MODULE_4__shared_services_seat_status_service__["a" /* SeatStatusService */] }, { type: __WEBPACK_IMPORTED_MODULE_5__shared_services_stock_types_service__["a" /* StockTypesService */] }, { type: __WEBPACK_IMPORTED_MODULE_6__shared_services_quentity_check_service__["a" /* QuentityCheckService */] }, { type: __WEBPACK_IMPORTED_MODULE_1__angular_router__["f" /* Router */] }, { type: __WEBPACK_IMPORTED_MODULE_2__reserve_by_quantity_reserve_by_quantity_component__["a" /* ReserveByQuantityComponent */] }, { type: __WEBPACK_IMPORTED_MODULE_7__shared_services_stock_type_data_service__["a" /* StockTypeDataService */] }, { type: __WEBPACK_IMPORTED_MODULE_8__shared_services_error_modal_data_service__["a" /* ErrorModalDataService */] }, { type: __WEBPACK_IMPORTED_MODULE_9__shared_services_animation_enable_service__["a" /* AnimationEnableService */] }, { type: __WEBPACK_IMPORTED_MODULE_10__shared_services_count_select_service__["a" /* CountSelectService */] }, { type: __WEBPACK_IMPORTED_MODULE_11__shared_services_smartPhone_check_service__["a" /* SmartPhoneCheckService */] }, { type: __WEBPACK_IMPORTED_MODULE_12__shared_services_reserve_by_seat_browser_back_service__["a" /* ReserveBySeatBrowserBackService */] }, { type: __WEBPACK_IMPORTED_MODULE_13__shared_services_seat_data_service__["a" /* SeatDataService */] }, { type: __WEBPACK_IMPORTED_MODULE_15_angular2_logger_core__["Logger"] }]; };
+    VenuemapComponent.ctorParameters = function () { return [{ type: __WEBPACK_IMPORTED_MODULE_0__angular_core__["ElementRef"] }, { type: __WEBPACK_IMPORTED_MODULE_1__angular_router__["a" /* ActivatedRoute */] }, { type: __WEBPACK_IMPORTED_MODULE_3__shared_services_performances_service__["a" /* PerformancesService */] }, { type: __WEBPACK_IMPORTED_MODULE_4__shared_services_seat_status_service__["a" /* SeatStatusService */] }, { type: __WEBPACK_IMPORTED_MODULE_5__shared_services_stock_types_service__["a" /* StockTypesService */] }, { type: __WEBPACK_IMPORTED_MODULE_6__shared_services_quantity_check_service__["a" /* QuantityCheckService */] }, { type: __WEBPACK_IMPORTED_MODULE_1__angular_router__["f" /* Router */] }, { type: __WEBPACK_IMPORTED_MODULE_2__reserve_by_quantity_reserve_by_quantity_component__["a" /* ReserveByQuantityComponent */] }, { type: __WEBPACK_IMPORTED_MODULE_7__shared_services_stock_type_data_service__["a" /* StockTypeDataService */] }, { type: __WEBPACK_IMPORTED_MODULE_8__shared_services_error_modal_data_service__["a" /* ErrorModalDataService */] }, { type: __WEBPACK_IMPORTED_MODULE_9__shared_services_animation_enable_service__["a" /* AnimationEnableService */] }, { type: __WEBPACK_IMPORTED_MODULE_10__shared_services_count_select_service__["a" /* CountSelectService */] }, { type: __WEBPACK_IMPORTED_MODULE_11__shared_services_smartPhone_check_service__["a" /* SmartPhoneCheckService */] }, { type: __WEBPACK_IMPORTED_MODULE_12__shared_services_reserve_by_seat_browser_back_service__["a" /* ReserveBySeatBrowserBackService */] }, { type: __WEBPACK_IMPORTED_MODULE_13__shared_services_seat_data_service__["a" /* SeatDataService */] }, { type: __WEBPACK_IMPORTED_MODULE_15_angular2_logger_core__["Logger"] }]; };
     return VenuemapComponent;
 }());
 //# sourceMappingURL=/srv/altair/master/ticketing/src/altair/app/ticketing/spa_cart/src/venue-map.component.js.map
@@ -11599,13 +11607,15 @@ var VenuemapComponent = (function () {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__shared_services_smartPhone_check_service__ = __webpack_require__("../../../../../src/app/shared/services/smartPhone-check.service.ts");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__shared_services_animation_enable_service__ = __webpack_require__("../../../../../src/app/shared/services/animation-enable.service.ts");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__shared_services_reserve_by_seat_browser_back_service__ = __webpack_require__("../../../../../src/app/shared/services/reserve-by-seat-browser-back.service.ts");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9_jquery__ = __webpack_require__("../../../../jquery/dist/jquery.js");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9_jquery___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_9_jquery__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10_rxjs_Rx__ = __webpack_require__("../../../../rxjs/Rx.js");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10_rxjs_Rx___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_10_rxjs_Rx__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__app_constants__ = __webpack_require__("../../../../../src/app/app.constants.ts");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_12_angular2_logger_core__ = __webpack_require__("../../../../angular2-logger/core.js");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_12_angular2_logger_core___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_12_angular2_logger_core__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__shared_services_quantity_check_service__ = __webpack_require__("../../../../../src/app/shared/services/quantity-check.service.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10_jquery__ = __webpack_require__("../../../../jquery/dist/jquery.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10_jquery___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_10_jquery__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_11_rxjs_Rx__ = __webpack_require__("../../../../rxjs/Rx.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_11_rxjs_Rx___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_11_rxjs_Rx__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_12__app_constants__ = __webpack_require__("../../../../../src/app/app.constants.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_13_angular2_logger_core__ = __webpack_require__("../../../../angular2-logger/core.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_13_angular2_logger_core___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_13_angular2_logger_core__);
+
 
 
 
@@ -11620,7 +11630,7 @@ var VenuemapComponent = (function () {
 
 
 var SelectProductComponent = (function () {
-    function SelectProductComponent(seatStatus, route, router, performances, stockTypes, selectProducts, errorModalDataService, smartPhoneCheckService, animationEnableService, reserveBySeatBrowserBackService, _logger) {
+    function SelectProductComponent(seatStatus, route, router, performances, stockTypes, selectProducts, errorModalDataService, smartPhoneCheckService, animationEnableService, reserveBySeatBrowserBackService, quantityCheckService, _logger) {
         this.seatStatus = seatStatus;
         this.route = route;
         this.router = router;
@@ -11631,6 +11641,7 @@ var SelectProductComponent = (function () {
         this.smartPhoneCheckService = smartPhoneCheckService;
         this.animationEnableService = animationEnableService;
         this.reserveBySeatBrowserBackService = reserveBySeatBrowserBackService;
+        this.quantityCheckService = quantityCheckService;
         this._logger = _logger;
         //確保座席商品　席受け,数受け
         this.products = [];
@@ -11664,7 +11675,7 @@ var SelectProductComponent = (function () {
     SelectProductComponent.prototype.ngOnInit = function () {
         var _this = this;
         var that = this;
-        this.timer = __WEBPACK_IMPORTED_MODULE_10_rxjs_Rx__["Observable"].timer(900000);
+        this.timer = __WEBPACK_IMPORTED_MODULE_11_rxjs_Rx__["Observable"].timer(900000);
         this.timer = this.timer.subscribe(function () {
             that.cancel();
             that.timeout();
@@ -11719,6 +11730,7 @@ var SelectProductComponent = (function () {
                     _this.month = startOn.getMonth() + 1;
                     _this.day = startOn.getDate();
                     _this.salesSegmentId = response.data.sales_segments[0].sales_segment_id;
+                    _this.productLimit = response.data.sales_segments[0].product_limit;
                     _this.pageTitle = _this.performance.performance_name;
                     _this.loadStockType();
                 }, function (error) {
@@ -11738,6 +11750,8 @@ var SelectProductComponent = (function () {
                 .subscribe(function (response) {
                 _this._logger.debug("get stockType(#" + _this.performanceId + ") success", response);
                 _this.stockType = response.data.stock_types[0];
+                _this.maxProductQuantity = response.data.stock_types[0].max_product_quantity;
+                _this.minProductQuantity = response.data.stock_types[0].min_product_quantity;
                 _this.initialSetting();
             }, function (error) {
                 _this._logger.error('stockType error', error);
@@ -11875,12 +11889,17 @@ var SelectProductComponent = (function () {
     //残席数・合計金額・選択済み座席数・±ボタン有効無効
     SelectProductComponent.prototype.recalculation = function () {
         var disabledNumber = 1;
+        var selectedQuantity = 0;
         this.assignedQuantity = 0;
         this.fee = 0;
         if (this.isQuantityOnly) {
             //+ボタン有効無効
             for (var x in this.products) {
-                if (this.unAssignedQuantity < this.salesUnitQuantitys[x]) {
+                selectedQuantity = 0;
+                if (this.selectedQuantitys[x]) {
+                    selectedQuantity = this.selectedQuantitys[x];
+                }
+                if (this.quantityCheckService.productMaxLimitCheck(this.products[x].max_product_quantity, this.salesUnitQuantitys[x], selectedQuantity, this.unAssignedQuantity)) {
                     addClass(x, "plus");
                 }
                 else {
@@ -11889,16 +11908,15 @@ var SelectProductComponent = (function () {
             }
             //-ボタン有効無効
             for (var x in this.products) {
-                if (this.selectedQuantitys[x] > 0) {
-                    if (disabledNumber > this.selectedQuantitys[x]) {
-                        addClass(x, "minus");
-                    }
-                    else {
-                        removeClass(x, "minus");
-                    }
+                selectedQuantity = 0;
+                if (this.selectedQuantitys[x]) {
+                    selectedQuantity = this.selectedQuantitys[x];
+                }
+                if (this.quantityCheckService.selectedQuantityMinLimitCheck(selectedQuantity)) {
+                    addClass(x, "minus");
                 }
                 else {
-                    addClass(x, "minus");
+                    removeClass(x, "minus");
                 }
             }
             //合計金額再計算
@@ -11920,7 +11938,11 @@ var SelectProductComponent = (function () {
             this.nextSeat = this.seatResult.seat_name[0];
             //+ボタン有効無効
             for (var x in this.products) {
-                if (this.unAssignedQuantity < this.salesUnitQuantitys[x]) {
+                selectedQuantity = 0;
+                if (this.selectedSeatResults[x]) {
+                    selectedQuantity = this.selectedSeatResults[x].length;
+                }
+                if (this.quantityCheckService.productMaxLimitCheck(this.products[x].max_product_quantity, this.salesUnitQuantitys[x], selectedQuantity, this.unAssignedQuantity)) {
                     addClass(x, "plus");
                 }
                 else {
@@ -11929,16 +11951,15 @@ var SelectProductComponent = (function () {
             }
             //-ボタン有効無効
             for (var x in this.products) {
+                selectedQuantity = 0;
                 if (this.selectedSeatResults[x]) {
-                    if (disabledNumber > this.selectedSeatResults[x].length) {
-                        addClass(x, "minus");
-                    }
-                    else {
-                        removeClass(x, "minus");
-                    }
+                    selectedQuantity = this.selectedSeatResults[x].length;
+                }
+                if (this.quantityCheckService.selectedQuantityMinLimitCheck(selectedQuantity)) {
+                    addClass(x, "minus");
                 }
                 else {
-                    addClass(x, "minus");
+                    removeClass(x, "minus");
                 }
             }
             //合計金額再計算
@@ -11962,12 +11983,12 @@ var SelectProductComponent = (function () {
         */
         function addClass(x, str) {
             if (str == "plus") {
-                __WEBPACK_IMPORTED_MODULE_9_jquery__('#plus-btn' + [x]).prop("disabled", true);
-                __WEBPACK_IMPORTED_MODULE_9_jquery__('#plus-btn' + [x]).addClass('disabled');
+                __WEBPACK_IMPORTED_MODULE_10_jquery__('#plus-btn' + [x]).prop("disabled", true);
+                __WEBPACK_IMPORTED_MODULE_10_jquery__('#plus-btn' + [x]).addClass('disabled');
             }
             else {
-                __WEBPACK_IMPORTED_MODULE_9_jquery__('#minus-btn' + [x]).prop("disabled", true);
-                __WEBPACK_IMPORTED_MODULE_9_jquery__('#minus-btn' + [x]).addClass('disabled');
+                __WEBPACK_IMPORTED_MODULE_10_jquery__('#minus-btn' + [x]).prop("disabled", true);
+                __WEBPACK_IMPORTED_MODULE_10_jquery__('#minus-btn' + [x]).addClass('disabled');
             }
         }
         /**
@@ -11977,12 +11998,12 @@ var SelectProductComponent = (function () {
         */
         function removeClass(x, str) {
             if (str == "plus") {
-                __WEBPACK_IMPORTED_MODULE_9_jquery__('#plus-btn' + [x]).prop("disabled", false);
-                __WEBPACK_IMPORTED_MODULE_9_jquery__('#plus-btn' + [x]).removeClass('disabled');
+                __WEBPACK_IMPORTED_MODULE_10_jquery__('#plus-btn' + [x]).prop("disabled", false);
+                __WEBPACK_IMPORTED_MODULE_10_jquery__('#plus-btn' + [x]).removeClass('disabled');
             }
             else {
-                __WEBPACK_IMPORTED_MODULE_9_jquery__('#minus-btn' + [x]).prop("disabled", false);
-                __WEBPACK_IMPORTED_MODULE_9_jquery__('#minus-btn' + [x]).removeClass('disabled');
+                __WEBPACK_IMPORTED_MODULE_10_jquery__('#minus-btn' + [x]).prop("disabled", false);
+                __WEBPACK_IMPORTED_MODULE_10_jquery__('#minus-btn' + [x]).removeClass('disabled');
             }
         }
     };
@@ -12017,7 +12038,7 @@ var SelectProductComponent = (function () {
     SelectProductComponent.prototype.purchase = function () {
         var _this = this;
         this.animationEnableService.sendToRoadFlag(true);
-        __WEBPACK_IMPORTED_MODULE_9_jquery__('#submit').prop("disabled", true);
+        __WEBPACK_IMPORTED_MODULE_10_jquery__('#submit').prop("disabled", true);
         var data;
         data = {
             "is_quantity_only": this.isQuantityOnly,
@@ -12080,7 +12101,8 @@ var SelectProductComponent = (function () {
                     }
                 }
             });
-            this.unassignedSeatCheck(this.unAssignedQuantity);
+            //商品選択チェック処理
+            this.checks();
         }
         else {
             var RequestQuantity_1 = 1;
@@ -12119,7 +12141,8 @@ var SelectProductComponent = (function () {
                     "quantity": RequestQuantity_1
                 });
             });
-            this.unassignedSeatCheck(this.seatResult.seat_name.length);
+            //商品選択チェック処理
+            this.checks();
         }
         //商品選択API
         if (!this.modalVisible) {
@@ -12134,33 +12157,93 @@ var SelectProductComponent = (function () {
                 }
                 else {
                     _this.animationEnableService.sendToRoadFlag(false);
-                    __WEBPACK_IMPORTED_MODULE_9_jquery__('#submit').prop("disabled", false);
+                    __WEBPACK_IMPORTED_MODULE_10_jquery__('#submit').prop("disabled", false);
                     _this._logger.debug('select product error', _this.selectProduct.data.results.reason);
                     _this.errorModalDataService.sendToErrorModal('エラー', '商品を選択できません。');
                 }
             }, function (error) {
                 _this.animationEnableService.sendToRoadFlag(false);
-                __WEBPACK_IMPORTED_MODULE_9_jquery__('#submit').prop("disabled", false);
+                __WEBPACK_IMPORTED_MODULE_10_jquery__('#submit').prop("disabled", false);
                 _this._logger.error('select product error', error);
             });
         }
     };
+    /**
+    * 商品選択API前の最終チェック
+    */
+    SelectProductComponent.prototype.checks = function () {
+        var that = this;
+        var modal_title = '選択エラー';
+        var modal_massage = null;
+        var selectedQuantity = 0;
+        var selectedProductQuantity = 0;
+        //未割当チェック
+        modal_massage = this.quantityCheckService.unassignedSeatCheck(this.unAssignedQuantity);
+        if (modal_massage) {
+            return callModal(modal_massage);
+        }
+        //選択した「商品数」を求める
+        for (var x in this.salesUnitQuantitys) {
+            if (this.isQuantityOnly) {
+                //数受け
+                if (this.selectedQuantitys[x]) {
+                    selectedProductQuantity += this.selectedQuantitys[x] / this.salesUnitQuantitys[x];
+                }
+            }
+            else {
+                //席受け
+                if (this.selectedSeatResults[x]) {
+                    selectedProductQuantity += this.selectedSeatResults[x].length / this.salesUnitQuantitys[x];
+                }
+            }
+        }
+        //席種単位での商品上限個数チェック
+        modal_massage = this.quantityCheckService.stockTypeProductMaxLimitCheck(this.productLimit, this.maxProductQuantity, selectedProductQuantity);
+        if (modal_massage) {
+            return callModal(modal_massage);
+        }
+        //席種単位での商品下限個数チェック
+        modal_massage = this.quantityCheckService.stockTypeProductMinLimitCheck(this.minProductQuantity, selectedProductQuantity);
+        if (modal_massage) {
+            return callModal(modal_massage);
+        }
+        //選択した「枚数」を求める
+        for (var x in this.products) {
+            selectedQuantity = 0;
+            if (this.isQuantityOnly) {
+                //数受け
+                if (this.selectedQuantitys[x]) {
+                    selectedQuantity = this.selectedQuantitys[x];
+                }
+            }
+            else {
+                //席受け
+                if (this.selectedSeatResults[x]) {
+                    selectedQuantity = this.selectedSeatResults[x].length;
+                }
+            }
+            //商品単位での商品下限個数チェック
+            modal_massage = this.quantityCheckService.productMinLimitCheck(this.products[x].min_product_quantity, selectedQuantity, this.products[x].product_name);
+            if (modal_massage) {
+                return callModal(modal_massage);
+            }
+            //必須選択商品チェック
+            modal_massage = this.quantityCheckService.mustBeChosenCheck(this.products[x].is_must_be_chosen, selectedQuantity, this.products[x].product_name);
+            if (modal_massage) {
+                return callModal(modal_massage);
+            }
+        }
+        function callModal(massage) {
+            that.modalVisible = true;
+            that.modalTitle = modal_title;
+            that.modalMessage = massage;
+            that.animationEnableService.sendToRoadFlag(false);
+            __WEBPACK_IMPORTED_MODULE_10_jquery__('#submit').prop("disabled", false);
+        }
+    };
     //トップへ遷移
     SelectProductComponent.prototype.onClick = function () {
-        location.href = "" + __WEBPACK_IMPORTED_MODULE_11__app_constants__["b" /* AppConstService */].PAGE_URL.TOP;
-    };
-    /**
-   * 合計枚数チェック
-   * @param  {number}  num 未割当枚数
-   */
-    SelectProductComponent.prototype.unassignedSeatCheck = function (num) {
-        if (num > 0) {
-            this.modalVisible = true;
-            this.modalTitle = '選択エラー';
-            this.modalMessage = '<p>未割当の座席があります。</p>';
-            this.animationEnableService.sendToRoadFlag(false);
-            __WEBPACK_IMPORTED_MODULE_9_jquery__('#submit').prop("disabled", false);
-        }
+        location.href = "" + __WEBPACK_IMPORTED_MODULE_12__app_constants__["b" /* AppConstService */].PAGE_URL.TOP;
     };
     /**
     * 整数か返す
@@ -12191,50 +12274,50 @@ var SelectProductComponent = (function () {
             var h = Math.max.apply(null, [document.body.clientHeight, document.body.scrollHeight, document.documentElement.scrollHeight, document.documentElement.clientHeight]);
             return h;
         }
-        __WEBPACK_IMPORTED_MODULE_9_jquery__(function () {
-            var windowWidth = __WEBPACK_IMPORTED_MODULE_9_jquery__(window).width();
+        __WEBPACK_IMPORTED_MODULE_10_jquery__(function () {
+            var windowWidth = __WEBPACK_IMPORTED_MODULE_10_jquery__(window).width();
             var windowSm = 768;
             if (windowWidth <= windowSm) {
                 //横幅768px以下のとき（つまりスマホ時）に行う処理を書く
-                __WEBPACK_IMPORTED_MODULE_9_jquery__(function () {
+                __WEBPACK_IMPORTED_MODULE_10_jquery__(function () {
                     var windowH;
                     var mainH;
                     var minus = 112;
                     var mainID = 'buySeatArea';
                     function heightSetting() {
-                        windowH = __WEBPACK_IMPORTED_MODULE_9_jquery__(window).height();
+                        windowH = __WEBPACK_IMPORTED_MODULE_10_jquery__(window).height();
                         mainH = windowH - minus;
                         if (that.isQuantityOnly) {
-                            __WEBPACK_IMPORTED_MODULE_9_jquery__('#' + mainID).height(bodyContentsHeight());
+                            __WEBPACK_IMPORTED_MODULE_10_jquery__('#' + mainID).height(bodyContentsHeight());
                         }
                     }
                     heightSetting();
-                    __WEBPACK_IMPORTED_MODULE_9_jquery__(window).resize(function () {
+                    __WEBPACK_IMPORTED_MODULE_10_jquery__(window).resize(function () {
                         heightSetting();
                     });
                 });
             }
             else {
                 //横幅768px超のとき（タブレット、PC）に行う処理を書く
-                __WEBPACK_IMPORTED_MODULE_9_jquery__(function () {
+                __WEBPACK_IMPORTED_MODULE_10_jquery__(function () {
                     var windowH;
                     var mainH;
                     var minus = 169;
                     var mainID = 'buySeatArea';
                     function heightSetting() {
-                        windowH = __WEBPACK_IMPORTED_MODULE_9_jquery__(window).height();
+                        windowH = __WEBPACK_IMPORTED_MODULE_10_jquery__(window).height();
                         mainH = windowH - minus;
-                        __WEBPACK_IMPORTED_MODULE_9_jquery__('#' + mainID).height(mainH + 'px');
+                        __WEBPACK_IMPORTED_MODULE_10_jquery__('#' + mainID).height(mainH + 'px');
                     }
                     heightSetting();
-                    __WEBPACK_IMPORTED_MODULE_9_jquery__(window).resize(function () {
+                    __WEBPACK_IMPORTED_MODULE_10_jquery__(window).resize(function () {
                         heightSetting();
                     });
                 });
             }
         });
     };
-    SelectProductComponent.ctorParameters = function () { return [{ type: __WEBPACK_IMPORTED_MODULE_1__shared_services_seat_status_service__["a" /* SeatStatusService */] }, { type: __WEBPACK_IMPORTED_MODULE_0__angular_router__["a" /* ActivatedRoute */] }, { type: __WEBPACK_IMPORTED_MODULE_0__angular_router__["f" /* Router */] }, { type: __WEBPACK_IMPORTED_MODULE_2__shared_services_performances_service__["a" /* PerformancesService */] }, { type: __WEBPACK_IMPORTED_MODULE_3__shared_services_stock_types_service__["a" /* StockTypesService */] }, { type: __WEBPACK_IMPORTED_MODULE_5__shared_services_select_product_service__["a" /* SelectProductService */] }, { type: __WEBPACK_IMPORTED_MODULE_4__shared_services_error_modal_data_service__["a" /* ErrorModalDataService */] }, { type: __WEBPACK_IMPORTED_MODULE_6__shared_services_smartPhone_check_service__["a" /* SmartPhoneCheckService */] }, { type: __WEBPACK_IMPORTED_MODULE_7__shared_services_animation_enable_service__["a" /* AnimationEnableService */] }, { type: __WEBPACK_IMPORTED_MODULE_8__shared_services_reserve_by_seat_browser_back_service__["a" /* ReserveBySeatBrowserBackService */] }, { type: __WEBPACK_IMPORTED_MODULE_12_angular2_logger_core__["Logger"] }]; };
+    SelectProductComponent.ctorParameters = function () { return [{ type: __WEBPACK_IMPORTED_MODULE_1__shared_services_seat_status_service__["a" /* SeatStatusService */] }, { type: __WEBPACK_IMPORTED_MODULE_0__angular_router__["a" /* ActivatedRoute */] }, { type: __WEBPACK_IMPORTED_MODULE_0__angular_router__["f" /* Router */] }, { type: __WEBPACK_IMPORTED_MODULE_2__shared_services_performances_service__["a" /* PerformancesService */] }, { type: __WEBPACK_IMPORTED_MODULE_3__shared_services_stock_types_service__["a" /* StockTypesService */] }, { type: __WEBPACK_IMPORTED_MODULE_5__shared_services_select_product_service__["a" /* SelectProductService */] }, { type: __WEBPACK_IMPORTED_MODULE_4__shared_services_error_modal_data_service__["a" /* ErrorModalDataService */] }, { type: __WEBPACK_IMPORTED_MODULE_6__shared_services_smartPhone_check_service__["a" /* SmartPhoneCheckService */] }, { type: __WEBPACK_IMPORTED_MODULE_7__shared_services_animation_enable_service__["a" /* AnimationEnableService */] }, { type: __WEBPACK_IMPORTED_MODULE_8__shared_services_reserve_by_seat_browser_back_service__["a" /* ReserveBySeatBrowserBackService */] }, { type: __WEBPACK_IMPORTED_MODULE_9__shared_services_quantity_check_service__["a" /* QuantityCheckService */] }, { type: __WEBPACK_IMPORTED_MODULE_13_angular2_logger_core__["Logger"] }]; };
     return SelectProductComponent;
 }());
 //# sourceMappingURL=/srv/altair/master/ticketing/src/altair/app/ticketing/spa_cart/src/select-product.component.js.map
@@ -12494,13 +12577,13 @@ var ApiBase = (function (_super) {
 
 var CountSelectService = (function () {
     function CountSelectService() {
-        this.toQuentityCountSelect = new __WEBPACK_IMPORTED_MODULE_0_rxjs_Subject__["Subject"]();
+        this.toQuantityCountSelect = new __WEBPACK_IMPORTED_MODULE_0_rxjs_Subject__["Subject"]();
         // Observable streams
-        this.toQuentityData$ = this.toQuentityCountSelect.asObservable();
+        this.toQuantityData$ = this.toQuantityCountSelect.asObservable();
     }
     // Service message commands
-    CountSelectService.prototype.sendToQuentity = function (countSelect) {
-        this.toQuentityCountSelect.next(countSelect);
+    CountSelectService.prototype.sendToQuantity = function (countSelect) {
+        this.toQuantityCountSelect.next(countSelect);
     };
     CountSelectService.ctorParameters = function () { return []; };
     return CountSelectService;
@@ -12519,20 +12602,12 @@ var CountSelectService = (function () {
 
 var ErrorModalDataService = (function () {
     function ErrorModalDataService() {
-        //private toQuentityDataStockTypeId = new Subject<number>();
-        //private errorDisplay = new Subject<boolean>();
         this.errorTitle = new __WEBPACK_IMPORTED_MODULE_0_rxjs_Subject__["Subject"]();
         this.errorDetail = new __WEBPACK_IMPORTED_MODULE_0_rxjs_Subject__["Subject"]();
-        // Observable streams
-        //public toQuentityData$= this.toQuentityDataStockTypeId.asObservable();
-        //public errorDisplay$= this.errorDisplay.asObservable();
         this.errorTitle$ = this.errorTitle.asObservable();
         this.errorDetail$ = this.errorDetail.asObservable();
     }
-    // Service message commands
     ErrorModalDataService.prototype.sendToErrorModal = function (title, detail) {
-        // this.toQuentityDataStockTypeId.next(stockTypeId);
-        //this.errorDisplay.next(true);
         title = title ? title : 'サーバーと通信できません。';
         this.errorTitle.next(title);
         detail = detail ? detail : 'インターネットに未接続または通信が不安定な可能性があります。通信環境の良いところで操作をやり直すかページを再読込してください。';
@@ -12600,81 +12675,181 @@ var PerformancesService = (function (_super) {
 
 /***/ }),
 
-/***/ "../../../../../src/app/shared/services/quentity-check.service.ts":
+/***/ "../../../../../src/app/shared/services/quantity-check.service.ts":
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return QuentityCheckService; });
-var QuentityCheckService = (function () {
-    function QuentityCheckService() {
-        this.defaultMaxQuantity = 14;
-        this.defaultMinQuantity = 1;
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return QuantityCheckService; });
+var QuantityCheckService = (function () {
+    function QuantityCheckService() {
     }
     /**
-   * 購入上限枚数チェックを行います
-   *
-   * @param  {number} maxQuantity - 最大購入数
-   * @param  {number} performanceOrderLimit - 購入上限枚数:perormance.order-limit
-   * @param  {number} eventOrderLimit - 購入上限枚数:event.order-limit
-   * @param  {number} quantity - 枚数
-   * @return {boolean}
-   */
-    QuentityCheckService.prototype.maxLimitCheck = function (maxQuantity, performanceOrderLimit, eventOrderLimit, quantity) {
-        if (maxQuantity) {
-            if (quantity > maxQuantity) {
-                return false;
-            }
-        }
-        else {
-            if (performanceOrderLimit) {
-                if (quantity > performanceOrderLimit) {
+  * 席種単位での購入上限枚数チェック
+  *
+  * @param  {number} upper_limit - 販売区分の購入上限枚数:salesSagment.upper_limit
+  * @param  {number} max_quantity - 席種毎の最大購入枚数:stockType.max_quantity
+  * @param  {number} quantity - 枚数
+  * @return {boolean}
+  */
+    QuantityCheckService.prototype.stockTypeQuantityMaxLimitCheck = function (upper_limit, max_quantity, quantity) {
+        //両方ある場合は設定枚数の少ない方で
+        //どちらもない場合はチェックなし
+        if (upper_limit && max_quantity) {
+            if (upper_limit < max_quantity) {
+                if (upper_limit < quantity) {
                     return false;
                 }
             }
             else {
-                if (eventOrderLimit) {
-                    if (quantity > eventOrderLimit) {
-                        return false;
-                    }
+                if (max_quantity < quantity) {
+                    return false;
                 }
-                else {
-                    if (quantity > this.defaultMaxQuantity) {
-                        return false;
-                    }
-                }
+            }
+        }
+        else if (upper_limit) {
+            if (upper_limit < quantity) {
+                return false;
+            }
+        }
+        else if (max_quantity) {
+            if (max_quantity < quantity) {
+                return false;
             }
         }
         return true;
     };
     /**
-  * 購入下限枚数チェックを行います
+  * 席種単位での購入下限枚数チェック
   *
-  * @param  {number} minQuantity - 最小購入数
+  * @param  {number} min_quantity - 席種毎の最小購入枚数:stockType.min_quantity
   * @param  {number} quantity - 枚数
   * @return {boolean}
   */
-    QuentityCheckService.prototype.minLimitCheck = function (minQuantity, quantity) {
-        if (minQuantity) {
-            if (quantity < minQuantity) {
+    QuantityCheckService.prototype.stockTypeQuantityMinLimitCheck = function (min_quantity, quantity) {
+        //席種毎の最小購入枚数が無い場合はデフォルト１でチェック
+        var DEFAULT_MIN_NUMBER = 1;
+        if (min_quantity) {
+            if (min_quantity > quantity) {
                 return false;
             }
         }
         else {
-            if (quantity < this.defaultMinQuantity) {
+            if (DEFAULT_MIN_NUMBER > quantity) {
                 return false;
             }
         }
         return true;
     };
     /**
-  * 販売単位のチェックを行います
+  * 席種単位での商品上限個数チェック
+  * @param  {number} upper_limit - 販売区分の購入上限枚数:salesSagment.upper_limit
+  * @param  {number} max_product_quantity - 席種毎の最大購入数:stockType.max_product_quantity
+  * @param  {number} product_quantity - 選択した商品数
+  * @return {string}
+  */
+    QuantityCheckService.prototype.stockTypeProductMaxLimitCheck = function (upper_limit, max_product_quantity, product_quantity) {
+        //両方ある場合は設定枚数の少ない方で
+        //どちらもない場合はチェックなし
+        if (upper_limit && max_product_quantity) {
+            if (upper_limit < max_product_quantity) {
+                if (upper_limit < product_quantity) {
+                    return '<p>商品は合計' + upper_limit + '個以内でご選択ください。</p>';
+                }
+            }
+            else {
+                if (max_product_quantity < product_quantity) {
+                    return '<p>商品は合計' + max_product_quantity + '個以内でご選択ください。</p>';
+                }
+            }
+        }
+        else if (upper_limit) {
+            if (upper_limit < product_quantity) {
+                return '<p>商品は合計' + upper_limit + '個以内でご選択ください。</p>';
+            }
+        }
+        else if (max_product_quantity) {
+            if (max_product_quantity < product_quantity) {
+                return '<p>商品は合計' + max_product_quantity + '個以内でご選択ください。</p>';
+            }
+        }
+        return null;
+    };
+    /**
+  * 席種単位での商品下限個数チェック
+  * @param  {number} min_product_quantity - 席種毎の最大購入数:stockType.min_product_quantity
+  * @param  {number} product_quantity - 選択した商品数
+  * @return {string}
+  */
+    QuantityCheckService.prototype.stockTypeProductMinLimitCheck = function (min_product_quantity, product_quantity) {
+        //設定がない場合はチェックなし。
+        if (min_product_quantity) {
+            if (min_product_quantity > product_quantity) {
+                return '<p>商品は合計' + min_product_quantity + '個以上でご選択ください。</p>';
+            }
+        }
+        return null;
+    };
+    /**
+  * 商品単位での商品上限個数チェック+残席数に対する販売単位のチェックを行います
+  * @param  {number} max_product_quantity - 商品の商品購入上限数:Product.max_product_quantity
+  * @param  {number} sales_unit_quantity - 販売単位
+  * @param  {number} selected_quantity - 選択座席数
+  * @param  {number} un_selected_quantity - 未選択座席数
+  * @return {boolean}
+  */
+    QuantityCheckService.prototype.productMaxLimitCheck = function (max_product_quantity, sales_unit_quantity, selected_quantity, un_selected_quantity) {
+        var max_purchase_possible_quantity = null;
+        //残席数に対する販売単位のチェック
+        if (un_selected_quantity < sales_unit_quantity) {
+            return true;
+        }
+        //設定が無い場合はチェックなし
+        if (max_product_quantity) {
+            //最大購入可能枚数を求める
+            max_purchase_possible_quantity = max_product_quantity * sales_unit_quantity;
+            if (max_purchase_possible_quantity <= selected_quantity) {
+                return true;
+            }
+        }
+        return false;
+    };
+    /**
+  * 商品単位での商品下限個数チェック
+  * @param  {number} min_product_quantity - 商品の商品購入下限数:Product.min_product_quantity
+  * @param  {number} selected_quantity - 選択座席数
+  * @param  {string} product_name - 商品名
+  * @return {string}
+  */
+    QuantityCheckService.prototype.productMinLimitCheck = function (min_product_quantity, selected_quantity, product_name) {
+        //設定が無い場合はチェックなし
+        if (min_product_quantity) {
+            if (min_product_quantity > selected_quantity) {
+                return '<p>' + product_name + 'は' + min_product_quantity + '個以上でご選択ください。</p>';
+            }
+        }
+        return null;
+    };
+    /**
+  * 必須選択商品チェック
+  * @param  {boolean}  must_be_chosen - 必須選択
+  * @param  {number}   selected_quantity - 選択座席数
+  * @param  {string}   product_name - 商品名
+  * @return {string}
+  */
+    QuantityCheckService.prototype.mustBeChosenCheck = function (must_be_chosen, selected_quantity, product_name) {
+        if (must_be_chosen && !selected_quantity) {
+            return '<p>' + product_name + 'を1個以上ご選択ください。</p>';
+        }
+        return null;
+    };
+    /**
+  * 販売単位チェック
   * 席種の中でその選択席数がその販売単位の倍数ではない場合、エラーとする。
   * @param  {IProducts[]} products - 商品情報
   * @param  {number} quantity - 選択座席数
   * @return {number}
   */
-    QuentityCheckService.prototype.salesUnitCheck = function (products, quantity) {
-        var FALSE_NUMBER = 1;
+    QuantityCheckService.prototype.salesUnitCheck = function (products, quantity) {
         var salesUnitNumber = null;
         var result = null;
         for (var i = 0, len = products.length; i < len; i++) {
@@ -12694,11 +12869,11 @@ var QuentityCheckService = (function () {
         return result;
     };
     /**
-   * 枚数選択表示用配列作成、販売単位1を削除する関数
-   * @param  {IProducts[]} products - 商品情報
-   * @return {number[]}
-   */
-    QuentityCheckService.prototype.eraseOne = function (products) {
+  * 枚数選択表示用配列作成、販売単位1を削除する関数
+  * @param  {IProducts[]} products - 商品情報
+  * @return {number[]}
+  */
+    QuantityCheckService.prototype.eraseOne = function (products) {
         var ERASE_NUMBER = 1;
         var result = [];
         for (var i = 0, len = products.length; i < len; i++) {
@@ -12718,9 +12893,34 @@ var QuentityCheckService = (function () {
         }
         return result;
     };
-    return QuentityCheckService;
+    /**
+  * 残席数に対する販売単位のチェックを行います
+  
+  * @param  {number} selected_quantity - 選択座席数
+  * @return {boolean}
+  */
+    QuantityCheckService.prototype.selectedQuantityMinLimitCheck = function (selected_quantity) {
+        var FALSE_NUMBER = 1;
+        //残席数に対する販売単位のチェック
+        if (FALSE_NUMBER > selected_quantity) {
+            return true;
+        }
+        return false;
+    };
+    /**
+  * 未割当枚数チェック
+  * @param  {number}  num - 未割当枚数
+  * @return {string}
+  */
+    QuantityCheckService.prototype.unassignedSeatCheck = function (num) {
+        if (num > 0) {
+            return '<p>未割当の座席があります。</p>';
+        }
+        return null;
+    };
+    return QuantityCheckService;
 }());
-//# sourceMappingURL=/srv/altair/master/ticketing/src/altair/app/ticketing/spa_cart/src/quentity-check.service.js.map
+//# sourceMappingURL=/srv/altair/master/ticketing/src/altair/app/ticketing/spa_cart/src/quantity-check.service.js.map
 
 /***/ }),
 
@@ -13049,17 +13249,17 @@ var SmartPhoneCheckService = (function () {
 
 var StockTypeDataService = (function () {
     function StockTypeDataService() {
-        this.toQuentityDataStockTypeId = new __WEBPACK_IMPORTED_MODULE_0_rxjs_Subject__["Subject"]();
+        this.toQuantityDataStockTypeId = new __WEBPACK_IMPORTED_MODULE_0_rxjs_Subject__["Subject"]();
         this.toSeatListDisplayFlag = new __WEBPACK_IMPORTED_MODULE_0_rxjs_Subject__["Subject"]();
         this.toIsSearchFlag = new __WEBPACK_IMPORTED_MODULE_0_rxjs_Subject__["Subject"]();
         // Observable streams
-        this.toQuentityData$ = this.toQuentityDataStockTypeId.asObservable();
+        this.toQuantityData$ = this.toQuantityDataStockTypeId.asObservable();
         this.toSeatListFlag$ = this.toSeatListDisplayFlag.asObservable();
         this.toIsSearchFlag$ = this.toIsSearchFlag.asObservable();
     }
     // Service message commands
-    StockTypeDataService.prototype.sendToQuentity = function (stockTypeId) {
-        this.toQuentityDataStockTypeId.next(stockTypeId);
+    StockTypeDataService.prototype.sendToQuantity = function (stockTypeId) {
+        this.toQuantityDataStockTypeId.next(stockTypeId);
     };
     StockTypeDataService.prototype.sendToSeatListFlag = function (flag) {
         this.toSeatListDisplayFlag.next(flag);
@@ -13198,8 +13398,10 @@ module.exports = __webpack_require__("../../../../../src/main.ts");
 var _rollbarConfig = {
   accessToken: "9b73abba03a846dcb6bb06333d7c0b33",
   captureUncaught: true,
+  captureUnhandledRejections: true,
+  autoInstrument: true,
   payload: {
     environment: location.protocol=="https:" ? location.hostname.split(".")[1] : "unknown"
   }
 };
-!function(r){function e(t){if(o[t])return o[t].exports;var n=o[t]={exports:{},id:t,loaded:!1};return r[t].call(n.exports,n,n.exports,e),n.loaded=!0,n.exports}var o={};return e.m=r,e.c=o,e.p="",e(0)}([function(r,e,o){"use strict";var t=o(1).Rollbar,n=o(2);_rollbarConfig.rollbarJsUrl=_rollbarConfig.rollbarJsUrl||"https://d37gvrvc0wt4s1.cloudfront.net/js/v1.9/rollbar.min.js";var a=t.init(window,_rollbarConfig),i=n(a,_rollbarConfig);a.loadFull(window,document,!_rollbarConfig.async,_rollbarConfig,i)},function(r,e){"use strict";function o(r){return function(){try{return r.apply(this,arguments)}catch(e){try{console.error("[Rollbar]: Internal error",e)}catch(o){}}}}function t(r,e,o){window._rollbarWrappedError&&(o[4]||(o[4]=window._rollbarWrappedError),o[5]||(o[5]=window._rollbarWrappedError._rollbarContext),window._rollbarWrappedError=null),r.uncaughtError.apply(r,o),e&&e.apply(window,o)}function n(r){var e=function(){var e=Array.prototype.slice.call(arguments,0);t(r,r._rollbarOldOnError,e)};return e.belongsToShim=!0,e}function a(r){this.shimId=++c,this.notifier=null,this.parentShim=r,this._rollbarOldOnError=null}function i(r){var e=a;return o(function(){if(this.notifier)return this.notifier[r].apply(this.notifier,arguments);var o=this,t="scope"===r;t&&(o=new e(this));var n=Array.prototype.slice.call(arguments,0),a={shim:o,method:r,args:n,ts:new Date};return window._rollbarShimQueue.push(a),t?o:void 0})}function l(r,e){if(e.hasOwnProperty&&e.hasOwnProperty("addEventListener")){var o=e.addEventListener;e.addEventListener=function(e,t,n){o.call(this,e,r.wrap(t),n)};var t=e.removeEventListener;e.removeEventListener=function(r,e,o){t.call(this,r,e&&e._wrapped?e._wrapped:e,o)}}}var c=0;a.init=function(r,e){var t=e.globalAlias||"Rollbar";if("object"==typeof r[t])return r[t];r._rollbarShimQueue=[],r._rollbarWrappedError=null,e=e||{};var i=new a;return o(function(){if(i.configure(e),e.captureUncaught){i._rollbarOldOnError=r.onerror,r.onerror=n(i);var o,a,c="EventTarget,Window,Node,ApplicationCache,AudioTrackList,ChannelMergerNode,CryptoOperation,EventSource,FileReader,HTMLUnknownElement,IDBDatabase,IDBRequest,IDBTransaction,KeyOperation,MediaController,MessagePort,ModalWindow,Notification,SVGElementInstance,Screen,TextTrack,TextTrackCue,TextTrackList,WebSocket,WebSocketWorker,Worker,XMLHttpRequest,XMLHttpRequestEventTarget,XMLHttpRequestUpload".split(",");for(o=0;o<c.length;++o)a=c[o],r[a]&&r[a].prototype&&l(i,r[a].prototype)}return e.captureUnhandledRejections&&(i._unhandledRejectionHandler=function(r){var e=r.reason,o=r.promise,t=r.detail;!e&&t&&(e=t.reason,o=t.promise),i.unhandledRejection(e,o)},r.addEventListener("unhandledrejection",i._unhandledRejectionHandler)),r[t]=i,i})()},a.prototype.loadFull=function(r,e,t,n,a){var i=function(){var e;if(void 0===r._rollbarPayloadQueue){var o,t,n,i;for(e=new Error("rollbar.js did not load");o=r._rollbarShimQueue.shift();)for(n=o.args,i=0;i<n.length;++i)if(t=n[i],"function"==typeof t){t(e);break}}"function"==typeof a&&a(e)},l=!1,c=e.createElement("script"),p=e.getElementsByTagName("script")[0],d=p.parentNode;c.crossOrigin="",c.src=n.rollbarJsUrl,c.async=!t,c.onload=c.onreadystatechange=o(function(){if(!(l||this.readyState&&"loaded"!==this.readyState&&"complete"!==this.readyState)){c.onload=c.onreadystatechange=null;try{d.removeChild(c)}catch(r){}l=!0,i()}}),d.insertBefore(c,p)},a.prototype.wrap=function(r,e){try{var o;if(o="function"==typeof e?e:function(){return e||{}},"function"!=typeof r)return r;if(r._isWrap)return r;if(!r._wrapped){r._wrapped=function(){try{return r.apply(this,arguments)}catch(e){throw"string"==typeof e&&(e=new String(e)),e._rollbarContext=o()||{},e._rollbarContext._wrappedSource=r.toString(),window._rollbarWrappedError=e,e}},r._wrapped._isWrap=!0;for(var t in r)r.hasOwnProperty(t)&&(r._wrapped[t]=r[t])}return r._wrapped}catch(n){return r}};for(var p="log,debug,info,warn,warning,error,critical,global,configure,scope,uncaughtError,unhandledRejection".split(","),d=0;d<p.length;++d)a.prototype[p[d]]=i(p[d]);r.exports={Rollbar:a,_rollbarWindowOnError:t}},function(r,e){"use strict";r.exports=function(r,e){return function(o){if(!o&&!window._rollbarInitialized){var t=window.RollbarNotifier,n=e||{},a=n.globalAlias||"Rollbar",i=window.Rollbar.init(n,r);i._processShimQueue(window._rollbarShimQueue||[]),window[a]=i,window._rollbarInitialized=!0,t.processPayloads()}}}}]);
+!function(r){function o(n){if(e[n])return e[n].exports;var t=e[n]={exports:{},id:n,loaded:!1};return r[n].call(t.exports,t,t.exports,o),t.loaded=!0,t.exports}var e={};return o.m=r,o.c=e,o.p="",o(0)}([function(r,o,e){"use strict";var n=e(1),t=e(4);_rollbarConfig=_rollbarConfig||{},_rollbarConfig.rollbarJsUrl=_rollbarConfig.rollbarJsUrl||"https://cdnjs.cloudflare.com/ajax/libs/rollbar.js/2.3.7/rollbar.min.js",_rollbarConfig.async=void 0===_rollbarConfig.async||_rollbarConfig.async;var a=n.setupShim(window,_rollbarConfig),l=t(_rollbarConfig);window.rollbar=n.Rollbar,a.loadFull(window,document,!_rollbarConfig.async,_rollbarConfig,l)},function(r,o,e){"use strict";function n(r){return function(){try{return r.apply(this,arguments)}catch(r){try{console.error("[Rollbar]: Internal error",r)}catch(r){}}}}function t(r,o){this.options=r,this._rollbarOldOnError=null;var e=s++;this.shimId=function(){return e},window&&window._rollbarShims&&(window._rollbarShims[e]={handler:o,messages:[]})}function a(r,o){var e=o.globalAlias||"Rollbar";if("object"==typeof r[e])return r[e];r._rollbarShims={},r._rollbarWrappedError=null;var t=new p(o);return n(function(){o.captureUncaught&&(t._rollbarOldOnError=r.onerror,i.captureUncaughtExceptions(r,t,!0),i.wrapGlobals(r,t,!0)),o.captureUnhandledRejections&&i.captureUnhandledRejections(r,t,!0);var n=o.autoInstrument;return o.enabled!==!1&&(void 0===n||n===!0||"object"==typeof n&&n.network)&&r.addEventListener&&(r.addEventListener("load",t.captureLoad.bind(t)),r.addEventListener("DOMContentLoaded",t.captureDomContentLoaded.bind(t))),r[e]=t,t})()}function l(r){return n(function(){var o=this,e=Array.prototype.slice.call(arguments,0),n={shim:o,method:r,args:e,ts:new Date};window._rollbarShims[this.shimId()].messages.push(n)})}var i=e(2),s=0,d=e(3),c=function(r,o){return new t(r,o)},p=d.bind(null,c);t.prototype.loadFull=function(r,o,e,t,a){var l=function(){var o;if(void 0===r._rollbarDidLoad){o=new Error("rollbar.js did not load");for(var e,n,t,l,i=0;e=r._rollbarShims[i++];)for(e=e.messages||[];n=e.shift();)for(t=n.args||[],i=0;i<t.length;++i)if(l=t[i],"function"==typeof l){l(o);break}}"function"==typeof a&&a(o)},i=!1,s=o.createElement("script"),d=o.getElementsByTagName("script")[0],c=d.parentNode;s.crossOrigin="",s.src=t.rollbarJsUrl,e||(s.async=!0),s.onload=s.onreadystatechange=n(function(){if(!(i||this.readyState&&"loaded"!==this.readyState&&"complete"!==this.readyState)){s.onload=s.onreadystatechange=null;try{c.removeChild(s)}catch(r){}i=!0,l()}}),c.insertBefore(s,d)},t.prototype.wrap=function(r,o,e){try{var n;if(n="function"==typeof o?o:function(){return o||{}},"function"!=typeof r)return r;if(r._isWrap)return r;if(!r._rollbar_wrapped&&(r._rollbar_wrapped=function(){e&&"function"==typeof e&&e.apply(this,arguments);try{return r.apply(this,arguments)}catch(e){var o=e;throw"string"==typeof o&&(o=new String(o)),o._rollbarContext=n()||{},o._rollbarContext._wrappedSource=r.toString(),window._rollbarWrappedError=o,o}},r._rollbar_wrapped._isWrap=!0,r.hasOwnProperty))for(var t in r)r.hasOwnProperty(t)&&(r._rollbar_wrapped[t]=r[t]);return r._rollbar_wrapped}catch(o){return r}};for(var u="log,debug,info,warn,warning,error,critical,global,configure,handleUncaughtException,handleUnhandledRejection,captureEvent,captureDomContentLoaded,captureLoad".split(","),f=0;f<u.length;++f)t.prototype[u[f]]=l(u[f]);r.exports={setupShim:a,Rollbar:p}},function(r,o){"use strict";function e(r,o,e){if(r){var t;"function"==typeof o._rollbarOldOnError?t=o._rollbarOldOnError:r.onerror&&!r.onerror.belongsToShim&&(t=r.onerror,o._rollbarOldOnError=t);var a=function(){var e=Array.prototype.slice.call(arguments,0);n(r,o,t,e)};a.belongsToShim=e,r.onerror=a}}function n(r,o,e,n){r._rollbarWrappedError&&(n[4]||(n[4]=r._rollbarWrappedError),n[5]||(n[5]=r._rollbarWrappedError._rollbarContext),r._rollbarWrappedError=null),o.handleUncaughtException.apply(o,n),e&&e.apply(r,n)}function t(r,o,e){if(r){"function"==typeof r._rollbarURH&&r._rollbarURH.belongsToShim&&r.removeEventListener("unhandledrejection",r._rollbarURH);var n=function(r){var e,n,t;try{e=r.reason}catch(r){e=void 0}try{n=r.promise}catch(r){n="[unhandledrejection] error getting `promise` from event"}try{t=r.detail,!e&&t&&(e=t.reason,n=t.promise)}catch(r){t="[unhandledrejection] error getting `detail` from event"}e||(e="[unhandledrejection] error getting `reason` from event"),o&&o.handleUnhandledRejection&&o.handleUnhandledRejection(e,n)};n.belongsToShim=e,r._rollbarURH=n,r.addEventListener("unhandledrejection",n)}}function a(r,o,e){if(r){var n,t,a="EventTarget,Window,Node,ApplicationCache,AudioTrackList,ChannelMergerNode,CryptoOperation,EventSource,FileReader,HTMLUnknownElement,IDBDatabase,IDBRequest,IDBTransaction,KeyOperation,MediaController,MessagePort,ModalWindow,Notification,SVGElementInstance,Screen,TextTrack,TextTrackCue,TextTrackList,WebSocket,WebSocketWorker,Worker,XMLHttpRequest,XMLHttpRequestEventTarget,XMLHttpRequestUpload".split(",");for(n=0;n<a.length;++n)t=a[n],r[t]&&r[t].prototype&&l(o,r[t].prototype,e)}}function l(r,o,e){if(o.hasOwnProperty&&o.hasOwnProperty("addEventListener")){for(var n=o.addEventListener;n._rollbarOldAdd&&n.belongsToShim;)n=n._rollbarOldAdd;var t=function(o,e,t){n.call(this,o,r.wrap(e),t)};t._rollbarOldAdd=n,t.belongsToShim=e,o.addEventListener=t;for(var a=o.removeEventListener;a._rollbarOldRemove&&a.belongsToShim;)a=a._rollbarOldRemove;var l=function(r,o,e){a.call(this,r,o&&o._rollbar_wrapped||o,e)};l._rollbarOldRemove=a,l.belongsToShim=e,o.removeEventListener=l}}r.exports={captureUncaughtExceptions:e,captureUnhandledRejections:t,wrapGlobals:a}},function(r,o){"use strict";function e(r,o){this.impl=r(o,this),this.options=o,n(e.prototype)}function n(r){for(var o=function(r){return function(){var o=Array.prototype.slice.call(arguments,0);if(this.impl[r])return this.impl[r].apply(this.impl,o)}},e="log,debug,info,warn,warning,error,critical,global,configure,handleUncaughtException,handleUnhandledRejection,_createItem,wrap,loadFull,shimId,captureEvent,captureDomContentLoaded,captureLoad".split(","),n=0;n<e.length;n++)r[e[n]]=o(e[n])}e.prototype._swapAndProcessMessages=function(r,o){this.impl=r(this.options);for(var e,n,t;e=o.shift();)n=e.method,t=e.args,this[n]&&"function"==typeof this[n]&&("captureDomContentLoaded"===n||"captureLoad"===n?this[n].apply(this,[t[0],e.ts]):this[n].apply(this,t));return this},r.exports=e},function(r,o){"use strict";r.exports=function(r){return function(o){if(!o&&!window._rollbarInitialized){r=r||{};for(var e,n,t=r.globalAlias||"Rollbar",a=window.rollbar,l=function(r){return new a(r)},i=0;e=window._rollbarShims[i++];)n||(n=e.handler),e.handler._swapAndProcessMessages(l,e.messages);window[t]=n,window._rollbarInitialized=!0}}}}]);
