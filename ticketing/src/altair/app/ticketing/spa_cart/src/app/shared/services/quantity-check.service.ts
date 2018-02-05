@@ -231,12 +231,12 @@ export class QuantityCheckService {
   /**
 * 未割当枚数チェック
 * @param  {number}  num - 未割当枚数
-* @return {boolean}
+* @return {string}
 */
   unassignedSeatCheck(num: number) {
     if (num > 0) {
-      return true;
+      return '<p>未割当の座席があります。</p>';
     }
-    return false
+    return null;
   }
 }

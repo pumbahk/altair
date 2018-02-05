@@ -604,17 +604,15 @@ export class SelectProductComponent implements OnInit {
   checks() {
     const that = this;
     let modal_title: string = '選択エラー';
-    let modal_massage: string;
+    let modal_massage: string = null;
     let selectedQuantity: number = 0;
     let selectedProductQuantity: number = 0;
 
     //未割当チェック
-    if (this.quantityCheckService.unassignedSeatCheck(this.unAssignedQuantity)) {
-      modal_massage = '<p>未割当の座席があります。</p>';
-      callModal(modal_massage);
-      return;
+    modal_massage = this.quantityCheckService.unassignedSeatCheck(this.unAssignedQuantity);
+    if (modal_massage) {
+      return callModal(modal_massage);
     }
-
     //選択した「商品数」を求める
     for (let x in this.salesUnitQuantitys) {
       if (this.isQuantityOnly) {
@@ -630,18 +628,15 @@ export class SelectProductComponent implements OnInit {
       }
     }
     //席種単位での商品上限個数チェック
-    if (this.quantityCheckService.stockTypeProductMaxLimitCheck(this.productLimit, this.maxProductQuantity, selectedProductQuantity)) {
-      modal_massage = this.quantityCheckService.stockTypeProductMaxLimitCheck(this.productLimit, this.maxProductQuantity, selectedProductQuantity);
-      callModal(modal_massage);
-      return;
+    modal_massage = this.quantityCheckService.stockTypeProductMaxLimitCheck(this.productLimit, this.maxProductQuantity, selectedProductQuantity);
+    if (modal_massage) {
+      return callModal(modal_massage);
     }
     //席種単位での商品下限個数チェック
-    if (this.quantityCheckService.stockTypeProductMinLimitCheck(this.minProductQuantity, selectedProductQuantity)) {
-      modal_massage = this.quantityCheckService.stockTypeProductMinLimitCheck(this.minProductQuantity, selectedProductQuantity);
-      callModal(modal_massage);
-      return;
+    modal_massage = this.quantityCheckService.stockTypeProductMinLimitCheck(this.minProductQuantity, selectedProductQuantity);
+    if (modal_massage) {
+      return callModal(modal_massage);
     }
-
     //選択した「枚数」を求める
     for (let x in this.products) {
       selectedQuantity = 0;
@@ -657,18 +652,17 @@ export class SelectProductComponent implements OnInit {
         }
       }
       //商品単位での商品下限個数チェック
-      if (this.quantityCheckService.productMinLimitCheck(this.products[x].min_product_quantity, selectedQuantity, this.products[x].product_name)) {
-        modal_massage = this.quantityCheckService.productMinLimitCheck(this.products[x].min_product_quantity, selectedQuantity, this.products[x].product_name);
-        callModal(modal_massage);
-        return;
+      modal_massage = this.quantityCheckService.productMinLimitCheck(this.products[x].min_product_quantity, selectedQuantity, this.products[x].product_name);
+      if (modal_massage) {
+        return callModal(modal_massage);
       }
       //必須選択商品チェック
-      if (this.quantityCheckService.mustBeChosenCheck(this.products[x].is_must_be_chosen, selectedQuantity, this.products[x].product_name)) {
-        modal_massage = this.quantityCheckService.mustBeChosenCheck(this.products[x].is_must_be_chosen, selectedQuantity, this.products[x].product_name);
-        callModal(modal_massage);
-        return;
+      modal_massage = this.quantityCheckService.mustBeChosenCheck(this.products[x].is_must_be_chosen, selectedQuantity, this.products[x].product_name);
+      if (modal_massage) {
+        return callModal(modal_massage);
       }
     }
+
     function callModal(massage: string) {
       that.modalVisible = true;
       that.modalTitle = modal_title;
