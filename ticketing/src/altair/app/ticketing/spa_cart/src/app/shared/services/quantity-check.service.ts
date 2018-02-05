@@ -63,7 +63,7 @@ export class QuantityCheckService {
 * @param  {number} upper_limit - 販売区分の購入上限枚数:salesSagment.upper_limit
 * @param  {number} max_product_quantity - 席種毎の最大購入数:stockType.max_product_quantity
 * @param  {number} product_quantity - 選択した商品数
-* @return {boolean}
+* @return {string}
 */
   stockTypeProductMaxLimitCheck(upper_limit: number, max_product_quantity: number, product_quantity: number) {
     //両方ある場合は設定枚数の少ない方で
@@ -71,39 +71,39 @@ export class QuantityCheckService {
     if (upper_limit && max_product_quantity) {
       if (upper_limit < max_product_quantity) {
         if (upper_limit < product_quantity) {
-          return true;
+          return '<p>商品は合計' + upper_limit + '個以内でご選択ください。</p>';
         }
       } else {
         if (max_product_quantity < product_quantity) {
-          return true;
+          return '<p>商品は合計' + max_product_quantity + '個以内でご選択ください。</p>';
         }
       }
     } else if (upper_limit) {
       if (upper_limit < product_quantity) {
-        return true;
+        return '<p>商品は合計' + upper_limit + '個以内でご選択ください。</p>';
       }
     } else if (max_product_quantity) {
       if (max_product_quantity < product_quantity) {
-        return true;
+        return '<p>商品は合計' + max_product_quantity + '個以内でご選択ください。</p>';
       }
     }
-    return false;
+    return null;
   }
 
   /**
 * 席種単位での商品下限個数チェック
 * @param  {number} min_product_quantity - 席種毎の最大購入数:stockType.min_product_quantity
 * @param  {number} product_quantity - 選択した商品数
-* @return {boolean}
+* @return {string}
 */
   stockTypeProductMinLimitCheck(min_product_quantity: number, product_quantity: number) {
     //設定がない場合はチェックなし。
     if (min_product_quantity) {
       if (min_product_quantity > product_quantity) {
-        return true;
+        return '<p>商品は合計' + min_product_quantity + '個以上でご選択ください。</p>';
       }
     }
-    return false;
+    return null;
   }
 
   /**
@@ -135,29 +135,31 @@ export class QuantityCheckService {
 * 商品単位での商品下限個数チェック
 * @param  {number} min_product_quantity - 商品の商品購入下限数:Product.min_product_quantity
 * @param  {number} selected_quantity - 選択座席数
-* @return {boolean}
+* @param  {string} product_name - 商品名
+* @return {string}
 */
-  productMinLimitCheck(min_product_quantity: number, selected_quantity: number) {
+  productMinLimitCheck(min_product_quantity: number, selected_quantity: number, product_name:string) {
     //設定が無い場合はチェックなし
     if (min_product_quantity) {
       if (min_product_quantity > selected_quantity) {
-        return true
+        return '<p>' + product_name + 'は' + min_product_quantity + '個以上でご選択ください。</p>';
       }
     }
-    return false;
+    return null;
   }
 
   /**
 * 必須選択商品チェック
 * @param  {boolean}  must_be_chosen - 必須選択
 * @param  {number}   selected_quantity - 選択座席数
-* @return {boolean}
+* @param  {string}   product_name - 商品名
+* @return {string}
 */
-  mustBeChosenCheck(must_be_chosen: boolean, selected_quantity: number) {
+  mustBeChosenCheck(must_be_chosen: boolean, selected_quantity: number,product_name:string) {
     if (must_be_chosen && !selected_quantity) {
-      return true;
+      return '<p>' + product_name + 'を1個以上ご選択ください。</p>';
     }
-    return false
+    return null;
   }
 
   /**
