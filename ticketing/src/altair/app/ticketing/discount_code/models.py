@@ -6,7 +6,6 @@ from datetime import datetime
 from altair.app.ticketing.models import Base, BaseModel, WithTimestamp, LogicallyDeleted, Identifier, DBSession
 from altair.app.ticketing.utils import rand_string
 from altair.saannotation import AnnotatedColumn
-from pyramid.decorator import reify
 from pyramid.i18n import TranslationString as _
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import column_property, relationship
@@ -14,6 +13,7 @@ from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.schema import ForeignKey
 from sqlalchemy.types import Boolean, Integer, DateTime, Unicode, UnicodeText, String
 from standardenum import StandardEnum
+from sqlalchemy import func
 
 logger = logging.getLogger(__name__)
 
@@ -51,9 +51,17 @@ class DiscountCodeSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def target(self):
         return self.DiscountCodeTarget
 
-    @reify
+    @property
     def target_count(self):
-        return len(self.DiscountCodeTarget)
+        return DiscountCodeTarget.query.with_entities(
+            func.count(DiscountCodeTarget.id)
+        ).filter_by(discount_code_setting_id=self.id).scalar()
+
+    @property
+    def code_count(self):
+        return DiscountCodeCode.query.with_entities(
+            func.count(DiscountCodeCode.id)
+        ).filter_by(discount_code_setting_id=self.id).scalar()
 
     @property
     def available_status(self):
@@ -71,7 +79,7 @@ class DiscountCodeSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                     or (self.end_at is not None and self.end_at < now):
                 reasons.append(u'有効期間外です。')
 
-            if len(self.code) == 0:
+            if self.code_count == 0:
                 reasons.append(u'コードが自社によって生成されていません。')
 
         return True if not reasons else reasons
