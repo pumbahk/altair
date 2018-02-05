@@ -17,10 +17,9 @@ from pyramid.renderers import render_to_response
 from pyramid.response import Response
 from pyramid.view import view_config, view_defaults
 from sqlalchemy.exc import SQLAlchemyError
-from .api import is_enabled_discount_code_checked, get_discount_setting_related_data
+from .api import is_enabled_discount_code_checked, get_discount_setting_related_data, validate_to_delete_all_codes
 from .forms import DiscountCodeSettingForm, DiscountCodeCodesForm, SearchTargetForm, SearchCodeForm
-from .models import DiscountCodeSetting, DiscountCodeCode, DiscountCodeTarget, delete_discount_code_setting, \
-    delete_all_discount_code, insert_specific_number_code
+from .models import DiscountCodeSetting, DiscountCodeCode, DiscountCodeTarget, delete_all_discount_code, insert_specific_number_code
 
 logger = logging.getLogger(__name__)
 
@@ -137,14 +136,21 @@ class DiscountCode(BaseView):
         setting = DiscountCodeSetting.get(setting_id, organization_id=self.context.user.organization_id)
         if setting is None:
             return HTTPNotFound('discount_code_setting_id %d is not found' % setting_id)
+        location = self.request.route_path("discount_code.settings_index")
+
+        err_reasons = validate_to_delete_all_codes(setting, self.context.session)
+        if err_reasons:
+            self.request.session.flash(
+                u'「ID:{} {}」を削除できません（{}）'.format(setting.id, setting.name, u'・'.join(err_reasons)))
+            return HTTPFound(location=location)
 
         try:
-            delete_discount_code_setting(setting)
+            self.context.delete_discount_code_setting(setting)
             self.request.session.flash(u'クーポン・割引コード設定を削除しました')
         except SQLAlchemyError as e:
             self.request.session.flash(u'クーポン・割引コード設定の削除に失敗しました')
 
-        return HTTPFound(self.request.route_path("discount_code.settings_index"))
+        return HTTPFound(location=location)
 
     @view_config(route_name='discount_code.codes_index',
                  renderer='altair.app.ticketing:templates/discount_code/codes/index.html',
@@ -246,9 +252,10 @@ class DiscountCode(BaseView):
         if setting is None:
             return HTTPNotFound('discount_code_setting_id %d is not found' % setting_id)
 
-        err_reasons = self.context.validate_to_delete_all_codes()
+        err_reasons = validate_to_delete_all_codes(setting, self.context.session)
         if err_reasons:
-            self.request.session.flash(u'削除できません（{}）'.format(u'・'.join(err_reasons)))
+            self.request.session.flash(
+                u'「ID:{} {}」を削除できません（{}）'.format(setting.id, setting.name, u'・'.join(err_reasons)))
             return HTTPFound(location=location)
 
         try:

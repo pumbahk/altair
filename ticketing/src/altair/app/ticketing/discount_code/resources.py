@@ -5,9 +5,7 @@ import logging
 import webhelpers.paginate as paginate
 from altair.app.ticketing.core.models import Event, Performance
 from altair.app.ticketing.core.utils import PageURL_WebOb_Ex
-from altair.app.ticketing.discount_code.models import DiscountCodeTarget, DiscountCodeCode, DiscountCodeSetting, \
-    UsedDiscountCodeOrder
-from altair.app.ticketing.orders.models import Order, OrderedProductItem, OrderedProduct
+from altair.app.ticketing.discount_code.models import DiscountCodeTarget, DiscountCodeCode
 from altair.app.ticketing.resources import TicketingAdminResource
 from altair.sqlahelper import get_db_session
 from sqlalchemy.sql import and_
@@ -40,6 +38,16 @@ class DiscountCodeSettingResource(TicketingAdminResource):
                 for at in at_list:
                     for unit in unit_list:
                         self.request.POST['{}.{}'.format(at, unit)] = u''
+
+    @staticmethod
+    def delete_discount_code_setting(setting):
+        for code in setting.DiscountCode:
+            code.delete()
+
+        for target in setting.DiscountCodeTarget:
+            target.delete()
+
+        setting.delete()
 
 
 class DiscountCodeCodesResource(TicketingAdminResource):
@@ -82,29 +90,6 @@ class DiscountCodeCodesResource(TicketingAdminResource):
             query = query.filter(DiscountCodeCode.code == f.data['code'].strip())
 
         return query
-
-    def validate_to_delete_all_codes(self):
-        err = []
-        setting = self.session.query(DiscountCodeSetting).filter_by(id=self.setting_id).one()
-        if setting.is_valid:
-            err.append(u'設定の有効フラグにチェックが入っている')
-
-        valid_order_cnt = self.session.query(DiscountCodeCode).join(
-            UsedDiscountCodeOrder,
-            OrderedProductItem,
-            OrderedProduct,
-            Order
-        ).filter(
-            DiscountCodeCode.discount_code_setting_id == self.setting_id,
-            Order.canceled_at.is_(None),
-            Order.deleted_at.is_(None),
-            Order.refunded_at.is_(None)
-        ).count()
-
-        if valid_order_cnt:
-            err.append(u'コードが使用された有効な予約が{}件ある'.format(valid_order_cnt))
-
-        return err
 
 
 class DiscountCodeTargetResource(TicketingAdminResource):
