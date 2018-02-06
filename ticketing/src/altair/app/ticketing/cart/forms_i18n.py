@@ -225,28 +225,22 @@ class ClientFormFactory(object):
                     status = False
                 return status
 
-            def _validate_birthday(self, *args, **kwargs):
-                status = True
-                data = self.data
-                if self.context.request.organization.code == 'RT' and data["birthday"] is None:
-                    getattr(self, "birthday").errors.append(u"入力してください")
-                    status = False
-                return status
+            def validate_birthday(self, field):
+                if self.context.request.organization.code == 'RT' and not self.birthday.data:
+                    self.birthday.errors.append(u"選択してください。")
+                    return False
+                return True
 
-            def _validate_sex(self, *args, **kwargs):
-                status = True
-                data = self.data
-                if self.context.request.organization.code == 'RT' and data["sex"] is None:
-                    getattr(self, "sex").errors.append(u"選択してください")
-                    status = False
-                return status
+            def validate_sex(self, field):
+                if self.context.request.organization.code == 'RT' and not self.sex.data:
+                    self.sex.errors.append(u"選択してください。")
+                    return False
+                return True
 
             def validate(self):
                 # このように and 演算子を展開しないとすべてが一度に評価されない
                 status = super(ClientForm, self).validate()
                 status = self._validate_email_addresses() and status
-                status = self._validate_birthday() and status
-                status = self._validate_sex() and status
                 return status
 
         return ClientForm
