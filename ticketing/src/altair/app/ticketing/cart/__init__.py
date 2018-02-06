@@ -444,7 +444,13 @@ def main(global_config, **local_config):
 
     config.scan()
 
+    import os
+    import newrelic.agent
     app = config.make_wsgi_app()
+    newrelic_conf_file_path = '/etc/newrelic/altair.ticketing.cart.newrelic.ini'
+    if os.path.isfile(newrelic_conf_file_path):
+        newrelic.agent.initialize(newrelic_conf_file_path)
+        app = newrelic.agent.WSGIApplicationWrapper(app)
 
     return direct_static_serving_filter_factory({
         CART_STATIC_URL_PREFIX: CART_STATIC_ASSET_SPEC,
