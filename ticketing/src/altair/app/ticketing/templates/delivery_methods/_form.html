@@ -14,9 +14,13 @@
   ${ch.form_item(form.selectable)}
   ${ch.form_item(form.hide_voucher)}
   ${ch.form_item(form.single_qr_mode)}
+  <!-- 現時点qr_aesはHT(66)しか使いませんので、HT(66)のorganizationしか見えないようにする -->
+  % if form.organization_id.data == 66:
+    ${ch.form_item(form.allow_sp_qr_aes)}
+  % endif
+  <!-- 現時点qr_aesはHT(66)しか使いませんので、HT(66)のorganizationしか見えないようにする -->
   ${ch.form_item(form.expiration_date)}
-  ${ch.form_item(form.description, style='width:500px;height:100px;')}
-  % if i18n_org == u"True":
+  % if i18n_org == True:
     ${ch.form_item(form.name_en, maxlength=255)}
     ${ch.form_item(form.description_en, style='width:500px;height:100px;')}
     ${ch.form_item(form.name_zh_cn, maxlength=255)}

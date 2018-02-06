@@ -7,7 +7,7 @@ from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.renderers import render_to_response
 from pyramid.url import route_path
 
-from altair.app.ticketing.payments.plugins import QR_DELIVERY_PLUGIN_ID, RESERVE_NUMBER_DELIVERY_PLUGIN_ID
+from altair.app.ticketing.payments.plugins import QR_DELIVERY_PLUGIN_ID, RESERVE_NUMBER_DELIVERY_PLUGIN_ID, QR_AES_DELIVERY_PLUGIN_ID
 from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.models import merge_session_with_post
 from altair.app.ticketing.fanstatic import with_bootstrap
@@ -47,7 +47,7 @@ class DeliveryMethods(BaseView):
         form = DeliveryMethodForm(organization_id=self.context.user.organization_id)
         return {
             'form': form,
-            'i18n_org': u"True" if organization_setting.i18n else "False"
+            'i18n_org': organization_setting.i18n
         }
 
     @view_config(route_name='delivery_methods.new', request_method='POST', renderer='altair.app.ticketing:templates/delivery_methods/_form.html')
@@ -58,9 +58,10 @@ class DeliveryMethods(BaseView):
         f = DeliveryMethodForm(self.request.POST)
         organization_setting = c_models.OrganizationSetting.filter_by(organization_id=self.context.user.organization_id).one()
         if f.validate():
-            delivery_method = merge_session_with_post(DeliveryMethod(), f.data, excludes={'single_qr_mode', 'expiration_date'})
+            delivery_method = merge_session_with_post(DeliveryMethod(), f.data, excludes={'single_qr_mode', 'expiration_date', 'allow_sp_qr_aes'})
             delivery_method.preferences.setdefault(unicode(QR_DELIVERY_PLUGIN_ID), {})['single_qr_mode'] = f.single_qr_mode.data
             delivery_method.preferences.setdefault(unicode(RESERVE_NUMBER_DELIVERY_PLUGIN_ID), {})['expiration_date'] = f.expiration_date.data
+            delivery_method.preferences.setdefault(unicode(QR_AES_DELIVERY_PLUGIN_ID), {})['allow_sp_qr_aes'] = f.allow_sp_qr_aes.data
             if organization_setting.i18n:
                 delivery_method.preferences.setdefault(u'en', {})['name'] = f.name_en.data
                 delivery_method.preferences.setdefault(u'en', {})['description'] = f.description_en.data
@@ -78,7 +79,7 @@ class DeliveryMethods(BaseView):
         else:
             return {
                 'form':f,
-                'i18n_org': u"True" if organization_setting.i18n else "False"
+                'i18n_org': organization_setting.i18n
             }
 
     @view_config(route_name='delivery_methods.edit', request_method='GET', renderer='altair.app.ticketing:templates/delivery_methods/_form.html')
@@ -88,6 +89,7 @@ class DeliveryMethods(BaseView):
         form = DeliveryMethodForm(obj=obj)
         form.single_qr_mode.data = obj.preferences.get(unicode(QR_DELIVERY_PLUGIN_ID), {}).get('single_qr_mode', False)
         form.expiration_date.data = obj.preferences.get(unicode(RESERVE_NUMBER_DELIVERY_PLUGIN_ID), {}).get('expiration_date', None)
+        form.allow_sp_qr_aes.data = obj.preferences.get(unicode(QR_AES_DELIVERY_PLUGIN_ID), {}).get('allow_sp_qr_aes', False)
         organization_setting = c_models.OrganizationSetting.filter_by(organization_id=self.context.user.organization_id).one()
         if organization_setting.i18n:
             form.name_en.data = obj.preferences.get(u'en', {}).get('name', u'')
@@ -100,7 +102,7 @@ class DeliveryMethods(BaseView):
             form.description_ko.data = obj.preferences.get(u'ko', {}).get('description', u'')
         return {
             'form': form,
-            'i18n_org': u"True" if organization_setting.i18n else "False"
+            'i18n_org': organization_setting.i18n
             }
 
     @view_config(route_name='delivery_methods.edit', request_method='POST', renderer='altair.app.ticketing:templates/delivery_methods/_form.html')
@@ -119,6 +121,7 @@ class DeliveryMethods(BaseView):
             delivery_method = merge_session_with_post(delivery_method, f.data, excludes={'single_qr_mode', 'expiration_date'})
             delivery_method.preferences.setdefault(unicode(QR_DELIVERY_PLUGIN_ID), {})['single_qr_mode'] = f.single_qr_mode.data
             delivery_method.preferences.setdefault(unicode(RESERVE_NUMBER_DELIVERY_PLUGIN_ID), {})['expiration_date'] = f.expiration_date.data
+            delivery_method.preferences.setdefault(unicode(QR_AES_DELIVERY_PLUGIN_ID), {})['allow_sp_qr_aes'] = f.allow_sp_qr_aes.data
             if organization_setting.i18n:
                 delivery_method.preferences.setdefault(u'en', {})['name'] = f.name_en.data
                 delivery_method.preferences.setdefault(u'en', {})['description'] = f.description_en.data
@@ -136,7 +139,7 @@ class DeliveryMethods(BaseView):
         else:
             return {
                 'form':f,
-                'i18n_org': u"True" if organization_setting.i18n else "False"
+                'i18n_org': organization_setting.i18n
             }
 
     @view_config(route_name='delivery_methods.delete')
