@@ -43,6 +43,7 @@ class CommonResource(object):
             hotwords = self.get_hotword()
             genretree = self.get_genre_tree(parent=None)
             areas = self.get_area()
+            promotion_banners = self.get_promotion_banners()
             top_news = self.get_top_news()
         return {
              'promotions':promotions
