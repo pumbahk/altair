@@ -5,7 +5,7 @@ import logging
 import webhelpers.paginate as paginate
 from altair.app.ticketing.core.models import Event, Performance
 from altair.app.ticketing.core.utils import PageURL_WebOb_Ex
-from altair.app.ticketing.discount_code.models import DiscountCodeTarget, DiscountCodeCode
+from altair.app.ticketing.discount_code.models import DiscountCodeSetting, DiscountCodeTarget, DiscountCodeCode
 from altair.app.ticketing.resources import TicketingAdminResource
 from altair.sqlahelper import get_db_session
 from sqlalchemy.sql import and_
@@ -100,12 +100,14 @@ class DiscountCodeTargetResource(TicketingAdminResource):
         self.session = get_db_session(request, name="slave")
         self.setting_id = request.matchdict['setting_id']
 
-    def event_pagination(self, f):
+    def event_pagination_query(self, f, session):
         """
         ページネーションの範囲内のイベント情報の取得。
-        LIKE検索がslaveでは実行できなかったので、masterを参照。
+        :param f: SearchTargetFormクラス
+        :param session: slaveのセッション
+        :return: ページネーションで使用するクエリオブジェクト
         """
-        query = Event.query.filter(
+        query = session.query(Event).filter(
             Event.organization_id == self.user.organization.id
         ).order_by(
             Event.display_order,
@@ -122,15 +124,22 @@ class DiscountCodeTargetResource(TicketingAdminResource):
                      DiscountCodeTarget.discount_code_setting_id == self.setting_id)
             ).group_by(Event.id)
 
+        return query
+
+    def event_pagination(self, query):
+        """
+        ページネーションの範囲内のイベント情報の取得。
+        :param query: ページネーションで使用するクエリオブジェクト
+        :return: events イベントのレコード
+        """
         events = paginate.Page(
             query,
             page=int(self.request.params.get('page', 0)),
-            items_per_page=50,
+            items_per_page=20,
             url=PageURL_WebOb_Ex(self.request)
         )
 
         events = self._add_other_discount_code_setting_names_for_each_performances(events)
-
         return events
 
     def _add_other_discount_code_setting_names_for_each_performances(self, events):
@@ -143,11 +152,16 @@ class DiscountCodeTargetResource(TicketingAdminResource):
         own_setting_id = self.request.matchdict['setting_id']
         for event in events:
             for performance in event.performances:
-                others = []
-                for target in performance.DiscountCodeTarget:
-                    if unicode(target.discount_code_setting_id) != own_setting_id:
-                        others.append(target.discount_code_setting.name)
-                performance.other_discount_code_setting_names = others
+                performance.other_discount_code_setting_names = []
+                settings = self.session.query(DiscountCodeSetting.name).join(
+                    DiscountCodeTarget
+                ).filter(
+                    DiscountCodeSetting.id != own_setting_id,
+                    DiscountCodeTarget.performance_id == performance.id
+                ).group_by(DiscountCodeSetting.id).all()
+
+                for s in settings:
+                    performance.other_discount_code_setting_names.append(s.name)
 
         return events
 
