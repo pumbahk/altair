@@ -1680,17 +1680,8 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
     this.modalTopCss();
     // 押下したボタンの座席名
     this.selectedSeatName = value;
-    let flag = $.inArray(this.selectedSeatName, this.selectedSeatNameList);
-    this.selectedSeatId = this.selectedSeatList[flag];
-    this.selectedStockTypeName = this.stockTypeName;
-    this.selectedDescription = this.description;
-    // 押下したボタンの座席idの席種
-    for (let i = 0; i < this.countSelect; i++) {
-      if (this.selectedSeatId == this.seats[i].seat_l0_id) {
-        this.selectedStockTypeId = this.seats[i].stock_type_id;
-        break;
-      }
-    }
+    let index = $.inArray(this.selectedSeatName, this.selectedSeatNameList);
+    this.selectedSeatId = this.selectedSeatList[index];
   }
 
   // ダイアログの消去
@@ -1835,13 +1826,6 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
     for (let i = 0; i < this.countSelect; i++) {
       if (this.selectedSeatName == this.selectedSeatNameList[i]) {
         this.selectedSeatId = this.selectedSeatList[i];
-        break;
-      }
-    }
-    // 押下したボタンの座席idの席種
-    for (let i = 0; i < this.countSelect; i++) {
-      if (this.selectedSeatId == this.seats[i].seat_l0_id) {
-        this.selectedStockTypeId = this.seats[i].stock_type_id;
         break;
       }
     }
