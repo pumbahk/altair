@@ -7,13 +7,13 @@ from altair.app.ticketing.models import Base, BaseModel, WithTimestamp, Logicall
 from altair.app.ticketing.utils import rand_string
 from altair.saannotation import AnnotatedColumn
 from pyramid.i18n import TranslationString as _
+from sqlalchemy import func
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import column_property, relationship
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.schema import ForeignKey
 from sqlalchemy.types import Boolean, Integer, DateTime, Unicode, UnicodeText, String
 from standardenum import StandardEnum
-from sqlalchemy import func
 
 logger = logging.getLogger(__name__)
 
