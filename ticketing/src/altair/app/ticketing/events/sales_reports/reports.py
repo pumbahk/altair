@@ -679,7 +679,7 @@ class PerformanceReporter(object):
         return self.reporters[sales_segment]
 
 class ExportableReporter(object):
-    def __init__(self, request, event):
+    def __init__(self, request, event, form):
         self.slave_session = get_db_session(request, name="slave")
         self.request = request
 
@@ -696,12 +696,12 @@ class ExportableReporter(object):
             self.performance_codes = map(unicode.strip, request.params.get('performance_code').split(','))
 
         self.ordered_from = None
-        if request.params.get('from'):
-            self.ordered_from = datetime.strptime(request.params.get('from'), '%Y-%m-%d')
+        if form.ordered_from.data:
+            self.ordered_from = form.ordered_from.data
 
         self.ordered_to = None
-        if request.params.get('to'):
-            self.ordered_to = datetime.strptime(request.params.get('to'), '%Y-%m-%d')
+        if form.ordered_to.data:
+            self.ordered_to = form.ordered_to.data
 
         # レポート設定を無視する
         self.without_filter = False
