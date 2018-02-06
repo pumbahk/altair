@@ -492,6 +492,8 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
         that.displayViewBox = that.originalViewBox.concat();
         that.seatAreaHeight = $("#mapImgBox").height();
         that.svgMap = document.getElementById('mapImgBox').firstElementChild;
+        that.D_Width = $(that.svgMap).innerWidth(); // 表示窓のwidth
+        that.D_Height = $(that.svgMap).innerHeight(); // 表示窓のheight
         that.saveSeatData();
         that.mapHome(true);
         that.endTime = new Date();
@@ -1450,7 +1452,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
     }
   }
 
-  // 拡大・縮小後ののviewBoxの値を取得
+  // 拡大・縮小後のviewBox値を取得
   getZoomViewBox(x: number, y: number, scale: number): any {
     let viewBoxValues = this.getPresentViewBox();
     let viewBoxVals = [];
