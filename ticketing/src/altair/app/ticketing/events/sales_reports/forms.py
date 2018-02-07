@@ -309,9 +309,6 @@ class SalesReportDownloadForm(OurForm):
             if name in kwargs:
                 field.data = kwargs[name]
 
-        # previewの画面で集計期間の日付のエラーメッセージのみを出すためのflag
-        self.is_preview = is_preview
-
     def _get_translations(self):
         return Translations()
 
@@ -341,11 +338,6 @@ class SalesReportDownloadForm(OurForm):
             self.limited_from.errors.append(u'開始日時は終了日時よりも前に設定してください。')
         return status
 
-    def _preview_validate_msg(self):
-        # プレビューの場合、件名と受信先のエラーメッセージを出さない。
-        self.subject.errors = ()
-        self.recipient.errors = ()
-
     def _rearrange_limited_after1990_msg(self):
         # 出力したい集計期間のエラーメッセージを整理する
         if self.limited_to.errors:
@@ -361,8 +353,6 @@ class SalesReportDownloadForm(OurForm):
     def validate(self, *args, **kwargs):
         status = super(self.__class__, self).validate(*args, **kwargs)
         self._rearrange_limited_after1990_msg()
-        if not status and self.is_preview:
-            self._preview_validate_msg()
         return all([status, self._check_limited_from_to()])
 
 
