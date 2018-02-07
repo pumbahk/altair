@@ -9944,6 +9944,8 @@ var VenuemapComponent = (function () {
                 that.displayViewBox = that.originalViewBox.concat();
                 that.seatAreaHeight = __WEBPACK_IMPORTED_MODULE_14_jquery__("#mapImgBox").height();
                 that.svgMap = document.getElementById('mapImgBox').firstElementChild;
+                that.D_Width = __WEBPACK_IMPORTED_MODULE_14_jquery__(that.svgMap).innerWidth(); // 表示窓のwidth
+                that.D_Height = __WEBPACK_IMPORTED_MODULE_14_jquery__(that.svgMap).innerHeight(); // 表示窓のheight
                 that.saveSeatData();
                 that.mapHome(true);
                 that.endTime = new Date();
@@ -10908,7 +10910,7 @@ var VenuemapComponent = (function () {
             return (this.D_Width / parseFloat(viewBoxValues[2]));
         }
     };
-    // 拡大・縮小後ののviewBoxの値を取得
+    // 拡大・縮小後のviewBox値を取得
     VenuemapComponent.prototype.getZoomViewBox = function (x, y, scale) {
         var viewBoxValues = this.getPresentViewBox();
         var viewBoxVals = [];
