@@ -172,9 +172,9 @@ def main():
 
             if len(seat_price_list) > 0:
                 if opts.local_run:
-                    output_file(os.path.join(opts.target, start_on.strftime('%Y%m%d'), 'price.json'), seat_price_list)
+                    output_file(os.path.join(opts.target, start_on.strftime('%Y%m%d_%H%M'), 'price.json'), seat_price_list)
                     continue
-                upload(opts.target + start_on.strftime('%Y%m%d') + '/price.json', seat_price_list, resolver)
+                upload(opts.target + start_on.strftime('%Y%m%d_%H%M') + '/price.json', seat_price_list, resolver)
 
     except:
         set_quiet(False)
