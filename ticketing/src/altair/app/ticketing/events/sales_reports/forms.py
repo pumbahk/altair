@@ -301,6 +301,61 @@ class SalesReportForm(OurForm):
         return all([status, self._check_limited_from_to()])
 
 
+class SalesReportDownloadForm(OurForm):
+
+    def __init__(self, formdata=None, obj=None, prefix='', is_preview=False, **kwargs):
+        super(SalesReportDownloadForm, self).__init__(formdata, obj, prefix, **kwargs)
+        for name, field in iteritems(self._fields):
+            if name in kwargs:
+                field.data = kwargs[name]
+
+    def _get_translations(self):
+        return Translations()
+
+    event_id = HiddenField(
+        validators=[Optional()],
+    )
+    performance_id = HiddenField(
+        validators=[Optional()],
+    )
+    ordered_from = OurDateTimeField(
+        label=u'絞り込み期間',
+        validators=[Optional(), after1900],
+        format='%Y-%m-%d %H:%M',
+    )
+    ordered_to = OurDateTimeField(
+        label=u'絞り込み期間',
+        validators=[Optional(), after1900],
+        missing_value_defaults=dict(hour=Max, minute=Max, second=Max),
+        format='%Y-%m-%d %H:%M',
+    )
+
+    def _check_limited_from_to(self):
+        status = True
+        if self.limited_from.data and self.limited_to.data:
+            status = self.limited_from.data <= self.limited_to.data
+        if not status:
+            self.limited_from.errors.append(u'開始日時は終了日時よりも前に設定してください。')
+        return status
+
+    def _rearrange_limited_after1990_msg(self):
+        # 出力したい集計期間のエラーメッセージを整理する
+        if self.limited_to.errors:
+            msg_set = set()
+            msg_set.update(self.limited_from.errors, self.limited_to.errors)
+
+            # 重複しないため、全ての集計期間のエラーメッセージをlimited_fromに入れる
+            self.limited_from.errors = list(msg_set)
+
+            # limited_toのエラーメッセージをクリアする。
+            self.limited_to.errors = []
+
+    def validate(self, *args, **kwargs):
+        status = super(self.__class__, self).validate(*args, **kwargs)
+        self._rearrange_limited_after1990_msg()
+        return all([status, self._check_limited_from_to()])
+
+
 class ReportSettingForm(OurForm):
 
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):

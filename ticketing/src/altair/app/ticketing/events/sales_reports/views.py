@@ -25,6 +25,7 @@ from altair.app.ticketing.core.models import Performance
 from altair.app.ticketing.events.sales_reports.forms import (
     SalesReportSearchForm,
     SalesReportForm,
+    SalesReportDownloadForm,
     ReportSettingForm,
     NumberOfPerformanceReportExportForm,
     )
@@ -83,6 +84,7 @@ class SalesReports(BaseView):
 
         event = self.context.event
         form = SalesReportForm(self.request.params, event_id=event.id)
+        download_form = SalesReportDownloadForm(self.request.params, event_id=event.id)
         event_total_reporter = None
         performance_total_reporter = None
 
@@ -97,13 +99,15 @@ class SalesReports(BaseView):
                 'report_settings':ReportSetting.filter_by(event_id=event.id).all(),
                 'event_total_reporter':event_total_reporter,
                 'performance_total_reporter':performance_total_reporter,
-                'form':form
+                'form':form,
+                'download_form':download_form
                 }
 
     @view_config(route_name='sales_reports.performance', renderer='altair.app.ticketing:templates/sales_reports/performance.html')
     def performance(self):
         performance = self.context.performance
         form = SalesReportForm(self.request.params, performance_id=performance.id)
+        download_form = SalesReportDownloadForm(self.request.params, performance_id=performance.id)
         performance_reporter = None
 
         form.validate()
@@ -116,7 +120,8 @@ class SalesReports(BaseView):
             'report_settings':ReportSetting.filter_by(performance_id=performance.id).all(),
             'performance_reporter':performance_reporter,
             'performance': performance,
-            'form':form
+            'form':form,
+            'download_form':download_form
             }
 
     @view_config(route_name='sales_reports.preview', renderer='altair.app.ticketing:templates/sales_reports/preview.html')
@@ -161,8 +166,9 @@ class SalesReports(BaseView):
         event = Event.get(event_id, organization_id=self.context.user.organization_id)
         if event is None:
             raise HTTPNotFound('event id %d is not found' % event_id)
-        
-        render_param = dict(reporter=ExportableReporter(self.request, event), encoding="cp932")
+
+        form = SalesReportDownloadForm(formdata=self.request.params)
+        render_param = dict(reporter=ExportableReporter(self.request, event, form), encoding="cp932")
         r = render_to_response('altair.app.ticketing:templates/sales_reports/export.txt', render_param, request=self.request)
         if(self.request.params.get('view')):
             r.headers['Content-Type'] = 'text/plain'
@@ -201,8 +207,9 @@ class SalesReports(BaseView):
         event = Event.get(event_id, organization_id=self.context.user.organization_id)
         if event is None:
             raise HTTPNotFound('event id %d is not found' % event_id)
-        
-        reporter = ExportableReporter(self.request, event)
+
+        form = SalesReportDownloadForm(formdata=self.request.params)
+        reporter = ExportableReporter(self.request, event, form)
         return Response(reporter.get_xml(), headers=[ ('Content-Type', 'text/xml') ])
 
     @view_config(route_name='sales_reports.mail_body')
