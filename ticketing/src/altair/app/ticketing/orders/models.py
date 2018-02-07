@@ -861,6 +861,10 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def used_discount_codes(self):
         return discount_api.get_used_discount_codes(self)
 
+    @reify
+    def used_discount_code_groups(self):
+        return discount_api.used_discount_code_groups(self)
+
     @property
     def discount_amount(self):
         return discount_api.get_discount_amount(self)
