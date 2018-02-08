@@ -7,34 +7,31 @@ small { font-size: 9px; }
 </head>
 <body>
 
-<template:block id="site">
-<h1>${id} ${name} <small>${sub_name}</small></h1>
 
-席数: <a target="_blank" href="https://service.ticketstar.jp/venues/show/${venue}">${count}</a> <br />
-backend: ${backend_metadata_url} <br />
-frontend: ${metadata_url} <br />
-</template:block>
+<h1><%= site.id %> <%= site.name %> <small><%= sub_name %></small></h1>
+
+席数: <a target="_blank" href="https://service.ticketstar.jp/venues/show/<%= venues[0].id %>"><%= venues[0].seat_count %></a> <br />
+backend: <%= site.backend_metadata_url %> <br />
+frontend: <%= site.metadata_url %> <br />
+
 <ul>
-<template:block id="svgs">
-<li><a target="_blank" href="https://service.ticketstar.jp/venues/${venue.element(0).element(id)}/frontend/${filename}">${filename}</a> (${name})</li>
-</template:block>
+<!--
+<% svgs.forEach(function(svg) { %>
+<li><a target="_blank" href="https://service.ticketstar.jp/venues/<%= venues[0].id %>/frontend/<%= svg.filename %>"><%= svg.filename %></a> (<%= svg.name %>)</li>
+<% }); %>
+-->
 </ul>
 
-<template:block id="site">
 <form method="post" target="output">
-<input type="submit" name="check" value="整合性チェック" ${metadata_url.if(=).then(disabled="disabled")} />
+<input type="submit" name="check" value="整合性チェック" <% site.metadata_url ? '' : 'disabled="disabled"' %> />
 </form>
-<a href="run.php?site=${id}">frontend差し替え...</a>
-</template:block>
+<a href="run?site=<%= site.id %>">frontend差し替え...</a>
 
 <div style="display: none;">
 <form method="post" style="background-color: #ffcccc;" target="output">
 <h2>frontendの差替</h2>
-<template:block id="site">
-<!--<input type="hidden" name="site" value="${id}" />-->
-</template:block>
 frontend: <input type="text" name="frontend" value="" style="width: 90%;" placeholder="http://hostname/vwr.html#/upload/frontend/ffffffffffff/metadata.json" /> <br />
-directory name: <input type="text" name="dir" value="${dir}" style="width: 400px;" /> (重複しないよう変更してください) <br />
+directory name: <input type="text" name="dir" value="<%= site.dir %>" style="width: 400px;" /> (重複しないよう変更してください) <br />
 <!--frontend(.svg files and .json): <input type="file" name="front[]" multiple="multiple" />-->
 <input type="submit" name="replace" value="差替" /> <br />
 <input type="submit" name="check" value="整合性チェック" />
@@ -45,18 +42,26 @@ directory name: <input type="text" name="dir" value="${dir}" style="width: 400px
 
 <h2>Venues &amp; Performances</h2>
 <table border="1">
+<thead>
+<tr><th>venue id</th><th>performance</th><th>service</th><th>cart</th><th>created</th></tr>
+</thead>
 <tbody>
-<template:block id="venue">
-<tr><td>${id}</td><td>${performance_name} ${performance.if(=).then(<!--)}(${start_on.format(Y/M/D)}-)${performance.if(=).then(-->)}</td>
-<td>${performance.if(=).then(<!--)}
-	<a target="_blank" href="https://service.ticketstar.jp/events/performances/show/${performance}/seat-allocation">service</a>
-${performance.if(=).then(-->)}</td>
-<td>${performance.if(=).then(<!--)}
-	<a target="_blank" href="https://${host}/cart/events/${event}?performance=${performance}">cart</a>
-${performance.if(=).then(-->)}</td>
-<td>${created_at.format(Y/M/D)}</td>
-<td>${count}</td></tr>
-</template:block>
+<% venues.forEach(function(venue) { %>
+<tr><td><%= venue.id %></td><td><%= venue.performance ? venue.performance.name+' ('+venue.performance.start_on+')' : '-' %></td>
+<td>
+  <% if(venue.performance) { %>
+	<a target="_blank" href="https://service.ticketstar.jp/events/performances/show/<%= venue.performance.id %>/seat-allocation">service</a>
+  <% } %>
+</td>
+<td>
+  <% if(venue.performance) { %>
+  	<a target="_blank" href="https://<%= host %>/cart/events/<%= venue.performance.event.id %>?performance=<%= venue.performance.id %>">cart</a>
+  <% } %>
+</td>
+<td><%= venue.created_at %></td>
+</tr>
+<% }); %>
+
 </tbody>
 </table>
 

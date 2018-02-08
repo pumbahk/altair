@@ -153,23 +153,19 @@ def save_discount_code(carted_product_item, ordered_product_item):
     return True
 
 
-def get_discount_code_setting(used_discount_code_cart):
-    setting = DiscountCodeSetting.\
-        filter(DiscountCodeSetting.first_4_digits == used_discount_code_cart.code[:4]).\
-        filter(DiscountCodeSetting.is_valid==True).all()
-    return setting
-
-
-def get_discount_code_settings(used_discount_code_carts):
-    code_first_4_digits = list(set([code.code[:4] for code in used_discount_code_carts]))
+def get_discount_code_settings(used_discount_codes):
+    code_first_4_digits = list(set([code.code[:4] for code in used_discount_codes]))
     settings = DiscountCodeSetting.\
         filter(DiscountCodeSetting.first_4_digits.in_(code_first_4_digits)).\
         filter(DiscountCodeSetting.is_valid==True).all()
     return settings
 
 
-def used_discount_code_groups(cart):
-    codes = get_used_discount_codes(cart)
+def used_discount_code_groups(cart_or_order):
+    from altair.app.ticketing.orders.models import Order
+    from altair.app.ticketing.cart.models import Cart
+
+    codes = get_used_discount_codes(cart_or_order)
     settings = get_discount_code_settings(codes)
 
     code_groups = {}
@@ -185,8 +181,12 @@ def used_discount_code_groups(cart):
         group_dict = dict()
         group_dict['discount_code_setting'] = setting
         group_dict['code'] = code_groups[setting.first_4_digits]
-        group_dict['discount_price'] = sum(
-            [code.carted_product_item.price for code in code_groups[setting.first_4_digits]])
+        for code in code_groups[setting.first_4_digits]:
+            if isinstance(cart_or_order, Cart):
+                group_dict['discount_price'] = sum([code.carted_product_item.price])
+            elif isinstance(cart_or_order, Order):
+                group_dict['discount_price'] = sum([code.ordered_product_item.price])
+
         groups.append(group_dict)
     return groups
 
@@ -304,3 +304,20 @@ def cancel_used_discount_codes(request, order, now=None):
             _(u'used discount code can not be canceled.').interpolate(),
             nested_exc_info=exc_info
         )
+
+
+def validate_to_delete_all_codes(setting, session):
+    err = []
+    try:
+        if DiscountCodeSetting.is_valid_checked(setting.id, session):
+            err.append(u'設定の有効フラグにチェックが入っている')
+    except NoResultFound:
+        err.append(u'削除対象の割引設定（ID: {} {}）が存在しません。'.format(setting.id, setting.name))
+    except MultipleResultsFound:
+        err.append(u'複数の割引設定（ID: {} {}）が検出されました。開発部に調査を依頼してください。'.format(setting.id, setting.name))
+
+    valid_order_cnt = UsedDiscountCodeOrder.count_exists_valid_order(setting.first_4_digits, session)
+    if valid_order_cnt:
+        err.append(u'コードが使用された有効な予約が{}件ある'.format(valid_order_cnt))
+
+    return err

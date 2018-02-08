@@ -44,7 +44,10 @@ class StockHolderForm(OurForm):
     )
     text_color = OurTextField(
         label=u'記号色',
-        validators=[Required()],
+        validators=[
+            Required(),
+            Regexp(r'^#([0-9a-fA-F]{6})$', message=u'カラーコードを入力してください'),
+            ],
     )
     is_putback_target = BooleanField(
         default=False,

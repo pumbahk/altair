@@ -952,7 +952,8 @@ class QRAESView(object):
             performance = ticket.performance,
             event = ticket.event,
             product = ticket.product,
-            gate = gate
+            gate = gate,
+            allow_sp=ticket.order.payment_delivery_method_pair.delivery_method.preferences.get(unicode(plugins.QR_AES_DELIVERY_PLUGIN_ID), {}).get(u'allow_sp_qr_aes', False)
         )
 
     @lbr_view_config(
@@ -992,6 +993,7 @@ class QRAESView(object):
             if token.item.ordered_product.order.delivery_plugin_id == plugins.QR_AES_DELIVERY_PLUGIN_ID:
                 # altair
                 ticket = build_ht_qr_by_token_id(self.request, self.request.params['order_no'], self.request.params['token'])
+                allow_sp = ticket.order.payment_delivery_method_pair.delivery_method.preferences.get(unicode(plugins.QR_AES_DELIVERY_PLUGIN_ID), {}).get(u'allow_sp_qr_aes', False)
 
                 return dict(
                     token = token.id,    # dummy
@@ -1001,7 +1003,8 @@ class QRAESView(object):
                     performance = ticket.performance,
                     event = ticket.event,
                     product = ticket.product,
-                    gate = gate
+                    gate = gate,
+                    allow_sp = allow_sp
                 )
         else:
             order = get_order_by_order_no(self.request, order_no)
@@ -1011,6 +1014,8 @@ class QRAESView(object):
             if order.delivery_plugin_id == plugins.QR_AES_DELIVERY_PLUGIN_ID:
                 # altair
                 ticket = build_ht_qr_by_order(self.request, order)
+                allow_sp = order.payment_delivery_method_pair.delivery_method.preferences.get(
+                    unicode(plugins.QR_AES_DELIVERY_PLUGIN_ID), {}).get(u'allow_sp_qr_aes', False)
 
                 return dict(
                     token=None,
@@ -1020,7 +1025,8 @@ class QRAESView(object):
                     performance=ticket.performance,
                     event=ticket.event,
                     product=None,
-                    gate=None
+                    gate=None,
+                    allow_sp=allow_sp
                 )
 
     @lbr_view_config(

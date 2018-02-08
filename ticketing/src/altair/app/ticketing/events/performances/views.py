@@ -780,6 +780,7 @@ class Performances(BaseView):
             new_performance.subtitle3 = origin_performance.subtitle3
             new_performance.subtitle4 = origin_performance.subtitle4
             new_performance.note = origin_performance.note
+            new_performance.account_id = origin_performance.account_id
 
             if new_performance.setting is None:
                 new_performance.setting = PerformanceSetting()
@@ -934,6 +935,7 @@ class Performances(BaseView):
             new_performance.subtitle3 = origin_performance.subtitle3
             new_performance.subtitle4 = origin_performance.subtitle4
             new_performance.note = origin_performance.note
+            new_performance.account_id = origin_performance.account_id
 
             if new_performance.setting is None:
                 new_performance.setting = PerformanceSetting()

@@ -17,10 +17,9 @@ from pyramid.renderers import render_to_response
 from pyramid.response import Response
 from pyramid.view import view_config, view_defaults
 from sqlalchemy.exc import SQLAlchemyError
-from .api import is_enabled_discount_code_checked, get_discount_setting_related_data
+from .api import is_enabled_discount_code_checked, get_discount_setting_related_data, validate_to_delete_all_codes
 from .forms import DiscountCodeSettingForm, DiscountCodeCodesForm, SearchTargetForm, SearchCodeForm
-from .models import DiscountCodeSetting, DiscountCodeCode, DiscountCodeTarget, delete_discount_code_setting, \
-    delete_all_discount_code, insert_specific_number_code
+from .models import DiscountCodeSetting, DiscountCodeCode, DiscountCodeTarget, delete_all_discount_code, insert_specific_number_code
 
 logger = logging.getLogger(__name__)
 
@@ -137,14 +136,21 @@ class DiscountCode(BaseView):
         setting = DiscountCodeSetting.get(setting_id, organization_id=self.context.user.organization_id)
         if setting is None:
             return HTTPNotFound('discount_code_setting_id %d is not found' % setting_id)
+        location = self.request.route_path("discount_code.settings_index")
+
+        err_reasons = validate_to_delete_all_codes(setting, self.context.session)
+        if err_reasons:
+            self.request.session.flash(
+                u'「ID:{} {}」を削除できません（{}）'.format(setting.id, setting.name, u'・'.join(err_reasons)))
+            return HTTPFound(location=location)
 
         try:
-            delete_discount_code_setting(setting)
+            self.context.delete_discount_code_setting(setting)
             self.request.session.flash(u'クーポン・割引コード設定を削除しました')
         except SQLAlchemyError as e:
             self.request.session.flash(u'クーポン・割引コード設定の削除に失敗しました')
 
-        return HTTPFound(self.request.route_path("discount_code.settings_index"))
+        return HTTPFound(location=location)
 
     @view_config(route_name='discount_code.codes_index',
                  renderer='altair.app.ticketing:templates/discount_code/codes/index.html',
@@ -246,7 +252,12 @@ class DiscountCode(BaseView):
         if setting is None:
             return HTTPNotFound('discount_code_setting_id %d is not found' % setting_id)
 
-        t0 = time.time()
+        err_reasons = validate_to_delete_all_codes(setting, self.context.session)
+        if err_reasons:
+            self.request.session.flash(
+                u'「ID:{} {}」を削除できません（{}）'.format(setting.id, setting.name, u'・'.join(err_reasons)))
+            return HTTPFound(location=location)
+
         try:
             deleted_num = delete_all_discount_code(setting.id)
             if deleted_num != 0:
@@ -261,7 +272,6 @@ class DiscountCode(BaseView):
         except SQLAlchemyError:
             self.request.session.flash(u'コードの全削除に失敗しました')
 
-        logger.info("execution time {} sec".format(str(time.time() - t0)))
         return HTTPFound(location=location)
 
     @view_config(route_name='discount_code.codes_used_at')
@@ -300,7 +310,9 @@ class DiscountCode(BaseView):
     def target_index(self):
         f = SearchTargetForm(self.request.GET, organization_id=self.context.organization.id)
         if f.validate():
-            events = self.context.event_pagination(f)
+            query = self.context.event_pagination_query(f, self.context.session)
+            event_cnt = query.count()
+            events = self.context.event_pagination(query)
             event_id_list = self.context.get_event_id_list(events)
             registered = self.context.get_registered_id_list(event_id_list)
 
@@ -309,6 +321,7 @@ class DiscountCode(BaseView):
             return {
                 'setting': self.context.setting,
                 'events': events,
+                'event_cnt': event_cnt,
                 'registered': registered,
                 'performance_count': performance_count,
                 'search_form': f
@@ -327,7 +340,8 @@ class DiscountCode(BaseView):
         """すでに登録されている適用対象と、今回の登録内容を比較し、どのパフォーマンスが追加・削除されたか表示する"""
         f = SearchTargetForm(self.request.GET, organization_id=self.context.organization.id)
         if f.validate():
-            events = self.context.event_pagination(f)
+            query = self.context.event_pagination_query(f, self.context.session)
+            events = self.context.event_pagination(query)
             event_id_list = self.context.get_event_id_list(events)
             registered = self.context.get_registered_id_list(event_id_list)
 

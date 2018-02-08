@@ -1,8 +1,0 @@
-#!/bin/sh
-
-CURRENT=$(dirname $0)
-
-BASENAME=$1
-
-echo "SELECT Venue.id FROM Site,Venue WHERE Venue.site_id=Site.id and (drawing_url like \"%/svgs/${BASENAME}.xml\" OR backend_metadata_url like \"%/backend/${BASENAME}/metadata.json\") and Venue.deleted_at is null and Site.deleted_at is null" | \
-$CURRENT/db-master --skip-column-names

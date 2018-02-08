@@ -1246,6 +1246,10 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             .order_by(Performance.end_on.desc(), Performance.start_on.desc()) \
             .first()
 
+    @property
+    def performance_cnt(self):
+        return Performance.filter_by(event_id=self.id).count()
+
     @staticmethod
     def get_owner_event(account):
         return Event.query.join(Event.account).filter(Account.id==account.id).all()

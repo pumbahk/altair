@@ -206,7 +206,7 @@
       <artifactId>plugin</artifactId>
       <version>1.6</version>
       <scope>system</scope>
-      <systemPath>${java.home}/lib/plugin.jar</systemPath>
+      <systemPath>${env.JRE6_HOME}/lib/plugin.jar</systemPath>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
