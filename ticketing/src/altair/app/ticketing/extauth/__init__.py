@@ -229,4 +229,13 @@ def api_main(global_config, **local_config):
     config.add_route('extauth.api.openid_end_session', '/session/{id_token:.*}', request_method='DELETE')
     config.add_route('extauth.api.v0.user', ENDPOINT_PATH['get_user_info_v0'])
     config.scan('.api_views')
-    return config.make_wsgi_app()
+
+    import os
+    import newrelic.agent
+    app = config.make_wsgi_app()
+    newrelic_conf_file_path = '/etc/newrelic/altair.ticketing.extauth.newrelic.ini'
+    if os.path.isfile(newrelic_conf_file_path):
+        newrelic.agent.initialize(newrelic_conf_file_path)
+        app = newrelic.agent.WSGIApplicationWrapper(app)
+
+    return app

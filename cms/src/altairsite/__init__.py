@@ -141,7 +141,14 @@ def main(global_config, **local_config):
     # tracking
     config.include(install_tracking_image_generator)
 
+    import os
+    import newrelic.agent
     app = config.make_wsgi_app()
+    newrelic_conf_file_path = '/etc/newrelic/altair.cms.usersite.newrelic.ini'
+    if os.path.isfile(newrelic_conf_file_path):
+        newrelic.agent.initialize(newrelic_conf_file_path)
+        app = newrelic.agent.WSGIApplicationWrapper(app)
+
     from pyramid.interfaces import IRouter
     config.registry.registerUtility(app, IRouter)
     return app

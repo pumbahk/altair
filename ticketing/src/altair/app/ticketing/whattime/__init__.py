@@ -73,5 +73,13 @@ def main(global_config, **local_config):
     config.include('altair.app.ticketing.cart.request')
     config.add_tween('altair.app.ticketing.tweens.session_cleaner_factory', under=INGRESS)
     config.add_tween('altair.app.ticketing.cart.tweens.response_time_tween_factory', under=INGRESS)
-    return config.make_wsgi_app()
 
+    import os
+    import newrelic.agent
+    app = config.make_wsgi_app()
+    newrelic_conf_file_path = '/etc/newrelic/altair.ticketing.whattime.newrelic.ini'
+    if os.path.isfile(newrelic_conf_file_path):
+        newrelic.agent.initialize(newrelic_conf_file_path)
+        app = newrelic.agent.WSGIApplicationWrapper(app)
+
+    return app

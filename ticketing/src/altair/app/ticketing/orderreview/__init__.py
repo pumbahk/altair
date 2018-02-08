@@ -164,5 +164,11 @@ def main(global_config, **local_config):
 
     setup_cms_communication_api(config)
 
-    return config.make_wsgi_app()
-
+    import os
+    import newrelic.agent
+    app = config.make_wsgi_app()
+    newrelic_conf_file_path = '/etc/newrelic/altair.ticketing.orderreview.newrelic.ini'
+    if os.path.isfile(newrelic_conf_file_path):
+        newrelic.agent.initialize(newrelic_conf_file_path)
+        app = newrelic.agent.WSGIApplicationWrapper(app)
+    return app

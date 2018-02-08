@@ -64,4 +64,12 @@ def main(global_config, **local_config):
     config.include('.')
     config.scan(".views")
 
-    return config.make_wsgi_app()
+    import os
+    import newrelic.agent
+    app = config.make_wsgi_app()
+    newrelic_conf_file_path = '/etc/newrelic/altair.ticketing.coupon.newrelic.ini'
+    if os.path.isfile(newrelic_conf_file_path):
+        newrelic.agent.initialize(newrelic_conf_file_path)
+        app = newrelic.agent.WSGIApplicationWrapper(app)
+
+    return app
