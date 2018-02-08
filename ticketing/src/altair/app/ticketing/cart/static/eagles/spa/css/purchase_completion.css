@@ -84,8 +84,16 @@
 	width: 74.7%;
 }
 
-
-
+.notice a {
+  color: #64000C;
+  text-decoration: underline;
+}
+.notice a:hover,
+.notice a:focus,
+.notice a:active {
+  color: #AE767C;
+  text-decoration: underline;
+}
 
 
 
