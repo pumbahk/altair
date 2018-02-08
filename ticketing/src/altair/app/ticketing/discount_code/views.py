@@ -310,7 +310,9 @@ class DiscountCode(BaseView):
     def target_index(self):
         f = SearchTargetForm(self.request.GET, organization_id=self.context.organization.id)
         if f.validate():
-            events = self.context.event_pagination(f)
+            query = self.context.event_pagination_query(f, self.context.session)
+            event_cnt = query.count()
+            events = self.context.event_pagination(query)
             event_id_list = self.context.get_event_id_list(events)
             registered = self.context.get_registered_id_list(event_id_list)
 
@@ -319,6 +321,7 @@ class DiscountCode(BaseView):
             return {
                 'setting': self.context.setting,
                 'events': events,
+                'event_cnt': event_cnt,
                 'registered': registered,
                 'performance_count': performance_count,
                 'search_form': f
@@ -337,7 +340,8 @@ class DiscountCode(BaseView):
         """すでに登録されている適用対象と、今回の登録内容を比較し、どのパフォーマンスが追加・削除されたか表示する"""
         f = SearchTargetForm(self.request.GET, organization_id=self.context.organization.id)
         if f.validate():
-            events = self.context.event_pagination(f)
+            query = self.context.event_pagination_query(f, self.context.session)
+            events = self.context.event_pagination(query)
             event_id_list = self.context.get_event_id_list(events)
             registered = self.context.get_registered_id_list(event_id_list)
 
