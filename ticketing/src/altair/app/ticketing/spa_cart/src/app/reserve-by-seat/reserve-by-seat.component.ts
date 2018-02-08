@@ -80,17 +80,10 @@ export class ReserveBySeatComponent implements OnInit {
             let mainID = 'mapAreaLeft'
             let windowH = $(window).height();
             let mainH = windowH - minus;
-            if (mainH <= 0) {
-              mainH = 190;
-            }
             that.mapAreaLeftH = mainH;
             $('#'+mainID).height(mainH+'px');
           }
-
-          $(document).ready(function(){
-            heightSetting();
-          });
-
+          heightSetting();
           //リサイズ時の縦幅調整
           $(window).resize(function(){
             heightSetting();

@@ -494,9 +494,8 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
       }
 
       that.originalViewBox = that.getPresentViewBox();
-
       // viewBox取得　且つ　reserve-by-seatの高さが取得
-      if ((that.originalViewBox) && (that.mapAreaLeftH != 0)) {
+      if ((that.originalViewBox) && (that.mapAreaLeftH > SIDE_HEIGHT)) {
         clearInterval(svgLoadCompleteTimer);
         that.displayViewBox = that.originalViewBox.concat();
         that.seatAreaHeight = $("#mapImgBox").height();
@@ -873,7 +872,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
       }
       resizeTimer = setTimeout(() => {
         this.sideError();
-        if (that.originalViewBox && that.mapAreaLeftH != 0) {
+        if (that.originalViewBox && that.mapAreaLeftH > 0) {
           if (this.countSelect == 0) {
             if (!this.smartPhoneCheckService.isSmartPhone()) {
               //席種リストの表示
@@ -1008,7 +1007,11 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
   //画面が横向きだった場合エラーモーダルを出す
   sideError() {
     let orientation = window.orientation;
-    if ($("#mapImgBox").height() < SIDE_HEIGHT && (orientation == 90 || orientation == -90)) {//座席図領域<定数
+    let height = $("#mapImgBox").height();
+    if (this.scaleTotal >= SCALE_SEAT) {
+      height = height - 280;
+    }
+    if (height < SIDE_HEIGHT && (orientation == 90 || orientation == -90)) {//座席図領域<定数
       this.sideProhibition = true;
       this.resizeCssTrue();
     } else {
@@ -1402,7 +1405,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
   //座席選択時の画面拡大縮小
   seatSelectDisplay(flag: boolean) {
     let windowHeight = $(window).height();
-    let allHead: number = $('header').height(); + $('.headArea').height(); + $('.choiceArea').height();;
+    let allHead: number = $('header').height() + $('.headArea').height() + $('.choiceArea').height() + $('#colorNavi').height();
     let orientation = window.orientation;
     if (flag) {
       if (this.smartPhoneCheckService.isSmartPhone()) {
