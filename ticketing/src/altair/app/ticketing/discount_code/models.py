@@ -53,15 +53,11 @@ class DiscountCodeSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     @property
     def target_count(self):
-        return DiscountCodeTarget.query.with_entities(
-            func.count(DiscountCodeTarget.id)
-        ).filter_by(discount_code_setting_id=self.id).scalar()
+        return DiscountCodeTarget.filter_by(discount_code_setting_id=self.id).count()
 
     @property
     def code_count(self):
-        return DiscountCodeCode.query.with_entities(
-            func.count(DiscountCodeCode.id)
-        ).filter_by(discount_code_setting_id=self.id).scalar()
+        return DiscountCodeCode.filter_by(discount_code_setting_id=self.id).count()
 
     @property
     def available_status(self):
