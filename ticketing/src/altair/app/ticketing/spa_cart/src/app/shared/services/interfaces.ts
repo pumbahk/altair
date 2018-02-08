@@ -141,7 +141,7 @@ export interface IPerformance {
   venue_id: number;
   /** @type string - 会場名 */
   venue_name: string;
-  /** @type number - 購入上限枚数 */
+  /** @type number - 購入上限枚数 （未使用）*/
   order_limit: number;
   /** @type string - 公演名 */
   performance_name: string;
@@ -169,7 +169,7 @@ export interface ISalesSegment {
   sales_segment_id: number;
   /** @type string - 販売開始日時 yyyy-mm-dd hh24:mi:ss */
   start_at: string;
-  /** @type string - 購入上限枚数 */
+  /** @type number - 購入回数制限 */
   order_limit: string;
   /** @type boolean - 座席選択可否 */
   seat_choice: boolean;
@@ -177,13 +177,17 @@ export interface ISalesSegment {
   sales_segment_name: string;
   /** @type string - 販売終了日時 yyyy-mm-dd hh24:mi:ss */
   end_at: string;
+  /** @type number - 購入上限枚数 */
+  upper_limit: number;
+  /** @type number - 商品購入上限数 */
+  product_limit: number;
 }
 
 /** @interface イベント情報インタフェース */
 export interface IEvent {
   /** @type number - イベントID */
   event_id: number;
-  /** @type number - 購入上限枚数 */
+  /** @type number - 購入上限枚数 （未使用）*/
   order_limit: number;
 }
 

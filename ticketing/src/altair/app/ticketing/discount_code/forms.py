@@ -31,30 +31,25 @@ class DiscountCodeSettingForm(Form):
         新たに登録しようとしている組み合わせが存在しないことを確認する。
         :return: エラーメッセージ
         """
-
         # 既存の設定の編集時（Hiddenで渡されるIDの有無で判断）
-        if len(self.id.data) != 0:
-            query = DiscountCodeSetting.filter_by(
+        if self.id.data:
+            cnt = DiscountCodeSetting.filter_by(
                 id=self.id.data,
                 organization_id=self.organization_id,
                 first_digit=self.first_digit.data,
                 following_2to4_digits=self.following_2to4_digits.data
-            )
-            cnt = int(query.count())
-            limit = 1
-            if cnt == limit:
+            ).count()
+            if int(cnt) == 1:
                 # 既存の設定の接頭辞を編集しなかった場合、ここでリターン
                 return True
 
         # 新規に設定を登録する場合、あるいは編集時に別の接頭辞に変更する場合
-        query = DiscountCodeSetting.filter_by(
+        cnt = DiscountCodeSetting.filter_by(
             organization_id=self.organization_id,
             first_digit=self.first_digit.data,
             following_2to4_digits=self.following_2to4_digits.data
-        )
-        cnt = int(query.count())
-        limit = 0
-        if cnt > limit:
+        ).count()
+        if int(cnt) > 0:
             raise ValidationError(u'すでに使用されている組み合わせです')
 
         return True
@@ -66,6 +61,27 @@ class DiscountCodeSettingForm(Form):
             return True
         else:
             raise ValidationError(u'コード管理元と接頭辞が正しくありません。自社(T), スポーツサービス開発(E)')
+
+    def validate_is_valid(self, request):
+        # 設定の新規作成時
+        if not self.id.data:
+            raise ValidationError(u'新規登録時は有効にできません。関連項目を設定後に有効にしてください。')
+
+        err_list = []
+        target_cnt = DiscountCodeTarget.filter_by(discount_code_setting_id=self.id.data).count()
+        if not int(target_cnt):
+            err_list.append(u'適用対象の設定')
+
+        if self.issued_by.data == 'own':
+            code_cnt = DiscountCodeCode.filter_by(discount_code_setting_id=self.id.data).count()
+            if not int(code_cnt):
+                err_list.append(u'コードの生成')
+
+        if err_list:
+            err_str = u'と'.join(err_list)
+            raise ValidationError(u'{}を行うと有効に変更できます。'.format(err_str))
+
+        return True
 
     def validate_first_digit(self, request):
         self._check_prefix()

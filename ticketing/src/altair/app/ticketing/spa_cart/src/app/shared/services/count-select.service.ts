@@ -6,13 +6,13 @@ export class CountSelectService {
 
   constructor() { }
 
-  private toQuentityCountSelect = new Subject<number>();
+  private toQuantityCountSelect = new Subject<number>();
 
   // Observable streams
-  public toQuentityData$= this.toQuentityCountSelect.asObservable();
+  public toQuantityData$= this.toQuantityCountSelect.asObservable();
 
   // Service message commands
-  sendToQuentity(countSelect: number) {
-    this.toQuentityCountSelect.next(countSelect);
+  sendToQuantity(countSelect: number) {
+    this.toQuantityCountSelect.next(countSelect);
   }
 }

@@ -641,12 +641,12 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         from altair.app.ticketing.orders.api import get_refund_per_ticket_fee
         return get_refund_per_ticket_fee(self.refund, self)
 
-    def get_refund_ticket_price(self, product_item_id):
+    def get_refund_ticket_price(self, ordered_product_item_token_id):
         from altair.app.ticketing.orders.api import get_refund_ticket_price
         return get_refund_ticket_price(
             self.refund,
             self,
-            product_item_id
+            ordered_product_item_token_id
             )
 
     def get_item_refund_record(self, item):
@@ -860,6 +860,10 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     @property
     def used_discount_codes(self):
         return discount_api.get_used_discount_codes(self)
+
+    @reify
+    def used_discount_code_groups(self):
+        return discount_api.used_discount_code_groups(self)
 
     @property
     def discount_amount(self):

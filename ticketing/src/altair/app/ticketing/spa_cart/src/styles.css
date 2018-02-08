@@ -524,9 +524,9 @@ app-select-product .modalWindowAlertBox {
     height: 100%;
 }
 
-/* reserve-by-quentity */
-.modalWindowAlertBox .modalWindowAlertBoxInner .fixed .modalTicketQty .disabled {
-    background-color: #a4404c;
+/* reserve-by-quantity */
+.ticketQty .disabled {
+    background-color: #a4404c!important;
     cursor: not-allowed;
 }
 .buy{

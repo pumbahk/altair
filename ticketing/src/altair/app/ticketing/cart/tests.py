@@ -930,7 +930,7 @@ class ReserveViewTests(unittest.TestCase):
         from datetime import datetime, timedelta
 
         self.config.include('.request')
-        self.config.add_route('cart.payment', 'payment')
+        self.config.add_route('cart.discount_code', 'discount_code')
         # 在庫
         stock_id = 1
         product_item_id = 2
@@ -1042,7 +1042,7 @@ class ReserveViewTests(unittest.TestCase):
                 'separate_seats': False,
                 },
             'result': 'OK',
-            'payment_url': 'http://example.com/payment',
+            'payment_url': 'http://example.com/discount_code',
             })
         cart_id = request.session['altair.app.ticketing.cart_id']
 
