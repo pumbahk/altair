@@ -1,36 +1,47 @@
 # -*- coding: utf-8 -*-
 
 from datetime import datetime
+
+from altair.app.ticketing.cart.exceptions import OwnDiscountCodeDuplicateError
+from altair.app.ticketing.orders.exceptions import OrderCancellationError
+from communicators.utils import get_communicator
+from pyramid.httpexceptions import HTTPFound
+from pyramid.i18n import TranslationString as _
 from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 from .models import DiscountCodeSetting, DiscountCodeCode, UsedDiscountCodeCart, UsedDiscountCodeOrder
-from altair.app.ticketing.orders.exceptions import OrderCancellationError
-from altair.app.ticketing.cart.exceptions import OwnDiscountCodeDuplicateError
-from communicators.utils import get_communicator
-from pyramid.i18n import TranslationString as _
 
 
-def is_enabled_discount_code_checked(context, request):
+def check_discount_code_functions_available(context, request):
     """
-    クーポン・割引コードの使用設定がONになっているか確認
-    requestは使用できていないが、使用場所がcustom_predicatesのために必要。
+    管理画面のクーポン・割引コード関連機能が使用できる状態か判定
+    :param context: Resourceオブジェクト
+    :param request: requestは使用できていないが、使用場所がcustom_predicatesのために必要。
+    :return: Boolean
     """
-    return context.user.organization.setting.enable_discount_code
-
-
-def get_discount_setting_related_data(context, request):
-    """DiscountCodeSettingとそれに紐づく関連テーブルのレコードを取得"""
-    setting_id = request.matchdict['setting_id']
-
-    query = context.session.query(DiscountCodeSetting).filter_by(
-        organization_id=context.user.organization_id,
-        id=setting_id
-    )
-
-    try:
-        context.setting = query.one()
-        return True
-    except NoResultFound:
+    # ログアウト状態
+    if not context.user:
         return False
+
+    # 組織設定でクーポン・割引コード設定がOFF
+    if not context.user.organization.setting.enable_discount_code:
+        return False
+
+    # 割引コード設定のIDがGETで渡されている場合
+    if 'setting_id' in request.matchdict:
+        setting_id = request.matchdict['setting_id']
+        try:
+            # 成功時はcontextに設定情報を渡しておく
+            context.setting = context.session.query(DiscountCodeSetting).filter_by(
+                organization_id=context.user.organization_id,
+                id=setting_id
+            ).one()
+        except NoResultFound:
+            return False
+        except MultipleResultsFound:
+            request.session.flash(u'登録データに不整合が発生しています。開発部に調査を依頼してください。')
+            raise HTTPFound(location=request.route_path('discount_code.settings_index'))
+
+    return True
 
 
 # order_likeには、cartと、_DummyCart、Orderが入る想定
