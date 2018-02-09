@@ -17,7 +17,7 @@ from pyramid.renderers import render_to_response
 from pyramid.response import Response
 from pyramid.view import view_config, view_defaults
 from sqlalchemy.exc import SQLAlchemyError
-from .api import is_enabled_discount_code_checked, get_discount_setting_related_data, validate_to_delete_all_codes
+from .api import check_discount_code_functions_available, validate_to_delete_all_codes
 from .forms import DiscountCodeSettingForm, DiscountCodeCodesForm, SearchTargetForm, SearchCodeForm
 from .models import DiscountCodeSetting, DiscountCodeCode, DiscountCodeTarget, delete_all_discount_code, insert_specific_number_code
 
@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 
 @view_defaults(decorator=with_bootstrap,
                permission='master_editor',
-               custom_predicates=(is_enabled_discount_code_checked,))
+               custom_predicates=(check_discount_code_functions_available,))
 class DiscountCode(BaseView):
     @view_config(route_name='discount_code.settings_index',
                  renderer='altair.app.ticketing:templates/discount_code/settings/index.html')
@@ -153,8 +153,7 @@ class DiscountCode(BaseView):
         return HTTPFound(location=location)
 
     @view_config(route_name='discount_code.codes_index',
-                 renderer='altair.app.ticketing:templates/discount_code/codes/index.html',
-                 custom_predicates=(is_enabled_discount_code_checked, get_discount_setting_related_data,))
+                 renderer='altair.app.ticketing:templates/discount_code/codes/index.html')
     def codes_index(self):
         f = DiscountCodeCodesForm()
         sf = SearchCodeForm(self.request.GET, organization_id=self.context.organization.id)
@@ -171,8 +170,7 @@ class DiscountCode(BaseView):
             return HTTPFound(self.request.route_path("discount_code.codes_index", setting_id=self.context.setting_id,
                                                      _query=self.request.GET))
 
-    @view_config(route_name='discount_code.codes_csv_export',
-                 custom_predicates=(is_enabled_discount_code_checked, get_discount_setting_related_data,))
+    @view_config(route_name='discount_code.codes_csv_export')
     def codes_csv_export(self):
         f = SearchCodeForm(self.request.GET, organization_id=self.context.organization.id)
         if f.validate():
@@ -197,8 +195,7 @@ class DiscountCode(BaseView):
                                                      _query=self.request.GET))
 
     @view_config(route_name='discount_code.codes_add', request_method='GET',
-                 renderer='altair.app.ticketing:templates/discount_code/codes/_form.html', xhr=True,
-                 custom_predicates=(is_enabled_discount_code_checked, get_discount_setting_related_data,))
+                 renderer='altair.app.ticketing:templates/discount_code/codes/_form.html', xhr=True)
     def codes_add(self):
         f = DiscountCodeCodesForm()
         return {
@@ -208,8 +205,7 @@ class DiscountCode(BaseView):
         }
 
     @view_config(route_name='discount_code.codes_add', request_method='POST',
-                 renderer='altair.app.ticketing:templates/discount_code/codes/_form.html', xhr=True,
-                 custom_predicates=(is_enabled_discount_code_checked, get_discount_setting_related_data,))
+                 renderer='altair.app.ticketing:templates/discount_code/codes/_form.html', xhr=True)
     def codes_add_post(self):
         """
         12桁の英数字（使用可能文字：[A,C,E-H,K-N,P-R,T,W-Y,3,4,6,7,9]）を指定数分生成
@@ -305,8 +301,7 @@ class DiscountCode(BaseView):
                                                  _query=self.request.GET))
 
     @view_config(route_name='discount_code.target_index',
-                 renderer='altair.app.ticketing:templates/discount_code/target/index.html',
-                 custom_predicates=(is_enabled_discount_code_checked, get_discount_setting_related_data,))
+                 renderer='altair.app.ticketing:templates/discount_code/target/index.html')
     def target_index(self):
         f = SearchTargetForm(self.request.GET, organization_id=self.context.organization.id)
         if f.validate():
@@ -334,8 +329,7 @@ class DiscountCode(BaseView):
 
     @view_config(route_name='discount_code.target_confirm',
                  renderer='altair.app.ticketing:templates/discount_code/target/_modal.html',
-                 xhr=True,
-                 custom_predicates=(is_enabled_discount_code_checked, get_discount_setting_related_data,))
+                 xhr=True)
     def target_confirm(self):
         """すでに登録されている適用対象と、今回の登録内容を比較し、どのパフォーマンスが追加・削除されたか表示する"""
         f = SearchTargetForm(self.request.GET, organization_id=self.context.organization.id)
@@ -369,8 +363,7 @@ class DiscountCode(BaseView):
                                                      _query=self.request.GET))
 
     @view_config(route_name='discount_code.target_register', request_method='POST',
-                 renderer='altair.app.ticketing:templates/discount_code/target/_modal.html',
-                 custom_predicates=(is_enabled_discount_code_checked, get_discount_setting_related_data,))
+                 renderer='altair.app.ticketing:templates/discount_code/target/_modal.html')
     def target_register(self):
         logger.info(
             'Update discount code target performance(s).operator_id: {}, added_id_list: {}, deleted_id_list: {}'.format(
