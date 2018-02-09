@@ -12,14 +12,14 @@ from datetime import datetime
 
 from altair.sqlahelper import get_db_session
 from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
+from sqlalchemy.sql.expression import asc
+from webhelpers.number import format_number
 
 import json
 
 from altair.pyramid_assets import get_resolver
 
-from altair.app.ticketing.core.models import Organization, Event, EventSetting, Performance
-
-from altair.app.ticketing.cart.view_support import get_seat_type_dicts
+from altair.app.ticketing.core.models import Organization, Event, EventSetting, Performance, Product
 
 logger = logging.getLogger(__name__)
 
@@ -71,11 +71,30 @@ def get_target_sales_segment(performance, now, sales_segment_group_name):
     return sales_segment[0] if sales_segment else None
 
 
-def get_seat_price(seat_type):
-    return dict(
-        stock_type_name=seat_type['name'],
-        products=[dict(name=product['name'], price=product['price']) for product in seat_type['products']]
-    )
+def get_seat_price_list(session, sales_segment):
+    products = session.query(Product) \
+        .filter(Product.public == True) \
+        .filter(Product.deleted_at == None) \
+        .filter(Product.sales_segment_id == sales_segment.id) \
+        .order_by(asc(Product.seat_stock_type_id)) \
+        .all()
+
+    seat_type_ids = list(set([product.seat_stock_type_id for product in products]))
+
+    seat_price_list = []
+    for seat_type_id in seat_type_ids:
+        seat_products = [product for product in products if product.seat_stock_type_id == seat_type_id]
+        if len(seat_products) > 0:
+            seat_price_list.append(
+                dict(
+                    stock_type_name=seat_products[0].seat_stock_type.name,
+                    products=[dict(
+                        price=format_number(int(product.price), ','),
+                        name=product.name)
+                        for product in seat_products]
+                )
+            )
+    return seat_price_list
 
 
 def output_file(file_name, data):
@@ -167,12 +186,12 @@ def main():
                                 % (p.start_on, p.id, p.name, sales_segment_group_name.decode('utf-8')))
                         continue
 
-                    seat_types = get_seat_type_dicts(request, sales_segment)
-                    seat_price_list.extend([get_seat_price(seat_type) for seat_type in seat_types])
+                    seat_price_list.extend(get_seat_price_list(session, sales_segment))
 
             if len(seat_price_list) > 0:
                 if opts.local_run:
-                    output_file(os.path.join(opts.target, start_on.strftime('%Y%m%d_%H%M'), 'price.json'), seat_price_list)
+                    output_file(os.path.join(opts.target, start_on.strftime('%Y%m%d_%H%M'),
+                                             'price.json'), seat_price_list)
                     continue
                 upload(opts.target + start_on.strftime('%Y%m%d_%H%M') + '/price.json', seat_price_list, resolver)
 
