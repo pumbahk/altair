@@ -256,7 +256,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
   // 横画面表示エラーモーダルフラグ
   sideProhibition: boolean = false;
   // 座席図表示エリア高さ
-  seatAreaHeight: number = null;
+  seatAreaHeight: number;
   // 選択単位フラグ 1席ずつ:true/2席以上ずつ:false
   isGroupedSeats: boolean = true;
   // 座席グループ情報
@@ -856,10 +856,11 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
     const that = this;
     //初期表示時横の場合
     getHightTimer = setInterval(() => {
-      //領域の初期heightを取得
       that.seatAreaHeight = $("#mapImgBox").height();
-      //領域が取得できる且つ横画面且つスマホであればエラーダイアログ出力判定を行う
-      if (that.seatAreaHeight != null && orientation == 90 || orientation == -90 && this.smartPhoneCheckService.isSmartPhone()) {
+      if (that.seatAreaHeight > 0) {
+        that.sideError();
+        clearTimeout(getHightTimer);
+      } else if (that.seatAreaHeight == 0 && orientation == 90 || orientation == -90 && this.smartPhoneCheckService.isSmartPhone()) {
         that.sideError();
         clearTimeout(getHightTimer);
       }
@@ -1007,11 +1008,9 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
   sideError() {
     let orientation = window.orientation;
     let height = $("#mapImgBox").height();
-    //拡大状態であれば席種リスト分を減らす
     if (this.scaleTotal >= SCALE_SEAT) {
       height = height - 280;
     }
-    //領域が定数以下且つ横画面であればエラーダイアログを出力
     if (height < SIDE_HEIGHT && (orientation == 90 || orientation == -90)) {//座席図領域<定数
       this.sideProhibition = true;
       this.resizeCssTrue();
