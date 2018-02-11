@@ -24,7 +24,7 @@
                 </th>
                 <th class="span1" style="text-align:center;">
                     ${HH.label_text_for(DiscountCodeSettingForm.status)}
-                    ${ch.help(form.status, u"「有効」にならない限り、チケット購入時にクーポン・割引コード入力画面は表示されません。")|n}
+                    ${ch.help(form.status, u"「適用」にならない限り、チケット購入時にクーポン・割引コード入力画面は表示されません。")|n}
                 </th>
                 <th class="span1" style="text-align: center">
                     頭4文字
@@ -51,11 +51,11 @@
                         <td style="text-align: center">${setting.id}</td>
                         <td style="text-align: center;">
                             % if setting.available_status == True:
-                                <span class="badge badge-info">有　効</span>
+                                <span class="badge badge-info">適　用</span>
                             % else:
                                 <span class="badge badge-warning" rel="popover"
-                                      data-original-title="無効になっている理由"
-                                      data-content="${ch.unordered_list_up(setting.available_status)}">無　効</span>
+                                      data-original-title="準備中になっている理由"
+                                      data-content="${ch.unordered_list_up(setting.available_status)}">準備中</span>
                             % endif
                         </td>
                         <td style="text-align: center;">
