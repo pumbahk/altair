@@ -1284,9 +1284,10 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
       this.stockTypeName = '';
       this.filterComponent.selectSeatSearch(this.stockTypeName);
       this.stockTypeDataService.sendToIsSearchFlag(false);
-      if ($(window).width() > WINDOW_SM) {
-        this.stockTypeDataService.sendToSeatListFlag(true);
-        this.seatSelectDisplay(true);
+      this.mapHome();
+      if (!this.smartPhoneCheckService.isSmartPhone() && !this.smartPhoneCheckService.isIpad()) {
+        //ツールチップ削除
+        $('[id=tooltip]').remove();
       }
     }
   }
