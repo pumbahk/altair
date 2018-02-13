@@ -1700,6 +1700,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
 
   // 席種詳細ダイアログの消去
   removeDialog() {
+    let cancelSeat = this.countSelect;
     //席のキャンセル
     if (this.isGroupedSeats) {
       $('#' + this.selectedSeatId).css({ 'fill': SEAT_COLOR_NA });
@@ -1735,8 +1736,10 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
     }
     //ダイアログ非表示
     this.displayDetail = false;
-    //席が1つも選択されていない場合
-    this.selectedCancel();
+    //席がキャンセルされた場合
+    if (cancelSeat) {
+      this.selectedCancel();
+    }
   }
 
   // リストへの追加
