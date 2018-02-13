@@ -1272,6 +1272,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
       }
     }
   }
+  //席選択数が0の場合の処理
   selectedCancel() {
     if (this.countSelect == 0) {
       $('.seatNumberBox').slideUp(300);
@@ -1282,9 +1283,11 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
       this.stockTypeId = null;
       this.stockTypeName = '';
       this.filterComponent.selectSeatSearch(this.stockTypeName);
-      if ($(window).width() > WINDOW_SM) {
-        this.stockTypeDataService.sendToSeatListFlag(true);
-        this.seatSelectDisplay(true);
+      this.stockTypeDataService.sendToIsSearchFlag(false);
+      this.mapHome();
+      if (!this.smartPhoneCheckService.isSmartPhone() && !this.smartPhoneCheckService.isIpad()) {
+        //ツールチップ削除
+        $('[id=tooltip]').remove();
       }
     }
   }
@@ -1695,8 +1698,10 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
     }
   }
 
-  // ダイアログの消去
+  // 席種詳細ダイアログの消去
   removeDialog() {
+    let cancelSeat = this.countSelect;
+    //席のキャンセル
     if (this.isGroupedSeats) {
       $('#' + this.selectedSeatId).css({ 'fill': SEAT_COLOR_NA });
       if (this.reservedFlag) {
@@ -1729,12 +1734,11 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
         this.countSelect = this.selectedSeatList.length;
       }
     }
+    //ダイアログ非表示
     this.displayDetail = false;
-    if (this.countSelect == 0) {
-      this.ticketDetail = false;
-      if (($(window).width() > WINDOW_SM) || (this.scaleTotal < SCALE_SEAT)) {
-        this.seatSelectDisplay(false);
-      }
+    //席がキャンセルされた場合
+    if (cancelSeat) {
+      this.selectedCancel();
     }
   }
 
@@ -1871,17 +1875,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
         this.countSelect = this.selectedSeatList.length;
       }
     }
-    if (this.countSelect == 0) {
-      this.ticketDetail = false;
-      this.stockTypeDataService.sendToIsSearchFlag(false);
-      this.sameStockType = true;
-      this.stockTypeName = '';
-      this.filterComponent.selectSeatSearch(this.stockTypeName);
-      if (($(window).width() > WINDOW_SM) || (this.scaleTotal < SCALE_SEAT)) {
-        this.stockTypeDataService.sendToSeatListFlag(true);
-        this.seatSelectDisplay(true);
-      }
-    }
+    this.selectedCancel();
     this.displayDetail = false;
   }
 
