@@ -152,23 +152,23 @@ export class ApiBase extends Http{
   private callErrorModal(errMsg:string) {
     if (errMsg == `${ApiConst.TIMEOUT}` || errMsg == `${ApiConst.SERVER_DNS_ERROR}`) {
       this.errorModalDataService.sendToErrorModal(
-        '通信エラー発生',
+        '通信エラー発生(E101)',
         'インターネットに未接続または通信が不安定な可能性があります。通信環境の良いところで操作をやり直すかページを再読込してください。'
       );
     } else if (errMsg == `${ApiConst.INTERNAL_SERVER_ERROR}`) {
       this.errorModalDataService.sendToErrorModal(
-        'サーバーエラー発生',
-        '予期しないエラーが発生しました。操作をやり直すかページを再読込してください。'
+        'ただいま大変混み合っております。(E102)',
+        '現在、アクセスが集中しページが閲覧しにくい状態となっております。お客様にはご不便とご迷惑をおかけいたしますが、今しばらくお待ちの上、再度アクセスをしていただけますよう、よろしくお願いいたします。'
       );
     } else if (errMsg == `${ApiConst.SERVICE_UNAVAILABLE}`) {
       this.errorModalDataService.sendToErrorModal(
-        'メンテナンス中',
-        'ただいまメンテナンス中のため、一時的にサービスをご利用いただけません。'
+        'ただいま大変混み合っております。(E103)',
+        '現在、アクセスが集中しページが閲覧しにくい状態となっております。お客様にはご不便とご迷惑をおかけいたしますが、今しばらくお待ちの上、再度アクセスをしていただけますよう、よろしくお願いいたします。'
       );
     } else {
       this.errorModalDataService.sendToErrorModal(
-        'その他エラー発生',
-        '予期しないエラーが発生しました。操作をやり直すかページを再読込してください。'
+        'ただいま大変混み合っております。(E104)',
+        '現在、アクセスが集中しページが閲覧しにくい状態となっております。お客様にはご不便とご迷惑をおかけいたしますが、今しばらくお待ちの上、再度アクセスをしていただけますよう、よろしくお願いいたします。'
       );
     }
   }
