@@ -233,16 +233,10 @@ class Cart(Base, c_models.CartMixin):
 
     @property
     def total_amount(self):
-        total_amount = c_api.calculate_total_amount(self)
-        return total_amount - self.discount_amount
-
-    @property
-    def total_amount(self):
         try:
-            return c_api.calculate_total_amount(self) - self.discount_amount
-        except Exception as e:
+            return c_api.calculate_total_amount(self)
+        except Exception:
             raise InvalidCartStatusError(self.id)
-
 
     @property
     def delivery_fee(self):
