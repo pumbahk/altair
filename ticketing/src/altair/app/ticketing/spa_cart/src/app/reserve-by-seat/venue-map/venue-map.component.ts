@@ -989,9 +989,14 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
 
   ngOnDestroy() {
     //イベントハンドラを削除
-    $(window).off('resize');
+    $('#mapAreaLeft').off('mouseenter mousemove mouseleave ');
+    $('#mapBtnHome').off('mousedown touchstart mouseup touchend');
+    $('#mapBtnPlus').off('mousedown touchstart mouseup touchend');
+    $('#mapBtnMinus').off('mousedown touchstart mouseup touchend');
+    $('#mapImgBox').off('mousedown touchstart mouseup touchend mousewheel DOMMouseScroll');
     this.gestureObj.off("pinchstart pinchmove pinchend");
     this.gestureObj.off("panstart panmove panend");
+    $(window).off('resize');
   }
 
   //画面が横向きだった場合エラーモーダルを出す
