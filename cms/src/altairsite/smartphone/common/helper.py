@@ -240,7 +240,9 @@ class SmartPhoneHelper(object):
         return helper.get_summary_salessegment_group(event)
 
     def disp_period(self, open_time, close):
-        if open_time is not None and close is not None and \
+        if open_time is not None and close is None:
+            period = self.disp_time(open_time)
+        elif open_time is not None and close is not None and \
            (open_time.year == close.year and open_time.month == close.month and open_time.day == close.day):
             period = self.disp_time(open_time)
         else:
