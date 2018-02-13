@@ -827,15 +827,16 @@ def refresh_order(request, session, order):
     logger.info('Finished refreshing order %s (id=%d)' % (order.order_no, order.id))
 
 def recalculate_total_amount_for_order(request, order_like):
-    return \
-        order_like.transaction_fee + \
-        order_like.delivery_fee + \
-        order_like.system_fee + \
-        order_like.special_fee + \
-        order_like.sales_segment.get_products_amount_without_fee(
-            order_like.payment_delivery_pair,
-            [ (item.product, item.price, item.quantity) for item in order_like.items ]
-            )
+    discount_amount = discount_api.get_discount_amount(order_like)
+    total_amount = order_like.transaction_fee + \
+                   order_like.delivery_fee + \
+                   order_like.system_fee + \
+                   order_like.special_fee + \
+                   order_like.sales_segment.get_products_amount_without_fee(
+                       order_like.payment_delivery_pair,
+                       [(item.product, item.price, item.quantity) for item in order_like.items]
+                   )
+    return total_amount - discount_amount
 
 def validate_order(request, order_like, ref, update=False):
     retval = []
