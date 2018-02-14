@@ -280,6 +280,9 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
   //ブラウザバック確認モーダルを出さないフラグ
   returnUnconfirmFlag = false;
 
+  //Hammer.jsイベントオブジェクト
+  gestureObj = null;
+
   ngOnInit() {
     this.startTime = new Date();
     const that = this;
@@ -660,12 +663,12 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
       }
     });
 
-    let gestureObj = new Hammer($('#mapImgBox')[0]);
-    gestureObj.get('pan').set({ enable: true, threshold: 0, direction: Hammer.DIRECTION_ALL });
-    gestureObj.get('pinch').set({ enable: true });
+    this.gestureObj = new Hammer($('#mapImgBox')[0]);
+    this.gestureObj.get('pan').set({ enable: true, threshold: 0, direction: Hammer.DIRECTION_ALL });
+    this.gestureObj.get('pinch').set({ enable: true });
 
     // パン操作
-    gestureObj.on('panstart panmove panend', (event) => {
+    this.gestureObj.on('panstart panmove panend', (event) => {
       if (this.isInitialEnd()) {
         let venueObj = $('#mapImgBox');
         let x, y, viewBoxVals;
@@ -706,7 +709,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
     });
 
     // ピンチ操作
-    gestureObj.on('pinchstart pinchmove pinchend', (event) => {
+    this.gestureObj.on('pinchstart pinchmove pinchend', (event) => {
       if (this.isInitialEnd()) {
         let viewBoxVals: any[];
         let venueObj = $('#mapImgBox');
@@ -985,7 +988,14 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
   }
 
   ngOnDestroy() {
-    //リサイズのイベントハンドラを削除
+    //イベントハンドラを削除
+    $('#mapAreaLeft').off('mouseenter mousemove mouseleave');
+    $('#mapBtnHome').off('mousedown touchstart mouseup touchend');
+    $('#mapBtnPlus').off('mousedown touchstart mouseup touchend');
+    $('#mapBtnMinus').off('mousedown touchstart mouseup touchend');
+    $('#mapImgBox').off('mousedown touchstart mouseup touchend mousewheel DOMMouseScroll');
+    this.gestureObj.off('pinchstart pinchmove pinchend');
+    this.gestureObj.off('panstart panmove panend');
     $(window).off('resize');
   }
 
