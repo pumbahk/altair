@@ -273,18 +273,24 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
   endTime: any;
   // SVGに対するinnerHTMLの利用可否
   isInnerHtmlAvailable: boolean = true;
-
   //ブラウザバックフラグ
   returnFlag = false;
-
   //ブラウザバック確認モーダルを出さないフラグ
   returnUnconfirmFlag = false;
+  //ローディングアニメーションが表示されているか
+  roadingAnimationEnable: boolean;
 
   ngOnInit() {
     this.startTime = new Date();
     const that = this;
     let drawingRegionTimer;
     let drawingSeatTimer;
+
+    this.animationEnableService.toRoadingFlag$.subscribe(
+      flag => {
+        this.roadingAnimationEnable = flag;
+      }
+    );
     this.animationEnableService.sendToRoadFlag(true);
 
     var svg_test = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
@@ -649,7 +655,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
         if (this.touchFlag) {
           if ($(event.target).hasClass('region') || $(event.target).parents().hasClass('region')) {
             this.tapRegion(event);
-          } else if ($(event.target).hasClass('seat')) {
+          } else if ($(event.target).hasClass('seat') && !this.roadingAnimationEnable) {
             this.tapSeat(event);
           }
         }
