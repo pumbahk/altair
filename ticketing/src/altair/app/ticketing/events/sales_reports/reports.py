@@ -716,9 +716,9 @@ class ExportableReporter(object):
         """
         cond_order = and_(Order.id==OrderedProduct.order_id, Order.canceled_at==None, Order.refunded_at==None)
         if self.ordered_from:
-            cond_order = and_(cond_order, Order.created_at>=self.ordered_from)
+            cond_order = and_(cond_order, Order.created_at >= self.ordered_from)
         if self.ordered_to:
-            cond_order  = and_(cond_order, Order.created_at<self.ordered_to+timedelta(days=1))
+            cond_order  = and_(cond_order, Order.created_at < self.ordered_to)
 
         q = self.slave_session.query(
             Performance, Stock, ProductItem, SalesSegmentGroup, SalesSegment,
