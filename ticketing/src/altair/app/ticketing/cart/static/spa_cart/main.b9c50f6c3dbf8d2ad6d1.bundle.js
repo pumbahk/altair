@@ -9750,6 +9750,8 @@ var VenuemapComponent = (function () {
         this.returnFlag = false;
         //ブラウザバック確認モーダルを出さないフラグ
         this.returnUnconfirmFlag = false;
+        //Hammer.jsイベントオブジェクト
+        this.gestureObj = null;
         this.element = this.el.nativeElement;
     }
     VenuemapComponent.prototype.ngOnInit = function () {
@@ -10109,11 +10111,11 @@ var VenuemapComponent = (function () {
                 event.preventDefault();
             }
         });
-        var gestureObj = new Hammer(__WEBPACK_IMPORTED_MODULE_14_jquery__('#mapImgBox')[0]);
-        gestureObj.get('pan').set({ enable: true, threshold: 0, direction: Hammer.DIRECTION_ALL });
-        gestureObj.get('pinch').set({ enable: true });
+        this.gestureObj = new Hammer(__WEBPACK_IMPORTED_MODULE_14_jquery__('#mapImgBox')[0]);
+        this.gestureObj.get('pan').set({ enable: true, threshold: 0, direction: Hammer.DIRECTION_ALL });
+        this.gestureObj.get('pinch').set({ enable: true });
         // パン操作
-        gestureObj.on('panstart panmove panend', function (event) {
+        this.gestureObj.on('panstart panmove panend', function (event) {
             if (_this.isInitialEnd()) {
                 var venueObj = __WEBPACK_IMPORTED_MODULE_14_jquery__('#mapImgBox');
                 var x = void 0, y = void 0, viewBoxVals = void 0;
@@ -10152,7 +10154,7 @@ var VenuemapComponent = (function () {
             }
         });
         // ピンチ操作
-        gestureObj.on('pinchstart pinchmove pinchend', function (event) {
+        this.gestureObj.on('pinchstart pinchmove pinchend', function (event) {
             if (_this.isInitialEnd()) {
                 var viewBoxVals = void 0;
                 var venueObj = __WEBPACK_IMPORTED_MODULE_14_jquery__('#mapImgBox');
@@ -10430,7 +10432,14 @@ var VenuemapComponent = (function () {
         }, false);
     };
     VenuemapComponent.prototype.ngOnDestroy = function () {
-        //リサイズのイベントハンドラを削除
+        //イベントハンドラを削除
+        __WEBPACK_IMPORTED_MODULE_14_jquery__('#mapAreaLeft').off('mouseenter mousemove mouseleave');
+        __WEBPACK_IMPORTED_MODULE_14_jquery__('#mapBtnHome').off('mousedown touchstart mouseup touchend');
+        __WEBPACK_IMPORTED_MODULE_14_jquery__('#mapBtnPlus').off('mousedown touchstart mouseup touchend');
+        __WEBPACK_IMPORTED_MODULE_14_jquery__('#mapBtnMinus').off('mousedown touchstart mouseup touchend');
+        __WEBPACK_IMPORTED_MODULE_14_jquery__('#mapImgBox').off('mousedown touchstart mouseup touchend mousewheel DOMMouseScroll');
+        this.gestureObj.off('pinchstart pinchmove pinchend');
+        this.gestureObj.off('panstart panmove panend');
         __WEBPACK_IMPORTED_MODULE_14_jquery__(window).off('resize');
     };
     //画面が横向きだった場合エラーモーダルを出す
