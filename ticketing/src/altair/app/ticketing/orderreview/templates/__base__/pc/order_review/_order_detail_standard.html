@@ -163,7 +163,9 @@
     <input type="hidden" name="action" value="edit_order_attributes.form" />
     <input type="hidden" name="order_no" value="${order.order_no}" />
     <input type="hidden" name="tel" value="${order.shipping_address.tels[0]}" />
-    <input type="submit" class="historySearchBtn" value="${__(u'入力情報の編集')}" />
+    <p class="wrap-btn">
+      <input type="submit" class="btn" value="${__(u'入力情報の編集')}" />
+    </p>
   </form>
   % endif
 % endif
