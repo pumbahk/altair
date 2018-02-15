@@ -150,10 +150,6 @@ class Cart(Base, c_models.CartMixin):
     def name(self):
         return str(self.performance.id)
 
-    @property
-    def performance_id(self):
-        return str(self.performance.id)
-
     @classmethod
     @deprecate("this function does not take it account that a cart is not associated to a single performance")
     def create(cls, request, **kwargs):
