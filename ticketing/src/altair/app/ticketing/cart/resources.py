@@ -831,9 +831,9 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
             if not self.is_authz_user:
                 return False
 
-            auth_identifier = self.request.altair_auth_info['authz_identifier']
+            authz_identifier = self.request.altair_auth_info['authz_identifier']
             # 数字だけで構成されていない場合（「一般の方」「その他会員IDをお持ちの方」ログイン）をはじく
-            if not auth_identifier.isdigit():
+            if not authz_identifier.isdigit():
                 return False
 
         return True
