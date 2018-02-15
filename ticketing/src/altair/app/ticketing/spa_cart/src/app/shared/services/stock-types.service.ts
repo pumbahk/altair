@@ -46,7 +46,7 @@ export class StockTypesService extends ApiBase{
     return this.performances.getPerformance(performanceId).flatMap((response: IPerformanceInfoResponse) => {
       const url = `${ApiConst.API_URL.STOCK_TYPES.replace(/{:performance_id}/, performanceId + '')
         .replace(/{:sales_segment_id}/, response.data.performance.sales_segments[0].sales_segment_id + '')}`;
-      return this.httpGet(url);
+      return this.httpGet(url,true);
     }).share();
   }
 
