@@ -234,7 +234,7 @@ class DiscountCodeCodesForm(Form):
     generate_num = IntegerField(
         label=u'コード生成数',
         validators=[
-            NumberRange(min=0, max=54875873536, message=u'同一のクーポン・割引コード設定で生成できるコードの上限数は54,875,873,536です')
+            NumberRange(min=0, max=50000, message=u'一度に生成できるコードの上限数は50,000です。それ以上にコードが必要な場合は複数回実行してください。')
         ]
     )
 

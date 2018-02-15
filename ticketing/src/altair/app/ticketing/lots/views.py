@@ -294,7 +294,7 @@ class EntryLotView(object):
             ]
 
     @lbr_view_config(request_method="GET")
-    def get(self, form=None):
+    def get(self, form=None, recaptcha_done=None):
         jump_maintenance_page_for_trouble(self.request.organization)
         if form is None:
             form = self._create_form()
@@ -320,7 +320,7 @@ class EntryLotView(object):
         performance_product_map = self._create_performance_product_map(sales_segment.products)
         stock_types = self._stock_type_from_products(sales_segment.products)
 
-        if self.request.organization.setting.recaptcha:
+        if self.request.organization.setting.recaptcha and not recaptcha_done:
             recaptcha = self.request.GET.get('g-recaptcha-response')
             if not self.context.check_recaptch(recaptcha):
                 return HTTPFound(self.request.route_url('lots.index.recaptcha', event_id=self.context.event.id, lot_id=lot.id) or '/')
@@ -422,7 +422,7 @@ class EntryLotView(object):
             validated = False
 
         if not validated:
-            return self.get(form=cform)
+            return self.get(form=cform, recaptcha_done=True)
 
         entry_no = api.generate_entry_no(self.request, self.context.organization)
 

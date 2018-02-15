@@ -97,9 +97,18 @@ def iterate_serial_and_seat(ordered_product_item_like):
         for i in range(ordered_product_item_like.quantity):
             yield i, None
 
+
 def calculate_total_amount(order_like):
     if not order_like.sales_segment:
         return None
-    return order_like.sales_segment.get_amount(
+
+    total_amount = order_like.sales_segment.get_amount(
         order_like.payment_delivery_pair,
         [(p.product, p.price, p.quantity) for p in order_like.items])
+
+    if hasattr(order_like, 'discount_amount'):
+        return total_amount - order_like.discount_amount
+    elif hasattr(order_like.original_order, 'discount_amount'):
+        return total_amount - order_like.original_order.discount_amount
+
+    return total_amount

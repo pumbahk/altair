@@ -9750,6 +9750,8 @@ var VenuemapComponent = (function () {
         this.returnFlag = false;
         //ブラウザバック確認モーダルを出さないフラグ
         this.returnUnconfirmFlag = false;
+        //Hammer.jsイベントオブジェクト
+        this.gestureObj = null;
         this.element = this.el.nativeElement;
     }
     VenuemapComponent.prototype.ngOnInit = function () {
@@ -10109,11 +10111,11 @@ var VenuemapComponent = (function () {
                 event.preventDefault();
             }
         });
-        var gestureObj = new Hammer(__WEBPACK_IMPORTED_MODULE_14_jquery__('#mapImgBox')[0]);
-        gestureObj.get('pan').set({ enable: true, threshold: 0, direction: Hammer.DIRECTION_ALL });
-        gestureObj.get('pinch').set({ enable: true });
+        this.gestureObj = new Hammer(__WEBPACK_IMPORTED_MODULE_14_jquery__('#mapImgBox')[0]);
+        this.gestureObj.get('pan').set({ enable: true, threshold: 0, direction: Hammer.DIRECTION_ALL });
+        this.gestureObj.get('pinch').set({ enable: true });
         // パン操作
-        gestureObj.on('panstart panmove panend', function (event) {
+        this.gestureObj.on('panstart panmove panend', function (event) {
             if (_this.isInitialEnd()) {
                 var venueObj = __WEBPACK_IMPORTED_MODULE_14_jquery__('#mapImgBox');
                 var x = void 0, y = void 0, viewBoxVals = void 0;
@@ -10152,7 +10154,7 @@ var VenuemapComponent = (function () {
             }
         });
         // ピンチ操作
-        gestureObj.on('pinchstart pinchmove pinchend', function (event) {
+        this.gestureObj.on('pinchstart pinchmove pinchend', function (event) {
             if (_this.isInitialEnd()) {
                 var viewBoxVals = void 0;
                 var venueObj = __WEBPACK_IMPORTED_MODULE_14_jquery__('#mapImgBox');
@@ -10430,7 +10432,14 @@ var VenuemapComponent = (function () {
         }, false);
     };
     VenuemapComponent.prototype.ngOnDestroy = function () {
-        //リサイズのイベントハンドラを削除
+        //イベントハンドラを削除
+        __WEBPACK_IMPORTED_MODULE_14_jquery__('#mapAreaLeft').off('mouseenter mousemove mouseleave');
+        __WEBPACK_IMPORTED_MODULE_14_jquery__('#mapBtnHome').off('mousedown touchstart mouseup touchend');
+        __WEBPACK_IMPORTED_MODULE_14_jquery__('#mapBtnPlus').off('mousedown touchstart mouseup touchend');
+        __WEBPACK_IMPORTED_MODULE_14_jquery__('#mapBtnMinus').off('mousedown touchstart mouseup touchend');
+        __WEBPACK_IMPORTED_MODULE_14_jquery__('#mapImgBox').off('mousedown touchstart mouseup touchend mousewheel DOMMouseScroll');
+        this.gestureObj.off('pinchstart pinchmove pinchend');
+        this.gestureObj.off('panstart panmove panend');
         __WEBPACK_IMPORTED_MODULE_14_jquery__(window).off('resize');
     };
     //画面が横向きだった場合エラーモーダルを出す
@@ -10728,6 +10737,7 @@ var VenuemapComponent = (function () {
             }
         }
     };
+    //席選択数が0の場合の処理
     VenuemapComponent.prototype.selectedCancel = function () {
         if (this.countSelect == 0) {
             __WEBPACK_IMPORTED_MODULE_14_jquery__('.seatNumberBox').slideUp(300);
@@ -10738,9 +10748,11 @@ var VenuemapComponent = (function () {
             this.stockTypeId = null;
             this.stockTypeName = '';
             this.filterComponent.selectSeatSearch(this.stockTypeName);
-            if (__WEBPACK_IMPORTED_MODULE_14_jquery__(window).width() > WINDOW_SM) {
-                this.stockTypeDataService.sendToSeatListFlag(true);
-                this.seatSelectDisplay(true);
+            this.stockTypeDataService.sendToIsSearchFlag(false);
+            this.mapHome();
+            if (!this.smartPhoneCheckService.isSmartPhone() && !this.smartPhoneCheckService.isIpad()) {
+                //ツールチップ削除
+                __WEBPACK_IMPORTED_MODULE_14_jquery__('[id=tooltip]').remove();
             }
         }
     };
@@ -11146,8 +11158,10 @@ var VenuemapComponent = (function () {
             }
         }
     };
-    // ダイアログの消去
+    // 席種詳細ダイアログの消去
     VenuemapComponent.prototype.removeDialog = function () {
+        var cancelSeat = this.countSelect;
+        //席のキャンセル
         if (this.isGroupedSeats) {
             __WEBPACK_IMPORTED_MODULE_14_jquery__('#' + this.selectedSeatId).css({ 'fill': SEAT_COLOR_NA });
             if (this.reservedFlag) {
@@ -11181,12 +11195,11 @@ var VenuemapComponent = (function () {
                 this.countSelect = this.selectedSeatList.length;
             }
         }
+        //ダイアログ非表示
         this.displayDetail = false;
-        if (this.countSelect == 0) {
-            this.ticketDetail = false;
-            if ((__WEBPACK_IMPORTED_MODULE_14_jquery__(window).width() > WINDOW_SM) || (this.scaleTotal < SCALE_SEAT)) {
-                this.seatSelectDisplay(false);
-            }
+        //席がキャンセルされた場合
+        if (cancelSeat) {
+            this.selectedCancel();
         }
     };
     // リストへの追加
@@ -11326,17 +11339,7 @@ var VenuemapComponent = (function () {
                 this.countSelect = this.selectedSeatList.length;
             }
         }
-        if (this.countSelect == 0) {
-            this.ticketDetail = false;
-            this.stockTypeDataService.sendToIsSearchFlag(false);
-            this.sameStockType = true;
-            this.stockTypeName = '';
-            this.filterComponent.selectSeatSearch(this.stockTypeName);
-            if ((__WEBPACK_IMPORTED_MODULE_14_jquery__(window).width() > WINDOW_SM) || (this.scaleTotal < SCALE_SEAT)) {
-                this.stockTypeDataService.sendToSeatListFlag(true);
-                this.seatSelectDisplay(true);
-            }
-        }
+        this.selectedCancel();
         this.displayDetail = false;
     };
     // カート破棄のダイアログの非表示
@@ -12541,16 +12544,16 @@ var ApiBase = (function (_super) {
     };
     ApiBase.prototype.callErrorModal = function (errMsg) {
         if (errMsg == "" + __WEBPACK_IMPORTED_MODULE_4__app_constants__["a" /* ApiConst */].TIMEOUT || errMsg == "" + __WEBPACK_IMPORTED_MODULE_4__app_constants__["a" /* ApiConst */].SERVER_DNS_ERROR) {
-            this.errorModalDataService.sendToErrorModal('通信エラー発生', 'インターネットに未接続または通信が不安定な可能性があります。通信環境の良いところで操作をやり直すかページを再読込してください。');
+            this.errorModalDataService.sendToErrorModal('通信エラー発生(E101)', 'インターネットに未接続または通信が不安定な可能性があります。通信環境の良いところで操作をやり直すかページを再読込してください。');
         }
         else if (errMsg == "" + __WEBPACK_IMPORTED_MODULE_4__app_constants__["a" /* ApiConst */].INTERNAL_SERVER_ERROR) {
-            this.errorModalDataService.sendToErrorModal('サーバーエラー発生', '予期しないエラーが発生しました。操作をやり直すかページを再読込してください。');
+            this.errorModalDataService.sendToErrorModal('ただいま大変混み合っております。(E102)', '現在、アクセスが集中しページが閲覧しにくい状態となっております。お客様にはご不便とご迷惑をおかけいたしますが、今しばらくお待ちの上、再度アクセスをしていただけますよう、よろしくお願いいたします。');
         }
         else if (errMsg == "" + __WEBPACK_IMPORTED_MODULE_4__app_constants__["a" /* ApiConst */].SERVICE_UNAVAILABLE) {
-            this.errorModalDataService.sendToErrorModal('メンテナンス中', 'ただいまメンテナンス中のため、一時的にサービスをご利用いただけません。');
+            this.errorModalDataService.sendToErrorModal('ただいま大変混み合っております。(E103)', '現在、アクセスが集中しページが閲覧しにくい状態となっております。お客様にはご不便とご迷惑をおかけいたしますが、今しばらくお待ちの上、再度アクセスをしていただけますよう、よろしくお願いいたします。');
         }
         else {
-            this.errorModalDataService.sendToErrorModal('その他エラー発生', '予期しないエラーが発生しました。操作をやり直すかページを再読込してください。');
+            this.errorModalDataService.sendToErrorModal('ただいま大変混み合っております。(E104)', '現在、アクセスが集中しページが閲覧しにくい状態となっております。お客様にはご不便とご迷惑をおかけいたしますが、今しばらくお待ちの上、再度アクセスをしていただけますよう、よろしくお願いいたします。');
         }
     };
     ApiBase.prototype.check401 = function (body) {
@@ -13328,7 +13331,7 @@ var StockTypesService = (function (_super) {
         return this.performances.getPerformance(performanceId).flatMap(function (response) {
             var url = "" + __WEBPACK_IMPORTED_MODULE_2__app_constants__["a" /* ApiConst */].API_URL.STOCK_TYPES.replace(/{:performance_id}/, performanceId + '')
                 .replace(/{:sales_segment_id}/, response.data.performance.sales_segments[0].sales_segment_id + '');
-            return _this.httpGet(url);
+            return _this.httpGet(url, true);
         }).share();
     };
     /**

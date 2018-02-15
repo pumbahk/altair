@@ -183,7 +183,7 @@ class LotResource(LotResourceBase):
                 logger.info('lot_id (%ld) != lot_id_from_session (%ld)' % (lot_id, lot_id_from_session))
                 raise HTTPNotFound(
                     detail=u'lots_session_conflict',
-                    comment=u'注意：未完了の抽選申込情報が見つかりました。申込情報をクリアして先に進んで良い場合は、下記リンクをクリックして下さい'
+                    comment=u'注意：申込が完了していない抽選情報が見つかりました。申込途中の情報をクリアして、先に進んで良い場合は、下記リンクをクリックして下さい'
                 )
         event_id = None
         try:
