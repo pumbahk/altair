@@ -239,12 +239,17 @@ class SmartPhoneHelper(object):
         helper = EventHelper()
         return helper.get_summary_salessegment_group(event)
 
-    def disp_period(self, open_time, close):
+    def disp_period(self, open_time, close, performances=None):
         if open_time is not None and close is None:
             period = self.disp_time(open_time)
         elif open_time is not None and close is not None and \
-           (open_time.year == close.year and open_time.month == close.month and open_time.day == close.day):
-            period = self.disp_time(open_time)
+                (open_time.year == close.year and open_time.month == close.month and open_time.day == close.day):
+
+            if performances and len(performances) > 1:
+                # 複数公演があり、日付が同じ日の場合は、日付のみ出す
+                period = self.disp_date_week(open_time)
+            else:
+                period = self.disp_time(open_time)
         else:
             # 公演日と、公演終了日が違う場合は、両方表示する
             period = u'%s〜%s' % (
