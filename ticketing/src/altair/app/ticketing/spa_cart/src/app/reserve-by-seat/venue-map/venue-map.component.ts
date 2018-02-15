@@ -280,6 +280,9 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
   //ブラウザバック確認モーダルを出さないフラグ
   returnUnconfirmFlag = false;
 
+  //Hammer.jsイベントオブジェクト
+  gestureObj = null;
+
   ngOnInit() {
     this.startTime = new Date();
     const that = this;
@@ -660,12 +663,12 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
       }
     });
 
-    let gestureObj = new Hammer($('#mapImgBox')[0]);
-    gestureObj.get('pan').set({ enable: true, threshold: 0, direction: Hammer.DIRECTION_ALL });
-    gestureObj.get('pinch').set({ enable: true });
+    this.gestureObj = new Hammer($('#mapImgBox')[0]);
+    this.gestureObj.get('pan').set({ enable: true, threshold: 0, direction: Hammer.DIRECTION_ALL });
+    this.gestureObj.get('pinch').set({ enable: true });
 
     // パン操作
-    gestureObj.on('panstart panmove panend', (event) => {
+    this.gestureObj.on('panstart panmove panend', (event) => {
       if (this.isInitialEnd()) {
         let venueObj = $('#mapImgBox');
         let x, y, viewBoxVals;
@@ -706,7 +709,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
     });
 
     // ピンチ操作
-    gestureObj.on('pinchstart pinchmove pinchend', (event) => {
+    this.gestureObj.on('pinchstart pinchmove pinchend', (event) => {
       if (this.isInitialEnd()) {
         let viewBoxVals: any[];
         let venueObj = $('#mapImgBox');
@@ -985,7 +988,14 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
   }
 
   ngOnDestroy() {
-    //リサイズのイベントハンドラを削除
+    //イベントハンドラを削除
+    $('#mapAreaLeft').off('mouseenter mousemove mouseleave');
+    $('#mapBtnHome').off('mousedown touchstart mouseup touchend');
+    $('#mapBtnPlus').off('mousedown touchstart mouseup touchend');
+    $('#mapBtnMinus').off('mousedown touchstart mouseup touchend');
+    $('#mapImgBox').off('mousedown touchstart mouseup touchend mousewheel DOMMouseScroll');
+    this.gestureObj.off('pinchstart pinchmove pinchend');
+    this.gestureObj.off('panstart panmove panend');
     $(window).off('resize');
   }
 
@@ -1272,6 +1282,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
       }
     }
   }
+  //席選択数が0の場合の処理
   selectedCancel() {
     if (this.countSelect == 0) {
       $('.seatNumberBox').slideUp(300);
@@ -1282,9 +1293,11 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
       this.stockTypeId = null;
       this.stockTypeName = '';
       this.filterComponent.selectSeatSearch(this.stockTypeName);
-      if ($(window).width() > WINDOW_SM) {
-        this.stockTypeDataService.sendToSeatListFlag(true);
-        this.seatSelectDisplay(true);
+      this.stockTypeDataService.sendToIsSearchFlag(false);
+      this.mapHome();
+      if (!this.smartPhoneCheckService.isSmartPhone() && !this.smartPhoneCheckService.isIpad()) {
+        //ツールチップ削除
+        $('[id=tooltip]').remove();
       }
     }
   }
@@ -1695,8 +1708,10 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
     }
   }
 
-  // ダイアログの消去
+  // 席種詳細ダイアログの消去
   removeDialog() {
+    let cancelSeat = this.countSelect;
+    //席のキャンセル
     if (this.isGroupedSeats) {
       $('#' + this.selectedSeatId).css({ 'fill': SEAT_COLOR_NA });
       if (this.reservedFlag) {
@@ -1729,12 +1744,11 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
         this.countSelect = this.selectedSeatList.length;
       }
     }
+    //ダイアログ非表示
     this.displayDetail = false;
-    if (this.countSelect == 0) {
-      this.ticketDetail = false;
-      if (($(window).width() > WINDOW_SM) || (this.scaleTotal < SCALE_SEAT)) {
-        this.seatSelectDisplay(false);
-      }
+    //席がキャンセルされた場合
+    if (cancelSeat) {
+      this.selectedCancel();
     }
   }
 
@@ -1871,17 +1885,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
         this.countSelect = this.selectedSeatList.length;
       }
     }
-    if (this.countSelect == 0) {
-      this.ticketDetail = false;
-      this.stockTypeDataService.sendToIsSearchFlag(false);
-      this.sameStockType = true;
-      this.stockTypeName = '';
-      this.filterComponent.selectSeatSearch(this.stockTypeName);
-      if (($(window).width() > WINDOW_SM) || (this.scaleTotal < SCALE_SEAT)) {
-        this.stockTypeDataService.sendToSeatListFlag(true);
-        this.seatSelectDisplay(true);
-      }
-    }
+    this.selectedCancel();
     this.displayDetail = false;
   }
 

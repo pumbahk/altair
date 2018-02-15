@@ -16,7 +16,9 @@
                         case '21':
                             return (seatNumber === match[1]);
                         case '25':
-                            return (seatNumber === match[1]) && match[2] == 'バックネット裏ボックスシート6';
+                            if (seatName == 'バックネット裏ボックスシート') {
+                                return (seatNumber === match[1]) && match[2] == 'バックネット裏ボックスシート6';
+                            }
                         default:
                             return (seatNumber === match[1]) &&
                                 (match[2].indexOf(seatName) !== -1 || seatName.indexOf(match[2]) !== -1);

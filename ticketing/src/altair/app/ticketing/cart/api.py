@@ -692,8 +692,7 @@ class _DummyCart(c_models.CartMixin):
 
     @property
     def total_amount(self):
-        total_amount = c_api.calculate_total_amount(self)
-        return total_amount - self.discount_amount
+        return c_api.calculate_total_amount(self)
 
     @property
     def delivery_fee(self):
