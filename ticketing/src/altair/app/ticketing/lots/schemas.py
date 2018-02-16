@@ -4,9 +4,10 @@ from wtforms import fields
 from wtforms import validators as v
 from wtforms import Form
 from wtforms import widgets
+from wtforms.ext.csrf.fields import CSRFTokenField
 
 from altair.app.ticketing.cart.schemas import ClientForm as _ClientForm, ExtraForm
-from altair.app.ticketing.cart.view_support import build_dynamic_form, filter_extra_form_schema
+from altair.app.ticketing.cart.view_support import build_dynamic_form, filter_extra_form_schema, DynamicFormBuilder
 from altair.app.ticketing.users.models import SexEnum
 from altair.formhelpers import (
     Required,
@@ -29,7 +30,7 @@ from altair.formhelpers.widgets import (
 from altair.formhelpers.fields import (
     OurDateField
     )
-from altair.formhelpers.form import OurForm
+from altair.formhelpers.form import OurForm, OurDynamicForm, SecureFormMixin
 from altair.formhelpers.widgets import Switcher
 from altair.formhelpers.fields import OurRadioField
 from altair.formhelpers.validators import (
@@ -117,3 +118,13 @@ class ShowLotEntryForm(OurForm):
 
     entry_no = fields.TextField(u"抽選申し込み番号", validators=[v.Required()])
     tel_no = fields.TextField(u"電話番号", validators=[v.Required()])
+
+class LotsEntryAttributeForm(OurDynamicForm, SecureFormMixin):
+    SECRET_KEY = __name__
+    csrf = CSRFTokenField()
+
+    def __init__(self, **kwargs):
+        self._dynswitch_predefined_symbols = kwargs.pop('_dynswitch_predefined_symbols', {})
+        super(LotsEntryAttributeForm, self).__init__(name_builder=DynamicFormBuilder._name_builder, **kwargs)
+
+build_dynamic_form_for_lots_review = DynamicFormBuilder(form_factory=LotsEntryAttributeForm)

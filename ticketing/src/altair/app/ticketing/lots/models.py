@@ -730,6 +730,10 @@ class LotEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def is_ordered(self):
         return self.is_elected and any([w.order_id != None for w in self.wishes])
 
+    @property
+    def is_extra_form_editable(self):
+        return not any([self.is_elected, self.is_rejected, self.is_canceled, self.is_withdrawn, self.is_ordered])
+
     def reject(self):
         now = datetime.now()
         self.rejected_at = now

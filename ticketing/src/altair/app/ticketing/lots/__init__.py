@@ -60,6 +60,8 @@ def setup_routes(config):
     config.add_route('lots.review.withdraw.withdraw', 'review/withdraw/withdraw', factory='.resources.LotReviewWithdrawResource')
     config.add_route('lots.review.withdraw.confirm', 'review/withdraw/confirm', factory='.resources.LotReviewWithdrawResource')
 
+    config.add_route('lots.review.edit_lot_entry_attributes.form', 'review', request_method='POST',request_param='action=edit_lot_entry_attributes.form', factory='.resources.LotReviewResource')
+    config.add_route('lots.review.edit_lot_entry_attributes.update', 'review', request_method='POST',request_param='action=edit_lot_entry_attributes.update', factory='.resources.LotReviewResource')
     config.add_route('lots.review.index', 'review', factory='.resources.LotReviewResource')
 
     # 当選フェーズ

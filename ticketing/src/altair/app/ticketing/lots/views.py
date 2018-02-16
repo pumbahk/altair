@@ -6,6 +6,7 @@ import urlparse
 
 from markupsafe import Markup
 from pyramid.view import view_config, view_defaults
+from pyramid.decorator import reify
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPBadRequest, HTTPMovedPermanently
 from sqlalchemy.orm.exc import NoResultFound
 
@@ -14,6 +15,7 @@ from altair.pyramid_tz.api import get_timezone
 from altair.pyramid_dynamic_renderer import lbr_view_config
 from altair.pyramid_dynamic_renderer.config import lbr_notfound_view_config
 from altair.request.adapters import UnicodeMultiDictAdapter
+from altair.now import get_now, is_now_set
 from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.core.models import PaymentDeliveryMethodPair
 from altair.app.ticketing.payments.plugins import ORION_DELIVERY_PLUGIN_ID
@@ -21,8 +23,11 @@ from altair.app.ticketing.cart import api as cart_api
 from altair.app.ticketing.utils import toutc
 from altair.app.ticketing.cart.exceptions import NoCartError
 from altair.app.ticketing.cart.view_support import (
+    filter_extra_form_schema,
     get_extra_form_data_pair_pairs,
     coerce_extra_form_data,
+    render_view_to_response_with_derived_request,
+    render_display_value,
     )
 from altair.app.ticketing.mailmags.api import get_magazines_to_subscribe, multi_subscribe
 from altair.app.ticketing.cart.rendering import selectable_renderer
@@ -46,6 +51,7 @@ from altair.app.ticketing.orderreview.views import (
     jump_maintenance_page_om_for_trouble,
     jump_infomation_page_om_for_10873,
     )
+from altair.app.ticketing.orders.api import OrderAttributeIO, get_extra_form_fields_for_order, get_order_by_order_no
 from . import utils, utils_i18n
 from pyramid.session import check_csrf_token
 from altair.app.ticketing.mails.api import get_mail_utility
@@ -732,25 +738,22 @@ class LotReviewView(object):
             return dict(form=form)
         # XXX: hack
         jump_infomation_page_om_for_10873(lot_entry)
-        return my_render_view_to_response(lot_entry, self.request)
+        return my_render_view_to_response(self.context, self.request, "post_validated")
 
-    @lbr_view_config(request_method="POST", renderer=selectable_renderer("review.html"), context=LotEntry)
+    @lbr_view_config(request_method="POST", renderer=selectable_renderer("review.html"), name="post_validated")
     def post_validated(self):
         jump_maintenance_page_om_for_trouble(self.request.organization)
-        lot_entry = self.context
+        lot_entry = self.context.entry
         api.entry_session(self.request, lot_entry)
-        event_id = lot_entry.lot.event.id # いる？
-        lot_id = lot_entry.lot.id # いる？
-        organization_id = lot_entry.lot.event.organization.id
         user_point_accounts = lot_entry.user_point_accounts
         entry_controller = LotEntryController(self.request)
         entry_controller.load(lot_entry)
         timestamp = datetime.now()
-        organization_setting = OrganizationSetting.query \
-                                    .filter_by(organization_id=organization_id) \
-                                    .first()
+        organization_setting = lot_entry.lot.event.organization.setting
         if organization_setting:
             lot_entry_user_withdraw = organization_setting.lot_entry_user_withdraw
+        else:
+            lot_entry_user_withdraw = False
 
         # 当選して、未決済の場合、決済画面に移動可能
         return dict(entry=lot_entry,
@@ -766,7 +769,7 @@ class LotReviewView(object):
             entry_controller=entry_controller,
             timestamp=timestamp,
             can_withdraw=lot_entry_user_withdraw and lot_entry.lot.lot_entry_user_withdraw,
-            can_withdraw_show=self.context.check_withdraw_show(self.request),
+            can_withdraw_show=self.context.entry.check_withdraw_show(self.request),
             now=get_now(self.request),
             custom_locale_negotiator=custom_locale_negotiator(self.request) if self.request.organization.setting.i18n else "")
 
@@ -928,3 +931,71 @@ class LotReviewWithdrawView(object):
             custom_locale_negotiator=custom_locale_negotiator(self.request) if self.request.organization.setting.i18n else ""
         )
 
+@view_defaults(renderer=selectable_renderer("edit_lot_entry_attributes.html"), request_method='POST')
+class LotEntryAttributeView(object):
+    def __init__(self, context, request):
+        self.context = context
+        self.request = request
+
+    @reify
+    def _predefined_symbols(self):
+        return {}
+
+    def create_form(self, formdata=None, data=None):
+        from .adapters import LotEntryCart
+        order_like = LotEntryCart(self.context.entry)
+        mode = ['editable']
+        data = {
+            entry[0]: entry[2]
+            for entry in OrderAttributeIO(for_='lots', mode=mode).marshal(self.request, order_like)
+            }
+
+        extra_form_field_descs = get_extra_form_fields_for_order(self.request, order_like, for_='lots')
+        form, form_fields = schemas.build_dynamic_form_for_lots_review(
+            self.request,
+            filter_extra_form_schema(extra_form_field_descs, mode=mode),
+            _dynswitch_predefined_symbols=self._predefined_symbols,
+            formdata=formdata,
+            _data=data,
+            csrf_context=self.request
+            )
+        # retouch form_fields
+        for form_field in form_fields:
+            field_desc = form_field['descriptor']
+            form_field['old_display_value'] = render_display_value(self.request, field_desc, data.get(field_desc['name'])) if data is not None else u''
+        return form, form_fields
+
+    def render_review_view(self):
+        return render_view_to_response_with_derived_request(
+            context_factory=lambda request: self.context,
+            request=self.request,
+            route=('lots.review.index', {}),
+            name='post_validated'
+        )
+
+    @lbr_view_config(route_name='lots.review.edit_lot_entry_attributes.form')
+    def form(self):
+        form, form_fields = self.create_form(formdata=None)
+        return dict(entry=self.context.entry, form=form, form_fields=form_fields)
+
+    @lbr_view_config(route_name='lots.review.edit_lot_entry_attributes.update', request_param='do_cancel')
+    def cancel(self):
+        return self.render_review_view()
+
+    @lbr_view_config(route_name='lots.review.edit_lot_entry_attributes.update', request_param='do_update')
+    def update(self):
+        form, form_fields = self.create_form(formdata=UnicodeMultiDictAdapter(self.request.params, 'utf-8', 'replace'))
+        if not form.validate():
+            if len(form.csrf.errors) > 0:
+                return self.cancel()
+            else:
+                return dict(entry=self.context.entry, form=form, form_fields=form_fields)
+
+        updated_attributes = {
+            k: form.data[k]
+            for k in (form_field['descriptor']['name'] for form_field in form_fields if
+                      form_field['descriptor'].get('edit_in_orderreview', False))
+        }
+        self.context.entry.attributes.update(cart_api.coerce_extra_form_data(self.request, updated_attributes))
+
+        return self.render_review_view()
