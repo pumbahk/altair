@@ -69,6 +69,7 @@ altair.ticketing.cooperation.augus.tort = cooperation/ftp/augus/upload/test
 altair.mu.auth_key = ${altair:mu.auth_key}
 
 ; altair.discount_code.eagles_communicator
+altair.discount_code.eagles_communicator.endpoint_base = ${altair:discount_code.eagles_communicator.endpoint_base}
 altair.discount_code.eagles_communicator.hash_key = 60eAb@%Fa7e?
 altair.discount_code.eagles_communicator.http_proxy = ${altair:discount_code.eagles_communicator.http_proxy}
 altair.discount_code.eagles_communicator.https_proxy = ${altair:discount_code.eagles_communicator.https_proxy}
