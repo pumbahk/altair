@@ -465,6 +465,8 @@ export class FilterComponent implements OnInit {
       if (min == this.seatPrices[0] && max == this.seatPrices[1] &&
         name == this.seatName && unreserved == this.seatValues[0] && reserved == this.seatValues[1]) {
         this.search();
+      } else {
+        this.animationEnableService.sendToRoadFlag(false);
       }
     }, 500);
   }
