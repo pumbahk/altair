@@ -1055,7 +1055,11 @@ class ReserveView(object):
         DBSession.flush()
         api.set_cart(self.request, cart)
 
-        payment_url = self.request.route_url("cart.discount_code", sales_segment_id=sales_segment.id)
+        # 管理画面の組織設定で割引コードを利用設定にしていた場合
+        if self.context.cart.organization.enable_discount_code:
+            payment_url = self.request.route_url("cart.discount_code", sales_segment_id=sales_segment.id)
+        else:
+            payment_url = self.request.route_url("cart.payment", sales_segment_id=sales_segment.id)
 
         return dict(result='OK',
                     payment_url=payment_url,
@@ -1435,17 +1439,17 @@ class DiscountCodeEnteringView(object):
     @back(back_to_top, back_to_product_list_for_mobile)
     @lbr_view_config(request_method="GET")
     def discount_code_get(self):
+        # SPAはcart.orderルートを経由せず直接このviewにアクセスしてくるため、ここで割引コード適用判定を行う
+        sales_segment_id = self.request.matchdict["sales_segment_id"]
+        if not self.context.if_discount_code_available_for_seat_selection():
+            # 割引コードが適用できない場合は通常ルートへ
+            return HTTPFound(self.request.route_path('cart.payment', sales_segment_id=sales_segment_id))
 
         cart = self.context.read_only_cart
         self.context.check_deleted_product(cart)
-        sales_segment_id = self.request.matchdict["sales_segment_id"]
         forms = self.context.create_discount_code_forms()
         sorted_cart_product_items = self.context.sorted_carted_product_items()
         self.context.delete_temporarily_save_discount_code()
-
-        # ディスカウントコードを使わない場合は通常ルートへ
-        if not self.context.if_discount_code_available_for_seat_selection():
-            return HTTPFound(self.request.route_path('cart.payment', sales_segment_id=sales_segment_id))
 
         csrf_form = schemas.CSRFSecureForm(csrf_context=self.request.session)
         return dict(
@@ -1471,7 +1475,6 @@ class DiscountCodeEnteringView(object):
         self.context.validate_discount_codes(codes)
 
         if self.context.is_authz_user:
-            # TODO 株主会員の場合数字のため、これだけだと足りなそう
             # ファンクラブのクーポンの場合(スポーツサービス開発発行のコード)の場合ログインしていないと使えない
             self.context.confirm_discount_code_status(codes)
 
@@ -1695,7 +1698,6 @@ class CompleteView(object):
     def __init__(self, context, request):
         self.context = context
         self.request = request
-        # TODO: Orderを表示？
 
     @limiter.release
     @back(back_to_top, back_to_product_list_for_mobile)
@@ -1742,7 +1744,6 @@ class CompleteView(object):
         self.context.check_deleted_product(cart)
         # クーポンのチェック
         if self.context.is_authz_user:
-            # TODO 株主会員の場合数字のため、これだけだと足りなそう
             self.context.check_available_discont_code()
         self.context.check_order_limit() # 最終チェック
         order = api.make_order_from_cart(self.request, cart)
