@@ -194,9 +194,15 @@ def used_discount_code_groups(cart_or_order):
         group_dict['code'] = code_groups[setting.first_4_digits]
         for code in code_groups[setting.first_4_digits]:
             if isinstance(cart_or_order, Cart):
-                group_dict['discount_price'] = sum([code.carted_product_item.price])
+                if 'discount_price' in group_dict:
+                    group_dict['discount_price'] = group_dict['discount_price'] + sum([code.carted_product_item.price])
+                else:
+                    group_dict['discount_price'] = sum([code.carted_product_item.price])
             elif isinstance(cart_or_order, Order):
-                group_dict['discount_price'] = sum([code.ordered_product_item.price])
+                if 'discount_price' in group_dict:
+                    group_dict['discount_price'] = group_dict['discount_price'] + sum([code.ordered_product_item.price])
+                else:
+                    group_dict['discount_price'] = sum([code.ordered_product_item.price])
 
         groups.append(group_dict)
     return groups
