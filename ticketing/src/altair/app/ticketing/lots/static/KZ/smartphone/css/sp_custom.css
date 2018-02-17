@@ -36,8 +36,13 @@ li.btn-seat-plus.btn-seat-active:after {
 }
 
 /* input type */
-.confirmForm input[type=radio]:checked + label::after {
+.confirmForm input[type=radio]:checked + label::after{
 	background: var(--custom-input-color) !important;
+}
+
+.confirmForm input[type=checkbox]:checked + label::after{
+	border-left-color: var(--custom-input-color) !important;
+  border-bottom-color: var(--custom-input-color) !important;
 }
 
 /* Box contents */
