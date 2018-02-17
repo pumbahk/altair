@@ -165,14 +165,24 @@ def save_discount_code(carted_product_item, ordered_product_item):
 
 
 def get_discount_code_settings(used_discount_codes):
+    """
+    使用された割引コードから割引コード設定を取得する
+    使用後のコード設定を取得することが目的なので、有効フラグや有効期間などは無視する。
+    :param used_discount_codes: 使用されたコード情報のオブジェクト
+    :return: 割引コード設定
+    """
     code_first_4_digits = list(set([code.code[:4] for code in used_discount_codes]))
     settings = DiscountCodeSetting.\
-        filter(DiscountCodeSetting.first_4_digits.in_(code_first_4_digits)).\
-        filter(DiscountCodeSetting.is_valid==True).all()
+        filter(DiscountCodeSetting.first_4_digits.in_(code_first_4_digits)).all()
     return settings
 
 
 def used_discount_code_groups(cart_or_order):
+    """
+    使用された割引コードを頭4桁でグループ化し、その合計金額や設定内容をまとめている
+    :param cart_or_order: OrderやCartオブジェクト
+    :return: 頭4桁の入力文字でグループ化されたdict
+    """
     from altair.app.ticketing.orders.models import Order
     from altair.app.ticketing.cart.models import Cart
 
