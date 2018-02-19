@@ -14,11 +14,13 @@
   ${ch.form_item(form.selectable)}
   ${ch.form_item(form.hide_voucher)}
   ${ch.form_item(form.single_qr_mode)}
-  <!-- 現時点qr_aesはHT(66)しか使いませんので、HT(66)のorganizationしか見えないようにする -->
-  % if form.organization_id.data == 66:
-    ${ch.form_item(form.allow_sp_qr_aes)}
-  % endif
-  <!-- 現時点qr_aesはHT(66)しか使いませんので、HT(66)のorganizationしか見えないようにする -->
+  <!-- qr_aesのフィルドをループで出す -->
+  % for name in form._fields:
+    % if name.startswith('qr_aes_'):
+      ${ch.form_item(form[name])}
+    % endif
+  % endfor
+  <!-- qr_aesのフィルドをループで出す -->
   ${ch.form_item(form.expiration_date)}
   % if i18n_org == True:
     ${ch.form_item(form.name_en, maxlength=255)}
@@ -35,4 +37,3 @@ ${fh.inject_js(registry_var)}
 </%def>
 </%fh:render_block>
 </form>
-
