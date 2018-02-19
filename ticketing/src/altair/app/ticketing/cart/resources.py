@@ -823,6 +823,13 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
     def _is_sports_service_code_used_by_eligible_user(self, first_4_digits):
         """
         ファンクラブ会員専用クーポンの誤利用を防ぐバリデーション
+
+        'authz_identifier'の値はログイン方法によって変化する
+
+        「ファンクラブの方」でログインすると文字列の数字
+        「一般の方」でログインするとOpenIDの文字列
+        「その他会員IDをお持ちの方」でログインすると「acct:」から始まるメールアドレスのような文字列（例：acct:000409140429+eagles@eagles.stg.altr.jp）
+
         :param first_4_digits: 入力されたコードの頭4桁
         :return: Boolean
         """
@@ -831,11 +838,13 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
                                                                        session=self.session)
 
         if setting:
+            # OAuth認証していないユーザをはじく
             if not self.is_authz_user:
                 return False
 
-            fc_member_id = self.request.altair_auth_info['authz_identifier']
-            if not fc_member_id.isdigit():
+            authz_identifier = self.request.altair_auth_info['authz_identifier']
+            # 数字だけで構成されていない場合（「一般の方」「その他会員IDをお持ちの方」ログイン）をはじく
+            if not authz_identifier.isdigit():
                 return False
 
         return True
@@ -850,12 +859,8 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
     @property
     def is_authz_user(self):
         """
-        キー'authz_identifier'の値はログイン方法によって変化する
-
-        「ファンクラブの方」でログインすると文字列の数字
-        「一般の方」でログインするとOpenIDの文字列
-
-        :return: Boolean OAuth認証しているユーザ場合はTrue。
+        OAuth認証しているユーザの場合はTrueを返す。
+        :return: Boolean
         """
         return "authz_identifier" in self.request.altair_auth_info
 
