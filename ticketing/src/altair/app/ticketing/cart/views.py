@@ -1439,6 +1439,8 @@ class DiscountCodeEnteringView(object):
     @back(back_to_top, back_to_product_list_for_mobile)
     @lbr_view_config(request_method="GET")
     def discount_code_get(self):
+        # UsedDiscountCodeCartテーブルに保存されている割引コードの途中入力内容をクリア
+        self.context.delete_temporarily_save_discount_code()
         # SPAはcart.orderルートを経由せず直接このviewにアクセスしてくるため、ここで割引コード適用判定を行う
         sales_segment_id = self.request.matchdict["sales_segment_id"]
         if not self.context.if_discount_code_available_for_seat_selection():
@@ -1449,7 +1451,6 @@ class DiscountCodeEnteringView(object):
         self.context.check_deleted_product(cart)
         forms = self.context.create_discount_code_forms()
         sorted_cart_product_items = self.context.sorted_carted_product_items()
-        self.context.delete_temporarily_save_discount_code()
 
         csrf_form = schemas.CSRFSecureForm(csrf_context=self.request.session)
         return dict(
