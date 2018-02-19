@@ -13331,7 +13331,7 @@ var StockTypesService = (function (_super) {
         return this.performances.getPerformance(performanceId).flatMap(function (response) {
             var url = "" + __WEBPACK_IMPORTED_MODULE_2__app_constants__["a" /* ApiConst */].API_URL.STOCK_TYPES.replace(/{:performance_id}/, performanceId + '')
                 .replace(/{:sales_segment_id}/, response.data.performance.sales_segments[0].sales_segment_id + '');
-            return _this.httpGet(url);
+            return _this.httpGet(url, true);
         }).share();
     };
     /**

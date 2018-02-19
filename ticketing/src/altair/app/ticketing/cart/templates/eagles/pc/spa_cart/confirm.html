@@ -1,18 +1,16 @@
 <%inherit file="./base.html"/>
-<%block name="javascript">
-<script type="text/javascript" src="${request.static_url('altair.app.ticketing.cart:static/js/disable_on_submit.js')}"></script>
-<script type="text/javascript">
-  $(function() {
-    $('form').disableOnSubmit('input[type=submit][name!="back"]');
-  });
-</script>
-</%block>
 <%block name="css">
 <style>
 </style>
 <link rel="stylesheet" href="${request.static_url('altair.app.ticketing.cart:static/eagles/spa/css/purchase_completion.css')}" type="text/css" media="all" />
 
 </%block>
+<script type="text/javascript" src="${request.static_url('altair.app.ticketing.cart:static/js/disable_on_submit.js')}"></script>
+<script type="text/javascript">
+  $(function() {
+    $('form').disableOnSubmit('input[type=submit][name!="back"]');
+  });
+</script>
 		<div class="login-page">
 			<div class="contents">
 				<!--****************************************************************-->

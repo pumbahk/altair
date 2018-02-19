@@ -273,12 +273,12 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
   endTime: any;
   // SVGに対するinnerHTMLの利用可否
   isInnerHtmlAvailable: boolean = true;
-
   //ブラウザバックフラグ
   returnFlag = false;
-
   //ブラウザバック確認モーダルを出さないフラグ
   returnUnconfirmFlag = false;
+  //ローディングアニメーションが表示されているか
+  roadingAnimationEnable: boolean;
 
   //Hammer.jsイベントオブジェクト
   gestureObj = null;
@@ -288,6 +288,12 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
     const that = this;
     let drawingRegionTimer;
     let drawingSeatTimer;
+
+    this.animationEnableService.toRoadingFlag$.subscribe(
+      flag => {
+        this.roadingAnimationEnable = flag;
+      }
+    );
     this.animationEnableService.sendToRoadFlag(true);
 
     var svg_test = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
@@ -654,7 +660,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
         if (this.touchFlag) {
           if ($(event.target).hasClass('region') || $(event.target).parents().hasClass('region')) {
             this.tapRegion(event);
-          } else if ($(event.target).hasClass('seat')) {
+          } else if ($(event.target).hasClass('seat') && !this.roadingAnimationEnable) {
             this.tapSeat(event);
           }
         }
@@ -1695,17 +1701,8 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
     this.modalTopCss();
     // 押下したボタンの座席名
     this.selectedSeatName = value;
-    let flag = $.inArray(this.selectedSeatName, this.selectedSeatNameList);
-    this.selectedSeatId = this.selectedSeatList[flag];
-    this.selectedStockTypeName = this.stockTypeName;
-    this.selectedDescription = this.description;
-    // 押下したボタンの座席idの席種
-    for (let i = 0; i < this.countSelect; i++) {
-      if (this.selectedSeatId == this.seats[i].seat_l0_id) {
-        this.selectedStockTypeId = this.seats[i].stock_type_id;
-        break;
-      }
-    }
+    let index = $.inArray(this.selectedSeatName, this.selectedSeatNameList);
+    this.selectedSeatId = this.selectedSeatList[index];
   }
 
   // 席種詳細ダイアログの消去
@@ -1851,13 +1848,6 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
     for (let i = 0; i < this.countSelect; i++) {
       if (this.selectedSeatName == this.selectedSeatNameList[i]) {
         this.selectedSeatId = this.selectedSeatList[i];
-        break;
-      }
-    }
-    // 押下したボタンの座席idの席種
-    for (let i = 0; i < this.countSelect; i++) {
-      if (this.selectedSeatId == this.seats[i].seat_l0_id) {
-        this.selectedStockTypeId = this.seats[i].stock_type_id;
         break;
       }
     }

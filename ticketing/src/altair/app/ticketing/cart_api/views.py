@@ -781,7 +781,7 @@ class CartAPIView(object):
     def select_products(self):
         #セッション情報から取得
         cart = api.get_cart(self.request, False)
-        logger.debug("cart_id %s", cart.id)
+        logger.debug("cart_id %s", cart.id if cart else 'none')
 
         if cart is None or cart.finished_at is not None:
             return {
