@@ -621,7 +621,7 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         query = DBSession.query(DiscountCodeSetting).join(
             DiscountCodeTarget
         ).filter(
-            Performance.id == self.id,
+            DiscountCodeTarget.performance_id == self.id,
             DiscountCodeSetting.is_valid == 1,
             or_(DiscountCodeSetting.start_at.is_(None), DiscountCodeSetting.start_at <= now),
             or_(DiscountCodeSetting.end_at.is_(None), DiscountCodeSetting.end_at >= now)
