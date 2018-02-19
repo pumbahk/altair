@@ -172,7 +172,7 @@ class SummarizedPerformance(object):
         self.account = account
 
 class SummarizedShippingAddress(ShippingAddressMixin):
-    def __init__(self, last_name, first_name, last_name_kana, first_name_kana, zip, country, prefecture, city, address_1, address_2, tel_1, tel_2, fax, email_1, email_2):
+    def __init__(self, last_name, first_name, last_name_kana, first_name_kana, zip, country, prefecture, city, address_1, address_2, tel_1, tel_2, fax, email_1, email_2, birthday, sex):
         self.last_name = last_name
         self.first_name = first_name
         self.last_name_kana = last_name_kana
@@ -188,6 +188,8 @@ class SummarizedShippingAddress(ShippingAddressMixin):
         self.fax = fax
         self.email_1 = email_1
         self.email_2 = email_2
+        self.birthday = birthday
+        self.sex = sex
 
 def _get_performances(request, organization_id):
     if not hasattr(request, "_performances"):
@@ -1354,6 +1356,8 @@ class OrderSummary(Base):
             ShippingAddress.__table__.c.fax,
             ShippingAddress.__table__.c.email_1,
             ShippingAddress.__table__.c.email_2,
+            ShippingAddress.__table__.c.birthday,
+            ShippingAddress.__table__.c.sex,
             PaymentMethod.__table__.c.name.label('payment_method_name'),
             PaymentMethod.__table__.c.payment_plugin_id,
             DeliveryMethod.__table__.c.name.label('delivery_method_name'),
@@ -1420,6 +1424,8 @@ class OrderSummary(Base):
     fax = ShippingAddress.fax
     email_1 = ShippingAddress.email_1
     email_2 = ShippingAddress.email_2
+    birthday = ShippingAddress.birthday
+    sex = ShippingAddress.sex
     payment_method_id = PaymentMethod.id
     payment_method_name = PaymentMethod.__table__.c.name
     payment_plugin_id = PaymentMethod.__table__.c.payment_plugin_id
@@ -1581,6 +1587,8 @@ class OrderSummary(Base):
             self.fax,
             self.email_1,
             self.email_2,
+            self.birthday,
+            self.sex,
         )
     rel_shipping_address = orm.relationship("ShippingAddress", primaryjoin=Order.shipping_address_id==ShippingAddress.id)
     shipping_address = HybridRelation(_shipping_address, rel_shipping_address)
