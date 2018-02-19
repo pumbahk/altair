@@ -233,6 +233,20 @@ orion_checked = False
             </ul>
           </td>
         </tr>
+        <tr>
+          <th scope="row">生年月日</th>
+          <td>
+            ${form['birthday']}
+            ${h.error_list(request, form, 'birthday')}
+          </td>
+        </tr>
+        <tr>
+          <th scope="row">${form['sex'].label}</th>
+          <td>
+            ${form['sex']}
+            ${h.error_list(request, form, 'sex')}
+          </td>
+        </tr>
       </table>
       <!--
           </div>
