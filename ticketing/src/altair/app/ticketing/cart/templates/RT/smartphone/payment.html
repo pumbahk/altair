@@ -199,9 +199,13 @@ form {
 
     % if has_orion:
     <div class="dispBox" id="orion-ticket-phone-info" ${'' if orion_checked else 'style="display:none;"'|n}>
-      <%t:header>イベントゲット情報</%t:header>
+      <%t:header>アプリ受取追加情報</%t:header>
+      <p style="color: red; font-size: 80%;">
+        お友達にチケットを渡したい場合は、下記の入力フォームからお友達の電話番号を入力してください。<br/>
+        登録された電話番号以外の方にチケットを渡すことができませんのでご注意ください。
+      </p>
       <div class="dispBoxInner">
-        <ul id="orion-ticket-phone-list">
+        <ul id="orion-ticket-phone-list" style="list-style: none; padding: 0;">
           <li id="orion-ticket-phone-template" style="display: none;">
             <label for="tmp-orion-ticket-phone">電話番号</label>
             <input type="text" id="tmp-orion-ticket-phone">　<button type="button" onclick="delete_orion_ticket_phone(this);">削除</button>
