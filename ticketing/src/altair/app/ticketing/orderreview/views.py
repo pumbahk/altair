@@ -52,7 +52,7 @@ import contextlib
 import re
 from functools import partial
 
-from altair.app.ticketing.qr.lookup import lookup_qr_aes_plugin
+from altair.app.ticketing.project_specific.huistenbosch.qr_utilits import build_ht_qr_by_ticket_id, build_ht_qr_by_token_id, build_ht_qr_by_order, build_ht_qr_by_sign
 
 from altair.app.ticketing.i18n import custom_locale_negotiator
 
@@ -916,24 +916,45 @@ class QRAESView(object):
         renderer=selectable_renderer("order_review/qr_aes_confirm.html"))
     def qr_aes_confirm(self):
         sign = self.request.matchdict.get('sign', '')
-        ticket = self.context.qr_aes_plugin.build_qr_by_sign(sign)
+        ticket = build_ht_qr_by_sign(self.request, sign)
 
         if ticket == None:
             raise HTTPNotFound()
 
-        return self.context.qr_aes_plugin.output_to_template(ticket)
+        return dict(
+            order = ticket.order,
+            ticket = ticket,
+            performance = ticket.performance,
+            event = ticket.event,
+            product = ticket.product
+            )
 
     @lbr_view_config(
         route_name='order_review.qr_aes',
         renderer=selectable_renderer("order_review/qr_aes.html"))
     def qr_aes_html(self):
         sign = self.request.matchdict.get('sign', '')
-        ticket = self.context.qr_aes_plugin.build_qr_by_sign(sign)
+        ticket = build_ht_qr_by_sign(self.request, sign)
 
         if ticket is None:
             raise HTTPNotFound()
 
-        return self.context.qr_aes_plugin.output_to_template(ticket)
+        if ticket.seat is None:
+            gate = None
+        else:
+            gate = ticket.seat.attributes.get("gate", None)
+
+        return dict(
+            token = ticket.item_token and ticket.item_token.id, # dummy
+            serial = ticket.id,           # dummy
+            order = ticket.order,
+            ticket = ticket,
+            performance = ticket.performance,
+            event = ticket.event,
+            product = ticket.product,
+            gate = gate,
+            allow_sp=ticket.order.payment_delivery_method_pair.delivery_method.preferences.get(unicode(plugins.QR_AES_DELIVERY_PLUGIN_ID), {}).get(u'allow_sp_qr_aes', False)
+        )
 
     @lbr_view_config(
         route_name='order_review.qr_aes_draw',
@@ -941,7 +962,7 @@ class QRAESView(object):
         )
     def qr_aes_image(self):
         sign = self.request.matchdict.get('sign', '')
-        ticket = self.context.qr_aes_plugin.build_qr_by_sign(sign)
+        ticket = build_ht_qr_by_sign(self.request, sign)
         if ticket is None:
             raise HTTPNotFound()
 
@@ -960,13 +981,53 @@ class QRAESView(object):
 
         order_no = self.request.params['order_no']
         token_id = self.request.params['token']
-
         if token_id:
-            ticket = self.context.qr_aes_plugin.build_qr_by_token_id(order_no=order_no, token_id=token_id)
-        else:
-            ticket = self.context.qr_aes_plugin.build_qr_by_order_no(order_no)
+            token = get_matched_token_from_token_id(order_no, token_id)
 
-        return self.context.qr_aes_plugin.output_to_template(ticket)
+            if token.seat is None:
+                gate = None
+            else:
+                gate = token.seat.attributes.get("gate", None)
+
+
+            if token.item.ordered_product.order.delivery_plugin_id == plugins.QR_AES_DELIVERY_PLUGIN_ID:
+                # altair
+                ticket = build_ht_qr_by_token_id(self.request, self.request.params['order_no'], self.request.params['token'])
+                allow_sp = ticket.order.payment_delivery_method_pair.delivery_method.preferences.get(unicode(plugins.QR_AES_DELIVERY_PLUGIN_ID), {}).get(u'allow_sp_qr_aes', False)
+
+                return dict(
+                    token = token.id,    # dummy
+                    serial = ticket.id,  # dummy
+                    order = ticket.order,
+                    ticket = ticket,
+                    performance = ticket.performance,
+                    event = ticket.event,
+                    product = ticket.product,
+                    gate = gate,
+                    allow_sp = allow_sp
+                )
+        else:
+            order = get_order_by_order_no(self.request, order_no)
+            tel = self.request.POST['tel']
+            if tel not in order.shipping_address.tels:
+                raise HTTPNotFound
+            if order.delivery_plugin_id == plugins.QR_AES_DELIVERY_PLUGIN_ID:
+                # altair
+                ticket = build_ht_qr_by_order(self.request, order)
+                allow_sp = order.payment_delivery_method_pair.delivery_method.preferences.get(
+                    unicode(plugins.QR_AES_DELIVERY_PLUGIN_ID), {}).get(u'allow_sp_qr_aes', False)
+
+                return dict(
+                    token=None,
+                    serial=None,
+                    order=ticket.order,
+                    ticket=ticket,
+                    performance=ticket.performance,
+                    event=ticket.event,
+                    product=None,
+                    gate=None,
+                    allow_sp=allow_sp
+                )
 
     @lbr_view_config(
         route_name='order_review.qr_aes_send',
@@ -1044,12 +1105,10 @@ def render_qr_aes_mail_viewlet(context, request):
     token = request.params['token']
     order_no = request.params['order_no']
     if token:
-        #ticket = build_ht_qr_by_token_id(request, order_no, token)
-        ticket = None
+        ticket = build_ht_qr_by_token_id(request, order_no, token)
     else:
         order = get_order_by_order_no(request, order_no)
-        #ticket = build_ht_qr_by_order(request, order)
-        ticket = None
+        ticket = build_ht_qr_by_order(request, order)
 
     if ticket is None:
         raise HTTPNotFound
