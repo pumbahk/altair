@@ -20,6 +20,7 @@
   % endif
   <!-- 現時点qr_aesはHT(66)しか使いませんので、HT(66)のorganizationしか見えないようにする -->
   ${ch.form_item(form.expiration_date)}
+  ${ch.form_item(form.description, style='width:500px;height:100px;')}
   % if i18n_org == True:
     ${ch.form_item(form.name_en, maxlength=255)}
     ${ch.form_item(form.description_en, style='width:500px;height:100px;')}

@@ -244,7 +244,11 @@ orion_checked = False
   % if has_orion:
   <div id="orion-ticket-phone-info" class="confirmBox" ${'' if orion_checked else 'style="display:none;"'|n}>
     <div class="confirmBoxInner">
-      <h2>イベントゲット情報</h2>
+      <h2>アプリ受取追加情報</h2>
+      <p style="color: red;">
+        お友達にチケットを渡したい場合は、下記の入力フォームからお友達の電話番号を入力してください。<br/>
+        登録された電話番号以外の方にチケットを渡すことができませんのでご注意ください。
+      </p>
       <table id="confirmEventGate">
         <tr>
           <th scope="row">譲渡先</th>
