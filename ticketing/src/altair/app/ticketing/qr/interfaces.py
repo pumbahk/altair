@@ -5,3 +5,9 @@ class IQRDataBuilder(Interface):
 
 class IQRDataAESBuilder(Interface):
     pass
+
+class IQRAESPlugin(Interface):
+    pass
+
+class IQRAESDeliveryFormMaker(Interface):
+    pass
