@@ -1,0 +1,123 @@
+<%namespace name="fh" module="altair.formhelpers.utils.mako" />
+<%inherit file="review_base.html" />
+
+<div id="content">
+  %if request.session.peek_flash():
+    <ul class="error">
+    %for message in request.session.pop_flash():
+      <li>${message}</li>
+    %endfor
+    </ul>
+  %endif
+  <div class="wrap-content">
+    <h2 class="heading-primary">${__(u'入力情報編集')}</h2>
+
+    <div class="review-item">
+      <h3 class="fWB mgb5 f120">${__(u'追加情報')}</h3>
+      <form method="POST" class="confirmForm" action="${request.route_path('lots.review.edit_lot_entry_attributes.update')}">
+        ${form.csrf}
+        <input type="hidden" name="action" value="edit_lot_entry_attributes.update" />
+        <input type="hidden" name="entry_no" value=${entry.entry_no}>
+        <input type="hidden" name="tel_no" value=${entry.shipping_address.tel_1}>
+
+        <%fh:render_block>
+          <% beginning_of_group = True %>
+          % for field in form_fields:
+            % if field['field']:
+              % if beginning_of_group:
+                <table class="customer-table" summary="追加情報">
+                <% beginning_of_group = False %>
+              % endif
+              <tr>
+                <th scope="row"><label for="${field['field'].name}">${field['field'].label}</label></th>
+                <td>
+                  % if field['descriptor'].get('edit_in_orderreview', False):
+                    % if field['field'].description:
+                      <div class="extra-form-description">${field['field'].description}</div>
+                    % endif
+                    ${fh.render(field['field'])}
+                    ${h.error_list(request, field['field'])}
+                    % if field['field']._note:
+                      <div class="extra-form-note">${field['field']._note}</div>
+                    % endif
+                  % else:
+                    <div>${h.sensible_coerce(request, field['old_display_value'])}</div>
+                    ${fh.render(field['field'], _widget=h.generic_hidden_input, password=field['descriptor']['kind'] == 'password')}
+                  % endif
+                </td>
+              </tr>
+            % else:
+              % if not beginning_of_group:
+                  </table>
+              % endif
+              <div class="confirmBoxContent">${field['description']}</div>
+              <% beginning_of_group = True %>
+            % endif
+          % endfor
+          % if not beginning_of_group:
+            </table>
+          % endif
+        <%def name="__post__(registry_var)">
+        ${fh.inject_js(registry_var, predefined_symbols=view._predefined_symbols)}
+        </%def>
+        </%fh:render_block>
+        <div align="center">
+          <input type="submit" name="do_update" class="btn btn-primary" value="保存する" />
+          <input type="submit" name="do_cancel" class="btn" value="キャンセル" />
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript">
+  function sex_event() {
+    var ul = $("#sex");
+    var radio_item = ul.find("input[type='radio']");
+    ul.find("label").on("click", function(e) {
+      e.preventDefault();
+      var this_radio_item = $(this).parent().find("input[type='radio']");
+      if (!this_radio_item.is(":checked")) {
+        radio_item.prop("checked", false);
+        this_radio_item.prop("checked", true);
+      }
+    });
+  }
+
+  function extra_radio() {
+    var extra_radios = $("input[name^='extra'][type='radio']");
+
+    $.each(extra_radios, function() {
+      var parent = $(this).parents("td");
+      var radio_item = parent.find("input[type='radio']");
+      var label = $(this).parent().find("label");
+      label.on("click", function(e) {
+        e.preventDefault();
+        var this_radio_item = $(this).parent().find("input[type='radio']");
+        if (!this_radio_item.is(":checked")) {
+          radio_item.prop("checked", false);
+          this_radio_item.prop("checked", true);
+        }
+      });
+    });
+  }
+
+  function extra_checkbox() {
+    var extra_checkboxes = $("input[name^='extra'][type='checkbox']");
+
+    $.each(extra_checkboxes, function() {
+      var li = $(this).parents("li");
+      $(this).detach().prependTo(li);
+    });
+  }
+
+  function extra_field_event() {
+    extra_radio();
+    extra_checkbox();
+  }
+
+  $(document).ready(function(){
+    sex_event();
+    extra_field_event();
+  });
+</script>
