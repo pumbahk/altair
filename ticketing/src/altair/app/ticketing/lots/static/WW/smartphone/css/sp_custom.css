@@ -40,6 +40,11 @@ li.btn-seat-plus.btn-seat-active:after {
 	background: var(--custom-input-color) !important;
 }
 
+.confirmForm input[type=checkbox]:checked + label::after{
+  border-left-color: var(--custom-input-color) !important;
+  border-bottom-color: var(--custom-input-color) !important;
+}
+
 /* Box contents */
 .selectseat-accordion dt {
     border-color: var(--custom-border-color) !important;
