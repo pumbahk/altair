@@ -23,6 +23,7 @@
     elif membership['kind']['name'] == u'3-STAR': class_for_club='login-three-star'
     elif membership['kind']['name'] == u'2-STAR': class_for_club='login-two-star'
     elif membership['kind']['name'] == u'KIDS': class_for_club='login-kids-star'
+    elif membership['kind']['name'] == u'アカデミー': class_for_club='login-academy'
     else: class_for_club='login-basic-club'
 %>
               <tr>
