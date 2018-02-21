@@ -1,4 +1,5 @@
 <%page args="device"/>
+<%doc>
 % if device == 'pc':
      <div style="text-align:right;">
        <a href="/howto.html" class="headerLink" target="_blank">${__(u'申込方法')}</a>
@@ -15,3 +16,4 @@
        </div>
 % elif device == 'mobile':
 % endif
+</%doc>

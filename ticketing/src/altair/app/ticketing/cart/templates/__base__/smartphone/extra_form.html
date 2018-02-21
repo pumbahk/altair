@@ -26,7 +26,7 @@ form {
 %endif
 <div class="confirm-wrap">
   <h2 class="heading heading_simple_line">${_(u'追加情報の入力')}</h2>
-  <form id="form1" name="form1" method="post" action="${request.url}">
+  <form id="form1" name="form1" class="confirmForm" method="post" action="${request.url}">
     <div class="settlement-wrap">
       <table class="customer-table">
         <tbody>
@@ -71,3 +71,35 @@ form {
   </form>
 </div>
 
+<script type="text/javascript">
+  function extra_radio() {
+    var extra_radios = $("input[name^='extra'][type='radio']");
+
+    $.each(extra_radios, function() {
+      var parent = $(this).parents("td");
+      var radio_item = parent.find("input[type='radio']");
+      var label = $(this).parent().find("label");
+      label.on("click", function(e) {
+        e.preventDefault();
+        var this_radio_item = $(this).prev();
+        if (!this_radio_item.is(":checked")) {
+          radio_item.prop("checked", false);
+          this_radio_item.prop("checked", true);
+        }
+      });
+    });
+  }
+
+  function extra_checkbox() {
+    var extra_checkboxes = $("input[name^='extra'][type='checkbox']");
+    $.each(extra_checkboxes, function() {
+      var label = $(this).parent();
+      $(this).detach().insertBefore(label);
+    });
+  }
+
+  $(document).ready(function(){
+    extra_radio();
+    extra_checkbox();
+  });
+</script>
