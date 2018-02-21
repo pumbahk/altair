@@ -32,6 +32,9 @@ import { ApiConst } from '../app.constants';
 //logger
 import { Logger } from "angular2-logger/core";
 
+const REGION_COLOR_SELECTED = 'rgb(255, 0, 0)';
+const REGION_COLOR_WHITE = 'rgb(255, 255, 255)';
+
 @Component({
   selector: 'app-reserve-by-quantity',
   templateUrl: './reserve-by-quantity.component.html',
@@ -207,14 +210,12 @@ export class ReserveByQuantityComponent implements OnInit {
                       getMap = document.getElementById("venue-quantity");
                       if (getMap && getMap.firstElementChild) {
                         //二重色付け制限
-                        if ($('#venue-quantity').find('.region').css({ 'fill': 'red' }) || $('#venue-quantity').find('.region').find('.coloring_region').css({ 'fill': 'red' })) {
-                          $('#venue-quantity').find('.region').css({ 'fill': 'white' });
-                          $('#venue-quantity').find('.region').find('.coloring_region').css({ 'fill': 'white' });
-                        }
+                        $('#venue-quantity').find('.region').css({ 'fill': REGION_COLOR_WHITE });
+                        $('#venue-quantity').find('.region').find('.coloring_region').css({ 'fill': REGION_COLOR_WHITE });
                         //色付け
                         for (let i = 0; i < that.regions.length; i++) {
-                          $('#venue-quantity').find('#' + that.regions[i]).css({ 'fill': 'red' });
-                          $('#venue-quantity').find('#' + that.regions[i]).find('.coloring_region').css({ 'fill': 'red' });
+                          $('#venue-quantity').find('#' + that.regions[i]).css({ 'fill': REGION_COLOR_SELECTED });
+                          $('#venue-quantity').find('#' + that.regions[i]).find('.coloring_region').css({ 'fill': REGION_COLOR_SELECTED });
                         }
                         //インターバル処理終了
                         clearInterval(timer);
