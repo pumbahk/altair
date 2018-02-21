@@ -9141,10 +9141,14 @@ var FilterComponent = (function () {
     //検索項目変更ディレイ（連打防止）
     FilterComponent.prototype.searchs = function (min, max, name, unreserved, reserved) {
         var _this = this;
+        this.animationEnableService.sendToRoadFlag(true);
         setTimeout(function () {
             if (min == _this.seatPrices[0] && max == _this.seatPrices[1] &&
                 name == _this.seatName && unreserved == _this.seatValues[0] && reserved == _this.seatValues[1]) {
                 _this.search();
+            }
+            else {
+                _this.animationEnableService.sendToRoadFlag(false);
             }
         }, 500);
     };
@@ -9760,6 +9764,9 @@ var VenuemapComponent = (function () {
         var that = this;
         var drawingRegionTimer;
         var drawingSeatTimer;
+        this.animationEnableService.toRoadingFlag$.subscribe(function (flag) {
+            _this.roadingAnimationEnable = flag;
+        });
         this.animationEnableService.sendToRoadFlag(true);
         var svg_test = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
         if (typeof (svg_test.innerHTML) === 'undefined') {
@@ -10103,7 +10110,7 @@ var VenuemapComponent = (function () {
                     if (__WEBPACK_IMPORTED_MODULE_14_jquery__(event.target).hasClass('region') || __WEBPACK_IMPORTED_MODULE_14_jquery__(event.target).parents().hasClass('region')) {
                         _this.tapRegion(event);
                     }
-                    else if (__WEBPACK_IMPORTED_MODULE_14_jquery__(event.target).hasClass('seat')) {
+                    else if (__WEBPACK_IMPORTED_MODULE_14_jquery__(event.target).hasClass('seat') && !_this.roadingAnimationEnable) {
                         _this.tapSeat(event);
                     }
                 }
@@ -11146,17 +11153,8 @@ var VenuemapComponent = (function () {
         this.modalTopCss();
         // 押下したボタンの座席名
         this.selectedSeatName = value;
-        var flag = __WEBPACK_IMPORTED_MODULE_14_jquery__["inArray"](this.selectedSeatName, this.selectedSeatNameList);
-        this.selectedSeatId = this.selectedSeatList[flag];
-        this.selectedStockTypeName = this.stockTypeName;
-        this.selectedDescription = this.description;
-        // 押下したボタンの座席idの席種
-        for (var i = 0; i < this.countSelect; i++) {
-            if (this.selectedSeatId == this.seats[i].seat_l0_id) {
-                this.selectedStockTypeId = this.seats[i].stock_type_id;
-                break;
-            }
-        }
+        var index = __WEBPACK_IMPORTED_MODULE_14_jquery__["inArray"](this.selectedSeatName, this.selectedSeatNameList);
+        this.selectedSeatId = this.selectedSeatList[index];
     };
     // 席種詳細ダイアログの消去
     VenuemapComponent.prototype.removeDialog = function () {
@@ -11304,13 +11302,6 @@ var VenuemapComponent = (function () {
         for (var i = 0; i < this.countSelect; i++) {
             if (this.selectedSeatName == this.selectedSeatNameList[i]) {
                 this.selectedSeatId = this.selectedSeatList[i];
-                break;
-            }
-        }
-        // 押下したボタンの座席idの席種
-        for (var i = 0; i < this.countSelect; i++) {
-            if (this.selectedSeatId == this.seats[i].seat_l0_id) {
-                this.selectedStockTypeId = this.seats[i].stock_type_id;
                 break;
             }
         }
