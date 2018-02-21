@@ -55,3 +55,13 @@ li.btn-seat-plus.btn-seat-active:after {
     color: var(--custom-color) !important;
     border-color: var(--custom-border-color) !important;
 }
+
+/* input */
+.confirmForm input[type=radio]:checked + label::after {
+  background: var(--custom-background-color) !important;
+}
+
+.confirmForm input[type=checkbox]:checked + label::after {
+	border-left-color: var(--custom-background-color) !important;
+	border-bottom-color: var(--custom-background-color) !important;
+}
