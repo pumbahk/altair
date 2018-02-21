@@ -207,16 +207,14 @@ export class ReserveByQuantityComponent implements OnInit {
                       getMap = document.getElementById("venue-quantity");
                       if (getMap && getMap.firstElementChild) {
                         //二重色付け制限
-                        if ($('#venue-quantity').find('.region').css({ 'fill': 'red' })) {
-                          $('#venue-quantity').find('.region').css({
-                            'fill': 'white'
-                          });
+                        if ($('#venue-quantity').find('.region').css({ 'fill': 'red' }) || $('#venue-quantity').find('.region').find('.coloring_region').css({ 'fill': 'red' })) {
+                          $('#venue-quantity').find('.region').css({ 'fill': 'white' });
+                          $('#venue-quantity').find('.region').find('.coloring_region').css({ 'fill': 'white' });
                         }
                         //色付け
                         for (let i = 0; i < that.regions.length; i++) {
-                          $('#venue-quantity').find('#' + that.regions[i]).css({
-                            'fill': 'red'
-                          });
+                          $('#venue-quantity').find('#' + that.regions[i]).css({ 'fill': 'red' });
+                          $('#venue-quantity').find('#' + that.regions[i]).find('.coloring_region').css({ 'fill': 'red' });
                         }
                         //インターバル処理終了
                         clearInterval(timer);
