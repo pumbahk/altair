@@ -177,10 +177,10 @@ msgid "戻る"
 msgstr "Back"
 
 msgid "入力情報の編集"
-msgstr "Edit Inputted Information"
+msgstr "Edit Information"
 
 msgid "入力情報編集"
-msgstr "Edit Inputted Information"
+msgstr "Edit Information"
 
 msgid "保存する"
 msgstr "Save"
