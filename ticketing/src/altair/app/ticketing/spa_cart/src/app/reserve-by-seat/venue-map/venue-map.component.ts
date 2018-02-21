@@ -968,15 +968,22 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
         }
       }
     }
-
+    
     //セッションストレージに滞在フラグを登録
     sessionStorage.setItem('stay', 'true');
+    
+    //iPadの初期表示用
+    let firstPopstate = this.reserveBySeatBrowserBackService.selectProductCount == 0 ? true : false;
 
     //ブラウザの戻る・進むで発火
     window.addEventListener('popstate', function (e) {
       if (that.returnUnconfirmFlag) {
         that.returnUnconfirmFlag = false;
       } else {
+        if (that.smartPhoneCheckService.isIpad() && firstPopstate) {
+          firstPopstate = false;
+          return;
+        }
         that.confirmReturn();
         if (ua.match(/crios/i)) {
           history.forward();
