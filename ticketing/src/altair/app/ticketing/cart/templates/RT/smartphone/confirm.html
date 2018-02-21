@@ -180,6 +180,10 @@
               <td>${shipping.last_name_kana} ${shipping.first_name_kana}</td>
             </tr>
             <tr>
+              <th scope="row">メールアドレス</th>
+              <td>${shipping.email_1}</td>
+            </tr>
+            <tr>
               <th scope="row">電話番号</th>
               <td>${shipping.tel_1}</td>
             </tr>
@@ -187,6 +191,14 @@
               <th scope="row">配送先住所 <br />※配送受取を選択した場合</th>
               <td>${shipping.zip} ${shipping.prefecture}${shipping.city}${shipping.address_1}${shipping.address_2}
               </td>
+            </tr>
+            <tr>
+              <th scope="row">生年月日</th>
+              <td>${u"{0.year} 年 {0.month}月 {0.day}日".format(shipping.birthday)}</td>
+            </tr>
+            <tr>
+              <th scope="row">性別</th>
+              <td>${h.format_sex(request, shipping.sex)}</td>
             </tr>
           </table>
         </div>

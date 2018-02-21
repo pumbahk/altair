@@ -575,6 +575,8 @@ class ConfirmLotEntryView(object):
         if entry is None:
             self.request.session.flash(self._message(u"セッションに問題が発生しました。"))
             return self.back_to_form()
+        elif entry['birthday']:
+            entry['shipping_address']['birthday'] = entry['birthday']
 
         entry.pop('token')
         entry_no = entry['entry_no']
