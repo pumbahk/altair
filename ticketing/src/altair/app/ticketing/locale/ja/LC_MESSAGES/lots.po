@@ -173,6 +173,18 @@ msgstr "税込"
 msgid "戻る"
 msgstr "戻る"
 
+msgid "入力情報の編集"
+msgstr "入力情報の編集"
+
+msgid "入力情報編集"
+msgstr "入力情報編集"
+
+msgid "保存する"
+msgstr "保存する"
+
+msgid "キャンセル"
+msgstr "キャンセル"
+
 # index
 
 msgid "※このページに記載されている料金はすべて消費税込です。"

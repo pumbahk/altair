@@ -176,6 +176,18 @@ msgstr "含税"
 msgid "戻る"
 msgstr "回上一页"
 
+msgid "入力情報の編集"
+msgstr "编辑讯息"
+
+msgid "入力情報編集"
+msgstr "编辑讯息"
+
+msgid "保存する"
+msgstr "保存"
+
+msgid "キャンセル"
+msgstr "取消"
+
 # index
 
 msgid "※このページに記載されている料金はすべて消費税込です。"
