@@ -563,7 +563,7 @@ class MultiCheckoutView(object):
         # 変換
         order_no = order['order_no']
 
-        item_name = api.get_item_name(self.request, cart.performance_id)
+        item_name = api.get_item_name(self.request, cart.name)
 
         try:
             checkout_auth_result = multicheckout_api.checkout_auth_secure_code(
@@ -625,7 +625,7 @@ class MultiCheckoutView(object):
             order['order_no'] = cart.order_no
 
             try:
-                item_name = api.get_item_name(self.request, cart.performance_id)
+                item_name = api.get_item_name(self.request, cart.name)
                 logger.debug('call forced checkout auth')
 
                 # 強制3Dオーソリ
@@ -706,7 +706,7 @@ class MultiCheckoutView(object):
 
         try:
             auth_result = multicheckout_api.secure3d_auth(cart.order_no, callback_params['pares'], callback_params['md'])
-            item_name = api.get_item_name(self.request, cart.performance_id)
+            item_name = api.get_item_name(self.request, cart.name)
 
             # TODO: エラーメッセージ
             #if not auth_result.is_enable_auth_checkout():

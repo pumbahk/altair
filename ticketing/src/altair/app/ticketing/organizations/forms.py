@@ -542,11 +542,6 @@ class OrganizationSettingForm(OrganizationSettingSimpleForm):
         if org_setting:
             raise ValueError(u'既に同じ名前の店舗名称があります。')
 
-    def validate_cart_item_name(self, field):
-        if len(field.data.encode('shift_jis')) > 36:
-            raise ValueError(u'登録可能な文字数を超えています。36byte以内(全角18文字分、半角36文字分)で入力してください。')
-
-
 class HostForm(OurForm):
     host_name = OurTextField(
         label=get_annotations_for(c_models.Host.host_name)['label'],
