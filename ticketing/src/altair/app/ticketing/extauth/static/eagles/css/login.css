@@ -118,6 +118,12 @@
   .login-member-page .login-kids-star .btn-team {
     background: #f6ac19;
   }
+  .login-member-page .login-academy .sub-ttl {
+    color: #4ab134;
+  }
+  .login-member-page .login-academy .btn-team {
+    background: #4ab134;
+  }
 
 
 @media screen and (min-width: 768px) {

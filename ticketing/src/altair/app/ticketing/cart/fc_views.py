@@ -176,7 +176,7 @@ class FCIndexView(object):
     def get(self):
         jump_maintenance_page_for_trouble(self.request.organization)
         form, extra_form_fields = self.product_form_from_user_profile(load_user_profile(self.request, self.context.performance.id))
-        return dict(form=form, extra_form_fields=extra_form_fields)
+        return dict(form=form, extra_form_fields=extra_form_fields, max_quantity=self.sales_segment.max_quantity)
 
     @lbr_view_config(request_method='POST')
     def post(self):

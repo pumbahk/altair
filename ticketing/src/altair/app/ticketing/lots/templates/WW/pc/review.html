@@ -215,11 +215,11 @@
       %endfor
     </table>
   </div>
-  % if len(entry.get_lot_entry_attribute_pair_pairs(request, mode='editable')) > 0:
-  <form method="post" action="${request.route_path('order_review.edit_order_attributes.form')}">
-    <input type="hidden" name="action" value="edit_order_attributes.form" />
-    <input type="hidden" name="order_no" value="${order.order_no}" />
-    <input type="hidden" name="tel" value="${order.shipping_address.tels[0]}" />
+  % if entry.is_extra_form_editable and len(entry.get_lot_entry_attribute_pair_pairs(request, mode='editable')) > 0:
+  <form method="post" action="${request.route_path('lots.review.edit_lot_entry_attributes.form')}">
+    <input type="hidden" name="action" value="edit_lot_entry_attributes.form" />
+    <input type="hidden" name="entry_no" value=${entry_no}>
+    <input type="hidden" name="tel_no" value=${tel_no}>
     <input type="submit" class="btn btn-primary" value="${_(u'入力情報の編集')}" />
   </form>
   % endif

@@ -21,8 +21,8 @@ from altair.app.ticketing.payments.plugins import CHECKOUT_PAYMENT_PLUGIN_ID
 
 logger = logging.getLogger(__name__)
 
-# 楽チケと一緒にポイント付与したいOrgのコード
-from . import orgs_with_rakuten
+# orgs_with_rakuten: 楽チケと一緒にポイント付与したいOrgのコード, orgs_not_consider_rakutepay: 楽天ペイの場合は対象外にするOrgのコード
+from . import orgs_with_rakuten, orgs_not_consider_rakutenpay
 
 class RecordError(Exception):
     pass
@@ -571,8 +571,9 @@ def do_make_point_grant_data(registry, organization, start_date, end_date, submi
         orders = query.all()
         logger.info('number of orders to process: %d' % len(orders))
         for order in orders:
-            # 楽天ペイの予約は対象外
-            if order.payment_plugin_id == CHECKOUT_PAYMENT_PLUGIN_ID:
+            # orgs_not_consider_rakutepayにあるorganizationかつ楽天ペイの予約は対象外
+            # orgs_not_consider_rakutenpayは__init__.pyにて設定されます
+            if order.payment_plugin_id == CHECKOUT_PAYMENT_PLUGIN_ID and organization.code in orgs_not_consider_rakutenpay:
                 continue
 
             point_grant_history_entries_by_type = {}

@@ -80,6 +80,7 @@ dogpile_cache.altair_oauth_auth_plugin_metadata.arguments.db = 6
 ;sej.api_key = 1001
 
 ; altair.discount_code.eagles_communicator
+altair.discount_code.eagles_communicator.endpoint_base = ${altair:discount_code.eagles_communicator.endpoint_base}
 altair.discount_code.eagles_communicator.hash_key = 60eAb@%Fa7e?
 altair.discount_code.eagles_communicator.http_proxy = ${altair:discount_code.eagles_communicator.http_proxy}
 altair.discount_code.eagles_communicator.https_proxy = ${altair:discount_code.eagles_communicator.https_proxy}

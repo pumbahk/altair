@@ -237,10 +237,10 @@ def _maybe_encoded(s, encoding='utf-8'):
         return s
     return s.decode(encoding)
 
-def get_item_name(request, cart_name):
+def get_item_name(request, performance_id):
     organization = request.organization
     base_item_name = organization.setting.cart_item_name
-    return _maybe_encoded(base_item_name) + " " + str(cart_name)
+    return _maybe_encoded(base_item_name) + " " + str(performance_id)
 
 def get_payment_method_manager(request=None, registry=None):
     if request is not None:

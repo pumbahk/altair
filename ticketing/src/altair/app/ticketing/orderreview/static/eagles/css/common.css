@@ -2638,6 +2638,11 @@ a {
     width: 100%;
     position: relative;
   }
+
+  #receipt-button {
+    width: 90%;
+    border-radius: 5px;
+  }
   .btn-buy:before, .btn-buy:after,
   .btn-primary:before,
   .btn-primary:after {

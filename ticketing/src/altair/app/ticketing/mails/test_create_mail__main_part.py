@@ -310,39 +310,26 @@ class MailTemplateCreationTest(unittest.TestCase):
         from altair.app.ticketing.core.models import MailTypeEnum, StockType, StockTypeEnum
         operator = setup_operator()
         self.session.add(operator)
-        order_no = "*orderno*"
-        stock_type = StockType()
-        stock_type.type = StockTypeEnum.Other.v
-        order = setup_order(quantity=2,
-                            quantity_only=True,
-                            organization=operator.organization,
-                            order_no=order_no,
-                            stock_type=stock_type)
         request = _make_request(operator.organization)
+        stock_type_list = [StockTypeEnum.Other.v, StockTypeEnum.Seat.v]
+        for (i, t) in enumerate(stock_type_list):
+            stock_type = StockType()
+            stock_type.type = t
+            order_no = "*orderno{}*".format(i)
+            order = setup_order(quantity=2,
+                                quantity_only=True,
+                                organization=operator.organization,
+                                order_no=order_no,
+                                stock_type=stock_type)
 
-        with mock.patch("altair.app.ticketing.mails.complete.ch.render_payment_finished_mail_viewlet") as prender:
-            with mock.patch("altair.app.ticketing.mails.complete.ch.render_delivery_finished_mail_viewlet") as drender:
-                result = self._callAction(request, order, MailTypeEnum.PurchaseCompleteMail)
-                self.assertTrue(result.body.data, str) #xxx:
-                self.assertIn("*orderno*", result.body.data)
-                self.assertTrue(prender.called)
-                self.assertTrue(drender.called)
-
-        stock_type = StockType()
-        stock_type.type = StockTypeEnum.Seat.v
-        order = setup_order(quantity=2,
-                            quantity_only=True,
-                            organization=operator.organization,
-                            order_no=order_no,
-                            stock_type=stock_type)
-        with mock.patch("altair.app.ticketing.mails.complete.ch.render_payment_finished_mail_viewlet") as prender:
-            with mock.patch("altair.app.ticketing.mails.complete.ch.render_delivery_finished_mail_viewlet") as drender:
-                result = self._callAction(request, order, MailTypeEnum.PurchaseCompleteMail)
-                self.assertTrue(result.body.data, str) #xxx:
-                self.assertIn("*orderno*", result.body.data)
-                self.assertTrue(prender.called)
-                self.assertTrue(drender.called)
-
+            with mock.patch("altair.app.ticketing.mails.complete.ch.render_payment_finished_mail_viewlet") as prender:
+                with mock.patch(
+                        "altair.app.ticketing.mails.complete.ch.render_delivery_finished_mail_viewlet") as drender:
+                    result = self._callAction(request, order, MailTypeEnum.PurchaseCompleteMail)
+                    self.assertTrue(result.body.data, str)  # xxx:
+                    self.assertIn(order_no, result.body.data)
+                    self.assertTrue(prender.called)
+                    self.assertTrue(drender.called)
 
     def test_purchase_cancel_mail(self):
         from altair.app.ticketing.core.models import MailTypeEnum
