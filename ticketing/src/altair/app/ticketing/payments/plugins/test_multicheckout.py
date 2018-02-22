@@ -106,7 +106,6 @@ class MultiCheckoutViewTests(unittest.TestCase):
         dummy_cart = testing.DummyModel(
             id=cart_id,
             name=u"99999999",
-            performance_id=99999999,
             total_amount=1234,
             is_expired=lambda self, *args: False,
             finished_at=None,
@@ -182,7 +181,6 @@ class MultiCheckoutViewTests(unittest.TestCase):
         dummy_cart = testing.DummyModel(
             id=cart_id,
             name=u"99999999",
-            performance_id=99999999,
             total_amount=1234,
             is_expired=lambda self, *args: False,
             finished_at=None,
@@ -255,7 +253,6 @@ class MultiCheckoutViewTests(unittest.TestCase):
         dummy_cart = testing.DummyModel(
             id=cart_id,
             name=u"99999999",
-            performance_id=99999999,
             total_amount=1234,
             is_expired=lambda self, *args: False,
             finished_at=None,
@@ -331,7 +328,6 @@ class MultiCheckoutViewTests(unittest.TestCase):
         dummy_cart = testing.DummyModel(
             id=cart_id,
             name=u"99999999",
-            performance_id=99999999,
             total_amount=1234,
             performance=testing.DummyModel(id=100, name=u'テスト公演'),
             products=[],
@@ -396,7 +392,6 @@ class MultiCheckoutViewTests(unittest.TestCase):
         dummy_cart = testing.DummyModel(
             id=cart_id,
             name=u"99999999",
-            performance_id=99999999,
             total_amount=1234,
             performance=testing.DummyModel(id=100, name=u'テスト公演'),
             products=[],
@@ -604,7 +599,6 @@ class MultiCheckoutPluginTests(unittest.TestCase):
         dummy_cart = testing.DummyModel(
             id=cart_id,
             name=u"9999999999",
-            performance_id=99999999,
             organization_id=1,
             total_amount=1234,
             performance=testing.DummyModel(id=100, name=u'テスト公演'),
@@ -688,7 +682,6 @@ class MultiCheckoutPluginTests(unittest.TestCase):
         dummy_cart = testing.DummyModel(
             id=cart_id,
             name=u"9999999999",
-            performance_id=99999999,
             total_amount=1234,
             organization_id=1,
             performance=testing.DummyModel(id=100, name=u'テスト公演'),
@@ -772,7 +765,6 @@ class MultiCheckoutPluginTests(unittest.TestCase):
         dummy_cart = testing.DummyModel(
             id=cart_id,
             name=u"9999999999",
-            performance_id=99999999,
             total_amount=1234,
             organization_id=1,
             performance=testing.DummyModel(id=100, name=u'テスト公演'),
@@ -909,7 +901,6 @@ class MultiCheckoutPluginTests(unittest.TestCase):
         dummy_cart = testing.DummyModel(
             id=cart_id,
             name=u"99999999",
-            performance_id=99999999,
             total_amount=1234,
             organization_id=1,
             performance=testing.DummyModel(id=100, name=u'テスト公演'),
@@ -949,7 +940,6 @@ class MultiCheckoutPluginTests(unittest.TestCase):
         dummy_cart = testing.DummyModel(
             id=cart_id,
             name=u"99999999",
-            performance_id=99999999,
             total_amount=1234,
             organization_id=1,
             performance=testing.DummyModel(id=100, name=u'テスト公演'),
