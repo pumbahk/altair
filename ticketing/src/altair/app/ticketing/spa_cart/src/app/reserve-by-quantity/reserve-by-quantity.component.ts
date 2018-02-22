@@ -110,6 +110,8 @@ export class ReserveByQuantityComponent implements OnInit {
   upperLimit: number;
   //最小購入数
   minQuantity: number = 1;
+  //最小単位
+  minSalesUnitNumber: number = null;
 
   //説明
   description: string;
@@ -119,6 +121,9 @@ export class ReserveByQuantityComponent implements OnInit {
 
   //座席確保飛び席モーダルフラグ
   separatDetailDisplay: boolean = false;
+
+  //+ボタンに追加するクラス　disabled用
+  plusBtnClass = '';
 
   constructor(private route: ActivatedRoute, private router: Router,
     private performances: PerformancesService, private stockTypes: StockTypesService,
@@ -192,6 +197,30 @@ export class ReserveByQuantityComponent implements OnInit {
                     this.quantity = this.stockType.min_quantity;
                   }
                   this.maxQuantity = this.stockType.max_quantity;
+                  //最小の単位を取得
+                  let salesUnitNumber: number = null;
+                  this.minSalesUnitNumber = null;
+                  for (let i = 0, len = this.selectedProducts.length; i < len; i++) {
+                    salesUnitNumber = null;
+                    for (let j = 0, len = this.selectedProducts[i].product_items.length; j < len; j++) {
+                      if (this.selectedProducts[i].product_items[j].sales_unit_quantity) {
+                        salesUnitNumber += this.selectedProducts[i].product_items[j].sales_unit_quantity;
+                      }
+                    }
+                    if (!this.minSalesUnitNumber || this.minSalesUnitNumber > salesUnitNumber) {
+                      this.minSalesUnitNumber = salesUnitNumber;
+                    }
+                  }
+                  //初期選択枚数が最小単位で割り切れなかった場合調整
+                  if (this.quantity % this.minSalesUnitNumber != 0) {
+                    this.quantity = Math.ceil(this.quantity / this.minSalesUnitNumber) * this.minSalesUnitNumber;
+                  }
+                  //+ボタンのdisabled
+                  this.plusBtnClass = '';
+                  if (!this.quantityCheckService.stockTypeQuantityMaxLimitCheck(this.upperLimit, this.maxQuantity, this.quantity + this.minSalesUnitNumber)) {
+                    this.plusBtnClass = 'disabled';
+                  }
+                  //regions取得
                   that.regions = this.stockType.regions;
                   this.modalTopCss();
                   //regionsがある時のみ色付けインターバル開始
@@ -261,10 +290,10 @@ export class ReserveByQuantityComponent implements OnInit {
 
   //チケット枚数減少
   minusClick() {
-    if (this.quantityCheckService.stockTypeQuantityMinLimitCheck(this.minQuantity, this.quantity - 1)) {
-      this.quantity--;
+    if (this.quantityCheckService.stockTypeQuantityMinLimitCheck(this.minQuantity, this.quantity - this.minSalesUnitNumber)) {
+      this.quantity = this.quantity - this.minSalesUnitNumber;
       $('#plus-btn').removeClass('disabled');
-      if (!this.quantityCheckService.stockTypeQuantityMinLimitCheck(this.minQuantity, this.quantity - 1)) {
+      if (!this.quantityCheckService.stockTypeQuantityMinLimitCheck(this.minQuantity, this.quantity - this.minSalesUnitNumber)) {
         $('#minus-btn').addClass('disabled');
       }
     } else {
@@ -274,10 +303,10 @@ export class ReserveByQuantityComponent implements OnInit {
 
   //チケット枚数増加
   plusClick() {
-    if (this.quantityCheckService.stockTypeQuantityMaxLimitCheck(this.upperLimit, this.maxQuantity, this.quantity + 1)) {
-      this.quantity++;
+    if (this.quantityCheckService.stockTypeQuantityMaxLimitCheck(this.upperLimit, this.maxQuantity, this.quantity + this.minSalesUnitNumber)) {
+      this.quantity = this.quantity + this.minSalesUnitNumber;
       $("#minus-btn").removeClass('disabled');
-      if (!this.quantityCheckService.stockTypeQuantityMaxLimitCheck(this.upperLimit, this.maxQuantity, this.quantity + 1)) {
+      if (!this.quantityCheckService.stockTypeQuantityMaxLimitCheck(this.upperLimit, this.maxQuantity, this.quantity + this.minSalesUnitNumber)) {
         $("#plus-btn").addClass('disabled');
       }
     } else {
