@@ -173,11 +173,18 @@ class DiscountCodeCode(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     @property
     def order(self):
+        order = None
         if len(self.UsedDiscountCodeOrder) == 0:
-            return None
+            return order
 
         desc_ordered = sorted(self.UsedDiscountCodeOrder, key=lambda x: x.created_at, reverse=True)
-        return desc_ordered[0].ordered_product_item.ordered_product.order
+        latest = desc_ordered[0]
+        if latest.ordered_product_item and \
+                latest.ordered_product_item.ordered_product and \
+                latest.ordered_product_item.ordered_product.order:
+            order = latest.ordered_product_item.ordered_product.order
+
+        return order
 
 
 class DiscountCodeTarget(Base, BaseModel, WithTimestamp, LogicallyDeleted):
