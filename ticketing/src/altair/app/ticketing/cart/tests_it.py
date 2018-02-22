@@ -26,6 +26,9 @@ def _setup_it(config):
     reg.adapters.register([IRequest], IReserving, "", Reserving)
     reg.adapters.register([IRequest], ICartFactory, "", CartFactory)
     config.add_route('cart.payment', 'cart/payment')
+    config.add_route('cart.discount_code', 'discount/code/{sales_segment_id}',
+                     factory='.resources.DiscountCodeTicketingCartResources')
+
 
 class ReserveViewTests(unittest.TestCase):
 

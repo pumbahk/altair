@@ -102,3 +102,9 @@ a:hover,a.selected{ text-decoration: underline; }
 .selectwrapper {
      height: 50px;
 }
+
+ul.error-list li {
+  color: #D8000C;
+  background-color: #FFBABA;
+  padding: 0 8px;
+}

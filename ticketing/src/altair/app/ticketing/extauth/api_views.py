@@ -93,6 +93,7 @@ class APIView(object):
                 )
         except OAuthRenderableError as e:
             self.request.response.status = e.http_status
+            logger.warn('issue_oauth_access_token. {} HTTP Status ={}'.format(e.error_string, e.http_status))
             return get_oauth_response_renderer(self.request).render_exc_as_dict(e)
         renderer = get_oauth_response_renderer(self.request)
         result = renderer.render_auth_descriptor_as_dict(auth_descriptor, state)
@@ -120,6 +121,7 @@ class APIView(object):
                         invalidate_client_http_session(self.request, http_session_id) 
         except OAuthRenderableError as e:
             self.request.response.status = e.http_status
+            logger.warn('revoke_oauth_access_token. {} HTTP Status ={}'.format(e.error_string, e.http_status))
             return get_oauth_response_renderer(self.request).render_exc_as_dict(e)
         return {}
 
@@ -144,6 +146,7 @@ class APIView(object):
                 invalidate_client_http_session(self.request, http_session_id) 
         except OAuthRenderableError as e:
             self.request.response.status = e.http_status
+            logger.warn('openid_end_session. {} HTTP Status ={}'.format(e.error_string, e.http_status))
             return get_oauth_response_renderer(self.request).render_exc_as_dict(e)
         except OAuthNoSuchAccessTokenError:
             self.request.response.status = 404

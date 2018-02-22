@@ -1811,21 +1811,22 @@ td.event img {
 /* .detailBox {{{ */
 .detailBox {
     width: 690px;
-    margin: 0 auto 20px auto;
-    background: url(../img/detail/bg_box_bottom.gif) no-repeat left bottom;
+    margin: 0 auto 20px;
+    background-color:#F7F7F0;
+    border-radius: 8px;
+    box-shadow: 2px 2px 4px rgba(0,0,0,0.2);
 }
-
 .detailBoxInner {
     height: 1%;
     overflow: hidden;
     padding: 0 12px 10px;
-    background: url(../img/detail/bg_box_top.gif) no-repeat 0 0;
 }
-
 .detailBox h2 {
     position: static !important;
     padding: 8px 0 10px;
     margin-bottom: 5px;
+    background-color: #FAFAF6 !important;
+    border-bottom: 1px solid #E5E5CB;
 }
 /* }}} */
 

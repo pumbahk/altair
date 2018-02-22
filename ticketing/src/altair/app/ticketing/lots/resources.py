@@ -357,6 +357,18 @@ class LotReviewResource(LotResourceBase):
         self.request = request
         self.organization = self.request.organization
 
+    def get_lot_entry(self):
+        entry_no = self.request.params.get('entry_no')
+        tel_no = self.request.params.get('tel_no')
+        lot_entry = api.get_entry(self.request, entry_no, tel_no)
+        if not lot_entry:
+            raise HTTPNotFound
+        return lot_entry
+
+    @reify
+    def entry(self):
+        return self.get_lot_entry()
+
 
 @implementer(ILotResource)
 class LotLogoutResource(LotResourceBase):

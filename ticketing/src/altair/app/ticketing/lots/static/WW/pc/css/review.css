@@ -528,3 +528,9 @@ body {
 .selectdiv {
     clear: both;
 }
+
+ul.error-list li {
+  color: #D8000C;
+  background-color: #FFBABA;
+  padding: 0 8px;
+}

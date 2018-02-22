@@ -658,6 +658,17 @@ main {
 
 /* ETC
  -------------------------------------------- */
+ul.error-list li {
+  color: #D8000C;
+  background-color: #FFBABA;
+  padding: 0 8px;
+}
+
+.error-box {
+  border: 3px solid red;
+  background: #FFEEEE;
+  padding: 10px; margin: 10px;
+}
 .notice h4 {
   background: #D3D3D3;
   padding: 3px 5px;

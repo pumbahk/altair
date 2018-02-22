@@ -919,7 +919,7 @@ class ReserveViewTests(unittest.TestCase):
             SalesSegmentGroup,
             SalesSegmentKindEnum,
             Organization,
-            Host,
+            OrganizationSetting,
             PaymentDeliveryMethodPair,
             SeatIndex,
             SeatIndexType,
@@ -931,6 +931,7 @@ class ReserveViewTests(unittest.TestCase):
 
         self.config.include('.request')
         self.config.add_route('cart.discount_code', 'discount_code')
+        self.config.add_route('cart.payment', 'payment')
         # 在庫
         stock_id = 1
         product_item_id = 2
@@ -945,7 +946,13 @@ class ReserveViewTests(unittest.TestCase):
         sales_segment_group_id = 11
 
         now = datetime.now()
-        get_organization.return_value = organization = Organization(id=organization_id, short_name='XX', code='XX')
+        get_organization.return_value = organization = Organization(id=organization_id,
+                                                                    short_name='XX',
+                                                                    code='XX',
+                                                                    _setting=OrganizationSetting(
+                                                                        enable_discount_code=0
+                                                                    ))
+
         venue = self._add_venue(organization_id, site_id, venue_id)
         venue.performance_id = performance_id
         stock = Stock(id=stock_id, quantity=100, performance_id=performance_id, stock_type=StockType(quantity_only=False))
@@ -1042,7 +1049,7 @@ class ReserveViewTests(unittest.TestCase):
                 'separate_seats': False,
                 },
             'result': 'OK',
-            'payment_url': 'http://example.com/discount_code',
+            'payment_url': 'http://example.com/payment',
             })
         cart_id = request.session['altair.app.ticketing.cart_id']
 

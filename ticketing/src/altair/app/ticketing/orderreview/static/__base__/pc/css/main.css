@@ -165,10 +165,12 @@ select {
 	border: 1px solid #CCC;
 	padding: 5px;
 }
+input[type=radio],
 input[type=checkbox] {
     display: inline-block;
     margin-right: 6px;
 }
+input[type=radio] + label,
 input[type=checkbox] + label {
     position: relative;
     display: inline-block;
@@ -176,32 +178,53 @@ input[type=checkbox] + label {
     line-height: 30px;
     cursor: pointer;
 }
+input[type=radio],
 input[type=checkbox] {
 	display: none;
 	margin: 0;
 	background: #000;
 }
+input[type=radio] + label,
 input[type=checkbox] + label {
 	padding: 0 0 0 30px;
 }
+input[type=radio] + label::before,
 input[type=checkbox] + label::before {
 	content: "";
 	position: absolute;
 	top: 50%;
 	left: 0;
+	-moz-box-sizing: border-box;
+	box-sizing: border-box;
 	display: block;
 	width: 18px;
 	height: 18px;
 	margin-top: -9px;
 	background: #FFF;
 }
+input[type=radio] + label::before {
+	border: 2px solid #ccc;
+	border-radius: 30px;
+}
 input[type=checkbox] + label::before {
 	border: 2px solid #ccc;
 }
+input[type=radio]:checked + label::after,
 input[type=checkbox]:checked + label::after {
 	content: "";
 	position: absolute;
 	top: 50%;
+	-moz-box-sizing: border-box;
+	box-sizing: border-box;
+	display: block;
+}
+input[type=radio]:checked + label::after {
+	left: 5px;
+	width: 8px;
+	height: 8px;
+	margin-top: -4px;
+	background: #E71063;
+	border-radius: 8px;
 }
 input[type=checkbox]:checked + label::after {
 	left: 3px;

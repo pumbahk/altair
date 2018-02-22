@@ -1023,6 +1023,10 @@ class GetRefundTicketPrice(unittest.TestCase):
                             quantity=1,
                             refund_price=Decimal(7),
                             product_item_id=1,
+                            tokens=[testing.DummyModel(
+                                id=1,
+                                used_discount_codes=[],
+                            )],
                             product_item=testing.DummyModel(
                                 id=1,
                                 price=Decimal(5),
@@ -1034,6 +1038,10 @@ class GetRefundTicketPrice(unittest.TestCase):
                             quantity=2,
                             refund_price=Decimal(3),
                             product_item_id=2,
+                            tokens=[testing.DummyModel(
+                                id=2,
+                                used_discount_codes=[],
+                            )],
                             product_item=testing.DummyModel(
                                 id=2,
                                 price=Decimal(13),

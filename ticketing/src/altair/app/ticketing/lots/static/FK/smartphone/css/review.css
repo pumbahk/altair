@@ -518,3 +518,9 @@ body {
      margin: 0;
      padding: 0;
 }
+
+ul.error-list li {
+  color: #D8000C;
+  background-color: #FFBABA;
+  padding: 0 8px;
+}

@@ -460,10 +460,13 @@ export class FilterComponent implements OnInit {
 
   //検索項目変更ディレイ（連打防止）
   public searchs(min: number, max: number, name: string, unreserved: boolean, reserved: boolean) {
+    this.animationEnableService.sendToRoadFlag(true);
     setTimeout(() => {
       if (min == this.seatPrices[0] && max == this.seatPrices[1] &&
         name == this.seatName && unreserved == this.seatValues[0] && reserved == this.seatValues[1]) {
         this.search();
+      } else {
+        this.animationEnableService.sendToRoadFlag(false);
       }
     }, 500);
   }
