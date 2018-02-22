@@ -165,6 +165,12 @@ class TestCheckoutViews(unittest.TestCase, CoreTestMixin):
             },
             root_factory=self._dummy_root_factory,
             session_factory=self._dummy_session_factory)
+        from altair.sqlahelper import register_sessionmaker_with_engine
+        register_sessionmaker_with_engine(
+            config.registry,
+            'slave',
+            self.session.bind
+        )
         config.include('pyramid_mako')
         config.include('altair.pyramid_dynamic_renderer')
         config.add_mako_renderer('.html')
