@@ -47,7 +47,6 @@ export class ReserveBySeatComponent implements OnInit {
     $(function(){
       var mainH;
       var windowH;
-      alert($(window).width());
       var windowWidth = $(window).width();
       var windowSm = 768;
       if (windowWidth <= windowSm) {
