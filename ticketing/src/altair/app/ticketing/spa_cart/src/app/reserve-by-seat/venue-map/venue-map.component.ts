@@ -917,6 +917,13 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
             }
           }
         }
+
+        //スマホ表示からPC+タブレット表示になった際の検索部分表示
+        if (!this.smartPhoneCheckService.isSmartPhone()) {
+          if ($(window).width() > WINDOW_SM) {
+            $('.choiceAreaAcdBox').css('display', 'block');
+          }
+        }
       }, 200);
     });
 
@@ -1405,7 +1412,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
   //座席選択時の画面拡大縮小
   seatSelectDisplay(flag: boolean) {
     let windowHeight = $(window).height();
-    let allHead: number = $('header').height() + $('.headArea').height() + $('.choiceArea').height() + $('#colorNavi').height();
+    let allHead: number = $('header').height() + $('.headArea').height() + $('.choiceAreaMenuBtn').height() + $('#colorNavi').height();
     let orientation = window.orientation;
     if (flag) {
       if (this.smartPhoneCheckService.isSmartPhone()) {
@@ -2093,18 +2100,13 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
   //SP、検索エリアがアクティブ時のモーダルのトップ調整
   modalTopCss() {
     if (this.smartPhoneCheckService.isSmartPhone()) {
+      setTimeout(function () {
+        $("#modalWindowAlertBox").css({
+          'top': "-37px",
+        });
+      }, 100);
       if ($(".choiceAreaAcdBox").css('display') == "block") {
-        setTimeout(function () {
-          $("#modalWindowAlertBox").css({
-            'top': "-250px",
-          });
-        }, 100);
-      } else {
-        setTimeout(function () {
-          $("#modalWindowAlertBox").css({
-            'top': "-37px",
-          });
-        }, 100);
+        $('.choiceAreaAcdBox').slideToggle(300).hide();
       }
     }
   }
