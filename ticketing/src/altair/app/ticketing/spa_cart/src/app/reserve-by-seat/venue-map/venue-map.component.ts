@@ -922,6 +922,8 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
         if (!this.smartPhoneCheckService.isSmartPhone()) {
           if ($(window).width() > WINDOW_SM) {
             $('.choiceAreaAcdBox').css('display', 'block');
+          } else {
+            $('.choiceAreaAcdBox').css('display', 'none');
           }
         }
       }, 200);
