@@ -47,7 +47,6 @@ export class ReserveBySeatComponent implements OnInit {
     $(function(){
       var mainH;
       var windowH;
-      alert($(window).width());
       var windowWidth = $(window).width();
       var windowSm = 768;
       if (windowWidth <= windowSm) {
@@ -132,17 +131,22 @@ export class ReserveBySeatComponent implements OnInit {
         //横幅768px超のとき（タブレット、PC）に行う処理を書く
 
         /***********************************************************/
+        //filterのtoggle
+        $('.acdBt').click(function () {
+          $(this).next().slideToggle(300);
+        });
 
-          $(function(){
-            if(!($('#choiceSeatArea, #buySeatArea, #buyChoiceSeatArea').length)){
-                //ここに「＃sample」が存在しなかった場合の処理を記述
-                $('#mapAreaLeft').addClass('noSide');
-                $('#mapBtnBox').addClass('mapBtnBoxR');
-                $('#mapNaviBox').addClass('mapNaviBoxR');
-                $('#mapAreaRight').addClass('dNone');
-                /////////////////////
-            }
-          });
+
+        $(function () {
+          if (!($('#choiceSeatArea, #buySeatArea, #buyChoiceSeatArea').length)) {
+            //ここに「＃sample」が存在しなかった場合の処理を記述
+            $('#mapAreaLeft').addClass('noSide');
+            $('#mapBtnBox').addClass('mapBtnBoxR');
+            $('#mapNaviBox').addClass('mapNaviBoxR');
+            $('#mapAreaRight').addClass('dNone');
+            /////////////////////
+          }
+        });
 
         /***********************************************************/
         $(function(){
