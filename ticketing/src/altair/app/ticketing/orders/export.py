@@ -739,7 +739,7 @@ class OrderCSV(object):
             localized_columns=self.localized_columns
             )
 
-class OrderDeltaCSV(OrderCSV):
+class OrderOptionalCSV(object):
     EXPORT_TYPE_ORDER = 1
     EXPORT_TYPE_SEAT = 2
 
@@ -876,10 +876,23 @@ class OrderDeltaCSV(OrderCSV):
 
     }
 
-
-    def __init__(self, request, export_type=OrderCSV.EXPORT_TYPE_ORDER, organization_id=None, localized_columns={}, excel_csv=False, session=DBSession, option_columns=None):
-        super(OrderDeltaCSV, self).__init__(request, export_type, organization_id, localized_columns, excel_csv, session)
+    def __init__(self, request, export_type=EXPORT_TYPE_ORDER, organization_id=None, localized_columns={}, excel_csv=False, session=None, option_columns=None):
+        self.request = request
+        self.export_type = export_type
         self.column_renderers = self.get_export_renderers(export_type, option_columns)
+        self.enable_fancy = excel_csv
+        self.organization_id = organization_id
+        self._mailsubscription_cache = None
+        self.localized_columns = localized_columns
+        self.session = session if session else get_db_session(request, 'slave')
+        self.organization = session.query(Organization).filter_by(id=self.organization_id).one()
+        self.marshaller_factory = PickleMarshallerFactory()
+
+    @property
+    def mailsubscription_cache(self):
+        if self._mailsubscription_cache is None:
+            self._mailsubscription_cache = _create_mailsubscription_cache(self.organization_id, self.session)
+        return self._mailsubscription_cache
 
     def _get_renderer(self, option, candidates, export_type):
         renderer = candidates.get(option, None)

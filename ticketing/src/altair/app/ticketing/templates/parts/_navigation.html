@@ -59,8 +59,8 @@
         % if HH.has_permission('order_viewer'):
         <li><a href="${request.route_path('orders.index')}">予約検索</a></li>
         <li><a href="${request.route_path('cart.search')}">カート追跡</a></li>
-        <li><a href="${request.route_path('orders.delta')}">予約検索(テスト版)</a></li>
-        <li><a href="${request.route_path('orders.delta.pattern')}">ダウンロード設定(テスト版)</a></li>
+        <li><a href="${request.route_path('orders.optional')}">予約検索(テスト版)</a></li>
+        <li><a href="${request.route_path('orders.optional.pattern')}">ダウンロード設定(テスト版)</a></li>
         % endif
         % if HH.has_permission('event_editor'):
         <li><a href="${request.route_path('orders.refund.index')}">払戻一覧</a></li>

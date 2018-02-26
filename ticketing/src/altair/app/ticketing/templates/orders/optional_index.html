@@ -30,7 +30,7 @@
   </div>
 </div>
 <div style="float: left;">
-  <%include file="/orders/_delta_search.html" args="form=form_search" />
+  <%include file="/orders/_search_optional.html" args="form=form_search" />
 </div>
 <div style="clear: both;"></div>
 
@@ -63,9 +63,9 @@
     <dd id="checkbox_status_count"></dd>
   </dl>
   % if request.params.get('action') == 'checked':
-  <a type="button" class="btn" href="javascript:search_orders('${request.route_path('orders.delta')}');">全ての予約を表示</a>
+  <a type="button" class="btn" href="javascript:search_orders('${request.route_path('orders.optional')}');">全ての予約を表示</a>
   % else:
-  <a type="button" class="btn" href="javascript:search_orders('${request.route_path('orders.delta', _query=dict(action='checked'))}');">選択した予約だけ表示</a>
+  <a type="button" class="btn" href="javascript:search_orders('${request.route_path('orders.optional', _query=dict(action='checked'))}');">選択した予約だけ表示</a>
   % endif
   <button type="button" class="btn" id="checkbox_status_reset">リセット</button>
   <a type="button" class="btn" id="addall">全て選択</a>
