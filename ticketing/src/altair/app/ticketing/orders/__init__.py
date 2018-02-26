@@ -78,8 +78,6 @@ def includeme(config):
     config.add_route("orders.mailinfo"                  , "/orders/{order_id}/mailinfo/{action}")
     config.add_route("cart.search",                       "/carts/")
     config.add_route("cart.show",                       "/carts/{order_no}")
-    config.add_route('orders.beta'                      , '/beta/')
-    config.add_route('orders.beta.download'             , '/beta/download/')
 
     # latest search and download page
     config.add_route('orders.delta', '/delta/')
