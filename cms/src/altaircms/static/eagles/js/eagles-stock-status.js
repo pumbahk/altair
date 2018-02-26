@@ -15,6 +15,7 @@
         var inf = 0;
         var out = 0;
         var prk = 0;
+        var others = 0;
         var all = 0;
         var count = 0;
         for(var n in d) {
@@ -27,6 +28,8 @@
                 out += d[n];
             } else if(n.match(/^24:/)) {
                 prk += d[n];
+            } else if (n.match(/^\d+:/)) {
+                others += d[n]
             }
             all += d[n];
             if(n.match(/^\d+:/)) {
@@ -36,6 +39,9 @@
         if(count == 0) {
             // 特殊な公演なので対象としない
             return '';
+        }
+        if (prk > 0 && ei3 === 0 && inf === 0 && out === 00 && others === 0) {
+            return ['state-few', 'スマイルグリコパークのみ'];
         }
         if(all == 0) {
             return ['state-sold', '全席種完売'];
