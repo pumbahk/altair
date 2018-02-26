@@ -70,7 +70,7 @@ from altair.app.ticketing.orders.models import (
 from altair.app.ticketing.sej import api as sej_api
 from altair.app.ticketing.mails.api import get_mail_utility
 from altair.app.ticketing.mailmags.models import MailSubscription, MailMagazine, MailSubscriptionStatus
-from altair.app.ticketing.orders.export import OrderCSV, OrderOptionalCSV, get_japanese_columns, RefundResultCSVExporter, get_ordered_ja_col
+from altair.app.ticketing.orders.export import OrderCSV, OrderOptionalCSV, get_japanese_columns, get_ordered_ja_col, RefundResultCSVExporter, get_ordered_ja_col
 from .forms import (
     OrderForm,
     OrderInfoForm,
@@ -863,7 +863,7 @@ class OrderOptionalDownloadView(OrderBaseView):
 
         order_csv = OrderOptionalCSV(self.request,
                                   organization_id=self.context.organization.id,
-                                  localized_columns=get_japanese_columns(self.request),
+                                  localized_columns=get_ordered_ja_col(),
                                   session=slave_session,
                                   option_columns=option_columns,
                                   **kwargs)

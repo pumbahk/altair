@@ -1326,6 +1326,7 @@ class OrderSummary(Base):
             Order.__table__.c.payment_delivery_method_pair_id,
             Order.__table__.c.shipping_address_id,
             Order.__table__.c.issued,
+            Order.__table__.c.printed_at,
             Order.__table__.c.user_id,
             Order.__table__.c.refund_id,
             Order.__table__.c.fraud_suspect,
@@ -1394,10 +1395,9 @@ class OrderSummary(Base):
     payment_delivery_method_pair_id = Order.payment_delivery_method_pair_id
     shipping_address_id = Order.shipping_address_id
     issued = Order.issued
+    printed_at = Order.printed_at
     user_id = Order.user_id
-    refund_id = Order.refund_id
     fraud_suspect = Order.fraud_suspect
-    created_at = Order.created_at
     deleted_at = Order.deleted_at
     user_profile_last_name = UserProfile.__table__.c.last_name
     user_profile_first_name = UserProfile.__table__.c.first_name
