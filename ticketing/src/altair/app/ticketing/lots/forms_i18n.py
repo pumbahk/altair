@@ -130,7 +130,7 @@ class ClientFormFactory(object):
                 validators=[
                     SwitchOptional('tel_2'),
                     Required(_(u'入力してください')),
-                    Length(min=1, max=11),
+                    Length(min=10, max=11),
                     Regexp(r'^\d*$', message=_(u'-(ハイフン)を抜いた半角数字のみを入力してください')),
                     ]
                 )
@@ -140,7 +140,7 @@ class ClientFormFactory(object):
                 filters=[ignore_space_hyphen, NFKC],
                 validators=[
                     Optional(),
-                    Length(min=1, max=11),
+                    Length(min=10, max=11),
                     Regexp(r'^\d*$', message=_(u'-(ハイフン)を抜いた半角数字のみを入力してください')),
                     ]
                 )
