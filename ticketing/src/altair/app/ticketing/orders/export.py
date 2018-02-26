@@ -930,10 +930,12 @@ class OrderDeltaCSV(OrderCSV):
         from altair.app.ticketing.orders.models import order_user_point_account_table
         from altair.app.ticketing.users.models import UserPointAccount
 
-        query = UserPointAccount.query.join(order_user_point_account_table,
-                                            UserPointAccount.id == order_user_point_account_table.c.user_point_account_id)\
-                                      .join(Order, order_user_point_account_table.c.order_id == Order.id)\
-                                      .filter(Order.id == order.id)
+        query = self.session.query(UserPointAccount.account_number)\
+            .join(order_user_point_account_table,
+                  UserPointAccount.id == order_user_point_account_table.c.user_point_account_id)\
+            .join(Order, order_user_point_account_table.c.order_id == Order.id)\
+            .filter(Order.id == order.id)
+
         try:
             return query.one()
         except NoResultFound:
@@ -946,7 +948,7 @@ class OrderDeltaCSV(OrderCSV):
 
         tenant = famiport.lookup_famiport_tenant(self.request, order)
         if tenant is not None:
-            session = get_db_session(self.request, 'famiport')
+            session = get_db_session(self.request, 'famiport_slave')
             try:
                 famiport_order = session.query(FamiPortOrder)\
                                         .filter(FamiPortOrder.client_code == tenant.code)\
@@ -976,7 +978,7 @@ class OrderDeltaCSV(OrderCSV):
     def lookup_event_setting(self, e_id):
         from altair.app.ticketing.core.models import EventSetting
         try:
-            es = EventSetting.query.filter_by(event_id=e_id).one()
+            es = self.session.query(EventSetting).filter_by(event_id=e_id).one()
             return es
         except NoResultFound:
             logger.exception(u'no event setting is found when download the order info.')
@@ -987,7 +989,7 @@ class OrderDeltaCSV(OrderCSV):
     def lookup_performance_setting(self, p_id):
         from altair.app.ticketing.core.models import PerformanceSetting
         try:
-            ps = PerformanceSetting.query.filter_by(performance_id=p_id).one()
+            ps = self.session.query(PerformanceSetting).filter_by(performance_id=p_id).one()
             return ps
         except NoResultFound:
             logger.exception(u'no performance setting is found when download the order info.')
@@ -998,7 +1000,6 @@ class OrderDeltaCSV(OrderCSV):
 
     def iter_records_for_order(self, order):
         user_credential = order.user.user_credential if order.user else None
-        member = order.user.member if order.user and order.user.member else None
 
         user_point_account = self.lookup_user_point_account(order)
         famiport_receipt_payment = self.lookup_famiport_receipt(order, payment_flag=True)
