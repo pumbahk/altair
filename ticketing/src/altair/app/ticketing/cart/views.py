@@ -1575,7 +1575,7 @@ class PointAccountEnteringView(object):
 
             if is_smartphone(self.request):
                 asid = self.context.asid_smartphone
-            return dict(form=form, asid=asid)
+            return dict(form=form, asid=asid, performance=self.context.performance)
 
         point_params = self.get_point_data()
 
