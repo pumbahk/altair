@@ -254,7 +254,7 @@ class ReceiptViewResource(OrderReviewResourceBase):
             filter(Order.canceled_at == None). \
             filter(Order.order_no == order_no).first()
 
-        logger.info("organization_id=%s, order_no=%s, order=%s obtained in ReceiptViewResource." % (self.organization.id, order_no, order))
+        logger.info("organization_id=%s, order_no=%s, order=%s obtained in ReceiptViewResource." % (self.organization.id, order_no, self.order))
         if not self.order:
             raise HTTPNotFound()
 
