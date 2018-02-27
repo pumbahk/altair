@@ -1,0 +1,21 @@
+<div class="confirmBoxText">
+  <table class="customer-table">
+    <tbody>
+      <tr>
+        <th scope="row">${_(u'Famiポート予約番号')}</th>
+        <td><p class="fWB red">${famiport_order['payment_reserve_number']}</p></td>
+      </tr>
+      <tr>
+        <th scope="row">${_(u'支払期限')}</th>
+        <td>
+          <p class="fWB">
+          ${h.i18n_datetime(famiport_order['payment_start_at'], locale)}　〜　
+          % if famiport_order['payment_due_at']:
+            ${h.i18n_datetime(famiport_order['payment_due_at'], locale)}
+          % endif
+          </p>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
