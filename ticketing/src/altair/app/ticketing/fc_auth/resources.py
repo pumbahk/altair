@@ -39,8 +39,7 @@ class FixedMembershipFCAuthResource(FCAuthResourceBase):
 
     @reify
     def membership(self):
-        session = get_db_session(self.request, 'slave')
-        return session.query(Membership) \
+        return Membership.query \
             .filter_by(organization_id=self.organization.id) \
             .filter_by(name=self._membership_name) \
             .one()
