@@ -8282,6 +8282,8 @@ var PaymentComponent = (function () {
 
 
 
+var REGION_COLOR_SELECTED = 'rgb(255, 0, 0)';
+var REGION_COLOR_WHITE = 'rgb(255, 255, 255)';
 var ReserveByQuantityComponent = (function () {
     function ReserveByQuantityComponent(route, router, performances, stockTypes, seatStatus, seats, quantityCheckService, stockTypeDataService, errorModalDataService, countSelectService, animationEnableService, smartPhoneCheckService, reserveBySeatBrowserBackService, _logger) {
         this.route = route;
@@ -8394,16 +8396,12 @@ var ReserveByQuantityComponent = (function () {
                                     getMap = document.getElementById("venue-quantity");
                                     if (getMap && getMap.firstElementChild) {
                                         //二重色付け制限
-                                        if (__WEBPACK_IMPORTED_MODULE_13_jquery__('#venue-quantity').find('.region').css({ 'fill': 'red' })) {
-                                            __WEBPACK_IMPORTED_MODULE_13_jquery__('#venue-quantity').find('.region').css({
-                                                'fill': 'white'
-                                            });
-                                        }
+                                        __WEBPACK_IMPORTED_MODULE_13_jquery__('#venue-quantity').find('.region').css({ 'fill': REGION_COLOR_WHITE });
+                                        __WEBPACK_IMPORTED_MODULE_13_jquery__('#venue-quantity').find('.region').find('.coloring_region').css({ 'fill': REGION_COLOR_WHITE });
                                         //色付け
                                         for (var i = 0; i < that.regions.length; i++) {
-                                            __WEBPACK_IMPORTED_MODULE_13_jquery__('#venue-quantity').find('#' + that.regions[i]).css({
-                                                'fill': 'red'
-                                            });
+                                            __WEBPACK_IMPORTED_MODULE_13_jquery__('#venue-quantity').find('#' + that.regions[i]).css({ 'fill': REGION_COLOR_SELECTED });
+                                            __WEBPACK_IMPORTED_MODULE_13_jquery__('#venue-quantity').find('#' + that.regions[i]).find('.coloring_region').css({ 'fill': REGION_COLOR_SELECTED });
                                         }
                                         //インターバル処理終了
                                         clearInterval(timer);
