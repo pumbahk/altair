@@ -274,7 +274,7 @@
     /* 操作内容をajaxでbackendに送って、backendの処理結果によってsuccess_funcかerror_funcを実行する */
     function post_pattern(post_content, success_func, error_func) {
       $.ajax({
-        url: "${request.route_url('orders.delta.pattern.operate')}",
+        url: "${request.route_url('orders.optional.pattern.operate')}",
         type: "POST",
         data: post_content,
         success: function(json) {

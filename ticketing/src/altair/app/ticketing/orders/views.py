@@ -70,7 +70,7 @@ from altair.app.ticketing.orders.models import (
 from altair.app.ticketing.sej import api as sej_api
 from altair.app.ticketing.mails.api import get_mail_utility
 from altair.app.ticketing.mailmags.models import MailSubscription, MailMagazine, MailSubscriptionStatus
-from altair.app.ticketing.orders.export import OrderCSV, OrderDeltaCSV, get_japanese_columns, RefundResultCSVExporter, get_ordered_ja_col
+from altair.app.ticketing.orders.export import OrderCSV, OrderOptionalCSV, get_japanese_columns, get_ordered_ja_col, RefundResultCSVExporter, get_ordered_ja_col
 from .forms import (
     OrderForm,
     OrderInfoForm,
@@ -91,7 +91,6 @@ from .forms import (
     FamiPortOrderCancelForm,
     DownloadItemsPatternForm,
     )
-from .forms_delta import OrderSearchForm as OrderSearchFormDelta
 from altair.app.ticketing.orders.forms import OrderMemoEditFormFactory
 from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.fanstatic import with_bootstrap
@@ -407,76 +406,6 @@ class OrderIndexView(OrderBaseView):
         return {
             'total_quantity': total_quantity
         }
-
-class DownloadParamValidationError(Exception):
-    u"""購入情報DL(beta)のパラメータエラー
-    """
-    pass
-
-@view_defaults(decorator=with_bootstrap, permission='sales_editor')
-class OrderBetaDownloadView(OrderBaseView):
-    """The Order download beta.
-    """
-
-    @view_config(route_name='orders.beta', request_method='GET',
-                 renderer='altair.app.ticketing:templates/orders/beta.html')
-    def index(self):
-        """The Order search page.
-        """
-        import altair.app.ticketing.orders.dump as altair_order_dump
-        from altair.app.ticketing.core.models import (
-            Event,
-            PaymentMethod,
-            DeliveryMethod,
-            )
-        organization_id = self.context.organization.id
-        events = Event.query\
-          .filter(Event.organization_id==organization_id)\
-          .order_by(Event.display_order)
-        payment_methods = PaymentMethod.query\
-          .filter(PaymentMethod.organization_id==organization_id)
-        delivery_methods = DeliveryMethod.query\
-          .filter(DeliveryMethod.organization_id==organization_id)
-        return {'column_compiler': altair_order_dump.column_compiler,
-                'name_filter': altair_order_dump.name_filter,
-                'events': events,
-                'payment_methods': payment_methods,
-                'delivery_methods': delivery_methods,
-                }
-
-    @view_config(route_name='orders.beta.download', request_method='GET')
-    def download(self):
-        """The Order Download API.
-
-        request format:
-        type: 'CSV' or 'JSON'
-        count: 100, 200
-        filters: [['Column.name': [CONDITION, ... ], ... ]
-        options: ['Column.name', ...]
-
-        response format:
-        """
-
-        import json
-        import altair.app.ticketing.orders.dump as altair_order_dump
-        session = get_db_session(self.request, name="slave")
-        json_str = self.request.params.get('json', None)
-        if not json_str:
-            raise DownloadParamValidationError(
-                'Order dowload parameter error: {}'.format(
-                    repr(self.request.params)))
-        # data = json.loads(json_str)
-        # filters = data['filters']
-        # options = data['options']
-        # limit = data['limit']
-        res = Response()
-        res.headers = [
-            ('Content-Type', 'application/octet-stream; charset=cp932'),
-            ('Content-Disposition', 'attachment; filename={0}'.format('test.csv')),
-            ]
-        exporter = altair_order_dump.OrderExporter(session, self.context.organization.id)
-        exporter.exportfp(res, json_=json_str)
-        return res
 
 
 @view_defaults(decorator=with_bootstrap, permission='sales_editor') # sales_counter ではない!
@@ -813,22 +742,16 @@ class OrderDownloadView(OrderBaseView):
                           for columns in results])
         return response
 
-class OrderDeltaBaseView(BaseView):
-    @reify
-    def endpoints(self):
-        return {
-            'enqueue_orders': self.request.route_path('orders.checked.queue'),
-        }
 
-@view_defaults(decorator=with_bootstrap, renderer='altair.app.ticketing:templates/orders/delta.html', permission='order_viewer')
-class OrderDeltaIndexView(OrderDeltaBaseView):
-    @view_config(route_name='orders.delta', request_method="GET")
+@view_defaults(decorator=with_bootstrap, renderer='altair.app.ticketing:templates/orders/optional_index.html', permission='order_viewer')
+class OrderOptionalIndexView(OrderBaseView):
+    @view_config(route_name='orders.optional', request_method="GET")
     def get(self):
         request = self.request
         patterns = get_patterns_info(request)
         organization_id = request.context.organization.id
 
-        form_search = OrderSearchFormDelta(organization_id=organization_id)
+        form_search = OrderSearchForm(organization_id=organization_id)
 
         return {
             'form_search': form_search,
@@ -836,7 +759,7 @@ class OrderDeltaIndexView(OrderDeltaBaseView):
             'patterns': patterns
         }
 
-    @view_config(route_name='orders.delta', request_method="POST")
+    @view_config(route_name='orders.optional', request_method="POST")
     def post(self):
         request = self.request
         patterns = get_patterns_info(request)
@@ -845,7 +768,7 @@ class OrderDeltaIndexView(OrderDeltaBaseView):
 
         params = MultiDict(request.POST)
         params["order_no"] = " ".join(request.POST.getall("order_no"))
-        form_search = OrderSearchFormDelta(params, organization_id=organization_id)
+        form_search = OrderSearchForm(params, organization_id=organization_id)
         orders = None
         page = int(request.GET.get('page', 0))
 
@@ -888,8 +811,8 @@ class OrderDeltaIndexView(OrderDeltaBaseView):
         }
 
 @view_defaults(decorator=with_bootstrap, permission='sales_editor')
-class OrderDeltaDownloadView(OrderDeltaBaseView):
-    @view_config(route_name='orders.delta.download')
+class OrderOptionalDownloadView(OrderBaseView):
+    @view_config(route_name='orders.optional.download')
     def download(self):
         slave_session = get_db_session(self.request, name="slave")
 
@@ -901,7 +824,7 @@ class OrderDeltaDownloadView(OrderDeltaBaseView):
             if len(checked_orders) > 0:
                 query = query.filter(Order.id.in_(checked_orders))
             else:
-                raise HTTPFound(location=route_path('orders.delta', self.request))
+                raise HTTPFound(location=route_path('orders.optional', self.request))
         else:
             form_search = OrderSearchForm(self.request.params, organization_id=organization_id)
             form_search.sort.data = None
@@ -913,14 +836,14 @@ class OrderDeltaDownloadView(OrderDeltaBaseView):
                                                              OrderSummary.deleted_at == None))
             except QueryBuilderError as e:
                 self.request.session.flash(e.message)
-                raise HTTPFound(location=route_path('orders.delta', self.request))
+                raise HTTPFound(location=route_path('orders.optional', self.request))
             ordered_term = None
             if form_search.ordered_from.data and form_search.ordered_to.data:
                 ordered_term = form_search.ordered_to.data - form_search.ordered_from.data
             if not form_search.performance_id.data and (ordered_term is None or ordered_term.days > 0):
                 if query.count() >= 100000:
                     self.request.session.flash(u'対象件数が多すぎます。(予約期間を1日にするか、公演を指定すれば制限はありません)')
-                    raise HTTPFound(location=route_path('orders.delta', self.request))
+                    raise HTTPFound(location=route_path('orders.optional', self.request))
 
         query._request = self.request
         orders = query
@@ -938,9 +861,9 @@ class OrderDeltaDownloadView(OrderDeltaBaseView):
             kwargs['excel_csv'] = True
         option_columns = self.request.params.getall('download-option')
 
-        order_csv = OrderDeltaCSV(self.request,
+        order_csv = OrderOptionalCSV(self.request,
                                   organization_id=self.context.organization.id,
-                                  localized_columns=get_japanese_columns(self.request),
+                                  localized_columns=get_ordered_ja_col(),
                                   session=slave_session,
                                   option_columns=option_columns,
                                   **kwargs)
@@ -961,9 +884,9 @@ class OrderDeltaDownloadView(OrderDeltaBaseView):
         response.app_iter = order_csv(_orders(orders), writer_factory)
         return response
 
-@view_defaults(decorator=with_bootstrap, renderer='altair.app.ticketing:templates/orders/delta_pattern.html', permission='order_viewer')
-class OrderDeltaPatternView(OrderDeltaBaseView):
-    @view_config(route_name='orders.delta.pattern', request_method="GET")
+@view_defaults(decorator=with_bootstrap, renderer='altair.app.ticketing:templates/orders/optional_download_pattern.html', permission='order_viewer')
+class OrderOptionalDownloadPatternView(BaseView):
+    @view_config(route_name='orders.optional.pattern', request_method="GET")
     def index(self):
         japanese_columns = get_ordered_ja_col()
         patterns = get_patterns_info(self.request)
@@ -1004,7 +927,7 @@ class OrderDeltaPatternView(OrderDeltaBaseView):
                     emsgs.append(u"{0}: {1}".format(field, error))
         return emsgs
 
-    @view_config(route_name='orders.delta.pattern.operate', request_method="POST", renderer="json")
+    @view_config(route_name='orders.optional.pattern.operate', request_method="POST", renderer="json")
     def operate(self):
         organization_id = self.context.organization.id
         pattern_name = self.request.POST.get('pattern_name', None)

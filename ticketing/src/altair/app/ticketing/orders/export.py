@@ -19,8 +19,17 @@ from altair.app.ticketing.cart.helpers import format_number as _format_number
 from altair.app.ticketing.mailmags.models import MailSubscription, MailMagazine, MailSubscriptionStatus
 from altair.app.ticketing.utils import dereference
 from altair.app.ticketing.csvutils import CSVRenderer, PlainTextRenderer, CollectionRenderer, AttributeRenderer, SimpleRenderer
-from altair.app.ticketing.core.models import StockType, Stock, Product, ProductItem, Organization, ChannelEnum
+from altair.app.ticketing.core.models import (
+    StockType,
+    Stock,
+    Product,
+    ProductItem,
+    Organization,
+    ChannelEnum,
+    EventSetting,
+    PerformanceSetting)
 from altair.app.ticketing.sej.models import SejRefundTicket, SejTicket
+from altair.app.ticketing.famiport.models import FamiPortOrder, FamiPortReceipt, FamiPortReceiptType
 from altair.app.ticketing.orders.models import Order
 from .api import get_order_attribute_pair_pairs
 
@@ -739,7 +748,7 @@ class OrderCSV(object):
             localized_columns=self.localized_columns
             )
 
-class OrderDeltaCSV(OrderCSV):
+class OrderOptionalCSV(object):
     EXPORT_TYPE_ORDER = 1
     EXPORT_TYPE_SEAT = 2
 
@@ -876,10 +885,24 @@ class OrderDeltaCSV(OrderCSV):
 
     }
 
-
-    def __init__(self, request, export_type=OrderCSV.EXPORT_TYPE_ORDER, organization_id=None, localized_columns={}, excel_csv=False, session=DBSession, option_columns=None):
-        super(OrderDeltaCSV, self).__init__(request, export_type, organization_id, localized_columns, excel_csv, session)
+    def __init__(self, request, export_type=EXPORT_TYPE_ORDER, organization_id=None, localized_columns={}, excel_csv=False, session=None, option_columns=None):
+        self.request = request
+        self.export_type = export_type
         self.column_renderers = self.get_export_renderers(export_type, option_columns)
+        self.enable_fancy = excel_csv
+        self.organization_id = organization_id
+        self._mailsubscription_cache = None
+        self.localized_columns = localized_columns
+        self.session = session if session else get_db_session(request, 'slave')
+        self.session_famiport = None
+        self.organization = session.query(Organization).filter_by(id=self.organization_id).one()
+        self.marshaller_factory = PickleMarshallerFactory()
+
+    @property
+    def mailsubscription_cache(self):
+        if self._mailsubscription_cache is None:
+            self._mailsubscription_cache = _create_mailsubscription_cache(self.organization_id, self.session)
+        return self._mailsubscription_cache
 
     def _get_renderer(self, option, candidates, export_type):
         renderer = candidates.get(option, None)
@@ -930,53 +953,45 @@ class OrderDeltaCSV(OrderCSV):
         from altair.app.ticketing.orders.models import order_user_point_account_table
         from altair.app.ticketing.users.models import UserPointAccount
 
-        query = UserPointAccount.query.join(order_user_point_account_table,
-                                            UserPointAccount.id == order_user_point_account_table.c.user_point_account_id)\
-                                      .join(Order, order_user_point_account_table.c.order_id == Order.id)\
-                                      .filter(Order.id == order.id)
+        query = self.session.query(UserPointAccount.account_number)\
+            .join(order_user_point_account_table,
+                  UserPointAccount.id == order_user_point_account_table.c.user_point_account_id)\
+            .join(Order, order_user_point_account_table.c.order_id == Order.id)\
+            .filter(Order.id == order.id)
+
         try:
             return query.one()
         except NoResultFound:
             return None
 
     # 決済方法か取引方法がファミポートの場合のみ情報を取得する。それ以外の場合はNoneを返す
-    def lookup_famiport_order(self, order):
-        from altair.app.ticketing.payments.plugins import famiport
-        from altair.app.ticketing.famiport.models import FamiPortOrder
-
-        tenant = famiport.lookup_famiport_tenant(self.request, order)
-        if tenant is not None:
-            session = get_db_session(self.request, 'famiport')
-            try:
-                famiport_order = session.query(FamiPortOrder)\
-                                        .filter(FamiPortOrder.client_code == tenant.code)\
-                                        .filter(FamiPortOrder.order_no == order.order_no)\
-                                        .filter(FamiPortOrder.invalidated_at == None)\
-                                        .one()
-                return famiport_order
-            except (MultipleResultsFound, NoResultFound):
-                pass
-        return None
-
     def lookup_famiport_receipt(self, order, payment_flag=False, ticketing_flag=False):
         if not payment_flag and not ticketing_flag:
             return None
 
-        from altair.app.ticketing.payments.plugins import FAMIPORT_PAYMENT_PLUGIN_ID, FAMIPORT_DELIVERY_PLUGIN_ID
-        is_famiport_payment = order.payment_delivery_pair.payment_method.payment_plugin_id == FAMIPORT_PAYMENT_PLUGIN_ID
-        is_famiport_delivery = order.payment_delivery_pair.delivery_method.delivery_plugin_id == FAMIPORT_DELIVERY_PLUGIN_ID
+        if not self.session_famiport:
+            self.session_famiport = get_db_session(self.request, 'famiport_slave')
 
-        if (payment_flag and is_famiport_payment) or (ticketing_flag and is_famiport_delivery):
-            famiport_order = self.lookup_famiport_order(order)
-            if famiport_order is not None:
-                return famiport_order.famiport_receipts[0]
+        query = self.session_famiport.query(FamiPortReceipt.reserve_number)\
+                                     .join(FamiPortOrder)\
+                                     .filter(FamiPortOrder.order_no == order.order_no)
+        if payment_flag:
+            query = query.filter(or_(FamiPortReceipt.type == FamiPortReceiptType.CashOnDelivery.value,
+                                     FamiPortReceipt.type == FamiPortReceiptType.Payment.value))\
+                         .order_by(FamiPortReceipt.created_at.desc())
+        elif ticketing_flag:
+            query = query.filter(or_(FamiPortReceipt.type == FamiPortReceiptType.CashOnDelivery.value,
+                                     FamiPortReceipt.type == FamiPortReceiptType.Ticketing.value))\
+                         .order_by(FamiPortReceipt.created_at.desc())
+        else:
+            logger.warning(u'lookup_famiport_receipt was not set to get either payment nor ticketing...')
+            return None
 
-        return None
+        return query.first()
 
     def lookup_event_setting(self, e_id):
-        from altair.app.ticketing.core.models import EventSetting
         try:
-            es = EventSetting.query.filter_by(event_id=e_id).one()
+            es = self.session.query(EventSetting).filter_by(event_id=e_id).one()
             return es
         except NoResultFound:
             logger.exception(u'no event setting is found when download the order info.')
@@ -985,9 +1000,8 @@ class OrderDeltaCSV(OrderCSV):
         return None
 
     def lookup_performance_setting(self, p_id):
-        from altair.app.ticketing.core.models import PerformanceSetting
         try:
-            ps = PerformanceSetting.query.filter_by(performance_id=p_id).one()
+            ps = self.session.query(PerformanceSetting).filter_by(performance_id=p_id).one()
             return ps
         except NoResultFound:
             logger.exception(u'no performance setting is found when download the order info.')
@@ -998,7 +1012,6 @@ class OrderDeltaCSV(OrderCSV):
 
     def iter_records_for_order(self, order):
         user_credential = order.user.user_credential if order.user else None
-        member = order.user.member if order.user and order.user.member else None
 
         user_point_account = self.lookup_user_point_account(order)
         famiport_receipt_payment = self.lookup_famiport_receipt(order, payment_flag=True)

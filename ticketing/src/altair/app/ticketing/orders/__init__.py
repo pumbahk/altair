@@ -78,14 +78,12 @@ def includeme(config):
     config.add_route("orders.mailinfo"                  , "/orders/{order_id}/mailinfo/{action}")
     config.add_route("cart.search",                       "/carts/")
     config.add_route("cart.show",                       "/carts/{order_no}")
-    config.add_route('orders.beta'                      , '/beta/')
-    config.add_route('orders.beta.download'             , '/beta/download/')
 
     # latest search and download page
-    config.add_route('orders.delta', '/delta/')
-    config.add_route('orders.delta.download', '/delta/download/')
-    config.add_route('orders.delta.pattern', '/delta/pattern/')
-    config.add_route('orders.delta.pattern.operate', '/delta/pattern/operate/')
+    config.add_route('orders.optional', '/optional/')
+    config.add_route('orders.optional.download', '/optional/download/')
+    config.add_route('orders.optional.pattern', '/optional/pattern/')
+    config.add_route('orders.optional.pattern.operate', '/optional/pattern/operate/')
 
     config.include('.info')
     config.scan(".")

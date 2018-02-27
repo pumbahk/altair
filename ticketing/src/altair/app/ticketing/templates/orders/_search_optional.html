@@ -1,4 +1,4 @@
-<%page args="form, url='/orders/delta/'" />
+<%page args="form, url='/orders/optional/'" />
 <%namespace file="/common/helpers.html" name="ch" />
 <%
   from altair.formhelpers import OurDateWidget
@@ -21,7 +21,7 @@
 .form-horizontal .controls {
   margin-left: 140px;
 }
-#search-delta table {
+#search-optional table {
   border-collapse: separate;
   width: 800px;
   border-spacing: 4px;
@@ -30,43 +30,42 @@
   table-layout: fixed;
 }
 
-#search-delta table tbody td,
-#search-delta table tbody th {
+#search-optional table tbody td,
+#search-optional table tbody th {
   padding: 0 15px;
 }
-#search-delta table tbody th {
+#search-optional table tbody th {
   text-align: left;
   vertical-align: middle;
   border: none;
-  text-align: nowrap;
 }
-#search-delta label {
+#search-optional label {
   margin-top: 10px;
   margin-bottom: 0;
   font-weight: 600;
 }
-#search-delta input,
-#search-delta select {
+#search-optional input,
+#search-optional select {
   width: 100%;
   -ms-box-sizing:content-box;
   -moz-box-sizing:content-box;
   -webkit-box-sizing:content-box;
   box-sizing:content-box;
 }
-#search-delta a.show-ordered-time-btn,
-#search-delta a.show-start-on-time-btn {
+#search-optional a.show-ordered-time-btn,
+#search-optional a.show-start-on-time-btn {
   margin-left: 10px;
 }
-#search-delta .packed-checkboxes input {
+#search-optional .packed-checkboxes input {
   width: auto;
 }
 
-#search-delta .packed-checkboxes .checkbox-set {
+#search-optional .packed-checkboxes .checkbox-set {
   overflow: hidden;
   width: 40em;
   margin: 0;
 }
-#search-delta .packed-checkboxes .checkbox-set .checkbox-set-item {
+#search-optional .packed-checkboxes .checkbox-set .checkbox-set-item {
   float: left;
   width: 10em;
   font-weight: normal;
@@ -91,7 +90,7 @@
   var patterns = ${patterns_js|n};
 
   function search_orders(url) {
-    $('#search-delta').attr('action', url).submit();
+    $('#search-optional').attr('action', url).submit();
   }
 
   function show_total(url, type) {
@@ -99,7 +98,7 @@
       url: url,
       type: 'POST',
       dataType: 'json',
-      data: $('#search-delta').serialize(),
+      data: $('#search-optional').serialize(),
       success: function(data) {
         switch(type) {
           case 'amount':
@@ -146,7 +145,7 @@
     detail = $('#detail_search');
     if (sort) detail.find('#sort').val(sort);
     if (direction) detail.find('#direction').val(direction);
-    detail.find('#search-delta').attr('action', url).submit();
+    detail.find('#search-optional').attr('action', url).submit();
   }
 
   function parse_options_to_params(pattern_name, patterns) {
@@ -164,7 +163,7 @@
     var pattern_name = $('select#saved-patterns').val();
     var params_options = parse_options_to_params(pattern_name, patterns);
     detail = $('#detail_search');
-    detail.find('#search-delta').attr('action', 'download/?' + params + params_options).submit();
+    detail.find('#search-optional').attr('action', 'download/?' + params + params_options).submit();
     $('#modal-download_orders').modal('hide');
   }
 </script>
@@ -172,7 +171,7 @@
   <div>
     <h3>検索条件設定</h3>
   </div>
-  <form id="search-delta" class="form-horizontal" method="POST">
+  <form id="search-optional" class="form-horizontal" method="POST">
     <table>
       <tbody>
         <tr>
@@ -371,8 +370,8 @@
             return update_on_hasvalue.call(self, v);
           }
         };
-        $("#search-delta select[name='event_id']").change(update_performances_and_ssgroups).chosen();
-        $("#search-delta select[name='performance_id']").chosen();
+        $("#search-optional select[name='event_id']").change(update_performances_and_ssgroups).chosen();
+        $("#search-optional select[name='performance_id']").chosen();
 
         // フォームの描画中は見えなくしている
         $("#detail_search").show();
@@ -399,7 +398,7 @@
   <ul class="nav nav-pills">
     <li class="dropdown" id="top-search" style="margin-left: 10px;">
       <div class="btn-group">
-        <a href="javascript:search_orders('${request.route_path('orders.delta')}');" class="btn">
+        <a href="javascript:search_orders('${request.route_path('orders.optional')}');" class="btn">
           <i class="icon-search"></i> 検索
         </a>
       </div>
@@ -435,7 +434,7 @@
     % endif
   </select>
   <div class="btn-group">
-    <a class="btn" href="${request.route_path('orders.delta.pattern')}" target="_blank">
+    <a class="btn" href="${request.route_path('orders.optional.pattern')}" target="_blank">
       <i class="fa fa-cog" aria-hidden="true"></i> 設定
     </a>
   </div>
