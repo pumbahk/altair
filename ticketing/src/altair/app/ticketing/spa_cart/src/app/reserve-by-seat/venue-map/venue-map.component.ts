@@ -98,7 +98,8 @@ const SIDE_HEIGHT = 200; //横画面時エラーを出す最大値
 export class VenuemapComponent implements OnInit, AfterViewInit {
 
   @Input() filterComponent: FilterComponent;
-  @Input() mapAreaLeftH: number; // reserve-by-seat.component.tsからのマップ領域の高さ設定値
+  @Input() mapAreaLeftH: number; // マップ領域の高さ
+  @Input() isGetMapH: number; // マップ領域の高さが取得できたか
   @ViewChild(ReserveByQuantityComponent)
   quantity: ReserveByQuantityComponent;
 
@@ -342,7 +343,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
               this._logger.debug(`get StockTypesAll(#${this.performanceId}) success`, response);
               let stockTypes: IStockType[] = response.data.stock_types;
               for (let i = 0, len = stockTypes.length; i < len; i++) {
-                if (!this.smartPhoneCheckService.isSmartPhone() && !this.smartPhoneCheckService.isIpad()) {
+                if (!this.smartPhoneCheckService.isSmartPhone() && !this.smartPhoneCheckService.isIpad() && !this.smartPhoneCheckService.isTablet()) {
                   //紐づく商品の最小価格、最大価格を求める
                   let minPrice: number;
                   let maxPrice: number;
@@ -455,7 +456,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
               }
             }
 
-            if (!that.smartPhoneCheckService.isSmartPhone() && !that.smartPhoneCheckService.isIpad()) {
+            if (!that.smartPhoneCheckService.isSmartPhone() && !that.smartPhoneCheckService.isIpad() && !this.smartPhoneCheckService.isTabletSP()) {
               //ツールチップ用属性の設定
               that.tooltipStockType.forEach(function (value) {
                 if (value.region) {
@@ -494,7 +495,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
       }
 
       that.originalViewBox = that.getPresentViewBox();
-      // viewBox取得　且つ　reserve-by-seatの高さが取得
+      // viewBox取得　且つ　座席選択領域の高さを取得
       if ((that.originalViewBox) && (that.mapAreaLeftH > SIDE_HEIGHT)) {
         clearInterval(svgLoadCompleteTimer);
         that.displayViewBox = that.originalViewBox.concat();
@@ -509,7 +510,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
       }
     }, 100);
 
-    if (!this.smartPhoneCheckService.isSmartPhone() && !this.smartPhoneCheckService.isIpad()) {
+    if (!this.smartPhoneCheckService.isSmartPhone() && !this.smartPhoneCheckService.isIpad() && !this.smartPhoneCheckService.isTablet()) {
       //ツールチップの表示
       $('#mapAreaLeft').on('mouseenter', '.region', function (e) {
         let tooltip = '';
@@ -856,14 +857,20 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
     const that = this;
     //初期表示時横の場合
     getHightTimer = setInterval(() => {
-      that.seatAreaHeight = $("#mapImgBox").height();
-      if (that.seatAreaHeight > 0) {
-        that.sideError();
-        clearTimeout(getHightTimer);
-      } else if (that.seatAreaHeight == 0 && orientation == 90 || orientation == -90 && this.smartPhoneCheckService.isSmartPhone()) {
+      if (this.isGetMapH) {
         that.sideError();
         clearTimeout(getHightTimer);
       }
+      /*that.seatAreaHeight = $("#mapImgBox").height();
+      alert(that.seatAreaHeight);
+      座席選択領域が取得できるもしくはスマホ表示で画面が横になっている
+      if (that.seatAreaHeight > 0) {
+        that.sideError();
+        clearTimeout(getHightTimer);
+      } else if (that.seatAreaHeight == 0 && orientation == 90 || orientation == -90 && this.smartPhoneCheckService.isSmartPhone() && this.smartPhoneCheckService.isTablet() == "SP") {
+        that.sideError();
+        clearTimeout(getHightTimer);
+      }*/
     }, 100);
 
     $(window).resize(() => {

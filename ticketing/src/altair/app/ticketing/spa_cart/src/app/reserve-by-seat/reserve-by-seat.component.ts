@@ -33,6 +33,9 @@ export class ReserveBySeatComponent implements OnInit {
   // マップの高さ
   mapAreaLeftH: number = 0;
 
+  // マップの高さ取得フラグ
+  isGetMapH: boolean = false;
+
   constructor(
     private route: ActivatedRoute,
     private loadingService: LoadingAnimateService) {
@@ -79,8 +82,9 @@ export class ReserveBySeatComponent implements OnInit {
             let mainID = 'mapAreaLeft'
             let windowH = $(window).height();
             let mainH = windowH - minus;
+            $('#' + mainID).height(mainH + 'px');
             that.mapAreaLeftH = mainH;
-            $('#'+mainID).height(mainH+'px');
+            that.isGetMapH = true;
           }
           heightSetting();
           //リサイズ時の縦幅調整
