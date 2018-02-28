@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """add_used_discount_code_result_columns_on_cart_and_order
 
 Revision ID: 5eeeec0ae6d
@@ -19,7 +20,25 @@ Identifier = sa.BigInteger
 
 
 def upgrade():
-    pass
+    # 今回追加したカラムは、後日op.alter_column()でnullableをTrueに変更する
+    op.add_column('UsedDiscountCodeCart', sa.Column('discount_code_setting_id', Identifier, nullable=True))
+    op.add_column('UsedDiscountCodeCart', sa.Column('applied_amount', sa.Integer(8), nullable=True))
+    op.add_column('UsedDiscountCodeCart', sa.Column('benefit_amount', sa.Integer(8), nullable=True))
+    op.add_column('UsedDiscountCodeCart', sa.Column('benefit_unit', sa.Unicode(1), nullable=True))
+
+    op.add_column('UsedDiscountCodeOrder', sa.Column('discount_code_setting_id', Identifier, nullable=True))
+    op.add_column('UsedDiscountCodeOrder', sa.Column('applied_amount', sa.Integer(8), nullable=True))
+    op.add_column('UsedDiscountCodeOrder', sa.Column('benefit_amount', sa.Integer(8), nullable=True))
+    op.add_column('UsedDiscountCodeOrder', sa.Column('benefit_unit', sa.Unicode(1), nullable=True))
+
 
 def downgrade():
-    pass
+    op.drop_column('UsedDiscountCodeCart', 'discount_code_setting_id')
+    op.drop_column('UsedDiscountCodeCart', 'applied_amount')
+    op.drop_column('UsedDiscountCodeCart', 'benefit_amount')
+    op.drop_column('UsedDiscountCodeCart', 'benefit_unit')
+
+    op.drop_column('UsedDiscountCodeOrder', 'discount_code_setting_id')
+    op.drop_column('UsedDiscountCodeOrder', 'applied_amount')
+    op.drop_column('UsedDiscountCodeOrder', 'benefit_amount')
+    op.drop_column('UsedDiscountCodeOrder', 'benefit_unit')
