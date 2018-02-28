@@ -145,7 +145,9 @@ class SpaCartIndexView(IndexViewMixin):
         if not is_spa_mode(self.request):
             response = set_spa_access(self.request.response)
             return HTTPFound(headers=response.headers, location=self.request.route_url('cart.spa.index', performance_id=self.context.performance.id, anything=""))
-        return {}
+        return dict(
+            event=create_event_dict(self, self.context.performance.id, sales_segments, self.request.organization.setting.i18n)
+        )
 
 
 @provider(IPageFlowPredicate)
