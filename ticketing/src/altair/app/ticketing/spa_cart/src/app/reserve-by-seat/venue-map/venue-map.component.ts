@@ -496,7 +496,8 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
 
       that.originalViewBox = that.getPresentViewBox();
       // viewBox取得　且つ　座席選択領域の高さを取得
-      if ((that.originalViewBox) && (that.mapAreaLeftH > SIDE_HEIGHT)) {
+
+      if ((that.originalViewBox) && (that.mapAreaLeftH >= SIDE_HEIGHT)) {
         clearInterval(svgLoadCompleteTimer);
         that.displayViewBox = that.originalViewBox.concat();
         that.seatAreaHeight = $("#mapImgBox").height();
@@ -861,16 +862,6 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
         that.sideError();
         clearTimeout(getHightTimer);
       }
-      /*that.seatAreaHeight = $("#mapImgBox").height();
-      alert(that.seatAreaHeight);
-      座席選択領域が取得できるもしくはスマホ表示で画面が横になっている
-      if (that.seatAreaHeight > 0) {
-        that.sideError();
-        clearTimeout(getHightTimer);
-      } else if (that.seatAreaHeight == 0 && orientation == 90 || orientation == -90 && this.smartPhoneCheckService.isSmartPhone() && this.smartPhoneCheckService.isTablet() == "SP") {
-        that.sideError();
-        clearTimeout(getHightTimer);
-      }*/
     }, 100);
 
     $(window).resize(() => {
@@ -1388,26 +1379,24 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
       this.seatSelectDisplay(true);
     }
 
-    let resizeTimer = setTimeout(() => {
-      this.D_Width = $(this.svgMap).innerWidth(); // 表示窓のwidth
-      this.D_Height = $(this.svgMap).innerHeight(); // 表示窓のheight
-      this.DA = this.D_Width / this.D_Height;
-      this.scaleTotal = this.getPresentScale(this.originalViewBox);
-      this.SCALE_MIN = this.scaleTotal;
-      this.wholemapFlag = false;
-      // svgのoriginalViweBoxと表示領域のアスペクト比を合わせる
-      this.displayViewBox = this.originalViewBox.concat();
-      this.TA = parseFloat(this.originalViewBox[2]) / parseFloat(this.originalViewBox[3]);
-      if (this.DA >= this.TA) {
-        this.displayViewBox[2] = String(this.D_Width * parseFloat(this.displayViewBox[3]) / this.D_Height);
-        this.displayViewBox[0] = String(parseFloat(this.displayViewBox[0]) - (parseFloat(this.displayViewBox[2]) - parseFloat(this.originalViewBox[2])) / 2);
-      } else {
-        this.displayViewBox[3] = String(this.D_Height * parseFloat(this.displayViewBox[2]) / this.D_Width);
-        this.displayViewBox[1] = String(parseFloat(this.displayViewBox[1]) - (parseFloat(this.displayViewBox[3]) - parseFloat(this.originalViewBox[3])) / 2);
-      }
-      $('#mapImgBox').children().attr('viewBox', this.displayViewBox.join(' ')); // viewBoxを初期値に設定
-      if (!isInitialCalled) this.onoffRegion(this.regionIds);
-    }, 0);
+    this.D_Width = $(this.svgMap).innerWidth(); // 表示窓のwidth
+    this.D_Height = $(this.svgMap).innerHeight(); // 表示窓のheight
+    this.DA = this.D_Width / this.D_Height;
+    this.scaleTotal = this.getPresentScale(this.originalViewBox);
+    this.SCALE_MIN = this.scaleTotal;
+    this.wholemapFlag = false;
+    // svgのoriginalViweBoxと表示領域のアスペクト比を合わせる
+    this.displayViewBox = this.originalViewBox.concat();
+    this.TA = parseFloat(this.originalViewBox[2]) / parseFloat(this.originalViewBox[3]);
+    if (this.DA >= this.TA) {
+      this.displayViewBox[2] = String(this.D_Width * parseFloat(this.displayViewBox[3]) / this.D_Height);
+      this.displayViewBox[0] = String(parseFloat(this.displayViewBox[0]) - (parseFloat(this.displayViewBox[2]) - parseFloat(this.originalViewBox[2])) / 2);
+    } else {
+      this.displayViewBox[3] = String(this.D_Height * parseFloat(this.displayViewBox[2]) / this.D_Width);
+      this.displayViewBox[1] = String(parseFloat(this.displayViewBox[1]) - (parseFloat(this.displayViewBox[3]) - parseFloat(this.originalViewBox[3])) / 2);
+    }
+    $('#mapImgBox').children().attr('viewBox', this.displayViewBox.join(' ')); // viewBoxを初期値に設定
+    if (!isInitialCalled) this.onoffRegion(this.regionIds);
   }
 
   // 現在のviewBoxの値を取得
