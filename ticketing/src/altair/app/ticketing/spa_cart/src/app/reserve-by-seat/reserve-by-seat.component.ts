@@ -89,7 +89,6 @@ export class ReserveBySeatComponent implements OnInit {
           heightSetting();
           //リサイズ時の縦幅調整
           $(window).resize(function(){
-            that.isGetMapH = false;
             heightSetting();
           });
         });
@@ -168,7 +167,6 @@ export class ReserveBySeatComponent implements OnInit {
           }
           heightSetting();
           $(window).resize(function() {
-            that.isGetMapH = false;
             heightSetting();
           });
         });

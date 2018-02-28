@@ -1013,8 +1013,10 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
   sideError() {
     let orientation = window.orientation;
     let height = $("#mapImgBox").height();
-    if (this.scaleTotal >= SCALE_SEAT) {
-      height = height - 280;
+    if (this.smartPhoneCheckService.isSmartPhone() || this.smartPhoneCheckService.isTablet() == "SP") {
+      if (this.scaleTotal >= SCALE_SEAT) {
+        height = height - 280;
+      }
     }
     if (height < SIDE_HEIGHT && (orientation == 90 || orientation == -90)) {//座席図領域<定数
       this.sideProhibition = true;
