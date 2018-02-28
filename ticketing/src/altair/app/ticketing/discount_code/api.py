@@ -2,7 +2,7 @@
 
 from datetime import datetime
 
-from altair.app.ticketing.cart.exceptions import OwnDiscountCodeDuplicateError
+from altair.app.ticketing.cart.exceptions import OwnDiscountCodeDuplicateError, NotAllowedBenefitUnitError
 from altair.app.ticketing.orders.exceptions import OrderCancellationError
 from communicators.utils import get_communicator
 from pyramid.httpexceptions import HTTPFound
@@ -120,6 +120,24 @@ def enable_discount_code(organization):
     return organization.setting.enable_discount_code
 
 
+def calc_applied_amount(code_dict):
+    """
+    割引コードによる適用金額（値引き額）を計算する。
+    :param code_dict: cartのviewで使用されたcreate_codes（）の結果
+    :return: 計算された金額
+    """
+    setting = code_dict['discount_code_setting']
+    item = code_dict['carted_product_item']
+    if setting.benefit_unit == u'%':
+        amount = float(item.price) * (setting.benefit_amount / 100.00)
+    elif setting.benefit_unit == u'yen':
+        amount = item.price - setting.benefit_amount
+    else:
+        raise NotAllowedBenefitUnitError()
+
+    return int(amount)
+
+
 def temporarily_save_discount_code(codes, organization):
     # carted_product_itemのIDと、使用したコードを保存する
     for code_dict in codes:
@@ -136,6 +154,12 @@ def temporarily_save_discount_code(codes, organization):
             if own_code:
                 # 自社コードの場合のみ存在
                 use_discount_code.discount_code_id = own_code.id
+
+            use_discount_code.applied_amount = calc_applied_amount(code_dict)
+            use_discount_code.discount_code_setting_id = code_dict['discount_code_setting'].id
+            use_discount_code.benefit_amount = code_dict['discount_code_setting'].benefit_amount
+            use_discount_code.benefit_unit = code_dict['discount_code_setting'].benefit_unit
+
             use_discount_code.add()
     return True
 
@@ -150,8 +174,12 @@ def save_discount_code(carted_product_item, ordered_product_item):
         use_discount_code_order.code = used_discount_code_cart.code
         use_discount_code_order.ordered_product_item = ordered_product_item
         use_discount_code_order.ordered_product_item_token = ordered_product_item.tokens[index]
+        use_discount_code_order.discount_code_setting_id = used_discount_code_cart.discount_code_setting_id
+        use_discount_code_order.applied_amount = used_discount_code_cart.applied_amount
+        use_discount_code_order.benefit_amount = used_discount_code_cart.benefit_amount
+        use_discount_code_order.benefit_unit = used_discount_code_cart.benefit_unit
 
-        # クーポン・割引コードテーブルに使用日時を記載
+        # クーポン・割引コードテーブルに使用日時を記載（自社コードの場合）
         if used_discount_code_cart.discount_code_id:
             use_discount_code_order.discount_code_id = used_discount_code_cart.discount_code_id
             available_code = DiscountCodeCode.query.filter_by(id=used_discount_code_cart.discount_code_id).first()

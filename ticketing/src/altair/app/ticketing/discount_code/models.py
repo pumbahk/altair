@@ -101,6 +101,12 @@ class UsedDiscountCodeCart(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     carted_product_item_id = AnnotatedColumn(Identifier, ForeignKey('CartedProductItem.id'))
     carted_product_item = relationship("CartedProductItem", backref="used_discount_codes")
     finished_at = AnnotatedColumn(DateTime, nullable=True, _a_label=_(u'カート処理日時'))
+    discount_code_setting_id = AnnotatedColumn(Identifier, ForeignKey('DiscountCodeSetting.id'), nullable=False,
+                                               _a_label=_(u'割引コード設定ID'))
+    discount_code_setting = relationship('DiscountCodeSetting', backref='used_discount_code_carts')
+    applied_amount = AnnotatedColumn(Integer(8), nullable=False, _a_label=_(u'割引の発生金額'))
+    benefit_amount = AnnotatedColumn(Integer(8), nullable=False, _a_label=_(u'割引内容：数値'))
+    benefit_unit = AnnotatedColumn(Unicode(1), nullable=False, _a_label=_(u'割引内容：単位'))
 
 
 class UsedDiscountCodeOrder(Base, BaseModel, WithTimestamp, LogicallyDeleted):
@@ -118,6 +124,12 @@ class UsedDiscountCodeOrder(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     ordered_product_item = relationship("OrderedProductItem", backref="used_discount_codes")
     ordered_product_item_token_id = AnnotatedColumn(Identifier, ForeignKey('OrderedProductItemToken.id'))
     ordered_product_item_token = relationship("OrderedProductItemToken", backref="used_discount_codes")
+    discount_code_setting_id = AnnotatedColumn(Identifier, ForeignKey('DiscountCodeSetting.id'), nullable=False,
+                                               _a_label=_(u'割引コード設定ID'))
+    discount_code_setting = relationship('DiscountCodeSetting', backref='used_discount_code_orders')
+    applied_amount = AnnotatedColumn(Integer(8), nullable=False, _a_label=_(u'割引の発生金額'))
+    benefit_amount = AnnotatedColumn(Integer(8), nullable=False, _a_label=_(u'割引内容：数値'))
+    benefit_unit = AnnotatedColumn(Unicode(1), nullable=False, _a_label=_(u'割引内容：単位'))
 
     @staticmethod
     def count_exists_valid_order(first_4_digits, session=None):
