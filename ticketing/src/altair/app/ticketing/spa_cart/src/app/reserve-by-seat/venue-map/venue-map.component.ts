@@ -99,7 +99,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
 
   @Input() filterComponent: FilterComponent;
   @Input() mapAreaLeftH: number; // マップ領域の高さ
-  @Input() isGetMapH: number; // マップ領域の高さが取得できたか
+  @Input() isGetMapH: boolean; // マップ領域の高さが取得できたか
   @ViewChild(ReserveByQuantityComponent)
   quantity: ReserveByQuantityComponent;
 
@@ -456,7 +456,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
               }
             }
 
-            if (!that.smartPhoneCheckService.isSmartPhone() && !that.smartPhoneCheckService.isIpad() && !this.smartPhoneCheckService.isTabletSP()) {
+            if (!that.smartPhoneCheckService.isSmartPhone() && !that.smartPhoneCheckService.isIpad() && !that.smartPhoneCheckService.isTablet()) {
               //ツールチップ用属性の設定
               that.tooltipStockType.forEach(function (value) {
                 if (value.region) {
@@ -926,12 +926,10 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
         }
 
         //スマホ表示からPC+タブレット表示になった際の検索部分表示
-        if (!this.smartPhoneCheckService.isSmartPhone()) {
-          if ($(window).width() > WINDOW_SM) {
-            $('.choiceAreaAcdBox').css('display', 'block');
-          } else {
-            $('.choiceAreaAcdBox').css('display', 'none');
-          }
+        if ($(window).width() > WINDOW_SM) {
+          $('.choiceAreaAcdBox').css('display', 'block');
+        } else {
+          $('.choiceAreaAcdBox').css('display', 'none');
         }
       }, 200);
     });
@@ -1192,7 +1190,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
     if (this.changeRgb($(e.target).css('fill')) == SEAT_COLOR_AVAILABLE) {
       if (!this.viewSelectNum || this.viewSelectNum >= this.selectedSeatList.length + 1) {
         $(e.target).css({ 'fill': SEAT_COLOR_SELECTED });
-        if (!this.smartPhoneCheckService.isSmartPhone() && !this.smartPhoneCheckService.isIpad()) {
+        if (!this.smartPhoneCheckService.isSmartPhone() && !this.smartPhoneCheckService.isIpad() && !this.smartPhoneCheckService.isTablet()) {
           this.selectedSeatName = decodeURIComponent($(e.target).attr('title'));
         } else {
           this.selectedSeatName = decodeURIComponent($(e.target).children('title').text());
@@ -1236,7 +1234,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
               $("#" + this.selectedGroupIds[i]).children().remove();
             }
             $(this.svgMap).find('#' + this.selectedGroupIds[i]).css({ 'fill': SEAT_COLOR_SELECTED });
-            if (!this.smartPhoneCheckService.isSmartPhone() && !this.smartPhoneCheckService.isIpad()) {
+            if (!this.smartPhoneCheckService.isSmartPhone() && !this.smartPhoneCheckService.isIpad() && !this.smartPhoneCheckService.isTablet()) {
               this.selectedSeatGroupNames.push(decodeURIComponent($(this.svgMap).find('#' + this.selectedGroupIds[i]).attr('title')));
             } else {
               this.selectedSeatGroupNames.push(decodeURIComponent($(this.svgMap).find('#' + this.selectedGroupIds[i])[0].attributes[9].value));
@@ -1255,7 +1253,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
             $("#" + this.selectedGroupIds[i]).children().remove();
           }
           $(this.svgMap).find('#' + this.selectedGroupIds[i]).css({ 'fill': SEAT_COLOR_SELECTED });
-          if (!this.smartPhoneCheckService.isSmartPhone() && !this.smartPhoneCheckService.isIpad()) {
+          if (!this.smartPhoneCheckService.isSmartPhone() && !this.smartPhoneCheckService.isIpad() && !this.smartPhoneCheckService.isTablet()) {
             this.selectedSeatGroupNames.push(decodeURIComponent($(this.svgMap).find('#' + this.selectedGroupIds[i]).attr('title')));
           } else {
             this.selectedSeatGroupNames.push(decodeURIComponent($(this.svgMap).find('#' + this.selectedGroupIds[i])[0].attributes[9].value));
@@ -1424,7 +1422,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
     let allHead: number = $('header').height() + $('.headArea').height() + $('.choiceAreaMenuBtn').height() + $('#colorNavi').height();
     let orientation = window.orientation;
     if (flag) {
-      if (this.smartPhoneCheckService.isSmartPhone()) {
+      if (this.smartPhoneCheckService.isSmartPhone() || this.smartPhoneCheckService.isTablet() == "SP") {
         if (orientation == 0 || orientation == 180) {//縦向き
           if (this.seatAreaHeight) {
             $('#mapAreaLeft').css({
@@ -1437,7 +1435,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
         }
       }
     } else {
-      if (this.smartPhoneCheckService.isSmartPhone()) {
+      if (this.smartPhoneCheckService.isSmartPhone() || this.smartPhoneCheckService.isTablet() == "SP") {
         if (orientation == 0 || orientation == 180) {//縦向き
           $('#mapAreaLeft').css({
             'height': windowHeight - allHead,
@@ -1589,7 +1587,9 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
     }
 
     $('.seat').remove();
-    if (!this.smartPhoneCheckService.isSmartPhone() && !this.smartPhoneCheckService.isIpad()) $('svg').find('title').remove();
+    if (!this.smartPhoneCheckService.isSmartPhone() && !this.smartPhoneCheckService.isIpad() && !this.smartPhoneCheckService.isTablet()) {
+      $('svg').find('title').remove();
+    }
   }
 
   // 現在の描画サイズに合わせて表示するグリッドを決定し、座席データを動的に追加・削除
@@ -1695,7 +1695,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
           $('#' + this.seats[i].seat_l0_id).css({ 'fill': SEAT_COLOR_AVAILABLE });
         }
 
-        if (!this.smartPhoneCheckService.isSmartPhone() && !this.smartPhoneCheckService.isIpad()) {
+        if (!this.smartPhoneCheckService.isSmartPhone() && !this.smartPhoneCheckService.isIpad() && !this.smartPhoneCheckService.isTablet()) {
           let stockType = this.seats[i].stock_type_id ? this.tooltipStockType[this.seats[i].stock_type_id] : null;
           if (stockType) {
             $('#' + this.seats[i].seat_l0_id).attr({
@@ -2050,12 +2050,12 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
     let viewBox = this.getPresentViewBox();
     let width: any;
     let height: any;
-    if (this.smartPhoneCheckService.isSmartPhone()) {
+    if (this.smartPhoneCheckService.isSmartPhone() || this.smartPhoneCheckService.isTablet() == "SP") {
       width = 2000;
       height = 1250;
     } else {
       width = 1500;
-      height = 1000;
+      height = 960;
     }
     if (viewBox) {
       let Mx: any = (+viewBox[0] + (+viewBox[2] / 2));
@@ -2078,12 +2078,12 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
     let viewBox = this.getPresentViewBox();
     let width: any;
     let height: any;
-    if (this.smartPhoneCheckService.isSmartPhone()) {
+    if (this.smartPhoneCheckService.isSmartPhone() || this.smartPhoneCheckService.isTablet() == "SP") {
       width = 2000;
       height = 1250;
     } else {
       width = 1500;
-      height = 1000;
+      height = 960;
     }
     if (viewBox) {
       let Mx: any = (+viewBox[0] + (+viewBox[2] / 2));
@@ -2108,7 +2108,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
   }
   //SP、検索エリアがアクティブ時のモーダルのトップ調整
   modalTopCss() {
-    if (this.smartPhoneCheckService.isSmartPhone()) {
+    if (this.smartPhoneCheckService.isSmartPhone() || this.smartPhoneCheckService.isTablet() == "SP") {
       setTimeout(function () {
         $("#modalWindowAlertBox").css({
           'top': "-37px",

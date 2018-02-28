@@ -9,7 +9,7 @@ export class SmartPhoneCheckService {
  * @return {boolean}
  */
   isSmartPhone() {
-    if (navigator.userAgent.indexOf('iPhone') > 0 || navigator.userAgent.indexOf('iPod') > 0 || navigator.userAgent.indexOf('Android') > 0) {
+    if (navigator.userAgent.indexOf('iPhone') > 0 || navigator.userAgent.indexOf('iPod') > 0 || (navigator.userAgent.indexOf('Android') > 0 && navigator.userAgent.indexOf('Mobile') > 0)) {
       return true;
     }
     return false;
@@ -33,7 +33,7 @@ export class SmartPhoneCheckService {
 */
   isTablet() {
     const WINDOW_SM = 768;
-    var windowWidth = $(window).width();
+    var windowWidth = window.outerWidth;
     if (navigator.userAgent.indexOf('Android') > 0 && navigator.userAgent.indexOf('Mobile') < 0) {
       if (windowWidth <= WINDOW_SM) {
         return "SP";
