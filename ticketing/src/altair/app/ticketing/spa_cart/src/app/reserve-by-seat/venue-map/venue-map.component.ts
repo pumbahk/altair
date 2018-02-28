@@ -1013,6 +1013,8 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
   sideError() {
     let orientation = window.orientation;
     let height = $("#mapImgBox").height();
+    alert(height);
+    alert(this.smartPhoneCheckService.isTablet());
     if (this.smartPhoneCheckService.isSmartPhone() || this.smartPhoneCheckService.isTablet() == "SP") {
       if (this.scaleTotal >= SCALE_SEAT) {
         height = height - 280;
