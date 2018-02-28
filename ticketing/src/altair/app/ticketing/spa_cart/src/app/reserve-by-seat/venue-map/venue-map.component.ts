@@ -1093,6 +1093,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
         let y_pos = getPositionY(e);
         let viewBoxVals = this.getZoomViewBox(x_pos, y_pos, scale);
         $('#mapImgBox').children().attr('viewBox', viewBoxVals.join(' '));
+        alert(($(window).width() <= WINDOW_SM) || (this.countSelect != 0));
         if (($(window).width() <= WINDOW_SM) || (this.countSelect != 0)) {
           this.stockTypeDataService.sendToSeatListFlag(false);
           this.seatSelectDisplay(false);
@@ -1418,6 +1419,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
       if (this.smartPhoneCheckService.isSmartPhone() || this.smartPhoneCheckService.isTablet() == "SP") {
         if (orientation == 0 || orientation == 180) {//縦向き
           if (this.seatAreaHeight) {
+            alert("a");
             $('#mapAreaLeft').css({
               'height': this.seatAreaHeight,
             });
@@ -1430,6 +1432,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
     } else {
       if (this.smartPhoneCheckService.isSmartPhone() || this.smartPhoneCheckService.isTablet() == "SP") {
         if (orientation == 0 || orientation == 180) {//縦向き
+          alert("b");
           $('#mapAreaLeft').css({
             'height': windowHeight - allHead,
           });
