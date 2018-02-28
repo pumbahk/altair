@@ -104,7 +104,8 @@ def get_discount_amount(order_like):
         for element in item.elements:
             used_codes = element.used_discount_codes
             if used_codes:
-                discount_amount = discount_amount + element.product_item.price * len(used_codes)
+                for used in used_codes:
+                    discount_amount = discount_amount + used.applied_amount
     return discount_amount
 
 
@@ -112,7 +113,8 @@ def get_discount_price(ordered_product_item_token):
     price = 0
     used_codes = ordered_product_item_token.used_discount_codes
     if used_codes:
-        price = ordered_product_item_token.item.price * len(used_codes)
+        for used in used_codes:
+            price = price + used.applied_amount
     return price
 
 
