@@ -47,10 +47,25 @@ export class ReserveBySeatComponent implements OnInit {
     const that = this;
 
     $(function () {
-      //filterのtoggle(PC初期表示)
-      $('.acdBt').click(function () {
-        $(this).next().slideToggle(300);
-      });
+      var windowWidth = $(window).width();
+      var windowSm = 768;
+      //filterの初期表示
+      if (windowWidth <= windowSm) {
+        $(document).ready(function () {
+          $('.acdTp').click(function () {
+            $(this).prev().slideToggle(300);
+          }).prev().hide();
+        });
+        $(document).ready(function () {
+          $('.acdBt').click(function () {
+            $(this).next().slideToggle(300);
+          }).next().hide();
+        });
+      } else {
+        $('.acdBt').click(function () {
+          $(this).next().slideToggle(300);
+        });
+      }
 
       function setting() {
         var mainH;
@@ -59,20 +74,6 @@ export class ReserveBySeatComponent implements OnInit {
         var windowSm = 768;
         if (windowWidth <= windowSm) {
           //横幅768px以下のとき（つまりスマホ時）に行う処理を書く
-
-          $(document).ready(function () {
-            $('.acdTp').click(function () {
-              $(this).prev().slideToggle(300);
-            }).prev().hide();
-          });
-
-          //filterのtoggle
-          $(document).ready(function () {
-            $('.acdBt').click(function () {
-              $(this).next().slideToggle(300);
-            }).next().hide();
-          });
-
           $(function () {
             function heightSetting() {
               let minus = 0;
