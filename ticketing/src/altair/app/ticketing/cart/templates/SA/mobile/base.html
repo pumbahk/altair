@@ -8,6 +8,14 @@
   <img src="${request.static_url('altair.app.ticketing.cart:static/SA/mobile/images/mobile_logo.gif')}" width="100%" alt="静岡朝日テレビ" />
 </div>
 <div>
+<form action="${request.route_path('cart.logout')}" method="POST">
+    <div style="text-align: right">
+    <%doc>ログイン/ログアウト</%doc>
+        % if view_context.get_include_template_path('login_status.html') is not None:
+    <%include file="${view_context.get_include_template_path('login_status.html')}" args="device=view_context.ua_type" />
+        % endif
+    </div>
+</form>
 ${self.body()}
 <hr size="1" color="#888888" noshade="noshade" />
 <div align="center" style="font-size:x-small">

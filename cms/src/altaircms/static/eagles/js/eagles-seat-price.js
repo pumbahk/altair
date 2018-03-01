@@ -76,7 +76,6 @@
             }).then(function(data) {
                 if (data.length > 0) {
                     setSeatPrice(data);
-                    $('#priceListArea').show();
                 }
             });
         }

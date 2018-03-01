@@ -596,6 +596,9 @@ msgstr "Delivery of email magazine"
 msgid "ご利用いただいた方には、楽天チケットからのメールマガジンをお送りします。不要な方はチェックをはずしてください。"
 msgstr "You can receive an email magazine from the Rakuten ticket. Uncheck if it is not needed."
 
+msgid "ご利用いただいた方には、メールマガジンをお送りします。不要な方はチェックをはずしてください。"
+msgstr "For those who sign up, you will receive an e-mail newsletter. Please remove the check of which you do not want."
+
 msgid "座席選択にもどる"
 msgstr "Back to seat selection"
 

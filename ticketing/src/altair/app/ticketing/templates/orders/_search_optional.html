@@ -1,0 +1,484 @@
+<%page args="form, url='/orders/optional/'" />
+<%namespace file="/common/helpers.html" name="ch" />
+<%
+  from altair.formhelpers import OurDateWidget
+  import json
+  patterns_js = json.dumps(patterns)
+%>
+
+<script src="${request.static_url('altair.app.ticketing:static/js/jquery.chosen.js')}"></script>
+<link rel="stylesheet" type="text/css" href="${request.static_url('altair.app.ticketing:static/css/chosen.css')}" />
+<!-- font-awesome -->
+<link href="/static/css/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet"></link>
+
+<style type="text/css">
+.order-msg {
+  font-weight: normal;
+}
+.form-horizontal .control-label {
+  width: 120px;
+}
+.form-horizontal .controls {
+  margin-left: 140px;
+}
+#search-optional table {
+  border-collapse: separate;
+  width: 800px;
+  border-spacing: 4px;
+  margin-left: -4px;
+  margin-bottom: -4px;
+  table-layout: fixed;
+}
+
+#search-optional table tbody td,
+#search-optional table tbody th {
+  padding: 0 15px;
+}
+#search-optional table tbody th {
+  text-align: left;
+  vertical-align: middle;
+  border: none;
+}
+#search-optional label {
+  margin-top: 10px;
+  margin-bottom: 0;
+  font-weight: 600;
+}
+#search-optional input,
+#search-optional select {
+  width: 100%;
+  -ms-box-sizing:content-box;
+  -moz-box-sizing:content-box;
+  -webkit-box-sizing:content-box;
+  box-sizing:content-box;
+}
+#search-optional a.show-ordered-time-btn,
+#search-optional a.show-start-on-time-btn {
+  margin-left: 10px;
+}
+#search-optional .packed-checkboxes input {
+  width: auto;
+}
+
+#search-optional .packed-checkboxes .checkbox-set {
+  overflow: hidden;
+  width: 40em;
+  margin: 0;
+}
+#search-optional .packed-checkboxes .checkbox-set .checkbox-set-item {
+  float: left;
+  width: 10em;
+  font-weight: normal;
+  margin: 2.5px 0;
+}
+.download-patterns {
+  float: left;
+  margin-left: 10px;
+}
+.download-patterns select#saved-patterns {
+  float: left;
+  margin-right: 10px;
+  width: 400px;
+  border-radius: 4px;
+}
+.download-patterns .btn-group {
+  float: left;
+}
+</style>
+<script type="text/javascript">
+  /* load download pattern into javascript global */
+  var patterns = ${patterns_js|n};
+
+  function search_orders(url) {
+    $('#search-optional').attr('action', url).submit();
+  }
+
+  function show_total(url, type) {
+    $.ajax({
+      url: url,
+      type: 'POST',
+      dataType: 'json',
+      data: $('#search-optional').serialize(),
+      success: function(data) {
+        switch(type) {
+          case 'amount':
+            $('#btn_total_amount').hide();
+            var total = document.getElementById('total_amount');
+            var text = '検索された購入金額の総合計';
+            var count = parseInt(data.total_amount).toLocaleString();
+            break;
+          case 'quantity':
+            $('#btn_total_quantity').hide();
+            var total = document.getElementById('total_quantity');
+            var text = '検索された販売枚数の総合計';
+            var count = parseInt(data.total_quantity).toLocaleString();
+            break;
+          default:
+            break;
+        }
+        var table = document.createElement('table');
+        table.className = 'table table-striped table-bordered';
+        var thead = document.createElement('thead');
+        var tr0 = document.createElement('tr');
+        var td0 = document.createElement('td');
+        td0.appendChild(document.createTextNode(text));
+        tr0.appendChild(td0);
+        thead.appendChild(tr0);
+        var tbody = document.createElement('tbody');
+        var tr1 = document.createElement('tr');
+        var td1 = document.createElement('td');
+        td1.appendChild(document.createTextNode(count));
+        tr1.appendChild(td1);
+        tbody.appendChild(tr1);
+        table.appendChild(thead);
+        table.appendChild(tbody);
+        total.appendChild(table);
+      },
+      error: function() {
+        $('#total_error').html('データ取得失敗しました');
+      }
+    })
+  }
+
+  function sort_orders(sort, direction, url) {
+    url = url || '${url}';
+    detail = $('#detail_search');
+    if (sort) detail.find('#sort').val(sort);
+    if (direction) detail.find('#direction').val(direction);
+    detail.find('#search-optional').attr('action', url).submit();
+  }
+
+  function parse_options_to_params(pattern_name, patterns) {
+      var loaded_options = "";
+      var options=patterns[pattern_name];
+      for (var i = 0; i < options.length; i++) {
+        loaded_options += "&download-option=" + options[i];
+      }
+
+      return loaded_options;
+  }
+
+  function download_orders() {
+    var params = $('#modal-download_orders').parent('form').serialize();
+    var pattern_name = $('select#saved-patterns').val();
+    var params_options = parse_options_to_params(pattern_name, patterns);
+    detail = $('#detail_search');
+    detail.find('#search-optional').attr('action', 'download/?' + params + params_options).submit();
+    $('#modal-download_orders').modal('hide');
+  }
+</script>
+<div id="detail_search" style="display: none;">
+  <div>
+    <h3>検索条件設定</h3>
+  </div>
+  <form id="search-optional" class="form-horizontal" method="POST">
+    <table>
+      <tbody>
+        <tr>
+          <th colspan="2"><label for="order_no">${form.order_no.label.text} <span class="order-msg">※複数の予約番号での検索時はスペース(全角/半角)で区切ってご入力ください。</span></label></th>
+        </tr>
+        <tr>
+          <td colspan="2">
+            ${form.order_no(minlength=12)}
+          </td>
+        </tr>
+        <tr>
+          <th><label for="name">${form.name.label.text}</label></th>
+          <th><label for="seat_number">${form.seat_number.label.text}</label></th>
+          <th><label for="tel">${form.tel.label.text}</label></th>
+        </tr>
+        <tr>
+          <td>${form.name()}</td>
+          <td>${form.seat_number()}</td>
+          <td>${form.tel()}</td>
+        </tr>
+        <tr>
+          <th><label for="email">${form.email.label.text}</label></th>
+          <th><label for="login_id">${form.login_id.label.text}</label></th>
+          <th><label for="member_id">${form.member_id.label.text}</label></th>
+        </tr>
+        <tr>
+          <td>${form.email()}</td>
+          <td>${form.login_id()}</td>
+          <td>${form.member_id()}</td>
+        </tr>
+        <tr>
+          <th><label for="fm_reserve_number">${form.fm_reserve_number.label.text}</label></th>
+          <th><label>${form.billing_or_exchange_number.label.text}</label></th>
+          <th><label for="number_of_tickets">${form.number_of_tickets.label.text}</label></th>
+        </tr>
+        <tr>
+          <td>${form.fm_reserve_number()}</td>
+          <td>${form.billing_or_exchange_number}</td>
+          <td>${form.number_of_tickets()}</td>
+        </tr>
+        <tr>
+          <th><label>${form.ordered_from.label.text}</label></th>
+        </tr>
+        <tr>
+          <td colspan="3">
+            ${form.ordered_from} 〜 ${form.ordered_to}
+            <a class="show-ordered-time-btn btn btn-small"><i class="icon-plus"></i> 時間</a>
+            %if form.ordered_from.errors or form.ordered_to.errors:
+              <%
+                 errors = set(form.ordered_from.errors + form.ordered_to.errors)
+              %>
+              %for error in errors:
+              <div>
+                <span style="color: red;">${error}</span>
+              </div>
+              %endfor
+            %endif
+          </td>
+          <script>
+            $('.show-ordered-time-btn').click(function(){
+              var status = $(this).data('status');
+              var el = $('input[name="ordered_from.hour"],input[name="ordered_from.minute"],input[name="ordered_to.hour"],input[name="ordered_to.minute"]').parent();
+              if (status == 'off') {
+                el.show();
+                $(this).data('status', 'on');
+              } else {
+                el.hide();
+                $(this).data('status', 'off');
+              }
+            }).click();
+          </script>
+        </tr>
+        <tr>
+          <th><label>${form.start_on_from.label.text}</label></th>
+        </tr>
+        <tr>
+          <td colspan="3">
+            ${form.start_on_from} 〜 ${form.start_on_to}
+            <a class="show-start-on-time-btn btn btn-small"><i class="icon-plus"></i> 時間</a>
+            %if form.start_on_from.errors or form.start_on_to.errors:
+              <%
+                 errors = set(form.start_on_from.errors + form.start_on_to.errors)
+              %>
+              %for error in errors:
+              <div>
+                <span style="color: red;">${error}</span>
+              </div>
+              %endfor
+            %endif
+          </td>
+          <script>
+            $('.show-start-on-time-btn').click(function(){
+              var status = $(this).data('status');
+              var el = $('input[name="start_on_from.hour"],input[name="start_on_from.minute"],input[name="start_on_to.hour"],input[name="start_on_to.minute"]').parent();
+              if (status == 'off') {
+                el.show();
+                $(this).data('status', 'on');
+              } else {
+                el.hide();
+                $(this).data('status', 'off');
+              }
+            }).click();
+          </script>
+        </tr>
+      </tbody>
+    </table>
+    <table>
+      <tbody>
+        <tr>
+          <th><label for="event_id">${form.event_id.label.text}</label></th>
+        </tr>
+        <tr>
+          <td>${form.event_id(style="width:750px", size=4)}</td>
+        </tr>
+        <tr>
+          <th><label for="performance_id">${form.performance_id.label.text}</label></th>
+        </tr>
+        <tr>
+          <td>${form.performance_id(style="width:750px", size=4)}</td>
+        </tr>
+      </tbody>
+    </table>
+    <table>
+      <tbody>
+        <tr>
+          <th><label for="sales_segment_group_id">${form.sales_segment_group_id.label.text}</label></th>
+          <th><label for="payment_method">${form.payment_method.label.text}</label></th>
+          <th><label for="delivery_method">${form.delivery_method.label.text}</label></th>
+        </tr>
+        <tr>
+          <td>${form.sales_segment_group_id(size=4)}</td>
+          <td>${form.payment_method(size=4)}</td>
+          <td>${form.delivery_method(size=4)}</td>
+        </tr>
+      </tbody>
+    </table>
+    <table class="packed-checkboxes">
+      <tbody>
+        <tr>
+          <th><label for="status">${form.status.label.text}</label></th>
+        </tr>
+        <tr>
+          <td>
+            ${form.status}
+            ${form.issue_status()}
+            ${form.payment_status()}
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <script type="text/javascript">
+      $(function(){
+        var update_on_empty = function(){
+          var $target = $(this).parents("form").find("select[name='performance_id']").eq(0);
+          $target.empty();
+          $target.chosen().trigger("liszt:updated");
+
+          var $ssg = $(this).parents("form").find("select[name='sales_segment_group_id']").eq(0);
+          $ssg.empty();
+
+          return;
+        };
+        var update_on_hasvalue = function(v){
+          var self = this;
+          var params = {event_id: v};
+          $.getJSON("${request.route_url('orders.api.performances')}", params).done(function(data){
+            if(data.status){
+              var $target = $(self).parents("form").find("select[name='performance_id']").eq(0);
+              $target.empty();
+              // optimize if slow.
+              for(var i=0, j=data.result.length; i<j; i++){
+                var e = data.result[i];
+                $target.append($("<option>").attr("value", e.pk).text(e.name))
+              }
+              $target.chosen().trigger("liszt:updated");
+            }
+          });
+          $.getJSON("${request.route_url('orders.api.sales_segment_groups')}", params).done(function(data){
+            if(data.status){
+              var $target = $(self).parents("form").find("select[name='sales_segment_group_id']").eq(0);
+              $target.empty();
+              // optimize if slow.
+              for(var i=0, j=data.result.length; i<j; i++){
+                var e = data.result[i];
+                $target.append($("<option>").attr("value", e.pk).text(e.name))
+              }
+            }
+          });
+        };
+        var update_performances_and_ssgroups = function(){
+          var self = this;
+          var v = $(this).val();
+          if(!v){
+            return update_on_empty.call(self);
+          } else {
+            return update_on_hasvalue.call(self, v);
+          }
+        };
+        $("#search-optional select[name='event_id']").change(update_performances_and_ssgroups).chosen();
+        $("#search-optional select[name='performance_id']").chosen();
+
+        // フォームの描画中は見えなくしている
+        $("#detail_search").show();
+      });
+    </script>
+    ${ch.form_item(form.sort)}
+    ${ch.form_item(form.direction)}
+  </form>
+</div>
+
+<div style="float: left;">
+  <ul class="nav nav-pills">
+    <li class="dropdown" style="margin-left: 10px;">
+      <div class="btn-group">
+        <a href="${url}" class="btn">
+			</i> リセット
+        </a>
+      </div>
+    </li>
+  </ul>
+</div>
+
+<div style="float: left;">
+  <ul class="nav nav-pills">
+    <li class="dropdown" id="top-search" style="margin-left: 10px;">
+      <div class="btn-group">
+        <a href="javascript:search_orders('${request.route_path('orders.optional')}');" class="btn">
+          <i class="icon-search"></i> 検索
+        </a>
+      </div>
+    </li>
+  </ul>
+</div>
+
+<!--float styleのエフェクトをクリア（改行のため）-->
+<div style="clear:both"></div>
+
+<div class="btn-group" style="float: left;">
+  <button class="btn btn-inverse" style="margin-left: 10px;" id="download-orders">
+    <i class="icon-download icon-white"></i> ダウンロード
+  </button>
+</div>
+<script type="text/javascript">
+    $('#download-orders').on('click', function() {
+        var pattern_name = $('#saved-patterns').val();
+        if (!pattern_name) {
+            alert('テンプレートを選択してください。');
+        } else {
+            $('#modal-download_orders').modal();
+        }
+    });
+</script>
+<div class="download-patterns">
+  <select id="saved-patterns" class="styled-select">
+    <option value="">ダウンロードパターンを選んでください</option>
+    % if patterns:
+      % for key, val in patterns.items():
+        <option value="${key}">${key}</option>
+      % endfor
+    % endif
+  </select>
+  <div class="btn-group">
+    <a class="btn" href="${request.route_path('orders.optional.pattern')}" target="_blank">
+      <i class="fa fa-cog" aria-hidden="true"></i> 設定
+    </a>
+  </div>
+</div>
+
+<!--float styleのエフェクトをクリア-->
+<div style="clear: both;"></div>
+
+
+<form id="download" class="form-horizontal" action="${request.route_path('orders.download')}" method="POST">
+<div id="modal-download_orders" class="modal hide">
+  <div class="modal-header">
+    <a href="#" class="close">&times;</a>
+    <h3>確認</h3>
+  </div>
+
+  <div class="modal-body">
+    <p>購入情報(CSV)をダウンロードします。よろしいですか？<br>
+      % if not form.get_conditions():
+        <div class="alert alert-error">
+          <div style="margin-bottom: 5px;">検索条件がありません。<br>対象が多すぎると時間がかかる可能性があるので条件を指定してください。</div>
+        </div>
+      % endif
+      <%include file="/orders/_search_condition.html" args="form=form" />
+    </p>
+    <fieldset>
+      <div>
+        <input id="export_type_1" name="export_type" type="radio" value="1" style="float: left; margin-right: 5px;" checked>
+        <label for="export_type_1">予約ごとに1行ずつ出力する</label>
+      </div>
+      <div>
+        <input id="export_type_2" name="export_type" type="radio" value="2" style="float: left; margin-right: 5px;">
+        <label for="export_type_2">座席ごとに1行ずつ出力する</label>
+      </div>
+    </fieldset>
+  </div>
+
+  <div class="modal-footer">
+    <div class="control-group" style="text-align:left; float: left; white-space: nowrap">
+      <input id="excel_csv" name="excel_csv" type="checkbox" value="1" checked="checked" style="float: left; margin-right: 5px;">
+      <label for="excel_csv">Excel形式のCSVを出力する</label>
+    </div>
+    <a href="javascript:void(0);" onclick="$('#modal-download_orders').modal('hide');" class="btn secondary">キャンセル</a>
+    <a href="javascript:download_orders();" class="btn danger">ダウンロード</a>
+  </div>
+</div>
+</form>

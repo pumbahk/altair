@@ -551,7 +551,7 @@ msgid "メールマガジンの配信"
 msgstr "Delivery of e-mail magazine"
 
 msgid "お申し込みいただいた方に、メールマガジンをお送りします。不要な方はチェックをはずしてください。"
-msgstr "For those who sign up, you will receive an e-mail newsletter. Please unnecessary one, remove the check."
+msgstr "For those who sign up, you will receive an e-mail newsletter. Please remove the check of which you do not want."
 
 msgid "申込内容確認"
 msgstr "Application Content Confirmation"
@@ -597,9 +597,6 @@ msgstr "Your Application has been completed"
 msgid "下記の受付番号はとても大切な番号です。すぐにメモして保管してください。"
 msgstr "The receipt number is very important. Please take a note of it immediately and keep it safe."
 
-msgid "受付番号"
-msgstr "Receipt number"
-
 msgid "お申込み時に、ご登録いただいたメールアドレス宛に、受付完了メールが送られます。しばらくたっても確認のメールが届かない場合は、入力されたメールアドレスが誤りがあるか、メールの受信設定により受信できていない可能性があります。"
 msgstr "You will receive confirmation email sent to the email you registered after you complete the application. If you don't receive the confirmation email for a while, it may be caused by the wrong email address or email receiving setting of your devices."
 
@@ -617,6 +614,17 @@ msgstr "An error occurred during the settlement. Please try <a href=\"{0}\"> aga
 
 msgid "配送受取を選択した場合"
 msgstr "If delivery is needed"
+
+# Add
+
+msgid "注意：申込が完了していない抽選情報が見つかりました。申込途中の情報をクリアして、先に進んで良い場合は、下記リンクをクリックして下さい"
+msgstr "Note: You have found the lottery information for which application has not been completed, click the link below if you want to clear the information in the application"
+
+msgid "該当の抽選申込みページは見つかりませんでした"
+msgstr "I did not see the corresponding lottery application page"
+
+msgid "申込途中の情報をクリアして、新しい申し込みページを開く"
+msgstr "Clear the information in the application and open a new application page"
 
 # 国名
 

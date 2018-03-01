@@ -337,9 +337,10 @@ main {
   padding: 0 0 3px 10px;
 }
 .lots-item table th {
-    padding: 10px;
-    border-top: 1px solid #CCC;
-    font-weight: bold;
+  padding: 10px;
+  border-top: 1px solid #CCC;
+  font-weight: bold;
+  width: 25%;
 }
 .lots-item table td {
     padding: 10px;

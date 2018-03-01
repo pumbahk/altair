@@ -568,15 +568,10 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def cancel(self, request, payment_method=None, now=None):
         from .api import refund_order, cancel_order
         try:
-            # TODO このtryの間の処理は途中で例外エラーが発生した場合にDBのロールバックが一部できていない。要調査
             if self.payment_status == 'refunding':
                 refund_order(request, self, payment_method=payment_method, now=now)
             else:
                 cancel_order(request, self, now=now)
-
-            # 割引コードがチケット購入時に使用されている場合
-            if self.used_discount_codes:
-                discount_api.cancel_used_discount_codes(request, self, now=now)
 
         except Exception as e:
             logger.exception(u'キャンセルに失敗しました')
@@ -1326,6 +1321,7 @@ class OrderSummary(Base):
             Order.__table__.c.payment_delivery_method_pair_id,
             Order.__table__.c.shipping_address_id,
             Order.__table__.c.issued,
+            Order.__table__.c.printed_at,
             Order.__table__.c.user_id,
             Order.__table__.c.refund_id,
             Order.__table__.c.fraud_suspect,
@@ -1394,10 +1390,9 @@ class OrderSummary(Base):
     payment_delivery_method_pair_id = Order.payment_delivery_method_pair_id
     shipping_address_id = Order.shipping_address_id
     issued = Order.issued
+    printed_at = Order.printed_at
     user_id = Order.user_id
-    refund_id = Order.refund_id
     fraud_suspect = Order.fraud_suspect
-    created_at = Order.created_at
     deleted_at = Order.deleted_at
     user_profile_last_name = UserProfile.__table__.c.last_name
     user_profile_first_name = UserProfile.__table__.c.first_name

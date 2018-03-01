@@ -800,7 +800,8 @@ def payment_plugin_exception(context, request):
     append_slash=True
     )
 def notfound(context, request):
-    default_msg = u'該当の抽選申込みページは見つかりませんでした'
+    _message = partial(h._message, request=request)
+    default_msg = _message(u'該当の抽選申込みページは見つかりませんでした')
     display_msg = context.comment or default_msg
     session_clear_url = None
     # session情報のconflictで404なった場合のみクリア用urlを入れる
