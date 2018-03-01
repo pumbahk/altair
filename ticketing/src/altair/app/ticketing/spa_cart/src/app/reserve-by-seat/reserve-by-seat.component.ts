@@ -70,7 +70,6 @@ export class ReserveBySeatComponent implements OnInit {
 
           $(function () {
             function heightSetting() {
-              alert("SPイベント");
               let minus = 0;
               if ($('#modalWindow').length) {
                 minus = 149;
@@ -130,23 +129,11 @@ export class ReserveBySeatComponent implements OnInit {
           });
 
 
-          $(function () {
-            if (!($('#choiceSeatArea, #buySeatArea, #buyChoiceSeatArea').length)) {
-              //ここに「＃sample」が存在しなかった場合の処理を記述
-              $('#mapAreaLeft').addClass('noSide');
-              $('#mapBtnBox').addClass('mapBtnBoxR');
-              $('#mapNaviBox').addClass('mapNaviBoxR');
-              $('#mapAreaRight').addClass('dNone');
-              /////////////////////
-            }
-          });
-
           /***********************************************************/
           $(function () {
             var minus = 240
             var mainID = 'mapAreaLeft'
             function heightSetting() {
-              alert("PCイベント");
               windowH = $(window).height();
               mainH = windowH - minus;
               that.mapAreaLeftH = mainH;

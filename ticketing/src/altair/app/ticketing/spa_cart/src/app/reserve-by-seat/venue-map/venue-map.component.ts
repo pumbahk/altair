@@ -854,7 +854,6 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
     // リサイズ処理
     let getHightTimer = null;
     let resizeTimer = null;
-    let orientation = window.orientation;
     const that = this;
     //初期表示時横の場合
     getHightTimer = setInterval(() => {
@@ -921,6 +920,9 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
           $('.choiceAreaAcdBox').css('display', 'block');
         } else {
           $('.choiceAreaAcdBox').css('display', 'none');
+          if (this.scaleTotal >= SCALE_SEAT && this.smartPhoneCheckService.isTablet() == "SP") {
+            this.seatSelectDisplay(false);
+          }
         }
       }, 200);
     });
@@ -938,13 +940,13 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
         that.returnUnconfirmFlag = true;
         //進むで来ていない場合の対策
         let historyCountTemp = history.length.toString();
-        setTimeout(function(){
+        setTimeout(function () {
           //まだtrueの場合は開きなおしたため履歴数を更新
           if (that.returnUnconfirmFlag) {
             that.returnUnconfirmFlag = false;
             sessionStorage.setItem('historyCount', historyCountTemp);
           }
-        },1000);
+        }, 1000);
       } else {
         //開きなおした場合履歴数を更新する
         sessionStorage.setItem('historyCount', history.length.toString());
@@ -952,13 +954,13 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
     }
 
     //商品選択へのブラウザバック
-    this.reserveBySeatBrowserBackService.modal.subscribe((value)=>{
+    this.reserveBySeatBrowserBackService.modal.subscribe((value) => {
       that.confirmReturn();
     });
 
     //他画面へのブラウザバック
     if (ua.match(/crios/i)) {
-      $(document).on('click', function(){
+      $(document).on('click', function () {
         history.pushState(null, null, null);
         $(document).off('click');
       });
@@ -1018,16 +1020,13 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
         height = height - 280;
       }
     }
-    //PCはorientationではじき、PC表示タブレットは以下ではじく
-    //if (this.smartPhoneCheckService.isTablet() != "PC") {
-      if (height < SIDE_HEIGHT && (orientation == 90 || orientation == -90)) {//座席図領域<定数
-        this.sideProhibition = true;
-        this.resizeCssTrue();
-      } else {
-        this.sideProhibition = false;
-        this.resizeCssFalse();
-      }
-    //}
+    if (height < SIDE_HEIGHT && (orientation == 90 || orientation == -90)) {//座席図領域<定数
+      this.sideProhibition = true;
+      this.resizeCssTrue();
+    } else {
+      this.sideProhibition = false;
+      this.resizeCssFalse();
+    }
   }
 
   resizeCssTrue() {
@@ -1414,17 +1413,10 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
     let windowHeight = $(window).height();
     let allHead: number = $('header').height() + $('.headArea').height() + $('.choiceAreaMenuBtn').height() + $('#colorNavi').height();
     let orientation = window.orientation;
-    alert(windowHeight + "window");
-    alert($('header').height());
-    alert($('.headArea').height());
-    alert($('.choiceAreaMenuBtn').height());
-    alert($('#colorNavi').height());
-    alert(allHead + "allHead");
     if (flag) {
       if (this.smartPhoneCheckService.isSmartPhone() || this.smartPhoneCheckService.isTablet() == "SP") {
         if (orientation == 0 || orientation == 180) {//縦向き
           if (this.seatAreaHeight) {
-            alert("a");
             $('#mapAreaLeft').css({
               'height': this.seatAreaHeight,
             });
@@ -1437,7 +1429,6 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
     } else {
       if (this.smartPhoneCheckService.isSmartPhone() || this.smartPhoneCheckService.isTablet() == "SP") {
         if (orientation == 0 || orientation == 180) {//縦向き
-          alert("b");
           $('#mapAreaLeft').css({
             'height': windowHeight - allHead,
           });
@@ -2140,8 +2131,8 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
     sessionStorage.removeItem('stay');
 
     let backCount = -(history.length - Number(sessionStorage.getItem('historyCount')) + 1);
-    if(ua.indexOf('msie') != -1 || ua.indexOf('trident') != -1) {
-      window.addEventListener('popstate', function(){
+    if (ua.indexOf('msie') != -1 || ua.indexOf('trident') != -1) {
+      window.addEventListener('popstate', function () {
         history.go(backCount);
       });
       history.go(-(this.reserveBySeatBrowserBackService.selectProductCount + 1));
