@@ -46,162 +46,145 @@ export class ReserveBySeatComponent implements OnInit {
     this.loadingService.setValue(true);
     const that = this;
 
-    //ここからmainHeight.js
-    $(function(){
-      var mainH;
-      var windowH;
-      var windowWidth = $(window).width();
-      var windowSm = 768;
-      if (windowWidth <= windowSm) {
-        //横幅768px以下のとき（つまりスマホ時）に行う処理を書く
+    $(function () {
+      function setting() {
+        var mainH;
+        var windowH;
+        var windowWidth = $(window).width();
+        var windowSm = 768;
+        if (windowWidth <= windowSm) {
+          //横幅768px以下のとき（つまりスマホ時）に行う処理を書く
 
-        $(document).ready(function(){
-          $('.acdTp').click(function() {
-            $(this).prev().slideToggle(300);
-          }).prev().hide();
-        });
+          $(document).ready(function () {
+            $('.acdTp').click(function () {
+              $(this).prev().slideToggle(300);
+            }).prev().hide();
+          });
 
-        //filterのtoggle
-        $(document).ready(function(){
-          $('.acdBt').click(function() {
-            $(this).next().slideToggle(300);
-          }).next().hide();
-        });
+          //filterのtoggle
+          $(document).ready(function () {
+            $('.acdBt').click(function () {
+              $(this).next().slideToggle(300);
+            }).next().hide();
+          });
 
-        $(function(){
-          function heightSetting() {
-            alert("SPイベント");
-            let minus = 0;
-            if($('#modalWindow').length){
-              minus = 149;
-            } else if($('#choiceSeatArea').length){
-              minus = 280;
-            } else {
-              minus = 149;
+          $(function () {
+            function heightSetting() {
+              alert("SPイベント");
+              let minus = 0;
+              if ($('#modalWindow').length) {
+                minus = 149;
+              } else if ($('#choiceSeatArea').length) {
+                minus = 280;
+              } else {
+                minus = 149;
+              }
+
+              let mainID = 'mapAreaLeft'
+              let windowH = $(window).height();
+              let mainH = windowH - minus;
+              $('#' + mainID).height(mainH + 'px');
+              that.mapAreaLeftH = mainH;
+              that.isGetMapH = true;
             }
-
-            let mainID = 'mapAreaLeft'
-            let windowH = $(window).height();
-            let mainH = windowH - minus;
-            $('#' + mainID).height(mainH + 'px');
-            that.mapAreaLeftH = mainH;
-            that.isGetMapH = true;
-          }
-          heightSetting();
-          //リサイズ時の縦幅調整
-          $(window).resize(function(){
             heightSetting();
           });
-        });
 
-        $(function(){
-          if($('#modalWindow').length){
+          $(function () {
+            if ($('#modalWindow').length) {
               //venue-mapの席種詳細モーダルが存在した場合
               //reserve-by-quantityが存在した場合
-              $(function(){
+              $(function () {
                 var minus = 114
                 var mainID = 'modalWindow'
-                function heightSetting(){
+                function heightSetting() {
                   windowH = $(window).height();
                   mainH = windowH - minus;
 
-                  $('#'+mainID).height(mainH+'px');
+                  $('#' + mainID).height(mainH + 'px');
                 }
                 heightSetting();
-                $(window).resize(function() {
-                  heightSetting();
-                });
               });
+            }
+          });
 
+          $(function () {
+            var minus = 114
+            var mainID = 'modalWindowAlertBoxInner'
+            function heightSetting() {
+              windowH = $(window).height();
+              mainH = windowH - minus;
+
+              $('#' + mainID).height(mainH + 'px');
+            }
+            heightSetting();
+          });
+
+        } else {
+          //横幅768px超のとき（タブレット、PC）に行う処理を書く
+
+          /***********************************************************/
+          //filterのtoggle
+          $('.acdBt').click(function () {
+            $(this).next().slideToggle(300);
+          });
+
+
+          $(function () {
+            if (!($('#choiceSeatArea, #buySeatArea, #buyChoiceSeatArea').length)) {
+              //ここに「＃sample」が存在しなかった場合の処理を記述
+              $('#mapAreaLeft').addClass('noSide');
+              $('#mapBtnBox').addClass('mapBtnBoxR');
+              $('#mapNaviBox').addClass('mapNaviBoxR');
+              $('#mapAreaRight').addClass('dNone');
               /////////////////////
-          }
-        });
+            }
+          });
 
-        $(function(){
-					var minus = 114
-					var mainID = 'modalWindowAlertBoxInner'
-					function heightSetting(){
-						windowH = $(window).height();
-						mainH = windowH - minus;
-
-						$('#'+mainID).height(mainH+'px');
-					}
-					heightSetting();
-					$(window).resize(function() {
-						heightSetting();
-					});
-				});
-
-      } else {
-        //横幅768px超のとき（タブレット、PC）に行う処理を書く
-
-        /***********************************************************/
-        //filterのtoggle
-        $('.acdBt').click(function () {
-          $(this).next().slideToggle(300);
-        });
-
-
-        $(function () {
-          if (!($('#choiceSeatArea, #buySeatArea, #buyChoiceSeatArea').length)) {
-            //ここに「＃sample」が存在しなかった場合の処理を記述
-            $('#mapAreaLeft').addClass('noSide');
-            $('#mapBtnBox').addClass('mapBtnBoxR');
-            $('#mapNaviBox').addClass('mapNaviBoxR');
-            $('#mapAreaRight').addClass('dNone');
-            /////////////////////
-          }
-        });
-
-        /***********************************************************/
-        $(function(){
-          //var minus = 220
-          var minus = 240
-          var mainID = 'mapAreaLeft'
-          function heightSetting() {
-            alert("PCイベント");
-            windowH = $(window).height();
-            mainH = windowH - minus;
-            that.mapAreaLeftH = mainH;
-            $('#' + mainID).height(mainH + 'px');
-            that.mapAreaLeftH = mainH;
-            that.isGetMapH = true;
-          }
-          heightSetting();
-          $(window).resize(function() {
+          /***********************************************************/
+          $(function () {
+            var minus = 240
+            var mainID = 'mapAreaLeft'
+            function heightSetting() {
+              alert("PCイベント");
+              windowH = $(window).height();
+              mainH = windowH - minus;
+              that.mapAreaLeftH = mainH;
+              $('#' + mainID).height(mainH + 'px');
+              that.mapAreaLeftH = mainH;
+              that.isGetMapH = true;
+            }
             heightSetting();
           });
-        });
-        $(function(){
-          var minus = 220
-          var mainID = 'mapAreaRight'
-          function heightSetting(){
-            windowH = $(window).height();
-            mainH = windowH - minus;
+          $(function () {
+            var minus = 220
+            var mainID = 'mapAreaRight'
+            function heightSetting() {
+              windowH = $(window).height();
+              mainH = windowH - minus;
 
-            $('#'+mainID).height(mainH+'px');
-          }
-          heightSetting();
-          $(window).resize(function() {
+              $('#' + mainID).height(mainH + 'px');
+            }
             heightSetting();
           });
-        });
-        $(function(){
-          var minus = 169
-          var mainID = 'buySeatArea'
-          function heightSetting(){
-            windowH = $(window).height();
-            mainH = windowH - minus;
+          $(function () {
+            var minus = 169
+            var mainID = 'buySeatArea'
+            function heightSetting() {
+              windowH = $(window).height();
+              mainH = windowH - minus;
 
-            $('#'+mainID).height(mainH+'px');
-          }
-          heightSetting();
-          $(window).resize(function() {
+              $('#' + mainID).height(mainH + 'px');
+            }
             heightSetting();
           });
-        });
+        }
       }
+      setting();
+      $(window).resize(function () {
+        setting();
       });
+    });
 
       /*/////////////////////PC・SP両方/////////////////////////*/
 
@@ -275,7 +258,6 @@ export class ReserveBySeatComponent implements OnInit {
           }
         });
       });
-      //////////////////////////////////////////////////////////ここから上mainHeight.js
   }
 
   ngAfterViewInit(): void {
