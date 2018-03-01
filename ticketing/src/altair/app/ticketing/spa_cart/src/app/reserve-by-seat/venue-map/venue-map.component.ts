@@ -1020,12 +1020,15 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
         height = height - 280;
       }
     }
-    if (height < SIDE_HEIGHT && (orientation == 90 || orientation == -90)) {//座席図領域<定数
-      this.sideProhibition = true;
-      this.resizeCssTrue();
-    } else {
-      this.sideProhibition = false;
-      this.resizeCssFalse();
+    //PCはorientationではじき、PC表示タブレットは以下ではじく
+    if (this.smartPhoneCheckService.isTablet() != "PC") {
+      if (height < SIDE_HEIGHT && (orientation == 90 || orientation == -90)) {//座席図領域<定数
+        this.sideProhibition = true;
+        this.resizeCssTrue();
+      } else {
+        this.sideProhibition = false;
+        this.resizeCssFalse();
+      }
     }
   }
 
@@ -1034,7 +1037,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
       'height': "",
       'overflow-y': ""
     });
-    $('.choiceArea').css({
+    $('.choiceAreaAcdBox').css({
       'display': 'none'
     });
 
@@ -1055,7 +1058,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
       'height': "100%",
       'overflow-y': "auto"
     });
-    $('.choiceArea').css({
+    $('.choiceAreaAcdBox').css({
       'display': 'block'
     });
   }
@@ -1412,10 +1415,11 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
   //座席選択時の画面拡大縮小
   seatSelectDisplay(flag: boolean) {
     let windowHeight = $(window).height();
-    let allHead: number = $('header').height() + $('.headArea').height() + $('.choiceAreaMenuBtn').height() + $('#colorNavi').height();
+    alert(windowHeight + "window");
+    let allHead: number = $('header').height() + $('.headArea').height() + $('.choiceArea').height() + $('#colorNavi').height();
     alert($('header').height() + "header");
     alert($('.headArea').height() + "headerArea");
-    alert($('.choiceAreaMenuBtn').height() + "choiceAreaMenuBtn");
+    alert($('.choiceArea').height() + "choiceArea");
     alert($('#colorNavi').height() + "colorNavi");
     alert(allHead + "allHead");
     alert(windowHeight - allHead + "result");
