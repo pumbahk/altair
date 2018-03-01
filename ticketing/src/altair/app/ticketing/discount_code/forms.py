@@ -161,7 +161,7 @@ class DiscountCodeSettingForm(Form):
         validators=[Required()],
         choices=[
             ('%', u'%'),
-            ('円', u'yen'),
+            ('yen', u'円'),
         ],
         coerce=str
     )
