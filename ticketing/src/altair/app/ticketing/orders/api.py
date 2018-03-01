@@ -684,6 +684,10 @@ def cancel_order(request, order, now=None):
     if order.payment_status == 'paid':
         order.mark_refunded()
 
+    # 割引コードがチケット購入時に使用されている場合
+    if order.used_discount_codes:
+        discount_api.cancel_used_discount_codes(request, order, now=now)
+
     order.save()
     logger.info('success order cancel (order_no=%s)' % order.order_no)
     return warnings
@@ -736,6 +740,11 @@ def refund_order(request, order, payment_method=None, now=None):
         raise
 
     order.mark_refunded()
+
+    # 割引コードがチケット購入時に使用されている場合
+    if order.used_discount_codes:
+        discount_api.cancel_used_discount_codes(request, order, now=now)
+
     order.save()
     logger.info('success order refund (order_no=%s)' % order.order_no)
     return warnings

@@ -26,6 +26,8 @@ from .exceptions import InvalidForm, OAuthRequiredSettingError
 from . import helpers as h
 from functools import partial
 
+from altair.app.ticketing.qr.lookup import lookup_qr_aes_plugin
+
 logger = logging.getLogger(__name__)
 
 class DefaultResource(object):
@@ -246,8 +248,17 @@ class ReceiptViewResource(OrderReviewResourceBase):
     def __init__(self, request):
         super(ReceiptViewResource, self).__init__(request)
         order_no = request.params.get('order_no', None)
-        order = self.session.query(Order).join(SalesSegment, Order.sales_segment_id == SalesSegment.id). \
-            join(SalesSegmentSetting, SalesSegment.id == SalesSegmentSetting.sales_segment_id). \
+        self.order = self.session.query(Order). \
             filter(Order.organization_id == self.organization.id). \
+            filter(Order.deleted_at == None). \
+            filter(Order.canceled_at == None). \
             filter(Order.order_no == order_no).first()
-        self.order = order
+
+        logger.info("organization_id=%s, order_no=%s, order=%s obtained in ReceiptViewResource." % (self.organization.id, order_no, self.order))
+        if not self.order:
+            raise HTTPNotFound()
+
+class QRAESViewResource(OrderReviewResourceBase):
+    def __init__(self, request):
+        super(QRAESViewResource, self).__init__(request)
+        self.qr_aes_plugin = lookup_qr_aes_plugin(request, self.organization.code)

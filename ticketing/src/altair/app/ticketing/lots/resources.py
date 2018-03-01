@@ -28,10 +28,12 @@ from .exceptions import OutTermException, OverEntryLimitException, OverEntryLimi
 from .models import Lot, LotEntry, LotEntryWish
 from .api import get_lot_entry_dict
 from . import api
+from . import helpers as h
 from webob.multidict import MultiDict
 from altair.app.ticketing.cart import schemas as cart_schemas
 from altair.app.ticketing.users.models import UserPointAccountTypeEnum
 
+from functools import partial
 logger = logging.getLogger(__name__)
 
 def lot_resource_factory(request):
@@ -165,6 +167,7 @@ class LotResource(LotResourceBase):
     def __init__(self, request):
         self.request = request
         self.now = get_now(request)
+        self._message = partial(h._message, request=self.request)
 
         self.organization = self.request.organization
         if self.request.GET.get('clear'):
@@ -183,7 +186,7 @@ class LotResource(LotResourceBase):
                 logger.info('lot_id (%ld) != lot_id_from_session (%ld)' % (lot_id, lot_id_from_session))
                 raise HTTPNotFound(
                     detail=u'lots_session_conflict',
-                    comment=u'注意：申込が完了していない抽選情報が見つかりました。申込途中の情報をクリアして、先に進んで良い場合は、下記リンクをクリックして下さい'
+                    comment=self._message(u'注意：申込が完了していない抽選情報が見つかりました。申込途中の情報をクリアして、先に進んで良い場合は、下記リンクをクリックして下さい')
                 )
         event_id = None
         try:

@@ -1,0 +1,27 @@
+<div class="confirmBoxText">
+  <table class="customer-table">
+    <tbody>
+      % if payment_type == 'CashOnDelivery':
+      <tr>
+        <td>${_(u'チケットは代金と引換です。')}</td>
+      </tr>
+      % else:
+      <tr>
+        <th scope="row">${_(u'Famiポート予約番号')}</th>
+        <td><p class="fWB red">${famiport_order['ticketing_reserve_number']}</p></td>
+      </tr>
+      <tr>
+        <th scope="row">${_(u'発券可能期間')}</th>
+        <td>
+          <p class="fWB">
+          ${h.i18n_datetime(famiport_order['ticketing_start_at'], locale)}　〜　
+          % if famiport_order['ticketing_end_at']:
+            ${h.i18n_datetime(famiport_order['ticketing_end_at'], locale)}
+          % endif
+          </p>
+        </td>
+      </tr>
+      % endif
+    </tbody>
+  </table>
+</div>

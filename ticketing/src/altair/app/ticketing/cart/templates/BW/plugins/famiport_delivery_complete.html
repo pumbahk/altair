@@ -1,0 +1,21 @@
+<table>
+  <tbody>
+  %if payment_type == 'CashOnDelivery':
+    <tr>
+      <td>
+        ${_(u'チケットは代金と引換です。')}
+      </td>
+    </tr>
+  %else:
+    <tr>
+      <th>${_(u'発券可能期間')}</th>
+      <td>
+        <span class="bold">${h.japanese_datetime(famiport_order['ticketing_start_at'])}</span>　〜　
+        %if famiport_order['ticketing_end_at']:
+        <span class="bold">${h.japanese_datetime(famiport_order['ticketing_end_at'])}</span>
+        %endif
+      </td>
+    </tr>
+  %endif
+  </tbody>
+</table>
