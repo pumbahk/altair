@@ -1013,7 +1013,6 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
   sideError() {
     let orientation = window.orientation;
     let height = $("#mapImgBox").height();
-    alert(height);
     if (this.smartPhoneCheckService.isSmartPhone() || this.smartPhoneCheckService.isTablet() == "SP") {
       if (this.scaleTotal >= SCALE_SEAT) {
         height = height - 280;
@@ -1413,12 +1412,19 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
   //座席選択時の画面拡大縮小
   seatSelectDisplay(flag: boolean) {
     let windowHeight = $(window).height();
-    let allHead: number = $('header').height() + $('.headArea').height() + $('.choiceAreaAcdBox').height() + $('#colorNavi').height();
+    let allHead: number = $('header').height() + $('.headArea').height() + $('.choiceAreaMenuBtn').height() + $('#colorNavi').height();
     let orientation = window.orientation;
+    alert(windowHeight + "window");
+    alert($('header').height());
+    alert($('.headArea').height());
+    alert($('.choiceAreaMenuBtn').height());
+    alert($('#colorNavi').height());
+    alert(allHead + "allHead");
     if (flag) {
       if (this.smartPhoneCheckService.isSmartPhone() || this.smartPhoneCheckService.isTablet() == "SP") {
         if (orientation == 0 || orientation == 180) {//縦向き
           if (this.seatAreaHeight) {
+            alert("a");
             $('#mapAreaLeft').css({
               'height': this.seatAreaHeight,
             });
@@ -1431,6 +1437,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
     } else {
       if (this.smartPhoneCheckService.isSmartPhone() || this.smartPhoneCheckService.isTablet() == "SP") {
         if (orientation == 0 || orientation == 180) {//縦向き
+          alert("b");
           $('#mapAreaLeft').css({
             'height': windowHeight - allHead,
           });
