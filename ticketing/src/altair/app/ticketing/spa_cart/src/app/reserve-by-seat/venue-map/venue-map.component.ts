@@ -1019,7 +1019,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
       }
     }
     //PCはorientationではじき、PC表示タブレットは以下ではじく
-    if (this.smartPhoneCheckService.isTablet() != "PC") {
+    //if (this.smartPhoneCheckService.isTablet() != "PC") {
       if (height < SIDE_HEIGHT && (orientation == 90 || orientation == -90)) {//座席図領域<定数
         this.sideProhibition = true;
         this.resizeCssTrue();
@@ -1027,7 +1027,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
         this.sideProhibition = false;
         this.resizeCssFalse();
       }
-    }
+    //}
   }
 
   resizeCssTrue() {
