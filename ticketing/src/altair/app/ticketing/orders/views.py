@@ -145,8 +145,8 @@ from altair.app.ticketing.tickets.utils import build_cover_dict_from_order
 from altair.app.ticketing.core.models import TicketCover
 
 ## ハウステンボス専用のQRコードユーティリティ
-#from altair.app.ticketing.project_specific.huistenbosch.qr_utilits import build_ht_qr_by_token
-from altair.app.ticketing.qr.lookup import lookup_qr_aes_plugin
+from altair.app.ticketing.project_specific.huistenbosch.qr_utilits import build_ht_qr_by_token
+
 # XXX
 INNER_DELIVERY_PLUGIN_IDS = [
     payments_plugins.SHIPPING_DELIVERY_PLUGIN_ID,
@@ -1418,8 +1418,7 @@ class OrderDetailView(OrderBaseView):
             tokens = [(token, element, item) for item in order.items for element in item.elements for token in element.tokens]
             for token, element, item in tokens:
                 if qr_type == payments_plugins.QR_AES_DELIVERY_PLUGIN_ID:
-                    qr_aes_plugin = lookup_qr_aes_plugin(self.request, self.context.organization.code)
-                    qr = qr_aes_plugin.build_qr_by_token(order.order_no, token)
+                    qr = build_ht_qr_by_token(self.request, order.order_no, token)
                     url = url_builder.build_aes_url(self.request, qr.sign)
                 else:
                     qr = build_qr_by_token(self.request, order.order_no, token)
