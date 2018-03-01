@@ -1014,7 +1014,6 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
     let orientation = window.orientation;
     let height = $("#mapImgBox").height();
     alert(height);
-    alert(this.smartPhoneCheckService.isTablet());
     if (this.smartPhoneCheckService.isSmartPhone() || this.smartPhoneCheckService.isTablet() == "SP") {
       if (this.scaleTotal >= SCALE_SEAT) {
         height = height - 280;
@@ -1037,10 +1036,9 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
       'height': "",
       'overflow-y': ""
     });
-    $('.choiceAreaAcdBox').css({
+    $('.choiceArea').css({
       'display': 'none'
     });
-
     $('html,body').css({
       'width': '100%',
       'height': '100%',
@@ -1058,7 +1056,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
       'height': "100%",
       'overflow-y': "auto"
     });
-    $('.choiceAreaAcdBox').css({
+    $('.choiceArea').css({
       'display': 'block'
     });
   }
@@ -1415,20 +1413,12 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
   //座席選択時の画面拡大縮小
   seatSelectDisplay(flag: boolean) {
     let windowHeight = $(window).height();
-    alert(windowHeight + "window");
-    let allHead: number = $('header').height() + $('.headArea').height() + $('.choiceArea').height() + $('#colorNavi').height();
-    alert($('header').height() + "header");
-    alert($('.headArea').height() + "headerArea");
-    alert($('.choiceArea').height() + "choiceArea");
-    alert($('#colorNavi').height() + "colorNavi");
-    alert(allHead + "allHead");
-    alert(windowHeight - allHead + "result");
+    let allHead: number = $('header').height() + $('.headArea').height() + $('.choiceAreaAcdBox').height() + $('#colorNavi').height();
     let orientation = window.orientation;
     if (flag) {
       if (this.smartPhoneCheckService.isSmartPhone() || this.smartPhoneCheckService.isTablet() == "SP") {
         if (orientation == 0 || orientation == 180) {//縦向き
           if (this.seatAreaHeight) {
-            alert("a");
             $('#mapAreaLeft').css({
               'height': this.seatAreaHeight,
             });
@@ -1441,7 +1431,6 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
     } else {
       if (this.smartPhoneCheckService.isSmartPhone() || this.smartPhoneCheckService.isTablet() == "SP") {
         if (orientation == 0 || orientation == 180) {//縦向き
-          alert("b");
           $('#mapAreaLeft').css({
             'height': windowHeight - allHead,
           });

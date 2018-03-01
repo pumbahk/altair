@@ -161,7 +161,7 @@ export class ReserveBySeatComponent implements OnInit {
             windowH = $(window).height();
             mainH = windowH - minus;
             that.mapAreaLeftH = mainH;
-            $('#'+mainID + ',#mapImgBox svg').height(mainH+'px');
+            $('#'+mainID).height(mainH+'px');
             that.mapAreaLeftH = mainH;
             that.isGetMapH = true;
           }
