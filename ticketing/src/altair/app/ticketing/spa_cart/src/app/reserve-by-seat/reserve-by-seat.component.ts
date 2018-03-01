@@ -69,7 +69,8 @@ export class ReserveBySeatComponent implements OnInit {
         });
 
         $(function(){
-          function heightSetting(){
+          function heightSetting() {
+            alert("SPイベント");
             let minus = 0;
             if($('#modalWindow').length){
               minus = 149;
@@ -157,7 +158,8 @@ export class ReserveBySeatComponent implements OnInit {
           //var minus = 220
           var minus = 240
           var mainID = 'mapAreaLeft'
-          function heightSetting(){
+          function heightSetting() {
+            alert("PCイベント");
             windowH = $(window).height();
             mainH = windowH - minus;
             that.mapAreaLeftH = mainH;
