@@ -922,6 +922,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
           $('.choiceAreaAcdBox').css('display', 'none');
           if (this.scaleTotal >= SCALE_SEAT && this.smartPhoneCheckService.isTablet() == "SP") {
             this.seatSelectDisplay(false);
+            this.stockTypeDataService.sendToSeatListFlag(false);
           }
         }
       }, 200);
