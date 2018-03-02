@@ -3189,7 +3189,15 @@
 	.modalWindowAlert .modalInner .modalAlert .modalBtnBox button {
 		width: 48%;
 	}
-
+	/* ツールチップ */
+	#tooltip {
+		position: absolute;
+		background-color: #FFF;
+		color: #000;
+		padding: 5px;
+		text-align: center;
+		border: solid 1px #ddd;
+	}
 	/*SP END QUERY*************************/
 }
 /*--------------------------------------------
@@ -3433,6 +3441,15 @@
 	}
 	.seatSearch input[type=checkbox]:checked+.checkbox:before {
 		opacity: 1;
+	}
+	/* ツールチップ */
+	#tooltip {
+		position: absolute;
+		background-color: #FFF;
+		color: #000;
+		padding: 5px;
+		text-align: center;
+		border: solid 1px #ddd;
 	}
 	/*TABLET END QUERY*************************/
 }

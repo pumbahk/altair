@@ -67,7 +67,6 @@ export class ReserveBySeatComponent implements OnInit {
         });
       }
 
-
       function setting() {
         var mainH;
         var windowH;
@@ -88,39 +87,19 @@ export class ReserveBySeatComponent implements OnInit {
               let mainID = 'mapAreaLeft'
               let windowH = $(window).height();
               let mainH = windowH - minus;
-              $('#' + mainID).height(mainH + 'px');
-              that.mapAreaLeftH = mainH;
-              that.isGetMapH = true;
+              //スマホサイズのPC対応
+              if (!($('#modalWindowStockTypeAlertBox').length) && !($('#buyChoiceSeatArea').length)) {
+                $('#' + mainID).height(mainH + 'px');
+                that.mapAreaLeftH = mainH;
+                that.isGetMapH = true;
+              }
             }
             heightSetting();
           });
-
           $(function () {
-            if ($('#modalWindow').length) {
-              //venue-mapの席種詳細モーダルが存在した場合
-              //reserve-by-quantityが存在した場合
-              $(function () {
-                var minus = 114
-                var mainID = 'modalWindow'
-                function heightSetting() {
-                  windowH = $(window).height();
-                  mainH = windowH - minus;
-
-                  $('#' + mainID).height(mainH + 'px');
-                }
-                heightSetting();
-              });
-            }
-          });
-
-          $(function () {
-            var minus = 114
-            var mainID = 'modalWindowAlertBoxInner'
+            var mainID = 'mapAreaRight'
             function heightSetting() {
-              windowH = $(window).height();
-              mainH = windowH - minus;
-
-              $('#' + mainID).height(mainH + 'px');
+              $('#' + mainID).height("100%");
             }
             heightSetting();
           });
@@ -134,7 +113,6 @@ export class ReserveBySeatComponent implements OnInit {
             function heightSetting() {
               windowH = $(window).height();
               mainH = windowH - minus;
-              that.mapAreaLeftH = mainH;
               $('#' + mainID).height(mainH + 'px');
               that.mapAreaLeftH = mainH;
               that.isGetMapH = true;
@@ -172,14 +150,7 @@ export class ReserveBySeatComponent implements OnInit {
     });
 
     /*/////////////////////PC・SP両方/////////////////////////*/
-    $(function () {
-      if (!($('#choiceSeatArea, #buySeatArea, #buyChoiceSeatArea').length)) {
-        $('#mapAreaLeft').addClass('noSide');
-        $('#mapBtnBox').addClass('mapBtnBoxR');
-        $('#mapNaviBox').addClass('mapNaviBoxR');
-        $('#mapAreaRight').addClass('dNone');
-      }
-    });
+
 
     $(function () {
       //venue-mapの選択した座席リスト、select-productのtoggle
