@@ -871,7 +871,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
         this.sideError();
         if (that.originalViewBox && that.mapAreaLeftH > 0) {
           if (this.countSelect == 0) {
-            if (!this.smartPhoneCheckService.isSmartPhone()) {
+            if ($(window).width() > WINDOW_SM) {
               //席種リストの表示
               this.stockTypeDataService.sendToSeatListFlag(true);
             }
