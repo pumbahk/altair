@@ -738,7 +738,9 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
                 code_forms.append({
                     'code': codes[cnt],
                     'carted_product_item': carted_product_item,
-                    'form': form
+                    'form': form,
+                    'discount_code_setting': cart.performance.find_available_target_settings(
+                        first_4_digits=codes[cnt][:4])
                 })
                 cnt += 1
                 if input_cnt == cnt:
