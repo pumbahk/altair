@@ -916,6 +916,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
         }
 
         //スマホ表示からPC+タブレット表示になった際の検索部分表示
+        alert($(window).width());
         if ($(window).width() > WINDOW_SM) {
           $('.choiceAreaAcdBox').css('display', 'block');
         } else {
@@ -1284,6 +1285,8 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
       $('.seatNumberBox').slideDown(300);
       if ($(window).width() <= WINDOW_SM) {
         this.active = '';
+      } else {
+        this.active = "active";
       }
       this.sameStockType = true;
     } else {
