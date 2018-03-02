@@ -1414,7 +1414,9 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
     let windowHeight = $(window).height();
     let allHead: number = $('header').height() + $('.headArea').height() + $('.choiceAreaMenuBtn').height() + $('#colorNavi').height();
     let orientation = window.orientation;
+    //true/拡大を戻す、false/拡大
     if (flag) {
+      //スマホ表示
       if (this.smartPhoneCheckService.isSmartPhone() || this.smartPhoneCheckService.isTablet() == "SP") {
         if (orientation == 0 || orientation == 180) {//縦向き
           if (this.seatAreaHeight) {
@@ -1426,6 +1428,9 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
             }, 0);
           }
         }
+      //PC表示
+      } else {
+        this.stockTypeDataService.sendToSeatListFlag(true);
       }
     } else {
       if (this.smartPhoneCheckService.isSmartPhone() || this.smartPhoneCheckService.isTablet() == "SP") {
@@ -1437,6 +1442,8 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
             this.setAspectRatio();
           }, 0);
         }
+      } else {
+        this.stockTypeDataService.sendToSeatListFlag(true);
       }
     }
   }

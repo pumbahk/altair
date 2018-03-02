@@ -67,6 +67,7 @@ export class ReserveBySeatComponent implements OnInit {
         });
       }
 
+
       function setting() {
         var mainH;
         var windowH;
@@ -171,6 +172,14 @@ export class ReserveBySeatComponent implements OnInit {
     });
 
     /*/////////////////////PC・SP両方/////////////////////////*/
+    $(function () {
+      if (!($('#choiceSeatArea, #buySeatArea, #buyChoiceSeatArea').length)) {
+        $('#mapAreaLeft').addClass('noSide');
+        $('#mapBtnBox').addClass('mapBtnBoxR');
+        $('#mapNaviBox').addClass('mapNaviBoxR');
+        $('#mapAreaRight').addClass('dNone');
+      }
+    });
 
     $(function () {
       //venue-mapの選択した座席リスト、select-productのtoggle
