@@ -160,7 +160,8 @@ class DiscountCodeSettingForm(Form):
         label=get_annotations_for(DiscountCodeSetting.benefit_unit)['label'],
         validators=[Required()],
         choices=[
-            ('%', u'%')
+            ('%', u'%'),
+            ('yen', u'円'),
         ],
         coerce=str
     )
