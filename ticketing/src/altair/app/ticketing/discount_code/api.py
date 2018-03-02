@@ -104,8 +104,10 @@ def get_discount_amount(order_like):
         for element in item.elements:
             used_codes = element.used_discount_codes
             if used_codes:
-                for used in used_codes:
-                    discount_amount = discount_amount + used.applied_amount
+                discount_amount = discount_amount + element.product_item.price * len(used_codes)
+                # TODO https://jira.rakuten-it.com/jira/browse/TKT-5063対応。恒久的にはこちらを使用する。
+                # for used in used_codes:
+                #     discount_amount = discount_amount + used.applied_amount
     return discount_amount
 
 
