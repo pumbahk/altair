@@ -113,8 +113,10 @@ def get_discount_price(ordered_product_item_token):
     price = 0
     used_codes = ordered_product_item_token.used_discount_codes
     if used_codes:
-        for used in used_codes:
-            price = price + used.applied_amount
+        price = ordered_product_item_token.item.price * len(used_codes)
+        # TODO https://jira.rakuten-it.com/jira/browse/TKT-5063対応。恒久的にはこちらを使用する。
+        # for used in used_codes:
+        #     price = price + used.applied_amount
     return price
 
 
