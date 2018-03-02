@@ -1428,7 +1428,9 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
             }, 0);
           }
         }
-
+      //PC表示
+      } else {
+        this.stockTypeDataService.sendToSeatListFlag(true);
       }
     } else {
       if (this.smartPhoneCheckService.isSmartPhone() || this.smartPhoneCheckService.isTablet() == "SP") {
@@ -1440,6 +1442,8 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
             this.setAspectRatio();
           }, 0);
         }
+      } else {
+        this.stockTypeDataService.sendToSeatListFlag(true);
       }
     }
   }
