@@ -23,7 +23,15 @@ class MatchUpPerformanceSelectorTests(unittest.TestCase):
     def test_iface(self):
         from zope.interface.verify import verifyObject
         from .interfaces import IPerformanceSelector
-        request = testing.DummyRequest()
+        request = testing.DummyRequest(
+            translate=lambda t: t,
+            accept_language=testing.DummyModel(
+                best_match=lambda a, b: 'ja'
+            ),
+            organization=testing.DummyModel(
+                setting=testing.DummyModel(i18n=False),
+            ),
+        )
         request.context = testing.DummyResource(request=request,
                                                 available_sales_segments=[])
         target = self._makeOne(request)
@@ -33,7 +41,15 @@ class MatchUpPerformanceSelectorTests(unittest.TestCase):
         self.assertEqual(target.context, request.context)
 
     def test_zero(self):
-        request = testing.DummyRequest()
+        request = testing.DummyRequest(
+            translate=lambda t: t,
+            accept_language=testing.DummyModel(
+                best_match=lambda a, b: 'ja'
+            ),
+            organization=testing.DummyModel(
+                setting=testing.DummyModel(i18n=False),
+            ),
+        )
         request.context = testing.DummyResource(request=request,
                                                 available_sales_segments=[])
 
@@ -161,7 +177,15 @@ class DatePerformanceSelectorTests(unittest.TestCase):
     def test_iface(self):
         from zope.interface.verify import verifyObject
         from .interfaces import IPerformanceSelector
-        request = testing.DummyRequest()
+        request = testing.DummyRequest(
+            translate=lambda t:t,
+            accept_language=testing.DummyModel(
+                best_match=lambda a, b: 'ja'
+            ),
+            organization=testing.DummyModel(
+                setting=testing.DummyModel(i18n=False),
+            ),
+        )
         request.context = testing.DummyResource(request=request,
                                                 available_sales_segments=[])
         target = self._makeOne(request)
@@ -171,7 +195,15 @@ class DatePerformanceSelectorTests(unittest.TestCase):
         self.assertEqual(target.context, request.context)
 
     def test_zero(self):
-        request = testing.DummyRequest()
+        request = testing.DummyRequest(
+            translate=lambda t: t,
+            accept_language=testing.DummyModel(
+                best_match=lambda a, b: 'ja'
+            ),
+            organization=testing.DummyModel(
+                setting=testing.DummyModel(i18n=False),
+            ),
+        )
         request.context = testing.DummyResource(request=request,
                                                 available_sales_segments=[])
 
