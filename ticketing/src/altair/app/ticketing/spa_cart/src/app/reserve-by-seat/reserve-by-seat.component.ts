@@ -51,7 +51,6 @@ export class ReserveBySeatComponent implements OnInit {
       var windowSm = 768;
       //filterの初期表示
       if (windowWidth <= windowSm) {
-        console.log("a");
         $(document).ready(function () {
           $('.acdTp').click(function () {
             $(this).prev().slideToggle(300);
@@ -63,7 +62,6 @@ export class ReserveBySeatComponent implements OnInit {
           }).next().hide();
         });
       } else {
-        console.log("b");
         $('.acdBt').click(function () {
           $(this).next().slideToggle(300);
         });
@@ -74,6 +72,7 @@ export class ReserveBySeatComponent implements OnInit {
         var windowH;
         var windowWidth = $(window).width();
         var windowSm = 768;
+        console.log(windowWidth);
         if (windowWidth <= windowSm) {
           //横幅768px以下のとき（つまりスマホ時）に行う処理を書く
           $(function () {
@@ -108,7 +107,6 @@ export class ReserveBySeatComponent implements OnInit {
 
         } else {
           //横幅768px超のとき（タブレット、PC）に行う処理を書く
-
           $(function () {
             var minus = 240
             var mainID = 'mapAreaLeft'
@@ -138,7 +136,6 @@ export class ReserveBySeatComponent implements OnInit {
             function heightSetting() {
               windowH = $(window).height();
               mainH = windowH - minus;
-
               $('#' + mainID).height(mainH + 'px');
             }
             heightSetting();
