@@ -463,10 +463,9 @@ class DynamicFormBuilder(object):
             if min and max:
                 if min == max:
                     message = u'{}文字で入力してください'.format(min)
-                    validators.append(Length(min=min, max=max, message=message))
                 else:
                     message = u'{}文字以上、{}文字以内で入力してください'.format(min, max)
-                    validators.append(Length(min=min, max=max, message=message))
+                validators.append(Length(min=min, max=max, message=message))
             elif min:
                 message = u'{}文字以上で入力してください'.format(min)
                 validators.append(Length(min=min, message=message))
