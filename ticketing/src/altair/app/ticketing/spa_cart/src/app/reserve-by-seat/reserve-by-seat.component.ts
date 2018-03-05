@@ -74,6 +74,7 @@ export class ReserveBySeatComponent implements OnInit {
         var windowSm = 768;
         console.log(windowWidth);
         if (windowWidth <= windowSm) {
+          console.log("SP");
           //横幅768px以下のとき（つまりスマホ時）に行う処理を書く
           $(function () {
             function heightSetting() {
@@ -106,6 +107,7 @@ export class ReserveBySeatComponent implements OnInit {
           });
 
         } else {
+          console.log("PC");
           //横幅768px超のとき（タブレット、PC）に行う処理を書く
           $(function () {
             var minus = 240
