@@ -193,6 +193,11 @@ form {
         ${form['tel_1'].label}
         ${form['tel_1']}
         (例: 080xxxxyyyy)
+        % if has_orion:
+          <p id='orion-tel_1-notice' style="color: red; margin:0; ${'' if orion_checked else 'display:none;'|n}">
+            ※お受け取りになるスマートフォンの電話番号をご入力ください。
+          </p>
+        % endif
         ${h.error_list(request, form, 'tel_1')}
       </div>
     </div>
@@ -239,12 +244,14 @@ form {
           % if has_orion:
           if (is_orion) {
               $("#orion-ticket-phone-info").show();
+              render_tel_1(is_orion_selected=is_orion);
           } else {
               var ul = $("#orion-ticket-phone-list"),
                   li = ul.children("li").eq(1).detach();
               ul.find("li").not("#orion-ticket-phone-template").remove();
               li.appendTo(ul);
               $("#orion-ticket-phone-info").hide();
+              render_tel_1(is_orion_selected=is_orion);
           }
           % endif
       }
@@ -274,6 +281,19 @@ form {
                       .attr("for", label);
         li.find("input").attr("id", label)
                       .attr("name", "orion-ticket-phone");
+      }
+      function render_tel_1(is_orion_selected) {
+        var tel_1 = $("#tel_1");
+        if (is_orion_selected === true) {
+            tel_1.attr("tel_data", tel_1.val());
+            tel_1.val("");
+            $("#orion-tel_1-notice").show();
+        } else {
+            if (tel_1.val() === "") {
+                tel_1.val(tel_1.attr("tel_data"));
+            }
+            $("#orion-tel_1-notice").hide();
+        }
       }
       % endif
     </script>
