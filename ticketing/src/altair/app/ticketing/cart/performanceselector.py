@@ -4,12 +4,23 @@
 絞り込みキーと販売区分リスト
 """
 
-from collections import OrderedDict
 from zope.interface import implementer
+
+from altair.app.ticketing.i18n import custom_locale_negotiator
+
 from .interfaces import IPerformanceSelector, ICartResource
-from .helpers import create_date_label, create_time_label, create_time_only_label
+from .helpers import create_time_label, create_time_only_label
 
 class _PerformanceSelector(object):
+    def __init__(self, request):
+        self.request = request
+        self.context = request.context
+        self.sales_segments = self.context.available_sales_segments
+        self.use_i18n = self._check_use_i18n(custom_locale_negotiator(self.request))
+
+    def _check_use_i18n(self, locale):
+        return locale and locale != u'ja'
+
     def select_value(self, sales_segment):
         """
         販売区分からキーになる値を取り出す。
@@ -43,14 +54,14 @@ class _PerformanceSelector(object):
         # さらにキーで束ねられたエントリを指定の条件でソート
         return sorted(key_to_sales_segments_map.items(), lambda a, b: self.sorter(a[1][0], b[1][0]))
 
-    def sales_segment_to_dict(self, sales_segment, i18n=False):
+    def sales_segment_to_dict(self, sales_segment):
 
         return dict(
             id=sales_segment.id,
-            name=self._create_name(sales_segment, i18n),
-            name_pc=self.time_label(sales_segment, i18n),
+            name=self._create_name(sales_segment),
+            name_pc=self.time_label(sales_segment),
             name_mobile=self.time_label(sales_segment),
-            name_smartphone=self.time_label(sales_segment, i18n),
+            name_smartphone=self.time_label(sales_segment),
             order_url=self.request.route_url(
                 'cart.order',
                 sales_segment_id=sales_segment.id),
@@ -62,8 +73,8 @@ class _PerformanceSelector(object):
                 event_id=self.context.event.id)
             )
 
-    def _create_name(self, sales_segment, i18n=False):
-        return self.time_label(sales_segment, i18n)
+    def _create_name(self, sales_segment):
+        return self.time_label(sales_segment)
 
     def time_only_label(self, sales_segment):
         v = self.venue_label(sales_segment)
@@ -73,9 +84,9 @@ class _PerformanceSelector(object):
         else:
             return v
 
-    def time_label(self, sales_segment, i18n=False):
+    def time_label(self, sales_segment):
         v = self.venue_label(sales_segment)
-        t = create_time_label(sales_segment.performance.start_on, sales_segment.performance.end_on, i18n=i18n)
+        t = create_time_label(sales_segment.performance.start_on, sales_segment.performance.end_on, i18n=self.use_i18n)
         return t + " " + v
 
     def venue_label(self, sales_segment):
@@ -92,9 +103,7 @@ class MatchUpPerformanceSelector(_PerformanceSelector):
     second_label = u"日付・会場"
 
     def __init__(self, request):
-        self.request = request
-        self.context = request.context
-        self.sales_segments = self.context.available_sales_segments
+        super(MatchUpPerformanceSelector, self).__init__(request)
 
         context = request.context
         if ICartResource.providedBy(context):
@@ -117,7 +126,7 @@ class MatchUpPerformanceSelector(_PerformanceSelector):
         key_to_sales_segments_map = self.build_key_to_sales_segments_map()
         for k, sales_segments in key_to_sales_segments_map:
             selection.append((k, [
-                self.sales_segment_to_dict(sales_segment, self.request.organization.setting.i18n)
+                self.sales_segment_to_dict(sales_segment)
                 for sales_segment in sales_segments
                 ]))
         return selection
@@ -145,9 +154,7 @@ class DatePerformanceSelector(_PerformanceSelector):
     second_label = u"日付・会場"
 
     def __init__(self, request):
-        self.request = request
-        self.context = request.context
-        self.sales_segments = self.context.available_sales_segments
+        super(DatePerformanceSelector, self).__init__(request)
 
         context = request.context
         if ICartResource.providedBy(context):
@@ -169,7 +176,7 @@ class DatePerformanceSelector(_PerformanceSelector):
 
 
     def select_value(self, sales_segment):
-        return create_time_label(sales_segment.performance.start_on, sales_segment.performance.end_on, False)
+        return create_time_label(sales_segment.performance.start_on, sales_segment.performance.end_on, disp_time=True, i18n=self.use_i18n)
 
     def __call__(self):
         selection = []
@@ -185,9 +192,9 @@ class DatePerformanceSelector(_PerformanceSelector):
 
         return dict(
             id=sales_segment.id,
-            name=self._create_name(sales_segment, self.request.organization.setting.i18n),
+            name=self._create_name(sales_segment),
             name_pc=self.time_only_label(sales_segment),
-            name_mobile=self.time_label(sales_segment, self.request.organization.setting.i18n),
+            name_mobile=self.time_label(sales_segment),
             name_smartphone=self.time_only_label(sales_segment),
             order_url=self.request.route_url(
                 'cart.order',
