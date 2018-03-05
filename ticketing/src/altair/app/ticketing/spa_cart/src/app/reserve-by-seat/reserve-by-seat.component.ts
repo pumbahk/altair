@@ -92,6 +92,7 @@ export class ReserveBySeatComponent implements OnInit {
               //スマホサイズのPC対応
               if (!($('#modalWindowStockTypeAlertBox').length) && !($('#buyChoiceSeatArea').length)) {
                 $('#' + mainID).height(mainH + 'px');
+                console.log("b");
                 that.mapAreaLeftH = mainH;
                 that.isGetMapH = true;
               }
@@ -116,6 +117,7 @@ export class ReserveBySeatComponent implements OnInit {
               windowH = $(window).height();
               mainH = windowH - minus;
               $('#' + mainID).height(mainH + 'px');
+              console.log("c");
               that.mapAreaLeftH = mainH;
               that.isGetMapH = true;
             }
