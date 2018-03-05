@@ -870,14 +870,14 @@
         );
     },
 
-    render_max_length: function () {
+    render_length: function (length_name) {
       var self = this;
-      return $('<label class="control-label"></label>').text(translations['ja']['max_length'])
+      return $('<label class="control-label"></label>').text(translations['ja'][length_name])
         .add(
-          $('<input type="text" name="max_length" class="input-small" />')
-          .val(this.model.get('max_length'))
+          $('<input type="text" name=' + length_name + ' class="input-small" />')
+          .val(this.model.get(length_name))
           .on('change', function () {
-            self.model.set('max_length', parseIntExactly(this.value));
+            self.model.set(length_name, parseIntExactly(this.value));
           })
         );
     },
@@ -911,8 +911,8 @@
       var self = this;
       this.$el
         .empty()
-        .append($('<div class="control-group"></div>').append(this.render_min_length()))
-        .append($('<div class="control-group"></div>').append(this.render_max_length()))
+        .append($('<div class="control-group"></div>').append(this.render_length("min_length")))
+        .append($('<div class="control-group"></div>').append(this.render_length("max_length")))
         .append($('<div class="control-group"></div>').append(this.render_validator_settings()));
       return this;
     }
