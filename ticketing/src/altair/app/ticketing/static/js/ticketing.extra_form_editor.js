@@ -38,6 +38,7 @@
       'show_on_entry': '購入画面に表示',
       'show_in_orderreview': '予約確認画面に表示',
       'edit_in_orderreview': '予約確認画面で編集',
+      'min_length': '最小入力文字数',
       'max_length': '最大入力文字数',
       'remove': '削除',
       'validators': '入力値の制限',
@@ -90,6 +91,9 @@
 
     initialize: function () {
       this.model.on('change:type', this.render, this);
+      this.model.on('change:min_length', function () {
+        this.$el.find('input').attr("minlength", this.model.get('min_length'));
+      }, this);
       this.model.on('change:max_length', function () {
         this.$el.find('input').attr("maxlength", this.model.get('max_length'));
       }, this);
@@ -100,7 +104,8 @@
         .empty()
         .append(
           $('<input type="text" class="input-medium" />')
-          .attr("maxlength", this.model.get('max_length'))
+            .attr("minlength", this.model.get('min_length'))
+            .attr("maxlength", this.model.get('max_length'))
         );
       return this;
     }
@@ -111,6 +116,9 @@
 
     initialize: function () {
       this.model.on('change:type', this.render, this);
+      this.model.on('change:min_length', function () {
+        this.$el.find('input').attr("minlength", this.model.get('min_length'));
+      }, this);
       this.model.on('change:max_length', function () {
         this.$el.find('input').attr("maxlength", this.model.get('max_length'));
       }, this);
@@ -121,7 +129,8 @@
         .empty()
         .append(
           $('<input type="password" class="input-medium" />')
-          .attr("maxlength", this.model.get('max_length'))
+            .attr("minlength", this.model.get('min_length'))
+            .attr("maxlength", this.model.get('max_length'))
         );
       return this;
     }
@@ -132,6 +141,9 @@
 
     initialize: function () {
       this.model.on('change:type', this.render, this);
+      this.model.on('change:min_length', function () {
+        this.$el.find('textarea').attr("minlength", this.model.get('min_length'));
+      }, this);
       this.model.on('change:max_length', function () {
         this.$el.find('textarea').attr("maxlength", this.model.get('max_length'));
       }, this);
@@ -142,7 +154,8 @@
         .empty()
         .append(
           $('<textarea></textarea>')
-          .attr("maxlength", this.model.get('max_length'))
+            .attr("minlength", this.model.get('min_length'))
+            .attr("maxlength", this.model.get('max_length'))
         );
       return this;
     }
@@ -535,6 +548,7 @@
       show_in_orderreview: true,
       edit_in_orderreview: false,
       activation_conditions: '',
+      min_length: null,
       max_length: null,
       validators: null,
       choices: null
@@ -844,14 +858,26 @@
     initialize: function () {
     },
 
-    render_max_length: function () {
+    render_min_length: function () {
       var self = this;
-      return $('<label class="control-label"></label>').text(translations['ja']['max_length'])
+      return $('<label class="control-label"></label>').text(translations['ja']['min_length'])
         .add(
-          $('<input type="text" name="max_length" class="input-small" />')
-          .val(this.model.get('max_length'))
+          $('<input type="text" name="min_length" class="input-small" />')
+          .val(this.model.get('min_length'))
           .on('change', function () {
-            self.model.set('max_length', parseIntExactly(this.value));
+            self.model.set('min_length', parseIntExactly(this.value));
+          })
+        );
+    },
+
+    render_length: function (length_name) {
+      var self = this;
+      return $('<label class="control-label"></label>').text(translations['ja'][length_name])
+        .add(
+          $('<input type="text" name=' + length_name + ' class="input-small" />')
+          .val(this.model.get(length_name))
+          .on('change', function () {
+            self.model.set(length_name, parseIntExactly(this.value));
           })
         );
     },
@@ -885,7 +911,8 @@
       var self = this;
       this.$el
         .empty()
-        .append($('<div class="control-group"></div>').append(this.render_max_length()))
+        .append($('<div class="control-group"></div>').append(this.render_length("min_length")))
+        .append($('<div class="control-group"></div>').append(this.render_length("max_length")))
         .append($('<div class="control-group"></div>').append(this.render_validator_settings()));
       return this;
     }
