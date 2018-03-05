@@ -916,10 +916,13 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
         }
 
         //スマホ表示からPC+タブレット表示になった際の検索部分表示
-
+        console.log($(window).width());
+        console.log(($(window).width() > WINDOW_SM));
         if ($(window).width() > WINDOW_SM) {
+          console.log("a");
           $('.choiceAreaAcdBox').css('display', 'block');
         } else {
+          console.log("b");
           $('.choiceAreaAcdBox').css('display', 'none');
           if (this.scaleTotal >= SCALE_SEAT && this.smartPhoneCheckService.isTablet() == "SP") {
             this.seatSelectDisplay(false);
