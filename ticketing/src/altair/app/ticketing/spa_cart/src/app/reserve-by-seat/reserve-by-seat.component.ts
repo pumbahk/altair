@@ -51,6 +51,7 @@ export class ReserveBySeatComponent implements OnInit {
       var windowSm = 768;
       //filterの初期表示
       if (windowWidth <= windowSm) {
+        console.log("a");
         $(document).ready(function () {
           $('.acdTp').click(function () {
             $(this).prev().slideToggle(300);
@@ -62,6 +63,7 @@ export class ReserveBySeatComponent implements OnInit {
           }).next().hide();
         });
       } else {
+        console.log("b");
         $('.acdBt').click(function () {
           $(this).next().slideToggle(300);
         });
