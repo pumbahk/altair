@@ -66,7 +66,8 @@ def upgrade():
 
 
 def downgrade():
-    pass
+    op.drop_constraint('UsedDiscountCodeCart_ibfk_3', 'UsedDiscountCodeCart', type_='foreignkey')
+    op.drop_constraint('UsedDiscountCodeOrder_ibfk_4', 'UsedDiscountCodeOrder', type_='foreignkey')
     # Those below methods are for development purpose.
     #
     # op.execute('''
