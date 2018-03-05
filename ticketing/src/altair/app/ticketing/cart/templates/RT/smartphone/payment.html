@@ -193,6 +193,11 @@ form {
         ${form['tel_1'].label}
         ${form['tel_1']}
         (例: 080xxxxyyyy)
+        % if has_orion:
+          <p id='orion-tel_1-notice' style="color: red; margin:0; ${'' if orion_checked else 'display:none;'|n}">
+            ※お受け取りになるスマートフォンの電話番号をご入力ください。
+          </p>
+        % endif
         ${h.error_list(request, form, 'tel_1')}
       </div>
     </div>
@@ -201,8 +206,9 @@ form {
     <div class="dispBox" id="orion-ticket-phone-info" ${'' if orion_checked else 'style="display:none;"'|n}>
       <%t:header>アプリ受取追加情報</%t:header>
       <p style="color: red; font-size: 80%;">
-        お友達にチケットを渡したい場合は、下記の入力フォームからお友達の電話番号を入力してください。<br/>
-        登録された電話番号以外の方にチケットを渡すことができませんのでご注意ください。
+        他の方にチケットを渡したい場合は、下記の入力フォームから他の方の電話番号を入力してください。<br/>
+        チケットのお受け取りにはご購入時にご入力いただいた電話番号とEventGateアプリでご登録いただいた電話番号が一致する必要がございます。<br/>
+        また、EventGateアプリの電話番号登録の際にはSMS認証が必要になりますので、SMSが受信できるスマートフォンの電話番号をご入力ください。
       </p>
       <div class="dispBoxInner">
         <ul id="orion-ticket-phone-list" style="list-style: none; padding: 0;">
@@ -238,12 +244,14 @@ form {
           % if has_orion:
           if (is_orion) {
               $("#orion-ticket-phone-info").show();
+              render_tel_1(is_orion_selected=is_orion);
           } else {
               var ul = $("#orion-ticket-phone-list"),
                   li = ul.children("li").eq(1).detach();
               ul.find("li").not("#orion-ticket-phone-template").remove();
               li.appendTo(ul);
               $("#orion-ticket-phone-info").hide();
+              render_tel_1(is_orion_selected=is_orion);
           }
           % endif
       }
@@ -273,6 +281,19 @@ form {
                       .attr("for", label);
         li.find("input").attr("id", label)
                       .attr("name", "orion-ticket-phone");
+      }
+      function render_tel_1(is_orion_selected) {
+        var tel_1 = $("#tel_1");
+        if (is_orion_selected === true) {
+            tel_1.attr("tel_data", tel_1.val());
+            tel_1.val("");
+            $("#orion-tel_1-notice").show();
+        } else {
+            if (tel_1.val() === "") {
+                tel_1.val(tel_1.attr("tel_data"));
+            }
+            $("#orion-tel_1-notice").hide();
+        }
       }
       % endif
     </script>
