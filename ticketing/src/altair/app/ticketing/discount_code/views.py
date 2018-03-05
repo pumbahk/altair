@@ -403,3 +403,20 @@ class DiscountCode(BaseView):
         self.request.session.flash(u'変更内容を保存しました')
         return HTTPFound(self.request.route_path("discount_code.target_index", setting_id=self.context.setting.id,
                                                  _query=self.request.GET))
+
+    @view_config(route_name='discount_code.report_print')
+    def report_print(self):
+        t0 = time.time()
+        codes = self.context.get_used_discount_order_by_setting_id()
+
+        render_param = dict(codes=codes)
+        r = render_to_response('altair.app.ticketing:templates/discount_code/report/export.txt', render_param,
+                               request=self.request)
+        now = datetime.now().strftime('%Y%m%d_%H%M%S')
+        filename = u"{}_report_{}.csv".format(get_safe_filename(self.context.setting.name), now)
+        headers = [
+            ('Content-Type', 'application/octet-stream; charset=utf-8'),
+            ('Content-Disposition', "attachment; filename*=utf-8''%s" % urllib.quote(filename.encode("utf-8")))
+        ]
+        logger.info("number of codes: {}, execution time {} sec".format(len(codes), str(time.time() - t0)))
+        return Response(r.text.encode('cp932'), headers=headers)
