@@ -25,7 +25,10 @@
     <!-- ========== /header ========== -->
 
     <!-- ========== main ========== -->
-    <%include file="../includes/login_status.html" args="device=view_context.ua_type" />
+    <%doc>ログイン/ログアウト</%doc>
+    % if view_context.get_include_template_path('login_status.html') is not None:
+        <%include file="${view_context.get_include_template_path('login_status.html')}" args="device=view_context.ua_type" />
+    % endif
     <div class="selectwrapper">
       ${h.create_url(request) |n}
     </div>
