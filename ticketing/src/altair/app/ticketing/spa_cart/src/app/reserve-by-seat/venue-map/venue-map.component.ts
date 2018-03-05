@@ -893,12 +893,12 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
             this.D_Width = $(this.svgMap).innerWidth(); // 現在の表示領域のwidth
             this.D_Height = $(this.svgMap).innerHeight(); // 現在の表示領域のheight
             this.DA = this.D_Width / this.D_Height; //現在の表示領域のアスペクト比
-
+            console.log(resizeViewBox, "a");
             //倍率が変わらないようviewboxを現在の表示領域に合わせる
             resizeViewBox[3] = String(parseFloat(resizeViewBox[3]) * this.D_Height / beforeHeight);
             resizeViewBox[2] = String(parseFloat(resizeViewBox[2]) * this.D_Width / beforeWidth);
             $('#mapImgBox').children().attr('viewBox', resizeViewBox.join(' '));
-
+            console.log(resizeViewBox,"b");
             //アスペクト比の調整と個席表示/非表示の切り替え
             this.setAspectRatio();
 
@@ -1464,8 +1464,6 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
       this.displayViewBox[3] = String(this.D_Height * parseFloat(this.displayViewBox[2]) / this.D_Width);
       this.displayViewBox[1] = String(parseFloat(this.displayViewBox[1]) - (parseFloat(this.displayViewBox[3]) - parseFloat(this.originalViewBox[3])) / 2);
     }
-    $('#mapImgBox').children().attr('viewBox', this.displayViewBox.join(' ')); // viewBoxを初期値に設定
-    console.log("a");
     this.onoffRegion(this.regionIds);
   }
 
