@@ -1402,7 +1402,6 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
       this.displayViewBox[1] = String(parseFloat(this.displayViewBox[1]) - (parseFloat(this.displayViewBox[3]) - parseFloat(this.originalViewBox[3])) / 2);
     }
     $('#mapImgBox').children().attr('viewBox', this.displayViewBox.join(' ')); // viewBoxを初期値に設定
-    console.log("a");
     if (!isInitialCalled) this.onoffRegion(this.regionIds);
   }
 
@@ -1465,6 +1464,8 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
       this.displayViewBox[3] = String(this.D_Height * parseFloat(this.displayViewBox[2]) / this.D_Width);
       this.displayViewBox[1] = String(parseFloat(this.displayViewBox[1]) - (parseFloat(this.displayViewBox[3]) - parseFloat(this.originalViewBox[3])) / 2);
     }
+    $('#mapImgBox').children().attr('viewBox', this.displayViewBox.join(' ')); // viewBoxを初期値に設定
+    console.log("a");
     this.onoffRegion(this.regionIds);
   }
 
