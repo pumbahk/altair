@@ -916,8 +916,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
         }
 
         //スマホ表示からPC+タブレット表示になった際の検索部分表示
-        alert($(window).width());
-        if ($(window).width() > WINDOW_SM) {
+        if ($(window).width() >= WINDOW_SM) {
           $('.choiceAreaAcdBox').css('display', 'block');
         } else {
           $('.choiceAreaAcdBox').css('display', 'none');
