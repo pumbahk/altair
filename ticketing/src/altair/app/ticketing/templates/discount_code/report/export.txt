@@ -42,7 +42,7 @@ for code in codes:
         HH.order_status_string(code.Order),
         HH.payment_status_string(code.Order),
         HH.delivery_status_string(code.Order),
-        vh.datetime(used_at, with_weekday=True),
+        vh.datetime(code.used_at, with_weekday=True),
         code.ordered_product_item_price,
         code.applied_amount,
         code.product_name,
