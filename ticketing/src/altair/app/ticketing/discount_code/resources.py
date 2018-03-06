@@ -5,17 +5,17 @@ import logging
 import webhelpers.paginate as paginate
 from altair.app.ticketing.core.models import Event, Performance, Product
 from altair.app.ticketing.core.utils import PageURL_WebOb_Ex
-from altair.app.ticketing.orders.models import (
-    OrderedProduct,
-    OrderedProductItem,
-    Order
-    )
-from altair.app.ticketing.users.models import MemberGroup
 from altair.app.ticketing.discount_code.models import (DiscountCodeSetting,
                                                        DiscountCodeTarget,
                                                        DiscountCodeCode,
                                                        UsedDiscountCodeOrder)
+from altair.app.ticketing.orders.models import (
+    OrderedProduct,
+    OrderedProductItem,
+    Order
+)
 from altair.app.ticketing.resources import TicketingAdminResource
+from altair.app.ticketing.users.models import MemberGroup
 from altair.sqlahelper import get_db_session
 from sqlalchemy.sql import and_
 from sqlalchemy.sql import func
