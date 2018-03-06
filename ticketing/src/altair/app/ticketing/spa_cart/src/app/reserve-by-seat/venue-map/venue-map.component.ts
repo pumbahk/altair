@@ -893,35 +893,9 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
             this.D_Width = $(this.svgMap).innerWidth(); // 現在の表示領域のwidth
             this.D_Height = $(this.svgMap).innerHeight(); // 現在の表示領域のheight
             this.DA = this.D_Width / this.D_Height; //現在の表示領域のアスペクト比
-            console.log(resizeViewBox, "a");
-            /*
             resizeViewBox[3] = String(parseFloat(resizeViewBox[3]) * this.D_Height / beforeHeight);
             resizeViewBox[2] = String(parseFloat(resizeViewBox[2]) * this.D_Width / beforeWidth);
-
-
-
-            */
-            let Box2;
-            let Box3;
-            let hoge;
-            let huga;
-            //if (SP表示→PC表示になったら){
-              // resizeViewBox[0] = String(parseFloat(this.displayViewBox[0]) - (parseFloat(this.displayViewBox[2]) - parseFloat(this.originalViewBox[2])) / 2);
-              // resizeViewBox[2] = String(this.D_Width * parseFloat(this.displayViewBox[3]) / this.D_Height);
-              // resizeViewBox[3] = String(this.D_Height * parseFloat(this.displayViewBox[2]) / this.D_Width);
-            //}else
-              //倍率が変わらないようviewboxを現在の表示領域に合わせる
-              Box3 = String(parseFloat(resizeViewBox[3]) * this.D_Height / beforeHeight);
-              Box2 = String(parseFloat(resizeViewBox[2]) * this.D_Width / beforeWidth);
-              hoge = (parseFloat(resizeViewBox[3]) - Box3) / 2;
-              huga = (parseFloat(resizeViewBox[2]) - Box2) / 2;
-              resizeViewBox[0] = String(parseFloat(resizeViewBox[0]) + huga);
-              resizeViewBox[2] = String(parseFloat(resizeViewBox[2]) - huga);
-              resizeViewBox[1] = String(parseFloat(resizeViewBox[1]) + hoge);
-              resizeViewBox[3] = String(parseFloat(resizeViewBox[3]) - hoge);
-            //}
             $('#mapImgBox').children().attr('viewBox', resizeViewBox.join(' '));
-            console.log(resizeViewBox,"b");
             //アスペクト比の調整と個席表示/非表示の切り替え
             this.setAspectRatio();
 

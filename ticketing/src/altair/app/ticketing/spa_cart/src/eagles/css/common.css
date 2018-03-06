@@ -333,7 +333,7 @@ button {
   margin-bottom: 50px !important;
 }
 
-@media screen and (min-width: 768px) {
+@media screen and (min-width: 769px) {
   .mb-xs {
     margin-bottom: 7.5px !important;
   }
@@ -351,7 +351,7 @@ button {
   }
 }
 
-@media screen and (max-width: 767px) {
+@media screen and (max-width: 768px) {
   .mb-xs {
     margin-bottom: 5px !important;
   }
@@ -525,7 +525,7 @@ a {
   transition: all 200ms linear;
 }
 
-@media screen and (min-width: 768px) {
+@media screen and (min-width: 769px) {
   /*--------------------------------------------
     共通
   ---------------------------------------------*/
@@ -2424,7 +2424,7 @@ a {
 /***************************************/
 
 
-@media screen and (max-width: 767px) {
+@media screen and (max-width: 768px) {
   /*--------------------------------------------
     SP 共通
   ---------------------------------------------*/
