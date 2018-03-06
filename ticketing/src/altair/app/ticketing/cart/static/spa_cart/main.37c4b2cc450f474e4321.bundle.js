@@ -2294,6 +2294,7 @@ var View_ReserveByQuantityComponent1 = (function (_super) {
         this._expr_59 = __WEBPACK_IMPORTED_MODULE_1__angular_core_src_change_detection_change_detection_util__["b" /* UNINITIALIZED */];
         this._expr_60 = __WEBPACK_IMPORTED_MODULE_1__angular_core_src_change_detection_change_detection_util__["b" /* UNINITIALIZED */];
         this._expr_61 = __WEBPACK_IMPORTED_MODULE_1__angular_core_src_change_detection_change_detection_util__["b" /* UNINITIALIZED */];
+        this._expr_62 = __WEBPACK_IMPORTED_MODULE_1__angular_core_src_change_detection_change_detection_util__["b" /* UNINITIALIZED */];
     }
     View_ReserveByQuantityComponent1.prototype.createInternal = function (rootSelector) {
         this._el_0 = __WEBPACK_IMPORTED_MODULE_3__angular_core_src_linker_view_utils__["createRenderElement"](this.renderer, null, 'div', new __WEBPACK_IMPORTED_MODULE_3__angular_core_src_linker_view_utils__["InlineArray4"](4, 'class', 'modalWindowAlertBox', 'id', 'modalWindowAlertBox'), null);
@@ -2343,7 +2344,7 @@ var View_ReserveByQuantityComponent1 = (function (_super) {
         this._el_39 = __WEBPACK_IMPORTED_MODULE_3__angular_core_src_linker_view_utils__["createRenderElement"](this.renderer, this._el_31, 'p', new __WEBPACK_IMPORTED_MODULE_3__angular_core_src_linker_view_utils__["InlineArray2"](2, 'id', 'ticketSheet'), null);
         this._text_40 = this.renderer.createText(this._el_39, '', null);
         this._text_41 = this.renderer.createText(this._el_31, '\n                    ', null);
-        this._el_42 = __WEBPACK_IMPORTED_MODULE_3__angular_core_src_linker_view_utils__["createRenderElement"](this.renderer, this._el_31, 'button', new __WEBPACK_IMPORTED_MODULE_3__angular_core_src_linker_view_utils__["InlineArray4"](4, 'class', 'iconPlus', 'id', 'plus-btn'), null);
+        this._el_42 = __WEBPACK_IMPORTED_MODULE_3__angular_core_src_linker_view_utils__["createRenderElement"](this.renderer, this._el_31, 'button', new __WEBPACK_IMPORTED_MODULE_3__angular_core_src_linker_view_utils__["InlineArray2"](2, 'id', 'plus-btn'), null);
         this._el_43 = __WEBPACK_IMPORTED_MODULE_3__angular_core_src_linker_view_utils__["createRenderElement"](this.renderer, this._el_42, 'span', __WEBPACK_IMPORTED_MODULE_3__angular_core_src_linker_view_utils__["EMPTY_INLINE_ARRAY"], null);
         this._text_44 = this.renderer.createText(this._el_31, '\n                ', null);
         this._text_45 = this.renderer.createText(this._el_29, '\n            ', null);
@@ -2464,6 +2465,11 @@ var View_ReserveByQuantityComponent1 = (function (_super) {
         if (__WEBPACK_IMPORTED_MODULE_3__angular_core_src_linker_view_utils__["checkBinding"](throwOnChange, this._expr_61, currVal_61)) {
             this.renderer.setText(this._text_40, currVal_61);
             this._expr_61 = currVal_61;
+        }
+        var currVal_62 = __WEBPACK_IMPORTED_MODULE_3__angular_core_src_linker_view_utils__["inlineInterpolate"](1, 'iconPlus ', this.parentView.context.plusBtnClass, '');
+        if (__WEBPACK_IMPORTED_MODULE_3__angular_core_src_linker_view_utils__["checkBinding"](throwOnChange, this._expr_62, currVal_62)) {
+            this.renderer.setElementProperty(this._el_42, 'className', currVal_62);
+            this._expr_62 = currVal_62;
         }
     };
     View_ReserveByQuantityComponent1.prototype.destroyInternal = function () {
@@ -8321,10 +8327,14 @@ var ReserveByQuantityComponent = (function () {
         this.seatNameList = [];
         //最小購入数
         this.minQuantity = 1;
+        //最小単位
+        this.minSalesUnitNumber = null;
         //ボタン表示・非表示
         this.nextButtonFlag = false;
         //座席確保飛び席モーダルフラグ
         this.separatDetailDisplay = false;
+        //+ボタンに追加するクラス　disabled用
+        this.plusBtnClass = '';
     }
     ReserveByQuantityComponent.prototype.ngOnInit = function () {
         var _this = this;
@@ -8382,6 +8392,30 @@ var ReserveByQuantityComponent = (function () {
                                 _this.quantity = _this.stockType.min_quantity;
                             }
                             _this.maxQuantity = _this.stockType.max_quantity;
+                            //最小の単位を取得
+                            var salesUnitNumber = null;
+                            _this.minSalesUnitNumber = null;
+                            for (var i = 0, len = _this.selectedProducts.length; i < len; i++) {
+                                salesUnitNumber = null;
+                                for (var j = 0, len_1 = _this.selectedProducts[i].product_items.length; j < len_1; j++) {
+                                    if (_this.selectedProducts[i].product_items[j].sales_unit_quantity) {
+                                        salesUnitNumber += _this.selectedProducts[i].product_items[j].sales_unit_quantity;
+                                    }
+                                }
+                                if (!_this.minSalesUnitNumber || _this.minSalesUnitNumber > salesUnitNumber) {
+                                    _this.minSalesUnitNumber = salesUnitNumber;
+                                }
+                            }
+                            //初期選択枚数が最小単位で割り切れなかった場合調整
+                            if (_this.quantity % _this.minSalesUnitNumber != 0) {
+                                _this.quantity = Math.ceil(_this.quantity / _this.minSalesUnitNumber) * _this.minSalesUnitNumber;
+                            }
+                            //+ボタンのdisabled
+                            _this.plusBtnClass = '';
+                            if (!_this.quantityCheckService.stockTypeQuantityMaxLimitCheck(_this.upperLimit, _this.maxQuantity, _this.quantity + _this.minSalesUnitNumber)) {
+                                _this.plusBtnClass = 'disabled';
+                            }
+                            //regions取得
                             that.regions = _this.stockType.regions;
                             _this.modalTopCss();
                             //regionsがある時のみ色付けインターバル開始
@@ -8442,10 +8476,10 @@ var ReserveByQuantityComponent = (function () {
     };
     //チケット枚数減少
     ReserveByQuantityComponent.prototype.minusClick = function () {
-        if (this.quantityCheckService.stockTypeQuantityMinLimitCheck(this.minQuantity, this.quantity - 1)) {
-            this.quantity--;
+        if (this.quantityCheckService.stockTypeQuantityMinLimitCheck(this.minQuantity, this.quantity - this.minSalesUnitNumber)) {
+            this.quantity = this.quantity - this.minSalesUnitNumber;
             __WEBPACK_IMPORTED_MODULE_13_jquery__('#plus-btn').removeClass('disabled');
-            if (!this.quantityCheckService.stockTypeQuantityMinLimitCheck(this.minQuantity, this.quantity - 1)) {
+            if (!this.quantityCheckService.stockTypeQuantityMinLimitCheck(this.minQuantity, this.quantity - this.minSalesUnitNumber)) {
                 __WEBPACK_IMPORTED_MODULE_13_jquery__('#minus-btn').addClass('disabled');
             }
         }
@@ -8455,10 +8489,10 @@ var ReserveByQuantityComponent = (function () {
     };
     //チケット枚数増加
     ReserveByQuantityComponent.prototype.plusClick = function () {
-        if (this.quantityCheckService.stockTypeQuantityMaxLimitCheck(this.upperLimit, this.maxQuantity, this.quantity + 1)) {
-            this.quantity++;
+        if (this.quantityCheckService.stockTypeQuantityMaxLimitCheck(this.upperLimit, this.maxQuantity, this.quantity + this.minSalesUnitNumber)) {
+            this.quantity = this.quantity + this.minSalesUnitNumber;
             __WEBPACK_IMPORTED_MODULE_13_jquery__("#minus-btn").removeClass('disabled');
-            if (!this.quantityCheckService.stockTypeQuantityMaxLimitCheck(this.upperLimit, this.maxQuantity, this.quantity + 1)) {
+            if (!this.quantityCheckService.stockTypeQuantityMaxLimitCheck(this.upperLimit, this.maxQuantity, this.quantity + this.minSalesUnitNumber)) {
                 __WEBPACK_IMPORTED_MODULE_13_jquery__("#plus-btn").addClass('disabled');
             }
         }
