@@ -123,7 +123,7 @@ export class ReserveByQuantityComponent implements OnInit {
   separatDetailDisplay: boolean = false;
 
   //+ボタンに追加するクラス　disabled用
-  plusBtnClass = '';
+  plusBtnClass: string = '';
 
   constructor(private route: ActivatedRoute, private router: Router,
     private performances: PerformancesService, private stockTypes: StockTypesService,
