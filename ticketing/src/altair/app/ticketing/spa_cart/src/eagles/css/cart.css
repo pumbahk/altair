@@ -2534,178 +2534,6 @@
 	.listText{
 		width:75%
 	}
-	/*#buyChoiceSeatArea {
-		background: #f6f7f9;
-		width: 100%;
-	}
-	#buyChoiceSeatArea .buyChoiceSeatBox {
-		font-size: 13px;
-		padding: 10px 3%;
-		position: relative;
-	}
-	#buyChoiceSeatArea .buyChoiceSeatBox .seatNumberBox {
-		/ *display: none;
-		height: 80px;
-		overflow-y: scroll;* /
-		padding-bottom: 10px;
-		border-bottom: 1px solid #ddd;
-		margin-bottom: 10px;
-	}
-	#buyChoiceSeatArea .buyChoiceSeatBox .seatNumber {
-		border: solid 1px #CCC;
-		box-sizing: border-box;
-		width: 97%;
-		height: 30px;
-		line-height: 30px;
-		border-radius: 5px;
-		background: #FFF;
-		position: relative;
-		margin-bottom: 5px;
-	}
-	#buyChoiceSeatArea .buyChoiceSeatBox .seatNumber p {
-		display: block;
-		padding: 0 20px;
-		font-size: 13px;
-		color: #333;
-		letter-spacing: 10px;
-	}
-	#buyChoiceSeatArea .buyChoiceSeatBox .seatNumber .closeBtnBox {
-		position: absolute;
-		top: 4px;
-		right: 5px;
-	}
-	#buyChoiceSeatArea .buyChoiceSeatBox .seatNumber span.closeBtn {
-		border-radius: 50px;
-		-webkit-border-radius: 50px;
-		-moz-border-radius: 50px;
-		width: 20px;
-		height: 20px;
-		position: relative;
-		display: block;
-		background: #fff;
-		border: solid 1px #CCC;
-	}
-	#buyChoiceSeatArea .buyChoiceSeatBox .seatNumber span.closeBtn:before, #buyChoiceSeatArea .buyChoiceSeatBox .seatNumber span.closeBtn:after {
-		content: '';
-		height: 2px;
-		width: 15px;
-		display: block;
-		background: #CCC;
-		position: absolute;
-		top: 8px;
-		left: 2px;
-		transform: rotate(-45deg);
-		-webkit-transform: rotate(-45deg);
-		-moz-transform: rotate(-45deg);
-		-o-transform: rotate(-45deg);
-		-ms-transform: rotate(-45deg);
-	}
-	#buyChoiceSeatArea .buyChoiceSeatBox .seatNumber span.closeBtn:after {
-		transform: rotate(45deg);
-		-webkit-transform: rotate(45deg);
-		-moz-transform: rotate(45deg);
-		-o-transform: rotate(45deg);
-		-ms-transform: rotate(45deg);
-	}
-	#buyChoiceSeatArea .buyChoiceSeatBox .selectBoxBtn p {
-		float: left;
-		display: block;
-		height: 40px;
-		line-height: 40px;
-	}
-	#buyChoiceSeatArea .buyChoiceSeatBox button {
-		position: absolute;
-		bottom: 10px;
-		right: 3%;
-		height: 40px;
-		width: 30%;
-		color: #FFF;
-		text-align: center;
-		padding: 0 5px;
-		border-radius: 5px;
-		background: #64000c;
-		display: block;
-	}
-	#buyChoiceSeatArea .buyChoiceSeatBox button:hover {
-		color: #64000c;
-		background: #FFF;
-		border: solid 1px #64000c;
-		box-sizing: border-box;
-	}
-	#buyChoiceSeatArea .buyChoiceSeatBox .selectBoxBtn .closeBtnBox {
-		height: 25px;
-		width: 25px;
-		display: block;
-		position: relative;
-		float: left;
-		top: 10px;
-	}
-	#buyChoiceSeatArea .buyChoiceSeatBox .selectBoxBtn span.closeBtn {
-		border-radius: 50px;
-		-webkit-border-radius: 50px;
-		-moz-border-radius: 50px;
-		width: 20px;
-		height: 20px;
-		position: relative;
-		display: block;
-		background: #fff;
-		border: solid 1px #CCC;
-	}
-	#buyChoiceSeatArea .buyChoiceSeatBox .selectBoxBtn span.closeBtn:before/ *, #buyChoiceSeatArea .buyChoiceSeatBox .selectBoxBtn span.closeBtn:after* / {
-		content: '';
-		height: 2px;
-		width: 12px;
-		display: block;
-		background: #CCC;
-		position: absolute;
-		top: 8px;
-		left: 3px;
-	}
-	/ *#buyChoiceSeatArea .buyChoiceSeatBox .selectBoxBtn span.closeBtn:after {
-		transform: rotate(90deg);
-		-webkit-transform: rotate(90deg);
-		-moz-transform: rotate(90deg);
-		-o-transform: rotate(90deg);
-		-ms-transform: rotate(90deg);
-		-webkit-transition: all .4s;
-		transition: all .4s;
-	}
-	#buyChoiceSeatArea .selectBoxBtn {
-		cursor: pointer;
-	}* /
-	#buyChoiceSeatArea .buyChoiceSeatBox .selectBoxBtn .active span.closeBtn {
-		border-radius: 50px;
-		-webkit-border-radius: 50px;
-		-moz-border-radius: 50px;
-		width: 20px;
-		height: 20px;
-		position: relative;
-		display: block;
-		background: #fff;
-		border: solid 1px #CCC;
-	}
-	#buyChoiceSeatArea .buyChoiceSeatBox .selectBoxBtn .active span.closeBtn:before {
-		content: '';
-		height: 2px;
-		width: 12px;
-		display: block;
-		background: #CCC;
-		position: absolute;
-		top: 8px;
-		left: 3px;
-	}
-	#buyChoiceSeatArea .buyChoiceSeatBox .selectBoxBtn .active span.closeBtn:after {
-		content: '';
-		height: 0px;
-		width: 0px;
-		display: block;
-		background: #FFF;
-		position: absolute;
-		top: 8px;
-		left: 3px;
-		-webkit-transition: all .4s;
-		transition: all .4s;
-	}*/
 	.fixed{
 		display: block;
 		background: #f6f7f9;
@@ -2945,7 +2773,6 @@
 		position: absolute;
 		top: 5px;
 		right: 3%;
-		box-shadow: 0px 0px 2px 2px rgba(0, 0, 0, 0.1);
 	}
 	.modalWindow .modalInner span.closeBtn {
 		border-radius: 50px;
@@ -2956,7 +2783,7 @@
 		position: relative;
 		display: block;
 		background: #fff;
-
+		box-shadow: 0px 0px 2px 2px rgba(0, 0, 0, 0.1);
 	}
 	.modalWindow .modalInner span.closeBtn:before, .modalWindow .modalInner span.closeBtn:after {
 		content: '';
@@ -3003,76 +2830,6 @@
 		color: #333;
 		line-height: 1;
 	}
-/*******************************************************************************************************/
-	/* .modalWindowEvent{
-		height:105% !important;
-	}
-	.modalWindow .modalInner .eventBox .eventMainTtl {
-		text-align:left;
-		width:90%;
-		background:#64000c;
-		color:#fff;
-		font-size:18px;
-		padding:5px 3%;
-		margin-bottom:15px;
-	}
-	.modalWindow .modalInner .eventBox .eventTtl {
-		font-size:18px;
-		font-weight:bold;
-		border-left:5px solid #64000c;
-		padding:0 0 0 10px;
-		margin-bottom:15px;
-	}
-	.modalWindow .modalInner .eventBox .eventPlace {
-		margin-bottom:5px;
-	}
-	.modalWindow .modalInner .eventBox .eventPlace li {
-		display:block;
-	}
-	.modalWindow .modalInner .eventBox .eventPlace:before {
-		display: block;
-		content: '場所';
-		background-color: #ccc;
-		color:#FFF;
-		text-align:center;
-		width: 45px;
-		border-radius:3px;
-	}
-	.modalWindow .modalInner .eventBox .eventDate {
-		border-bottom:solid 1px #ddd;
-		padding-bottom:10px;
-		margin-bottom:10px;
-	}
-	.modalWindow .modalInner .eventBox .eventDate li {
-		display:block;
-	}
-	.modalWindow .modalInner .eventBox .eventDate:before {
-		display: block;
-		content: '日時';
-		background-color: #ccc;
-		color:#FFF;
-		text-align:center;
-		width: 45px;
-		border-radius:3px;
-	}
-	.modalWindow .modalInner .eventBox .eventImg div {
-		width:50%;
-		box-sizing:border-box;
-		float:left;
-		padding:1%;
-	}
-	.modalWindow .modalInner .eventBox .eventImg div img {
-		width:100%;
-		height:auto;
-	}
-	.modalWindow .modalInner .eventBox .eventDetail {
-		border:solid 1px #ddd;
-		padding:10px;
-		margin:10px 0;
-		display:block;
-	} */
-
-
 	.modalWindowAlertBox {
 		background: rgba(0,0,0, 0.8);
 		position:absolute;
@@ -3099,7 +2856,7 @@
         width:100%;
         height:500px;
         z-index:999;
-     }
+    }
 
 	.modalWindowAlertBoxInner {
 		position:absolute;
