@@ -699,7 +699,8 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
         from . import schemas
         cart = self.read_only_cart
         settings = cart.performance.find_available_target_settings(max_price=self.cart.highest_item_price,
-                                                                   session=self.session)
+                                                                   session=self.session,
+                                                                   now=self.now)
         forms = []
         for index in range(cart.carted_product_item_count):
             forms.append(schemas.DiscountCodeForm(discount_code_settings=settings))
@@ -726,7 +727,8 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
 
         sorted_cart_product_items = self.sorted_carted_product_items(cart)
         settings = cart.performance.find_available_target_settings(max_price=cart.highest_item_price,
-                                                                   session=self.session)
+                                                                   session=self.session,
+                                                                   now=self.now)
 
         code_forms = []
         input_cnt = len(codes)
@@ -740,7 +742,9 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
                     'carted_product_item': carted_product_item,
                     'form': form,
                     'discount_code_setting': cart.performance.find_available_target_settings(
-                        first_4_digits=codes[cnt][:4])
+                        first_4_digits=codes[cnt][:4],
+                        now=self.now
+                    )
                 })
                 cnt += 1
                 if input_cnt == cnt:
@@ -792,7 +796,8 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
         """
         if (not self.cart.organization.enable_discount_code) or \
                 (not self.performance.find_available_target_settings(max_price=self.cart.highest_item_price,
-                                                                     session=self.session)) or \
+                                                                     session=self.session,
+                                                                     now=self.now)) or \
                 (not self.cart.is_product_item_quantity_one):
             return False
         else:
@@ -837,7 +842,8 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
         """
         setting = self.cart.performance.find_available_target_settings(issued_by=u'sports_service',
                                                                        first_4_digits=first_4_digits,
-                                                                       session=self.session)
+                                                                       session=self.session,
+                                                                       now=self.now)
 
         if setting:
             # OAuth認証していないユーザをはじく
@@ -883,7 +889,9 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
                                                            self.cart.performance.find_available_target_settings(
                                                                issued_by=u'sports_service',
                                                                max_price=self.cart.highest_item_price,
-                                                               session=self.session))
+                                                               session=self.session,
+                                                               now=self.now)
+                                                           )
         if result is None:
             # 使用可能なDiscountCodeSettingがない
             return True
@@ -917,7 +925,8 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
                                                      order.cart.performance.find_available_target_settings(
                                                          issued_by=u'sports_service',
                                                          max_price=cart.highest_item_price,
-                                                         session=self.session
+                                                         session=self.session,
+                                                         now=self.now
                                                      ))
             if not result['status'] == u'OK' and result['usage_type'] == u'1010':
                 # 使用時にエラー
@@ -944,7 +953,8 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
 
         cart = self.read_only_cart
         settings = cart.performance.find_available_target_settings(max_price=self.cart.highest_item_price,
-                                                                   session=self.session)
+                                                                   session=self.session,
+                                                                   now=self.now)
 
         remaining_count = len(range(cart.carted_product_item_count)) - len(forms)
         if remaining_count > 0:

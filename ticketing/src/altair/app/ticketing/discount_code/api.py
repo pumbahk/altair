@@ -334,7 +334,8 @@ def cancel_used_discount_codes(request, order, now=None):
 
             first_4_digits = code.code[:4]
             code_setting = order.cart.performance.find_available_target_settings(first_4_digits=first_4_digits,
-                                                                                 for_delete=True)
+                                                                                 for_delete=True,
+                                                                                 now=now)
             if code_setting.issued_by == u'own':
                 code.discount_code.used_at = None
             elif code_setting.issued_by == u'sports_service':
