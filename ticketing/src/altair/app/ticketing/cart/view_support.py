@@ -470,7 +470,7 @@ class DynamicFormBuilder(object):
                 message = u'{}文字以上で入力してください'.format(min)
                 validators.append(Length(min=min, message=message))
             elif max:
-                message = u'{}文字以上で入力してください'.format(max)
+                message = u'{}文字以内で入力してください'.format(max)
                 validators.append(Length(max=max, message=message))
 
         validator_flags = {}
