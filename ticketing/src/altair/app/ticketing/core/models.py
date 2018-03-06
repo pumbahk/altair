@@ -608,7 +608,7 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return [lot.sales_segment for lot in self.event.lots]
 
     def find_available_target_settings(self, issued_by=None, first_4_digits=None,
-                                       max_price=None, session=None, for_delete=False):
+                                       max_price=None, session=None, for_delete=False, now=None):
         """
         引数で指定された条件で利用可能な状態の割引設定を抽出。
         :param issued_by: コードの発行元
@@ -616,10 +616,14 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         :param max_price: 最も高い席の価格（例：大人席・子供席なら大人席の値段）
         :param session: slaveのsession。なければmasterを使う。
         :param for_delete: Trueなら削除時の抽出条件。「有効・無効フラグ」や「有効期間」を無視する。
-        :return: 割引コード設定のリスト。（ただしfirst_4_digitsがある場合、返り値は1つであるべきなので、.one()で返す）
+        :param now: 現在時刻。「時間指定してカート購入」を利用している場合はそちらの時刻が使用される。
+        :return: 割引コード設定のリスト（ただしfirst_4_digitsがある場合、返り値は1つであるべきなので、.one()で返す）
         """
         from altair.app.ticketing.discount_code.models import DiscountCodeSetting, DiscountCodeTarget
-        now = datetime.now()
+
+        if now is None:
+            now = datetime.now()
+
         q = session.query(DiscountCodeSetting) if session else DBSession.query(DiscountCodeSetting)
         q = q.join(
             DiscountCodeTarget

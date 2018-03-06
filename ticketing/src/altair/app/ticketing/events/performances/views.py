@@ -174,7 +174,9 @@ class PerformanceShowView(BaseView):
             cart_url=cart_url,
             spa_cart_url =spa_cart_url,
             cart_now_cart_url=get_cart_now_url_builder(self.request).build(
-                self.request, cart_url, self.performance.event_id)
+                self.request, cart_url, self.performance.event_id),
+            cart_now_spa_cart_url=get_cart_now_url_builder(self.request).build(
+                self.request, spa_cart_url, self.performance.event_id),
         ))
         return data
 
