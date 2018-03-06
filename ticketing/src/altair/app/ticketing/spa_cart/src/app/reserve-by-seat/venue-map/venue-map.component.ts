@@ -913,12 +913,12 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
               //倍率が変わらないようviewboxを現在の表示領域に合わせる
               Box3 = String(parseFloat(resizeViewBox[3]) * this.D_Height / beforeHeight);
               Box2 = String(parseFloat(resizeViewBox[2]) * this.D_Width / beforeWidth);
-              hoge = (resizeViewBox[3] - Box3) / 2;
-              huga = (resizeViewBox[2] - Box2) / 2;
-              resizeViewBox[0] = resizeViewBox[0] + Box2;
-              resizeViewBox[2] = resizeViewBox[2] - Box2;
-              resizeViewBox[1] = resizeViewBox[1] + Box3;
-              resizeViewBox[3] = resizeViewBox[3] - Box3;
+              hoge = (parseFloat(resizeViewBox[3]) - Box3) / 2;
+              huga = (parseFloat(resizeViewBox[2]) - Box2) / 2;
+              resizeViewBox[0] = String(parseFloat(resizeViewBox[0]) + huga);
+              resizeViewBox[2] = String(parseFloat(resizeViewBox[2]) - huga);
+              resizeViewBox[1] = String(parseFloat(resizeViewBox[1]) + hoge);
+              resizeViewBox[3] = String(parseFloat(resizeViewBox[3]) - hoge);
             //}
             $('#mapImgBox').children().attr('viewBox', resizeViewBox.join(' '));
             console.log(resizeViewBox,"b");
