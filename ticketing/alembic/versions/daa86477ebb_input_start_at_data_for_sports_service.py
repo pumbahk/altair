@@ -19,6 +19,10 @@ Identifier = sa.BigInteger
 
 
 def upgrade():
+    """
+    '2018-02-24 10:00:00' is the datetime that the first discount_code started to be used.
+    :return: void
+    """
     op.execute('''
                UPDATE `DiscountCodeSetting` dcs
                SET dcs.start_at = '2018-02-24 10:00:00'
