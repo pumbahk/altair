@@ -1,7 +1,7 @@
 """input_start_at_data_for_sports_service
 
 Revision ID: daa86477ebb
-Revises: 2cd4d21b8402
+Revises: 14766315f5ba
 Create Date: 2018-03-06 17:12:00.618982
 
 """
