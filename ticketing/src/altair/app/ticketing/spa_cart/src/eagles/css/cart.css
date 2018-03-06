@@ -1378,7 +1378,7 @@
 		top:-50px;
 		left:0;
 		width:100%;
-		height:115%;
+		height:120%;
 		z-index:99;
 	}
 	#modalWindowErrorBox {
@@ -2945,6 +2945,7 @@
 		position: absolute;
 		top: 5px;
 		right: 3%;
+		box-shadow: 0px 0px 2px 2px rgba(0, 0, 0, 0.1);
 	}
 	.modalWindow .modalInner span.closeBtn {
 		border-radius: 50px;
@@ -2955,6 +2956,7 @@
 		position: relative;
 		display: block;
 		background: #fff;
+
 	}
 	.modalWindow .modalInner span.closeBtn:before, .modalWindow .modalInner span.closeBtn:after {
 		content: '';
@@ -3373,7 +3375,7 @@
 		background: #64000c;
 		border: solid 1px #64000c;
 		box-sizing: border-box;
-        font-size: 80%;
+        font-size: 70%;
     }
     .ie .choiceArea .seatSearch button{
         margin: 0px;
