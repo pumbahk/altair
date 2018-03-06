@@ -4924,6 +4924,7 @@ class OrionPerformance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     icon_url = Column(Unicode(255))
 
     qr_enabled = Column(Boolean)
+    toggle_enabled = Column(Boolean)
     pattern = Column(Unicode(255))
 
     coupon_2_name = Column(Unicode(255))

@@ -440,6 +440,11 @@ class OrionPerformanceForm(Form):
         validators=[Optional()],
     )
 
+    toggle_enabled = BooleanField(
+        label=u'スワイプ認証を使う',
+        validators=[Optional()],
+    )
+
     pattern = TextField(
         label=u'もぎり認証パターン',
         validators=[Optional()],
