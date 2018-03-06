@@ -52,19 +52,10 @@ export class ReserveBySeatComponent implements OnInit {
       //filterの初期表示
       if (windowWidth <= windowSm) {
         $(document).ready(function () {
-          $('.acdTp').click(function () {
-            $(this).prev().slideToggle(300);
-          }).prev().hide();
-        });
-        $(document).ready(function () {
           $('.acdBt').click(function () {
             $(this).next().slideToggle(300);
           }).next().hide();
-        });
-      } else {
-        $('.acdBt').click(function () {
-          $(this).next().slideToggle(300);
-        });
+        })
       }
 
       function setting() {
@@ -84,9 +75,7 @@ export class ReserveBySeatComponent implements OnInit {
               } else {
                 minus = 149;
               }
-              let mainID = 'mapAreaLeft'
-              let windowH = $(window).height();
-              let mainH = windowH - minus;
+              let mainID = 'mapAreaLeft';
               //スマホサイズのPC対応
               if (!($('#modalWindowStockTypeAlertBox').length) && !($('#buyChoiceSeatArea').length)) {
                 $('#' + mainID).height(mainH + 'px');
@@ -174,48 +163,6 @@ export class ReserveBySeatComponent implements OnInit {
           $(this).next("dd").parent().siblings().find("dd").slideUp();
           $(this).toggleClass("open");
           $(this).parent().siblings().find("dt").removeClass("open");
-        }
-      });
-    });
-
-    $(document).ready(function () {
-      $(".methodExplanation").hide();
-      // show the info that is already clicked
-      var clicked_item = $("input[id^='radio']").filter(':checked');
-      $(clicked_item).parent().next().show();
-
-      $("dt.settlement-list").on('click', function (e) {
-        e.preventDefault();
-        var clicked_radio = $(this).find("input[id^='radio']");
-        var index = $("input[id^='radio']").index(clicked_radio);
-        var vis_item = $(".methodExplanation:visible");
-        // uncheck the radio and close the info block when it is clicked again
-        if ($(clicked_radio).is(':checked') && $(this).next().is(':visible')) {
-          $(clicked_radio).prop('checked', false);
-          $(this).next().slideUp();
-        } else {
-          var do_shift = false;
-          var shift = 0;
-          // decide whether the position setting needs to include the height of previous info block
-          if ($(vis_item).length === 1) {
-            var vis_index = $(".methodExplanation").index($(vis_item));
-            // if the index of visible item is less than that of the clicked item.
-            do_shift = vis_index < index;
-          }
-
-          // set the position to be shifted.
-          if (do_shift) {
-            var margin = +$(vis_item).css('margin-top').replace("px", "");
-            margin += +$(vis_item).css('margin-bottom').replace("px", "");
-            shift = $(vis_item).height() + margin;
-          }
-          $(".methodExplanation").slideUp();
-          $(this).next().slideDown();
-          $(clicked_radio).prop('checked', true);
-          // shift the position to show the info properly
-          $('html, body').animate({
-            scrollTop: $(this).offset().top - shift
-          });
         }
       });
     });

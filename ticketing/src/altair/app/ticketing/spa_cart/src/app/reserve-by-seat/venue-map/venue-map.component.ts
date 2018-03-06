@@ -497,18 +497,19 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
       that.originalViewBox = that.getPresentViewBox();
       // viewBox取得　且つ　座席選択領域の高さを取得
 
-      if ((that.originalViewBox) && (that.mapAreaLeftH >= SIDE_HEIGHT)) {
-        clearInterval(svgLoadCompleteTimer);
-        that.displayViewBox = that.originalViewBox.concat();
-        that.seatAreaHeight = $("#mapImgBox").height();
-        that.svgMap = document.getElementById('mapImgBox').firstElementChild;
-        that.D_Width = $(that.svgMap).innerWidth(); // 表示窓のwidth
-        that.D_Height = $(that.svgMap).innerHeight(); // 表示窓のheight
-        that.saveSeatData();
-        that.mapHome(true);
-        that.endTime = new Date();
-        that._logger.info(that.endTime - that.startTime + "ms");
-      }
+      if ((that.originalViewBox) && (that.mapAreaLeftH >= SIDE_HEIGHT) ||
+      (!that.smartPhoneCheckService.isSmartPhone() && !that.smartPhoneCheckService.isIpad() && !that.smartPhoneCheckService.isTablet()) && that.mapAreaLeftH) {
+          clearInterval(svgLoadCompleteTimer);
+          that.displayViewBox = that.originalViewBox.concat();
+          that.seatAreaHeight = $("#mapImgBox").height();
+          that.svgMap = document.getElementById('mapImgBox').firstElementChild;
+          that.D_Width = $(that.svgMap).innerWidth(); // 表示窓のwidth
+          that.D_Height = $(that.svgMap).innerHeight(); // 表示窓のheight
+          that.saveSeatData();
+          that.mapHome(true);
+          that.endTime = new Date();
+          that._logger.info(that.endTime - that.startTime + "ms");
+        }
     }, 100);
 
     if (!this.smartPhoneCheckService.isSmartPhone() && !this.smartPhoneCheckService.isIpad() && !this.smartPhoneCheckService.isTablet()) {
@@ -893,6 +894,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
             this.D_Width = $(this.svgMap).innerWidth(); // 現在の表示領域のwidth
             this.D_Height = $(this.svgMap).innerHeight(); // 現在の表示領域のheight
             this.DA = this.D_Width / this.D_Height; //現在の表示領域のアスペクト比
+            //倍率が変わらないようviewboxを現在の表示領域に合わせる
             resizeViewBox[3] = String(parseFloat(resizeViewBox[3]) * this.D_Height / beforeHeight);
             resizeViewBox[2] = String(parseFloat(resizeViewBox[2]) * this.D_Width / beforeWidth);
             $('#mapImgBox').children().attr('viewBox', resizeViewBox.join(' '));
@@ -2107,15 +2109,16 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
   }
   //SP、検索エリアがアクティブ時のモーダルのトップ調整
   modalTopCss() {
+    if ($(".choiceAreaAcdBox").css('display') == "block") {
+      $('.choiceAreaAcdBox').slideToggle(300).hide();
+    }
     if (this.smartPhoneCheckService.isSmartPhone() || this.smartPhoneCheckService.isTablet() == "SP") {
       setTimeout(function () {
         $("#modalWindowAlertBox").css({
           'top': "-37px",
         });
       }, 100);
-      if ($(".choiceAreaAcdBox").css('display') == "block") {
-        $('.choiceAreaAcdBox').slideToggle(300).hide();
-      }
+
     }
   }
 
