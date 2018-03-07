@@ -75,10 +75,12 @@ class DeliveryMethods(BaseView):
             delivery_method.preferences.setdefault(unicode(QR_DELIVERY_PLUGIN_ID), {})['single_qr_mode'] = f.single_qr_mode.data
             delivery_method.preferences.setdefault(unicode(RESERVE_NUMBER_DELIVERY_PLUGIN_ID), {})['expiration_date'] = f.expiration_date.data
 
-            get_qr_aes_field_names = getattr(f, 'get_qr_aes_field_names', None)
-            if get_qr_aes_field_names:
-                for name in get_qr_aes_field_names():
-                    delivery_method.preferences.setdefault(unicode(QR_AES_DELIVERY_PLUGIN_ID), {})[name] = f[name].data
+            if f.delivery_plugin_id.data == QR_AES_DELIVERY_PLUGIN_ID:
+                delivery_method.preferences.setdefault(unicode(QR_AES_DELIVERY_PLUGIN_ID), {})['single_qr_mode'] = f.single_qr_mode.data
+                get_qr_aes_field_names = getattr(f, 'get_qr_aes_field_names', None)
+                if get_qr_aes_field_names:
+                    for name in get_qr_aes_field_names():
+                        delivery_method.preferences.setdefault(unicode(QR_AES_DELIVERY_PLUGIN_ID), {})[name] = f[name].data
 
             if organization_setting.i18n:
                 delivery_method.preferences.setdefault(u'en', {})['name'] = f.name_en.data
@@ -114,10 +116,12 @@ class DeliveryMethods(BaseView):
         form.single_qr_mode.data = obj.preferences.get(unicode(QR_DELIVERY_PLUGIN_ID), {}).get('single_qr_mode', False)
         form.expiration_date.data = obj.preferences.get(unicode(RESERVE_NUMBER_DELIVERY_PLUGIN_ID), {}).get('expiration_date', None)
 
-        get_qr_aes_field_names = getattr(form, 'get_qr_aes_field_names', None)
-        if get_qr_aes_field_names:
-            for name in get_qr_aes_field_names():
-                form._fields[name].data = obj.preferences.get(unicode(QR_AES_DELIVERY_PLUGIN_ID), {}).get(name, None)
+        if obj.delivery_plugin_id == QR_AES_DELIVERY_PLUGIN_ID:
+            form.single_qr_mode.data = obj.preferences.get(unicode(QR_AES_DELIVERY_PLUGIN_ID), {}).get('single_qr_mode',False)
+            get_qr_aes_field_names = getattr(form, 'get_qr_aes_field_names', None)
+            if get_qr_aes_field_names:
+                for name in get_qr_aes_field_names():
+                    form._fields[name].data = obj.preferences.get(unicode(QR_AES_DELIVERY_PLUGIN_ID), {}).get(name, None)
 
         organization_setting = c_models.OrganizationSetting.filter_by(organization_id=self.context.user.organization_id).one()
         if organization_setting.i18n:
@@ -156,10 +160,12 @@ class DeliveryMethods(BaseView):
             delivery_method.preferences.setdefault(unicode(QR_DELIVERY_PLUGIN_ID), {})['single_qr_mode'] = f.single_qr_mode.data
             delivery_method.preferences.setdefault(unicode(RESERVE_NUMBER_DELIVERY_PLUGIN_ID), {})['expiration_date'] = f.expiration_date.data
 
-            get_qr_aes_field_names = getattr(f, 'get_qr_aes_field_names', None)
-            if get_qr_aes_field_names:
-                for name in get_qr_aes_field_names():
-                    delivery_method.preferences.setdefault(unicode(QR_AES_DELIVERY_PLUGIN_ID), {})[name] = f[name].data
+            if f.delivery_plugin_id.data == QR_AES_DELIVERY_PLUGIN_ID:
+                delivery_method.preferences.setdefault(unicode(QR_AES_DELIVERY_PLUGIN_ID), {})['single_qr_mode'] = f.single_qr_mode.data
+                get_qr_aes_field_names = getattr(f, 'get_qr_aes_field_names', None)
+                if get_qr_aes_field_names:
+                    for name in get_qr_aes_field_names():
+                        delivery_method.preferences.setdefault(unicode(QR_AES_DELIVERY_PLUGIN_ID), {})[name] = f[name].data
 
             if organization_setting.i18n:
                 delivery_method.preferences.setdefault(u'en', {})['name'] = f.name_en.data

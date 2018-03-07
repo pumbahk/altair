@@ -118,7 +118,7 @@ class DeliveryMethodForm(OurForm):
     single_qr_mode = OurBooleanField(
         label=u'単一QRモード (一括発券)',
         validators=[
-            DynSwitchDisabled('{delivery_plugin_id} <> "%d"' % QR_DELIVERY_PLUGIN_ID)
+            DynSwitchDisabled('AND({delivery_plugin_id} <> "%d", {delivery_plugin_id} <> "%d")' % (QR_DELIVERY_PLUGIN_ID, QR_AES_DELIVERY_PLUGIN_ID))
             ]
         )
     expiration_date = OurTextField(
