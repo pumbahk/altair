@@ -10,7 +10,12 @@ from pyramid.httpexceptions import HTTPFound
 from pyramid.i18n import TranslationString as _
 from sqlalchemy import func
 from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
-from .models import DiscountCodeSetting, DiscountCodeCode, UsedDiscountCodeCart, UsedDiscountCodeOrder
+from .models import (
+    DiscountCodeSetting,
+    DiscountCodeCode,
+    UsedDiscountCodeCart,
+    UsedDiscountCodeOrder
+)
 
 
 def check_discount_code_functions_available(context, request):
@@ -120,6 +125,23 @@ def get_discount_price(ordered_product_item_token):
         for used in used_codes:
             price = price + used.applied_amount
     return price
+
+
+def get_discount_price_from_carted_product(request, cp):
+    """
+    :param request: リクエストオブジェクト
+    :param cp: CartedProductオブジェクト
+    :return: discount_price: 商品ごとの割引金額。引換券の利用がない場合はNoneが返る。
+    """
+    from altair.app.ticketing.cart.models import CartedProductItem
+    result = get_db_session(request, 'slave').query(
+        func.sum(UsedDiscountCodeCart.applied_amount).label('discount_price')
+    ).join(
+        CartedProductItem
+    ).filter(
+        CartedProductItem.carted_product_id == cp.id
+    ).one()
+    return result.discount_price
 
 
 def get_discount_price_from_ordered_product(op):

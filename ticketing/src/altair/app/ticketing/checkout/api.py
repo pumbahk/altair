@@ -13,6 +13,7 @@ from altair.app.ticketing.core.models import ChannelEnum
 from altair.app.ticketing.core import api as core_api
 from altair.app.ticketing.cart.models import Cart
 from altair.app.ticketing.orders.models import Order
+from altair.app.ticketing.discount_code import api as discount_api
 from altair.sqla import session_scope
 from . import interfaces
 from . import models as m
@@ -130,6 +131,13 @@ def get_fee_items_dict(request, order_like):
         retval['special_fee'] = ('special_fee', 'refund_special_fee', order_like.special_fee_name)
     return retval
 
+
+def calc_item_fee(request, item):
+    discount_price = discount_api.get_discount_price_from_carted_product(request, item)
+    item_fee = item.price * item.quantity
+    return item_fee - discount_price if discount_price else item_fee
+
+
 def build_checkout_object_from_order_like(request, order_like):
     checkout_object = m.Checkout(
         orderCartId=order_like.order_no,
@@ -140,8 +148,8 @@ def build_checkout_object_from_order_like(request, order_like):
             m.CheckoutItem(
                 itemId=unicode(item.product.id),
                 itemName=item.product.name,
-                itemNumbers=item.quantity,
-                itemFee=int(item.price)
+                itemNumbers=1,
+                itemFee=int(calc_item_fee(request, item))
                 )
             )
     # 手数料も商品として登録する
