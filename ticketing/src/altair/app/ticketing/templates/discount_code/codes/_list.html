@@ -41,6 +41,8 @@
                             %if code.order and code.order.order_no:
                                 <a href="${request.route_path("orders.show_by_order_no",order_no=code.order.order_no)}">${code.order.order_no}</a>
                                 ${HH.order_status(code.order)}
+                                ${HH.payment_status(code.order)}
+                                ${HH.delivery_status(code.order)}
                             %endif
                         </td>
                         <td>

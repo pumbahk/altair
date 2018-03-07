@@ -20,29 +20,36 @@ queue = cStringIO.StringIO()
 writer = UnicodeWriter(queue)
 
 writer.writerow([
-    u"コードID",
     u"クーポン・割引コード",
     u"予約番号",
     u"ステータス",
     u"決済",
     u"配送",
     u"使用日時",
-    u"オペレーター名",
-    u"作成日時",
+    u"商品金額",
+    u"割引金額",
+    u"席種名",
+    u"イベント名",
+    u"公演名",
+    u"開演日時",
+    u"会員区分",
 ])
 
 for code in codes:
-    order_no = code.order.order_no if code.order else None
     c_list = [
-        code.id,
         code.code,
-        order_no,
-        HH.order_status_string(code.order),
-        HH.payment_status_string(code.order),
-        HH.delivery_status_string(code.order),
+        code.Order.order_no,
+        HH.order_status_string(code.Order),
+        HH.payment_status_string(code.Order),
+        HH.delivery_status_string(code.Order),
         vh.datetime(code.used_at, with_weekday=True),
-        code.operator.name,
-        vh.datetime(code.created_at, with_weekday=True)
+        code.ordered_product_item_price,
+        code.applied_amount,
+        code.product_name,
+        code.event_title,
+        code.performance_name,
+        vh.datetime(code.performance_start_on, with_weekday=True),
+        code.member_group_name,
     ]
     str_list = [unicode('' if elm is None else elm) for elm in c_list]
     writer.writerow(str_list)
