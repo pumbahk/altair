@@ -400,6 +400,40 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
 
     this.filterComponent.searched$.subscribe((response: ISeatsResponse) => {
       that.seatGroups = response.data.seat_groups;
+      console.log(that.seatGroups);
+      that.seatGroups =
+      [
+        {
+          "seat_group_name": "BBOXペア[26]",
+          "seat_group_id": "sEBOX-03",
+          "seat_l0_ids": [
+            "sEBOX-03-001",
+            "sEBOX-03-002",
+            "sEBOX-03-003",
+            "sEBOX-03-004",
+            "sEBOX-03-005",
+            "sEBOX-03-006",
+            "sEBOX-03-007",
+            "sEBOX-03-008"
+          ]
+        },
+        {
+          "seat_group_name": "BBOXペア[27]",
+          "seat_group_id": "sBPDX-03",
+          "seat_l0_ids": [
+            "sBPDX-03-001",
+            "sBPDX-03-002"
+          ]
+        },
+        {
+          "seat_group_name": "BBOXペア[28]",
+          "seat_group_id": "rBBOX-028",
+          "seat_l0_ids": [
+            "sBBOX-28-001",
+            "sBBOX-28-002"
+          ]
+        }
+      ]
       that.regions = response.data.regions;
       that.seats = response.data.seats;
       this.reservedFlag = this.filterComponent.reserved;
@@ -1220,7 +1254,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
             if (!this.smartPhoneCheckService.isSmartPhone() && !this.smartPhoneCheckService.isIpad()) {
               this.selectedSeatGroupNames.push(decodeURIComponent($(this.svgMap).find('#' + this.selectedGroupIds[i]).attr('title')));
             } else {
-              this.selectedSeatGroupNames.push(decodeURIComponent($(this.svgMap).find('#' + this.selectedGroupIds[i])[0].attributes[9].value));
+              this.selectedSeatGroupNames.push(decodeURIComponent($(this.svgMap).find('#' + this.selectedGroupIds[i])[0].attributes['title'].value));
             }
 
           }
@@ -1239,7 +1273,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
           if (!this.smartPhoneCheckService.isSmartPhone() && !this.smartPhoneCheckService.isIpad()) {
             this.selectedSeatGroupNames.push(decodeURIComponent($(this.svgMap).find('#' + this.selectedGroupIds[i]).attr('title')));
           } else {
-            this.selectedSeatGroupNames.push(decodeURIComponent($(this.svgMap).find('#' + this.selectedGroupIds[i])[0].attributes[9].value));
+            this.selectedSeatGroupNames.push(decodeURIComponent($(this.svgMap).find('#' + this.selectedGroupIds[i])[0].attributes['title'].value));
           }
         }
         this.selectTimes();
