@@ -521,7 +521,6 @@ body {
   border-radius: 5px;
   padding: 20px;
   width: 340px;
-  height: 75px;
 }
 .landing-tbl .btn-landing {
   background: #7D00BE;
@@ -535,9 +534,7 @@ body {
 }
 .landing-tbl .landing-box .logo {
   vertical-align: middle;
-  padding: 0 10px 6px 0;
-  width: 70px;
-  height: auto;
+  height: 2rem;
 }
 
 @media screen and (max-width: 767px){
@@ -556,7 +553,7 @@ body {
     font-size: 1.6rem;
   }
   .landing-tbl .btn-box {
-    margin: 0;
+    margin-bottom: 10px;
     vertical-align: middle;
   }
   .landing-tbl .btn {
