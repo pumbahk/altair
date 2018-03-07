@@ -521,6 +521,7 @@ body {
   border-radius: 5px;
   padding: 20px;
   width: 340px;
+  height: 75px;
 }
 .landing-tbl .btn-landing {
   background: #7D00BE;
@@ -561,6 +562,7 @@ body {
   .landing-tbl .btn {
     border-radius: 5px;
     width: 100% !important;
+    height: auto;
     padding: 15px 20px;
     margin: 0;
   }
@@ -580,6 +582,7 @@ body {
     width: 23px;
     height: 20px;
     margin: 0 auto;
+    cursor: pointer;
   }
   .arrow {
     display: block;

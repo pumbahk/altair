@@ -6,37 +6,35 @@
     <tbody>
       <tr>
         <td class="landing-box js-sp-accotdion-btn">
-          <h3 class="heading_simple">楽天会員でのお申し込みの方</h3>
+          <h3 class="heading_simple"><br/>楽天会員でのお申し込みの方</h3>
           <div class="btn-box">
             <a href="${request.route_path('mypage.show')}" class="btn btn-landing-rakuten">
-              <img src="//tstar.s3.amazonaws.com/extauth/static/eagles/images/logo_rakuten.gif" class="logo" width="70px" alt="楽天">
+              <img src="${view_context.static_url('common/images/logo_rakuten.gif')}" class="logo" alt="楽天">
               <span>楽天会員IDでログイン</span>
             </a>
           </div>
           <div class="page-top-box js-show-box">
-            <a href="#" class="sp page-top">
+            <span href="#" class="sp page-top">
               <span class="arrow top"></span>
-            </a>
+            </span>
           </div>
         </td>
         <td class="landing-box js-sp-accotdion-btn">
-          <h3 class="heading_simple">楽天会員以外でのお申し込みの方</h3>
+          <h3 class="heading_simple">楽天会員以外でのお申し込みの方<br/>（受付番号 RT0000～ で確認する）</h3>
           <div class="btn-box">
-            <!--<p>[購入履歴]受付番号（RT0000 〜）での購入確認はこちらから</p>-->
             <a href="${request.route_path('order_review.form')}" class="btn btn-landing">
               <span>購入の確認はこちらから</span>
             </a>
           </div>
           <div class="btn-box">
-            <!--<p>[抽選受付]受付番号（RT0000 〜）での購入確認はこちらから</p>-->
             <a href="https://rt.tstar.jp/lots/review" class="btn btn-landing">
               <span>抽選受付の確認はこちらから</span>
             </a>
           </div>
           <div class="page-top-box js-show-box">
-            <a href="#" class="sp page-top">
+            <span class="sp page-top">
               <span class="arrow top"></span>
-            </a>
+            </span>
           </div>
         </td>
       </tr>
@@ -44,6 +42,8 @@
   </table>
   <h3 class="heading_simple_line">注意事項</h3>
   <p>発売開始直後は回線が大変込み合う場合がございますので、予めご了承ください。</p>
+  <p>楽天イーグルスのチケット購入確認は<a href="https://eagles.tstar.jp/orderreview">こちら</a></p>
+  <p>ヴィッセル神戸のチケット購入確認は<a href="https://vissel.tstar.jp/orderreview/">こちら</a></p>
 </div>
 
 <script type="text/javascript">
