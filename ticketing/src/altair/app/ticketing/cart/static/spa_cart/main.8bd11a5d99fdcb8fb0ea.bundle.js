@@ -10703,7 +10703,7 @@ var VenuemapComponent = (function () {
                             this.selectedSeatGroupNames.push(decodeURIComponent(__WEBPACK_IMPORTED_MODULE_14_jquery__(this.svgMap).find('#' + this.selectedGroupIds[i]).attr('title')));
                         }
                         else {
-                            this.selectedSeatGroupNames.push(decodeURIComponent(__WEBPACK_IMPORTED_MODULE_14_jquery__(this.svgMap).find('#' + this.selectedGroupIds[i])[0].attributes[9].value));
+                            this.selectedSeatGroupNames.push(decodeURIComponent(__WEBPACK_IMPORTED_MODULE_14_jquery__(this.svgMap).find('#' + this.selectedGroupIds[i])[0].attributes['title'].value));
                         }
                     }
                     this.selectTimes();
@@ -10724,7 +10724,7 @@ var VenuemapComponent = (function () {
                         this.selectedSeatGroupNames.push(decodeURIComponent(__WEBPACK_IMPORTED_MODULE_14_jquery__(this.svgMap).find('#' + this.selectedGroupIds[i]).attr('title')));
                     }
                     else {
-                        this.selectedSeatGroupNames.push(decodeURIComponent(__WEBPACK_IMPORTED_MODULE_14_jquery__(this.svgMap).find('#' + this.selectedGroupIds[i])[0].attributes[9].value));
+                        this.selectedSeatGroupNames.push(decodeURIComponent(__WEBPACK_IMPORTED_MODULE_14_jquery__(this.svgMap).find('#' + this.selectedGroupIds[i])[0].attributes['title'].value));
                     }
                 }
                 this.selectTimes();
