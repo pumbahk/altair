@@ -461,12 +461,18 @@ class AnshinCheckoutAPITest(unittest.TestCase):
     maxDiff = 16384
 
     def setUp(self):
-        self.config = testing.setUp()
+        from altair.sqlahelper import register_sessionmaker_with_engine
         from .models import _session as priv_session
+        self.config = testing.setUp()
         priv_session.remove()
         self._session = _setup_db()
         self.session = priv_session
         self.request = testing.DummyRequest()
+        register_sessionmaker_with_engine(
+            self.config.registry,
+            'slave',
+            self.session.bind
+            )
 
     def tearDown(self):
         testing.tearDown()
@@ -694,8 +700,8 @@ class AnshinCheckoutAPITest(unittest.TestCase):
             u'</item>'
             u'<item>'
             u'<itemId>1</itemId>'
-            u'<itemNumbers>2</itemNumbers>'
-            u'<itemFee>10</itemFee>'
+            u'<itemNumbers>1</itemNumbers>'
+            u'<itemFee>20</itemFee>'
             u'<itemName>item 1</itemName>'
             u'</item>'
             u'<item>'
@@ -781,8 +787,8 @@ class AnshinCheckoutAPITest(unittest.TestCase):
             u'</item>'
             u'<item>'
             u'<itemId>1</itemId>'
-            u'<itemNumbers>2</itemNumbers>'
-            u'<itemFee>10</itemFee>'
+            u'<itemNumbers>1</itemNumbers>'
+            u'<itemFee>20</itemFee>'
             u'<itemName>item 1</itemName>'
             u'</item>'
             u'<item>'
@@ -881,8 +887,8 @@ class AnshinCheckoutAPITest(unittest.TestCase):
             u'</item>'
             u'<item>'
             u'<itemId>1</itemId>'
-            u'<itemNumbers>2</itemNumbers>'
-            u'<itemFee>10</itemFee>'
+            u'<itemNumbers>1</itemNumbers>'
+            u'<itemFee>20</itemFee>'
             u'<itemName>item 1</itemName>'
             u'</item>'
             u'<item>'
