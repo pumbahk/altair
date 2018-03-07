@@ -1,40 +1,29 @@
-<%inherit file="../layout.html" />
+<%inherit file="../layout_resp.html" />
 
-<h2>購入履歴の確認</h2>
-
-<div class="memberLogin" style="width: 93%">
-
-<dl>
-<dd>
-<form action="${request.route_path('order_review.show')}" method="post">
-<table width="323" border="0" cellpadding="0" cellspacing="0" class="member nobdr" align="center">
-<tbody>
-<tr>
-<th align="right">受付番号 <span class="red">*</span></th>
-<td align="left">
-<div class="tal">
-${form.order_no}<br/>
-(例: RT00000000AB)
-<span class="red">${h.render_errors(request, form.order_no.errors)}</span>
-</div>
-</td>
-</tr>
-<tr>
-<th align="right">電話番号 <span class="red">*</span></th>
-<td align="left">
-<div class="tal">
-${form.tel}<br/>
-(例: 080xxxxyyyy)
-<span class="red">${h.render_errors(request, form.tel.errors)}</span><br/>
-電話番号は、ご登録時の電話番号をご入力ください（携帯・自宅をどちらもご登録した場合、どちらの番号でも構いません)
-</div>
-</td>
-</tr>
-
-</tbody>
-</table>
-<p><input type="submit" value="次に進む" class="btnLogin" style="width:200px;height:40px;line-height:40px;"></p>
-</form>
-</dd>
-</dl>
+<h2 class="heading-primary">購入履歴の確認</h2>
+<div class="confirm-wrap">
+  <form class="confirmForm" action="${request.route_path('order_review.show')}" method="post">
+    <table class="customer-table login-tbl">
+      <tbody>
+        <tr>
+          <th>受付番号 <span class="icon-required">必須</span></th>
+          <td>
+            ${form.order_no(placeholder=u'例: RT00000000AB')}
+            <span class="clr_red">${h.render_errors(request, form.order_no.errors)}</span>
+          </td>
+        </tr>
+        <tr>
+          <th>電話番号 <span class="icon-required">必須</span></th>
+          <td>
+            ${form.tel(placeholder=u'例: 080xxxxyyyy')}
+            <span class="clr_red">${h.render_errors(request, form.tel.errors)}</span>
+            <p class="annot">電話番号は、ご登録時の電話番号をご入力ください。</p>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="confirm-btnBox">
+      <input type="submit" value="次に進む" class="btn btn-primary">
+    </div>
+  </form>
 </div>
