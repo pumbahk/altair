@@ -1,6 +1,6 @@
 var _rollbarConfig = {
   accessToken: "9b73abba03a846dcb6bb06333d7c0b33",
-  ignoredMessages: ["TypeError: undefined is not an object (evaluating 'document.getElementsByClassName(classNames[i])[0].contentWindow')"],
+  ignoredMessages: ["TypeError: undefined is not an object \(evaluating 'document\.getElementsByClassName\(classNames\[i\]\)\[0\]\.contentWindow'\)"],
   captureUncaught: true,
   captureUnhandledRejections: true,
   autoInstrument: true,
