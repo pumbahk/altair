@@ -12,35 +12,19 @@ from altair.app.ticketing.core.models import DeliveryMethod, DeliveryMethodPlugi
 from altair.saannotation import get_annotations_for
 from altair.app.ticketing.payments.plugins import SEJ_DELIVERY_PLUGIN_ID, QR_DELIVERY_PLUGIN_ID, FAMIPORT_DELIVERY_PLUGIN_ID, RESERVE_NUMBER_DELIVERY_PLUGIN_ID, QR_AES_DELIVERY_PLUGIN_ID
 
-ALLOW_QR_AES_ORG = [66]
-HT_ORG_ID = 66
-
 def get_msg(target):
     msg = u'手数料は「予約ごと」または「{}」どちらか一方を入力してください。<br/>'
     msg += u'取得しない手数料は「0」を入力してください。'
     msg = Markup(msg.format(target))
     return msg
 
-def get_pmps(organization_id):
-    """
-    ## 暫定対応、QR_AESはHT以外のORGが見えないようにする。
-    :param organization_id:
-    :return pmps:
-    """
-    if organization_id in ALLOW_QR_AES_ORG:
-        pmps = [(pmp.id, pmp.name) for pmp in DeliveryMethodPlugin.all()]
-    else:
-        pmps = [(pmp.id, pmp.name) for pmp in DeliveryMethodPlugin.all() if pmp.id != QR_AES_DELIVERY_PLUGIN_ID]
-
-    return pmps
+def get_dmp():
+    return [(dmp.id, dmp.name) for dmp in DeliveryMethodPlugin.all() if dmp.id != QR_AES_DELIVERY_PLUGIN_ID]
 
 class DeliveryMethodForm(OurForm):
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
         OurForm.__init__(self, formdata, obj, prefix, **kwargs)
-
-        ## 暫定対応、QR_AESはHT以外のORGが見えないようにする。
-        organization_id = self.organization_id.data or kwargs.get('organization_id')
-        self.delivery_plugin_id.choices=get_pmps(int(organization_id)) if organization_id else []
+        self.delivery_plugin_id.choices = get_dmp()
 
     def _get_translations(self):
         return Translations()
@@ -137,12 +121,6 @@ class DeliveryMethodForm(OurForm):
             DynSwitchDisabled('{delivery_plugin_id} <> "%d"' % QR_DELIVERY_PLUGIN_ID)
             ]
         )
-    allow_sp_qr_aes = OurBooleanField(
-        label=u'スマートフォンでの表示',
-        validators=[
-            DynSwitchDisabled('{delivery_plugin_id} <> "%d"' % QR_AES_DELIVERY_PLUGIN_ID)
-        ]
-    )
     expiration_date = OurTextField(
         label=u'チケット有効期限 (相対)',
         validators=[
