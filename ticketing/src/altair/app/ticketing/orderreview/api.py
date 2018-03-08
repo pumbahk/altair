@@ -85,6 +85,7 @@ def send_to_orion(request, context, recipient, data):
     obj['coupons'] = list()
     obj['coupons'].append(dict(name = seat.name if seat is not None else product.name,
                                qr = (orion.qr_enabled==1),
+                               toggle_enabled = (orion.toggle_enabled==1),
                                pattern = orion.pattern))
     if (not orion.coupon_2_name is None) and (not orion.coupon_2_name == u''):
         obj['coupons'].append(dict(name = orion.coupon_2_name, qr = (orion.coupon_2_qr_enabled==1), pattern = orion.coupon_2_pattern))

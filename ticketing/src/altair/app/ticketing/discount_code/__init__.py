@@ -3,10 +3,16 @@ from altair.app.ticketing import newRootFactory
 
 
 def includeme(config):
-    from .resources import DiscountCodeSettingResource, DiscountCodeCodesResource, DiscountCodeTargetResource
+    from .resources import (
+        DiscountCodeSettingResource,
+        DiscountCodeCodesResource,
+        DiscountCodeTargetResource,
+        DiscountCodeReportResource
+    )
     dcs_factory = newRootFactory(DiscountCodeSettingResource)
     dcc_factory = newRootFactory(DiscountCodeCodesResource)
     dct_factory = newRootFactory(DiscountCodeTargetResource)
+    dcr_factory = newRootFactory(DiscountCodeReportResource)
 
     # クーポン・割引コード設定
     config.add_route('discount_code.settings_index', '/settings/', factory=dcs_factory)
@@ -27,6 +33,10 @@ def includeme(config):
     config.add_route('discount_code.target_confirm', '/target/{setting_id}/confirm', factory=dct_factory)
     config.add_route('discount_code.target_register', '/target/{setting_id}/register', factory=dct_factory)
 
+    # 帳票
+    config.add_route('discount_code.report_print', '/report/print/{setting_id}', factory=dcr_factory)
+
+    # 外部通信API
     config.include('.communicators')
 
     config.scan('.')

@@ -23,7 +23,7 @@
                     <p class="ticketQtyTtl">枚数</p>
                     <button id="minus-btn" class="iconMinus disabled" (click)="minusClick()"><span></span></button>
                     <p id="ticketSheet">{{quantity}}</p>
-                    <button id="plus-btn"  class="iconPlus" (click)="plusClick()"><span></span></button>
+                    <button id="plus-btn"  class="iconPlus {{plusBtnClass}}" (click)="plusClick()"><span></span></button>
                 </div>
             </div>
             <div class="modalBtnBox" *ngIf="nextButtonFlag">
