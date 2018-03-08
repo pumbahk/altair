@@ -8,6 +8,13 @@ sys.stdout = codecs.getwriter('utf_8')(sys.stdout)
 sys.stdin = codecs.getreader('utf_8')(sys.stdin)
 
 from altair.app.ticketing.csvutils import UnicodeWriter
+from altair.app.ticketing.helpers.admin import AdminHelperAdapter
+from altair.viewhelpers.datetime_ import DefaultDateTimeFormatter, DateTimeHelper
+
+date_time_formatter = DefaultDateTimeFormatter()
+# 変数名はテンプレートファイルでの表記に合わせて作成
+HH = AdminHelperAdapter(request)
+vh = DateTimeHelper(date_time_formatter)
 
 queue = cStringIO.StringIO()
 writer = UnicodeWriter(queue)
@@ -16,6 +23,9 @@ writer.writerow([
     u"コードID",
     u"クーポン・割引コード",
     u"予約番号",
+    u"ステータス",
+    u"決済",
+    u"配送",
     u"使用日時",
     u"オペレーター名",
     u"作成日時",
@@ -27,9 +37,12 @@ for code in codes:
         code.id,
         code.code,
         order_no,
-        code.used_at,
+        HH.order_status_string(code.order),
+        HH.payment_status_string(code.order),
+        HH.delivery_status_string(code.order),
+        vh.datetime(code.used_at, with_weekday=True),
         code.operator.name,
-        code.created_at
+        vh.datetime(code.created_at, with_weekday=True)
     ]
     str_list = [unicode('' if elm is None else elm) for elm in c_list]
     writer.writerow(str_list)

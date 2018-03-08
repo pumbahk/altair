@@ -3,19 +3,26 @@
 import unittest
 from pyramid import testing
 
-class MatchUpPerformanceSelectorTests(unittest.TestCase):
+class PerformaceSelectorTestsBase(object):
     maxDiff = None
 
     def setUp(self):
         self.config = testing.setUp()
+        self.request = testing.DummyRequest(
+            translate=lambda t: t,
+            accept_language=testing.DummyModel(
+                best_match=lambda a, b: 'ja'
+            ),
+            organization=testing.DummyModel(
+                setting=testing.DummyModel(i18n=False),
+            ),
+        )
 
     def tearDown(self):
         testing.tearDown()
 
     def _getTarget(self):
-        from .performanceselector import MatchUpPerformanceSelector
-        return MatchUpPerformanceSelector
-
+        raise NotImplementedError
 
     def _makeOne(self, *args, **kwargs):
         return self._getTarget()(*args, **kwargs)
@@ -23,40 +30,36 @@ class MatchUpPerformanceSelectorTests(unittest.TestCase):
     def test_iface(self):
         from zope.interface.verify import verifyObject
         from .interfaces import IPerformanceSelector
-        request = testing.DummyRequest()
-        request.context = testing.DummyResource(request=request,
+
+        self.request.context = testing.DummyResource(request=self.request,
                                                 available_sales_segments=[])
-        target = self._makeOne(request)
-        
+        target = self._makeOne(self.request)
+
         verifyObject(IPerformanceSelector, target)
-        self.assertEqual(target.request, request)
-        self.assertEqual(target.context, request.context)
+        self.assertEqual(target.request, self.request)
+        self.assertEqual(target.context, self.request.context)
 
     def test_zero(self):
-        request = testing.DummyRequest()
-        request.context = testing.DummyResource(request=request,
+        self.request.context = testing.DummyResource(request=self.request,
                                                 available_sales_segments=[])
 
-        target = self._makeOne(request)
+        target = self._makeOne(self.request)
         result = target()
 
         self.assertEqual(len(result), 0)
+
+class MatchUpPerformanceSelectorTests(PerformaceSelectorTestsBase, unittest.TestCase):
+
+    def _getTarget(self):
+        from .performanceselector import MatchUpPerformanceSelector
+        return MatchUpPerformanceSelector
 
     def test_a_sales_segment(self):
         self.config.add_route('cart.seat_types2', '/testing/seat_types2/{performance_id}/{sales_segment_id}')
         self.config.add_route('cart.order', '/testing/order/{sales_segment_id}')
         from datetime import datetime
-        request = testing.DummyRequest(
-            translate=lambda t:t,
-            accept_language=testing.DummyModel(
-                best_match=lambda a,b:'ja'
-            ),
-            organization=testing.DummyModel(
-                setting=testing.DummyModel(i18n=False),
-            ),
-        )
-        request.context = testing.DummyResource(
-            request=request,
+        self.request.context = testing.DummyResource(
+            request=self.request,
             event=DummyEvent(id=123),
             available_sales_segments=[
                 DummySalesSegment(
@@ -104,7 +107,7 @@ class MatchUpPerformanceSelectorTests(unittest.TestCase):
                 ]
             )
 
-        target = self._makeOne(request)
+        target = self._makeOne(self.request)
         result = target()
 
         self.assertEqual(len(result), 2)
@@ -141,60 +144,19 @@ class MatchUpPerformanceSelectorTests(unittest.TestCase):
                           'name_mobile': u'2013年4月1日(月) - 4月2日(火) テスト会場 前売券',
                           })
 
-class DatePerformanceSelectorTests(unittest.TestCase):
+class DatePerformanceSelectorTests(PerformaceSelectorTestsBase, unittest.TestCase):
     maxDiff = None
-
-    def setUp(self):
-        self.config = testing.setUp()
-
-    def tearDown(self):
-        testing.tearDown()
 
     def _getTarget(self):
         from .performanceselector import DatePerformanceSelector
         return DatePerformanceSelector
 
-
-    def _makeOne(self, *args, **kwargs):
-        return self._getTarget()(*args, **kwargs)
-
-    def test_iface(self):
-        from zope.interface.verify import verifyObject
-        from .interfaces import IPerformanceSelector
-        request = testing.DummyRequest()
-        request.context = testing.DummyResource(request=request,
-                                                available_sales_segments=[])
-        target = self._makeOne(request)
-        
-        verifyObject(IPerformanceSelector, target)
-        self.assertEqual(target.request, request)
-        self.assertEqual(target.context, request.context)
-
-    def test_zero(self):
-        request = testing.DummyRequest()
-        request.context = testing.DummyResource(request=request,
-                                                available_sales_segments=[])
-
-        target = self._makeOne(request)
-        result = target()
-
-        self.assertEqual(len(result), 0)
-
     def test_a_sales_segment(self):
         self.config.add_route('cart.seat_types2', '/testing/seat_types2/{performance_id}/{sales_segment_id}')
         self.config.add_route('cart.order', '/testing/order/{sales_segment_id}')
         from datetime import datetime
-        request = testing.DummyRequest(
-            translate=lambda t:t,
-            accept_language=testing.DummyModel(
-                best_match=lambda a,b:'ja'
-            ),
-            organization=testing.DummyModel(
-                setting=testing.DummyModel(i18n=False),
-            ),
-        )
-        request.context = testing.DummyResource(
-            request=request,
+        self.request.context = testing.DummyResource(
+            request=self.request,
             event=DummyEvent(id=123),
             available_sales_segments=[
                 DummySalesSegment(
@@ -256,7 +218,7 @@ class DatePerformanceSelectorTests(unittest.TestCase):
                 ]
             )
 
-        target = self._makeOne(request)
+        target = self._makeOne(self.request)
         result = target()
 
         self.assertEqual(len(result), 3)

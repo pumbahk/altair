@@ -1,0 +1,56 @@
+# -*- coding: utf-8 -*-
+<%page args="codes" /><%
+
+import cStringIO
+import codecs, sys
+
+sys.stdout = codecs.getwriter('utf_8')(sys.stdout)
+sys.stdin = codecs.getreader('utf_8')(sys.stdin)
+
+from altair.app.ticketing.csvutils import UnicodeWriter
+from altair.app.ticketing.helpers.admin import AdminHelperAdapter
+from altair.viewhelpers.datetime_ import DefaultDateTimeFormatter, DateTimeHelper
+
+date_time_formatter = DefaultDateTimeFormatter()
+# 変数名はテンプレートファイルでの表記に合わせて作成
+HH = AdminHelperAdapter(request)
+vh = DateTimeHelper(date_time_formatter)
+
+queue = cStringIO.StringIO()
+writer = UnicodeWriter(queue)
+
+writer.writerow([
+    u"クーポン・割引コード",
+    u"予約番号",
+    u"ステータス",
+    u"決済",
+    u"配送",
+    u"使用日時",
+    u"商品金額",
+    u"割引金額",
+    u"席種名",
+    u"イベント名",
+    u"公演名",
+    u"開演日時",
+    u"会員区分",
+])
+
+for code in codes:
+    c_list = [
+        code.code,
+        code.Order.order_no,
+        HH.order_status_string(code.Order),
+        HH.payment_status_string(code.Order),
+        HH.delivery_status_string(code.Order),
+        vh.datetime(code.used_at, with_weekday=True),
+        code.ordered_product_item_price,
+        code.applied_amount,
+        code.product_name,
+        code.event_title,
+        code.performance_name,
+        vh.datetime(code.performance_start_on, with_weekday=True),
+        code.member_group_name,
+    ]
+    str_list = [unicode('' if elm is None else elm) for elm in c_list]
+    writer.writerow(str_list)
+%>${queue.getvalue().decode("utf-8") | n}

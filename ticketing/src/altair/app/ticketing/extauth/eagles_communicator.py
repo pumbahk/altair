@@ -134,7 +134,7 @@ class EaglesCommunicator(object):
                                 )
                             )
                         )
-                    for member in members
+                    for member in sorted(members, key=lambda x: x['course_id'])
                     ]
                 )
         except KeyError as e:

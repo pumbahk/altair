@@ -3,10 +3,19 @@
 import logging
 
 import webhelpers.paginate as paginate
-from altair.app.ticketing.core.models import Event, Performance
+from altair.app.ticketing.core.models import Event, Performance, Product
 from altair.app.ticketing.core.utils import PageURL_WebOb_Ex
-from altair.app.ticketing.discount_code.models import DiscountCodeSetting, DiscountCodeTarget, DiscountCodeCode
+from altair.app.ticketing.discount_code.models import (DiscountCodeSetting,
+                                                       DiscountCodeTarget,
+                                                       DiscountCodeCode,
+                                                       UsedDiscountCodeOrder)
+from altair.app.ticketing.orders.models import (
+    OrderedProduct,
+    OrderedProductItem,
+    Order
+)
 from altair.app.ticketing.resources import TicketingAdminResource
+from altair.app.ticketing.users.models import MemberGroup
 from altair.sqlahelper import get_db_session
 from sqlalchemy.sql import and_
 from sqlalchemy.sql import func
@@ -22,22 +31,11 @@ class DiscountCodeSettingResource(TicketingAdminResource):
         self.session = get_db_session(request, name="slave")
 
         self._upper_following_2to4_digits()
-        self._make_empty_first_4_digits_if_needed()
 
     def _upper_following_2to4_digits(self):
         """POSTされたパラメータを大文字に変更"""
         if 'following_2to4_digits' in self.request.POST:
             self.request.POST['following_2to4_digits'] = self.request.POST['following_2to4_digits'].upper()
-
-    def _make_empty_first_4_digits_if_needed(self):
-        """コード管理元が自社でなければ有効期間は空にする"""
-        if 'issued_by' in self.request.POST:
-            if self.request.POST['issued_by'] != 'own':
-                at_list = ['start_at', 'end_at']
-                unit_list = ['year', 'month', 'day', 'hour', 'minute']
-                for at in at_list:
-                    for unit in unit_list:
-                        self.request.POST['{}.{}'.format(at, unit)] = u''
 
     @staticmethod
     def delete_discount_code_setting(setting):
@@ -235,3 +233,43 @@ class DiscountCodeTargetResource(TicketingAdminResource):
             ).all()
 
         return targets
+
+
+class DiscountCodeReportResource(TicketingAdminResource):
+    def __init__(self, request):
+        super(DiscountCodeReportResource, self).__init__(request)
+
+        self.request = request
+        self.session = get_db_session(request, name="slave")
+        self.setting_id = request.matchdict['setting_id']
+
+    def get_used_discount_order_by_setting_id(self):
+        codes = self.session.query(
+            UsedDiscountCodeOrder.id.label('used_discount_code_order_id'),
+            UsedDiscountCodeOrder.code,
+            Order,
+            UsedDiscountCodeOrder.created_at.label('used_at'),
+            Product.name.label('product_name'),
+            OrderedProductItem.price.label('ordered_product_item_price'),
+            UsedDiscountCodeOrder.applied_amount,
+            Event.title.label('event_title'),
+            Performance.name.label('performance_name'),
+            Performance.start_on.label('performance_start_on'),
+            MemberGroup.name.label('member_group_name')
+        ).join(
+            OrderedProductItem,
+            OrderedProduct,
+            Product,
+            Order,
+            Performance,
+            Event,
+            MemberGroup
+        ).filter(
+            UsedDiscountCodeOrder.discount_code_setting_id == self.setting_id
+        ).order_by(
+            UsedDiscountCodeOrder.code.asc(),
+            UsedDiscountCodeOrder.created_at.desc(),
+            UsedDiscountCodeOrder.id.desc()
+        ).all()
+
+        return codes

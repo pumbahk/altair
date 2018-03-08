@@ -115,10 +115,8 @@ def get_discount_price(ordered_product_item_token):
     price = 0
     used_codes = ordered_product_item_token.used_discount_codes
     if used_codes:
-        price = ordered_product_item_token.item.price * len(used_codes)
-        # TODO https://jira.rakuten-it.com/jira/browse/TKT-5063対応。恒久的にはこちらを使用する。
-        # for used in used_codes:
-        #     price = price + used.applied_amount
+        for used in used_codes:
+            price = price + used.applied_amount
     return price
 
 
@@ -336,7 +334,8 @@ def cancel_used_discount_codes(request, order, now=None):
 
             first_4_digits = code.code[:4]
             code_setting = order.cart.performance.find_available_target_settings(first_4_digits=first_4_digits,
-                                                                                 for_delete=True)
+                                                                                 for_delete=True,
+                                                                                 now=now)
             if code_setting.issued_by == u'own':
                 code.discount_code.used_at = None
             elif code_setting.issued_by == u'sports_service':

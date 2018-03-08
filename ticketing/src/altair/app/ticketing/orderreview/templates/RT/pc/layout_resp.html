@@ -21,34 +21,52 @@
 </head>
 
 <body class="confirm">
-<div class="ts-wrapper">
+  <div class="ts-wrapper">
 
-<!-- ******************** header [start] ******************** -->
-<header class="ts-header">
-<div class="ts-header-inner">
-   
-<!-- ===== ts-header-wrap [start] ===== --> 
-<div class="ts-header-wrap">
+  <!-- ******************** header [start] ******************** -->
+  <header class="ts-header">
+    <div class="ts-header-inner">
+      <!-- ===== ts-header-wrap [start] ===== -->
+      <div class="ts-header-wrap">
+        <div class="ticket-logo-area ticket-logo-mypage">
+          <div class="ticket-logo-pc"><h1><a href="//ticket.rakuten.co.jp/"><span class="offleft">楽天チケット</span></a></h1></div>
+          <div class="ticket-logo-sp"><h1><a href="//ticket.rakuten.co.jp/"><span class="offleft">楽天チケット</span></a></h1></div>
+        </div>
+      </div>
+      <!-- ===== ts-header-wrap [end] ===== -->
+    </div>
+  </header>
+  <!-- ******************** header [end] ******************** -->
 
-<div class="ticket-logo-area ticket-logo-mypage">
-    <div class="ticket-logo-pc"><h1><a href="//ticket.rakuten.co.jp/"><span class="offleft">楽天チケット</span></a></h1></div>
-    <div class="ticket-logo-sp"><h1><a href="//ticket.rakuten.co.jp/"><span class="offleft">楽天チケット</span></a></h1></div>
-</div>
+  <!-- ******************** contents [start] ******************** -->
+  <div class="ts-contents">
+    <div class="ts-contents-inner">
+      ${next.body()}
+    </div>
+  </div>
+  <!-- ******************** contents [end] ******************** -->
 
-</div><!-- ===== ts-header-wrap [end] ===== --> 
+  <!-- ******************** header [start] ******************** -->
+  <footer class="ts-footer">
+    <div class="ts-footer-inner">
+      <!-- ===== ts-header-wrap [start] ===== -->
+      <div class="ts-footer-wrap">
+        <nav class="ts-footer-nav">
+          <ul>
+            <li><a href="http://www.ticketstar.jp/corporate/">運営会社</a></li>
+            <li><a href="${h.safe_get_contact_url(request)}">お問い合わせ</a></li>
+            <li><a href="http://privacy.rakuten.co.jp/">個人情報保護方針</a></li>
+            <li><a href="http://www.ticketstar.jp/legal/">特定商取引法に基づく表示</a></li>
+            <li><a href="http://ticket.rakuten.co.jp/terms">サービス利用規約</a></li>
+          </ul>
+        </nav>
+      </div>
+      <!-- ===== ts-header-wrap [end] ===== -->
+    </div>
+  </footer>
+  <!-- ******************** header [end] ******************** -->
 
-</div></header><!-- ******************** header [end] ******************** -->
-
-<!-- ******************** contents [start] ******************** -->
-<div class="ts-contents">
-<div class="ts-contents-inner">
-
-${next.body()}
-
-</div></div>
-<!-- ******************** contents [end] ******************** -->
-
-</div>
+  </div>
 %if request.organization.setting.sitecatalyst_use:
 <%include file="altair.app.ticketing.orderreview:templates/RT/common/sitecatalyst.html"/>
 %endif

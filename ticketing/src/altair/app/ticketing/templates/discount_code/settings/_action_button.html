@@ -21,6 +21,11 @@
             url=request.route_path('discount_code.codes_index', setting_id=s_id),
             icon='icon-pencil',
         ),
+        'report':dict(
+            label=u'帳票',
+            url=request.route_path('discount_code.report_print', setting_id=s_id),
+            icon='icon-pencil',
+        ),
         'delete':dict(
             label=u'削除',
             url='javascript:delete_setting({});'.format(s_id),
@@ -29,7 +34,7 @@
         ),
       }
 
-    order_list = ['edit', 'target', 'code', 'delete']
+    order_list = ['edit', 'target', 'code', 'report', 'delete']
 
     if setting.issued_by != 'own':
         actions.pop('code', None)
