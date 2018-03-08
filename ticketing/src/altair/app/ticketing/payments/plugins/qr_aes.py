@@ -57,7 +57,7 @@ def deliver_completion_viewlet(context, request):
     tickets = []
 
     if single_qr_mode:
-        qr_aes_plugin = lookup_qr_aes_plugin(request, context.organization.code)
+        qr_aes_plugin = lookup_qr_aes_plugin(request, request.organization.code)
         qr_aes_plugin.get_matched_history_from_order(order)
         ticket = QRTicket(
             order=order,
