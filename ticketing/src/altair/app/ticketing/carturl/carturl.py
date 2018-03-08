@@ -8,6 +8,7 @@ logger = logging.getLogger(__name__)
 from zope.interface import implementer
 from .interfaces import IURLBuilder
 from altair.app.ticketing.core.models import Host
+from altair.app.ticketing.payments.plugins import QR_DELIVERY_PLUGIN_ID
 
 def _url_builder(scheme, host_name, path, query_dict):
     query = urllib.urlencode(query_dict, True)
@@ -208,25 +209,18 @@ class OrderReviewQRURLBuilder(object):
     def __init__(self, path_prefix):
         self.path_prefix = path_prefix.rstrip("/")
 
-    def build_path(self, ticket_id, sign):
-        return u"{0}/qr/{1}/{2}/".format(self.path_prefix, ticket_id, sign)
-
-    def build_path_aes(self, sign):
-        return u"{0}/qr_aes/{1}/".format(self.path_prefix, sign)
+    def build_path(self, ticket_id, sign, qr_type):
+        if qr_type == QR_DELIVERY_PLUGIN_ID:
+            return u"{0}/qr/{1}/{2}/".format(self.path_prefix, ticket_id, sign)
+        else:
+            return u"{0}/qr_aes/{1}/".format(self.path_prefix, sign)
 
     def build_hostname(self, request, organization):
         return guess_host_name_from_request(request, organization=organization)
 
-    def build(self, request, ticket_id, sign, organization=None):
+    def build(self, request, ticket, organization=None, qr_type=QR_DELIVERY_PLUGIN_ID):
         organization = organization or request.context.organization
         scheme = _get_scheme_from_request(request)
         host_name = self.build_hostname(request, organization)
-        path = self.build_path(ticket_id, sign)
-        return _url_builder(scheme, host_name, path, {})
-
-    def build_aes_url(self, request, sign, organization=None):
-        organization = organization or request.context.organization
-        scheme = _get_scheme_from_request(request)
-        host_name = self.build_hostname(request, organization)
-        path = self.build_path_aes(sign)
+        path = self.build_path(ticket.id, ticket.sign, qr_type)
         return _url_builder(scheme, host_name, path, {})

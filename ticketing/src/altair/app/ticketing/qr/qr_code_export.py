@@ -57,7 +57,7 @@ def main(request, org_code=None, performance_id=None, from_date=None, prt_flg=No
         if single_qr_mode:
             qr = build_qr_by_order(request, order)
             printed_time = order.items[0].elements[0].printed_at if prt_flg else None
-            ticket = build_ticket(order, url_builder.build(request, qr.id, qr.sign), printed_time)
+            ticket = build_ticket(order, url_builder.build(request, qr), printed_time)
             tickets.append(ticket)
         else:
             opts = [element for item in order.items for element in item.elements]
