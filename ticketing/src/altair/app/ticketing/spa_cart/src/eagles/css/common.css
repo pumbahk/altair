@@ -533,7 +533,7 @@ a {
     letter-spacing: 0.1em;
   }
   .inner {
-    min-width: 768px;
+    min-width: 769px;
     max-width: 1300px;
     margin: 0 auto;
     padding: 0 20px;
@@ -1336,7 +1336,7 @@ a {
     1.ヘッダー
   ---------------------------------------------*/
   header {
-    min-width: 768px;
+    min-width: 769px;
     background: #860010;
     padding: 20px;
     position: relative;
