@@ -89,8 +89,10 @@ class VenueSiteDrawingProviderAdapter(object):
                     map_prefix = 'root'
                 elif 'mini' in map_tag :
                     map_prefix = 'mini'
-                else:
+                elif 'seats' in map_tag :
                     map_prefix = 'seat'
+                else:
+                    map_prefix = 'seat_group'
                 retval[map_prefix] = resolver.resolve(myurljoin(self._absolute_frontend_metadata_url, name))
             return dict(retval)
         else:

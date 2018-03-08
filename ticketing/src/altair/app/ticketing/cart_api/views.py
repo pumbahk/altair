@@ -125,6 +125,9 @@ class CartAPIView(object):
         if 'seat' not in drawings:
             reason += " seat data is none "
 
+        if 'seat_group' not in drawings:
+            reason += " seat_group data is none "
+
         if reason:
             return {
                 "results": {
@@ -136,13 +139,15 @@ class CartAPIView(object):
         root_map_url = drawings['root']
         mini_map_url = drawings['mini']
         seat_data_url = drawings['seat']
+        seat_group_data_url = drawings['seat_group']
         logger.debug("root_url=%s", root_map_url)
         logger.debug("mini_url=%s", mini_map_url)
         logger.debug("seat_url=%s", seat_data_url)
+        logger.debug("seat_group_url=%s", seat_group_data_url)
 
         reason = ""
-        if not root_map_url or not mini_map_url or not seat_data_url:
-            reason = "svg map_url & seats_data is none"
+        if not root_map_url or not mini_map_url or not seat_data_url or not seat_group_data_url:
+            reason = "svg map_url & seats_data & seat_group_data_url is none"
 
         if reason:
             return {
@@ -165,6 +170,7 @@ class CartAPIView(object):
                 venue_map_url=root_map_url,
                 mini_venue_map_url=mini_map_url,
                 seat_data_url=seat_data_url,
+                seat_group_data_url=seat_group_data_url,
             ),
             event=dict(
                 event_id=performance.event.id,
