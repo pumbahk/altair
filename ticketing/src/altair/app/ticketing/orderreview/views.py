@@ -52,8 +52,6 @@ import contextlib
 import re
 from functools import partial
 
-from altair.app.ticketing.qr.lookup import lookup_qr_aes_plugin
-
 from altair.app.ticketing.i18n import custom_locale_negotiator
 
 def jump_maintenance_page_om_for_trouble(organization):
@@ -1044,12 +1042,10 @@ def render_qr_aes_mail_viewlet(context, request):
     token = request.params['token']
     order_no = request.params['order_no']
     if token:
-        #ticket = build_ht_qr_by_token_id(request, order_no, token)
-        ticket = None
+        ticket = context.qr_aes_plugin.build_qr_by_token_id(order_no, token)
     else:
         order = get_order_by_order_no(request, order_no)
-        #ticket = build_ht_qr_by_order(request, order)
-        ticket = None
+        ticket = context.qr_aes_plugin.build_qr_by_order(order)
 
     if ticket is None:
         raise HTTPNotFound
