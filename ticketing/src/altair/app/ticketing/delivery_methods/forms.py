@@ -158,3 +158,10 @@ class DeliveryMethodForm(OurForm):
     def validate_fee_per_subticket(form, field):
         if form.data['fee_per_order'] and form.data[field.name]:
             raise ValidationError(get_msg(u'チケットごと:副券'))
+
+    # organizationによるカスタマイズフィールド名を取得メソッド
+    def get_customized_fields(self):
+        """
+        :return: list
+        """
+        return []

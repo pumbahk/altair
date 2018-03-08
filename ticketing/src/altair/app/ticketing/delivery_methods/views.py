@@ -71,16 +71,22 @@ class DeliveryMethods(BaseView):
 
         organization_setting = c_models.OrganizationSetting.filter_by(organization_id=self.context.user.organization_id).one()
         if f.validate():
-            delivery_method = merge_session_with_post(DeliveryMethod(), f.data, excludes={'single_qr_mode', 'expiration_date'})
-            delivery_method.preferences.setdefault(unicode(QR_DELIVERY_PLUGIN_ID), {})['single_qr_mode'] = f.single_qr_mode.data
+            # カスタマイズフィールドはpreferencesで保存されるため、excludesにフィールドを入れる
+            excludes = {'single_qr_mode', 'expiration_date'}
+            get_customized_fields = getattr(f, 'get_customized_fields', None)
+            customized_fields = get_customized_fields() if get_customized_fields else []
+            if customized_fields:
+                excludes.update(customized_fields)
+
+            delivery_method = merge_session_with_post(DeliveryMethod(), f.data, excludes=excludes)
             delivery_method.preferences.setdefault(unicode(RESERVE_NUMBER_DELIVERY_PLUGIN_ID), {})['expiration_date'] = f.expiration_date.data
 
-            if f.delivery_plugin_id.data == QR_AES_DELIVERY_PLUGIN_ID:
-                delivery_method.preferences.setdefault(unicode(QR_AES_DELIVERY_PLUGIN_ID), {})['single_qr_mode'] = f.single_qr_mode.data
-                get_qr_aes_field_names = getattr(f, 'get_qr_aes_field_names', None)
-                if get_qr_aes_field_names:
-                    for name in get_qr_aes_field_names():
-                        delivery_method.preferences.setdefault(unicode(QR_AES_DELIVERY_PLUGIN_ID), {})[name] = f[name].data
+            # QR系の引取方法しかsingle_qr_modeを使わない。（Falseの可能性があり）
+            if f.single_qr_mode.data is not None:
+                delivery_method.preferences.setdefault(unicode(f.delivery_plugin_id.data), {})['single_qr_mode'] = f.single_qr_mode.data
+            # カスタマイズフィールドの情報をpreferencesに入れる
+            for field_name in customized_fields:
+                delivery_method.preferences.setdefault(unicode(QR_AES_DELIVERY_PLUGIN_ID), {})[field_name] = f[field_name].data
 
             if organization_setting.i18n:
                 delivery_method.preferences.setdefault(u'en', {})['name'] = f.name_en.data
@@ -109,32 +115,31 @@ class DeliveryMethods(BaseView):
         qr_aes_delivery_form_maker = lookup_qr_aes_delivery_form_maker(self.request, self.context.organization.code)
 
         if qr_aes_delivery_form_maker:
-            form = qr_aes_delivery_form_maker.make_form(obj=obj)
+            f = qr_aes_delivery_form_maker.make_form(obj=obj)
         else:
-            form = DeliveryMethodForm(obj=obj)
+            f = DeliveryMethodForm(obj=obj)
 
-        form.single_qr_mode.data = obj.preferences.get(unicode(QR_DELIVERY_PLUGIN_ID), {}).get('single_qr_mode', False)
-        form.expiration_date.data = obj.preferences.get(unicode(RESERVE_NUMBER_DELIVERY_PLUGIN_ID), {}).get('expiration_date', None)
-
-        if obj.delivery_plugin_id == QR_AES_DELIVERY_PLUGIN_ID:
-            form.single_qr_mode.data = obj.preferences.get(unicode(QR_AES_DELIVERY_PLUGIN_ID), {}).get('single_qr_mode',False)
-            get_qr_aes_field_names = getattr(form, 'get_qr_aes_field_names', None)
-            if get_qr_aes_field_names:
-                for name in get_qr_aes_field_names():
-                    form._fields[name].data = obj.preferences.get(unicode(QR_AES_DELIVERY_PLUGIN_ID), {}).get(name, None)
+        f.expiration_date.data = obj.preferences.get(unicode(RESERVE_NUMBER_DELIVERY_PLUGIN_ID), {}).get('expiration_date', None)
+        # QR系の引取方法しかsingle_qr_modeを使わない。
+        f.single_qr_mode.data = obj.preferences.get(unicode(obj.delivery_plugin_id), {}).get('single_qr_mode', False)
+        # preferencesからカスタマイズフィールドの情報を取得（カスタマイズフィールドはdelivery_plugin_idに絞ってる）
+        get_customized_fields = getattr(f, 'get_customized_fields', None)
+        customized_fields = get_customized_fields() if get_customized_fields else []
+        for field_name in customized_fields:
+            f._fields[field_name].data = obj.preferences.get(unicode(obj.delivery_plugin_id), {}).get(field_name, None)
 
         organization_setting = c_models.OrganizationSetting.filter_by(organization_id=self.context.user.organization_id).one()
         if organization_setting.i18n:
-            form.name_en.data = obj.preferences.get(u'en', {}).get('name', u'')
-            form.description_en.data = obj.preferences.get(u'en', {}).get('description', u'')
-            form.name_zh_cn.data = obj.preferences.get(u'zh_CN', {}).get('name', u'')
-            form.description_zh_cn.data = obj.preferences.get(u'zh_CN', {}).get('description', u'')
-            form.name_zh_tw.data = obj.preferences.get(u'zh_TW', {}).get('name', u'')
-            form.description_zh_tw.data = obj.preferences.get(u'zh_TW', {}).get('description', u'')
-            form.name_ko.data = obj.preferences.get(u'ko', {}).get('name', u'')
-            form.description_ko.data = obj.preferences.get(u'ko', {}).get('description', u'')
+            f.name_en.data = obj.preferences.get(u'en', {}).get('name', u'')
+            f.description_en.data = obj.preferences.get(u'en', {}).get('description', u'')
+            f.name_zh_cn.data = obj.preferences.get(u'zh_CN', {}).get('name', u'')
+            f.description_zh_cn.data = obj.preferences.get(u'zh_CN', {}).get('description', u'')
+            f.name_zh_tw.data = obj.preferences.get(u'zh_TW', {}).get('name', u'')
+            f.description_zh_tw.data = obj.preferences.get(u'zh_TW', {}).get('description', u'')
+            f.name_ko.data = obj.preferences.get(u'ko', {}).get('name', u'')
+            f.description_ko.data = obj.preferences.get(u'ko', {}).get('description', u'')
         return {
-            'form': form,
+            'form': f,
             'i18n_org': organization_setting.i18n
             }
 
@@ -156,16 +161,21 @@ class DeliveryMethods(BaseView):
 
         organization_setting = c_models.OrganizationSetting.filter_by(organization_id=self.context.user.organization_id).one()
         if f.validate():
-            delivery_method = merge_session_with_post(delivery_method, f.data, excludes={'single_qr_mode', 'expiration_date'})
-            delivery_method.preferences.setdefault(unicode(QR_DELIVERY_PLUGIN_ID), {})['single_qr_mode'] = f.single_qr_mode.data
-            delivery_method.preferences.setdefault(unicode(RESERVE_NUMBER_DELIVERY_PLUGIN_ID), {})['expiration_date'] = f.expiration_date.data
+            # カスタマイズフィールドはpreferencesで保存されるため、excludesにフィールドを入れる
+            excludes = {'single_qr_mode', 'expiration_date'}
+            get_customized_fields = getattr(f, 'get_customized_fields', None)
+            customized_fields = get_customized_fields() if get_customized_fields else []
+            if customized_fields:
+                excludes.update(customized_fields)
 
-            if f.delivery_plugin_id.data == QR_AES_DELIVERY_PLUGIN_ID:
-                delivery_method.preferences.setdefault(unicode(QR_AES_DELIVERY_PLUGIN_ID), {})['single_qr_mode'] = f.single_qr_mode.data
-                get_qr_aes_field_names = getattr(f, 'get_qr_aes_field_names', None)
-                if get_qr_aes_field_names:
-                    for name in get_qr_aes_field_names():
-                        delivery_method.preferences.setdefault(unicode(QR_AES_DELIVERY_PLUGIN_ID), {})[name] = f[name].data
+            delivery_method = merge_session_with_post(delivery_method, f.data, excludes=excludes)
+            delivery_method.preferences.setdefault(unicode(RESERVE_NUMBER_DELIVERY_PLUGIN_ID), {})['expiration_date'] = f.expiration_date.data
+            # QR系の引取方法しかsingle_qr_modeを使わない。（Falseの可能性があり）
+            if f.single_qr_mode.data is not None:
+                delivery_method.preferences.setdefault(unicode(f.delivery_plugin_id.data), {})['single_qr_mode'] = f.single_qr_mode.data
+            # カスタマイズフィールドの情報をpreferencesに入れる
+            for field_name in customized_fields:
+                delivery_method.preferences.setdefault(unicode(QR_AES_DELIVERY_PLUGIN_ID), {})[field_name] = f[field_name].data
 
             if organization_setting.i18n:
                 delivery_method.preferences.setdefault(u'en', {})['name'] = f.name_en.data
