@@ -166,17 +166,19 @@ class PerformanceShowView(BaseView):
         cart_url = get_performance_cart_url_builder(self.request).build(
             self.request, self.performance)
         spa_cart_url = None
+        cart_now_spa_cart_url = None
         if self.context.organization.code == 'RE':
             spa_cart_url = get_performance_spa_cart_url_builder(self.request).build(
                 self.request, self.performance)
+            cart_now_spa_cart_url = get_cart_now_url_builder(self.request).build(
+                self.request, spa_cart_url, self.performance.event_id)
 
         data.update(dict(
             cart_url=cart_url,
             spa_cart_url =spa_cart_url,
             cart_now_cart_url=get_cart_now_url_builder(self.request).build(
                 self.request, cart_url, self.performance.event_id),
-            cart_now_spa_cart_url=get_cart_now_url_builder(self.request).build(
-                self.request, spa_cart_url, self.performance.event_id),
+            cart_now_spa_cart_url=cart_now_spa_cart_url,
         ))
         return data
 
