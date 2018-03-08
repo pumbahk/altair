@@ -161,6 +161,8 @@ export interface IPerformance {
   mini_venue_map_url: string;
   /** @type string - 個席データ */
   seat_data_url: string;
+  /** @type string - 個席グループデータ */
+  seat_group_data_url: string;
 }
 
 /** @interface 販売情報インタフェース */
