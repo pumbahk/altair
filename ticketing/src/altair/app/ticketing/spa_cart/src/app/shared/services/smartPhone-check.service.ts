@@ -27,21 +27,17 @@ export class SmartPhoneCheckService {
     return false;
   }
   /**
-* tablet(Android)かチェックを行います
+* スマホサイズのtablet(Android)かチェックを行います
 * ※769px以下はタブレットでもスマホ表示
-* @return {string} スマホ表示/SP,PC表示/PC,タブレットではない/null
+* @return {boolean} スマホ表示タブレット/true,タブレットではない/false
 */
-  isTablet() {
+  isTabletSP() {
     const WINDOW_SM = 768;
     var windowWidth = window.outerWidth;
     if (navigator.userAgent.indexOf('Android') > 0 && navigator.userAgent.indexOf('Mobile') < 0) {
       if (windowWidth <= WINDOW_SM) {
-        return "SP";
-      } else {
-        return "PC";
+        return true;
       }
-    } else {
-      return null;
-    }
+    return false;
   }
 }

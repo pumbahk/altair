@@ -919,7 +919,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
           $('.choiceAreaAcdBox').css('display', 'block');
         } else {
           $('.choiceAreaAcdBox').css('display', 'none');
-          if (this.scaleTotal >= SCALE_SEAT && this.smartPhoneCheckService.isTablet() == "SP") {
+          if (this.scaleTotal >= SCALE_SEAT && this.smartPhoneCheckService.isTabletSP()) {
             this.seatSelectDisplay(false);
             this.stockTypeDataService.sendToSeatListFlag(false);
           }
@@ -1015,7 +1015,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
   sideError() {
     let orientation = window.orientation;
     let height = $("#mapImgBox").height();
-    if (this.smartPhoneCheckService.isSmartPhone() || this.smartPhoneCheckService.isTablet() == "SP") {
+    if (this.smartPhoneCheckService.isSmartPhone() || this.smartPhoneCheckService.isTabletSP()) {
       if (this.scaleTotal >= SCALE_SEAT) {
         height = height - 280;
       }
@@ -1418,7 +1418,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
     //true/拡大を戻す、false/拡大
     if (flag) {
       //スマホ表示
-      if (this.smartPhoneCheckService.isSmartPhone() || this.smartPhoneCheckService.isTablet() == "SP") {
+      if (this.smartPhoneCheckService.isSmartPhone() || this.smartPhoneCheckService.isTabletSP()) {
         if (orientation == 0 || orientation == 180) {//縦向き
           if (this.seatAreaHeight) {
             $('#mapAreaLeft').css({
@@ -1434,7 +1434,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
         this.stockTypeDataService.sendToSeatListFlag(true);
       }
     } else {
-      if (this.smartPhoneCheckService.isSmartPhone() || this.smartPhoneCheckService.isTablet() == "SP") {
+      if (this.smartPhoneCheckService.isSmartPhone() || this.smartPhoneCheckService.isTabletSP()) {
         if (orientation == 0 || orientation == 180) {//縦向き
           $('#mapAreaLeft').css({
             'height': windowHeight - allHead,
@@ -2051,7 +2051,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
     let viewBox = this.getPresentViewBox();
     let width: any;
     let height: any;
-    if (this.smartPhoneCheckService.isSmartPhone() || this.smartPhoneCheckService.isTablet() == "SP") {
+    if (this.smartPhoneCheckService.isSmartPhone() || this.smartPhoneCheckService.isTabletSP()) {
       width = 2000;
       height = 1250;
     } else {
@@ -2079,7 +2079,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
     let viewBox = this.getPresentViewBox();
     let width: any;
     let height: any;
-    if (this.smartPhoneCheckService.isSmartPhone() || this.smartPhoneCheckService.isTablet() == "SP") {
+    if (this.smartPhoneCheckService.isSmartPhone() || this.smartPhoneCheckService.isTabletSP()) {
       width = 2000;
       height = 1250;
     } else {
@@ -2112,7 +2112,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
     if ($(".choiceAreaAcdBox").css('display') == "block") {
       $('.choiceAreaAcdBox').slideToggle(300).hide();
     }
-    if (this.smartPhoneCheckService.isSmartPhone() || this.smartPhoneCheckService.isTablet() == "SP") {
+    if (this.smartPhoneCheckService.isSmartPhone() || this.smartPhoneCheckService.isTabletSP()) {
       setTimeout(function () {
         $("#modalWindowAlertBox").css({
           'top': "-37px",
