@@ -145,8 +145,8 @@ from altair.app.ticketing.tickets.utils import build_cover_dict_from_order
 from altair.app.ticketing.core.models import TicketCover
 
 ## ハウステンボス専用のQRコードユーティリティ
-from altair.app.ticketing.project_specific.huistenbosch.qr_utilits import build_ht_qr_by_token
-
+#from altair.app.ticketing.project_specific.huistenbosch.qr_utilits import build_ht_qr_by_token
+from altair.app.ticketing.qr.lookup import lookup_qr_aes_plugin
 # XXX
 INNER_DELIVERY_PLUGIN_IDS = [
     payments_plugins.SHIPPING_DELIVERY_PLUGIN_ID,
@@ -1400,29 +1400,34 @@ class OrderDetailView(OrderBaseView):
         order = Order.get(order_id, self.context.organization.id)
         qr_type = order.delivery_plugin_id
         url_builder = get_orderreview_qr_url_builder(self.request)
-        qr_preferences = order.payment_delivery_pair.delivery_method.preferences.get(unicode(payments_plugins.QR_DELIVERY_PLUGIN_ID), {})
+        qr_preferences = order.payment_delivery_pair.delivery_method.preferences.get(unicode(qr_type), {})
         single_qr_mode = qr_preferences.get('single_qr_mode', False)
         tickets = []
         if single_qr_mode:
-            qr = build_qr_by_order(self.request, order)
-            qr_id = qr.id
-            qr_sign = qr.sign if hasattr(qr, 'sign') else None
+            if qr_type == payments_plugins.QR_AES_DELIVERY_PLUGIN_ID:
+                qr_aes_plugin = lookup_qr_aes_plugin(self.request, self.context.organization.code)
+                qr = qr_aes_plugin.build_qr_by_order(order)
+            else:
+                qr = build_qr_by_order(self.request, order)
+
+            url = url_builder.build(self.request, qr, qr_type=qr_type)
             tickets.append({
                 'token': None,
                 'element': None,
                 'item': None,
                 'qr': qr,
-                'url': url_builder.build(self.request, qr_id, qr_sign)
+                'url': url
                 })
         else:
             tokens = [(token, element, item) for item in order.items for element in item.elements for token in element.tokens]
             for token, element, item in tokens:
                 if qr_type == payments_plugins.QR_AES_DELIVERY_PLUGIN_ID:
-                    qr = build_ht_qr_by_token(self.request, order.order_no, token)
-                    url = url_builder.build_aes_url(self.request, qr.sign)
+                    qr_aes_plugin = lookup_qr_aes_plugin(self.request, self.context.organization.code)
+                    qr = qr_aes_plugin.build_qr_by_token(order.order_no, token)
                 else:
                     qr = build_qr_by_token(self.request, order.order_no, token)
-                    url = url_builder.build(self.request, qr.id, qr.sign)
+
+                url = url_builder.build(self.request, qr, qr_type=qr_type)
                 tickets.append({
                     'token': token,
                     'element': element,
