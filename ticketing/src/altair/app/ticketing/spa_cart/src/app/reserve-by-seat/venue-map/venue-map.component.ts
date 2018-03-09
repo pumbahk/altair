@@ -497,18 +497,19 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
       that.originalViewBox = that.getPresentViewBox();
       // viewBox取得　且つ　座席選択領域の高さを取得
 
-      if ((that.originalViewBox) && (that.mapAreaLeftH >= SIDE_HEIGHT) || that.smartPhoneCheckService.isPC() && that.mapAreaLeftH) {
+      if ((that.originalViewBox && (that.mapAreaLeftH >= SIDE_HEIGHT)) ||
+        (that.originalViewBox && that.smartPhoneCheckService.isPC() && that.mapAreaLeftH)) {
         clearInterval(svgLoadCompleteTimer);
-          that.displayViewBox = that.originalViewBox.concat();
-          that.seatAreaHeight = $("#mapImgBox").height();
-          that.svgMap = document.getElementById('mapImgBox').firstElementChild;
-          that.D_Width = $(that.svgMap).innerWidth(); // 表示窓のwidth
-          that.D_Height = $(that.svgMap).innerHeight(); // 表示窓のheight
-          that.saveSeatData();
-          that.mapHome(true);
-          that.endTime = new Date();
-          that._logger.info(that.endTime - that.startTime + "ms");
-        }
+        that.displayViewBox = that.originalViewBox.concat();
+        that.seatAreaHeight = $("#mapImgBox").height();
+        that.svgMap = document.getElementById('mapImgBox').firstElementChild;
+        that.D_Width = $(that.svgMap).innerWidth(); // 表示窓のwidth
+        that.D_Height = $(that.svgMap).innerHeight(); // 表示窓のheight
+        that.saveSeatData();
+        that.mapHome(true);
+        that.endTime = new Date();
+        that._logger.info(that.endTime - that.startTime + "ms");
+      }
     }, 100);
 
     if (this.smartPhoneCheckService.isPC()) {
