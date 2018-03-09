@@ -4,9 +4,11 @@ from datetime import datetime
 
 from altair.app.ticketing.cart.exceptions import OwnDiscountCodeDuplicateError, NotAllowedBenefitUnitError
 from altair.app.ticketing.orders.exceptions import OrderCancellationError
+from altair.sqlahelper import get_db_session
 from communicators.utils import get_communicator
 from pyramid.httpexceptions import HTTPFound
 from pyramid.i18n import TranslationString as _
+from sqlalchemy import func
 from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 from .models import DiscountCodeSetting, DiscountCodeCode, UsedDiscountCodeCart, UsedDiscountCodeOrder
 
@@ -118,6 +120,24 @@ def get_discount_price(ordered_product_item_token):
         for used in used_codes:
             price = price + used.applied_amount
     return price
+
+
+def get_discount_price_from_ordered_product(op):
+    """
+    :param op: OrderedProductオブジェクト
+    :return: discount_price: 商品ごとの割引金額。
+    """
+    from altair.app.ticketing.orders.models import OrderedProductItem
+    from pyramid.threadlocal import get_current_request
+    result = get_db_session(get_current_request(), 'slave').query(
+        func.sum(UsedDiscountCodeOrder.applied_amount).label('discount_price')
+    ).join(
+        OrderedProductItem
+    ).filter(
+        OrderedProductItem.ordered_product_id == op.id
+    ).one()
+
+    return result.discount_price if result.discount_price else 0
 
 
 def enable_discount_code(organization):
