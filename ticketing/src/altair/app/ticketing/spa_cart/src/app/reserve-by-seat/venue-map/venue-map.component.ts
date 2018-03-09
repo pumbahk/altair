@@ -2109,7 +2109,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
   }
   //SP、検索エリアがアクティブ時のモーダルのトップ調整
   modalTopCss() {
-    if ($(".choiceAreaAcdBox").css('display') == "block") {
+    if ($(".choiceAreaAcdBox").css('display') == "block" && (this.smartPhoneCheckService.isSmartPhone() || this.smartPhoneCheckService.isTabletSP())) {
       $('.choiceAreaAcdBox').slideToggle(300).hide();
     }
     if (this.smartPhoneCheckService.isSmartPhone() || this.smartPhoneCheckService.isTabletSP()) {
