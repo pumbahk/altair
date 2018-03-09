@@ -55,8 +55,13 @@ export class ReserveBySeatComponent implements OnInit {
           $('.acdBt').click(function () {
             $(this).next().slideToggle(300);
           }).next().hide();
-        })
+        });
+      } else {
+        $('.acdBt').click(function () {
+          $(this).next().slideToggle(300);
+        });
       }
+
 
       function setting() {
         var mainH;
