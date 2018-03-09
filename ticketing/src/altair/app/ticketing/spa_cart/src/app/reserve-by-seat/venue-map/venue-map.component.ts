@@ -343,7 +343,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
               this._logger.debug(`get StockTypesAll(#${this.performanceId}) success`, response);
               let stockTypes: IStockType[] = response.data.stock_types;
               for (let i = 0, len = stockTypes.length; i < len; i++) {
-                if (!this.smartPhoneCheckService.isSmartPhone() && !this.smartPhoneCheckService.isIpad() && !this.smartPhoneCheckService.isTablet()) {
+                if (this.smartPhoneCheckService.isPC()) {
                   //紐づく商品の最小価格、最大価格を求める
                   let minPrice: number;
                   let maxPrice: number;
@@ -456,7 +456,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
               }
             }
 
-            if (!that.smartPhoneCheckService.isSmartPhone() && !that.smartPhoneCheckService.isIpad() && !that.smartPhoneCheckService.isTablet()) {
+            if (that.smartPhoneCheckService.isPC()) {
               //ツールチップ用属性の設定
               that.tooltipStockType.forEach(function (value) {
                 if (value.region) {
@@ -497,9 +497,8 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
       that.originalViewBox = that.getPresentViewBox();
       // viewBox取得　且つ　座席選択領域の高さを取得
 
-      if ((that.originalViewBox) && (that.mapAreaLeftH >= SIDE_HEIGHT) ||
-      (!that.smartPhoneCheckService.isSmartPhone() && !that.smartPhoneCheckService.isIpad() && !that.smartPhoneCheckService.isTablet()) && that.mapAreaLeftH) {
-          clearInterval(svgLoadCompleteTimer);
+      if ((that.originalViewBox) && (that.mapAreaLeftH >= SIDE_HEIGHT) || that.smartPhoneCheckService.isPC() && that.mapAreaLeftH) {
+        clearInterval(svgLoadCompleteTimer);
           that.displayViewBox = that.originalViewBox.concat();
           that.seatAreaHeight = $("#mapImgBox").height();
           that.svgMap = document.getElementById('mapImgBox').firstElementChild;
@@ -512,7 +511,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
         }
     }, 100);
 
-    if (!this.smartPhoneCheckService.isSmartPhone() && !this.smartPhoneCheckService.isIpad() && !this.smartPhoneCheckService.isTablet()) {
+    if (this.smartPhoneCheckService.isPC()) {
       //ツールチップの表示
       $('#mapAreaLeft').on('mouseenter', '.region', function (e) {
         let tooltip = '';
@@ -1184,7 +1183,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
     if (this.changeRgb($(e.target).css('fill')) == SEAT_COLOR_AVAILABLE) {
       if (!this.viewSelectNum || this.viewSelectNum >= this.selectedSeatList.length + 1) {
         $(e.target).css({ 'fill': SEAT_COLOR_SELECTED });
-        if (!this.smartPhoneCheckService.isSmartPhone() && !this.smartPhoneCheckService.isIpad() && !this.smartPhoneCheckService.isTablet()) {
+        if (this.smartPhoneCheckService.isPC()) {
           this.selectedSeatName = decodeURIComponent($(e.target).attr('title'));
         } else {
           this.selectedSeatName = decodeURIComponent($(e.target).children('title').text());
@@ -1228,7 +1227,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
               $("#" + this.selectedGroupIds[i]).children().remove();
             }
             $(this.svgMap).find('#' + this.selectedGroupIds[i]).css({ 'fill': SEAT_COLOR_SELECTED });
-            if (!this.smartPhoneCheckService.isSmartPhone() && !this.smartPhoneCheckService.isIpad() && !this.smartPhoneCheckService.isTablet()) {
+            if (this.smartPhoneCheckService.isPC()) {
               this.selectedSeatGroupNames.push(decodeURIComponent($(this.svgMap).find('#' + this.selectedGroupIds[i]).attr('title')));
             } else {
               this.selectedSeatGroupNames.push(decodeURIComponent($(this.svgMap).find('#' + this.selectedGroupIds[i])[0].attributes[9].value));
@@ -1247,7 +1246,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
             $("#" + this.selectedGroupIds[i]).children().remove();
           }
           $(this.svgMap).find('#' + this.selectedGroupIds[i]).css({ 'fill': SEAT_COLOR_SELECTED });
-          if (!this.smartPhoneCheckService.isSmartPhone() && !this.smartPhoneCheckService.isIpad() && !this.smartPhoneCheckService.isTablet()) {
+          if (this.smartPhoneCheckService.isPC()) {
             this.selectedSeatGroupNames.push(decodeURIComponent($(this.svgMap).find('#' + this.selectedGroupIds[i]).attr('title')));
           } else {
             this.selectedSeatGroupNames.push(decodeURIComponent($(this.svgMap).find('#' + this.selectedGroupIds[i])[0].attributes[9].value));
@@ -1588,7 +1587,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
     }
 
     $('.seat').remove();
-    if (!this.smartPhoneCheckService.isSmartPhone() && !this.smartPhoneCheckService.isIpad() && !this.smartPhoneCheckService.isTablet()) {
+    if (this.smartPhoneCheckService.isPC()) {
       $('svg').find('title').remove();
     }
   }
@@ -1696,7 +1695,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
           $('#' + this.seats[i].seat_l0_id).css({ 'fill': SEAT_COLOR_AVAILABLE });
         }
 
-        if (!this.smartPhoneCheckService.isSmartPhone() && !this.smartPhoneCheckService.isIpad() && !this.smartPhoneCheckService.isTablet()) {
+        if (this.smartPhoneCheckService.isPC()) {
           let stockType = this.seats[i].stock_type_id ? this.tooltipStockType[this.seats[i].stock_type_id] : null;
           if (stockType) {
             $('#' + this.seats[i].seat_l0_id).attr({

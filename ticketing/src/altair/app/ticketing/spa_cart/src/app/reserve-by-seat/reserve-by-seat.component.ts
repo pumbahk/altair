@@ -76,6 +76,8 @@ export class ReserveBySeatComponent implements OnInit {
                 minus = 149;
               }
               let mainID = 'mapAreaLeft';
+              windowH = $(window).height();
+              mainH = windowH - minus;
               //スマホサイズのPC対応
               if (!($('#modalWindowStockTypeAlertBox').length) && !($('#buyChoiceSeatArea').length)) {
                 $('#' + mainID).height(mainH + 'px');
