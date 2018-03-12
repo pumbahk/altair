@@ -3979,6 +3979,8 @@ var View_ReserveBySeatComponent0 = (function (_super) {
         this._VenuemapComponent_32_4.check_filterComponent(currVal_32_0_0, throwOnChange, false);
         var currVal_32_0_1 = this.context.mapAreaLeftH;
         this._VenuemapComponent_32_4.check_mapAreaLeftH(currVal_32_0_1, throwOnChange, false);
+        var currVal_32_0_2 = this.context.isGetMapH;
+        this._VenuemapComponent_32_4.check_isGetMapH(currVal_32_0_2, throwOnChange, false);
         this._VenuemapComponent_32_4.ngDoCheck(this, this._el_32, throwOnChange);
         this.compView_22.internalDetectChanges(throwOnChange);
         this.compView_26.internalDetectChanges(throwOnChange);
@@ -4726,6 +4728,7 @@ var Wrapper_VenuemapComponent = (function () {
         this.context = new __WEBPACK_IMPORTED_MODULE_0__app_reserve_by_seat_venue_map_venue_map_component__["a" /* VenuemapComponent */](p0, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15);
         this._expr_0 = __WEBPACK_IMPORTED_MODULE_1__angular_core_src_change_detection_change_detection_util__["b" /* UNINITIALIZED */];
         this._expr_1 = __WEBPACK_IMPORTED_MODULE_1__angular_core_src_change_detection_change_detection_util__["b" /* UNINITIALIZED */];
+        this._expr_2 = __WEBPACK_IMPORTED_MODULE_1__angular_core_src_change_detection_change_detection_util__["b" /* UNINITIALIZED */];
     }
     Wrapper_VenuemapComponent.prototype.ngOnDetach = function (view, componentView, el) {
     };
@@ -4744,6 +4747,13 @@ var Wrapper_VenuemapComponent = (function () {
             this._changed = true;
             this.context.mapAreaLeftH = currValue;
             this._expr_1 = currValue;
+        }
+    };
+    Wrapper_VenuemapComponent.prototype.check_isGetMapH = function (currValue, throwOnChange, forceUpdate) {
+        if ((forceUpdate || __WEBPACK_IMPORTED_MODULE_3__angular_core_src_linker_view_utils__["checkBinding"](throwOnChange, this._expr_2, currValue))) {
+            this._changed = true;
+            this.context.isGetMapH = currValue;
+            this._expr_2 = currValue;
         }
     };
     Wrapper_VenuemapComponent.prototype.ngDoCheck = function (view, el, throwOnChange) {
@@ -8377,9 +8387,8 @@ var ReserveByQuantityComponent = (function () {
                                 'width': '100%',
                                 'height': '100%',
                             });
-                            if (_this.smartPhoneCheckService.isSmartPhone()) {
-                                _this.modalSizeObtained();
-                            }
+                            //おまかせ表示前デザイン設定
+                            _this.modalSizeObtained();
                             _this.stockType = response.data.stock_types[0];
                             //席種名と商品情報取得
                             _this.stockTypeName = _this.stockType.stock_type_name;
@@ -9211,147 +9220,108 @@ var ReserveBySeatComponent = (function () {
         this.loadingService = loadingService;
         // マップの高さ
         this.mapAreaLeftH = 0;
+        // マップの高さ取得フラグ
+        this.isGetMapH = false;
     }
     ReserveBySeatComponent.prototype.ngOnInit = function () {
         //ローディング表示
         this.loadingService.setValue(true);
         var that = this;
-        //ここからmainHeight.js
         __WEBPACK_IMPORTED_MODULE_2_jquery__(function () {
-            var mainH;
-            var windowH;
             var windowWidth = __WEBPACK_IMPORTED_MODULE_2_jquery__(window).width();
             var windowSm = 768;
+            //filterの初期表示
             if (windowWidth <= windowSm) {
-                //横幅768px以下のとき（つまりスマホ時）に行う処理を書く
-                __WEBPACK_IMPORTED_MODULE_2_jquery__(document).ready(function () {
-                    __WEBPACK_IMPORTED_MODULE_2_jquery__('.acdTp').click(function () {
-                        __WEBPACK_IMPORTED_MODULE_2_jquery__(this).prev().slideToggle(300);
-                    }).prev().hide();
-                });
-                //filterのtoggle
                 __WEBPACK_IMPORTED_MODULE_2_jquery__(document).ready(function () {
                     __WEBPACK_IMPORTED_MODULE_2_jquery__('.acdBt').click(function () {
                         __WEBPACK_IMPORTED_MODULE_2_jquery__(this).next().slideToggle(300);
                     }).next().hide();
                 });
-                __WEBPACK_IMPORTED_MODULE_2_jquery__(function () {
-                    function heightSetting() {
-                        var minus = 0;
-                        if (__WEBPACK_IMPORTED_MODULE_2_jquery__('#modalWindow').length) {
-                            minus = 149;
-                        }
-                        else if (__WEBPACK_IMPORTED_MODULE_2_jquery__('#choiceSeatArea').length) {
-                            minus = 280;
-                        }
-                        else {
-                            minus = 149;
-                        }
-                        var mainID = 'mapAreaLeft';
-                        var windowH = __WEBPACK_IMPORTED_MODULE_2_jquery__(window).height();
-                        var mainH = windowH - minus;
-                        if (mainH <= 0) {
-                            mainH = 190;
-                        }
-                        that.mapAreaLeftH = mainH;
-                        __WEBPACK_IMPORTED_MODULE_2_jquery__('#' + mainID).height(mainH + 'px');
-                    }
-                    __WEBPACK_IMPORTED_MODULE_2_jquery__(document).ready(function () {
-                        heightSetting();
-                    });
-                    //リサイズ時の縦幅調整
-                    __WEBPACK_IMPORTED_MODULE_2_jquery__(window).resize(function () {
-                        heightSetting();
-                    });
-                });
-                __WEBPACK_IMPORTED_MODULE_2_jquery__(function () {
-                    if (__WEBPACK_IMPORTED_MODULE_2_jquery__('#modalWindow').length) {
-                        //venue-mapの席種詳細モーダルが存在した場合
-                        //reserve-by-quantityが存在した場合
-                        __WEBPACK_IMPORTED_MODULE_2_jquery__(function () {
-                            var minus = 114;
-                            var mainID = 'modalWindow';
-                            function heightSetting() {
-                                windowH = __WEBPACK_IMPORTED_MODULE_2_jquery__(window).height();
-                                mainH = windowH - minus;
-                                __WEBPACK_IMPORTED_MODULE_2_jquery__('#' + mainID).height(mainH + 'px');
-                            }
-                            heightSetting();
-                            __WEBPACK_IMPORTED_MODULE_2_jquery__(window).resize(function () {
-                                heightSetting();
-                            });
-                        });
-                    }
-                });
-                __WEBPACK_IMPORTED_MODULE_2_jquery__(function () {
-                    var minus = 114;
-                    var mainID = 'modalWindowAlertBoxInner';
-                    function heightSetting() {
-                        windowH = __WEBPACK_IMPORTED_MODULE_2_jquery__(window).height();
-                        mainH = windowH - minus;
-                        __WEBPACK_IMPORTED_MODULE_2_jquery__('#' + mainID).height(mainH + 'px');
-                    }
-                    heightSetting();
-                    __WEBPACK_IMPORTED_MODULE_2_jquery__(window).resize(function () {
-                        heightSetting();
-                    });
-                });
             }
             else {
-                //横幅768px超のとき（タブレット、PC）に行う処理を書く
-                /***********************************************************/
-                __WEBPACK_IMPORTED_MODULE_2_jquery__(function () {
-                    if (!(__WEBPACK_IMPORTED_MODULE_2_jquery__('#choiceSeatArea, #buySeatArea, #buyChoiceSeatArea').length)) {
-                        //ここに「＃sample」が存在しなかった場合の処理を記述
-                        __WEBPACK_IMPORTED_MODULE_2_jquery__('#mapAreaLeft').addClass('noSide');
-                        __WEBPACK_IMPORTED_MODULE_2_jquery__('#mapBtnBox').addClass('mapBtnBoxR');
-                        __WEBPACK_IMPORTED_MODULE_2_jquery__('#mapNaviBox').addClass('mapNaviBoxR');
-                        __WEBPACK_IMPORTED_MODULE_2_jquery__('#mapAreaRight').addClass('dNone');
-                    }
-                });
-                /***********************************************************/
-                __WEBPACK_IMPORTED_MODULE_2_jquery__(function () {
-                    //var minus = 220
-                    var minus = 240;
-                    var mainID = 'mapAreaLeft';
-                    function heightSetting() {
-                        windowH = __WEBPACK_IMPORTED_MODULE_2_jquery__(window).height();
-                        mainH = windowH - minus;
-                        that.mapAreaLeftH = mainH;
-                        __WEBPACK_IMPORTED_MODULE_2_jquery__('#' + mainID + ',#mapImgBox svg').height(mainH + 'px');
-                    }
-                    heightSetting();
-                    __WEBPACK_IMPORTED_MODULE_2_jquery__(window).resize(function () {
-                        heightSetting();
-                    });
-                });
-                __WEBPACK_IMPORTED_MODULE_2_jquery__(function () {
-                    var minus = 220;
-                    var mainID = 'mapAreaRight';
-                    function heightSetting() {
-                        windowH = __WEBPACK_IMPORTED_MODULE_2_jquery__(window).height();
-                        mainH = windowH - minus;
-                        __WEBPACK_IMPORTED_MODULE_2_jquery__('#' + mainID).height(mainH + 'px');
-                    }
-                    heightSetting();
-                    __WEBPACK_IMPORTED_MODULE_2_jquery__(window).resize(function () {
-                        heightSetting();
-                    });
-                });
-                __WEBPACK_IMPORTED_MODULE_2_jquery__(function () {
-                    var minus = 169;
-                    var mainID = 'buySeatArea';
-                    function heightSetting() {
-                        windowH = __WEBPACK_IMPORTED_MODULE_2_jquery__(window).height();
-                        mainH = windowH - minus;
-                        __WEBPACK_IMPORTED_MODULE_2_jquery__('#' + mainID).height(mainH + 'px');
-                    }
-                    heightSetting();
-                    __WEBPACK_IMPORTED_MODULE_2_jquery__(window).resize(function () {
-                        heightSetting();
-                    });
+                __WEBPACK_IMPORTED_MODULE_2_jquery__('.acdBt').click(function () {
+                    __WEBPACK_IMPORTED_MODULE_2_jquery__(this).next().slideToggle(300);
                 });
             }
+            function setting() {
+                var mainH;
+                var windowH;
+                var windowWidth = __WEBPACK_IMPORTED_MODULE_2_jquery__(window).width();
+                var windowSm = 768;
+                if (windowWidth <= windowSm) {
+                    //横幅768px以下のとき（つまりスマホ時）に行う処理を書く
+                    __WEBPACK_IMPORTED_MODULE_2_jquery__(function () {
+                        function heightSetting() {
+                            var minus = 0;
+                            if (__WEBPACK_IMPORTED_MODULE_2_jquery__('#modalWindow').length) {
+                                minus = 149;
+                            }
+                            else if (__WEBPACK_IMPORTED_MODULE_2_jquery__('#choiceSeatArea').length) {
+                                minus = 280;
+                            }
+                            else {
+                                minus = 149;
+                            }
+                            var mainID = 'mapAreaLeft';
+                            windowH = __WEBPACK_IMPORTED_MODULE_2_jquery__(window).height();
+                            mainH = windowH - minus;
+                            //スマホサイズのPC対応
+                            if (!(__WEBPACK_IMPORTED_MODULE_2_jquery__('#modalWindowStockTypeAlertBox').length) && !(__WEBPACK_IMPORTED_MODULE_2_jquery__('#buyChoiceSeatArea').length)) {
+                                __WEBPACK_IMPORTED_MODULE_2_jquery__('#' + mainID).height(mainH + 'px');
+                                that.mapAreaLeftH = mainH;
+                                that.isGetMapH = true;
+                            }
+                        }
+                        heightSetting();
+                    });
+                    __WEBPACK_IMPORTED_MODULE_2_jquery__(function () {
+                        var mainID = 'mapAreaRight';
+                        function heightSetting() {
+                            __WEBPACK_IMPORTED_MODULE_2_jquery__('#' + mainID).height("100%");
+                        }
+                        heightSetting();
+                    });
+                }
+                else {
+                    //横幅768px超のとき（タブレット、PC）に行う処理を書く
+                    __WEBPACK_IMPORTED_MODULE_2_jquery__(function () {
+                        var minus = 240;
+                        var mainID = 'mapAreaLeft';
+                        function heightSetting() {
+                            windowH = __WEBPACK_IMPORTED_MODULE_2_jquery__(window).height();
+                            mainH = windowH - minus;
+                            __WEBPACK_IMPORTED_MODULE_2_jquery__('#' + mainID).height(mainH + 'px');
+                            that.mapAreaLeftH = mainH;
+                            that.isGetMapH = true;
+                        }
+                        heightSetting();
+                    });
+                    __WEBPACK_IMPORTED_MODULE_2_jquery__(function () {
+                        var minus = 220;
+                        var mainID = 'mapAreaRight';
+                        function heightSetting() {
+                            windowH = __WEBPACK_IMPORTED_MODULE_2_jquery__(window).height();
+                            mainH = windowH - minus;
+                            __WEBPACK_IMPORTED_MODULE_2_jquery__('#' + mainID).height(mainH + 'px');
+                        }
+                        heightSetting();
+                    });
+                    __WEBPACK_IMPORTED_MODULE_2_jquery__(function () {
+                        var minus = 169;
+                        var mainID = 'buySeatArea';
+                        function heightSetting() {
+                            windowH = __WEBPACK_IMPORTED_MODULE_2_jquery__(window).height();
+                            mainH = windowH - minus;
+                            __WEBPACK_IMPORTED_MODULE_2_jquery__('#' + mainID).height(mainH + 'px');
+                        }
+                        heightSetting();
+                    });
+                }
+            }
+            setting();
+            __WEBPACK_IMPORTED_MODULE_2_jquery__(window).resize(function () {
+                setting();
+            });
         });
         /*/////////////////////PC・SP両方/////////////////////////*/
         __WEBPACK_IMPORTED_MODULE_2_jquery__(function () {
@@ -9381,47 +9351,6 @@ var ReserveBySeatComponent = (function () {
                 }
             });
         });
-        __WEBPACK_IMPORTED_MODULE_2_jquery__(document).ready(function () {
-            __WEBPACK_IMPORTED_MODULE_2_jquery__(".methodExplanation").hide();
-            // show the info that is already clicked
-            var clicked_item = __WEBPACK_IMPORTED_MODULE_2_jquery__("input[id^='radio']").filter(':checked');
-            __WEBPACK_IMPORTED_MODULE_2_jquery__(clicked_item).parent().next().show();
-            __WEBPACK_IMPORTED_MODULE_2_jquery__("dt.settlement-list").on('click', function (e) {
-                e.preventDefault();
-                var clicked_radio = __WEBPACK_IMPORTED_MODULE_2_jquery__(this).find("input[id^='radio']");
-                var index = __WEBPACK_IMPORTED_MODULE_2_jquery__("input[id^='radio']").index(clicked_radio);
-                var vis_item = __WEBPACK_IMPORTED_MODULE_2_jquery__(".methodExplanation:visible");
-                // uncheck the radio and close the info block when it is clicked again
-                if (__WEBPACK_IMPORTED_MODULE_2_jquery__(clicked_radio).is(':checked') && __WEBPACK_IMPORTED_MODULE_2_jquery__(this).next().is(':visible')) {
-                    __WEBPACK_IMPORTED_MODULE_2_jquery__(clicked_radio).prop('checked', false);
-                    __WEBPACK_IMPORTED_MODULE_2_jquery__(this).next().slideUp();
-                }
-                else {
-                    var do_shift = false;
-                    var shift = 0;
-                    // decide whether the position setting needs to include the height of previous info block
-                    if (__WEBPACK_IMPORTED_MODULE_2_jquery__(vis_item).length === 1) {
-                        var vis_index = __WEBPACK_IMPORTED_MODULE_2_jquery__(".methodExplanation").index(__WEBPACK_IMPORTED_MODULE_2_jquery__(vis_item));
-                        // if the index of visible item is less than that of the clicked item.
-                        do_shift = vis_index < index;
-                    }
-                    // set the position to be shifted.
-                    if (do_shift) {
-                        var margin = +__WEBPACK_IMPORTED_MODULE_2_jquery__(vis_item).css('margin-top').replace("px", "");
-                        margin += +__WEBPACK_IMPORTED_MODULE_2_jquery__(vis_item).css('margin-bottom').replace("px", "");
-                        shift = __WEBPACK_IMPORTED_MODULE_2_jquery__(vis_item).height() + margin;
-                    }
-                    __WEBPACK_IMPORTED_MODULE_2_jquery__(".methodExplanation").slideUp();
-                    __WEBPACK_IMPORTED_MODULE_2_jquery__(this).next().slideDown();
-                    __WEBPACK_IMPORTED_MODULE_2_jquery__(clicked_radio).prop('checked', true);
-                    // shift the position to show the info properly
-                    __WEBPACK_IMPORTED_MODULE_2_jquery__('html, body').animate({
-                        scrollTop: __WEBPACK_IMPORTED_MODULE_2_jquery__(this).offset().top - shift
-                    });
-                }
-            });
-        });
-        //////////////////////////////////////////////////////////ここから上mainHeight.js
     };
     ReserveBySeatComponent.prototype.ngAfterViewInit = function () {
         //ローディング非表示
@@ -9842,7 +9771,7 @@ var VenuemapComponent = (function () {
                         _this._logger.debug("get StockTypesAll(#" + _this.performanceId + ") success", response);
                         var stockTypes = response.data.stock_types;
                         for (var i = 0, len = stockTypes.length; i < len; i++) {
-                            if (!_this.smartPhoneCheckService.isSmartPhone() && !_this.smartPhoneCheckService.isIpad()) {
+                            if (_this.smartPhoneCheckService.isPC()) {
                                 //紐づく商品の最小価格、最大価格を求める
                                 var minPrice = void 0;
                                 var maxPrice = void 0;
@@ -9944,7 +9873,7 @@ var VenuemapComponent = (function () {
                                 __WEBPACK_IMPORTED_MODULE_14_jquery__(that.svgMap).find('#' + regions[i].region_id).find('.coloring_region').css({ 'fill': REGION_COLOR_MANY_SEATS });
                             }
                         }
-                        if (!that.smartPhoneCheckService.isSmartPhone() && !that.smartPhoneCheckService.isIpad()) {
+                        if (that.smartPhoneCheckService.isPC()) {
                             //ツールチップ用属性の設定
                             that.tooltipStockType.forEach(function (value) {
                                 if (value.region) {
@@ -9979,8 +9908,9 @@ var VenuemapComponent = (function () {
                 return;
             }
             that.originalViewBox = that.getPresentViewBox();
-            // viewBox取得　且つ　reserve-by-seatの高さが取得
-            if ((that.originalViewBox) && (that.mapAreaLeftH != 0)) {
+            // viewBox取得　且つ　座席選択領域の高さを取得
+            if ((that.originalViewBox && (that.mapAreaLeftH >= SIDE_HEIGHT)) ||
+                (that.originalViewBox && that.smartPhoneCheckService.isPC() && that.mapAreaLeftH)) {
                 clearInterval(svgLoadCompleteTimer);
                 that.displayViewBox = that.originalViewBox.concat();
                 that.seatAreaHeight = __WEBPACK_IMPORTED_MODULE_14_jquery__("#mapImgBox").height();
@@ -9993,7 +9923,7 @@ var VenuemapComponent = (function () {
                 that._logger.info(that.endTime - that.startTime + "ms");
             }
         }, 100);
-        if (!this.smartPhoneCheckService.isSmartPhone() && !this.smartPhoneCheckService.isIpad()) {
+        if (this.smartPhoneCheckService.isPC()) {
             //ツールチップの表示
             __WEBPACK_IMPORTED_MODULE_14_jquery__('#mapAreaLeft').on('mouseenter', '.region', function (e) {
                 var tooltip = '';
@@ -10330,16 +10260,10 @@ var VenuemapComponent = (function () {
         // リサイズ処理
         var getHightTimer = null;
         var resizeTimer = null;
-        var orientation = window.orientation;
         var that = this;
         //初期表示時横の場合
         getHightTimer = setInterval(function () {
-            that.seatAreaHeight = __WEBPACK_IMPORTED_MODULE_14_jquery__("#mapImgBox").height();
-            if (that.seatAreaHeight > 0) {
-                that.sideError();
-                clearTimeout(getHightTimer);
-            }
-            else if (that.seatAreaHeight == 0 && orientation == 90 || orientation == -90 && _this.smartPhoneCheckService.isSmartPhone()) {
+            if (_this.isGetMapH) {
                 that.sideError();
                 clearTimeout(getHightTimer);
             }
@@ -10350,9 +10274,9 @@ var VenuemapComponent = (function () {
             }
             resizeTimer = setTimeout(function () {
                 _this.sideError();
-                if (that.originalViewBox && that.mapAreaLeftH != 0) {
+                if (that.originalViewBox && that.mapAreaLeftH > 0) {
                     if (_this.countSelect == 0) {
-                        if (!_this.smartPhoneCheckService.isSmartPhone()) {
+                        if (__WEBPACK_IMPORTED_MODULE_14_jquery__(window).width() > WINDOW_SM) {
                             //席種リストの表示
                             _this.stockTypeDataService.sendToSeatListFlag(true);
                         }
@@ -10394,6 +10318,17 @@ var VenuemapComponent = (function () {
                         else if (parseFloat(_this.displayViewBox[1]) + parseFloat(_this.displayViewBox[3]) < parseFloat(resizeViewBox[1]) + parseFloat(resizeViewBox[3])) {
                             _this.mapHome();
                         }
+                    }
+                }
+                //スマホ表示からPC+タブレット表示になった際の検索部分表示
+                if (__WEBPACK_IMPORTED_MODULE_14_jquery__(window).width() > WINDOW_SM) {
+                    __WEBPACK_IMPORTED_MODULE_14_jquery__('.choiceAreaAcdBox').css('display', 'block');
+                }
+                else {
+                    __WEBPACK_IMPORTED_MODULE_14_jquery__('.choiceAreaAcdBox').css('display', 'none');
+                    if (_this.scaleTotal >= SCALE_SEAT && _this.smartPhoneCheckService.isTabletSP()) {
+                        _this.seatSelectDisplay(false);
+                        _this.stockTypeDataService.sendToSeatListFlag(false);
                     }
                 }
             }, 200);
@@ -10484,7 +10419,13 @@ var VenuemapComponent = (function () {
     //画面が横向きだった場合エラーモーダルを出す
     VenuemapComponent.prototype.sideError = function () {
         var orientation = window.orientation;
-        if (__WEBPACK_IMPORTED_MODULE_14_jquery__("#mapImgBox").height() < SIDE_HEIGHT && (orientation == 90 || orientation == -90)) {
+        var height = __WEBPACK_IMPORTED_MODULE_14_jquery__("#mapImgBox").height();
+        if (this.smartPhoneCheckService.isSmartPhone() || this.smartPhoneCheckService.isTabletSP()) {
+            if (this.scaleTotal >= SCALE_SEAT) {
+                height = height - 280;
+            }
+        }
+        if (height < SIDE_HEIGHT && (orientation == 90 || orientation == -90)) {
             this.sideProhibition = true;
             this.resizeCssTrue();
         }
@@ -10652,7 +10593,7 @@ var VenuemapComponent = (function () {
         if (this.changeRgb(__WEBPACK_IMPORTED_MODULE_14_jquery__(e.target).css('fill')) == SEAT_COLOR_AVAILABLE) {
             if (!this.viewSelectNum || this.viewSelectNum >= this.selectedSeatList.length + 1) {
                 __WEBPACK_IMPORTED_MODULE_14_jquery__(e.target).css({ 'fill': SEAT_COLOR_SELECTED });
-                if (!this.smartPhoneCheckService.isSmartPhone() && !this.smartPhoneCheckService.isIpad()) {
+                if (this.smartPhoneCheckService.isPC()) {
                     this.selectedSeatName = decodeURIComponent(__WEBPACK_IMPORTED_MODULE_14_jquery__(e.target).attr('title'));
                 }
                 else {
@@ -10699,7 +10640,7 @@ var VenuemapComponent = (function () {
                             __WEBPACK_IMPORTED_MODULE_14_jquery__("#" + this.selectedGroupIds[i]).children().remove();
                         }
                         __WEBPACK_IMPORTED_MODULE_14_jquery__(this.svgMap).find('#' + this.selectedGroupIds[i]).css({ 'fill': SEAT_COLOR_SELECTED });
-                        if (!this.smartPhoneCheckService.isSmartPhone() && !this.smartPhoneCheckService.isIpad()) {
+                        if (this.smartPhoneCheckService.isPC()) {
                             this.selectedSeatGroupNames.push(decodeURIComponent(__WEBPACK_IMPORTED_MODULE_14_jquery__(this.svgMap).find('#' + this.selectedGroupIds[i]).attr('title')));
                         }
                         else {
@@ -10720,7 +10661,7 @@ var VenuemapComponent = (function () {
                         __WEBPACK_IMPORTED_MODULE_14_jquery__("#" + this.selectedGroupIds[i]).children().remove();
                     }
                     __WEBPACK_IMPORTED_MODULE_14_jquery__(this.svgMap).find('#' + this.selectedGroupIds[i]).css({ 'fill': SEAT_COLOR_SELECTED });
-                    if (!this.smartPhoneCheckService.isSmartPhone() && !this.smartPhoneCheckService.isIpad()) {
+                    if (this.smartPhoneCheckService.isPC()) {
                         this.selectedSeatGroupNames.push(decodeURIComponent(__WEBPACK_IMPORTED_MODULE_14_jquery__(this.svgMap).find('#' + this.selectedGroupIds[i]).attr('title')));
                     }
                     else {
@@ -10758,6 +10699,9 @@ var VenuemapComponent = (function () {
             __WEBPACK_IMPORTED_MODULE_14_jquery__('.seatNumberBox').slideDown(300);
             if (__WEBPACK_IMPORTED_MODULE_14_jquery__(window).width() <= WINDOW_SM) {
                 this.active = '';
+            }
+            else {
+                this.active = "active";
             }
             this.sameStockType = true;
         }
@@ -10853,34 +10797,31 @@ var VenuemapComponent = (function () {
     };
     // 初期状態
     VenuemapComponent.prototype.mapHome = function (isInitialCalled) {
-        var _this = this;
         if (isInitialCalled === void 0) { isInitialCalled = false; }
         if (!isInitialCalled && this.countSelect == 0) {
             this.stockTypeDataService.sendToSeatListFlag(true);
             this.seatSelectDisplay(true);
         }
-        var resizeTimer = setTimeout(function () {
-            _this.D_Width = __WEBPACK_IMPORTED_MODULE_14_jquery__(_this.svgMap).innerWidth(); // 表示窓のwidth
-            _this.D_Height = __WEBPACK_IMPORTED_MODULE_14_jquery__(_this.svgMap).innerHeight(); // 表示窓のheight
-            _this.DA = _this.D_Width / _this.D_Height;
-            _this.scaleTotal = _this.getPresentScale(_this.originalViewBox);
-            _this.SCALE_MIN = _this.scaleTotal;
-            _this.wholemapFlag = false;
-            // svgのoriginalViweBoxと表示領域のアスペクト比を合わせる
-            _this.displayViewBox = _this.originalViewBox.concat();
-            _this.TA = parseFloat(_this.originalViewBox[2]) / parseFloat(_this.originalViewBox[3]);
-            if (_this.DA >= _this.TA) {
-                _this.displayViewBox[2] = String(_this.D_Width * parseFloat(_this.displayViewBox[3]) / _this.D_Height);
-                _this.displayViewBox[0] = String(parseFloat(_this.displayViewBox[0]) - (parseFloat(_this.displayViewBox[2]) - parseFloat(_this.originalViewBox[2])) / 2);
-            }
-            else {
-                _this.displayViewBox[3] = String(_this.D_Height * parseFloat(_this.displayViewBox[2]) / _this.D_Width);
-                _this.displayViewBox[1] = String(parseFloat(_this.displayViewBox[1]) - (parseFloat(_this.displayViewBox[3]) - parseFloat(_this.originalViewBox[3])) / 2);
-            }
-            __WEBPACK_IMPORTED_MODULE_14_jquery__('#mapImgBox').children().attr('viewBox', _this.displayViewBox.join(' ')); // viewBoxを初期値に設定
-            if (!isInitialCalled)
-                _this.onoffRegion(_this.regionIds);
-        }, 0);
+        this.D_Width = __WEBPACK_IMPORTED_MODULE_14_jquery__(this.svgMap).innerWidth(); // 表示窓のwidth
+        this.D_Height = __WEBPACK_IMPORTED_MODULE_14_jquery__(this.svgMap).innerHeight(); // 表示窓のheight
+        this.DA = this.D_Width / this.D_Height;
+        this.scaleTotal = this.getPresentScale(this.originalViewBox);
+        this.SCALE_MIN = this.scaleTotal;
+        this.wholemapFlag = false;
+        // svgのoriginalViweBoxと表示領域のアスペクト比を合わせる
+        this.displayViewBox = this.originalViewBox.concat();
+        this.TA = parseFloat(this.originalViewBox[2]) / parseFloat(this.originalViewBox[3]);
+        if (this.DA >= this.TA) {
+            this.displayViewBox[2] = String(this.D_Width * parseFloat(this.displayViewBox[3]) / this.D_Height);
+            this.displayViewBox[0] = String(parseFloat(this.displayViewBox[0]) - (parseFloat(this.displayViewBox[2]) - parseFloat(this.originalViewBox[2])) / 2);
+        }
+        else {
+            this.displayViewBox[3] = String(this.D_Height * parseFloat(this.displayViewBox[2]) / this.D_Width);
+            this.displayViewBox[1] = String(parseFloat(this.displayViewBox[1]) - (parseFloat(this.displayViewBox[3]) - parseFloat(this.originalViewBox[3])) / 2);
+        }
+        __WEBPACK_IMPORTED_MODULE_14_jquery__('#mapImgBox').children().attr('viewBox', this.displayViewBox.join(' ')); // viewBoxを初期値に設定
+        if (!isInitialCalled)
+            this.onoffRegion(this.regionIds);
     };
     // 現在のviewBoxの値を取得
     VenuemapComponent.prototype.getPresentViewBox = function () {
@@ -10891,13 +10832,12 @@ var VenuemapComponent = (function () {
     VenuemapComponent.prototype.seatSelectDisplay = function (flag) {
         var _this = this;
         var windowHeight = __WEBPACK_IMPORTED_MODULE_14_jquery__(window).height();
-        var allHead = __WEBPACK_IMPORTED_MODULE_14_jquery__('header').height();
-        +__WEBPACK_IMPORTED_MODULE_14_jquery__('.headArea').height();
-        +__WEBPACK_IMPORTED_MODULE_14_jquery__('.choiceArea').height();
-        ;
+        var allHead = __WEBPACK_IMPORTED_MODULE_14_jquery__('header').height() + __WEBPACK_IMPORTED_MODULE_14_jquery__('.headArea').height() + __WEBPACK_IMPORTED_MODULE_14_jquery__('.choiceAreaMenuBtn').height() + __WEBPACK_IMPORTED_MODULE_14_jquery__('#colorNavi').height();
         var orientation = window.orientation;
+        //true/拡大を戻す、false/拡大
         if (flag) {
-            if (this.smartPhoneCheckService.isSmartPhone()) {
+            //スマホ表示
+            if (this.smartPhoneCheckService.isSmartPhone() || this.smartPhoneCheckService.isTabletSP()) {
                 if (orientation == 0 || orientation == 180) {
                     if (this.seatAreaHeight) {
                         __WEBPACK_IMPORTED_MODULE_14_jquery__('#mapAreaLeft').css({
@@ -10909,9 +10849,12 @@ var VenuemapComponent = (function () {
                     }
                 }
             }
+            else {
+                this.stockTypeDataService.sendToSeatListFlag(true);
+            }
         }
         else {
-            if (this.smartPhoneCheckService.isSmartPhone()) {
+            if (this.smartPhoneCheckService.isSmartPhone() || this.smartPhoneCheckService.isTabletSP()) {
                 if (orientation == 0 || orientation == 180) {
                     __WEBPACK_IMPORTED_MODULE_14_jquery__('#mapAreaLeft').css({
                         'height': windowHeight - allHead,
@@ -10920,6 +10863,9 @@ var VenuemapComponent = (function () {
                         _this.setAspectRatio();
                     }, 0);
                 }
+            }
+            else {
+                this.stockTypeDataService.sendToSeatListFlag(true);
             }
         }
     };
@@ -11057,8 +11003,9 @@ var VenuemapComponent = (function () {
             this.seat_elements = seat_data;
         }
         __WEBPACK_IMPORTED_MODULE_14_jquery__('.seat').remove();
-        if (!this.smartPhoneCheckService.isSmartPhone() && !this.smartPhoneCheckService.isIpad())
+        if (this.smartPhoneCheckService.isPC()) {
             __WEBPACK_IMPORTED_MODULE_14_jquery__('svg').find('title').remove();
+        }
     };
     // 現在の描画サイズに合わせて表示するグリッドを決定し、座席データを動的に追加・削除
     VenuemapComponent.prototype.setActiveGrid = function () {
@@ -11162,7 +11109,7 @@ var VenuemapComponent = (function () {
                 if (this.seats[i].is_available) {
                     __WEBPACK_IMPORTED_MODULE_14_jquery__('#' + this.seats[i].seat_l0_id).css({ 'fill': SEAT_COLOR_AVAILABLE });
                 }
-                if (!this.smartPhoneCheckService.isSmartPhone() && !this.smartPhoneCheckService.isIpad()) {
+                if (this.smartPhoneCheckService.isPC()) {
                     var stockType = this.seats[i].stock_type_id ? this.tooltipStockType[this.seats[i].stock_type_id] : null;
                     if (stockType) {
                         __WEBPACK_IMPORTED_MODULE_14_jquery__('#' + this.seats[i].seat_l0_id).attr({
@@ -11514,13 +11461,13 @@ var VenuemapComponent = (function () {
         var viewBox = this.getPresentViewBox();
         var width;
         var height;
-        if (this.smartPhoneCheckService.isSmartPhone()) {
+        if (this.smartPhoneCheckService.isSmartPhone() || this.smartPhoneCheckService.isTabletSP()) {
             width = 2000;
             height = 1250;
         }
         else {
             width = 1500;
-            height = 1000;
+            height = 960;
         }
         if (viewBox) {
             var Mx = (+viewBox[0] + (+viewBox[2] / 2));
@@ -11541,13 +11488,13 @@ var VenuemapComponent = (function () {
         var viewBox = this.getPresentViewBox();
         var width;
         var height;
-        if (this.smartPhoneCheckService.isSmartPhone()) {
+        if (this.smartPhoneCheckService.isSmartPhone() || this.smartPhoneCheckService.isTabletSP()) {
             width = 2000;
             height = 1250;
         }
         else {
             width = 1500;
-            height = 1000;
+            height = 960;
         }
         if (viewBox) {
             var Mx = (+viewBox[0] + (+viewBox[2] / 2));
@@ -11571,21 +11518,15 @@ var VenuemapComponent = (function () {
     };
     //SP、検索エリアがアクティブ時のモーダルのトップ調整
     VenuemapComponent.prototype.modalTopCss = function () {
-        if (this.smartPhoneCheckService.isSmartPhone()) {
-            if (__WEBPACK_IMPORTED_MODULE_14_jquery__(".choiceAreaAcdBox").css('display') == "block") {
-                setTimeout(function () {
-                    __WEBPACK_IMPORTED_MODULE_14_jquery__("#modalWindowAlertBox").css({
-                        'top': "-250px",
-                    });
-                }, 100);
-            }
-            else {
-                setTimeout(function () {
-                    __WEBPACK_IMPORTED_MODULE_14_jquery__("#modalWindowAlertBox").css({
-                        'top': "-37px",
-                    });
-                }, 100);
-            }
+        if (__WEBPACK_IMPORTED_MODULE_14_jquery__(".choiceAreaAcdBox").css('display') == "block" && (this.smartPhoneCheckService.isSmartPhone() || this.smartPhoneCheckService.isTabletSP())) {
+            __WEBPACK_IMPORTED_MODULE_14_jquery__('.choiceAreaAcdBox').slideToggle(300).hide();
+        }
+        if (this.smartPhoneCheckService.isSmartPhone() || this.smartPhoneCheckService.isTabletSP()) {
+            setTimeout(function () {
+                __WEBPACK_IMPORTED_MODULE_14_jquery__("#modalWindowAlertBox").css({
+                    'top': "-37px",
+                });
+            }, 100);
         }
     };
     //ブラウザバック確認モーダルを出す
@@ -13245,18 +13186,58 @@ var SmartPhoneCheckService = (function () {
    * @return {boolean}
    */
     SmartPhoneCheckService.prototype.isSmartPhone = function () {
-        if (navigator.userAgent.indexOf('iPhone') > 0 || navigator.userAgent.indexOf('iPod') > 0 || navigator.userAgent.indexOf('Android') > 0) {
+        if (navigator.userAgent.indexOf('iPhone') > 0 || navigator.userAgent.indexOf('iPod') > 0 || (navigator.userAgent.indexOf('Android') > 0 && navigator.userAgent.indexOf('Mobile') > 0)) {
             return true;
         }
         return false;
     };
     /**
-* ipadかチェックを行います
-*
-* @return {boolean}
-*/
+  * ipadかチェックを行います
+  *
+  * @return {boolean}
+  */
     SmartPhoneCheckService.prototype.isIpad = function () {
         if (navigator.userAgent.indexOf('iPad') > 0) {
+            return true;
+        }
+        return false;
+    };
+    /**
+  * スマホサイズのtablet(Android)かチェックを行います
+  * ※768px以下はタブレットでもスマホ表示
+  * @return {boolean} スマホ表示タブレット/true,タブレットではない/false
+  */
+    SmartPhoneCheckService.prototype.isTabletSP = function () {
+        var WINDOW_SM = 768;
+        var windowWidth = window.outerWidth;
+        if (navigator.userAgent.indexOf('Android') > 0 && navigator.userAgent.indexOf('Mobile') < 0) {
+            if (windowWidth <= WINDOW_SM) {
+                return true;
+            }
+            return false;
+        }
+    };
+    /**
+  * PCサイズのtablet(Android)かチェックを行います
+  * ※769px以上はタブレットでもスマホ表示
+  * @return {boolean} PC表示タブレット/true,タブレットではない/false
+  */
+    SmartPhoneCheckService.prototype.isTabletPC = function () {
+        var WINDOW_SM = 768;
+        var windowWidth = window.outerWidth;
+        if (navigator.userAgent.indexOf('Android') > 0 && navigator.userAgent.indexOf('Mobile') < 0) {
+            if (windowWidth > WINDOW_SM) {
+                return true;
+            }
+            return false;
+        }
+    };
+    /**
+  * PCかチェックを行います
+  * @return {boolean} PC/true,PC以外/false
+  */
+    SmartPhoneCheckService.prototype.isPC = function () {
+        if (!this.isSmartPhone() && !this.isIpad() && !this.isTabletSP() && !this.isTabletPC()) {
             return true;
         }
         return false;
@@ -13425,6 +13406,7 @@ module.exports = __webpack_require__("../../../../../src/main.ts");
 },[0]);
 var _rollbarConfig = {
   accessToken: "9b73abba03a846dcb6bb06333d7c0b33",
+  ignoredMessages: ["undefined is not an object \\(evaluating 'document\\.getElementsByClassName\\(classNames\\[i\\]\\)\\[0\\]\\.contentWindow'\\)"],
   captureUncaught: true,
   captureUnhandledRejections: true,
   autoInstrument: true,
