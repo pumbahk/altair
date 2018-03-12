@@ -219,6 +219,7 @@ class Scanner(object):
         if kind is None:
             kind = kind_dict[kind_name] =  SalesSegmentKind(name=kind_name, organization_id=organization.id)
         kind.label = record.get("kind_label", u"<不明>")
+        salessegment.group.name = record['name']
         salessegment.group.master = kind
         salessegment.group.kind = kind.name #todo:replace
         salessegment.group.publicp = publicp
