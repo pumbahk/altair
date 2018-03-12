@@ -217,7 +217,7 @@ app-select-product .modalWindowAlertBox {
 #priceArea .variousText{
 	font-size:12px;
 }
-@media screen and (min-width: 768px) {/*PC*/
+@media screen and (min-width: 769px) {/*PC*/
 	#textArea{
 		display: block;
 		margin: 25px 0 0 0;
@@ -413,7 +413,7 @@ app-select-product .modalWindowAlertBox {
 }
 
 
-@media screen and (min-width: 768px) {
+@media screen and (min-width: 769px) {
     #buySeatArea {
         overflow-y: scroll;
         overflow-x: hidden;
@@ -422,7 +422,7 @@ app-select-product .modalWindowAlertBox {
 
 /* venue-map */
 
-@media screen and (min-width: 768px) {
+@media screen and (min-width: 769px) {
     #buyChoiceSeatArea .buyChoiceSeatBox .seatNumber p {
         font-size: 16px;
     }
@@ -748,7 +748,7 @@ app-select-product .modalWindowAlertBox {
 
 /*IE*/
 
-@media screen and (min-width: 768px) {
+@media screen and (min-width: 769px) {
 	.ie .headArea .inner .haBtn02 {
 		line-height: normal;
 	}

@@ -90,7 +90,7 @@
   }
 
 
-@media screen and (min-width: 768px) {
+@media screen and (min-width: 769px) {
   /*--------------------------------------------
     購入履歴
   ---------------------------------------------*/
@@ -283,7 +283,7 @@
   .login-page .login-normal .sub-ttl {
     margin-bottom: 70px;
   }
-  
+
 
   /*--------------------------------------------
     会員選択
@@ -354,7 +354,7 @@
     background: #d60e0f;
   }*/
 
-  
+
 
   .login-member-page td:nth-child(even) {
     /*background: #f1efef;*/
@@ -555,8 +555,8 @@ opacity: .7;
 /***************************************/
 
 
-@media screen and (max-width: 767px) {
- 
+@media screen and (max-width: 768px) {
+
 
   /*--------------------------------------------
     SP 購入履歴
@@ -770,7 +770,7 @@ opacity: .7;
   .login-page .login-normal .sub-ttl {
     margin-bottom: 0;
   }
-  
+
 
   /*--------------------------------------------
     SP 会員選択
@@ -909,7 +909,7 @@ opacity: .7;
     -ms-transform: rotate(45deg);
     transform: rotate(45deg);
   }
-  
+
   /*--------------------------------------------
     SP 購入履歴の確認
   ---------------------------------------------*/
@@ -1062,12 +1062,12 @@ opacity: .7;
 /***************************************/
 
 
-@media (min-width: 768px) and (max-width: 1100px) {
+@media (min-width: 769px) and (max-width: 1100px) {
   .login-member-page .login-box .sub-ttl {
     font-size: 18px;
   }
 }
-@media (min-width: 768px) and (max-width: 1070px) {
+@media (min-width: 769px) and (max-width: 1070px) {
   .orderreview-list-page .orderreview-list-wrap .orderreview-list li .orderreview-tbl .payment-detail {
     padding-left: 20px;
   }
