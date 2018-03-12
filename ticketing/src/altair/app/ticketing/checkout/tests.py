@@ -12,6 +12,18 @@ from altair.app.ticketing.testing import _setup_db as _setup_db_, _teardown_db
 from altair.app.ticketing.checkout import api, models, interfaces
 
 
+class DummyOrganization(object):
+    def __init__(self, id=None):
+        self.id = id
+        self.name = u'テスト組織名'
+        self.setting = DummyOrganizationSetting()
+
+
+class DummyOrganizationSetting(object):
+    def __init__(self):
+        self.enable_discount_code = False
+
+
 def _setup_db(echo=False):
     return _setup_db_(
         modules=[
@@ -467,7 +479,7 @@ class AnshinCheckoutAPITest(unittest.TestCase):
         priv_session.remove()
         self._session = _setup_db()
         self.session = priv_session
-        self.request = testing.DummyRequest()
+        self.request = testing.DummyRequest(organization=DummyOrganization(1))
         register_sessionmaker_with_engine(
             self.config.registry,
             'slave',
@@ -700,8 +712,8 @@ class AnshinCheckoutAPITest(unittest.TestCase):
             u'</item>'
             u'<item>'
             u'<itemId>1</itemId>'
-            u'<itemNumbers>1</itemNumbers>'
-            u'<itemFee>20</itemFee>'
+            u'<itemNumbers>2</itemNumbers>'
+            u'<itemFee>10</itemFee>'
             u'<itemName>item 1</itemName>'
             u'</item>'
             u'<item>'
@@ -787,8 +799,8 @@ class AnshinCheckoutAPITest(unittest.TestCase):
             u'</item>'
             u'<item>'
             u'<itemId>1</itemId>'
-            u'<itemNumbers>1</itemNumbers>'
-            u'<itemFee>20</itemFee>'
+            u'<itemNumbers>2</itemNumbers>'
+            u'<itemFee>10</itemFee>'
             u'<itemName>item 1</itemName>'
             u'</item>'
             u'<item>'
@@ -887,8 +899,8 @@ class AnshinCheckoutAPITest(unittest.TestCase):
             u'</item>'
             u'<item>'
             u'<itemId>1</itemId>'
-            u'<itemNumbers>1</itemNumbers>'
-            u'<itemFee>20</itemFee>'
+            u'<itemNumbers>2</itemNumbers>'
+            u'<itemFee>10</itemFee>'
             u'<itemName>item 1</itemName>'
             u'</item>'
             u'<item>'
