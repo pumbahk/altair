@@ -131,7 +131,7 @@ def get_discount_price_from_carted_product(request, cp):
     """
     :param request: リクエストオブジェクト
     :param cp: CartedProductオブジェクト
-    :return: discount_price: 商品ごとの割引金額。引換券の利用がない場合はNoneが返る。
+    :return: discount_price: 商品ごとの割引金額。
     """
     from altair.app.ticketing.cart.models import CartedProductItem
     result = get_db_session(request, 'slave').query(
@@ -141,7 +141,8 @@ def get_discount_price_from_carted_product(request, cp):
     ).filter(
         CartedProductItem.carted_product_id == cp.id
     ).one()
-    return result.discount_price
+
+    return result.discount_price if result.discount_price else 0
 
 
 def get_discount_price_from_ordered_product(op):
