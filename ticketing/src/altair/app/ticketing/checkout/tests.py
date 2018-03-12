@@ -467,7 +467,7 @@ class AnshinCheckoutAPITest(unittest.TestCase):
         priv_session.remove()
         self._session = _setup_db()
         self.session = priv_session
-        self.request = testing.DummyResource(
+        self.request = testing.DummyRequest(
                 organization=testing.DummyResource(
                     id=1,
                     name=u'テスト組織名',
@@ -642,13 +642,10 @@ class AnshinCheckoutAPITest(unittest.TestCase):
             u'</itemsInfo>'
             u'</orderItemsInfo>')
 
-    def test_create_checkout_request_xml_with_items(self):
-        from lxml import etree
+    def _make_cart_with_items(self):
         from altair.app.ticketing.core.models import SalesSegment, PaymentDeliveryMethodPair, PaymentMethod, DeliveryMethod, Product, FeeTypeEnum
         from altair.app.ticketing.cart.models import Cart, CartedProduct, CartSetting
         from decimal import Decimal
-        from base64 import b64decode
-        target = self._buildTarget()
         cart = Cart(
             id=10,
             _order_no='XX0000000000',
@@ -682,6 +679,15 @@ class AnshinCheckoutAPITest(unittest.TestCase):
                     ) for i in range(2)
                 ]
         )
+
+        return cart
+
+    def test_create_checkout_request_xml_with_items(self):
+        from lxml import etree
+        from base64 import b64decode
+        target = self._buildTarget()
+        cart = self._make_cart_with_items()
+
         self._session.add(cart)
         self._session.flush()
         _, result = target.build_checkout_request_form(cart)
@@ -711,6 +717,53 @@ class AnshinCheckoutAPITest(unittest.TestCase):
             u'<itemNumbers>2</itemNumbers>'
             u'<itemFee>10</itemFee>'
             u'<itemName>item 1</itemName>'
+            u'</item>'
+            u'<item>'
+            u'<itemId>delivery_fee</itemId>'
+            u'<itemNumbers>1</itemNumbers>'
+            u'<itemFee>60</itemFee>'
+            u'<itemName>引取手数料</itemName>'
+            u'</item>'
+            u'<item>'
+            u'<itemId>system_fee</itemId>'
+            u'<itemNumbers>1</itemNumbers>'
+            u'<itemFee>80</itemFee>'
+            u'<itemName>システム利用料</itemName>'
+            u'</item>'
+            u'</itemsInfo>'
+            u'</orderItemsInfo>')
+
+    def test_create_checkout_request_xml_with_items_with_discount_code(self):
+        from lxml import etree
+        from base64 import b64decode
+
+        self.request.organization.setting.enable_discount_code = True
+
+        target = self._buildTarget()
+        cart = self._make_cart_with_items()
+        self._session.add(cart)
+        self._session.flush()
+        _, result = target.build_checkout_request_form(cart)
+        result_n = etree.fromstring(result)
+        checkout_n = result_n.find('input[@name="checkout"]')
+        self.assertTrue(checkout_n is not None)
+        payload = b64decode(checkout_n.get('value')).decode('utf-8')
+
+        self.assertEqual(payload,
+            u'<orderItemsInfo>'
+            u'<serviceId>this-is-serviceId</serviceId>'
+            u'<orderCompleteUrl>/completed</orderCompleteUrl>'
+            u'<orderFailedUrl>/failed</orderFailedUrl>'
+            u'<authMethod>1</authMethod>'
+            u'<isTMode>1</isTMode>'
+            u'<orderCartId>XX0000000000</orderCartId>'
+            u'<orderTotalFee>160</orderTotalFee>'
+            u'<itemsInfo>'
+            u'<item>'
+            u'<itemId>total_fee_with_discount</itemId>'
+            u'<itemNumbers>1</itemNumbers>'
+            u'<itemFee>20</itemFee>'
+            u'<itemName>テスト組織名 チケットご購入代金</itemName>'
             u'</item>'
             u'<item>'
             u'<itemId>delivery_fee</itemId>'
