@@ -12,18 +12,6 @@ from altair.app.ticketing.testing import _setup_db as _setup_db_, _teardown_db
 from altair.app.ticketing.checkout import api, models, interfaces
 
 
-class DummyOrganization(object):
-    def __init__(self, id=None):
-        self.id = id
-        self.name = u'テスト組織名'
-        self.setting = DummyOrganizationSetting()
-
-
-class DummyOrganizationSetting(object):
-    def __init__(self):
-        self.enable_discount_code = False
-
-
 def _setup_db(echo=False):
     return _setup_db_(
         modules=[
@@ -479,7 +467,15 @@ class AnshinCheckoutAPITest(unittest.TestCase):
         priv_session.remove()
         self._session = _setup_db()
         self.session = priv_session
-        self.request = testing.DummyRequest(organization=DummyOrganization(1))
+        self.request = testing.DummyResource(
+                organization=testing.DummyResource(
+                    id=1,
+                    name=u'テスト組織名',
+                    setting=testing.DummyResource(
+                        enable_discount_code=False
+                    )
+                )
+        )
         register_sessionmaker_with_engine(
             self.config.registry,
             'slave',
