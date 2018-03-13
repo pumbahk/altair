@@ -354,7 +354,7 @@ class CartAPIView(object):
                 is_available=(seat_status == SeatStatusEnum.Vacant.v),
             ) for seat_l0_id, stock_id, seat_status in seats]
 
-        if'seats' in fields:
+        if 'seat_groups' in fields:
             performance_id = int(self.request.matchdict.get('performance_id'))
             performance = session.query(Performance).filter_by(id=performance_id).first()
             seat_groups = search_seatGroup(self.request, performance.venue.site_id, performance.venue.id, session)
