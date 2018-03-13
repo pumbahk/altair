@@ -4,7 +4,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 from zope.interface import implementer
-from ..interfaces import IQRAESPlugin, IQRAESDeliveryFormMaker
+from ..interfaces import IQRAESPlugin
 
 import sqlahelper
 from sqlalchemy.orm.session import object_session
@@ -13,6 +13,7 @@ from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound, UnmappedInst
 from pyramid.httpexceptions import HTTPNotFound
 
 from altair.app.ticketing.core.models import DeliveryMethodPlugin, TicketPrintHistory
+from altair.app.ticketing.delivery_methods.interfaces import IDeliveryFormMaker
 from altair.app.ticketing.delivery_methods.forms import DeliveryMethodForm
 from altair.app.ticketing.orders.api import get_order_by_order_no
 from altair.app.ticketing.orders.models import (Order,
@@ -160,7 +161,7 @@ class QRAESDeliveryMethodForm(DeliveryMethodForm):
                 names.append(attr)
         return names
 
-@implementer(IQRAESDeliveryFormMaker)
+@implementer(IDeliveryFormMaker)
 class QRAESDeliveryFormMaker(object):
 
     def make_form(self, formdata=None, obj=None, prefix='', **kwargs):

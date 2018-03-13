@@ -14,8 +14,9 @@ from sqlalchemy.orm.exc import UnmappedInstanceError
 from altair.formhelpers import OurBooleanField
 from altair.formhelpers.validators import DynSwitchDisabled, ValidationError
 
+from altair.app.ticketing.delivery_methods.interfaces import IDeliveryFormMaker
 from altair.app.ticketing.payments.plugins import QR_AES_DELIVERY_PLUGIN_ID
-from altair.app.ticketing.qr.interfaces import IQRAESPlugin, IQRAESDeliveryFormMaker
+from altair.app.ticketing.qr.interfaces import IQRAESPlugin
 from altair.app.ticketing.qr.qr_aes_plugins.base import QRAESPlugin, QRAESDeliveryFormMaker, QRAESDeliveryMethodForm
 from altair.app.ticketing.qr.utils import QRTicketObject
 
@@ -91,7 +92,7 @@ def _get_db_session(history):
 
 def includeme(config):
     config.add_qr_aes_plugin(HTQRAESPlugin(), u"HT")
-    config.add_qr_aes_delivery_form_maker(HTQRAESDeliveryFormMaker(), u"HT")
+    config.add_delivery_form_maker(HTQRAESDeliveryFormMaker(), u"HT")
     config.scan(__name__)
 
 @implementer(IQRAESPlugin)
@@ -174,7 +175,7 @@ class HTQRAESDeliveryMethodForm(QRAESDeliveryMethodForm):
             DynSwitchDisabled('{delivery_plugin_id} <> "%d"' % QR_AES_DELIVERY_PLUGIN_ID)
         ])
 
-@implementer(IQRAESDeliveryFormMaker)
+@implementer(IDeliveryFormMaker)
 class HTQRAESDeliveryFormMaker(QRAESDeliveryFormMaker):
     def __init__(self):
         super(QRAESDeliveryFormMaker, self).__init__()

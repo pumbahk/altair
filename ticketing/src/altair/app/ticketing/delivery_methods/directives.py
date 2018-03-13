@@ -1,10 +1,10 @@
 # -*- coding:utf-8 -*-
 import logging
-from .interfaces import IQRAESPlugin, IQRAESDeliveryFormMaker
+from .interfaces import IDeliveryFormMaker
 
 logger = logging.getLogger(__name__)
 
-QE_AES_CONFIG = -10
+DELIVERY_METHOD_CONFIG = -9
 
 class Discriminator(object):
     __slot__ = (
@@ -36,19 +36,20 @@ class Discriminator(object):
     def __hash__(self):
         return 1
 
-
-def add_qr_aes_plugin(config, plugin, organization_code):
-    """ プラグイン登録
-    :param plugin: an instance of IQRAESPlugin
+def add_delivery_form_maker(config, maker, organization_code):
+    """ デリバリーフォームメーカー登録
+    :param maker: an instance of IDeliveryFormMaker
     :param organization_code: organization's code
     """
-    key = Discriminator(organization_code + "-plugin")
+    key = Discriminator(organization_code + "-delivery-form-maker")
+
     def register():
-        logger.info("add_qr_aes_plugin: %r registered for %s" % (plugin, organization_code))
-        config.registry.utilities.register([], IQRAESPlugin, str(key), plugin)
+        logger.info("add_delivery_form_maker: %r registered for %s" % (maker, organization_code))
+        config.registry.utilities.register([], IDeliveryFormMaker, str(key), maker)
+
     intr = config.introspectable(
-        "qr aes plugin", str(key),
-        config.object_description(plugin),
+        "delivery form maker", str(key),
+        config.object_description(maker),
         "organization_code=%s" % organization_code
-        )
-    config.action(key, register, introspectables=[intr], order=QE_AES_CONFIG)
+    )
+    config.action(key, register, introspectables=[intr], order=DELIVERY_METHOD_CONFIG)
