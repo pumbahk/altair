@@ -11,6 +11,7 @@ from altair.formhelpers.validators import (
     CP932,
     SwitchOptional,
     DynSwitchDisabled,
+    after1900,
     )
 from altair.formhelpers.fields.core import (
     OurTextField,
@@ -20,6 +21,9 @@ from altair.formhelpers.fields.core import (
     OurSelectField,
     OurIntegerField,
     OurFormField,
+    )
+from altair.formhelpers.fields import (
+    OurDateField
     )
 from altair.formhelpers.fields.liaison import (
     Liaison,
@@ -31,6 +35,11 @@ from altair.formhelpers.filters import (
     NFKC,
     lstrip,
     )
+from altair.formhelpers.widgets import (
+    OurDateWidget,
+    build_date_input_select_japanese_japan,
+    )
+from altair.app.ticketing.users.models import SexEnum
 from .schemas import length_limit_for_sej, japanese_prefecture_select_input
 import forms_i18n_helper as h
 
@@ -180,6 +189,19 @@ class ClientFormFactory(object):
                     )
                 )
 
+            sex = OurRadioField(_(u'性別'), choices=[(str(SexEnum.Male), _(u'男性')), (str(SexEnum.Female), _(u'女性'))], default=str(SexEnum.Female))
+            birthday = OurDateField(
+                label=_(u"誕生日"),
+                value_defaults={'year': u'1980'},
+                missing_value_defaults={'year': u'', 'month': u'', 'day': u'', },
+                widget=OurDateWidget(
+                    input_builder=build_date_input_select_japanese_japan
+                ),
+                validators=[
+                    after1900,
+                ]
+            )
+
             def __init__(self, formdata=None, obj=None, prefix=u'', **kwargs):
                 context = kwargs.pop('context')
                 self.context = context
@@ -204,6 +226,18 @@ class ClientFormFactory(object):
                     getattr(self, "email_2").errors.append(_(u"メールアドレスと確認メールアドレスが一致していません。"))
                     status = False
                 return status
+
+            def validate_birthday(self, field):
+                if self.context.request.organization.code == 'RT' and not self.birthday.data:
+                    self.birthday.errors.append(u"選択してください。")
+                    return False
+                return True
+
+            def validate_sex(self, field):
+                if self.context.request.organization.code == 'RT' and not self.sex.data:
+                    self.sex.errors.append(u"選択してください。")
+                    return False
+                return True
 
             def validate(self):
                 # このように and 演算子を展開しないとすべてが一度に評価されない

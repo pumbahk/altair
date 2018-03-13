@@ -72,7 +72,7 @@ if not reservation:
           <div class="page-header">
             <h3>配送情報</h3>
           </div>
-          <%include file="./_show_shipping_table.html" args="order_like=order,shipping_address=order.shipping_address,delivery_plugin_info=delivery_plugin_info"/>
+          <%include file="./_show_shipping_table.html" args="order_like=order,shipping_address=order.shipping_address,delivery_plugin_info=delivery_plugin_info,vh=vh"/>
 
           % if is_current_order:
           <div class="pull-right">
