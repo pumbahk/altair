@@ -47,7 +47,6 @@ def form_log(request, message):
     logger.info("%s: \n%s" % (message, values))
 
 cart_timeout = api.get_cart_expire_time
-format_sex = format_sex
 
 def create_date_label(start, end, i18n=False):
     if i18n:
