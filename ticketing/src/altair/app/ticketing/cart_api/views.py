@@ -125,8 +125,8 @@ class CartAPIView(object):
         if 'seat' not in drawings:
             reason += " seat data is none "
 
-        if 'seat_group' not in drawings:
-            reason += " seat_group data is none "
+        if 'seat-group' not in drawings:
+            reason += " seat-group data is none "
 
         if reason:
             return {
@@ -139,7 +139,7 @@ class CartAPIView(object):
         root_map_url = drawings['root']
         mini_map_url = drawings['mini']
         seat_data_url = drawings['seat']
-        seat_group_data_url = drawings['seat_group']
+        seat_group_data_url = drawings['seat-group']
         logger.debug("root_url=%s", root_map_url)
         logger.debug("mini_url=%s", mini_map_url)
         logger.debug("seat_url=%s", seat_data_url)
