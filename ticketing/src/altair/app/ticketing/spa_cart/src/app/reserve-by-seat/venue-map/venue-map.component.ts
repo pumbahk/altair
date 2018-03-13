@@ -1153,12 +1153,16 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
     }
     //1席ずつか2席以上ずつか判定
     this.isGroupedSeats = true;
-    for (let i = 0, len = this.seatGroups.length; i < len; i++) {
-      if ($.inArray(this.selectedSeatId, this.seatGroups[i].seat_l0_ids) != -1) {
-        this.isGroupedSeats = false;
-        this.selectedGroupIds = this.seatGroups[i].seat_l0_ids;
-        break;
+    if (this.seatGroups) {
+      for (let i = 0, len = this.seatGroups.length; i < len; i++) {
+        if ($.inArray(this.selectedSeatId, this.seatGroups[i].seat_l0_ids) != -1) {
+          this.isGroupedSeats = false;
+          this.selectedGroupIds = this.seatGroups[i].seat_l0_ids;
+          break;
+        }
       }
+    } else {
+      this.isGroupedSeats = true;
     }
     //席種に紐づく最大購入数取得＋無い場合1.公演2.イベントの順でセット
     for (let i = 0, len = this.stockType.length; i < len; i++) {
