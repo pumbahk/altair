@@ -64,15 +64,15 @@ shipping =order.shipping_address
         -->
         <tr>
           <th scope="row">住所</th>
-          <td>${shipping_address.zip} ${shipping_address.prefecture}${shipping_address.city}${shipping_address.address_1}${shipping_address.address_2}</td>
+          <td>〒${shipping.zip} ${shipping.prefecture}${shipping.city}${shipping.address_1}${shipping.address_2}</td>
         </tr>
         <tr>
           <th scope="row">生年月日</th>
-          <td>${u"{0.year} 年 {0.month}月 {0.day}日".format(shipping_address.birthday)}</td>
+          <td>${u"{0.year} 年 {0.month}月 {0.day}日".format(shipping.birthday)}</td>
         </tr>
         <tr>
           <th scope="row">性別</th>
-          <td>${h.format_sex(request, shipping_address.sex)}</td>
+          <td>${h.format_sex(request, shipping.sex)}</td>
         </tr>
     </table>
 <p class="mgt10">※ご購入時に入力された情報が表示されております。
