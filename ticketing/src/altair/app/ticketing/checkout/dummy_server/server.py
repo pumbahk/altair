@@ -444,7 +444,7 @@ class DummyCheckoutView(object):
         if not f.validate():
             return {
                 'service_settings': service_settings,
-                'order': order,
+                'order': order_dict,
                 'form': f,
                 }
         openid_claimed_id = f.openid_claimed_id.data
@@ -462,13 +462,13 @@ class DummyCheckoutView(object):
                     return HTTPFound(location=self.request.current_route_path())
                 populate_order_dict_from_order_confirmation_dict(order_dict, order_confirmation_dict)
                 self.request.session['order'] = order_dict
-            self.request.session['openid_claimed_id']  = openid_claimed_id
+            self.request.session['openid_claimed_id'] = openid_claimed_id
             self.request.session['used_points'] = used_points
             return HTTPFound(location=self.request.route_path('checkout_dummy_server.confirm'))
         elif self.verb == 'AuthorizeFailure':
             del self.request.session['order']
             del self.request.session['service_settings']
-            return HTTPFound(location=order['order_failed_url'])
+            return HTTPFound(location=order_dict['order_failed_url'])
         return HTTPFound(location=self.request.current_route_path())
 
     @view_config(route_name='checkout_dummy_server.confirm', renderer='confirm.mako', request_method='GET')
