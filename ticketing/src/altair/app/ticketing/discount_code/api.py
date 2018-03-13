@@ -281,14 +281,6 @@ def used_discount_code_groups(cart_or_order):
         for code in code_groups[setting.first_4_digits]:
             if code.applied_amount:
                 group_dict['discount_price'] = group_dict['discount_price'] + code.applied_amount
-            # TODO https://jira.rakuten-it.com/jira/browse/TKT-5040の本格運用開始後廃止予定 ここから
-            elif isinstance(cart_or_order, Cart):
-                if 'discount_price' in group_dict:
-                    group_dict['discount_price'] = group_dict['discount_price'] + sum([code.carted_product_item.price])
-            elif isinstance(cart_or_order, Order):
-                if 'discount_price' in group_dict:
-                    group_dict['discount_price'] = group_dict['discount_price'] + sum([code.ordered_product_item.price])
-            # TODO ここまで
 
         groups.append(group_dict)
     return groups
