@@ -185,6 +185,7 @@ export class ReserveByQuantityComponent implements OnInit {
                   $('html,body').css({
                     'width': '100%',
                     'height': '100%',
+                    'overflow-y': 'hidden'
                   });
                   //おまかせ表示前デザイン設定
                   if ($(window).width() <= WINDOW_SM) {
