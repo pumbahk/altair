@@ -18,65 +18,19 @@ from altair.app.ticketing.qr.qr_aes_plugins.base import QRAESPlugin
 from altair.app.ticketing.qr.utils import QRTicketObject
 
 
-# BWのカスタマイズ内容
-## 固定値の設定（現時点2017-07-13。）
-BW_QR_DATA_HEADER = '6'
-BW_TYPE_CODE = '6'
-BW_ID_CODE = 'HTB0000001'
-BW_COUNT_FLAG = '1'
-BW_SEASON_FLAG = '0'
-BW_SPECIAL_FLAG = '0'
-
-## 自由エリア
-BW_QR_DATA_FREE = 'http://huistenbosch.co.jp/event/'.ljust(40)
-
-
-ja_map = {
-    'id_code': u'識別コード',
-    'type_code': u'種類コード',
-    'ticket_code': u'券種コード',
-    'serial_no': u'通し番号',
-    'issued_at': u'発行日',
-    'count_flag': u'カウントフラグ',
-    'season_flag': u'シーズンフラグ',
-    'valid_date_from': u'有効期限From',
-    'valid_date_to': u'有効期限To',
-    'enterable_days': u'入場期限',
-    'enterable_from': u'入場可能時間',
-    'usable_date_to': u'使用期限', #購入日＋90日
-    'special_flag': u'特殊フラグ'
-}
-
-item_list = OrderedDict([
-    ('id_code', 10),
-    ('type_code', 1),
-    ('ticket_code', 6),
-    ('serial_no', 17),
-    ('issued_at', 8),
-    ('count_flag', 1),
-    ('season_flag', 1),
-    ('valid_date_from', 8),
-    ('valid_date_to', 8),
-    ('enterable_days', 3),
-    ('enterable_from', 4),
-    ('usable_date_to', 8),
-    ('special_flag', 1)
-])
+BW_UNIQUE_FLAG = '1'
+BW_VALID_FROM = '00000000'
+BW_VALID_to = '00000000'
 
 encrypting_items =[
-    'id_code',
     'type_code',
+    'location_code',
     'ticket_code',
-    'serial_no',
+    'ticket_seq',
+    'unique_flag',
     'issued_at',
-    'count_flag',
-    'season_flag',
-    'valid_date_from',
-    'valid_date_to',
-    'enterable_days',
-    'enterable_from',
-    'usable_date_to',
-    'special_flag'
+    'valid_form',
+    'valid_to'
 ]
 
 DBSession = get_session()
@@ -90,8 +44,35 @@ def _get_db_session(history):
 
 
 def includeme(config):
-    config.add_qr_aes_plugin(BWQRAESPlugin("!ALTAIR_AES_ENCRYPTION_URL_BWBW!"), u"BW")
+    config.add_qr_aes_plugin(BWQRAESPlugin("BELGIAN_BEER_WEEKEND_2018_IS_FUN"), u"BW")
+    config.add_qr_aes_delivery_form_maker(BWQRAESDeliveryFormMaker(), u"BW")
     config.scan(__name__)
+
+
+def get_type_code(product):
+    if product.name.count("STARTER"):
+        return "RAKSTR"
+    if product.name.count("GROUP"):
+        return "RAKGRP"
+    return ""
+
+
+def get_location_code(performance):
+    if performance.name.count('Nagoya'):
+        return "NGY"
+    if performance.name.count('Yokohama'):
+        return "YKH"
+    if performance.name.count('Osaka'):
+        return "OSK"
+    if performance.name.count('Sapporo'):
+        return "SAP"
+    if performance.name.count('Hibiya'):
+        return "HBY"
+    if performance.name.count('Kobe'):
+        return "KBE"
+    if performance.name.count('Tokyo'):
+        return "TKY"
+    return ""
 
 
 @implementer(IQRAESPlugin)
@@ -101,53 +82,32 @@ class BWQRAESPlugin(QRAESPlugin):
 
     def make_data_for_qr(self, history):
         """
-        'id_code': u'識別コード',
-        'type_code': u'種類コード',
-        'ticket_code': u'券種コード',
-        'serial_no': u'通し番号',
-        'issued_at': u'発行日',
-        'count_flag': u'カウントフラグ',
-        'season_flag': u'シーズンフラグ',
-        'valid_date_from': u'有効期限From',
-        'valid_date_to': u'有効期限To',
-        'enterable_days': u'入場期限',
-        'enterable_from': u'入場可能時間',
-        'usable_date_to': u'使用期限', #購入日＋90日
-        'special_flag': u'特殊フラグ'
+        type_code(string 6):チケット種類コード
+        location_code(string 3):場所コード
+        ticket_code(string 12):注文番号（一意）
+        ticket_seq(string 3):同じ注文で複数枚のチケットがあるときのシーケンス番号（連番）001-999
+        unique_flag(bool 1):Falseの場合は、同じticket_codeを持つチケットを複数回使用できます。
+        issued_at(date 8):発行日 YYYYMMDD
+        valid_from(date 8):有効期限開始日 YYYYMMDD 必ず00000000を入れる
+        valid_to(date 8):有効期限終了日 YYYYMMDD 必ず00000000を入れる
         """
 
         qr_ticket_obj = QRTicketObject(history, _get_db_session(history))
         params = dict()
 
-        # TODO ここらへん
-        params['type_code'] = BW_TYPE_CODE
-        params['id_code'] = BW_ID_CODE
-        params['count_flag'] = BW_COUNT_FLAG
-        params['season_flag'] = BW_SEASON_FLAG
-        params['special_flag'] = BW_SPECIAL_FLAG
+        params['type_code'] = get_type_code(qr_ticket_obj)
+        params['location_code'] = get_location_code(qr_ticket_obj.performance)
+        params['ticket_code'] = qr_ticket_obj.order_no
+        params['ticket_seq'] = str(qr_ticket_obj.item_token.serial+1).rjust(3, '0')
+        params['unique_flag'] = BW_UNIQUE_FLAG
+        params['issued_at'] = qr_ticket_obj.order.created_at
+        params['valid_form'] = BW_VALID_FROM
+        params['valid_to'] = BW_VALID_to
 
-        _, ticket_code, enterable_days, usable_days = qr_ticket_obj.ordered_product_item.product_item.name.split('_')
-
-        params['ticket_code'] = ticket_code
-        params['enterable_days'] = enterable_days.strip()[:3].rjust(3, '0')
-
-        performance = qr_ticket_obj.performance
-
-        params['valid_date_from'] = performance.open_on.strftime('%Y%m%d') if performance.open_on else '0' * 8
-        params['valid_date_to'] = performance.end_on.strftime('%Y%m%d') if performance.end_on else '0' * 8
-        params['issued_at'] = performance.start_on.strftime('%Y%m%d') if performance.start_on else '0' * 8
-        params['enterable_from'] = performance.start_on.strftime('%H%M') if performance.start_on else '0' * 4
-        usable_date_to = qr_ticket_obj.order.created_at + timedelta(days=int(usable_days))
-        params['usable_date_to'] = usable_date_to.strftime('%Y%m%d')
-
-        suffix = str(qr_ticket_obj.id)[:10]
-        params['serial_no'] = 'A' + params['ticket_code'] + suffix.rjust(10, '0')
-
-        data = dict(header=BW_QR_DATA_FREE + BW_QR_DATA_HEADER, content='')
+        data = dict(header='', content='')
 
         for item in encrypting_items:
             data['content'] += params[item]
-        # TODO ここまで
         return {'data': data, 'ticket': qr_ticket_obj}
 
     def output_to_template(self, ticket):
