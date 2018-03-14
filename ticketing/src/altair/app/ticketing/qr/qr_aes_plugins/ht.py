@@ -11,13 +11,9 @@ from sqlahelper import get_session
 from sqlalchemy.orm.session import object_session
 from sqlalchemy.orm.exc import UnmappedInstanceError
 
-from altair.formhelpers import OurBooleanField
-from altair.formhelpers.validators import DynSwitchDisabled, ValidationError
-
-from altair.app.ticketing.delivery_methods.interfaces import IDeliveryFormMaker
 from altair.app.ticketing.payments.plugins import QR_AES_DELIVERY_PLUGIN_ID
 from altair.app.ticketing.qr.interfaces import IQRAESPlugin
-from altair.app.ticketing.qr.qr_aes_plugins.base import QRAESPlugin, QRAESDeliveryFormMaker, QRAESDeliveryMethodForm
+from altair.app.ticketing.qr.qr_aes_plugins.base import QRAESPlugin
 from altair.app.ticketing.qr.utils import QRTicketObject
 
 
@@ -92,7 +88,6 @@ def _get_db_session(history):
 
 def includeme(config):
     config.add_qr_aes_plugin(HTQRAESPlugin(), u"HT")
-    config.add_delivery_form_maker(HTQRAESDeliveryFormMaker(), u"HT")
     config.scan(__name__)
 
 @implementer(IQRAESPlugin)
@@ -163,22 +158,3 @@ class HTQRAESPlugin(QRAESPlugin):
             product=ticket.product,
             allow_sp=allow_sp
         )
-
-class HTQRAESDeliveryMethodForm(QRAESDeliveryMethodForm):
-    def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
-        super(HTQRAESDeliveryMethodForm, self).__init__(formdata=formdata, obj=obj, prefix=prefix, **kwargs)
-
-    # フィルド名は必ず'qr_aes_'からの文字列で命名ください。
-    qr_aes_allow_sp = OurBooleanField(
-        label=u'スマートフォンでの表示',
-        validators=[
-            DynSwitchDisabled('{delivery_plugin_id} <> "%d"' % QR_AES_DELIVERY_PLUGIN_ID)
-        ])
-
-@implementer(IDeliveryFormMaker)
-class HTQRAESDeliveryFormMaker(QRAESDeliveryFormMaker):
-    def __init__(self):
-        super(QRAESDeliveryFormMaker, self).__init__()
-
-    def make_form(self, formdata=None, obj=None, prefix='', **kwargs):
-        return HTQRAESDeliveryMethodForm(formdata=formdata, obj=obj, prefix=prefix, **kwargs)
