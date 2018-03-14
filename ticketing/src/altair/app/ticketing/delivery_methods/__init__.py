@@ -15,6 +15,8 @@ def includeme(config):
     # 共通のDeliveryFormMakerを登録する
     config.registry.registerUtility(DeliverFormMaker(),IDeliveryFormMaker,name='general-delivery-form-maker')
 
+    config.include('.plugins')
+
     config.add_route('delivery_methods.index', '/', factory='.resources.DeliveryMethodResource')
     config.add_route('delivery_methods.new', '/new', factory='.resources.DeliveryMethodResource')
     config.add_route('delivery_methods.edit', '/edit/{delivery_method_id}', factory='.resources.DeliveryMethodResource')

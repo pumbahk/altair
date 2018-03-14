@@ -12,9 +12,7 @@ from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound, UnmappedInst
 
 from pyramid.httpexceptions import HTTPNotFound
 
-from altair.app.ticketing.core.models import DeliveryMethodPlugin, TicketPrintHistory
-from altair.app.ticketing.delivery_methods.interfaces import IDeliveryFormMaker
-from altair.app.ticketing.delivery_methods.forms import DeliveryMethodForm
+from altair.app.ticketing.core.models import TicketPrintHistory
 from altair.app.ticketing.orders.api import get_order_by_order_no
 from altair.app.ticketing.orders.models import (Order,
                                                 OrderedProduct,
@@ -148,21 +146,3 @@ class QRAESPlugin(object):
 
     def output_to_template(self, ticket):
         return {'ticket': ticket}
-
-class QRAESDeliveryMethodForm(DeliveryMethodForm):
-    def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
-        super(QRAESDeliveryMethodForm, self).__init__(formdata=formdata, obj=obj, prefix=prefix, **kwargs)
-        self.delivery_plugin_id.choices = [(dmp.id, dmp.name) for dmp in DeliveryMethodPlugin.all()]
-
-    def get_customized_fields(self):
-        names = []
-        for attr in dir(self):
-            if attr.startswith('qr_aes_'):
-                names.append(attr)
-        return names
-
-@implementer(IDeliveryFormMaker)
-class QRAESDeliveryFormMaker(object):
-
-    def make_form(self, formdata=None, obj=None, prefix='', **kwargs):
-        return QRAESDeliveryMethodForm(formdata=formdata, obj=obj, prefix=prefix, **kwargs)
