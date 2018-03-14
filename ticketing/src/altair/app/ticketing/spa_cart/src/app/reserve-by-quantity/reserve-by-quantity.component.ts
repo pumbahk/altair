@@ -186,7 +186,9 @@ export class ReserveByQuantityComponent implements OnInit {
                     'height': '100%',
                   });
                   //おまかせ表示前デザイン設定
-                  this.modalSizeObtained();
+                  if (this.smartPhoneCheckService.isSmartPhone() || this.smartPhoneCheckService.isTabletSP()) {
+                    this.modalSizeObtained();
+                  }
                   this.stockType = response.data.stock_types[0];
                   //席種名と商品情報取得
                   this.stockTypeName = this.stockType.stock_type_name;
