@@ -267,12 +267,8 @@ class ImportCSVParserContext(object):
             'key': u'shipping_address.email_2',
             'required': False,
             },
-        'birthday': {
-            'key': u'shipping_address.birthday',
-            'required': False,
-        },
         'sex': {
-            'key': u'shipping_address.sex',
+            'key': u'user_profile.sex',
             'required': False,
             },
         }
@@ -643,7 +639,6 @@ class ImportCSVParserContext(object):
             fax             = record['fax'],
             email_1         = record['email_1'],
             email_2         = record['email_2'],
-            birthday        = record['birthday'],
             sex             = record['sex'],
             )
         return shipping_address
