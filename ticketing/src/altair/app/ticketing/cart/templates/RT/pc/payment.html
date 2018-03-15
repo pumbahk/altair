@@ -309,10 +309,10 @@ orion_checked = False
           render_tel_1(is_orion_selected=is_orion);
       } else {
           var ul = $("#orion-ticket-phone-list"),
-              li = $("#orion-ticket-phone-template").clone().removeAttr("id").removeAttr("style");
-          render_num(1, li);
+              // 一つ目のliがtemplateなので、電話番号1のliが二番目のli
+              li = ul.children('li').eq(1).detach();
           ul.find("li").not("#orion-ticket-phone-template").remove();
-          li.show().appendTo(ul);
+          li.appendTo(ul);
           $("#orion-ticket-phone-info").hide();
           render_tel_1(is_orion_selected=is_orion);
       }
@@ -334,7 +334,7 @@ orion_checked = False
         $(button).parent().remove();
         $("#orion-ticket-phone-list").find("li").each(function(index, li) {
             if (index !== 0) {
-                refresh_num(index, $(li));
+                render_num(index, $(li));
             }
 
         });
