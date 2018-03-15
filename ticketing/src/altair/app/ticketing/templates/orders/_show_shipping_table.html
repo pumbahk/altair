@@ -48,16 +48,16 @@
             <tr>
               <th>生年月日</th>
               <td>
-                % if order.shipping_address and order.shipping_address.birthday:
-                  ${vh.date(order.shipping_address.birthday)}
+                % if shipping_address and shipping_address.birthday:
+                  ${vh.date(shipping_address.birthday)}
                 % endif
               </td>
             </tr>
             <tr>
               <th>性別</th>
               <td>
-                % if order.shipping_address and order.shipping_address.sex:
-                  ${uh.format_sex(request, order.shipping_address.sex)}
+                % if shipping_address and shipping_address.sex:
+                  ${uh.format_sex(request, shipping_address.sex)}
                 % endif
               </td>
             </tr>
