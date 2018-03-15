@@ -255,7 +255,8 @@ class ClientFormFactory(object):
                         tel_1=self.data['tel_1'],
                         tel_2=self.data['tel_2'],
                         fax=self.data['fax'],
-                        sex=self.data['sex']
+                        sex=self.data['sex'],
+                        birthday=self.data['birthday']
                         )
 
 

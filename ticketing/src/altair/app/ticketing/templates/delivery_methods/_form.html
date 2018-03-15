@@ -14,13 +14,11 @@
   ${ch.form_item(form.selectable)}
   ${ch.form_item(form.hide_voucher)}
   ${ch.form_item(form.single_qr_mode)}
-  <!-- qr_aesのフィルドをループで出す -->
-  % for name in form._fields:
-    % if name.startswith('qr_aes_'):
-      ${ch.form_item(form[name])}
-    % endif
+  <!-- カスタマイズフィールドをループで出す -->
+  % for field_name in form.get_customized_fields():
+    ${ch.form_item(form[field_name])}
   % endfor
-  <!-- qr_aesのフィルドをループで出す -->
+  <!-- カスタマイズフィールドをループで出す -->
   ${ch.form_item(form.expiration_date)}
   ${ch.form_item(form.description, style='width:500px;height:100px;')}
   % if i18n_org == True:

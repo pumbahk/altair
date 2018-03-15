@@ -311,6 +311,9 @@
           });
         });
       </script>
+      <%block name="javascript">
+        <script type="text/javascript" src="${request.static_url('altair.app.ticketing:static/js/ajaxzip3-https.js')}"></script>
+      </%block>
       <div class="ss-pdmd">
         <div class="half" style="float:left">
             ${ch.form_item(_context.settings_form.sales_segment_id)}
@@ -345,7 +348,8 @@
         ${ch.form_item(form.tel_1, placeholder=u'例）08012345678')}
         <br/>
         <div class="half" style="float:left">
-            ${ch.form_item(form.zip, placeholder=u"例）1030001")}
+          <% path = request.static_url('altair.app.ticketing:static/js/zipdata') %>
+          ${ch.form_item(form.zip, placeholder=u"例）1030001", onKeyUp="AjaxZip3.zip2addr('" + path + "', 'zip','','prefecture','city','', 'address_1');")}
         </div>
         <div class="half" style="float:right">
             ${ch.form_item(form.prefecture, placeholder=u"例）東京都")}

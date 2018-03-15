@@ -13,6 +13,11 @@
 </script>
 		<div class="login-page">
 			<div class="contents">
+                % if request.session.peek_flash():
+                    % for message in request.session.pop_flash():
+                        <div class="error">${message}</div>
+                    % endfor
+                % endif
 				<!--****************************************************************-->
 				<section class="headArea">
 					<div class="inner">

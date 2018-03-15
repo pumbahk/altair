@@ -4,7 +4,7 @@ import re
 import json
 import transaction
 import time
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from urlparse import urlparse
 
 import sqlalchemy as sa
@@ -38,7 +38,7 @@ from altair.app.ticketing.payments.api import set_confirm_url, lookup_plugin
 from altair.app.ticketing.payments.payment import Payment
 from altair.app.ticketing.payments.plugins import ORION_DELIVERY_PLUGIN_ID
 from altair.app.ticketing.payments.exceptions import OrderLikeValidationFailure
-from altair.app.ticketing.users.models import UserPointAccountTypeEnum
+from altair.app.ticketing.users.models import UserPointAccountTypeEnum, SexEnum
 from altair.app.ticketing.venues.api import get_venue_site_adapter
 from altair.mobile.interfaces import IMobileRequest
 from altair.sqlahelper import get_db_session
@@ -1135,13 +1135,16 @@ class PaymentView(object):
         if 0 == len(payment_delivery_methods):
             raise PaymentMethodEmptyError.from_resource(self.context, self.request)
 
-        metadata = dict()
-        # 自動入力設定がオンの時だけmetadataをとってくる
-        if self.request.context.membershipinfo is not None and self.request.context.membershipinfo.enable_auto_input_form:
-            metadata = getattr(self.request, 'altair_auth_metadata', {})
-            if self.request.altair_auth_info['membership_source'] == 'altair.oauth_auth.plugin.OAuthAuthPlugin':
-                metadata = metadata[u'profile']
-
+        metadata = self.get_profile_meta_data()
+        birthday_dt = metadata.get('birthday', None)
+        if birthday_dt:
+            if not (isinstance(metadata.get('birthday'), datetime) or isinstance(metadata.get('birthday'), date)):
+                try:
+                    birthday_dt = datetime.strptime(birthday_dt, '%Y-%m-%dT%H:%M:%S').date()
+                except (TypeError, ValueError):
+                    birthday_dt = date(1980, 1, 1)
+        else:
+            birthday_dt = date(1980, 1, 1)
         shipping_address_info = dict(
             first_name=metadata.get('first_name'),
             first_name_kana=metadata.get('first_name_kana', u''),
@@ -1156,7 +1159,9 @@ class PaymentView(object):
             address_2=metadata.get('address_2'),
             email_1=metadata.get('email_1'),
             email_2=metadata.get('email_2'),
-            email_1_confirm=metadata.get('email_1')
+            email_1_confirm=metadata.get('email_1'),
+            birthday=birthday_dt,
+            sex=metadata.get('sex') if metadata.get('sex') is not None else SexEnum.Female.v
         )
 
         client_form = forms_i18n.ClientFormFactory(self.request).make_form()
@@ -1179,6 +1184,15 @@ class PaymentView(object):
             orion_ticket_phone=[''],
             orion_phone_errors = ['']
             )
+
+    def get_profile_meta_data(self):
+        """ 自動入力設定がオンの時だけmetadataをとってくる"""
+        metadata = dict()
+        if self.request.context.membershipinfo is not None and self.request.context.membershipinfo.enable_auto_input_form:
+            metadata = getattr(self.request, 'altair_auth_metadata', {})
+            if self.request.altair_auth_info['membership_source'] == 'altair.oauth_auth.plugin.OAuthAuthPlugin':
+                metadata = metadata[u'profile']
+        return metadata
 
     def get_validated_address_data(self):
         """フォームから ShippingAddress などの値を取りたいときはこれで"""
@@ -1209,6 +1223,8 @@ class PaymentView(object):
                 tel_1=form.data['tel_1'],
                 tel_2=None,
                 fax=form.data['fax'],
+                birthday=form.data['birthday'] if form.data['birthday'] is not None else date(1980, 1, 1),
+                sex=form.data['sex'] if form.data['sex'] is not None else SexEnum.Female.v
                 )
         else:
             return None
@@ -1355,6 +1371,10 @@ class PaymentView(object):
         return client_name
 
     def create_shipping_address(self, user, data):
+        if self.context.request.organization.code != 'RT':
+            metadata = self.get_profile_meta_data()
+            data['birthday'] = metadata.get('birthday') if metadata.get('birthday') else None
+            data['sex'] = metadata.get('sex') if metadata.get('sex') else None
         logger.debug('shipping_address=%r', data)
         return c_models.ShippingAddress(
             first_name=data['first_name'],
@@ -1373,6 +1393,7 @@ class PaymentView(object):
             tel_2=data['tel_2'],
             fax=data['fax'],
             sex=data.get("sex"),
+            birthday=data['birthday'],
             user=user
         )
 

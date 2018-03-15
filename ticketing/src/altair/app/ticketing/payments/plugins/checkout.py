@@ -86,10 +86,6 @@ ANSHIN_CHECKOUT_MINIMUM_AMOUNT = Decimal('100')
 @implementer(IPaymentPlugin)
 class CheckoutPlugin(object):
     def validate_order(self, request, order_like, update=False):
-        # TKT5018 暫定対応：クーポンをカートに持っている時に楽天ペイを含むPDMPを出さない
-        if getattr(order_like, 'used_discount_quantity', 0) != 0:
-            raise OrderLikeValidationFailure(u'discount codes are not allow for rakuten pay', 'order.used_discount_quantity')
-
         for item in order_like.items:
             if item.price < ANSHIN_CHECKOUT_MINIMUM_AMOUNT:
                 raise OrderLikeValidationFailure(u'product price too low', 'ordered_product.price')

@@ -24,5 +24,4 @@ def includeme(config):
     builder_aes = qr_aes()
     config.registry.registerUtility(builder_aes, IQRDataAESBuilder)
     config.add_directive("add_qr_aes_plugin", ".directives.add_qr_aes_plugin")
-    config.add_directive("add_qr_aes_delivery_form_maker", ".directives.add_qr_aes_delivery_form_maker")
     config.include('.qr_aes_plugins')
