@@ -50,29 +50,29 @@ def includeme(config):
 
 
 def get_type_code(product):
-    if product.name.count("STARTER"):
-        return "RAKSTR"
-    if product.name.count("GROUP"):
-        return "RAKGRP"
-    return ""
+    if product.name.count(u"STARTER"):
+        return u"RAKSTR"
+    if product.name.count(u"GROUP"):
+        return u"RAKGRP"
+    return u""
 
 
 def get_location_code(performance):
-    if performance.name.count('Nagoya'):
-        return "NGY"
-    if performance.name.count('Yokohama'):
-        return "YKH"
-    if performance.name.count('Osaka'):
-        return "OSK"
-    if performance.name.count('Sapporo'):
-        return "SAP"
-    if performance.name.count('Hibiya'):
-        return "HBY"
-    if performance.name.count('Kobe'):
-        return "KBE"
-    if performance.name.count('Tokyo'):
-        return "TKY"
-    return ""
+    if performance.name.count(u'Nagoya'):
+        return u"NGY"
+    if performance.name.count(u'Yokohama'):
+        return u"YKH"
+    if performance.name.count(u'Osaka'):
+        return u"OSK"
+    if performance.name.count(u'Sapporo'):
+        return u"SAP"
+    if performance.name.count(u'Hibiya'):
+        return u"HBY"
+    if performance.name.count(u'Kobe'):
+        return u"KBE"
+    if performance.name.count(u'Tokyo'):
+        return u"TKY"
+    return u""
 
 
 @implementer(IQRAESPlugin)
@@ -93,14 +93,14 @@ class BWQRAESPlugin(QRAESPlugin):
         """
 
         qr_ticket_obj = QRTicketObject(history, _get_db_session(history))
-        params = dict()
 
-        params['type_code'] = get_type_code(qr_ticket_obj)
+        params = dict()
+        params['type_code'] = get_type_code(qr_ticket_obj.product)
         params['location_code'] = get_location_code(qr_ticket_obj.performance)
         params['ticket_code'] = qr_ticket_obj.order_no
         params['ticket_seq'] = str(qr_ticket_obj.item_token.serial+1).rjust(3, '0')
         params['unique_flag'] = BW_UNIQUE_FLAG
-        params['issued_at'] = qr_ticket_obj.order.created_at
+        params['issued_at'] = qr_ticket_obj.order.created_at.strftime("%Y%m%d")
         params['valid_form'] = BW_VALID_FROM
         params['valid_to'] = BW_VALID_to
 
