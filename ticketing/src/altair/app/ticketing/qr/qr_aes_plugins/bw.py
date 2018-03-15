@@ -46,7 +46,6 @@ def _get_db_session(history):
 
 def includeme(config):
     config.add_qr_aes_plugin(BWQRAESPlugin("BELGIAN_BEER_WEEKEND_2018_IS_FUN"), u"BW")
-    config.add_qr_aes_delivery_form_maker(BWQRAESDeliveryFormMaker(), u"BW")
     config.scan(__name__)
 
 
@@ -118,14 +117,11 @@ class BWQRAESPlugin(QRAESPlugin):
         return {'data': data, 'ticket': qr_ticket_obj}
 
     def output_to_template(self, ticket):
-        allow_sp = ticket.order.payment_delivery_method_pair.delivery_method.preferences.get(
-            unicode(QR_AES_DELIVERY_PLUGIN_ID), {}).get(u'qr_aes_allow_sp', False)
         # TODO orderreview
         return dict(
             order=ticket.order,
             ticket=ticket,
             performance=ticket.performance,
             event=ticket.event,
-            product=ticket.product,
-            allow_sp=allow_sp
+            product=ticket.product
         )
