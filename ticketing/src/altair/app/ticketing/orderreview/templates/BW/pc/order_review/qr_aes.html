@@ -1,0 +1,5 @@
+% if allow_sp:
+  <%include file="_sp_allow_qr_aes.html" args="event=event, performance=performance, order=order, product=product, ticket=ticket" />
+% else:
+  <%include file="_sp_not_allow_qr_aes.html" args="event=event, performance=performance, order=order, product=product, ticket=ticket" />
+% endif
