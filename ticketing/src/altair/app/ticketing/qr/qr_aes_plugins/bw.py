@@ -18,9 +18,10 @@ from altair.app.ticketing.qr.qr_aes_plugins.base import QRAESPlugin
 from altair.app.ticketing.qr.utils import QRTicketObject
 
 
+BW_TICKET_SEQ = '001'
 BW_UNIQUE_FLAG = '1'
 BW_VALID_FROM = '00000000'
-BW_VALID_to = '00000000'
+BW_VALID_TO = '00000000'
 
 encrypting_items =[
     'type_code',
@@ -89,7 +90,8 @@ class BWQRAESPlugin(QRAESPlugin):
         type_code(string 6):チケット種類コード
         location_code(string 3):場所コード
         ticket_code(string 12):注文番号（一意）
-        ticket_seq(string 3):同じ注文で複数枚のチケットがあるときのシーケンス番号（連番）001-999
+        ticket_qty(string 3):注文枚数 001-999
+        ticket_seq(string 3):同じ注文で複数の席種があるときのシーケンス番号（連番）001-999
         unique_flag(bool 1):Falseの場合は、同じticket_codeを持つチケットを複数回使用できます。
         issued_at(date 8):発行日 YYYYMMDD
         valid_from(date 8):有効期限開始日 YYYYMMDD 必ず00000000を入れる
@@ -104,11 +106,11 @@ class BWQRAESPlugin(QRAESPlugin):
         params['location_code'] = get_location_code(qr_ticket_obj.performance)
         params['ticket_code'] = qr_ticket_obj.order_no
         params['ticket_qty'] = str(qr_ticket_obj.order.items[0].quantity).rjust(3, '0')
-        params['ticket_seq'] = "1"
+        params['ticket_seq'] = BW_TICKET_SEQ
         params['unique_flag'] = BW_UNIQUE_FLAG
         params['issued_at'] = qr_ticket_obj.order.created_at.strftime("%Y%m%d")
         params['valid_form'] = BW_VALID_FROM
-        params['valid_to'] = BW_VALID_to
+        params['valid_to'] = BW_VALID_TO
 
         data = dict(header='', content='')
 
