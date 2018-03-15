@@ -34,6 +34,7 @@ import { Logger } from "angular2-logger/core";
 
 const REGION_COLOR_SELECTED = 'rgb(255, 0, 0)';
 const REGION_COLOR_WHITE = 'rgb(255, 255, 255)';
+const WINDOW_SM = 768; // スマホか否かの判定に用いる
 
 @Component({
   selector: 'app-reserve-by-quantity',
@@ -184,9 +185,12 @@ export class ReserveByQuantityComponent implements OnInit {
                   $('html,body').css({
                     'width': '100%',
                     'height': '100%',
+                    'overflow-y': 'hidden'
                   });
                   //おまかせ表示前デザイン設定
-                  this.modalSizeObtained();
+                  if ($(window).width() <= WINDOW_SM) {
+                    this.modalSizeObtained();
+                  }
                   this.stockType = response.data.stock_types[0];
                   //席種名と商品情報取得
                   this.stockTypeName = this.stockType.stock_type_name;
