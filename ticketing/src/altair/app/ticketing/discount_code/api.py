@@ -111,10 +111,8 @@ def get_discount_amount(order_like):
         for element in item.elements:
             used_codes = element.used_discount_codes
             if used_codes:
-                discount_amount = discount_amount + element.product_item.price * len(used_codes)
-                # TODO https://jira.rakuten-it.com/jira/browse/TKT-5063対応。恒久的にはこちらを使用する。
-                # for used in used_codes:
-                #     discount_amount = discount_amount + used.applied_amount
+                for used in used_codes:
+                    discount_amount = discount_amount + used.applied_amount
     return discount_amount
 
 
@@ -226,7 +224,7 @@ def save_discount_code(carted_product_item, ordered_product_item):
         use_discount_code_order.benefit_amount = used_discount_code_cart.benefit_amount
         use_discount_code_order.benefit_unit = used_discount_code_cart.benefit_unit
 
-        # クーポン・割引コードテーブルに使用日時を記載（自社コードの場合）
+        # クーポン・割引コードテーブルに使用日時を記載
         if used_discount_code_cart.discount_code_id:
             use_discount_code_order.discount_code_id = used_discount_code_cart.discount_code_id
             available_code = DiscountCodeCode.query.filter_by(id=used_discount_code_cart.discount_code_id).first()
@@ -239,17 +237,26 @@ def save_discount_code(carted_product_item, ordered_product_item):
     return True
 
 
-def get_discount_code_settings(used_discount_codes):
+def get_discount_code_settings(codes):
     """
-    使用された割引コードから割引コード設定を取得する
+    使用された割引コード文字列から割引コード設定を取得する
     使用後のコード設定を取得することが目的なので、有効フラグや有効期間などは無視する。
-    :param used_discount_codes: 使用されたコード情報のオブジェクト
-    :return: 割引コード設定
+    :param codes: 割引コード文字列のリスト
+    :return setting_list: 割引コード設定のリスト
     """
-    code_first_4_digits = list(set([code.code[:4] for code in used_discount_codes]))
-    settings = DiscountCodeSetting.\
-        filter(DiscountCodeSetting.first_4_digits.in_(code_first_4_digits)).all()
-    return settings
+    setting_list = []
+    if not codes:
+        return setting_list
+
+    for code in codes:
+        first_digit = code[:1]
+        following_2to4_digits = code[1:4]
+        setting = DiscountCodeSetting. \
+            filter(DiscountCodeSetting.first_digit == first_digit). \
+            filter(DiscountCodeSetting.following_2to4_digits == following_2to4_digits).one()
+        setting_list.append(setting)
+
+    return setting_list
 
 
 def used_discount_code_groups(cart_or_order):
@@ -258,11 +265,12 @@ def used_discount_code_groups(cart_or_order):
     :param cart_or_order: OrderやCartオブジェクト
     :return: 頭4桁の入力文字でグループ化されたdict
     """
-    from altair.app.ticketing.orders.models import Order
-    from altair.app.ticketing.cart.models import Cart
+    groups = []
 
     codes = get_used_discount_codes(cart_or_order)
     settings = get_discount_code_settings(codes)
+    if not settings:
+        return groups
 
     code_groups = {}
     for code in codes:
@@ -272,7 +280,6 @@ def used_discount_code_groups(cart_or_order):
         else:
             code_groups[code.code[:4]] = [code]
 
-    groups = []
     for setting in settings:
         group_dict = dict()
         group_dict['discount_code_setting'] = setting
@@ -283,6 +290,7 @@ def used_discount_code_groups(cart_or_order):
                 group_dict['discount_price'] = group_dict['discount_price'] + code.applied_amount
 
         groups.append(group_dict)
+
     return groups
 
 
