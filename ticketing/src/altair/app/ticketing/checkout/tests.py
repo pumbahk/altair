@@ -760,7 +760,7 @@ class AnshinCheckoutAPITest(unittest.TestCase):
             u'<orderTotalFee>160</orderTotalFee>'
             u'<itemsInfo>'
             u'<item>'
-            u'<itemId>total_fee_with_discount</itemId>'
+            u'<itemId>total_ticket_fee</itemId>'
             u'<itemNumbers>1</itemNumbers>'
             u'<itemFee>20</itemFee>'
             u'<itemName>テスト組織名 チケットご購入代金</itemName>'
