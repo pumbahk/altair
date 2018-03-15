@@ -8300,6 +8300,7 @@ var PaymentComponent = (function () {
 
 var REGION_COLOR_SELECTED = 'rgb(255, 0, 0)';
 var REGION_COLOR_WHITE = 'rgb(255, 255, 255)';
+var WINDOW_SM = 768; // スマホか否かの判定に用いる
 var ReserveByQuantityComponent = (function () {
     function ReserveByQuantityComponent(route, router, performances, stockTypes, seatStatus, seats, quantityCheckService, stockTypeDataService, errorModalDataService, countSelectService, animationEnableService, smartPhoneCheckService, reserveBySeatBrowserBackService, _logger) {
         this.route = route;
@@ -8386,9 +8387,12 @@ var ReserveByQuantityComponent = (function () {
                             __WEBPACK_IMPORTED_MODULE_13_jquery__('html,body').css({
                                 'width': '100%',
                                 'height': '100%',
+                                'overflow-y': 'hidden'
                             });
                             //おまかせ表示前デザイン設定
-                            _this.modalSizeObtained();
+                            if (__WEBPACK_IMPORTED_MODULE_13_jquery__(window).width() <= WINDOW_SM) {
+                                _this.modalSizeObtained();
+                            }
                             _this.stockType = response.data.stock_types[0];
                             //席種名と商品情報取得
                             _this.stockTypeName = _this.stockType.stock_type_name;
