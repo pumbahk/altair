@@ -5067,4 +5067,7 @@ class OrionTicketPhone(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     user = relationship('User', backref='phones')
     order_no = Column(String(12), nullable=False, default='')
     entry_no = Column(String(12), nullable=False, default='')
+    owner_phone_number = Column(String(20), nullable=False, default='')
     phones = Column(String(255), nullable=False, default='')
+    sent_at = Column(DateTime, nullable=True, default=None)
+    sent = Column(Boolean, nullable=False, default=False)

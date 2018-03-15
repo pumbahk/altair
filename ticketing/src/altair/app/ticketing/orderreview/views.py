@@ -22,7 +22,7 @@ from altair.app.ticketing.core.api import get_default_contact_url
 from altair.request.adapters import UnicodeMultiDictAdapter
 from altair.now import get_now, is_now_set
 
-from altair.app.ticketing.core.models import ShippingAddress, OrderreviewIndexEnum
+from altair.app.ticketing.core.models import ShippingAddress, OrderreviewIndexEnum, OrionTicketPhone
 from altair.app.ticketing.core.utils import IssuedAtBubblingSetter
 from altair.app.ticketing.mailmags.api import get_magazines_to_subscribe, multi_subscribe, multi_unsubscribe
 from altair.app.ticketing.payments import plugins
@@ -870,6 +870,10 @@ class QRView(object):
 
         result = []
         try:
+            # send_to_orionの時間をorion_ticket_phoneに記録する
+            orion_ticket_phone = OrionTicketPhone.query.filter(OrionTicketPhone.order_no == self.request.params['order_no']).first()
+            # send_to_orionは成功予定する
+            orion_ticket_phone.sent = True
             if 'multi' in self.request.params and self.request.params['multi']!="":
                 data_list = OrderedProductItemToken.query\
                     .join(OrderedProductItem)\
@@ -892,10 +896,21 @@ class QRView(object):
                 response = api.send_to_orion(self.request, self.context, mail, data)
                 if response == None:
                     result.append(dict(seat=seat, result=u"failure", reason=u"不明なエラー"))
+                    # 一件だけ失敗したら、sentをFalseにする
+                    orion_ticket_phone.sent = False
+                    logger.info("failed to send order: {0}, token: {1}...".format(self.request.params['order_no'], data.id))
                 elif response['result'] != u"OK":
                     result.append(dict(seat=seat, result=u"failure", reason=response['message']))
+                    # 一件だけ失敗したら、sentをFalseにする
+                    orion_ticket_phone.sent = False
+                    logger.info("failed to send order: {0}, token: {1}...".format(self.request.params['order_no'], data.id))
                 else:
                     result.append(dict(seat=seat, result=u"success"))
+
+            # send_to_orionの時間をorion_ticket_phoneに記録する
+            orion_ticket_phone.sent_at = datetime.now()
+            orion_ticket_phone.update()
+
         except Exception, e:
             logger.error(e.message, exc_info=1)
             raise
