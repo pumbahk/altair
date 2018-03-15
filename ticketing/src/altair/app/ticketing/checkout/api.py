@@ -13,6 +13,7 @@ from altair.app.ticketing.core.models import ChannelEnum
 from altair.app.ticketing.core import api as core_api
 from altair.app.ticketing.cart.models import Cart
 from altair.app.ticketing.orders.models import Order
+from altair.app.ticketing.discount_code import api as discount_api
 from altair.sqla import session_scope
 from . import interfaces
 from . import models as m
@@ -130,20 +131,49 @@ def get_fee_items_dict(request, order_like):
         retval['special_fee'] = ('special_fee', 'refund_special_fee', order_like.special_fee_name)
     return retval
 
+
+def calc_total_item_fee_with_discount(request, items):
+    """
+    :param request: リクエストオブジェクト
+    :param items: CartedProductオブジェクトのリスト
+    :return: 割引金額を考慮した予約内の商品合計金額
+    """
+    total = 0
+    for item in items:
+        discount_price = discount_api.get_discount_price_from_carted_product(request, item)
+        item_fee = item.price * item.quantity
+        total = total + (item_fee - discount_price)
+
+    return total
+
+
 def build_checkout_object_from_order_like(request, order_like):
     checkout_object = m.Checkout(
         orderCartId=order_like.order_no,
         orderTotalFee=int(order_like.total_amount)
         )
-    for item in order_like.items:
+    if request.organization.setting.enable_discount_code:
+        # 組織設定で割引コードが有効になっている場合は全商品の合計
         checkout_object.items.append(
             m.CheckoutItem(
-                itemId=unicode(item.product.id),
-                itemName=item.product.name,
-                itemNumbers=item.quantity,
-                itemFee=int(item.price)
+                itemId=u'total_fee_with_discount',
+                itemName=u'{} チケットご購入代金'.format(request.organization.name),
+                itemNumbers=1,
+                itemFee=int(calc_total_item_fee_with_discount(request, order_like.items))
+            )
+        )
+    else:
+        # そうでない場合は商品の金額と個数を個別に扱う
+        for item in order_like.items:
+            checkout_object.items.append(
+                m.CheckoutItem(
+                    itemId=unicode(item.product.id),
+                    itemName=item.product.name,
+                    itemNumbers=item.quantity,
+                    itemFee=int(item.price)
                 )
             )
+
     # 手数料も商品として登録する
     for item_id, (attr_name, _, name) in get_fee_items_dict(request, order_like).items():
         fee = getattr(order_like, attr_name)

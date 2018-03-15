@@ -131,7 +131,7 @@ class EaglesDiscountCodeAPI(object):
 
     @view_config(route_name='extauth_dummy.confirm_coupon_status')
     def eagles_confirm_coupon_status(self):
-        # TODO fc_member_idのチェック。
+        # fc_member_idの適合性を確認する処理は組み込んでいません。
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%s")
         client_name = self.request.POST['client_name']
         token = self.request.POST['token']
@@ -178,7 +178,7 @@ class EaglesDiscountCodeAPI(object):
 
     @view_config(route_name='extauth_dummy.use_coupon')
     def eagles_use_coupon(self):
-        # TODO fc_member_idのチェック。
+        # fc_member_idの適合性を確認する処理は組み込んでいません。
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%s")
         client_name = self.request.POST['client_name']
         token = self.request.POST['token']
@@ -231,7 +231,7 @@ class EaglesDiscountCodeAPI(object):
 
     @view_config(route_name='extauth_dummy.cancel_used_coupon')
     def eagles_cancel_used_coupon(self):
-        # TODO fc_member_idのチェック。
+        # fc_member_idの適合性を確認する処理は組み込んでいません。
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%s")
         client_name = self.request.POST['client_name']
         token = self.request.POST['token']

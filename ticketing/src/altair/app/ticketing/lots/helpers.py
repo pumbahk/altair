@@ -68,6 +68,7 @@ SHIPPING_ATTRS = (
     "tel_1",
     "tel_2",
     "fax",
+    "birthday",
 )
 
 wished_performance_id_pt = r"^performanceDate-(?P<wish_order>\d+)$"

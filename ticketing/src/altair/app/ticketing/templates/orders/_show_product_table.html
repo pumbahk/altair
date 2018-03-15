@@ -130,8 +130,7 @@
     </td>
     <td style="color: red;text-align:right;">
         % if ordered_product_item.used_discount_codes:
-            -${vh.price(len(ordered_product_item.used_discount_codes) * ordered_product_item.price)}
-            ## TODO ここは後日、こちらに書き換える → -${vh.price(int(sum([code.applied_amount for code in ordered_product_item.used_discount_codes])))}
+            -${vh.price(int(sum([code.applied_amount for code in ordered_product_item.used_discount_codes])))}
         % endif
     </td>
   </tr>

@@ -52,21 +52,3 @@ def add_qr_aes_plugin(config, plugin, organization_code):
         "organization_code=%s" % organization_code
         )
     config.action(key, register, introspectables=[intr], order=QE_AES_CONFIG)
-
-def add_qr_aes_delivery_form_maker(config, maker, organization_code):
-    """ ヘルパー登録
-    :param maker: an instance of IQRAESFormHelper
-    :param organization_code: organization's code
-    """
-    key = Discriminator(organization_code + "-form-helper")
-
-    def register():
-        logger.info("add_qr_aes_form_helper: %r registered for %s" % (maker, organization_code))
-        config.registry.utilities.register([], IQRAESDeliveryFormMaker, str(key), maker)
-
-    intr = config.introspectable(
-        "qr aes delivery form maker", str(key),
-        config.object_description(maker),
-        "organization_code=%s" % organization_code
-    )
-    config.action(key, register, introspectables=[intr], order=QE_AES_CONFIG)
