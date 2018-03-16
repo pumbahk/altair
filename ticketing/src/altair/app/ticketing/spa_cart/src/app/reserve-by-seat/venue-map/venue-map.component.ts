@@ -86,7 +86,7 @@ const SCALE_SEAT = 1.0; // 表示倍率2倍個席表示
 const SCALE_MAX = 5.0;  // 表示倍率の最大値
 
 const WINDOW_SM = 768; // スマホか否かの判定に用いる
-const SIDE_HEIGHT = 200; //横画面時エラーを出す最大値
+const SIDE_HEIGHT = 160; //横画面時エラーを出す最大値
 
 @Component({
   providers: [FilterComponent, ReserveByQuantityComponent],
@@ -496,12 +496,10 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
 
       that.originalViewBox = that.getPresentViewBox();
       // viewBox取得　且つ　座席選択領域の高さを取得
-
       if ((that.originalViewBox && (that.mapAreaLeftH >= SIDE_HEIGHT)) ||
         (that.originalViewBox && that.smartPhoneCheckService.isPC() && that.mapAreaLeftH)) {
         clearInterval(svgLoadCompleteTimer);
         that.displayViewBox = that.originalViewBox.concat();
-        that.seatAreaHeight = $("#mapImgBox").height();
         that.svgMap = document.getElementById('mapImgBox').firstElementChild;
         that.D_Width = $(that.svgMap).innerWidth(); // 表示窓のwidth
         that.D_Height = $(that.svgMap).innerHeight(); // 表示窓のheight
@@ -1436,6 +1434,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
     } else {
       if (this.smartPhoneCheckService.isSmartPhone() || this.smartPhoneCheckService.isTabletSP()) {
         if (orientation == 0 || orientation == 180) {//縦向き
+          this.seatAreaHeight = $("#mapImgBox").height();
           $('#mapAreaLeft').css({
             'height': windowHeight - allHead,
           });

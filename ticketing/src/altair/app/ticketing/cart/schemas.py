@@ -332,13 +332,13 @@ class ClientForm(OurDynamicForm):
         return status
 
     def validate_birthday(self, field):
-        if self.context.request.organization.code == 'RT' and not self.birthday.data:
+        if self.context.request.organization.code == 'RT' and not self.birthday.data and self.context.cart_setting.type != 'fc':
             self.birthday.errors.append(u"選択してください。")
             return False
         return True
 
     def validate_sex(self, field):
-        if self.context.request.organization.code == 'RT' and not self.sex.data:
+        if self.context.request.organization.code == 'RT' and not self.sex.data and self.context.cart_setting.type != 'fc':
             self.sex.errors.append(u"選択してください。")
             return False
         return True
