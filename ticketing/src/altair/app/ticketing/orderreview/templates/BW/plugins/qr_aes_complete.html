@@ -2,6 +2,20 @@
 
 ${description}
 
+<style>
+.QRButton {
+    margin: 5px auto;
+    background: #E5803A;
+    color: #FFF;
+    padding: 5px 10px;
+    font-weight: bold;
+    font-size: 16px;
+    border-radius: 5px;
+    display: inline-block;
+    cursor: pointer;
+}
+</style>
+
 % if paid:
     % for ticket in tickets:
         <div style="border: 1px solid gray; padding: 8px; margin-bottom: 4px;">
@@ -17,7 +31,7 @@ ${description}
                 <input type="hidden" name="order_no" value="${order.order_no}" />
                 <input type="hidden" name="tel" value="${tel}" />
                 <input type="hidden" name="token" value="${ticket.token.id if ticket.token else ""}" />
-                <input type="submit" value="QRコードを表示する" style="width:150px;height:40px" />
+                <input type="submit" class="QRButton" value="QRコードを表示する" />
             </form>
             <br/>
             <form method="post" target="_blank" action="${request.route_path('order_review.qr_aes_send')}">
@@ -25,7 +39,7 @@ ${description}
                 <input type="hidden" name="tel" value="${tel}" />
                 <input type="hidden" name="token" value="${ticket.token.id if ticket.token else ""}" />
                 メールアドレス: <input type="text" name="mail" size="40" />
-                <input type="submit" name="send" value="メールで送る" />
+                <input type="submit" class="QRButton" name="send" value="メールで送る" />
             </form>
         </div>
     % endfor
