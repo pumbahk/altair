@@ -88,29 +88,33 @@ class DiscountCodeForm(OurForm):
             return True
 
         if len(code) != 0 and len(code) != 12:
-            getattr(self, "code").errors.append(u"ご選択された席には適用できないクーポンです(T0001)")
+            getattr(self, "code").errors.append(u"ご選択された席には適用できないクーポン・割引コードです(T0001)")
             return False
 
         if not any([setting for setting in self.discount_code_settings if code[:4] == setting.first_4_digits]):
-            getattr(self, "code").errors.append(u"ご選択された席には適用できないクーポンです(T0002)")
+            getattr(self, "code").errors.append(u"ご選択された席には適用できないクーポン・割引コードです(T0002)")
             return False
 
         return True
 
     def add_duplicate_code_error(self):
-        getattr(self, "code").errors.append(u"重複して入力されたクーポンです(T0003)")
+        getattr(self, "code").errors.append(u"重複して入力されたクーポン・割引コードです(T0003)")
         return False
 
     def add_used_discount_code_error(self):
-        getattr(self, "code").errors.append(u"使用されたクーポンです(T0004)")
+        getattr(self, "code").errors.append(u"使用されたクーポン・割引コードです(T0004)")
         return False
 
     def add_non_fanclub_member_discount_code_error(self):
-        getattr(self, "code").errors.append(u"ご選択された席には適用できないクーポンです(T0005)")
+        getattr(self, "code").errors.append(u"ご選択された席には適用できないクーポン・割引コードです(T0005)")
+        return False
+
+    def not_existed_own_discount_code_error(self):
+        getattr(self, "code").errors.append(u"ご選択された席には適用できないクーポン・割引コードです(T0006)")
         return False
 
     def add_coupon_response_error(self, reason_code):
-        getattr(self, "code").errors.append(u"ご選択された席には適用できないクーポンです(E{})".format(reason_code))
+        getattr(self, "code").errors.append(u"ご選択された席には適用できないクーポン・割引コードです(E{})".format(reason_code))
         return False
 
     def add_internal_error(self):
