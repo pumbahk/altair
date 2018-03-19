@@ -245,15 +245,15 @@ def get_discount_code_settings(codes):
     :return setting_list: 割引コード設定のリスト
     """
     setting_list = []
-    if not codes:
-        return setting_list
+    code_set = set(code.code[:4] for code in codes)
 
-    for code in codes:
+    for code in code_set:
         first_digit = code[:1]
         following_2to4_digits = code[1:4]
-        setting = DiscountCodeSetting. \
-            filter(DiscountCodeSetting.first_digit == first_digit). \
-            filter(DiscountCodeSetting.following_2to4_digits == following_2to4_digits).one()
+        setting = DiscountCodeSetting \
+            .filter(DiscountCodeSetting.first_digit == first_digit) \
+            .filter(DiscountCodeSetting.following_2to4_digits == following_2to4_digits) \
+            .one()
         setting_list.append(setting)
 
     return setting_list
