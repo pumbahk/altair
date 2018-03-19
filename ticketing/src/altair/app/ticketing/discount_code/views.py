@@ -146,9 +146,10 @@ class DiscountCode(BaseView):
 
         try:
             self.context.delete_discount_code_setting(setting)
-            self.request.session.flash(u'クーポン・割引コード設定を削除しました')
+            self.request.session.flash(u'「ID:{} {}」を削除しました'.format(setting.id, setting.name))
         except SQLAlchemyError as e:
-            self.request.session.flash(u'クーポン・割引コード設定の削除に失敗しました')
+            self.request.session.flash(u'「ID:{} {}」の削除に失敗しました'.format(setting.id, setting.name))
+            logger.error("Couldn't delete discount_code_setting: {}".format(str(e)))
 
         return HTTPFound(location=location)
 
