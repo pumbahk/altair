@@ -1,9 +1,47 @@
-<div class="confirmBoxText">
-    <table class="customer-table">
-        <tr>
-            <td>
-                ${description}
-            </td>
-        </tr>
-    </table>
+<div>
+
+${description}
+
+<style>
+.QRButton {
+    margin: 5px auto;
+    background: #E5803A;
+    color: #FFF;
+    padding: 5px 10px;
+    font-weight: bold;
+    font-size: 16px;
+    border-radius: 5px;
+    display: inline-block;
+    cursor: pointer;
+}
+</style>
+
+% if paid:
+    % for ticket in tickets:
+        <div style="border: 1px solid gray; padding: 8px; margin-bottom: 4px;">
+            % if ticket.product:
+            商品名 ${ticket.product.name} (${ticket.product.id}) <br />
+            % endif
+            %if ticket.seat:
+            席番号 ${ticket.seat.name} (${ticket.seat.l0_id}) <br />
+            %endif
+            <br />
+
+            <form method="post" target="_blank" action="${request.route_path('order_review.qr_aes_print')}">
+                <input type="hidden" name="order_no" value="${order.order_no}" />
+                <input type="hidden" name="tel" value="${tel}" />
+                <input type="hidden" name="token" value="${ticket.token.id if ticket.token else ""}" />
+                <input type="submit" class="QRButton" value="QRコードを表示する" />
+            </form>
+            <br/>
+            <form method="post" target="_blank" action="${request.route_path('order_review.qr_aes_send')}">
+                <input type="hidden" name="order_no" value="${order.order_no}" />
+                <input type="hidden" name="tel" value="${tel}" />
+                <input type="hidden" name="token" value="${ticket.token.id if ticket.token else ""}" />
+                メールアドレス: <input type="text" name="mail" size="40" />
+                <input type="submit" class="QRButton" name="send" value="メールで送る" />
+            </form>
+        </div>
+    % endfor
+% endif
 </div>
