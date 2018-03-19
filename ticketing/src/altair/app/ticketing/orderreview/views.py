@@ -962,7 +962,7 @@ class QRAESView(object):
         if token_id:
             ticket = self.context.qr_aes_plugin.build_qr_by_token_id(order_no=order_no, token_id=token_id)
         else:
-            ticket = self.context.qr_aes_plugin.build_qr_by_order_no(order_no)
+            ticket = self.context.qr_aes_plugin.build_qr_by_order_no(self.request, order_no)
 
         return self.context.qr_aes_plugin.output_to_template(ticket)
 
