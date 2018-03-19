@@ -11,7 +11,7 @@ from pyramid.decorator import reify
 from pyramid.httpexceptions import HTTPNotFound
 from sqlalchemy.orm import joinedload, joinedload_all
 from sqlalchemy.orm.session import make_transient
-from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 from zope.interface import implementer
 from webob.multidict import MultiDict
 from altair.sqlahelper import get_db_session
@@ -23,7 +23,7 @@ from altair.app.ticketing.orders import models as order_models
 from altair.app.ticketing.core.interfaces import IOrderQueryable
 from altair.app.ticketing.users import models as u_models
 from altair.app.ticketing.utils import memoize
-from ..discount_code.models import UsedDiscountCodeCart
+from ..discount_code.models import UsedDiscountCodeCart, DiscountCodeCode
 from ..discount_code import api as discount_api
 from . import models as m
 from . import api as cart_api
@@ -820,11 +820,49 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
             if not self._is_sports_service_code_used_by_eligible_user(code[:4]):
                 form.add_non_fanclub_member_discount_code_error()
 
+            # 存在する自社コードか確認するバリデーション
+            if not self._is_exist_own_discount_code(code):
+                form.not_existed_own_discount_code_error()
+
             # 使用済みコードバリデーション
             organization = cart_api.get_organization(self.request)
             if discount_api.check_used_discount_code(code, organization):
                 form.add_used_discount_code_error()
 
+        return True
+
+    def _is_exist_own_discount_code(self, code_str):
+        """
+        入力されたコードが自社コードだった場合、データベースに存在しているか確認する。
+        :param code_str: 入力されたコード
+        :return: Boolean
+        """
+        organization = cart_api.get_organization(self.request)
+        first_4_digits = code_str[:4]
+        setting = self.cart.performance.find_available_target_settings(issued_by=u'own',
+                                                                       first_4_digits=first_4_digits,
+                                                                       session=self.session,
+                                                                       now=self.now)
+
+        # 自社コードではなかった場合
+        if not setting:
+            return True
+
+        try:
+            self.session.query(DiscountCodeCode).filter(
+                DiscountCodeCode.code == code_str,
+                DiscountCodeCode.discount_code_setting_id == setting.id,
+                DiscountCodeCode.organization_id == organization.id
+            ).one()
+        except NoResultFound:
+            # データベースに登録のないコードが入力されている
+            return False
+        except MultipleResultsFound as err:
+            logger.error(
+                'found duplicate discount codes "{}". {}'.format(code_str, err.message))
+            return False
+
+        # 正常にレコードが見つかった場合
         return True
 
     def _is_sports_service_code_used_by_eligible_user(self, first_4_digits):
