@@ -860,6 +860,7 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
         except MultipleResultsFound as err:
             logger.error(
                 'found duplicate discount codes "{}". {}'.format(code_str, err.message))
+            return False
 
         # 正常にレコードが見つかった場合
         return True
