@@ -582,6 +582,11 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                       key=lambda s: s.id)
 
     @property
+    def not_exist_product_item(self):
+        # 商品明細がこのパフォーマンスにひとつも紐付いていない
+        return not [product for product in self.products if len(product.items) > 0]
+
+    @property
     def lots(self):
         """当公演を抽選対象としているLotを返す"""
         lots = set()

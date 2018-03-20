@@ -367,7 +367,7 @@ class Lots(BaseView):
             lots_cart_now_url=self.context.lots_cart_now_url,
             agreement_lots_cart_now_url=self.context.agreement_lots_cart_now_url,
             product_grid=product_grid,
-            not_exist_product_item=self.context.not_exist_product_item,
+            not_exist_product_item=lot.not_exist_product_item,
             h=h,
             )
 

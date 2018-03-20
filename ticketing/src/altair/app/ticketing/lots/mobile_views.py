@@ -103,11 +103,16 @@ class EntryLotView(object):
         if self.context.option_index is None:
             return HTTPFound(self.request.route_path('lots.entry.step3', event_id=event.id, lot_id=lot.id))
 
+        performances = []
+        for performance in lot.performances:
+            if not performance.not_exist_product_item:
+                performances.append(performance)
+
         return dict(
             event=event,
             lot=lot,
             sales_segment=lot.sales_segment,
-            performances=sorted(lot.performances, lambda a, b: cmp(a.start_on, b.start_on)),
+            performances=sorted(performances, lambda a, b: cmp(a.start_on, b.start_on)),
             option_index=self.context.option_index
             )
 
@@ -146,13 +151,15 @@ class EntryLotView(object):
             products=sorted(
                 [
                     products_per_stock_type
-                    for _, products_per_stock_type in products.items() if products_per_stock_type[0].seat_stock_type.quantity_only is True
-                    ],
-                lambda a, b: cmp(a[0].seat_stock_type.display_order, a[0].seat_stock_type.display_order,)
-                ),
+                    for _, products_per_stock_type in products.items() if
+                    products_per_stock_type[0].seat_stock_type.quantity_only is True
+                    and len(products_per_stock_type[0].items) > 0
+                ],
+                lambda a, b: cmp(a[0].seat_stock_type.display_order, a[0].seat_stock_type.display_order, )
+            ),
             option_index=self.context.option_index,
             messages=self.request.session.pop_flash()
-            )
+        )
 
     def step3_rendered_value(self, option_index):
         event = self.context.event

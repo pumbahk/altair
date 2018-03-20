@@ -195,6 +195,10 @@ class Lot(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             LotRejectWork.id==None
         ).all()
 
+    @property
+    def not_exist_product_item(self):
+        # 商品明細が紐付いていない商品があった場合
+        return [product for product in self.products if len(product.items) == 0]
 
     @property
     def query_receipt_entries(self):
