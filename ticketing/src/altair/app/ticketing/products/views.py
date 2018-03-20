@@ -149,6 +149,12 @@ class ProductAndProductItem(BaseView):
         f = ProductAndProductItemForm(self.request.POST, sales_segment=product.sales_segment)
         if product_item is not None and len(product.items) != 1:
             f.product_item_price.data = product_item.price
+        if product_item is None:
+            # 商品明細のみにある項目をWTFormのvalidatorでRequiredとすると商品編集でバリデーションエラーが発生してしまう
+            # 商品編集の際に商品＆商品明細のformを使いまわしていることが原因
+            # 本来は商品単体のformを作成するべきだがインパクトが大きいため、
+            # product_itemがない場合は商品編集と想定し、ticket_bundle_idのバリデーションをパスするようにデータを設定することで対処
+            f.ticket_bundle_id.data = f.ticket_bundle_id.choices[0][0]
         if f.validate():
             point_grant_settings = [
                 PointGrantSetting.query.filter_by(id=point_grant_setting_id, organization_id=self.context.user.organization_id).one()
