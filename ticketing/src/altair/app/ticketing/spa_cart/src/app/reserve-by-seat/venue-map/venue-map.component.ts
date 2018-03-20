@@ -496,7 +496,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
 
       that.originalViewBox = that.getPresentViewBox();
       // viewBox取得　且つ　座席選択領域の高さを取得
-      if ((that.originalViewBox && (that.mapAreaLeftH >= SIDE_HEIGHT)) ||
+      if ((that.originalViewBox && that.mapAreaLeftH != 0) ||
         (that.originalViewBox && that.smartPhoneCheckService.isPC() && that.mapAreaLeftH)) {
         clearInterval(svgLoadCompleteTimer);
         that.displayViewBox = that.originalViewBox.concat();
@@ -916,7 +916,6 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
         if ($(window).width() > WINDOW_SM) {
           $('.choiceAreaAcdBox').css('display', 'block');
         } else {
-          $('.choiceAreaAcdBox').css('display', 'none');
           if (this.scaleTotal >= SCALE_SEAT && this.smartPhoneCheckService.isTabletSP()) {
             this.seatSelectDisplay(false);
             this.stockTypeDataService.sendToSeatListFlag(false);
