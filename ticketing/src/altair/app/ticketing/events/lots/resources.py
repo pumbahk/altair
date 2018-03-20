@@ -85,6 +85,11 @@ class LotResource(AbstractLotResource):
     def agreement_lots_cart_now_url(self):
         return get_cart_now_url_builder(self.request).build(self.request, self.agreement_lots_cart_url, self.event.id if self.event else None)
 
+    @property
+    def not_exist_product_item(self):
+        # 商品明細が紐付いていない商品があった場合
+        return [product for product in self.lot.products if len(product.items) == 0]
+
 
 class LotViewResource(LotResource):
     def __init__(self, request, lot_id):
@@ -93,6 +98,7 @@ class LotViewResource(LotResource):
             self.lot_id = long(lot_id)
         except (TypeError, ValueError):
             raise HTTPNotFound
+
 
 class LotEntryResource(AbstractLotResource):
     def __init__(self, request):
