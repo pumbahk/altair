@@ -34,6 +34,17 @@ def _send_mail_simple(request, recipient, sender, mail_body, subject=u"QRチケ�
             sender=sender)
     return get_mailer(request).send(message)
 
+def _build_orion_ticket_phone_verify(owner_phone_number, orion_ticket_phones):
+    if owner_phone_number and orion_ticket_phones:
+        return owner_phone_number + ',' + orion_ticket_phones
+    elif owner_phone_number:
+        return owner_phone_number
+    elif orion_ticket_phones:
+        return orion_ticket_phones
+    else:
+        return u''
+
+
 def send_to_orion(request, context, recipient, data):
     order = data.item.ordered_product.order
     product = data.item.ordered_product.product
@@ -45,11 +56,14 @@ def send_to_orion(request, context, recipient, data):
     segment = order.sales_segment
     seat = data.seat
     orion = performance.orion
-    orion_ticket_phone_verify = order.get_send_to_orion_phone_string(request)
+    owner_phone_number = order.get_send_to_orion_phone_string(request)
+    orion_ticket_phones = order.get_send_to_orion_owner_phone_string(request)
+    orion_ticket_phone_verify = _build_orion_ticket_phone_verify(owner_phone_number, orion_ticket_phones)
     obj = dict()
     obj['token'] = data.id
     obj['recipient'] = dict(mail = recipient)
     obj['order'] = dict(number = order.order_no,
+                        owner_phone_number=owner_phone_number,
                         orion_ticket_phone_verify=orion_ticket_phone_verify,
                         sequence = data.serial,
                         created_at = str(order.paid_at))

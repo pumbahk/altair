@@ -856,13 +856,22 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         orion_ticket_phone = session.query(OrionTicketPhone).filter(OrionTicketPhone.order_no == self.order_no).first()
         return orion_ticket_phone.phones.split(',') if orion_ticket_phone else []
 
-    def get_send_to_orion_phone_string(self, request):
+    def _get_orion_ticket_phone(self, request):
         session = get_db_session(request, 'slave')
         try:
-            orion_ticket_phone = session.query(OrionTicketPhone).filter(OrionTicketPhone.order_no == self.order_no).one()
-            return orion_ticket_phone.owner_phone_number + ',' + orion_ticket_phone.phones
+            orion_ticket_phone = session.query(OrionTicketPhone).filter(
+                OrionTicketPhone.order_no == self.order_no).one()
+            return orion_ticket_phone
         except (NoResultFound, MultipleResultsFound):
-            return u""
+            return None
+
+    def get_send_to_orion_phone_string(self, request):
+        orion_ticket_phone = self._get_orion_ticket_phone(request)
+        return orion_ticket_phone.phones if orion_ticket_phone else u""
+
+    def get_send_to_orion_owner_phone_string(self, request):
+        orion_ticket_phone = self._get_orion_ticket_phone(request)
+        return orion_ticket_phone.owner_phone_number if orion_ticket_phone else u""
 
     @property
     def used_discount_codes(self):
