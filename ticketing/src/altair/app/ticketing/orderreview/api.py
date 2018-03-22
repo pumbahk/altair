@@ -56,8 +56,8 @@ def send_to_orion(request, context, recipient, data):
     segment = order.sales_segment
     seat = data.seat
     orion = performance.orion
-    owner_phone_number = order.get_send_to_orion_phone_string(request)
-    orion_ticket_phones = order.get_send_to_orion_owner_phone_string(request)
+    owner_phone_number = order.get_send_to_orion_owner_phone_string(request)
+    orion_ticket_phones = order.get_send_to_orion_phone_string(request)
     orion_ticket_phone_verify = _build_orion_ticket_phone_verify(owner_phone_number, orion_ticket_phones)
     obj = dict()
     obj['token'] = data.id
