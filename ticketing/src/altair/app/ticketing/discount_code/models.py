@@ -28,7 +28,6 @@ class DiscountCodeSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     id = AnnotatedColumn(Identifier, primary_key=True, _a_label=_(u'ID'))
     first_digit = AnnotatedColumn(Unicode(1), nullable=True, _a_label=_(u'コード1桁め'))
     following_2to4_digits = AnnotatedColumn(Unicode(3), nullable=True, _a_label=_(u'コード2〜4桁め'))
-    first_4_digits = column_property(first_digit + following_2to4_digits)
     name = AnnotatedColumn(Unicode(255), nullable=False, _a_label=_(u'コード名称'))
     issued_by = AnnotatedColumn(Unicode(255), nullable=False, _a_label=_(u'コード管理元'))
     criterion = AnnotatedColumn(Unicode(255), nullable=False, _a_label=_(u'適用基準'))
@@ -46,6 +45,10 @@ class DiscountCodeSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     end_at = AnnotatedColumn(DateTime, nullable=True, _a_label=_(u'適用終了日時'))
     explanation = AnnotatedColumn(UnicodeText, nullable=True, _a_label=_(u'割引概要説明文 '))
     code = relationship('DiscountCodeCode', backref='DiscountCodeSetting')
+
+    @property
+    def first_4_digits(self):
+        return self.first_digit + self.following_2to4_digits
 
     @property
     def target(self):
