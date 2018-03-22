@@ -31,11 +31,11 @@
                 modal_setting.modal('toggle');
             };
 
-            delete_setting = function delete_setting(id) {
+            delete_setting = function delete_setting(id, name) {
                 if (!id) return;
                 var modal = $('#modal-delete');
                 modal.find('#delete').attr('href', endpoints['delete'].replace('__id__', id));
-                modal.find('#message').text('選択したクーポン・割引コード設定を削除します。よろしいですか？');
+                modal.find('#message').text('「ID:' + id + ' ' + name + '」を削除します。よろしいですか？');
                 modal.modal('toggle');
             };
         })($('#${modal_id}'));

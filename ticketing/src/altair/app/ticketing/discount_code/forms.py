@@ -181,9 +181,6 @@ class DiscountCodeSettingForm(Form):
     status = HiddenField(
         label=u'状態',
     )
-    first_4_digits = HiddenField(
-        label=u'接頭辞（prefix）4桁指定',
-    )
 
 
 class DiscountCodeCodesForm(Form):

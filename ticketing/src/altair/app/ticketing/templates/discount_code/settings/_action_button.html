@@ -4,31 +4,30 @@
 <script type="text/javascript">
 </script>
 <%
-    s_id = setting.id if setting else ''
     actions = {
         'edit':dict(
             label=u'編集',
-            url='javascript:edit_setting({});'.format(s_id),
+            url='javascript:edit_setting({});'.format(setting.id),
             icon='icon-pencil',
         ),
         'target':dict(
             label=u'適用対象',
-            url=request.route_path('discount_code.target_index', setting_id=s_id),
+            url=request.route_path('discount_code.target_index', setting_id=setting.id),
             icon='icon-pencil',
         ),
         'code':dict(
             label=u'コード一覧',
-            url=request.route_path('discount_code.codes_index', setting_id=s_id),
+            url=request.route_path('discount_code.codes_index', setting_id=setting.id),
             icon='icon-pencil',
         ),
         'report':dict(
             label=u'帳票',
-            url=request.route_path('discount_code.report_print', setting_id=s_id),
+            url=request.route_path('discount_code.report_print', setting_id=setting.id),
             icon='icon-pencil',
         ),
         'delete':dict(
             label=u'削除',
-            url='javascript:delete_setting({});'.format(s_id),
+            url=u'javascript:delete_setting({}, "{}");'.format(setting.id, setting.name),
             attrs={'class':'btn-danger'},
             icon='icon-minus',
         ),

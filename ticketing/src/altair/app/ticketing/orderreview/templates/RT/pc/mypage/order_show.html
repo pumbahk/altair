@@ -66,6 +66,22 @@ shipping =order.shipping_address
           <td>000-0000-0000</td>
         </tr>
         -->
+        <tr>
+          <th scope="row">住所</th>
+          <td>〒${shipping.zip} ${shipping.prefecture}${shipping.city}${shipping.address_1}${shipping.address_2}</td>
+        </tr>
+        % if shipping.birthday:
+        <tr>
+          <th scope="row">生年月日</th>
+          <td>${u"{0.year} 年 {0.month}月 {0.day}日".format(shipping.birthday)}</td>
+        </tr>
+        % endif
+        % if shipping.sex:
+        <tr>
+          <th scope="row">性別</th>
+          <td>${h.format_sex(request, shipping.sex)}</td>
+        </tr>
+        % endif
       </tbody>
     </table>
 <p class="mgt10">※ご購入時に入力された情報が表示されております。
