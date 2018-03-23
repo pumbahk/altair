@@ -20,13 +20,10 @@ class ResaleSegmentCreateSerializer(ResaleSegmentSerializer):
 class ResaleRequestSerializer(Schema):
     __model__ = ResaleRequest
     id = fields.Integer()
+    resale_segment_id = fields.Integer(required=True)
     ordered_product_item_token_id = fields.Integer(required=True)
     bank_code = fields.String(required=True)
     bank_branch_code = fields.String(required=True)
     account_number = fields.String(required=True)
     account_holder_name = fields.String(required=True)
     total_amount = fields.Number(required=True)
-
-class ResaleRequestCreateSerializer(ResaleRequestSerializer):
-    performance_id = fields.Integer(required=True)
-    resale_segment_id = fields.Integer(required=True)

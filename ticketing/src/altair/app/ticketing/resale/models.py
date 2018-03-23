@@ -1,14 +1,13 @@
 # -*- coding: utf-8 -*-
 
 import logging
-from datetime import datetime
 
 from altair.app.ticketing.models import Base, BaseModel, WithTimestamp, LogicallyDeleted, Identifier
 from altair.saannotation import AnnotatedColumn
 from pyramid.i18n import TranslationString as _
 
-from sqlalchemy import Table, Column, ForeignKey, func, or_, and_, event
-from sqlalchemy.orm import column_property, relationship, backref
+from sqlalchemy import Table, Column, ForeignKey
+from sqlalchemy.orm import relationship, backref
 from sqlalchemy.types import Boolean, Integer, DateTime, Unicode, UnicodeText, String, Numeric
 
 logger = logging.getLogger(__name__)
@@ -23,7 +22,6 @@ class ResaleSegment(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 class ResaleRequest(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'ResaleRequest'
     id = Column(Identifier, primary_key=True)
-    performance_id = Column(Identifier, nullable=False)
     resale_segment_id = Column(Identifier, ForeignKey('ResaleSegment.id', ondelete='CASCADE'), nullable=False)
     resale_segment = relationship("ResaleSegment", backref="resale_requests")
     ordered_product_item_token_id = Column(Identifier)
