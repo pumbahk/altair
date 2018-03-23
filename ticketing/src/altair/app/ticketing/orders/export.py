@@ -980,12 +980,14 @@ class OrderOptionalCSV(object):
     # 予約に紐づくポイント付与額を取得
     def lookup_point_grant_history_entry(self, order):
         from altair.app.ticketing.loyalty.models import PointGrantHistoryEntry
-        query = self.session.query(PointGrantHistoryEntry) \
+        query = self.session.query(PointGrantHistoryEntry.amount) \
             .join(Order, PointGrantHistoryEntry.order_id == Order.id) \
             .filter(Order.id == order.id)
         try:
             return query.one()
         except NoResultFound:
+            return None
+        except MultipleResultsFound:
             return None
 
     # 予約に紐づくポイント付与料率・固定付与ポイントを取得
@@ -998,15 +1000,15 @@ class OrderOptionalCSV(object):
             .filter(Order.order_no == order.order_no, Order.created_at >= PointGrantSetting.start_at,
                     Order.created_at <= PointGrantSetting.end_at).order_by(sa.desc(Order.created_at))
 
-        if query.all():
-            return query.first()
-        else:
+        point_grant_setting=query.first()
+        if not point_grant_setting:
             from altair.app.ticketing.core.models import OrganizationSetting
             organization_setting = self.session.query(OrganizationSetting) \
                 .filter(OrganizationSetting.organization_id == self.organization_id).one()
             PointGrantSetting.rate = organization_setting.point_rate if organization_setting.point_rate else None
             PointGrantSetting.fixed = organization_setting.point_fixed if organization_setting.point_fixed else None
             return PointGrantSetting
+        return point_grant_setting
 
 
     # 決済方法か取引方法がファミポートの場合のみ情報を取得する。それ以外の場合はNoneを返す
