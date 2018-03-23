@@ -127,6 +127,9 @@ class DeliveryMethodForm(OurForm):
             DynSwitchDisabled('{delivery_plugin_id} <> "%d"' % RESERVE_NUMBER_DELIVERY_PLUGIN_ID)
             ]
         )
+    public = OurBooleanField(
+        label=u'公開する'
+        )
     display_order = OurTextField(
         label=u'表示順',
         default=0,
