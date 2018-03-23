@@ -980,6 +980,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
       if (that.returnUnconfirmFlag) {
         that.returnUnconfirmFlag = false;
       } else {
+        //iPadの場合、初期表示の際もイベントが発生するため最初の1回は無視
         if (that.smartPhoneCheckService.isIpad() && firstPopstate) {
           firstPopstate = false;
           return;
