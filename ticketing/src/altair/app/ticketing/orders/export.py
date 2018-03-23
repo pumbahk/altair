@@ -4,10 +4,9 @@ import os, sys
 import logging
 import tempfile
 import pickle
-import sqlalchemy as sa
 from io import BytesIO
 from datetime import date, datetime
-from collections import OrderedDict
+from collections import OrderedDict, namedtuple
 
 from paste.util.multidict import MultiDict
 from altair.sqlahelper import get_db_session
@@ -993,21 +992,23 @@ class OrderOptionalCSV(object):
     # 予約に紐づくポイント付与料率・固定付与ポイントを取得
     def lookup_point_grant_setting(self, order):
         from altair.app.ticketing.loyalty.models import PointGrantSetting, SalesSegment_PointGrantSetting
-        query = self.session.query(PointGrantSetting) \
+        query = self.session.query(PointGrantSetting.rate, PointGrantSetting.fixed) \
             .join(SalesSegment_PointGrantSetting,
                   SalesSegment_PointGrantSetting.c.point_grant_setting_id == PointGrantSetting.id) \
             .join(Order, Order.sales_segment_id == SalesSegment_PointGrantSetting.c.sales_segment_id) \
             .filter(Order.order_no == order.order_no, Order.created_at >= PointGrantSetting.start_at,
-                    Order.created_at <= PointGrantSetting.end_at).order_by(sa.desc(Order.created_at))
+                    Order.created_at <= PointGrantSetting.end_at).order_by(Order.created_at.desc())
 
         point_grant_setting=query.first()
         if not point_grant_setting:
             from altair.app.ticketing.core.models import OrganizationSetting
             organization_setting = self.session.query(OrganizationSetting) \
                 .filter(OrganizationSetting.organization_id == self.organization_id).one()
-            PointGrantSetting.rate = organization_setting.point_rate if organization_setting.point_rate else None
-            PointGrantSetting.fixed = organization_setting.point_fixed if organization_setting.point_fixed else None
-            return PointGrantSetting
+            _PointGrantSetting = namedtuple('_PointGrantSetting', ('rate', 'fixed'))
+            return _PointGrantSetting (
+                rate=organization_setting.point_rate if organization_setting.point_rate else None,
+                fixed=organization_setting.point_fixed if organization_setting.point_fixed else None
+            )
         return point_grant_setting
 
 
