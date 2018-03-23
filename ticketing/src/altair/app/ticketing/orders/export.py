@@ -4,6 +4,7 @@ import os, sys
 import logging
 import tempfile
 import pickle
+import sqlalchemy as sa
 from io import BytesIO
 from datetime import date, datetime
 from collections import OrderedDict
@@ -153,7 +154,10 @@ japanese_columns = {
     u'stock_type.name': u'席種',
     u'famiport_receipt_payment.reserve_number': u'FM払込票番号',
     u'famiport_receipt_ticketing.reserve_number': u'FM引換票番号',
-    u'order.channel': u'チャネル'
+    u'order.channel': u'チャネル',
+    u'point_grant_setting.rate': u'ポイント付与料率',
+    u'point_grant_setting.fixed': u'固定付与ポイント',
+    u'point_grant_history_entry.amount': u'ポイント付与額'
 }
 
 ordered_ja_col = OrderedDict([
@@ -252,7 +256,10 @@ ordered_ja_col = OrderedDict([
     (u'order.cart_setting_id', u'カート設定'),
     (u'order.type', u'予約タイプ'),
     (u'stock_holder.name', u'枠名'),
-    (u'order.channel', u'チャネル')
+    (u'order.channel', u'チャネル'),
+    (u'point_grant_setting.rate', u'ポイント付与料率'),
+    (u'point_grant_setting.fixed', u'固定付与ポイント'),
+    (u'point_grant_history_entry.amount', u'ポイント付与額')
 ])
 
 def get_japanese_columns(request):
@@ -838,6 +845,9 @@ class OrderOptionalCSV(object):
         u'famiport_receipt_payment.reserve_number': PlainTextRenderer(u'famiport_receipt_payment.reserve_number'),
         u'famiport_receipt_ticketing.reserve_number': PlainTextRenderer(u'famiport_receipt_ticketing.reserve_number'),
         u'order.channel': ChannelRenderer(u'order.channel'),
+        u'point_grant_history_entry.amount': PlainTextRenderer(u'point_grant_history_entry.amount'),
+        u'point_grant_setting.rate': PlainTextRenderer(u'point_grant_setting.rate'),
+        u'point_grant_setting.fixed': PlainTextRenderer(u'point_grant_setting.fixed'),
     }
 
     ordered_product_candidates ={
@@ -967,6 +977,38 @@ class OrderOptionalCSV(object):
         except NoResultFound:
             return None
 
+    # 予約に紐づくポイント付与額を取得
+    def lookup_point_grant_history_entry(self, order):
+        from altair.app.ticketing.loyalty.models import PointGrantHistoryEntry
+        query = self.session.query(PointGrantHistoryEntry) \
+            .join(Order, PointGrantHistoryEntry.order_id == Order.id) \
+            .filter(Order.id == order.id)
+        try:
+            return query.one()
+        except NoResultFound:
+            return None
+
+    # 予約に紐づくポイント付与料率・固定付与ポイントを取得
+    def lookup_point_grant_setting(self, order):
+        from altair.app.ticketing.loyalty.models import PointGrantSetting, SalesSegment_PointGrantSetting
+        query = self.session.query(PointGrantSetting) \
+            .join(SalesSegment_PointGrantSetting,
+                  SalesSegment_PointGrantSetting.c.point_grant_setting_id == PointGrantSetting.id) \
+            .join(Order, Order.sales_segment_id == SalesSegment_PointGrantSetting.c.sales_segment_id) \
+            .filter(Order.order_no == order.order_no, Order.created_at >= PointGrantSetting.start_at,
+                    Order.created_at <= PointGrantSetting.end_at).order_by(sa.desc(Order.created_at))
+
+        if query.all():
+            return query.first()
+        else:
+            from altair.app.ticketing.core.models import OrganizationSetting
+            organization_setting = self.session.query(OrganizationSetting) \
+                .filter(OrganizationSetting.organization_id == self.organization_id).one()
+            PointGrantSetting.rate = organization_setting.point_rate if organization_setting.point_rate else None
+            PointGrantSetting.fixed = organization_setting.point_fixed if organization_setting.point_fixed else None
+            return PointGrantSetting
+
+
     # 決済方法か取引方法がファミポートの場合のみ情報を取得する。それ以外の場合はNoneを返す
     def lookup_famiport_receipt(self, order, payment_flag=False, ticketing_flag=False):
         if not payment_flag and not ticketing_flag:
@@ -1017,6 +1059,8 @@ class OrderOptionalCSV(object):
         user_credential = order.user.user_credential if order.user else None
 
         user_point_account = self.lookup_user_point_account(order)
+        point_grant_history_entry = self.lookup_point_grant_history_entry(order)
+        point_grant_setting = self.lookup_point_grant_setting(order)
         famiport_receipt_payment = self.lookup_famiport_receipt(order, payment_flag=True)
         famiport_receipt_ticketing = self.lookup_famiport_receipt(order, ticketing_flag=True)
         event_setting = self.lookup_event_setting(order.performance.event.id)
@@ -1043,6 +1087,8 @@ class OrderOptionalCSV(object):
             u'famiport_receipt_ticketing': famiport_receipt_ticketing,
             u'event_setting': event_setting,
             u'performance_setting': performance_setting,
+            u'point_grant_history_entry': point_grant_history_entry,
+            u'point_grant_setting': point_grant_setting
             }
         if self.export_type == self.EXPORT_TYPE_ORDER:
             record = dict(common_record)
