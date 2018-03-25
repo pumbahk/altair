@@ -323,7 +323,10 @@ class EntryLotView(object):
 
         sales_segment = lot.sales_segment
         payment_delivery_pairs = [pdmp for pdmp in sales_segment.payment_delivery_method_pairs if pdmp.public]
-        performance_product_map = self._create_performance_product_map(sales_segment.products)
+        # 商品明細が紐付いていないものは表示しない
+        performance_product_map = self._create_performance_product_map(
+            [product for product in sales_segment.products if len(product.items) > 0])
+
         stock_types = self._stock_type_from_products(sales_segment.products)
 
         if self.request.organization.setting.recaptcha and not recaptcha_done:

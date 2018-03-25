@@ -196,7 +196,9 @@ class EntryLotView(object):
                     break
 
         sales_segment = lot.sales_segment
-        performance_product_map = self._create_performance_product_map(sales_segment.products)
+        # 商品明細が紐付いてない場合は表示しない
+        performance_product_map = self._create_performance_product_map(
+            [product for product in sales_segment.products if len(product.items) > 0])
         stock_types = [
             dict(
                 id=rec[0],

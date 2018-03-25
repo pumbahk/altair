@@ -32,6 +32,10 @@ Altair Backend -- ${lot.event.title}[${lot.name}]
   </h1>
 </div>
 
+% if not_exist_product_item:
+  <h4 class="alert-danger">商品明細が紐付いていません。紐付けてください。</h4>
+% endif
+
 ${tabs.tabs(request)}
 
 <div class="row-fluid">
