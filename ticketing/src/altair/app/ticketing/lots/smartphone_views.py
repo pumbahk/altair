@@ -179,10 +179,15 @@ class EntryLotView(object):
             logger.debug('lot not not found')
             raise HTTPNotFound()
 
-        performances = lot.performances
+        performances = []
+        for perf in lot.performances:
+            if not perf.not_exist_product_item:
+                performances.append(perf)
+
         if not performances:
             logger.debug('lot performances not found')
             raise HTTPNotFound()
+
         performances = sorted(performances, key=operator.attrgetter('start_on'))
 
         performance_map = make_performance_map(self.request, performances)
