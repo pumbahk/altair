@@ -450,6 +450,32 @@ class PerformanceShowView(BaseView):
 
         return self.orion_index_view()
 
+    @view_config(route_name="performances.discount_code_settings.show", request_method='GET')
+    def discount_code_settings_show(self):
+        from altair.app.ticketing.discount_code.forms import DiscountCodeSettingForm
+        from altair.app.ticketing.core.utils import PageURL_WebOb_Ex
+        session = get_db_session(self.request, 'slave')
+        query = Performance(id=self.performance.id).find_available_target_settings_query(
+            session=session,
+            refer_all=True,
+            now=self.context.now
+        ).group_by('DiscountCodeSetting.id').order_by('DiscountCodeSetting.id desc')
+
+        settings = paginate.Page(
+            query,
+            page=int(self.request.params.get('page', 0)),
+            items_per_page=20,
+            url=PageURL_WebOb_Ex(self.request)
+        )
+
+        data = {
+            'tab': 'discount_code',
+            'performance': self.performance,
+            'settings': settings,
+            'form': DiscountCodeSettingForm(),
+        }
+        return data
+
 
 @view_defaults(decorator=with_bootstrap, permission="event_editor")
 class Performances(BaseView):
