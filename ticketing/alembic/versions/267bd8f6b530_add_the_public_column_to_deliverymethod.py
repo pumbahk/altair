@@ -1,14 +1,14 @@
 """add the public column to deliverymethod
 
 Revision ID: 267bd8f6b530
-Revises: daa86477ebb
+Revises: 3835e1ca503b
 Create Date: 2018-03-26 11:01:31.460227
 
 """
 
 # revision identifiers, used by Alembic.
 revision = '267bd8f6b530'
-down_revision = 'daa86477ebb'
+down_revision = '3835e1ca503b'
 
 from alembic import op
 import sqlalchemy as sa
