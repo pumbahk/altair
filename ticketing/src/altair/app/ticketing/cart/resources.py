@@ -744,7 +744,8 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
         code_dict_list = []
 
         if not code_str_list:
-            code_str_list = [code.strip() for code in self.request.POST.getall('code') if code]
+            stripped = map(lambda c: c.strip(), self.request.POST.getall('code'))  # 前後の空白の削除
+            code_str_list = [code for code in stripped if len(code)]  # 文字入力のあったフォームのみリスト化
 
         num_used_codes = len(code_str_list)
         if num_used_codes == 0:
