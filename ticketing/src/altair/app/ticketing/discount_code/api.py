@@ -75,10 +75,7 @@ def is_exist_duplicate_codes(code, code_str_list):
     :return:
     """
     n = sum(code == x for x in code_str_list)
-    if n > 1:
-        return True
-    else:
-        return False
+    return n > 1
 
 
 def check_used_discount_code(code, organizatoin):
