@@ -1462,6 +1462,7 @@ class DiscountCodeEnteringView(object):
     @back(back_to_top, back_to_product_list_for_mobile)
     @lbr_view_config(request_method="GET")
     def discount_code_get(self):
+        self.context.check_order_limit()
         # UsedDiscountCodeCartテーブルに保存されている割引コードの途中入力内容をクリア
         self.context.delete_temporarily_save_discount_code()
         # SPAはcart.orderルートを経由せず直接このviewにアクセスしてくるため、ここで割引コード適用判定を行う
