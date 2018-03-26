@@ -715,7 +715,7 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
             forms.append(code_dict['form'])
 
         cart = self.read_only_cart
-        remaining_count = len(range(cart.carted_product_item_count)) - len(forms)
+        remaining_count = cart.carted_product_item_count - len(forms)
         if remaining_count > 0:
             for index in range(remaining_count):
                 forms.append(schemas.DiscountCodeForm())
