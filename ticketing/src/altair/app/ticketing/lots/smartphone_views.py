@@ -159,12 +159,18 @@ class EntryLotView(object):
             if not self.context.check_recaptch(recaptcha):
                 return HTTPFound(self.request.route_url('lots.index.recaptcha', event_id=self.context.event.id, lot_id=lot.id) or '/')
 
+        performances = []
+        for perf in lot.performances:
+            if not perf.not_exist_product_item:
+                performances.append(perf)
+        performances = sorted(performances, lambda a, b: cmp(a.start_on, b.start_on))
+
         return dict(
             event=event,
             lot=lot,
             performance_id = performance_id,
             sales_segment=lot.sales_segment,
-            performances=sorted(lot.performances, lambda a, b: cmp(a.start_on, b.start_on)),
+            performances=performances
             )
 
     @lbr_view_config(route_name='lots.entry.sp_step1', renderer=selectable_renderer("step1.html"))
@@ -179,10 +185,15 @@ class EntryLotView(object):
             logger.debug('lot not not found')
             raise HTTPNotFound()
 
-        performances = lot.performances
+        performances = []
+        for perf in lot.performances:
+            if not perf.not_exist_product_item:
+                performances.append(perf)
+
         if not performances:
             logger.debug('lot performances not found')
             raise HTTPNotFound()
+
         performances = sorted(performances, key=operator.attrgetter('start_on'))
 
         performance_map = make_performance_map(self.request, performances)
