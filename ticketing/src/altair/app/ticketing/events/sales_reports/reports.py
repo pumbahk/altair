@@ -697,13 +697,13 @@ class ExportableReporter(object):
 
         # TKT-5185 精算書ツールで呼ばれているのでformが来ない場合にも対応した
         self.ordered_from = None
-        if form.ordered_from.data:
+        if form and form.ordered_from.data:
             self.ordered_from = form.ordered_from.data
         else:
             self.ordered_from = datetime.strptime(request.params.get('from'), '%Y-%m-%d')
 
         self.ordered_to = None
-        if form.ordered_to.data:
+        if form and form.ordered_to.data:
             self.ordered_to = form.ordered_to.data
         else:
             self.ordered_to = datetime.strptime(request.params.get('to'), '%Y-%m-%d')
