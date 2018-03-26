@@ -679,7 +679,7 @@ class PerformanceReporter(object):
         return self.reporters[sales_segment]
 
 class ExportableReporter(object):
-    def __init__(self, request, event, form):
+    def __init__(self, request, event, form=None):
         self.slave_session = get_db_session(request, name="slave")
         self.request = request
 
@@ -695,13 +695,18 @@ class ExportableReporter(object):
         if request.params.get('performance_code'):
             self.performance_codes = map(unicode.strip, request.params.get('performance_code').split(','))
 
+        # TKT-5185 精算書ツールで呼ばれているのでformが来ない場合にも対応した
         self.ordered_from = None
         if form.ordered_from.data:
             self.ordered_from = form.ordered_from.data
+        else:
+            self.ordered_from = datetime.strptime(request.params.get('from'), '%Y-%m-%d')
 
         self.ordered_to = None
         if form.ordered_to.data:
             self.ordered_to = form.ordered_to.data
+        else:
+            self.ordered_to = datetime.strptime(request.params.get('to'), '%Y-%m-%d')
 
         # レポート設定を無視する
         self.without_filter = False
