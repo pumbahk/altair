@@ -1109,7 +1109,7 @@ class PaymentView(object):
         return [
             pdmp
             for pdmp in self.context.available_payment_delivery_method_pairs(sales_segment)
-            if pdmp.payment_method.public
+            if pdmp.payment_method.public and pdmp.delivery_method.public
         ]
 
     @lbr_view_config(request_method="GET")

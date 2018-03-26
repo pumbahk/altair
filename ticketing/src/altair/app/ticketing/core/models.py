@@ -2264,6 +2264,7 @@ class DeliveryMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     description = AnnotatedColumn(Unicode(2000), _a_label=_(u'説明文 (HTML)'))
     _fee = Column('fee', Numeric(precision=16, scale=2), nullable=True)
     _fee_type = Column('fee_type', Integer, nullable=True, default=FeeTypeEnum.Once.v[0])
+    public = Column(Boolean, nullable=False, default=True)
 
     fee_per_order = AnnotatedColumn(Numeric(precision=16, scale=2), nullable=False, default=Decimal('0.00'), _a_label=_(u'手数料 (予約ごと)'))
     fee_per_principal_ticket = AnnotatedColumn(Numeric(precision=16, scale=2), nullable=False, default=Decimal('0.00'), _a_label=_(u'手数料 (チケットごと:主券)'))
