@@ -1194,7 +1194,7 @@ class PaymentView(object):
                 metadata = metadata[u'profile']
         return metadata
 
-    def get_validated_address_data(self):
+    def get_validated_address_data(self, pdp=None):
         """フォームから ShippingAddress などの値を取りたいときはこれで"""
         form = self.form
         if self.request.organization.setting.i18n:
@@ -1206,7 +1206,7 @@ class PaymentView(object):
             last_name_kana=form.data['last_name_kana']
             country='日本'
 
-        if form.validate():
+        if form.validate(pdp):
             return dict(
                 first_name=form.data['first_name'],
                 last_name=form.data['last_name'],
@@ -1241,6 +1241,8 @@ class PaymentView(object):
                     error = u'電話番号の桁数が11桁ではありません'
                 if not phone.isdigit():
                     error = ','.join([error, u'数字以外の文字は入力できません']) if error else u'数字以外の文字は入力できません'
+                if not re.compile('^(070|080|090)').match(phone):
+                    error = ','.join([error, u'[070,080,090]で始まる携帯電話番号を入力してください']) if error else u'[070,080,090]で始まる携帯電話番号を入力してください'
             errors.append(error)
 
         if not phones:
@@ -1280,7 +1282,7 @@ class PaymentView(object):
         else:
             self.form = schemas.ClientForm(formdata=self.request.params, context=self.context)
 
-        shipping_address_params = self.get_validated_address_data()
+        shipping_address_params = self.get_validated_address_data(payment_delivery_pair)
         orion_ticket_phone, orion_phone_errors = self.verify_orion_ticket_phone(self.request.POST.getall('orion-ticket-phone'))
 
         try:
