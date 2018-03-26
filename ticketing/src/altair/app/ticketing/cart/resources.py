@@ -837,8 +837,7 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
         sports_service_codes = []
         for code_dict in code_dict_list:
             form = code_dict['form']
-            form.validate()
-            if form.errors:
+            if not form.validate():
                 continue
 
             code = form.code.data
