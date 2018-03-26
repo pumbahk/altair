@@ -1,14 +1,14 @@
 """add owner phone number to OrionTicketPhone
 
 Revision ID: 41e3c7e113c0
-Revises: daa86477ebb
+Revises: 267bd8f6b530
 Create Date: 2018-03-14 13:34:08.514260
 
 """
 
 # revision identifiers, used by Alembic.
 revision = '41e3c7e113c0'
-down_revision = 'daa86477ebb'
+down_revision = '267bd8f6b530'
 
 from alembic import op
 import sqlalchemy as sa
