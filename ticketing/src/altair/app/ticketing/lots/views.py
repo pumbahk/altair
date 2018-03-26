@@ -309,7 +309,10 @@ class EntryLotView(object):
 
         event = self.context.event
         lot = self.context.lot
-        performances = lot.performances
+        performances = []
+        for perf in lot.performances:
+            if not perf.not_exist_product_item:
+                performances.append(perf)
         performances = sorted(performances, key=lambda p: (p.display_order, p.start_on))
         performance_map = make_performance_map(self.request, performances)
 
