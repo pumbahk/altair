@@ -110,7 +110,7 @@ class EaglesCommunicator(object):
 
         return resp_data
 
-    def confirm_discount_code_status(self, data):
+    def confirm_discount_code_status_api(self, data):
         """
         data = {
             'usage_type': '1010',
@@ -121,7 +121,7 @@ class EaglesCommunicator(object):
         resp_data = self._discount_code_common_method(url_suffix="/api/coupon/confirm/status", data=data)
         return resp_data
 
-    def use_discount_code(self, data):
+    def use_discount_code_api(self, data):
         """
         data = {
             'usage_type': '1010',
@@ -132,7 +132,7 @@ class EaglesCommunicator(object):
         resp_data = self._discount_code_common_method(url_suffix="/api/coupon/use", data=data)
         return resp_data
 
-    def cancel_used_discount_code(self, data):
+    def cancel_used_discount_code_api(self, data):
         """
         data = {
             'usage_type': '1010',

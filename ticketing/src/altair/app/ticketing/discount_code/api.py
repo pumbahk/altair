@@ -2,7 +2,7 @@
 
 from datetime import datetime
 
-from altair.app.ticketing.cart.exceptions import OwnDiscountCodeDuplicateError, NotAllowedBenefitUnitError
+from altair.app.ticketing.cart.exceptions import OwnDiscountCodeDuplicateError, NotAllowedBenefitUnitError, NotExistingOwnDiscountCodeError
 from altair.app.ticketing.orders.exceptions import OrderCancellationError
 from altair.sqlahelper import get_db_session
 from communicators.utils import get_communicator
@@ -65,6 +65,17 @@ def release_cart(cart):
     for code in codes:
         code.finished_at = datetime.now()
     return True
+
+
+def is_exist_duplicate_codes(code, code_str_list):
+    """
+    入力されたコードの中で重複があればTrueを返す
+    :param code: 割引コード文字列
+    :param code_str_list: 入力された全割引コード文字列のリスト
+    :return:
+    """
+    n = sum(code == x for x in code_str_list)
+    return n > 1
 
 
 def check_used_discount_code(code, organizatoin):
@@ -183,22 +194,26 @@ def calc_applied_amount(code_dict):
     return int(amount)
 
 
-def temporarily_save_discount_code(codes, organization):
+def temporarily_save_discount_code(code_dict_list, organization, session):
     # carted_product_itemのIDと、使用したコードを保存する
-    for code_dict in codes:
+    for code_dict in code_dict_list:
         code = code_dict['form'].code.data
         if code:
             use_discount_code = UsedDiscountCodeCart()
             use_discount_code.code = code
             use_discount_code.carted_product_item_id = code_dict['carted_product_item'].id
-            own_code = DiscountCodeCode.query.filter(
-                DiscountCodeCode.code == code_dict['code'],
-                DiscountCodeCode.organization_id == organization.id,
-                DiscountCodeCode.used_at.is_(None)
-            ).first()
-            if own_code:
-                # 自社コードの場合のみ存在
-                use_discount_code.discount_code_id = own_code.id
+
+            # 自社コードの利用時
+            if code_dict['discount_code_setting'].issued_by == u'own':
+                own_code = session.query(DiscountCodeCode.id).filter(
+                    DiscountCodeCode.code == code_dict['code'],
+                    DiscountCodeCode.organization_id == organization.id,
+                    DiscountCodeCode.used_at.is_(None)
+                ).first()
+                if own_code:
+                    use_discount_code.discount_code_id = own_code.id
+                else:
+                    raise NotExistingOwnDiscountCodeError()
 
             use_discount_code.applied_amount = calc_applied_amount(code_dict)
             use_discount_code.discount_code_setting_id = code_dict['discount_code_setting'].id
@@ -294,10 +309,7 @@ def used_discount_code_groups(cart_or_order):
     return groups
 
 
-def confirm_discount_code_status(request, codes, available_fanclub_discount_code_settings):
-    if not available_fanclub_discount_code_settings:
-        return None
-
+def confirm_discount_code_status(request, codes):
     # イーグルスクーポンの状態確認
     comm = get_communicator(request, 'disc_code_eagles')
     fc_member_id = request.altair_auth_info['authz_identifier']
@@ -305,22 +317,14 @@ def confirm_discount_code_status(request, codes, available_fanclub_discount_code
     # ファンクラブのもので先頭4桁が合致するものだけ実施
     coupons = []
     for code in codes:
-        for setting in available_fanclub_discount_code_settings:
-            if code['code'][:4] == setting.first_4_digits:
-                coupons.append({'coupon_cd': code['code']})
-
-    if not coupons:
-        return None
+        coupons.append({'coupon_cd': code['code']})
 
     data = {
         'usage_type': '1010',
         'fc_member_id': fc_member_id,
         'coupons': coupons
     }
-    result = comm.confirm_discount_code_status(data)
-
-    if not result['status'] == u'OK' and result['usage_type'] == u'1010':
-        return False
+    result = comm.confirm_discount_code_status_api(data)
 
     return result
 
@@ -348,7 +352,7 @@ def use_discount_codes(request, codes, available_fanclub_discount_code_settings)
         'fc_member_id': fc_member_id,
         'coupons': coupons
     }
-    result = comm.use_discount_code(data)
+    result = comm.use_discount_code_api(data)
 
     if not result['status'] == u'OK' and result['usage_type'] == u'1010':
         return False
@@ -396,7 +400,7 @@ def cancel_used_discount_codes(request, order, now=None):
             'coupons': api_request_coupons
         }
 
-        result = comm.cancel_used_discount_code(data)
+        result = comm.cancel_used_discount_code_api(data)
         for coupon in result['coupons']:
             if coupon['reason_cd'][:2] != '10':
                 raise SystemError('inappropriate response returned.')

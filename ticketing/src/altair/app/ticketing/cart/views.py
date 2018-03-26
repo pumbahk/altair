@@ -1472,12 +1472,11 @@ class DiscountCodeEnteringView(object):
 
         cart = self.context.read_only_cart
         self.context.check_deleted_product(cart)
-        forms = self.context.create_discount_code_forms()
         sorted_cart_product_items = self.context.sorted_carted_product_items()
 
         csrf_form = schemas.CSRFSecureForm(csrf_context=self.request.session)
         return dict(
-            forms=forms,
+            forms=self.context.create_discount_code_forms(),
             csrf_form=csrf_form,
             cart_product_items=sorted_cart_product_items,
             sales_segment_id=sales_segment_id,
@@ -1493,26 +1492,21 @@ class DiscountCodeEnteringView(object):
         cart = self.context.read_only_cart
         self.context.check_deleted_product(cart)
         sales_segment_id = self.request.matchdict["sales_segment_id"]
-        codes = self.context.create_codes(cart)
+        code_dict_list = self.context.create_code_dict_list(cart)
         sorted_cart_product_items = self.context.sorted_carted_product_items()
 
-        self.context.validate_discount_codes(codes)
-
-        if self.context.is_authz_user:
-            # ファンクラブのクーポンの場合(スポーツサービス開発発行のコード)の場合ログインしていないと使えない
-            self.context.confirm_discount_code_status(codes)
-
-        if self.context.exist_validate_error(codes):
+        validated = self.context.validate_discount_codes(code_dict_list)
+        if self.context.exist_validate_error(validated):
             csrf_form = schemas.CSRFSecureForm(csrf_context=self.request.session)
             return dict(
-                forms=self.context.create_validated_forms(codes),
+                forms=self.context.create_validated_forms(code_dict_list),
                 csrf_form=csrf_form,
                 cart_product_items=sorted_cart_product_items,
                 sales_segment_id=sales_segment_id,
                 performance=self.context.performance,
                 carted_product_item_count=self.context.carted_product_item_count
             )
-        self.context.temporarily_save_discount_code(codes)
+        self.context.temporarily_save_discount_code(code_dict_list)
         return HTTPFound(self.request.route_path('cart.payment', sales_segment_id=sales_segment_id))
 
 
@@ -1766,13 +1760,11 @@ class CompleteView(object):
                 raise
 
         self.context.check_deleted_product(cart)
-        # クーポンのチェック
-        if self.context.is_authz_user:
-            self.context.check_available_discont_code()
         self.context.check_order_limit() # 最終チェック
+        self.context.is_discount_code_still_available()
+        self.context.use_sports_service_discount_code()
         order = api.make_order_from_cart(self.request, cart)
         order_no = order.order_no
-        self.context.use_discount_coupon(order, cart)
         transaction.commit()  # cont_complete_viewでエラーが出てロールバックされても困るので
         logger.debug("keyword=%s" % ' '.join(self.request.params.getall('keyword')))
         return cont_complete_view(

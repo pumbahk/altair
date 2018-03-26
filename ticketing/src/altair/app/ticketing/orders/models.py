@@ -798,6 +798,8 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                         valid=True #valid=Falseの時は何時だろう？
                         )
                     ordered_product_item.tokens.append(token)
+
+                # 使用された割引コードを保存
                 discount_api.save_discount_code(element, ordered_product_item)
 
         DBSession.flush() # これとっちゃだめ
