@@ -684,11 +684,9 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
         super(DiscountCodeTicketingCartResources, self).__init__(request, sales_segment_id)
         self.session = get_db_session(self.request, name="slave")
 
-    def sorted_carted_product_items(self, cart=None):
-        if not cart:
-            cart = self.read_only_cart
+    def sorted_carted_product_items(self):
         sorted_cart_product_items = list()
-        for carted_product in cart.items:
+        for carted_product in self.read_only_cart.items:
             for carted_product_item in carted_product.elements:
                 sorted_cart_product_items.append(carted_product_item)
         sorted_cart_product_items = [obj for obj in reversed(sorted(sorted_cart_product_items, key=lambda x:x.price))]
@@ -702,16 +700,16 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
             forms.append(schemas.DiscountCodeForm())
         return forms
 
-    def create_validated_forms(self, codes):
+    def create_validated_forms(self, code_dict_list):
         """
         バリデーションエラー発生時、入力されたコードを上に詰めて表示する。
         未入力だったフォーム分は下に配置されるようになっている。
-        :param codes:
+        :param code_dict_list:
         :return:
         """
         from . import schemas
         forms = []
-        for code_dict in codes:
+        for code_dict in code_dict_list:
             forms.append(code_dict['form'])
 
         cart = self.read_only_cart
@@ -733,28 +731,23 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
             self.request.POST.clear()
             self.request.POST.extend(upper_list)
 
-    def create_code_dict_list(self, cart, code_str_list=None):
+    def create_code_dict_list(self, code_str_list):
         """
         入力された割引コード数分のdictをリストで作成している
-        :param cart:
-        :param code_str_list: NoneであればPOSTの値から作成する
+        :param code_str_list: 割引コード文字列のリスト。この情報をもとにdictで様々な情報を付加していっている
         :return code_dict_list: 割引コード文字列、紐づく商品、Formオブジェクトなどがまとめられたdict
         """
         from . import schemas
         code_dict_list = []
-
-        if not code_str_list:
-            stripped = map(lambda c: c.strip(), self.request.POST.getall('code'))  # 前後の空白の削除
-            code_str_list = [code for code in stripped if len(code)]  # 文字入力のあったフォームのみリスト化
-
         num_used_codes = len(code_str_list)
         if num_used_codes == 0:
             return code_dict_list
 
-        sorted_cart_product_items = self.sorted_carted_product_items(cart)
-        settings = cart.performance.find_available_target_settings(max_price=cart.highest_item_price,
-                                                                   session=self.session,
-                                                                   now=self.now)
+        sorted_cart_product_items = self.sorted_carted_product_items()
+        settings = self.read_only_cart.performance.find_available_target_settings(
+            max_price=self.read_only_cart.highest_item_price,
+            session=self.session,
+            now=self.now)
 
         cnt = 0
         for carted_product_item in sorted_cart_product_items:
@@ -768,7 +761,7 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
                     'code': code_str_list[cnt],
                     'carted_product_item': carted_product_item,
                     'form': form,
-                    'discount_code_setting': cart.performance.find_available_target_settings(
+                    'discount_code_setting': self.read_only_cart.performance.find_available_target_settings(
                         first_4_digits=code_str_list[cnt][:4],
                         now=self.now
                     )
@@ -778,8 +771,8 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
         return code_dict_list
 
     def is_discount_code_still_available(self):
-        code_str_list = [code.code for code in discount_api.get_used_discount_codes(self.cart)]
-        code_dict_list = self.create_code_dict_list(self.cart, code_str_list)
+        code_str_list = [code.code for code in discount_api.get_used_discount_codes(self.read_only_cart)]
+        code_dict_list = self.create_code_dict_list(code_str_list)
         if code_dict_list:
             validated = self.validate_discount_codes(code_dict_list)
             if self.exist_validate_error(validated):
@@ -823,11 +816,11 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
         管理画面における組織設定での利用フラグ、割引設定、および販売単位をチェックしている。
         :return: Boolean
         """
-        if (not self.cart.organization.enable_discount_code) or \
-                (not self.performance.find_available_target_settings(max_price=self.cart.highest_item_price,
+        if (not self.read_only_cart.organization.enable_discount_code) or \
+                (not self.performance.find_available_target_settings(max_price=self.read_only_cart.highest_item_price,
                                                                      session=self.session,
                                                                      now=self.now)) or \
-                (not self.cart.is_product_item_quantity_one):
+                (not self.read_only_cart.is_product_item_quantity_one):
             return False
         else:
             return True
@@ -853,8 +846,8 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
                 form.add_used_discount_code_error()
                 continue
 
-            code_setting = self.cart.performance.find_available_target_settings(first_4_digits=code[:4],
-                                                                                now=self.now)
+            code_setting = self.read_only_cart.performance.find_available_target_settings(first_4_digits=code[:4],
+                                                                                          now=self.now)
 
             # 存在する自社コードか確認するバリデーション
             if code_setting.issued_by == 'own' and not self._is_exist_own_discount_code(code):
@@ -964,14 +957,14 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
     def use_sports_service_discount_code(self):
         success = True
 
-        code_str_list = [code.code for code in discount_api.get_used_discount_codes(self.cart) if
+        code_str_list = [code.code for code in discount_api.get_used_discount_codes(self.read_only_cart) if
                          code.discount_code_setting.issued_by == u'sports_service']
-        code_dict_list = self.create_code_dict_list(self.cart, code_str_list)
+        code_dict_list = self.create_code_dict_list(code_str_list)
 
         if code_dict_list:
-            settings = self.cart.performance.find_available_target_settings(
+            settings = self.read_only_cart.performance.find_available_target_settings(
                 issued_by=u'sports_service',
-                max_price=self.cart.highest_item_price,
+                max_price=self.read_only_cart.highest_item_price,
                 session=self.session,
                 now=self.now
             )
@@ -985,7 +978,7 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
                 if coupon['reason_cd'] != u'1010' or coupon['available_flg'] != u'1':
                     logger.error(
                         "[ The response for order_no: {}] the discount code is not available.".format(
-                            self.cart.order_no))
+                            self.read_only_cart.order_no))
                     success = False
 
         return success

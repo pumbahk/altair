@@ -1493,21 +1493,23 @@ class DiscountCodeEnteringView(object):
         cart = self.context.read_only_cart
         self.context.check_deleted_product(cart)
         sales_segment_id = self.request.matchdict["sales_segment_id"]
-        code_dict_list = self.context.create_code_dict_list(cart)
+        stripped = map(lambda c: c.strip(), self.request.POST.getall('code'))  # 前後の空白の削除
+        code_str_list = [code for code in stripped if len(code)]  # 文字入力のあったフォームのみリスト化
+        code_dict_list = self.context.create_code_dict_list(code_str_list)
         sorted_cart_product_items = self.context.sorted_carted_product_items()
 
         validated = self.context.validate_discount_codes(code_dict_list)
         if self.context.exist_validate_error(validated):
             csrf_form = schemas.CSRFSecureForm(csrf_context=self.request.session)
             return dict(
-                forms=self.context.create_validated_forms(code_dict_list),
+                forms=self.context.create_validated_forms(validated),
                 csrf_form=csrf_form,
                 cart_product_items=sorted_cart_product_items,
                 sales_segment_id=sales_segment_id,
                 performance=self.context.performance,
                 carted_product_item_count=self.context.carted_product_item_count
             )
-        self.context.temporarily_save_discount_code(code_dict_list)
+        self.context.temporarily_save_discount_code(validated)
         return HTTPFound(self.request.route_path('cart.payment', sales_segment_id=sales_segment_id))
 
 
