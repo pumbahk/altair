@@ -4,6 +4,7 @@ import os, sys
 import logging
 import tempfile
 import pickle
+import woothee
 from io import BytesIO
 from datetime import date, datetime
 from collections import OrderedDict, namedtuple
@@ -156,7 +157,8 @@ japanese_columns = {
     u'order.channel': u'チャネル',
     u'point_grant_setting.rate': u'ポイント付与料率',
     u'point_grant_setting.fixed': u'固定付与ポイント',
-    u'point_grant_history_entry.amount': u'ポイント付与額'
+    u'point_grant_history_entry.amount': u'ポイント付与額',
+    u'cart.user_agent': u'デバイス情報'
 }
 
 ordered_ja_col = OrderedDict([
@@ -258,7 +260,8 @@ ordered_ja_col = OrderedDict([
     (u'order.channel', u'チャネル'),
     (u'point_grant_setting.rate', u'ポイント付与料率'),
     (u'point_grant_setting.fixed', u'固定付与ポイント'),
-    (u'point_grant_history_entry.amount', u'ポイント付与額')
+    (u'point_grant_history_entry.amount', u'ポイント付与額'),
+    (u'cart.user_agent', u'デバイス情報')
 ])
 
 def get_japanese_columns(request):
@@ -847,6 +850,7 @@ class OrderOptionalCSV(object):
         u'point_grant_history_entry.amount': PlainTextRenderer(u'point_grant_history_entry.amount'),
         u'point_grant_setting.rate': PlainTextRenderer(u'point_grant_setting.rate'),
         u'point_grant_setting.fixed': PlainTextRenderer(u'point_grant_setting.fixed'),
+        u'cart.user_agent': PlainTextRenderer(u'cart.user_agent'),
     }
 
     ordered_product_candidates ={
@@ -1057,6 +1061,20 @@ class OrderOptionalCSV(object):
             logger.exception(u'multiple performance settings are found when download the order info.')
         return None
 
+    def lookup_cart_user_agent(self, order):
+        from altair.app.ticketing.cart.models import Cart
+        query = self.session.query(Cart.user_agent).filter_by(order_id=order.id).order_by(Cart.created_at.desc())
+        try:
+            cua = query.one()
+            if cua != ('',):
+                _Cart = namedtuple('_Cart', ('user_agent'))
+                return _Cart(
+                    user_agent=self.detect_ua_type(str(cua))
+                )
+        except NoResultFound:
+            return None
+        except MultipleResultsFound:
+            return None
 
     def iter_records_for_order(self, order):
         user_credential = order.user.user_credential if order.user else None
@@ -1068,6 +1086,7 @@ class OrderOptionalCSV(object):
         famiport_receipt_ticketing = self.lookup_famiport_receipt(order, ticketing_flag=True)
         event_setting = self.lookup_event_setting(order.performance.event.id)
         performance_setting = self.lookup_performance_setting(order.performance.id)
+        cart_user_agent = self.lookup_cart_user_agent(order)
 
         common_record = {
             u'order': order,
@@ -1091,7 +1110,8 @@ class OrderOptionalCSV(object):
             u'event_setting': event_setting,
             u'performance_setting': performance_setting,
             u'point_grant_history_entry': point_grant_history_entry,
-            u'point_grant_setting': point_grant_setting
+            u'point_grant_setting': point_grant_setting,
+            u'cart': cart_user_agent,
             }
         if self.export_type == self.EXPORT_TYPE_ORDER:
             record = dict(common_record)
@@ -1133,6 +1153,30 @@ class OrderOptionalCSV(object):
             localized_columns=self.localized_columns
             )
 
+    def detect_ua_type(self, user_agent):
+        try:
+            ua = woothee.parse(user_agent)
+        except UnicodeDecodeError:
+            sys.stderr.write(repr(user_agent))
+            return 'pc'
+
+        if ua['category'] == 'smartphone':
+            if ua['os'] == 'Android':
+                if 'Mobile' not in user_agent:
+                    ret = 'atab'
+                else:
+                    ret = 'asp'
+            elif ua['os'] in ['iPhone']:
+                ret = 'isp'
+            elif ua['os'] in ['iPad', 'iPod']:
+                ret = 'itab'
+            else:
+                ret = 'sp'
+        elif ua['category'] == 'mobilephone':
+            ret = 'fp'
+        else:
+            ret = 'pc'
+        return ret
 
 class RefundResultCSVExporter(object):
     csv_header = [
