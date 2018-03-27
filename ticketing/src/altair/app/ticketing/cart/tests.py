@@ -1293,6 +1293,7 @@ class PaymentViewTests(unittest.TestCase):
         payment_method = testing.DummyModel(payment_plugin_id=1)
         delivery_method = testing.DummyModel(delivery_plugin_id=1)
         payment_method.public = True
+        delivery_method.public = True
 
         payment_delivery_method_pair = testing.DummyModel()
         payment_delivery_method_pair.payment_method = payment_method
