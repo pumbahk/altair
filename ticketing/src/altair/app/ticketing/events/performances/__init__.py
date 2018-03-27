@@ -33,4 +33,6 @@ def includeme(config):
     config.add_route('performances.orion.index', '/orion/{performance_id}', factory=factory)
     ##altair.app.ticketing.print_progress.__init__.pyでperformances.print_progress.showが定義されている
 
+    config.add_route('performances.discount_code_settings.show', '/discount_code_settings/{performance_id}', factory=factory)
+
 VISIBLE_PERFORMANCE_SESSION_KEY = '_visible_performance'

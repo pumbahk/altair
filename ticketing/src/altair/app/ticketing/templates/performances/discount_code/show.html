@@ -1,0 +1,6 @@
+<div>
+  <h4>${HH.route_label(request.matched_route.name)}</h4>
+</div>
+
+<%include file="/discount_code/settings/_list.html" args="form=form, settings=settings"/>
+<%include file="/discount_code/settings/_modal.html" args="modal_id='modal_setting'"/>
