@@ -619,9 +619,6 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         """
         from altair.app.ticketing.discount_code.models import DiscountCodeSetting, DiscountCodeTarget
 
-        if now is None:
-            now = datetime.now()
-
         q = session.query(DiscountCodeSetting) if session else DBSession.query(DiscountCodeSetting)
         q = q.join(
             DiscountCodeTarget
@@ -630,6 +627,9 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         )
 
         if not refer_all:
+            if now is None:
+                now = datetime.now()
+
             q = q.filter(
                 DiscountCodeSetting.is_valid == 1,
                 or_(DiscountCodeSetting.start_at.is_(None), DiscountCodeSetting.start_at <= now),
