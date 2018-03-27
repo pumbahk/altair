@@ -10,7 +10,7 @@
 <%! from altair.app.ticketing.discount_code.forms import DiscountCodeSettingForm %>
 
 <script src="${request.static_url('altair.app.ticketing:static/js/jquery.chosen.js')}"></script>
-<link rel="stylesheet" type="text/css" href="${request.static_url('altair.app.ticketing:static/css/chosen.css')}" />
+<link rel="stylesheet" type="text/css" href="${request.static_url('altair.app.ticketing:static/css/chosen.css')}"/>
 
 <div class="row-fluid" style="margin-top: 30px;">
     <div class="span10">
@@ -25,7 +25,7 @@
                     ${HH.label_text_for(DiscountCodeSettingForm.status)}
                     ${ch.help(form.status, u"「適用」にならない限り、チケット購入時にクーポン・割引コード入力画面は表示されません。")|n}
                 </th>
-                <th class="span1" style="text-align: center">
+                <th>
                     頭4文字
                 </th>
                 <th>
@@ -47,14 +47,16 @@
                     ${ch.sortable(form.issued_by)}
                     ${ch.help(form.issued_by, u"「自社」の場合は「コード一覧」機能でコードの生成や管理が可能です。")|n}
                 </th>
-                <th></th>
+                %if HH.has_permission('master_editor'):
+                    <th></th>
+                %endif
             </tr>
             </thead>
             <tbody>
                 % for setting in settings.items:
                     <tr id="code-${setting.id}">
-                        <td style="text-align: center">${setting.id}</td>
-                        <td style="text-align: center;">
+                        <td>${setting.id}</td>
+                        <td>
                             % if setting.available_status == True:
                                 <span class="badge badge-info">適　用</span>
                             % else:
@@ -63,11 +65,11 @@
                                       data-content="${ch.unordered_list_up(setting.available_status)}">準備中</span>
                             % endif
                         </td>
-                        <td style="text-align: center;">
+                        <td>
                             ${setting.first_4_digits if setting.first_4_digits else '-'}
                         </td>
                         <td>${setting.name}</td>
-                        <td style="text-align: center;">${setting.target_count}</td>
+                        <td>${setting.target_count}</td>
                         <td>${vh.number(setting.condition_price_amount)}${u'円' if setting.criterion == 'price' else ''}
                             ${''.join([enum.v[1] for enum in ConditionPriceMoreOrLessEnum if enum.v[0] == setting.condition_price_more_or_less])}</td>
                         <td>${vh.number(setting.benefit_amount)}${setting.benefit_unit}</td>
@@ -85,9 +87,11 @@
                             %endif
                         </td>
                         <td>${''.join([enum.v[1] for enum in CodeOrganizerEnum if enum.v[0] == setting.issued_by])}</td>
-                        <td style="width: 1%; white-space: nowrap;">
-                                <%include file="/discount_code/settings/_action_button.html" args="setting=setting, small=True, split=True"/>
-                        </td>
+                        %if HH.has_permission('master_editor'):
+                            <td style="white-space: nowrap;">
+                                    <%include file="/discount_code/settings/_action_button.html" args="setting=setting, small=True, split=True"/>
+                            </td>
+                        %endif
                     </tr>
                 % endfor
             </tbody>
