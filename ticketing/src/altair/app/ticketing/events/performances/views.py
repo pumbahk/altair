@@ -44,6 +44,10 @@ from .generator import PerformanceCodeGenerator
 from ..famiport_helpers import get_famiport_performance_ids
 from .api import set_visible_performance, set_invisible_performance
 
+from altair.app.ticketing.discount_code.forms import DiscountCodeSettingForm
+from altair.app.ticketing.discount_code.api import check_discount_code_functions_available
+from altair.app.ticketing.core.utils import PageURL_WebOb_Ex
+
 logger = logging.getLogger(__name__)
 
 
@@ -450,10 +454,9 @@ class PerformanceShowView(BaseView):
 
         return self.orion_index_view()
 
-    @view_config(route_name="performances.discount_code_settings.show", request_method='GET')
+    @view_config(route_name="performances.discount_code_settings.show", request_method='GET',
+                 custom_predicates=(check_discount_code_functions_available,))
     def discount_code_settings_show(self):
-        from altair.app.ticketing.discount_code.forms import DiscountCodeSettingForm
-        from altair.app.ticketing.core.utils import PageURL_WebOb_Ex
         session = get_db_session(self.request, 'slave')
         query = Performance(id=self.performance.id).find_available_target_settings_query(
             session=session,
