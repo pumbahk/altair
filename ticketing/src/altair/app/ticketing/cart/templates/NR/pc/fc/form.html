@@ -1,4 +1,4 @@
-<%inherit file="${context['main_template'].uri}" />
+<%inherit file="base.html" />
 <%namespace name="fh" module="altair.formhelpers.utils.mako" />
 <%block name="javascript">
   <script type="text/javascript" src="${request.static_url('altair.app.ticketing.cart:static/js/ajaxzip3-https.js')}"></script>
@@ -6,12 +6,22 @@
 var zip_file_path = ${h.json_encode(request.static_url('altair.app.ticketing.cart:static/js/zipdata'))|n};
 </script>
 </%block>
-<%block name="title">${view_context.title}</%block>
+<%block name="css">
+  <link rel="stylesheet" href="${request.static_url('altair.app.ticketing.cart:static/NR/pc/css/form.css')}" type="text/css" />
+</%block>
+
+<body>
+<div class="container">
+    <div class="header">
+      <img src="${view_context.header_image_url}" alt="${view_context.team_name}" />
+    </div>
+<h2>入会</h2>
 % if view_context.orderreview_page_url != 'about:blank':
 <div class="title-right-description">
   申込受付履歴は<a href="${view_context.orderreview_page_url}">こちら</a>で確認できます
 </div>
 % endif
+
 <%def name="render_field(field, label=False, _description=None, _note=None, _suffix=u'', **kwargs)">
 <%
 _description = _description or field.description
@@ -36,175 +46,91 @@ if label is None or label is True:
 </div>
 </%def>
 <%! from altair.formhelpers import widgets %>
+
 <%fh:render_block>
 <form action="${request.current_route_path()}" method="post">
-  <table class="frame form">
-    <colgroup>
-      <col style="width:180px;">
-      <col style="width:310px;">
-    </colgroup>
-    <tbody>
-      <tr>
-        <th>${view_context.fc_kind_title if view_context.fc_kind_title else u'会員種別'} <span class="red">*</span></th>
-        <td>
-          ${render_field(form['extra']['member_type'])}
-        </td>
-      </tr>
-      <tr>
-        <th>
-          個数
-        </th>
-        <td>
-          <select id="quantity" name="quantity">
-            % for num in range(1, max_quantity + 1):
-              <option value="${num}">${num}</option>
-            % endfor
-            </select>
-        </td>
-      </tr>
-      <tr>
-        <th>
-          ${view_context.fc_name if view_context.fc_name else u'氏名'} <span class="red">*</span>
-        </th>
-        <td>
-          ${render_field(form.last_name, label=True)}
-          ${render_field(form.first_name, label=True)}
-        </td>
-      </tr>
-      <tr>
-        <th>
-          ${view_context.fc_name if view_context.fc_name else u'氏名'}（フリガナ） <span class="red">*</span>
-        </th>
-        <td>
-          ${render_field(form.last_name_kana, label=True)}
-          ${render_field(form.first_name_kana, label=True)}
-        </td>
-      </tr>
-      <tr>
-        <th>
-          郵便番号 <span class="red">*</span>
-        </th>
-        <td>
-          ${render_field(form['zip'])}
-        </td>
-      </tr>
-      <tr>
-        <th>
-          住所 <span class="red">*</span>
-        </th>
-        <td>
-          ${render_field(form['prefecture'], label=True)}
-          ${render_field(form['city'], label=True, _note=u'(例：千代田区)')}
-          ${render_field(form['address_1'], label=True, _note=u'(例：丸の内1-1)')}
-          ${render_field(form['address_2'], label=True, _note=u'(例：XXビル253号)')}
-        </td>
-      </tr>
-      % if view_context.flavors.get('mobile_and_landline_phone_number'):
-      <tr>
-        <th rowspan="2">
-          電話番号 <span class="red">*</span><br />
-          <span class="red">（自宅・携帯のどちらか必須）</span>
-        </th>
-        <td>
-          ${render_field(form['tel_1'], label=u'(自宅)')}
-        </td>
-      </tr>
-      <tr>
-        <td>
-          ${render_field(form['tel_2'], label=u'(携帯)')}
-        </td>
-      </tr>
-      % else:
-      <tr>
-        <th>
-          電話番号 <span class="red">*</span><br />
-        </th>
-        <td>
-          ${render_field(form['tel_1'])}
-        </td>
-      </tr>
-      % endif
-      % if view_context.flavors.get('pc_and_mobile_email_address'):
-      <tr>
-        <th>
-          PCメールアドレス <span class="red">*</span>
-        </th>
-        <td>
-          ${render_field(form['email_1'])}
-        </td>
-      </tr>
-      <tr>
-        <th>
-          PCメールアドレス（確認用） <span class="red">*</span>
-        </th>
-        <td>
-          ${render_field(form['email_1_confirm'])}
-        </td>
-      </tr>
-      <tr>
-        <th>
-          携帯メールアドレス
-        </th>
-        <td>
-          ${render_field(form['email_2'])}
-        </td>
-      </tr>
-      <tr>
-        <th>
-          携帯メールアドレス（確認用）
-        </th>
-        <td>
-          ${render_field(form['email_2_confirm'])}
-        </td>
-      </tr>
-      % else:
-      <tr>
-        <th>
-          メールアドレス <span class="red">*</span>
-        </th>
-        <td>
-          ${render_field(form['email_1'])}
-        </td>
-      </tr>
-      <tr>
-        <th>
-          メールアドレス（確認用） <span class="red">*</span>
-        </th>
-        <td>
-          ${render_field(form['email_1_confirm'])}
-        </td>
-      </tr>
-      % endif
-      % if extra_form_fields is not None:
+<div class="contents">
+<dl class="contact">
+    <dt><span class="required">${view_context.fc_kind_title if view_context.fc_kind_title else u'会員種別'}</span></dt>
+    <dd>${render_field(form['extra']['member_type'])}</dd>
+    <dt><span class="required">個数</span></dt>
+    <dd>
+        <select id="quantity" name="quantity">
+        % for num in range(1, max_quantity + 1):
+          <option value="${num}">${num}</option>
+        % endfor
+        </select>
+    </dd>
+    <dt><span class="required">姓</span></dt>
+    <dd>
+        ${render_field(form.last_name)}
+    </dd>
+    <dt><span class="required">名</span></dt>
+    <dd>
+    </dd>
+    <dd>
+        ${render_field(form.first_name)}
+    </dd>
+    <dt><span class="required">姓(カナ)</span></dt>
+    <dd>${render_field(form.last_name_kana)}</dd>
+    <dt><span class="required">名(カナ)</span></dt>
+    <dd>${render_field(form.first_name_kana)}</dd>
+    <dt><span class="required">郵便番号<small>(半角英数7ケタ)</small></span></dt>
+    <dd>${render_field(form['zip'])}</dd>
+    <dt><span class="required">都道府県</span></dt>
+    <dd>${render_field(form['prefecture'])}</dd>
+    <dt><span class="required">市区町村</span></dt>
+    <dd>${render_field(form['city'], _note=u'(例：千代田区)')}</dd>
+    <dt><span class="required">町名番地</span></dt>
+    <dd>${render_field(form['address_1'], _note=u'(例：丸の内1-1)')}</dd>
+    <dt><span>建物名等</span></dt>
+    <dd>${render_field(form['address_2'], _note=u'(例：XXビル253号)')}</dd>
+    % if view_context.flavors.get('mobile_and_landline_phone_number'):
+        <dt><span class="required">電話番号(自宅)</span></dt>
+        <dd>${render_field(form['tel_1'])}</dd>
+        <dt><span class="required">電話番号(携帯)</span></dt>
+        <dd>${render_field(form['tel_2'])}</dd>
+    % else:
+        <dt><span class="required">電話番号(自宅)</span></dt>
+        <dd>${render_field(form['tel_1'])}</dd>
+    % endif
+    % if view_context.flavors.get('pc_and_mobile_email_address'):
+        <dt><span class="required">PCメールアドレス</span></dt>
+        <dd>${render_field(form['email_1'])}</dd>
+        <dt><span class="required">PCメールアドレス(確認用)</span></dt>
+        <dd>${render_field(form['email_1_confirm'])}</dd>
+        <dt><span class="required">携帯メールアドレス</span></dt>
+        <dd>${render_field(form['email_2'])}</dd>
+        <dt><span class="required">携帯メールアドレス(確認用)</span></dt>
+        <dd>${render_field(form['email_2_confirm'])}</dd>
+    % else:
+        <dt><span class="required">PCメールアドレス</span></dt>
+        <dd>${render_field(form['email_1'])}</dd>
+        <dt><span class="required">PCメールアドレス(確認用)</span></dt>
+        <dd>${render_field(form['email_1_confirm'])}</dd>
+    % endif
+    % if extra_form_fields is not None:
       % for field_desc in extra_form_fields:
-      <%
-try:
-    field = form['extra']._contained_form[field_desc['name']]
-except:
-    field = None
-%>
-      % if field is not None:
-      <tr>
-        <th scope="row">
-            <label for="${field.id}">${field.label}</label>
-            % if field.flags.required:
-            <span class="red">*</span>
-            % endif
-        </th>
-        <td>
-          ${render_field(field)}
-        </td>
-      </tr>
-      % elif field_desc['description']:
-      <tr>
-        <td colspan="2">
-          ${field_desc['description']|n}
-        </td>
-      </tr>
-      % endif
+        <%
+        try:
+            field = form['extra']._contained_form[field_desc['name']]
+        except:
+            field = None
+        %>
+
+        % if field is not None:
+        <dt><span class="${'required' if field.flags.required  else ''}">${field.label}</span></dt>
+        <dd>${render_field(field)}</dd>
+        % elif field_desc['description']:
+        <dd>
+            ${field_desc['description']|n}
+        </dd>
+        % endif
+
       % endfor
-      % else:
-      % for field in form['extra']._contained_form:
+    % else:
+
+    % for field in form['extra']._contained_form:
       % if not field.short_name in {'member_type'}:
       <tr>
         <th scope="row">
@@ -218,22 +144,16 @@ except:
         </td>
       </tr>
       % endif
-      % endfor
-      % endif
-    </tbody>
-    <tfoot>
-      <tr>
-        <td colspan="2">
-          <div class="textR red">
-            *は入力必須項目です。
-            % if view_context.flavors.get('mobile_and_landline_phone_number'):
-電話番号は携帯・自宅のどちらか一方で構いません。
-            % endif
-          </div>
-        </td>
-      </tr>
-    </tfoot>
-  </table>
+    % endfor
+  % endif
+
+</dl>
+</div><!-- contents END//-->
+<ul class="note">
+    <li><span class="required"></span>は入力必須項目です。</li>
+    <li>注文受付完了、確認メール等をメールでご案内します。「ticketstar.jp」からのメールを受信できるよう、お申し込み前にドメイン指定の設定を必ずお願いいたします。</li>
+</ul>
+
   <%def name="__post__(registry_var)">
   ${fh.inject_js(registry_var)}
   <script type="text/javascript">
@@ -257,7 +177,7 @@ $(zip.getUIElements()).on('keyup', function () {
 </script>
   </%def>
   </%fh:render_block>
-  <div class="frame frame-inner textC">
+
+
     <input type="submit" value="次に進む" class="submit">
-  </div>
 </form>
