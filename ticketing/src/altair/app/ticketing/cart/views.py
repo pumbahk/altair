@@ -1241,7 +1241,7 @@ class PaymentView(object):
                     error = u'電話番号の桁数が11桁ではありません'
                 if not phone.isdigit():
                     error = ','.join([error, u'数字以外の文字は入力できません']) if error else u'数字以外の文字は入力できません'
-                if not re.compile('^(070|080|090)').match(phone):
+                if not re.match('^(070|080|090)', phone):
                     error = ','.join([error, u'[070,080,090]で始まる携帯電話番号を入力してください']) if error else u'[070,080,090]で始まる携帯電話番号を入力してください'
             errors.append(error)
 

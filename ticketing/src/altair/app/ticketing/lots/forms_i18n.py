@@ -278,10 +278,11 @@ class ClientFormFactory(object):
             def _validate_tel_1(self, *args, **kwargs):
                 import re
                 status = True
-                if not re.compile('^(070|080|090)').match(self.data["tel_1"]):
+                phone = self.data["tel_1"].strip()
+                if not re.match('^(070|080|090)', phone):
                     getattr(self, "tel_1").errors.append(u"[070,080,090]で始まる携帯電話番号を入力してください")
                     status = False
-                if len(self.data["tel_1"]) != 11:
+                if len(phone) != 11:
                     getattr(self, "tel_1").errors.append(u"電話番号の桁数が11桁ではありません")
                     status = False
                 return status
