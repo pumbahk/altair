@@ -3,21 +3,11 @@ import logging
 from pyramid.view import render_view_to_response
 from pyramid_mailer import get_mailer
 from pyramid_mailer.message import Message
-from altair.app.ticketing.core.api import get_organization_setting
+
 from altair.app.ticketing.cart import api as cart_api
 from altair.app.ticketing.cart.api import get_organization
 from altair.app.ticketing.mails.api import get_appropriate_message_part
-import altair.app.ticketing.orders.orion as orion_api
-from pyramid.threadlocal import get_current_registry
-from altair.app.ticketing.qr.utils import get_matched_token_from_token_id
-from altair.sqlahelper import get_db_session
-
-from altair.app.ticketing.orders.models import (
-    Order,
-    OrderedProduct,
-    OrderedProductItem,
-    OrderedProductItemToken,
-    )
+from altair.app.ticketing.orders import orion as orion_api
 
 logger = logging.getLogger(__name__)
 
@@ -44,6 +34,17 @@ def _send_mail_simple(request, recipient, sender, mail_body, subject=u"QRチケ�
             sender=sender)
     return get_mailer(request).send(message)
 
+def _build_orion_ticket_phone_verify(owner_phone_number, orion_ticket_phones):
+    if owner_phone_number and orion_ticket_phones:
+        return owner_phone_number + ',' + orion_ticket_phones
+    elif owner_phone_number:
+        return owner_phone_number
+    elif orion_ticket_phones:
+        return orion_ticket_phones
+    else:
+        return u''
+
+
 def send_to_orion(request, context, recipient, data):
     order = data.item.ordered_product.order
     product = data.item.ordered_product.product
@@ -55,14 +56,15 @@ def send_to_orion(request, context, recipient, data):
     segment = order.sales_segment
     seat = data.seat
     orion = performance.orion
-    shipping_address = order.shipping_address
-    user_phone = shipping_address.tel_1 or shipping_address.tel_2
-    orion_ticket_phones = ','.join([user_phone] + order.get_orion_ticket_phone_list).rstrip(',')
+    owner_phone_number = order.get_send_to_orion_owner_phone_string(request)
+    orion_ticket_phones = order.get_send_to_orion_phone_string(request)
+    orion_ticket_phone_verify = _build_orion_ticket_phone_verify(owner_phone_number, orion_ticket_phones)
     obj = dict()
     obj['token'] = data.id
     obj['recipient'] = dict(mail = recipient)
     obj['order'] = dict(number = order.order_no,
-                        orion_ticket_phone_verify=orion_ticket_phones,
+                        owner_phone_number=owner_phone_number,
+                        orion_ticket_phone_verify=orion_ticket_phone_verify,
                         sequence = data.serial,
                         created_at = str(order.paid_at))
     obj['performance'] = dict(code = performance.code, name = performance.name,
@@ -95,7 +97,7 @@ def send_to_orion(request, context, recipient, data):
     obj['theme'] = dict(header = orion.header_url,
                         background = orion.background_url,
                         icon = orion.icon_url)
-    
+
     return orion_api.create(request, obj)
 
 def is_mypage_organization(context, request):

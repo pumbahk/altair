@@ -248,12 +248,13 @@ def convert_shipping_address(params):
             setattr(shipping_address, attr, params[attr])
     return shipping_address
 
-def create_or_update_orion_ticket_phone(user, entry_no, data):
+def create_or_update_orion_ticket_phone(user, entry_no, owner_phone_number, data):
     logger.debug('orion_ticket_phone_info=%r', data)
     orion_ticket_phone = OrionTicketPhone.filter_by(entry_no=entry_no).first()
     if not orion_ticket_phone:
         orion_ticket_phone = OrionTicketPhone()
     orion_ticket_phone.entry_no = entry_no
+    orion_ticket_phone.owner_phone_number = owner_phone_number
     orion_ticket_phone.phones = data
     orion_ticket_phone.user = user
     return orion_ticket_phone

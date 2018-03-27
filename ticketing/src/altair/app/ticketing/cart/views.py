@@ -1297,7 +1297,10 @@ class PaymentView(object):
                     logger.debug("invalid : %s" % orion_phone_errors)
                     raise self.ValidationFailed(self._message(u'イベントゲート情報の入力内容を確認してください'))
 
-                create_orion_ticket_phone = self.create_or_update_orion_ticket_phone(user, cart.order_no, orion_ticket_phone)
+                create_orion_ticket_phone = self.create_or_update_orion_ticket_phone(user,
+                                                                                     cart.order_no,
+                                                                                     cart.shipping_address.tel_1,
+                                                                                     orion_ticket_phone)
                 DBSession.add(create_orion_ticket_phone)
 
             DBSession.add(cart)
@@ -1397,13 +1400,14 @@ class PaymentView(object):
             user=user
         )
 
-    def create_or_update_orion_ticket_phone(self, user, order_no, data):
+    def create_or_update_orion_ticket_phone(self, user, order_no, owner_phone_number, data):
         logger.debug('orion_ticket_phone_info=%r', data)
         orion_ticket_phone = c_models.OrionTicketPhone.filter_by(order_no=order_no).first()
         if not orion_ticket_phone:
             orion_ticket_phone = c_models.OrionTicketPhone()
         phones = u','.join(data)
         orion_ticket_phone.order_no = order_no
+        orion_ticket_phone.owner_phone_number = owner_phone_number
         orion_ticket_phone.phones = phones
         orion_ticket_phone.user = user
         return orion_ticket_phone

@@ -35,6 +35,7 @@ from altair.app.ticketing.core.models import (
     Performance,
     SeatStatusEnum,
     ChannelEnum,
+    OrionTicketPhone
     )
 from altair.app.ticketing.core import api as core_api
 from altair.app.ticketing.cart import api as cart_api
@@ -779,7 +780,6 @@ def create_inner_order(request, order_like, note, session=None):
     if session is None:
         from altair.app.ticketing.models import DBSession
         session = DBSession
-
     payment = Payment(order_like, request)
     if order_like.payment_delivery_pair.payment_method.pay_at_store() or \
        order_like.payment_delivery_pair.payment_method.cash_on_reservation():
@@ -802,6 +802,14 @@ def create_inner_order(request, order_like, note, session=None):
         if IPaymentCart.providedBy(order_like):
             order_like.finish()
 
+    # 引取方法の場合はowner_phone_numberのでOrionTicketPhoneを作成
+    if order.delivery_plugin_id == payments_plugins.ORION_DELIVERY_PLUGIN_ID:
+        create_orion_ticket_phone(order.user,
+                                  order.order_no,
+                                  order.shipping_address.tel_1,
+                                  [],
+                                  session)
+
     order.note = note
     add_booster_attributes(request, order)
     return order
@@ -820,6 +828,21 @@ def add_booster_attributes(request, order):
             value=u''
             )
         DBSession.add(attribute)
+
+
+def create_orion_ticket_phone(user, order_no, owner_phone_number, data, session=None):
+    if session is None:
+        from altair.app.ticketing.models import DBSession
+        session = DBSession
+    logger.debug('orion_ticket_phone_info=%r', owner_phone_number)
+    orion_ticket_phone = OrionTicketPhone(
+        order_no=order_no,
+        owner_phone_number=owner_phone_number,
+        phones=u','.join(data),
+        user=user
+    )
+    session.add(orion_ticket_phone)
+    return orion_ticket_phone
 
 def refresh_order(request, session, order):
     logger.info('Trying to refresh order %s (id=%d, payment_delivery_pair={ payment_method=%s, delivery_method=%s })...'
