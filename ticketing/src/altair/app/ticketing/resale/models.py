@@ -18,6 +18,7 @@ class ResaleSegment(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     start_at = AnnotatedColumn(DateTime, nullable=False, _a_label=_(u'リセール受付開始'))
     end_at = AnnotatedColumn(DateTime, nullable=False, _a_label=_(u'リセール受付開始'))
     performance_id = Column(Identifier, nullable=False)
+    sent_at = AnnotatedColumn(DateTime, nullable=False, _a_label=_(u'連携日時'))
 
 class ResaleRequest(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'ResaleRequest'

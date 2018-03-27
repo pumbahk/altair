@@ -24,6 +24,7 @@ def upgrade():
                     sa.Column('start_at', sa.DateTime(), nullable=False),
                     sa.Column('end_at', sa.DateTime(), nullable=False),
                     sa.Column('performance_id', Identifier(), nullable=False),
+                    sa.Column('sent_at', sa.TIMESTAMP(), nullable=True),
                     sa.Column('created_at', sa.TIMESTAMP(), server_default=sqlf.current_timestamp(), nullable=False),
                     sa.Column('updated_at', sa.TIMESTAMP(), server_default=text('0'), nullable=False),
                     sa.Column('deleted_at', sa.TIMESTAMP(), nullable=True),
