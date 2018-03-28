@@ -184,7 +184,7 @@ class FCIndexView(object):
         form, extra_form_fields = self.product_form(UnicodeMultiDictAdapter(self.request.params, 'utf-8', 'replace'))
         if not form.validate():
             self.request.errors = form.errors
-            return dict(form=form, extra_form_fields=extra_form_fields)
+            return dict(form=form, extra_form_fields=extra_form_fields, max_quantity=self.sales_segment.max_quantity)
 
         member_type = form['extra']._contained_form.member_type.data
         q = c_models.Product.query \
@@ -217,7 +217,7 @@ class FCIndexView(object):
             )
         if cart is None:
             logger.debug('cart is None')
-            return dict(form=form, extra_form_fields=extra_form_fields)
+            return dict(form=form, extra_form_fields=extra_form_fields, max_quantity=self.sales_segment.max_quantity)
         logger.debug('cart %s' % cart)
         api.set_cart(self.request, cart)
         data = extract_form_data(form)
