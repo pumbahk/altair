@@ -413,6 +413,9 @@ class EntryLotView(object):
             self.request.session.flash(self._message(u"お支払お引き取り方法を選択してください"))
             validated = False
 
+        payment_delivery_method_pair_id = self.request.params.get('payment_delivery_method_pair_id', 0)
+        payment_delivery_pair = PaymentDeliveryMethodPair.query.filter_by(id=payment_delivery_method_pair_id).first()
+
         email_1 = cform['email_1'].data
         birthday = cform['birthday'].data
 
@@ -421,7 +424,7 @@ class EntryLotView(object):
         if email_1 and len(email_1) > 64:
             self.request.session.flash(self._message(u"メールアドレスは64文字以下のものをご使用ください"))
             validated = False
-        if not cform.validate() or not birthday:
+        if not cform.validate(payment_delivery_pair) or not birthday:
             self.request.session.flash(self._message(u"購入者情報に入力不備があります"))
             if not birthday:
                 cform['birthday'].errors = [self.request.translate(u'日付が正しくありません')] if self.request.organization.setting.i18n else [u'日付が正しくありません']
@@ -438,7 +441,7 @@ class EntryLotView(object):
 
         entry_no = api.generate_entry_no(self.request, self.context.organization)
 
-        shipping_address_dict = cform.get_validated_address_data()
+        shipping_address_dict = cform.get_validated_address_data(payment_delivery_pair)
         api.new_lot_entry(
             self.request,
             entry_no=entry_no,

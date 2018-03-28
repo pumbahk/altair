@@ -239,7 +239,7 @@ class ClientFormFactory(object):
                     return False
                 return True
 
-            def validate(self):
+            def validate(self, *args, **kwargs):
                 # このように and 演算子を展開しないとすべてが一度に評価されない
                 status = super(ClientForm, self).validate()
                 status = self._validate_email_addresses() and status

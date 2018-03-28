@@ -339,6 +339,9 @@ class EntryLotView(object):
             self.request.session.flash(_(u"お支払お引き取り方法を選択してください"))
             validated = False
 
+        payment_delivery_method_pair_id = self.request.params.get('payment_delivery_method_pair_id', 0)
+        payment_delivery_pair = PaymentDeliveryMethodPair.query.filter_by(id=payment_delivery_method_pair_id).first()
+
         # イベントゲット情報(Orion Ticket Phone)
         orion_ticket_phone, orion_phone_errors = h.verify_orion_ticket_phone(self.request.POST.getall('orion-ticket-phone'))
         cform.orion_ticket_phone.data = ','.join(orion_ticket_phone)
@@ -349,7 +352,7 @@ class EntryLotView(object):
         birthday = cform['birthday'].data
 
         # 購入者情報
-        if not cform.validate() or not birthday:
+        if not cform.validate(payment_delivery_pair) or not birthday:
             self.request.session.flash(_(u"購入者情報に入力不備があります"))
             if not birthday:
                 cform['birthday'].errors = [_(u"日付が正しくありません")]
@@ -384,7 +387,7 @@ class EntryLotView(object):
 
         entry_no = api.generate_entry_no(self.request, self.context.organization)
 
-        shipping_address_dict = cform.get_validated_address_data()
+        shipping_address_dict = cform.get_validated_address_data(payment_delivery_pair)
         api.new_lot_entry(
             self.request,
             entry_no=entry_no,
