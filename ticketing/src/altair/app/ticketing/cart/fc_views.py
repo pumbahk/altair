@@ -237,7 +237,7 @@ class FCPaymentView(PaymentView):
     def _user_profile(self):
         return load_user_profile(self.request, self.context.performance.id)
 
-    def get_validated_address_data(self):
+    def get_validated_address_data(self, pdp=None):
         address_data = self._user_profile
         return dict(
             first_name=address_data['first_name'],
