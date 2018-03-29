@@ -130,7 +130,6 @@ class ClientFormFactory(object):
                 validators=[
                     SwitchOptional('tel_2'),
                     Required(_(u'入力してください')),
-                    Length(min=10, max=11),
                     Regexp(r'^\d*$', message=_(u'-(ハイフン)を抜いた半角数字のみを入力してください')),
                     ]
                 )
@@ -238,8 +237,8 @@ class ClientFormFactory(object):
                 validators=[Optional()]
             )
 
-            def get_validated_address_data(self):
-                if self.validate():
+            def get_validated_address_data(self, pdp=None):
+                if self.validate(pdp):
                     return dict(
                         first_name=self.data['first_name'],
                         last_name=self.data['last_name'],
@@ -275,10 +274,29 @@ class ClientFormFactory(object):
                     status = False
                 return status
 
-            def validate(self):
+            def _validate_tel_1(self, pdp=None):
+                import re
+                status = True
+                phone = self.data["tel_1"].strip()
+                if pdp and pdp.delivery_method.delivery_plugin_id == 5:
+                    # [EventGate]のみチェックする
+                    if not re.match('^(070|080|090)', phone):
+                        getattr(self, "tel_1").errors.append(u"[070,080,090]で始まる携帯電話番号を入力してください")
+                        status = False
+                    if len(phone) != 11:
+                        getattr(self, "tel_1").errors.append(u"電話番号の桁数が11桁ではありません")
+                        status = False
+                else:
+                    if len(phone) < 10 or len(phone) > 11:
+                        getattr(self, "tel_1").errors.append(u"10文字から11文字の間で入力してください。")
+                        status = False
+                return status
+
+            def validate(self, pdp=None):
                 # このように and 演算子を展開しないとすべてが一度に評価されない
                 status = super(ClientForm, self).validate()
                 status = self._validate_email_addresses() and status
+                status = self._validate_tel_1(pdp) and status
                 return status
         return ClientForm
 

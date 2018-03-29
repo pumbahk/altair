@@ -79,11 +79,11 @@ def zip_validators(request):
 def address_1_validators(request):
     _ = request.translate
     locale_name = custom_locale_negotiator(request)
-    base_validators = [Length(max=255, message=_(u'{0}文字以内で入力してください').format(255))]
+    base_validators = [Required(_(u'入力してください')), Length(max=255, message=_(u'{0}文字以内で入力してください').format(255))]
     if locale_name == 'ja' or not request.organization.setting.i18n:
         return base_validators + [CP932]
     else:
-        return base_validators +[Required(_(u'入力してください')), Regexp(r'^[\w\s\.\-,]+$', message=_(u'アルファベット、数字、-(ハイフン)、.(点)、,(コンマ)、空白を入力してください'))]
+        return base_validators +[Regexp(r'^[\w\s\.\-,]+$', message=_(u'アルファベット、数字、-(ハイフン)、.(点)、,(コンマ)、空白を入力してください'))]
 
 def address_2_validators(request):
     _ = request.translate

@@ -37,6 +37,10 @@ class OwnDiscountCodeDuplicateError(CartException):
     pass
 
 
+class NotExistingOwnDiscountCodeError(CartException):
+    pass
+
+
 class NotAllowedBenefitUnitError(CartException):
     pass
 

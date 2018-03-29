@@ -1,14 +1,18 @@
-<%inherit file="${context['main_template'].uri}" />
-<%block name="title">申込内容確認</%block>
+<%inherit file="base.html" />
+<%block name="css">
+  <link rel="stylesheet" href="${request.static_url('altair.app.ticketing.cart:static/NR/pc/css/form.css')}" type="text/css" />
+</%block>
+<div class="container">
+    <div class="header">
+      <img src="${view_context.header_image_url}" alt="${view_context.team_name}" />
+    </div>
+<h2>申込内容確認</h2>
 <form id="form1" action="${request.route_path('payment.confirm')}" method="post">
   ${form.csrf_token()}
-  <table class="frame form">
-    <colgroup>
-      <col style="width:180px;" />
-      <col style="width:310px;" />
-    </colgroup>
+<div class="contents">
+  <% pm = [(p[0], dp[1]) for p, dp in extra_form_data] %>
+  <table>
     <tbody>
-      <% pm = [(p[0], dp[1]) for p, dp in extra_form_data] %>
       <tr>
         <th>${view_context.fc_kind_title if view_context.fc_kind_title else u'会員種別'}</th>
         <td>${cart.items[0].product.name}</td>
@@ -71,9 +75,10 @@
       % endfor
     </tbody>
   </table>
+</div><!-- contact END//-->
 
-  <div class="frame frame-inner textC">
-    <input type="submit" name="back" value="戻る" class="submit half" />
-    <input type="submit" value="申し込む" class="submit half" />
-  </div>
+<ul class="page-transition">
+  <li><input name="back" value="戻る" class="submit submit-back" type="submit"></li>
+  <li><input value="申し込む" class="submit" type="submit"></li>
+</ul>
 </form>

@@ -23,6 +23,15 @@ class CodeOrganizerEnum(StandardEnum):
     own = ('own', u'自社')
 
 
+class BenefitUnitEnum(StandardEnum):
+    percent = ('%', u'%')
+    yen = ('yen', u'円')
+
+
+class ConditionPriceMoreOrLessEnum(StandardEnum):
+    less = ('less', u'以下')
+
+
 class DiscountCodeSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'DiscountCodeSetting'
     id = AnnotatedColumn(Identifier, primary_key=True, _a_label=_(u'ID'))

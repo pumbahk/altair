@@ -309,7 +309,10 @@ class EntryLotView(object):
 
         event = self.context.event
         lot = self.context.lot
-        performances = lot.performances
+        performances = []
+        for perf in lot.performances:
+            if not perf.not_exist_product_item:
+                performances.append(perf)
         performances = sorted(performances, key=lambda p: (p.display_order, p.start_on))
         performance_map = make_performance_map(self.request, performances)
 
@@ -323,7 +326,10 @@ class EntryLotView(object):
 
         sales_segment = lot.sales_segment
         payment_delivery_pairs = [pdmp for pdmp in sales_segment.payment_delivery_method_pairs if pdmp.public]
-        performance_product_map = self._create_performance_product_map(sales_segment.products)
+        # 商品明細が紐付いていないものは表示しない
+        performance_product_map = self._create_performance_product_map(
+            [product for product in sales_segment.products if len(product.items) > 0])
+
         stock_types = self._stock_type_from_products(sales_segment.products)
 
         if self.request.organization.setting.recaptcha and not recaptcha_done:
@@ -407,6 +413,9 @@ class EntryLotView(object):
             self.request.session.flash(self._message(u"お支払お引き取り方法を選択してください"))
             validated = False
 
+        payment_delivery_method_pair_id = self.request.params.get('payment_delivery_method_pair_id', 0)
+        payment_delivery_pair = PaymentDeliveryMethodPair.query.filter_by(id=payment_delivery_method_pair_id).first()
+
         email_1 = cform['email_1'].data
         birthday = cform['birthday'].data
 
@@ -415,7 +424,7 @@ class EntryLotView(object):
         if email_1 and len(email_1) > 64:
             self.request.session.flash(self._message(u"メールアドレスは64文字以下のものをご使用ください"))
             validated = False
-        if not cform.validate() or not birthday:
+        if not cform.validate(payment_delivery_pair) or not birthday:
             self.request.session.flash(self._message(u"購入者情報に入力不備があります"))
             if not birthday:
                 cform['birthday'].errors = [self.request.translate(u'日付が正しくありません')] if self.request.organization.setting.i18n else [u'日付が正しくありません']
@@ -432,7 +441,7 @@ class EntryLotView(object):
 
         entry_no = api.generate_entry_no(self.request, self.context.organization)
 
-        shipping_address_dict = cform.get_validated_address_data()
+        shipping_address_dict = cform.get_validated_address_data(payment_delivery_pair)
         api.new_lot_entry(
             self.request,
             entry_no=entry_no,
@@ -581,7 +590,7 @@ class ConfirmLotEntryView(object):
         shipping_address = entry['shipping_address']
         shipping_address = h.convert_shipping_address(shipping_address)
         user = cart_api.get_or_create_user(self.context.authenticated_user())
-        orion_ticket_phone = h.create_or_update_orion_ticket_phone(user, entry_no, entry['orion_ticket_phone']) if 'orion_ticket_phone' in entry and entry['orion_ticket_phone'] else None
+        orion_ticket_phone = h.create_or_update_orion_ticket_phone(user, entry_no, shipping_address.tel_1, entry['orion_ticket_phone']) if 'orion_ticket_phone' in entry and entry['orion_ticket_phone'] else None
         shipping_address.user = user
         wishes = entry['wishes']
         logger.debug('wishes={0}'.format(wishes))

@@ -315,6 +315,7 @@ class RouteConfig(object):
         'performances.orion.index'  : u'イベントゲート連携',
         'performances.show'         : u'公演 詳細',
         'performances.show_tab'     : None,
+        'performances.discount_code_settings.show': u'割引コード設定状況',
         'permissions.index'         : u'権限 一覧',
         'point_grant_settings.delete'       : u'ポイント付与設定 削除',
         'point_grant_settings.delete_confirm'   : None,

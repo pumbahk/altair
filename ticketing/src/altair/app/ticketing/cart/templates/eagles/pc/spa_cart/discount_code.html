@@ -57,15 +57,9 @@
                                 <td>
                                     <span>クーポン・割引コード</span>
                                     ${form.code(placeholder=u'クーポン・割引コードをご入力ください')}
+                                    ${h.error_list(request, form, 'code', style_class="couponAttention")}
                                 </td>
                             </tr>
-                            % if form.errors:
-                            <tr>
-                                <td class="couponAttention">
-                                    ${form.errors['code'][0]}
-                                </td>
-                            </tr>
-                            % endif
                             % endfor
                             </tbody>
                         </table>

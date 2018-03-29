@@ -94,6 +94,7 @@ class LotViewResource(LotResource):
         except (TypeError, ValueError):
             raise HTTPNotFound
 
+
 class LotEntryResource(AbstractLotResource):
     def __init__(self, request):
         super(LotEntryResource, self).__init__(request)

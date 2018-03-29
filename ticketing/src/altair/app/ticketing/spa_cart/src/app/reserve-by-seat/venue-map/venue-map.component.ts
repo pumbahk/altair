@@ -496,7 +496,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
 
       that.originalViewBox = that.getPresentViewBox();
       // viewBox取得　且つ　座席選択領域の高さを取得
-      if ((that.originalViewBox && (that.mapAreaLeftH >= SIDE_HEIGHT)) ||
+      if ((that.originalViewBox && that.mapAreaLeftH != 0) ||
         (that.originalViewBox && that.smartPhoneCheckService.isPC() && that.mapAreaLeftH)) {
         clearInterval(svgLoadCompleteTimer);
         that.displayViewBox = that.originalViewBox.concat();
@@ -916,7 +916,6 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
         if ($(window).width() > WINDOW_SM) {
           $('.choiceAreaAcdBox').css('display', 'block');
         } else {
-          $('.choiceAreaAcdBox').css('display', 'none');
           if (this.scaleTotal >= SCALE_SEAT && this.smartPhoneCheckService.isTabletSP()) {
             this.seatSelectDisplay(false);
             this.stockTypeDataService.sendToSeatListFlag(false);
@@ -978,15 +977,23 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
         }
       }
     }
-
+    
     //セッションストレージに滞在フラグを登録
     sessionStorage.setItem('stay', 'true');
+    
+    //iPadの初期表示用
+    let firstPopstate = this.reserveBySeatBrowserBackService.selectProductCount == 0 ? true : false;
 
     //ブラウザの戻る・進むで発火
     window.addEventListener('popstate', function (e) {
       if (that.returnUnconfirmFlag) {
         that.returnUnconfirmFlag = false;
       } else {
+        //iPadの場合、初期表示の際もイベントが発生するため最初の1回は無視
+        if (that.smartPhoneCheckService.isIpad() && firstPopstate) {
+          firstPopstate = false;
+          return;
+        }
         that.confirmReturn();
         if (ua.match(/crios/i)) {
           history.forward();

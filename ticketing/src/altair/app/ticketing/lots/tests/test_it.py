@@ -166,6 +166,7 @@ class EntryLotViewTests(unittest.TestCase):
         from altair.app.ticketing.core.models import Organization, OrganizationSetting
         mock_get_organization.return_value = Organization(code='RL', short_name='RL')
         from altair.app.ticketing.payments.interfaces import IPaymentDeliveryPlugin, IPaymentPreparer
+        from datetime import date
         self.config.add_route('lots.entry.confirm', '/lots/events/{event_id}/entry/{lot_id}/confirm')
         lot, products = self._add_datas([
             {'name': u'商品 A', 'price': 100},
@@ -272,7 +273,8 @@ class EntryLotViewTests(unittest.TestCase):
              'tel_1': u'01234567899',
              'tel_2': u'',
              'sex': u'1',
-             'zip': u'1234567'})
+             'zip': u'1234567',
+             'birthday': date(1980, 5, 3)})
 
     def _params(self, **kwargs):
         from webob.multidict import MultiDict
@@ -547,7 +549,7 @@ class ConfirmLotEntryViewTests(unittest.TestCase):
 
     def _assert_shipping_address(self, actual, expected):
         from .. import helpers
-        names = [n for n in helpers.SHIPPING_ATTRS if n not in ['nick_name', 'sex']]
+        names = [n for n in helpers.SHIPPING_ATTRS if n not in ['nick_name', 'sex', 'birthday']]
         for name in names:
             self.assertEqual(getattr(actual, name), expected[name])
 

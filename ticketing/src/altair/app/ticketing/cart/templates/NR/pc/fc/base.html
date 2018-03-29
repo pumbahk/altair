@@ -1,0 +1,52 @@
+<%
+h2_bg_lighten = h.to_hex_color(h.lighten(view_context.mobile_header_background_color, .6))
+h2_bg = view_context.mobile_header_background_color
+h2_bg_darken = h.to_hex_color(h.darken(view_context.mobile_header_background_color, .5))
+h2_border = view_context.mobile_header_background_color
+h3_border = view_context.mobile_header_background_color
+frame_border = view_context.mobile_header_background_color
+btn_bg = [
+  h.to_hex_color(h.lighten(view_context.mobile_marker_color, .5)),
+  view_context.mobile_marker_color,
+  h.to_hex_color(h.darken(view_context.mobile_marker_color, .2)),
+  h.to_hex_color(h.darken(view_context.mobile_marker_color, .05)),
+  ]
+btn_bg_hover = [
+  h.to_hex_color(h.lighten(view_context.mobile_marker_color, .7)),
+  h.to_hex_color(h.lighten(view_context.mobile_marker_color, .5)),
+  h.to_hex_color(h.lighten(view_context.mobile_marker_color, .3)),
+  view_context.mobile_marker_color,
+  ]
+%>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="ja">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+  <title>${view_context.title}</title>
+  <link rel="shortcut icon" href="${view_context.static_url("pc/images/favicon.ico")}" />
+  <script type="text/javascript" src="${request.static_url('altair.app.ticketing.cart:static/js/disable_on_submit.js')}"></script>
+  <script type="text/javascript">
+$(function() {
+  $('form').disableOnSubmit('input[type=submit][name!="back"]');
+});
+</script>
+  <%block name="javascript"></%block>
+</head>
+<body>
+    <div class="main">
+      ${self.body()}
+    </div>
+    <div class="footer">
+      <nav>
+        <ul>
+          <li class="first"><a href="${view_context.contact_url}">お問い合わせ</a></li>
+          <li><a target="_blank" href="${view_context.privacy_policy_page_url}">個人情報保護方針</a></li>
+          <li class="last"><a target="_blank" href="${view_context.legal_notice_page_url}">特定商取引法に基づく表示</a></li>
+        </ul>
+      </nav>
+      <div class="copyright">
+         &copy; TicketStar, Inc. 
+      </div>
+    </div>
+</body>
+</html>
