@@ -445,6 +445,11 @@ class OrionPerformanceForm(Form):
         validators=[Optional()],
     )
 
+    phone_verify_disabled = BooleanField(
+        label=u'チケット受取るの電話番号制限を外す',
+        validators=[Optional()],
+    )
+
     pattern = TextField(
         label=u'もぎり認証パターン',
         validators=[Optional()],

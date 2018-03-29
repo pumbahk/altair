@@ -582,6 +582,11 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                       key=lambda s: s.id)
 
     @property
+    def not_exist_product_item(self):
+        # 商品明細がこのパフォーマンスにひとつも紐付いていない
+        return not [product for product in self.products if len(product.items) > 0]
+
+    @property
     def lots(self):
         """当公演を抽選対象としているLotを返す"""
         lots = set()
@@ -607,22 +612,12 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def lot_sales_segments(self):
         return [lot.sales_segment for lot in self.event.lots]
 
-    def find_available_target_settings(self, issued_by=None, first_4_digits=None,
-                                       max_price=None, session=None, for_delete=False, now=None):
+    def find_available_target_settings_query(self, issued_by=None, first_4_digits=None,
+                                             max_price=None, session=None, refer_all=False, now=None):
         """
-        引数で指定された条件で利用可能な状態の割引設定を抽出。
-        :param issued_by: コードの発行元
-        :param first_4_digits: クーポン・割引コードの文字列
-        :param max_price: 最も高い席の価格（例：大人席・子供席なら大人席の値段）
-        :param session: slaveのsession。なければmasterを使う。
-        :param for_delete: Trueなら削除時の抽出条件。「有効・無効フラグ」や「有効期間」を無視する。
-        :param now: 現在時刻。「時間指定してカート購入」を利用している場合はそちらの時刻が使用される。
-        :return: 割引コード設定のリスト（ただしfirst_4_digitsがある場合、返り値は1つであるべきなので、.one()で返す）
+        指定された条件で利用可能な割引コード設定を抽出するクエリを作成
         """
         from altair.app.ticketing.discount_code.models import DiscountCodeSetting, DiscountCodeTarget
-
-        if now is None:
-            now = datetime.now()
 
         q = session.query(DiscountCodeSetting) if session else DBSession.query(DiscountCodeSetting)
         q = q.join(
@@ -631,7 +626,10 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             DiscountCodeTarget.performance_id == self.id
         )
 
-        if not for_delete:
+        if not refer_all:
+            if now is None:
+                now = datetime.now()
+
             q = q.filter(
                 DiscountCodeSetting.is_valid == 1,
                 or_(DiscountCodeSetting.start_at.is_(None), DiscountCodeSetting.start_at <= now),
@@ -649,6 +647,26 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 DiscountCodeSetting.first_digit == first_4_digits[:1],
                 DiscountCodeSetting.following_2to4_digits == first_4_digits[1:4]
             )
+
+        return q
+
+    def find_available_target_settings(self, issued_by=None, first_4_digits=None,
+                                       max_price=None, session=None, refer_all=False, now=None):
+        """
+        引数で指定された条件で利用可能な状態の割引設定を抽出。
+        :param issued_by: コードの発行元
+        :param first_4_digits: クーポン・割引コードの文字列
+        :param max_price: 最も高い席の価格（例：大人席・子供席なら大人席の値段）
+        :param session: slaveのsession。なければmasterを使う。
+        :param refer_all: Trueなら「有効・無効フラグ」や「有効期間」を無視して抽出する。
+        :param now: 現在時刻。「時間指定してカート購入」を利用している場合はそちらの時刻が使用される。
+        :return: 割引コード設定のリスト（ただしfirst_4_digitsがある場合、返り値は1つであるべきなので、.one()で返す）
+        """
+        q = self.find_available_target_settings_query(issued_by=issued_by, first_4_digits=first_4_digits,
+                                                      max_price=max_price, session=session, refer_all=refer_all,
+                                                      now=now)
+
+        if first_4_digits is not None:
             try:
                 return q.one()
             except NoResultFound:
@@ -2259,6 +2277,7 @@ class DeliveryMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     description = AnnotatedColumn(Unicode(2000), _a_label=_(u'説明文 (HTML)'))
     _fee = Column('fee', Numeric(precision=16, scale=2), nullable=True)
     _fee_type = Column('fee_type', Integer, nullable=True, default=FeeTypeEnum.Once.v[0])
+    public = Column(Boolean, nullable=False, default=True)
 
     fee_per_order = AnnotatedColumn(Numeric(precision=16, scale=2), nullable=False, default=Decimal('0.00'), _a_label=_(u'手数料 (予約ごと)'))
     fee_per_principal_ticket = AnnotatedColumn(Numeric(precision=16, scale=2), nullable=False, default=Decimal('0.00'), _a_label=_(u'手数料 (チケットごと:主券)'))
@@ -4930,6 +4949,7 @@ class OrionPerformance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     qr_enabled = Column(Boolean)
     toggle_enabled = Column(Boolean)
+    phone_verify_disabled = Column(Boolean)
     pattern = Column(Unicode(255))
 
     coupon_2_name = Column(Unicode(255))
@@ -5060,4 +5080,7 @@ class OrionTicketPhone(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     user = relationship('User', backref='phones')
     order_no = Column(String(12), nullable=False, default='')
     entry_no = Column(String(12), nullable=False, default='')
+    owner_phone_number = Column(String(20), nullable=False, default='')
     phones = Column(String(255), nullable=False, default='')
+    sent_at = Column(DateTime, nullable=True, default=None)
+    sent = Column(Boolean, nullable=False, default=False)

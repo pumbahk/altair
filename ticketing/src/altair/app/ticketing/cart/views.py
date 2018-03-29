@@ -1109,7 +1109,7 @@ class PaymentView(object):
         return [
             pdmp
             for pdmp in self.context.available_payment_delivery_method_pairs(sales_segment)
-            if pdmp.payment_method.public
+            if pdmp.payment_method.public and pdmp.delivery_method.public
         ]
 
     @lbr_view_config(request_method="GET")
@@ -1194,7 +1194,7 @@ class PaymentView(object):
                 metadata = metadata[u'profile']
         return metadata
 
-    def get_validated_address_data(self):
+    def get_validated_address_data(self, pdp=None):
         """フォームから ShippingAddress などの値を取りたいときはこれで"""
         form = self.form
         if self.request.organization.setting.i18n:
@@ -1206,7 +1206,7 @@ class PaymentView(object):
             last_name_kana=form.data['last_name_kana']
             country='日本'
 
-        if form.validate():
+        if form.validate(pdp):
             return dict(
                 first_name=form.data['first_name'],
                 last_name=form.data['last_name'],
@@ -1241,6 +1241,8 @@ class PaymentView(object):
                     error = u'電話番号の桁数が11桁ではありません'
                 if not phone.isdigit():
                     error = ','.join([error, u'数字以外の文字は入力できません']) if error else u'数字以外の文字は入力できません'
+                if not re.match('^(070|080|090)', phone):
+                    error = ','.join([error, u'[070,080,090]で始まる携帯電話番号を入力してください']) if error else u'[070,080,090]で始まる携帯電話番号を入力してください'
             errors.append(error)
 
         if not phones:
@@ -1280,7 +1282,7 @@ class PaymentView(object):
         else:
             self.form = schemas.ClientForm(formdata=self.request.params, context=self.context)
 
-        shipping_address_params = self.get_validated_address_data()
+        shipping_address_params = self.get_validated_address_data(payment_delivery_pair)
         orion_ticket_phone, orion_phone_errors = self.verify_orion_ticket_phone(self.request.POST.getall('orion-ticket-phone'))
 
         try:
@@ -1297,7 +1299,10 @@ class PaymentView(object):
                     logger.debug("invalid : %s" % orion_phone_errors)
                     raise self.ValidationFailed(self._message(u'イベントゲート情報の入力内容を確認してください'))
 
-                create_orion_ticket_phone = self.create_or_update_orion_ticket_phone(user, cart.order_no, orion_ticket_phone)
+                create_orion_ticket_phone = self.create_or_update_orion_ticket_phone(user,
+                                                                                     cart.order_no,
+                                                                                     cart.shipping_address.tel_1,
+                                                                                     orion_ticket_phone)
                 DBSession.add(create_orion_ticket_phone)
 
             DBSession.add(cart)
@@ -1397,13 +1402,14 @@ class PaymentView(object):
             user=user
         )
 
-    def create_or_update_orion_ticket_phone(self, user, order_no, data):
+    def create_or_update_orion_ticket_phone(self, user, order_no, owner_phone_number, data):
         logger.debug('orion_ticket_phone_info=%r', data)
         orion_ticket_phone = c_models.OrionTicketPhone.filter_by(order_no=order_no).first()
         if not orion_ticket_phone:
             orion_ticket_phone = c_models.OrionTicketPhone()
         phones = u','.join(data)
         orion_ticket_phone.order_no = order_no
+        orion_ticket_phone.owner_phone_number = owner_phone_number
         orion_ticket_phone.phones = phones
         orion_ticket_phone.user = user
         return orion_ticket_phone
@@ -1462,6 +1468,7 @@ class DiscountCodeEnteringView(object):
     @back(back_to_top, back_to_product_list_for_mobile)
     @lbr_view_config(request_method="GET")
     def discount_code_get(self):
+        self.context.check_order_limit()
         # UsedDiscountCodeCartテーブルに保存されている割引コードの途中入力内容をクリア
         self.context.delete_temporarily_save_discount_code()
         # SPAはcart.orderルートを経由せず直接このviewにアクセスしてくるため、ここで割引コード適用判定を行う
@@ -1472,12 +1479,11 @@ class DiscountCodeEnteringView(object):
 
         cart = self.context.read_only_cart
         self.context.check_deleted_product(cart)
-        forms = self.context.create_discount_code_forms()
         sorted_cart_product_items = self.context.sorted_carted_product_items()
 
         csrf_form = schemas.CSRFSecureForm(csrf_context=self.request.session)
         return dict(
-            forms=forms,
+            forms=self.context.create_discount_code_forms(),
             csrf_form=csrf_form,
             cart_product_items=sorted_cart_product_items,
             sales_segment_id=sales_segment_id,
@@ -1493,26 +1499,23 @@ class DiscountCodeEnteringView(object):
         cart = self.context.read_only_cart
         self.context.check_deleted_product(cart)
         sales_segment_id = self.request.matchdict["sales_segment_id"]
-        codes = self.context.create_codes(cart)
+        stripped = map(lambda c: c.strip(), self.request.POST.getall('code'))  # 前後の空白の削除
+        code_str_list = [code for code in stripped if len(code)]  # 文字入力のあったフォームのみリスト化
+        code_dict_list = self.context.create_code_dict_list(code_str_list)
         sorted_cart_product_items = self.context.sorted_carted_product_items()
 
-        self.context.validate_discount_codes(codes)
-
-        if self.context.is_authz_user:
-            # ファンクラブのクーポンの場合(スポーツサービス開発発行のコード)の場合ログインしていないと使えない
-            self.context.confirm_discount_code_status(codes)
-
-        if self.context.exist_validate_error(codes):
+        validated = self.context.validate_discount_codes(code_dict_list)
+        if self.context.exist_validate_error(validated):
             csrf_form = schemas.CSRFSecureForm(csrf_context=self.request.session)
             return dict(
-                forms=self.context.create_validated_forms(codes),
+                forms=self.context.create_validated_forms(validated),
                 csrf_form=csrf_form,
                 cart_product_items=sorted_cart_product_items,
                 sales_segment_id=sales_segment_id,
                 performance=self.context.performance,
                 carted_product_item_count=self.context.carted_product_item_count
             )
-        self.context.temporarily_save_discount_code(codes)
+        self.context.temporarily_save_discount_code(validated)
         return HTTPFound(self.request.route_path('cart.payment', sales_segment_id=sales_segment_id))
 
 
@@ -1766,13 +1769,11 @@ class CompleteView(object):
                 raise
 
         self.context.check_deleted_product(cart)
-        # クーポンのチェック
-        if self.context.is_authz_user:
-            self.context.check_available_discont_code()
         self.context.check_order_limit() # 最終チェック
+        self.context.is_discount_code_still_available()
+        self.context.use_sports_service_discount_code()
         order = api.make_order_from_cart(self.request, cart)
         order_no = order.order_no
-        self.context.use_discount_coupon(order, cart)
         transaction.commit()  # cont_complete_viewでエラーが出てロールバックされても困るので
         logger.debug("keyword=%s" % ' '.join(self.request.params.getall('keyword')))
         return cont_complete_view(

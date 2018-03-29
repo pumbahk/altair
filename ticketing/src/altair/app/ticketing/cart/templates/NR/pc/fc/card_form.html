@@ -1,5 +1,15 @@
-<%inherit file="${context['main_template'].uri}" />
-<%block name="title">クレジットカード決済情報</%block>
+<%inherit file="base.html" />
+<%block name="css">
+  <link rel="stylesheet" href="${request.static_url('altair.app.ticketing.cart:static/NR/pc/css/form.css')}" type="text/css" />
+</%block>
+
+<div class="container">
+    <div class="header">
+      <img src="${view_context.header_image_url}" alt="${view_context.team_name}" />
+    </div>
+
+    <h2>クレジットカード決済情報</h2>
+
 % if request.session.peek_flash():
 <table class="frame form">
   <tbody>
@@ -14,13 +24,10 @@
 </table>
 % endif
 
+<div class="contents">
 <form id="form1" name="form1" method="post" action="${request.current_route_path()}">
   ${form.csrf_token()}
   <table class="frame form">
-    <colgroup>
-      <col style="width:180px;" />
-      <col style="width:310px;" />
-    </colgroup>
     <tbody>
       <tr>
         <th>カード番号</th>
@@ -61,8 +68,6 @@
       </tr>
     </tbody>
   </table>
-
-  <div class="frame frame-inner textC">
-    <input type="submit" value="送信" class="submit" style="width:400px;height:50px;" />
-  </div>
+  <input type="submit" value="送信" class="submit">
 </form>
+</div>

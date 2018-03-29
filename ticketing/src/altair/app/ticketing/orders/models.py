@@ -798,6 +798,8 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                         valid=True #valid=Falseの時は何時だろう？
                         )
                     ordered_product_item.tokens.append(token)
+
+                # 使用された割引コードを保存
                 discount_api.save_discount_code(element, ordered_product_item)
 
         DBSession.flush() # これとっちゃだめ
@@ -853,6 +855,23 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         from altair.app.ticketing.models import DBSession as session
         orion_ticket_phone = session.query(OrionTicketPhone).filter(OrionTicketPhone.order_no == self.order_no).first()
         return orion_ticket_phone.phones.split(',') if orion_ticket_phone else []
+
+    def _get_orion_ticket_phone(self, request):
+        session = get_db_session(request, 'slave')
+        try:
+            orion_ticket_phone = session.query(OrionTicketPhone).filter(
+                OrionTicketPhone.order_no == self.order_no).one()
+            return orion_ticket_phone
+        except (NoResultFound, MultipleResultsFound):
+            return None
+
+    def get_send_to_orion_phone_string(self, request):
+        orion_ticket_phone = self._get_orion_ticket_phone(request)
+        return orion_ticket_phone.phones if orion_ticket_phone else u""
+
+    def get_send_to_orion_owner_phone_string(self, request):
+        orion_ticket_phone = self._get_orion_ticket_phone(request)
+        return orion_ticket_phone.owner_phone_number if orion_ticket_phone else u""
 
     @property
     def used_discount_codes(self):

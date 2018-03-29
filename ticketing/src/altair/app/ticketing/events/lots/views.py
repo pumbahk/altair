@@ -224,6 +224,7 @@ class Lots(BaseView):
         organization = event.organization
         org_withdraw = False
 
+
         organization_setting = OrganizationSetting.query \
                                 .filter_by(organization_id=organization.id) \
                                 .first()
@@ -366,6 +367,7 @@ class Lots(BaseView):
             lots_cart_now_url=self.context.lots_cart_now_url,
             agreement_lots_cart_now_url=self.context.agreement_lots_cart_now_url,
             product_grid=product_grid,
+            not_exist_product_item=lot.not_exist_product_item,
             h=h,
             )
 

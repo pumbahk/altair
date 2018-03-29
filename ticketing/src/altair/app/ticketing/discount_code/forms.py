@@ -8,7 +8,14 @@ from altair.saannotation import get_annotations_for
 from wtforms import Form
 from wtforms import TextField, HiddenField, SelectField, BooleanField, TextAreaField, IntegerField
 from wtforms.validators import Length, Optional, ValidationError, NumberRange
-from .models import CodeOrganizerEnum, DiscountCodeSetting, DiscountCodeCode, DiscountCodeTarget
+from .models import (
+    DiscountCodeSetting,
+    DiscountCodeCode,
+    DiscountCodeTarget,
+    CodeOrganizerEnum,
+    BenefitUnitEnum,
+    ConditionPriceMoreOrLessEnum,
+)
 
 
 class DiscountCodeSettingForm(Form):
@@ -139,9 +146,7 @@ class DiscountCodeSettingForm(Form):
     condition_price_more_or_less = SelectField(
         label=get_annotations_for(DiscountCodeSetting.condition_price_more_or_less)['label'],
         validators=[Required()],
-        choices=[
-            ('less', u'以下')
-        ],
+        choices=[condition_price_more_or_less.v for condition_price_more_or_less in ConditionPriceMoreOrLessEnum],
         coerce=str
     )
     benefit_amount = TextField(
@@ -154,10 +159,7 @@ class DiscountCodeSettingForm(Form):
     benefit_unit = SelectField(
         label=get_annotations_for(DiscountCodeSetting.benefit_unit)['label'],
         validators=[Required()],
-        choices=[
-            ('%', u'%'),
-            ('yen', u'円'),
-        ],
+        choices=[benefit_unit.v for benefit_unit in BenefitUnitEnum],
         coerce=str
     )
     start_at = OurDateTimeField(

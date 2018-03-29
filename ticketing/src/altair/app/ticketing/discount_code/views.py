@@ -136,14 +136,12 @@ class DiscountCode(BaseView):
         setting = DiscountCodeSetting.get(setting_id, organization_id=self.context.user.organization_id)
         if setting is None:
             return HTTPNotFound('discount_code_setting_id %d is not found' % setting_id)
-        location = self.request.route_path("discount_code.settings_index")
 
         err_reasons = validate_to_delete_all_codes(setting, self.context.session)
         if err_reasons:
             self.request.session.flash(
                 u'「ID:{} {}」を削除できません（{}）'.format(setting.id, setting.name, u'・'.join(err_reasons)))
-            return HTTPFound(location=location)
-
+            return HTTPFound(location=self.request.referer)
         try:
             self.context.delete_discount_code_setting(setting)
             self.request.session.flash(u'「ID:{} {}」を削除しました'.format(setting.id, setting.name))
@@ -151,7 +149,7 @@ class DiscountCode(BaseView):
             self.request.session.flash(u'「ID:{} {}」の削除に失敗しました'.format(setting.id, setting.name))
             logger.error("Couldn't delete discount_code_setting: {}".format(str(e)))
 
-        return HTTPFound(location=location)
+        return HTTPFound(location=self.request.referer)
 
     @view_config(route_name='discount_code.codes_index',
                  renderer='altair.app.ticketing:templates/discount_code/codes/index.html')

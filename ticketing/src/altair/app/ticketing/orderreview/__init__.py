@@ -68,6 +68,7 @@ def includeme(config):
     ## orion
     config.add_route('order_review.orion_send', '/qr/eg_send', factory='.resources.EventGateViewResource')
     config.add_route('order_review.orion_draw', '/qr/eg_print/{token}/{serial}/{sign}', factory='.resources.EventGateViewResource')
+    config.add_route('order_review.orion_ticket_list', '/orion/ticket_list', factory='.resources.EventGateViewResource')
 
     ## mypage
     config.add_route('mypage.show', '/mypage', factory='.resources.MyPageListViewResource')

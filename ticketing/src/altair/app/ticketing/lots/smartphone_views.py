@@ -159,12 +159,18 @@ class EntryLotView(object):
             if not self.context.check_recaptch(recaptcha):
                 return HTTPFound(self.request.route_url('lots.index.recaptcha', event_id=self.context.event.id, lot_id=lot.id) or '/')
 
+        performances = []
+        for perf in lot.performances:
+            if not perf.not_exist_product_item:
+                performances.append(perf)
+        performances = sorted(performances, lambda a, b: cmp(a.start_on, b.start_on))
+
         return dict(
             event=event,
             lot=lot,
             performance_id = performance_id,
             sales_segment=lot.sales_segment,
-            performances=sorted(lot.performances, lambda a, b: cmp(a.start_on, b.start_on)),
+            performances=performances
             )
 
     @lbr_view_config(route_name='lots.entry.sp_step1', renderer=selectable_renderer("step1.html"))
@@ -179,10 +185,15 @@ class EntryLotView(object):
             logger.debug('lot not not found')
             raise HTTPNotFound()
 
-        performances = lot.performances
+        performances = []
+        for perf in lot.performances:
+            if not perf.not_exist_product_item:
+                performances.append(perf)
+
         if not performances:
             logger.debug('lot performances not found')
             raise HTTPNotFound()
+
         performances = sorted(performances, key=operator.attrgetter('start_on'))
 
         performance_map = make_performance_map(self.request, performances)
@@ -196,7 +207,9 @@ class EntryLotView(object):
                     break
 
         sales_segment = lot.sales_segment
-        performance_product_map = self._create_performance_product_map(sales_segment.products)
+        # 商品明細が紐付いてない場合は表示しない
+        performance_product_map = self._create_performance_product_map(
+            [product for product in sales_segment.products if len(product.items) > 0])
         stock_types = [
             dict(
                 id=rec[0],
@@ -326,6 +339,9 @@ class EntryLotView(object):
             self.request.session.flash(_(u"お支払お引き取り方法を選択してください"))
             validated = False
 
+        payment_delivery_method_pair_id = self.request.params.get('payment_delivery_method_pair_id', 0)
+        payment_delivery_pair = PaymentDeliveryMethodPair.query.filter_by(id=payment_delivery_method_pair_id).first()
+
         # イベントゲット情報(Orion Ticket Phone)
         orion_ticket_phone, orion_phone_errors = h.verify_orion_ticket_phone(self.request.POST.getall('orion-ticket-phone'))
         cform.orion_ticket_phone.data = ','.join(orion_ticket_phone)
@@ -336,7 +352,7 @@ class EntryLotView(object):
         birthday = cform['birthday'].data
 
         # 購入者情報
-        if not cform.validate() or not birthday:
+        if not cform.validate(payment_delivery_pair) or not birthday:
             self.request.session.flash(_(u"購入者情報に入力不備があります"))
             if not birthday:
                 cform['birthday'].errors = [_(u"日付が正しくありません")]
@@ -371,7 +387,7 @@ class EntryLotView(object):
 
         entry_no = api.generate_entry_no(self.request, self.context.organization)
 
-        shipping_address_dict = cform.get_validated_address_data()
+        shipping_address_dict = cform.get_validated_address_data(payment_delivery_pair)
         api.new_lot_entry(
             self.request,
             entry_no=entry_no,
