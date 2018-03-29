@@ -1,5 +1,0 @@
-src/*.egg-info
-temp/
-build/
-setup.cfg
-*.pyc
