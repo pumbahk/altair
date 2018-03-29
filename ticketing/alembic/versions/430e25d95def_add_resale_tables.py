@@ -23,7 +23,7 @@ def upgrade():
                     sa.Column('id', Identifier(), nullable=False),
                     sa.Column('start_at', sa.DateTime(), nullable=False),
                     sa.Column('end_at', sa.DateTime(), nullable=False),
-                    sa.Column('performance_id', Identifier(), nullable=False),
+                    sa.Column('performance_id', Identifier(), nullable=False, index=True),
                     sa.Column('sent_at', sa.TIMESTAMP(), nullable=True),
                     sa.Column('created_at', sa.TIMESTAMP(), server_default=sqlf.current_timestamp(), nullable=False),
                     sa.Column('updated_at', sa.TIMESTAMP(), server_default=text('0'), nullable=False),
@@ -33,7 +33,7 @@ def upgrade():
 
     op.create_table('ResaleRequest',
                     sa.Column('id', Identifier(), nullable=False),
-                    sa.Column('resale_segment_id', Identifier(), nullable=False),
+                    sa.Column('resale_segment_id', Identifier(), nullable=False, index=True),
                     sa.Column('ordered_product_item_token_id', Identifier(), nullable=False),
                     sa.Column('bank_code', sa.Unicode(32), nullable=False),
                     sa.Column('bank_branch_code', sa.Unicode(32), nullable=False),
