@@ -706,7 +706,7 @@ class ExportableReporter(object):
         if form and form.ordered_to.data:
             self.ordered_to = form.ordered_to.data
         elif request.params.get('to'):
-            self.ordered_from = datetime.strptime(request.params.get('to'), '%Y-%m-%d')
+            self.ordered_to = datetime.strptime(request.params.get('to'), '%Y-%m-%d')
 
         # レポート設定を無視する
         self.without_filter = False
