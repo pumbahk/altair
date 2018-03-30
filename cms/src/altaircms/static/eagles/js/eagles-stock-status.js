@@ -40,11 +40,10 @@
             // 特殊な公演なので対象としない
             return '';
         }
-        if (prk > 0 && ei3 === 0 && inf === 0 && out === 00 && others === 0) {
-            return ['state-few', 'スマイルグリコパークのみ'];
-        }
-        if(all == 0) {
+        if (all == 0) {
             return ['state-sold', '全席種完売'];
+        } else if (prk === all) {
+            return ['state-few', 'スマイルグリコパークのみ'];
         } else if(300 <= ei3) {
             return ['state-has-seat-full', '余裕あり'];
         } else if(1000 <= inf) {
