@@ -81,7 +81,6 @@ def is_exist_duplicate_codes(code, code_str_list):
 def check_used_discount_code(code, organizatoin):
     used_code = UsedDiscountCodeOrder.query.\
         filter(UsedDiscountCodeOrder.code==code).\
-        filter(UsedDiscountCodeOrder.deleted_at==None).\
         filter(UsedDiscountCodeOrder.canceled_at==None).\
         filter(UsedDiscountCodeOrder.refunded_at==None). \
         order_by(UsedDiscountCodeOrder.created_at.desc()).\

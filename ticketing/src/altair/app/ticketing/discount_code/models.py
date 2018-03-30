@@ -159,11 +159,9 @@ class UsedDiscountCodeOrder(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             Order
         ).filter(
             UsedDiscountCodeOrder.code.like(first_4_digits + "%"),
-            UsedDiscountCodeOrder.deleted_at.is_(None),
             UsedDiscountCodeOrder.canceled_at.is_(None),
             UsedDiscountCodeOrder.refunded_at.is_(None),
             Order.canceled_at.is_(None),
-            Order.deleted_at.is_(None),
             Order.refunded_at.is_(None)
         ).count()
 
