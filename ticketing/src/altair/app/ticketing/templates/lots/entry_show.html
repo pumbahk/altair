@@ -5,6 +5,7 @@
 <%
 from altair.app.ticketing.lots.helpers import format_currency
 from altair.app.ticketing.core.api import get_channel
+from altair.app.ticketing.orders.helpers import detect_ua_type
 %>
 <%block name="fulltitle">
 Altair Backend -- ${lot.event.title}[${lot.name}]
@@ -50,6 +51,14 @@ Altair Backend -- ${lot.event.title}[${lot.name}]
             <tr>
               <th class="span2">ブラウザID</th>
               <td class="span3">${lot_entry.browserid}</td>
+            </tr>
+            <tr>
+              <th class="span2">デバイス</th>
+              <td class="span3">${detect_ua_type(lot_entry.user_agent if lot_entry.user_agent else u'')}</td>
+            </tr>
+            <tr>
+              <th class="span2">UserAgent</th>
+              <td class="span3">${lot_entry.user_agent if lot_entry.user_agent else u''}</td>
             </tr>
           </table>
           <div class="pagination-right">

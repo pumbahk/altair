@@ -1,6 +1,7 @@
 <%! from altair.app.ticketing.payments.plugins import MULTICHECKOUT_PAYMENT_PLUGIN_ID %>
 <%inherit file="/layout_2cols.html" />
 <%namespace file="/common/helpers.html" name="ch" />
+<% from altair.app.ticketing.orders.helpers import detect_ua_type %>
 <style type="text/css">
 .table.point-grant-history span.error {
   color: #f00;
@@ -113,6 +114,12 @@
       <td>
         <% from altair.app.ticketing.core.api import get_channel %>
         ${get_channel(cart.channel).k}
+      </td>
+    </tr>
+    <tr>
+      <th>デバイス</th>
+      <td>
+        ${detect_ua_type(cart.user_agent if cart.user_agent else u'')}
       </td>
     </tr>
     <tr>

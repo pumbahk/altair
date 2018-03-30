@@ -4,7 +4,6 @@ import os, sys
 import logging
 import tempfile
 import pickle
-import woothee
 from io import BytesIO
 from datetime import date, datetime
 from collections import OrderedDict, namedtuple
@@ -32,6 +31,7 @@ from altair.app.ticketing.core.models import (
 from altair.app.ticketing.sej.models import SejRefundTicket, SejTicket
 from altair.app.ticketing.famiport.models import FamiPortOrder, FamiPortReceipt, FamiPortReceiptType
 from altair.app.ticketing.orders.models import Order
+from altair.app.ticketing.orders.helpers import detect_ua_type
 from .api import get_order_attribute_pair_pairs
 
 logger = logging.getLogger(__name__)
@@ -1069,7 +1069,7 @@ class OrderOptionalCSV(object):
             if cua != ('',):
                 _Cart = namedtuple('_Cart', ('user_agent'))
                 return _Cart(
-                    user_agent=self.detect_ua_type(str(cua))
+                    user_agent=detect_ua_type(str(cua))
                 )
         except NoResultFound:
             return None
@@ -1152,31 +1152,6 @@ class OrderOptionalCSV(object):
                 ),
             localized_columns=self.localized_columns
             )
-
-    def detect_ua_type(self, user_agent):
-        try:
-            ua = woothee.parse(user_agent)
-        except UnicodeDecodeError:
-            sys.stderr.write(repr(user_agent))
-            return 'pc'
-
-        if ua['category'] == 'smartphone':
-            if ua['os'] == 'Android':
-                if 'Mobile' not in user_agent:
-                    ret = 'atab'
-                else:
-                    ret = 'asp'
-            elif ua['os'] in ['iPhone']:
-                ret = 'isp'
-            elif ua['os'] in ['iPad', 'iPod']:
-                ret = 'itab'
-            else:
-                ret = 'sp'
-        elif ua['category'] == 'mobilephone':
-            ret = 'fp'
-        else:
-            ret = 'pc'
-        return ret
 
 class RefundResultCSVExporter(object):
     csv_header = [
