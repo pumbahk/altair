@@ -418,6 +418,12 @@ var makeEditable = (function () {
         }
         return true;
       });
+      editing.keyup(function (e) {
+        var value = editing.val();
+        if (value.trim().length == 0) {
+            cancel();
+        }
+      });
     }
 
     function endEdit() {
