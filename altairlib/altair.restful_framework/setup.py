@@ -42,7 +42,7 @@ setup(name='altair.restful_framework',
       include_package_data=True,
       zip_safe=False,
       install_requires=requires,
-      test_suite='altair.aes_urlsafe',
+      test_suite='altair.restful_framework',
       entry_points="""
       # -*- Entry points: -*-
       """,
