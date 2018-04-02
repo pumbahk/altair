@@ -9706,6 +9706,8 @@ var VenuemapComponent = (function () {
         this.sideProhibition = false;
         // 選択単位フラグ 1席ずつ:true/2席以上ずつ:false
         this.isGroupedSeats = true;
+        // 座席グループ情報
+        this.seatGroups = [];
         // 最終座席情報検索呼び出しチェック状態
         this.reservedFlag = true;
         this.unreservedFlag = true;
@@ -9749,6 +9751,7 @@ var VenuemapComponent = (function () {
                     _this.performanceId = _this.performance.performance_id;
                     _this.venueURL = _this.performance.venue_map_url;
                     _this.seatDataURL = _this.performance.seat_data_url;
+                    _this.seatGroupDataURL = _this.performance.seat_group_data_url;
                     // 個席データ取得
                     if ((_this.seatDataURL) && _this.seatDataURL != "") {
                         _this.isExistsSeatData = true;
@@ -9758,6 +9761,21 @@ var VenuemapComponent = (function () {
                             var errorMassage;
                             var file_name;
                             var url_str = _this.seatDataURL;
+                            var cut_idx = url_str.lastIndexOf("/");
+                            file_name = url_str.slice(cut_idx + 1);
+                            errorMassage = file_name + " not found";
+                            _this._logger.error(errorMassage);
+                            return;
+                        });
+                    }
+                    // 個席グループデータ取得
+                    if ((_this.seatGroupDataURL) && _this.seatGroupDataURL != "") {
+                        _this.seatDataService.getSeatGroupData(_this.seatGroupDataURL).subscribe(function (response) {
+                            _this.seatGroups = response;
+                        }, function (error) {
+                            var errorMassage;
+                            var file_name;
+                            var url_str = _this.seatGroupDataURL;
                             var cut_idx = url_str.lastIndexOf("/");
                             file_name = url_str.slice(cut_idx + 1);
                             errorMassage = file_name + " not found";
@@ -9826,7 +9844,6 @@ var VenuemapComponent = (function () {
             }
         });
         this.filterComponent.searched$.subscribe(function (response) {
-            that.seatGroups = response.data.seat_groups;
             that.regions = response.data.regions;
             that.seats = response.data.seats;
             _this.reservedFlag = _this.filterComponent.reserved;
@@ -12978,6 +12995,13 @@ var SeatDataService = (function (_super) {
      * @return {Observable} see http.get()
      */
     SeatDataService.prototype.getSeatData = function (url) {
+        return this.httpGetJsonData(url);
+    };
+    /**
+     * 個席グループデータ取得
+     * @return {Observable} see http.get()
+     */
+    SeatDataService.prototype.getSeatGroupData = function (url) {
         return this.httpGetJsonData(url);
     };
     SeatDataService.ctorParameters = function () { return [{ type: __WEBPACK_IMPORTED_MODULE_0__angular_http__["XHRBackend"] }, { type: __WEBPACK_IMPORTED_MODULE_0__angular_http__["RequestOptions"] }, { type: __WEBPACK_IMPORTED_MODULE_2__error_modal_data_service__["a" /* ErrorModalDataService */] }, { type: __WEBPACK_IMPORTED_MODULE_3_angular2_logger_core__["Logger"] }]; };
