@@ -136,9 +136,11 @@ class CartAPIView(object):
         root_map_url = drawings['root']
         mini_map_url = drawings['mini']
         seat_data_url = drawings['seat']
+        seat_group_data_url = drawings['seat-group']
         logger.debug("root_url=%s", root_map_url)
         logger.debug("mini_url=%s", mini_map_url)
         logger.debug("seat_url=%s", seat_data_url)
+        logger.debug("seat_group_url=%s", seat_group_data_url)
 
         reason = ""
         if not root_map_url or not mini_map_url or not seat_data_url:
@@ -165,6 +167,7 @@ class CartAPIView(object):
                 venue_map_url=root_map_url,
                 mini_venue_map_url=mini_map_url,
                 seat_data_url=seat_data_url,
+                seat_group_data_url=seat_group_data_url,
             ),
             event=dict(
                 event_id=performance.event.id,
@@ -348,15 +351,17 @@ class CartAPIView(object):
                 is_available=(seat_status == SeatStatusEnum.Vacant.v),
             ) for seat_l0_id, stock_id, seat_status in seats]
 
-        performance_id = int(self.request.matchdict.get('performance_id'))
-        performance = session.query(Performance).filter_by(id=performance_id).first()
-        seat_groups = search_seatGroup(self.request, performance.venue.site_id, performance.venue.id, session)
+        if 'seat_groups' in fields:
+            performance_id = int(self.request.matchdict.get('performance_id'))
+            performance = session.query(Performance).filter_by(id=performance_id).first()
+            seat_groups = search_seatGroup(self.request, performance.venue.site_id, performance.venue.id, session)
 
-        res['seat_groups'] = [dict(
-            seat_group_id=sg.l0_id,
-            seat_group_name=sg.name,
-            seat_l0_ids=[seat.l0_id for seat in sg.seats],
-        ) for sg in seat_groups]
+            res['seat_groups'] = [dict(
+                seat_group_id=sg.l0_id,
+                seat_group_name=sg.name,
+                seat_l0_ids=[seat.l0_id for seat in sg.seats],
+            ) for sg in seat_groups]
+
 
         return res
 
