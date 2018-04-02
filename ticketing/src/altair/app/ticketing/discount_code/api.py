@@ -402,7 +402,7 @@ def cancel_used_discount_codes(request, order, now=None):
         result = comm.cancel_used_discount_code_api(data)
         for coupon in result['coupons']:
             if coupon['reason_cd'][:2] != '10':
-                raise SystemError('inappropriate response returned.')
+                raise SystemError('inappropriate reason_cd {} returned.'.format(coupon['reason_cd']))
 
     except:
         import sys
