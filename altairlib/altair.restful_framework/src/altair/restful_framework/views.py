@@ -72,7 +72,7 @@ class APIView(object):
     def permission_denied(self, request, message):
         raise HTTPForbidden(detail=message)
 
-    def option(self, request, *args, **kwargs):
+    def options(self, request, *args, **kwargs):
         response = Response()
 
         response.headers['Allow'] = ', '.join(self.allow_methods)

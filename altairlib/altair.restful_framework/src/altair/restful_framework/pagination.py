@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 
 import logging
+import six
 from collections import OrderedDict, Sequence
 from math import ceil
 
 from pyramid.decorator import reify
+from pyramid.httpexceptions import HTTPNotFound
 from pyramid.response import Response
 
 from .settings import api_settings
@@ -99,7 +101,7 @@ class Paginator(object):
         if self.count == 0 and not self.allow_empty_first_page:
             return 0
         hits = max(1, self.count - self.orphans)
-        return int(ceil(hits / self.per_page))
+        return int(ceil(hits / float(self.per_page)))
 
     @property
     def page_range(self):
@@ -207,7 +209,13 @@ class PageNumberPagination(BasePagination):
         try:
             self.page = paginator.page(page_number)
         except InvalidPage as exc:
-            pass
+            raise HTTPNotFound(
+                "Invalid page '{page_number}': {message}"
+                    .format(
+                    page_number=page_number,
+                    message=six.text_type(exc)
+                )
+            )
 
         self.request = request
         return list(self.page)
