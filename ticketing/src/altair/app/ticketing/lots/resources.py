@@ -159,6 +159,9 @@ class LotResourceBase(object):
         url = "https://www.google.com/recaptcha/api/siteverify"
         param = dict(secret=self.recaptcha_secret, response=recaptcha)
         response = requests.post(url, param)
+        if not response.content:
+            logger.warn("recaptcha response is empty string")
+            return False
         return json.loads(response.content)['success']
 
 
