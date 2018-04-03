@@ -1,5 +1,4 @@
-<%page args="vh,HH,order"/>'
-<% from altair.app.ticketing.orders.helpers import detect_ua_type %>
+<%page args="vh,HH,order"/>
 
           <table class="table table-striped table-bordered">
             <tr>
@@ -93,12 +92,6 @@
               <td>
                 <% from altair.app.ticketing.core.api import get_channel %>
                 ${get_channel(order.channel).k}
-              </td>
-            </tr>
-            <tr>
-              <th>デバイス</th>
-              <td>
-                ${detect_ua_type(order.cart.user_agent if order.cart else u'')}
               </td>
             </tr>
             <tr>

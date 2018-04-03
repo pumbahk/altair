@@ -31,7 +31,6 @@ from altair.app.ticketing.core.models import (
 from altair.app.ticketing.sej.models import SejRefundTicket, SejTicket
 from altair.app.ticketing.famiport.models import FamiPortOrder, FamiPortReceipt, FamiPortReceiptType
 from altair.app.ticketing.orders.models import Order
-from altair.app.ticketing.orders.helpers import detect_ua_type
 from .api import get_order_attribute_pair_pairs
 
 logger = logging.getLogger(__name__)
@@ -157,8 +156,7 @@ japanese_columns = {
     u'order.channel': u'チャネル',
     u'point_grant_setting.rate': u'ポイント付与料率',
     u'point_grant_setting.fixed': u'固定付与ポイント',
-    u'point_grant_history_entry.amount': u'ポイント付与額',
-    u'cart.user_agent': u'デバイス情報'
+    u'point_grant_history_entry.amount': u'ポイント付与額'
 }
 
 ordered_ja_col = OrderedDict([
@@ -260,8 +258,7 @@ ordered_ja_col = OrderedDict([
     (u'order.channel', u'チャネル'),
     (u'point_grant_setting.rate', u'ポイント付与料率'),
     (u'point_grant_setting.fixed', u'固定付与ポイント'),
-    (u'point_grant_history_entry.amount', u'ポイント付与額'),
-    (u'cart.user_agent', u'デバイス情報')
+    (u'point_grant_history_entry.amount', u'ポイント付与額')
 ])
 
 def get_japanese_columns(request):
@@ -850,7 +847,6 @@ class OrderOptionalCSV(object):
         u'point_grant_history_entry.amount': PlainTextRenderer(u'point_grant_history_entry.amount'),
         u'point_grant_setting.rate': PlainTextRenderer(u'point_grant_setting.rate'),
         u'point_grant_setting.fixed': PlainTextRenderer(u'point_grant_setting.fixed'),
-        u'cart.user_agent': PlainTextRenderer(u'cart.user_agent'),
     }
 
     ordered_product_candidates ={
@@ -1061,20 +1057,6 @@ class OrderOptionalCSV(object):
             logger.exception(u'multiple performance settings are found when download the order info.')
         return None
 
-    def lookup_cart_user_agent(self, order):
-        from altair.app.ticketing.cart.models import Cart
-        query = self.session.query(Cart.user_agent).filter_by(order_id=order.id).order_by(Cart.created_at.desc())
-        try:
-            cua = query.one()
-            if cua != ('',):
-                _Cart = namedtuple('_Cart', ('user_agent'))
-                return _Cart(
-                    user_agent=detect_ua_type(str(cua))
-                )
-        except NoResultFound:
-            return None
-        except MultipleResultsFound:
-            return None
 
     def iter_records_for_order(self, order):
         user_credential = order.user.user_credential if order.user else None
@@ -1086,7 +1068,6 @@ class OrderOptionalCSV(object):
         famiport_receipt_ticketing = self.lookup_famiport_receipt(order, ticketing_flag=True)
         event_setting = self.lookup_event_setting(order.performance.event.id)
         performance_setting = self.lookup_performance_setting(order.performance.id)
-        cart_user_agent = self.lookup_cart_user_agent(order)
 
         common_record = {
             u'order': order,
@@ -1110,8 +1091,7 @@ class OrderOptionalCSV(object):
             u'event_setting': event_setting,
             u'performance_setting': performance_setting,
             u'point_grant_history_entry': point_grant_history_entry,
-            u'point_grant_setting': point_grant_setting,
-            u'cart': cart_user_agent,
+            u'point_grant_setting': point_grant_setting
             }
         if self.export_type == self.EXPORT_TYPE_ORDER:
             record = dict(common_record)
@@ -1152,6 +1132,7 @@ class OrderOptionalCSV(object):
                 ),
             localized_columns=self.localized_columns
             )
+
 
 class RefundResultCSVExporter(object):
     csv_header = [
