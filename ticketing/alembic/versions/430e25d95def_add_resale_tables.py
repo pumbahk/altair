@@ -1,14 +1,14 @@
 """add resale tables
 
 Revision ID: 430e25d95def
-Revises: 41e3c7e113c0
+Revises: daa86477ebb
 Create Date: 2018-03-19 16:49:57.109438
 
 """
 
 # revision identifiers, used by Alembic.
 revision = '430e25d95def'
-down_revision = '41e3c7e113c0'
+down_revision = 'daa86477ebb'
 
 from alembic import op
 import sqlalchemy as sa
@@ -23,8 +23,7 @@ def upgrade():
                     sa.Column('id', Identifier(), nullable=False),
                     sa.Column('start_at', sa.DateTime(), nullable=False),
                     sa.Column('end_at', sa.DateTime(), nullable=False),
-                    sa.Column('performance_id', Identifier(), nullable=False, index=True),
-                    sa.Column('sent_at', sa.TIMESTAMP(), nullable=True),
+                    sa.Column('performance_id', Identifier(), nullable=False),
                     sa.Column('created_at', sa.TIMESTAMP(), server_default=sqlf.current_timestamp(), nullable=False),
                     sa.Column('updated_at', sa.TIMESTAMP(), server_default=text('0'), nullable=False),
                     sa.Column('deleted_at', sa.TIMESTAMP(), nullable=True),
@@ -33,7 +32,7 @@ def upgrade():
 
     op.create_table('ResaleRequest',
                     sa.Column('id', Identifier(), nullable=False),
-                    sa.Column('resale_segment_id', Identifier(), nullable=False, index=True),
+                    sa.Column('resale_segment_id', Identifier(), nullable=False),
                     sa.Column('ordered_product_item_token_id', Identifier(), nullable=False),
                     sa.Column('bank_code', sa.Unicode(32), nullable=False),
                     sa.Column('bank_branch_code', sa.Unicode(32), nullable=False),
