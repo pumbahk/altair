@@ -11,6 +11,7 @@
 </%block>
 
 <div class="mgt30">
+${(view_context.embedded_html_complete_page or u'')|n}
     <p class="tac bold fs24">${__(u'購入を完了いたしました。')}</p>
     <p class="tac">${__(u'下記の受付番号はとても大切な番号です。すぐにメモするか印刷して保管してください。')}</p>
 </div>
@@ -139,5 +140,3 @@
   </a>
   </div>
 </div>
-
-${(view_context.embedded_html_complete_page or u'')|n}
