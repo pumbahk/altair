@@ -1,14 +1,14 @@
 """add resale tables
 
 Revision ID: 430e25d95def
-Revises: daa86477ebb
+Revises: 41e3c7e113c0
 Create Date: 2018-03-19 16:49:57.109438
 
 """
 
 # revision identifiers, used by Alembic.
 revision = '430e25d95def'
-down_revision = 'daa86477ebb'
+down_revision = '41e3c7e113c0'
 
 from alembic import op
 import sqlalchemy as sa
