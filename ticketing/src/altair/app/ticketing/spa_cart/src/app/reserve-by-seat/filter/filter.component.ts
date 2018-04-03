@@ -416,22 +416,20 @@ export class FilterComponent implements OnInit {
 //検索パラメータ取得処理
 getSearchParams(): ISeatsRequest {
   let params: ISeatsRequest;
+  let fields: string;
 
   if (this.seatDataService.isExistsSeatGroupData) {
-    params = {
-      fields: "stock_types,regions,seats",
-      min_price: this.seatPrices[0],
-      max_price: this.seatPrices[1],
-      stock_type_name: this.seatName,
-    };
-  } else {
-    params = {
-      fields: "stock_types,regions,seats,seat_groups",
-      min_price: this.seatPrices[0],
-      max_price: this.seatPrices[1],
-      stock_type_name: this.seatName,
-    };
+    fields = "stock_types,regions,seats";
+  }else {
+    fields = "stock_types,regions,seats,seat_groups";
   }
+
+  params = {
+    fields: fields,
+    min_price: this.seatPrices[0],
+    max_price: this.seatPrices[1],
+    stock_type_name: this.seatName,
+  };
 
   return params;
 }

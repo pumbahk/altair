@@ -234,7 +234,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
   // 座席データ（JSON）の有無
   isExistsSeatData = false;
   // 座席グループデータ（JSON）の有無
-  isExistsSeatGroupData = false;
+  isExistsSeatGroupData:boolean = false;
   // 表示領域のwidthとheightを求めるため
   svgMap: any;
   D_Width: number;    // 表示領域のwidth
@@ -424,7 +424,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
 
     this.filterComponent.searched$.subscribe((response: ISeatsResponse) => {
 
-      if (!(this.isExistsSeatGroupData)) {
+      if (!this.isExistsSeatGroupData) {
         that.seatGroups = response.data.seat_groups;
       }
 
