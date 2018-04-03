@@ -1,4 +1,6 @@
 # encoding: utf-8
+import sys
+import woothee
 from altair.app.ticketing.orders.models import (
     ImportStatusEnum,
     ImportTypeEnum,
@@ -145,7 +147,7 @@ def error_level_to_html(request, error_level):
         return render_error_label(request, 'warning')
 
 def render_error_label(request, kind):
-    if kind == 'error': 
+    if kind == 'error':
         label = u'エラー'
         style = u'label-important'
     elif kind == 'warning':
@@ -167,3 +169,28 @@ def cancel_reason(reason):
         if e.v[0] == reason:
             return e.v[1]
     return u'?'
+
+def detect_ua_type(user_agent):
+    try:
+        ua = woothee.parse(user_agent)
+    except UnicodeDecodeError:
+        sys.stderr.write(repr(user_agent))
+        return 'pc'
+
+    if ua['category'] == 'smartphone':
+        if ua['os'] == 'Android':
+            if 'Mobile' not in user_agent:
+                ret = 'atab'
+            else:
+                ret = 'asp'
+        elif ua['os'] in ['iPhone']:
+            ret = 'isp'
+        elif ua['os'] in ['iPad', 'iPod']:
+            ret = 'itab'
+        else:
+            ret = 'sp'
+    elif ua['category'] == 'mobilephone':
+        ret = 'fp'
+    else:
+        ret = 'pc'
+    return ret
