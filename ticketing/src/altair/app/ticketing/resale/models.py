@@ -18,6 +18,7 @@ class ResaleSegment(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     start_at = AnnotatedColumn(DateTime, nullable=False, _a_label=_(u'リセール受付開始'))
     end_at = AnnotatedColumn(DateTime, nullable=False, _a_label=_(u'リセール受付開始'))
     performance_id = Column(Identifier, nullable=False)
+    sent_at = AnnotatedColumn(DateTime, nullable=False, _a_label=_(u'連携日時'))
 
 class ResaleRequest(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'ResaleRequest'
@@ -30,3 +31,5 @@ class ResaleRequest(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     account_number = AnnotatedColumn(Unicode(32), nullable=False, _a_label=(u'銀行口座番号'))
     account_holder_name = AnnotatedColumn(Unicode(255), nullable=False, _a_label=(u'名義人'))
     total_amount = AnnotatedColumn(Numeric(precision=16, scale=2), nullable=False, _a_label=(u'振込合計金額'))
+    sold_at = AnnotatedColumn(DateTime, nullable=False, _a_label=_(u'リセール日時'))
+    sold = Column(Boolean, nullable=False, default=False)
