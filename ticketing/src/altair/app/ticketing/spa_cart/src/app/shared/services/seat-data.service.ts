@@ -19,6 +19,10 @@ export class SeatDataService extends ApiBase{
     super(backend, options, errorModalDataService, _logger);
 
   }
+
+  //venuemap / filter seat_groups共有フラグ
+  isExistsSeatGroupData: boolean = false;
+
   /**
    * 個席データ取得
    * @return {Observable} see http.get()

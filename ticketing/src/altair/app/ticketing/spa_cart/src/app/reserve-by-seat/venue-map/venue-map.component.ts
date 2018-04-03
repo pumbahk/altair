@@ -233,6 +233,8 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
   originalViewBox: any[] = null;
   // 座席データ（JSON）の有無
   isExistsSeatData = false;
+  // 座席グループデータ（JSON）の有無
+  isExistsSeatGroupData = false;
   // 表示領域のwidthとheightを求めるため
   svgMap: any;
   D_Width: number;    // 表示領域のwidth
@@ -338,6 +340,8 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
           // 個席グループデータ取得
           if ((this.seatGroupDataURL) && this.seatGroupDataURL != "") {
             this.seatDataService.getSeatGroupData(this.seatGroupDataURL).subscribe((response: any) => {
+              this.isExistsSeatGroupData = true;
+              this.seatDataService.isExistsSeatGroupData = this.isExistsSeatGroupData;
               this.seatGroups = response;
             },
               (error) => {
@@ -419,6 +423,11 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
     });
 
     this.filterComponent.searched$.subscribe((response: ISeatsResponse) => {
+
+      if (!(this.isExistsSeatGroupData)) {
+        that.seatGroups = response.data.seat_groups;
+      }
+
       that.regions = response.data.regions;
       that.seats = response.data.seats;
       this.reservedFlag = this.filterComponent.reserved;
@@ -995,10 +1004,10 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
         }
       }
     }
-    
+
     //セッションストレージに滞在フラグを登録
     sessionStorage.setItem('stay', 'true');
-    
+
     //iPadの初期表示用
     let firstPopstate = this.reserveBySeatBrowserBackService.selectProductCount == 0 ? true : false;
 

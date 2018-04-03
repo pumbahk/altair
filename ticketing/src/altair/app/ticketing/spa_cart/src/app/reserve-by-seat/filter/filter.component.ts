@@ -10,6 +10,7 @@ import { StockTypesService } from '../../shared/services/stock-types.service';
 import { StockTypeDataService } from '../../shared/services/stock-type-data.service';
 import { ErrorModalDataService } from '../../shared/services/error-modal-data.service';
 import { AnimationEnableService } from '../../shared/services/animation-enable.service';
+import { SeatDataService } from '../../shared/services/seat-data.service';
 //interface
 import {
   IPerformanceInfoResponse,
@@ -91,6 +92,7 @@ export class FilterComponent implements OnInit {
     private errorModalDataService: ErrorModalDataService,
     private animationEnableService: AnimationEnableService,
     private stockTypeDataService: StockTypeDataService,
+    private seatDataService: SeatDataService,
     private _logger: Logger) {
 
     this.searched$ = new EventEmitter<ISeatsResponse>();
@@ -411,16 +413,28 @@ export class FilterComponent implements OnInit {
     }
   }
 
-  //検索パラメータ取得処理
-  getSearchParams(): ISeatsRequest {
-    let params: ISeatsRequest = {
-      fields: "",
+//検索パラメータ取得処理
+getSearchParams(): ISeatsRequest {
+  let params: ISeatsRequest;
+
+  if (this.seatDataService.isExistsSeatGroupData) {
+    params = {
+      fields: "stock_types,regions,seats",
       min_price: this.seatPrices[0],
       max_price: this.seatPrices[1],
       stock_type_name: this.seatName,
     };
-    return params;
+  } else {
+    params = {
+      fields: "stock_types,regions,seats,seat_groups",
+      min_price: this.seatPrices[0],
+      max_price: this.seatPrices[1],
+      stock_type_name: this.seatName,
+    };
   }
+
+  return params;
+}
 
   //検索処理
   public search(): Observable<ISeatsResponse> {
