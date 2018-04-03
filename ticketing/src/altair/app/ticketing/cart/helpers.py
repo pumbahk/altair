@@ -15,16 +15,13 @@ from wtforms.widgets import ListWidget
 from pyramid.view import render_view_to_response
 from pyramid.compat import escape
 from pyramid.threadlocal import get_current_request
-from altair.app.ticketing.users.helpers import format_sex
 from altair.mobile.interfaces import IMobileRequest, ISmartphoneRequest
 from altair.formhelpers.widgets.checkbox import CheckboxMultipleSelect
 from altair.formhelpers.widgets.list import OurListWidget
 from altair.formhelpers.widgets.datetime import OurDateWidget, build_date_input_japanese_japan
-from altair.app.ticketing.mails.helpers import render_delivery_finished_mail_viewlet, render_payment_finished_mail_viewlet
 from altair.app.ticketing.mails.helpers import render_delivery_cancel_mail_viewlet, render_payment_cancel_mail_viewlet
 from altair.app.ticketing.mails.helpers import render_delivery_lots_accepted_mail_viewlet, render_payment_lots_accepted_mail_viewlet
 from altair.app.ticketing.mails.helpers import render_delivery_lots_elected_mail_viewlet, render_payment_lots_elected_mail_viewlet
-from altair.app.ticketing.mails.helpers import render_delivery_lots_rejected_mail_viewlet, render_payment_lots_rejected_mail_viewlet
 from altair.app.ticketing.core.models import FeeTypeEnum, SalesSegment, StockTypeEnum
 from .resources import OrderDelivery, CartDelivery, OrderPayment, CartPayment
 from . import api
@@ -128,7 +125,8 @@ def japanese_date(date):
     return u"%d年%d月%d日(%s)" % (date.year, date.month, date.day, u"月火水木金土日"[date.weekday()])
 
 def i18n_date(date, locale=None):
-    if locale and locale == 'ja':
+    if not locale or locale == 'ja':
+        # 非国際化 or 国際化（日本）
         return japanese_date(date)
     return u"%d/%d/%d(%s)" % (date.year, date.month, date.day, ('Mon.','Tue.','Wed.','Thu.','Fri.','Sat.','Sun.')[date.weekday()])
 
@@ -136,7 +134,8 @@ def japanese_time(time):
     return u"%d時%02d分" % (time.hour, time.minute)
 
 def i18n_time(time, locale=None):
-    if locale and locale == 'ja':
+    if not locale or locale == 'ja':
+        # 非国際化 or 国際化（日本）
         return japanese_time(time)
     return u" %d:%02d" % (time.hour, time.minute)
 
@@ -154,7 +153,8 @@ def datetime(dt):
     return None
 
 def i18n_datetime(dt, locale=None):
-    if locale and locale == 'ja':
+    if not locale or locale == 'ja':
+        # 非国際化 or 国際化（日本）
         return japanese_datetime(dt)
     try:
         return i18n_date(dt)+i18n_time(dt)
