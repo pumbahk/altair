@@ -4,10 +4,11 @@ import logging
 # altair built-in library
 from altair.sqlahelper import get_db_session
 from altair.restful_framework import generics
-from altair.restful_framework.fliters import FieldFilter
+from altair.restful_framework.fliters import FieldFilter, SearchFilter
 
 # resale
 from ..models import ResaleSegment, ResaleRequest
+from .mixins import CSVExportModelMixin
 from .serializers import ResaleSegmentSerializer, ResaleSegmentCreateSerializer, ResaleRequestSerializer
 from .paginations import ResaleSegmentPageNumberPagination, ResaleRequestPageNumberPagination
 
@@ -75,3 +76,35 @@ class ResaleRequestUpdateAPIView(generics.UpdateAPIView):
 class ResaleRequestDestroyAPIView(generics.DestroyAPIView):
     model = ResaleRequest
     serializer_class = ResaleRequestSerializer
+
+class ResaleRequestExportAPIView(CSVExportModelMixin, generics.GenericAPIView):
+    model = ResaleRequest
+    serializer_class = ResaleRequestSerializer
+    filter_classes = (FieldFilter, SearchFilter)
+    filter_fields = [
+        'ResaleRequest.id',
+        'ResaleRequest.resale_segment_id',
+        'ResaleRequest.ordered_product_item_token_id',
+        'ResaleRequest.bank_code',
+        'ResaleRequest.bank_branch_code',
+        'ResaleRequest.account_number',
+        'ResaleRequest.account_holder_name',
+        'ResaleRequest.total_amount'
+    ]
+    search_fields = [
+        'ResaleRequest.id',
+        'ResaleRequest.resale_segment_id',
+        'ResaleRequest.ordered_product_item_token_id',
+        'ResaleRequest.bank_code',
+        'ResaleRequest.bank_branch_code',
+        'ResaleRequest.account_number',
+        'ResaleRequest.account_holder_name',
+        'ResaleRequest.total_amount'
+    ]
+
+    # `get_dbsession`をoverrideしないと、masterのDBSessionを使う
+    def get_dbsession(self):
+        return get_db_session(self.request, 'slave')
+
+    def get(self, request, *args, **kwargs):
+        return self.export(request, *args, **kwargs)
