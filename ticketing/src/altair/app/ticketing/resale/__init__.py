@@ -19,6 +19,7 @@ def main(global_config, **local_config):
     config.include('pyramid_dogpile_cache')
     config.include('altair.httpsession.pyramid')
     config.include('altair.sqlahelper')
+    config.include('altair.restful_framework')
 
     config.include('.api', route_prefix='/api')
     config.scan('.')
