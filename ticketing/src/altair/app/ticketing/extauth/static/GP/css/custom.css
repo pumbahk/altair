@@ -1,3 +1,7 @@
 header .head {
-    background-color: #E83220 !important;
+    background-color: #4A9954 !important;
+}
+
+header .head h1 img {
+    padding: 0px;
 }
