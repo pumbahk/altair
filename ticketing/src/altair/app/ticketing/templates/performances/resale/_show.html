@@ -26,15 +26,19 @@
     font-size: 1rem;
   }
   /* request-search */
-  .request-search-nav .btn {
-    margin-top: 0 !important;
+  .request-search-nav {
+    margin-left: 0 !important;
   }
-  .request-search-nav .btn-group .btn + .btn {
-    margin-right: 10px !important;
+  .request-search-nav .navbar-text:not(:first-child) {
+    margin-left: 5px !important;
   }
   /* modal-resale-request */
   #modal-resale-request table th {
     width: 50%;
+  }
+  /* modal-resale-request-export */
+  #modal-resale-request-export table th:first-child {
+    width: 30%;
   }
 </style>
 
@@ -67,11 +71,38 @@
         </ul>
       </div>
       <hr/>
-      % if resale_requests:
+
       <div class="title">
         <h4>リセールリクエストリスト</h4>
       </div>
-      <button type="button" onclick="export_resale_request()">エクスポート</button>
+      <div class="navbar span6 request-search-nav">
+        <div class="navbar-inner">
+          <div class="container">
+            <form method="get" class="navbar-search pull-left form-inline">
+              <span class="navbar-text">
+                ${search_form.order_no.label}
+                ${search_form.order_no(class_="search-query input-medium")}
+              </span>
+              <span class="navbar-text">
+                ${search_form.account_holder_name.label}
+                ${search_form.account_holder_name(class_="search-query input-medium")}
+              </span>
+              <span class="navbar-text">
+                ${search_form.not_sold_only.label}
+                ${search_form.not_sold_only(class_="search-query input-medium")}
+              </span>
+              <span class="navbar-text">
+                ${search_form.sold_only.label}
+                ${search_form.sold_only(class_="search-query input-medium")}
+              </span>
+              <button type="submit">検索</button>
+              <button type="button" onclick="open_resale_request_export_modal()">エクスポート</button>
+            </form>
+          </div>
+        </div>
+      </div>
+      <div class="clearfix"></div>
+      % if resale_requests:
       <div class="resale-request-list-box">
         <table class="table table-striped table-bordered">
           <thead>
@@ -126,6 +157,10 @@
         </table>
       </div>
         ${ch.pager(resale_requests)}
+      % else:
+      <div>
+        <h4>リセールリクエストリストの情報は見つかりませんでした。</h4>
+      </div>
       % endif
     </div>
   </div>
@@ -204,6 +239,45 @@
   </div>
 </div>
 
+<div id="modal-resale-request-export" class="modal hide">
+  <div class="modal-header">
+    <h3>エクスポート</h3>
+  </div>
+  <div class="modal-body">
+    <div class="wrap-modal-body">
+      <p>下記の条件でリセールリクエストをエクスポートは大丈夫でしょうか？</p>
+      <table class="table table-striped table-bordered">
+        <thead>
+          <tr>
+            <th>条件</th>
+            <th>内容</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>予約番号</td>
+            <td id="order_no-condition"></td>
+          </tr>
+          <tr>
+            <td>名義人</td>
+            <td id="account_holder_name-condition"></td>
+          </tr>
+          <tr>
+            <td>リセールステータス</td>
+            <td id="sold-condition"></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <div class="reserve-area">
+      <button onclick="close_modal_resale_request_export($(this).parents('.modal'))" class="btn secondary btn-close">キャンセル</button>
+      <button onclick="export_resale_request($(this).parents('.modal'))" class="btn danger create_or_update">エクスポート</button>
+    </div>
+  </div>
+</div>
+
 <script type="text/javascript">
   if (String.prototype.format === undefined) {
       String.prototype.format = function(arg) {
@@ -258,6 +332,11 @@
 
   function close_modal_resale_request(modal) {
       clear_modal_error_status(modal);
+      modal.find("td[id]").text("");
+      modal.hide();
+  }
+
+  function close_modal_resale_request_export(modal) {
       modal.find("td[id]").text("");
       modal.hide();
   }
@@ -340,18 +419,19 @@
           },
           error: function(xhr) {
               var ret = handle_exception(xhr),
-                  ul = $(".modal-error-msgs-box ul");
+                  ul = $(".modal-error-msgs-box ul"),
+                  i = undefined;
 
               if ("status" in ret) {
                   ul.append($("<li>").text("{0} - {1}".format(ret["status"],ret["emsgs"])));
               }
               if ('start_at' in ret) {
-                  for (var i = 0; i < parsed_data['start_at'].length; i++) {
+                  for (i = 0; i < parsed_data['start_at'].length; i++) {
                       ul.append($("<li>").text(parsed_data['start_at'][i]));
                   }
               }
               if ('end_at' in ret) {
-                  for (var i = 0; i < parsed_data['end_at'].length; i++) {
+                  for (i = 0; i < parsed_data['end_at'].length; i++) {
                       ul.append($("<li>").text(parsed_data['end_at'][i]));
                   }
               }
@@ -400,18 +480,19 @@
           },
           error: function(xhr) {
               var ret = handle_exception(xhr),
-                  ul = $(".modal-error-msgs-box ul");
+                  ul = $(".modal-error-msgs-box ul"),
+                  i = undefined;
 
               if ("status" in ret) {
                   ul.append($("<li>").text("{0} - {1}".format(ret["status"],ret["emsgs"])));
               }
               if ("start_at" in ret) {
-                  for (var i = 0; i < ret["start_at"].length; i++) {
+                  for (i = 0; i < ret["start_at"].length; i++) {
                       ul.append($("<li>").text(ret["start_at"][i]));
                   }
               }
               if ("end_at" in ret) {
-                  for (var i = 0; i < ret["end_at"].length; i++) {
+                  for (i = 0; i < ret["end_at"].length; i++) {
                       ul.append($("<li>").text(ret["end_at"][i]));
                   }
               }
@@ -461,18 +542,7 @@
   }
 
   function send_to_orion(elem) {
-      var resale_segment_id = elem.parent().find('h4').data('resale_segment_id');
-      $.ajax({
-          url: "",
-          type: "POST",
-          data: {"resale_segment_id": resale_segment_id},
-          success: function(data) {
-
-          },
-          error: function(xhr) {
-
-          }
-      });
+      // TODO: Implement the logic of send_to_orion.
   }
 
   function show_resale_request_bank_info(resale_request_id) {
@@ -507,7 +577,61 @@
       });
   }
 
-  function export_resale_request() {
-      window.location = "/resale/api/requests/export";
+  function build_export_url() {
+      var baseUrl = "/resale/api/requests/export",
+          resale_segment_id = $($(".resale-segment-list-box").find("h4")[1]).data("resale_segment_id"),
+          sold_only = $("#sold_only").is(":checked"),
+          not_sold_only = $("#not_sold_only").is(":checked"),
+          order_no = $("#order_no").val().trim(),
+          account_holder_name = $("#account_holder_name").val().trim(),
+          filter_list = [];
+
+      if (sold_only && not_sold_only && order_no === "" && account_holder_name === "") {
+          return baseUrl + "?" + "filter[resale_segment_id]=" + resale_segment_id;
+      }
+
+      if (order_no !== "") {
+          filter_list.push("order_no=" + order_no);
+      }
+
+      if (account_holder_name !== "") {
+          filter_list.push("filter[account_holder_name]=" + account_holder_name);
+      }
+
+      if (sold_only^not_sold_only) {
+          filter_list.push("filter[sold]=" + +sold_only);
+      }
+
+      return baseUrl + "?" + filter_list.join("&");
+
+  }
+
+  function open_resale_request_export_modal() {
+      var modal = $("#modal-resale-request-export"),
+          sold_only = $("#sold_only").is(":checked"),
+          not_sold_only = $("#not_sold_only").is(":checked"),
+          order_no = $("#order_no").val().trim(),
+          account_holder_name = $("#account_holder_name").val().trim(),
+          sold_condition = "全部";
+
+      if (order_no === "") {
+          order_no = "条件なし";
+      }
+      if (account_holder_name === "") {
+          account_holder_name = "条件なし";
+      }
+      modal.find("#order_no-condition").text(order_no);
+      modal.find("#account_holder_name-condition").text(account_holder_name);
+      if (sold_only^not_sold_only) {
+          sold_condition = sold_only?"リセール済み":"リセール中";
+      }
+      modal.find("#sold-condition").text(sold_condition);
+      modal.show();
+  }
+
+  function export_resale_request(modal) {
+      close_modal_resale_request_export(modal);
+      url = build_export_url();
+      window.location = url;
   }
 </script>

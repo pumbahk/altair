@@ -492,11 +492,11 @@ class OrionPerformanceForm(Form):
 
 class PerformanceResaleSegmentForm(OurForm):
     performance_id = HiddenField(
-        label=u'ID',
+        label=u'公演ID',
         validators=[Optional()],
     )
     resale_segment_id = HiddenField(
-        label=u'ID',
+        label=u'リセールセグメントID',
         validators=[Optional()],
     )
     start_at = DateTimeField(
@@ -510,4 +510,24 @@ class PerformanceResaleSegmentForm(OurForm):
         validators=[Optional(), after1900],
         format='%Y-%m-%d %H:%M',
         widget=OurDateTimeWidget()
+    )
+
+class PerformanceResaleRequestSearchForm(OurForm):
+    order_no= TextField(
+        label=u'予約番号',
+        validators=[Optional()],
+    )
+    account_holder_name = TextField(
+        label=u'口座名義人氏名',
+        validators=[Optional()],
+    )
+    sold_only = BooleanField(
+        label=u'リセール済み',
+        validators=[Optional()],
+        default=False
+    )
+    not_sold_only = BooleanField(
+        label=u'リセール中',
+        validators=[Optional()],
+        default=False
     )
