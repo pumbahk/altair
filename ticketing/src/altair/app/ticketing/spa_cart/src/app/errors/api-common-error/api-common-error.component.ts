@@ -38,7 +38,7 @@ export class ApiCommonErrorComponent {
   }
   display() {
     this.errorDisplay = false;
-    this.animationEnableService.sendToRoadFlag(false);ErrorModalDataService
+    this.animationEnableService.sendToRoadFlag(false);
     this.onClosed && this.onClosed();
   }
 }
