@@ -19,6 +19,7 @@ from altair.mobile.interfaces import IMobileRequest, ISmartphoneRequest
 from altair.formhelpers.widgets.checkbox import CheckboxMultipleSelect
 from altair.formhelpers.widgets.list import OurListWidget
 from altair.formhelpers.widgets.datetime import OurDateWidget, build_date_input_japanese_japan
+from altair.app.ticketing.users.helpers import format_sex
 from altair.app.ticketing.mails.helpers import render_delivery_cancel_mail_viewlet, render_payment_cancel_mail_viewlet
 from altair.app.ticketing.mails.helpers import render_delivery_lots_accepted_mail_viewlet, render_payment_lots_accepted_mail_viewlet
 from altair.app.ticketing.mails.helpers import render_delivery_lots_elected_mail_viewlet, render_payment_lots_elected_mail_viewlet
