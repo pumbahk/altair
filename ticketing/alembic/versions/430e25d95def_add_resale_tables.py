@@ -40,6 +40,8 @@ def upgrade():
                     sa.Column('account_number', sa.Unicode(32), nullable=False),
                     sa.Column('account_holder_name', sa.Unicode(255), nullable=False),
                     sa.Column('total_amount', sa.Numeric(precision=16, scale=2), nullable=False),
+                    sa.Column('sold_at', sa.TIMESTAMP(), nullable=True),
+                    sa.Column('sold', sa.Boolean(), nullable=False, default=False, server_default='0', index=True),
                     sa.Column('created_at', sa.TIMESTAMP(), server_default=sqlf.current_timestamp(), nullable=False),
                     sa.Column('updated_at', sa.TIMESTAMP(), server_default=text('0'), nullable=False),
                     sa.Column('deleted_at', sa.TIMESTAMP(), nullable=True),
