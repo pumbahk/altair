@@ -251,6 +251,7 @@ class OrganizationSettings(BaseView):
         organization_setting.recaptcha = f.recaptcha.data
         organization_setting.tapirs = f.tapirs.data
         organization_setting.enable_discount_code = f.enable_discount_code.data
+        organization_setting.enable_resale = f.enable_resale.data
         organization_setting.enable_word = f.enable_word.data
         organization_setting.augus_use = f.augus_use.data
         organization_setting.mail_refund_to_user = f.mail_refund_to_user.data
