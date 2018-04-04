@@ -334,6 +334,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
                 file_name = url_str.slice(cut_idx + 1);
                 errorMassage = file_name + " not found"
                 this._logger.error(errorMassage);
+                this.errorModalDataService.sendReloadOnClosedToErrorModal();
                 return;
               });
           }
@@ -352,6 +353,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
                 file_name = url_str.slice(cut_idx + 1);
                 errorMassage = file_name + " not found"
                 this._logger.error(errorMassage);
+                this.errorModalDataService.sendReloadOnClosedToErrorModal();
                 return;
               });
           }
@@ -409,14 +411,16 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
               },
                 (error) => {
                   this._logger.error('findStockTypesByPerformanceId(#${this.performanceId}) error', error);
+                  this.errorModalDataService.sendReloadOnClosedToErrorModal();
                 });
-              (error) => {
-                this._logger.error('[VenueMapComponent]getStockType error', error);
-              }
-            });
+            }, (error) => {
+              this._logger.error('[VenueMapComponent]getStockType error', error);
+              this.errorModalDataService.sendReloadOnClosedToErrorModal();
+            })
         },
           (error) => {
             this._logger.error('get Performance(#${this.performanceId}) error', error);
+            this.errorModalDataService.sendReloadOnClosedToErrorModal();
             return;
           });
       }
