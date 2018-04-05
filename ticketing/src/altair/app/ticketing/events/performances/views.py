@@ -8,6 +8,7 @@ import datetime
 from cStringIO import StringIO
 
 import webhelpers.paginate as paginate
+import altair.app.ticketing.discount_code.api as dc_api
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.url import route_path
@@ -45,8 +46,6 @@ from ..famiport_helpers import get_famiport_performance_ids
 from .api import set_visible_performance, set_invisible_performance
 
 from altair.app.ticketing.discount_code.forms import DiscountCodeSettingForm
-from altair.app.ticketing.discount_code.api import check_discount_code_functions_available
-from altair.app.ticketing.core.utils import PageURL_WebOb_Ex
 
 logger = logging.getLogger(__name__)
 
@@ -455,26 +454,19 @@ class PerformanceShowView(BaseView):
         return self.orion_index_view()
 
     @view_config(route_name="performances.discount_code_settings.show", request_method='GET',
-                 custom_predicates=(check_discount_code_functions_available,))
+                 custom_predicates=(dc_api.check_discount_code_functions_available,))
     def discount_code_settings_show(self):
         session = get_db_session(self.request, 'slave')
         query = Performance(id=self.performance.id).find_available_target_settings_query(
             session=session,
             refer_all=True,
             now=self.context.now
-        ).group_by('DiscountCodeSetting.id').order_by('DiscountCodeSetting.id desc')
-
-        settings = paginate.Page(
-            query,
-            page=int(self.request.params.get('page', 0)),
-            items_per_page=20,
-            url=PageURL_WebOb_Ex(self.request)
-        )
+        ).group_by('DiscountCodeSetting.id')
 
         data = {
             'tab': 'discount_code',
             'performance': self.performance,
-            'settings': settings,
+            'settings': dc_api.paginate_setting_list(query, self.request),
             'form': DiscountCodeSettingForm(),
         }
         return data

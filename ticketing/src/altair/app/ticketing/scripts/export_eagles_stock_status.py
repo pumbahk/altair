@@ -1,25 +1,21 @@
 #! /usr/bin/env python
 #-*- coding: utf-8 -*-
 
-import sys
-import re
-from pyramid.paster import bootstrap, setup_logging
 import StringIO
+import json
 import locale
 import logging
+import re
+import sys
 from argparse import ArgumentParser
 from datetime import datetime
 
-from altair.sqlahelper import get_db_session
-from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
-
-import json
-
-from altair.pyramid_assets import get_resolver
-
-from altair.app.ticketing.core.models import Organization, Event, EventSetting, Performance
-
 from altair.app.ticketing.cart.view_support import get_seat_type_dicts
+from altair.app.ticketing.core.models import Organization, Event, EventSetting, Performance
+from altair.pyramid_assets import get_resolver
+from altair.sqlahelper import get_db_session
+from pyramid.paster import bootstrap, setup_logging
+from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 
 logger = logging.getLogger(__name__)
 
@@ -77,8 +73,12 @@ def select_sales_segment(sales_segments):
     return None
 
 
-def get_recent_sales_segment_without_lots(p, now):
+def get_recent_sales_segment_without_lots(p, now, sales_segment_group_names):
     not_ended_sales_segments = [ss for ss in p.sales_segments if ss.is_not_finished(now) and ss.public and not ss.is_lottery()]
+    if not_ended_sales_segments and len(sales_segment_group_names) > 0:
+        not_ended_sales_segments = [ss for ss in not_ended_sales_segments
+                                    if ss.sales_segment_group.name
+                                        in map(lambda name: name.decode('utf-8'), sales_segment_group_names)]
     if not_ended_sales_segments:
         return min(not_ended_sales_segments, key=lambda s: s.start_at)
     else:
@@ -92,6 +92,9 @@ def main():
     parser.add_argument('--target', type=str, required=True)
     parser.add_argument('--quiet', action='store_true', default=False)
     parser.add_argument('--dry-run', action='store_true', default=False)
+    parser.add_argument('--event-id', type=str, default=None)
+    parser.add_argument('--sales-segment-group-name', type=str, required=True)
+    parser.add_argument('--now', type=str, default=None)  # for debugging
 
     opts = parser.parse_args()
 
@@ -107,6 +110,9 @@ def main():
 
     message("mode: %s" % mode)
     message("target: %s" % opts.target)
+    message('now: %s' % opts.now)
+    message('event_id: %s' % opts.event_id)
+    message('sales_segment_group_name: %s' % opts.sales_segment_group_name.decode('utf-8'))
 
     try:
         try:
@@ -126,7 +132,10 @@ def main():
             message('Multiple organizations that match to %s' % opts.organization)
             return 1
 
-        now = datetime.now()
+        event_ids = map(int, opts.event_id.split(',')) if opts.event_id else []
+        sales_segment_group_names = opts.sales_segment_group_name.split(',') if opts.sales_segment_group_name else []
+
+        now = datetime.strptime(opts.now, '%Y/%m/%d_%H:%M:%S') if opts.now else datetime.now()
 
         global_seat_types = []
 
@@ -138,22 +147,24 @@ def main():
 
         by_start_on = dict()
 
-        performances = session.query(Performance) \
+        query = session.query(Performance) \
             .join(Event, Performance.event_id==Event.id) \
             .join(EventSetting, Event.id==EventSetting.event_id) \
             .filter(Event.organization_id == organization.id) \
             .filter(now.date() <= Performance.start_on) \
             .filter(EventSetting.visible != 0) \
             .filter(Performance.public != 0) \
-            .order_by(Event.display_order, Performance.start_on) \
-            .all()
+            .order_by(Event.display_order, Performance.start_on)
+        if len(event_ids) > 0:
+            query = query.filter(Event.id.in_(event_ids))
+        performances = query.all()
         for p in performances:
             message("performance(start=%s, id=%d, name=%s)" % (p.start_on, p.id, p.name))
 
             # XXX: this method consumes large memory space
             # sales_segment = p.get_recent_sales_segment(now=now)
 
-            sales_segment = get_recent_sales_segment_without_lots(p, now)
+            sales_segment = get_recent_sales_segment_without_lots(p, now, sales_segment_group_names)
 
             if not sales_segment:
                 continue

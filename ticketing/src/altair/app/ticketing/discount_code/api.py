@@ -2,7 +2,10 @@
 
 from datetime import datetime
 
-from altair.app.ticketing.cart.exceptions import OwnDiscountCodeDuplicateError, NotAllowedBenefitUnitError, NotExistingOwnDiscountCodeError
+import webhelpers.paginate as paginate
+from altair.app.ticketing.cart.exceptions import OwnDiscountCodeDuplicateError, NotAllowedBenefitUnitError, \
+    NotExistingOwnDiscountCodeError
+from altair.app.ticketing.core.utils import PageURL_WebOb_Ex
 from altair.app.ticketing.orders.exceptions import OrderCancellationError
 from altair.sqlahelper import get_db_session
 from communicators.utils import get_communicator
@@ -81,7 +84,6 @@ def is_exist_duplicate_codes(code, code_str_list):
 def check_used_discount_code(code, organizatoin):
     used_code = UsedDiscountCodeOrder.query.\
         filter(UsedDiscountCodeOrder.code==code).\
-        filter(UsedDiscountCodeOrder.deleted_at==None).\
         filter(UsedDiscountCodeOrder.canceled_at==None).\
         filter(UsedDiscountCodeOrder.refunded_at==None). \
         order_by(UsedDiscountCodeOrder.created_at.desc()).\
@@ -403,7 +405,7 @@ def cancel_used_discount_codes(request, order, now=None):
         result = comm.cancel_used_discount_code_api(data)
         for coupon in result['coupons']:
             if coupon['reason_cd'][:2] != '10':
-                raise SystemError('inappropriate response returned.')
+                raise SystemError('inappropriate reason_cd {} returned.'.format(coupon['reason_cd']))
 
     except:
         import sys
@@ -430,3 +432,28 @@ def validate_to_delete_all_codes(setting, session):
         err.append(u'コードが使用された有効な予約が{}件ある'.format(valid_order_cnt))
 
     return err
+
+
+def paginate_setting_list(query, request):
+    """
+    割引コード設定の一覧画面におけるページネーション
+    デフォルトのソートは「有効期間（終了日時）の降順 > 割引コードIDの降順」
+    :param query: クエリオブジェクト
+    :param request: リクエストオブジェクト
+    :return: 割引コード設定オブジェクトのリスト
+    """
+    sort = request.GET.get('sort', 'DiscountCodeSetting.end_at')
+    direction = request.GET.get('direction', 'desc')
+    query = query.order_by(
+        '{0} {1}'.format(sort, direction),
+        'DiscountCodeSetting.id desc'
+    )
+
+    return paginate.Page(
+        query,
+        page=int(request.params.get('page', 0)),
+        items_per_page=20,
+        url=PageURL_WebOb_Ex(request)
+    )
+
+

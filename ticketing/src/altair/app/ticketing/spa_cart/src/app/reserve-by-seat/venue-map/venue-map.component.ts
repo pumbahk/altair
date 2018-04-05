@@ -146,6 +146,8 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
   venueURL: string;
   // 個席データURL
   seatDataURL: string;
+  // 個席グループデータURL
+  seatGroupDataURL: string;
   // 色ナビurl
   colorNavi: string;
   // 会場図ミニマップURL
@@ -231,6 +233,8 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
   originalViewBox: any[] = null;
   // 座席データ（JSON）の有無
   isExistsSeatData = false;
+  // 座席グループデータ（JSON）の有無
+  isExistsSeatGroupData:boolean = false;
   // 表示領域のwidthとheightを求めるため
   svgMap: any;
   D_Width: number;    // 表示領域のwidth
@@ -261,7 +265,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
   // 選択単位フラグ 1席ずつ:true/2席以上ずつ:false
   isGroupedSeats: boolean = true;
   // 座席グループ情報
-  seatGroups: ISeatGroup[];
+  seatGroups: ISeatGroup[] = [];
   // 最終座席情報検索呼び出しチェック状態
   reservedFlag: boolean = true;
   unreservedFlag: boolean = true;
@@ -314,6 +318,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
           this.performanceId = this.performance.performance_id;
           this.venueURL = this.performance.venue_map_url;
           this.seatDataURL = this.performance.seat_data_url;
+          this.seatGroupDataURL = this.performance.seat_group_data_url;
 
           // 個席データ取得
           if ((this.seatDataURL) && this.seatDataURL != "") {
@@ -325,6 +330,24 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
                 let errorMassage: string;
                 let file_name: string;
                 let url_str: string = this.seatDataURL;
+                let cut_idx: number = url_str.lastIndexOf("/");
+                file_name = url_str.slice(cut_idx + 1);
+                errorMassage = file_name + " not found"
+                this._logger.error(errorMassage);
+                return;
+              });
+          }
+          // 個席グループデータ取得
+          if ((this.seatGroupDataURL) && this.seatGroupDataURL != "") {
+            this.seatDataService.getSeatGroupData(this.seatGroupDataURL).subscribe((response: any) => {
+              this.isExistsSeatGroupData = true;
+              this.seatDataService.isExistsSeatGroupData = this.isExistsSeatGroupData;
+              this.seatGroups = response;
+            },
+              (error) => {
+                let errorMassage: string;
+                let file_name: string;
+                let url_str: string = this.seatGroupDataURL;
                 let cut_idx: number = url_str.lastIndexOf("/");
                 file_name = url_str.slice(cut_idx + 1);
                 errorMassage = file_name + " not found"
@@ -400,7 +423,11 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
     });
 
     this.filterComponent.searched$.subscribe((response: ISeatsResponse) => {
-      that.seatGroups = response.data.seat_groups;
+
+      if (!this.isExistsSeatGroupData) {
+        that.seatGroups = response.data.seat_groups;
+      }
+
       that.regions = response.data.regions;
       that.seats = response.data.seats;
       this.reservedFlag = this.filterComponent.reserved;
@@ -977,10 +1004,10 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
         }
       }
     }
-    
+
     //セッションストレージに滞在フラグを登録
     sessionStorage.setItem('stay', 'true');
-    
+
     //iPadの初期表示用
     let firstPopstate = this.reserveBySeatBrowserBackService.selectProductCount == 0 ? true : false;
 
