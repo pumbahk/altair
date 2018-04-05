@@ -473,6 +473,16 @@ class DynamicFormBuilder(object):
                 message = u'{}文字以内で入力してください'.format(max)
                 validators.append(Length(max=max, message=message))
 
+        if field_desc.get('kind') in ['text', 'textarea']:
+            from altair.formhelpers import (Zenkaku, Hankaku)
+            zenkaku = field_desc['validators'].get('zenkaku')
+            hankaku = field_desc['validators'].get('hankaku')
+            if zenkaku['enabled']:
+                validators.append(Zenkaku)
+
+            if hankaku['enabled']:
+                validators.append(Hankaku)
+
         validator_flags = {}
         all_enabled = True
         validator_descs = field_desc.get('validators')
