@@ -1,0 +1,29 @@
+<%inherit file="./base.html" />
+%if request.session.peek_flash():
+<div style="border: 3px solid red; background: #FFEEEE; padding: 10px; margin: 10px;">
+  <ul>
+    %for message in request.session.pop_flash():
+    <li>${message}</li>
+    %endfor
+  </ul>
+</div>
+%endif
+
+<%
+  if custom_locale_negotiator=='ja' or not request.organization.setting.i18n:
+    start_at = h.japanese_datetime(lot.start_at)
+    end_at = h.japanese_datetime(lot.end_at)
+  else:
+    start_at = h.i18n_datetime(lot.start_at)
+    end_at = h.i18n_datetime(lot.end_at)
+  endif
+%>
+
+<div id="content">
+  <div class="wrap-content">
+    <p>
+      ${__(u"{0} {1} の申込期間は {2} ～ {3} となっております。").format(lot.event.title, lot.name, start_at, end_at)}
+    </p>
+  </div>
+</div>
+

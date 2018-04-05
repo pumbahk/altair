@@ -337,19 +337,22 @@ class ClientForm(OurDynamicForm):
     def _validate_tel_1(self, pdp=None):
         import re
         status = True
-        phone = self.data["tel_1"].strip()
-        if pdp and pdp.delivery_method.delivery_plugin_id == 5:
-            # [EventGate]のみチェックする
-            if not re.match('^(070|080|090)', phone):
-                getattr(self, "tel_1").errors.append(u"[070,080,090]で始まる携帯電話番号を入力してください")
-                status = False
-            if len(phone) != 11:
-                getattr(self, "tel_1").errors.append(u"電話番号の桁数が11桁ではありません")
-                status = False
+        if self.data["tel_1"]:
+            phone = self.data["tel_1"].strip()
+            if pdp and pdp.delivery_method.delivery_plugin_id == 5:
+                # [EventGate]のみチェックする
+                if not re.match('^(070|080|090)', phone):
+                    getattr(self, "tel_1").errors.append(u"[070,080,090]で始まる携帯電話番号を入力してください")
+                    status = False
+                if len(phone) != 11:
+                    getattr(self, "tel_1").errors.append(u"電話番号の桁数が11桁ではありません")
+                    status = False
+            else:
+                if len(phone) < 10 or len(phone) > 11:
+                    getattr(self, "tel_1").errors.append(u"10文字から11文字の間で入力してください。")
+                    status = False
         else:
-            if len(phone) < 10 or len(phone) > 11:
-                getattr(self, "tel_1").errors.append(u"10文字から11文字の間で入力してください。")
-                status = False
+            status = False
         return status
 
     def validate_birthday(self, field):

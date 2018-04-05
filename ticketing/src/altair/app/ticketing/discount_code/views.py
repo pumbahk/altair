@@ -4,10 +4,9 @@ import json
 import logging
 import time
 import urllib
+import altair.app.ticketing.discount_code.api as dc_api
 from datetime import datetime
 
-import webhelpers.paginate as paginate
-from altair.app.ticketing.core.utils import PageURL_WebOb_Ex
 from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.models import merge_session_with_post
 from altair.app.ticketing.utils import get_safe_filename
@@ -17,38 +16,26 @@ from pyramid.renderers import render_to_response
 from pyramid.response import Response
 from pyramid.view import view_config, view_defaults
 from sqlalchemy.exc import SQLAlchemyError
-from .api import check_discount_code_functions_available, validate_to_delete_all_codes
 from .forms import DiscountCodeSettingForm, DiscountCodeCodesForm, SearchTargetForm, SearchCodeForm
-from .models import DiscountCodeSetting, DiscountCodeCode, DiscountCodeTarget, delete_all_discount_code, insert_specific_number_code
+from .models import DiscountCodeSetting, DiscountCodeCode, DiscountCodeTarget, delete_all_discount_code, \
+    insert_specific_number_code
 
 logger = logging.getLogger(__name__)
 
 
 @view_defaults(decorator=with_bootstrap,
                permission='master_editor',
-               custom_predicates=(check_discount_code_functions_available,))
+               custom_predicates=(dc_api.check_discount_code_functions_available,))
 class DiscountCode(BaseView):
     @view_config(route_name='discount_code.settings_index',
                  renderer='altair.app.ticketing:templates/discount_code/settings/index.html')
     def settings_index(self):
-        sort = self.request.GET.get('sort', 'DiscountCodeSetting.end_at')
-        direction = self.request.GET.get('direction', 'desc')
-
         query = self.context.session.query(DiscountCodeSetting).filter_by(
             organization_id=self.context.user.organization_id)
-        query = query.order_by('{0} {1}'.format(sort, direction)) \
-            .order_by('DiscountCodeSetting.id desc')
-
-        settings = paginate.Page(
-            query,
-            page=int(self.request.params.get('page', 0)),
-            items_per_page=20,
-            url=PageURL_WebOb_Ex(self.request)
-        )
 
         return {
             'form': DiscountCodeSettingForm(),
-            'settings': settings,
+            'settings': dc_api.paginate_setting_list(query, self.request),
         }
 
     @view_config(route_name='discount_code.settings_new', request_method='GET',
@@ -137,7 +124,7 @@ class DiscountCode(BaseView):
         if setting is None:
             return HTTPNotFound('discount_code_setting_id %d is not found' % setting_id)
 
-        err_reasons = validate_to_delete_all_codes(setting, self.context.session)
+        err_reasons = dc_api.validate_to_delete_all_codes(setting, self.context.session)
         if err_reasons:
             self.request.session.flash(
                 u'「ID:{} {}」を削除できません（{}）'.format(setting.id, setting.name, u'・'.join(err_reasons)))
@@ -247,7 +234,7 @@ class DiscountCode(BaseView):
         if setting is None:
             return HTTPNotFound('discount_code_setting_id %d is not found' % setting_id)
 
-        err_reasons = validate_to_delete_all_codes(setting, self.context.session)
+        err_reasons = dc_api.validate_to_delete_all_codes(setting, self.context.session)
         if err_reasons:
             self.request.session.flash(
                 u'「ID:{} {}」を削除できません（{}）'.format(setting.id, setting.name, u'・'.join(err_reasons)))

@@ -60,33 +60,7 @@
                 % endfor
                 % endif
                 %endfor
-                % if order.cart.discount_amount:
-                <tr id="commission">
-                    <td colspan="5">
-                        <table class="couponTable">
-                            % for index, group in enumerate(order.cart.used_discount_code_groups):
-
-                            <tr class="purchaseCouponTtl">
-                                <td colspan="4">クーポン・割引コードご使用金額</td>
-                            </tr>
-                            <tr class="purchaseCoupon${index}">
-                                <td class="purchaseCouponTxt">
-                                    ${group['discount_code_setting'].explanation |n}
-                                </td>
-                                <td>
-                                    <%
-                                    codes = [code.code for code in group['code']]
-                                    %>
-                                    ${"<br/>".join(codes) |n}
-                                </td>
-                                <td>${len(group['code'])}枚</td>
-                                <td class="align1 couponPrice">-￥${h.format_number(group['discount_price'])}</td>
-                            </tr>
-                        </table>
-                    </td>
-                </tr>
-                % endfor
-                % endif
+          <%include file="../../__commons__/discount_code/sp.html" args="cart=cart"/>
           <tr id="commission">
             <th scope="row">決済手数料</th>
             <td>&nbsp;</td>

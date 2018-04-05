@@ -1,32 +1,26 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
 <head>
-<style type="text/css">
-.btn {
-  display: inline-block;
-  border: 1px solid black;
-}
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=1100, user-scalable=yes">
+<meta content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" name="viewport">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="cache-control" content="no-cache">
+<meta http-equiv="expires" content="0">
+<title>グッドラック・プロモーション</title>
 
-.membership--kind {
-  display: block;
-}
+<!-- Cascading Style Sheets -->
+<link rel="shortcut icon" href="${view_context.static_url('images/favicon.ico')}" />
+<link rel="stylesheet" href="${view_context.static_url('css/sanitize.css')}" type="text/css" media="all">
+<link rel="stylesheet" href="${view_context.static_url('css/import.css')}" type="text/css" media="all">
+<link rel="stylesheet" href="${view_context.static_url('css/custom.css')}" type="text/css" media="all">
 
-.membership--membership_id {
-  display: block;
-}
-</style>
 </head>
 <body>
-<header>
-% if hasattr(_context, 'subtype') and request.authenticated_userid:
-楽天会員としてログイン (<a href="${request.route_path('extauth.logout', subtype=_context.subtype)}">ログアウトする</a>)
-% endif
-</header>
-<main>
+<%include file="./_header.mako" />
+<main class="logout">
 ${self.body()}
 </main>
-<footer>
-footer
-</footer>
 </body>
 </html>

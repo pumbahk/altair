@@ -581,13 +581,23 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return True
 
     def mark_canceled(self, now=None):
-        self.canceled_at = now or datetime.now() # SAFE TO USE datetime.now() HERE
+        datetime_now = now or datetime.now()  # SAFE TO USE datetime.now() HERE
+        request = get_current_request()
+        self.canceled_at = datetime_now
+        # 割引コードがチケット購入時に使用されている場合
+        if self.used_discount_codes:
+            discount_api.cancel_used_discount_codes(request, self, now=datetime_now)
 
     def mark_refunded(self, now=None):
-        self.refunded_at = now or datetime.now() # SAFE TO USE datetime.now() HERE
+        datetime_now = now or datetime.now()  # SAFE TO USE datetime.now() HERE
+        request = get_current_request()
+        self.refunded_at = datetime_now
+        # 割引コードがチケット購入時に使用されている場合
+        if self.used_discount_codes:
+            discount_api.cancel_used_discount_codes(request, self, now=datetime_now)
 
     def mark_delivered(self, now=None):
-        self.delivered_at = now or datetime.now() # SAFE TO USE datetime.now() HERE
+        self.delivered_at = now or datetime.now()  # SAFE TO USE datetime.now() HERE
 
     def mark_paid(self, now=None):
         self.paid_at = now or datetime.now()
