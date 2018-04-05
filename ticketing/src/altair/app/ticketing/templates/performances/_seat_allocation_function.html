@@ -388,6 +388,7 @@ var makeEditable = (function () {
     var editableIcon = $('<i class="icon-pencil" style="margin-left: 4px;"></i>').appendTo(n);
     var save = function (value) { set(value); }; // will be overridden by bindSave()
     var value = '';
+    var tempN = n;
 
     function beginEdit() {
       if (editing)
@@ -420,8 +421,8 @@ var makeEditable = (function () {
       });
       editing.keyup(function (e) {
         var value = editing.val();
-        if (value.trim().length == 0) {
-            cancel();
+        if (tempN[0].className == 'stock-name' && value.trim().length == 0) {
+          cancel();
         }
       });
     }
