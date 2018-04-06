@@ -542,7 +542,12 @@ class LotEntryStatus(object):
             inner.c.performance_id==Performance.id
         ).filter(
             inner.c.stock_type_id==StockType.id
-        ).group_by(inner.c.performance_id, inner.c.stock_type_id).all()
+        ).group_by(
+            inner.c.performance_id, inner.c.stock_type_id
+        ).order_by(
+            Performance.display_order,
+            Performance.start_on,
+        ).all()
 
         product_results = DBSession.query(
             Performance,
