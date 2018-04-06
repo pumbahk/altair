@@ -1145,6 +1145,10 @@ class ClientOptionalForm(ClientForm):
                     break;
             field.validators.append(Optional())
 
+    def _validate_tel_1(self, *args, **kwargs):
+        # 電話番号1の validation をしない (ClientForm._validate_tel_1 をオーバライド)
+        return True
+
     def _validate_email_addresses(self, *args, **kwargs):
         # メールアドレスの validation をしない (ClientForm._validate_email_addresses をオーバライド)
         return True
