@@ -708,6 +708,10 @@ class ExportableReporter(object):
         elif request.params.get('to'):
             self.ordered_to = datetime.strptime(request.params.get('to'), '%Y-%m-%d')
 
+            # TKT-5269 期間の終了日時が、0分0秒だった場合、その日中を取得
+            if self.ordered_to.minute == 0 and self.ordered_to.second == 0:
+                self.ordered_to = self.ordered_to + timedelta(hours=23, minutes=59, seconds=59)
+
         # レポート設定を無視する
         self.without_filter = False
         if request.params.get('all'):
