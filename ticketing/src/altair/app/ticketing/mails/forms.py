@@ -8,6 +8,7 @@ from altair.formhelpers.form import OurForm
 from altair.formhelpers import fields
 from altair.formhelpers import widgets
 from wtforms import validators
+from wtforms.validators import Regexp, Optional
 from collections import namedtuple, OrderedDict
 from altair.app.ticketing.cart import helpers as ch
 
@@ -225,7 +226,13 @@ class SubjectInfoRenderer(object):
 def MailInfoFormFactory(template, mutil=None, request=None):
     attrs = OrderedDict()
     attrs["subject"] = fields.OurTextField(label=u"メール件名")
-    attrs["sender"] = fields.OurTextField(label=u"メールsender")
+    attrs["sender"] = fields.OurTextField(
+        label=u"メールsender",
+        validators=[
+            Optional(),
+            Regexp(r'^[a-zA-Z0-9_+\-*/=.]+@[^.][a-zA-Z0-9_\-.]*\.[a-z]{2,10}$'),
+        ]
+    )
 
     try:
         default = mutil.get_subject_info_default()
