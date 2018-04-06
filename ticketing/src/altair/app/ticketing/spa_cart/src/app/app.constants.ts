@@ -21,7 +21,7 @@ export class ApiConst {
     PERFORMANCES:     `${ApiConst.API_BASE_URL}events/{:event_id}/performances`,
 
     // 公演情報API
-    PERFORMANCE_INfO: `${ApiConst.API_BASE_URL}performances/{:performance_id}`,
+    PERFORMANCE_INFO: `${ApiConst.API_BASE_URL}performances/{:performance_id}`,
 
     // 席種情報検索API
     STOCK_TYPES:      `${ApiConst.API_BASE_URL}performances/{:performance_id}/sales_segments/{:sales_segment_id}/stock_types`,
