@@ -40,7 +40,7 @@ ${performance.code} | ${performance.name}
 </script>
 
 <h2>${performance.name}</h2>
-
+${request.context.organization.setting.enable_resale}
 <div class="tabbable tabs-top" id="tabbable-content">
   <ul class="nav nav-tabs">
     % if HH.has_permission('event_editor'):
@@ -53,6 +53,9 @@ ${performance.code} | ${performance.name}
     <li id="import_orders-tab"><a href="${request.route_path('performances.import_orders.index', performance_id=performance.id)}">予約インポート</a></li>
     <li id="region-tab"><a href="${request.route_path('performances.region.index', performance_id=performance.id)}">会場図領域設定</a></li>
     <li id="orion-tab"><a href="${request.route_path('performances.orion.index', performance_id=performance.id)}">イベント・ゲート</a></li>
+    % if request.context.organization.setting.enable_resale:
+    <li id="resale-tab"><a href="${request.route_path('performances.resale.index', performance_id=performance.id)}">リセール</a></li>
+    % endif
     <li id="print_progress-tab"><a href="${request.route_path('performances.print_progress.show', performance_id=performance.id)}">発券進捗状況確認</a></li>
     % if request.context.organization.setting.enable_discount_code:
     <li id="discount_code-tab"><a href="${request.route_path('performances.discount_code_settings.show', performance_id=performance.id)}">割引コード設定状況</a></li>
@@ -92,6 +95,10 @@ ${performance.code} | ${performance.name}
     % elif tab == 'orion':
     <div class="tab-pane" id="orion">
       <%include file="./orion/_show.html" args="performance=performance, stats=stats" />
+    </div>
+    % elif tab == 'resale':
+    <div class="tab-pane" id="resale">
+      <%include file="./resale/_show.html" args="performance=performance, stats=stats" />
     </div>
     % elif tab == 'print_progress':
     <div class="tab-pane" id="print_progress">

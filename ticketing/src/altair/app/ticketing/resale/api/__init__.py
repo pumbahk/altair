@@ -26,6 +26,9 @@ def includeme(config):
     config.add_route('api.request.create', '/requests/create')
     config.add_view(views.ResaleRequestCreateAPIView.as_view(), route_name='api.request.create')
 
+    config.add_route('api.request.export', '/requests/export')
+    config.add_view(views.ResaleRequestExportAPIView.as_view(), route_name='api.request.export')
+
     config.add_route('api.request.detail', '/requests/{id}')
     config.add_view(views.ResaleRequestRetrieveAPIView.as_view(), route_name='api.request.detail')
 

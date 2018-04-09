@@ -21,7 +21,15 @@ from altair.sqlahelper import get_db_session
 from altair.app.ticketing.models import merge_session_with_post, record_to_multidict
 from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.fanstatic import with_bootstrap
-from altair.app.ticketing.events.performances.forms import PerformanceForm, PerformanceManycopyForm, PerformanceTermForm, PerformancePublicForm, OrionPerformanceForm
+from altair.app.ticketing.events.performances.forms import (
+    PerformanceForm,
+    PerformanceManycopyForm,
+    PerformanceTermForm,
+    PerformancePublicForm,
+    OrionPerformanceForm,
+    PerformanceResaleSegmentForm,
+    PerformanceResaleRequestSearchForm
+)
 from altair.app.ticketing.core.models import Event, Performance, PerformanceSetting, OrionPerformance, Stock_drawing_l0_id
 from altair.app.ticketing.famiport.userside_models import AltairFamiPortPerformance
 from altair.app.ticketing.orders.forms import OrderForm, OrderSearchForm, OrderImportForm
@@ -33,7 +41,7 @@ from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.mails.api import get_mail_utility
 from altair.app.ticketing.core.models import MailTypeChoices
 from altair.app.ticketing.orders.api import OrderSummarySearchQueryBuilder, QueryBuilderError
-from altair.app.ticketing.orders.models import OrderSummary, OrderImportTask, ImportStatusEnum, ImportTypeEnum
+from altair.app.ticketing.orders.models import OrderSummary, OrderImportTask, ImportStatusEnum, ImportTypeEnum, OrderedProductItemToken, OrderedProductItem, OrderedProduct, Order
 from altair.app.ticketing.orders.importer import OrderImporter, ImportCSVReader
 from altair.app.ticketing.orders import helpers as order_helpers
 from altair.app.ticketing.cart import helpers as cart_helper
@@ -41,6 +49,7 @@ from altair.app.ticketing.carturl.api import get_performance_cart_url_builder, g
 from altair.app.ticketing.events.sales_segments.resources import (
     SalesSegmentAccessor,
 )
+from altair.app.ticketing.resale.models import ResaleSegment, ResaleRequest
 from .generator import PerformanceCodeGenerator
 from ..famiport_helpers import get_famiport_performance_ids
 from .api import set_visible_performance, set_invisible_performance
@@ -470,6 +479,54 @@ class PerformanceShowView(BaseView):
             'form': DiscountCodeSettingForm(),
         }
         return data
+
+    @view_config(route_name="performances.resale.index", request_method='GET')
+    def resale_index(self):
+        slave_session = get_db_session(self.request, name="slave")
+        form = PerformanceResaleSegmentForm(performance_id=self.performance.id)
+        search_form = PerformanceResaleRequestSearchForm(self.request.params)
+        resale_segments = slave_session.query(ResaleSegment) \
+                                       .filter(ResaleSegment.performance_id == self.performance.id)\
+                                       .all()
+        resale_requests = []
+        # 現時点resale_segmentは1つしかない。
+        for resale_segment in resale_segments:
+            resale_requests = slave_session.query(ResaleRequest, OrderedProductItemToken) \
+                .filter(ResaleRequest.ordered_product_item_token_id == OrderedProductItemToken.id) \
+                .filter(ResaleRequest.resale_segment_id == resale_segment.id) \
+                .filter(ResaleRequest.deleted_at == None)
+
+        if search_form.order_no.data:
+            order_no_list = re.split(r'[ \t,]', search_form.order_no.data)
+            resale_requests = resale_requests \
+                .join(OrderedProductItemToken,
+                      ResaleRequest.ordered_product_item_token_id == OrderedProductItemToken.id) \
+                .join(OrderedProductItem, OrderedProductItem.id == OrderedProductItemToken.ordered_product_item_id) \
+                .join(OrderedProduct, OrderedProduct.id == OrderedProductItem.ordered_product_id) \
+                .join(Order, Order.id == OrderedProduct.order_id) \
+                .filter(Order.order_no.in_(order_no_list))
+
+        if search_form.account_holder_name.data:
+            resale_requests = resale_requests.filter(ResaleRequest.account_holder_name == search_form.account_holder_name.data)
+
+        if (search_form.sold_only.data^search_form.not_sold_only.data):
+            resale_requests = resale_requests.filter(ResaleRequest.sold == search_form.sold_only.data)
+
+        resale_requests = paginate.Page(
+            resale_requests,
+            page=int(self.request.params.get('page', 0)),
+            items_per_page=50,
+            url=paginate.PageURL_WebOb(self.request)
+        )
+        return {
+            'tab': 'resale',
+            'action': '',
+            'performance': self.performance,
+            'resale_segments': resale_segments,
+            'resale_requests': resale_requests,
+            'form': form,
+            'search_form': search_form
+        }
 
 
 @view_defaults(decorator=with_bootstrap, permission="event_editor")
