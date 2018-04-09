@@ -476,8 +476,8 @@ class CSVRendererWrapper(object):
                     yield retval
             if bio.tell() > 0:
                 yield bio.getvalue()
-        except:
-            logger.exception(u'error occured during sending CSV data')
+        except Exception as e:
+            logger.exception(u'error occured during sending CSV data: {}'.format(e.message))
         finally:
             self.close()
 
