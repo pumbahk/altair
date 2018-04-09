@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 
 import urllib
+from pyramid.threadlocal import get_current_request
 
 ## todo: 以下のクラスを利用している箇所のimport文変更
 from .modelmanage import (
@@ -58,3 +59,25 @@ def make_page_url(path, params, page, encode_type, partial=False):
 
     qs = urllib.urlencode(dict([k, v.encode(encode_type) if isinstance(v, unicode) else v] for k, v in params.items()))
     return "%s?%s" % (path, qs)
+
+
+def add_env_label(string, request=None):
+    """
+    開発・検証環境の場合は文言を追記（TKT-5283）。
+    メールの件名など、どの環境で出力された文字列か表示させるために使う。
+    使用する文言は各環境の「*.cfg」ファイルで定義されている。
+    (例：findable_label.label = stg.altr.jp）
+
+    :param string: 環境名文言を追加する対象の文字列
+    :param request: リクエストオブジェクト（なければ生成する）
+    :return: 本番環境以外では文字が対象の頭に追記される。
+    """
+    if not request:
+        request = get_current_request()
+
+    environment = request.registry.settings.get('altair.findable_label.label')
+    if environment:
+        env_label = '[{}]'.format(environment)
+        return env_label + string
+    else:
+        return string
