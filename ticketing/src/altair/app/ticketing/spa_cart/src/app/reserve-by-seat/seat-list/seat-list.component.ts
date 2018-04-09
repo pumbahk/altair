@@ -45,6 +45,7 @@ export class SeatlistComponent implements OnInit {
 
   @Output() confirmStockType = new EventEmitter<boolean>();
   @Output() stockTypeIdFromList = new EventEmitter<number>();
+  @Output() onClickSeatSelection = new EventEmitter();
 
   //公演
   performance: IPerformance;
@@ -215,6 +216,7 @@ export class SeatlistComponent implements OnInit {
 */
   onSelectClick(stockTypeName){
     if (this.isInitialEnd) {
+      this.onClickSeatSelection.emit();
       this.filterComponent.selectSeatSearch(stockTypeName);
       this.mapHome.emit();
     }

@@ -1440,6 +1440,13 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
     if (!isInitialCalled) this.onoffRegion(this.regionIds);
   }
 
+  onClickSeatSelection() {
+    if ($(window).width() <= WINDOW_SM) {
+      // SP表示の場合は会場図へスクロール
+      $('html, body').animate({scrollTop: $('#mapImgBox').offset().top}, 500, 'swing');
+    }
+  }
+
   // 現在のviewBoxの値を取得
   getPresentViewBox(): any {
     let viewBox = $('#mapImgBox').children().attr('viewBox');
