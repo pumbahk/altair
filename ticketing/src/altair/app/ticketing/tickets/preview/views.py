@@ -188,7 +188,8 @@ def load_ticket_image(request, ticket_format):
     desc = resolver.resolve('altair.app.ticketing:static/images/tickets/%s' % im_loc)
     return image.open(desc.stream())
 
-def composite_ticket_image(request, ticket_format, im, im_info_defaults={'dpi':(300, 300)}, ticket_im_info_defaults={'dpi':(90, 90)}):
+def composite_ticket_image(request, ticket_format, im, im_info_defaults={'dpi':(300, 300)},
+                           ticket_im_info_defaults={'dpi':(90, 90)}, use_im_default_dpi=False):
     try:
         ticket_im = load_ticket_image(request, ticket_format)
     except Exception as e:
@@ -199,6 +200,8 @@ def composite_ticket_image(request, ticket_format, im, im_info_defaults={'dpi':(
         return im
     im_info = dict(im_info_defaults)
     im_info.update(im.info)
+    if use_im_default_dpi:
+        im_info.update(im_info_defaults)
     ticket_im_info = dict(ticket_im_info_defaults)
     ticket_im_info.update(ticket_im.info)
     im_dpi = im_info['dpi']
@@ -435,7 +438,9 @@ class PreviewApiView(object):
             if not without_ticket_image:
                 f = BytesIO(imgdata)
                 f.name = 'svg.png'
-                im = composite_ticket_image(self.request, ticket_format, image.open(f), im_info_defaults={'dpi':(300, 300)})
+                # tkt5272 7POS環境では券面プレビューがずれてしまうので、デフォルト解像度を使用するようにする
+                im = composite_ticket_image(self.request, ticket_format, image.open(f),
+                                            im_info_defaults={'dpi':(300, 300)}, use_im_default_dpi=True)
                 f = BytesIO()
                 im.save(f, 'png')
                 imgdata = f.getvalue()
