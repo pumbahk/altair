@@ -169,7 +169,15 @@ if label is None or label is True:
       %endfor
     </div>
   </div>
-
+  <%
+    for pm in performances:
+      if pm.orion and pm.orion.phone_verify_disabled:
+        is_phone_verify_disabled = 'true'
+      else:
+        is_phone_verify_disabled = 'false'
+        break
+    endfor
+  %>
   <div class="settlementBox">
     <div class="settlementBoxInner">
       <h2><img src="${request.static_url('altair.app.ticketing.cart:static/RT/pc/images/title_methods.gif')}" alt="お支払い、引き取り方法の指定" width="267" height="30" /></h2>
@@ -185,10 +193,10 @@ if label is None or label is True:
               <% checked = 'checked' if str(m.id) == checked_id else '' %>
               <% is_orion = 'true' if m.delivery_method.delivery_plugin_id == ORION_DELIVERY_PLUGIN_ID else 'false' %>
               <% orion_checked = checked and is_orion == 'true' if not orion_checked else orion_checked %>
-              <td class="settlementPayRadio"${' rowspan="2"' if m.system_fee > 0 or m.special_fee > 0 else u''|n} onclick="pdmp(this, ${is_orion})">
+              <td class="settlementPayRadio"${' rowspan="2"' if m.system_fee > 0 or m.special_fee > 0 else u''|n} onclick="pdmp(this, ${is_orion}, ${is_phone_verify_disabled})">
                 <input type="radio" name="payment_delivery_method_pair_id" id="radio2" value="${m.id}" autocomplete="off" ${checked} />
               </td>
-              <td onclick="pdmp(this, ${is_orion})">
+              <td onclick="pdmp(this, ${is_orion}, ${is_phone_verify_disabled})">
                 <dl>
                   <dt>${m.payment_method.name}</dt>
                   <dd class="paymentFee_${h.format_number(m.transaction_fee)}">
@@ -199,7 +207,7 @@ if label is None or label is True:
                   </dd>
                 </dl>
               </td>
-              <td onclick="pdmp(this, ${is_orion})">
+              <td onclick="pdmp(this, ${is_orion}, ${is_phone_verify_disabled})">
                 <dl>
                   <dt>${m.delivery_method.name}</dt>
                   <dd class="devlieryFee_${h.format_number(m.delivery_fee)}">
@@ -601,9 +609,9 @@ var selected_performance_id = 0;
 })($('#wishForm'));
 
 // orion関するfunctions
-function pdmp(td, is_orion) {
+function pdmp(td, is_orion, is_phone_disabled) {
     $(td).parents("tr").find("input").prop("checked", true);
-    if (is_orion) {
+    if (is_orion && is_phone_disabled === false) {
         $("#orion-ticket-phone-info").show();
     } else {
         var ul = $("#orion-ticket-phone-list"),
