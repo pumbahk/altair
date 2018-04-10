@@ -12,11 +12,15 @@ class ResaleSegmentSerializer(Schema):
     end_at = fields.DateTime('%Y-%m-%d %H:%M:%S',
                              required=True,
                              error_messages={'invalid': u"リセール終了日時を正しい日時に設定ください。"})
+    sent_status = fields.Integer(required=False)
+    sent_at = fields.DateTime('%Y-%m-%d %H:%M:%S',
+                             required=False,
+                             error_messages={'invalid': u"連携日時を正しい日時に設定ください。"})
 
     @validates_schema
     def valdate_start_and_end_at(self, data):
         if data['start_at'] > data['end_at']:
-            raise ValidationError(u'リセール開始日時を終了日時より後に設定くだいさ。', 'start_at')
+            raise ValidationError(u'リセール開始日時を終了日時より後に設定くだいさ。', ['start_at'])
 
 class ResaleSegmentCreateSerializer(ResaleSegmentSerializer):
     performance_id = fields.Integer(required=True)
