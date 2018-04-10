@@ -473,15 +473,18 @@ class DynamicFormBuilder(object):
                 message = u'{}文字以内で入力してください'.format(max)
                 validators.append(Length(max=max, message=message))
 
+        # 全角のみ・半角のみの指定をバリデーションに追加
         if field_desc.get('kind') in ['text', 'textarea']:
             from altair.formhelpers import (Zenkaku, Hankaku)
-            zenkaku = field_desc['validators'].get('zenkaku')
-            hankaku = field_desc['validators'].get('hankaku')
-            if zenkaku['enabled']:
-                validators.append(Zenkaku)
+            if hasattr(field_desc['validators'], 'zenkaku'):
+                zenkaku = field_desc['validators'].get('zenkaku')
+                if zenkaku['enabled']:
+                    validators.append(Zenkaku)
 
-            if hankaku['enabled']:
-                validators.append(Hankaku)
+            if hasattr(field_desc['validators'], 'hankaku'):
+                hankaku = field_desc['validators'].get('hankaku')
+                if hankaku['enabled']:
+                    validators.append(Hankaku)
 
         validator_flags = {}
         all_enabled = True
