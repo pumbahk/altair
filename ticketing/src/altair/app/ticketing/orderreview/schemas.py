@@ -95,3 +95,16 @@ class OrderReviewOrderAttributeForm(OurDynamicForm, SecureFormMixin):
         super(OrderReviewOrderAttributeForm, self).__init__(name_builder=DynamicFormBuilder._name_builder, **kwargs)
 
 build_dynamic_form = DynamicFormBuilder(form_factory=OrderReviewOrderAttributeForm)
+
+
+class PassportUserImageUploadForm(Form):
+    passport_user_id = fields.HiddenField(u"PassportUserID")
+    order_no = fields.HiddenField(u"予約番号")
+    tel = fields.HiddenField(u"電話番号")
+    upload_file = fields.FileField(label=u"imageファイル")
+
+    def validate_upload_file(form, field):
+        if not hasattr(field.data, "filename"):
+            raise ValidationError(u"ファイルを指定してください")
+        if not (field.data.filename.endswith('.png') or field.data.filename.endswith('.jpg')):
+            raise ValidationError(u"jpg/pngファイルのみアップロード可能です。")

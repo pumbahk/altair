@@ -279,6 +279,7 @@ class OrganizationSettings(BaseView):
         organization_setting.oauth_endpoint_api = f.oauth_endpoint_api.data
         organization_setting.oauth_scope = f.oauth_scope.data
         organization_setting.openid_prompt = f.openid_prompt.data
+        organization_setting.enable_passport = f.enable_passport.data
         organization_setting.save()
 
         self.request.session.flash(u'その他の設定を保存しました')

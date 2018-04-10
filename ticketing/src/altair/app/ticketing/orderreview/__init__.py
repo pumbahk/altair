@@ -31,15 +31,22 @@ def decide_auth_types(request, classification):
 def setup_static_views(config):
     config.add_static_view('static', 'altair.app.ticketing.orderreview:static', cache_max_age=3600)
     config.add_static_view('static_', 'altair.app.ticketing.cart:static', cache_max_age=3600)
+    config.add_static_view('static__', 'altair.app.ticketing.passport:static', cache_max_age=3600)
     config.add_static_view('img', 'altair.app.ticketing.cart:static', cache_max_age=3600)
 
     config.include("altair.cdnpath")
     from altair.cdnpath import S3StaticPathFactory
     settings = config.registry.settings
+    # config.add_cdn_static_path(S3StaticPathFactory(
+    #         settings["s3.bucket_name"],
+    #         exclude=config.maybe_dotted(settings.get("s3.static.exclude.function")),
+    #         mapping={"altair.app.ticketing.cart:static/": "/cart/static/"}))
+
     config.add_cdn_static_path(S3StaticPathFactory(
-            settings["s3.bucket_name"],
-            exclude=config.maybe_dotted(settings.get("s3.static.exclude.function")),
-            mapping={"altair.app.ticketing.cart:static/": "/cart/static/"}))
+        settings["s3.bucket_name"],
+        exclude=config.maybe_dotted(settings.get("s3.static.exclude.function")),
+        mapping={"altair.app.ticketing.passport:static/": "/passport/static/"}))
+
 
 def includeme(config):
     ## review

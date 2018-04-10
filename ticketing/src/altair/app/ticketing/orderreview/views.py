@@ -376,7 +376,9 @@ class OrderReviewShowView(object):
 
         if order is None or order.shipping_address is None:
             raise InvalidForm(form, [self._message(u'受付番号または電話番号が違います。')])
-        return dict(order=order, locale=custom_locale_negotiator(self.request) if self.request.organization.setting.i18n else "")
+
+        return dict(order=order,
+                    locale=custom_locale_negotiator(self.request) if self.request.organization.setting.i18n else "", )
 
 @view_defaults(renderer=selectable_renderer("order_review/edit_order_attributes.html"), request_method='POST')
 class OrderAttributesEditView(object):
