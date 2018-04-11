@@ -19,7 +19,7 @@ class SentStatus:
     fail = 4
     unknown = 5
 
-class SoldStatus:
+class ResaleRequestStatus:
     waiting = 1
     sold = 2
     back = 3
