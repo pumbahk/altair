@@ -81,28 +81,64 @@
       <div class="title">
         <h4>リセールリクエストリスト</h4>
       </div>
-      <div class="navbar span6 request-search-nav">
+      <div class="navbar span5 request-search-nav">
         <div class="navbar-inner">
           <div class="container">
             <form method="get" class="navbar-search pull-left form-inline">
-              <span class="navbar-text">
-                ${search_form.order_no.label}
-                ${search_form.order_no(class_="search-query input-medium")}
-              </span>
-              <span class="navbar-text">
-                ${search_form.account_holder_name.label}
-                ${search_form.account_holder_name(class_="search-query input-medium")}
-              </span>
-              <span class="navbar-text">
-                ${search_form.not_sold_only.label}
-                ${search_form.not_sold_only(class_="search-query input-medium")}
-              </span>
-              <span class="navbar-text">
-                ${search_form.sold_only.label}
-                ${search_form.sold_only(class_="search-query input-medium")}
-              </span>
-              <button type="submit">検索</button>
-              <button type="button" onclick="open_resale_request_export_modal()">エクスポート</button>
+              <div>
+                <span class="navbar-text">
+                  ${search_form.order_no.label}
+                  ${search_form.order_no(class_="search-query input-medium")}
+                </span>
+                <span class="navbar-text">
+                  ${search_form.account_holder_name.label}
+                  ${search_form.account_holder_name(class_="search-query input-medium")}
+                </span>
+                <button type="submit">検索</button>
+                <button type="button" onclick="open_resale_request_export_modal()">エクスポート</button>
+              </div>
+              <div>
+                <span class="navbar-text">
+                  <strong>ステータス：</strong>
+                </span>
+                <span class="navbar-text">
+                  ${search_form.waiting.label}
+                  ${search_form.waiting(class_="search-query input-medium")}
+                </span>
+                <span class="navbar-text">
+                  ${search_form.sold.label}
+                  ${search_form.sold(class_="search-query input-medium")}
+                </span>
+                <span class="navbar-text">
+                  ${search_form.back.label}
+                  ${search_form.back(class_="search-query input-medium")}
+                </span>
+                <span class="navbar-text">
+                  ${search_form.cancel.label}
+                  ${search_form.cancel(class_="search-query input-medium")}
+                </span>
+              </div>
+              <div>
+                <span class="navbar-text">
+                  <strong>連携ステータス：</strong>
+                </span>
+                <span class="navbar-text">
+                  ${search_form.not_sent.label}
+                  ${search_form.not_sent(class_="search-query input-medium")}
+                </span>
+                <span class="navbar-text">
+                  ${search_form.sent.label}
+                  ${search_form.sent(class_="search-query input-medium")}
+                </span>
+                <span class="navbar-text">
+                  ${search_form.send_required.label}
+                  ${search_form.send_required(class_="search-query input-medium")}
+                </span>
+                <span class="navbar-text">
+                  ${search_form.fail.label}
+                  ${search_form.fail(class_="search-query input-medium")}
+                </span>
+              </div>
             </form>
           </div>
         </div>
@@ -452,7 +488,7 @@
   }
 
   function update_send_button_status(button, status) {
-      if (status === "success") {
+      if (status === "sent") {
           button.removeClass("btn-danger btn-warning");
           button.addClass("btn-inverse");
           button.attr("disabled", true);
@@ -655,7 +691,7 @@
 
               for (i = 0; i < success_list.length; i++) {
                   send_button = $("#resale-segment-" + success_list[i]).siblings(".btn-send");
-                  update_send_button_status(send_button, 'success');
+                  update_send_button_status(send_button, 'sent');
               }
               for (i = 0; i < fail_list.length; i++) {
                   send_button = $("#resale-segment-" + fail_list[i]).siblings(".btn-send");

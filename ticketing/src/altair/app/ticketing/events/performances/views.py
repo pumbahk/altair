@@ -512,8 +512,11 @@ class PerformanceShowView(BaseView):
         if search_form.account_holder_name.data:
             resale_requests = resale_requests.filter(ResaleRequest.account_holder_name == search_form.account_holder_name.data)
 
-        if (search_form.sold_only.data^search_form.not_sold_only.data):
-            resale_requests = resale_requests.filter(ResaleRequest.sold == search_form.sold_only.data)
+        if search_form.get_status():
+            resale_requests = resale_requests.filter(ResaleRequest.status.in_(search_form.get_status()))
+
+        if search_form.get_sent_status():
+            resale_requests = resale_requests.filter(ResaleRequest.sent_status.in_(search_form.get_sent_status()))
 
         resale_requests = paginate.Page(
             resale_requests,
@@ -1190,7 +1193,7 @@ class ResaleForOrionAPIView(BaseView):
                     logger.info("fail to send resale segment: {0}...".format(resale_segment.id))
                 else:
                     success_list.append(resale_segment.id)
-                    resale_segment.sent_status = SentStatus.success
+                    resale_segment.sent_status = SentStatus.sent
             except Exception as e:
                 fail_list.append(resale_segment.id)
                 resale_segment.sent_status = SentStatus.fail
@@ -1244,13 +1247,13 @@ class ResaleForOrionAPIView(BaseView):
             resale_requests = DBSession.query(ResaleRequest)\
                 .filter(ResaleRequest.resale_segment_id == resale_segment_id) \
                 .filter(ResaleRequest.status.in_([ResaleRequestStatus.sold, ResaleRequestStatus.back])) \
-                .filter(ResaleRequest.sent_status != SentStatus.success) \
+                .filter(ResaleRequest.sent_status != SentStatus.sent) \
                 .all()
         else:
             resale_requests = DBSession.query(ResaleRequest)\
                 .filter(ResaleRequest.id == resale_request_id) \
                 .filter(ResaleRequest.status != ResaleRequestStatus.unknown) \
-                .filter(ResaleRequest.sent_status != SentStatus.success) \
+                .filter(ResaleRequest.sent_status != SentStatus.sent) \
                 .all()
 
         if not resale_requests:
@@ -1268,7 +1271,7 @@ class ResaleForOrionAPIView(BaseView):
                     logger.info("fail to send resale segment(ID: {0}) ...".format(resale_request.id))
                 else:
                     success_list.append(resale_request.id)
-                    resale_request.sent_status = SentStatus.success
+                    resale_request.sent_status = SentStatus.sent
             except Exception as e:
                 fail_list.append(resale_request.id)
                 resale_request.sent_status = SentStatus.fail

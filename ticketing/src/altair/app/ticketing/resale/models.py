@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 class SentStatus:
     not_sent = 1
-    success = 2
+    sent = 2
     send_required = 3
     fail = 4
     unknown = 5
