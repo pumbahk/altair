@@ -51,8 +51,11 @@
 <%
   status_str = u""
   color_class = ""
-  if resale_request.sent_status == 4:
+  if resale_request.sent_status == 3:
     status_str = u"再連携必須"
+    color_class = "btn-danger"
+  elif resale_request.sent_status == 4:
+    status_str = u"連携失敗"
     color_class = "btn-danger"
   else:
     status_str = u"連携"
@@ -83,8 +86,8 @@
   % if resale_request.sent_status != 2:
     <% sent_status_str, sent_status_color = get_resale_request_sent_status(resale_request) %>
     <div class="btn-group">
-      <button class="btn btn-small" onclick="operate_resale_request($(this), 'waiting')">リセット</button>
-      <button class="btn btn-small ${sent_status_color}" onclick="open_send_resale_request_to_orion_modal($(this), false)">${sent_status_str}</button>
+      <button class="btn btn-small btn-reset" onclick="operate_resale_request($(this), 'waiting')">リセット</button>
+      <button class="btn btn-small ${sent_status_color} btn-send" onclick="open_send_resale_request_to_orion_modal($(this), false)">${sent_status_str}</button>
     </div>
   % endif
 % else:

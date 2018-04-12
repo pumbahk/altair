@@ -306,15 +306,19 @@
         <tbody>
           <tr>
             <td>予約番号</td>
-            <td id="order_no-condition"></td>
+            <td id="condition-order_no"></td>
           </tr>
           <tr>
             <td>名義人</td>
-            <td id="account_holder_name-condition"></td>
+            <td id="condition-account_holder_name"></td>
           </tr>
           <tr>
-            <td>リセールステータス</td>
-            <td id="sold-condition"></td>
+            <td>ステータス</td>
+            <td id="condition-status"></td>
+          </tr>
+          <tr>
+            <td>連携ステータス</td>
+            <td id="condition-sent_status"></td>
           </tr>
         </tbody>
       </table>
@@ -358,8 +362,8 @@
 
 <button id="resale-request-reset-btn-template" class="btn btn-small hide" onclick="operate_resale_request($(this), 'waiting')">リセット</button>
 <div id="resale-request-btn-group-template-1" class="btn-group hide">
-  <button class="btn btn-small" onclick="operate_resale_request($(this), 'waiting')">リセット</button>
-  <button class="btn btn-small btn-warning" onclick="open_send_resale_request_to_orion_modal($(this), false)">連携</button>
+  <button class="btn btn-small btn-reset" onclick="operate_resale_request($(this), 'waiting')">リセット</button>
+  <button class="btn btn-small btn-warning btn-send" onclick="open_send_resale_request_to_orion_modal($(this), false)">連携</button>
 </div>
 <div id="resale-request-btn-group-template-2" class="btn-group hide">
   <button class="btn btn-small btn-primary" onclick="operate_resale_request($(this), 'sold')">リセール</button>
@@ -835,7 +839,7 @@
                   span.text(span.text().replace("（仮）", ""));
                   btn_group.remove();
               } else {
-                  button.text("連携失敗").removeClass("btn-warning").addClass("btn-danger");
+                  tr.find("button.btn-send").text("連携失敗").removeClass("btn-warning").addClass("btn-danger");
               }
               close_modal_send_resale_request_to_orion(modal);
           },
@@ -868,16 +872,34 @@
       });
   }
 
+  function get_resale_request_status() {
+      var status_list = [];
+      if ($("#waiting").is(":checked")) status_list.push(1);
+      if ($("#sold").is(":checked")) status_list.push(2);
+      if ($("#back").is(":checked")) status_list.push(3);
+      if ($("#cancel").is(":checked")) status_list.push(4);
+      return status_list;
+  }
+
+  function get_resale_request_sent_status() {
+      var sent_status_list = [];
+      if ($("#not_sent").is(":checked")) sent_status_list.push(1);
+      if ($("#sent").is(":checked")) sent_status_list.push(2);
+      if ($("#send_required").is(":checked")) sent_status_list.push(3);
+      if ($("#fail").is(":checked")) sent_status_list.push(4);
+      return sent_status_list;
+  }
+
   function build_export_url() {
       var baseUrl = "/resale/api/requests/export",
           resale_segment_id = $($(".resale-segment-list-box").find("h4")[1]).data("resale_segment_id"),
-          sold_only = $("#sold_only").is(":checked"),
-          not_sold_only = $("#not_sold_only").is(":checked"),
           order_no = $("#order_no").val().trim(),
           account_holder_name = $("#account_holder_name").val().trim(),
+          status_list = get_resale_request_status(),
+          sent_status_list = get_resale_request_sent_status(),
           filter_list = [];
 
-      if (sold_only && not_sold_only && order_no === "" && account_holder_name === "") {
+      if (status_list.length === 0 && sent_status_list === 0 && order_no === "" && account_holder_name === "") {
           return baseUrl + "?" + "filter[resale_segment_id]=" + resale_segment_id;
       }
 
@@ -889,21 +911,58 @@
           filter_list.push("filter[account_holder_name]=" + account_holder_name);
       }
 
-      if (sold_only^not_sold_only) {
-          filter_list.push("filter[sold]=" + +sold_only);
+      if (status_list.length !== 0) {
+          filter_list.push("filter[status]=" + status_list.join(","));
+      }
+
+      if (sent_status_list.length !== 0) {
+          filter_list.push("filter[sent_status]=" + sent_status_list.join(","));
       }
 
       return baseUrl + "?" + filter_list.join("&");
 
   }
 
+  function get_resale_request_status_verbose() {
+    var status_list = get_resale_request_status(),
+        status_verbose_list = [];
+
+    if (status_list.length === 0) {
+      status_verbose_list.push("条件なし")
+    } else if (status_list.length === 4) {
+      status_verbose_list.push("全部")
+    } else {
+      if ($("#waiting").is(":checked")) status_verbose_list.push("リセール中");
+      if ($("#sold").is(":checked")) status_verbose_list.push("リセール");
+      if ($("#back").is(":checked")) status_verbose_list.push("返却");
+      if ($("#cancel").is(":checked")) status_verbose_list.push("キャンセル");
+    }
+      return status_verbose_list;
+  }
+
+  function get_resale_request_sent_status_verbose() {
+    var sent_status_list = get_resale_request_sent_status(),
+        status_verbose_list = [];
+
+    if (sent_status_list.length === 0) {
+      status_verbose_list.push("条件なし")
+    } else if (sent_status_list.length === 4) {
+      status_verbose_list.push("全部")
+    } else {
+      if ($("#not_sent").is(":checked")) status_verbose_list.push("未連携");
+      if ($("#sent").is(":checked")) status_verbose_list.push("連携済み");
+      if ($("#send_required").is(":checked")) status_verbose_list.push("再連携必須");
+      if ($("#fail").is(":checked")) status_verbose_list.push("連携失敗");
+    }
+    return status_verbose_list;
+  }
+
   function open_resale_request_export_modal() {
       var modal = $("#modal-resale-request-export"),
-          sold_only = $("#sold_only").is(":checked"),
-          not_sold_only = $("#not_sold_only").is(":checked"),
           order_no = $("#order_no").val().trim(),
           account_holder_name = $("#account_holder_name").val().trim(),
-          sold_condition = "全部";
+          status_list = get_resale_request_status_verbose(),
+          sent_status_list = get_resale_request_sent_status_verbose();
 
       if (order_no === "") {
           order_no = "条件なし";
@@ -911,12 +970,10 @@
       if (account_holder_name === "") {
           account_holder_name = "条件なし";
       }
-      modal.find("#order_no-condition").text(order_no);
-      modal.find("#account_holder_name-condition").text(account_holder_name);
-      if (sold_only^not_sold_only) {
-          sold_condition = sold_only?"リセール済み":"リセール中";
-      }
-      modal.find("#sold-condition").text(sold_condition);
+      modal.find("#condition-order_no").text(order_no);
+      modal.find("#condition-account_holder_name").text(account_holder_name);
+      modal.find("#condition-status").text(status_list.join(', '));
+      modal.find("#condition-sent_status").text(sent_status_list.join(', '));
       modal.show();
       $("#modal-bg").show();
   }
