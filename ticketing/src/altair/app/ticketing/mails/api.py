@@ -18,6 +18,7 @@ from altair.mobile import carriers
 
 from altair.app.ticketing.core.models import ExtraMailInfo
 from altair.app.ticketing.core.api import get_default_contact_url
+from altair.app.ticketing.core.utils import add_env_label
 
 from .interfaces import (
     IMailUtility,
@@ -200,6 +201,8 @@ class MailUtility(object):
         if not message.recipients:
             logger.warn("recipients is not found. skip.")
             return message
+
+        message.subject = add_env_label(message.subject, request)
 
         mailer = get_mailer(request)
         mailer.send(message)

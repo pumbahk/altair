@@ -27,7 +27,7 @@ export class PerformancesService extends ApiBase{
    */
   getPerformance(performanceId: number): Observable<IPerformanceInfoResponse | IErrorResponse> {
 
-    const url = `${ApiConst.API_URL.PERFORMANCE_INfO.replace(/{:performance_id}/, performanceId + '')}`;
+    const url = `${ApiConst.API_URL.PERFORMANCE_INFO.replace(/{:performance_id}/, performanceId + '')}`;
     var httpGet = this.httpGet(url, true).map((response: IPerformanceInfoResponse) => {
       response.data.performance.sales_segments = response.data.sales_segments;
       return response;

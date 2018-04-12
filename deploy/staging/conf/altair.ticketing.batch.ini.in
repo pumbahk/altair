@@ -24,6 +24,9 @@ altair.httpsession.persistence.type = ${altair:beaker_backend_type}
 altair.httpsession.persistence.data_dir = %(here)s/../tmp/beaker/data
 altair.httpsession.persistence.lock_dir = %(here)s/../tmp/beaker/lock
 
+; altair.findable_label
+altair.findable_label.label = ${altair:findable_label.label}
+
 [loggers]
 keys = root, ticketing
 

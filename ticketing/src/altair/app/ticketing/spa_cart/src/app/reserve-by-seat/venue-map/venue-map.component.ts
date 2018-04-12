@@ -334,6 +334,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
                 file_name = url_str.slice(cut_idx + 1);
                 errorMassage = file_name + " not found"
                 this._logger.error(errorMassage);
+                this.errorModalDataService.sendReloadOnClosedToErrorModal();
                 return;
               });
           }
@@ -352,6 +353,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
                 file_name = url_str.slice(cut_idx + 1);
                 errorMassage = file_name + " not found"
                 this._logger.error(errorMassage);
+                this.errorModalDataService.sendReloadOnClosedToErrorModal();
                 return;
               });
           }
@@ -409,14 +411,16 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
               },
                 (error) => {
                   this._logger.error('findStockTypesByPerformanceId(#${this.performanceId}) error', error);
+                  this.errorModalDataService.sendReloadOnClosedToErrorModal();
                 });
-              (error) => {
-                this._logger.error('[VenueMapComponent]getStockType error', error);
-              }
-            });
+            }, (error) => {
+              this._logger.error('[VenueMapComponent]getStockType error', error);
+              this.errorModalDataService.sendReloadOnClosedToErrorModal();
+            })
         },
           (error) => {
             this._logger.error('get Performance(#${this.performanceId}) error', error);
+            this.errorModalDataService.sendReloadOnClosedToErrorModal();
             return;
           });
       }
@@ -1434,6 +1438,13 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
     }
     $('#mapImgBox').children().attr('viewBox', this.displayViewBox.join(' ')); // viewBoxを初期値に設定
     if (!isInitialCalled) this.onoffRegion(this.regionIds);
+  }
+
+  onClickSeatSelection() {
+    if ($(window).width() <= WINDOW_SM) {
+      // SP表示の場合は会場図へスクロール
+      $('html, body').animate({scrollTop: $('#mapImgBox').offset().top}, 500, 'swing');
+    }
   }
 
   // 現在のviewBoxの値を取得

@@ -6,13 +6,17 @@ from ..models import ResaleSegment, ResaleRequest
 class ResaleSegmentSerializer(Schema):
     __model__ = ResaleSegment
     id = fields.Integer()
-    start_at = fields.DateTime('%Y-%m-%d %H:%M:%S', required=True)
-    end_at = fields.DateTime('%Y-%m-%d %H:%M:%S', required=True)
+    start_at = fields.DateTime('%Y-%m-%d %H:%M:%S',
+                               required=True,
+                               error_messages={'invalid': u"リセール開始日時を正しい日時に設定ください。"})
+    end_at = fields.DateTime('%Y-%m-%d %H:%M:%S',
+                             required=True,
+                             error_messages={'invalid': u"リセール終了日時を正しい日時に設定ください。"})
 
     @validates_schema
     def valdate_start_and_end_at(self, data):
         if data['start_at'] > data['end_at']:
-            raise ValidationError('start_at should be earlier than end_at.', 'start_at')
+            raise ValidationError(u'リセール開始日時を終了日時より後に設定くだいさ。', 'start_at')
 
 class ResaleSegmentCreateSerializer(ResaleSegmentSerializer):
     performance_id = fields.Integer(required=True)
