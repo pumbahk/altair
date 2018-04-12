@@ -119,10 +119,12 @@ export class FilterComponent implements OnInit {
           },
             (error) => {
               this._logger.error('findStockTypesByPerformanceId(#${this.performanceId}) error', error);
+              this.errorModalDataService.sendReloadOnClosedToErrorModal();
             });
         },
           (error) => {
             this._logger.error('get Performance(#${this.performanceId}) error', error);
+            this.errorModalDataService.sendReloadOnClosedToErrorModal();
             return;
           });
       }
@@ -209,6 +211,7 @@ export class FilterComponent implements OnInit {
       },
       (error) => {
         this._logger.error('[FilterComponent]getStockType error', error);
+        this.errorModalDataService.sendReloadOnClosedToErrorModal();
       });
 
     //初期表示処理
@@ -466,6 +469,7 @@ getSearchParams(): ISeatsRequest {
         $('.reserve').prop("disabled", false);
         this.animationEnableService.sendToRoadFlag(false);
         this._logger.error("seat search error", error);
+        this.errorModalDataService.sendReloadOnClosedToErrorModal();
       });
     return find;
   }

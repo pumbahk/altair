@@ -3281,6 +3281,10 @@ class Organization(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def enable_discount_code(self):
         return self.setting.enable_discount_code
 
+    @property
+    def enable_resale(self):
+        return self.setting.enable_resale
+
     def get_cms_data(self):
         return {"organization_id": self.id, "organization_source": "oauth"}
 
@@ -4377,6 +4381,7 @@ class OrganizationSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     recaptcha = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"recaptchaの使用", _a_label=u"recaptchaの使用")
     tapirs = AnnotatedColumn(Boolean, nullable=True, default=False, doc=u"テイパーズ機能", _a_label=u"テイパーズ機能")
     enable_discount_code = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"クーポン・割引コード設定を利用", _a_label=u"クーポン・割引コード設定を利用")
+    enable_resale = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"リセール機能を利用", _a_label=u"リセール機能を利用")
 
     def _render_cart_setting_id(self):
         return link_to_cart_setting(self.cart_setting)

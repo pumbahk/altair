@@ -514,15 +514,13 @@ class LotEntries(BaseView):
         lot = self.context.lot
         lot_status = api.get_lot_entry_status(lot, self.request)
         report_settings = LotEntryReportSetting.query.filter(
-            LotEntryReportSetting.lot_id==lot.id
+            LotEntryReportSetting.lot_id == lot.id
         ).all()
 
         between_lot_start_and_payment_due = lot.between_lot_start_and_payment_due()
         return dict(
             lot=lot,
-            performances = lot_status.performances,
             #  公演、希望順ごとの数
-            sub_counts = lot_status.sub_counts,
             lot_status=lot_status,
             report_settings=report_settings,
             between_lot_start_and_payment_due=between_lot_start_and_payment_due,

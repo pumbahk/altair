@@ -4122,6 +4122,7 @@ var Wrapper_SeatlistComponent = (function () {
         (this.subscription0 && this.subscription0.unsubscribe());
         (this.subscription1 && this.subscription1.unsubscribe());
         (this.subscription2 && this.subscription2.unsubscribe());
+        (this.subscription3 && this.subscription3.unsubscribe());
     };
     Wrapper_SeatlistComponent.prototype.check_filterComponent = function (currValue, throwOnChange, forceUpdate) {
         if ((forceUpdate || __WEBPACK_IMPORTED_MODULE_3__angular_core_src_linker_view_utils__["checkBinding"](throwOnChange, this._expr_0, currValue))) {
@@ -4167,7 +4168,7 @@ var Wrapper_SeatlistComponent = (function () {
         var result = true;
         return result;
     };
-    Wrapper_SeatlistComponent.prototype.subscribe = function (view, _eventHandler, emit0, emit1, emit2) {
+    Wrapper_SeatlistComponent.prototype.subscribe = function (view, _eventHandler, emit0, emit1, emit2, emit3) {
         this._eventHandler = _eventHandler;
         if (emit0) {
             (this.subscription0 = this.context.mapHome.subscribe(_eventHandler.bind(view, 'mapHome')));
@@ -4177,6 +4178,9 @@ var Wrapper_SeatlistComponent = (function () {
         }
         if (emit2) {
             (this.subscription2 = this.context.stockTypeIdFromList.subscribe(_eventHandler.bind(view, 'stockTypeIdFromList')));
+        }
+        if (emit3) {
+            (this.subscription3 = this.context.onClickSeatSelection.subscribe(_eventHandler.bind(view, 'onClickSeatSelection')));
         }
     };
     return Wrapper_SeatlistComponent;
@@ -5661,8 +5665,8 @@ var View_VenuemapComponent0 = (function (_super) {
         this._text_51 = this.renderer.createText(this._el_42, '\n', null);
         var disposable_0 = __WEBPACK_IMPORTED_MODULE_3__angular_core_src_linker_view_utils__["subscribeToRenderElement"](this, this._el_39, new __WEBPACK_IMPORTED_MODULE_3__angular_core_src_linker_view_utils__["InlineArray4"](4, 'output', null, 'confirmStockType', null), this.eventHandler(this.handleEvent_39));
         this._ReserveByQuantityComponent_39_3.subscribe(this, this.eventHandler(this.handleEvent_39), true, true);
-        var disposable_1 = __WEBPACK_IMPORTED_MODULE_3__angular_core_src_linker_view_utils__["subscribeToRenderElement"](this, this._el_45, new __WEBPACK_IMPORTED_MODULE_3__angular_core_src_linker_view_utils__["InlineArray8"](6, 'confirmStockType', null, 'mapHome', null, 'stockTypeIdFromList', null), this.eventHandler(this.handleEvent_45));
-        this._SeatlistComponent_45_4.subscribe(this, this.eventHandler(this.handleEvent_45), true, true, true);
+        var disposable_1 = __WEBPACK_IMPORTED_MODULE_3__angular_core_src_linker_view_utils__["subscribeToRenderElement"](this, this._el_45, new __WEBPACK_IMPORTED_MODULE_3__angular_core_src_linker_view_utils__["InlineArray8"](8, 'confirmStockType', null, 'mapHome', null, 'onClickSeatSelection', null, 'stockTypeIdFromList', null), this.eventHandler(this.handleEvent_45));
+        this._SeatlistComponent_45_4.subscribe(this, this.eventHandler(this.handleEvent_45), true, true, true, true);
         this._viewQuery_ReserveByQuantityComponent_0.reset([
             this._ReserveByQuantityComponent_39_3.context,
             this._ReserveByQuantityComponent_45_3
@@ -5883,9 +5887,13 @@ var View_VenuemapComponent0 = (function (_super) {
             var pd_sub_1 = (this.context.mapHome() !== false);
             result = (pd_sub_1 && result);
         }
-        if ((eventName == 'stockTypeIdFromList')) {
-            var pd_sub_2 = ((this.context.stockTypeIdFromList = $event) !== false);
+        if ((eventName == 'onClickSeatSelection')) {
+            var pd_sub_2 = (this.context.onClickSeatSelection() !== false);
             result = (pd_sub_2 && result);
+        }
+        if ((eventName == 'stockTypeIdFromList')) {
+            var pd_sub_3 = ((this.context.stockTypeIdFromList = $event) !== false);
+            result = (pd_sub_3 && result);
         }
         return result;
     };
@@ -8096,7 +8104,7 @@ var ApiConst = (function () {
         // 公演情報検索API
         PERFORMANCES: ApiConst.API_BASE_URL + "events/{:event_id}/performances",
         // 公演情報API
-        PERFORMANCE_INfO: ApiConst.API_BASE_URL + "performances/{:performance_id}",
+        PERFORMANCE_INFO: ApiConst.API_BASE_URL + "performances/{:performance_id}",
         // 席種情報検索API
         STOCK_TYPES: ApiConst.API_BASE_URL + "performances/{:performance_id}/sales_segments/{:sales_segment_id}/stock_types",
         // 席種情報API
@@ -8219,10 +8227,14 @@ var ApiCommonErrorComponent = (function () {
             _this.errorDetail = errorDetail;
             _this.errorDisplay = true;
         });
+        this.errorModalDataService.onClosed$.subscribe(function (onClosed) {
+            _this.onClosed = onClosed;
+        });
     };
     ApiCommonErrorComponent.prototype.display = function () {
         this.errorDisplay = false;
         this.animationEnableService.sendToRoadFlag(false);
+        this.onClosed && this.onClosed();
     };
     ApiCommonErrorComponent.ctorParameters = function () { return [{ type: __WEBPACK_IMPORTED_MODULE_0__shared_services_error_modal_data_service__["a" /* ErrorModalDataService */] }, { type: __WEBPACK_IMPORTED_MODULE_1__shared_services_animation_enable_service__["a" /* AnimationEnableService */] }]; };
     return ApiCommonErrorComponent;
@@ -8759,6 +8771,7 @@ var EventinfoComponent = (function () {
                     _this.isDateObtained = true;
                 }, function (error) {
                     _this._logger.error('get Performance(#${this.performanceId}) error', error);
+                    _this.errorModalDataService.sendReloadOnClosedToErrorModal();
                 });
             }
         });
@@ -8861,9 +8874,11 @@ var FilterComponent = (function () {
                         _this.setPriceInit();
                     }, function (error) {
                         _this._logger.error('findStockTypesByPerformanceId(#${this.performanceId}) error', error);
+                        _this.errorModalDataService.sendReloadOnClosedToErrorModal();
                     });
                 }, function (error) {
                     _this._logger.error('get Performance(#${this.performanceId}) error', error);
+                    _this.errorModalDataService.sendReloadOnClosedToErrorModal();
                     return;
                 });
             }
@@ -8949,6 +8964,7 @@ var FilterComponent = (function () {
             }
         }, function (error) {
             _this._logger.error('[FilterComponent]getStockType error', error);
+            _this.errorModalDataService.sendReloadOnClosedToErrorModal();
         });
         //初期表示処理
         if (this.stockTypes.length > 1) {
@@ -9195,6 +9211,7 @@ var FilterComponent = (function () {
             __WEBPACK_IMPORTED_MODULE_9_jquery__('.reserve').prop("disabled", false);
             _this.animationEnableService.sendToRoadFlag(false);
             _this._logger.error("seat search error", error);
+            _this.errorModalDataService.sendReloadOnClosedToErrorModal();
         });
         return find;
     };
@@ -9419,6 +9436,7 @@ var SeatlistComponent = (function () {
         this.mapHome = new __WEBPACK_IMPORTED_MODULE_0__angular_core__["EventEmitter"]();
         this.confirmStockType = new __WEBPACK_IMPORTED_MODULE_0__angular_core__["EventEmitter"]();
         this.stockTypeIdFromList = new __WEBPACK_IMPORTED_MODULE_0__angular_core__["EventEmitter"]();
+        this.onClickSeatSelection = new __WEBPACK_IMPORTED_MODULE_0__angular_core__["EventEmitter"]();
         //seatList表示・非表示フラグ
         this.seatListDisply = true;
         //検索結果フラグ
@@ -9557,6 +9575,7 @@ var SeatlistComponent = (function () {
    */
     SeatlistComponent.prototype.onSelectClick = function (stockTypeName) {
         if (this.isInitialEnd) {
+            this.onClickSeatSelection.emit();
             this.filterComponent.selectSeatSearch(stockTypeName);
             this.mapHome.emit();
         }
@@ -9782,6 +9801,7 @@ var VenuemapComponent = (function () {
                             file_name = url_str.slice(cut_idx + 1);
                             errorMassage = file_name + " not found";
                             _this._logger.error(errorMassage);
+                            _this.errorModalDataService.sendReloadOnClosedToErrorModal();
                             return;
                         });
                     }
@@ -9799,6 +9819,7 @@ var VenuemapComponent = (function () {
                             file_name = url_str.slice(cut_idx + 1);
                             errorMassage = file_name + " not found";
                             _this._logger.error(errorMassage);
+                            _this.errorModalDataService.sendReloadOnClosedToErrorModal();
                             return;
                         });
                     }
@@ -9851,13 +9872,15 @@ var VenuemapComponent = (function () {
                             _this.isInitialDataObtained = true;
                         }, function (error) {
                             _this._logger.error('findStockTypesByPerformanceId(#${this.performanceId}) error', error);
+                            _this.errorModalDataService.sendReloadOnClosedToErrorModal();
                         });
-                        (function (error) {
-                            _this._logger.error('[VenueMapComponent]getStockType error', error);
-                        });
+                    }, function (error) {
+                        _this._logger.error('[VenueMapComponent]getStockType error', error);
+                        _this.errorModalDataService.sendReloadOnClosedToErrorModal();
                     });
                 }, function (error) {
                     _this._logger.error('get Performance(#${this.performanceId}) error', error);
+                    _this.errorModalDataService.sendReloadOnClosedToErrorModal();
                     return;
                 });
             }
@@ -10870,6 +10893,12 @@ var VenuemapComponent = (function () {
         __WEBPACK_IMPORTED_MODULE_14_jquery__('#mapImgBox').children().attr('viewBox', this.displayViewBox.join(' ')); // viewBoxを初期値に設定
         if (!isInitialCalled)
             this.onoffRegion(this.regionIds);
+    };
+    VenuemapComponent.prototype.onClickSeatSelection = function () {
+        if (__WEBPACK_IMPORTED_MODULE_14_jquery__(window).width() <= WINDOW_SM) {
+            // SP表示の場合は会場図へスクロール
+            __WEBPACK_IMPORTED_MODULE_14_jquery__('html, body').animate({ scrollTop: __WEBPACK_IMPORTED_MODULE_14_jquery__('#mapImgBox').offset().top }, 500, 'swing');
+        }
     };
     // 現在のviewBoxの値を取得
     VenuemapComponent.prototype.getPresentViewBox = function () {
@@ -12622,14 +12651,25 @@ var ErrorModalDataService = (function () {
     function ErrorModalDataService() {
         this.errorTitle = new __WEBPACK_IMPORTED_MODULE_0_rxjs_Subject__["Subject"]();
         this.errorDetail = new __WEBPACK_IMPORTED_MODULE_0_rxjs_Subject__["Subject"]();
+        this.onClosed = new __WEBPACK_IMPORTED_MODULE_0_rxjs_Subject__["Subject"]();
         this.errorTitle$ = this.errorTitle.asObservable();
         this.errorDetail$ = this.errorDetail.asObservable();
+        this.onClosed$ = this.onClosed.asObservable();
     }
-    ErrorModalDataService.prototype.sendToErrorModal = function (title, detail) {
+    ErrorModalDataService.prototype.sendToErrorModal = function (title, detail, onClosed) {
         title = title ? title : 'サーバーと通信できません。';
         this.errorTitle.next(title);
         detail = detail ? detail : 'インターネットに未接続または通信が不安定な可能性があります。通信環境の良いところで操作をやり直すかページを再読込してください。';
         this.errorDetail.next(detail);
+        this.onClosed.next(onClosed);
+    };
+    ErrorModalDataService.prototype.sendHandlerOnClosedToErrorModal = function (onClosed) {
+        this.onClosed.next(onClosed);
+    };
+    ErrorModalDataService.prototype.sendReloadOnClosedToErrorModal = function () {
+        this.sendHandlerOnClosedToErrorModal(function () {
+            window.location.reload(true);
+        });
     };
     ErrorModalDataService.ctorParameters = function () { return []; };
     return ErrorModalDataService;
@@ -12670,7 +12710,7 @@ var PerformancesService = (function (_super) {
      * @return {Observable} see http.get()
      */
     PerformancesService.prototype.getPerformance = function (performanceId) {
-        var url = "" + __WEBPACK_IMPORTED_MODULE_2__app_constants__["a" /* ApiConst */].API_URL.PERFORMANCE_INfO.replace(/{:performance_id}/, performanceId + '');
+        var url = "" + __WEBPACK_IMPORTED_MODULE_2__app_constants__["a" /* ApiConst */].API_URL.PERFORMANCE_INFO.replace(/{:performance_id}/, performanceId + '');
         var httpGet = this.httpGet(url, true).map(function (response) {
             response.data.performance.sales_segments = response.data.sales_segments;
             return response;

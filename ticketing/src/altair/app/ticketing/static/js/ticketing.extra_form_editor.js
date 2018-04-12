@@ -30,7 +30,8 @@
         'must_be_equal_to_or_less_than': '{}以下の数値を指定してください',
         'must_be_less_than': '{}未満の数値を指定してください',
         'must_be_a_number': '数値を指定してください',
-        'must_choose_at_least_one_validator_type': '少なくとも一つ選択してください'
+        'must_choose_at_least_one_validator_type': '少なくとも一つ選択してください',
+        'can_not_choose_together_zenkaku_and_hankaka': '全角と半角は同時に選択できません'
       },
       'label': 'ラベル',
       'value': '値',
@@ -48,8 +49,10 @@
         'alphabets': 'アルファベット',
         'hiragana': 'ひらがな',
         'katakana': 'カタカナ',
-        'other_characters': 'その他の文字'
-      },
+        'other_characters': 'その他の文字',
+        'zenkaku': '全角のみ',
+        'hankaku': '半角のみ'
+      }
     }
   };
 
@@ -472,7 +475,9 @@
     { name: 'alphabets', model: DefaultValidatorSetting },
     { name: 'hiragana', model: DefaultValidatorSetting },
     { name: 'katakana', model: DefaultValidatorSetting },
-    { name: 'other_characters', model: DefaultValidatorSetting }
+    { name: 'other_characters', model: DefaultValidatorSetting },
+    { name: 'zenkaku', model: DefaultValidatorSetting, enabledByDefault: false },
+    { name: 'hankaku', model: DefaultValidatorSetting, enabledByDefault: false }
   ];
 
   var Validators = Backbone.Model.extend({
@@ -481,7 +486,9 @@
       alphabets: null,
       hiragana: null,
       katakana: null,
-      other_characters: null
+      other_characters: null,
+      zenkaku: null,
+      hankaku: null
     },
 
     initialize: function (_attributes, options) {
@@ -507,7 +514,7 @@
     validate: function (attributes, options) {
       var enabled = false;
       for (var name in attributes) {
-        if (!attributes.hasOwnProperty(name))
+        if (!attributes.hasOwnProperty(name) || (['zenkaku', 'hankaku'].indexOf(name) !== -1))
           continue;
         if (attributes[name] == null)
           return;
@@ -516,6 +523,12 @@
       }
       if (!enabled) {
         return translations['ja']['message']['must_choose_at_least_one_validator_type'];
+      }
+
+      var zenkaku = (attributes.hasOwnProperty('zenkaku') && attributes['zenkaku'] !== null) ? attributes['zenkaku'].get('enabled') : false;
+      var hankaku = (attributes.hasOwnProperty('hankaku') && attributes['hankaku'] !== null) ? attributes['hankaku'].get('enabled') : false;
+      if (zenkaku && hankaku) {
+        return translations['ja']['message']['can_not_choose_together_zenkaku_and_hankaka'];
       }
     },
 
@@ -889,6 +902,9 @@
       var settings = self.model.get('validators');
       $.each(validatorDefs, function (_, validatorDef) {
         var setting = settings.get(validatorDef.name);
+        if (validatorDef.name === 'zenkaku') {
+            $div.append('<hr>');
+        }
         $div.append(
           $('<label class="checkbox control-label"></label>')
           .append(

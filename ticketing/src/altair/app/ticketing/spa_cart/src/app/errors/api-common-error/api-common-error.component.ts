@@ -18,6 +18,7 @@ export class ApiCommonErrorComponent {
   errorDisplay: boolean;
   errorTitle: string;
   errorDetail: string;
+  onClosed: () => void;
 
   ngOnInit() {
     this.errorModalDataService.errorTitle$.subscribe(
@@ -30,9 +31,14 @@ export class ApiCommonErrorComponent {
         this.errorDetail = errorDetail;
         this.errorDisplay = true;
       });
+    this.errorModalDataService.onClosed$.subscribe(
+      onClosed => {
+        this.onClosed = onClosed;
+      });
   }
   display() {
     this.errorDisplay = false;
     this.animationEnableService.sendToRoadFlag(false);
+    this.onClosed && this.onClosed();
   }
 }
