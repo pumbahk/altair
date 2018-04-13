@@ -1,15 +1,12 @@
 <%def name="get_resale_segment_status(resale_segment)">
 <%
-  status_str = u""
-  color_class = u""
-  disabled = ""
   if resale_segment.sent_status == 1:
     color_class = "btn-warning"
     disabled = ''
     status_str = u'連携'
   elif resale_segment.sent_status == 2:
     color_class = "btn-inverse"
-    disabled = "disabled"
+    disabled = 'disabled="disabled"'
     status_str = u'連携済み'
   elif resale_segment.sent_status == 3:
     color_class = "btn-danger"
@@ -25,8 +22,6 @@
 
 <%def name="get_resale_request_status(resale_request)">
 <%
-  status_str = u""
-  color_class = ""
   if resale_request.status == 2:
     status_str = u"リセール"
     color_class = "label-success"
@@ -49,8 +44,6 @@
 
 <%def name="get_resale_request_sent_status(resale_request)">
 <%
-  status_str = u""
-  color_class = ""
   if resale_request.sent_status == 3:
     status_str = u"再連携必須"
     color_class = "btn-danger"
@@ -65,6 +58,8 @@
 %>
 </%def>
 
+<%doc>ここのjavascriptメソッド（onclickで呼ぶメソッド）は_show.htmlで定義されてる</%doc>
+
 <%def name="build_resale_segment_content(resale_segment)">
 <% status_str, status_color, disabled = get_resale_segment_status(resale_segment) %>
 <h4 id="resale-segment-${resale_segment.id}"
@@ -73,10 +68,12 @@
     data-end_at="${resale_segment.end_at}">開始日時：${resale_segment.start_at} 終了日時：${resale_segment.end_at}
 </h4>
 % if resale_segment.editable:
-<button class="btn btn-edit" onclick="open_resale_segment_form_for_update($(this))"><i class="icon-pencil"></i>編集</button>
+<button class="btn btn-edit" onclick="open_modal_create_or_update_resale_segment($(this), 'update')"><i class="icon-pencil"></i>編集</button>
+<button class="btn ${status_color} btn-send" ${disabled} onclick="send_resale_segment_to_orion($(this), 'update')"><i class="icon-refresh icon-white"></i>${status_str}</button>
+% else:
+<button class="btn btn-warning btn-send" onclick="open_modal_send_resale_request_to_orion($(this), true)"><i class="icon-refresh icon-white"></i>リセールリクエスト一括連携</button>
 % endif
-<button class="btn ${status_color} btn-send" disabled="${disabled}" onclick="send_resale_segment_to_orion($(this))"><i class="icon-refresh icon-white"></i>${status_str}</button>
-<button class="btn btn-warning btn-send" onclick="open_send_resale_request_to_orion_modal($(this), true)"><i class="icon-refresh icon-white"></i>リセールリクエスト一括連携</button>
+
 </%def>
 
 <%def name="build_resale_request_status_content(resale_request)">
@@ -87,7 +84,7 @@
     <% sent_status_str, sent_status_color = get_resale_request_sent_status(resale_request) %>
     <div class="btn-group">
       <button class="btn btn-small btn-reset" onclick="operate_resale_request($(this), 'waiting')">リセット</button>
-      <button class="btn btn-small ${sent_status_color} btn-send" onclick="open_send_resale_request_to_orion_modal($(this), false)">${sent_status_str}</button>
+      <button class="btn btn-small ${sent_status_color} btn-send" onclick="open_modal_send_resale_request_to_orion($(this), false)">${sent_status_str}</button>
     </div>
   % endif
 % else:

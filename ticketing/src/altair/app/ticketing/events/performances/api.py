@@ -70,7 +70,7 @@ def send_resale_request(request, resale_request):
     obj['resale_request'] = dict(
         id=resale_request.id,
         ResaleRequestStatus=resale_request.status,
-        sold_at=resale_request.sold_at
+        sold_at=str(resale_request.sold_at) if resale_request.sold_at else None
     )
     return make_send_to_orion_request(request, obj, 'orion.resale_request.feedback_url')
 
@@ -79,7 +79,7 @@ def send_resale_request_all(request, resale_requests):
         {
             'id': resale_request.id,
             'ResaleRequestStatus': resale_request.status,
-            'sold_at': resale_request.sold_at
+            'sold_at': str(resale_request.sold_at) if resale_request.sold_at else None
         } for resale_request in resale_requests
     ]
     return make_send_to_orion_request(request, objs, 'orion.resale_request.feedback_all_url')

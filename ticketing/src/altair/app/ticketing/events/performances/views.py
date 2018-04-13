@@ -486,37 +486,46 @@ class PerformanceShowView(BaseView):
     @view_config(route_name="performances.resale.index", request_method='GET')
     def resale_index(self):
         slave_session = get_db_session(self.request, name="slave")
+        selected_resale_segment_id = self.request.params.get('resale_segment_id', None)
         form = PerformanceResaleSegmentForm(performance_id=self.performance.id)
         search_form = PerformanceResaleRequestSearchForm(self.request.params)
         resale_segments = slave_session.query(ResaleSegment) \
-                                       .filter(ResaleSegment.performance_id == self.performance.id)\
-                                       .all()
-        resale_requests = []
-        # 現時点resale_segmentは1つしかない。
-        for resale_segment in resale_segments:
+                                       .filter(ResaleSegment.performance_id == self.performance.id)
+
+        if selected_resale_segment_id:
+            resale_segment = resale_segments.filter(id = selected_resale_segment_id).one()
+        else:
+            resale_segment = resale_segments.first()
+
+        if resale_segment:
+            form.resale_segment_id.data = resale_segment.id
+            # 現時点resale_segmentは1つしかない。
             resale_requests = slave_session.query(ResaleRequest, OrderedProductItemToken) \
                 .filter(ResaleRequest.ordered_product_item_token_id == OrderedProductItemToken.id) \
                 .filter(ResaleRequest.resale_segment_id == resale_segment.id) \
                 .filter(ResaleRequest.deleted_at == None)
+        else:
+            resale_requests = []
 
-        if search_form.order_no.data:
-            order_no_list = re.split(r'[ \t,]', search_form.order_no.data)
-            resale_requests = resale_requests \
-                .join(OrderedProductItemToken,
-                      ResaleRequest.ordered_product_item_token_id == OrderedProductItemToken.id) \
-                .join(OrderedProductItem, OrderedProductItem.id == OrderedProductItemToken.ordered_product_item_id) \
-                .join(OrderedProduct, OrderedProduct.id == OrderedProductItem.ordered_product_id) \
-                .join(Order, Order.id == OrderedProduct.order_id) \
-                .filter(Order.order_no.in_(order_no_list))
+        if resale_requests:
+            if search_form.order_no.data:
+                order_no_list = re.split(r'[ \t,]', search_form.order_no.data)
+                resale_requests = resale_requests \
+                    .join(OrderedProductItemToken,
+                          ResaleRequest.ordered_product_item_token_id == OrderedProductItemToken.id) \
+                    .join(OrderedProductItem, OrderedProductItem.id == OrderedProductItemToken.ordered_product_item_id) \
+                    .join(OrderedProduct, OrderedProduct.id == OrderedProductItem.ordered_product_id) \
+                    .join(Order, Order.id == OrderedProduct.order_id) \
+                    .filter(Order.order_no.in_(order_no_list))
 
-        if search_form.account_holder_name.data:
-            resale_requests = resale_requests.filter(ResaleRequest.account_holder_name == search_form.account_holder_name.data)
+            if search_form.account_holder_name.data:
+                resale_requests = resale_requests.filter(ResaleRequest.account_holder_name == search_form.account_holder_name.data)
 
-        if search_form.get_status():
-            resale_requests = resale_requests.filter(ResaleRequest.status.in_(search_form.get_status()))
+            if search_form.get_status():
+                resale_requests = resale_requests.filter(ResaleRequest.status.in_(search_form.get_status()))
 
-        if search_form.get_sent_status():
-            resale_requests = resale_requests.filter(ResaleRequest.sent_status.in_(search_form.get_sent_status()))
+            if search_form.get_sent_status():
+                resale_requests = resale_requests.filter(ResaleRequest.sent_status.in_(search_form.get_sent_status()))
 
         resale_requests = paginate.Page(
             resale_requests,
@@ -528,7 +537,8 @@ class PerformanceShowView(BaseView):
             'tab': 'resale',
             'action': '',
             'performance': self.performance,
-            'resale_segments': resale_segments,
+            'resale_segments': resale_segments.all(),
+            'selected_resale_segment_id': selected_resale_segment_id,
             'resale_requests': resale_requests,
             'form': form,
             'search_form': search_form

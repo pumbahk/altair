@@ -2,7 +2,7 @@
 <%namespace file="/common/helpers.html" name="ch" />
 <%namespace file="_helpers.html" name="rh" />
 
-<style>
+<style type="text/css">
   ul {
     list-style: none;
     margin: 0 auto;
@@ -45,16 +45,25 @@
     margin-left: 5px !important;
   }
   /* resale-request-list-box */
+  .resale-request-list-box table {
+    table-layout: fixed;
+  }
   .resale-request-list-box table thead th {
     white-space: nowrap;
   }
   /* modal-resale-request */
-  #modal-resale-request table th {
+  .modal-resale-request-bank-info table th {
     width: 50%;
   }
   /* modal-resale-request-export */
-  #modal-resale-request-export table th:first-child {
+  .modal-resale-request-export table th:first-child {
     width: 30%;
+  }
+  /* unknow exception modal */
+  .modal-unknown-exception .modal-body-content h4 {
+    color: #b94a48;
+    font-weight: bold;
+    font-size: 1rem;
   }
 </style>
 
@@ -66,9 +75,9 @@
     <div class="wrap-content">
       <div class="resale-segment-list-box">
         % if not resale_segments:
-        <button onclick="open_resale_segment_form_for_create()" class="btn btn-important resale-segment-add-btn"><i class="icon-plus"></i>登録</button>
+        <button onclick="open_modal_create_or_update_resale_segment($(this), 'create')" class="btn btn-important resale-segment-add-btn"><i class="icon-plus"></i>登録</button>
         % endif
-        <ul>
+        <ul data-selected_resale_segment_id="${selected_resale_segment_id}">
           % for resale_segment in resale_segments:
           <li>
             ${rh.build_resale_segment_content(resale_segment)}
@@ -95,7 +104,7 @@
                   ${search_form.account_holder_name(class_="search-query input-medium")}
                 </span>
                 <button type="submit">検索</button>
-                <button type="button" onclick="open_resale_request_export_modal()">エクスポート</button>
+                <button type="button" onclick="open_modal_export_bank_info()">エクスポート</button>
               </div>
               <div>
                 <span class="navbar-text">
@@ -194,10 +203,11 @@
               ${ordered_product_item_token.item.product_item.name}
             </td>
             <td>
-              ${ordered_product_item_token.seat.name if ordered_product_item_token.seat else "-"}
+              <% seat_name = ordered_product_item_token.seat.name if ordered_product_item_token.seat else "-" %>
+              ${seat_name}
             </td>
             <td>
-              <button onclick="show_resale_request_bank_info(${resale_request.id})"><i class="icon-th-list"></i></button>
+              <button onclick="open_modal_show_bank_info(${resale_request.id})"><i class="icon-th-list"></i></button>
             </td>
           </tr>
           % endfor
@@ -216,154 +226,40 @@
 
 <!-- modals -->
 <div id="modal-bg" class="hide"></div>
-<div id="modal-resale-segment-form" class="modal hide">
-  <div class="modal-header">
-    <h3>リセール区分登録</h3>
-  </div>
-  <div class="modal-body">
-    <div class="wrap-modal-body">
-      <div class="modal-error-msgs-box hide">
-        <ul></ul>
-      </div>
-      <form class="form-horizontal" method="POST">
-        ${ch.form_item(form.resale_segment_id)}
-        ${ch.form_item(form.performance_id)}
-        ${ch.form_item(form.start_at)}
-        ${ch.form_item(form.end_at)}
-      </form>
-    </div>
-  </div>
-  <div class="modal-footer">
-    <div class="reserve-area">
-      <button onclick="close_modal_resale_segment($(this).parents('.modal'))" class="btn secondary btn-close">キャンセル</button>
-      <button class="btn btn-danger create_or_update">確認する</button>
-    </div>
-  </div>
-</div>
-
-<div id="modal-resale-request" class="modal hide">
-  <div class="modal-header">
-    <h3>リセール振込情報</h3>
-  </div>
-  <div class="modal-body">
-    <div class="modal-error-msgs-box hide">
-      <ul></ul>
-    </div>
-    <div class="wrap-modal-body">
-      <table class="table table-striped table-bordered">
-        <thead>
-          <tr>
-            <th>項目</th>
-            <th>内容</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>銀行コード</td>
-            <td id="bank_code-info"></td>
-          </tr>
-          <tr>
-            <td>支店コード</td>
-            <td id="bank_branch_code-info"></td>
-          </tr>
-          <tr>
-            <td>口座番号</td>
-            <td id="account_number-info"></td>
-          </tr>
-          <tr>
-            <td>名義人</td>
-            <td id="account_holder_name-info"></td>
-          </tr>
-          <tr>
-            <td>振込額</td>
-            <td id="total_amount-info"></td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-  <div class="modal-footer">
-    <div class="reserve-area">
-      <button onclick="close_modal_resale_request($(this).parents('.modal'))" class="btn secondary btn-close">閉じる</button>
-    </div>
-  </div>
-</div>
-
-<div id="modal-resale-request-export" class="modal hide">
-  <div class="modal-header">
-    <h3>エクスポート</h3>
-  </div>
-  <div class="modal-body">
-    <div class="wrap-modal-body">
-      <p>下記の条件でリセールリクエストをエクスポートは大丈夫でしょうか？</p>
-      <table class="table table-striped table-bordered">
-        <thead>
-          <tr>
-            <th>条件</th>
-            <th>内容</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>予約番号</td>
-            <td id="condition-order_no"></td>
-          </tr>
-          <tr>
-            <td>名義人</td>
-            <td id="condition-account_holder_name"></td>
-          </tr>
-          <tr>
-            <td>ステータス</td>
-            <td id="condition-status"></td>
-          </tr>
-          <tr>
-            <td>連携ステータス</td>
-            <td id="condition-sent_status"></td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-  <div class="modal-footer">
-    <div class="reserve-area">
-      <button onclick="close_modal_resale_request_export($(this).parents('.modal'))" class="btn secondary btn-close">キャンセル</button>
-      <button onclick="export_resale_request($(this).parents('.modal'))" class="btn btn-primary create_or_update">エクスポート</button>
-    </div>
-  </div>
-</div>
-
-<div id="modal-send-resale-request-to-orion" class="modal hide">
+<div id="base-modal" class="modal hide">
   <div class="modal-header">
     <h3></h3>
   </div>
   <div class="modal-body">
     <div class="wrap-modal-body">
-      <div class="modal-error-msgs-box hide">
-        <ul></ul>
-      </div>
-      <p></p>
+      <div class="modal-error-msgs-box"><ul class="hide"></ul></div>
+      <div class="modal-body-content"></div>
     </div>
   </div>
   <div class="modal-footer">
-    <div class="reserve-area">
-      <button onclick="close_modal_send_resale_request_to_orion($(this).parents('.modal'))" class="btn secondary btn-close">キャンセル</button>
-      <button class="btn btn-danger send-to-orion">連携</button>
+    <div class="btn-area">
     </div>
   </div>
 </div>
-
 <!-- modals -->
 <!-- templates -->
+<form id="resale-segment-form" class="form-horizontal hide" method="POST">
+  ${ch.form_item(form.resale_segment_id)}
+  ${ch.form_item(form.performance_id)}
+  ${ch.form_item(form.start_at)}
+  ${ch.form_item(form.end_at)}
+</form>
+
 <li id="resale-segment-li-template" class="hide">
   <h4></h4>
-  <button class="btn" onclick="open_resale_segment_form_for_update($(this))"><i class="icon-pencil"></i>編集</button>
+  <button class="btn" onclick="open_modal_create_or_update_resale_segment($(this), 'update')"><i class="icon-pencil"></i>編集</button>
   <button class="btn btn-warning" onclick="send_resale_segment_to_orion($(this))"><i class="icon-refresh icon-white"></i>連携</button>
 </li>
 
 <button id="resale-request-reset-btn-template" class="btn btn-small hide" onclick="operate_resale_request($(this), 'waiting')">リセット</button>
 <div id="resale-request-btn-group-template-1" class="btn-group hide">
   <button class="btn btn-small btn-reset" onclick="operate_resale_request($(this), 'waiting')">リセット</button>
-  <button class="btn btn-small btn-warning btn-send" onclick="open_send_resale_request_to_orion_modal($(this), false)">連携</button>
+  <button class="btn btn-small btn-warning btn-send" onclick="open_modal_send_resale_request_to_orion($(this), false)">連携</button>
 </div>
 <div id="resale-request-btn-group-template-2" class="btn-group hide">
   <button class="btn btn-small btn-primary" onclick="operate_resale_request($(this), 'sold')">リセール</button>
@@ -371,7 +267,9 @@
   <button class="btn btn-small btn-danger" onclick="operate_resale_request($(this), 'cancel')">キャンセル</button>
 </div>
 <!-- templates -->
+
 <script type="text/javascript">
+  // --- common start ---
   if (String.prototype.format === undefined) {
       String.prototype.format = function(arg) {
           var rep_fn = undefined;
@@ -394,22 +292,22 @@
   }
 
   function split_datetime(datetime) {
-    var items = datetime.split(' '),
-        date = items[0],
-        time = items[1],
-        ret = {};
+      var items = datetime.split(' '),
+          date = items[0],
+          time = items[1],
+          ret = {};
 
-    items = date.split('-');
-    ret['y'] = items[0];
-    ret['m'] = items[1];
-    ret['d'] = items[2];
+      items = date.split('-');
+      ret['y'] = items[0];
+      ret['m'] = items[1];
+      ret['d'] = items[2];
 
-    items = time.split(':');
-    ret['H'] = items[0];
-    ret['M'] = items[1];
-    ret['S'] = items[2];
+      items = time.split(':');
+      ret['H'] = items[0];
+      ret['M'] = items[1];
+      ret['S'] = items[2];
 
-    return ret;
+      return ret;
   }
 
   function get_current_local_datetime() {
@@ -424,38 +322,8 @@
       )
   }
 
-  function clear_modal_error_status(modal) {
-      var msgs_box = modal.find(".modal-error-msgs-box");
-      msgs_box.find("ul").empty();
-      modal.find(".control-group").removeClass("error");
-      msgs_box.hide();
-  }
-
-  function close_modal_resale_segment(modal) {
-      $("#modal-bg").hide();
-      clear_modal_error_status(modal);
-      modal.hide();
-  }
-
-  function close_modal_resale_request(modal) {
-      $("#modal-bg").hide();
-      clear_modal_error_status(modal);
-      modal.find("td[id]").text("");
-      modal.hide();
-  }
-
-  function close_modal_resale_request_export(modal) {
-      $("#modal-bg").hide();
-      modal.find("td[id]").text("");
-      modal.hide();
-  }
-
-  function close_modal_send_resale_request_to_orion(modal) {
-      $("#modal-bg").hide();
-      modal.hide();
-  }
-
   function flush_result_message(ul, message) {
+      ul.find(".flushed_msgs").remove();
       ul.prepend(
           $("<li>").addClass("flushed_msgs")
                    .append($("<h4>").text(message).css("color", "#b94a48").css("margin", "0"))
@@ -490,7 +358,190 @@
 
       return ret;
   }
+  // --- common end ---
 
+  // --- modal start ---
+  function clear_modal_error_messages(modal) {
+      modal.find(".modal-error-msgs-box ul").empty().hide();
+      modal.find(".control-group").removeClass("error");
+  }
+  function clear_model_content(modal) {
+      clear_modal_error_messages(modal);
+      modal.removeAttr("class").addClass("modal hide");
+      modal.find(".modal-header h3").text("");
+      modal.find(".modal-body-content").empty();
+      modal.find(".btn-area").empty()
+  }
+  function open_modal() {
+      $("#base-modal").show();
+      $("#modal-bg").show();
+  }
+  function close_modal() {
+      var modal = $("#base-modal");
+      clear_model_content(modal);
+      modal.hide();
+      $("#modal-bg").hide();
+  }
+
+  //// modal for creating or updating resale segment
+  function open_modal_create_or_update_resale_segment(button, action) {
+      var modal = $("#base-modal"),
+          header_text = action === "create"? "リセール区分追加":"リセール区分編集",
+          onclick_method = action === "create"? "create_resale_segment()":"update_resale_segment()",
+          form = $("#resale-segment-form").clone().removeAttr("id").removeClass("hide"),
+          data = undefined,
+          start_at = undefined,
+          end_at = undefined;
+
+      if (action === "update") {
+          data = button.siblings('h4').data();
+          start_at = split_datetime(data['start_at']);
+          end_at = split_datetime(data['end_at']);
+
+          form.find("#resale_segment_id").val(data['resale_segment_id']);
+          form.find("#start_at\\.year").val(start_at.y);
+          form.find("#start_at\\.month").val(start_at.m);
+          form.find("#start_at\\.day").val(start_at.d);
+          form.find("#start_at\\.hour").val(start_at.H);
+          form.find("#start_at\\.minute").val(start_at.M);
+          form.find("#start_at\\.second").val(start_at.S);
+
+          form.find("#end_at\\.year").val(end_at.y);
+          form.find("#end_at\\.month").val(end_at.m);
+          form.find("#end_at\\.day").val(end_at.d);
+          form.find("#end_at\\.hour").val(end_at.H);
+          form.find("#end_at\\.minute").val(end_at.M);
+          form.find("#end_at\\.second").val(end_at.S);
+      }
+      modal.find(".modal-header h3").text(header_text);
+      modal.find(".modal-body-content").append(form);
+      modal.find(".btn-area")
+          .append($("<button onclick='close_modal()' class='btn secondary btn-close'>キャンセル</button>"))
+          .append($("<button class='btn btn-danger'>確認</button>").attr("onclick", onclick_method));
+      open_modal();
+  }
+
+  //// modal for showing bank information of a resale request
+  function open_modal_show_bank_info(resale_request_id) {
+      var modal = $("#base-modal");
+      modal.addClass("modal-resale-request-bank-info");
+      modal.find(".modal-header h3").text("リセール振込情報");
+      modal.find(".modal-body-content").append(
+          $("<table class=\"table table-striped table-bordered\"></table>")
+              .append($("<thead><tr><th>項目</th><th>内容</th></tr></thead>"))
+              .append($("<tbody></tbody>")
+                  .append($("<tr><td>銀行コード</td><td id=\"info-bank_code\"></td></tr>"))
+                  .append($("<tr><td>支店コード</td><td id=\"info-bank_branch_code\"></td></tr>"))
+                  .append($("<tr><td>口座番号</td><td id=\"info-account_number\"></td></tr>"))
+                  .append($("<tr><td>名義人</td><td id=\"info-account_holder_name\"></td></tr>"))
+                  .append($("<tr><td>振込額</td><td id=\"info-total_amount\"></td></tr>"))
+              )
+      );
+      modal.find(".btn-area")
+          .append($("<button onclick=\"close_modal()\" class=\"btn secondary btn-close\">閉じる</button>"));
+      $.ajax({
+          url: "/resale/api/requests/" + resale_request_id,
+          type: "GET",
+          success: function(data) {
+              for (key in data) {
+                  if (data.hasOwnProperty(key)) {
+                      modal.find("#info-" + key ).text(data[key]);
+                  }
+              }
+              open_modal();
+          },
+          error: function(xhr) {
+              var ret = handle_exception(xhr),
+                  modal = $("#modal-resale-request");
+                  ul = modal.find(".modal-error-msgs-box ul");
+
+              if ("status" in ret) {
+                  ul.append($("<li>").text("{0} - {1}".format(ret["status"],ret["emsgs"])));
+              }
+              if ("start_at" in ret) {
+                  for (var i = 0; i < ret["start_at"].length; i++) {
+                      ul.append($("<li>").text(ret["start_at"][i]));
+                  }
+              }
+              ul.show();
+              open_modal();
+          }
+      });
+  }
+
+  //// modal for exporting bank information of the resale requests
+  function open_modal_export_bank_info() {
+      var modal = $("#base-modal"),
+          order_no = $("#order_no").val().trim(),
+          account_holder_name = $("#account_holder_name").val().trim(),
+          status_list = get_resale_request_status_verbose(),
+          sent_status_list = get_resale_request_sent_status_verbose();
+
+      if (order_no === "") {order_no = "条件なし";}
+      if (account_holder_name === "") {account_holder_name = "条件なし";}
+
+      modal.addClass("modal-resale-request-export");
+      modal.find(".modal-header h3").text("エクスポート");
+      modal.find(".modal-body-content")
+          .append(
+              $("<p>下記の条件でリセールリクエストをエクスポートは大丈夫でしょうか？</p>")
+          )
+          .append(
+              $("<table class=\"table table-striped table-bordered\"></table>")
+                  .append($("<thead><tr><th>条件</th><th>内容</th></tr></thead>"))
+                  .append($("<tbody></tbody>")
+                      .append($("<tr><td>予約番号</td><td id=\"condition-order_no\">{0}</td></tr>".format(order_no)))
+                      .append($("<tr><td>名義人</td><td id=\"condition-account_holder_name\">{0}</td></tr>".format(account_holder_name)))
+                      .append($("<tr><td>ステータス</td><td id=\"condition-status\">{0}</td></tr>".format(status_list.join(','))))
+                      .append($("<tr><td>連携ステータス</td><td id=\"condition-sent_status\">{0}</td></tr>".format(sent_status_list.join(','))))
+                  )
+          );
+      modal.find(".btn-area")
+          .append($("<button onclick=\"close_modal()\" class=\"btn secondary btn-close\">キャンセル</button>"))
+          .append($("<button onclick=\"export_resale_request()\" class=\"btn btn-primary\">エクスポート</button>"));
+      open_modal();
+  }
+
+  //// modal for sending resale requests to orion
+  function open_modal_send_resale_request_to_orion(button, all) {
+      var modal = $("#base-modal"),
+          resale_segment_id = undefined,
+          resale_request_id = undefined;
+      if (all) {
+          resale_segment_id = button.siblings("h4").data("resale_segment_id");
+          modal.find(".modal-header h3").text("リセールリクエスト一括連携");
+          modal.find(".modal-body-content").append(
+              $("<p>リセールリクエスト一括連携したら、対象のリセールリクエストのステータスを変更できなくなります。</p>")
+          );
+          modal.find("button.send-to-orion").attr("onclick", "send_all_resale_request_to_orion({0})".format(resale_segment_id));
+          modal.find(".btn-area")
+          .append($("<button onclick=\"close_modal()\" class=\"btn secondary btn-close\">キャンセル</button>"))
+          .append($("<button onclick=\"send_all_resale_request_to_orion({0})\" class=\"btn btn-danger send-to-orion\">連携</button>".format(resale_segment_id)));
+      } else {
+          resale_request_id = button.parents("tr").data("resale_request_id");
+          modal.find(".modal-header h3").text("リセールリクエスト連携");
+          modal.find(".modal-body-content").append(
+              $("<p>リセールリクエスト連携したら、該当リセールリクエスト（ID: {0}）のステータスを変更できなくなります。</p>".format(resale_request_id))
+          );
+          modal.find(".btn-area")
+          .append($("<button onclick=\"close_modal()\" class=\"btn secondary btn-close\">キャンセル</button>"))
+          .append($("<button onclick=\"send_resale_request_to_orion({0})\" class=\"btn btn-danger\">連携</button>".format(resale_request_id)));
+      }
+      open_modal();
+  }
+
+  //// modal for unknown exception notification
+  function open_modal_unknown_exception_notification(ret) {
+      var modal = $("#base-modal");
+      modal.addClass("modal-unknown-exception");
+      modal.find(".modal-header h3").text("予想外エラーが発生してしまいました。");
+      modal.find(".modal-body-content").append($("<h4>{0} - {1}</h4>".format(ret['status'], ret['emsgs'])));
+      open_modal();
+  }
+
+  // --- modal end ---
+
+  // --- operation functions start ---
   function update_send_button_status(button, status) {
       if (status === "sent") {
           button.removeClass("btn-danger btn-warning");
@@ -511,8 +562,8 @@
   }
 
   function create_resale_segment() {
-      var modal = $('#modal-resale-segment-form'),
-          form = modal.find('form'),
+      var modal = $("#base-modal"),
+          form = modal.find("form"),
           url = "/resale/api/segments/create",
           data = {
             "performance_id": parseInt(form.find("#performance_id").val()),
@@ -529,7 +580,7 @@
                 form.find("#end_at\\.hour").val(),
                 form.find("#end_at\\.minute").val())
           };
-      clear_modal_error_status(modal);
+      clear_modal_error_messages(modal);
       $.ajax({
           url: url,
           type: "POST",
@@ -548,38 +599,38 @@
               li.appendTo(ul);
               flush_result_message(ul, "リセールセッグメントが作成されました。");
               $(".resale-segment-add-btn").remove();
-              close_modal_resale_segment(modal);
+              close_modal();
           },
           error: function(xhr) {
               var ret = handle_exception(xhr),
-                  ul = $(".modal-error-msgs-box ul"),
+                  ul = modal.find(".modal-error-msgs-box ul"),
                   i = undefined;
 
               if ("status" in ret) {
                   ul.append($("<li>").text("{0} - {1}".format(ret["status"],ret["emsgs"])));
               }
               if ('start_at' in ret) {
-                  for (i = 0; i < parsed_data['start_at'].length; i++) {
-                      ul.append($("<li>").text(parsed_data['start_at'][i]));
+                  for (i = 0; i < ret['start_at'].length; i++) {
+                      ul.append($("<li>").text(ret['start_at'][i]));
                   }
               }
               if ('end_at' in ret) {
-                  for (i = 0; i < parsed_data['end_at'].length; i++) {
-                      ul.append($("<li>").text(parsed_data['end_at'][i]));
+                  for (i = 0; i < ret['end_at'].length; i++) {
+                      ul.append($("<li>").text(ret['end_at'][i]));
                   }
               }
-              Object.keys(parsed_data).forEach(function(key) {
+              Object.keys(ret).forEach(function(key) {
                   $("label[for=" + key + "]").parents(".control-group").addClass("error");
 
               });
-              $(".modal-error-msgs-box").show();
+              ul.show();
           }
       })
   }
 
   function update_resale_segment() {
-      var modal = $('#modal-resale-segment-form'),
-          form = modal.find('form'),
+      var modal = $("#base-modal"),
+          form = modal.find("form"),
           resale_segment_id = form.find("#resale_segment_id").val(),
           url = "/resale/api/segments/{0}/update".format(resale_segment_id),
           data = {
@@ -598,7 +649,7 @@
             "sent_status": 3,
             "sent_at": get_current_local_datetime()
           };
-      clear_modal_error_status(modal);
+      clear_modal_error_messages(modal);
       $.ajax({
           url: url,
           type: "PUT",
@@ -613,11 +664,11 @@
                   .data('end_at', data["end_at"]);
               update_send_button_status(button, 'send_required');
               flush_result_message(h4.parents("ul"), "リセールセッグメントが更新されました。");
-              close_modal_resale_segment(modal);
+              close_modal();
           },
           error: function(xhr) {
               var ret = handle_exception(xhr),
-                  ul = $(".modal-error-msgs-box ul"),
+                  ul = modal.find(".modal-error-msgs-box ul"),
                   i = undefined;
 
               if ("status" in ret) {
@@ -637,45 +688,9 @@
                   $("label[for=" + key + "]").parents(".control-group").addClass("error");
 
               });
-              $(".modal-error-msgs-box").show();
+              ul.show();
           }
       })
-  }
-
-  function open_resale_segment_form_for_create() {
-      var modal = $("#modal-resale-segment-form"),
-          submit_button = modal.find("button.create_or_update");
-      submit_button.attr("onclick", "create_resale_segment()");
-      modal.show();
-      $("#modal-bg").show();
-  }
-
-  function open_resale_segment_form_for_update(elem) {
-      var modal = $("#modal-resale-segment-form"),
-          data = elem.parent().find('h4').data(),
-          resale_segment_id = data['resale_segment_id'],
-          start_at = split_datetime(data['start_at']),
-          end_at = split_datetime(data['end_at']),
-          form = modal.find("form");
-
-      form.find("#resale_segment_id").val(resale_segment_id);
-      form.find("#start_at\\.year").val(start_at.y);
-      form.find("#start_at\\.month").val(start_at.m);
-      form.find("#start_at\\.day").val(start_at.d);
-      form.find("#start_at\\.hour").val(start_at.H);
-      form.find("#start_at\\.minute").val(start_at.M);
-      form.find("#start_at\\.second").val(start_at.S);
-
-      form.find("#end_at\\.year").val(end_at.y);
-      form.find("#end_at\\.month").val(end_at.m);
-      form.find("#end_at\\.day").val(end_at.d);
-      form.find("#end_at\\.hour").val(end_at.H);
-      form.find("#end_at\\.minute").val(end_at.M);
-      form.find("#end_at\\.second").val(end_at.S);
-
-      modal.find("button.create_or_update").attr("onclick", "update_resale_segment()");
-      $("#modal-bg").show();
-      modal.show();
   }
 
   function send_resale_segment_to_orion(button) {
@@ -714,40 +729,6 @@
                   })
               }
               flush_result_message(h4.parents("ul"), ret);
-          }
-      });
-  }
-
-  function show_resale_request_bank_info(resale_request_id) {
-      $.ajax({
-          url: "/resale/api/requests/" + resale_request_id,
-          type: "GET",
-          success: function(data) {
-              var modal = $("#modal-resale-request");
-              for (key in data) {
-                  if (data.hasOwnProperty(key)) {
-                      modal.find("#" + key + "-info").text(data[key]);
-                  }
-              }
-              modal.show();
-              $("#modal-bg").show();
-          },
-          error: function(xhr) {
-              var ret = handle_exception(xhr),
-                  modal = $("#modal-resale-request");
-                  ul = modal.find(".modal-error-msgs-box ul");
-
-              if ("status" in ret) {
-                  ul.append($("<li>").text("{0} - {1}".format(ret["status"],ret["emsgs"])));
-              }
-              if ("start_at" in ret) {
-                  for (var i = 0; i < ret["start_at"].length; i++) {
-                      ul.append($("<li>").text(ret["start_at"][i]));
-                  }
-              }
-              modal.find(".modal-error-msgs-box").show();
-              modal.show();
-              $("#modal-bg").show();
           }
       });
   }
@@ -799,32 +780,13 @@
           },
           error: function(xhr) {
               var ret = handle_exception(xhr);
+              open_modal_unknown_exception_notification(ret);
           }
       });
   }
 
-  function open_send_resale_request_to_orion_modal(button, all) {
-      var modal = $("#modal-send-resale-request-to-orion"),
-          resale_segment_id = undefined,
-          resale_request_id = undefined;
-      if (all) {
-          resale_segment_id = button.siblings("h4").data("resale_segment_id");
-          modal.find(".modal-header h3").text("リセールリクエスト一括連携");
-          modal.find(".modal-body p").text("リセールリクエスト一括連携したら、対象のリセールリクエストのステータスを変更できなくなります。");
-          modal.find("button.send-to-orion").attr("onclick", "send_all_resale_request_to_orion({0})".format(resale_segment_id));
-      } else {
-          resale_request_id = button.parents("tr").data("resale_request_id");
-          modal.find(".modal-header h3").text("リセールリクエスト連携");
-          modal.find(".modal-body p").text("リセールリクエスト連携したら、該当リセールリクエスト（ID: {0}）のステータスを変更できなくなります。".format(resale_request_id));
-          modal.find("button.send-to-orion").attr("onclick", "send_resale_request_to_orion({0})".format(resale_request_id));
-      }
-      $("#modal-bg").show();
-      modal.show();
-  }
-
   function send_resale_request_to_orion(resale_request_id) {
-      var modal = $("#modal-send-resale-request-to-orion"),
-          tr = $("#resale-request-{0}".format(resale_request_id));
+      var tr = $("#resale-request-{0}".format(resale_request_id));
       $.ajax({
           url: "${request.route_path('performances.resale.send_resale_request_to_orion')}",
           type: "POST",
@@ -841,16 +803,17 @@
               } else {
                   tr.find("button.btn-send").text("連携失敗").removeClass("btn-warning").addClass("btn-danger");
               }
-              close_modal_send_resale_request_to_orion(modal);
+              close_modal();
           },
           error: function(xhr) {
               var ret = handle_exception(xhr);
+              open_modal_unknown_exception_notification(ret);
           }
       });
   }
 
   function send_all_resale_request_to_orion(resale_segment_id) {
-      var modal = $("#modal-send-resale-request-to-orion"),
+      var modal = $("#base-modal"),
           h4 = $("#resale-segment-{0}".format(resale_segment_id));
       $.ajax({
           url: "${request.route_path('performances.resale.send_resale_request_to_orion')}",
@@ -859,7 +822,7 @@
               "resale_segment_id": resale_segment_id
           },
           success: function() {
-              modal.find(".modal-body p").text("リセールリクエスト一括連携しました。");
+              modal.find(".modal-body-content p").text("リセールリクエスト一括連携しました。");
               modal.find("button.send-to-orion")
                   .text("確認")
                   .attr("onclick", "location.reload()");
@@ -892,7 +855,7 @@
 
   function build_export_url() {
       var baseUrl = "/resale/api/requests/export",
-          resale_segment_id = $($(".resale-segment-list-box").find("h4")[1]).data("resale_segment_id"),
+          resale_segment_id = $(".resale-segment-list-box ul").data("selected_resale_segment_id"),
           order_no = $("#order_no").val().trim(),
           account_holder_name = $("#account_holder_name").val().trim(),
           status_list = get_resale_request_status(),
@@ -957,30 +920,10 @@
     return status_verbose_list;
   }
 
-  function open_resale_request_export_modal() {
-      var modal = $("#modal-resale-request-export"),
-          order_no = $("#order_no").val().trim(),
-          account_holder_name = $("#account_holder_name").val().trim(),
-          status_list = get_resale_request_status_verbose(),
-          sent_status_list = get_resale_request_sent_status_verbose();
-
-      if (order_no === "") {
-          order_no = "条件なし";
-      }
-      if (account_holder_name === "") {
-          account_holder_name = "条件なし";
-      }
-      modal.find("#condition-order_no").text(order_no);
-      modal.find("#condition-account_holder_name").text(account_holder_name);
-      modal.find("#condition-status").text(status_list.join(', '));
-      modal.find("#condition-sent_status").text(sent_status_list.join(', '));
-      modal.show();
-      $("#modal-bg").show();
-  }
-
-  function export_resale_request(modal) {
-      close_modal_resale_request_export(modal);
+  function export_resale_request() {
       url = build_export_url();
+      close_modal();
       window.location = url;
   }
+  // --- operation functions start ---
 </script>
