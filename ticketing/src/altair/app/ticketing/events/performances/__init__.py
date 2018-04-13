@@ -36,6 +36,7 @@ def includeme(config):
     # send to orion api
     config.add_route('performances.resale.send_resale_segment_to_orion', '/resale/eg_send/resale_segment', factory=factory)
     config.add_route('performances.resale.send_resale_request_to_orion', '/resale/eg_send/resale_request', factory=factory)
+    config.add_route('performances.resale.send_all_resale_request_to_orion', '/resale/eg_send/all_resale_request', factory=factory)
     config.add_route('performances.resale.requests.operate', '/resale/requests/operate', factory=factory)
 
     ##altair.app.ticketing.print_progress.__init__.pyでperformances.print_progress.showが定義されている

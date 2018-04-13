@@ -74,7 +74,7 @@ def send_resale_request(request, resale_request):
     )
     return make_send_to_orion_request(request, obj, 'orion.resale_request.feedback_url')
 
-def send_resale_request_all(request, resale_requests):
+def send_all_resale_request(request, resale_requests):
     objs = [
         {
             'id': resale_request.id,

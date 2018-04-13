@@ -256,7 +256,6 @@
   <button class="btn btn-warning" onclick="send_resale_segment_to_orion($(this))"><i class="icon-refresh icon-white"></i>連携</button>
 </li>
 
-<button id="resale-request-reset-btn-template" class="btn btn-small hide" onclick="operate_resale_request($(this), 'waiting')">リセット</button>
 <div id="resale-request-btn-group-template-1" class="btn-group hide">
   <button class="btn btn-small btn-reset" onclick="operate_resale_request($(this), 'waiting')">リセット</button>
   <button class="btn btn-small btn-warning btn-send" onclick="open_modal_send_resale_request_to_orion($(this), false)">連携</button>
@@ -373,7 +372,9 @@
       modal.find(".btn-area").empty()
   }
   function open_modal() {
-      $("#base-modal").show();
+      var modal = $("#base-modal");
+      modal.find("button").on("click", function() {$(this).attr("disabled", true)});
+      modal.show();
       $("#modal-bg").show();
   }
   function close_modal() {
@@ -452,7 +453,7 @@
           },
           error: function(xhr) {
               var ret = handle_exception(xhr),
-                  modal = $("#modal-resale-request");
+                  modal = $("#base-modal");
                   ul = modal.find(".modal-error-msgs-box ul");
 
               if ("status" in ret) {
@@ -513,7 +514,6 @@
           modal.find(".modal-body-content").append(
               $("<p>リセールリクエスト一括連携したら、対象のリセールリクエストのステータスを変更できなくなります。</p>")
           );
-          modal.find("button.send-to-orion").attr("onclick", "send_all_resale_request_to_orion({0})".format(resale_segment_id));
           modal.find(".btn-area")
           .append($("<button onclick=\"close_modal()\" class=\"btn secondary btn-close\">キャンセル</button>"))
           .append($("<button onclick=\"send_all_resale_request_to_orion({0})\" class=\"btn btn-danger send-to-orion\">連携</button>".format(resale_segment_id)));
@@ -533,9 +533,12 @@
   //// modal for unknown exception notification
   function open_modal_unknown_exception_notification(ret) {
       var modal = $("#base-modal");
+      close_modal();
       modal.addClass("modal-unknown-exception");
       modal.find(".modal-header h3").text("予想外エラーが発生してしまいました。");
-      modal.find(".modal-body-content").append($("<h4>{0} - {1}</h4>".format(ret['status'], ret['emsgs'])));
+      modal.find(".modal-body-content").empty().append($("<h4>{0} - {1}</h4>".format(ret['status'], ret['emsgs'])));
+      modal.find(".btn-area")
+          .append($("<button onclick=\"close_modal()\" class=\"btn secondary btn-close\">確定</button>"));
       open_modal();
   }
 
@@ -795,7 +798,7 @@
           },
           success: function(data) {
 
-              if (data['success_list'].length > 0) {
+              if (data['result'] === "OK") {
                   var span = tr.find("span"),
                       btn_group = tr.find(".btn-group");
                   span.text(span.text().replace("（仮）", ""));
@@ -816,21 +819,30 @@
       var modal = $("#base-modal"),
           h4 = $("#resale-segment-{0}".format(resale_segment_id));
       $.ajax({
-          url: "${request.route_path('performances.resale.send_resale_request_to_orion')}",
+          url: "${request.route_path('performances.resale.send_all_resale_request_to_orion')}",
           type: "POST",
           data: {
               "resale_segment_id": resale_segment_id
           },
-          success: function() {
+          success: function(data) {
+              if (data['result'] === "OK") {
+                  modal.find(".modal-body-content p").text("リセールリクエスト一括連携しました。");
+              } else {
+                  modal.find(".modal-body-content p").text("リセールリクエスト一括連携しました。");
+              }
               modal.find(".modal-body-content p").text("リセールリクエスト一括連携しました。");
               modal.find("button.send-to-orion")
+                  .attr("disabled", false)
                   .text("確認")
                   .attr("onclick", "location.reload()");
           },
           error: function(xhr) {
-              var ret = handle_exception(xhr);
-              console.log(h4.parents("ul"));
-              flush_result_message(h4.parents("ul"), ret["emsgs"]);
+              var ret = handle_exception(xhr),
+                  ul = modal.find(".modal-error-msgs-box ul");
+              clear_modal_error_messages(modal);
+              ul.append($("<li>").text("{0}".format(ret["emsgs"])));
+              ul.show();
+              modal.find("button.send-to-orion").remove();
           }
       });
   }
