@@ -1295,9 +1295,14 @@ class PaymentView(object):
             self.context.check_order_limit()
 
             if payment_delivery_pair.delivery_method.delivery_plugin_id == ORION_DELIVERY_PLUGIN_ID:
+                if cart.performance.orion.check_number_of_phones:
+                    if len(orion_ticket_phone) != (cart.carted_product_item_count - 1):
+                        logger.debug("invalid : %s" % "The number of orion_ticket_phones doesn't match the number of carted_product_item")
+                        raise self.ValidationFailed(self._message(u'アプリ受取追加情報の譲渡先の電話番号を{0}個ご入力ください'.format(cart.carted_product_item_count - 1)))
+
                 if any(orion_phone_errors):
                     logger.debug("invalid : %s" % orion_phone_errors)
-                    raise self.ValidationFailed(self._message(u'イベントゲート情報の入力内容を確認してください'))
+                    raise self.ValidationFailed(self._message(u'アプリ受取追加情報の入力内容を確認してください'))
 
                 create_orion_ticket_phone = self.create_or_update_orion_ticket_phone(user,
                                                                                      cart.order_no,

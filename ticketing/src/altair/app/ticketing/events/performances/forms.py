@@ -451,6 +451,11 @@ class OrionPerformanceForm(Form):
         validators=[Optional()],
     )
 
+    check_number_of_phones = BooleanField(
+        label=u'入力される譲渡先の数と購入枚数をチェック',
+        validators=[Optional()]
+    )
+
     pattern = TextField(
         label=u'もぎり認証パターン',
         validators=[Optional()],
