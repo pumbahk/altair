@@ -20,7 +20,7 @@ class ResaleSegmentSerializer(Schema):
     @validates_schema
     def valdate_start_and_end_at(self, data):
         if data['start_at'] > data['end_at']:
-            raise ValidationError(u'リセール開始日時を終了日時より後に設定くだいさ。', ['start_at'])
+            raise ValidationError(u'リセール開始日時を終了日時より後に設定ください。', ['start_at'])
 
 class ResaleSegmentCreateSerializer(ResaleSegmentSerializer):
     performance_id = fields.Integer(required=True)
