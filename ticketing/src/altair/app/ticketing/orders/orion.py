@@ -70,3 +70,22 @@ def search(request, data):
             raise Exception("Orion API returned code %u" % stream.code)
     except Exception, e:
         raise Exception("cannot connect to %s" % api_url)
+
+def make_send_to_orion_request(request, data, action):
+    api_url = request.registry.settings.get(action, None)
+    if not api_url:
+        raise Exception("%s not found" % action)
+
+    data = json.dumps(data)
+    logger.info("Create request to Orion API: %s" % data)
+    req = urllib2.Request(api_url, data, headers={u'Content-Type': u'text/json; charset="UTF-8"'})
+    try:
+        stream = urllib2.urlopen(req)
+        if stream.code == 200:
+            res = unicode(stream.read(), 'utf-8')
+            logger.info("response = %s" % res)
+            return json.loads(res)
+        else:
+            raise Exception("server returned unexpected status: %d (payload) %r" % (stream.code, stream.read()))
+    except Exception:
+        raise Exception("cannot connect to %s" % api_url)
