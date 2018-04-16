@@ -579,7 +579,7 @@ class AugusPerformanceView(_AugusBaseView):
                     transaction.abort()
                     raise HTTPFound(error_url)
                 elif ag_venue.venue.site_id != performance.venue.site_id:
-                    self.request.session.flash(u'会場の連携情報が不一致です: Performance.id={} AugusPerformance.id={}'.format(
+                    self.request.session.flash(u'会場の連携情報が不一致です。設定されている会場図が連携できないので会場の設定を確認してください。:Performance.id={} AugusPerformance.id={}'.format(
                         performance.id, ag_performance.id))
                     transaction.abort()
                     raise HTTPFound(error_url)
