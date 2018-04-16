@@ -451,6 +451,7 @@ class SalesSegmentGroupAndLotForm(SalesSegmentGroupForm):
         label=u'希望取得上限',
         validators=[
             Required(),
+            NumberRange(min=1, message=u'1以上で入力してしてください')
         ],
     )
 
