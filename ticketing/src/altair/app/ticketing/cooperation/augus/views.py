@@ -705,7 +705,12 @@ class AugusPutbackView(_AugusBaseView):
     @view_config(route_name='augus.putback.index', request_method='GET',
                  renderer='altair.app.ticketing:templates/cooperation/augus/events/putback/index.html')
     def index(self):
-        putbacks = AugusPutback.query.all()
+        augus_performance_ids = [perf.augus_performances[0].id for perf in self.context.event.performances
+                              if perf.deleted_at is None
+                              and perf.augus_performances
+                              and perf.augus_performances[0].deleted_at is None]
+        putbacks = AugusPutback.query.filter(AugusPutback.augus_performance_id.in_(augus_performance_ids)).all()
+
         return dict(event=self.context.event,
                     putbacks=putbacks,
                     )
