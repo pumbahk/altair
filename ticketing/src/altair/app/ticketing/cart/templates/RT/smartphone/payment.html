@@ -245,8 +245,8 @@ form {
             <label for="orion-ticket-phone-${i+1}">電話番号${i+1}</label>
             <input type="text" id="orion-ticket-phone-${i+1}" name="orion-ticket-phone" value="${phone}">　
             % if i == 0:
-            <% is_disabled = 'disabled' if len(orion_ticket_phone) > 4 else '' %>
-            <button id="btn-add-orion-ticket-phone" type="button" onclick="add_orion_ticket_phone(this);" ${is_disabled|n}>追加</button>
+            <% disabled = 'disabled="disabled"' if len(orion_ticket_phone) > request.context.carted_product_item_count - 1 else '' %>
+            <button id="btn-add-orion-ticket-phone" type="button" onclick="add_orion_ticket_phone(this);" ${disabled|n}>追加</button>
             % else:
             <button type="button" onclick="delete_orion_ticket_phone(this);">削除</button>
             % endif
@@ -286,7 +286,7 @@ form {
           render_num(index, li);
           li.show().appendTo($(button).parents("ul"));
 
-          if (index > 4) {
+          if (index > parseInt(${request.context.carted_product_item_count}) - 1) {
               $(button).prop("disabled", true);
           }
       }
