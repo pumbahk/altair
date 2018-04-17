@@ -279,9 +279,13 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
   // SVGに対するinnerHTMLの利用可否
   isInnerHtmlAvailable: boolean = true;
   //ブラウザバックフラグ
-  returnFlag = false;
+  returnFlag: boolean = false;
   //ブラウザバック確認モーダルを出さないフラグ
-  returnUnconfirmFlag = false;
+  returnUnconfirmFlag: boolean = false;
+  //iPadの初期表示用
+  firstPopstate: boolean;
+  //ユーザーエージェント
+  ua: string = navigator.userAgent.toLowerCase();
   //ローディングアニメーションが表示されているか
   roadingAnimationEnable: boolean;
 
@@ -955,13 +959,10 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
       }, 200);
     });
 
-    //ブラウザ判別用にユーザーエージェント取得
-    let ua = navigator.userAgent.toLowerCase();
-
     //セッションストレージに履歴数を保持
     if (!sessionStorage.getItem('historyCount')) {
       sessionStorage.setItem('historyCount', history.length.toString());
-    } else if (ua.match(/crios/i) && !sessionStorage.getItem('stay') && sessionStorage.getItem('maxHistory')) {
+    } else if (this.ua.match(/crios/i) && !sessionStorage.getItem('stay') && sessionStorage.getItem('maxHistory')) {
       //iOS+chrome
       if (sessionStorage.getItem('maxHistory') == history.length.toString()) {
         //進むで来た可能性があるためモーダルを表示しない
@@ -987,7 +988,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
     });
 
     //他画面へのブラウザバック
-    if (ua.match(/crios/i)) {
+    if (this.ua.match(/crios/i)) {
       $(document).on('click', function () {
         history.pushState(null, null, null);
         $(document).off('click');
@@ -1002,7 +1003,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
           sessionStorage.setItem('historyCount', beforeHistory.toString());
         } else {
           //進まれた場合再読み込み
-          if (ua.indexOf('firefox') == -1 || ua.indexOf('android') !== -1 || /iP(hone|(o|a)d)/.test(navigator.userAgent)) {
+          if (this.ua.indexOf('firefox') == -1 || this.ua.indexOf('android') !== -1 || /iP(hone|(o|a)d)/.test(navigator.userAgent)) {
             location.href = location.href;
           }
         }
@@ -1012,26 +1013,12 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
     //セッションストレージに滞在フラグを登録
     sessionStorage.setItem('stay', 'true');
 
-    //iPadの初期表示用
-    let firstPopstate = this.reserveBySeatBrowserBackService.selectProductCount == 0 ? true : false;
+    //初期表示かどうか　iPad対応
+    this.firstPopstate = this.reserveBySeatBrowserBackService.selectProductCount == 0 ? true : false;
 
     //ブラウザの戻る・進むで発火
     window.addEventListener('popstate', function (e) {
-      if (that.returnUnconfirmFlag) {
-        that.returnUnconfirmFlag = false;
-      } else {
-        //iPadの場合、初期表示の際もイベントが発生するため最初の1回は無視
-        if (that.smartPhoneCheckService.isIpad() && firstPopstate) {
-          firstPopstate = false;
-          return;
-        }
-        that.confirmReturn();
-        if (ua.match(/crios/i)) {
-          history.forward();
-        } else {
-          history.pushState(null, null, null);
-        }
-      }
+      that.browserBack();
     }, false);
   }
 
@@ -2172,11 +2159,29 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
     this.returnFlag = true;
   }
 
+  //ブラウザバック時の処理
+  browserBack() {
+    if (this.returnUnconfirmFlag) {
+      this.returnUnconfirmFlag = false;
+    } else {
+      //iPadの場合、初期表示の際もイベントが発生するため最初の1回は無視
+      if (this.smartPhoneCheckService.isIpad() && this.firstPopstate) {
+        this.firstPopstate = false;
+        return;
+      }
+      this.confirmReturn();
+      if (this.ua.match(/crios/i)) {
+        history.forward();
+      } else {
+        history.pushState(null, null, null);
+      }
+    }
+  }
+
   //直前のサイトへ戻る
   returnPrevious() {
-    window.removeEventListener('popstate');
-    var ua = window.navigator.userAgent.toLowerCase();
-    if (ua.match(/crios/i)) {
+    window.removeEventListener('popstate', this.browserBack);
+    if (this.ua.match(/crios/i)) {
       //進む判定用に履歴数を保持
       sessionStorage.setItem('maxHistory', history.length.toString());
     }
@@ -2185,7 +2190,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
     sessionStorage.removeItem('stay');
 
     let backCount = -(history.length - Number(sessionStorage.getItem('historyCount')) + 1);
-    if (ua.indexOf('msie') != -1 || ua.indexOf('trident') != -1) {
+    if (this.ua.indexOf('msie') != -1 || this.ua.indexOf('trident') != -1) {
       window.addEventListener('popstate', function () {
         history.go(backCount);
       });
