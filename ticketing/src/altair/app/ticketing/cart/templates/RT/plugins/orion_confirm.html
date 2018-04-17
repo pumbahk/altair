@@ -1,7 +1,8 @@
 <div>
 
     <h4>${request.context.cart.payment_delivery_pair.delivery_method.name}</h4>
-
+    <% orion_ticket_phone_list = request.context.cart.get_orion_ticket_phone_list %>
+    % if orion_ticket_phone_list:
     <table id="confirmEventGate">
       <tr>
         <th colspan="2">
@@ -12,13 +13,14 @@
         <th scope="row">譲渡先</th>
         <td>
           <ul>
-            % for i, phone in enumerate(request.context.cart.get_orion_ticket_phone_list):
+            % for i, phone in enumerate(orion_ticket_phone_list):
             <li>電話番号${i+1}: ${phone}</li>
             % endfor
           </ul>
         </td>
       </tr>
     </table>
+    % endif
 
     <p>
     % if request.context.cart.performance.orion:

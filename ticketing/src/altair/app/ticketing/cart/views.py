@@ -1181,8 +1181,8 @@ class PaymentView(object):
             performance=self.context.performance,
             payment_delivery_methods=payment_delivery_methods,
             custom_locale_negotiator=custom_locale_negotiator(self.request) if self.request.organization.setting.i18n else "",
-            orion_ticket_phone=[''],
-            orion_phone_errors = ['']
+            orion_ticket_phone=[],
+            orion_phone_errors = []
             )
 
     def get_profile_meta_data(self):
@@ -1235,19 +1235,15 @@ class PaymentView(object):
         for phone in data:
             phone = phone.strip()
             error = u''
-            phones.append(phone)
             if phone:
+                phones.append(phone)
                 if len(phone) != 11:
                     error = u'電話番号の桁数が11桁ではありません'
                 if not phone.isdigit():
                     error = ','.join([error, u'数字以外の文字は入力できません']) if error else u'数字以外の文字は入力できません'
                 if not re.match('^(070|080|090)', phone):
                     error = ','.join([error, u'[070,080,090]で始まる携帯電話番号を入力してください']) if error else u'[070,080,090]で始まる携帯電話番号を入力してください'
-            errors.append(error)
-
-        if not phones:
-            phones = ['']
-            errors = ['']
+                errors.append(error)
 
         return phones, errors
 
