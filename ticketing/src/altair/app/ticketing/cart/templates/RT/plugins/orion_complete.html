@@ -1,31 +1,22 @@
 <div>
-    <%
-      if order.performance.orion and order.performance.orion.phone_verify_disabled:
-          is_phone_verify_disabled = True
-      else:
-          is_phone_verify_disabled = False
-    %>
     <h4>${order.payment_delivery_pair.delivery_method.name}</h4>
-    % if not is_phone_verify_disabled:
-      <table id="confirmEventGate">
-        <tr>
-          <th colspan="2">
-            <strong>アプリ受取追加情報</strong>
-          </th>
-        </tr>
-        <tr>
-          <th scope="row">譲渡先</th>
-          <td>
-            <ul>
-              % for i, phone in enumerate(order.get_orion_ticket_phone_list):
-              <li>電話番号${i+1}: ${phone}</li>
-              % endfor
-            </ul>
-          </td>
-        </tr>
-      </table>
-    % endif
-
+    <table id="confirmEventGate">
+      <tr>
+        <th colspan="2">
+          <strong>アプリ受取追加情報</strong>
+        </th>
+      </tr>
+      <tr>
+        <th scope="row">譲渡先</th>
+        <td>
+          <ul>
+            % for i, phone in enumerate(order.get_orion_ticket_phone_list):
+            <li>電話番号${i+1}: ${phone}</li>
+            % endfor
+          </ul>
+        </td>
+      </tr>
+    </table>
     <p>
       % if order.performance.orion:
       % if order.performance.orion.qr_enabled:
