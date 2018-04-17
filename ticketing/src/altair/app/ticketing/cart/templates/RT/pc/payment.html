@@ -23,6 +23,12 @@ orion_checked = False
             <p style="margin-left:20px;">どれかひとつをお選びください</p>
       %endif
       <% checked_id = request.params.get('payment_delivery_method_pair_id') %>
+      <%
+        if performance.orion and performance.orion.phone_verify_disabled:
+          is_phone_verify_disabled = 'true'
+        else:
+          is_phone_verify_disabled = 'false'
+      %>
       %for m in payment_delivery_methods:
       <div class="settlementPayBox">
         <div class="settlementPayBoxInner">
@@ -36,10 +42,10 @@ orion_checked = False
               if not has_orion:
                 has_orion = is_orion == 'true'
               %>
-              <td class="settlementPayRadio"${' rowspan="2"' if m.system_fee > 0 or m.special_fee > 0 else u''|n} onclick="pdmp(this, ${is_orion})">
+              <td class="settlementPayRadio"${' rowspan="2"' if m.system_fee > 0 or m.special_fee > 0 else u''|n} onclick="pdmp(this, ${is_orion}, ${is_phone_verify_disabled})">
                 <input type="radio" name="payment_delivery_method_pair_id" id="radio2" value="${m.id}" autocomplete="off" ${checked} />
               </td>
-              <td onclick="pdmp(this, ${is_orion})">
+              <td onclick="pdmp(this, ${is_orion}, ${is_phone_verify_disabled})">
                 <dl>
                   <dt>${m.payment_method.name}</dt>
                   <dd class="paymentFee_${h.format_number(m.transaction_fee)}">
@@ -50,7 +56,7 @@ orion_checked = False
                   </dd>
                 </dl>
               </td>
-              <td onclick="pdmp(this, ${is_orion})">
+              <td onclick="pdmp(this, ${is_orion}, ${is_phone_verify_disabled})">
                 <dl>
                   <dt>${m.delivery_method.name}</dt>
                   <dd class="devlieryFee_${h.format_number(m.delivery_fee)}">
@@ -301,10 +307,10 @@ orion_checked = False
   </div>
   % endif
   <script type="text/javascript">
-    function pdmp(td, is_orion) {
+    function pdmp(td, is_orion, is_phone_disabled) {
       $(td).parents("tr").find("input").prop("checked", true);
       % if has_orion:
-      if (is_orion) {
+      if (is_orion && is_phone_disabled === false) {
           $("#orion-ticket-phone-info").show();
           render_tel_1(is_orion_selected=is_orion);
       } else {

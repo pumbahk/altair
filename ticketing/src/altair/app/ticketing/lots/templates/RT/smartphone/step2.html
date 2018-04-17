@@ -44,8 +44,8 @@ $(document).ready(function(){
 });
 
 // orion関係のjavascript
-function pdmp(is_orion) {
-  if (is_orion) {
+function pdmp(is_orion, is_phone_disabled) {
+  if (is_orion && is_phone_disabled === false) {
     $("#orion-ticket-phone-info").show();
   } else {
     var ul = $("#orion-ticket-phone-list"),
@@ -121,6 +121,15 @@ function render_num(index, li) {
 <div class="subInner">
 <dl class="creditList">
 <dt>
+<%
+  for pm in event.performances:
+    if pm.orion and pm.orion.phone_verify_disabled:
+      is_phone_verify_disabled = 'true'
+    else:
+      is_phone_verify_disabled = 'false'
+      break
+  endfor
+%>
 % for m in payment_delivery_pairs:
 <%
   checked = 'checked' if str(m.id) == payment_delivery_method_pair_id else ''
@@ -128,7 +137,7 @@ function render_num(index, li) {
   orion_checked = checked and is_orion == 'true' if not orion_checked else orion_checked
 %>
 <p>
-  <input id="radio${m.id}" type="radio" name="payment_delivery_method_pair_id" value="${m.id}" ${checked} onclick="pdmp(${is_orion})"/>
+  <input id="radio${m.id}" type="radio" name="payment_delivery_method_pair_id" value="${m.id}" ${checked} onclick="pdmp(${is_orion}, ${is_phone_verify_disabled})"/>
   <label for="radio${m.id}">${m.payment_method.name} / ${m.delivery_method.name}</label>
 </p>
 % endfor
