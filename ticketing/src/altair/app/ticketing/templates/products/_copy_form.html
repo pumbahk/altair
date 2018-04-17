@@ -1,10 +1,8 @@
 <%page args="form" />
 <%namespace file="/common/helpers.html" name="ch" />
 
-<form action="${request.url}" method="POST" class="form-horizontal">
-  <fieldset>
-    ${origin_sales_segment.name}をコピーします。
-    <br/>
-    ${ch.form_item(form.copy_sales_segments)}
-  </fieldset>
+<p><span class="text-info">「${origin_sales_segment.name}」</span>をコピーします。</p>
+<form action="${request.url}" method="POST">
+    ${ch.form_item(form.is_overwrite_stock_holder, help=ch.help(form.is_overwrite_stock_holder))}
+    ${ch.form_item(form.copy_sales_segments, class_= 'table')}
 </form>

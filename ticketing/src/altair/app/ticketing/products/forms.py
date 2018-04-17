@@ -410,10 +410,17 @@ class ProductCopyForm(OurForm):
                 ]
 
     copy_sales_segments = OurPHPCompatibleSelectMultipleField(
-        label=u'コピー先を選択してください',
-        validators=[Required()],
-        choices=[],
+        label=u'コピー先販売区分',
+        choices=[]
     )
+
+    is_overwrite_stock_holder = OurBooleanField(
+        label=u'販売区分グループの配券先で書きかえ',
+        widget=CheckboxInput(),
+        help=u'コピー元の配券先を引き継がず、コピー先の販売区分グループの配券先を設定します。',
+        default=True
+    )
+
 
 class ProductAndProductItemAPIForm(OurForm, ProductFormMixin, ProductItemFormMixin):
 

@@ -197,24 +197,33 @@ class ProductAndProductItem(BaseView):
     @view_config(route_name='products.copy', request_method='GET', renderer='altair.app.ticketing:templates/products/_copy_form.html', xhr=True)
     def copy_xhr(self):
         # 商品の販売区分間コピー
-        copy_sales_segments = self.context.copy_sales_segments
-        f = ProductCopyForm(copy_sales_segments=copy_sales_segments)
+        f = ProductCopyForm(copy_sales_segments=self.context.copy_sales_segments)
         return dict(form=f, origin_sales_segment=self.context.sales_segment)
 
-    @view_config(route_name='products.copy', request_method='POST', renderer='altair.app.ticketing:templates/products/_form.html', xhr=True)
+    @view_config(route_name='products.copy', request_method='POST', renderer='altair.app.ticketing:templates/products/_copy_form.html', xhr=True)
     def copy_post_xhr(self):
         # 商品の販売区分間コピー
         origin_sales_segment = self.context.sales_segment
-        form = ProductCopyForm(self.request.POST, origin_sales_segment)
-        copy_sales_segments = form['copy_sales_segments'].data
-        sales_segment_group = SalesSegment.get(copy_sales_segments[0]).sales_segment_group
-        for copy_sales_segment_id in copy_sales_segments:
-
+        f = ProductCopyForm(self.request.POST, copy_sales_segments=self.context.copy_sales_segments)
+        copy_sales_segments_id_list = f['copy_sales_segments'].data
+        for copy_sales_segment_id in copy_sales_segments_id_list:
             copy_sales_segment = SalesSegment.get(copy_sales_segment_id)
-            products = Product.query.filter(Product.sales_segment_id==origin_sales_segment.id).all()
+            products = Product.query.filter(
+                Product.sales_segment_id == origin_sales_segment.id
+            ).order_by(Product.display_order).all()
 
             for product in products:
-                new_product = Product.get(Product.create_from_template(template=product, with_product_items=True)[product.id])
+                condition = {
+                    'template': product,
+                    'with_product_items': True
+                }
+
+                # 販売区分グループの配券先で書きかえ
+                if f['is_overwrite_stock_holder'].data:
+                    copy_sales_segment_group = SalesSegment.get(copy_sales_segment_id).sales_segment_group
+                    condition.update(stock_holder_id=copy_sales_segment_group.stock_holder_id)
+
+                new_product = Product.get(Product.create_from_template(**condition)[product.id])
                 for new_product_name in moderate_name_candidates(new_product.name):
                     existing_product_in_copy_sales_segment = Product.query.filter(
                         Product.sales_segment_id == copy_sales_segment_id,
@@ -234,7 +243,6 @@ class ProductAndProductItem(BaseView):
                         original_product=new_product
                     )
 
-        sales_segment_group.sync_stock_holder()
         self.request.session.flash(u'商品をコピーしました')
         return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
 
