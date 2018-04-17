@@ -939,6 +939,7 @@ class OrionEventGateView(object):
             .join(Order, and_(OrionTicketPhone.order_no == Order.order_no))\
             .filter(OrionTicketPhone.owner_phone_number == phone_number)\
             .filter(OrionTicketPhone.sent == False) \
+            .filter(Order.issuing_start_at <= datetime.now()) \
             .filter(Order.canceled_at == None) \
             .filter(Order.refunded_at == None) \
             .filter(Order.paid_at != None)
