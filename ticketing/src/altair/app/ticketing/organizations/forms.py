@@ -479,6 +479,18 @@ class OrganizationSettingForm(OrganizationSettingSimpleForm):
     i18n = OurBooleanField(
         label=get_annotations_for(c_models.OrganizationSetting.i18n)['label']
         )
+    default_locale = OurSelectField(
+        label=_(u'デフォルト言語'),
+        validators=[Optional()],
+        choices=[
+            (u'', u'なし'),
+            (u'en', u'English'),
+            (u'ja', u'日本語'),
+            (u'zh_CN', u'简体中文'),
+            (u'zh_TW', u'繁体中文'),
+            (u'ko', u'한국어'),
+        ]
+    )
     auto_cms = OurBooleanField(
         label=get_annotations_for(c_models.OrganizationSetting.auto_cms)['label']
     )
