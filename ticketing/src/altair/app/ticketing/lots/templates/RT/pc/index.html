@@ -257,6 +257,7 @@ if label is None or label is True:
     </div>
   </div>
 
+  % if is_phone_verify_disabled == 'false':
   <div id="orion-ticket-phone-info" class="settlementBox" ${'' if orion_checked else 'style="display:none;"'|n}>
     <div class="settlementBoxinner">
       <h2>イベントゲット情報</h2>
@@ -302,6 +303,7 @@ if label is None or label is True:
       </div>
     </div>
   </div>
+  % endif
 
   <div class="settlementBox">
     <div class="settlementBoxInner">
