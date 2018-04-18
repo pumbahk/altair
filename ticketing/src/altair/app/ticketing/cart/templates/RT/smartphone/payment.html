@@ -2,7 +2,9 @@
 <%namespace file="tags_smartphone.html" name="t" />
 <%
 from altair.app.ticketing.payments.plugins import ORION_DELIVERY_PLUGIN_ID
+# has_orionは決済引取方法の中でorionの引取方法があるかどうか
 has_orion = False
+# has_orionは決済引取方法の中でorionの引取方法が選べられるかどうか（バリーデーションに止まってリロードされる場合）
 orion_checked = False
 %>
 <style type="text/css">
@@ -227,9 +229,12 @@ form {
     </div>
 
     <%
+      # show_orion_inputはorion_ticket_phoneの入力フォームを表示するかどうか。下記２つのcheckを満たす場合は表示する
+      # check 1: 取引方法の中でorionの引取方法があることかつorionの設定でphone_verify_disabledがfalse
+      # check 2: check 1が満たす場合：check_number_of_phonesがfalseまたは選択された商品明細の数が2以上の場合
       show_orion_input = False
       if has_orion and is_phone_verify_disabled == 'false':
-        if (performance.orion and performance.orion.check_number_of_phones) or request.context.carted_product_item_count > 1:
+        if (performance.orion and not performance.orion.check_number_of_phones) or request.context.carted_product_item_count > 1:
           show_orion_input = True
     %>
 
