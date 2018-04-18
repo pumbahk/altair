@@ -243,12 +243,14 @@
 </div>
 <!-- modals -->
 <!-- templates -->
-<form id="resale-segment-form" class="form-horizontal hide" method="POST">
+<div id="reuse-box" class="hide">
+<form id="reuse-item-1" class="form-horizontal" method="POST">
   ${ch.form_item(form.resale_segment_id)}
   ${ch.form_item(form.performance_id)}
   ${ch.form_item(form.start_at)}
   ${ch.form_item(form.end_at)}
 </form>
+</div>
 
 <li id="resale-segment-li-template" class="hide">
   <h4></h4>
@@ -366,10 +368,13 @@
   }
   function clear_model_content(modal) {
       clear_modal_error_messages(modal);
-      modal.removeAttr("class").addClass("modal hide");
+      modal.find("[id^=reuse-item-]").each(function () {
+          $(this).detach().appendTo("#reuse-box");
+      });
       modal.find(".modal-header h3").text("");
       modal.find(".modal-body-content").empty();
-      modal.find(".btn-area").empty()
+      modal.find(".btn-area").empty();
+      modal.removeAttr("class").addClass("modal");
   }
   function open_modal() {
       var modal = $("#base-modal");
@@ -389,7 +394,7 @@
       var modal = $("#base-modal"),
           header_text = action === "create"? "リセール区分追加":"リセール区分編集",
           onclick_method = action === "create"? "create_resale_segment()":"update_resale_segment()",
-          form = $("#resale-segment-form").clone().removeAttr("id").removeClass("hide"),
+          form = $("#reuse-item-1").detach(),
           data = undefined,
           start_at = undefined,
           end_at = undefined;
