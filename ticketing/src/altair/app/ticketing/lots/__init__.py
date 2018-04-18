@@ -102,7 +102,19 @@ def forbidden_handler(context, request):
     session = get_db_session(request, 'slave')
     membership_name=request.altair_auth_info['membership']
     membership=session.query(Membership).filter(Membership.organization_id==request.organization.id).filter(Membership.name==membership_name).one()
-    request.context.message = u'{membergroup_name} としてログインしています。<br/>恐れ入りますが、現在、こちらのアカウントでは {event_name} {lot_name} の受付を行っておりません。<br/>本受付の対象アカウントでログインしていただけますようお願いいたします。'.format(
+
+    message = u'{membergroup_name} としてログインしています。<br/>' \
+              u'恐れ入りますが、現在、こちらのアカウントでは {event_name} {lot_name} の受付を行っておりません。<br/>' \
+              u'本受付の対象アカウントでログインしていただけますようお願いいたします。'
+
+    locale_name = getattr(request, 'locale_name', None)
+    if locale_name and locale_name != 'ja':
+        message = message + u'<br/><br/>' \
+                            u'You logged in as "{membergroup_name}".<br/>' \
+                            u'The application for "{event_name} {lot_name}" is not available for this account.<br/>' \
+                            u'Please login with a proper account.'
+
+    request.context.message = message.format(
         lot_name=request.context.lot.name,
         event_name=request.context.lot.event.title,
         membergroup_name=request.altair_auth_info['membergroup'],
