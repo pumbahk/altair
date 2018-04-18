@@ -184,7 +184,7 @@ ${m.delivery_method.description or '' | n}
 
 <p class="tyuui2">${form['email_1'].description}</p>
 
-
+%if is_phone_verify_disabled == 'false':
 <div id="orion-ticket-phone-info" class="subbox" ${'' if orion_checked else 'style="display:none;"'|n}>
   <dl>
     <dt>
@@ -231,6 +231,7 @@ ${m.delivery_method.description or '' | n}
     </dd>
   </dl>
 </div>
+%endif
 
 <div class="subbox">
 <dl>

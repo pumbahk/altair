@@ -266,7 +266,7 @@ orion_checked = False
     </div>
   </div>
 
-  % if has_orion and (not performance.orion.check_number_of_phones or request.context.carted_product_item_count > 1):
+  % if has_orion and (not performance.orion.check_number_of_phones or request.context.carted_product_item_count > 1) and is_phone_verify_disabled == 'false':
   <div id="orion-ticket-phone-info" class="confirmBox" ${'' if orion_checked else 'style="display:none;"'|n}>
     <div class="confirmBoxInner">
       <h2>アプリ受取追加情報</h2>
