@@ -78,3 +78,8 @@ vertical-align:bottom;
   width: 100%;
   margin: auto;
 }
+
+.validation-error {
+    color: red;
+    font-weight: bold;
+}
