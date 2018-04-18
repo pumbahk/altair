@@ -2,9 +2,10 @@
 <%namespace file="./tags_mobile.html" name="mobile" />
 <%namespace name="fh" module="altair.formhelpers.utils.mako" />
 <%
-   import altair.app.ticketing.cart.helpers as ch
-   import altair.app.ticketing.lots.helpers as h
-   %>
+    import altair.app.ticketing.cart.helpers as ch
+    import altair.app.ticketing.lots.helpers as h
+    from markupsafe import Markup
+%>
 <%def name="render_field(field, label=False, _description=None, _note=None, _suffix=u'', **kwargs)">
 <%
 _description = _description or field.description
@@ -121,7 +122,9 @@ ${lot.name}
 <%mobile:form_header>${field.label}</%mobile:form_header>
 <div>
 ${render_field(field)}
-${h.error_list(request, field)}
+% for error in field.errors:
+  ${Markup(h.render_mobile_error(error))}
+% endfor
 </div>
 % endif
 % endfor
