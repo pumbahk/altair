@@ -266,7 +266,7 @@ orion_checked = False
     </div>
   </div>
 
-  % if has_orion:
+  % if has_orion and (not performance.orion.check_number_of_phones or request.context.carted_product_item_count > 1):
   <div id="orion-ticket-phone-info" class="confirmBox" ${'' if orion_checked else 'style="display:none;"'|n}>
     <div class="confirmBoxInner">
       <h2>アプリ受取追加情報</h2>
@@ -284,21 +284,35 @@ orion_checked = False
                 <label for="tmp-orion-ticket-phone">電話番号</label>
                 <input type="text" id="tmp-orion-ticket-phone">　<button type="button" onclick="delete_orion_ticket_phone(this);">削除</button>
               </li>
-              % for i, (phone, error) in enumerate(zip(orion_ticket_phone, orion_phone_errors)):
-              <li>
-                <label for="orion-ticket-phone-${i+1}">電話番号${i+1}</label>
-                <input type="text" id="orion-ticket-phone-${i+1}" name="orion-ticket-phone" value="${phone}">　
-                % if i == 0:
-                <% is_disabled = 'disabled' if len(orion_ticket_phone) > 4 else '' %>
-                <button id="btn-add-orion-ticket-phone" type="button" onclick="add_orion_ticket_phone(this);" ${is_disabled|n}>追加</button>
-                % else:
-                <button type="button" onclick="delete_orion_ticket_phone(this);">削除</button>
-                % endif
-                % if error:
-                <span class="error">${error}</span>
-                % endif
-              </li>
-              % endfor
+              % if not orion_ticket_phone:
+                <li>
+                  <label for="orion-ticket-phone-1">電話番号1</label>
+                  <input type="text" id="orion-ticket-phone-1" name="orion-ticket-phone" value="">
+                  <%
+                    if performance.orion.check_number_of_phones:
+                      disabled = 'disabled="disabled"' if request.context.carted_product_item_count < 3 else ''
+                    else:
+                      disabled = 'disabled="disabled"' if request.context.carted_product_item_count < 2 else ''
+                  %>
+                  <button id="btn-add-orion-ticket-phone" type="button" onclick="add_orion_ticket_phone(this);" ${disabled|n}>追加</button>
+                </li>
+              % else:
+                % for i, (phone, error) in enumerate(zip(orion_ticket_phone, orion_phone_errors)):
+                  <li>
+                    <label for="orion-ticket-phone-${i+1}">電話番号${i+1}</label>
+                    <input type="text" id="orion-ticket-phone-${i+1}" name="orion-ticket-phone" value="${phone}">　
+                    % if i == 0:
+                    <% disabled = 'disabled="disabled"' if len(orion_ticket_phone) > request.context.carted_product_item_count - 1 else '' %>
+                    <button id="btn-add-orion-ticket-phone" type="button" onclick="add_orion_ticket_phone(this);" ${disabled|n}>追加</button>
+                    % else:
+                    <button type="button" onclick="delete_orion_ticket_phone(this);">削除</button>
+                    % endif
+                    % if error:
+                    <span class="error">${error}</span>
+                    % endif
+                  </li>
+                % endfor
+              % endif
             </ul>
           </td>
         </tr>
@@ -331,7 +345,7 @@ orion_checked = False
         render_num(index, li);
         li.show().appendTo($(button).parents("ul"));
 
-        if (index > 4) {
+        if (index > parseInt(${request.context.carted_product_item_count}) - 1) {
             $(button).prop("disabled", true);
         }
     }

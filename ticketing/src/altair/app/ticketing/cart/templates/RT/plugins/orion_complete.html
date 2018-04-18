@@ -1,5 +1,7 @@
 <div>
     <h4>${order.payment_delivery_pair.delivery_method.name}</h4>
+    <% orion_ticket_phone_list = order.get_orion_ticket_phone_list %>
+    % if orion_ticket_phone_list:
     <table id="confirmEventGate">
       <tr>
         <th colspan="2">
@@ -10,13 +12,14 @@
         <th scope="row">譲渡先</th>
         <td>
           <ul>
-            % for i, phone in enumerate(order.get_orion_ticket_phone_list):
+            % for i, phone in enumerate(orion_ticket_phone_list):
             <li>電話番号${i+1}: ${phone}</li>
             % endfor
           </ul>
         </td>
       </tr>
     </table>
+    % endif
     <p>
       % if order.performance.orion:
       % if order.performance.orion.qr_enabled:
