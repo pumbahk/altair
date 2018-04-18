@@ -11,6 +11,7 @@
     <br/>
   % endif
 
+<% from datetime import datetime %>
 
 %if not paid:
 
@@ -114,9 +115,12 @@
 
 % endif
 
+  % if order.issuing_start_at > datetime.now():
+    <p style="font-weight: bold">電子チケットの発券/送信は<span style="color: red;">${h.japanese_datetime(order.issuing_start_at)}</span>より開始いたしますので、ご了承ください。</p>
+  % else:
     <p class="red">携帯電話へ送信される場合は、@tstar.jp からのメールが受信できるよう、《事前に》お客様ご自身でドメイン指定の設定を必ずお願いいたします。</p>
 
-    % if 0 < len(tickets):
+    % if 1 < len(tickets):
     <div style="border: 1px solid gray; padding: 8px; margin-bottom: 4px;">
     ${len(tickets)}枚分のメールをまとめて送信
     <form method="post" target="_blank" action="${request.route_path('order_review.orion_send')}">
@@ -131,7 +135,7 @@
 
     % for (idx, ticket) in zip(range(0, len(tickets)), tickets):
         <div style="border: 1px solid gray; padding: 8px; margin-bottom: 4px;">
-	    ${idx+1}/${len(tickets)} <br />
+      ${idx+1}/${len(tickets)} <br />
             % if ticket.product:
             商品名 ${ticket.product.name} <br />
             % endif
@@ -139,7 +143,7 @@
             席番号 ${ticket.seat.name} <br />
             %endif
             <br />
-	    % if ticket.performance.orion and ticket.performance.orion.qr_enabled:
+      % if ticket.performance.orion and ticket.performance.orion.qr_enabled:
               <form method="post" target="_blank" action="${request.route_path('order_review.qr_print')}">
                   <input type="hidden" name="order_no" value="${order.order_no}" />
                   <input type="hidden" name="tel" value="${tel}" />
@@ -147,7 +151,7 @@
                   <input type="submit" value="QRコードを表示する" style="width:150px;height:40px" />
               </form>
               <br/>
-	    % endif
+      % endif
               <form method="post" target="_blank" action="${request.route_path('order_review.orion_send')}">
                   <input type="hidden" name="order_no" value="${order.order_no}" />
                   <input type="hidden" name="tel" value="${tel}" />
@@ -157,7 +161,7 @@
               </form>
         </div>
     % endfor
-
+  % endif
 % else:
 <p class="red">本公演は
 ${order.payment_delivery_pair.delivery_method.name}
