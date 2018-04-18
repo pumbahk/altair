@@ -170,13 +170,11 @@ if label is None or label is True:
     </div>
   </div>
   <%
+    is_phone_verify_disabled = 'true'
     for pm in performances:
-      if pm.orion and pm.orion.phone_verify_disabled:
-        is_phone_verify_disabled = 'true'
-      else:
+      if pm.orion and not pm.orion.phone_verify_disabled:
         is_phone_verify_disabled = 'false'
         break
-    endfor
   %>
   <div class="settlementBox">
     <div class="settlementBoxInner">

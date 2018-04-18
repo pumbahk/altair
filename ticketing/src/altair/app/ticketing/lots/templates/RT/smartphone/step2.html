@@ -122,13 +122,11 @@ function render_num(index, li) {
 <dl class="creditList">
 <dt>
 <%
+  is_phone_verify_disabled = 'true'
   for pm in event.performances:
-    if pm.orion and pm.orion.phone_verify_disabled:
-      is_phone_verify_disabled = 'true'
-    else:
+    if pm.orion and not pm.orion.phone_verify_disabled:
       is_phone_verify_disabled = 'false'
       break
-  endfor
 %>
 % for m in payment_delivery_pairs:
 <%
