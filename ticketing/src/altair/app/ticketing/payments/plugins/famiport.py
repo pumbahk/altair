@@ -186,13 +186,15 @@ class FamiPortTicketXMLBuilder(object):
 
     def __call__(self, name, dicts):
         render = pystache.render
+        render_noescape = pystache.Renderer(escape=lambda u: u).render
         root = etree.Element(u'ticket')
         ti = self._get_template_info(name)
         for element_name, t in ti.mappings:
             e = etree.Element(element_name)
             #tkt330 プレースホルダーを二重交換
             e.text = render(t, dicts)
-            e.text = render(e.text, dicts)
+            # tkt4789 プレースホルダー二重交換時にHTMLエスケープするとその後の処理で再度HTMLエスケープされるので、エスケープなし
+            e.text = render_noescape(e.text, dicts)
             root.append(e)
         return root, ti.template_code, ti.logically_subticket
 
