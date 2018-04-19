@@ -104,7 +104,7 @@ class PaymentPluginErrorConverterTween(object):
         except PaymentPluginException as e:
             if not e.ignorable:
                 try:
-                    logger.exception("PaymentPluginErrorConverterTween: %s" % str(e))
+                    logger.exception(u"PaymentPluginErrorConverterTween: {0}".format(unicode(e)))
                 except (UnicodeDecodeError, UnicodeEncodeError):
                     logger.exception("oops")
             if e.back_url:

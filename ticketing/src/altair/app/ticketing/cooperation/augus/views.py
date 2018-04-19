@@ -579,7 +579,7 @@ class AugusPerformanceView(_AugusBaseView):
                     transaction.abort()
                     raise HTTPFound(error_url)
                 elif ag_venue.venue.site_id != performance.venue.site_id:
-                    self.request.session.flash(u'会場の連携情報が不一致です: Performance.id={} AugusPerformance.id={}'.format(
+                    self.request.session.flash(u'会場の連携情報が不一致です。設定されている会場図が連携できないので会場の設定を確認してください。:Performance.id={} AugusPerformance.id={}'.format(
                         performance.id, ag_performance.id))
                     transaction.abort()
                     raise HTTPFound(error_url)
@@ -705,7 +705,10 @@ class AugusPutbackView(_AugusBaseView):
     @view_config(route_name='augus.putback.index', request_method='GET',
                  renderer='altair.app.ticketing:templates/cooperation/augus/events/putback/index.html')
     def index(self):
-        putbacks = AugusPutback.query.all()
+        augus_performance_ids = [perf.augus_performances[0].id for perf in self.context.event.performances
+                              if perf.augus_performances]
+        putbacks = AugusPutback.query.filter(AugusPutback.augus_performance_id.in_(augus_performance_ids)).all()
+
         return dict(event=self.context.event,
                     putbacks=putbacks,
                     )

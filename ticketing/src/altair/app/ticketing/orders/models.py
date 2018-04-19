@@ -864,7 +864,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def get_orion_ticket_phone_list(self):
         from altair.app.ticketing.models import DBSession as session
         orion_ticket_phone = session.query(OrionTicketPhone).filter(OrionTicketPhone.order_no == self.order_no).first()
-        return orion_ticket_phone.phones.split(',') if orion_ticket_phone else []
+        return orion_ticket_phone.phones.split(',') if orion_ticket_phone and orion_ticket_phone.phones else []
 
     def _get_orion_ticket_phone(self, request):
         session = get_db_session(request, 'slave')

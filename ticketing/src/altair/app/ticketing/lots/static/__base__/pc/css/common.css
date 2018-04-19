@@ -75,6 +75,11 @@ vertical-align:bottom;
 	text-indent: -9999px;
 }
 
+.validation-error {
+    color: red;
+    font-weight: bold;
+}
+
 a{ text-decoration:none; color: #3171bd; outline: none; }
 a:focus { outline: none; }
 a:hover,a.selected{ text-decoration: underline; }

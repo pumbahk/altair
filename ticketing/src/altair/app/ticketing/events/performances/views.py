@@ -10,7 +10,7 @@ from cStringIO import StringIO
 import webhelpers.paginate as paginate
 import altair.app.ticketing.discount_code.api as dc_api
 from pyramid.view import view_config, view_defaults
-from pyramid.httpexceptions import HTTPFound, HTTPNotFound
+from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPBadRequest
 from pyramid.url import route_path
 from pyramid.renderers import render_to_response
 from pyramid.security import has_permission, ACLAllowed
@@ -49,10 +49,14 @@ from altair.app.ticketing.carturl.api import get_performance_cart_url_builder, g
 from altair.app.ticketing.events.sales_segments.resources import (
     SalesSegmentAccessor,
 )
-from altair.app.ticketing.resale.models import ResaleSegment, ResaleRequest
+from altair.app.ticketing.resale.models import ResaleSegment, ResaleRequest, SentStatus, ResaleRequestStatus
 from .generator import PerformanceCodeGenerator
 from ..famiport_helpers import get_famiport_performance_ids
-from .api import set_visible_performance, set_invisible_performance
+from .api import (set_visible_performance,
+                  set_invisible_performance,
+                  send_resale_segment,
+                  send_all_resale_request,
+                  send_resale_request)
 
 from altair.app.ticketing.discount_code.forms import DiscountCodeSettingForm
 
@@ -483,34 +487,46 @@ class PerformanceShowView(BaseView):
     @view_config(route_name="performances.resale.index", request_method='GET')
     def resale_index(self):
         slave_session = get_db_session(self.request, name="slave")
+        selected_resale_segment_id = self.request.params.get('resale_segment_id', None)
         form = PerformanceResaleSegmentForm(performance_id=self.performance.id)
         search_form = PerformanceResaleRequestSearchForm(self.request.params)
         resale_segments = slave_session.query(ResaleSegment) \
-                                       .filter(ResaleSegment.performance_id == self.performance.id)\
-                                       .all()
-        resale_requests = []
-        # 現時点resale_segmentは1つしかない。
-        for resale_segment in resale_segments:
+                                       .filter(ResaleSegment.performance_id == self.performance.id)
+
+        if selected_resale_segment_id:
+            resale_segment = resale_segments.filter(id = selected_resale_segment_id).one()
+        else:
+            resale_segment = resale_segments.first()
+
+        if resale_segment:
+            form.resale_segment_id.data = resale_segment.id
+            # 現時点resale_segmentは1つしかない。
             resale_requests = slave_session.query(ResaleRequest, OrderedProductItemToken) \
                 .filter(ResaleRequest.ordered_product_item_token_id == OrderedProductItemToken.id) \
                 .filter(ResaleRequest.resale_segment_id == resale_segment.id) \
                 .filter(ResaleRequest.deleted_at == None)
+        else:
+            resale_requests = []
 
-        if search_form.order_no.data:
-            order_no_list = re.split(r'[ \t,]', search_form.order_no.data)
-            resale_requests = resale_requests \
-                .join(OrderedProductItemToken,
-                      ResaleRequest.ordered_product_item_token_id == OrderedProductItemToken.id) \
-                .join(OrderedProductItem, OrderedProductItem.id == OrderedProductItemToken.ordered_product_item_id) \
-                .join(OrderedProduct, OrderedProduct.id == OrderedProductItem.ordered_product_id) \
-                .join(Order, Order.id == OrderedProduct.order_id) \
-                .filter(Order.order_no.in_(order_no_list))
+        if resale_requests:
+            if search_form.order_no.data:
+                order_no_list = re.split(r'[ \t,]', search_form.order_no.data)
+                resale_requests = resale_requests \
+                    .join(OrderedProductItemToken,
+                          ResaleRequest.ordered_product_item_token_id == OrderedProductItemToken.id) \
+                    .join(OrderedProductItem, OrderedProductItem.id == OrderedProductItemToken.ordered_product_item_id) \
+                    .join(OrderedProduct, OrderedProduct.id == OrderedProductItem.ordered_product_id) \
+                    .join(Order, Order.id == OrderedProduct.order_id) \
+                    .filter(Order.order_no.in_(order_no_list))
 
-        if search_form.account_holder_name.data:
-            resale_requests = resale_requests.filter(ResaleRequest.account_holder_name == search_form.account_holder_name.data)
+            if search_form.account_holder_name.data:
+                resale_requests = resale_requests.filter(ResaleRequest.account_holder_name == search_form.account_holder_name.data)
 
-        if (search_form.sold_only.data^search_form.not_sold_only.data):
-            resale_requests = resale_requests.filter(ResaleRequest.sold == search_form.sold_only.data)
+            if search_form.get_status():
+                resale_requests = resale_requests.filter(ResaleRequest.status.in_(search_form.get_status()))
+
+            if search_form.get_sent_status():
+                resale_requests = resale_requests.filter(ResaleRequest.sent_status.in_(search_form.get_sent_status()))
 
         resale_requests = paginate.Page(
             resale_requests,
@@ -522,7 +538,8 @@ class PerformanceShowView(BaseView):
             'tab': 'resale',
             'action': '',
             'performance': self.performance,
-            'resale_segments': resale_segments,
+            'resale_segments': resale_segments.all(),
+            'selected_resale_segment_id': selected_resale_segment_id,
             'resale_requests': resale_requests,
             'form': form,
             'search_form': search_form
@@ -1147,3 +1164,167 @@ class MailInfoNewView(BaseView):
                 "mutil": mutil,
                 "choices": MailTypeChoices,
                 "choice_form": choice_form}
+
+
+class ResaleForOrionAPIView(BaseView):
+
+    def __init__(self, context, request):
+        super(ResaleForOrionAPIView, self).__init__(context, request)
+        self.session = get_db_session(request, 'slave')
+
+    def _get_valid_resale_request_action_code(self, action):
+        action_code = getattr(ResaleRequestStatus, action, None)
+        if not action_code:
+            action_code = ResaleRequestStatus.unknown
+        return action_code
+
+    @view_config(route_name="performances.resale.send_resale_segment_to_orion",
+                 request_method="POST",
+                 renderer="json")
+    def send_resale_segment_to_orion(self):
+        performance_id = int(self.request.params.get('performance_id', None))
+        if not performance_id:
+            raise HTTPNotFound()
+        performance = self.session.query(Performance).get(performance_id)
+        resale_segment_id = self.request.params.get('resale_segment_id', None)
+        resale_segments = DBSession.query(ResaleSegment).filter(ResaleSegment.performance_id == performance_id)
+
+        if resale_segment_id:
+            resale_segments = resale_segments.filter(ResaleSegment.id == resale_segment_id)
+
+        success_list = []
+        fail_list = []
+        for resale_segment in resale_segments:
+            resale_segment.sent_at = datetime.datetime.now()
+            try:
+                resp = send_resale_segment(self.request, performance, resale_segment)
+                if not resp or resp['result'] != u"OK":
+                    fail_list.append(resale_segment.id)
+                    resale_segment.sent_status = SentStatus.fail
+                    logger.info("fail to send resale segment: {0}...".format(resale_segment.id))
+                else:
+                    success_list.append(resale_segment.id)
+                    resale_segment.sent_status = SentStatus.sent
+            except Exception as e:
+                fail_list.append(resale_segment.id)
+                resale_segment.sent_status = SentStatus.fail
+                logger.info(
+                    "fail to send resale segment(ID: {0}) with the exception: {1} ...".format(
+                        resale_segment.id, str(e))
+                )
+
+            DBSession.merge(resale_segment)
+            DBSession.flush()
+
+        return {
+            'success_list': success_list,
+            'fail_list': fail_list
+        }
+
+    @view_config(route_name="performances.resale.requests.operate",
+                 request_method="POST",
+                 renderer="json")
+    def operate_resale_requests(self):
+        resale_request_id = self.request.params.get('resale_request_id', None)
+        action = self.request.params.get('action', None)
+        if not resale_request_id or not action:
+            raise HTTPNotFound
+
+        action_code = self._get_valid_resale_request_action_code(action)
+        result = u"OK"
+        emsgs = u""
+        try:
+            resale_request = DBSession.query(ResaleRequest).get(resale_request_id)
+            resale_request.status = action_code
+            DBSession.merge(resale_request)
+            DBSession.flush()
+            logger.info("ResaleRequst(ID: {}) was updated as {}".format(resale_request_id, action))
+        except Exception as e:
+            emsgs = str(e)
+            result = u"NG"
+            logger.info("ResaleRequst(ID: {}) failed to be updated as {}".format(resale_request_id, action))
+
+        return {'result': result, 'emsgs': emsgs}
+
+    @view_config(route_name="performances.resale.send_resale_request_to_orion",
+                 request_method="POST",
+                 renderer="json")
+    def send_resale_request_to_orion(self):
+        resale_request_id = self.request.params.get('resale_request_id', None)
+        if not resale_request_id:
+            raise HTTPNotFound()
+
+        try:
+            resale_request = DBSession.query(ResaleRequest) \
+                .filter(ResaleRequest.id == resale_request_id) \
+                .filter(ResaleRequest.status != ResaleRequestStatus.unknown) \
+                .filter(ResaleRequest.sent_status != SentStatus.sent) \
+                .one()
+        except Exception:
+            raise HTTPNotFound()
+
+        resale_request.sent_at = datetime.datetime.now()
+        result = u"OK"
+        emsgs = u""
+        try:
+            resp = send_resale_request(self.request, resale_request)
+            if not resp or resp['result'] != u"OK":
+                result = u"NG"
+                emsgs = u"リセールリクエスト連携は失敗しました。"
+                resale_request.sent_status = SentStatus.fail
+                logger.info("fail to send resale request(ID: {0}) ...".format(resale_request.id))
+            else:
+                resale_request.sent_status = SentStatus.sent
+        except Exception as e:
+            result = u"NG"
+            emsgs = u"リセールリクエスト連携は失敗しました。"
+            resale_request.sent_status = SentStatus.fail
+            logger.info(
+                "fail to send resale request(ID: {0}) with the exception: {1} ...".format(
+                    resale_request.id, str(e))
+            )
+
+        DBSession.merge(resale_request)
+        DBSession.flush()
+
+        return {'result': result, 'emsgs': emsgs}
+
+    @view_config(route_name="performances.resale.send_all_resale_request_to_orion",
+                 request_method="POST",
+                 renderer="json")
+    def send_all_resale_request_to_orion(self):
+        resale_segment_id = self.request.params.get('resale_segment_id', None)
+        if not resale_segment_id:
+            raise HTTPNotFound()
+
+        resale_requests = DBSession.query(ResaleRequest) \
+            .filter(ResaleRequest.resale_segment_id == resale_segment_id) \
+            .filter(ResaleRequest.status.in_([ResaleRequestStatus.sold, ResaleRequestStatus.back])) \
+            .filter(ResaleRequest.sent_status != SentStatus.sent)
+
+        if not resale_requests.count():
+            raise HTTPNotFound()
+
+        result = u"OK"
+        emsgs = u""
+        try:
+            resale_requests.update({ResaleRequest.sent_at: datetime.datetime.now()}, synchronize_session='fetch')
+            resp = send_all_resale_request(self.request, resale_requests.all())
+            if not resp or resp['result'] != u"OK":
+                logger.info("fail to send the resale request of resale segment(ID: {0}) ...".format(resale_segment_id))
+                resale_requests.update({ResaleRequest.sent_status: SentStatus.fail}, synchronize_session='fetch')
+                result = u"NG"
+                emsgs = u"リセールリクエスト一括連携は失敗しました。"
+            else:
+                resale_requests.update({ResaleRequest.sent_status: SentStatus.sent}, synchronize_session='fetch')
+        except Exception as e:
+            logger.info("fail to send the resale request of resale segment(ID: {0}) with the exception: {1}...".format(
+                resale_segment_id, str(e))
+            )
+            resale_requests.update({ResaleRequest.sent_status: SentStatus.fail}, synchronize_session='fetch')
+            result = u"NG"
+            emsgs = u"リセールリクエスト一括連携は失敗しました。"
+
+        DBSession.flush()
+
+        return {'result': result, 'emsgs': emsgs}

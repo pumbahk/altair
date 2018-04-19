@@ -1,7 +1,9 @@
 <%inherit file="./base.html"/>
 <%
 from altair.app.ticketing.payments.plugins import ORION_DELIVERY_PLUGIN_ID
+# has_orionは決済引取方法の中でorionの引取方法があるかどうか
 has_orion = False
+# has_orionは決済引取方法の中でorionの引取方法が選べられるかどうか（バリーデーションに止まってリロードされる場合）
 orion_checked = False
 %>
 
@@ -23,6 +25,12 @@ orion_checked = False
             <p style="margin-left:20px;">どれかひとつをお選びください</p>
       %endif
       <% checked_id = request.params.get('payment_delivery_method_pair_id') %>
+      <%
+        if not performance.orion or (performance.orion and performance.orion.phone_verify_disabled):
+          is_phone_verify_disabled = 'true'
+        else:
+          is_phone_verify_disabled = 'false'
+      %>
       %for m in payment_delivery_methods:
       <div class="settlementPayBox">
         <div class="settlementPayBoxInner">
@@ -36,10 +44,10 @@ orion_checked = False
               if not has_orion:
                 has_orion = is_orion == 'true'
               %>
-              <td class="settlementPayRadio"${' rowspan="2"' if m.system_fee > 0 or m.special_fee > 0 else u''|n} onclick="pdmp(this, ${is_orion})">
+              <td class="settlementPayRadio"${' rowspan="2"' if m.system_fee > 0 or m.special_fee > 0 else u''|n} onclick="pdmp(this, ${is_orion}, ${is_phone_verify_disabled})">
                 <input type="radio" name="payment_delivery_method_pair_id" id="radio2" value="${m.id}" autocomplete="off" ${checked} />
               </td>
-              <td onclick="pdmp(this, ${is_orion})">
+              <td onclick="pdmp(this, ${is_orion}, ${is_phone_verify_disabled})">
                 <dl>
                   <dt>${m.payment_method.name}</dt>
                   <dd class="paymentFee_${h.format_number(m.transaction_fee)}">
@@ -50,7 +58,7 @@ orion_checked = False
                   </dd>
                 </dl>
               </td>
-              <td onclick="pdmp(this, ${is_orion})">
+              <td onclick="pdmp(this, ${is_orion}, ${is_phone_verify_disabled})">
                 <dl>
                   <dt>${m.delivery_method.name}</dt>
                   <dd class="devlieryFee_${h.format_number(m.delivery_fee)}">
@@ -260,7 +268,17 @@ orion_checked = False
     </div>
   </div>
 
-  % if has_orion:
+  <%
+    # show_orion_inputはorion_ticket_phoneの入力フォームを表示するかどうか。下記２つのcheckを満たす場合は表示する
+    # check 1: 取引方法の中でorionの引取方法があることかつorionの設定でphone_verify_disabledがfalse
+    # check 2: check 1が満たす場合：check_number_of_phonesがfalseまたは選択された商品明細の数が2以上の場合
+    show_orion_input = False
+    if has_orion and is_phone_verify_disabled == 'false':
+      if (performance.orion and not performance.orion.check_number_of_phones) or request.context.carted_product_item_count > 1:
+        show_orion_input = True
+  %>
+
+  % if show_orion_input:
   <div id="orion-ticket-phone-info" class="confirmBox" ${'' if orion_checked else 'style="display:none;"'|n}>
     <div class="confirmBoxInner">
       <h2>アプリ受取追加情報</h2>
@@ -278,21 +296,35 @@ orion_checked = False
                 <label for="tmp-orion-ticket-phone">電話番号</label>
                 <input type="text" id="tmp-orion-ticket-phone">　<button type="button" onclick="delete_orion_ticket_phone(this);">削除</button>
               </li>
-              % for i, (phone, error) in enumerate(zip(orion_ticket_phone, orion_phone_errors)):
-              <li>
-                <label for="orion-ticket-phone-${i+1}">電話番号${i+1}</label>
-                <input type="text" id="orion-ticket-phone-${i+1}" name="orion-ticket-phone" value="${phone}">　
-                % if i == 0:
-                <% is_disabled = 'disabled' if len(orion_ticket_phone) > 4 else '' %>
-                <button id="btn-add-orion-ticket-phone" type="button" onclick="add_orion_ticket_phone(this);" ${is_disabled|n}>追加</button>
-                % else:
-                <button type="button" onclick="delete_orion_ticket_phone(this);">削除</button>
-                % endif
-                % if error:
-                <span class="error">${error}</span>
-                % endif
-              </li>
-              % endfor
+              % if not orion_ticket_phone:
+                <li>
+                  <label for="orion-ticket-phone-1">電話番号1</label>
+                  <input type="text" id="orion-ticket-phone-1" name="orion-ticket-phone" value="">
+                  <%
+                    if performance.orion and performance.orion.check_number_of_phones:
+                      disabled = 'disabled="disabled"' if request.context.carted_product_item_count < 3 else ''
+                    else:
+                      disabled = 'disabled="disabled"' if request.context.carted_product_item_count < 2 else ''
+                  %>
+                  <button id="btn-add-orion-ticket-phone" type="button" onclick="add_orion_ticket_phone(this);" ${disabled|n}>追加</button>
+                </li>
+              % else:
+                % for i, (phone, error) in enumerate(zip(orion_ticket_phone, orion_phone_errors)):
+                  <li>
+                    <label for="orion-ticket-phone-${i+1}">電話番号${i+1}</label>
+                    <input type="text" id="orion-ticket-phone-${i+1}" name="orion-ticket-phone" value="${phone}">　
+                    % if i == 0:
+                    <% disabled = 'disabled="disabled"' if len(orion_ticket_phone) > request.context.carted_product_item_count - 1 else '' %>
+                    <button id="btn-add-orion-ticket-phone" type="button" onclick="add_orion_ticket_phone(this);" ${disabled|n}>追加</button>
+                    % else:
+                    <button type="button" onclick="delete_orion_ticket_phone(this);">削除</button>
+                    % endif
+                    % if error:
+                    <span class="error">${error}</span>
+                    % endif
+                  </li>
+                % endfor
+              % endif
             </ul>
           </td>
         </tr>
@@ -301,10 +333,10 @@ orion_checked = False
   </div>
   % endif
   <script type="text/javascript">
-    function pdmp(td, is_orion) {
+    function pdmp(td, is_orion, is_phone_disabled) {
       $(td).parents("tr").find("input").prop("checked", true);
       % if has_orion:
-      if (is_orion) {
+      if (is_orion && is_phone_disabled === false) {
           $("#orion-ticket-phone-info").show();
           render_tel_1(is_orion_selected=is_orion);
       } else {
@@ -324,8 +356,13 @@ orion_checked = False
             li = $("#orion-ticket-phone-template").clone().removeAttr("id").removeAttr("style");
         render_num(index, li);
         li.show().appendTo($(button).parents("ul"));
-
-        if (index > 4) {
+        <%
+          if (performance.orion and performance.orion.check_number_of_phones):
+            orion_up_limit = request.context.carted_product_item_count - 2
+          else:
+            orion_up_limit = request.context.carted_product_item_count - 1
+        %>
+        if (index > parseInt(${orion_up_limit})) {
             $(button).prop("disabled", true);
         }
     }

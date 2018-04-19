@@ -70,7 +70,9 @@ class ResaleRequestListAPIView(generics.ListAPIView):
         'ResaleRequest.account_holder_name',
         'ResaleRequest.total_amount',
         'ResaleRequest.sold_at',
-        'ResaleRequest.sold'
+        'ResaleRequest.status',
+        'ResaleRequest.sent_status',
+        'ResaleRequest.sent_at'
     ]
     search_fields = [
         'ResaleRequest.id',
@@ -82,7 +84,9 @@ class ResaleRequestListAPIView(generics.ListAPIView):
         'ResaleRequest.account_holder_name',
         'ResaleRequest.total_amount',
         'ResaleRequest.sold_at',
-        'ResaleRequest.sold'
+        'ResaleRequest.status',
+        'ResaleRequest.sent_status',
+        'ResaleRequest.sent_at'
     ]
 
     # `get_dbsession`をoverrideしないと、masterのDBSessionを使う
@@ -128,8 +132,9 @@ class ResaleRequestExportAPIView(CSVExportModelMixin, generics.GenericAPIView):
         'ResaleRequest.account_holder_name',
         'ResaleRequest.total_amount',
         'ResaleRequest.sold_at',
-        'ResaleRequest.sold'
-
+        'ResaleRequest.status',
+        'ResaleRequest.sent_status',
+        'ResaleRequest.sent_at'
     ]
     search_fields = [
         'ResaleRequest.id',
@@ -141,7 +146,9 @@ class ResaleRequestExportAPIView(CSVExportModelMixin, generics.GenericAPIView):
         'ResaleRequest.account_holder_name',
         'ResaleRequest.total_amount',
         'ResaleRequest.sold_at',
-        'ResaleRequest.sold'
+        'ResaleRequest.status',
+        'ResaleRequest.sent_status',
+        'ResaleRequest.sent_at'
     ]
 
     # `get_dbsession`をoverrideしないと、masterのDBSessionを使う

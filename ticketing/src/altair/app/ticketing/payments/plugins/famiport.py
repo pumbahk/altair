@@ -359,9 +359,10 @@ def build_famiport_order_dict(request, order_like, client_code, type_, name='fam
             sales_segment_code = famiport_sales_segment['code']
         except:
             raise FamiPortPluginFailure(
-                u'cannot retrieve FamiPortSalesSegment with client_code=%s, altair_famiport_sales_segment_pair_id=%ld. perhaps sales information has not been set to the famiport-side database yet?' % (
+                u'cannot retrieve FamiPortSalesSegment with client_code=%s, altair_famiport_sales_segment_pair_id=%ld, organization_name=%s. perhaps sales information has not been set to the famiport-side database yet?' % (
                     client_code,
-                    altair_famiport_sales_segment_pair.id
+                    altair_famiport_sales_segment_pair.id,
+                    order_like.organization.name
                     ),
                 order_no=order_like.order_no,
                 back_url=None
@@ -370,9 +371,10 @@ def build_famiport_order_dict(request, order_like, client_code, type_, name='fam
         altair_famiport_performance = get_altair_famiport_performance(order_like)
         if altair_famiport_performance is None:
             raise FamiPortPluginFailure(
-                u'cannot retrieve AltairFamiPortPerformance with client_code=%s, performance_id=%ld.' % (
+                u'cannot retrieve AltairFamiPortPerformance with client_code=%s, performance_id=%ld., organization_name=%s' % (
                     client_code,
-                    order_like.performance_id
+                    order_like.performance_id,
+                    order_like.organization.name
                     ),
                 order_no=order_like.order_no,
                 back_url=None
