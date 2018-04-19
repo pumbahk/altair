@@ -3,7 +3,13 @@
 
 <script type="text/javascript">
   var new_product, edit_product, copy_product, delete_product, preview_ticket;
+
+  function pop_over() {
+      $('[rel=popover]').popover({html: true});
+  }
+
   $(function() {
+    pop_over();
     (function (modal_product) {
       new_product = function new_product(sales_segment_id) {
         if (!sales_segment_id) {
@@ -67,6 +73,11 @@
       };
     })($('#${modal_id}'));
   });
+
+  $(document).ajaxComplete(function () {
+      pop_over();
+  });
+
 </script>
 <div id="${modal_id}" class="modal hide">
   <div class="modal-header">

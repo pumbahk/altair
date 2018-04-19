@@ -14,6 +14,7 @@ from altair.formhelpers.fields import OurIntegerField, DateTimeField, OurGrouped
 from altair.formhelpers import replace_ambiguous
 from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.core.models import Account, Site, Venue, Performance, PerformanceSetting, Stock, SalesSegment, Operator
+from altair.app.ticketing.resale.models import ResaleRequestStatus, SentStatus
 from altair.app.ticketing.payments.plugins.sej import DELIVERY_PLUGIN_ID as SEJ_DELIVERY_PLUGIN_ID
 from altair.app.ticketing.core.utils import ApplicableTicketsProducer
 from altair.app.ticketing.helpers import label_text_for
@@ -450,6 +451,11 @@ class OrionPerformanceForm(Form):
         validators=[Optional()],
     )
 
+    check_number_of_phones = BooleanField(
+        label=u'入力される譲渡先の数と購入枚数をチェック',
+        validators=[Optional()]
+    )
+
     pattern = TextField(
         label=u'もぎり認証パターン',
         validators=[Optional()],
@@ -521,13 +527,49 @@ class PerformanceResaleRequestSearchForm(OurForm):
         label=u'口座名義人氏名',
         validators=[Optional()],
     )
-    sold_only = BooleanField(
-        label=u'リセール済み',
-        validators=[Optional()],
-        default=False
-    )
-    not_sold_only = BooleanField(
+    waiting = BooleanField(
         label=u'リセール中',
         validators=[Optional()],
         default=False
     )
+    sold = BooleanField(
+        label=u'リセール済み',
+        validators=[Optional()],
+        default=False
+    )
+    back = BooleanField(
+        label=u'返却',
+        validators=[Optional()],
+        default=False
+    )
+    cancel = BooleanField(
+        label=u'キャンセル',
+        validators=[Optional()],
+        default=False
+    )
+    not_sent = BooleanField(
+        label=u'未連携',
+        validators=[Optional()],
+        default=False
+    )
+    sent = BooleanField(
+        label=u'連携済み',
+        validators=[Optional()],
+        default=False
+    )
+    send_required = BooleanField(
+        label=u'再連携必須',
+        validators=[Optional()],
+        default=False
+    )
+    fail = BooleanField(
+        label=u'連携失敗',
+        validators=[Optional()],
+        default=False
+    )
+
+    def get_status(self):
+        return [val for (key, val) in ResaleRequestStatus.__dict__.items() if key in self and self[key].data]
+
+    def get_sent_status(self):
+        return [val for (key, val) in SentStatus.__dict__.items() if key in self and self[key].data]

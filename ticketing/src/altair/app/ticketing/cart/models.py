@@ -359,7 +359,7 @@ class Cart(Base, c_models.CartMixin):
     def get_orion_ticket_phone_list(self):
         from altair.app.ticketing.models import DBSession as session
         orion_ticket_phone = session.query(c_models.OrionTicketPhone).filter(c_models.OrionTicketPhone.order_no == self.order_no).first()
-        return orion_ticket_phone.phones.split(',') if orion_ticket_phone else []
+        return orion_ticket_phone.phones.split(',') if orion_ticket_phone and orion_ticket_phone.phones else []
 
     @property
     def carted_product_item_count(self):

@@ -1,5 +1,5 @@
 <%inherit file="${context['main_template'].uri}" />
-<%namespace name="fh" module="altair.formhelpers.utils.mako" />
+<%namespace file="altair.app.ticketing.lots:templates/__commons__/helper.html" name="lh" />
 <%
   from altair.app.ticketing.payments.plugins import ORION_DELIVERY_PLUGIN_ID
   orion_checked = False
@@ -7,29 +7,6 @@
   import altair.app.ticketing.lots.helpers as h
 %>
 
-<%def name="render_field(field, label=False, _description=None, _note=None, _suffix=u'', **kwargs)">
-<%
-_description = _description or field.description
-_note = _note or field._note
-if label is None or label is True:
-  label = field.label
-%>
-<div class="field">
-  % if _description:
-  <div class="field-description">${_description}</div>
-  % endif
-  <div class="control-segment">
-    % if label:
-      ${label}
-    % endif
-    ${fh.render(field, **kwargs)}${_suffix}
-    % if _note:
-    <div class="field-note">${_note}</div>
-    % endif
-    ${ch.error(field.name)}
-  </div>
-</div>
-</%def>
 
 %if request.session.peek_flash():
 <div style="border: 3px solid red; background: #FFEEEE; padding: 10px; margin: 10px;">
@@ -169,7 +146,13 @@ if label is None or label is True:
       %endfor
     </div>
   </div>
-
+  <%
+    is_phone_verify_disabled = 'true'
+    for pm in performances:
+      if pm.orion and not pm.orion.phone_verify_disabled:
+        is_phone_verify_disabled = 'false'
+        break
+  %>
   <div class="settlementBox">
     <div class="settlementBoxInner">
       <h2><img src="${request.static_url('altair.app.ticketing.cart:static/RT/pc/images/title_methods.gif')}" alt="お支払い、引き取り方法の指定" width="267" height="30" /></h2>
@@ -185,10 +168,10 @@ if label is None or label is True:
               <% checked = 'checked' if str(m.id) == checked_id else '' %>
               <% is_orion = 'true' if m.delivery_method.delivery_plugin_id == ORION_DELIVERY_PLUGIN_ID else 'false' %>
               <% orion_checked = checked and is_orion == 'true' if not orion_checked else orion_checked %>
-              <td class="settlementPayRadio"${' rowspan="2"' if m.system_fee > 0 or m.special_fee > 0 else u''|n} onclick="pdmp(this, ${is_orion})">
+              <td class="settlementPayRadio"${' rowspan="2"' if m.system_fee > 0 or m.special_fee > 0 else u''|n} onclick="pdmp(this, ${is_orion}, ${is_phone_verify_disabled})">
                 <input type="radio" name="payment_delivery_method_pair_id" id="radio2" value="${m.id}" autocomplete="off" ${checked} />
               </td>
-              <td onclick="pdmp(this, ${is_orion})">
+              <td onclick="pdmp(this, ${is_orion}, ${is_phone_verify_disabled})">
                 <dl>
                   <dt>${m.payment_method.name}</dt>
                   <dd class="paymentFee_${h.format_number(m.transaction_fee)}">
@@ -199,7 +182,7 @@ if label is None or label is True:
                   </dd>
                 </dl>
               </td>
-              <td onclick="pdmp(this, ${is_orion})">
+              <td onclick="pdmp(this, ${is_orion}, ${is_phone_verify_disabled})">
                 <dl>
                   <dt>${m.delivery_method.name}</dt>
                   <dd class="devlieryFee_${h.format_number(m.delivery_fee)}">
@@ -249,6 +232,7 @@ if label is None or label is True:
     </div>
   </div>
 
+  % if is_phone_verify_disabled == 'false':
   <div id="orion-ticket-phone-info" class="settlementBox" ${'' if orion_checked else 'style="display:none;"'|n}>
     <div class="settlementBoxinner">
       <h2>イベントゲット情報</h2>
@@ -263,21 +247,29 @@ if label is None or label is True:
                     <label for="tmp-orion-ticket-phone">電話番号</label>
                     <input type="text" id="tmp-orion-ticket-phone">　<button type="button" onclick="delete_orion_ticket_phone(this);">削除</button>
                   </li>
-                  % for i, (phone, error) in enumerate(zip(orion_ticket_phone, orion_phone_errors)):
+                  % if not orion_ticket_phone:
                     <li>
-                      <label for="orion-ticket-phone-${i+1}">電話番号${i+1}</label>
-                      <input type="text" id="orion-ticket-phone-${i+1}" name="orion-ticket-phone" value="${phone}">　
-                      % if i == 0:
-                      <% is_disabled = 'disabled' if len(orion_ticket_phone) > 4 else '' %>
-                      <button id="btn-add-orion-ticket-phone" type="button" onclick="add_orion_ticket_phone(this);" ${is_disabled|n}>追加</button>
-                      % else:
-                      <button type="button" onclick="delete_orion_ticket_phone(this);">削除</button>
-                      % endif
-                      % if error:
-                      <span class="error">${error}</span>
-                      % endif
+                      <label for="orion-ticket-phone-1">電話番号1</label>
+                      <input type="text" id="orion-ticket-phone-1" name="orion-ticket-phone" value="">　
+                      <button id="btn-add-orion-ticket-phone" type="button" onclick="add_orion_ticket_phone(this);">追加</button>
                     </li>
-                  % endfor
+                  % else:
+                    % for i, (phone, error) in enumerate(zip(orion_ticket_phone, orion_phone_errors)):
+                      <li>
+                        <label for="orion-ticket-phone-${i+1}">電話番号${i+1}</label>
+                        <input type="text" id="orion-ticket-phone-${i+1}" name="orion-ticket-phone" value="${phone}">　
+                        % if i == 0:
+                        <% is_disabled = 'disabled' if len(orion_ticket_phone) > 4 else '' %>
+                        <button id="btn-add-orion-ticket-phone" type="button" onclick="add_orion_ticket_phone(this);" ${is_disabled|n}>追加</button>
+                        % else:
+                        <button type="button" onclick="delete_orion_ticket_phone(this);">削除</button>
+                        % endif
+                        % if error:
+                        <span class="error">${error}</span>
+                        % endif
+                      </li>
+                    % endfor
+                  % endif
                 </ul>
               </td>
             </tr>
@@ -286,6 +278,7 @@ if label is None or label is True:
       </div>
     </div>
   </div>
+  % endif
 
   <div class="settlementBox">
     <div class="settlementBoxInner">
@@ -408,7 +401,7 @@ if label is None or label is True:
                 <label for="${field.id}">${field.label}</label>
               </th>
               <td>
-                ${render_field(field)}
+                ${lh.render_field(field)}
               </td>
             </tr>
             % endif
@@ -601,9 +594,9 @@ var selected_performance_id = 0;
 })($('#wishForm'));
 
 // orion関するfunctions
-function pdmp(td, is_orion) {
+function pdmp(td, is_orion, is_phone_disabled) {
     $(td).parents("tr").find("input").prop("checked", true);
-    if (is_orion) {
+    if (is_orion && is_phone_disabled === false) {
         $("#orion-ticket-phone-info").show();
     } else {
         var ul = $("#orion-ticket-phone-list"),
