@@ -25,13 +25,14 @@ class CSVExportModelMixin(object):
                 record['id'],
                 record['bank_code'],
                 record['bank_branch_code'],
+                record['account_type'],
                 record['account_number'],
                 record['account_holder_name'],
                 record['total_amount']])
 
     def _write_file(self, file, data):
         writer = csv_writer(file, delimiter=',', quoting=QUOTE_ALL)
-        writer.writerow(map(encode_to_cp932, [u"ID", u"銀行コード", u"支店コード", u"口座番号", u"名義人", u"振込額"]))
+        writer.writerow(map(encode_to_cp932, [u"ID", u"銀行コード", u"支店コード", u"口座種別", u"口座番号", u"名義人", u"振込額"]))
 
         for row in self._render_data(data):
             writer.writerow(row)

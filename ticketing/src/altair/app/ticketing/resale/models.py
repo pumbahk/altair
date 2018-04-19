@@ -48,6 +48,7 @@ class ResaleRequest(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     ordered_product_item_token_id = Column(Identifier)
     bank_code = AnnotatedColumn(Unicode(32), nullable=False, _a_label=(u'銀行コード'))
     bank_branch_code = AnnotatedColumn(Unicode(32), nullable=False, _a_label=(u'支店コード'))
+    account_type = AnnotatedColumn(Unicode(64), nullable=False, default=u'', _a_label=(u'銀行口座種別'))
     account_number = AnnotatedColumn(Unicode(32), nullable=False, _a_label=(u'銀行口座番号'))
     account_holder_name = AnnotatedColumn(Unicode(255), nullable=False, _a_label=(u'名義人'))
     total_amount = AnnotatedColumn(Numeric(precision=16, scale=2), nullable=False, _a_label=(u'振込合計金額'))
