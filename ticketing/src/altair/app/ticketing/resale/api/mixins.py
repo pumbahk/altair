@@ -48,3 +48,19 @@ class CSVExportModelMixin(object):
         self._write_file(resp.body_file, data)
 
         return resp
+
+class AlternativePermissionMixin(object):
+    alternative_permission_classes = []
+
+    def get_alternative_permissions(self):
+        return [permission() for permission in self.alternative_permission_classes]
+
+    def check_permission(self, request):
+        super(AlternativePermissionMixin, self).check_permission(request)
+        if not any([permission.has_permission(request, self) for permission in self.get_alternative_permissions()]):
+            self.permission_denied(request, message=getattr(permission, 'message', None))
+
+    def check_object_permission(self, request, obj):
+        super(AlternativePermissionMixin, self).check_object_permission(request, obj)
+        if not any([permission.has_object_permission(request, self, obj) for permission in self.get_alternative_permissions()]):
+            self.permission_denied(request, message=getattr(permission, 'message', None))
