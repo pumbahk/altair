@@ -1003,10 +1003,10 @@ class Performances(BaseView):
 
         if origin_performance.open_on:
             open_date = form.start_day.data + datetime.timedelta(hours=origin_performance.open_on.hour,
-                                                                 minutes=origin_performance.start_on.minute)
+                                                                 minutes=origin_performance.open_on.minute)
         if origin_performance.end_on:
             end_date = form.start_day.data + datetime.timedelta(hours=origin_performance.end_on.hour,
-                                                                minutes=origin_performance.start_on.minute)
+                                                                minutes=origin_performance.end_on.minute)
         start_date = form.start_day.data + datetime.timedelta(hours=origin_performance.start_on.hour,
                                                               minutes=origin_performance.start_on.minute)
 
