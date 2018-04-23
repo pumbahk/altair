@@ -862,7 +862,12 @@ class QRView(object):
     def send_to_orion(self):
         # TODO: validate mail address
 
-        mail = self.request.params['mail']
+        mail = self.request.params.get('mail', None)
+        if not mail:
+            logger.info(u"Email key error.Or not yet entered.")
+            return dict(mail=mail,
+                        message=u"Emailの形式が正しくありません")
+
         # send mail using template
         form = schemas.SendMailSchema(self.request.POST)
 
