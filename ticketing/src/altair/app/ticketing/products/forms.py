@@ -417,9 +417,29 @@ class ProductCopyForm(OurForm):
     is_overwrite_stock_holder = OurBooleanField(
         label=u'販売区分グループの配券先で書きかえ',
         widget=CheckboxInput(),
+        validators=[Optional()],
         help=u'コピー元の配券先を引き継がず、コピー先の販売区分グループの配券先を設定します。',
         default=True
     )
+
+    def validate_copy_sales_segments(self, copy_sales_segments):
+        """
+        コピー先販売区分のバリデーション
+        :param copy_sales_segments: 選択可能なコピー先販売区分
+        :return: Boolean
+        """
+        selected_id_list = self.copy_sales_segments.data
+        if not selected_id_list:
+            self.copy_sales_segments.errors = [u'選択が必須です']
+            return False
+
+        choices = [unicode(sales_segment.id) for sales_segment in copy_sales_segments]
+        for select in selected_id_list:
+            if select not in choices:
+                self.copy_sales_segments.errors = [u'選択に誤りがあります']
+                return False
+
+        return True
 
 
 class ProductAndProductItemAPIForm(OurForm, ProductFormMixin, ProductItemFormMixin):
