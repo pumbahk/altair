@@ -40,6 +40,10 @@ class ResaleSegment(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def editable(self):
         return len(self.resale_requests) == 0
 
+    @property
+    def get_performance_id(self):
+        return self.performance_id
+
 class ResaleRequest(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'ResaleRequest'
     id = Column(Identifier, primary_key=True)
@@ -55,3 +59,7 @@ class ResaleRequest(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     status = Column(Integer, nullable=False, default=1)
     sent_at = AnnotatedColumn(DateTime, nullable=True, _a_label=_(u'連携日時'))
     sent_status = Column(Integer, nullable=False, default=1)
+
+    @property
+    def get_performance_id(self):
+        return self.resale_segment.get_performance_id if self.resale_segment else None
