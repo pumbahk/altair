@@ -74,7 +74,7 @@
       ${ch.form_item(form.famiport_enabled)}
       ${ch.form_item(form.enable_fm_reflection_func)}
       ${ch.form_item(form.i18n)}
-      % if organization.setting.i18n:
+      % if form.i18n.data:
         ${ch.form_item(form.default_locale)}
       % else:
         ${ch.form_item(form.default_locale, disabled='disabled')}

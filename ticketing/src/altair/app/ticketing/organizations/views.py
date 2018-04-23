@@ -376,6 +376,7 @@ class OrganizationSettingSimples(BaseView):
                     organization_setting.auto_cms = f.auto_cms.data
                     organization_setting.recaptcha = f.recaptcha.data
                     organization_setting.tapirs = f.tapirs.data
+                    organization_setting.default_locale = f.default_locale.data if f.default_locale.data else u'ja'
                     self.request.session.flash(u'その他の設定を保存しました')
                     return HTTPFound(location=route_path(
                         'organizations.settings.edit.simple',
