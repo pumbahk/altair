@@ -483,7 +483,6 @@ class OrganizationSettingForm(OrganizationSettingSimpleForm):
         label=_(u'デフォルト言語'),
         validators=[Optional()],
         choices=[
-            (u'', u'なし'),
             (u'en', u'English'),
             (u'ja', u'日本語'),
             (u'zh_CN', u'简体中文'),

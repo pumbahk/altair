@@ -19,7 +19,7 @@ Identifier = sa.BigInteger
 
 
 def upgrade():
-    op.add_column(u'OrganizationSetting', sa.Column('default_locale', sa.Unicode(length=255), nullable=True))
+    op.add_column(u'OrganizationSetting', sa.Column('default_locale', sa.Unicode(length=255), nullable=False, server_default=u'ja'))
 
 def downgrade():
     op.drop_column(u'OrganizationSetting', 'default_locale')
