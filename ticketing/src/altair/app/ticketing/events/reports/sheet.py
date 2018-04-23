@@ -257,9 +257,22 @@ def seat_records_from_seat_sources(seat_sources, report_type, kind, date):
     サマリー作成
     """
     result = []
+
+    def to_int_or_str(val):
+        """
+        文字列の頭から数字で始まる部分だけ取得し、intgerにする。
+        数字で始まっていない場合はそのまま返す。
+        :param val: 文字列
+        :return: integer or unicodeの文字列
+        """
+        reppatter = re.compile(r"[0-9]+")
+        match = reppatter.match(val)
+        if match:
+            return int(match.group())
+        else:
+            return val
+
     # block,floor,line,seatの優先順でソートする
-    def to_int_or_str(value):
-        return int(value) if value.isdigit() else value
     sorted_seat_sources = sorted(
         seat_sources,
         key=lambda v: (v.block, v.floor, to_int_or_str(v.line), to_int_or_str(v.seat) if (v.seat!=None and v.seat!='') else None))
