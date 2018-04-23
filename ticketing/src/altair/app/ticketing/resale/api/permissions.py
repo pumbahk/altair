@@ -14,7 +14,7 @@ class ResaleAPIKeyPermission(BasePermission):
         self.aes = AESURLSafe(key="ALTAIR_AES_ENCRYPTION_FOR_RESALE")
 
     def has_permission(self, request, view):
-        key = request.headers.get('Resale-API-Key', None)
+        key = request.headers.get('x-app-key', None)
         if not key:
             return False
         try:
@@ -36,11 +36,8 @@ class ResaleAltairPermission(BasePermission):
         )
 
     def has_object_permission(self, request, view, obj):
-        if type(obj) == 'ResaleSegment':
-            performance_id = obj.performance_id
-        elif type(obj) == 'ResaleRequest':
-            performance_id = obj.resale_segment.performance_id
-        else:
+        performance_id = getattr(obj, 'get_performance_id', None)
+        if not performance_id:
             return False
         try:
             organization = view.dbsession.query(Organization.id)\
