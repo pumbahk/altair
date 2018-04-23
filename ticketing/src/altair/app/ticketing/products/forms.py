@@ -411,6 +411,7 @@ class ProductCopyForm(OurForm):
 
     copy_sales_segments = OurPHPCompatibleSelectMultipleField(
         label=u'コピー先販売区分',
+        help=u'SHIFTキーを押しながら選択すると複数を同時に選択してコピーできます',
         choices=[]
     )
 
