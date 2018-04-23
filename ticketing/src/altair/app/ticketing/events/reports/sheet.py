@@ -256,13 +256,13 @@ def seat_records_from_seat_sources(seat_sources, report_type, kind, date):
     """SeatSourceのリストからSeatRecordのリストを返す
     サマリー作成
     """
+    from altair.app.ticketing.utils import natural_keys
     result = []
+
     # block,floor,line,seatの優先順でソートする
-    def to_int_or_str(value):
-        return int(value) if value.isdigit() else value
     sorted_seat_sources = sorted(
         seat_sources,
-        key=lambda v: (v.block, v.floor, to_int_or_str(v.line), to_int_or_str(v.seat) if (v.seat!=None and v.seat!='') else None))
+        key=lambda v: (v.block, v.floor, natural_keys(v.line), natural_keys(v.seat) if (v.seat!=None and v.seat!='') else None))
     # block,floor,lineでグループ化してSeatRecordを作る
     for key, generator in groupby(sorted_seat_sources, lambda v: (v.block, v.floor, v.line)):
         values = list(generator)
