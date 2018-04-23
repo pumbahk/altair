@@ -1,5 +1,5 @@
 <%namespace name="fh" module="altair.formhelpers.utils.mako" />
-<%def name="render_field(field, label=False, _description=None, _note=None, _suffix=u'', **kwargs)">
+<%def name="render_field(field, label=False, _description=None, _note=None, _suffix=u'', _for_base=False, **kwargs)">
 <%
 _description = _description or field.description
 _note = _note or field._note
@@ -18,9 +18,29 @@ if label is None or label is True:
     % if _note:
     <div class="field-note">${_note}</div>
     % endif
-      % for error in field.errors:
-        <span class="validation-error">${error}</span>
-      % endfor
+    % if field.errors:
+        % if _for_base:
+            ${render_error_for_base(field.errors)}
+        % else:
+            ${render_error(field.errors)}
+        % endif
+    % endif
   </div>
 </div>
+</%def>
+
+
+<%def name="render_error(errors)">
+  % for e in errors:
+    <span class="validation-error">${e}</span>
+  % endfor
+</%def>
+
+
+<%def name="render_error_for_base(errors)">
+<ul class="error-list">
+    % for e in errors:
+    <li>${e}</li>
+    % endfor
+</ul>
 </%def>
