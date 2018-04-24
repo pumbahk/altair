@@ -995,7 +995,7 @@ class OrdersRefundIndexView(OrderBaseView):
         refunds = paginate.Page(
             query,
             page=page,
-            items_per_page=100,
+            items_per_page=40,
             item_count=query.count(),
             url=paginate.PageURL_WebOb(self.request)
         )
