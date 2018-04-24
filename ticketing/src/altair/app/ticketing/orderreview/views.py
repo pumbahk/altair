@@ -864,7 +864,7 @@ class QRView(object):
 
         mail = self.request.params.get('mail', None)
         if not mail:
-            logger.info(u"Email key error.Or not yet entered.")
+            logger.info(u"Email address is not provided.")
             return dict(mail=mail,
                         message=u"Emailの形式が正しくありません")
 
