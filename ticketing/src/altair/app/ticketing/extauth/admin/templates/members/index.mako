@@ -72,6 +72,7 @@
     </tr>
   </thead>
   <tbody>
+${max(members.items_per_page * (members.page-1) + 1,0)}～${min(members.items_per_page * members.page, members.item_count)} / ${members.item_count}件
 % for member in members:
     <tr${u' class="disabled"' if not member.enabled else u''|n}>
       <td><input type="checkbox" name="id" value="${member.id}"></td>
