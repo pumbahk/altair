@@ -4482,11 +4482,18 @@ class OrganizationSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         self.default_oauth_setting['oauth_service_provider'] = value
 
 class OrganizationSettingDefaultLocaleEnum(StandardEnum):
-    English = u'English'
-    ja      = u'日本語'
-    zh_CN   = u'简体中文'
-    zh_TW   = u'繁体中文'
-    ko      = u'한국어'
+    en    = u'English'
+    ja    = u'日本語'
+    zh_CN = u'简体中文'
+    zh_TW = u'繁体中文'
+    ko    = u'한국어'
+    order = [
+        'en',
+        'ja',
+        'zh_CN',
+        'zh_TW',
+        'ko',
+    ]
 
 @implementer(ISetting, IAllAppliedSetting, IChainedSetting)
 class EventSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
