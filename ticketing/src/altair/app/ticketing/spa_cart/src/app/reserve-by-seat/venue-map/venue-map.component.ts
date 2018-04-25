@@ -282,6 +282,8 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
   returnFlag: boolean = false;
   //ブラウザバック確認モーダルを出さないフラグ
   returnUnconfirmFlag: boolean = false;
+  //ブラウザバック時の関数　removeEventListenerのため変数に格納
+  browserBackFunction: any = (event) => this.browserBack();
   //iPadの初期表示用
   firstPopstate: boolean;
   //ユーザーエージェント
@@ -1017,9 +1019,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
     this.firstPopstate = this.reserveBySeatBrowserBackService.selectProductCount == 0 ? true : false;
 
     //ブラウザの戻る・進むで発火
-    window.addEventListener('popstate', function (e) {
-      that.browserBack();
-    }, false);
+    window.addEventListener('popstate', that.browserBackFunction, false);
   }
 
   ngOnDestroy() {
@@ -2180,7 +2180,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
 
   //直前のサイトへ戻る
   returnPrevious() {
-    window.removeEventListener('popstate', this.browserBack);
+    window.removeEventListener('popstate', this.browserBackFunction);
     if (this.ua.match(/crios/i)) {
       //進む判定用に履歴数を保持
       sessionStorage.setItem('maxHistory', history.length.toString());
