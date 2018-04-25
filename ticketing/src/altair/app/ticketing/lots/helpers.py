@@ -450,3 +450,11 @@ def render_label(field):
             )
         ]
     return Markup(u''.join(buf))
+
+
+def render_lot_product_quantity(product, wished_quantity):
+    if len(product.items) > 1:
+        return u'×{}'.format(wished_quantity)
+    else:
+        return u'{}枚'.format(wished_quantity * product.items[0].quantity)
+

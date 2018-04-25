@@ -125,6 +125,7 @@ class EntryLotView(object):
                 price=float(product.price),
                 formatted_price=h.format_currency(product.price),
                 description=product.description,
+                items=map(lambda item: dict(quantity=item.quantity), product.items) if product.items else []
             ))
             performance_product_map[performance.id] = products
 
