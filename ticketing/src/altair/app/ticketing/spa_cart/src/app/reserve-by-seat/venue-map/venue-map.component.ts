@@ -1019,7 +1019,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
     this.firstPopstate = this.reserveBySeatBrowserBackService.selectProductCount == 0 ? true : false;
 
     //ブラウザの戻る・進むで発火
-    window.addEventListener('popstate', that.browserBackFunction, false);
+    window.addEventListener('popstate', this.browserBackFunction, false);
   }
 
   ngOnDestroy() {
