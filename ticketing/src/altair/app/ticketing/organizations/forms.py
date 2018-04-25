@@ -379,13 +379,7 @@ class OrganizationSettingSimpleForm(OurForm):
     default_locale = OurSelectField(
         label=_(u'デフォルト言語'),
         validators=[Optional()],
-        choices=[
-            (u'en', u'English'),
-            (u'ja', u'日本語'),
-            (u'zh_CN', u'简体中文'),
-            (u'zh_TW', u'繁体中文'),
-            (u'ko', u'한국어'),
-        ]
+        choices=[(e.k, e.v) for e in c_models.OrganizationSettingDefaultLocaleEnum],
     )
 
     def __init__(self, *args, **kwargs):
@@ -496,13 +490,7 @@ class OrganizationSettingForm(OrganizationSettingSimpleForm):
     default_locale = OurSelectField(
         label=_(u'デフォルト言語'),
         validators=[Optional()],
-        choices=[
-            (u'en', u'English'),
-            (u'ja', u'日本語'),
-            (u'zh_CN', u'简体中文'),
-            (u'zh_TW', u'繁体中文'),
-            (u'ko', u'한국어'),
-        ]
+        choices=[(e.k, e.v) for e in c_models.OrganizationSettingDefaultLocaleEnum],
     )
     auto_cms = OurBooleanField(
         label=get_annotations_for(c_models.OrganizationSetting.auto_cms)['label']
