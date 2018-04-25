@@ -2192,7 +2192,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
     let backCount = -(history.length - Number(sessionStorage.getItem('historyCount')) + 1);
     if (this.ua.indexOf('msie') != -1 || this.ua.indexOf('trident') != -1) {
       window.addEventListener('popstate', function () {
-        history.go(backCount);
+        history.go(backCount + 1);
       });
       history.go(-(this.reserveBySeatBrowserBackService.selectProductCount + 1));
     } else {
