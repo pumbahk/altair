@@ -300,7 +300,7 @@ class EntryLotView(object):
             ]
 
     @lbr_view_config(request_method="GET")
-    def get(self, form=None, recaptcha_done=None):
+    def get(self, form=None, wishes=None, recaptcha_done=None):
         jump_maintenance_page_for_trouble(self.request.organization)
         if form is None:
             form = self._create_form()
@@ -339,6 +339,7 @@ class EntryLotView(object):
 
         return dict(
             form=form,
+            wishes=wishes,
             event=event,
             sales_segment=sales_segment,
             payment_delivery_pairs=payment_delivery_pairs,
@@ -437,7 +438,7 @@ class EntryLotView(object):
             validated = False
 
         if not validated:
-            return self.get(form=cform, recaptcha_done=True)
+            return self.get(form=cform, wishes=wishes, recaptcha_done=True)
 
         entry_no = api.generate_entry_no(self.request, self.context.organization)
 

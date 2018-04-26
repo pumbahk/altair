@@ -74,6 +74,11 @@
       ${ch.form_item(form.famiport_enabled)}
       ${ch.form_item(form.enable_fm_reflection_func)}
       ${ch.form_item(form.i18n)}
+      % if form.i18n.data:
+        ${ch.form_item(form.default_locale)}
+      % else:
+        ${ch.form_item(form.default_locale, disabled='disabled')}
+      % endif
       ${ch.form_item(form.auto_cms)}
       ${ch.form_item(form.event_label)}
       ${ch.form_item(form.show_event_op_and_sales)}
@@ -92,3 +97,13 @@
     </div>
   </form>
 </div>
+
+<script type="text/javascript">
+  $('#i18n').change(function(){
+    if ($(this).is(':checked')) {
+      $("#default_locale").prop({'disabled':false});
+    } else {
+      $("#default_locale").prop({'disabled':true});
+    }
+  });
+</script>

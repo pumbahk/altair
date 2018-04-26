@@ -205,8 +205,15 @@ class ProductAndProductItem(BaseView):
         # 商品の販売区分間コピー
         origin_sales_segment = self.context.sales_segment
         f = ProductCopyForm(self.request.POST, copy_sales_segments=self.context.copy_sales_segments)
-        copy_sales_segments_id_list = f['copy_sales_segments'].data
-        for copy_sales_segment_id in copy_sales_segments_id_list:
+
+        # フォームがOurPHPCompatibleSelectMultipleFieldを使用しているため、変則的なバリデーションで対応
+        if not all([
+            f.is_overwrite_stock_holder.validate(f),
+            f.validate_copy_sales_segments(self.context.copy_sales_segments)
+        ]):
+            return dict(form=f, origin_sales_segment=origin_sales_segment)
+
+        for copy_sales_segment_id in f.copy_sales_segments.data:
             copy_sales_segment = SalesSegment.get(copy_sales_segment_id)
             products = Product.query.filter(
                 Product.sales_segment_id == origin_sales_segment.id
@@ -219,7 +226,7 @@ class ProductAndProductItem(BaseView):
                 }
 
                 # 販売区分グループの配券先で書きかえ
-                if f['is_overwrite_stock_holder'].data:
+                if f.is_overwrite_stock_holder.data:
                     copy_sales_segment_group = SalesSegment.get(copy_sales_segment_id).sales_segment_group
                     condition.update(stock_holder_id=copy_sales_segment_group.stock_holder_id)
 

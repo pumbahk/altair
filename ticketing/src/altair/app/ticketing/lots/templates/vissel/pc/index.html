@@ -91,6 +91,9 @@
     <form method="post" id="wishForm" action="${request.url}">
       <div class="lots-item mgt20">
         <h3>${__(u'希望選択')}</h3>
+        % if request.method == 'POST' and not wishes:
+          ${lh.render_error_for_base([__(u'希望枚数をご選択ください')])}
+        % endif
         <div class="box-border">
           %for i in range(lot.limit_wishes):
           <div class="settlementSelectBox mgt10">
@@ -413,7 +416,7 @@
                 <label for="${field.id}">${field.label}</label>
               </th>
               <td>
-                ${lh.render_field(field)}
+                ${lh.render_field(field, _for_base=True)}
               </td>
             </tr>
             % endif

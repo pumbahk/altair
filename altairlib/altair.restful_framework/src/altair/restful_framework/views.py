@@ -31,7 +31,7 @@ class APIView(object):
         """
         Runs anything that needs to occur prior to calling the method handler.
         """
-        pass
+        self.check_permission(request)
 
     def dispatch(self, request, *args, **kwargs):
         try:

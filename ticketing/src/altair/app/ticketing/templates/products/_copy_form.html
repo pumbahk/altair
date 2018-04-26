@@ -4,5 +4,5 @@
 <p><span class="text-info">「${origin_sales_segment.name}」</span>をコピーします。</p>
 <form action="${request.url}" method="POST">
     ${ch.form_item(form.is_overwrite_stock_holder, help=ch.help(form.is_overwrite_stock_holder))}
-    ${ch.form_item(form.copy_sales_segments, class_= 'table')}
+    ${ch.form_item(form.copy_sales_segments, class_= 'table', help=ch.help(form.copy_sales_segments))}
 </form>

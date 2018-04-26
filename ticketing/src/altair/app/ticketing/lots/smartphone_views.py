@@ -270,7 +270,7 @@ class EntryLotView(object):
 
         # 商品チェック
         if not wishes:
-            self.request.session.flash(_(u"申し込み内容に入力不備があります"))
+            self.request.session.flash(_(u"希望枚数をご選択ください"))
             validated = False
         elif not h.check_duplicated_products(wishes):
             self.request.session.flash(_(u"同一商品が複数回希望されています。"))

@@ -455,3 +455,22 @@ def parse_content_type(header_value):
 
 def rand_string(seed, length):
     return "".join([random.choice(seed) for i in range(length)])
+
+
+def atoi(text):
+    return int(text) if text.isdigit() else text
+
+
+def natural_keys(text):
+    """
+    alist.sort(key=natural_keys) sorts in human order
+    http://nedbatchelder.com/blog/200712/human_sorting.html
+    (See Toothy's implementation in the comments)
+
+    補足:
+    数字と文字列混在のリストを人の目で見て自然な並びにソートするキー。
+    Macにfinderでファイル名による昇順ソートをかけるようなイメージ。
+
+    https://stackoverflow.com/questions/5967500/how-to-correctly-sort-a-string-with-a-number-inside
+    """
+    return [atoi(c) for c in re.split('(\d+)', text)]
