@@ -93,7 +93,7 @@
       <div class="confirm-wrap mgt20">
         <h3>${__(u'希望選択')}</h3>
         % if request.method == 'POST' and not wishes:
-          <p>${lh.render_error([__(u'希望枚数をご選択ください')])}</p>
+          ${lh.render_error_for_base([__(u'希望枚数をご選択ください')])}
         % endif
         <div class="settlementBoxInner">
           %for i in range(lot.limit_wishes):
@@ -415,7 +415,7 @@
                     <label for="${field.id}">${field.label}</label>
                   </th>
                   <td>
-                    ${lh.render_field(field)}
+                    ${lh.render_field(field, _for_base=True)}
                   </td>
                 </tr>
                 % endif
