@@ -41,8 +41,8 @@ def custom_locale_negotiator(request):
     # Set value with application default settting
     if not request.accept_language:
         locale_name = request.registry.settings.default_locale_name
-    if locale_name is None and request.organization._setting.i18n:
-        locale_name = request.organization._setting.default_locale
+    if locale_name is None and request.organization.setting.i18n:
+        locale_name = request.organization.setting.default_locale
     if locale_name is None:
         locale_name = 'ja'
 
