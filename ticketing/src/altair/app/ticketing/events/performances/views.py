@@ -1002,10 +1002,13 @@ class Performances(BaseView):
         end_date = None
 
         if origin_performance.open_on:
-            open_date = form.start_day.data + datetime.timedelta(hours=origin_performance.open_on.hour)
+            open_date = form.start_day.data + datetime.timedelta(hours=origin_performance.open_on.hour,
+                                                                 minutes=origin_performance.open_on.minute)
         if origin_performance.end_on:
-            end_date = form.start_day.data + datetime.timedelta(hours=origin_performance.end_on.hour)
-        start_date = form.start_day.data + datetime.timedelta(hours=origin_performance.start_on.hour)
+            end_date = form.start_day.data + datetime.timedelta(hours=origin_performance.end_on.hour,
+                                                                minutes=origin_performance.end_on.minute)
+        start_date = form.start_day.data + datetime.timedelta(hours=origin_performance.start_on.hour,
+                                                              minutes=origin_performance.start_on.minute)
 
         code_generator = PerformanceCodeGenerator(self.request)
         for cnt in range(0, target_total + 1):
