@@ -4374,6 +4374,7 @@ class OrganizationSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     enable_fm_reflection_func = AnnotatedColumn(Boolean, nullable=False, default=True, doc=u"FM連携状態の判定機能を利用", _a_label=u"FM連携状態の判定機能を利用")
     orderreview_index = AnnotatedColumn(Integer, nullable=False, default=1, server_default='0', _a_label=u"購入履歴の認証画面選択")
     i18n = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"国際化Org判断用", _a_label=u"国際化Org")
+    default_locale = AnnotatedColumn(Unicode(255), nullable=False, default=u'ja', _a_label=u'デフォルト言語')
     auto_cms = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"CMS自動化", _a_label=u"CMS自動化")
     event_label = AnnotatedColumn(Boolean, nullable=False, default=True, doc=u"イベント販売区分ラベル", _a_label=u"イベント販売区分ラベル")
     show_event_op_and_sales = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"登録、営業担当者を表示", _a_label=u"登録、営業担当者を表示")
@@ -4480,6 +4481,19 @@ class OrganizationSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             self.default_oauth_setting = {}
         self.default_oauth_setting['oauth_service_provider'] = value
 
+class OrganizationSettingDefaultLocaleEnum(StandardEnum):
+    en    = u'English'
+    ja    = u'日本語'
+    zh_CN = u'简体中文'
+    zh_TW = u'繁体中文'
+    ko    = u'한국어'
+    order = [
+        'en',
+        'ja',
+        'zh_CN',
+        'zh_TW',
+        'ko',
+    ]
 
 @implementer(ISetting, IAllAppliedSetting, IChainedSetting)
 class EventSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):

@@ -373,6 +373,15 @@ class OrganizationSettingSimpleForm(OurForm):
     tapirs = OurBooleanField(
         label=get_annotations_for(c_models.OrganizationSetting.tapirs)['label']
     )
+    i18n = OurBooleanField(
+        label=get_annotations_for(c_models.OrganizationSetting.i18n)['label']
+    )
+    default_locale = OurSelectField(
+        label=_(u'デフォルト言語'),
+        validators=[Optional()],
+        choices=[(k, getattr(c_models.OrganizationSettingDefaultLocaleEnum, k).v) for k in
+                 c_models.OrganizationSettingDefaultLocaleEnum.order.v],
+    )
 
     def __init__(self, *args, **kwargs):
         context = kwargs.pop('context')
@@ -479,6 +488,12 @@ class OrganizationSettingForm(OrganizationSettingSimpleForm):
     i18n = OurBooleanField(
         label=get_annotations_for(c_models.OrganizationSetting.i18n)['label']
         )
+    default_locale = OurSelectField(
+        label=_(u'デフォルト言語'),
+        validators=[Optional()],
+        choices=[(k, getattr(c_models.OrganizationSettingDefaultLocaleEnum, k).v) for k in
+                 c_models.OrganizationSettingDefaultLocaleEnum.order.v],
+    )
     auto_cms = OurBooleanField(
         label=get_annotations_for(c_models.OrganizationSetting.auto_cms)['label']
     )

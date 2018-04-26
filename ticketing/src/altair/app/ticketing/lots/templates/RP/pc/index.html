@@ -80,6 +80,9 @@
   <div class="settlementBox">
     <div class="settlementBoxInner">
       <h2 class="title"><img src="${request.static_url('altair.app.ticketing.lots:static/RP/pc/img/order/title_hope.gif')}" alt="お申込内容" width="97" height="30" /></h2>
+      % if request.method == 'POST' and not wishes:
+          <p>${lh.render_error([__(u'希望枚数をご選択ください')])}</p>
+      % endif
       %for i in range(lot.limit_wishes):
       <div class="settlementSelectBox">
         <div class="settlementSelectBoxInner02">

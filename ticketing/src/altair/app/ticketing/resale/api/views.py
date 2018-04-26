@@ -9,9 +9,10 @@ from altair.restful_framework.fliters import FieldFilter, SearchFilter
 
 # resale
 from ..models import ResaleSegment, ResaleRequest
-from .mixins import CSVExportModelMixin
+from .mixins import CSVExportModelMixin, AlternativePermissionMixin
 from .serializers import ResaleSegmentSerializer, ResaleSegmentCreateSerializer, ResaleRequestSerializer
 from .paginations import ResaleSegmentPageNumberPagination, ResaleRequestPageNumberPagination
+from .permissions import ResaleAltairPermission, ResaleAPIKeyPermission
 
 # orders
 from altair.app.ticketing.orders.models import Order, OrderedProduct, OrderedProductItem, OrderedProductItemToken
@@ -19,10 +20,11 @@ from altair.app.ticketing.orders.models import Order, OrderedProduct, OrderedPro
 logger = logging.getLogger(__name__)
 
 
-class ResaleSegmentListAPIView(generics.ListAPIView):
+class ResaleSegmentListAPIView(AlternativePermissionMixin, generics.ListAPIView):
     model = ResaleSegment
     serializer_class = ResaleSegmentSerializer
     pagination_class = ResaleSegmentPageNumberPagination
+    alternative_permission_classes = [ResaleAltairPermission, ResaleAPIKeyPermission]
     filter_classes = (FieldFilter, )
     filter_fields = ['ResaleSegment.performance_id']
 
@@ -34,11 +36,13 @@ class ResaleSegmentListAPIView(generics.ListAPIView):
 class ResaleSegmentCreateAPIView(generics.CreateAPIView):
     model = ResaleSegment
     serializer_class = ResaleSegmentCreateSerializer
+    permission_classes = [ResaleAltairPermission]
 
 
-class ResaleSegmentRetrieveAPIView(generics.RetrieveAPIView):
+class ResaleSegmentRetrieveAPIView(AlternativePermissionMixin, generics.RetrieveAPIView):
     model = ResaleSegment
     serializer_class = ResaleSegmentSerializer
+    alternative_permission_classes = [ResaleAltairPermission, ResaleAPIKeyPermission]
 
     # `get_dbsession`をoverrideしないと、masterのDBSessionを使う
     def get_dbsession(self):
@@ -48,17 +52,20 @@ class ResaleSegmentRetrieveAPIView(generics.RetrieveAPIView):
 class ResaleSegmentUpdateAPIView(generics.UpdateAPIView):
     model = ResaleSegment
     serializer_class = ResaleSegmentSerializer
+    permission_classes = [ResaleAltairPermission]
 
 
 class ResaleSegmentDestroyAPIView(generics.DestroyAPIView):
     model = ResaleSegment
     serializer_class = ResaleSegmentSerializer
+    permission_classes = [ResaleAltairPermission]
 
 
-class ResaleRequestListAPIView(generics.ListAPIView):
+class ResaleRequestListAPIView(AlternativePermissionMixin, generics.ListAPIView):
     model = ResaleRequest
     serializer_class = ResaleRequestSerializer
     pagination_class = ResaleRequestPageNumberPagination
+    alternative_permission_classes = [ResaleAltairPermission, ResaleAPIKeyPermission]
     filter_classes = (FieldFilter, SearchFilter)
     filter_fields = [
         'ResaleRequest.id',
@@ -66,6 +73,7 @@ class ResaleRequestListAPIView(generics.ListAPIView):
         'ResaleRequest.ordered_product_item_token_id',
         'ResaleRequest.bank_code',
         'ResaleRequest.bank_branch_code',
+        'ResaleRequest.account_type',
         'ResaleRequest.account_number',
         'ResaleRequest.account_holder_name',
         'ResaleRequest.total_amount',
@@ -80,6 +88,7 @@ class ResaleRequestListAPIView(generics.ListAPIView):
         'ResaleRequest.ordered_product_item_token_id',
         'ResaleRequest.bank_code',
         'ResaleRequest.bank_branch_code',
+        'ResaleRequest.account_type',
         'ResaleRequest.account_number',
         'ResaleRequest.account_holder_name',
         'ResaleRequest.total_amount',
@@ -94,14 +103,16 @@ class ResaleRequestListAPIView(generics.ListAPIView):
         return get_db_session(self.request, 'slave')
 
 
-class ResaleRequestCreateAPIView(generics.CreateAPIView):
+class ResaleRequestCreateAPIView(AlternativePermissionMixin, generics.CreateAPIView):
     model = ResaleRequest
     serializer_class = ResaleRequestSerializer
+    alternative_permission_classes = [ResaleAltairPermission, ResaleAPIKeyPermission]
 
 
-class ResaleRequestRetrieveAPIView(generics.RetrieveAPIView):
+class ResaleRequestRetrieveAPIView(AlternativePermissionMixin, generics.RetrieveAPIView):
     model = ResaleRequest
     serializer_class = ResaleRequestSerializer
+    alternative_permission_classes = [ResaleAltairPermission, ResaleAPIKeyPermission]
 
     # `get_dbsession`をoverrideしないと、masterのDBSessionを使う
     def get_dbsession(self):
@@ -111,16 +122,19 @@ class ResaleRequestRetrieveAPIView(generics.RetrieveAPIView):
 class ResaleRequestUpdateAPIView(generics.UpdateAPIView):
     model = ResaleRequest
     serializer_class = ResaleRequestSerializer
+    alternative_permission_classes = [ResaleAltairPermission, ResaleAPIKeyPermission]
 
 
 class ResaleRequestDestroyAPIView(generics.DestroyAPIView):
     model = ResaleRequest
     serializer_class = ResaleRequestSerializer
+    alternative_permission_classes = [ResaleAltairPermission, ResaleAPIKeyPermission]
 
 
 class ResaleRequestExportAPIView(CSVExportModelMixin, generics.GenericAPIView):
     model = ResaleRequest
     serializer_class = ResaleRequestSerializer
+    permission_classes = [ResaleAltairPermission]
     filter_classes = (FieldFilter, SearchFilter)
     filter_fields = [
         'ResaleRequest.id',
@@ -128,6 +142,7 @@ class ResaleRequestExportAPIView(CSVExportModelMixin, generics.GenericAPIView):
         'ResaleRequest.ordered_product_item_token_id',
         'ResaleRequest.bank_code',
         'ResaleRequest.bank_branch_code',
+        'ResaleRequest.account_type',
         'ResaleRequest.account_number',
         'ResaleRequest.account_holder_name',
         'ResaleRequest.total_amount',
@@ -142,6 +157,7 @@ class ResaleRequestExportAPIView(CSVExportModelMixin, generics.GenericAPIView):
         'ResaleRequest.ordered_product_item_token_id',
         'ResaleRequest.bank_code',
         'ResaleRequest.bank_branch_code',
+        'ResaleRequest.account_type',
         'ResaleRequest.account_number',
         'ResaleRequest.account_holder_name',
         'ResaleRequest.total_amount',

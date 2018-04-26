@@ -448,6 +448,9 @@ msgstr "日期不正確"
 msgid "セッションに問題が発生しました。"
 msgstr "Session發生了問題。"
 
+msgid "希望枚数をご選択ください"
+msgstr "請選擇各個志願的票券數量"
+
 # agreement
 
 msgid "内容を同意の上、チェックを入れてください。"

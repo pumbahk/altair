@@ -451,6 +451,9 @@ msgstr "Date is incorrect"
 msgid "セッションに問題が発生しました。"
 msgstr "There was a problem in the session."
 
+msgid "希望枚数をご選択ください"
+msgstr "Please select your desired number of sheets"
+
 # agreement
 
 msgid "内容を同意の上、チェックを入れてください。"

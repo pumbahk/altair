@@ -40,6 +40,10 @@ class ResaleSegment(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def editable(self):
         return len(self.resale_requests) == 0
 
+    @property
+    def get_performance_id(self):
+        return self.performance_id
+
 class ResaleRequest(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'ResaleRequest'
     id = Column(Identifier, primary_key=True)
@@ -48,6 +52,7 @@ class ResaleRequest(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     ordered_product_item_token_id = Column(Identifier)
     bank_code = AnnotatedColumn(Unicode(32), nullable=False, _a_label=(u'銀行コード'))
     bank_branch_code = AnnotatedColumn(Unicode(32), nullable=False, _a_label=(u'支店コード'))
+    account_type = AnnotatedColumn(Unicode(64), nullable=False, default=u'', _a_label=(u'銀行口座種別'))
     account_number = AnnotatedColumn(Unicode(32), nullable=False, _a_label=(u'銀行口座番号'))
     account_holder_name = AnnotatedColumn(Unicode(255), nullable=False, _a_label=(u'名義人'))
     total_amount = AnnotatedColumn(Numeric(precision=16, scale=2), nullable=False, _a_label=(u'振込合計金額'))
@@ -55,3 +60,7 @@ class ResaleRequest(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     status = Column(Integer, nullable=False, default=1)
     sent_at = AnnotatedColumn(DateTime, nullable=True, _a_label=_(u'連携日時'))
     sent_status = Column(Integer, nullable=False, default=1)
+
+    @property
+    def get_performance_id(self):
+        return self.resale_segment.get_performance_id if self.resale_segment else None

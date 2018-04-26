@@ -168,6 +168,10 @@
       <td>${u'○' if organization_setting.i18n else u'×'}</td>
     </tr>
     <tr>
+      <th>${HH.label_text_for(c_models.OrganizationSetting.default_locale)}</th>
+      <td>${organization_setting.default_locale}</td>
+    </tr>
+    <tr>
       <th>${HH.label_text_for(c_models.OrganizationSetting.auto_cms)}</th>
       <td>${u'○' if organization_setting.auto_cms else u'×'}</td>
     </tr>

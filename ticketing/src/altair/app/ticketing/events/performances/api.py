@@ -4,7 +4,7 @@ from altair.app.ticketing.core.utils import ApplicableTicketsProducer
 from altair.app.ticketing.payments.plugins import SEJ_DELIVERY_PLUGIN_ID
 from altair.app.ticketing.payments.plugins import FAMIPORT_DELIVERY_PLUGIN_ID
 from altair.app.ticketing.orders.orion import make_send_to_orion_request
-
+from altair.app.ticketing.resale.models import ResaleRequestStatus
 from . import VISIBLE_PERFORMANCE_SESSION_KEY
 
 
@@ -49,28 +49,49 @@ def get_no_ticket_bundles(performance):
     return no_ticket_bundles
 
 def send_resale_segment(request, performance, resale_segment):
-    obj = dict()
-    obj['performance'] = dict(
-        id=performance.id,
+    obj = dict(
+        organization_code=performance.event.organization.code,
+        event_code=performance.event.code,
+        event_name=performance.event.title,
         code=performance.code,
         name=performance.name,
-        open_on=str(performance.open_on) if performance.open_on is not None else None,
-        start_on=str(performance.start_on) if performance.start_on is not None else None,
-        end_on=str(performance.end_on) if performance.end_on is not None else None
+        url='',
+        logo='',
+        icon=performance.orion.icon_url,
+        header_image=performance.orion.header_url,
+        footer_image=None,
+        background_image=performance.orion.background_url,
+        share_description='',
+        open_on=performance.open_on.strftime('%Y-%m-%d %H:%M:%S') if performance.open_on is not None else None,
+        start_on=performance.start_on.strftime('%Y-%m-%d %H:%M:%S') if performance.start_on is not None else None,
+        end_on=performance.end_on.strftime('%Y-%m-%d %H:%M:%S') if performance.end_on is not None else None,
+        search_end_at='',
+        site_name=performance.venue.site.name,
+        public='',
+        reception_start_at='',
+        reception_end_at='',
+        resale_segment_id=resale_segment.id,
+        resale_start_at=resale_segment.start_at.strftime('%Y-%m-%d %H:%M:%S') if resale_segment.start_at else None,
+        resale_end_at=resale_segment.end_at.strftime('%Y-%m-%d %H:%M:%S') if resale_segment.end_at else None,
+        resale_enable=1
     )
-    obj['resale_segment'] = dict(
-        performance_id=resale_segment.performance_id,
-        start_at=str(resale_segment.start_at),
-        end_at=str(resale_segment.end_at)
-    )
+
     return make_send_to_orion_request(request, obj, 'orion.resale_segment.create_or_update_url')
 
+def _get_verbose_status(status):
+    if status == ResaleRequestStatus.sold:
+        verbose_status = u'sold'
+    elif status == ResaleRequestStatus.back:
+        verbose_status = u'not_sold'
+    else:
+        verbose_status = u'pending'
+    return verbose_status
+
 def send_resale_request(request, resale_request):
-    obj = dict()
-    obj['resale_request'] = dict(
+    obj = dict(
         id=resale_request.id,
-        ResaleRequestStatus=resale_request.status,
-        sold_at=str(resale_request.sold_at) if resale_request.sold_at else None
+        status=_get_verbose_status(resale_request.status),
+        sold_at=resale_request.sold_at.strftime('%Y-%m-%d %H:%M:%S') if resale_request.sold_at else None
     )
     return make_send_to_orion_request(request, obj, 'orion.resale_request.feedback_url')
 
@@ -78,8 +99,8 @@ def send_all_resale_request(request, resale_requests):
     objs = [
         {
             'id': resale_request.id,
-            'ResaleRequestStatus': resale_request.status,
-            'sold_at': str(resale_request.sold_at) if resale_request.sold_at else None
+            'status': _get_verbose_status(resale_request.status),
+            'sold_at': resale_request.sold_at.strftime('%Y-%m-%d %H:%M:%S') if resale_request.sold_at else None
         } for resale_request in resale_requests
     ]
     return make_send_to_orion_request(request, objs, 'orion.resale_request.feedback_all_url')
