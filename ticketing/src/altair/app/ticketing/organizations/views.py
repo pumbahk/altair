@@ -264,6 +264,7 @@ class OrganizationSettings(BaseView):
         organization_setting.enable_fm_reflection_func = f.enable_fm_reflection_func.data
         organization_setting.orderreview_index = f.orderreview_index.data
         organization_setting.i18n = f.i18n.data
+        organization_setting.default_locale = f.default_locale.data
         organization_setting.auto_cms = f.auto_cms.data
         organization_setting.event_label = f.event_label.data
         organization_setting.show_event_op_and_sales = f.show_event_op_and_sales.data
@@ -375,6 +376,7 @@ class OrganizationSettingSimples(BaseView):
                     organization_setting.auto_cms = f.auto_cms.data
                     organization_setting.recaptcha = f.recaptcha.data
                     organization_setting.tapirs = f.tapirs.data
+                    organization_setting.default_locale = f.default_locale.data if f.default_locale.data else u'ja'
                     self.request.session.flash(u'その他の設定を保存しました')
                     return HTTPFound(location=route_path(
                         'organizations.settings.edit.simple',
