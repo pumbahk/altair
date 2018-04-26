@@ -104,6 +104,9 @@ $(function(){
 <form method="post" id="wishForm" action="${request.url}">
   <div class="confirm-wrap mgt20">
     <h2 class="heading heading_simple_line">${__(u'希望選択')}</h2>
+    % if request.method == 'POST' and not wishes:
+      <p>${lh.render_error([__(u'希望枚数をご選択ください')])}</p>
+    % endif
     <div class="settlementBoxInner">
       %for i in range(lot.limit_wishes):
       <div class="settlementSelectBox mgt10">
