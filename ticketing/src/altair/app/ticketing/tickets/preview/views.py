@@ -858,7 +858,8 @@ class DownloadListOfPreviewImage(object):
                 .order_by(sa.asc(c_models.Product.display_order))
                 .all())
 
-    def fetch_data_list(self, q, organization, delivery_method_id, ticket_format):
+    def fetch_data_list(self, q, organization, delivery_method_id, ticket_format,
+                        scale_preview_type_default={'x':2.0, 'y': 2.0}):
         svg_string_list = []
         dm = c_models.DeliveryMethod.query.filter_by(id=delivery_method_id).one()
         for product_item in q:
@@ -889,6 +890,8 @@ class DownloadListOfPreviewImage(object):
                 else:
                     transformer = SVGTransformer(svg)
                     transformer.data["ticket_format"] = ticket.ticket_format
+                    transformer.data['sx'] = scale_preview_type_default['x']
+                    transformer.data['sy'] = scale_preview_type_default['y']
                     svg = transformer.transform()
                     svg_string_list.append((svg, product_item, ticket, "default"))
         return svg_string_list
