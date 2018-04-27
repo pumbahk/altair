@@ -9642,6 +9642,7 @@ var WINDOW_SM = 768; // スマホか否かの判定に用いる
 var SIDE_HEIGHT = 160; //横画面時エラーを出す最大値
 var VenuemapComponent = (function () {
     function VenuemapComponent(el, route, performancesService, seatStatus, stockTypesService, quantityCheckService, router, reserveByQuantity, stockTypeDataService, errorModalDataService, animationEnableService, countSelectService, smartPhoneCheckService, reserveBySeatBrowserBackService, seatDataService, _logger) {
+        var _this = this;
         this.el = el;
         this.route = route;
         this.performancesService = performancesService;
@@ -9757,6 +9758,10 @@ var VenuemapComponent = (function () {
         this.returnFlag = false;
         //ブラウザバック確認モーダルを出さないフラグ
         this.returnUnconfirmFlag = false;
+        //ブラウザバック時の関数　removeEventListenerのため変数に格納
+        this.browserBackFunction = function (event) { return _this.browserBack(); };
+        //ユーザーエージェント
+        this.ua = navigator.userAgent.toLowerCase();
         //Hammer.jsイベントオブジェクト
         this.gestureObj = null;
         this.element = this.el.nativeElement;
@@ -10397,13 +10402,11 @@ var VenuemapComponent = (function () {
                 }
             }, 200);
         });
-        //ブラウザ判別用にユーザーエージェント取得
-        var ua = navigator.userAgent.toLowerCase();
         //セッションストレージに履歴数を保持
         if (!sessionStorage.getItem('historyCount')) {
             sessionStorage.setItem('historyCount', history.length.toString());
         }
-        else if (ua.match(/crios/i) && !sessionStorage.getItem('stay') && sessionStorage.getItem('maxHistory')) {
+        else if (this.ua.match(/crios/i) && !sessionStorage.getItem('stay') && sessionStorage.getItem('maxHistory')) {
             //iOS+chrome
             if (sessionStorage.getItem('maxHistory') == history.length.toString()) {
                 //進むで来た可能性があるためモーダルを表示しない
@@ -10428,7 +10431,7 @@ var VenuemapComponent = (function () {
             that.confirmReturn();
         });
         //他画面へのブラウザバック
-        if (ua.match(/crios/i)) {
+        if (this.ua.match(/crios/i)) {
             __WEBPACK_IMPORTED_MODULE_14_jquery__(document).on('click', function () {
                 history.pushState(null, null, null);
                 __WEBPACK_IMPORTED_MODULE_14_jquery__(document).off('click');
@@ -10445,7 +10448,7 @@ var VenuemapComponent = (function () {
                 }
                 else {
                     //進まれた場合再読み込み
-                    if (ua.indexOf('firefox') == -1 || ua.indexOf('android') !== -1 || /iP(hone|(o|a)d)/.test(navigator.userAgent)) {
+                    if (this.ua.indexOf('firefox') == -1 || this.ua.indexOf('android') !== -1 || /iP(hone|(o|a)d)/.test(navigator.userAgent)) {
                         location.href = location.href;
                     }
                 }
@@ -10453,28 +10456,10 @@ var VenuemapComponent = (function () {
         }
         //セッションストレージに滞在フラグを登録
         sessionStorage.setItem('stay', 'true');
-        //iPadの初期表示用
-        var firstPopstate = this.reserveBySeatBrowserBackService.selectProductCount == 0 ? true : false;
+        //初期表示かどうか　iPad対応
+        this.firstPopstate = this.reserveBySeatBrowserBackService.selectProductCount == 0 ? true : false;
         //ブラウザの戻る・進むで発火
-        window.addEventListener('popstate', function (e) {
-            if (that.returnUnconfirmFlag) {
-                that.returnUnconfirmFlag = false;
-            }
-            else {
-                //iPadの場合、初期表示の際もイベントが発生するため最初の1回は無視
-                if (that.smartPhoneCheckService.isIpad() && firstPopstate) {
-                    firstPopstate = false;
-                    return;
-                }
-                that.confirmReturn();
-                if (ua.match(/crios/i)) {
-                    history.forward();
-                }
-                else {
-                    history.pushState(null, null, null);
-                }
-            }
-        }, false);
+        window.addEventListener('popstate', this.browserBackFunction, false);
     };
     VenuemapComponent.prototype.ngOnDestroy = function () {
         //イベントハンドラを削除
@@ -11612,20 +11597,39 @@ var VenuemapComponent = (function () {
         this.confirmStockType = true;
         this.returnFlag = true;
     };
+    //ブラウザバック時の処理
+    VenuemapComponent.prototype.browserBack = function () {
+        if (this.returnUnconfirmFlag) {
+            this.returnUnconfirmFlag = false;
+        }
+        else {
+            //iPadの場合、初期表示の際もイベントが発生するため最初の1回は無視
+            if (this.smartPhoneCheckService.isIpad() && this.firstPopstate) {
+                this.firstPopstate = false;
+                return;
+            }
+            this.confirmReturn();
+            if (this.ua.match(/crios/i)) {
+                history.forward();
+            }
+            else {
+                history.pushState(null, null, null);
+            }
+        }
+    };
     //直前のサイトへ戻る
     VenuemapComponent.prototype.returnPrevious = function () {
-        window.removeEventListener('popstate');
-        var ua = window.navigator.userAgent.toLowerCase();
-        if (ua.match(/crios/i)) {
+        window.removeEventListener('popstate', this.browserBackFunction);
+        if (this.ua.match(/crios/i)) {
             //進む判定用に履歴数を保持
             sessionStorage.setItem('maxHistory', history.length.toString());
         }
         //滞在フラグを削除
         sessionStorage.removeItem('stay');
         var backCount = -(history.length - Number(sessionStorage.getItem('historyCount')) + 1);
-        if (ua.indexOf('msie') != -1 || ua.indexOf('trident') != -1) {
+        if (this.ua.indexOf('msie') != -1 || this.ua.indexOf('trident') != -1) {
             window.addEventListener('popstate', function () {
-                history.go(backCount);
+                history.go(backCount + 1);
             });
             history.go(-(this.reserveBySeatBrowserBackService.selectProductCount + 1));
         }
