@@ -836,33 +836,45 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
             if not form.validate():
                 continue
 
+            """ 以降のバリデーションでは割引コードの不正利用のヒントとならないよう、（原則的に）エラーコードにより表示する """
             code = form.code.data
 
-            # 重複コードバリデーション
-            if discount_api.is_exist_duplicate_codes(code, code_str_list):
-                form.add_duplicate_code_error()
+            # 桁数が適切か
+            if len(code) != 0 and len(code) != 12:
+                form.append_error_message(u"ご選択された席には適用できないクーポン・割引コードです(T0001)")
                 continue
 
-            # 使用済みコードバリデーション
+            # 管理画面上に設定が存在しているか
+            if not any([setting for setting in form.discount_code_settings if code[:4] == setting.first_4_digits]):
+                form.append_error_message(u"ご選択された席には適用できないクーポン・割引コードです(T0002)")
+                continue
+
+            # 入力されたコードに重複がないか
+            if discount_api.is_exist_duplicate_codes(code, code_str_list):
+                form.append_error_message(u"重複して入力されたクーポン・割引コードです(T0003)")
+                continue
+
+            # コードが使用済みになっていないか
             organization = cart_api.get_organization(self.request)
             if discount_api.check_used_discount_code(code, organization):
-                form.add_used_discount_code_error()
+                form.append_error_message(u"使用されたクーポン・割引コードです(T0004)")
                 continue
 
             code_setting = self.read_only_cart.performance.find_available_target_settings(first_4_digits=code[:4],
                                                                                           now=self.now)
 
-            # 存在する自社コードか確認するバリデーション
+            # 存在する自社コードか
             if code_setting.issued_by == 'own' and not self._is_exist_own_discount_code(code):
-                form.not_existed_own_discount_code_error()
+                form.append_error_message(u"ご選択された席には適用できないクーポン・割引コードです(T0006)")
                 continue
 
-            # ファンクラブ会員専用クーポンの誤利用を防ぐバリデーション
+            # スポーツサービス開発発行コードの場合
             if code_setting.issued_by == 'sports_service':
+                # 適切な会員資格による利用であれば、sports_service_codesにプールしておく
                 if self._is_sports_service_code_used_by_eligible_user():
                     sports_service_codes.append(code_dict)
                 else:
-                    form.add_non_fanclub_member_discount_code_error()
+                    form.append_error_message(u"ご選択された席には適用できないクーポン・割引コードです(T0005)")
                     continue
 
         # スポーツサービス開発のAPIにアクセスして、使用可能なコードか確認する
@@ -942,7 +954,7 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
 
         # 通信エラーなど。1つ目のformにデータを埋め込み表示
         if not result or not result['status'] == u'OK':
-            return code_dict_list[0].code_dict['form'].add_internal_error()
+            return code_dict_list[0]['form'].append_error_message(u"通信エラーが発生しました。時間をあけてお試しください(E0002)")
 
         coupons = result['coupons']
         error_list = {}
@@ -953,7 +965,8 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
         error_keys = error_list.keys()
         for code_dict in code_dict_list:
             if code_dict['form'].code.data in error_keys:
-                code_dict['form'].add_coupon_response_error(error_list[code_dict['form'].code.data])
+                reason_cd = error_list[code_dict['form'].code.data]
+                code_dict['form'].append_error_message(u"ご選択された席には適用できないクーポン・割引コードです(E{})".format(reason_cd))
 
         return code_dict_list
 
