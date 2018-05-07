@@ -56,7 +56,9 @@ from .api import (set_visible_performance,
                   set_invisible_performance,
                   send_resale_segment,
                   send_all_resale_request,
-                  send_resale_request)
+                  send_resale_request,
+                  get_progressing_order_import_task
+                  )
 
 from altair.app.ticketing.discount_code.forms import DiscountCodeSettingForm
 
@@ -730,71 +732,86 @@ class Performances(BaseView):
             venue_id=performance.venue.id,
             context=self.context
         )
-        if f.validate():
-            if is_copy:
-                event_id = performance.event_id
-                performance = merge_session_with_post(Performance(), f.data)
-                performance.event_id = event_id
-                performance.create_venue_id = f.venue_id.data
-                if performance.setting is None:
-                    performance.setting = PerformanceSetting()
-                performance.setting.order_limit = f.order_limit.data
-                performance.setting.entry_limit = f.entry_limit.data
-                performance.setting.max_quantity_per_user = f.max_quantity_per_user.data
-                performance.setting.performance_operator_id = f.performance_operator_id.data
-                performance.setting.sales_person_id = f.sales_person_id.data
-                performance.setting.visible = f.visible.data
 
-                original = Performance.query.filter_by(
-                    id=self.request.POST['original_id']).first()
-                if original is not None:
-                    if original.orion is not None:
-                        performance.orion = OrionPerformance.clone(
-                            original.orion, False, ['performance_id'])
-                performance.save()
+        order_import_tasks = get_progressing_order_import_task(self.request, performance)
+        if order_import_tasks:
+            self.request.session.flash(u'{}元のパフォーマンスに予約インポートが実行中です。完了後に再実行してください。'.format(route_name))
+            for task in order_import_tasks:
+                self.request.session.flash(u'パフォーマンスID {}: {} インポート登録日時: {}'.format(
+                    task.perf_id,
+                    task.perf_name,
+                    task.task_created_at
+                ))
 
-                # 抽選の商品を作成する
-                copy_lots_between_performance(original, performance)
-            else:
-                try:
-                    query = Performance.query.filter_by(id=performance.id)
-                    performance = query.with_lockmode(
-                        'update').populate_existing().one()
-                except Exception, e:
-                    logging.info(e.message)
-                    f.id.errors.append(u'エラーが発生しました。同時に同じ公演を編集することはできません。')
-                    return {
-                        'form': f,
-                        'event': performance.event,
-                        'route_name': route_name,
-                        'route_path': self.request.path,
-                    }
+        if f.validate() and not order_import_tasks:
+            try:
+                if is_copy:
+                    event_id = performance.event_id
+                    performance = merge_session_with_post(Performance(), f.data)
+                    performance.event_id = event_id
+                    performance.create_venue_id = f.venue_id.data
+                    if performance.setting is None:
+                        performance.setting = PerformanceSetting()
+                    performance.setting.order_limit = f.order_limit.data
+                    performance.setting.entry_limit = f.entry_limit.data
+                    performance.setting.max_quantity_per_user = f.max_quantity_per_user.data
+                    performance.setting.performance_operator_id = f.performance_operator_id.data
+                    performance.setting.sales_person_id = f.sales_person_id.data
+                    performance.setting.visible = f.visible.data
 
-                performance = merge_session_with_post(performance, f.data)
-                venue = performance.venue
-                if f.data['venue_id'] != venue.id:
-                    performance.delete_venue_id = venue.id
-                    performance.create_venue_id = f.data['venue_id']
-                if performance.setting is None:
-                    performance.setting = PerformanceSetting()
-                performance.setting.order_limit = f.order_limit.data
-                performance.setting.entry_limit = f.entry_limit.data
-                performance.setting.max_quantity_per_user = f.max_quantity_per_user.data
-                performance.setting.performance_operator_id = f.performance_operator_id.data
-                performance.setting.sales_person_id = f.sales_person_id.data
-                performance.setting.visible = f.visible.data
-                performance.save()
+                    original = Performance.query.filter_by(
+                        id=self.request.POST['original_id']).first()
+                    if original is not None:
+                        if original.orion is not None:
+                            performance.orion = OrionPerformance.clone(
+                                original.orion, False, ['performance_id'])
+                    performance.save()
 
-            self.request.session.flash(u'パフォーマンスを保存しました')
-            return HTTPFound(location=route_path('performances.show', self.request, performance_id=performance.id))
-        else:
-            return {
-                'form': f,
-                'is_copy': False,
-                'event': performance.event,
-                'route_name': route_name,
-                'route_path': self.request.path,
-            }
+                    # 抽選の商品を作成する
+                    copy_lots_between_performance(original, performance)
+                else:
+                    try:
+                        query = Performance.query.filter_by(id=performance.id)
+                        performance = query.with_lockmode(
+                            'update').populate_existing().one()
+                    except Exception as e:
+                        logging.info(e.message)
+                        f.id.errors.append(u'エラーが発生しました。同時に同じ公演を編集することはできません。')
+                        raise Exception(e.message)
+
+                    performance = merge_session_with_post(performance, f.data)
+                    venue = performance.venue
+                    if f.data['venue_id'] != venue.id:
+                        performance.delete_venue_id = venue.id
+                        performance.create_venue_id = f.data['venue_id']
+                    if performance.setting is None:
+                        performance.setting = PerformanceSetting()
+                    performance.setting.order_limit = f.order_limit.data
+                    performance.setting.entry_limit = f.entry_limit.data
+                    performance.setting.max_quantity_per_user = f.max_quantity_per_user.data
+                    performance.setting.performance_operator_id = f.performance_operator_id.data
+                    performance.setting.sales_person_id = f.sales_person_id.data
+                    performance.setting.visible = f.visible.data
+                    performance.save()
+
+                self.request.session.flash(u'パフォーマンスを{}しました'.format(route_name))
+                return HTTPFound(location=route_path('performances.show', self.request, performance_id=performance.id))
+
+            except Exception as exc:
+                if exc.message == u'Lock wait timeout exceeded; try restarting transaction':
+                    self.request.session.flash(u'{}処理がタイムアウトしました。時間をおいて再実行してください。'.format(route_name))
+                else:
+                    error_msg = u'予期しないエラーによってパフォーマンスの{}に失敗しました'.format(route_name)
+                    self.request.session.flash(error_msg)
+                    logger.error(u'{}: {}'.format(error_msg, exc.message))
+
+        return {
+            'form': f,
+            'is_copy': is_copy,
+            'event': performance.event,
+            'route_name': route_name,
+            'route_path': self.request.path,
+        }
 
     @view_config(route_name='performances.manycopy', request_method='GET', renderer='altair.app.ticketing:templates/performances/copy.html')
     def manycopy_get(self):
@@ -827,79 +844,89 @@ class Performances(BaseView):
             target_total = len(params['name'])
 
         error_exist = self.validate_manycopy(params, target_total)
-        if error_exist:
-            forms = []
-            if target_total > 0:
+        if not error_exist:
+            try:
+                code_generator = PerformanceCodeGenerator(self.request)
                 for cnt in range(0, target_total):
-                    f = PerformanceManycopyForm()
-                    f.id.data = origin_performance.id
-                    f.name.data = params['name'][cnt]
+
+                    new_performance = Performance()
+
+                    # POST data
+                    new_performance.event_id = origin_performance.event_id
+                    new_performance.name = params['name'][cnt]
+                    new_performance.name = new_performance.name.replace("&quote;", "\'")
                     if params['open_on'][cnt]:
-                        f.open_on.data = params['open_on'][cnt]
-                    f.start_on.data = params['start_on'][cnt]
-                    f.end_on.data = params['end_on'][cnt]
-                    f.display_order.data = params['display_order'][cnt]
-                    forms.append(f)
+                        new_performance.open_on = datetime.datetime.strptime(params['open_on'][cnt], '%Y-%m-%d %H:%M')
+                    new_performance.start_on = datetime.datetime.strptime(params['start_on'][cnt], '%Y-%m-%d %H:%M')
+                    if params['end_on'][cnt]:
+                        new_performance.end_on = datetime.datetime.strptime(params['end_on'][cnt], '%Y-%m-%d %H:%M')
+                    new_performance.display_order = params['display_order'][cnt]
 
-            return {
-                'event': origin_performance.event,
-                'origin_performance': origin_performance,
-                'origin_performance_form': self.create_origin_performance_form(origin_performance),
-                'forms': forms,
-                'cart_helper': cart_helper,
-                'route_path': self.request.path,
-            }
+                    # Copy data
+                    new_performance.code = code_generator.generate(origin_performance.code)
+                    new_performance.venue_id = origin_performance.venue.id
+                    new_performance.create_venue_id = origin_performance.venue.id
+                    new_performance.original_id = origin_performance.id
+                    new_performance.redirect_url_pc = origin_performance.redirect_url_pc
+                    new_performance.redirect_url_mobile = origin_performance.redirect_url_mobile
+                    new_performance.abbreviated_title = origin_performance.abbreviated_title
+                    new_performance.subtitle = origin_performance.subtitle
+                    new_performance.subtitle2 = origin_performance.subtitle2
+                    new_performance.subtitle3 = origin_performance.subtitle3
+                    new_performance.subtitle4 = origin_performance.subtitle4
+                    new_performance.note = origin_performance.note
+                    new_performance.account_id = origin_performance.account_id
 
-        code_generator = PerformanceCodeGenerator(self.request)
-        for cnt in range(0, target_total):
+                    if new_performance.setting is None:
+                        new_performance.setting = PerformanceSetting()
 
-            new_performance = Performance()
+                    new_performance.setting.order_limit = origin_performance.setting.order_limit
+                    new_performance.setting.entry_limit = origin_performance.setting.entry_limit
+                    new_performance.setting.max_quantity_per_user = origin_performance.setting.max_quantity_per_user
+                    new_performance.setting.visible = origin_performance.setting.visible
 
-            # POST data
-            new_performance.event_id = origin_performance.event_id
-            new_performance.name = params['name'][cnt]
-            new_performance.name = new_performance.name.replace("&quote;", "\'")
-            if params['open_on'][cnt]:
-                new_performance.open_on = datetime.datetime.strptime(params['open_on'][cnt], '%Y-%m-%d %H:%M')
-            new_performance.start_on = datetime.datetime.strptime(params['start_on'][cnt], '%Y-%m-%d %H:%M')
-            if params['end_on'][cnt]:
-                new_performance.end_on = datetime.datetime.strptime(params['end_on'][cnt], '%Y-%m-%d %H:%M')
-            new_performance.display_order = params['display_order'][cnt]
+                    if origin_performance.orion is not None:
+                        new_performance.orion = OrionPerformance.clone(
+                            origin_performance.orion, False, ['performance_id'])
 
-            # Copy data
-            new_performance.code = code_generator.generate(origin_performance.code)
-            new_performance.venue_id = origin_performance.venue.id
-            new_performance.create_venue_id = origin_performance.venue.id
-            new_performance.original_id = origin_performance.id
-            new_performance.redirect_url_pc = origin_performance.redirect_url_pc
-            new_performance.redirect_url_mobile = origin_performance.redirect_url_mobile
-            new_performance.abbreviated_title = origin_performance.abbreviated_title
-            new_performance.subtitle = origin_performance.subtitle
-            new_performance.subtitle2 = origin_performance.subtitle2
-            new_performance.subtitle3 = origin_performance.subtitle3
-            new_performance.subtitle4 = origin_performance.subtitle4
-            new_performance.note = origin_performance.note
-            new_performance.account_id = origin_performance.account_id
+                    new_performance.save()
 
-            if new_performance.setting is None:
-                new_performance.setting = PerformanceSetting()
+                    # 抽選の商品を作成する
+                    copy_lots_between_performance(origin_performance, new_performance)
 
-            new_performance.setting.order_limit = origin_performance.setting.order_limit
-            new_performance.setting.entry_limit = origin_performance.setting.entry_limit
-            new_performance.setting.max_quantity_per_user = origin_performance.setting.max_quantity_per_user
-            new_performance.setting.visible = origin_performance.setting.visible
+                    self.request.session.flash(u'パフォーマンスをコピーしました')
+                    return HTTPFound(location=route_path('performances.index', self.request, event_id=origin_performance.event.id))
 
-            if origin_performance.orion is not None:
-                new_performance.orion = OrionPerformance.clone(
-                    origin_performance.orion, False, ['performance_id'])
+            except Exception as exc:
+                if exc.message == u'Lock wait timeout exceeded; try restarting transaction':
+                    self.request.session.flash(u'処理がタイムアウトしました。時間をおいて再実行してください。')
+                else:
+                    error_msg = u'予期しないエラーによってコピーに失敗しました'
+                    self.request.session.flash(error_msg)
+                    logger.error(u'{}: {}'.format(error_msg, exc.message))
 
-            new_performance.save()
+        # エラー発生時は元画面の再描画
+        forms = []
+        if target_total > 0:
+            for cnt in range(0, target_total):
+                f = PerformanceManycopyForm()
+                f.id.data = origin_performance.id
+                f.name.data = params['name'][cnt]
+                if params['open_on'][cnt]:
+                    f.open_on.data = params['open_on'][cnt]
+                f.start_on.data = params['start_on'][cnt]
+                f.end_on.data = params['end_on'][cnt]
+                f.display_order.data = params['display_order'][cnt]
+                forms.append(f)
 
-            # 抽選の商品を作成する
-            copy_lots_between_performance(origin_performance, new_performance)
-
-        self.request.session.flash(u'パフォーマンスをコピーしました')
-        return HTTPFound(location=route_path('performances.index', self.request, event_id=origin_performance.event.id))
+        return {
+            'event': origin_performance.event,
+            'origin_performance': origin_performance,
+            'origin_performance_form': self.create_origin_performance_form(origin_performance),
+            'forms': forms,
+            'cart_helper': cart_helper,
+            'route_path': self.request.path,
+        }
 
     def create_origin_performance_form(self, origin_performance):
         f = PerformanceManycopyForm()
@@ -964,6 +991,14 @@ class Performances(BaseView):
             except ValueError:
                 self.request.session.flash(u'{}行目の表示順が不正です。'.format(cnt + 1))
                 error_exist = True
+
+        order_import_tasks = get_progressing_order_import_task(self.request, self.context.performance)
+        if order_import_tasks:
+            self.request.session.flash(u'コピー元のパフォーマンスに予約インポートが実行中です。完了後に再実行してください。')
+            for task in order_import_tasks:
+                self.request.session.flash(u'パフォーマンスID{}: {} インポート登録日時: '.format(task.perf_id, task.perf_name, task.task_created_at))
+            error_exist = True
+
         return error_exist
 
     @view_config(route_name='performances.termcopy', request_method='GET', renderer='altair.app.ticketing:templates/performances/termcopy.html')
@@ -988,76 +1023,99 @@ class Performances(BaseView):
         if form.start_day.data and form.end_day.data:
             target_total = (form.end_day.data - form.start_day.data).days
 
+        order_import_tasks = get_progressing_order_import_task(self.request, origin_performance)
+
+        error_msg = ''
         if target_total <= 0:
-            return {
-                'event': origin_performance.event,
-                'origin_performance': origin_performance,
-                'form': form,
-                'message': u'期間指定が不正です',
-                'cart_helper': cart_helper,
-                'route_path': self.request.path,
-            }
+            error_msg += u'期間指定が不正です。'
+        if order_import_tasks:
+            error_msg += u'コピー元のパフォーマンスに予約インポートが実行中です。完了後に再実行してください。'
+            for task in order_import_tasks:
+                error_msg += u'パフォーマンスID {}: {} インポート登録日時: {}'.format(
+                    task.perf_id,
+                    task.perf_name,
+                    task.task_created_at
+                )
 
-        open_date = None
-        end_date = None
-
-        if origin_performance.open_on:
-            open_date = form.start_day.data + datetime.timedelta(hours=origin_performance.open_on.hour,
-                                                                 minutes=origin_performance.open_on.minute)
-        if origin_performance.end_on:
-            end_date = form.start_day.data + datetime.timedelta(hours=origin_performance.end_on.hour,
-                                                                minutes=origin_performance.end_on.minute)
-        start_date = form.start_day.data + datetime.timedelta(hours=origin_performance.start_on.hour,
-                                                              minutes=origin_performance.start_on.minute)
-
-        code_generator = PerformanceCodeGenerator(self.request)
-        for cnt in range(0, target_total + 1):
-            new_performance = Performance()
+        if not error_msg:
+            open_date = None
+            end_date = None
 
             if origin_performance.open_on:
-                new_performance.open_on = open_date + datetime.timedelta(days=cnt)
+                open_date = form.start_day.data + datetime.timedelta(hours=origin_performance.open_on.hour,
+                                                                     minutes=origin_performance.open_on.minute)
             if origin_performance.end_on:
-                new_performance.end_on = end_date + datetime.timedelta(days=cnt)
-            new_performance.start_on = start_date + datetime.timedelta(days=cnt)
+                end_date = form.start_day.data + datetime.timedelta(hours=origin_performance.end_on.hour,
+                                                                    minutes=origin_performance.end_on.minute)
+            start_date = form.start_day.data + datetime.timedelta(hours=origin_performance.start_on.hour,
+                                                                  minutes=origin_performance.start_on.minute)
 
-            # Copy data
-            new_performance.event_id = origin_performance.event_id
-            new_performance.name = origin_performance.name
-            new_performance.name = new_performance.name.replace("&quote;", "\'")
-            new_performance.display_order = origin_performance.display_order
-            new_performance.code = code_generator.generate(origin_performance.code)
-            new_performance.venue_id = origin_performance.venue.id
-            new_performance.create_venue_id = origin_performance.venue.id
-            new_performance.original_id = origin_performance.id
-            new_performance.redirect_url_pc = origin_performance.redirect_url_pc
-            new_performance.redirect_url_mobile = origin_performance.redirect_url_mobile
-            new_performance.abbreviated_title = origin_performance.abbreviated_title
-            new_performance.subtitle = origin_performance.subtitle
-            new_performance.subtitle2 = origin_performance.subtitle2
-            new_performance.subtitle3 = origin_performance.subtitle3
-            new_performance.subtitle4 = origin_performance.subtitle4
-            new_performance.note = origin_performance.note
-            new_performance.account_id = origin_performance.account_id
+            try:
+                code_generator = PerformanceCodeGenerator(self.request)
+                for cnt in range(0, target_total + 1):
+                    new_performance = Performance()
 
-            if new_performance.setting is None:
-                new_performance.setting = PerformanceSetting()
+                    if origin_performance.open_on:
+                        new_performance.open_on = open_date + datetime.timedelta(days=cnt)
+                    if origin_performance.end_on:
+                        new_performance.end_on = end_date + datetime.timedelta(days=cnt)
+                    new_performance.start_on = start_date + datetime.timedelta(days=cnt)
 
-            new_performance.setting.order_limit = origin_performance.setting.order_limit
-            new_performance.setting.entry_limit = origin_performance.setting.entry_limit
-            new_performance.setting.max_quantity_per_user = origin_performance.setting.max_quantity_per_user
-            new_performance.setting.visible = origin_performance.setting.visible
+                    # Copy data
+                    new_performance.event_id = origin_performance.event_id
+                    new_performance.name = origin_performance.name
+                    new_performance.name = new_performance.name.replace("&quote;", "\'")
+                    new_performance.display_order = origin_performance.display_order
+                    new_performance.code = code_generator.generate(origin_performance.code)
+                    new_performance.venue_id = origin_performance.venue.id
+                    new_performance.create_venue_id = origin_performance.venue.id
+                    new_performance.original_id = origin_performance.id
+                    new_performance.redirect_url_pc = origin_performance.redirect_url_pc
+                    new_performance.redirect_url_mobile = origin_performance.redirect_url_mobile
+                    new_performance.abbreviated_title = origin_performance.abbreviated_title
+                    new_performance.subtitle = origin_performance.subtitle
+                    new_performance.subtitle2 = origin_performance.subtitle2
+                    new_performance.subtitle3 = origin_performance.subtitle3
+                    new_performance.subtitle4 = origin_performance.subtitle4
+                    new_performance.note = origin_performance.note
+                    new_performance.account_id = origin_performance.account_id
 
-            if origin_performance.orion is not None:
-                new_performance.orion = OrionPerformance.clone(
-                    origin_performance.orion, False, ['performance_id'])
+                    if new_performance.setting is None:
+                        new_performance.setting = PerformanceSetting()
 
-            new_performance.save()
+                    new_performance.setting.order_limit = origin_performance.setting.order_limit
+                    new_performance.setting.entry_limit = origin_performance.setting.entry_limit
+                    new_performance.setting.max_quantity_per_user = origin_performance.setting.max_quantity_per_user
+                    new_performance.setting.visible = origin_performance.setting.visible
 
-            # 抽選の商品を作成する
-            copy_lots_between_performance(origin_performance, new_performance)
+                    if origin_performance.orion is not None:
+                        new_performance.orion = OrionPerformance.clone(
+                            origin_performance.orion, False, ['performance_id'])
 
-        self.request.session.flash(u'パフォーマンスをコピーしました')
-        return HTTPFound(location=route_path('performances.index', self.request, event_id=origin_performance.event.id))
+                    new_performance.save()
+
+                    # 抽選の商品を作成する
+                    copy_lots_between_performance(origin_performance, new_performance)
+
+                self.request.session.flash(u'パフォーマンスをコピーしました')
+                return HTTPFound(location=route_path('performances.index', self.request, event_id=origin_performance.event.id))
+
+            except Exception as exc:
+                if exc.message == u'Lock wait timeout exceeded; try restarting transaction':
+                    self.request.session.flash(u'コピー処理がタイムアウトしました。時間をおいて再実行してください。')
+                else:
+                    error_msg = u'予期しないエラーによってパフォーマンスのコピーが失敗しました'
+                    self.request.session.flash(error_msg)
+                    logger.error(u'{}: {}'.format(error_msg, exc.message))
+
+        return {
+            'event': origin_performance.event,
+            'origin_performance': origin_performance,
+            'form': form,
+            'message': error_msg,
+            'cart_helper': cart_helper,
+            'route_path': self.request.path,
+        }
 
     @view_config(route_name='performances.delete')
     def delete(self):
