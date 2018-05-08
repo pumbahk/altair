@@ -1015,7 +1015,7 @@ class Performances(BaseView):
         if order_import_tasks:
             self.request.session.flash(u'コピー元のパフォーマンスに予約インポートが実行中です。完了後に再実行してください。')
             for task in order_import_tasks:
-                self.request.session.flash(u'パフォーマンスID{}: {} インポート登録日時: '.format(task.perf_id, task.perf_name, task.task_created_at))
+                self.request.session.flash(u'パフォーマンスID{}: {} インポート登録日時: {}'.format(task.perf_id, task.perf_name, task.task_created_at))
             error_exist = True
 
         return error_exist
