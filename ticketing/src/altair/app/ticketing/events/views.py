@@ -15,6 +15,7 @@ from sqlalchemy import or_
 from sqlalchemy import sql
 from sqlalchemy.sql import func, and_
 from sqlalchemy.orm.util import class_mapper
+from sqlalchemy.exc import InternalError
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPCreated, HTTPServiceUnavailable
 from pyramid.threadlocal import get_current_registry
@@ -26,12 +27,12 @@ from pyramid.renderers import render_to_response
 
 from altair.sqlahelper import get_db_session
 from altair.sqla import new_comparator
-
 from altair.app.ticketing.models import merge_session_with_post, record_to_multidict, merge_and_flush
 from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.core.models import Event, EventSetting, Performance, PerformanceSetting, StockType, StockTypeEnum, SalesSegment
 from altair.app.ticketing.core import api as core_api
+from altair.app.ticketing.events.performances import api as p_api
 from altair.app.ticketing.core.utils import PageURL_WebOb_Ex
 from altair.app.ticketing.events.performances.forms import PerformanceForm
 from altair.app.ticketing.events.stock_types.forms import StockTypeForm
@@ -360,66 +361,84 @@ class Events(BaseView):
         if event is None:
             return HTTPNotFound('event id %d is not found' % event_id)
 
-        f = EventForm(self.request.POST, context=self.context)
-        if f.validate():
-            if self.request.matched_route.name == 'events.copy':
-                event = merge_session_with_post(
-                    Event(
-                        organization_id=self.context.organization.id,
-                        setting=EventSetting(
-                            order_limit=f.order_limit.data,
-                            max_quantity_per_user=f.max_quantity_per_user.data,
-                            middle_stock_threshold=f.middle_stock_threshold.data,
-                            middle_stock_threshold_percent=f.middle_stock_threshold_percent.data,
-                            cart_setting_id=f.cart_setting_id.data,
-                            event_operator_id=f.event_operator_id.data,
-                            sales_person_id=f.sales_person_id.data,
-                            visible=True,
-                            tapirs=f.tapirs.data
-                            # performance_selector=f.get_performance_selector(),
-                            # performance_selector_label1_override=f.performance_selector_label1_override.data,
-                            # performance_selector_label2_override=f.performance_selector_label2_override.data,
-                            ),
-                        ),
-                    f.data,
-                    # excludes={'performance_selector',
-                    #           'performance_selector_label1_override',
-                    #           'performance_selector_label2_override',
-                    #           },
-                    )
-            else:
-                event = merge_session_with_post(event, f.data,
-                    # excludes={'performance_selector',
-                    #           'performance_selector_label1_override',
-                    #           'performance_selector_label2_override',
-                    #           },
-                )
-                if event.setting is None:
-                    event.setting = EventSetting()
-                event.setting.order_limit = f.order_limit.data
-                event.setting.max_quantity_per_user = f.max_quantity_per_user.data
-                event.setting.middle_stock_threshold = f.middle_stock_threshold.data
-                event.setting.middle_stock_threshold_percent = f.middle_stock_threshold_percent.data
-                event.setting.visible = f.visible.data
-                if f.cart_setting_id.data is not None:
-                    event.setting.cart_setting_id = f.cart_setting_id.data
-                event.setting.event_operator_id = f.event_operator_id.data
-                event.setting.sales_person_id = f.sales_person_id.data
-                event.setting.tapirs = f.tapirs.data
-            try:
-                event.save()
-                self.request.session.flash(u'イベントを保存しました')
-            except Exception, exception:
-                self.request.session.flash(exception.message.decode('utf-8'))
+        order_import_tasks = p_api.get_progressing_order_import_task(self.request, event)
+        if order_import_tasks:
+            self.request.session.flash(u'{}元イベントに属する以下のパフォーマンスに予約インポートが実行中です。完了後に再実行してください。'.format(route_name))
+            for task in order_import_tasks:
+                self.request.session.flash(u'パフォーマンスID {}: {} インポート登録日時: {}'.format(
+                    task.perf_id,
+                    task.perf_name,
+                    task.task_created_at
+                ))
 
-            return HTTPFound(location=route_path('events.show', self.request, event_id=event.id))
-        else:
-            return {
-                'form':f,
-                'event':event,
-                'route_name': route_name,
-                'route_path': self.request.path,
-            }
+        f = EventForm(self.request.POST, context=self.context)
+
+        if f.validate() and not order_import_tasks:
+
+            def unexpected_error():
+                error_msg = u'予期しないエラーによってイベントの{}に失敗しました'.format(route_name)
+                self.request.session.flash(error_msg)
+                logger.error(u'{}: {}'.format(error_msg, exc.message))
+
+            try:
+                raise Exception()
+                if self.request.matched_route.name == 'events.copy':
+                    event = merge_session_with_post(
+                        Event(
+                            organization_id=self.context.organization.id,
+                            setting=EventSetting(
+                                order_limit=f.order_limit.data,
+                                max_quantity_per_user=f.max_quantity_per_user.data,
+                                middle_stock_threshold=f.middle_stock_threshold.data,
+                                middle_stock_threshold_percent=f.middle_stock_threshold_percent.data,
+                                cart_setting_id=f.cart_setting_id.data,
+                                event_operator_id=f.event_operator_id.data,
+                                sales_person_id=f.sales_person_id.data,
+                                visible=True,
+                                tapirs=f.tapirs.data
+                                ),
+                            ),
+                        f.data,
+                        )
+                else:
+                    event = merge_session_with_post(event, f.data)
+                    if event.setting is None:
+                        event.setting = EventSetting()
+                    event.setting.order_limit = f.order_limit.data
+                    event.setting.max_quantity_per_user = f.max_quantity_per_user.data
+                    event.setting.middle_stock_threshold = f.middle_stock_threshold.data
+                    event.setting.middle_stock_threshold_percent = f.middle_stock_threshold_percent.data
+                    event.setting.visible = f.visible.data
+                    if f.cart_setting_id.data is not None:
+                        event.setting.cart_setting_id = f.cart_setting_id.data
+                    event.setting.event_operator_id = f.event_operator_id.data
+                    event.setting.sales_person_id = f.sales_person_id.data
+                    event.setting.tapirs = f.tapirs.data
+
+                event.save()
+
+            except InternalError as exc:
+                # 1205: u'Lock wait timeout exceeded; try restarting transaction'
+                # 1213: u'Deadlock found when trying to get lock; try restarting transaction'
+                if exc.orig.args[0] and (exc.orig.args[0] in [1205, 1213]):
+                    self.request.session.flash(u'{}処理がタイムアウトしました。別処理にて関連データの更新が行われています。時間をおいて再実行してください。'.format(route_name))
+                    logger.error(u'{}. locked out sql: {}'.format(exc.message, exc.statement))
+                else:
+                    unexpected_error()
+
+            except Exception as exc:
+                unexpected_error()
+
+            else:
+                self.request.session.flash(u'イベントを{}しました'.format(route_name))
+                return HTTPFound(location=route_path('events.show', self.request, event_id=event.id))
+
+        return {
+            'form':f,
+            'event':event,
+            'route_name': route_name,
+            'route_path': self.request.path,
+        }
 
     @view_config(route_name='events.delete')
     def delete(self):

@@ -1,5 +1,8 @@
 # coding:utf-8
 from datetime import datetime
+from altair.sqlahelper import get_db_session
+from altair.app.ticketing.core.models import Event, Performance
+from altair.app.ticketing.orders.models import OrderImportTask, ImportStatusEnum
 from altair.app.ticketing.core.utils import ApplicableTicketsProducer
 from altair.app.ticketing.payments.plugins import SEJ_DELIVERY_PLUGIN_ID
 from altair.app.ticketing.payments.plugins import FAMIPORT_DELIVERY_PLUGIN_ID
@@ -104,3 +107,35 @@ def send_all_resale_request(request, resale_requests):
         } for resale_request in resale_requests
     ]
     return make_send_to_orion_request(request, objs, 'orion.resale_request.feedback_all_url')
+
+
+def get_progressing_order_import_task(request, obj):
+    """
+    イベント、またはパフォーマンスに紐づく進行中の予約インポートタスクを取得。
+    :param request: リクエストオブジェクト
+    :param obj: Event or Performance
+    :return: 予約インポートタスク
+    """
+    slave_session = get_db_session(request, name="slave")
+    query = slave_session.query(
+        Performance.id.label('perf_id'),
+        Performance.name.label('perf_name'),
+        OrderImportTask.created_at.label('task_created_at')
+    ).join(
+        OrderImportTask
+    ).filter(
+        OrderImportTask.status.in_([
+            ImportStatusEnum.Waiting.v,
+            ImportStatusEnum.Importing.v
+        ])
+    )
+
+    if isinstance(obj, Event):
+        query = query.join(Event).filter(Event.id == obj.id)
+    elif isinstance(obj, Performance):
+        query = query.filter(Performance.id == obj.id)
+    else:
+        raise Exception('must be a instance of Event or Performance. but "obj" is {}'.format(type(obj)))
+
+    order_import_tasks = query.all()
+    return order_import_tasks
