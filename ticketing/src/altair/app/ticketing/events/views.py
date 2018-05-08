@@ -381,7 +381,6 @@ class Events(BaseView):
                 logger.error(u'{}: {}'.format(error_msg, exc.message))
 
             try:
-                raise Exception()
                 if self.request.matched_route.name == 'events.copy':
                     event = merge_session_with_post(
                         Event(
