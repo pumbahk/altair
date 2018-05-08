@@ -17,6 +17,7 @@ from pyramid.security import has_permission, ACLAllowed
 from paste.util.multidict import MultiDict
 
 from altair.sqlahelper import get_db_session
+from sqlalchemy.exc import InternalError
 
 from altair.app.ticketing.models import merge_session_with_post, record_to_multidict
 from altair.app.ticketing.views import BaseView
@@ -744,6 +745,12 @@ class Performances(BaseView):
                 ))
 
         if f.validate() and not order_import_tasks:
+
+            def unexpected_error():
+                error_msg = u'予期しないエラーによってパフォーマンスの{}に失敗しました'.format(route_name)
+                self.request.session.flash(error_msg)
+                logger.error(u'{}: {}'.format(error_msg, exc.message))
+
             try:
                 if is_copy:
                     event_id = performance.event_id
@@ -770,14 +777,9 @@ class Performances(BaseView):
                     # 抽選の商品を作成する
                     copy_lots_between_performance(original, performance)
                 else:
-                    try:
-                        query = Performance.query.filter_by(id=performance.id)
-                        performance = query.with_lockmode(
-                            'update').populate_existing().one()
-                    except Exception as e:
-                        logging.info(e.message)
-                        f.id.errors.append(u'エラーが発生しました。同時に同じ公演を編集することはできません。')
-                        raise Exception(e.message)
+                    query = Performance.query.filter_by(id=performance.id)
+                    performance = query.with_lockmode(
+                        'update').populate_existing().one()
 
                     performance = merge_session_with_post(performance, f.data)
                     venue = performance.venue
@@ -794,16 +796,21 @@ class Performances(BaseView):
                     performance.setting.visible = f.visible.data
                     performance.save()
 
-                self.request.session.flash(u'パフォーマンスを{}しました'.format(route_name))
-                return HTTPFound(location=route_path('performances.show', self.request, performance_id=performance.id))
+            except InternalError as exc:
+                # 1205: u'Lock wait timeout exceeded; try restarting transaction'
+                # 1213: u'Deadlock found when trying to get lock; try restarting transaction'
+                if exc.orig.args[0] and (exc.orig.args[0] in [1205, 1213]):
+                    self.request.session.flash(u'{}処理がタイムアウトしました。別処理にて関連データの更新が行われています。時間をおいて再実行してください。'.format(route_name))
+                    logger.error(u'{}. locked out sql: {}'.format(exc.message, exc.statement))
+                else:
+                    unexpected_error()
 
             except Exception as exc:
-                if exc.message == u'Lock wait timeout exceeded; try restarting transaction':
-                    self.request.session.flash(u'{}処理がタイムアウトしました。時間をおいて再実行してください。'.format(route_name))
-                else:
-                    error_msg = u'予期しないエラーによってパフォーマンスの{}に失敗しました'.format(route_name)
-                    self.request.session.flash(error_msg)
-                    logger.error(u'{}: {}'.format(error_msg, exc.message))
+                unexpected_error()
+
+            else:
+                self.request.session.flash(u'パフォーマンスを{}しました'.format(route_name))
+                return HTTPFound(location=route_path('performances.show', self.request, performance_id=performance.id))
 
         return {
             'form': f,
@@ -845,6 +852,12 @@ class Performances(BaseView):
 
         error_exist = self.validate_manycopy(params, target_total)
         if not error_exist:
+
+            def unexpected_error():
+                error_msg = u'予期しないエラーによってコピーに失敗しました'
+                self.request.session.flash(error_msg)
+                logger.error(u'{}: {}'.format(error_msg, exc.message))
+
             try:
                 code_generator = PerformanceCodeGenerator(self.request)
                 for cnt in range(0, target_total):
@@ -894,16 +907,22 @@ class Performances(BaseView):
                     # 抽選の商品を作成する
                     copy_lots_between_performance(origin_performance, new_performance)
 
-                    self.request.session.flash(u'パフォーマンスをコピーしました')
-                    return HTTPFound(location=route_path('performances.index', self.request, event_id=origin_performance.event.id))
+            except InternalError as exc:
+                # 1205: u'Lock wait timeout exceeded; try restarting transaction'
+                # 1213: u'Deadlock found when trying to get lock; try restarting transaction'
+                if exc.orig.args[0] and (exc.orig.args[0] in [1205, 1213]):
+                    self.request.session.flash(u'{}処理がタイムアウトしました。別処理にて関連データの更新が行われています。時間をおいて再実行してください。'.format(route_name))
+                    logger.error(u'{}. locked out sql: {}'.format(exc.message, exc.statement))
+                else:
+                    unexpected_error()
 
             except Exception as exc:
-                if exc.message == u'Lock wait timeout exceeded; try restarting transaction':
-                    self.request.session.flash(u'処理がタイムアウトしました。時間をおいて再実行してください。')
-                else:
-                    error_msg = u'予期しないエラーによってコピーに失敗しました'
-                    self.request.session.flash(error_msg)
-                    logger.error(u'{}: {}'.format(error_msg, exc.message))
+                unexpected_error()
+
+            else:
+                self.request.session.flash(u'パフォーマンスをコピーしました')
+                return HTTPFound(
+                    location=route_path('performances.index', self.request, event_id=origin_performance.event.id))
 
         # エラー発生時は元画面の再描画
         forms = []
@@ -1028,16 +1047,17 @@ class Performances(BaseView):
         error_msg = ''
         if target_total <= 0:
             error_msg += u'期間指定が不正です。'
+
         if order_import_tasks:
-            error_msg += u'コピー元のパフォーマンスに予約インポートが実行中です。完了後に再実行してください。'
+            self.request.session.flash(u'コピー元のパフォーマンスに予約インポートが実行中です。完了後に再実行してください。')
             for task in order_import_tasks:
-                error_msg += u'パフォーマンスID {}: {} インポート登録日時: {}'.format(
+                self.request.session.flash(u'パフォーマンスID {}: {} インポート登録日時: {}'.format(
                     task.perf_id,
                     task.perf_name,
                     task.task_created_at
-                )
+                ))
 
-        if not error_msg:
+        if not error_msg and not order_import_tasks:
             open_date = None
             end_date = None
 
@@ -1049,6 +1069,11 @@ class Performances(BaseView):
                                                                     minutes=origin_performance.end_on.minute)
             start_date = form.start_day.data + datetime.timedelta(hours=origin_performance.start_on.hour,
                                                                   minutes=origin_performance.start_on.minute)
+
+            def unexpected_error():
+                err_msg = u'予期しないエラーによってパフォーマンスのコピーが失敗しました'
+                self.request.session.flash(err_msg)
+                logger.error(u'{}: {}'.format(err_msg, exc.message))
 
             try:
                 code_generator = PerformanceCodeGenerator(self.request)
@@ -1097,16 +1122,21 @@ class Performances(BaseView):
                     # 抽選の商品を作成する
                     copy_lots_between_performance(origin_performance, new_performance)
 
-                self.request.session.flash(u'パフォーマンスをコピーしました')
-                return HTTPFound(location=route_path('performances.index', self.request, event_id=origin_performance.event.id))
+            except InternalError as exc:
+                # 1205: u'Lock wait timeout exceeded; try restarting transaction'
+                # 1213: u'Deadlock found when trying to get lock; try restarting transaction'
+                if exc.orig.args[0] and (exc.orig.args[0] in [1205, 1213]):
+                    error_msg = u'{}処理がタイムアウトしました。別処理にて関連データの更新が行われています。時間をおいて再実行してください。'.format(route_name)
+                    logger.error(u'{}. locked out sql: {}'.format(exc.message, exc.statement))
+                else:
+                    unexpected_error()
 
             except Exception as exc:
-                if exc.message == u'Lock wait timeout exceeded; try restarting transaction':
-                    self.request.session.flash(u'コピー処理がタイムアウトしました。時間をおいて再実行してください。')
-                else:
-                    error_msg = u'予期しないエラーによってパフォーマンスのコピーが失敗しました'
-                    self.request.session.flash(error_msg)
-                    logger.error(u'{}: {}'.format(error_msg, exc.message))
+                unexpected_error()
+
+            else:
+                self.request.session.flash(u'パフォーマンスをコピーしました')
+                return HTTPFound(location=route_path('performances.index', self.request, event_id=origin_performance.event.id))
 
         return {
             'event': origin_performance.event,

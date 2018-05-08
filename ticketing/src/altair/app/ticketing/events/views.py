@@ -15,6 +15,7 @@ from sqlalchemy import or_
 from sqlalchemy import sql
 from sqlalchemy.sql import func, and_
 from sqlalchemy.orm.util import class_mapper
+from sqlalchemy.exc import InternalError
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPCreated, HTTPServiceUnavailable
 from pyramid.threadlocal import get_current_registry
@@ -371,52 +372,66 @@ class Events(BaseView):
                 ))
 
         f = EventForm(self.request.POST, context=self.context)
+
         if f.validate() and not order_import_tasks:
-            if self.request.matched_route.name == 'events.copy':
-                event = merge_session_with_post(
-                    Event(
-                        organization_id=self.context.organization.id,
-                        setting=EventSetting(
-                            order_limit=f.order_limit.data,
-                            max_quantity_per_user=f.max_quantity_per_user.data,
-                            middle_stock_threshold=f.middle_stock_threshold.data,
-                            middle_stock_threshold_percent=f.middle_stock_threshold_percent.data,
-                            cart_setting_id=f.cart_setting_id.data,
-                            event_operator_id=f.event_operator_id.data,
-                            sales_person_id=f.sales_person_id.data,
-                            visible=True,
-                            tapirs=f.tapirs.data
-                            ),
-                        ),
-                    f.data,
-                    )
-            else:
-                event = merge_session_with_post(event, f.data)
-                if event.setting is None:
-                    event.setting = EventSetting()
-                event.setting.order_limit = f.order_limit.data
-                event.setting.max_quantity_per_user = f.max_quantity_per_user.data
-                event.setting.middle_stock_threshold = f.middle_stock_threshold.data
-                event.setting.middle_stock_threshold_percent = f.middle_stock_threshold_percent.data
-                event.setting.visible = f.visible.data
-                if f.cart_setting_id.data is not None:
-                    event.setting.cart_setting_id = f.cart_setting_id.data
-                event.setting.event_operator_id = f.event_operator_id.data
-                event.setting.sales_person_id = f.sales_person_id.data
-                event.setting.tapirs = f.tapirs.data
+
+            def unexpected_error():
+                error_msg = u'予期しないエラーによってイベントの{}に失敗しました'.format(route_name)
+                self.request.session.flash(error_msg)
+                logger.error(u'{}: {}'.format(error_msg, exc.message))
 
             try:
+                raise Exception()
+                if self.request.matched_route.name == 'events.copy':
+                    event = merge_session_with_post(
+                        Event(
+                            organization_id=self.context.organization.id,
+                            setting=EventSetting(
+                                order_limit=f.order_limit.data,
+                                max_quantity_per_user=f.max_quantity_per_user.data,
+                                middle_stock_threshold=f.middle_stock_threshold.data,
+                                middle_stock_threshold_percent=f.middle_stock_threshold_percent.data,
+                                cart_setting_id=f.cart_setting_id.data,
+                                event_operator_id=f.event_operator_id.data,
+                                sales_person_id=f.sales_person_id.data,
+                                visible=True,
+                                tapirs=f.tapirs.data
+                                ),
+                            ),
+                        f.data,
+                        )
+                else:
+                    event = merge_session_with_post(event, f.data)
+                    if event.setting is None:
+                        event.setting = EventSetting()
+                    event.setting.order_limit = f.order_limit.data
+                    event.setting.max_quantity_per_user = f.max_quantity_per_user.data
+                    event.setting.middle_stock_threshold = f.middle_stock_threshold.data
+                    event.setting.middle_stock_threshold_percent = f.middle_stock_threshold_percent.data
+                    event.setting.visible = f.visible.data
+                    if f.cart_setting_id.data is not None:
+                        event.setting.cart_setting_id = f.cart_setting_id.data
+                    event.setting.event_operator_id = f.event_operator_id.data
+                    event.setting.sales_person_id = f.sales_person_id.data
+                    event.setting.tapirs = f.tapirs.data
+
                 event.save()
-                self.request.session.flash(u'イベントを{}しました'.format(route_name))
-                return HTTPFound(location=route_path('events.show', self.request, event_id=event.id))
+
+            except InternalError as exc:
+                # 1205: u'Lock wait timeout exceeded; try restarting transaction'
+                # 1213: u'Deadlock found when trying to get lock; try restarting transaction'
+                if exc.orig.args[0] and (exc.orig.args[0] in [1205, 1213]):
+                    self.request.session.flash(u'{}処理がタイムアウトしました。別処理にて関連データの更新が行われています。時間をおいて再実行してください。'.format(route_name))
+                    logger.error(u'{}. locked out sql: {}'.format(exc.message, exc.statement))
+                else:
+                    unexpected_error()
 
             except Exception as exc:
-                if exc.message == u'Lock wait timeout exceeded; try restarting transaction':
-                    self.request.session.flash(u'{}処理がタイムアウトしました。時間をおいて再実行してください。'.format(route_name))
-                else:
-                    error_msg = u'予期しないエラーによってイベントの{}に失敗しました'.format(route_name)
-                    self.request.session.flash(error_msg)
-                    logger.error(u'{}: {}'.format(error_msg, exc.message))
+                unexpected_error()
+
+            else:
+                self.request.session.flash(u'イベントを{}しました'.format(route_name))
+                return HTTPFound(location=route_path('events.show', self.request, event_id=event.id))
 
         return {
             'form':f,
