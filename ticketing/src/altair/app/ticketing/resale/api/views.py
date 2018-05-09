@@ -9,7 +9,7 @@ from altair.restful_framework.fliters import FieldFilter, SearchFilter
 
 # resale
 from ..models import ResaleSegment, ResaleRequest
-from .mixins import CSVExportModelMixin, AlternativePermissionMixin
+from .mixins import CSVExportModelMixin, AlternativePermissionMixin, CryptoMixin
 from .serializers import ResaleSegmentSerializer, ResaleSegmentCreateSerializer, ResaleRequestSerializer
 from .paginations import ResaleSegmentPageNumberPagination, ResaleRequestPageNumberPagination
 from .permissions import ResaleAltairPermission, ResaleAPIKeyPermission
@@ -61,11 +61,12 @@ class ResaleSegmentDestroyAPIView(generics.DestroyAPIView):
     permission_classes = [ResaleAltairPermission]
 
 
-class ResaleRequestListAPIView(AlternativePermissionMixin, generics.ListAPIView):
+class ResaleRequestListAPIView(CryptoMixin, AlternativePermissionMixin, generics.ListAPIView):
     model = ResaleRequest
     serializer_class = ResaleRequestSerializer
     pagination_class = ResaleRequestPageNumberPagination
     alternative_permission_classes = [ResaleAltairPermission, ResaleAPIKeyPermission]
+    crypt_fields = ['account_type', 'account_number', 'account_holder_name']
     filter_classes = (FieldFilter, SearchFilter)
     filter_fields = [
         'ResaleRequest.id',
@@ -103,15 +104,17 @@ class ResaleRequestListAPIView(AlternativePermissionMixin, generics.ListAPIView)
         return get_db_session(self.request, 'slave')
 
 
-class ResaleRequestCreateAPIView(AlternativePermissionMixin, generics.CreateAPIView):
+class ResaleRequestCreateAPIView(CryptoMixin, AlternativePermissionMixin, generics.CreateAPIView):
     model = ResaleRequest
     serializer_class = ResaleRequestSerializer
+    crypt_fields = ['account_type', 'account_number', 'account_holder_name']
     alternative_permission_classes = [ResaleAltairPermission, ResaleAPIKeyPermission]
 
 
-class ResaleRequestRetrieveAPIView(AlternativePermissionMixin, generics.RetrieveAPIView):
+class ResaleRequestRetrieveAPIView(CryptoMixin, AlternativePermissionMixin, generics.RetrieveAPIView):
     model = ResaleRequest
     serializer_class = ResaleRequestSerializer
+    crypt_fields = ['account_type', 'account_number', 'account_holder_name']
     alternative_permission_classes = [ResaleAltairPermission, ResaleAPIKeyPermission]
 
     # `get_dbsession`をoverrideしないと、masterのDBSessionを使う
@@ -119,9 +122,10 @@ class ResaleRequestRetrieveAPIView(AlternativePermissionMixin, generics.Retrieve
         return get_db_session(self.request, 'slave')
 
 
-class ResaleRequestUpdateAPIView(generics.UpdateAPIView):
+class ResaleRequestUpdateAPIView(CryptoMixin, generics.UpdateAPIView):
     model = ResaleRequest
     serializer_class = ResaleRequestSerializer
+    crypt_fields = ['account_type', 'account_number', 'account_holder_name']
     alternative_permission_classes = [ResaleAltairPermission, ResaleAPIKeyPermission]
 
 

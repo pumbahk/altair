@@ -4,6 +4,10 @@ from csv import writer as csv_writer, QUOTE_ALL
 from datetime import datetime
 from pyramid.response import Response
 
+from altair.aes_urlsafe import AESURLSafe
+
+def get_aes_crpytor():
+    return AESURLSafe(key="AES_CRYPTOR_FOR_RESALE_REQUEST!!")
 
 def encode_to_cp932(data):
     if not hasattr(data, "encode"):
@@ -18,6 +22,7 @@ def encode_to_cp932(data):
             return '?'
 
 class CSVExportModelMixin(object):
+    cryptor = AESURLSafe(key="AES_CRYPTOR_FOR_RESALE_REQUEST!!")
 
     def _render_data(self, data):
         for record in data:
@@ -25,9 +30,9 @@ class CSVExportModelMixin(object):
                 record['id'],
                 record['bank_code'],
                 record['bank_branch_code'],
-                record['account_type'],
-                record['account_number'],
-                record['account_holder_name'],
+                self.cryptor.decrypt(record['account_type'].encode('utf-8')),
+                self.cryptor.decrypt(record['account_number'].encode('utf-8')),
+                self.cryptor.decrypt(record['account_holder_name'].encode('utf-8')),
                 record['total_amount']])
 
     def _write_file(self, file, data):
@@ -49,6 +54,63 @@ class CSVExportModelMixin(object):
         self._write_file(resp.body_file, data)
 
         return resp
+
+class CryptoMixin(object):
+    cryptor = AESURLSafe(key="AES_CRYPTOR_FOR_RESALE_REQUEST!!")
+    crypt_fields = []
+
+    def _encrypt(self, data):
+        if data:
+            return self.cryptor.encrypt(data)
+        return data
+
+    def _decrypt(self, data):
+        if data:
+            return self.cryptor.decrypt(data)
+        return data
+
+    def encrypt_fields(self, data):
+        for field in self.crypt_fields:
+            data[field] = self._encrypt(data.get(field, u''))
+        return data
+
+    def decrypt_fields(self, data):
+        for field in self.crypt_fields:
+            data[field] = self._decrypt(data.get(field, u'').encode('utf-8'))
+        return data
+
+    def list(self, request, *args, **kwargs):
+        data = self.filter_query(self.get_query()).all()
+        serializer = self.get_serializer()
+        page = self.paginate_query(data)
+
+        if page is not None:
+            data = serializer.dump(page, many=True)
+            for item in data:
+                self.decrypt_fields(item)
+
+            return self.get_paginated_response(data)
+
+        data = serializer.dump(data, many=True)
+        for item in data:
+            self.decrypt_fields(item)
+        return Response(json=data)
+
+    def retrieve(self, request, *args, **kwargs):
+        serializer = self.get_serializer()
+        instance = self.get_object()
+        data = serializer.dump(instance)
+        data = self.decrypt_fields(data)
+        return Response(json=data)
+
+    def perform_create(self, data):
+        data = self.encrypt_fields(data)
+        return super(CryptoMixin, self).perform_create(data)
+
+    def perform_update(self, data, instance):
+        data = self.encrypt_fields(data)
+        return super(CryptoMixin, self).perform_update(data)
+
 
 class AlternativePermissionMixin(object):
     alternative_permission_classes = []
