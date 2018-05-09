@@ -1068,15 +1068,17 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
   }
 
   resizeCssFalse() {
-    //スクロール解除
-    $('html').css({
-      'height': "100%",
-      'overflow-y': "hidden"
-    });
-    $('body').css({
-      'height': "100%",
-      'overflow-y': "auto"
-    });
+    //スクロール解除 枚数選択時は解除しない
+    if (document.getElementById("modalWindow-quantity") == null) {
+      $('html').css({
+        'height': "100%",
+        'overflow-y': "hidden"
+      });
+      $('body').css({
+        'height': "100%",
+        'overflow-y': "auto"
+      });
+    }
     $('.choiceArea').css({
       'display': 'block'
     });
