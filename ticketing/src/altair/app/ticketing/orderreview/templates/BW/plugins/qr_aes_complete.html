@@ -27,19 +27,19 @@ ${description}
             %endif
             <br />
 
+            <form method="post" target="_blank" action="${request.route_path('order_review.qr_aes_print')}">
+                <input type="hidden" name="order_no" value="${order.order_no}" />
+                <input type="hidden" name="tel" value="${tel}" />
+                <input type="hidden" name="token" value="${ticket.token.id if ticket.token else ""}" />
+                <input type="submit" class="QRButton" value="QRコードを表示する" />
+            </form>
+            <br/>
             <form method="post" target="_blank" action="${request.route_path('order_review.qr_aes_send')}">
                 <input type="hidden" name="order_no" value="${order.order_no}" />
                 <input type="hidden" name="tel" value="${tel}" />
                 <input type="hidden" name="token" value="${ticket.token.id if ticket.token else ""}" />
                 メールアドレス: <input type="text" name="mail" size="40" />
                 <input type="submit" class="QRButton" name="send" value="メールで送る" />
-            </form>
-            <br/>
-            <form method="post" target="_blank" action="${request.route_path('order_review.qr_aes_print')}">
-                <input type="hidden" name="order_no" value="${order.order_no}" />
-                <input type="hidden" name="tel" value="${tel}" />
-                <input type="hidden" name="token" value="${ticket.token.id if ticket.token else ""}" />
-                <input type="submit" class="QRButton" value="QRコードを表示する" />
             </form>
         </div>
     % endfor
