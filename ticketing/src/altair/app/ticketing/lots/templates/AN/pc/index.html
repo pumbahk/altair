@@ -44,11 +44,11 @@ $(function(){
         </tr>
         <tr>
           <th scope="row">${__(u'申込受付期間')}</th>
-          <td>${h.japanese_datetime(sales_segment.start_at)}～${h.japanese_datetime(sales_segment.end_at)}</td>
+          <td>${h.i18n_datetime(sales_segment.start_at, custom_locale_negotiator)}～${h.i18n_datetime(sales_segment.end_at, custom_locale_negotiator)}</td>
         </tr>
         <tr>
           <th scope="row">${__(u'抽選結果発表予定日')}</th>
-          <td>${h.announce_time_label(lot)}</td>
+          <td>${h.announce_time_label_i18n(lot, custom_locale_negotiator)}</td>
         </tr>
         %if sales_segment.max_quantity:
         <tr>
@@ -88,7 +88,7 @@ $(function(){
           </tr>
           <tr class="none">
             <th scope="row">${__(u'公演日')}</th>
-            <td>${h.performance_datetime(performance, disp_open_time='true')}</td>
+            <td>${h.performance_datetime(performance, i18n=True, disp_open_time='true')}</td>
           </tr>
           <tr>
             <th scope="row">${__(u'会場')}</th>
@@ -144,12 +144,12 @@ $(function(){
                   %for performance in performances:
                     % if selected_performance:
                       % if (performance.id == selected_performance.id) and (i == 0):
-                      <option value="${performance.id}" selected>${h.performance_date_label(performance)}</option>
+                      <option value="${performance.id}" selected>${h.performance_date_label_i18n(performance)}</option>
                       % else:
-                      <option value="${performance.id}">${h.performance_date_label(performance)}</option>
+                      <option value="${performance.id}">${h.performance_date_label_i18n(performance)}</option>
                       % endif
                     % else:
-                    <option value="${performance.id}">${h.performance_date_label(performance)}</option>
+                    <option value="${performance.id}">${h.performance_date_label_i18n(performance)}</option>
                     % endif
                   %endfor
                   </select>
