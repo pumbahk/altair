@@ -179,7 +179,11 @@ $(function(){
   <div class="confirm-wrap mgt20">
     <div class="settlementBoxInner">
       <h2 class="heading heading_simple_line">${__(u'お支払・お引取り方法選択')}</h2>
+      <%
+        radio_cnt = 0
+      %>
       %for m in payment_delivery_pairs:
+      <% radio_cnt += 1 %>
       <div class="settlementPayBox">
         <div class="settlementPayBoxInner">
           <table>
@@ -187,7 +191,8 @@ $(function(){
               <tr>
                 <% checked = 'checked' if str(m.id) == payment_delivery_method_pair_id else '' %>
                 <td class="settlementPayRadio" ${'rowspan="3"' if m.system_fee > 0 or m.special_fee > 0 else u' rowspan="2" '|n}>
-                  <input class="fold" type="radio" name="payment_delivery_method_pair_id" id="radio2" value="${m.id}" autocomplete="off" ${checked} />
+                  <input id="${'radio{}'.format(radio_cnt)}" class="fold" type="radio" name="payment_delivery_method_pair_id" value="${m.id}" autocomplete="off" ${checked} />
+                  <label for=${"radio{}".format(radio_cnt)}></label>
                 </td>
                 <td class='fold' onclick="$(this).parents('table').find('input').attr('checked', 'checked');">
                   <dl>
@@ -410,8 +415,16 @@ $(function(){
                 ${form['sex'].label}
               </th>
               <td>
-                ${form['sex']}
-                ${h.error_list(request, form, 'sex')}
+                <ul id="sex">
+                  <li>
+                    <input id="sex-sex-0" name="sex" value="1" type="radio">
+                    <label for="sex-sex-0">${__(u'男性')}</label>
+                  </li>
+                  <li>
+                    <input id="sex-sex-1" name="sex" value="2" type="radio" checked>
+                    <label for="sex-sex-1">${__(u'女性')}</label>
+                  </li>
+                </ul>
               </td>
             </tr>
             % for field in form['extra']._contained_form:
@@ -645,4 +658,38 @@ var selected_performance_id = 0;
         updateSelection(postedValues);
     });
 })($('#wishForm'));
+function extra_radio() {
+  var extra_radios = $("input[name^='extra'][type='radio']");
+
+  $.each(extra_radios, function() {
+    var parent = $(this).parents("td");
+    var radio_item = parent.find("input[type='radio']");
+    var label = $(this).parent().find("label");
+    label.on("click", function(e) {
+      e.preventDefault();
+      var this_radio_item = $(this).parent().find("input[type='radio']");
+      if (!this_radio_item.is(":checked")) {
+        radio_item.prop("checked", false);
+        this_radio_item.prop("checked", true);
+      }
+    });
+  });
+}
+
+function extra_checkbox() {
+  var extra_checkboxes = $("input[name^='extra'][type='checkbox']");
+
+  $.each(extra_checkboxes, function() {
+    var li = $(this).parents("li");
+    $(this).detach().prependTo(li);
+  });
+}
+
+function extra_field_event() {
+  extra_radio();
+  extra_checkbox();
+}
+$(function() {
+    extra_field_event();
+})
 </script>

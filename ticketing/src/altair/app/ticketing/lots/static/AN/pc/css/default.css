@@ -18,56 +18,6 @@
 html {
 	overflow-y: scroll;
 }
-.purchase-title {
-	padding: 10px;
-	border-left: 5px double #999;
-	background: #efefef none repeat scroll 0 0;
-	font-size: 14px;
-	font-weight: bold;
-}
-.nav-stepbar {
-	overflow: hidden;
-	position: relative;
-	margin: 0 0 30px;
-}
-.nav-stepbar ol {
-	float: left;
-	position: relative;
-	left: 50%;
-}
-.nav-stepbar ol li {
-	float: left;
-	position: relative;
-	left: -50%;
-	width: 150px;
-	border-right: 12px solid #fff;
-	background: #c5d6dc none repeat scroll 0 0;
-	color: #004763;
-	height: 50px;
-	text-align: center;
-}
-.nav-stepbar ol li::after {
-	content: "";
-	display: block;
-	position: absolute;
-	top: 0;
-	right: -10px;
-	width: 0;
-	border-top: 25px solid transparent;
-	border-bottom: 25px solid transparent;
-	border-left: 10px solid #c5d6dc;
-}
-.nav-stepbar ol li.current {
-	background: #739baa none repeat scroll 0 0;
-	color: #fff;
-	font-weight: bold;
-}
-.nav-stepbar ol li.current::after {
-	border-left: 10px solid #739baa;
-}
-.nav-stepbar ol dl {
-	padding-top: 3px;
-}
 
 table {
 	width: 100%;
@@ -95,17 +45,6 @@ table tr:first-child th, table tr:first-child td {
 
 table.purchase-table td:last-child {
 	text-align: right;
-}
-.details {
-	margin: 0;
-	border-top: none;
-}
-.details th {
-	border-top: none;
-	background: #fff none repeat scroll 0 0;
-}
-.details td {
-	border-top: none;
 }
 
 caption, th {
@@ -245,24 +184,6 @@ a:active {
 	margin: 0;
 }
 
-/*.totopPage {
-	display: inline-block;
-	width: 230px;
-	height: 40px;
-	padding: 17px 20px 0;
-	border: none;
-	background: #bf0000 none repeat scroll 0 0;
-	color: #fff !important;
-	font-size: 16px !important;
-	font-weight: bold;
-	text-decoration: none !important;
-	cursor: pointer;
-
-}
-.totopPage:hover {
-	opacity: 0.8;
-}*/
-
 /* helper
 --------------------------------------------------- */
 .fs6 { font-size: 0.6rem; }
@@ -326,15 +247,6 @@ a:active {
 .list-rice li { list-style: outside none; margin: 0 0 3px 0; }
 .list-rice li:before { content: "※"; }
 
-.creditCard {
-	line-height: 1.3;
-}
-.creditCard li {
-	margin: 0 0 1rem 20px;
-}
-.creditCard .cards {
-	margin: 0 0 1rem 20px;
-}
 .btn-primary {
 	display: inline-block;
 	width: 230px;
@@ -386,17 +298,6 @@ a:active {
 .btn-close:hover {
 	opacity: 0.8;
 }
-
-/*.btn-buy {
-  display: inline-block;
-  width: 224px;
-  padding: 46px 0 0 0;
-  background: url(../images/btn_buy.gif) no-repeat 0 0;
-  border: none;
-  height: 0px;
-  font-size: 0px;
-  line-height: -1px;
-}*/
 
 .tooltip {
     border: #888 1px solid;
@@ -467,28 +368,6 @@ a:active {
 .modal-body table tr:first-child td:nth-child(1) {
 	content: "";
 	width: 60%;
-}
-
-.flow-widget {
-  width: 700px;
-  height: 45px;
-}
-
-.flow-widget img.flow-widget-body {
-  width: 100%;
-  height: 100%;
-  margin: 0 0;
-  padding: 0 0;
-  border: none;
-}
-
-#settlement .flow-widget {
-  margin: 0px auto 20px auto;
-  box-shadow: #888 2px 2px 4px -2px;
-}
-
-.notice-label {
-	color: #FF0000;
 }
 
 .clr_red { color: red; }

@@ -5,6 +5,17 @@
     --custom-background-color: #1E368E;     /* background 背景（divなど） */
 }
 
+/* input color 見出し
+-------------------------------------------- */
+input[type=checkbox]:checked + label::after {
+  border-left-color: var(--custom-color) !important;
+	border-bottom-color: var(--custom-color) !important;
+}
+
+input[type="radio"]:checked + label::after {
+  background: var(--custom-background-color) !important;
+}
+
 /* buttons color ボタン
 -------------------------------------------- */
 .btn-buy {
@@ -46,10 +57,6 @@ h2.heading-primary {
 .confirmBox h2 {
     color: var(--custom-color) !important;
     border-color: var(--custom-border-color) !important;
-}
-
-.attention1 {
-	color: var(--custom-color) !important;
 }
 
 .settlementPayBox dt {
