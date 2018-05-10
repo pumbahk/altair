@@ -9,7 +9,18 @@
     </ul>
   </div>
   %endif
-  <p>
-  ${lot.event.title} ${lot.name} の申込期間は ${h.japanese_datetime(lot.start_at)} ～ ${h.japanese_datetime(lot.end_at)} となっております。
-  </p>
+  <%
+  if custom_locale_negotiator=='ja' or not request.organization.setting.i18n:
+    start_at = h.japanese_datetime(lot.start_at)
+    end_at = h.japanese_datetime(lot.end_at)
+  else:
+    start_at = h.i18n_datetime(lot.start_at)
+    end_at = h.i18n_datetime(lot.end_at)
+  endif
+  %>
+  <div class="pd20">
+    <p>
+      ${__(u"{0} {1} の申込期間は {2} ～ {3} となっております。").format(lot.event.title, lot.name, start_at, end_at)}
+    </p>
+  </div>
 </div>
