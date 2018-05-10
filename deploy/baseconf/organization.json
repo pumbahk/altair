@@ -89,6 +89,11 @@
         "sound-creator": {
             "auth_source": "oauth",
             "short_name":  "sound-c"
+        },
+        "TN":{
+            "auth_source": "oauth",
+            "backend_id": 131,
+            "short_name": "TN"
         }
     }
 }

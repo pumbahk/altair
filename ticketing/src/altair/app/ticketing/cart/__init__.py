@@ -409,7 +409,6 @@ def main(global_config, **local_config):
     config.include('altair.pyramid_boto.s3.assets')
 
     config.include('altair.app.ticketing.users')
-    config.include('altair.app.ticketing.orders')
     config.include('altair.app.ticketing.organization_settings')
     config.include('altair.app.ticketing.venues.setup_components')
 

@@ -17,13 +17,23 @@
     <input type="hidden" name="product-id-<%= wishOrder %>-<%= j %>" value="<%= product.id %>" />
     <div class="product-name-price-quantity">
       <span class="product-name"><%= product.name %></span>
-      <span class="product-price"><%= product.formatted_price %></span>×
-      <select name="<%= quantityField %>" >
-        <option></option>
-        <% for (var k = lowerLimit; k <= currentUpperLimit; k++) { %>
-        <option value="<%= k %>"><%= k %></option>
-        <% } %> 
-      </select>枚
+      <span class="product-price"><%= product.formatted_price %></span>
+      <span>
+        <% if (product.items.length === 1 && product.items[0].quantity > 1) { %>
+          <%= product.items[0].quantity %>×
+        <% } else if (product.items.length > 1) { %>
+          ×
+        <% } %>
+        <select name="<%= quantityField %>" >
+          <option></option>
+          <% for (var k = lowerLimit; k <= currentUpperLimit; k++) { %>
+          <option value="<%= k %>"><%= k %></option>
+          <% } %>
+        </select>
+        <% if (product.items.length === 1) { %>
+          枚
+        <% } %>
+      </span>
     </div>
     <% if (product.description) { %>
     <span class="product-description"><%= product.description %></span>
