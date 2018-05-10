@@ -3183,7 +3183,8 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     def has_lot_entry_products(self):
         from altair.app.ticketing.lots.models import LotEntryProduct
-        return bool(LotEntryProduct.query.filter(LotEntryProduct.product_id==self.id).count())
+        return bool(LotEntryProduct.query.join(Product, Product.id == LotEntryProduct.product_id).filter(
+            Product.original_product_id == self.id).count())
 
     def is_amount_mismatching(self):
         return self.price != sum(pi.price * pi.quantity for pi in self.items)

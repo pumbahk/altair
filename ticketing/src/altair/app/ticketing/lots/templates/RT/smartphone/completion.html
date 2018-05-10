@@ -33,7 +33,7 @@
 <tr>
 <td>${lot_product.product.name}</td>
 </tr><tr>
-<td>${h.format_currency(lot_product.product.price)}×${lot_product.quantity}枚=${h.format_currency(lot_product.subtotal)}</td>
+<td>${h.render_lot_product_quantity(lot_product.product, lot_product.quantity)}&nbsp;${h.format_currency(lot_product.subtotal)}</td>
 </tr>
 %endfor
 

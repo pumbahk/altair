@@ -18,7 +18,7 @@ ${h.japanese_date(option_data['performance'].start_on)}<br />
 % for rec in option_data['wished_products']:
 % if rec['quantity'] > 0:
 ・${rec['product'].name}<br />
-<div align="right" style="text-align:right">${h.format_currency(rec['product'].price)} (税込)×${rec['quantity']}枚=${h.format_currency(rec['subtotal'])}</div>
+<div align="right" style="text-align:right">${h.render_lot_product_quantity(rec['product'], rec['quantity'])}&nbsp;${h.format_currency(rec['subtotal'])} (税込)</div>
 % endif
 % endfor
 計 (手数料を除いた金額)
