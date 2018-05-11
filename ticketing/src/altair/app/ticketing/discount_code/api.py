@@ -189,7 +189,7 @@ def calc_applied_amount(code_dict):
     if setting.benefit_unit == u'%':
         amount = float(item.price) * (setting.benefit_amount / 100.00)
     elif setting.benefit_unit == u'yen':
-        amount = item.price - setting.benefit_amount
+        amount = setting.benefit_amount
     else:
         raise NotAllowedBenefitUnitError()
 
