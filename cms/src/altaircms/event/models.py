@@ -1,5 +1,4 @@
 # coding: utf-8
-
 import sqlalchemy as sa
 from pyramid.decorator import reify
 import sqlalchemy.orm as orm
@@ -10,6 +9,8 @@ from altaircms.models import Word, Event_Word
 from altaircms.auth.models import Organization
 from datetime import datetime
 from datetime import timedelta
+from altaircms.models import Genre
+from altaircms.page.models import Page, PageSet
 
 
 class Event(BaseOriginalMixin, WithOrganizationMixin, Base):
@@ -49,6 +50,37 @@ class Event(BaseOriginalMixin, WithOrganizationMixin, Base):
     @reify
     def organization(self):
         return Organization.query.filter_by(id=self.organization_id).one()
+
+    @staticmethod
+    def get_events_from_genre_name_per_month(genre_id=None, genre_name=None):
+        # イベント詳細ページが公開中
+        # イベントが開催前
+        now = datetime.now()
+        events = None
+        query = Event.query.join(PageSet, PageSet.event_id == Event.id).join(Genre, Genre.id == PageSet.genre_id).join(
+            Page, Page.pageset_id == PageSet.id).filter(
+            Event.organization_id == 8).filter(
+            Page.publish_begin <= now).filter(sa.or_(Page.publish_end == None, Page.publish_end >= now)).filter(
+            Event.event_close > now)
+        if genre_id:
+            query = query.filter(Genre.id == genre_id)
+        elif genre_name:
+            query = query.filter(Genre.name == genre_name)
+        else:
+            return events
+
+        events = query.order_by(Event.event_open).all()
+
+        event_dict = {}
+        event_list = []
+        # 年月をkeyにしてEventを並べる
+        for event in events:
+            key = u"{}年{}月".format(str(event.event_open.year), str(event.event_open.month))
+            if key not in event_dict:
+                event_list = list()
+                event_dict[key] = event_list
+            event_list.append(event)
+        return event_dict
 
     @classmethod
     def near_the_deal_close_query(cls, now, N=7, qs=None):
