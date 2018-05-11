@@ -72,7 +72,7 @@ def search(request, data):
         raise Exception("cannot connect to %s" % api_url)
 
 def make_send_to_orion_request(request, data, action):
-    x_app_key = request.registry.settings.get('x-app-key', None)
+    x_app_key = request.registry.settings.get('orion.x-app-key', None)
     api_url = request.registry.settings.get(action, None)
     if not api_url:
         raise Exception("%s not found" % action)
