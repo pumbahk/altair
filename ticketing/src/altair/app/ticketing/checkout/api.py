@@ -406,6 +406,7 @@ class AnshinCheckoutAPI(object):
             res = self.comm.send_order_change_request(xml)
             result = self.pb.parse_order_control_response_xml(res)
             if 'statusCode' in result and result['statusCode'] != '0':
+                logger.warn(u'Anshin Checkout API error detail: {}'.format(str(result)))
                 error_code = result['apiErrorCode'] if 'apiErrorCode' in result else ''
                 raise AnshinCheckoutAPIError(
                     u'楽天ペイの金額変更に失敗しました',
