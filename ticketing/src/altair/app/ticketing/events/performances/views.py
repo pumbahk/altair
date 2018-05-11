@@ -1269,6 +1269,34 @@ class ResaleForOrionAPIView(BaseView):
             action_code = ResaleRequestStatus.unknown
         return action_code
 
+    def _parse_resp_resale_request(self, resale_request, resp_result):
+        if int(resp_result['request_id']) == resale_request.id and resp_result['success']:
+            result = u"OK"
+            emsgs = u""
+            resale_request.sent_status = SentStatus.sent
+        elif int(resp_result['request_id']) != resale_request.id:
+            result = u"NG"
+            emsgs = u"連携したリセールリクエストIDが一致していませんでした。"
+            resale_request.sent_status = SentStatus.fail
+            logger.info("fail to send resale request(ID: {}) because request id in orion was {} ...".format(
+                resale_request.id,
+                resp_result['request_id']
+            ))
+        elif not resp_result['success']:
+            result = u"NG"
+            emsgs = resp_result['message']
+            resale_request.sent_status = SentStatus.fail
+            logger.info("fail to send resale request(ID: {}) with receiving error message was {}...".format(
+                resale_request.id, emsgs))
+        else:
+            result = u"NG"
+            emsgs = resp_result['message'] if 'message' in resp_result else u"リセールリクエスト連携は失敗しました。"
+            resale_request.sent_status = SentStatus.fail
+            logger.info("fail to send resale request(ID: {}) ...".format(resale_request.id))
+            logger.info("received error message was {} ...".format(emsgs))
+
+        return result, emsgs
+
     @view_config(route_name="performances.resale.send_resale_segment_to_orion",
                  request_method="POST",
                  renderer="json")
@@ -1289,7 +1317,8 @@ class ResaleForOrionAPIView(BaseView):
             resale_segment.sent_at = datetime.datetime.now()
             try:
                 resp = send_resale_segment(self.request, performance, resale_segment)
-                if not resp or resp['result'] != u"OK":
+                import pdb; pdb.set_trace()
+                if not resp or not resp['success']:
                     fail_list.append(resale_segment.id)
                     resale_segment.sent_status = SentStatus.fail
                     logger.info("fail to send resale segment: {0}...".format(resale_segment.id))
@@ -1355,17 +1384,16 @@ class ResaleForOrionAPIView(BaseView):
             raise HTTPNotFound()
 
         resale_request.sent_at = datetime.datetime.now()
-        result = u"OK"
-        emsgs = u""
         try:
             resp = send_resale_request(self.request, resale_request)
-            if not resp or resp['result'] != u"OK":
+            if not resp or not (resp['success'] and resp['submit']):
                 result = u"NG"
                 emsgs = u"リセールリクエスト連携は失敗しました。"
                 resale_request.sent_status = SentStatus.fail
                 logger.info("fail to send resale request(ID: {0}) ...".format(resale_request.id))
             else:
-                resale_request.sent_status = SentStatus.sent
+                result, emsgs = self._parse_resp_resale_request(resale_request, resp['result']['updates'])
+
         except Exception as e:
             result = u"NG"
             emsgs = u"リセールリクエスト連携は失敗しました。"
@@ -1396,18 +1424,24 @@ class ResaleForOrionAPIView(BaseView):
         if not resale_requests.count():
             raise HTTPNotFound()
 
-        result = u"OK"
-        emsgs = u""
         try:
             resale_requests.update({ResaleRequest.sent_at: datetime.datetime.now()}, synchronize_session='fetch')
             resp = send_all_resale_request(self.request, resale_requests.all())
-            if not resp or resp['result'] != u"OK":
+            if not resp or not (resp['success'] and resp['submit']):
                 logger.info("fail to send the resale request of resale segment(ID: {0}) ...".format(resale_segment_id))
                 resale_requests.update({ResaleRequest.sent_status: SentStatus.fail}, synchronize_session='fetch')
                 result = u"NG"
                 emsgs = u"リセールリクエスト一括連携は失敗しました。"
             else:
-                resale_requests.update({ResaleRequest.sent_status: SentStatus.sent}, synchronize_session='fetch')
+                result = u"OK"
+                emsgs = u""
+                for resale_request, resp_result in zip(resale_requests, resp['result']['updates']):
+                    result_tmp, emsgs_tmp = self._parse_resp_resale_request(resale_request, resp_result)
+                    DBSession.merge(resale_request)
+                    if result_tmp == u"NG":
+                        result = u"NG"
+                        emsgs = u"リセールリクエスト一括連携はしましたが、連携失敗のリセールリクエストがあります。"
+
         except Exception as e:
             logger.info("fail to send the resale request of resale segment(ID: {0}) with the exception: {1}...".format(
                 resale_segment_id, str(e))

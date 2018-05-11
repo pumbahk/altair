@@ -831,12 +831,12 @@
               "resale_segment_id": resale_segment_id
           },
           success: function(data) {
+              console.log(data);
               if (data['result'] === "OK") {
                   modal.find(".modal-body-content p").text("リセールリクエスト一括連携しました。");
               } else {
-                  modal.find(".modal-body-content p").text("リセールリクエスト一括連携しました。");
+                  modal.find(".modal-body-content p").text(data["emsgs"]);
               }
-              modal.find(".modal-body-content p").text("リセールリクエスト一括連携しました。");
               modal.find("button.send-to-orion")
                   .attr("disabled", false)
                   .text("確認")
