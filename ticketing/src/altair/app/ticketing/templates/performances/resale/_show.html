@@ -136,10 +136,6 @@
                   ${search_form.sent(class_="search-query input-medium")}
                 </span>
                 <span class="navbar-text">
-                  ${search_form.send_required.label}
-                  ${search_form.send_required(class_="search-query input-medium")}
-                </span>
-                <span class="navbar-text">
                   ${search_form.fail.label}
                   ${search_form.fail(class_="search-query input-medium")}
                 </span>
@@ -859,7 +855,6 @@
       var sent_status_list = [];
       if ($("#not_sent").is(":checked")) sent_status_list.push(1);
       if ($("#sent").is(":checked")) sent_status_list.push(2);
-      if ($("#send_required").is(":checked")) sent_status_list.push(3);
       if ($("#fail").is(":checked")) sent_status_list.push(4);
       return sent_status_list;
   }
@@ -920,7 +915,6 @@
     } else {
       if ($("#not_sent").is(":checked")) status_verbose_list.push("未連携");
       if ($("#sent").is(":checked")) status_verbose_list.push("連携済み");
-      if ($("#send_required").is(":checked")) status_verbose_list.push("再連携必須");
       if ($("#fail").is(":checked")) status_verbose_list.push("連携失敗");
     }
     return status_verbose_list;
