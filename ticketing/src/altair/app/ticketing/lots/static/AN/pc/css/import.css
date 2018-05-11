@@ -7,7 +7,7 @@
 */
 
 
-@import 'default.css';
-@import 'layout.css';
-@import 'content.css';
-@import '../../../common/css/jquery.colorbox.css';
+@import'default.css';
+@import'layout.css';
+@import'content.css';
+@import'message.css';
