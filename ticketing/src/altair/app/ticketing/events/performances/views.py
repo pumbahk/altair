@@ -1317,7 +1317,6 @@ class ResaleForOrionAPIView(BaseView):
             resale_segment.sent_at = datetime.datetime.now()
             try:
                 resp = send_resale_segment(self.request, performance, resale_segment)
-                import pdb; pdb.set_trace()
                 if not resp or not resp['success']:
                     fail_list.append(resale_segment.id)
                     resale_segment.sent_status = SentStatus.fail
@@ -1356,13 +1355,17 @@ class ResaleForOrionAPIView(BaseView):
         try:
             resale_request = DBSession.query(ResaleRequest).get(resale_request_id)
             resale_request.status = action_code
+            if action_code == ResaleRequestStatus.sold:
+                resale_request.sold_at = datetime.datetime.now()
+            else:
+                resale_request.sold_at = None
             DBSession.merge(resale_request)
             DBSession.flush()
-            logger.info("ResaleRequst(ID: {}) was updated as {}".format(resale_request_id, action))
+            logger.info("ResaleRequest(ID: {}) was updated as {}".format(resale_request_id, action))
         except Exception as e:
             emsgs = str(e)
             result = u"NG"
-            logger.info("ResaleRequst(ID: {}) failed to be updated as {}".format(resale_request_id, action))
+            logger.info("ResaleRequest(ID: {}) failed to be updated as {}".format(resale_request_id, action))
 
         return {'result': result, 'emsgs': emsgs}
 
