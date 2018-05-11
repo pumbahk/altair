@@ -4,6 +4,8 @@ import traceback
 import logging
 import cgi
 import re
+import ConfigParser
+import os
 import unicodedata
 from urlparse import urlparse
 from datetime import datetime
@@ -12,6 +14,7 @@ from zope.interface import implementer, directlyProvides
 
 from pyramid_mailer import get_mailer
 from pyramid_mailer.message import Attachment
+from pyramid.settings import aslist
 
 from altair.mobile.api import detect_from_email_address
 from altair.mobile import carriers
@@ -168,6 +171,42 @@ class MailUtility(object):
         self.module = module
         self.mtype = mtype
         self.builder = builder
+        self.white_list_recipient = None
+
+    def get_white_list_recipient(self, request):
+        """deploy/<各環境>/conf/white_list.iniからリスト形式で設定を取得"""
+        deploy_conf_dir = os.path.dirname(request.registry.settings.get('__file__'))
+        conf_file_path = deploy_conf_dir + os.sep + 'white_list.ini'
+
+        result = []
+        if os.path.isfile(conf_file_path):
+            config = ConfigParser.ConfigParser()
+            config.read(conf_file_path)
+            result = aslist(config.get('mail', 'recipients'))
+
+        self.white_list_recipient = result
+
+    def is_match_white_list_recipients(self, recipient, request):
+        """
+        STG/DEV環境においてメールの送信を許可するホワイトリストに合致しているメールアドレスか確認する
+        ホワイトリストそのものが存在していない場合は、全メールアドレスへの送信を許可。
+        :param recipient: 送信対象者のメールアドレス
+        :param request: リクエストオブジェクト
+        :return: Boolean, true:送信OK false:送信NG
+        """
+        if self.white_list_recipient is None:
+            self.get_white_list_recipient(request)
+
+        if not self.white_list_recipient:
+            return True
+
+        for w in self.white_list_recipient:
+            r = re.compile(w)
+            if r.match(recipient):
+                return True
+
+        logger.warn('{} is not matched with white_list'.format(recipient))
+        return False
 
     def get_mailtype_description(self):
         return self.module.get_mailtype_description()
@@ -197,7 +236,8 @@ class MailUtility(object):
             raise Exception("mail message is None")
         message_settings_override(message, override)
 
-        message.recipients = [x for x in message.recipients if x]
+        message.recipients = [x for x in message.recipients if
+                              (x and self.is_match_white_list_recipients(x, request))]
         if not message.recipients:
             logger.warn("recipients is not found. skip.")
             return message

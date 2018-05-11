@@ -1,0 +1,9 @@
+[mail]
+recipients =
+    .*@rakuten.com
+    .*@mail.rakuten.com
+    .*@mail.rakuten.co.jp
+    .*@rakuten.jp
+    .*@ticketstar.jp
+    stgticketusers\+[0-9]*@gmail.com
+    stgticketusers@gmail.com
