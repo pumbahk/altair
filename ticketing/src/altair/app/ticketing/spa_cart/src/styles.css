@@ -533,8 +533,10 @@ app-select-product .modalWindowAlertBox {
     text-align: center;
 }
 .foremost{
-	height:110%;
+	height:100%;
 	z-index: 101;
+	position: fixed;
+	top: 0;
 }
 
 #roadBackground{
