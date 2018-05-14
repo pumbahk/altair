@@ -38,7 +38,7 @@
       %if can_receive_from_next_day:
         <tr>
           <td colspan="2">
-            <span class="bold">${_(u'購入いただいた日の翌日{0}から引き取りが可能となります。').format(h.japanese_time(sej_order.ticketing_start_at))}</span>
+            <span class="bold">${_(u'申込いただいた日の翌日{0}から引き取りが可能となります。').format(h.japanese_time(sej_order.ticketing_start_at))}</span>
           </td>
         </tr>
       %endif
@@ -48,9 +48,9 @@
         <p>
           ${_(u'セブン-イレブン発券の際には引換票番号が必要です。')}
           %if payment_type == 'Paid':
-            ${_(u'<a href=\"/orderreview\">予約・購入履歴確認画面</a>より、「引換票」を印刷するか、または番号をお控え下さい。')|n}
+            ${_(u'<a href=\"/orderreview\">予約・申込履歴確認画面</a>より、「引換票」を印刷するか、または番号をお控え下さい。')|n}
           %else:
-            ${_(u'<a href=\"/orderreview\">予約・購入履歴確認画面</a>にて表示される引換票番号をお控え下さい。')|n}
+            ${_(u'<a href=\"/orderreview\">予約・申込履歴確認画面</a>にて表示される引換票番号をお控え下さい。')|n}
           %endif
         </p>
         <p>${_(u'引取受付期間内に、セブン-イレブン店頭レジにてチケットをお引取り下さい。')}</p>

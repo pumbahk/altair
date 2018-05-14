@@ -2,7 +2,7 @@
 <!-- ******************** contents [start] ******************** -->
 
 <div class="mgt20">
-  <p class="tac bold fs24">${__(u'購入を完了いたしました。')}</p>
+  <p class="tac bold fs24">${__(u'申込を完了いたしました。')}</p>
   <p class="tac">${__(u'下記の受付番号はとても大切な番号です。すぐにメモするか印刷して保管してください。')}</p>
 </div>
 
@@ -15,7 +15,7 @@
 <div class="confirmForm">
   <!-- ===== お買い物内容 ===== -->
   <div class="confirm-wrap">
-    <h2 class="heading_simple_line">${__(u'お買い物内容')}</h2>
+    <h2 class="heading_simple_line">${__(u'申込内容')}</h2>
 
     <!-- ===== purchase-wrap ===== -->
     <div class="purchase-wrap">
@@ -23,7 +23,7 @@
         <p>${order.performance.event.title}</p>
         <p>${h.performance_datetime(order.performance, i18n)}(予定) ${order.performance.venue.name}</p>
       </div>
-      <table class="purchase-table" summary="${__(u'席種、金額などのお買い物内容')}">
+      <table class="purchase-table" summary="${__(u'席種、金額などのお申込み内容')}">
         <tbody>
           % for product in order.ordered_products:
             <tr>
@@ -116,7 +116,7 @@
   <!-- ===== BTN ===== -->
   <div class="confirm-btnBox">
     <a class="btn-primary btn btn-buy" href="${request.route_url('cart.index', event_id=order.performance.event.id, _query={'performance': order.performance_id})}">
-      ${__(u'他のチケットを購入する')}
+      ${__(u'他のチケットをお申込み')}
     </a>
   </div>
 </div>

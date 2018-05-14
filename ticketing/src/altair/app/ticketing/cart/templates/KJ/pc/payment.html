@@ -42,7 +42,7 @@ function zip_switcher(select) {
   <ol>
     <li><dl><dt>STEP1</dt><dd>${_(u'公演日時・会場選択')}</dd></dl></li>
     <li class="current"><dl><dt>STEP2</dt><dd>${_(u'支払・引取方法選択')}</dd></dl></li>
-    <li><dl><dt>STEP3</dt><dd>${_(u'購入情報確認')}</dd></dl></li>
+    <li><dl><dt>STEP3</dt><dd>${_(u'申込情報確認')}</dd></dl></li>
   </ol>
 </nav>
 
@@ -150,7 +150,7 @@ function zip_switcher(select) {
 
   <div class="confirm-wrap">
     <div class="customerBox">
-        <h2>${_(u'購入者情報')}</h2>
+        <h2>${_(u'申込者情報')}</h2>
       <!--
           <h2>購入者情報</h2>
           <div class="settlementPayBox">
@@ -158,7 +158,7 @@ function zip_switcher(select) {
               -->
       <table id="confirmDelivery" class="customer-table">
         <tr>
-          <th scope="row">${_(u'購入者氏名')}
+          <th scope="row">${_(u'申込者氏名')}
           % if custom_locale_negotiator=='ja':
           <br><span>(全角)</span>
           % endif
@@ -177,7 +177,7 @@ function zip_switcher(select) {
         </tr>
         % if custom_locale_negotiator=='ja' or not request.organization.setting.i18n:
         <tr>
-          <th scope="row">購入者氏名(全角カナ)</th>
+          <th scope="row">申込者氏名(全角カナ)</th>
           <td>
             <ul>
               <li>

@@ -41,7 +41,7 @@
         <tr>
           <td colspan="2">
             % if can_receive_from_next_day:
-            <p class="fWB">${_(u'購入いただいた日の翌日{0}から引き取りが可能となります。').format(h.i18n_datetime(sej_order.ticketing_start_at, locale))}</p>
+            <p class="fWB">${_(u'申込いただいた日の翌日{0}から引き取りが可能となります。').format(h.i18n_datetime(sej_order.ticketing_start_at, locale))}</p>
             % endif
             <p>${_(u'セブン-イレブン発券の際には引換票番号が必要です。')}</p>
             <p>${_(u'引取受付期間内に、セブン-イレブン店頭レジにてチケットをお引取り下さい。')}</p>

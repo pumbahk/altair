@@ -24,12 +24,12 @@ ${h.i18n_datetime(start_at)}
 <p>${_(u'とさせていただいております。')}</p>
 % endif
 % if available_sales_segments:
-<p>${_(u'なお、本公演の他の日付、会場のチケットは下記からお買い求めいただけます。')}</p>
+<p>${_(u'なお、本公演の他の日付、会場のチケットは下記からお申込みいただけます。')}</p>
 <ul>
 %   for _sales_segment in available_sales_segments:
 <li><a href="${h.cart_url(request, sales_segment=_sales_segment)}">${h.format_name(request, sales_segment=_sales_segment)}</a></li>
 %   endfor
 </ul>
 % else:
-<p>${_(u'他の公演のチケットは<a href=\"request.context.host_base_url\">こちら</a>からお買い求めくださいますようお願いいたします。').format(request.context.host_base_url) |n}</p>
+<p>${_(u'他の公演のチケットは<a href=\"request.context.host_base_url\">こちら</a>からお申込みくださいますようお願いいたします。').format(request.context.host_base_url) |n}</p>
 % endif

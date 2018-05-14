@@ -18,7 +18,7 @@
 <!-- ******************** contents [start] ******************** -->
 <div class="confirm-attBox-a mgt30">
   <p class="clr_red bold fs18">${__(u'まだお申し込みは完了していません')}</p>
-  <p>${__(u'ご注文内容をご確認いただき「購入する」ボタンより、購入を完了させてください。')}</p>
+  <p>${__(u'ご注文内容をご確認いただき「申込」ボタンより、申込を完了させてください。')}</p>
 </div>
 
 
@@ -27,7 +27,7 @@
   <!-- ===== お買い物内容 ===== -->
   <input type="hidden" name="event_id" value="${cart.performance.event.id}"/>
   <div class="confirm-wrap">
-    <h2 class="heading_simple_line">${__(u'お買い物内容')}</h2>
+    <h2 class="heading_simple_line">${__(u'申込内容')}</h2>
 
 
   <!-- ===== purchase-wrap ===== -->
@@ -36,7 +36,7 @@
         <p>${cart.performance.event.title}</p>
         <p>${h.performance_datetime(cart.performance, i18n)}(予定) ${cart.performance.venue.name}</p>
       </div>
-      <table class="purchase-table" summary="${__(u'席種、金額などのお買い物内容')}">
+      <table class="purchase-table" summary="${__(u'席種、金額などのお申込み内容')}">
         <tbody>
           %for product in cart.items:
           <tr>
@@ -105,7 +105,7 @@
 
   <!-- ===== 購入者情報 ===== -->
   <div class="confirm-wrap">
-    <h2 class="heading_simple_line">${__(u'購入者情報')}</h2>
+    <h2 class="heading_simple_line">${__(u'申込者情報')}</h2>
 
     <!-- ===== customerBox ===== -->
     <div class="customerBox">
@@ -113,7 +113,7 @@
         <tbody>
           <tr>
             <th>
-              ${__(u'購入者氏名')}
+              ${__(u'申込者氏名')}
               % if custom_locale_negotiator=='ja':
                 <br><span>漢字</span>
               % endif
@@ -126,7 +126,7 @@
           </tr>
           % if custom_locale_negotiator=='ja':
             <tr>
-              <th>購入者氏名<br><span>カナ</span></th>
+              <th>申込者氏名<br><span>カナ</span></th>
             </tr>
             <tr>
               <td>
@@ -229,7 +229,7 @@
   <div class="confirm-btnBox">
     <ul class="confirm-btnBox-column2 clearfix">
       <li>
-        <input id="btn-complete" class="btn btn-primary" type="submit" value="${__(u'購入する')}" />
+        <input id="btn-complete" class="btn btn-primary" type="submit" value="${__(u'申込')}" />
         <p class="fs12 clr_red">※${__(u'お申込み確定後は、理由の如何を問わず、')}<br>${__(u'取替・変更・キャンセルをお受けできません。')}</p>
       </li>
       <li>

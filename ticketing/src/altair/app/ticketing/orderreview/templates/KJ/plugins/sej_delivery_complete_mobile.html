@@ -13,7 +13,7 @@ ${h.japanese_datetime(sej_order.ticketing_due_at)}
 % endif
 <br/>
 %if can_receive_from_next_day:
-${_(u'購入いただいた日の翌日')}${h.japanese_time(sej_order.ticketing_start_at)}${_(u'から引き取りが可能となります。')}<br/>
+${_(u'申込いただいた日の翌日')}${h.japanese_time(sej_order.ticketing_start_at)}${_(u'から引き取りが可能となります。')}<br/>
 %endif
 %endif
 <br/>

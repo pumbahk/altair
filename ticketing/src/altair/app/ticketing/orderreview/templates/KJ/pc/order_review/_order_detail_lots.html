@@ -31,7 +31,7 @@
 </div>
 
 <div class="confirm-item">
-  <h3 class="fWB mgt20 mgb5 f120">${__(u'購入者情報')}</h3>
+  <h3 class="fWB mgt20 mgb5 f120">${__(u'申込者情報')}</h3>
   <table class="customer-table" summary="${__(u'配送先情報')}">
     <tr>
       <th scope="row">${__(u'氏名（漢字）')}</th>
@@ -63,14 +63,14 @@
       </tr>
       <tr>
         <td colspan="2">
-            ※${__(u'ご購入時に入力された情報が表示されております。')}<br/>
+            ※${__(u'お申込時に入力された情報が表示されております。')}<br/>
         </td>
       </tr>
   </table>
 </div>
 
 <div class="confirm-item">
-  <h3 class="fWB mgt20 mgb5 f120">${__(u'購入したイベントの情報')}</h3>
+  <h3 class="fWB mgt20 mgb5 f120">${__(u'申込したイベントの情報')}</h3>
   <table class="customer-table">
     <tr>
       <th scope="row">${__(u'イベント名')}</th>
@@ -108,7 +108,7 @@
 
 <div class="confirm-item">
   <h3 class="fWB mgt20 mgb5 f120">${__(u'注文内容')}</h3>
-  <table id="contentsOfShopping" class="customer-table" summary="${__(u'席種、金額などのお買い物内容')}">
+  <table id="contentsOfShopping" class="customer-table" summary="${__(u'席種、金額などのお申込み内容')}">
    %for product in order.items:
     <tr>
       <th scope="row"><span style="background-color:#ff0000; width:13px; height:13px; display:inline-block; margin-right: 0.5em; position:relative; top:1px;"></span>${product.product.name}
@@ -177,7 +177,7 @@
 
 % if order.status == 'canceled':
   <div class="confirm-item">
-    <h3 class="fWB mgt20 mgb5 f120"><span class="red">${__(u'この購入/予約はキャンセルされました')}</span></h3>
+    <h3 class="fWB mgt20 mgb5 f120"><span class="red">${__(u'この申込/予約はキャンセルされました')}</span></h3>
     <div class="confirmBoxText">
       <p>
     ${__(u'キャンセル処理は、下記のような理由によりおこなっております。')}<br />

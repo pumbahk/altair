@@ -61,7 +61,7 @@ $(function() {
   <ol>
     <li><dl><dt>STEP1</dt><dd>${__(u'公演日時・会場選択')}</dd></dl></li>
     <li><dl><dt>STEP2</dt><dd>${__(u'支払・引取方法選択')}</dd></dl></li>
-    <li class="current"><dl><dt>STEP3</dt><dd>${__(u'購入情報確認')}</dd></dl></li>
+    <li class="current"><dl><dt>STEP3</dt><dd>${__(u'申込情報確認')}</dd></dl></li>
   </ol>
 </nav>
 
@@ -73,7 +73,7 @@ $(function() {
 
 <div style="margin-left:10px; margin-bottom: 10px;">
     <p class="clr_red bold fs18 tac">${__(u'まだお申し込みは完了していません')}</p>
-    <p class="tac mgb30">${__(u'ご注文内容をご確認いただき「購入する」ボタンより、購入を完了させてください。')}</p>
+    <p class="tac mgb30">${__(u'ご注文内容をご確認いただき「申込」ボタンより、申込を完了させてください。')}</p>
 </div>
 
 <form id="form1" action="${delegator['url'] if delegator else request.route_url('payment.confirm')}" method="post">
@@ -82,11 +82,11 @@ $(function() {
 
     <!-- ===== お買い物内容 ===== -->
     <div class="confirmBox">
-      <h2 class="heading heading_simple_line">${__(u'お買い物内容')}</h2>
+      <h2 class="heading heading_simple_line">${__(u'申込内容')}</h2>
         <p class="purchase-title">${cart.performance.event.title} ${cart.performance.name} ${h.performance_datetime(cart.performance, i18n)}(${__(u'予定')}) ${cart.performance.venue.name}</p>
         <div class="confirmBoxInner">
         <!-- ===== purchase-wrap ===== -->
-            <table id="contentsOfShopping" summary="${__(u'席種、金額などのお買い物内容')}">
+            <table id="contentsOfShopping" summary="${__(u'席種、金額などのお申込み内容')}">
                 <tbody>
                     % for product in cart.items:
                     <tr>
@@ -182,12 +182,12 @@ $(function() {
 
     <!-- ===== 購入者情報 ===== -->
     <div class="confirmBox">
-      <h2 class="heading heading_simple_line">${__(u'購入者情報')}</h2>
+      <h2 class="heading heading_simple_line">${__(u'申込者情報')}</h2>
         <!-- ===== customerBox ===== -->
             <table class="customer-table">
                 <tbody>
                     <tr>
-                        <th scope="row">${__(u'購入者氏名')}
+                        <th scope="row">${__(u'申込者氏名')}
                         % if custom_locale_negotiator=='ja':
                           <br><span>漢字</span>
                         % endif
@@ -198,7 +198,7 @@ $(function() {
                     </tr>
                     % if custom_locale_negotiator=='ja':
                     <tr>
-                        <th scope="row">購入者氏名<br><span>カナ</span></th>
+                        <th scope="row">申込者氏名<br><span>カナ</span></th>
                         <td>
                             ${shipping.last_name_kana} ${shipping.first_name_kana}
                         </td>
@@ -281,7 +281,7 @@ $(function() {
                 % if delegator:
                 ${delegator['submit']}
                 % else:
-                <input class="btn btn-primary" id="btn-complete" type="submit" value="${__(u'購入する')}" />
+                <input class="btn btn-primary" id="btn-complete" type="submit" value="${__(u'申込')}" />
                 <br />
                 <p class="fs7 clr_red mgt10" style="color:#c01920;">
                 ※${__(u'お申込み確定後は、理由の如何を問わず、')}&nbsp;&nbsp;<br/>

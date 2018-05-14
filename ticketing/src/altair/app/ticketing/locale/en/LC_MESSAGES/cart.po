@@ -9,6 +9,9 @@ msgstr "Ticket information/Sales/Purchase/Order"
 msgid "チケット購入"
 msgstr "Purchase Ticket"
 
+msgid "チケット申込"
+msgstr "Purchase Ticket"
+
 msgid "公演日時・会場選択"
 msgstr "Date/Venue"
 
@@ -16,6 +19,9 @@ msgid "支払・引取方法選択"
 msgstr "Payment/Delivery"
 
 msgid "購入情報確認"
+msgstr "Confirm"
+
+msgid "申込情報確認"
 msgstr "Confirm"
 
 msgid "お問い合わせはこちら"
@@ -50,16 +56,25 @@ msgstr "Reselect"
 msgid "購入する"
 msgstr "Purchase"
 
+msgid "申込"
+msgstr "Purchase"
+
 msgid "数量"
 msgstr "Quantity"
 
 msgid "上記座席を確保しました。{0}分以内に購入を完了してください"
 msgstr "The seats have been preserved. Please complete your purchase in '{0} minutes'."
 
+msgid "上記座席を確保しました。{0}分以内に申込を完了してください"
+msgstr "The seats have been preserved. Please complete your purchase in '{0} minutes'."
+
 msgid "（完了しない場合は、確保解除となります）"
 msgstr "(After 15 minutes, the preserved seats will be released.)"
 
 msgid "スマホサイトで購入する"
+msgstr "Purchase by smartphone site"
+
+msgid "スマホサイトで申込"
 msgstr "Purchase by smartphone site"
 
 msgid "誠に申し訳ございませんが、選択された公演「{0}」<u>現在販売しておりません</u>"
@@ -95,7 +110,13 @@ msgstr "Please, select a seat type."
 msgid "座席を選んで購入"
 msgstr "Self-Select"
 
+msgid "座席を選んで申込"
+msgstr "Self-Select"
+
 msgid "おまかせで購入"
+msgstr "Auto-Select"
+
+msgid "おまかせで申込"
 msgstr "Auto-Select"
 
 msgid "購入"
@@ -107,19 +128,34 @@ msgstr "Select"
 msgid "チケット購入方法"
 msgstr "Ticket Purchase Method"
 
+msgid "チケット申込方法"
+msgstr "Ticket Purchase Method"
+
 msgid "1. 左側の席種一覧から希望の席種をクリックしてください。"
 msgstr "1. Click on the seat type from the list on the left side."
 
 msgid "2. 希望の券種と購入枚数を選択してください。"
 msgstr "2. Select a product and quantity."
 
+msgid "2. 希望の券種と申込枚数を選択してください。"
+msgstr "2. Select a product and quantity."
+
 msgid "3. 購入方法を選び、座席を確保してください。"
+msgstr "3. Click on the 'Purchase' button to preserve the seats."
+
+msgid "3. 申込方法を選び、座席を確保してください。"
 msgstr "3. Click on the 'Purchase' button to preserve the seats."
 
 msgid "「おまかせで購入」ボタンをクリックすると、選択された席種の中から前方より座席を自動配席します。暫くお待ち頂くと、確保できた座席番号が表示されますので、ご確認の上、購入ステップにお進みください。"
 msgstr "'Auto-Select' button will automatically select a seat for you. After the seats are selected, a confirm dialog will pop-up. Please confirm the details before going to the next step."
 
+msgid "「おまかせで申込」ボタンをクリックすると、選択された席種の中から前方より座席を自動配席します。暫くお待ち頂くと、確保できた座席番号が表示されますので、ご確認の上、申込ステップにお進みください。"
+msgstr "'Auto-Select' button will automatically select a seat for you. After the seats are selected, a confirm dialog will pop-up. Please confirm the details before going to the next step."
+
 msgid "「座席を選んで購入」の場合、右側（この欄）に座席図が表示されます。座席図上で、選択いただいた購入枚数分の座席をクリックし、下部の「選択」ボタンを押してください。"
+msgstr "If 'Self-Select' button is clicked, a seat map will be displayed in this box. After selecting seats, please press the 'Select' button at the bottom."
+
+msgid "「座席を選んで申込」の場合、右側（この欄）に座席図が表示されます。座席図上で、選択いただいた申込枚数分の座席をクリックし、下部の「選択」ボタンを押してください。"
 msgstr "If 'Self-Select' button is clicked, a seat map will be displayed in this box. After selecting seats, please press the 'Select' button at the bottom."
 
 msgid "色のついた座席が選択可能な席です。"
@@ -144,6 +180,9 @@ msgid "座席指定はできません"
 msgstr "Seat designation is not available."
 
 msgid "席種・券種・枚数を選択の上、ご購入ください"
+msgstr "Select 'seat type', 'product', 'quantity' to purchase."
+
+msgid "席種・券種・枚数を選択の上、お申込ください"
 msgstr "Select 'seat type', 'product', 'quantity' to purchase."
 
 msgid "キャンセル"
@@ -278,6 +317,9 @@ msgid "{0}文字以内で入力してください"
 msgstr "Please enter within {0} characters"
 
 msgid "購入者氏名"
+msgstr "Name"
+
+msgid "申込者氏名"
 msgstr "Name"
 
 msgid "姓"
@@ -531,6 +573,9 @@ msgstr "Using 'Refresh' button may cause errors."
 msgid "購入完了と同時に決済され、即時予約確定となります(抽選受付の場合は、当選と同時に決済されます)。"
 msgstr "Purchase completion and settlement will be done at the same time.(in case of lottery accepted, it will be settled when the lottery is elected.)."
 
+msgid "申込完了と同時に決済され、即時予約確定となります(抽選受付の場合は、当選と同時に決済されます)。"
+msgstr "Purchase completion and settlement will be done at the same time.(in case of lottery accepted, it will be settled when the lottery is elected.)."
+
 msgid "支払回数は≪1回払い≫のみのお取扱いとなります。 以下のクレジットカードがご利用できます。"
 msgstr "For number of payments, <<1 time payment>> is only available. The following credit card is available."
 
@@ -543,7 +588,13 @@ msgstr "After the card information input, the system will verify the effectivene
 msgid "お客様のカードによっては、チケットの予約・購入が完了していない場合でも、上記の有効性確認に伴い、カード利用案内メール等が配信される場合があります。"
 msgstr "Depending on the verification result of your card, even if the reservation and purchase of the ticket has not been completed, card usage guide email may be delivered."
 
+msgid "お客様のカードによっては、チケットの予約・申込が完了していない場合でも、上記の有効性確認に伴い、カード利用案内メール等が配信される場合があります。"
+msgstr "Depending on the verification result of your card, even if the reservation and purchase of the ticket has not been completed, card usage guide email may be delivered."
+
 msgid "ご購入されたチケットは、理由の如何を問わず、取替・変更・キャンセルはお受けできません。"
+msgstr "After Ticket purchase is completed, regardless of the reason, replacement, change, and cancellation can not be accepted."
+
+msgid "お申込されたチケットは、理由の如何を問わず、取替・変更・キャンセルはお受けできません。"
 msgstr "After Ticket purchase is completed, regardless of the reason, replacement, change, and cancellation can not be accepted."
 
 # confirm
@@ -557,10 +608,19 @@ msgstr "The purchase is not completed yet."
 msgid "ご注文内容をご確認いただき「購入する」ボタンより、購入を完了させてください。"
 msgstr "Confirm your order and click on 'Purchase' button to complete."
 
+msgid "ご注文内容をご確認いただき「申込」ボタンより、申込を完了させてください。"
+msgstr "Confirm your order and click on 'Purchase' button to complete."
+
 msgid "お買い物内容"
 msgstr "Shopping content"
 
+msgid "申込内容"
+msgstr "Shopping content"
+
 msgid "席種、金額などのお買い物内容"
+msgstr "Shopping content, such as seat type and price."
+
+msgid "席種、金額などのお申込み内容"
 msgstr "Shopping content, such as seat type and price."
 
 msgid "枚"
@@ -582,6 +642,9 @@ msgid "お引き取り"
 msgstr "Delivery"
 
 msgid "購入者情報"
+msgstr "Purchaser information"
+
+msgid "申込者情報"
 msgstr "Purchaser information"
 
 msgid "配送先住所"
@@ -625,6 +688,9 @@ msgstr "regardless of the reason, replacement, change, cancellation is not avail
 msgid "購入を完了いたしました。"
 msgstr "Purchase was completed."
 
+msgid "申込を完了いたしました。"
+msgstr "Purchase was completed."
+
 msgid "下記の受付番号はとても大切な番号です。すぐにメモするか印刷して保管してください。"
 msgstr "Receipt number is very important. Please keep it safe."
 
@@ -658,6 +724,9 @@ msgstr "You could confirm your reservasion from「<a href=\"/orderreview\">Order
 msgid "他のチケットを購入する"
 msgstr "Purchase other tickets"
 
+msgid "他のチケットをお申込み"
+msgstr "Purchase other tickets"
+
 msgid "トップにもどる"
 msgstr "Back To Top"
 
@@ -687,10 +756,16 @@ msgstr " "
 msgid "他の公演のチケットは<a href=\"request.context.host_base_url\">こちら</a>からお買い求めくださいますようお願いいたします。"
 msgstr "And you can purchase the other tickets from <a href=\"{0}\">here</a>"
 
+msgid "他の公演のチケットは<a href=\"request.context.host_base_url\">こちら</a>からお申込みくださいますようお願いいたします。"
+msgstr "And you can purchase the other tickets from <a href=\"{0}\">here</a>"
+
 msgid "performance.name (sales_segment.name) の販売は"
 msgstr "You can purchase ticket for {0} ({1}) during the following period."
 
 msgid "なお、本公演の他の日付、会場のチケットは下記からお買い求めいただけます。"
+msgstr "For other date, venue information please access the following links."
+
+msgid "なお、本公演の他の日付、会場のチケットは下記からお申込みいただけます。"
 msgstr "For other date, venue information please access the following links."
 
 # errors
@@ -713,13 +788,25 @@ msgstr " "
 msgid "購入完了画面の表示期限を過ぎています"
 msgstr "The completion page has expired."
 
+msgid "申込完了画面の表示期限を過ぎています"
+msgstr "The completion page has expired."
+
 msgid "購入完了画面は一定時間経過後表示できなくなります。"
+msgstr "The completion page will expired soon when your shopping is done."
+
+msgid "申込完了画面は一定時間経過後表示できなくなります。"
 msgstr "The completion page will expired soon when your shopping is done."
 
 msgid "誠にお手数ですが、ご購入内容の確認は、購入完了時に送信される購入完了メールをご覧ください。"
 msgstr "Please check your e-mail for the purchase information."
 
+msgid "誠にお手数ですが、お申込内容の確認は、申込完了時に送信される申込完了メールをご覧ください。"
+msgstr "Please check your e-mail for the purchase information."
+
 msgid "支払・引取方法についての詳細は、「<a href=\"/orderreview\">購入履歴確認</a>」にて照会いただけます。"
+msgstr "For information about your payment/delivery, please access <a href=\"/orderreview\">here</a>."
+
+msgid "支払・引取方法についての詳細は、「<a href=\"/orderreview\">申込履歴確認</a>」にて照会いただけます。"
 msgstr "For information about your payment/delivery, please access <a href=\"/orderreview\">here</a>."
 
 msgid "ご注意"
@@ -728,13 +815,22 @@ msgstr "Notice"
 msgid "混雑時などに、正常な購入処理が行われた際にも、まれにこの画面が表示されることがございます。"
 msgstr "This page maybe be shown when our site is busy even your purchase finished successfully."
 
+msgid "混雑時などに、正常な申込処理が行われた際にも、まれにこの画面が表示されることがございます。"
+msgstr "This page maybe be shown when our site is busy even your purchase finished successfully."
+
 msgid "そのような状況で、メール受信設定などの理由で購入完了メールの確認ができない場合は、<a href=\"default_contact_url\">こちら</a>にお問い合わせください。"
+msgstr "If you can not receive email from us or not sure about the status of your order, please contact us from <a href=\"{0}\">here</a>."
+
+msgid "そのような状況で、メール受信設定などの理由で申込完了メールの確認ができない場合は、<a href=\"default_contact_url\">こちら</a>にお問い合わせください。"
 msgstr "If you can not receive email from us or not sure about the status of your order, please contact us from <a href=\"{0}\">here</a>."
 
 msgid "セッションがタイムアウトされました。"
 msgstr "Oops, timeout happened to load this page."
 
 msgid "再度、最初からご購入をお試しください。<a href=\"request.context.host_base_url\">トップに戻る</a>"
+msgstr "Please try again from <a href=\"{0}\">here</a>."
+
+msgid "再度、最初からお申込をお試しください。<a href=\"request.context.host_base_url\">トップに戻る</a>"
 msgstr "Please try again from <a href=\"{0}\">here</a>."
 
 # fc_auth
@@ -875,13 +971,22 @@ msgstr "Exchange period"
 msgid "購入いただいた日の翌日{0}から引き取りが可能となります。"
 msgstr "Exchange period will start at the day after you purchased.(purchased date: {0})"
 
+msgid "申込いただいた日の翌日{0}から引き取りが可能となります。"
+msgstr "Exchange period will start at the day after you purchased.(purchased date: {0})"
+
 msgid "セブン-イレブン発券の際には引換票番号が必要です。"
 msgstr "You will need to provide your 'Exchange number' when ticketing at Seven-Eleven."
 
 msgid "<a href=\"/orderreview\">予約・購入履歴確認画面</a>より、「引換票」を印刷するか、または番号をお控え下さい。"
 msgstr "Please get your 'Exchange ticket' from <a href=\"/orderreview\">Order confirmation</a>"
 
+msgid "<a href=\"/orderreview\">予約・申込履歴確認画面</a>より、「引換票」を印刷するか、または番号をお控え下さい。"
+msgstr "Please get your 'Exchange ticket' from <a href=\"/orderreview\">Order confirmation</a>"
+
 msgid "<a href=\"/orderreview\">予約・購入履歴確認画面</a>にて表示される引換票番号をお控え下さい。"
+msgstr "Please get your 'Exchange number' from <a href=\"/orderreview\">Order confirmation</a>"
+
+msgid "<a href=\"/orderreview\">予約・申込履歴確認画面</a>にて表示される引換票番号をお控え下さい。"
 msgstr "Please get your 'Exchange number' from <a href=\"/orderreview\">Order confirmation</a>"
 
 msgid "引取受付期間内に、セブン-イレブン店頭レジにてチケットをお引取り下さい。"

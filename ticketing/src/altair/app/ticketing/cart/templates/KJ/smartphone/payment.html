@@ -162,7 +162,7 @@ function zip_switcher(select) {
     <!-- ===== / クレジットカードでお支払い ===== -->
 
     <!-- ===== 購入者情報入力 ===== -->
-    <h2 class="heading_simple_line">${_(u'購入者情報')}</h2>
+    <h2 class="heading_simple_line">${_(u'申込者情報')}</h2>
 
 
     <!-- ===== customerBox ===== -->
@@ -171,7 +171,7 @@ function zip_switcher(select) {
         <tbody>
           <tr>
             <th>
-              ${_(u'購入者氏名')}
+              ${_(u'申込者氏名')}
               % if custom_locale_negotiator=='ja':
                   <br><span>全角</span>
               % endif
@@ -195,7 +195,7 @@ function zip_switcher(select) {
           % if custom_locale_negotiator=='ja' or not request.organization.setting.i18n:
 
           <tr>
-            <th>購入者氏名<br><span>全角カナ</span></th>
+            <th>申込者氏名<br><span>全角カナ</span></th>
           </tr>
           <tr>
             <td>
