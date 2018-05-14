@@ -33,6 +33,7 @@ class ResaleSegment(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     start_at = AnnotatedColumn(DateTime, nullable=False, _a_label=_(u'申込開始日時'))
     end_at = AnnotatedColumn(DateTime, nullable=False, _a_label=_(u'申込終了日時'))
     performance_id = Column(Identifier, nullable=False)
+    resale_performance_id = Column(Identifier, nullable=False)
     sent_at = AnnotatedColumn(DateTime, nullable=True, _a_label=_(u'連携日時'))
     sent_status = Column(Integer, nullable=False, default=1)
     resale_start_at = AnnotatedColumn(DateTime, nullable=False, _a_label=_(u'リセール開始日時', default=None))

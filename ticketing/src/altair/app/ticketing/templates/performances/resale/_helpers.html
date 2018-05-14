@@ -70,6 +70,10 @@
     data-start_at="${resale_segment.start_at}"
     data-end_at="${resale_segment.end_at}">
   <ul style="display:table">
+    % if resale_segment.resale_performance_id:
+      <li style="display:table-row">リセール連携公演ID：${resale_segment.resale_performance_id}</li>
+      <li style="display:table-row">リセール開始日時：${resale_segment.resale_start_at}</li>
+    % endif
     <li style="display:table-row">リセール開始日時：${resale_segment.resale_start_at}</li>
     <li style="display:table-row">リセール終了日時：${resale_segment.resale_end_at}</li>
     <li style="display:table-row">申込開始日時：${resale_segment.start_at}</li>
@@ -88,7 +92,6 @@
     % endif
   </ul>
 </h5>
-
 </%def>
 
 <%def name="build_resale_request_status_content(resale_request)">

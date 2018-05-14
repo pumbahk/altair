@@ -1,11 +1,15 @@
 # encoding: utf-8
 
+from datetime import datetime
 from marshmallow import Schema, fields, validates_schema, ValidationError
+
+from altair.app.ticketing.core.models import Performance
 from ..models import ResaleSegment, ResaleRequest
 
 class ResaleSegmentSerializer(Schema):
     __model__ = ResaleSegment
     id = fields.Integer()
+    performance_id = fields.Integer()
     start_at = fields.DateTime('%Y-%m-%d %H:%M:%S',
                                required=True,
                                error_messages={'invalid': u"申込開始日時を正しい日時に設定ください。"})
@@ -22,6 +26,7 @@ class ResaleSegmentSerializer(Schema):
     sent_at = fields.DateTime('%Y-%m-%d %H:%M:%S',
                              required=False,
                              error_messages={'invalid': u"連携日時を正しい日時に設定ください。"})
+    resale_performance_id = fields.Integer(required=False)
 
     @validates_schema
     def validate_start_and_end_at(self, data):
@@ -39,6 +44,38 @@ class ResaleSegmentSerializer(Schema):
         if _resale_start_at > _resale_end_at:
             raise ValidationError(u'リセール開始日時をリセール終了日より前に設定ください。')
 
+
+
+    @validates_schema
+    def validate_resale_performance_id_exist(self, data):
+        if data['resale_performance_id']:
+            if ResaleSegment.query.filter_by(resale_performance_id=data['resale_performance_id']).count() > 0:
+                raise ValidationError(
+                    u'登録したいリセール公演の公演（ID: {}）はすでに他のリセール区分に登録されています。'.format(data['performance_id']),
+                    ['resale_performance_id'])
+
+            try:
+                p = Performance.query.filter_by(id=data['performance_id']).one()
+            except:
+                raise ValidationError(
+                    u'リセール元の公演（ID: {}）は見つかりませんでした。'.format(data['performance_id']),
+                    ['resale_performance_id'])
+            try:
+                p_resale = Performance.query.filter_by(id=data['resale_performance_id']).one()
+            except:
+                raise ValidationError(
+                    u'登録したいリセール公演の公演（ID: {}）は存在していません。'.format(data['resale_performance_id']),
+                    ['resale_performance_id'])
+
+            if p.event.organization.id != p_resale.event.organization.id:
+                raise ValidationError(
+                    u'登録したいリセール公演の公演は{}の公演のみ登録できます。'.format(
+                        p.event.organization.name),
+                    ['resale_performance_id'])
+
+            if p_resale.start_on < datetime.now() or (p_resale.end_on and p_resale.end_on < datetime.now()):
+                raise ValidationError(
+                    u'登録したいリセール公演の公演はすでに終了しています。',['resale_performance_id'])
 
 
 class ResaleSegmentCreateSerializer(ResaleSegmentSerializer):

@@ -52,7 +52,8 @@ class ResaleSegmentRetrieveAPIView(AlternativePermissionMixin, generics.Retrieve
 class ResaleSegmentUpdateAPIView(generics.UpdateAPIView):
     model = ResaleSegment
     serializer_class = ResaleSegmentSerializer
-    permission_classes = [ResaleAltairPermission]
+    # permission_classes = [ResaleAltairPermission]
+    alternative_permission_classes = [ResaleAltairPermission, ResaleAPIKeyPermission]
 
 
 class ResaleSegmentDestroyAPIView(generics.DestroyAPIView):
