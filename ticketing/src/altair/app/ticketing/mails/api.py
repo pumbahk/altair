@@ -174,9 +174,9 @@ class MailUtility(object):
         self.white_list_recipient = None
 
     def get_white_list_recipient(self, request):
-        """deploy/<各環境>/conf/white_list.iniからリスト形式で設定を取得"""
+        """deploy/<各環境>/conf/altair.white_list.iniからリスト形式で設定を取得"""
         deploy_conf_dir = os.path.dirname(request.registry.settings.get('__file__'))
-        conf_file_path = deploy_conf_dir + os.sep + 'white_list.ini'
+        conf_file_path = deploy_conf_dir + os.sep + 'altair.white_list.ini'
 
         result = []
         if os.path.isfile(conf_file_path):

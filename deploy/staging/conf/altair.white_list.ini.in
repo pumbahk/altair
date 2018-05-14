@@ -1,4 +1,5 @@
 [mail]
+; If the value is empty, all types of email addresses are allowed to be sent.
 recipients =
     .*@rakuten.com
     .*@mail.rakuten.com
