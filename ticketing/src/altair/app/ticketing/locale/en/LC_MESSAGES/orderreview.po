@@ -146,6 +146,9 @@ msgstr "Issued at"
 msgid "購入者情報"
 msgstr "Purchaser information"
 
+msgid "申込者情報"
+msgstr "Purchaser information"
+
 msgid "配送先情報"
 msgstr "Shipping information"
 
@@ -161,10 +164,16 @@ msgstr "Address"
 msgid "ご購入時に入力された情報が表示されております。"
 msgstr "The information you inputted when purchasing is displayed."
 
+msgid "お申込時に入力された情報が表示されております。"
+msgstr "The information you inputted when purchasing is displayed."
+
 msgid "登録情報変更をご希望の場合は、<a href=\"https://ticket.rakuten.co.jp/inquiry\" target=\"_blank\">問合せフォームより</a>ご連絡下さい。"
 msgstr "If you would like the registration information changes, <a href=\"https://ticket.rakuten.co.jp/inquiry\" target=\"_blank\">here</a>"
 
 msgid "購入したイベントの情報"
+msgstr "Information of the ordered event"
+
+msgid "申込したイベントの情報"
 msgstr "Information of the ordered event"
 
 msgid "イベント名"
@@ -183,6 +192,9 @@ msgid "注文内容"
 msgstr "Order details"
 
 msgid "席種、金額などのお買い物内容"
+msgstr "Seat types, shopping content, such as amount of money"
+
+msgid "席種、金額などのお申込み内容"
 msgstr "Seat types, shopping content, such as amount of money"
 
 msgid "枚"
@@ -207,6 +219,9 @@ msgid "入力情報の編集"
 msgstr "Edit the information"
 
 msgid "この購入/予約はキャンセルされました"
+msgstr "The order has been canceled"
+
+msgid "この申込/予約はキャンセルされました"
 msgstr "The order has been canceled"
 
 msgid "キャンセル処理は、下記のような理由によりおこなっております。"
@@ -250,6 +265,12 @@ msgstr "From here"
 
 msgid "までご連絡ください。"
 msgstr " contact us."
+
+msgid "購入履歴照会"
+msgstr "Purchase history"
+
+msgid "申込履歴照会"
+msgstr "Purchase history"
 
 # paymend & delivery
 
@@ -353,10 +374,16 @@ msgstr "Exchange period"
 msgid "購入いただいた日の翌日{0}から引き取りが可能となります。"
 msgstr "You can issue the ticket on {0}, the next day you purchased."
 
+msgid "申込いただいた日の翌日{0}から引き取りが可能となります。"
+msgstr "You can issue the ticket on {0}, the next day you purchased."
+
 msgid "セブン-イレブン発券の際には引換票番号が必要です。"
 msgstr "Exchange slip number is required for issuing the tickets."
 
 msgid "<a href=\"/orderreview\">予約・購入履歴確認画面</a>より、「引換票」を印刷するか、または番号をお控え下さい。"
+msgstr "<a href=\"/orderreview\">here </a>Reservations and purchase history confirmation screen"
+
+msgid "<a href=\"/orderreview\">予約・申込履歴確認画面</a>より、「引換票」を印刷するか、または番号をお控え下さい。"
 msgstr "<a href=\"/orderreview\">here </a>Reservations and purchase history confirmation screen"
 
 msgid "<a href=\"/orderreview\">予約・購入履歴確認画面</a>にて表示される引換票番号をお控え下さい。"

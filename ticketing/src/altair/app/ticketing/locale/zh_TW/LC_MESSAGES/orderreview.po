@@ -146,6 +146,9 @@ msgstr "發票時間"
 msgid "購入者情報"
 msgstr "購買人資訊"
 
+msgid "申込者情報"
+msgstr "購買人資訊"
+
 msgid "配送先情報"
 msgstr "郵寄資訊"
 
@@ -161,10 +164,16 @@ msgstr "地址"
 msgid "ご購入時に入力された情報が表示されております。"
 msgstr "顯示資訊為購票時所登錄的資訊。"
 
+msgid "お申込時に入力された情報が表示されております。"
+msgstr "顯示資訊為購票時所登錄的資訊。"
+
 msgid "登録情報変更をご希望の場合は、<a href=\"https://ticket.rakuten.co.jp/inquiry\" target=\"_blank\">問合せフォームより</a>ご連絡下さい。"
 msgstr "如果有需要更改登錄資訊的情況，<a href=\"https://ticket.rakuten.co.jp/inquiry\" target=\"_blank\">請洽這裡</a>"
 
 msgid "購入したイベントの情報"
+msgstr "已購票的活動資勳"
+
+msgid "申込したイベントの情報"
 msgstr "已購票的活動資勳"
 
 msgid "イベント名"
@@ -183,6 +192,9 @@ msgid "注文内容"
 msgstr "訂票內容"
 
 msgid "席種、金額などのお買い物内容"
+msgstr "座席種類、金額等購買資訊"
+
+msgid "席種、金額などのお申込み内容"
 msgstr "座席種類、金額等購買資訊"
 
 msgid "枚"
@@ -207,6 +219,9 @@ msgid "入力情報の編集"
 msgstr "編輯登錄資訊"
 
 msgid "この購入/予約はキャンセルされました"
+msgstr "購買/訂票已取消"
+
+msgid "この申込/予約はキャンセルされました"
 msgstr "購買/訂票已取消"
 
 msgid "キャンセル処理は、下記のような理由によりおこなっております。"
@@ -250,6 +265,12 @@ msgstr "這裡"
 
 msgid "までご連絡ください。"
 msgstr "與我們聯繫。"
+
+msgid "購入履歴照会"
+msgstr "購買紀錄"
+
+msgid "申込履歴照会"
+msgstr "購買紀錄"
 
 # paymend & delivery
 
@@ -353,10 +374,16 @@ msgstr "受理取票期間"
 msgid "購入いただいた日の翌日{0}から引き取りが可能となります。"
 msgstr "購買日期的{0}天後可以取票"
 
+msgid "申込いただいた日の翌日{0}から引き取りが可能となります。"
+msgstr "購買日期的{0}天後可以取票"
+
 msgid "セブン-イレブン発券の際には引換票番号が必要です。"
 msgstr "在7-Eleven取票時，請務必出示兌換票。"
 
 msgid "<a href=\"/orderreview\">予約・購入履歴確認画面</a>より、「引換票」を印刷するか、または番号をお控え下さい。"
+msgstr "請至<a href=\"/orderreview\">訂票及購票確認</a>確認您的「兌換票」。您可以列印或是記下「兌換票」號碼。"
+
+msgid "<a href=\"/orderreview\">予約・申込履歴確認画面</a>より、「引換票」を印刷するか、または番号をお控え下さい。"
 msgstr "請至<a href=\"/orderreview\">訂票及購票確認</a>確認您的「兌換票」。您可以列印或是記下「兌換票」號碼。"
 
 msgid "<a href=\"/orderreview\">予約・購入履歴確認画面</a>にて表示される引換票番号をお控え下さい。"
