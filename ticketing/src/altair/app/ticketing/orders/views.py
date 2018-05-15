@@ -2304,13 +2304,13 @@ class OrdersReserveView(OrderBaseView):
                     self.context.raise_error(u'個数が不正です')
                 product_quantity = int(quantity)
                 product = DBSession.query(Product).filter_by(id=product_id).one()
-                total_quantity += product_quantity * product.get_quantity_power(product.seat_stock_type, self.context.performance.id)
+                total_quantity += product_quantity
                 order_items.append((product, product_quantity))
 
             if not total_quantity:
                 self.context.raise_error(u'個数を入力してください')
             elif seats and total_quantity != len(seats):
-                self.context.raise_error(u'個数の合計数（%d）が選択した座席数（%d席）と一致しません' % (total_quantity, len(seats)))
+                self.context.raise_error(u'個数の合計（{}席）を選択した座席数（{}席）にしてください'.format(total_quantity, len(seats)))
 
             # 選択されたSeatのステータスをいったん戻してカートデータとして再確保する
             self.release_seats(self.context.performance.venue, seats)
