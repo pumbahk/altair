@@ -10505,15 +10505,17 @@ var VenuemapComponent = (function () {
         });
     };
     VenuemapComponent.prototype.resizeCssFalse = function () {
-        //スクロール解除
-        __WEBPACK_IMPORTED_MODULE_14_jquery__('html').css({
-            'height': "100%",
-            'overflow-y': "hidden"
-        });
-        __WEBPACK_IMPORTED_MODULE_14_jquery__('body').css({
-            'height': "100%",
-            'overflow-y': "auto"
-        });
+        //スクロール解除 枚数選択時は解除しない
+        if (document.getElementById("modalWindow-quantity") == null) {
+            __WEBPACK_IMPORTED_MODULE_14_jquery__('html').css({
+                'height': "100%",
+                'overflow-y': "hidden"
+            });
+            __WEBPACK_IMPORTED_MODULE_14_jquery__('body').css({
+                'height': "100%",
+                'overflow-y': "auto"
+            });
+        }
         __WEBPACK_IMPORTED_MODULE_14_jquery__('.choiceArea').css({
             'display': 'block'
         });
