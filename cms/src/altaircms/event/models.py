@@ -52,14 +52,14 @@ class Event(BaseOriginalMixin, WithOrganizationMixin, Base):
         return Organization.query.filter_by(id=self.organization_id).one()
 
     @staticmethod
-    def get_events_from_genre_name_per_month(genre_id=None, genre_name=None):
+    def get_events_from_genre_name_per_month(genre_id=None, genre_name=None, organization_id=8):
         # イベント詳細ページが公開中
         # イベントが開催前
         now = datetime.now()
-        events = None
+        events = {}
         query = Event.query.join(PageSet, PageSet.event_id == Event.id).join(Genre, Genre.id == PageSet.genre_id).join(
             Page, Page.pageset_id == PageSet.id).filter(
-            Event.organization_id == 8).filter(
+            Event.organization_id == organization_id).filter(
             Page.publish_begin <= now).filter(sa.or_(Page.publish_end == None, Page.publish_end >= now)).filter(
             Event.event_close > now)
         if genre_id:

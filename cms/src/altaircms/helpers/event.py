@@ -83,7 +83,7 @@ def get_second_image_from_pagesets(request, pageset):
                 break
     if images:
         # 2個目のImageWidgetを使用する。なければ、1個目のImageWidgetを使用する
-        widget = images[len(images) - 1]
+        widget = images[-1]
         image_widget = ImageWidget.query.filter(ImageWidget.id == widget['pk']).first()
         if image_widget:
             return helpers.asset.rendering_object(request, image_widget.asset).filepath
