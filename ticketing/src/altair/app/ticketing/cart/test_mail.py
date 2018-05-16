@@ -165,6 +165,7 @@ class SendPurchaseCompleteMailTest(unittest.TestCase, MailTestMixin):
         self.config.add_subscriber('altair.app.ticketing.cart.subscribers.add_helpers', 'pyramid.events.BeforeRender')
 
         self.registerDummyMailer()
+        self.set_dummy_conf_ini_file_path()
         from mock import patch
         self._patch_get_cart_setting_from_order_like = patch('altair.app.ticketing.cart.api.get_cart_setting_from_order_like')
         p = self._patch_get_cart_setting_from_order_like.start()
