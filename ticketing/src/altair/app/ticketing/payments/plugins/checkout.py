@@ -67,6 +67,43 @@ def back_url(request):
     except:
         return None
 
+
+def is_order_fee_modified(request, order_like):
+    """手数料・支払い合計金額・購入商品金額の値に操作が加わっているか判定"""
+    origin_order = order_like.prev
+    order_attrs = [
+        'system_fee',
+        'transaction_fee',
+        'delivery_fee',
+        'special_fee',
+        'special_fee_name',
+        'total_amount'
+    ]
+
+    try:
+        for attr in order_attrs:
+            ol_attr = getattr(order_like, attr)
+            oo_attr = getattr(origin_order, attr)
+            if ol_attr != oo_attr:
+                return False
+
+        for (ol_opi, oo_opi) in zip(order_like.items, origin_order.items):
+            ol_opi_price = getattr(ol_opi, 'price')
+            oo_opi_price = getattr(oo_opi, 'price')
+            if ol_opi_price != oo_opi_price:
+                return False
+
+    except AttributeError as err:
+        logger.error(str(err))
+        raise CheckoutSettlementFailure(
+            message=u'金額情報に不備が発生しています',
+            order_no=order_like.order_no,
+            back_url=None
+        )
+
+    return True
+
+
 class CheckoutSettlementFailure(PaymentPluginException):
     def __init__(self, message, order_no, back_url, ignorable=False, error_code=None, return_code=None):
         super(CheckoutSettlementFailure, self).__init__(message, order_no, back_url, ignorable)
@@ -161,6 +198,10 @@ class CheckoutPlugin(object):
         # (is_inner_channel は IOrderLike インターフェイスにない、IOrderLike インターフェイスは Cart も実装するものなので)
         if getattr(order_like, 'is_inner_channel', False):
             logger.info('order %s is inner order' % order_like.order_no)
+            return
+
+        # 支払い金額に変更がない場合、楽天ペイAPIにはアクセスしない
+        if is_order_fee_modified(request, order_like):
             return
 
         service = api.get_checkout_service(request, order_like.organization_id, get_channel(order_like.channel))
