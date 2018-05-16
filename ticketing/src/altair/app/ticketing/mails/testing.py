@@ -1,4 +1,16 @@
+# -*- coding:utf-8 -*-
 class MailTestMixin(object):
+    def set_dummy_conf_ini_file_path(self):
+        """セットしたダミーのiniファイルのパスは、送信対象のホワイトリスト機能（get_white_list_recipient(self, request)）で使用"""
+        import sys
+        import os
+        from os.path import dirname
+        bin_test_ticketing = sys.argv[0]
+        deploy_dir = dirname(dirname(dirname(bin_test_ticketing)))
+        paths = [deploy_dir, 'test', 'conf', 'altair.dummy.ini']
+        dummy_conf_ini_path = os.sep.join(paths)
+        self.config.registry.settings.update({'__file__': dummy_conf_ini_path})
+
     def registerDummyMailer(self):
         from pyramid_mailer import get_mailer
         from pyramid_mailer.interfaces import IMailer
