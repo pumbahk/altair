@@ -25,8 +25,6 @@ class TestGetTargetOrderNos(unittest.TestCase, CoreTestMixin):
         self.seats = self._create_seats(self.stocks)
         self.products = self._create_products(self.stocks, sales_segment=self.sales_segment)
 
-        self.set_dummy_conf_ini_file_path()
-
     def tearDown(self):
         _teardown_db()
 
