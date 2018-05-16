@@ -63,7 +63,7 @@ ${self.body()}
 <div class="wrap clearfix">
 <div class="box">
 <p class="for-sp-img">
-<img src="//tstar.s3.amazonaws.com/asset/vissel/2014-03-06/c887e7171e7342d2916ffb7b08f4501e.png" alt="ヴィッセル"/></p>
+<img src="/tstar.s3.amazonaws.com/usersite/uploaded/vissel/8e14f701313c42839fa90bc2a1c3f1fb/1040/images/slogun.png" alt="ヴィッセル"/></p>
 </div>
 <div class="box">
 <!-- menu -->
