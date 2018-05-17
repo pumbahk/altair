@@ -99,10 +99,6 @@
                   ${search_form.order_no.label}
                   ${search_form.order_no(class_="search-query input-medium")}
                 </span>
-                <span class="navbar-text">
-                  ${search_form.account_holder_name.label}
-                  ${search_form.account_holder_name(class_="search-query input-medium")}
-                </span>
                 <button type="submit">検索</button>
                 <button type="button" onclick="open_modal_export_bank_info()">エクスポート</button>
               </div>
@@ -138,10 +134,6 @@
                 <span class="navbar-text">
                   ${search_form.sent.label}
                   ${search_form.sent(class_="search-query input-medium")}
-                </span>
-                <span class="navbar-text">
-                  ${search_form.send_required.label}
-                  ${search_form.send_required(class_="search-query input-medium")}
                 </span>
                 <span class="navbar-text">
                   ${search_form.fail.label}
@@ -480,12 +472,10 @@
   function open_modal_export_bank_info() {
       var modal = $("#base-modal"),
           order_no = $("#order_no").val().trim(),
-          account_holder_name = $("#account_holder_name").val().trim(),
           status_list = get_resale_request_status_verbose(),
           sent_status_list = get_resale_request_sent_status_verbose();
 
       if (order_no === "") {order_no = "条件なし";}
-      if (account_holder_name === "") {account_holder_name = "条件なし";}
 
       modal.addClass("modal-resale-request-export");
       modal.find(".modal-header h3").text("エクスポート");
@@ -498,7 +488,6 @@
                   .append($("<thead><tr><th>条件</th><th>内容</th></tr></thead>"))
                   .append($("<tbody></tbody>")
                       .append($("<tr><td>予約番号</td><td id=\"condition-order_no\">{0}</td></tr>".format(order_no)))
-                      .append($("<tr><td>名義人</td><td id=\"condition-account_holder_name\">{0}</td></tr>".format(account_holder_name)))
                       .append($("<tr><td>ステータス</td><td id=\"condition-status\">{0}</td></tr>".format(status_list.join(','))))
                       .append($("<tr><td>連携ステータス</td><td id=\"condition-sent_status\">{0}</td></tr>".format(sent_status_list.join(','))))
                   )
@@ -633,6 +622,7 @@
 
               });
               ul.show();
+              modal.find("button").prop("disabled", false);
           }
       })
   }
@@ -831,12 +821,12 @@
               "resale_segment_id": resale_segment_id
           },
           success: function(data) {
+              console.log(data);
               if (data['result'] === "OK") {
                   modal.find(".modal-body-content p").text("リセールリクエスト一括連携しました。");
               } else {
-                  modal.find(".modal-body-content p").text("リセールリクエスト一括連携しました。");
+                  modal.find(".modal-body-content p").text(data["emsgs"]);
               }
-              modal.find(".modal-body-content p").text("リセールリクエスト一括連携しました。");
               modal.find("button.send-to-orion")
                   .attr("disabled", false)
                   .text("確認")
@@ -866,7 +856,6 @@
       var sent_status_list = [];
       if ($("#not_sent").is(":checked")) sent_status_list.push(1);
       if ($("#sent").is(":checked")) sent_status_list.push(2);
-      if ($("#send_required").is(":checked")) sent_status_list.push(3);
       if ($("#fail").is(":checked")) sent_status_list.push(4);
       return sent_status_list;
   }
@@ -875,21 +864,16 @@
       var baseUrl = "/resale/api/requests/export",
           resale_segment_id = $(".resale-segment-list-box ul").data("selected_resale_segment_id"),
           order_no = $("#order_no").val().trim(),
-          account_holder_name = $("#account_holder_name").val().trim(),
           status_list = get_resale_request_status(),
           sent_status_list = get_resale_request_sent_status(),
           filter_list = [];
 
-      if (status_list.length === 0 && sent_status_list === 0 && order_no === "" && account_holder_name === "") {
+      if (status_list.length === 0 && sent_status_list === 0 && order_no === "") {
           return baseUrl + "?" + "filter[resale_segment_id]=" + resale_segment_id;
       }
 
       if (order_no !== "") {
           filter_list.push("order_no=" + order_no);
-      }
-
-      if (account_holder_name !== "") {
-          filter_list.push("filter[account_holder_name]=" + account_holder_name);
       }
 
       if (status_list.length !== 0) {
@@ -932,7 +916,6 @@
     } else {
       if ($("#not_sent").is(":checked")) status_verbose_list.push("未連携");
       if ($("#sent").is(":checked")) status_verbose_list.push("連携済み");
-      if ($("#send_required").is(":checked")) status_verbose_list.push("再連携必須");
       if ($("#fail").is(":checked")) status_verbose_list.push("連携失敗");
     }
     return status_verbose_list;

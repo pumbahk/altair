@@ -2687,7 +2687,7 @@ class OrdersEditAPIView(OrderBaseView):
         try:
             modiry_order, warnings = save_order_modification(self.request, order, order_data)
         except OrderCreationError as e:
-            logger.exception(u'save error (%s)' % unicode(e))
+            logger.warn(u'save error (%s)' % unicode(e))
             raise HTTPBadRequest(body=json.dumps(dict(message=unicode(e.message))))
         except Exception as e:
             logger.exception('save error (%s)' % e.message)
