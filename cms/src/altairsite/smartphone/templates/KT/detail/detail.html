@@ -78,7 +78,9 @@ $(function () {
 
 
 <h2 class="glitter red">イベント詳細</h2>
-    ${renderer.render(header_image)}
+% for header_image in header_images:
+  ${renderer.render(header_image)}
+% endfor
 
 <%m:header>イベント名称</%m:header>
 <div class="sectionbox">
