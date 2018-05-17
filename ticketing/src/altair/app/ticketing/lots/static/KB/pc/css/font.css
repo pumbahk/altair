@@ -1,0 +1,208 @@
+@charset "UTF-8";
+
+/* font */
+
+.f70 {
+	font-size: 70%;
+	line-height: 140%;
+}
+.f75 {
+	font-size: 75%;
+	line-height: 150%;
+}
+.f78 {
+	font-size: 78%;
+	line-height: 150%;
+}
+.f80 {
+	font-size: 80%;
+	line-height: 160%;
+}
+.f80ie {
+	/font-size: 80%;
+	/line-height: 130%;
+}
+.f85 {
+	font-size: 85%;
+	line-height: 170%;
+}
+.f90 {
+	font-size: 90%;
+	line-height: 160%;
+}
+.f95 {
+	font-size: 95%;
+	line-height: 160%;
+}
+.f100 {
+	font-size: 100%;
+	line-height: 130%;
+}
+.f110 {
+	font-size: 110%;
+	line-height: 120%;
+}
+.f120 {
+	font-size: 120%;
+	line-height: 120%;
+}
+
+.f130 {
+	font-size: 130%;
+	line-height: 120%;
+}
+.f140 {
+	font-size: 140%;
+	line-height: 120%;
+}
+.f150 {
+	font-size: 150%;
+	line-height: 120%;
+}
+.f160 {
+	font-size: 160%;
+	line-height: 120%;
+}
+.f170 {
+	font-size: 170%;
+	line-height: 120%;
+}
+.f180 {
+	font-size: 180%;
+	line-height: 120%;
+}
+.f190 {
+	font-size: 190%;
+	line-height: 120%;
+}
+.f200 {
+	font-size: 200%;
+	line-height: 120%;
+}
+.f210 {
+	font-size: 210%;
+	line-height: 120%;
+}
+.f220 {
+	font-size: 220%;
+	line-height: 120%;
+}
+.f230 {
+	font-size: 230%;
+	line-height: 120%;
+}
+.f240 {
+	font-size: 240%;
+	line-height: 120%;
+}
+.mg5 { margin: 5px; }
+.mg10 { margin: 10px; }
+.mg20 { margin: 20px; }
+.mg30 { margin: 30px; }
+.mg40 { margin: 40px; }
+.mg50 { margin: 50px; }
+.mgtb5 { margin: 5px; }
+.mgtb10 { margin: 10px 0; }
+.mgtb20 { margin: 20px 0; }
+.mgtb30 { margin: 30px 0; }
+.mgtb40 { margin: 40px 0; }
+.mgtb50 { margin: 50px 0; }
+.mgt5 { margin-top: 5px; }
+.mgt10 { margin-top: 10px; }
+.mgt20 { margin-top: 20px; }
+.mgt30 { margin-top: 30px; }
+.mgt40 { margin-top: 40px; }
+.mgt50 { margin-top: 50px; }
+.mgb5 { margin-bottom: 5px; }
+.mgb10 { margin-bottom: 10px; }
+.mgb20 { margin-bottom: 20px; }
+.mgb30 { margin-bottom: 30px; }
+.mgb40 { margin-bottom: 40px; }
+.mgb50 { margin-bottom: 50px; }
+.mgl5 { margin-left: 5px; }
+.mgl10 { margin-left: 10px; }
+.mgl20 { margin-left: 20px; }
+.mgl30 { margin-left: 30px; }
+.mgl40 { margin-left: 40px; }
+.mgl50 { margin-left: 50px; }
+.mgr5 { margin-right: 5px; }
+.mgr10 { margin-right: 10px; }
+.mgr20 { margin-right: 20px; }
+.mgr30 { margin-right: 30px; }
+.mgr40 { margin-right: 40px; }
+.mgr50 { margin-right: 50px; }
+
+
+.gray {
+	color: #777777;
+}
+.blue {
+	color: #0066CC;
+}
+.blue02 {
+	color: #333399;
+}
+.red {
+	color: #b80000;
+}
+.black {
+	color: #000000;
+}
+.orange {
+	color: #ff6a00;
+}
+.eng {
+	font-family: Arial, Helvetica, sans-serif;
+}
+.goshic {
+	font-family: "ＭＳ Ｐゴシック", Osaka, "ヒラギノ角ゴ Pro W3";
+}
+.equal, .xx {
+	font-family: "ＭＳ ゴシック", "Osaka－等幅";
+}
+
+
+
+/* nowrap */
+.nWP { white-space: nowrap !important;}
+
+/* line-height */
+.lH20 {line-height: 200% !important;}
+.lH19 {line-height: 190% !important;}
+.lH18 {line-height: 180% !important;}
+.lH17 {line-height: 170% !important;}
+.lH16 {line-height: 160% !important;}
+.lH15 {line-height: 150% !important;}
+.lH14 {line-height: 140% !important;}
+.lH13 {line-height: 130% !important;}
+
+/* float */
+.Fl{float:left;}
+.Fr{float:right;}
+
+/* img float */
+.imgL {
+	float: left;
+	padding: 0 15px 15px 0;
+}
+.imgR {
+	float: right;
+	padding: 0 0 15px 15px;
+	*padding: 0 0 15px 10px;
+
+}
+
+/* font-weight */
+.fWN { font-weight: normal;}
+.fWB { font-weight: bold;}
+
+/* text-align */
+.txtC{
+    text-align: center !important;
+}
+.txtL{
+    text-align: left !important;
+}
+.txtR{
+    text-align: right !important;
+}

@@ -14,6 +14,7 @@ class send_accepted_mailTests(unittest.TestCase, MailTestMixin):
         self.config.add_mako_renderer('.txt')
         self.config.include('altair.app.ticketing.mails')
         self.registerDummyMailer()
+        self.set_dummy_conf_ini_file_path()
 
     def tearDown(self):
         testing.tearDown()

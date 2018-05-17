@@ -1,0 +1,17 @@
+<h3>${_(u'以下の住所に配送します')}</h3>
+<table>
+  <tbody>
+    <tr>
+      <th>${_(u'郵便番号')}</th>
+      <td>${shipping_address.zip}</td>
+    </tr>
+  <tr>
+      <th>${_(u'住所')}</th>
+      <td>${shipping_address.prefecture}${shipping_address.city}${shipping_address.address_1}${shipping_address.address_2}</td>
+    </tr>
+  <tr>
+      <th>${_(u'宛名')}</th>
+      <td>${shipping_address.last_name} ${shipping_address.first_name} ${_(u'様')}</td>
+    </tr>
+  </tbody>
+</table>
