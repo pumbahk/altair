@@ -202,6 +202,7 @@ class CheckoutPlugin(object):
 
         # 支払い金額に変更がない場合、楽天ペイAPIにはアクセスしない
         if is_order_fee_modified(request, order_like):
+            logger.info('order %s was not modified any fees' % order_like.order_no)
             return
 
         service = api.get_checkout_service(request, order_like.organization_id, get_channel(order_like.channel))
