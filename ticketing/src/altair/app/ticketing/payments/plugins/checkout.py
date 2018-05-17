@@ -39,6 +39,7 @@ from altair.app.ticketing.checkout import api
 from altair.app.ticketing.checkout.exceptions import AnshinCheckoutAPIError
 from altair.app.ticketing.mailmags.api import multi_subscribe
 
+from sqlalchemy.orm.exc import NoResultFound
 from ..exceptions import PaymentPluginException, OrderLikeValidationFailure, PaymentCartNotAvailable
 from ..interfaces import IPaymentPlugin, IOrderPayment
 from ..payment import Payment
@@ -70,7 +71,15 @@ def back_url(request):
 
 def is_order_fee_modified(request, order_like):
     """手数料・支払い合計金額・購入商品金額の値に操作が加わっているか判定"""
-    origin_order = order_like.prev
+    try:
+        origin_order = order_like.prev
+    except NoResultFound as e:
+        logger.info('"{}" does not have previous branch_no record. considered that fees are not modified : {}'.format(
+            order_like.order_no,
+            e.message)
+        )
+        return True
+
     order_attrs = [
         'system_fee',
         'transaction_fee',
@@ -366,7 +375,7 @@ class CheckoutCompleteView(object):
         if result != api.RESULT_FLG_SUCCESS:
             logger.debug(u'checkout order_complete failed (order_no=%s)' % checkout.orderCartId)
 
-        return HTTPOk(  
+        return HTTPOk(
             content_type='text/html', charset='utf-8',
             body=service.create_order_complete_response_xml(result, datetime.now()))
 
