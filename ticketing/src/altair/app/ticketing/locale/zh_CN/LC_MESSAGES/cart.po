@@ -735,6 +735,9 @@ msgstr "非常抱歉"
 msgid "event.title(performance.name) の販売期間は"
 msgstr "{0} ({1}) 的售票期间为"
 
+msgid "event.titleの販売期間は"
+msgstr "{0} 的售票期间为"
+
 msgid "となっております。"
 msgstr " "
 
@@ -743,6 +746,9 @@ msgstr "请于售票期间内访问我们的网站购票。"
 
 msgid "event.title (performance.name) の販売は"
 msgstr "{0} ({1}) 的售票截止日期为"
+
+msgid "event.titleの販売は"
+msgstr "{0} 的售票截止日期为"
 
 msgid "end_at まで"
 msgstr "{0}"
