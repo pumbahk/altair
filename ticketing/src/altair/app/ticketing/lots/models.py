@@ -230,6 +230,19 @@ class Lot(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             LotEntry.withdrawn_at==None, #ユーザ取消されていない
         )
 
+    @property
+    def delivery_methods_without_ticket(self):
+        delivery_methods = [pdmp.delivery_method for pdmp in self.sales_segment.payment_delivery_method_pairs]
+        # relation 商品-商品明細-チケット券面構成-チケット券面-チケット様式-引取方法
+        delivery_methods_with_ticket = \
+            [delivery_method for product in self.products
+             for item in product.items
+             for ticket in item.ticket_bundle.tickets
+             for delivery_method in ticket.ticket_format.delivery_methods]
+
+        return [delivery_method for delivery_method in delivery_methods
+                if delivery_method.id not in map(lambda d:d.id, delivery_methods_with_ticket)]
+
     def is_elected(self):
         return self.status == int(LotStatusEnum.Elected)
 

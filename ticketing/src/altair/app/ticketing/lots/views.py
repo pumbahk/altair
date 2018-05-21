@@ -35,7 +35,8 @@ from altair.now import get_now
 from . import api
 from . import helpers as h
 from . import schemas
-from .exceptions import NotElectedException, OverEntryLimitException, OverEntryLimitPerPerformanceException
+from .exceptions import NotElectedException, OverEntryLimitException, OverEntryLimitPerPerformanceException,\
+    LotDeliveryMethodWithoutTicket
 from .models import (
     LotEntry,
 )
@@ -606,10 +607,16 @@ class ConfirmLotEntryView(object):
             raise HTTPBadRequest()
         logger.info(repr(self.request.session['lots.magazine_ids']))
 
-        api.prepare2_for_payment(self.request, entry)
-
         payment_delivery_method_pair_id = entry['payment_delivery_method_pair_id']
         payment_delivery_method_pair = PaymentDeliveryMethodPair.query.filter(PaymentDeliveryMethodPair.id==payment_delivery_method_pair_id).one()
+
+        if payment_delivery_method_pair.delivery_method.id in map(lambda d:d.id, lot.delivery_methods_without_ticket):
+            # 引き取り方法に券面が紐づいていない場合はエラー
+            logger.error('The chosen delivery method[id={}] is without ticket.'
+                         .format(payment_delivery_method_pair.delivery_method.id))
+            raise LotDeliveryMethodWithoutTicket()
+
+        api.prepare2_for_payment(self.request, entry)
 
         acc = api.get_user_point_account_from_session(self.request)
         if acc is not None:
@@ -803,6 +810,16 @@ def payment_plugin_exception(context, request):
         return HTTPFound(location=context.back_url)
     else:
         location = request.context.host_base_url
+    return dict(message=Markup(_message(u'決済中にエラーが発生しました。しばらく時間を置いてから<a href="{0}">再度お試しください。</a>').format(location)))
+
+
+@lbr_view_config(
+    context=LotDeliveryMethodWithoutTicket,
+    renderer=selectable_renderer('message.html')
+    )
+def lot_delivery_method_without_ticket_exception(context, request):
+    _message = partial(h._message, request=request)
+    location = request.context.host_base_url
     return dict(message=Markup(_message(u'決済中にエラーが発生しました。しばらく時間を置いてから<a href="{0}">再度お試しください。</a>').format(location)))
 
 
