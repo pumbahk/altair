@@ -76,7 +76,7 @@ def _add_lot(session, event_id, sales_segment_group_id, num_performances, member
     from altair.app.ticketing.core.models import (
         Event, Performance, PerformanceSetting, SalesSegment, StockType,
         PaymentMethod, DeliveryMethod, PaymentDeliveryMethodPair,
-        Product,
+        Product, ProductItem, TicketBundle, Ticket, TicketFormat
     )
     # event
     event = Event(id=event_id)
@@ -97,6 +97,12 @@ def _add_lot(session, event_id, sales_segment_group_id, num_performances, member
                                  )
                                  #membergroups=membergroups)
 
+    # ticket
+    ticket_format = TicketFormat(id=1, name='test', data='{}', display_order=0,
+                                 visible=1, delivery_methods=[delivery_method])
+    ticket = Ticket(id=1, ticket_format=ticket_format)
+    ticket_bundle = TicketBundle(id=1, tickets=[ticket])
+
     # performances
     performances = []
     products = []
@@ -114,10 +120,12 @@ def _add_lot(session, event_id, sales_segment_group_id, num_performances, member
 
         for j in range(num_products):
             seat_stock_type = StockType()
+            item = ProductItem(price=100, quantity=1, ticket_bundle=ticket_bundle)
             product = Product(sales_segment=sales_segment,
                               performance=p,
                               price=i * 100 + j * 10,
-                              seat_stock_type=seat_stock_type)
+                              seat_stock_type=seat_stock_type,
+                              items=[item])
             products.append(product)
 
     lot = m.Lot(event=event, sales_segment=sales_segment)
