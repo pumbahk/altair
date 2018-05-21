@@ -27,3 +27,6 @@ class LotEntryWithdrawException(Exception):
 
 class OAuthRequiredSettingError(Exception):
     pass
+
+class LotDeliveryMethodWithoutTicket(Exception):
+    pass
