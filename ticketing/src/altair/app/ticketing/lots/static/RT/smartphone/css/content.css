@@ -468,3 +468,8 @@ a.withdrawBackButtonSP{
     margin:10px;
 }
 
+/* orion ticket phone
+----------------------------------------------------------- */
+#orion-ticket-phone-template {
+  display: none;
+}

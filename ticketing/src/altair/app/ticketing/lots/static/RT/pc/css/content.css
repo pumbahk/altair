@@ -2407,3 +2407,17 @@ a.withdrawConfirmButtonPC{
     width: 100%;
 }
 
+/* orion ticket phone */
+#orion-ticket-phone-template {
+  display: none;
+  margin-bottom:2px;
+}
+
+#orion-ticket-phone-list li {
+  margin-bottom: 2px;
+}
+
+#orion-ticket-phone-list li label {
+  display: inline-block;
+  width: 80px;
+}
