@@ -343,11 +343,11 @@ class EntryLotView(object):
         payment_delivery_method_pair_id = self.request.params.get('payment_delivery_method_pair_id', 0)
         payment_delivery_pair = PaymentDeliveryMethodPair.query.filter_by(id=payment_delivery_method_pair_id).first()
 
-        # イベントゲット情報(Orion Ticket Phone)
+        # アプリ受取追加情報(Orion Ticket Phone)
         orion_ticket_phone, orion_phone_errors = h.verify_orion_ticket_phone(self.request.POST.getall('orion-ticket-phone'))
         cform.orion_ticket_phone.data = ','.join(orion_ticket_phone)
         if any(orion_phone_errors):
-            self.request.session.flash(_(u'イベントゲット情報の入力内容を確認してください'))
+            self.request.session.flash(_(u'アプリ受取追加情報の入力内容を確認してください'))
             validated = False
 
         birthday = cform['birthday'].data

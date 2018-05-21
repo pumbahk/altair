@@ -435,7 +435,7 @@ class EntryLotView(object):
         orion_ticket_phone, orion_phone_errors = h.verify_orion_ticket_phone(self.request.POST.getall('orion-ticket-phone'))
         cform.orion_ticket_phone.data = ','.join(orion_ticket_phone)
         if any(orion_phone_errors):
-            self.request.session.flash(self._message(u'イベントゲット情報の入力内容を確認してください'))
+            self.request.session.flash(self._message(u'アプリ受取追加情報の入力内容を確認してください'))
             validated = False
 
         if not validated:
@@ -592,7 +592,6 @@ class ConfirmLotEntryView(object):
         shipping_address = entry['shipping_address']
         shipping_address = h.convert_shipping_address(shipping_address)
         user = cart_api.get_or_create_user(self.context.authenticated_user())
-        orion_ticket_phone = h.create_or_update_orion_ticket_phone(user, entry_no, shipping_address.tel_1, entry['orion_ticket_phone']) if 'orion_ticket_phone' in entry and entry['orion_ticket_phone'] else None
         shipping_address.user = user
         wishes = entry['wishes']
         logger.debug('wishes={0}'.format(wishes))
@@ -610,6 +609,12 @@ class ConfirmLotEntryView(object):
 
         payment_delivery_method_pair_id = entry['payment_delivery_method_pair_id']
         payment_delivery_method_pair = PaymentDeliveryMethodPair.query.filter(PaymentDeliveryMethodPair.id==payment_delivery_method_pair_id).one()
+
+        if payment_delivery_method_pair.delivery_method.delivery_plugin_id == ORION_DELIVERY_PLUGIN_ID:
+            phones = entry['orion_ticket_phone'] if 'orion_ticket_phone' in entry and entry['orion_ticket_phone'] else ''
+            orion_ticket_phone = h.create_or_update_orion_ticket_phone(user, entry_no, shipping_address.tel_1, phones)
+        else:
+            orion_ticket_phone = None
 
         acc = api.get_user_point_account_from_session(self.request)
         if acc is not None:
