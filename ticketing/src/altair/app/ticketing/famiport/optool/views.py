@@ -459,10 +459,9 @@ class FamiPortRebookOrderView(object):
     @view_config(xhr=True, route_name='rebook_order', request_method='POST', match_param='action=rebook', renderer='json', permission='operator')
     def post_rebook_order(self):
         session = get_db_session(self.request, name="famiport")
+        now = datetime.now()
         receipt = self.context.receipt
         order = receipt.famiport_order
-        client_code = order.client_code
-        vh=ViewHelpers(self.request)
         old_management_number = receipt.reserve_number
         new_management_number = u''
         error = u''
@@ -471,31 +470,29 @@ class FamiPortRebookOrderView(object):
             cancel_code = self.request.POST.get('cancel_reason_code')
             cancel_text = self.request.POST.get('cancel_reason_text')
 
-            errors = validate_rebook_cond(receipt, datetime.now())
+            errors = validate_rebook_cond(receipt, now)
             if not errors:
-                make_suborder_by_order_no(request=self.request,
-                                          session=session,
-                                          client_code=client_code,
-                                          order_no=order.order_no,
-                                          cancel_reason_code=cancel_code,
-                                          cancel_reason_text=cancel_text)
+                try:
+                    new_receipt = order.recreate_receipt(now,
+                                                         self.request,
+                                                         receipt,
+                                                         reason=None,
+                                                         cancel_reason_code=cancel_code,
+                                                         cancel_reason_text=cancel_text)
+                except Exception as e:
+                    return dict(old_identifier=old_management_number,
+                                new_identifier=new_management_number,
+                                error=unicode(e))
 
-                if receipt.type == FamiPortReceiptType.Payment.value:
-                    new_receipt = filter(lambda x: x.canceled_at is None and x.type == FamiPortReceiptType.Payment.value, order.famiport_receipts).pop()
-                    if order.paid_at:
-                        order.paid_at = None
-                elif receipt.type == FamiPortReceiptType.Ticketing.value:
-                    new_receipt = filter(lambda x: x.canceled_at is None and x.type == FamiPortReceiptType.Ticketing.value, order.famiport_receipts).pop()
-                    if order.issued_at:
-                        order.issued_at = None
+                if new_receipt:
+                    new_management_number = new_receipt.reserve_number
                 else:
-                    new_receipt = filter(lambda x: x.canceled_at is None and x.type == FamiPortReceiptType.CashOnDelivery.value, order.famiport_receipts).pop()
-                    if order.paid_at:
-                        order.paid_at = None
-                    if order.issued_at:
-                        order.issued_at = None
-
-                new_management_number = new_receipt.reserve_number
+                    if receipt.type == FamiPortReceiptType.Payment.value:
+                        error = u'未入金の支払込票は同席番再予約しませんので、予約番号（{}）は変更されていません。'.format(receipt.reserve_number)
+                    elif receipt.type == FamiPortReceiptType.Ticketing.value:
+                        error = u'未発券の引換票は同席番再予約しませんので、予約番号（{}）は変更されていません。'.format(receipt.reserve_number)
+                    else:
+                        error = u'未入金/未発券の引換票は同席番再予約しませんので、予約番号（{}）は変更されていません。'.format(receipt.reserve_number)
             else:
                 error = u'<br>・'.join(errors)
 

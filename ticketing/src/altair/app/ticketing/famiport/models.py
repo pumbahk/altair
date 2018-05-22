@@ -844,6 +844,79 @@ class FamiPortOrder(Base, WithTimestamp):
                     )
                 )
 
+    def recreate_receipt(self, now, request, famiport_receipt, reason=None, cancel_reason_code=None, cancel_reason_text=None):
+        """同席番再予約のみ使われてます。
+        引数のFamiPortReceiptと紐づくFamiPortOrderの状況によってFamiPortReceiptを作る。
+        新しいFamiPortReceiptが作られたらTrueで作られないならFalseを返す。
+        下記の条件についていずれを満たせば、新しいFamiPortReceiptを作る
+
+        条件1：
+            famiport_receiptがPaymentかつFamiPortOrderが入金済みと未発券
+        条件2：
+            famiport_receiptがTicketかつFamiPortOrderが発券済み
+        条件3：
+            famiport_receiptがCashOnDeliveryかつFamiPortOrderが入金済みと発券済み
+
+        補足：現状で、FamiPortReceiptが未入金で発券済みのステータスがありません。
+
+        :param receipt: FamiPortReceipt
+        :return: FamiPortReceipt
+        """
+        session = object_session(self)
+        new_receipt = None
+        if famiport_receipt.type == FamiPortReceiptType.Payment.value:
+            if self.paid_at and not self.issued_at:
+                new_receipt = FamiPortReceipt.create(session,
+                                                     self.famiport_client,
+                                                     type=FamiPortReceiptType.Payment.value)
+                self.famiport_receipts.append(new_receipt)
+                famiport_receipt.mark_canceled(now,
+                                               request,
+                                               reason=reason,
+                                               cancel_reason_code=cancel_reason_code,
+                                               cancel_reason_text=cancel_reason_text)
+                self.paid_at = None
+            elif self.paid_at and self.issued_at:
+                logger.warning(
+                    'Payment type receipt(reserve_number: {}) can not be recreated before recreating Ticket type receipt.'.format(
+                        famiport_receipt.reserve_number, self.order_no)
+                )
+                raise AssertionError(u'前払い（後日渡し）について、発券済みの場合は先に引換票を同席再予約してください。')
+
+        elif famiport_receipt.type == FamiPortReceiptType.Ticketing.value:
+            if self.issued_at:
+                new_receipt = FamiPortReceipt.create(session,
+                                                     self.famiport_client,
+                                                     type=FamiPortReceiptType.Ticketing.value)
+                self.famiport_receipts.append(new_receipt)
+                famiport_receipt.mark_canceled(now,
+                                               request,
+                                               reason=reason,
+                                               cancel_reason_code=cancel_reason_code,
+                                               cancel_reason_text=cancel_reason_text)
+                self.issued_at = None
+        elif famiport_receipt.type == FamiPortReceiptType.CashOnDelivery.value:
+            if self.paid_at and self.issued_at:
+                new_receipt = FamiPortReceipt.create(session,
+                                                     self.famiport_client,
+                                                     type=FamiPortReceiptType.CashOnDelivery.value)
+                self.famiport_receipts.append(new_receipt)
+                famiport_receipt.mark_canceled(now,
+                                               request,
+                                               reason=reason,
+                                               cancel_reason_code=cancel_reason_code,
+                                               cancel_reason_text=cancel_reason_text)
+                self.paid_at = None
+                self.issued_at = None
+        else:
+            logger.error(
+                'An unexpected error occurs when recreating receipt(reserve_number: {}) of FamiPortOrder(order_no: {})'.format(
+                    famiport_receipt.reserve_number, self.order_no)
+            )
+            raise AssertionError(u'予想外のエラーが発生してしまいました。')
+
+        return new_receipt
+
     @property
     def automatically_cancellable(self):
         return self.invalidated_at is None and \
