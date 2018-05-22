@@ -27,8 +27,9 @@ class ImageInfoForm(Form):
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
         super(ImageInfoForm, self).__init__(formdata=formdata, obj=obj, prefix=prefix, **kwargs)
         if "id" in kwargs and not kwargs["id"]:
-            # widgetが作成されていない初回のみ100%をwidthに入れる
-            self.width.data = u'100%'
+            # widgetが作成されていない初回のみ90%をwidthに入れる。中央寄せ
+            self.width.data = u'90%'
+            self.align.data = u'center'
 
     href = fields.TextField(id="href", label=u"リンク先")
     width = MaybeIntegerField(id="width", label=u"レンダリングのwidth", validators=[validators.Optional()])
