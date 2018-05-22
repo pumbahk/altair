@@ -9,6 +9,7 @@ from cStringIO import StringIO
 
 import webhelpers.paginate as paginate
 import altair.app.ticketing.discount_code.api as dc_api
+from wtforms.validators import ValidationError
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPBadRequest
 from pyramid.url import route_path
@@ -420,7 +421,7 @@ class PerformanceShowView(BaseView):
     def orion_index_view(self):
         form = OrionPerformanceForm(
             self.request.params,
-            data=self.performance.orion)
+            obj=self.performance.orion)
         if self.performance.orion is not None:
             form.enabled.data = True
             if self.performance.orion.coupon_2_name is not None:
@@ -443,31 +444,35 @@ class PerformanceShowView(BaseView):
             form.coupon_2_qr_enabled.data = None
             form.coupon_2_pattern.data = None
 
-        if form.validate():
-            if form.enabled.data == False:
-                # delete
-                if self.performance.orion != None:
-                    self.performance.orion.delete()
-            elif self.performance.orion is None:
-                # insert
-                op = merge_session_with_post(
-                    OrionPerformance(
-                        performance_id=self.performance.id
-                    ),
-                    form.data
-                )
-                op.save()
-            else:
-                # update
-                op = merge_session_with_post(
-                    self.performance.orion,
-                    form.data
-                )
-                op.save()
+        try:
+            form.validate()
+        except ValidationError as err:
+            self.request.session.flash(err.message)
+            return self.orion_index_view()
 
-            return HTTPFound(self.request.route_url('performances.orion.index', performance_id=self.performance.id))
+        if not form.enabled.data:
+            # delete
+            if self.performance.orion is not None:
+                self.performance.orion.delete()
+        elif self.performance.orion is None:
+            # insert
+            op = merge_session_with_post(
+                OrionPerformance(
+                    performance_id=self.performance.id
+                ),
+                form.data
+            )
+            op.save()
+        else:
+            # update
+            op = merge_session_with_post(
+                self.performance.orion,
+                form.data
+            )
+            op.save()
+        self.request.session.flash(u'イベント・ゲート連携を保存しました')
+        return HTTPFound(self.request.route_url('performances.orion.index', performance_id=self.performance.id))
 
-        return self.orion_index_view()
 
     @view_config(route_name="performances.discount_code_settings.show", request_method='GET',
                  custom_predicates=(dc_api.check_discount_code_functions_available,))
