@@ -384,7 +384,7 @@ ${form['sex']}
 ${self.error(form, 'sex')}
 </p>
 </dd>
-
+${lh.disp_extra_description(extra_description, 'sp')}
 % for field in form['extra']._contained_form:
 % if not field.short_name in {'member_type'}:
 <dt class="creditHl">${field.label}</dt>

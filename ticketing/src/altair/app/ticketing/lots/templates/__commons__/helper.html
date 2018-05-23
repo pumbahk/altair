@@ -44,3 +44,23 @@ if label is None or label is True:
     % endfor
 </ul>
 </%def>
+
+<%def name="disp_extra_description(extra_description, device)">
+% for descript in extra_description:
+    % if device == 'pc':
+        <tr>
+            <td></td>
+            <td>${descript['description']}}</td>
+        </tr>
+    % elif device == 'sp':
+        <dt class="creditHl"></dt>
+        <dd>
+            <p>${descript['description']}}</p>
+        </dd>
+    % elif device == 'mobile':
+        <div>
+            ${descript['description']}
+        </div>
+    % endif
+% endfor
+</%def>

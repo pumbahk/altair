@@ -341,6 +341,7 @@ class EntryLotView(object):
 
         return dict(
             form=form,
+            extra_description=api.get_description_only(self.context.cart_setting.extra_form_fields),
             wishes=wishes,
             event=event,
             sales_segment=sales_segment,

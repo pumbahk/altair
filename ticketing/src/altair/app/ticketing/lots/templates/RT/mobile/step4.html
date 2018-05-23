@@ -1,6 +1,7 @@
 <%inherit file="./base.html"/>
 <%namespace file="./tags_mobile.html" name="mobile" />
 <%namespace name="fh" module="altair.formhelpers.utils.mako" />
+<%namespace file="altair.app.ticketing.lots:templates/__commons__/helper.html" name="lh" />
 <%
     import altair.app.ticketing.cart.helpers as ch
     import altair.app.ticketing.lots.helpers as h
@@ -115,7 +116,7 @@ ${lot.name}
   ${form['sex'](_widget=h.mobile_list_widget(request))}
   ${h.mobile_error_list(request, form, 'sex')}
 </div>
-
+${lh.disp_extra_description(extra_description, 'mobile')}
 % for field in form['extra']._contained_form:
 % if not field.short_name in {'member_type'}:
 <%mobile:form_header>${field.label}</%mobile:form_header>

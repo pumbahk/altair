@@ -292,11 +292,13 @@ class EntryLotView(object):
         payment_delivery_pairs = [pdmp for pdmp in sales_segment.payment_delivery_method_pairs if pdmp.public]
 
         return dict(form=form, event=event, lot=lot,
-            payment_delivery_pairs=payment_delivery_pairs, wishes=wishes,
-            payment_delivery_method_pair_id=self.request.params.get('payment_delivery_method_pair_id'),
-            custom_locale_negotiator=custom_locale_negotiator(self.request) if self.request.organization.setting.i18n else "",
-            orion_ticket_phone=orion_ticket_phone,
-            orion_phone_errors=orion_phone_errors
+                    payment_delivery_pairs=payment_delivery_pairs, wishes=wishes,
+                    payment_delivery_method_pair_id=self.request.params.get('payment_delivery_method_pair_id'),
+                    custom_locale_negotiator=custom_locale_negotiator(
+                        self.request) if self.request.organization.setting.i18n else "",
+                    orion_ticket_phone=orion_ticket_phone,
+                    orion_phone_errors=orion_phone_errors,
+                    extra_description=api.get_description_only(self.context.cart_setting.extra_form_fields),
                     )
 
     @lbr_view_config(route_name='lots.entry.sp_step3', renderer=selectable_renderer("step3.html"), custom_predicates=())
