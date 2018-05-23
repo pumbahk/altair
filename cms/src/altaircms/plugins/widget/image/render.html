@@ -1,5 +1,6 @@
 ## 画像ウィジェット
 <%
+## TKT-5540 画像ウィジェットでPCはwidthをつけないようにする
 attributes = [attr for attr in widget.html_attributes.split(" ") if not attr.count("width")]
 html_attributes = " ".join(attributes)
 %>
