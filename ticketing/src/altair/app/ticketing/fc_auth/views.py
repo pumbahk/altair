@@ -62,20 +62,22 @@ class FCAuthLoginViewMixin(object):
         if identities is None:
             if hasattr(self.request.context, 'membership') and self.request.context.membership.enable_login_body:
                 membership_info = self.request.context.membership
-                change_message = u'error_message'
+                # change_message = u'error_message'
                 pc_smartphone_error_message = u'<span class="red">' + membership_info.login_body_error_message + u'</span>'
                 mobile_error_message = u'<span style="color: red">' + membership_info.login_body_error_message + u'</span>'
-                if ISmartphoneRequest.providedBy(self.request):
-                    self.request.context.membership.login_body_smartphone = \
-                        re.sub(change_message, pc_smartphone_error_message, membership_info.login_body_smartphone)
-                elif IMobileRequest.providedBy(self.request):
-                    self.request.context.membership.login_body_mobile = \
-                        re.sub(change_message, mobile_error_message, membership_info.login_body_mobile)
-                else:
-                    self.request.context.membership.login_body_pc = \
-                        re.sub(change_message, pc_smartphone_error_message, membership_info.login_body_pc)
+                # if ISmartphoneRequest.providedBy(self.request):
+                #     self.request.context.membership.login_body_smartphone = \
+                #         re.sub(change_message, pc_smartphone_error_message, membership_info.login_body_smartphone)
+                # elif IMobileRequest.providedBy(self.request):
+                #     self.request.context.membership.login_body_mobile = \
+                #         re.sub(change_message, mobile_error_message, membership_info.login_body_mobile)
+                # else:
+                #     self.request.context.membership.login_body_pc = \
+                #         re.sub(change_message, pc_smartphone_error_message, membership_info.login_body_pc)
 
             return {'username': username,
+                    'error_message_pc_sp': pc_smartphone_error_message,
+                    'error_message_mb': mobile_error_message,
                     'message': u'IDかパスワードが一致しません'}
         return HTTPFound(location=return_to_url(self.request), headers=self.request.response.headers)
    
@@ -102,15 +104,6 @@ class FixedMembershipLoginView(FCAuthLoginViewMixin):
 
     @lbr_view_config(route_name='fc_auth.login', request_method="GET", http_cache=60)
     def login_form(self):
-        if self.request.context.membership.enable_login_body:
-            membership_info = self.request.context.membership
-            change_message = u'error_message'
-            self.request.context.membership.login_body_smartphone = \
-                re.sub(change_message, u'', membership_info.login_body_smartphone)
-            self.request.context.membership.login_body_mobile = \
-                re.sub(change_message, u'', membership_info.login_body_mobile)
-            self.request.context.membership.login_body_pc = \
-                re.sub(change_message, u'', membership_info.login_body_pc)
         return dict(username='')
 
     @lbr_view_config(route_name='fc_auth.login', request_method="POST")
