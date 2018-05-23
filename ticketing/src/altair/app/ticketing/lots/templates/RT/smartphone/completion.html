@@ -113,6 +113,7 @@ ${shipping_address.address_2}
 <% extra_form_data = entry.get_lot_entry_attribute_pair_pairs(request) %>
 % if extra_form_data:
 <dt class="creditHl">追加情報</dt>
+${self.lh.disp_extra_description(extra_description, 'sp')}
 <dd>
   <div class="detailBox">
     <ul>

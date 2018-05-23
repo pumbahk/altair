@@ -1,5 +1,4 @@
 <%inherit file="${context['main_template'].uri}" />
-<%namespace file="altair.app.ticketing.lots:templates/__commons__/helper.html" name="lh" />
 <%
   from altair.app.ticketing.payments.plugins import ORION_DELIVERY_PLUGIN_ID
   # has_orionは決済引取方法の中でorionの引取方法があるかどうか
@@ -384,13 +383,13 @@ ${form['sex']}
 ${self.error(form, 'sex')}
 </p>
 </dd>
-${lh.disp_extra_description(extra_description, 'sp')}
+${self.lh.disp_extra_description(extra_description, 'sp')}
 % for field in form['extra']._contained_form:
 % if not field.short_name in {'member_type'}:
 <dt class="creditHl">${field.label}</dt>
 <dd>
   <p>
-    ${lh.render_field(field)}
+    ${self.lh.render_field(field)}
   </p>
 </dd>
 % endif
