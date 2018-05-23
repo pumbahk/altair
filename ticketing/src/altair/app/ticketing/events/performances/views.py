@@ -443,34 +443,32 @@ class PerformanceShowView(BaseView):
             form.coupon_2_qr_enabled.data = None
             form.coupon_2_pattern.data = None
 
-        try:
-            form.validate()
-        except ValidationError as err:
-            self.request.session.flash(err.message)
-            return self.orion_index_view()
+        if form.validate():
+            if form.enabled.data == False:
+                # delete
+                if self.performance.orion != None:
+                    self.performance.orion.delete()
+            elif self.performance.orion is None:
+                # insert
+                op = merge_session_with_post(
+                    OrionPerformance(
+                        performance_id=self.performance.id
+                    ),
+                    form.data
+                )
+                op.save()
+            else:
+                # update
+                op = merge_session_with_post(
+                    self.performance.orion,
+                    form.data
+                )
+                op.save()
 
-        if not form.enabled.data:
-            # delete
-            if self.performance.orion is not None:
-                self.performance.orion.delete()
-        elif self.performance.orion is None:
-            # insert
-            op = merge_session_with_post(
-                OrionPerformance(
-                    performance_id=self.performance.id
-                ),
-                form.data
-            )
-            op.save()
-        else:
-            # update
-            op = merge_session_with_post(
-                self.performance.orion,
-                form.data
-            )
-            op.save()
-        self.request.session.flash(u'イベント・ゲート連携を保存しました')
-        return HTTPFound(self.request.route_url('performances.orion.index', performance_id=self.performance.id))
+            self.request.session.flash(u'イベント・ゲート連携を保存しました')
+            return HTTPFound(self.request.route_url('performances.orion.index', performance_id=self.performance.id))
+
+        return self.orion_index_view()
 
 
     @view_config(route_name="performances.discount_code_settings.show", request_method='GET',
