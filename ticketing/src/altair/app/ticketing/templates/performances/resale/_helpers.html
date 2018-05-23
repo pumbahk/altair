@@ -62,17 +62,32 @@
 
 <%def name="build_resale_segment_content(resale_segment)">
 <% status_str, status_color, disabled = get_resale_segment_status(resale_segment) %>
-<h4 id="resale-segment-${resale_segment.id}"
+<h5 id="resale-segment-${resale_segment.id}"
+    class="resale-segment__info"
     data-resale_segment_id="${resale_segment.id}"
+    data-resale_start_at="${resale_segment.resale_start_at}"
+    data-resale_end_at="${resale_segment.resale_end_at}"
     data-start_at="${resale_segment.start_at}"
-    data-end_at="${resale_segment.end_at}">開始日時：${resale_segment.start_at} 終了日時：${resale_segment.end_at}
-</h4>
-% if resale_segment.editable:
-<button class="btn btn-edit" onclick="open_modal_create_or_update_resale_segment($(this), 'update')"><i class="icon-pencil"></i>編集</button>
-<button class="btn ${status_color} btn-send" ${disabled} onclick="send_resale_segment_to_orion($(this), 'update')"><i class="icon-refresh icon-white"></i>${status_str}</button>
-% else:
-<button class="btn btn-warning btn-send" onclick="open_modal_send_resale_request_to_orion($(this), true)"><i class="icon-refresh icon-white"></i>リセールリクエスト一括連携</button>
-% endif
+    data-end_at="${resale_segment.end_at}">
+  <ul style="display:table">
+    <li style="display:table-row">リセール開始日時：${resale_segment.resale_start_at}</li>
+    <li style="display:table-row">リセール終了日時：${resale_segment.resale_end_at}</li>
+    <li style="display:table-row">申込開始日時：${resale_segment.start_at}</li>
+    <li style="display:table-row">申込終了日時：${resale_segment.end_at}</li>
+    % if resale_segment.editable:
+    <br/>
+    <li style="display:table-row">
+      <button class="btn btn-edit" onclick="open_modal_create_or_update_resale_segment($(this), 'update')"><i class="icon-pencil"></i>編集</button>
+      <button class="btn ${status_color} btn-send" ${disabled} onclick="send_resale_segment_to_orion($(this), 'update')"><i class="icon-refresh icon-white"></i>${status_str}</button>
+    </li>
+    % else:
+    <br/>
+    <li style="display:table-row">
+      <button class="btn btn-warning btn-send" onclick="open_modal_send_resale_request_to_orion($(this), true)"><i class="icon-refresh icon-white"></i>リセールリクエスト一括連携</button>
+    </li>
+    % endif
+  </ul>
+</h5>
 
 </%def>
 

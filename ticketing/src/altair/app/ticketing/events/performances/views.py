@@ -420,7 +420,7 @@ class PerformanceShowView(BaseView):
     def orion_index_view(self):
         form = OrionPerformanceForm(
             self.request.params,
-            data=self.performance.orion)
+            obj=self.performance.orion)
         if self.performance.orion is not None:
             form.enabled.data = True
             if self.performance.orion.coupon_2_name is not None:
@@ -465,9 +465,11 @@ class PerformanceShowView(BaseView):
                 )
                 op.save()
 
+            self.request.session.flash(u'イベント・ゲート連携を保存しました')
             return HTTPFound(self.request.route_url('performances.orion.index', performance_id=self.performance.id))
 
         return self.orion_index_view()
+
 
     @view_config(route_name="performances.discount_code_settings.show", request_method='GET',
                  custom_predicates=(dc_api.check_discount_code_functions_available,))
