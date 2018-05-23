@@ -20,11 +20,7 @@ Identifier = sa.BigInteger
 def upgrade():
     op.add_column('ResaleSegment', sa.Column('resale_start_at', sa.DateTime(), nullable=True))
     op.add_column('ResaleSegment', sa.Column('resale_end_at', sa.DateTime(), nullable=True))
-    # op.alter_column('ResaleSegment', 'start_at', new_column_name='reception_start_at', existing_type=sa.DateTime(), nullable=True)
-    # op.alter_column('ResaleSegment', 'end_at', new_column_name='reception_end_at', existing_type=sa.DateTime(), nullable=True)
 
 def downgrade():
     op.drop_column('ResaleSegment', 'resale_start_at')
     op.drop_column('ResaleSegment', 'resale_end_at')
-    # op.alter_column('ResaleSegment', 'reception_start_at', new_column_name='start_at', existing_type=sa.DateTime(), nullable=True)
-    # op.alter_column('ResaleSegment', 'reception_end_at', new_column_name='end_at', existing_type=sa.DateTime(), nullable=True)
