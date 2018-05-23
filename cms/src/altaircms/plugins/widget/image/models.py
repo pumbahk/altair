@@ -1,3 +1,4 @@
+# -*- coding:utf-8 -*-
 from zope.interface import implements
 from altaircms.interfaces import IWidget
 from markupsafe import Markup
@@ -46,6 +47,10 @@ class ImageWidget(Widget):
             attributes["alt"] = self.alt
         if self.attributes:
             attributes.update(self.attributes)
+
+        # TKT5540 スマホ画像サイズに合わせているためwidth指定はPCでは行わない
+        if "width" in attributes:
+            del attributes["width"]
         return u" ".join([u'%s="%s"' % (k, v) for k, v in attributes.items()])
 
     @property
