@@ -881,7 +881,7 @@ class FamiPortOrder(Base, WithTimestamp):
                     'Payment type receipt(reserve_number: {}) can not be recreated before recreating Ticket type receipt.'.format(
                         famiport_receipt.reserve_number, self.order_no)
                 )
-                raise AssertionError(u'前払い（後日渡し）について、発券済みの場合は先に引換票を同席再予約してください。')
+                raise AssertionError(u'前払い（後日渡し）について、発券済みの場合は先に引換票を同席番再予約してください。')
 
         elif famiport_receipt.type == FamiPortReceiptType.Ticketing.value:
             if self.issued_at:
