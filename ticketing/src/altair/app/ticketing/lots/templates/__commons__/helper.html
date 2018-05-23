@@ -49,8 +49,7 @@ if label is None or label is True:
 % for descript in extra_description:
     % if device == 'pc':
         <tr>
-            <td></td>
-            <td>${descript['description']}}</td>
+            <td colspan="2">${descript['description']}</td>
         </tr>
     % elif device == 'sp':
         <dt class="creditHl"></dt>

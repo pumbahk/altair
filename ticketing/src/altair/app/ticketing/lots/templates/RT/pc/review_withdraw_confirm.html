@@ -1,4 +1,5 @@
 <%inherit file="${context['main_template'].uri}" />
+<%namespace file="altair.app.ticketing.lots:templates/__commons__/helper.html" name="lh" />
 %if can_withdraw:
 <div align="center">
 <h1>この抽選申込を取消しますか?</h1>
@@ -215,6 +216,7 @@
       <div class="settlementSelectBox">
         <div class="settlementSelectBoxInner02">
             <table summary="追加情報">
+                ${lh.disp_extra_description(extra_description, 'pc')}
                 % for _, (display_name, display_value) in extra_form_data:
                 <tr>
                     <th>${display_name}</th>

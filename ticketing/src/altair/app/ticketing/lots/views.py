@@ -560,7 +560,8 @@ class ConfirmLotEntryView(object):
                     accountno=acc.account_number if acc else "",
                     membershipinfo = self.context.membershipinfo,
                     custom_locale_negotiator=custom_locale_negotiator(self.request) if self.request.organization.setting.i18n else "",
-                    orion_ticket_phone=orion_ticket_phone
+                    orion_ticket_phone=orion_ticket_phone,
+                    extra_description=api.get_description_only(self.context.cart_setting.extra_form_fields),
                     )
 
     def back_to_form(self):
@@ -725,7 +726,8 @@ class CompletionLotEntryView(object):
             gender=entry.gender,
             birthday=entry.birthday,
             memo=entry.memo,
-            custom_locale_negotiator=custom_locale_negotiator(self.request) if self.request.organization.setting.i18n else ""
+            custom_locale_negotiator=custom_locale_negotiator(self.request) if self.request.organization.setting.i18n else "",
+            extra_description=api.get_description_only(self.context.cart_setting.extra_form_fields),
             )
 
 @view_defaults(route_name='lots.review.index')
@@ -781,21 +783,24 @@ class LotReviewView(object):
 
         # 当選して、未決済の場合、決済画面に移動可能
         return dict(entry=lot_entry,
-            wishes=lot_entry.wishes,
-            lot=lot_entry.lot,
-            entry_no=lot_entry.entry_no,
-            tel_no=self.request.params['tel_no'],
-            shipping_address=lot_entry.shipping_address,
-            gender=lot_entry.gender,
-            birthday=lot_entry.birthday,
-            user_point_accounts=user_point_accounts,
-            memo=lot_entry.memo,
-            entry_controller=entry_controller,
-            timestamp=timestamp,
-            can_withdraw=lot_entry_user_withdraw and lot_entry.lot.lot_entry_user_withdraw,
-            can_withdraw_show=self.context.entry.check_withdraw_show(self.request),
-            now=get_now(self.request),
-            custom_locale_negotiator=custom_locale_negotiator(self.request) if self.request.organization.setting.i18n else "")
+                    wishes=lot_entry.wishes,
+                    lot=lot_entry.lot,
+                    entry_no=lot_entry.entry_no,
+                    tel_no=self.request.params['tel_no'],
+                    shipping_address=lot_entry.shipping_address,
+                    gender=lot_entry.gender,
+                    birthday=lot_entry.birthday,
+                    user_point_accounts=user_point_accounts,
+                    memo=lot_entry.memo,
+                    entry_controller=entry_controller,
+                    timestamp=timestamp,
+                    can_withdraw=lot_entry_user_withdraw and lot_entry.lot.lot_entry_user_withdraw,
+                    can_withdraw_show=self.context.entry.check_withdraw_show(self.request),
+                    now=get_now(self.request),
+                    custom_locale_negotiator=custom_locale_negotiator(
+                        self.request) if self.request.organization.setting.i18n else "",
+                    extra_description=api.get_description_only(self.context.entry.cart_setting.extra_form_fields),
+                    )
 
 
 @lbr_view_config(
@@ -963,7 +968,8 @@ class LotReviewWithdrawView(object):
             can_withdraw=self.can_withdraw,
             error_msg=self.error_msg,
             now = now,
-            custom_locale_negotiator=custom_locale_negotiator(self.request) if self.request.organization.setting.i18n else ""
+            custom_locale_negotiator=custom_locale_negotiator(self.request) if self.request.organization.setting.i18n else "",
+            extra_description=api.get_description_only(self.context.entry.cart_setting.extra_form_fields),
         )
 
 @view_defaults(renderer=selectable_renderer("edit_lot_entry_attributes.html"), request_method='POST')
