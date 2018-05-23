@@ -2,8 +2,8 @@
     import re
     login_body_mobile = request.context.membership.login_body_mobile
     if error_message_mb:
-        login_body = re.sub('error_message', error_message_mb, login_body)
+        login_body = re.sub('error_message', error_message_mb, login_body_mobile)
     else:
-        login_body = re.sub('error_message', '', login_body)
+        login_body = re.sub('error_message', '', login_body_mobile)
 %>
-${login_body_mobile |n}
+${login_body |n}
