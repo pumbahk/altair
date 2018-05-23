@@ -1,10 +1,16 @@
 ## 画像ウィジェット
+<%
+## TKT-5540 画像ウィジェットでPCはwidthをつけないようにする
+attributes = [attr for attr in widget.html_attributes.split(" ") if not attr.count("width")]
+html_attributes = " ".join(attributes)
+%>
+
 <%def name="render_image(request,widget)">
   % if widget.disable_right_click:
-    <img ${widget.html_attributes|n}
+    <img ${html_attributes|n}
       src="${h.asset.rendering_object(request,widget.asset).filepath}" oncontextmenu='return false;'/>
   % else:
-    <img ${widget.html_attributes|n}
+    <img ${html_attributes|n}
       src="${h.asset.rendering_object(request,widget.asset).filepath}" />
   % endif
 </%def>
