@@ -481,7 +481,7 @@
                   ul.append($("<li>").text("{0} - {1}".format(ret["status"],ret["emsgs"])));
               }
               if ("start_at" in ret) {
-                  for (let i = 0; i < ret["start_at"].length; i++) {
+                  for (var i = 0; i < ret["start_at"].length; i++) {
                       ul.append($("<li>").text(ret["start_at"][i]));
                   }
               }
@@ -744,7 +744,7 @@
           type: "POST",
           data: {"performance_id": performance_id, "resale_segment_id": resale_segment_id},
           success: function(data) {
-              let success_list = data['success_list'],
+              var success_list = data['success_list'],
                   fail_list = data['fail_list'],
                   send_button = undefined,
                   i = undefined;
