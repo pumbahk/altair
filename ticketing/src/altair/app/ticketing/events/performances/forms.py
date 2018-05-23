@@ -496,27 +496,6 @@ class OrionPerformanceForm(Form):
         validators=[Optional()],
     )
 
-    resale_start_at = DateTimeField(
-        label=u'リセール開始日時',
-        validators=[Optional(), after1900],
-        format='%Y-%m-%d %H:%M',
-        widget=OurDateTimeWidget(),
-    )
-    resale_end_at = DateTimeField(
-        label=u'リセール終了日時',
-        validators=[Optional(), after1900],
-        format='%Y-%m-%d %H:%M',
-        widget=OurDateTimeWidget(),
-    )
-
-    def validate(self):
-        if self.resale_start_at.data is None and self.resale_start_at.data is None:
-            return True
-        if self.resale_start_at.data is None or self.resale_start_at.data is None:
-            raise ValidationError(u'リセール開始日時またはリセール終了日のどちらかが不正です')
-        if self.resale_start_at.data > self.resale_end_at.data:
-            raise ValidationError(u'リセール開始日時はリセール終了日より未来の日時は入力できません')
-
 class PerformanceResaleSegmentForm(OurForm):
     performance_id = HiddenField(
         label=u'公演ID',
@@ -537,6 +516,18 @@ class PerformanceResaleSegmentForm(OurForm):
         validators=[Optional(), after1900],
         format='%Y-%m-%d %H:%M',
         widget=OurDateTimeWidget()
+    )
+    resale_start_at = DateTimeField(
+        label=u'リセール開始日時',
+        validators=[Optional(), after1900],
+        format='%Y-%m-%d %H:%M',
+        widget=OurDateTimeWidget(),
+    )
+    resale_end_at = DateTimeField(
+        label=u'リセール終了日時',
+        validators=[Optional(), after1900],
+        format='%Y-%m-%d %H:%M',
+        widget=OurDateTimeWidget(),
     )
 
 class PerformanceResaleRequestSearchForm(OurForm):

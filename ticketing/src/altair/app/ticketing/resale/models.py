@@ -30,11 +30,13 @@ class ResaleRequestStatus:
 class ResaleSegment(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'ResaleSegment'
     id = Column(Identifier, primary_key=True)
-    start_at = AnnotatedColumn(DateTime, nullable=False, _a_label=_(u'リセール受付開始'))
-    end_at = AnnotatedColumn(DateTime, nullable=False, _a_label=_(u'リセール受付開始'))
+    start_at = AnnotatedColumn(DateTime, nullable=False, _a_label=_(u'申込開始日時'))
+    end_at = AnnotatedColumn(DateTime, nullable=False, _a_label=_(u'申込終了日時'))
     performance_id = Column(Identifier, nullable=False)
     sent_at = AnnotatedColumn(DateTime, nullable=True, _a_label=_(u'連携日時'))
     sent_status = Column(Integer, nullable=False, default=1)
+    resale_start_at = AnnotatedColumn(DateTime, nullable=False, _a_label=_(u'リセール開始日時', default=None))
+    resale_end_at = AnnotatedColumn(DateTime, nullable=False, _a_label=_(u'リセール終了日時', default=None))
 
     @property
     def editable(self):

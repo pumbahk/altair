@@ -4977,9 +4977,6 @@ class OrionPerformance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     coupon_2_qr_enabled = Column(Boolean)
     coupon_2_pattern = Column(Unicode(255))
 
-    resale_start_at = Column(DateTime, nullable=True, default=None)
-    resale_end_at = Column(DateTime, nullable=True, default=None)
-
 
 class CartMixin(object):
     @property

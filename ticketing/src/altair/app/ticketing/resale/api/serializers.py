@@ -12,15 +12,34 @@ class ResaleSegmentSerializer(Schema):
     end_at = fields.DateTime('%Y-%m-%d %H:%M:%S',
                              required=True,
                              error_messages={'invalid': u"申込終了日時を正しい日時に設定ください。"})
+    resale_start_at = fields.DateTime('%Y-%m-%d %H:%M:%S',
+                               required=False,
+                               error_messages={'invalid': u"リセール開始日時を正しい日時に設定ください。"})
+    resale_end_at = fields.DateTime('%Y-%m-%d %H:%M:%S',
+                             required=False,
+                             error_messages={'invalid': u"リセール終了日時を正しい日時に設定ください。"})
     sent_status = fields.Integer(required=False)
     sent_at = fields.DateTime('%Y-%m-%d %H:%M:%S',
                              required=False,
                              error_messages={'invalid': u"連携日時を正しい日時に設定ください。"})
 
     @validates_schema
-    def valdate_start_and_end_at(self, data):
+    def validate_start_and_end_at(self, data):
         if data['start_at'] > data['end_at']:
-            raise ValidationError(u'申込開始日時を終了日時より後に設定ください。', ['start_at'])
+            raise ValidationError(u'申込開始日時を申込終了日時より前に設定ください。', ['start_at'])
+
+    @validates_schema
+    def validate_resale_start_and_end_at(self, data):
+        _resale_start_at = data['resale_start_at']
+        _resale_end_at = data['resale_end_at']
+
+        if _resale_start_at is None and _resale_end_at is None:
+            return True
+
+        if _resale_start_at > _resale_end_at:
+            raise ValidationError(u'リセール開始日時をリセール終了日より前に設定ください。')
+
+
 
 class ResaleSegmentCreateSerializer(ResaleSegmentSerializer):
     performance_id = fields.Integer(required=True)

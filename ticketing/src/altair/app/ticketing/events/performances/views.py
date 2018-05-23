@@ -9,7 +9,6 @@ from cStringIO import StringIO
 
 import webhelpers.paginate as paginate
 import altair.app.ticketing.discount_code.api as dc_api
-from wtforms.validators import ValidationError
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPBadRequest
 from pyramid.url import route_path
