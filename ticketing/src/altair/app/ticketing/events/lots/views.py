@@ -369,6 +369,7 @@ class Lots(BaseView):
             product_grid=product_grid,
             not_exist_product_item=lot.not_exist_product_item,
             h=h,
+            delivery_methods_without_ticket=lot.delivery_methods_without_ticket
             )
 
     @view_config(route_name='lots.edit', renderer='altair.app.ticketing:templates/lots/edit.html'

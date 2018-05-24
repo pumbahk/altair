@@ -738,6 +738,9 @@ msgstr "Sorry, "
 msgid "event.title(performance.name) の販売期間は"
 msgstr "You can purchase the tickets for {0} ({1}) during the following period."
 
+msgid "event.titleの販売期間は"
+msgstr "You can purchase the tickets for {0} during the following period."
+
 msgid "となっております。"
 msgstr " "
 
@@ -746,6 +749,9 @@ msgstr "Please access our site during this period."
 
 msgid "event.title (performance.name) の販売は"
 msgstr "You can purchase ticket for {0} ({1}) until "
+
+msgid "event.titleの販売は"
+msgstr "You can purchase ticket for {0} until "
 
 msgid "end_at まで"
 msgstr "{0} "

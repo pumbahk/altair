@@ -69,7 +69,7 @@ def back_url(request):
         return None
 
 
-def is_order_fee_modified(request, order_like):
+def is_order_fee_not_modified(request, order_like):
     """手数料・支払い合計金額・購入商品金額の値に操作が加わっているか判定"""
     try:
         origin_order = order_like.prev
@@ -210,7 +210,7 @@ class CheckoutPlugin(object):
             return
 
         # 支払い金額に変更がない場合、楽天ペイAPIにはアクセスしない
-        if is_order_fee_modified(request, order_like):
+        if is_order_fee_not_modified(request, order_like):
             logger.info('order %s was not modified any fees' % order_like.order_no)
             return
 

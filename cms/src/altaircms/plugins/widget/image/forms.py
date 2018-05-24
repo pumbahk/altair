@@ -5,21 +5,32 @@ from altaircms.formhelpers import AlignChoiceField
 import wtforms.fields as fields
 import wtforms.validators as validators
 
+
 class FetchImageForm(Form):
     page = MaybeIntegerField(default=0)
     pk = MaybeIntegerField(default=None, blank_value="null")
+
 
 class SearchByNameForm(Form):
     search_word = fields.TextField()
     page = MaybeIntegerField(default=0)
     pk = MaybeIntegerField(default=None, blank_value="null")
 
+
 class SearchByTagForm(Form):
     tags = fields.TextField()
     page = MaybeIntegerField(default=0)
     pk = MaybeIntegerField(default=None, blank_value="null")
 
+
 class ImageInfoForm(Form):
+    def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
+        super(ImageInfoForm, self).__init__(formdata=formdata, obj=obj, prefix=prefix, **kwargs)
+        if "id" in kwargs and not kwargs["id"]:
+            # widgetが作成されていない初回のみ90%をwidthに入れる。中央寄せ
+            self.width.data = u'90%'
+            self.align.data = u'center'
+
     href = fields.TextField(id="href", label=u"リンク先")
     width = MaybeIntegerField(id="width", label=u"レンダリングのwidth", validators=[validators.Optional()])
     height = MaybeIntegerField(id="height", label=u"レンダリング時のheight", validators=[validators.Optional()])
@@ -29,7 +40,6 @@ class ImageInfoForm(Form):
 
     asset_id = fields.IntegerField(id="asset_id")
     attributes = fields.HiddenField()
-
 
     def validate(self):
         if not super(ImageInfoForm, self).validate():

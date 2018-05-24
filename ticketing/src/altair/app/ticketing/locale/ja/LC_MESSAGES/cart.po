@@ -735,6 +735,9 @@ msgstr "誠に申し訳ございませんが"
 msgid "event.title(performance.name) の販売期間は"
 msgstr "{0} ({1}) の販売期間は"
 
+msgid "event.titleの販売期間は"
+msgstr "{0}の販売期間は"
+
 msgid "となっております。"
 msgstr "となっております。"
 
@@ -743,6 +746,9 @@ msgstr "販売期間内にアクセスしていただきますようお願いい
 
 msgid "event.title (performance.name) の販売は"
 msgstr "{0} ({1}) の販売は"
+
+msgid "event.titleの販売は"
+msgstr "{0}の販売は"
 
 msgid "end_at まで"
 msgstr "{0} まで"

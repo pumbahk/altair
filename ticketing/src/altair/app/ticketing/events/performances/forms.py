@@ -506,16 +506,28 @@ class PerformanceResaleSegmentForm(OurForm):
         validators=[Optional()],
     )
     start_at = DateTimeField(
-        label=u'リセール開始日時',
+        label=u'申込開始日時',
         validators=[Optional(), after1900],
         format='%Y-%m-%d %H:%M',
         widget=OurDateTimeWidget()
     )
     end_at = DateTimeField(
-        label=u'リセール終了日時',
+        label=u'申込終了日時',
         validators=[Optional(), after1900],
         format='%Y-%m-%d %H:%M',
         widget=OurDateTimeWidget()
+    )
+    resale_start_at = DateTimeField(
+        label=u'リセール開始日時',
+        validators=[Optional(), after1900],
+        format='%Y-%m-%d %H:%M',
+        widget=OurDateTimeWidget(),
+    )
+    resale_end_at = DateTimeField(
+        label=u'リセール終了日時',
+        validators=[Optional(), after1900],
+        format='%Y-%m-%d %H:%M',
+        widget=OurDateTimeWidget(),
     )
 
 class PerformanceResaleRequestSearchForm(OurForm):

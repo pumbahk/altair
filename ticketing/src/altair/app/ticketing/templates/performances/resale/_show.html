@@ -69,7 +69,7 @@
 
 <div id="main">
   <div class="title">
-    <h4>リセール</h4>
+    <h4>リセール詳細</h4>
   </div>
   <div class="content">
     <div class="wrap-content">
@@ -77,9 +77,10 @@
         % if not resale_segments:
         <button onclick="open_modal_create_or_update_resale_segment($(this), 'create')" class="btn btn-important resale-segment-add-btn"><i class="icon-plus"></i>登録</button>
         % endif
-        <ul data-selected_resale_segment_id="${selected_resale_segment_id}">
+        <ul id="resale-segment-list" data-selected_resale_segment_id="${selected_resale_segment_id}">
+          <li class="resale-segment-message-box"></li>
           % for resale_segment in resale_segments:
-          <li>
+          <li class="resale-segment-detail-box">
             ${rh.build_resale_segment_content(resale_segment)}
           </li>
           % endfor
@@ -239,16 +240,14 @@
 <form id="reuse-item-1" class="form-horizontal" method="POST">
   ${ch.form_item(form.resale_segment_id)}
   ${ch.form_item(form.performance_id)}
+  ${ch.form_item(form.resale_start_at)}
+  ${ch.form_item(form.resale_end_at)}
   ${ch.form_item(form.start_at)}
   ${ch.form_item(form.end_at)}
 </form>
 </div>
 
-<li id="resale-segment-li-template" class="hide">
-  <h4></h4>
-  <button class="btn" onclick="open_modal_create_or_update_resale_segment($(this), 'update')"><i class="icon-pencil"></i>編集</button>
-  <button class="btn btn-warning" onclick="send_resale_segment_to_orion($(this))"><i class="icon-refresh icon-white"></i>連携</button>
-</li>
+<h5 id="resale-segment-li-template"></h5>
 
 <div id="resale-request-btn-group-template-1" class="btn-group hide">
   <button class="btn btn-small btn-reset" onclick="operate_resale_request($(this), 'waiting')">リセット</button>
@@ -265,11 +264,11 @@
   // --- common start ---
   if (String.prototype.format === undefined) {
       String.prototype.format = function(arg) {
-          var rep_fn = undefined;
+          let rep_fn = undefined;
           if (typeof arg === "object") {
               rep_fn = function(m, k) { return arg[k]; };
           } else {
-              var args = arguments;
+              let args = arguments;
               rep_fn = function(m, k) { return args[parseInt(k)]; };
           }
           return this.replace(/\{(\w+)\}/g, rep_fn);
@@ -285,7 +284,7 @@
   }
 
   function split_datetime(datetime) {
-      var items = datetime.split(' '),
+      let items = datetime.split(' '),
           date = items[0],
           time = items[1],
           ret = {};
@@ -304,7 +303,7 @@
   }
 
   function get_current_local_datetime() {
-      var now = new Date();
+      let now = new Date();
       return concat_datetime(
           now.getFullYear(),
           now.getMonth() + 1,
@@ -315,20 +314,21 @@
       )
   }
 
-  function flush_result_message(ul, message) {
-      ul.find(".flushed_msgs").remove();
-      ul.prepend(
-          $("<li>").addClass("flushed_msgs")
-                   .append($("<h4>").text(message).css("color", "#b94a48").css("margin", "0"))
-                   .append($("<i>").addClass("icon-remove-sign"))
-                   .on('click' , function() {
-                       this.remove();
-                    })
-      );
+  function flush_result_message(message) {
+      let element = $(".resale-segment-message-box");
+      element.empty();
+      element.append(
+          $("<div>").addClass("flushed_msgs")
+              .append($("<h4>").text(message).css("color", "#b94a48").css("margin", "0"))
+              .append($("<i>").addClass("icon-remove-sign"))
+              .on('click', function () {
+                  this.remove();
+              })
+          )
   }
 
   function handle_exception(xhr) {
-      var ret = {},
+      let ret = {},
           status = "",
           emsgs = "";
 
@@ -369,13 +369,13 @@
       modal.removeAttr("class").addClass("modal");
   }
   function open_modal() {
-      var modal = $("#base-modal");
+      let modal = $("#base-modal");
       modal.find("button").on("click", function() {$(this).attr("disabled", true)});
       modal.show();
       $("#modal-bg").show();
   }
   function close_modal() {
-      var modal = $("#base-modal");
+      let modal = $("#base-modal");
       clear_model_content(modal);
       modal.hide();
       $("#modal-bg").hide();
@@ -383,20 +383,43 @@
 
   //// modal for creating or updating resale segment
   function open_modal_create_or_update_resale_segment(button, action) {
-      var modal = $("#base-modal"),
+      let modal = $("#base-modal"),
           header_text = action === "create"? "リセール区分追加":"リセール区分編集",
           onclick_method = action === "create"? "create_resale_segment()":"update_resale_segment()",
           form = $("#reuse-item-1").detach(),
           data = undefined,
+          resale_start_at = undefined,
+          resale_end_at = undefined,
           start_at = undefined,
           end_at = undefined;
 
       if (action === "update") {
-          data = button.siblings('h4').data();
+          data = $(".resale-segment__info").data();
+          form.find("#resale_segment_id").val(data['resale_segment_id']);
+
+          if (data['resale_start_at'] !== undefined) {
+            resale_start_at = split_datetime(data['resale_start_at']);
+            form.find("#resale_start_at\\.year").val(resale_start_at.y);
+            form.find("#resale_start_at\\.month").val(resale_start_at.m);
+            form.find("#resale_start_at\\.day").val(resale_start_at.d);
+            form.find("#resale_start_at\\.hour").val(resale_start_at.H);
+            form.find("#resale_start_at\\.minute").val(resale_start_at.M);
+            form.find("#resale_start_at\\.second").val(resale_start_at.S);
+          }
+
+          if (data['resale_end_at'] !== undefined) {
+            resale_end_at = split_datetime(data['resale_end_at']);
+            form.find("#resale_end_at\\.year").val(resale_end_at.y);
+            form.find("#resale_end_at\\.month").val(resale_end_at.m);
+            form.find("#resale_end_at\\.day").val(resale_end_at.d);
+            form.find("#resale_end_at\\.hour").val(resale_end_at.H);
+            form.find("#resale_end_at\\.minute").val(resale_end_at.M);
+            form.find("#resale_end_at\\.second").val(resale_end_at.S);
+          }
+
           start_at = split_datetime(data['start_at']);
           end_at = split_datetime(data['end_at']);
 
-          form.find("#resale_segment_id").val(data['resale_segment_id']);
           form.find("#start_at\\.year").val(start_at.y);
           form.find("#start_at\\.month").val(start_at.m);
           form.find("#start_at\\.day").val(start_at.d);
@@ -415,7 +438,7 @@
       modal.find(".modal-body-content").append(form);
       modal.find(".btn-area")
           .append($("<button onclick='close_modal()' class='btn secondary btn-close'>キャンセル</button>"))
-          .append($("<button class='btn btn-danger'>確認</button>").attr("onclick", onclick_method));
+          .append($("<button class='btn btn-danger'>保存</button>").attr("onclick", onclick_method));
       open_modal();
   }
 
@@ -450,7 +473,7 @@
               open_modal();
           },
           error: function(xhr) {
-              var ret = handle_exception(xhr),
+              let ret = handle_exception(xhr),
                   modal = $("#base-modal");
                   ul = modal.find(".modal-error-msgs-box ul");
 
@@ -470,7 +493,7 @@
 
   //// modal for exporting bank information of the resale requests
   function open_modal_export_bank_info() {
-      var modal = $("#base-modal"),
+      let modal = $("#base-modal"),
           order_no = $("#order_no").val().trim(),
           status_list = get_resale_request_status_verbose(),
           sent_status_list = get_resale_request_sent_status_verbose();
@@ -500,11 +523,11 @@
 
   //// modal for sending resale requests to orion
   function open_modal_send_resale_request_to_orion(button, all) {
-      var modal = $("#base-modal"),
+      let modal = $("#base-modal"),
           resale_segment_id = undefined,
           resale_request_id = undefined;
       if (all) {
-          resale_segment_id = button.siblings("h4").data("resale_segment_id");
+          resale_segment_id = button.siblings("h5").data("resale_segment_id");
           modal.find(".modal-header h3").text("リセールリクエスト一括連携");
           modal.find(".modal-body-content").append(
               $("<p>リセールリクエスト一括連携したら、対象のリセールリクエストのステータスを変更できなくなります。</p>")
@@ -527,7 +550,7 @@
 
   //// modal for unknown exception notification
   function open_modal_unknown_exception_notification(ret) {
-      var modal = $("#base-modal");
+      let modal = $("#base-modal");
       close_modal();
       modal.addClass("modal-unknown-exception");
       modal.find(".modal-header h3").text("予想外エラーが発生してしまいました。");
@@ -559,12 +582,52 @@
       }
   }
 
-  function create_resale_segment() {
-      var modal = $("#base-modal"),
-          form = modal.find("form"),
-          url = "/resale/api/segments/create",
-          data = {
+  function update_display(resale_segment_id, resale_start_at, resale_end_at, start_at, end_at) {
+
+    let li = $(".resale-segment-detail-box");
+    li.empty();
+
+    let h5_temp = $("#resale-segment-li-template").clone().removeAttr("id").removeClass("hide");
+
+    h5_temp.attr("id", "resale-segment-" + resale_segment_id)
+      .attr("class", "resale-segment__info")
+      .data('resale_segment_id', resale_segment_id)
+      .data('resale_start_at', resale_start_at)
+      .data('resale_end_at', resale_end_at)
+      .data('start_at', start_at)
+      .data('end_at', end_at);
+
+    let buttonDom = $("<li>")
+        .append($("<button class=\"btn\" onclick=\"open_modal_create_or_update_resale_segment($(this), 'update')\"><i class=\"icon-pencil\"></i>編集</button>\n"))
+        .append($("<button class=\"btn btn-warning btn-send\" onclick=\"send_resale_segment_to_orion($(this))\"><i class=\"icon-refresh icon-white\"></i>連携</button>"));
+
+    let content = $("<ul style=\"display:table\">")
+        .append($("<li style=\"display:table-row\">リセール開始日時：" + resale_start_at + "</li>"))
+        .append($("<li style=\"display:table-row\">リセール終了日時：" + resale_end_at + "</li>"))
+        .append($("<li style=\"display:table-row\">申込開始日時：" + start_at + "</li>"))
+        .append($("<li style=\"display:table-row\">申込終了日時：" + end_at + "</li>"))
+        .append($("<br/>"))
+        .append(buttonDom);
+
+    h5_temp.append(content);
+    h5_temp.appendTo(li);
+  }
+
+  function create_data_from_dom(form) {
+      return {
             "performance_id": parseInt(form.find("#performance_id").val()),
+            "resale_start_at": concat_datetime(
+                form.find("#resale_start_at\\.year").val(),
+                form.find("#resale_start_at\\.month").val(),
+                form.find("#resale_start_at\\.day").val(),
+                form.find("#resale_start_at\\.hour").val(),
+                form.find("#resale_start_at\\.minute").val()),
+            "resale_end_at": concat_datetime(
+                form.find("#resale_end_at\\.year").val(),
+                form.find("#resale_end_at\\.month").val(),
+                form.find("#resale_end_at\\.day").val(),
+                form.find("#resale_end_at\\.hour").val(),
+                form.find("#resale_end_at\\.minute").val()),
             "start_at": concat_datetime(
                 form.find("#start_at\\.year").val(),
                 form.find("#start_at\\.month").val(),
@@ -578,29 +641,28 @@
                 form.find("#end_at\\.hour").val(),
                 form.find("#end_at\\.minute").val())
           };
+  }
+
+  function create_resale_segment() {
+      let modal = $("#base-modal"),
+          form = modal.find("form"),
+          url = "/resale/api/segments/create",
+          data = create_data_from_dom(form);
       clear_modal_error_messages(modal);
+
       $.ajax({
           url: url,
           type: "POST",
           data: data,
           success: function(data) {
-              var ul = $(".resale-segment-list-box ul"),
-                  li = $("#resale-segment-li-template").clone().removeAttr("id").removeClass("hide"),
-                  h4 = li.find("h4");
-
-              h4.text("開始日時：" + data["start_at"] + " 終了日時：" + data["end_at"])
-                .attr("id", "resale-segment-" + data["id"])
-                .data('resale_segment_id', data["id"])
-                .data('start_at', data["start_at"])
-                .data('end_at', data["end_at"]);
-
-              li.appendTo(ul);
-              flush_result_message(ul, "リセールセッグメントが作成されました。");
+              $("ul#resale-segment-list").append($("<li class=\"resale-segment-detail-box\"></li>"));
+              update_display(data["id"], data["resale_start_at"], data["resale_end_at"], data["start_at"], data["end_at"]);
               $(".resale-segment-add-btn").remove();
+              flush_result_message("リセールセッグメントが作成されました。");
               close_modal();
           },
           error: function(xhr) {
-              var ret = handle_exception(xhr),
+              let ret = handle_exception(xhr),
                   ul = modal.find(".modal-error-msgs-box ul"),
                   i = undefined;
 
@@ -628,45 +690,26 @@
   }
 
   function update_resale_segment() {
-      var modal = $("#base-modal"),
-          form = modal.find("form"),
-          resale_segment_id = form.find("#resale_segment_id").val(),
-          url = "/resale/api/segments/{0}/update".format(resale_segment_id),
-          data = {
-            "start_at": concat_datetime(
-                form.find("#start_at\\.year").val(),
-                form.find("#start_at\\.month").val(),
-                form.find("#start_at\\.day").val(),
-                form.find("#start_at\\.hour").val(),
-                form.find("#start_at\\.minute").val()),
-            "end_at": concat_datetime(
-                form.find("#end_at\\.year").val(),
-                form.find("#end_at\\.month").val(),
-                form.find("#end_at\\.day").val(),
-                form.find("#end_at\\.hour").val(),
-                form.find("#end_at\\.minute").val()),
-            "sent_status": 3,
-            "sent_at": get_current_local_datetime()
-          };
+      let modal = $("#base-modal");
+      let form = modal.find("form");
+      let resale_segment_id = form.find("#resale_segment_id").val();
+      let url = "/resale/api/segments/{0}/update".format(resale_segment_id);
+      let data = create_data_from_dom(form);
+      data["sent_status"] = 3;
+      data["sent_at"] = get_current_local_datetime();
       clear_modal_error_messages(modal);
       $.ajax({
           url: url,
           type: "PUT",
           data: data,
           success: function(data) {
-              var resale_segment_id = data["id"],
-                  h4 = $("h4#resale-segment-" + resale_segment_id),
-                  button = h4.siblings(".btn-send");
-
-              h4.text("開始日時：" + data["start_at"] + " 終了日時：" + data["end_at"])
-                  .data('start_at', data["start_at"])
-                  .data('end_at', data["end_at"]);
-              update_send_button_status(button, 'send_required');
-              flush_result_message(h4.parents("ul"), "リセールセッグメントが更新されました。");
+              update_display(data["id"], data["resale_start_at"], data["resale_end_at"], data["start_at"], data["end_at"]);
+              update_send_button_status($(".resale-segment-detail-box").find(".btn-send"), 'send_required');
+              flush_result_message("リセールセグメントが更新されました。");
               close_modal();
           },
           error: function(xhr) {
-              var ret = handle_exception(xhr),
+              let ret = handle_exception(xhr),
                   ul = modal.find(".modal-error-msgs-box ul"),
                   i = undefined;
 
@@ -693,10 +736,10 @@
   }
 
   function send_resale_segment_to_orion(button) {
-      var h4 = button.siblings("h4"),
-          resale_segment_id = h4.data("resale_segment_id"),
-          performance_id = parseInt("${performance.id}"),
-          url = "${request.route_path('performances.resale.send_resale_segment_to_orion')}";
+      let resale_segment_id = $(".resale-segment__info").data("resale_segment_id");
+      let performance_id = parseInt("${performance.id}");
+      let url = "${request.route_path('performances.resale.send_resale_segment_to_orion')}";
+
       $.ajax({
           url: url,
           type: "POST",
@@ -708,32 +751,33 @@
                   i = undefined;
 
               for (i = 0; i < success_list.length; i++) {
-                  send_button = $("#resale-segment-" + success_list[i]).siblings(".btn-send");
+                  send_button = $("#resale-segment-" + success_list[i]).find(".btn-send");
+                  console.log(send_button);
                   update_send_button_status(send_button, 'sent');
               }
               for (i = 0; i < fail_list.length; i++) {
-                  send_button = $("#resale-segment-" + fail_list[i]).siblings(".btn-send");
+                  send_button = $("#resale-segment-" + fail_list[i]).find(".btn-send");
                   update_send_button_status(send_button, 'fail');
               }
-              flush_result_message(h4.parents("ul"), "リセールセッグメント情報はOrionに送信されました。");
+              flush_result_message("リセールセグメント情報がOrionに送信されました。");
           },
           error: function(xhr) {
-              var ret = handle_exception(xhr);
+              let ret = handle_exception(xhr);
               if (button) {
                   update_send_button_status(button, 'fail');
               } else {
-                  $("h4[id*='resale-segment-']").each(function() {
-                      var button = $(this).siblings(".btn-send");
+                  $("h5[id*='resale-segment-']").each(function() {
+                      let button = $(this).find(".btn-send");
                       update_send_button_status(button, 'fail');
                   })
               }
-              flush_result_message(h4.parents("ul"), ret);
+              flush_result_message(ret);
           }
       });
   }
 
   function build_status_content(td, action) {
-      var span = $('<span class="label"></span>');
+      let span = $('<span class="label"></span>');
       td.empty();
       if (action === "sold") {
           span.addClass("label-success")
@@ -763,7 +807,7 @@
   }
 
   function operate_resale_request(button, action) {
-      var td = button.parents("td"),
+      let td = button.parents("td"),
           resale_request_id = button.parents("tr").data("resale_request_id"),
           status_code = {"waiting": 1, "sold": 2, "back": 3, "cancel": 4};
       $.ajax({
@@ -778,14 +822,14 @@
               td.parent().data("status", status_code[action]);
           },
           error: function(xhr) {
-              var ret = handle_exception(xhr);
+              let ret = handle_exception(xhr);
               open_modal_unknown_exception_notification(ret);
           }
       });
   }
 
   function send_resale_request_to_orion(resale_request_id) {
-      var tr = $("#resale-request-{0}".format(resale_request_id));
+      let tr = $("#resale-request-{0}".format(resale_request_id));
       $.ajax({
           url: "${request.route_path('performances.resale.send_resale_request_to_orion')}",
           type: "POST",
@@ -795,7 +839,7 @@
           success: function(data) {
 
               if (data['result'] === "OK") {
-                  var span = tr.find("span"),
+                  let span = tr.find("span"),
                       btn_group = tr.find(".btn-group");
                   span.text(span.text().replace("（仮）", ""));
                   btn_group.remove();
@@ -805,15 +849,15 @@
               close_modal();
           },
           error: function(xhr) {
-              var ret = handle_exception(xhr);
+              let ret = handle_exception(xhr);
               open_modal_unknown_exception_notification(ret);
           }
       });
   }
 
   function send_all_resale_request_to_orion(resale_segment_id) {
-      var modal = $("#base-modal"),
-          h4 = $("#resale-segment-{0}".format(resale_segment_id));
+      let modal = $("#base-modal"),
+          h5 = $("#resale-segment-{0}".format(resale_segment_id));
       $.ajax({
           url: "${request.route_path('performances.resale.send_all_resale_request_to_orion')}",
           type: "POST",
@@ -833,7 +877,7 @@
                   .attr("onclick", "location.reload()");
           },
           error: function(xhr) {
-              var ret = handle_exception(xhr),
+              let ret = handle_exception(xhr),
                   ul = modal.find(".modal-error-msgs-box ul");
               clear_modal_error_messages(modal);
               ul.append($("<li>").text("{0}".format(ret["emsgs"])));
@@ -844,7 +888,7 @@
   }
 
   function get_resale_request_status() {
-      var status_list = [];
+      let status_list = [];
       if ($("#waiting").is(":checked")) status_list.push(1);
       if ($("#sold").is(":checked")) status_list.push(2);
       if ($("#back").is(":checked")) status_list.push(3);
@@ -853,7 +897,7 @@
   }
 
   function get_resale_request_sent_status() {
-      var sent_status_list = [];
+      let sent_status_list = [];
       if ($("#not_sent").is(":checked")) sent_status_list.push(1);
       if ($("#sent").is(":checked")) sent_status_list.push(2);
       if ($("#fail").is(":checked")) sent_status_list.push(4);
@@ -861,7 +905,7 @@
   }
 
   function build_export_url() {
-      var baseUrl = "/resale/api/requests/export",
+      let baseUrl = "/resale/api/requests/export",
           resale_segment_id = $(".resale-segment-list-box ul").data("selected_resale_segment_id"),
           order_no = $("#order_no").val().trim(),
           status_list = get_resale_request_status(),
@@ -889,7 +933,7 @@
   }
 
   function get_resale_request_status_verbose() {
-    var status_list = get_resale_request_status(),
+    let status_list = get_resale_request_status(),
         status_verbose_list = [];
 
     if (status_list.length === 0) {
@@ -906,7 +950,7 @@
   }
 
   function get_resale_request_sent_status_verbose() {
-    var sent_status_list = get_resale_request_sent_status(),
+    let sent_status_list = get_resale_request_sent_status(),
         status_verbose_list = [];
 
     if (sent_status_list.length === 0) {
