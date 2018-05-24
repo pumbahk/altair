@@ -78,8 +78,8 @@ def move_image_detail(context, request):
     widgets = []
     for structure in structures:
         for widget in structure[1]:
-            wg = context.get_widget_model(widget, widgets)
-            if widget['pk']:
+            if "pk" in widget and widget['pk']:
+                wg = context.get_widget_model(widget, widgets)
                 widgets.append(wg)
 
     header_images = context.get_header_images(widgets)
