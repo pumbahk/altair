@@ -495,13 +495,13 @@ class DynamicFormBuilder(object):
             concatenated_csets = ur''
             message = u''
             if validator_flags['other_characters']:
-                sets = [u'[^']
+                sets = [u'^[^']
                 cdescs = []
                 for name, cset, cdesc in self.validator_specs:
                     if cset is not None and not validator_flags[name]:
                         sets.append(cset)
                         cdescs.append(cdesc)
-                sets.append(u']')
+                sets.append(u']+$')
                 concatenated_csets = u''.join(sets)
                 message = u'%sは入力できません' % u'・'.join(cdescs)
             else:

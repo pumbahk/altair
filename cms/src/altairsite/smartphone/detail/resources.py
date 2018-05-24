@@ -74,7 +74,7 @@ class DetailPageResource(object):
 
     def is_dynamic_page_organization(self):
         org = get_organization_from_request(request=self.request)
-        return org.short_name in ['KT', 'RL']
+        return org.short_name in ['RT', 'KT', 'RL']
 
     def get_widget_model(self, widget, widgets):
         model = None
@@ -85,13 +85,15 @@ class DetailPageResource(object):
         widget.update({'model': model})
         return widget
 
-    def get_header_image(self, widgets):
+    def get_header_images(self, widgets):
+        images = list()
         for widget in widgets:
             if widget['name'] == "image":
-                return widget
+                images.append(widget)
+        return images
 
-    def remove_header_image(self, widgets):
-        header_image = self.get_header_image(widgets)
-        if header_image:
+    def remove_header_images(self, widgets):
+        header_images = self.get_header_images(widgets)
+        for header_image in header_images:
             widgets.remove(header_image)
         return widgets

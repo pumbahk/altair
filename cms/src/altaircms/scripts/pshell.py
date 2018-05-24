@@ -43,6 +43,9 @@ def setup(env):
     env["Base"] =  Base
     env["M"] = Base.metadata
 
+    for sym in ['begin', 'commit', 'abort']:
+        env[sym] = getattr(transaction, sym)
+
     rootmodule = "altaircms"
     root = resource_filename(rootmodule, "")
     for path in collect_files(altaircms.__path__[0], lambda f: f.endswith("models.py") and not "test" in f):

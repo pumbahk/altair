@@ -1,6 +1,8 @@
 # -*- coding:utf-8 -*-
 from webhelpers.number import format_number as _format_number
 from .base import jdate
+import json
+
 WEEK =[u"月", u"火", u"水", u"木", u"金", u"土", u"日"]
 
 def _to_term(p):
@@ -47,7 +49,47 @@ def performance_time(performance):
     datestr = d.strftime(u"%Y年%m月%d日".encode("utf-8")).decode("utf-8")
     timestr = d.strftime("%H:%M")
     return u"%s（%s）%s" % (datestr, unicode(WEEK[d.weekday()]),  timestr)
-    
+
+
+def event_time(event):
+    open = event.event_open
+    close = event.event_close
+    open_datestr = open.strftime(u"%Y年%m月%d日".encode("utf-8")).decode("utf-8")
+    if open == close:
+        return u"{}({})".format(open_datestr, unicode(WEEK[open.weekday()]))
+    close_datestr = close.strftime(u"%Y年%m月%d日".encode("utf-8")).decode("utf-8")
+    return u"{}({}) 〜 {}({})".format(open_datestr, unicode(WEEK[open.weekday()]), close_datestr,
+                                     unicode(WEEK[close.weekday()]))
+
+
+def get_venues(event):
+    venues = [performance.venue for performance in event.performances]
+    venues = sorted(set(venues), key=venues.index) # 重複削除
+    return u"<br/>".join(venues)
+
+
+def get_second_image_from_pagesets(request, pageset):
+    # 登録されている2つ目の画像を取得する
+    import altaircms.helpers as helpers
+    from altaircms.plugins.widget.image.models import ImageWidget
+    current_page = pageset.current(published=True)
+    structures = json.loads(current_page.structure).items()
+    images = []
+    for structure in structures:
+        for widget in structure[1]:
+            if widget['name'] == u'image':
+                images.append(widget)
+            if len(images) == 2:
+                break
+    if images:
+        # 2個目のImageWidgetを使用する。なければ、1個目のImageWidgetを使用する
+        widget = images[-1]
+        image_widget = ImageWidget.query.filter(ImageWidget.id == widget['pk']).first()
+        if image_widget:
+            return helpers.asset.rendering_object(request, image_widget.asset).filepath
+    return ""
+
+
 def format_number(num, thousands=","):
     return _format_number(int(num), thousands)
 price_format = format_number #deprecated

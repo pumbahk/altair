@@ -36,9 +36,9 @@ logger = logging.getLogger(__name__)
 # FIXME
 FC_SESSION_KEY = 'altair.cart.fc.user_profile'
 
-def clear_user_profile(request):
-    if FC_SESSION_KEY in request.session:
-        del request.session[FC_SESSION_KEY]
+def clear_user_profile(request, performance_id):
+    if "{}{}".format(FC_SESSION_KEY, performance_id) in request.session:
+        del request.session["{}{}".format(FC_SESSION_KEY, performance_id)]
 
 
 def store_user_profile(request, user_profile, performance_id):
@@ -312,8 +312,9 @@ class FCCompleteView(CompleteView):
     @lbr_view_config(route_name='payment.confirm', request_method="POST")
     @lbr_view_config(route_name='payment.finish.mobile', request_method="POST")
     def post(self):
+        performance_id = self.context.performance.id
         retval = super(FCCompleteView, self).post()
-        clear_user_profile(self.request)
+        clear_user_profile(self.request, performance_id)
         return retval
 
     @lbr_view_config(context=CompleteViewTicketingCartResource)
