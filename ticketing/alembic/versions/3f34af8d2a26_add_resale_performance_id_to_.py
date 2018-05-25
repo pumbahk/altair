@@ -1,14 +1,14 @@
 """add resale performance_id to resalesegment
 
 Revision ID: 3f34af8d2a26
-Revises: 3cd361e34c44
+Revises: 13151cb706a
 Create Date: 2018-05-14 12:01:41.278473
 
 """
 
 # revision identifiers, used by Alembic.
 revision = '3f34af8d2a26'
-down_revision = '3cd361e34c44'
+down_revision = '13151cb706a'
 
 from alembic import op
 import sqlalchemy as sa
