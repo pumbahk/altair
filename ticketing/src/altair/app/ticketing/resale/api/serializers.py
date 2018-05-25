@@ -35,8 +35,8 @@ class ResaleSegmentSerializer(Schema):
 
     @validates_schema
     def validate_resale_start_and_end_at(self, data):
-        _resale_start_at = data['resale_start_at']
-        _resale_end_at = data['resale_end_at']
+        _resale_start_at = data.get('resale_start_at')
+        _resale_end_at = data.get('resale_end_at')
 
         if _resale_start_at is None and _resale_end_at is None:
             return True
@@ -48,23 +48,29 @@ class ResaleSegmentSerializer(Schema):
 
     @validates_schema
     def validate_resale_performance_id_exist(self, data):
-        if data['resale_performance_id']:
-            if ResaleSegment.query.filter_by(resale_performance_id=data['resale_performance_id']).count() > 0:
+
+        resale_segment_id = data.get('resale_segment_id')
+        performance_id = data.get('performance_id')
+        resale_performance_id = data.get('resale_performance_id')
+
+        if resale_performance_id:
+            if ResaleSegment.query \
+                    .filter_by(id=resale_segment_id)\
+                    .filter_by(resale_performance_id=resale_performance_id).count() > 0:
                 raise ValidationError(
                     u'登録したいリセール公演の公演（ID: {}）はすでに他のリセール区分に登録されています。'.format(data['performance_id']),
                     ['resale_performance_id'])
 
             try:
-                p = Performance.query.filter_by(id=data['performance_id']).one()
+                p = Performance.query.filter_by(id=performance_id).one()
             except:
                 raise ValidationError(
-                    u'リセール元の公演（ID: {}）は見つかりませんでした。'.format(data['performance_id']),
-                    ['resale_performance_id'])
+                    u'リセール元の公演（ID: {}）は見つかりませんでした。'.format(performance_id))
             try:
-                p_resale = Performance.query.filter_by(id=data['resale_performance_id']).one()
+                p_resale = Performance.query.filter_by(id=resale_performance_id).one()
             except:
                 raise ValidationError(
-                    u'登録したいリセール公演の公演（ID: {}）は存在していません。'.format(data['resale_performance_id']),
+                    u'登録したいリセール公演の公演（ID: {}）は存在していません。'.format(resale_performance_id),
                     ['resale_performance_id'])
 
             if p.event.organization.id != p_resale.event.organization.id:

@@ -455,7 +455,7 @@
           header_text = action === "create"? "リセール公演登録":"リセール公演編集",
           onclick_method = "add_or_update_resale_performance_id()",
           form = $("#reuse-item-2").detach(),
-          data = button.siblings('h4').data();
+          data = $(".resale-segment__info").data();
 
           form.find("#resale_segment_id").val(data['resale_segment_id']);
           form.find("input[name=start_at]").val(data['start_at']);
@@ -622,14 +622,22 @@
     h5_temp.attr("id", "resale-segment-" + resale_segment_id)
       .attr("class", "resale-segment__info")
       .data('resale_segment_id', resale_segment_id)
+      .data('resale_performance_id', resale_performance_id)
       .data('resale_start_at', resale_start_at)
       .data('resale_end_at', resale_end_at)
       .data('start_at', start_at)
       .data('end_at', end_at);
 
     let buttonDom = $("<li>")
-        .append($("<button class=\"btn\" onclick=\"open_modal_create_or_update_resale_segment($(this), 'update')\"><i class=\"icon-pencil\"></i>編集</button>\n"))
-        .append($("<button class=\"btn btn-warning btn-send\" onclick=\"send_resale_segment_to_orion($(this))\"><i class=\"icon-refresh icon-white\"></i>連携</button>"));
+        .append($("<button class=\"btn\" onclick=\"open_modal_create_or_update_resale_segment($(this), 'update')\"><i class=\"icon-pencil\"></i>編集</button>\n"));
+
+    if (resale_performance_id) {
+        buttonDom.append($("<button class=\"btn\" onclick=\"open_modal_create_or_update_resale_performance($(this), 'update')\"><i class=\"icon-pencil\"></i>リセール公演ID編集</button>\n"));
+    } else {
+        buttonDom.append($("<button class=\"btn\" onclick=\"open_modal_create_or_update_resale_performance($(this), 'create')\"><i class=\"icon-pencil\"></i>リセール公演ID登録</button>\n"));
+    }
+
+    buttonDom.append($("<button class=\"btn btn-warning btn-send\" onclick=\"send_resale_segment_to_orion($(this))\"><i class=\"icon-refresh icon-white\"></i>連携</button>"));
 
     let content = $("<ul style=\"display:table\">")
         .append($("<li style=\"display:table-row\">リセール開始日時：" + resale_start_at + "</li>"))
@@ -737,7 +745,7 @@
           type: "PUT",
           data: data,
           success: function(data) {
-              update_display(data["id"], data["resale_start_at"], data["resale_end_at"], data["start_at"], data["end_at"]);
+              update_display(data["id"], data["resale_performance_id"], data["resale_start_at"], data["resale_end_at"], data["start_at"], data["end_at"]);
               update_send_button_status($(".resale-segment-detail-box").find(".btn-send"), 'send_required');
               flush_result_message("リセールセグメントが更新されました。");
               close_modal();
@@ -776,25 +784,21 @@
           url = "/resale/api/segments/{0}/update".format(resale_segment_id),
           data = {
             "performance_id": parseInt(form.find("#performance_id").val()),
+            "resale_segment_id": resale_segment_id,
             "start_at": form.find("input[name=start_at]").val(),
             "end_at": form.find("input[name=end_at]").val(),
             "resale_performance_id": parseInt(form.find("#resale_performance_id").val())
           };
-      console.log(data);
+
       clear_modal_error_messages(modal);
       $.ajax({
           url: url,
           type: "PUT",
           data: data,
           success: function(data) {
-              var resale_segment_id = data["id"],
-                  h4 = $("h4#resale-segment-" + resale_segment_id);
-
-              h4.text("開始日時：" + data["start_at"] + " 終了日時：" + data["end_at"] + "（リセール連携公演ID：{0}）"
-                .format(data["resale_performance_id"]));
-              h4.data('resale_performance_id', data["resale_performance_id"]);
-
-              flush_result_message(h4.parents("ul"), "リセール公演が登録されました。");
+              update_display(data["id"], data["resale_performance_id"], data["resale_start_at"], data["resale_end_at"], data["start_at"], data["end_at"]);
+              update_send_button_status($(".resale-segment-detail-box").find(".btn-send"), 'send_required');
+              flush_result_message("リセール公演を連携しました。");
               close_modal();
           },
           error: function(xhr) {

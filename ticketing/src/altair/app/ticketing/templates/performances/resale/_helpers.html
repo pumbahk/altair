@@ -82,6 +82,11 @@
     <br/>
     <li style="display:table-row">
       <button class="btn btn-edit" onclick="open_modal_create_or_update_resale_segment($(this), 'update')"><i class="icon-pencil"></i>編集</button>
+      % if not resale_segment.resale_performance_id:
+        <button class="btn" onclick="open_modal_create_or_update_resale_performance($(this), 'create')"><i class="icon-pencil"></i>リセール公演ID登録</button>
+      % else:
+        <button class="btn" onclick="open_modal_create_or_update_resale_performance($(this), 'update')"><i class="icon-pencil"></i>リセール公演ID編集</button>
+      % endif
       <button class="btn ${status_color} btn-send" ${disabled} onclick="send_resale_segment_to_orion($(this), 'update')"><i class="icon-refresh icon-white"></i>${status_str}</button>
     </li>
     % else:
