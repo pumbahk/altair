@@ -128,28 +128,6 @@ dl.cost-detail > dd {
     </div>
   </div>
 
-  % if entry.get_orion_ticket_phone_list:
-  <div class="subbox">
-    <dl>
-      <dt><p class="lineRed">アプリ受取追加情報</p></dt>
-      <dd>
-        <div class="subInner2">
-          <dl class="creditList">
-            <dt class="creditHl">譲渡先</dt>
-            <dd>
-              <ul>
-                % for i, phone in enumerate(entry.get_orion_ticket_phone_list):
-                <li>電話番号${i+1}: ${phone}</li>
-                % endfor
-              </ul>
-            </dd>
-          </dl>
-        </div>
-      </dd>
-    </dl>
-  </div>
-  % endif
-
   <div class="subbox">
     <dl>
       <dt><p class="lineRed">購入者情報</p></dt>
@@ -187,4 +165,47 @@ dl.cost-detail > dd {
       </dd>
     </dl>
   </div>
+
+  % if entry.get_orion_ticket_phone_list:
+  <div class="subbox">
+    <dl>
+      <dt><p class="lineRed">アプリ受取追加情報</p></dt>
+      <dd>
+        <div class="subInner2">
+          <dl class="creditList">
+            <dt class="creditHl">譲渡先</dt>
+            <dd>
+              <ul>
+                % for i, phone in enumerate(entry.get_orion_ticket_phone_list):
+                <li>電話番号${i+1}: ${phone}</li>
+                % endfor
+              </ul>
+            </dd>
+          </dl>
+        </div>
+      </dd>
+    </dl>
+  </div>
+  % endif
+
+  <% extra_form_data = entry.get_lot_entry_attribute_pair_pairs(request) %>
+  % if extra_form_data:
+  <div class="subbox">
+    <dl>
+      <dt><p class="lineRed">追加情報</p></dt>
+      <dd>
+        <div class="subInner2">
+          <dl class="creditList">
+            ${lh.disp_extra_description(extra_description, 'sp')}
+            % for _, (display_name, display_value) in extra_form_data:
+              <dt class="creditHl">${display_name}</dt>
+              <dd>${h.sensible_coerce(request, display_value)}</dd>
+            % endfor
+          </dl>
+        </div>
+      </dd>
+    </dl>
+  </div>
+  % endif
+
 </div>

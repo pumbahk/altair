@@ -54,27 +54,6 @@
       %endfor
     </div>
   </div>
-  % if orion_ticket_phone:
-  <div class="settlementBox">
-    <div class="settlementBoxInner">
-      <h2>アプリ受取追加情報</h2>
-      <div class="settlementSelectBox">
-        <div class="settlementSelectBoxInner02">
-          <table summary="">
-            <tr>
-              <th>譲渡先</th>
-              <td>
-                % for i, phone in enumerate(orion_ticket_phone):
-                <p>電話番号${i+1}: ${phone}</p>
-                % endfor
-              </td>
-            </tr>
-          </table>
-        </div>
-      </div>
-    </div>
-  </div>
-  % endif
   <div class="settlementBox">
     <div class="settlementBoxInner">
       <h2><img src="${request.static_url('altair.app.ticketing.lots:static/RT/pc/img/order/title_buyer.gif')}" alt="購入者情報" width="97" height="30" /></h2>
@@ -118,6 +97,29 @@
       </div>
     </div>
   </div>
+
+  % if orion_ticket_phone:
+  <div class="settlementBox">
+    <div class="settlementBoxInner">
+      <h2>アプリ受取追加情報</h2>
+      <div class="settlementSelectBox">
+        <div class="settlementSelectBoxInner02">
+          <table summary="">
+            <tr>
+              <th>譲渡先</th>
+              <td>
+                % for i, phone in enumerate(orion_ticket_phone):
+                <p>電話番号${i+1}: ${phone}</p>
+                % endfor
+              </td>
+            </tr>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  % endif
+
   % if extra_form_data:
   <div class="confirmBox">
   	<div class="confirmBoxInner">
@@ -134,7 +136,6 @@
     </div>
   </div>
   % endif
-
 
   % if mailmagazines_to_subscribe:
   <div class="settlementBox">
