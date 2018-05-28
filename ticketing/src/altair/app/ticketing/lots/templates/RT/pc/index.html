@@ -367,19 +367,6 @@
                 ${self.error(form, 'sex')}
               </td>
             </tr>
-            ${self.lh.disp_extra_description(extra_description, 'pc')}
-            % for field in form['extra']._contained_form:
-            % if not field.short_name in {'member_type'}:
-            <tr>
-              <th scope="row">
-                <label for="${field.id}">${field.label}</label>
-              </th>
-              <td>
-                ${self.lh.render_field(field)}
-              </td>
-            </tr>
-            % endif
-            % endfor
           </table>
         </div>
       </div>
