@@ -1,5 +1,4 @@
 <%inherit file="${context['main_template'].uri}" />
-<%namespace file="altair.app.ticketing.lots:templates/__commons__/helper.html" name="lh" />
 <%
   from altair.app.ticketing.payments.plugins import ORION_DELIVERY_PLUGIN_ID
   # has_orionは決済引取方法の中でorionの引取方法があるかどうか
@@ -87,7 +86,7 @@
     <div class="settlementBoxInner">
       <h2 class="title"><img src="${request.static_url('altair.app.ticketing.lots:static/RT/pc/img/order/title_hope.gif')}" alt="お申込内容" width="97" height="30" /></h2>
       % if request.method == 'POST' and not wishes:
-          <p>${lh.render_error([__(u'希望枚数をご選択ください')])}</p>
+          <p>${self.lh.render_error([__(u'希望枚数をご選択ください')])}</p>
       % endif
       %for i in range(lot.limit_wishes):
       <div class="settlementSelectBox">
@@ -433,6 +432,7 @@
                 ${self.error(form, 'sex')}
               </td>
             </tr>
+            ${self.lh.disp_extra_description(extra_description, 'pc')}
             % for field in form['extra']._contained_form:
             % if not field.short_name in {'member_type'}:
             <tr>
@@ -440,7 +440,7 @@
                 <label for="${field.id}">${field.label}</label>
               </th>
               <td>
-                ${lh.render_field(field)}
+                ${self.lh.render_field(field)}
               </td>
             </tr>
             % endif
