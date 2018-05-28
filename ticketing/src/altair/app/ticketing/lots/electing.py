@@ -125,11 +125,20 @@ class Electing(object):
             self.lot.id,
             len(works),
         ))
+        lot_entry_lock = self.request.lot_entry_lock
+        if lot_entry_lock:
+            for stock, stock_status, product_item, performance, quantity, count in self.required_stocks:
+                # stockerのLockを使わない場合、事前に在庫数を確認、足りない場合に例外発生
+                if stock_status.quantity < quantity:
+                    from altair.app.ticketing.cart import api as cart_api
+                    raise cart_api.NotEnoughStockException(stock, stock_status.quantity, quantity)
+
         for work in works:
             logger.info("publish entry_wish = {0}".format(work.entry_wish_no))
             body = {"lot_id": self.lot.id,
                     "entry_no": work.lot_entry_no,
                     "wish_order": work.wish_order,
+                    "lot_entry_lock":lot_entry_lock,
             }
             publisher.publish(body=json.dumps(body),
                               routing_key="lots.election",

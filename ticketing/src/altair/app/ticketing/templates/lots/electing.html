@@ -18,6 +18,17 @@
     font-weight: normal;
     background-color: #eee;
   }
+  .entry-lock-checkboxes .checkbox-set {
+    width: 80em;
+  }
+  .entry-lock-checkboxes .checkbox-set .checkbox-set-item {
+    width: 18em;
+    float: left;
+  }
+  .entry-lock-checkboxes th {
+    font-weight: normal;
+    background-color: #eee;
+  }
 </style>
 
 </%block>
@@ -151,14 +162,47 @@ ${tabs.tabs(request)}
       %endfor
       </ul>
     </p>
+    <%if stock_info:
+      elect_info = u''
+      for stock, quantity, performance in stock_info:
+        performance_info = u'・'+performance.name+u'➡︎'+str(quantity)+u'件未当選'
+        elect_info += performance_info
+    %>
+    %if lot.organization.setting.lot_entry_lock:
+      <div class="alert alert-warning">
+        抽選UnLockをチェックすると当選処理時間が短くなります。<br>
+        抽選UnLock使用時、当選確定処理完了後、必ず「在庫数確定する」を行ってください。
+      </div>
+      <table class="entry-lock-checkboxes">
+        <tbody>
+          <tr>
+            <th>抽選UnLock</th>
+            <td>
+              <div class="checkbox-set" id="status">
+                <label class="checkbox-set-item" for="lot_entry_lock">使用
+                  <input id="lot_entry_lock" name="lot_entry_lock" type="checkbox" ${'disabled="disabled"' if not electing.required_stocks else u''}>
+                </label>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <br>
+    %endif
     <div class="pull-left">
       <p>
         <button ${"disabled" if electing.blockers or not process_possible else ""} id="btn-election"
                 class="btn btn-large btn-primary pull-left" style="margin-right: 5px;">
           当選確定する
         </button>
+        <button ${"disabled" if electing.blockers or not lot.organization.setting.lot_entry_lock or not stock_info else ""} id="btn-entry_stock_quantity_subtraction"
+                class="btn btn-large btn-warning" style="margin-right: 5px;" data-toggle="popover" data-placement="right" data-content="${elect_info if stock_info else u''}" data-original-title="">
+          在庫数確定する
+        </button>
+      </p>
+      <p>
         <button ${"disabled" if electing.blockers or not process_possible else ""} id="btn-rejection"
-                class="btn btn-large btn-info" style="margin-right: 5px;">
+                class="btn btn-large btn-info pull-left" style="margin-right: 5px;">
           落選確定する
         </button>
         <button id="btn-entries-close" ${"disabled" if not closer.can_close() or not process_possible else ""} class="btn btn-large btn-warning"
@@ -177,6 +221,11 @@ ${tabs.tabs(request)}
           落選結果通知
         </button>
       </p>
+      <script>
+      $(function() {
+        $('#btn-entry_stock_quantity_subtraction').popover('show');
+      })
+      </script>
       %if not closer.can_close():
       <script>
       $(function() {
@@ -200,12 +249,27 @@ ${tabs.tabs(request)}
 
 <script>
 $("#btn-election").on("click", function (){
+    var lot_entry_lock = 0;
+    if ($("#lot_entry_lock").prop("checked")) {
+        lot_entry_lock = 1;
+    }
     var modal = $("#modal-confirm");
     var form = modal.find("form");
     form.attr("method", "POST");
     form.attr("action", "${request.route_url('lots.entries.elect', lot_id=lot.id)}");
+    form.append($('<input />').attr({ type: 'hidden', name: 'lot_entry_lock', value: lot_entry_lock}));
     form.find("input[type=submit]").val("確定");
     var message = "当選確定します。"
+    modal.find(".message").html("<p>" + message + "</p>");
+    modal.modal("toggle");
+});
+$("#btn-entry_stock_quantity_subtraction").on("click", function (){
+    var modal = $("#modal-confirm");
+    var form = modal.find("form");
+    form.attr("method", "POST");
+    form.attr("action", "${request.route_url('lots.entries.stock_quantity_subtraction', lot_id=lot.id)}");
+    form.find("input[type=submit]").val("確定");
+    var message = "在庫数確定します。"
     modal.find(".message").html("<p>" + message + "</p>");
     modal.modal("toggle");
 });
