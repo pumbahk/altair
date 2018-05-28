@@ -35,6 +35,10 @@ altair.ticketing.resale =
     http://backend.stg.altr.jp(/resale(?:/.*)?)
     http://%(_proxy_target)s:${altair:ticketing.resale.port}\1
 
+altair.ticketing.orion =
+    http://backend.stg.altr.jp(/orion(?:/.*)?)
+    http://%(_proxy_target)s:${altair:ticketing.orion.port}\1
+
 altair.ticketing.admin =
     http://backend.stg.altr.jp(/.*)?
     http://%(_proxy_target)s:${altair:ticketing.admin.default.port}\1
