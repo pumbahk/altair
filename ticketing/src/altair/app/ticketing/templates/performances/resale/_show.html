@@ -909,12 +909,10 @@
           resale_segment_id = $(".resale-segment-list-box ul").data("selected_resale_segment_id"),
           order_no = $("#order_no").val().trim(),
           status_list = get_resale_request_status(),
-          sent_status_list = get_resale_request_sent_status(),
-          filter_list = [];
+          sent_status_list = get_resale_request_sent_status();
+      var filter_list = [];
 
-      if (status_list.length === 0 && sent_status_list === 0 && order_no === "") {
-          return baseUrl + "?" + "filter[resale_segment_id]=" + resale_segment_id;
-      }
+      filter_list.push("filter[resale_segment_id]=" + resale_segment_id);
 
       if (order_no !== "") {
           filter_list.push("order_no=" + order_no);
@@ -929,7 +927,6 @@
       }
 
       return baseUrl + "?" + filter_list.join("&");
-
   }
 
   function get_resale_request_status_verbose() {
