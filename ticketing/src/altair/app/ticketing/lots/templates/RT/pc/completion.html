@@ -3,7 +3,17 @@
    import altair.app.ticketing.cart.helpers as ch
    import altair.app.ticketing.lots.helpers as h
 %>
+<%block name="css">
+    <style type="text/css">
+        p.attention {
+            color: #cc0000;
+            margin-bottom: 15px;
+        }
+    </style>
+</%block>
 <p class="pageTitle">申込を完了しました</p>
+<p>下記の受付番号はとても大切な番号です。すぐにメモするか印刷して保管してください。</p>
+<p class="attention">★お申し込み内容を忘れないよう、この画面のスクリーンショットを取っておいてください。</p>
 <div class="confirmBox">
   <div class="confirmBoxInner">
     <h2><img src="${request.static_url('altair.app.ticketing.lots:static/RT/pc/img/order/title_number.gif')}" alt="申込番号" width="97" height="30" /></h2>
