@@ -135,28 +135,11 @@ class AdminHelperAdapter(object):
         resale_request = ordered_product_time_token.resale_request
         if not resale_request:
             return ""
-        elif resale_request.status == 1:
-            return render_label(
-                u"リセール中",
-                u'warning'
-            )
-        elif resale_request.status == 2:
-            return render_label(
-                u"リセール済み",
-                u'success'
-            )
-        elif resale_request.status == 3:
-            return render_label(
-                u"リセール返却",
-                u'info'
-            )
-        elif resale_request.status == 4:
-            return render_label(
-                u"リセールキャンセル",
-                u'info'
-            )
         else:
-            return ""
+            return render_label(
+                resale_request.verbose_status,
+                resale_request.label_attribute
+            )
 
     def has_permission(self, permission):
         return isinstance(

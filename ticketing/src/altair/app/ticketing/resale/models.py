@@ -70,6 +70,19 @@ class ResaleRequest(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return self.resale_segment.get_performance_id if self.resale_segment else None
 
     @property
+    def label_attribute(self):
+        if self.status == ResaleRequestStatus.waiting:
+            return u'warning'
+        elif self.status == ResaleRequestStatus.sold:
+            return u'success'
+        elif self.status == ResaleRequestStatus.back:
+            return u'info'
+        elif self.status == ResaleRequestStatus.cancel:
+            return u'important'
+        else:
+            return u''
+
+    @property
     def verbose_status(self):
         if self.status == ResaleRequestStatus.waiting:
             return u'リセール中'
