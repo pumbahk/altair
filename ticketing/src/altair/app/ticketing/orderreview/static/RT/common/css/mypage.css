@@ -380,7 +380,37 @@ body {
 .purchase-table tr.purchase-table-total td:last-child { font-weight: bold; font-size: 1.8rem; }
 
 
+/* .resale-wrap ============================== */
 
+.resale-table {
+	width: 100%;
+	border-collapse: collapse;
+	margin-top: 20px;
+}
+.resale-table th,
+.resale-table td {
+	padding: 10px;
+  text-align: center;
+	border-top: 1px solid #EFEFEF;
+  width: 40%;
+}
+.resale-table th:first-child,
+.resale-table td:first-child,
+.resale-table th:last-child,
+.resale-table td:last-child {
+  width: 30%;
+}
+.resale-table th {
+	font-weight: bold;
+}
+.resale-table tr:first-child th,
+.resale-table tr:first-child td {
+	border: none;
+}
+.resale-table tr:last-child th,
+.resale-table tr:last-child td {
+	border-bottom: 2px solid #CCC;
+}
 
 /* confirm_magBox ============================== */
 

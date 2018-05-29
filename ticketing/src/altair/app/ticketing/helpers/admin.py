@@ -122,6 +122,42 @@ class AdminHelperAdapter(object):
             self.order_status_string(order),
             self.order_status_style(order))
 
+    def order_resale_status(self, order):
+        if order.has_resale_requests:
+            return render_label(
+                u"リセール情報あり",
+                u'info'
+            )
+        else:
+            return ""
+
+    def ordered_product_item_token_resale_status(self, ordered_product_time_token):
+        resale_request = ordered_product_time_token.resale_request
+        if not resale_request:
+            return ""
+        elif resale_request.status == 1:
+            return render_label(
+                u"リセール中",
+                u'warning'
+            )
+        elif resale_request.status == 2:
+            return render_label(
+                u"リセール済み",
+                u'success'
+            )
+        elif resale_request.status == 3:
+            return render_label(
+                u"リセール返却",
+                u'info'
+            )
+        elif resale_request.status == 4:
+            return render_label(
+                u"リセールキャンセル",
+                u'info'
+            )
+        else:
+            return ""
+
     def has_permission(self, permission):
         return isinstance(
             security_has_permission(
