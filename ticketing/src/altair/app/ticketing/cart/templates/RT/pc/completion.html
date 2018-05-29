@@ -11,11 +11,16 @@
   .next-action{
     margin-top: 20px;
   }
+  p.attention {
+      color: #cc0000;
+      margin-bottom: 15px;
+  }
 </style>
 </%block>
 
 <p><img src="${request.static_url('altair.app.ticketing.cart:static/RT/pc/images/completion.gif')}" alt="購入を完了いたしました。" width="201" height="50" /></p>
 <p>下記の受付番号はとても大切な番号です。すぐにメモするか印刷して保管してください。</p>
+<p class="attention">★お申し込み内容を忘れないよう、この画面のスクリーンショットを取っておいてください。</p>
 
 <div class="confirmBox">
   <div class="confirmBoxInner">
