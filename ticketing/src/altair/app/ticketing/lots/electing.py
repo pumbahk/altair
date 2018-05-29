@@ -31,6 +31,7 @@ from altair.app.ticketing.lots.models import (
     LotElectedEntry,
     LotRejectedEntry,
 )
+from altair.app.ticketing.events.lots import helpers as event_lot_helper
 
 logger = logging.getLogger(__name__)
 
@@ -52,6 +53,9 @@ class Electing(object):
         # 在庫
         for p in self.check_stock():
             blockers.append(u"{0.name} の在庫が不足しています。".format(p))
+        # 在庫(大規模当選処理(テスト版))
+        for p, s, q in self.unlock_check_stock():
+            blockers.append(u"{0.name} の在庫が不足しています。➡︎	現在庫数:{1} 在庫数確定在庫数:{2}".format(p,s,q))
 
         return blockers
 
@@ -67,6 +71,13 @@ class Electing(object):
         for stock, stock_status, product_item, performance, quantity, count in self.required_stocks:
             if quantity > stock_status.quantity:
                 yield product_item
+
+    def unlock_check_stock(self):
+        """ 在庫数確定の在庫数が現在個数以下になっているか(大規模当選処理(テスト版))"""
+        for stock, stock_status, product_item, performance, quantity, count in self.required_stocks:
+            for elh_stock, elh_quantity, elh_performance in event_lot_helper.performance_stock_quantity(self.lot.id):
+                if elh_stock.id == stock.id and stock_status.quantity < (quantity + elh_quantity):
+                    yield product_item, stock_status.quantity, quantity + elh_quantity
 
     @reify
     def required_stocks(self):
@@ -129,9 +140,11 @@ class Electing(object):
         if lot_entry_lock:
             for stock, stock_status, product_item, performance, quantity, count in self.required_stocks:
                 # stockerのLockを使わない場合、事前に在庫数を確認、足りない場合に例外発生
-                if stock_status.quantity < quantity:
-                    from altair.app.ticketing.cart import api as cart_api
-                    raise cart_api.NotEnoughStockException(stock, stock_status.quantity, quantity)
+                for elh_stock, elh_quantity, elh_performance in event_lot_helper.performance_stock_quantity(self.lot.id):
+                    # 上記、在庫数確定行わなく、当選処理行う場合、前回当選在庫数を確認
+                    if elh_stock.id == stock.id and stock_status.quantity < (quantity + elh_quantity):
+                        from altair.app.ticketing.cart.stocker import NotEnoughStockException
+                        raise NotEnoughStockException(stock, stock_status.quantity, quantity + elh_quantity)
 
         for work in works:
             logger.info("publish entry_wish = {0}".format(work.entry_wish_no))

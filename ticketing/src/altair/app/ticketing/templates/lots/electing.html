@@ -29,6 +29,9 @@
     font-weight: normal;
     background-color: #eee;
   }
+  div.alert-messages h5 {
+     color: red
+  }
 </style>
 
 </%block>
@@ -155,94 +158,85 @@ ${tabs.tabs(request)}
     %if lot.is_finished():
       この抽選は終了しました
     %else:
-    <p>
-      <ul>
-      %for blocker in electing.blockers:
-        <li>${blocker}</li>
-      %endfor
-      </ul>
-    </p>
-    <%if stock_info:
-      elect_info = u''
-      for stock, quantity, performance in stock_info:
-        performance_info = u'・'+performance.name+u'➡︎'+str(quantity)+u'件未当選'
-        elect_info += performance_info
-    %>
-    %if lot.organization.setting.lot_entry_lock:
-      <div class="alert alert-warning">
-        抽選UnLockをチェックすると当選処理時間が短くなります。<br>
-        抽選UnLock使用時、当選確定処理完了後、必ず「在庫数確定する」を行ってください。
+      <p>
+        <ul>
+        %for blocker in electing.blockers:
+          <li>${blocker}</li>
+        %endfor
+        </ul>
+      </p>
+      %if lot.organization.setting.lot_entry_lock:
+        <table class="entry-lock-checkboxes">
+          <tbody>
+            <tr>
+              <th>大規模当選処理(テスト版)</th>
+              <td>
+                <div class="checkbox-set" id="status">
+                  <label class="checkbox-set-item" for="lot_entry_lock">
+                    <input id="lot_entry_lock" name="lot_entry_lock" type="checkbox" ${'disabled="disabled"' if not electing.required_stocks else u''}>
+                  </label>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <br>
+      %endif
+      <div class="pull-left">
+        <p>
+          <button ${"disabled" if electing.blockers or not process_possible else ""} id="btn-rejection"
+                  class="btn btn-large btn-info pull-left" style="margin-right: 5px;">
+            落選確定する
+          </button>
+          <button ${"disabled" if electing.blockers or not process_possible else ""} id="btn-election"
+                  class="btn btn-large btn-primary pull-left" style="margin-right: 5px;">
+            当選確定する
+          </button>
+          <button ${"disabled" if electing.blockers or not lot.organization.setting.lot_entry_lock or not stock_info or not process_possible else ""} id="btn-entry_stock_quantity_subtraction"
+                  class="btn btn-large btn-warning" style="margin-right: 5px;">
+            在庫数確定する
+          </button>
+          %if electing.blockers or not process_possible:
+            <div class="alert-messages">
+              <h5>抽選申込取消がONのため、受付期間：${vh.datetime(lot.lotting_announce_datetime, with_weekday=True)}を過ぎるまで当選、落選処理が行えません。</h5>
+            </div>
+          %endif
+          %if not electing.blockers and lot.organization.setting.lot_entry_lock and stock_info and process_possible:
+            <div class="alert-messages">
+              <h5>在庫数を確定してください。</h5>
+            </div>
+          %endif
+        </p>
+        <hr>
+        <p>
+          <button id="btn-send-rejection-mail" ${"disabled" if not lot.is_over_announcement_datetime() else ""} class="btn btn-large btn-info"
+                  data-toggle="popover" data-placement="right" data-content="抽選結果発表予定日: ${vh.datetime(lot.lotting_announce_datetime, with_weekday=True)}を過ぎていません" data-original-title="">
+            落選結果通知
+          </button>
+          <button id="btn-send-election-mail" ${"disabled" if not lot.is_over_announcement_datetime() else ""} class="btn btn-large btn-primary"
+                  data-toggle="popover" data-placement="right" data-content="" data-original-title="">
+            当選結果通知
+          </button>
+          %if not lot.is_over_announcement_datetime():
+            <div class="alert-messages">
+              <h5>抽選結果発表予定日: ${vh.datetime(lot.lotting_announce_datetime, with_weekday=True)}を過ぎていません</h5>
+            </div>
+          %endif
+        </p>
+        <hr>
+        <p>
+          <button id="btn-entries-close" ${"disabled" if not closer.can_close() or not process_possible else ""} class="btn btn-large btn-warning"
+                  style="margin-right: 5px;" >
+            オーソリ開放する
+          </button>
+          %if not closer.can_close():
+            <div class="alert-messages">
+              <h5>当落の確定していない申込があるか、メールが未送信のためオーソリ開放できません</h5>
+            </div>
+          %endif
+        </p>
       </div>
-      <table class="entry-lock-checkboxes">
-        <tbody>
-          <tr>
-            <th>抽選UnLock</th>
-            <td>
-              <div class="checkbox-set" id="status">
-                <label class="checkbox-set-item" for="lot_entry_lock">使用
-                  <input id="lot_entry_lock" name="lot_entry_lock" type="checkbox" ${'disabled="disabled"' if not electing.required_stocks else u''}>
-                </label>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-      <br>
-    %endif
-    <div class="pull-left">
-      <p>
-        <button ${"disabled" if electing.blockers or not process_possible else ""} id="btn-election"
-                class="btn btn-large btn-primary pull-left" style="margin-right: 5px;">
-          当選確定する
-        </button>
-        <button ${"disabled" if electing.blockers or not lot.organization.setting.lot_entry_lock or not stock_info else ""} id="btn-entry_stock_quantity_subtraction"
-                class="btn btn-large btn-warning" style="margin-right: 5px;" data-toggle="popover" data-placement="right" data-content="${elect_info if stock_info else u''}" data-original-title="">
-          在庫数確定する
-        </button>
-      </p>
-      <p>
-        <button ${"disabled" if electing.blockers or not process_possible else ""} id="btn-rejection"
-                class="btn btn-large btn-info pull-left" style="margin-right: 5px;">
-          落選確定する
-        </button>
-        <button id="btn-entries-close" ${"disabled" if not closer.can_close() or not process_possible else ""} class="btn btn-large btn-warning"
-                style="margin-right: 5px;" data-toggle="popover" data-placement="right" data-original-title=""
-                data-content="当落の確定していない申込があるか、メールが未送信のためオーソリ開放できません" >
-          オーソリ開放する
-        </button>
-      </p>
-      <p>
-        <button id="btn-send-election-mail" ${"disabled" if not lot.is_over_announcement_datetime() else ""} class="btn btn-large btn-primary"
-                data-toggle="popover" data-placement="right" data-content="" data-original-title="">
-          当選結果通知
-        </button>
-        <button id="btn-send-rejection-mail" ${"disabled" if not lot.is_over_announcement_datetime() else ""} class="btn btn-large btn-info"
-                data-toggle="popover" data-placement="right" data-content="抽選結果発表予定日: ${vh.datetime(lot.lotting_announce_datetime, with_weekday=True)}を過ぎていません" data-original-title="">
-          落選結果通知
-        </button>
-      </p>
-      <script>
-      $(function() {
-        $('#btn-entry_stock_quantity_subtraction').popover('show');
-      })
-      </script>
-      %if not closer.can_close():
-      <script>
-      $(function() {
-        $('#btn-entries-close').popover('show');
-      })
-      </script>
-      %endif
-      %if not lot.is_over_announcement_datetime():
-      <script>
-      $(function() {
-        $('#btn-send-election-mail').popover('show');
-        $('#btn-send-rejection-mail').popover('show');
-      })
-      </script>
-      %endif
-    </div>
-    %endif
+    % endif
   % endif
 </div>
 

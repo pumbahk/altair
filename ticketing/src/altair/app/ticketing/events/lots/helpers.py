@@ -1,7 +1,22 @@
 # -*- coding:utf-8 -*-
 from api import get_lots_cart_url
+from sqlalchemy import sql
 from webhelpers.html.tags import link_to
 from altair.app.ticketing.lots.helpers import timezone_label
+from altair.app.ticketing.core.models import (
+    DBSession,
+    Performance,
+    StockStatus,
+    ProductItem,
+    Product,
+    Stock,
+)
+from altair.app.ticketing.lots.models import (
+    LotEntry,
+    LotEntryWish,
+    LotElectedEntry,
+    LotEntryProduct,
+)
 
 
 class Link(object):
@@ -36,3 +51,31 @@ def exist_not_quantity_only_stock_type(lot):
             # 座席選択あり
             return True
     return False
+
+def performance_stock_quantity(lot_id):
+    s = [Stock, sql.func.count(LotElectedEntry.id), Performance]
+    performance_stock_info = DBSession.query(*s).filter(
+        LotEntry.lot_id == lot_id
+    ).filter(
+        LotEntryWish.lot_entry_id == LotEntry.id
+    ).filter(
+        LotElectedEntry.lot_entry_id == LotEntry.id
+    ).filter(
+        LotEntryProduct.lot_wish_id == LotEntryWish.id
+    ).filter(
+        LotEntryProduct.product_id == Product.id
+    ).filter(
+        Product.id == ProductItem.product_id
+    ).filter(
+        Stock.id == ProductItem.stock_id
+    ).filter(
+        Performance.id == ProductItem.performance_id
+    ).filter(
+        LotElectedEntry.completed_at == None
+    ).filter(
+        LotEntryWish.canceled_at == None
+    ).filter(
+        LotEntryWish.elected_at != None
+    ).group_by(Stock.id)
+
+    return performance_stock_info.all()
