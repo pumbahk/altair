@@ -523,11 +523,11 @@
 
   //// modal for sending resale requests to orion
   function open_modal_send_resale_request_to_orion(button, all) {
-      let modal = $("#base-modal"),
-          resale_segment_id = undefined,
+      let modal = $("#base-modal");
+      var resale_segment_id = undefined,
           resale_request_id = undefined;
       if (all) {
-          resale_segment_id = button.siblings("h5").data("resale_segment_id");
+          resale_segment_id = button.parents("h5").data("resale_segment_id");
           modal.find(".modal-header h3").text("リセールリクエスト一括連携");
           modal.find(".modal-body-content").append(
               $("<p>リセールリクエスト一括連携したら、対象のリセールリクエストのステータスを変更できなくなります。</p>")
