@@ -60,6 +60,8 @@ class FCAuthLoginViewMixin(object):
             identities, auth_factors, metadata = self.auth_api.login(self.request, self.request.response, credentials, auth_factor_provider_name=self.plugin.name)
 
         if identities is None:
+            pc_smartphone_error_message = u''
+            mobile_error_message = u''
             if hasattr(self.request.context, 'membership') and self.request.context.membership.enable_login_body:
                 membership_info = self.request.context.membership
                 pc_smartphone_error_message = u'<span class="red">' + membership_info.login_body_error_message + u'</span>'
