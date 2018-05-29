@@ -1,14 +1,14 @@
 """add lots lock to OrganizationSetting
 
 Revision ID: 4efaf35b55bf
-Revises: 3cd361e34c44
+Revises: 13151cb706a
 Create Date: 2018-05-22 15:52:42.554896
 
 """
 
 # revision identifiers, used by Alembic.
 revision = '4efaf35b55bf'
-down_revision = '3cd361e34c44'
+down_revision = '13151cb706a'
 
 from alembic import op
 import sqlalchemy as sa

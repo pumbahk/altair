@@ -986,10 +986,9 @@ class LotEntries(BaseView):
             StockStatus.query.filter(StockStatus.stock_id == stock.id).update({'quantity': (StockStatus.quantity - quantity)})
 
         DBSession.execute("UPDATE LotElectedEntry lee "
-                          "INNER JOIN LotEntry le ON le.lot_id = %d "
+                          "INNER JOIN LotEntry le ON le.lot_id = {0} "
                           "SET lee.completed_at = now() "
-                          "WHERE lee.lot_entry_id = le.id AND lee.completed_at IS NULL AND lee.deleted_at IS NULL AND le.deleted_at IS NULL"
-                          % (lot_id))
+                          "WHERE lee.lot_entry_id = le.id AND lee.completed_at IS NULL AND lee.deleted_at IS NULL AND le.deleted_at IS NULL".format(lot_id))
 
         self.request.session.flash(u"在庫数確定処理を行いました")
         lot.start_electing()
