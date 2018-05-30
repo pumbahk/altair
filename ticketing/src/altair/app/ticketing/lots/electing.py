@@ -48,14 +48,14 @@ class Electing(object):
         blockers = []
 
         # 商品明細
-        for p in self.check_product_items():
-            blockers.append(u"{0.name} に商品明細がありません。".format(p))
+        for product_name in self.check_product_items():
+            blockers.append(u"{0} に商品明細がありません。".format(product_name))
         # 在庫
-        for p in self.check_stock():
-            blockers.append(u"{0.name} の在庫が不足しています。".format(p))
+        for performance_name, product_item in self.check_stock():
+            blockers.append(u"{0}, {1} の在庫が不足しています。".format(performance_name, product_item))
         # 在庫(大規模当選処理(テスト版))
-        for p, s, q in self.unlock_check_stock():
-            blockers.append(u"{0.name} の在庫が不足しています。➡︎	現在庫数:{1} 在庫数確定在庫数:{2}".format(p,s,q))
+        for performance_name, product_item, stock_status_quantity, entry_quantity in self.unlock_check_stock():
+            blockers.append(u"{0}, {1} の在庫が不足しています。➡︎	現在庫数:{2} 在庫数確定在庫数:{3}".format(performance_name, product_item, stock_status_quantity, entry_quantity))
 
         return blockers
 
@@ -64,20 +64,20 @@ class Electing(object):
 
         for product in self.lot.products:
             if not product.items:
-                yield product
+                yield product.name
 
     def check_stock(self):
         """ 当選予定の在庫数が現在個数以下になっているか"""
         for stock, stock_status, product_item, performance, quantity, count in self.required_stocks:
             if quantity > stock_status.quantity:
-                yield product_item
+                yield performance.name, product_item.name
 
     def unlock_check_stock(self):
         """ 在庫数確定の在庫数が現在個数以下になっているか(大規模当選処理(テスト版))"""
         for stock, stock_status, product_item, performance, quantity, count in self.required_stocks:
             for elh_stock, elh_quantity, elh_performance in event_lot_helper.performance_stock_quantity(self.lot.id):
                 if elh_stock.id == stock.id and stock_status.quantity < (quantity + elh_quantity):
-                    yield product_item, stock_status.quantity, quantity + elh_quantity
+                    yield performance.name, product_item.name, stock_status.quantity, quantity + elh_quantity
 
     @reify
     def required_stocks(self):
