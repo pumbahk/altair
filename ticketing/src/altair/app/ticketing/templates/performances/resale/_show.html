@@ -242,8 +242,10 @@
   ${ch.form_item(form.performance_id)}
   ${ch.form_item(form.resale_start_at)}
   ${ch.form_item(form.resale_end_at)}
+% if resale_segment.editable:
   ${ch.form_item(form.start_at)}
   ${ch.form_item(form.end_at)}
+% endif
 </form>
 </div>
 
