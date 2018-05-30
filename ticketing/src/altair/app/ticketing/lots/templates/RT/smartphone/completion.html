@@ -83,19 +83,6 @@
 
 %endfor
 
-% if entry.get_orion_ticket_phone_list:
-  <dt class="creditHl">アプリ受取追加情報</dt>
-  <dd>
-    <div class="detailBox">
-      <ul>
-        % for i, phone in enumerate(entry.get_orion_ticket_phone_list):
-        <li>電話番号${i+1}: ${phone}</li>
-        % endfor
-      </ul>
-    </div>
-  </dd>
-% endif
-
 <dt class="creditHl">購入者情報</dt>
 <dd>
 
@@ -117,6 +104,19 @@ ${shipping_address.address_2}
 </ul>
 </div>
 </dd>
+
+% if entry.get_orion_ticket_phone_list:
+  <dt class="creditHl">アプリ受取追加情報</dt>
+  <dd>
+    <div class="detailBox">
+      <ul>
+        % for i, phone in enumerate(entry.get_orion_ticket_phone_list):
+        <li>電話番号${i+1}: ${phone}</li>
+        % endfor
+      </ul>
+    </div>
+  </dd>
+% endif
 
 <% extra_form_data = entry.get_lot_entry_attribute_pair_pairs(request) %>
 % if extra_form_data:

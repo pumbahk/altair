@@ -72,18 +72,6 @@
 
 %endfor
 
-% if orion_ticket_phone:
-  <dt class="creditHl">アプリ受取追加情報</dt>
-  <dd>
-    <div class="detailBox">
-      <ul>
-        % for i, phone in enumerate(orion_ticket_phone):
-        <li>電話番号${i+1}: ${phone}</li>
-        % endfor
-      </ul>
-    </div>
-  </dd>
-% endif
 
 <dt class="creditHl">購入者情報</dt>
 <dd>
@@ -106,6 +94,19 @@ ${shipping_address['address_2']}
 </ul>
 </div>
 </dd>
+
+% if orion_ticket_phone:
+  <dt class="creditHl">アプリ受取追加情報</dt>
+  <dd>
+    <div class="detailBox">
+      <ul>
+        % for i, phone in enumerate(orion_ticket_phone):
+        <li>電話番号${i+1}: ${phone}</li>
+        % endfor
+      </ul>
+    </div>
+  </dd>
+% endif
 
 % if extra_form_data:
 <dt class="creditHl">追加情報</dt>

@@ -248,71 +248,6 @@
     </div>
   </div>
 
-  <%
-    # show_orion_inputはorion_ticket_phoneの入力フォームを表示するかどうか。下記２つのcheckを満たす場合は表示する
-    # check 1: 取引方法の中でorionの引取方法があることかつorionの設定でphone_verify_disabledがfalse
-    # check 2: check 1が満たす場合：check_number_of_phonesがfalseまたは選択された商品明細の数が2以上の場合
-    show_orion_input = False
-    if has_orion and is_phone_verify_disabled == 'false':
-      if check_number_of_phones == 'false' or sales_segment.max_quantity > 1:
-        show_orion_input = True
-  %>
-
-  % if show_orion_input:
-  <div id="orion-ticket-phone-info" class="settlementBox" ${'' if orion_checked else 'style="display:none;"'|n}>
-    <div class="settlementBoxinner">
-      <h2>アプリ受取追加情報</h2>
-      <div class="settlementSelectBox">
-        <div class="settlementSelectBoxInner02">
-          <table summary="アプリ受取追加情報">
-            <tr>
-              <th>譲渡先</th>
-              <td>
-                <ul id="orion-ticket-phone-list">
-                  <li id="orion-ticket-phone-template">
-                    <label for="tmp-orion-ticket-phone" style="display: inline-block; width: 80px;">電話番号</label>
-                    <input type="text" id="tmp-orion-ticket-phone">
-                    <button type="button" onclick="delete_orion_ticket_phone(this);">削除</button>
-                  </li>
-                  % if not orion_ticket_phone:
-                    <%
-                      if check_number_of_phones == 'true':
-                        disabled = 'disabled="disabled"' if sales_segment.max_quantity < 3 else ''
-                      else:
-                        disabled = 'disabled="disabled"' if sales_segment.max_quantity < 2 else ''
-                    %>
-                    <li>
-                      <label for="orion-ticket-phone-1">電話番号1</label>
-                      <input type="text" id="orion-ticket-phone-1" name="orion-ticket-phone" value="">
-                      <button id="btn-add-orion-ticket-phone" type="button" onclick="add_orion_ticket_phone(this);" ${disabled|n}>追加</button>
-                    </li>
-                  % else:
-                    % for i, (phone, error) in enumerate(zip(orion_ticket_phone, orion_phone_errors)):
-                      <li style="margin-bottom: 2px;">
-                        <label for="orion-ticket-phone-${i+1}">電話番号${i+1}</label>
-                        <input type="text" id="orion-ticket-phone-${i+1}" name="orion-ticket-phone" value="${phone}">
-                        % if i == 0:
-                        <% disabled = 'disabled="disabled"' if len(orion_ticket_phone) > sales_segment.max_quantity - 1 else '' %>
-                        <button id="btn-add-orion-ticket-phone" type="button" onclick="add_orion_ticket_phone(this);" ${disabled|n}>追加</button>
-                        % else:
-                        <button type="button" onclick="delete_orion_ticket_phone(this);">削除</button>
-                        % endif
-                        % if error:
-                        <span class="error">${error}</span>
-                        % endif
-                      </li>
-                    % endfor
-                  % endif
-                </ul>
-              </td>
-            </tr>
-          </table>
-        </div>
-      </div>
-    </div>
-  </div>
-  % endif
-
   <div class="settlementBox">
     <div class="settlementBoxInner">
       <h2><img src="${request.static_url('altair.app.ticketing.lots:static/RT/pc/img/order/title_buyer.gif')}" alt="購入者情報" width="97" height="30" /></h2>
@@ -432,6 +367,85 @@
                 ${self.error(form, 'sex')}
               </td>
             </tr>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <%
+    # show_orion_inputはorion_ticket_phoneの入力フォームを表示するかどうか。下記２つのcheckを満たす場合は表示する
+    # check 1: 取引方法の中でorionの引取方法があることかつorionの設定でphone_verify_disabledがfalse
+    # check 2: check 1が満たす場合：check_number_of_phonesがfalseまたは選択された商品明細の数が2以上の場合
+    show_orion_input = False
+    if has_orion and is_phone_verify_disabled == 'false':
+      if check_number_of_phones == 'false' or sales_segment.max_quantity > 1:
+        show_orion_input = True
+  %>
+
+  % if show_orion_input:
+  <div id="orion-ticket-phone-info" class="settlementBox" ${'' if orion_checked else 'style="display:none;"'|n}>
+    <div class="settlementBoxinner">
+      <h2>アプリ受取追加情報</h2>
+      <div class="settlementSelectBox">
+        <div class="settlementSelectBoxInner02">
+          <table summary="アプリ受取追加情報">
+            <tr>
+              <th>譲渡先</th>
+              <td>
+                <ul id="orion-ticket-phone-list">
+                  <li id="orion-ticket-phone-template">
+                    <label for="tmp-orion-ticket-phone" style="display: inline-block; width: 80px;">電話番号</label>
+                    <input type="text" id="tmp-orion-ticket-phone">
+                    <button type="button" onclick="delete_orion_ticket_phone(this);">削除</button>
+                  </li>
+                  % if not orion_ticket_phone:
+                    <%
+                      if check_number_of_phones == 'true':
+                        disabled = 'disabled="disabled"' if sales_segment.max_quantity < 3 else ''
+                      else:
+                        disabled = 'disabled="disabled"' if sales_segment.max_quantity < 2 else ''
+                    %>
+                    <li>
+                      <label for="orion-ticket-phone-1">電話番号1</label>
+                      <input type="text" id="orion-ticket-phone-1" name="orion-ticket-phone" value="">
+                      <button id="btn-add-orion-ticket-phone" type="button" onclick="add_orion_ticket_phone(this);" ${disabled|n}>追加</button>
+                    </li>
+                  % else:
+                    % for i, (phone, error) in enumerate(zip(orion_ticket_phone, orion_phone_errors)):
+                      <li style="margin-bottom: 2px;">
+                        <label for="orion-ticket-phone-${i+1}">電話番号${i+1}</label>
+                        <input type="text" id="orion-ticket-phone-${i+1}" name="orion-ticket-phone" value="${phone}">
+                        % if i == 0:
+                        <% disabled = 'disabled="disabled"' if len(orion_ticket_phone) > sales_segment.max_quantity - 1 else '' %>
+                        <button id="btn-add-orion-ticket-phone" type="button" onclick="add_orion_ticket_phone(this);" ${disabled|n}>追加</button>
+                        % else:
+                        <button type="button" onclick="delete_orion_ticket_phone(this);">削除</button>
+                        % endif
+                        % if error:
+                        <span class="error">${error}</span>
+                        % endif
+                      </li>
+                    % endfor
+                  % endif
+                </ul>
+              </td>
+            </tr>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  % endif
+
+  <% extra_fields = [field for field in form['extra']._contained_form] %>
+  % if extra_fields:
+  <div class="settlementBox">
+    <div class="settlementBoxInner">
+      <h2><img src="${request.static_url('altair.app.ticketing.lots:static/RT/pc/img/order/title_buyer.gif')}" alt="購入者情報" width="97" height="30" /></h2>
+      <div class="settlementSelectBox">
+        <div class="settlementSelectBoxInner02">
+          <table summary="購入者情報入力">
             ${self.lh.disp_extra_description(extra_description, 'pc')}
             % for field in form['extra']._contained_form:
             % if not field.short_name in {'member_type'}:
@@ -450,6 +464,8 @@
       </div>
     </div>
   </div>
+  % endif
+
   <p class="align2"><input type="image" src="${request.static_url('altair.app.ticketing.lots:static/RT/pc/img/settlement/btn_next.gif')}" alt="次へ" width="226" height="46" /></p>
 </form>
 <%def name="product_select_tmpl()">
