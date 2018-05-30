@@ -98,9 +98,11 @@ def elect_lot_wish(request, wish, order=None):
     if order is None:
         cart = lot_wish_cart(wish)
         payment = Payment(cart, request, cancel_payment_on_failure=False)
-        performance = cart.performance
-        product_requires = [(p.product, p.quantity) for p in cart.items]
-        stocked = stocker.take_stock(performance.id, product_requires)
+        lot_entry_lock = request.params.get('lot_entry_lock')
+        if not lot_entry_lock:
+            performance = cart.performance
+            product_requires = [(p.product, p.quantity) for p in cart.items]
+            stocked = stocker.take_stock(performance.id, product_requires)
         order = payment.call_payment()
         order.user_point_accounts = cart.user_point_accounts
         order.attributes = wish.lot_entry.attributes
@@ -164,7 +166,7 @@ def elect_lots_task(context, request):
                 if orion_ticket_phone:
                     DBSession.add(orion_ticket_phone)
                 DBSession.delete(context.work)
-                wish.lot_entry.elect(wish)
+                wish.lot_entry.elect(wish, request.params.get('lot_entry_lock'))
                 wish.order_id = order.id
                 wish.lot_entry.order_id = order.id
                 wish.lot_entry.order = order

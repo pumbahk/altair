@@ -364,6 +364,9 @@ class OrganizationSettingSimpleForm(OurForm):
     lot_entry_user_withdraw = OurBooleanField(
         label=get_annotations_for(c_models.OrganizationSetting.lot_entry_user_withdraw)['label']
     )
+    lot_entry_lock = OurBooleanField(
+        label=get_annotations_for(c_models.OrganizationSetting.lot_entry_lock)['label']
+    )
     auto_cms = OurBooleanField(
         label=get_annotations_for(c_models.OrganizationSetting.auto_cms)['label']
     )
@@ -470,6 +473,9 @@ class OrganizationSettingForm(OrganizationSettingSimpleForm):
     lot_asid = OurTextField(
         label=get_annotations_for(c_models.OrganizationSetting.lot_asid)['label']
         )
+    lot_entry_lock = OurBooleanField(
+        label=get_annotations_for(c_models.OrganizationSetting.lot_entry_lock)['label']
+    )
     sitecatalyst_use = OurBooleanField(
         label=get_annotations_for(c_models.OrganizationSetting.sitecatalyst_use)['label']
         )

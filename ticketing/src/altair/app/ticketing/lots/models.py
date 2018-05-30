@@ -760,12 +760,16 @@ class LotEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
         return rejected
 
-    def elect(self, wish):
+    def elect(self, wish, entry_lock=None):
         assert wish in self.wishes
         now = datetime.now()
         self.elected_at = now
+        completed_at = None
+        if not entry_lock:
+            completed_at = now
         elected = LotElectedEntry(lot_entry=self,
-                                  lot_entry_wish=wish)
+                                  lot_entry_wish=wish,
+                                  completed_at=completed_at)
         for _wish in self.wishes:
             if wish == _wish:
                 _wish.elect(now)
@@ -1164,6 +1168,7 @@ class LotElectedEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
 
     mail_sent_at = sa.Column(sa.DateTime)
+    completed_at = sa.Column(sa.DateTime)
 
     order_id = sa.Column(Identifier, sa.ForeignKey('Order.id'))
 
