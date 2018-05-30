@@ -173,7 +173,7 @@ ${tabs.tabs(request)}
               <td>
                 <div class="checkbox-set" id="status">
                   <label class="checkbox-set-item" for="lot_entry_lock">
-                    <input id="lot_entry_lock" name="lot_entry_lock" type="checkbox" ${'disabled="disabled"' if not electing.required_stocks else u''}>
+                    <input id="lot_entry_lock" name="lot_entry_lock" type="checkbox" ${'disabled="disabled"' if not electing.required_stocks or electing.blockers or not process_possible else u''}>
                   </label>
                 </div>
               </td>
