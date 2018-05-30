@@ -502,7 +502,7 @@ class PerformanceResaleSegmentForm(OurForm):
         validators=[Optional()],
     )
     resale_segment_id = HiddenField(
-        label=u'リセールセグメントID',
+        label=u'リセール区分ID',
         validators=[Optional()],
     )
     start_at = DateTimeField(
@@ -528,6 +528,10 @@ class PerformanceResaleSegmentForm(OurForm):
         validators=[Optional(), after1900],
         format='%Y-%m-%d %H:%M',
         widget=OurDateTimeWidget(),
+    )
+    resale_performance_id = OurIntegerField(
+        label=u'リセール公演ID',
+        validators=[Optional()],
     )
 
 class PerformanceResaleRequestSearchForm(OurForm):
