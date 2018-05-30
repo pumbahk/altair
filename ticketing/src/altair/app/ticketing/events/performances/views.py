@@ -1128,7 +1128,7 @@ class Performances(BaseView):
                 # 1205: u'Lock wait timeout exceeded; try restarting transaction'
                 # 1213: u'Deadlock found when trying to get lock; try restarting transaction'
                 if exc.orig.args[0] and (exc.orig.args[0] in [1205, 1213]):
-                    error_msg = u'{}処理がタイムアウトしました。別処理にて関連データの更新が行われています。時間をおいて再実行してください。'.format(route_name)
+                    error_msg = u'コピー処理がタイムアウトしました。別処理にて関連データの更新が行われています。時間をおいて再実行してください。'
                     logger.error(u'{}. locked out sql: {}'.format(exc.message, exc.statement))
                 else:
                     unexpected_error()
