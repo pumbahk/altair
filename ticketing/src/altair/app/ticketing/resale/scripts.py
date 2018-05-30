@@ -74,6 +74,7 @@ def do_update_resale_request_status_with_sold(request):
             .filter(Performance.id == p_resale.id)\
             .filter(Order.deleted_at == None) \
             .filter(Order.canceled_at == None) \
+            .filter(Order.paid_at != None) \
             .filter(OrderedProduct.deleted_at == None)\
             .filter(OrderedProductItem.deleted_at == None)\
             .filter(OrderedProductItemToken.deleted_at == None)
