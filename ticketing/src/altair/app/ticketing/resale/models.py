@@ -2,6 +2,8 @@
 
 import logging
 
+from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
+
 from altair.app.ticketing.models import Base, BaseModel, WithTimestamp, LogicallyDeleted, Identifier
 from altair.saannotation import AnnotatedColumn
 from pyramid.i18n import TranslationString as _
@@ -66,3 +68,29 @@ class ResaleRequest(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     @property
     def get_performance_id(self):
         return self.resale_segment.get_performance_id if self.resale_segment else None
+
+    @property
+    def label_attribute(self):
+        if self.status == ResaleRequestStatus.waiting:
+            return u'warning'
+        elif self.status == ResaleRequestStatus.sold:
+            return u'success'
+        elif self.status == ResaleRequestStatus.back:
+            return u'info'
+        elif self.status == ResaleRequestStatus.cancel:
+            return u'important'
+        else:
+            return u''
+
+    @property
+    def verbose_status(self):
+        if self.status == ResaleRequestStatus.waiting:
+            return u'リセール中'
+        elif self.status == ResaleRequestStatus.sold:
+            return u'リセール済み'
+        elif self.status == ResaleRequestStatus.back:
+            return u'リセール返却'
+        elif self.status == ResaleRequestStatus.cancel:
+            return u'リセールキャンセル'
+        else:
+            return u'予想外エラー'

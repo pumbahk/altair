@@ -68,6 +68,9 @@ from altair.app.ticketing.lots.models import (
     Lot,
     LotEntry,
     )
+from altair.app.ticketing.resale.models import (
+    ResaleRequest
+)
 from altair.app.ticketing.models import (
     Base,
 )
@@ -899,6 +902,17 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def used_discount_quantity(self):
         return discount_api.get_used_discount_quantity(self)
 
+    @property
+    def has_resale_requests(self):
+        resale_requests = ResaleRequest.query\
+            .join(OrderedProductItemToken, and_(ResaleRequest.ordered_product_item_token_id == OrderedProductItemToken.id))\
+            .join(OrderedProductItem)\
+            .join(OrderedProduct)\
+            .filter(OrderedProduct.order_id == self.id)\
+            .filter(ResaleRequest.deleted_at == None)\
+            .count()
+
+        return resale_requests > 0
 
 class OrderNotification(Base, BaseModel):
     __tablename__ = 'OrderNotification'
@@ -1001,6 +1015,32 @@ class OrderedProduct(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     def get_element_refund_record(self, element):
         return element
+
+    def get_resale_info(self, request):
+        session = get_db_session(request, 'slave')
+
+        data = session.query(ResaleRequest, OrderedProductItemToken) \
+            .join(OrderedProductItemToken,
+                  and_(ResaleRequest.ordered_product_item_token_id == OrderedProductItemToken.id)) \
+            .join(OrderedProductItem, and_(OrderedProductItem.id == OrderedProductItemToken.ordered_product_item_id)) \
+            .filter(ResaleRequest.ordered_product_item_token_id == OrderedProductItemToken.id) \
+            .filter(OrderedProductItem.ordered_product_id == self.id) \
+            .all()
+        resale_info = []
+        for (resale_request, ordered_product_item_token) in data:
+            seat_name = ordered_product_item_token.seat.name if ordered_product_item_token.seat else u'-'
+            if not self.product.sales_segment.setting.display_seat_no:
+                seat_name = u'-'
+
+            resale_info.append(
+                {
+                    'seat_type_name': self.product.name,
+                    'seat_name': seat_name or u'-',
+                    'resale_request_status': resale_request.verbose_status,
+                }
+            )
+        return resale_info
+
 
 
 @implementer(IOrderedProductItemLike)
@@ -1129,6 +1169,14 @@ class OrderedProductItemToken(Base,BaseModel, LogicallyDeleted):
     @property
     def is_applied_discount_code(self):
         return len(self.used_discount_codes) > 0
+
+    @property
+    def resale_request(self):
+        try:
+            resale_request = ResaleRequest.query.filter(ResaleRequest.ordered_product_item_token_id == self.id).one()
+            return resale_request
+        except (NoResultFound, MultipleResultsFound):
+            return None
 
 class OrderReceipt(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'OrderReceipt'
@@ -1404,6 +1452,7 @@ class OrderSummary(Base):
     performance_id = Order.performance_id
     sales_segment_id = Order.sales_segment_id
     order_no = Order.order_no
+    has_resale_requests = Order.has_resale_requests
     created_at = Order.created_at
     paid_at = Order.paid_at
     delivered_at = Order.delivered_at

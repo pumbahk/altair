@@ -1,1 +1,9 @@
-${request.context.membership.login_body_mobile |n}
+<%
+    import re
+    login_body = request.context.membership.login_body_mobile
+    if error_message_mb:
+        login_body = re.sub('error_message', error_message_mb, login_body)
+    else:
+        login_body = re.sub('error_message', '', login_body)
+%>
+${login_body |n}
