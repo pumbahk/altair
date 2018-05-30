@@ -74,19 +74,14 @@
     <li style="display:table-row">リセール終了日時：${resale_segment.resale_end_at}</li>
     <li style="display:table-row">申込開始日時：${resale_segment.start_at}</li>
     <li style="display:table-row">申込終了日時：${resale_segment.end_at}</li>
-    % if resale_segment.editable:
     <br/>
     <li style="display:table-row">
       <button class="btn btn-edit" onclick="open_modal_create_or_update_resale_segment($(this), 'update')"><i class="icon-pencil"></i>編集</button>
       <button class="btn ${status_color} btn-send" ${disabled} onclick="send_resale_segment_to_orion($(this), 'update')"><i class="icon-refresh icon-white"></i>${status_str}</button>
+      % if not resale_segment.editable:
+        <button class="btn btn-warning btn-send" onclick="open_modal_send_resale_request_to_orion($(this), true)"><i class="icon-refresh icon-white"></i>リセールリクエスト一括連携</button>
+      % else:
     </li>
-    % else:
-    <br/>
-    <li style="display:table-row">
-      <button class="btn btn-edit" onclick="open_modal_create_or_update_resale_segment($(this), 'update')"><i class="icon-pencil"></i>編集</button>
-      <button class="btn btn-warning btn-send" onclick="open_modal_send_resale_request_to_orion($(this), true)"><i class="icon-refresh icon-white"></i>リセールリクエスト一括連携</button>
-    </li>
-    % endif
   </ul>
 </h5>
 
