@@ -120,7 +120,8 @@
             var pm_id = ${form.get_defalut_sales_counter_payment_method()};
             if (pm_id) $('#sales_counter_payment_method_id').val(pm_id);
         }
-        if ($('[id^=product_quantity]').length == 1) {
+        <%doc>「個数」の入力フォームが1つのみ表示される場合に限り、デフォルトで指定した席数が表示されている</%doc>
+        if ($('[id^=product_quantity]').length === 1) {
             $('[id^=product_quantity]:first').val(${len(_context.seats_form.seats.data)});
         }
         $('#payment_delivery_method_pair_id').change(function () {
@@ -202,6 +203,7 @@
                                         product_item.stock_id: product_item.quantity
                                         for product_item in product.items
                                     },
+                                    u'power': product.get_quantity_power(product.seat_stock_type, performance.id)
                                 }
                             for product in _context.products
                             })|n};
@@ -210,7 +212,7 @@
                             $(function () {
                                 var product_quantity = $modal.find('input[id^="product_quantity"]');
 
-                                function refresh() {
+                                function refresh(when) {
                                     var total_price = 0;
                                     var total_quantity = 0;
                                     var num_required_seats_per_stock = {};
@@ -221,6 +223,11 @@
                                         var price = products[product_id]['price'];
                                         var quantity = parseInt($(this).val());
                                         quantity = (isNaN(quantity) || quantity < 0) ? 0 : quantity;
+                                        <%doc>モーダル初期ロード時のみ、選択席数を商品の数量倍率で割る TKT-2822</%doc>;
+                                        if (quantity !== 0 && when === 'default') {
+                                            quantity = quantity / products[product_id]['power'];
+                                            $(this).val(quantity);
+                                        }
                                         $.each(products[product_id]['stock_quantity_pairs'], function (k, v) {
                                             var n = num_required_seats_per_stock[k];
                                             if (n === void(0))
@@ -253,12 +260,13 @@
                                 }
 
                                 product_quantity.on('change', refresh);
-                                refresh();
+                                refresh('default');
                             });
                         })($('#modal-reserve'));
                     </script>
                     <div class="alert alert-info info">
                     </div>
+                    <p>※ 連席の場合、個数は連席ごとの単位として表示されます。</p>
                     <table class="table table-striped table-bordered">
                         <tr>
                             <th class="span2">席種</th>

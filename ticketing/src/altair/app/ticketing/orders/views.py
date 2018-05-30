@@ -2304,7 +2304,9 @@ class OrdersReserveView(OrderBaseView):
                     self.context.raise_error(u'個数が不正です')
                 product_quantity = int(quantity)
                 product = DBSession.query(Product).filter_by(id=product_id).one()
-                total_quantity += product_quantity
+                # 「予約する」モーダルウィンドウでは連席を商品の数量倍率で割って表示しているため、ここで実際に押さえている席数に戻す TKT-2822
+                power = product.get_quantity_power(product.seat_stock_type, self.context.performance.id)
+                total_quantity += product_quantity * power
                 order_items.append((product, product_quantity))
 
             if not total_quantity:
