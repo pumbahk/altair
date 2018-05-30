@@ -180,9 +180,9 @@
         <form class="form-horizontal" action="javascript:confirmOrder();">
             <div class="memo-area" style="display:none">
                 ${ch.form_item(form.note, rows=3, class_='span10')}
-      %for field in form_order_edit_attribute:
-                                                                             ${ch.form_item(field, class_='span10', style="width:80%")}
-            %endfor
+                %for field in form_order_edit_attribute:
+                    ${ch.form_item(field, class_='span10', style="width:80%")}
+                %endfor
             </div>
             <div class="reserve-area">
                 % if _context.products:
@@ -190,19 +190,19 @@
                     stock_types = _context.stock_types
                     num_selected_seats_per_stock = {}
                     for seat in _context.seats:
-        num_selected_seats_per_stock[seat.stock_id] = num_selected_seats_per_stock.get(seat.stock_id, 0) + 1
+                        num_selected_seats_per_stock[seat.stock_id] = num_selected_seats_per_stock.get(seat.stock_id, 0) + 1
                 %>
                     <script type="text/javascript">
                         (function ($modal) {
                             var products = ${HH.json({
-                            product.id: {
-                            u'name': product.name,
-                            u'price': int(product.price),
-                            u'stock_quantity_pairs': {
-                            product_item.stock_id: product_item.quantity
-                            for product_item in product.items
-                            },
-                            }
+                                product.id: {
+                                    u'name': product.name,
+                                    u'price': int(product.price),
+                                    u'stock_quantity_pairs': {
+                                        product_item.stock_id: product_item.quantity
+                                        for product_item in product.items
+                                    },
+                                }
                             for product in _context.products
                             })|n};
                             var num_selected_seats_per_stock = ${HH.json(num_selected_seats_per_stock)|n};
@@ -236,7 +236,9 @@
                                         num_seats_remaining += v - num_required_seats_per_stock[k];
                                     });
                                     total_price = total_price + '';
-                                    while (total_price != (total_price = total_price.replace(/^(-?\d+)(\d{3})/, "$1,$2"))) ;
+                                    while (
+                                        total_price != (total_price = total_price.replace(/^(-?\d+)(\d{3})/, "$1,$2"))
+                                    );
                                     $modal.find('span[name="total-price"]').text(total_price + '円');
                                     $modal.find('span[name="total-quantity"]').text(total_quantity);
                                     if (num_seats > 0) {
@@ -264,57 +266,61 @@
                             <th class="span2">単価</th>
                             <th style="width: 80px;">個数</th>
                         </tr>
-                        <script type="text/javascript"
-                                src="${request.static_url('altair.app.ticketing:static/js/jquery-spin.js')}"></script>
-                        % for stock_type in sorted(stock_types, key=lambda x:(x.display_order)):
-                        <% stock_type_seats = [seat for seat in _context.seats if seat.stock.stock_type == stock_type] %>
-                            <tr>
-                                <td colspan="2">
-                                    <div style="float: left;" class="span4">
-                                        ${stock_type.name}
-                                    </div>
-                                    <div style="float: left;">
-                                        % if stock_type_seats:
-                                            <ul>
-                                                % for seat in stock_type_seats:
-                                                    <li>${seat.name}</li>
-                                                % endfor
-                                            </ul>
-                                        % endif
-                                    </div>
-                                </td>
-                                <td></td>
-                                <td>
-                                    % if stock_type_seats:
-            ${len(stock_type_seats)}
-                                    % endif
-                                </td>
-                            </tr>
-                        % for product in sorted(_context.products, key=lambda x:x.display_order):
-                            % if stock_type == product.seat_stock_type:
-                            <% product_quantity_id = u"product_quantity-{id}".format(id=product.id) %>
+                        <script type="text/javascript" src="${request.static_url('altair.app.ticketing:static/js/jquery-spin.js')}"></script>
+                        % for stock_type in sorted(stock_types, key=lambda x:x.display_order):
+                            <% stock_type_seats = [seat for seat in _context.seats if seat.stock.stock_type == stock_type] %>
                                 <tr>
-                                    <td style="text-align: right;">
-                                        <span class="label label-info">${product.sales_segment.name}</span>
+                                    <td colspan="2">
+                                        <div style="float: left;" class="span4">
+                                            ${stock_type.name}
+                                        </div>
+                                        <div style="float: left;">
+                                            % if stock_type_seats:
+                                                <ul>
+                                                    % for seat in stock_type_seats:
+                                                        <li>${seat.name}</li>
+                                                    % endfor
+                                                </ul>
+                                            % endif
+                                        </div>
                                     </td>
-                                    <td>${product.name}</td>
-                                    <td class="price">${vh.price(product.price)}</td>
-                                    <td><input id="${product_quantity_id}" name="${product_quantity_id}"
-                                               class="product_quantity" type="text" value=""></td>
-                                    <script type="text/javascript">
-                                        $("#${product_quantity_id}").spin({
-                                            imageBasePath: "${request.static_url('altair.app.ticketing:static/images/spin/')}",
-                                            min: 0
-                                        });
-                                    </script>
+                                    <td></td>
+                                    <td>
+                                        % if stock_type_seats:
+                                            ${len(stock_type_seats)}
+                                        % endif
+                                    </td>
                                 </tr>
-                            % endif
-                        % endfor
+                            % for product in sorted(_context.products, key=lambda x:x.display_order):
+                                % if stock_type == product.seat_stock_type:
+                                <% product_quantity_id = u"product_quantity-{id}".format(id=product.id) %>
+                                    <tr>
+                                        <td style="text-align: right;">
+                                            <span class="label label-info">${product.sales_segment.name}</span>
+                                        </td>
+                                        <td>${product.name}</td>
+                                        <td class="price">${vh.price(product.price)}</td>
+                                        <td>
+                                            <input id="${product_quantity_id}" name="${product_quantity_id}" class="product_quantity" type="text" value="">
+                                        </td>
+                                        <script type="text/javascript">
+                                            $("#${product_quantity_id}").spin({
+                                                imageBasePath: "${request.static_url('altair.app.ticketing:static/images/spin/')}",
+                                                min: 0
+                                            });
+                                        </script>
+                                    </tr>
+                                % endif
+                            % endfor
                         % endfor
                         <tr>
                             <td colspan="2">合計</td>
-                            <td class="price"><span name="total-price"></span></td>
-                            <td><span name="total-quantity"></span></td>
+                            <td class="price">
+                                <span name="total-price"></span>
+                            </td>
+                            <td>
+                                <span name="total-quantity"></span>
+                            </td>
                         </tr>
                     </table>
                 % else:
@@ -350,8 +356,7 @@
                     });
                 </script>
                 <%block name="javascript">
-                    <script type="text/javascript"
-                            src="${request.static_url('altair.app.ticketing:static/js/ajaxzip3-https.js')}"></script>
+                    <script type="text/javascript" src="${request.static_url('altair.app.ticketing:static/js/ajaxzip3-https.js')}"></script>
                 </%block>
                 <div class="ss-pdmd">
                     <div class="half" style="float:left">
@@ -367,20 +372,19 @@
                 </div>
 
                 <div class="shipping-address">
-
                     <div class="control-group name">
                         <div class="half" style="float:left">
                             <label class="control-label">氏名</label>
                             <div class="controls">
                                 ${form.last_name(maxlength=u'10', placeholder=u'姓）山田')}
-            ${form.first_name(maxlength=u'10', placeholder=u'名）太郎')}
+                                ${form.first_name(maxlength=u'10', placeholder=u'名）太郎')}
                             </div>
                         </div>
                         <div class="half" style="float:right">
                             <label class="control-label">氏名(カナ)</label>
                             <div class="controls">
                                 ${form.last_name_kana(maxlength=u'10', placeholder=u"姓（カナ）ヤマダ")}
-            ${form.first_name_kana(maxlength=u'10', placeholder=u"名（カナ）タロウ")}
+                                ${form.first_name_kana(maxlength=u'10', placeholder=u"名（カナ）タロウ")}
                             </div>
                         </div>
                     </div>
@@ -388,7 +392,7 @@
                     <br/>
                     <div class="half" style="float:left">
                         <% path = request.static_url('altair.app.ticketing:static/js/zipdata') %>
-          ${ch.form_item(form.zip, placeholder=u"例）1030001", onKeyUp="AjaxZip3.zip2addr('" + path + "', 'zip','','prefecture','city','', 'address_1');")}
+                        ${ch.form_item(form.zip, placeholder=u"例）1030001", onKeyUp="AjaxZip3.zip2addr('" + path + "', 'zip','','prefecture','city','', 'address_1');")}
                     </div>
                     <div class="half" style="float:right">
                         ${ch.form_item(form.prefecture, placeholder=u"例）東京都")}
