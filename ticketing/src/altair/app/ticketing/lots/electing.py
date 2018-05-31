@@ -31,6 +31,7 @@ from altair.app.ticketing.lots.models import (
     LotElectedEntry,
     LotRejectedEntry,
 )
+from altair.app.ticketing.events.lots import helpers as event_lot_helper
 
 logger = logging.getLogger(__name__)
 
@@ -47,11 +48,14 @@ class Electing(object):
         blockers = []
 
         # 商品明細
-        for p in self.check_product_items():
-            blockers.append(u"{0.name} に商品明細がありません。".format(p))
+        for product_name in self.check_product_items():
+            blockers.append(u"{0} に商品明細がありません。".format(product_name))
         # 在庫
-        for p in self.check_stock():
-            blockers.append(u"{0.name} の在庫が不足しています。".format(p))
+        for performance_name, product_item in self.check_stock():
+            blockers.append(u"{0}, {1} の在庫が不足しています。".format(performance_name, product_item))
+        # 在庫(大規模当選処理(テスト版))
+        for performance_name, product_item, stock_status_quantity, entry_quantity in self.unlock_check_stock():
+            blockers.append(u"{0}, {1} の在庫が不足しています。➡︎	現在庫数:{2} 在庫数確定在庫数:{3}".format(performance_name, product_item, stock_status_quantity, entry_quantity))
 
         return blockers
 
@@ -60,13 +64,20 @@ class Electing(object):
 
         for product in self.lot.products:
             if not product.items:
-                yield product
+                yield product.name
 
     def check_stock(self):
         """ 当選予定の在庫数が現在個数以下になっているか"""
         for stock, stock_status, product_item, performance, quantity, count in self.required_stocks:
             if quantity > stock_status.quantity:
-                yield product_item
+                yield performance.name, product_item.name
+
+    def unlock_check_stock(self):
+        """ 在庫数確定の在庫数が現在個数以下になっているか(大規模当選処理(テスト版))"""
+        for stock, stock_status, product_item, performance, quantity, count in self.required_stocks:
+            for elh_stock, elh_quantity, elh_performance in event_lot_helper.performance_stock_quantity(self.lot.id):
+                if elh_stock.id == stock.id and stock_status.quantity < (quantity + elh_quantity):
+                    yield performance.name, product_item.name, stock_status.quantity, quantity + elh_quantity
 
     @reify
     def required_stocks(self):
@@ -125,11 +136,22 @@ class Electing(object):
             self.lot.id,
             len(works),
         ))
+        lot_entry_lock = self.request.lot_entry_lock
+        if lot_entry_lock:
+            for stock, stock_status, product_item, performance, quantity, count in self.required_stocks:
+                # stockerのLockを使わない場合、事前に在庫数を確認、足りない場合に例外発生
+                for elh_stock, elh_quantity, elh_performance in event_lot_helper.performance_stock_quantity(self.lot.id):
+                    # 上記、在庫数確定行わなく、当選処理行う場合、前回当選在庫数を確認
+                    if elh_stock.id == stock.id and stock_status.quantity < (quantity + elh_quantity):
+                        from altair.app.ticketing.cart.stocker import NotEnoughStockException
+                        raise NotEnoughStockException(stock, stock_status.quantity, quantity + elh_quantity)
+
         for work in works:
             logger.info("publish entry_wish = {0}".format(work.entry_wish_no))
             body = {"lot_id": self.lot.id,
                     "entry_no": work.lot_entry_no,
                     "wish_order": work.wish_order,
+                    "lot_entry_lock":lot_entry_lock,
             }
             publisher.publish(body=json.dumps(body),
                               routing_key="lots.election",

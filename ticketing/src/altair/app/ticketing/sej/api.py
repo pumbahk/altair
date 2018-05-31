@@ -227,7 +227,7 @@ def get_sej_order(order_no, fetch_canceled=False, session=None):
     if not fetch_canceled:
         q = q.filter(SejOrder.cancel_at == None)
     retval = q \
-        .order_by(desc(SejOrder.version_no), desc(SejOrder.branch_no)) \
+        .order_by(desc(SejOrder.branch_no), desc(SejOrder.version_no)) \
         .first()
     return retval
 
@@ -245,7 +245,7 @@ def get_sej_order_by_exchange_number_or_billing_number(order_no=None, exchange_n
         q = q.filter_by(exchange_number=exchange_number)
     if billing_number:
         q = q.filter_by(billing_number=billing_number)
-    return q.order_by(desc(SejOrder.version_no), desc(SejOrder.branch_no)).first()
+    return q.order_by(desc(SejOrder.branch_no), desc(SejOrder.version_no)).first()
 
 def get_sej_orders(order_no, fetch_canceled=False, session=None):
     if session is None:
@@ -256,7 +256,7 @@ def get_sej_orders(order_no, fetch_canceled=False, session=None):
         .filter(SejOrder.order_at != None)
     if not fetch_canceled:
         q = q.filter_by(cancel_at=None)
-    q = q.order_by(desc(SejOrder.version_no), desc(SejOrder.branch_no))
+    q = q.order_by(desc(SejOrder.branch_no), desc(SejOrder.version_no))
     return q.all()
 
 def get_valid_sej_orders(order_no, session=None):
@@ -267,7 +267,7 @@ def get_valid_sej_orders(order_no, session=None):
         .filter(SejOrder.error_type == None) \
         .filter(SejOrder.order_at != None) \
         .filter(SejOrder.cancel_at == None) \
-        .order_by(desc(SejOrder.version_no), desc(SejOrder.branch_no))
+        .order_by(desc(SejOrder.branch_no), desc(SejOrder.version_no))
     lists = OrderedDict()
     for sej_order in q:
         payment_type = int(sej_order.payment_type)

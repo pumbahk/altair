@@ -32,6 +32,8 @@ from altair.app.ticketing.core.models import (
     Stock,
     ReportRecipient,
     OrganizationSetting,
+    StockStatus,
+    ProductItem,
     )
 from altair.app.ticketing.orders.forms import ClientOptionalForm
 from altair.app.ticketing.orders.api import OrderAttributeIO
@@ -41,6 +43,8 @@ from altair.app.ticketing.lots.models import (
     LotElectWork,
     LotRejectWork,
     LotEntryWish,
+    LotElectedEntry,
+    LotEntryProduct,
     )
 from altair.app.ticketing.lots.events import (
     LotElectedEvent,
@@ -912,7 +916,8 @@ class LotEntries(BaseView):
                     form=form,
                     process_possible=self._check_lot_entries_process_possible(),
                     electing=electing,
-                    h=h)
+                    h=h,
+                    stock_info=h.performance_stock_quantity(lot_id))
 
     def _check_lot_entries_process_possible(self):
         lot = self.context.lot
@@ -954,6 +959,7 @@ class LotEntries(BaseView):
         """
         self.check_organization(self.context.event)
         lot_id = self.context.lot_id
+        self.request.lot_entry_lock = int(self.request.params.get('lot_entry_lock', 0))
         lot = Lot.query.filter(Lot.id==lot_id).one()
         if not self._check_lot_entries_process_possible():
             self.request.session.flash(u"抽選申込ユーザ取消受付中のため当選確定処理実行できません。")
@@ -961,6 +967,30 @@ class LotEntries(BaseView):
         lots_api.elect_lot_entries(self.request, lot.id)
 
         self.request.session.flash(u"当選確定処理を行いました")
+        lot.start_electing()
+
+        return HTTPFound(location=self.request.route_url('lots.entries.elect', lot_id=lot.id))
+
+    @view_config(route_name='lots.entries.stock_quantity_subtraction',
+                 renderer="string",
+                 request_method="POST",
+                 permission='event_viewer')
+    def quantity_subtraction_entries(self):
+        """ 在庫数確定処理
+        """
+        self.check_organization(self.context.event)
+        lot_id = self.context.lot_id
+        lot = self.context.lot
+
+        for stock, quantity, performance in h.performance_stock_quantity(lot_id):
+            StockStatus.query.filter(StockStatus.stock_id == stock.id).update({'quantity': (StockStatus.quantity - quantity)})
+
+        DBSession.execute("UPDATE LotElectedEntry lee "
+                          "INNER JOIN LotEntry le ON le.lot_id = {0} "
+                          "SET lee.completed_at = now() "
+                          "WHERE lee.lot_entry_id = le.id AND lee.completed_at IS NULL AND lee.deleted_at IS NULL AND le.deleted_at IS NULL".format(lot_id))
+
+        self.request.session.flash(u"在庫数確定処理を行いました")
         lot.start_electing()
 
         return HTTPFound(location=self.request.route_url('lots.entries.elect', lot_id=lot.id))

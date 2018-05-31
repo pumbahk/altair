@@ -57,6 +57,8 @@ def includeme(config):
                      factory=lot_resource_factory)
     config.add_route('lots.entries.elect', 'entries/elect/{lot_id}',
                      factory=lot_resource_factory)
+    config.add_route('lots.entries.stock_quantity_subtraction', 'entries/stock_quantity_subtraction/{lot_id}',
+                     factory=lot_resource_factory)
 
     # メール送信用API
     config.add_route('lots.entries.send_election_mail', 'entries/send_election_mail/{lot_id}',

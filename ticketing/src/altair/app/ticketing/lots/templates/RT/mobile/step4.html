@@ -115,7 +115,7 @@ ${lot.name}
   ${form['sex'](_widget=h.mobile_list_widget(request))}
   ${h.mobile_error_list(request, form, 'sex')}
 </div>
-
+${self.lh.disp_extra_description(extra_description, 'mobile')}
 % for field in form['extra']._contained_form:
 % if not field.short_name in {'member_type'}:
 <%mobile:form_header>${field.label}</%mobile:form_header>

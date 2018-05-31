@@ -32,6 +32,7 @@
 
 import transaction
 from collections import OrderedDict
+from markupsafe import Markup
 from uuid import uuid4
 from sqlalchemy import sql
 from sqlalchemy.orm.exc import NoResultFound
@@ -755,3 +756,18 @@ def copy_lot_products_from_performance(performance, lot):
                 lot=lot,
                 original_product=product
             )
+
+
+def get_description_only(extra_form_fields):
+    """追加フィールドから説明文のみを抽出"""
+    extra_description = []
+    if not extra_form_fields:  # 追加フィールドが未設定だとNoneになる
+        return extra_description
+
+    for field_desc in extra_form_fields:
+        if field_desc['kind'] == u'description_only':
+            extra_description.append({
+                'description': Markup(field_desc['description']),
+            })
+
+    return extra_description

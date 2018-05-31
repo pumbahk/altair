@@ -3,7 +3,17 @@
    import altair.app.ticketing.cart.helpers as ch
    import altair.app.ticketing.lots.helpers as h
 %>
+<%block name="css">
+    <style type="text/css">
+        p.attention {
+            color: #cc0000;
+            margin-bottom: 15px;
+        }
+    </style>
+</%block>
 <p class="pageTitle">申込を完了しました</p>
+<p>下記の受付番号はとても大切な番号です。すぐにメモするか印刷して保管してください。</p>
+<p class="attention">★お申し込み内容を忘れないよう、この画面のスクリーンショットを取っておいてください。</p>
 <div class="confirmBox">
   <div class="confirmBoxInner">
     <h2><img src="${request.static_url('altair.app.ticketing.lots:static/RT/pc/img/order/title_number.gif')}" alt="申込番号" width="97" height="30" /></h2>
@@ -51,27 +61,6 @@
     %endfor
   </div>
 </div>
-% if entry.get_orion_ticket_phone_list:
-<div class="settlementBox">
-  <div class="settlementBoxInner">
-    <h2>アプリ受取追加情報</h2>
-    <div class="settlementSelectBox">
-      <div class="settlementSelectBoxInner02">
-        <table summary="">
-          <tr>
-            <th>譲渡先</th>
-            <td>
-              % for i, phone in enumerate(entry.get_orion_ticket_phone_list):
-              <p>電話番号${i+1}: ${phone}</p>
-              % endfor
-            </td>
-          </tr>
-        </table>
-      </div>
-    </div>
-  </div>
-</div>
-% endif
 <div class="settlementBox">
   <div class="settlementBoxInner">
     <h2><img src="${request.static_url('altair.app.ticketing.lots:static/RT/pc/img/order/title_buyer.gif')}" alt="購入者情報" width="97" height="30" /></h2>
@@ -115,12 +104,35 @@
   </div>
 </div>
 
+% if entry.get_orion_ticket_phone_list:
+<div class="settlementBox">
+  <div class="settlementBoxInner">
+    <h2>アプリ受取追加情報</h2>
+    <div class="settlementSelectBox">
+      <div class="settlementSelectBoxInner02">
+        <table summary="">
+          <tr>
+            <th>譲渡先</th>
+            <td>
+              % for i, phone in enumerate(entry.get_orion_ticket_phone_list):
+              <p>電話番号${i+1}: ${phone}</p>
+              % endfor
+            </td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+% endif
+
 <% extra_form_data = entry.get_lot_entry_attribute_pair_pairs(request) %>
 % if extra_form_data:
 <div class="confirmBox">
 	<div class="confirmBoxInner">
     <h2>追加情報</h2>
 	  <table id="contentsOfShopping">
+          ${self.lh.disp_extra_description(extra_description, 'pc')}
     % for _, (display_name, display_value) in extra_form_data:
       <tr>
         <th scope="row">${display_name}</th>

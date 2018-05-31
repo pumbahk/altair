@@ -245,6 +245,13 @@
   ${ch.form_item(form.start_at)}
   ${ch.form_item(form.end_at)}
 </form>
+<form id="reuse-item-2" class="form-horizontal" method="POST">
+  ${ch.form_item(form.resale_segment_id)}
+  ${ch.form_item(form.performance_id)}
+  ${ch.form_item(form.resale_performance_id)}
+  <input type="hidden" name="start_at">
+  <input type="hidden" name="end_at">
+</form>
 </div>
 
 <h5 id="resale-segment-li-template"></h5>
@@ -442,6 +449,29 @@
       open_modal();
   }
 
+  //// modal for creating or updating resale performance id
+  function open_modal_create_or_update_resale_performance(button, action) {
+      var modal = $("#base-modal"),
+          header_text = action === "create"? "リセール公演登録":"リセール公演編集",
+          onclick_method = "add_or_update_resale_performance_id()",
+          form = $("#reuse-item-2").detach(),
+          data = $(".resale-segment__info").data();
+
+          form.find("#resale_segment_id").val(data['resale_segment_id']);
+          form.find("input[name=start_at]").val(data['start_at']);
+          form.find("input[name=end_at]").val(data['end_at']);
+
+      if (action === "update") {
+          form.find("#resale_performance_id").val(data['resale_performance_id']);
+      }
+      modal.find(".modal-header h3").text(header_text);
+      modal.find(".modal-body-content").append(form);
+      modal.find(".btn-area")
+          .append($("<button onclick='close_modal()' class='btn secondary btn-close'>キャンセル</button>"))
+          .append($("<button class='btn btn-danger'>確認</button>").attr("onclick", onclick_method));
+      open_modal();
+  }
+
   //// modal for showing bank information of a resale request
   function open_modal_show_bank_info(resale_request_id) {
       var modal = $("#base-modal");
@@ -523,11 +553,11 @@
 
   //// modal for sending resale requests to orion
   function open_modal_send_resale_request_to_orion(button, all) {
-      let modal = $("#base-modal"),
-          resale_segment_id = undefined,
+      let modal = $("#base-modal");
+      var resale_segment_id = undefined,
           resale_request_id = undefined;
       if (all) {
-          resale_segment_id = button.siblings("h5").data("resale_segment_id");
+          resale_segment_id = button.parents("h5").data("resale_segment_id");
           modal.find(".modal-header h3").text("リセールリクエスト一括連携");
           modal.find(".modal-body-content").append(
               $("<p>リセールリクエスト一括連携したら、対象のリセールリクエストのステータスを変更できなくなります。</p>")
@@ -582,7 +612,7 @@
       }
   }
 
-  function update_display(resale_segment_id, resale_start_at, resale_end_at, start_at, end_at) {
+  function update_display(resale_segment_id, resale_performance_id, resale_start_at, resale_end_at, start_at, end_at) {
 
     let li = $(".resale-segment-detail-box");
     li.empty();
@@ -592,14 +622,22 @@
     h5_temp.attr("id", "resale-segment-" + resale_segment_id)
       .attr("class", "resale-segment__info")
       .data('resale_segment_id', resale_segment_id)
+      .data('resale_performance_id', resale_performance_id)
       .data('resale_start_at', resale_start_at)
       .data('resale_end_at', resale_end_at)
       .data('start_at', start_at)
       .data('end_at', end_at);
 
     let buttonDom = $("<li>")
-        .append($("<button class=\"btn\" onclick=\"open_modal_create_or_update_resale_segment($(this), 'update')\"><i class=\"icon-pencil\"></i>編集</button>\n"))
-        .append($("<button class=\"btn btn-warning btn-send\" onclick=\"send_resale_segment_to_orion($(this))\"><i class=\"icon-refresh icon-white\"></i>連携</button>"));
+        .append($("<button class=\"btn\" onclick=\"open_modal_create_or_update_resale_segment($(this), 'update')\"><i class=\"icon-pencil\"></i>編集</button>\n"));
+
+    if (resale_performance_id) {
+        buttonDom.append($("<button class=\"btn\" onclick=\"open_modal_create_or_update_resale_performance($(this), 'update')\"><i class=\"icon-pencil\"></i>リセール公演ID編集</button>\n"));
+    } else {
+        buttonDom.append($("<button class=\"btn\" onclick=\"open_modal_create_or_update_resale_performance($(this), 'create')\"><i class=\"icon-pencil\"></i>リセール公演ID登録</button>\n"));
+    }
+
+    buttonDom.append($("<button class=\"btn btn-warning btn-send\" onclick=\"send_resale_segment_to_orion($(this))\"><i class=\"icon-refresh icon-white\"></i>連携</button>"));
 
     let content = $("<ul style=\"display:table\">")
         .append($("<li style=\"display:table-row\">リセール開始日時：" + resale_start_at + "</li>"))
@@ -608,6 +646,10 @@
         .append($("<li style=\"display:table-row\">申込終了日時：" + end_at + "</li>"))
         .append($("<br/>"))
         .append(buttonDom);
+
+    if (resale_performance_id) {
+        content.prepend($("<li style=\"display:table-row\">リセール連携公演ID：{0}</li>".format(resale_performance_id)))
+    }
 
     h5_temp.append(content);
     h5_temp.appendTo(li);
@@ -656,7 +698,7 @@
           data: data,
           success: function(data) {
               $("ul#resale-segment-list").append($("<li class=\"resale-segment-detail-box\"></li>"));
-              update_display(data["id"], data["resale_start_at"], data["resale_end_at"], data["start_at"], data["end_at"]);
+              update_display(data["id"], data["resale_performance_id"], data["resale_start_at"], data["resale_end_at"], data["start_at"], data["end_at"]);
               $(".resale-segment-add-btn").remove();
               flush_result_message("リセールセッグメントが作成されました。");
               close_modal();
@@ -703,7 +745,7 @@
           type: "PUT",
           data: data,
           success: function(data) {
-              update_display(data["id"], data["resale_start_at"], data["resale_end_at"], data["start_at"], data["end_at"]);
+              update_display(data["id"], data["resale_performance_id"], data["resale_start_at"], data["resale_end_at"], data["start_at"], data["end_at"]);
               update_send_button_status($(".resale-segment-detail-box").find(".btn-send"), 'send_required');
               flush_result_message("リセールセグメントが更新されました。");
               close_modal();
@@ -731,6 +773,52 @@
 
               });
               ul.show();
+          }
+      })
+  }
+
+  function add_or_update_resale_performance_id() {
+      var modal = $("#base-modal"),
+          form = modal.find("form"),
+          resale_segment_id = form.find("#resale_segment_id").val(),
+          url = "/resale/api/segments/{0}/update".format(resale_segment_id),
+          data = {
+            "performance_id": parseInt(form.find("#performance_id").val()),
+            "resale_segment_id": resale_segment_id,
+            "start_at": form.find("input[name=start_at]").val(),
+            "end_at": form.find("input[name=end_at]").val(),
+            "resale_performance_id": parseInt(form.find("#resale_performance_id").val())
+          };
+
+      clear_modal_error_messages(modal);
+      $.ajax({
+          url: url,
+          type: "PUT",
+          data: data,
+          success: function(data) {
+              update_display(data["id"], data["resale_performance_id"], data["resale_start_at"], data["resale_end_at"], data["start_at"], data["end_at"]);
+              update_send_button_status($(".resale-segment-detail-box").find(".btn-send"), 'send_required');
+              flush_result_message("リセール公演を連携しました。");
+              close_modal();
+          },
+          error: function(xhr) {
+              var ret = handle_exception(xhr),
+                  ul = modal.find(".modal-error-msgs-box ul"),
+                  i = undefined;
+              if ("status" in ret) {
+                  ul.append($("<li>").text("{0} - {1}".format(ret["status"],ret["emsgs"])));
+              }
+              if ('resale_performance_id' in ret) {
+                  for (i = 0; i < ret['resale_performance_id'].length; i++) {
+                      ul.append($("<li>").text(ret['resale_performance_id'][i]));
+                  }
+              }
+              Object.keys(ret).forEach(function(key) {
+                  $("label[for=" + key + "]").parents(".control-group").addClass("error");
+
+              });
+              ul.show();
+              modal.find("button").prop("disabled", false);
           }
       })
   }
@@ -909,12 +997,10 @@
           resale_segment_id = $(".resale-segment-list-box ul").data("selected_resale_segment_id"),
           order_no = $("#order_no").val().trim(),
           status_list = get_resale_request_status(),
-          sent_status_list = get_resale_request_sent_status(),
-          filter_list = [];
+          sent_status_list = get_resale_request_sent_status();
+      var filter_list = [];
 
-      if (status_list.length === 0 && sent_status_list === 0 && order_no === "") {
-          return baseUrl + "?" + "filter[resale_segment_id]=" + resale_segment_id;
-      }
+      filter_list.push("filter[resale_segment_id]=" + resale_segment_id);
 
       if (order_no !== "") {
           filter_list.push("order_no=" + order_no);
@@ -929,7 +1015,6 @@
       }
 
       return baseUrl + "?" + filter_list.join("&");
-
   }
 
   function get_resale_request_status_verbose() {

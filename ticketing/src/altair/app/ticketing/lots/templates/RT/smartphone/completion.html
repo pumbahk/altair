@@ -4,7 +4,14 @@
    import altair.app.ticketing.cart.helpers as ch
    import altair.app.ticketing.lots.helpers as h
 %>
-
+<%block name="css">
+    <style type="text/css">
+        .attention {
+            color: #cc0000;
+            margin-bottom: 15px;
+        }
+    </style>
+</%block>
 <div id="main">
 <form method="post" action="${request.route_path('lots.entry.index', event_id=event.id, lot_id=lot.id)}">
 
@@ -17,8 +24,9 @@
 <dl class="confirmList">
 
 <dt>申込を完了いたしました。<br>
-下記の受付番号はとても大切な番号です。すぐにメモして保管してください。</dt>
-
+下記の受付番号はとても大切な番号です。すぐにメモして保管してください。
+    <div class="attention">★お申し込み内容を忘れないよう、この画面のスクリーンショットを取っておいてください。<div>
+</dt>
 <dt class="creditHl">申込番号</dt>
 <dd><p class="disp-entry_no">${entry.entry_no}</p></dd>
 
@@ -75,19 +83,6 @@
 
 %endfor
 
-% if entry.get_orion_ticket_phone_list:
-  <dt class="creditHl">アプリ受取追加情報</dt>
-  <dd>
-    <div class="detailBox">
-      <ul>
-        % for i, phone in enumerate(entry.get_orion_ticket_phone_list):
-        <li>電話番号${i+1}: ${phone}</li>
-        % endfor
-      </ul>
-    </div>
-  </dd>
-% endif
-
 <dt class="creditHl">購入者情報</dt>
 <dd>
 
@@ -110,9 +105,23 @@ ${shipping_address.address_2}
 </div>
 </dd>
 
+% if entry.get_orion_ticket_phone_list:
+  <dt class="creditHl">アプリ受取追加情報</dt>
+  <dd>
+    <div class="detailBox">
+      <ul>
+        % for i, phone in enumerate(entry.get_orion_ticket_phone_list):
+        <li>電話番号${i+1}: ${phone}</li>
+        % endfor
+      </ul>
+    </div>
+  </dd>
+% endif
+
 <% extra_form_data = entry.get_lot_entry_attribute_pair_pairs(request) %>
 % if extra_form_data:
 <dt class="creditHl">追加情報</dt>
+${self.lh.disp_extra_description(extra_description, 'sp')}
 <dd>
   <div class="detailBox">
     <ul>
