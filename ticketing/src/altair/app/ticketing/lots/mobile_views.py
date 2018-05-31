@@ -294,7 +294,8 @@ class EntryLotView(object):
             payment_delivery_methods=payment_delivery_method_pairs,
             form=form,
             pdmp_messages=pdmp_messages,
-            messages=self.request.session.pop_flash()
+            messages=self.request.session.pop_flash(),
+            extra_description=api.get_description_only(self.context.cart_setting.extra_form_fields),
             )
 
     @lbr_view_config(route_name='lots.entry.step4', renderer=selectable_renderer("step4.html"))

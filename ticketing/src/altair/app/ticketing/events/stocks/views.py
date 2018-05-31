@@ -13,8 +13,10 @@ from sqlalchemy.sql import func
 from wtforms import ValidationError
 from paste.util.multidict import MultiDict
 
+from altair.sqlahelper import get_db_session
 from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.fanstatic import with_bootstrap
+from altair.app.ticketing.lots.models import LotEntry, LotElectedEntry
 from altair.app.ticketing.core.models import Stock, StockType, Seat, SeatStatusEnum, Venue, Performance
 from altair.app.ticketing.events.stocks.forms import AllocateSeatForm, AllocateStockForm, AllocateStockTypeForm
 
@@ -31,6 +33,17 @@ class Stocks(BaseView):
             logger.error('performance id %d is not found' % performance_id)
             raise HTTPBadRequest(body=json.dumps({
                 'message':u'パフォーマンスが存在しません',
+            }))
+
+        # TKT-5590 在庫ロックのない当選中は、配席できないようにする
+        lot_ids = [lot.id for lot in performance.event.lots]
+        session = get_db_session(self.request, 'slave')
+        electing = session.query(LotElectedEntry).join(LotEntry,
+                                                       LotEntry.id == LotElectedEntry.lot_entry_id).filter(
+            LotElectedEntry.completed_at == None).filter(LotEntry.lot_id.in_(lot_ids)).first()
+        if electing:
+            raise HTTPBadRequest(body=json.dumps({
+                'message': u'大規模当選処理(テスト版)を使用しています。在庫数確定がされていない抽選があります',
             }))
 
         post_data = MultiDict(self.request.json_body)

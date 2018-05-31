@@ -173,6 +173,7 @@ class RouteConfig(object):
         'lots.entries.elect'        : u'抽選申込 当選',
         'lots.entries.elect_all'    : None,
         'lots.entries.elect_entry_no'       : None,
+        'lots.entries.stock_quantity_subtraction': u'抽選在庫　確定',
         'lots.entries.export'       : u'抽選申込 申込データエクスポート',
         'lots.entries.export.html'  : None,
         'lots.entries.import'       : u'抽選申込 当選データインポート',

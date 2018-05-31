@@ -375,6 +375,10 @@ class LotReviewResource(LotResourceBase):
     def entry(self):
         return self.get_lot_entry()
 
+    @property
+    def cart_setting(self):
+        return self.event and (self.event.setting.cart_setting or self.event.organization.setting.cart_setting)
+
 
 @implementer(ILotResource)
 class LotLogoutResource(LotResourceBase):

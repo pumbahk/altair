@@ -84,6 +84,12 @@ def order_status(order, sent=False):
     elif order.payment_status == 'unpaid':
         return u"未入金"
 
+def order_resale_status(order):
+    if order.has_resale_requests:
+        return u'（リセール情報あり）'
+    else:
+        return u''
+
 def safe_strftime(s, format='%Y-%m-%d %H:%M'):
     return s and s.strftime(format) or ''
 

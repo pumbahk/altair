@@ -1,5 +1,4 @@
 <%inherit file="${context['main_template'].uri}" />
-<%namespace file="altair.app.ticketing.lots:templates/__commons__/helper.html" name="lh" />
 <%
   from altair.app.ticketing.payments.plugins import ORION_DELIVERY_PLUGIN_ID
   # has_orionは決済引取方法の中でorionの引取方法があるかどうか
@@ -202,61 +201,6 @@ ${m.delivery_method.description or '' | n}
       show_orion_input = True
 %>
 
-%if show_orion_input:
-<div id="orion-ticket-phone-info" class="subbox" ${'' if orion_checked else 'style="display:none;"'|n}>
-  <dl>
-    <dt>
-      <p class="lineRed">アプリ受取追加情報</p>
-    </dt>
-    <dd>
-      <div class="subInner2">
-        <dl class="creditList">
-          <dt class="creditHl">譲渡先</dt>
-          <dd>
-            <ul id="orion-ticket-phone-list">
-              <li id="orion-ticket-phone-template">
-                <label for="tmp-orion-ticket-phone">電話番号</label>
-                <input type="text" id="tmp-orion-ticket-phone">　<button type="button" onclick="delete_orion_ticket_phone(this);">削除</button>
-              </li>
-              % if not orion_ticket_phone:
-                <%
-                  if check_number_of_phones == 'true':
-                    disabled = 'disabled="disabled"' if lot.sales_segment.max_quantity < 3 else ''
-                  else:
-                    disabled = 'disabled="disabled"' if lot.sales_segment.max_quantity < 2 else ''
-                %>
-                <li>
-                  <label for="orion-ticket-phone-1">電話番号1</label>
-                  <input type="text" id="orion-ticket-phone-1" name="orion-ticket-phone" value="">　
-                  <% is_disabled = 'disabled' if len(orion_ticket_phone) > 4 else '' %>
-                  <button id="btn-add-orion-ticket-phone" type="button" onclick="add_orion_ticket_phone(this);" ${is_disabled|n}>追加</button>
-                </li>
-              % else:
-                % for i, (phone, error) in enumerate(zip(orion_ticket_phone, orion_phone_errors)):
-                  <li>
-                    <label for="orion-ticket-phone-${i+1}">電話番号${i+1}</label>
-                    <input type="text" id="orion-ticket-phone-${i+1}" name="orion-ticket-phone" value="${phone}">
-                    % if i == 0:
-                    <% disabled = 'disabled="disabled"' if len(orion_ticket_phone) > lot.sales_segment.max_quantity - 1 else '' %>
-                    <button id="btn-add-orion-ticket-phone" type="button" onclick="add_orion_ticket_phone(this);" ${disabled|n}>追加</button>
-                    % else:
-                    <button type="button" onclick="delete_orion_ticket_phone(this);">削除</button>
-                    % endif
-                    % if error:
-                    <span class="error">${error}</span>
-                    % endif
-                  </li>
-                % endfor
-              % endif
-            </ul>
-          </dd>
-        </dl>
-      </div>
-    </dd>
-  </dl>
-</div>
-%endif
-
 <div class="subbox">
 <dl>
 <dt>
@@ -384,13 +328,87 @@ ${form['sex']}
 ${self.error(form, 'sex')}
 </p>
 </dd>
+</dl>
+</div>
 
+</dd>
+</dl>
+</div>
+
+%if show_orion_input:
+<div id="orion-ticket-phone-info" class="subbox" ${'' if orion_checked else 'style="display:none;"'|n}>
+  <dl>
+    <dt>
+      <p class="lineRed">アプリ受取追加情報</p>
+    </dt>
+    <dd>
+      <div class="subInner2">
+        <dl class="creditList">
+          <dt class="creditHl">譲渡先</dt>
+          <dd>
+            <ul id="orion-ticket-phone-list">
+              <li id="orion-ticket-phone-template">
+                <label for="tmp-orion-ticket-phone">電話番号</label>
+                <input type="text" id="tmp-orion-ticket-phone">　<button type="button" onclick="delete_orion_ticket_phone(this);">削除</button>
+              </li>
+              % if not orion_ticket_phone:
+                <%
+                  if check_number_of_phones == 'true':
+                    disabled = 'disabled="disabled"' if lot.sales_segment.max_quantity < 3 else ''
+                  else:
+                    disabled = 'disabled="disabled"' if lot.sales_segment.max_quantity < 2 else ''
+                %>
+                <li>
+                  <label for="orion-ticket-phone-1">電話番号1</label>
+                  <input type="text" id="orion-ticket-phone-1" name="orion-ticket-phone" value="">　
+                  <% is_disabled = 'disabled' if len(orion_ticket_phone) > 4 else '' %>
+                  <button id="btn-add-orion-ticket-phone" type="button" onclick="add_orion_ticket_phone(this);" ${is_disabled|n}>追加</button>
+                </li>
+              % else:
+                % for i, (phone, error) in enumerate(zip(orion_ticket_phone, orion_phone_errors)):
+                  <li>
+                    <label for="orion-ticket-phone-${i+1}">電話番号${i+1}</label>
+                    <input type="text" id="orion-ticket-phone-${i+1}" name="orion-ticket-phone" value="${phone}">
+                    % if i == 0:
+                    <% disabled = 'disabled="disabled"' if len(orion_ticket_phone) > lot.sales_segment.max_quantity - 1 else '' %>
+                    <button id="btn-add-orion-ticket-phone" type="button" onclick="add_orion_ticket_phone(this);" ${disabled|n}>追加</button>
+                    % else:
+                    <button type="button" onclick="delete_orion_ticket_phone(this);">削除</button>
+                    % endif
+                    % if error:
+                    <span class="error">${error}</span>
+                    % endif
+                  </li>
+                % endfor
+              % endif
+            </ul>
+          </dd>
+        </dl>
+      </div>
+    </dd>
+  </dl>
+</div>
+%endif
+
+<% extra_fields = [field for field in form['extra']._contained_form] %>
+
+% if extra_fields:
+<div class="subbox">
+<dl>
+<dt>
+<p class="lineRed">追加情報</p>
+<div class="tyuui2">*印の項目は入力が必須です</div>
+</dt>
+<dd>
+<div class="subInner2">
+<dl class="creditList">
+${self.lh.disp_extra_description(extra_description, 'sp')}
 % for field in form['extra']._contained_form:
 % if not field.short_name in {'member_type'}:
 <dt class="creditHl">${field.label}</dt>
 <dd>
   <p>
-    ${lh.render_field(field)}
+    ${self.lh.render_field(field)}
   </p>
 </dd>
 % endif
@@ -402,6 +420,7 @@ ${self.error(form, 'sex')}
 </dd>
 </dl>
 </div>
+% endif
 <p class="nextBtn"><input type="submit" value="次へ"></p>
 
 </form>

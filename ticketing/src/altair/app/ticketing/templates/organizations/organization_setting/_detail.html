@@ -152,6 +152,10 @@
       <td>${organization_setting.lot_asid if organization_setting.lot_asid else u'-'}</td>
     </tr>
     <tr>
+      <th>${HH.label_text_for(c_models.OrganizationSetting.lot_entry_lock)}</th>
+      <td>${u'○' if organization_setting.lot_entry_lock else u'×'}</td>
+    </tr>
+    <tr>
       <th>${HH.label_text_for(c_models.OrganizationSetting.lot_entry_user_withdraw)}</th>
       <td>${u'ON' if organization_setting.lot_entry_user_withdraw else u'OFF'}</td>
     </tr>
