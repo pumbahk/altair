@@ -5,48 +5,13 @@
 
 <%include file="common/_top_news.html" args="top_news=top_news"/>
 <%include file="search/search.html" args="form=form"/>
-<%include file="common/_pickup.html" args="promotions=promotions, helper=helper"/>
 <%include file="common/_genre.html" args="genretree=genretree, helper=helper"/>
-<%include file="common/_promotion_banner.html" args="promotion_banners=promotion_banners"/>
-<%include file="common/_topcontent.html" args="topcontents=topcontents, helper=helper"/>
 <%include file="common/_area.html" args="area=area, helper=helper"/>
-<%include file="common/_topic.html" args="topics=topics, helper=helper"/>
-<%include file="common/_hotword.html" args="hotwords=hotwords, helper=helper, genre_id=0"/>
-
-<!-- セブンイレブン -->
-<img src="https://tstar.s3.amazonaws.com/asset/RT/2015-06-23/8f11ab27f2794fb08552f9b98f27b5c0.gif" width="95%" class="rc-gp-migrate-bann"/>
-
-<!-- ファミリーマート -->
-<img src="${request.static_url('altaircms:static/RT/smartphone/img/famima.gif')}" width="95%" class="rc-gp-migrate-bann"/>
-
-<!-- Facebook -->
-<a href="https://www.facebook.com/Rakutenticket/">
-  <img src="${request.static_url('altaircms:static/RT/smartphone/img/facebook.png')}" width="95%" class="rc-gp-migrate-bann"/>
-</a>
-
-<!-- LINE -->
-<a href="https://line.me/R/ti/p/%40ybn4429n">
-  <img src="${request.static_url('altaircms:static/RT/smartphone/img/line.png')}" width="95%" class="rc-gp-migrate-bann"/>
-</a>
-
-<!-- Rakuten Portal -->
-<div id="rc-gp-banner" class="rc-gp-migrate-bann rc-gp-hidden"></div>
 
 <!-- NBA -->
-<%
-now = datetime.now()
-target_date = datetime.strptime('2018/04/15', '%Y/%m/%d')
-%>
-
-% if now < target_date:
-<a href="https://tv.rakuten.co.jp/nba/?scid=wi_tck_nba_grpbnr201802&utm_medium=rakuteng&utm_source=tck&utm_campaign=nba_grpbnr201802">
-  <img src="${request.static_url('altaircms:static/RT/smartphone/img/nba290x65.jpg')}" width="95%" class="rc-gp-migrate-bann"/>
-</a>
-% else:
 <a href="https://tv.rakuten.co.jp/nba/?scid=wi_tck_nba_grpbnr20180315&utm_medium=rakuteng&utm_source=tck&utm_campaign=nba_grpbnr20180415">
   <img src="${request.static_url('altaircms:static/RT/smartphone/img/nba0415.jpg')}" width="95%" class="rc-gp-migrate-bann"/>
 </a>
-% endif
 
 <section class="rc-gp-migrate-links">
   <h2>楽天のグループサービス</h2>
