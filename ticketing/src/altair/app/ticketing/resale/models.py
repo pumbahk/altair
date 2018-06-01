@@ -85,13 +85,20 @@ class ResaleRequest(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     @property
     def verbose_status(self):
-        if self.status == ResaleRequestStatus.waiting:
-            return u'リセール中'
-        elif self.status == ResaleRequestStatus.sold:
-            return u'リセール済み'
-        elif self.status == ResaleRequestStatus.back:
-            return u'リセール返却'
-        elif self.status == ResaleRequestStatus.cancel:
-            return u'リセールキャンセル'
+        if not self.sent_status == SentStatus.sent:
+            verbose_status = u'（仮）'
         else:
-            return u'予想外エラー'
+            verbose_status = u''
+
+        if self.status == ResaleRequestStatus.waiting:
+            verbose_status += u'リセール中'
+        elif self.status == ResaleRequestStatus.sold:
+            verbose_status += u'リセール済み'
+        elif self.status == ResaleRequestStatus.back:
+            verbose_status += u'リセール返却'
+        elif self.status == ResaleRequestStatus.cancel:
+            verbose_status += u'リセールキャンセル'
+        else:
+            verbose_status = u'予想外エラー'
+
+        return verbose_status
