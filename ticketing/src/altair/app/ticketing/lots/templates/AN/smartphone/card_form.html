@@ -11,7 +11,7 @@
 %endif
 
 <div class="confirm-wrap">
-    <h2 class="heading heading_simple_line">クレジットカードでお支払い</h2>
+    <h2 class="heading heading_simple_line">${_(u'クレジットカードでお支払い')}</h2>
     <form id="form1" class="confirmForm" name="form1" method="post" action="${request.url}">
         ${form.csrf_token()}
         <div class="customerBox">
@@ -67,7 +67,8 @@
                     ${_(u'セキュリティコードは、カード裏面の署名欄に印刷されている下3桁の数字です。')}
                 </li>
                 <li>
-                    ${_(u'ブラウザの「戻る」ボタンを使用するとエラーになります。')}<br>${_(u'ページによってはブラウザの「更新」ボタンを使用するとエラーになる場合があります。')}
+                    ${_(u'ブラウザの「戻る」ボタンを使用するとエラーになります。')}<br>
+                    ${_(u'ページによってはブラウザの「更新」ボタンを使用するとエラーになる場合があります。')}
                 </li>
                 <%
                     notice = request.session.get('altair.app.ticketing.payments.auth3d_notice')
