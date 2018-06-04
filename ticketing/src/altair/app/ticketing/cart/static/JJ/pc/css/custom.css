@@ -67,22 +67,3 @@
 .settlementInterest h2 {
     background-color: var(--custom-background-color) !important;
 }
-
-/* navi step bar
--------------------------------------------- */
-.nav-stepbar ol li {
-    background: var(--custom-light-color);
-    color: var(--custom-dark-color);
-}
-
-.nav-stepbar ol li:after {
-    border-left: 10px solid var(--custom-light-color);
-}
-
-.nav-stepbar ol li.current {
-    background: var(--custom-default-color);
-}
-
-.nav-stepbar ol li.current:after {
-    border-left: 10px solid var(--custom-default-color);
-}
