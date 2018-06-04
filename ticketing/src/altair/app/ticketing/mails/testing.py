@@ -14,6 +14,8 @@ class MailTestMixin(object):
         """セットしたダミーのiniファイルのパスは、送信対象のホワイトリスト機能（get_white_list_recipient(self, request)）で使用"""
         bin_test_ticketing = sys.argv[0]
         deploy_dir = dirname(dirname(dirname(bin_test_ticketing)))
+        self.config.registry.settings.update({'deploy_dir': deploy_dir})
+
         paths = [deploy_dir, 'test', 'conf', 'altair.dummy.ini']
         dummy_conf_ini_path = os.sep.join(paths)
         self.config.registry.settings.update({'__file__': dummy_conf_ini_path})
