@@ -2,6 +2,7 @@
 <%namespace file="common/tags_smartphone.html" name="m" />
 <%block name="title">トップ</%block>
 <% from datetime import datetime %>
+<script type="text/javascript" src="${request.static_url('altaircms:static/RT/smartphone/js/acordion.js')}"></script>
 
 <%include file="common/_top_news.html" args="top_news=top_news"/>
 <%include file="search/search.html" args="form=form"/>
