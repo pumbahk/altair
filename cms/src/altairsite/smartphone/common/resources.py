@@ -37,6 +37,7 @@ class CommonResource(object):
             genretree = self.get_genre_tree(parent=None)
             areas = self.get_area()
             promotion_banners = self.get_promotion_banners()
+            news = self.get_news()
             top_news = self.get_top_news()
         else:
             promotions = self.getInfo(kind="promotion", system_tag_id=None)
@@ -46,6 +47,7 @@ class CommonResource(object):
             genretree = self.get_genre_tree(parent=None)
             areas = self.get_area()
             promotion_banners = self.get_promotion_banners()
+            news = self.get_news()
             top_news = self.get_top_news()
         return {
             'promotions': promotions
@@ -59,6 +61,7 @@ class CommonResource(object):
             , 'helpers': helpers
             , 'form': TopSearchForm()
             , 'promotion_banners': promotion_banners
+            , 'news': news
             , 'top_news': top_news
         }
 
@@ -224,6 +227,10 @@ class CommonResource(object):
     def get_top_news(self):
         top_news = self.request.allowable(Category).filter(Category.hierarchy == 'top_news').all()
         return top_news
+
+    def get_news(self):
+        news = self.request.allowable(Category).filter(Category.hierarchy == 'news').all()
+        return news
 
     def get_promotion_banners(self):
         banners = self.request.allowable(Category).filter(Category.hierarchy == 'promotion_banner').all()

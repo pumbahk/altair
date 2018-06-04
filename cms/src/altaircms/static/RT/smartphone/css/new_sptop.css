@@ -84,6 +84,12 @@ h2.category_ttl {
 	border-top: none;
 	padding: 0 5px 5px;
 }
+.top_news li {
+	color: #FFF;
+	display: block;
+	text-decoration: none;
+	font-size: 1rem;
+}
 .top_news li a {
 	color: #FFF;
 	display: block;
