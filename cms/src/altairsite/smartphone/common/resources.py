@@ -34,21 +34,18 @@ class CommonResource(object):
             topcontents = self.getInfo(kind="topcontent", system_tag_id=None)[0:5]
             topics = self.getInfo(kind="topic", system_tag_id=None)[0:5]
             hotwords = self.get_hotword()[0:5]
-            genretree = self.get_genre_tree(parent=None)
-            areas = self.get_area()
-            promotion_banners = self.get_promotion_banners()
-            news = self.get_news()
-            top_news = self.get_top_news()
         else:
             promotions = self.getInfo(kind="promotion", system_tag_id=None)
             topcontents = self.getInfo(kind="topcontent", system_tag_id=None)
             topics = self.getInfo(kind="topic", system_tag_id=None)
             hotwords = self.get_hotword()
-            genretree = self.get_genre_tree(parent=None)
-            areas = self.get_area()
-            promotion_banners = self.get_promotion_banners()
-            news = self.get_news()
-            top_news = self.get_top_news()
+
+        genretree = self.get_genre_tree(parent=None)
+        areas = self.get_area()
+        promotion_banners = self.get_promotion_banners()
+        news = self.get_news()
+        top_news = self.get_top_news()
+
         return {
             'promotions': promotions
             , 'topcontents': topcontents
