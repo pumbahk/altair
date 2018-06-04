@@ -994,7 +994,7 @@
 
   function build_export_url() {
       let baseUrl = "/resale/api/requests/export",
-          resale_segment_id = $(".resale-segment-list-box ul").data("selected_resale_segment_id"),
+          resale_segment_id = $("#resale-segment-list").data("selected_resale_segment_id"),
           order_no = $("#order_no").val().trim(),
           status_list = get_resale_request_status(),
           sent_status_list = get_resale_request_sent_status();

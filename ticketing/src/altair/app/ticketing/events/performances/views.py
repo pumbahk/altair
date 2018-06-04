@@ -499,9 +499,10 @@ class PerformanceShowView(BaseView):
                                        .filter(ResaleSegment.performance_id == self.performance.id)
 
         if selected_resale_segment_id:
-            resale_segment = resale_segments.filter(id = selected_resale_segment_id).one()
+            resale_segment = resale_segments.filter(ResaleSegment.id==selected_resale_segment_id).one()
         else:
             resale_segment = resale_segments.first()
+            selected_resale_segment_id = resale_segment.id
 
         if resale_segment:
             form.resale_segment_id.data = resale_segment.id
@@ -539,6 +540,7 @@ class PerformanceShowView(BaseView):
             items_per_page=50,
             url=paginate.PageURL_WebOb(self.request)
         )
+
         return {
             'tab': 'resale',
             'action': '',
