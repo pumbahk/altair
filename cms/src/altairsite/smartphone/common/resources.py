@@ -9,7 +9,9 @@ from ..search.search_query import SaleInfo
 
 from sqlalchemy import asc
 from altaircms.datelib import get_now
+from altaircms import helpers
 from altaircms.models import Genre, Category
+from altaircms.genre.searcher import GenreSearcher
 from altaircms.tag.models import HotWord
 from altaircms.topic.api import get_topic_searcher
 from altaircms.genre.searcher import GenreSearcher
@@ -46,16 +48,18 @@ class CommonResource(object):
             promotion_banners = self.get_promotion_banners()
             top_news = self.get_top_news()
         return {
-             'promotions':promotions
-            ,'topcontents':topcontents
-            ,'topics':topics
-            ,'hotwords':hotwords
-            ,'genretree':genretree
-            ,'areas':areas
-            ,'helper':SmartPhoneHelper()
-            ,'form':TopSearchForm()
-            ,'promotion_banners':promotion_banners
-            ,'top_news': top_news
+            'promotions': promotions
+            , 'topcontents': topcontents
+            , 'topics': topics
+            , 'hotwords': hotwords
+            , 'genretree': genretree
+            , 'genre_searcher': GenreSearcher(self.request)
+            , 'areas': areas
+            , 'helper': SmartPhoneHelper()
+            , 'helpers': helpers
+            , 'form': TopSearchForm()
+            , 'promotion_banners': promotion_banners
+            , 'top_news': top_news
         }
 
     def get_genre_render_param(self, genre_id):
@@ -77,20 +81,20 @@ class CommonResource(object):
         utils = SnsUtils(request=self.request)
 
         return {
-             'genre':genre
-            ,'promotions':promotions
-            ,'topcontents':topcontents
-            ,'topics':topics
-            ,'hotwords':hotwords
-            ,'genretree':genretree
-            ,'areas':areas
-            ,'week_sales':week_sales
-            ,'near_end_sales':near_end_sales
-            ,'helper':SmartPhoneHelper()
-            ,'form':form
-            , 'sns':{
-                'url':utils.get_sns_url_from_genre(genre=genre),
-                'title':u"楽天チケット-" + genre.label
+            'genre': genre
+            , 'promotions': promotions
+            , 'topcontents': topcontents
+            , 'topics': topics
+            , 'hotwords': hotwords
+            , 'genretree': genretree
+            , 'areas': areas
+            , 'week_sales': week_sales
+            , 'near_end_sales': near_end_sales
+            , 'helper': SmartPhoneHelper()
+            , 'form': form
+            , 'sns': {
+                'url': utils.get_sns_url_from_genre(genre=genre),
+                'title': u"楽天チケット-" + genre.label
             }
         }
 
