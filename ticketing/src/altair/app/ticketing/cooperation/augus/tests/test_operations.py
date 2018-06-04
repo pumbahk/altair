@@ -37,7 +37,8 @@ class PathManagerTest(TestCase, MailTestMixin):
 
     def tearDown(self):
         # テストで作成されたディレクトリの削除
-        shutil.rmtree(self.test_dir_top)
+        if os.path.isdir(self.test_dir_top):
+            shutil.rmtree(self.test_dir_top)
 
     def get_target(self):
         augus_account = AugusAccount()
