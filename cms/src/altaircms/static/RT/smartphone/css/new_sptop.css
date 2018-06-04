@@ -359,12 +359,34 @@ h2.category_ttl {
 #publicity li a span {
 	display: inline-block;
 }
+#publicity li {
+	color: #333;
+	text-decoration: none;
+	display: block;
+	border-bottom: 1px solid #e6e6e6;
+	padding: 5px;
+}
+#publicity li:hover {
+	background: #e6e6e6;
+}
+#publicity li span {
+	display: inline-block;
+}
 #publicity li a span.list_img {
 	width: 15%;
 	max-width: 80px;
 	margin-right: 3%;
 }
 #publicity li a span.list_txt {
+	width: 82%;
+	vertical-align: top;
+}
+#publicity li span.list_img {
+	width: 15%;
+	max-width: 80px;
+	margin-right: 3%;
+}
+#publicity li span.list_txt {
 	width: 82%;
 	vertical-align: top;
 }

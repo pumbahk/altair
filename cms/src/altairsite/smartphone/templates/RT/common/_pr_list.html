@@ -1,0 +1,31 @@
+<%page args="pr_list" />
+
+% if pr_list:
+<section id="publicity" class="publicity">
+    <div class="top_inner">
+        <ul>
+            % for pr in pr_list:
+            <li>
+                % if pr.url:
+                <a href="${pr.url}">
+                   <span class="list_img">
+                       <img src="${pr.imgsrc}">
+                    </span>
+                    <span class="list_txt">
+                    ${pr.label}
+                    </span>
+                </a>
+                % else:
+                <span class="list_img">
+                    <img src="${pr.imgsrc}">
+                </span>
+                <span class="list_txt">
+                    ${pr.label}
+                </span>
+                % endif
+            </li>
+            % endfor
+        </ul>
+    </div>
+</section>
+% endif

@@ -45,6 +45,7 @@ class CommonResource(object):
         promotion_banners = self.get_promotion_banners()
         news = self.get_news()
         top_news = self.get_top_news()
+        pr_list = self.get_pr_list()
 
         return {
             'promotions': promotions
@@ -60,6 +61,7 @@ class CommonResource(object):
             , 'promotion_banners': promotion_banners
             , 'news': news
             , 'top_news': top_news
+            , 'pr_list': pr_list
         }
 
     def get_genre_render_param(self, genre_id):
@@ -228,6 +230,10 @@ class CommonResource(object):
     def get_news(self):
         news = self.request.allowable(Category).filter(Category.hierarchy == 'news').all()
         return news
+
+    def get_pr_list(self):
+        pr_list = self.request.allowable(Category).filter(Category.hierarchy == 'pr_list').all()
+        return pr_list
 
     def get_promotion_banners(self):
         banners = self.request.allowable(Category).filter(Category.hierarchy == 'promotion_banner').all()
