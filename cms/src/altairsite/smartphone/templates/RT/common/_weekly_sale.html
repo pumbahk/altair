@@ -1,0 +1,43 @@
+<%page args="weekly_sale, helpers" />
+<script>
+$(document).ready(function(){
+    // 10件ずつ表示
+    var eventCount = ${len(weekly_sale.events)};
+    var position = 10;
+    for (var count=10; count<eventCount; count++) {
+        $(".sale_evnet" + String(count)).hide();
+    }
+
+    $(".over_txt").on('click',function(){
+        var nextPosition = position + 10;
+        if (position < eventCount) {
+            if (eventCount < nextPosition) {
+                nextPosition = eventCount;
+            }
+
+            for (var count=position; count<nextPosition; count++) {
+                $(".sale_evnet" + String(count)).show();
+            }
+            console.log(position);
+            position = nextPosition;
+        }
+    });
+});
+
+</script>
+
+% if weekly_sale:
+<section id="week_tickets" class="week_tickets">
+    <h2 class="category_ttl">今週発売のチケット</h2>
+    <div class="top_inner">
+        <ul>
+            % for num, event in enumerate(weekly_sale.events):
+            <li class="sale_evnet${num}">
+                <a href="${request.route_path('smartphone.detail', _query=dict(event_id=event.id))}">${event.title}</a>
+            </li>
+            % endfor
+        </ul>
+        <p class="over_txt">もっとみる▼</p>
+    </div>
+</section>
+% endif

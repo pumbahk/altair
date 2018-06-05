@@ -40,6 +40,7 @@ class CommonResource(object):
             topics = self.getInfo(kind="topic", system_tag_id=None)
             hotwords = self.get_hotword()
 
+        weekly_sale = self.search_week(None, 1, 100)
         genretree = self.get_genre_tree(parent=None)
         areas = self.get_area()
         promotion_banners = self.get_promotion_banners()
@@ -52,6 +53,7 @@ class CommonResource(object):
             , 'topcontents': topcontents
             , 'topics': topics
             , 'hotwords': hotwords
+            , 'weekly_sale': weekly_sale
             , 'genretree': genretree
             , 'genre_searcher': GenreSearcher(self.request)
             , 'areas': areas
@@ -156,7 +158,11 @@ class CommonResource(object):
             qs = self.request.genre_freeword
         else:
             searcher = SimpleEventSearcher(request=self.request)
-            qs = searcher.search_freeword(search_query=search_query, genre_label=search_query.genre.label, cond=None)
+            if search_query.genre:
+                qs = searcher.search_freeword(search_query=search_query, genre_label=search_query.genre.label,
+                                              cond=None)
+            else:
+                qs = searcher.search_freeword(search_query=search_query, genre_label=None, cond=None)
             self.request.genre_freeword = qs
         return qs
 
@@ -224,17 +230,21 @@ class CommonResource(object):
         return genre
 
     def get_top_news(self):
-        top_news = self.request.allowable(Category).filter(Category.hierarchy == 'top_news').all()
+        top_news = self.request.allowable(Category).filter(Category.hierarchy == 'top_news').order_by(
+            Category.display_order).all()
         return top_news
 
     def get_news(self):
-        news = self.request.allowable(Category).filter(Category.hierarchy == 'news').all()
+        news = self.request.allowable(Category).filter(Category.hierarchy == 'news').order_by(
+            Category.display_order).all()
         return news
 
     def get_pr_list(self):
-        pr_list = self.request.allowable(Category).filter(Category.hierarchy == 'pr_list').all()
+        pr_list = self.request.allowable(Category).filter(Category.hierarchy == 'pr_list').order_by(
+            Category.display_order).all()
         return pr_list
 
     def get_promotion_banners(self):
-        banners = self.request.allowable(Category).filter(Category.hierarchy == 'promotion_banner').all()
+        banners = self.request.allowable(Category).filter(Category.hierarchy == 'promotion_banner').order_by(
+            Category.display_order).all()
         return banners
