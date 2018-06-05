@@ -436,19 +436,19 @@ h2.category_ttl {
 
 /*  seach btn
 --------------------------------------------------- */
-#seach_btn a {
+#search_btn a {
 	display: block;
 	position: fixed;
 	bottom: 5px;
 	right: 5px;
 	width: 60px;
 }
-#seach_btn a img {
+#search_btn a img {
 	width: 100%;
 	opacity: 0.7;
 	transition-duration:0.5s;
 }
-#seach_btn a img:hover {
+#search_btn a img:hover {
 	opacity: 1;
 }
 

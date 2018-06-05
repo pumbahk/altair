@@ -3,6 +3,7 @@
 <%block name="title">トップ</%block>
 <% from datetime import datetime %>
 <script type="text/javascript" src="${request.static_url('altaircms:static/RT/smartphone/js/acordion.js')}"></script>
+<script type="text/javascript" src="${request.static_url('altaircms:static/RT/smartphone/js/search-btn.js')}"></script>
 
 <%include file="common/_top_news.html" args="top_news=top_news"/>
 <%include file="search/search.html" args="form=form"/>
@@ -15,6 +16,12 @@
 <%include file="common/_news.html" args="news=news"/>
 <%include file="common/_pr_list.html" args="pr_list=pr_list"/>
 
+<!-- 追従する検索ボタン -->
+<div id="search_btn">
+  <a href="#search">
+    <img src="${request.static_url('altaircms:static/RT/smartphone/img/icon_search.png')}"/>
+  </a>
+</div>
 <!-- NBA -->
 <a href="https://tv.rakuten.co.jp/nba/?scid=wi_tck_nba_grpbnr20180315&utm_medium=rakuteng&utm_source=tck&utm_campaign=nba_grpbnr20180415">
   <img src="${request.static_url('altaircms:static/RT/smartphone/img/nba0415.jpg')}" width="95%" class="rc-gp-migrate-bann"/>
