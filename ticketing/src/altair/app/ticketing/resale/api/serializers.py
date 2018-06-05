@@ -42,7 +42,7 @@ class ResaleSegmentSerializer(Schema):
             return True
 
         if _resale_start_at > _resale_end_at:
-            raise ValidationError(u'リセール開始日時をリセール終了日より前に設定ください。')
+            raise ValidationError(u'リセール開始日時をリセール終了日より前に設定ください。', ['resale_start_at'])
 
 
 
