@@ -2,6 +2,7 @@
 <%namespace file="/common/modal.html" name="common_modal" />
 <%namespace file="/common/helpers.html" name="ch" />
 <%namespace file="_entries_tabs.html" name="tabs" />
+<% from datetime import datetime %>
 
 <%block name="style">
 <link rel="stylesheet" type="text/css" href="/static/css/decentcolorpicker.css" />
@@ -19,10 +20,10 @@
     background-color: #eee;
   }
   .entry-lock-checkboxes .checkbox-set {
-    width: 80em;
+    width: 2em;
   }
   .entry-lock-checkboxes .checkbox-set .checkbox-set-item {
-    width: 18em;
+    width: 2em;
     float: left;
   }
   .entry-lock-checkboxes th {
@@ -151,9 +152,10 @@ ${tabs.tabs(request)}
       <br>
       当選、落選を確定すると、ユーザーに当選メールおよび落選メールが送信されます。<br>
       また、クレジットカードで申込された抽選申込は、オーソリ(与信枠)が確保されている為、当選 / 落選の確定後にすべて開放してください。<br>
-      オーソリ開放は、当選 / 落選 の確定後のみ実行可能です。
-
-
+      オーソリ開放は、当選 / 落選 の確定後のみ実行可能です。<br>
+      <br>
+      大規模当選処理を行う場合は、当選確定後に在庫数を確定するボタンを押してください。<br>
+      当選確定、在庫数確定する処理が完了後、当選結果通知ボタンが有効になります。<br>
     </div>
     %if lot.is_finished():
       この抽選は終了しました
@@ -177,6 +179,12 @@ ${tabs.tabs(request)}
                   </label>
                 </div>
               </td>
+              <td>
+                <button ${"disabled" if electing.blockers or not lot.organization.setting.lot_entry_lock or not stock_info or not process_possible else ""} id="btn-entry_stock_quantity_subtraction"
+                        class="btn btn-large btn-warning" style="margin-right: 5px;">
+                  在庫数確定する
+                </button>
+              </td>
             </tr>
           </tbody>
         </table>
@@ -184,21 +192,22 @@ ${tabs.tabs(request)}
       %endif
       <div class="pull-left">
         <p>
-          <button ${"disabled" if electing.blockers or not process_possible else ""} id="btn-rejection"
-                  class="btn btn-large btn-info pull-left" style="margin-right: 5px;">
-            落選確定する
-          </button>
           <button ${"disabled" if electing.blockers or not process_possible else ""} id="btn-election"
                   class="btn btn-large btn-primary pull-left" style="margin-right: 5px;">
             当選確定する
           </button>
-          <button ${"disabled" if electing.blockers or not lot.organization.setting.lot_entry_lock or not stock_info or not process_possible else ""} id="btn-entry_stock_quantity_subtraction"
-                  class="btn btn-large btn-warning" style="margin-right: 5px;">
-            在庫数確定する
+          <button ${"disabled" if electing.blockers or not process_possible else ""} id="btn-rejection"
+                  class="btn btn-large btn-info" style="margin-right: 5px;">
+            落選確定する
           </button>
-          %if electing.blockers or not process_possible:
+          %if electing.blockers or not process_possible or (lot.end_at > datetime.now()):
             <div class="alert-messages">
-              <h5>抽選申込取消がONのため、受付期間：${vh.datetime(lot.lotting_announce_datetime, with_weekday=True)}を過ぎるまで当選、落選処理が行えません。</h5>
+              <h5>受付期間：${vh.datetime(lot.end_at, with_weekday=True)}を過ぎるまで当選、落選処理が行えません。</h5>
+            </div>
+          %endif
+          %if (electing.blockers and (lot.end_at < datetime.now())) or not process_possible :
+            <div class="alert-messages">
+              <h5>在庫が足りません。パフォーマンスの配席数を確認してください。</h5>
             </div>
           %endif
           %if not electing.blockers and lot.organization.setting.lot_entry_lock and stock_info and process_possible:
@@ -209,13 +218,13 @@ ${tabs.tabs(request)}
         </p>
         <hr>
         <p>
-          <button id="btn-send-rejection-mail" ${"disabled" if not lot.is_over_announcement_datetime() else ""} class="btn btn-large btn-info"
-                  data-toggle="popover" data-placement="right" data-content="抽選結果発表予定日: ${vh.datetime(lot.lotting_announce_datetime, with_weekday=True)}を過ぎていません" data-original-title="">
-            落選結果通知
-          </button>
-          <button id="btn-send-election-mail" ${"disabled" if not lot.is_over_announcement_datetime() else ""} class="btn btn-large btn-primary"
-                  data-toggle="popover" data-placement="right" data-content="" data-original-title="">
+          <button id="btn-send-election-mail" ${"disabled" if electing.required_stocks or stock_info or not lot.is_over_announcement_datetime() else ""}
+                  class="btn btn-large btn-primary pull-left" style="margin-right: 5px;">
             当選結果通知
+          </button>
+          <button id="btn-send-rejection-mail" ${"disabled" if lot_reject_cnt or not lot.is_over_announcement_datetime() else ""}
+                  class="btn btn-large btn-info"  style="margin-right: 5px;">
+            落選結果通知
           </button>
           %if not lot.is_over_announcement_datetime():
             <div class="alert-messages">
