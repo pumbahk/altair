@@ -516,7 +516,7 @@ class PerformanceShowView(BaseView):
             resale_segment = resale_segments.filter(ResaleSegment.id==selected_resale_segment_id).one()
         else:
             resale_segment = resale_segments.first()
-            selected_resale_segment_id = resale_segment.id
+            selected_resale_segment_id = resale_segment.id if resale_segment else None
 
         if resale_segment:
             form.resale_segment_id.data = resale_segment.id
@@ -525,10 +525,7 @@ class PerformanceShowView(BaseView):
                 .filter(ResaleRequest.ordered_product_item_token_id == OrderedProductItemToken.id) \
                 .filter(ResaleRequest.resale_segment_id == resale_segment.id) \
                 .filter(ResaleRequest.deleted_at == None)
-        else:
-            resale_requests = []
 
-        if resale_requests:
             if search_form.order_no.data:
                 order_no_list = re.split(r'[ \t,]', search_form.order_no.data)
                 resale_requests = resale_requests \
@@ -547,6 +544,8 @@ class PerformanceShowView(BaseView):
 
             if search_form.get_sent_status():
                 resale_requests = resale_requests.filter(ResaleRequest.sent_status.in_(search_form.get_sent_status()))
+        else:
+            resale_requests = []
 
         resale_requests = paginate.Page(
             resale_requests,

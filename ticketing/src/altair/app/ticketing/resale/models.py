@@ -41,10 +41,6 @@ class ResaleSegment(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     resale_end_at = AnnotatedColumn(DateTime, nullable=False, _a_label=u'リセール終了日時', default=None)
 
     @property
-    def editable(self):
-        return len(self.resale_requests) == 0
-
-    @property
     def get_performance_id(self):
         return self.performance_id
 
