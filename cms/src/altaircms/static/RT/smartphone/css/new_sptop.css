@@ -204,6 +204,17 @@ h2.category_ttl {
 	width: 82%;
 	vertical-align: top;
 }
+#special_contents .over_txt {
+	display: block;
+	color: #FFF;
+	border-radius: 10px;
+	background: #7d00be;
+	width: 70px;
+	padding: 1px;
+	margin: 5px auto;
+	text-align: center;
+	cursor: pointer;
+}
 
 /* genre
 --------------------------------------------------- */

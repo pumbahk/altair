@@ -11,6 +11,7 @@ from sqlalchemy import asc
 from altaircms.datelib import get_now
 from altaircms import helpers
 from altaircms.models import Genre, Category
+from altaircms.page.models import StaticPageSet
 from altaircms.genre.searcher import GenreSearcher
 from altaircms.tag.models import HotWord
 from altaircms.topic.api import get_topic_searcher
@@ -41,6 +42,8 @@ class CommonResource(object):
             hotwords = self.get_hotword()
 
         weekly_sale = self.search_week(None, 1, 100)
+        # 静的ページの表示順が1のものを初期表示、もっと見るを押すと2のものを表示
+        static_pagesets_dict = self.get_static_pagesets_dict()
         genretree = self.get_genre_tree(parent=None)
         areas = self.get_area()
         promotion_banners = self.get_promotion_banners()
@@ -54,6 +57,7 @@ class CommonResource(object):
             , 'topics': topics
             , 'hotwords': hotwords
             , 'weekly_sale': weekly_sale
+            , 'static_pagesets_dict': static_pagesets_dict
             , 'genretree': genretree
             , 'genre_searcher': GenreSearcher(self.request)
             , 'areas': areas
@@ -224,6 +228,15 @@ class CommonResource(object):
 
     def get_area(self):
         return get_areas()
+
+    def get_static_pagesets_dict(self):
+        # 静的ページで1のものを初期表示、もっと見るを押すと2のものを表示
+        initial_disp_static_pagesets = self.request.allowable(StaticPageSet).filter(
+            StaticPageSet.display_order == 1).all()
+        static_pagesets = self.request.allowable(StaticPageSet).filter(
+            StaticPageSet.display_order == 2).all()
+        static_pagesets_dict = {'initial_disp': initial_disp_static_pagesets, 'disp': static_pagesets}
+        return static_pagesets_dict
 
     def get_genre(self, id):
         genre = self.request.allowable(Genre).filter(Genre.id == id).first()

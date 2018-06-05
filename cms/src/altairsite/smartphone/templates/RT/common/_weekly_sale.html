@@ -8,7 +8,7 @@ $(document).ready(function(){
         $(".sale_evnet" + String(count)).hide();
     }
 
-    $(".over_txt").on('click',function(){
+    $(".disp_more_sale").on('click',function(){
         var nextPosition = position + 10;
         if (position < eventCount) {
             if (eventCount < nextPosition) {
@@ -37,7 +37,7 @@ $(document).ready(function(){
             </li>
             % endfor
         </ul>
-        <p class="over_txt">もっとみる▼</p>
+        <p class="over_txt disp_more_sale">もっとみる▼</p>
     </div>
 </section>
 % endif
