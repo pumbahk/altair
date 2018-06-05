@@ -1,0 +1,16 @@
+:root {
+    --custom-color: #000000;        /* fonts 文字 */
+    --custom-border-color: #000000;     /* border 罫線（divなど） */
+    --custom-background-color: #000000;     /* background 背景（divなど） */
+}
+
+/* heading color 見出し
+-------------------------------------------- */
+header .head {
+  background-color: var(--custom-background-color) !important;
+}
+
+.heading-primary {
+    background-color: var(--custom-background-color) !important;
+}
+
