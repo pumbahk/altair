@@ -72,8 +72,8 @@ def send_resale_segment(request, performance, resale_segment):
     obj = dict(
         code=performance.code,
         resale_segment_id=resale_segment.id,
-        reception_start_at=resale_segment.start_at.strftime('%Y-%m-%d %H:%M:%S') if resale_segment.start_at else None,
-        reception_end_at=resale_segment.end_at.strftime('%Y-%m-%d %H:%M:%S') if resale_segment.end_at else None,
+        reception_start_at=resale_segment.reception_start_at.strftime('%Y-%m-%d %H:%M:%S') if resale_segment.reception_start_at else None,
+        reception_end_at=resale_segment.reception_end_at.strftime('%Y-%m-%d %H:%M:%S') if resale_segment.reception_end_at else None,
         resale_start_at=resale_segment.resale_start_at.strftime('%Y-%m-%d %H:%M:%S') if resale_segment.resale_start_at else None,
         resale_end_at=resale_segment.resale_end_at.strftime('%Y-%m-%d %H:%M:%S') if resale_segment.resale_end_at else None,
         resale_enable=1

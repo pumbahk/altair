@@ -240,17 +240,17 @@
 <form id="reuse-item-1" class="form-horizontal" method="POST">
   ${ch.form_item(form.resale_segment_id)}
   ${ch.form_item(form.performance_id)}
+  ${ch.form_item(form.reception_start_at)}
+  ${ch.form_item(form.reception_end_at)}
   ${ch.form_item(form.resale_start_at)}
   ${ch.form_item(form.resale_end_at)}
-  ${ch.form_item(form.start_at)}
-  ${ch.form_item(form.end_at)}
 </form>
 <form id="reuse-item-2" class="form-horizontal" method="POST">
   ${ch.form_item(form.resale_segment_id)}
   ${ch.form_item(form.performance_id)}
   ${ch.form_item(form.resale_performance_id)}
-  <input type="hidden" name="start_at">
-  <input type="hidden" name="end_at">
+  <input type="hidden" name="reception_start_at">
+  <input type="hidden" name="reception_end_at">
 </form>
 </div>
 
@@ -397,8 +397,8 @@
           data = undefined,
           resale_start_at = undefined,
           resale_end_at = undefined,
-          start_at = undefined,
-          end_at = undefined;
+          reception_start_at = undefined,
+          reception_end_at = undefined;
 
       if (action === "update") {
           data = $(".resale-segment__info").data();
@@ -424,22 +424,22 @@
             form.find("#resale_end_at\\.second").val(resale_end_at.S);
           }
 
-          start_at = split_datetime(data['start_at']);
-          end_at = split_datetime(data['end_at']);
+          reception_start_at = split_datetime(data['reception_start_at']);
+          reception_end_at = split_datetime(data['reception_end_at']);
 
-          form.find("#start_at\\.year").val(start_at.y);
-          form.find("#start_at\\.month").val(start_at.m);
-          form.find("#start_at\\.day").val(start_at.d);
-          form.find("#start_at\\.hour").val(start_at.H);
-          form.find("#start_at\\.minute").val(start_at.M);
-          form.find("#start_at\\.second").val(start_at.S);
+          form.find("#reception_start_at\\.year").val(reception_start_at.y);
+          form.find("#reception_start_at\\.month").val(reception_start_at.m);
+          form.find("#reception_start_at\\.day").val(reception_start_at.d);
+          form.find("#reception_start_at\\.hour").val(reception_start_at.H);
+          form.find("#reception_start_at\\.minute").val(reception_start_at.M);
+          form.find("#reception_start_at\\.second").val(reception_start_at.S);
 
-          form.find("#end_at\\.year").val(end_at.y);
-          form.find("#end_at\\.month").val(end_at.m);
-          form.find("#end_at\\.day").val(end_at.d);
-          form.find("#end_at\\.hour").val(end_at.H);
-          form.find("#end_at\\.minute").val(end_at.M);
-          form.find("#end_at\\.second").val(end_at.S);
+          form.find("#reception_end_at\\.year").val(reception_end_at.y);
+          form.find("#reception_end_at\\.month").val(reception_end_at.m);
+          form.find("#reception_end_at\\.day").val(reception_end_at.d);
+          form.find("#reception_end_at\\.hour").val(reception_end_at.H);
+          form.find("#reception_end_at\\.minute").val(reception_end_at.M);
+          form.find("#reception_end_at\\.second").val(reception_end_at.S);
       }
       modal.find(".modal-header h3").text(header_text);
       modal.find(".modal-body-content").append(form);
@@ -458,8 +458,8 @@
           data = $(".resale-segment__info").data();
 
           form.find("#resale_segment_id").val(data['resale_segment_id']);
-          form.find("input[name=start_at]").val(data['start_at']);
-          form.find("input[name=end_at]").val(data['end_at']);
+          form.find("input[name=reception_start_at]").val(data['reception_start_at']);
+          form.find("input[name=reception_end_at]").val(data['reception_end_at']);
 
       if (action === "update") {
           form.find("#resale_performance_id").val(data['resale_performance_id']);
@@ -612,7 +612,7 @@
       }
   }
 
-  function update_display(resale_segment_id, resale_performance_id, resale_start_at, resale_end_at, start_at, end_at) {
+  function update_display(resale_segment_id, resale_performance_id, resale_start_at, resale_end_at, reception_start_at, reception_end_at) {
 
     let li = $(".resale-segment-detail-box");
     li.empty();
@@ -625,8 +625,8 @@
       .data('resale_performance_id', resale_performance_id)
       .data('resale_start_at', resale_start_at)
       .data('resale_end_at', resale_end_at)
-      .data('start_at', start_at)
-      .data('end_at', end_at);
+      .data('reception_start_at', reception_start_at)
+      .data('reception_end_at', reception_end_at);
 
     let buttonDom = $("<li>")
         .append($("<button class=\"btn\" onclick=\"open_modal_create_or_update_resale_segment($(this), 'update')\"><i class=\"icon-pencil\"></i>編集</button>\n"));
@@ -638,10 +638,10 @@
     }
 
     let content = $("<ul style=\"display:table\">")
+        .append($("<li style=\"display:table-row\">申込開始日時：" + reception_start_at + "</li>"))
+        .append($("<li style=\"display:table-row\">申込終了日時：" + reception_end_at + "</li>"))
         .append($("<li style=\"display:table-row\">リセール開始日時：" + resale_start_at + "</li>"))
         .append($("<li style=\"display:table-row\">リセール終了日時：" + resale_end_at + "</li>"))
-        .append($("<li style=\"display:table-row\">申込開始日時：" + start_at + "</li>"))
-        .append($("<li style=\"display:table-row\">申込終了日時：" + end_at + "</li>"))
         .append($("<br/>"))
         .append(buttonDom);
 
@@ -668,18 +668,18 @@
                 form.find("#resale_end_at\\.day").val(),
                 form.find("#resale_end_at\\.hour").val(),
                 form.find("#resale_end_at\\.minute").val()),
-            "start_at": concat_datetime(
-                form.find("#start_at\\.year").val(),
-                form.find("#start_at\\.month").val(),
-                form.find("#start_at\\.day").val(),
-                form.find("#start_at\\.hour").val(),
-                form.find("#start_at\\.minute").val()),
-            "end_at": concat_datetime(
-                form.find("#end_at\\.year").val(),
-                form.find("#end_at\\.month").val(),
-                form.find("#end_at\\.day").val(),
-                form.find("#end_at\\.hour").val(),
-                form.find("#end_at\\.minute").val())
+            "reception_start_at": concat_datetime(
+                form.find("#reception_start_at\\.year").val(),
+                form.find("#reception_start_at\\.month").val(),
+                form.find("#reception_start_at\\.day").val(),
+                form.find("#reception_start_at\\.hour").val(),
+                form.find("#reception_start_at\\.minute").val()),
+            "reception_end_at": concat_datetime(
+                form.find("#reception_end_at\\.year").val(),
+                form.find("#reception_end_at\\.month").val(),
+                form.find("#reception_end_at\\.day").val(),
+                form.find("#reception_end_at\\.hour").val(),
+                form.find("#reception_end_at\\.minute").val())
           };
   }
 
@@ -696,7 +696,7 @@
           data: data,
           success: function(data) {
               $("ul#resale-segment-list").append($("<li class=\"resale-segment-detail-box\"></li>"));
-              update_display(data["id"], data["resale_performance_id"], data["resale_start_at"], data["resale_end_at"], data["start_at"], data["end_at"]);
+              update_display(data["id"], data["resale_performance_id"], data["resale_start_at"], data["resale_end_at"], data["reception_start_at"], data["reception_end_at"]);
               $(".resale-segment-add-btn").remove();
               flush_result_message("リセールセッグメントが作成されました。");
               close_modal();
@@ -709,14 +709,14 @@
               if ("status" in ret) {
                   ul.append($("<li>").text("{0} - {1}".format(ret["status"],ret["emsgs"])));
               }
-              if ('start_at' in ret) {
-                  for (i = 0; i < ret['start_at'].length; i++) {
-                      ul.append($("<li>").text(ret['start_at'][i]));
+              if ('reception_start_at' in ret) {
+                  for (i = 0; i < ret['reception_start_at'].length; i++) {
+                      ul.append($("<li>").text(ret['reception_start_at'][i]));
                   }
               }
-              if ('end_at' in ret) {
-                  for (i = 0; i < ret['end_at'].length; i++) {
-                      ul.append($("<li>").text(ret['end_at'][i]));
+              if ('reception_end_at' in ret) {
+                  for (i = 0; i < ret['reception_end_at'].length; i++) {
+                      ul.append($("<li>").text(ret['reception_end_at'][i]));
                   }
               }
               Object.keys(ret).forEach(function(key) {
@@ -743,7 +743,7 @@
           type: "PUT",
           data: data,
           success: function(data) {
-              update_display(data["id"], data["resale_performance_id"], data["resale_start_at"], data["resale_end_at"], data["start_at"], data["end_at"]);
+              update_display(data["id"], data["resale_performance_id"], data["resale_start_at"], data["resale_end_at"], data["reception_start_at"], data["reception_end_at"]);
               // リセール区分は成功に更新されたら、すぐ連携します。
               send_resale_segment_to_orion(performance_id, resale_segment_id);
               close_modal();
@@ -756,14 +756,14 @@
               if ("status" in ret) {
                   ul.append($("<li>").text("{0} - {1}".format(ret["status"],ret["emsgs"])));
               }
-              if ("start_at" in ret) {
-                  for (i = 0; i < ret["start_at"].length; i++) {
-                      ul.append($("<li>").text(ret["start_at"][i]));
+              if ("reception_start_at" in ret) {
+                  for (i = 0; i < ret["reception_start_at"].length; i++) {
+                      ul.append($("<li>").text(ret["reception_start_at"][i]));
                   }
               }
-              if ("end_at" in ret) {
-                  for (i = 0; i < ret["end_at"].length; i++) {
-                      ul.append($("<li>").text(ret["end_at"][i]));
+              if ("reception_end_at" in ret) {
+                  for (i = 0; i < ret["reception_end_at"].length; i++) {
+                      ul.append($("<li>").text(ret["reception_end_at"][i]));
                   }
               }
               if ("resale_start_at" in ret) {
@@ -794,8 +794,8 @@
           data = {
             "performance_id": parseInt(form.find("#performance_id").val()),
             "resale_segment_id": resale_segment_id,
-            "start_at": form.find("input[name=start_at]").val(),
-            "end_at": form.find("input[name=end_at]").val(),
+            "reception_start_at": form.find("input[name=reception_start_at]").val(),
+            "reception_end_at": form.find("input[name=reception_end_at]").val(),
             "resale_performance_id": parseInt(form.find("#resale_performance_id").val())
           };
 
@@ -805,7 +805,7 @@
           type: "PUT",
           data: data,
           success: function(data) {
-              update_display(data["id"], data["resale_performance_id"], data["resale_start_at"], data["resale_end_at"], data["start_at"], data["end_at"]);
+              update_display(data["id"], data["resale_performance_id"], data["resale_start_at"], data["resale_end_at"], data["reception_start_at"], data["reception_end_at"]);
               flush_result_message("リセール公演を連携しました。");
               close_modal();
           },

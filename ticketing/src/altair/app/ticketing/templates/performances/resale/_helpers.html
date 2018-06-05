@@ -44,17 +44,16 @@
     data-resale_segment_id="${resale_segment.id}"
     data-resale_start_at="${resale_segment.resale_start_at}"
     data-resale_end_at="${resale_segment.resale_end_at}"
-    data-start_at="${resale_segment.start_at}"
-    data-end_at="${resale_segment.end_at}">
+    data-reception_start_at="${resale_segment.reception_start_at}"
+    data-reception_end_at="${resale_segment.reception_end_at}">
   <ul style="display:table">
     % if resale_segment.resale_performance_id:
       <li style="display:table-row">リセール連携公演ID：${resale_segment.resale_performance_id}</li>
-      <li style="display:table-row">リセール開始日時：${resale_segment.resale_start_at}</li>
     % endif
+    <li style="display:table-row">申込開始日時：${resale_segment.reception_start_at}</li>
+    <li style="display:table-row">申込終了日時：${resale_segment.reception_end_at}</li>
     <li style="display:table-row">リセール開始日時：${resale_segment.resale_start_at}</li>
     <li style="display:table-row">リセール終了日時：${resale_segment.resale_end_at}</li>
-    <li style="display:table-row">申込開始日時：${resale_segment.start_at}</li>
-    <li style="display:table-row">申込終了日時：${resale_segment.end_at}</li>
     % if resale_segment.editable:
     <br/>
     <li style="display:table-row">
