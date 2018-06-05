@@ -51,8 +51,7 @@ def get_no_ticket_bundles(performance):
 
     return no_ticket_bundles
 
-def send_resale_segment(request, performance, resale_segment):
-
+def send_orion_performance(request, performance):
     obj = dict(
         organization_code=performance.event.organization.code,
         event_code=performance.event.code,
@@ -65,9 +64,16 @@ def send_resale_segment(request, performance, resale_segment):
         end_on=performance.end_on.strftime('%Y-%m-%d %H:%M:%S') if performance.end_on is not None else None,
         search_end_at='',
         site_name=performance.venue.site.name,
+    )
+
+    return make_send_to_orion_request(request, obj, 'orion.resale_segment.create_or_update_url')
+
+def send_resale_segment(request, performance, resale_segment):
+    obj = dict(
+        code=performance.code,
         resale_segment_id=resale_segment.id,
-        reception_start_at = resale_segment.start_at.strftime('%Y-%m-%d %H:%M:%S') if resale_segment.start_at else None,
-        reception_end_at = resale_segment.end_at.strftime('%Y-%m-%d %H:%M:%S') if resale_segment.end_at else None,
+        reception_start_at=resale_segment.start_at.strftime('%Y-%m-%d %H:%M:%S') if resale_segment.start_at else None,
+        reception_end_at=resale_segment.end_at.strftime('%Y-%m-%d %H:%M:%S') if resale_segment.end_at else None,
         resale_start_at=resale_segment.resale_start_at.strftime('%Y-%m-%d %H:%M:%S') if resale_segment.resale_start_at else None,
         resale_end_at=resale_segment.resale_end_at.strftime('%Y-%m-%d %H:%M:%S') if resale_segment.resale_end_at else None,
         resale_enable=1

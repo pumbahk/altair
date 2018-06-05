@@ -44,6 +44,7 @@ from altair.app.ticketing.core.models import MailTypeChoices
 from altair.app.ticketing.orders.api import OrderSummarySearchQueryBuilder, QueryBuilderError
 from altair.app.ticketing.orders.models import OrderSummary, OrderImportTask, ImportStatusEnum, ImportTypeEnum, OrderedProductItemToken, OrderedProductItem, OrderedProduct, Order
 from altair.app.ticketing.orders.importer import OrderImporter, ImportCSVReader
+from altair.app.ticketing.orders.orion import OrionAPIException
 from altair.app.ticketing.orders import helpers as order_helpers
 from altair.app.ticketing.cart import helpers as cart_helper
 from altair.app.ticketing.carturl.api import get_performance_cart_url_builder, get_performance_spa_cart_url_builder, get_cart_now_url_builder
@@ -55,6 +56,7 @@ from .generator import PerformanceCodeGenerator
 from ..famiport_helpers import get_famiport_performance_ids
 from .api import (set_visible_performance,
                   set_invisible_performance,
+                  send_orion_performance,
                   send_resale_segment,
                   send_all_resale_request,
                   send_resale_request,
@@ -465,7 +467,18 @@ class PerformanceShowView(BaseView):
                 )
                 op.save()
 
-            self.request.session.flash(u'イベント・ゲート連携を保存しました')
+            if self.performance.orion:
+                try:
+                    resp = send_orion_performance(self.request, self.performance)
+                    if not resp or not resp['success']:
+                        self.request.session.flash(u'イベント・ゲートは保存しましたが、Orionサーバーとの連携は失敗しました。')
+                    else:
+                        self.request.session.flash(u'イベント・ゲート連携を保存しました')
+                except:
+                    self.request.session.flash(u'イベント・ゲートは保存しましたが、Orionサーバーとの連携は失敗しました。')
+                    pass
+            else:
+                self.request.session.flash(u'イベント・ゲート連携を保存しました')
             return HTTPFound(self.request.route_url('performances.orion.index', performance_id=self.performance.id))
 
         return self.orion_index_view()
@@ -800,6 +813,12 @@ class Performances(BaseView):
                     performance.setting.visible = f.visible.data
                     performance.save()
 
+                if performance.orion:
+                    resp = send_orion_performance(self.request, performance)
+                    if not resp or not resp['success']:
+                        raise OrionAPIException('send resale segment error occurs during performance copy/edit.')
+
+
             except InternalError as exc:
                 # 1205: u'Lock wait timeout exceeded; try restarting transaction'
                 # 1213: u'Deadlock found when trying to get lock; try restarting transaction'
@@ -808,6 +827,10 @@ class Performances(BaseView):
                     logger.error(u'{}. locked out sql: {}'.format(exc.message, exc.statement))
                 else:
                     unexpected_error()
+
+            except OrionAPIException as exc:
+                self.request.session.flash(u'{}の処理でOrionとの連携は失敗しました。もう一度同じ内容で保存してください。'.format(route_name))
+                logger.error(str(exc))
 
             except Exception as exc:
                 unexpected_error()
@@ -906,6 +929,11 @@ class Performances(BaseView):
                         new_performance.orion = OrionPerformance.clone(
                             origin_performance.orion, False, ['performance_id'])
 
+                        resp = send_orion_performance(self.request, new_performance)
+                        if not resp or not resp['success']:
+                            raise OrionAPIException(
+                                'send resale segment error occurs during performance manycopy.')
+
                     new_performance.save()
 
                     # 抽選の商品を作成する
@@ -919,6 +947,10 @@ class Performances(BaseView):
                     logger.error(u'{}. locked out sql: {}'.format(exc.message, exc.statement))
                 else:
                     unexpected_error()
+
+            except OrionAPIException as exc:
+                self.request.session.flash(u'Performance(CODE: {})のコピー処理でOrionとの連携は失敗しました。もう一度操作してください。'.format(origin_performance.code))
+                logger.error(str(exc))
 
             except Exception as exc:
                 unexpected_error()
@@ -1121,6 +1153,11 @@ class Performances(BaseView):
                         new_performance.orion = OrionPerformance.clone(
                             origin_performance.orion, False, ['performance_id'])
 
+                        resp = send_orion_performance(self.request, new_performance)
+                        if not resp or not resp['success']:
+                            raise OrionAPIException(
+                                'send resale segment error occurs during performance termcopy.')
+
                     new_performance.save()
 
                     # 抽選の商品を作成する
@@ -1134,6 +1171,10 @@ class Performances(BaseView):
                     logger.error(u'{}. locked out sql: {}'.format(exc.message, exc.statement))
                 else:
                     unexpected_error()
+
+            except OrionAPIException as exc:
+                self.request.session.flash(u'Performance(CODE: {})のコピー処理でOrionとの連携は失敗しました。もう一度操作してください。'.format(origin_performance.code))
+                logger.error(str(exc))
 
             except Exception as exc:
                 unexpected_error()
