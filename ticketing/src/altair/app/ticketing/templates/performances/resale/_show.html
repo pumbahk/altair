@@ -737,6 +737,7 @@
       let resale_segment_id = form.find("#resale_segment_id").val();
       let url = "/resale/api/segments/{0}/update".format(resale_segment_id);
       let data = create_data_from_dom(form);
+      // sent_statusが3の場合は再連携必須。
       data["sent_status"] = 3;
       data["sent_at"] = get_current_local_datetime();
       clear_modal_error_messages(modal);
@@ -824,41 +825,26 @@
   }
 
   function send_resale_segment_to_orion(button) {
-      let resale_segment_id = $(".resale-segment__info").data("resale_segment_id");
-      let performance_id = parseInt("${performance.id}");
-      let url = "${request.route_path('performances.resale.send_resale_segment_to_orion')}";
+      let resale_segment_id = $(".resale-segment__info").data("resale_segment_id"),
+          performance_id = parseInt("${performance.id}"),
+          url = "${request.route_path('performances.resale.send_resale_segment_to_orion')}";
 
       $.ajax({
           url: url,
           type: "POST",
           data: {"performance_id": performance_id, "resale_segment_id": resale_segment_id},
           success: function(data) {
-              var success_list = data['success_list'],
-                  fail_list = data['fail_list'],
-                  send_button = undefined,
-                  i = undefined;
-
-              for (i = 0; i < success_list.length; i++) {
-                  send_button = $("#resale-segment-" + success_list[i]).find(".btn-send");
-                  console.log(send_button);
-                  update_send_button_status(send_button, 'sent');
+              if (data["result"] === "OK") {
+                  update_send_button_status(button, 'sent');
+                  flush_result_message("リセールセグメント情報がOrionに送信されました。");
+              } else {
+                  update_send_button_status(button, 'fail');
+                  flush_result_message(data["emsgs"]);
               }
-              for (i = 0; i < fail_list.length; i++) {
-                  send_button = $("#resale-segment-" + fail_list[i]).find(".btn-send");
-                  update_send_button_status(send_button, 'fail');
-              }
-              flush_result_message("リセールセグメント情報がOrionに送信されました。");
           },
           error: function(xhr) {
               let ret = handle_exception(xhr);
-              if (button) {
-                  update_send_button_status(button, 'fail');
-              } else {
-                  $("h5[id*='resale-segment-']").each(function() {
-                      let button = $(this).find(".btn-send");
-                      update_send_button_status(button, 'fail');
-                  })
-              }
+              update_send_button_status(button, 'fail');
               flush_result_message(ret);
           }
       });
@@ -953,7 +939,6 @@
               "resale_segment_id": resale_segment_id
           },
           success: function(data) {
-              console.log(data);
               if (data['result'] === "OK") {
                   modal.find(".modal-body-content p").text("リセールリクエスト一括連携しました。");
               } else {

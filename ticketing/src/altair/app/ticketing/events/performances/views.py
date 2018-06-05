@@ -18,6 +18,7 @@ from paste.util.multidict import MultiDict
 
 from altair.sqlahelper import get_db_session
 from sqlalchemy.exc import InternalError
+from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 
 from altair.app.ticketing.models import merge_session_with_post, record_to_multidict
 from altair.app.ticketing.views import BaseView
@@ -1347,43 +1348,40 @@ class ResaleForOrionAPIView(BaseView):
                  renderer="json")
     def send_resale_segment_to_orion(self):
         performance_id = int(self.request.params.get('performance_id', None))
-        if not performance_id:
+        resale_segment_id = self.request.params.get('resale_segment_id', None)
+        if not performance_id or not resale_segment_id:
             raise HTTPNotFound()
         performance = self.session.query(Performance).get(performance_id)
-        resale_segment_id = self.request.params.get('resale_segment_id', None)
-        resale_segments = DBSession.query(ResaleSegment).filter(ResaleSegment.performance_id == performance_id)
+        try:
+            resale_segment = DBSession.query(ResaleSegment)\
+                .filter(ResaleSegment.id == resale_segment_id)\
+                .filter(ResaleSegment.performance_id == performance_id)\
+                .one()
+        except (NoResultFound, MultipleResultsFound):
+            raise HTTPNotFound()
 
-        if resale_segment_id:
-            resale_segments = resale_segments.filter(ResaleSegment.id == resale_segment_id)
-
-        success_list = []
-        fail_list = []
-        for resale_segment in resale_segments:
-            resale_segment.sent_at = datetime.datetime.now()
-            try:
-                resp = send_resale_segment(self.request, performance, resale_segment)
-                if not resp or not resp['success']:
-                    fail_list.append(resale_segment.id)
-                    resale_segment.sent_status = SentStatus.fail
-                    logger.info("fail to send resale segment: {0}...".format(resale_segment.id))
-                else:
-                    success_list.append(resale_segment.id)
-                    resale_segment.sent_status = SentStatus.sent
-            except Exception as e:
-                fail_list.append(resale_segment.id)
+        result = u"OK"
+        emsgs = u""
+        resale_segment.sent_at = datetime.datetime.now()
+        try:
+            resp = send_resale_segment(self.request, performance, resale_segment)
+            if not resp or not resp['success']:
+                result = u"NG"
+                emsgs = u"リセールリクエスト連携は失敗しました。"
                 resale_segment.sent_status = SentStatus.fail
-                logger.info(
-                    "fail to send resale segment(ID: {0}) with the exception: {1} ...".format(
-                        resale_segment.id, str(e))
-                )
+                logger.info("fail to send resale segment: {0}...".format(resale_segment.id))
+            else:
+                resale_segment.sent_status = SentStatus.sent
+        except Exception as e:
+            resale_segment.sent_status = SentStatus.fail
+            logger.info(
+                "fail to send resale segment(ID: {0}) with the exception: {1} ...".format(
+                    resale_segment.id, str(e))
+            )
+        DBSession.merge(resale_segment)
+        DBSession.flush()
 
-            DBSession.merge(resale_segment)
-            DBSession.flush()
-
-        return {
-            'success_list': success_list,
-            'fail_list': fail_list
-        }
+        return {'result': result, 'emsgs': emsgs}
 
     @view_config(route_name="performances.resale.requests.operate",
                  request_method="POST",
