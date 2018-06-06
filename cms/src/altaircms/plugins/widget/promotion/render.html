@@ -12,28 +12,20 @@
 import random
 prefix = str(random.random())[2:]
 %>
-<script type="text/javascript" src="${request.static_url('altaircms:static/RT/js/jquery.tile.js')}"></script>
-<script type="text/javascript" src="${request.static_url('altaircms:static/RT/js/carouFredSel.js')}"></script>
-<script type="text/javascript" src="${request.static_url('altaircms:static/RT/js/slider.js')}"></script>
-<link rel="stylesheet" type="text/css" href="${request.static_url('altaircms:static/RT/css/slider.css')}" />
+<script type="text/javascript" src="${request.static_url('altaircms:static/RT/smartphone/js/slick.min.js')}"></script>
+<link rel="stylesheet" type="text/css" href="${request.static_url('altaircms:static/RT/smartphone/css/slick.css')}" />
+<link rel="stylesheet" type="text/css" href="${request.static_url('altaircms:static/RT/smartphone/css/slick-theme.css')}" />
+<link rel="stylesheet" type="text/css" href="${request.static_url('altaircms:static/RT/smartphone/css/new_sptop.css')}" />
 
 <div class="promotion-widget">
   <div id="tsMainSlider">
-      <div id="full-slider">
-          <div id="full-inner">
-              <div id="full-wrapper">
-                  <ul id="full-carousel">
-                    % for img_info in infos:
-                      <li>
-                        ${show_image(prefix,img_info.main,img_info.main_link)|n}
-                      </li>
-                    % endfor
-                  </ul>
-                  <a href="#" id="full-prev"><img src="${request.static_url('altaircms:static/RT/img/sliderImg/arrow-left.png')}" width="26" height="54" /></a> <a href="#" id="full-next"><img src="${request.static_url('altaircms:static/RT/img/sliderImg/arrow-right.png')}" width="26" height="54" /></a>
-              </div>
-          </div>
-          <div id="full-pager"></div>
-      </div>
+    <ul id="full-carousel">
+      % for img_info in infos:
+      <li>
+        ${show_image(prefix,img_info.main,img_info.main_link)|n}
+      </li>
+      % endfor
+    </ul>
   </div>
 </div>
 % endif
