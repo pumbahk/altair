@@ -18,6 +18,7 @@ from paste.util.multidict import MultiDict
 
 from altair.sqlahelper import get_db_session
 from sqlalchemy.exc import InternalError
+from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 
 from altair.app.ticketing.models import merge_session_with_post, record_to_multidict
 from altair.app.ticketing.views import BaseView
@@ -44,6 +45,7 @@ from altair.app.ticketing.core.models import MailTypeChoices
 from altair.app.ticketing.orders.api import OrderSummarySearchQueryBuilder, QueryBuilderError
 from altair.app.ticketing.orders.models import OrderSummary, OrderImportTask, ImportStatusEnum, ImportTypeEnum, OrderedProductItemToken, OrderedProductItem, OrderedProduct, Order
 from altair.app.ticketing.orders.importer import OrderImporter, ImportCSVReader
+from altair.app.ticketing.orders.orion import OrionAPIException
 from altair.app.ticketing.orders import helpers as order_helpers
 from altair.app.ticketing.cart import helpers as cart_helper
 from altair.app.ticketing.carturl.api import get_performance_cart_url_builder, get_performance_spa_cart_url_builder, get_cart_now_url_builder
@@ -55,6 +57,7 @@ from .generator import PerformanceCodeGenerator
 from ..famiport_helpers import get_famiport_performance_ids
 from .api import (set_visible_performance,
                   set_invisible_performance,
+                  send_orion_performance,
                   send_resale_segment,
                   send_all_resale_request,
                   send_resale_request,
@@ -465,7 +468,18 @@ class PerformanceShowView(BaseView):
                 )
                 op.save()
 
-            self.request.session.flash(u'イベント・ゲート連携を保存しました')
+            if self.performance.orion:
+                try:
+                    resp = send_orion_performance(self.request, self.performance)
+                    if not resp or not resp['success']:
+                        self.request.session.flash(u'イベント・ゲートは保存しましたが、Orionサーバーとの連携は失敗しました。')
+                    else:
+                        self.request.session.flash(u'イベント・ゲート連携を保存しました')
+                except:
+                    self.request.session.flash(u'イベント・ゲートは保存しましたが、Orionサーバーとの連携は失敗しました。')
+                    pass
+            else:
+                self.request.session.flash(u'イベント・ゲート連携を保存しました')
             return HTTPFound(self.request.route_url('performances.orion.index', performance_id=self.performance.id))
 
         return self.orion_index_view()
@@ -502,7 +516,7 @@ class PerformanceShowView(BaseView):
             resale_segment = resale_segments.filter(ResaleSegment.id==selected_resale_segment_id).one()
         else:
             resale_segment = resale_segments.first()
-            selected_resale_segment_id = resale_segment.id
+            selected_resale_segment_id = resale_segment.id if resale_segment else None
 
         if resale_segment:
             form.resale_segment_id.data = resale_segment.id
@@ -511,10 +525,7 @@ class PerformanceShowView(BaseView):
                 .filter(ResaleRequest.ordered_product_item_token_id == OrderedProductItemToken.id) \
                 .filter(ResaleRequest.resale_segment_id == resale_segment.id) \
                 .filter(ResaleRequest.deleted_at == None)
-        else:
-            resale_requests = []
 
-        if resale_requests:
             if search_form.order_no.data:
                 order_no_list = re.split(r'[ \t,]', search_form.order_no.data)
                 resale_requests = resale_requests \
@@ -533,6 +544,8 @@ class PerformanceShowView(BaseView):
 
             if search_form.get_sent_status():
                 resale_requests = resale_requests.filter(ResaleRequest.sent_status.in_(search_form.get_sent_status()))
+        else:
+            resale_requests = []
 
         resale_requests = paginate.Page(
             resale_requests,
@@ -800,6 +813,12 @@ class Performances(BaseView):
                     performance.setting.visible = f.visible.data
                     performance.save()
 
+                if performance.orion:
+                    resp = send_orion_performance(self.request, performance)
+                    if not resp or not resp['success']:
+                        raise OrionAPIException('send resale segment error occurs during performance copy/edit.')
+
+
             except InternalError as exc:
                 # 1205: u'Lock wait timeout exceeded; try restarting transaction'
                 # 1213: u'Deadlock found when trying to get lock; try restarting transaction'
@@ -808,6 +827,10 @@ class Performances(BaseView):
                     logger.error(u'{}. locked out sql: {}'.format(exc.message, exc.statement))
                 else:
                     unexpected_error()
+
+            except OrionAPIException as exc:
+                self.request.session.flash(u'{}の処理でOrionとの連携は失敗しました。もう一度同じ内容で保存してください。'.format(route_name))
+                logger.error(str(exc))
 
             except Exception as exc:
                 unexpected_error()
@@ -1306,43 +1329,40 @@ class ResaleForOrionAPIView(BaseView):
                  renderer="json")
     def send_resale_segment_to_orion(self):
         performance_id = int(self.request.params.get('performance_id', None))
-        if not performance_id:
+        resale_segment_id = self.request.params.get('resale_segment_id', None)
+        if not performance_id or not resale_segment_id:
             raise HTTPNotFound()
         performance = self.session.query(Performance).get(performance_id)
-        resale_segment_id = self.request.params.get('resale_segment_id', None)
-        resale_segments = DBSession.query(ResaleSegment).filter(ResaleSegment.performance_id == performance_id)
+        try:
+            resale_segment = DBSession.query(ResaleSegment)\
+                .filter(ResaleSegment.id == resale_segment_id)\
+                .filter(ResaleSegment.performance_id == performance_id)\
+                .one()
+        except (NoResultFound, MultipleResultsFound):
+            raise HTTPNotFound()
 
-        if resale_segment_id:
-            resale_segments = resale_segments.filter(ResaleSegment.id == resale_segment_id)
-
-        success_list = []
-        fail_list = []
-        for resale_segment in resale_segments:
-            resale_segment.sent_at = datetime.datetime.now()
-            try:
-                resp = send_resale_segment(self.request, performance, resale_segment)
-                if not resp or not resp['success']:
-                    fail_list.append(resale_segment.id)
-                    resale_segment.sent_status = SentStatus.fail
-                    logger.info("fail to send resale segment: {0}...".format(resale_segment.id))
-                else:
-                    success_list.append(resale_segment.id)
-                    resale_segment.sent_status = SentStatus.sent
-            except Exception as e:
-                fail_list.append(resale_segment.id)
+        result = u"OK"
+        emsgs = u""
+        resale_segment.sent_at = datetime.datetime.now()
+        try:
+            resp = send_resale_segment(self.request, performance, resale_segment)
+            if not resp or not resp['success']:
+                result = u"NG"
+                emsgs = u"リセールリクエスト連携は失敗しました。"
                 resale_segment.sent_status = SentStatus.fail
-                logger.info(
-                    "fail to send resale segment(ID: {0}) with the exception: {1} ...".format(
-                        resale_segment.id, str(e))
-                )
+                logger.info("fail to send resale segment: {0}...".format(resale_segment.id))
+            else:
+                resale_segment.sent_status = SentStatus.sent
+        except Exception as e:
+            resale_segment.sent_status = SentStatus.fail
+            logger.info(
+                "fail to send resale segment(ID: {0}) with the exception: {1} ...".format(
+                    resale_segment.id, str(e))
+            )
+        DBSession.merge(resale_segment)
+        DBSession.flush()
 
-            DBSession.merge(resale_segment)
-            DBSession.flush()
-
-        return {
-            'success_list': success_list,
-            'fail_list': fail_list
-        }
+        return {'result': result, 'emsgs': emsgs}
 
     @view_config(route_name="performances.resale.requests.operate",
                  request_method="POST",

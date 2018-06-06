@@ -6,6 +6,9 @@ import urllib2
 
 logger = logging.getLogger(__name__)
 
+class OrionAPIException(Exception):
+    pass
+
 def on_order_canceled(ev):
     try:
         if ev.order.performance.orion is None:
@@ -88,6 +91,6 @@ def make_send_to_orion_request(request, data, action):
             logger.info("response = %s" % res)
             return json.loads(res)
         else:
-            raise Exception("server returned unexpected status: %d (payload) %r" % (stream.code, stream.read()))
+            raise OrionAPIException("server returned unexpected status: %d (payload) %r" % (stream.code, stream.read()))
     except Exception:
-        raise Exception("cannot connect to %s" % api_url)
+        raise OrionAPIException("cannot connect to %s" % api_url)
