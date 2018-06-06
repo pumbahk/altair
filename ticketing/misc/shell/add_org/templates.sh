@@ -107,7 +107,6 @@ test -d ${CODE} && rm -rf ${CODE}
 echo "${txtyellow}`pwd`/${CODE}は${base}で作成します。${txtreset}"
 
 cp -r ${base} ${CODE}
-
 # ディレクトリがない場合作る
 test ! -d ${CODE}/mobile/images && mkdir -p ${CODE}/mobile/images
 
