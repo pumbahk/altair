@@ -200,7 +200,7 @@ ${tabs.tabs(request)}
                   class="btn btn-large btn-info" style="margin-right: 5px;">
             落選確定する
           </button>
-          %if electing.blockers or not process_possible or (lot.end_at > datetime.now()):
+          %if not process_possible or (lot.end_at > datetime.now()):
             <div class="alert-messages">
               <h5>受付期間：${vh.datetime(lot.end_at, with_weekday=True)}を過ぎるまで当選、落選処理が行えません。</h5>
             </div>
