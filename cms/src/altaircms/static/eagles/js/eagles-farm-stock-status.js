@@ -1,124 +1,172 @@
 (function() {
-    var url = 'https://s3-ap-northeast-1.amazonaws.com/tstar/stocks/RE/all.json';
+    const URL = 'https://s3-ap-northeast-1.amazonaws.com/tstar-dev/stocks/RE/farm-all.json';
+    let LABEL_GROUP = {
+        SOLD_OUT: {
+            "label_text": "完売",
+            "class_attribute": "state-sold"
+        },
+        SEAT_FEW: {
+            "label_text": "残りわずか",
+            "class_attribute": "state-few"
+        },
+        SEAT_FULL: {
+            "label_text": "余裕あり",
+            "class_attribute": "state-has-seat-full"
+        }
+    };
+    let RENDER_DATA_FIELD = {
+        LABEL: "label",
+        MONTH: "month",
+        DATE: "date"
+    };
 
-    var combine = function(a, b) {
-        var r = { };
-        for(var i=0 ; i<a.length ; i++) {
-            if(b[i] != null) {
-                r[a[i]] = b[i];
-            }
-        }
-        return r;
-    };
-    var make_status = function(d) {
-        var ei3 = 0;
-        var inf = 0;
-        var out = 0;
-        var prk = 0;
-        var others = 0;
-        var all = 0;
-        var count = 0;
-        for(var n in d) {
-            if(n.match(/^(2|3|4|5|6):/)) {
-                ei3 += d[n];
-            }
-            if(n.match(/^(6|7|8|9|10|11|12|13|14|15|25|27|28|29|30|31|32|33):/)) {
-                inf += d[n];
-            } else if(n.match(/^(16|17|18|19|20|21|34|35|36|37|38|39):/)) {
-                out += d[n];
-            } else if(n.match(/^24:/)) {
-                prk += d[n];
-            } else if (n.match(/^\d+:/)) {
-                others += d[n]
-            }
-            all += d[n];
-            if(n.match(/^\d+:/)) {
-                count++;
-            }
-        }
-        if(count == 0) {
-            // 特殊な公演なので対象としない
-            return '';
-        }
-        if (all == 0) {
-            return ['state-sold', '全席種完売'];
-        } else if (prk === all) {
-            return ['state-few', 'スマイルグリコパークのみ'];
-        } else if(300 <= ei3) {
-            return ['state-has-seat-full', '余裕あり'];
-        } else if(1000 <= inf) {
-            return ['state-has-seat', '良席あと少し'];
-        } else if(1000 <= out) {
-            return ['state-infield-few', '内野席あと少し'];
-        } else if(1500 <= prk) {
-            return ['state-few', '残りわずか'];
-        } else if(all < 100) {
-            return ['state-piece-seat', 'バラ席のみ'];
-        } else {
-            return ['state-few', '残りわずか'];
-        }
-    };
-    var load = function(url, cb) {
-        $.ajax({
-            url: url
-        }).done(function(d) {
-            var result = { };
-            for(var i=0 ; i<d.performances.length ; i++) {
-                var start = d.performances[i].start_on;
-                var status = make_status(combine(d.seat_types, d.performances[i].stocks));
-                if(status != '') {
-                    result[start] = status;
-                }
-            }
-            cb(result);
-        });
-    };
-    /*
-    var handle = function(id) {
-    };
-    */
-    var extend_row = function(row, month, day, status) {
-        var td = row.find('td:last');
-        if(0 < td.find('.stockStatusInfomation').size()) {
-            return; // do nothing if contains .stockStatusInfomation
+    let GENERAL_PUBLIC = 1;
+    let TARGET_SEAT = [GENERAL_PUBLIC];
+    let RESPONSE_DATE_REGEXP = /^(\d+)\D(\d+)\D(\d+)/;
+    let SALES_REGEXP = /購入する/;
+
+    let target_counter = (function() {
+
+        let count = {};
+
+        function counter(stocks) {
+            $.each(TARGET_SEAT, function(index, target) {
+                let seat_count = stocks[target];
+                if (seat_count === undefined) return true;
+
+                let value = count[target];
+                if (value === undefined) value = 0;
+                value += seat_count;
+
+                count[target] = value;
+            });
         }
 
-		td.addClass('state');
-		td.addClass(status[0]);
-        td.find('p.state-txt').html(status[1]);
+        return {
+            put: function(stocks) {
+                counter(stocks)
+            },
+            get: function() {
+                return count;
+            }
+        };
+    })();
+
+    let make_label = function(counted_target) {
+
+        let count = counted_target[GENERAL_PUBLIC];
+        let status;
+        if (count > 100) {
+            status = LABEL_GROUP.SEAT_FULL;
+        }else if (count > 0) {
+            status = LABEL_GROUP.SEAT_FEW;
+        }else {
+            status = LABEL_GROUP.SOLD_OUT;
+        }
+        return [status.class_attribute, status.label_text];
     };
-    var extend_table = function(table, result) {
-        var header = $(table).find('tr').eq(0).find('th').eq(0).text();
-        $(table).find('tr').each(function() {
-            var tr = $(this);
-            var md = tr.find('th.date').eq(0).text().match(/(\d+)月(\d+)日/);
+
+    let stock_api = (function(){
+        let url = URL;
+        function call(successBlock, failureBlock) {
+            $.ajax({
+                url: url
+            }).then(
+                function (data) {
+                    successBlock(data)
+                },
+                function () {
+                    failureBlock()
+                });
+        }
+        return {
+            get: function(callback){
+                call(callback);
+            }
+        }
+    })();
+
+    let is_sale = function(tr_element) {
+        return ("" + tr_element.text()).match(SALES_REGEXP)
+    };
+
+    let parse_date_time = function(tr_element) {
+        let date_element = tr_element.find('th.date');
+        let md = date_element.eq(0).text().match(/(\d+)月(\d+)日/);
+        if(!md) {
+            md = date_element.eq(0).text().match(/(\d+)\/(\d+)/);
             if(!md) {
-                md = tr.find('th.date').eq(0).text().match(/(\d+)\/(\d+)/);
-                if(!md) {
+                return "";
+            }
+        }
+        return md;
+    };
+
+    let extend_row = function(row, status, is_show_icon) {
+        let td = row.find('td:last');
+        if(0 < td.find('.stockStatusInfomation').size()) {
+            return;
+        }
+        td.addClass('state');
+        td.addClass(status[0]);
+        let box = td.find('.state-box');
+        if (is_show_icon) {
+            box.find('p.state-txt').html(status[1]);
+        }else {
+            box.remove();
+        }
+    };
+
+    let extend_table = function(table, render_data) {
+        $(table).find('tr').each(function() {
+            let tr = $(this);
+            let md = parse_date_time(tr);
+            let key = ('0' + md[1]).slice(-2) + ('0' + md[2]).slice(-2);
+            let render_data_element = render_data[key];
+
+            if(render_data_element !== undefined) {
+                if (is_sale(tr)) {
+                    extend_row(
+                        tr,
+                        render_data_element[RENDER_DATA_FIELD.LABEL],
+                        true
+                    );
                     return true;
                 }
             }
-            if(!(""+tr.text()).match(/購入する/)) {
-                extend_row(tr, md[1], md[2], [ 'state-sold', '全席種<br />完売' ]);
-                return;
-            }
-            for(var start_on in result) {
-                var match = start_on.match(/^(\d+)\D(\d+)\D(\d+)/);
-                if(match) {
-                    if(md[1]*1 == match[2]*1 && md[2]*1 == match[3]*1) {
-                        extend_row(tr, md[1], md[2], result[start_on]);
-                        return true;
-                    }
-                }
-            }
+
+            extend_row(
+                tr,
+                [
+                    LABEL_GROUP.SOLD_OUT.class_attribute,
+                    ""
+                ],
+                false);
+        });
+    };
+
+    let render = function(render_data) {
+        $('table').each(function() {
+            extend_table(this, render_data);
         });
     };
 
     $(function() {
-        load(url, function(result) {
-            $('table').each(function() {
-                extend_table(this, result);
+        stock_api.get(function(data) {
+            let render_data = {};
+            let performances = data.performances;
+            $.each(performances, function(index, performance) {
+                target_counter.put(performance.stocks);
+                let counted_target = target_counter.get();
+                let label = make_label(counted_target);
+                let start_on = performance.start_on.match(RESPONSE_DATE_REGEXP);
+                let render_data_element = {};
+                render_data_element[RENDER_DATA_FIELD.LABEL] = label;
+                render_data_element[RENDER_DATA_FIELD.MONTH] = start_on[2];
+                render_data_element[RENDER_DATA_FIELD.DATE] = start_on[3];
+                render_data[start_on[2]+start_on[3]] = render_data_element;
             });
+            render(render_data);
         });
     });
 })();
