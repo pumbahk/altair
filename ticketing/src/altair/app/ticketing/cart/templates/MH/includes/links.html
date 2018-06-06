@@ -1,0 +1,20 @@
+<%page args="device"/>
+% if device == 'pc':
+     <%doc>
+     <div style="text-align:right;">
+       <a href="/howto.html" class="headerLink" target="_blank">${__(u'申込方法')}</a>
+       <a href="/faq.html" class="headerLink" target="_blank">${__(u'よくある質問')}</a>
+       <a href="/orderreview" class="headerLink" target="_blank">${__(u'申込確認')}</a>
+     </div>
+     </%doc>
+% elif device == 'smartphone':
+       <%doc>
+       <div style="clear:both;">
+       <div style="text-align:right;">
+         <a href="/howto.html" class="headerLink" target="_blank">${__(u'申込方法')}</a>
+         <a href="/faq.html" class="headerLink" target="_blank">${__(u'よくある質問')}</a>
+         <a href="/orderreview" class="headerLink" target="_blank">${__(u'申込確認')}</a>
+       </div>
+       </%doc>
+% elif device == 'mobile':
+% endif
