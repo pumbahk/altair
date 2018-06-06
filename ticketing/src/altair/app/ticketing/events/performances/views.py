@@ -929,11 +929,6 @@ class Performances(BaseView):
                         new_performance.orion = OrionPerformance.clone(
                             origin_performance.orion, False, ['performance_id'])
 
-                        resp = send_orion_performance(self.request, new_performance)
-                        if not resp or not resp['success']:
-                            raise OrionAPIException(
-                                'send resale segment error occurs during performance manycopy.')
-
                     new_performance.save()
 
                     # 抽選の商品を作成する
@@ -947,10 +942,6 @@ class Performances(BaseView):
                     logger.error(u'{}. locked out sql: {}'.format(exc.message, exc.statement))
                 else:
                     unexpected_error()
-
-            except OrionAPIException as exc:
-                self.request.session.flash(u'Performance(CODE: {})のコピー処理でOrionとの連携は失敗しました。もう一度操作してください。'.format(origin_performance.code))
-                logger.error(str(exc))
 
             except Exception as exc:
                 unexpected_error()
@@ -1153,11 +1144,6 @@ class Performances(BaseView):
                         new_performance.orion = OrionPerformance.clone(
                             origin_performance.orion, False, ['performance_id'])
 
-                        resp = send_orion_performance(self.request, new_performance)
-                        if not resp or not resp['success']:
-                            raise OrionAPIException(
-                                'send resale segment error occurs during performance termcopy.')
-
                     new_performance.save()
 
                     # 抽選の商品を作成する
@@ -1171,10 +1157,6 @@ class Performances(BaseView):
                     logger.error(u'{}. locked out sql: {}'.format(exc.message, exc.statement))
                 else:
                     unexpected_error()
-
-            except OrionAPIException as exc:
-                self.request.session.flash(u'Performance(CODE: {})のコピー処理でOrionとの連携は失敗しました。もう一度操作してください。'.format(origin_performance.code))
-                logger.error(str(exc))
 
             except Exception as exc:
                 unexpected_error()
