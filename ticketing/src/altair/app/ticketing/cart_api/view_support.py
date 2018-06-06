@@ -46,6 +46,9 @@ def get_filtered_stock_types(request, sales_segment, session=None):
     max_price = params.get("max_price", None)
     need_quantity = params.get("quantity", "1")
     stock_type_name = params.get("stock_type_name", None)
+    region_ids = params.get("region_ids", None)
+    if region_ids:
+        region_ids = region_ids.split(',')
 
     from decimal import Decimal
     min_price = Decimal(min_price) if min_price else None
@@ -53,18 +56,34 @@ def get_filtered_stock_types(request, sales_segment, session=None):
     need_quantity = Decimal(need_quantity)
 
     # 在庫設定があって公開されているものだけ
-    stock_list = session.query(Stock, StockStatus, StockType, Product.price)\
-        .join(StockType)\
-        .join(StockStatus)\
-        .join(Product)\
-        .join(ProductItem)\
-        .filter(Product.sales_segment_id==sales_segment.id)\
-        .filter(Stock.performance_id==sales_segment.performance_id)\
-        .filter(ProductItem.stock_id==Stock.id)\
-        .filter(0 < Stock.quantity)\
-        .filter(StockType.display == 1)\
-        .filter(Product.public == 1)\
-        .order_by(StockType.id, Product.display_order)
+    if region_ids:
+        stock_list = session.query(Stock, StockStatus, StockType, Product.price)\
+            .join(StockType)\
+            .join(StockStatus)\
+            .join(Product)\
+            .join(ProductItem)\
+            .join(Stock_drawing_l0_id)\
+            .filter(Product.sales_segment_id==sales_segment.id)\
+            .filter(Stock.performance_id==sales_segment.performance_id)\
+            .filter(ProductItem.stock_id==Stock.id)\
+            .filter(0 < Stock.quantity)\
+            .filter(StockType.display == 1)\
+            .filter(Product.public == 1)\
+            .filter(Stock_drawing_l0_id.drawing_l0_id.in_(region_ids))\
+            .order_by(StockType.id, Product.display_order)
+    else:
+        stock_list = session.query(Stock, StockStatus, StockType, Product.price)\
+            .join(StockType)\
+            .join(StockStatus)\
+            .join(Product)\
+            .join(ProductItem)\
+            .filter(Product.sales_segment_id==sales_segment.id)\
+            .filter(Stock.performance_id==sales_segment.performance_id)\
+            .filter(ProductItem.stock_id==Stock.id)\
+            .filter(0 < Stock.quantity)\
+            .filter(StockType.display == 1)\
+            .filter(Product.public == 1)\
+            .order_by(StockType.id, Product.display_order)
 
     stock_type_dict = dict()
     rest_quantity_by_stock = dict()
