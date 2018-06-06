@@ -81,7 +81,7 @@ def performance_stock_quantity(lot_id):
 
     return performance_stock_info.all()
 
-def is_rejecting_count(lot_id):
+def rejecting_count(lot_id):
     lot_reject_cnt = LotRejectWork.query.filter(
         LotRejectWork.lot_entry_no == LotEntry.entry_no
     ).filter(

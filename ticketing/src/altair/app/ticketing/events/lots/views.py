@@ -917,7 +917,7 @@ class LotEntries(BaseView):
                     process_possible=self._check_lot_entries_process_possible(),
                     electing=electing,
                     h=h,
-                    lot_reject_cnt=h.is_rejecting_count(lot_id),
+                    lot_reject_cnt=h.rejecting_count(lot_id),
                     stock_info=h.performance_stock_quantity(lot_id))
 
     def _check_lot_entries_process_possible(self):
