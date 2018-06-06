@@ -24,6 +24,10 @@
     let TARGET_SEAT = [GENERAL_PUBLIC];
     let RESPONSE_DATE_REGEXP = /^(\d+)\D(\d+)\D(\d+)/;
     let SALES_REGEXP = /購入する/;
+    let DOM_DATE_REGEXP_LIST = [
+        /(\d+)月(\d+)日/,
+        /(\d+)\/(\d+)/
+    ];
 
     let target_counter = (function() {
 
@@ -32,10 +36,10 @@
         function counter(stocks) {
             $.each(TARGET_SEAT, function(index, target) {
                 let seat_count = stocks[target];
-                if (seat_count === undefined) return true;
+                if (!seat_count) return true;
 
                 let value = count[target];
-                if (value === undefined) value = 0;
+                if (!value) value = 0;
                 value += seat_count;
 
                 count[target] = value;
@@ -92,13 +96,14 @@
 
     let parse_date_time = function(tr_element) {
         let date_element = tr_element.find('th.date');
-        let md = date_element.eq(0).text().match(/(\d+)月(\d+)日/);
-        if(!md) {
-            md = date_element.eq(0).text().match(/(\d+)\/(\d+)/);
-            if(!md) {
-                return "";
+        let md = [];
+        $.each(DOM_DATE_REGEXP_LIST, function(index, regexp) {
+            let match = date_element.eq(0).text().match(regexp);
+            if (match) {
+                md = match;
+                return false;
             }
-        }
+        });
         return md;
     };
 
@@ -121,27 +126,26 @@
         $(table).find('tr').each(function() {
             let tr = $(this);
             let md = parse_date_time(tr);
-            let key = ('0' + md[1]).slice(-2) + ('0' + md[2]).slice(-2);
-            let render_data_element = render_data[key];
-
-            if(render_data_element !== undefined) {
-                if (is_sale(tr)) {
-                    extend_row(
-                        tr,
-                        render_data_element[RENDER_DATA_FIELD.LABEL],
-                        true
-                    );
-                    return true;
-                }
+            let render_data_element = null;
+            if (md.length === 3) {
+                let key = ('0' + md[1]).slice(-2) + ('0' + md[2]).slice(-2);
+                render_data_element = render_data[key];
             }
 
-            extend_row(
-                tr,
-                [
-                    LABEL_GROUP.SOLD_OUT.class_attribute,
-                    ""
-                ],
-                false);
+            if(render_data_element && is_sale(tr)) {
+                extend_row(
+                    tr,
+                    render_data_element[RENDER_DATA_FIELD.LABEL],
+                    true);
+            }else {
+                extend_row(
+                    tr,
+                    [
+                        LABEL_GROUP.SOLD_OUT.class_attribute,
+                        ""
+                    ],
+                    false);
+            }
         });
     };
 
