@@ -16,6 +16,7 @@ from altair.app.ticketing.lots.models import (
     LotEntryWish,
     LotElectedEntry,
     LotEntryProduct,
+    LotRejectWork,
 )
 
 
@@ -79,3 +80,12 @@ def performance_stock_quantity(lot_id):
     ).group_by(Stock.id)
 
     return performance_stock_info.all()
+
+def rejecting_count(lot_id):
+    lot_reject_cnt = LotRejectWork.query.filter(
+        LotRejectWork.lot_entry_no == LotEntry.entry_no
+    ).filter(
+        LotEntry.lot_id == lot_id
+    ).count()
+
+    return lot_reject_cnt
