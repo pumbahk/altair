@@ -505,13 +505,13 @@ class PerformanceResaleSegmentForm(OurForm):
         label=u'リセール区分ID',
         validators=[Optional()],
     )
-    start_at = DateTimeField(
+    reception_start_at = DateTimeField(
         label=u'申込開始日時',
         validators=[Optional(), after1900],
         format='%Y-%m-%d %H:%M',
         widget=OurDateTimeWidget()
     )
-    end_at = DateTimeField(
+    reception_end_at = DateTimeField(
         label=u'申込終了日時',
         validators=[Optional(), after1900],
         format='%Y-%m-%d %H:%M',
