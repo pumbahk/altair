@@ -2304,13 +2304,15 @@ class OrdersReserveView(OrderBaseView):
                     self.context.raise_error(u'個数が不正です')
                 product_quantity = int(quantity)
                 product = DBSession.query(Product).filter_by(id=product_id).one()
-                total_quantity += product_quantity * product.get_quantity_power(product.seat_stock_type, self.context.performance.id)
+                # 「予約する」モーダルウィンドウでは連席を商品の数量倍率で割って表示しているため、ここで実際に押さえている席数に戻す TKT-2822
+                power = product.get_quantity_power(product.seat_stock_type, self.context.performance.id)
+                total_quantity += product_quantity * power
                 order_items.append((product, product_quantity))
 
             if not total_quantity:
                 self.context.raise_error(u'個数を入力してください')
             elif seats and total_quantity != len(seats):
-                self.context.raise_error(u'個数の合計数（%d）が選択した座席数（%d席）と一致しません' % (total_quantity, len(seats)))
+                self.context.raise_error(u'個数の合計（{}席）を選択した座席数（{}席）にしてください'.format(total_quantity, len(seats)))
 
             # 選択されたSeatのステータスをいったん戻してカートデータとして再確保する
             self.release_seats(self.context.performance.venue, seats)
@@ -2349,7 +2351,7 @@ class OrdersReserveView(OrderBaseView):
                 'performance': self.context.performance,
                 'form_order_edit_attribute': form_order_edit_attribute
             }
-        except ValidationError, e:
+        except ValidationError as e:
             self.context.raise_error(e.message)
         except NotEnoughAdjacencyException:
             logger.info("not enough adjacency")
@@ -2359,14 +2361,20 @@ class OrdersReserveView(OrderBaseView):
             self.context.raise_error(u'既に予約済か選択できない座席です。画面を最新の情報に更新した上で再度座席を選択してください。')
         except NotEnoughStockException as e:
             logger.info("not enough stock quantity :%s" % e)
-            self.context.raise_error(u'在庫がありません')
+            self.context.raise_error(
+                u'在庫がありません。 {holder}「{stock_type_name}」 必要席数: {required} 残席数: {actual}'.format(
+                    holder=e.stock_holder_name,
+                    stock_type_name=e.stock_type_name,
+                    required=e.required,
+                    actual=e.actualy)
+            )
         except InnerCartSessionException as e:
-            logger.exception("oops")
+            logger.exception("oops :%s" % e)
             self.context.raise_error(u'エラーが発生しました。もう一度選択してください。')
         except OrderLikeValidationFailure as e:
-            logger.exception("oops")
+            logger.exception("oops :%s" % e)
             self.context.raise_error(e.message)
-        except Exception, e:
+        except Exception as e:
             if isinstance(e, Response):
                 raise
             else:

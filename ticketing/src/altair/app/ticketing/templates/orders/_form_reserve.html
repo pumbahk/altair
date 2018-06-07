@@ -3,394 +3,445 @@
 <%namespace file="/common/helpers.html" name="ch" />
 
 <style type="text/css">
-  #modal-reserve {
-    width: 90%;
-    left: 5%;
-    top: 5%;
-    margin: auto;
-    height: 90%;
-  }
-  #modal-reserve .modal-header {
-    height: 5%;
-  }
-  #modal-reserve .modal-body {
-    max-height:none !important;
-    height: 87% !important;
-    padding: 1% 15px !important;
-    position: relative !important;
-  }
-  #modal-reserve .modal-footer {
-    position: relative;
-    bottom: 0;
-  }
-  #modal-reserve .product_quantity {
-    width: 50px;
-    padding: 2px;
-    margin: 0;
-  }
-  #modal-reserve .shipping-address .name {
-    width: 100%;
-  }
-  #modal-reserve .shipping-address .name .controls{
-    float: left !important;
-    margin-left: 20px !important;
-    width: 70% !important;
-  }
-  #modal-reserve .shipping-address .name .controls input{
-    float: left !important;
-    width: 45% !important;
-  }
-  #modal-reserve .shipping-address .name .controls input:last-child {
-    margin-left: 20px;
-  }
-  #modal-reserve .shipping-address .controls,
-  #modal-reserve .delivery_at_store .controls {
-    width: auto;
-  }
-  #modal-reserve .shipping-address .controls input,
-  #modal-reserve .delivery_at_store .controls select {
-    margin-left: -6px;
-    padding-right: 0;
-    width: 100%;
-  }
-  #modal-reserve .form-horizontal .control-group {
-    margin-bottom: 5px;
-  }
-  #modal-reserve .form-horizontal ul {
-    padding-top: 5px;
-  }
-  #store_warning {
-    color: #BA0000;
-    display: none;
-    padding: 0 50px;
-  }
-  #shipping-address-btn {
-    margin: 10px 0;
-  }
-  #modal-reserve .control-label {
-    width: 105px !important;
-  }
-  .controls {
-    margin-left: 125px !important;
-  }
-  .half {
-    width: 50%;
-    float: left;
-  }
-  .ss-pdmd {
-    width: 100%;
-  }
-  .ss-pdmd .controls{
-    margin-left: 120px !important;
-  }
-  .ss-pdmd .control-label{
-    width: 120px !important;
-  }
-  #sales_segment_id,
-  #payment_delivery_method_pair_id {
-    width: 100%;
-  }
+    #modal-reserve {
+        width: 90%;
+        left: 5%;
+        top: 5%;
+        margin: auto;
+        height: 90%;
+    }
+
+    #modal-reserve .modal-header {
+        height: 5%;
+    }
+
+    #modal-reserve .modal-body {
+        max-height: none !important;
+        height: 87% !important;
+        padding: 1% 15px !important;
+        position: relative !important;
+    }
+
+    #modal-reserve .modal-footer {
+        position: relative;
+        bottom: 0;
+    }
+
+    #modal-reserve .product_quantity {
+        width: 50px;
+        padding: 2px;
+        margin: 0;
+    }
+
+    #modal-reserve .shipping-address .name {
+        width: 100%;
+    }
+
+    #modal-reserve .shipping-address .name .controls {
+        float: left !important;
+        margin-left: 20px !important;
+        width: 70% !important;
+    }
+
+    #modal-reserve .shipping-address .name .controls input {
+        float: left !important;
+        width: 45% !important;
+    }
+
+    #modal-reserve .shipping-address .name .controls input:last-child {
+        margin-left: 20px;
+    }
+
+    #modal-reserve .shipping-address .controls,
+    #modal-reserve .delivery_at_store .controls {
+        width: auto;
+    }
+
+    #modal-reserve .shipping-address .controls input,
+    #modal-reserve .delivery_at_store .controls select {
+        margin-left: -6px;
+        padding-right: 0;
+        width: 100%;
+    }
+
+    #modal-reserve .form-horizontal .control-group {
+        margin-bottom: 5px;
+    }
+
+    #modal-reserve .form-horizontal ul {
+        padding-top: 5px;
+    }
+
+    #store_warning {
+        color: #BA0000;
+        display: none;
+        padding: 0 50px;
+    }
+
+    #shipping-address-btn {
+        margin: 10px 0;
+    }
+
+    #modal-reserve .control-label {
+        width: 105px !important;
+    }
+
+    .controls {
+        margin-left: 125px !important;
+    }
+
+    .half {
+        width: 50%;
+        float: left;
+    }
+
+    .ss-pdmd {
+        width: 100%;
+    }
+
+    .ss-pdmd .controls {
+        margin-left: 120px !important;
+    }
+
+    .ss-pdmd .control-label {
+        width: 120px !important;
+    }
+
+    #sales_segment_id,
+    #payment_delivery_method_pair_id {
+        width: 100%;
+    }
 
 </style>
 
 <script type="text/javascript">
-  $(function() {
-    if (window.ticketPrinterService) {
-      var pm_id = ${form.get_defalut_sales_counter_payment_method()};
-      if (pm_id) $('#sales_counter_payment_method_id').val(pm_id);
-    }
-    if ($('[id^=product_quantity]').length == 1) {
-      $('[id^=product_quantity]:first').val(${len(_context.seats_form.seats.data)});
-    }
-    $('#payment_delivery_method_pair_id').change(function(){
-      var delivery_at_store = $('.delivery_at_store');
-      var store_warning = $('#store_warning');
-      if ($.inArray(parseInt($(this).val()), ${HH.json([payment_delivery_method_pair.id for payment_delivery_method_pair in _context.convenience_payment_delivery_method_pairs])|n}) == -1) {
-        delivery_at_store.css('display', 'none');
-        store_warning.css('display', 'none');
-      } else {
-        delivery_at_store.css('display', 'inline');
-        store_warning.css('display', 'block');
-      }
-    }).change();
-    $('.draggable').draggable({scroll: true, handle:$('.draggable .modal-header')});
-    $('#modal-reserve').disableOnSubmit();
+    $(function () {
+        if (window.ticketPrinterService) {
+            var pm_id = ${form.get_defalut_sales_counter_payment_method()};
+            if (pm_id) $('#sales_counter_payment_method_id').val(pm_id);
+        }
+        <%doc>「個数」の入力フォームが1つのみ表示される場合に限り、デフォルトで指定した席数が表示されている</%doc>
+        if ($('[id^=product_quantity]').length === 1) {
+            $('[id^=product_quantity]:first').val(${len(_context.seats_form.seats.data)});
+        }
+        $('#payment_delivery_method_pair_id').change(function () {
+            var delivery_at_store = $('.delivery_at_store');
+            var store_warning = $('#store_warning');
+            if ($.inArray(parseInt($(this).val()), ${HH.json([payment_delivery_method_pair.id for payment_delivery_method_pair in _context.convenience_payment_delivery_method_pairs])|n}) == -1) {
+                delivery_at_store.css('display', 'none');
+                store_warning.css('display', 'none');
+            } else {
+                delivery_at_store.css('display', 'inline');
+                store_warning.css('display', 'block');
+            }
+        }).change();
+        $('.draggable').draggable({scroll: true, handle: $('.draggable .modal-header')});
+        $('#modal-reserve').disableOnSubmit();
 
-    // pager (see:templates/performances/_reservation.html)
-    var pager = new Pager("#modal-reserve", "reserve");
-    pager.$el.find("#reserve-tab").on("click", function(){pager.next("reserve");});
-    pager.$el.find("#reserve-next").on("click", function(){pager.next("memo");});
-    pager.$el.find("#memo-tab").on("click", function(){pager.next("memo");});
-    pager.$el.find("#memo-prev").on("click", function(){pager.next("reserve");});
-    $("#modal-reserve").bind("*onFailure", function(){pager.next("reserve");});
-  });
+        // pager (see:templates/performances/_reservation.html)
+        var pager = new Pager("#modal-reserve", "reserve");
+        pager.$el.find("#reserve-tab").on("click", function () {
+            pager.next("reserve");
+        });
+        pager.$el.find("#reserve-next").on("click", function () {
+            pager.next("memo");
+        });
+        pager.$el.find("#memo-tab").on("click", function () {
+            pager.next("memo");
+        });
+        pager.$el.find("#memo-prev").on("click", function () {
+            pager.next("reserve");
+        });
+        $("#modal-reserve").bind("*onFailure", function () {
+            pager.next("reserve");
+        });
+    });
 </script>
 
 <div id="modal-reserve" class="modal hide draggable">
-  <div class="modal-header">
-    <h3>予約する -- ${performance.event.title}[${performance.name}]</h3>
-  </div>
-
-  <div class="modal-body">
-    <%doc>
-    wizard形式にする前にタブ化する
-    [購入情報入力|文言・メモ入力|購入情報確認|文言・メモ入力確認]
-    </%doc>
-
-    <ul class="nav nav-tabs" style="margin-bottom:10px;">
-      <li class="active"><a id="reserve-tab">購入情報入力</a></li>
-      <li><a id="memo-tab">文言・メモ入力</a></li>
-      <li><a>購入情報確認</a></li>
-      <li><a>文言・メモ入力確認</a></li>
-    </ul>
-
-    ${ch.alert_message(form)}
-
-    <form class="form-horizontal" action="javascript:confirmOrder();">
-    <div class="memo-area" style="display:none">
-      ${ch.form_item(form.note, rows=3, class_='span10')}
-      %for field in form_order_edit_attribute:
-        ${ch.form_item(field, class_='span10', style="width:80%")}
-      %endfor
+    <div class="modal-header">
+        <h3>予約する -- ${performance.event.title}[${performance.name}]</h3>
     </div>
-    <div class="reserve-area">
-      % if _context.products:
-      <%
-      stock_types = _context.stock_types
-      num_selected_seats_per_stock = {}
-      for seat in _context.seats:
-        num_selected_seats_per_stock[seat.stock_id] = num_selected_seats_per_stock.get(seat.stock_id, 0) + 1
-      %>
-      <script type="text/javascript">
-        (function ($modal) {
-          var products = ${HH.json({
-            product.id: {
-              u'name': product.name,
-              u'price': int(product.price),
-              u'stock_quantity_pairs': {
-                product_item.stock_id: product_item.quantity
-                for product_item in product.items
-                },
-              }
-            for product in _context.products
-            })|n};
-          var num_selected_seats_per_stock = ${HH.json(num_selected_seats_per_stock)|n};
-          var message_template = ${HH.json(u'{num_seats}席選択されています (あと{num_seats_remaining}席選択できます)')|n};
-          $(function() {
-            var product_quantity = $modal.find('input[id^="product_quantity"]');
-            function refresh() {
-              var total_price = 0;
-              var total_quantity = 0;
-              var num_required_seats_per_stock = {};
-              product_quantity.each(function () {
-                var x = $(this).get(0).name.match(/^product_quantity-(\d+)$/);
-                if (x === null) return;
-                var product_id = x[1];
-                var price = products[product_id]['price'];
-                var quantity = parseInt($(this).val());
-                quantity = (isNaN(quantity) || quantity < 0) ? 0 : quantity;
-                $.each(products[product_id]['stock_quantity_pairs'], function (k, v) {
-                  var n = num_required_seats_per_stock[k];
-                  if (n === void(0))
-                    n = num_required_seats_per_stock[k] = 0; 
-                  num_required_seats_per_stock[k] = n + v * quantity;
-                });
-                total_price += price * quantity;
-                total_quantity += quantity;
-              });
-              var num_seats = 0, num_seats_remaining = 0;
-              $.each(num_selected_seats_per_stock, function (k, v) {
-                num_seats += v;
-                num_seats_remaining += v - num_required_seats_per_stock[k];
-              });
-              total_price = total_price + '';
-              while(total_price != (total_price = total_price.replace(/^(-?\d+)(\d{3})/, "$1,$2")));
-              $modal.find('span[name="total-price"]').text(total_price + '円');
-              $modal.find('span[name="total-quantity"]').text(total_quantity);
-              if (num_seats > 0) {
-                var _values = {
-                  'num_seats': num_seats,
-                  'num_seats_remaining': num_seats_remaining
-                };
-                $modal.find('.info').text(message_template.replace(/\{[^}]+\}/g, function ($0) {
-                  return _values[$0.substring(1, $0.length - 1)];
-                }));
-              }
-            }
-            product_quantity.on('change', refresh);
-            refresh();
-          });
-        })($('#modal-reserve'));
-      </script>
-      <div class="alert alert-info info">
-      </div>
-      <table class="table table-striped table-bordered">
-        <tr>
-          <th class="span2">席種</th>
-          <th class="span4">商品</th>
-          <th class="span2">単価</th>
-          <th style="width: 80px;">個数</th>
-        </tr>
-        <script type="text/javascript" src="${request.static_url('altair.app.ticketing:static/js/jquery-spin.js')}"></script>
-        % for stock_type in sorted(stock_types, key=lambda x:(x.display_order)):
-        <% stock_type_seats = [seat for seat in _context.seats if seat.stock.stock_type == stock_type] %>
-        <tr>
-          <td colspan="2">
-            <div style="float: left;" class="span4">
-              ${stock_type.name}
-            </div>
-            <div style="float: left;">
-              % if stock_type_seats:
-              <ul>
-                % for seat in stock_type_seats:
-                <li>${seat.name}</li>
-                % endfor
-              </ul>
-              % endif
-            </div>
-          </td>
-          <td></td>
-          <td>
-            % if stock_type_seats:
-            ${len(stock_type_seats)}
-            % endif
-          </td>
-        </tr>
-          % for product in sorted(_context.products, key=lambda x:x.display_order):
-            % if stock_type == product.seat_stock_type:
-            <% product_quantity_id = u"product_quantity-{id}".format(id=product.id) %>
-        <tr>
-          <td style="text-align: right;">
-            <span class="label label-info">${product.sales_segment.name}</span>
-          </td>
-          <td>${product.name}</td>
-          <td class="price">${vh.price(product.price)}</td>
-          <td><input id="${product_quantity_id}" name="${product_quantity_id}" class="product_quantity" type="text" value=""></td>
-          <script type="text/javascript">
-            $("#${product_quantity_id}").spin({imageBasePath: "${request.static_url('altair.app.ticketing:static/images/spin/')}", min: 0});
-          </script>
-        </tr>
-            % endif
-          % endfor
-        % endfor
-        <tr>
-          <td colspan="2">合計</td>
-          <td class="price"><span name="total-price"></span></td>
-          <td><span name="total-quantity"></span></td>
-        </tr>
-      </table>
-      % else:
-        <div class="alert alert-warning info">
-          指定された販売区分には、選択された座席に対応する商品が設定されていません。<br />
-          条件を見直してください。
-        </div>
-      % endif
 
-      <script type="text/javascript">
-        $(function(){
-          $("#modal-reserve select[name='sales_segment_id']").change(function(){
-            var modal = $('#modal-reserve');
-            modal.find('.modal-body .alert').remove();
-            var $form = modal.find('form');
-            var params = build_form_params($form);
-            $.ajax({
-              type: 'post',
-              url: '${request.route_path('orders.reserve.form.reload')}',
-              data: params,
-              dataType: 'html',
-              success: function(data) {
-                $('#modal-reserve').modal('hide');
-                $('#reserve-form').html(data);
-                $('#modal-reserve').modal({'backdrop':'static', 'keyboard':false});
-                $('#modal-reserve').modal('show');
-              },
-              error: function(xhr, text) {
-                $('#modal-reserve').find('.modal-body').prepend('<div class="alert alert-error"><ul>エラーが発生しました</ul></div>');
-              }
-            });
-          });
-        });
-      </script>
-      <%block name="javascript">
-        <script type="text/javascript" src="${request.static_url('altair.app.ticketing:static/js/ajaxzip3-https.js')}"></script>
-      </%block>
-      <div class="ss-pdmd">
-        <div class="half" style="float:left">
-            ${ch.form_item(_context.settings_form.sales_segment_id)}
-        </div>
-        <div class="half" style="float:right">
-            ${ch.form_item(form.payment_delivery_method_pair_id)}
-        </div>
-        <div style="clear:both"></div>
-        <div id="store_warning">
-          <p>※ コンビニ決済およびコンビニ受取は氏名、氏名（カナ）、TELが必須です。</p>
-        </div>
-      </div>
+    <div class="modal-body">
+        <%doc>
+        wizard形式にする前にタブ化する
+        [購入情報入力|文言・メモ入力|購入情報確認|文言・メモ入力確認]
+        </%doc>
 
-      <div class="shipping-address">
+        <ul class="nav nav-tabs" style="margin-bottom:10px;">
+            <li class="active"><a id="reserve-tab">購入情報入力</a></li>
+            <li><a id="memo-tab">文言・メモ入力</a></li>
+            <li><a>購入情報確認</a></li>
+            <li><a>文言・メモ入力確認</a></li>
+        </ul>
 
-        <div class="control-group name">
-          <div class="half" style="float:left">
-          <label class="control-label">氏名</label>
-          <div class="controls">
-            ${form.last_name(maxlength=u'10', placeholder=u'姓）山田')}
-            ${form.first_name(maxlength=u'10', placeholder=u'名）太郎')}
-          </div>
+        ${ch.alert_message(form)}
+
+        <form class="form-horizontal" action="javascript:confirmOrder();">
+            <div class="memo-area" style="display:none">
+                ${ch.form_item(form.note, rows=3, class_='span10')}
+                %for field in form_order_edit_attribute:
+                    ${ch.form_item(field, class_='span10', style="width:80%")}
+                %endfor
             </div>
-          <div class="half" style="float:right">
-          <label class="control-label">氏名(カナ)</label>
-          <div class="controls">
-            ${form.last_name_kana(maxlength=u'10', placeholder=u"姓（カナ）ヤマダ")}
-            ${form.first_name_kana(maxlength=u'10', placeholder=u"名（カナ）タロウ")}
-          </div>
-            </div>
-        </div>
-        ${ch.form_item(form.tel_1, placeholder=u'例）08012345678')}
-        <br/>
-        <div class="half" style="float:left">
-          <% path = request.static_url('altair.app.ticketing:static/js/zipdata') %>
-          ${ch.form_item(form.zip, placeholder=u"例）1030001", onKeyUp="AjaxZip3.zip2addr('" + path + "', 'zip','','prefecture','city','', 'address_1');")}
-        </div>
-        <div class="half" style="float:right">
-            ${ch.form_item(form.prefecture, placeholder=u"例）東京都")}
-        </div>
-        <div style="clear:both"></div>
-        <div class="half" style="float:left">
-            ${ch.form_item(form.city, placeholder=u"例）中央区")}
-        </div>
-        <div class="half" style="float:right">
-            ${ch.form_item(form.address_1, placeholder=u"例）日本橋x-xx-xx")}
-        </div>
-        <div style="clear:both"></div>
-        ${ch.form_item(form.address_2, placeholder=u'例）yyビルz階')}
-        ${ch.form_item(form.email_1, placeholder=u'例）customer_name@example.com')}
-      </div>
+            <div class="reserve-area">
+                % if _context.products:
+                <%
+                    stock_types = _context.stock_types
+                    num_selected_seats_per_stock = {}
+                    for seat in _context.seats:
+                        num_selected_seats_per_stock[seat.stock_id] = num_selected_seats_per_stock.get(seat.stock_id, 0) + 1
+                %>
+                    <script type="text/javascript">
+                        (function ($modal) {
+                            var products = ${HH.json({
+                                product.id: {
+                                    u'name': product.name,
+                                    u'price': int(product.price),
+                                    u'stock_quantity_pairs': {
+                                        product_item.stock_id: product_item.quantity
+                                        for product_item in product.items
+                                    },
+                                    u'power': product.get_quantity_power(product.seat_stock_type, performance.id)
+                                }
+                            for product in _context.products
+                            })|n};
+                            var num_selected_seats_per_stock = ${HH.json(num_selected_seats_per_stock)|n};
+                            var message_template = ${HH.json(u'{num_seats}席選択されています (あと{num_seats_remaining}席選択できます)')|n};
+                            $(function () {
+                                var product_quantity = $modal.find('input[id^="product_quantity"]');
 
-      <div class="delivery_at_store">
-        <br/>
-        ${ch.form_item(form.sales_counter_payment_method_id)}
-        <div class="control-group">
-          <div class="controls">
-            <p>※ 当日窓口決済を選択すると、予約のステータスが「入金済み」になります</p>
-          </div>
-        </div>
-      </div>
-      ${_context.preconditions_form.performance_id}
-      ${_context.preconditions_form.stocks}
-      ${_context.seats_form.seats}
+                                function refresh(when) {
+                                    var total_price = 0;
+                                    var total_quantity = 0;
+                                    var num_required_seats_per_stock = {};
+                                    product_quantity.each(function () {
+                                        var x = $(this).get(0).name.match(/^product_quantity-(\d+)$/);
+                                        if (x === null) return;
+                                        var product_id = x[1];
+                                        var price = products[product_id]['price'];
+                                        var quantity = parseInt($(this).val());
+                                        quantity = (isNaN(quantity) || quantity < 0) ? 0 : quantity;
+                                        <%doc>モーダル初期ロード時のみ、選択席数を商品の数量倍率で割る TKT-2822</%doc>;
+                                        if (quantity !== 0 && when === 'default') {
+                                            quantity = quantity / products[product_id]['power'];
+                                            $(this).val(quantity);
+                                        }
+                                        $.each(products[product_id]['stock_quantity_pairs'], function (k, v) {
+                                            var n = num_required_seats_per_stock[k];
+                                            if (n === void(0))
+                                                n = num_required_seats_per_stock[k] = 0;
+                                            num_required_seats_per_stock[k] = n + v * quantity;
+                                        });
+                                        total_price += price * quantity;
+                                        total_quantity += quantity;
+                                    });
+                                    var num_seats = 0, num_seats_remaining = 0;
+                                    $.each(num_selected_seats_per_stock, function (k, v) {
+                                        num_seats += v;
+                                        num_seats_remaining += v - num_required_seats_per_stock[k];
+                                    });
+                                    total_price = total_price + '';
+                                    while (
+                                        total_price != (total_price = total_price.replace(/^(-?\d+)(\d{3})/, "$1,$2"))
+                                    );
+                                    $modal.find('span[name="total-price"]').text(total_price + '円');
+                                    $modal.find('span[name="total-quantity"]').text(total_quantity);
+                                    if (num_seats > 0) {
+                                        var _values = {
+                                            'num_seats': num_seats,
+                                            'num_seats_remaining': num_seats_remaining
+                                        };
+                                        $modal.find('.info').text(message_template.replace(/\{[^}]+\}/g, function ($0) {
+                                            return _values[$0.substring(1, $0.length - 1)];
+                                        }));
+                                    }
+                                }
+
+                                product_quantity.on('change', refresh);
+                                refresh('default');
+                            });
+                        })($('#modal-reserve'));
+                    </script>
+                    <div class="alert alert-info info">
+                    </div>
+                    <p>※ 連席の場合、個数は連席ごとの単位として表示されます。</p>
+                    <table class="table table-striped table-bordered">
+                        <tr>
+                            <th class="span2">席種</th>
+                            <th class="span4">商品</th>
+                            <th class="span2">単価</th>
+                            <th style="width: 80px;">個数</th>
+                        </tr>
+                        <script type="text/javascript" src="${request.static_url('altair.app.ticketing:static/js/jquery-spin.js')}"></script>
+                        % for stock_type in sorted(stock_types, key=lambda x:x.display_order):
+                            <% stock_type_seats = [seat for seat in _context.seats if seat.stock.stock_type == stock_type] %>
+                                <tr>
+                                    <td colspan="2">
+                                        <div style="float: left;" class="span4">
+                                            ${stock_type.name}
+                                        </div>
+                                        <div style="float: left;">
+                                            % if stock_type_seats:
+                                                <ul>
+                                                    % for seat in stock_type_seats:
+                                                        <li>${seat.name}</li>
+                                                    % endfor
+                                                </ul>
+                                            % endif
+                                        </div>
+                                    </td>
+                                    <td></td>
+                                    <td>
+                                        % if stock_type_seats:
+                                            ${len(stock_type_seats)}
+                                        % endif
+                                    </td>
+                                </tr>
+                            % for product in sorted(_context.products, key=lambda x:x.display_order):
+                                % if stock_type == product.seat_stock_type:
+                                <% product_quantity_id = u"product_quantity-{id}".format(id=product.id) %>
+                                    <tr>
+                                        <td style="text-align: right;">
+                                            <span class="label label-info">${product.sales_segment.name}</span>
+                                        </td>
+                                        <td>${product.name}</td>
+                                        <td class="price">${vh.price(product.price)}</td>
+                                        <td>
+                                            <input id="${product_quantity_id}" name="${product_quantity_id}" class="product_quantity" type="text" value="">
+                                        </td>
+                                        <script type="text/javascript">
+                                            $("#${product_quantity_id}").spin({
+                                                imageBasePath: "${request.static_url('altair.app.ticketing:static/images/spin/')}",
+                                                min: 0
+                                            });
+                                        </script>
+                                    </tr>
+                                % endif
+                            % endfor
+                        % endfor
+                        <tr>
+                            <td colspan="2">合計</td>
+                            <td class="price">
+                                <span name="total-price"></span>
+                            </td>
+                            <td>
+                                <span name="total-quantity"></span>
+                            </td>
+                        </tr>
+                    </table>
+                % else:
+                    <div class="alert alert-warning info">
+                        指定された販売区分には、選択された座席に対応する商品が設定されていません。<br/>
+                        条件を見直してください。
+                    </div>
+                % endif
+
+                <script type="text/javascript">
+                    $(function () {
+                        $("#modal-reserve select[name='sales_segment_id']").change(function () {
+                            var modal = $('#modal-reserve');
+                            modal.find('.modal-body .alert').remove();
+                            var $form = modal.find('form');
+                            var params = build_form_params($form);
+                            $.ajax({
+                                type: 'post',
+                                url: '${request.route_path('orders.reserve.form.reload')}',
+                                data: params,
+                                dataType: 'html',
+                                success: function (data) {
+                                    $('#modal-reserve').modal('hide');
+                                    $('#reserve-form').html(data);
+                                    $('#modal-reserve').modal({'backdrop': 'static', 'keyboard': false});
+                                    $('#modal-reserve').modal('show');
+                                },
+                                error: function (xhr, text) {
+                                    $('#modal-reserve').find('.modal-body').prepend('<div class="alert alert-error"><ul>エラーが発生しました</ul></div>');
+                                }
+                            });
+                        });
+                    });
+                </script>
+                <%block name="javascript">
+                    <script type="text/javascript" src="${request.static_url('altair.app.ticketing:static/js/ajaxzip3-https.js')}"></script>
+                </%block>
+                <div class="ss-pdmd">
+                    <div class="half" style="float:left">
+                        ${ch.form_item(_context.settings_form.sales_segment_id)}
+                    </div>
+                    <div class="half" style="float:right">
+                        ${ch.form_item(form.payment_delivery_method_pair_id)}
+                    </div>
+                    <div style="clear:both"></div>
+                    <div id="store_warning">
+                        <p>※ コンビニ決済およびコンビニ受取は氏名、氏名（カナ）、TELが必須です。</p>
+                    </div>
+                </div>
+
+                <div class="shipping-address">
+                    <div class="control-group name">
+                        <div class="half" style="float:left">
+                            <label class="control-label">氏名</label>
+                            <div class="controls">
+                                ${form.last_name(maxlength=u'10', placeholder=u'姓）山田')}
+                                ${form.first_name(maxlength=u'10', placeholder=u'名）太郎')}
+                            </div>
+                        </div>
+                        <div class="half" style="float:right">
+                            <label class="control-label">氏名(カナ)</label>
+                            <div class="controls">
+                                ${form.last_name_kana(maxlength=u'10', placeholder=u"姓（カナ）ヤマダ")}
+                                ${form.first_name_kana(maxlength=u'10', placeholder=u"名（カナ）タロウ")}
+                            </div>
+                        </div>
+                    </div>
+                    ${ch.form_item(form.tel_1, placeholder=u'例）08012345678')}
+                    <br/>
+                    <div class="half" style="float:left">
+                        <% path = request.static_url('altair.app.ticketing:static/js/zipdata') %>
+                        ${ch.form_item(form.zip, placeholder=u"例）1030001", onKeyUp="AjaxZip3.zip2addr('" + path + "', 'zip','','prefecture','city','', 'address_1');")}
+                    </div>
+                    <div class="half" style="float:right">
+                        ${ch.form_item(form.prefecture, placeholder=u"例）東京都")}
+                    </div>
+                    <div style="clear:both"></div>
+                    <div class="half" style="float:left">
+                        ${ch.form_item(form.city, placeholder=u"例）中央区")}
+                    </div>
+                    <div class="half" style="float:right">
+                        ${ch.form_item(form.address_1, placeholder=u"例）日本橋x-xx-xx")}
+                    </div>
+                    <div style="clear:both"></div>
+                    ${ch.form_item(form.address_2, placeholder=u'例）yyビルz階')}
+                    ${ch.form_item(form.email_1, placeholder=u'例）customer_name@example.com')}
+                </div>
+
+                <div class="delivery_at_store">
+                    <br/>
+                    ${ch.form_item(form.sales_counter_payment_method_id)}
+                    <div class="control-group">
+                        <div class="controls">
+                            <p>※ 当日窓口決済を選択すると、予約のステータスが「入金済み」になります</p>
+                        </div>
+                    </div>
+                </div>
+                ${_context.preconditions_form.performance_id}
+                ${_context.preconditions_form.stocks}
+                ${_context.seats_form.seats}
+            </div>
+        </form>
     </div>
-    </form>
-  </div>
 
-  <div class="modal-footer">
-    <div class="reserve-area">
-      <button onclick="javascript:reselectOrder(); return false;" class="btn secondary btn-close">戻る</button>
-      <button id="reserve-next" class="btn danger">メモ・文言を設定する</button>
-      <button onclick="$('#modal-reserve').find('form').submit(); return false;" class="btn danger">確認する</button>
+    <div class="modal-footer">
+        <div class="reserve-area">
+            <button onclick="javascript:reselectOrder(); return false;" class="btn secondary btn-close">戻る</button>
+            <button id="reserve-next" class="btn danger">メモ・文言を設定する</button>
+            <button onclick="$('#modal-reserve').find('form').submit(); return false;" class="btn danger">確認する</button>
+        </div>
+        <div class="memo-area" style="display:none">
+            <button id="memo-prev" class="btn secondary btn-close">戻る</button>
+            <button onclick="$('#modal-reserve').find('form').submit(); return false;" class="btn danger">確認する</button>
+        </div>
     </div>
-    <div class="memo-area" style="display:none">
-      <button id="memo-prev" class="btn secondary btn-close">戻る</button>
-      <button onclick="$('#modal-reserve').find('form').submit(); return false;" class="btn danger">確認する</button>
-    </div>
-  </div>
 </div>
