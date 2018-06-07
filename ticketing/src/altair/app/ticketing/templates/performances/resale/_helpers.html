@@ -42,8 +42,14 @@
 <h5 id="resale-segment-${resale_segment.id}"
     class="resale-segment__info"
     data-resale_segment_id="${resale_segment.id}"
-    data-resale_start_at="${resale_segment.resale_start_at}"
-    data-resale_end_at="${resale_segment.resale_end_at}"
+    // 必須項目ではないので、値がある時にh5のdataとして入ります。
+    % if resale_segment.resale_start_at:
+      data-resale_start_at="${resale_segment.resale_start_at}"
+    % endif
+    // 必須項目ではないので、値がある時にh5のdataとして入ります。
+    % if resale_segment.resale_end_at:
+      data-resale_end_at="${resale_segment.resale_end_at}"
+    % endif
     data-reception_start_at="${resale_segment.reception_start_at}"
     data-reception_end_at="${resale_segment.reception_end_at}">
   <ul style="display:table">

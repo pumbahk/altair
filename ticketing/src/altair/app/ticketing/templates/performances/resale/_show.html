@@ -614,7 +614,8 @@
 
   function update_display(resale_segment_id, resale_performance_id, resale_start_at, resale_end_at, reception_start_at, reception_end_at) {
 
-    let li = $(".resale-segment-detail-box");
+    let li = $(".resale-segment-detail-box"),
+        sent_request_button = li.find("button.btn-send").detach();
     li.empty();
 
     let h5_temp = $("#resale-segment-li-template").clone().removeAttr("id").removeClass("hide");
@@ -623,10 +624,12 @@
       .attr("class", "resale-segment__info")
       .data('resale_segment_id', resale_segment_id)
       .data('resale_performance_id', resale_performance_id)
-      .data('resale_start_at', resale_start_at)
-      .data('resale_end_at', resale_end_at)
       .data('reception_start_at', reception_start_at)
       .data('reception_end_at', reception_end_at);
+
+    // 必須項目ではないので、値がある時にh5のdataとして入ります。
+    if (resale_start_at) h5_temp.data('resale_start_at', resale_start_at);
+    if (resale_end_at) h5_temp.data('resale_end_at', resale_end_at);
 
     let buttonDom = $("<li>")
         .append($("<button class=\"btn\" onclick=\"open_modal_create_or_update_resale_segment($(this), 'update')\"><i class=\"icon-pencil\"></i>編集</button>\n"));
@@ -635,6 +638,10 @@
         buttonDom.append($("<button class=\"btn\" onclick=\"open_modal_create_or_update_resale_performance($(this), 'update')\"><i class=\"icon-pencil\"></i>リセール公演ID編集</button>\n"));
     } else {
         buttonDom.append($("<button class=\"btn\" onclick=\"open_modal_create_or_update_resale_performance($(this), 'create')\"><i class=\"icon-pencil\"></i>リセール公演ID登録</button>\n"));
+    }
+
+    if (sent_request_button.length > 0) {
+        buttonDom.append(sent_request_button);
     }
 
     var content = $("<ul style=\"display:table\">");
@@ -753,7 +760,6 @@
           resale_segment_id = form.find("#resale_segment_id").val(),
           url = "/resale/api/segments/{0}/update".format(resale_segment_id),
           data = create_data_from_dom(form);
-      // sent_statusが3の場合は再連携必須。
       clear_modal_error_messages(modal);
       $.ajax({
           url: url,
