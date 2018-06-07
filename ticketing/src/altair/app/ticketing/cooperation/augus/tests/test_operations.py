@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 from unittest import TestCase
+import os
+import shutil
 from altair.app.ticketing.core.models import (
     Account,
     AugusAccount,
@@ -7,7 +9,8 @@ from altair.app.ticketing.core.models import (
 from ..operations import (
     PathManager,
     )
-
+from altair.app.ticketing.mails.testing import MailTestMixin
+from pyramid import testing
 
 class AugusOperationTest(TestCase):
     def setup(self):
@@ -18,11 +21,24 @@ class AugusOperationTest(TestCase):
         pass
 
 
-class PathManagerTest(TestCase):
-    augus_account_id = 3
-    var_dir = 'test'
-    send_dir = 'send_dir'
-    recv_dir = 'recv_dir'
+class PathManagerTest(TestCase, MailTestMixin):
+    def setUp(self):
+        self.config = testing.setUp()
+        self.set_dummy_conf_ini_file_path()
+        self.augus_account_id = '3'
+        self.var_dir = os.sep.join([self.config.registry.settings.deploy_dir, 'test'])
+        self.send_dir = 'send_dir'
+        self.recv_dir = 'recv_dir'
+        self.test_dir_top = os.sep.join([self.var_dir, self.augus_account_id])
+
+        # 過去のテストの中断など、何らかの理由でテストディレクトリが残っていれば削除
+        if os.path.isdir(self.test_dir_top):
+            shutil.rmtree(self.test_dir_top)
+
+    def tearDown(self):
+        # テストで作成されたディレクトリの削除
+        if os.path.isdir(self.test_dir_top):
+            shutil.rmtree(self.test_dir_top)
 
     def get_target(self):
         augus_account = AugusAccount()

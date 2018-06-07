@@ -168,6 +168,7 @@ class ResaleRequestExportAPIView(CSVExportModelMixin, generics.GenericAPIView):
         return self.export(request, *args, **kwargs)
 
     def filter_query(self, query):
+        query = super(ResaleRequestExportAPIView, self).filter_query(query)
         order_no = self.request.params.get('order_no', None)
         if order_no:
             order_no_list = re.split(r'[ \t,]', order_no)
@@ -181,4 +182,4 @@ class ResaleRequestExportAPIView(CSVExportModelMixin, generics.GenericAPIView):
                                OrderedProduct.order_id == Order.id) \
                          .filter(Order.order_no.in_(order_no_list))
         
-        return super(ResaleRequestExportAPIView, self).filter_query(query)
+        return query

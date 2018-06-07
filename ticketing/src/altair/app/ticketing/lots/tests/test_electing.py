@@ -52,7 +52,7 @@ class ElectingTests(unittest.TestCase):
 
     def test_elect_lot_entries(self):
         publisher = self._set_publisher()
-        request = DummyRequest(registry=self.config.registry)
+        request = DummyRequest(registry=self.config.registry, lot_entry_lock=0)
         mock_lot = mock.Mock(id=89889891)
         #elected_wishes = [mock.Mock(entry=mock_lot.entry)]
         #rejected_wishes = [mock.Mock(entry=mock_lot.entry)]
@@ -68,7 +68,7 @@ class ElectingTests(unittest.TestCase):
         target.elect_lot_entries()
         self.assertEqual(publisher.called,
                          [('publish',
-                           {'body': '{"lot_id": 89889891, "entry_no": "testing-entry-no", "wish_order": 0}',
+                           {'body': '{"lot_id": 89889891, "entry_no": "testing-entry-no", "lot_entry_lock": 0, "wish_order": 0}',
                             'properties': {'content_type': 'application/json'},
                             'routing_key': 'lots.election'})])
 

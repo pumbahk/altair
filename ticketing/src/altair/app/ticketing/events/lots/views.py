@@ -917,6 +917,7 @@ class LotEntries(BaseView):
                     process_possible=self._check_lot_entries_process_possible(),
                     electing=electing,
                     h=h,
+                    lot_reject_cnt=h.rejecting_count(lot_id),
                     stock_info=h.performance_stock_quantity(lot_id))
 
     def _check_lot_entries_process_possible(self):
@@ -984,6 +985,7 @@ class LotEntries(BaseView):
 
         for stock, quantity, performance in h.performance_stock_quantity(lot_id):
             StockStatus.query.filter(StockStatus.stock_id == stock.id).update({'quantity': (StockStatus.quantity - quantity)})
+            logger.info("stock quantity subtraction: stock_id = {0} : subtraction quantity = {1}".format(stock.id, quantity))
 
         DBSession.execute("UPDATE LotElectedEntry lee "
                           "INNER JOIN LotEntry le ON le.lot_id = {0} "

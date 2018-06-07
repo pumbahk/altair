@@ -1,25 +1,3 @@
-<%def name="get_resale_segment_status(resale_segment)">
-<%
-  if resale_segment.sent_status == 1:
-    color_class = "btn-warning"
-    disabled = ''
-    status_str = u'連携'
-  elif resale_segment.sent_status == 2:
-    color_class = "btn-inverse"
-    disabled = 'disabled="disabled"'
-    status_str = u'連携済み'
-  elif resale_segment.sent_status == 3:
-    color_class = "btn-danger"
-    disabled = ''
-    status_str = u'再連携必須'
-  else:
-    color_class = "btn-danger"
-    disabled = ''
-    status_str = u'連携失敗'
-  return status_str, color_class, disabled
-%>
-</%def>
-
 <%def name="get_resale_request_status(resale_request)">
 <%
   if resale_request.status == 2:
@@ -61,24 +39,37 @@
 <%doc>ここのjavascriptメソッド（onclickで呼ぶメソッド）は_show.htmlで定義されてる</%doc>
 
 <%def name="build_resale_segment_content(resale_segment)">
-<% status_str, status_color, disabled = get_resale_segment_status(resale_segment) %>
+<%
+if resale_segment.resale_start_at:
+  data_resale_start_at = 'data-resale_start_at="{}"'.format(resale_segment.resale_start_at)
+else:
+  data_resale_start_at = ''
+
+if resale_segment.resale_end_at:
+  data_resale_end_at = 'data-resale_end_at="{}"'.format(resale_segment.resale_end_at)
+else:
+  data_resale_end_at = ''
+%>
 <h5 id="resale-segment-${resale_segment.id}"
     class="resale-segment__info"
     data-resale_segment_id="${resale_segment.id}"
-    data-resale_start_at="${resale_segment.resale_start_at}"
-    data-resale_end_at="${resale_segment.resale_end_at}"
-    data-start_at="${resale_segment.start_at}"
-    data-end_at="${resale_segment.end_at}">
+    ${data_resale_start_at|n}
+    ${data_resale_end_at|n}
+    data-reception_start_at="${resale_segment.reception_start_at}"
+    data-reception_end_at="${resale_segment.reception_end_at}">
   <ul style="display:table">
     % if resale_segment.resale_performance_id:
       <li style="display:table-row">リセール連携公演ID：${resale_segment.resale_performance_id}</li>
+    % endif
+    <li style="display:table-row">申込開始日時：${resale_segment.reception_start_at}</li>
+    <li style="display:table-row">申込終了日時：${resale_segment.reception_end_at}</li>
+    % if resale_segment.resale_start_at:
       <li style="display:table-row">リセール開始日時：${resale_segment.resale_start_at}</li>
     % endif
-    <li style="display:table-row">リセール開始日時：${resale_segment.resale_start_at}</li>
-    <li style="display:table-row">リセール終了日時：${resale_segment.resale_end_at}</li>
-    <li style="display:table-row">申込開始日時：${resale_segment.start_at}</li>
-    <li style="display:table-row">申込終了日時：${resale_segment.end_at}</li>
-    % if resale_segment.editable:
+    % if resale_segment.resale_end_at:
+      <li style="display:table-row">リセール終了日時：${resale_segment.resale_end_at}</li>
+    % endif
+
     <br/>
     <li style="display:table-row">
       <button class="btn btn-edit" onclick="open_modal_create_or_update_resale_segment($(this), 'update')"><i class="icon-pencil"></i>編集</button>
@@ -87,14 +78,10 @@
       % else:
         <button class="btn" onclick="open_modal_create_or_update_resale_performance($(this), 'update')"><i class="icon-pencil"></i>リセール公演ID編集</button>
       % endif
-      <button class="btn ${status_color} btn-send" ${disabled} onclick="send_resale_segment_to_orion($(this), 'update')"><i class="icon-refresh icon-white"></i>${status_str}</button>
+      % if resale_segment.resale_requests:
+        <button class="btn btn-warning btn-send" onclick="open_modal_send_resale_request_to_orion($(this), true)"><i class="icon-refresh icon-white"></i>リセールリクエスト一括連携</button>
+      % endif
     </li>
-    % else:
-    <br/>
-    <li style="display:table-row">
-      <button class="btn btn-warning btn-send" onclick="open_modal_send_resale_request_to_orion($(this), true)"><i class="icon-refresh icon-white"></i>リセールリクエスト一括連携</button>
-    </li>
-    % endif
   </ul>
 </h5>
 </%def>
