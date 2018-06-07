@@ -39,11 +39,22 @@
 <%doc>ここのjavascriptメソッド（onclickで呼ぶメソッド）は_show.htmlで定義されてる</%doc>
 
 <%def name="build_resale_segment_content(resale_segment)">
+<%
+if resale_segment.resale_start_at:
+  data_resale_start_at = 'data-resale_start_at="{}"'.format(resale_segment.resale_start_at)
+else:
+  data_resale_start_at = ''
+
+if resale_segment.resale_end_at:
+  data_resale_end_at = 'data-resale_end_at="{}"'.format(resale_segment.resale_end_at)
+else:
+  data_resale_end_at = ''
+%>
 <h5 id="resale-segment-${resale_segment.id}"
     class="resale-segment__info"
     data-resale_segment_id="${resale_segment.id}"
-    data-resale_start_at="${resale_segment.resale_start_at}"
-    data-resale_end_at="${resale_segment.resale_end_at}"
+    ${data_resale_start_at|n}
+    ${data_resale_end_at|n}
     data-reception_start_at="${resale_segment.reception_start_at}"
     data-reception_end_at="${resale_segment.reception_end_at}">
   <ul style="display:table">
