@@ -1,5 +1,5 @@
 (function() {
-    const URL = 'https://s3-ap-northeast-1.amazonaws.com/tstar-dev/stocks/RE/farm-all.json';
+    const URL = 'https://s3-ap-northeast-1.amazonaws.com/tstar/stocks/RE/farm-all.json';
     let LABEL_GROUP = {
         SOLD_OUT: {
             "label_text": "完売",
