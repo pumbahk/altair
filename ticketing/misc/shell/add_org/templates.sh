@@ -111,7 +111,7 @@ cp -r ${base} ${CODE}
 test ! -d ${CODE}/mobile/images && mkdir -p ${CODE}/mobile/images
 
 # ロゴ画像の配置
-test -f ${PATH_TO_SP_LOGO} && cp ${PATH_TO_SP_LOGO} ${CODE}/pc/images/logo.png # orderreviewの場合はPCだとロゴのサイズが合わないのでSPのロゴを使用する
+test -f ${PATH_TO_ORDERREVIEW_LOGO} && cp ${PATH_TO_ORDERREVIEW_LOGO} ${CODE}/pc/images/logo.png # orderreviewの場合はPCだとロゴのサイズが合わないのでSPのロゴを使用する
 test -f ${PATH_TO_FAVICON} && cp ${PATH_TO_FAVICON} ${CODE}/pc/images/favicon.ico
 test -f ${PATH_TO_MB_LOGO} && cp ${PATH_TO_MB_LOGO} ${CODE}/mobile/images/mb_logo.gif
 
