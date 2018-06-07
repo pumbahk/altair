@@ -1,6 +1,6 @@
 (function() {
-    const URL = 'https://s3-ap-northeast-1.amazonaws.com/tstar/stocks/RE/farm-all.json';
-    let LABEL_GROUP = {
+    var URL = 'https://s3-ap-northeast-1.amazonaws.com/tstar/stocks/RE/farm-all.json';
+    var LABEL_GROUP = {
         SOLD_OUT: {
             "label_text": "完売",
             "class_attribute": "state-sold"
@@ -14,31 +14,31 @@
             "class_attribute": "state-has-seat-full"
         }
     };
-    let RENDER_DATA_FIELD = {
+    var RENDER_DATA_FIELD = {
         LABEL: "label",
         MONTH: "month",
         DATE: "date"
     };
 
-    let GENERAL_PUBLIC = 1;
-    let TARGET_SEAT = [GENERAL_PUBLIC];
-    let RESPONSE_DATE_REGEXP = /^(\d+)\D(\d+)\D(\d+)/;
-    let SALES_REGEXP = /購入する/;
-    let DOM_DATE_REGEXP_LIST = [
+    var GENERAL_PUBLIC = 1;
+    var TARGET_SEAT = [GENERAL_PUBLIC];
+    var RESPONSE_DATE_REGEXP = /^(\d+)\D(\d+)\D(\d+)/;
+    var SALES_REGEXP = /購入する/;
+    var DOM_DATE_REGEXP_LIST = [
         /(\d+)月(\d+)日/,
         /(\d+)\/(\d+)/
     ];
 
-    let target_counter = (function() {
+    var target_counter = (function() {
 
-        let count = {};
+        var count = {};
 
         function counter(stocks) {
             $.each(TARGET_SEAT, function(index, target) {
-                let seat_count = stocks[target];
+                var seat_count = stocks[target];
                 if (!seat_count) return true;
 
-                let value = count[target];
+                var value = count[target];
                 if (!value) value = 0;
                 value += seat_count;
 
@@ -56,10 +56,10 @@
         };
     })();
 
-    let make_label = function(counted_target) {
+    var make_label = function(counted_target) {
 
-        let count = counted_target[GENERAL_PUBLIC];
-        let status;
+        var count = counted_target[GENERAL_PUBLIC];
+        var status;
         if (count > 100) {
             status = LABEL_GROUP.SEAT_FULL;
         }else if (count > 0) {
@@ -70,8 +70,8 @@
         return [status.class_attribute, status.label_text];
     };
 
-    let stock_api = (function(){
-        let url = URL;
+    var stock_api = (function(){
+        var url = URL;
         function call(successBlock, failureBlock) {
             $.ajax({
                 url: url
@@ -90,15 +90,15 @@
         }
     })();
 
-    let is_sale = function(tr_element) {
+    var is_sale = function(tr_element) {
         return ("" + tr_element.text()).match(SALES_REGEXP)
     };
 
-    let parse_date_time = function(tr_element) {
-        let date_element = tr_element.find('th.date');
-        let md = [];
+    var parse_date_time = function(tr_element) {
+        var date_element = tr_element.find('th.date');
+        var md = [];
         $.each(DOM_DATE_REGEXP_LIST, function(index, regexp) {
-            let match = date_element.eq(0).text().match(regexp);
+            var match = date_element.eq(0).text().match(regexp);
             if (match) {
                 md = match;
                 return false;
@@ -107,14 +107,14 @@
         return md;
     };
 
-    let extend_row = function(row, status, is_show_icon) {
-        let td = row.find('td:last');
+    var extend_row = function(row, status, is_show_icon) {
+        var td = row.find('td:last');
         if(0 < td.find('.stockStatusInfomation').size()) {
             return;
         }
         td.addClass('state');
         td.addClass(status[0]);
-        let box = td.find('.state-box');
+        var box = td.find('.state-box');
         if (is_show_icon) {
             box.find('p.state-txt').html(status[1]);
         }else {
@@ -122,13 +122,13 @@
         }
     };
 
-    let extend_table = function(table, render_data) {
+    var extend_table = function(table, render_data) {
         $(table).find('tr').each(function() {
-            let tr = $(this);
-            let md = parse_date_time(tr);
-            let render_data_element = null;
+            var tr = $(this);
+            var md = parse_date_time(tr);
+            var render_data_element = null;
             if (md.length === 3) {
-                let key = ('0' + md[1]).slice(-2) + ('0' + md[2]).slice(-2);
+                var key = ('0' + md[1]).slice(-2) + ('0' + md[2]).slice(-2);
                 render_data_element = render_data[key];
             }
 
@@ -149,7 +149,7 @@
         });
     };
 
-    let render = function(render_data) {
+    var render = function(render_data) {
         $('table').each(function() {
             extend_table(this, render_data);
         });
@@ -157,14 +157,14 @@
 
     $(function() {
         stock_api.get(function(data) {
-            let render_data = {};
-            let performances = data.performances;
+            var render_data = {};
+            var performances = data.performances;
             $.each(performances, function(index, performance) {
                 target_counter.put(performance.stocks);
-                let counted_target = target_counter.get();
-                let label = make_label(counted_target);
-                let start_on = performance.start_on.match(RESPONSE_DATE_REGEXP);
-                let render_data_element = {};
+                var counted_target = target_counter.get();
+                var label = make_label(counted_target);
+                var start_on = performance.start_on.match(RESPONSE_DATE_REGEXP);
+                var render_data_element = {};
                 render_data_element[RENDER_DATA_FIELD.LABEL] = label;
                 render_data_element[RENDER_DATA_FIELD.MONTH] = start_on[2];
                 render_data_element[RENDER_DATA_FIELD.DATE] = start_on[3];
