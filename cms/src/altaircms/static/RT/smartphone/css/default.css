@@ -55,20 +55,6 @@ ul.menu {
   vertical-align: bottom;
 }
 
-.menuitem-label:before {
-  content: "";
-  display: block;
-  float: right;
-  font-family: Serif;
-  color: #888;
-  text-shadow: 1px 1px 2px #fff;
-  background: url("../img/rarrow.png") no-repeat center center;
-  margin: 0 8px 0 10px;
-  width: 12px;
-  height: 32px;
-  vertical-align: middle;
-}
-
 .menu._2cols .menuitem {
   width: 50%;
   font-size: 14px;

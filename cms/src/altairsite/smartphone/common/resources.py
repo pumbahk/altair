@@ -95,10 +95,12 @@ class CommonResource(object):
             , 'topics': topics
             , 'hotwords': hotwords
             , 'genretree': genretree
+            , 'genre_searcher': GenreSearcher(self.request)
             , 'areas': areas
             , 'week_sales': week_sales
             , 'near_end_sales': near_end_sales
             , 'helper': SmartPhoneHelper()
+            , 'helpers': helpers
             , 'form': form
             , 'sns': {
                 'url': utils.get_sns_url_from_genre(genre=genre),
