@@ -2,42 +2,42 @@
 <%namespace file="tags_smartphone.html" name="m" />
 
 <section id="genre" class="genre">
-<h2 class="category_ttl">ジャンルから探す</h2>
-<div class="top_inner">
-<dl class="acordion">
+    <h2 class="category_ttl">ジャンルから探す</h2>
+    <div class="top_inner">
+        <dl class="acordion">
 
-	% for i in range(0, len(genretree)):
-	<%
-	genre = genretree[i].genre
-	children = genre_searcher.get_children(genre)
-	%>
-	% if genre.name == "music":
-	<dt class="trigger"><span class="genre_txt">音楽</span></dt>
-	% elif genre.name == "stage":
-	<dt class="trigger"><span class="genre_txt">演劇・ステージ</span></dt>
-	% elif genre.name == "sports":
-	<dt class="trigger"><span class="genre_txt">スポーツ</span></dt>
-	% elif genre.name == "event":
-	<dt class="trigger"><span class="genre_txt">イベント</span></dt>
-	% endif
-	<dd class="acordion_tree">
-		<ul>
-			% for g in children:
-			<li><a href="${helpers.link.get_link_from_genre(request, g)}">${g.label}</a></li>
-			% endfor
+            % for i in range(0, len(genretree)):
+            <%
+            genre = genretree[i].genre
+            children = genre_searcher.get_children(genre)
+            %>
+            % if genre.name == "music":
+            <dt class="trigger"><span class="genre_txt">音楽</span></dt>
+            % elif genre.name == "stage":
+            <dt class="trigger"><span class="genre_txt">演劇・ステージ</span></dt>
+            % elif genre.name == "sports":
+            <dt class="trigger"><span class="genre_txt">スポーツ</span></dt>
+            % elif genre.name == "event":
+            <dt class="trigger"><span class="genre_txt">イベント</span></dt>
+            % endif
+            <dd class="acordion_tree">
+                <ul>
+                    % for g in children:
+                    <li><a href="${helpers.link.get_link_from_genre(request, g)}">${g.label}</a></li>
+                    % endfor
 
-			% if genre.name == "music":
-			<li><a href="${helpers.link.get_link_from_genre(request, genre)}">音楽全般</a></li>
-			% elif genre.name == "stage":
-			<li><a href="${helpers.link.get_link_from_genre(request, genre)}">演劇・ステージ全般</a></li>
-			% elif genre.name == "sports":
-			<li><a href="${helpers.link.get_link_from_genre(request, genre)}">スポーツ全般</a></li>
-			% elif genre.name == "event":
-			<li><a href="${helpers.link.get_link_from_genre(request, genre)}">イベント全般</a></li>
-			% endif
-		</ul>
-	</dd>
-	% endfor
-</dl>
-</div>
+                    % if genre.name == "music":
+                    <li><a href="${helpers.link.get_link_from_genre(request, genre)}">音楽全般</a></li>
+                    % elif genre.name == "stage":
+                    <li><a href="${helpers.link.get_link_from_genre(request, genre)}">演劇・ステージ全般</a></li>
+                    % elif genre.name == "sports":
+                    <li><a href="${helpers.link.get_link_from_genre(request, genre)}">スポーツ全般</a></li>
+                    % elif genre.name == "event":
+                    <li><a href="${helpers.link.get_link_from_genre(request, genre)}">イベント全般</a></li>
+                    % endif
+                </ul>
+            </dd>
+            % endfor
+        </dl>
+    </div>
 </section>
