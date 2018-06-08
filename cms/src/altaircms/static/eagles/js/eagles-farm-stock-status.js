@@ -20,45 +20,26 @@
         DATE: "date"
     };
 
-    var GENERAL_PUBLIC = 1;
-    var TARGET_SEAT = [GENERAL_PUBLIC];
+    var TARGET_SEAT = {
+        GENERAL_PUBLIC:
+            {
+                "manage_no": 0,
+                "name_regexp": /^内野自由席/
+            }
+    };
+
     var RESPONSE_DATE_REGEXP = /^(\d+)\D(\d+)\D(\d+)/;
-    var SALES_REGEXP = /購入する/;
+    var SALES_REGEXP = /^購入する/;
+    var TARGET_PLACE_REGEXP = /^森林どりスタジアム泉/;
     var DOM_DATE_REGEXP_LIST = [
         /(\d+)月(\d+)日/,
         /(\d+)\/(\d+)/
     ];
 
-    var target_counter = (function() {
+    var make_label = function(counted_target, target_seat_order_map) {
 
-        var count = {};
-
-        function counter(stocks) {
-            $.each(TARGET_SEAT, function(index, target) {
-                var seat_count = stocks[target];
-                if (!seat_count) return true;
-
-                var value = count[target];
-                if (!value) value = 0;
-                value += seat_count;
-
-                count[target] = value;
-            });
-        }
-
-        return {
-            put: function(stocks) {
-                counter(stocks)
-            },
-            get: function() {
-                return count;
-            }
-        };
-    })();
-
-    var make_label = function(counted_target) {
-
-        var count = counted_target[GENERAL_PUBLIC];
+        var disp_order = target_seat_order_map[TARGET_SEAT.GENERAL_PUBLIC.manage_no];
+        var count = counted_target[disp_order];
         var status;
         if (count > 100) {
             status = LABEL_GROUP.SEAT_FULL;
@@ -71,10 +52,9 @@
     };
 
     var stock_api = (function(){
-        var url = URL;
         function call(successBlock, failureBlock) {
             $.ajax({
-                url: url
+                url: URL
             }).then(
                 function (data) {
                     successBlock(data)
@@ -90,8 +70,39 @@
         }
     })();
 
+    var get_target_seat_order_map = function(seat_types) {
+        var target_seat_order_map = {};
+        $.each(seat_types, function(disp_order, seat_type) {
+            $.each(TARGET_SEAT , function(key, value) {
+                var match = seat_type.match(value.name_regexp);
+                if (!match || match.len === 0) {
+                    return true;
+                }
+                target_seat_order_map[value.manage_no] = disp_order;
+                return false;
+            });
+        });
+        return target_seat_order_map
+    };
+
+    var count_target = function(stocks, target_seat_order_map) {
+        var count = {};
+        $.each(target_seat_order_map, function(manage_no, disp_order) {
+            var seat_count = stocks[disp_order];
+            if (seat_count === undefined) return true;
+            count[disp_order] = seat_count;
+        });
+        return count;
+    };
+
     var is_sale = function(tr_element) {
-        return ("" + tr_element.text()).match(SALES_REGEXP)
+        var buy_element = tr_element.find('.btn');
+        return ("" + buy_element.text()).match(SALES_REGEXP)
+    };
+
+    var is_target_place = function(tr_element) {
+        var place_element = tr_element.find('.place');
+        return ("" + place_element.text()).match(TARGET_PLACE_REGEXP)
     };
 
     var parse_date_time = function(tr_element) {
@@ -132,7 +143,7 @@
                 render_data_element = render_data[key];
             }
 
-            if(render_data_element && is_sale(tr)) {
+            if(render_data_element && is_sale(tr) && is_target_place(tr)) {
                 extend_row(
                     tr,
                     render_data_element[RENDER_DATA_FIELD.LABEL],
@@ -159,10 +170,11 @@
         stock_api.get(function(data) {
             var render_data = {};
             var performances = data.performances;
+            var target_seat_order_map = get_target_seat_order_map(data.seat_types);
+
             $.each(performances, function(index, performance) {
-                target_counter.put(performance.stocks);
-                var counted_target = target_counter.get();
-                var label = make_label(counted_target);
+                var counted_target = count_target(performance.stocks, target_seat_order_map);
+                var label = make_label(counted_target, target_seat_order_map);
                 var start_on = performance.start_on.match(RESPONSE_DATE_REGEXP);
                 var render_data_element = {};
                 render_data_element[RENDER_DATA_FIELD.LABEL] = label;
