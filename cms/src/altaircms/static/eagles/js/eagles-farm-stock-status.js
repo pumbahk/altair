@@ -40,6 +40,7 @@
 
         var disp_order = target_seat_order_map[TARGET_SEAT.GENERAL_PUBLIC.manage_no];
         var count = counted_target[disp_order];
+
         var status;
         if (count > 100) {
             status = LABEL_GROUP.SEAT_FULL;
@@ -89,7 +90,7 @@
         var count = {};
         $.each(target_seat_order_map, function(manage_no, disp_order) {
             var seat_count = stocks[disp_order];
-            if (seat_count === undefined) return true;
+            if (!seat_count) seat_count = 0;
             count[disp_order] = seat_count;
         });
         return count;
