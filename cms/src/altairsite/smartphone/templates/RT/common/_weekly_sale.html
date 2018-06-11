@@ -1,4 +1,5 @@
 <%page args="weekly_sale" />
+% if weekly_sale and weekly_sale.events:
 <script>
 $(document).ready(function(){
     // 10件ずつ表示
@@ -23,10 +24,8 @@ $(document).ready(function(){
         }
     });
 });
-
 </script>
 
-% if weekly_sale:
 <section id="week_tickets" class="week_tickets">
     <h2 class="category_ttl">今週発売のチケット</h2>
     <div class="top_inner">

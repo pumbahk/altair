@@ -33,7 +33,13 @@
     <div class="ticket-logo-sp"><h1><a href="/"><span class="offleft">楽天チケット</span></a></h1>
     </div>
   </div>
-  <div class="ticket-top-icon"><a href="https://rt.tstar.jp/orderreview"><img src="${request.static_url('altaircms:static/RT/smartphone/img/icon_check.png')}" alt=""></a></div>
+    <div class="ticket-top-icon clearfix">
+        <span class="icon_help"><a href="https://ticket.faq.rakuten.ne.jp/app/home"><img
+                src="${request.static_url('altaircms:static/RT/smartphone/img/icon_help.png')}" alt="ヘルプ"></a></span>
+        <span class="icon_check"><a href="https://rt.tstar.jp/orderreview"><img
+                src="${request.static_url('altaircms:static/RT/smartphone/img/icon_check.png')}"
+                alt="お申込内容確認"></a></span>
+    </div>
 
 </div>
 ${self.body()}
