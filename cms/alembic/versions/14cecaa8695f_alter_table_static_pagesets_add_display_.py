@@ -15,7 +15,7 @@ import sqlalchemy as sa
 
 
 def upgrade():
-    op.add_column('static_pagesets', sa.Column('display_order', sa.Integer(), nullable=False))
+    op.add_column('static_pagesets', sa.Column('display_order', sa.Integer(), nullable=False, default=0))
 
 
 def downgrade():
