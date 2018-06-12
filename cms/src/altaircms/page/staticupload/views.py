@@ -117,6 +117,7 @@ class StaticPageSetView(BaseView):
         form.name.data = static_pageset.name
         form.url.data = static_pageset.url
         form.genre_id.data = static_pageset.genre_id
+        form.display_order.data = static_pageset.display_order
 
         pg = ParseGenre(self.request)
         genre_dict, genre_id_dict = pg.get_genre_pagesets()
@@ -160,6 +161,7 @@ class StaticPageSetView(BaseView):
         static_pageset.name = form.name.data
         static_pageset.url = form.url.data
         static_pageset.genre = genre
+        static_pageset.display_order = form.display_order.data if form.display_order.data else 0
         FlashMessage.success(u"%sが更新されました" % static_pageset.name, request=self.request)
         return HTTPFound(get_endpoint(self.request))
 

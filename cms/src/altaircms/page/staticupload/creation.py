@@ -100,7 +100,8 @@ class StaticPageCreate(object):
         data = self.data
         pageset = StaticPageSet(url=data["name"], 
                                 name=data["label"], 
-                                hash=uuid.uuid4().hex)
+                                hash=uuid.uuid4().hex,
+                                display_order=data["display_order"])
         static_page = StaticPage(name=data["name"],
                                  pageset=pageset, 
                                  layout=data["layout"],

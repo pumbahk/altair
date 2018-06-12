@@ -1,11 +1,24 @@
 <%page args="areas, genre, helper" />
 <%namespace file="tags_smartphone.html" name="m" />
 
-<h2 class="glitter red">地域で絞り込む</h2>
 % if areas:
-    <ul class="menu">
-    % for area in areas:
-        <a href="${request.route_path('smartphone.search_genre_area')}?genre_id=${genre.id}&area=${area.name}&page=1"><li class="menuitem"><span class="menuitem-label">${helper.get_area_japanese(area.name)}</span></li></a>
-    % endfor
-    </ul>
+<section id="area" class="area">
+    <h2 class="category_ttl">地域で絞り込む</h2>
+    <div class="top_inner">
+        <dl class="acordion">
+            <dt class="triggerA"><span><img src="" alt=""></span><span>地域で絞り込む</span></dt>
+            <dd class="acordion_treeA">
+                <ul>
+                    % for area in areas:
+                    <li>
+                        <a href="${request.route_path('smartphone.search_genre_area',_query=dict(genre_id=genre.id, area=area.name, page=1))}">
+                            ${helper.get_area_japanese(area.name)}
+                        </a>
+                    </li>
+                    % endfor
+                </ul>
+            </dd>
+        </dl>
+    </div>
+</section>
 % endif

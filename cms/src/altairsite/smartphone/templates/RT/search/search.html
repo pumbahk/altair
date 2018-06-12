@@ -1,16 +1,14 @@
 <%page args="form" />
-<%namespace file="../common/tags_smartphone.html" name="m" />
-
-<div class="sectionbox inverted" id="search">
-    <form class="sectionbox-inner" action="${request.route_path('smartphone.search')}" method="GET">
-        ${form.word(placeholder=u"アーティスト名、公演名、会場名など")}
-        ${form.sale}
-        <br/>
-        <div class="moreInfo">
-        <input id="details" type="submit" class="btn-secondary btn-large" value="検索"/>
-        <a href="/smartphone/init_detail">もっと詳しく</a></div>
-        % if helper.disp_error(form):
-            <font color="yellow">${helper.disp_error(form)}</font><br/>
-        % endif
-    </form>
+<div id="search">
+    <div class="top_inner">
+        <div id="search_area">
+            <form action="${request.route_path('smartphone.search')}" method="GET">
+                ${form.word(placeholder=u"アーティスト名、公演名、会場名など")}
+                <input id="details" type="submit" class="btn-secondary btn-large" value="">
+                % if helper.disp_error(form):
+                    <font color="yellow">${helper.disp_error(form)}</font><br/>
+                % endif
+            </form>
+        </div>
+    </div>
 </div>
