@@ -73,12 +73,22 @@ def select_sales_segment(sales_segments):
     return None
 
 
-def get_recent_sales_segment_without_lots(p, now, sales_segment_group_names):
+def filter_by_sales_segment_group_names(not_ended_sales_segments, group_names):
+    not_ended_sales_segments = [ss for ss in not_ended_sales_segments
+                                if ss.sales_segment_group.name
+                                in map(lambda name: name.decode('utf-8'), group_names)]
+    return not_ended_sales_segments
+
+
+def get_recent_sales_segment_without_lots(p, now, sales_segment_group_names, on_the_day_sales_segment_group_names):
     not_ended_sales_segments = [ss for ss in p.sales_segments if ss.is_not_finished(now) and ss.public and not ss.is_lottery()]
-    if not_ended_sales_segments and len(sales_segment_group_names) > 0:
-        not_ended_sales_segments = [ss for ss in not_ended_sales_segments
-                                    if ss.sales_segment_group.name
-                                        in map(lambda name: name.decode('utf-8'), sales_segment_group_names)]
+    if not_ended_sales_segments:
+        if p.start_on.date() == now.date() and len(on_the_day_sales_segment_group_names) > 0:
+            not_ended_sales_segments = filter_by_sales_segment_group_names(not_ended_sales_segments,
+                                                                           on_the_day_sales_segment_group_names)
+        elif len(sales_segment_group_names) > 0:
+            not_ended_sales_segments = filter_by_sales_segment_group_names(not_ended_sales_segments,
+                                                                           sales_segment_group_names)
     if not_ended_sales_segments:
         return min(not_ended_sales_segments, key=lambda s: s.start_at)
     else:
@@ -94,6 +104,7 @@ def main():
     parser.add_argument('--dry-run', action='store_true', default=False)
     parser.add_argument('--event-id', type=str, default=None)
     parser.add_argument('--sales-segment-group-name', type=str, required=True)
+    parser.add_argument('--on-the-day-sales-segment-group-name', type=str, required=True)
     parser.add_argument('--now', type=str, default=None)  # for debugging
 
     opts = parser.parse_args()
@@ -113,6 +124,7 @@ def main():
     message('now: %s' % opts.now)
     message('event_id: %s' % opts.event_id)
     message('sales_segment_group_name: %s' % opts.sales_segment_group_name.decode('utf-8'))
+    message('on_the_day_sales_segment_group_name: %s' % opts.on_the_day_sales_segment_group_name.decode('utf-8'))
 
     try:
         try:
@@ -134,6 +146,7 @@ def main():
 
         event_ids = map(int, opts.event_id.split(',')) if opts.event_id else []
         sales_segment_group_names = opts.sales_segment_group_name.split(',') if opts.sales_segment_group_name else []
+        on_the_day_sales_segment_group_names = opts.on_the_day_sales_segment_group_name.split(',') if opts.on_the_day_sales_segment_group_name else []
 
         now = datetime.strptime(opts.now, '%Y/%m/%d_%H:%M:%S') if opts.now else datetime.now()
 
@@ -164,7 +177,7 @@ def main():
             # XXX: this method consumes large memory space
             # sales_segment = p.get_recent_sales_segment(now=now)
 
-            sales_segment = get_recent_sales_segment_without_lots(p, now, sales_segment_group_names)
+            sales_segment = get_recent_sales_segment_without_lots(p, now, sales_segment_group_names, on_the_day_sales_segment_group_names)
 
             if not sales_segment:
                 continue
