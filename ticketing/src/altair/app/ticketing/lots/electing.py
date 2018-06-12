@@ -75,9 +75,9 @@ class Electing(object):
     def unlock_check_stock(self):
         """ 在庫数確定の在庫数が現在個数以下になっているか(大規模当選処理(テスト版))"""
         for stock, stock_status, product_item, performance, quantity, count in self.required_stocks:
-            for elh_stock, elh_quantity, elh_performance in event_lot_helper.performance_stock_quantity(self.lot.id):
-                if elh_stock.id == stock.id and stock_status.quantity < (quantity + elh_quantity):
-                    yield performance.name, product_item.name, stock_status.quantity, quantity + elh_quantity
+            for elh_stock, elh_performance, elh_total_quantity in event_lot_helper.performance_stock_quantity(self.lot.id):
+                if elh_stock.id == stock.id and stock_status.quantity < (quantity + elh_total_quantity):
+                    yield performance.name, product_item.name, stock_status.quantity, quantity + elh_total_quantity
 
     @reify
     def required_stocks(self):
@@ -140,11 +140,11 @@ class Electing(object):
         if lot_entry_lock:
             for stock, stock_status, product_item, performance, quantity, count in self.required_stocks:
                 # stockerのLockを使わない場合、事前に在庫数を確認、足りない場合に例外発生
-                for elh_stock, elh_quantity, elh_performance in event_lot_helper.performance_stock_quantity(self.lot.id):
+                for elh_stock, elh_performance, elh_total_quantity in event_lot_helper.performance_stock_quantity(self.lot.id):
                     # 上記、在庫数確定行わなく、当選処理行う場合、前回当選在庫数を確認
-                    if elh_stock.id == stock.id and stock_status.quantity < (quantity + elh_quantity):
+                    if elh_stock.id == stock.id and stock_status.quantity < (quantity + elh_total_quantity):
                         from altair.app.ticketing.cart.stocker import NotEnoughStockException
-                        raise NotEnoughStockException(stock, stock_status.quantity, quantity + elh_quantity)
+                        raise NotEnoughStockException(stock, stock_status.quantity, quantity + elh_total_quantity)
 
         for work in works:
             logger.info("publish entry_wish = {0}".format(work.entry_wish_no))

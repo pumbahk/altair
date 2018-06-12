@@ -983,9 +983,9 @@ class LotEntries(BaseView):
         lot_id = self.context.lot_id
         lot = self.context.lot
 
-        for stock, quantity, performance in h.performance_stock_quantity(lot_id):
-            StockStatus.query.filter(StockStatus.stock_id == stock.id).update({'quantity': (StockStatus.quantity - quantity)})
-            logger.info("stock quantity subtraction: stock_id = {0} : subtraction quantity = {1}".format(stock.id, quantity))
+        for stock, performance, total_quantity in h.performance_stock_quantity(lot_id):
+            StockStatus.query.filter(StockStatus.stock_id == stock.id).update({'quantity': (StockStatus.quantity - total_quantity)})
+            logger.info("stock quantity subtraction: stock_id = {0} : subtraction quantity = {1}".format(stock.id, total_quantity))
 
         DBSession.execute("UPDATE LotElectedEntry lee "
                           "INNER JOIN LotEntry le ON le.lot_id = {0} "
