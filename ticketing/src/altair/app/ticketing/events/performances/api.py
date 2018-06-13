@@ -51,8 +51,7 @@ def get_no_ticket_bundles(performance):
 
     return no_ticket_bundles
 
-def send_orion_performance(request, performance):
-
+def _get_performance_info(performance):
     if performance.open_on is not None:
         search_end_at = performance.open_on + timedelta(days=60)
     else:
@@ -72,33 +71,29 @@ def send_orion_performance(request, performance):
         site_name=performance.venue.site.name,
     )
 
+    return obj
+
+def send_orion_performance(request, performance):
+
+    obj = _get_performance_info(performance)
     return make_send_to_orion_request(request, obj, 'orion.resale_segment.create_or_update_url')
 
 def send_resale_segment(request, performance, resale_segment):
+    obj = _get_performance_info(performance)
 
-    if performance.open_on is not None:
-        search_end_at = performance.open_on + timedelta(days=60)
-    else:
-        search_end_at = performance.start_on + timedelta(days=60)
-
-    obj = dict(
-        organization_code=performance.event.organization.code,
-        event_code=performance.event.code,
-        event_name=performance.event.title,
-        code=performance.code,
-        name=performance.name,
-        url='',
-        open_on=performance.open_on.strftime('%Y-%m-%d %H:%M:%S') if performance.open_on is not None else None,
-        start_on=performance.start_on.strftime('%Y-%m-%d %H:%M:%S') if performance.start_on is not None else None,
-        end_on=performance.end_on.strftime('%Y-%m-%d %H:%M:%S') if performance.end_on is not None else None,
-        search_end_at=search_end_at.strftime('%Y-%m-%d %H:%M:%S'),
-        site_name=performance.venue.site.name,
-        resale_segment_id=resale_segment.id,
-        reception_start_at=resale_segment.reception_start_at.strftime('%Y-%m-%d %H:%M:%S') if resale_segment.reception_start_at else None,
-        reception_end_at=resale_segment.reception_end_at.strftime('%Y-%m-%d %H:%M:%S') if resale_segment.reception_end_at else None,
-        resale_start_at=resale_segment.resale_start_at.strftime('%Y-%m-%d %H:%M:%S') if resale_segment.resale_start_at else None,
-        resale_end_at=resale_segment.resale_end_at.strftime('%Y-%m-%d %H:%M:%S') if resale_segment.resale_end_at else None,
-        resale_enable=1
+    obj.update(
+        dict(
+            resale_segment_id=resale_segment.id,
+            reception_start_at=resale_segment.reception_start_at.strftime(
+                '%Y-%m-%d %H:%M:%S') if resale_segment.reception_start_at else None,
+            reception_end_at=resale_segment.reception_end_at.strftime(
+                '%Y-%m-%d %H:%M:%S') if resale_segment.reception_end_at else None,
+            resale_start_at=resale_segment.resale_start_at.strftime(
+                '%Y-%m-%d %H:%M:%S') if resale_segment.resale_start_at else None,
+            resale_end_at=resale_segment.resale_end_at.strftime(
+                '%Y-%m-%d %H:%M:%S') if resale_segment.resale_end_at else None,
+            resale_enable=1
+        )
     )
 
     return make_send_to_orion_request(request, obj, 'orion.resale_segment.create_or_update_url')
