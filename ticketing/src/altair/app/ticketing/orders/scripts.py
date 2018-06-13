@@ -3,6 +3,7 @@
 import os
 import sys
 from datetime import datetime, timedelta
+import json
 import logging
 import transaction
 import argparse
@@ -242,28 +243,33 @@ def import_orders():
     request = env['request']
     request.environ[request.environ.setdefault('altair.browserid.env_key', '_browserid')] = 'import_orders'
 
-    # 多重起動防止
-    LOCK_NAME = import_orders.__name__
-    LOCK_TIMEOUT = 10
-    conn = sqlahelper.get_engine().connect()
-    status = conn.scalar("select get_lock(%s,%s)", (LOCK_NAME, LOCK_TIMEOUT))
-    if status != 1:
-        logging.warn('lock timeout: already running process')
-        return
-
     logging.info('start import_orders batch')
     session_for_task = orm.session.Session(bind=sqlahelper.get_engine())
-    tasks = session_for_task.query(OrderImportTask).filter(
+    task = session_for_task.query(OrderImportTask).filter(
         OrderImportTask.status == ImportStatusEnum.Waiting.v,
         OrderImportTask.deleted_at == None
-    ).order_by(OrderImportTask.id).with_lockmode('update').all()
-    for task in tasks:
-        task.status = ImportStatusEnum.Importing.v
-    session_for_task.commit()
+    ).order_by(OrderImportTask.id).with_lockmode('update').first()
 
-    from .importer import initiate_import_task
+    if task:
+        # 同じパフォーマンスのインポートを多重起動防止
+        LOCK_NAME = '{0} with performance({1})'.format(import_orders.__name__, task.performance_id)
+        LOCK_TIMEOUT = 10
+        conn = sqlahelper.get_engine().connect()
+        status = conn.scalar("select get_lock(%s,%s)", (LOCK_NAME, LOCK_TIMEOUT))
+        if status != 1:
+            logging.warn('lock timeout: already running process with the same performance: {}.'.format(task.performance_id))
+            task.status = ImportStatusEnum.Aborted.v
+            task.errors = json.dumps({u'重複インポートエラー': u'同じ公演の予約インポートはすでに実行されますので、終わってから再実行してください。'})
+            session_for_task.commit()
+            return
+        else:
+            task.status = ImportStatusEnum.Importing.v
+            session_for_task.commit()
 
-    for task in tasks:
+        from .importer import initiate_import_task
         initiate_import_task(request, task, session_for_task)
 
-    logging.info('end import_orders batch')
+        logging.info('end import_orders batch')
+    else:
+        logging.info('order import task with waiting status not found!!')
+        logging.info('end import_orders batch')
