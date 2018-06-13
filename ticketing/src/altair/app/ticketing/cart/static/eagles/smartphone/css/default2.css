@@ -914,31 +914,32 @@ h3.glitter {
   border: 1px solid #fff;
   -webkit-border-radius: 0px;
   border-radius: 0px;
-  height: 28px;
-  line-height: 28px;
+  line-height: 1.2;
   font-size: 17px;
   color: #fff;
   overflow: hidden;
   vertical-align: middle;
-  padding: 0px 0px 0px 10px;
+  padding: 7px 0 5px 12px;
   margin: 0 0;
   background-image: linear-gradient(top, #9ea398 0%, #898f83 48%, #767d70 50%, #878d81);
   background-image: -webkit-gradient(linear, left top, left bottom, from(#9ea398), color-stop(0.48, #898f83), color-stop(0.5, #767d70), to(#878d81));
   background-image: -webkit-linear-gradient(top, #9ea398 0%, #898f83 48%, #767d70 50%, #878d81);
   background-image: -moz-linear-gradient(top, #9ea398 0%, #898f83 48%, #767d70 50%, #878d81);
   box-shadow: 2px 2px 2px -1px rgba(0, 0, 0, .3), 0px 0px 0px 2px rgba(255, 255, 255, .3) inset;
+  position:relative;
   text-shadow: 1px 1px 1px rgba(0, 0, 0, .4);
   user-select: none;
+   word-break:break-all;
   -ms-user-select: none;
   -webkit-user-select: none;
   -moz-user-select: none;
 }
 
-h3.glitter:after {
-  position: relative;
+h3.glitter:before {
+  position: absolute;
   display: block;
-  left: -6px;
-  top: -24px;
+  left: 6px;
+  top: 5px;
   content: "";
   width: 2px;
   height: 20px;

@@ -378,8 +378,10 @@ body {
 	padding: 10px 0 10px 15px;
 }
 #tsSideArea #tsTweet {
-	border: 1px solid #CCC;
-	padding: 0 10px 10px 10px;
+    border: 1px solid #CCC;
+    padding: 0 10px 10px 10px;
+    height: 400px;
+    overflow-y: scroll;
 }
 
 ul.tsSideBanner {
