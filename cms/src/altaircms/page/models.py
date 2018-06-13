@@ -235,6 +235,7 @@ class StaticPageSet(Base,
     genre = orm.relationship("Genre", backref="static_pageset", uselist=False, primaryjoin="StaticPageSet.genre_id==Genre.id")
 
     hash = sa.Column(sa.String(length=32), nullable=False)
+    display_order = sa.Column(sa.Integer, default=0)
 
     def current(self, dt=None, published=True):
         dt = dt or datetime.now()

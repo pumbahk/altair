@@ -65,6 +65,19 @@ def upload(uri, data, resolver):
         raise Exception("wrong uri: " % uri)
 
 
+def get_seat_price_from_sales_segment_group_name(group_names, session, seat_price_list, p, now):
+    for group_name in group_names:
+        sales_segment = get_target_sales_segment(p, now, group_name)
+        if not sales_segment:
+            message('performance(start=%s, id=%d, name=%s) has no sales_segment(%s)'
+                    % (p.start_on, p.id, p.name, group_name.decode('utf-8')))
+            continue
+
+        seat_price_list.extend(get_seat_price_list(session, sales_segment))
+
+    return seat_price_list
+
+
 def get_target_sales_segment(performance, now, sales_segment_group_name):
     sales_segment = [ss for ss in performance.sales_segments if ss.is_not_finished(now) and ss.public
                      and ss.sales_segment_group.name == sales_segment_group_name.decode('utf-8')]
@@ -113,6 +126,7 @@ def main():
     parser.add_argument('--quiet', action='store_true', default=False)
     parser.add_argument('--event-id', type=str, default=None)
     parser.add_argument('--sales-segment-group-name', type=str, required=True)
+    parser.add_argument('--on-the-day-sales-segment-group-name', type=str, required=True)
     parser.add_argument('--now', type=str, default=None)
     parser.add_argument('--local-run', action='store_true', default=False)
     parser.add_argument('--with-private-performance', action='store_true', default=False)
@@ -130,6 +144,7 @@ def main():
     message('target: %s' % opts.target)
     message('event_id: %s' % opts.event_id)
     message('sales_segment_group_name: %s' % opts.sales_segment_group_name.decode('utf-8'))
+    message('on_the_day_sales_segment_group_name: %s' % opts.on_the_day_sales_segment_group_name.decode('utf-8'))
     message('now: %s' % opts.now)
     message('with_private_performance: %s' % opts.with_private_performance)
 
@@ -154,6 +169,7 @@ def main():
         now = datetime.strptime(opts.now, '%Y/%m/%d_%H:%M:%S') if opts.now else datetime.now()
         event_ids = map(int, opts.event_id.split(',')) if opts.event_id else []
         sales_segment_group_names = opts.sales_segment_group_name.split(',') if opts.sales_segment_group_name else []
+        on_the_day_sales_segment_group_names = opts.on_the_day_sales_segment_group_name.split(',') if opts.on_the_day_sales_segment_group_name else []
 
         by_start_on = dict()
 
@@ -179,14 +195,10 @@ def main():
 
             for p in performances:
                 message('performance(start=%s, id=%d, name=%s)' % (p.start_on, p.id, p.name))
-                for sales_segment_group_name in sales_segment_group_names:
-                    sales_segment = get_target_sales_segment(p, now, sales_segment_group_name)
-                    if not sales_segment:
-                        message('performance(start=%s, id=%d, name=%s) has no sales_segment(%s)'
-                                % (p.start_on, p.id, p.name, sales_segment_group_name.decode('utf-8')))
-                        continue
-
-                    seat_price_list.extend(get_seat_price_list(session, sales_segment))
+                if p.start_on.date() == now.date():
+                    seat_price_list = get_seat_price_from_sales_segment_group_name(on_the_day_sales_segment_group_names, session, seat_price_list, p, now)
+                else:
+                    seat_price_list = get_seat_price_from_sales_segment_group_name(sales_segment_group_names, session, seat_price_list, p, now)
 
             if len(seat_price_list) > 0:
                 if opts.local_run:

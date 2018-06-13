@@ -1,11 +1,17 @@
 <%page args="top_news" />
 
-% for news in top_news:
-  % if news.url:
-    <a href="${news.url}">
-      <div class="top_news">${news.label}</div>
-    </a>
-  % else:
-    <div class="top_news">${news.label}</div>
-  % endif
-% endfor
+% if top_news:
+  <div class="top_news">
+    <ul>
+    % for news in top_news:
+      <li>
+        % if news.url:
+          <a href="${news.url}">${news.label}</a>
+        % else:
+          ${news.label}
+        % endif
+      </li>
+    % endfor
+    </ul>
+  </div>
+% endif

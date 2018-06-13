@@ -75,7 +75,7 @@ class Event(BaseOriginalMixin, WithOrganizationMixin, Base):
         event_list = []
         # 年月をkeyにしてEventを並べる
         for event in events:
-            key = u"{}年{}月".format(str(event.event_open.year), str(event.event_open.month))
+            key = u"{}{}".format(str(event.event_open.year), str(event.event_open.month).zfill(2))
             if key not in event_dict:
                 event_list = list()
                 event_dict[key] = event_list

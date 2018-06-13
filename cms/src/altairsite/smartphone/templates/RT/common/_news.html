@@ -1,0 +1,17 @@
+<%page args="news" />
+
+% if news:
+  <div class="top_news">
+    <ul>
+    % for news in news:
+      <li>
+        % if news.url:
+          <a href="${news.url}">${news.label}</a>
+        % else:
+          ${news.label}
+        % endif
+      </li>
+    % endfor
+    </ul>
+  </div>
+% endif

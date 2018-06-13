@@ -1,3 +1,6 @@
+
+
+
 body {
   margin: 0 0;
   font-family: Helvetica;
@@ -52,20 +55,6 @@ ul.menu {
   vertical-align: bottom;
 }
 
-.menuitem-label:before {
-  content: "";
-  display: block;
-  float: right;
-  font-family: Serif;
-  color: #888;
-  text-shadow: 1px 1px 2px #fff;
-  background: url("../img/rarrow.png") no-repeat center center;
-  margin: 0 8px 0 10px;
-  width: 12px;
-  height: 32px;
-  vertical-align: middle;
-}
-
 .menu._2cols .menuitem {
   width: 50%;
   font-size: 14px;
@@ -100,7 +89,7 @@ ul.menu {
   background-color: #a1deff;
 }
 
-.sectionbox {
+/* .sectionbox {
   width: 100%;
 }
 
@@ -181,7 +170,7 @@ ul.menu {
   margin: 5px 0 0 0;
   font-weight: bold;
   font-family: inherit;
-}
+} */
 .btn-large {
   font-size: 20px;
 }
@@ -947,6 +936,19 @@ h1 { margin:0; padding: 0;}
 .ticket-logo-top .ticket-logo-sp a{
   	margin: 6px 0 6px 6px;
 }
+.ticket-top-icon {
+    float: right;
+    padding: 7px 5px 0 0;
+}
+.ticket-top-icon span img {
+    height: 100%;
+}
+.ticket-top-icon span.icon_check,
+.ticket-top-icon span.icon_help {
+    height: 36px;
+    margin-left: 10px;
+    display: inline-block;
+}
 
 .leisureBtn { width:100%; }
 .leisureBtn a { display:block; margin:5px auto 0; text-align:center; max-width:320px; }
@@ -964,6 +966,8 @@ h1 { margin:0; padding: 0;}
 .promotionbannerBtn a img {
   width: 100%;
 }
-.top_news{
+/* .top_news{
   color: red;
-}
+} */
+
+

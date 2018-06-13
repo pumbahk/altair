@@ -102,12 +102,15 @@ def get_order_status(order, sent=False):
         return u"受付済"
 
 def get_order_status_image(order):
-    if order.status == 'canceled':
-        return u"icon_cancel.gif"
-    elif order.status == 'delivered':
-        return u"icon_hassou.gif"
+    if order.has_resale_requests:
+        return u"icon_resale_uketsuke.gif"
     else:
-        return u"icon_uketsuke.gif"
+        if order.status == 'canceled':
+            return u"icon_cancel.gif"
+        elif order.status == 'delivered':
+            return u"icon_hassou.gif"
+        else:
+            return u"icon_uketsuke.gif"
 
 def get_order_status_style(order):
     if order.status == 'canceled':

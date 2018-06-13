@@ -1,13 +1,30 @@
-<%page args="genretree, helper" />
-<%namespace file="../common/tags_smartphone.html" name="m" />
+<%page args="genretree, helper, helpers" />
+<%namespace file="tags_smartphone.html" name="m" />
 
-<h2 class="glitter red">サブジャンルで絞り込む</h2>
-<ul class="menu">
-% for i in range(0, len(genretree)):
-    <% genre = genretree[i].genre %>
-    <a href="${request.route_path('smartphone.genre', genre_id=genre.id)}"><li class="menuitem"><span class="menuitem-label">${genre.label}</span></li></a>
-% endfor
-% if len(genretree) == 0:
-    対象となるジャンルはありません
-% endif
-</ul>
+<section id="genre" class="genre">
+    <h2 class="category_ttl">ジャンルから探す</h2>
+    <div class="top_inner">
+        <dl class="acordion">
+
+            <dt class="trigger"><span class="genre_txt">サブジャンル一覧</span></dt>
+            <dd class="acordion_tree">
+                <ul>
+                    % for i in range(0, len(genretree)):
+                    <%
+                    genre = genretree[i].genre
+                    children = genre_searcher.get_children(genre)
+                    %>
+                    <li>
+                        <a href="${request.route_path('smartphone.genre', genre_id=genre.id)}">
+                            <span class="menuitem-label">${genre.label}</span>
+                        </a>
+                    </li>
+                    % endfor
+                </ul>
+                % if len(genretree) == 0:
+                対象となるジャンルはありません
+                % endif
+            </dd>
+        </dl>
+    </div>
+</section>
