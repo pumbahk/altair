@@ -1,0 +1,41 @@
+<%page args="static_pagesets_dict" />
+<%
+# 静的ページでinitial_dipsのものを初期表示、もっと見るを押すとdispのものを表示
+initial_disp_static_pagesets = None
+static_pagesets = None
+if static_pagesets_dict:
+    if "initial_disp" in static_pagesets_dict.keys():
+        initial_disp_static_pagesets = static_pagesets_dict['initial_disp']
+
+    if "disp" in static_pagesets_dict.keys():
+        static_pagesets = static_pagesets_dict['disp']
+%>
+
+<script>
+$(document).ready(function(){
+    $(".next_display").hide();
+    $(".disp_static_pagesets").on('click',function(){
+        $(".next_display").show();
+    });
+});
+</script>
+
+% if static_pagesets_dict and initial_disp_static_pagesets:
+<section id="special_contents" class="special_contents">
+    <h2 class="category_ttl">特集</h2>
+    <div class="top_inner">
+        <ul>
+            % for pagesets in initial_disp_static_pagesets:
+            <li><a href="${request.route_path('features', page_name=pagesets.url)}">
+                <span class="list_txt">${pagesets.name}</span></a>
+            </li>
+            % endfor
+            % for pagesets in static_pagesets:
+            <li class="next_display"><a href="${request.route_path('features', page_name=pagesets.url)}"><span
+                    class="list_txt">${pagesets.name}</span></a></li>
+            % endfor
+        </ul>
+        <p class="over_txt disp_static_pagesets">もっとみる▼</p>
+    </div>
+</section>
+% endif

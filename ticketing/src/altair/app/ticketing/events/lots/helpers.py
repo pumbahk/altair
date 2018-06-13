@@ -54,7 +54,7 @@ def exist_not_quantity_only_stock_type(lot):
     return False
 
 def performance_stock_quantity(lot_id):
-    s = [Stock, sql.func.count(LotElectedEntry.id), Performance]
+    s = [Stock, Performance, sql.func.sum(LotEntryProduct.quantity * ProductItem.quantity)]
     performance_stock_info = DBSession.query(*s).filter(
         LotEntry.lot_id == lot_id
     ).filter(

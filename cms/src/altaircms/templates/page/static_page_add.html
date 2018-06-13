@@ -173,7 +173,7 @@
 </script>
 <form id="main" action="${h.current_route_path_override(request, action="create")}"
 	  method="POST" enctype="multipart/form-data">
-  ${fco.form_as_table_strict(form,["name", "label", "zipfile","publish_begin", "publish_end", "layout"])}
+  ${fco.form_as_table_strict(form,["name", "label", "zipfile","publish_begin", "publish_end", "layout", "display_order"])}
   <input type="hidden" id="genre_id" name="genre_id" value="">
 </form>
 <table class="table breadcrumbs-box">

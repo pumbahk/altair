@@ -9,7 +9,10 @@ from ..search.search_query import SaleInfo
 
 from sqlalchemy import asc
 from altaircms.datelib import get_now
+from altaircms import helpers
 from altaircms.models import Genre, Category
+from altaircms.page.models import StaticPageSet
+from altaircms.genre.searcher import GenreSearcher
 from altaircms.tag.models import HotWord
 from altaircms.topic.api import get_topic_searcher
 from altaircms.genre.searcher import GenreSearcher
@@ -32,30 +35,39 @@ class CommonResource(object):
             topcontents = self.getInfo(kind="topcontent", system_tag_id=None)[0:5]
             topics = self.getInfo(kind="topic", system_tag_id=None)[0:5]
             hotwords = self.get_hotword()[0:5]
-            genretree = self.get_genre_tree(parent=None)
-            areas = self.get_area()
-            promotion_banners = self.get_promotion_banners()
-            top_news = self.get_top_news()
         else:
             promotions = self.getInfo(kind="promotion", system_tag_id=None)
             topcontents = self.getInfo(kind="topcontent", system_tag_id=None)
             topics = self.getInfo(kind="topic", system_tag_id=None)
             hotwords = self.get_hotword()
-            genretree = self.get_genre_tree(parent=None)
-            areas = self.get_area()
-            promotion_banners = self.get_promotion_banners()
-            top_news = self.get_top_news()
+
+        weekly_sale = self.search_week(None, 1, 100)
+        # 静的ページの表示順が1のものを初期表示、もっと見るを押すと2のものを表示
+        static_pagesets_dict = self.get_static_pagesets_dict()
+        genretree = self.get_genre_tree(parent=None)
+        areas = self.get_area()
+        promotion_banners = self.get_promotion_banners()
+        news = self.get_news()
+        top_news = self.get_top_news()
+        pr_list = self.get_pr_list()
+
         return {
-             'promotions':promotions
-            ,'topcontents':topcontents
-            ,'topics':topics
-            ,'hotwords':hotwords
-            ,'genretree':genretree
-            ,'areas':areas
-            ,'helper':SmartPhoneHelper()
-            ,'form':TopSearchForm()
-            ,'promotion_banners':promotion_banners
-            ,'top_news': top_news
+            'promotions': promotions
+            , 'topcontents': topcontents
+            , 'topics': topics
+            , 'hotwords': hotwords
+            , 'weekly_sale': weekly_sale
+            , 'static_pagesets_dict': static_pagesets_dict
+            , 'genretree': genretree
+            , 'genre_searcher': GenreSearcher(self.request)
+            , 'areas': areas
+            , 'helper': SmartPhoneHelper()
+            , 'helpers': helpers
+            , 'form': TopSearchForm()
+            , 'promotion_banners': promotion_banners
+            , 'news': news
+            , 'top_news': top_news
+            , 'pr_list': pr_list
         }
 
     def get_genre_render_param(self, genre_id):
@@ -77,20 +89,22 @@ class CommonResource(object):
         utils = SnsUtils(request=self.request)
 
         return {
-             'genre':genre
-            ,'promotions':promotions
-            ,'topcontents':topcontents
-            ,'topics':topics
-            ,'hotwords':hotwords
-            ,'genretree':genretree
-            ,'areas':areas
-            ,'week_sales':week_sales
-            ,'near_end_sales':near_end_sales
-            ,'helper':SmartPhoneHelper()
-            ,'form':form
-            , 'sns':{
-                'url':utils.get_sns_url_from_genre(genre=genre),
-                'title':u"楽天チケット-" + genre.label
+            'genre': genre
+            , 'promotions': promotions
+            , 'topcontents': topcontents
+            , 'topics': topics
+            , 'hotwords': hotwords
+            , 'genretree': genretree
+            , 'genre_searcher': GenreSearcher(self.request)
+            , 'areas': areas
+            , 'week_sales': week_sales
+            , 'near_end_sales': near_end_sales
+            , 'helper': SmartPhoneHelper()
+            , 'helpers': helpers
+            , 'form': form
+            , 'sns': {
+                'url': utils.get_sns_url_from_genre(genre=genre),
+                'title': u"楽天チケット-" + genre.label
             }
         }
 
@@ -150,7 +164,11 @@ class CommonResource(object):
             qs = self.request.genre_freeword
         else:
             searcher = SimpleEventSearcher(request=self.request)
-            qs = searcher.search_freeword(search_query=search_query, genre_label=search_query.genre.label, cond=None)
+            if search_query.genre:
+                qs = searcher.search_freeword(search_query=search_query, genre_label=search_query.genre.label,
+                                              cond=None)
+            else:
+                qs = searcher.search_freeword(search_query=search_query, genre_label=None, cond=None)
             self.request.genre_freeword = qs
         return qs
 
@@ -213,14 +231,35 @@ class CommonResource(object):
     def get_area(self):
         return get_areas()
 
+    def get_static_pagesets_dict(self):
+        # 静的ページで1のものを初期表示、もっと見るを押すと2のものを表示
+        initial_disp_static_pagesets = self.request.allowable(StaticPageSet).filter(
+            StaticPageSet.display_order == 1).all()
+        static_pagesets = self.request.allowable(StaticPageSet).filter(
+            StaticPageSet.display_order == 2).all()
+        static_pagesets_dict = {'initial_disp': initial_disp_static_pagesets, 'disp': static_pagesets}
+        return static_pagesets_dict
+
     def get_genre(self, id):
         genre = self.request.allowable(Genre).filter(Genre.id == id).first()
         return genre
 
     def get_top_news(self):
-        top_news = self.request.allowable(Category).filter(Category.hierarchy == 'top_news').all()
+        top_news = self.request.allowable(Category).filter(Category.hierarchy == 'top_news').order_by(
+            Category.display_order).all()
         return top_news
 
+    def get_news(self):
+        news = self.request.allowable(Category).filter(Category.hierarchy == 'news').order_by(
+            Category.display_order).all()
+        return news
+
+    def get_pr_list(self):
+        pr_list = self.request.allowable(Category).filter(Category.hierarchy == 'pr_list').order_by(
+            Category.display_order).all()
+        return pr_list
+
     def get_promotion_banners(self):
-        banners = self.request.allowable(Category).filter(Category.hierarchy == 'promotion_banner').all()
+        banners = self.request.allowable(Category).filter(Category.hierarchy == 'promotion_banner').order_by(
+            Category.display_order).all()
         return banners

@@ -183,7 +183,7 @@
 </script>
 <form id="main" action="${h.current_route_path_override(request, action="update")}"
 	  method="POST" enctype="multipart/form-data">
-  ${fco.form_as_table_strict(form,["name", "url"])}
+  ${fco.form_as_table_strict(form,["name", "url", "display_order"])}
   <input type="hidden" id="genre_id" name="genre_id" value=${form.genre_id.data}>
 </form>
 <table class="table breadcrumbs-box">

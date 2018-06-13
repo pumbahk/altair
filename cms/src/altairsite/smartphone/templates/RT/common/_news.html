@@ -1,9 +1,9 @@
-<%page args="top_news" />
+<%page args="news" />
 
-% if top_news:
+% if news:
   <div class="top_news">
     <ul>
-    % for news in top_news:
+    % for news in news:
       <li>
         % if news.url:
           <a href="${news.url}">${news.label}</a>
