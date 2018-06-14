@@ -257,9 +257,10 @@ def import_orders():
         conn = sqlahelper.get_engine().connect()
         status = conn.scalar("select get_lock(%s,%s)", (LOCK_NAME, LOCK_TIMEOUT))
         if status != 1:
-            logging.warn('lock timeout: already running process with the same performance: {}.'.format(task.performance_id))
+            logging.warn('lock timeout: already running process with the same performance: {}. skip...'.format(task.performance_id))
+            logging.info('end import_orders batch')
             task.status = ImportStatusEnum.Aborted.v
-            task.errors = json.dumps({u'重複インポートエラー': u'同じ公演の予約インポートはすでに実行されますので、終わってから再実行してください。'})
+            task.errors = json.dumps({u'-': [u'-', [u'重複インポートエラー: 同じ公演の予約インポートはすでに実行されていますので、終わってから再実行してください。']]})
             session_for_task.commit()
             return
         else:
