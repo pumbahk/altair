@@ -67,6 +67,7 @@ from altair.app.ticketing.orders.models import (
     ProtoOrder,
     DownloadItemsPattern,
     )
+from altair.app.ticketing.lots.models import LotEntry, LotElectedEntry
 from altair.app.ticketing.sej import api as sej_api
 from altair.app.ticketing.mails.api import get_mail_utility
 from altair.app.ticketing.mailmags.models import MailSubscription, MailMagazine, MailSubscriptionStatus
@@ -2284,6 +2285,8 @@ class OrdersReserveView(OrderBaseView):
         # 古いカートのセッションが残っていたら削除
         api.remove_cart(self.request, release=True, async=False)
         post_data = self.request.POST
+        performance_id = post_data.get('performance_id', 0)
+        self.electing_stock_check(performance_id)
         try:
             if not self.context.form.validate():
                 self.context.raise_error(self.context.form.errors)
@@ -2386,6 +2389,8 @@ class OrdersReserveView(OrderBaseView):
         post_data = self.request.POST
         with_enqueue = post_data.get('with_enqueue', False)
         with_cover = post_data.get('with_cover', False)
+        performance_id = post_data.get('performance_id', 0)
+        self.electing_stock_check(performance_id)
 
         try:
             # create order
@@ -2445,6 +2450,17 @@ class OrdersReserveView(OrderBaseView):
             logger.exception('save error (%s)' % e.message)
             self.context.raise_error(u'エラーが発生しました', HTTPInternalServerError)
 
+    def electing_stock_check(self, performance_id):
+        performance = Performance.get(performance_id, self.context.organization.id)
+        lot_ids = [lot.id for lot in performance.event.lots]
+        session = get_db_session(self.request, 'slave')
+        electing = session.query(LotElectedEntry).join(LotEntry,
+                                                       LotEntry.id == LotElectedEntry.lot_entry_id).filter(
+            LotElectedEntry.completed_at == None).filter(LotEntry.lot_id.in_(lot_ids)).first()
+        if electing:
+            raise HTTPBadRequest(body=json.dumps({
+                'message': u'大規模当選処理(テスト版)を使用しています。在庫数確定がされていない抽選があります',
+            }))
 
 @view_defaults(decorator=with_bootstrap, permission='sales_counter')
 class OrdersEditAPIView(OrderBaseView):
