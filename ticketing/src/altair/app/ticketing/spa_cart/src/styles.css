@@ -734,7 +734,10 @@ app-select-product .modalWindowAlertBox {
 }
 
 .seat {
-    display: none;
+	display: inline;
+	fill: rgb(160, 160, 160);
+	stroke: rgb(0, 0, 0);
+	stroke-width: 0.5 !important;
 }
 
 #mapImgBox{

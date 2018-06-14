@@ -99,7 +99,7 @@ export class SeatlistComponent implements OnInit {
             this.stockTypes = response.data.stock_types;
             this.filterComponent.searched$.subscribe((response: ISeatsResponse) => {
               that.searchResultFlag = false;
-              this.seatStockType = response.data.stock_types;
+              if (response.data.stock_types) this.seatStockType = response.data.stock_types;
               this.stockTypesArr = this.makeStockTypeArr(this.stockTypes, this.seatStockType);
               this.makeStockTypes = this.divideList(this.stockTypes);
 
@@ -217,7 +217,7 @@ export class SeatlistComponent implements OnInit {
   onSelectClick(stockTypeName){
     if (this.isInitialEnd) {
       this.onClickSeatSelection.emit();
-      this.filterComponent.selectSeatSearch(stockTypeName);
+      this.filterComponent.selectSeatSearch(stockTypeName, true);
       this.mapHome.emit();
     }
 

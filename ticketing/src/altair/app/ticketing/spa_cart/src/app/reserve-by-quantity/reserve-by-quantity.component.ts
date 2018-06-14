@@ -408,7 +408,10 @@ export class ReserveByQuantityComponent implements OnInit {
 
   //NGorERRORの場合、座席情報検索apiを呼び、空席情報を更新する処理
   seatUpdate() {
-    this.filterComponent.search();
+    let getItem = this.filterComponent.isSeatDisplay ? this.filterComponent.getAll : this.filterComponent.getStockType;
+    //キャッシュの削除
+    this.filterComponent.cacheClear$.emit(this.filterComponent.ActiveRegions);
+    this.filterComponent.search(getItem, this.filterComponent.ActiveRegions.join(','));
   }
 
   //飛び席モーダル「選び直す」ボタン

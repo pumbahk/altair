@@ -205,7 +205,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
   // 公演
   performance: IPerformance;
   // 座席情報
-  seats: ISeat[];
+  seats: ISeat[] = [];
   // ブロック情報
   regions: IRegion[];
   // 座席選択POST初期データ
@@ -256,6 +256,10 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
   displayViewBox: any[] = null;
   // 座席Element情報
   seat_elements: any = {};
+  //gridとregionの紐づけ情報
+  gridToRegion: any = {};
+  //取得済みregionのキャッシュ
+  regionCache: string[] = [];
   // 表示中のグリッド
   active_grid: string[] = [];
   // 横画面表示エラーモーダルフラグ
@@ -330,7 +334,9 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
           if ((this.seatDataURL) && this.seatDataURL != "") {
             this.isExistsSeatData = true;
             this.seatDataService.getSeatData(this.seatDataURL).subscribe((response: any) => {
-              this.seat_elements = response;
+              this.seat_elements = response['seats'] ? response['seats'] : response;
+              this.gridToRegion = response['regions'];
+              this.filterComponent.isExistGridToRegion = this.gridToRegion && Object.keys(this.gridToRegion).length > 0;
             },
               (error) => {
                 let errorMassage: string;
@@ -434,12 +440,11 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
 
     this.filterComponent.searched$.subscribe((response: ISeatsResponse) => {
 
-      if (!this.isExistsSeatGroupData) {
+      if (!this.isExistsSeatGroupData && response.data.seat_groups) {
         that.seatGroups = response.data.seat_groups;
       }
-
-      that.regions = response.data.regions;
-      that.seats = response.data.seats;
+      if (response.data.regions) that.regions = response.data.regions;
+      if (response.data.seats) that.seats = this.isExistsSeatData ? this.seats.concat(response.data.seats) : response.data.seats;
       this.reservedFlag = this.filterComponent.reserved;
       this.unreservedFlag = this.filterComponent.unreserved;
 
@@ -522,6 +527,15 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
             that.drawingSeats();
           }
         }, 100);
+      }
+    });
+
+    //キャッシュ削除
+    this.filterComponent.cacheClear$.subscribe((newCache: string[]) => {
+      this.seats = [];
+      this.regionCache = [];
+      if (newCache.length > 0) {
+        this.regionCache = newCache;
       }
     });
 
@@ -629,7 +643,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
   isInitialEnd() {
     let result: boolean = false;
     //全ての初期ロード判定
-    if (this.originalViewBox && this.seats && this.isInitialDataObtained) {
+    if (this.originalViewBox && this.isInitialDataObtained) {
       result = true;
     }
 
@@ -1336,7 +1350,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
       this.sameStockType = true;
       this.stockTypeId = null;
       this.stockTypeName = '';
-      this.filterComponent.selectSeatSearch(this.stockTypeName);
+      this.filterComponent.selectSeatSearch(this.stockTypeName, true);
       this.stockTypeDataService.sendToIsSearchFlag(false);
       this.mapHome();
       if (!this.smartPhoneCheckService.isSmartPhone() && !this.smartPhoneCheckService.isIpad()) {
@@ -1704,7 +1718,11 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
         }
       }
       this.active_grid = next_active_grid;
-      if (isRedrawSeats) this.drawingSeats();
+      //非表示から表示にしたgridがあった場合のみ席情報の取得、色付け
+      if (isRedrawSeats) {
+        this.getSeat();
+        this.drawingSeats();
+      }
     } else {
       for (let i = 0; i < this.active_grid.length; i++) {
         let els = this.seat_elements[this.active_grid[i]];
@@ -1714,6 +1732,50 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
       }
       this.active_grid = [];
     }
+    //filterComponentに現在の表示領域中のgridに紐づくregionと個席表示かどうかをセット（検索用）
+    this.filterComponent.ActiveRegions = this.activeGridToRegion();
+    this.filterComponent.isSeatDisplay = this.active_grid.length > 0;
+  }
+
+  //席情報の取得
+  getSeat() {
+    if (this.filterComponent.isExistGridToRegion) {
+      //gridとregionの紐づけ情報が存在する場合
+      let activeRegion = this.activeGridToRegion();
+      let getRegion = [];
+      for (let region of activeRegion) {
+        //キッシュされていなければ取得対象とする
+        if (this.regionCache.indexOf(region) == -1) {
+          getRegion.push(region);
+        }
+      }
+      //取得対象があればキャッシュを登録して検索
+      if (getRegion.length > 0) {
+        this.regionCache = this.regionCache.concat(getRegion);
+        this.filterComponent.search(this.filterComponent.getSeat, getRegion.join(','));
+      }
+    } else if (!this.seats.length) {
+      //gridとregionの紐づけ情報が存在せず、seatsが空の場合
+      this.filterComponent.search(this.filterComponent.getSeat);
+    }
+  }
+
+  //active_gridから表示中のregionを割り出す
+  activeGridToRegion() {
+    let regionIds = [];
+    //gridとregionの紐づけ情報が存在する場合
+    if (this.filterComponent.isExistGridToRegion) {
+      for (let grid of this.active_grid) {
+        if (this.gridToRegion[grid]) {
+          for (let region of this.gridToRegion[grid]) {
+            if (regionIds.indexOf(region) == -1) {
+              regionIds.push(region);
+            }
+          }
+        }
+      }
+    }
+    return regionIds;
   }
 
   // 座席要素の色付け
@@ -2042,7 +2104,10 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
   // 座席情報検索更新
   seatUpdate() {
     // NGorERRORの場合、座席情報検索apiを呼び、空席情報を更新する処理
-    this.filterComponent.search();
+    let getItem = this.filterComponent.isSeatDisplay ? this.filterComponent.getAll : this.filterComponent.getStockType;
+    //キャッシュの削除
+    this.filterComponent.cacheClear$.emit(this.filterComponent.ActiveRegions);
+    this.filterComponent.search(getItem, this.filterComponent.ActiveRegions.join(','));
   }
 
   // モーダルウィンドウを閉じる
