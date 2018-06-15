@@ -73,6 +73,7 @@ def import_per_order(context, request):
         context._session.add(_proto_order)
         logging.info('order_import_task (%s) order_no (%s) ended with errors' % (_proto_order.order_import_task.id, _proto_order.order_no))
     finally:
+        _proto_order.processed_at = _now
         context._session.commit()
 
 
@@ -89,8 +90,6 @@ def import_per_task(context, request):
 
     try:
         _task = context._session.query(orders_models.OrderImportTask).filter_by(id=context.order_import_task_id).one()
-        _task.status = orders_models.ImportStatusEnum.Importing.v
-        context._session.commit()
         logging.info('starting order_import_task (%s)...' % _task.id)
     except NoResultFound:
         logger.error('order_import_task (id: {}) not found at the beginning of the task'.format(context.order_import_task_id))

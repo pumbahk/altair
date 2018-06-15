@@ -62,7 +62,8 @@ from .api import (set_visible_performance,
                   send_all_resale_request,
                   send_resale_request,
                   get_progressing_order_import_task,
-                  send_import_order_task_to_worker
+                  send_import_order_task_to_worker,
+                  update_order_import_tasks_done_by_worker
                   )
 
 from altair.app.ticketing.discount_code.forms import DiscountCodeSettingForm
@@ -244,11 +245,16 @@ class PerformanceShowView(BaseView):
         if importer:
             del self.request.session['ticketing.order.importer']
 
-        order_import_tasks = OrderImportTask.query.filter(
+        query = OrderImportTask.query.filter(
             OrderImportTask.organization_id == self.context.organization.id,
             OrderImportTask.performance_id == self.performance.id,
             OrderImportTask.status != ImportStatusEnum.ConfirmNeeded.v
-        ).all()
+        )
+
+        order_import_tasks_need_check = query.filter(OrderImportTask.status == ImportStatusEnum.Importing.v).all()
+
+        if order_import_tasks_need_check:
+            update_order_import_tasks_done_by_worker(self.request, order_import_tasks_need_check)
 
         data = {
             'tab': 'import_orders',
@@ -259,7 +265,7 @@ class PerformanceShowView(BaseView):
                 enable_random_import=True,
             ),
             'oh': order_helpers,
-            'order_import_tasks': order_import_tasks
+            'order_import_tasks': query.all()
         }
         data.update(self._extra_data())
         return data
@@ -361,7 +367,7 @@ class PerformanceShowView(BaseView):
                 self.request.route_url('performances.import_orders.index', performance_id=self.performance.id))
         else:
             if task.count > 0:
-                task.status = ImportStatusEnum.Waiting.v
+                task.status = ImportStatusEnum.Importing.v
                 send_import_order_task_to_worker(self.request, task)
                 self.request.session.flash(u'予約インポートを実行しました')
                 return HTTPFound(
@@ -381,6 +387,10 @@ class PerformanceShowView(BaseView):
         ).first()
         if task is None:
             return HTTPFound(self.request.route_url('performances.import_orders.index', performance_id=self.performance.id))
+        else:
+            if task.status == ImportStatusEnum.Importing.v:
+                update_order_import_tasks_done_by_worker(self.request, [task])
+
         data = {
             'tab': 'import_orders',
             'action': 'show',

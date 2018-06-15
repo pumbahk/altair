@@ -1435,7 +1435,6 @@ def create_or_update_order_from_proto_order(request, reserving, stocker, proto_o
     if is_new_create:
         logger.info('create order (%s)' % proto_order.order_no)
         new_order = _create_order_from_proto_order(request, reserving, stocker, proto_order, entrust_separate_seats, channel_for_new_orders)
-        proto_order.processed_at = now_
         if order_modifier:
             order_modifier(proto_order, new_order)
         logger.info('finished creating a new order (%s)' % proto_order.order_no)
@@ -1471,7 +1470,6 @@ def create_or_update_order_from_proto_order(request, reserving, stocker, proto_o
         logger.info('create order (%s)' % proto_order.order_no)
         new_order = _create_order_from_proto_order(request, reserving, stocker, proto_order, entrust_separate_seats,
                                                    channel_for_new_orders)
-        proto_order.processed_at = now_
         proto_order.original_order.deleted_at = now_
         if order_modifier:
             order_modifier(proto_order, new_order)
