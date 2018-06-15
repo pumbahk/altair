@@ -61,7 +61,8 @@ from .api import (set_visible_performance,
                   send_resale_segment,
                   send_all_resale_request,
                   send_resale_request,
-                  get_progressing_order_import_task
+                  get_progressing_order_import_task,
+                  send_import_order_task_to_worker
                   )
 
 from altair.app.ticketing.discount_code.forms import DiscountCodeSettingForm
@@ -343,6 +344,33 @@ class PerformanceShowView(BaseView):
         else:
             self.request.session.flash(u'インポート対象がありません')
             return HTTPFound(self.request.route_url('performances.import_orders.index', performance_id=self.performance.id))
+
+    @view_config(route_name='performances.import_orders.send_to_worker', request_method='POST')
+    def send_to_worker(self):
+        try:
+            task_id = long(self.request.params.get('task_id'))
+            task = OrderImportTask.query.filter_by(id=task_id).one()
+        except (ValueError, TypeError):
+            task = None
+        except NoResultFound:
+            task = None
+
+        if not task:
+            self.request.session.flash(u'不明なエラーです')
+            return HTTPFound(
+                self.request.route_url('performances.import_orders.index', performance_id=self.performance.id))
+        else:
+            if task.count > 0:
+                task.status = ImportStatusEnum.Waiting.v
+                send_import_order_task_to_worker(self.request, task)
+                self.request.session.flash(u'予約インポートを実行しました')
+                return HTTPFound(
+                    self.request.route_url('performances.import_orders.index', performance_id=self.performance.id))
+            else:
+                self.request.session.flash(u'インポート対象がありません')
+                return HTTPFound(
+                    self.request.route_url('performances.import_orders.index', performance_id=self.performance.id))
+
 
     @view_config(route_name='performances.import_orders.show')
     def import_orders_show(self):

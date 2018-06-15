@@ -1,8 +1,11 @@
 # coding:utf-8
+import json
 from datetime import datetime, timedelta
+from altair.mq import get_publisher
 from altair.sqlahelper import get_db_session
 from altair.app.ticketing.core.models import Event, Performance
-from altair.app.ticketing.orders.models import OrderImportTask, ImportStatusEnum
+from altair.app.ticketing.orders.models import OrderImportTask, ImportStatusEnum, ImportTypeEnum, AllocationModeEnum
+from altair.app.ticketing.orders.workers.tasks import import_per_order, import_per_task
 from altair.app.ticketing.core.utils import ApplicableTicketsProducer
 from altair.app.ticketing.payments.plugins import SEJ_DELIVERY_PLUGIN_ID
 from altair.app.ticketing.payments.plugins import FAMIPORT_DELIVERY_PLUGIN_ID
@@ -156,3 +159,48 @@ def get_progressing_order_import_task(request, obj):
 
     order_import_tasks = query.all()
     return order_import_tasks
+
+def import_orders_per_order(request, order_import_task, priority=0):
+    publisher = get_publisher(request, 'import_per_order')
+
+    for proto_order in order_import_task.proto_orders:
+        body = json.dumps({'proto_order_id': proto_order.id,
+                           'entrust_separate_seats': order_import_task.entrust_separate_seats})
+        publisher.publish(body=body,
+                          routing_key='import_per_order',
+                          properties=dict(content_type="application/json", priority=priority))
+
+def import_orders_per_task(request, order_import_task, priority=0):
+    publisher = get_publisher(request, 'import_per_task')
+    body = json.dumps({'order_import_task_id': order_import_task.id})
+    publisher.publish(body=body,
+                      routing_key='import_per_task',
+                      properties=dict(content_type="application/json", priority=priority))
+
+def _get_import_mode(import_type, allocation_mode):
+    if import_type == ImportTypeEnum.Update.v or import_type == ImportTypeEnum.CreateOrUpdate.v:
+        if allocation_mode == AllocationModeEnum.AlwaysAllocateNew.v:
+            return 'per_task'
+    return 'per_order'
+
+def _get_priority(count):
+    if count < 10:
+        return 10
+    elif count < 100:
+        return 9
+    elif count < 1000:
+        return 8
+    elif count < 10000:
+        return 7
+    else:
+        return 6
+
+def send_import_order_task_to_worker(request, order_import_task):
+
+    import_mode = _get_import_mode(order_import_task.import_type, order_import_task.allocation_mode)
+    priority = _get_priority(order_import_task.count)
+
+    if import_mode == 'per_order':
+        import_orders_per_order(request, order_import_task, priority)
+    else:
+        import_orders_per_task(request, order_import_task, priority)

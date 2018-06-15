@@ -38,6 +38,14 @@
 </table>
 % endif
 
+<form class="form-horizontal" action="${request.route_path('performances.import_orders.send_to_worker', performance_id=performance.id, _query=dict(task_id=task.id))}" method="POST">
+  <div class="form-actions">
+    % if task.count > 0:
+    <input class="btn btn-primary pull-right" type="submit" value="ワーカーでインポートを実行する" />
+    % endif
+  </div>
+</form>
+
 <form class="form-horizontal" action="${request.route_path('performances.import_orders.confirm', performance_id=performance.id, _query=dict(task_id=task.id))}" method="POST">
   <div class="form-actions">
     % if task.count > 0:
