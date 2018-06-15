@@ -1,0 +1,90 @@
+[DEFAULT]
+sqlalchemy.url = ${altair:ticketing.db_url.master}
+altair.sqlahelper.sessions.slave.url = ${altair:ticketing.db_url.slave}
+altair.sqlahelper.sessions.famiport.url = ${altair:famiport.db_url.master}
+
+[app:main]
+use = config:altair.ticketing.admin.ini#ticketing
+
+get sqlalchemy.url = sqlalchemy.url
+get altair.sqlahelper.sessions.slave.url = altair.sqlahelper.sessions.slave.url
+get altair.sqlahelper.sessions.famiport.url = altair.sqlahelper.sessions.famiport.url
+
+; altair:site-data
+altair.site_data.base_url = s3://tstar-dev/venue-layouts/frontend/
+
+; altair.mq
+altair.ticketing.orders.mq = altair.mq.consumer.pika_client_factory
+                           altair.mq.publisher.pika_publisher_factory
+altair.ticketing.orders.mq.url = ${altair:ticketing.mq_url}
+
+; Beaker
+session.type = ${altair:beaker_backend_type}
+session.data_dir = %(here)s/../tmp/beaker/data
+session.lock_dir = %(here)s/../tmp/beaker/lock
+
+cache.type = ${altair:beaker_backend_type}
+cache.data_dir = %(here)s/../tmp/beaker/data
+cache.lock_dir = %(here)s/../tmp/beaker/lock
+
+; altair.httpsession
+altair.httpsession.persistence = ${altair:httpsession_persistence_backend_type}
+altair.httpsession.persistence.type = ${altair:beaker_backend_type}
+altair.httpsession.persistence.data_dir = %(here)s/../tmp/beaker/data
+altair.httpsession.persistence.lock_dir = %(here)s/../tmp/beaker/lock
+
+# Begin logging configuration
+
+[loggers]
+keys = root, altair, ticketing, sqlalchemy
+
+[handlers]
+keys = console, fluent, sqlalchemy
+
+[formatters]
+keys = generic
+
+[logger_root]
+level = INFO
+handlers = console, fluent
+
+[logger_altair]
+level = DEBUG
+handlers = console, fluent
+qualname = altair
+propagate = 0
+
+[logger_ticketing]
+level = DEBUG
+handlers = console, fluent
+qualname = altair.app.ticketing
+propagate = 0
+
+[logger_sqlalchemy]
+level = INFO
+handlers = sqlalchemy
+qualname = sqlalchemy.engine
+propagate = 0
+
+[handler_console]
+class = altair.log.filters.BrowserIdStreamHandler
+args = (sys.stderr,)
+level = ${altair:console_loglevel}
+formatter = generic
+
+[handler_sqlalchemy]
+class = altair.log.filters.BrowserIdTimedRotatingFileHandler
+args = ('%(here)s/../log/altair.ticketing.admin.sqlalchemy.log', 'D',)
+level = INFO
+formatter = generic
+
+[handler_fluent]
+class = altair.log.filters.BrowserIdFluentHandler
+args = ('altair.ticketing.worker.orders', '127.0.0.1', 24224, 3.0, False, 'utf-8', None, ['environ', 'params', 'session'])
+level = NOTSET
+formatter = generic
+
+[formatter_generic]
+format = %(asctime)s %(browserid)s %(url)s %(levelname)-5.5s [%(name)s][%(threadName)s] %(message)s
+
+# End logging configuration

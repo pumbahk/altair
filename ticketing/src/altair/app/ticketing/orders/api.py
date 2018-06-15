@@ -1335,6 +1335,162 @@ def create_or_update_orders_from_proto_orders(request, reserving, stocker, proto
     if len(errors_map) > 0:
         raise MassOrderCreationError(u'failed to create orders', errors_map)
 
+def _release_original_order(proto_order, now):
+    try:
+        assert proto_order.order_no == proto_order.original_order.order_no
+        proto_order.original_order.release()
+        if now is not None:
+            now_ = now
+        else:
+            now_ = datetime.now()
+        proto_order.original_order.mark_canceled(now_)
+        proto_order.original_order.deleted_at = now_
+    except Exception as e:
+        logger.exception(u'error occurred during releasing the orders')
+        raise OrderCreationError(
+            proto_order.ref,
+            proto_order.order_no,
+            u'座席の解放に失敗しました',
+            {}
+        )
+
+def _create_order_from_proto_order(request, reserving, stocker, proto_order, entrust_separate_seats, channel_for_new_orders=ChannelEnum.INNER.v):
+    errors_for_proto_order = []
+    try:
+        new_order = create_order_from_proto_order(
+            request,
+            reserving=reserving,
+            stocker=stocker,
+            proto_order=proto_order,
+            prev_order=proto_order.original_order,
+            entrust_separate_seats=entrust_separate_seats,
+            default_channel=channel_for_new_orders
+        )
+        errors_for_proto_order.extend(
+            validate_order(request, new_order, proto_order.ref, update=(proto_order.original_order is not None)))
+    except NotEnoughStockException as e:
+        import sys
+        logger.info(
+            'cannot reserve stock (stock_id=%s, required=%d, available=%d)' % (e.stock.id, e.required, e.actualy),
+            exc_info=sys.exc_info())
+        raise OrderCreationError(
+            proto_order.ref,
+            proto_order.order_no,
+            u'在庫がありません (席種: ${stock_type_name}, 個数: ${required})',
+            dict(
+                stock_type_name=e.stock.stock_type.name,
+                required=e.required
+            )
+        )
+    except NotEnoughAdjacencyException as e:
+        import sys
+        logger.info('cannot allocate seat (stock_id=%s, quantity=%d)' % (e.stock_id, e.quantity),
+                    exc_info=sys.exc_info())
+        stock = DBSession.query(Stock).filter_by(id=e.stock_id).one()
+        raise OrderCreationError(
+            proto_order.ref,
+            proto_order.order_no,
+            u'配席可能な座席がありません (席種: ${stock_type_name}, 個数: ${quantity})',
+            dict(
+                stock_type_name=stock.stock_type.name,
+                quantity=e.quantity
+            )
+        )
+    except InvalidProductSelectionException as e:
+        import sys
+        logger.info('cannot take stocks', exc_info=sys.exc_info())
+        raise OrderCreationError(
+            proto_order.ref,
+            proto_order.order_no,
+            u'バグが発生しています (商品/商品明細に紐づいている公演とorderのperformanceが違うとかそのような理由だけどバリデーションできていない)',
+            {}
+        )
+    except InvalidSeatSelectionException as e:
+        import sys
+        logger.info('cannot allocate selected seats', exc_info=sys.exc_info())
+        raise OrderCreationError(
+            proto_order.ref,
+            proto_order.order_no,
+            u'既に予約済か選択できない座席です。',
+            {}
+        )
+    except Exception as e:
+        import sys
+        logger.info('unknown errors occur.', exc_info=sys.exc_info())
+        raise OrderCreationError(
+            proto_order.ref,
+            proto_order.order_no,
+            u'予想外エラーが発生してしまいました。',
+            {}
+        )
+
+    return new_order
+
+def create_or_update_order_from_proto_order(request, reserving, stocker, proto_order, entrust_separate_seats, order_modifier=None, now=None, channel_for_new_orders=ChannelEnum.INNER.v):
+    from altair.app.ticketing.models import DBSession
+
+    is_new_create = proto_order.original_order is None
+    now_ = now or datetime.now()
+
+    if is_new_create:
+        logger.info('create order (%s)' % proto_order.order_no)
+        new_order = _create_order_from_proto_order(request, reserving, stocker, proto_order, entrust_separate_seats, channel_for_new_orders)
+        proto_order.processed_at = now_
+        if order_modifier:
+            order_modifier(proto_order, new_order)
+        logger.info('finished creating a new order (%s)' % proto_order.order_no)
+        logger.info('reflecting the status of new order to the payment / delivery plugins (%s)' % new_order.order_no)
+        try:
+            DBSession.add(new_order)
+            call_payment_delivery_plugin(
+                request,
+                new_order,
+                included_payment_plugin_ids=[
+                    payments_plugins.SEJ_PAYMENT_PLUGIN_ID,
+                    payments_plugins.RESERVE_NUMBER_PAYMENT_PLUGIN_ID,
+                    payments_plugins.FREE_PAYMENT_PLUGIN_ID,
+                    payments_plugins.FAMIPORT_PAYMENT_PLUGIN_ID
+                ]
+            )
+        except Exception as e:
+            import sys
+            exc_info = sys.exc_info()
+            logger.error(u'failed to create inner order %s' % new_order.order_no, exc_info=exc_info)
+            new_order.release()
+            raise OrderCreationError(
+                proto_order.ref,
+                new_order.order_no,
+                u'注文情報の送信中に致命的なエラーが発生しました (${error})',
+                dict(error=unicode(e)),
+                nested_exc_info=exc_info
+            )
+
+    else:
+        logger.info('releasing order (%s)' % proto_order.original_order.order_no)
+        _release_original_order(proto_order, now)
+        logger.info('create order (%s)' % proto_order.order_no)
+        new_order = _create_order_from_proto_order(request, reserving, stocker, proto_order, entrust_separate_seats,
+                                                   channel_for_new_orders)
+        proto_order.processed_at = now_
+        proto_order.original_order.deleted_at = now_
+        if order_modifier:
+            order_modifier(proto_order, new_order)
+        logger.info('reflecting the status of updated order to the payment / delivery plugins (%s)' % new_order.order_no)
+        try:
+            DBSession.merge(new_order)
+            refresh_order(request, DBSession, new_order)
+        except Exception as e:
+            import sys
+            exc_info = sys.exc_info()
+            logger.error(u'[EMERGENCY] failed to update order %s' % new_order.order_no, exc_info=exc_info)
+            raise OrderCreationError(
+                proto_order.ref,
+                new_order.order_no,
+                u'注文情報の送信中に致命的なエラーが発生しました (${error})',
+                dict(error=unicode(e)),
+                nested_exc_info=exc_info
+            )
+
 def save_order_modifications_from_proto_orders(request, order_proto_order_pairs, session=None, now=None):
     if session is None:
         from altair.app.ticketing.models import DBSession

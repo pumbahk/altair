@@ -52,6 +52,10 @@ altair.ticketing.userside_famiport.mq = altair.mq.consumer.pika_client_factory
                                         altair.mq.publisher.pika_publisher_factory
 altair.ticketing.userside_famiport.mq.url = ${altair:ticketing.mq_url}
 
+altair.ticketing.orders.mq = altair.mq.consumer.pika_client_factory
+                           altair.mq.publisher.pika_publisher_factory
+altair.ticketing.orders.mq.url = ${altair:ticketing.mq_url}
+
 ;; altair.mq -- Pika (AMQP) を使わないでローカルで同期的にディスパッチする場合
 ;altair.ticketing.lots.mq = altair.mq.publisher.locally_dispatching_publisher_consumer_factory
 ;altair.ticketing.lots.mq.routes =
