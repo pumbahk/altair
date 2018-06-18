@@ -446,11 +446,14 @@ class PerformanceShowView(BaseView):
             form.coupon_2_qr_enabled.data = None
             form.coupon_2_pattern.data = None
 
+        op = None
+
         if form.validate():
             if form.enabled.data == False:
                 # delete
                 if self.performance.orion != None:
                     self.performance.orion.delete()
+
             elif self.performance.orion is None:
                 # insert
                 op = merge_session_with_post(
@@ -468,7 +471,7 @@ class PerformanceShowView(BaseView):
                 )
                 op.save()
 
-            if self.performance.orion:
+            if op:
                 try:
                     resp = send_orion_performance(self.request, self.performance)
                     if not resp or not resp['success']:
@@ -818,6 +821,11 @@ class Performances(BaseView):
                     if not resp or not resp['success']:
                         raise OrionAPIException('send resale segment error occurs during performance copy/edit.')
 
+            except OrionAPIException as exc:
+                self.request.session.flash(u'{}の処理でOrionとの連携は失敗しました。もう一度同じ内容で保存してください。'.format(route_name))
+                logger.error(str(exc))
+                # OrionAPIExceptionが発生する時に、performanceはすでに保存されましたので、コピーや編集されたperformanceのページに遷移する。
+                return HTTPFound(location=route_path('performances.show', self.request, performance_id=performance.id))
 
             except InternalError as exc:
                 # 1205: u'Lock wait timeout exceeded; try restarting transaction'
@@ -827,10 +835,6 @@ class Performances(BaseView):
                     logger.error(u'{}. locked out sql: {}'.format(exc.message, exc.statement))
                 else:
                     unexpected_error()
-
-            except OrionAPIException as exc:
-                self.request.session.flash(u'{}の処理でOrionとの連携は失敗しました。もう一度同じ内容で保存してください。'.format(route_name))
-                logger.error(str(exc))
 
             except Exception as exc:
                 unexpected_error()
