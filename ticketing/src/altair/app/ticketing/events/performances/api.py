@@ -1,5 +1,6 @@
 # coding:utf-8
 import json
+import random
 from datetime import datetime, timedelta
 from altair.mq import get_publisher
 from altair.sqlahelper import get_db_session
@@ -166,7 +167,11 @@ def get_progressing_order_import_task(request, obj):
 def import_orders_per_order(request, order_import_task, priority=0):
     publisher = get_publisher(request, 'import_per_order')
 
-    for proto_order in order_import_task.proto_orders:
+    proto_orders = order_import_task.proto_orders
+    if order_import_task.enable_random_import:
+        random.shuffle(proto_orders)
+
+    for proto_order in proto_orders:
         body = json.dumps({'proto_order_id': proto_order.id,
                            'entrust_separate_seats': order_import_task.entrust_separate_seats})
         publisher.publish(body=body,
