@@ -2459,18 +2459,15 @@ class OrdersReserveView(OrderBaseView):
                 .join(Event, Event.id == Lot.event_id) \
                 .join(Performance, Event.id == Performance.event_id)\
                 .filter(Event.organization_id == self.context.organization.id).filter(Performance.id == performance_id).all()
-            if performance_lots is None:
-                raise HTTPBadRequest(body=json.dumps({
-                    'message': u'パフォーマンスが存在しません',
-                }))
-            lot_ids = [Lot.id for Lot in performance_lots]
-            electing = session.query(LotElectedEntry).join(LotEntry,
-                                                           LotEntry.id == LotElectedEntry.lot_entry_id).filter(
-                LotElectedEntry.completed_at == None).filter(LotEntry.lot_id.in_(lot_ids)).first()
-            if electing:
-                raise HTTPBadRequest(body=json.dumps({
-                    'message': u'大規模当選処理(テスト版)を使用しています。在庫数確定がされていない抽選があります',
-                }))
+            if performance_lots:
+                lot_ids = [Lot.id for Lot in performance_lots]
+                electing = session.query(LotElectedEntry).join(LotEntry,
+                                                               LotEntry.id == LotElectedEntry.lot_entry_id).filter(
+                    LotElectedEntry.completed_at == None).filter(LotEntry.lot_id.in_(lot_ids)).first()
+                if electing:
+                    raise HTTPBadRequest(body=json.dumps({
+                        'message': u'大規模当選処理(テスト版)を使用しています。在庫数確定がされていない抽選があります',
+                    }))
 
 @view_defaults(decorator=with_bootstrap, permission='sales_counter')
 class OrdersEditAPIView(OrderBaseView):
