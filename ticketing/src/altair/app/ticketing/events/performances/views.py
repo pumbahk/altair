@@ -305,22 +305,34 @@ class PerformanceShowView(BaseView):
         )
         DBSession.add(order_import_task)
         DBSession.flush()
-        return HTTPFound(self.request.route_url('performances.import_orders.confirm', performance_id=self.performance.id, _query=dict(task_id=order_import_task.id)))
+
+        return HTTPFound(self.request.route_url('performances.import_orders.confirm',
+                                                performance_id=self.performance.id,
+                                                _query=dict(task_id=order_import_task.id,
+                                                            user_test_version=int(f.use_test_version.data))
+                                                ))
 
     @view_config(route_name='performances.import_orders.confirm', request_method='GET')
     def import_orders_confirm_get(self):
         task_id = None
+
+        try:
+            use_test_version = bool(int(self.request.params.get('user_test_version')))
+        except (ValueError, TypeError):
+            use_test_version = False
+
         try:
             task_id = long(self.request.params.get('task_id'))
         except (ValueError, TypeError):
             pass
+
         if task_id is None:
             self.request.session.flash(u'不明なエラーです')
             return HTTPFound(self.request.route_url('performances.import_orders.index', performance_id=self.performance.id))
         task = OrderImportTask.query.filter_by(id=task_id).one()
         data = {
             'tab': 'import_orders',
-            'action': 'confirm',
+            'action': 'confirm_test' if use_test_version else 'confirm',
             'performance': self.performance,
             'oh': order_helpers,
             'task': task,
@@ -349,8 +361,8 @@ class PerformanceShowView(BaseView):
             self.request.session.flash(u'インポート対象がありません')
             return HTTPFound(self.request.route_url('performances.import_orders.index', performance_id=self.performance.id))
 
-    @view_config(route_name='performances.import_orders.send_to_worker', request_method='POST')
-    def send_to_worker(self):
+    @view_config(route_name='performances.import_orders.test_version', request_method='POST')
+    def send_to_worker_post(self):
         try:
             task_id = long(self.request.params.get('task_id'))
             task = OrderImportTask.query.filter_by(id=task_id).one()

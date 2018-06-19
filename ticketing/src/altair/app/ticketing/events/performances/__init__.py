@@ -26,7 +26,7 @@ def includeme(config):
     config.add_route('performances.import_orders.confirm', '/import_orders/{performance_id}/confirm', factory=factory)
     config.add_route('performances.import_orders.show', '/import_orders/{performance_id}/show/{task_id}', factory=factory)
     config.add_route('performances.import_orders.delete', '/import_orders/{performance_id}/delete/{task_id}', factory=factory)
-    config.add_route('performances.import_orders.send_to_worker', '/import_orders/{performance_id}/send_to_worker', factory=factory)
+    config.add_route('performances.import_orders.test_version', '/import_orders/{performance_id}/test_version', factory=factory)
 
     config.add_route('performances.region.index', '/drawing/{performance_id}', factory=factory)
     config.add_route('performances.region.update', '/drawing/{performance_id}/update', factory=factory)
