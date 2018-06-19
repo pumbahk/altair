@@ -1073,7 +1073,7 @@ class OrderImportForm(OurForm):
     import_type = BugFreeSelectField(
         label=u'インポート方法',
         validators=[Required()],
-        choices=[(str(e.v), get_import_type_label(e.v, no_option_desc=True)) for e in [ImportTypeEnum.Create, ImportTypeEnum.Update, ImportTypeEnum.CreateOrUpdate]],
+        choices=[(str(e.v), get_import_type_label(e.v, no_option_desc=True)) for e in [ImportTypeEnum.Create, ImportTypeEnum.Update]],
         default=ImportTypeEnum.Update.v,
         coerce=int,
     )

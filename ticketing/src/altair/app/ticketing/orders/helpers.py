@@ -27,7 +27,6 @@ def decode_candidate_id(candidate_id):
 import_type_labels = {
     ImportTypeEnum.Create.v: u'新規登録',
     ImportTypeEnum.Update.v: u'予約を更新',
-    ImportTypeEnum.Create.v | ImportTypeEnum.Update.v: u'予約の更新と登録を同時に行う',
     }
 
 allocation_mode_labels = {
