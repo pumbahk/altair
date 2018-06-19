@@ -260,7 +260,6 @@ class PerformanceShowView(BaseView):
             'tab': 'import_orders',
             'performance': self.performance,
             'form': OrderImportForm(
-                always_issue_order_no=False,
                 merge_order_attributes=True,
                 enable_random_import=True,
             ),
@@ -280,8 +279,7 @@ class PerformanceShowView(BaseView):
             return self.import_orders_get()
         importer = OrderImporter(
             self.request,
-            import_type=f.import_type.data | (
-                ImportTypeEnum.AlwaysIssueOrderNo.v if f.always_issue_order_no.data else 0),
+            import_type=f.import_type.data,
             allocation_mode=f.allocation_mode.data,
             merge_order_attributes=f.merge_order_attributes.data,
             enable_random_import=f.enable_random_import.data,

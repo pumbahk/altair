@@ -1153,7 +1153,6 @@ def create_or_update_orders_from_proto_orders(request, reserving, stocker, proto
     # まず最初に order をリリースする
     orders_will_be_created = bool(int(import_type) & int(ImportTypeEnum.Create))
     orders_will_be_updated = bool(int(import_type) & int(ImportTypeEnum.Update))
-    always_issue_order_no = bool(int(import_type) & int(ImportTypeEnum.AlwaysIssueOrderNo))
 
     import random
     if enable_random_import:

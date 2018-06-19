@@ -48,7 +48,6 @@
 
 <form class="form-horizontal" enctype="multipart/form-data" action="${request.route_path('performances.import_orders.index', performance_id=performance.id)}" method="POST">
   ${ch.form_item(form.import_type)}
-  ${ch.form_item(form.always_issue_order_no)}
   ${ch.form_item(form.allocation_mode)}
   ${ch.form_item(form.merge_order_attributes)}
   ${ch.form_item(form.enable_random_import)}

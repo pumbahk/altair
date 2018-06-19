@@ -1073,12 +1073,9 @@ class OrderImportForm(OurForm):
     import_type = BugFreeSelectField(
         label=u'インポート方法',
         validators=[Required()],
-        choices=[(str(e.v), get_import_type_label(e.v, no_option_desc=True)) for e in [ImportTypeEnum.Create, ImportTypeEnum.Update]],
+        choices=[(str(e.v), get_import_type_label(e.v)) for e in [ImportTypeEnum.Create, ImportTypeEnum.Update]],
         default=ImportTypeEnum.Update.v,
         coerce=int,
-    )
-    always_issue_order_no = OurBooleanField(
-        label=u'常に新しい予約番号を発番'
     )
     enable_random_import = OurBooleanField(
         label=u'ランダムインポート'
