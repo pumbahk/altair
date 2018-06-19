@@ -2,6 +2,7 @@
 import json
 import random
 from datetime import datetime, timedelta
+from sqlalchemy.sql.expression import func
 from altair.mq import get_publisher
 from altair.sqlahelper import get_db_session
 from altair.app.ticketing.core.models import Event, Performance
@@ -166,10 +167,12 @@ def get_progressing_order_import_task(request, obj):
 
 def import_orders_per_order(request, order_import_task, priority=0):
     publisher = get_publisher(request, 'import_per_order')
+    _session = get_db_session(request, 'slave')
 
-    proto_orders = order_import_task.proto_orders
+    proto_orders = _session.query(ProtoOrder.id).filter(ProtoOrder.order_import_task_id == order_import_task.id)
+
     if order_import_task.enable_random_import:
-        random.shuffle(proto_orders)
+        proto_orders = proto_orders.order_by(func.rand())
 
     for proto_order in proto_orders:
         body = json.dumps({'proto_order_id': proto_order.id,
@@ -178,9 +181,9 @@ def import_orders_per_order(request, order_import_task, priority=0):
                           routing_key='import_per_order',
                           properties=dict(content_type="application/json", priority=priority))
 
-def import_orders_per_task(request, order_import_task, priority=0):
+def import_orders_per_task(request, order_import_task_id, priority=0):
     publisher = get_publisher(request, 'import_per_task')
-    body = json.dumps({'order_import_task_id': order_import_task.id})
+    body = json.dumps({'order_import_task_id': order_import_task_id})
     publisher.publish(body=body,
                       routing_key='import_per_task',
                       properties=dict(content_type="application/json", priority=priority))
