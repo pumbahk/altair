@@ -4,6 +4,7 @@ import os
 import time
 import logging
 import argparse
+from datetime import datetime
 from pyramid.renderers import render_to_response
 from pyramid.paster import (
     bootstrap,
@@ -34,19 +35,22 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('conf', nargs='?', default=None)
     parser.add_argument('--force', action='store_true', default=False)
+    parser.add_argument('--now', type=str, default=None)  # for debugging
     args = parser.parse_args()
     setup_logging(args.conf)
     env = bootstrap(args.conf)
     settings = env['registry'].settings
-    mailer = Mailer(settings)
 
     var_dir = get_var_dir(settings)
     mailer = Mailer(settings)
 
     mgr = AugusOperationManager(var_dir=var_dir)
+
+    now = datetime.strptime(args.now, '%Y/%m/%d_%H:%M:%S')
+
     try:
         with multilock.MultiStartLock('augus_achievement'):
-            mgr.achieve(mailer, args.force)
+            mgr.achieve(mailer, args.force, now)
     except multilock.AlreadyStartUpError as err:
         logger.warn('{}'.format(repr(err)))
         return
