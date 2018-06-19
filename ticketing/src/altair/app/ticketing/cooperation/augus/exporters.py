@@ -6,7 +6,8 @@ import datetime
 import itertools
 from StringIO import StringIO
 from sqlalchemy.orm.exc import NoResultFound
-
+from pyramid.threadlocal import get_current_request
+from altair.sqlahelper import get_db_session
 from altair.app.ticketing.core.models import (
     Seat,
     Venue,
@@ -21,6 +22,7 @@ from altair.app.ticketing.core.models import (
     AugusPutback,
     AugusSeat,
     AugusStockInfo,
+    SeatStatus,
     SeatStatusEnum,
     AugusSeatStatus,
     AugusPerformance,
@@ -158,15 +160,14 @@ class AugusPutbackExporter(object):
         return responses
 
 class AugusAchievementExporter(object):
-    def create_record(self, seat):
-        if seat.status in [SeatStatusEnum.NotOnSale.v, SeatStatusEnum.Vacant.v, SeatStatusEnum.Canceled.v]:
+    def __init__(self):
+        self.session = get_db_session(get_current_request(), name="slave")
+
+    def create_record(self, seat, seat_status_checked=False):
+        if not seat_status_checked and seat.status in [SeatStatusEnum.NotOnSale.v, SeatStatusEnum.Vacant.v, SeatStatusEnum.Canceled.v]:
             return
 
-        augus_ticket = None
-        augus_stock_info = None
-        augus_stock_detail = None
         ordered_product_item = self.seat2opitem(seat)
-        augus_stock_detail = None
         try:
             augus_stock_detail = AugusStockDetail\
             .query\
@@ -261,40 +262,22 @@ class AugusAchievementExporter(object):
         res = AchievementResponse()
         res.event_code = augus_performance.augus_event_code
         res.date = augus_performance.start_on
-        seats = [stock_info.seat for stock_info in augus_performance.augus_stock_infos]
+        unless_status = [SeatStatusEnum.NotOnSale.v, SeatStatusEnum.Vacant.v, SeatStatusEnum.Canceled.v]
+        seats = self.session.query(
+            Seat
+        ).join(
+            SeatStatus,
+            AugusStockInfo,
+            AugusPerformance
+        ).filter(
+            AugusPerformance.id == augus_performance.id
+        ).filter(
+            ~SeatStatus.status.in_(unless_status)
+        ).all()
+
         for seat in seats:
-            record = self.create_record(seat)
+            record = self.create_record(seat, seat_status_checked=True)
             if record:
-                res.append(record)
-        return res
-
-    def _export_from_augus_event_code(self, augus_event_code):
-        augus_performances = AugusPerformance\
-            .query\
-            .filter(AugusPerformance.augus_event_code==augus_event_code)\
-            .all()
-        res = AchievementResponse()
-        res.event_code = augus_event_code
-
-        if augus_performances:
-            res.date = augus_performances[0].start_on
-
-        for ag_performance in augus_performances:
-            stock_infos = AugusStockInfo\
-                .query\
-                .filter(AugusStockInfo.augus_performance_id==ag_performance.id)\
-                .all()
-
-            for stock_info in stock_infos:
-                # 返券済みのものは出力しない
-                if stock_info.putbacked_at:
-                    continue
-
-
-                # 未販売は出力しない
-                if stock_info.seat.status in [SeatStatusEnum.NotOnSale.v, SeatStatusEnum.Vacant.v, SeatStatusEnum.Canceled.v]:
-                    continue
-                record = self.create_record(stock_info)
                 res.append(record)
         return res
 
