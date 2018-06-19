@@ -55,6 +55,7 @@ from altair.app.ticketing.core.models import (
     MailTypeEnum,
     Refund,
     RefundStatusEnum,
+    Event,
     )
 from altair.app.ticketing.core import api as core_api
 from altair.app.ticketing.core import helpers as core_helpers
@@ -2451,16 +2452,25 @@ class OrdersReserveView(OrderBaseView):
             self.context.raise_error(u'エラーが発生しました', HTTPInternalServerError)
 
     def electing_stock_check(self, performance_id):
-        performance = Performance.get(performance_id, self.context.organization.id)
-        lot_ids = [lot.id for lot in performance.event.lots]
         session = get_db_session(self.request, 'slave')
-        electing = session.query(LotElectedEntry).join(LotEntry,
-                                                       LotEntry.id == LotElectedEntry.lot_entry_id).filter(
-            LotElectedEntry.completed_at == None).filter(LotEntry.lot_id.in_(lot_ids)).first()
-        if electing:
-            raise HTTPBadRequest(body=json.dumps({
-                'message': u'大規模当選処理(テスト版)を使用しています。在庫数確定がされていない抽選があります',
-            }))
+        if self.context.organization.id:
+            from altair.app.ticketing.lots.models import Lot
+            performance_lots = session.query(Lot) \
+                .join(Event, Event.id == Lot.event_id) \
+                .join(Performance, Event.id == Performance.event_id)\
+                .filter(Event.organization_id == self.context.organization.id).filter(Performance.id == performance_id).all()
+            if performance_lots is None:
+                raise HTTPBadRequest(body=json.dumps({
+                    'message': u'パフォーマンスが存在しません',
+                }))
+            lot_ids = [Lot.id for Lot in performance_lots]
+            electing = session.query(LotElectedEntry).join(LotEntry,
+                                                           LotEntry.id == LotElectedEntry.lot_entry_id).filter(
+                LotElectedEntry.completed_at == None).filter(LotEntry.lot_id.in_(lot_ids)).first()
+            if electing:
+                raise HTTPBadRequest(body=json.dumps({
+                    'message': u'大規模当選処理(テスト版)を使用しています。在庫数確定がされていない抽選があります',
+                }))
 
 @view_defaults(decorator=with_bootstrap, permission='sales_counter')
 class OrdersEditAPIView(OrderBaseView):
