@@ -263,11 +263,17 @@
 							お気に入りワードに登録しておくと、発売開始等のタイミングでお知らせメールが届きます。
 </p>
           <table id="confirmKeywordSubscription" class="methodArea">
+            % if 4 < len(keywords_to_subscribe):
+            <div style="margin-top: 8px;">
+              <a href="#" onclick="$(this).parents('table').find('input').prop('checked', true);return false;">全て選択</a>
+              <a href="#" onclick="$(this).parents('table').find('input').prop('checked', false);return false;">全て解除</a>
+            </div>
+            %endif
             % for keyword, subscribed in keywords_to_subscribe:
             <tr>
               <td scope="row">
-  <input type="checkbox" checked="checked" name="keyword" id="keyword-${keyword.id}" value="${keyword.id}" ${subscribed and u'disabled="disabled"' or u''|n} />
-  <label for="keyword-${keyword.id}">${keyword.label}</label>
+                <input type="checkbox" checked="checked" name="keyword" id="keyword-${keyword.id}" value="${keyword.id}" ${subscribed and u'disabled="disabled"' or u''|n} />
+                <label for="keyword-${keyword.id}">${keyword.label}</label>
               </td>
             </tr>
             % endfor
