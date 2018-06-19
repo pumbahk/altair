@@ -197,6 +197,30 @@ shipping =order.shipping_address
 </tbody></table>
 </div><!-- ===== / 注文内容 ===== -->
 
+% if order.has_resale_requests:
+<!-- ===== リセール内容 ===== -->
+<div class="confirm-wrap">
+<h2 class="heading heading_simple_line">リセール内容</h2>
+<table class="resale-table" summary="リセール内容">
+<tbody>
+  <tr>
+    <th>商品名</th>
+    <th>席名</th>
+    <th>ステータス</th>
+  </tr>
+  % for product in order.items:
+    % for resale_data in product.get_resale_info(request):
+      <tr class="commission">
+        <td><span style="background-color:${getattr(product.product.items[0].stock_type, 'style', {}).get('fill', {}).get('color') or '#000'}; width:12px; height:12px; border: 1px solid #888; border-radius:2px; display:inline-block; margin-right: 0.5em;"></span>${resale_data['seat_type_name']}</td>
+        <td>${resale_data['seat_name']}</td>
+        <td>${resale_data['resale_request_status']}</td>
+      </tr>
+    % endfor
+  % endfor
+</tbody></table>
+</div><!-- ===== / リセール内容 ===== -->
+% endif
+
 <% extra_form_data = order.get_order_attribute_pair_pairs(request, mode='orderreview') %>
 % if extra_form_data:
 <div class="confirm-wrap">
