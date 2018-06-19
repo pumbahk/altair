@@ -42,8 +42,10 @@ import_status_labels = {
     }
 
 def get_import_type_label(import_type):
-    import_type = int(import_type)
-    s = import_type_labels.get(import_type & (ImportTypeEnum.Create.v | ImportTypeEnum.Update.v))
+    try:
+        s = import_type_labels.get(int(import_type))
+    except (KeyError, TypeError):
+        s = None
     return s or u'?'
 
 def get_allocation_mode_label(allocation_mode):

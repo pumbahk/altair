@@ -20,7 +20,6 @@ class ImportPerOrderResource(object):
 
     @reify
     def proto_order(self):
-
         try:
             return order_models.ProtoOrder.filter_by(id=self.proto_order_id).one()
         except NoResultFound:
