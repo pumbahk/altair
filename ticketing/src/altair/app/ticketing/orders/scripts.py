@@ -258,7 +258,7 @@ def import_orders():
     request.environ[request.environ.setdefault('altair.browserid.env_key', '_browserid')] = 'import_orders'
     registry = env['registry']
     settings = registry.settings
-    max_import_job_number = int(settings.get('max_import_job_number', 3))
+    max_import_job_number = int(settings.get('altair.orders.max_import_job_num', 3))
 
     logging.info('start import_orders batch')
 
