@@ -265,8 +265,8 @@
           <table id="confirmKeywordSubscription" class="methodArea">
             % if 4 < len(keywords_to_subscribe):
             <div style="margin-top: 8px;">
-              <a href="#" onclick="$(this).parents('table').find('input').prop('checked', true);return false;">全て選択</a>
-              <a href="#" onclick="$(this).parents('table').find('input').prop('checked', false);return false;">全て解除</a>
+              <a href="#" onclick="$(this).closest('div.dispBoxInner').find('input').prop('checked', true);return false;">全て選択</a>
+              <a href="#" onclick="$(this).closest('div.dispBoxInner').find('input').prop('checked', false);return false;">全て解除</a>
             </div>
             %endif
             % for keyword, subscribed in keywords_to_subscribe:
