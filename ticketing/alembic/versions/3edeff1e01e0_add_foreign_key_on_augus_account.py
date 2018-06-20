@@ -24,9 +24,7 @@ def upgrade():
         source='AugusAccount',
         referent='Account',
         local_cols=['account_id'],
-        remote_cols=['id'],
-        onupdate='CASCADE',
-        ondelete='CASCADE'
+        remote_cols=['id']
     )
 
 

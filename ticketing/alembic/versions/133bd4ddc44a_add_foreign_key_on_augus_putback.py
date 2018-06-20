@@ -24,9 +24,7 @@ def upgrade():
         source='AugusPutback',
         referent='AugusPerformance',
         local_cols=['augus_performance_id'],
-        remote_cols=['id'],
-        onupdate='CASCADE',
-        ondelete='CASCADE'
+        remote_cols=['id']
     )
 
     op.create_foreign_key(
@@ -34,9 +32,7 @@ def upgrade():
         source='AugusPutback',
         referent='AugusAccount',
         local_cols=['augus_account_id'],
-        remote_cols=['id'],
-        onupdate='CASCADE',
-        ondelete='CASCADE'
+        remote_cols=['id']
     )
 
 

@@ -24,9 +24,7 @@ def upgrade():
         source='AugusStockInfo',
         referent='AugusPerformance',
         local_cols=['augus_performance_id'],
-        remote_cols=['id'],
-        onupdate='CASCADE',
-        ondelete='CASCADE'
+        remote_cols=['id']
     )
 
     op.create_foreign_key(
@@ -34,9 +32,7 @@ def upgrade():
         source='AugusStockInfo',
         referent='AugusTicket',
         local_cols=['augus_ticket_id'],
-        remote_cols=['id'],
-        onupdate='CASCADE',
-        ondelete='CASCADE'
+        remote_cols=['id']
     )
 
     op.create_foreign_key(
@@ -44,9 +40,7 @@ def upgrade():
         source='AugusStockInfo',
         referent='AugusAccount',
         local_cols=['augus_account_id'],
-        remote_cols=['id'],
-        onupdate='CASCADE',
-        ondelete='CASCADE'
+        remote_cols=['id']
     )
 
     op.create_foreign_key(
@@ -54,9 +48,7 @@ def upgrade():
         source='AugusStockInfo',
         referent='Seat',
         local_cols=['seat_id'],
-        remote_cols=['id'],
-        onupdate='CASCADE',
-        ondelete='CASCADE'
+        remote_cols=['id']
     )
 
 
