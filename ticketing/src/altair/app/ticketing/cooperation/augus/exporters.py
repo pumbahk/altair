@@ -337,5 +337,5 @@ class AugusAchievementExporter(object):
         else:
             qs = qs.filter(AugusPerformance.stoped_at == None)
 
-        ag_performances = qs.limit(1).all()
+        ag_performances = qs.all()
         return ag_performances
