@@ -1,0 +1,46 @@
+<%!
+from altair.app.ticketing.price_batch_update.models import PriceBatchUpdateTaskStatusEnum
+%>
+
+<%def name="get_operator_name(operator)">
+<%
+    return operator.name if operator else '削除されたユーザ'
+%>
+</%def>
+
+<%def name="get_status_label(status)">
+<%
+    if status == PriceBatchUpdateTaskStatusEnum.Waiting.v:
+        return u'価格変更待ち'
+    elif status == PriceBatchUpdateTaskStatusEnum.Updating.v:
+        return u'価格変更中'
+    elif status == PriceBatchUpdateTaskStatusEnum.Updated.v:
+        return u'価格変更完了'
+    elif status == PriceBatchUpdateTaskStatusEnum.Canceled.v:
+        return u'価格変更中止'
+    elif status == PriceBatchUpdateTaskStatusEnum.Aborted.v:
+        return u'価格変更異常終了'
+    else:
+        return u''
+%>
+</%def>
+
+<%def name="get_sales_segment_label(sales_segments)">
+<%
+    if len(sales_segments) > 0:
+        return ','.join(map(lambda ss: ss.name, sales_segments))
+    else:
+        return u'削除された販売区分'
+%>
+</%def>
+
+<%def name="get_itemization(items)">
+    %if len(items) > 0:
+        % for index, item in enumerate(items):
+            %if index != 0:
+                <br>
+            %endif
+            ${item}
+        % endfor
+    %endif
+</%def>

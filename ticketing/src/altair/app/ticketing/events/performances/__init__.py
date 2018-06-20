@@ -43,4 +43,14 @@ def includeme(config):
 
     config.add_route('performances.discount_code_settings.show', '/discount_code_settings/{performance_id}', factory=factory)
 
+    config.add_route('performances.price_batch_update.index', '/price_batch_update/{performance_id}', factory=factory)
+    config.add_route('performances.price_batch_update.confirm',
+                     '/price_batch_update/{performance_id}/confirm', factory=factory)
+    config.add_route('performances.price_batch_update.show',
+                     '/price_batch_update/{performance_id}/show/{task_id}', factory=factory)
+    config.add_route('performances.price_batch_update.delete',
+                     '/price_batch_update/{performance_id}/delete', factory=factory)
+    config.add_route('performances.price_batch_update.cancel',
+                     '/price_batch_update/{performance_id}/cancel', factory=factory)
+
 VISIBLE_PERFORMANCE_SESSION_KEY = '_visible_performance'

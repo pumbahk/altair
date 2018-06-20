@@ -59,6 +59,9 @@ ${performance.code} | ${performance.name}
     % if request.context.organization.setting.enable_discount_code:
     <li id="discount_code-tab"><a href="${request.route_path('performances.discount_code_settings.show', performance_id=performance.id)}">割引コード設定状況</a></li>
     % endif
+    % if request.context.organization.setting.enable_price_batch_update:
+    <li id="price_batch_update-tab"><a href="${request.route_path('performances.price_batch_update.index', performance_id=performance.id)}">価格一括変更</a></li>
+    % endif
   </ul>
   <div class="tab-content" id="tabbable-tab-content">
     % if tab == 'summary':
@@ -106,6 +109,16 @@ ${performance.code} | ${performance.name}
     % elif tab == 'discount_code':
     <div class="tab-pane" id="discount_code">
       <%include file="/performances/discount_code/show.html" args="forms=forms, settings=settings" />
+    </div>
+    % elif tab == 'price_batch_update':
+    <div class="tab-pane" id="price_batch_update">
+      % if action == 'show':
+        <%include file="./price_batch_update/_show.html" args="performance=performance, stats=stats" />
+      % elif action == 'confirm':
+        <%include file="./price_batch_update/_confirm.html" args="performance=performance, stats=stats" />
+      % else:
+        <%include file="./price_batch_update/_index.html" args="performance=performance, form=form, price_batch_update_tasks=price_batch_update_tasks" />
+      % endif
     </div>
     % elif HH.has_permission('event_editor'):
     <div class="tab-pane" id="seat-allocation">

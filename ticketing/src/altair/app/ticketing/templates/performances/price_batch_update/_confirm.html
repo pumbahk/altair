@@ -1,0 +1,43 @@
+<%page args="performance, stats" />
+<%namespace file="/common/helpers.html" name="ch" />
+<%namespace file="_helpers.html" name="ph" />
+
+<div class="alert alert-warning">
+  <p>CSVファイルを読み込みました。以下の内容で正しいか確認してください。</p>
+  <ul>
+    <li>注意: バリデーションエラーを解消しないと価格変更タスクを登録できません。</li>
+  </ul>
+</div>
+
+<%include file="_stats.html" args="stats=stats" />
+
+% if csv_errors:
+<h4>バリデーションエラー詳細</h4>
+<table class="table">
+  <thead>
+    <tr>
+      <th>CSVの行番号</th>
+      <th>詳細</th>
+    </tr>
+  </thead>
+  <tbody>
+  % for line_num, csv_error_details in csv_errors.items():
+    <tr>
+      <td>${line_num}行目</td>
+      <td>${ph.get_itemization(csv_error_details)}</td>
+    </tr>
+  % endfor
+  </tbody>
+</table>
+% endif
+
+<form class="form-horizontal" action="${request.route_path('performances.price_batch_update.confirm', performance_id=performance.id)}" method="POST">
+  <div class="form-actions">
+    % if len(csv_errors) == 0:
+    <input class="btn btn-primary pull-right" type="submit" value="登録する" />
+    % else:
+    <input class="btn btn-primary pull-right" type="submit" disabled="disabled" value="エラーのため登録できません" />
+    % endif
+    <a href="${request.route_path('performances.price_batch_update.index', performance_id=performance.id)}" class="btn pull-right" style="margin-right: 10px;">戻る</a>
+  </div>
+</form>

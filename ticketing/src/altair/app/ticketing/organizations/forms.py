@@ -455,6 +455,9 @@ class OrganizationSettingForm(OrganizationSettingSimpleForm):
     enable_resale = OurBooleanField(
         label=get_annotations_for(c_models.OrganizationSetting.enable_resale)['label']
     )
+    enable_price_batch_update = OurBooleanField(
+        label=get_annotations_for(c_models.OrganizationSetting.enable_price_batch_update)['label']
+    )
     enable_word = OurBooleanField(
         label=get_annotations_for(c_models.OrganizationSetting.enable_word)['label']
     )
