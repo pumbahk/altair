@@ -237,7 +237,7 @@ def _get_host_lock(lock_conn, _max=3):
     HOST_LOCK_TIMEOUT = 1
     host_lock_status = None
     for i in range(_max):
-        host_lock_name = HOST_LOCK_NAME.format(HOST_NAME, str(i))
+        host_lock_name = HOST_LOCK_NAME.format(host_name=HOST_NAME, num=str(i))
         host_lock_status = lock_conn.scalar("select get_lock(%s,%s)", (host_lock_name, HOST_LOCK_TIMEOUT))
         if host_lock_status == 1:
             break
