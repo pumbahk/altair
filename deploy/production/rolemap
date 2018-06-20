@@ -9,6 +9,8 @@ apcs3.1a.vpc.altr	gateapp
 
 btmv1.1a.vpc.altr	batch
 btmv1.1c.vpc.altr	batch
+btmv2.1a.vpc.altr	batch-booster
+btmv2.1c.vpc.altr	batch-booster
 wkmv1.1a.vpc.altr	worker
 wkmv1.1c.vpc.altr	worker
 wkmv2.1a.vpc.altr	worker
