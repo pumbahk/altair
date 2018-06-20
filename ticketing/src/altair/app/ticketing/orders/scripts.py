@@ -3,9 +3,11 @@
 import os
 import sys
 from datetime import datetime, timedelta
+import json
 import logging
 import transaction
 import argparse
+import socket
 
 from pyramid.paster import bootstrap, setup_logging   
 from pyramid.renderers import render_to_response
@@ -229,6 +231,19 @@ def detect_fraud():
     logging.info('end detect_fraud batch')
 
 
+def _get_host_lock(lock_conn, _max=3):
+    HOST_NAME = socket.gethostname()
+    HOST_LOCK_NAME = "{host_name}-{num}"
+    HOST_LOCK_TIMEOUT = 1
+    host_lock_status = None
+    for i in range(_max):
+        host_lock_name = HOST_LOCK_NAME.format(HOST_NAME, str(i))
+        host_lock_status = lock_conn.scalar("select get_lock(%s,%s)", (host_lock_name, HOST_LOCK_TIMEOUT))
+        if host_lock_status == 1:
+            break
+
+    return host_lock_status
+
 def import_orders():
     ''' 予約の一括登録
     '''
@@ -241,29 +256,54 @@ def import_orders():
 
     request = env['request']
     request.environ[request.environ.setdefault('altair.browserid.env_key', '_browserid')] = 'import_orders'
-
-    # 多重起動防止
-    LOCK_NAME = import_orders.__name__
-    LOCK_TIMEOUT = 10
-    conn = sqlahelper.get_engine().connect()
-    status = conn.scalar("select get_lock(%s,%s)", (LOCK_NAME, LOCK_TIMEOUT))
-    if status != 1:
-        logging.warn('lock timeout: already running process')
-        return
+    registry = env['registry']
+    settings = registry.settings
+    max_import_job_number = int(settings.get('altair.orders.max_import_job_num', 3))
 
     logging.info('start import_orders batch')
+
+    lock_conn = sqlahelper.get_engine().connect()
+    # 同じバッチサーバーのインポートを多重起動防止
+    locked_host_name = _get_host_lock(lock_conn, _max=max_import_job_number)
+    if not locked_host_name:
+        logging.warn('host lock timeout: already running process. skip...')
+        logging.info('end import_orders batch')
+        # lock_connをクローズ
+        lock_conn.close()
+        return
+
     session_for_task = orm.session.Session(bind=sqlahelper.get_engine())
-    tasks = session_for_task.query(OrderImportTask).filter(
+    task = session_for_task.query(OrderImportTask).filter(
         OrderImportTask.status == ImportStatusEnum.Waiting.v,
         OrderImportTask.deleted_at == None
-    ).order_by(OrderImportTask.id).with_lockmode('update').all()
-    for task in tasks:
-        task.status = ImportStatusEnum.Importing.v
-    session_for_task.commit()
+    ).order_by(OrderImportTask.id).with_lockmode('update').first()
 
-    from .importer import initiate_import_task
+    if task:
+        # 同じパフォーマンスのインポートを多重起動防止
+        PERFORMANCE_LOCK_NAME = 'order_import_task with performance({})'.format(task.performance_id)
+        PERFORMANCE_LOCK_TIMEOUT = 10
+        performance_status = lock_conn.scalar("select get_lock(%s,%s)", (PERFORMANCE_LOCK_NAME, PERFORMANCE_LOCK_TIMEOUT))
+        if performance_status != 1:
+            logging.warn('performance lock timeout: already running process with the same performance: {}. skip...'.format(task.performance_id))
+            logging.info('end import_orders batch')
+            task.status = ImportStatusEnum.Aborted.v
+            task.errors = json.dumps({u'-': [u'-', [u'重複インポートエラー: 同じ公演の予約インポートはすでに実行されていますので、終わってから再実行してください。']]})
+            session_for_task.commit()
+            return
+        else:
+            task.status = ImportStatusEnum.Importing.v
+            session_for_task.commit()
 
-    for task in tasks:
+        from .importer import initiate_import_task
         initiate_import_task(request, task, session_for_task)
 
+        # PERFORMANCE_LOCKを解放
+        lock_conn.scalar("select release_lock(%s)", (PERFORMANCE_LOCK_NAME))
+    else:
+        logging.info('order import task with waiting status not found!!')
+
+    # HOST_LOCKを解放
+    lock_conn.scalar("select release_lock(%s)", (locked_host_name))
+    # lock_connをクローズ
+    lock_conn.close()
     logging.info('end import_orders batch')
