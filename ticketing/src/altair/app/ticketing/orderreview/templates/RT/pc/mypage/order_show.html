@@ -21,7 +21,7 @@ shipping =order.shipping_address
       </tr>
       <tr>
         <th scope="row">ステータス</th>
-        <td>${h.order_status(order, sent=True)}</td>
+        <td>${h.order_status(order, sent=True)}${h.order_resale_status(order)}</td>
       </tr>
       % if order.status == 'delivered':
       <tr>
