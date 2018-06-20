@@ -1,5 +1,9 @@
 <%inherit file="review_base.html" />
 
+<div class="selectwrapper">
+  ${h.create_url(request) |n}
+</div>
+
 <h2 class="heading heading-primary">${_(u'抽選申込確認')}</h2>
 
 <!-- ===== 申込状況確認 ===== -->
