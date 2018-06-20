@@ -33,7 +33,8 @@ from ..exceptions import (
     DeletedProductError,
     DiscountCodeConfirmError,
     OwnDiscountCodeDuplicateError,
-    DiscountCodeInternalError
+    DiscountCodeInternalError,
+    ChangedProductPriceError
 )
 from ..reserving import InvalidSeatSelectionException, NotEnoughAdjacencyException
 from ..stocker import InvalidProductSelectionException, NotEnoughStockException
@@ -117,6 +118,13 @@ class CommonErrorView(object):
     def deleted_product(self):
         # カートに入った商品が、購入確定時に削除された
         return dict(message=Markup(self.context.message))
+
+    @lbr_view_config(context=ChangedProductPriceError)
+    def deleted_product(self):
+        # カートに入った商品の価格が、購入確定時に変更された
+        msg = u'お手続き中にお選び頂いた商品の価格が変更されました。お手数ですが再度ご購入手続きをお願いします<br><a href="{0}">ご購入手続きはこちら</a>'
+        location = self.context.back_url
+        return dict(message=Markup(msg.format(location)))
 
     @lbr_view_config(context=PaymentMethodEmptyError)
     def payment_method_is_empty(self):

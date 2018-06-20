@@ -25,6 +25,13 @@ class DeletedProductError(CartException):
     pass
 
 
+class ChangedProductPriceError(CartException):
+    back_url = None
+
+    def __init__(self, back_url):
+        self.back_url = back_url
+
+
 class DiscountCodeConfirmError(CartException):
     pass
 
