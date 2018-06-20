@@ -43,3 +43,5 @@ def upgrade():
 def downgrade():
     op.drop_constraint('AugusVenue_ibfk_1', 'AugusVenue', type_='foreignkey')
     op.drop_constraint('AugusVenue_ibfk_2', 'AugusVenue', type_='foreignkey')
+    op.drop_index('AugusVenue_ibfk_1', 'AugusVenue')
+    op.drop_index('AugusVenue_ibfk_2', 'AugusVenue')

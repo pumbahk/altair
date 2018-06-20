@@ -41,5 +41,7 @@ def upgrade():
 
 
 def downgrade():
-    op.drop_constraint('AugusSeat_ibfk_1', 'AugusSeat', type_='foreignkey')
     op.drop_constraint('AugusSeat_ibfk_2', 'AugusSeat', type_='foreignkey')
+    op.drop_constraint('AugusSeat_ibfk_1', 'AugusSeat', type_='foreignkey')
+    op.drop_index('AugusSeat_ibfk_1', 'AugusSeat')
+    op.drop_index('AugusSeat_ibfk_2', 'AugusSeat')

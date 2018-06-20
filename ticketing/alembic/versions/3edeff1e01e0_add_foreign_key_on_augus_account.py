@@ -32,3 +32,4 @@ def upgrade():
 
 def downgrade():
     op.drop_constraint('AugusAccount_ibfk_1', 'AugusAccount', type_='foreignkey')
+    op.drop_index('AugusAccount_ibfk_1', 'AugusAccount')

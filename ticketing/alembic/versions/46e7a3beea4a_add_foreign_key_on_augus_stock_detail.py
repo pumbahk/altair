@@ -54,3 +54,6 @@ def downgrade():
     op.drop_constraint('AugusStockDetail_ibfk_1', 'AugusStockDetail', type_='foreignkey')
     op.drop_constraint('AugusStockDetail_ibfk_2', 'AugusStockDetail', type_='foreignkey')
     op.drop_constraint('AugusStockDetail_ibfk_3', 'AugusStockDetail', type_='foreignkey')
+    op.drop_index('AugusStockDetail_ibfk_1', 'AugusStockDetail')
+    op.drop_index('AugusStockDetail_ibfk_2', 'AugusStockDetail')
+    op.drop_index('AugusStockDetail_ibfk_3', 'AugusStockDetail')
