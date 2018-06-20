@@ -307,12 +307,13 @@ class AugusWorker(object):
             transaction.commit()
         return putback_codes
 
-    def achieve(self, ag_performances):
+    def achieve(self, ag_performances, sleep=1.5):
         logger.info('start augus distribition: augus_account_id={}'.format(self.augus_account.id))
         staging = self.path.send_dir_staging
         exporter = AugusAchievementExporter()
 
         for ag_performance in ag_performances:
+            time.sleep(sleep)
             logger.info('Achievement export start: AugusPerformance.id={}'.format(ag_performance.id))
             res = exporter.export_from_augus_performance(ag_performance)
             res.customer_id = self.augus_account.code
