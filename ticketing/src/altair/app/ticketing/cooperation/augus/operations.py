@@ -307,23 +307,25 @@ class AugusWorker(object):
             transaction.commit()
         return putback_codes
 
-    def achieve(self, ag_performances, sleep=1.5):
+    def achieve(self, exporter, worker, all_):
         logger.info('start augus distribition: augus_account_id={}'.format(self.augus_account.id))
         staging = self.path.send_dir_staging
-        exporter = AugusAchievementExporter()
+        ag_performances = exporter.get_target_augus_performances(worker, all_)
 
         for ag_performance in ag_performances:
-            time.sleep(sleep)
-            logger.info('Achievement export start: AugusPerformance.id={}'.format(ag_performance.id))
+            logger.info('Achi０evement export start: AugusPerformance.id={}'.format(ag_performance.id))
             res = exporter.export_from_augus_performance(ag_performance)
             res.customer_id = self.augus_account.code
             path = os.path.join(staging, res.name)
             logger.info('export: {}'.format(path))
             AugusExporter.export(res, path)
-            ag_performance.is_report_target = False
-            ag_performance.save()
 
-        return transaction.commit()
+            master = AugusPerformance.query.get(ag_performance.id)
+            master.is_report_target = False
+            master.save()
+
+        transaction.commit()
+        return ag_performances
 
     def venue_sync_request(self, mailer, sleep=2):
         logger.info('start augus venue sync request: augus_account_id={}'.format(self.augus_account.id))
@@ -537,25 +539,10 @@ class AugusOperationManager(object):
                     )
 
     def achieve(self, mailer, all_=False, now=None):
+        exporter = AugusAchievementExporter(now)
         for worker in self.augus_workers():
             try:
-                if not now:
-                    now = datetime.datetime.now()
-
-                moratorium = datetime.timedelta(days=90)
-                qs = AugusPerformance \
-                    .query \
-                    .join(AugusPerformance.performance) \
-                    .filter(AugusPerformance.augus_account_id == worker.augus_account.id) \
-                    .filter(sa.or_(Performance.start_on >= now - moratorium, Performance.end_on >= now - moratorium))
-
-                if not all_:
-                    qs = qs.filter(AugusPerformance.is_report_target == True)
-                else:
-                    qs = qs.filter(AugusPerformance.stoped_at == None)
-
-                ag_performances = qs.all()
-                worker.achieve(ag_performances)
+                ag_performances = worker.achieve(exporter, worker, all_)
             except:
                 raise
 

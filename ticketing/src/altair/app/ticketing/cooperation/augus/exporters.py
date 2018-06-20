@@ -3,6 +3,7 @@ import os
 import time
 import logging
 import datetime
+import sqlalchemy as sa
 import itertools
 from StringIO import StringIO
 from sqlalchemy.orm.exc import NoResultFound
@@ -159,8 +160,14 @@ class AugusPutbackExporter(object):
             AugusExporter.export(response, resfile_path)
         return responses
 
+
 class AugusAchievementExporter(object):
-    def __init__(self):
+    def __init__(self, now=None):
+        if now is None:
+            now = datetime.datetime.now()
+
+        self.now = now
+        self.moratorium = datetime.timedelta(days=90)
         self.session = get_db_session(get_current_request(), name="slave")
 
     def create_record(self, seat, seat_status_checked=False):
@@ -314,3 +321,21 @@ class AugusAchievementExporter(object):
             return opitem.ordered_product.order
         else:
             return None
+
+    def get_target_augus_performances(self, worker, all_):
+        qs = self.session.query(AugusPerformance).join(AugusPerformance.performance) \
+            .filter(AugusPerformance.augus_account_id == worker.augus_account.id) \
+            .filter(
+                sa.or_(
+                    Performance.start_on >= self.now - self.moratorium,
+                    Performance.end_on >= self.now - self.moratorium
+                )
+            )
+
+        if not all_:
+            qs = qs.filter(AugusPerformance.is_report_target == True)
+        else:
+            qs = qs.filter(AugusPerformance.stoped_at == None)
+
+        ag_performances = qs.limit(1).all()
+        return ag_performances
