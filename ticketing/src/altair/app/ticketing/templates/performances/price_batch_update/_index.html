@@ -48,6 +48,9 @@
   <p>この機能は、複数の商品明細をもつ商品に対応していません。指定しないようお願いします。</p>
 </div>
 
+% if not performance.sales_segments:
+  <p class="alert-danger">公演に販売区分が設定されていません。販売区分を設定してください。</p>
+% endif
 <form class="form-horizontal" enctype="multipart/form-data"
       action="${request.route_path('performances.price_batch_update.index', performance_id=performance.id)}"
       method="POST">

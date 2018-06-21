@@ -625,14 +625,17 @@ class PerformanceShowView(BaseView):
         form.sales_segment_id.choices = \
             [(sales_segment.id, sales_segment.name) for sales_segment in self.performance.sales_segments]
 
+        if len(form.sales_segment_id.data) != \
+                len([ss for ss in self.performance.sales_segments if ss.id in form.sales_segment_id.data]):
+            self.__store_msg_in_price_batch_update_attr(
+                self.request, 'alert-error',
+                [u'公演に紐づいていない販売区分{0}が含まれています。'.format(form.sales_segment_id.data)])
+            return HTTPFound(self.request.route_url('performances.price_batch_update.index',
+                                                    performance_id=self.performance.id))
+
         if not form.validate():
             messages = [error for item, errors in form.errors.items() for error in errors]
-            self.request.session[self.PRICE_BATCH_UPDATE_ATTRIBUTE_KEY] = {
-                'message_dict': {
-                    'type': 'alert-error',
-                    'messages': messages
-                }
-            }
+            self.__store_msg_in_price_batch_update_attr(self.request, 'alert-error', messages)
             return HTTPFound(self.request.route_url('performances.price_batch_update.index',
                                                     performance_id=self.performance.id))
 
@@ -643,7 +646,7 @@ class PerformanceShowView(BaseView):
             'csv_file_name': form.price_csv.data.filename,
             'csv_data': form.price_csv.data.value,
             'count': count,
-            'csv_errors': csv_errors,
+            'csv_errors': csv_errors
         }
         return HTTPFound(self.request.route_url('performances.price_batch_update.confirm',
                                                 performance_id=self.performance.id))
@@ -709,13 +712,9 @@ class PerformanceShowView(BaseView):
         csv_data = self.request.session[self.PRICE_BATCH_UPDATE_ATTRIBUTE_KEY]['csv_data']
 
         if len(sales_segment_ids) != len(sales_segments):
-            self.request.session[self.PRICE_BATCH_UPDATE_ATTRIBUTE_KEY].update({
-                'message_dict': {
-                    'type': 'alert-error',
-                    'messages': [u'操作中に削除された販売区分があります(id={})。ご確認の上、再度実行してください。'
-                                     .format(sales_segment_ids)]
-                }
-            })
+            self.__store_msg_in_price_batch_update_attr(
+                self.request, 'alert-error',
+                [u'操作中に削除された販売区分があります(id={})。ご確認の上、再度実行してください。'.format(sales_segment_ids)])
             return HTTPFound(self.request.route_url('performances.price_batch_update.index',
                                                     performance_id=self.performance.id))
 
@@ -723,13 +722,9 @@ class PerformanceShowView(BaseView):
         csv_rows = read_price_csv(StringIO(csv_data))
         count, csv_errors = validate_price_csv(csv_rows, self.performance, sales_segment_ids)
         if len(csv_errors) > 0:
-            self.request.session[self.PRICE_BATCH_UPDATE_ATTRIBUTE_KEY].update({
-                'message_dict': {
-                    'type': 'alert-error',
-                    'messages': [u'操作中の変更によりエラーが検出されたため登録できませんでした。ご確認ください。']
-                },
-                'csv_errors': csv_errors
-            })
+            self.request.session[self.PRICE_BATCH_UPDATE_ATTRIBUTE_KEY].update({'csv_errors': csv_errors})
+            self.__store_msg_in_price_batch_update_attr(
+                self.request, 'alert-error', [u'操作中の変更によりエラーが検出されたため登録できませんでした。ご確認ください。'])
             return HTTPFound(self.request.route_url('performances.price_batch_update.confirm',
                                                     performance_id=self.performance.id))
 
@@ -754,30 +749,25 @@ class PerformanceShowView(BaseView):
         DBSession.add_all(new_price_entries)
         DBSession.flush()
 
-        self.request.session[self.PRICE_BATCH_UPDATE_ATTRIBUTE_KEY].update({
-            'message_dict': {
-                'type': 'alert-success',
-                'messages': [u'価格一括変更タスク(id={})を登録しました。'.format(new_task.id)]
-            }
-        })
+        self.__store_msg_in_price_batch_update_attr(self.request, 'alert-success',
+                                                    [u'価格一括変更タスク(id={})を登録しました。'.format(new_task.id)])
         return HTTPFound(self.request.route_url('performances.price_batch_update.index',
                                                 performance_id=self.performance.id))
 
     @view_config(route_name='performances.price_batch_update.show')
     def price_batch_update_show(self):
+        task_id = self.request.matchdict['task_id']
+
         task = PriceBatchUpdateTask.query.filter(
-            PriceBatchUpdateTask.id == self.request.matchdict['task_id'],
+            PriceBatchUpdateTask.id == task_id,
             PriceBatchUpdateTask.organization_id == self.context.organization.id,
             PriceBatchUpdateTask.performance_id == self.performance.id
         ).first()
         if task is None:
             # 存在しないtask, org, performanceの不一致はエラー
-            self.request.session[self.PRICE_BATCH_UPDATE_ATTRIBUTE_KEY].update({
-                'message_dict': {
-                    'type': 'alert-error',
-                    'messages': [u'ご指定のタスクは削除されたか、対象の組織 or 公演に紐づいていないため、参照できません。']
-                }
-            })
+            self.__store_msg_in_price_batch_update_attr(
+                self.request, 'alert-error',
+                [u'ご指定のタスク[id={}]は削除されたか、対象の組織 or 公演に紐づいていないため、参照できません。'.format(task_id)])
             return HTTPFound(
                 self.request.route_url('performances.price_batch_update.index', performance_id=self.performance.id))
         data = {
@@ -796,40 +786,30 @@ class PerformanceShowView(BaseView):
                         .format(self.context.organization.id))
             return HTTPFound(self.request.route_url('performances.show', performance_id=self.performance.id))
 
+        task_id = self.request.params['task_id']
+
         task = PriceBatchUpdateTask.query.filter(
-            PriceBatchUpdateTask.id == self.request.params['task_id'],
+            PriceBatchUpdateTask.id == task_id,
             PriceBatchUpdateTask.organization_id == self.context.organization.id,
             PriceBatchUpdateTask.performance_id == self.performance.id
         ).with_lockmode('update').first()
 
         if task is None:
             # 存在しないtask, org, performanceの不一致はエラー
-            self.request.session[self.PRICE_BATCH_UPDATE_ATTRIBUTE_KEY] = {
-                'message_dict': {
-                    'type': 'alert-error',
-                    'messages': [u'ご指定のタスクは削除されたか、対象の組織 or 公演に紐づいていないため、参照できません。']
-                }
-            }
+            self.__store_msg_in_price_batch_update_attr(
+                self.request, 'alert-error',
+                [u'ご指定のタスク[id={}]は削除されたか、対象の組織 or 公演に紐づいていないため、参照できません。'.format(task_id)])
             return HTTPFound(
                 self.request.route_url('performances.price_batch_update.index', performance_id=self.performance.id))
 
         if task.status == PriceBatchUpdateTaskStatusEnum.Waiting.v:
             task.status = PriceBatchUpdateTaskStatusEnum.Canceled.v
             task.save()
-            self.request.session[self.PRICE_BATCH_UPDATE_ATTRIBUTE_KEY] = {
-                'message_dict': {
-                    'type': 'alert-success',
-                    'messages': [u'価格一括変更タスク(id={})を中止しました。'.format(self.request.params['task_id'])]
-                }
-            }
+            self.__store_msg_in_price_batch_update_attr(
+                self.request, 'alert-success', [u'価格一括変更タスク(id={})を中止しました。'.format(task_id)])
         else:
-            self.request.session[self.PRICE_BATCH_UPDATE_ATTRIBUTE_KEY] = {
-                'message_dict': {
-                    'type': 'alert-error',
-                    'messages': [u'ステータスが実行待ちでないタスクは中止できません。']
-                }
-            }
-
+            self.__store_msg_in_price_batch_update_attr(
+                self.request, 'alert-error', [u'ステータスが実行待ちでないタスク[id={}]は中止できません。'.format(task_id)])
         return HTTPFound(self.request.route_url('performances.price_batch_update.index',
                                                 performance_id=self.performance.id))
 
@@ -840,20 +820,19 @@ class PerformanceShowView(BaseView):
                         .format(self.context.organization.id))
             return HTTPFound(self.request.route_url('performances.show', performance_id=self.performance.id))
 
+        task_id = self.request.params['task_id']
+
         task = PriceBatchUpdateTask.query.filter(
-            PriceBatchUpdateTask.id == self.request.params['task_id'],
+            PriceBatchUpdateTask.id == task_id,
             PriceBatchUpdateTask.organization_id == self.context.organization.id,
             PriceBatchUpdateTask.performance_id == self.performance.id
         ).with_lockmode('update').first()
 
         if task is None:
             # 存在しないtask, org, performanceの不一致はエラー
-            self.request.session[self.PRICE_BATCH_UPDATE_ATTRIBUTE_KEY] = {
-                'message_dict': {
-                    'type': 'alert-error',
-                    'messages': [u'ご指定のタスクは削除されたか、対象の組織 or 公演に紐づいていないため、参照できません。']
-                }
-            }
+            self.__store_msg_in_price_batch_update_attr(
+                self.request, 'alert-error',
+                [u'ご指定のタスク[id={}]は削除されたか、対象の組織 or 公演に紐づいていないため、参照できません。'.format(task_id)])
             return HTTPFound(
                 self.request.route_url('performances.price_batch_update.index', performance_id=self.performance.id))
 
@@ -863,19 +842,11 @@ class PerformanceShowView(BaseView):
             task.deleted_at = datetime.datetime.now()
             DBSession.merge(task)
             DBSession.flush()
-            self.request.session[self.PRICE_BATCH_UPDATE_ATTRIBUTE_KEY] = {
-                'message_dict': {
-                    'type': 'alert-success',
-                    'messages': [u'価格一括変更タスク(id={})を削除しました。'.format(self.request.params['task_id'])]
-                }
-            }
+            self.__store_msg_in_price_batch_update_attr(
+                self.request, 'alert-success', [u'価格一括変更タスク(id={})を削除しました。'.format(task_id)])
         else:
-            self.request.session[self.PRICE_BATCH_UPDATE_ATTRIBUTE_KEY] = {
-                'message_dict': {
-                    'type': 'alert-error',
-                    'messages': [u'ステータスが中止または異常終了でないタスクは削除できません。']
-                }
-            }
+            self.__store_msg_in_price_batch_update_attr(self.request, 'alert-error',
+                [u'ステータスが中止または異常終了でないタスク[id={}]は削除できません。'.format(task_id)])
 
         return HTTPFound(self.request.route_url('performances.price_batch_update.index',
                                                 performance_id=self.performance.id))
@@ -887,7 +858,8 @@ class PerformanceShowView(BaseView):
         stats['status'] = task.status
         stats['sales_segments'].extend(task.sales_segments)
         stats['count'] = len(task.entries)
-        stats['errors'].append(task.error)
+        if task.error:
+            stats['errors'].append(task.error)
 
         def get_error_msg(error_code):
             error = getattr(PriceBatchUpdateErrorEnum, error_code, None)
@@ -920,6 +892,17 @@ class PerformanceShowView(BaseView):
             'created_at': None,
             'updated_at': None
         }
+
+    def __store_msg_in_price_batch_update_attr(self, request, alert_type, messages):
+        if self.PRICE_BATCH_UPDATE_ATTRIBUTE_KEY not in request.session:
+            request.session[self.PRICE_BATCH_UPDATE_ATTRIBUTE_KEY] = dict()
+
+        request.session[self.PRICE_BATCH_UPDATE_ATTRIBUTE_KEY].update({
+            'message_dict': {
+                'type': alert_type,
+                'messages': messages
+            }
+        })
 
 @view_defaults(decorator=with_bootstrap, permission="event_editor")
 class Performances(BaseView):

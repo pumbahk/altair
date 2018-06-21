@@ -34,7 +34,7 @@ class _MultiItemsProductError(Exception):
 class _ProcessingBatchError(Exception):
     batch_error_code = None
 
-    def __init(self, code):
+    def __init__(self, code):
         self.batch_error_code = code
 
 
@@ -47,14 +47,25 @@ class PriceCsvRow(object):
 def read_price_csv(csv_file, encoding='cp932'):
     price_csv_rows = []
 
-    for line in csv.DictReader(csv_file):
+    for index, line in enumerate(csv.DictReader(csv_file)):
         price_csv_row = PriceCsvRow()
-        price_csv_row.performance_id = long(line['performance_id'])\
-            if 'performance_id' in line else None
-        price_csv_row.product_name = unicode(line['product_name'].decode(encoding))\
-            if 'product_name' in line else None
-        price_csv_row.price_optimized = long(line['price_optimized'])\
-            if 'price_optimized' in line else None
+        try:
+            price_csv_row.performance_id = long(line['performance_id']) \
+                if 'performance_id' in line and line['performance_id'] else None
+        except ValueError:
+            logger.warn('csv-line {0}: performance_id is not numeric.'.format(index + 1))
+
+        try:
+            price_csv_row.product_name = unicode(line['product_name'].decode(encoding)) \
+                if 'product_name' in line and line['product_name'] else None
+        except UnicodeDecodeError:
+            logger.warn('csv-line {0}: failed to decode product_name with {1}.'.format(index + 1, encoding))
+
+        try:
+            price_csv_row.price_optimized = long(line['price_optimized']) \
+                if 'price_optimized' in line and line['price_optimized'] else None
+        except ValueError:
+            logger.warn('csv-line {0}: price_optimized is not numeric.'.format(index + 1))
 
         price_csv_rows.append(price_csv_row)
 
@@ -81,16 +92,16 @@ def _validate_price_csv_row(row, performance, sales_segments):
     if row.performance_id != performance.id:
         errors.append(u'公演IDが一致しないか、存在しません。')
     if not row.price_optimized:
-        errors.append(u'商品名が指定されていません。')
+        errors.append(u'価格が指定されていないか、不正な形式です。')
     if not row.product_name:
-        errors.append(u'価格が指定されていません。')
+        errors.append(u'商品名が指定されていないか、不正な形式です。')
     else:
         for ss in sales_segments:
             try:
                 target_product = [p for p in ss.products if p.name == row.product_name and p.public]
                 _validate_product(target_product)
             except _NoProductError:
-                errors.append(u'商品({0})は販売区分({1})に存在しません。'.format(row.product_name, ss.name))
+                errors.append(u'商品({0})は販売区分({1})に存在しないか、非公開です。'.format(row.product_name, ss.name))
             except _SameNameProductError:
                 errors.append(u'商品({0})は販売区分({1})に複数存在します。'.format(row.product_name, ss.name))
             except _MultiItemsProductError:
@@ -109,7 +120,6 @@ def run_price_batch_update_task(task_id):
                     PriceBatchUpdateTask.status == PriceBatchUpdateTaskStatusEnum.Updating.v,
                     PriceBatchUpdateTask.deleted_at.is_(None)
         ).with_lockmode('update').first()
-
         count_updated = 0
 
         for entry in task.entries:

@@ -4,7 +4,7 @@ from altair.app.ticketing.price_batch_update.models import PriceBatchUpdateTaskS
 
 <%def name="get_operator_name(operator)">
 <%
-    return operator.name if operator else '削除されたユーザ'
+    return operator.name if operator else u'削除されたユーザ'
 %>
 </%def>
 

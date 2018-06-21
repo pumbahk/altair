@@ -65,7 +65,7 @@ class PriceBatchUpdateTask(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     @property
     def sales_segments(self):
         sales_segments_dict = dict()
-        for entry in self.entries:
+        for entry in [entry for entry in self.entries if entry.sales_segment]:
             sales_segments_dict[entry.sales_segment_id] = entry.sales_segment
 
         return sales_segments_dict.values() if len(sales_segments_dict) > 0 else []
