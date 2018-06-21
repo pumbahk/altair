@@ -542,7 +542,7 @@ class AugusOperationManager(object):
         exporter = AugusAchievementExporter(now)
         for worker in self.augus_workers():
             try:
-                ag_performances = worker.achieve(exporter, worker, all_)
+                ag_performances = worker.achieve(exporter, all_)
             except:
                 raise
 
