@@ -313,7 +313,7 @@ class AugusWorker(object):
         ag_performances = exporter.get_target_augus_performances(worker, all_)
 
         for ag_performance in ag_performances:
-            logger.info('Achi０evement export start: AugusPerformance.id={}'.format(ag_performance.id))
+            logger.info('Achievement export start: AugusPerformance.id={}'.format(ag_performance.id))
             res = exporter.export_from_augus_performance(ag_performance)
             res.customer_id = self.augus_account.code
             path = os.path.join(staging, res.name)
