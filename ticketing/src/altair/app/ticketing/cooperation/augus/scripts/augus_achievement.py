@@ -4,7 +4,6 @@ import os
 import time
 import logging
 import argparse
-from datetime import datetime
 from pyramid.renderers import render_to_response
 from pyramid.paster import (
     bootstrap,
@@ -43,14 +42,11 @@ def main():
 
     var_dir = get_var_dir(settings)
     mailer = Mailer(settings)
-
     mgr = AugusOperationManager(var_dir=var_dir)
-
-    now = datetime.strptime(args.now, '%Y/%m/%d_%H:%M:%S')
 
     try:
         with multilock.MultiStartLock('augus_achievement'):
-            mgr.achieve(mailer, args.force, now)
+            mgr.achieve(mailer, args.force, args.now)
     except multilock.AlreadyStartUpError as err:
         logger.warn('{}'.format(repr(err)))
         return

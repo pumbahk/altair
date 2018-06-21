@@ -163,8 +163,11 @@ class AugusPutbackExporter(object):
 
 class AugusAchievementExporter(object):
     def __init__(self, now=None):
-        if now is None:
+        if now:
+            now = datetime.datetime.strptime(now, '%Y/%m/%d_%H:%M:%S')
+        else:
             now = datetime.datetime.now()
+
 
         self.now = now
         self.moratorium = datetime.timedelta(days=90)
