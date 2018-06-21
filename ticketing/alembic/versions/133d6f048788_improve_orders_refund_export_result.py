@@ -19,10 +19,8 @@ Identifier = sa.BigInteger
 
 
 def upgrade():
-    op.create_index('barcode_number', 'SejTicket', ['barcode_number'])
     op.create_index('ticket_barcode_number', 'SejRefundTicket', ['ticket_barcode_number'])
 
 
 def downgrade():
-    op.drop_index('barcode_number', 'SejTicket')
     op.drop_index('ticket_barcode_number', 'SejRefundTicket')
