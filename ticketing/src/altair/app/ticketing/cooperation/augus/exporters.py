@@ -324,9 +324,9 @@ class AugusAchievementExporter(object):
         else:
             return None
 
-    def get_target_augus_performances(self, worker, all_):
+    def get_target_augus_performances(self, augus_account_id, all_):
         qs = self.session.query(AugusPerformance).join(AugusPerformance.performance) \
-            .filter(AugusPerformance.augus_account_id == worker.augus_account.id) \
+            .filter(AugusPerformance.augus_account_id == augus_account_id) \
             .filter(
                 sa.or_(
                     Performance.start_on >= self.now - self.moratorium,
