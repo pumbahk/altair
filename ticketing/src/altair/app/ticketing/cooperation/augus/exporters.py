@@ -32,6 +32,8 @@ from altair.app.ticketing.core.models import (
 from altair.app.ticketing.orders.models import (
     orders_seat_table,
     OrderedProductItem,
+    OrderedProduct,
+    Order
     )
 from altair.augus.types import (
     DateType,
@@ -290,24 +292,22 @@ class AugusAchievementExporter(object):
                 res.append(record)
         return res
 
-    @staticmethod
-    def seat2opitem(seat):
-        qs = orders_seat_table.select(whereclause='seat_id={}'.format(seat.id))
-        da = qs.execute()
-        seatid_opitemid =da.fetchall()
+    def seat2opitem(self, seat):
+        try:
+            opitem = self.session.query(OrderedProductItem).join(
+                orders_seat_table, orders_seat_table.c.OrderedProductItem_id == OrderedProductItem.id
+            ).join(
+                OrderedProduct,
+                Order
+            ).filter(
+                Order.canceled_at.is_(None)
+            ).filter(
+                orders_seat_table.c.seat_id == seat.id
+            ).one()
+        except NoResultFound:
+            return None
 
-        for seat_id, opitem_id in seatid_opitemid:
-            opitem = OrderedProductItem.get(id=opitem_id)
-            if not opitem:
-                continue
-            # すでにある予約をインポートで更新した後、正しく一番新しいordered product itemを取得できるようにする
-            elif not opitem.ordered_product.order:
-                continue
-            elif opitem.ordered_product.current_order and  opitem.ordered_product.current_order.status == 'canceled':
-                continue
-            else:
-                return opitem
-        return None
+        return opitem
 
     @staticmethod
     def get_unit_price(opitem):
@@ -337,7 +337,7 @@ class AugusAchievementExporter(object):
         if not all_:
             qs = qs.filter(AugusPerformance.is_report_target == True)
         else:
-            qs = qs.filter(AugusPerformance.stoped_at == None)
+            qs = qs.filter(AugusPerformance.stoped_at.is_(None))
 
         ag_performances = qs.all()
         return ag_performances
