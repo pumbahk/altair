@@ -177,7 +177,6 @@ class AugusAchievementExporter(object):
         if not seat_status_checked and seat.status in [SeatStatusEnum.NotOnSale.v, SeatStatusEnum.Vacant.v, SeatStatusEnum.Canceled.v]:
             return
 
-        ordered_product_item = self.seat2opitem(seat)
         try:
             augus_stock_detail = AugusStockDetail\
             .query\
@@ -188,7 +187,7 @@ class AugusAchievementExporter(object):
         except NoResultFound as err: # 未配席
             return None
 
-
+        ordered_product_item = self.seat2opitem(seat)
         if ordered_product_item:
             augus_ticket = ordered_product_item.ordered_product.product.augus_ticket
             if not augus_ticket:
