@@ -661,9 +661,23 @@ class DynamicExtraForm(ExtraForm):
         self._form_schema = form_schema
 
 
+class GoodsExtraForm(ExtraForm):
+
+    def __init__(self, *args, **kwargs):
+        context = kwargs.get('context')
+        form_schema = filter_extra_form_schema(
+            context.cart_setting.extra_form_fields or [],
+            mode='entry'
+            )
+        fields = build_dynamic_form.unbound_fields(form_schema)
+        super(GoodsExtraForm, self).__init__(*args, _fields=fields, **kwargs)
+        self._form_schema = form_schema
+
+
 extra_form_type_map = {
     'booster.89ers': _89ersExtraForm,
     'booster.bambitious': BambitiousExtraForm,
     'booster.bigbulls': BigbullsExtraForm,
     'fc': DynamicExtraForm,
+    'goods': GoodsExtraForm,
     }

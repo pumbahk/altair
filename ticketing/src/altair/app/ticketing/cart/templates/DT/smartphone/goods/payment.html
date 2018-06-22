@@ -1,0 +1,78 @@
+<%inherit file="layout.html" />
+<%block name="title">支払方法選択</%block>
+% if request.session.peek_flash():
+<ul class="error">
+  % for message in request.session.pop_flash():
+  <li>${message}</li>
+  % endfor
+</ul>
+% endif
+<form method="post" action="${request.current_route_path()}">
+  <div class="marginal">
+    <p>
+      代金の支払方法を指定して、「次に進む」ボタンをクリックして下さい。<br />
+      購入時には、代金のほかに支払方法により、手数料がかかる場合があります。
+    </p>
+  </div>
+  <% checked_id = request.params.get('payment_delivery_method_pair_id') %>
+  <table class="frame form">
+    <tbody>
+      % for m in payment_delivery_methods:
+      <% checked = 'checked' if str(m.id) == checked_id else '' %>
+      <tr>
+        <th style="text-align:left;">
+          <label><input type="radio" name="payment_delivery_method_pair_id" id="radio2" value="${m.id}" ${checked}>${m.payment_method.name} & ${m.delivery_method.name}</label>
+        </th>
+      </tr>
+      <tr>
+        <td>
+          <div>
+            ${m.payment_method.name}
+          </div>
+          <div>
+            決済手数料
+            ${h.format_currency(m.transaction_fee)}
+            (${h.fee_type(m.payment_method.fee_type)})
+          </div>
+          <p/>
+
+          <div>
+            ${m.delivery_method.name}
+          </div>
+          <div>
+            配送料
+            ${h.format_currency(m.delivery_fee)}
+            % if m.delivery_fee > 0:
+            (${h.fee_type(m.delivery_method.fee_type)})
+            % endif
+          </div>
+          <div>
+            ${m.delivery_method.description |n}
+          </div>
+          <p/>
+
+          % if m.system_fee > 0:
+          <div>
+            梱包料
+            ${h.format_currency(m.system_fee)}
+            (${h.fee_type(m.system_fee_type)})
+          </div>
+          % endif
+          % if m.special_fee > 0:
+          <div>
+            ${m.special_fee_name}
+            ${h.format_currency(m.special_fee)}
+            (${h.fee_type(m.special_fee_type)})
+          </div>
+          % endif
+        </td>
+      </tr>
+      % endfor
+    </tbody>
+  </table>
+
+  <div class="textC">
+    <input type="submit" name="back" value="戻る" class="submit half" />
+    <input type="submit" value="次に進む" class="submit half" />
+  </div>
+</form>
