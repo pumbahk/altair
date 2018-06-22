@@ -4,13 +4,13 @@ from __future__ import absolute_import
 import logging
 import itertools
 from zope.interface import implementer, providedBy, alsoProvides
-from pyramid.httpexceptions import HTTPForbidden
+from pyramid.httpexceptions import HTTPNotFound, HTTPForbidden
 from pyramid.interfaces import IAuthenticationPolicy, IRequest, IViewClassifier, IView, IMultiView
 from pyramid.security import Everyone, Authenticated, principals_allowed_by_permission
 
 from .api import get_auth_api, get_who_api, decide, get_request_classifier, get_plugin_registry
 from .interfaces import ISessionKeeper, IForbiddenHandler, IAltairAuthRequest, IRequestInterceptor
-
+from altair.rakuten_auth.openid import RakutenOpenIdAbolishmentError
 
 logger = logging.getLogger(__name__)
 
@@ -188,9 +188,14 @@ def challenge_view(context, request):
         if len(unauthenticated_plugin_names) > 0:
             response = HTTPForbidden()
             for plugin_name in unauthenticated_plugin_names:
-                if api.challenge(request, response, challenger_name=plugin_name):
+                is_challenge = api.challenge(request, response, challenger_name=plugin_name)
+                if is_challenge:
                     logger.debug('plugin requesting challenge: %s' % plugin_name)
                     break
+    except RakutenOpenIdAbolishmentError:
+        not_found = HTTPNotFound()
+        not_found.explanation = "Page not found."
+        return not_found
     except Exception:
         logger.exception("OOPS!")
         raise

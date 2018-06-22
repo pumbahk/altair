@@ -2,7 +2,12 @@
 <%namespace file="../../../__commons__/tags_mobile.html" name="mobile" />
 <%mobile:header>楽天会員の方はこちら</%mobile:header>
 <%mobile:form_get action="${request.route_path('mypage.show')}">
-<input type="submit" value="次に進む" />
+    <p>楽天会員ＩＤを利用しての照会は終了しました。
+        <br/>
+        パソコン、スマートフォン、タブレットで確認いただくか、
+        <a href="#">こちら</a>
+        から問い合わせしてください。
+    </p>
 </%mobile:form_get>
 
 <%mobile:header>一般の方のチケット確認</%mobile:header>
