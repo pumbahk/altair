@@ -16,6 +16,32 @@
       </tr>
       % endfor
       <tr>
+        <th>${__(u'決済手数料')}</th>
+        <td>￥${h.format_number(cart.transaction_fee)}</td>
+      </tr>
+% if cart.delivery_fee > 0:
+      <tr>
+        <th>${__(u'配送手数料')}</th>
+        <td>￥${h.format_number(cart.delivery_fee)}</td>
+      </tr>
+% endif
+% if cart.system_fee > 0:
+      <tr>
+        <th>${__(u'梱包料')}</th>
+        <td>￥${h.format_number(cart.system_fee)}</td>
+      </tr>
+% endif
+% if cart.special_fee > 0:
+      <tr>
+        <th>${order.special_fee_name}</th>
+        <td>￥${h.format_number(cart.special_fee)}</td>
+      </tr>
+% endif
+      <tr>
+        <th>合計金額</th>
+        <td>￥${h.format_number(cart.total_amount)}</td>
+      </tr>
+      <tr>
         <th>${view_context.fc_name if view_context.fc_name else u'氏名'}</th>
         <td>${cart.shipping_address.last_name} ${cart.shipping_address.first_name}</td>
       </tr>
