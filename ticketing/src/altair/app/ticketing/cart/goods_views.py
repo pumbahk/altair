@@ -1,10 +1,8 @@
 # -*- coding:utf-8 -*-
 import logging
-from datetime import date
-from webob.multidict import MultiDict
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.decorator import reify
-from pyramid.view import view_defaults, render_view_to_response
+from pyramid.view import view_defaults
 from markupsafe import escape, Markup
 
 from altair.formhelpers.fields import OurFormField
@@ -12,20 +10,14 @@ from altair.formhelpers.validators import DynSwitchDisabled
 from altair.pyramid_dynamic_renderer import lbr_view_config
 from altair.viewhelpers.numbers import create_number_formatter
 from altair.request.adapters import UnicodeMultiDictAdapter
-from altair.app.ticketing.payments import api as payment_api
 from altair.app.ticketing.payments.payment import Payment
-from altair.app.ticketing.payments.exceptions import PaymentDeliveryMethodPairNotFound
 from altair.app.ticketing.core import models as c_models
-from altair.app.ticketing.users.models import User, UserProfile
 from altair.app.ticketing.fanstatic import with_jquery, with_jquery_tools
 from altair.app.ticketing.views import mobile_request
-from altair.app.ticketing.models import DBSession
 
 from . import api
 from . import schemas
 from .helpers import sex_value
-from .events import notify_order_completed
-from .exceptions import NoCartError, InvalidCSRFTokenException
 from .views import PaymentView, ConfirmView, CompleteView
 from .rendering import selectable_renderer
 from .view_support import back, is_goods_cart_pred
@@ -34,21 +26,21 @@ from .resources import CompleteViewTicketingCartResource
 logger = logging.getLogger(__name__)
 
 # FIXME
-FC_SESSION_KEY = 'altair.cart.goods.user_profile'
+GOODS_SESSION_KEY = 'altair.cart.goods.user_profile'
 
 def clear_user_profile(request, performance_id):
-    if "{}{}".format(FC_SESSION_KEY, performance_id) in request.session:
-        del request.session["{}{}".format(FC_SESSION_KEY, performance_id)]
+    if "{}{}".format(GOODS_SESSION_KEY, performance_id) in request.session:
+        del request.session["{}{}".format(GOODS_SESSION_KEY, performance_id)]
 
 
 def store_user_profile(request, user_profile, performance_id):
     logger.debug('stored user profile=%r' % user_profile)
-    request.session["{}{}".format(FC_SESSION_KEY, performance_id)] = user_profile
+    request.session["{}{}".format(GOODS_SESSION_KEY, performance_id)] = user_profile
 
 
 def load_user_profile(request, performance_id):
-    logger.debug('loaded user profile=%r' % request.session.get(FC_SESSION_KEY))
-    return request.session.get("{}{}".format(FC_SESSION_KEY, performance_id))
+    logger.debug('loaded user profile=%r' % request.session.get(GOODS_SESSION_KEY))
+    return request.session.get("{}{}".format(GOODS_SESSION_KEY, performance_id))
 
 def back_to_top2(request):
     performance_id = request.context.performance.id
@@ -79,7 +71,7 @@ from altair.app.ticketing.cart.views import jump_maintenance_page_for_trouble
     custom_predicates=(is_goods_cart_pred,),
     permission="buy"
     )
-class FCEventIndexView(object):
+class GoodsEventIndexView(object):
     def __init__(self, context, request):
         self.context = context
         self.request = request
@@ -110,7 +102,7 @@ class FCEventIndexView(object):
     custom_predicates=(is_goods_cart_pred,),
     permission="buy"
     )
-class FCIndexView(object):
+class GoodsIndexView(object):
     def __init__(self, context, request):
         self.context = context
         self.request = request
@@ -225,7 +217,7 @@ class FCIndexView(object):
     custom_predicates=(is_goods_cart_pred,),
     permission="buy"
     )
-class FCPaymentView(PaymentView):
+class GoodsPaymentView(PaymentView):
     @reify
     def _user_profile(self):
         return load_user_profile(self.request, self.context.performance.id)
@@ -278,11 +270,11 @@ class FCPaymentView(PaymentView):
                 if k not in {'product_delivery_method'}
                 )
             api.store_extra_form_data(self.request, extra_data)
-        return super(FCPaymentView, self).post()
+        return super(GoodsPaymentView, self).post()
 
     @lbr_view_config(request_method="GET")
     def get(self):
-        return super(FCPaymentView, self).get()
+        return super(GoodsPaymentView, self).get()
 
 
 @view_defaults(
@@ -291,25 +283,25 @@ class FCPaymentView(PaymentView):
     renderer=selectable_renderer("goods/confirm.html"),
     custom_predicates=(is_goods_cart_pred,),
     permission="buy")
-class FCConfirmView(ConfirmView):
+class GoodsConfirmView(ConfirmView):
     @lbr_view_config(request_method="GET")
     def get(self):
-        return super(FCConfirmView, self).get()
+        return super(GoodsConfirmView, self).get()
 
 @view_defaults(
     route_name='payment.finish',
     decorator=with_jquery.not_when(mobile_request),
     renderer=selectable_renderer("goods/completion.html"),
     custom_predicates=(is_goods_cart_pred,))
-class FCCompleteView(CompleteView):
+class GoodsCompleteView(CompleteView):
     @lbr_view_config(route_name='payment.confirm', request_method="POST")
     @lbr_view_config(route_name='payment.finish.mobile', request_method="POST")
     def post(self):
         performance_id = self.context.performance.id
-        retval = super(FCCompleteView, self).post()
+        retval = super(GoodsCompleteView, self).post()
         clear_user_profile(self.request, performance_id)
         return retval
 
     @lbr_view_config(context=CompleteViewTicketingCartResource)
     def get(self):
-        return super(FCCompleteView, self).get()
+        return super(GoodsCompleteView, self).get()
