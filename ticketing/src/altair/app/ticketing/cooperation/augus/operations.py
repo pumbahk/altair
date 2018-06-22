@@ -307,38 +307,25 @@ class AugusWorker(object):
             transaction.commit()
         return putback_codes
 
-    def achieve(self, all_=False, sleep=1.5):
+    def achieve(self, exporter, all_):
         logger.info('start augus distribition: augus_account_id={}'.format(self.augus_account.id))
         staging = self.path.send_dir_staging
-        exporter = AugusAchievementExporter()
-        now = datetime.datetime.now()
-        moratorium = datetime.timedelta(days=90)
-        qs = AugusPerformance\
-          .query\
-          .join(AugusPerformance.performance) \
-          .filter(AugusPerformance.augus_account_id==self.augus_account.id) \
-          .filter(sa.or_(Performance.start_on >= now - moratorium, Performance.end_on >= now - moratorium))
+        ag_performances = exporter.get_target_augus_performances(self.augus_account.id, all_)
 
-        if not all_:
-            qs = qs.filter(AugusPerformance.is_report_target==True)
-        else:
-            qs = qs.filter(AugusPerformance.stoped_at==None)
-
-        ag_performances = qs.all()
-        ids = [ag_performance.id for ag_performance in ag_performances]
         for ag_performance in ag_performances:
-            time.sleep(sleep)
             logger.info('Achievement export start: AugusPerformance.id={}'.format(ag_performance.id))
             res = exporter.export_from_augus_performance(ag_performance)
             res.customer_id = self.augus_account.code
             path = os.path.join(staging, res.name)
             logger.info('export: {}'.format(path))
             AugusExporter.export(res, path)
-            ag_performance.is_report_target = False
-            ag_performance.save()
-        transaction.commit()
-        return ids
 
+            master = AugusPerformance.query.get(ag_performance.id)
+            master.is_report_target = False
+            master.save()
+
+        transaction.commit()
+        return ag_performances
 
     def venue_sync_request(self, mailer, sleep=2):
         logger.info('start augus venue sync request: augus_account_id={}'.format(self.augus_account.id))
@@ -551,33 +538,22 @@ class AugusOperationManager(object):
                     params,
                     )
 
-
-    def achieve(self, mailer, all_=False):
+    def achieve(self, mailer, all_=False, now=None):
+        exporter = AugusAchievementExporter(now)
         for worker in self.augus_workers():
-            augus_account_id = worker.augus_account.id
-            ids = []
             try:
-                ids = worker.achieve(all_)
+                ag_performances = worker.achieve(exporter, all_)
             except:
                 raise
 
-            if mailer and len(ids):
-                augus_performances = AugusPerformance\
-                    .query\
-                    .filter(AugusPerformance.id.in_(ids))\
-                    .filter(AugusPerformance.augus_account_id==augus_account_id)\
-                    .all()
-
-                params = {
-                    'augus_performances': augus_performances,
-                    }
-
+            if mailer and len(ag_performances):
+                params = {'augus_performances': ag_performances}
                 self.send_mail(
                     mailer, worker.augus_account,
                     u'【オーガス連携】販売実績通知のおしらせ',
                     'altair.app.ticketing:templates/cooperation/augus/mails/augus_achievement.html',
                     params,
-                    )
+                )
 
     def venue_sync_request(self, mailer=None):
         for worker in self.augus_workers():
