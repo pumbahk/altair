@@ -88,7 +88,7 @@ function zip_switcher(select) {
     <%
     checked_id = request.params.get('payment_delivery_method_pair_id')
     radio_cnt = 0
-    %>
+    %>payment_delivery_methods
     %for m in payment_delivery_methods:
     <% radio_cnt += 1 %>
     <div class="settlement-wrap">
@@ -130,9 +130,21 @@ function zip_switcher(select) {
                 </tr>
                 <tr>
                   <td>
-                    <p class="commission">${_(u'手数料')}</p>
-                    ※${_(h.fee_type(m.delivery_method.fee_type))}<br>
-                    ${h.format_currency(m.delivery_fee)}
+                    % if m.delivery_fee_type == 0:
+                      <div class="dispBox devlieryFee_${h.format_number(m.delivery_fee)}">
+                        <span class="deliveryFee">${h.format_currency(m.delivery_fee)}</span>
+                        <span class="deliveryFeeType">(${h.fee_type(m.delivery_fee_type)})</span>
+                      </div>
+                    % else:
+                        <span class="deliveryFeeLabel">本券</span>
+                        <span class="deliveryFee">${h.format_currency(m.delivery_fee)}</span>
+                        <span class="deliveryFeeType">(${h.fee_type(m.delivery_fee_type)})</span>
+                        <br/>
+                        <span class="deliveryFeeLabel">副券</span>
+                        <span class="deliveryFee">${h.format_currency(m.delivery_fee_per_sub_ticket)}</span>
+                        <span class="deliveryFeeType">(${h.fee_type(m.delivery_fee_type)})</span>
+                    % endif
+                    <div class="description">${m.delivery_method.description or '' | n}</div>
                   </td>
                 </tr>
               </tbody>
