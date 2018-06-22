@@ -50,6 +50,11 @@ if label is None or label is True:
       <tr>
         <th>
           <span>${product.name}</span>
+          %if request.session.peek_flash():
+              %for message in request.session.pop_flash():
+              <div class="error">${message}</div>
+              %endfor
+          %endif
         </th>
         <td>
           <select id="${product.id}-quantity" name="${product.id}-quantity">

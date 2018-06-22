@@ -200,6 +200,9 @@ class FCIndexView(object):
             self.request.errors = form.errors
             return dict(form=form, extra_form_fields=extra_form_fields, products=products, max_quantity=self.sales_segment.max_quantity)
         product_quantity_list = self.get_product_quantity_list()
+        if not product_quantity_list:
+            self.request.session.flash(u'購入する商品を選択してください')
+            return dict(form=form, extra_form_fields=extra_form_fields, products=products, max_quantity=self.sales_segment.max_quantity)
         cart = api.order_products(
             self.request,
             self.sales_segment,
