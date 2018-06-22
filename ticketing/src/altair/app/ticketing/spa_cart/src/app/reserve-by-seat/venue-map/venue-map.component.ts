@@ -1456,16 +1456,16 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
     return (viewBox) ? viewBox.split(' ') : null;
   }
 
-  //座席選択時の画面拡大縮小
+  //会場図表示領域の拡大縮小
   seatSelectDisplay(flag: boolean) {
     let windowHeight = $(window).height();
-    let allHead: number = $('header').height() + $('.headArea').height() + $('.choiceAreaMenuBtn').height() + $('#colorNavi').height();
+    let allHead = $('header').height() + $('.headArea').height() + $('.choiceAreaMenuBtn').height() + $('#colorNavi').height();
     let orientation = window.orientation;
-    //true/拡大を戻す、false/拡大
-    if (flag) {
-      //スマホ表示
-      if (this.smartPhoneCheckService.isSmartPhone() || this.smartPhoneCheckService.isTabletSP()) {
-        if (orientation == 0 || orientation == 180) {//縦向き
+    if (this.smartPhoneCheckService.isSmartPhone() || this.smartPhoneCheckService.isTabletSP()) {
+      if (orientation == 0 || orientation == 180) {
+        //スマホ表示かつ縦向き
+        if (flag) {
+          //会場図表示領域を縮小
           if (this.seatAreaHeight) {
             $('#mapAreaLeft').css({
               'height': this.seatAreaHeight,
@@ -1474,14 +1474,8 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
               this.setAspectRatio();
             }, 0);
           }
-        }
-      //PC表示
-      } else {
-        this.stockTypeDataService.sendToSeatListFlag(true);
-      }
-    } else {
-      if (this.smartPhoneCheckService.isSmartPhone() || this.smartPhoneCheckService.isTabletSP()) {
-        if (orientation == 0 || orientation == 180) {//縦向き
+        } else {
+          //会場図表示領域を拡大
           this.seatAreaHeight = $("#mapImgBox").height();
           $('#mapAreaLeft').css({
             'height': windowHeight - allHead,
@@ -1490,9 +1484,10 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
             this.setAspectRatio();
           }, 0);
         }
-      } else {
-        this.stockTypeDataService.sendToSeatListFlag(true);
       }
+    } else if (this.countSelect == 0) {
+      //PC表示で座席未選択
+      this.stockTypeDataService.sendToSeatListFlag(true);
     }
   }
   //現在のアスペクト比を合わせる
