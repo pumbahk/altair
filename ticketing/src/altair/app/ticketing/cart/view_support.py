@@ -1086,6 +1086,9 @@ def is_booster_cart_pred(context, request):
 def is_fc_cart_pred(context, request):
     return api.is_fc_cart(context.cart_setting)
 
+def is_goods_cart_pred(context, request):
+    return api.is_goods_cart(context.cart_setting)
+
 def is_booster_or_fc_cart_pred(context, request):
     return api.is_booster_or_fc_cart(context.cart_setting)
 

@@ -1,0 +1,357 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="ja">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+  <title>${view_context.title}</title>
+  <style type="text/css">
+body {
+    margin: 0;
+    padding: 0;
+    background: #f4f3f1 none repeat scroll 0 0;
+    color: #000;
+    font-family: Meiryo,"Hiragino Kaku Gothic ProN",MS-PGothic,sans-serif;
+    font-size: 62.5%;
+}
+table.layout {
+    border: 0;
+    border-collapse: collapse;
+    border-spacing: 0;
+    background-color: #fff;
+    color: #000;
+}
+table.layout tr {
+    padding: 0 0;
+    margin: 0 0;
+}
+table.layout td {
+    padding: 0 0;
+    margin: 0 0;
+    text-align: left;
+}
+img {
+    border: 0;
+    vertical-align: bottom;
+}
+img a {
+    border: 0;
+}
+h1 {
+    display: none;
+}
+h2 {
+    margin: 0 0 20px;
+    padding: 8px 12px;
+    background: #0c1b6f none repeat scroll 0 0;
+    color: #fff;
+    font-size: 20px;
+    text-align: left;
+}
+.title-right-description {
+    margin: 0 0 3px;
+	font-size: 12px;
+    font-weight: normal;
+    text-align: right;
+}
+h3 {
+    text-align: left;
+    color: #000;
+    border-bottom: 2px solid #0c1b6f;
+    padding: 0 0 3px 10px;
+    margin: 0 0 10px;
+    font-size: 18px;
+}
+.main {
+    width: 950px;
+    margin: 0 auto 20px;
+    padding: 20px;
+    background: #fff no-repeat scroll 0 0;
+    box-sizing: border-box;
+}
+.main form {
+    padding: 0;
+    margin: 0;
+}
+.main ul.error {
+    margin: 0 30px;
+    padding: 8px 30px;
+    background-color: rgba(255, 255, 255, .5);
+    border-radius: 8px 8px;
+}
+.main > p {
+    color: #fff; 
+    font-weight: bold;
+    padding-left: 1%;
+}
+.marginal {
+	margin: 0 0 3px 3px;
+	font-size: 12px;
+    text-align: left;
+}
+.marginal p {
+	margin: 0;
+}
+.frame {
+    width: 100%;
+    margin: 0px auto 20px !important;
+    border: 3px solid #ccc !important;
+    font-size: 14px;
+    text-align: left;
+}
+.frame-inner {
+    background: #fff no-repeat scroll 0 0;
+    padding: 10px;
+}
+.frame.frame-inner {
+    width: auto;
+}
+.frame-inner p {
+    margin-top: 0;
+}
+table.form {
+    width: 100%;
+    padding: 0;
+    margin: 0;
+    border-collapse: collapse;
+    border: none;
+}
+table.form tbody th {
+    width: 25%;
+    padding: 15px 20px 15px 10px;
+    border-collapse: collapse;
+    background: #fbfbfb none repeat scroll 0 0;
+    border: 1px solid #ccc;
+    text-align: left;
+	font-weight: bold;
+	white-space: nowrap;
+}
+table.form thead th {
+    background-color: #efefef;
+    border-collapse: collapse;
+    padding: 10px;
+    border-bottom: 1px solid #fff;
+    text-align: left;
+    font-size: 16px;
+}
+table.form td {
+    padding: 15px;
+    background: #f4f3f1 none repeat scroll 0 0;
+    border: 1px solid #ccc;
+	text-align: left;
+}
+table.form tfoot td {
+    background: #fff no-repeat scroll 0 0;
+    padding: 15px;
+}
+.control-segment ul {
+    list-style-type: none;
+    padding: 0 0;
+    margin: 0 0;
+}
+.field-note {
+    display: inline-block;
+    font-size: 14px;
+}
+.control-segment .error {
+    display: inline-block;
+}
+.red {
+    color: #970018;
+}
+.textRight {
+    text-align: right;
+}
+.textR {
+    text-align: right !important;    
+}
+.textL {
+    text-align: left !important;    
+}
+.textC {
+    text-align: center !important;    
+}
+.clear {
+    clear: both !important;
+}
+.font12 {
+    font-size: 12px;
+}
+.font14 {
+    font-size: 14px;
+}
+.font16 {
+    font-size: 16px;
+}
+.font18 {
+    font-size: 18px;
+}
+.font20 {
+    font-size: 20px;
+}
+input.submit {
+    display: inline-block;
+    width: 20%;
+    margin: 0 auto;
+    padding: 15px;
+    border: none;
+    background: #fe5200 none repeat scroll 0 0;
+    color: #fff;
+    font-size: 16px;
+    font-weight: bold;
+    text-align: center;
+    cursor: pointer;
+}
+input.submit:hover {
+    opacity: 0.8;
+}
+input.submit.half {
+    width: 200px;
+}
+table.purchasedContents {
+    border-collapse: collapse;
+    width: 100%;
+    background: #fff;
+    margin: 0 auto;
+}
+table.purchasedContents thead th {
+    border: none;
+    font-size: 16px;
+    text-align: left;
+    padding: 10px;
+}
+table.purchasedContents thead th span {
+    border-left: 2px #888 solid;
+    padding: 5px;
+}
+table.purchasedContents tbody tr {
+    border-top: 1px #efefef solid;
+}
+table.purchasedContents td {
+    padding: 3px 18px;
+}
+table.purchasedContents td ul {
+    padding: 0 0 0 20px;
+}
+table.purchasedContents td ul li {
+    margin-top: 3px;
+}
+table.purchasedContents tfoot td {
+    border-top: 1px #ccc solid;
+    font-size: 16px;
+    text-align: left;
+    padding: 10px 18px;
+}
+table.purchasedContents tfoot td .paymentCoupon {
+    -moz-box-shadow:inset 0px 1px 0px 0px #d67c75;
+    -webkit-box-shadow:inset 0px 1px 0px 0px #d67c75;
+    box-shadow:inset 0px 1px 0px 0px #d67c75;
+    background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #ad271d), color-stop(1, #661d16) );
+    background:-moz-linear-gradient( center top, #ad271d 5%, #661d16 100% );
+    filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#ad271d', endColorstr='#661d16');
+    background-color:#ad271d;
+    -moz-border-radius:6px;
+    -webkit-border-radius:6px;
+    border-radius:6px;
+    border:1px solid #d83526;
+    display:inline-block;
+    color:#ffffff;
+    font-family:arial;
+    font-size:15px;
+    font-weight:bold;
+    padding:6px 60px;
+    text-decoration:none;
+    text-shadow:1px 1px 0px #98231a;
+}
+table.purchasedContents tfoot td .paymentCoupon:hover {
+    background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #661d16), color-stop(1, #ad271d) );
+    background:-moz-linear-gradient( center top, #661d16 5%, #ad271d 100% );
+    filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#661d16', endColorstr='#ad271d');
+    background-color:#661d16;
+}
+table.purchasedContents tfoot td .paymentCoupon:active {
+    position:relative;
+    top:1px;
+}
+.footer {
+    margin: 0 auto;
+    padding: 10px 0;
+    background: #fff no-repeat scroll 0 0;
+	font-size: 14px;
+    text-align: center;
+}
+.footer .footernav {
+    margin: 10px auto;
+}
+.footer .footernav ul {
+    display: inline;
+    font-size: 75%;
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
+.footer .footernav ul li.first {
+    border-left: medium none;
+}
+.footer .footernav ul li {
+    border-left: 1px solid #534741;
+    display: inline;
+    padding: 0 6px;
+    white-space: nowrap;
+}
+.footer .copyright {
+    color: #CCCCCC;
+    font-size: 75%;
+}
+.error {
+    margin: 0;
+    color: red;
+    font-weight: bold;
+    font-size: 12px;
+}
+.form-field-message {
+    color: #970018;
+}
+.importantNumber {
+    margin: 0 0 20px;
+	padding: 20px;
+	border: 1px solid #e3e0db;
+	color: #bf191f;
+    font-size: 1.6rem;
+    font-weight: bold;
+	text-align: left;
+}
+</style>
+  <link rel="shortcut icon" href="${view_context.static_url('pc/images/favicon.ico')}" />
+  <script type="text/javascript" src="${request.static_url('altair.app.ticketing.cart:static/js/disable_on_submit.js')}"></script>
+  <script type="text/javascript">
+$(function() {
+  $('form').disableOnSubmit('input[type=submit][name!="back"]');
+});
+</script>
+<%block name="javascript"></%block>
+<link rel="stylesheet" href="${view_context.static_url('pc/css/custom_fc.css')}" type="text/css" media="all">
+</head>
+<body>
+  <div align="center">
+    <div class="header">
+      <img src="${view_context.header_image_url}" alt="${view_context.team_name}" width="950" height="64" />
+    </div>
+    <h1 class="title">${view_context.title}</h1>
+    <div class="main">
+      <h2><%block name="title"></%block></h2>
+      ${self.body()}
+    </div>
+    <div class="footer">
+      <div class="footernav">
+        <ul>
+          <li class="first"><a href="${view_context.contact_url}">お問い合わせ</a></li>
+          <li><a target="_blank" href="${view_context.privacy_policy_page_url}">個人情報保護方針</a></li>
+          <li class="last"><a target="_blank" href="${view_context.legal_notice_page_url}">特定商取引法に基づく表示</a></li>
+        </ul>
+      </div>
+      <div class="copyright">
+         &copy; TicketStar, Inc. 
+      </div>
+    </div>
+  </div>
+</body>
+</html>

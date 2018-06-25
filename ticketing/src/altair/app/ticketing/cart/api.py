@@ -668,6 +668,10 @@ def is_fc_cart(cart_setting):
     return cart_setting.fc_cart if cart_setting else False
 
 
+def is_goods_cart(cart_setting):
+    return cart_setting.goods_cart if cart_setting else False
+
+
 class _DummyCart(c_models.CartMixin):
     order_no = u'ZZ0000000000'
 

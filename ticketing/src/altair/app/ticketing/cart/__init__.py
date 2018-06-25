@@ -124,6 +124,8 @@ def setup_payment_renderers(config):
                ICartResource.providedBy(request.context):
                 if api.is_booster_cart(request.context.cart_setting):
                     path_or_renderer_name = 'booster/' + path_or_renderer_name
+                elif api.is_goods_cart(request.context.cart_setting):
+                    path_or_renderer_name = 'goods/' + path_or_renderer_name
                 elif api.is_fc_cart(request.context.cart_setting):
                     path_or_renderer_name = 'fc/' + path_or_renderer_name
             return self.selectable_renderer_helper_factory(
@@ -309,6 +311,7 @@ def setup_layouts(config):
             )
     config.add_lbr_layout(".layouts.Layout", template=layout_selector("booster.html"), name='booster')
     config.add_lbr_layout(".layouts.Layout", template=layout_selector("fc.html"), name='fc')
+    config.add_lbr_layout(".layouts.Layout", template=layout_selector("goods.html"), name='goods')
 
 def setup_panels(config):
     from .rendering import selectable_renderer

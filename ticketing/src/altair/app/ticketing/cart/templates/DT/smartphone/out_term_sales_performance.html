@@ -1,0 +1,35 @@
+<%inherit file="./base.html"/>
+<p>${_(u'誠に申し訳ございませんが')}</p>
+% if which == 'next':
+%   if sales_segment is not None:
+<p>${_(u'performance.name (sales_segment.name) の販売は').format(performance.name, sales_segment.name)}</p>
+%   else:
+<p>${_(u'event.title (performance.name) の販売は').format(event.title, performance.name)}</p>
+%   endif
+<p>
+${h.i18n_datetime(start_at)}
+% if end_at:
+〜 ${h.i18n_datetime(end_at)} 
+% endif
+</p>
+<p>${_(u'となっております。')}</p>
+<p>${_(u'販売期間内にアクセスしていただきますようお願いいたします。')}</p>
+% else:
+%   if sales_segment is not None:
+<p>${_(u'performance.name (sales_segment.name) の販売は').format(performance.name, sales_segment.name)}</p>
+%   else:
+<p>${_(u'event.title (performance.name) の販売は').format(event.title, performance.name)}</p>
+%   endif
+<p>${h.i18n_datetime(end_at)} まで</p>
+<p>${_(u'とさせていただいております。')}</p>
+% endif
+% if available_sales_segments:
+<p>${_(u'なお、本公演の他の日付、会場のチケットは下記からお買い求めいただけます。')}</p>
+<ul>
+%   for _sales_segment in available_sales_segments:
+<li><a href="${h.cart_url(request, sales_segment=_sales_segment)}">${h.format_name(request, sales_segment=_sales_segment)}</a></li>
+%   endfor
+</ul>
+% else:
+<p>${_(u'他の公演のチケットは<a href=\"request.context.host_base_url\">こちら</a>からお買い求めくださいますようお願いいたします。').format(request.context.host_base_url) |n}</p>
+% endif
