@@ -130,6 +130,7 @@ function zip_switcher(select) {
                 </tr>
                 <tr>
                   <td>
+                    <p class="commission">${_(u'手数料')}</p>
                     % if m.delivery_fee_type == 0:
                       <div class="dispBox devlieryFee_${h.format_number(m.delivery_fee)}">
                         <span class="deliveryFee">${h.format_currency(m.delivery_fee)}</span>

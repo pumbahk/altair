@@ -101,20 +101,20 @@ function zip_switcher(select) {
                 <dl>
                   <dd class="devlieryFee_${h.format_number(m.delivery_fee)}">
                   % if m.delivery_fee_type == 0:
-                    <span class="deliveryFeeLabel">手数料</span>
-                    <span class="deliveryFee">${h.format_currency(m.delivery_fee)}</span>
-                    <span class="deliveryFeeType">(${h.fee_type(m.delivery_method.fee_type)})</span>
+                  <span class="deliveryFeeLabel">${_(u'手数料')}</span>
+                  <span class="deliveryFee">${h.format_currency(m.delivery_fee)}</span>
+                  <span class="deliveryFeeType">(${_(h.fee_type(m.delivery_method.fee_type))})</span>
                   % else:
                     <dl class="deliveryMainSubBox">
-                      <dt style="width:auto; font-weight: normal;">手数料</dt>
+                      <dt style="width:auto; font-weight: normal; color:black !important;">${_(u'手数料')}</dt>
                       <dd>
-                        <span class="deliveryFeeLabel">本券</span>
+                        <span class="deliveryFeeLabel">${_(u'本券')}</span>
                         <span class="deliveryFee">${h.format_currency(m.delivery_fee)}</span>
-                        <span class="deliveryFeeType">(${h.fee_type(m.delivery_fee_type)})</span>
+                        <span class="deliveryFeeType">(${_(h.fee_type(m.delivery_fee_type))})</span>
                         <br/>
-                        <span class="deliveryFeeLabel">副券</span>
+                        <span class="deliveryFeeLabel">${_(u'副券')}</span>
                         <span class="deliveryFee">${h.format_currency(m.delivery_fee_per_sub_ticket)}</span>
-                        <span class="deliveryFeeType">(${h.fee_type(m.delivery_fee_type)})</span>
+                        <span class="deliveryFeeType">(${_(h.fee_type(m.delivery_fee_type))})</span>
                       </dd>
                     </dl>
                   % endif
@@ -143,7 +143,7 @@ function zip_switcher(select) {
                       <dt>${m.special_fee_name}</dt>
                       <dd class="paymentFee_${h.format_number(m.transaction_fee)}">
                         <span class="paymentFee">${h.format_currency(m.special_fee)}</span>
-                        <span class="paymentFeeType">(${h.fee_type(m.special_fee_type)})</span>
+                        <span class="paymentFeeType">(${_(h.fee_type(m.special_fee_type))})</span>
                       </dd>
                       %endif
                     </dl>

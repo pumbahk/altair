@@ -1506,3 +1506,9 @@ msgstr "라쿠텐 포인트 계좌를 확인하려면"
 
 msgid "こちら"
 msgstr "이쪽으로"
+
+msgid "本券"
+msgstr "주 티켓"
+
+msgid "副券"
+msgstr "부 티켓"

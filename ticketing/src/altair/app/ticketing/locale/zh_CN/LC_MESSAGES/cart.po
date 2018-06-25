@@ -1,6 +1,5 @@
 msgid ""
 msgstr ""
-
 # common
 
 msgid "チケット情報・販売・購入・予約"
@@ -1507,3 +1506,9 @@ msgstr "查看乐天积分账户，"
 
 msgid "こちら"
 msgstr "请点击这里"
+
+msgid "本券"
+msgstr "主券"
+
+msgid "副券"
+msgstr "副券"
