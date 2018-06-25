@@ -382,14 +382,14 @@ class TestOurHTTPConnection(unittest.TestCase):
         term = GuardedValue(False)
 
         st = threading.Thread(
-            target=self._make_server(ssl_version=ssl.PROTOCOL_TLSv1),
+            target=self._make_server(ssl_version=ssl.PROTOCOL_SSLv23),
             kwargs=dict(
                 fut=fut,
                 term=term)
             )
         st.start()
         ct = threading.Thread(
-            target=self._make_client(ssl_version=ssl.PROTOCOL_TLSv1),
+            target=self._make_client(ssl_version=ssl.PROTOCOL_SSLv23),
             kwargs=dict(
                 fut=fut,
                 term=term
@@ -408,7 +408,7 @@ class TestOurHTTPConnection(unittest.TestCase):
         term = GuardedValue(False)
 
         st = threading.Thread(
-            target=self._make_server(ssl_version=ssl.PROTOCOL_TLSv1),
+            target=self._make_server(ssl_version=ssl.PROTOCOL_SSLv23),
             kwargs=dict(
                 fut=fut,
                 term=term)
