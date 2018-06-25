@@ -4,7 +4,7 @@ from __future__ import absolute_import
 import logging
 import itertools
 from zope.interface import implementer, providedBy, alsoProvides
-from pyramid.httpexceptions import HTTPNotFound, HTTPForbidden
+from pyramid.httpexceptions import HTTPForbidden
 from pyramid.interfaces import IAuthenticationPolicy, IRequest, IViewClassifier, IView, IMultiView
 from pyramid.security import Everyone, Authenticated, principals_allowed_by_permission
 
