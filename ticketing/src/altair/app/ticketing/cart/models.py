@@ -954,16 +954,19 @@ class CartSetting(Base, WithTimestamp, LogicallyDeleted):
 
     @property
     def booster_or_fc_cart(self):
-        from .schemas import extra_form_type_map
-        return self.type in extra_form_type_map
+        return self.type == 'booster' or self.type == 'fc'
 
     @property
     def booster_cart(self):
-        return self.booster_or_fc_cart and not self.fc_cart
+        return self.type == 'booster'
 
     @property
     def fc_cart(self):
         return self.type == 'fc'
+
+    @property
+    def goods_cart(self):
+        return self.type == 'goods'
 
     @property
     def hidden_venue_html(self):

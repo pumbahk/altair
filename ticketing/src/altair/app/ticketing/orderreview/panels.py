@@ -19,3 +19,8 @@ def order_detail_booster(context, request, order, user_point_accounts=None, loca
 @panel_config('order_detail.fc', renderer=selectable_renderer('order_review/_order_detail_fc.html'))
 def order_detail_fc(context, request, order, user_point_accounts=None, locale=None):
     return {'order': order, 'user_point_accounts': user_point_accounts, 'locale': locale}
+
+
+@panel_config('order_detail.goods', renderer=selectable_renderer('order_review/_order_detail_goods.html'))
+def order_detail_goods(context, request, order, user_point_accounts=None, locale=None):
+    return {'order': order, 'user_point_accounts': user_point_accounts, 'locale': locale}

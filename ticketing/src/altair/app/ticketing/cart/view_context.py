@@ -216,6 +216,9 @@ def determine_layout(event):
             request.layout_manager.use_layout('booster')
         elif api.is_fc_cart(cart_setting):
             request.layout_manager.use_layout('fc')
+        elif api.is_fc_cart(cart_setting):
+            request.layout_manager.use_layout('goods')
+
 
 def includeme(config):
     config.add_request_method(get_cart_view_context_factory(config.registry), 'view_context', reify=True)
