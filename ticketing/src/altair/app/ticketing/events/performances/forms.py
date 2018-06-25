@@ -4,7 +4,7 @@ from .api import get_no_ticket_bundles
 
 from datetime import datetime, timedelta
 from wtforms import Form
-from wtforms import TextField, HiddenField, TextAreaField, BooleanField
+from wtforms import TextField, HiddenField, TextAreaField, BooleanField, FileField, SelectMultipleField
 from wtforms.validators import Regexp, Length, Optional, ValidationError
 
 from altair.formhelpers import Translations, Required, NullableTextField, JISX0208, after1900
@@ -589,3 +589,21 @@ class PerformanceResaleRequestSearchForm(OurForm):
 
     def get_sent_status(self):
         return [val for (key, val) in SentStatus.__dict__.items() if key in self and self[key].data]
+
+
+class PerformancePriceBatchUpdateForm(OurForm):
+    sales_segment_id = SelectMultipleField(
+        label=u'販売区分',
+        choices=None,
+        validators=[Required(u'販売区分を選択してください。')],
+        coerce=lambda x: long(x) if x else u""
+    )
+    # FileFieldでRequiredを指定しても正しく機能しないため、Validatorを自作する
+    price_csv = FileField(
+        u'CSVファイル',
+        validators=[]
+    )
+
+    def validate_price_csv(form, field):
+        if field.data == u'':
+            raise ValidationError(u'CSVを指定してください。')

@@ -1,0 +1,43 @@
+<%page args="stats" />
+<%namespace file="_helpers.html" name="ph" />
+
+<table class="table table-bordered">
+  <tbody>
+    <tr>
+      <th style="width:200px;">ID</th>
+      <td>${stats['task_id'] if stats['task_id'] else u''}</td>
+    </tr>
+    <tr>
+      <th>オペレーター</th>
+      <td>${ph.get_operator_name(stats['operator'])}</td>
+    </tr>
+    <tr>
+      <th>ステータス</th>
+      <td>${ph.get_status_label(stats['status'])}</td>
+    </tr>
+    <tr>
+      <th>対象販売区分</th>
+      <td>${ph.get_sales_segment_label(stats['sales_segments'])}</td>
+    </tr>
+    <tr>
+      <th>商品数</th>
+      <td>${stats['count']}</td>
+    </tr>
+    <tr>
+      <th>一括変更エラーコード</th>
+      <td>${ph.get_itemization(stats['errors'])}</td>
+    </tr>
+    <tr>
+      <th>一括変更エラー詳細</th>
+      <td>${ph.get_itemization(stats['error_descriptions'])}</td>
+    </tr>
+    <tr>
+      <th>登録日時</th>
+      <td>${stats['created_at'] if stats['created_at'] else u''}</td>
+    </tr>
+    <tr>
+      <th>更新日時</th>
+      <td>${stats['updated_at'] if stats['updated_at'] else u''}</td>
+    </tr>
+  </tbody>
+</table>
