@@ -137,11 +137,11 @@ function zip_switcher(select) {
                         <span class="deliveryFeeType">(${h.fee_type(m.delivery_fee_type)})</span>
                       </div>
                     % else:
-                        <span class="deliveryFeeLabel">本券</span>
+                        <span class="deliveryFeeLabel">${_(u'本券')}</span>
                         <span class="deliveryFee">${h.format_currency(m.delivery_fee)}</span>
                         <span class="deliveryFeeType">(${h.fee_type(m.delivery_fee_type)})</span>
                         <br/>
-                        <span class="deliveryFeeLabel">副券</span>
+                        <span class="deliveryFeeLabel">${_(u'副券')}</span>
                         <span class="deliveryFee">${h.format_currency(m.delivery_fee_per_sub_ticket)}</span>
                         <span class="deliveryFeeType">(${h.fee_type(m.delivery_fee_type)})</span>
                     % endif
