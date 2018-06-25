@@ -15,7 +15,7 @@ from datetime import datetime
 
 from zope.interface import implementer
 from beaker.cache import Cache, CacheManager, cache_regions
-from pyramid.httpexceptions import HTTPNotFound, HTTPFound, HTTPUnauthorized
+from pyramid.httpexceptions import HTTPNotFound, HTTPFound, HTTPUnauthorized, HTTPForbidden
 from pyramid.request import Request
 from pyramid.response import Response
 from pyramid.path import DottedNameResolver
@@ -96,10 +96,6 @@ def sex_no(s, encoding='utf-8'):
 
 
 class RakutenOpenIDError(Exception):
-    pass
-
-
-class RakutenOpenIdAbolishmentError(Exception):
     pass
 
 
@@ -524,18 +520,16 @@ class RakutenOpenID(object):
     def challenge(self, request, auth_context, response):
         logger.debug('challenge')
 
-        if IMobileRequest.providedBy(request):
-            raise RakutenOpenIdAbolishmentError(u'The open id api was abolished for future phone.')
-
         session = self.new_session(request)
-        return_url = request.environ.get('altair.rakuten_auth.return_url', request.url)
-        # _session = request.session # Session gets created here!
-        # if _session is not None and IMobileRequest.providedBy(request):
-        #     key = HybridHTTPBackend.get_query_string_key(request)
-        #     session_restorer = HybridHTTPBackend.get_session_restorer(request)
-        #     if key and session_restorer:
-        #         return_url = merge_session_restorer_to_url(return_url, key, session_restorer)
+        if IMobileRequest.providedBy(request):
+            abolishment_url = request.registry.settings.get('altair.mobile.abolishment.url')
+            if abolishment_url:
+                response.location = abolishment_url
+                response.status = 302
+                return True
+            raise HTTPForbidden()
 
+        return_url = request.environ.get('altair.rakuten_auth.return_url', request.url)
         self.set_return_url(session, return_url)
         session.save()
         redirect_to = self.get_redirect_url(request, session)
@@ -616,6 +610,8 @@ def openid_consumer_from_config(config, prefix):
     challenge_success_callback = settings.get(prefix + 'challenge_success_callback')
     if challenge_success_callback is not None and not callable(challenge_success_callback):
         challenge_success_callback = config.maybe_dotted(challenge_success_callback)
+
+    mobile_abolish_url = settings.get('altair.mobile.abolishment.url')
     return RakutenOpenID(
         plugin_name=AUTH_PLUGIN_NAME,
         cache_region=None,
