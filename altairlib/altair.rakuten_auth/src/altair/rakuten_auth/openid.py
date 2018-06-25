@@ -15,7 +15,7 @@ from datetime import datetime
 
 from zope.interface import implementer
 from beaker.cache import Cache, CacheManager, cache_regions
-from pyramid.httpexceptions import HTTPNotFound, HTTPFound, HTTPUnauthorized, HTTPForbidden
+from pyramid.httpexceptions import HTTPFound, HTTPUnauthorized, HTTPForbidden
 from pyramid.request import Request
 from pyramid.response import Response
 from pyramid.path import DottedNameResolver
@@ -611,7 +611,6 @@ def openid_consumer_from_config(config, prefix):
     if challenge_success_callback is not None and not callable(challenge_success_callback):
         challenge_success_callback = config.maybe_dotted(challenge_success_callback)
 
-    mobile_abolish_url = settings.get('altair.mobile.abolishment.url')
     return RakutenOpenID(
         plugin_name=AUTH_PLUGIN_NAME,
         cache_region=None,
