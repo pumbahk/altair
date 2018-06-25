@@ -1,21 +1,26 @@
 <%inherit file="../layout.html" />
 <%namespace file="../../../__commons__/tags_mobile.html" name="mobile" />
-<%mobile:header>楽天会員の方はこちら</%mobile:header>
-<%mobile:form_get action="${request.route_path('mypage.show')}">
-    <p>楽天会員ＩＤを利用しての照会は終了しました。
-        <br/>
-        パソコン、スマートフォン、タブレットで確認いただくか、
-        <a href="#">こちら</a>
-        から問い合わせしてください。
-    </p>
-</%mobile:form_get>
 
 <%mobile:header>一般の方のチケット確認</%mobile:header>
 <%mobile:form_get action="${request.route_path('order_review.form')}">
-<input type="submit" value="次に進む" />
+    <input type="submit" value="次に進む" />
 </%mobile:form_get>
 
 <%mobile:header>一般の方の抽選結果確認</%mobile:header>
 <%mobile:form_get action="https://rt.tstar.jp/lots/review">
-<input type="submit" value="次に進む" />
+    <input type="submit" value="次に進む" />
+</%mobile:form_get>
+
+<%mobile:header>楽天会員の方はこちら</%mobile:header>
+<%mobile:form_get action="${request.route_path('mypage.show')}">
+    <p>
+        楽天会員IDのフィーチャーフォンのサービス終了に伴い、楽天会員IDでの購入履歴の閲覧ができなくなりました。<br/>
+        購入履歴は受付番号からご覧いただくようお願いいたします。<br/>
+        ※パソコンまたはスマートフォンでの楽天会員IDでの購入履歴は引き続きご利用いただけます。<br/>
+        <br/>
+        詳しくは下記をご確認ください。<br/>
+        <a href="https://ticket.faq.rakuten.ne.jp/app/answers/detail/a_id/11896">【重要】楽天会員IDのフィーチャーフォンのサービス終了のお知らせ</a><br/>
+        <br/>
+        お問い合わせフォームは<a href="https://ticket.rakuten.co.jp/inquiry">こちら</a><br/>
+    </p>
 </%mobile:form_get>
