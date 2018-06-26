@@ -83,7 +83,8 @@ class AuthAPI(object):
             )
         logger.debug('challengers matched for classification "%s": %s' % (classification, challengers))
         for challenger in challengers:
-            if challenger.challenge(request, self, response):
+            is_challenge = challenger.challenge(request, self, response)
+            if is_challenge:
                 return True
         return False
 
