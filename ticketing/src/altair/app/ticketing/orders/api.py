@@ -4,6 +4,7 @@ import logging
 import re
 import json
 import itertools
+import sys
 import transaction
 from decimal import Decimal
 from datetime import date, datetime
@@ -646,7 +647,6 @@ def cancel_order(request, order, now=None):
     try:
         _validate_order_cancellation(request, order, now)
     except:
-        import sys
         exc_info = sys.exc_info()
         raise OrderCancellationError(
             order.order_no,
@@ -1206,7 +1206,6 @@ def create_or_update_orders_from_proto_orders(request, reserving, stocker, proto
                 )
             errors_for_proto_order.extend(validate_order(request, new_order, proto_order.ref, update=(proto_order.original_order is not None)))
         except NotEnoughStockException as e:
-            import sys
             logger.info('cannot reserve stock (stock_id=%s, required=%d, available=%d)' % (e.stock.id, e.required, e.actualy), exc_info=sys.exc_info())
             errors_for_proto_order.append(
                 OrderCreationError(
@@ -1220,7 +1219,6 @@ def create_or_update_orders_from_proto_orders(request, reserving, stocker, proto
                     )
                 )
         except NotEnoughAdjacencyException as e:
-            import sys
             logger.info('cannot allocate seat (stock_id=%s, quantity=%d)' % (e.stock_id, e.quantity), exc_info=sys.exc_info())
             stock = DBSession.query(Stock).filter_by(id=e.stock_id).one()
             errors_for_proto_order.append(
@@ -1235,7 +1233,6 @@ def create_or_update_orders_from_proto_orders(request, reserving, stocker, proto
                     )
                 )
         except InvalidProductSelectionException as e:
-            import sys
             logger.info('cannot take stocks', exc_info=sys.exc_info())
             errors_for_proto_order.append(
                 OrderCreationError(
@@ -1246,7 +1243,6 @@ def create_or_update_orders_from_proto_orders(request, reserving, stocker, proto
                     )
                 )
         except InvalidSeatSelectionException as e:
-            import sys
             logger.info('cannot allocate selected seats', exc_info=sys.exc_info())
             errors_for_proto_order.append(
                 OrderCreationError(
@@ -1286,7 +1282,6 @@ def create_or_update_orders_from_proto_orders(request, reserving, stocker, proto
             DBSession.merge(order)
             refresh_order(request, DBSession, order)
         except Exception as e:
-            import sys
             exc_info = sys.exc_info()
             logger.error(u'[EMERGENCY] failed to update order %s' % order.order_no, exc_info=exc_info)
             errors_map.setdefault(proto_order.ref, []).append(
@@ -1317,7 +1312,6 @@ def create_or_update_orders_from_proto_orders(request, reserving, stocker, proto
                     ]
                 )
         except Exception as e:
-            import sys
             exc_info = sys.exc_info()
             logger.error(u'failed to create inner order %s' % order.order_no, exc_info=exc_info)
             errors_map.setdefault(proto_order.ref, []).append(
@@ -1368,7 +1362,6 @@ def _create_order_from_proto_order(request, reserving, stocker, proto_order, ent
         errors_for_proto_order.extend(
             validate_order(request, new_order, proto_order.ref, update=(proto_order.original_order is not None)))
     except NotEnoughStockException as e:
-        import sys
         logger.info(
             'cannot reserve stock (stock_id=%s, required=%d, available=%d)' % (e.stock.id, e.required, e.actualy),
             exc_info=sys.exc_info())
@@ -1382,7 +1375,6 @@ def _create_order_from_proto_order(request, reserving, stocker, proto_order, ent
             )
         )
     except NotEnoughAdjacencyException as e:
-        import sys
         logger.info('cannot allocate seat (stock_id=%s, quantity=%d)' % (e.stock_id, e.quantity),
                     exc_info=sys.exc_info())
         stock = DBSession.query(Stock).filter_by(id=e.stock_id).one()
@@ -1396,7 +1388,6 @@ def _create_order_from_proto_order(request, reserving, stocker, proto_order, ent
             )
         )
     except InvalidProductSelectionException as e:
-        import sys
         logger.info('cannot take stocks', exc_info=sys.exc_info())
         raise OrderCreationError(
             proto_order.ref,
@@ -1405,7 +1396,6 @@ def _create_order_from_proto_order(request, reserving, stocker, proto_order, ent
             {}
         )
     except InvalidSeatSelectionException as e:
-        import sys
         logger.info('cannot allocate selected seats', exc_info=sys.exc_info())
         raise OrderCreationError(
             proto_order.ref,
@@ -1414,7 +1404,6 @@ def _create_order_from_proto_order(request, reserving, stocker, proto_order, ent
             {}
         )
     except Exception as e:
-        import sys
         logger.info('unknown errors occur.', exc_info=sys.exc_info())
         raise OrderCreationError(
             proto_order.ref,
@@ -1451,7 +1440,6 @@ def create_or_update_order_from_proto_order(request, reserving, stocker, proto_o
                 ]
             )
         except Exception as e:
-            import sys
             exc_info = sys.exc_info()
             logger.error(u'failed to create inner order %s' % new_order.order_no, exc_info=exc_info)
             new_order.release()
@@ -1477,7 +1465,6 @@ def create_or_update_order_from_proto_order(request, reserving, stocker, proto_o
             DBSession.merge(new_order)
             refresh_order(request, DBSession, new_order)
         except Exception as e:
-            import sys
             exc_info = sys.exc_info()
             logger.error(u'[EMERGENCY] failed to update order %s' % new_order.order_no, exc_info=exc_info)
             raise OrderCreationError(
@@ -1512,7 +1499,6 @@ def save_order_modifications_from_proto_orders(request, order_proto_order_pairs,
             # 在庫の状態など正しいか判定する
             errors.extend(validate_order(request, new_order, proto_order.ref, update=(proto_order.original_order is not None)))
         except NotEnoughStockException as e:
-            import sys
             logger.info('cannot reserve stock (stock_id=%s, required=%d, available=%d)' % (e.stock.id, e.required, e.actualy), exc_info=sys.exc_info())
             errors.append(
                 OrderCreationError(
@@ -1526,7 +1512,6 @@ def save_order_modifications_from_proto_orders(request, order_proto_order_pairs,
                     )
                 )
         except NotEnoughAdjacencyException as e:
-            import sys
             logger.info('cannot allocate seat (stock_id=%s, quantity=%d)' % (e.stock_id, e.quantity), exc_info=sys.exc_info())
             stock = DBSession.query(Stock).filter_by(id=e.stock_id).one()
             errors.append(
@@ -1541,7 +1526,6 @@ def save_order_modifications_from_proto_orders(request, order_proto_order_pairs,
                     )
                 )
         except InvalidProductSelectionException as e:
-            import sys
             logger.info('cannot take stocks', exc_info=sys.exc_info())
             errors.append(
                 OrderCreationError(
@@ -1552,7 +1536,6 @@ def save_order_modifications_from_proto_orders(request, order_proto_order_pairs,
                     )
                 )
         except InvalidSeatSelectionException as e:
-            import sys
             logger.info('cannot allocate selected seats', exc_info=sys.exc_info())
             errors.append(
                 OrderCreationError(
@@ -2048,7 +2031,6 @@ def save_order_modification_old(request, order, modify_data, session=None):
                             )
                         ordered_product_item.tokens.append(token)
     except InvalidSeatSelectionException:
-        import sys
         raise OrderCreationError(
             None,
             modify_order.order_no,
@@ -2056,7 +2038,6 @@ def save_order_modification_old(request, order, modify_data, session=None):
             nested_exc_info=sys.exc_info()
             )
     except NotEnoughStockException as e:
-        import sys
         logger.info("not enough stock quantity :%s" % e)
         raise OrderCreationError(
             None,
