@@ -1084,7 +1084,7 @@ class OrderImportForm(OurForm):
         label=u'配席モード',
         validators=[Required()],
         choices=[(str(e.v), get_allocation_mode_label(e.v)) for e in AllocationModeEnum],
-        default=AllocationModeEnum.AlwaysAllocateNew.v,
+        default=AllocationModeEnum.QuantityOnly.v,
         coerce=int,
     )
     merge_order_attributes = OurBooleanField(
