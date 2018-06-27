@@ -81,6 +81,9 @@ def validate_price_csv(csv_rows, performance, target_sales_segment_ids):
         if len(errors) > 0:
             error_dict.update({index + 1: errors})
 
+    if len(csv_rows) == 0:
+        error_dict.update({u'-': [u'商品数が0件です。入力ファイルで商品を指定してください。']})
+
     product_count_to_update = len(csv_rows) * len(target_sales_segments)
 
     return product_count_to_update, error_dict
