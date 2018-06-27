@@ -181,9 +181,9 @@ def import_orders_per_order(request, order_import_task, priority=0):
                           routing_key='import_per_order',
                           properties=dict(content_type="application/json", priority=priority))
 
-def import_orders_per_task(request, order_import_task_id, priority=0):
+def import_orders_per_task(request, order_import_task, priority=0):
     publisher = get_publisher(request, 'import_per_task')
-    body = json.dumps({'order_import_task_id': order_import_task_id})
+    body = json.dumps({'order_import_task_id': order_import_task.id})
     publisher.publish(body=body,
                       routing_key='import_per_task',
                       properties=dict(content_type="application/json", priority=priority))
