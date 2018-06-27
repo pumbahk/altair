@@ -1,8 +1,16 @@
 # coding:utf-8
+import json
+import random
 from datetime import datetime, timedelta
+from sqlalchemy.sql.expression import func
+from altair.mq import get_publisher
 from altair.sqlahelper import get_db_session
 from altair.app.ticketing.core.models import Event, Performance
-from altair.app.ticketing.orders.models import OrderImportTask, ImportStatusEnum
+from altair.app.ticketing.orders.models import (ProtoOrder,
+                                                OrderImportTask,
+                                                ImportStatusEnum,
+                                                ImportTypeEnum,
+                                                AllocationModeEnum)
 from altair.app.ticketing.core.utils import ApplicableTicketsProducer
 from altair.app.ticketing.payments.plugins import SEJ_DELIVERY_PLUGIN_ID
 from altair.app.ticketing.payments.plugins import FAMIPORT_DELIVERY_PLUGIN_ID
@@ -156,3 +164,86 @@ def get_progressing_order_import_task(request, obj):
 
     order_import_tasks = query.all()
     return order_import_tasks
+
+def import_orders_per_order(request, order_import_task, priority=0):
+    publisher = get_publisher(request, 'import_per_order')
+    _session = get_db_session(request, 'slave')
+
+    proto_orders = _session.query(ProtoOrder.id).filter(ProtoOrder.order_import_task_id == order_import_task.id)
+
+    if order_import_task.enable_random_import:
+        proto_orders = proto_orders.order_by(func.rand())
+
+    for proto_order in proto_orders:
+        body = json.dumps({'proto_order_id': proto_order.id,
+                           'entrust_separate_seats': order_import_task.entrust_separate_seats})
+        publisher.publish(body=body,
+                          routing_key='import_per_order',
+                          properties=dict(content_type="application/json", priority=priority))
+
+def import_orders_per_task(request, order_import_task, priority=0):
+    publisher = get_publisher(request, 'import_per_task')
+    body = json.dumps({'order_import_task_id': order_import_task.id})
+    publisher.publish(body=body,
+                      routing_key='import_per_task',
+                      properties=dict(content_type="application/json", priority=priority))
+
+def _get_import_mode(import_type, allocation_mode):
+    if import_type == ImportTypeEnum.Update.v and allocation_mode == AllocationModeEnum.AlwaysAllocateNew.v:
+            return 'per_task'
+    return 'per_order'
+
+def _get_priority(count):
+    if count < 10:
+        return 10
+    elif count < 100:
+        return 9
+    elif count < 1000:
+        return 8
+    elif count < 10000:
+        return 7
+    else:
+        return 6
+
+def send_import_order_task_to_worker(request, order_import_task):
+
+    import_mode = _get_import_mode(order_import_task.import_type, order_import_task.allocation_mode)
+    priority = _get_priority(order_import_task.count)
+
+    if import_mode == 'per_order':
+        import_orders_per_order(request, order_import_task, priority)
+    else:
+        import_orders_per_task(request, order_import_task, priority)
+
+def _update_proto_order_errors(query):
+    proto_orders_with_error = query.filter(ProtoOrder.attributes != {}, ProtoOrder.attributes != None).all()
+    if not proto_orders_with_error:
+        return {}
+    else:
+        return dict(
+            (proto_order.ref, (proto_order.order_no, proto_order.attributes.get('errors', [])))
+            for proto_order in proto_orders_with_error
+        )
+
+def update_order_import_tasks_done_by_worker(request, order_import_tasks):
+    _session = get_db_session(request, 'slave')
+
+    for _task in order_import_tasks:
+        if _task.status != ImportStatusEnum.Importing.v:
+            continue
+
+        query = _session.query(ProtoOrder)\
+            .filter(ProtoOrder.order_import_task==_task)\
+            .filter(ProtoOrder.processed_at != None)
+
+        if query.count() != _task.count:
+            continue
+
+        errors_dict = _update_proto_order_errors(query)
+        if errors_dict:
+            _task.status = ImportStatusEnum.Aborted.v
+            _task.errors = json.dumps(errors_dict)
+        else:
+            _task.status = ImportStatusEnum.Imported.v
+
+        _task.save()

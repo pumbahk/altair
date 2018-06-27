@@ -1,0 +1,52 @@
+<%inherit file="/layout_2cols.html" />
+<%namespace file="/common/helpers.html" name="ch" />
+
+<style type="text/css">
+    .controls select {
+        width: 80%;
+    }
+
+    .controls input {
+        width: 80%;
+    }
+
+    .controls textarea {
+        width: 80%;
+        min-height: 100px;
+    }
+</style>
+
+<%
+if request.matched_route.name == 'term.edit':
+    route_name = u'編集'
+    route_path = request.route_path('term.edit', term_id=term.id)
+else:
+    route_name = u'登録'
+    route_path = request.route_path('term.new', passport_id=passport.id)
+%>
+
+<%block name="breadcrumbs">
+${ch.breadcrumbs(
+names=[u'トップ', u'パスポート設定', u'パスポート詳細', u'パスポート入場不可期間一覧', u'パスポート入場不可期間登録/更新'],
+urls=[request.route_path('index'), request.route_path('passport.index')
+, request.route_path('passport.show', passport_id=passport.id), request.route_path('term.index', passport_id=passport.id)]
+)}
+</%block>
+
+<div class="page-header">
+    <h3>パスポート入場不可期間設定</h3>
+</div>
+
+
+<div class="well">
+    <form class="form-horizontal" action="${route_path}" method="POST">
+        <fieldset>
+            ${ch.form_item(form.id)}
+            ${ch.form_item(form.start_on)}
+            ${ch.form_item(form.end_on)}
+        </fieldset>
+        <div class="form-actions">
+            <input class="btn btn-primary" type="submit" name="submit" value="${route_name}">
+        </div>
+    </form>
+</div>

@@ -26,6 +26,7 @@ def includeme(config):
     config.add_route('performances.import_orders.confirm', '/import_orders/{performance_id}/confirm', factory=factory)
     config.add_route('performances.import_orders.show', '/import_orders/{performance_id}/show/{task_id}', factory=factory)
     config.add_route('performances.import_orders.delete', '/import_orders/{performance_id}/delete/{task_id}', factory=factory)
+    config.add_route('performances.import_orders.test_version', '/import_orders/{performance_id}/test_version', factory=factory)
 
     config.add_route('performances.region.index', '/drawing/{performance_id}', factory=factory)
     config.add_route('performances.region.update', '/drawing/{performance_id}/update', factory=factory)
@@ -42,5 +43,15 @@ def includeme(config):
     ##altair.app.ticketing.print_progress.__init__.pyでperformances.print_progress.showが定義されている
 
     config.add_route('performances.discount_code_settings.show', '/discount_code_settings/{performance_id}', factory=factory)
+
+    config.add_route('performances.price_batch_update.index', '/price_batch_update/{performance_id}', factory=factory)
+    config.add_route('performances.price_batch_update.confirm',
+                     '/price_batch_update/{performance_id}/confirm', factory=factory)
+    config.add_route('performances.price_batch_update.show',
+                     '/price_batch_update/{performance_id}/show/{task_id}', factory=factory)
+    config.add_route('performances.price_batch_update.delete',
+                     '/price_batch_update/{performance_id}/delete', factory=factory)
+    config.add_route('performances.price_batch_update.cancel',
+                     '/price_batch_update/{performance_id}/cancel', factory=factory)
 
 VISIBLE_PERFORMANCE_SESSION_KEY = '_visible_performance'

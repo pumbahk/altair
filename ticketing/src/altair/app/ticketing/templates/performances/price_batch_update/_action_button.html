@@ -1,0 +1,70 @@
+<%page args="performance, task, small=False" />
+<%namespace file="/common/helpers.html" name="ch" />
+<%namespace file="/common/modal.html" import="delete_modal" />
+
+<%!
+from altair.app.ticketing.price_batch_update.models import PriceBatchUpdateTaskStatusEnum
+%>
+
+<script type="text/javascript">
+  function cancel_task(performance_id, task_id) {
+    modal = $('#modal-price-batch-update-cancel');
+    modal.find('#delete').attr('href',
+        'javascript:document.forms["price-batch-update-cancel-form-${task.id}"].submit()');
+    modal.find('#message').text("${u'選択したタスクを中止します。中止後は再開できません。よろしいですか？'}");
+    modal.modal('toggle');
+  }
+
+  function delete_task(performance_id, task_id) {
+    modal = $('#modal-price-batch-update-delete');
+    modal.find('#delete').attr('href',
+        'javascript:document.forms["price-batch-update-delete-form-${task.id}"].submit()');
+    modal.find('#message').text("${u'選択したタスクをリストから削除します。よろしいですか？'}");
+    modal.modal('toggle');
+  }
+</script>
+<%
+  actions = {
+    'show':dict(
+      label=u'詳細',
+      url=request.route_path('performances.price_batch_update.show', performance_id=performance.id, task_id=task.id),
+      icon='icon-th-list',
+      route_name='performances.price_batch_update.show'
+    ),
+    'cancel':dict(
+      label=u'中止',
+      url='javascript:cancel_task(%d,%d);' % (performance.id, task.id),
+      icon='icon-minus',
+      route_name='performances.price_batch_update.cancel'
+    ),
+    'delete':dict(
+      label=u'削除',
+      url='javascript:delete_task(%d,%d);' % (performance.id, task.id),
+      icon='icon-minus',
+      route_name='performances.price_batch_update.delete'
+    )
+ }
+
+%>
+<div style="float: left;">
+  % if task.status == PriceBatchUpdateTaskStatusEnum.Waiting.v:
+    ${HH.action_button(actions, ['show', 'cancel'], extra_classes=[u'btn-small'] if small else [])}
+  % elif task.status in [PriceBatchUpdateTaskStatusEnum.Canceled.v, PriceBatchUpdateTaskStatusEnum.Aborted.v]:
+    ${HH.action_button(actions, ['show', 'delete'], extra_classes=[u'btn-small'] if small else [])}
+  % else:
+    ${HH.action_button(actions, ['show'], extra_classes=[u'btn-small'] if small else [])}
+  % endif
+</div>
+
+<form name="price-batch-update-cancel-form-${task.id}"
+      action="${request.route_path('performances.price_batch_update.cancel', performance_id=performance.id)}"
+      method="post">
+  <input type="hidden" name="task_id" value="${task.id}">
+</form>
+<form name="price-batch-update-delete-form-${task.id}"
+      action="${request.route_path('performances.price_batch_update.delete', performance_id=performance.id)}"
+      method="post">
+  <input type="hidden" name="task_id" value="${task.id}">
+</form>
+${delete_modal(id=u'modal-price-batch-update-cancel', label_delete=u'実行', label_cancel=u'戻る')}
+${delete_modal(id=u'modal-price-batch-update-delete')}

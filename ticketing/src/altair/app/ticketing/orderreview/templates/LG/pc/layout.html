@@ -1,48 +1,39 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<html>
-<head>
-  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
-  <link rel="shortcut icon" href="${request.static_url('altair.app.ticketing.orderreview:static/LG/pc/images/laguna-gamagori.ico')}" />
-  <title>ラグーナテンボス 購入確認ページ</title>
-  <link rel="stylesheet" type="text/css" href="${request.static_url('altair.app.ticketing.orderreview:static/LG/pc/css/style2.css')}" media="all" />
-</head>
-<body>
-<div class="header" id="top">
-  <div class="header-inner">
-    <h1>
-      <a href="http://www.lagunatenbosch.co.jp/ticket/index.html">
-        <img src="${request.static_url('altair.app.ticketing.orderreview:static/LG/pc/images/logo.png')}" alt="ラグーナテンボス 購入確認ページ" height="64"/>
-      </a>
-    </h1>
-  </div>
-</div>
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <!--[if lt IE 9]>
+    <script type="text/javascript" src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <meta charset="UTF-8">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="cache-control" content="no-cache">
+    <meta http-equiv="expires" content="0">
+    <title>${view_context.team_name}</title>
+    <meta name="description" content="チケット情報・販売・購入・予約は「${view_context.team_name}」で！">
+    <meta name="keywords" content="${view_context.team_name}, チケット,チケット予約, チケット購入, イベント">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
 
-<div class="gnavi">
-  <ul>
-    <li><a href="http://www.lagunatenbosch.co.jp/ticket/index.html">TOP</a></li>
-  </ul>
-</div>
+    <!-- Cascading Style Sheets -->
+    <link rel="shortcut icon" href="${view_context.static_url('pc/images/favicon.ico')}">
+    <link rel="stylesheet" href="${view_context.static_url('pc/css/mypage.css')}" type="text/css" media="all">
+    <link rel="stylesheet" href="${view_context.static_url('pc/css/custom.css')}" type="text/css" media="all">
 
-<div class="wrapper">
-  <div class="kadomaru">
-${next.body()}
-  </div>
-</div>
-
-<div class="footer">
-  <div class="footer-inner">
-    <div class="footernav">
-      <ul>
-<li><a href="http://www.ticketstar.jp/corporate/">運営会社</a></li>
-<li><a href="http://www.lagunatenbosch.co.jp/laguna/privacy/index.html">個人情報保護方針</a></li>
-<li><a href="https://lagunatenbosch.tstar.jp/legal">特定商取引法に基づく表示</a></li>
-<li><a href="${h.safe_get_contact_url(request)}">お問い合わせ</a></li>
-      </ul>
+  </head>
+  <body class="confirm">
+    <div class="ts-wrapper">
+      <!-- header -->
+      <%include file="../includes/header.html" />
+      <!-- header -->
+      <!-- contents -->
+      <div class="ts-contents">
+        <div class="ts-contents-inner">
+          ${next.body()}
+        </div>
+      </div>
+      <!-- contents -->
+      <!-- footer -->
+      <%include file="../includes/footer.html" />
+      <!-- footer -->
     </div>
-    <div class="copyright clear">
-         &copy; TicketStar, Inc.
-    </div>
-  </div>
-</div>
-</body>
+  </body>
 </html>

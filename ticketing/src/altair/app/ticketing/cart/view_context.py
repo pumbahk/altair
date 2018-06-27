@@ -218,6 +218,8 @@ def determine_layout(event):
             request.layout_manager.use_layout('fc')
         elif api.is_fc_cart(cart_setting):
             request.layout_manager.use_layout('goods')
+        elif api.is_passport_cart(cart_setting):
+            request.layout_manager.use_layout('passport')
 
 
 def includeme(config):

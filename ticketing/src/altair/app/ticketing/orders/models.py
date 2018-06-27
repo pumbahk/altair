@@ -1202,8 +1202,6 @@ class ImportStatusEnum(StandardEnum):
 class ImportTypeEnum(StandardEnum):
     Create = 1             # BITMASK
     Update = 2             # BITMASK
-    CreateOrUpdate = 3     # BITMASK
-    AlwaysIssueOrderNo = 4 # BITMASK
 
 
 class AllocationModeEnum(StandardEnum):

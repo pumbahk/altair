@@ -228,6 +228,7 @@ setup(name='altair.app.ticketing',
       export_mu_jobs=altair.app.ticketing.scripts.export_mu_jobs:main
       import_mu_result=altair.app.ticketing.scripts.import_mu_result:main
       update_resale_request_status=altair.app.ticketing.resale.scripts:update_resale_request_status
+      price_batch_update=altair.app.ticketing.price_batch_update.scripts:do_price_batch_update
       """,
       dependency_links=[
         'file:../altairlib/altair.versiontools#egg=altair.versiontools-1.0',

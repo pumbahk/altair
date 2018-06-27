@@ -1,6 +1,5 @@
 msgid ""
 msgstr ""
-
 # common
 
 msgid "チケット情報・販売・購入・予約"
@@ -1507,3 +1506,9 @@ msgstr "楽天ポイント口座を確認するには、"
 
 msgid "こちら"
 msgstr "こちら"
+
+msgid "本券"
+msgstr "本券"
+
+msgid "副券"
+msgstr "副券"

@@ -93,6 +93,10 @@ altair.ticketing.coupon =
     http://[^/.]+.stg.altr.jp(/coupon(?:/.*)?)
     http://%(_proxy_target)s:${altair:ticketing.coupon.port}\1
 
+altair.ticketing.passport = 
+    http://[^/.]+.stg.altr.jp(/passport(?:/.*)?)
+    http://%(_proxy_target)s:${altair:ticketing.passport.port}\1
+
 altair.ticketing.lots =
     http://[^/.]+.stg.altr.jp(/lots(?:/.*)?)
     http://%(_proxy_target)s:${altair:ticketing.lots.port}\1

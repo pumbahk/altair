@@ -3,10 +3,12 @@ import os
 import time
 import logging
 import datetime
+import sqlalchemy as sa
 import itertools
 from StringIO import StringIO
 from sqlalchemy.orm.exc import NoResultFound
-
+from pyramid.threadlocal import get_current_request
+from altair.sqlahelper import get_db_session
 from altair.app.ticketing.core.models import (
     Seat,
     Venue,
@@ -21,6 +23,7 @@ from altair.app.ticketing.core.models import (
     AugusPutback,
     AugusSeat,
     AugusStockInfo,
+    SeatStatus,
     SeatStatusEnum,
     AugusSeatStatus,
     AugusPerformance,
@@ -29,6 +32,8 @@ from altair.app.ticketing.core.models import (
 from altair.app.ticketing.orders.models import (
     orders_seat_table,
     OrderedProductItem,
+    OrderedProduct,
+    Order
     )
 from altair.augus.types import (
     DateType,
@@ -157,16 +162,23 @@ class AugusPutbackExporter(object):
             AugusExporter.export(response, resfile_path)
         return responses
 
+
 class AugusAchievementExporter(object):
-    def create_record(self, seat):
-        if seat.status in [SeatStatusEnum.NotOnSale.v, SeatStatusEnum.Vacant.v, SeatStatusEnum.Canceled.v]:
+    def __init__(self, now=None):
+        if now:
+            now = datetime.datetime.strptime(now, '%Y/%m/%d_%H:%M:%S')
+        else:
+            now = datetime.datetime.now()
+
+
+        self.now = now
+        self.moratorium = datetime.timedelta(days=90)
+        self.session = get_db_session(get_current_request(), name="slave")
+
+    def create_record(self, seat, seat_status_checked=False):
+        if not seat_status_checked and seat.status in [SeatStatusEnum.NotOnSale.v, SeatStatusEnum.Vacant.v, SeatStatusEnum.Canceled.v]:
             return
 
-        augus_ticket = None
-        augus_stock_info = None
-        augus_stock_detail = None
-        ordered_product_item = self.seat2opitem(seat)
-        augus_stock_detail = None
         try:
             augus_stock_detail = AugusStockDetail\
             .query\
@@ -177,7 +189,7 @@ class AugusAchievementExporter(object):
         except NoResultFound as err: # 未配席
             return None
 
-
+        ordered_product_item = self.seat2opitem(seat)
         if ordered_product_item:
             augus_ticket = ordered_product_item.ordered_product.product.augus_ticket
             if not augus_ticket:
@@ -261,61 +273,41 @@ class AugusAchievementExporter(object):
         res = AchievementResponse()
         res.event_code = augus_performance.augus_event_code
         res.date = augus_performance.start_on
-        seats = [stock_info.seat for stock_info in augus_performance.augus_stock_infos]
+        unless_status = [SeatStatusEnum.NotOnSale.v, SeatStatusEnum.Vacant.v, SeatStatusEnum.Canceled.v]
+        seats = self.session.query(
+            Seat
+        ).join(
+            SeatStatus,
+            AugusStockInfo,
+            AugusPerformance
+        ).filter(
+            AugusPerformance.id == augus_performance.id
+        ).filter(
+            ~SeatStatus.status.in_(unless_status)
+        ).all()
+
         for seat in seats:
-            record = self.create_record(seat)
+            record = self.create_record(seat, seat_status_checked=True)
             if record:
                 res.append(record)
         return res
 
-    def _export_from_augus_event_code(self, augus_event_code):
-        augus_performances = AugusPerformance\
-            .query\
-            .filter(AugusPerformance.augus_event_code==augus_event_code)\
-            .all()
-        res = AchievementResponse()
-        res.event_code = augus_event_code
+    def seat2opitem(self, seat):
+        try:
+            opitem = self.session.query(OrderedProductItem).join(
+                orders_seat_table, orders_seat_table.c.OrderedProductItem_id == OrderedProductItem.id
+            ).join(
+                OrderedProduct,
+                Order
+            ).filter(
+                Order.canceled_at.is_(None)
+            ).filter(
+                orders_seat_table.c.seat_id == seat.id
+            ).one()
+        except NoResultFound:
+            return None
 
-        if augus_performances:
-            res.date = augus_performances[0].start_on
-
-        for ag_performance in augus_performances:
-            stock_infos = AugusStockInfo\
-                .query\
-                .filter(AugusStockInfo.augus_performance_id==ag_performance.id)\
-                .all()
-
-            for stock_info in stock_infos:
-                # 返券済みのものは出力しない
-                if stock_info.putbacked_at:
-                    continue
-
-
-                # 未販売は出力しない
-                if stock_info.seat.status in [SeatStatusEnum.NotOnSale.v, SeatStatusEnum.Vacant.v, SeatStatusEnum.Canceled.v]:
-                    continue
-                record = self.create_record(stock_info)
-                res.append(record)
-        return res
-
-    @staticmethod
-    def seat2opitem(seat):
-        qs = orders_seat_table.select(whereclause='seat_id={}'.format(seat.id))
-        da = qs.execute()
-        seatid_opitemid =da.fetchall()
-
-        for seat_id, opitem_id in seatid_opitemid:
-            opitem = OrderedProductItem.get(id=opitem_id)
-            if not opitem:
-                continue
-            # すでにある予約をインポートで更新した後、正しく一番新しいordered product itemを取得できるようにする
-            elif not opitem.ordered_product.order:
-                continue
-            elif opitem.ordered_product.current_order and  opitem.ordered_product.current_order.status == 'canceled':
-                continue
-            else:
-                return opitem
-        return None
+        return opitem
 
     @staticmethod
     def get_unit_price(opitem):
@@ -331,3 +323,21 @@ class AugusAchievementExporter(object):
             return opitem.ordered_product.order
         else:
             return None
+
+    def get_target_augus_performances(self, augus_account_id, all_):
+        qs = self.session.query(AugusPerformance).join(AugusPerformance.performance) \
+            .filter(AugusPerformance.augus_account_id == augus_account_id) \
+            .filter(
+                sa.or_(
+                    Performance.start_on >= self.now - self.moratorium,
+                    Performance.end_on >= self.now - self.moratorium
+                )
+            )
+
+        if not all_:
+            qs = qs.filter(AugusPerformance.is_report_target == True)
+        else:
+            qs = qs.filter(AugusPerformance.stoped_at.is_(None))
+
+        ag_performances = qs.all()
+        return ag_performances

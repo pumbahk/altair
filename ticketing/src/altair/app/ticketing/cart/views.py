@@ -1621,6 +1621,9 @@ class PointAccountEnteringView(object):
         return HTTPFound(location=flow_graph(self.context, self.request)(url_wanted=False))
 
 
+PRODUCTS_TO_CONFIRM_ATTRIBUTE_KEY = 'cart.confirm.products_to_confirm_{0}'
+
+
 @view_defaults(
     route_name='payment.confirm',
     decorator=with_jquery.not_when(mobile_request),
@@ -1672,6 +1675,11 @@ class ConfirmView(object):
                             ks.append([ type('', (), { 'id': w["id"], 'label': w["label"] }), False ])
                 except Exception as e:
                     logger.warn("Failed to get words info from cms", e)
+
+        if organization.setting.enable_price_batch_update:
+            # TKT-4147で追加。影響範囲最小化のためenable_price_batch_updateで判定
+            self.request.session[PRODUCTS_TO_CONFIRM_ATTRIBUTE_KEY.format(organization.code)] = \
+                self.context.get_product_price_map_dict(cart)
 
         return dict(
             cart=cart,
@@ -1770,6 +1778,12 @@ class CompleteView(object):
                 raise
 
         self.context.check_deleted_product(cart)
+        organization = api.get_organization(self.request)
+        if organization.setting.enable_price_batch_update:
+            # TKT-4147で追加。影響範囲最小化のためenable_price_batch_updateで判定
+            product_price_map_before = self.request.session[PRODUCTS_TO_CONFIRM_ATTRIBUTE_KEY.format(organization.code)]
+            del self.request.session[PRODUCTS_TO_CONFIRM_ATTRIBUTE_KEY.format(organization.code)]
+            self.context.check_changed_product_price(cart, product_price_map_before)
         self.context.check_order_limit() # 最終チェック
         self.context.is_discount_code_still_available()
         self.context.use_sports_service_discount_code()

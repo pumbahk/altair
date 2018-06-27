@@ -41,7 +41,8 @@ from .exceptions import (
     OverQuantityLimitException,
     InvalidCartStatusError,
     DiscountCodeConfirmError,
-    OAuthRequiredSettingError
+    OAuthRequiredSettingError,
+    ChangedProductPriceError
 )
 from zope.deprecation import deprecate
 from altair.now import get_now
@@ -426,6 +427,26 @@ class TicketingCartResourceBase(object):
             if not carted_product.product:
                 logger.info(u"Product is deleted. CartID = {0}".format(cart.id))
                 raise DeletedProductError(u"こちらの商品は現在ご購入いただけません。")
+
+    def get_product_price_map_dict(self, cart):
+        product_price_map_dict = {}
+        for cart_product in cart.items:
+            product_price_map_dict.update({
+                cart_product.product.id: cart_product.product.price
+            })
+        return product_price_map_dict
+
+    def check_changed_product_price(self, cart, product_price_map_before):
+        for cart_product in cart.items:
+            product = cart_product.product
+            if product.price != product_price_map_before[product.id]:
+                if cart_api.is_spa_mode(self.request):
+                    back_url = self.request.route_url('cart.spa.index',
+                                                      performance_id=self.request.context.performance.id,
+                                                      anything="")
+                else:
+                    back_url = self.request.route_url('cart.index', event_id=self.request.context.event.id)
+                raise ChangedProductPriceError(back_url)
 
     def _login_required(self, auth_type):
         if auth_type == 'fc_auth':

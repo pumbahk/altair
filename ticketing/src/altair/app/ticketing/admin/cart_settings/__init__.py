@@ -5,6 +5,7 @@ cart_setting_types = [
     (u'fc', u'入会フォーム'),
     (u'lot', u'抽選フォーム'),
     (u'goods', u'グッズ販売フォーム'),
+    (u'passport', u'パスポートフォーム')
     ]
 
 def setup__views(config):

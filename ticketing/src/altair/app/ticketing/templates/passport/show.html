@@ -1,0 +1,68 @@
+<%inherit file="/layout_2cols.html" />
+<%namespace file="/common/helpers.html" name="ch" />
+
+<%block name="breadcrumbs">
+${ch.breadcrumbs(
+names=[u'トップ', u'パスポート設定', u'パスポート表示'],
+urls=[request.route_path('index'), request.route_path('passport.index')]
+)}
+</%block>
+
+<%block name="style">
+<link rel="stylesheet" type="text/css" href="/static/css/decentcolorpicker.css"/>
+<script type="text/javascript" src="/static/js/jquery.decentcolorpicker.js"></script>
+</%block>
+
+<div class="page-header">
+    <h1 style="word-wrap: break-word;">${passport.name}</h1>
+</div>
+
+<table class="table table-bordered fullwidth">
+    <tbody>
+    <tr>
+        <th class="span3">パスポート名称</th>
+        <td>${passport.name}</td>
+    </tr>
+    <tr>
+        <th class="span3">平日パスポート</th>
+        <td>${u"有効" if passport.daily_passport else u"無効"}</td>
+    </tr>
+    <tr>
+        <th class="span3">適応パフォーマンス</th>
+        % if passport.performance:
+        <td>
+            <a href="${request.route_path('performances.show', performance_id=passport.performance.id)}">
+                ${u"{0} {1}".format(passport.performance.event.title, passport.performance.name)}
+            </a>
+        </td>
+        % else:
+        <td></td>
+        % endif
+    </tr>
+    <tr>
+        <th class="span3">有効年数</th>
+        <td>${passport.available_day}</td>
+    </tr>
+    <tr>
+        <th class="span3">有効/無効</th>
+        <td>${u"有効" if passport.is_valid else u"無効"}</td>
+    </tr>
+    <tr>
+        <th class="span3">作成日時</th>
+        <td>${passport.created_at}</td>
+    </tr>
+    <tr>
+        <th class="span3">更新日時</th>
+        <td>${passport.updated_at}</td>
+    </tr>
+    </tbody>
+</table>
+<a class="id-action btn btn-small" href="${request.route_url('term.index', passport_id=passport.id)}">
+    <i class="icon-pencil"></i> 入場不可期間を設定
+</a>
+<a class="id-action btn btn-small" href="${request.route_url('passport.edit', passport_id=passport.id)}">
+    <i class="icon-pencil"></i> 編集
+</a>
+<a class="id-action btn btn-small btn-danger" href="${request.route_url('passport.delete', passport_id=passport.id)}">
+    削除
+</a>

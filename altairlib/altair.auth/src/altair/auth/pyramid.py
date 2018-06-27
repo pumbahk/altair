@@ -11,7 +11,6 @@ from pyramid.security import Everyone, Authenticated, principals_allowed_by_perm
 from .api import get_auth_api, get_who_api, decide, get_request_classifier, get_plugin_registry
 from .interfaces import ISessionKeeper, IForbiddenHandler, IAltairAuthRequest, IRequestInterceptor
 
-
 logger = logging.getLogger(__name__)
 
 authenticator_prefix = 'altair.auth.authenticator:'
@@ -188,7 +187,8 @@ def challenge_view(context, request):
         if len(unauthenticated_plugin_names) > 0:
             response = HTTPForbidden()
             for plugin_name in unauthenticated_plugin_names:
-                if api.challenge(request, response, challenger_name=plugin_name):
+                is_challenge = api.challenge(request, response, challenger_name=plugin_name)
+                if is_challenge:
                     logger.debug('plugin requesting challenge: %s' % plugin_name)
                     break
     except Exception:

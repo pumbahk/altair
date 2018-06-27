@@ -1,0 +1,13 @@
+<%page args="performance, stats" />
+
+<div>
+  <h4>価格一括変更タスク詳細</h4>
+</div>
+
+<%include file="_stats.html" args="stats=stats" />
+
+<form class="form-horizontal" action="${request.route_path('performances.price_batch_update.index', performance_id=performance.id)}" method="GET">
+  <div class="form-actions">
+    <input class="btn btn-primary pull-right" type="submit" value="戻る">
+  </div>
+</form>
