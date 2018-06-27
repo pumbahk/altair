@@ -86,6 +86,8 @@ ${performance.code} | ${performance.name}
         <%include file="./import_orders/_show.html" args="performance=performance, stats=stats" />
       % elif action == 'confirm':
         <%include file="./import_orders/_confirm.html" args="performance=performance, stats=stats" />
+      % elif action == 'confirm_test':
+        <%include file="./import_orders/_confirm_test.html" args="performance=performance, stats=stats" />
       % else:
         <%include file="./import_orders/_index.html" args="performance=performance, form=form, order_import_tasks=order_import_tasks" />
       % endif

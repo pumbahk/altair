@@ -1073,12 +1073,9 @@ class OrderImportForm(OurForm):
     import_type = BugFreeSelectField(
         label=u'インポート方法',
         validators=[Required()],
-        choices=[(str(e.v), get_import_type_label(e.v, no_option_desc=True)) for e in [ImportTypeEnum.Create, ImportTypeEnum.Update, ImportTypeEnum.CreateOrUpdate]],
+        choices=[(str(e.v), get_import_type_label(e.v)) for e in ImportTypeEnum],
         default=ImportTypeEnum.Update.v,
         coerce=int,
-    )
-    always_issue_order_no = OurBooleanField(
-        label=u'常に新しい予約番号を発番'
     )
     enable_random_import = OurBooleanField(
         label=u'ランダムインポート'
@@ -1087,13 +1084,16 @@ class OrderImportForm(OurForm):
         label=u'配席モード',
         validators=[Required()],
         choices=[(str(e.v), get_allocation_mode_label(e.v)) for e in AllocationModeEnum],
-        default=ImportTypeEnum.Create.v,
+        default=AllocationModeEnum.AlwaysAllocateNew.v,
         coerce=int,
     )
     merge_order_attributes = OurBooleanField(
         label=u'既存の予約の購入情報属性を更新する',
         help=u'チェックを入れずに実行すると、属性はCSVに書かれているものに置換となりますので注意してください',
         default=True
+    )
+    use_test_version = OurBooleanField(
+        label=u'テスト版を使う'
     )
 
     def validate_order_csv(form, field):

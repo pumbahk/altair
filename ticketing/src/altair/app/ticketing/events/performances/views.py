@@ -62,7 +62,9 @@ from .api import (set_visible_performance,
                   send_resale_segment,
                   send_all_resale_request,
                   send_resale_request,
-                  get_progressing_order_import_task
+                  get_progressing_order_import_task,
+                  send_import_order_task_to_worker,
+                  update_order_import_tasks_done_by_worker
                   )
 
 from altair.app.ticketing.discount_code.forms import DiscountCodeSettingForm
@@ -252,22 +254,26 @@ class PerformanceShowView(BaseView):
         if importer:
             del self.request.session['ticketing.order.importer']
 
-        order_import_tasks = OrderImportTask.query.filter(
+        query = OrderImportTask.query.filter(
             OrderImportTask.organization_id == self.context.organization.id,
             OrderImportTask.performance_id == self.performance.id,
             OrderImportTask.status != ImportStatusEnum.ConfirmNeeded.v
-        ).all()
+        )
+
+        order_import_tasks_need_check = query.filter(OrderImportTask.status == ImportStatusEnum.Importing.v).all()
+
+        if order_import_tasks_need_check:
+            update_order_import_tasks_done_by_worker(self.request, order_import_tasks_need_check)
 
         data = {
             'tab': 'import_orders',
             'performance': self.performance,
             'form': OrderImportForm(
-                always_issue_order_no=False,
                 merge_order_attributes=True,
                 enable_random_import=True,
             ),
             'oh': order_helpers,
-            'order_import_tasks': order_import_tasks
+            'order_import_tasks': query.all()
         }
         data.update(self._extra_data())
         return data
@@ -282,8 +288,7 @@ class PerformanceShowView(BaseView):
             return self.import_orders_get()
         importer = OrderImporter(
             self.request,
-            import_type=f.import_type.data | (
-                ImportTypeEnum.AlwaysIssueOrderNo.v if f.always_issue_order_no.data else 0),
+            import_type=f.import_type.data,
             allocation_mode=f.allocation_mode.data,
             merge_order_attributes=f.merge_order_attributes.data,
             enable_random_import=f.enable_random_import.data,
@@ -309,22 +314,34 @@ class PerformanceShowView(BaseView):
         )
         DBSession.add(order_import_task)
         DBSession.flush()
-        return HTTPFound(self.request.route_url('performances.import_orders.confirm', performance_id=self.performance.id, _query=dict(task_id=order_import_task.id)))
+
+        return HTTPFound(self.request.route_url('performances.import_orders.confirm',
+                                                performance_id=self.performance.id,
+                                                _query=dict(task_id=order_import_task.id,
+                                                            user_test_version=int(f.use_test_version.data))
+                                                ))
 
     @view_config(route_name='performances.import_orders.confirm', request_method='GET')
     def import_orders_confirm_get(self):
         task_id = None
+
+        try:
+            use_test_version = bool(int(self.request.params.get('user_test_version')))
+        except (ValueError, TypeError):
+            use_test_version = False
+
         try:
             task_id = long(self.request.params.get('task_id'))
         except (ValueError, TypeError):
             pass
+
         if task_id is None:
             self.request.session.flash(u'不明なエラーです')
             return HTTPFound(self.request.route_url('performances.import_orders.index', performance_id=self.performance.id))
         task = OrderImportTask.query.filter_by(id=task_id).one()
         data = {
             'tab': 'import_orders',
-            'action': 'confirm',
+            'action': 'confirm_test' if use_test_version else 'confirm',
             'performance': self.performance,
             'oh': order_helpers,
             'task': task,
@@ -353,6 +370,33 @@ class PerformanceShowView(BaseView):
             self.request.session.flash(u'インポート対象がありません')
             return HTTPFound(self.request.route_url('performances.import_orders.index', performance_id=self.performance.id))
 
+    @view_config(route_name='performances.import_orders.test_version', request_method='POST')
+    def send_to_worker_post(self):
+        try:
+            task_id = long(self.request.params.get('task_id'))
+            task = OrderImportTask.query.filter_by(id=task_id).one()
+        except (ValueError, TypeError):
+            task = None
+        except NoResultFound:
+            task = None
+
+        if not task:
+            self.request.session.flash(u'不明なエラーです')
+            return HTTPFound(
+                self.request.route_url('performances.import_orders.index', performance_id=self.performance.id))
+        else:
+            if task.count > 0:
+                task.status = ImportStatusEnum.Importing.v
+                send_import_order_task_to_worker(self.request, task)
+                self.request.session.flash(u'予約インポートを実行しました')
+                return HTTPFound(
+                    self.request.route_url('performances.import_orders.index', performance_id=self.performance.id))
+            else:
+                self.request.session.flash(u'インポート対象がありません')
+                return HTTPFound(
+                    self.request.route_url('performances.import_orders.index', performance_id=self.performance.id))
+
+
     @view_config(route_name='performances.import_orders.show')
     def import_orders_show(self):
         task_id = self.request.matchdict.get('task_id')
@@ -362,6 +406,10 @@ class PerformanceShowView(BaseView):
         ).first()
         if task is None:
             return HTTPFound(self.request.route_url('performances.import_orders.index', performance_id=self.performance.id))
+        else:
+            if task.status == ImportStatusEnum.Importing.v:
+                update_order_import_tasks_done_by_worker(self.request, [task])
+
         data = {
             'tab': 'import_orders',
             'action': 'show',

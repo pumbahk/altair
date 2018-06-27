@@ -27,7 +27,6 @@ def decode_candidate_id(candidate_id):
 import_type_labels = {
     ImportTypeEnum.Create.v: u'新規登録',
     ImportTypeEnum.Update.v: u'予約を更新',
-    ImportTypeEnum.Create.v | ImportTypeEnum.Update.v: u'予約の更新と登録を同時に行う',
     }
 
 allocation_mode_labels = {
@@ -42,18 +41,12 @@ import_status_labels = {
     ImportStatusEnum.Aborted.v: u'インポート異常終了',
     }
 
-def get_import_type_label(import_type, no_option_desc=False):
-    import_type = int(import_type)
-    s = import_type_labels.get(import_type & (ImportTypeEnum.Create.v | ImportTypeEnum.Update.v))
-    if s is None:
-        return u'?'
-    if no_option_desc or (import_type & ImportTypeEnum.Create.v) == 0:
-        return s
-    if import_type & ImportTypeEnum.AlwaysIssueOrderNo.v != 0:
-        how_to_issue_order_no = u'常に新しい予約番号を発番'
-    else:
-        how_to_issue_order_no = u'予約番号を再利用'
-    return u'%s (%s)' % (s, how_to_issue_order_no)
+def get_import_type_label(import_type):
+    try:
+        s = import_type_labels.get(int(import_type))
+    except (KeyError, TypeError):
+        s = None
+    return s or u'?'
 
 def get_allocation_mode_label(allocation_mode):
     return allocation_mode_labels.get(int(allocation_mode), u'?')

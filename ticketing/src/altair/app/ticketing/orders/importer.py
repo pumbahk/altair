@@ -287,7 +287,6 @@ class ImportCSVParserContext(object):
 
         self.orders_will_be_created = bool(order_import_task.import_type & ImportTypeEnum.Create.v)
         self.orders_will_be_updated = bool(order_import_task.import_type & ImportTypeEnum.Update.v)
-        self.always_issue_order_no = bool(order_import_task.import_type & ImportTypeEnum.AlwaysIssueOrderNo.v)
         self.merge_order_attributes = order_import_task.merge_order_attributes
         self.operator = order_import_task.operator
 
@@ -352,51 +351,31 @@ class ImportCSVParserContext(object):
             if order_no_or_key:
                 obj = get_relevant_object(self.request, order_no_or_key, self.session, include_deleted=True)
                 logger.info('relevant_object=%s' % obj)
-            if self.always_issue_order_no and self.orders_will_be_created:
-                order_no = None
-                if isinstance(obj, Order):
-                    if self.orders_will_be_updated:
-                        if obj.is_canceled() or obj.deleted_at is not None:
-                            raise self.exc_factory(u'元の注文 %s はキャンセル済みです' % obj.order_no)
-                        order_no = order_no_or_key
-                        original_order = obj
-                elif obj is not None:
-                    order_no = core_api.get_next_order_no(self.request, self.organization)
-                    logger.info('always_issue_order_no is specified; new_order_no=%s' % order_no)
-                    if isinstance(obj, LotEntry):
-                        note.append(u'元の抽選の予約番号: %s' % order_no_or_key)
-                    else: 
-                        logger.info(u'%s is used by %s' % (order_no_or_key, label_for_object(obj)))
-
-                # 予約番号の特定ができない場合は新規に発番する
-                if order_no is None:
-                    order_no = core_api.get_next_order_no(self.request, self.organization)
-                    logger.info('always_issue_order_no is specified; new_order_no=%s' % order_no)
-            else:
-                if obj is not None:
-                    order_no = order_no_or_key
-                    if isinstance(obj, LotEntry):
-                        if obj.is_canceled or obj.deleted_at is not None:
-                            raise self.exc_factory(u'抽選 %s はキャンセル済みです' % obj.entry_no)
-                        note.append(u'抽選より同じ予約番号で生成')
-                    else:
-                        if self.orders_will_be_updated:
-                            if isinstance(obj, Order):
-                                if obj.is_canceled() or obj.deleted_at is not None:
-                                    raise self.exc_factory(u'元の注文 %s はキャンセル済みです' % obj.order_no)
-                                original_order = obj
-                            else:
-                                raise self.exc_factory(u'更新対象が注文ではありません (%sです)' % label_for_object(obj))
-                        else:
-                            if obj.deleted_at is not None:
-                                raise self.exc_factory(u'この予約番号は予約されています')
-                            else:
-                                raise self.exc_factory(u'すでに同じ予約番号の予約またはカートが存在します')
+            if obj is not None:
+                order_no = order_no_or_key
+                if isinstance(obj, LotEntry):
+                    if obj.is_canceled or obj.deleted_at is not None:
+                        raise self.exc_factory(u'抽選 %s はキャンセル済みです' % obj.entry_no)
+                    note.append(u'抽選より同じ予約番号で生成')
                 else:
-                    if self.orders_will_be_created:
-                        order_no = core_api.get_next_order_no(self.request, self.organization)
-                    elif self.orders_will_be_updated:
-                        raise self.exc_factory(u'更新対象の注文が存在しません')
+                    if self.orders_will_be_updated:
+                        if isinstance(obj, Order):
+                            if obj.is_canceled() or obj.deleted_at is not None:
+                                raise self.exc_factory(u'元の注文 %s はキャンセル済みです' % obj.order_no)
+                            original_order = obj
+                        else:
+                            raise self.exc_factory(u'更新対象が注文ではありません (%sです)' % label_for_object(obj))
+                    else:
+                        if obj.deleted_at is not None:
+                            raise self.exc_factory(u'この予約番号は予約されています')
+                        else:
+                            raise self.exc_factory(u'すでに同じ予約番号の予約またはカートが存在します')
+            else:
+                if self.orders_will_be_created:
+                    order_no = core_api.get_next_order_no(self.request, self.organization)
+                else:
+                    raise self.exc_factory(u'更新対象の注文が存在しません')
+
             if original_order is not None:
                 if original_order.issued_at is not None or \
                    original_order.printed_at is not None:
@@ -405,13 +384,6 @@ class ImportCSVParserContext(object):
                     raise self.exc_factory(u'更新対象の注文の決済方法と新しい注文の決済方法が異なっています')
                 if original_order.payment_delivery_pair.delivery_method.delivery_plugin_id != pdmp.delivery_method.delivery_plugin_id:
                     raise self.exc_factory(u'更新対象の注文の引取方法と新しい注文の引取方法が異なっています')
-
-            new_order_created_at = None
-            new_order_paid_at = None
-            issuing_start_at = None
-            issuing_end_at = None
-            payment_start_at = None
-            payment_due_at = None
 
             new_order_created_at_str = row.get(u'order.created_at')
             new_order_created_at = self.parse_date(new_order_created_at_str, u'注文生成日時が不正です')

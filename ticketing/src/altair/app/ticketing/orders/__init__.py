@@ -86,6 +86,7 @@ def includeme(config):
     config.add_route('orders.optional.pattern.operate', '/optional/pattern/operate/')
 
     config.include('.info')
+    config.include('.workers')
     config.scan(".")
 
     # 団体予約、インナー予約でcartパッケージを使う為の設定
