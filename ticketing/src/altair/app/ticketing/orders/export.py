@@ -1153,32 +1153,30 @@ class RefundResultCSVExporter(object):
         self.refund = refund
 
     def __iter__(self):
-        query = self.session.query(Order).join(
-                SejRefundTicket, and_(SejRefundTicket.order_no==Order.order_no, SejRefundTicket.deleted_at==None)
-            ).join(
-                SejTicket, and_(SejTicket.barcode_number==SejRefundTicket.ticket_barcode_number, SejTicket.deleted_at==None)
-            ).join(
-                ProductItem, and_(ProductItem.id==SejTicket.product_item_id, ProductItem.deleted_at==None)
-            ).join(
-                Product, and_(Product.id==ProductItem.product_id, Product.deleted_at==None)
-            ).join(
-                Stock, and_(Stock.id==ProductItem.stock_id, Stock.deleted_at==None)
-            ).join(
-                StockType, and_(StockType.id==Stock.stock_type_id, StockType.deleted_at==None)
-            ).filter(
-                Order.refund_id==self.refund.id
-            ).with_entities(
-                SejRefundTicket.order_no.label('order_no'),
-                StockType.name.label('stock_type_name'),
-                Product.name.label('product_name'),
-                ProductItem.name.label('product_item_name'),
-                SejRefundTicket.sent_at.label('sent_at'),
-                SejRefundTicket.refunded_at.label('refunded_at'),
-                SejRefundTicket.ticket_barcode_number.label('barcode_number'),
-                SejRefundTicket.refund_ticket_amount.label('refund_ticket_amount'),
-                SejRefundTicket.refund_other_amount.label('refund_other_amount'),
-                SejRefundTicket.status.label('status'),
-            )
+        query = self.session.query(
+            SejRefundTicket.order_no.label('order_no'),
+            StockType.name.label('stock_type_name'),
+            Product.name.label('product_name'),
+            ProductItem.name.label('product_item_name'),
+            SejRefundTicket.sent_at.label('sent_at'),
+            SejRefundTicket.refunded_at.label('refunded_at'),
+            SejRefundTicket.ticket_barcode_number.label('barcode_number'),
+            SejRefundTicket.refund_ticket_amount.label('refund_ticket_amount'),
+            SejRefundTicket.refund_other_amount.label('refund_other_amount'),
+            SejRefundTicket.status.label('status'),
+        ).join(
+            Order, SejRefundTicket.order_no == Order.order_no
+        ).join(
+            SejTicket, SejTicket.barcode_number == SejRefundTicket.ticket_barcode_number
+        ).join(
+            ProductItem,
+            Product,
+            Stock,
+            StockType
+        ).filter(
+            Order.refund_id == self.refund.id
+        )
+
         for row in query:
             yield OrderedDict([
                 (name, getattr(row, k) if getattr(row, k) is not None else u'')

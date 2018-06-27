@@ -19,3 +19,4 @@ def s3upload(connection, bucket_name, local_file_path, s3_directory_path, s3_fil
     bucket_key.key = s3_file_path
     bucket_key.set_contents_from_filename(local_file_path)
     bucket_key.set_acl('public-read')
+    return s3_file_path

@@ -1,0 +1,52 @@
+<%inherit file="/layout_2cols.html" />
+<%namespace file="/common/helpers.html" name="ch" />
+<%block name="breadcrumbs">
+${ch.breadcrumbs(
+names=[u'トップ', u'パスポート設定'],
+urls=[request.route_path('index')]
+)}
+</%block>
+
+<div class="page-header">
+    <h1>パスポート設定</h1>
+</div>
+
+<a href="${request.route_path('passport.new')}" class="btn">
+    <i class="icon-plus"></i> 新規
+</a>
+
+<table class="table fullwidth checkboxed_table">
+    <thead>
+    <tr>
+        <th>名前</th>
+        <th>平日パスポートフラグ</th>
+        <th>適応パフォーマンス</th>
+        <th>有効日数</th>
+        <th>有効/無効</th>
+        <th>更新日時</th>
+        <th>作成日時</th>
+        <th></th>
+    </tr>
+    </thead>
+    <tbody>
+    % for passport in passports:
+    <tr>
+        <td><a href="${request.route_path('passport.show', passport_id=passport.id)}">${passport.name}</a></td>
+        <td>${u"有効" if passport.daily_passport else u"無効"}</td>
+        % if passport.performance:
+        <td>
+            <a href="${request.route_path('performances.show', performance_id=passport.performance.id)}">
+                ${u"{0} {1}".format(passport.performance.event.title, passport.performance.name)}
+            </a>
+        </td>
+        % else:
+        <td></td>
+        % endif
+        <td>${passport.available_day}日</td>
+        <td>${u"有効" if passport.is_valid else u"無効"}</td>
+        <td>${passport.updated_at}</td>
+        <td>${passport.created_at}</td>
+    </tr>
+    % endfor
+    </tbody>
+</table>

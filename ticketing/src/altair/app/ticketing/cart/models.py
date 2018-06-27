@@ -969,6 +969,10 @@ class CartSetting(Base, WithTimestamp, LogicallyDeleted):
         return self.type == 'goods'
 
     @property
+    def passport_cart(self):
+        return self.type == 'passport'
+
+    @property
     def hidden_venue_html(self):
         return self.data.get('hidden_venue_html')
 

@@ -2,6 +2,13 @@
 <%namespace file="/common/helpers.html" name="ch" />
 
 <%include file="../_detail_table.html" args="expanded=False" />
+
+<style type="text/css">
+  .test-btn {
+    margin-left: 10px;
+  }
+</style>
+
 % if order_import_tasks:
 <div>
   <h4>予約インポート</h4>
@@ -45,10 +52,17 @@
     <li>数受け商品に座席を割り当てる場合は、ファイルの並び順で優先して座席が割り当てられます。</li>
   </ul>
 </div>
+<div class="alert alert-danger">
+  <p>予約インポート（テスト版）について。</p>
+  <ul>
+    <li>予約ごとワーカーで予約インポートを行うため、ファイルの並び順で優先してインポートは保証できません。</li>
+    <li>「予約を更新」かつ「座席番号を無視し常に自動配席する」の場合は予約インポートタスクの単位で行います。（従来の予約インポートと同じです。）</li>
+  </ul>
+</div>
 
 <form class="form-horizontal" enctype="multipart/form-data" action="${request.route_path('performances.import_orders.index', performance_id=performance.id)}" method="POST">
+  ${ch.form_item(form.use_test_version)}
   ${ch.form_item(form.import_type)}
-  ${ch.form_item(form.always_issue_order_no)}
   ${ch.form_item(form.allocation_mode)}
   ${ch.form_item(form.merge_order_attributes)}
   ${ch.form_item(form.enable_random_import)}

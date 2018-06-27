@@ -1,0 +1,52 @@
+<%page args="performance, stats" />
+<%namespace file="/common/helpers.html" name="ch" />
+
+<div class="alert alert-danger">
+  <p>CSVファイルを読み込みました。以下の内容で正しいか確認してください。</p>
+  <ul>
+    <li>注意: 席数は在庫総数のチェックのみです。インポート時の配席順などにより、実際にはいくつかの席がインポートできない可能性があります。</li>
+    <li>予約ごとワーカーで予約インポートを行うため、ファイルの並び順で優先してインポートは保証できません。</li>
+    <li>「予約を更新」かつ「座席番号を無視し常に自動配席する」の場合は予約インポートタスクの単位で行います。（従来の予約インポートと同じです。）</li>
+  </ul>
+</div>
+
+<%include file="_stats.html" args="stats=stats" />
+
+% if errors:
+<h4>インポートできない予約のエラー詳細</h4>
+<table class="table">
+  <thead>
+    <tr>
+      <th>CSV内の予約番号</th>
+      <th>詳細</th>
+    </tr>
+  </thead>
+  <tbody>
+  % for ref, errors_for_order in errors.items():
+    <tr>
+      <td rowspan="${len(errors_for_order)}">${ref}</td>
+    % for r, error in enumerate(errors_for_order):
+      % if r > 0:
+    <tr>
+      % endif
+      <td>
+        ${oh.error_level_to_html(request, error['level'])}
+        ${error['message']}
+      </td>
+    </tr>
+    % endfor
+  % endfor
+  </tbody>
+</table>
+% endif
+
+<form class="form-horizontal" action="${request.route_path('performances.import_orders.test_version', performance_id=performance.id, _query=dict(task_id=task.id))}" method="POST">
+  <div class="form-actions">
+    % if task.count > 0:
+    <input class="btn btn-danger pull-right" type="submit" value="インポート（テスト版）を実行する" />
+    % else:
+    <input class="btn btn-danger pull-right" type="submit" disabled="disabled" value="インポート対象がありません" />
+    % endif
+    <a href="${request.route_path('performances.import_orders.index', performance_id=performance.id)}" class="btn pull-right" style="margin-right: 10px;">戻る</a>
+  </div>
+</form>

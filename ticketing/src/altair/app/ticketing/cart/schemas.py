@@ -644,6 +644,7 @@ class BigbullsExtraForm(ExtraForm):
         widget=OurCheckboxInput(label=u'希望する')
         )
 
+
 class DynamicExtraForm(ExtraForm):
     member_type = OurSelectField(
         u"会員種別選択",
@@ -674,7 +675,21 @@ class GoodsExtraForm(ExtraForm):
         self._form_schema = form_schema
 
 
+class PassportExtraForm(ExtraForm):
+
+    def __init__(self, *args, **kwargs):
+        context = kwargs.get('context')
+        form_schema = filter_extra_form_schema(
+            context.cart_setting.extra_form_fields or [],
+            mode='entry'
+            )
+        fields = build_dynamic_form.unbound_fields(form_schema)
+        super(PassportExtraForm, self).__init__(*args, _fields=fields, **kwargs)
+        self._form_schema = form_schema
+
+
 extra_form_type_map = {
+    'passport': PassportExtraForm,
     'booster.89ers': _89ersExtraForm,
     'booster.bambitious': BambitiousExtraForm,
     'booster.bigbulls': BigbullsExtraForm,

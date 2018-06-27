@@ -1,0 +1,89 @@
+<%def name="render_passport(order)">
+% for item in order.items:
+  ${item.product.seat_stock_type.name}<br/>
+  ${item.product.name} × ${item.quantity}枚<br/>
+  % for element in item.elements:
+    % for token in element.tokens:
+      <div>
+        ${element.product_item.name}
+        % if token.seat:
+          <div>
+            ${token.seat.name}
+          </div>
+        % endif
+        % if order.is_canceled():
+          キャンセル済みです
+        % elif order.payment_status == 'refunding':
+          払い戻し予定です
+        % elif order.payment_status == 'refunded':
+          払い戻し済みです
+        % elif order.payment_status == 'unpaid':
+          ご入金後、利用が可能となります
+        % elif token.printed_at is not None:
+          利用済みです<br/>
+          ${token.printed_at.strftime("%Y/%m/%d %H:%M:%S")}
+        % elif order.payment_status == 'paid':
+            <form action="${request.route_path('passport.admission', reserved_number=reserved_number.number, token_id=token.id)}" method="POST">
+              <input class="btnPassport" type="submit" value="入場する"/>
+            </form>
+        % endif
+      </div>
+    % endfor
+  % endfor
+    <hr/>
+% endfor
+</%def>
+
+<%def name="render_out_term_passport(order)">
+<%namespace file="tags_mobile.html" name="mobile" />
+<%mobile:form_header>パスポートが有効期限切れです</%mobile:form_header>
+<div class="purchased">
+
+<div>${order.performance.event.title}</div>
+<div>${order.performance.name}</div>
+<br/>
+
+<%mobile:form_header>受付番号</%mobile:form_header>
+<div>${order.order_no}</div>
+<br/>
+
+<%mobile:form_header>ご購入チケット</%mobile:form_header>
+% for item in order.items:
+  ${item.product.seat_stock_type.name}<br/>
+  ${item.product.name} × ${item.quantity}枚<br/>
+  % for element in item.elements:
+    % for token in element.tokens:
+      <div>
+        ${element.product_item.name}
+        % if token.seat:
+          <div>
+            ${token.seat.name}
+          </div>
+        % endif
+        有効期限切れです
+      </div>
+    % endfor
+  % endfor
+    <hr/>
+% endfor
+</div>
+
+</%def>
+
+<%def name="render_all_passport_button(order)">
+  % if not order.printed_at:
+    % if order.is_canceled():
+      キャンセル済みです
+    % elif order.payment_status == 'refunding':
+      払い戻し予定です
+    % elif order.payment_status == 'refunded':
+      払い戻し済みです
+    % elif order.payment_status == 'unpaid':
+      ご入金後、利用が可能となります
+    % elif order.payment_status == 'paid':
+      <form action="${request.route_path('passport.order_admission', reserved_number=reserved_number.number)}" method="POST">
+        <input class="btnPassport" type="submit" value="全てのチケットを使用する"/>
+      </form>
+    % endif
+  % endif
+</%def>

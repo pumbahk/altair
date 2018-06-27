@@ -61,6 +61,7 @@ from altair.app.ticketing.sej.interfaces import ISejTenant
 from altair.app.ticketing.sej.exceptions import SejError
 from altair.app.ticketing.venues.interfaces import ITentativeVenueSite
 from .utils import ApplicableTicketsProducer
+from ..passport.models import Passport
 from . import api
 
 logger = logging.getLogger(__name__)
@@ -4385,6 +4386,9 @@ class OrganizationSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     tapirs = AnnotatedColumn(Boolean, nullable=True, default=False, doc=u"テイパーズ機能", _a_label=u"テイパーズ機能")
     enable_discount_code = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"クーポン・割引コード設定を利用", _a_label=u"クーポン・割引コード設定を利用")
     enable_resale = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"リセール機能を利用", _a_label=u"リセール機能を利用")
+    enable_price_batch_update = AnnotatedColumn(Boolean, nullable=False, default=False,
+                                                doc=u"価格一括変更機能を利用", _a_label=u"価格一括変更機能を利用")
+    enable_passport = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"パスポート販売の使用", _a_label=u"パスポート販売の使用")
 
     def _render_cart_setting_id(self):
         return link_to_cart_setting(self.cart_setting)

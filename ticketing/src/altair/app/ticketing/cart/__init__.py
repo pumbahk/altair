@@ -128,6 +128,8 @@ def setup_payment_renderers(config):
                     path_or_renderer_name = 'goods/' + path_or_renderer_name
                 elif api.is_fc_cart(request.context.cart_setting):
                     path_or_renderer_name = 'fc/' + path_or_renderer_name
+                elif api.is_passport_cart(request.context.cart_setting):
+                    path_or_renderer_name = 'passport/' + path_or_renderer_name
             return self.selectable_renderer_helper_factory(
                 path_or_renderer_name,
                 package,
@@ -312,6 +314,7 @@ def setup_layouts(config):
     config.add_lbr_layout(".layouts.Layout", template=layout_selector("booster.html"), name='booster')
     config.add_lbr_layout(".layouts.Layout", template=layout_selector("fc.html"), name='fc')
     config.add_lbr_layout(".layouts.Layout", template=layout_selector("goods.html"), name='goods')
+    config.add_lbr_layout(".layouts.Layout", template=layout_selector("passport.html"), name='passport')
 
 def setup_panels(config):
     from .rendering import selectable_renderer

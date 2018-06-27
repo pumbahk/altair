@@ -252,6 +252,7 @@ class OrganizationSettings(BaseView):
         organization_setting.tapirs = f.tapirs.data
         organization_setting.enable_discount_code = f.enable_discount_code.data
         organization_setting.enable_resale = f.enable_resale.data
+        organization_setting.enable_price_batch_update = f.enable_price_batch_update.data
         organization_setting.enable_word = f.enable_word.data
         organization_setting.augus_use = f.augus_use.data
         organization_setting.mail_refund_to_user = f.mail_refund_to_user.data
@@ -278,6 +279,7 @@ class OrganizationSettings(BaseView):
         organization_setting.oauth_endpoint_api = f.oauth_endpoint_api.data
         organization_setting.oauth_scope = f.oauth_scope.data
         organization_setting.openid_prompt = f.openid_prompt.data
+        organization_setting.enable_passport = f.enable_passport.data
         organization_setting.save()
 
         self.request.session.flash(u'その他の設定を保存しました')
