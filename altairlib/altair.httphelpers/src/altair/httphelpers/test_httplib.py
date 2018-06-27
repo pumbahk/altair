@@ -408,7 +408,7 @@ class TestOurHTTPConnection(unittest.TestCase):
         term = GuardedValue(False)
 
         st = threading.Thread(
-            target=self._make_server(ssl_version=ssl.PROTOCOL_SSLv23),
+            target=self._make_server(ssl_version=ssl.PROTOCOL_TLSv1),
             kwargs=dict(
                 fut=fut,
                 term=term)
