@@ -1,0 +1,44 @@
+<%inherit file="/layout_2cols.html" />
+<%namespace file="/common/helpers.html" name="ch" />
+<%block name="breadcrumbs">
+${ch.breadcrumbs(
+names=[u'トップ', u'パスポート設定', u'パスポート詳細', u'パスポート入場不可期間一覧'],
+urls=[request.route_path('index'), request.route_path('passport.index'), request.route_path('passport.show', passport_id=passport.id)]
+)}
+</%block>
+
+<div class="page-header">
+    <h1>パスポート入場不可期間一覧</h1>
+</div>
+
+<a href="${request.route_path('term.new', passport_id=passport.id)}" class="btn">
+    <i class="icon-plus"></i> 新規
+</a>
+
+<table class="table fullwidth checkboxed_table">
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>入場不可日</th>
+        <th>入場不可終了日</th>
+        <th>更新日時</th>
+        <th>作成日時</th>
+        <th></th>
+    </tr>
+    </thead>
+    <tbody>
+    % for term in terms:
+    <tr>
+        <td>${term.id}</td>
+        <td>
+            <a href="${request.route_path('term.show', term_id=term.id)}">${term.start_on}</a>
+        </td>
+        <td>
+            <a href="${request.route_path('term.show', term_id=term.id)}">${term.end_on}</a>
+        </td>
+        <td>${term.updated_at}</td>
+        <td>${term.created_at}</td>
+    </tr>
+    % endfor
+    </tbody>
+</table>

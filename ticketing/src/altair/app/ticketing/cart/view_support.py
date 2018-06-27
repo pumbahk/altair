@@ -823,6 +823,8 @@ def get_extra_form_schema(context, request, sales_segment, for_=None):
     if for_ == 'cart':
         if api.is_fc_cart(cart_setting):
             return cart_setting.extra_form_fields
+        elif api.is_passport_cart(cart_setting):
+            return cart_setting.extra_form_fields
         elif api.is_booster_cart(cart_setting):
             # XXX: ブースターの互換性のため
             extra_form_class = get_extra_form_class(request, cart_setting)
@@ -1088,6 +1090,9 @@ def is_fc_cart_pred(context, request):
 
 def is_goods_cart_pred(context, request):
     return api.is_goods_cart(context.cart_setting)
+
+def is_passport_cart_pred(context, request):
+    return api.is_passport_cart(context.cart_setting)
 
 def is_booster_or_fc_cart_pred(context, request):
     return api.is_booster_or_fc_cart(context.cart_setting)

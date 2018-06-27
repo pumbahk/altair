@@ -120,6 +120,10 @@
       <td>${u'ON' if organization_setting.enable_price_batch_update else u'OFF'}</td>
     </tr>
     <tr>
+      <th>${HH.label_text_for(c_models.OrganizationSetting.enable_passport)}</th>
+      <td>${u'ON' if organization_setting.enable_passport else u'OFF'}</td>
+    </tr>
+    <tr>
       <th>${HH.label_text_for(c_models.OrganizationSetting.orderreview_index)}</th>
       <td>${organization_setting.orderreview_index}</td>
     </tr>

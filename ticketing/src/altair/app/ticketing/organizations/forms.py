@@ -458,6 +458,9 @@ class OrganizationSettingForm(OrganizationSettingSimpleForm):
     enable_price_batch_update = OurBooleanField(
         label=get_annotations_for(c_models.OrganizationSetting.enable_price_batch_update)['label']
     )
+    enable_passport = OurBooleanField(
+        label=get_annotations_for(c_models.OrganizationSetting.enable_passport)['label']
+    )
     enable_word = OurBooleanField(
         label=get_annotations_for(c_models.OrganizationSetting.enable_word)['label']
     )
