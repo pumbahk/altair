@@ -62,10 +62,7 @@ class ResaleSegmentSerializer(Schema):
             if _performance.open_on.replace(hour=0, minute=0, second=0, microsecond=0) <= _resale_end_at:
                 raise ValidationError(u'リセール終了日時は公演日の１日前までに設定してください。', ['resale_end_at'])
 
-        try:
-            _sales_segments = _performance.sales_segments
-        except:
-            raise ValidationError(u'販売区分は見つかりませんでした。')
+        _sales_segments = _performance.sales_segments
 
         _start_on = None
         for _sales_segment in _sales_segments:
