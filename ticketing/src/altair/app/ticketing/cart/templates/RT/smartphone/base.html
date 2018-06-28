@@ -10,6 +10,7 @@
   <meta http-equiv="content-script-type" content="text/javascript" />
   <link rel="shortcut icon" href="${request.static_url('altair.app.ticketing.cart:static/RT/smartphone/images/rakuten.ico')}" />
   <link rel="stylesheet" href="${request.static_url('altair.app.ticketing.cart:static/RT/smartphone/css/default2.css')}" type="text/css" />
+  <link rel="stylesheet" href="${request.static_url('altair.app.ticketing.cart:static/RT/smartphone/css/header-logo.css')}" type="text/css" />
   <%block name="javascript"></%block>
   <%block name="css"></%block>
 </head>
@@ -18,8 +19,8 @@
   <div id="container" class="page">
     <!-- ========== header ========== -->
      <div class="header">
-        <div class="ticket-logo-area ticket-logo-cart">
-            <div class="ticket-logo-sp"><a href="//ticket.rakuten.co.jp/"><span class="offleft">楽天チケット</span></a></div>
+        <div class="header-logo header-logo-cart">
+            <h1><a href="https://ticket.rakuten.co.jp/">楽天チケット</a></h1>
         </div>
         % if getattr(request, 'context', None) and hasattr(request.context, 'switch_pc_url'):
             <div class="side-action-buttons">
