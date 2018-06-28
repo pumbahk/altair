@@ -39,8 +39,9 @@ class PassportView(BaseView):
     @view_config(route_name='passport.new', request_method="POST",
                  renderer='altair.app.ticketing:templates/passport/form.html')
     def new_post(self):
-        form = PassportForm(formdata=self.request.POST)
+        form = PassportForm(organization_id=self.context.user.organization_id, formdata=self.request.POST)
         if not form.validate():
+            form.configure()
             return dict(form=form)
 
         # TODO passport organizatoin_idをGETから
@@ -86,6 +87,7 @@ class PassportView(BaseView):
                             formdata=self.request.POST)
 
         if not form.validate():
+            form.configure()
             return dict(form=form, passport=passport)
 
         params = form.data

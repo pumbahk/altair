@@ -14,7 +14,7 @@ class PassportForm(OurForm):
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
         OurForm.__init__(self, formdata, obj, prefix, **kwargs)
         if "organization_id" in kwargs:
-            self.organization_id = kwargs['organization_id']
+            self.organization_id.data = kwargs['organization_id']
 
     id = OurHiddenField(
         label=get_annotations_for(Passport.id)['label'],
@@ -55,7 +55,7 @@ class PassportForm(OurForm):
     def configure(self):
         from altair.app.ticketing.core.models import Performance, Event
         performances = Performance.query.join(Event, Event.id == Performance.event_id).filter(
-            Event.organization_id == self.organization_id).all()
+            Event.organization_id == self.organization_id.data).all()
         self.performance_id.choices = [(performance.id, u"{0} {1}".format(performance.event.title, performance.name))
                                        for
                                        performance in performances]
