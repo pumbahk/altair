@@ -46,6 +46,14 @@ urls=[request.route_path('index')]
         <td>${u"有効" if passport.is_valid else u"無効"}</td>
         <td>${passport.updated_at}</td>
         <td>${passport.created_at}</td>
+        <td>
+            <a class="id-action btn btn-small" href="${request.route_url('passport.edit', passport_id=passport.id)}">
+                <i class="icon-pencil"></i> 編集
+            </a>
+            <a class="id-action btn btn-small btn-danger" href="${request.route_url('passport.delete', passport_id=passport.id)}">
+                削除
+            </a>
+        </td>
     </tr>
     % endfor
     </tbody>
