@@ -38,6 +38,14 @@ urls=[request.route_path('index'), request.route_path('passport.index'), request
         </td>
         <td>${term.updated_at}</td>
         <td>${term.created_at}</td>
+        <td>
+            <a class="id-action btn btn-small" href="${request.route_url('term.edit', term_id=term.id)}">
+                <i class="icon-pencil"></i> 編集
+            </a>
+            <a class="id-action btn btn-small btn-danger" href="${request.route_url('term.delete', term_id=term.id)}">
+                削除
+            </a>
+        </td>
     </tr>
     % endfor
     </tbody>
