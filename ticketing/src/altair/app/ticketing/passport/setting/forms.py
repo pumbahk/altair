@@ -13,8 +13,11 @@ from ..models import Passport, PassportNotAvailableTerm
 class PassportForm(OurForm):
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
         OurForm.__init__(self, formdata, obj, prefix, **kwargs)
+        self.exist_passport_performance = None
         if "organization_id" in kwargs:
             self.organization_id.data = kwargs['organization_id']
+        if "exist_passport_performance" in kwargs:
+            self.exist_passport_performance = kwargs['exist_passport_performance']
 
     id = OurHiddenField(
         label=get_annotations_for(Passport.id)['label'],
@@ -59,6 +62,27 @@ class PassportForm(OurForm):
         self.performance_id.choices = [(performance.id, u"{0} {1}".format(performance.event.title, performance.name))
                                        for
                                        performance in performances]
+
+    def validate(self, pdp=None):
+        # このように and 演算子を展開しないとすべてが一度に評価されない
+        status = super(PassportForm, self).validate()
+        status = all([status, self._validate_performance_id(), self._validate_available_day()])
+        return status
+
+    def _validate_performance_id(self, *args, **kwargs):
+        if self.exist_passport_performance:
+            self.performance_id.errors.append(u"パスポート設定は１つのパフォーマンスにのみ紐付けられます")
+            return False
+        return True
+
+    def _validate_available_day(self, *args, **kwargs):
+        if not self.available_day.data.isdigit():
+            self.available_day.errors.append(u"数字で入力してください")
+        if int(self.available_day.data) < 1:
+            self.available_day.errors.append(u"１日以上で入力してください")
+            return False
+        self.available_day.data = int(self.available_day.data)
+        return True
 
 
 class PassportNotAvailableTermForm(OurForm):

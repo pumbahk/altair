@@ -37,3 +37,6 @@ class PassportResource(TicketingAdminResource):
                                                                        Passport.id == PassportNotAvailableTerm.passport_id).filter(
             Passport.id == self.passport.id).filter(
             Passport.organization_id == self.user.organization_id).all()
+
+    def exist_passport_performance(self, performance_id):
+        return self.slave_session.query(Passport).filter(Passport.performance_id==performance_id).first()

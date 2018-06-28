@@ -51,6 +51,7 @@ urls=[request.route_path('index'), request.route_path("passport.index")]
         <fieldset>
             ${ch.form_item(form.name)}
             ${ch.form_item(form.performance_id, class_='chosen')}
+            ${h.error(form.performance_id)}
             ${ch.form_item(form.daily_passport)}
             ${ch.form_item(form.available_day)}
             ${ch.form_item(form.is_valid)}

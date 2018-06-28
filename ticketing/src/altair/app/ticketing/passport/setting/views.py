@@ -34,15 +34,15 @@ class PassportView(BaseView):
     def new(self):
         form = PassportForm(organization_id=self.context.user.organization_id)
         form.configure()
-        return dict(form=form)
+        return dict(form=form, h=h)
 
     @view_config(route_name='passport.new', request_method="POST",
                  renderer='altair.app.ticketing:templates/passport/form.html')
     def new_post(self):
-        form = PassportForm(organization_id=self.context.user.organization_id, formdata=self.request.POST)
+        form = PassportForm(exist_passport_performance=self.context.exist_passport_performance(self.request.POST['performance_id']), organization_id=self.context.user.organization_id, formdata=self.request.POST)
         if not form.validate():
             form.configure()
-            return dict(form=form)
+            return dict(form=form, h=h)
 
         # TODO passport organizatoin_idをGETから
         params = form.data
@@ -74,7 +74,7 @@ class PassportView(BaseView):
         form.configure()
         if passport.performance:
             form.performance_id.data = passport.performance.id
-        return dict(form=form, passport=passport)
+        return dict(form=form, passport=passport, h=h)
 
     @view_config(route_name='passport.edit', request_method="POST",
                  renderer='altair.app.ticketing:templates/passport/form.html')
@@ -88,7 +88,7 @@ class PassportView(BaseView):
 
         if not form.validate():
             form.configure()
-            return dict(form=form, passport=passport)
+            return dict(form=form, passport=passport, h=h)
 
         params = form.data
         passport.name = params["name"]
@@ -142,14 +142,14 @@ class TermView(BaseView):
                  renderer='altair.app.ticketing:templates/passport/term/form.html')
     def new(self):
         form = PassportNotAvailableTermForm()
-        return dict(form=form, passport=self.context.passport)
+        return dict(form=form, passport=self.context.passport, h=h)
 
     @view_config(route_name='term.new', request_method="POST",
                  renderer='altair.app.ticketing:templates/passport/term/form.html')
     def new_post(self):
         form = PassportNotAvailableTermForm(formdata=self.request.POST)
         if not form.validate():
-            return dict(form=form)
+            return dict(form=form, h=h)
 
         params = form.data
         term = PassportNotAvailableTerm(
@@ -173,7 +173,7 @@ class TermView(BaseView):
             start_on=term.start_on,
             end_on=term.end_on
         )
-        return dict(form=form, passport=term.passport, term=term)
+        return dict(form=form, passport=term.passport, term=term, h=h)
 
     @view_config(route_name='term.edit', request_method="POST",
                  renderer='altair.app.ticketing:templates/passport/term/form.html')
@@ -183,7 +183,7 @@ class TermView(BaseView):
             raise HTTPNotFound("term is not found. edit post")
         form = PassportNotAvailableTermForm(formdata=self.request.POST)
         if not form.validate():
-            return dict(form=form, passport=term.passport, term=term)
+            return dict(form=form, passport=term.passport, term=term, h=h)
 
         params = form.data
         term.start_on = params["start_on"]
