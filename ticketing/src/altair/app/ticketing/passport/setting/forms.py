@@ -48,7 +48,8 @@ class PassportForm(OurForm):
         label=get_annotations_for(Passport.daily_passport)['label']
     )
     is_valid = OurBooleanField(
-        label=get_annotations_for(Passport.is_valid)['label']
+        label=get_annotations_for(Passport.is_valid)['label'],
+        default=True
     )
 
     def configure(self):
