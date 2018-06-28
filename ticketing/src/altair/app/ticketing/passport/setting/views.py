@@ -4,6 +4,7 @@ from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.views import BaseView
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.view import view_config, view_defaults
+from . import helpers as h
 
 from .forms import PassportForm, PassportNotAvailableTermForm
 from ..models import Passport, PassportNotAvailableTerm
@@ -123,7 +124,8 @@ class TermView(BaseView):
     def index(self):
         return dict(
             passport=self.context.passport,
-            terms=self.context.terms
+            terms=self.context.terms,
+            h=h
         )
 
     @view_config(route_name='term.show', renderer='altair.app.ticketing:templates/passport/term/show.html')

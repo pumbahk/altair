@@ -31,10 +31,10 @@ urls=[request.route_path('index'), request.route_path('passport.index'), request
     <tr>
         <td>${term.id}</td>
         <td>
-            <a href="${request.route_path('term.show', term_id=term.id)}">${term.start_on}</a>
+            <a href="${request.route_path('term.show', term_id=term.id)}">${h.japanese_date(term.start_on)}</a>
         </td>
         <td>
-            <a href="${request.route_path('term.show', term_id=term.id)}">${term.end_on}</a>
+            <a href="${request.route_path('term.show', term_id=term.id)}">${h.japanese_date(term.end_on)}</a>
         </td>
         <td>${term.updated_at}</td>
         <td>${term.created_at}</td>
