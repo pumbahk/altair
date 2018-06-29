@@ -100,6 +100,7 @@ def use_passport(passport_user_id):
 
 
 def get_passport_user_from_order_id(order_id):
+    # データ不整合にならないようマスタから取得
     return PassportUser.query.filter(PassportUser.order_id == order_id).first()
 
 
