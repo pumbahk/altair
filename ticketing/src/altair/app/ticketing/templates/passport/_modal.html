@@ -1,0 +1,33 @@
+<script type="text/javascript">
+  function delete_passport(id) {
+    modal = $('#delete-modal');
+    modal.find('#delete').attr('href', '/passport/setting/delete/' + id);
+    modal.find('#message').text("${u'選択したパスポートを削除します。よろしいですか？'}");
+    modal.modal('toggle');
+  }
+  function delete_term(id) {
+    modal = $('#delete-modal');
+    modal.find('#delete').attr('href', '/passport/setting/term/delete/' + id);
+    modal.find('#message').text("${u'選択した入場不可期間を削除します。よろしいですか？'}");
+    modal.modal('toggle');
+  }
+</script>
+
+<div id="delete-modal" class="modal hide">
+  <div class="modal-header">
+    <a class="close" data-dismiss="modal">&times;</a>
+    <h3>確認</h3>
+  </div>
+  <div class="modal-body">
+    <div class="content">
+      <span id="message"></span>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <a id="delete" class="id-action btn btn-small btn-danger" href="">
+      <i class="icon-pencil"></i> 削除
+    </a>
+    <a href="#" class="btn" data-dismiss="modal">閉じる</a>
+    </a>
+  </div>
+</div>

@@ -1,4 +1,5 @@
 <%inherit file="/layout_2cols.html" />
+<%include file="./_modal.html"/>
 <%namespace file="/common/helpers.html" name="ch" />
 <%block name="breadcrumbs">
 ${ch.breadcrumbs(
@@ -50,8 +51,9 @@ urls=[request.route_path('index')]
             <a class="id-action btn btn-small" href="${request.route_url('passport.edit', passport_id=passport.id)}">
                 <i class="icon-pencil"></i> 編集
             </a>
-            <a class="id-action btn btn-small btn-danger" href="${request.route_url('passport.delete', passport_id=passport.id)}">
-                削除
+            <a class="id-action btn btn-small btn-danger" href="javascript:void(0);"
+               onclick="delete_passport(${passport.id});">
+                <i class="icon-pencil"></i> 削除
             </a>
         </td>
     </tr>

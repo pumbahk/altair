@@ -1,6 +1,7 @@
 <%inherit file="/layout_2cols.html" />
 <%namespace file="/common/helpers.html" name="ch" />
 <%block name="breadcrumbs">
+<%include file="../_modal.html"/>
 ${ch.breadcrumbs(
 names=[u'トップ', u'パスポート設定', u'パスポート詳細', u'パスポート入場不可期間一覧'],
 urls=[request.route_path('index'), request.route_path('passport.index'), request.route_path('passport.show', passport_id=passport.id)]
@@ -42,8 +43,9 @@ urls=[request.route_path('index'), request.route_path('passport.index'), request
             <a class="id-action btn btn-small" href="${request.route_url('term.edit', term_id=term.id)}">
                 <i class="icon-pencil"></i> 編集
             </a>
-            <a class="id-action btn btn-small btn-danger" href="${request.route_url('term.delete', term_id=term.id)}">
-                削除
+            <a class="id-action btn btn-small btn-danger" href="javascript:void(0);"
+               onclick="delete_term(${term.id});">
+                <i class="icon-pencil"></i> 削除
             </a>
         </td>
     </tr>
