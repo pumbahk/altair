@@ -31,17 +31,16 @@
 
 <div class="header-navigation">
   <div class="header-logo header-logo-top">
-	<h1><a href="https://ticket.rakuten.co.jp/">楽天チケット</a></h1>
+	  <h1><a href="https://ticket.rakuten.co.jp/">楽天チケット</a></h1>
   </div>
+  <div class="ticket-top-icon clearfix">
+    <span class="icon_help">
+      <a href="https://ticket.faq.rakuten.ne.jp/app/home"><img src="${request.static_url('altaircms:static/RT/smartphone/img/icon_help.png')}" alt="ヘルプ"></a>
+    </span>
+    <span class="icon_check">
+      <a href="https://rt.tstar.jp/orderreview"><img src="${request.static_url('altaircms:static/RT/smartphone/img/icon_check.png')}" alt="お申込内容確認"></a>
+    </span>
   </div>
-    <div class="ticket-top-icon clearfix">
-        <span class="icon_help"><a href="https://ticket.faq.rakuten.ne.jp/app/home"><img
-                src="${request.static_url('altaircms:static/RT/smartphone/img/icon_help.png')}" alt="ヘルプ"></a></span>
-        <span class="icon_check"><a href="https://rt.tstar.jp/orderreview"><img
-                src="${request.static_url('altaircms:static/RT/smartphone/img/icon_check.png')}"
-                alt="お申込内容確認"></a></span>
-    </div>
-
 </div>
 ${self.body()}
 <%block name="fnavi" />
