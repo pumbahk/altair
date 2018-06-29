@@ -87,8 +87,6 @@ class PassportView(BaseView):
         passport = self.context.passport
         if passport is None:
             raise HTTPNotFound("passport is not found. delete")
-        # elif passport > 0:
-        #     self.request.session.flash(u'販売されているため消せません')
         else:
             passport.delete()
             self.request.session.flash(u'パスポートを削除しました')
@@ -125,13 +123,7 @@ class TermView(BaseView):
         if not form.validate():
             return dict(form=form, h=h)
 
-        params = form.data
-        term = PassportNotAvailableTerm(
-            start_on=params["start_on"],
-            end_on=params["end_on"],
-            passport_id=self.request.matchdict['passport_id']
-        )
-        term.save()
+        self.context.save_term(PassportNotAvailableTerm(), form)
         self.request.session.flash(u'パスポート入場不可期間を登録しました')
         return HTTPFound(
             location=self.request.route_path("term.index", passport_id=self.request.matchdict['passport_id']))
@@ -159,10 +151,7 @@ class TermView(BaseView):
         if not form.validate():
             return dict(form=form, passport=term.passport, term=term, h=h)
 
-        params = form.data
-        term.start_on = params["start_on"]
-        term.end_on = params["end_on"]
-        term.save()
+        self.context.save_term(term, form)
         self.request.session.flash(u'パスポート入場不可期間を更新しました')
         return HTTPFound(location=self.request.route_path("term.show", term_id=term.id))
 
@@ -172,8 +161,6 @@ class TermView(BaseView):
         pasport_id = term.passport.id
         if term is None:
             raise HTTPNotFound("term is not found. delete")
-        # elif passport > 0:
-        #     self.request.session.flash(u'販売されているため消せません')
         else:
             term.delete()
             self.request.session.flash(u'パスポート入場不可期間を削除しました')

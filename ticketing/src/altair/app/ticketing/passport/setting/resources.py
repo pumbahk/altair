@@ -56,3 +56,10 @@ class PassportResource(TicketingAdminResource):
         passport.is_valid = params["is_valid"]
         passport.organization_id = self.user.organization_id
         passport.save()
+
+    def save_term(self, term, form):
+        params = form.data
+        term.start_on = params["start_on"]
+        term.end_on = params["end_on"]
+        term.passport_id = self.request.matchdict['passport_id']
+        term.save()
