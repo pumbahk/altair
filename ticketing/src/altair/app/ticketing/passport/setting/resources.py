@@ -3,6 +3,7 @@ from altair.app.ticketing.resources import TicketingAdminResource
 from altair.sqlahelper import get_db_session
 
 from ..models import Passport, PassportNotAvailableTerm
+from altair.app.ticketing.core.models import Performance, Event
 
 
 class PassportResource(TicketingAdminResource):
@@ -38,5 +39,20 @@ class PassportResource(TicketingAdminResource):
             Passport.id == self.passport.id).filter(
             Passport.organization_id == self.user.organization_id).all()
 
-    def exist_passport_performance(self, performance_id):
-        return self.slave_session.query(Passport).filter(Passport.performance_id==performance_id).first()
+    def exist_passport_performance(self):
+        return self.slave_session.query(Passport).filter(Passport.performance_id == self.request.POST['performance_id']).first()
+
+    @property
+    def performances(self):
+        return self.slave_session.query(Performance).join(Event, Event.id == Performance.event_id).filter(
+            Event.organization_id == self.user.organization_id).all()
+
+    def save_passport(self, passport, form):
+        params = form.data
+        passport.name = params["name"]
+        passport.available_day = params["available_day"]
+        passport.performance_id = params["performance_id"]
+        passport.daily_passport = params["daily_passport"]
+        passport.is_valid = params["is_valid"]
+        passport.organization_id = self.user.organization_id
+        passport.save()

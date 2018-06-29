@@ -4,8 +4,8 @@ from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.views import BaseView
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.view import view_config, view_defaults
-from . import helpers as h
 
+from . import helpers as h
 from .forms import PassportForm, PassportNotAvailableTermForm
 from ..models import Passport, PassportNotAvailableTerm
 
@@ -19,42 +19,31 @@ class PassportView(BaseView):
 
     @view_config(route_name='passport.index', renderer='altair.app.ticketing:templates/passport/index.html')
     def index(self):
-        return dict(
-            passports=self.context.passports
-        )
+        return dict(passports=self.context.passports)
 
     @view_config(route_name='passport.show', renderer='altair.app.ticketing:templates/passport/show.html')
     def show(self):
-        return dict(
-            passport=self.context.passport
-        )
+        return dict(passport=self.context.passport)
 
     @view_config(route_name='passport.new', request_method="GET",
                  renderer='altair.app.ticketing:templates/passport/form.html')
     def new(self):
         form = PassportForm(organization_id=self.context.user.organization_id)
-        form.configure()
+        form.set_performance_choices(self.context.performances)
         return dict(form=form, h=h)
 
     @view_config(route_name='passport.new', request_method="POST",
                  renderer='altair.app.ticketing:templates/passport/form.html')
     def new_post(self):
-        form = PassportForm(exist_passport_performance=self.context.exist_passport_performance(self.request.POST['performance_id']), organization_id=self.context.user.organization_id, formdata=self.request.POST)
+        form = PassportForm(
+            exist_passport_performance=self.context.exist_passport_performance(),
+            organization_id=self.context.user.organization_id, formdata=self.request.POST)
+
         if not form.validate():
-            form.configure()
+            form.set_performance_choices(self.context.performances)
             return dict(form=form, h=h)
 
-        # TODO passport organizatoin_idをGETから
-        params = form.data
-        passport = Passport(
-            name=params["name"],
-            organization_id=self.context.user.organization_id,
-            performance_id=params["performance_id"],
-            available_day=params["available_day"],
-            daily_passport=params["daily_passport"],
-            is_valid=params["is_valid"],
-        )
-        passport.save()
+        self.context.save_passport(Passport(), form)
         self.request.session.flash(u'パスポートを登録しました')
         return HTTPFound(location=self.request.route_path("passport.index"))
 
@@ -71,7 +60,7 @@ class PassportView(BaseView):
                             daily_passport=passport.daily_passport,
                             is_valid=passport.is_valid,
                             )
-        form.configure()
+        form.set_performance_choices(self.context.performances)
         if passport.performance:
             form.performance_id.data = passport.performance.id
         return dict(form=form, passport=passport, h=h)
@@ -85,19 +74,11 @@ class PassportView(BaseView):
 
         form = PassportForm(organization_id=self.context.user.organization_id,
                             formdata=self.request.POST)
-
+        self.context.save_passport(passport, form)
         if not form.validate():
-            form.configure()
+            form.set_performance_choices(self.context.performances)
             return dict(form=form, passport=passport, h=h)
 
-        params = form.data
-        passport.name = params["name"]
-        passport.available_day = params["available_day"]
-        passport.performance_id = params["performance_id"]
-        passport.daily_passport = params["daily_passport"]
-        passport.is_valid = params["is_valid"]
-        passport.organization_id = self.context.user.organization_id
-        passport.save()
         self.request.session.flash(u'パスポートを更新しました')
         return HTTPFound(location=self.request.route_path("passport.show", passport_id=passport.id))
 
@@ -124,19 +105,12 @@ class TermView(BaseView):
 
     @view_config(route_name='term.index', renderer='altair.app.ticketing:templates/passport/term/index.html')
     def index(self):
-        return dict(
-            passport=self.context.passport,
-            terms=self.context.terms,
-            h=h
-        )
+        return dict(passport=self.context.passport, terms=self.context.terms, h=h)
 
     @view_config(route_name='term.show', renderer='altair.app.ticketing:templates/passport/term/show.html')
     def show(self):
         term = self.context.term
-        return dict(
-            passport=term.passport,
-            term=term
-        )
+        return dict(passport=term.passport, term=term)
 
     @view_config(route_name='term.new', request_method="GET",
                  renderer='altair.app.ticketing:templates/passport/term/form.html')
