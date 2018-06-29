@@ -1,9 +1,10 @@
 # -*- coding:utf-8 -*-
+from datetime import datetime
+
 from altair.app.ticketing.core.models import Host
 from altair.sqlahelper import get_db_session
 
-from ..passport.models import PassportUserInfo, PassportUser, PassportNotAvailableTerm
-from datetime import datetime, date
+from ..passport.models import PassportUserInfo, PassportUser
 
 
 def get_passport_product_quantities(products, extra_data):
@@ -50,7 +51,6 @@ def get_passport_product_quantities(products, extra_data):
 
 
 def can_use_passport(request, passport_user):
-
     now = datetime.now()
 
     # パスポート設定が使用不可
@@ -71,7 +71,8 @@ def can_use_passport(request, passport_user):
             return False
 
     # パスポートの有効期限切れ確認
-    if now > datetime(passport_user.expired_at.year, passport_user.expired_at.month, passport_user.expired_at.day, 23, 59):
+    if now > datetime(passport_user.expired_at.year, passport_user.expired_at.month, passport_user.expired_at.day, 23,
+                      59):
         return False
 
     # 入場不可期間
