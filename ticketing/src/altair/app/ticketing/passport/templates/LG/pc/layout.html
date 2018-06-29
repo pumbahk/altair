@@ -1,38 +1,150 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!doctype html>
 <html>
 <head>
-  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
-  <link rel="shortcut icon" href="${request.static_url('altair.app.ticketing.passport:static/LG/pc/images/favicon.ico')}" />
-  <title>ラグーナテンボス 購入確認ページ</title>
-  <link rel="stylesheet" type="text/css" href="${request.static_url('altair.app.ticketing.passport:static/LG/pc/css/style2.css')}" media="all" />
-  <script type="text/javascript" src="${request.static_url('altair.app.ticketing.passport:static/common/js/jquery-1.11.3.min.js')}"></script>
-  <script type="text/javascript" src="${request.static_url('altair.app.ticketing.passport:static/common/js/passport.js')}"></script>
-  <script type="text/javascript" src="${request.static_url('altair.app.ticketing.passport:static/common/js/disable_return_page.js')}"></script>
-  <link rel="stylesheet" type="text/css" href="${request.static_url('altair.app.ticketing.passport:static/common/css/passport.css')}" media="all" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <link rel="shortcut icon"
+          href="${request.static_url('altair.app.ticketing.passport:static/LG/pc/images/style2.css')}">
+    <title>ラグーナテンボス 購入確認ページ</title>
+    <link rel="stylesheet" type="text/css"
+          href="${request.static_url('altair.app.ticketing.passport:static/common/css/style2.css')}" media="all">
+    <script type="text/javascript"
+            src="${request.static_url('altair.app.ticketing.passport:static/common/js/jquery-1.11.3.min.js')}"></script>
+    <script type="text/javascript"
+            src="${request.static_url('altair.app.ticketing.passport:static/common/js/passport.js')}"></script>
+    <script type="text/javascript"
+            src="${request.static_url('altair.app.ticketing.passport:static/common/js/disable_return_page.js')}"></script>
+    <link rel="stylesheet" type="text/css"
+          href="${request.static_url('altair.app.ticketing.passport:static/common/css/passport.css')}" media="all">
+
 </head>
-<body>
-<div class="header" id="top">
-  <div class="header-inner">
-    <h1>
-      <a href="http://lagunatenbosch.tstar.jp/">
-        <img src="${request.static_url('altair.app.ticketing.passport:static/LG/pc/images/logo.png')}" alt="ラグーナテンボス 購入確認ページ" height="64"/>
-      </a>
-    </h1>
-  </div>
-</div>
+<body class="passport">
 
-<div class="wrapper">
-  <div class="kadomaru">
-${next.body()}
-  </div>
-</div>
-
-<div class="footer">
-  <div class="footer-inner">
-    <div class="copyright clear">
-         &copy; TicketStar, Inc.
+<header>
+    <div class="header-inner">
+        <h1>
+            <a href="http://lagunatenbosch.tstar.jp/"><img
+                    src="${request.static_url('altair.app.ticketing.passport:static/LG/pc/images/logo.png')}"
+                    alt="ラグーナテンボス"></a>
+        </h1>
+        <div class="title"><img
+                src="${request.static_url('altair.app.ticketing.passport:static/common/images/title.png')}"
+                alt="WEBチケット購入ページ">
+        </div>
     </div>
-  </div>
-</div>
+</header>
+
+<section>
+    <div id="modal-content">
+        <form id="passport_form" action="" method="POST">
+            <input class="btn-attention btn-attention-red" value="利用する" type="submit">
+            <input id="modal-close" class="btn-attention btn-attention-gray" value="やめる" type="button">
+            <input id="disp_dialog" name="disp_dialog" type="checkbox">
+            <label for="disp_dialog" class="checkbox">次回から表示しない</label>
+        </form>
+        <div class="attention">本当に利用しますか？この操作は、施設（または店舗）の方が行います。お客様ご自身が、押してしまった場合は無効になります。</div>
+    </div>
+    <div id="alert-modal-content">
+        <div class="super-attention">※このチケットは既に使用されています。</div>
+        <form id="alert_passport_form" action="" method="GET">
+            <input class="btn-attention" value="前に戻る" type="submit">
+        </form>
+    </div>
+
+    <h2>チケット情報</h2>
+    <div class="purchased">
+        <div class="security_box" style="background-color:red">カラーコード676</div>
+        <div class="purchasedContents contents-area">
+            <ul>
+                <li><span class="contents-area-point">イベント名</span><span
+                        class="contents-area-txt">光の宮殿 ジュエルイルミネーションショー</span></li>
+                <li><span class="contents-area-point">公演名</span><span class="contents-area-txt">Maxin10sity世界の第一線でプロジェクションマッピングを手がけるトップクリエイティブチーム</span>
+                </li>
+                <li><span class="contents-area-point">受付番号</span><span class="contents-area-txt">HT000012AAYA</span>
+                </li>
+            </ul>
+        </div>
+
+    </div>
+    <div class="ticket-area-wrapper">
+
+        <div class="ticket-area">
+            <div class="ticket-area-data">
+                <div class="ticket-area-data-inner">
+                    <h3>ご購入チケット</h3>
+                    <p class="passport_name">商品明細名:SSS</p>
+                    <p class="passport_name">席番SSS × 8枚</p>
+                </div>
+            </div>
+            <div class="ticket-area-bt">
+                <div class="confirm_not_exist">
+                    <form method="POST" action="/passport/4907459268/use/17107841">
+                        <input class="btnPassport" value="利用する" type="image"
+                               src="${request.static_url('altair.app.ticketing.passport:static/common/images/ticket-right.png')}"
+                               alt="もぎる">
+                    </form>
+                </div>
+                <div class="confirm_exist" style="display: none;">
+                    <input class="btnPassport passport_button" value="利用する" next_url="/passport/4907459268/use/17107841"
+                           check_url="/passport/can_use/17107841" type="image"
+                           src="${request.static_url('altair.app.ticketing.passport:static/common/images/ticket-right.png')}"
+                           alt="もぎる">
+                </div>
+            </div>
+        </div>
+
+        <div class="ticket-area">
+            <div class="ticket-area-data">
+                <div class="ticket-area-data-inner">
+                    <h3>ご購入チケット</h3>
+                    <p class="passport_name">商品明細名:商品明細名が長い場合商品明細名が長い場合商品明細名が長い場合SSS</p>
+                    <p class="passport_name">席番SSS × 1枚</p>
+                </div>
+            </div>
+            <div class="ticket-area-bt">
+                <div class="confirm_not_exist" style="display: none;">
+                    <form method="POST" action="/passport/4907459268/use/17107841">
+                        <input class="btnPassport" value="利用する" type="image"
+                               src="${request.static_url('altair.app.ticketing.passport:static/common/images/ticket-right.png')}"
+                               alt="もぎる">
+                    </form>
+                </div>
+                <div class="confirm_exist">
+                    <input class="btnPassport passport_button" value="利用する" next_url="/passport/4907459268/use/17107841"
+                           check_url="/passport/can_use/17107841" type="image"
+                           src="${request.static_url('altair.app.ticketing.passport:static/common/images/ticket-right.png')}"
+                           alt="もぎる">
+                </div>
+            </div>
+        </div>
+        <div class="ticket-area">
+            <div class="ticket-area-data">
+                <div class="ticket-area-data-inner">
+                    <h3>ご購入チケット</h3>
+                    <p class="passport_name">商品明細名:もぎった後のイメージ</p>
+                    <p class="passport_name">席番SSS × 1枚</p>
+                </div>
+            </div>
+            <div class="ticket-area-bt">
+                <div class="confirm_not_exist" style="display: none;">
+                    <div class="btnPassport-end"><img
+                            src="${request.static_url('altair.app.ticketing.passport:static/common/images/ticket-right-end.png')}"
+                            alt="もぎる"></div>
+                </div>
+                <div class="confirm_exist">
+                    <div class="btnPassport-end"><img
+                            src="${request.static_url('altair.app.ticketing.passport:static/common/images/ticket-right-end.png')}"
+                            alt="もぎる"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <input class="btnAllPassport passport_button" value="全てのチケットを使用する" check_url="/passport/can_use/order/4907459268"
+           next_url="/passport/use/4907459268" type="button" id="btnAllPassport"></section>
+
+<footer>
+    <div class="copyright">© TicketStar, Inc.</div>
+</footer>
+
 </body>
 </html>
