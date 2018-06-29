@@ -21,7 +21,7 @@ class Passport(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     daily_passport = AnnotatedColumn(Boolean, nullable=True, _a_label=_(u'平日パスポート'))
     is_valid = AnnotatedColumn(Boolean, nullable=True, _a_label=_(u'有効・無効フラグ'))
     organization_id = AnnotatedColumn(Identifier, ForeignKey('Organization.id'), nullable=False, _a_label=_(u'組織ID'))
-    performance_id = AnnotatedColumn(Identifier, ForeignKey('Performance.id'), nullable=False, _a_label=_(u'パフォーマンスID'))
+    performance_id = AnnotatedColumn(Identifier, ForeignKey('Performance.id'), nullable=False, _a_label=_(u'パフォーマンス'))
     organization = relationship('Organization',
                                 backref='passport',
                                 cascade='all'
