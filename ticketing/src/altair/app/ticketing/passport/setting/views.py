@@ -121,7 +121,7 @@ class TermView(BaseView):
     def new_post(self):
         form = PassportNotAvailableTermForm(formdata=self.request.POST)
         if not form.validate():
-            return dict(form=form, h=h)
+            return dict(form=form, passport=self.context.passport, h=h)
 
         self.context.save_term(PassportNotAvailableTerm(), form)
         self.request.session.flash(u'パスポート入場不可期間を登録しました')

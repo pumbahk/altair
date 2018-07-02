@@ -92,12 +92,23 @@ class PassportNotAvailableTermForm(OurForm):
         validators=[Optional()]
     )
     start_on = OurDateField(
-        label=u'入場不可時間',
+        label=u'入場不可日',
         validators=[Optional(), after1900],
         format='%Y-%m-%d %H:%M',
     )
     end_on = OurDateField(
-        label=u'入場不可終了時間',
+        label=u'入場不可終了日',
         validators=[Optional(), after1900],
         format='%Y-%m-%d %H:%M',
     )
+
+    def validate(self, pdp=None):
+        status = super(PassportNotAvailableTermForm, self).validate()
+        status = all([status, self._validate_start_on()])
+        return status
+
+    def _validate_start_on(self, *args, **kwargs):
+        if self.start_on.data > self.end_on.data:
+            self.start_on.errors.append(u"入場不可終了日が、入場不可日より前になっています")
+            return False
+        return True
