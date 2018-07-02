@@ -50,6 +50,21 @@ def get_passport_product_quantities(products, extra_data):
     return product_quantity_pair
 
 
+def check_order_passport_status(order, passport_user):
+    if order.is_canceled():
+        return False
+
+    if not passport_user.image_path:
+        return False
+
+    if order.payment_status == 'refunding':
+        return False
+
+    if order.payment_status == 'refunded':
+        return False
+    return True
+
+
 def can_use_passport(request, passport_user):
     now = datetime.now()
 
