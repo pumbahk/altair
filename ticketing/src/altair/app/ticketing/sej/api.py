@@ -1,31 +1,23 @@
 # -*- coding:utf-8 -*-
 
-from datetime import timedelta
+from collections import OrderedDict
 from datetime import datetime
 from decimal import Decimal
 import logging
-logger = logging.getLogger(__name__)
-
-from collections import OrderedDict
-
-from sqlalchemy import update
+from pyramid.interfaces import IRequest
 from sqlalchemy import and_, func
-from sqlalchemy.sql.expression import asc, desc
+from sqlalchemy.sql.expression import desc
 from sqlalchemy.orm.exc import NoResultFound
-from sqlalchemy.orm.session import make_transient
-
-import sqlahelper
 
 from altair.sqlahelper import get_db_session
 
-from .utils import JavaHashMap
 from .models import SejOrder, SejTicket, SejRefundEvent, SejRefundTicket, ThinSejTenant, SejTicketTemplateFile, SejTicketType, SejPaymentType
 from .models import _session
-from .interfaces import ISejTenant, ISejNWTSUploader, ISejNWTSUploaderFactory
-from .exceptions import SejServerError, SejError, SejErrorBase, RefundTotalAmountOverError
+from .interfaces import ISejTenant, ISejNWTSUploaderFactory
+from .exceptions import SejError, SejErrorBase, RefundTotalAmountOverError
 from .payment import request_cancel_order, request_order, request_update_order
-from pyramid.threadlocal import get_current_registry
-from pyramid.interfaces import IRequest
+
+logger = logging.getLogger(__name__)
 
 def do_sej_order(request, tenant, sej_order, now=None, session=None):
     if session is None:
