@@ -269,7 +269,10 @@
 
 <script type="text/javascript">
 
-  // --- common start ---
+  let fields = ['year', 'month', 'day', 'hour', 'minute', 'second'];
+  let datetimewidget_prefix = 'datetimewidget-';
+
+    // --- common start ---
   if (String.prototype.format === undefined) {
       String.prototype.format = function(arg) {
           let rep_fn = undefined;
@@ -368,6 +371,7 @@
       let body_element = modal_element.find(".modal-body-content");
       let button_area_element = modal_element.find(".btn-area");
       let error_msg_box_element = modal_element.find(".modal-error-msgs-box ul");
+      let control_group = modal_element.find(".control-group");
       let modal_bg = $("#modal-bg");
 
       let add_header_text = function(text) {
@@ -410,7 +414,7 @@
 
       let clear_message_content = function() {
           error_msg_box_element.empty().hide();
-          modal_element.find(".control-group").removeClass("error");
+          control_group.removeClass("error");
       };
 
       let clear_content = function() {
@@ -522,6 +526,13 @@
       }
   })();
 
+  //FIXME: ticketing.common.jsの曜日の反映タイミングが微妙なので、正しい呼び出し順番にする必要がある。
+  function refresh_dow() {
+      $.each(fields, function (_, k) {
+          $('.' + datetimewidget_prefix + 'container').find('.' + datetimewidget_prefix + k + '[value]').trigger('change');
+      });
+  }
+
   //// modal for creating or updating resale segment
   function open_modal_create_or_update_resale_segment(button, action) {
 
@@ -575,6 +586,7 @@
       let onclick_method = action === "create"? "create_resale_segment()":"update_resale_segment()";
       _modal.add_button_content($("<button onclick='_modal.close()' class='btn secondary btn-close'>キャンセル</button>"));
       _modal.add_button_content($("<button class='btn btn-danger'>保存</button>").attr("onclick", onclick_method));
+      refresh_dow()
       _modal.open()
   }
 
