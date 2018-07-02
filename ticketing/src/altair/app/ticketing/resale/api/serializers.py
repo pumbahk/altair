@@ -3,7 +3,7 @@
 from datetime import datetime
 from marshmallow import Schema, fields, validates_schema, ValidationError
 
-from altair.app.ticketing.core.models import Performance, SalesSegment, SalesSegmentGroup
+from altair.app.ticketing.core.models import Performance
 from ..models import ResaleSegment, ResaleRequest
 from datetime import timedelta
 
