@@ -75,6 +75,7 @@ class PassportForm(OurForm):
     def _validate_available_day(self, *args, **kwargs):
         if not self.available_day.data.isdigit():
             self.available_day.errors.append(u"数字で入力してください")
+            return False
         if int(self.available_day.data) < 1:
             self.available_day.errors.append(u"１日以上で入力してください")
             return False
