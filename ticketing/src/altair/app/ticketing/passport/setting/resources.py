@@ -33,6 +33,14 @@ class PassportResource(TicketingAdminResource):
             PassportNotAvailableTerm.id == term_id).first()
 
     @property
+    def origin_term(self):
+        term_id = self.request.matchdict.get('term_id', 0)
+        return PassportNotAvailableTerm.query.join(Passport,
+                                                   Passport.id == PassportNotAvailableTerm.passport_id).filter(
+            Passport.organization_id == self.user.organization_id).filter(
+            PassportNotAvailableTerm.id == term_id).first()
+
+    @property
     def terms(self):
         return self.slave_session.query(PassportNotAvailableTerm).join(Passport,
                                                                        Passport.id == PassportNotAvailableTerm.passport_id).filter(
@@ -61,5 +69,7 @@ class PassportResource(TicketingAdminResource):
         params = form.data
         term.start_on = params["start_on"]
         term.end_on = params["end_on"]
-        term.passport_id = self.request.matchdict['passport_id']
+        origin_term = self.origin_term
+        if not origin_term:
+            term.passport_id = self.request.matchdict['passport_id']
         term.save()
