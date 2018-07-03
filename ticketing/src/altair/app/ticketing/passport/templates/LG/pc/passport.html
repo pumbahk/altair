@@ -55,7 +55,6 @@
 
 <script>
 <% from altair.app.ticketing.passport import PASSPORT_COOKIE_NAME %>
-var required_confirm = null;
 if(document.cookie.indexOf("${PASSPORT_COOKIE_NAME}") > -1){
   $(".confirm_exist").hide();
   $(".confirm_not_exist").show();

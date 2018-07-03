@@ -88,7 +88,6 @@ $(document).ready(function () {
     });
 });
 
-var required_confirm = null;
 if (document.cookie.indexOf("_passport") > -1) {
     $(".confirm_exist").hide();
     $(".confirm_not_exist").show();
