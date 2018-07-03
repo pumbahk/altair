@@ -35,7 +35,7 @@ class PassportView(object):
             reserved_number=self.context.reserved_number,
             order=self.context.order,
             passport_security=self.context.passport_security
-            )
+        )
 
     @lbr_view_config(
         route_name='passport.admission', request_method='GET')
@@ -47,7 +47,7 @@ class PassportView(object):
             reserved_number=self.context.reserved_number,
             order=self.context.order,
             passport_security=self.context.passport_security
-            )
+        )
 
     @lbr_view_config(
         route_name='passport.admission', request_method='POST')
@@ -65,7 +65,7 @@ class PassportView(object):
             reserved_number=self.context.reserved_number,
             order=self.context.order,
             passport_security=self.context.passport_security
-            )
+        )
 
     @lbr_view_config(
         route_name='passport.order_admission', request_method='GET')
@@ -81,7 +81,7 @@ class PassportView(object):
             reserved_number=self.context.reserved_number,
             order=self.context.order,
             passport_security=self.context.passport_security
-            )
+        )
 
     @lbr_view_config(
         route_name='passport.order_admission', request_method='POST')
@@ -95,7 +95,7 @@ class PassportView(object):
             reserved_number=self.context.reserved_number,
             order=self.context.order,
             passport_security=self.context.passport_security
-            )
+        )
 
     @lbr_view_config(
         route_name='passport.check_can_use', request_method="GET", renderer='json')

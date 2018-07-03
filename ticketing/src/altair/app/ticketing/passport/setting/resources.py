@@ -3,6 +3,7 @@ from altair.app.ticketing.resources import TicketingAdminResource
 from altair.sqlahelper import get_db_session
 
 from ..models import Passport, PassportNotAvailableTerm
+from altair.app.ticketing.core.models import Performance, Event
 
 
 class PassportResource(TicketingAdminResource):
@@ -32,8 +33,43 @@ class PassportResource(TicketingAdminResource):
             PassportNotAvailableTerm.id == term_id).first()
 
     @property
+    def origin_term(self):
+        term_id = self.request.matchdict.get('term_id', 0)
+        return PassportNotAvailableTerm.query.join(Passport,
+                                                   Passport.id == PassportNotAvailableTerm.passport_id).filter(
+            Passport.organization_id == self.user.organization_id).filter(
+            PassportNotAvailableTerm.id == term_id).first()
+
+    @property
     def terms(self):
         return self.slave_session.query(PassportNotAvailableTerm).join(Passport,
                                                                        Passport.id == PassportNotAvailableTerm.passport_id).filter(
             Passport.id == self.passport.id).filter(
             Passport.organization_id == self.user.organization_id).all()
+
+    def exist_passport_performance(self):
+        return self.slave_session.query(Passport).filter(Passport.performance_id == self.request.POST['performance_id']).first()
+
+    @property
+    def performances(self):
+        return self.slave_session.query(Performance).join(Event, Event.id == Performance.event_id).filter(
+            Event.organization_id == self.user.organization_id).all()
+
+    def save_passport(self, passport, form):
+        params = form.data
+        passport.name = params["name"]
+        passport.available_day = params["available_day"]
+        passport.performance_id = params["performance_id"]
+        passport.daily_passport = params["daily_passport"]
+        passport.is_valid = params["is_valid"]
+        passport.organization_id = self.user.organization_id
+        passport.save()
+
+    def save_term(self, term, form):
+        params = form.data
+        term.start_on = params["start_on"]
+        term.end_on = params["end_on"]
+        origin_term = self.origin_term
+        if not origin_term:
+            term.passport_id = self.request.matchdict['passport_id']
+        term.save()

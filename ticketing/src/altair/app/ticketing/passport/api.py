@@ -1,9 +1,10 @@
 # -*- coding:utf-8 -*-
+from datetime import datetime
+
 from altair.app.ticketing.core.models import Host
 from altair.sqlahelper import get_db_session
 
-from ..passport.models import PassportUserInfo, PassportUser, PassportNotAvailableTerm
-from datetime import datetime, date
+from ..passport.models import PassportUserInfo, PassportUser
 
 
 def get_passport_product_quantities(products, extra_data):
@@ -49,8 +50,22 @@ def get_passport_product_quantities(products, extra_data):
     return product_quantity_pair
 
 
-def can_use_passport(request, passport_user):
+def check_order_passport_status(order, passport_user):
+    if order.is_canceled():
+        return False
 
+    if not passport_user.image_path:
+        return False
+
+    if order.payment_status == 'refunding':
+        return False
+
+    if order.payment_status == 'refunded':
+        return False
+    return True
+
+
+def can_use_passport(request, passport_user):
     now = datetime.now()
 
     # パスポート設定が使用不可
@@ -71,7 +86,8 @@ def can_use_passport(request, passport_user):
             return False
 
     # パスポートの有効期限切れ確認
-    if now > datetime(passport_user.expired_at.year, passport_user.expired_at.month, passport_user.expired_at.day, 23, 59):
+    if now > datetime(passport_user.expired_at.year, passport_user.expired_at.month, passport_user.expired_at.day, 23,
+                      59):
         return False
 
     # 入場不可期間
@@ -100,6 +116,7 @@ def use_passport(passport_user_id):
 
 
 def get_passport_user_from_order_id(order_id):
+    # データ不整合にならないようマスタから取得
     return PassportUser.query.filter(PassportUser.order_id == order_id).first()
 
 

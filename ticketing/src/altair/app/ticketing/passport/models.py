@@ -5,6 +5,7 @@ import logging
 from altair.app.ticketing.models import Base, BaseModel, WithTimestamp, LogicallyDeleted, Identifier
 from altair.saannotation import AnnotatedColumn
 from pyramid.i18n import TranslationString as _
+from sqlalchemy import orm
 from sqlalchemy.orm import relationship
 from sqlalchemy.schema import ForeignKey
 from sqlalchemy.types import Boolean, Integer, DateTime, Unicode
@@ -20,7 +21,7 @@ class Passport(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     daily_passport = AnnotatedColumn(Boolean, nullable=True, _a_label=_(u'平日パスポート'))
     is_valid = AnnotatedColumn(Boolean, nullable=True, _a_label=_(u'有効・無効フラグ'))
     organization_id = AnnotatedColumn(Identifier, ForeignKey('Organization.id'), nullable=False, _a_label=_(u'組織ID'))
-    performance_id = AnnotatedColumn(Identifier, ForeignKey('Performance.id'), nullable=False, _a_label=_(u'パフォーマンスID'))
+    performance_id = AnnotatedColumn(Identifier, ForeignKey('Performance.id'), nullable=False, _a_label=_(u'パフォーマンス'))
     organization = relationship('Organization',
                                 backref='passport',
                                 cascade='all'
@@ -36,8 +37,10 @@ class PassportNotAvailableTerm(Base, BaseModel, WithTimestamp, LogicallyDeleted)
     id = AnnotatedColumn(Identifier, primary_key=True, _a_label=_(u'ID'))
     start_on = AnnotatedColumn(DateTime, _a_label=_(u"開始"))
     end_on = AnnotatedColumn(DateTime, _a_label=_(u"終了"))
-    passport = relationship("Passport", backref='terms')
-    passport_id = AnnotatedColumn(Identifier, ForeignKey('Passport.id', ondelete='CASCADE'), nullable=False)
+    passport = relationship("Passport",
+                            backref=orm.backref("terms", uselist=True, cascade="all,delete-orphan")
+                            )
+    passport_id = AnnotatedColumn(Identifier, ForeignKey('Passport.id'), nullable=False)
 
 
 class PassportUser(Base, BaseModel, WithTimestamp, LogicallyDeleted):
