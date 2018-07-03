@@ -158,11 +158,11 @@ class TermView(BaseView):
     @view_config(route_name='term.delete')
     def delete(self):
         term = self.context.term
-        pasport_id = term.passport.id
+        passport_id = term.passport.id
         if term is None:
             raise HTTPNotFound("term is not found. delete")
         else:
             term.delete()
             self.request.session.flash(u'パスポート入場不可期間を削除しました')
 
-        return HTTPFound(location=self.request.route_path("term.index", passport_id=pasport_id))
+        return HTTPFound(location=self.request.route_path("term.index", passport_id=passport_id))
