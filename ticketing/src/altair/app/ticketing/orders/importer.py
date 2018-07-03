@@ -975,6 +975,9 @@ class ImportCSVParser(object):
                     seat_name = seat_name.strip()
                 seat = None
                 if not product_item.stock.stock_type.quantity_only:
+                    if self.order_import_task.allocation_mode == AllocationModeEnum.QuantityOnly.v:
+                        raise exc(u'「数受けのため配席なし」のインポートモードを設定されていますが、インポート先の席種は数受けではありません')
+
                     if self.order_import_task.allocation_mode == AllocationModeEnum.SameAllocation.v:
                         if not seat_name:
                             raise exc(u'席種「%s」は数受けではありませんが、座席番号が指定されていません' % product_item.stock.stock_type.name)
@@ -1145,6 +1148,8 @@ class OrderImporter(object):
                                 if len(cpi.seats) > 0:
                                     if self.allocation_mode == AllocationModeEnum.Reallocation.v:
                                         add_error(u'自動配席が有効になっていて、かつ一部の座席が指定されています。指定のない座席は自動的に決定されます。 (座席数=%d 商品明細数=%d)' % (len(cpi.seats), cpi.quantity), level=IMPORT_WARNING)
+                                    elif self.allocation_mode == AllocationModeEnum.QuantityOnlyToSeat.v:
+                                        add_error(u'数受けから座席を割当するモードですが、一部の座席が指定されています。指定のない座席は自動的に決定されます。 (座席数=%d 商品明細数=%d)' % (len(cpi.seats), cpi.quantity), level=IMPORT_WARNING)
                                 else:
                                     if cart.original_order is not None:
                                         add_error(u'座席は自動的に決定されます (予定配席数=%d)' % (cpi.quantity,), level=IMPORT_WARNING)

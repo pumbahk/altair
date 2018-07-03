@@ -44,7 +44,7 @@ from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.mails.api import get_mail_utility
 from altair.app.ticketing.core.models import MailTypeChoices
 from altair.app.ticketing.orders.api import OrderSummarySearchQueryBuilder, QueryBuilderError
-from altair.app.ticketing.orders.models import OrderSummary, OrderImportTask, ImportStatusEnum, ImportTypeEnum, OrderedProductItemToken, OrderedProductItem, OrderedProduct, Order
+from altair.app.ticketing.orders.models import OrderSummary, OrderImportTask, ImportStatusEnum, OrderedProductItemToken, OrderedProductItem, OrderedProduct, Order
 from altair.app.ticketing.orders.importer import OrderImporter, ImportCSVReader
 from altair.app.ticketing.orders.orion import OrionAPIException
 from altair.app.ticketing.orders import helpers as order_helpers
@@ -249,10 +249,16 @@ class PerformanceShowView(BaseView):
         return data
 
     @view_config(route_name='performances.import_orders.index', request_method='GET')
-    def import_orders_get(self):
+    def import_orders_get(self, form=None):
         importer = self.request.session.get('ticketing.order.importer')
         if importer:
             del self.request.session['ticketing.order.importer']
+
+        if not form:
+            form = OrderImportForm(
+                merge_order_attributes=True,
+                enable_random_import=True,
+            )
 
         query = OrderImportTask.query.filter(
             OrderImportTask.organization_id == self.context.organization.id,
@@ -268,10 +274,7 @@ class PerformanceShowView(BaseView):
         data = {
             'tab': 'import_orders',
             'performance': self.performance,
-            'form': OrderImportForm(
-                merge_order_attributes=True,
-                enable_random_import=True,
-            ),
+            'form': form,
             'oh': order_helpers,
             'order_import_tasks': query.all()
         }
@@ -280,12 +283,12 @@ class PerformanceShowView(BaseView):
 
     @view_config(route_name='performances.import_orders.index', request_method='POST')
     def import_orders_post(self):
-        f = OrderImportForm(self.request.params)
-        if not f.validate():
-            for f, errors in f.errors.items():
+        form = OrderImportForm(self.request.params)
+        if not form.validate():
+            for f, errors in form.errors.items():
                 for error in errors:
                     self.request.session.flash(error)
-            return self.import_orders_get()
+            return self.import_orders_get(form)
         importer = OrderImporter(
             self.request,
             import_type=f.import_type.data,
