@@ -51,6 +51,7 @@ def release_carts():
     parser = argparse.ArgumentParser()
     parser.add_argument('config')
     parser.add_argument('--all', default=False, action='store_true')
+    parser.add_argument('--hourly', default=False, action='store_true')
     args = parser.parse_args()
 
     setup_logging(args.config)
@@ -62,7 +63,7 @@ def release_carts():
         logging.error('expiration is not specified. exiting...')
         return
     target_to = datetime.now() - timedelta(minutes=expire_time)
-    target_from = None if args.all else (datetime.now() - timedelta(minutes=expire_time*2))
+    target_from = None if args.all else ( datetime.now() - timedelta(hours=2) if args.hourly else datetime.now() - timedelta(minutes=expire_time*2))
 
     # 多重起動防止
     LOCK_NAME = release_carts.__name__
