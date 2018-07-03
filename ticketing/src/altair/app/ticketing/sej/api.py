@@ -108,23 +108,19 @@ def cancel_sej_order(request, tenant, sej_order, origin_order, now=None, session
 def _get_ticket_count_group_by_token(request, sej_order):
     session = get_db_session(request, name="slave")
 
-    # 一つ商品明細が複数主券を持つ場合はOrderedProductItemTokenのidが一つ
-    # そのため、OrderedProductItemTokenのidをGROUP BYで主券の数を得られる
-    fetch_results = session.query(
+    # 一つ商品明細トークンが複数主券を持つ場合はトークンのIDが一つしかないため
+    # トークンのIDをGROUP BYで主券の数を得る
+    results = session.query(
         SejTicket.ordered_product_item_token_id.label('token_id'),
         func.count(SejTicket.id).label('cnt')) \
         .filter(SejTicket.order_no == sej_order.order_no) \
         .group_by(SejTicket.ordered_product_item_token_id) \
         .all()
 
-    result = {}
-    for fetch_result in fetch_results:
-        result[fetch_result.token_id] = fetch_result.cnt
-
-    return result
+    return {result.token_id: result.cnt for result in results}
 
 def _get_divided_ticket_amount(sej_ticket, ticket_price_getter, ticket_cnt):
-    # 一つ商品明細が複数主券を持つ場合は払戻のチケット代をチケットの数で割る
+    # 一つ商品明細トークンが複数主券を持つ場合は払戻のチケット代をチケットの数で割る
     actual_ticket_amount = \
         ticket_price_getter(sej_ticket) / Decimal(ticket_cnt.get(sej_ticket.ordered_product_item_token_id, 1))
 
