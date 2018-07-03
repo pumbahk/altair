@@ -142,16 +142,12 @@ def do_update_resale_request_status_with_not_sold(request):
 
     for resale_segment in resale_segments:
         logging.info("start updating and sending resale_requests of resale_segment (ID: {}) with not sold.".format(resale_segment.id))
-        try:
-            p_resale = DBSession_slave.query(Performance).filter_by(id = resale_segment.resale_performance_id).one()
-        except (NoResultFound, MultipleResultsFound):
-            logging.info("resale performance (ID: {}) not found. skip...".format(resale_segment.resale_performance_id))
+
+        if resale_segment.resale_end_at is None:
+            logging.info("resale performance (ID: {}) has no resale_end_at. skip...".format(resale_segment.resale_performance_id))
             continue
 
-        if p_resale.open_on:
-            days = (p_resale.open_on - datetime.now()).days
-        else:
-            days = (p_resale.start_on - datetime.now()).days
+        days = (resale_segment.resale_end_at - datetime.now()).days
 
         if days > 0:
             logging.info("resale performance (ID: {}) would not start before tomorrow. skip...".format(resale_segment.resale_performance_id))
