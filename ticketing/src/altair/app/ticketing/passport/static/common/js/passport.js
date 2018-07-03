@@ -16,7 +16,6 @@ $(document).on('click', '.passport_button', function () {
     var next_url = $(this).attr("next_url");
     var check_url = $(this).attr("check_url");
 
-    console.log("zzz");
     check_can_use_passport(check_url).done(function (result) {
         if (result == true) {
             console.log("passport is not used");
