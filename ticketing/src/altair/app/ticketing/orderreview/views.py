@@ -1002,7 +1002,11 @@ class QRAESView(object):
         if ticket == None:
             raise HTTPNotFound()
 
-        return self.context.qr_aes_plugin.output_to_template(ticket)
+        output_to_template = self.context.qr_aes_plugin.output_to_template(ticket)
+        locale = custom_locale_negotiator(self.request) if self.request.organization.setting.i18n else u"ja"
+        output_to_template.update({"locale": locale})
+
+        return output_to_template
 
     @lbr_view_config(
         route_name='order_review.qr_aes',
@@ -1014,7 +1018,11 @@ class QRAESView(object):
         if ticket is None:
             raise HTTPNotFound()
 
-        return self.context.qr_aes_plugin.output_to_template(ticket)
+        output_to_template = self.context.qr_aes_plugin.output_to_template(ticket)
+        locale = custom_locale_negotiator(self.request) if self.request.organization.setting.i18n else u"ja"
+        output_to_template.update({"locale": locale})
+
+        return output_to_template
 
     @lbr_view_config(
         route_name='order_review.qr_aes_draw',
@@ -1047,7 +1055,11 @@ class QRAESView(object):
         else:
             ticket = self.context.qr_aes_plugin.build_qr_by_order_no(self.request, order_no)
 
-        return self.context.qr_aes_plugin.output_to_template(ticket)
+        output_to_template = self.context.qr_aes_plugin.output_to_template(ticket)
+        locale = custom_locale_negotiator(self.request) if self.request.organization.setting.i18n else u"ja"
+        output_to_template.update({"locale": locale})
+
+        return output_to_template
 
     @lbr_view_config(
         route_name='order_review.qr_aes_send',
