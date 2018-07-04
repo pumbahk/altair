@@ -1205,8 +1205,10 @@ class ImportTypeEnum(StandardEnum):
 
 
 class AllocationModeEnum(StandardEnum):
-    AlwaysAllocateNew = 1
-    NoAutoAllocation = 2
+    QuantityOnly = 1
+    SameAllocation = 2
+    Reallocation = 3
+    QuantityOnlyToSeat = 4
 
 class OrderImportTask(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'OrderImportTask'
@@ -1216,7 +1218,7 @@ class OrderImportTask(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     performance_id = sa.Column(Identifier, sa.ForeignKey('Performance.id'), nullable=True)
     operator_id = sa.Column(Identifier, sa.ForeignKey('Operator.id', ondelete='CASCADE'), nullable=False)
     import_type = sa.Column(sa.Integer, nullable=False)
-    allocation_mode = sa.Column(sa.Integer, default=1, nullable=False) # XXX: 1 = AllocationModeEnum.AlwaysAllocateNew
+    allocation_mode = sa.Column(sa.Integer, default=1, nullable=False) # XXX: 1 = AllocationModeEnum.QuantityOnly
     entrust_separate_seats = sa.Column(sa.Boolean, default=False, nullable=False)
     merge_order_attributes = sa.Column(sa.Boolean, default=False, nullable=False)
     enable_random_import = sa.Column(sa.Boolean, default=True, nullable=False)

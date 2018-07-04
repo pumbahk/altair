@@ -1073,7 +1073,7 @@ class OrderImportForm(OurForm):
     import_type = BugFreeSelectField(
         label=u'インポート方法',
         validators=[Required()],
-        choices=[(str(e.v), get_import_type_label(e.v)) for e in ImportTypeEnum],
+        choices=sorted([(str(e.v), get_import_type_label(e.v)) for e in ImportTypeEnum], key=lambda tup: tup[0]),
         default=ImportTypeEnum.Update.v,
         coerce=int,
     )
@@ -1083,8 +1083,8 @@ class OrderImportForm(OurForm):
     allocation_mode = BugFreeSelectField(
         label=u'配席モード',
         validators=[Required()],
-        choices=[(str(e.v), get_allocation_mode_label(e.v)) for e in AllocationModeEnum],
-        default=AllocationModeEnum.AlwaysAllocateNew.v,
+        choices=sorted([('0', '')] + [(str(e.v), get_allocation_mode_label(e.v)) for e in AllocationModeEnum], key=lambda tup: tup[0]),
+        default=0,
         coerce=int,
     )
     merge_order_attributes = OurBooleanField(
@@ -1095,6 +1095,10 @@ class OrderImportForm(OurForm):
     use_test_version = OurBooleanField(
         label=u'テスト版を使う'
     )
+
+    def validate_allocation_mode(self, field):
+        if not field.data or field.data == 0:
+            raise ValidationError(u'配席モードを選択してください。')
 
     def validate_order_csv(form, field):
         if not hasattr(field.data, 'file'):

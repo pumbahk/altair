@@ -30,8 +30,10 @@ import_type_labels = {
     }
 
 allocation_mode_labels = {
-    AllocationModeEnum.AlwaysAllocateNew.v: u'座席番号を無視し常に自動配席する',
-    AllocationModeEnum.NoAutoAllocation.v: u'座席番号に該当する座席を配席する',
+    AllocationModeEnum.QuantityOnly.v: u'数受けのため配席なし',
+    AllocationModeEnum.SameAllocation.v: u'座席番号に該当する座席を配席する',
+    AllocationModeEnum.Reallocation.v: u'座席番号を無視し常に自動配席する',
+    AllocationModeEnum.QuantityOnlyToSeat.v: u'数受けから座席を割当する',
     }
 
 import_status_labels = {
