@@ -23,6 +23,11 @@ s3_upload() {
     local s3_path="${1}"
     local local_path="${2}"
 
+    if [ ! -d "${local_path}" ]; then
+        echo "ローカルディレクトリ: ${local_path}が存在していません。"
+        return 0
+    fi
+
     # S3に既存のディレクトリがあるか確認
     is_exist=`s3cmd ls "${s3_path}/${CODE}"`
     if [ -n "${is_exist}" ]; then
