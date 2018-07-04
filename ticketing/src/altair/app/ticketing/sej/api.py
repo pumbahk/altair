@@ -1,28 +1,23 @@
 # -*- coding:utf-8 -*-
 
-from datetime import timedelta
-from datetime import datetime
-import logging
-logger = logging.getLogger(__name__)
-
 from collections import OrderedDict
-
-from sqlalchemy import update
-from sqlalchemy import and_
-from sqlalchemy.sql.expression import asc, desc
+from datetime import datetime
+from decimal import Decimal
+import logging
+from pyramid.interfaces import IRequest
+from sqlalchemy import and_, func
+from sqlalchemy.sql.expression import desc
 from sqlalchemy.orm.exc import NoResultFound
-from sqlalchemy.orm.session import make_transient
 
-import sqlahelper
+from altair.sqlahelper import get_db_session
 
-from .utils import JavaHashMap
 from .models import SejOrder, SejTicket, SejRefundEvent, SejRefundTicket, ThinSejTenant, SejTicketTemplateFile, SejTicketType, SejPaymentType
 from .models import _session
-from .interfaces import ISejTenant, ISejNWTSUploader, ISejNWTSUploaderFactory
-from .exceptions import SejServerError, SejError, SejErrorBase, RefundTotalAmountOverError
+from .interfaces import ISejTenant, ISejNWTSUploaderFactory
+from .exceptions import SejError, SejErrorBase, RefundTotalAmountOverError
 from .payment import request_cancel_order, request_order, request_update_order
-from pyramid.threadlocal import get_current_registry
-from pyramid.interfaces import IRequest
+
+logger = logging.getLogger(__name__)
 
 def do_sej_order(request, tenant, sej_order, now=None, session=None):
     if session is None:
@@ -110,6 +105,27 @@ def cancel_sej_order(request, tenant, sej_order, origin_order, now=None, session
         raise SejError(u'generic failure (reason: %s)' % unicode(e), sej_order.order_no)
     return sej_order
 
+def _get_ticket_count_group_by_token(request, sej_order):
+    session = get_db_session(request, name="slave")
+
+    # 一つ商品明細トークンが複数主券を持つ場合はトークンのIDが一つしかないため
+    # トークンのIDをGROUP BYで主券の数を得る
+    results = session.query(
+        SejTicket.ordered_product_item_token_id.label('token_id'),
+        func.count(SejTicket.id).label('cnt')) \
+        .filter(SejTicket.order_no == sej_order.order_no) \
+        .group_by(SejTicket.ordered_product_item_token_id) \
+        .all()
+
+    return {result.token_id: result.cnt for result in results}
+
+def _get_divided_ticket_amount(sej_ticket, ticket_price_getter, ticket_cnt):
+    # 一つ商品明細トークンが複数主券を持つ場合は払戻のチケット代をチケットの数で割る
+    actual_ticket_amount = \
+        ticket_price_getter(sej_ticket) / Decimal(ticket_cnt.get(sej_ticket.ordered_product_item_token_id, 1))
+
+    return actual_ticket_amount
+
 def refund_sej_order(request,
                      tenant,
                      sej_order,
@@ -165,6 +181,9 @@ def refund_sej_order(request,
         re.refund_enabled = 1
         re.need_stub = need_stub
 
+        # 一つ商品明細が持ってるSEJチケットの数を取得
+        ticket_cnt = _get_ticket_count_group_by_token(request, sej_order)
+
         # create SejRefundTicket
         i = 0
         sum_amount = 0
@@ -172,7 +191,7 @@ def refund_sej_order(request,
             # 主券でかつバーコードがあるものだけ払戻する
             if sej_ticket.barcode_number is not None and \
                int(sej_ticket.ticket_type) in (SejTicketType.Ticket.v, SejTicketType.TicketWithBarcode.v):
-                ticket_amount = ticket_price_getter(sej_ticket)
+                ticket_amount = _get_divided_ticket_amount(sej_ticket, ticket_price_getter, ticket_cnt)
                 rt = session.query(SejRefundTicket).filter(and_(
                     SejRefundTicket.order_no==sej_order.order_no,
                     SejRefundTicket.ticket_barcode_number==sej_ticket.barcode_number,

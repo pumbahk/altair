@@ -13,8 +13,11 @@ from ..models import Passport, PassportNotAvailableTerm
 class PassportForm(OurForm):
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
         OurForm.__init__(self, formdata, obj, prefix, **kwargs)
+        self.exist_passport_performance = None
         if "organization_id" in kwargs:
-            self.organization_id = kwargs['organization_id']
+            self.organization_id.data = kwargs['organization_id']
+        if "exist_passport_performance" in kwargs:
+            self.exist_passport_performance = kwargs['exist_passport_performance']
 
     id = OurHiddenField(
         label=get_annotations_for(Passport.id)['label'],
@@ -48,16 +51,36 @@ class PassportForm(OurForm):
         label=get_annotations_for(Passport.daily_passport)['label']
     )
     is_valid = OurBooleanField(
-        label=get_annotations_for(Passport.is_valid)['label']
+        label=get_annotations_for(Passport.is_valid)['label'],
+        default=True
     )
 
-    def configure(self):
-        from altair.app.ticketing.core.models import Performance, Event
-        performances = Performance.query.join(Event, Event.id == Performance.event_id).filter(
-            Event.organization_id == self.organization_id).all()
+    def set_performance_choices(self, performances):
         self.performance_id.choices = [(performance.id, u"{0} {1}".format(performance.event.title, performance.name))
                                        for
                                        performance in performances]
+
+    def validate(self, pdp=None):
+        # このように and 演算子を展開しないとすべてが一度に評価されない
+        status = super(PassportForm, self).validate()
+        status = all([status, self._validate_performance_id(), self._validate_available_day()])
+        return status
+
+    def _validate_performance_id(self, *args, **kwargs):
+        if self.exist_passport_performance:
+            self.performance_id.errors.append(u"パスポート設定は１つのパフォーマンスにのみ紐付けられます")
+            return False
+        return True
+
+    def _validate_available_day(self, *args, **kwargs):
+        if not self.available_day.data.isdigit():
+            self.available_day.errors.append(u"数字で入力してください")
+            return False
+        if int(self.available_day.data) < 1:
+            self.available_day.errors.append(u"１日以上で入力してください")
+            return False
+        self.available_day.data = int(self.available_day.data)
+        return True
 
 
 class PassportNotAvailableTermForm(OurForm):
@@ -69,12 +92,23 @@ class PassportNotAvailableTermForm(OurForm):
         validators=[Optional()]
     )
     start_on = OurDateField(
-        label=u'入場不可時間',
+        label=u'入場不可日',
         validators=[Optional(), after1900],
         format='%Y-%m-%d %H:%M',
     )
     end_on = OurDateField(
-        label=u'入場不可終了時間',
+        label=u'入場不可終了日',
         validators=[Optional(), after1900],
         format='%Y-%m-%d %H:%M',
     )
+
+    def validate(self, pdp=None):
+        status = super(PassportNotAvailableTermForm, self).validate()
+        status = all([status, self._validate_start_on()])
+        return status
+
+    def _validate_start_on(self, *args, **kwargs):
+        if self.start_on.data > self.end_on.data:
+            self.start_on.errors.append(u"入場不可終了日が、入場不可日より前になっています")
+            return False
+        return True

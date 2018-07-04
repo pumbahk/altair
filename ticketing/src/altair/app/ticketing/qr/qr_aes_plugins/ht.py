@@ -1,7 +1,6 @@
 # -*- coding:utf-8 -*-
 
 import logging
-logger = logging.getLogger(__name__)
 
 from collections import OrderedDict
 from datetime import timedelta
@@ -16,8 +15,10 @@ from altair.app.ticketing.qr.interfaces import IQRAESPlugin
 from altair.app.ticketing.qr.qr_aes_plugins.base import QRAESPlugin
 from altair.app.ticketing.qr.utils import QRTicketObject
 
+logger = logging.getLogger(__name__)
 
 # HTのカスタマイズ内容
+# HBの実装はHTQRAESPluginを継承して行った
 ## 固定値の設定（現時点2017-07-13。）
 HT_QR_DATA_HEADER = '6'
 HT_TYPE_CODE = '6'
@@ -88,7 +89,6 @@ def _get_db_session(history):
 
 def includeme(config):
     config.add_qr_aes_plugin(HTQRAESPlugin(), u"HT")
-    config.scan(__name__)
 
 @implementer(IQRAESPlugin)
 class HTQRAESPlugin(QRAESPlugin):
@@ -147,6 +147,7 @@ class HTQRAESPlugin(QRAESPlugin):
         return {'data': data, 'ticket': qr_ticket_obj}
 
     def output_to_template(self, ticket):
+        # TODO: 2018年7月の頭にスマホ禁止のテンプレート廃止する
         allow_sp = ticket.order.payment_delivery_method_pair.delivery_method.preferences.get(
             unicode(QR_AES_DELIVERY_PLUGIN_ID), {}).get(u'qr_aes_allow_sp', False)
 

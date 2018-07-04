@@ -1,29 +1,27 @@
 # coding: utf-8
 
-import optparse
-import sys
+import argparse
 import logging
+import sys
+
 from datetime import datetime
-import sqlahelper
 from pyramid.paster import bootstrap, setup_logging
+
 from altair.multilock import AlreadyStartUpError, MultiStartLock
 
 logger = logging.getLogger(__name__)
 
-def main(argv=sys.argv):
-    if len(sys.argv) < 2:
-        print "usage: python sej_notification.py development.ini"
-        sys.exit()
+def main():
+    parser = argparse.ArgumentParser(description="SEJ Notification")
+    parser.add_argument('conf', nargs='?', help='Please provide altair.ticketing.batch.ini')
+    args = parser.parse_args()
 
-    ini_file = sys.argv[1]
-    setup_logging(ini_file)
-    env = bootstrap(ini_file)
+    setup_logging(args.conf)
+    env = bootstrap(args.conf)
 
     try:
         with MultiStartLock(__name__, 1):
             request = env['request']
-            registry = env['registry']
-            settings = registry.settings
 
             import transaction
             from altair.app.ticketing.orders.api import get_order_by_order_no
@@ -52,4 +50,4 @@ def main(argv=sys.argv):
         logger.error('another instance of sej_notification is running')
 
 if __name__ == u"__main__":
-    main(sys.argv)
+    main()

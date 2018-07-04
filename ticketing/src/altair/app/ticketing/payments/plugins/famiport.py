@@ -473,7 +473,8 @@ def refund_order(request, order, refund_record, now=None):
         refund_id=famiport_refund_id,
         order_no=order.order_no,
         per_order_fee=refund_record.refund_per_order_fee,
-        per_ticket_fee=refund_record.refund_per_ticket_fee
+        per_ticket_fee=refund_record.refund_per_ticket_fee,
+        refund_total_amount=refund_record.refund_total_amount
         )
 
 

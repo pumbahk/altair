@@ -974,23 +974,22 @@ def refund_order_by_order_no(
         refund_id,
         per_ticket_fee,
         per_order_fee,
+        refund_total_amount,
         order_no=None,
-        famiport_order_identifier=None,
+        famiport_order_identifier=None
         ):
     sys.exc_clear()
     try:
-        session = get_db_session(request, 'famiport')
-
         internal.refund_order_by_order_no(
-            session,
+            request,
             client_code=client_code,
             refund_id=refund_id,
             order_no=order_no,
             famiport_order_identifier=famiport_order_identifier,
             per_ticket_fee=per_ticket_fee,
-            per_order_fee=per_order_fee
+            per_order_fee=per_order_fee,
+            refund_total_amount=refund_total_amount
             )
-        session.commit()
     except:
         logger.exception(u'internal error')
         raise FamiPortAPIError('internal error')

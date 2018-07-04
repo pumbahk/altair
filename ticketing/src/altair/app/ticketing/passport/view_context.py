@@ -19,7 +19,7 @@ def get_passport_view_context_factory(default_package):
     class OrderReviewViewContext(object):
         def __init__(self, request):
             self.request = request
-            self.context = getattr(request, 'context', None) # will not be available for exception views
+            self.context = getattr(request, 'context', None)  # will not be available for exception views
 
         @reify
         def ua_type(self):
@@ -96,10 +96,13 @@ def get_passport_view_context_factory(default_package):
         def static_url(self, path, module=None, *args, **kwargs):
             if module is None:
                 module = 'passport'
-            return self.request.static_url("altair.app.ticketing.%(module)s:static/%(organization_short_name)s/%(path)s" % dict(organization_short_name=self.organization_short_name, path=path, module=module), *args, **kwargs)
+            return self.request.static_url(
+                "altair.app.ticketing.%(module)s:static/%(organization_short_name)s/%(path)s" % dict(
+                    organization_short_name=self.organization_short_name, path=path, module=module), *args, **kwargs)
 
         def __getattr__(self, k):
             return getattr(self.cart_setting, k)
+
     return OrderReviewViewContext
 
 

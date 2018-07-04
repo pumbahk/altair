@@ -19,6 +19,7 @@ class HTQRAESDeliveryMethodForm(QRAESDeliveryMethodForm):
         super(HTQRAESDeliveryMethodForm, self).__init__(formdata=formdata, obj=obj, prefix=prefix, **kwargs)
 
     # フィルド名は必ず'qr_aes_'からの文字列で命名ください。
+    # TODO: 2018年7月の頭にスマホ禁止のテンプレート廃止より、このフラグを外す予定
     qr_aes_allow_sp = OurBooleanField(
         label=u'スマートフォンでの表示',
         validators=[
