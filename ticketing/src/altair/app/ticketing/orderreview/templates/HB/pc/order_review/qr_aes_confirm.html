@@ -33,6 +33,37 @@
       height: 1px;
       background: #6e85b2;
     }
+    %if request.organization.setting.i18n:
+    .lang-link-box {
+      margin: 10px auto;
+    }
+    .lang-link-warp {
+      padding: 0;
+      margin: 0 auto;
+      list-style: none;
+    }
+    .lang-link-warp li {
+      display: inline-block;
+    }
+    .lang-link-warp li + li {
+      margin-left: 5px;
+    }
+    .lang-link-warp a {
+      text-decoration: none;
+    }
+    .lang-link-warp .link-item {
+      color: #6e85b2;
+    }
+    .lang-link-warp .link-item:not(.active):hover {
+      color: #6e85b2;
+      text-decoration: underline;
+    }
+    .lang-link-warp .active {
+      text-decoration: underline;
+      color: #0E357F;
+      font-weight: bold;
+    }
+    % endif
     .p-date {
       padding: 0;
       margin: 0;
@@ -95,10 +126,21 @@
       height: 1.2rem;
       padding-right: 3px;
     }
+    .close-btn {
+      color: #6e85b2;
+      text-decoration: none;
+    }
+    .close-btn:hover {
+      color: #0E357F;
+      text-decoration: underline;
+    }
   </style>
 </head>
 <body>
   <div class="content">
+    %if request.organization.setting.i18n:
+      ${h.get_lang_list_link(request) |n}
+    % endif
     <hr class="main" />
     <h3>${event.title}</h3>
     % if performance and performance.name:
@@ -145,7 +187,7 @@
     </div>
     <hr class="sub" />
     <hr class="main" />
-    <a href="javascript:window.close();">${_(u'閉じる')}</a>
+    <a class="close-btn" href="javascript:window.close();">${_(u'閉じる')}</a>
   </div>
 </body>
 </html>

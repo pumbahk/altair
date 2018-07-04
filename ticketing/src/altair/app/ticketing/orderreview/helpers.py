@@ -201,3 +201,21 @@ def get_entry_status_image(request, entry):
         return u"icon_rakusen.gif"
     else:
         return u"icon_kekkachusenmachi.gif"
+
+def get_lang_list_link(request):
+    if not request.organization or not request.organization.setting.i18n:
+        link_list = u""
+    else:
+        locales = OrderedDict(
+            [(u'en', u'English'), (u'ja', u'日本語'), (u'zh_CN', u'简体中文'), (u'zh_TW', u'繁体中文'), (u'ko', u'한국어')])
+        link_list = u'<div class="lang-link-box"><ul class="lang-link-warp">{links}</ul></div>'
+        current_locale = custom_locale_negotiator(request)
+        links = u""
+        for locale, verbose_name in locales.items():
+            if locale != current_locale:
+                links += u'<li><a class="link-item" href="/locale?language={0}">{1}</a></li>'.format(locale, verbose_name)
+            else:
+                links += u'<li><span class="link-item active">{0}</span></li>'.format(verbose_name)
+        link_list = link_list.format(links=links)
+
+    return link_list
