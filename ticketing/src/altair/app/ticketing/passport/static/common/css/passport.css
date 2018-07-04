@@ -292,6 +292,28 @@
     font-size: 1.0rem;
     text-align: center;
 }
+
+/* -- 20180703 add start -- */
+.passport input[type="submit"],
+.passport input[type="button"] {
+  border-radius: 0;
+  -webkit-box-sizing: content-box;
+  -webkit-appearance: button;
+  appearance: button;
+  border: none;
+  box-sizing: border-box;
+  cursor: pointer;
+}
+.passport input[type="submit"]::-webkit-search-decoration,
+.passport input[type="button"]::-webkit-search-decoration {
+  display: none;
+}
+.passport input[type="submit"]::focus,
+.passport input[type="button"]::focus {
+  outline-offset: -2px;
+}
+/* -- 20180703 add end -- */
+
 .passport input[type=radio],
 .passport input[type=checkbox] {
   display: none;
