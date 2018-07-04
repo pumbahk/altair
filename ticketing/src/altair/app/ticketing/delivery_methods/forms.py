@@ -170,6 +170,9 @@ class DeliveryMethodForm(OurForm):
         return []
 
 class QRAESDeliveryMethodForm(DeliveryMethodForm):
+    """
+    追加のカスタマイズのフィルド名は必ず'qr_aes_'からの文字列で命名ください。
+    """
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
         super(QRAESDeliveryMethodForm, self).__init__(formdata=formdata, obj=obj, prefix=prefix, **kwargs)
         self.delivery_plugin_id.choices = [(dmp.id, dmp.name) for dmp in DeliveryMethodPlugin.all()]
