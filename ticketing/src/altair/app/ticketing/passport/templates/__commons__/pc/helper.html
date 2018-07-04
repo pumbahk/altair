@@ -6,7 +6,7 @@ passport_users = sorted(order.users, key=lambda user: user.order_attribute_num)
 % for num, user in enumerate(passport_users):
 <% index = num+1 %>
     % if user.image_path:
-    <img width="100%"
+    <img width="100%" border="2"
           src="${request.static_url('altair.app.ticketing.passport:static/{}'.format(user.image_path.replace('passport/static/', '')))}"/>
     % endif
 <% ret_can_use_passport = can_use_passport(request, user) %>
