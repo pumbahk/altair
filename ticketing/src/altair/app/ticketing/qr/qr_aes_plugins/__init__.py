@@ -3,4 +3,4 @@
 def includeme(config):
     config.include('.ht')
     config.include('.bw')
-    config.scan(__name__)
+    config.include('.hb')
