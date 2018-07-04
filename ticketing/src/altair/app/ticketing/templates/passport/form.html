@@ -1,5 +1,7 @@
 <%inherit file="/layout_2cols.html" />
 <%namespace file="/common/helpers.html" name="ch" />
+<script src="${request.static_url('altair.app.ticketing:static/js/jquery.chosen.js')}"></script>
+<link rel="stylesheet" type="text/css" href="${request.static_url('altair.app.ticketing:static/css/chosen.css')}"/>
 
 <style type="text/css">
     .controls select {
@@ -16,6 +18,13 @@
     }
 </style>
 
+<script>
+    $(function () {
+        $(".chosen").chosen({
+            search_contains: true
+        })
+    });
+</script>
 <%
 if request.matched_route.name == 'passport.edit':
     route_name = u'編集'
@@ -41,7 +50,8 @@ urls=[request.route_path('index'), request.route_path("passport.index")]
     <form class="form-horizontal" action="${route_path}" method="POST">
         <fieldset>
             ${ch.form_item(form.name)}
-            ${ch.form_item(form.performance_id)}
+            ${ch.form_item(form.performance_id, class_='chosen')}
+            ${h.error(form.performance_id)}
             ${ch.form_item(form.daily_passport)}
             ${ch.form_item(form.available_day)}
             ${ch.form_item(form.is_valid)}

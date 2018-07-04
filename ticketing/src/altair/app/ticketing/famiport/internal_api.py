@@ -3,6 +3,8 @@ import sys
 import six
 import logging
 from datetime import datetime
+from decimal import Decimal
+from sqlalchemy import func
 from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 from altair.sqlahelper import get_db_session
 import functools
@@ -693,97 +695,142 @@ def get_or_create_refund(
     else:
         return famiport_refund, False
 
+def _get_ticket_count_group_by_token(request, famiport_order_id):
+    session = get_db_session(request, 'famiport_slave')
+
+    # 一つ商品明細トークンが複数主券を持つ場合はトークンのIDが一つしかないため
+    # トークンのIDをGROUP BYで主券の数を得る
+    results = session.query(
+        FamiPortTicket.userside_token_id.label('token_id'),
+        func.count(FamiPortTicket.id).label('cnt')) \
+        .filter(FamiPortTicket.famiport_order_id == famiport_order_id) \
+        .group_by(FamiPortTicket.userside_token_id) \
+        .all()
+
+    return {result.token_id: result.cnt for result in results}
+
 def refund_order_by_order_no(
-        session,
+        request,
         client_code,
         refund_id,
         order_no,
         famiport_order_identifier,
         per_order_fee,
-        per_ticket_fee):
+        per_ticket_fee,
+        refund_total_amount):
+    session = get_db_session(request, 'famiport')
     famiport_order = get_famiport_order(session, client_code=client_code, order_no=order_no, famiport_order_identifier=famiport_order_identifier)
+
+    if famiport_order.canceled_at:
+        raise FamiPortError(u'famiport_order: %s is already canceled' % famiport_order.order_no)
+
+    famiport_tickets = sorted([famiport_ticket
+                               for famiport_ticket in famiport_order.famiport_tickets
+                               if not famiport_ticket.is_subticket],
+                              key=lambda x: x.id)
+
+    if len(famiport_tickets) == 0:
+        raise FamiPortError('no tickets can be refunded')
+
     try:
         famiport_refund = session.query(FamiPortRefund).filter_by(client_code=client_code, id=refund_id).with_lockmode('update').one()
     except NoResultFound:
         raise FamiPortError('no corresponding FamiPortRefund found (refund_id=%ld)' % refund_id)
-    existing_famiport_refund_entries = dict(
-        (famiport_refund_entry.famiport_ticket_id, famiport_refund_entry)
-        for famiport_refund_entry in session.query(FamiPortRefundEntry) \
-            .join(FamiPortRefundEntry.famiport_ticket) \
-            .filter(FamiPortRefundEntry.famiport_refund_id == famiport_refund.id) \
-            .filter(FamiPortTicket.famiport_order_id == famiport_order.id)
-        )
-    famiport_tickets_to_refund = [
-        famiport_ticket
-        for famiport_ticket in famiport_order.famiport_tickets
-        if not famiport_ticket.is_subticket
-        ]
-    if len(famiport_tickets_to_refund) == 0:
-        raise FamiPortError('no tickets can be refunded')
-    famiport_refund_entries_to_update = dict(
-        (
-            famiport_ticket.id,
-            FamiPortRefundEntry(
-                famiport_refund=famiport_refund,
-                famiport_ticket=famiport_ticket,
-                ticket_payment=famiport_ticket.price,
-                ticketing_fee=per_ticket_fee,
-                other_fees=(per_order_fee if i == 0 else 0),
-                shop_code=famiport_order.ticketing_famiport_receipt.shop_code
-                )
-            )
-        for i, famiport_ticket in enumerate(famiport_tickets_to_refund)
-        )
-    famiport_refund_entries_to_add = []
+
+    # 一つ商品明細トークンが持ってるFamiPortチケットの数を取得
+    ticket_cnt = _get_ticket_count_group_by_token(request, famiport_order.id)
+    # Refund検証ための変数を設定
+    refund_ticket_cnt = 0
+    total_amount_for_check = 0
     serial = famiport_refund.last_serial
-    for famiport_ticket_id, famiport_refund_entry  in list(six.iteritems(famiport_refund_entries_to_update)):
-        existing_famiport_refund_entry = existing_famiport_refund_entries.get(famiport_ticket_id)
-        if existing_famiport_refund_entry is not None:
-            if existing_famiport_refund_entry.refunded_at is not None:
+    for famiport_ticket in famiport_tickets:
+
+        famiport_refund_entry = session.query(FamiPortRefundEntry) \
+            .join(FamiPortTicket) \
+            .filter(FamiPortRefundEntry.famiport_refund_id == famiport_refund.id) \
+            .filter(FamiPortTicket.famiport_order_id == famiport_order.id) \
+            .filter(FamiPortTicket.id == famiport_ticket.id) \
+            .first()
+        if not famiport_refund_entry:
+            famiport_refund_entry = FamiPortRefundEntry()
+
+        # 主券の数で実際払戻金額を計算
+        calc_ticket_payment = famiport_ticket.price / Decimal(ticket_cnt.get(famiport_ticket.userside_token_id, 1))
+
+        # すべてが0の場合はデータを追加しない
+        if calc_ticket_payment == 0 and (per_order_fee == 0 or refund_ticket_cnt > 0) and per_ticket_fee == 0:
+            if famiport_refund_entry.id:
+                session.delete(famiport_refund_entry)
+            continue
+
+        if famiport_refund_entry.id:
+            logger.info('FamiPortRefundEntry(id=%ld) will be updated' % famiport_refund_entry.id)
+            if famiport_refund_entry.refunded_at:
                 raise FamiPortError('FamiPortRefundEntry(id=%ld) is already refunded at %s' % (
-                    existing_famiport_refund_entry.id,
-                    existing_famiport_refund_entry.refunded_at
-                    ))
-            logger.info('FamiPortRefundEntry(id=%ld) will be updated' % existing_famiport_refund_entry.id)
-            if existing_famiport_refund_entry.ticket_payment != famiport_refund_entry.ticket_payment:
-                logger.info('FamiPortRefundEntry(id=%ld).ticket_payment: %s => %s' % (
-                    existing_famiport_refund_entry.id,
-                    existing_famiport_refund_entry.ticket_payment,
-                    famiport_refund_entry.ticket_payment
-                    ))
-                existing_famiport_refund_entry.ticket_payment = famiport_refund_entry.ticket_payment
-            if existing_famiport_refund_entry.ticketing_fee != famiport_refund_entry.ticketing_fee:
-                logger.info('FamiPortRefundEntry(id=%ld).ticketing_fee: %s => %s' % (
-                    existing_famiport_refund_entry.id,
-                    existing_famiport_refund_entry.ticketing_fee,
-                    famiport_refund_entry.ticketing_fee
-                    ))
-                existing_famiport_refund_entry.ticketing_fee = famiport_refund_entry.ticketing_fee
-            if existing_famiport_refund_entry.other_fees != famiport_refund_entry.other_fees:
-                logger.info('FamiPortRefundEntry(id=%ld).other_fees: %s => %s' % (
-                    existing_famiport_refund_entry.id,
-                    existing_famiport_refund_entry.other_fees,
-                    famiport_refund_entry.other_fees
-                    ))
-                existing_famiport_refund_entry.other_fees = famiport_refund_entry.other_fees
+                    famiport_refund_entry.id,
+                    famiport_refund_entry.refunded_at
+                ))
+            if famiport_refund_entry.ticket_payment != calc_ticket_payment:
+                logger.info(
+                    'FamiPortRefundEntry(id=%ld).ticket_payment: %s => %s' % (
+                        famiport_refund_entry.id,
+                        famiport_refund_entry.ticket_payment,
+                        calc_ticket_payment
+                    )
+                )
+            if famiport_refund_entry.ticketing_fee != per_ticket_fee:
+                logger.info(
+                    'FamiPortRefundEntry(id=%ld).ticketing_fee: %s => %s' % (
+                        famiport_refund_entry.id,
+                        famiport_refund_entry.ticketing_fee,
+                        per_ticket_fee
+                    )
+                )
+            if refund_ticket_cnt == 0 and famiport_refund_entry.other_fees != per_order_fee:
+                logger.info(
+                    'FamiPortRefundEntry(id=%ld).other_fees: %s => %s' % (
+                        famiport_refund_entry.id,
+                        famiport_refund_entry.ticketing_fee,
+                        per_ticket_fee
+                    )
+                )
         else:
-            logger.info('FamiPortRefundEntry(famiport_ticket_id=%ld, ticket_payment=%s, ticketing_fee=%s, other_fees=%s, shop_code=%s) will be added' % (
-                famiport_refund_entry.famiport_ticket.id,
-                famiport_refund_entry.ticket_payment,
-                famiport_refund_entry.ticketing_fee,
-                famiport_refund_entry.other_fees,
-                famiport_refund_entry.shop_code
+            logger.info(
+                'FamiPortRefundEntry(famiport_ticket_id=%ld, ticket_payment=%s, ticketing_fee=%s, other_fees=%s, shop_code=%s) will be added' % (
+                    famiport_ticket.id,
+                    calc_ticket_payment,
+                    per_ticket_fee,
+                    per_order_fee if refund_ticket_cnt == 0 else 0,
+                    famiport_order.ticketing_famiport_receipt.shop_code
                 ))
             serial += 1
             famiport_refund_entry.serial = serial
-            famiport_refund_entries_to_add.append(famiport_refund_entry)
-    logger.info('updated entries: %d, added entries: %d' % (
-        len(famiport_refund_entries_to_update) - len(famiport_refund_entries_to_add), 
-        len(famiport_refund_entries_to_add)
-        ))
-    for famiport_refund_entry in sorted(famiport_refund_entries_to_add, key=lambda famiport_refund_entry: famiport_refund_entry.famiport_ticket_id):
+
+        famiport_refund_entry.famiport_refund = famiport_refund
+        famiport_refund_entry.famiport_ticket = famiport_ticket
+        famiport_refund_entry.ticket_payment = calc_ticket_payment
+        famiport_refund_entry.ticketing_fee = per_ticket_fee
+        famiport_refund_entry.other_fees = per_order_fee if refund_ticket_cnt == 0 else 0
+        famiport_refund_entry.shop_code=famiport_order.ticketing_famiport_receipt.shop_code
+
+        # チケットデータの状態不正などにより払戻データの合計額が予約金額を超える場合はエラーにする
+        total_amount_for_check += famiport_refund_entry.ticket_payment \
+                                  + famiport_refund_entry.ticketing_fee \
+                                  + famiport_refund_entry.other_fees
+
+        if refund_total_amount < total_amount_for_check:
+            logger.error(u'check over amount {0} < {1}'.format(refund_total_amount, total_amount_for_check))
+            raise FamiPortError(
+                u'refund total amount over: {0} < {1}'.format(refund_total_amount, total_amount_for_check))
+
         session.add(famiport_refund_entry)
+        refund_ticket_cnt += 1
+
+    if refund_ticket_cnt == 0:
+        logger.warning(u'No refundable tickets found: %s' % famiport_order.order_no)
+
     famiport_refund.last_serial = serial
+    session.commit()
 
 def invalidate_famiport_event(session, userside_id, now):
     famiport_event = session.query(FamiPortEvent)\

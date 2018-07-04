@@ -12,10 +12,10 @@ from altair.app.ticketing.users.models import Membership
 from altair.sqlahelper import get_db_session
 from pyramid.decorator import reify
 
-from .helper import PassportHelper
-from .security import PassportSecurity
 import api
 from models import PassportUser
+from .helper import PassportHelper
+from .security import PassportSecurity
 
 logger = logging.getLogger(__name__)
 

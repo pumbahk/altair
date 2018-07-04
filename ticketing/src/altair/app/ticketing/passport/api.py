@@ -1,28 +1,29 @@
 # -*- coding:utf-8 -*-
+from datetime import datetime
+
 from altair.app.ticketing.core.models import Host
 from altair.sqlahelper import get_db_session
 
-from ..passport.models import PassportUserInfo, PassportUser, PassportNotAvailableTerm
-from datetime import datetime, date
+from ..passport.models import PassportUserInfo, PassportUser
 
 
 def get_passport_product_quantities(products, extra_data):
     # パスポートの商品と、個数のリストを返す
-    # 運用で商品のパスポートの表示順と、追加情報のパスポート種類の順番を一緒にしてもらう
+    # 運用で商品のパスポートの表示順と、追加情報の種類の順番を一緒にしてもらう
     # 種類ごとにパスポートが何件あるか数える
     passport_dict = {}
     for num in range(4):
         index = num + 1
         try:
             if index == 1:
-                passport = extra_data['extra'][u"パスポート種類({0}人目)".format(index)]
+                passport = extra_data['extra'][u"種類({0}人目)".format(index)]
                 birthday = extra_data['extra'][u"生年月日({0}人目)".format(index)]
                 sex = extra_data['extra'][u"性別({0}人目)".format(index)]
                 if not all([birthday, sex]):
                     # １人目は追加情報に氏名などがない
                     continue
             else:
-                passport = extra_data['extra'][u"パスポート種類({0}人目)".format(index)]
+                passport = extra_data['extra'][u"種類({0}人目)".format(index)]
                 last_name = extra_data['extra'][u"姓({0}人目)".format(index)]
                 first_name = extra_data['extra'][u"名({0}人目)".format(index)]
                 last_name_kana = extra_data['extra'][u"セイ({0}人目)".format(index)]
@@ -41,7 +42,7 @@ def get_passport_product_quantities(products, extra_data):
         except KeyError:
             pass
 
-    # 商品の表示順が追加情報のパスポート種類の値と一致しているので商品と件数のペアにする
+    # 商品の表示順が追加情報の種類の値と一致しているので商品と件数のペアにする
     product_quantity_pair = []
     for product in products:
         if str(product.display_order) in passport_dict:
@@ -49,8 +50,22 @@ def get_passport_product_quantities(products, extra_data):
     return product_quantity_pair
 
 
-def can_use_passport(request, passport_user):
+def check_order_passport_status(order, passport_user):
+    if order.is_canceled():
+        return False
 
+    if not passport_user.image_path:
+        return False
+
+    if order.payment_status == 'refunding':
+        return False
+
+    if order.payment_status == 'refunded':
+        return False
+    return True
+
+
+def can_use_passport(request, passport_user):
     now = datetime.now()
 
     # パスポート設定が使用不可
@@ -71,7 +86,8 @@ def can_use_passport(request, passport_user):
             return False
 
     # パスポートの有効期限切れ確認
-    if now > datetime(passport_user.expired_at.year, passport_user.expired_at.month, passport_user.expired_at.day, 23, 59):
+    if now > datetime(passport_user.expired_at.year, passport_user.expired_at.month, passport_user.expired_at.day, 23,
+                      59):
         return False
 
     # 入場不可期間
@@ -100,6 +116,7 @@ def use_passport(passport_user_id):
 
 
 def get_passport_user_from_order_id(order_id):
+    # データ不整合にならないようマスタから取得
     return PassportUser.query.filter(PassportUser.order_id == order_id).first()
 
 
@@ -128,7 +145,7 @@ def get_passport_data(index, extra_data, shipping_address, products_name_dict, p
         if index == 1:
             info = PassportUserInfo(
                 passport_user_dict[index],
-                products_name_dict[extra_data[u"パスポート種類({0}人目)".format(index)]],
+                products_name_dict[extra_data[u"種類({0}人目)".format(index)]],
                 shipping_address.last_name,
                 shipping_address.first_name,
                 shipping_address.last_name_kana,
@@ -139,7 +156,7 @@ def get_passport_data(index, extra_data, shipping_address, products_name_dict, p
         else:
             info = PassportUserInfo(
                 passport_user_dict[index],
-                products_name_dict[extra_data[u"パスポート種類({0}人目)".format(index)]],
+                products_name_dict[extra_data[u"種類({0}人目)".format(index)]],
                 extra_data[u"姓({0}人目)".format(index)],
                 extra_data[u"名({0}人目)".format(index)],
                 extra_data[u"セイ({0}人目)".format(index)],

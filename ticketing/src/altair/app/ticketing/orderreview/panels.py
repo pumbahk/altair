@@ -10,6 +10,7 @@ from boto.exception import S3ResponseError
 from pyramid_layout.panel import panel_config
 
 from .schemas import PassportUserImageUploadForm
+from ..orders.models import Order
 from ..passport.api import get_passport_datas
 from ..passport.models import PassportUser
 
@@ -24,7 +25,8 @@ def order_detail_standard(context, request, order, user_point_accounts=None, loc
 
 
 @panel_config('order_detail.booster.89ers', renderer=selectable_renderer('order_review/_order_detail_booster.html'))
-@panel_config('order_detail.booster.bambitious', renderer=selectable_renderer('order_review/_order_detail_booster.html'))
+@panel_config('order_detail.booster.bambitious',
+              renderer=selectable_renderer('order_review/_order_detail_booster.html'))
 @panel_config('order_detail.booster.bigbulls', renderer=selectable_renderer('order_review/_order_detail_booster.html'))
 def order_detail_booster(context, request, order, user_point_accounts=None, locale=None):
     return {'order': order, 'user_point_accounts': user_point_accounts, 'locale': locale}
@@ -42,14 +44,12 @@ def order_detail_goods(context, request, order, user_point_accounts=None, locale
 
 @panel_config('order_detail.passport', renderer=selectable_renderer('order_review/_order_detail_passport.html'))
 def order_detail_passport(context, request, order, user_point_accounts=None, locale=None):
-
     upload_form = PassportUserImageUploadForm(request.POST)
     if upload_form.passport_user_id.data:
         if not isinstance(upload_form['upload_file'].data, unicode):
             # パスポート画像がPOSTされた
             s3_file_path = save_upload_file(request, upload_form)
             update_passport_user_image(upload_form, s3_file_path)
-            from ..orders.models import Order
             order = Order.get(order.id, order.organization_id)
         else:
             request.session.flash(u'ファイルを指定してアップロードしてください')
@@ -87,14 +87,13 @@ def save_upload_file(request, form):
     connection = S3ConnectionFactory(request)()
     bucket_name = request.registry.settings["s3.bucket_name"]
 
+    s3_file_path = ""
     try:
         s3_file_path = s3upload(connection, bucket_name, file_path, S3_DIRECTORY.format(form.passport_user_id.data),
                                 "{0}.jpg".format(uuid.uuid4()))
-        #logger.info("auto_cms image saved. user={}, performanceID={}".format(self.user.name.encode("utf-8"),
-        #                                                                     form.passport_user_id.data))
 
     except S3ResponseError as e:
-        logger.info("Image did not save. PerformanceID={}".format(form.passport_user_id.data))
+        logger.error("Image did not save. PerformanceID={}".format(form.passport_user_id.data))
         request.session.flash(u"{}の画像が保存できませんでした。PassportUserID:{}".format(form.passport_user_id.data))
     os.remove(file_path)
     return s3_file_path
