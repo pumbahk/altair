@@ -1,0 +1,5 @@
+@charset "UTF-8";
+@import url(../../../__base__/pc/css/sanitize.css);
+@import url(../../../__base__/pc/css/common.css);
+@import url(main.css);
+@import url(../../../__base__/pc/css/font.css);
