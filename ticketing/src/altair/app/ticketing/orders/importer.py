@@ -975,10 +975,7 @@ class ImportCSVParser(object):
                     seat_name = seat_name.strip()
                 seat = None
                 if not product_item.stock.stock_type.quantity_only:
-                    if self.order_import_task.allocation_mode == AllocationModeEnum.QuantityOnly.v:
-                        raise exc(u'「数受けのため配席なし」のインポートモードを設定されていますが、インポート先の席種は数受けではありません')
-
-                    if self.order_import_task.allocation_mode == AllocationModeEnum.SameAllocation.v:
+                    if self.order_import_task.allocation_mode == AllocationModeEnum.NoAutoAllocation.v:
                         if not seat_name:
                             raise exc(u'席種「%s」は数受けではありませんが、座席番号が指定されていません' % product_item.stock.stock_type.name)
                         seat = context.get_seat(seat_name, product_item)
@@ -1008,7 +1005,7 @@ class ImportCSVParser(object):
 
 
 class OrderImporter(object):
-    def __init__(self, request, import_type, allocation_mode=AllocationModeEnum.QuantityOnly.v, entrust_separate_seats=False, merge_order_attributes=False, enable_random_import=True, session=None, now=None):
+    def __init__(self, request, import_type, allocation_mode=AllocationModeEnum.AlwaysAllocateNew.v, entrust_separate_seats=False, merge_order_attributes=False, enable_random_import=True, session=None, now=None):
         self.request = request
         self.import_type = int(import_type)
         self.allocation_mode = int(allocation_mode)
@@ -1142,14 +1139,11 @@ class OrderImporter(object):
                         if len(cpi.seats) > cpi.quantity:
                             add_error(u'商品明細数よりも座席数が多くなっています (座席数=%d 商品明細数=%d)' % (len(cpi.seats), cpi.quantity))
                         elif len(cpi.seats) < cpi.quantity:
-                            if self.allocation_mode == AllocationModeEnum.SameAllocation.v:
+                            if self.allocation_mode == AllocationModeEnum.NoAutoAllocation.v:
                                 add_error(u'商品明細数と座席数が一致していません (座席数=%d 商品明細数=%d)' % (len(cpi.seats), cpi.quantity))
                             else:
                                 if len(cpi.seats) > 0:
-                                    if self.allocation_mode == AllocationModeEnum.Reallocation.v:
-                                        add_error(u'自動配席が有効になっていて、かつ一部の座席が指定されています。指定のない座席は自動的に決定されます。 (座席数=%d 商品明細数=%d)' % (len(cpi.seats), cpi.quantity), level=IMPORT_WARNING)
-                                    elif self.allocation_mode == AllocationModeEnum.QuantityOnlyToSeat.v:
-                                        add_error(u'数受けから座席を割当するモードですが、一部の座席が指定されています。指定のない座席は自動的に決定されます。 (座席数=%d 商品明細数=%d)' % (len(cpi.seats), cpi.quantity), level=IMPORT_WARNING)
+                                    add_error(u'自動配席が有効になっていて、かつ一部の座席が指定されています。指定のない座席は自動的に決定されます。 (座席数=%d 商品明細数=%d)' % (len(cpi.seats), cpi.quantity), level=IMPORT_WARNING)
                                 else:
                                     if cart.original_order is not None:
                                         add_error(u'座席は自動的に決定されます (予定配席数=%d)' % (cpi.quantity,), level=IMPORT_WARNING)
