@@ -189,7 +189,7 @@ def import_orders_per_task(request, order_import_task, priority=0):
                       properties=dict(content_type="application/json", priority=priority))
 
 def _get_import_mode(import_type, allocation_mode):
-    if import_type == ImportTypeEnum.Update.v and allocation_mode == AllocationModeEnum.Reallocation.v:
+    if import_type == ImportTypeEnum.Update.v and allocation_mode == AllocationModeEnum.AlwaysAllocateNew.v:
             return 'per_task'
     return 'per_order'
 
