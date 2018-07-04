@@ -128,7 +128,7 @@
 </head>
 <body>
   <div class="content">
-    %if request.organization.setting.i18n:
+    %if request.organization.setting.i18n and not disable_lang_link:
       ${h.get_lang_list_link(request) |n}
     % endif
     <hr class="main" />

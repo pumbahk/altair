@@ -1057,7 +1057,7 @@ class QRAESView(object):
 
         output_to_template = self.context.qr_aes_plugin.output_to_template(ticket)
         locale = custom_locale_negotiator(self.request) if self.request.organization.setting.i18n else u"ja"
-        output_to_template.update({"locale": locale})
+        output_to_template.update({"locale": locale, "disable_lang_link": True})
 
         return output_to_template
 
