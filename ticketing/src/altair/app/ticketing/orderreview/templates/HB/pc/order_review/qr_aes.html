@@ -152,7 +152,7 @@
       % endif
     </div>
     <hr class="sub" />
-    <p class="order_no">受付番号 ${order.order_no}</p>
+    <p class="order_no">${_(u'受付番号')} ${order.order_no}</p>
     <div class="wrap-qr">
       <img class="qr" src="${request.route_path(('order_review.qr_aes_draw'), sign=ticket.sign)}" />
     </div>
