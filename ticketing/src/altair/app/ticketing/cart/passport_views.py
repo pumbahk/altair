@@ -331,14 +331,14 @@ class PassportCompleteView(CompleteView):
         return super(PassportCompleteView, self).get()
 
     def create_passport_dict(self, order_attributes):
-        # 追加情報で入力されたパスポートの種類のvalueをキーにしている
+        # 追加情報で入力された種類のvalueをキーにしている
         # そしてそのvalueが、Productのdisplay_orderと一致している。
         # 複数同じパスポートが買われている場合、リストに追加される
         passport_dict = {}
         for num in range(4):
             index = num + 1
             try:
-                passport = order_attributes[u"パスポート種類({0}人目)".format(index)]
+                passport = order_attributes[u"種類({0}人目)".format(index)]
                 if passport in passport_dict:
                     passport_dict[passport].append(index)
                 else:
