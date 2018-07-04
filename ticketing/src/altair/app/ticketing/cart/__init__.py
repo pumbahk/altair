@@ -160,6 +160,8 @@ def setup_payment_renderers(config):
                 [
                     'templates/%(organization_short_name)s/%(ua_type)s/plugins/%(path)s',
                     'templates/%(organization_short_name)s/plugins/%(path)s',
+                    'templates/__base__/%(ua_type)s/plugins/%(path)s',
+                    'templates/__base__/plugins/%(path)s',
                     'templates/__default__/%(ua_type)s/plugins/%(path)s',
                     'templates/__default__/plugins/%(path)s',
                     '%(their_package)s:templates/%(ua_type)s/%(path)s',
