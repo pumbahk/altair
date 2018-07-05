@@ -149,7 +149,7 @@ host = 0.0.0.0
 port = %(http_port)s
 workers = 1
 timeout = 3600
-graceful_timeout = 300
+graceful_timeout = 3600
 
 [pshell]
 setup = altair.app.ticketing.scripts.pshell.setup
