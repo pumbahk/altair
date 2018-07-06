@@ -1,10 +1,10 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import subprocess
-import os
-import sys
 import argparse
+import os
+import subprocess
+import sys
 from filecmp import dircmp
 
 # 重複を持つファイルのパス
