@@ -108,3 +108,8 @@ class PassportUserImageUploadForm(Form):
             raise ValidationError(u"ファイルを指定してください")
         if not (field.data.filename.endswith('.png') or field.data.filename.endswith('.jpg')):
             raise ValidationError(u"jpg/pngファイルのみアップロード可能です。")
+
+
+class PassportUserImageConfirmForm(Form):
+    order_no = fields.HiddenField(u"予約番号")
+    confirm = fields.HiddenField(label=u"確定")

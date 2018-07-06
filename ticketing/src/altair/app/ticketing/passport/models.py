@@ -51,6 +51,7 @@ class PassportUser(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     image_path = AnnotatedColumn(Unicode(1024), nullable=False, _a_label=_(u'顔写真パス'))
     is_valid = AnnotatedColumn(Boolean, nullable=True, _a_label=_(u'有効・無効フラグ'))
     admission_time = AnnotatedColumn(DateTime, _a_label=_(u"最終入場時刻"))
+    confirmed_at = AnnotatedColumn(DateTime, _a_label=_(u"本人確認画像確定時間"))
     ordered_product = relationship("OrderedProduct", backref='users')
     ordered_product_id = AnnotatedColumn(Identifier, ForeignKey('OrderedProduct.id'), nullable=False)
     order = relationship("Order", backref='users')
