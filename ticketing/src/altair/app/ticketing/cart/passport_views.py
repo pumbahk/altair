@@ -308,8 +308,9 @@ class PassportCompleteView(CompleteView):
     @lbr_view_config(route_name='payment.confirm', request_method="POST")
     @lbr_view_config(route_name='payment.finish.mobile', request_method="POST")
     def post(self):
+        performance_id = self.context.performance.id
         retval = super(PassportCompleteView, self).post()
-        clear_user_profile(self.request, self.context.performance)
+        clear_user_profile(self.request, performance_id)
         return retval
 
     @lbr_view_config(context=CompleteViewTicketingCartResource)
