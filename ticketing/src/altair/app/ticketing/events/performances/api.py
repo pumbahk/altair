@@ -216,14 +216,16 @@ def send_import_order_task_to_worker(request, order_import_task):
         import_orders_per_task(request, order_import_task, priority)
 
 def _update_proto_order_errors(query):
-    proto_orders_with_error = query.filter(ProtoOrder.attributes != {}, ProtoOrder.attributes != None).all()
-    if not proto_orders_with_error:
-        return {}
-    else:
-        return dict(
-            (proto_order.ref, (proto_order.order_no, proto_order.attributes.get('errors', [])))
-            for proto_order in proto_orders_with_error
-        )
+    ret = {}
+    proto_orders_with_attr = query.filter(ProtoOrder.attributes != {}, ProtoOrder.attributes != None).all()
+
+    if proto_orders_with_attr:
+        for proto_order in proto_orders_with_attr:
+            error = proto_order.attributes.get('errors')
+            if error:
+                ret[proto_order.ref] = (proto_order.order_no, error)
+
+        return ret
 
 def update_order_import_tasks_done_by_worker(request, order_import_tasks):
     _session = get_db_session(request, 'slave')
