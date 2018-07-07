@@ -105,7 +105,7 @@ def cancel_sej_order(request, tenant, sej_order, origin_order, now=None, session
         raise SejError(u'generic failure (reason: %s)' % unicode(e), sej_order.order_no)
     return sej_order
 
-def _get_ticket_count_group_by_token(request, sej_order):
+def _get_ticket_count_group_by_token(request, sej_order_id):
     session = get_db_session(request, name="slave")
 
     # 一つ商品明細トークンが複数主券を持つ場合はトークンのIDが一つしかないため
@@ -113,7 +113,7 @@ def _get_ticket_count_group_by_token(request, sej_order):
     results = session.query(
         SejTicket.ordered_product_item_token_id.label('token_id'),
         func.count(SejTicket.id).label('cnt')) \
-        .filter(SejTicket.order_no == sej_order.order_no) \
+        .filter(SejTicket.sej_order_id == sej_order_id) \
         .group_by(SejTicket.ordered_product_item_token_id) \
         .all()
 
@@ -182,7 +182,7 @@ def refund_sej_order(request,
         re.need_stub = need_stub
 
         # 一つ商品明細が持ってるSEJチケットの数を取得
-        ticket_cnt = _get_ticket_count_group_by_token(request, sej_order)
+        ticket_cnt = _get_ticket_count_group_by_token(request, sej_order.id)
 
         # create SejRefundTicket
         i = 0
