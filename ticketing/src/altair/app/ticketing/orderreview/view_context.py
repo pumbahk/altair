@@ -129,7 +129,7 @@ def get_orderreview_view_context_factory(default_package):
 
                 override_path = {
                     'org_path': '{package}:templates/{organization_short_name}/fc_auth/{ua_type}/{path}',
-                    'bath_path': '{package}:templates/__base__/fc_auth/{ua_type}/{path}',
+                    'base_path': '{package}:templates/__base__/fc_auth/{ua_type}/{path}',
                 }
                 path = template_name
                 first_try = use_base_dir_if_org_template_not_exists(self, path, package, override_path)
@@ -141,7 +141,7 @@ def get_orderreview_view_context_factory(default_package):
 
                 override_path = {
                     'org_path': '{package}:templates/{organization_short_name}/{ua_type}/fc_auth/{path}',
-                    'bath_path': '{package}:templates/__base__/{ua_type}/fc_auth/{path}',
+                    'base_path': '{package}:templates/__base__/{ua_type}/fc_auth/{path}',
                 }
                 second_try = use_base_dir_if_org_template_not_exists(self, path, package, override_path)
                 return second_try
