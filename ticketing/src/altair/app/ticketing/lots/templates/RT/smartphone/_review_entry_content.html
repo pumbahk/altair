@@ -95,7 +95,7 @@ dl.cost-detail > dd {
           <dl class="creditList">
             %for wish in wishes:
             <dt class="creditHl">第${wish.wish_order + 1}希望
-             <span style="color:red;">
+             <span class="highLightRed">
                %if h.lot_entry_display_status(entry, now) == u'当選表示':
                 %if wish.elected_at:
                   ご用意できました
