@@ -69,7 +69,7 @@ require('jquery-hammerjs');
 import { Logger } from "angular2-logger/core";
 
 // constants
-import { ApiConst } from '../../app.constants';
+import { ApiConst, SearchConst } from '../../app.constants';
 
 import { Observable } from 'rxjs/Observable';
 
@@ -1728,7 +1728,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
       this.active_grid = [];
     }
     //filterComponentに現在の表示領域中のgridに紐づくregionと個席表示かどうかをセット（検索用）
-    this.filterComponent.ActiveRegions = this.activeGridToRegion();
+    this.filterComponent.activeRegions = this.activeGridToRegion();
     this.filterComponent.isSeatDisplay = this.active_grid.length > 0;
   }
 
@@ -1747,11 +1747,11 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
       //取得対象があればキャッシュを登録して検索
       if (getRegion.length > 0) {
         this.regionCache = this.regionCache.concat(getRegion);
-        this.filterComponent.search(this.filterComponent.getSeat, getRegion.join(','));
+        this.filterComponent.search(SearchConst.SEARCH_TARGET_ITEM.SEAT, getRegion.join(','));
       }
     } else if (!this.seats.length) {
       //gridとregionの紐づけ情報が存在せず、seatsが空の場合
-      this.filterComponent.search(this.filterComponent.getSeat);
+      this.filterComponent.search(SearchConst.SEARCH_TARGET_ITEM.SEAT);
     }
   }
 
@@ -2099,10 +2099,10 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
   // 座席情報検索更新
   seatUpdate() {
     // NGorERRORの場合、座席情報検索apiを呼び、空席情報を更新する処理
-    let getItem = this.filterComponent.isSeatDisplay ? this.filterComponent.getAll : this.filterComponent.getStockType;
+    let item = this.filterComponent.isSeatDisplay ? SearchConst.SEARCH_TARGET_ITEM.ALL : SearchConst.SEARCH_TARGET_ITEM.STOCKTYPE;
     //キャッシュの削除
-    this.filterComponent.cacheClear$.emit(this.filterComponent.ActiveRegions);
-    this.filterComponent.search(getItem, this.filterComponent.ActiveRegions.join(','));
+    this.filterComponent.cacheClear$.emit(this.filterComponent.activeRegions);
+    this.filterComponent.search(item, this.filterComponent.activeRegions.join(','));
   }
 
   // モーダルウィンドウを閉じる

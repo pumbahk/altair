@@ -27,7 +27,7 @@ import {
 //jquery
 import * as $ from 'jquery';
 //const
-import { ApiConst } from '../../app.constants';
+import { ApiConst, SearchConst } from '../../app.constants';
 //logger
 import { Logger } from "angular2-logger/core";
 @Component({
@@ -79,17 +79,12 @@ export class FilterComponent implements OnInit {
   //検索有効無効
   isSearch: boolean = false;
 
-  //取得項目
-  getAll: number = 1;
-  getStockType: number = 2;
-  getSeat: number = 3;
-
   //gridとregionの紐づけ情報が存在するか
   isExistGridToRegion = false;
   //全体図表示か個席表示か（active_gridの有無で判別）
   isSeatDisplay = false;
   //表示領域のregion
-  ActiveRegions: string[]= [];
+  activeRegions: string[]= [];
 
   /**
    * EventEmitter
@@ -211,7 +206,7 @@ export class FilterComponent implements OnInit {
           this.setPriceInitFlag = true;
           //初期表示処理
           this.valueGetTime();
-          this.searchs(this.seatPrices[0], this.seatPrices[1], this.seatName, this.seatValues[0], this.seatValues[1], this.getStockType);
+          this.searchs(this.seatPrices[0], this.seatPrices[1], this.seatName, this.seatValues[0], this.seatValues[1], SearchConst.SEARCH_TARGET_ITEM.STOCKTYPE);
         } else {
           this.max = 100;
           this.min = 0;
@@ -220,7 +215,7 @@ export class FilterComponent implements OnInit {
             that.setPriceInitFlag = true;
           }, 100);
           this.valueGetTime();
-          this.search(this.getStockType);
+          this.search(SearchConst.SEARCH_TARGET_ITEM.STOCKTYPE);
         }
       },
       (error) => {
@@ -362,14 +357,14 @@ export class FilterComponent implements OnInit {
     if (!this.searching) {
       this.getIsSearchFlag();
       if (!this.searching && !this.isSearch) {
-        this.cacheClear$.emit(this.ActiveRegions);
-        let getItem;
+        this.cacheClear$.emit(this.activeRegions);
+        let item;
         if (this.isExistGridToRegion) {
-          getItem = this.ActiveRegions.length > 0 ? this.getAll : this.getStockType;
+          item = this.activeRegions.length > 0 ? SearchConst.SEARCH_TARGET_ITEM.ALL : SearchConst.SEARCH_TARGET_ITEM.STOCKTYPE;
         } else {
-          getItem = this.isSeatDisplay ? this.getAll : this.getStockType;
+          item = this.isSeatDisplay ? SearchConst.SEARCH_TARGET_ITEM.ALL : SearchConst.SEARCH_TARGET_ITEM.STOCKTYPE;
         }
-        this.searchs(this.seatPrices[0], this.seatPrices[1], this.seatName, this.seatValues[0], this.seatValues[1], getItem, this.ActiveRegions.join(','));
+        this.searchs(this.seatPrices[0], this.seatPrices[1], this.seatName, this.seatValues[0], this.seatValues[1], item, this.activeRegions.join(','));
       }
     }
   }
@@ -385,14 +380,14 @@ export class FilterComponent implements OnInit {
       this.reserved = true;
       this.seatValues = [true, true];
 
-      this.cacheClear$.emit(this.ActiveRegions);
-      let getItem;
+      this.cacheClear$.emit(this.activeRegions);
+      let item;
       if (this.isExistGridToRegion) {
-        getItem = this.ActiveRegions.length > 0 ? this.getAll : this.getStockType;
+        item = this.activeRegions.length > 0 ? SearchConst.SEARCH_TARGET_ITEM.ALL : SearchConst.SEARCH_TARGET_ITEM.STOCKTYPE;
       } else {
-        getItem = this.isSeatDisplay ? this.getAll : this.getStockType;
+        item = this.isSeatDisplay ? SearchConst.SEARCH_TARGET_ITEM.ALL : SearchConst.SEARCH_TARGET_ITEM.STOCKTYPE;
       }
-      this.searchs(this.seatPrices[0], this.seatPrices[1], this.seatName, this.seatValues[0], this.seatValues[1], getItem, this.ActiveRegions.join(','));
+      this.searchs(this.seatPrices[0], this.seatPrices[1], this.seatName, this.seatValues[0], this.seatValues[1], item, this.activeRegions.join(','));
     }
   }
 
@@ -441,10 +436,10 @@ export class FilterComponent implements OnInit {
     this.seatValues = [true, true];
     this.seatName = name;
     if (!this.searching) {
-      let getItem = mapHome ? this.getStockType : this.getAll;
-      let regions = mapHome ? [] : this.ActiveRegions;
+      let item = mapHome ? SearchConst.SEARCH_TARGET_ITEM.STOCKTYPE : SearchConst.SEARCH_TARGET_ITEM.ALL;
+      let regions = mapHome ? [] : this.activeRegions;
       this.cacheClear$.emit(regions);
-      this.searchs(this.seatPrices[0], this.seatPrices[1], this.seatName, this.seatValues[0], this.seatValues[1], getItem, regions.join(','));
+      this.searchs(this.seatPrices[0], this.seatPrices[1], this.seatName, this.seatValues[0], this.seatValues[1], item, regions.join(','));
     }
   }
 
@@ -455,12 +450,12 @@ getSearchParams(item: number, regionIds: string): ISeatsRequest {
 
   //取得項目
   switch(item) {
-    case this.getStockType:
+    case SearchConst.SEARCH_TARGET_ITEM.STOCKTYPE:
       fields = "stock_types,regions";
       break;
-    case this.getAll:
+    case SearchConst.SEARCH_TARGET_ITEM.ALL:
       fields = "stock_types,regions,";
-    case this.getSeat:
+    case SearchConst.SEARCH_TARGET_ITEM.SEAT:
       fields += "seats";
       //seat groupのJSONがなければAPIから取得する
       if (!this.seatDataService.isExistsSeatGroupData) {
@@ -480,7 +475,7 @@ getSearchParams(item: number, regionIds: string): ISeatsRequest {
 }
 
   //検索処理
-  public search(item: number = this.getAll, regionIds: string = ''): Observable<ISeatsResponse> {
+  public search(item: number = SearchConst.SEARCH_TARGET_ITEM.ALL, regionIds: string = ''): Observable<ISeatsResponse> {
     this._logger.debug("seat search start");
     let find = null;
     this.searching = true;
@@ -519,7 +514,7 @@ getSearchParams(item: number, regionIds: string): ISeatsRequest {
   }
 
   //検索項目変更ディレイ（連打防止）
-  public searchs(min: number, max: number, name: string, unreserved: boolean, reserved: boolean, item: number = this.getAll, regionIds: string = '') {
+  public searchs(min: number, max: number, name: string, unreserved: boolean, reserved: boolean, item: number = SearchConst.SEARCH_TARGET_ITEM.ALL, regionIds: string = '') {
     this.animationEnableService.sendToRoadFlag(true);
     setTimeout(() => {
       if (min == this.seatPrices[0] && max == this.seatPrices[1] &&
