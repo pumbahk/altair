@@ -114,6 +114,8 @@ def _get_ticket_count_group_by_token(request, sej_order_id):
         SejTicket.ordered_product_item_token_id.label('token_id'),
         func.count(SejTicket.id).label('cnt')) \
         .filter(SejTicket.sej_order_id == sej_order_id) \
+        .filter(SejTicket.barcode_number.isnot(None)) \
+        .filter(SejTicket.ticket_type.in_([SejTicketType.Ticket.v, SejTicketType.TicketWithBarcode.v])) \
         .group_by(SejTicket.ordered_product_item_token_id) \
         .all()
 

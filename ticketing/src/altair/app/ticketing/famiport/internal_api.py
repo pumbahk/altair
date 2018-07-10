@@ -12,6 +12,7 @@ from .models import (
     FamiPortOrder,
     FamiPortOrderType,
     FamiPortTicket,
+    FamiPortTicketType,
     FamiPortClient,
     FamiPortVenue,
     FamiPortEvent,
@@ -704,6 +705,8 @@ def _get_ticket_count_group_by_token(request, famiport_order_id):
         FamiPortTicket.userside_token_id.label('token_id'),
         func.count(FamiPortTicket.id).label('cnt')) \
         .filter(FamiPortTicket.famiport_order_id == famiport_order_id) \
+        .filter(FamiPortTicket.logically_subticket == False) \
+        .filter(FamiPortTicket.type.in_([FamiPortTicketType.Ticket.value, FamiPortTicketType.TicketWithBarcode.value])) \
         .group_by(FamiPortTicket.userside_token_id) \
         .all()
 
