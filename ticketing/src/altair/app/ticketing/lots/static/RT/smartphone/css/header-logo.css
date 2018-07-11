@@ -1,0 +1,43 @@
+@charset "utf-8";
+    /* FOR SP */
+	.header-logo a,
+	.header-logo span {
+    	display: block;
+		width: 60px;
+		height: 32px;
+		background: url(../images/header_logo_sp.png) no-repeat 0 0;
+		background-size: 60px 32px;
+        overflow: hidden;
+        text-indent: 100%;
+        white-space: nowrap;
+	 }
+	.header-logo-top a,
+	.header-logo-top span {
+		margin: 7px;
+        float: left;
+	}
+	.header-logo-cart a,
+	.header-logo-cart span {
+		margin: 3px 7px;
+        float: left;
+	}
+	.header-logo-cartfc a,
+	.header-logo-cartfc span {
+		margin: 3px 7px;
+	}
+    .ts-header {
+        padding: 7px 0;/* orderreview */
+    }
+	.header-logo-orderreview a,
+	.header-logo-orderreview span {
+		margin: 0 7px;
+	}
+	.header-logo-orderreview-mp a,
+	.header-logo-orderreview-mp span {
+		margin: 0 7px;
+	}
+	.header-logo-lots a,
+	.header-logo-lots span {
+		margin: 7px 7px 0;
+	}
+    /* FOR SP END */

@@ -10,6 +10,8 @@ from altair.formhelpers import Translations, Required
 from altair.formhelpers import OurForm, OurTextField, OurSelectField, OurIntegerField, OurBooleanField, NullableTextField, NullableIntegerField
 from altair.formhelpers.filters import NFKC
 from altair.app.ticketing.core.models import StockTypeEnum, StockType
+from altair.formhelpers.validators import JISX0208
+
 
 class StockTypeForm(OurForm):
 
@@ -27,6 +29,7 @@ class StockTypeForm(OurForm):
         validators=[
             Required(),
             Length(max=255, message=u'255文字以内で入力してください'),
+            JISX0208
         ]
     )
     quantity_only = OurIntegerField(

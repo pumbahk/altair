@@ -13,7 +13,7 @@ Please check your application detail and results on lottery application confirma
 English information follows Japanese
 %endif
 %endif
-
+<% tax=u'tax included' if i18n else u'税込'%>
 -----
 
 %if get("name_kana").status or get("name").status:
@@ -73,10 +73,10 @@ ${product.product.name} ${h.format_currency(product.product.price)} x ${product.
 ${get("total_amount").label}：${h.format_currency(wish.tickets_amount)}
 %endif
 %if get("system_fee").status:
-${get("system_fee").label}：${h.format_currency(wish.system_fee)}（tax included）
+${get("system_fee").label}：${h.format_currency(wish.system_fee)}（${tax}）
 %endif
 %if get("special_fee").status and wish.special_fee > 0:
-${wish.special_fee_name}：${h.format_currency(wish.special_fee)}（tax included）
+${wish.special_fee_name}：${h.format_currency(wish.special_fee)}（${tax}）
 %endif
 %if get("transaction_fee").status:
 ${get("transaction_fee").label}：${h.format_currency(wish.transaction_fee)}
@@ -152,10 +152,10 @@ ${product.product.name} ${h.format_currency(product.product.price)} x ${product.
 Total Amount：${h.format_currency(wish.tickets_amount)}
 %endif
 %if get("system_fee").status:
-System Usage Fee：${h.format_currency(wish.system_fee)}（tax included）
+System Usage Fee：${h.format_currency(wish.system_fee)}（${tax}）
 %endif
 %if get("special_fee").status and wish.special_fee > 0:
-Special Fee：${h.format_currency(wish.special_fee)}（tax included）
+Special Fee：${h.format_currency(wish.special_fee)}（${tax}）
 %endif
 %if get("transaction_fee").status:
 Transaction Fee：${h.format_currency(wish.transaction_fee)}

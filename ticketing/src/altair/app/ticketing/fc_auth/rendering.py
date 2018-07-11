@@ -22,6 +22,7 @@ def includeme(config):
                 '%(package)s:templates/%(organization_short_name)s/%(ua_type)s/fc_auth/%(membership)s/%(path)s',
                 '%(package)s:templates/%(organization_short_name)s/%(ua_type)s/fc_auth/%(path)s',
                 '%(their_package)s:templates/%(organization_short_name)s/%(ua_type)s/%(path)s',
+                '%(their_package)s:templates/__base__/%(ua_type)s/%(path)s',
                 ]
             ),
         IDynamicRendererHelperFactory,
