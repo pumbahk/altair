@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 spdb_old_sql = """
     SELECT
-        CONCAT(`Order`.order_no, OrderedProductItem.id, `Order`.branch_no, OrderedProductItemToken.serial) as PrimaryKey,
+        CONCAT(`Order`.order_no, OrderedProductItemToken.serial) as PrimaryKey,
         `Order`.order_no,
         CASE
             WHEN `Order`.canceled_at IS NOT NULL THEN 'canceled'
