@@ -200,6 +200,10 @@
   </div>
 % endif
 
+% if order.performance.event.setting.cart_setting.embedded_html_complete_page:
+  ${order.performance.event.setting.cart_setting.embedded_html_complete_page |n}
+% endif
+
 <div class="confirm-item">
   <h3 class="fWB mgt20 mgb5 f120">${__(u'注意事項')}</h3>
   <div class="confirmBoxText">

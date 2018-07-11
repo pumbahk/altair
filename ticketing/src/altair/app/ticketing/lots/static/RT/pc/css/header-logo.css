@@ -1,0 +1,45 @@
+@charset "utf-8";
+/* FOR PC */
+.header-logo a,
+.header-logo span {
+	display: block;
+	width: 190px;
+	height: 32px;
+	background: url(../images/header_logo_pc.png) no-repeat 0 0;
+    background-size: 190px 32px;
+    overflow: hidden;
+	text-indent: 100%;
+	white-space: nowrap;
+}
+.header-logo-top a,
+.header-logo-top span {
+  	margin: 5px 0 0 12px;
+}
+.header-logo-cart a,
+.header-logo-cart span {
+  	margin: 12px 0 8px 12px;
+}
+.header-logo-cartfc a,
+.header-logo-cartfc span {
+  	margin: 12px 0 8px 12px;
+}
+.header-logo-orderreview a,
+.header-logo-orderreview span {
+  	margin: 2px 7px 0 12px;
+}
+.header-logo-orderreview-mp a,
+.header-logo-orderreview-mp span {
+  	margin: 2px 7px 0 12px;
+}
+.header-logo-lots a,
+.header-logo-lots span {
+  	margin: 12px 7px 0 12px;
+}
+.header-logo-public a,
+.header-logo-public span {
+  	margin: 0 0 0 2px;
+}
+.header-logo-lots h1 {
+  	margin-bottom: 0!important;
+}
+/* FOR PC END */

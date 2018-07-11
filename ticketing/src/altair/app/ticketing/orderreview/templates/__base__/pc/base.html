@@ -17,8 +17,8 @@
   </head>
 
   <body class="confirm">
-    <%include file="../includes/header.html" />
+    <%include file="${view_context.get_include_template_path('header.html')}" />
     ${next.body()}
-    <%include file="../includes/footer.html" />
+    <%include file="${view_context.get_include_template_path('footer.html')}" />
   </body>
 </html>

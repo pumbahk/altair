@@ -6,7 +6,7 @@ altair.sqlahelper.sessions.slave.url = ${altair:cms.db_url.slave}
 
 [app:altaircms]
 use = config:%(here)s/../../baseconf/cms-common.ini#altaircms
-pyramid.includes = pyramid_tm pyramid_fanstatic altair.findable_label
+pyramid.includes = pyramid_tm pyramid_fanstatic altair.findable_label ${altair:extra_pyramid_includes}
 
 get sqlalchemy.url = sqlalchemy.url
 get altair.sqlahelper.sessions.slave.url = altair.sqlahelper.sessions.slave.url
@@ -62,7 +62,7 @@ host = 0.0.0.0
 port = %(http_port)s
 workers = 1
 timeout = 3600
-graceful_timeout = 300
+graceful_timeout = 3600
 
 [pshell]
 setup = altaircms.scripts.pshell.setup

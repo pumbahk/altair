@@ -5,7 +5,7 @@ sqlalchemy.url = ${altair:newsletter.db_url.master}
 
 [app:newsletter]
 use = config:%(here)s/../../baseconf/common.ini#newsletter
-pyramid.includes = pyramid_tm pyramid_fanstatic pyramid_mailer
+pyramid.includes = pyramid_tm pyramid_fanstatic pyramid_mailer ${altair:extra_pyramid_includes}
 
 get sqlalchemy.url = sqlalchemy.url
 

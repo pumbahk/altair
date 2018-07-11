@@ -111,6 +111,10 @@
 </div>
 % endif
 
+% if order.performance.event.setting.cart_setting.embedded_html_complete_page:
+  ${order.performance.event.setting.cart_setting.embedded_html_complete_page |n}
+% endif
+
 <div class="section">
   <h3>購入者情報</h3>
   <table class="purchasedContents" summary="配送先情報">

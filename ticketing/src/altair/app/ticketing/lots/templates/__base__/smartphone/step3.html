@@ -190,6 +190,10 @@
     <p class="align2"><input type="image" src="${request.static_url('altair.app.ticketing.lots:static/AN/pc/img/settlement/btn_next.gif')}" alt="次へ" width="226" height="46" /></p>
   </form>      
 </div>
+<%doc>
+TKT-5695時に調査。_product_selection.html_は__base__では使用されないと思われる。
+タイミングを見て削除。
+</%doc>
 <%def name="product_select_tmpl()">
 <%include file="_product_selection.html_" />
 </%def>

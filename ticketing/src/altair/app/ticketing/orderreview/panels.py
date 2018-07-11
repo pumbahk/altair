@@ -3,13 +3,14 @@ import logging
 import os
 import shutil
 import uuid
+from datetime import datetime
 
 from altair.app.ticketing.cart.rendering import selectable_renderer
 from altair.app.ticketing.events.auto_cms.api import s3upload, S3ConnectionFactory
 from boto.exception import S3ResponseError
 from pyramid_layout.panel import panel_config
 
-from .schemas import PassportUserImageUploadForm
+from .schemas import PassportUserImageUploadForm, PassportUserImageConfirmForm
 from ..orders.models import Order
 from ..passport.api import get_passport_datas
 from ..passport.models import PassportUser
@@ -45,6 +46,8 @@ def order_detail_goods(context, request, order, user_point_accounts=None, locale
 @panel_config('order_detail.passport', renderer=selectable_renderer('order_review/_order_detail_passport.html'))
 def order_detail_passport(context, request, order, user_point_accounts=None, locale=None):
     upload_form = PassportUserImageUploadForm(request.POST)
+    confirm_form = PassportUserImageConfirmForm(request.POST)
+
     if upload_form.passport_user_id.data:
         if not isinstance(upload_form['upload_file'].data, unicode):
             # パスポート画像がPOSTされた
@@ -53,6 +56,13 @@ def order_detail_passport(context, request, order, user_point_accounts=None, loc
             order = Order.get(order.id, order.organization_id)
         else:
             request.session.flash(u'ファイルを指定してアップロードしてください')
+    elif confirm_form.confirm.data:
+        # パスポート画像の確定
+        order = Order.get(order.id, order.organization_id)
+        if can_confirm_upload_file(order):
+            confirm_upload_file(order)
+        else:
+            request.session.flash(u'全ての本人画像を設定してから確定してください')
 
     passport_infos = []
     if order.performance.passport:
@@ -97,3 +107,19 @@ def save_upload_file(request, form):
         request.session.flash(u"{}の画像が保存できませんでした。PassportUserID:{}".format(form.passport_user_id.data))
     os.remove(file_path)
     return s3_file_path
+
+
+def confirm_upload_file(order):
+    # 本人確認画像を確定し、変更できないようにする
+    for user in order.users:
+        user.confirmed_at = datetime.now()
+        user.save()
+
+
+def can_confirm_upload_file(order):
+    # 本人確認画像を確定できるか（画像が全て設定されていること）
+    for user in order.users:
+        if not user.image_path:
+            return False
+    return True
+

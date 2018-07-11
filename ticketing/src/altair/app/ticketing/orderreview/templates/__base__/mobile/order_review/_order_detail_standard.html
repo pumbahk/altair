@@ -79,6 +79,11 @@ ${h.render_payment_finished_viewlet(request, order)}
 <%mobile:form_header>お引き取り</%mobile:form_header>
 ${h.render_delivery_finished_viewlet(request, order)}
 % endif
+
+% if order.performance.event.setting.cart_setting.embedded_html_complete_page_mobile:
+  ${order.performance.event.setting.cart_setting.embedded_html_complete_page_mobile |n}
+% endif
+
 <div>
 &#xe737;注意事項<br />
 <font size="-2">
