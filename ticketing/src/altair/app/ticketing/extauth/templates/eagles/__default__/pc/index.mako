@@ -24,7 +24,7 @@
                 <div class="btn-box">
                   <a href="${_context.route_path('extauth.rakuten.entry')}" class="btn btn-eagles">
                     <img src="${view_context.static_url('images/logo_rakuten.gif')}" class="logo" width="70px" alt="楽天">
-                    <span>楽天会員IDでログイン</span>
+                    <span>楽天IDでログイン</span>
                   </a>
                 </div>
                 <div class="btn-box">
@@ -33,7 +33,7 @@ from datetime import datetime
 thisyear = datetime.now().strftime('%Y')
 %>
                   <a href="https://eagles.fanclub.rakuten.co.jp/mypage/login/ridLogin" class="btn btn-normal">
-                    <span class="txt">楽天会員ID連携がお済でない方はこちら</span><br><span class="caution">※TEAM EAGLESメンバーと連携した楽天会員ID・パスワードが必要です。</span>
+                    <span class="txt">楽天ID連携がお済でない方はこちら</span><br><span class="caution">※TEAM EAGLESメンバーと連携した楽天ID・パスワードが必要です。</span>
                   </a>
                 </div>
                 <a href="https://member.id.rakuten.co.jp/rms/nid/upkfwd" target="_blank" class="login-link">会員ID・パスワードを忘れてしまった方はこちら</a>
@@ -51,7 +51,7 @@ thisyear = datetime.now().strftime('%Y')
                 <div class="btn-box for-general">
                   <a href="${_context.route_path('extauth.rakuten.entry', _query=dict(use_fanclub=False))}" class="btn btn-eagles">
                     <img src="${view_context.static_url('images/logo_rakuten.gif')}" class="logo" width="70px" alt="楽天">
-                    <span>楽天会員IDでログイン</span>
+                    <span>楽天IDでログイン</span>
                   </a>
                 </div>
                 <div class="btn-box">

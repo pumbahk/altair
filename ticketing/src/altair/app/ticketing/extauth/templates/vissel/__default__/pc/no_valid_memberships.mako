@@ -2,7 +2,7 @@
 
 <section class="main none">
 <div class="wrap">
-<p class="lead">ご入力いただいた楽天会員IDはファンクラブ会員IDと連携していない楽天会員IDです。<br>一般（非ファンクラブ会員）の方は「次へ進む」からお進みください。</p>
+<p class="lead">ご入力いただいた楽天IDはファンクラブ会員IDと連携していない楽天IDです。<br>一般（非ファンクラブ会員）の方は「次へ進む」からお進みください。</p>
 <div class="boxArea clearfix">
 <!-- member loginbox -->
 <div class="box login-box">
