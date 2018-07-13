@@ -1,33 +1,28 @@
 # -*- coding: utf-8 -*-
 
-import sys
-import re
 import csv
-import logging
-import transaction
 import json
+import logging
+import re
 import six
-from decimal import Decimal
-from datetime import datetime, date, time
-from standardenum import StandardEnum
+import transaction
+
 from collections import OrderedDict
-from StringIO import StringIO
+from datetime import datetime, date, time
+from decimal import Decimal
 
 from pyramid.decorator import reify
-from zope.interface import implementer
 from sqlalchemy.sql import expression as sql_expr
 from sqlalchemy.orm import joinedload
 from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
+
 from altair.timeparse import parse_date_or_time
 from altair.viewhelpers.datetime_ import create_date_time_formatter
 from altair.app.ticketing.utils import todatetime, todate
 from altair.app.ticketing.payments.api import lookup_plugin
-from altair.app.ticketing.cart.reserving import NotEnoughAdjacencyException
 from altair.app.ticketing.cart import api as cart_api
 from altair.app.ticketing.core import api as core_api
 from altair.app.ticketing.core.models import (
-    Operator,
-    Organization,
     Event,
     Performance,
     ChannelEnum,
@@ -41,9 +36,7 @@ from altair.app.ticketing.core.models import (
     ProductItem,
     ShippingAddress,
     SeatStatusEnum,
-    StockTypeEnum,
     Seat,
-    SeatStatus,
     Venue,
     CartMixin,
     )
@@ -59,15 +52,9 @@ from altair.app.ticketing.orders.models import (
     )
 from altair.app.ticketing.payments import plugins as payments_plugins
 from altair.app.ticketing.payments.exceptions import OrderLikeValidationFailure
-from altair.app.ticketing.payments.plugins.sej import get_ticketing_start_at
-from altair.app.ticketing.payments.interfaces import IPaymentCart
-from altair.app.ticketing.core.interfaces import (
-    IOrderedProductLike,
-    IOrderedProductItemLike,
-    IShippingAddress,
-    )
 from altair.app.ticketing.users.models import UserCredential, Membership, MemberGroup, Member, MemberGroup_SalesSegment
-from altair.app.ticketing.utils import sensible_alnum_encode
+
+from .helpers import get_allocation_mode_label
 from .models import OrderImportTask, ImportStatusEnum, ImportTypeEnum, AllocationModeEnum, ProtoOrder
 from .api import create_or_update_orders_from_proto_orders, get_order_by_order_no, get_relevant_object, label_for_object
 from .export import japanese_columns
@@ -284,9 +271,6 @@ class ImportCSVParserContext(object):
         self.event = event or (performance and performance.event)
         self.default_payment_method = default_payment_method
         self.default_delivery_method = default_delivery_method
-
-        self.orders_will_be_created = bool(order_import_task.import_type & ImportTypeEnum.Create.v)
-        self.orders_will_be_updated = bool(order_import_task.import_type & ImportTypeEnum.Update.v)
         self.merge_order_attributes = order_import_task.merge_order_attributes
         self.operator = order_import_task.operator
 
@@ -299,6 +283,8 @@ class ImportCSVParserContext(object):
         self.performances = {}
         self.events = {}
         self.venues = {}
+        self.sales_segments = {}
+        self.pdmps = {}
         self.payment_methods = {}
         self.delivery_methods = {}
         self.date_time_formatter = create_date_time_formatter(request)
@@ -339,6 +325,20 @@ class ImportCSVParserContext(object):
                 raise self.exc_factory(u'%s: %s' % (message, string))
         return None
 
+    def _validate_performance_with_import_type(self, origin_performance_id, performance_id):
+        """
+        予約の更新もしくは移動の場合はインポート元のパフォーマンスとインポート先のパフォーマンスをチェック
+        予約を更新：同じパフォーマンスしかインポートできない。
+        予約の移動：違うパフォーマンスしかインポートできない。
+        """
+        if self.order_import_task.import_type == ImportTypeEnum.Update.v:
+            if (origin_performance_id != performance_id):
+                raise self.exc_factory(u'インポート方法が「予約を更新」の場合は同じパフォーマンスでインポートを行ってください。')
+        elif self.order_import_task.import_type == ImportTypeEnum.Transfer.v:
+            if (origin_performance_id == performance_id):
+                raise self.exc_factory(u'インポート方法が「予約の移動」の場合は違うパフォーマンスで行ってください。')
+
+
     def get_proto_order(self, row, order_no_or_key, performance, sales_segment, pdmp, cart_setting, attributes=None):
         # create TemporaryCart
         cart = self.carts.get(order_no_or_key)
@@ -358,32 +358,35 @@ class ImportCSVParserContext(object):
                         raise self.exc_factory(u'抽選 %s はキャンセル済みです' % obj.entry_no)
                     note.append(u'抽選より同じ予約番号で生成')
                 else:
-                    if self.orders_will_be_updated:
+                    if self.order_import_task.import_type in (ImportTypeEnum.Update.v, ImportTypeEnum.Transfer.v):
                         if isinstance(obj, Order):
                             if obj.is_canceled() or obj.deleted_at is not None:
-                                raise self.exc_factory(u'元の注文 %s はキャンセル済みです' % obj.order_no)
+                                raise self.exc_factory(u'元の予約 %s はキャンセル済みです。' % obj.order_no)
                             original_order = obj
                         else:
-                            raise self.exc_factory(u'更新対象が注文ではありません (%sです)' % label_for_object(obj))
+                            raise self.exc_factory(u'更新対象が予約ではありません (%sです)。' % label_for_object(obj))
                     else:
                         if obj.deleted_at is not None:
-                            raise self.exc_factory(u'この予約番号は予約されています')
+                            raise self.exc_factory(u'この予約番号は予約されています。')
                         else:
-                            raise self.exc_factory(u'すでに同じ予約番号の予約またはカートが存在します')
+                            raise self.exc_factory(u'すでに同じ予約番号の予約またはカートが存在します。')
             else:
-                if self.orders_will_be_created:
+                if self.order_import_task.import_type == ImportTypeEnum.Create.v:
                     order_no = core_api.get_next_order_no(self.request, self.organization)
                 else:
-                    raise self.exc_factory(u'更新対象の注文が存在しません')
+                    raise self.exc_factory(u'更新対象もしくは移動対象の予約が存在しません。')
 
             if original_order is not None:
+                # 予約の更新もしくは移動の場合はインポート元のパフォーマンスとインポート先のパフォーマンスをチェック
+                self._validate_performance_with_import_type(original_order.performance_id, performance.id)
+
                 if original_order.issued_at is not None or \
                    original_order.printed_at is not None:
-                    raise self.exc_factory(u'更新対象の注文はすでに発券済みです')
+                    raise self.exc_factory(u'更新対象の注文はすでに発券済みです。')
                 if original_order.payment_delivery_pair.payment_method.payment_plugin_id != pdmp.payment_method.payment_plugin_id:
-                    raise self.exc_factory(u'更新対象の注文の決済方法と新しい注文の決済方法が異なっています')
+                    raise self.exc_factory(u'更新対象の注文の決済方法と新しい注文の決済方法が異なっています。')
                 if original_order.payment_delivery_pair.delivery_method.delivery_plugin_id != pdmp.delivery_method.delivery_plugin_id:
-                    raise self.exc_factory(u'更新対象の注文の引取方法と新しい注文の引取方法が異なっています')
+                    raise self.exc_factory(u'更新対象の注文の引取方法と新しい注文の引取方法が異なっています。')
 
             new_order_created_at_str = row.get(u'order.created_at')
             new_order_created_at = self.parse_date(new_order_created_at_str, u'注文生成日時が不正です')
@@ -673,6 +676,7 @@ class ImportCSVParserContext(object):
             raise self.exc_factory(u'公演がありません  公演名: %s, 公演コード: %s, 公演日: %s' % (performance_name, performance_code, performance_date))
         except MultipleResultsFound:
             raise self.exc_factory(u'複数の候補があります  公演名: %s, 公演コード: %s, 公演日: %s' % (performance_name, performance_code, performance_date))
+
         if performance_name is not None and retval.name != performance_name:
             raise self.exc_factory(u'公演名が違います  公演名: %s != %s, 公演コード: %s, 公演日: %s' % (performance_name, retval.name, performance_code, performance_date))
         if _performance_date and not date_time_compare(_performance_date, retval.start_on):
@@ -681,8 +685,14 @@ class ImportCSVParserContext(object):
         return retval
 
     def get_sales_segment(self, row, performance):
+        performance_code = performance.code
         ssg_name = row.get(u'ordered_product.product.sales_segment.sales_segment_group.name')
         lot_name = row.get(u'order.created_from_lot_entry.lot.name', u'').strip()
+
+        key = u'%s:%s:%s' % (performance_code, ssg_name, lot_name)
+        sales_segment = self.sales_segments.get(key)
+        if sales_segment:
+            return sales_segment
 
         q = self.session.query(SalesSegment).join(SalesSegmentGroup).join(Event) \
             .filter(SalesSegmentGroup.name == ssg_name) \
@@ -703,7 +713,7 @@ class ImportCSVParserContext(object):
         if self.event is not None:
             q = q.filter(SalesSegmentGroup.event == self.event)
         try:
-            sales_segment = q.one()
+            self.sales_segments[key] = sales_segment = q.one()
         except NoResultFound:
             raise self.exc_factory(u'販売区分がありません  販売区分グループ名: %s' % ssg_name)
         except MultipleResultsFound:
@@ -753,13 +763,19 @@ class ImportCSVParserContext(object):
     def get_pdmp(self, row, sales_segment):
         payment_method = self.get_payment_method(row)
         delivery_method = self.get_delivery_method(row)
+
+        key = "%s:%s" % (payment_method.name, delivery_method.name)
+        pdmp = self.pdmps.get(key)
+        if pdmp:
+            return pdmp
+
         try:
-            pdmp = self.session.query(PaymentDeliveryMethodPair) \
+            query = self.session.query(PaymentDeliveryMethodPair) \
                 .join(SalesSegment_PaymentDeliveryMethodPair) \
                 .filter(SalesSegment_PaymentDeliveryMethodPair.c.sales_segment_id == sales_segment.id) \
                 .filter(PaymentDeliveryMethodPair.payment_method == payment_method) \
-                .filter(PaymentDeliveryMethodPair.delivery_method == delivery_method) \
-                .one()
+                .filter(PaymentDeliveryMethodPair.delivery_method == delivery_method)
+            self.pdmps[key] = pdmp = query.one()
         except NoResultFound:
             raise self.exc_factory(u'販売区分「%s」(id=%ld) に決済引取方法がありません  決済方法: %s  引取方法: %s' % (sales_segment.sales_segment_group.name, sales_segment.id, payment_method.name, delivery_method.name))
         except MultipleResultsFound:
@@ -773,7 +789,6 @@ class ImportCSVParserContext(object):
         if not membership_name:
             return None, None, None
 
-        membership = None
         membergroup = None
         credential = None
 
@@ -975,7 +990,9 @@ class ImportCSVParser(object):
                     seat_name = seat_name.strip()
                 seat = None
                 if not product_item.stock.stock_type.quantity_only:
-                    if self.order_import_task.allocation_mode == AllocationModeEnum.NoAutoAllocation.v:
+                    if self.order_import_task.allocation_mode == AllocationModeEnum.NoAllocation.v:
+                        raise exc(u'配席モードは「数受けのため配席しない」ですが、インポート先の席種「%s」は数受けではありません。' % product_item.stock.stock_type.name)
+                    elif self.order_import_task.allocation_mode == AllocationModeEnum.SameAllocation.v:
                         if not seat_name:
                             raise exc(u'席種「%s」は数受けではありませんが、座席番号が指定されていません' % product_item.stock.stock_type.name)
                         seat = context.get_seat(seat_name, product_item)
@@ -983,8 +1000,15 @@ class ImportCSVParser(object):
                             raise exc(u'すでに同じ座席番号の座席が追加されています (%s)' % seat)
                         element.seats.append(seat)
                 else:
-                    if seat_name:
-                        raise exc(u'席種「%s」は数受けですが、座席番号が指定されています' % product_item.stock.stock_type.name)
+                    if self.order_import_task.allocation_mode in (AllocationModeEnum.SameAllocation.v,
+                                                                  AllocationModeEnum.ReAllocation.v):
+                        allocation_mode_verbose = get_allocation_mode_label(self.order_import_task.allocation_mode)
+                        raise exc(u'配席モードは「%s」ですが、インポート先の席種「%s」は数受けです。' %
+                                  (allocation_mode_verbose, product_item.stock.stock_type.name))
+                    else:
+                        if seat_name:
+                            raise exc(u'席種「%s」は数受けですが、座席番号が指定されています' % product_item.stock.stock_type.name)
+
                 for i in range(element_quantity_for_row):
                     serial = context.get_serial(element)
                     if len(element.tokens) >= product_item.quantity * item.quantity:
@@ -1005,7 +1029,7 @@ class ImportCSVParser(object):
 
 
 class OrderImporter(object):
-    def __init__(self, request, import_type, allocation_mode=AllocationModeEnum.AlwaysAllocateNew.v, entrust_separate_seats=False, merge_order_attributes=False, enable_random_import=True, session=None, now=None):
+    def __init__(self, request, import_type, allocation_mode=AllocationModeEnum.SameAllocation.v, entrust_separate_seats=False, merge_order_attributes=False, enable_random_import=True, session=None, now=None):
         self.request = request
         self.import_type = int(import_type)
         self.allocation_mode = int(allocation_mode)
@@ -1021,11 +1045,11 @@ class OrderImporter(object):
         """ImportCSVParserによってできたProtoOrder-OrderedProduct-OrderedProductItemのツリーを検証したりする"""
         sum_quantity = dict()
         ref = None
-        cart = None
         carts_to_be_imported = []
         errors = OrderedDict()
         refs_excluded = set()
-        no_update = order_import_task.import_type & (ImportTypeEnum.Create.v | ImportTypeEnum.Update.v) == ImportTypeEnum.Create.v
+        do_check_total_quantity = (order_import_task.import_type == ImportTypeEnum.Create.v or
+                                   order_import_task.allocation_mode == AllocationModeEnum.SameAllocation.v)
 
         def add_error(message, level=IMPORT_ERROR):
             logger.info('%s: %s' % (ref, message))
@@ -1119,11 +1143,12 @@ class OrderImporter(object):
                                 )
                             )
                     product_item_to_element_map[product_item.id] = cpi
-                    if no_update:
+                    if do_check_total_quantity:
                         # 在庫数
                         # - ここでは在庫総数のチェックのみ
                         # - 実際に配席しないと連席判定も含めた在庫の過不足は分からない為
                         # - 予約の更新の場合は在庫引当の検証を行わない
+                        # - 数受けの場合は配席なしなので検証を行う
                         quantity_for_stock = sum_quantity.setdefault(stock.id, 0)
                         quantity_for_stock += cpi.quantity
                         if stock.stock_status.quantity < quantity_for_stock:
@@ -1139,7 +1164,7 @@ class OrderImporter(object):
                         if len(cpi.seats) > cpi.quantity:
                             add_error(u'商品明細数よりも座席数が多くなっています (座席数=%d 商品明細数=%d)' % (len(cpi.seats), cpi.quantity))
                         elif len(cpi.seats) < cpi.quantity:
-                            if self.allocation_mode == AllocationModeEnum.NoAutoAllocation.v:
+                            if self.allocation_mode == AllocationModeEnum.SameAllocation.v:
                                 add_error(u'商品明細数と座席数が一致していません (座席数=%d 商品明細数=%d)' % (len(cpi.seats), cpi.quantity))
                             else:
                                 if len(cpi.seats) > 0:
@@ -1263,7 +1288,6 @@ def initiate_import_task(request, task, session_for_task):
         session_for_task.commit()
 
 def run_import_task(request, task):
-    from altair.app.ticketing.models import DBSession
     reserving = cart_api.get_reserving(request)
     stocker = cart_api.get_stocker(request)
 
