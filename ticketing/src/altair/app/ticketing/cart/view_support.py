@@ -940,6 +940,9 @@ def back_to_top(request):
     if performance_id is not None:
         extra['_query'] = { 'performance': performance_id }
 
+    if event_id is None:
+        event_id = request.params.get('event_id')
+
     api.remove_cart(request)
 
     if api.is_spa_mode(request):
