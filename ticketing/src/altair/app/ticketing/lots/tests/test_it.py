@@ -262,7 +262,7 @@ class EntryLotViewTests(unittest.TestCase):
             {'address_1': u'代々木１丁目',
              'address_2': u'森京ビル',
              'city': u'渋谷区',
-             'country': None,
+             'country': u'日本',
              'email_1': u'test@example.com',
              'fax': u'01234567899',
              'first_name': u'あ',
