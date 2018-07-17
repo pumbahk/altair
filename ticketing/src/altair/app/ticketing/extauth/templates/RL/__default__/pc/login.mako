@@ -3,11 +3,11 @@
 <section class="main loginArea">
 <dl>
 <dt>楽天会員の方はこちら</dt>
-<dd><a href="${_context.route_path('extauth.rakuten.entry')}" class="btnLogin"><span class="login-fc-btn">楽天会員IDでログイン</span></a></dd>
+<dd><a href="${_context.route_path('extauth.rakuten.entry')}" class="btnLogin"><span class="login-fc-btn">楽天IDでログイン</span></a></dd>
 <dd><a href="" class="btnID">楽天会員に登録する</a></dd>
 <dd>
 <ul>
-<li>※楽天会員IDでログインいただくと、2回目以降のお客様情報のご入力がスムーズになります。</li>
+<li>※楽天IDでログインいただくと、2回目以降のお客様情報のご入力がスムーズになります。</li>
 <li>※ポイントの付与期間は、施設によって異なります。</li>
 </ul>
 </dd>
@@ -23,8 +23,8 @@
 <dd class="no-sp"></dd>
 <dd>
 <ul>
-<li>※楽天会員IDでログインしない場合、楽天スーパーポイントは付与されません。</li>
-<li>※楽天会員IDでご購入いただくことをお勧めいたします。</li>
+<li>※楽天IDでログインしない場合、楽天スーパーポイントは付与されません。</li>
+<li>※楽天IDでご購入いただくことをお勧めいたします。</li>
 </ul>
 </dd>
 </dl>
