@@ -6,10 +6,12 @@
 <body>
 <div align="center">
   <img src="${view_context.static_url('mobile/images/logo.gif', 'lots')}" width="240" alt="${view_context.team_name}" />
+  % if lot.auth_type == 'fc_auth' and view_context.get_include_template_path('login_status.html', 'lots') is not None:
+    <%include file="${view_context.get_include_template_path('login_status.html', 'lots')}" args="device=view_context.ua_type" />
+  % endif
   <hr size="2" noshade="noshade" color="#000000" />
 </div>
 <div>
-
 ${self.body()}
 
 <hr size="1" color="#888888" noshade="noshade" />

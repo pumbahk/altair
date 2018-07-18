@@ -29,6 +29,9 @@
   </div>
   <div id="main">
     <!-- ========== main ========== -->
+    % if request.context.cart_setting.auth_type == 'fc_auth' and view_context.get_include_template_path('login_status.html') is not None:
+      <%include file="${view_context.get_include_template_path('login_status.html')}" args="device=view_context.ua_type" />
+    % endif
     <h1>${_(u'チケット購入')}</h1>
     % if view_context.get_include_template_path('links.html') is not None:
       <%include file="${view_context.get_include_template_path('links.html')}" args="device=view_context.ua_type" />
