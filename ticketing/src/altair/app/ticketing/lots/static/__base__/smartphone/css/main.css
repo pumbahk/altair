@@ -23,7 +23,7 @@ body {
 	color: #333;
 	font-size: 1.4rem;
 	line-height: 1.5;
-    font-family:Meiryo,"Hiragino Kaku Gothic ProN",MS-PGothic,sans-serif;
+	font-family:Meiryo,"Hiragino Kaku Gothic ProN",MS-PGothic,sans-serif;
 	text-align: center;
 	background: #f4f3f1;
 }
@@ -757,4 +757,21 @@ li.btn-seat-plus.btn-seat-active:after {
 }
 .settlement-table td:last-child {
 	width: 20%;
+}
+
+/* FC_auth login/logout button */
+form[name="logout"] input[type="submit"] {
+  border: none;
+	border-radius: 0;
+	outline: none;
+	vertical-align: middle;
+	-webkit-appearance: none;
+	-moz-appearance: none;
+  text-decoration: underline;
+  color: #3171bd;
+}
+
+form[name="logout"] input[type="submit"]:hover {
+  text-decoration: none;
+  opacity: 1.0;
 }

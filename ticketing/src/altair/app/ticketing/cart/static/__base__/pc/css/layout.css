@@ -76,6 +76,43 @@ div#grpheader {
 	margin: 10px 0 30px;
 }
 
+/* FOOTER
+--------------------------------------------------- */
+footer{
+    width: 950px;
+    margin: -20px auto;
+	padding: 2em 1em;
+    background-color: #dcdcdc;/* 背景色 */
+	box-sizing: border-box;
+	text-align: center;
+}
+footer ul{
+    margin: 0 auto;
+}
+footer ul li{
+	display: inline-block;
+	padding: 0 13px 0 0;
+	color: #333!important;/* 文字色 */
+	font-size: 14px;/* フォントサイズ */
+	line-height: 1.2;
+}
+footer ul li::after {
+	content: "|";
+	padding: 0 0 0 13px;
+}
+footer ul li a {
+	color: #1e73a4!important;/* 文字色 */
+	text-decoration: underline!important;
+}
+footer ul li a:hover {
+	color: #00A2B4!important;/* リンクホバー文字色 */
+	text-decoration: underline!important;
+}
+footer ul li:last-child::after{
+	content: none;
+	padding: 0;
+}
+
 /* reset
 ----------------------------------------------------------- */
 .selectpicker {

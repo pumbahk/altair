@@ -448,6 +448,15 @@ main {
   width:100%;
 }
 
+form[name="logout"] input[type="submit"] {
+  text-decoration: underline;
+  color: #1e73a4;
+}
+
+form[name="logout"] input[type="submit"]:hover {
+  color: #00A2B4;
+}
+
 @media only screen and (max-width: 750px) {
   .lots-item table th {
     background: #FBFBFB;

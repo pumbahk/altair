@@ -17,7 +17,7 @@
             <h2 class="page-ttl">ファンクラブ会員、一般選択</h2>
             <div class="attention-wrap">
               <div class="inner">
-                <p>ご入力いただいた楽天会員IDはファンクラブ会員IDと連携していない楽天会員IDです。<br>一般（非ファンクラブ会員）の方は「次へ進む」からお進みください。</p>
+                <p>ご入力いただいた楽天IDはファンクラブ会員IDと連携していない楽天IDです。<br>一般（非ファンクラブ会員）の方は「次へ進む」からお進みください。</p>
               </div>
             </div>
             <table class="login-tbl">
