@@ -4697,6 +4697,16 @@ class AugusAccount(Base, BaseModel):
     password = AnnotatedColumn(Unicode, nullable=False,  _a_label=(u'パスワード'))
     send_dir = AnnotatedColumn(Unicode, nullable=False,  _a_label=(u'送り側ディレクトリ'))
     recv_dir = AnnotatedColumn(Unicode, nullable=False,  _a_label=(u'受け側ディレクトリ'))
+    use_numbered_ticket_format = \
+        AnnotatedColumn(Boolean, nullable=False, default=False, _a_label=(u'整理券フォーマットを使用する'))
+    accept_achievement_request = \
+        AnnotatedColumn(Boolean, nullable=False, default=False, _a_label=(u'販売実績要求を受け付ける'))
+    accept_putback_request = \
+        AnnotatedColumn(Boolean, nullable=False, default=False, _a_label=(u'返券要求を受け付ける'))
+    enable_auto_distribution_to_own_stock_holder = \
+        AnnotatedColumn(Boolean, nullable=False, default=False, _a_label=(u'追加配券時に自動で自社枠へ取り込む'))
+    enable_unreserved_seat = \
+        AnnotatedColumn(Boolean, nullable=False, default=False, _a_label=(u'自由席を使う'))
 
     account_id = Column(Identifier, ForeignKey('Account.id'), nullable=False, unique=True)#, _a_label=(u'アカウント')) # PK
     account = relationship('Account', uselist=False, backref=backref('augus_account', uselist=False))
