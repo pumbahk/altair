@@ -212,7 +212,14 @@ def get_orderreview_view_context_factory(default_package):
                     module = 'orderreview'
 
                 static_path = use_base_dir_if_org_static_not_exists(self, path, module)
-                return self.request.static_url(static_path, **kwargs)
+                url = self.request.static_url(static_path, **kwargs)
+
+                # TKT-5968 self.request.script_nameである"orderreview/"が強制的に付加されてしまうため、かき消し
+                # (mypage機能がorderreviewモジュール内に含まれているため）
+                if (module == 'fc_auth') and ('orderreview/' in url):
+                    url = url.replace('orderreview/', '')
+
+                return url
             else:
                 if module is None:
                     module = 'orderreview'

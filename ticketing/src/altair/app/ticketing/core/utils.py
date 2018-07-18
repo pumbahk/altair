@@ -154,7 +154,7 @@ def search_file_from_path_list(path_list, replace):
         if asset.resolve(path).exists():
             return path
 
-    logger.error('could not find "{path}" from {actual_paths}'.format(
+    logger.warning('could not find "{path}" from {actual_paths}'.format(
         path=replace['path'],
         actual_paths=', '.join(actual_paths)
     ))

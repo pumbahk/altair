@@ -1,6 +1,9 @@
 <%namespace file="../../../__commons__/tags_mobile.html" name="mobile" />
 <%mobile:form_header>受付番号</%mobile:form_header>
 <div>${order.order_no}</div>
+% if order.performance.event.setting.cart_setting.embedded_html_complete_page_mobile:
+  ${order.performance.event.setting.cart_setting.embedded_html_complete_page_mobile |n}
+% endif
 <%mobile:form_header>イベント名</%mobile:form_header>
 <div>
 ${order.performance.event.title} ${order.performance.name}<br />
@@ -49,10 +52,6 @@ ${order.performance.venue.name}<br />
   <input type="submit" value="入力情報の編集" />
 </form>
 % endif
-% endif
-
-% if order.performance.event.setting.cart_setting.embedded_html_complete_page_mobile:
-  ${order.performance.event.setting.cart_setting.embedded_html_complete_page_mobile |n}
 % endif
 
 <% shipping_address = order.shipping_address %>
