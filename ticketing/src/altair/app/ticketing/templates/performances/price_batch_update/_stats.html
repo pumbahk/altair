@@ -32,6 +32,10 @@
       <td>${ph.get_itemization(stats['error_descriptions'])}</td>
     </tr>
     <tr>
+      <th>予約日時</th>
+      <td>${stats['reserverd_at'] if stats['reserverd_at'] else u''}</td>
+    </tr>
+    <tr>
       <th>登録日時</th>
       <td>${stats['created_at'] if stats['created_at'] else u''}</td>
     </tr>

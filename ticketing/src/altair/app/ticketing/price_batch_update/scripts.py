@@ -2,6 +2,7 @@
 
 from argparse import ArgumentParser
 import logging
+from datetime import datetime as dt
 from pyramid.paster import bootstrap, setup_logging
 from sqlalchemy import orm
 import sqlahelper
@@ -13,6 +14,7 @@ from .updater import run_price_batch_update_task
 
 logger = logging.getLogger(__name__)
 
+DATEFORMAT_NOW = "%Y-%m-%d %H:00"
 
 def do_price_batch_update():
     parser = ArgumentParser()
@@ -32,6 +34,8 @@ def do_price_batch_update():
 
     option_task_ids = map(int, options.task_ids.split(',')) if options.task_ids else []
     task_ids = []
+    task_info = dict()
+    task_flg = False
 
     try:
         query = session.query(PriceBatchUpdateTask).filter(
@@ -40,15 +44,19 @@ def do_price_batch_update():
         ).order_by(PriceBatchUpdateTask.id).with_lockmode('update')
 
         if option_task_ids:
-            query.filter(PriceBatchUpdateTask.id.in_(option_task_ids))
+            query = query.filter(PriceBatchUpdateTask.id.in_(option_task_ids))
 
         tasks = query.all()
 
         for task in tasks:
-            task_ids.append(task.id)
-            task.status = PriceBatchUpdateTaskStatusEnum.Updating.v
+            if dt.now().strftime(DATEFORMAT_NOW) == dt.strftime(task.reserverd_at, DATEFORMAT_NOW):
+                task_ids.append(task.id)
+                task_info[task.id] = task.reserverd_at
+                task.status = PriceBatchUpdateTaskStatusEnum.Updating.v
+                task_flg = True
 
-        session.commit()
+        if task_flg:
+            session.commit()
     except:
         session.rollback()
         raise
@@ -56,7 +64,7 @@ def do_price_batch_update():
         session.close()
 
     logging.info('Running price batch tasks = [{}]'.format(task_ids))
-    for task_id in task_ids:
-        run_price_batch_update_task(task_id)
-
+    if task_flg:
+        for key, value in task_info.iteritems():
+            run_price_batch_update_task(key)
     logging.info('End price batch update')

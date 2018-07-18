@@ -4,7 +4,7 @@ from altair.app.ticketing.models import Base, BaseModel, WithTimestamp, Logicall
 from altair.app.ticketing.core.models import SalesSegment
 from sqlalchemy import Column, ForeignKey, and_
 from sqlalchemy.orm import relationship, backref
-from sqlalchemy.types import Numeric, Integer, String
+from sqlalchemy.types import Numeric, Integer, String, DateTime
 from standardenum import StandardEnum
 
 
@@ -53,6 +53,7 @@ class PriceBatchUpdateTask(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     status = Column(Integer, nullable=False)
     count_updated = Column(Integer, nullable=True)
     error = Column(String(20), nullable=True)
+    reserverd_at = Column(DateTime(), nullable=True)
 
     organization = relationship('Organization')
     performance = relationship('Performance')
