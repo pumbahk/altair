@@ -9,7 +9,7 @@
 </div>
 <div>
 % if request.context.cart_setting.auth_type == 'fc_auth' and view_context.get_include_template_path('login_status.html') is not None:
-  <%include file="${view_context.get_include_template_path('login_status.html')}" args="device=view_context.ua_type" />
+  <%include file="${view_context.get_include_template_path('login_status.html')}" />
 % endif
 ${self.body()}
 <hr size="1" color="#888888" noshade="noshade" />

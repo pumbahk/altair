@@ -1,12 +1,7 @@
-<%page args="device"/>
+<%page/>
 <form name="logout" action="${request.route_path('cart.logout')}" method="POST">
   <div style="text-align: right;">
-    % if device == 'mobile':
-      <input type="hidden" name="event_id" value="${event.id}">
-    % else:
-      <input type="hidden" name="event_id" value="${event['id']}">
-    % endif
-
+    <input type="hidden" name="event_id" value="${request.context.event.id}">
     % if (not getattr(request, 'context', None)) or request.context.authenticated_user()['is_guest']:
       <input type="submit" value="会員でログイン"/>
     % else:
