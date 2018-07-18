@@ -523,14 +523,22 @@ class LotEntries(BaseView):
         ).all()
 
         between_lot_start_and_payment_due = lot.between_lot_start_and_payment_due()
+        stock_type_wishes_status, product_wishes_status = lot_status.performance_seat_type_statuses
+        product_dict = {}
+        for stock_type_status in stock_type_wishes_status:
+            for product_status in product_wishes_status[(stock_type_status.performance, stock_type_status.stock_type)]:
+                product_dict[product_status.product.id] = product_status
+
         return dict(
             lot=lot,
             #  公演、希望順ごとの数
             lot_status=lot_status,
+            stock_type_wishes_status=stock_type_wishes_status,
+            product_wishes_status=product_wishes_status,
+            product_dict=product_dict,
             report_settings=report_settings,
             between_lot_start_and_payment_due=between_lot_start_and_payment_due,
             )
-
 
     @view_config(route_name='lots.entries.export',
                  renderer='csv', permission='event_viewer')
@@ -751,7 +759,6 @@ class LotEntries(BaseView):
         status_url = self.request.route_url('lots.entries.elect', lot_id=lot.id)
         electing = Electing(lot, self.request)
 
-        lot_status = api.get_lot_entry_status(lot, self.request)
         if wishes is not None:
             wishes_pager = paginate.Page(
                 wishes,
@@ -771,7 +778,6 @@ class LotEntries(BaseView):
                     electing_all_url=electing_all_url,
                     cancel_electing_url=cancel_electing_url,
                     cancel_rejecting_url=cancel_rejecting_url,
-                    lot_status=lot_status,
                     status_url=status_url,
                     electing=electing,
                     performances=performances,
