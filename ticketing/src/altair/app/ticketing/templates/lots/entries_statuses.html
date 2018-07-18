@@ -1,5 +1,40 @@
 <%page args="lot_status" />
 
+<%def name="render_subtotal(product)">
+    <%
+        stock_type_status = None
+        for status in stock_type_wishes_status:
+            if status.stock_type.id == product.seat_stock_type.id:
+                stock_type_status = status
+                break
+    %>
+    % if stock_type_status:
+    <tr bgcolor="grey">
+        <td colspan="4" align="right">${stock_type_status.stock_type.name}合計</td>
+        <td>${stock_type_status.entry_quantity}</td>
+        %for i in range(lot_status.lot.limit_wishes):
+            <td>${stock_type_status.wish_statuses[i].entry_quantity}</td>
+        %endfor
+        <td>${stock_type_status.elected_quantity}</td>
+        <td>${stock_type_status.ordered_quantity}</td>
+        <td>${stock_type_status.reserved_quantity if between_lot_start_and_payment_due else u"0"}</td>
+        <td>${stock_type_status.canceled_quantity}</td>
+    </tr>
+    % else:
+    <tr bgcolor="grey">
+        <td colspan="4" align="right">${product.seat_stock_type.name}合計</td>
+        <td>0</td>
+        %for i in range(lot_status.lot.limit_wishes):
+            <td>0</td>
+        %endfor
+        <td>0</td>
+        <td>0</td>
+        <td>0</td>
+        <td>0</td>
+    </tr>
+    % endif
+</%def>
+
 <div>
   <h4>件数ベース</h4>
   <table border="1" bordercolor="#808080" width="98%" style="border-collapse:collapse;">
@@ -38,58 +73,52 @@
       <th>第${i+1}希望</th>
       %endfor
     </tr>
-    <% stock_type_wishes_status, product_wishes_status = lot_status.performance_seat_type_statuses %>
-    %for stock_type_status in stock_type_wishes_status:
-        %for product_status in product_wishes_status[(stock_type_status.performance, stock_type_status.stock_type)]:
+    <%
+      products = lot_status.products_status
+      before_product = None
+    %>
+      % for product in products:
+        % if before_product and before_product.seat_stock_type.id != product.seat_stock_type.id:
+            ${render_subtotal(before_product)}
+        % endif
+        <% before_product = product %>
         <tr>
-            <td>${vh.datetime(product_status.performance.start_on, with_weekday=True)}</td>
-            <td>${product_status.performance.venue.name}</td>
-            <td>${product_status.seat_type.name}</td>
-            <td>${product_status.product.name}</td>
-            <td>${product_status.entry_quantity}</td>
+            <td>${vh.datetime(product.performance.start_on, with_weekday=True)}</td>
+            <td>${product.performance.venue.name}</td>
+            <td>${product.seat_stock_type.name}</td>
+            <td>${product.name}</td>
+            <td>${product_dict[product.id].entry_quantity if product.id in product_dict else u"0"}</td>
             %for i in range(lot_status.lot.limit_wishes):
-                <td>${product_status.wish_statuses[i].entry_quantity}</td>
+                <td>${product_dict[product.id].wish_statuses[i].entry_quantity if product.id in product_dict else u"0"}</td>
             %endfor
-            <td>${product_status.elected_quantity}</td>
-            <td>${product_status.ordered_quantity}</td>
+            <td>${product_dict[product.id].elected_quantity if product.id in product_dict else u"0"}</td>
+            <td>${product_dict[product.id].ordered_quantity if product.id in product_dict else u"0"}</td>
             %if between_lot_start_and_payment_due:
-                <td>${product_status.reserved_quantity}</td>
+                <td>${product_dict[product.id].reserved_quantity if product.id in product_dict else u"0"}</td>
             %else:
                 <td>0</td>
             %endif
-            <td>${product_status.canceled_quantity}</td>
+            <td>${product_dict[product.id].canceled_quantity if product.id in product_dict else u"0"}</td>
         </tr>
-        %endfor
-        <tr bgcolor="grey">
-            <td colspan="4" align="right">${stock_type_status.stock_type.name}合計</td>
-            <td>${stock_type_status.entry_quantity}</td>
+      % endfor
+
+        ${render_subtotal(before_product)}
+        <tr>
+            <td colspan="4">合計</td>
+            <td>${lot_status.total_quantity or 0}</td>
             %for i in range(lot_status.lot.limit_wishes):
-                <td>${stock_type_status.wish_statuses[i].entry_quantity}</td>
+                <td>${lot_status.wish_statuses[i].quantity or 0}</td>
             %endfor
-            <td>${stock_type_status.elected_quantity}</td>
-            <td>${stock_type_status.ordered_quantity}</td>
+            <td>${sum([st.elected_quantity for st in stock_type_wishes_status])}</td>
+            <td>${sum([st.ordered_quantity for st in stock_type_wishes_status])}</td>
             %if between_lot_start_and_payment_due:
-                <td>${stock_type_status.reserved_quantity}</td>
+                <td>${sum([st.reserved_quantity for st in stock_type_wishes_status])}</td>
             %else:
                 <td>0</td>
             %endif
-            <td>${stock_type_status.canceled_quantity}</td>
+            <td>${sum([st.canceled_quantity for st in stock_type_wishes_status])}</td>
         </tr>
-    %endfor
-    <tr>
-        <td colspan="4">合計</td>
-        <td>${lot_status.total_quantity or 0}</td>
-        %for i in range(lot_status.lot.limit_wishes):
-            <td>${lot_status.wish_statuses[i].quantity or 0}</td>
-        %endfor
-        <td>${sum([st.elected_quantity for st in stock_type_wishes_status])}</td>
-        <td>${sum([st.ordered_quantity for st in stock_type_wishes_status])}</td>
-        %if between_lot_start_and_payment_due:
-            <td>${sum([st.reserved_quantity for st in stock_type_wishes_status])}</td>
-        %else:
-            <td>0</td>
-        %endif
-        <td>${sum([st.canceled_quantity for st in stock_type_wishes_status])}</td>
-    </tr>
   </table>
+
+
 </div>
