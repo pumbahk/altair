@@ -1031,7 +1031,7 @@ class OrderSearchBase(list):
                                 t_performance.c.event_id==condition.event_id.data)
             if condition.performance_id.data:
                  sub_cond = and_(sub_cond,
-                                 t_performance.c.id==condition.event_id.data)
+                                 t_performance.c.id==condition.performance_id.data)
 
             subq = select([t_ordered_product.c.order_id],
                           from_obj=from_obj,
