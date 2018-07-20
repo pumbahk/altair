@@ -1,0 +1,17 @@
+<%page args="device"/>
+% if device == 'pc':
+  <%doc>
+  <footer>
+    <ul>
+      <li><a href="/howto.html" target="_blank">${__(u'申込方法')}</a></li>
+      <li><a href="/faq.html" target="_blank">${__(u'よくある質問')}</a></li>
+      <li><a href="/orderreview" target="_blank">${__(u'申込確認')}</a></li>
+    </ul>
+    <p class="copyright">&copy; TicketStar, Inc.</p>
+  </footer>
+  </%doc>
+% elif device == 'smartphone':
+  <%doc>
+  </%doc>
+% elif device == 'mobile':
+% endif

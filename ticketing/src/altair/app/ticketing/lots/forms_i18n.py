@@ -249,7 +249,8 @@ class ClientFormFactory(object):
                         city=self.data['city'],
                         address_1=self.data['address_1'],
                         address_2=self.data['address_2'],
-                        country=self.data['country'] if request.organization.setting.i18n else None,
+                        # tkt3908 ShippingAddressの国名を入れないと無用なオペが発生する可能性アリ。非国際化の場合は'日本'
+                        country=self.data['country'] if request.organization.setting.i18n else u'日本',
                         email_1=self.data['email_1'],
                         tel_1=self.data['tel_1'],
                         tel_2=self.data['tel_2'],

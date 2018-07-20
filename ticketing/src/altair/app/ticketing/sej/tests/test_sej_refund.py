@@ -2,7 +2,9 @@
 import os
 import unittest
 import mock
+from decimal import Decimal
 from pyramid import testing
+from altair.sqlahelper import register_sessionmaker_with_engine
 from altair.app.ticketing.testing import _setup_db, _teardown_db
 
 class RefundSejOrderTest(unittest.TestCase):
@@ -16,6 +18,11 @@ class RefundSejOrderTest(unittest.TestCase):
         self.config = testing.setUp()
         self.request = testing.DummyRequest()
         self.config.include('altair.app.ticketing.sej')
+        register_sessionmaker_with_engine(
+            self.config.registry,
+            'slave',
+            self.session.bind
+        )
 
     def tearDown(self):
         testing.tearDown()
@@ -28,7 +35,10 @@ class RefundSejOrderTest(unittest.TestCase):
         return refund_sej_order
 
     def _callFUT(self, *args, **kwargs):
-        return self._getTarget()(*args, **kwargs) 
+        return self._getTarget()(*args, **kwargs)
+
+    def _ticket_price_getter(self, value='10.'):
+        return mock.Mock(return_value=Decimal(value))
 
     def test_without_tickets(self):
         from ..models import ThinSejTenant, SejOrder
@@ -36,7 +46,6 @@ class RefundSejOrderTest(unittest.TestCase):
         from ..exceptions import SejError
         tenant = ThinSejTenant()
         sej_order = SejOrder(order_no='XX0000000000')
-        ticket_price_getter = mock.Mock(return_value=10.)
         with self.assertRaises(SejError):
             self._callFUT(
                 self.request,
@@ -45,14 +54,14 @@ class RefundSejOrderTest(unittest.TestCase):
                 performance_name=u'パフォーマンス名',
                 performance_code=u'000000',
                 performance_start_on=datetime(2014, 3, 1, 0, 0, 0),
-                per_order_fee=0.,
-                per_ticket_fee=0.,
-                ticket_price_getter=ticket_price_getter,
+                per_order_fee=Decimal('0.'),
+                per_ticket_fee=Decimal('0.'),
+                ticket_price_getter=self._ticket_price_getter(),
                 refund_start_at=datetime(2014, 1, 1, 0, 0, 0),
                 refund_end_at=datetime(2014, 2, 1, 0, 0, 0),
                 need_stub=0,
                 ticket_expire_at=datetime(2014, 2, 1, 0, 0, 0),
-                refund_total_amount=10,
+                refund_total_amount=Decimal('10'),
                 now=datetime(2014, 1, 1, 0, 0, 0)
                 )
 
@@ -65,7 +74,6 @@ class RefundSejOrderTest(unittest.TestCase):
             order_no='XX0000000000',
             tickets=[SejTicket(ticket_type=SejTicketType.Ticket.v, barcode_number=None)]
             )
-        ticket_price_getter = mock.Mock(return_value=10.)
         refund_event = self._callFUT(
             self.request,
             tenant=tenant,
@@ -73,14 +81,14 @@ class RefundSejOrderTest(unittest.TestCase):
             performance_name=u'パフォーマンス名',
             performance_code=u'000000',
             performance_start_on=datetime(2014, 3, 1, 0, 0, 0),
-            per_order_fee=0.,
-            per_ticket_fee=0.,
-            ticket_price_getter=ticket_price_getter,
+            per_order_fee=Decimal('0.'),
+            per_ticket_fee=Decimal('0.'),
+            ticket_price_getter=self._ticket_price_getter(),
             refund_start_at=datetime(2014, 1, 1, 0, 0, 0),
             refund_end_at=datetime(2014, 2, 1, 0, 0, 0),
             need_stub=0,
             ticket_expire_at=datetime(2014, 2, 1, 0, 0, 0),
-            refund_total_amount=10,
+            refund_total_amount=Decimal('10'),
             now=datetime(2014, 1, 1, 0, 0, 0)
             )
         self.assertEqual(self.session.query(SejRefundTicket).filter_by(refund_event_id=refund_event.id).count(), 0)
@@ -97,7 +105,6 @@ class RefundSejOrderTest(unittest.TestCase):
                 SejTicket(ticket_type=SejTicketType.TicketWithBarcode.v, barcode_number=u'111111111111')
                 ]
             )
-        ticket_price_getter = mock.Mock(return_value=10.)
         refund_event = self._callFUT(
             self.request,
             tenant=tenant,
@@ -105,14 +112,14 @@ class RefundSejOrderTest(unittest.TestCase):
             performance_name=u'パフォーマンス名',
             performance_code=u'000000',
             performance_start_on=datetime(2014, 3, 1, 0, 0, 0),
-            per_order_fee=0.,
-            per_ticket_fee=0.,
-            ticket_price_getter=ticket_price_getter,
+            per_order_fee=Decimal('0.'),
+            per_ticket_fee=Decimal('0.'),
+            ticket_price_getter=self._ticket_price_getter(),
             refund_start_at=datetime(2014, 1, 1, 0, 0, 0),
             refund_end_at=datetime(2014, 2, 1, 0, 0, 0),
             need_stub=0,
             ticket_expire_at=datetime(2014, 2, 1, 0, 0, 0),
-            refund_total_amount=20,
+            refund_total_amount=Decimal('20'),
             now=datetime(2014, 1, 1, 0, 0, 0)
             )
         self.assertTrue(refund_event.id is not None)
@@ -131,7 +138,6 @@ class RefundSejOrderTest(unittest.TestCase):
                 SejTicket(ticket_type=SejTicketType.TicketWithBarcode.v, barcode_number=u'000000000000'),
                 ]
             )
-        ticket_price_getter = mock.Mock(return_value=10.)
         refund_event = self._callFUT(
             self.request,
             tenant=tenant,
@@ -139,14 +145,14 @@ class RefundSejOrderTest(unittest.TestCase):
             performance_name=u'パフォーマンス名',
             performance_code=u'000000',
             performance_start_on=datetime(2014, 3, 1, 0, 0, 0),
-            per_order_fee=0.,
-            per_ticket_fee=0.,
-            ticket_price_getter=ticket_price_getter,
+            per_order_fee=Decimal('0.'),
+            per_ticket_fee=Decimal('0.'),
+            ticket_price_getter=self._ticket_price_getter(),
             refund_start_at=datetime(2014, 1, 1, 0, 0, 0),
             refund_end_at=datetime(2014, 2, 1, 0, 0, 0),
             need_stub=0,
             ticket_expire_at=datetime(2014, 2, 1, 0, 0, 0),
-            refund_total_amount=10,
+            refund_total_amount=Decimal('10'),
             now=datetime(2014, 1, 1, 0, 0, 0)
             )
         self.assertTrue(refund_event.id is not None)
@@ -164,7 +170,6 @@ class RefundSejOrderTest(unittest.TestCase):
                 SejTicket(ticket_type=SejTicketType.TicketWithBarcode.v, barcode_number=u'111111111111')
                 ]
             )
-        ticket_price_getter = mock.Mock(return_value=0.)
         refund_event = self._callFUT(
             self.request,
             tenant=tenant,
@@ -172,14 +177,14 @@ class RefundSejOrderTest(unittest.TestCase):
             performance_name=u'パフォーマンス名',
             performance_code=u'000000',
             performance_start_on=datetime(2014, 3, 1, 0, 0, 0),
-            per_order_fee=0.,
-            per_ticket_fee=0.,
-            ticket_price_getter=ticket_price_getter,
+            per_order_fee=Decimal('0.'),
+            per_ticket_fee=Decimal('0.'),
+            ticket_price_getter=self._ticket_price_getter('0.'),
             refund_start_at=datetime(2014, 1, 1, 0, 0, 0),
             refund_end_at=datetime(2014, 2, 1, 0, 0, 0),
             need_stub=0,
             ticket_expire_at=datetime(2014, 2, 1, 0, 0, 0),
-            refund_total_amount=20,
+            refund_total_amount=Decimal('20'),
             now=datetime(2014, 1, 1, 0, 0, 0)
             )
         self.assertTrue(refund_event.id is not None)
@@ -197,7 +202,6 @@ class RefundSejOrderTest(unittest.TestCase):
                 SejTicket(ticket_type=SejTicketType.TicketWithBarcode.v, barcode_number=u'111111111111'),
                 ]
             )
-        ticket_price_getter = mock.Mock(return_value=10.)
         with self.assertRaises(RefundTotalAmountOverError):
             refund_event = self._callFUT(
                 self.request,
@@ -206,14 +210,14 @@ class RefundSejOrderTest(unittest.TestCase):
                 performance_name=u'パフォーマンス名',
                 performance_code=u'000000',
                 performance_start_on=datetime(2014, 3, 1, 0, 0, 0),
-                per_order_fee=0.,
-                per_ticket_fee=0.,
-                ticket_price_getter=ticket_price_getter,
+                per_order_fee=Decimal('0.'),
+                per_ticket_fee=Decimal('0.'),
+                ticket_price_getter=self._ticket_price_getter(),
                 refund_start_at=datetime(2014, 1, 1, 0, 0, 0),
                 refund_end_at=datetime(2014, 2, 1, 0, 0, 0),
                 need_stub=0,
                 ticket_expire_at=datetime(2014, 2, 1, 0, 0, 0),
-                refund_total_amount=10,
+                refund_total_amount=Decimal('10'),
                 now=datetime(2014, 1, 1, 0, 0, 0)
                 )
 

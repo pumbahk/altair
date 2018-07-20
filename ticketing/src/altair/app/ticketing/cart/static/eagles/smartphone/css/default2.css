@@ -1098,3 +1098,8 @@ input[type="submit"] {
   font-size: 16px;
   font-size: 1.6rem;
 }
+
+div.attention {
+   color: #cc0000;
+   margin-bottom: 15px;
+}

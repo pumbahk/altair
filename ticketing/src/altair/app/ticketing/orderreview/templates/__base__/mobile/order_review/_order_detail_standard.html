@@ -1,6 +1,11 @@
 <%namespace file="../../../__commons__/tags_mobile.html" name="mobile" />
 <%mobile:form_header>受付番号</%mobile:form_header>
 <div>${order.order_no}</div>
+
+% if order.performance.event.setting.cart_setting.embedded_html_complete_page_mobile:
+  ${order.performance.event.setting.cart_setting.embedded_html_complete_page_mobile |n}
+% endif
+
 <%mobile:form_header>イベント名</%mobile:form_header>
 <div>
 ${order.performance.event.title} ${order.performance.name}<br />
@@ -79,6 +84,7 @@ ${h.render_payment_finished_viewlet(request, order)}
 <%mobile:form_header>お引き取り</%mobile:form_header>
 ${h.render_delivery_finished_viewlet(request, order)}
 % endif
+
 <div>
 &#xe737;注意事項<br />
 <font size="-2">

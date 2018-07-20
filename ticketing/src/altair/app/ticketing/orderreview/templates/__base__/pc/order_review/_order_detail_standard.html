@@ -30,6 +30,10 @@
   </table>
 </div>
 
+% if order.performance.event.setting.cart_setting.embedded_html_complete_page:
+  ${order.performance.event.setting.cart_setting.embedded_html_complete_page |n}
+% endif
+
 <div class="confirm-item">
   <h3 class="fWB mgt20 mgb5 f120">${__(u'購入者情報')}</h3>
   <table class="customer-table" summary="${__(u'配送先情報')}">

@@ -308,8 +308,9 @@ class PassportCompleteView(CompleteView):
     @lbr_view_config(route_name='payment.confirm', request_method="POST")
     @lbr_view_config(route_name='payment.finish.mobile', request_method="POST")
     def post(self):
+        performance_id = self.context.performance.id
         retval = super(PassportCompleteView, self).post()
-        clear_user_profile(self.request, self.context.performance)
+        clear_user_profile(self.request, performance_id)
         return retval
 
     @lbr_view_config(context=CompleteViewTicketingCartResource)
@@ -331,14 +332,14 @@ class PassportCompleteView(CompleteView):
         return super(PassportCompleteView, self).get()
 
     def create_passport_dict(self, order_attributes):
-        # 追加情報で入力されたパスポートの種類のvalueをキーにしている
+        # 追加情報で入力された種類のvalueをキーにしている
         # そしてそのvalueが、Productのdisplay_orderと一致している。
         # 複数同じパスポートが買われている場合、リストに追加される
         passport_dict = {}
         for num in range(4):
             index = num + 1
             try:
-                passport = order_attributes[u"パスポート種類({0}人目)".format(index)]
+                passport = order_attributes[u"種類({0}人目)".format(index)]
                 if passport in passport_dict:
                     passport_dict[passport].append(index)
                 else:

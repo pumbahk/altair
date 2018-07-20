@@ -3,7 +3,7 @@ import sys
 import six
 import logging
 from datetime import datetime
-from decimal import Decimal
+from decimal import Decimal, ROUND_DOWN
 from sqlalchemy import func
 from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 from altair.sqlahelper import get_db_session
@@ -12,6 +12,7 @@ from .models import (
     FamiPortOrder,
     FamiPortOrderType,
     FamiPortTicket,
+    FamiPortTicketType,
     FamiPortClient,
     FamiPortVenue,
     FamiPortEvent,
@@ -704,10 +705,28 @@ def _get_ticket_count_group_by_token(request, famiport_order_id):
         FamiPortTicket.userside_token_id.label('token_id'),
         func.count(FamiPortTicket.id).label('cnt')) \
         .filter(FamiPortTicket.famiport_order_id == famiport_order_id) \
+        .filter(FamiPortTicket.logically_subticket == False) \
+        .filter(FamiPortTicket.type.in_([FamiPortTicketType.Ticket.value, FamiPortTicketType.TicketWithBarcode.value])) \
         .group_by(FamiPortTicket.userside_token_id) \
         .all()
 
-    return {result.token_id: result.cnt for result in results}
+    return {result.token_id: int(result.cnt) for result in results}
+
+def _get_ticket_amount(ticket_price, cnt, is_first):
+    """
+    :param ticket_price: Decimal
+    :param cnt: int
+    :param is_first: bool
+    :return: Decimal
+    """
+    # 一つ商品明細トークンが複数主券を持つ場合は払戻のチケット代をチケットの数で割る
+    # チケット枚数で金額を割り切れない対応するために、切り捨てでticketの金額を計算する
+    ticket_amount = (ticket_price/cnt).quantize(Decimal('1.'), rounding=ROUND_DOWN)
+    # 割り切れない余りを1つ目のチケットにつける
+    if is_first:
+        remainder = ticket_price % cnt
+        ticket_amount += remainder
+    return ticket_amount
 
 def refund_order_by_order_no(
         request,
@@ -755,10 +774,12 @@ def refund_order_by_order_no(
             famiport_refund_entry = FamiPortRefundEntry()
 
         # 主券の数で実際払戻金額を計算
-        calc_ticket_payment = famiport_ticket.price / Decimal(ticket_cnt.get(famiport_ticket.userside_token_id, 1))
+        ticket_amount = _get_ticket_amount(famiport_ticket.price,
+                                           ticket_cnt.get(famiport_ticket.userside_token_id, 1),
+                                           refund_ticket_cnt == 0)
 
         # すべてが0の場合はデータを追加しない
-        if calc_ticket_payment == 0 and (per_order_fee == 0 or refund_ticket_cnt > 0) and per_ticket_fee == 0:
+        if ticket_amount == 0 and (per_order_fee == 0 or refund_ticket_cnt > 0) and per_ticket_fee == 0:
             if famiport_refund_entry.id:
                 session.delete(famiport_refund_entry)
             continue
@@ -770,12 +791,12 @@ def refund_order_by_order_no(
                     famiport_refund_entry.id,
                     famiport_refund_entry.refunded_at
                 ))
-            if famiport_refund_entry.ticket_payment != calc_ticket_payment:
+            if famiport_refund_entry.ticket_payment != ticket_amount:
                 logger.info(
                     'FamiPortRefundEntry(id=%ld).ticket_payment: %s => %s' % (
                         famiport_refund_entry.id,
                         famiport_refund_entry.ticket_payment,
-                        calc_ticket_payment
+                        ticket_amount
                     )
                 )
             if famiport_refund_entry.ticketing_fee != per_ticket_fee:
@@ -798,7 +819,7 @@ def refund_order_by_order_no(
             logger.info(
                 'FamiPortRefundEntry(famiport_ticket_id=%ld, ticket_payment=%s, ticketing_fee=%s, other_fees=%s, shop_code=%s) will be added' % (
                     famiport_ticket.id,
-                    calc_ticket_payment,
+                    ticket_amount,
                     per_ticket_fee,
                     per_order_fee if refund_ticket_cnt == 0 else 0,
                     famiport_order.ticketing_famiport_receipt.shop_code
@@ -808,7 +829,7 @@ def refund_order_by_order_no(
 
         famiport_refund_entry.famiport_refund = famiport_refund
         famiport_refund_entry.famiport_ticket = famiport_ticket
-        famiport_refund_entry.ticket_payment = calc_ticket_payment
+        famiport_refund_entry.ticket_payment = ticket_amount
         famiport_refund_entry.ticketing_fee = per_ticket_fee
         famiport_refund_entry.other_fees = per_order_fee if refund_ticket_cnt == 0 else 0
         famiport_refund_entry.shop_code=famiport_order.ticketing_famiport_receipt.shop_code

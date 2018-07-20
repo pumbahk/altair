@@ -15,7 +15,7 @@
 </head>
 <body id="settlement">
   <!-- ========== header ========== -->
-  <%include file="../includes/header.html" />
+  <%include file="${view_context.get_include_template_path('header.html', 'lots')}" args="device=view_context.ua_type" />
   <!-- ========== /header ========== -->
   <div id="container" class="ts-wrapper">
   <!-- ========== main ========== -->
@@ -31,6 +31,9 @@
         <h1 class="heading-primary">${__(u'チケット申込')}</h1>
         % if view_context.get_include_template_path('links.html', 'lots') is not None:
           <%include file="${view_context.get_include_template_path('links.html', 'lots')}" args="device=view_context.ua_type" />
+        % endif
+        % if lot.auth_type == 'fc_auth' and view_context.get_include_template_path('login_status.html', 'lots') is not None:
+          <%include file="${view_context.get_include_template_path('login_status.html', 'lots')}" args="device=view_context.ua_type" />
         % endif
         ${self.body()}
       </div>

@@ -52,8 +52,8 @@ class PassportResource(TicketingAdminResource):
 
     @property
     def performances(self):
-        return self.slave_session.query(Performance).join(Event, Event.id == Performance.event_id).filter(
-            Event.organization_id == self.user.organization_id).all()
+        return Performance.query.join(Event, Event.id == Performance.event_id).filter(
+            Event.organization_id == self.user.organization_id)
 
     def save_passport(self, passport, form):
         params = form.data

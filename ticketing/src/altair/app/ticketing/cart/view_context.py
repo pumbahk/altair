@@ -6,6 +6,8 @@ from pyramid.path import AssetResolver
 from altair.mobile.interfaces import IMobileRequest, ISmartphoneRequest
 from altair.app.ticketing.mails.api import get_sender_address
 from altair.app.ticketing.core.models import MailTypeEnum
+from altair.app.ticketing.core.utils import (use_base_dir_if_org_template_not_exists,
+                                             use_base_dir_if_org_static_not_exists)
 from altair.app.ticketing.mails.interfaces import IMailRequest
 from . import api
 from .interfaces import ICartResource
@@ -159,46 +161,76 @@ def get_cart_view_context_factory(default_package):
                 raise
 
         def get_template_path(self, path):
-            organization_short_name = self.organization_short_name or "__default__"
-            membership = self.membership or "__default__"
-            package_or_path, colon, _path = path.partition(':')
-            if not colon:
-                package = default_package
-                path = package_or_path
+            if self.organization_short_name in ['AF', 'PC']:
+                # TKT-5751動作テスト中 指定対象のORGのみを対象
+                from altair.app.ticketing.cart.api import is_spa_mode
+                if is_spa_mode(self.request):
+                    path = "spa_cart/{0}".format(path)
+
+                return use_base_dir_if_org_template_not_exists(self, path, default_package)
+
             else:
-                package = package_or_path
-                path = _path
-            from altair.app.ticketing.cart.api import is_spa_mode
-            if is_spa_mode(self.request):
-                path = "spa_cart/{0}".format(path)
-            return '%(package)s:templates/%(organization_short_name)s/%(ua_type)s/%(path)s' % dict(
-                package=package,
-                organization_short_name=organization_short_name,
-                membership=membership,
-                ua_type=self.ua_type,
-                path=path)
+                organization_short_name = self.organization_short_name or "__default__"
+                membership = self.membership or "__default__"
+                package_or_path, colon, _path = path.partition(':')
+                if not colon:
+                    package = default_package
+                    path = package_or_path
+                else:
+                    package = package_or_path
+                    path = _path
+                from altair.app.ticketing.cart.api import is_spa_mode
+                if is_spa_mode(self.request):
+                    path = "spa_cart/{0}".format(path)
+                return '%(package)s:templates/%(organization_short_name)s/%(ua_type)s/%(path)s' % dict(
+                    package=package,
+                    organization_short_name=organization_short_name,
+                    membership=membership,
+                    ua_type=self.ua_type,
+                    path=path)
+
 
         def static_url(self, path, module=None, *args, **kwargs):
-            if module is None:
-                module = 'cart'
-            return self.request.static_url("altair.app.ticketing.%(module)s:static/%(organization_short_name)s/%(path)s" % dict(organization_short_name=self.organization_short_name, path=path, module=module), *args, **kwargs)
+            if self.organization_short_name in ['AF', 'PC']:
+                # TKT-5751動作テスト中 指定対象のORGのみを対象
+                if module is None:
+                    module = 'cart'
+
+                static_path = use_base_dir_if_org_static_not_exists(self, path, module)
+                return self.request.static_url(static_path, **kwargs)
+            else:
+                if module is None:
+                    module = 'cart'
+                return self.request.static_url("altair.app.ticketing.%(module)s:static/%(organization_short_name)s/%(path)s" % dict(organization_short_name=self.organization_short_name, path=path, module=module), *args,**kwargs)
 
         def get_include_template_path(self, path, module=None, * args, **kwargs):
-            if module is None:
-                module = 'cart'
+            if self.organization_short_name in ['AF', 'PC']:
+                # TKT-5751動作テスト中 指定対象のORGのみを対象
+                if module is None:
+                    module = 'cart'
 
-            include_path = "altair.app.ticketing.%(module)s:templates/%(organization_short_name)s/includes/%(path)s" % dict(
-                module=module,
-                organization_short_name=self.organization_short_name,
-                path=path)
+                override_path = {
+                    'org_path': '{package}:templates/{organization_short_name}/includes/{path}',
+                    'base_path': '{package}:templates/__base__/includes/{path}'
+                }
 
-            # check file
-            assetresolver = AssetResolver()
-            physical_path = assetresolver.resolve(include_path).abspath()
-            if os.path.exists(physical_path):
-                return include_path
+                return use_base_dir_if_org_template_not_exists(self, path, default_package, override_path)
             else:
-                return None
+                if module is None:
+                    module = 'cart'
+
+                include_path = "altair.app.ticketing.%(module)s:templates/%(organization_short_name)s/includes/%(path)s" % dict(
+                    module=module,
+                    organization_short_name=self.organization_short_name,
+                    path=path)
+
+                # check file
+                assetresolver = AssetResolver()
+                physical_path = assetresolver.resolve(include_path).abspath()
+                if os.path.exists(physical_path):
+                    return include_path
+                else:
+                    return None
 
         def __getattr__(self, k):
             return getattr(self.cart_setting, k, None)

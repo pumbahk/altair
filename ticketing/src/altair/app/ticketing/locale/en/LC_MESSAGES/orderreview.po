@@ -277,10 +277,19 @@ msgstr "Purchase history"
 # qr
 
 msgid "商品名"
-msgstr "Product name"
+msgstr "Product Name"
+
+msgid "席種・券種"
+msgstr "Seat/Ticket Type"
+
+msgid "購入者氏名"
+msgstr "Purchaser Name"
+
+msgid "利用日"
+msgstr "Date of Use"
 
 msgid "席番号"
-msgstr "Seat number"
+msgstr "Seat Number"
 
 msgid "発行(印刷orメール送信)済"
 msgstr "Published (print or send mail)"
@@ -304,7 +313,7 @@ msgid "携帯電話からご利用の方は、ボタンを押した後で表示�
 msgstr "Please use function like screenshot to save the screen of QR code."
 
 msgid "QRチケットの取得・管理に関しては、お客様ご自身の責任でお願いいたします。"
-msgstr "Please get and manage the QR code on your own responsibility."
+msgstr "It is your own responsibility to ensure that the ticket with QR code is correctly generated and keep it well."
 
 msgid "QRチケットの転送間違い、お渡し間違い等に起因するトラブル等にはご対応いたしかねますのでご注意ください。"
 msgstr "Be careful! We don't respond to the request for dealing the troubles caused by wrong sending or wrong giving."
@@ -312,11 +321,26 @@ msgstr "Be careful! We don't respond to the request for dealing the troubles cau
 msgid "閉じる"
 msgstr "Close"
 
+msgid "ご利用方法"
+msgstr "How to use"
+
 msgid "以下の注意事項に同意しQRチケットを取得"
 msgstr "Please agree the below term and get the QR code"
 
 msgid "QRチケットを取得"
 msgstr "Get QR code"
+
+msgid "本券のQRコードをかざすと、入場ゲートでそのまま来場できます。"
+msgstr "Please bring this ticket with QR code and scan it at the gate to enter the park."
+
+msgid "入場する際は、お客様１名様につき、１枚ずつ本券をご持参ください。"
+msgstr "Each person need to hold and present their own ticket to enter the park."
+
+msgid "ご利用者の確認の為、身分証明書（外国籍の方はパスポート）のご提示をお願いさせて頂く場合がございます。"
+msgstr "In order to confirm the user, we may ask you to present your identity card (Passport for foreigners)."
+
+msgid "ご購入者とご利用者のお名前が異なる場合など、ＷＥＢチケットでのご入場をお断りさせて頂く場合がございますので予めご了承ください。"
+msgstr "Please understand beforehand that we may refuse your admission with ticket bought on the website if the purchaser's name and the user's name are different."
 
 # sej
 

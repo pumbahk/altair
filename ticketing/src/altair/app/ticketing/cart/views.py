@@ -1228,7 +1228,7 @@ class PaymentView(object):
                 )
         else:
             return None
-
+    ###verify_orion_ticket_phone
     def verify_orion_ticket_phone(self, data):
         phones = []
         errors = []

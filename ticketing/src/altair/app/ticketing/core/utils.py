@@ -2,6 +2,9 @@
 
 import urllib
 from pyramid.threadlocal import get_current_request
+from pyramid.path import AssetResolver
+import logging
+logger = logging.getLogger(__name__)
 
 ## todo: 以下のクラスを利用している箇所のimport文変更
 from .modelmanage import (
@@ -81,3 +84,79 @@ def add_env_label(string, request=None):
         return env_label + string
     else:
         return string
+
+
+def use_base_dir_if_org_template_not_exists(obj, path, default_package, override_paths=None):
+    """
+    ORG独自テンプレートが存在していない場合は__base__ディレクトリの同階層ファイルを参照するようにする
+    override(dict)で指定。
+    """
+    organization_short_name = obj.organization_short_name or "__base__"
+    package_or_path, colon, _path = path.partition(':')
+    if not colon:
+        package = default_package
+        path = package_or_path
+    else:
+        package = package_or_path
+        path = _path
+
+    if override_paths:
+        org_path = override_paths['org_path']
+        base_path = override_paths['base_path']
+    else:
+        # デフォルトで調べるパス
+        org_path = '{package}:templates/{organization_short_name}/{ua_type}/{path}'
+        base_path = '{package}:templates/__base__/{ua_type}/{path}'
+
+    replace = {
+        'package': package,
+        'organization_short_name': organization_short_name,
+        'ua_type': obj.ua_type,
+        'path': path,
+    }
+
+    return search_file_from_path_list([org_path, base_path], replace)
+
+
+def use_base_dir_if_org_static_not_exists(obj, path, module):
+    """
+    ORG独自の静的コンテンツが存在していない場合は__base__ディレクトリの同階層ファイルを参照するようにする。
+    S3側ではなくGit管理下に存在するかを見ていることに注意
+    """
+    org_path = "altair.app.ticketing.{module}:static/{organization_short_name}/{path}"
+    base_path = "altair.app.ticketing.{module}:static/__base__/{path}"
+    replace = {
+        'organization_short_name': obj.organization_short_name,
+        'path': path,
+        'module': module
+    }
+
+    static_file_path = search_file_from_path_list([org_path, base_path], replace)
+
+    if static_file_path is None:
+        # 404ステータスでもシステムの動作に影響ない画像ファイルなどを考慮し、ここではNoneを返さない
+        static_file_path = org_path.format(**replace)
+
+    return static_file_path
+
+
+def search_file_from_path_list(path_list, replace):
+    """
+    path_listの順にファイルの存在を確認していき、見つかったところでファイルのパスを返す。
+
+    :param path_list: 置換前のパスの文言リスト
+    :param replace: 置換するパラメータのdict
+    :return: ファイルのパス
+    """
+    actual_paths = [p.format(**replace) for p in path_list]
+    asset = AssetResolver()
+    for path in actual_paths:
+        if asset.resolve(path).exists():
+            return path
+
+    logger.warning('could not find "{path}" from {actual_paths}'.format(
+        path=replace['path'],
+        actual_paths=', '.join(actual_paths)
+    ))
+
+    return None

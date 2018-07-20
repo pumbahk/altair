@@ -5,6 +5,7 @@ import json
 import logging
 import csv
 import itertools
+import re
 from collections import OrderedDict
 from datetime import datetime
 from pyramid.view import view_config, view_defaults
@@ -56,6 +57,7 @@ from altair.app.ticketing.core.models import (
     Refund,
     RefundStatusEnum,
     Event,
+    OrionTicketPhone,
     )
 from altair.app.ticketing.core import api as core_api
 from altair.app.ticketing.core import helpers as core_helpers
@@ -145,6 +147,8 @@ from altair.app.ticketing.tickets.preview.api import get_placeholders_from_ticke
 from altair.app.ticketing.tickets.preview.transform import SVGTransformer
 from altair.app.ticketing.tickets.utils import build_cover_dict_from_order
 from altair.app.ticketing.core.models import TicketCover
+
+from altair.app.ticketing.payments.plugins import ORION_DELIVERY_PLUGIN_ID
 
 ## ハウステンボス専用のQRコードユーティリティ
 #from altair.app.ticketing.project_specific.huistenbosch.qr_utilits import build_ht_qr_by_token
@@ -1373,7 +1377,15 @@ class OrderDetailView(OrderBaseView):
         form_each_print = forms.get_each_print_form(default_ticket_format_id)
 
         payment_plugin_info, delivery_plugin_info = get_payment_delivery_plugin_info(self.request, order)
-
+        pdmp = PaymentDeliveryMethodPair.get(order.payment_delivery_method_pair_id)
+        dmpi = DeliveryMethod.get(pdmp.delivery_method_id)
+        is_orion = ORION_DELIVERY_PLUGIN_ID == dmpi.delivery_plugin_id
+        orion_ticket_phone = ""
+        orion_ticket_phone_id = ""
+        orion_phone_list = OrionTicketPhone.filter_by(order_no=order.order_no).all()
+        if orion_phone_list:
+            orion_ticket_phone_id = orion_phone_list[0].id
+            orion_ticket_phone = orion_phone_list[0].phones.split(',');
         return {
             'is_current_order': order.deleted_at is None,
             'order':order,
@@ -1393,7 +1405,11 @@ class OrderDetailView(OrderBaseView):
             "objects_for_describe_product_item": joined_objects_for_product_item(),
             'build_candidate_id': build_candidate_id,
             'endpoints': self.endpoints,
-            'reservation': self.context.user.is_reservation
+            'reservation': self.context.user.is_reservation,
+            'is_orion': is_orion,
+            'orion_ticket_phone_id':orion_ticket_phone_id,
+            'orion_ticket_phone': orion_ticket_phone,
+            'orion_phone_list': orion_phone_list,
             }
 
     @view_config(route_name='orders.show.qr', permission='sales_editor', request_method='GET', renderer='altair.app.ticketing:templates/orders/_show_qr.html')
@@ -1945,6 +1961,42 @@ class OrderDetailView(OrderBaseView):
             if v or old is not marker:
                 order.attributes[k] = v
         order.save()
+        return {}
+
+    @view_config(route_name="orders.orion_phones", request_method="POST", renderer="json")
+    def edit_orion_phone_on_order(self):
+        order_id = int(self.request.matchdict.get('order_id', 0))
+        orion_ticket_phone_id = int(self.request.matchdict.get('orion_ticket_phone_id', 0))
+        order = get_order_by_id(self.request, order_id)
+
+        if order is None or order.organization_id != self.context.organization.id:
+            raise HTTPBadRequest(body=json.dumps({
+                'message':u'不正なデータです',
+            }))
+
+        orion_ticket_phone = OrionTicketPhone.filter_by(id=orion_ticket_phone_id).all()[0]
+
+        if orion_ticket_phone is None:
+            raise HTTPBadRequest(body=json.dumps({
+                'message': u'不正なデータです',
+            }))
+        logger.debug("kimkimkim")
+        logger.debug([s.encode('utf-8') for s in self.request.json_body.values()])
+        orion_phone_errors = verify_orion_ticket_phone([s.encode('utf-8') for s in self.request.json_body.values()])
+        logger.debug("kimkimkim2")
+        logger.debug([s.encode('utf-8') for s in orion_phone_errors])
+        #I want to append error msg on here
+        if any(orion_phone_errors):
+            raise HTTPBadRequest(body=json.dumps({
+                'message': " ".join(orion_phone_errors ),
+            }))
+
+        orion_phones = orion_ticket_phone.phones
+        input_phones = ','.join([str(s) for s in self.request.json_body.values()])
+
+        if not input_phones == orion_phones:
+            orion_ticket_phone.phones = input_phones
+            orion_ticket_phone.save()
         return {}
 
     @view_config(route_name="orders.point_grant_mode", request_method="POST", renderer="json", permission="event_editor")
@@ -2856,3 +2908,19 @@ class CartView(BaseView):
             multicheckout_records.append(secure3d_info_rec)
 
         return { 'cart': cart, 'multicheckout_records': multicheckout_records }
+
+def verify_orion_ticket_phone(data):
+    errors = []
+    for phone in data:
+        phone = phone.strip()
+        error = u''
+        if phone:
+            if len(phone) != 11:
+                error = u'電話番号の桁数が11桁ではありません'
+            if not phone.isdigit():
+                error = ', '.join([error, u'数字以外の文字は入力できません']) if error else u'数字以外の文字は入力できません'
+            if not re.match('^(070|080|090)', phone):
+                error = ', '.join([error, u'[070,080,090]で始まる携帯電話番号を入力してください']) if error else u'[070,080,090]で始まる携帯電話番号を入力してください'
+            errors.append(error)
+
+    return errors

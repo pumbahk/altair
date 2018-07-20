@@ -125,6 +125,7 @@ $(document).on('change', 'input[type=file]', function() {
   </div>
 </div>
 
+% if passport_infos:
 <div class="settlementBox OrderBox">
   <div class="settlementBoxInner">
     <h3 class="bold mgt20 mgb5 fs16">パスポート設定</h3>
@@ -140,27 +141,38 @@ $(document).on('change', 'input[type=file]', function() {
           % endif
         </th>
         <td class="display_value">
-        <form action="${request.route_path('order_review.show')}"
-              method="POST" accept-charset="utf-8" enctype="multipart/form-data">
-          ${forms[index].passport_user_id}
-          ${forms[index].order_no}
-          ${forms[index].tel}
-          <div class="input-group">
+          % if not info._passport_user.confirmed_at:
+          <form action="${request.route_path('order_review.show')}"
+                method="POST" accept-charset="utf-8" enctype="multipart/form-data">
+            ${forms[index].passport_user_id}
+            ${forms[index].order_no}
+            ${forms[index].tel}
+            <div class="input-group">
               <label class="input-group-btn">
                   <span class="btn btn-primary" style="width: 100px">
                       ファイル選択<input id="upload_file" name="upload_file" type="file" style="display:none">
                   </span>
               </label>
               <input type="text" class="form-control" readonly="">
-          </div>
-          <input id="submit_button" class="primary_button max_widh" type="submit" value="アップロードする"/>
-        </form>
+            </div>
+            <input id="submit_button" class="primary_button max_widh" type="submit" value="アップロードする"/>
+          </form>
+          % endif
         </td>
       </tr>
   %endfor
     </table>
+    % if not passport_infos[0]._passport_user.confirmed_at:
+    <form action="${request.route_path('order_review.show')}" method="POST">
+      <input type="hidden" name="confirm" value="confirm"/>
+      <input type="hidden" name="order_no" value="${order.order_no}"/>
+      <input type="hidden" name="tel" value="${order.shipping_address.tel_1}"/>
+      <input id="submit_button" class="primary_button max_widh" type="submit" value="本人確認画像を確定する"/>
+    </form>
+    % endif
   </div>
 </div>
+% endif
 
 % if order.status == 'canceled':
   <div class="settlementBox2 OrderBox">
