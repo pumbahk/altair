@@ -470,10 +470,10 @@ class LotEntryStatus(object):
     def products_status(self):
         from altair.app.ticketing.core.models import SalesSegment
         from altair.app.ticketing.lots.models import Lot
-        products = Product.query.join(SalesSegment, SalesSegment.id == Product.sales_segment_id).join(Lot,
-                                                                                                      Lot.sales_segment_id == SalesSegment.id).filter(
-            Lot.id == self.lot.id).order_by(Product.display_order).all()
-
+        products = Product.query \
+            .join(SalesSegment, SalesSegment.id == Product.sales_segment_id) \
+            .join(Lot, Lot.sales_segment_id == SalesSegment.id).filter(Lot.id == self.lot.id) \
+            .order_by(Product.display_order).all()
         return products
 
     ## 公演・席種ごとの情報
