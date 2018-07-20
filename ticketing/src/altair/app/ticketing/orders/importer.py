@@ -989,12 +989,15 @@ class ImportCSVParser(object):
                 if seat_name is not None:
                     seat_name = seat_name.strip()
                 seat = None
+
                 if not product_item.stock.stock_type.quantity_only:
                     if self.order_import_task.allocation_mode == AllocationModeEnum.NoAllocation.v:
                         raise exc(u'配席モードは「数受けのため配席しない」ですが、インポート先の席種「%s」は数受けではありません。' % product_item.stock.stock_type.name)
                     elif self.order_import_task.allocation_mode == AllocationModeEnum.SameAllocation.v:
                         if not seat_name:
                             raise exc(u'席種「%s」は数受けではありませんが、座席番号が指定されていません' % product_item.stock.stock_type.name)
+
+                    if seat_name:
                         seat = context.get_seat(seat_name, product_item)
                         if seat in element.seats:
                             raise exc(u'すでに同じ座席番号の座席が追加されています (%s)' % seat)
