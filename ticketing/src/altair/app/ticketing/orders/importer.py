@@ -1051,8 +1051,9 @@ class OrderImporter(object):
         carts_to_be_imported = []
         errors = OrderedDict()
         refs_excluded = set()
+        # - 数受けの場合は配席なしなので検証を行う
         do_check_total_quantity = (order_import_task.import_type == ImportTypeEnum.Create.v or
-                                   order_import_task.allocation_mode == AllocationModeEnum.SameAllocation.v)
+                                   order_import_task.allocation_mode == AllocationModeEnum.NoAllocation.v)
 
         def add_error(message, level=IMPORT_ERROR):
             logger.info('%s: %s' % (ref, message))
