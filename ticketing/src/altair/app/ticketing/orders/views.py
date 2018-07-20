@@ -1980,10 +1980,7 @@ class OrderDetailView(OrderBaseView):
             raise HTTPBadRequest(body=json.dumps({
                 'message': u'不正なデータです',
             }))
-        logger.debug("kimkimkim")
-        logger.debug([s.encode('utf-8') for s in self.request.json_body.values()])
         orion_phone_errors = verify_orion_ticket_phone([s.encode('utf-8') for s in self.request.json_body.values()])
-        logger.debug("kimkimkim2")
         logger.debug([s.encode('utf-8') for s in orion_phone_errors])
         #I want to append error msg on here
         if any(orion_phone_errors):
