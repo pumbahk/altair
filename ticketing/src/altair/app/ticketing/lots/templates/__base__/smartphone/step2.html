@@ -355,6 +355,9 @@ function zip_switcher(select) {
                     ${form['zip'](onKeyUp="AjaxZip3.zip2addr('" + path + "', 'zip','','prefecture','city','', 'address_1');", placeholder=_(u'例: 1030001'))}
                   % else:
                     ${form['zip'](placeholder=_(u'例: 1030001'))}
+                    % if custom_locale_negotiator=='ko':
+                        <span style="margin-left:10px; font-size:90%; color:#333;">${__(u'(記入必要無し)')}</span>
+                    % endif
                   % endif
                   ${h.error_list(request, form, 'zip')}
                 </li>
