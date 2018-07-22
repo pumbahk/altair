@@ -1010,41 +1010,40 @@ class OrderSearchBase(list):
                             or_(*payment_cond))
 
         if condition.number_of_tickets.data:
-            if condition.performance_id.data or condition.event_id.data:
-                value = condition.number_of_tickets.data
-                from_obj = t_ordered_product_item.join(
-                    t_product_item,
-                    and_(t_product_item.c.id==t_ordered_product_item.c.product_item_id,
-                         t_product_item.c.deleted_at==None),
-                ).join(
-                    t_ordered_product,
-                    and_(t_ordered_product.c.id==t_ordered_product_item.c.ordered_product_id,
-                         t_ordered_product.c.deleted_at==None),
-                ).join(
-                    t_performance,
-                    and_(t_performance.c.id==t_product_item.c.performance_id,
-                         t_performance.c.deleted_at==None),
-                )
-    
-                sub_cond = t_ordered_product_item.c.deleted_at==None
-                if condition.event_id.data:
-                     sub_cond = and_(sub_cond,
-                                    t_performance.c.event_id==condition.event_id.data)
-                if condition.performance_id.data:
-                     sub_cond = and_(sub_cond,
-                                     t_performance.c.id==condition.event_id.data)
-    
-                subq = select([t_ordered_product.c.order_id],
-                              from_obj=from_obj,
-                              whereclause=sub_cond,
-                ).group_by(
-                    t_ordered_product.c.order_id
-                ).having(
-                    func.sum(t_ordered_product_item.c.quantity) == value
-                )
-    
-                cond = and_(cond,
-                            t_order.c.id.in_(subq))
+            value = condition.number_of_tickets.data
+            from_obj = t_ordered_product_item.join(
+                t_product_item,
+                and_(t_product_item.c.id==t_ordered_product_item.c.product_item_id,
+                     t_product_item.c.deleted_at==None),
+            ).join(
+                t_ordered_product,
+                and_(t_ordered_product.c.id==t_ordered_product_item.c.ordered_product_id,
+                     t_ordered_product.c.deleted_at==None),
+            ).join(
+                t_performance,
+                and_(t_performance.c.id==t_product_item.c.performance_id,
+                     t_performance.c.deleted_at==None),
+            )
+
+            sub_cond = t_ordered_product_item.c.deleted_at==None
+            if condition.event_id.data:
+                 sub_cond = and_(sub_cond,
+                                t_performance.c.event_id==condition.event_id.data)
+            if condition.performance_id.data:
+                 sub_cond = and_(sub_cond,
+                                 t_performance.c.id==condition.performance_id.data)
+
+            subq = select([t_ordered_product.c.order_id],
+                          from_obj=from_obj,
+                          whereclause=sub_cond,
+            ).group_by(
+                t_ordered_product.c.order_id
+            ).having(
+                func.sum(t_ordered_product_item.c.quantity) == value
+            )
+
+            cond = and_(cond,
+                        t_order.c.id.in_(subq))
     
         return cond
 
