@@ -46,9 +46,9 @@ $(function () {
           duration: 100,
           step: function (h) {
             var dest = targetOffset + h - $(window).height();
-            if ($(window).scrollTop() < dest) {
-              $(window).scrollTop(dest);
-            }
+            //if ($(window).scrollTop() < dest) {
+            //  $(window).scrollTop(dest);
+            //}
           }
         });
         target.addClass('activated');
