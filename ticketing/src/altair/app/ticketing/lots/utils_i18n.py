@@ -76,7 +76,8 @@ def create_form(request, context, formdata=None, **kwds):
         form.email_1_confirm.data = form.email_1.data
     if form.country:
         # [country_71]は韓国のコード
-        form.country.data = request.translate(u'country_71') if custom_locale_negotiator(request) == u'ko' else None
+        if custom_locale_negotiator(request) == u'ko':
+            form.country.data = request.translate(u'country_71')
         form.country.choices = [(h, h) for h in Cart_ClientFormFactory(request).get_countries()]
 
     return form
