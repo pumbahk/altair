@@ -1172,6 +1172,8 @@ class PaymentView(object):
             )
         if self.request.organization.setting.i18n:
             shipping_address_info['country']=metadata.get('country')
+            # [country_71]は韓国のコード
+            form.country.data = self.request.translate(u'country_71') if custom_locale_negotiator(self.request) == u'ko' else None
             form.country.choices = [(c, c) for c in forms_i18n.ClientFormFactory(self.request).get_countries()]
         default_prefecture = self.context.cart_setting.default_prefecture
         if default_prefecture is not None:
