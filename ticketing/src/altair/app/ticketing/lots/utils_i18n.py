@@ -9,6 +9,7 @@ from altair.app.ticketing.cart import api as cart_api
 from altair.app.ticketing.users.models import SexEnum
 from .forms_i18n import ClientFormFactory
 from altair.app.ticketing.cart.forms_i18n import ClientFormFactory as Cart_ClientFormFactory
+from altair.app.ticketing.i18n import custom_locale_negotiator
 def create_form(request, context, formdata=None, **kwds):
     """希望入力と配送先情報と追加情報入力用のフォームを返す(English)
     """
@@ -74,6 +75,9 @@ def create_form(request, context, formdata=None, **kwds):
     if form.email_1.data:
         form.email_1_confirm.data = form.email_1.data
     if form.country:
+        # [country_71]は韓国のコード
+        if custom_locale_negotiator(request) == u'ko':
+            form.country.data = request.translate(u'country_71')
         form.country.choices = [(h, h) for h in Cart_ClientFormFactory(request).get_countries()]
 
     return form
