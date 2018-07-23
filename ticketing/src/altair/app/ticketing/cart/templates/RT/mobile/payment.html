@@ -131,7 +131,7 @@
 <%mobile:form_header>${form['sex'].label}</%mobile:form_header>
 </div>
 <div>
-  ${form['sex'].label}<br/>
+  ${form['sex'].label}<div style="color:red">*</div><br/>
   ${form['sex']}
   <div style="color:#ff0000">
     ${h.error_list(request, form, 'sex')}
