@@ -695,8 +695,7 @@ class PerformanceShowView(BaseView):
             'csv_data': form.price_csv.data.value,
             'count': count,
             'csv_errors': csv_errors,
-            'reserverd_at': datetime.datetime.strptime(str(form.reserverd_at.data) + u' ' + form.reserverd_hour.data, '%Y-%m-%d %H:%M') \
-                if form.reserverd_at.data and form.reserverd_hour.data else None,
+            'reserverd_at': datetime.datetime.strptime(str(form.reserverd_at.data) + u' ' + form.reserverd_hour.data, '%Y-%m-%d %H:%M'),
         }
         return HTTPFound(self.request.route_url('performances.price_batch_update.confirm',
                                                 performance_id=self.performance.id))

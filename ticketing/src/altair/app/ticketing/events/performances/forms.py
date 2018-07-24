@@ -617,6 +617,12 @@ class PerformancePriceBatchUpdateForm(OurForm):
         choices=[(str('{:0=2}:00'.format(x)), str('{:0=2}:00'.format(x))) for x in range(24)],
     )
 
+    def validate_reserverd_at(form, field):
+        reserverd_datatime = datetime.strptime(str(field.data) + u' ' + form.reserverd_hour.data, '%Y-%m-%d %H:%M')
+        if reserverd_datatime < datetime.now():
+            raise ValidationError(u'過去の日時は指定できません。')
+        return reserverd_datatime
+
     def validate_price_csv(form, field):
         if field.data == u'':
             raise ValidationError(u'CSVを指定してください。')

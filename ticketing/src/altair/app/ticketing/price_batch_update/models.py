@@ -53,7 +53,7 @@ class PriceBatchUpdateTask(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     status = Column(Integer, nullable=False)
     count_updated = Column(Integer, nullable=True)
     error = Column(String(20), nullable=True)
-    reserverd_at = Column(DateTime(), nullable=True)
+    reserverd_at = Column(DateTime(), nullable=False)
 
     organization = relationship('Organization')
     performance = relationship('Performance')

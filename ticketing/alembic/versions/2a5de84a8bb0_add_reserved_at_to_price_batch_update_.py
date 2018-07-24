@@ -12,10 +12,6 @@ down_revision = '51e1d0bf8628'
 
 from alembic import op
 import sqlalchemy as sa
-from sqlalchemy.sql.expression import text
-from sqlalchemy.sql import functions as sqlf
-
-Identifier = sa.BigInteger
 
 
 def upgrade():
