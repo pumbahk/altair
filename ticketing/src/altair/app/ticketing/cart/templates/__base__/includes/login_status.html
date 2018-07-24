@@ -1,11 +1,7 @@
-<%doc> カートセッティングによるFC認証ログイン・ログアウトボタン </%doc>
+<%doc> FC認証ログイン画面遷移ボタン </%doc>
 <form name="logout" action="${request.route_path('cart.logout')}" method="POST">
   <div style="text-align: right;">
     <input type="hidden" name="event_id" value="${request.context.event.id}">
-    % if (not getattr(request, 'context', None)) or request.context.authenticated_user()['is_guest']:
-      <input type="submit" value="会員でログイン"/>
-    % else:
-      <input type="submit" value="ログアウト"/>
-    % endif
+    <input type="submit" value="会員ログイン画面に戻る"/>
   </div>
 </form>
