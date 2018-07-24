@@ -604,24 +604,24 @@ class PerformancePriceBatchUpdateForm(OurForm):
         validators=[]
     )
 
-    reserverd_at = DateField(
+    reserved_at = DateField(
         label=u'予約年月日',
         validators=[Required(u'予約年月日を選択してください。'), after1900],
         format='%Y-%m-%d',
         widget=OurDateWidget()
     )
 
-    reserverd_hour = OurSelectField(
+    reserved_hour = OurSelectField(
         label=u'予約時刻',
         validators=[Required(u'予約時刻を選択してください。')],
         choices=[(str('{:0=2}:00'.format(x)), str('{:0=2}:00'.format(x))) for x in range(24)],
     )
 
-    def validate_reserverd_at(form, field):
-        reserverd_datatime = datetime.strptime(str(field.data) + u' ' + form.reserverd_hour.data, '%Y-%m-%d %H:%M')
-        if reserverd_datatime < datetime.now():
+    def validate_reserved_at(form, field):
+        reserved_datatime = datetime.strptime(str(field.data) + u' ' + form.reserved_hour.data, '%Y-%m-%d %H:%M')
+        if reserved_datatime < datetime.now():
             raise ValidationError(u'過去の日時は指定できません。')
-        return reserverd_datatime
+        return reserved_datatime
 
     def validate_price_csv(form, field):
         if field.data == u'':

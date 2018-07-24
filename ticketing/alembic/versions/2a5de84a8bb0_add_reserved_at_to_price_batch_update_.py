@@ -15,7 +15,7 @@ import sqlalchemy as sa
 
 
 def upgrade():
-    op.add_column(u'PriceBatchUpdateTask', sa.Column('reserverd_at', sa.TIMESTAMP(), nullable=False))
+    op.add_column(u'PriceBatchUpdateTask', sa.Column('reserved_at', sa.TIMESTAMP(), nullable=False))
 
 def downgrade():
-    op.drop_column(u'PriceBatchUpdateTask', 'reserverd_at')
+    op.drop_column(u'PriceBatchUpdateTask', 'reserved_at')

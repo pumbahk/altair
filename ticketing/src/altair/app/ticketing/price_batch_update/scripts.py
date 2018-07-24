@@ -20,7 +20,7 @@ def do_price_batch_update():
     parser = ArgumentParser()
     parser.add_argument('--config', type=str, required=True)
     parser.add_argument('--task-ids', type=str, required=False) # for debug
-    parser.add_argument('--date-fmt', type=str, required=False) # for debug
+    parser.add_argument('--task-date', type=str, required=False) # for debug
 
     options = parser.parse_args()
     setup_logging(options.config)
@@ -30,9 +30,9 @@ def do_price_batch_update():
         logger.info('argument: task_ids={}'.format(options.task_ids))
 
     now_date_time = None
-    if options.date_fmt:
-        now_date_time = dt.strptime(options.date_fmt, DATEFORMAT_NOW)
-        logger.info('argument: date-fmt={}'.format(now_date_time))
+    if options.task_date:
+        now_date_time = dt.strptime(options.task_date, DATEFORMAT_NOW)
+        logger.info('argument: task_date={}'.format(now_date_time))
     else:
         now_date_time = dt.now().replace(minute=0, second=0, microsecond=0)
 
@@ -55,12 +55,11 @@ def do_price_batch_update():
         tasks = query.all()
 
         for task in tasks:
-            if now_date_time == task.reserverd_at:
+            if now_date_time == task.reserved_at:
                 task_ids.append(task.id)
                 task.status = PriceBatchUpdateTaskStatusEnum.Updating.v
 
-        if task_ids:
-            session.commit()
+        session.commit()
     except:
         session.rollback()
         raise
