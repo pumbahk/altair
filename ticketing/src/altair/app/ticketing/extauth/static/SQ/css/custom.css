@@ -1,14 +1,14 @@
 header .head {
-    background-color: #4A9954 !important;
+    background-color: #bf0000 !important;
 }
 
 header .head h1 img {
-    padding: 0px;
+    padding: 0;
 }
 
 main #content .btn,
 main #content h2 {
-    background-color: #4A9954 !important;
+    background-color: #bf0000 !important;
 }
 
 main #content .btn:hover {

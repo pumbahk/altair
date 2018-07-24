@@ -2,7 +2,7 @@
 <header>
     <div class="head">
         <h1>
-            <a href="https://goodluck-p.tstar.jp/fc">
+            <a href="https://stylecube.tstar.jp/fc">
             <img src="${view_context.static_url('images/logo.png')}" alt="logo">
             </a>
         </h1>
