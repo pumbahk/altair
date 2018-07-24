@@ -1375,31 +1375,25 @@ class OrderDetailView(OrderBaseView):
         form_order = forms.get_order_form()
         form_refund = forms.get_order_refund_form()
         form_each_print = forms.get_each_print_form(default_ticket_format_id)
-
         payment_plugin_info, delivery_plugin_info = get_payment_delivery_plugin_info(self.request, order)
-        pdmp = PaymentDeliveryMethodPair.get(order.payment_delivery_method_pair_id)
-        dmpi = DeliveryMethod.get(pdmp.delivery_method_id)
-        is_orion = ORION_DELIVERY_PLUGIN_ID == dmpi.delivery_plugin_id
+        is_orion = ORION_DELIVERY_PLUGIN_ID == order.delivery_plugin_id
         orion_ticket_phone = ""
-        orion_ticket_phone_id = ""
-        orion_phone_list = OrionTicketPhone.filter_by(order_no=order.order_no).all()
-        if orion_phone_list:
-            orion_ticket_phone_id = orion_phone_list[0].id
-            orion_ticket_phone = orion_phone_list[0].phones.split(',');
+        if is_orion:
+            orion_ticket_phone = order.get_orion_ticket_phone_list
         return {
             'is_current_order': order.deleted_at is None,
-            'order':order,
+            'order': order,
             'ordered_product_attributes': ordered_product_attributes,
             'order_attributes': order_attributes,
-            'order_history':order_history,
+            'order_history': order_history,
             'point_grant_settings': loyalty_api.applicable_point_grant_settings_for_order(order),
             'payment_plugin_info': payment_plugin_info,
             'delivery_plugin_info': delivery_plugin_info,
-            'mail_magazines':mail_magazines,
-            'form_order_info':form_order_info,
-            'form_shipping_address':form_shipping_address,
-            'form_order':form_order,
-            'form_refund':form_refund,
+            'mail_magazines': mail_magazines,
+            'form_order_info': form_order_info,
+            'form_shipping_address': form_shipping_address,
+            'form_order': form_order,
+            'form_refund': form_refund,
             'form_each_print': form_each_print,
             'form_order_edit_attribute': forms.get_order_edit_attribute(),
             "objects_for_describe_product_item": joined_objects_for_product_item(),
@@ -1407,9 +1401,7 @@ class OrderDetailView(OrderBaseView):
             'endpoints': self.endpoints,
             'reservation': self.context.user.is_reservation,
             'is_orion': is_orion,
-            'orion_ticket_phone_id':orion_ticket_phone_id,
             'orion_ticket_phone': orion_ticket_phone,
-            'orion_phone_list': orion_phone_list,
             }
 
     @view_config(route_name='orders.show.qr', permission='sales_editor', request_method='GET', renderer='altair.app.ticketing:templates/orders/_show_qr.html')
@@ -1966,30 +1958,31 @@ class OrderDetailView(OrderBaseView):
     @view_config(route_name="orders.orion_phones", request_method="POST", renderer="json")
     def edit_orion_phone_on_order(self):
         order_id = int(self.request.matchdict.get('order_id', 0))
-        orion_ticket_phone_id = int(self.request.matchdict.get('orion_ticket_phone_id', 0))
         order = get_order_by_id(self.request, order_id)
+        orion_id = order._get_orion_ticket_phone(self.request).id
 
         if order is None or order.organization_id != self.context.organization.id:
             raise HTTPBadRequest(body=json.dumps({
                 'message':u'不正なデータです',
             }))
 
-        orion_ticket_phone = OrionTicketPhone.filter_by(id=orion_ticket_phone_id).all()[0]
+        orion_ticket_phone = OrionTicketPhone.filter_by(id=orion_id).all()[0]
 
         if orion_ticket_phone is None:
             raise HTTPBadRequest(body=json.dumps({
                 'message': u'不正なデータです',
             }))
-        orion_phone_errors = verify_orion_ticket_phone([s.encode('utf-8') for s in self.request.json_body.values()])
-        logger.debug([s.encode('utf-8') for s in orion_phone_errors])
-        #I want to append error msg on here
+
+        orion_phone_list = self.request.params.getall('orion-ticket-phone')
+        orion_phone_errors = verify_orion_ticket_phone([s.encode('utf-8') for s in orion_phone_list])
+
         if any(orion_phone_errors):
             raise HTTPBadRequest(body=json.dumps({
-                'message': " ".join(orion_phone_errors ),
+                'message': " ".join(orion_phone_errors),
             }))
-
+        logger.debug(orion_phone_list)
         orion_phones = orion_ticket_phone.phones
-        input_phones = ','.join([str(s) for s in self.request.json_body.values()])
+        input_phones = ','.join([str(s) for s in orion_phone_list])
 
         if not input_phones == orion_phones:
             orion_ticket_phone.phones = input_phones

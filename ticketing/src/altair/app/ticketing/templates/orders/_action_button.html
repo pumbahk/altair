@@ -98,20 +98,14 @@
   }
 
   function save_orion_phones(){
-    var param = {};
+    var param = "";
     var form = $('#orion-phones-form');
     form.find('.message').empty();
-    $(form.serializeArray()).each(function(i, v) {
-      param[v.name] = v.value;
-    });
-    console.log(param);
-    console.log(form.serializeArray());
+    param = form.serialize();
     $.ajax({
       type: 'post',
-      url: '${request.route_path('orders.orion_phones', order_id=order.id, orion_ticket_phone_id=orion_ticket_phone_id)}',
-      contentType: 'application/json; charset=utf-8',
-      dataType: 'json',
-      data: JSON.stringify(param),
+      url: '${request.route_path('orders.orion_phones', order_id=order.id)}',
+      data: param,
       success: function(result) {
         form.find('.message').append('EventGate電話番号を保存しました');
       },

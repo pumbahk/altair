@@ -35,7 +35,7 @@ def includeme(config):
     config.add_route('orders.reserve.complete'          , '/reserve/complete/', factory='.resources.OrderReserveResource')
     config.add_route('orders.reserve.reselect'          , '/reserve/reselect/', factory='.resources.OrderReserveResource')
     config.add_route('orders.memo_on_order'             , '/memo_on_order/{order_id}')
-    config.add_route('orders.orion_phones'              , '/edit_orion_phones/{order_id}/{orion_ticket_phone_id}')
+    config.add_route('orders.orion_phones'              , '/edit_orion_phones/{order_id}')
     config.add_route('orders.attributes_edit'           , '/attributes/edit/{order_id}')
     config.add_route('orders.ordered_product_attribute_edit', '/ordered_product_item/attributes/edit/{order_no}')
     config.add_route('orders.point_grant_mode'          , '/point_grant_mode/{order_id}')
