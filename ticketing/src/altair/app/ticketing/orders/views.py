@@ -25,6 +25,8 @@ from sqlalchemy.orm import joinedload, undefer
 from sqlalchemy.orm.session import make_transient
 from webob.multidict import MultiDict
 import transaction
+
+from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 from .reservation import ReservationReportOperator
 
 from altair.sqlahelper import get_db_session
@@ -1965,7 +1967,12 @@ class OrderDetailView(OrderBaseView):
                 'message':u'不正なデータです',
             }))
 
-        orion_ticket_phone = OrionTicketPhone.filter_by(order_no=order.order_no).one()
+        try:
+            orion_ticket_phone = OrionTicketPhone.filter_by(order_no=order.order_no).one()
+        except (NoResultFound, MultipleResultsFound):
+            raise HTTPBadRequest(body=json.dumps({
+                'message': u'不正なデータです',
+            }))
 
         if orion_ticket_phone is None:
             raise HTTPBadRequest(body=json.dumps({
@@ -1979,7 +1986,7 @@ class OrderDetailView(OrderBaseView):
             raise HTTPBadRequest(body=json.dumps({
                 'message': " ".join(orion_phone_errors),
             }))
-        
+
         orion_phones = orion_ticket_phone.phones
         input_phones = ','.join([str(s) for s in orion_phone_list])
 
