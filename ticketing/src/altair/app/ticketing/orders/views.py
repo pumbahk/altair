@@ -1959,14 +1959,13 @@ class OrderDetailView(OrderBaseView):
     def edit_orion_phone_on_order(self):
         order_id = int(self.request.matchdict.get('order_id', 0))
         order = get_order_by_id(self.request, order_id)
-        orion_id = order._get_orion_ticket_phone(self.request).id
 
         if order is None or order.organization_id != self.context.organization.id:
             raise HTTPBadRequest(body=json.dumps({
                 'message':u'不正なデータです',
             }))
 
-        orion_ticket_phone = OrionTicketPhone.filter_by(id=orion_id).all()[0]
+        orion_ticket_phone = OrionTicketPhone.filter_by(order_no=order.order_no).one()
 
         if orion_ticket_phone is None:
             raise HTTPBadRequest(body=json.dumps({
@@ -1974,13 +1973,13 @@ class OrderDetailView(OrderBaseView):
             }))
 
         orion_phone_list = self.request.params.getall('orion-ticket-phone')
-        orion_phone_errors = verify_orion_ticket_phone([s.encode('utf-8') for s in orion_phone_list])
+        orion_phone_errors = verify_orion_ticket_phone(orion_phone_list)
 
         if any(orion_phone_errors):
             raise HTTPBadRequest(body=json.dumps({
                 'message': " ".join(orion_phone_errors),
             }))
-        logger.debug(orion_phone_list)
+        
         orion_phones = orion_ticket_phone.phones
         input_phones = ','.join([str(s) for s in orion_phone_list])
 
