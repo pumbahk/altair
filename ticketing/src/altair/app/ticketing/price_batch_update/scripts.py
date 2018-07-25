@@ -2,6 +2,7 @@
 
 from argparse import ArgumentParser
 import logging
+from datetime import datetime as dt
 from pyramid.paster import bootstrap, setup_logging
 from sqlalchemy import orm
 import sqlahelper
@@ -13,11 +14,13 @@ from .updater import run_price_batch_update_task
 
 logger = logging.getLogger(__name__)
 
+DATEFORMAT_NOW = "%Y-%m-%d %H:%M:%S"
 
 def do_price_batch_update():
     parser = ArgumentParser()
     parser.add_argument('--config', type=str, required=True)
     parser.add_argument('--task-ids', type=str, required=False) # for debug
+    parser.add_argument('--task-date', type=str, required=False) # for debug
 
     options = parser.parse_args()
     setup_logging(options.config)
@@ -25,6 +28,13 @@ def do_price_batch_update():
 
     if options.task_ids:
         logger.info('argument: task_ids={}'.format(options.task_ids))
+
+    now_date_time = None
+    if options.task_date:
+        now_date_time = dt.strptime(options.task_date, DATEFORMAT_NOW)
+        logger.info('argument: task_date={}'.format(now_date_time))
+    else:
+        now_date_time = dt.now().replace(minute=0, second=0, microsecond=0)
 
     logging.info('Start price batch update')
     # altair.app.ticketing.models.DBSession出ない場合はLogicallyDeletedが効かないことに注意
@@ -40,13 +50,14 @@ def do_price_batch_update():
         ).order_by(PriceBatchUpdateTask.id).with_lockmode('update')
 
         if option_task_ids:
-            query.filter(PriceBatchUpdateTask.id.in_(option_task_ids))
+            query = query.filter(PriceBatchUpdateTask.id.in_(option_task_ids))
 
         tasks = query.all()
 
         for task in tasks:
-            task_ids.append(task.id)
-            task.status = PriceBatchUpdateTaskStatusEnum.Updating.v
+            if now_date_time == task.reserved_at:
+                task_ids.append(task.id)
+                task.status = PriceBatchUpdateTaskStatusEnum.Updating.v
 
         session.commit()
     except:
@@ -58,5 +69,4 @@ def do_price_batch_update():
     logging.info('Running price batch tasks = [{}]'.format(task_ids))
     for task_id in task_ids:
         run_price_batch_update_task(task_id)
-
     logging.info('End price batch update')

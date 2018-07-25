@@ -103,15 +103,6 @@
   text-decoration: underline;
 }
 
-
-
-
-
-
-
-
-
-
 @media screen and (max-width: 767px) {
 
 .couponTable {
@@ -140,30 +131,7 @@
 
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+p.attention {
+    color: #cc0000;
+    margin-bottom: 15px;
+}

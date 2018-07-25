@@ -694,7 +694,8 @@ class PerformanceShowView(BaseView):
             'csv_file_name': form.price_csv.data.filename,
             'csv_data': form.price_csv.data.value,
             'count': count,
-            'csv_errors': csv_errors
+            'csv_errors': csv_errors,
+            'reserved_at': datetime.datetime.strptime(str(form.reserved_at.data) + u' ' + form.reserved_hour.data, '%Y-%m-%d %H:%M'),
         }
         return HTTPFound(self.request.route_url('performances.price_batch_update.confirm',
                                                 performance_id=self.performance.id))
@@ -723,10 +724,12 @@ class PerformanceShowView(BaseView):
         sales_segment_ids = self.request.session[self.PRICE_BATCH_UPDATE_ATTRIBUTE_KEY]['sales_segment_ids']
         csv_errors = self.request.session[self.PRICE_BATCH_UPDATE_ATTRIBUTE_KEY]['csv_errors']
         count = self.request.session[self.PRICE_BATCH_UPDATE_ATTRIBUTE_KEY]['count']
+        reserved_at = self.request.session[self.PRICE_BATCH_UPDATE_ATTRIBUTE_KEY]['reserved_at']
 
         stats = self.__create_price_batch_update_stats()
         stats['operator'] = self.context.user
         stats['count'] = count
+        stats['reserved_at'] = reserved_at
         stats['sales_segments'].extend([ss for ss in self.performance.sales_segments
                                         if ss.id in sales_segment_ids])
 
@@ -758,6 +761,7 @@ class PerformanceShowView(BaseView):
         sales_segments = [ss for ss in self.performance.sales_segments if ss.id in sales_segment_ids]
         csv_file_name = self.request.session[self.PRICE_BATCH_UPDATE_ATTRIBUTE_KEY]['csv_file_name']
         csv_data = self.request.session[self.PRICE_BATCH_UPDATE_ATTRIBUTE_KEY]['csv_data']
+        reserved_at = self.request.session[self.PRICE_BATCH_UPDATE_ATTRIBUTE_KEY]['reserved_at']
 
         if len(sales_segment_ids) != len(sales_segments):
             self.__store_msg_in_price_batch_update_attr(
@@ -781,6 +785,7 @@ class PerformanceShowView(BaseView):
             performance=self.context.performance,
             operator=self.context.user,
             status=PriceBatchUpdateTaskStatusEnum.Waiting.v,
+            reserved_at=reserved_at
         )
         DBSession.add(new_task)
         DBSession.flush()
@@ -922,7 +927,7 @@ class PerformanceShowView(BaseView):
                 entry_with_error.product_name,
                 get_error_msg(entry_with_error.error)
             ))
-
+        stats['reserved_at'] = task.reserved_at
         stats['created_at'] = task.created_at
         stats['updated_at'] = task.updated_at
         return stats
@@ -937,6 +942,7 @@ class PerformanceShowView(BaseView):
             'count': 0,
             'errors': [],
             'error_descriptions': [],
+            'reserved_at': None,
             'created_at': None,
             'updated_at': None
         }

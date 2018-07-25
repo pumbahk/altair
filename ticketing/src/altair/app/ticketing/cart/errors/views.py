@@ -122,7 +122,7 @@ class CommonErrorView(object):
     @lbr_view_config(context=ChangedProductPriceError)
     def deleted_product(self):
         # カートに入った商品の価格が、購入確定時に変更された
-        msg = u'お手続き中にお選び頂いた商品の価格が変更されました。<br>お手数ですが<a style="border-bottom: 1px solid" href="{0}">こちら</a>から再度ご購入手続きをお願いします'
+        msg = u'大変申し訳ございません。お手続き中に価格が変更されました。<br>お手数ですが、<a style="border-bottom: 1px solid" href="{0}">こちら</a>から再度ご購入お手続きをお願いいたします。'
         location = self.context.back_url
         return dict(message=Markup(msg.format(location)))
 

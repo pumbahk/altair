@@ -5,6 +5,11 @@
   color: #f00;
   font-weight: bold;
 }
+
+#orion-ticket-phone-template {
+  display: none;
+  margin-bottom:2px;
+}
 </style>
 <%block name="breadcrumbs">
 <%
@@ -94,6 +99,74 @@ if not reservation:
           <%include file="./_show_payment_table.html" args="order=order,payment_plugin_info=payment_plugin_info,delivery_plugin_info=delivery_plugin_info" />
         </div>
       </div>
+      <!--Orion phone input logic and form-->
+      <%
+      show_orion_input = False
+      if is_orion and order.performance.orion.phone_verify_disabled == False:
+        show_orion_input = True
+      %>
+
+  % if show_orion_input:
+    <form id="orion-phones-form" method="POST" action="javascript:save_orion_phones()">
+        <div class="row-fluid" ${'' if is_orion else 'style="display:none;"'|n}>
+          <div class="span12">
+            <div class="page-header">
+              <h3>アプリ受取追加情報</h3>
+            </div>
+          </div>
+        </div>
+
+      <div id="orion-ticket-phone-info" class="settlementBox">
+        <div class="settlementBoxinner">
+          <div class="settlementSelectBox">
+            <div class="settlementSelectBoxInner02">
+              <table summary="アプリ受取追加情報">
+                    <ul id="orion-ticket-phone-list">
+                      <li id="orion-ticket-phone-template">
+                        <label for="tmp-orion-ticket-phone" style="display: inline-block; width: 80px;">電話番号</label>
+                        <input type="text" id="tmp-orion-ticket-phone" value="">
+                        <button type="button" onclick="delete_orion_ticket_phone(this);">削除</button>
+                      </li>
+                      % if not orion_ticket_phone:
+                        <%
+                          if check_number_of_phones == 'true':
+                            disabled = 'disabled="disabled"' if order.sales_segment.max_quantity < 3 else ''
+                          else:
+                            disabled = 'disabled="disabled"' if order.sales_segment.max_quantity < 2 else ''
+                        %>
+                        <li>
+                          <label for="orion-ticket-phone-1">電話番号1</label>
+                          <input type="text" id="orion-ticket-phone-1" name="orion-ticket-phone" value="">
+                          <button id="btn-add-orion-ticket-phone" type="button" onclick="add_orion_ticket_phone(this);" ${disabled|n}>追加</button>
+                        </li>
+                      % else:
+                        % for i, phone in enumerate(orion_ticket_phone):
+                          <li>
+                            <label for="orion-ticket-phone-${i+1}" style="display: inline-block; width: 80px;" >電話番号${i+1}</label>
+                            <input type="text" id="orion-ticket-phone-${i+1}" name="orion-ticket-phone" value="${phone}">
+                            % if i == 0:
+                            <% disabled = 'disabled="disabled"' if len(orion_ticket_phone) > order.sales_segment.max_quantity - 1 else '' %>
+                            <button id="btn-add-orion-ticket-phone" type="button" onclick="add_orion_ticket_phone(this);" ${disabled|n}>追加</button>
+                            % else:
+                            <button type="button" onclick="delete_orion_ticket_phone(this);">削除</button>
+                            % endif
+                            % if error:
+                            <span class="error">${error}</span>
+                            % endif
+                          </li>
+                        % endfor
+                      % endif
+                    </ul>
+                    <input class="btn" type="submit" value="保存"><div class="message" style="display: inline"></div>
+                  </td>
+                </tr>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+  % endif
 
       <div class="row-fluid">
         <div class="span12">
@@ -465,4 +538,41 @@ $(function(){
       $($(this).attr("data-target")).load($(this).attr("href"));
     });
   });
+</script>
+<script type="text/javascript">
+
+// orion関するfunctions
+function add_orion_ticket_phone(button) {
+    var index = $(button).parents("ul").find("li").length,
+        li = $("#orion-ticket-phone-template").clone().removeAttr("id").show();
+    render_num(index, li);
+    li.show().appendTo($(button).parents("ul"));
+    <%
+      orion_up_limit = 0;
+      if order.performance.orion:
+        if order.performance.orion.check_number_of_phones == 'true':
+          orion_up_limit = order.sales_segment.max_quantity - 2
+        else:
+          orion_up_limit = order.sales_segment.max_quantity - 1
+    %>
+    if (index > parseInt(${orion_up_limit})) {
+        $(button).prop("disabled", true);
+    }
+}
+function delete_orion_ticket_phone(button) {
+    $("#btn-add-orion-ticket-phone").prop("disabled", false);
+    $(button).parent().remove();
+    $("#orion-ticket-phone-list").find("li").each(function(index, li) {
+        if (index !== 0) {
+            render_num(index, $(li));
+        }
+    });
+}
+function render_num(index, li) {
+    var label = "orion-ticket-phone-" + index;
+    li.find("label").text("電話番号" + index)
+                  .attr("for", label);
+    li.find("input").attr("id", label)
+                  .attr("name", "orion-ticket-phone");
+}
 </script>
