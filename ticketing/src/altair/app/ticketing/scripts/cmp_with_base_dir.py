@@ -72,7 +72,11 @@ def remove_same_files(dcmp, args):
         os.remove(org_file_path)
 
     for sub_dcmp in dcmp.subdirs.values():
-        remove_same_files(sub_dcmp, args)
+        # ディレクトリにシムリンクを貼ってある場合はunlink
+        if os.path.islink(sub_dcmp.right):
+            os.unlink(sub_dcmp.right)
+        else:
+            remove_same_files(sub_dcmp, args)
 
 if __name__ == '__main__':
     sys.exit(main())
