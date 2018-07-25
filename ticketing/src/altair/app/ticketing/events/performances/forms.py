@@ -10,7 +10,7 @@ from wtforms.validators import Regexp, Length, Optional, ValidationError
 from altair.formhelpers import Translations, Required, NullableTextField, JISX0208, after1900
 from altair.formhelpers.form import OurForm
 from altair.formhelpers.filters import zero_as_none
-from altair.formhelpers.fields import OurIntegerField, DateTimeField, OurGroupedSelectField, OurSelectField, OurBooleanField
+from altair.formhelpers.fields import OurIntegerField, DateTimeField, DateField, OurGroupedSelectField, OurSelectField, OurBooleanField
 from altair.formhelpers import replace_ambiguous
 from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.core.models import Account, Site, Venue, Performance, PerformanceSetting, Stock, SalesSegment, Operator
@@ -603,6 +603,25 @@ class PerformancePriceBatchUpdateForm(OurForm):
         u'CSVファイル',
         validators=[]
     )
+
+    reserved_at = DateField(
+        label=u'予約年月日',
+        validators=[Required(u'予約年月日を選択してください。'), after1900],
+        format='%Y-%m-%d',
+        widget=OurDateWidget()
+    )
+
+    reserved_hour = OurSelectField(
+        label=u'予約時刻',
+        validators=[Required(u'予約時刻を選択してください。')],
+        choices=[(str('{:0=2}:00'.format(x)), str('{:0=2}:00'.format(x))) for x in range(24)],
+    )
+
+    def validate_reserved_at(form, field):
+        reserved_datatime = datetime.strptime(str(field.data) + u' ' + form.reserved_hour.data, '%Y-%m-%d %H:%M')
+        if reserved_datatime < datetime.now():
+            raise ValidationError(u'過去の日時は指定できません。')
+        return reserved_datatime
 
     def validate_price_csv(form, field):
         if field.data == u'':

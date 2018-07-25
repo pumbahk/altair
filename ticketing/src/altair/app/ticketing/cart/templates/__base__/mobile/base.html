@@ -8,9 +8,6 @@
   <img src="${view_context.static_url('mobile/images/logo.gif')}" width="100%" alt="${view_context.team_name}" />
 </div>
 <div>
-% if request.context.cart_setting.auth_type == 'fc_auth' and view_context.get_include_template_path('login_status.html') is not None:
-  <%include file="${view_context.get_include_template_path('login_status.html')}" />
-% endif
 ${self.body()}
 <hr size="1" color="#888888" noshade="noshade" />
 <div align="center" style="font-size:x-small">

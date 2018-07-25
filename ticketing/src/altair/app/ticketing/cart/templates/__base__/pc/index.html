@@ -34,6 +34,10 @@
   </script>
 </%block>
 
+% if request.context.cart_setting.auth_type == 'fc_auth' and view_context.get_include_template_path('login_status.html') is not None:
+  <%include file="${view_context.get_include_template_path('login_status.html')}" />
+% endif
+
 <nav class="nav-stepbar clearfix mgb30">
   <ol>
     <li class="current">

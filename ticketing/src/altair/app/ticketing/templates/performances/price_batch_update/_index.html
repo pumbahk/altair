@@ -18,6 +18,7 @@
         <th>対象販売区分</th>
         <th>商品数</th>
         <th>エラー</th>
+        <th>予約日時</th>
         <th>登録日時</th>
         <th>更新日時</th>
         <th class="span2"></th>
@@ -30,6 +31,7 @@
         <td>${ph.get_sales_segment_label(task.sales_segments)}</td>
         <td>${len(task.entries)}</td>
         <td>${task.error if task.error else u''}</td>
+        <td>${task.reserved_at if task.reserved_at else u''}</td>
         <td>${task.created_at}</td>
         <td>${task.updated_at if task.updated_at else u''}</td>
         <td>
@@ -54,6 +56,8 @@
 <form class="form-horizontal" enctype="multipart/form-data"
       action="${request.route_path('performances.price_batch_update.index', performance_id=performance.id)}"
       method="POST">
+  ${ch.form_item(form.reserved_at)}
+  ${ch.form_item(form.reserved_hour)}
   ${ch.form_item(form.sales_segment_id)}
   ${ch.form_item(form.price_csv)}
   <div class="form-actions">

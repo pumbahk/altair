@@ -161,7 +161,7 @@ def get_cart_view_context_factory(default_package):
                 raise
 
         def get_template_path(self, path):
-            if self.organization_short_name in ['AF', 'PC']:
+            if self.organization_short_name in ['AF', 'PC', 'PH', 'SQ', 'WP']:
                 # TKT-5751動作テスト中 指定対象のORGのみを対象
                 from altair.app.ticketing.cart.api import is_spa_mode
                 if is_spa_mode(self.request):
@@ -191,7 +191,7 @@ def get_cart_view_context_factory(default_package):
 
 
         def static_url(self, path, module=None, *args, **kwargs):
-            if self.organization_short_name in ['AF', 'PC']:
+            if self.organization_short_name in ['AF', 'PC', 'PH', 'SQ', 'WP']:
                 # TKT-5751動作テスト中 指定対象のORGのみを対象
                 if module is None:
                     module = 'cart'
@@ -204,7 +204,7 @@ def get_cart_view_context_factory(default_package):
                 return self.request.static_url("altair.app.ticketing.%(module)s:static/%(organization_short_name)s/%(path)s" % dict(organization_short_name=self.organization_short_name, path=path, module=module), *args,**kwargs)
 
         def get_include_template_path(self, path, module=None, * args, **kwargs):
-            if self.organization_short_name in ['AF', 'PC']:
+            if self.organization_short_name in ['AF', 'PC', 'PH', 'SQ', 'WP']:
                 # TKT-5751動作テスト中 指定対象のORGのみを対象
                 if module is None:
                     module = 'cart'

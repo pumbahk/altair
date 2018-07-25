@@ -12,7 +12,7 @@
 
   <!-- Cascading Style Sheets -->
   <link rel="shortcut icon" href="${view_context.static_url('pc/images/favicon.ico')}">
-  <link rel="stylesheet" href="${request.static_url('altair.app.ticketing.cart:static/__base__/pc/css/import.css')}" type="text/css" media="all">
+  <link rel="stylesheet" href="${view_context.static_url('pc/css/import.css')}" type="text/css" media="all">
   <link rel="stylesheet" href="${view_context.static_url('pc/css/custom.css')}" type="text/css" media="all">
   <%block name="javascript"></%block>
   <%block name="css"></%block>
@@ -29,9 +29,6 @@
   </div>
   <div id="main">
     <!-- ========== main ========== -->
-    % if request.context.cart_setting.auth_type == 'fc_auth' and view_context.get_include_template_path('login_status.html') is not None:
-      <%include file="${view_context.get_include_template_path('login_status.html')}" />
-    % endif
     <h1>${_(u'チケット購入')}</h1>
     % if view_context.get_include_template_path('links.html') is not None:
       <%include file="${view_context.get_include_template_path('links.html')}" args="device=view_context.ua_type" />
