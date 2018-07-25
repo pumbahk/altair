@@ -78,7 +78,7 @@ def get_coupon_view_context_factory(default_package):
             return self.cart_setting.extra_footer_links_mobile or []
 
         def get_template_path(self, path):
-            if self.organization_short_name in ['AF', 'PC', 'PH', 'SQ']:
+            if self.organization_short_name in ['AF', 'PC', 'PH', 'SQ', 'WP']:
                 # TKT-5751動作テスト中 指定対象のORGのみを対象
                 return use_base_dir_if_org_template_not_exists(self, path, default_package)
             else:
@@ -97,7 +97,7 @@ def get_coupon_view_context_factory(default_package):
                     path=path)
 
         def static_url(self, path, module=None, *args, **kwargs):
-            if self.organization_short_name in ['AF', 'PC', 'PH', 'SQ']:
+            if self.organization_short_name in ['AF', 'PC', 'PH', 'SQ', 'WP']:
                 # TKT-5751動作テスト中 指定対象のORGのみを対象
                 if module is None:
                     module = 'coupon'

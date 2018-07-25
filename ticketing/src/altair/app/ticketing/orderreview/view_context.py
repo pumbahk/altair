@@ -95,7 +95,7 @@ def get_orderreview_view_context_factory(default_package):
             return None
 
         def get_template_path(self, path):
-            if self.organization_short_name in ['AF', 'PC', 'PH', 'SQ']:
+            if self.organization_short_name in ['AF', 'PC', 'PH', 'SQ', 'WP']:
                 # TKT-5751動作テスト中 指定対象のORGのみを対象
                 override_paths = None
                 if self.ua_type == 'smartphone':  # order_reviewのテンプレートはスマホもPCテンプレートで対応
@@ -121,7 +121,7 @@ def get_orderreview_view_context_factory(default_package):
                     path=path)
 
         def get_fc_login_template(self, package=None, template_name='login.html'):
-            if self.organization_short_name in ['AF', 'PC', 'PH', 'SQ']:
+            if self.organization_short_name in ['AF', 'PC', 'PH', 'SQ', 'WP']:
                 # TKT-5751動作テスト中 指定対象のORGのみを対象
                 """ORGによってfc_authと{ua_type}のディレクトリの順番が逆になっているものがあるため、2回テンプレートのパスを確認"""
                 if package is None:
@@ -180,7 +180,7 @@ def get_orderreview_view_context_factory(default_package):
                     return None
 
         def get_include_template_path(self, path, module=None, * args, **kwargs):
-            if self.organization_short_name in ['AF', 'PC', 'PH', 'SQ']:
+            if self.organization_short_name in ['AF', 'PC', 'PH', 'SQ', 'WP']:
                 # TKT-5751動作テスト中 指定対象のORGのみを対象
                 override_path = {
                     'org_path': '{package}:templates/{organization_short_name}/includes/{path}',
@@ -189,7 +189,7 @@ def get_orderreview_view_context_factory(default_package):
 
                 return use_base_dir_if_org_template_not_exists(self, path, default_package, override_path)
             else:
-                if module is None:
+                if module is None:\
                     module = 'orderreview'
 
                 include_path = "altair.app.ticketing.%(module)s:templates/%(organization_short_name)s/includes/%(path)s" % dict(
@@ -206,7 +206,7 @@ def get_orderreview_view_context_factory(default_package):
                     return None
 
         def static_url(self, path, module=None, *args, **kwargs):
-            if self.organization_short_name in ['AF', 'PC', 'PH', 'SQ']:
+            if self.organization_short_name in ['AF', 'PC', 'PH', 'SQ', 'WP']:
                 # TKT-5751動作テスト中 指定対象のORGのみを対象
                 if module is None:
                     module = 'orderreview'
