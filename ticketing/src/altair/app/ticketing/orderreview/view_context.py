@@ -189,7 +189,7 @@ def get_orderreview_view_context_factory(default_package):
 
                 return use_base_dir_if_org_template_not_exists(self, path, default_package, override_path)
             else:
-                if module is None:\
+                if module is None:
                     module = 'orderreview'
 
                 include_path = "altair.app.ticketing.%(module)s:templates/%(organization_short_name)s/includes/%(path)s" % dict(
