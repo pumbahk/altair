@@ -1973,12 +1973,7 @@ class OrderDetailView(OrderBaseView):
             raise HTTPBadRequest(body=json.dumps({
                 'message': u'不正なデータです',
             }))
-
-        if orion_ticket_phone is None:
-            raise HTTPBadRequest(body=json.dumps({
-                'message': u'不正なデータです',
-            }))
-
+        
         orion_phone_list = self.request.params.getall('orion-ticket-phone')
         orion_phone_errors = verify_orion_ticket_phone(orion_phone_list)
 
