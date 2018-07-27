@@ -36,3 +36,4 @@ log
 # ignore newsletter csv file
 newsletter/newsletter/csv
 tags
+cscope.*
