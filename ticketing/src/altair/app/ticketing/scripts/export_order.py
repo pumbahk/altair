@@ -78,7 +78,7 @@ SETTING_KEY = {
 
 # Column list. Key is db label. Value is column name of csv.
 COLUMN = OrderedDict([
-    ('performanc_id', '公演ID'),
+    ('performance_id', '公演ID'),
     ('performance_name', '公演'),
     ('order_no', '予約番号'),
     ('first_name', '配送先姓'),
@@ -86,21 +86,21 @@ COLUMN = OrderedDict([
     ('first_name_kana', '配送先姓(カナ)'),
     ('last_name_kana', '配送先名(カナ)'),
     ('sex', '性別'),
-    ('tel1', '電話番号1'),
-    ('email1', 'メールアドレス1'),
+    ('tel_1', '電話番号1'),
+    ('email_1', 'メールアドレス1'),
     ('zip', '郵便番号'),
     ('country', '国'),
     ('prefecture', '都道府県'),
     ('city', '市区町村'),
-    ('address1', '住所1'),
-    ('address2', '住所2'),
+    ('address_1', '住所1'),
+    ('address_2', '住所2'),
     ('payment_method_id', '決済方法')
 ])
 
 COLUMN_ATTRIBUTE_KEY_PREFIX = '追加情報(Key)'
 COLUMN_ATTRIBUTE_VALUE_PREFIX = '追加情報(Value)'
-CMD_SED_ATTRIBUTE_KEY = "sed -i -e 's/追加情報\(Key\)\d{1,},/追加情報\(Key\)/g' "
-CMD_SED_ATTRIBUTE_VALUE = "sed -i -e 's/追加情報\(Value\)\d{1,},/追加情報\(Value\)/g' "
+CMD_SED_ATTRIBUTE_KEY = "sed -i -e 's/追加情報(Key)[0-9]\{1,\}/追加情報(Key)/g' "
+CMD_SED_ATTRIBUTE_VALUE = "sed -i -e 's/追加情報(Value)[0-9]\{1,\}/追加情報(Value)/g' "
 
 
 class InValidArgumentException(Exception):
@@ -148,9 +148,8 @@ def write_csv(out_filename, csv_data, max_attribute_count, mode):
             fieldnames.append(value.encode(CSV_FILE_ENCODE))
 
         for i in range(max_attribute_count):
-            fieldnames.append(COLUMN_ATTRIBUTE_KEY_PREFIX + i)
-            fieldnames.append(COLUMN_ATTRIBUTE_VALUE_PREFIX + i)
-
+            fieldnames.append((COLUMN_ATTRIBUTE_KEY_PREFIX + str(i)).encode(CSV_FILE_ENCODE))
+            fieldnames.append((COLUMN_ATTRIBUTE_VALUE_PREFIX + str(i)).encode(CSV_FILE_ENCODE))
         writer = csv.DictWriter(f, fieldnames, extrasaction='ignore')
         writer.writeheader()
         for data in csv_data:
@@ -167,8 +166,8 @@ def execute_sed_with_subprocess(command_prefix, filename):
 
 def sed_csv_attribute_column(csv_filename):
     """Sed column name which is attribute name and value"""
-    execute_sed_with_subprocess(CMD_SED_ATTRIBUTE_KEY, csv_filename)
-    execute_sed_with_subprocess(CMD_SED_ATTRIBUTE_VALUE, csv_filename)
+    execute_sed_with_subprocess(CMD_SED_ATTRIBUTE_KEY.encode(CSV_FILE_ENCODE), csv_filename)
+    execute_sed_with_subprocess(CMD_SED_ATTRIBUTE_VALUE.encode(CSV_FILE_ENCODE), csv_filename)
 
 
 def read_file(in_filename, mode):
@@ -267,18 +266,21 @@ def fetch_organization_id(request, organization_code):
 
 
 # Regarding to CSV
-def create_csv_data(results):
+def create_csv_data(results, attributes_dic):
     """Create csv data to create csv file"""
     csv_data = []
     for result in results:
-        result_dic = result.__dict__
-        del result_dic['_labels']
+        order = result.__dict__
         dic = {}
         for column, name in COLUMN.items():
-            value = result_dic.get(column)
+            value = order.get(column)
             if type(value) is unicode:
                 value = value.encode(CSV_FILE_ENCODE)
             dic[name.encode(CSV_FILE_ENCODE)] = value
+
+        attributes = attributes_dic.get(result.order_id)
+        if attributes is not None and len(attributes) > 0:
+            dic.update(attributes)
 
         csv_data.append(dic)
 
@@ -515,6 +517,7 @@ def encrypt_task(args):
     if len(results) == 0:
         message('No target.')
 
+    attributes_dic = {}
     max_attribute_count = 0
     for result in results:
         order_id = result.order_id
@@ -526,14 +529,16 @@ def encrypt_task(args):
         if max_attribute_count < attribute_count:
             max_attribute_count = attribute_count
 
+        attribute_dic = {}
         for index, attribute in enumerate(order_attributes):
-            csv_column = COLUMN_ATTRIBUTE_KEY_PREFIX + index
-            csv_value = COLUMN_ATTRIBUTE_VALUE_PREFIX + index
-            result[csv_column] = attribute.name
-            result[csv_value] = attribute.value
+            csv_column = (COLUMN_ATTRIBUTE_KEY_PREFIX + str(index)).encode(CSV_FILE_ENCODE)
+            csv_value = (COLUMN_ATTRIBUTE_VALUE_PREFIX + str(index)).encode(CSV_FILE_ENCODE)
+            attribute_dic[csv_column] = attribute.name.encode(CSV_FILE_ENCODE)
+            attribute_dic[csv_value] = attribute.value.encode(CSV_FILE_ENCODE)
+        attributes_dic[result.order_id] = attribute_dic
 
     # Create cvs file
-    cvs_data = create_csv_data(results)
+    cvs_data = create_csv_data(results, attributes_dic)
     write_csv(tmp_file_path, cvs_data, max_attribute_count, 'w')
     sed_csv_attribute_column(tmp_file_path)
     crypt_hash_key = get_crypt_hash_key(enc_key_filename)
