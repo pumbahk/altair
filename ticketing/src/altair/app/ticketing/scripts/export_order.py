@@ -16,7 +16,7 @@ from argparse import ArgumentParser
 from collections import OrderedDict
 from Crypto.Cipher import AES
 from Crypto import Random
-from datetime import datetime
+from datetime import datetime, timedelta
 from pyramid.paster import bootstrap
 from sqlalchemy import and_
 from boto.s3.connection import S3Connection
@@ -352,7 +352,7 @@ def get_target_date(args):
     """Get target_date value from args. If target_date is none, it set default date"""
     target_date = args.target_date
     if target_date is None:
-        target_date = datetime.now().strftime(DATE_FORMAT)
+        target_date = (datetime.now() - timedelta(days=1)).strftime(DATE_FORMAT)
     else:
         try:
             datetime.strptime(target_date, DATE_FORMAT)
