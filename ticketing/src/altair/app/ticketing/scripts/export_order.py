@@ -55,12 +55,13 @@ SETTING_ASCII_ENCODE = "unicode-escape"
 
 DATE_FORMAT = '%Y-%m-%d'
 
-# TARGET_CART_SETTING = 'fc'
+TARGET_CART_SETTING = 'fc'
 # For STG TEST
-TARGET_CART_SETTING = 'standard'
+# TARGET_CART_SETTING = 'standard'
 
 # Key list on ini file
 SETTING_KEY = {
+    'EVENT_IDS': '{}.export.order.event.ids',
     'ENC_BASE_KEY_FORMAT': '{}.export.order.enc.base.key',
     'ENC_KEY_FILE_PATH_FORMAT': '{}.export.order.enc.key.file.path',
     'ENC_IV_FILE_PATH_FORMAT': '{}.export.order.enc.iv.file.path',
@@ -213,7 +214,7 @@ def clean_up(filename):
 
 
 # DAO
-def fetch_order_data(session, organization_id, start_at, end_at):
+def fetch_order_data(session, organization_id, event_id_list, start_at, end_at):
     """Fetch order data from database"""
     query = session.query(
         Order.id.label('order_id'),
@@ -244,6 +245,7 @@ def fetch_order_data(session, organization_id, start_at, end_at):
         .filter(Order.canceled_at.is_(None)) \
         .filter(Order.refund_id.is_(None)) \
         .filter(and_(start_at <= Order.paid_at, Order.paid_at <= end_at)) \
+        .filter(Performance.event_id.in_(event_id_list)) \
         .filter(ShippingAddress.deleted_at.is_(None)) \
         .filter(CartSetting.type == TARGET_CART_SETTING)
 
@@ -401,6 +403,8 @@ def get_params_on_encrypt_task(args):
     target_date = get_target_date(args)
     dry_run = args.dry_run
 
+    event_id_list = get_setting_value(settings, SETTING_KEY['EVENT_IDS'].format(organization_code), '').split(',')
+
     enc_key_filename = get_setting_value(settings, SETTING_KEY['ENC_KEY_FILE_PATH_FORMAT'].format(organization_code))
     enc_iv_filename = get_setting_value(settings, SETTING_KEY['ENC_IV_FILE_PATH_FORMAT'].format(organization_code))
     enc_salt_filename = get_setting_value(settings, SETTING_KEY['ENC_SALT_FILE_PATH_FORMAT'].format(organization_code))
@@ -417,6 +421,7 @@ def get_params_on_encrypt_task(args):
     return (request,
             config,
             organization_id,
+            event_id_list,
             target_date,
             tmp_file_path,
             enc_key_filename,
@@ -478,6 +483,7 @@ def encrypt_task(args):
         request,
         config,
         organization_id,
+        event_id_list,
         target_date,
         tmp_file_path,
         enc_key_filename,
@@ -501,7 +507,11 @@ def encrypt_task(args):
     # Data fetch and decoration
     message('Fetch database data from {} to {}.'.format(start_at, end_at))
     session = get_db_session(request, name='slave')
-    results = fetch_order_data(session, organization_id, start_at, end_at)
+
+    if len(event_id_list) > 0:
+        results = fetch_order_data(session, organization_id, event_id_list, start_at, end_at)
+    else:
+        results = []
 
     if len(results) == 0:
         message('No target.')
