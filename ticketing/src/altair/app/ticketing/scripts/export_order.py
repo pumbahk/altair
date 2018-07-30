@@ -287,6 +287,18 @@ def create_csv_data(results, attributes_dic):
     return csv_data
 
 
+# Arrange Dictionary
+def get_attribute_dic(order_attributes):
+    """Arrange attribute dic"""
+    attribute_dic = {}
+    for index, attribute in enumerate(order_attributes):
+        csv_column = (COLUMN_ATTRIBUTE_KEY_PREFIX + str(index)).encode(CSV_FILE_ENCODE)
+        csv_value = (COLUMN_ATTRIBUTE_VALUE_PREFIX + str(index)).encode(CSV_FILE_ENCODE)
+        attribute_dic[csv_column] = attribute.name.encode(CSV_FILE_ENCODE)
+        attribute_dic[csv_value] = attribute.value.encode(CSV_FILE_ENCODE)
+    return attribute_dic
+
+
 # AES Operation
 def derive_key_and_iv(password, salt, key_length, iv_length):
     """Auxilary function to generate key and iv for encryption/decryption
@@ -529,13 +541,7 @@ def encrypt_task(args):
         if max_attribute_count < attribute_count:
             max_attribute_count = attribute_count
 
-        attribute_dic = {}
-        for index, attribute in enumerate(order_attributes):
-            csv_column = (COLUMN_ATTRIBUTE_KEY_PREFIX + str(index)).encode(CSV_FILE_ENCODE)
-            csv_value = (COLUMN_ATTRIBUTE_VALUE_PREFIX + str(index)).encode(CSV_FILE_ENCODE)
-            attribute_dic[csv_column] = attribute.name.encode(CSV_FILE_ENCODE)
-            attribute_dic[csv_value] = attribute.value.encode(CSV_FILE_ENCODE)
-        attributes_dic[result.order_id] = attribute_dic
+        attributes_dic[result.order_id] = get_attribute_dic(order_attributes)
 
     # Create cvs file
     cvs_data = create_csv_data(results, attributes_dic)
