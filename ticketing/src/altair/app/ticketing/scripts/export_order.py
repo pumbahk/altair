@@ -160,7 +160,6 @@ def write_csv(out_filename, csv_data, max_attribute_count, mode):
 def execute_sed_with_subprocess(command_prefix, filename):
     """Execute command on subprocess"""
     command = command_prefix + filename
-    print(command)
     result = subprocess.call(command, shell=True)
     if result != 0:
         raise ValueError('Cannot find csv file. So please confirm. csv_filename:{}'.format(filename))
