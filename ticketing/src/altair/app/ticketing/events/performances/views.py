@@ -249,7 +249,7 @@ class PerformanceShowView(BaseView):
         return data
 
     @view_config(route_name='performances.import_orders.index', request_method='GET')
-    def import_orders_get(self, form=None):
+    def import_orders_get(self):
         importer = self.request.session.get('ticketing.order.importer')
         if importer:
             del self.request.session['ticketing.order.importer']
@@ -265,16 +265,13 @@ class PerformanceShowView(BaseView):
         if order_import_tasks_need_check:
             update_order_import_tasks_done_by_worker(self.request, order_import_tasks_need_check)
 
-        if form is None:
-            form = OrderImportForm(
-                merge_order_attributes=True,
-                enable_random_import=True
-            )
-
         data = {
             'tab': 'import_orders',
             'performance': self.performance,
-            'form': form,
+            'form': OrderImportForm(
+                merge_order_attributes=True,
+                enable_random_import=True,
+            ),
             'oh': order_helpers,
             'order_import_tasks': query.all()
         }
@@ -283,22 +280,22 @@ class PerformanceShowView(BaseView):
 
     @view_config(route_name='performances.import_orders.index', request_method='POST')
     def import_orders_post(self):
-        form = OrderImportForm(self.request.params)
-        if not form.validate():
-            for _, errors in form.errors.items():
+        f = OrderImportForm(self.request.params)
+        if not f.validate():
+            for f, errors in f.errors.items():
                 for error in errors:
                     self.request.session.flash(error)
-            return self.import_orders_get(form=form)
+            return self.import_orders_get()
         importer = OrderImporter(
             self.request,
-            import_type=form.import_type.data,
-            allocation_mode=form.allocation_mode.data,
-            merge_order_attributes=form.merge_order_attributes.data,
-            enable_random_import=form.enable_random_import.data,
+            import_type=f.import_type.data,
+            allocation_mode=f.allocation_mode.data,
+            merge_order_attributes=f.merge_order_attributes.data,
+            enable_random_import=f.enable_random_import.data,
             session=DBSession
         )
         order_import_task, errors = importer(
-            reader=ImportCSVReader(StringIO(form.order_csv.data.value), encoding='cp932:normalized-tilde'),
+            reader=ImportCSVReader(StringIO(f.order_csv.data.value), encoding='cp932:normalized-tilde'),
             operator=self.context.user,
             organization=self.context.organization,
             performance=self.performance
@@ -321,7 +318,7 @@ class PerformanceShowView(BaseView):
         return HTTPFound(self.request.route_url('performances.import_orders.confirm',
                                                 performance_id=self.performance.id,
                                                 _query=dict(task_id=order_import_task.id,
-                                                            user_test_version=int(form.use_test_version.data))
+                                                            user_test_version=int(f.use_test_version.data))
                                                 ))
 
     @view_config(route_name='performances.import_orders.confirm', request_method='GET')
