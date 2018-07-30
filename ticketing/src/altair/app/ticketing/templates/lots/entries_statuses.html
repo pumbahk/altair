@@ -4,7 +4,7 @@
     <%
         stock_type_status = None
         for status in stock_type_wishes_status:
-            if status.stock_type.id == product.seat_stock_type.id:
+            if status.stock_type.id == product.seat_stock_type.id and status.performance.id == product.performance.id:
                 stock_type_status = status
                 break
     %>
@@ -78,10 +78,6 @@
       before_product = None
     %>
       % for product in products:
-        % if before_product and before_product.seat_stock_type.id != product.seat_stock_type.id:
-            ${render_subtotal(before_product)}
-        % endif
-        <% before_product = product %>
         <tr>
             <td>${vh.datetime(product.performance.start_on, with_weekday=True)}</td>
             <td>${product.performance.venue.name}</td>
@@ -100,9 +96,9 @@
             %endif
             <td>${product_dict[product.id].canceled_quantity if product.id in product_dict else u"0"}</td>
         </tr>
+        ${render_subtotal(product)}
       % endfor
 
-        ${render_subtotal(before_product)}
         <tr>
             <td colspan="4">合計</td>
             <td>${lot_status.total_quantity or 0}</td>
