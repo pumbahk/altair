@@ -27,13 +27,11 @@ def decode_candidate_id(candidate_id):
 import_type_labels = {
     ImportTypeEnum.Create.v: u'新規登録',
     ImportTypeEnum.Update.v: u'予約を更新',
-    ImportTypeEnum.Transfer.v: u'予約の移動'
     }
 
 allocation_mode_labels = {
-    AllocationModeEnum.NoAllocation.v: u'数受けのため配席しない',
-    AllocationModeEnum.SameAllocation.v: u'座席番号に該当する座席を配席する',
-    AllocationModeEnum.ReAllocation.v: u'座席番号を無視し常に自動配席する'
+    AllocationModeEnum.AlwaysAllocateNew.v: u'座席番号を無視し常に自動配席する',
+    AllocationModeEnum.NoAutoAllocation.v: u'座席番号に該当する座席を配席する',
     }
 
 import_status_labels = {
