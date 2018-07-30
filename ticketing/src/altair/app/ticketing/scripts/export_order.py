@@ -11,7 +11,6 @@ import csv
 import hashlib
 import sys
 import traceback
-import boto
 
 from argparse import ArgumentParser
 from collections import OrderedDict
