@@ -5,6 +5,7 @@ import re
 import json
 import itertools
 import sys
+import random
 import transaction
 from decimal import Decimal
 from datetime import date, datetime
@@ -1149,25 +1150,19 @@ def get_relevant_object(request, order_no, session=None, include_deleted=False):
 def create_or_update_orders_from_proto_orders(request, reserving, stocker, proto_orders, import_type, allocation_mode, entrust_separate_seats, enable_random_import, order_modifier=None, now=None, channel_for_new_orders=ChannelEnum.INNER.v):
     from altair.app.ticketing.models import DBSession
     errors_map = {}
+    now_ = now or datetime.now()
 
-    # まず最初に order をリリースする
-    orders_will_be_created = bool(int(import_type) & int(ImportTypeEnum.Create))
-    orders_will_be_updated = bool(int(import_type) & int(ImportTypeEnum.Update))
-
-    import random
     if enable_random_import:
         random.shuffle(proto_orders)
-    if orders_will_be_updated:
+
+    # まず最初に order をリリースする
+    if import_type in (ImportTypeEnum.Update.v, ImportTypeEnum.Transfer.v):
         for proto_order in proto_orders:
             if proto_order.original_order:
                 logger.info('releasing order (%s)' % proto_order.original_order.order_no)
                 try:
                     assert proto_order.order_no == proto_order.original_order.order_no
                     proto_order.original_order.release()
-                    if now is not None:
-                        now_ = now
-                    else:
-                        now_ = datetime.now()
                     proto_order.original_order.mark_canceled(now_)
                     proto_order.original_order.deleted_at = now_
                 except Exception as e:
@@ -1184,11 +1179,12 @@ def create_or_update_orders_from_proto_orders(request, reserving, stocker, proto
                 logger.info('finished releasing order (%s)' % proto_order.original_order.order_no)
                 DBSession.flush()
     else:
-        assert orders_will_be_created and not any(proto_order.original_order for proto_order in proto_orders)
+        assert import_type == ImportTypeEnum.Create.v and not any(proto_order.original_order for proto_order in proto_orders)
 
     created_orders = []
     updated_orders = []
     for proto_order in proto_orders:
+        new_order = None
         errors_for_proto_order = []
         if proto_order.original_order is not None:
             logger.info('updating order (%s)' % proto_order.order_no)
@@ -1257,10 +1253,6 @@ def create_or_update_orders_from_proto_orders(request, reserving, stocker, proto
             continue
         if order_modifier is not None:
             order_modifier(proto_order, new_order)
-        if now is not None:
-            now_ = now
-        else:
-            now_ = datetime.now()
         proto_order.processed_at = now_
         DBSession.add(proto_order)
         DBSession.add(new_order)

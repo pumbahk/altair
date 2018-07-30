@@ -1073,7 +1073,9 @@ class OrderImportForm(OurForm):
     import_type = BugFreeSelectField(
         label=u'インポート方法',
         validators=[Required()],
-        choices=[(str(e.v), get_import_type_label(e.v)) for e in ImportTypeEnum],
+        choices=[(str(ImportTypeEnum.Update.v), get_import_type_label(ImportTypeEnum.Update.v)),
+                 (str(ImportTypeEnum.Transfer.v), get_import_type_label(ImportTypeEnum.Transfer.v)),
+                 (str(ImportTypeEnum.Create.v), get_import_type_label(ImportTypeEnum.Create.v))],
         default=ImportTypeEnum.Update.v,
         coerce=int,
     )
@@ -1083,8 +1085,9 @@ class OrderImportForm(OurForm):
     allocation_mode = BugFreeSelectField(
         label=u'配席モード',
         validators=[Required()],
-        choices=[(str(e.v), get_allocation_mode_label(e.v)) for e in AllocationModeEnum],
-        default=AllocationModeEnum.AlwaysAllocateNew.v,
+        choices=sorted([(str(e.v), get_allocation_mode_label(e.v)) for e in AllocationModeEnum],
+                       key=lambda x: x[0]),
+        default=AllocationModeEnum.SameAllocation.v,
         coerce=int,
     )
     merge_order_attributes = OurBooleanField(
