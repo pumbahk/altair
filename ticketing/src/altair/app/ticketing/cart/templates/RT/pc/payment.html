@@ -247,14 +247,14 @@ orion_checked = False
           </td>
         </tr>
         <tr>
-          <th scope="row">生年月日</th>
+          <th scope="row">生年月日<span class="notice-label"> ※必須</span></th>
           <td>
             ${form['birthday']}
             ${h.error_list(request, form, 'birthday')}
           </td>
         </tr>
         <tr>
-          <th scope="row">${form['sex'].label}</th>
+          <th scope="row">${form['sex'].label}<span class="notice-label"> ※必須</span></th>
           <td>
             ${form['sex']}
             ${h.error_list(request, form, 'sex')}
