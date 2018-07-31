@@ -1,4 +1,8 @@
 <%inherit file="./base.html" />
+<%doc>ログイン/ログアウト</%doc>
+% if view_context.get_include_template_path('login_status.html') is not None:
+  <%include file="${view_context.get_include_template_path('login_status.html')}" args="device=view_context.ua_type" />
+% endif
 <%block name="css">
   <link rel="stylesheet" href="${request.static_url('altair.app.ticketing.cart:static/js/css/jquery.smihica_vertical_slider/smihica_vertical_slider2.css')}" type="text/css" media="all" />
   <style type="text/css">

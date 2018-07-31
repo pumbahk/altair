@@ -9,6 +9,14 @@
 他の日時／会場を下記よりお選びいただけます。<br />
 </font>
 % endif
+<form action="${request.route_path('cart.logout')}" method="POST">
+    <div style="text-align: right">
+    <%doc>ログイン/ログアウト</%doc>
+        % if view_context.get_include_template_path('login_status.html') is not None:
+    <%include file="${view_context.get_include_template_path('login_status.html')}" args="device=view_context.ua_type" />
+        % endif
+    </div>
+</form>
 % if not key:
   <%mobile:form_header>${selector_label_1}をお選びください</%mobile:form_header>
   % for _key, _ in key_to_formatted_sales_segments_map:
