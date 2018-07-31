@@ -298,7 +298,7 @@ ${self.error(form, 'address_2')}
 </p>
 </dd>
 
-<dt class="creditHl">電話番号数字)</dt>
+<dt class="creditHl">電話番号(半角数字)</dt>
 <dd>
 <p>
 ${h.render_label(form['tel_1'])}（固定電話をお持ちでない場合は、携帯電話番号を入力してください。）<br/>
@@ -321,7 +321,7 @@ ${self.error(form, 'birthday')}
 </p>
 </dd>
 
-<dt class="creditHl"><label class="required"${h.render_label(form['sex'])}</label></dt>
+<dt class="creditHl"><label class="required">${h.render_label(form['sex'])}</label></dt>
 <dd>
 <p>
 ${form['sex']}
