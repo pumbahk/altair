@@ -520,7 +520,8 @@ class SalesDetailReporter(object):
             func.sum(Stock.quantity)
         ).group_by(func.ifnull(Product.base_product_id, Product.id))
         for id, product_item_num, stock_quantity in query.all():
-            # TKT6027
+            # TKT6027 クエリのほうで、商品明細が複数ある場合、枚数分掛け算されてしまう。
+            # クエリを直すのが困難なため、商品明細数で割り正常な数とした
             stock_quantity = stock_quantity / product_item_num
             if id not in self.reports:
                 logger.warn('invalid key (product_id:%s) total_quantity query' % id)
