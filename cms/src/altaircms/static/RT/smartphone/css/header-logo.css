@@ -1,43 +1,149 @@
 @charset "utf-8";
+/* FOR PC */
+.header-logo a,
+.header-logo span {
+    display: block;
+    width: 190px;
+    height: 32px;
+    background: url(../images/header_logo_pc.png) no-repeat 0 0;
+    background-size: 190px 32px;
+    overflow: hidden;
+    text-indent: 100%;
+    white-space: nowrap;
+}
+
+.header-logo-top a,
+.header-logo-top span {
+    margin: 5px 0 0 12px;
+}
+
+.header-logo-cart a,
+.header-logo-cart span {
+    margin: 12px 0 8px 12px;
+}
+
+.header-logo-cartfc a,
+.header-logo-cartfc span {
+    margin: 12px 0 8px 12px;
+}
+
+.header-logo-orderreview a,
+.header-logo-orderreview span {
+    margin: 2px 7px 0 12px;
+}
+
+.header-logo-orderreview-mp a,
+.header-logo-orderreview-mp span {
+    margin: 2px 7px 0 12px;
+}
+
+.header-logo-lots a,
+.header-logo-lots span {
+    margin: 12px 0 0 12px;
+}
+
+.header-logo-lots h1 {
+    margin-bottom: 0 !important;
+}
+
+.header-logo-public a,
+.header-logo-public span {
+    margin: 0 0 0 2px;
+}
+
+.header-logo-features a,
+.header-logo-features span {
+    display: block;
+    width: 190px;
+    height: 32px;
+    margin: 0 0 0 2px;
+    background: url(../images/header_logo_pc.png) no-repeat 0 0;
+    background-size: 190px 32px;
+    overflow: hidden;
+    text-indent: 100%;
+    white-space: nowrap;
+}
+
+.header-logo-genre a,
+.header-logo-genre span {
+    display: block;
+    width: 190px;
+    height: 32px;
+    margin: 0 0 0 2px;
+    background: url(../images/header_logo_pc.png) no-repeat 0 0;
+    background-size: 190px 32px;
+    overflow: hidden;
+    text-indent: 100%;
+    white-space: nowrap;
+}
+
+/* FOR PC END */
+
+@media screen and (max-width: 480px) {
     /* FOR SP */
-	.header-logo a,
-	.header-logo span {
-    	display: block;
-		width: 60px;
-		height: 40px;
-		background: url(../images/header_logo_sp.png) no-repeat 0 0;
-		background-size: 60px 40px;
+    .header-logo a,
+    .header-logo span {
+        display: block;
+        width: 75px;
+        height: 40px;
+        background: url(../images/header_logo_sp.png) no-repeat 0 0;
+        background-size: 75px 40px;
         overflow: hidden;
         text-indent: 100%;
         white-space: nowrap;
-	 }
-	.header-logo-top a,
-	.header-logo-top span {
-		margin: 7px;
-        float: left;
-	}
-	.header-logo-cart a,
-	.header-logo-cart span {
-		margin: 3px 7px;
-        float: left;
-	}
-	.header-logo-cartfc a,
-	.header-logo-cartfc span {
-		margin: 3px 7px;
-	}
-    .ts-header {
-        padding: 7px 0;/* orderreview */
     }
-	.header-logo-orderreview a,
-	.header-logo-orderreview span {
-		margin: 0 7px;
-	}
-	.header-logo-orderreview-mp a,
-	.header-logo-orderreview-mp span {
-		margin: 0 7px;
-	}
-	.header-logo-lots a,
-	.header-logo-lots span {
-		margin: 7px 7px 0;
-	}
-    /* FOR SP END */
+
+    .header-logo-top a,
+    .header-logo-top span {
+        margin: 7px 8px 8px;
+        float: left;
+    }
+
+    .header-logo-cart a,
+    .header-logo-cart span {
+        margin: 3px 8px 8px;
+        float: left;
+    }
+
+    .header-logo-cartfc a,
+    .header-logo-cartfc span {
+        margin: 3px 8px 4px;
+    }
+
+    .ts-header {
+        padding: 7px 0; /* orderreview */
+    }
+
+    .header-logo-orderreview a,
+    .header-logo-orderreview span {
+        margin: 0 8px
+    }
+
+    .header-logo-orderreview-mp a,
+    .header-logo-orderreview-mp span {
+        margin: 0 8px;
+    }
+
+    .header-logo-lots a,
+    .header-logo-lots span {
+        margin: 0;
+    }
+}
+
+/* FOR SP END */
+
+@media screen and (max-width: 767px) {
+    /* FOR FEATURES */
+    .header-logo-features a,
+    .header-logo-features span {
+        margin: 8px;
+        display: block;
+        width: 75px;
+        height: 40px;
+        background: url(../images/header_logo_sp.png) no-repeat 0 0;
+        background-size: 75px 40px;
+        overflow: hidden;
+        text-indent: 100%;
+        white-space: nowrap;
+    }
+}
