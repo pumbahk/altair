@@ -12,6 +12,7 @@ from altair.app.ticketing.core.models import (
     Performance,
     StockType,
     Product,
+    SalesSegment,
     PaymentDeliveryMethodPair,
     )
 from altair.app.ticketing.core.interfaces import (
@@ -30,6 +31,7 @@ from .models import (
     )
 from zope.interface import implementer
 from altair.app.ticketing.payments.interfaces import IPaymentCart
+from altair.app.ticketing.lots.models import Lot
 
 logger = logging.getLogger(__name__)
 
@@ -468,10 +470,8 @@ class LotEntryStatus(object):
 
         return results
 
-    @reify
+    @property
     def products_status(self):
-        from altair.app.ticketing.core.models import SalesSegment
-        from altair.app.ticketing.lots.models import Lot
         products = self.slave_session.query(Product) \
             .join(SalesSegment, SalesSegment.id == Product.sales_segment_id) \
             .join(Lot, Lot.sales_segment_id == SalesSegment.id).filter(Lot.id == self.lot.id) \
