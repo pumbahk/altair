@@ -3,7 +3,6 @@ import logging
 from pyramid.decorator import reify
 from sqlalchemy import sql
 from datetime import datetime, timedelta
-from altair.sqlahelper import get_db_session
 from webhelpers.containers import correlate_objects
 from altair.app.ticketing.models import (
     DBSession,
@@ -12,7 +11,6 @@ from altair.app.ticketing.core.models import (
     Performance,
     StockType,
     Product,
-    SalesSegment,
     PaymentDeliveryMethodPair,
     )
 from altair.app.ticketing.core.interfaces import (
@@ -31,7 +29,6 @@ from .models import (
     )
 from zope.interface import implementer
 from altair.app.ticketing.payments.interfaces import IPaymentCart
-from altair.app.ticketing.lots.models import Lot
 
 logger = logging.getLogger(__name__)
 
@@ -295,8 +292,7 @@ class LotSessionCart(object):
 class LotEntryStatus(object):
     def __init__(self, lot, request=None):
         self.lot = lot
-        self.request = request
-        self.slave_session = get_db_session(self.request, name='slave')
+        self.request = request # いらない
 
     @property
     def performances(self):
@@ -469,14 +465,6 @@ class LotEntryStatus(object):
             results[i] = LotEntryWishStatus(i, 0)
 
         return results
-
-    @property
-    def products_status(self):
-        products = self.slave_session.query(Product) \
-            .join(SalesSegment, SalesSegment.id == Product.sales_segment_id) \
-            .join(Lot, Lot.sales_segment_id == SalesSegment.id).filter(Lot.id == self.lot.id) \
-            .order_by(Product.display_order).all()
-        return products
 
     ## 公演・席種ごとの情報
     @reify
