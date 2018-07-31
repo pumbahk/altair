@@ -10,7 +10,8 @@ import subprocess
 import csv
 import hashlib
 import sys
-import traceback
+import StringIO
+import boto
 
 from argparse import ArgumentParser
 from collections import OrderedDict
@@ -44,6 +45,7 @@ if charset == 'US-ASCII':
     charset = 'utf-8'
 
 logger = logging.getLogger(__name__)
+quiet = False
 output = sys.stdout
 
 # Subcommand List
@@ -106,6 +108,18 @@ CMD_SED_ATTRIBUTE_VALUE = "sed -i -e 's/追加情報(Value)[0-9]\{1,\}/追加情
 class InValidArgumentException(Exception):
     """Exception for argument validation"""
     pass
+
+
+def set_quiet(q):
+    global quiet, output
+    if q:
+        output = StringIO.StringIO()
+    else:
+        if quiet:
+            print >>sys.stdout, output.getvalue()
+            output.close()
+        output = sys.stdout
+    quiet = q
 
 
 def message(msg, auxiliary=False):
@@ -188,7 +202,7 @@ def upload_file_to_s3(filename,
                       upload_path,
                       aws_access_key,
                       aws_secret,
-                      dry_run=True):
+                      dry_run):
 
     if dry_run:
         message('filename:' + filename)
@@ -197,6 +211,9 @@ def upload_file_to_s3(filename,
         message('aws_access_key:' + aws_access_key)
         message('aws_secret:' + aws_secret)
     else:
+        if not boto.config.has_section('Boto'):
+            boto.config.add_section('Boto')
+        boto.config.set('Boto', 'num_retries', '3')
         s3 = S3Connection(aws_access_key, aws_secret)
         bucket = s3.get_bucket(bucket_name)
         k = Key(bucket)
@@ -585,6 +602,7 @@ def decrypt_task(args):
 def main():
     # Load argument of batch
     parser = ArgumentParser()
+    parser.add_argument('--quiet', action='store_true', default=False, help='Disappear log without error')
     subparsers = parser.add_subparsers(help='sub-command help')
 
     # generate_key sub command
@@ -615,23 +633,21 @@ def main():
     decrypt_parser.set_defaults(handler=decrypt_task)
 
     args = parser.parse_args()
+    set_quiet(args.quiet)
 
     if hasattr(args, 'handler'):
         try:
             args.handler(args)
-        except InValidArgumentException as ie:
-            message(ie.message)
-            return BATCH_FAILURE
-        except ValueError as ve:
-            message(ve.message)
-            return BATCH_FAILURE
-        except Exception as e:
+        except (InValidArgumentException, ValueError):
+            set_quiet(False)
+            raise
+        except Exception:
+            set_quiet(False)
             message('Unexpected error. So please confirm the following traceback.')
-            message(traceback.format_exc(e))
-            return BATCH_FAILURE
+            raise
     else:
-        message('Wrong sub command. So please confirm your argument.')
+        set_quiet(False)
         parser.print_help()
-        return BATCH_FAILURE
+        raise InValidArgumentException('Wrong sub command. So please confirm your argument.')
 
     return BATCH_SUCCESS
