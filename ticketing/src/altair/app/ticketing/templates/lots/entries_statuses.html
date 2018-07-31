@@ -73,10 +73,7 @@
       <th>第${i+1}希望</th>
       %endfor
     </tr>
-    <%
-      products = lot_status.products_status
-      before_product = None
-    %>
+    <% products = lot_status.products_status %>
       % for product in products:
         <tr>
             <td>${vh.datetime(product.performance.start_on, with_weekday=True)}</td>
