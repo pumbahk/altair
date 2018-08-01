@@ -1,8 +1,4 @@
 <%inherit file="./base.html" />
-<%doc>ログイン/ログアウト</%doc>
-% if view_context.get_include_template_path('login_status.html') is not None:
-  <%include file="${view_context.get_include_template_path('login_status.html')}" args="device=view_context.ua_type" />
-% endif
 <%block name="css">
   <link rel="stylesheet" href="${request.static_url('altair.app.ticketing.cart:static/js/css/jquery.smihica_vertical_slider/smihica_vertical_slider2.css')}" type="text/css" media="all" />
   <style type="text/css">
@@ -80,11 +76,21 @@ $(function() {cart.init(salesSegmentsSelection, selected, cartReleaseUrl, true, 
         if performance:
             link = request.context.switch_sp_url
     %>
-    % if request.cookies.get(PC_ACCESS_COOKIE_NAME):
-        <a href="${link}">
-          <button class="switch_pc">スマホサイトで購入する</button>
-        </a>
-    % endif
+    <div>
+        % if request.cookies.get(PC_ACCESS_COOKIE_NAME):
+            <p style="text-align: left; float: left;">
+                <a href="${link}">
+                    <button class="switch_pc">スマホサイトで購入する</button>
+                </a>
+            </p>
+        % endif
+        <%doc>ログイン/ログアウト</%doc>
+        % if view_context.get_include_template_path('login_status.html') is not None:
+            <p style="text-align: right;">
+                <%include file="${view_context.get_include_template_path('login_status.html')}" args="device=view_context.ua_type" />
+            </p>
+        %  endif
+    </div>
 
     ${self.widget.flow_widget(1)}
     <h2 id="ticketName">${event['title']} (<span class="performanceNameSpace"></span>)</h2>
