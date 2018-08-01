@@ -1129,3 +1129,6 @@ input[type="submit"] {
 .ticket-logo-cart{
   	float:left;
   }
+.notice-label {
+	color: #FF0000;
+}

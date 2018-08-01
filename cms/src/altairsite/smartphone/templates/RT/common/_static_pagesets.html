@@ -22,7 +22,7 @@ $(document).ready(function(){
 
 % if static_pagesets_dict and initial_disp_static_pagesets:
 <section id="special_contents" class="special_contents">
-    <h2 class="category_ttl">特集</h2>
+    <h2 class="category_ttl">おすすめ公演・特集</h2>
     <div class="top_inner">
         <ul>
             % for pagesets in initial_disp_static_pagesets:
@@ -35,7 +35,7 @@ $(document).ready(function(){
                     class="list_txt">${pagesets.name}</span></a></li>
             % endfor
         </ul>
-        <p class="over_txt disp_static_pagesets">もっとみる▼</p>
+        <p class="over_txt disp_static_pagesets"><span>もっとみる</span></p>
     </div>
 </section>
 % endif

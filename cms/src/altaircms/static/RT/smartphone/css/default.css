@@ -970,4 +970,10 @@ h1 { margin:0; padding: 0;}
   color: red;
 } */
 
-
+.fcb_logo-sp {
+  width: 270px;
+  height: 57px;
+}
+.fcb_logo-sp img {
+  max-width: 100%;
+}

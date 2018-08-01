@@ -51,6 +51,7 @@ form = TopPageSidebarSearchForm()
     
     <link rel="shortcut icon" href="${request.static_url("altaircms:static/RT/img/common/favicon.ico")}" />
     <link rel="stylesheet" href="${request.static_url("altaircms:static/RT/css/import.css")}" type="text/css" media="all" />
+    <link rel="stylesheet" href="${request.static_url("altaircms:static/RT/css/header-logo.css")}" type="text/css" media="all" />
     <script type="text/javascript" src="${request.static_url("altaircms:static/RT/js/jquery.js")}"></script>
     <%include file="altaircms:templates/front/google-analitics.html"/>
   </head>
@@ -61,8 +62,8 @@ form = TopPageSidebarSearchForm()
         <div id="grpheader" style="height: 80px">
           <p id="tagLine"><a name="pagetop">チケット販売・イベント予約</a></p>
           <div id="siteID">
-            <div id="logobox" style="width: 100px; float: left">
-              <a href="http://ticket.rakuten.co.jp/"><img src="${request.static_url("altaircms:static/RT/img/renewal/ticket_logo_pc.png")}" alt="楽天チケット"/></a>
+            <div class="header-logo header-logo-top">
+                <h1><a href="https://ticket.rakuten.co.jp/">楽天チケット</a></h1>
             </div>
           </div>
           <dl id="remoteNav">

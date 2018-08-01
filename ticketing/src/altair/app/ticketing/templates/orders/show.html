@@ -102,7 +102,7 @@ if not reservation:
       <!--Orion phone input logic and form-->
       <%
       show_orion_input = False
-      if is_orion and order.performance.orion.phone_verify_disabled == False:
+      if is_orion and (order.performance.orion and order.performance.orion.phone_verify_disabled == False):
         show_orion_input = True
       %>
 

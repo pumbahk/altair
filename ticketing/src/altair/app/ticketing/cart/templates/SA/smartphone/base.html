@@ -26,20 +26,11 @@
         </div>
       </div>
 
-      <div class="side-action-buttons">
-        <form name="logout" action="${request.route_path('cart.logout')}" method="POST">
-          <div style="text-align: right">
-            <%doc>ログイン/ログアウト</%doc>
-            % if view_context.get_include_template_path('login_status.html') is not None:
-              <%include file="${view_context.get_include_template_path('login_status.html')}" args="device=view_context.ua_type" />
-            % endif
-            % if getattr(request, 'context', None) and hasattr(request.context, 'switch_pc_url'):
-              <a href="${request.context.switch_pc_url}" class="btn btn-supplementary"><span class="btn-inner">PCサイトで購入する</span></a>
-            % endif
-          </div>
-        </form>
+      <div style="text-align: right">
+        % if getattr(request, 'context', None) and hasattr(request.context, 'switch_pc_url'):
+          <a href="${request.context.switch_pc_url}" class="btn btn-supplementary"><span class="btn-inner">PCサイトで購入する</span></a>
+        % endif
       </div>
-
       <div class="band">
         <h1>チケット購入</h1>
       </div>
