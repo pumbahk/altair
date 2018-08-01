@@ -224,8 +224,11 @@ def upload_file_to_s3(filename,
 # Clean up
 def clean_up(filename):
     """Delete file"""
-    os.remove(filename)
-    message("Clean up data succeeded. filename: {}".format(filename))
+    if os.path.isfile(filename):
+        os.remove(filename)
+        message("Clean up data succeeded. filename: {}".format(filename))
+    else:
+        message("File not found. So skip clean file. filename: {}".format(filename))
 
 
 # DAO
