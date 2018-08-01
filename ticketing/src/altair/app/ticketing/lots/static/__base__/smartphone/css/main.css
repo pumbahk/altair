@@ -68,7 +68,7 @@ header h1 img {
 	margin: 0 auto;
 }
 .ts-contents-inner {
-
+	word-break: break-all;
 }
 
 
