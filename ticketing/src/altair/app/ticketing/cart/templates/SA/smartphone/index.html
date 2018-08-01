@@ -1,4 +1,14 @@
 <%inherit file="./base.html" />
+<div class="side-action-buttons">
+  <form name="logout" action="${request.route_path('cart.logout')}" method="POST">
+    <div style="text-align: right">
+      <%doc>ログイン/ログアウト</%doc>
+      % if view_context.get_include_template_path('login_status.html') is not None:
+        <%include file="${view_context.get_include_template_path('login_status.html')}" args="device=view_context.ua_type" />
+      % endif
+    </div>
+  </form>
+</div>
 <%namespace file="tags_smartphone.html" name="m" />
 
 <%block name="css">
