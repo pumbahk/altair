@@ -53,5 +53,9 @@ def set_locale_cookie(request):
         response.set_cookie('_LOCALE_',
                             value=language,
                             max_age=31536000)  # max_age = year
-    return HTTPFound(location=request.environ['HTTP_REFERER'],
-                     headers=response.headers)
+
+    if "HTTP_REFERER" in request.environ:
+        return HTTPFound(location=request.environ['HTTP_REFERER'],
+                         headers=response.headers)
+
+    return HTTPFound("/")
