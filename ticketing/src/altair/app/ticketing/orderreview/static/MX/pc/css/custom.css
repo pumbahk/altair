@@ -15,6 +15,9 @@
 
 /* input color 見出し
 -------------------------------------------- */
+input[type=radio]:checked + label::after {
+  background: var(--custom-background-color) !important;
+}
 input[type=checkbox]:checked + label::after{
   border-left-color: var(--custom-color) !important;
 	border-bottom-color: var(--custom-color) !important;
