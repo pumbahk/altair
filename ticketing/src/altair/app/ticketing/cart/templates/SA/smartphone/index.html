@@ -6,9 +6,6 @@
       % if view_context.get_include_template_path('login_status.html') is not None:
         <%include file="${view_context.get_include_template_path('login_status.html')}" args="device=view_context.ua_type" />
       % endif
-      % if getattr(request, 'context', None) and hasattr(request.context, 'switch_pc_url'):
-        <a href="${request.context.switch_pc_url}" class="btn btn-supplementary"><span class="btn-inner">PCサイトで購入する</span></a>
-      % endif
     </div>
   </form>
 </div>
