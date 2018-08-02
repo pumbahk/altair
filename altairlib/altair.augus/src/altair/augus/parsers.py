@@ -24,9 +24,9 @@ class AugusParser(object):
         raise ProtocolNotFound(path)
 
     @classmethod
-    def parse(cls, path):
+    def parse(cls, path, protocol=None):
         with open(path, 'rb') as fp:
-            return cls.parsefp(fp)
+            return cls.parsefp(fp, protocol)
 
     @classmethod
     def parsefp(cls, fp, protocol=None):

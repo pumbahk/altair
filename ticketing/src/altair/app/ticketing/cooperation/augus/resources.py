@@ -12,6 +12,8 @@ from sqlalchemy.orm.exc import (
     NoResultFound,
     MultipleResultsFound,
     )
+from pyramid.threadlocal import get_current_request
+from altair.sqlahelper import get_db_session
 from altair.app.ticketing.resources import TicketingAdminResource
 from altair.app.ticketing.core.models import (
     Account,
@@ -28,6 +30,9 @@ from .utils import (
 from .errors import (
     NoSeatError,
     BadRequest,
+    )
+from .csveditor import (
+    AugusCSVEditor,
     )
 
 
@@ -61,8 +66,23 @@ class AugusVenueRequestAccessor(RequestAccessor):
     in_params = {'augus_account_id': int,
         }
 
-class AugusVenueResource(TicketingAdminResource):
+
+class VenueCommonResource(TicketingAdminResource):
+    def __init__(self, request):
+        super(VenueCommonResource, self).__init__(request)
+        self.__slave_session = get_db_session(get_current_request(), name="slave")
+
+    def get_augus_account_by_id(self, augus_account_id):
+        return self.__slave_session.query(AugusAccount)\
+            .join(Account)\
+            .filter(AugusAccount.id==augus_account_id)\
+            .filter(Account.organization_id == self.organization.id)\
+            .first()
+
+
+class AugusVenueResource(VenueCommonResource):
     accessor_factory = AugusVenueRequestAccessor
+
     def __init__(self, request):
         super(type(self), self).__init__(request)
         self.accessor = self.accessor_factory(request)
@@ -85,7 +105,6 @@ class AugusVenueResource(TicketingAdminResource):
     def augus_venue_version(self):
         return self.accessor.augus_venue_version
 
-
     @reify
     def augus_venue(self):
         try:
@@ -97,11 +116,20 @@ class AugusVenueResource(TicketingAdminResource):
             raise HTTPNotFound('The AugusVenue not found or multiply: code={}, version={}'.format(
                 self.augus_venue_code, self.augus_venue_version))
 
+    @staticmethod
+    def is_valid_csv_format(records, target_augus_account):
+        # TKT5866 AugusAccount設定で整理券フォーマットon/offを見ては入力CSVのフォーマットをチェックする
+        # ヘッダ行の項目数で判断する。会場連携ダウンロード・アップロード間の連携先指定誤りを検出する。
+        csv_header_expected = AugusCSVEditor(target_augus_account).get_csv_header()
+        return len(csv_header_expected) != len(records[0])
+
+
 class VenueRequestAccessor(RequestAccessor):
     in_matchdict = {'venue_id': int}
 
-class VenueResource(TicketingAdminResource):
+class VenueResource(VenueCommonResource):
     accessor_factory = VenueRequestAccessor
+
     def __init__(self, request):
         super(type(self), self).__init__(request)
         self.accessor = self.accessor_factory(request)

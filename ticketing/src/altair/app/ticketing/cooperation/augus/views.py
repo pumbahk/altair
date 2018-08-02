@@ -41,6 +41,7 @@ from altair.augus.types import Status
 
 from .forms import (
     AugusVenueUploadForm,
+    AugusVenueDownloadForm,
     )
 from .csveditor import (
     AugusCSVEditor,
@@ -62,8 +63,10 @@ logger = logging.getLogger(__name__)
 def test(*args, **kwds):
     return ValueError()
 
+
 class _AugusBaseView(BaseView):
     pass
+
 
 @view_defaults(route_name='augus.venue', decorator=with_bootstrap, permission='event_editor')
 class VenueView(_AugusBaseView):
@@ -72,6 +75,7 @@ class VenueView(_AugusBaseView):
     def index(self):
         return {'venue': self.context.venue,
                 'ag_venues': self.context.augus_venues,
+                'download_form': AugusVenueDownloadForm(organization_id=self.context.organization.id),
                 'upload_form': AugusVenueUploadForm(organization_id=self.context.organization.id),
                 }
 
@@ -97,7 +101,13 @@ class VenueView(_AugusBaseView):
                        ('Content-Disposition', 'attachment; filename={0}'.format(filename)),
                        ]
         writer = csv.writer(res, delimiter=',')
-        csveditor = AugusCSVEditor()
+
+        augus_account_id = int(self.request.params.get('augus_account_id', 0))
+        augus_account = self.context.get_augus_account_by_id(augus_account_id)
+        if not augus_account:
+            raise HTTPBadRequest('augus account not found')
+
+        csveditor = AugusCSVEditor(augus_account)
         pairs = SeatAugusSeatPairs()
         pairs.load(self.context.venue)
         try:
@@ -131,17 +141,8 @@ class VenueView(_AugusBaseView):
         import csv
         from altair.app.ticketing.core.models import Venue, AugusSeat
 
-        from altair.app.ticketing.core.models import (
-            Account,
-            AugusAccount,
-            )
         augus_account_id = int(self.request.params.get('augus_account_id', 0))
-        augus_account = AugusAccount\
-          .query\
-          .join(Account)\
-          .filter(AugusAccount.id==augus_account_id)\
-          .filter(Account.organization_id==self.context.organization.id)\
-          .first()
+        augus_account = self.context.get_augus_account_by_id(augus_account_id)
 
         if not augus_account:
             raise HTTPBadRequest('augus account not found')
@@ -181,6 +182,13 @@ class VenueView(_AugusBaseView):
                         'message':u'この会場は既に登録されています',
                     }))
 
+                if self.context.is_valid_csv_format(records, augus_account):
+                    # 連携先指定間違いを防ぐため、ヘッダ行の項目数を判定する
+                    raise HTTPBadRequest(body=json.dumps({
+                        'message':
+                            u'アップロードCSVの形式が不正です。ご指定の連携先がダウンロード時と違う可能性があります。ご確認ください',
+                    }))
+
                 logger.info('AUGUS VENUE: creating augus venues')
                 venue = Venue.query.filter(Venue.id==venue_id).one()
 
@@ -202,6 +210,7 @@ class VenueView(_AugusBaseView):
                     record = seat_id__record[seat.id]
                     _str = lambda _col: _col.decode('cp932')
                     _int = lambda _col: int(_col) if _col.strip() else None
+                    is_numbered_ticket = augus_account.use_numbered_ticket_format
                     if record[6]: # create
                         ex_seat = AugusSeat()
                         ex_seat.area_name = _str(record[8])
@@ -211,15 +220,16 @@ class VenueView(_AugusBaseView):
                         ex_seat.floor = _str(record[12])
                         ex_seat.column = _str(record[13])
                         ex_seat.num = _str(record[14])
-                        ex_seat.block = _int(record[15])
-                        ex_seat.coordy = _int(record[16])
-                        ex_seat.coordx = _int(record[17])
-                        ex_seat.coordy_whole = _int(record[18])
-                        ex_seat.coordx_whole = _int(record[19])
-                        ex_seat.area_code = _int(record[20])
-                        ex_seat.info_code = _int(record[21])
-                        ex_seat.doorway_code = _int(record[22])
-                        ex_seat.version = _int(record[23])
+                        ex_seat.ticket_number = _int(record[15]) if is_numbered_ticket else None
+                        ex_seat.block = _int(record[16]) if is_numbered_ticket else _int(record[15])
+                        ex_seat.coordy = _int(record[17]) if is_numbered_ticket else _int(record[16])
+                        ex_seat.coordx = _int(record[18]) if is_numbered_ticket else _int(record[17])
+                        ex_seat.coordy_whole = _int(record[19]) if is_numbered_ticket else _int(record[18])
+                        ex_seat.coordx_whole = _int(record[20]) if is_numbered_ticket else _int(record[19])
+                        ex_seat.area_code = _int(record[21]) if is_numbered_ticket else _int(record[20])
+                        ex_seat.info_code = _int(record[22]) if is_numbered_ticket else _int(record[21])
+                        ex_seat.doorway_code = _int(record[23]) if is_numbered_ticket else _int(record[22])
+                        ex_seat.version = _int(record[24]) if is_numbered_ticket else _int(record[23])
                         # link
                         ex_seat.augus_venue_id = ex_venue.id
                         ex_seat.seat_id = seat.id
@@ -265,6 +275,7 @@ class AugusVenueView(_AugusBaseView):
                  renderer='altair.app.ticketing:templates/cooperation/augus/augus_venues/show.html')
     def show(self):
         return dict(augus_venue=self.context.augus_venue,
+                    download_form=AugusVenueDownloadForm(organization_id=self.context.organization.id),
                     upload_form=AugusVenueUploadForm(organization_id=self.context.organization.id),
                     )
 
@@ -277,7 +288,13 @@ class AugusVenueView(_AugusBaseView):
                        ('Content-Disposition', 'attachment; filename={0}'.format(filename)),
                        ]
         writer = csv.writer(res, delimiter=',')
-        csveditor = AugusCSVEditor()
+
+        augus_account_id = int(self.request.params.get('augus_account_id', 0))
+        augus_account = self.context.get_augus_account_by_id(augus_account_id)
+        if not augus_account:
+            raise HTTPBadRequest('augus account not found')
+
+        csveditor = AugusCSVEditor(augus_account)
         pairs = SeatAugusSeatPairs()
         pairs.load_augus_venue(augus_venue)
         try:
@@ -297,6 +314,11 @@ class AugusVenueView(_AugusBaseView):
 
         if not self.context.augus_account:
             raise HTTPBadRequest('augus account not found')
+
+        augus_account_id = int(self.request.params.get('augus_account_id', 0))
+        augus_account = self.context.get_augus_account_by_id(augus_account_id)
+        if not augus_account:
+            raise HTTPBadRequest('target augus account not found, augus_account_id={}'.format(augus_account_id))
 
         try:
             fp = self.request.POST['augus_venue_file'].file
@@ -321,6 +343,15 @@ class AugusVenueView(_AugusBaseView):
             reader = csv.reader(fp)
             headers = reader.next()
             records = [record for record in reader]
+
+            if self.context.is_valid_csv_format(records, augus_account):
+                # 連携先指定間違いを防ぐため
+                raise HTTPBadRequest(body=json.dumps({
+                    'message':
+                        u'アップロードCSVの形式が不正です。ご指定の連携先がダウンロード時と違う可能性があります。ご確認ください',
+                }))
+            is_numbered_ticket = augus_account.use_numbered_ticket_format
+
             logger.info('AUGUS VENUE: creating target list')
             external_venue_code_name_version_list = filter(lambda code_name_version: code_name_version != ("", "", ""),
                                                            set([(record[6], record[7], record[23]) for record in records]))
@@ -349,16 +380,17 @@ class AugusVenueView(_AugusBaseView):
                         and ex_seat.priority == _int(record[11])\
                         and ex_seat.floor == _str(record[12])\
                         and ex_seat.column == _str(record[13])\
-                        and ex_seat.num == _str(record[14])\
-                        and ex_seat.block == _int(record[15])\
-                        and ex_seat.coordy == _int(record[16])\
-                        and ex_seat.coordx == _int(record[17])\
-                        and ex_seat.coordy_whole == _int(record[18])\
-                        and ex_seat.coordx_whole == _int(record[19])\
-                        and ex_seat.area_code == _int(record[20])\
-                        and ex_seat.info_code == _int(record[21])\
-                        and ex_seat.doorway_code == _int(record[22])\
-                        and ex_seat.version == _int(record[23])\
+                        and ex_seat.num == _str(record[14]) \
+                        and ex_seat.ticket_number == _int(record[15]) if is_numbered_ticket else None\
+                        and ex_seat.block == _int(record[16]) if is_numbered_ticket else _int(record[15])\
+                        and ex_seat.coordy == _int(record[17]) if is_numbered_ticket else _int(record[16])\
+                        and ex_seat.coordx == _int(record[18]) if is_numbered_ticket else _int(record[17])\
+                        and ex_seat.coordy_whole == _int(record[19]) if is_numbered_ticket else _int(record[18])\
+                        and ex_seat.coordx_whole == _int(record[20]) if is_numbered_ticket else _int(record[19])\
+                        and ex_seat.area_code == _int(record[21]) if is_numbered_ticket else _int(record[20])\
+                        and ex_seat.info_code == _int(record[22]) if is_numbered_ticket else _int(record[21])\
+                        and ex_seat.doorway_code == _int(record[23]) if is_numbered_ticket else _int(record[22])\
+                        and ex_seat.version == _int(record[24]) if is_numbered_ticket else _int(record[23])\
                         and ex_seat.seat_id == seat_id
 
                     return not status
@@ -429,15 +461,16 @@ class AugusVenueView(_AugusBaseView):
                     ex_seat.floor = _str(record[12])
                     ex_seat.column = _str(record[13])
                     ex_seat.num = _str(record[14])
-                    ex_seat.block = _int(record[15])
-                    ex_seat.coordy = _int(record[16])
-                    ex_seat.coordx = _int(record[17])
-                    ex_seat.coordy_whole = _int(record[18])
-                    ex_seat.coordx_whole = _int(record[19])
-                    ex_seat.area_code = _int(record[20])
-                    ex_seat.info_code = _int(record[21])
-                    ex_seat.doorway_code = _int(record[22])
-                    ex_seat.version = _int(record[23])
+                    ex_seat.ticket_number = _int(record[15]) if is_numbered_ticket else None
+                    ex_seat.block = _int(record[16]) if is_numbered_ticket else _int(record[15])
+                    ex_seat.coordy = _int(record[17]) if is_numbered_ticket else _int(record[16])
+                    ex_seat.coordx = _int(record[18]) if is_numbered_ticket else _int(record[17])
+                    ex_seat.coordy_whole = _int(record[19]) if is_numbered_ticket else _int(record[18])
+                    ex_seat.coordx_whole = _int(record[20]) if is_numbered_ticket else _int(record[19])
+                    ex_seat.area_code = _int(record[21]) if is_numbered_ticket else _int(record[20])
+                    ex_seat.info_code = _int(record[22]) if is_numbered_ticket else _int(record[21])
+                    ex_seat.doorway_code = _int(record[23]) if is_numbered_ticket else _int(record[22])
+                    ex_seat.version = _int(record[24]) if is_numbered_ticket else _int(record[23])
                     # link
                     ex_seat.seat_id = seat.id
                     updates.add(ex_seat)

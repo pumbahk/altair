@@ -171,6 +171,7 @@ class AugusDistributionImporter(object):
                                       floor=record.floor,
                                       column=record.column,
                                       number=record.number,
+                                      ticket_number=record.ticket_number if hasattr(record, 'ticket_number') else None
                                       )
         if not ag_seat:
             raise IllegalImportDataError('Not foud augus seat: venue={}/area={}/info={}/floor={}/column={}/num={}'.format(
@@ -327,13 +328,14 @@ class AugusDistributionImporter(object):
         return self.import_record_all(protocol, augus_account)
 
     @staticmethod
-    def get_augus_seat(ag_venue, area_code, info_code, floor, column, number):
+    def get_augus_seat(ag_venue, area_code, info_code, floor, column, number, ticket_number):
         return AugusSeat.query.filter(AugusSeat.augus_venue_id==ag_venue.id)\
                               .filter(AugusSeat.area_code==area_code)\
                               .filter(AugusSeat.info_code==info_code)\
                               .filter(AugusSeat.floor==floor)\
                               .filter(AugusSeat.column==column)\
                               .filter(AugusSeat.num==number)\
+                              .filter(AugusSeat.ticket_number==ticket_number)\
                               .first()
 
     @staticmethod

@@ -4,15 +4,18 @@ from .common import (
     RecordBase,
     )
 
+
 class _PutbackProtocol(ProtocolBase):
     """返券プロトコル
     """
     pass
 
+
 class _PutbackRecord(RecordBase):
     """返券レコード
     """
     pass
+
 
 class PutbackRequestRecord(_PutbackRecord):
     """返券要求レコード
@@ -36,7 +39,8 @@ class PutbackRequestRecord(_PutbackRecord):
         'seat_type_classif',
         'seat_count',
         )
-    
+
+
 class PutbackResponseRecord(_PutbackRecord):
     """返券応答レコード
     """
@@ -63,8 +67,9 @@ class PutbackResponseRecord(_PutbackRecord):
         'putback_type',
         )
 
-class PutbackFinishRecord(_PutbackRecord):
-    """返券完了レコード
+
+class PutbackWithNumberedTicketResponseRecord(_PutbackRecord):
+    """返券応答レコード 整理券フォーマット
     """
     attributes = (
         'event_code',
@@ -73,19 +78,23 @@ class PutbackFinishRecord(_PutbackRecord):
         'putback_code',
         'seat_type_code',
         'unit_value_code',
+        'date',
+        'start_on',
         'block',
         'coordy',
-        'coordx',        
+        'coordx',
         'area_code',
         'info_code',
         'floor',
         'column',
         'number',
+        'ticket_number',
         'seat_type_classif',
         'seat_count',
-        'status',
+        'putback_status',
         'putback_type',
         )
+
 
 class PutbackRequest(_PutbackProtocol):
     """返券要求
@@ -94,16 +103,18 @@ class PutbackRequest(_PutbackProtocol):
     pattern = '^RT(?P<customer_id>.{7})HEY(?P<event_code>[^_]{0,9})_(?P<date>\d{12})_(?P<created_at>\d{14})\.csv$'
     fmt = 'RT{customer_id:07d}HEY{event_code:09d}_{date:12}_{created_at:14}.csv'
 
+
 class PutbackResponse(_PutbackProtocol):
     """返券応答
     """
     record = PutbackResponseRecord
     pattern = '^RT(?P<customer_id>.{7})HEN(?P<event_code>[^_]{0,9})_(?P<date>\d{12})_(?P<created_at>\d{14})\.csv$'
     fmt = 'RT{customer_id:07d}HEN{event_code:09d}_{date:12}_{created_at:14}.csv'
-        
-class PutbackFinish(_PutbackProtocol):
-    """返券完了
+
+
+class PutbackWithNumberedTicketResponse(PutbackResponse):
+    """返券応答 整理券フォーマット
     """
-    record = PutbackFinishRecord    
-    pattern = '^RT(?P<customer_id>.{7})HEK(?P<event_code>[^_]{0,9})_(?P<date>\d{12})_(?P<created_at>\d{14})\.csv$'
-    fmt = 'RT{customer_id:07d}HEK{event_code:09d}_{date:12}_{created_at:14}.csv'
+    # tkt5866 あえてALLには追加しない。既存処理を考慮し、AugusParser.get_protocolで拾われないようにするため
+    record = PutbackWithNumberedTicketResponseRecord
+

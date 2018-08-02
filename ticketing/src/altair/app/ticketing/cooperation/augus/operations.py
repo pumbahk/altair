@@ -26,6 +26,7 @@ from altair.augus.protocols import (
     VenueSyncRequest,
     VenueSyncResponse,
     )
+from altair.augus.protocols.distribution import DistributionWithNumberedTicketSyncRequest
 
 from altair.app.ticketing.core.models import (
     Organization,
@@ -226,7 +227,8 @@ class AugusWorker(object):
         staging = self.path.recv_dir_staging
         pending = self.path.recv_dir_pending
         send_dir_staging = self.path.send_dir_staging
-        target = DistributionSyncRequest
+        target = DistributionWithNumberedTicketSyncRequest \
+            if self.augus_account.use_numbered_ticket_format else DistributionSyncRequest
         importer = AugusDistributionImporter()
         exporter = AugusDistributionExporter()
         status = Status.NG
@@ -241,7 +243,7 @@ class AugusWorker(object):
                 logger.info('Target file: {}'.format(name))
                 path = os.path.join(staging, name)
 
-                request = AugusParser.parse(path)
+                request = AugusParser.parse(path, target)
 
                 try:
                     importer.import_(request, self.augus_account)

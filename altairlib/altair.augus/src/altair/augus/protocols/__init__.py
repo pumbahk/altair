@@ -12,7 +12,6 @@ from .distribution import (
 from .putback import (
     PutbackRequest,
     PutbackResponse,
-    PutbackFinish,
     )
 from .achievement import (
     AchievementRequest,
@@ -29,7 +28,6 @@ ALL = (VenueSyncRequest,
        DistributionSyncResponse,
        PutbackRequest,
        PutbackResponse,
-       PutbackFinish,
        AchievementRequest,
        AchievementResponse,
        )
