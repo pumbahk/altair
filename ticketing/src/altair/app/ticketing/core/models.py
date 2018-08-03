@@ -4942,7 +4942,6 @@ class AugusSeatStatus(object):
     def get_status(cls, seat, order=None):
         if seat.status in (SeatStatusEnum.Keep.v,
                            SeatStatusEnum.Import.v,
-                           SeatStatusEnum.InCart.v,
                            SeatStatusEnum.Confirmed.v,
                            SeatStatusEnum.Reserved.v,
                            ):

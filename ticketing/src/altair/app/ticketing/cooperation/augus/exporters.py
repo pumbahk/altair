@@ -176,7 +176,7 @@ class AugusAchievementExporter(object):
         self.session = get_db_session(get_current_request(), name="slave")
 
     def create_record(self, seat, seat_status_checked=False):
-        if not seat_status_checked and seat.status in [SeatStatusEnum.NotOnSale.v, SeatStatusEnum.Vacant.v, SeatStatusEnum.Canceled.v]:
+        if not seat_status_checked and seat.status in [SeatStatusEnum.InCart.v, SeatStatusEnum.NotOnSale.v, SeatStatusEnum.Vacant.v, SeatStatusEnum.Canceled.v]:
             return
 
         try:
