@@ -4942,7 +4942,6 @@ class AugusSeatStatus(object):
     def get_status(cls, seat, order=None):
         if seat.status in (SeatStatusEnum.Keep.v,
                            SeatStatusEnum.Import.v,
-                           SeatStatusEnum.InCart.v,
                            SeatStatusEnum.Confirmed.v,
                            SeatStatusEnum.Reserved.v,
                            ):
@@ -4955,6 +4954,7 @@ class AugusSeatStatus(object):
             else:
                 return cls.RESERVE
         else:
+            logger.info('Seat.id {} has other status {}'.format(seat.id, seat.status))
             return cls.OTHER
 
 
