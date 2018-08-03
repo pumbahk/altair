@@ -233,6 +233,8 @@ def is_same_sej_order(sej_order, sej_args, ticket_dicts):
                 return False
             if ticket.ticket_data_xml != d['xml']:
                 return False
+            if ticket.ordered_product_item_token_id != d['ordered_product_item_token_id']:
+                return False
     return True
 
 def refresh_order(request, tenant, order, update_reason, current_date=None):
