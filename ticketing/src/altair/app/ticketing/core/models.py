@@ -4955,6 +4955,7 @@ class AugusSeatStatus(object):
             else:
                 return cls.RESERVE
         else:
+            logger.info('Seat.id {} has other status {}'.format(seat.id, seat.status))
             return cls.OTHER
 
 
