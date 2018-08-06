@@ -1,0 +1,24 @@
+<%page args="product" />
+
+% if product.seats:
+    % if product.product.sales_segment.setting.display_seat_no:
+    <td><strong>${product.seat_quantity}</strong>枚</td>
+    <td>
+        % for seat in product.seats:
+        ${seat['name']}<br/>
+        % endfor
+    </td>
+    % else:
+        % if len(product.elements) > 1:
+        <td colspan="2"><strong>×${product.quantity}</strong></td>
+        % else:
+        <td colspan="2"><strong>${product.elements[0].product_item.quantity * product.quantity}</strong>枚</td>
+        % endif
+    % endif
+% else:
+    % if len(product.elements) > 1:
+    <td colspan="2"><strong>×${product.quantity}</strong></td>
+    % else:
+    <td colspan="2"><strong>${product.elements[0].product_item.quantity * product.quantity}</strong>枚</td>
+    % endif
+% endif

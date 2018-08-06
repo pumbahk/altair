@@ -12,19 +12,7 @@ ${order.performance.venue.name}<br />
 <%mobile:form_header>購入内容</%mobile:form_header>
 合計金額: ￥${h.format_number(order.total_amount)}<br />
 %for product in order.items:
-・${product.product.name}
-% if product.seats:
-% if product.product.sales_segment.setting.display_seat_no:
-  (${product.seat_quantity}枚)<br />
-  % for seat in product.seats:
-  　${seat['name']}<br/>
-  % endfor
-% else:
-  (${product.seat_quantity}枚)<br />
-% endif
-% else:
-  (${product.quantity}枚)<br />
-% endif
+<%include file="./product_count.html" args="product=product"/>
 　￥${h.format_number(product.price * product.quantity)}<br />
 %endfor
 ・ステータス:${h.order_status(order)}<br/>
