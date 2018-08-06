@@ -8,6 +8,7 @@ CODE="PC"
 ORG_NAME="株式会社WW" # 25文字以内で設定してください
 CONTACT="http://www.h5-official.com/pages/1236135/contact" # 【mailto:メールアドレス】 OR 【問い合わせURL】
 REQUIRED_COUPON=false # クーポン機能必要であればtrueにしてください
+REQUIRED_EXTAUTH=false # Extauth機能必要であればtrueにしてください
 
 ### chef-repo設定
 SUB_DOMAIN="ww"
