@@ -8,6 +8,7 @@ CODE="PC"
 ORG_NAME="株式会社WW" # 25文字以内で設定してください
 CONTACT="http://www.h5-official.com/pages/1236135/contact" # 【mailto:メールアドレス】 OR 【問い合わせURL】
 REQUIRED_COUPON=false # クーポン機能必要であればtrueにしてください
+REQUIRED_EXTAUTH=false # Extauth機能必要であればtrueにしてください
 
 ### chef-repo設定
 SUB_DOMAIN="ww"
@@ -35,6 +36,7 @@ PATH_TO_S3_ORDERREVIEW="s3://${BUCKET}/orderreview/static"
 PATH_TO_S3_FCAUTH="s3://${BUCKET}/fc_auth/static"
 PATH_TO_S3_LOTS="s3://${BUCKET}/lots/static"
 PATH_TO_S3_COUPON="s3://${BUCKET}/coupon/static"
+PATH_TO_S3_EXTAUTH="s3://${BUCKET}/extauth/static"
 PATH_TO_S3_USERSITE="s3://${BUCKET}/usersite/static"
 
 #---------------------------
@@ -46,6 +48,7 @@ PATH_TO_STATIC_ORDERREVIEW="ticketing/src/altair/app/ticketing/orderreview/stati
 PATH_TO_STATIC_FCAUTH="ticketing/src/altair/app/ticketing/fc_auth/static"
 PATH_TO_STATIC_LOTS="ticketing/src/altair/app/ticketing/lots/static"
 PATH_TO_STATIC_COUPON="ticketing/src/altair/app/ticketing/coupon/static"
+PATH_TO_STATIC_EXTAUTH="ticketing/src/altair/app/ticketing/extauth/static"
 PATH_TO_STATIC_ALTAIRCMS="cms/src/altaircms/static"
 
 #---------------------------
