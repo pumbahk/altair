@@ -2,40 +2,31 @@
 % if weekly_sale and weekly_sale.events:
 <script>
 $(document).ready(function(){
-    // 10件ずつ表示
-    var eventCount = ${len(weekly_sale.events)};
-    var position = 10;
-    for (var count=10; count<eventCount; count++) {
-        $(".sale_evnet" + String(count)).hide();
-    }
-
-    $(".disp_more_sale").on('click',function(){
-        var nextPosition = position + 10;
-        if (position < eventCount) {
-            if (eventCount < nextPosition) {
-                nextPosition = eventCount;
-            }
-
-            for (var count=position; count<nextPosition; count++) {
-                $(".sale_evnet" + String(count)).show();
-            }
-            position = nextPosition;
-        }
+    $(".next_display_week").hide();
+    $(".disp_next_week").on('click',function(){
+        $(".next_display_week").show();
     });
 });
 </script>
+
 
 <section id="week_tickets" class="week_tickets">
     <h2 class="category_ttl">今週発売のチケット</h2>
     <div class="top_inner">
         <ul>
             % for num, event in enumerate(weekly_sale.events):
-            <li class="sale_evnet${num}">
-                <a href="${request.route_path('smartphone.detail', _query=dict(event_id=event.id))}">${event.title}</a>
-            </li>
+              % if num < 4:
+                <li>
+                    <a href="${request.route_path('smartphone.detail', _query=dict(event_id=event.id))}">${event.title}</a>
+                </li>
+              % else:
+                <li class="next_display_week">
+                    <a href="${request.route_path('smartphone.detail', _query=dict(event_id=event.id))}">${event.title}</a>
+                </li>
+              % endif
             % endfor
         </ul>
-        <p class="over_txt disp_static_pagesets"><span>もっとみる</span></p>
+        <p class="over_txt disp_next_week"><span>もっとみる</span></p>
     </div>
 </section>
 % endif
