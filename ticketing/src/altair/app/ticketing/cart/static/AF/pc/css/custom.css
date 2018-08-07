@@ -1,9 +1,9 @@
 :root {
-    --custom-btn-color: #E60012;    /* buttons ボタン */
-    --custom-color: #E60012;        /* fonts 文字 */
-    --custom-border-color: #E60012;     /* border 罫線（divなど） */
-    --custom-background-color: #E60012;     /* background 背景（divなど） */
-    --custom-default-color: #E60012;
+    --custom-btn-color: #0057b8;    /* buttons ボタン */
+    --custom-color: #0057b8;        /* fonts 文字 */
+    --custom-border-color: #0057b8;     /* border 罫線（divなど） */
+    --custom-background-color: #0057b8;     /* background 背景（divなど） */
+    --custom-default-color: #0057b8;
     --custom-light-color: #ccc;
     --custom-dark-color: #fff;
 }
