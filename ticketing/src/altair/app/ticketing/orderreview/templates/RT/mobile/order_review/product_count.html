@@ -1,0 +1,13 @@
+<%page args="product" />
+% if len(product.elements) > 1:
+・${product.product.name} (×${product.quantity})<br />
+% else:
+・${product.product.name} (${product.elements[0].product_item.quantity * product.quantity}枚)<br />
+% endif
+% if product.seats:
+    % if product.product.sales_segment.setting.display_seat_no:
+        % for seat in product.seats:
+　${seat['name']}<br/>
+        % endfor
+    % endif
+% endif

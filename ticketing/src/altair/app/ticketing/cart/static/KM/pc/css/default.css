@@ -446,6 +446,9 @@ a:active {
   margin-top: 3px;
   margin-bottom: 15px;
   border: 2px solid #999;
+  max-height: 218px;
+  overflow-y: auto;
+  display:inline-block;
 }
 
 .modal-body th {

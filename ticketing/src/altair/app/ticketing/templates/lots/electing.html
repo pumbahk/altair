@@ -202,10 +202,10 @@ ${tabs.tabs(request)}
           </button>
           %if not process_possible or (lot.end_at > datetime.now()):
             <div class="alert-messages">
-              <h5>受付期間：${vh.datetime(lot.end_at, with_weekday=True)}を過ぎるまで当選、落選処理が行えません。</h5>
+              <h5>抽選申込ユーザ取消がONのため、受付期間：${vh.datetime(lot.end_at, with_weekday=True)}を過ぎるまで当選、落選処理が行えません。</h5>
             </div>
           %endif
-          %if (electing.blockers and (lot.end_at < datetime.now())) or not process_possible :
+          %if (electing.blockers and (lot.end_at < datetime.now())):
             <div class="alert-messages">
               <h5>在庫が足りません。パフォーマンスの配席数を確認してください。</h5>
             </div>
