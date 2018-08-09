@@ -259,7 +259,6 @@ def fetch_order_data(session, organization_id, event_id_list, start_at, end_at):
         .join(CartSetting, CartSetting.id == Order.cart_setting_id) \
         .join(ShippingAddress, ShippingAddress.id == Order.shipping_address_id) \
         .filter(Order.organization_id == organization_id) \
-        .filter(Order.user_id.isnot(None)) \
         .filter(Order.canceled_at.is_(None)) \
         .filter(Order.refund_id.is_(None)) \
         .filter(and_(start_at <= Order.paid_at, Order.paid_at <= end_at)) \

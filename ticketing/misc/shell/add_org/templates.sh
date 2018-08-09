@@ -35,6 +35,7 @@ cat << EOS
 CODE: ${CODE}
 ORG_NAME: ${ORG_NAME}
 CONTACT: ${CONTACT}
+FQDN: ${FQDN}
 
 ALTAIR_PATH: ${ALTAIR_PATH}
 PATH_TO_FAVICON: ${PATH_TO_FAVICON}
@@ -160,6 +161,45 @@ else
 fi
 
 cat << EOS
+
+#---------------------------
+# 【手順】extauth テンプレート/画像の配置
+#---------------------------
+EOS
+
+if ${REQUIRED_EXTAUTH}; then
+    # テンプレートの配置
+    # 暫定対応でGP（現在（2018/08/03時点）で最新）をベースにしてテンプレートを作成します。
+    # コピーしたら、中身色な値を手修正するものがありますので、ご注意ください。
+    cd ${ALTAIR_PATH}/ticketing/src/altair/app/ticketing/extauth/templates
+    test -d ${CODE} && rm -rf ${CODE}
+    mkdir -p ${CODE}/__default__
+    cp -r GP/__default__/pc ${CODE}/__default__/pc
+
+    ### replace
+    find ${CODE} -type f | xargs sed -i'' -e "s@goodluck-p.tstar.jp@${FQDN}@g"
+    find ${CODE} -type f | xargs sed -i'' -e "s@グッドラック・プロモーション@${ORG_NAME}@g"
+    find ${CODE} -type f -name "*-e" | xargs rm  # バックアップができることがあるので、その場合消す
+
+    ### simlink
+    cd ${CODE}/__default__
+    ln -s pc smartphone
+
+    # 静的コンテンツの配置
+    cd ${ALTAIR_PATH}/${PATH_TO_STATIC_EXTAUTH}
+    test -d ${CODE} && rm -rf ${CODE}
+    cp -r __default__ ${CODE}
+
+    test -f ${PATH_TO_PC_LOGO} && cp ${PATH_TO_PC_LOGO} ${CODE}/pc/images/logo.png
+    test -f ${PATH_TO_FAVICON} && cp ${PATH_TO_FAVICON} ${CODE}/pc/images/favicon.ico
+    test -f ${PATH_TO_SP_LOGO} && cp ${PATH_TO_SP_LOGO} ${CODE}/smartphone/images/logo.png
+    test -f ${PATH_TO_FAVICON} && cp ${PATH_TO_FAVICON} ${CODE}/smartphone/images/favicon.ico
+
+else
+    echo "REQUIRED_EXTAUTHが${REQUIRED_EXTAUTH}に設定されているため、スキップします。"
+fi
+cat << EOS
+
 #---------------------------
 # 【手順】cmsのエラーコンテンツ配置手順
 #---------------------------

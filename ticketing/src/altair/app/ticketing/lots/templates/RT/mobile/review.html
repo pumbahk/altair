@@ -71,7 +71,11 @@ ${h.japanese_date(wish.performance.start_on)}<br />
 % for lot_product in wish.products:
 ・${lot_product.product.name}<br />
 <div align="right" style="text-align:right">
-${h.format_currency(lot_product.product.price)}×${lot_product.quantity}枚=${h.format_currency(lot_product.subtotal)} (税込)
+% if len(lot_product.product.items) > 1:
+×${lot_product.quantity}=${h.format_currency(lot_product.subtotal)} (税込)
+% else:
+${lot_product.product.items[0].quantity * lot_product.quantity}枚=${h.format_currency(lot_product.subtotal)} (税込)
+% endif
 </div>
 % endfor
 ・決済手数料 (${wish.lot_entry.payment_delivery_method_pair.payment_method.name})<br />
