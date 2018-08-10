@@ -323,7 +323,7 @@ class AugusWorker(object):
 
         importer = AugusPutbackImporter()
         target = PutbackWithNumberedTicketRequest \
-            if self.augus_account.accept_putback_request else PutbackRequest
+            if self.augus_account.use_numbered_ticket_format else PutbackRequest
         putback_codes = []
 
         try:

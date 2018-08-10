@@ -392,9 +392,10 @@ class AugusPutbackImporter(object):
                                               augus_performance, putback_code):
         putback_stock_holder = self.__create_stock_holder_for_auto_putback(augus_performance.performance.event_id)
         augus_putback = self.__create_augus_putback(augus_account, augus_performance, putback_code)
+        augus_seat_and_record_list = \
+            self.__get_augus_seat_and_record_list(augus_account, augus_performance, records_group_by_performance)
 
-        for augus_seat, record \
-                in self.__get_augus_seat_and_record_list(augus_performance, records_group_by_performance):
+        for augus_seat, record in augus_seat_and_record_list:
             augus_stock_info = self.__get_enable_augus_stock_info(augus_seat)
             putback_stock = self.__get_putback_stock(putback_stock_holder, augus_performance, augus_stock_info)
 
@@ -468,7 +469,7 @@ class AugusPutbackImporter(object):
             .first()
         return latest_augus_putback.augus_putback_code + 1 if latest_augus_putback else 1
 
-    def __get_augus_seat_and_record_list(self, augus_performance, records):
+    def __get_augus_seat_and_record_list(self, augus_account, augus_performance, records):
         augus_venue = self._slave_session.query(AugusVenue)\
             .filter(AugusVenue.code == augus_performance.augus_venue_code,
                     AugusVenue.version == augus_performance.augus_venue_version,
@@ -480,6 +481,8 @@ class AugusPutbackImporter(object):
                                        u'augus_venue_version={}, '.format(augus_performance.augus_venue_version))
 
         def to_tuple(data):
+            # 整理券フォーマットでないときticket_numberをNoneにするとSQLのIN句にNULLを条件に検索しようとするが
+            # IN句ではNULLが評価できないため検索結果なしとなる。このため固定値にし、クエリ生成でも同じ固定値で整理券を検索することで対策
             return (
                 long(data.block),
                 long(data.coordy),
@@ -489,7 +492,7 @@ class AugusPutbackImporter(object):
                 data.number if hasattr(data, 'number') else data.num,
                 long(data.area_code),
                 long(data.info_code),
-                long(data.ticket_number) if hasattr(data, 'ticket_number') else None
+                long(data.ticket_number) if augus_account.use_numbered_ticket_format else 'not_care'
             )
 
         augus_seats = self._slave_session.query(AugusSeat)\
@@ -503,7 +506,7 @@ class AugusPutbackImporter(object):
                         AugusSeat.num,
                         AugusSeat.area_code,
                         AugusSeat.info_code,
-                        AugusSeat.ticket_number
+                        AugusSeat.ticket_number if augus_account.use_numbered_ticket_format else 'not_care'
                     ).in_(map(to_tuple, records)),
                     AugusSeat.deleted_at.is_(None))\
             .all()
