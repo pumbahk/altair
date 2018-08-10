@@ -141,8 +141,7 @@ class AugusPutbackExporter(object):
 
         augus_account = \
             self._slave_session.query(AugusAccount)\
-                .filter(AugusAccount.code == customer_id,
-                        AugusAccount.deleted_at.is_(None))\
+                .filter(AugusAccount.code == customer_id)\
                 .one()
         use_numbered_ticket_format = augus_account.use_numbered_ticket_format if augus_account else False
 
@@ -301,8 +300,7 @@ class AugusAchievementExporter(object):
         augus_account = self.session.query(
             AugusAccount
         ).filter(
-            AugusAccount.id == augus_performance.augus_account_id,
-            AugusAccount.deleted_at.is_(None)
+            AugusAccount.id == augus_performance.augus_account_id
         ).one()
         use_numbered_ticket_format = augus_account.use_numbered_ticket_format if augus_account else False
 
