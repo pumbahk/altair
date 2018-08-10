@@ -337,9 +337,8 @@ class AugusWorker(object):
                     transaction.commit()
                     putback_codes.extend(imported_putback_codes)
                     logger.info('putback request: ok: {}'.format(name))
-                except AugusDataImportError as error:
-                    logger.error('Cooperation has not been completed: {}'.format(error))
-                    traceback.print_exc(file=sys.stderr)
+                except AugusDataImportError:
+                    logger.error('Cooperation has not been completed: {}'.format(traceback.format_exc()))
                     transaction.abort()
                     continue
                 except Exception as error:
@@ -347,7 +346,6 @@ class AugusWorker(object):
                     transaction.abort()
                     raise
         except:
-            traceback.print_exc(file=sys.stderr)
             raise
 
         return putback_codes
@@ -393,9 +391,8 @@ class AugusWorker(object):
                     transaction.commit()
                     augus_performance_ids.extend(imported_augus_performance_ids)
                     logger.info('achieve request: ok: {}'.format(name))
-                except AugusDataImportError as error:
-                    logger.error('Cooperation has not been completed: {}'.format(error))
-                    traceback.print_exc(file=sys.stderr)
+                except AugusDataImportError:
+                    logger.error('Cooperation has not been completed: {}'.format(traceback.format_exc()))
                     transaction.abort()
                     continue
                 except Exception as error:
@@ -403,7 +400,6 @@ class AugusWorker(object):
                     transaction.abort()
                     raise
         except:
-            traceback.print_exc(file=sys.stderr)
             raise
 
         return augus_performance_ids
@@ -623,29 +619,32 @@ class AugusOperationManager(object):
 
     def putback_request(self, mailer):
         for worker in self.augus_workers():
-            augus_account = worker.augus_account
-            if not augus_account.accept_putback_request:
-                continue
-
             try:
+                augus_account = worker.augus_account
+                if not augus_account.accept_putback_request:
+                    continue
+
                 putback_codes = worker.putback_request()
-            except:
-                raise
 
-            if mailer and len(putback_codes):
-                slave_session = get_db_session(get_current_request(), name="slave")
-                augus_putbacks = slave_session.query(AugusPutback)\
-                    .filter(AugusPutback.augus_putback_code.in_(putback_codes))
+                if mailer and len(putback_codes):
+                    slave_session = get_db_session(get_current_request(), name="slave")
+                    augus_putbacks = slave_session.query(AugusPutback) \
+                        .filter(AugusPutback.augus_putback_code.in_(putback_codes))\
+                        .all()
 
-                params = {
-                    'augus_putbacks': augus_putbacks,
+                    params = {
+                        'augus_putbacks': augus_putbacks,
                     }
-                self.send_mail(
-                    mailer, augus_account,
-                    u'【オーガス連携】返券予約のおしらせ',
-                    'altair.app.ticketing:templates/cooperation/augus/mails/augus_putback_request.html',
-                    params,
+                    self.send_mail(
+                        mailer, augus_account,
+                        u'【オーガス連携】返券予約のおしらせ',
+                        'altair.app.ticketing:templates/cooperation/augus/mails/augus_putback_request.html',
+                        params,
                     )
+            except:
+                logger.error('error occurred in putback request for augus_account_id = {}: {}'
+                             .format(augus_account.id, traceback.format_exc()))
+                continue
 
     def achieve(self, mailer, all_=False, now=None):
         exporter = AugusAchievementExporter(now)
@@ -666,30 +665,32 @@ class AugusOperationManager(object):
 
     def achieve_request(self, mailer):
         for worker in self.augus_workers():
-            augus_account = worker.augus_account
-            if not augus_account.accept_achievement_request:
-                continue
-
             try:
+                augus_account = worker.augus_account
+                if not augus_account.accept_achievement_request:
+                    continue
+
                 augus_performance_ids = worker.achieve_request()
-            except:
-                raise
 
-            if mailer and len(augus_performance_ids):
-                slave_session = get_db_session(get_current_request(), name="slave")
-                augus_performances = slave_session.query(AugusPerformance)\
-                    .filter(AugusPerformance.id.in_(augus_performance_ids))\
-                    .all()
+                if mailer and len(augus_performance_ids):
+                    slave_session = get_db_session(get_current_request(), name="slave")
+                    augus_performances = slave_session.query(AugusPerformance) \
+                        .filter(AugusPerformance.id.in_(augus_performance_ids)) \
+                        .all()
 
-                params = {
-                    'augus_performances': augus_performances,
+                    params = {
+                        'augus_performances': augus_performances,
                     }
-                self.send_mail(
-                    mailer, augus_account,
-                    u'【オーガス連携】実績通知予約のおしらせ',
-                    'altair.app.ticketing:templates/cooperation/augus/mails/augus_achievement_request.html',
-                    params,
+                    self.send_mail(
+                        mailer, augus_account,
+                        u'【オーガス連携】実績通知予約のおしらせ',
+                        'altair.app.ticketing:templates/cooperation/augus/mails/augus_achievement_request.html',
+                        params,
                     )
+            except:
+                logger.error('error occurred in achieve request for augus_account_id = {}: {}'
+                             .format(augus_account.id, traceback.format_exc()))
+                continue
 
     def venue_sync_request(self, mailer=None):
         for worker in self.augus_workers():
