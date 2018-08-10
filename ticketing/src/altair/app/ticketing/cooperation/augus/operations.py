@@ -26,6 +26,7 @@ from altair.augus.protocols import (
     VenueSyncRequest,
     VenueSyncResponse,
     PutbackRequest,
+    AchievementRequest,
     )
 from altair.augus.protocols.distribution import DistributionWithNumberedTicketSyncRequest
 from altair.augus.protocols.putback import PutbackWithNumberedTicketRequest
@@ -48,6 +49,7 @@ from .importers import (
     AugusTicketImpoter,
     AugusDistributionImporter,
     AugusPutbackImporter,
+    AugusAchieveImporter,
     )
 from .exporters import (
     AugusExporter,
@@ -369,6 +371,41 @@ class AugusWorker(object):
         transaction.commit()
         return ag_performances
 
+    def achieve_request(self):
+        logger.info('start augus putback request: augus_account_id={}'.format(self.augus_account.id))
+        staging = self.path.recv_dir_staging
+        pending = self.path.recv_dir_pending
+
+        importer = AugusAchieveImporter()
+        target = AchievementRequest
+        augus_performance_ids = []
+
+        try:
+            for name in filter(target.match_name, os.listdir(staging)):
+                logger.info('Target file: {}'.format(name))
+                path = os.path.join(staging, name)
+                records = AugusParser.parse(path, target)
+
+                try:
+                    imported_augus_performance_ids = importer.import_(records, self.augus_account)
+                    shutil.move(path, pending)
+                    transaction.commit()
+                    augus_performance_ids.extend(imported_augus_performance_ids)
+                    logger.info('achieve request: ok: {}'.format(name))
+                except AugusDataImportError as error:
+                    logger.info('Cooperation has not been completed: {}'.format(error))
+                    transaction.abort()
+                    continue
+                except Exception as error:
+                    logger.info('Unknown error: {}'.format(error))
+                    transaction.abort()
+                    raise
+        except:
+            traceback.print_exc(file=sys.stderr)
+            raise
+
+        return augus_performance_ids
+
     def venue_sync_request(self, mailer, sleep=2):
         logger.info('start augus venue sync request: augus_account_id={}'.format(self.augus_account.id))
         staging = self.path.recv_dir_staging
@@ -622,6 +659,33 @@ class AugusOperationManager(object):
                     'altair.app.ticketing:templates/cooperation/augus/mails/augus_achievement.html',
                     params,
                 )
+
+    def achieve_request(self, mailer):
+        for worker in self.augus_workers():
+            augus_account = worker.augus_account
+            if not augus_account.accept_achievement_request:
+                continue
+
+            try:
+                augus_performance_ids = worker.achieve_request()
+            except:
+                raise
+
+            if mailer and len(augus_performance_ids):
+                slave_session = get_db_session(get_current_request(), name="slave")
+                augus_performances = slave_session.query(AugusPerformance)\
+                    .filter(AugusPerformance.id.in_(augus_performance_ids))\
+                    .all()
+
+                params = {
+                    'augus_performances': augus_performances,
+                    }
+                self.send_mail(
+                    mailer, augus_account,
+                    u'【オーガス連携】実績通知予約のおしらせ',
+                    'altair.app.ticketing:templates/cooperation/augus/mails/augus_achievement_request.html',
+                    params,
+                    )
 
     def venue_sync_request(self, mailer=None):
         for worker in self.augus_workers():

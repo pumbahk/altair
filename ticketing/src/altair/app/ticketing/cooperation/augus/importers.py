@@ -3,6 +3,9 @@ import time
 import datetime
 import itertools
 import logging
+from sqlalchemy import (
+    tuple_,
+)
 from sqlalchemy.orm.exc import (
     MultipleResultsFound,
     NoResultFound,
@@ -565,4 +568,56 @@ class AugusPutbackImporter(object):
         putback_stock.save()
         old_stock.save()
         seat.save()
+
+
+class AugusAchieveImporter(object):
+    def __init__(self):
+        self.__slave_session = get_db_session(get_current_request(), name="slave")
+
+    def import_(self, records, augus_account):
+        return self.__import_record_all(records, augus_account)
+
+    def __import_record_all(self, records, augus_account):
+        if len(records) == 0:
+            return []
+
+        couple_of_event_and_performance_code = self.__get_unique_couple_of_event_and_performance_code(records)
+        augus_performances = self.__get_augus_performances(augus_account.id, couple_of_event_and_performance_code)
+        augus_performances_ids = map(lambda ag_performance: ag_performance.id, augus_performances)
+
+        AugusPerformance.query.filter(AugusPerformance.id.in_(augus_performances_ids))\
+             .update({AugusPerformance.is_report_target: True}, synchronize_session='fetch')
+
+        return augus_performances_ids
+
+    @staticmethod
+    def __get_unique_couple_of_event_and_performance_code(records):
+        couple_of_event_and_performance_code = []
+        for record in records:
+            if (record.event_code, record.performance_code) not in couple_of_event_and_performance_code:
+                couple_of_event_and_performance_code.append((record.event_code, record.performance_code))
+        return couple_of_event_and_performance_code
+
+    def __get_augus_performances(self, augus_account_id, couple_of_event_and_performance_code):
+        # tuple_はmysqlやpostgreSQLなどでのみ動くことに注意
+        augus_performances = self.__slave_session.query(AugusPerformance).filter(
+            tuple_(AugusPerformance.augus_event_code, AugusPerformance.augus_performance_code)
+                .in_(couple_of_event_and_performance_code),
+            AugusPerformance.augus_account_id == augus_account_id,
+            AugusPerformance.deleted_at.is_(None)
+        ).all()
+
+        event_and_performance_code_from_augus_performance = \
+            map(lambda ag_p: (ag_p.augus_event_code, ag_p.augus_performance_code), augus_performances) \
+                if augus_performances else []
+
+        # 取得したAugusPerformanceがリクエストと必要十分かチェック
+        for event_code, performance_code in couple_of_event_and_performance_code:
+            if (long(event_code), long(performance_code)) not in event_and_performance_code_from_augus_performance:
+                # 一つでもなければ対象ファイルの処理を終了する
+                raise AugusDataImportError(u'Not found augus_performance: ' +
+                                           u'augus_account_id={}, '.format(augus_account_id) +
+                                           u'event_code={}, '.format(event_code) +
+                                           u'performance_code={}'.format(performance_code))
+        return augus_performances
 

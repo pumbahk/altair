@@ -24,10 +24,7 @@ class AchievementRequestRecord(_AchievementRecord):
         'event_code',
         'performance_code',
         'date',
-        'start_on',
-        'event_name',
-        'performance_name',
-        'venue_name',
+        'start_on'
         )
 
 

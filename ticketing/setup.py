@@ -199,6 +199,7 @@ setup(name='altair.app.ticketing',
       augus_putback=altair.app.ticketing.cooperation.augus.scripts.augus_putback:main
       augus_putback_request=altair.app.ticketing.cooperation.augus.scripts.augus_putback_request:main
       augus_achievement=altair.app.ticketing.cooperation.augus.scripts.augus_achievement:main
+      augus_achievement_request=altair.app.ticketing.cooperation.augus.scripts.augus_achievement_request:main
       augus_venue_sync_request=altair.app.ticketing.cooperation.augus.scripts.augus_venue_sync_request:main
       augus_venue_sync_response=altair.app.ticketing.cooperation.augus.scripts.augus_venue_sync_response:main
       send_payment_remind_mail=altair.app.ticketing.mails.scripts.send_payment_remind_mail:main
