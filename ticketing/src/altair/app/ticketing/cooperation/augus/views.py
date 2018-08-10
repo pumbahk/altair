@@ -159,9 +159,19 @@ class VenueView(_AugusBaseView):
             reader = csv.reader(fp)
             headers = reader.next()
             records = [record for record in reader]
+
+            if self.context.is_valid_csv_format(headers, augus_account):
+                # 連携先指定間違いを防ぐため、ヘッダ行の項目数を判定する
+                raise HTTPBadRequest(u'アップロードCSVの形式が不正です。ご指定の連携先がダウンロード時と違う可能性があります。' +
+                                     u'ご確認ください。')
+
             logger.info('AUGUS VENUE: creating target list')
+            # tab 区切りだとココでIndexErrorとかになるよ
             external_venue_code_name_version_list = filter(lambda code_version: code_version != ("", "", ""),
-                                                           set([(record[6], record[7], record[23]) for record in records])) # tab 区切りだとココでIndexErrorとかになるよ
+                                                           set([(record[headers.index('augus_venue_code')],
+                                                                 record[headers.index('augus_venue_name')],
+                                                                 record[headers.index('augus_venue_version')])
+                                                                for record in records]))
             count = len(external_venue_code_name_version_list)
             if count == 0: # 対象すべてunlink
                 raise HTTPBadRequest(body=json.dumps({
@@ -182,11 +192,6 @@ class VenueView(_AugusBaseView):
                         'message':u'この会場は既に登録されています',
                     }))
 
-                if self.context.is_valid_csv_format(headers, augus_account):
-                    # 連携先指定間違いを防ぐため、ヘッダ行の項目数を判定する
-                    raise HTTPBadRequest(u'アップロードCSVの形式が不正です。' +
-                                         u'ご指定の連携先がダウンロード時と違う可能性があります。ご確認ください。')
-
                 logger.info('AUGUS VENUE: creating augus venues')
                 venue = Venue.query.filter(Venue.id==venue_id).one()
 
@@ -199,7 +204,8 @@ class VenueView(_AugusBaseView):
                 ex_venue.save()
 
                 logger.info('AUGUS VENUE: creating augus seat target dict')
-                seat_id__record = dict([(int(record[0]), record) for record in records if record[6].strip()])
+                seat_id__record = dict([(int(record[headers.index('id')]), record)
+                                        for record in records if record[headers.index('augus_venue_code')].strip()])
                 seat_ids = seat_id__record.keys()
                 logger.info('AUGUS VENUE: creating target seat list')
                 seats = filter(lambda seat: seat.id in seat_ids, venue.seats)
@@ -209,25 +215,26 @@ class VenueView(_AugusBaseView):
                     _str = lambda _col: _col.decode('cp932')
                     _int = lambda _col: int(_col) if _col.strip() else None
                     is_numbered_ticket = augus_account.use_numbered_ticket_format
-                    if record[6]: # create
+                    if record[headers.index('augus_venue_code')]: # create
                         ex_seat = AugusSeat()
-                        ex_seat.area_name = _str(record[8])
-                        ex_seat.info_name = _str(record[9])
-                        ex_seat.doorway_name = _str(record[10])
-                        ex_seat.priority = _int(record[11])
-                        ex_seat.floor = _str(record[12])
-                        ex_seat.column = _str(record[13])
-                        ex_seat.num = _str(record[14])
-                        ex_seat.ticket_number = _int(record[15]) if is_numbered_ticket else None
-                        ex_seat.block = _int(record[16]) if is_numbered_ticket else _int(record[15])
-                        ex_seat.coordy = _int(record[17]) if is_numbered_ticket else _int(record[16])
-                        ex_seat.coordx = _int(record[18]) if is_numbered_ticket else _int(record[17])
-                        ex_seat.coordy_whole = _int(record[19]) if is_numbered_ticket else _int(record[18])
-                        ex_seat.coordx_whole = _int(record[20]) if is_numbered_ticket else _int(record[19])
-                        ex_seat.area_code = _int(record[21]) if is_numbered_ticket else _int(record[20])
-                        ex_seat.info_code = _int(record[22]) if is_numbered_ticket else _int(record[21])
-                        ex_seat.doorway_code = _int(record[23]) if is_numbered_ticket else _int(record[22])
-                        ex_seat.version = _int(record[24]) if is_numbered_ticket else _int(record[23])
+                        ex_seat.area_name = _str(record[headers.index('augus_seat_area_name')])
+                        ex_seat.info_name = _str(record[headers.index('augus_seat_info_name')])
+                        ex_seat.doorway_name = _str(record[headers.index('augus_seat_doorway_name')])
+                        ex_seat.priority = _int(record[headers.index('augus_seat_priority')])
+                        ex_seat.floor = _str(record[headers.index('augus_seat_floor')])
+                        ex_seat.column = _str(record[headers.index('augus_seat_column')])
+                        ex_seat.num = _str(record[headers.index('augus_seat_num')])
+                        ex_seat.ticket_number = _int(record[headers.index('augus_seat_ticket_number')]) \
+                            if is_numbered_ticket else None
+                        ex_seat.block = _int(record[headers.index('augus_seat_block')])
+                        ex_seat.coordy = _int(record[headers.index('augus_seat_coordy')])
+                        ex_seat.coordx = _int(record[headers.index('augus_seat_coordx')])
+                        ex_seat.coordy_whole = _int(record[headers.index('augus_seat_coordy_whole')])
+                        ex_seat.coordx_whole = _int(record[headers.index('augus_seat_coordx_whole')])
+                        ex_seat.area_code = _int(record[headers.index('augus_seat_area_code')])
+                        ex_seat.info_code = _int(record[headers.index('augus_seat_info_code')])
+                        ex_seat.doorway_code = _int(record[headers.index('augus_seat_doorway_code')])
+                        ex_seat.version = _int(record[headers.index('augus_venue_version')])
                         # link
                         ex_seat.augus_venue_id = ex_venue.id
                         ex_seat.seat_id = seat.id
@@ -350,7 +357,10 @@ class AugusVenueView(_AugusBaseView):
 
             logger.info('AUGUS VENUE: creating target list')
             external_venue_code_name_version_list = filter(lambda code_name_version: code_name_version != ("", "", ""),
-                                                           set([(record[6], record[7], record[23]) for record in records]))
+                                                           set([(record[headers.index('augus_venue_code')],
+                                                                 record[headers.index('augus_venue_name')],
+                                                                 record[headers.index('augus_venue_version')])
+                                                                for record in records]))
             count = len(external_venue_code_name_version_list)
 
             # 変更がないrecordは除外
@@ -360,33 +370,34 @@ class AugusVenueView(_AugusBaseView):
             _int = lambda _col: int(_col) if _col.strip() else None
 
             def _is_modified(record):
-                seat_id = int(record[0])
+                seat_id = int(record[headers.index('id')])
                 ex_seat = seat_id__ex_seat.get(seat_id, None)
                 if not ex_seat:
-                    word = list(set(map(lambda _ss: _ss.strip(), record[6:])))[0]
+                    word = list(set(map(lambda _ss: _ss.strip(), record[headers.index('augus_venue_code'):])))[0]
                     if word != '':
                         return True
                     else:
                         return False
                 else:
-                    status = ex_seat.augus_venue.code == _int(record[6])\
-                        and ex_seat.area_name == _str(record[8])\
-                        and ex_seat.info_name == _str(record[9]) \
-                        and ex_seat.doorway_name == _str(record[10])\
-                        and ex_seat.priority == _int(record[11])\
-                        and ex_seat.floor == _str(record[12])\
-                        and ex_seat.column == _str(record[13])\
-                        and ex_seat.num == _str(record[14]) \
-                        and ex_seat.ticket_number == _int(record[15]) if is_numbered_ticket else None\
-                        and ex_seat.block == _int(record[16]) if is_numbered_ticket else _int(record[15])\
-                        and ex_seat.coordy == _int(record[17]) if is_numbered_ticket else _int(record[16])\
-                        and ex_seat.coordx == _int(record[18]) if is_numbered_ticket else _int(record[17])\
-                        and ex_seat.coordy_whole == _int(record[19]) if is_numbered_ticket else _int(record[18])\
-                        and ex_seat.coordx_whole == _int(record[20]) if is_numbered_ticket else _int(record[19])\
-                        and ex_seat.area_code == _int(record[21]) if is_numbered_ticket else _int(record[20])\
-                        and ex_seat.info_code == _int(record[22]) if is_numbered_ticket else _int(record[21])\
-                        and ex_seat.doorway_code == _int(record[23]) if is_numbered_ticket else _int(record[22])\
-                        and ex_seat.version == _int(record[24]) if is_numbered_ticket else _int(record[23])\
+                    status = ex_seat.augus_venue.code == _int(record[headers.index('augus_venue_code')])\
+                        and ex_seat.area_name == _str(record[headers.index('augus_seat_area_name')])\
+                        and ex_seat.info_name == _str(record[headers.index('augus_seat_info_name')]) \
+                        and ex_seat.doorway_name == _str(record[headers.index('augus_seat_doorway_name')])\
+                        and ex_seat.priority == _int(record[headers.index('augus_seat_priority')])\
+                        and ex_seat.floor == _str(record[headers.index('augus_seat_floor')])\
+                        and ex_seat.column == _str(record[headers.index('augus_seat_column')])\
+                        and ex_seat.num == _str(record[headers.index('augus_seat_num')]) \
+                        and ex_seat.ticket_number == \
+                             _int(record[headers.index('augus_seat_ticket_number')]) if is_numbered_ticket else None\
+                        and ex_seat.block == _int(record[headers.index('augus_seat_block')])\
+                        and ex_seat.coordy == _int(record[headers.index('augus_seat_coordy')])\
+                        and ex_seat.coordx == _int(record[headers.index('augus_seat_coordx')])\
+                        and ex_seat.coordy_whole == _int(record[headers.index('augus_seat_coordy_whole')])\
+                        and ex_seat.coordx_whole == _int(record[headers.index('augus_seat_coordx_whole')])\
+                        and ex_seat.area_code == _int(record[headers.index('augus_seat_area_code')])\
+                        and ex_seat.info_code == _int(record[headers.index('augus_seat_info_code')])\
+                        and ex_seat.doorway_code == _int(record[headers.index('augus_seat_doorway_code')])\
+                        and ex_seat.version == _int(record[headers.index('augus_venue_version')])\
                         and ex_seat.seat_id == seat_id
 
                     return not status
@@ -398,11 +409,15 @@ class AugusVenueView(_AugusBaseView):
             logger.info('AUGUS VENUE: create name ex_seat dict')
             name__ex_seat = dict([((ex_seat.floor, ex_seat.column, ex_seat.num, ex_seat.area_code, ex_seat.info_code), ex_seat)
                                   for ex_seat in ex_venue.augus_seats])
-            _name = lambda _record: (_str(_record[12]), _str(_record[13]), _str(_record[14]), int(_record[20]), int(_record[21]))
+            _name = lambda _record: (_str(_record[headers.index('augus_seat_floor')]),
+                                     _str(_record[headers.index('augus_seat_column')]),
+                                     _str(_record[headers.index('augus_seat_num')]),
+                                     int(_record[headers.index('augus_seat_area_code')]),
+                                     int(_record[headers.index('augus_seat_info_code')]))
 
             # とりあえずtargetとなるseatのlinkは削除しておく
             logger.info('AUGUS VENUE: creating seat id list')
-            seat_ids = [int(record[0]) for record in records]
+            seat_ids = [int(record[headers.index('id')]) for record in records]
 
             logger.info('AUGUS VENUE: deleting all link')
             for ex_seat in ex_venue.augus_seats:
@@ -418,7 +433,11 @@ class AugusVenueView(_AugusBaseView):
             updates = set()
             logger.info('AUGUS VENUE: filtering')
             try:
-                records = [record for record in records if record[6] and (record[12], record[13], record[14]) != (u'', u'', u'')]
+                records = [record for record in records
+                           if record[headers.index('augus_venue_code')] and
+                           (record[headers.index('augus_seat_floor')],
+                            record[headers.index('augus_seat_column')],
+                            record[headers.index('augus_seat_num')]) != (u'', u'', u'')]
             except IndexError:
                 raise ValueError(repr(record))
 
@@ -437,36 +456,38 @@ class AugusVenueView(_AugusBaseView):
 
                 logger.info('AUGUS VENUE: update augus seats: length={}'.format(len(records)))
                 for record in records:
-                    if int(record[6]) != ex_venue.code or int(record[23]) != ex_venue.version:
+                    if int(record[headers.index('augus_venue_code')]) != ex_venue.code \
+                            or int(record[headers.index('augus_venue_version')]) != ex_venue.version:
                         raise HTTPBadRequest(body=json.dumps({
                                     'message':u'会場コード、会場バージョンが異なっています: {}'.format(record),
                                     }))
 
                     name = _name(record) #(_str(record[12]), _str(record[13]), _str(record[14]), int(record[20]), int(record[21]))
-                    seat = seat_id__seat[int(record[0])]
+                    seat = seat_id__seat[int(record[headers.index('id')])]
                     ex_seat = name__ex_seat.get(name, None)
                     if not ex_seat:
                         ex_seat = AugusSeat()
                         ex_seat.augus_venue_id = ex_venue.id
 
                     # update external seat
-                    ex_seat.area_name = _str(record[8])
-                    ex_seat.info_name = _str(record[9])
-                    ex_seat.doorway_name = _str(record[10])
-                    ex_seat.priority = _int(record[11])
-                    ex_seat.floor = _str(record[12])
-                    ex_seat.column = _str(record[13])
-                    ex_seat.num = _str(record[14])
-                    ex_seat.ticket_number = _int(record[15]) if is_numbered_ticket else None
-                    ex_seat.block = _int(record[16]) if is_numbered_ticket else _int(record[15])
-                    ex_seat.coordy = _int(record[17]) if is_numbered_ticket else _int(record[16])
-                    ex_seat.coordx = _int(record[18]) if is_numbered_ticket else _int(record[17])
-                    ex_seat.coordy_whole = _int(record[19]) if is_numbered_ticket else _int(record[18])
-                    ex_seat.coordx_whole = _int(record[20]) if is_numbered_ticket else _int(record[19])
-                    ex_seat.area_code = _int(record[21]) if is_numbered_ticket else _int(record[20])
-                    ex_seat.info_code = _int(record[22]) if is_numbered_ticket else _int(record[21])
-                    ex_seat.doorway_code = _int(record[23]) if is_numbered_ticket else _int(record[22])
-                    ex_seat.version = _int(record[24]) if is_numbered_ticket else _int(record[23])
+                    ex_seat.area_name = _str(record[headers.index('augus_seat_area_name')])
+                    ex_seat.info_name = _str(record[headers.index('augus_seat_info_name')])
+                    ex_seat.doorway_name = _str(record[headers.index('augus_seat_doorway_name')])
+                    ex_seat.priority = _int(record[headers.index('augus_seat_priority')])
+                    ex_seat.floor = _str(record[headers.index('augus_seat_floor')])
+                    ex_seat.column = _str(record[headers.index('augus_seat_column')])
+                    ex_seat.num = _str(record[headers.index('augus_seat_num')])
+                    ex_seat.ticket_number = _int(record[headers.index('augus_seat_ticket_number')]) \
+                        if is_numbered_ticket else None
+                    ex_seat.block = _int(record[headers.index('augus_seat_block')])
+                    ex_seat.coordy = _int(record[headers.index('augus_seat_coordy')])
+                    ex_seat.coordx = _int(record[headers.index('augus_seat_coordx')])
+                    ex_seat.coordy_whole = _int(record[headers.index('augus_seat_coordy_whole')])
+                    ex_seat.coordx_whole = _int(record[headers.index('augus_seat_coordx_whole')])
+                    ex_seat.area_code = _int(record[headers.index('augus_seat_area_code')])
+                    ex_seat.info_code = _int(record[headers.index('augus_seat_info_code')])
+                    ex_seat.doorway_code = _int(record[headers.index('augus_seat_doorway_code')])
+                    ex_seat.version = _int(record[headers.index('augus_venue_version')])
                     # link
                     ex_seat.seat_id = seat.id
                     updates.add(ex_seat)
