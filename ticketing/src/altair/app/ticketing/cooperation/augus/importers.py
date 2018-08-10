@@ -7,8 +7,11 @@ from sqlalchemy.orm.exc import (
     MultipleResultsFound,
     NoResultFound,
     )
+from pyramid.threadlocal import get_current_request
+from altair.sqlahelper import get_db_session
 from altair.app.ticketing.core.models import (
     Seat,
+    SeatStatus,
     Venue,
     Event,
     Performance,
@@ -350,3 +353,216 @@ class AugusDistributionImporter(object):
             return seat
         else:
             raise NoSeatError()
+
+
+class AugusPutbackImporter(object):
+    def __init__(self):
+        self._slave_session = get_db_session(get_current_request(), name="slave")
+
+    def import_(self, records, augus_account):
+        return self.__import_record_all(records, augus_account)
+
+    def __import_record_all(self, records, augus_account):
+        records_dict_group_by_augus_performance = self.__group_records_dict_by_augus_performance(augus_account, records)
+        putback_code = self.__get_new_putback_code()
+        putback_codes = []
+
+        for augus_performance, records_group_by_performance in records_dict_group_by_augus_performance.items():
+            self.__import_records_group_by_performance(records_group_by_performance,
+                                                       augus_account, augus_performance, putback_code)
+            putback_codes.append(putback_code)
+            putback_code += 1
+
+        return putback_codes
+
+    def __import_records_group_by_performance(self, records_group_by_performance, augus_account,
+                                              augus_performance, putback_code):
+        putback_stock_holder = self.__create_stock_holder_for_auto_putback(augus_performance.performance.event_id)
+        augus_putback = self.__create_augus_putback(augus_account, augus_performance, putback_code)
+
+        for augus_seat, record \
+                in self.__get_augus_seat_and_record_list(augus_performance, records_group_by_performance):
+            augus_stock_info = self.__get_enable_augus_stock_info(augus_seat)
+            putback_stock = self.__get_putback_stock(putback_stock_holder, augus_performance, augus_stock_info)
+
+            self.__allocate_seat(augus_stock_info.seat.id, putback_stock, long(record.seat_count))
+            for augus_stock_detail in augus_stock_info.augus_stock_details:
+                augus_stock_detail.augus_putback_id = augus_putback.id
+                augus_stock_detail.save()
+
+    def __group_records_dict_by_augus_performance(self, augus_account, records):
+        records_dict_group_by_augus_performance = dict()
+
+        augus_performances = self.__get_augus_performances(augus_account, records)
+
+        def to_tuple(ag_p):
+            return u'{}_{}'.format(ag_p.augus_event_code, ag_p.augus_performance_code), ag_p
+
+        # 必要十分確認用の中間データ
+        augus_performance_dict_to_verify = dict(map(to_tuple, augus_performances)) if augus_performances else dict()
+
+        for record in records:
+            if not u'{}_{}'.format(record.event_code, record.performance_code) in augus_performance_dict_to_verify:
+                # AugusPerformanceなし or ひもづくAugusVenue, Perfomrance, Venueがない
+                raise AugusDataImportError(u'Not found AugusPerformance link to Performance: ' +
+                                           u'augus_account_id={}, '.format(augus_account.id) +
+                                           u'event_code={}, '.format(record.event_code) +
+                                           u'performance_code={}'.format(record.performance_code))
+
+            key = augus_performance_dict_to_verify[u'{}_{}'.format(record.event_code, record.performance_code)]
+            if key in records_dict_group_by_augus_performance:
+                records_dict_group_by_augus_performance[key].append(record)
+            else:
+                records_dict_group_by_augus_performance.update({key: [record]})
+
+        return records_dict_group_by_augus_performance
+
+    @staticmethod
+    def __create_stock_holder_for_auto_putback(event_id):
+        stock_holder = StockHolder()
+        stock_holder.name = u'オーガス自動返券枠_{}'.format(time.strftime('%Y%m%d_%H%M%S'))
+        stock_holder.event_id = event_id
+        stock_holder.style = u'{"text": "\u8ffd", "text_color": "#a62020"}'
+        stock_holder.account_id = 35 # 楽天チケット固定
+        stock_holder.is_putback_target = True
+        stock_holder.save()
+        return stock_holder
+
+    @staticmethod
+    def __create_augus_putback(augus_account, augus_performance, putback_code):
+        augus_putback = AugusPutback()
+        augus_putback.augus_account_id = augus_account.id
+        augus_putback.augus_performance_id = augus_performance.id
+        augus_putback.augus_putback_code = putback_code
+        augus_putback.reserved_at = datetime.datetime.now()
+        augus_putback.save()
+        return augus_putback
+
+    def __get_augus_performances(self, augus_account, records):
+        return self._slave_session.query(AugusPerformance)\
+            .join(Performance,
+                  Performance.id == AugusPerformance.performance_id)\
+            .filter(AugusPerformance.augus_account_id == augus_account.id,
+                    tuple_(AugusPerformance.augus_event_code, AugusPerformance.augus_performance_code)
+                    .in_(map(lambda r: (r.event_code, r.performance_code), records)),
+                    AugusPerformance.deleted_at.is_(None),
+                    Performance.deleted_at.is_(None))\
+            .all()
+
+    def __get_new_putback_code(self):
+        latest_augus_putback = self._slave_session.query(AugusPutback)\
+            .order_by(AugusPutback.augus_putback_code.desc())\
+            .first()
+        return latest_augus_putback.augus_putback_code + 1 if latest_augus_putback else 1
+
+    def __get_augus_seat_and_record_list(self, augus_performance, records):
+        augus_venue = self._slave_session.query(AugusVenue)\
+            .filter(AugusVenue.code == augus_performance.augus_venue_code,
+                    AugusVenue.version == augus_performance.augus_venue_version,
+                    AugusVenue.deleted_at.is_(None))\
+            .first()
+        if not augus_venue:
+            raise AugusDataImportError(u'Not found AugusVenue: ' +
+                                       u'augus_venue_code={}, '.format(augus_performance.augus_venue_code) +
+                                       u'augus_venue_version={}, '.format(augus_performance.augus_venue_version))
+
+        def to_tuple(data):
+            return (
+                long(data.block),
+                long(data.coordy),
+                long(data.coordx),
+                data.floor,
+                data.column,
+                data.number if hasattr(data, 'number') else data.num,
+                long(data.area_code),
+                long(data.info_code),
+                long(data.ticket_number) if hasattr(data, 'ticket_number') else None
+            )
+
+        augus_seats = self._slave_session.query(AugusSeat)\
+            .filter(AugusSeat.augus_venue_id == augus_venue.id,
+                    tuple_(
+                        AugusSeat.block,
+                        AugusSeat.coordy,
+                        AugusSeat.coordx,
+                        AugusSeat.floor,
+                        AugusSeat.column,
+                        AugusSeat.num,
+                        AugusSeat.area_code,
+                        AugusSeat.info_code,
+                        AugusSeat.ticket_number
+                    ).in_(map(to_tuple, records)),
+                    AugusSeat.deleted_at.is_(None))\
+            .all()
+
+        augus_seat_dicts_to_verify = dict(zip(map(to_tuple, augus_seats), augus_seats)) if augus_seats else dict()
+        augus_seat_and_record_list = []
+        for record in records:
+            # 必要十分かチェック
+            if to_tuple(record) not in augus_seat_dicts_to_verify:
+                raise AugusDataImportError(u'Not found AugusSeat: ' +
+                                           u'augus_venue_id={}, '.format(augus_venue.id) +
+                                           u'record={}'.format(vars(record)))
+            augus_seat = augus_seat_dicts_to_verify[to_tuple(record)]
+            augus_seat_and_record_list.append((augus_seat, record))
+
+        return augus_seat_and_record_list
+
+    @staticmethod
+    def __get_enable_augus_stock_info(augus_seat):
+        valid_seat_status = [SeatStatusEnum.NotOnSale.v, SeatStatusEnum.Vacant.v, SeatStatusEnum.Canceled.v]
+
+        augus_stock_info = AugusStockInfo.query\
+            .join(AugusStockDetail,
+                  AugusStockDetail.augus_stock_info_id == AugusStockInfo.id)\
+            .join(AugusTicket,
+                  AugusTicket.id == AugusStockInfo.augus_ticket_id)\
+            .join(Seat,
+                  AugusStockInfo.seat_id == Seat.id)\
+            .join(SeatStatus,
+                  SeatStatus.seat_id == Seat.id)\
+            .filter(AugusStockInfo.augus_seat_id == augus_seat.id,
+                    AugusStockInfo.deleted_at.is_(None),
+                    AugusStockDetail.augus_putback_id.is_(None),
+                    AugusTicket.deleted_at.is_(None),
+                    Seat.deleted_at.is_(None),
+                    SeatStatus.status.in_(valid_seat_status),
+                    SeatStatus.deleted_at.is_(None))\
+            .first()
+        if not augus_stock_info:
+            # 連携・配券できていないケース or データ不整合
+            raise AugusDataImportError(u'Not found AugusStockInfo on seat status[{}]: '.format(valid_seat_status) +
+                                       u'augus_seat_id={}, '.format(augus_seat.id))
+        return augus_stock_info
+
+    @staticmethod
+    def __get_putback_stock(putback_stock_holder, augus_perforamnce, augus_stock_info):
+        for stock in putback_stock_holder.stocks:
+            if stock.stock_type_id == augus_stock_info.augus_ticket.stock_type_id \
+                    and stock.performance_id == augus_perforamnce.performance_id:
+                return stock
+        else:
+            raise AugusDataImportError(u'Not found putback stock: ' +
+                                       u'stock_type_id={}, '.format(augus_stock_info.augus_ticket.stock_type_id) +
+                                       u'performance_id={}'.format(augus_perforamnce.performance_id))
+
+    @staticmethod
+    def __allocate_seat(seat_id, putback_stock, seat_count):
+        seat = Seat.query.join(Stock)\
+            .filter(Seat.id == seat_id,
+                    Seat.deleted_at.is_(None))\
+            .first() # get seat from master session
+        if not seat:
+            raise AugusDataImportError(u'Not found Seat: seat_id={}'.format(seat_id))
+        old_stock = seat.stock
+        if not old_stock:
+            raise AugusDataImportError(u'Not found Stock allocated Seat: seat_id={}'.format(seat_id))
+
+        putback_stock.quantity += seat_count
+        old_stock.quantity = max(old_stock.quantity - seat_count, 0)
+        seat.stock_id = putback_stock.id
+
+        putback_stock.save()
+        old_stock.save()
+        seat.save()
+

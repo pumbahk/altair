@@ -23,7 +23,6 @@ class PutbackRequestRecord(_PutbackRecord):
     attributes = (
         'event_code',
         'performance_code',
-        'distribution_code',
         'seat_type_code',
         'unit_value_code',
         'date',
@@ -38,6 +37,32 @@ class PutbackRequestRecord(_PutbackRecord):
         'number',
         'seat_type_classif',
         'seat_count',
+        'putback_classif',
+        )
+
+
+class PutbackWithNumberedTicketRequestRecord(_PutbackRecord):
+    """返券要求レコード　整理券フォーマット
+    """
+    attributes = (
+        'event_code',
+        'performance_code',
+        'seat_type_code',
+        'unit_value_code',
+        'date',
+        'start_on',
+        'block',
+        'coordy',
+        'coordx',
+        'area_code',
+        'info_code',
+        'floor',
+        'column',
+        'number',
+        'ticket_number',
+        'seat_type_classif',
+        'seat_count',
+        'putback_classif',
         )
 
 
@@ -102,6 +127,12 @@ class PutbackRequest(_PutbackProtocol):
     record = PutbackRequestRecord
     pattern = '^RT(?P<customer_id>.{7})HEY(?P<event_code>[^_]{0,9})_(?P<date>\d{12})_(?P<created_at>\d{14})\.csv$'
     fmt = 'RT{customer_id:07d}HEY{event_code:09d}_{date:12}_{created_at:14}.csv'
+
+
+class PutbackWithNumberedTicketRequest(PutbackRequest):
+    """返券要求 整理券フォーマット
+    """
+    record = PutbackWithNumberedTicketRequestRecord
 
 
 class PutbackResponse(_PutbackProtocol):

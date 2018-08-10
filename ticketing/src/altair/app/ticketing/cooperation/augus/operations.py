@@ -25,8 +25,12 @@ from altair.augus.protocols import (
     DistributionSyncRequest,
     VenueSyncRequest,
     VenueSyncResponse,
+    PutbackRequest,
     )
 from altair.augus.protocols.distribution import DistributionWithNumberedTicketSyncRequest
+from altair.augus.protocols.putback import PutbackWithNumberedTicketRequest
+from pyramid.threadlocal import get_current_request
+from altair.sqlahelper import get_db_session
 
 from altair.app.ticketing.core.models import (
     Organization,
@@ -43,6 +47,7 @@ from .importers import (
     AugusPerformanceImpoter,
     AugusTicketImpoter,
     AugusDistributionImporter,
+    AugusPutbackImporter,
     )
 from .exporters import (
     AugusExporter,
@@ -309,6 +314,41 @@ class AugusWorker(object):
             transaction.commit()
         return putback_codes
 
+    def putback_request(self):
+        logger.info('start augus putback request: augus_account_id={}'.format(self.augus_account.id))
+        staging = self.path.recv_dir_staging
+        pending = self.path.recv_dir_pending
+
+        importer = AugusPutbackImporter()
+        target = PutbackWithNumberedTicketRequest \
+            if self.augus_account.accept_putback_request else PutbackRequest
+        putback_codes = []
+
+        try:
+            for name in filter(target.match_name, os.listdir(staging)):
+                logger.info('Target file: {}'.format(name))
+                path = os.path.join(staging, name)
+                records = AugusParser.parse(path, target)
+                try:
+                    imported_putback_codes = importer.import_(records, self.augus_account)
+                    shutil.move(path, pending)
+                    transaction.commit()
+                    putback_codes.extend(imported_putback_codes)
+                    logger.info('putback request: ok: {}'.format(name))
+                except AugusDataImportError as error:
+                    logger.info('Cooperation has not been completed: {}'.format(error))
+                    transaction.abort()
+                    continue
+                except Exception as error:
+                    logger.info('Unknown error: {}'.format(error))
+                    transaction.abort()
+                    raise
+        except:
+            traceback.print_exc(file=sys.stderr)
+            raise
+
+        return putback_codes
+
     def achieve(self, exporter, all_):
         logger.info('start augus distribition: augus_account_id={}'.format(self.augus_account.id))
         staging = self.path.send_dir_staging
@@ -537,6 +577,32 @@ class AugusOperationManager(object):
                     mailer, augus_account,
                     u'【オーガス連携】返券のおしらせ',
                     'altair.app.ticketing:templates/cooperation/augus/mails/augus_putback.html',
+                    params,
+                    )
+
+    def putback_request(self, mailer):
+        for worker in self.augus_workers():
+            augus_account = worker.augus_account
+            if not augus_account.accept_putback_request:
+                continue
+
+            try:
+                putback_codes = worker.putback_request()
+            except:
+                raise
+
+            if mailer and len(putback_codes):
+                slave_session = get_db_session(get_current_request(), name="slave")
+                augus_putbacks = slave_session.query(AugusPutback)\
+                    .filter(AugusPutback.augus_putback_code.in_(putback_codes))
+
+                params = {
+                    'augus_putbacks': augus_putbacks,
+                    }
+                self.send_mail(
+                    mailer, augus_account,
+                    u'【オーガス連携】返券予約のおしらせ',
+                    'altair.app.ticketing:templates/cooperation/augus/mails/augus_putback_request.html',
                     params,
                     )
 
