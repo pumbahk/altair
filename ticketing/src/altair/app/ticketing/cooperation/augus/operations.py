@@ -584,6 +584,8 @@ class AugusOperationManager(object):
                 mailer.successes = successes
                 mailer.errors = errors
                 mailer.not_yets = not_yets
+                mailer.enable_auto_distribution_to_own_stock_holder =\
+                    augus_account.enable_auto_distribution_to_own_stock_holder
                 recipients = ['ticket-op@mail.rakuten.com'] # augus_account.email
                 sender = 'dev@ticketstar.jp'
                 mailer.send(recipients, sender)

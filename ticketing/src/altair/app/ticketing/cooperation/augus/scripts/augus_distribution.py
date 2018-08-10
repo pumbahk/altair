@@ -28,7 +28,7 @@ from pyramid.paster import (
 import transaction
 from ..importers import AugusDistributionImporter
 from ..exporters import AugusDistributionExporter
-from ..mails import AugusDistributionMialer
+from ..mails import AugusDistributionMailer
 from ..operations import AugusOperationManager
 from ..config import get_var_dir
 from ..errors import (
@@ -47,7 +47,7 @@ def main():
     env = bootstrap(args.conf)
     settings = env['registry'].settings
     var_dir = get_var_dir(settings)
-    mailer = AugusDistributionMialer(settings)
+    mailer = AugusDistributionMailer(settings)
 
     mgr = AugusOperationManager(var_dir=var_dir)
     try:

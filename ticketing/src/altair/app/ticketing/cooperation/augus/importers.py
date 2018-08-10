@@ -288,10 +288,20 @@ class AugusDistributionImporter(object):
                 # 新しいStockHolderを作成 (初回のみ実行される事を想定)
                 stock_holder = stock_holders.get(ag_performance.performance.event, None)
                 if not stock_holder:
-                    name = u'オーガス連携:' + time.strftime('%Y-%m-%d-%H-%M-%S')
-                    account_id = 35 # 楽天チケット　ううっ(直したい)
-                    stock_holder = self._create_stock_holder(ag_performance.performance,
-                                                             name, account_id)
+                    if augus_account.enable_auto_distribution_to_own_stock_holder:
+                        stock_holder = StockHolder.query.filter(
+                            StockHolder.event_id == ag_performance.performance.event_id,
+                            StockHolder.name == u'自社',
+                            StockHolder.deleted_at.is_(None)
+                        ).first()
+
+                        if not stock_holder:
+                            raise AugusDataImportError(u'Not found own stock holder: event_id={}, name={}'
+                                                       .format(ag_performance.performance.event_id, u'自社'))
+                    else:
+                        name = u'オーガス連携:' + time.strftime('%Y-%m-%d-%H-%M-%S')
+                        account_id = 35  # 楽天チケット　ううっ(直したい)
+                        stock_holder = self._create_stock_holder(ag_performance.performance, name, account_id)
                     stock_holders[ag_performance.performance.event] = stock_holder
 
 
