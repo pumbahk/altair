@@ -182,12 +182,10 @@ class VenueView(_AugusBaseView):
                         'message':u'この会場は既に登録されています',
                     }))
 
-                if self.context.is_valid_csv_format(records, augus_account):
+                if self.context.is_valid_csv_format(headers, augus_account):
                     # 連携先指定間違いを防ぐため、ヘッダ行の項目数を判定する
-                    raise HTTPBadRequest(body=json.dumps({
-                        'message':
-                            u'アップロードCSVの形式が不正です。ご指定の連携先がダウンロード時と違う可能性があります。ご確認ください',
-                    }))
+                    raise HTTPBadRequest(u'アップロードCSVの形式が不正です。' +
+                                         u'ご指定の連携先がダウンロード時と違う可能性があります。ご確認ください。')
 
                 logger.info('AUGUS VENUE: creating augus venues')
                 venue = Venue.query.filter(Venue.id==venue_id).one()
@@ -344,12 +342,10 @@ class AugusVenueView(_AugusBaseView):
             headers = reader.next()
             records = [record for record in reader]
 
-            if self.context.is_valid_csv_format(records, augus_account):
+            if self.context.is_valid_csv_format(headers, augus_account):
                 # 連携先指定間違いを防ぐため
-                raise HTTPBadRequest(body=json.dumps({
-                    'message':
-                        u'アップロードCSVの形式が不正です。ご指定の連携先がダウンロード時と違う可能性があります。ご確認ください',
-                }))
+                raise HTTPBadRequest(u'アップロードCSVの形式が不正です。ご指定の連携先がダウンロード時と違う可能性があります。' +
+                                     u'ご確認ください。')
             is_numbered_ticket = augus_account.use_numbered_ticket_format
 
             logger.info('AUGUS VENUE: creating target list')

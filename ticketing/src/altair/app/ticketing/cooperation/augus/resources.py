@@ -117,11 +117,11 @@ class AugusVenueResource(VenueCommonResource):
                 self.augus_venue_code, self.augus_venue_version))
 
     @staticmethod
-    def is_valid_csv_format(records, target_augus_account):
+    def is_valid_csv_format(header, target_augus_account):
         # TKT5866 AugusAccount設定で整理券フォーマットon/offを見ては入力CSVのフォーマットをチェックする
         # ヘッダ行の項目数で判断する。会場連携ダウンロード・アップロード間の連携先指定誤りを検出する。
         csv_header_expected = AugusCSVEditor(target_augus_account).get_csv_header()
-        return len(csv_header_expected) != len(records[0])
+        return len(csv_header_expected) != len(header)
 
 
 class VenueRequestAccessor(RequestAccessor):
