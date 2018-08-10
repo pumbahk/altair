@@ -89,8 +89,8 @@ altair.fanclub_auth.url_builder_factory = ${altair:extauth.fanclub_auth.url_buil
 altair.fanclub_auth.oauth.consumer_key = ${altair:extauth.fanclub_auth.oauth.consumer_key}
 altair.fanclub_auth.oauth.secret = ${altair:extauth.fanclub_auth.oauth.secret}
 altair.fanclub_auth.endpoint_builder_factory = altair.app.ticketing.extauth.fanclub_auth.FanclubEndpointBuilder
-altair.fanclub_auth.stg_setting.basic_username = dev-ticket-qa
-altair.fanclub_auth.stg_setting.basic_password = ticket2017
+altair.fanclub_auth.stg_setting.basic_username = ${altair:stg.basic_auth.username}
+altair.fanclub_auth.stg_setting.basic_password = ${altair:stg.basic_auth.password}
 
 ; altair.httpsession
 get altair.httpsession.persistence = altair.httpsession.persistence
