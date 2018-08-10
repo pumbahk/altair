@@ -3,6 +3,8 @@ from .common import (
     ProtocolBase,
     RecordBase,
     )
+import time
+import datetime
 
 
 class _DistributionRecord(RecordBase):
@@ -40,6 +42,14 @@ class DistributionSyncRequestRecord(_DistributionRecord):
         'seat_count',
         )
 
+    def _str2datetime(self, txt):
+        st = time.strptime(txt, '%Y%m%d%H%M')
+        return datetime.datetime(*st[:5])
+
+    @property
+    def start_on_datetime(self):
+        return self._str2datetime(self.date + self.start_on)
+
 
 class DistributionWithNumberedTicketSyncRequestRecord(_DistributionRecord):
     """配券連携 初期/追加 共用 レコード 整理券フォーマット
@@ -64,6 +74,14 @@ class DistributionWithNumberedTicketSyncRequestRecord(_DistributionRecord):
         'seat_type_classif',
         'seat_count',
         )
+
+    def _str2datetime(self, txt):
+        st = time.strptime(txt, '%Y%m%d%H%M')
+        return datetime.datetime(*st[:5])
+
+    @property
+    def start_on_datetime(self):
+        return self._str2datetime(self.date + self.start_on)
 
 
 class DistributionSyncResponseRecord(_DistributionRecord):

@@ -238,7 +238,7 @@ class AugusDistributionImporter(object):
                 ag_detail.distributed_at = datetime.datetime.now()
                 ag_detail.augus_seat_type_code = record.seat_type_code
                 ag_detail.augus_unit_value_code = record.unit_value_code
-                ag_detail.start_on = record.start_on
+                ag_detail.start_on = record.start_on_datetime
                 ag_detail.quantity = ag_stock_info.quantity
                 ag_detail.augus_stock_info_id = ag_stock_info.id
                 ag_detail.augus_ticket_id = ag_ticket.id

@@ -239,7 +239,7 @@ class AugusAchievementExporter(object):
             record.column = augus_stock_detail.augus_stock_info.augus_seat.column
             record.number = augus_stock_detail.augus_stock_info.augus_seat.num
             if use_numbered_ticket_format:
-                record.ticket_number = use_numbered_ticket_format.ticket_number
+                record.ticket_number = augus_stock_detail.augus_stock_info.augus_seat.ticket_number
             record.seat_type_classif = augus_stock_detail.augus_stock_info.seat_type_classif
             record.seat_count = augus_stock_detail.quantity
             record.unit_value = augus_ticket.value
