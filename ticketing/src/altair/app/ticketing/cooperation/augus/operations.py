@@ -338,11 +338,12 @@ class AugusWorker(object):
                     putback_codes.extend(imported_putback_codes)
                     logger.info('putback request: ok: {}'.format(name))
                 except AugusDataImportError as error:
-                    logger.info('Cooperation has not been completed: {}'.format(error))
+                    logger.error('Cooperation has not been completed: {}'.format(error))
+                    traceback.print_exc(file=sys.stderr)
                     transaction.abort()
                     continue
                 except Exception as error:
-                    logger.info('Unknown error: {}'.format(error))
+                    logger.error('Unknown error: {}'.format(error))
                     transaction.abort()
                     raise
         except:
@@ -352,7 +353,7 @@ class AugusWorker(object):
         return putback_codes
 
     def achieve(self, exporter, all_):
-        logger.info('start augus distribition: augus_account_id={}'.format(self.augus_account.id))
+        logger.info('start augus achievement: augus_account_id={}'.format(self.augus_account.id))
         staging = self.path.send_dir_staging
         ag_performances = exporter.get_target_augus_performances(self.augus_account.id, all_)
 
@@ -372,7 +373,7 @@ class AugusWorker(object):
         return ag_performances
 
     def achieve_request(self):
-        logger.info('start augus putback request: augus_account_id={}'.format(self.augus_account.id))
+        logger.info('start augus achievement request: augus_account_id={}'.format(self.augus_account.id))
         staging = self.path.recv_dir_staging
         pending = self.path.recv_dir_pending
 
@@ -393,11 +394,12 @@ class AugusWorker(object):
                     augus_performance_ids.extend(imported_augus_performance_ids)
                     logger.info('achieve request: ok: {}'.format(name))
                 except AugusDataImportError as error:
-                    logger.info('Cooperation has not been completed: {}'.format(error))
+                    logger.error('Cooperation has not been completed: {}'.format(error))
+                    traceback.print_exc(file=sys.stderr)
                     transaction.abort()
                     continue
                 except Exception as error:
-                    logger.info('Unknown error: {}'.format(error))
+                    logger.error('Unknown error: {}'.format(error))
                     transaction.abort()
                     raise
         except:
