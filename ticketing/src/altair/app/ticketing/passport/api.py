@@ -7,6 +7,36 @@ from altair.sqlahelper import get_db_session
 from ..passport.models import PassportUserInfo, PassportUser
 
 
+def validate_passport_data(extra_data):
+    # パスポートの1人分のデータが、すべて正しく入っているかどうかバリデーションする
+    for num in range(4):
+        index = num + 1
+        try:
+            if index == 1:
+                birthday = extra_data['extra'][u"生年月日({0}人目)".format(index)]
+                sex = extra_data['extra'][u"性別({0}人目)".format(index)]
+                if not all([birthday, sex]):
+                    # １人目は追加情報に氏名などがない
+                    return False
+            else:
+                last_name = extra_data['extra'][u"姓({0}人目)".format(index)]
+                first_name = extra_data['extra'][u"名({0}人目)".format(index)]
+                last_name_kana = extra_data['extra'][u"セイ({0}人目)".format(index)]
+                first_name_kana = extra_data['extra'][u"メイ({0}人目)".format(index)]
+                birthday = extra_data['extra'][u"生年月日({0}人目)".format(index)]
+                sex = extra_data['extra'][u"性別({0}人目)".format(index)]
+
+                if any([last_name, first_name, last_name_kana, first_name_kana, birthday]) and not all(
+                        [last_name, first_name, last_name_kana, first_name_kana, birthday]):
+                    # 正常に一人分の値が入っているかの確認
+                    return False
+
+        except KeyError:
+            pass
+
+    return True
+
+
 def get_passport_product_quantities(products, extra_data):
     # パスポートの商品と、個数のリストを返す
     # 運用で商品のパスポートの表示順と、追加情報の種類の順番を一緒にしてもらう
