@@ -10,6 +10,7 @@ from sqlalchemy.orm.exc import (
     MultipleResultsFound,
     NoResultFound,
     )
+from sqlalchemy.orm import contains_eager
 from pyramid.threadlocal import get_current_request
 from altair.sqlahelper import get_db_session
 from altair.app.ticketing.core.models import (
@@ -601,7 +602,8 @@ class AugusPutbackImporter(object):
     def __get_augus_performances(self, augus_account, records):
         return self._slave_session.query(AugusPerformance)\
             .join(Performance,
-                  Performance.id == AugusPerformance.performance_id)\
+                  Performance.id == AugusPerformance.performance_id) \
+            .options(contains_eager(AugusPerformance.performance)) \
             .filter(AugusPerformance.augus_account_id == augus_account.id,
                     tuple_(AugusPerformance.augus_event_code, AugusPerformance.augus_performance_code)
                     .in_(map(lambda r: (r.event_code, r.performance_code), records)),
@@ -682,7 +684,10 @@ class AugusPutbackImporter(object):
             .join(Seat,
                   AugusStockInfo.seat_id == Seat.id)\
             .join(SeatStatus,
-                  SeatStatus.seat_id == Seat.id)\
+                  SeatStatus.seat_id == Seat.id) \
+            .options(contains_eager(AugusStockInfo.augus_stock_details)) \
+            .options(contains_eager(AugusStockInfo.augus_ticket)) \
+            .options(contains_eager(AugusStockInfo.seat)) \
             .filter(AugusStockInfo.augus_seat_id == augus_seat.id,
                     AugusStockInfo.deleted_at.is_(None),
                     AugusStockDetail.augus_putback_id.is_(None),
@@ -700,7 +705,8 @@ class AugusPutbackImporter(object):
     def __get_augus_stock_info_of_unreserved_seat(self, augus_performance, record):
         augus_stock_info_list = AugusStockInfo.query\
             .join(AugusTicket,
-                  AugusTicket.id == AugusStockInfo.augus_ticket_id)\
+                  AugusTicket.id == AugusStockInfo.augus_ticket_id) \
+            .options(contains_eager(AugusStockInfo.augus_ticket)) \
             .filter(AugusTicket.augus_performance_id == augus_performance.id,
                     AugusTicket.augus_seat_type_code == record.seat_type_code,
                     AugusTicket.unit_value_code == record.unit_value_code,
@@ -723,6 +729,7 @@ class AugusPutbackImporter(object):
                   StockHolder.id == Stock.stock_holder_id) \
             .join(StockStatus,
                   StockStatus.stock_id == Stock.id) \
+            .options(contains_eager(Stock.stock_status)) \
             .filter(Stock.performance_id == augus_performance.performance_id,
                     Stock.stock_type_id == augus_stock_info.augus_ticket.stock_type_id,
                     Stock.deleted_at.is_(None),

@@ -7,6 +7,7 @@ import sqlalchemy as sa
 import itertools
 from StringIO import StringIO
 from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy.orm import contains_eager
 from pyramid.threadlocal import get_current_request
 from altair.sqlahelper import get_db_session
 from altair.app.ticketing.core.models import (
@@ -403,7 +404,10 @@ class AugusAchievementExporter(object):
             .join(AugusTicket,
                   AugusTicket.id == Product.augus_ticket_id)\
             .join(AugusStockInfo,
-                  AugusStockInfo.augus_ticket_id == AugusTicket.id)\
+                  AugusStockInfo.augus_ticket_id == AugusTicket.id) \
+            .options(contains_eager(Order.items, OrderedProduct.product,
+                                    Product.augus_ticket, AugusTicket.augus_stock_infos,
+                                    AugusStockInfo.augus_ticket)) \
             .filter(Order.performance_id == performance_id,
                     OrderedProduct.deleted_at.is_(None),
                     Order.canceled_at.is_(None),
