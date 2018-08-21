@@ -123,6 +123,23 @@ class AugusVenueResource(VenueCommonResource):
         csv_header_expected = AugusCSVEditor(target_augus_account).get_csv_header()
         return len(csv_header_expected) != len(header)
 
+    @staticmethod
+    def is_kazuuke_augus_venue(records, headers):
+        if len(records) == 1:
+            # 自由席のみの会場図は、データが一つのみでブロックNo・座標Y・座標Xが全て0となる
+            data = records[0]
+
+            def to_int(col):
+                return int(col) if col.strip() else None
+
+            block = to_int(data[headers.index('augus_seat_block')])
+            coody = to_int(data[headers.index('augus_seat_coordy')])
+            coodx = to_int(data[headers.index('augus_seat_coordx')])
+
+            return (block == 0) and (coody == 0) and (coodx == 0)
+
+        return False
+
 
 class VenueRequestAccessor(RequestAccessor):
     in_matchdict = {'venue_id': int}

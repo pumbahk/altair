@@ -25,18 +25,20 @@
     <th>オーガス開始日時</th>
     <th>オーガス会場名</th>
     <th>オーガス座席名</th>
+    <th>返券席数</th>
   </tr>
   %for stock_detail in putback.augus_stock_details:
   <tr>
     <td>${stock_detail.augus_stock_info.augus_performance.performance.name}</td>
     <td>${stock_detail.augus_stock_info.augus_performance.performance.start_on}</td>
-    <td>${stock_detail.augus_stock_info.seat.venue.name}</td>
-    <td>${stock_detail.augus_stock_info.seat.name}</td>
-    <td>${stock_detail.augus_stock_info.seat.l0_id}</td>
+    <td>${stock_detail.augus_stock_info.seat.venue.name if stock_detail.augus_stock_info.seat else stock_detail.augus_stock_info.augus_performance.performance.venue.name}</td>
+    <td>${stock_detail.augus_stock_info.seat.name if stock_detail.augus_stock_info.seat else stock_detail.augus_stock_info.augus_ticket.stock_type.name}</td>
+    <td>${stock_detail.augus_stock_info.seat.l0_id if stock_detail.augus_stock_info.seat else u''}</td>
     <td>${stock_detail.augus_stock_info.augus_performance.augus_event_name}</td>
     <td>${stock_detail.augus_stock_info.augus_performance.augus_performance_name}</td>
     <td>${stock_detail.augus_stock_info.augus_performance.start_on}</td>
-    <td>${stock_detail.augus_stock_info.augus_seat.augus_venue.name}</td>
+    <td>${stock_detail.augus_stock_info.augus_seat.augus_venue.name if stock_detail.augus_stock_info.augus_seat else stock_detail.augus_stock_info.augus_performance.get_augus_venue().name}</td>
+    %if stock_detail.augus_stock_info.augus_seat:
     <td>
       ${stock_detail.augus_stock_info.augus_seat.area_name}
       ${stock_detail.augus_stock_info.augus_seat.info_name}
@@ -44,6 +46,10 @@
       ${stock_detail.augus_stock_info.augus_seat.column}
       ${stock_detail.augus_stock_info.augus_seat.num}
     </td>
+    %else:
+    <td>${stock_detail.augus_stock_info.augus_ticket.augus_seat_type_name}</td>
+    %endif
+    <td>${stock_detail.quantity}</td>
   </tr>
   %endfor
 </table>

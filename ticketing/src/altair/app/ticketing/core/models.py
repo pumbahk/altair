@@ -4860,6 +4860,7 @@ class AugusStockDetail(Base, BaseModel):
     augus_putback = relationship('AugusPutback', backref='augus_stock_details')
     augus_ticket_id = Column(Identifier, ForeignKey('AugusTicket.id'), nullable=True)
     augus_ticket = relationship('AugusTicket', backref='augus_stock_details')
+    augus_unreserved_putback_status = AnnotatedColumn(Integer, nullable=True)
     distributed_at = Column(DateTime, nullable=True)
 
 
@@ -4875,9 +4876,9 @@ class AugusStockInfo(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     augus_performance = relationship('AugusPerformance')
 
     augus_ticket_id = Column(Identifier, ForeignKey('AugusTicket.id'), nullable=False)
-    augus_ticket = relationship('AugusTicket')
+    augus_ticket = relationship('AugusTicket', backref='augus_stock_infos')
 
-    augus_seat_id = Column(Identifier, ForeignKey('AugusSeat.id'), nullable=False)
+    augus_seat_id = Column(Identifier, ForeignKey('AugusSeat.id'), nullable=True)
     augus_seat = relationship('AugusSeat')
 
     seat_id = Column(Identifier, ForeignKey('Seat.id'), nullable=False)
@@ -4967,6 +4968,18 @@ class AugusSeatStatus(object):
         else:
             logger.info('Seat.id {} has other status {}'.format(seat.id, seat.status))
             return cls.OTHER
+
+
+class AugusUnreservedSeatStatus(object):
+    RESERVE = 0
+    SOLD = 1
+
+    @classmethod
+    def get_status(cls, order):
+        if order and order.payment_status == 'paid':
+            return cls.SOLD
+        else:
+            return cls.RESERVE
 
 
 class OrionPerformance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
