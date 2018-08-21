@@ -393,7 +393,15 @@ class AugusVenueView(_AugusBaseView):
                 seat_id = int(record[headers.index('id')])
                 ex_seat = seat_id__ex_seat.get(seat_id, None)
                 if not ex_seat:
-                    word = list(set(map(lambda _ss: _ss.strip(), record[headers.index('augus_venue_code'):])))[0]
+                    if is_numbered_ticket and _int(record[headers.index('augus_seat_ticket_number')]) > 0:
+                        # TKT5866 整理券の場合は列・番が空となる仕様のため、これは許容する
+                        # ただし、以下の処理は列・番がCSVで隣り合っていることを前提としているため、並び順が変わったらメンテが必要
+                        inputs_required = record[headers.index('augus_venue_code'): headers.index('augus_seat_column')]
+                        inputs_required.extend(record[headers.index('augus_seat_ticket_number'):])
+                    else:
+                        # TKT5866 整理券出ない場合は既存通り、Augus会場連携由来の値は全て必須とする
+                        inputs_required = record[headers.index('augus_venue_code'):]
+                    word = list(set(map(lambda _ss: _ss.strip(), inputs_required)))[0]
                     if word != '':
                         return True
                     else:
