@@ -30,13 +30,14 @@
     <th>会場名</th>
     <th>座席名</th>
     <th>l0_id</th>
+    <th>返券席数</th>
     <th>オーガス座席エリアコード</th>
     <th>オーガス座席情報コード</th>
     <th>オーガス座席階</th>
     <th>オーガス座席列</th>
     <th>オーガス座席番</th>
+    <th>オーガス整理券番号</th>
     <th>追券コード</th>
-    <th>返券席数</th>
   </tr>
   %for augus_stock_info in augus_stock_infos:
   <tr>
@@ -46,12 +47,6 @@
     <td>${augus_stock_info.augus_performance.performance.venue.name}</td>
     <td>${augus_stock_info.seat.name if augus_stock_info.seat else augus_stock_info.augus_ticket.augus_seat_type_name}</td>
     <td>${augus_stock_info.seat.l0_id if augus_stock_info.seat else u''}</td>
-    <td>${augus_stock_info.augus_seat.area_code if augus_stock_info.augus_seat else u''}</td>
-    <td>${augus_stock_info.augus_seat.info_code if augus_stock_info.augus_seat else u''}</td>
-    <td>${augus_stock_info.augus_seat.floor if augus_stock_info.augus_seat else u''}</td>
-    <td>${augus_stock_info.augus_seat.column if augus_stock_info.augus_seat else u''}</td>
-    <td>${augus_stock_info.augus_seat.num if augus_stock_info.augus_seat else u''}</td>
-    <td>${augus_stock_info.augus_distribution_code}</td>
     %if augus_stock_info.id in putback_count_kazuuke_dict:
     <input type="hidden" name="putback_count" value="${putback_count_kazuuke_dict.get(augus_stock_info.id)}"/>
     <td>${putback_count_kazuuke_dict.get(augus_stock_info.id)}</td>
@@ -59,6 +54,13 @@
     <input type="hidden" name="putback_count" value="1"/>
     <td>1</td>
     %endif
+    <td>${augus_stock_info.augus_seat.area_code if augus_stock_info.augus_seat else u''}</td>
+    <td>${augus_stock_info.augus_seat.info_code if augus_stock_info.augus_seat else u''}</td>
+    <td>${augus_stock_info.augus_seat.floor if augus_stock_info.augus_seat else u''}</td>
+    <td>${augus_stock_info.augus_seat.column if augus_stock_info.augus_seat else u''}</td>
+    <td>${augus_stock_info.augus_seat.num if augus_stock_info.augus_seat else u''}</td>
+    <td>${augus_stock_info.augus_seat.ticket_number if augus_stock_info.augus_seat is not None and augus_stock_info.augus_seat.ticket_number else u''}</td>
+    <td>${augus_stock_info.augus_distribution_code}</td>
   </tr>
   %endfor
 </table>
