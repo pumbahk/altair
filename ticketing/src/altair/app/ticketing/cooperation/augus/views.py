@@ -1027,7 +1027,7 @@ class AugusPutbackView(_AugusBaseView):
 
                     augus_stock_info.quantity = augus_stock_info.quantity - putback_count_dict.get(augus_stock_info.id)
                     augus_stock_info.save()
-                self.request.session.flash(u'返券予約しました: AugusPerformance.id={}'.format(augus_performance.id))
+            self.request.session.flash(u'返券予約しました: AugusPerformance.id={}'.format(augus_performance.id))
         return HTTPFound(url)
 
 @view_defaults(route_name='augus.achievement', decorator=with_bootstrap, permission='event_editor')
