@@ -3,8 +3,8 @@
 import logging
 from pyramid.decorator import reify
 from altair.mobile.interfaces import IMobileRequest, ISmartphoneRequest
-from altair.app.ticketing.core.utils import (use_base_dir_if_org_template_not_exists,
-                                             use_base_dir_if_org_static_not_exists)
+from altair.app.ticketing.core.utils import (search_template_file,
+                                             search_static_file)
 from altair.app.ticketing.mails.interfaces import IMailRequest
 from altair.app.ticketing.cart import api as cart_api
 from . import api
@@ -78,37 +78,14 @@ def get_coupon_view_context_factory(default_package):
             return self.cart_setting.extra_footer_links_mobile or []
 
         def get_template_path(self, path):
-            if self.organization_short_name in ['AF', 'PC', 'PH', 'SQ', 'WP', 'AR', 'BW', 'DT', 'GP', 'HM', 'JJ', 'KB', 'KF', 'KJ', 'MH', 'MX', 'JH']:
-                # TKT-5751動作テスト中 指定対象のORGのみを対象
-                return use_base_dir_if_org_template_not_exists(self, path, default_package)
-            else:
-                organization_short_name = self.organization_short_name or "__default__"
-                package_or_path, colon, _path = path.partition(':')
-                if not colon:
-                    package = default_package
-                    path = package_or_path
-                else:
-                    package = package_or_path
-                    path = _path
-                return '%(package)s:templates/%(organization_short_name)s/%(ua_type)s/%(path)s' % dict(
-                    package=package,
-                    organization_short_name=organization_short_name,
-                    ua_type=self.ua_type,
-                    path=path)
+            return search_template_file(self, path, default_package)
 
         def static_url(self, path, module=None, *args, **kwargs):
-            if self.organization_short_name in ['AF', 'PC', 'PH', 'SQ', 'WP', 'AR', 'BW', 'DT', 'GP', 'HM', 'JJ', 'KB', 'KF', 'KJ', 'MH', 'MX', 'JH']:
-                # TKT-5751動作テスト中 指定対象のORGのみを対象
-                if module is None:
-                    module = 'coupon'
+            if module is None:
+                module = 'coupon'
 
-                static_path = use_base_dir_if_org_static_not_exists(self, path, module)
-                return self.request.static_url(static_path, **kwargs)
-            else:
-                if module is None:
-                    module = 'coupon'
-                return self.request.static_url(
-                    "altair.app.ticketing.%(module)s:static/%(organization_short_name)s/%(path)s" % dict(organization_short_name=self.organization_short_name, path=path, module=module), *args, **kwargs)
+            static_path = search_static_file(self, path, module)
+            return self.request.static_url(static_path, **kwargs)
 
         def __getattr__(self, k):
             return getattr(self.cart_setting, k)
