@@ -37,6 +37,7 @@ from altair.app.ticketing.fanstatic import with_jquery, with_jquery_tools
 from altair.app.ticketing.payments.api import set_confirm_url, lookup_plugin
 from altair.app.ticketing.payments.payment import Payment
 from altair.app.ticketing.payments.plugins import ORION_DELIVERY_PLUGIN_ID
+from altair.app.ticketing.price_batch_update.models import PRODUCTS_TO_CONFIRM_ATTRIBUTE_KEY
 from altair.app.ticketing.payments.exceptions import OrderLikeValidationFailure
 from altair.app.ticketing.users.models import UserPointAccountTypeEnum, SexEnum
 from altair.app.ticketing.venues.api import get_venue_site_adapter
@@ -1120,7 +1121,7 @@ class PaymentView(object):
         sales_segment = self.context.sales_segment
         cart = self.context.read_only_cart
         self.context.check_deleted_product(cart)
-        self.context.check_order_limit()
+        self.context.check_order_limit(cart)
 
         payment_delivery_methods = self.get_payment_delivery_method_pairs(sales_segment)
         payment_delivery_methods = [
@@ -1290,7 +1291,7 @@ class PaymentView(object):
             sales_segment = cart.sales_segment
             cart.payment_delivery_pair = payment_delivery_pair
             cart.shipping_address = self.create_shipping_address(user, shipping_address_params)
-            self.context.check_order_limit()
+            self.context.check_order_limit(cart)
 
             if payment_delivery_pair.delivery_method.delivery_plugin_id == ORION_DELIVERY_PLUGIN_ID:
                 if cart.performance.orion and cart.performance.orion.check_number_of_phones:
@@ -1471,7 +1472,8 @@ class DiscountCodeEnteringView(object):
     @back(back_to_top, back_to_product_list_for_mobile)
     @lbr_view_config(request_method="GET")
     def discount_code_get(self):
-        self.context.check_order_limit()
+        cart = self.context.read_only_cart
+        self.context.check_order_limit(cart)
         # UsedDiscountCodeCartテーブルに保存されている割引コードの途中入力内容をクリア
         self.context.delete_temporarily_save_discount_code()
         # SPAはcart.orderルートを経由せず直接このviewにアクセスしてくるため、ここで割引コード適用判定を行う
@@ -1480,7 +1482,6 @@ class DiscountCodeEnteringView(object):
             # 割引コードが適用できない場合は通常ルートへ
             return HTTPFound(self.request.route_path('cart.payment', sales_segment_id=sales_segment_id))
 
-        cart = self.context.read_only_cart
         self.context.check_deleted_product(cart)
         sorted_cart_product_items = self.context.sorted_carted_product_items()
 
@@ -1621,10 +1622,6 @@ class PointAccountEnteringView(object):
             # ユーザはあえてポイント入力しなかったようなので...
             del cart.user_point_accounts[:]
         return HTTPFound(location=flow_graph(self.context, self.request)(url_wanted=False))
-
-
-PRODUCTS_TO_CONFIRM_ATTRIBUTE_KEY = 'cart.confirm.products_to_confirm_{0}'
-
 
 @view_defaults(
     route_name='payment.confirm',
@@ -1779,17 +1776,7 @@ class CompleteView(object):
             else:
                 raise
 
-        self.context.check_deleted_product(cart)
-        organization = api.get_organization(self.request)
-        if organization.setting.enable_price_batch_update:
-            # TKT-4147で追加。影響範囲最小化のためenable_price_batch_updateで判定
-            product_price_map_before = self.request.session[PRODUCTS_TO_CONFIRM_ATTRIBUTE_KEY.format(organization.code)]
-            del self.request.session[PRODUCTS_TO_CONFIRM_ATTRIBUTE_KEY.format(organization.code)]
-            self.context.check_changed_product_price(cart, product_price_map_before)
-        self.context.check_order_limit() # 最終チェック
-        self.context.is_discount_code_still_available()
-        self.context.use_sports_service_discount_code()
-        order = api.make_order_from_cart(self.request, cart)
+        order = api.make_order_from_cart(self.request, self.context, cart)
         order_no = order.order_no
         transaction.commit()  # cont_complete_viewでエラーが出てロールバックされても困るので
         logger.debug("keyword=%s" % ' '.join(self.request.params.getall('keyword')))

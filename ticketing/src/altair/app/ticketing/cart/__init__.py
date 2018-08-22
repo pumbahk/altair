@@ -242,9 +242,9 @@ class CartInterface(object):
     def get_success_url(self, request):
         return request.route_url('payment.confirm')
 
-    def make_order_from_cart(self, request, cart):
+    def make_order_from_cart(self, request, context, cart):
         from .api import make_order_from_cart
-        return make_order_from_cart(request, cart)
+        return make_order_from_cart(request, context, cart)
 
     def cont_complete_view(self, context, request, order_no, magazine_ids, word_ids):
         from .views import cont_complete_view

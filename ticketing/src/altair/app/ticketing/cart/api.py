@@ -28,8 +28,10 @@ from altair.app.ticketing.core import api as c_api
 from altair.app.ticketing.users import models as u_models
 from altair.app.ticketing.orders import models as order_models
 from altair.app.ticketing.discount_code import api as discount_api
+from altair.app.ticketing.price_batch_update.models import PRODUCTS_TO_CONFIRM_ATTRIBUTE_KEY
 from altair.app.ticketing.interfaces import ITemporaryStore
 from altair.app.ticketing.payments import api as payments_api
+from altair.app.ticketing.payments.payment import Payment
 from altair.app.ticketing.payments.exceptions import PaymentDeliveryMethodPairNotFound, OrderLikeValidationFailure
 from altair.mq import get_publisher
 from altair.sqlahelper import get_db_session
@@ -44,6 +46,7 @@ from .interfaces import (
     )
 from .models import Cart, PaymentMethodManager, DBSession, CartSetting
 from .exceptions import NoCartError
+from .events import notify_order_completed
 from altair.preview.api import set_rendered_target
 
 logger = logging.getLogger(__name__)
@@ -769,12 +772,33 @@ def coerce_extra_form_data(request, extra_form_data):
         attributes[k] = v
     return attributes
 
-def make_order_from_cart(request, cart):
-    from .events import notify_order_completed
-    from altair.app.ticketing.payments.payment import Payment
+
+def make_order_from_cart(request, context, cart):
+    """
+    カートからオーダーの作成処理を行う。
+    楽天PAY決済時と通常の購入方法でチェック処理が二重管理にならないよう、こちらに処理を組み込んで共有(TKT-6237)。
+    :param request: リクエスト
+    :param context: コンテクスト
+    :param cart: カート
+    :return: オーダー
+    """
+
+    # 各種のチェック処理
+    organization = get_organization(request)
+    if organization.setting.enable_price_batch_update:
+        # TKT-4147で追加。影響範囲最小化のためenable_price_batch_updateで判定
+        product_price_map_before = request.session[PRODUCTS_TO_CONFIRM_ATTRIBUTE_KEY.format(organization.code)]
+        del request.session[PRODUCTS_TO_CONFIRM_ATTRIBUTE_KEY.format(organization.code)]
+        context.check_changed_product_price(cart, product_price_map_before)
+
+    context.check_deleted_product(cart)
+    context.check_order_limit(cart)
+    context.is_discount_code_still_available(cart)
+    context.use_sports_service_discount_code(cart)
+
+    # オーダー作成
     payment = Payment(cart, request)
     order = payment.call_payment()
-
 
     extra_form_data = load_extra_form_data(request)
     if extra_form_data is not None:
