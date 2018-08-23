@@ -1197,6 +1197,8 @@ class ImportStatusEnum(StandardEnum):
     Importing = 2
     Imported = 3
     Aborted = 4
+    WorkerImporting = 5
+    WorkerImportError = 6
 
 
 class ImportTypeEnum(StandardEnum):

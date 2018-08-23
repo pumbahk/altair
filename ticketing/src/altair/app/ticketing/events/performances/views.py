@@ -20,6 +20,7 @@ from altair.sqlahelper import get_db_session
 from sqlalchemy.exc import InternalError
 from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 
+from altair.app.ticketing.utils import CSVExporter
 from altair.app.ticketing.models import merge_session_with_post, record_to_multidict
 from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.fanstatic import with_bootstrap
@@ -64,7 +65,8 @@ from .api import (set_visible_performance,
                   send_resale_request,
                   get_progressing_order_import_task,
                   send_import_order_task_to_worker,
-                  update_order_import_tasks_done_by_worker
+                  update_order_import_tasks_done_by_worker,
+                  get_error_proto_order_list
                   )
 
 from altair.app.ticketing.discount_code.forms import DiscountCodeSettingForm
@@ -260,7 +262,9 @@ class PerformanceShowView(BaseView):
             OrderImportTask.status != ImportStatusEnum.ConfirmNeeded.v
         )
 
-        order_import_tasks_need_check = query.filter(OrderImportTask.status == ImportStatusEnum.Importing.v).all()
+        order_import_tasks_need_check = query.filter(
+            OrderImportTask.status == ImportStatusEnum.WorkerImporting.v
+        ).all()
 
         if order_import_tasks_need_check:
             update_order_import_tasks_done_by_worker(self.request, order_import_tasks_need_check)
@@ -386,7 +390,7 @@ class PerformanceShowView(BaseView):
                 self.request.route_url('performances.import_orders.index', performance_id=self.performance.id))
         else:
             if task.count > 0:
-                task.status = ImportStatusEnum.Importing.v
+                task.status = ImportStatusEnum.WorkerImporting.v
                 send_import_order_task_to_worker(self.request, task)
                 self.request.session.flash(u'予約インポートを実行しました')
                 return HTTPFound(
@@ -406,9 +410,9 @@ class PerformanceShowView(BaseView):
         ).first()
         if task is None:
             return HTTPFound(self.request.route_url('performances.import_orders.index', performance_id=self.performance.id))
-        else:
-            if task.status == ImportStatusEnum.Importing.v:
-                update_order_import_tasks_done_by_worker(self.request, [task])
+
+        if task.status == ImportStatusEnum.WorkerImporting.v:
+            update_order_import_tasks_done_by_worker(self.request, [task])
 
         data = {
             'tab': 'import_orders',
@@ -416,8 +420,9 @@ class PerformanceShowView(BaseView):
             'performance': self.performance,
             'oh': order_helpers,
             'task': task,
-            'errors': task.errors,
+            'errors': task.errors if task.status == ImportStatusEnum.Aborted.v else None,
             'stats': order_helpers.order_import_task_stats(task),
+            'show_error_list_btn': task.status == ImportStatusEnum.WorkerImportError.v
         }
         data.update(self._extra_data())
         return data
@@ -435,6 +440,30 @@ class PerformanceShowView(BaseView):
             task.delete()
             self.request.session.flash(u'予約インポートを削除しました')
         return HTTPFound(self.request.route_url('performances.import_orders.index', performance_id=self.performance.id))
+
+    @view_config(route_name='performances.import_orders.error_list.download')
+    def download_error_list(self):
+        session = get_db_session(self.request, 'slave')
+        task_id = self.request.matchdict.get('task_id')
+
+        try:
+            task = session.query(OrderImportTask).filter(
+                OrderImportTask.id == task_id).one()
+        except NoResultFound:
+            raise HTTPNotFound()
+
+        data = get_error_proto_order_list(session, task)
+        csv_exporter = CSVExporter(
+            fields=['order_no', 'errors'],
+            filename=u'error_order_list',
+            filename_timestamp=True
+        )
+
+        resp = csv_exporter(data, headers=[u'予約番号', u'エラー内容'])
+
+        return resp
+
+
 
     @view_config(route_name="performances.region.index", request_method='GET')
     def region_index_view(self):

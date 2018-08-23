@@ -1,17 +1,22 @@
 # -*- coding:utf-8 -*-
-from standardenum import StandardEnum
-from urlparse import uses_relative, uses_netloc, urlparse
-from decimal import Decimal
-from pyramid.threadlocal import get_current_registry
-from altair.mobile.interfaces import IMobileCarrierDetector
-from altair.mobile.api import _detect_from_email_address
-from datetime import date, timedelta, datetime
+import functools
 import pytz
-import urllib
+import random
 import re
 import sys
-import functools
-import random
+import urllib
+
+from csv import writer as csv_writer, QUOTE_ALL
+from datetime import date, datetime
+from urlparse import uses_relative, uses_netloc, urlparse
+from decimal import Decimal
+from standardenum import StandardEnum
+
+from pyramid.response import Response
+from pyramid.threadlocal import get_current_registry
+
+from altair.mobile.interfaces import IMobileCarrierDetector
+from altair.mobile.api import _detect_from_email_address
 
 
 __all__ = [
@@ -215,7 +220,7 @@ def dereference(object, key, return_none_unless_feasible=False):
                 token = tokens.next()
             except StopIteration:
                 token = None
-            
+
             identifier = token and token.group(1)
             if identifier is None:
                 raise ValueError('identifier expected')
@@ -263,7 +268,7 @@ def dereference(object, key, return_none_unless_feasible=False):
                         identifier_or_number = identifier_or_number[0][1]
                 else:
                     identifier_or_number = u''.join(c[1] for c in identifier_or_number)
-                
+
             if not identifier_or_number:
                 raise ValueError('identifier or number expected')
 
@@ -474,3 +479,96 @@ def natural_keys(text):
     https://stackoverflow.com/questions/5967500/how-to-correctly-sort-a-string-with-a-number-inside
     """
     return [atoi(c) for c in re.split('(\d+)', text)]
+
+
+class CSVExporter(object):
+    """
+    簡単のCSVファイルを出力するクラス
+    シンプルな内容をCSVで出力する場合は使える
+
+    Initialization:
+        fields:List 出力内容の項目。
+        filename:string は出力ファイル名（.csvを含まない）。
+        filename_timestamp:bool は出力ファイル名にTime Stampを付けるかどうかのフラグ。
+
+    Required:
+        data:List 出力内容。
+
+    Optional:
+        headers:List 出力内容のヘッダー。
+
+    Return:
+        Response:pyramid.Response 戻り値はpyramidのResponseですので直接viewsの戻り値として使える
+
+    Quick Start:
+
+        @view_config(route_name='error_list.download')
+        def download_error_list(self):
+            csv_exporter = CSVExporter(fields=['order_no', 'errors'], filnename='error_list', filename_timestamp=True)
+
+            data = [{'order_no': 'RT00000001', 'errors': u'決済方法が間違います。'},
+                    {'order_no': 'RT00000002', 'errors': u'決済方法が間違います。'}]
+            headers = [u'予約番号', u'エラーメッセージ']
+
+            resp = csv_exporter(data, headers)
+
+            return resp
+    """
+    def __init__(self, fields, filename=None, filename_timestamp=False):
+        self.fields = fields
+        self.filename = self._remove_extension(filename)
+        self.filename_timestamp = filename_timestamp
+
+    def _remove_extension(self, filename):
+        if filename.endswith('.csv'):
+            filename = filename.replace('.csv', '')
+        return filename
+
+    def _encode_to_cp932(self, data):
+        if not hasattr(data, "encode"):
+            return str(data)
+        try:
+            # unicode typeの文字列のみcp932の文字コードに変換られる
+            if not isinstance(data, unicode):
+                data = data.decode('utf-8')
+            return data.replace('\r\n', '').encode('cp932')
+        except UnicodeEncodeError:
+            print 'cannot encode character %s to cp932' % data
+            if data is not None and len(data) > 1:
+                return ''.join([self._encode_to_cp932(d) for d in data])
+            else:
+                return '?'
+
+    def _render_data(self, data):
+        for record in data:
+
+            items = [record[field] for field in self.fields]
+            yield map(self._encode_to_cp932, items)
+
+    def _write_file(self, body, data, headers):
+        writer = csv_writer(body, delimiter=',', quoting=QUOTE_ALL)
+        if headers:
+            writer.writerow(map(self._encode_to_cp932, headers))
+
+        for row in self._render_data(data):
+            writer.writerow(row)
+
+    def _build_filename(self):
+        if self.filename_timestamp:
+            filename = self.filename + '_{timestamp}.csv'.format(timestamp=datetime.now().strftime(u'%Y%m%d%H%M%S'))
+        else:
+            filename = self.filename + '.csv'
+        return filename
+
+    def __call__(self, data, headers=None):
+
+        filename = self._build_filename()
+
+        resp = Response(status=200, headers=[
+            ('Content-Type', 'text/csv'),
+            ('Content-Disposition',
+             'attachment; filename={}'.format(filename))
+        ])
+        self._write_file(resp.body_file, data, headers)
+
+        return resp
