@@ -79,8 +79,6 @@ from .exceptions import (
     CartCreationException,
     InvalidCartStatusError,
     PaymentMethodEmptyError,
-    OverOrderLimitException,
-    OverQuantityLimitException,
     OutTermSalesException,
     TooManyCartsCreated,
     PaymentError,
@@ -1876,30 +1874,6 @@ class OutTermSalesView(object):
             available_sales_segments=available_sales_segments,
             custom_locale_negotiator=negotiator,
             **datum)
-
-@view_defaults(renderer=selectable_renderer('over_limit.html'))
-class OverLimitView(object):
-    def __init__(self, context, request):
-        self.context = context
-        self.request = request
-
-    @lbr_view_config(context=OverOrderLimitException)
-    def over_order_limit(self):
-        location = self.request.route_url('cart.index', event_id=self.context.event_id)
-        return dict(
-            location=location,
-            order_limit=self.context.order_limit,
-            event=self.context.event,
-            performance=self.context.performance)
-
-    @lbr_view_config(context=OverQuantityLimitException)
-    def over_quantity_limit(self):
-        location = self.request.route_url('cart.index', event_id=self.context.event_id)
-        return dict(
-            location=location,
-            quantity_limit=self.context.quantity_limit,
-            event=self.context.event,
-            performance=self.context.performance)
 
 @lbr_view_config(decorator=with_jquery.not_when(mobile_request), request_method="POST", route_name='cart.logout')
 @limiter.release
