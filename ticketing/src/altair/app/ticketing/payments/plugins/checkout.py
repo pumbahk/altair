@@ -366,8 +366,10 @@ class CheckoutCompleteView(object):
                 make_order_from_cart(self.request, self.context, cart)
                 result = api.RESULT_FLG_SUCCESS
                 logger.info(u'checkout order_complete success (order_no=%s)' % checkout.orderCartId)
-            except:
-                logger.exception("OOPS")
+            except Exception as e:
+                logger.exception(
+                    "Exception error has occured during completing checkout order: {}".format(e.message)
+                )
         else:
             logger.error(u"failed to retrieve cart (order_no=%s)" % checkout.orderCartId)
 
