@@ -400,13 +400,13 @@ class TicketingCartResourceBase(object):
                 setting = setting.super
         return retval
 
-    def check_order_limit(self):
+    def check_order_limit(self, cart):
         """ 購入回数および購入枚数制限チェック
         設定なしの場合は何度でも購入可能です。
         カウントするOrder数にcancelされたOrderは含まれません。
         """
-        cart_total_quantity = sum(element.quantity for item in self.read_only_cart.items for element in item.elements)
-        total_orders_and_quantities_per_user = self.get_total_orders_and_quantities_per_user(self.read_only_cart.sales_segment)
+        cart_total_quantity = sum(element.quantity for item in cart.items for element in item.elements)
+        total_orders_and_quantities_per_user = self.get_total_orders_and_quantities_per_user(cart.sales_segment)
         for container, record in total_orders_and_quantities_per_user:
             order_limit = record['order_limit']
             max_quantity_per_user = record['max_quantity_per_user']
@@ -794,8 +794,14 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
 
         return code_dict_list
 
-    def is_discount_code_still_available(self):
-        code_str_list = [code.code for code in discount_api.get_used_discount_codes(self.read_only_cart)]
+    def is_discount_code_still_available(self, cart):
+        """
+        使用するディスカウントコードの有効性を確認。
+        フォーム入力時から購入決定に至るまでの間で、別ブラウザなどで使用されていないかの確認。
+        :param cart: カート
+        :return: 成功時はTrue, 失敗時は例外エラー
+        """
+        code_str_list = [code.code for code in discount_api.get_used_discount_codes(cart)]
         code_dict_list = self.create_code_dict_list(code_str_list)
         if code_dict_list:
             validated = self.validate_discount_codes(code_dict_list)
@@ -991,17 +997,21 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
 
         return code_dict_list
 
-    def use_sports_service_discount_code(self):
+    def use_sports_service_discount_code(self, cart):
+        """
+        イーグルスファンクラブ発行によるディスカウントコードの利用
+        :param cart: カート
+        :return: Boolean
+        """
         success = True
-
-        code_str_list = [code.code for code in discount_api.get_used_discount_codes(self.read_only_cart) if
+        code_str_list = [code.code for code in discount_api.get_used_discount_codes(cart) if
                          code.discount_code_setting.issued_by == u'sports_service']
         code_dict_list = self.create_code_dict_list(code_str_list)
 
         if code_dict_list:
-            settings = self.read_only_cart.performance.find_available_target_settings(
+            settings = cart.performance.find_available_target_settings(
                 issued_by=u'sports_service',
-                max_price=self.read_only_cart.highest_item_price,
+                max_price=cart.highest_item_price,
                 session=self.session,
                 now=self.now
             )
@@ -1015,7 +1025,7 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
                 if coupon['reason_cd'] != u'1010' or coupon['available_flg'] != u'1':
                     logger.error(
                         "[ The response for order_no: {}] the discount code is not available.".format(
-                            self.read_only_cart.order_no))
+                            cart.order_no))
                     success = False
 
         return success

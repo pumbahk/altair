@@ -57,7 +57,7 @@ def includeme(config):
     # 決済系(楽天ペイ)
     config.add_payment_plugin(CheckoutPlugin(), PAYMENT_PLUGIN_ID)
     config.add_route('payment.checkout.login', 'payment/checkout/login')
-    config.add_route('payment.checkout.order_complete', 'payment/checkout/order_complete')
+    config.add_route('payment.checkout.order_complete', 'payment/checkout/order_complete', factory='altair.app.ticketing.cart.resources.DiscountCodeTicketingCartResources')
     config.add_route('payment.checkout.callback.success', 'payment/checkout/callback/success')
     config.add_route('payment.checkout.callback.error', 'payment/checkout/callback/error')
     config.scan(__name__)
@@ -363,11 +363,13 @@ class CheckoutCompleteView(object):
         cart = get_cart_by_order_no(self.request, checkout.orderCartId)
         if cart is not None:
             try:
-                order = make_order_from_cart(self.request, cart)
+                make_order_from_cart(self.request, self.context, cart)
                 result = api.RESULT_FLG_SUCCESS
                 logger.info(u'checkout order_complete success (order_no=%s)' % checkout.orderCartId)
-            except:
-                logger.exception("OOPS")
+            except Exception as e:
+                logger.exception(
+                    "Exception error has occured during completing checkout order: {}".format(e.message)
+                )
         else:
             logger.error(u"failed to retrieve cart (order_no=%s)" % checkout.orderCartId)
 
