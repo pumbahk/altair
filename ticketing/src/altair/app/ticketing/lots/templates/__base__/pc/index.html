@@ -134,10 +134,22 @@
                           % if (performance.id == selected_performance.id) and (i == 0):
                           <option value="${performance.id}" selected>${h.performance_date_label(performance)}</option>
                           % else:
-                          <option value="${performance.id}">${h.performance_date_label_i18n(performance)}</option>
+                          <option value="${performance.id}">
+                            % if request.organization.setting.i18n:
+                              ${h.performance_date_label_i18n(performance)}
+                            % else:
+                              ${h.performance_date_label(performance)}
+                            % endif
+                          </option>
                           % endif
                         % else:
-                        <option value="${performance.id}">${h.performance_date_label_i18n(performance)}</option>
+                        <option value="${performance.id}">
+                            % if request.organization.setting.i18n:
+                              ${h.performance_date_label_i18n(performance)}
+                            % else:
+                              ${h.performance_date_label(performance)}
+                            % endif
+                        </option>
                         % endif
                       %endfor
                       </select>
