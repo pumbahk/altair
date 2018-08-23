@@ -227,7 +227,6 @@ def update_order_import_tasks_done_by_worker(request, order_import_tasks):
             continue
 
         error_count = query.filter(
-            ProtoOrder.attributes.isnot(None),
             ProtoOrder.attributes.contains('%errors%')
         ).count()
 
@@ -243,7 +242,6 @@ def get_error_proto_order_list(session, order_import_task):
     proto_orders_with_errors = session.query(ProtoOrder)\
         .filter(ProtoOrder.order_import_task == order_import_task,
                 ProtoOrder.processed_at.isnot(None),
-                ProtoOrder.attributes.isnot(None),
                 ProtoOrder.attributes.contains('%errors%')) \
         .all()
     data = []
