@@ -91,6 +91,8 @@ class Organizations(BaseView):
                     name='default',
                     performance_selector='date',
                     default_mail_sender=f.default_mail_sender.data,
+                    rendered_template_1=f.short_name.data,
+                    rendered_template_2='__base__',
                     cart_setting=CartSetting(
                         organization=organization,
                         name=u'デフォルトの設定',
@@ -195,7 +197,9 @@ class OrganizationSettings(BaseView):
         organization_setting = OrganizationSetting.query.filter_by(organization_id=organization_id, id=organization_setting_id).first()
         if organization_setting is None:
             return HTTPNotFound("organizationSetting(organization_id=%d, id=%d) is not found" % (organization_setting_id, organization_id))
-        f = OrganizationSettingForm(obj=organization_setting, context=self.context, organization=organization)
+        f = OrganizationSettingForm(obj=organization_setting, context=self.context, organization=organization,
+                                    default={'rendered_template_1': organization.short_name,
+                                             'rendered_template_2': '__base__'})
         return {
             'organization': organization,
             'form':f,
@@ -280,6 +284,8 @@ class OrganizationSettings(BaseView):
         organization_setting.oauth_scope = f.oauth_scope.data
         organization_setting.openid_prompt = f.openid_prompt.data
         organization_setting.enable_passport = f.enable_passport.data
+        organization_setting.rendered_template_1 = f.rendered_template_1.data
+        organization_setting.rendered_template_2 = f.rendered_template_2.data
         organization_setting.save()
 
         self.request.session.flash(u'その他の設定を保存しました')

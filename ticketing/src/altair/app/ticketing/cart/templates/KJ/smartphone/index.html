@@ -52,6 +52,9 @@ $(function () {
 </%block>
 
 <!-- ******************** contents [start] ******************** -->
+% if request.context.cart_setting.auth_type == 'fc_auth' and view_context.get_include_template_path('login_status.html') is not None:
+  <%include file="${view_context.get_include_template_path('login_status.html')}" />
+% endif
 <h2 class="purchase-title">${event['title']}</h2>
 
 

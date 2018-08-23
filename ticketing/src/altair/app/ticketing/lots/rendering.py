@@ -1,14 +1,16 @@
 # encoding: utf-8
-import os
-import logging
 import cgi
-from zope.interface import implementer
-from zope.proxy import ProxyBase, setProxiedObject
-from pyramid.renderers import RendererHelper
+import logging
+import os
+
+from altair.app.ticketing.core.utils import search_template_file
+from altair.pyramid_dynamic_renderer import RendererHelperProxy
+from altair.pyramid_dynamic_renderer.interfaces import IDynamicRendererHelperFactory
 from pyramid.interfaces import IRendererInfo
 from pyramid.path import AssetResolver
-from altair.pyramid_dynamic_renderer.interfaces import IDynamicRendererHelperFactory
-from altair.pyramid_dynamic_renderer import RendererHelperProxy, RequestSwitchingRendererHelperFactory
+from pyramid.renderers import RendererHelper
+from zope.interface import implementer
+from zope.proxy import ProxyBase, setProxiedObject
 
 logger = logging.getLogger(__name__)
 
@@ -44,19 +46,19 @@ class OverridableTemplateRendererHelperFactory(object):
         self.view_context_factory = view_context_factory
         self.path_patterns = path_patterns
 
-    def get_template_paths(self, view_context, their_package, path):
-        params = dict(
-            package=self.package,
-            their_package=their_package,
-            organization_short_name=(view_context.organization_short_name or "__default__"),
-            subtype=(view_context.subtype or "__default__"),
-            ua_type=view_context.ua_type,
-            path=path
+    def get_template_path(self, view_context, their_package, path):
+        for path_pattern in self.path_patterns:
+            params = dict(
+                their_package=their_package,
+                subtype=(view_context.subtype or "__default__"),
             )
-        return [
-            path_pattern % params
-            for path_pattern in self.path_patterns
-            ]
+
+            file_path = search_template_file(view_context, path, self.package, path_pattern, params, log_err=False)
+            if file_path:
+                return file_path
+
+        # パスパターンの中に該当するものが見つからなかった場合
+        return None
 
     def resolve_template(self, spec):
         package_or_path, colon_in_name, path = spec.partition(':')
@@ -83,19 +85,12 @@ class OverridableTemplateRendererHelperFactory(object):
             view_context = self.view_context_factory(name, package, registry, request, system_values=system_values, **kwargs)
         if system_values is not None:
             system_values['view_context'] = view_context
-        paths = self.get_template_paths(view_context, package.__name__, name)
-        for path in paths:
-            asset = self.resolve_template(path)
-            resolved_uri = asset.absspec()
-            if resolved_uri in self.bad_templates:
-                continue
-            else:
-                if not asset.exists():
-                    logger.debug('template %s does not exist' % resolved_uri)
-                    self.bad_templates.add(resolved_uri)
-                    continue
-            return RendererHelper(name=resolved_uri, package=package, registry=registry)
-        return NotFoundRenderer()
+        resolved_uri = self.get_template_path(view_context, package.__name__, name)
+        if not resolved_uri:
+            return NotFoundRenderer()
+
+        return RendererHelper(name=resolved_uri, package=package, registry=registry)
+
 
 _template_renderer_helper_factory_proxy = ProxyBase(None)
 
@@ -105,6 +100,7 @@ def selectable_renderer(name):
         name
         )
 
+
 def includeme(config):
     setProxiedObject(
         _template_renderer_helper_factory_proxy,
@@ -112,9 +108,7 @@ def includeme(config):
             config.registry.__name__,
             view_context_factory=lambda name, package, registry, request, **kwargs: request.view_context,
             path_patterns=[
-                'templates/%(organization_short_name)s/%(ua_type)s/%(path)s',
-                'templates/__base__/%(ua_type)s/%(path)s'
-                ]
-            )
+                u'{package}:templates/{organization_short_name}/{ua_type}/{path}',
+            ]
         )
-
+    )

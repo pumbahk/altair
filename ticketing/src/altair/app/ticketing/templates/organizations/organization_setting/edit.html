@@ -82,6 +82,13 @@
       % else:
         ${ch.form_item(form.default_locale, disabled='disabled')}
       % endif
+      ${ch.form_item(form.rendered_template_1, help=ch.help(form.rendered_template_1,
+        u'''テンプレートや静的コンテンツを優先して参照するORGディレクトリの指定。<br />
+        第1参照テンプレートが自己ORG、第2が__base__（HTML5）が基本的な組み合わせとできるよう移行中。<br />
+        なお、__default__（XHTML）は楽天チケットなど古くから存在するORGで使用されているテンプレートです。<br />
+        現在、この設定が動作する処理は「<b>cart, lots, orderreview, fc_auth</b>」です。''')
+      )}
+      ${ch.form_item(form.rendered_template_2, help=ch.help(form.rendered_template_2, u"第1参照テンプレート内にファイルが存在しない場合に参照するディレクトリ"))}
       ${ch.form_item(form.auto_cms)}
       ${ch.form_item(form.event_label)}
       ${ch.form_item(form.show_event_op_and_sales)}
@@ -102,6 +109,10 @@
 </div>
 
 <script type="text/javascript">
+  $(function () {
+      $('[rel=popover]').popover({html: true});
+  });
+
   $('#i18n').change(function(){
     if ($(this).is(':checked')) {
       $("#default_locale").prop({'disabled':false});

@@ -11,20 +11,20 @@ def overridable_renderer(name):
         name
         )
 
+
 def includeme(config):
     config.registry.registerUtility(
         OverridableTemplateRendererHelperFactory(
             config.registry.__name__,
             lambda name, package, registry, request, **kwargs: request.view_context,
             [
-                '%(package)s:templates/%(login_body)s/%(ua_type)s/%(path)s',
-                '%(package)s:templates/%(organization_short_name)s/fc_auth/%(ua_type)s/%(path)s',
-                '%(package)s:templates/%(organization_short_name)s/%(ua_type)s/fc_auth/%(membership)s/%(path)s',
-                '%(package)s:templates/%(organization_short_name)s/%(ua_type)s/fc_auth/%(path)s',
-                '%(their_package)s:templates/%(organization_short_name)s/%(ua_type)s/%(path)s',
-                '%(their_package)s:templates/__base__/%(ua_type)s/%(path)s',
-                ]
-            ),
+                u'{package}:templates/{login_body}/{ua_type}/{path}',
+                u'{package}:templates/{organization_short_name}/fc_auth/{ua_type}/{path}',
+                u'{package}:templates/{organization_short_name}/{ua_type}/fc_auth/{membership}/{path}',
+                u'{package}:templates/{organization_short_name}/{ua_type}/fc_auth/{path}',
+                u'{their_package}:templates/{organization_short_name}/{ua_type}/{path}',
+            ]
+        ),
         IDynamicRendererHelperFactory,
         name="fc_auth.overridable"
-        )
+    )
