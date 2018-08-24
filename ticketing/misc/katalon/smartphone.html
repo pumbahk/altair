@@ -35,7 +35,17 @@
 </tr>
 <tr><td>type</td><td>id=username<datalist><option>id=username</option></datalist></td><td>test_member</td>
 </tr>
+<tr><td>storeEval</td><td>window.document.getElementById('password').getAttribute('type') !== 'hidden'<datalist><option>window.document.getElementById('password').getAttribute('type') !== 'hidden'</option></datalist></td><td>result</td>
+</tr>
+<tr><td>if</td><td>result<datalist><option>result</option></datalist></td><td></td>
+</tr>
 <tr><td>type</td><td>id=password<datalist><option>id=password</option></datalist></td><td>1234</td>
+</tr>
+<tr><td>else</td><td><datalist><option></option></datalist></td><td></td>
+</tr>
+<tr><td>getEval</td><td>window.document.getElementById('password').value = 1234<datalist><option>window.document.getElementById('password').value = 1234</option><option>window.document.getElementById('password').value= 1234</option></datalist></td><td></td>
+</tr>
+<tr><td>endIf</td><td><datalist><option></option></datalist></td><td></td>
 </tr>
 <tr><td>clickAndWait</td><td>//button[@type='submit']<datalist><option>//button[@type='submit']</option></datalist></td><td></td>
 </tr>
