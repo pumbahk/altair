@@ -1,5 +1,5 @@
 header .head {
-    background-color: #bf0000 !important;
+    background-color: #63c331 !important;
 }
 
 header .head h1 img {
@@ -8,7 +8,7 @@ header .head h1 img {
 
 main #content .btn,
 main #content h2 {
-    background-color: #bf0000 !important;
+    background-color: #63c331 !important;
 }
 
 main #content .btn:hover {
