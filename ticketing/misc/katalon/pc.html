@@ -11,11 +11,15 @@
 <tr><td rowspan="1" colspan="3">cart</td></tr>
 </thead>
 <tbody>
+<tr><td>#</td><td>設定<datalist><option>設定</option></datalist></td><td></td>
+</tr>
+<tr><td>loadVars</td><td>config_stg.csv<datalist><option>LOCAL</option><option>STG</option><option>config_local.csv</option><option>config_stg.csv</option></datalist></td><td></td>
+</tr>
 <tr><td>#</td><td>使用するORGテンプレート指定<datalist><option>使用するORGテンプレート指定</option></datalist></td><td></td>
 </tr>
 <tr><td>loadVars</td><td>templete_check_orgs.csv<datalist><option>template_check_orgs.csv</option><option>templete_check_orgs.csv</option></datalist></td><td></td>
 </tr>
-<tr><td>open</td><td>http://backend.stg.altr.jp/organizations/103/settings/102/edit<datalist><option>http://backend.stg.altr.jp/organizations/103/settings/102/edit</option></datalist></td><td></td>
+<tr><td>open</td><td>${organization_setting_url}<datalist><option>http://backend.stg.altr.jp/organizations/103/settings/102/edit</option><option>${organization_setting_url}</option></datalist></td><td></td>
 </tr>
 <tr><td>select</td><td>id=rendered_template_1<datalist><option>id=rendered_template_1</option><option>name=rendered_template_1</option><option>//select[@id='rendered_template_1']</option><option>//div[@id='main-container']/div[3]/form/fieldset/div[48]/div/select</option><option>//div[48]/div/select</option></datalist></td><td>value=${short_name}</td>
 </tr>
@@ -23,7 +27,7 @@
 </tr>
 <tr><td>#</td><td>FCログイン<datalist><option>FCログイン</option></datalist></td><td></td>
 </tr>
-<tr><td>open</td><td>http://animefilmfestivaltokyo2018.stg.altr.jp/cart/events/10954<datalist><option>http://animefilmfestivaltokyo2018.stg.altr.jp/cart/events/10954</option></datalist></td><td></td>
+<tr><td>open</td><td>${cart_url}<datalist><option>http://animefilmfestivaltokyo2018.stg.altr.jp/cart/events/10954</option><option>${event_url}</option><option>${cart_url}</option></datalist></td><td></td>
 </tr>
 <tr><td>waitForPageToLoad</td><td><datalist><option></option></datalist></td><td></td>
 </tr>
@@ -31,7 +35,17 @@
 </tr>
 <tr><td>type</td><td>id=username<datalist><option>id=username</option></datalist></td><td>test_member</td>
 </tr>
+<tr><td>storeEval</td><td>window.document.getElementById('password').getAttribute('type') !== 'hidden'<datalist><option>window.document.getElementById('password').getAttribute('type') !== 'hidden'</option><option>document.getElementById('password').getAttribute('type') === 'hidden';</option></datalist></td><td>result</td>
+</tr>
+<tr><td>if</td><td>${result}<datalist><option>${result}</option></datalist></td><td></td>
+</tr>
 <tr><td>type</td><td>id=password<datalist><option>id=password</option></datalist></td><td>1234</td>
+</tr>
+<tr><td>else</td><td><datalist><option></option></datalist></td><td></td>
+</tr>
+<tr><td>getEval</td><td>window.document.getElementById('password').value = 1234<datalist><option>window.document.getElementById('password').value = 1234</option><option>window.document.getElementById('password').value= 1234</option></datalist></td><td></td>
+</tr>
+<tr><td>endif</td><td><datalist><option></option></datalist></td><td></td>
 </tr>
 <tr><td>clickAndWait</td><td>//button[@type='submit']<datalist><option>//button[@type='submit']</option></datalist></td><td></td>
 </tr>
@@ -81,7 +95,7 @@
 </tr>
 <tr><td>captureEntirePageScreenshot</td><td>input_credit_card<datalist><option>input_credit_card</option></datalist></td><td></td>
 </tr>
-<tr><td>type</td><td>id=textfield<datalist><option>id=textfield</option><option>name=card_number</option><option>xpath=(.//*[normalize-space(text()) and normalize-space(.)='半角数字(16桁)'])[1]/following::input[1]</option><option>xpath=(.//*[normalize-space(text()) and normalize-space(.)='半角数字'])[1]/preceding::input[1]</option><option>//input[@id='textfield']</option><option>//form[@id='form1']/div/table/tbody/tr/td/input</option><option>//td/input</option><option>css=#textfield</option></datalist></td><td>4297690077068684</td>
+<tr><td>type</td><td>id=textfield<datalist><option>id=textfield</option><option>name=card_number</option><option>xpath=(.//*[normalize-space(text()) and normalize-space(.)='半角数字(16桁)'])[1]/following::input[1]</option><option>xpath=(.//*[normalize-space(text()) and normalize-space(.)='半角数字'])[1]/preceding::input[1]</option><option>//input[@id='textfield']</option><option>//form[@id='form1']/div/table/tbody/tr/td/input</option><option>//td/input</option><option>css=#textfield</option></datalist></td><td>4242424242424242</td>
 </tr>
 <tr><td>select</td><td>id=select<datalist><option>id=select</option><option>name=exp_month</option><option>xpath=(.//*[normalize-space(text()) and normalize-space(.)='半角数字'])[1]/following::select[1]</option><option>xpath=(.//*[normalize-space(text()) and normalize-space(.)='半角ローマ字'])[1]/preceding::select[2]</option><option>//select[@id='select']</option><option>//form[@id='form1']/div/table/tbody/tr[2]/td/select</option><option>//td/select</option><option>css=#select</option></datalist></td><td>label=03</td>
 </tr>
@@ -93,21 +107,9 @@
 </tr>
 <tr><td>clickAndWait</td><td>xpath=(.//*[normalize-space(text()) and normalize-space(.)='ブラウザの「戻る」ボタンを使用するとエラーになります。ページによってはブラウザの「更新」ボタンを使用するとエラーになる場合があります。'])[1]/following::input[1]<datalist><option>xpath=(.//*[normalize-space(text()) and normalize-space(.)='ブラウザの「戻る」ボタンを使用するとエラーになります。ページによってはブラウザの「更新」ボタンを使用するとエラーになる場合があります。'])[1]/following::input[1]</option><option>xpath=(.//*[normalize-space(text()) and normalize-space(.)='セキュリティコードは、カード裏面の署名欄に印刷されている下3桁の数字です。'])[1]/following::input[1]</option><option>xpath=(.//*[normalize-space(text()) and normalize-space(.)='local'])[1]/preceding::input[1]</option><option>xpath=(.//*[normalize-space(text()) and normalize-space(.)='« FIXME: Debug Toolbar'])[1]/preceding::input[1]</option><option>//input[@value='次へ']</option><option>//form[@id='form1']/p/input</option><option>//p/input</option><option>css=input.btn.btn-primary</option></datalist></td><td></td>
 </tr>
-<tr><td>#</td><td>3Dセキュア<datalist><option>3Dセキュア</option></datalist></td><td></td>
-</tr>
-<tr><td>pause</td><td>2000<datalist><option>10000000</option><option>20000</option><option>2000</option></datalist></td><td></td>
-</tr>
-<tr><td>click</td><td>name=Password<datalist><option>name=Password</option><option>xpath=(.//*[normalize-space(text()) and normalize-space(.)='パスワード:'])[1]/following::input[1]</option><option>xpath=(.//*[normalize-space(text()) and normalize-space(.)='**** **** **** 8684'])[1]/following::input[1]</option><option>xpath=(.//*[normalize-space(text()) and normalize-space(.)='ヘルプ'])[1]/preceding::input[2]</option><option>//input[@name='Password']</option><option>//td[3]/input</option><option>css=input[name="Password"]</option></datalist></td><td></td>
-</tr>
-<tr><td>type</td><td>name=Password<datalist><option>name=Password</option><option>xpath=(.//*[normalize-space(text()) and normalize-space(.)='パスワード:'])[1]/following::input[1]</option><option>xpath=(.//*[normalize-space(text()) and normalize-space(.)='**** **** **** 8684'])[1]/following::input[1]</option><option>xpath=(.//*[normalize-space(text()) and normalize-space(.)='ヘルプ'])[1]/preceding::input[2]</option><option>//input[@name='Password']</option><option>//td[3]/input</option><option>css=input[name="Password"]</option></datalist></td><td>rakuten59875</td>
-</tr>
-<tr><td>clickAndWait</td><td>id=sendButton<datalist><option>id=sendButton</option><option>xpath=(.//*[normalize-space(text()) and normalize-space(.)='パスワード:'])[1]/following::input[2]</option><option>xpath=(.//*[normalize-space(text()) and normalize-space(.)='ヘルプ'])[1]/preceding::input[1]</option><option>xpath=(.//*[normalize-space(text()) and normalize-space(.)='キャンセル'])[1]/preceding::input[1]</option><option>//input[@id='sendButton']</option><option>//td[3]/table/tbody/tr/td/input</option><option>css=#sendButton</option></datalist></td><td></td>
-</tr>
 <tr><td>#</td><td>確認画面<datalist><option>確認画面</option></datalist></td><td></td>
 </tr>
-<tr><td>#</td><td>ローカルやSTG環境だと「セキュアではない」というアラートウィンドウが表示されると思うので、手動で対応してください。<datalist><option>ローカルやSTG環境だと「セキュアではない」というアラートウィンドウが表示されると思うので、手動で対応してください。</option></datalist></td><td></td>
-</tr>
-<tr><td>pause</td><td>4000<datalist><option>2000</option><option>4000</option></datalist></td><td></td>
+<tr><td>captureEntirePageScreenshot</td><td>confirm<datalist><option>confirm</option></datalist></td><td></td>
 </tr>
 <tr><td>click</td><td>id=btn-complete<datalist><option>id=btn-complete</option><option>xpath=(.//*[normalize-space(text()) and normalize-space(.)='※配送受取を選択した場合'])[1]/following::input[2]</option><option>xpath=(.//*[normalize-space(text()) and normalize-space(.)='local'])[1]/preceding::input[1]</option><option>xpath=(.//*[normalize-space(text()) and normalize-space(.)='« FIXME: Debug Toolbar'])[1]/preceding::input[1]</option><option>//input[@id='btn-complete']</option><option>//form[@id='form1']/table/tbody/tr/td[2]/input</option><option>//td[2]/input</option><option>css=#btn-complete</option></datalist></td><td></td>
 </tr>
@@ -139,17 +141,23 @@
 </tr>
 <tr><td>endLoadVars</td><td><datalist><option></option></datalist></td><td></td>
 </tr>
+<tr><td>endLoadVars</td><td><datalist><option></option></datalist></td><td></td>
+</tr>
 </tbody></table>
 <table cellpadding="1" cellspacing="1" border="1">
 <thead>
 <tr><td rowspan="1" colspan="3">lots</td></tr>
 </thead>
 <tbody>
+<tr><td>#</td><td>設定<datalist><option>設定</option></datalist></td><td></td>
+</tr>
+<tr><td>loadVars</td><td>config_stg.csv<datalist><option>config_stg.csv</option><option>config_local.csv</option><option>config_stgl.csv</option></datalist></td><td></td>
+</tr>
 <tr><td>#</td><td>使用するORGテンプレート指定<datalist><option>使用するORGテンプレート指定</option></datalist></td><td></td>
 </tr>
 <tr><td>loadVars</td><td>templete_check_orgs.csv<datalist><option>template_check_orgs.csv</option><option>templete_check_orgs.csv</option></datalist></td><td></td>
 </tr>
-<tr><td>open</td><td>http://backend.stg.altr.jp/organizations/103/settings/102/edit<datalist><option>http://backend.stg.altr.jp/organizations/103/settings/102/edit</option></datalist></td><td></td>
+<tr><td>open</td><td>${organization_setting_url}<datalist><option>http://backend.stg.altr.jp/organizations/103/settings/102/edit</option><option>${organization_setting_url}</option></datalist></td><td></td>
 </tr>
 <tr><td>select</td><td>id=rendered_template_1<datalist><option>id=rendered_template_1</option><option>name=rendered_template_1</option><option>//select[@id='rendered_template_1']</option><option>//div[@id='main-container']/div[3]/form/fieldset/div[48]/div/select</option><option>//div[48]/div/select</option></datalist></td><td>value=${short_name}</td>
 </tr>
@@ -157,7 +165,7 @@
 </tr>
 <tr><td>#</td><td>FC認証<datalist><option>FC認証</option></datalist></td><td></td>
 </tr>
-<tr><td>open</td><td>http://animefilmfestivaltokyo2018.stg.altr.jp/lots/events/10955/entry/8321<datalist><option>http://animefilmfestivaltokyo2018.stg.altr.jp/lots/events/10955/entry/8321</option></datalist></td><td></td>
+<tr><td>open</td><td>${lot_url}<datalist><option>http://animefilmfestivaltokyo2018.stg.altr.jp/lots/events/10955/entry/8321</option><option>${event_url}</option><option>${lot_url}</option></datalist></td><td></td>
 </tr>
 <tr><td>waitForPageToLoad</td><td><datalist><option></option></datalist></td><td></td>
 </tr>
@@ -165,17 +173,27 @@
 </tr>
 <tr><td>type</td><td>id=username<datalist><option>id=username</option><option>name=username</option><option>xpath=(.//*[normalize-space(text()) and normalize-space(.)='会員番号'])[1]/following::input[1]</option><option>xpath=(.//*[normalize-space(text()) and normalize-space(.)='会員の方はこちら'])[1]/following::input[1]</option><option>xpath=(.//*[normalize-space(text()) and normalize-space(.)='パスワード'])[1]/preceding::input[1]</option><option>xpath=(.//*[normalize-space(text()) and normalize-space(.)='ログイン'])[1]/preceding::input[2]</option><option>//input[@id='username']</option><option>//form[@id='member-login-form']/dl/dd/input</option><option>//input</option><option>css=#username</option></datalist></td><td>test_member</td>
 </tr>
+<tr><td>storeEval</td><td>window.document.getElementById('password').getAttribute('type') !== 'hidden'<datalist><option>document.getElementById('password').getAttribute('type') === 'hidden';</option><option>window.document.getElementById('password').getAttribute('type') !== 'hidden'</option></datalist></td><td>result</td>
+</tr>
+<tr><td>if</td><td>${result}<datalist><option>${result}</option></datalist></td><td></td>
+</tr>
 <tr><td>type</td><td>id=password<datalist><option>id=password</option><option>name=password</option><option>xpath=(.//*[normalize-space(text()) and normalize-space(.)='パスワード'])[1]/following::input[1]</option><option>xpath=(.//*[normalize-space(text()) and normalize-space(.)='会員番号'])[1]/following::input[2]</option><option>xpath=(.//*[normalize-space(text()) and normalize-space(.)='ログイン'])[1]/preceding::input[1]</option><option>xpath=(.//*[normalize-space(text()) and normalize-space(.)='一般の方はこちらから'])[1]/preceding::input[1]</option><option>//input[@id='password']</option><option>//form[@id='member-login-form']/dl/dd[2]/input</option><option>//dd[2]/input</option><option>css=#password</option></datalist></td><td>1234</td>
 </tr>
-<tr><td>clickAndWait</td><td>xpath=(.//*[normalize-space(text()) and normalize-space(.)='パスワード'])[1]/following::button[1]<datalist><option>xpath=(.//*[normalize-space(text()) and normalize-space(.)='パスワード'])[1]/following::button[1]</option><option>xpath=(.//*[normalize-space(text()) and normalize-space(.)='会員番号'])[1]/following::button[1]</option><option>xpath=(.//*[normalize-space(text()) and normalize-space(.)='一般の方はこちらから'])[1]/preceding::button[1]</option><option>xpath=(.//*[normalize-space(text()) and normalize-space(.)='注意事項'])[1]/preceding::button[1]</option><option>//button[@type='submit']</option><option>//form[@id='member-login-form']/p/button</option><option>//button</option><option>css=button.btn</option></datalist></td><td></td>
+<tr><td>else</td><td><datalist><option></option></datalist></td><td></td>
+</tr>
+<tr><td>getEval</td><td>window.document.getElementById('password').value = 1234<datalist><option>window.document.getElementById('password').value= 1234</option><option>window.document.getElementById('password').value = 1234</option></datalist></td><td></td>
+</tr>
+<tr><td>endif</td><td><datalist><option></option></datalist></td><td></td>
+</tr>
+<tr><td>clickAndWait</td><td>//button[@type='submit']<datalist><option>xpath=(.//*[normalize-space(text()) and normalize-space(.)='ログインパスワード(半角英数字)'])[1]/following::button[1]</option><option>xpath=(.//*[normalize-space(text()) and normalize-space(.)='ログインパスワードをお持ちの方はこちらから'])[1]/following::button[1]</option><option>xpath=(.//*[normalize-space(text()) and normalize-space(.)='一般の方はこちらから'])[1]/preceding::button[1]</option><option>xpath=(.//*[normalize-space(text()) and normalize-space(.)='注意事項'])[1]/preceding::button[1]</option><option>//button[@type='submit']</option><option>//form[@id='member-login-form']/p/button</option><option>//button</option><option>css=button.btn</option><option>xpath=(button[@type='submit'])</option></datalist></td><td></td>
 </tr>
 <tr><td>#</td><td>申込トップ<datalist><option>申込トップ</option></datalist></td><td></td>
 </tr>
 <tr><td>captureEntirePageScreenshot</td><td>entry_top<datalist><option>entry_top</option></datalist></td><td></td>
 </tr>
-<tr><td>click</td><td>xpath=(.//*[normalize-space(text()) and normalize-space(.)='(1枚ごと)'])[2]/following::td[1]<datalist><option>xpath=(.//*[normalize-space(text()) and normalize-space(.)='(1枚ごと)'])[2]/following::td[1]</option><option>xpath=(.//*[normalize-space(text()) and normalize-space(.)='￥0'])[2]/following::td[1]</option><option>xpath=(.//*[normalize-space(text()) and normalize-space(.)='クレジットカード決済'])[1]/preceding::td[1]</option><option>xpath=(.//*[normalize-space(text()) and normalize-space(.)='手数料'])[3]/preceding::td[1]</option><option>//form[@id='wishForm']/div[2]/div[2]/div/table/tbody/tr/td</option><option>//div[2]/div[2]/div/table/tbody/tr/td</option></datalist></td><td></td>
+<tr><td>select</td><td>name=product-quantity-0-0<datalist><option>name=product-quantity-0-0</option><option>xpath=(.//*[normalize-space(text()) and normalize-space(.)='￥100×'])[1]/following::select[1]</option><option>xpath=(.//*[normalize-space(text()) and normalize-space(.)='テスト席種'])[2]/following::select[1]</option><option>xpath=(.//*[normalize-space(text()) and normalize-space(.)='第2希望'])[1]/preceding::select[1]</option><option>xpath=(.//*[normalize-space(text()) and normalize-space(.)='テストパフォーマンス'])[3]/preceding::select[1]</option><option>//select[@name='product-quantity-0-0']</option><option>//table[@id='wish-cell-table-0']/tbody/tr[4]/td/div/select</option><option>//td/div/select</option><option>css=select[name="product-quantity-0-0"]</option></datalist></td><td>label=1</td>
 </tr>
-<tr><td>select</td><td>name=product-quantity-0-0<datalist><option>name=product-quantity-0-0</option><option>xpath=(.//*[normalize-space(text()) and normalize-space(.)='￥100×'])[1]/following::select[1]</option><option>xpath=(.//*[normalize-space(text()) and normalize-space(.)='テスト席種商品'])[1]/following::select[1]</option><option>xpath=(.//*[normalize-space(text()) and normalize-space(.)='第2希望'])[1]/preceding::select[1]</option><option>xpath=(.//*[normalize-space(text()) and normalize-space(.)='テストパフォーマンス'])[3]/preceding::select[1]</option><option>//select[@name='product-quantity-0-0']</option><option>//table[@id='wish-cell-table-0']/tbody/tr[4]/td/div/select</option><option>//td/div/select</option><option>css=select[name="product-quantity-0-0"]</option></datalist></td><td>label=1</td>
+<tr><td>click</td><td>xpath=(//dt[contains(text(), 'クレジットカード決済')])<datalist><option>xpath=(.//*[normalize-space(text()) and normalize-space(.)='お支払・お引取り方法選択'])[1]/following::dt[1]</option><option>xpath=(.//*[normalize-space(text()) and normalize-space(.)='￥100×'])[3]/following::dt[1]</option><option>xpath=(.//*[normalize-space(text()) and normalize-space(.)='手数料'])[1]/preceding::dt[1]</option><option>xpath=(.//*[normalize-space(text()) and normalize-space(.)='￥0'])[1]/preceding::dt[1]</option><option>//form[@id='wishForm']/div[2]/div/div/table/tbody/tr/td[2]/dl/dt</option><option>//dt</option><option>css=dt</option><option>xpath=(//dt[contains(text(), 'クレジットカード決済')])</option></datalist></td><td></td>
 </tr>
 <tr><td>type</td><td>id=last_name<datalist><option>id=last_name</option><option>name=last_name</option><option>xpath=(.//*[normalize-space(text()) and normalize-space(.)='姓'])[1]/following::input[1]</option><option>xpath=(.//*[normalize-space(text()) and normalize-space(.)='購入者氏名 (全角)'])[1]/following::input[1]</option><option>xpath=(.//*[normalize-space(text()) and normalize-space(.)='名'])[1]/preceding::input[1]</option><option>xpath=(.//*[normalize-space(text()) and normalize-space(.)='購入者氏名 (カナ)'])[1]/preceding::input[2]</option><option>//input[@id='last_name']</option><option>//form[@id='wishForm']/div[3]/div/table/tbody/tr/td/ul/li/input</option><option>//li/input</option><option>css=#last_name</option></datalist></td><td>テスト</td>
 </tr>
@@ -201,7 +219,7 @@
 </tr>
 <tr><td>click</td><td>xpath=(.//*[normalize-space(text()) and normalize-space(.)='性別'])[1]/following::label[1]<datalist><option>xpath=(.//*[normalize-space(text()) and normalize-space(.)='性別'])[1]/following::label[1]</option><option>xpath=(.//*[normalize-space(text()) and normalize-space(.)='日'])[1]/following::label[2]</option><option>xpath=(.//*[normalize-space(text()) and normalize-space(.)='女性'])[1]/preceding::label[1]</option><option>xpath=(.//*[normalize-space(text()) and normalize-space(.)='運営会社'])[1]/preceding::label[4]</option><option>//ul[@id='sex']/li/label</option><option>//tr[7]/td/ul/li/label</option><option>css=#sex &gt; li &gt; label</option></datalist></td><td></td>
 </tr>
-<tr><td>type</td><td>id=自由に入力してください<datalist><option>id=自由に入力してください</option><option>name=extra.自由に入力してください</option><option>xpath=(.//*[normalize-space(text()) and normalize-space(.)='自由に入力してください'])[1]/following::input[1]</option><option>xpath=(.//*[normalize-space(text()) and normalize-space(.)='女性'])[1]/following::input[1]</option><option>xpath=(.//*[normalize-space(text()) and normalize-space(.)='COMPANY'])[1]/preceding::input[1]</option><option>xpath=(.//*[normalize-space(text()) and normalize-space(.)='CONTACT'])[1]/preceding::input[1]</option><option>//input[@id='自由に入力してください']</option><option>//form[@id='wishForm']/div[3]/div/table/tbody/tr[8]/td/div/div/input</option><option>//div/input</option><option>css=#自由に入力してください</option></datalist></td><td>追記フィールド</td>
+<tr><td>type</td><td>id=自由に入力してください<datalist><option>id=自由入力</option><option>name=extra.自由入力</option><option>xpath=(.//*[normalize-space(text()) and normalize-space(.)='自由に入力してください'])[1]/following::input[1]</option><option>xpath=(.//*[normalize-space(text()) and normalize-space(.)='自由入力'])[1]/following::input[1]</option><option>xpath=(.//*[normalize-space(text()) and normalize-space(.)='TOP'])[1]/preceding::input[1]</option><option>xpath=(.//*[normalize-space(text()) and normalize-space(.)='CONTACT'])[1]/preceding::input[1]</option><option>//input[@id='自由入力']</option><option>//form[@id='wishForm']/div[3]/div/table/tbody/tr[8]/td/div/div[2]/input</option><option>//div[2]/input</option><option>css=#自由入力</option><option>id=自由に入力してください</option></datalist></td><td>追記フィールド</td>
 </tr>
 <tr><td>clickAndWait</td><td>xpath=(.//*[normalize-space(text()) and normalize-space(.)='女性'])[1]/following::p[1]<datalist><option>xpath=(.//*[normalize-space(text()) and normalize-space(.)='女性'])[1]/following::p[1]</option><option>xpath=(.//*[normalize-space(text()) and normalize-space(.)='男性'])[1]/following::p[1]</option><option>xpath=(.//*[normalize-space(text()) and normalize-space(.)='運営会社'])[1]/preceding::p[1]</option><option>xpath=(.//*[normalize-space(text()) and normalize-space(.)='お問い合わせ'])[1]/preceding::p[1]</option><option>//p[@onclick="$('#wishForm').submit()"]</option><option>//form[@id='wishForm']/div[4]/p</option><option>//div[4]/p</option><option>css=p.btn</option></datalist></td><td></td>
 </tr>
@@ -209,7 +227,7 @@
 </tr>
 <tr><td>captureEntirePageScreenshot</td><td>input_credit_card_info<datalist><option>input_credit_card_info</option></datalist></td><td></td>
 </tr>
-<tr><td>type</td><td>id=textfield<datalist><option>id=textfield</option><option>name=card_number</option><option>xpath=(.//*[normalize-space(text()) and normalize-space(.)='カード番号'])[1]/following::input[1]</option><option>xpath=(.//*[normalize-space(text()) and normalize-space(.)='クレジットカードでお支払い'])[1]/following::input[2]</option><option>xpath=(.//*[normalize-space(text()) and normalize-space(.)='有効期限'])[1]/preceding::input[1]</option><option>//input[@id='textfield']</option><option>//form[@id='form1']/dl/dd/input</option><option>//dd/input</option><option>css=#textfield</option></datalist></td><td>4297690077068684</td>
+<tr><td>type</td><td>id=textfield<datalist><option>id=textfield</option><option>name=card_number</option><option>xpath=(.//*[normalize-space(text()) and normalize-space(.)='カード番号'])[1]/following::input[1]</option><option>xpath=(.//*[normalize-space(text()) and normalize-space(.)='クレジットカードでお支払い'])[1]/following::input[2]</option><option>xpath=(.//*[normalize-space(text()) and normalize-space(.)='有効期限'])[1]/preceding::input[1]</option><option>//input[@id='textfield']</option><option>//form[@id='form1']/dl/dd/input</option><option>//dd/input</option><option>css=#textfield</option></datalist></td><td>4242424242424242</td>
 </tr>
 <tr><td>select</td><td>id=select<datalist><option>id=select</option><option>name=exp_month</option><option>xpath=(.//*[normalize-space(text()) and normalize-space(.)='有効期限'])[1]/following::select[1]</option><option>xpath=(.//*[normalize-space(text()) and normalize-space(.)='名義人'])[1]/preceding::select[2]</option><option>xpath=(.//*[normalize-space(text()) and normalize-space(.)='セキュリティコード'])[1]/preceding::select[2]</option><option>//select[@id='select']</option><option>//form[@id='form1']/dl/dd[2]/select</option><option>//dd[2]/select</option><option>css=#select</option></datalist></td><td>label=03</td>
 </tr>
@@ -221,17 +239,9 @@
 </tr>
 <tr><td>clickAndWait</td><td>xpath=(.//*[normalize-space(text()) and normalize-space(.)='セキュリティコードは、カード裏面の署名欄に印刷されている下3桁の数字です。'])[1]/following::p[9]<datalist><option>xpath=(.//*[normalize-space(text()) and normalize-space(.)='セキュリティコードは、カード裏面の署名欄に印刷されている下3桁の数字です。'])[1]/following::p[9]</option><option>xpath=(.//*[normalize-space(text()) and normalize-space(.)='セキュリティコード'])[1]/following::p[9]</option><option>xpath=(.//*[normalize-space(text()) and normalize-space(.)='運営会社'])[1]/preceding::p[1]</option><option>xpath=(.//*[normalize-space(text()) and normalize-space(.)='お問い合わせ'])[1]/preceding::p[1]</option><option>//p[@onclick="$('#form1').submit()"]</option><option>//div[@id='content']/article/section/div[2]/p</option><option>//div[2]/p</option><option>css=p.btn</option></datalist></td><td></td>
 </tr>
-<tr><td>#</td><td>3Dセキュア<datalist><option>3Dセキュア</option></datalist></td><td></td>
+<tr><td>#</td><td>確認画面<datalist><option>確認画面</option></datalist></td><td></td>
 </tr>
-<tr><td>pause</td><td>2000<datalist><option>4000</option><option>2000</option></datalist></td><td></td>
-</tr>
-<tr><td>type</td><td>name=Password<datalist><option>name=Password</option><option>xpath=(.//*[normalize-space(text()) and normalize-space(.)='パスワード:'])[1]/following::input[1]</option><option>xpath=(.//*[normalize-space(text()) and normalize-space(.)='**** **** **** 8684'])[1]/following::input[1]</option><option>xpath=(.//*[normalize-space(text()) and normalize-space(.)='ヘルプ'])[1]/preceding::input[2]</option><option>//input[@name='Password']</option><option>//td[3]/input</option><option>css=input[name="Password"]</option></datalist></td><td>rakuten59875</td>
-</tr>
-<tr><td>clickAndWait</td><td>id=sendButton<datalist><option>id=sendButton</option><option>xpath=(.//*[normalize-space(text()) and normalize-space(.)='パスワード:'])[1]/following::input[2]</option><option>xpath=(.//*[normalize-space(text()) and normalize-space(.)='ヘルプ'])[1]/preceding::input[1]</option><option>xpath=(.//*[normalize-space(text()) and normalize-space(.)='キャンセル'])[1]/preceding::input[1]</option><option>//input[@id='sendButton']</option><option>//td[3]/table/tbody/tr/td/input</option><option>css=#sendButton</option></datalist></td><td></td>
-</tr>
-<tr><td>#</td><td>申込内容確認<datalist><option>申込内容確認</option></datalist></td><td></td>
-</tr>
-<tr><td>pause</td><td>4000<datalist><option>4000</option></datalist></td><td></td>
+<tr><td>captureEntirePageScreenshot</td><td>confirm<datalist><option>confirm</option></datalist></td><td></td>
 </tr>
 <tr><td>clickAndWait</td><td>xpath=(//p[contains(text(), '確定する')])<datalist><option>xpath=(.//*[normalize-space(text()) and normalize-space(.)='(未回答)'])[1]/following::p[2]</option><option>xpath=(.//*[normalize-space(text()) and normalize-space(.)='追加情報'])[1]/following::p[2]</option><option>xpath=(.//*[normalize-space(text()) and normalize-space(.)='運営会社'])[1]/preceding::p[1]</option><option>xpath=(.//*[normalize-space(text()) and normalize-space(.)='お問い合わせ'])[1]/preceding::p[1]</option><option>xpath=(//p[@onclick='doAction(this)'])[2]</option><option>//form[@id='form1']/div[4]/p[2]</option><option>//p[2]</option><option>xpath=(//p[contains(text(), '確定する')])</option></datalist></td><td></td>
 </tr>
@@ -273,7 +283,7 @@
 </tr>
 <tr><td>endLoadVars</td><td><datalist><option></option></datalist></td><td></td>
 </tr>
-<tr><td></td><td><datalist><option></option></datalist></td><td></td>
+<tr><td>endLoadVars</td><td><datalist><option></option></datalist></td><td></td>
 </tr>
 </tbody></table>
 </body>
