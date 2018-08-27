@@ -71,13 +71,9 @@ class TestCheckoutViews(unittest.TestCase, CoreTestMixin):
 
     def _dummy_root_factory(self, request):
         return testing.DummyResource(
-            authenticated_user=lambda: {'is_guest': True},
-            host_base_url='/',
-            check_deleted_product=lambda cart: True,
-            check_order_limit=lambda cart: True,
-            is_discount_code_still_available=lambda cart: True,
-            use_sports_service_discount_code=lambda cart: True,
-        )
+            authenticated_user=lambda:{'is_guest': True},
+            host_base_url='/'
+            )
 
     def _dummy_session_factory(self, request):
         return self.session_data
@@ -107,11 +103,6 @@ class TestCheckoutViews(unittest.TestCase, CoreTestMixin):
             ])
         CoreTestMixin.setUp(self)
         self.organization.short_name = 'vissel'
-        self.organization.settings = [
-            OrganizationSetting(
-                name='default'
-            )
-        ]
         self.organization._setting = OrganizationSetting(enable_word=1)
         self.session.add(self.organization)
         self.cart_setting = CartSetting(type='standard')

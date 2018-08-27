@@ -639,7 +639,7 @@ class TicketingCartResourceTestBase(object):
             )
 
         target = self._makeOne(self.request)
-        result = target.check_order_limit(target.read_only_cart)
+        result = target.check_order_limit()
         self.assert_(True)
 
     @mock.patch('altair.app.ticketing.cart.api.get_user')
@@ -662,7 +662,7 @@ class TicketingCartResourceTestBase(object):
         target = self._makeOne(self.request)
 
         with self.assertRaises(OverOrderLimitException):
-            target.check_order_limit(target.read_only_cart)
+            target.check_order_limit()
 
     @mock.patch('altair.app.ticketing.cart.api.get_user')
     @mock.patch('altair.app.ticketing.cart.api.get_cart_safe')
@@ -683,7 +683,7 @@ class TicketingCartResourceTestBase(object):
         target = self._makeOne(self.request)
 
         try:
-            target.check_order_limit(target.read_only_cart)
+            target.check_order_limit()
             self.assert_(True)
         except:
             self.fail()
@@ -789,7 +789,7 @@ class TicketingCartResourceTestBase(object):
         self.session.flush()
         target = self._makeOne(self.request)
         with self.assertRaises(OverOrderLimitException):
-            target.check_order_limit(target.read_only_cart)
+            target.check_order_limit()
 
     @mock.patch('altair.app.ticketing.cart.api.get_cart_safe')
     def test_check_order_limit_email_under(self, get_cart_safe):
@@ -809,7 +809,7 @@ class TicketingCartResourceTestBase(object):
         target = self._makeOne(self.request)
 
         try:
-            target.check_order_limit(target.read_only_cart)
+            target.check_order_limit()
             self.assert_(True)
         except:
             self.fail()
@@ -1326,7 +1326,7 @@ class PaymentViewTests(unittest.TestCase):
             get_payment_delivery_method_pair = lambda: payment_delivery_method_pair,
             sales_segment = testing.DummyModel(),
             check_deleted_product=lambda x: True,
-            check_order_limit=lambda x: True,
+            check_order_limit=lambda: True,
             performance=True,
             )
         target = self._makeOne(context, request)
