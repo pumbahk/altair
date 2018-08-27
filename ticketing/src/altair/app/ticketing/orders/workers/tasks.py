@@ -110,6 +110,7 @@ def import_per_task(context, request):
         )
         transaction.commit()
         _task.status = orders_models.ImportStatusEnum.Imported.v
+        _task.errors = None
     except MassOrderCreationError as e:
         transaction.abort()
         errors_dict = dict(
@@ -122,6 +123,8 @@ def import_per_task(context, request):
     except Exception as e:
         logging.exception('order_import_task(%s) aborted: %s' % (_task.id, e))
         _task.status = orders_models.ImportStatusEnum.Aborted.v
+        _task.errors = json.dumps({u'予想外エラー': (u'-', [str(e)])})
+
     finally:
         if errors_dict:
             _task.errors = json.dumps(errors_dict)
@@ -133,8 +136,7 @@ def import_per_task(context, request):
                         attributes = proto_order.attributes = {}
                     attributes.setdefault('errors', []).extend(errors_for_order)
                     context._session.add(proto_order)
-                except:
+                except Exception:
                     logger.exception(ref)
-        else:
-            _task.errors = None
+
         context._session.commit()

@@ -158,18 +158,16 @@ def setup_payment_renderers(config):
                 config.registry.__name__,
                 lambda name, package, registry, request, **kwargs: request.view_context,
                 [
-                    'templates/%(organization_short_name)s/%(ua_type)s/plugins/%(path)s',
-                    'templates/%(organization_short_name)s/plugins/%(path)s',
-                    'templates/__base__/%(ua_type)s/plugins/%(path)s',
-                    'templates/__base__/plugins/%(path)s',
-                    'templates/__default__/%(ua_type)s/plugins/%(path)s',
-                    'templates/__default__/plugins/%(path)s',
-                    '%(their_package)s:templates/%(ua_type)s/%(path)s',
-                    ]
-                )
-            ),
+                    u'{package}:templates/{organization_short_name}/{ua_type}/plugins/{path}',
+                    u'{package}:templates/{organization_short_name}/plugins/{path}',
+                    u'{package}:templates/__default__/{ua_type}/plugins/{path}',
+                    u'{package}:templates/__default__/plugins/{path}',
+                    u'{their_package}:templates/{ua_type}/{path}',
+                ]
+            )
+        ),
         'overridable'
-        )
+    )
 
 def import_mail_module(config):
     config.include('altair.app.ticketing.mails')

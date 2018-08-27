@@ -35,7 +35,12 @@
 % endif
 
 <form class="form-horizontal" action="${request.route_path('performances.import_orders.index', performance_id=performance.id)}" method="GET">
-  <div class="form-actions">
-    <input class="btn btn-primary pull-right" type="submit" value="戻る">
+  <div class="form-actions clearfix">
+    <div class="form-group pull-right">
+      % if show_error_list_btn:
+          <a class="btn btn-danger" href="${request.route_path('performances.import_orders.error_list.download', task_id=task.id)}">エラーリスト</a>
+      % endif
+      <input class="btn btn-primary" type="submit" value="戻る">
+    </div>
   </div>
 </form>

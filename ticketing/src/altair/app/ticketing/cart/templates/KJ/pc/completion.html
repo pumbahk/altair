@@ -23,6 +23,8 @@
     </div>
 </div><!-- ===== / 受付番号 ===== -->
 
+${(view_context.embedded_html_complete_page or u'')|n}
+
 <!-- ===== お買い物内容 ===== -->
 <div class="confirmBox">
     <!-- ===== purchase-wrap ===== -->
@@ -139,5 +141,3 @@
   </a>
   </div>
 </div>
-
-${(view_context.embedded_html_complete_page or u'')|n}

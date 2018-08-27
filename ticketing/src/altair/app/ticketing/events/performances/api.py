@@ -1,6 +1,6 @@
 # coding:utf-8
 import json
-import random
+from csv import writer as csv_writer, QUOTE_ALL
 from datetime import datetime, timedelta
 from sqlalchemy.sql.expression import func
 from altair.mq import get_publisher
@@ -215,37 +215,44 @@ def send_import_order_task_to_worker(request, order_import_task):
     else:
         import_orders_per_task(request, order_import_task, priority)
 
-def _update_proto_order_errors(query):
-    ret = {}
-    proto_orders_with_attr = query.filter(ProtoOrder.attributes != {}, ProtoOrder.attributes != None).all()
-
-    if proto_orders_with_attr:
-        for proto_order in proto_orders_with_attr:
-            error = proto_order.attributes.get('errors')
-            if error:
-                ret[proto_order.ref] = (proto_order.order_no, error)
-
-        return ret
-
 def update_order_import_tasks_done_by_worker(request, order_import_tasks):
     _session = get_db_session(request, 'slave')
 
     for _task in order_import_tasks:
-        if _task.status != ImportStatusEnum.Importing.v:
-            continue
-
         query = _session.query(ProtoOrder)\
-            .filter(ProtoOrder.order_import_task==_task)\
-            .filter(ProtoOrder.processed_at != None)
+            .filter(ProtoOrder.order_import_task == _task)\
+            .filter(ProtoOrder.processed_at.isnot(None))
 
         if query.count() != _task.count:
             continue
 
-        errors_dict = _update_proto_order_errors(query)
-        if errors_dict:
-            _task.status = ImportStatusEnum.Aborted.v
-            _task.errors = json.dumps(errors_dict)
+        error_count = query.filter(
+            ProtoOrder.attributes.contains('%errors%')
+        ).count()
+
+        if error_count > 0:
+            _task.status = ImportStatusEnum.WorkerImportError.v
         else:
             _task.status = ImportStatusEnum.Imported.v
 
+        _task.errors = json.dumps({u'error_count': error_count})
         _task.save()
+
+def get_error_proto_order_list(session, order_import_task):
+    proto_orders_with_errors = session.query(ProtoOrder)\
+        .filter(ProtoOrder.order_import_task == order_import_task,
+                ProtoOrder.processed_at.isnot(None),
+                ProtoOrder.attributes.contains('%errors%')) \
+        .all()
+    data = []
+    for proto_order in proto_orders_with_errors:
+        errors = proto_order.attributes.get('errors', "")
+        if errors:
+            data.append(
+                {
+                    'order_no': proto_order.order_no,
+                    'errors': '\n'.join(errors)
+                }
+            )
+
+    return data

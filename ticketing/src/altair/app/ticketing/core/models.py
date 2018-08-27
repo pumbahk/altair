@@ -4389,6 +4389,8 @@ class OrganizationSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     enable_price_batch_update = AnnotatedColumn(Boolean, nullable=False, default=False,
                                                 doc=u"価格一括変更機能を利用", _a_label=u"価格一括変更機能を利用")
     enable_passport = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"パスポート販売の使用", _a_label=u"パスポート販売の使用")
+    rendered_template_1 = AnnotatedColumn(String(32), nullable=False, default='-', doc=u"テンプレートや静的コンテンツを優先して参照するORGテンプレート", _a_label=u"第1参照テンプレート")
+    rendered_template_2 = AnnotatedColumn(String(32), nullable=False, default='-', doc=u"rendered_template_1に該当のファイルがなかった場合に参照するORGテンプレート", _a_label=u"第2参照テンプレート")
 
     def _render_cart_setting_id(self):
         return link_to_cart_setting(self.cart_setting)

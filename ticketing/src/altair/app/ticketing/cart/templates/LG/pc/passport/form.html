@@ -37,6 +37,9 @@ if label is None or label is True:
 </%def>
 <%! from altair.formhelpers import widgets %>
 <%fh:render_block>
+% for message in request.session.pop_flash():
+  <div class="error">${message}</div>
+% endfor
 <form action="${request.current_route_path()}" method="post">
   <table class="frame form">
     <colgroup>

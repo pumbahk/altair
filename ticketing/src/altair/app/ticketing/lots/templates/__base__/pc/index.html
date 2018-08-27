@@ -8,8 +8,8 @@
 
 <div id="content">
   <div class="wrap-content">
-    % if view_context.get_include_template_path('links.html', 'lots') is not None:
-      <%include file="${view_context.get_include_template_path('links.html', 'lots')}" args="device=view_context.ua_type" />
+    % if view_context.get_include_template_path('links.html') is not None:
+      <%include file="${view_context.get_include_template_path('links.html')}" args="device=view_context.ua_type" />
     % endif
     %if request.session.peek_flash():
     <div class="error-box">
@@ -76,7 +76,7 @@
             </tr>
             <tr class="none">
               <th scope="row">${__(u'公演日')}</th>
-              <td>${h.performance_datetime(performance, i18n=True, disp_open_time='true')}</td>
+              <td>${h.performance_datetime(performance, i18n=request.organization.setting.i18n, disp_open_time='true')}</td>
             </tr>
             <tr>
               <th scope="row">${__(u'会場')}</th>
@@ -134,10 +134,22 @@
                           % if (performance.id == selected_performance.id) and (i == 0):
                           <option value="${performance.id}" selected>${h.performance_date_label(performance)}</option>
                           % else:
-                          <option value="${performance.id}">${h.performance_date_label_i18n(performance)}</option>
+                          <option value="${performance.id}">
+                            % if request.organization.setting.i18n:
+                              ${h.performance_date_label_i18n(performance)}
+                            % else:
+                              ${h.performance_date_label(performance)}
+                            % endif
+                          </option>
                           % endif
                         % else:
-                        <option value="${performance.id}">${h.performance_date_label_i18n(performance)}</option>
+                        <option value="${performance.id}">
+                            % if request.organization.setting.i18n:
+                              ${h.performance_date_label_i18n(performance)}
+                            % else:
+                              ${h.performance_date_label(performance)}
+                            % endif
+                        </option>
                         % endif
                       %endfor
                       </select>
