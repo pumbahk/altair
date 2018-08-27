@@ -1,0 +1,9 @@
+<%inherit file="./base.html"/>
+<%namespace file="altair.app.ticketing.cart:templates/__commons__/tags_mobile.html" name="mobile" />
+<%mobile:header>チケット購入</%mobile:header>
+% if order_limit is not UNDEFINED:
+<p>${performance.name}の購入は ${order_limit} 回までとなっております。</p>
+% else:
+<p>${performance.name}の購入は ${quantity_limit} 枚までとなっております。</p>
+% endif
+<p><a href="${location}">${event.title}の購入ページに戻る</a></p>

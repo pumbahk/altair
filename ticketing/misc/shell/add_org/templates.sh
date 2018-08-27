@@ -190,8 +190,8 @@ if ${REQUIRED_EXTAUTH}; then
     test -d ${CODE} && rm -rf ${CODE}
     cp -r __default__ ${CODE}
 
-    test -f ${PATH_TO_PC_LOGO} && cp ${PATH_TO_PC_LOGO} ${CODE}/pc/images/logo.png
-    test -f ${PATH_TO_FAVICON} && cp ${PATH_TO_FAVICON} ${CODE}/pc/images/favicon.ico
+    test -f ${PATH_TO_PC_LOGO} && cp ${PATH_TO_PC_LOGO} ${CODE}/images/logo.png
+    test -f ${PATH_TO_FAVICON} && cp ${PATH_TO_FAVICON} ${CODE}/images/favicon.ico
     test -f ${PATH_TO_SP_LOGO} && cp ${PATH_TO_SP_LOGO} ${CODE}/smartphone/images/logo.png
     test -f ${PATH_TO_FAVICON} && cp ${PATH_TO_FAVICON} ${CODE}/smartphone/images/favicon.ico
 

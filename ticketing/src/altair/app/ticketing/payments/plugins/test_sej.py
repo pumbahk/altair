@@ -1953,7 +1953,8 @@ class IsSameSejOrderTest(unittest.TestCase):
                     performance_datetime=datetime(2014, 8, 1, 0, 0, 0),
                     ticket_template_id=1,
                     product_item_id=1,
-                    ticket_data_xml='<xml />'
+                    ticket_data_xml='<xml />',
+                    ordered_product_item_token_id='item_token_id'
                     )
                 ]
             )
@@ -1983,7 +1984,8 @@ class IsSameSejOrderTest(unittest.TestCase):
                 performance_datetime=datetime(2014, 8, 1, 0, 0, 0),
                 ticket_template_id=1,
                 product_item_id=1,
-                xml='<xml />'
+                xml='<xml />',
+                ordered_product_item_token_id='item_token_id'
                 )
             ]
         self.assertTrue(self._callFUT(sej_order, args_dict, ticket_dicts))

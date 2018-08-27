@@ -18,7 +18,7 @@
   </head>
 
   <body>
-    <%include file="${view_context.get_include_template_path('header.html', 'lots')}" args="device=view_context.ua_type" />
+    <%include file="${view_context.get_include_template_path('header.html')}" args="device=view_context.ua_type" />
     <main>
       %if request.organization.setting.i18n:
         <div class="selectwrapper">
@@ -27,7 +27,7 @@
       % endif
       ${next.body()}
     </main>
-    <%include file="${view_context.get_include_template_path('footer.html', 'lots')}" args="device=view_context.ua_type" />
+    <%include file="${view_context.get_include_template_path('footer.html')}" args="device=view_context.ua_type" />
   </body>
   <script type="text/javascript">
     $(function() {

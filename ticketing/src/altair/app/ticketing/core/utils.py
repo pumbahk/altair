@@ -86,12 +86,22 @@ def add_env_label(string, request=None):
         return string
 
 
-def use_base_dir_if_org_template_not_exists(obj, path, default_package, override_paths=None):
+def search_template_file(obj, path, default_package, override_path_str=None, params=None, log_err=True):
     """
-    ORG独自テンプレートが存在していない場合は__base__ディレクトリの同階層ファイルを参照するようにする
-    override(dict)で指定。
+    OrganizationSettingで指定した順にORGテンプレートディレクトリを参照していき、レンダリングに使用するテンプレートファイルを見つける
+    引数の名称などは修正前のものを踏襲しているものの分かりづらいため、以下に詳細を明記します。
+
+    :param obj: ViewContextオブジェクト
+    :param path: ファイル名
+    :param default_package: altair.app.ticketing.cartなどの文字列
+    :param override_path_str: 置換元のパス文言（`path_str`）を個別に指定したい場合に指定
+    :param params: 置換用の補足パラメータ（dict）
+        `login_body`: 会員種別詳細で「ログイン画面の使用」にチェックを入れていると「'__fc_auth__'」の文字列が入ってくる
+        `membership`: 会員種別名
+        `their_package`: `path_str`に「${their_package}」が使用される場合があり、「altair.app.ticketing.fc_auth」に書き換えるために使われている
+    :param log_err: テンプレートファイルが見つからない場合にエラーレベルをERRORで出力するか。FalseであればINFOで出力する。
+    :return: テンプレートファイルのパス or None
     """
-    organization_short_name = obj.organization_short_name or "__base__"
     package_or_path, colon, _path = path.partition(':')
     if not colon:
         package = default_package
@@ -100,63 +110,73 @@ def use_base_dir_if_org_template_not_exists(obj, path, default_package, override
         package = package_or_path
         path = _path
 
-    if override_paths:
-        org_path = override_paths['org_path']
-        base_path = override_paths['base_path']
-    else:
-        # デフォルトで調べるパス
-        org_path = '{package}:templates/{organization_short_name}/{ua_type}/{path}'
-        base_path = '{package}:templates/__base__/{ua_type}/{path}'
+    default_path_str = u'{package}:templates/{organization_short_name}/{ua_type}/{path}'
+    path_str = override_path_str if override_path_str else default_path_str
 
-    replace = {
-        'package': package,
-        'organization_short_name': organization_short_name,
-        'ua_type': obj.ua_type,
-        'path': path,
-    }
+    rendered_templates = [
+        obj.request.organization.setting.rendered_template_1,
+        obj.request.organization.setting.rendered_template_2
+    ]
 
-    return search_file_from_path_list([org_path, base_path], replace)
+    path_list = []
+    for rt in rendered_templates:
+        if rt != u'-':
+            replace = {'package': package, 'organization_short_name': rt, 'ua_type': obj.ua_type, 'path': path}
+            if params:
+                replace.update(params)
+            path_list.append(path_str.format(**replace))
+
+    return check_file_existence_and_return_the_path(path_list, log_err)
 
 
-def use_base_dir_if_org_static_not_exists(obj, path, module):
+def search_static_file(obj, path, module):
     """
-    ORG独自の静的コンテンツが存在していない場合は__base__ディレクトリの同階層ファイルを参照するようにする。
-    S3側ではなくGit管理下に存在するかを見ていることに注意
+    OrganizationSettingで指定した順にORG静的コンテンツディレクトリを参照する。
+    S3側ではなくGit管理下に存在を確認 → ファイルが見つかればそのディレクトリをもとにS3のbucketのパスが以降の処理で生成される。
     """
-    org_path = "altair.app.ticketing.{module}:static/{organization_short_name}/{path}"
-    base_path = "altair.app.ticketing.{module}:static/__base__/{path}"
-    replace = {
-        'organization_short_name': obj.organization_short_name,
-        'path': path,
-        'module': module
-    }
+    path_str = u"altair.app.ticketing.{module}:static/{organization_short_name}/{path}"
 
-    static_file_path = search_file_from_path_list([org_path, base_path], replace)
+    rendered_templates = [
+        obj.request.organization.setting.rendered_template_1,
+        obj.request.organization.setting.rendered_template_2
+    ]
 
+    path_list = [path_str.format(
+        module=module,
+        organization_short_name=rt,
+        path=path
+    ) for rt in rendered_templates if rt != u'-']
+
+    static_file_path = check_file_existence_and_return_the_path(path_list)
+
+    # ファイルが見つからなくても静的コンテンツのためシステムの動作には影響ない。
+    # Noneではなくrendered_template_1で設定されたORGディレクトリのパスを当てておく。
     if static_file_path is None:
-        # 404ステータスでもシステムの動作に影響ない画像ファイルなどを考慮し、ここではNoneを返さない
-        static_file_path = org_path.format(**replace)
+        static_file_path = path_list[0]
 
     return static_file_path
 
 
-def search_file_from_path_list(path_list, replace):
+def check_file_existence_and_return_the_path(path_list, log_err=True):
     """
     path_listの順にファイルの存在を確認していき、見つかったところでファイルのパスを返す。
 
     :param path_list: 置換前のパスの文言リスト
-    :param replace: 置換するパラメータのdict
+    :param log_err: TrueならログのレベルをERRORで出力する
     :return: ファイルのパス
     """
-    actual_paths = [p.format(**replace) for p in path_list]
     asset = AssetResolver()
-    for path in actual_paths:
+    for path in path_list:
         if asset.resolve(path).exists():
             return path
 
-    logger.warning('could not find "{path}" from {actual_paths}'.format(
-        path=replace['path'],
-        actual_paths=', '.join(actual_paths)
-    ))
+    log_str = u'could not find template or static file: "{path_list}"'.format(
+        path_list=u', '.join(path_list)
+    )
+
+    if log_err:
+        logger.error(log_str)
+    else:
+        logger.info(log_str)
 
     return None

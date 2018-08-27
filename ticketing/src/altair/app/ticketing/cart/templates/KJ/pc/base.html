@@ -1,47 +1,47 @@
 <!DOCTYPE html>
 <html>
 <head>
-<!--[if lt IE 9]>
+  <!--[if lt IE 9]>
 <script type="text/javascript" src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
-<![endif]-->
-<meta charset="UTF-8">
-<meta http-equiv="Pragma" content="no-cache">
-<meta http-equiv="cache-control" content="no-cache">
-<meta http-equiv="expires" content="0">
-<title>${_(view_context.team_name)}</title>
+  <![endif]-->
+  <meta charset="UTF-8">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="cache-control" content="no-cache">
+  <meta http-equiv="expires" content="0">
+  <title>${_(view_context.team_name)}</title>
 
-<!-- Cascading Style Sheets -->
-<link rel="shortcut icon" href="${view_context.static_url('pc/images/favicon.ico')}">
-<link rel="stylesheet" href="${request.static_url('altair.app.ticketing.cart:static/__base__/pc/css/import.css')}" type="text/css" media="all">
-<link rel="stylesheet" href="${view_context.static_url('pc/css/custom.css')}" type="text/css" media="all">
-<%block name="javascript"></%block>
-<%block name="css"></%block>
+  <!-- Cascading Style Sheets -->
+  <link rel="shortcut icon" href="${view_context.static_url('pc/images/favicon.ico')}">
+  <link rel="stylesheet" href="${view_context.static_url('pc/css/import.css')}" type="text/css" media="all">
+  <link rel="stylesheet" href="${view_context.static_url('pc/css/custom.css')}" type="text/css" media="all">
+  <%block name="javascript"></%block>
+  <%block name="css"></%block>
 </head>
 
 <body id="settlement">
-  <div id="container">
-    <!-- ========== header ========== -->
-    <%include file="../includes/header.html" />
-    <!-- ========== /header ========== -->
+<div id="container">
+  <!-- ========== header ========== -->
+  <%include file="${view_context.get_include_template_path('header.html')}" />
+  <!-- ========== /header ========== -->
 
-    <!-- ========== main ========== -->
-    <div class="selectwrapper">
-      ${h.create_url(request) |n}
-    </div>
-    <div id="main">
-      <h1>${_(u'チケット申込')}</h1>
-      % if view_context.get_include_template_path('links.html') is not None:
-        <%include file="${view_context.get_include_template_path('links.html')}" args="device=view_context.ua_type" />
-      % endif
-      ${self.body()}
-    </div>
-    <!-- ========== /main ========== -->
-
-    <!-- ========== footer ========== -->
-    <%include file="../includes/footer.html" />
-    <!-- ========== /footer ========== -->
+  <div class="selectwrapper">
+    ${h.create_url(request) |n}
   </div>
-  <!-- /container -->
+  <div id="main">
+    <!-- ========== main ========== -->
+    <h1>${_(u'チケット申込')}</h1>
+    % if view_context.get_include_template_path('links.html') is not None:
+      <%include file="${view_context.get_include_template_path('links.html')}" args="device=view_context.ua_type" />
+    % endif
+    ${self.body()}
+  </div>
+  <!-- ========== /main ========== -->
+</div>
+<!-- /container -->
+
+<!-- ========== footer ========== -->
+  <%include file="${view_context.get_include_template_path('footer.html')}" args="device=view_context.ua_type" />
+<!-- ========== /footer ========== -->
   <%block name="extras"></%block>
 </body>
 

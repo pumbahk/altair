@@ -17,7 +17,7 @@
   </head>
 
   <body>
-    <%include file="${view_context.get_include_template_path('header.html', 'lots')}" args="device=view_context.ua_type" />
+    <%include file="${view_context.get_include_template_path('header.html')}" args="device=view_context.ua_type" />
     <div class="selectwrapper">
       % if request.organization.setting.i18n:
       ${h.create_url_link(request) |n}
@@ -26,6 +26,6 @@
     <main>
       ${next.body()}
     </main>
-    <%include file="${view_context.get_include_template_path('footer.html', 'lots')}" args="device=view_context.ua_type" />
+    <%include file="${view_context.get_include_template_path('footer.html')}" args="device=view_context.ua_type" />
   </body>
 </html>

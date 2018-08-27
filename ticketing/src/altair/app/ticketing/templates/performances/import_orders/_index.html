@@ -31,7 +31,7 @@
         <td>${task.id}</td>
         <td>${task.operator.name if task.operator else u"削除されたユーザ"}</td>
         <td>${task.count}</td>
-        <td>${oh.get_order_import_task_status_label(task.status)}</td>
+        <td>${oh.get_order_import_task_status_label(task)}</td>
         <td>${u'Yes' if task.enable_random_import else u'No'}</td>
         <td>${task.created_at}</td>
         <td>${task.updated_at}</td>

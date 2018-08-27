@@ -17,6 +17,8 @@ from ..exceptions import (
     NoSalesSegment,
     NoPerformanceError,
     InvalidCSRFTokenException,
+    OverOrderLimitException,
+    OverQuantityLimitException,
     QuantityOutOfBoundsError,
     ProductQuantityOutOfBoundsError,
     PerStockTypeQuantityOutOfBoundsError,
@@ -24,8 +26,6 @@ from ..exceptions import (
     PerProductProductQuantityOutOfBoundsError,
     CartCreationException,
     InvalidCartStatusError,
-    OverOrderLimitException,
-    OverQuantityLimitException,
     PaymentMethodEmptyError,
     TooManyCartsCreated,
     PaymentError,
@@ -151,28 +151,6 @@ class CommonErrorView(object):
         logger.error("Fanclub discount api internal error!!")
         return dict(title=u'', message=u'システムエラーが発生しました。再度時間をおいてお試しいただき、同様のエラーが発生する場合はお手数ですが弊社までご連絡ください')
 
-
-    @lbr_view_config(context=OverOrderLimitException)
-    def over_order_limit_exception(self):
-        location = self.request.route_url('cart.index', event_id=self.context.event_id)
-        msg = u'{performance.name} の購入は {limit} 回までとなっております。 <br><a href="{location}">{event.title}の購入ページに戻る</a>'
-        return dict(title=u'',
-                    message=Markup(msg.format(location=location,
-                                              limit=self.context.order_limit,
-                                              event=self.context.event,
-                                              performance=self.context.performance)))
-
-    @lbr_view_config(context=OverQuantityLimitException)
-    def over_quantity_limit_exception(self):
-        location = self.request.route_url('cart.index', event_id=self.context.event_id)
-        msg = u'{performance.name} の購入は {limit} 枚までとなっております。 <br><a href="{location}">{event.title}の購入ページに戻る</a>'
-        return dict(title=u'',
-                    message=Markup(msg.format(location=location,
-                                              limit=self.context.quantity_limit,
-                                              event=self.context.event,
-                                              performance=self.context.performance)))
-
-
     @lbr_view_config(context=InvalidCartStatusError)
     def invalid_cart_status_error(self):
         return dict(message=Markup(u'大変申し訳ございません。ブラウザの複数ウィンドウからの操作や、戻るボタン等の操作により、予約を継続することができません。<br>'
@@ -201,6 +179,30 @@ class CommonErrorView(object):
     @lbr_view_config(context=NotEnoughStockException)
     def not_enough_stock_exception(self):
         return dict(message=u"在庫がありません。\nご希望の座席を確保できませんでした。")
+
+@view_defaults(renderer=selectable_renderer('over_limit.html'))
+class OverLimitView(object):
+    def __init__(self, context, request):
+        self.context = context
+        self.request = request
+
+    @lbr_view_config(context=OverOrderLimitException)
+    def over_order_limit(self):
+        location = self.request.route_url('cart.index', event_id=self.context.event_id)
+        return dict(
+            location=location,
+            order_limit=self.context.order_limit,
+            event=self.context.event,
+            performance=self.context.performance)
+
+    @lbr_view_config(context=OverQuantityLimitException)
+    def over_quantity_limit(self):
+        location = self.request.route_url('cart.index', event_id=self.context.event_id)
+        return dict(
+            location=location,
+            quantity_limit=self.context.quantity_limit,
+            event=self.context.event,
+            performance=self.context.performance)
 
 @view_defaults(xhr=True, renderer='json')
 class XHROnlyExcView(object):

@@ -27,7 +27,7 @@ from altair.app.ticketing.users import models as u_models
 from altair.app.ticketing.cart import models as cart_models
 from altair.app.ticketing.login.main.forms import OperatorForm
 from altair.saannotation import get_annotations_for
-from altair.app.ticketing.core.models import OrganizationSetting
+from altair.app.ticketing.core.models import Organization, OrganizationSetting
 from altair.app.ticketing.operators.models import OperatorAuth, ensure_ascii
 
 
@@ -563,6 +563,23 @@ class OrganizationSettingForm(OrganizationSettingSimpleForm):
             (u'rakuten', u'楽天認証'),
             (u'pollux', u'ファンクラブ認証(pollux)'),
             ]
+        )
+
+    rendered_template_1 = OurSelectField(
+        label=get_annotations_for(c_models.OrganizationSetting.rendered_template_1)['label'],
+        choices=lambda field: [(org.short_name, u'{}: {}'.format(org.short_name, org.name)) for org in
+                               Organization.query.order_by(Organization.short_name).all()],
+        coerce=str
+        )
+
+    rendered_template_2 = OurSelectField(
+        label=get_annotations_for(c_models.OrganizationSetting.rendered_template_2)['label'],
+        choices=[
+            (u'__base__', u'__base__（HTML5）'),
+            (u'__default__', u'__default__（XHTML）'),
+            (u'-', u'利用しない'),
+            ],
+        coerce=str,
         )
 
     def validate_multicheckout_shop_name(form, field):

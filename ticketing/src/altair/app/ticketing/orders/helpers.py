@@ -39,6 +39,8 @@ import_status_labels = {
     ImportStatusEnum.Importing.v: u'インポート中',
     ImportStatusEnum.Imported.v: u'インポート完了',
     ImportStatusEnum.Aborted.v: u'インポート異常終了',
+    ImportStatusEnum.WorkerImporting.v: u'インポート中（ワーカー）',
+    ImportStatusEnum.WorkerImportError.v: u'-',  # エラー数による文言が変わるため、u'-'をダミーとして入れる。
     }
 
 def get_import_type_label(import_type):
@@ -51,8 +53,17 @@ def get_import_type_label(import_type):
 def get_allocation_mode_label(allocation_mode):
     return allocation_mode_labels.get(int(allocation_mode), u'?')
 
-def get_order_import_task_status_label(status):
-    return import_status_labels.get(int(status), u'?')
+def get_order_import_task_status_label(task):
+    if task.status == ImportStatusEnum.WorkerImportError.v:
+        error_count = task.errors.get(u'error_count', 0)
+        if task.count == error_count:
+            label = u'インポート異常終了（ワーカー）'
+        else:
+            label = u'インポート一部完了（{0}/{1}）'.format(task.count - error_count, task.count)
+    else:
+        label = import_status_labels.get(int(task.status), u'?')
+
+    return label
 
 def get_merge_order_attributes_label(yesno):
     return u'更新' if yesno else u'置換'
@@ -124,7 +135,7 @@ def order_import_task_stats(task):
     stats['updated_at'] = task.updated_at
     stats['operator_name'] = task.operator.name
     stats['enable_random_import'] = task.enable_random_import
-    stats['status'] = get_order_import_task_status_label(task.status)
+    stats['status'] = get_order_import_task_status_label(task)
 
     return stats
 
@@ -138,7 +149,7 @@ def error_level_to_html(request, error_level):
         return render_error_label(request, 'warning')
 
 def render_error_label(request, kind):
-    if kind == 'error': 
+    if kind == 'error':
         label = u'エラー'
         style = u'label-important'
     elif kind == 'warning':
