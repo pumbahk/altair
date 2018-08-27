@@ -57,3 +57,8 @@ class FamiPortAPIError(Exception):
 
 class FamiPortAPINotFoundError(FamiPortAPIError):
     pass
+
+
+class FamiPortPaymentOrTicketingOrderDateNoneError(FamiPortError):
+    def __init__(self, message):
+        super(FamiPortPaymentOrTicketingOrderDateNoneError, self).__init__(message)
