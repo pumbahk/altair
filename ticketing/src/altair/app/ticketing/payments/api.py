@@ -46,9 +46,9 @@ def get_cart_by_order_no(request, order_no, retrieve_invalidated=False):
     cart_if = request.registry.getUtility(ICartInterface)
     return cart_if.get_cart_by_order_no(request, order_no, retrieve_invalidated=retrieve_invalidated)
 
-def make_order_from_cart(request, context, cart):
+def make_order_from_cart(request, cart):
     cart_if = request.registry.getUtility(ICartInterface)
-    return cart_if.make_order_from_cart(request, context, cart)
+    return cart_if.make_order_from_cart(request, cart)
 
 def cont_complete_view(context, request, order_no, magazine_ids, word_ids):
     cart_if = request.registry.getUtility(ICartInterface)

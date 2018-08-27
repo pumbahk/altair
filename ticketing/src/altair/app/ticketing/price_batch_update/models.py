@@ -8,9 +8,6 @@ from sqlalchemy.types import Numeric, Integer, String, DateTime
 from standardenum import StandardEnum
 
 
-PRODUCTS_TO_CONFIRM_ATTRIBUTE_KEY = 'cart.confirm.products_to_confirm_{0}'
-
-
 class PriceBatchUpdateTaskStatusEnum(StandardEnum):
     Waiting = 0
     Updating = 1
