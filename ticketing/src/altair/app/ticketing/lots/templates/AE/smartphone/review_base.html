@@ -17,8 +17,8 @@
 </head>
 <body class="confirm">
   <%include file="../includes/header.html" />
-  % if view_context.get_include_template_path('links.html', 'lots') is not None:
-    <%include file="${view_context.get_include_template_path('links.html', 'lots')}" args="device=view_context.ua_type" />
+  % if view_context.get_include_template_path('links.html') is not None:
+    <%include file="${view_context.get_include_template_path('links.html')}" args="device=view_context.ua_type" />
   % endif
   ${next.body()}
   <%include file="../includes/footer.html" />
