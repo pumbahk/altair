@@ -21,9 +21,9 @@
         ${h.create_url_link(request) |n}
       </div>
       % endif
-      % if view_context.get_include_template_path('links.html', 'lots') is not None:
+      % if view_context.get_include_template_path('links.html') is not None:
       <div class="links-wrap">
-        <%include file="${view_context.get_include_template_path('links.html', 'lots')}" args="device=view_context.ua_type" />
+        <%include file="${view_context.get_include_template_path('links.html')}" args="device=view_context.ua_type" />
       </div>
       % endif
       ${self.body()}
