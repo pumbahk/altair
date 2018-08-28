@@ -38,7 +38,7 @@ from altair.app.ticketing.models import DBSession, Base
 from altair.app.ticketing.famiport import api as famiport_api
 from altair.app.ticketing.cart.models import CartedProductItem
 from altair.app.ticketing.core.models import FamiPortTenant
-from altair.app.ticketing.famiport.exc import FamiPortAPIError
+from altair.app.ticketing.famiport.exc import FamiPortAPIError, FamiportPaymentDateNoneError, FamiPortTicketingDateNoneError
 from altair.app.ticketing.orders.models import OrderedProductItem
 import altair.app.ticketing.orders.models as order_models
 from altair.app.ticketing.orders.api import bind_attributes
@@ -514,6 +514,8 @@ def refresh_order(request, order, plugin, now=None, name='famiport'):
             request,
             **build_famiport_order_dict(request, order, tenant.code, type_, name=name)
             )
+    except (FamiportPaymentDateNoneError, FamiPortTicketingDateNoneError):
+        raise
     except FamiPortAPIError:
         raise FamiPortPluginFailure('failed to refresh order', order_no=order.order_no, back_url=None)
 
