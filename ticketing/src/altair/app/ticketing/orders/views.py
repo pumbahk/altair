@@ -156,7 +156,7 @@ from altair.app.ticketing.payments.plugins import ORION_DELIVERY_PLUGIN_ID
 #from altair.app.ticketing.project_specific.huistenbosch.qr_utilits import build_ht_qr_by_token
 from altair.app.ticketing.qr.lookup import lookup_qr_aes_plugin
 
-from altair.app.ticketing.famiport.exc import FamiPortPaymentOrTicketingOrderDateNoneError
+from altair.app.ticketing.famiport.exc import FamiportPaymentDateNoneError, FamiPortTicketingDateNoneError
 
 # XXX
 INNER_DELIVERY_PLUGIN_IDS = [
@@ -1477,9 +1477,9 @@ class OrderDetailView(OrderBaseView):
             except OrderLikeValidationFailure as orderLikeValidationFailure:
                 transaction.abort()
                 self.request.session.flash(orderLikeValidationFailure.message)
-            except FamiPortPaymentOrTicketingOrderDateNoneError as paymentOrTicketingOrderDateNoneError:
+            except (FamiportPaymentDateNoneError, FamiPortTicketingDateNoneError) as dateNoneError:
                 transaction.abort()
-                self.request.session.flash(paymentOrTicketingOrderDateNoneError.message)
+                self.request.session.flash(dateNoneError.message)
             except Exception as exception:
                 exc_info = sys.exc_info()
                 logger.error(u'[EMERGENCY] failed to update order %s' % order.order_no, exc_info=exc_info)
