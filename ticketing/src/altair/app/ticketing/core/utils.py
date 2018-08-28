@@ -175,7 +175,7 @@ def check_file_existence_and_return_the_path(path_list, log_err=True):
     )
 
     if log_err:
-        logger.error(log_str)
+        logger.warn(log_str)
     else:
         logger.info(log_str)
 
