@@ -184,12 +184,15 @@ s)
     ;;
 esac
 
-org_name_modify=$(ask "${txtred}FamiPortClient.nameは全角25文字以下で登録される必要があります（現在値：${ORG_NAME}）。${txtreset}[ 文字入力（修正実施）, エンターキー（スキップ） ]> ")
-if [ -n "${org_name_modify}" ]; then
-    org_name_zen=${org_name_modify}
-else
-    org_name_zen=${ORG_NAME}
+echo "${txtred}FamiPortClient.nameに登録するORG_NAMEは全角25文字以下にしてください（現在値：${ORG_NAME}）。${txtreset}"
+cnt=$(echo ${#ORG_NAME})
+echo "ORG_NAMEは${cnt}文字です。"
+if [ "${cnt}" -gt 25 ]; then
+    echo "ORG_NAMEは25文字以下にしてください。"
+    exit 1
 fi
+org_name_zen=$(echo "${ORG_NAME}" | uconv -x Halfwidth-Fullwidth)
+echo "ORG_NAMEを強制的に全角化しました: ${org_name_zen}"
 
 connect="mysql -u famiport -pfamiport -h ${MASTER_DB_FMP} -P ${MASTER_PORT} -D famiport"
 sql=$(cat << EOS
