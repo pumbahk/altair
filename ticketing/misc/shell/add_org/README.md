@@ -21,6 +21,12 @@ templates.shでテンプレートの作成を自動化、s3_upload.shでアッ�
 config.shに追加したいORGの設定内容を書き換えてください。  
 （../common/config.shもスクリプト利用者の環境に合わせてください）
 
+uconvが使える状態か確認してください。
+
+```which uconv```
+
+使えない場合は```brew install icu4c```などでインストールしてください。
+
 [ templates.sh, s3_upload.sh ]  
 "PATH_TO_MB_LOGO"で指定する画像は.gifに変換済みであることを確認してください。
 変換には以下のようなサービスもあります。
