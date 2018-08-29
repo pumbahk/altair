@@ -47,13 +47,7 @@
     <td>${augus_stock_info.augus_performance.performance.venue.name}</td>
     <td>${augus_stock_info.seat.name if augus_stock_info.seat else augus_stock_info.augus_ticket.augus_seat_type_name}</td>
     <td>${augus_stock_info.seat.l0_id if augus_stock_info.seat else u''}</td>
-    %if augus_stock_info.id in putback_count_kazuuke_dict:
-    <input type="hidden" name="putback_count" value="${putback_count_kazuuke_dict.get(augus_stock_info.id)}"/>
-    <td>${putback_count_kazuuke_dict.get(augus_stock_info.id)}</td>
-    %else:
-    <input type="hidden" name="putback_count" value="1"/>
-    <td>1</td>
-    %endif
+    <td>${putback_count_kazuuke_dict.get(augus_stock_info.id) if augus_stock_info.id in putback_count_kazuuke_dict else u'1'}</td>
     <td>${augus_stock_info.augus_seat.area_code if augus_stock_info.augus_seat else u''}</td>
     <td>${augus_stock_info.augus_seat.info_code if augus_stock_info.augus_seat else u''}</td>
     <td>${augus_stock_info.augus_seat.floor if augus_stock_info.augus_seat else u''}</td>
@@ -63,6 +57,7 @@
     <td>${augus_stock_info.augus_distribution_code}</td>
   </tr>
   %endfor
+  <input type="hidden" name="stock_holder_id" value="${stock_holder.id}"/>
 </table>
 </form>
 

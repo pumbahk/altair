@@ -25,6 +25,7 @@ from altair.app.ticketing.core.models import (
     SeatStatusEnum,
     Product,
     StockHolder,
+    Stock,
     Performance,
     StockType,
     AugusAccount,
@@ -830,14 +831,13 @@ class AugusPutbackView(_AugusBaseView):
                      if stock.performance_id == performance_id
                      for seat in stock.seats
                      ]
-            stock_type_ids_kazuuke = [stock.stock_type.id for stock in stock_holder.stocks
-                                      if stock.performance_id == performance_id
-                                      and stock.stock_type.quantity_only
-                                      and stock.quantity > 0] \
-                if ag_performance.augus_account.enable_unreserved_seat else []
+            stock_type_id_and_kazuuke_stock_dict = {st.stock_type_id: st for st in stock_holder.stocks
+                                                    if st.performance_id == performance_id
+                                                    and st.stock_type.quantity_only and st.quantity > 0} \
+                if ag_performance.augus_account.enable_unreserved_seat else dict()
             ag_tickets_kazuuke = [augus_ticket for augus_ticket in ag_performance.augus_tickets
                                   if SeatTypeClassif.get(augus_ticket.augus_seat_type_classif) == SeatTypeClassif.FREE
-                                  and augus_ticket.stock_type_id in stock_type_ids_kazuuke]
+                                  and augus_ticket.stock_type_id in stock_type_id_and_kazuuke_stock_dict.keys()]
 
             try:
                 for seat in seats:
@@ -853,21 +853,13 @@ class AugusPutbackView(_AugusBaseView):
                 for ag_ticket in ag_tickets_kazuuke:
                     ag_stock_infos_kazuuke = ag_ticket.augus_stock_infos  # 自由席では重複しない想定
                     if not ag_stock_infos_kazuuke or len(ag_stock_infos_kazuuke) != 1:
+                        # ag_ticketにひもづくag_stock_infoがないのは連携前のため対象外
                         continue
-                    ag_stock_info_kazuuke = ag_stock_infos_kazuuke[0]
-                    # TKT5866 返券枠の在庫数と既に返券予約済みの在庫数の合計を比較する
-                    # 返券枠の在庫数の方が大きければ、まだ返券予約していない在庫があるので返券できる、同値の場合は返券予約済み
-                    ag_stock_details_kazuuke = [detail for detail in ag_stock_info_kazuuke.augus_stock_details
-                                                if detail.augus_putback_id is not None]
-                    seat_count_putbacked = reduce(lambda x, y: x + y, [d.quantity for d in ag_stock_details_kazuuke]) \
-                        if len(ag_stock_details_kazuuke) > 0 else 0
-                    putback_stock = [stock for stock in stock_holder.stocks
-                                     if stock.performance_id == performance_id
-                                     and stock.stock_type_id == ag_ticket.stock_type_id][0]  # 一つのみの想定
-                    if putback_stock.quantity - seat_count_putbacked > 0:
-                        augus_stock_infos.append(ag_stock_info_kazuuke)
-                        putback_count_kazuuke_dict.update(
-                            {ag_stock_info_kazuuke.id: putback_stock.quantity - seat_count_putbacked})
+                    ag_stock_info_kazuuke = ag_stock_infos_kazuuke[0]  # 自由席では1対1になるはず
+                    putback_stock = stock_type_id_and_kazuuke_stock_dict[ag_ticket.stock_type_id]
+
+                    augus_stock_infos.append(ag_stock_info_kazuuke)
+                    putback_count_kazuuke_dict.update({ag_stock_info_kazuuke.id: putback_stock.quantity})
 
                 if len(augus_stock_infos) == 0:
                     self.request.session.flash(u'対象になる座席がありません: Performance.id={}'.format(performance_id))
@@ -881,6 +873,7 @@ class AugusPutbackView(_AugusBaseView):
         return dict(event=self.context.event,
                     augus_stock_infos=augus_stock_infos,
                     putback_count_kazuuke_dict=putback_count_kazuuke_dict,
+                    stock_holder = stock_holder,
                     )
 
 
@@ -979,9 +972,13 @@ class AugusPutbackView(_AugusBaseView):
         augus_stock_info_ids = map(int, self.request.params.getall('augus_stock_info_id'))
         augus_stock_infos = AugusStockInfo.query.filter(
             AugusStockInfo.id.in_(augus_stock_info_ids)).all()
-        putback_count_dict = dict(zip(augus_stock_info_ids, map(int, self.request.params.getall('putback_count'))))
+        # TKT-5866 自由席は返券予約後に返券枠の在庫を0にする。このためにStockを取得する
+        stock_holder_id = int(self.request.params.get('stock_holder_id'))
+        stocks = Stock.query.filter(Stock.stock_holder_id == stock_holder_id).all()
+        stock_dict = {(st.performance_id, st.stock_type_id): st for st in stocks}
 
-        can_putback = lambda seat: seat.status in [SeatStatusEnum.NotOnSale.v, SeatStatusEnum.Vacant.v, SeatStatusEnum.Canceled.v]
+        can_putback = lambda seat: seat.status in \
+                                   [SeatStatusEnum.NotOnSale.v, SeatStatusEnum.Vacant.v, SeatStatusEnum.Canceled.v]
 
         # TKT-5866 指定席はSeatStatusのチェックを実施
         # 自由席は手動で枠移動できたのであれば返券可能な想定なのでチェックしない
@@ -1010,13 +1007,17 @@ class AugusPutbackView(_AugusBaseView):
                         augus_stock_detail.augus_putback_id = putback.id
                         augus_stock_detail.save()
                 else:
+                    putback_stock_kazuuke = \
+                        stock_dict[(augus_performance.performance_id, augus_stock_info.augus_ticket.stock_type_id)]
+                    putback_seat_count_kazuuke = putback_stock_kazuuke.quantity
+
                     # 自由席の場合はAugusStockDetailを新規に作成し、AugusStockInfoの席数を減らす
                     augus_stock_detail = AugusStockDetail()
                     augus_stock_detail.augus_distribution_code = augus_stock_info.augus_distribution_code
                     augus_stock_detail.augus_seat_type_code = augus_stock_info.augus_ticket.augus_seat_type_code
                     augus_stock_detail.augus_unit_value_code = augus_stock_info.augus_ticket.unit_value_code
                     augus_stock_detail.seat_type_classif = augus_stock_info.seat_type_classif
-                    augus_stock_detail.quantity = putback_count_dict.get(augus_stock_info.id)
+                    augus_stock_detail.quantity = putback_seat_count_kazuuke
                     augus_stock_detail.augus_stock_info_id = augus_stock_info.id
                     augus_stock_detail.augus_putback_id = putback.id
                     augus_stock_detail.augus_ticket_id = augus_stock_info.augus_ticket.id
@@ -1025,8 +1026,12 @@ class AugusPutbackView(_AugusBaseView):
                     augus_stock_detail.augus_unreserved_putback_status = AugusPutbackStatus.CANDO
                     augus_stock_detail.save()
 
-                    augus_stock_info.quantity = augus_stock_info.quantity - putback_count_dict.get(augus_stock_info.id)
+                    augus_stock_info.quantity = augus_stock_info.quantity - putback_seat_count_kazuuke
                     augus_stock_info.save()
+
+                    # 自由席は返券枠の在庫を0に更新
+                    putback_stock_kazuuke.quantity = 0
+                    putback_stock_kazuuke.save()
             self.request.session.flash(u'返券予約しました: AugusPerformance.id={}'.format(augus_performance.id))
         return HTTPFound(url)
 

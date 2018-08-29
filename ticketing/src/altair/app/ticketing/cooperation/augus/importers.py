@@ -474,8 +474,8 @@ class AugusPutbackImporter(object):
 
         self.__import_records_of_reserved_seat(records_of_reserved_seat, augus_account, augus_performance,
                                                augus_putback, putback_stock_holder)
-        self.__import_records_of_unreserved_seat(records_of_unreserved_seat, augus_account, augus_performance,
-                                               augus_putback, putback_stock_holder)
+        self.__import_records_of_unreserved_seat(records_of_unreserved_seat, augus_account,
+                                                 augus_performance, augus_putback)
 
     def __import_records_of_reserved_seat(self, records, augus_account, augus_performance
                                           , augus_putback, putback_stock_holder):
@@ -491,8 +491,7 @@ class AugusPutbackImporter(object):
                 augus_stock_detail.augus_putback_id = augus_putback.id
                 augus_stock_detail.save()
 
-    def __import_records_of_unreserved_seat(self, records, augus_account, augus_performance
-                                          , augus_putback, putback_stock_holder):
+    def __import_records_of_unreserved_seat(self, records, augus_account, augus_performance, augus_putback):
 
         def move_stock_count(to_stock, from_stock, count):
             to_stock.quantity += count
@@ -508,21 +507,21 @@ class AugusPutbackImporter(object):
                         .format(augus_account.id, vars(record)))
 
             augus_stock_info = self.__get_augus_stock_info_of_unreserved_seat(augus_performance, record)
-            putback_stock = self.__get_putback_stock(putback_stock_holder, augus_performance, augus_stock_info)
             own_stock = self.__get_own_stock(augus_performance, augus_stock_info)
 
             seat_count = long(record.seat_count)
             if own_stock.stock_status.quantity >= seat_count:
                 #　全て返券可能な場合は、成功のAugusStockDetailのみ作る
-                move_stock_count(putback_stock, own_stock, seat_count)
                 self.__create_stock_detail(augus_stock_info, augus_putback, seat_count, AugusPutbackStatus.CANDO)
                 # augus_stock_infoの在庫を更新
                 augus_stock_info.quantity = augus_stock_info.quantity - seat_count
                 augus_stock_info.save()
+                # 自由席は返券予約成立後に返券枠の在庫を0にする仕様。返券要求は自動で返券予約を作るので枠移動不要。自社枠在庫のみ減らす
+                own_stock.quantity = own_stock.quantity - seat_count
+                own_stock.save()
             elif own_stock.stock_status.quantity > 0:
                 # 一部のみ返券可能の場合は、成功のAugusStockDetailと失敗のAugusStockDetailを作る
                 putback_seat_count = own_stock.stock_status.quantity
-                move_stock_count(putback_stock, own_stock, putback_seat_count)
                 self.__create_stock_detail(augus_stock_info, augus_putback, putback_seat_count,
                                            AugusPutbackStatus.CANDO)
                 self.__create_stock_detail(augus_stock_info, augus_putback, seat_count - putback_seat_count,
@@ -530,6 +529,9 @@ class AugusPutbackImporter(object):
                 # augus_stock_infoの在庫を更新
                 augus_stock_info.quantity = augus_stock_info.quantity - putback_seat_count
                 augus_stock_info.save()
+                # 自由席は返券予約成立後に返券枠の在庫を0にする仕様。返券要求は自動で返券予約を作るので枠移動不要。自社枠在庫のみ減らす
+                own_stock.quantity = own_stock.quantity - putback_seat_count
+                own_stock.save()
             else:
                 # 全て返券不可能な場合は、失敗のAugusStockDetailのみ作る
                 self.__create_stock_detail(augus_stock_info, augus_putback, seat_count,
