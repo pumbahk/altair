@@ -188,7 +188,10 @@ class OverLimitView(object):
 
     @lbr_view_config(context=OverOrderLimitException)
     def over_order_limit(self):
-        location = self.request.route_url('cart.index', event_id=self.context.event_id)
+        if self.context.request.organization.code == 'RE' and api.is_spa_mode(self.context.request):
+            location = self.request.route_url('cart.spa.index', performance_id=self.context.performance.id, anything="")
+        else:
+            location = self.request.route_url('cart.index', event_id=self.context.event_id)
         return dict(
             location=location,
             order_limit=self.context.order_limit,
@@ -197,7 +200,10 @@ class OverLimitView(object):
 
     @lbr_view_config(context=OverQuantityLimitException)
     def over_quantity_limit(self):
-        location = self.request.route_url('cart.index', event_id=self.context.event_id)
+        if self.context.request.organization.code == 'RE' and api.is_spa_mode(self.context.request):
+            location = self.request.route_url('cart.spa.index', performance_id=self.context.performance.id, anything="")
+        else:
+            location = self.request.route_url('cart.index', event_id=self.context.event_id)
         return dict(
             location=location,
             quantity_limit=self.context.quantity_limit,
