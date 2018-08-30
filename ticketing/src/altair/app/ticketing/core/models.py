@@ -4704,7 +4704,7 @@ class AugusAccount(Base, BaseModel):
     accept_putback_request = \
         AnnotatedColumn(Boolean, nullable=False, default=False, _a_label=(u'返券要求を受け付ける'))
     enable_auto_distribution_to_own_stock_holder = \
-        AnnotatedColumn(Boolean, nullable=False, default=False, _a_label=(u'追加配券時に自動で自社枠へ取り込む'))
+        AnnotatedColumn(Boolean, nullable=False, default=False, _a_label=(u'配券時に自動で自社枠へ取り込む'))
     enable_unreserved_seat = \
         AnnotatedColumn(Boolean, nullable=False, default=False, _a_label=(u'自由席を使う'))
 
