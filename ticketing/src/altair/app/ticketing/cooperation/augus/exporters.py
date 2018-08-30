@@ -409,15 +409,10 @@ class AugusAchievementExporter(object):
                                     Product.augus_ticket, AugusTicket.augus_stock_infos,
                                     AugusStockInfo.augus_ticket)) \
             .filter(Order.performance_id == performance_id,
-                    OrderedProduct.deleted_at.is_(None),
                     Order.canceled_at.is_(None),
                     Order.refunded_at.is_(None),
-                    Product.deleted_at.is_(None),
                     AugusTicket.augus_seat_type_classif == '2',
-                    AugusTicket.deleted_at.is_(None),
-                    AugusStockInfo.seat_type_classif == '2',
-                    AugusStockInfo.deleted_at.is_(None),
-                    Order.deleted_at.is_(None))\
+                    AugusStockInfo.seat_type_classif == '2')\
             .all()
 
         return orders if orders else []

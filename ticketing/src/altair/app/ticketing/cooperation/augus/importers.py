@@ -330,8 +330,7 @@ class AugusDistributionImporter(object):
                     if augus_account.enable_auto_distribution_to_own_stock_holder:
                         stock_holder = StockHolder.query.filter(
                             StockHolder.event_id == ag_performance.performance.event_id,
-                            StockHolder.name == u'自社',
-                            StockHolder.deleted_at.is_(None)
+                            StockHolder.name == u'自社'
                         ).first()
 
                         if not stock_holder:
@@ -415,8 +414,7 @@ class AugusDistributionImporter(object):
                     AugusTicket.augus_seat_type_code == record.seat_type_code,
                     AugusTicket.unit_value_code == record.unit_value_code,
                     AugusTicket.augus_account_id == ag_performance.augus_account_id,
-                    AugusTicket.augus_seat_type_classif == record.seat_type_classif,
-                    AugusTicket.deleted_at.is_(None))\
+                    AugusTicket.augus_seat_type_classif == record.seat_type_classif)\
             .first()
         if not ag_ticket:
             raise IllegalImportDataError(u'Not found augus ticket: ' +
@@ -434,8 +432,7 @@ class AugusDistributionImporter(object):
                     AugusStockInfo.seat_type_classif == record.seat_type_classif,
                     AugusStockInfo.augus_seat_id.is_(None),
                     AugusStockInfo.seat_id.is_(None),
-                    AugusStockInfo.augus_ticket_id == ag_ticket.id,
-                    AugusStockInfo.deleted_at.is_(None))\
+                    AugusStockInfo.augus_ticket_id == ag_ticket.id)\
             .first()
 
 
@@ -608,9 +605,7 @@ class AugusPutbackImporter(object):
             .options(contains_eager(AugusPerformance.performance)) \
             .filter(AugusPerformance.augus_account_id == augus_account.id,
                     tuple_(AugusPerformance.augus_event_code, AugusPerformance.augus_performance_code)
-                    .in_(map(lambda r: (r.event_code, r.performance_code), records)),
-                    AugusPerformance.deleted_at.is_(None),
-                    Performance.deleted_at.is_(None))\
+                    .in_(map(lambda r: (r.event_code, r.performance_code), records)))\
             .all()
 
     def __get_new_putback_code(self):
@@ -622,8 +617,7 @@ class AugusPutbackImporter(object):
     def __get_augus_seat_and_record_list(self, augus_account, augus_performance, records):
         augus_venue = self._slave_session.query(AugusVenue)\
             .filter(AugusVenue.code == augus_performance.augus_venue_code,
-                    AugusVenue.version == augus_performance.augus_venue_version,
-                    AugusVenue.deleted_at.is_(None))\
+                    AugusVenue.version == augus_performance.augus_venue_version)\
             .first()
         if not augus_venue:
             raise AugusDataImportError(u'Not found AugusVenue: ' +
@@ -657,8 +651,7 @@ class AugusPutbackImporter(object):
                         AugusSeat.area_code,
                         AugusSeat.info_code,
                         AugusSeat.ticket_number if augus_account.use_numbered_ticket_format else 'not_care'
-                    ).in_(map(to_tuple, records)),
-                    AugusSeat.deleted_at.is_(None))\
+                    ).in_(map(to_tuple, records)))\
             .all()
 
         augus_seat_dicts_to_verify = dict(zip(map(to_tuple, augus_seats), augus_seats)) if augus_seats else dict()
@@ -691,12 +684,8 @@ class AugusPutbackImporter(object):
             .options(contains_eager(AugusStockInfo.augus_ticket)) \
             .options(contains_eager(AugusStockInfo.seat)) \
             .filter(AugusStockInfo.augus_seat_id == augus_seat.id,
-                    AugusStockInfo.deleted_at.is_(None),
                     AugusStockDetail.augus_putback_id.is_(None),
-                    AugusTicket.deleted_at.is_(None),
-                    Seat.deleted_at.is_(None),
-                    SeatStatus.status.in_(valid_seat_status),
-                    SeatStatus.deleted_at.is_(None))\
+                    SeatStatus.status.in_(valid_seat_status))\
             .first()
         if not augus_stock_info:
             # 連携・配券できていないケース or データ不整合
@@ -711,9 +700,7 @@ class AugusPutbackImporter(object):
             .options(contains_eager(AugusStockInfo.augus_ticket)) \
             .filter(AugusTicket.augus_performance_id == augus_performance.id,
                     AugusTicket.augus_seat_type_code == record.seat_type_code,
-                    AugusTicket.unit_value_code == record.unit_value_code,
-                    AugusStockInfo.deleted_at.is_(None),
-                    AugusTicket.deleted_at.is_(None))\
+                    AugusTicket.unit_value_code == record.unit_value_code)\
             .all()
         if not augus_stock_info_list or len(augus_stock_info_list) != 1:
             # 連携・配券できていないケース or データ不整合 自由席だと一つのみのはず
@@ -734,10 +721,7 @@ class AugusPutbackImporter(object):
             .options(contains_eager(Stock.stock_status)) \
             .filter(Stock.performance_id == augus_performance.performance_id,
                     Stock.stock_type_id == augus_stock_info.augus_ticket.stock_type_id,
-                    Stock.deleted_at.is_(None),
-                    StockHolder.name == u'自社',
-                    StockHolder.deleted_at.is_(None),
-                    StockStatus.deleted_at.is_(None)) \
+                    StockHolder.name == u'自社') \
             .first()
         if not own_stock:
             raise AugusDataImportError(u'Not found own Stock: ' +
@@ -759,10 +743,7 @@ class AugusPutbackImporter(object):
 
     @staticmethod
     def __allocate_seat(seat_id, putback_stock, seat_count):
-        seat = Seat.query.join(Stock)\
-            .filter(Seat.id == seat_id,
-                    Seat.deleted_at.is_(None))\
-            .first() # get seat from master session
+        seat = Seat.query.join(Stock).filter(Seat.id == seat_id).first() # get seat from master session
         if not seat:
             raise AugusDataImportError(u'Not found Seat: seat_id={}'.format(seat_id))
         old_stock = seat.stock
@@ -811,8 +792,7 @@ class AugusAchieveImporter(object):
         augus_performances = self.__slave_session.query(AugusPerformance).filter(
             tuple_(AugusPerformance.augus_event_code, AugusPerformance.augus_performance_code)
                 .in_(couple_of_event_and_performance_code),
-            AugusPerformance.augus_account_id == augus_account_id,
-            AugusPerformance.deleted_at.is_(None)
+            AugusPerformance.augus_account_id == augus_account_id
         ).all()
 
         event_and_performance_code_from_augus_performance = \
