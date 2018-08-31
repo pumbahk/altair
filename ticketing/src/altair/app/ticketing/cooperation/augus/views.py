@@ -445,22 +445,9 @@ class AugusVenueView(_AugusBaseView):
                                      int(_record[headers.index('augus_seat_area_code')]),
                                      int(_record[headers.index('augus_seat_info_code')]))
 
-            # とりあえずtargetとなるseatのlinkは削除しておく
             logger.info('AUGUS VENUE: creating seat id list')
             seat_ids = [int(record[headers.index('id')]) for record in records]
 
-            logger.info('AUGUS VENUE: deleting all link')
-            for ex_seat in ex_venue.augus_seats:
-                if ex_seat.seat_id in seat_ids:
-                    ex_seat.seat_id = None
-                    updates.add(ex_seat)
-            logger.info('AUGUS VENUE: saving augus seats by delete link: record count={}'.format(len(records)))
-            for ex_seat in updates:
-                logger.info('AUGUS VENUE: save AugusSeat.id={}'.format(ex_seat.id))
-                ex_seat.save()
-
-
-            updates = set()
             logger.info('AUGUS VENUE: filtering')
             try:
                 records = [record for record in records
