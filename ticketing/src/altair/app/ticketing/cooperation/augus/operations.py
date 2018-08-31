@@ -683,7 +683,7 @@ class AugusOperationManager(object):
                     }
                     self.send_mail(
                         mailer, augus_account,
-                        u'【オーガス連携】実績通知予約のおしらせ',
+                        u'【オーガス連携】販売実績通知予約のおしらせ',
                         'altair.app.ticketing:templates/cooperation/augus/mails/augus_achievement_request.html',
                         params,
                     )
