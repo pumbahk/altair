@@ -10,6 +10,13 @@ from altair.app.ticketing.core.models import Event
 
 
 def export_data(event_id):
+    """
+    altair_pshell_ticketingでこのメソッドをインポートして、
+    対象イベントのIDを引数として入れて実行すれば、対象イベントのCMSデーターをJSONファイルで出力される。
+    ファイルの出力箇所は'altair_pshell_ticketing'を起動する場所です。
+    :param event_id:
+    :return: None
+    """
     request = get_current_request()
     db_session = get_db_session(request, 'slave')
     try:
