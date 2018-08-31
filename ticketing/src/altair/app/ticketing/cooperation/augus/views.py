@@ -353,8 +353,6 @@ class AugusVenueView(_AugusBaseView):
             venue = ex_venue.venue
             venue_id = venue.id
 
-
-
             logger.info('AUGUS VENUE: load augus venue')
             # pairs = SeatAugusSeatPairs()
             # pairs.load_augus_venue(ex_venue)
@@ -450,11 +448,19 @@ class AugusVenueView(_AugusBaseView):
 
             logger.info('AUGUS VENUE: filtering')
             try:
+                def _has_requirements(rcd):
+                    if is_numbered_ticket and _int(rcd[headers.index('augus_seat_ticket_number')]) > 0:
+                        # 整理券の場合、整理券の場合は列・番が存在しない
+                        return record[headers.index('augus_seat_floor')] != u'' and \
+                               not any([record[headers.index('augus_seat_column')],
+                                        record[headers.index('augus_seat_num')]])
+                    else:
+                        # 指定席の場合
+                        return all([record[headers.index('augus_seat_floor')],
+                                    record[headers.index('augus_seat_column')],
+                                    record[headers.index('augus_seat_num')]])
                 records = [record for record in records
-                           if record[headers.index('augus_venue_code')] and
-                           (record[headers.index('augus_seat_floor')],
-                            record[headers.index('augus_seat_column')],
-                            record[headers.index('augus_seat_num')]) != (u'', u'', u'')]
+                           if record[headers.index('augus_venue_code')] and _has_requirements(record)]
             except IndexError:
                 raise ValueError(repr(record))
 
