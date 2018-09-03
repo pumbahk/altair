@@ -42,4 +42,26 @@
 .header-logo-lots h1 {
   	margin-bottom: 0!important;
 }
+.header-logo-features a,
+.header-logo-features span {
+  	margin: 0 0 0 2px;
+}
 /* FOR PC END */
+
+/* FOR SP */
+	@media screen and (max-width: 767px) {
+	/* FOR FEATURES */
+    .header-logo-features a,
+    .header-logo-features span {
+        margin: 8px;
+    	display: block;
+		width: 75px;
+		height: 40px;
+		background: url(../images/header_logo_sp.png) no-repeat 0 0;
+		background-size: 75px 40px;
+        overflow: hidden;
+        text-indent: 100%;
+        white-space: nowrap;
+    }
+} 
+/* FOR SP END */
