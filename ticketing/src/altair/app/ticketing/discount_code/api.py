@@ -311,10 +311,9 @@ def used_discount_code_groups(cart_or_order):
     return groups
 
 
-def confirm_discount_code_status(request, codes):
+def confirm_discount_code_status(request, codes, fc_member_id):
     # イーグルスクーポンの状態確認
     comm = get_communicator(request, 'disc_code_eagles')
-    fc_member_id = request.altair_auth_info['authz_identifier']
 
     # ファンクラブのもので先頭4桁が合致するものだけ実施
     coupons = []
@@ -331,13 +330,12 @@ def confirm_discount_code_status(request, codes):
     return result
 
 
-def use_discount_codes(request, codes, available_fanclub_discount_code_settings):
+def use_discount_codes(request, codes, available_fanclub_discount_code_settings, fc_member_id):
     if not available_fanclub_discount_code_settings:
         return None
 
     # イーグルスクーポンの使用
     comm = get_communicator(request, 'disc_code_eagles')
-    fc_member_id = request.altair_auth_info['authz_identifier']
 
     # ファンクラブのもので先頭4桁が合致するものだけ実施
     coupons = []

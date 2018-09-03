@@ -30,7 +30,8 @@ from .models import (
     FamiPortRefund,
     FamiPortRefundEntry,
     )
-from .exc import FamiPortError, FamiPortAPIError, FamiPortAPINotFoundError, FamiPortAlreadyPaidError, FamiPortAlreadyIssuedError, FamiPortAlreadyCanceledError
+from .exc import FamiPortError, FamiPortAPIError, FamiPortAPINotFoundError, FamiPortAlreadyPaidError, \
+    FamiPortAlreadyIssuedError, FamiPortAlreadyCanceledError, FamiportPaymentDateNoneError, FamiPortTicketingDateNoneError
 from .communication.api import (  # noqa
     get_response_builder,  # noqa B/W compatibility
     get_xmlResponse_generator,  # noqa B/W compatibility
@@ -197,18 +198,18 @@ def validate_prefecture(prefecture):
 def validate_order_info(type_, payment_start_at, payment_due_at, ticketing_start_at, ticketing_end_at, ticket_payment, ticketing_fee, system_fee, total_amount):
     if type_ in (FamiPortOrderType.CashOnDelivery.value, FamiPortOrderType.Payment.value, FamiPortOrderType.PaymentOnly.value):
         if payment_start_at is None:
-            raise FamiPortError('payment_start_at is None while type=CashOnDelivery|Payment|PaymentOnly')
+            raise FamiportPaymentDateNoneError(u'支払開始日時を正しく入力してください')
         if payment_due_at is None:
-            raise FamiPortError('payment_due_at is None while type=CashOnDelivery|Payment|PaymentOnly')
+            raise FamiportPaymentDateNoneError(u'支払期限日時を正しく入力してください')
         if payment_start_at > payment_due_at:
-            raise FamiPortError('payment_start_at is later than payment_due_at')
+            raise FamiportPaymentDateNoneError(u'支払開始日時は支払期限日時より前の日時を入力してください')
     if type_ in (FamiPortOrderType.CashOnDelivery.value, FamiPortOrderType.Payment.value, FamiPortOrderType.Ticketing.value):
         if ticketing_start_at is None:
-            raise FamiPortError('ticketing_start_at is None while type=Payment|Ticketing')
+            raise FamiPortTicketingDateNoneError(u'発券開始日時を正しく入力してください')
         if ticketing_end_at is None:
-            raise FamiPortError('payment_start_at is None while type=Payment|Ticketing')
+            raise FamiPortTicketingDateNoneError(u'発券期限日時を正しく入力してください')
         if ticketing_start_at > ticketing_end_at:
-            raise FamiPortError('ticketing_start_at is later than ticketing_end_at')
+            raise FamiPortTicketingDateNoneError(u'発券開始日時は発券期限日時より前の日時を入力してください')
     if ticket_payment + ticketing_fee + system_fee != total_amount:
         raise FamiPortError('ticketing_payment + ticketing_fee + system_fee != total_amount')
 
