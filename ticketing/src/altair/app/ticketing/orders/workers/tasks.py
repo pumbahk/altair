@@ -81,7 +81,7 @@ def import_per_order(context, request):
              name="import_per_task",
              consumer="import_per_task",
              queue="import_per_task",
-             timeout=1800,
+             timeout=3600,
              arguments={"maxPriority": 10})
 def import_per_task(context, request):
     reserving = cart_api.get_reserving(request)
