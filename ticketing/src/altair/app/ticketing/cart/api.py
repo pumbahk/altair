@@ -814,3 +814,18 @@ def set_spa_access(response):
 def delete_spa_access(response):
     response.delete_cookie(SPA_COOKIE)
     return response
+
+def log_extra_form_fields(order_no, extra_data):
+    out_extra_field = u''
+    if order_no:
+        out_extra_field = u'order_no:'+order_no
+    for key, value in extra_data.iteritems():
+        if isinstance(value, (dict, list)):
+            out_extra_field += u' ' + key + ':' + value[0] if value else u''
+        elif isinstance(value, date):
+            out_extra_field += u' ' + key + ':' + value.strftime('%Y-%m-%d') if value else u''
+        elif isinstance(value, (int, float)):
+            out_extra_field += u' ' + key + ':' + str(value) if value else u''
+        else:
+            out_extra_field += u' ' + key + ':' + value if value else u''
+    logger.info('extra fields:%s' % out_extra_field)
