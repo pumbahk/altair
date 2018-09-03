@@ -18,7 +18,7 @@ Identifier = sa.BigInteger
 
 def upgrade():
     op.add_column('AugusSeat',
-                  sa.Column('ticket_number', sa.Integer(), nullable=True))
+                  sa.Column('ticket_number', sa.Integer(), nullable=False))
 
 
 def downgrade():

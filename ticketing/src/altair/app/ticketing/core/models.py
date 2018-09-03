@@ -4756,7 +4756,7 @@ class AugusSeat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     info_code = AnnotatedColumn(Integer, nullable=False, _a_label=(u'付加情報コード'))
     doorway_code = AnnotatedColumn(Integer, nullable=False, _a_label=(u'出入口コード'))
     version = AnnotatedColumn(Integer, nullable=False, _a_label=(u'会場バージョン'))
-    ticket_number = AnnotatedColumn(Integer, nullable=True, _a_label=(u'整理券番号'))
+    ticket_number = AnnotatedColumn(Integer, nullable=False, _a_label=(u'整理券番号'), default=0)
 
     augus_venue_id = Column(Identifier, ForeignKey('AugusVenue.id', ondelete='CASCADE'), nullable=False)
     seat_id = Column(Identifier, ForeignKey('Seat.id'))

@@ -386,14 +386,15 @@ class AugusDistributionImporter(object):
 
     @staticmethod
     def get_augus_seat(ag_venue, area_code, info_code, floor, column, number, ticket_number):
-        return AugusSeat.query.filter(AugusSeat.augus_venue_id == ag_venue.id)\
+        query = AugusSeat.query.filter(AugusSeat.augus_venue_id == ag_venue.id)\
                               .filter(AugusSeat.area_code == area_code)\
                               .filter(AugusSeat.info_code == info_code)\
                               .filter(AugusSeat.floor == floor)\
                               .filter(AugusSeat.column == column)\
-                              .filter(AugusSeat.num == number)\
-                              .filter(AugusSeat.ticket_number == ticket_number)\
-                              .first()
+                              .filter(AugusSeat.num == number)
+        if ticket_number is not None:
+            query.filter(AugusSeat.ticket_number == ticket_number)
+        return query.first()
 
     @staticmethod
     def augus_seat_to_real_seat(ag_performance, ag_seat):

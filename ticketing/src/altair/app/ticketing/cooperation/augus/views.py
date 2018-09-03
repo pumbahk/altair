@@ -234,8 +234,8 @@ class VenueView(_AugusBaseView):
                         ex_seat.floor = _str(record[headers.index('augus_seat_floor')])
                         ex_seat.column = _str(record[headers.index('augus_seat_column')])
                         ex_seat.num = _str(record[headers.index('augus_seat_num')])
-                        ex_seat.ticket_number = _int(record[headers.index('augus_seat_ticket_number')]) \
-                            if is_numbered_ticket else None
+                        if is_numbered_ticket:
+                            ex_seat.ticket_number = _int(record[headers.index('augus_seat_ticket_number')])
                         ex_seat.block = _int(record[headers.index('augus_seat_block')])
                         ex_seat.coordy = _int(record[headers.index('augus_seat_coordy')])
                         ex_seat.coordx = _int(record[headers.index('augus_seat_coordx')])
@@ -414,8 +414,8 @@ class AugusVenueView(_AugusBaseView):
                         and ex_seat.floor == _str(record[headers.index('augus_seat_floor')])\
                         and ex_seat.column == _str(record[headers.index('augus_seat_column')])\
                         and ex_seat.num == _str(record[headers.index('augus_seat_num')]) \
-                        and ex_seat.ticket_number == \
-                             _int(record[headers.index('augus_seat_ticket_number')]) if is_numbered_ticket else None\
+                        and (not is_numbered_ticket or
+                             ex_seat.ticket_number == _int(record[headers.index('augus_seat_ticket_number')]))\
                         and ex_seat.block == _int(record[headers.index('augus_seat_block')])\
                         and ex_seat.coordy == _int(record[headers.index('augus_seat_coordy')])\
                         and ex_seat.coordx == _int(record[headers.index('augus_seat_coordx')])\
@@ -500,8 +500,8 @@ class AugusVenueView(_AugusBaseView):
                     ex_seat.floor = _str(record[headers.index('augus_seat_floor')])
                     ex_seat.column = _str(record[headers.index('augus_seat_column')])
                     ex_seat.num = _str(record[headers.index('augus_seat_num')])
-                    ex_seat.ticket_number = _int(record[headers.index('augus_seat_ticket_number')]) \
-                        if is_numbered_ticket else None
+                    if is_numbered_ticket:
+                        ex_seat.ticket_number = _int(record[headers.index('augus_seat_ticket_number')])
                     ex_seat.block = _int(record[headers.index('augus_seat_block')])
                     ex_seat.coordy = _int(record[headers.index('augus_seat_coordy')])
                     ex_seat.coordx = _int(record[headers.index('augus_seat_coordx')])
