@@ -466,7 +466,7 @@ class EntryLotView(object):
 
         self.request.session['lots.entry.time'] = get_now(self.request)
         if 'extra' in cform:
-            cart_api.log_extra_form_fields(cform['extra'].data)
+            cart_api.log_extra_form_fields(entry_no, cform['extra'].data)
 
         if cart_api.is_point_input_required(self.context, self.request):
             return HTTPFound(self.request.route_path('lots.entry.rsp'))

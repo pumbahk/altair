@@ -1459,7 +1459,7 @@ class ExtraFormView(object):
             return dict(form=form, form_fields=form_fields)
         api.store_extra_form_data(self.request, form.data)
         if form.data:
-            api.log_extra_form_fields(form.data)
+            api.log_extra_form_fields(self.context.cart.order_no, form.data)
         return HTTPFound(location=flow_graph(self.context, self.request)(url_wanted=False))
 
 

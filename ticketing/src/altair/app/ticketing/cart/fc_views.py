@@ -223,7 +223,7 @@ class FCIndexView(object):
         data = extract_form_data(form)
         store_user_profile(self.request, data, cart.performance_id)
         if 'extra' in form:
-            api.log_extra_form_fields(form['extra'].data)
+            api.log_extra_form_fields(cart.order_no, form['extra'].data)
         logger.debug('OK redirect')
         return HTTPFound(location=self.request.route_url("cart.payment", sales_segment_id=cart.sales_segment.id))
 
