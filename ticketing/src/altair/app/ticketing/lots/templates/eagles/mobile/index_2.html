@@ -37,7 +37,7 @@ ${h.japanese_date(performance.start_on)}<br />
 <%mobile:header>お客様情報</%mobile:header>
 修正・変更箇所があれば訂正の上、「次へ」をクリックしてください。<br />
 <form method="post" action="${request.url}">
-<%mobile:form_header>購入者氏名(全角)</%mobile:form_header>
+<%mobile:form_header>申込者氏名(全角)</%mobile:form_header>
 <div>
   ${form['last_name'].label}
   ${form['last_name']}
@@ -49,7 +49,7 @@ ${h.japanese_date(performance.start_on)}<br />
   ${h.mobile_error_list(request, form, 'first_name')}
 <div color="#ff0000">
 
-<%mobile:form_header>購入者氏名(カナ)</%mobile:form_header>
+<%mobile:form_header>申込者氏名(カナ)</%mobile:form_header>
 <div>
   ${form['last_name_kana'].label}
   ${form['last_name_kana']}
@@ -84,7 +84,7 @@ ${h.japanese_date(performance.start_on)}<br />
   ${form['email_1_confirm']}
   ${h.mobile_error_list(request, form, 'email_1_confirm')}
 </div>
-<p>※ 予約受付完了メール等をメールでご案内します。「tstar.jp」からのメールを受信できるよう、お申し込み前にドメイン指定の設定を必ずお願いいたします。</p>
+<p>※ 予約受付完了メール等をメールでご案内します。「ticket.rakuten.co.jp」からのメールを受信できるよう、お申し込み前にドメイン指定の設定を必ずお願いいたします。</p>
 
 <%mobile:form_header>住所</%mobile:form_header>
 <div>
@@ -139,10 +139,11 @@ ${h.japanese_date(performance.start_on)}<br />
 % if m.payment_method.payment_plugin_id == 1:
 <font size="-2">
 予約受付完了と同時に決済され、即時予約確定となります。支払回数は≪1回払い≫のみのお取扱いとなります。以下のクレジットカードがご利用できます。<br />
-<img src="${request.static_url('altair.app.ticketing.cart:static/RL/mobile/img/kc_logo_rakuten.gif')}" height="30px" />
-<img src="${request.static_url('altair.app.ticketing.cart:static/RL/mobile/img/visa.gif')}" height="30px" />
-<img src="${request.static_url('altair.app.ticketing.cart:static/RL/mobile/img/master.gif')}" height="30px" />
-<img src="${request.static_url('altair.app.ticketing.cart:static/RL/mobile/img/jcb.gif')}" height="30px" />
+<img src="${request.static_url('altair.app.ticketing.cart:static/AN/mobile/img/kc_logo_rakuten.gif')}" height="30px" />
+<img src="${request.static_url('altair.app.ticketing.cart:static/AN/mobile/img/visa.gif')}" height="30px" />
+<img src="${request.static_url('altair.app.ticketing.cart:static/AN/mobile/img/master.gif')}" height="30px" />
+<img src="${request.static_url('altair.app.ticketing.cart:static/AN/mobile/img/jcb.gif')}" height="30px" />
+<img src="${request.static_url('altair.app.ticketing.cart:static/AN/mobile/img/amex_logo.gif')}" height="30px" />
 </font>
 % elif m.payment_method.payment_plugin_id == 2:
 <font size="-2">
