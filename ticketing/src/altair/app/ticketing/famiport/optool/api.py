@@ -173,7 +173,7 @@ def lookup_receipt_by_searchform_data(request, fami_session, formdata=None):
         query = query.filter(FamiPortReceipt.reserve_number == formdata.get('reserve_number'))
     if formdata.get('management_number'):
         pattern = u'%{}'.format(formdata.get('management_number'))
-        query = query.filter(FamiPortReceipt.famiport_order_identifier.like(pattern))
+        query = query.filter(FamiPortOrder.famiport_order_identifier.like(pattern))
     if formdata.get('barcode_number'):
         pattern = u'%{}'.format(formdata.get('barcode_number'))
         query = query.filter(FamiPortTicket.barcode_number.like(pattern))
@@ -205,7 +205,7 @@ def search_refund_ticket_by(request, params, now=None):
     if now is None:
         now = datetime.now()
     session = get_db_session(request, 'famiport')
-    query = session.query(FamiPortRefundEntry, FamiPortReceipt).join(FamiPortTicket, FamiPortTicket.id == FamiPortRefundEntry.famiport_ticket_id)\
+    query = session.query(FamiPortRefundEntry, FamiPortReceipt, FamiPortOrder).join(FamiPortTicket, FamiPortTicket.id == FamiPortRefundEntry.famiport_ticket_id)\
                                               .join(FamiPortRefund, FamiPortRefundEntry.famiport_refund_id == FamiPortRefund.id)\
                                               .join(FamiPortOrder, FamiPortOrder.id == FamiPortTicket.famiport_order_id)\
                                               .join(FamiPortReceipt, FamiPortReceipt.famiport_order_id == FamiPortOrder.id)\
@@ -243,7 +243,7 @@ def search_refund_ticket_by(request, params, now=None):
     if barcode_number:
         query = query.filter(FamiPortTicket.barcode_number == barcode_number)
     if management_number:
-        query = query.filter(FamiPortReceipt.famiport_order_identifier.endswith(management_number))
+        query = query.filter(FamiPortOrder.famiport_order_identifier.endswith(management_number))
     if refunded_shop_code:
         query = query.filter(FamiPortRefundEntry.shop_code == refunded_shop_code) \
                      .filter(FamiPortRefundEntry.refunded_at != None)
