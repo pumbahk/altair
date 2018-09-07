@@ -9,6 +9,9 @@ from .reports import SalesReporterOrderPrice, S3SalesReportOutputer, CsvSalesRep
 
 logger = logging.getLogger(__name__)
 
+# イーグルスの売上げレポートのバッチ用
+REPORT_TARGET_ORG_ID = 24
+
 
 def main(argv=sys.argv):
     parser = argparse.ArgumentParser()
@@ -22,7 +25,7 @@ def main(argv=sys.argv):
     logger.info('start send_sales_report_order_price batch')
 
     reporter = SalesReporterOrderPrice(request, S3SalesReportOutputer(request, request.registry.settings[
-        'sales_reports.var_dir']), 24)
+        'sales_reports.var_dir']), REPORT_TARGET_ORG_ID)
     reporter.output_report()
 
     reporter.create_report_data(True)
