@@ -64,3 +64,9 @@ class PaymentCartNotAvailable(Exception):
     """
     Cartがexpireしたなどで取得できんかった.
     """
+
+
+class OrderAlreadyDeliveredError(Exception):
+    """
+    worker でのインポートで予約番号が配送済みのときに発生させる例外
+    """
