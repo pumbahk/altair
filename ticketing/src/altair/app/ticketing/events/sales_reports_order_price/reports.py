@@ -229,7 +229,7 @@ class S3SalesReportOutputer(SalesReportOutputer):
                          S3_DIRECTORY.format(today_str), file_name)
                 logger.info(u"sales_report_order_price s3 upload={}".format(file_name))
             except S3ResponseError as e:
-                logger.info("SalesReportsOrderPrice did not save.")
+                logger.error("SalesReportsOrderPrice did not save. file_name={}".format(file_name))
             os.remove(file_path)
 
 
