@@ -65,6 +65,7 @@ from altair.app.ticketing.payments.payment import Payment
 from altair.app.ticketing.payments.api import lookup_plugin, get_payment_delivery_plugin, get_payment_plugin, get_delivery_plugin
 from altair.app.ticketing.payments.interfaces import IPaymentCart
 from altair.app.ticketing.payments.exceptions import (
+    OrderAlreadyDeliveredError,
     OrderLikeValidationFailure,
     PaymentDeliveryMethodPairNotFound,
     PaymentPluginException,
@@ -1281,6 +1282,16 @@ def create_or_update_orders_from_proto_orders(request, reserving, stocker, proto
         try:
             DBSession.merge(order)
             refresh_order(request, DBSession, order)
+        except OrderAlreadyDeliveredError as orderAlreadyDeliveredError:
+            logger.info(u'配送済みのため、予約番号 %s は更新できませんでした' % order.order_no)
+            errors_map.setdefault(proto_order.ref, []).append(
+                OrderCreationError(
+                    proto_order.ref,
+                    order.order_no,
+                    u'${error}',
+                    dict(error=unicode(orderAlreadyDeliveredError))
+                )
+            )
         except Exception as e:
             exc_info = sys.exc_info()
             logger.error(u'[EMERGENCY] failed to update order %s' % order.order_no, exc_info=exc_info)
@@ -1464,6 +1475,14 @@ def create_or_update_order_from_proto_order(request, reserving, stocker, proto_o
         try:
             DBSession.merge(new_order)
             refresh_order(request, DBSession, new_order)
+        except OrderAlreadyDeliveredError as orderAlreadyDeliveredError:
+            logger.info(u'配送済みのため、予約番号 %s は更新できませんでした' % new_order.order_no)
+            raise OrderCreationError(
+                proto_order.ref,
+                new_order.order_no,
+                u'${error}',
+                dict(error=unicode(orderAlreadyDeliveredError))
+            )
         except Exception as e:
             exc_info = sys.exc_info()
             logger.error(u'[EMERGENCY] failed to update order %s' % new_order.order_no, exc_info=exc_info)
