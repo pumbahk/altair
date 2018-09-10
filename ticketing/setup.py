@@ -225,6 +225,7 @@ setup(name='altair.app.ticketing',
       check_stock_quantity_mismatch_seat=altair.app.ticketing.stock.scripts.check_stock_quantity_mismatch_seat:main
       check_double_booking=altair.app.ticketing.stock.scripts.check_double_booking:main
       send_spdb=altair.app.ticketing.spdb.commands:main
+      send_sales_reports_order_price=altair.app.ticketing.events.sales_reports_order_price.commands:main
       export_mu_jobs=altair.app.ticketing.scripts.export_mu_jobs:main
       import_mu_result=altair.app.ticketing.scripts.import_mu_result:main
       update_resale_request_status=altair.app.ticketing.resale.scripts:update_resale_request_status
