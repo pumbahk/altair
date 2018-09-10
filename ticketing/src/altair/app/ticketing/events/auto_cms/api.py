@@ -13,7 +13,7 @@ class S3ConnectionFactory(object):
 
 
 def s3upload(connection, bucket_name, local_file_path, s3_directory_path, s3_file_name):
-    s3_file_path = "{}{}".format(s3_directory_path, s3_file_name)
+    s3_file_path = u"{}{}".format(s3_directory_path, s3_file_name)
     bucket = connection.get_bucket(bucket_name)
     bucket_key = Key(bucket)
     bucket_key.key = s3_file_path
