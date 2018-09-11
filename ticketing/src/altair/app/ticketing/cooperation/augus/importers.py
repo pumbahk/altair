@@ -393,7 +393,7 @@ class AugusDistributionImporter(object):
                               .filter(AugusSeat.column == column)\
                               .filter(AugusSeat.num == number)
         if ticket_number is not None:
-            query.filter(AugusSeat.ticket_number == ticket_number)
+            query = query.filter(AugusSeat.ticket_number == ticket_number)
         return query.first()
 
     @staticmethod
