@@ -51,8 +51,12 @@ class AugusDistributionAdapter(object):
             self.augus_performance_code = performance_code
             self.augus_distribution_code = distribution_code
 
-        self._count = len(AugusStockDetail.query.filter(
-            AugusStockDetail.augus_distribution_code==distribution_code).all())
+        # 配券された席数を算出する
+        augus_stock_details = AugusStockDetail.query.filter(
+            AugusStockDetail.augus_distribution_code==distribution_code,
+            AugusStockDetail.augus_putback_id.is_(None)
+        ).all()
+        self._count = sum([d.quantity for d in augus_stock_details])
         self.augus_distribution_code = distribution_code
 
     def __len__(self):

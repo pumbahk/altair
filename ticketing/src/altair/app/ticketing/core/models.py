@@ -4942,7 +4942,8 @@ class AugusPutback(Base, BaseModel): #, WithTimestamp, LogicallyDeleted):
 
 
     def __len__(self):
-        return len(self.augus_stock_details)
+        # 返券する全席数を返す
+        return sum([d.quantity for d in self.augus_stock_details])
 
 
 class AugusSeatStatus(object):
