@@ -579,14 +579,13 @@ class AugusOperationManager(object):
                 transaction.abort()
                 raise
             if mailer and (successes or errors or not_yets):
+                # mailerはAugusDistributionMailerクラスのインスタンスであること。でないと動作しません
                 mailer.successes = successes
                 mailer.errors = errors
                 mailer.not_yets = not_yets
                 mailer.enable_auto_distribution_to_own_stock_holder =\
                     augus_account.enable_auto_distribution_to_own_stock_holder
-                recipients = ['ticket-op@mail.rakuten.com'] # augus_account.email
-                sender = 'dev@ticketstar.jp'
-                mailer.send(recipients, sender)
+                mailer.send()
             if exception:
                 raise exception
 

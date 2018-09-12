@@ -98,7 +98,7 @@ class AugusDistributionMailer(object):
     def add_not_yet(self, request):
         self.not_yets.append(request)
 
-    def send(self, recipients, sender):
+    def send(self):
         successes = self._creates(self.successes) # 配席成功
         errors = self._creates(self.errors) # 不正配席指示
         not_yets = self._creates(self.not_yets) # 未連携

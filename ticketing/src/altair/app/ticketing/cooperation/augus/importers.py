@@ -491,12 +491,6 @@ class AugusPutbackImporter(object):
 
     def __import_records_of_unreserved_seat(self, records, augus_account, augus_performance, augus_putback):
 
-        def move_stock_count(to_stock, from_stock, count):
-            to_stock.quantity += count
-            from_stock.quantity = from_stock.quantity - count
-            to_stock.save()
-            from_stock.save()
-
         for record in records:
             if SeatTypeClassif.FREE == SeatTypeClassif.get(record.seat_type_classif) \
                     and not augus_account.enable_unreserved_seat:
