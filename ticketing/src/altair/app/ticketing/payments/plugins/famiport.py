@@ -557,6 +557,7 @@ def order_type_to_string(type_):
             return entry.name
     return None
 
+
 @lbr_view_config(context=IOrderPayment, name='payment-%d' % PAYMENT_PLUGIN_ID,
                  renderer=_overridable_payment('famiport_payment_completion.html'))
 def reserved_number_payment_viewlet(context, request):
@@ -565,7 +566,8 @@ def reserved_number_payment_viewlet(context, request):
     assert tenant is not None
     payment_method = context.order.payment_delivery_pair.payment_method
     famiport_order = famiport_api.get_famiport_order(request, tenant.code, context.order.order_no)
-    return dict(payment_name=payment_method.name, description=Markup(payment_method.description),
+    return dict(payment_name=payment_method.name,
+                description=Markup(get_description(payment_method, request.localizer.locale_name)),
                 famiport_order=famiport_order, h=cart_helper)
 
 
@@ -714,11 +716,12 @@ def deliver_completion_viewlet(context, request):
     famiport_order = famiport_api.get_famiport_order(request, tenant.code, context.order.order_no)
     return dict(
         delivery_name=delivery_method.name,
-        description=Markup(delivery_method.description),
+        description=Markup(get_description(delivery_method, request.localizer.locale_name)),
         famiport_order=famiport_order,
         payment_type=order_type_to_string(famiport_order['type']),
         h=cart_helper
         )
+
 
 @lbr_view_config(context=ICompleteMailResource, name='delivery-%d' % DELIVERY_PLUGIN_ID,
                  renderer=_overridable_delivery('famiport_delivery_mail_complete.html', fallback_ua_type='mail'))
@@ -939,3 +942,24 @@ def validate_order_like(request, order_like, plugin, update=False):
                 raise OrderLikeValidationFailure(
                     u'total_amount exceeds the maximum allowed amount: {}'.format(order_like.total_amount),
                     'order.total_amount')
+
+
+def get_description(method, locale):
+    """
+    言語によって説明文を出し分ける
+
+    Parameters
+    ----------
+    method : PaymentMethod or DeliveryMethod
+        決済方法、または、引取方法
+    locale : str
+        選択されている言語
+
+    Returns
+    ----------
+    description
+        説明文
+    """
+    if locale == 'ja':
+        return method.description
+    return method.preferences[locale]['description']
