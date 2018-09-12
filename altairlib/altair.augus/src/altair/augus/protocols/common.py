@@ -587,8 +587,9 @@ class ProtocolBase(list):
         return cls.record()
 
     def set_now(self):
-        self.date = time.localtime()
-        self.created_at = self.date
+        now = time.localtime()
+        self.date = now
+        self.created_at = now
 
     def load_file_name(self, name):
         name = os.path.basename(name)
