@@ -664,7 +664,6 @@ class AugusPutbackImporter(object):
 
     @staticmethod
     def __get_enable_augus_stock_info(augus_seat):
-        valid_seat_status = [SeatStatusEnum.NotOnSale.v, SeatStatusEnum.Vacant.v, SeatStatusEnum.Canceled.v]
 
         augus_stock_info = AugusStockInfo.query\
             .join(AugusStockDetail,
@@ -679,13 +678,11 @@ class AugusPutbackImporter(object):
             .options(contains_eager(AugusStockInfo.augus_ticket)) \
             .options(contains_eager(AugusStockInfo.seat)) \
             .filter(AugusStockInfo.augus_seat_id == augus_seat.id,
-                    AugusStockDetail.augus_putback_id.is_(None),
-                    SeatStatus.status.in_(valid_seat_status))\
+                    AugusStockDetail.augus_putback_id.is_(None))\
             .first()
         if not augus_stock_info:
             # 連携・配券できていないケース or データ不整合
-            raise AugusDataImportError(u'Not found AugusStockInfo on seat status[{}]: '.format(valid_seat_status) +
-                                       u'augus_seat_id={}, '.format(augus_seat.id))
+            raise AugusDataImportError(u'Not found AugusStockInfo : augus_seat_id={}, '.format(augus_seat.id))
         return augus_stock_info
 
     def __get_augus_stock_info_of_unreserved_seat(self, augus_performance, record):
