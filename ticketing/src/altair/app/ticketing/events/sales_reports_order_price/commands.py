@@ -25,10 +25,8 @@ def main(argv=sys.argv):
     logger.info('start send_sales_report_order_price batch')
 
     reporter = SalesReporterOrderPrice(request, S3SalesReportOutputer(request, request.registry.settings[
-        'sales_reports.var_dir']), REPORT_TARGET_ORG_ID)
+       'sales_reports.var_dir']), REPORT_TARGET_ORG_ID)
     reporter.output_report()
-
-    reporter.create_report_data(True)
     reporter.output_report(True)
 
     logger.info('end send_sales_report_order_price batch')
