@@ -57,90 +57,38 @@ class SalesReporterOrderPrice(object):
         self.__sales_report_events = request.registry.settings["sales_reports_events"].split(",")
         self.__organization_id = organization_id
         self.__slave_session = get_db_session(request, name="slave")
-        self.report_data = self.create_report_data()
         self.__outputer = outputer
+        self.report_data = None
 
     def create_report_data(self, reporting=False):
-        # TODO SalesSegmentGroup.reportingを追加するためだけに分岐してしまっている。要修正
-        if reporting:
-            query = self.__slave_session.query(
-                    Event.id.label('event_id'),
-                    Event.title.label('event_title'),
-                    Performance.code.label('performance_code'),
-                    Performance.start_on.label('performance_start_on'),
-                    Stock.id.label('stock_id'),
-                    StockType.name.label('stock_type_name'),
-                    Stock.quantity.label('stock_quantity'),
-                    Stock.quantity - sa.func.sum(
-                        OrderedProduct.quantity
-                    ) * ProductItem.quantity.label('stock_status_quantity'),
-                    SalesSegmentGroup.name.label('sales_segment_group_name'),
-                    Product.name.label('product_name'),
-                    OrderedProductItem.price.label('ordered_product_price'),
-                    sa.func.sum(
-                        OrderedProduct.quantity
-                    ) * ProductItem.quantity.label('total_count'),
-                    sa.func.sum(
-                        sa.func.IF(
-                            Order.paid_at != None , OrderedProduct.quantity, 0
-                        )
-                    ).label('purchace_count'),
-                    sa.func.sum(
-                        sa.func.IF(Order.paid_at == None, OrderedProduct.quantity * ProductItem.quantity, 0)
-                    ).label('order_count'),
-                    sa.func.sum(
-                        OrderedProductItem.quantity
-                    ) * OrderedProductItem.price.label('total_amount')
-            ). \
-                join(Performance, Performance.event_id == Event.id). \
-                join(SalesSegment, SalesSegment.performance_id == Performance.id). \
-                join(SalesSegmentGroup, SalesSegmentGroup.id == SalesSegment.sales_segment_group_id). \
-                join(Order, Order.performance_id == Performance.id). \
-                join(OrderedProduct, OrderedProduct.order_id == Order.id). \
-                join(OrderedProductItem, OrderedProductItem.ordered_product_id == OrderedProduct.id). \
-                join(Product, Product.id == OrderedProduct.product_id). \
-                join(ProductItem, OrderedProductItem.product_item_id == ProductItem.id). \
-                join(Stock, Stock.id == ProductItem.stock_id). \
-                join(StockStatus, StockStatus.stock_id == Stock.id). \
-                join(StockType, StockType.id == Product.seat_stock_type_id). \
-                filter(SalesSegmentGroup.reporting == True). \
-                filter(Order.canceled_at == None). \
-                filter(Order.refunded_at == None). \
-                filter(Event.organization_id == self.__organization_id). \
-                filter(Event.id.in_(self.__sales_report_events)). \
-                filter(SalesSegment.id==Order.sales_segment_id). \
-                group_by(ProductItem.id, OrderedProductItem.price). \
-                order_by(Event.id, Stock.id)
-            return query.all()
-
         query = self.__slave_session.query(
-                Event.id.label('event_id'),
-                Event.title.label('event_title'),
-                Performance.code.label('performance_code'),
-                Performance.start_on.label('performance_start_on'),
-                Stock.id.label('stock_id'),
-                StockType.name.label('stock_type_name'),
-                Stock.quantity.label('stock_quantity'),
-                Stock.quantity - sa.func.sum(
-                    OrderedProduct.quantity
-                ) * ProductItem.quantity.label('stock_status_quantity'),
-                SalesSegmentGroup.name.label('sales_segment_group_name'),
-                Product.name.label('product_name'),
-                OrderedProductItem.price.label('ordered_product_price'),
-                sa.func.sum(
-                    OrderedProduct.quantity
-                ) * ProductItem.quantity.label('total_count'),
-                sa.func.sum(
-                    sa.func.IF(
-                        Order.paid_at != None , OrderedProduct.quantity, 0
-                    )
-                ).label('purchace_count'),
-                sa.func.sum(
-                    sa.func.IF(Order.paid_at == None, OrderedProduct.quantity * ProductItem.quantity, 0)
-                ).label('order_count'),
-                sa.func.sum(
-                    OrderedProductItem.quantity
-                ) * OrderedProductItem.price.label('total_amount')
+            Event.id.label('event_id'),
+            Event.title.label('event_title'),
+            Performance.code.label('performance_code'),
+            Performance.start_on.label('performance_start_on'),
+            Stock.id.label('stock_id'),
+            StockType.name.label('stock_type_name'),
+            Stock.quantity.label('stock_quantity'),
+            Stock.quantity - sa.func.sum(
+                OrderedProduct.quantity
+                * ProductItem.quantity).label('stock_status_quantity'),
+            SalesSegmentGroup.name.label('sales_segment_group_name'),
+            Product.name.label('product_name'),
+            OrderedProductItem.price.label('ordered_product_price'),
+            sa.func.sum(
+                OrderedProduct.quantity
+            ) * ProductItem.quantity.label('total_count'),
+            sa.func.sum(
+                sa.func.IF(
+                    Order.paid_at != None, OrderedProduct.quantity * ProductItem.quantity, 0
+                )
+            ).label('purchace_count'),
+            sa.func.sum(
+                sa.func.IF(Order.paid_at == None, OrderedProduct.quantity * ProductItem.quantity, 0)
+            ).label('order_count'),
+            sa.func.sum(
+                OrderedProductItem.quantity
+                * OrderedProductItem.price).label('total_amount')
         ). \
             join(Performance, Performance.event_id == Event.id). \
             join(SalesSegment, SalesSegment.performance_id == Performance.id). \
@@ -152,17 +100,20 @@ class SalesReporterOrderPrice(object):
             join(ProductItem, OrderedProductItem.product_item_id == ProductItem.id). \
             join(Stock, Stock.id == ProductItem.stock_id). \
             join(StockStatus, StockStatus.stock_id == Stock.id). \
-            join(StockType, StockType.id == Product.seat_stock_type_id). \
-            filter(Order.canceled_at == None). \
+            join(StockType, StockType.id == Product.seat_stock_type_id)
+        if reporting:
+            query = query.filter(SalesSegmentGroup.reporting == True)
+        query = query.filter(Order.canceled_at == None). \
             filter(Order.refunded_at == None). \
             filter(Event.organization_id == self.__organization_id). \
             filter(Event.id.in_(self.__sales_report_events)). \
             filter(SalesSegment.id == Order.sales_segment_id). \
             group_by(ProductItem.id, OrderedProductItem.price). \
             order_by(Event.id, Stock.id)
-        return query.all()
+        self.report_data = query.all()
 
     def output_report(self, reporting=False):
+        self.create_report_data(reporting)
         return self.__outputer.output_report(self, reporting)
 
 
@@ -303,29 +254,18 @@ def create_csv(report, path, reporting=False):
         'total_count', 'purchace_count', 'order_count', 'total_amount'))
     col = Column(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14)
 
+    # 出力されたSQL結果から、行毎のリストを作成する。その後、リストを使用し、ファイルに書き込む
+    # 残数の計算のみ難しく、このような対応にしている
     stock_id = None
-    event_title = None
-    event_titles = []
+    stock_status_quantity_dict = {}
+    headers = []
+    bodies = []
     for data in report.report_data:
-
         output_list = list(data)
-
-        if not event_title or event_title != output_list[col.event_title]:
-            if event_title:
-                f.close()
-            event_title = output_list[col.event_title]
-            file_path = file_path_format_reporting.format(path, output_list[col.event_title])\
-                if reporting else file_path_format.format(path, output_list[col.event_title])
-            event_titles.append(output_list[col.event_title])
-            f = codecs.open(file_path, 'w', 'utf-8-sig')
-            logger.info(u"sales_report_order_price create file={}".format(file_path))
-            f.write(header)
-
         output_list[col.performance_start_on] = unicode(
             output_list[col.performance_start_on].strftime(u"%Y/%m/%d %H:%M"))
         output_list[col.stock_id] = unicode(output_list[col.stock_id])
         output_list[col.stock_quantity] = unicode(output_list[col.stock_quantity])
-        output_list[col.stock_status_quantity] = unicode(output_list[col.stock_status_quantity])
         output_list[col.ordered_product_price] = unicode(int(output_list[col.ordered_product_price]))
         output_list[col.total_count] = unicode(int(output_list[col.total_count]))
         output_list[col.purchace_count] = unicode(int(output_list[col.purchace_count]))
@@ -334,19 +274,50 @@ def create_csv(report, path, reporting=False):
 
         if not stock_id or stock_id != output_list[col.stock_id]:
             stock_id = output_list[col.stock_id]
-            seat_num = output_list[col.performance_code:col.stock_status_quantity+1]
-            seat_output = ",".join(seat_num)
-            seat_output = u"{0}\n".format(seat_output)
-            f.write(seat_output)
+            headers.append(output_list)
 
-        output_list[col.stock_quantity] = output_list[col.stock_status_quantity] = u""
+        # 残数
+        stock_status_quantity = 0
+        if stock_id in stock_status_quantity_dict:
+            stock_status_quantity = stock_status_quantity_dict[stock_id]
+        stock_status_quantity_dict[stock_id] = stock_status_quantity + int(output_list[col.stock_quantity]) - int(
+            output_list[col.stock_status_quantity])
 
-        del output_list[col.event_title]
-        del output_list[col.event_id]
-        output = ",".join(output_list)
-        output = u"{0}\n".format(output)
-        f.write(output)
+        bodies.append(output_list)
 
-    if report.report_data:
-        f.close()
+    stock_id = None
+    event_title = None
+    event_titles = []
+    for i, body_data in enumerate(bodies):
+
+        if not event_title or event_title != body_data[col.event_title]:
+            if event_title:
+                f.close()
+            event_title = body_data[col.event_title]
+            file_path = file_path_format_reporting.format(path, body_data[col.event_title])\
+                if reporting else file_path_format.format(path, body_data[col.event_title])
+            event_titles.append(body_data[col.event_title])
+
+            f = codecs.open(file_path, 'w', 'utf-8-sig')
+            logger.info(u"sales_report_order_price create file={}".format(file_path))
+            f.write(header)
+
+        if not stock_id or stock_id != body_data[col.stock_id]:
+            stock_id = body_data[col.stock_id]
+            header_data = headers.pop(0)
+            header_data[col.stock_status_quantity] = unicode(
+                int(body_data[col.stock_quantity]) - stock_status_quantity_dict[stock_id])
+            header_data = header_data[col.performance_code:col.stock_status_quantity+1]
+            write_data(f, header_data)
+
+        body_data[col.stock_quantity] = body_data[col.stock_status_quantity] = u""
+        del body_data[col.event_title]
+        del body_data[col.event_id]
+        write_data(f, body_data)
     return event_titles
+
+
+def write_data(fp, data):
+    output = ",".join(data)
+    output = u"{0}\n".format(output)
+    fp.write(output)
