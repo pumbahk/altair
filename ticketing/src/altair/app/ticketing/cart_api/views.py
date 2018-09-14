@@ -888,6 +888,7 @@ class CartAPIView(object):
                 request_products[product] = items
 
         #購入枚数チェック
+        ordered_items = []
         for product,request_items in request_products.iteritems():
             #商品明細の販売単位、枚数から商品の枚数を特定する。
             sum_sales_unit_quantity = sum([item.quantity for item in product.items])
@@ -895,23 +896,23 @@ class CartAPIView(object):
             for req in request_items:
                 for reqItem in req.values():
                     sum_item_quantity += reqItem['quantity']
-            ordered_items = [(product, sum_item_quantity / sum_sales_unit_quantity)]
-            logger.debug("ordered_items %s", ordered_items)
+            ordered_items.append((product, sum_item_quantity / sum_sales_unit_quantity))
 
-            try:
-                view_support.assert_quantity_within_bounds(sales_segment, ordered_items)
-            except (PerProductProductQuantityOutOfBoundsError,
-                    QuantityOutOfBoundsError,
-                    ProductQuantityOutOfBoundsError,
-                    PerStockTypeQuantityOutOfBoundsError,
-                    PerStockTypeProductQuantityOutOfBoundsError) as e:
-                logger.debug("PerProductProductQuantityOutOfBoundsError error %s",e.message)
-                return {
+        logger.debug("ordered_items %s", ordered_items)
+        try:
+            view_support.assert_quantity_within_bounds(sales_segment, ordered_items)
+        except (PerProductProductQuantityOutOfBoundsError,
+                QuantityOutOfBoundsError,
+                ProductQuantityOutOfBoundsError,
+                PerStockTypeQuantityOutOfBoundsError,
+                PerStockTypeProductQuantityOutOfBoundsError) as e:
+            logger.debug("PerProductProductQuantityOutOfBoundsError error %s",e.message)
+            return {
                 "results": {
-                       "status": "NG",
-                        "reason": "assert_quantity_within_bounds error"
-                    }
+                    "status": "NG",
+                    "reason": "assert_quantity_within_bounds error"
                 }
+            }
 
         #保存処理
         #Cart取得
