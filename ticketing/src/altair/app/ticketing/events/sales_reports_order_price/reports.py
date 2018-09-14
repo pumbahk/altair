@@ -2,18 +2,16 @@
 import codecs
 import logging
 import os
-import shutil
+from collections import namedtuple
+from datetime import datetime
+
 import sqlalchemy as sa
-import uuid
 from altair.app.ticketing.core.models import Event, Performance, StockType, ProductItem, Stock, StockStatus, \
     SalesSegment, SalesSegmentGroup, Product
 from altair.app.ticketing.events.auto_cms.api import s3upload, S3ConnectionFactory
 from altair.app.ticketing.orders.models import Order, OrderedProduct, OrderedProductItem
-from altair.app.ticketing.resources import TicketingAdminResource
 from altair.sqlahelper import get_db_session
 from boto.exception import S3ResponseError
-from collections import namedtuple
-from datetime import datetime
 
 S3_DIRECTORY = "sales_report_order_price/{}/"
 file_name_format = u"売上げレポート{0}_レポート非対称含む.csv"
