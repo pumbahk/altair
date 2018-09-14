@@ -1,0 +1,5 @@
+html.no-csstransforms3d .flexbox {
+  -js-display: -webkit-flex;
+  -js-display: -ms-flexbox;
+  -js-display: flex;
+}
