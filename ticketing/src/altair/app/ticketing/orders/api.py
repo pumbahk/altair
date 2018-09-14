@@ -1283,7 +1283,7 @@ def create_or_update_orders_from_proto_orders(request, reserving, stocker, proto
             DBSession.merge(order)
             refresh_order(request, DBSession, order)
         except OrderAlreadyDeliveredError as orderAlreadyDeliveredError:
-            logger.info(u'配送済みのため、予約番号 %s は更新できませんでした' % order.order_no)
+            logger.info(u'failed to update order %s because this order is already delivered' % order.order_no)
             errors_map.setdefault(proto_order.ref, []).append(
                 OrderCreationError(
                     proto_order.ref,
@@ -1294,7 +1294,7 @@ def create_or_update_orders_from_proto_orders(request, reserving, stocker, proto
             )
         except Exception as e:
             exc_info = sys.exc_info()
-            logger.error(u'[EMERGENCY] failed to update order %s' % order.order_no, exc_info=exc_info)
+            logger.info(u'[EMERGENCY] failed to update order %s' % order.order_no, exc_info=exc_info)
             errors_map.setdefault(proto_order.ref, []).append(
                 OrderCreationError(
                     proto_order.ref,
@@ -1476,7 +1476,7 @@ def create_or_update_order_from_proto_order(request, reserving, stocker, proto_o
             DBSession.merge(new_order)
             refresh_order(request, DBSession, new_order)
         except OrderAlreadyDeliveredError as orderAlreadyDeliveredError:
-            logger.info(u'配送済みのため、予約番号 %s は更新できませんでした' % new_order.order_no)
+            logger.info(u'failed to update order %s because this order is already delivered' % new_order.order_no)
             raise OrderCreationError(
                 proto_order.ref,
                 new_order.order_no,
@@ -1485,7 +1485,7 @@ def create_or_update_order_from_proto_order(request, reserving, stocker, proto_o
             )
         except Exception as e:
             exc_info = sys.exc_info()
-            logger.error(u'[EMERGENCY] failed to update order %s' % new_order.order_no, exc_info=exc_info)
+            logger.info(u'[EMERGENCY] failed to update order %s' % new_order.order_no, exc_info=exc_info)
             raise OrderCreationError(
                 proto_order.ref,
                 new_order.order_no,
