@@ -4,6 +4,7 @@ from pyramid.view import view_config
 from pyramid.response import Response
 from zope.interface import implementer
 from altair.pyramid_dynamic_renderer import lbr_view_config
+from altair.app.ticketing.payments.exceptions import OrderAlreadyDeliveredError
 from altair.app.ticketing.payments.interfaces import IDeliveryPlugin, IOrderDelivery
 from altair.app.ticketing.cart.interfaces import ICartDelivery
 from altair.app.ticketing.mails.interfaces import (
@@ -64,7 +65,7 @@ class ShippingDeliveryPlugin(object):
 
     def refresh(self, request, order):
         if order.delivered_at is not None:
-            raise Exception('order %s is already delivered' % order.order_no)
+            raise OrderAlreadyDeliveredError(u'予約番号 %s は配送済みです' % order.order_no)
 
     def cancel(self, request, order, now=None):
         # キャンセルフラグを立てるべきだと思うけど...
