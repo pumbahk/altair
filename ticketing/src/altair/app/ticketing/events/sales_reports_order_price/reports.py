@@ -226,7 +226,7 @@ class S3SalesReportOutputer(SalesReportOutputer):
                 event_name) if reporting else file_name_format.format(event_name)
             try:
                 s3upload(connection, bucket_name, file_path,
-                         S3_DIRECTORY.format(today_str), file_name)
+                         S3_DIRECTORY.format(today_str), file_name, public=False)
                 logger.info(u"sales_report_order_price s3 upload={}".format(file_name))
             except S3ResponseError as e:
                 logger.error("SalesReportsOrderPrice did not save. file_name={}".format(file_name))
