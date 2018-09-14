@@ -108,6 +108,7 @@ class SalesReporterOrderPrice(object):
                 filter(Order.refunded_at == None). \
                 filter(Event.organization_id == self.__organization_id). \
                 filter(Event.id.in_(self.__sales_report_events)). \
+                filter(SalesSegment.id==Order.sales_segment_id). \
                 group_by(ProductItem.id, OrderedProductItem.price). \
                 order_by(Event.id, Stock.id)
             return query.all()
@@ -156,6 +157,7 @@ class SalesReporterOrderPrice(object):
             filter(Order.refunded_at == None). \
             filter(Event.organization_id == self.__organization_id). \
             filter(Event.id.in_(self.__sales_report_events)). \
+            filter(SalesSegment.id == Order.sales_segment_id). \
             group_by(ProductItem.id, OrderedProductItem.price). \
             order_by(Event.id, Stock.id)
         return query.all()
