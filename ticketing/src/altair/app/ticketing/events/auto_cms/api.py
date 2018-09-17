@@ -12,11 +12,12 @@ class S3ConnectionFactory(object):
         return S3Connection(self.access_key, self.secret_key, host='s3-ap-northeast-1.amazonaws.com')
 
 
-def s3upload(connection, bucket_name, local_file_path, s3_directory_path, s3_file_name):
+def s3upload(connection, bucket_name, local_file_path, s3_directory_path, s3_file_name, public=True):
     s3_file_path = u"{}{}".format(s3_directory_path, s3_file_name)
     bucket = connection.get_bucket(bucket_name)
     bucket_key = Key(bucket)
     bucket_key.key = s3_file_path
     bucket_key.set_contents_from_filename(local_file_path)
-    bucket_key.set_acl('public-read')
+    if public:
+        bucket_key.set_acl('public-read')
     return s3_file_path
