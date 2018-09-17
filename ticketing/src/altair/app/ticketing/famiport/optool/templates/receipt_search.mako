@@ -121,7 +121,7 @@
         <td nowrap="nowrap">${receipt.famiport_order.famiport_performance.name}</td>
         <td nowrap="nowrap">${vh.format_date(receipt.famiport_order.famiport_performance.start_at)}</td>
         <td nowrap="nowrap">${vh.format_time(receipt.famiport_order.famiport_performance.start_at)}</td>
-        <td nowrap="nowrap">${vh.format_famiport_order_identifier(receipt.famiport_order_identifier)}</td>
+        <td nowrap="nowrap">${vh.format_famiport_order_identifier(receipt.famiport_order.famiport_order_identifier)}</td>
         <td nowrap="nowrap">${vh.get_barcode_no_text(receipt.barcode_no)}</td>
         <td nowrap="nowrap">${receipt.reserve_number}</td>
         % if personal_info:
