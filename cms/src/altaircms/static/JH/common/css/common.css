@@ -1405,7 +1405,6 @@ a {
   ---------------------------------------------*/
   header {
     min-width: 1050px;
-    background: #ee7800;
     padding: 20px;
     position: relative;
     height: 80px;
@@ -3352,7 +3351,6 @@ a {
   ---------------------------------------------*/
   header {
     width: 100%;
-    background: #e60012;
     position: relative;
     height: 50px;
     z-index: 1;
@@ -3366,7 +3364,8 @@ a {
     transform: translateY(-50%);
   }
   header .title img {
-    width: 120px;
+    height: 600px;
+	margin-top: 20px;
   }
   header .buy-link {
     color: #fff;
@@ -3389,6 +3388,7 @@ a {
     display: inline-block;
     width: 50px;
     height: 50px;
+    background: #fe5200;
     cursor: pointer;
     transition: all 200ms linear;
   }
@@ -3448,6 +3448,7 @@ a {
   }
   header .hbg .humberger-menu-wrap .hum-logo {
     padding: 20px;
+    background: #fff
   }
   header .hbg .humberger-menu-wrap .hum-logo a {
     display: block;
