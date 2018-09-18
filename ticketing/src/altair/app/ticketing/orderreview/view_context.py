@@ -19,7 +19,8 @@ def get_orderreview_view_context_factory(default_package):
     class OrderReviewViewContext(object):
         def __init__(self, request):
             self.request = request
-            self.context = getattr(request, 'context', None) # will not be available for exception views
+            self.context = getattr(request, 'context', None)  # will not be available for exception views
+            self.default_package = default_package
 
         @reify
         def ua_type(self):
@@ -102,12 +103,19 @@ def get_orderreview_view_context_factory(default_package):
             return search_template_file(self, path, default_package, override_path_str)
 
         def get_fc_login_template(self, package=None, template_name='login.html'):
-            """ORGによってfc_authと{ua_type}のディレクトリの順番が逆になっているものがあるため、2回テンプレートのパスを確認"""
+            path = template_name
+
+            # 第2参照テンプレートが__base__になっている場合はモジュールのfc_authを参照するようにする。
+            # cartやorderreview配下のfc_authディレクトリは参照しない。
+            if self.request.organization.setting.rendered_template_2 == '__base__':
+                override_path_str = u'altair.app.ticketing.fc_auth:templates/{organization_short_name}/{ua_type}/{path}'
+                return search_template_file(self, path, package, override_path_str)
+
+            # ORGによってfc_authと{ua_type}のディレクトリの順番が逆になっているものがあるため、2回テンプレートのパスを確認
             if package is None:
                 package = default_package
 
             override_path_str = u'{package}:templates/{organization_short_name}/fc_auth/{ua_type}/{path}'
-            path = template_name
             first_try = search_template_file(self, path, package, override_path_str)
 
             assetresolver = AssetResolver()
@@ -139,7 +147,9 @@ def get_orderreview_view_context_factory(default_package):
 
         def __getattr__(self, k):
             return getattr(self.cart_setting, k)
+
     return OrderReviewViewContext
+
 
 def includeme(config):
     config.add_request_method(get_orderreview_view_context_factory(config.registry), 'view_context', reify=True)

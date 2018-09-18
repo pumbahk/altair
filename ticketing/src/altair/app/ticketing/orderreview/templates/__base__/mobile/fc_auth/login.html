@@ -1,10 +1,10 @@
 <html lang="ja">
 <head>
-  <title>静岡朝日テレビ</title>
+  <title>${view_context.team_name}</title>
 </head>
 <body style="background-color:#FFFFFF" bgcolor="#FFFFFF">
 <div align="center">
-  <img src="${request.static_url('altair.app.ticketing.orderreview:static/SA/mobile/images/mobile_logo.gif')}" width="240" height="96" alt="静岡朝日テレビ" />
+  <img src="${view_context.static_url('mobile/images/mb_logo.gif')}" width="240" height="96" alt="${view_context.team_name}" />
 </div>
 <div>
 <div style="background-color:#E8240C" bgcolor="#E8240C"><font color="white">お申込み</font></div>
@@ -16,7 +16,7 @@
 
 </div>
 <form action="${request.route_path('fc_auth.login', membership=u'-', _query=dict(return_to=request.route_path('mypage.show')))}" method="post">
-<input type="hidden" name="membership" value="SA" />
+<input type="hidden" name="membership" value="${view_context.organization_short_name}" />
 <div>
   会員番号<br/>
   <input type="text" name="username" size="22" value="" istyle="4">

@@ -19,14 +19,14 @@ ${h.japanese_date(wish.performance.start_on)}<br />
 % for lot_product in wish.products:
 ・${lot_product.product.name}<br />
 <div align="right" style="text-align:right">
-${h.format_currency(lot_product.product.price)}×${lot_product.quantity}枚=${h.format_currency(lot_product.subtotal)} (税込) 
+${h.format_currency(lot_product.product.price)}×${lot_product.quantity}枚=${h.format_currency(lot_product.subtotal)} (税込)
 </div>
 % endfor
 ・決済手数料 (${payment_delivery_method_pair.payment_method.name})<br />
 <div align="right" style="text-align:right">
 ${h.format_currency(wish.transaction_fee)}
 </div>
-・配送手数料 (${payment_delivery_method_pair.delivery_method.name})<br .>
+・配送手数料 (${payment_delivery_method_pair.delivery_method.name})<br />
 <div align="right" style="text-align:right">
 ${h.format_currency(wish.delivery_fee)}
 </div>
@@ -82,10 +82,9 @@ ${shipping_address['address_2']}
 <div>
 ${memo|h.nl2br}
 </div>
-
 % if mailmagazines_to_subscribe:
 <%mobile:header>メールマガジンの配信</%mobile:header>
-ご利用いただいた方には、メールマガジンをお送りします。不要な方はチェックをはずしてください。<br />
+ご利用いただいた方には、${view_context.team_name}からのメールマガジンをお送りします。不要な方はチェックをはずしてください。<br />
 % for mailmagazine, subscribed in mailmagazines_to_subscribe:
 % if subscribed:
 <font color="red">(購読済)</font>
