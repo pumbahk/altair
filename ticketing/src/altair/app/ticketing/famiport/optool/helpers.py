@@ -132,7 +132,8 @@ class RefundTicketSearchHelper(object):
                ('barcode_number', u'バーコード'), ('event_code', u'興行コード'), ('event_subcode', u'興行サブコード'),
                ('performance_date', u'公演日'), ('event_name', u'興行名'),
                ('refunded_amount', u'返金額'), ('refunded_at', u'払戻日時'), ('refunded_shop_code', u'払戻店番'),
-               ('refunded_branch_name', u'払戻店舗名'))
+               ('refunded_branch_name', u'払戻店舗名'), ('order_no', u'予約番号'), ('sales_segment_name', u'販売区分'),
+               ('customer_name', u'氏名'))
 
     def __init__(self, request):
         self.request = request

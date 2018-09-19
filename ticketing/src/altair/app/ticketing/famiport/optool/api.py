@@ -218,6 +218,7 @@ def search_refund_ticket_by(request, params, now=None):
     management_number = params.get('management_number', None)
     barcode_number = params.get('barcode_number', None)
     refunded_shop_code = params.get('refunded_shop_code', None)
+    order_no = params.get('order_no', None)
     event_code = params.get('event_code', None)
     event_subcode = params.get('event_subcode', None)
     str_performance_start_date = params.get('performance_start_date', '')
@@ -247,6 +248,8 @@ def search_refund_ticket_by(request, params, now=None):
     if refunded_shop_code:
         query = query.filter(FamiPortRefundEntry.shop_code == refunded_shop_code) \
                      .filter(FamiPortRefundEntry.refunded_at != None)
+    if order_no:
+        query = query.filter(FamiPortOrder.order_no == order_no)
     if event_code:
         query = query.filter(FamiPortEvent.code_1 == event_code)
     if event_subcode:
