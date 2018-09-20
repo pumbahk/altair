@@ -170,7 +170,7 @@ class S3SalesReportOutputer(SalesReportOutputer):
             connection = S3ConnectionFactory(self.request)()
             now = datetime.now()
             today_str = now.strftime('%Y-%m-%d')
-            bucket_name = self.request.registry.settings["s3.bucket_name"]
+            bucket_name = self.request.registry.settings["sales_report_order_price.s3.bucket_name"]
             file_path = file_path_format_reporting.format(
                 self.path, event_name) if reporting else file_path_format.format(self.path, event_name)
             file_name = file_name_format_reporting.format(
