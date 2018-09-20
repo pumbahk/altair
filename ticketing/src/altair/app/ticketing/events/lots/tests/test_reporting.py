@@ -411,11 +411,11 @@ class send_lot_report_mailsTests(unittest.TestCase):
         self.assertEqual(len(mailer.outbox), 1)
         self.assertEqual(len(mailer.outbox[0].recipients), 2)
 
-    @mock.patch("altair.app.ticketing.events.lots.reporting.ReportCondition")
+    @mock.patch("altair.app.ticketing.events.lots.reporting.LotEntryReporter")
     @mock.patch("altair.app.ticketing.events.lots.reporting.datetime")
-    def test_it_on_error(self, mock_dt, mock_cond):
+    def test_it_on_error(self, mock_dt, mock_reporter):
         mock_dt.now.return_value = datetime(2013, 2, 3, 10, 33)
-        mock_cond.side_effect = Exception()
+        mock_reporter.side_effect = Exception()
         from pyramid_mailer import get_mailer
         self._add_lot_entries()
         request = testing.DummyRequest()
