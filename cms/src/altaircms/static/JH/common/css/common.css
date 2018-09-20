@@ -1140,11 +1140,19 @@ a {
   .calender-tbl td.team-logo {
     width: 61px;
     text-align: center;
-    padding: 10px 10px 10px 0;
+    padding: 10px 10px;
   }
   .calender-tbl td.team {
     width: 20%;
+    text-align: center;
   }
+  
+  .calender-tbl td.vs{
+    width: 5%;
+    text-align: center;
+  }
+  
+  
   .calender-tbl td.event-logo {
     font-size: 0;
     padding-right: 0;
@@ -3144,6 +3152,7 @@ a {
   .calender-tbl th, .calender-tbl td {
     vertical-align: middle;
     padding: 3px;
+    text-align: center;
   }
   .calender-tbl th a, .calender-tbl td a {
     color: #585858;
@@ -3173,13 +3182,15 @@ a {
     text-align: center;
   }
   .calender-tbl td.team-logo {
-    width: 7%;
+    width: 0%;
     text-align: center;
   }
   .calender-tbl td.team-logo img {
     width: 40px;
+    display: none;
   }
   .calender-tbl td.team {
+    text-align: center;  
     width: 26%;
   }
   .calender-tbl td.team .team-name {
