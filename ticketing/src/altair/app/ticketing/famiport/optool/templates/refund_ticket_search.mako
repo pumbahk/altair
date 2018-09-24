@@ -40,6 +40,8 @@
         <tr>
             <th class="pull-right" nowrap="nowrap">${form.refunded_shop_code.label}</th>
             <td>${form.refunded_shop_code}</td>
+            <th class="pull-right" nowrap="nowrap">${form.order_no.label}</th>
+            <td>${form.order_no}</td>
         </tr>
         <tr>
             <th class="pull-right">${form.performance_start_date.label}</th>
@@ -106,6 +108,9 @@
             <td>${rts_helper.format_datetime(famiport_refund_entry.refunded_at)}</td>
             <td>${famiport_refund_entry.shop_code if famiport_refund_entry.refunded_at else '-'}</td>
             <td>${rts_helper.get_shop_name_text(famiport_shop)}</td>
+            <td>${famiport_refund_entry.famiport_ticket.famiport_order.order_no}</td>
+            <td>${famiport_refund_entry.famiport_ticket.famiport_order.famiport_sales_segment.name}</td>
+            <td>${famiport_refund_entry.famiport_ticket.famiport_order.customer_name}</td>
         </tr>
         % endfor
         </tbody>

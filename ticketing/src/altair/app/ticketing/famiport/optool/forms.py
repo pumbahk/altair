@@ -332,6 +332,12 @@ class RefundTicketSearchForm(OurForm):
             Length(min=1, max=5, message=u'払戻店番は半角数字5文字以内で入力してください')
         ]
     )
+    order_no = OurTextField(
+        label=u'予約番号:',
+        validators=[
+            Optional()
+        ],
+    )
     event_code = OurTextField(
         label=u'興行コード:',
         validators=[
