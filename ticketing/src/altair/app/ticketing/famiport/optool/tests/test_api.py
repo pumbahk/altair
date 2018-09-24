@@ -435,7 +435,7 @@ class ReceiptSearchTest(APITestBase, TestCase):
         formdata = {'barcode_no': None, 'reserve_number': None, 'management_number': None, 'barcode_number': None, \
                     'customer_phone_number': None, 'shop_code': None, 'shop_name': None, 'sales_from': None, 'sales_to': None}
         # Search hits
-        for management_number in self.management_numbers:
+        for management_number in self.order_management_numbers:
             formdata['management_number'] = management_number
             query = lookup_receipt_by_searchform_data(self.request, self.session, formdata)
             receipts = query.all()
@@ -554,6 +554,7 @@ class RefundTicketSearchTest(APITestBase, TestCase):
     def setUp(self):
         APITestBase.setUp(self)
 
+        self.order_management_numbers = (u'000011112200', u'000011112201')
         self.management_numbers = (u'000011112222', u'000011112223')
         self.barcode_numbers = (u'0000000000001', u'0000000000002', u'0000000000003', u'0000000000004', u'0000000000005')
         self.shop_codes = (u'00001', u'00002', u'00003', u'00004')
@@ -748,7 +749,7 @@ class RefundTicketSearchTest(APITestBase, TestCase):
         self.famiport_order1 = FamiPortOrder(
             type=FamiPortOrderType.CashOnDelivery.value,
             order_no=u'RT0000000000',
-            famiport_order_identifier=self.famiport_client.prefix + u'000011112200',
+            famiport_order_identifier=self.famiport_client.prefix + self.order_management_numbers[0],
             famiport_sales_segment=self.famiport_sales_segment1,
             famiport_performance=self.famiport_performance2,
             famiport_client=self.famiport_client,
@@ -801,7 +802,7 @@ class RefundTicketSearchTest(APITestBase, TestCase):
         self.famiport_order2 = FamiPortOrder(
             type=FamiPortOrderType.Payment.value,
             order_no=u'RT0000000001',
-            famiport_order_identifier=self.famiport_client.prefix + u'000011112201',
+            famiport_order_identifier=self.famiport_client.prefix + self.order_management_numbers[1],
             famiport_sales_segment=self.famiport_sales_segment2,
             famiport_performance=self.famiport_performance2,
             famiport_client=self.famiport_client,
@@ -955,7 +956,7 @@ class RefundTicketSearchTest(APITestBase, TestCase):
         params = {'before_refund': None, 'during_refund': None, 'after_refund': None, 'management_number': None, 'barcode_number': None, \
                   'refunded_shop_code': None, 'event_code': None, 'event_subcode': None, 'performance_start_date': None, 'performance_end_date': None}
         # Search hits
-        for management_number in self.management_numbers:
+        for management_number in self.order_management_numbers:
             params['management_number'] = management_number
             query = search_refund_ticket_by(self.request, params)
             refund_tickets = query.all()

@@ -581,6 +581,9 @@ class FamiPortDownloadRefundTicketView(object):
                 unicode(rts_helper.format_datetime(famiport_refund_entry.refunded_at)),
                 unicode(famiport_refund_entry.shop_code),
                 unicode(rts_helper.get_shop_name_text(famiport_shop)),
+                unicode(famiport_refund_entry.famiport_ticket.famiport_order.order_no),
+                unicode(famiport_refund_entry.famiport_ticket.famiport_order.famiport_sales_segment.name),
+                unicode(famiport_refund_entry.famiport_ticket.famiport_order.customer_name),
             ])
 
         return {'header':header, 'rows': rows}

@@ -216,8 +216,8 @@ function showTopPageSliderFunc(){
   var slideIdQuery = GetQueryString();
   var slideId = slideIdQuery['slideId'];
   var mainSlider = $('#sliderCalender').bxSlider({
-      nextText: '次の月',
-      prevText: '前の月',
+      nextText: '次のページ',
+      prevText: '前のページ',
       adaptiveHeight: true,
       touchEnabled: true,
        buildPager: function(slideIndex){
@@ -260,8 +260,8 @@ pageTopPageObj.pcMainSlideFunc = function (){
   var slideId = slideIdQuery['slideId'];
 
   var mainSlider = $('#sliderCalender').bxSlider({
-      nextText: '次の月',
-      prevText: '前の月',
+      nextText: '次のページ',
+      prevText: '前のページ',
       adaptiveHeight: true,
       touchEnabled: false,
        buildPager: function(slideIndex){

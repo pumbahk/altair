@@ -774,6 +774,7 @@ class FamiPortPaymentViewletTest(FamiPortViewletTest):
         self.payment_method = DummyModel(
             name=self.name,
             description=self.description,
+            preferences={'en': {'description': u"説明説明説明説明説明"}},
             )
         self.payment_delivery_pair = DummyModel(payment_method=self.payment_method)
         self.order = DummyModel(
@@ -787,6 +788,7 @@ class FamiPortPaymentViewletTest(FamiPortViewletTest):
             cart=self.cart,
             description=self.payment_method.description,
             mail_data=mock.Mock(return_value=self.notice),
+            preferences={'en': {'description': u"説明説明説明説明説明"}},
             )
         self.request = DummyRequest()
         organization = DummyModel(
@@ -872,6 +874,11 @@ class FamiPortPaymentNoticeViewletTest(FamiPortPaymentViewletTest):
         self.assertEqual(res.text, self.notice)
 
 
+class TestLocalizer:
+    def __init__(self):
+        self.locale_name = 'en'
+
+
 class FamiPortDeliveryViewletTest(FamiPortViewletTest):
     def setUp(self):
         self.name = u'Famiポート引取'
@@ -880,6 +887,7 @@ class FamiPortDeliveryViewletTest(FamiPortViewletTest):
         self.delivery_method = DummyModel(
             name=self.name,
             description=self.description,
+            preferences={'en': {'description': u'説明説明説明説明説明'}}
             )
         self.payment_delivery_pair = DummyModel(delivery_method=self.delivery_method)
         self.order = DummyModel(
@@ -901,6 +909,7 @@ class FamiPortDeliveryViewletTest(FamiPortViewletTest):
             )
         )
         self.request.organization = organization
+        self.request.localizer = TestLocalizer()
 
     def _target(self):
         from .famiport import deliver_completion_viewlet as func
