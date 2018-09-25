@@ -29,6 +29,7 @@ def get_cart_view_context_factory(default_package):
             self.request = request
             self.context = getattr(request, 'context', None) # will not be available for exception views
             self._message = partial(h._message, request=self.request)
+            self.default_package = default_package
 
         @reify
         def ua_type(self):

@@ -17,16 +17,14 @@ ${h.i18n_datetime(start_at, locale)}
 〜 ${h.i18n_datetime(end_at, locale)}
 % endif
 </p>
-<p>${_(u'となっております。')}</p>
-<p>${_(u'販売期間内にアクセスしていただきますようお願いいたします。')}</p>
+<p>${_(u'となり終了しているか、規定枚数に達している為ご購入いただけません。')}</p>
 % else:
 %   if sales_segment is not None:
 <p>${_(u'performance.name (sales_segment.name) の販売は').format(performance.name, sales_segment.name)}</p>
 %   else:
 <p>${_(u'event.title (performance.name) の販売は').format(event.title, performance.name)}</p>
 %   endif
-<p>${h.i18n_datetime(end_at, locale)} まで</p>
-<p>${_(u'とさせていただいております。')}</p>
+<p>${h.i18n_datetime(end_at)} ${_(u'までとなり終了しているか、規定枚数に達している為ご購入いただけません。')}</p>
 % endif
 % if available_sales_segments:
 <p>${_(u'なお、本公演の他の日付、会場のチケットは下記からお買い求めいただけます。')}</p>
