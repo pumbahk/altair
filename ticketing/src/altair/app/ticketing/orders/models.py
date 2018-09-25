@@ -851,9 +851,10 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         from .api import get_order_attribute_pair_pairs
         return get_order_attribute_pair_pairs(request, self, include_undefined_items=include_undefined_items, for_=for_, mode=mode)
 
-    @property
-    def get_receipt(self):
-        receipts = OrderReceipt.filter_by(order_id = self.id)
+    def get_receipt(self, request):
+        session = get_db_session(request, 'slave')
+        receipts = session.query(OrderReceipt).filter_by(order_id=self.id)
+
         try:
             return receipts.one()
         except NoResultFound:
@@ -861,7 +862,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         except MultipleResultsFound:
             receipts = receipts.all()
             logger.info('order (%s) has multiple receipts (%s)' % (self.id, ', '.join([r.id for r in receipts])))
-            raise Exception(u'一つの予約は一つの領収書しか作れません')
+            raise ValueError(u'一つの予約は一つの領収書しか作れません')
 
     @reify
     def get_orion_ticket_phone_list(self):

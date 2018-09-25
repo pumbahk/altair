@@ -1,4 +1,3 @@
-<% receipt = order.get_receipt %>
 <section class="bg-contents">
     <div class="inner">
         <h2 class="page-ttl">購入履歴</h2>
@@ -169,8 +168,12 @@
                     </table>
                 </li>
             </ul>
-            <!--クレジットカードでお支払いのみ、購入履歴で領収書を発行できる-->
-            % if order.payment_plugin_id == 1:
+            <!--クレジットカードと楽天ペイでお支払いのみ、購入履歴で領収書を発行できる-->
+<%
+from altair.app.ticketing.payments.plugins import MULTICHECKOUT_PAYMENT_PLUGIN_ID, CHECKOUT_PAYMENT_PLUGIN_ID
+is_receipt_available = order.payment_plugin_id in [MULTICHECKOUT_PAYMENT_PLUGIN_ID, CHECKOUT_PAYMENT_PLUGIN_ID]
+%>
+            % if is_receipt_available:
                 <p class="buy-info-txt">
                     <button class="btn btn-primary" id="receipt-button">領収書発行</button>
                 </p>
@@ -181,6 +184,7 @@
         </div>
     </div>
 </section>
+% if is_receipt_available:
 <style>
     .screen-cover {
         position: fixed;
@@ -306,6 +310,7 @@
         <div class="footer">
             <p class="buy-info-txt">
                 <%
+                    receipt = order.get_receipt(request)
                     if not receipt:
                         btn_text = u'発行'
                     elif receipt and receipt.is_issuable:
@@ -323,6 +328,7 @@
         </div>
     </div>
 </div>
+% endif:
 
 % if request.organization.setting.sitecatalyst_use:
     <!--SiteCatalyst-->

@@ -4,6 +4,7 @@ import sqlahelper
 import json
 from datetime import datetime
 from collections import namedtuple
+from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 from sqlalchemy.sql.expression import or_, and_
 
 from pyramid.view import view_defaults
@@ -551,19 +552,25 @@ def receipt_view(context, request):
     order = context.order
     receipt_address = request.params.get('receipt_address', '')
     receipt_provision = request.params.get('receipt_provision', '')
-    receipt = order.get_receipt
+
+    try:
+        receipt = DBSession.query(OrderReceipt).filter_by(order_id=order.id).one()
+    except NoResultFound:
+        receipt = None
+    except MultipleResultsFound:
+        raise HTTPNotFound()
 
     if not receipt:
         receipt = OrderReceipt()
-        receipt.order_id=order.id
-        receipt.updated_at=now
+        receipt.order_id = order.id
+        receipt.updated_at = now
         receipt.created_at = now
         DBSession.add(receipt)
 
     issuable = receipt.is_issuable
-
     if issuable:
-        receipt.issued_at=now
+        receipt.issued_at = now
+        DBSession.merge(receipt)
 
     DBSession.flush()
     return dict(

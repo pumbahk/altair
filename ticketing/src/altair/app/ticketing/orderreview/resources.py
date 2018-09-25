@@ -17,6 +17,7 @@ from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.orders.models import Order
 from altair.app.ticketing.core.models import SalesSegment, SalesSegmentSetting, ShippingAddress, Organization
 from altair.app.ticketing.lots.models import LotEntry, Lot
+from altair.app.ticketing.qr.lookup import lookup_qr_aes_plugin
 from altair.app.ticketing.users.models import User, UserCredential, Membership, UserProfile
 from altair.app.ticketing.core import api as core_api
 from altair.app.ticketing.cart import api as cart_api
@@ -26,13 +27,13 @@ from .exceptions import InvalidForm, OAuthRequiredSettingError
 from . import helpers as h
 from functools import partial
 
-from altair.app.ticketing.qr.lookup import lookup_qr_aes_plugin
-
 logger = logging.getLogger(__name__)
+
 
 class DefaultResource(object):
     def __init__(self, request):
         self.request = request
+
 
 class OrderReviewResourceBase(object):
     __acl__ = [
@@ -127,11 +128,9 @@ class OrderReviewResourceBase(object):
         return params
 
 
-
 class LandingViewResource(OrderReviewResourceBase):
     pass
 
-from .views import unsuspicious_order_filter
 
 class MyPageListViewResource(OrderReviewResourceBase):
     def get_orders(self, user, page, per):
@@ -235,14 +234,18 @@ class MyPageOrderReviewResource(OrderReviewResourceBase):
 class MyPageResource(OrderReviewResourceBase):
     pass
 
+
 class QRViewResource(OrderReviewResourceBase):
     pass
+
 
 class EventGateViewResource(OrderReviewResourceBase):
     pass
 
+
 class ContactViewResource(OrderReviewResourceBase):
     pass
+
 
 class ReceiptViewResource(OrderReviewResourceBase):
     def __init__(self, request):
@@ -250,12 +253,13 @@ class ReceiptViewResource(OrderReviewResourceBase):
         order_no = request.params.get('order_no', None)
         self.order = self.session.query(Order). \
             filter(Order.organization_id == self.organization.id). \
-            filter(Order.deleted_at == None). \
-            filter(Order.canceled_at == None). \
+            filter(Order.deleted_at.is_(None)). \
+            filter(Order.canceled_at.is_(None)). \
             filter(Order.order_no == order_no).first()
         logger.info("organization_id=%s, order_no=%s, order=%s obtained in ReceiptViewResource." % (self.organization.id, order_no, self.order))
         if not self.order:
             raise HTTPNotFound()
+
 
 class QRAESViewResource(OrderReviewResourceBase):
     def __init__(self, request):
