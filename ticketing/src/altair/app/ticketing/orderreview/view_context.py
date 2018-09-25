@@ -117,10 +117,7 @@ def get_orderreview_view_context_factory(default_package):
 
             override_path_str = u'{package}:templates/{organization_short_name}/fc_auth/{ua_type}/{path}'
             first_try = search_template_file(self, path, package, override_path_str)
-
-            assetresolver = AssetResolver()
-            asset = assetresolver.resolve(first_try)
-            if asset.exists():
+            if first_try is not None:
                 return first_try
 
             override_path_str = u'{package}:templates/{organization_short_name}/{ua_type}/fc_auth/{path}'
