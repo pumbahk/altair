@@ -139,7 +139,7 @@ def send_lot_report_mails(request, sender):
         try:
             setting = DBSession.merge(setting)
             cond = ReportCondition(setting, now)
-            if cond.setting.period == ReportPeriodEnum.Entire.v[0] and not cond.is_reportable():
+            if not cond.is_reportable():
                 logger.info(u"setting {0} is not reportable".format(setting.id))
                 continue
             reporter = LotEntryReporter(sender, mailer, setting)
