@@ -7,7 +7,7 @@ import sqlalchemy as sa
 import itertools
 from StringIO import StringIO
 from sqlalchemy.orm.exc import NoResultFound
-from sqlalchemy.orm import contains_eager
+from sqlalchemy.orm import contains_eager, aliased
 from pyramid.threadlocal import get_current_request
 from altair.sqlahelper import get_db_session
 from altair.app.ticketing.core.models import (
@@ -381,8 +381,7 @@ class AugusAchievementExporter(object):
                 res.append(record)
 
         # 自由席の販売実績連携
-        orders_of_unreserved_seat = self.__get_orders_of_unreserved_seat(augus_account,
-                                                                         augus_performance.performance_id)
+        orders_of_unreserved_seat = self.__get_orders_of_unreserved_seat(augus_account, augus_performance)
         for order in orders_of_unreserved_seat:
             map(lambda ordered_product: res.append(
                 self.__create_record_of_unreserved_seat(augus_performance,
@@ -393,9 +392,21 @@ class AugusAchievementExporter(object):
 
         return res
 
-    def __get_orders_of_unreserved_seat(self, augus_account, performance_id):
+    def __get_orders_of_unreserved_seat(self, augus_account, augus_performance):
         if not augus_account.enable_unreserved_seat:
             return []
+
+        # 自由席のAugusStockInfoは席種コード単位で生成されるため、配券済のAugusTicketは席種コードで一意に特定できる想定
+        sub_query = self.session.query(
+            AugusTicket.id,
+            AugusTicket.augus_seat_type_code
+        )\
+            .join(AugusStockInfo, AugusStockInfo.augus_ticket_id == AugusTicket.id)\
+            .filter(AugusTicket.augus_performance_id == augus_performance.id,
+                    AugusTicket.augus_seat_type_classif == SeatTypeClassif.FREE.value.decode(),
+                    AugusStockInfo.seat_type_classif == SeatTypeClassif.FREE.value.decode())\
+            .subquery('augus_ticket_distributed')
+        augus_ticket_distributed = aliased(AugusTicket, sub_query)
 
         orders = self.session.query(Order)\
             .join(OrderedProduct)\
@@ -403,16 +414,18 @@ class AugusAchievementExporter(object):
                   Product.id == OrderedProduct.product_id)\
             .join(AugusTicket,
                   AugusTicket.id == Product.augus_ticket_id)\
+            .join(augus_ticket_distributed,
+                  augus_ticket_distributed.augus_seat_type_code == AugusTicket.augus_seat_type_code)\
             .join(AugusStockInfo,
-                  AugusStockInfo.augus_ticket_id == AugusTicket.id) \
+                  AugusStockInfo.augus_ticket_id == augus_ticket_distributed.id) \
             .options(contains_eager(Order.items, OrderedProduct.product,
                                     Product.augus_ticket, AugusTicket.augus_stock_infos,
                                     AugusStockInfo.augus_ticket)) \
-            .filter(Order.performance_id == performance_id,
+            .filter(Order.performance_id == augus_performance.performance_id,
                     Order.canceled_at.is_(None),
                     Order.refunded_at.is_(None),
-                    AugusTicket.augus_seat_type_classif == '2',
-                    AugusStockInfo.seat_type_classif == '2')\
+                    AugusTicket.augus_seat_type_classif == SeatTypeClassif.FREE.value.decode(),
+                    AugusStockInfo.seat_type_classif == SeatTypeClassif.FREE.value.decode())\
             .all()
 
         return orders if orders else []

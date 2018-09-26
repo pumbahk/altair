@@ -8,6 +8,7 @@ from sqlalchemy import (
     or_,
     and_,
     )
+from sqlalchemy.orm import contains_eager
 from sqlalchemy.orm.exc import (
     NoResultFound,
     MultipleResultsFound,
@@ -23,6 +24,8 @@ from altair.app.ticketing.core.models import (
     AugusAccount,
     AugusTicket,
     AugusPerformance,
+    AugusStockInfo,
+    AugusTicket
     )
 from .utils import (
     RequestAccessor,
@@ -205,11 +208,14 @@ class ChildVenueResource(TicketingAdminResource):
 class PerformanceRequestAccessor(RequestAccessor):
     in_matchdict = {'event_id': int}
 
+
 class PerformanceResource(TicketingAdminResource):
     accessor_factory = PerformanceRequestAccessor
+
     def __init__(self, request):
         super(type(self), self).__init__(request)
         self.accessor = self.accessor_factory(request)
+        self.__slave_session = get_db_session(get_current_request(), name="slave")
 
     @reify
     def event(self):
@@ -241,6 +247,16 @@ class PerformanceResource(TicketingAdminResource):
         return [(performance, ag_performance)
                 for performance, ag_performance
                 in self.get_performance_augus_performance_pair()]
+
+    def get_augus_stock_info_by_stock_types(self, augus_performance_id, stock_type_ids):
+
+        return self.__slave_session.query(AugusStockInfo)\
+            .join(AugusTicket, AugusTicket.id == AugusStockInfo.augus_ticket_id)\
+            .options(contains_eager(AugusStockInfo.augus_ticket))\
+            .filter(AugusStockInfo.augus_performance_id == augus_performance_id,
+                    AugusTicket.stock_type_id.in_(stock_type_ids))\
+            .all()
+
 
 class SeatTypeRequestAccessor(RequestAccessor):
     in_matchdict = {'event_id': int}

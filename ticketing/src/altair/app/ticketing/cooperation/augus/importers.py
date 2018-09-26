@@ -268,9 +268,9 @@ class AugusDistributionImporter(object):
             ag_stock_info.augus_account_id = ag_performance.augus_account_id
             ag_stock_info.augus_performance_id = ag_performance.id
             ag_stock_info.seat_type_classif = record.seat_type_classif
-            ag_stock_info.augus_ticket_id = ag_ticket.id
 
         ag_stock_info.augus_distribution_code = record.distribution_code
+        ag_stock_info.augus_ticket_id = ag_ticket.id
         ag_stock_info.distributed_at = datetime.datetime.now()
         ag_stock_info.quantity += int(record.seat_count)
         ag_stock_info.save()
@@ -427,13 +427,15 @@ class AugusDistributionImporter(object):
 
     @staticmethod
     def __get_augus_stock_info_of_unreserved_seat(record, ag_performance, ag_ticket):
-        # 更新のためmasterから取得
+        # 更新のためmasterから取得。自由席のAugusStockInfoは席種コード単位で生成される
         return AugusStockInfo.query\
+            .join(AugusTicket,
+                  AugusTicket.id == AugusStockInfo.augus_ticket_id)\
             .filter(AugusStockInfo.augus_performance_id == ag_performance.id,
                     AugusStockInfo.seat_type_classif == record.seat_type_classif,
                     AugusStockInfo.augus_seat_id.is_(None),
                     AugusStockInfo.seat_id.is_(None),
-                    AugusStockInfo.augus_ticket_id == ag_ticket.id)\
+                    AugusTicket.augus_seat_type_code == ag_ticket.augus_seat_type_code)\
             .first()
 
 
@@ -495,7 +497,7 @@ class AugusPutbackImporter(object):
             if SeatTypeClassif.FREE == SeatTypeClassif.get(record.seat_type_classif) \
                     and not augus_account.enable_unreserved_seat:
                 raise AugusDataImportError(
-                    'distribution of unreserved seat is disabled in AugusAccount[{}]: {}'
+                    'putback request of unreserved seat is disabled in AugusAccount[{}]: {}'
                         .format(augus_account.id, vars(record)))
 
             augus_stock_info = self.__get_augus_stock_info_of_unreserved_seat(augus_performance, record)
@@ -534,12 +536,14 @@ class AugusPutbackImporter(object):
         augus_stock_detail = AugusStockDetail()
         augus_stock_detail.augus_distribution_code = augus_stock_info.augus_distribution_code
         augus_stock_detail.augus_seat_type_code = augus_stock_info.augus_ticket.augus_seat_type_code
-        augus_stock_detail.augus_unit_value_code = augus_stock_info.augus_ticket.unit_value_code
         augus_stock_detail.seat_type_classif = augus_stock_info.seat_type_classif
         augus_stock_detail.quantity = seat_count
         augus_stock_detail.augus_stock_info_id = augus_stock_info.id
         augus_stock_detail.augus_putback_id = augus_putback.id
-        augus_stock_detail.augus_ticket_id = augus_stock_info.augus_ticket.id
+        # TKT-5866 自由席の場合は定価のAugusTikcetを紐付ける(在庫が席種単位であり、単価コードを正確に返却できないため)
+        augus_ticket_of_regular_price = augus_stock_info.augus_ticket.get_ticket_of_regular_price()
+        augus_stock_detail.augus_ticket_id = augus_ticket_of_regular_price.id
+        augus_stock_detail.augus_unit_value_code = augus_ticket_of_regular_price.unit_value_code
         augus_stock_detail.start_on = 0  # 自由席返券用なのでダミー値にする
         augus_stock_detail.distributed_at = 0  # 自由席返券用なのでダミー値にする
         augus_stock_detail.augus_unreserved_putback_status = status
@@ -686,13 +690,13 @@ class AugusPutbackImporter(object):
         return augus_stock_info
 
     def __get_augus_stock_info_of_unreserved_seat(self, augus_performance, record):
+        # 自由席のAugusStockInfoは席種コード単位で生成される
         augus_stock_info_list = AugusStockInfo.query\
             .join(AugusTicket,
                   AugusTicket.id == AugusStockInfo.augus_ticket_id) \
             .options(contains_eager(AugusStockInfo.augus_ticket)) \
             .filter(AugusTicket.augus_performance_id == augus_performance.id,
-                    AugusTicket.augus_seat_type_code == record.seat_type_code,
-                    AugusTicket.unit_value_code == record.unit_value_code)\
+                    AugusTicket.augus_seat_type_code == record.seat_type_code)\
             .all()
         if not augus_stock_info_list or len(augus_stock_info_list) != 1:
             # 連携・配券できていないケース or データ不整合 自由席だと一つのみのはず
