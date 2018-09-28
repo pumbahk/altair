@@ -44,6 +44,16 @@ class OrderLikeValidationFailure(Exception):
         return self.args[1]
 
 
+class SilentOrderLikeValidationFailure(OrderLikeValidationFailure):
+    def __init__(self, message, path, message_to_users=None):
+        self._message_to_users = message_to_users if message_to_users else message
+        super(SilentOrderLikeValidationFailure, self).__init__(message, path)
+
+    @property
+    def message_to_users(self):
+        return self._message_to_users
+
+
 class CancellationValidationFailure(Exception):
     """キャンセル出来ない状態にあるときに発生させる例外
     """
