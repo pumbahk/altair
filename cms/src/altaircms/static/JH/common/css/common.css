@@ -3029,7 +3029,7 @@ a {
   }
   .calender-box .bx-controls-direction a {
     font-size: 12px;
-    color: #ae767c;
+    color: #fff;
     position: absolute;
     top: 95px;
     letter-spacing: 2px;
@@ -3136,7 +3136,7 @@ a {
     font-weight: bold;
   }
   .calender-block .month-ttl .num {
-    font-size: 50px;
+    font-size: 26px;
     font-family: "futura-pt", sans-serif;
   }
   .calender-block .month-ttl.bottom {
@@ -3162,9 +3162,7 @@ a {
     text-align: center;
   }
   .calender-tbl th.date .day {
-    font-size: 18px;
-    font-family: "abolition",sans-serif;
-    letter-spacing: 2px;
+    font-size: 12px;
   }
   .calender-tbl th.date .week {
     display: none;
@@ -3518,7 +3516,7 @@ a {
   }
   header .hbg .humberger-menu-wrap ul.humberger-menu-list-box li.show-sub-menu .sub-menu a {
     color: #FFFFFF;
-    color: rgba(255, 255, 255, 0.7);
+    color: rgba(255, 255, 255);
     display: block;
     padding: 10px 0px 10px 20px;
   }
