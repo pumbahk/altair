@@ -529,8 +529,8 @@ class PerformanceResaleSegmentForm(OurForm):
         format='%Y-%m-%d %H:%M',
         widget=OurDateTimeWidget(),
     )
-    resale_performance_id = OurIntegerField(
-        label=u'リセール公演ID',
+    resale_performance_code = TextField(
+        label=u'リセール公演コード',
         validators=[Optional()],
     )
 
