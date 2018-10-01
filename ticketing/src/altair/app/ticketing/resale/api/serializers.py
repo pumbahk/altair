@@ -9,7 +9,7 @@ from ..models import ResaleSegment, ResaleRequest
 
 class ResaleSegmentSerializer(Schema):
     __model__ = ResaleSegment
-    id = fields.Integer()
+    id = fields.Integer(load_from='resale_segment_id')
     performance_id = fields.Integer()
     reception_start_at = fields.DateTime('%Y-%m-%d %H:%M:%S',
                                          required=True,
@@ -86,22 +86,19 @@ class ResaleSegmentSerializer(Schema):
             if _reception_start_at < _start_on:
                 raise ValidationError(u'申込開始日時を販売開始日時の後にしてください', ['reception_start_at'])
 
-
-
-
     @validates_schema
     def validate_resale_performance_id_exist(self, data):
 
-        resale_segment_id = data.get('resale_segment_id')
+        resale_segment_id = data.get('id')
         performance_id = data.get('performance_id')
         resale_performance_id = data.get('resale_performance_id')
 
         if resale_performance_id:
             if ResaleSegment.query \
-                    .filter_by(id=resale_segment_id) \
+                    .filter(ResaleSegment.id != resale_segment_id) \
                     .filter_by(resale_performance_id=resale_performance_id).count() > 0:
                 raise ValidationError(
-                    u'登録したいリセール公演の公演（ID: {}）はすでに他のリセール区分に登録されています。'.format(data['performance_id']),
+                    u'登録したいリセール公演の公演はすでに他のリセール区分に登録されています。'.format(data['resale_performance_id']),
                     ['resale_performance_id'])
 
             try:
@@ -113,7 +110,7 @@ class ResaleSegmentSerializer(Schema):
                 p_resale = Performance.query.filter_by(id=resale_performance_id).one()
             except:
                 raise ValidationError(
-                    u'登録したいリセール公演の公演（ID: {}）は存在していません。'.format(resale_performance_id),
+                    u'登録したいリセール公演の公演は存在していません。'.format(resale_performance_id),
                     ['resale_performance_id'])
 
             if p.event.organization.id != p_resale.event.organization.id:
