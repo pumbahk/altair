@@ -1,13 +1,13 @@
 <%inherit file="../base.html" />
 
 <main>
+  %if request.organization.setting.i18n:
+    <div class="selectwrapper">
+      ${h.create_url(request) |n}
+    </div>
+  % endif
   <div id="content">
     <div class="wrap-content">
-      %if request.organization.setting.i18n:
-        <div class="selectwrapper">
-          ${h.create_url(request) |n}
-        </div>
-      % endif
       <h2 class="heading heading-primary">${_(u'マイページ')}</h2>
       <div class="confirm-item">
         <h3 class="fWB mgb5 f120">${_(u'購入履歴照会')}</h3>
