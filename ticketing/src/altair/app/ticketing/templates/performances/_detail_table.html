@@ -24,12 +24,11 @@
     </tr>
     <tr>
       <th>終演</th>
-      ## styleを指定しないと下部の枠線だけ消えた状態になってしまう
-      <td style="border-bottom: 1px solid #dcdcdc;">${vh.datetime(performance.end_on, with_weekday=True)}</td>
+      <td>${vh.datetime(performance.end_on, with_weekday=True)}</td>
     </tr>
     <tr>
       <th>配券元</th>
-      <td>${performance.account.name if performance.account else performance.event.account.name}</td>
+      <td colspan="7">${performance.account.name if performance.account else performance.event.account.name}</td>
     </tr>
     <tr>
       <th>公演名副題</th>
