@@ -9,13 +9,13 @@ if not locale:
 
 
 <main>
+  %if request.organization.setting.i18n:
+    <div class="selectwrapper">
+      ${h.create_url(request) |n}
+    </div>
+  % endif
   <div id="content">
     <div class="wrap-content">
-      %if request.organization.setting.i18n:
-        <div class="selectwrapper">
-          ${h.create_url(request) |n}
-        </div>
-      % endif
       <h2 class="heading heading-primary">${__(u'受付履歴確認 検索結果')}</h2>
       <div class="confirm-item">
         <h3 class="fWB mgb5 f120">${__(u'受付番号')}</h3>

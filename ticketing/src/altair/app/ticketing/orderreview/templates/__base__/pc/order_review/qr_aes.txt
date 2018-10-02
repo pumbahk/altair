@@ -15,16 +15,6 @@ Venue: ${performance.venue.name}
 日付: ${h.performance_datetime(performance)}
 Date: ${h.performance_datetime(performance, True)}
 
-%if product:
-席種: ${product.name}
-Seat type: ${product.name}
-%endif
-%if seat:
-席番号: ${seat.name}
-Seat Number: ${seat.name}
-%endif
-
-↓こちらからQRチケットを取得してください。
 ${url}
 
 このメールには返信できません。

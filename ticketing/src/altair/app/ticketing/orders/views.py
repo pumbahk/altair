@@ -103,7 +103,7 @@ from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.orders.events import notify_order_canceled
 from altair.app.ticketing.payments.payment import Payment
 from altair.app.ticketing.payments.api import get_payment_plugin, lookup_plugin, get_delivery_plugin, validate_order_like
-from altair.app.ticketing.payments.exceptions import OrderLikeValidationFailure
+from altair.app.ticketing.payments.exceptions import OrderLikeValidationFailure, SilentOrderLikeValidationFailure
 from altair.app.ticketing.payments import plugins as payments_plugins
 from altair.app.ticketing.tickets.utils import build_dicts_from_ordered_product_item
 from altair.app.ticketing.cart import api
@@ -1979,7 +1979,7 @@ class OrderDetailView(OrderBaseView):
             raise HTTPBadRequest(body=json.dumps({
                 'message': u'不正なデータです',
             }))
-        
+
         orion_phone_list = self.request.params.getall('orion-ticket-phone')
         orion_phone_errors = verify_orion_ticket_phone(orion_phone_list)
 
@@ -2424,6 +2424,9 @@ class OrdersReserveView(OrderBaseView):
         except InnerCartSessionException as e:
             logger.exception("oops :%s" % e)
             self.context.raise_error(u'エラーが発生しました。もう一度選択してください。')
+        except SilentOrderLikeValidationFailure as e:
+            logger.info("silent order like validation failure :%s" % e)
+            self.context.raise_error(e.message_to_users)
         except OrderLikeValidationFailure as e:
             logger.exception("oops :%s" % e)
             self.context.raise_error(e.message)
@@ -2612,6 +2615,8 @@ class OrdersEditAPIView(OrderBaseView):
                 continue
             if op.get('quantity') > 0:
                 sales_segments.add(long(op.get('sales_segment_id')))
+            if op.get('quantity') == 0 or not op.get('quantity'):
+                raise HTTPBadRequest(body=json.dumps(dict(message=u'個数の値が不正です')))
         order_data['ordered_products'] = op_data
         logger.info('sales_segments=%s' % sales_segments)
         if len(sales_segments) > 1:

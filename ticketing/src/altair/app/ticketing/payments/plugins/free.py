@@ -11,14 +11,14 @@ from altair.app.ticketing.orders.api import bind_attributes
 from altair.app.ticketing.payments.interfaces import IPaymentPlugin, IOrderPayment
 from altair.app.ticketing.cart.interfaces import ICartPayment
 from altair.app.ticketing.mails.interfaces import (
-    ICompleteMailResource, 
+    ICompleteMailResource,
     IOrderCancelMailResource,
     ILotsAcceptedMailResource,
     ILotsElectedMailResource,
     ILotsRejectedMailResource,
     )
 
-from ..exceptions import OrderLikeValidationFailure
+from ..exceptions import SilentOrderLikeValidationFailure
 
 from . import FREE_PAYMENT_PLUGIN_ID as PAYMENT_PLUGIN_ID
 from .helpers import get_payment_method_info
@@ -66,7 +66,9 @@ class FreePaymentPlugin(object):
 
     def validate_order(self, request, order_like, update=False):
         if order_like.total_amount != 0:
-            raise OrderLikeValidationFailure(u'total_amount is not zero', 'order.total_amount')
+            raise SilentOrderLikeValidationFailure(u'total_amount is not zero',
+                                                   'order.total_amount',
+                                                   u'合計金額が0円ではないため、この決済方法は使用できません。')
 
     def validate_order_cancellation(self, request, order, now):
         """ キャンセルバリデーション """
