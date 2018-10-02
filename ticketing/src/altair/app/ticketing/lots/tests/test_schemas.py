@@ -17,6 +17,12 @@ class ClientFormTests(unittest.TestCase):
         return MultiDict(kwargs)
 
     def test_invalid(self):
+        context = testing.DummyResource(
+            request=testing.DummyRequest(
+                organization=testing.DummyModel(code=u"RT"),
+            ),
+            cart_setting=testing.DummyModel(type=u"fc"),
+        )
         data = self._params(
             last_name=u'テスト',
             last_name_kana=u'テスト',
@@ -35,13 +41,19 @@ class ClientFormTests(unittest.TestCase):
             email_2=u"test2@example.com",
             #email_2_confirm=u"test2@example.com",
         )
-        target = self._makeOne(formdata=data, context=testing.DummyResource(request=DummyRequest()))
+        target = self._makeOne(formdata=data, context=context)
         self.assertFalse(target.validate())
         self.assertIn('tel_1', target.errors)
         self.assertIn('email_1', target.errors)
         self.assertIn('email_2', target.errors)
 
     def test_it(self):
+        context = testing.DummyResource(
+            request=testing.DummyRequest(
+                organization=testing.DummyModel(code=u"RT"),
+            ),
+            cart_setting=testing.DummyModel(type=u"fc"),
+        )
         data = self._params(**{
             "last_name": u'テスト',
             "last_name_kana": u'テスト',
@@ -63,6 +75,6 @@ class ClientFormTests(unittest.TestCase):
             "birthday.month": u"01",
             "birthday.day": u"01",
             })
-        target = self._makeOne(formdata=data, context=testing.DummyResource(request=DummyRequest()))
+        target = self._makeOne(formdata=data, context=context)
         result = target.validate()
         self.assertTrue(result)
