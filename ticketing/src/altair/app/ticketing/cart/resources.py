@@ -27,7 +27,7 @@ from ..discount_code.models import UsedDiscountCodeCart, DiscountCodeCode
 from ..discount_code import api as discount_api
 from . import models as m
 from . import api as cart_api
-from .exceptions import NoCartError, DeletedProductError, InvalidCSRFTokenException
+from .exceptions import NoCartError, DeletedProductError, DifferentPdmpError, InvalidCSRFTokenException
 from .interfaces import (
     ICartResource,
     ICartPayment,
@@ -427,6 +427,18 @@ class TicketingCartResourceBase(object):
             if not carted_product.product:
                 logger.info(u"Product is deleted. CartID = {0}".format(cart.id))
                 raise DeletedProductError(u"こちらの商品は現在ご購入いただけません。")
+
+    def check_pdmp(self, cart):
+        # TKT-6483 不正な遷移で使用できない決済引取方法を選択してしまっている場合エラーにする
+        if not cart.payment_delivery_method_pair_id:
+            # ここに入る場合は決済引取方法が決まる前
+            return True
+
+        for pair in self.available_payment_delivery_method_pairs(cart.sales_segment):
+            if pair.id == cart.payment_delivery_method_pair_id:
+                return True
+        logger.info(u"PDMP that does not exist in the sales division is linked. CartID = {0}".format(cart.id))
+        raise DifferentPdmpError(u"不正な遷移です。もういちどお試しください。")
 
     def get_product_price_map_dict(self, cart):
         product_price_map_dict = {}

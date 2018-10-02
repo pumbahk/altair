@@ -1121,6 +1121,7 @@ class PaymentView(object):
         sales_segment = self.context.sales_segment
         cart = self.context.read_only_cart
         self.context.check_deleted_product(cart)
+        self.context.check_pdmp(cart)
         self.context.check_order_limit(cart)
 
         payment_delivery_methods = self.get_payment_delivery_method_pairs(sales_segment)
@@ -1266,6 +1267,7 @@ class PaymentView(object):
         """
         cart = self.context.cart
         self.context.check_deleted_product(cart)
+        self.context.check_pdmp(cart)
         user = api.get_or_create_user(self.context.authenticated_user())
         if user is not None:
             # 一旦ここでポイント口座をセットする
@@ -1485,6 +1487,7 @@ class DiscountCodeEnteringView(object):
             return HTTPFound(self.request.route_path('cart.payment', sales_segment_id=sales_segment_id))
 
         self.context.check_deleted_product(cart)
+        self.context.check_pdmp(cart)
         sorted_cart_product_items = self.context.sorted_carted_product_items(cart)
 
         csrf_form = schemas.CSRFSecureForm(csrf_context=self.request.session)
@@ -1504,6 +1507,7 @@ class DiscountCodeEnteringView(object):
         self.context.upper_code()  # 入力されたコードの大文字化
         cart = self.context.read_only_cart
         self.context.check_deleted_product(cart)
+        self.context.check_pdmp(cart)
         sales_segment_id = self.request.matchdict["sales_segment_id"]
         stripped = map(lambda c: c.strip(), self.request.POST.getall('code'))  # 前後の空白の削除
         code_str_list = [code for code in stripped if len(code)]  # 文字入力のあったフォームのみリスト化
@@ -1550,6 +1554,7 @@ class PointAccountEnteringView(object):
     def point(self):
         cart = self.context.read_only_cart
         self.context.check_deleted_product(cart)
+        self.context.check_pdmp(cart)
         if cart.payment_delivery_pair is None or cart.shipping_address is None:
             # 不正な画面遷移
             raise NoCartError()
@@ -1593,6 +1598,7 @@ class PointAccountEnteringView(object):
 
         cart = self.context.read_only_cart
         self.context.check_deleted_product(cart)
+        self.context.check_pdmp(cart)
         if cart.payment_delivery_pair is None or cart.shipping_address is None:
             # 不正な画面遷移
             raise NoCartError()
@@ -1641,6 +1647,7 @@ class ConfirmView(object):
         form = schemas.CSRFSecureForm(csrf_context=self.request.session)
         cart = self.context.cart
         self.context.check_deleted_product(cart)
+        self.context.check_pdmp(cart)
         if cart.shipping_address is None:
             raise InvalidCartStatusError(cart.id)
 
