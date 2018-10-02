@@ -88,6 +88,42 @@
   .login-member-page .login-team-fukushima .btn-team {
     background: #ec008d;
   }
+  .login-member-page .login-five-star .sub-ttl {
+    color: #231815;
+  }
+  .login-member-page .login-five-star .btn-team {
+    background: #231815;
+  }
+  .login-member-page .login-four-star .sub-ttl {
+    color: #7d001a;
+  }
+  .login-member-page .login-four-star .btn-team {
+    background: #7d001a;
+  }
+  .login-member-page .login-three-star .sub-ttl {
+    color: #b8a25d;
+  }
+  .login-member-page .login-three-star .btn-team {
+    background: #b8a25d;
+  }
+  .login-member-page .login-two-star .sub-ttl {
+    color: #898989;
+  }
+  .login-member-page .login-two-star .btn-team {
+    background: #898989;
+  }
+  .login-member-page .login-kids-star .sub-ttl {
+    color: #f6ac19;
+  }
+  .login-member-page .login-kids-star .btn-team {
+    background: #f6ac19;
+  }
+  .login-member-page .login-academy .sub-ttl {
+    color: #4ab134;
+  }
+  .login-member-page .login-academy .btn-team {
+    background: #4ab134;
+  }
 
 
 @media screen and (min-width: 768px) {
@@ -494,34 +530,9 @@
     border: solid 1px #ff0000;
 }
 .orderreview-list-page .orderreview-list-wrap .orderreview-list li .orderreview-tbl th .sate-list .done-payment{
-    background: #f07676;
-    color:#fff;
-    border: solid 1px #f07676;
-}
-.orderreview-list-page .orderreview-list-wrap .orderreview-list li .orderreview-tbl th .sate-list .cancel-refund{
-    background: #75bd0c;
-    color:#fff;
-    border: solid 1px #75bd0c;
-}
-.orderreview-list-page .orderreview-list-wrap .orderreview-list li .orderreview-tbl th .sate-list .done-refund{
-    background: #75bd0c;
-    color:#fff;
-    border: solid 1px #75bd0c;
-}
-.orderreview-list-page .orderreview-list-wrap .orderreview-list li .orderreview-tbl th .sate-list .done-send{
     background: #959595;
     color: #fff;
     border: solid 1px #959595;
-}
-.orderreview-list-page .orderreview-list-wrap .orderreview-list li .orderreview-tbl th .sate-list .done-delivery{
-    background: #f94e4e;
-    color:#fff;
-    border: solid 1px #f94e4e;
-}
-.orderreview-list-page .orderreview-list-wrap .orderreview-list li .orderreview-tbl th .sate-list .done-receipt{
-    background: #37bdde;
-    color:#fff;
-    border: solid 1px #37bdde;
 }
 .orderreview-list-page .orderreview-list-wrap .orderreview-list li .orderreview-tbl td{}
 .orderreview-list-page .orderreview-list-wrap .orderreview-list li .orderreview-tbl .payment-detail{
@@ -994,34 +1005,9 @@ opacity: .7;
     border: solid 1px #ff0000;
 }
 .orderreview-list-page .orderreview-list-wrap .orderreview-list li .orderreview-tbl th .sate-list .done-payment{
-    background: #f07676;
-    color:#fff;
-    border: solid 1px #f07676;
-}
-.orderreview-list-page .orderreview-list-wrap .orderreview-list li .orderreview-tbl th .sate-list .cancel-refund{
-    background: #75bd0c;
-    color:#fff;
-    border: solid 1px #75bd0c;
-}
-.orderreview-list-page .orderreview-list-wrap .orderreview-list li .orderreview-tbl th .sate-list .done-refund{
-    background: #75bd0c;
-    color:#fff;
-    border: solid 1px #75bd0c;
-}
-.orderreview-list-page .orderreview-list-wrap .orderreview-list li .orderreview-tbl th .sate-list .done-send{
     background: #959595;
     color: #fff;
     border: solid 1px #959595;
-}
-.orderreview-list-page .orderreview-list-wrap .orderreview-list li .orderreview-tbl th .sate-list .done-delivery{
-    background: #f94e4e;
-    color:#fff;
-    border: solid 1px #f94e4e;
-}
-.orderreview-list-page .orderreview-list-wrap .orderreview-list li .orderreview-tbl th .sate-list .done-receipt{
-    background: #37bdde;
-    color:#fff;
-    border: solid 1px #37bdde;
 }
 .orderreview-list-page .orderreview-list-wrap .orderreview-list li .orderreview-tbl td{}
 .orderreview-list-page .orderreview-list-wrap .orderreview-list li .orderreview-tbl .payment-detail{
@@ -1125,7 +1111,6 @@ opacity: .7;
     width: 120px;
   }
 }
-
 
   /*--------------------------------------------
     MAIL MAGAZINE
