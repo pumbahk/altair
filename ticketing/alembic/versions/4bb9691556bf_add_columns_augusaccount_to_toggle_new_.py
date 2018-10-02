@@ -1,14 +1,14 @@
 """Add columns AugusAccount to toggle new functions
 
 Revision ID: 4bb9691556bf
-Revises: 2a5de84a8bb0
+Revises: 4dee681121d2
 Create Date: 2018-08-21 15:37:06.119312
 
 """
 
 # revision identifiers, used by Alembic.
 revision = '4bb9691556bf'
-down_revision = '2a5de84a8bb0'
+down_revision = '4dee681121d2'
 
 from alembic import op
 import sqlalchemy as sa
