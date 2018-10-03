@@ -12,7 +12,8 @@ from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.events.tickets.merging import TicketVarsCollector, emit_to_another_template
 from altair.app.ticketing.payments.plugins.famiport import get_template_name_from_ticket_format
 from altair.app.ticketing.payments.plugins.famiport import FamiPortTicketTemplate
-from . import forms
+from . import forms, api
+from altair.app.ticketing.orders.api import send_task_notify_update_ticket_info
 
 import logging
 logger = logging.getLogger(__name__)
@@ -174,6 +175,46 @@ class BundleView(BaseView):
         self.request.session.flash(u'チケット券面構成(TicketBundle)がコピーされました')
         return HTTPFound(self.request.route_path("events.tickets.bundles.show",
                                                  event_id=event.id, bundle_id=new_bundle.id))
+
+    @view_config(route_name='events.tickets.bundles.refresh_order', request_method="GET",
+                 renderer="altair.app.ticketing:templates/tickets/events/_refresh_order.html")
+    def refresh_order(self):
+        bundle = self.context.bundle
+        event = self.context.event
+        form = forms.BundleForm(event_id=event.id, name=u"券面構成「{}」の更新通知".format(bundle.name))
+        next_to = self.request.route_path("events.tickets.bundles.refresh_order", bundle_id=bundle.id, event_id=event.id)
+        return dict(form=form, event=event, bundle=bundle, next_to=next_to)
+
+    @view_config(route_name="events.tickets.bundles.refresh_order", request_method="POST")
+    def refresh_order_post(self):
+        bundle = self.context.bundle
+        event = self.context.event
+        location = self.request.route_path("events.tickets.index", event_id=event.id)
+        form = forms.BundleForm(event_id=event.id,
+                                formdata=self.request.POST)
+
+        form.tickets.validators = []
+        if not form.validate():
+            self.request.session.flash(u'{}'.format(form.errors))
+        else:
+            try:
+                send_task_notify_update_ticket_info(self.request, bundle.id)
+                api.delete_old_task_history(self.request, bundle.id)
+                self.request.session.flash(u'「{}」にSEJ / FMの未発券予約への更新通知を開始しました。'.format(bundle.name))
+
+            except Exception as err:
+                logger.error(u'error occured while sending refresh_order task to worker: {}'.format(err.message))
+                self.request.session.flash(u'システムエラーが発生しました。開発チームにご連絡ください。')
+
+        return HTTPFound(location=location)
+
+    @view_config(route_name='events.tickets.bundles.refresh_order_error', request_method="GET",
+                 renderer="altair.app.ticketing:templates/tickets/events/_refresh_order_error.html")
+    def refresh_order_error(self):
+        bundle = self.context.bundle
+        event = self.context.event
+        task = self.context.notify_update_ticket_info_task
+        return dict(event=event, bundle=bundle, task=task)
 
 
     @view_config(route_name='events.tickets.bundles.delete', request_method="GET",

@@ -1,0 +1,44 @@
+<%namespace file="/common/helpers.html" import="form_item"/>
+
+<div class="modal-header">
+  <button type="button" class="close" data-dismiss="modal">×</button>
+  % if bundle.not_issued_sej_fm_order_cnt > 0:
+    <h3>確認</h3>
+  % else:
+    <h3>対象となる予約がありません</h3>
+  % endif
+</div>
+
+<form action="${next_to}" method="POST">
+  <div class="modal-body">
+    % if bundle.not_issued_sej_fm_order_cnt > 0:
+      <p>SEJ / FMの未発券予約に<span class="text-info">${form.name.data}</span>を行います。<br/>
+        よろしいですか？
+      </p>
+      <input type="hidden" name="bundle_id" value="${bundle.id}">
+      <input type="hidden" name="name" value="${bundle.name}">
+      <h5>実行される処理内容</h5>
+      <p>選択された券面構成に紐づく複数予約へ、以下と同等の処理が実行されます。</p>
+      <ul>
+        <li>予約情報編集画面で編集ボタンを押す。</li>
+        <li>登録内容を何も変更せず「保存」ボタンを押す。</li>
+        <li>予約内容が更新され、SEJ / FMに現在のAltairの登録内容で通知が行われる。</li>
+      </ul>
+      <p><i class="icon-check"></i>&nbsp;正常に更新通知が行われた予約には、予約情報画面のメモ欄に通知日時が追記されます。</p>
+    % else:
+      <p><span class="text-info">${form.name.data}</span>が必要な未発券予約は現在ありません。</p>
+    % endif
+    <h5>未発券予約の定義</h5>
+    <ul>
+      <li>受け取り方法がセブンイレブンかファミリーマート。</li>
+      <li>キャンセルされていない。</li>
+      <li>発券期日以内である。</li>
+    </ul>
+  </div>
+  <div class="modal-footer">
+    <a href="#" class="btn" data-dismiss="modal">キャンセル</a>
+    % if bundle.not_issued_sej_fm_order_cnt > 0:
+      <button type="submit" class="btn">通知</button>
+    % endif
+  </div>
+</form>

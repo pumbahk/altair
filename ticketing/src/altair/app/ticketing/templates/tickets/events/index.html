@@ -2,37 +2,41 @@
 <%namespace file="/common/helpers.html" name="ch" />
 
 <%block name="breadcrumbs">
-${ch.breadcrumbs(
+  ${ch.breadcrumbs(
   names=[u'イベント', event.title, u'券面'],
   urls=[request.route_path('events.index'), request.route_path('events.show', event_id=event.id)]
-)}
+  )}
 </%block>
 
 <%def name="cover_print_label(cover_print)">
-% if cover_print:
-  <span>する</span>
-% else:
-  <span>しない</span>
-% endif
+  % if cover_print:
+    <span>する</span>
+  % else:
+    <span>しない</span>
+  % endif
 </%def>
 
 <style type="text/css">
-  h3 {margin-top: 20px;  }
+  h3 {
+    margin-top: 20px;
+  }
 </style>
 <script>
-  $(function(){
-    $("a.id-action").click(  
-      function() {
-        var form = $(this).closest('form'); 
-        var pk = form.find("input:radio:checked, input:checkbox:checked").val();
-        if(!pk){ return false; }
-        $(this).attr("href", $(this).attr("href").replace("__id__", pk));
-        return true;
-    });
+  $(function() {
+    $('a.id-action').click(
+            function() {
+              var form = $(this).closest('form');
+              var pk = form.find('input:radio:checked, input:checkbox:checked').val();
+              if (!pk) {
+                return false;
+              }
+              $(this).attr('href', $(this).attr('href').replace('__id__', pk));
+              return true;
+            });
 
-   $("a.ajax-modal[data-toggle=modal]").click(function(){
-      $($(this).attr("data-target")).load($(this).attr("href"));
-   });
+    $('a.ajax-modal[data-toggle=modal]').click(function() {
+      $($(this).attr('data-target')).load($(this).attr('href'));
+    });
   });
 </script>
 
@@ -41,60 +45,64 @@ ${ch.breadcrumbs(
 
 <div class="page-header">
   %if event:
-  <h1>${event.title}</h1>
+    <h1>${event.title}</h1>
   %endif
   <h1>券面</h1>
 </div>
 
 <div class="message">
-<p>この操作は商品を作成する前に行ってください。商品作成時に券面と商品が結びつけられます。</p>
-<p>
-  1. イベントにチケット券面(Ticket)を割り当ててください。(主券、副券..など)<br/>
-  2. チケット券面(Ticket)を割り当てたら、チケット券面構成(TicketBundle)を作成してください。(「主券のみ」,「主券+副券」など)<br/>
-  3. 必要に応じて、作成したチケット券面構成(TicketBundle)に属性(TicketBundleAttribute)を追加してください。
-</p>
+  <p>この操作は商品を作成する前に行ってください。商品作成時に券面と商品が結びつけられます。</p>
+  <p>
+    1. イベントにチケット券面(Ticket)を割り当ててください。(主券、副券..など)<br/>
+    2. チケット券面(Ticket)を割り当てたら、チケット券面構成(TicketBundle)を作成してください。(「主券のみ」,「主券+副券」など)<br/>
+    3. 必要に応じて、作成したチケット券面構成(TicketBundle)に属性(TicketBundleAttribute)を追加してください。
+  </p>
 </div>
 
 <form id="tickets">
   <h3>1. チケット券面(Ticket)</h3>
 
-%if tickets.count() > 0:
-  <table class="table fullwidth checkboxed_table">
-    <thead>
+  %if tickets.count() > 0:
+    <table class="table fullwidth checkboxed_table">
+      <thead>
       <tr>
-      <th class="minwidth"></th>
-      <th><a href="#" class="sortable">名前</a></th>
-      <th><a href="#" class="sortable">ファイル名</a></th>
-      <th><a href="#" class="sortable">チケット様式</a></th>
-      <th><a href="#" class="sortable">発券種別</a></th>
-      <th><a href="#" class="sortable">表紙印刷</a></th>
-      <th><a href="#" class="sortable">更新日時</a></th>
-      <th><a href="#" class="sortable">作成日時</a></th>
+        <th class="minwidth"></th>
+        <th><a href="#" class="sortable">名前</a></th>
+        <th><a href="#" class="sortable">ファイル名</a></th>
+        <th><a href="#" class="sortable">チケット様式</a></th>
+        <th><a href="#" class="sortable">発券種別</a></th>
+        <th><a href="#" class="sortable">表紙印刷</a></th>
+        <th><a href="#" class="sortable">更新日時</a></th>
+        <th><a href="#" class="sortable">作成日時</a></th>
       </tr>
-    </thead>
-    <tbody>
-	% for ticket in tickets:
-      <tr>
-        <td><input type="radio" name="ticket_id" value="${ticket.id}" /></td>
-        <td id="ticket:${ticket.id}"><a href="${request.route_path("events.tickets.boundtickets.show", event_id=event.id, id=ticket.id)}">${ticket.name}</a></td>
-        <td>${ticket.filename}</td>
-        <td><a href="${request.route_path("tickets.ticketformats.show", id=ticket.ticket_format.id)}">${ticket.ticket_format.name}</a></td>
-        <td>${u"主券" if ticket.principal else u"副券"}</td>
-        <td>${cover_print_label(ticket.cover_print)}</td>
-        <td>${ticket.updated_at}</td>
-        <td>${ticket.created_at}</td>
-      </tr>
-	% endfor
-    </tbody>
-  </table>
-%endif
+      </thead>
+      <tbody>
+        % for ticket in tickets:
+          <tr>
+            <td><input type="radio" name="ticket_id" value="${ticket.id}"/></td>
+            <td id="ticket:${ticket.id}">
+              <a href="${request.route_path("events.tickets.boundtickets.show", event_id=event.id, id=ticket.id)}">${ticket.name}</a>
+            </td>
+            <td>${ticket.filename}</td>
+            <td>
+              <a href="${request.route_path("tickets.ticketformats.show", id=ticket.ticket_format.id)}">${ticket.ticket_format.name}</a>
+            </td>
+            <td>${u"主券" if ticket.principal else u"副券"}</td>
+            <td>${cover_print_label(ticket.cover_print)}</td>
+            <td>${ticket.updated_at}</td>
+            <td>${ticket.created_at}</td>
+          </tr>
+        % endfor
+      </tbody>
+    </table>
+  %endif
 
   <div class="row-fluid well">
     <div class="btn-group">
-      <a href="${request.route_path("events.tickets.api.ticketform",event_id=event.id)}" 
-       data-toggle="modal" data-target="#AjaxModal"
-       class="btn ajax-modal"
-       style="margin-right: 10px;">
+      <a href="${request.route_path("events.tickets.api.ticketform",event_id=event.id)}"
+         data-toggle="modal" data-target="#AjaxModal"
+         class="btn ajax-modal"
+         style="margin-right: 10px;">
         <i class="icon-plus"></i> チケット券面追加
       </a>
       <!--
@@ -123,73 +131,118 @@ ${ch.breadcrumbs(
   </div>
 </form>
 
+<% from altair.app.ticketing.orders.models import NotifyUpdateTicketInfoTaskEnum%>
 <form id="ticket-bundle">
   <h3>2. チケット券面構成(TicketBundle)</h3>
 
-%if bundles.count() > 0:
-  <table class="table fullwidth checkboxed_table">
-    <thead>
+  %if bundles.count() > 0:
+    <table class="table fullwidth checkboxed_table">
+      <thead>
       <tr>
-      <th class="span1"></th>
-      <th class="span2"><a href="#" class="sortable">名前</a></th>
-      <th class="span2"><a href="#" class="sortable">チケット券面(Ticket)</a></th>
-      <th class="span11"><a href="#" class="sortable">属性(TicketBundleAttribute)</a></th>
+        <th class="span1"></th>
+        <th class="span1"><a href="#" class="sortable">名前</a></th>
+        <th class="span2"><a href="#" class="sortable">チケット券面(Ticket)</a></th>
+        <th class="span3"><a href="#" class="sortable">属性(TicketBundleAttribute)</a></th>
+        <th class="span1"><a href="#" class="sortable">更新日時</a></th>
+        <th class="span1"><a href="#" class="sortable">作成日時</a></th>
+        <th class="span1"><a href="#" class="sortable">SEJ / FM更新通知日時</a></th>
       </tr>
-    </thead>
-    <tbody>
-	% for bundle in bundles:
-      <tr>
-        <td><input type="radio" name="id" value="${bundle.id}"/></td>
-        <td><a href="${request.route_path("events.tickets.bundles.show",bundle_id=bundle.id, event_id=event.id)}"
-             >${bundle.name}</a>
-        </td>
-        <td>
-          <ul>
-            %for ticket in bundle.tickets:
-            <li><a href="#ticket:${ticket.id}">${ticket.name}</a></li>
-            %endfor		  
-          </ul>
-        </td>
-        <td>
-          <ul>
-            %for attribute in sorted(bundle.attributes_.itervalues(), key=lambda a: a.name):
-            <li>${attribute.name}: ${attribute.value}</li>
-            %endfor		  
-          </ul>
-        </td>
-      </tr>
-	% endfor
-    </tbody>
-  </table>
-%endif
-※表紙を印刷しない場合は、紐付いているチケット券面の表紙を全て、印刷しない設定にしてください。
+      </thead>
+      <tbody>
+        % for bundle in bundles:
+          <tr>
+            <td><input type="radio" name="id" value="${bundle.id}"/></td>
+            <td>
+              <a href="${request.route_path("events.tickets.bundles.show",bundle_id=bundle.id, event_id=event.id)}">${bundle.name}</a>
+            </td>
+            <td>
+              <ul>
+                %for ticket in bundle.tickets:
+                  <li><a href="#ticket:${ticket.id}">${ticket.name}</a></li>
+                %endfor
+              </ul>
+            </td>
+            <td>
+              <ul>
+                %for attribute in sorted(bundle.attributes_.itervalues(), key=lambda a: a.name):
+                  <li>${attribute.name}: ${attribute.value}</li>
+                %endfor
+              </ul>
+            </td>
+            <td>${bundle.updated_at}</td>
+            <td>${bundle.created_at}</td>
+            <td>
+              %if bundle.not_issued_sej_fm_order_cnt > 0:
+                <p>
+                  未発券予約数: ${bundle.not_issued_sej_fm_order_cnt}
+                </p>
+              %endif
+              %if bundle.notification_tasks:
+                % for task in bundle.notification_tasks:
+                  <dl>
+                    <dt>タスクID: ${task.id}</dt>
+                    <dd${' class = text-error' if task.status == NotifyUpdateTicketInfoTaskEnum.failed.v[0] else ''}>
+                      ステータス: ${''.join([enum.v[1] for enum in NotifyUpdateTicketInfoTaskEnum if enum.v[0] == task.status])}</dd>
+                    <dd>オペレーター:
+                      <a href="${request.route_path('operators.show', operator_id=task.operator.id)}" target="_blank">${task.operator.name}
+                        <i class="icon-share"></i></a></dd>
+                    <dd>開始: ${task.created_at}</dd>
+                    <dd>更新: ${task.updated_at}</dd>
+                    % if task.status == NotifyUpdateTicketInfoTaskEnum.failed.v[0]:
+                      <dd>
+                        <a href="${request.route_path("events.tickets.bundles.refresh_order_error", event_id=event.id, bundle_id=bundle.id, task_id=task.id)}"
+                           class="btn ajax-modal"
+                           data-toggle="modal"
+                           data-target="#AjaxModal"
+                           style="margin-top: 10px;">
+                          <i class="icon-exclamation-sign"></i> エラー詳細
+                        </a>
+                      </dd>
+                    % endif
+                  </dl>
+                % endfor
+              %endif
+            </td>
+          </tr>
+        % endfor
+      </tbody>
+    </table>
+  %endif
+  ※表紙を印刷しない場合は、紐付いているチケット券面の表紙を全て、印刷しない設定にしてください。
   <div class="row-fluid well">
     <div class="btn-group">
-      <a href="${request.route_path("events.tickets.api.bundleform",event_id=event.id)}" 
-       data-toggle="modal"
-       data-target="#AjaxModal"
-       class="btn ajax-modal"
-       style="margin-right: 10px;">
-      <i class="icon-plus"></i> チケット券面構成を追加
+      <a href="${request.route_path("events.tickets.api.bundleform",event_id=event.id)}"
+         data-toggle="modal"
+         data-target="#AjaxModal"
+         class="btn ajax-modal"
+         style="margin-right: 10px;">
+        <i class="icon-plus"></i> チケット券面構成を追加
       </a>
       <a href="${request.route_path("events.tickets.bundles.copy", bundle_id="__id__", event_id=event.id)}"
          class="id-action btn ajax-modal"
          data-toggle="modal"
          data-target="#AjaxModal"
          style="margin-right: 10px;">
-      <i class="icon-plus"></i> コピーして新規作成
+        <i class="icon-plus"></i> コピーして新規作成
       </a>
       <a href="${request.route_path("events.tickets.bundles.edit_attributes", bundle_id="__id__", event_id=event.id)}"
          class="id-action btn"
          style="margin-right: 10px;">
-      <i class="icon-edit"></i> 属性一括編集
+        <i class="icon-edit"></i> 属性一括編集
+      </a>
+      <a href="${request.route_path("events.tickets.bundles.refresh_order", bundle_id="__id__", event_id=event.id)}"
+         class="id-action btn ajax-modal"
+         data-toggle="modal"
+         data-target="#AjaxModal"
+         style="margin-right: 10px;">
+        <i class="icon-star"></i> 更新をSEJ / FMに通知
       </a>
       <a href="${request.route_path("events.tickets.bundles.delete", bundle_id="__id__", event_id=event.id)}"
          class="id-action ajax-modal btn btn-danger"
          data-toggle="modal"
          data-target="#AjaxModal"
          style="margin-right: 10px;">
-      <i class="icon-minus"></i> 削除
+        <i class="icon-minus"></i> 削除
       </a>
     </div>
   </div>

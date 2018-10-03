@@ -22,6 +22,8 @@ def includeme(config):
     add_route("events.tickets.bundles.edit", "/event/{event_id}/bundle/{bundle_id}/edit")
     add_route("events.tickets.bundles.edit_attributes", "/event/{event_id}/bundle/{bundle_id}/attributes")
     add_route("events.tickets.bundles.copy", "/event/{event_id}/bundle/{bundle_id}/copy")
+    add_route("events.tickets.bundles.refresh_order", "/event/{event_id}/bundle/{bundle_id}/refresh_order")
+    add_route("events.tickets.bundles.refresh_order_error", "/event/{event_id}/bundle/{bundle_id}/refresh_order_error/{task_id}")
     add_route("events.tickets.bundles.delete", "/event/{event_id}/bundle/{bundle_id}/delete")
     add_route("events.tickets.bundles.show", "/event/{event_id}/bundle/{bundle_id}")
 

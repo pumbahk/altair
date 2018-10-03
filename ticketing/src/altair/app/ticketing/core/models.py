@@ -22,11 +22,12 @@ from sqlalchemy.orm.collections import attribute_mapped_collection
 from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm.session import object_session
-from sqlalchemy.sql.expression import asc, desc, exists, select, table, column, case, null, alias, or_
+from sqlalchemy.sql.expression import asc, desc, exists, select, table, column, case, null, alias, or_, between
 from sqlalchemy.ext.associationproxy import association_proxy
 from zope.interface import implementer
 from altair.saannotation import AnnotatedColumn
 from pyramid.i18n import TranslationString as _
+from pyramid.decorator import reify
 
 from zope.deprecation import deprecation
 from altair.types import annotated_property
@@ -3690,6 +3691,70 @@ class TicketBundle(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         self.product_items = list()
         for product_item in news:
             self.product_items.append(product_item)
+
+    def not_issued_sej_fm_order_query(self):
+        """SEJ/FM未発券予約抽出クエリの共通部分作成"""
+        from altair.app.ticketing.payments.plugins import SEJ_DELIVERY_PLUGIN_ID, FAMIPORT_DELIVERY_PLUGIN_ID
+        from altair.app.ticketing.orders.models import Order, OrderedProduct, OrderedProductItem
+        now = datetime.now()
+        query = self.query.join(
+            ProductItem,
+            OrderedProductItem,
+            OrderedProduct,
+            Order,
+            PaymentDeliveryMethodPair,
+            DeliveryMethod,
+            DeliveryMethodPlugin
+        ).filter(
+            TicketBundle.id == self.id,
+            DeliveryMethodPlugin.id.in_([SEJ_DELIVERY_PLUGIN_ID, FAMIPORT_DELIVERY_PLUGIN_ID]),
+            Order.issuing_end_at >= now,
+            Order.issued_at.is_(None),
+            Order.canceled_at.is_(None)
+        ).order_by(
+            Order.id
+        )
+
+        return query
+
+    def not_issued_sej_fm_orders(self):
+        """SEJ/FM未発券予約の抽出実行"""
+        from altair.app.ticketing.orders.models import Order
+        query = self.not_issued_sej_fm_order_query()
+        orders = query.with_entities(Order).group_by(Order.id)
+
+        return orders
+
+    @reify
+    def not_issued_sej_fm_order_cnt(self):
+        """SEJ/FM未発券予約数のカウント"""
+        from sqlalchemy import distinct
+        from altair.app.ticketing.orders.models import Order
+
+        # func.count()を使っているので、必ず1レコード出力される
+        # 例外エラーは発生しない
+        query = self.not_issued_sej_fm_order_query()
+        result = query.with_entities(
+            func.count(distinct(Order.id)).label('order_count')
+        ).one()
+
+        return result.order_count
+
+    @reify
+    def notification_tasks(self):
+        """「更新をSEJ/FMに通知」処理実行結果の取得"""
+        from altair.app.ticketing.events.tickets.models import NotifyUpdateTicketInfoTask
+        tasks = self.query.join(
+            NotifyUpdateTicketInfoTask
+        ).with_entities(
+            NotifyUpdateTicketInfoTask
+        ).filter(
+            TicketBundle.id == self.id
+        ).order_by(
+            desc(NotifyUpdateTicketInfoTask.id)
+        ).all()
+
+        return tasks
 
     @staticmethod
     def create_from_template(template, **kwargs):
