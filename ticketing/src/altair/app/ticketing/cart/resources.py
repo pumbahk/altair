@@ -438,7 +438,7 @@ class TicketingCartResourceBase(object):
             if pair.id == cart.payment_delivery_method_pair_id:
                 return True
         logger.info(u"PDMP that does not exist in the sales division is linked. CartID = {0}".format(cart.id))
-        raise DifferentPdmpError(u"不正な遷移です。もういちどお試しください。")
+        raise DifferentPdmpError(u"不正な遷移です。もう一度最初からやり直してください。")
 
     def get_product_price_map_dict(self, cart):
         product_price_map_dict = {}
