@@ -110,7 +110,6 @@ protocol_attribute_type = {
     PutbackRequest: (
         ('event_code', NumberType),
         ('performance_code', NumberType),
-        ('distribution_code', NumberType),
         ('seat_type_code', NumberType),
         ('unit_value_code', NumberType),
         ('date', DateType),
@@ -125,6 +124,7 @@ protocol_attribute_type = {
         ('number', StringType),
         ('seat_type_classif', SeatTypeClassif),
         ('seat_count', NumberType),
+        ('putback_classif', StringType),
     ),
     PutbackResponse: (
         ('event_code', NumberType),
@@ -153,9 +153,6 @@ protocol_attribute_type = {
         ('performance_code', NumberType),
         ('date', DateType),
         ('start_on', HourMinType),
-        ('event_name', StringType),
-        ('performance_name', StringType),
-        ('venue_name', StringType),
     ),
     AchievementResponse: (
         ('event_code', NumberType),
