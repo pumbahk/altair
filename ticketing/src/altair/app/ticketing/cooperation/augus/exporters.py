@@ -7,6 +7,7 @@ import sqlalchemy as sa
 import itertools
 from StringIO import StringIO
 from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy.orm import contains_eager, aliased
 from pyramid.threadlocal import get_current_request
 from altair.sqlahelper import get_db_session
 from altair.app.ticketing.core.models import (
@@ -26,8 +27,10 @@ from altair.app.ticketing.core.models import (
     SeatStatus,
     SeatStatusEnum,
     AugusSeatStatus,
+    AugusUnreservedSeatStatus,
     AugusPerformance,
     AugusStockDetail,
+    Product,
     )
 from altair.app.ticketing.orders.models import (
     orders_seat_table,
@@ -47,11 +50,16 @@ from altair.augus.protocols import (
     DistributionSyncResponse,
     AchievementResponse,
     )
+from altair.augus.protocols.putback import PutbackWithNumberedTicketResponseRecord
+from altair.augus.protocols.achievement import AchievementWithNumberedTicketResponse
 from altair.augus.exporters import AugusExporter
 from .errors import (
     AugusDataExportError,
     DuplicateFileNameError,
     )
+from altair.augus.types import (
+    SeatTypeClassif,
+)
 logger = logging.getLogger(__name__)
 RETRY = 100
 
@@ -83,17 +91,24 @@ class AugusDistributionExporter(object):
 
 
 class AugusPutbackExporter(object):
-    def create_record(self, stock_detail):
+    def __init__(self):
+        self._slave_session = get_db_session(get_current_request(), name="slave")
+
+    def create_record(self, stock_detail, use_numbered_ticket_format=False, enable_unreserved_seat=False):
         ag_putback = stock_detail.augus_putback
         ag_stock_info = stock_detail.augus_stock_info
+        # 自由席offで自由席の返券はない想定。万一自由席のデータがあっても
+        # 後のag_seatがNone（自由席はAugusSeatを作らない）になりエラーが発生するので気づけるはず
+        # ....
+        # AugusStockDetailの席区分はなぜかintなのでstrに変換しないとSeatTypeClassifを取得できない。
+        stock_detail_seat_type_classif = str(stock_detail.seat_type_classif)
+        is_reserved_seat = \
+            not (enable_unreserved_seat and SeatTypeClassif.FREE == SeatTypeClassif.get(stock_detail_seat_type_classif))
         ag_seat = stock_detail.augus_stock_info.augus_seat
         ag_performance = stock_detail.augus_putback.augus_performance
-        seat = stock_detail.augus_stock_info.seat
-        stock = seat.stock
-        stock_type = stock.stock_type
         ag_ticket = stock_detail.augus_ticket
 
-        record = PutbackResponseRecord()
+        record = PutbackWithNumberedTicketResponseRecord() if use_numbered_ticket_format else PutbackResponseRecord()
         record.event_code = ag_performance.augus_event_code
         record.performance_code = ag_performance.augus_performance_code
         record.distribution_code = stock_detail.augus_distribution_code
@@ -102,19 +117,27 @@ class AugusPutbackExporter(object):
         record.unit_value_code = stock_detail.augus_unit_value_code
         record.date = ag_performance.start_on.strftime(DateType.FORMAT)
         record.start_on = ag_performance.start_on.strftime(HourMinType.FORMAT)
-        record.block = ag_seat.block
-        record.coordy = ag_seat.coordy
-        record.coordx = ag_seat.coordx
-        record.coordy_whole = ag_seat.coordy_whole
-        record.coordx_whole = ag_seat.coordx_whole
-        record.area_code = ag_seat.area_code
-        record.info_code = ag_seat.info_code
-        record.floor = ag_seat.floor
-        record.column = ag_seat.column
-        record.number = ag_seat.num
+        record.block = ag_seat.block if is_reserved_seat else 0  # 自由席は0固定
+        record.coordy = ag_seat.coordy if is_reserved_seat else 0  # 自由席は0固定
+        record.coordx = ag_seat.coordx if is_reserved_seat else 0  # 自由席は0固定
+        record.coordy_whole = ag_seat.coordy_whole if is_reserved_seat else 0  # 自由席は0固定
+        record.coordx_whole = ag_seat.coordx_whole if is_reserved_seat else 0 # 自由席は0固定
+        record.area_code = ag_seat.area_code if is_reserved_seat else 0 # 自由席は0固定
+        record.info_code = ag_seat.info_code if is_reserved_seat else 0 # 自由席は0固定
+        record.floor = ag_seat.floor if is_reserved_seat else u'' # 自由席は空
+        record.column = ag_seat.column if is_reserved_seat else u'' # 自由席は空
+        record.number = ag_seat.num if is_reserved_seat else u'' # 自由席は空
+        if use_numbered_ticket_format:
+            record.ticket_number = ag_seat.ticket_number if is_reserved_seat else ''
         record.seat_type_classif = ag_ticket.augus_seat_type_classif
-        record.seat_count = ag_stock_info.quantity
-        record.putback_status = ag_stock_info.putback_status
+        if is_reserved_seat:
+            # TKT-5866 指定席でもAugusStockDetailからcountを取得してもいいと思うが、念のため既存処理のままとする
+            record.seat_count = ag_stock_info.quantity
+            record.putback_status = ag_stock_info.putback_status
+        else:
+            # TKT-5866 自由席の場合はAugusStockDetailからcountを取得する
+            record.seat_count = stock_detail.quantity
+            record.putback_status = stock_detail.augus_unreserved_putback_status
         record.putback_type = ag_putback.augus_putback_type
         return record
 
@@ -132,12 +155,22 @@ class AugusPutbackExporter(object):
 
         now = datetime.datetime.now()
 
+        augus_account = \
+            self._slave_session.query(AugusAccount)\
+                .filter(AugusAccount.code == customer_id)\
+                .one()
+        use_numbered_ticket_format = augus_account.use_numbered_ticket_format if augus_account else False
+        enable_unreserved_seat = augus_account.enable_unreserved_seat if augus_account else False
+
         responses = []
         for putback in putbacks:
             response = PutbackResponse()
             response.event_code = putback.augus_performance.augus_event_code
             response.date = putback.augus_performance.start_on
-            response.extend([self.create_record(stock_detail) for stock_detail in putback.augus_stock_details])
+            response.extend([self.create_record(stock_detail,
+                                                use_numbered_ticket_format=use_numbered_ticket_format,
+                                                enable_unreserved_seat=enable_unreserved_seat)
+                             for stock_detail in putback.augus_stock_details])
             responses.append(response)
             putback.notified_at = now
             putback.save()
@@ -175,7 +208,7 @@ class AugusAchievementExporter(object):
         self.moratorium = datetime.timedelta(days=90)
         self.session = get_db_session(get_current_request(), name="slave")
 
-    def create_record(self, seat, seat_status_checked=False):
+    def create_record(self, seat, seat_status_checked=False, use_numbered_ticket_format=False):
         if not seat_status_checked and seat.status in [SeatStatusEnum.InCart.v, SeatStatusEnum.NotOnSale.v, SeatStatusEnum.Vacant.v, SeatStatusEnum.Canceled.v]:
             return
 
@@ -205,7 +238,8 @@ class AugusAchievementExporter(object):
         status = AugusSeatStatus.get_status(seat, order)
 
         try:
-            record = AchievementResponse.record()
+            record = AchievementWithNumberedTicketResponse.record() \
+                if use_numbered_ticket_format else AchievementResponse.record()
             record.event_code = augus_stock_detail.augus_stock_info.augus_performance.augus_event_code
             record.performance_code = augus_stock_detail.augus_stock_info.augus_performance.augus_performance_code
             record.distribution_code = augus_stock_detail.augus_distribution_code
@@ -222,6 +256,8 @@ class AugusAchievementExporter(object):
             record.floor = augus_stock_detail.augus_stock_info.augus_seat.floor
             record.column = augus_stock_detail.augus_stock_info.augus_seat.column
             record.number = augus_stock_detail.augus_stock_info.augus_seat.num
+            if use_numbered_ticket_format:
+                record.ticket_number = augus_stock_detail.augus_stock_info.augus_seat.ticket_number
             record.seat_type_classif = augus_stock_detail.augus_stock_info.seat_type_classif
             record.seat_count = augus_stock_detail.quantity
             record.unit_value = augus_ticket.value
@@ -232,7 +268,44 @@ class AugusAchievementExporter(object):
             logger.info('order {}, seat id {} cause ValueError. Error Message: {}'.format(order.no, seat.id, e.message))
         return record
 
+    def __create_record_of_unreserved_seat(self, augus_performance, order,
+                                           ordered_product, use_numbered_ticket_format=False):
+        augus_ticket = ordered_product.product.augus_ticket
+        augus_stock_info = augus_ticket.augus_stock_infos[0]  # 自由席では複数存在しない想定
+
+        # 自由席ではOrderedProduct単位でレコードを作る
+        record = AchievementWithNumberedTicketResponse.record() \
+            if use_numbered_ticket_format else AchievementResponse.record()
+        record.event_code = augus_performance.augus_event_code
+        record.performance_code = augus_performance.augus_performance_code
+        record.distribution_code = augus_stock_info.augus_distribution_code
+        record.seat_type_code = augus_ticket.augus_seat_type_code
+        record.unit_value_code = augus_ticket.unit_value_code
+        record.date = augus_performance.start_on.strftime(DateType.FORMAT)
+        record.start_on = augus_performance.start_on.strftime(HourMinType.FORMAT)
+        record.reservation_number = order.order_no
+        record.block = 0   # 自由席は固定で0
+        record.coordy = 0  # 自由席は固定で0
+        record.coordx = 0  # 自由席は固定で0
+        record.area_code = 0  # 自由席は固定で0
+        record.info_code = 0  # 自由席は固定で0
+        record.floor = u''  # 自由席は固定で空
+        record.column = u''  # 自由席は固定で空
+        record.number = u''  # 自由席は固定で空
+        if use_numbered_ticket_format:
+            record.ticket_number = u''  # 自由席は固定で空
+        record.seat_type_classif = augus_stock_info.seat_type_classif
+        record.seat_count = ordered_product.quantity
+        record.unit_value = augus_ticket.value
+        record.processed_at = time.strftime('%Y%m%d%H%M%S')
+        record.achievement_status = str(AugusUnreservedSeatStatus.get_status(order))
+
+        return record
+
     def export(self, performance):
+        # tkt5866 このメソッドは使用されておらず、メンテもされていない
+        import warnings
+        warnings.warn('This is old and unsupported method.')
         res = AchievementResponse()
         for seat in performance.seats:
             record = self.create_record(seat)
@@ -241,6 +314,10 @@ class AugusAchievementExporter(object):
         return res
 
     def _create_record(self, stock_info):
+        # tkt5866 このメソッドは使用されておらず、メンテもされていない
+        import warnings
+        warnings.warn('This is old and unsupported method.')
+
         opitem = self.seat2opitem(stock_info.seat)
         if not opitem:
             raise AugusDataExportError('No such OrderedProductItem: Seat.id={}'.formamt(stock_info.seat))
@@ -273,10 +350,18 @@ class AugusAchievementExporter(object):
         return record
 
     def export_from_augus_performance(self, augus_performance):
-        res = AchievementResponse()
+        augus_account = self.session.query(
+            AugusAccount
+        ).filter(
+            AugusAccount.id == augus_performance.augus_account_id
+        ).one()
+        use_numbered_ticket_format = augus_account.use_numbered_ticket_format if augus_account else False
+
+        res = AchievementWithNumberedTicketResponse() if use_numbered_ticket_format else AchievementResponse()
         res.event_code = augus_performance.augus_event_code
         res.date = augus_performance.start_on
         unless_status = [SeatStatusEnum.InCart.v, SeatStatusEnum.NotOnSale.v, SeatStatusEnum.Vacant.v, SeatStatusEnum.Canceled.v]
+        # 自由席はSeat, AugusSeatを作らないのでここでは取得されない。ここで取得されるのは指定席のみ
         seats = self.session.query(
             Seat
         ).join(
@@ -290,10 +375,60 @@ class AugusAchievementExporter(object):
         ).all()
 
         for seat in seats:
-            record = self.create_record(seat, seat_status_checked=True)
+            record = self.create_record(seat, seat_status_checked=True,
+                                        use_numbered_ticket_format=use_numbered_ticket_format)
             if record:
                 res.append(record)
+
+        # 自由席の販売実績連携
+        orders_of_unreserved_seat = self.__get_orders_of_unreserved_seat(augus_account, augus_performance)
+        for order in orders_of_unreserved_seat:
+            map(lambda ordered_product: res.append(
+                self.__create_record_of_unreserved_seat(augus_performance,
+                                                        order,
+                                                        ordered_product,
+                                                        use_numbered_ticket_format=use_numbered_ticket_format)),
+                order.items)
+
         return res
+
+    def __get_orders_of_unreserved_seat(self, augus_account, augus_performance):
+        if not augus_account.enable_unreserved_seat:
+            return []
+
+        # 自由席のAugusStockInfoは席種コード単位で生成されるため、配券済のAugusTicketは席種コードで一意に特定できる想定
+        sub_query = self.session.query(
+            AugusTicket.id,
+            AugusTicket.augus_seat_type_code
+        )\
+            .join(AugusStockInfo, AugusStockInfo.augus_ticket_id == AugusTicket.id)\
+            .filter(AugusTicket.augus_performance_id == augus_performance.id,
+                    AugusTicket.augus_seat_type_classif == SeatTypeClassif.FREE.value.decode(),
+                    AugusStockInfo.seat_type_classif == SeatTypeClassif.FREE.value.decode())\
+            .subquery('augus_ticket_distributed')
+        augus_ticket_distributed = aliased(AugusTicket, sub_query)
+
+        orders = self.session.query(Order)\
+            .join(OrderedProduct)\
+            .join(Product,
+                  Product.id == OrderedProduct.product_id)\
+            .join(AugusTicket,
+                  AugusTicket.id == Product.augus_ticket_id)\
+            .join(augus_ticket_distributed,
+                  augus_ticket_distributed.augus_seat_type_code == AugusTicket.augus_seat_type_code)\
+            .join(AugusStockInfo,
+                  AugusStockInfo.augus_ticket_id == augus_ticket_distributed.id) \
+            .options(contains_eager(Order.items, OrderedProduct.product,
+                                    Product.augus_ticket, AugusTicket.augus_stock_infos,
+                                    AugusStockInfo.augus_ticket)) \
+            .filter(Order.performance_id == augus_performance.performance_id,
+                    Order.canceled_at.is_(None),
+                    Order.refunded_at.is_(None),
+                    AugusTicket.augus_seat_type_classif == SeatTypeClassif.FREE.value.decode(),
+                    AugusStockInfo.seat_type_classif == SeatTypeClassif.FREE.value.decode())\
+            .all()
+
+        return orders if orders else []
 
     def seat2opitem(self, seat):
         try:

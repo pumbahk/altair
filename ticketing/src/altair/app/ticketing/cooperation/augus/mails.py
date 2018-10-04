@@ -51,8 +51,12 @@ class AugusDistributionAdapter(object):
             self.augus_performance_code = performance_code
             self.augus_distribution_code = distribution_code
 
-        self._count = len(AugusStockDetail.query.filter(
-            AugusStockDetail.augus_distribution_code==distribution_code).all())
+        # 配券された席数を算出する
+        augus_stock_details = AugusStockDetail.query.filter(
+            AugusStockDetail.augus_distribution_code==distribution_code,
+            AugusStockDetail.augus_putback_id.is_(None)
+        ).all()
+        self._count = sum([d.quantity for d in augus_stock_details])
         self.augus_distribution_code = distribution_code
 
     def __len__(self):
@@ -78,14 +82,13 @@ class AugusDistributionFactory(object):
         return distributions
 
 
-class AugusDistributionMialer(object):
+class AugusDistributionMailer(object):
     def __init__(self, settings):
         self.settings = settings
-        self.sender = None
-        self.recipients = []
         self.successes = []
         self.errors = []
         self.not_yets = []
+        self.enable_auto_distribution_to_own_stock_holder = False
 
     def _creates(self, requests):
         return AugusDistributionFactory.creates(requests)
@@ -110,51 +113,7 @@ class AugusDistributionMialer(object):
         params = {'successes': successes,
                   'errors': errors,
                   'not_yets': not_yets,
-                  }
-        sender = self.sender
-        recipients = self.recipients
-
-        mailer = Mailer(self.settings)
-        body = render_to_response('altair.app.ticketing:templates/cooperation/augus/mails/augus_distribution.html', params)
-        mailer.create_message(
-            sender=sender,
-            recipient=recipients,
-            subject=u'【オーガス連携】追券/配券連携のお知らせ',
-            body=body.text,
-        )
-        mailer.send(sender, recipients)
-
-
-class AugusDistributionMialer(object):
-    def __init__(self, settings):
-        self.settings = settings
-        self.successes = []
-        self.errors = []
-        self.not_yets = []
-
-    def _creates(self, requests):
-        return AugusDistributionFactory.creates(requests)
-
-    def add_success(self, request):
-        self.successes.append(request)
-
-    def add_error(self, request):
-        self.errors.append(request)
-
-    def add_not_yet(self, request):
-        self.not_yets.append(request)
-
-    def send(self, recipients, sender):
-        successes = self._creates(self.successes) # 配席成功
-        errors = self._creates(self.errors) # 不正配席指示
-        not_yets = self._creates(self.not_yets) # 未連携
-
-        if len(successes) == 0 and len(errors) == 0 and len(not_yets) == 0:
-            return
-
-        params = {'successes': successes,
-                  'errors': errors,
-                  'not_yets': not_yets,
+                  'enable_auto_distribution_to_own_stock_holder': self.enable_auto_distribution_to_own_stock_holder,
                   }
         sender = self.settings['mail.augus.sender']
         recipient = self.settings['mail.augus.recipient']
