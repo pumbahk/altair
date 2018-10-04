@@ -98,7 +98,7 @@ class ResaleSegmentSerializer(Schema):
                     .filter(ResaleSegment.id != resale_segment_id) \
                     .filter_by(resale_performance_id=resale_performance_id).count() > 0:
                 raise ValidationError(
-                    u'登録したいリセール公演の公演はすでに他のリセール区分に登録されています。'.format(data['resale_performance_id']),
+                    u'登録したいリセール公演の公演はすでに他のリセール区分に登録されています。',
                     ['resale_performance_id'])
 
             try:
@@ -110,7 +110,7 @@ class ResaleSegmentSerializer(Schema):
                 p_resale = Performance.query.filter_by(id=resale_performance_id).one()
             except:
                 raise ValidationError(
-                    u'登録したいリセール公演の公演は存在していません。'.format(resale_performance_id),
+                    u'登録したいリセール公演の公演（ID: {}）は存在していません。'.format(resale_performance_id),
                     ['resale_performance_id'])
 
             if p.event.organization.id != p_resale.event.organization.id:
