@@ -158,8 +158,7 @@
                                                         <dt>${_(u'システム利用料')}</dt>
                                                         <dd class="paymentFee_${h.format_number(m.transaction_fee)}">
                                                             <span class="paymentFee">${h.format_currency(m.system_fee)}</span>
-                                                            <span class="paymentFeeType">(${h.fee_type(m.system_fee_type)}
-                                                                )</span>
+                                                            <span class="paymentFeeType">(${_(h.fee_type(m.system_fee_type))})</span>
                                                         </dd>
                                                     %endif
                                                     %if m.special_fee > 0:
