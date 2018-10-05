@@ -113,6 +113,7 @@ class SalesSegmentGroups(BaseView, SalesSegmentViewHelperMixin):
                         disp_orderreview=True,
                         disp_agreement=f.disp_agreement.data,
                         agreement_body=f.agreement_body.data,
+                        enable_point_allocation=f.enable_point_allocation.data
                         )
                     ),
                 f.data,
@@ -184,6 +185,9 @@ class SalesSegmentGroups(BaseView, SalesSegmentViewHelperMixin):
             new_sales_segment_group.setting.display_seat_no = f.display_seat_no.data
             new_sales_segment_group.setting.sales_counter_selectable = f.sales_counter_selectable.data
             new_sales_segment_group.setting.extra_form_fields = f.extra_form_fields.data
+            new_sales_segment_group.setting.enable_point_allocation = f.enable_point_allocation.data \
+                if self.context.organization.setting.enable_point_allocation \
+                else sales_segment_group.setting.enable_point_allocation
             new_sales_segment_group.save()
 
             accessor = SalesSegmentAccessor()
@@ -232,6 +236,8 @@ class SalesSegmentGroups(BaseView, SalesSegmentViewHelperMixin):
             sales_segment_group.setting.display_seat_no = f.display_seat_no.data
             sales_segment_group.setting.sales_counter_selectable = f.sales_counter_selectable.data
             sales_segment_group.setting.extra_form_fields = f.extra_form_fields.data
+            if self.context.organization.setting.enable_point_allocation:
+                sales_segment_group.setting.enable_point_allocation = f.enable_point_allocation.data
             sales_segment_group.save()
 
             sales_segment_group.sync_member_group_to_children()

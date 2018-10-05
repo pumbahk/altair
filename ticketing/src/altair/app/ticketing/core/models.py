@@ -4630,6 +4630,8 @@ class SalesSegmentGroupSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted)
     display_seat_no = AnnotatedColumn(Boolean, default=True, server_default='1', _a_label=_(u'座席番号の表示可否'))
     sales_counter_selectable = AnnotatedColumn(Boolean, default=True, server_default='1', _a_label=_(u'窓口業務で閲覧可能'))
     extra_form_fields = deferred(AnnotatedColumn(MutationDict.as_mutable(JSONEncodedDict(16777215)), _a_label=_(u'追加フィールド')))
+    enable_point_allocation = AnnotatedColumn(Boolean, default=False,
+                                              server_default='0', _a_label=_(u'ポイント充当を利用'))
 
     @classmethod
     def create_from_template(cls, template, **kwargs):
