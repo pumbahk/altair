@@ -4375,6 +4375,22 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
                     return True
         return False
 
+    def is_point_allocation_enable(self):
+        """
+        対象の販売区分で楽天ポイント充当が使用可能か返却する。
+        ポイント充当はOrg設定で使用可能かつ、販売区分設定で使用可能の場合に利用可能とする。
+        販売区分グループの値を利用する場合は、販売区分グループ設定値を参照する
+        :return: True:ポイント充当使用可能, False:ポイント充当使用不可
+        """
+        if self.setting.use_default_enable_point_allocation:
+            # 販売区分グループの設定値を使用する場合
+            return self.organization.setting.enable_point_allocation and \
+                   self.sales_segment_group.setting.enable_point_allocation
+        else:
+            # 販売区分の設定値を使用する場合
+            return self.organization.setting.enable_point_allocation and \
+                   self.setting.enable_point_allocation
+
 
 class SalesReportTypeEnum(StandardEnum):
     Default = 1
