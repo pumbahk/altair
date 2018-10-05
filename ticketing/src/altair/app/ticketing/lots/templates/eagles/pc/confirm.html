@@ -25,7 +25,7 @@
                   </tr>
                   <tr>
                     <th scope="row">${_(u'公演日・会場')}</th>
-                    <td colspan="2">${h.i18n_datetime(wish.performance.start_on, custom_locale_negotiator)}　${wish.performance.venue.name}</td>
+                    <td colspan="2">${h.i18n_datetime(wish.performance.start_on, custom_locale_negotiator)} ${wish.performance.venue.name}</td>
                   </tr>
                   <tr>
                     <td scope="row" colspan="3"><p class="fWB">${_(u'希望内容と手数料')}</p></td>
@@ -144,7 +144,7 @@
         <div class="box-border">
           <table>
             <tr>
-              <th>${_(u'お申し込みいただいた方に、メールマガジンをお送りします。不要な方はチェックをはずしてください。')}</th>
+              <th>${_(u'お申し込みいただいた方に、${view_context.team_name}からのメールマガジンをお送りします。不要な方はチェックをはずしてください。')}</th>
             </tr>
             <tr>
               <td>
@@ -163,7 +163,35 @@
         </div>
       </div>
       % endif
-
+      % if keywords_to_subscribe:
+      <div class="settlementBox">
+        <div class="settlementBoxInner">
+        <h2><img src="${view_context.static_url('pc/img/settlement/title_favorite.gif', 'lots')}" alt="お気に入りワード登録" width="267" height="30" /></h2>
+          <div id="mailKeywordBox">
+            <div id="mailKeywordBoxInner">
+            <dl>
+            <dt>
+            お気に入りワードに登録しておくと、発売開始等のタイミングでお知らせメールが届きます。<br />
+            お知らせメールのサービス開始は夏頃を予定しています。
+            </dt>
+            <dd>
+            <ul class="list-favorite">
+            % for keyword, subscribed in keywords_to_subscribe:
+              <li ${subscribed and u'class="subscribed"' or u''|n}>
+              <div>
+                <input type="checkbox" checked="checked" name="keyword" id="keyword-${keyword.id}" value="${keyword.id}" ${subscribed and u'disabled="disabled"' or u''|n} />
+                <label for="keyword-${keyword.id}">${keyword.label}</label>
+              </div>
+              </li>
+            % endfor
+            </ul>
+            </dd>
+            </dl>
+            </div>
+          </div>
+        </div>
+      </div>
+      % endif
       <div class="wrap-btn">
         <p class="btn short" data-action="back" onclick="doAction(this)">${__(u'戻る')}</p>
         <p class="btn short" onclick="doAction(this)">${__(u'確定する')}</p>
