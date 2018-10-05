@@ -153,7 +153,6 @@ class ProtocolRecordAttributeMismatchTest(TestCase):
         PutbackRequest: (
             'event_code',
             'performance_code',
-            'distribution_code',
             'seat_type_code',
             'unit_value_code',
             'date',
@@ -168,6 +167,7 @@ class ProtocolRecordAttributeMismatchTest(TestCase):
             'number',
             'seat_type_classif',
             'seat_count',
+            'putback_classif',
             ),
         PutbackResponse: (
             'event_code',
@@ -196,9 +196,6 @@ class ProtocolRecordAttributeMismatchTest(TestCase):
             'performance_code',
             'date',
             'start_on',
-            'event_name',
-            'performance_name',
-            'venue_name',
             ),
         AchievementResponse: (
             'event_code',
