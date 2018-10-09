@@ -1,5 +1,7 @@
 <div id="grpheader">
     <p id="siteID">
-        <a href="https://mt.tstar.jp/"><img src="${view_context.static_url('pc/images/logo.png')}" alt="${view_context.team_name}" class="serviceLogo" /></a>
+        <a href="${request.context.host_base_url}">
+            <img src="${view_context.static_url('pc/images/logo.png')}" alt="${view_context.team_name}" class="serviceLogo"/>
+        </a>
     </p>
 </div>
