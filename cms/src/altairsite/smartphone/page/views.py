@@ -70,19 +70,21 @@ class StaticKindView(object):
             }
         }
 
-    @smartphone_site_view_config(match_param="kind=inquiry", request_method="GET", renderer=selectable_renderer('altairsite.smartphone:templates/%(prefix)s/page/inquiry.html'))
+    @smartphone_site_view_config(match_param="kind=inquiry", request_method="GET", renderer=selectable_renderer(
+        'altairsite.smartphone:templates/%(prefix)s/page/inquiry.html'))
     def move_inquiry(self):
         session = InquirySession(request=self.request)
         session.put_inquiry_session();
         return {
-            'form':InquiryForm()
-            , 'sns':{
-                'url':"https://ticket.rakuten.co.jp/inquiry",
-                'title':u"楽天チケット-お問い合わせ"
+            'form': InquiryForm()
+            , 'sns': {
+                'url': "https://ticket.rakuten.co.jp/inquiry",
+                'title': u"楽天チケット-お問い合わせ"
             }
         }
 
-    @smartphone_site_view_config(match_param="kind=inquiry", request_method="POST", renderer=selectable_renderer('altairsite.smartphone:templates/%(prefix)s/page/inquiry.html'))
+    @smartphone_site_view_config(match_param="kind=inquiry", request_method="POST", renderer=selectable_renderer(
+        'altairsite.smartphone:templates/%(prefix)s/page/inquiry.html'))
     def move_inquiry_post(self):
         form = InquiryForm(self.request.POST)
 
@@ -97,23 +99,27 @@ class StaticKindView(object):
             return {"form": form}
 
         customer_mail = CustomerMail(form.data['username'], form.data['username_kana'], form.data['zip_no']
-            , form.data['address'], form.data['tel'], form.data['mail'], form.data['num'], form.data['category']
-            , form.data['title'], form.data['body'])
+                                     , form.data['address'], form.data['tel'], form.data['mail'], form.data['num'],
+                                     form.data['category']
+                                     , form.data['title'], form.data['body'])
         support_mail = SupportMail(form.data['username'], form.data['username_kana'], form.data['zip_no']
-            , form.data['address'], form.data['tel'], form.data['mail'], form.data['num'], form.data['category']
-            , form.data['title'], form.data['body'], self.request.environ.get("HTTP_USER_AGENT"))
+                                   , form.data['address'], form.data['tel'], form.data['mail'], form.data['num'],
+                                   form.data['category']
+                                   , form.data['title'], form.data['body'], self.request.environ.get("HTTP_USER_AGENT"))
 
-        send_inquiry_mail(request=self.request, title=u"楽天チケット　お問い合わせフォーム[スマホ]", body=support_mail.create_mail(), recipients=[self.request.inquiry_mailaddress])
-        ret = send_inquiry_mail(request=self.request, title=u"楽天チケット　お問い合わせ", body=customer_mail.create_mail(), recipients=[form.mail.data])
+        send_inquiry_mail(request=self.request, title=u"楽天チケット　お問い合わせフォーム[スマホ]", body=support_mail.create_mail(),
+                          recipients=[self.request.inquiry_mailaddress])
+        ret = send_inquiry_mail(request=self.request, title=u"楽天チケット　お問い合わせ", body=customer_mail.create_mail(),
+                                recipients=[form.mail.data])
 
         session.delete_inquiry_session()
 
         return {
-             'form':form
-            ,'result':ret
-            , 'sns':{
-                'url':"https://ticket.rakuten.co.jp/inquiry",
-                'title':u"楽天チケット-お問い合わせ"
+            'form': form
+            , 'result': ret
+            , 'sns': {
+                'url': "https://ticket.rakuten.co.jp/inquiry",
+                'title': u"楽天チケット-お問い合わせ"
             }
         }
 
