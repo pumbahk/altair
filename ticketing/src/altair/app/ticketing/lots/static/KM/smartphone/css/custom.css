@@ -2,8 +2,10 @@
     --custom-btn-color: #00A0E9;    /* buttons ボタン */
     --custom-color: #00A0E9;        /* fonts 文字 */
     --custom-border-color: #00A0E9;     /* border 罫線（divなど） */
+    --custom-input-color: #00A0E9;     /* input インプット（radio, inputなど） */
     --custom-background-color: #00A0E9;     /* background 背景（divなど） */
 }
+
 
 /* btn */
 .btn-selectseat {
@@ -33,14 +35,16 @@ li.btn-seat-plus.btn-seat-active:after {
     background-color: var(--custom-btn-color) !important;
 }
 
-.plugins-wrap button {
-  background-color: var(--custom-btn-color) !important;
+/* input type */
+.confirmForm input[type=radio]:checked + label::after {
+	background: var(--custom-input-color) !important;
 }
 
 /* Box contents */
 .selectseat-accordion dt {
     border-color: var(--custom-border-color) !important;
 }
+
 .selectseat-accordion dt:before {
     background-color: var(--custom-background-color) !important;
 }
@@ -54,4 +58,7 @@ li.btn-seat-plus.btn-seat-active:after {
 .heading_simple_line {
     color: var(--custom-color) !important;
     border-color: var(--custom-border-color) !important;
+}
+header .head {
+    background-color: var(--custom-background-color) !important;
 }
