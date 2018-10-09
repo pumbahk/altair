@@ -4470,6 +4470,8 @@ class OrganizationSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     enable_price_batch_update = AnnotatedColumn(Boolean, nullable=False, default=False,
                                                 doc=u"価格一括変更機能を利用", _a_label=u"価格一括変更機能を利用")
     enable_passport = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"パスポート販売の使用", _a_label=u"パスポート販売の使用")
+    # UserSiteでポイント充当が使えるかは、OrganizationSetting, SalesSegmentGroupSetting, SalesSegmentSettingをみて判断すること
+    # SalesSegment#is_point_allocation_enableメソッドを参考にすること
     enable_point_allocation = AnnotatedColumn(Boolean, nullable=False, default=False,
                                               doc=u"ポイント充当可否", _a_label=u"ポイント充当を利用")
     rendered_template_1 = AnnotatedColumn(String(32), nullable=False, default='-', doc=u"テンプレートや静的コンテンツを優先して参照するORGテンプレート", _a_label=u"第1参照テンプレート")
@@ -4646,6 +4648,8 @@ class SalesSegmentGroupSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted)
     display_seat_no = AnnotatedColumn(Boolean, default=True, server_default='1', _a_label=_(u'座席番号の表示可否'))
     sales_counter_selectable = AnnotatedColumn(Boolean, default=True, server_default='1', _a_label=_(u'窓口業務で閲覧可能'))
     extra_form_fields = deferred(AnnotatedColumn(MutationDict.as_mutable(JSONEncodedDict(16777215)), _a_label=_(u'追加フィールド')))
+    # UserSiteでポイント充当が使えるかは、OrganizationSetting, SalesSegmentGroupSetting, SalesSegmentSettingをみて判断すること
+    # SalesSegment#is_point_allocation_enableメソッドを参考にすること
     enable_point_allocation = AnnotatedColumn(Boolean, default=False,
                                               server_default='0', _a_label=_(u'ポイント充当を利用'))
 
@@ -4670,6 +4674,8 @@ class SalesSegmentSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     display_seat_no = AnnotatedColumn(Boolean, default=True, server_default='1', _a_label=_(u'座席番号の表示可否'))
     sales_counter_selectable = AnnotatedColumn(Boolean, default=True, server_default='1', _a_label=_(u'窓口業務で閲覧可能'))
     extra_form_fields = deferred(AnnotatedColumn(MutationDict.as_mutable(JSONEncodedDict(16777215)), _a_label=_(u'追加フィールド')))
+    # UserSiteでポイント充当が使えるかは、OrganizationSetting, SalesSegmentGroupSetting, SalesSegmentSettingをみて判断すること
+    # SalesSegment#is_point_allocation_enableメソッドを参考にすること
     enable_point_allocation = AnnotatedColumn(Boolean, default=False,
                                               server_default='0', _a_label=_(u'ポイント充当を利用'))
 
