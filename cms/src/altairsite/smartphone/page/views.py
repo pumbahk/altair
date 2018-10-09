@@ -1,12 +1,16 @@
 # -*- coding:utf-8 -*-
-from .forms import InquiryForm
-from ..common.helper import SmartPhoneHelper
+from datetime import datetime
+
 from altairsite.config import smartphone_site_view_config
-from altairsite.inquiry.message import CustomerMail, SupportMail
 from altairsite.inquiry.api import send_inquiry_mail
+from altairsite.inquiry.message import CustomerMail, SupportMail
 from altairsite.inquiry.session import InquirySession
 from altairsite.separation import selectable_renderer
 from pyramid.view import view_defaults
+
+from .forms import InquiryForm
+from ..common.helper import SmartPhoneHelper
+
 
 @view_defaults(route_name="smartphone.page",request_type="altair.mobile.interfaces.ISmartphoneRequest")
 class StaticKindView(object):
@@ -75,8 +79,10 @@ class StaticKindView(object):
     def move_inquiry(self):
         session = InquirySession(request=self.request)
         session.put_inquiry_session();
+        form = InquiryForm()
+        form.admission_time.data = datetime.now().strftime("%Y/%m/%d %H:%M:%S")
         return {
-            'form': InquiryForm()
+            'form': form
             , 'sns': {
                 'url': "https://ticket.rakuten.co.jp/inquiry",
                 'title': u"楽天チケット-お問い合わせ"

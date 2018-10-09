@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
 import re
-
+from datetime import datetime, timedelta
 from wtforms import Form, TextField, TextAreaField, SelectField, HiddenField
 from wtforms.validators import ValidationError, email, Required
+
+# ロボットを弾くため、お問い合わせを投稿させない時間
+TIME_NOT_TO_POST = 2
 
 
 class InquiryForm(Form):
@@ -20,6 +23,7 @@ class InquiryForm(Form):
     ], default=0)
     title = TextField(label=u'タイトル', validators=[Required(u'入力してください')])
     body = TextAreaField(label=u'内容', validators=[Required(u'入力してください')])
+    admission_time = HiddenField(label=u'入場時間', validators=[Required(u'入力してください')])
 
     # --- 表示用
     send = HiddenField(label=u'')
@@ -37,3 +41,10 @@ class InquiryForm(Form):
         if re.match(r'^[a-zA-Z0-9_+\-*/=.]+@[^.][a-zA-Z0-9_\-.]*\.[a-z]{2,10}$', email) is not None:
             return True
         raise ValidationError(u'メールアドレスの形式が不正です。全角は使用できません。')
+
+    def validate_admission_time(form, field):
+        now = datetime.now()
+        admission_time = datetime.strptime(field.data, '%Y/%m/%d %H:%M:%S')
+        if admission_time + timedelta(seconds=TIME_NOT_TO_POST) < now:
+            return
+        raise ValidationError(u'不正な操作の可能性があります。')

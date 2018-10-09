@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from datetime import datetime
+
 from altair.i18n.api import set_locale_cookie
 from altair.mobile.api import is_mobile_request
 from altairsite.config import usersite_view_config
@@ -26,6 +28,7 @@ def set_cookie(request):
 def move_inquiry(request):
     log_info("move_inquiry", "start")
     form = InquiryForm()
+    form.admission_time.data = datetime.now().strftime("%Y/%m/%d %H:%M:%S")
     session = InquirySession(request=request)
     session.put_inquiry_session();
     log_info("move_inquiry", "end")
