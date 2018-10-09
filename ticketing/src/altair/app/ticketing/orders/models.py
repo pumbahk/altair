@@ -295,6 +295,8 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     delivery_fee = sa.Column(sa.Numeric(precision=16, scale=2), nullable=False)
     special_fee = sa.Column(sa.Numeric(precision=16, scale=2), nullable=False, default=0)
     special_fee_name = sa.Column(sa.Unicode(255), nullable=False, default=u"")
+    point_amount = sa.Column(sa.Numeric(precision=16, scale=2), nullable=False, default=0)
+    refund_point_amount = sa.Column(sa.Numeric(precision=16, scale=2), nullable=False, default=0)
 
     payment_delivery_method_pair_id = sa.Column(Identifier, sa.ForeignKey("PaymentDeliveryMethodPair.id"))
     payment_delivery_pair = orm.relationship("PaymentDeliveryMethodPair", backref='orders')
@@ -324,6 +326,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     canceled_at = sa.Column(sa.DateTime, nullable=True, default=None)
     refund_id = sa.Column(Identifier, sa.ForeignKey('Refund.id'))
     refunded_at = sa.Column(sa.DateTime, nullable=True, default=None)
+    refunded_point_at = sa.Column(sa.DateTime, nullable=True, default=None)
     released_at = sa.Column(sa.DateTime, nullable=True, default=None)
 
     order_no = sa.Column(sa.Unicode(255))
