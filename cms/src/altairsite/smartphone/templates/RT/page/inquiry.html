@@ -131,6 +131,7 @@
 
 <form class="sectionbox-inner" action="${request.route_path('smartphone.page', kind='inquiry')}" method="POST">
     <fieldset>
+        ${disp_error(form.admission_time.errors)}
         <legend>お問い合わせフォーム</legend>
         お名前<br/>
         漢字<font color="red">※</font><br/>${form.username}
@@ -155,6 +156,7 @@
         ${disp_error(form.title.errors)}
         内容<font color="red">※</font>(具体的に記載してください)${form.body}<br/>
         ${disp_error(form.body.errors)}
+        ${form.admission_time}
         <font color="red">※</font>は必ず入力してください。<br/>
         % if not result:
             <input type="submit" class="btn-secondary btn-large" value="送信"/>
