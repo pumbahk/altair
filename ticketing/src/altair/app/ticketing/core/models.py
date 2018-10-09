@@ -3696,7 +3696,7 @@ class TicketBundle(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         """SEJ/FM未発券予約抽出クエリの共通部分作成"""
         from altair.app.ticketing.payments.plugins import SEJ_DELIVERY_PLUGIN_ID, FAMIPORT_DELIVERY_PLUGIN_ID
         from altair.app.ticketing.orders.models import Order, OrderedProduct, OrderedProductItem
-        now = datetime.now()
+        beginning_of_today = datetime.now().strftime("%Y/%m/%d 00:00:00")
         query = self.query.join(
             ProductItem,
             OrderedProductItem,
@@ -3708,7 +3708,7 @@ class TicketBundle(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         ).filter(
             TicketBundle.id == self.id,
             DeliveryMethodPlugin.id.in_([SEJ_DELIVERY_PLUGIN_ID, FAMIPORT_DELIVERY_PLUGIN_ID]),
-            Order.issuing_end_at >= now,
+            Order.issuing_end_at >= beginning_of_today,
             Order.issued_at.is_(None),
             Order.canceled_at.is_(None)
         ).order_by(
