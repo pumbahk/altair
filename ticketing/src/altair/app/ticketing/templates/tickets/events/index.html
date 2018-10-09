@@ -190,7 +190,7 @@
                     <dd>更新: ${task.updated_at}</dd>
                     % if task.status == NotifyUpdateTicketInfoTaskEnum.failed.v[0]:
                       <dd>
-                        <a href="${request.route_path("events.tickets.bundles.refresh_order_error", event_id=event.id, bundle_id=bundle.id, task_id=task.id)}"
+                        <a href="${request.route_path("events.tickets.bundles.notify_update_ticket_info_error", event_id=event.id, bundle_id=bundle.id, task_id=task.id)}"
                            class="btn ajax-modal"
                            data-toggle="modal"
                            data-target="#AjaxModal"
@@ -230,7 +230,7 @@
          style="margin-right: 10px;">
         <i class="icon-edit"></i> 属性一括編集
       </a>
-      <a href="${request.route_path("events.tickets.bundles.refresh_order", bundle_id="__id__", event_id=event.id)}"
+      <a href="${request.route_path("events.tickets.bundles.notify_update_ticket_info", bundle_id="__id__", event_id=event.id)}"
          class="id-action btn ajax-modal"
          data-toggle="modal"
          data-target="#AjaxModal"

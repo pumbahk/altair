@@ -176,17 +176,17 @@ class BundleView(BaseView):
         return HTTPFound(self.request.route_path("events.tickets.bundles.show",
                                                  event_id=event.id, bundle_id=new_bundle.id))
 
-    @view_config(route_name='events.tickets.bundles.refresh_order', request_method="GET",
-                 renderer="altair.app.ticketing:templates/tickets/events/_refresh_order.html")
-    def refresh_order(self):
+    @view_config(route_name='events.tickets.bundles.notify_update_ticket_info', request_method="GET",
+                 renderer="altair.app.ticketing:templates/tickets/events/_notify_update_ticket_info.html")
+    def notify_update_ticket_info(self):
         bundle = self.context.bundle
         event = self.context.event
         form = forms.BundleForm(event_id=event.id, name=u"券面構成「{}」の更新通知".format(bundle.name))
-        next_to = self.request.route_path("events.tickets.bundles.refresh_order", bundle_id=bundle.id, event_id=event.id)
+        next_to = self.request.route_path("events.tickets.bundles.notify_update_ticket_info", bundle_id=bundle.id, event_id=event.id)
         return dict(form=form, event=event, bundle=bundle, next_to=next_to)
 
-    @view_config(route_name="events.tickets.bundles.refresh_order", request_method="POST")
-    def refresh_order_post(self):
+    @view_config(route_name="events.tickets.bundles.notify_update_ticket_info", request_method="POST")
+    def notify_update_ticket_info_post(self):
         bundle = self.context.bundle
         event = self.context.event
         location = self.request.route_path("events.tickets.index", event_id=event.id)
@@ -203,14 +203,14 @@ class BundleView(BaseView):
                 self.request.session.flash(u'「{}」にSEJ / FMの未発券予約への更新通知を開始しました。'.format(bundle.name))
 
             except Exception as err:
-                logger.error(u'error occured while sending refresh_order task to worker: {}'.format(err.message))
+                logger.error(u'error occured while sending notify update task to worker: {}'.format(err.message))
                 self.request.session.flash(u'システムエラーが発生しました。開発チームにご連絡ください。')
 
         return HTTPFound(location=location)
 
-    @view_config(route_name='events.tickets.bundles.refresh_order_error', request_method="GET",
-                 renderer="altair.app.ticketing:templates/tickets/events/_refresh_order_error.html")
-    def refresh_order_error(self):
+    @view_config(route_name='events.tickets.bundles.notify_update_ticket_info_error', request_method="GET",
+                 renderer="altair.app.ticketing:templates/tickets/events/_notify_update_ticket_info_error.html")
+    def notify_update_ticket_info_error(self):
         bundle = self.context.bundle
         event = self.context.event
         task = self.context.notify_update_ticket_info_task
