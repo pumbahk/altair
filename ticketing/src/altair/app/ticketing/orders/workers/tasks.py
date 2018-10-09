@@ -146,7 +146,7 @@ def import_per_task(context, request):
              name="notify_update_ticket_info",
              consumer="notify_update_ticket_info",
              queue="notify_update_ticket_info",
-             timeout=3600,
+             timeout=7200,
              arguments={"maxPriority": 10})
 def notify_update_ticket_info(context, request):
     """現行の券面構成をSEJとFMに通知するため、orders.apiのrefresh_orderを利用して予約を更新する"""
