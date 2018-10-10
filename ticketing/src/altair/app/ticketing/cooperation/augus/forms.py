@@ -51,3 +51,25 @@ class AugusVenueUploadForm(Form):
         label=u'CSVファイル',
         validators=[],
         )
+
+
+class AugusVenueDownloadForm(Form):
+    def __init__(self, formdata=None, obj=None, prefix='', **kwds):
+        self.organization_id = kwds.pop('organization_id', None)
+        super(self.__class__, self).__init__(formdata, obj, prefix, **kwds)
+
+        try:
+            organization = Organization.query.filter(Organization.id==self.organization_id).one()
+            self.augus_account_id.choices = [
+                (account.augus_account.id, account.augus_account.name)
+                for account in organization.accounts
+                if account.augus_account
+                ]
+        except (NoResultFound, MultipleResultsFound) as err:
+            raise
+
+    augus_account_id = OurSelectField(
+        label=u'アカウント',
+        validators=[Required(u'選択してください')],
+        coerce=int,
+        )

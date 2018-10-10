@@ -270,6 +270,12 @@ def create_csv(report, path, reporting=False):
         output_list[col.order_count] = unicode(int(output_list[col.order_count]))
         output_list[col.total_amount] = unicode(int(output_list[col.total_amount]))
 
+        # カンマが含まれていることを考慮
+        output_list[col.event_title] = u"\"{0}\"".format(output_list[col.event_title])
+        output_list[col.stock_type_name] = u"\"{0}\"".format(output_list[col.stock_type_name])
+        output_list[col.product_name] = u"\"{0}\"".format(output_list[col.product_name])
+        output_list[col.sales_segment_group_name] = u"\"{0}\"".format(output_list[col.sales_segment_group_name])
+
         if not stock_id or stock_id != output_list[col.stock_id]:
             stock_id = output_list[col.stock_id]
             headers.append(output_list)

@@ -25,6 +25,10 @@ class DeletedProductError(CartException):
     pass
 
 
+class DifferentPdmpError(CartException):
+    pass
+
+
 class ChangedProductPriceError(CartException):
     back_url = None
 

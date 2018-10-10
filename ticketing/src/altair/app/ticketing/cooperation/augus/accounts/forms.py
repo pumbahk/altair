@@ -9,6 +9,7 @@ from altair.formhelpers import (
     OurTextField,
     OurSelectField,
     OurIntegerField,
+    OurBooleanField
     )
 from altair.saannotation import get_annotations_for
 from altair.formhelpers import (
@@ -66,3 +67,18 @@ class AugusAccountForm(OurForm):
     recv_dir = OurTextField(
         label=_label(AugusAccount.recv_dir),
         )
+    use_numbered_ticket_format = OurBooleanField(
+        label=_label(AugusAccount.use_numbered_ticket_format)
+    )
+    accept_achievement_request = OurBooleanField(
+        label=_label(AugusAccount.accept_achievement_request)
+    )
+    accept_putback_request = OurBooleanField(
+        label=_label(AugusAccount.accept_putback_request)
+    )
+    enable_auto_distribution_to_own_stock_holder = OurBooleanField(
+        label=_label(AugusAccount.enable_auto_distribution_to_own_stock_holder)
+    )
+    enable_unreserved_seat = OurBooleanField(
+        label=_label(AugusAccount.enable_unreserved_seat)
+    )

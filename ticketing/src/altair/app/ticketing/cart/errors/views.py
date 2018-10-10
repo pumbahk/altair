@@ -31,6 +31,7 @@ from ..exceptions import (
     PaymentError,
     CompletionPageNotRenderered,
     DeletedProductError,
+    DifferentPdmpError,
     DiscountCodeConfirmError,
     OwnDiscountCodeDuplicateError,
     DiscountCodeInternalError,
@@ -117,6 +118,11 @@ class CommonErrorView(object):
     @lbr_view_config(context=DeletedProductError)
     def deleted_product(self):
         # カートに入った商品が、購入確定時に削除された
+        return dict(message=Markup(self.context.message))
+
+    @lbr_view_config(context=DifferentPdmpError)
+    def different_pdmp(self):
+        # カートに入った決済支払方法が、販売区分に存在しないもの
         return dict(message=Markup(self.context.message))
 
     @lbr_view_config(context=ChangedProductPriceError)

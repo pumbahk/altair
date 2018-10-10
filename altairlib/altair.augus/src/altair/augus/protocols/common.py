@@ -445,6 +445,17 @@ class RecordAttribute(object):
     def venue_version(self, value):
         self._venue_version = NumberType.validate(value)
 
+    @property
+    def putback_classif(self):
+        """返券要求区分
+        返券種類を示す区分 1:席番指定 2 :枚数指定
+        """
+        return self._putback_classif
+
+    @putback_classif.setter
+    def putback_classif(self, value):
+        self._putback_classif = StringType.validate(value)
+
 
 class RecordIF(object):
     attributes = []
@@ -587,8 +598,9 @@ class ProtocolBase(list):
         return cls.record()
 
     def set_now(self):
-        self.date = time.localtime()
-        self.created_at = self.date
+        now = time.localtime()
+        self.date = now
+        self.created_at = now
 
     def load_file_name(self, name):
         name = os.path.basename(name)

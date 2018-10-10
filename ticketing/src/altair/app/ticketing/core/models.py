@@ -4699,6 +4699,16 @@ class AugusAccount(Base, BaseModel):
     password = AnnotatedColumn(Unicode, nullable=False,  _a_label=(u'パスワード'))
     send_dir = AnnotatedColumn(Unicode, nullable=False,  _a_label=(u'送り側ディレクトリ'))
     recv_dir = AnnotatedColumn(Unicode, nullable=False,  _a_label=(u'受け側ディレクトリ'))
+    use_numbered_ticket_format = \
+        AnnotatedColumn(Boolean, nullable=False, default=False, _a_label=(u'整理券フォーマットを使用する'))
+    accept_achievement_request = \
+        AnnotatedColumn(Boolean, nullable=False, default=False, _a_label=(u'販売実績要求を受け付ける'))
+    accept_putback_request = \
+        AnnotatedColumn(Boolean, nullable=False, default=False, _a_label=(u'返券要求を受け付ける'))
+    enable_auto_distribution_to_own_stock_holder = \
+        AnnotatedColumn(Boolean, nullable=False, default=False, _a_label=(u'配券時に自動で自社枠へ取り込む'))
+    enable_unreserved_seat = \
+        AnnotatedColumn(Boolean, nullable=False, default=False, _a_label=(u'自由席を使う'))
 
     account_id = Column(Identifier, ForeignKey('Account.id'), nullable=False, unique=True)#, _a_label=(u'アカウント')) # PK
     account = relationship('Account', uselist=False, backref=backref('augus_account', uselist=False))
@@ -4748,6 +4758,7 @@ class AugusSeat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     info_code = AnnotatedColumn(Integer, nullable=False, _a_label=(u'付加情報コード'))
     doorway_code = AnnotatedColumn(Integer, nullable=False, _a_label=(u'出入口コード'))
     version = AnnotatedColumn(Integer, nullable=False, _a_label=(u'会場バージョン'))
+    ticket_number = AnnotatedColumn(Integer, nullable=False, _a_label=(u'整理券番号'), default=0)
 
     augus_venue_id = Column(Identifier, ForeignKey('AugusVenue.id', ondelete='CASCADE'), nullable=False)
     seat_id = Column(Identifier, ForeignKey('Seat.id'))
@@ -4804,6 +4815,7 @@ class AugusPerformance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
 class AugusTicket(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'AugusTicket'
+    __REGULAR_PRICE_UNIT_TYPE_CODE__ = 0
     id = Column(Identifier, primary_key=True)
     augus_venue_code = AnnotatedColumn(Integer, nullable=False, _a_label=(u'オーガス会場コード'))
     augus_seat_type_code = AnnotatedColumn(Integer, nullable=False, _a_label=(u'オーガス席種コード'))
@@ -4834,6 +4846,19 @@ class AugusTicket(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def delete_link(self):
         self.stock_type_id = None
 
+    def get_ticket_of_regular_price(self):
+        if self.unit_value_code == self.__REGULAR_PRICE_UNIT_TYPE_CODE__:
+            return self
+
+        return AugusTicket.query\
+            .filter(AugusTicket.augus_performance_id == self.augus_performance_id,
+                    AugusTicket.augus_venue_code == self.augus_venue_code,
+                    AugusTicket.augus_seat_type_code == self.augus_seat_type_code,
+                    AugusTicket.augus_seat_type_classif == self.augus_seat_type_classif,
+                    AugusTicket.stock_type_id == self.stock_type_id,
+                    AugusTicket.unit_value_code == self.__REGULAR_PRICE_UNIT_TYPE_CODE__)\
+            .one()
+
 class AugusStockDetail(Base, BaseModel):
     __tablename__ = 'AugusStockDetail'
     id = Column(Identifier, primary_key=True)
@@ -4851,6 +4876,7 @@ class AugusStockDetail(Base, BaseModel):
     augus_putback = relationship('AugusPutback', backref='augus_stock_details')
     augus_ticket_id = Column(Identifier, ForeignKey('AugusTicket.id'), nullable=True)
     augus_ticket = relationship('AugusTicket', backref='augus_stock_details')
+    augus_unreserved_putback_status = AnnotatedColumn(Integer, nullable=True)
     distributed_at = Column(DateTime, nullable=True)
 
 
@@ -4866,9 +4892,9 @@ class AugusStockInfo(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     augus_performance = relationship('AugusPerformance')
 
     augus_ticket_id = Column(Identifier, ForeignKey('AugusTicket.id'), nullable=False)
-    augus_ticket = relationship('AugusTicket')
+    augus_ticket = relationship('AugusTicket', backref='augus_stock_infos')
 
-    augus_seat_id = Column(Identifier, ForeignKey('AugusSeat.id'), nullable=False)
+    augus_seat_id = Column(Identifier, ForeignKey('AugusSeat.id'), nullable=True)
     augus_seat = relationship('AugusSeat')
 
     seat_id = Column(Identifier, ForeignKey('Seat.id'), nullable=False)
@@ -4932,7 +4958,8 @@ class AugusPutback(Base, BaseModel): #, WithTimestamp, LogicallyDeleted):
 
 
     def __len__(self):
-        return len(self.augus_stock_details)
+        # 返券する全席数を返す
+        return sum([d.quantity for d in self.augus_stock_details])
 
 
 class AugusSeatStatus(object):
@@ -4958,6 +4985,18 @@ class AugusSeatStatus(object):
         else:
             logger.info('Seat.id {} has other status {}'.format(seat.id, seat.status))
             return cls.OTHER
+
+
+class AugusUnreservedSeatStatus(object):
+    RESERVE = 0
+    SOLD = 1
+
+    @classmethod
+    def get_status(cls, order):
+        if order and order.payment_status == 'paid':
+            return cls.SOLD
+        else:
+            return cls.RESERVE
 
 
 class OrionPerformance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
