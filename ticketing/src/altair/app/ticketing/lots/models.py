@@ -629,6 +629,8 @@ class LotEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     user_agent = sa.Column(sa.VARBINARY(200), nullable=True)
 
     user_point_accounts = orm.relationship('UserPointAccount', secondary=lot_entry_user_point_account_table)
+    # 楽天ポイントの使用は抽選では行わないため0ポイント
+    point_amount = 0
 
     #xxx: for order
     @property
@@ -654,6 +656,10 @@ class LotEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         if self.order is None:
             return None
         return self.order.total_amount
+
+    @property
+    def payment_amount(self):
+        return self.order.total_amount - self.point_amount
 
     @property
     def system_fee(self):

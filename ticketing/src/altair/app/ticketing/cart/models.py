@@ -239,6 +239,10 @@ class Cart(Base, c_models.CartMixin):
             raise InvalidCartStatusError(self.id)
 
     @property
+    def payment_amount(self):
+        return self.total_amount - self.point_amount
+
+    @property
     def delivery_fee(self):
         """ 引取手数料 """
         return self.sales_segment.get_delivery_fee(

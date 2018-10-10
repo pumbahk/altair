@@ -302,6 +302,10 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     payment_delivery_pair = orm.relationship("PaymentDeliveryMethodPair", backref='orders')
 
     @property
+    def payment_amount(self):
+        return self.total_amount - self.point_amount
+
+    @property
     def total_product_quantity(self):
         total = 0
         for op in self.ordered_products:
@@ -1315,6 +1319,10 @@ class ProtoOrder(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     membergroup = orm.relationship('MemberGroup')
 
     user_point_accounts = orm.relationship('UserPointAccount', secondary=proto_order_user_point_account_table)
+
+    @property
+    def payment_amount(self):
+        return self.total_amount - self.point_amount
 
     def mark_processed(self, now=None):
         self.processed_at = now or datetime.now()
