@@ -60,6 +60,7 @@
         <br/>
     % endif
 
+    ${disp_error(form.admission_time.errors)}
     <div id="inquiry" class="inquiry">
         <form action="${request.route_path('usersite.inquiry')}" method="POST">
             <fieldset style="border: none">
@@ -87,6 +88,7 @@
                 ${disp_error(form.title.errors)}
                 ${form.body.label}(具体的に記載してください)<span class="red">※</span><br/>${form.body}<br/>
                 ${disp_error(form.title.errors)}
+                ${form.admission_time}
             </fieldset>
             <span class="red">※</span>は必ず入力してください。<br/>
             % if not result:

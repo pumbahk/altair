@@ -10,7 +10,6 @@ from altair.augus.protocols import (
     DistributionSyncResponse,
     PutbackRequest,
     PutbackResponse,
-    PutbackFinish,
     AchievementRequest,
     AchievementResponse,
     ALL,
@@ -29,7 +28,6 @@ PROTOCOL_EXAMPLE = {
     DistributionSyncResponse: None,
     PutbackRequest: None,
     PutbackResponse: None,
-    PutbackFinish: None,
     AchievementRequest: None,
     AchievementResponse: None,
     }
