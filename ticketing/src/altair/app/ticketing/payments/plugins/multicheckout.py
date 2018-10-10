@@ -148,6 +148,9 @@ class MultiCheckoutPlugin(object):
         if order_like.total_amount <= 0:
             raise OrderLikeValidationFailure(u'total_amount is zero', 'order.total_amount')
 
+        if order_like.payment_amount < 0:
+            raise OrderLikeValidationFailure(u'payment amount is minus', 'order.payment_amount')
+
     def validate_order_cancellation(self, request, order, now):
         """ キャンセルバリデーション """
         pass
@@ -171,7 +174,7 @@ class MultiCheckoutPlugin(object):
                 pass
             elif status.Status in (str(MultiCheckoutStatusEnum.Settled), str(MultiCheckoutStatusEnum.PartCanceled)):
                 authorized_amount = multicheckout_api.get_authorized_amount(order_no)
-                if cart.total_amount > authorized_amount:
+                if cart.payment_amount > authorized_amount:
                     raise MultiCheckoutSettlementFailure(
                         message='multicheckout status is settled and new total_amount is greater than the previous (%s, %s > %s)' % (order_no, cart.total_amount, authorized_amount),
                         order_no=order_no,
@@ -213,8 +216,8 @@ class MultiCheckoutPlugin(object):
         authorized_amount = multicheckout_api.get_authorized_amount(mc_order_no)
         amount_to_cancel = 0
         assert authorized_amount is not None
-        # order_like.total_amount は Decimal だ...
-        amount_to_cancel = authorized_amount - int(order_like.total_amount)
+        # order_like.payment_amountは、Decimalのため
+        amount_to_cancel = authorized_amount - int(order_like.payment_amount)
 
         logger.info('finish2: amount_to_cancel=%d' % amount_to_cancel)
 
@@ -314,11 +317,11 @@ class MultiCheckoutPlugin(object):
         if res.Status not in (str(MultiCheckoutStatusEnum.Settled), str(MultiCheckoutStatusEnum.PartCanceled)):
             raise MultiCheckoutSettlementFailure("status of order %s (%s) is neither `Settled' nor `PartCanceled' (%s)" % (order.order_no, real_order_no, res.Status), order.order_no, None)
 
-        if order.total_amount == res.SalesAmount:
+        if order.payment_amount == res.SalesAmount:
             # no need to make requests
             logger.info('total amount (%s) of order %s (%s) is equal to the amount already committed (%s). nothing seems to be done' % (order.total_amount, order.order_no, real_order_no, res.SalesAmount))
             return
-        elif order.total_amount > res.SalesAmount:
+        elif order.payment_amount > res.SalesAmount:
             # we can't get the amount increased later
             raise MultiCheckoutSettlementFailure('total amount (%s) of order %s (%s) cannot be greater than the amount already committed (%s)' % (order.total_amount, order.order_no, real_order_no, res.SalesAmount), order.order_no, None)
 
@@ -337,6 +340,7 @@ class MultiCheckoutPlugin(object):
 
     @clear_exc
     def refund(self, request, order, refund_record):
+        # TODO 払戻時にポイントを使用された楽天ポイントを付与
         organization = c_models.Organization.query.filter_by(id=order.organization_id).one()
         multicheckout_api = get_multicheckout_3d_api(request, organization.setting.multicheckout_shop_name)
         real_order_no = order.order_no
@@ -354,7 +358,7 @@ class MultiCheckoutPlugin(object):
         if res.Status not in (str(MultiCheckoutStatusEnum.Settled), str(MultiCheckoutStatusEnum.PartCanceled)):
             raise MultiCheckoutSettlementFailure("status of order %s (%s) is neither `Settled' nor `PartCanceled' (%s)" % (order.order_no, real_order_no, res.Status), order.order_no, None)
 
-        remaining_amount = order.total_amount - refund_record.refund_total_amount
+        remaining_amount = order.payment_amount - refund_record.refund_total_amount
 
         if remaining_amount == res.SalesAmount:
             # no need to make requests
@@ -367,7 +371,7 @@ class MultiCheckoutPlugin(object):
         # 払い戻すべき金額を渡す必要がある
         part_cancel_res = multicheckout_api.checkout_sales_part_cancel(
             real_order_no,
-            order.total_amount - remaining_amount,
+            order.payment_amount - remaining_amount,
             0)
         if part_cancel_res.CmnErrorCd != '000000':
             raise MultiCheckoutSettlementFailure(
@@ -381,6 +385,7 @@ class MultiCheckoutPlugin(object):
     @clear_exc
     def cancel(self, request, order, now=None):
         # 売り上げキャンセル
+        # TODO 払戻時にポイントを使用された楽天ポイントを付与
         organization = c_models.Organization.query.filter_by(id=order.organization_id).one()
         multicheckout_api = get_multicheckout_3d_api(request, organization.setting.multicheckout_shop_name)
         real_order_no = order.order_no
