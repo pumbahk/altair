@@ -527,6 +527,7 @@ class MultiCheckoutPluginTests(unittest.TestCase):
                     )
                 ]
             )
+        dummy_cart.point_amount = 0
 
         session_order = {
             'client_name': u'楽天太郎',
@@ -601,6 +602,8 @@ class MultiCheckoutPluginTests(unittest.TestCase):
             name=u"9999999999",
             organization_id=1,
             total_amount=1234,
+            point_amount=0,
+            payment_amount=1234,
             performance=testing.DummyModel(id=100, name=u'テスト公演'),
             products=[],
             is_expired=lambda self, *args: False,
@@ -683,6 +686,7 @@ class MultiCheckoutPluginTests(unittest.TestCase):
             id=cart_id,
             name=u"9999999999",
             total_amount=1234,
+            payment_amount=1234,
             organization_id=1,
             performance=testing.DummyModel(id=100, name=u'テスト公演'),
             products=[],
@@ -766,6 +770,8 @@ class MultiCheckoutPluginTests(unittest.TestCase):
             id=cart_id,
             name=u"9999999999",
             total_amount=1234,
+            point_amount=0,
+            payment_amount=1234,
             organization_id=1,
             performance=testing.DummyModel(id=100, name=u'テスト公演'),
             products=[],
@@ -854,7 +860,8 @@ class MultiCheckoutPluginTests(unittest.TestCase):
                         ]
                     )
                 ],
-            total_amount=10
+            total_amount=10,
+            point_amount=0
             )
         get_multicheckout_impl.return_value = Checkout3D(
             auth_id='auth_id',
