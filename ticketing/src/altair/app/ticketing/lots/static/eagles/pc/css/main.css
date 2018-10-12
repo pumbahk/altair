@@ -587,7 +587,7 @@ form[name="logout"] input[type="submit"]:hover {
 }
 .wrap-form .formall.form1 dt {
   clear: left;
-  margin-left: 30%;
+  width: 22em;
 }
 .wrap-form .formall.form1 dt::before {
     content: "●";
