@@ -1,28 +1,30 @@
-<%inherit file="${context['main_template'].uri}" />
-<div id="main">
-  <form action="${request.url}" class="wishForm" method="post">
-    <div class="subbox">
-      <dl>
-        <dt><p class="lineRed">申込状況確認</p></dt>
-        <dd>
-          <div class="subInner2">
-            <dl class="creditList">
-              <dt class="creditHl">${form['entry_no'].label}</dt>
-              <dd>
-                ${form['entry_no'](class_="text")}（例：RL00000000AB）
-                ${self.error(form, 'entry_no', enclose=True)}
-              </dd>
-              <dt class="creditHl">${form['tel_no'].label}</dt>
-              <dd>
-                ${form['tel_no'](class_="text")}（例：080xxxxvvvv）
-                ${self.error(form, 'tel_no', enclose=True)}
-              </dd>
-            </dl>
-          </div>
-        </dd>
-      </dl>
-    </div>
-    <p class="nextBtn"><input type="submit" value="確認する" />
-  </form>
-</div>
+<%inherit file="review_base.html" />
 
+<div class="wrap-form">
+  <article>
+    <h2>${_(u'抽選申込確認')}</h2>
+
+    <section>
+      <form method="post" accept-charset="utf-8" action="${request.url}" autocomplete="off" novalidate>
+        <dl class="formall form1">
+          <dt>${_(u'受付番号')} (${_(u'半角英数')})</dt>
+          <dd>
+            <input id="entry_no" name="entry_no" type="text" value="" required><br>
+            <span>(例: RE00000000AB)</span><br>
+            <span class="red">${h.render_errors(request, form.entry_no.errors)}</span>
+          </dd>
+          <dt>${_(u'電話番号')} (${_(u'半角英数')})</dt>
+          <dd>
+            <input id="tel_no" name="tel_no" type="text" value="" required><br>
+            <span>(例: 080●●●●●●●●)</span><br>
+            <small class="annot">${_(u'電話番号はご登録時の電話番号をご入力ください。')}</small>
+            <span class="red">${h.render_errors(request, form.tel_no.errors)}</span>
+          </dd>
+        </dl>
+        <p class="txtC">
+          <button class="btn" type="submit">${_(u'次に進む')}</button>
+        </p>
+      </form>
+    </section>
+  </article>
+</div>
