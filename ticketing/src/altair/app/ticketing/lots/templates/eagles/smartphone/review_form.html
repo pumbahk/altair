@@ -9,12 +9,14 @@
         <dl class="formall form1">
           <dt>${_(u'受付番号')} (${_(u'半角英数')})</dt>
           <dd>
-            <input id="entry_no" name="entry_no" type="text" value="" placeholder="例: ${request.organization.short_name}000000AB" required>
+            <input id="entry_no" name="entry_no" type="text" value="" required><br>
+            <span>(例: RE00000000AB)</span><br>
             <span class="red">${h.render_errors(request, form.entry_no.errors)}</span>
           </dd>
           <dt>${_(u'電話番号')} (${_(u'半角英数')})</dt>
           <dd>
-            <input id="tel_no" name="tel_no" type="text" value="" placeholder="例: 080xxxxyyyy" required><br>
+            <input id="tel_no" name="tel_no" type="text" value="" required><br>
+            <span>(例: 080●●●●●●●●)</span><br>
             <small class="annot">${_(u'電話番号はご登録時の電話番号をご入力ください。')}</small>
             <span class="red">${h.render_errors(request, form.tel_no.errors)}</span>
           </dd>
