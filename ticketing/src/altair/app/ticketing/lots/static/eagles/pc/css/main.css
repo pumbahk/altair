@@ -41,9 +41,7 @@ header h1 {
 }
 header h1 img {
   border-radius: 5px;
-  background: #ffffff;
   vertical-align: middle !important;
-  height: 45px;
 }
 
 /* footer
@@ -277,7 +275,7 @@ table {
 -------------------------------------------- */
 main {
   padding: 30px 0;
-  background: #ffffff;
+  background: #64000D;
 }
 
 @media only screen and (max-width: 750px) {
@@ -329,8 +327,8 @@ main {
   clear: both;
   position: relative;
   left: -1px;
-  border-bottom: 2px solid #bf0000;
-  color: #bf0000;
+  border-bottom: 2px solid #bf191f;
+  color: #bf191f;
   font-size: 18px;
   font-weight: bold;
   margin: 0 0 10px;
@@ -589,7 +587,7 @@ form[name="logout"] input[type="submit"]:hover {
 }
 .wrap-form .formall.form1 dt {
   clear: left;
-  width: 22em;
+  margin-left: 30%;
 }
 .wrap-form .formall.form1 dt::before {
     content: "●";
@@ -686,6 +684,17 @@ form[name="logout"] input[type="submit"]:hover {
     width: 100%;
     display: block;
   }
+}
+
+
+.wrap-form {
+  overflow: hidden;
+  margin: 0 auto;
+  width: 950px;
+  min-height: 400px;
+  margin-bottom: 20px;
+  border: 8px solid #dfdfdf;
+  padding: 6px 6px 6px 6px;
 }
 
 /* ETC

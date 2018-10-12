@@ -40,9 +40,7 @@ header h1 {
 }
 header h1 img {
   border-radius: 5px;
-  background: #ffffff;
   vertical-align: middle !important;
-  height: 45px;
 }
 
 /* footer
@@ -310,8 +308,8 @@ main {
   clear: both;
   position: relative;
   left: -1px;
-  border-bottom: 2px solid #bf0000;
-  color: #bf0000;
+  border-bottom: 2px solid #bf191f;
+  color: #bf191f;
   font-size: 18px;
   font-weight: bold;
   margin: 0 0 10px;
