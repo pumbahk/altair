@@ -1277,6 +1277,7 @@ class ProtoOrder(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     operator = orm.relationship('Operator', uselist=False)
 
     total_amount = sa.Column(sa.Numeric(precision=16, scale=2), nullable=True)
+    point_amount = sa.Column(sa.Numeric(precision=16, scale=2), nullable=False, default=0)
     system_fee = sa.Column(sa.Numeric(precision=16, scale=2), nullable=True)
 
     special_fee_name = sa.Column(sa.Unicode(255), nullable=True)

@@ -135,6 +135,7 @@ class Cart(Base, c_models.CartMixin):
     membergroup = orm.relationship('MemberGroup')
 
     user_point_accounts = orm.relationship('UserPointAccount', secondary=cart_user_point_account_table)
+    point_amount = sa.Column(sa.Numeric(precision=16, scale=2), nullable=False, default=0)
 
     @property
     def products(self):
