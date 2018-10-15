@@ -325,6 +325,7 @@ class MultiCheckoutPlugin(object):
             # we can't get the amount increased later
             raise MultiCheckoutSettlementFailure('total amount (%s) of order %s (%s) cannot be greater than the amount already committed (%s)' % (order.total_amount, order.order_no, real_order_no, res.SalesAmount), order.order_no, None)
         elif order.point_amount and order.payment_amount != res.SalesAmount:
+            # TODO 減額を許容するものの、一部ポイント払いから全額ポイント払いになるような金額変更はバリデーションで弾くことになりました。減額の場合はポイント付与処理も発生する
             # ポイントを使用している場合は、金額変更できない
             raise MultiCheckoutSettlementFailure(u"You can not change the amount by using points.")
 
@@ -344,6 +345,7 @@ class MultiCheckoutPlugin(object):
     @clear_exc
     def refund(self, request, order, refund_record):
         # TODO 払戻時にポイントを使用された楽天ポイントを付与
+        # TODO 全額ポイント払いのときを考慮する。空のレスポンスが返ってきたときなど
         organization = c_models.Organization.query.filter_by(id=order.organization_id).one()
         multicheckout_api = get_multicheckout_3d_api(request, organization.setting.multicheckout_shop_name)
         real_order_no = order.order_no

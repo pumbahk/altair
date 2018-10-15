@@ -708,6 +708,10 @@ class _DummyCart(c_models.CartMixin):
         return c_api.calculate_total_amount(self)
 
     @property
+    def payment_amount(self):
+        return c_api.calculate_total_amount(self)
+
+    @property
     def delivery_fee(self):
         return self.sales_segment.get_delivery_fee(
             self.payment_delivery_pair,
