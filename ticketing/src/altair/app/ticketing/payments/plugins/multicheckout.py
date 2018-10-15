@@ -324,6 +324,9 @@ class MultiCheckoutPlugin(object):
         elif order.payment_amount > res.SalesAmount:
             # we can't get the amount increased later
             raise MultiCheckoutSettlementFailure('total amount (%s) of order %s (%s) cannot be greater than the amount already committed (%s)' % (order.total_amount, order.order_no, real_order_no, res.SalesAmount), order.order_no, None)
+        elif order.point_amount and order.payment_amount != res.SalesAmount:
+            # ポイントを使用している場合は、金額変更できない
+            raise MultiCheckoutSettlementFailure(u"You can not change the amount by using points.")
 
         part_cancel_res = multicheckout_api.checkout_sales_part_cancel(
             real_order_no,
