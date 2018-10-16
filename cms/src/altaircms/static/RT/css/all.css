@@ -620,7 +620,7 @@ dl#topicPath dt {
     clear: both;
 }*/
 #globalNav1 {
-    width: 950px;
+    min-width: 830px;
     margin: 0 0 0 0;
     clear: both;
 }

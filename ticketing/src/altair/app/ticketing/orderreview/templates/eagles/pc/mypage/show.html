@@ -15,7 +15,7 @@
           <div class="inner">
             <h2 class="page-ttl">マイページ</h2>
             <div class="sub-contents">
-             
+
             <h3 class="sub-ttl tac">購入履歴の確認</h3>
 
 
@@ -29,7 +29,7 @@
 <!-- ===== 抽選申込み照会 ===== -->
 % if lot_entries:
   <div class="confirm-wrap">
-  <h3>抽選申込み照会</h3>
+  <h3 class="sub-ttl tac">抽選申込み照会</h3>
   ${render_lot_entries(lot_entries)}
   </div>
 % else:
@@ -43,7 +43,7 @@
 </p>
 
             </div>
-            </div>      
+            </div>
           </div>
 
       <br/><br/><br/>
@@ -120,29 +120,43 @@
   </table>
 </%def>
 
+<!-- Renderer for lot_entries -->
 <%def name="render_lot_entries(lot_entries)">
-    % for entry in lot_entries:
-      <div class="mypage-box">
-        <p class="mypage-icon"><img src="${request.static_url('altair.app.ticketing.orderreview:static/RT/pc/images/mypage/' + h.get_entry_status_image(request, entry))}" alt="${h.get_entry_status(request, entry)}" width="60" height="60" /></p>
-        <dl>
-          <form id="lots${entry.entry_no}" name="${entry.entry_no}" action="/lots/review" method="POST">
-            <input type="hidden" name="entry_no" value="${entry.entry_no}"/>
-            <input type="hidden" name="tel_no" value="${entry.shipping_address.tel_1}"/>
-            % if h.is_disabled_order(entry):
-              <dt>${entry.lot.name}</dt>
-            % else:
-              <dt><a href="javascript:void(0);" onclick="document.getElementById('lots' + '${entry.entry_no}').submit()">${entry.lot.name}</a></dt>
-            % endif
-            <dd><span class="br">受付番号：${entry.entry_no}</span>
-                <span>申込日時：${h.japanese_datetime(entry.created_at)}</span></dd>
-            <dd><span class="br"></span><span></span></dd><!-- for adjustment -->
-          </form>
-        </dl>
-      </div>
-    % endfor
-<div style="text-align: right">
+            <div class="orderreview-list-wrap">
+              <ul class="orderreview-list">
+  % for entry in lot_entries:
+                <li>
+                  <table class="orderreview-tbl">
+                      <tr>
+                        <th>
+                          <ul class="sate-list">
+                              ${h.get_entry_status(request, entry)}
+                          </ul>
+                        </th>
+                        <td class="payment-detail">
+                          <form id="lots${entry.entry_no}" name="${entry.entry_no}" action="/lots/review" method="POST">
+                            <input type="hidden" name="entry_no" value="${entry.entry_no}"/>
+                            <input type="hidden" name="tel_no" value="${entry.shipping_address.tel_1}"/>
+                          <p class="payment-detail-title">${entry.lot.name}</p>
+                          <div class="payment-detail-box">
+                            <p><span>受付番号</span>:${entry.entry_no}<br class="sp"></p>
+                            <p><span>予約日時</span>:${h.japanese_datetime(entry.created_at)}</p>
+                          </div>
+                          </form>
+                        </td>
+                        <td class="confirm-box">
+                        % if h.is_disabled_order(entry):
+                          <dt>${entry.lot.name}</dt>
+                        % else:
+                          <dt><a href="javascript:void(0);" onclick="document.getElementById('lots' + '${entry.entry_no}').submit()" class="payment-confirm-btn">確認する</a></dt>
+                        % endif
+                        </td>
+                      </tr>
+                    </table>
+                </li>
+
+  % endfor
 ${render_pager(lot_entries)}
-</div>
 </%def>
 
 <%def name="render_orders(orders)">
