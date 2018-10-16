@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 <%inherit file="/layout_2cols.html" />
 <%namespace file="/common/helpers.html" name="ch" />
 
@@ -21,6 +22,7 @@
     margin-top: 20px;
   }
 
+  <%doc>ローディング中にjavascriptで動的に追加</%doc>
   .loader {
     border: 16px solid #f3f3f3; /* Light grey */
     border-top: 16px solid #196f3e; /* Altair green */
@@ -257,16 +259,14 @@
         contentType: false,
         dataType: 'json',
         success: function(res) {
-          console.log(res);
           point.hide();
           $(res.html).appendTo(point);
           point.fadeIn();
         },
         error: function(xhr, text) {
-          console.log('error');
+          loader.html('<p>エラーが発生しました</p>').removeClass('loader');
           console.log(xhr);
           console.log(text);
-          loader.html('<p>エラーが発生しました</p>').removeClass('loader');
         },
         complete: function() {
           point.removeClass('loader');
