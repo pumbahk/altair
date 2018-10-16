@@ -5,6 +5,7 @@ import sqlalchemy as sa
 from altair.app.ticketing.fanstatic import with_bootstrap
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPBadRequest, HTTPNotFound
+from pyramid.renderers import render_to_response
 from altair.app.ticketing.models import DBSession, record_to_appstruct
 from altair.app.ticketing.core.models import ProductItem, Performance
 from altair.app.ticketing.core.models import Ticket, TicketBundle, TicketBundleAttribute
@@ -40,6 +41,16 @@ class IndexView(BaseView):
         performances = []
         return dict(form=form, performances=performances)
 
+    @view_config(route_name='events.tickets.get_bundle_linked_info', request_method="GET", renderer='json')
+    def get_bundle_linked_info(self):
+        bundle = self.context.bundle
+        html = render_to_response('altair.app.ticketing:templates/tickets/events/_notify_update_ticket_info_ajax.html',
+                                  value={
+                                      'request': self.context.request,
+                                      'bundle': bundle
+                                  })
+
+        return {'html': html.body}
 
 @view_config(route_name="events.tickets.bind.ticket", request_method="POST",
              decorator=with_bootstrap, permission="event_editor")
