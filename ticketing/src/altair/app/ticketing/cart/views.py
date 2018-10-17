@@ -197,7 +197,7 @@ class PointUseConsideredPaymentAction(flow.PageFlowActionBase):
         # ログイン済み、デバイスがPCかスマホ、そしてポイント利用可能になっている場合にポイント入力画面へ遷移する
         if request.altair_auth_info['membership_source'] == 'altair.oauth_auth.plugin.OAuthAuthPlugin' \
                 and not is_mobile_request(request) \
-                and is_point_use_accepted(context, request):
+                and is_point_use_accepted(context):
             flow_context['point_use_check_validated'] = True
             return flow.Transition(context, request, url_or_path=request.route_url('cart.point_use'))
 
