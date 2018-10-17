@@ -198,8 +198,11 @@ def notify_update_ticket_info(context, request):
 
     if errors:
         task.status = NotifyUpdateTicketInfoTaskEnum.failed.v[0]
+        error_num = len(errors)
+        errors.insert(0, u'{}件のエラーが発生しました。'.format(error_num))
         task.errors = u'\n'.join(errors)
-        logger.error(u'failed to refresh {} order(s): {}'.format(len(errors), task.errors))
+        logger.error('NotifyUpdateTicketInfoTask failed {} order(s).'
+                     'Check the detail at NotifyUpdateTicketInfoTask.id:{}'.format(error_num, task.id))
     else:
         task.status = NotifyUpdateTicketInfoTaskEnum.completed.v[0]
         logger.info('SEJ/FM orders linked to bundle_id:{} were successfully refreshed.'.format(bundle_id))
