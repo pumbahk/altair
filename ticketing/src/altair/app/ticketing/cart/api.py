@@ -431,23 +431,17 @@ def is_point_account_no_input_required(context, request):
 def is_point_use_accepted_organization(request):
     """ ポイント利用が可能な Org であるかの判定 """
     organization = get_organization(request)
-    code = organization.code
-    return code == 'RE' or code == 'VK' or code == 'RT'
+    return organization.setting.enable_point_allocation
 
 
 def is_point_use_accepted(context, request):
     """
     ポイント利用が可能な Org の販売区分であるかの判定
-    ・Cart 情報に asid が存在している
+    ・Org の設定情報に asid が存在している
     ・Org が RE, VK, RT
     ・販売区分がポイント充当可能に設定されている
     """
-    # cart
-    if hasattr(context, "asid"):
-        if not context.asid:
-            return False
-
-    return \
+    return hasattr(context, "asid") and context.asid and \
         is_point_use_accepted_organization(request) and \
         context.sales_segment.is_point_allocation_enable
 
