@@ -1,0 +1,244 @@
+<%inherit file="./base.html"/>
+<%namespace file="tags_smartphone.html" name="m" />
+
+<%block name="javascript">
+  <script type="text/javascript" src="${request.static_url('altair.app.ticketing.cart:static/js/disable_on_submit.js')}"></script>
+  <script type="text/javascript">
+    $(function() {
+      $('#form1').disableOnSubmit('input[type=submit][name!="back"]');
+    });
+
+    % if maximum_usable_point < 50 or not is_point_available:
+    $(document).ready(function () {
+      $('label').each(function () {
+        let labelElement = $(this).attr('for');if (labelElement !== 'no_use') {
+          $(this).css('opacity', '0.5');
+          $('input#' + labelElement).prop('disabled', true);
+        }
+      });
+    });
+    % endif
+  </script>
+</%block>
+<%block name='css'>
+<style type="text/css">
+  th {
+      text-align: left;
+  }
+  .dispBox {
+    margin: auto;
+    width: 95%;
+    padding-top: 15px;
+  }
+  .methodArea {
+    border: 1px solid #000000;
+    background-color: cornsilk;
+    width: 100%;
+  }
+  .align1 {
+    text-align: right;
+  }
+  .dispBoxInner {
+    margin: auto;
+    width: 95%;
+    padding-top: 15px;
+  }
+  .point-use-table {
+    margin: 20px auto 0 auto;
+    width: 100%;
+    border: 1px solid #ccc;
+  }
+  .point-use-table td {
+    padding: 3px;
+    font-size: 12px;
+  }
+  .point-use-notice {
+    font-size: 12px;
+    margin: 20px auto 0 0;
+    line-height: 1.7;
+  }
+  .crimson {
+    color: #DC143C;
+  }
+  a:link {
+    text-decoration: none;
+  }
+  input[type='radio'] {
+    position: relative;
+    top: 2px;
+  }
+  #point_input_form {
+    width: 160px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
+</style>
+</%block>
+
+<form id="form1" name="form1" action="${request.url}" method="post">
+  <div class="confirmBox">
+	  <div class="confirmBoxInner">
+      <div class="dispBox">
+        <%m:header>お買い物内容</%m:header>
+        <div class="dispBoxInner">
+          <div id="name">
+            ${cart.performance.event.title}<br/>
+            ${h.performance_datetime(cart.performance)}(予定)<br/>
+            ${cart.performance.venue.name}
+          </div>
+          <br/>
+
+          <table id="contentsOfShopping" summary="席種、金額などのお買い物内容" class="methodArea">
+            %for product in cart.items:
+                <tr id="commission">
+                  % if len(product.items) == 1:
+                    <th scope="row"><img src="${request.static_url('altair.app.ticketing.cart:static/RT/smartphone/images/icon_dummy.gif')}" alt="" width="21" height="21" />${product.product.name}<strong> ${product.seat_quantity}</strong>枚<br/></th>
+                  % else:
+                    <th scope="row"><img src="${request.static_url('altair.app.ticketing.cart:static/RT/smartphone/images/icon_dummy.gif')}" alt="" width="21" height="21" />${product.product.name} ×<strong>${product.quantity}</strong><br/></th>
+                  % endif
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td class="align1">￥${h.format_number(product.product.price * product.quantity)}</td>
+                </tr>
+                % if product.product.sales_segment.setting.display_seat_no:
+                  % for seat in product.seats:
+                    <tr id="commission">
+                        <th scope="row" colspan="4">　　${seat['name']}</th>
+                    </tr>
+                  % endfor
+                % endif
+            %endfor
+            <tr id="commission">
+              <th scope="row">決済手数料</th>
+              <td>&nbsp;</td>
+              <td>&nbsp;</td>
+              <td class="align1">￥${h.format_number(cart.transaction_fee)}</td>
+            </tr>
+            <tr id="commission">
+              <th scope="row">発券/引取手数料</th>
+              <td>&nbsp;</td>
+              <td>&nbsp;</td>
+              <td class="align1">￥${h.format_number(cart.delivery_fee)}</td>
+            </tr>
+            <tr id="commission">
+              <th scope="row">システム利用料</th>
+              <td>&nbsp;</td>
+              <td>&nbsp;</td>
+              <td class="align1">￥${h.format_number(cart.system_fee)}</td>
+            </tr>
+            %if cart.special_fee > 0:
+            <tr id="commission">
+              <th scope="row">${cart.special_fee_name}</th>
+              <td>&nbsp;</td>
+              <td>&nbsp;</td>
+              <td class="align1">￥${h.format_number(cart.special_fee)}</td>
+            </tr>
+            %endif
+            <tr id="total">
+              <th scope="row">合計金額</th>
+              <td>&nbsp;</td>
+              <td>&nbsp;</td>
+              <td class="align1">￥${h.format_number(cart.total_amount)}</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+	  </div>
+  </div>
+
+  <div class="confirmBox">
+	  <div class="confirmBoxInner">
+      <div class="dispBox">
+        <%m:header>ポイント入力</%m:header>
+        <div class="dispBoxInner">
+
+          <table class="point-use-table">
+            <tr>
+              <td style="font-size: 15px">ポイント残高</td>
+            </tr>
+            <tr>
+              <td align="left">${cart.shipping_address.last_name} ${cart.shipping_address.first_name} さんのご利用可能な通常ポイント残高	</td>
+            </tr>
+            <tr>
+              <td class="point" align="right"><span class="crimson">${h.format_number(usable_standard_point)}</span> ポイント（円）</td>
+            </tr>
+          </table>
+          <table class="point-use-table">
+            <tr>
+              <td style="font-size: 15px">利用方法</td>
+            </tr>
+            <% errors = h.error_list(request, form, 'input_point', style_class='crimson') %>
+            % if errors:
+              ${errors}
+            % endif
+            <tr>
+              <td>
+                <input id="partial_use" name="point_use" type="radio" value="1">
+                <label for="partial_use">一部のポイントを使う
+                % if maximum_usable_point > 0:
+                  （利用上限ポイント：${h.format_number(maximum_usable_point)}）
+                % endif
+                </label>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <table>
+                  <tr>
+                    <td width="10px"></td>
+                    <td>${form.input_point(maxlength='6', id='point_input_form')}</td>
+                    <td><label for="input_point">ポイント</label></td>
+                  </tr>
+                  <tr>
+                    <td></td>
+                    <td colspan="2" style="padding-top: 0">
+                      <span class="crimson">( 例 ) 1000 &lt;半角数字&gt;</span>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding-top: 0;">
+                <span class="crimson">※50ポイント以上よりご利用可能です</span>
+                <div class="crimson">
+                  <span style="line-height: 1.7">
+                    ※決済手数料を除いた合計金額がポイントの利用上限となります。<br>
+                    ※決済手数料を除いた合計金額分のポイントをご利用の場合、決済手数料は0円となります。<br>
+                  </span>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <input id="all_use" name="point_use" type="radio" value="0">
+                <label for="all_use">全てのポイントを使う</label><br>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <input id="no_use" name="point_use" type="radio" value="-1" checked>
+                <label for="no_use">ポイントを利用しない</label>
+              </td>
+            </tr>
+          </table>
+
+          <div class="point-use-notice">
+            ＜ご注意＞<br>
+            <span class="crimson">
+              ・「全てのポイントを使う」を選択した場合、ご注文時点の利用可能な全てのポイントが利用ポイントとして確定いたします。<br>
+            </span>
+            ・1回のお支払い上限、1ヶ月のご利用上限については&nbsp;<a href="https://point.rakuten.co.jp/guidance/usemethod/" target="_blank">ポイント利用方法</a>&nbsp;をご確認ください。<br>
+            ・利用ポイント以外に不足金額が発生する場合は、選択されたお支払い方法でのお買い物になります。<br>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <input type="hidden" name="usable_standard_point" value="${usable_standard_point}">
+  <input type="hidden" name="maximum_usable_point" value="${maximum_usable_point}">
+  <div class="buttonbox">
+    <button onclick="$('#form1').submit()" class="btn btn-primary btn-large">次へ</button>
+  </div>
+</form>
