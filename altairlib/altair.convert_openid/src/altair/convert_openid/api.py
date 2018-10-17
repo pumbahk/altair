@@ -49,25 +49,28 @@ class OpenIDConverterFactory(object):
     def get_easyid(self, openid):
         request_url = self.endpoint + openid
 
-        try:
-            response = None
-            response = urllib2.urlopen(request_url, timeout=self.timeout)
-            result = response.read()
+        for _ in range(3):  # リトライ処理(最大3回実行)
+            try:
+                response = None
+                response = urllib2.urlopen(request_url, timeout=self.timeout)
+                result = response.read()
 
-            # response check
-            logger.debug('converter API result log : %s', result)
-            result_tree = ElementTree.fromstring(result)
-            easyid = result_tree.find('easyId').text
-        except Exception as e:
-            logger.error(e.message)
+                # response check
+                logger.debug('converter API result log : %s', result)
+                result_tree = ElementTree.fromstring(result)
+                easyid = result_tree.find('easyId').text
+            except Exception as e:
+                pass
+            else:  # try処理が成功した場合
+                if easyid is None:
+                    raise EasyIDNotFoundError('[OID0002]failed to get the target EasyID. openid = {}'.format(openid))
+                return easyid
+            finally:
+                if response:
+                    response.close()
+        else:  # リトライしても全て失敗した場合
+            logger.debug(e.message)
             raise ConverterAPIError('[OID0001]failed to request OpenID converter API. openid = {}'.format(openid))
-        finally:
-            if response:
-                response.close()
-
-        if easyid is None:
-            raise EasyIDNotFoundError('[OID0002]failed to get the target EasyID. openid = {}'.format(openid))
-        return easyid
 
 
 def includeme(config):

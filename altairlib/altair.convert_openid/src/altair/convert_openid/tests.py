@@ -15,10 +15,15 @@ class ConvertOpenIDTest(unittest.TestCase):
 
     def _callFUT(self, *args, **kwargs):
         from . import api
+        # 実際に通信をする場合は以下の2行をコメントアウトしてください
+        easyid = mock.MagicMock(return_value='13256346')
+        api.convert_openid_to_easyid = easyid
         return api.convert_openid_to_easyid(*args, **kwargs)
 
     def test_it(self):
         request = testing.DummyRequest()
+        # 例外処理確認用
+        # openid = 'https://myid.rakuten.co.jp/openid/user/reeMBzshCVbzC2SulpKTnGlWg=='
         openid = 'https://myid.rakuten.co.jp/openid/user/rNmPCzshCVbzC2SulpKTnGlWg=='
         result = self._callFUT(
             request=request,
