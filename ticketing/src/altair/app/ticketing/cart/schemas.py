@@ -2,7 +2,7 @@
 
 from datetime import datetime
 from wtforms.ext.csrf.session import SessionSecureForm
-from wtforms.validators import Regexp, Length, Optional, EqualTo
+from wtforms.validators import Regexp, Length, Optional, NumberRange, EqualTo
 from wtforms.widgets import Select as OurSelect
 from markupsafe import Markup
 from altair.formhelpers.form import OurForm, OurDynamicForm
@@ -93,6 +93,25 @@ class PointForm(OurForm):
         validators=[
             Optional(),
             Regexp(r'^(?:\d{4}-\d{4}-\d{4}-\d{4}|\d{16})$', message=u'16桁の数字を入れて下さい。'),
+        ]
+    )
+
+
+class PointUseForm(OurForm):
+    def __init__(self, formdata=None, usable_point=None):
+        super(PointUseForm, self).__init__(formdata=formdata)
+        if usable_point:
+            self.input_point.validators.append(
+                NumberRange(max=usable_point, message=u'入力されたポイントはご利用可能ポイントを上回っています。')
+            )
+
+    def update_error(self, field_name, errors):
+        self[field_name].errors = errors
+
+    input_point = OurIntegerField(
+        validators=[
+            Optional(),
+            NumberRange(min=50, message=u'50ポイント以上を入力してください。'),
         ]
     )
 
