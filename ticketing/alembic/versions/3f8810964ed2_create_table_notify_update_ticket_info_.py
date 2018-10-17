@@ -1,14 +1,14 @@
 """create_table_notify_update_ticket_info_task
 
 Revision ID: 3f8810964ed2
-Revises: 4dee681121d2
+Revises: 3ca4e33768b4
 Create Date: 2018-09-28 15:24:51.732847
 
 """
 
 # revision identifiers, used by Alembic.
 revision = '3f8810964ed2'
-down_revision = '4bb9691556bf'
+down_revision = '3ca4e33768b4'
 
 import sqlalchemy as sa
 from alembic import op
