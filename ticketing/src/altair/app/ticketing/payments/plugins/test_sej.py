@@ -1764,6 +1764,8 @@ class BuildSejArgsTest(unittest.TestCase):
                         shipping_address=shipping_address,
                         payment_delivery_pair=payment_delivery_pair,
                         total_amount=1000,
+                        point_amount=0,
+                        payment_amount=1000,
                         system_fee=300,
                         transaction_fee=400,
                         delivery_fee=200,
@@ -1850,6 +1852,61 @@ class BuildSejArgsTest(unittest.TestCase):
                     self.assertEqual(expectation[k], args[k], '[%d].%s: %s != %s' % (i, k, expectation[k], args[k]))
                 else:
                     self.assertEqual(self.now + timedelta(days=365), args[k], '[%d].%s: %s != %s' % (i, k, expectation[k], args[k]))
+        for i, (expectation, order) in enumerate(zip(self.expectations_prepayment, self.orders)):
+            # 一部ポイント払い 商品金額 > ポイント充当額(Orderの値はself.setUpを参照)
+            order.point_amount = 50
+            order.payment_amount = order.total_amount - order.point_amount
+            expectation['total_price'] = 950
+            expectation['ticket_price'] = 50
+            expectation['commission_fee'] = 700
+            expectation['ticketing_fee'] = 200
+            args = self._callFUT(SejPaymentType.Prepayment, order, self.now, self.now + timedelta(days=365))
+            for k, v in expectation.items():
+                self.assertEqual(expectation[k], args[k], '[%d].%s: %s != %s' % (i, k, expectation[k], args[k]))
+        for i, (expectation, order) in enumerate(zip(self.expectations_prepayment, self.orders)):
+            # 一部ポイント払いのパターン 商品金額 == ポイント充当額(Orderの値はself.setUpを参照)
+            order.point_amount = 100
+            order.payment_amount = order.total_amount - order.point_amount
+            expectation['total_price'] = 900
+            expectation['ticket_price'] = 0
+            expectation['commission_fee'] = 700
+            expectation['ticketing_fee'] = 200
+            args = self._callFUT(SejPaymentType.Prepayment, order, self.now, self.now + timedelta(days=365))
+            for k, v in expectation.items():
+                self.assertEqual(expectation[k], args[k], '[%d].%s: %s != %s' % (i, k, expectation[k], args[k]))
+        for i, (expectation, order) in enumerate(zip(self.expectations_prepayment, self.orders)):
+            # 一部ポイント払いのパターン 商品金額 < ポイント充当額 < 商品金額 + 配送手数料(Orderの値はself.setUpを参照)
+            order.point_amount = 200
+            order.payment_amount = order.total_amount - order.point_amount
+            expectation['total_price'] = 800
+            expectation['ticket_price'] = 0
+            expectation['commission_fee'] = 700
+            expectation['ticketing_fee'] = 100
+            args = self._callFUT(SejPaymentType.Prepayment, order, self.now, self.now + timedelta(days=365))
+            for k, v in expectation.items():
+                self.assertEqual(expectation[k], args[k], '[%d].%s: %s != %s' % (i, k, expectation[k], args[k]))
+        for i, (expectation, order) in enumerate(zip(self.expectations_prepayment, self.orders)):
+            # 一部ポイント払いのパターン 商品金額 < ポイント充当額 == 商品金額 + 配送手数料(Orderの値はself.setUpを参照)
+            order.point_amount = 300
+            order.payment_amount = order.total_amount - order.point_amount
+            expectation['total_price'] = 700
+            expectation['ticket_price'] = 0
+            expectation['commission_fee'] = 700
+            expectation['ticketing_fee'] = 0
+            args = self._callFUT(SejPaymentType.Prepayment, order, self.now, self.now + timedelta(days=365))
+            for k, v in expectation.items():
+                self.assertEqual(expectation[k], args[k], '[%d].%s: %s != %s' % (i, k, expectation[k], args[k]))
+        for i, (expectation, order) in enumerate(zip(self.expectations_prepayment, self.orders)):
+            # 一部ポイント払いのパターン 商品金額 + 配送手数料 < ポイント充当額(Orderの値はself.setUpを参照)
+            order.point_amount = 500
+            order.payment_amount = order.total_amount - order.point_amount
+            expectation['total_price'] = 500
+            expectation['ticket_price'] = 0
+            expectation['commission_fee'] = 500
+            expectation['ticketing_fee'] = 0
+            args = self._callFUT(SejPaymentType.Prepayment, order, self.now, self.now + timedelta(days=365))
+            for k, v in expectation.items():
+                self.assertEqual(expectation[k], args[k], '[%d].%s: %s != %s' % (i, k, expectation[k], args[k]))
 
     @mock.patch('altair.app.ticketing.sej.api.get_sej_order')
     def testPrepaymentOnly(self, get_sej_order):
@@ -1885,6 +1942,38 @@ class BuildSejArgsTest(unittest.TestCase):
                     self.assertEqual(expectation[k], args[k], '[%d].%s: %s != %s' % (i, k, expectation[k], args[k]))
                 else:
                     self.assertEqual(self.now + timedelta(days=365), args[k], '[%d].%s: %s != %s' % (i, k, expectation[k], args[k]))
+        for i, (expectation, order) in enumerate(zip(self.expectations_prepayment_only, self.orders)):
+            # 一部ポイント払い 商品金額 > ポイント充当額(Orderの値はself.setUpを参照)
+            order.point_amount = 50
+            order.payment_amount = order.total_amount - order.point_amount
+            expectation['total_price'] = 950
+            expectation['ticket_price'] = 50
+            expectation['commission_fee'] = 900
+            args = self._callFUT(SejPaymentType.PrepaymentOnly, order, self.now, self.now + timedelta(days=365))
+            for k, v in expectation.items():
+                self.assertEqual(expectation[k], args[k], '[%d].%s: %s != %s' % (i, k, expectation[k], args[k]))
+        for i, (expectation, order) in enumerate(zip(self.expectations_prepayment_only, self.orders)):
+            # 一部ポイント払いのパターン 商品金額 == ポイント充当額(Orderの値はself.setUpを参照)
+            order.point_amount = 100
+            order.payment_amount = order.total_amount - order.point_amount
+            expectation['total_price'] = 900
+            expectation['ticket_price'] = 0
+            expectation['commission_fee'] = 900
+            expectation['ticketing_fee'] = 0
+            args = self._callFUT(SejPaymentType.PrepaymentOnly, order, self.now, self.now + timedelta(days=365))
+            for k, v in expectation.items():
+                self.assertEqual(expectation[k], args[k], '[%d].%s: %s != %s' % (i, k, expectation[k], args[k]))
+        for i, (expectation, order) in enumerate(zip(self.expectations_prepayment_only, self.orders)):
+            # 一部ポイント払いのパターン 商品金額 < ポイント充当額
+            order.point_amount = 200
+            order.payment_amount = order.total_amount - order.point_amount
+            expectation['total_price'] = 800
+            expectation['ticket_price'] = 0
+            expectation['commission_fee'] = 800
+            expectation['ticketing_fee'] = 0
+            args = self._callFUT(SejPaymentType.PrepaymentOnly, order, self.now, self.now + timedelta(days=365))
+            for k, v in expectation.items():
+                self.assertEqual(expectation[k], args[k], '[%d].%s: %s != %s' % (i, k, expectation[k], args[k]))
 
     @mock.patch('altair.app.ticketing.sej.api.get_sej_order')
     def testCashOnDelivery(self, get_sej_order):
@@ -1920,6 +2009,101 @@ class BuildSejArgsTest(unittest.TestCase):
                     self.assertEqual(expectation[k], args[k], '[%d].%s: %s != %s' % (i, k, expectation[k], args[k]))
                 else:
                     self.assertEqual(self.now + timedelta(days=365), args[k], '[%d].%s: %s != %s' % (i, k, expectation[k], args[k]))
+        for i, (expectation, order) in enumerate(zip(self.expectations_cash_on_delivery, self.orders)):
+            # 一部ポイント払い 商品金額 > ポイント充当額(Orderの値はself.setUpを参照)
+            order.point_amount = 50
+            order.payment_amount = order.total_amount - order.point_amount
+            expectation['total_price'] = 950
+            expectation['ticket_price'] = 50
+            expectation['commission_fee'] = 700
+            expectation['ticketing_fee'] = 200
+            args = self._callFUT(SejPaymentType.CashOnDelivery, order, self.now, self.now + timedelta(days=365))
+            for k, v in expectation.items():
+                self.assertEqual(expectation[k], args[k], '[%d].%s: %s != %s' % (i, k, expectation[k], args[k]))
+        for i, (expectation, order) in enumerate(zip(self.expectations_cash_on_delivery, self.orders)):
+            # 一部ポイント払いのパターン 商品金額 == ポイント充当額(Orderの値はself.setUpを参照)
+            order.point_amount = 100
+            order.payment_amount = order.total_amount - order.point_amount
+            expectation['total_price'] = 900
+            expectation['ticket_price'] = 0
+            expectation['commission_fee'] = 700
+            expectation['ticketing_fee'] = 200
+            args = self._callFUT(SejPaymentType.CashOnDelivery, order, self.now, self.now + timedelta(days=365))
+            for k, v in expectation.items():
+                self.assertEqual(expectation[k], args[k], '[%d].%s: %s != %s' % (i, k, expectation[k], args[k]))
+        for i, (expectation, order) in enumerate(zip(self.expectations_cash_on_delivery, self.orders)):
+            # 一部ポイント払いのパターン 商品金額 < ポイント充当額 < 商品金額 + 配送手数料(Orderの値はself.setUpを参照)
+            order.point_amount = 200
+            order.payment_amount = order.total_amount - order.point_amount
+            expectation['total_price'] = 800
+            expectation['ticket_price'] = 0
+            expectation['commission_fee'] = 700
+            expectation['ticketing_fee'] = 100
+            args = self._callFUT(SejPaymentType.CashOnDelivery, order, self.now, self.now + timedelta(days=365))
+            for k, v in expectation.items():
+                self.assertEqual(expectation[k], args[k], '[%d].%s: %s != %s' % (i, k, expectation[k], args[k]))
+        for i, (expectation, order) in enumerate(zip(self.expectations_cash_on_delivery, self.orders)):
+            # 一部ポイント払いのパターン 商品金額 < ポイント充当額 == 商品金額 + 配送手数料(Orderの値はself.setUpを参照)
+            order.point_amount = 300
+            order.payment_amount = order.total_amount - order.point_amount
+            expectation['total_price'] = 700
+            expectation['ticket_price'] = 0
+            expectation['commission_fee'] = 700
+            expectation['ticketing_fee'] = 0
+            args = self._callFUT(SejPaymentType.CashOnDelivery, order, self.now, self.now + timedelta(days=365))
+            for k, v in expectation.items():
+                self.assertEqual(expectation[k], args[k], '[%d].%s: %s != %s' % (i, k, expectation[k], args[k]))
+        for i, (expectation, order) in enumerate(zip(self.expectations_cash_on_delivery, self.orders)):
+            # 一部ポイント払いのパターン 商品金額 + 配送手数料 < ポイント充当額(Orderの値はself.setUpを参照)
+            order.point_amount = 500
+            order.payment_amount = order.total_amount - order.point_amount
+            expectation['total_price'] = 500
+            expectation['ticket_price'] = 0
+            expectation['commission_fee'] = 500
+            expectation['ticketing_fee'] = 0
+            args = self._callFUT(SejPaymentType.CashOnDelivery, order, self.now, self.now + timedelta(days=365))
+            for k, v in expectation.items():
+                self.assertEqual(expectation[k], args[k], '[%d].%s: %s != %s' % (i, k, expectation[k], args[k]))
+
+    @mock.patch('altair.app.ticketing.sej.api.get_sej_order')
+    def test_Prepayment_illegal_for_full_point_payment(self, get_sej_order):
+        """
+        SejPaymentType.Prepaymentで全額ポイント払いの場合、バリデーションNGとなることをテスト
+        """
+        from altair.app.ticketing.sej.models import SejPaymentType
+        from .sej import SejPluginFailure
+        get_sej_order.return_value = None
+        test_order = self.orders[0]
+        test_order.payment_amount = 0
+        with self.assertRaises(SejPluginFailure):
+            self._callFUT(SejPaymentType.Prepayment, test_order, self.now, self.now + timedelta(days=365))
+
+    @mock.patch('altair.app.ticketing.sej.api.get_sej_order')
+    def test_PrepaymentOnly_illegal_for_full_point_payment(self, get_sej_order):
+        """
+        SejPaymentType.PrepaymentOnlyで全額ポイント払いの場合、バリデーションNGとなることをテスト
+        """
+        from altair.app.ticketing.sej.models import SejPaymentType
+        from .sej import SejPluginFailure
+        get_sej_order.return_value = None
+        test_order = self.orders[0]
+        test_order.payment_amount = 0
+        with self.assertRaises(SejPluginFailure):
+            self._callFUT(SejPaymentType.PrepaymentOnly, test_order, self.now, self.now + timedelta(days=365))
+
+    @mock.patch('altair.app.ticketing.sej.api.get_sej_order')
+    def test_CashOnDelivery_illegal_for_full_point_payment(self, get_sej_order):
+        """
+        SejPaymentType.CashOnDeliveryで全額ポイント払いの場合、バリデーションNGとなることをテスト
+        """
+        from altair.app.ticketing.sej.models import SejPaymentType
+        from .sej import SejPluginFailure
+        get_sej_order.return_value = None
+        test_order = self.orders[0]
+        test_order.payment_amount = 0
+        with self.assertRaises(SejPluginFailure):
+            self._callFUT(SejPaymentType.CashOnDelivery, test_order, self.now, self.now + timedelta(days=365))
+
 
 class IsSameSejOrderTest(unittest.TestCase):
     def _callFUT(self, *args, **kwargs):
@@ -2116,6 +2300,7 @@ class IsSameSejOrderTest(unittest.TestCase):
             ]
         self.assertTrue(self._callFUT(sej_order, args_dict, ticket_dicts))
 
+
 class ValidateOrderLikeTest(unittest.TestCase):
     def _getTarget(self):
         from .sej import validate_order_like
@@ -2143,6 +2328,7 @@ class ValidateOrderLikeTest(unittest.TestCase):
             issuing_end_at=current_date + timedelta(seconds=1),
             payment_due_at=current_date + timedelta(seconds=1),
             total_amount=1,
+            payment_amount=1,
             payment_delivery_pair=mock.Mock(
                 payment_method=mock.Mock(
                     payment_plugin_id=SEJ_PAYMENT_PLUGIN_ID
@@ -2177,6 +2363,7 @@ class ValidateOrderLikeTest(unittest.TestCase):
             issuing_end_at=current_date + timedelta(seconds=1),
             payment_due_at=current_date + timedelta(seconds=1),
             total_amount=1,
+            payment_amount=1,
             payment_delivery_pair=mock.Mock(
                 payment_method=mock.Mock(
                     payment_plugin_id=SEJ_PAYMENT_PLUGIN_ID
@@ -2209,6 +2396,7 @@ class ValidateOrderLikeTest(unittest.TestCase):
             issuing_end_at=current_date + timedelta(seconds=1),
             payment_due_at=current_date + timedelta(seconds=1),
             total_amount=1,
+            payment_amount=1,
             payment_delivery_pair=mock.Mock(
                 payment_method=mock.Mock(
                     payment_plugin_id=SEJ_PAYMENT_PLUGIN_ID
@@ -2243,6 +2431,7 @@ class ValidateOrderLikeTest(unittest.TestCase):
             issuing_end_at=current_date + timedelta(seconds=1),
             payment_due_at=current_date + timedelta(seconds=1),
             total_amount=1,
+            payment_amount=1,
             payment_delivery_pair=mock.Mock(
                 payment_method=mock.Mock(
                     payment_plugin_id=SEJ_PAYMENT_PLUGIN_ID
@@ -2271,6 +2460,7 @@ class ValidateOrderLikeTest(unittest.TestCase):
             issuing_end_at=current_date + timedelta(seconds=1),
             payment_due_at=current_date + timedelta(seconds=1),
             total_amount=1,
+            payment_amount=1,
             payment_delivery_pair=mock.Mock(
                 payment_method=mock.Mock(
                     payment_plugin_id=SEJ_PAYMENT_PLUGIN_ID
@@ -2303,6 +2493,7 @@ class ValidateOrderLikeTest(unittest.TestCase):
             issuing_end_at=current_date + timedelta(seconds=1),
             payment_due_at=current_date + timedelta(seconds=1),
             total_amount=1,
+            payment_amount=1,
             payment_delivery_pair=mock.Mock(
                 payment_method=mock.Mock(
                     payment_plugin_id=SEJ_PAYMENT_PLUGIN_ID
@@ -2337,6 +2528,7 @@ class ValidateOrderLikeTest(unittest.TestCase):
             issuing_end_at=current_date + timedelta(seconds=1),
             payment_due_at=current_date + timedelta(seconds=1),
             total_amount=1,
+            payment_amount=1,
             payment_delivery_pair=mock.Mock(
                 payment_method=mock.Mock(
                     payment_plugin_id=SEJ_PAYMENT_PLUGIN_ID
@@ -2369,6 +2561,7 @@ class ValidateOrderLikeTest(unittest.TestCase):
             issuing_end_at=current_date + timedelta(seconds=1),
             payment_due_at=current_date + timedelta(seconds=1),
             total_amount=1,
+            payment_amount=1,
             organization=testing.DummyModel(
                  setting=testing.DummyModel(i18n=False)
                 ),
@@ -2404,6 +2597,7 @@ class ValidateOrderLikeTest(unittest.TestCase):
             issuing_end_at=current_date + timedelta(seconds=1),
             payment_due_at=current_date + timedelta(seconds=1),
             total_amount=1,
+            payment_amount=1,
             payment_delivery_pair=mock.Mock(
                 payment_method=mock.Mock(
                     payment_plugin_id=SEJ_PAYMENT_PLUGIN_ID
@@ -2432,6 +2626,7 @@ class ValidateOrderLikeTest(unittest.TestCase):
             issuing_end_at=current_date + timedelta(seconds=1),
             payment_due_at=current_date + timedelta(seconds=1),
             total_amount=1,
+            payment_amount=1,
             payment_delivery_pair=mock.Mock(
                 payment_method=mock.Mock(
                     payment_plugin_id=SEJ_PAYMENT_PLUGIN_ID
@@ -2464,6 +2659,7 @@ class ValidateOrderLikeTest(unittest.TestCase):
             issuing_end_at=current_date + timedelta(seconds=1),
             payment_due_at=current_date + timedelta(seconds=1),
             total_amount=1,
+            payment_amount=1,
             payment_delivery_pair=mock.Mock(
                 payment_method=mock.Mock(
                     payment_plugin_id=SEJ_PAYMENT_PLUGIN_ID
@@ -2486,6 +2682,7 @@ class ValidateOrderLikeTest(unittest.TestCase):
             issuing_end_at=current_date + timedelta(seconds=1),
             payment_due_at=current_date + timedelta(seconds=1),
             total_amount=1,
+            payment_amount=1,
             payment_delivery_pair=mock.Mock(
                 payment_method=mock.Mock(
                     payment_plugin_id=SEJ_PAYMENT_PLUGIN_ID
@@ -2500,6 +2697,159 @@ class ValidateOrderLikeTest(unittest.TestCase):
             self.assertTrue(True)
         except OrderLikeValidationFailure as e:
             self.fail(e)
+
+    def test_invalid_payment_amount(self):
+        """
+        order_like.payment_amountが負数(支払い総額がマイナス)でバリデーションNGとなるかテスト
+        """
+        from . import SEJ_PAYMENT_PLUGIN_ID, SEJ_DELIVERY_PLUGIN_ID
+        from ..exceptions import OrderLikeValidationFailure
+        current_date = datetime.now()
+        order_like = mock.Mock(
+            shipping_address=mock.Mock(
+                tel_1='00000000000',
+                tel_2=None,
+                last_name=u'姓',
+                first_name=u'名',
+                last_name_kana=u'セイ',
+                first_name_kana=u'メイ',
+                zip='0000000',
+                email_1='email@example.com',
+                email_2=None
+            ),
+            issuing_end_at=current_date + timedelta(seconds=1),
+            payment_due_at=current_date + timedelta(seconds=1),
+            total_amount=1,
+            payment_amount=-1000,
+            payment_delivery_pair=mock.Mock(
+                payment_method=mock.Mock(
+                    payment_plugin_id=SEJ_PAYMENT_PLUGIN_ID
+                ),
+                delivery_method=mock.Mock(
+                    delivery_plugin_id=SEJ_DELIVERY_PLUGIN_ID
+                )
+            )
+        )
+        with self.assertRaises(OrderLikeValidationFailure):
+            self._callFUT(testing.DummyRequest(), current_date, order_like, ticketing=False)
+
+    def test_full_point_payment_ok(self):
+        """
+        全額ポイント払い時のテスト
+        """
+        from . import SEJ_PAYMENT_PLUGIN_ID, SHIPPING_DELIVERY_PLUGIN_ID
+        from ..exceptions import OrderLikeValidationFailure
+        current_date = datetime.now()
+        order_like = mock.Mock(
+            shipping_address=mock.Mock(
+                tel_1='00000000000',
+                tel_2=None,
+                last_name=u'姓',
+                first_name=u'名',
+                last_name_kana=u'セイ',
+                first_name_kana=u'メイ',
+                zip='0000000',
+                email_1='email@example.com',
+                email_2=None
+                ),
+            issuing_end_at=current_date + timedelta(seconds=1),
+            payment_due_at=current_date + timedelta(seconds=1),
+            total_amount=1000,
+            payment_amount=0,
+            payment_delivery_pair=mock.Mock(
+                payment_method=mock.Mock(
+                    payment_plugin_id=SEJ_PAYMENT_PLUGIN_ID
+                    ),
+                delivery_method=mock.Mock(
+                    delivery_plugin_id=SHIPPING_DELIVERY_PLUGIN_ID
+                    )
+                )
+            )
+        try:
+            self._callFUT(testing.DummyRequest(), current_date, order_like, ticketing=False)
+            self.assertTrue(True)
+        except OrderLikeValidationFailure as e:
+            self.fail(e)
+
+
+class DeterminePaymentTypeTest(unittest.TestCase):
+
+    def _callFUT(self, *args,  ** kwargs):
+        from .sej import determine_payment_type
+        return determine_payment_type(*args,  ** kwargs)
+
+    def test_Prepayment(self):
+        """
+        前払後日発券パターンテスト
+        """
+        from altair.app.ticketing.sej.models import SejPaymentType
+        from datetime import timedelta
+        current_date = datetime.now()
+        order_like = mock.Mock(
+            order_no='TEST1',
+            payment_start_at=current_date - timedelta(days=30),
+            issuing_start_at=current_date + timedelta(days=30),
+            total_amount=1000,
+            payment_amount=1000
+        )
+
+        payment_type = self._callFUT(current_date, order_like)
+        self.assertEqual(SejPaymentType.Prepayment, payment_type)
+
+    def test_CashOnDelivery(self):
+        """
+        代引パターンテスト
+        """
+        from altair.app.ticketing.sej.models import SejPaymentType
+        from datetime import timedelta
+        current_date = datetime.now()
+        order_like = mock.Mock(
+            order_no='TEST2',
+            payment_start_at=current_date + timedelta(days=5),
+            issuing_start_at=current_date + timedelta(days=5),
+            total_amount=1000,
+            payment_amount=1000
+        )
+
+        payment_type = self._callFUT(current_date, order_like)
+        self.assertEqual(SejPaymentType.CashOnDelivery, payment_type)
+
+    def test_Paid(self):
+        """
+        代済発券パターンテスト
+        """
+        from altair.app.ticketing.sej.models import SejPaymentType
+        from datetime import timedelta
+        current_date = datetime.now()
+        order_like = mock.Mock(
+            order_no='TEST3',
+            payment_start_at=current_date + timedelta(days=5),
+            issuing_start_at=current_date + timedelta(days=5),
+            total_amount=1000,
+            payment_amount=0
+        )
+
+        payment_type = self._callFUT(current_date, order_like)
+        self.assertEqual(SejPaymentType.Paid, payment_type)
+
+    def test_Prepayment_invalid_payment_start_at(self):
+        """
+        前払後日発券だが支払開始日が不正のパターンで例外となるテスト
+        """
+        from datetime import timedelta
+        from .sej import SejPluginFailure
+        current_date = datetime.now()
+        order_like = mock.Mock(
+            order_no='TEST1',
+            payment_start_at=current_date + timedelta(days=15),
+            issuing_start_at=current_date + timedelta(days=30),
+            total_amount=1000,
+            payment_amount=1000
+        )
+
+        with self.assertRaises(SejPluginFailure):
+            self._callFUT(current_date, order_like)
+
 
 class PluginTestBase(unittest.TestCase, CoreTestMixin, CartTestMixin):
     def setUp(self):
@@ -2621,6 +2971,7 @@ class PluginTestBase(unittest.TestCase, CoreTestMixin, CartTestMixin):
             order.created_at = datetime(2012, 1, 1, 0, 0, 0)
             order.payment_due_at = datetime(2012, 1, 5, 0, 0, 0)
             order.issuing_end_at = datetime(2012, 1, 8, 0, 0, 0)
+            order.point_amount = 0
             sej_order = self._create_sej_order(order, payment_type)
             self.session.add(order)
             order_pairs[payment_type] = (order, sej_order)
@@ -2718,6 +3069,29 @@ class PaymentPluginTest(PluginTestBase):
             order = plugin.finish(self.request, cart)
             self.assertEqual(cart.order_no, order.order_no)
 
+    def test_finish_with_full_point_allocation(self):
+        """
+        全額ポイント払いパターンのテスト
+        """
+
+        carts = self._create_carts()
+        plugin = self._makeOne()
+        for payment_type, cart in carts.items():
+            cart.point_amount = cart.total_amount
+            self.result = {
+                'X_shop_order_id': cart.order_no,
+                'X_haraikomi_no': '00001001',
+                'X_hikikae_no': '00001002',
+                'X_url_info': 'http://example.com/',
+                'iraihyo_id_00': '10000000',
+                'X_goukei_kingaku': cart.total_amount,
+                'X_ticket_daikin': cart.total_amount - cart.system_fee - cart.delivery_fee - cart.transaction_fee - cart.special_fee,
+                'X_ticket_kounyu_daikin': cart.system_fee + cart.special_fee,
+                'X_hakken_daikin': cart.transaction_fee,
+                }
+            order = plugin.finish(self.request, cart)
+            self.assertEqual(cart.order_no, order.order_no)
+
     def test_refresh(self):
         order_pairs = self._create_order_pairs()
         plugin = self._makeOne()
@@ -2738,11 +3112,18 @@ class PaymentPluginTest(PluginTestBase):
             plugin.refresh(self.request, order, current_date=datetime(2012, 1, 4, 0, 0, 0))
             self.assertTrue(self.dummy_communicator_called)
 
+    def test_refresh_with_full_point_allocationt(self):
+        from altair.app.ticketing.orders.models import Order
+        order = Order(order_no='XX0000000000', organization_id=self.organization.id, total_amount=100, point_amount=100)
+        plugin = self._makeOne()
+        plugin.refresh(self.request, order)
+        self.assertFalse(self.dummy_communicator_called)
+
     def test_refresh_fail_without_sej_order(self):
         from altair.app.ticketing.orders.models import Order
         from .sej import SejPluginFailure
         plugin = self._makeOne()
-        order = Order(order_no='XX0000000000', organization_id=self.organization.id)
+        order = Order(order_no='XX0000000000', organization_id=self.organization.id, total_amount=100, point_amount=0)
         with self.assertRaises(SejPluginFailure) as c:
             plugin.refresh(self.request, order)
         self.assertEqual(c.exception.message, 'no corresponding SejOrder found')
@@ -2759,6 +3140,7 @@ class PaymentPluginTest(PluginTestBase):
             shipping_address=self._create_shipping_address(),
             sales_segment=self.sales_segment,
             total_amount=100,
+            point_amount=0,
             system_fee=0,
             transaction_fee=0,
             delivery_fee=0,
@@ -2785,6 +3167,7 @@ class PaymentPluginTest(PluginTestBase):
             shipping_address=self._create_shipping_address(),
             sales_segment=self.sales_segment,
             total_amount=100,
+            point_amount=0,
             system_fee=0,
             transaction_fee=0,
             delivery_fee=0,
@@ -2799,6 +3182,25 @@ class PaymentPluginTest(PluginTestBase):
             self.assertTrue(True)
         except Exception as e:
             self.fail(e)
+
+    def test_cancel_with_full_point_allocation(self):
+        from altair.app.ticketing.orders.models import Order
+        plugin = self._makeOne()
+        order = Order(
+            total_amount = 100,
+            point_amount = 100
+        )
+        plugin.cancel(self.request, order)
+
+    def test_refund_with_full_point_allocation(self):
+        from altair.app.ticketing.orders.models import Order
+        plugin = self._makeOne()
+        order = Order(
+            total_amount = 100,
+            point_amount = 100,
+            paid_at = datetime.now()
+        )
+        plugin.refund(self.request, order, refund_record=None)
 
 class DeliveryPluginTest(PluginTestBase):
     def _getTarget(self):
@@ -2876,6 +3278,7 @@ class DeliveryPluginTest(PluginTestBase):
             shipping_address=self._create_shipping_address(),
             sales_segment=self.sales_segment,
             total_amount=100,
+            point_amount=0,
             system_fee=0,
             transaction_fee=0,
             delivery_fee=0,
@@ -2889,6 +3292,49 @@ class DeliveryPluginTest(PluginTestBase):
             plugin.refresh(self.request, order)
         self.assertEqual(c.exception.message, 'already delivered')
         self.assertEqual(c.exception.order_no, order.order_no)
+
+    @mock.patch('altair.app.ticketing.sej.userside_api.lookup_sej_tenant')
+    @mock.patch('altair.app.ticketing.sej.api.get_sej_order')
+    @mock.patch('altair.app.ticketing.payments.plugins.sej.is_same_sej_order', return_value=False)
+    def test_refresh_fail_total_price_too_reduced(self, lookup_sej_tenant, is_same_sej_order, get_sej_order):
+        from altair.app.ticketing.orders.models import Order
+        from altair.app.ticketing.sej.models import SejPaymentType
+        from .sej import SejPluginFailure
+        plugin = self._makeOne()
+        now = datetime.now()
+        order = Order(
+            order_no='XX0000000000',
+            organization_id=self.organization.id,
+            shipping_address=self._create_shipping_address(),
+            sales_segment=self.sales_segment,
+            total_amount=1000,
+            point_amount=800,
+            system_fee=0,
+            transaction_fee=0,
+            delivery_fee=0,
+            special_fee=0,
+            payment_due_at=now + timedelta(days=5),
+            created_at=now
+            )
+        order_to_refrsh = Order(
+            order_no='XX0000000000',
+            organization_id=self.organization.id,
+            shipping_address=self._create_shipping_address(),
+            sales_segment=self.sales_segment,
+            total_amount=800,
+            point_amount=800,
+            system_fee=0,
+            transaction_fee=0,
+            delivery_fee=0,
+            special_fee=0,
+            payment_due_at=now + timedelta(days=5),
+            created_at=now
+            )
+        sej_order = self._create_sej_order(order, SejPaymentType.Paid.v)
+        get_sej_order.return_value = sej_order
+        with self.assertRaises(SejPluginFailure):
+            plugin.refresh(self.request, order_to_refrsh)
+
 
 class PaymentDeliveryPluginTest(PluginTestBase):
     def _getTarget(self):
@@ -3024,6 +3470,48 @@ class PaymentDeliveryPluginTest(PluginTestBase):
             plugin.refresh(self.request, order)
         self.assertEqual(c.exception.message, 'already delivered')
         self.assertEqual(c.exception.order_no, order.order_no)
+
+    @mock.patch('altair.app.ticketing.sej.userside_api.lookup_sej_tenant')
+    @mock.patch('altair.app.ticketing.sej.api.get_sej_order')
+    @mock.patch('altair.app.ticketing.payments.plugins.sej.is_same_sej_order', return_value=False)
+    def test_refresh_fail_total_price_too_reduced(self, lookup_sej_tenant, is_same_sej_order, get_sej_order):
+        from altair.app.ticketing.orders.models import Order
+        from altair.app.ticketing.sej.models import SejPaymentType
+        from .sej import SejPluginFailure
+        plugin = self._makeOne()
+        now = datetime.now()
+        order = Order(
+            order_no='XX0000000000',
+            organization_id=self.organization.id,
+            shipping_address=self._create_shipping_address(),
+            sales_segment=self.sales_segment,
+            total_amount=1000,
+            point_amount=800,
+            system_fee=0,
+            transaction_fee=0,
+            delivery_fee=0,
+            special_fee=0,
+            payment_due_at=now + timedelta(days=5),
+            created_at=now
+            )
+        order_to_refrsh = Order(
+            order_no='XX0000000000',
+            organization_id=self.organization.id,
+            shipping_address=self._create_shipping_address(),
+            sales_segment=self.sales_segment,
+            total_amount=800,
+            point_amount=800,
+            system_fee=0,
+            transaction_fee=0,
+            delivery_fee=0,
+            special_fee=0,
+            payment_due_at=now + timedelta(days=5),
+            created_at=now
+            )
+        sej_order = self._create_sej_order(order, SejPaymentType.Prepayment)
+        get_sej_order.return_value = sej_order
+        with self.assertRaises(SejPluginFailure):
+            plugin.refresh(self.request, order_to_refrsh)
 
 if __name__ == "__main__":
     # setUpModule()

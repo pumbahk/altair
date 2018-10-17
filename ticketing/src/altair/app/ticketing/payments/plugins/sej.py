@@ -265,6 +265,14 @@ def refresh_order(request, tenant, order, update_reason, current_date=None):
         if order.delivered_at is not None:
             raise SejPluginFailure('already delivered', order_no=order.order_no, back_url=None)
 
+    if order.point_amount > 0 and sej_order.total_price > 0 >= order.payment_amount:
+        # ポイント使用の予約の減額の場合、更新前の予約で支払が存在し、更新後で全額ポイント払いになる変更を許容しない
+        # 一部ポイント払いから全額ポイント払いになり、支払方法が変わるような減額は許容しない。
+        raise SejPluginFailure('failed to reduce the sej_order.total_price to 0',
+                               order_no=order.order_no, back_url=None)
+
+    # TODO 減額によりポイント充当額が減った場合は、ポイント付与が発生する。ポイントAPIクライアントの完了を待って実装する
+
     if payment_type != int(sej_order.payment_type):
         logger.info('new sej order will be created as payment type is being changed: %d => %d' % (int(sej_order.payment_type), payment_type))
 
@@ -321,6 +329,7 @@ def refund_order(request, tenant, order, refund_record, now=None):
         logger.warning("trying to refund SEJ order that is not marked issued: %s" % order.order_no)
     refund = refund_record.refund
     performance = order.performance
+    # TODO 全額ポイント払いで未発券の場合はポイント付与が必要。ポイントAPIクライアントの完成後に実装する
     try:
         for sej_order in sej_orders:
             if int(sej_order.payment_type) == int(SejPaymentType.PrepaymentOnly):
@@ -355,6 +364,7 @@ def cancel_order(request, tenant, order, now=None):
             raise SejPluginFailure('no corresponding SejOrder found for order %s' % order.order_no)
         try:
             sej_api.cancel_sej_order(request, tenant=tenant, sej_order=sej_order, origin_order=order, now=now)
+            # TODO ポイントキャンセルAPIを叩く必要があるかも。ポイントAPIクライアントの完成を待って実装する
         except SejError:
             raise SejPluginFailure('cancel_order', order_no=order.order_no, back_url=None)
 
@@ -379,37 +389,59 @@ def build_non_updatable_args(order_like):
         email = shipping_address.email_1 or shipping_address.email_2 or ''
     return user_name, user_name_kana, tel1, tel2, zip_code, email
 
+
 def build_sej_args(payment_type, order_like, now, regrant_number_due_at):
     user_name, user_name_kana, tel1, tel2, zip_code, email = build_non_updatable_args(order_like)
     ticketing_start_at = get_ticketing_start_at(now, order_like)
     ticketing_due_at = get_ticketing_due_at(now, order_like)
+
+    if int(payment_type) != int(SejPaymentType.Paid) and order_like.payment_amount == 0:
+        # 全額ポイント払いは代済発券のみとなる想定(支払のみで全額ポイントの場合は決済しない想定)
+        raise SejPluginFailure('Full point payment is only allowed to SejPaymentType#Paid. Payment type{} is illegal.'
+                               .format(payment_type), order_no=order_like.order_no, back_url=None)
+
     if int(payment_type) == int(SejPaymentType.Paid):
-        total_price         = 0
-        ticket_price        = 0
-        commission_fee      = 0
-        ticketing_fee       = 0
-        payment_due_at      = None
-        ticketing_start_at  = get_ticketing_start_at(now, order_like)
-        ticketing_due_at    = get_ticketing_due_at(now, order_like)
+        total_price = 0
+        ticket_price = 0
+        commission_fee = 0
+        ticketing_fee = 0
+        payment_due_at = None
+        ticketing_start_at = get_ticketing_start_at(now, order_like)
+        ticketing_due_at = get_ticketing_due_at(now, order_like)
         if ticketing_due_at is None:
             # この処理は代済発券のみでよい
             # 発券期限はつねに確定させておかなければ再付番できない
             ticketing_due_at = now + timedelta(days=365)
     elif int(payment_type) == int(SejPaymentType.PrepaymentOnly):
         # 支払いのみの場合は、ticketing_fee が無視されるので、commission に算入してあげないといけない。
-        total_price         = order_like.total_amount
-        ticket_price        = order_like.total_amount - (order_like.system_fee + order_like.special_fee + order_like.transaction_fee + order_like.delivery_fee)
-        commission_fee      = order_like.system_fee + order_like.special_fee + order_like.transaction_fee + order_like.delivery_fee
-        ticketing_fee       = 0
-        ticketing_start_at  = None
-        ticketing_due_at    = None
-        payment_due_at      = get_payment_due_at(now, order_like)
+        # ポイント充当される優先順位は、商品代金 > 発券手数料 > その他手数料
+        _fee_amount = order_like.system_fee + order_like.special_fee + \
+                      order_like.transaction_fee + order_like.delivery_fee
+
+        # ポイント充当済の合計
+        total_price = order_like.payment_amount
+        # ポイント充当済の合計 <= 手数料合計の場合は商品代金が全てポイントで充当されたということ
+        ticket_price = max(order_like.payment_amount - _fee_amount, 0)
+        # 差し引いた残りの金額はcommission_feeとする
+        commission_fee = total_price - ticket_price
+        ticketing_fee = 0
+        ticketing_start_at = None
+        ticketing_due_at = None
+        payment_due_at = get_payment_due_at(now, order_like)
     elif int(payment_type) in (int(SejPaymentType.CashOnDelivery), int(SejPaymentType.Prepayment)):
-        total_price         = order_like.total_amount
-        ticket_price        = order_like.total_amount - (order_like.system_fee + order_like.special_fee + order_like.transaction_fee + order_like.delivery_fee)
-        commission_fee      = order_like.system_fee + order_like.special_fee + order_like.transaction_fee
-        ticketing_fee       = order_like.delivery_fee
-        payment_due_at      = get_payment_due_at(now, order_like)
+        # ポイント充当される優先順位は、商品代金 > 発券手数料 > その他手数料
+        _fee_amount = order_like.system_fee + order_like.special_fee + \
+                      order_like.transaction_fee + order_like.delivery_fee
+
+        # ポイント充当済の合計
+        total_price = order_like.payment_amount
+        # ポイント充当済の合計 <= 手数料合計の場合は商品代金が全てポイントで充当されたということ
+        ticket_price = max(order_like.payment_amount - _fee_amount, 0)
+        # 商品代金が全てポイントで充当された時、「手数料をポイント充当した額 = _fee_amount - order_like.payment_amount」となる
+        ticketing_fee = max(order_like.delivery_fee - max(_fee_amount - order_like.payment_amount, 0), 0)
+        # 差し引いた残りの金額はcommission_feeとする
+        commission_fee = total_price - ticket_price - ticketing_fee
+        payment_due_at = get_payment_due_at(now, order_like)
         if payment_due_at is None:
             raise SejPluginFailure('payment_due_at is not specified', order_no=order_like.order_no, back_url=None)
         if payment_due_at < now:
@@ -462,6 +494,9 @@ def determine_payment_type(current_date, order_like):
     else:
         # 代引
         payment_type = SejPaymentType.CashOnDelivery
+    if order_like.payment_amount == 0:
+        # 支払い総額が0(全額ポイント払い)の場合は代済発券とする
+        payment_type = SejPaymentType.Paid
     return payment_type
 
 
@@ -552,6 +587,9 @@ def validate_order_like(request, current_date, order_like, update=False, ticketi
     else:
         logger.debug('order_like.shipping_address is None')
 
+    if order_like.payment_amount < 0:
+        raise OrderLikeValidationFailure(u'payment_amount should not be negative', 'order.payment_amount')
+
     payment_type = None
     if order_like.payment_delivery_pair.payment_method.payment_plugin_id == PAYMENT_PLUGIN_ID:
         if order_like.payment_delivery_pair.delivery_method.delivery_plugin_id == DELIVERY_PLUGIN_ID:
@@ -559,7 +597,7 @@ def validate_order_like(request, current_date, order_like, update=False, ticketi
                 payment_type = determine_payment_type(current_date, order_like)
             except SejPluginFailure as e:
                 raise OrderLikeValidationFailure(e.message, 'payment_start_at')
-        else:
+        elif order_like.payment_amount > 0:  # 支払いが発生する(全額ポイント払いでない)場合に「支払のみ」とする
             payment_type = int(SejPaymentType.PrepaymentOnly)
     else:
         payment_type = int(SejPaymentType.Paid)
@@ -606,6 +644,10 @@ class SejPaymentPlugin(object):
 
     @clear_exc
     def finish2(self, request, order_like):
+        if order_like.payment_amount == 0:  # 支払いのみで全額ポイント払いの場合は確定処理を実施しない
+            logger.info(u'skipped to finish sej payment due to full amount already paid by point')
+            return
+
         current_date = datetime.now()
         tenant = userside_api.lookup_sej_tenant(request, order_like.organization_id)
         try:
@@ -631,6 +673,9 @@ class SejPaymentPlugin(object):
 
     @clear_exc
     def refresh(self, request, order, current_date=None):
+        if order.payment_amount == 0:  # 支払いのみで全額ポイント払いの場合はSejOrderがないので処理しない
+            logger.info(u'skipped to refresh sej order due to full amount already paid by point')
+            return
         if current_date is None:
             current_date = datetime.now()
         settings = request.registry.settings
@@ -645,6 +690,9 @@ class SejPaymentPlugin(object):
 
     @clear_exc
     def cancel(self, request, order, now=None):
+        if order.payment_amount == 0:  # 支払いのみで全額ポイント払いの場合はSejOrderがないので処理しない
+            logger.info(u'skipped to cancel sej order due to full amount already paid by point')
+            return
         tenant = userside_api.lookup_sej_tenant(request, order.organization_id)
         cancel_order(
             request,
@@ -658,6 +706,9 @@ class SejPaymentPlugin(object):
         """ *** 支払のみの場合は払戻しない *** """
         if order.paid_at is None:
             raise SejPluginFailure(u'cannot refund an order that is not paid yet', order_no=order.order_no, back_url=None)
+        if order.payment_amount == 0:
+            logger.info(u'skipped to refund sej order due to full amount already paid by point')
+            return
         sej_order = sej_api.get_sej_order(order.order_no)
         assert int(sej_order.payment_type) == int(SejPaymentType.PrepaymentOnly)
 
@@ -752,6 +803,7 @@ class SejDeliveryPlugin(SejDeliveryPluginBase):
 
     @clear_exc
     def refund(self, request, order, refund_record):
+        # 呼び出し側の仕様で配送プラグインのrefundは叩かれない
         if order.paid_at is None:
             raise SejPluginFailure(u'cannot refund an order that is not paid yet', order_no=order.order_no, back_url=None)
         tenant = userside_api.lookup_sej_tenant(request, order.organization_id)
@@ -843,6 +895,7 @@ class SejPaymentDeliveryPlugin(SejDeliveryPluginBase):
 
     @clear_exc
     def refund(self, request, order, refund_record):
+        # caller側の制御により、セブンを使用した払い戻しは配送方法によらず必ずPaymentDeliveryPluginのrefundが実行される
         if order.paid_at is None:
             raise SejPluginFailure(u'cannot refund an order that is not paid yet', order_no=order.order_no, back_url=None)
         tenant = userside_api.lookup_sej_tenant(request, order.organization_id)
