@@ -1663,13 +1663,17 @@ class PointUseView(object):
         self.request = request
 
     def send_data(self, cart, performance, form, usable_standard_point):
+        # 利用上限ポイント = 合計金額 - 決済手数料
+        maximum_usable_point = cart.total_amount - cart.transaction_fee
         return dict(
             cart=cart,
             performance=performance,
             form=form,
             usable_standard_point=usable_standard_point,
-            maximum_usable_point=(cart.total_amount - cart.transaction_fee),
-            is_point_available=(usable_standard_point >= self.MINIMUM_USABLE_POINT)
+            maximum_usable_point=maximum_usable_point,
+            # ユーザーの保持ポイントおよび利用上限ポイントが50ポイント以上の場合にポイント利用が可能
+            is_point_available=(usable_standard_point >= self.MINIMUM_USABLE_POINT
+                                and maximum_usable_point >= self.MINIMUM_USABLE_POINT)
         )
 
     @back(back_to_top, back_to_product_list_for_mobile)
