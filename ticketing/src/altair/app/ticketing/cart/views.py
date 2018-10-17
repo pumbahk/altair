@@ -51,8 +51,8 @@ from . import api
 from . import helpers as h
 from . import schemas
 from . import forms_i18n
-from .api import set_rendered_event, is_smartphone, is_point_input_required, is_fc_auth_organization, set_spa_access\
-    , delete_spa_access, is_spa_mode
+from .api import is_smartphone, is_point_account_no_input_required, is_point_use_accepted, is_fc_auth_organization, \
+    set_rendered_event, set_spa_access, delete_spa_access, is_spa_mode
 from altair.mobile.api import set_we_need_pc_access, set_we_invalidate_pc_access
 from .reserving import InvalidSeatSelectionException, NotEnoughAdjacencyException
 from .stocker import InvalidProductSelectionException, NotEnoughStockException
@@ -161,57 +161,73 @@ def flow_predicate_extra_form(pe, flow_context, context, request):
             )
         )
 
-@provider(IPageFlowPredicate)
-def flow_predicate_point_input_required(pe, flow_context, context, request):
-    return is_point_input_required(context, request)
 
 @provider(IPageFlowPredicate)
-def flow_predicate_prepared(pe, flow_context, context, request):
-    return flow_context['prepared']
+def flow_predicate_point_account_no_input_required(pe, flow_context, context, request):
+    return is_point_account_no_input_required(context, request)
+
+
+@provider(IPageFlowPredicate)
+def flow_predicate_point_use_check_validated(pe, flow_context, context, request):
+    return flow_context['point_use_check_validated']
+
 
 @provider(IPageFlowPredicate)
 def flow_predicate_non_booster_cart(pe, flow_context, context, request):
     return not is_booster_or_fc_cart_pred(context, request)
 
+
 @provider(IPageFlowPredicate)
 def flow_predicate_fc_cart(pe, flow_context, context, request):
     return is_fc_cart_pred(context, request)
 
+
+def payment_prepare(context, request):
+    response = Payment(context.cart, request).call_prepare()
+    if response is not None:
+        assert isinstance(response, HTTPFound)
+        return flow.Transition(context, request, url_or_path=response.location)
+
+    return flow.Transition(context, request, url_or_path=request.route_url('payment.confirm'))
+
+
 @implementer(flow.IPageFlowAction)
-class PaymentAction(flow.PageFlowActionBase):
+class PointUseConsideredPaymentAction(flow.PageFlowActionBase):
     def __call__(self, flow_context, context, request):
-        response = Payment(context.cart, request).call_prepare()
-        if response is not None:
-            assert isinstance(response, HTTPFound)
-            flow_context['prepared'] = True
-            return flow.Transition(context, request, url_or_path=response.location)
-        else:
-            flow_context['prepared'] = True
+        # ログイン済み、デバイスがPCかスマホ、そしてポイント利用可能になっている場合にポイント入力画面へ遷移する
+        if request.altair_auth_info['membership_source'] == 'altair.oauth_auth.plugin.OAuthAuthPlugin' \
+                and not is_mobile_request(request) \
+                and is_point_use_accepted(context, request):
+            flow_context['point_use_check_validated'] = True
+            return flow.Transition(context, request, url_or_path=request.route_url('cart.point_use'))
+
+        flow_context['point_use_check_validated'] = True
+        payment_prepare(context, request)
 
 
 # 画面フローの定義
 flow_graph = flow.PageFlowGraph(
-    flow_context_factory=lambda context, request: { 'prepared': False },
+    flow_context_factory=lambda context, request: {'point_use_check_validated': False},
     actions=[
-        # 購入者情報 => ポイント入力
+        # 購入者情報 => ポイント口座番号入力
         flow.SimpleTransitionAction(
             # 遷移条件
             predicates=[
                 flow.RouteIs('cart.payment'),
                 flow.Not(flow_predicate_extra_form),
-                flow_predicate_point_input_required,
-                ],
+                flow_predicate_point_account_no_input_required,
+            ],
             route_name='cart.point'
-            ),
-        # 追加情報入力 => ポイント入力
+        ),
+        # 追加情報入力 => ポイント口座番号入力
         flow.SimpleTransitionAction(
             # 遷移条件
             predicates=[
                 flow.RouteIs('cart.extra_form'),
-                flow_predicate_point_input_required,
-                ],
+                flow_predicate_point_account_no_input_required,
+            ],
             route_name='cart.point'
-            ),
+        ),
         # 購入者情報 => 追加情報入力
         flow.SimpleTransitionAction(
             # 遷移条件
@@ -219,58 +235,58 @@ flow_graph = flow.PageFlowGraph(
                 flow.RouteIs('cart.payment'),
                 flow_predicate_extra_form,
                 flow_predicate_non_booster_cart,
-                ],
+            ],
             route_name='cart.extra_form'
-            ),
-        # 購入者情報 => 決済情報入力
-        PaymentAction(
+        ),
+        # 購入者情報 => 決済情報入力 or ポイント利用
+        PointUseConsideredPaymentAction(
             # 遷移条件
             predicates=[
                 flow.RouteIs('cart.payment'),
-                flow.Not(flow_predicate_prepared),
-                flow.Not(flow_predicate_point_input_required),
+                flow.Not(flow_predicate_point_use_check_validated),
+                flow.Not(flow_predicate_point_account_no_input_required),
                 flow.Not(flow_predicate_extra_form),
                 flow.Not(flow_predicate_fc_cart),
-                ]
-            ),
-        # 入会カートでの購入者情報 => 決済情報入力
-        PaymentAction(
+            ]
+        ),
+        # 入会カートでの購入者情報 => 決済情報入力 or ポイント利用
+        PointUseConsideredPaymentAction(
             # 遷移条件
             predicates=[
                 flow.RouteIs('cart.payment'),
-                flow.Not(flow_predicate_prepared),
-                flow.Not(flow_predicate_point_input_required),
+                flow.Not(flow_predicate_point_use_check_validated),
+                flow.Not(flow_predicate_point_account_no_input_required),
                 flow_predicate_fc_cart
-                ]
-            ),
-        # ポイント入力 => 決済情報入力
-        PaymentAction(
+            ]
+        ),
+        # ポイント口座番号入力 => 決済情報入力 or ポイント利用
+        PointUseConsideredPaymentAction(
             # 遷移条件
             predicates=[
                 flow.RouteIs('cart.point'),
-                flow.Not(flow_predicate_prepared),
-                flow_predicate_point_input_required,
-                ]
-            ),
-        # 追加情報入力 => 決済情報入力
-        PaymentAction(
+                flow.Not(flow_predicate_point_use_check_validated),
+                flow_predicate_point_account_no_input_required,
+            ]
+        ),
+        # 追加情報入力 => 決済情報入力 or ポイント利用
+        PointUseConsideredPaymentAction(
             # 遷移条件
             predicates=[
                 flow.RouteIs('cart.extra_form'),
-                flow.Not(flow_predicate_prepared),
-                flow.Not(flow_predicate_point_input_required),
-                ]
-            ),
+                flow.Not(flow_predicate_point_use_check_validated),
+                flow.Not(flow_predicate_point_account_no_input_required),
+            ]
+        ),
         # 決済情報入力 => 確認画面
         flow.SimpleTransitionAction(
             # 遷移条件
             predicates=[
-                flow_predicate_prepared,
-                ],
+                flow_predicate_point_use_check_validated,
+            ],
             route_name='payment.confirm'
-            ),
-        ]
-    )
+        ),
+    ]
+)
 
 @view_defaults(
     route_name='cart.agreement',
@@ -1630,6 +1646,105 @@ class PointAccountEnteringView(object):
             # ユーザはあえてポイント入力しなかったようなので...
             del cart.user_point_accounts[:]
         return HTTPFound(location=flow_graph(self.context, self.request)(url_wanted=False))
+
+
+@view_defaults(
+    route_name='cart.point_use',
+    renderer=selectable_renderer("point_use.html"),
+    decorator=with_jquery.not_when(mobile_request),
+    permission="buy"
+)
+class PointUseView(object):
+    """ ポイント利用画面 """
+    MINIMUM_USABLE_POINT = 50
+
+    def __init__(self, context, request):
+        self.context = context
+        self.request = request
+
+    def send_data(self, cart, performance, form, usable_standard_point):
+        return dict(
+            cart=cart,
+            performance=performance,
+            form=form,
+            usable_standard_point=usable_standard_point,
+            maximum_usable_point=(cart.total_amount - cart.transaction_fee),
+            is_point_available=(usable_standard_point >= self.MINIMUM_USABLE_POINT)
+        )
+
+    @back(back_to_top, back_to_product_list_for_mobile)
+    @lbr_view_config(request_method='GET')
+    def build_point_use_view(self):
+        cart = self.context.cart
+        performance = self.context.performance
+        form = schemas.PointUseForm()
+
+        # TODO: Point API からeasyIdを使ってポイントを取得
+        usable_standard_point = 1500
+
+        return self.send_data(cart, performance, form, usable_standard_point)
+
+    @back(back_to_top, back_to_product_list_for_mobile)
+    @lbr_view_config(request_method='POST')
+    def register_used_point(self):
+        """ 決済前処理を行い、決済確認画面へ遷移する """
+        cart = self.context.cart
+        performance = self.context.performance
+        usable_standard_point = int(self.request.params['usable_standard_point'])
+
+        point_use_type = int(self.request.params['point_use'])
+        form = schemas.PointUseForm(formdata=self.request.params, usable_point=usable_standard_point)
+        used_point = 0
+
+        # 一部のポイントを使う場合
+        if point_use_type == 1:
+            try:
+                input_point = int(form.input_point.raw_data[0])
+            except ValueError:
+                form.update_error('input_point', [u'半角数字でポイントを入力してください'])
+                return self.send_data(cart, performance, form, usable_standard_point)
+
+            # 入力ポイントが50ポイント以上で利用可能ポイント以下であることを検証
+            if not form.validate():
+                form.update_error('input_point', [form.input_point.errors[0]])
+                return self.send_data(cart, performance, form, usable_standard_point)
+
+            # 入力ポイントが合計金額以上の場合、利用ポイントは合計金額
+            # 決済手数料も無料になる。
+            # 少ない場合、利用ポイントは合計金額は入力ポイント
+            # TODO: カートの合計金額や決済手数料の更新の確認
+            if input_point >= cart.total_amount:
+                used_point = cart.total_amount
+            else:
+                used_point = input_point
+
+        # 全てのポイントを使う場合
+        elif point_use_type == 0:
+            maximum_usable_point = cart.total_amount - cart.transaction_fee
+            if maximum_usable_point < 50:
+                form.update_error('input_point', [u'ポイントを使用することができません。'])
+                return self.update_with_error_message(cart, form, usable_standard_point)
+
+            # 利用可能ポイントが合計金額以上の場合、利用ポイントは合計金額
+            # 決済手数料も無料になる。
+            # 少ない場合、利用ポイントは利用可能ポイント
+            # TODO: カートの合計金額や決済手数料の更新の確認
+            if maximum_usable_point >= cart.total_amount:
+                used_point = cart.total_amount
+            else:
+                used_point = usable_standard_point
+
+        # TODO: ポイント利用情報の更新
+
+        # 全額ポイント利用となる場合は決済確認画面へ遷移
+        if used_point == cart.total_amount:
+            next_location = flow.Transition(self.context, self.request,
+                                            url_or_path=self.request.route_url('payment.confirm'))
+        else:
+            next_location = payment_prepare(self.context, self.request)(url_wanted=False)
+
+        return HTTPFound(location=next_location)
+
 
 @view_defaults(
     route_name='payment.confirm',
