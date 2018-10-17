@@ -401,13 +401,13 @@ def get_cart_user_identifiers(request):
             retval.append((remote_addr, 'weak'))
     return retval
 
-def is_point_input_organization(context, request):
+def is_point_account_no_input_organization(context, request):
     organization = get_organization(request)
     code = organization.code
     return code == 'RE' or code == 'KT' or code == 'VK' or code == 'RL' or code == 'RT'
 
-def is_point_input_required(context, request):
-    if not is_point_input_organization(context, request):
+def is_point_account_no_input_required(context, request):
+    if not is_point_account_no_input_organization(context, request):
         return False
 
     # cart
@@ -426,6 +426,31 @@ def is_point_input_required(context, request):
     if membership is not None:
         _enable_point_input = membership.enable_point_input
     return _enable_point_input
+
+
+def is_point_use_accepted_organization(request):
+    """ ポイント利用が可能な Org であるかの判定 """
+    organization = get_organization(request)
+    code = organization.code
+    return code == 'RE' or code == 'VK' or code == 'RT'
+
+
+def is_point_use_accepted(context, request):
+    """
+    ポイント利用が可能な Org の販売区分であるかの判定
+    ・Cart 情報に asid が存在している
+    ・Org が RE, VK, RT
+    ・販売区分がポイント充当可能に設定されている
+    """
+    # cart
+    if hasattr(context, "asid"):
+        if not context.asid:
+            return False
+
+    return \
+        is_point_use_accepted_organization(request) and \
+        context.sales_segment.is_point_allocation_enable
+
 
 def is_fc_auth_organization(context, request):
     return context.cart_setting.auth_type == "fc_auth"
