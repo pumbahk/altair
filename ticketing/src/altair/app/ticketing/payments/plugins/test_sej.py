@@ -3202,6 +3202,17 @@ class PaymentPluginTest(PluginTestBase):
         )
         plugin.refund(self.request, order, refund_record=None)
 
+    def test_get_order_info_with_full_point_allocation(self):
+        """
+        全額ポイント払いの時、空が返却されるか確認するテスト
+        """
+        plugin = self._makeOne()
+        order = testing.DummyModel(
+            payment_amount=0
+        )
+        order_info = plugin.get_order_info(self.request, order)
+        self.assertEqual(order_info, {})
+
 class DeliveryPluginTest(PluginTestBase):
     def _getTarget(self):
         from .sej import SejDeliveryPlugin

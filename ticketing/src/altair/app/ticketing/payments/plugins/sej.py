@@ -706,13 +706,15 @@ class SejPaymentPlugin(object):
         """ *** 支払のみの場合は払戻しない *** """
         if order.paid_at is None:
             raise SejPluginFailure(u'cannot refund an order that is not paid yet', order_no=order.order_no, back_url=None)
-        if order.payment_amount == 0:
+        if order.payment_amount == 0:  # 支払いのみで全額ポイント払いの場合はSejOrderがないので空を返却
             logger.info(u'skipped to refund sej order due to full amount already paid by point')
             return
         sej_order = sej_api.get_sej_order(order.order_no)
         assert int(sej_order.payment_type) == int(SejPaymentType.PrepaymentOnly)
 
     def get_order_info(self, request, order):
+        if order.payment_amount == 0:  # 支払いのみで全額ポイント払いの場合はSejOrderがないので空を返却
+            return {}
         return get_sej_order_info(request, order)
 
 
